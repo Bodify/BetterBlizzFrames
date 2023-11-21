@@ -1,0 +1,19 @@
+## Interface: 100200
+## Title: Better|cff00c0ffBlizz|rFrames
+## Notes: More options for Blizzard frames. Aura filtering, Party castbars, Combat indicator, Dark Mode etc.
+## SavedVariables: BetterBlizzFramesDB
+## IconAtlas: gmchat-icon-blizz
+## Author: Bodify
+
+modules\darkmode.lua
+modules\nameFix.lua
+modules\hideFrames.lua
+modules\auras.lua
+modules\absorb.lua
+modules\combat.lua
+modules\castbar.lua
+modules\healthbarColor.lua
+modules\arenaframes.lua
+modules\nahjProfile.lua
+gui.lua
+BetterBlizzFrames.lua

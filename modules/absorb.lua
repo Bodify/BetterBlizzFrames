@@ -1,0 +1,255 @@
+-- Setting up the database
+BetterBlizzFramesDB = BetterBlizzFramesDB or {}
+BBF = BBF or {}
+
+local function GetMaxAbsorbAuraIcon(unit)
+    local maxAbsorb = 0
+    local maxAbsorbIcon = nil
+
+    for i = 1, 40 do
+        local name, icon, count, debuffType, duration, expirationTime, unitCaster, _, _, spellId, _, _, _, _, _, absorb = UnitBuff(unit, i)
+        if absorb and absorb > maxAbsorb then
+            maxAbsorb = absorb
+            maxAbsorbIcon = icon
+        end
+    end
+
+    return maxAbsorbIcon
+end
+
+local function UpdateAbsorbIndicator(frame, unit)
+    if not BetterBlizzFramesDB.absorbIndicator then return end
+
+    local settingsPrefix = unit
+    local showAmount = BetterBlizzFramesDB[settingsPrefix .. "AbsorbAmount"]
+    local showIcon = BetterBlizzFramesDB[settingsPrefix .. "AbsorbIcon"]
+    local xPos = BetterBlizzFramesDB.playerAbsorbXPos
+    local yPos = BetterBlizzFramesDB.playerAbsorbYPos
+    local anchor = BetterBlizzFramesDB.playerAbsorbAnchor
+    local reverseAnchor = BBF.GetOppositeAnchor(anchor)
+    local darkModeOn = BetterBlizzFramesDB.darkModeUi
+    local vertexColor = darkModeOn and BetterBlizzFramesDB.darkModeColor or 1
+    local testMode = BetterBlizzFramesDB.absorbIndicatorTestMode
+    local flipIconText = BetterBlizzFramesDB.absorbIndicatorFlipIconText
+
+    if not frame.absorbParent then
+        frame.absorbParent = CreateFrame("Frame", nil, frame, "BackdropTemplate")
+        frame.absorbParent:SetSize(50, 50) -- Set this size to fit both icon and text
+        frame.absorbParent:SetPoint("CENTER", frame, "CENTER", xPos, yPos) -- Position it according to your needs
+        frame.absorbParent:SetFrameStrata("HIGH")
+
+        frame.absorbIcon = frame.absorbParent:CreateTexture(nil, "OVERLAY")
+        frame.absorbIcon:SetSize(20, 20)
+        frame.absorbIcon:SetPoint("CENTER", frame.absorbParent, "CENTER") -- Position the icon inside the parent frame
+
+        frame.absorbIndicator = frame.absorbParent:CreateFontString(nil, "OVERLAY")
+        frame.absorbIndicator:SetFont("Fonts\\FRIZQT__.TTF", 16, "OUTLINE")
+        frame.absorbIndicator:SetPoint("CENTER", frame.absorbParent, "CENTER") -- Position the text inside the parent frame
+        frame.absorbIndicator:SetDrawLayer("OVERLAY", 7)
+    end
+
+    -- Ensure the border is attached to the absorbParent and appears above the icon
+    if not frame.absorbIcon.border then
+        local border = CreateFrame("Frame", nil, frame.absorbParent, "BackdropTemplate")
+        border:SetBackdrop({
+            edgeFile = "Interface/Tooltips/UI-Tooltip-Border",
+            tileEdge = true,
+            edgeSize = 8,
+        })
+
+        border:SetPoint("TOPLEFT", frame.absorbIcon, "TOPLEFT", -2, 2)
+        border:SetPoint("BOTTOMRIGHT", frame.absorbIcon, "BOTTOMRIGHT", 2, -2)
+        border:SetFrameLevel(frame.absorbParent:GetFrameLevel() + 1)  -- Ensure the border is above the icon
+        frame.absorbIcon.border = border
+    end
+
+
+    if darkModeOn then
+        frame.absorbIcon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+        frame.absorbIcon.border:SetBackdropBorderColor(vertexColor, vertexColor, vertexColor)
+        frame.absorbIcon.border:Hide()
+    else
+        frame.absorbIcon:SetTexCoord(0, 1, 0, 1)
+        frame.absorbIcon.border:Hide()
+    end
+
+    frame.absorbIcon:ClearAllPoints()
+    frame.absorbIndicator:ClearAllPoints()
+
+    if frame == PlayerFrame then
+        xPos = xPos * -1 -- invert the xPos value for PlayerFrame
+    end
+
+    if testMode then
+        frame.absorbIcon:SetTexture("Interface\\Icons\\SPELL_HOLY_POWERWORDSHIELD")
+        frame.absorbIcon:Show()
+        frame.absorbIndicator:SetText("69k")
+        frame.absorbIndicator:Show()
+        if frame == PlayerFrame then
+            if anchor == "LEFT" or anchor == "RIGHT" then
+                frame.absorbIcon:SetPoint(anchor, frame, reverseAnchor, -20 + xPos, -1.5 + yPos)
+            else
+                frame.absorbIcon:SetPoint(reverseAnchor, frame, anchor, -30 + xPos, -25.5 + yPos)
+            end
+            if showIcon then
+                if darkModeOn then
+                    frame.absorbIcon.border:Show()
+                else
+                    frame.absorbIcon.border:Hide()
+                end
+                if flipIconText then
+                    frame.absorbIndicator:SetPoint("RIGHT", frame.absorbIcon, "LEFT", 0, 0)
+                else
+                    frame.absorbIndicator:SetPoint("LEFT", frame.absorbIcon, "RIGHT", 3, 0)
+                end
+            else
+                frame.absorbIndicator:SetPoint("LEFT", frame.absorbIcon, "RIGHT", -23, 0)
+            end
+        else
+            if anchor == "LEFT" or anchor =="RIGHT" then
+                frame.absorbIcon:SetPoint(reverseAnchor, frame, anchor, 20 + xPos, -1 + yPos)
+            else
+                frame.absorbIcon:SetPoint(reverseAnchor, frame, anchor, 30 + xPos, -25 + yPos)
+            end
+            if showIcon then
+                if darkModeOn then
+                    frame.absorbIcon.border:Show()
+                else
+                    frame.absorbIcon.border:Hide()
+                end
+                if flipIconText then
+                    frame.absorbIndicator:SetPoint("LEFT", frame.absorbIcon, "RIGHT", 3, 0)
+                else
+                    frame.absorbIndicator:SetPoint("RIGHT", frame.absorbIcon, "LEFT", 0, 0)
+                end
+            else
+                frame.absorbIndicator:SetPoint("RIGHT", frame.absorbIcon, "LEFT", 20, 0)
+            end
+        end
+        return
+    end
+
+    if showAmount then
+        if frame == PlayerFrame then
+            if anchor == "LEFT" or anchor == "RIGHT" then
+                frame.absorbIcon:SetPoint(anchor, frame, reverseAnchor, -20 + xPos, -1.5 + yPos)
+            else
+                frame.absorbIcon:SetPoint(reverseAnchor, frame, anchor, -30 + xPos, -25.5 + yPos)
+            end
+            if showIcon then
+                if darkModeOn then
+                    frame.absorbIcon.border:Show()
+                else
+                    frame.absorbIcon.border:Hide()
+                end
+                if flipIconText then
+                    frame.absorbIndicator:SetPoint("RIGHT", frame.absorbIcon, "LEFT", 0, 0)
+                else
+                    frame.absorbIndicator:SetPoint("LEFT", frame.absorbIcon, "RIGHT", 3, 0)
+                end
+            else
+                frame.absorbIndicator:SetPoint("LEFT", frame.absorbIcon, "RIGHT", -23, 0)
+            end
+        else
+            if anchor == "LEFT" or anchor =="RIGHT" then
+                frame.absorbIcon:SetPoint(reverseAnchor, frame, anchor, 20 + xPos, -1 + yPos)
+            else
+                frame.absorbIcon:SetPoint(reverseAnchor, frame, anchor, 30 + xPos, -25 + yPos)
+            end
+            if showIcon then
+                if darkModeOn then
+                    frame.absorbIcon.border:Show()
+                else
+                    frame.absorbIcon.border:Hide()
+                end
+                if flipIconText then
+                    frame.absorbIndicator:SetPoint("LEFT", frame.absorbIcon, "RIGHT", 3, 0)
+                else
+                    frame.absorbIndicator:SetPoint("RIGHT", frame.absorbIcon, "LEFT", 0, 0)
+                end
+            else
+                frame.absorbIndicator:SetPoint("RIGHT", frame.absorbIcon, "LEFT", 20, 0)
+            end
+        end
+
+        frame.absorbIndicator:SetScale(BetterBlizzFramesDB.absorbIndicatorScale)
+        frame.absorbIcon:SetScale(BetterBlizzFramesDB.absorbIndicatorScale)
+
+        local absorb = UnitGetTotalAbsorbs(unit) or 0
+        if absorb >= 1000 then
+            local displayValue = math.floor(absorb / 1000) .. "k"
+            frame.absorbIndicator:SetText(displayValue)
+            frame.absorbIndicator:Show()
+
+            if showIcon then
+                local auraIcon = GetMaxAbsorbAuraIcon(unit)
+                if auraIcon then
+                    frame.absorbIcon:SetTexture(auraIcon)
+                    frame.absorbIcon:Show()
+                    if frame.absorbIcon.border and darkModeUi then
+                        frame.absorbIcon.border:Show()
+                    end
+                else
+                    frame.absorbIcon:Hide()
+                    if frame.absorbIcon.border then
+                        frame.absorbIcon.border:Hide()
+                    end
+                end
+            else
+                frame.absorbIcon:Hide()
+                if frame.absorbIcon.border then
+                    frame.absorbIcon.border:Hide()
+                end
+            end
+        else
+            frame.absorbIndicator:Hide()
+            frame.absorbIcon:Hide()
+            if frame.absorbIcon.border then
+                frame.absorbIcon.border:Hide()
+            end
+        end
+    else
+        if frame.absorbIndicator then frame.absorbIndicator:Hide() end
+        if frame.absorbIcon then frame.absorbIcon:Hide() end
+        if frame.absorbIcon.border then
+            frame.absorbIcon.border:Hide()
+        end
+    end
+end
+
+
+
+function BBF.AbsorbCaller()
+    UpdateAbsorbIndicator(PlayerFrame, "player")
+    UpdateAbsorbIndicator(TargetFrame, "target")
+    UpdateAbsorbIndicator(FocusFrame, "focus")
+    if not BetterBlizzFramesDB.absorbIndicator then
+        if TargetFrame.absorbIcon and TargetFrame.absorbIcon.border then TargetFrame.absorbIcon.border:Hide() end
+        if TargetFrame.absorbIndicator then TargetFrame.absorbIndicator:Hide() end
+        if TargetFrame.absorbIcon then TargetFrame.absorbIcon:Hide() end
+        if PlayerFrame.absorbIndicator then PlayerFrame.absorbIndicator:Hide() end
+        if PlayerFrame.absorbIcon then PlayerFrame.absorbIcon:Hide() end
+        if PlayerFrame.absorbIcon and PlayerFrame.absorbIcon.border then PlayerFrame.absorbIcon.border:Hide() end
+        if FocusFrame.absorbIndicator then FocusFrame.absorbIndicator:Hide() end
+        if FocusFrame.absorbIcon then FocusFrame.absorbIcon:Hide() end
+        if FocusFrame.absorbIcon and FocusFrame.absorbIcon.border then FocusFrame.absorbIcon.border:Hide() end
+    end
+end
+
+
+-- Event listener for Absorb Indicator
+local function OnAbsorbEvent(self, event, unit)
+    UpdateAbsorbIndicator(TargetFrame, "target")
+    UpdateAbsorbIndicator(PlayerFrame, "player")
+    UpdateAbsorbIndicator(FocusFrame, "focus")
+end
+
+
+-- Event listener for Absorb Indicator
+local absorbEventFrame = CreateFrame("Frame")
+absorbEventFrame:RegisterEvent("UNIT_ABSORB_AMOUNT_CHANGED")
+absorbEventFrame:RegisterEvent("UNIT_HEAL_ABSORB_AMOUNT_CHANGED")
+absorbEventFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
+absorbEventFrame:RegisterEvent("PLAYER_FOCUS_CHANGED")
+absorbEventFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
+absorbEventFrame:SetScript("OnEvent", OnAbsorbEvent)

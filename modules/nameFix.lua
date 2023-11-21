@@ -1,0 +1,503 @@
+local specIDToName = {
+    -- Death Knight
+    [250] = "Blood", [251] = "Frost", [252] = "Unholy",
+    -- Demon Hunter
+    [577] = "Havoc", [581] = "Vengeance",
+    -- Druid
+    [102] = "Balance", [103] = "Feral", [104] = "Guardian", [105] = "Restoration",
+    -- Evoker
+    [1467] = "Devastation", [1468] = "Preservation", [1473] = "Augmentation",
+    -- Hunter
+    [253] = "Beast Mastery", [254] = "Marksmanship", [255] = "Survival",
+    -- Mage
+    [62] = "Arcane", [63] = "Fire", [64] = "Frost",
+    -- Monk
+    [268] = "Brewmaster", [270] = "Mistweaver", [269] = "Windwalker",
+    -- Paladin
+    [65] = "Holy", [66] = "Protection", [70] = "Retribution",
+    -- Priest
+    [256] = "Discipline", [257] = "Holy", [258] = "Shadow",
+    -- Rogue
+    [259] = "Assassination", [260] = "Outlaw", [261] = "Subtlety",
+    -- Shaman
+    [262] = "Elemental", [263] = "Enhancement", [264] = "Restoration",
+    -- Warlock
+    [265] = "Affliction", [266] = "Demonology", [267] = "Destruction",
+    -- Warrior
+    [71] = "Arms", [72] = "Fury", [73] = "Protection",
+}
+
+local specIDToNameShort = {
+    -- Death Knight
+    [250] = "Blood", [251] = "Frost", [252] = "Unholy",
+    -- Demon Hunter
+    [577] = "Havoc", [581] = "Vengeance",
+    -- Druid
+    [102] = "Balance", [103] = "Feral", [104] = "Guardian", [105] = "Resto",
+    -- Evoker
+    [1467] = "Dev", [1468] = "Pres", [1473] = "Aug",
+    -- Hunter
+    [253] = "BM", [254] = "Marksman", [255] = "Survival",
+    -- Mage
+    [62] = "Arcane", [63] = "Fire", [64] = "Frost",
+    -- Monk
+    [268] = "Brewmaster", [270] = "Mistweaver", [269] = "Windwalker",
+    -- Paladin
+    [65] = "Holy", [66] = "Prot", [70] = "Ret",
+    -- Priest
+    [256] = "Disc", [257] = "Holy", [258] = "Shadow",
+    -- Rogue
+    [259] = "Assa", [260] = "Outlaw", [261] = "Sub",
+    -- Shaman
+    [262] = "Ele", [263] = "Enha", [264] = "Resto",
+    -- Warlock
+    [265] = "Aff", [266] = "Demo", [267] = "Destro",
+    -- Warrior
+    [71] = "Arms", [72] = "Fury", [73] = "Prot",
+}
+
+local movedName = false
+
+local function CheckUnit(frame, unit, party)
+    local originalNameObject = frame.name or frame.Name
+    local newName
+    local showSpecName = BetterBlizzFramesDB.showSpecName
+    local shortSpecName = BetterBlizzFramesDB.shortArenaSpecName
+    local showArenaID = BetterBlizzFramesDB.showArenaID
+    local hidePartyNames = BetterBlizzFramesDB.hidePartyNames
+    local partyArenaNames = BetterBlizzFramesDB.partyArenaNames
+
+    if (party and hidePartyNames) and not partyArenaNames then
+        frame.cleanName:SetAlpha(0)
+        originalNameObject:SetAlpha(0)
+        return
+    end
+
+    if UnitIsUnit(unit, "player") and party then
+        frame.cleanName:SetText(GetUnitName(unit, true))
+        frame.cleanName:SetAlpha(1)
+        originalNameObject:SetAlpha(0)
+    elseif UnitIsUnit(unit, "party1") then
+        local specID
+        local Details = Details
+        if Details and Details.realversion >= 134 then
+            local unitGUID = UnitGUID(unit)
+            specID = Details:GetSpecByGUID(unitGUID)
+        end
+        local specName = specID and specIDToName[specID]
+        if shortSpecName then
+            specName = specID and specIDToNameShort[specID]
+        end
+
+        if specName then
+            if showSpecName and showArenaID then
+                newName = specName .. " 1"
+            elseif showSpecName then
+                newName = specName
+            elseif showArenaID then
+                newName = "Party 1"
+            end
+            frame.cleanName:SetText(newName)
+            frame.cleanName:SetAlpha(1)
+            originalNameObject:SetAlpha(0)
+        end
+
+    elseif UnitIsUnit(unit, "party2") then
+        local specID
+        local Details = Details
+        if Details and Details.realversion >= 134 then
+            local unitGUID = UnitGUID(unit)
+            specID = Details:GetSpecByGUID(unitGUID)
+        end
+        local specName = specID and specIDToName[specID]
+        if shortSpecName then
+            specName = specID and specIDToNameShort[specID]
+        end
+
+        if specName then
+            if showSpecName and showArenaID then
+                newName = specName .. " 2"
+            elseif showSpecName then
+                newName = specName
+            elseif showArenaID then
+                newName = "Party 2"
+            end
+            frame.cleanName:SetText(newName)
+            frame.cleanName:SetAlpha(1)
+            originalNameObject:SetAlpha(0)
+        end
+
+    elseif UnitIsUnit(unit, "arena1") then
+        local specID = GetArenaOpponentSpec(1)
+        local specName = specID and specIDToName[specID]
+        if shortSpecName then
+            specName = specID and specIDToNameShort[specID]
+        end
+
+        if specName then
+            if showSpecName and showArenaID then
+                newName = specName .. " 1"
+            elseif showSpecName then
+                newName = specName
+            elseif showArenaID then
+                newName = "Arena 1"
+            end
+            frame.cleanName:SetText(newName)
+            frame.cleanName:SetAlpha(1)
+            originalNameObject:SetAlpha(0)
+        end
+
+    elseif UnitIsUnit(unit, "arena2") then
+        local specID = GetArenaOpponentSpec(2)
+        local specName = specID and specIDToName[specID]
+        if shortSpecName then
+            specName = specID and specIDToNameShort[specID]
+        end
+
+        if specName then
+            if showSpecName and showArenaID then
+                newName = specName .. " 2"
+            elseif showSpecName then
+                newName = specName
+            elseif showArenaID then
+                newName = "Arena 2"
+            end
+            frame.cleanName:SetText(newName)
+            frame.cleanName:SetAlpha(1)
+            originalNameObject:SetAlpha(0)
+        end
+
+    elseif UnitIsUnit(unit, "arena3") then
+        local specID = GetArenaOpponentSpec(3)
+        local specName = specID and specIDToName[specID]
+        if shortSpecName then
+            specName = specID and specIDToNameShort[specID]
+        end
+
+        if specName then
+            if showSpecName and showArenaID then
+                newName = specName .. " 3"
+            elseif showSpecName then
+                newName = specName
+            elseif showArenaID then
+                newName = "Arena 3"
+            end
+            frame.cleanName:SetText(newName)
+            frame.cleanName:SetAlpha(1)
+            originalNameObject:SetAlpha(0)
+        end
+    else
+        frame.cleanName:SetText(GetUnitName(unit, true))
+        frame.cleanName:SetAlpha(0)
+        if not hidePartyNames and party then
+            originalNameObject:SetAlpha(1)
+        end
+    end
+end
+
+function ChangeName(frame, unit, party)
+    local originalNameObject = frame.name or frame.Name
+    local name = GetUnitName(unit, true)
+    local newName
+
+    local removeRealm = UnitIsPlayer(unit) and BetterBlizzFramesDB.removeRealmNames
+    local isInArena = IsActiveBattlefieldArena() and ((BetterBlizzFramesDB.partyArenaNames and party) or BetterBlizzFramesDB.targetAndFocusArenaNames)
+    local hidePartyNames = BetterBlizzFramesDB.hidePartyNames
+
+    if not frame.cleanName then
+        local a, p, a2, x, y = originalNameObject:GetPoint()
+        frame.cleanName = frame:CreateFontString(nil, "OVERLAY")
+        frame.cleanName:SetFont(originalNameObject:GetFont())
+        frame.cleanName:SetPoint(a, p, a2, x, y-1)
+        frame.cleanName:SetJustifyH(originalNameObject:GetJustifyH())
+        frame.cleanName:SetJustifyV(originalNameObject:GetJustifyV())
+        frame.cleanName:SetTextColor(originalNameObject:GetTextColor())
+        frame.cleanName:SetShadowOffset(originalNameObject:GetShadowOffset())
+        frame.cleanName:SetShadowColor(originalNameObject:GetShadowColor())
+
+        for i = 1, 4 do
+            if frame == PartyFrame["MemberFrame" .. i] then
+                local hideRole = BetterBlizzFramesDB.hidePartyRoles
+                if hideRole then
+                    frame.cleanName:SetWidth(originalNameObject:GetWidth() + 13)
+                    --frame.cleanName:SetPoint(a, p, a2, x, y+4)
+                    frame.cleanName:SetWordWrap(false)
+                else
+                    frame.cleanName:SetWidth(originalNameObject:GetWidth() + 10)
+                    --frame.cleanName:SetPoint(a, p, a2, x, y+4)
+                    frame.cleanName:SetWordWrap(false)
+                end
+                break
+            end
+        end
+    end
+
+    if isInArena then
+        if party then
+            if BetterBlizzFramesDB.partyArenaNames then
+                CheckUnit(frame, unit, true)
+            else
+                if frame.cleanName then
+                    frame.cleanName:SetAlpha(0)
+                end
+                if hidePartyNames and party then
+                    originalNameObject:SetAlpha(0)
+                else
+                    originalNameObject:SetAlpha(1)
+                end
+            end
+        else
+            if BetterBlizzFramesDB.targetAndFocusArenaNames then
+                CheckUnit(frame, unit)
+            else
+                if frame.cleanName then
+                    frame.cleanName:SetAlpha(0)
+                end
+                originalNameObject:SetAlpha(1)
+            end
+        end
+    elseif hideNames and party then
+        originalNameObject:SetAlpha(0)
+        if frame.cleanName then
+            frame.cleanName:SetAlpha(0)
+        end
+    elseif removeRealm then
+        if party then
+            if not hidePartyName then
+                newName = string.gsub(name, "-.*$", "")
+                frame.cleanName:SetText(newName)
+                frame.cleanName:SetAlpha(1)
+            else
+                frame.cleanName:SetAlpha(0)
+            end
+            originalNameObject:SetAlpha(0)
+        else
+            newName = string.gsub(name, "-.*$", "")
+            frame.cleanName:SetText(newName)
+            frame.cleanName:SetAlpha(1)
+            originalNameObject:SetAlpha(0)
+        end
+    else
+        frame.cleanName:SetAlpha(0)
+        if party then
+            if not hidePartyName then
+                originalNameObject:SetAlpha(1)
+            else
+                originalNameObject:SetAlpha(0)
+            end
+        else
+            originalNameObject:SetAlpha(1)
+        end
+    end
+end
+
+function BBF.PartyNameChange()
+    if CompactPartyFrame:IsVisible() then
+        for i = 1, 3 do
+            local memberFrame = _G["CompactPartyFrameMember" .. i]
+            if memberFrame and memberFrame.displayedUnit then
+                ChangeName(memberFrame, memberFrame.displayedUnit, true)
+            end
+        end
+    else
+        if PartyFrame:IsVisible() then ---PartyFrame:IsVisible() always true?
+            for i = 1, 4 do
+                local memberFrame = PartyFrame["MemberFrame" .. i]
+                if memberFrame and memberFrame.unit then
+                    ChangeName(memberFrame, memberFrame.unit, true)
+                end
+            end
+        end
+    end
+end
+
+
+local function TargetAndFocusNameChange()
+    if BetterBlizzFramesDB.targetAndFocusArenaNames or BetterBlizzFramesDB.removeRealmNames then
+        ChangeName(TargetFrame.TargetFrameContent.TargetFrameContentMain, "target")
+        ChangeName(FocusFrame.TargetFrameContent.TargetFrameContentMain, "focus")
+    end
+end
+
+
+
+local UpdatePartyNames = CreateFrame("Frame")
+UpdatePartyNames:RegisterEvent("GROUP_ROSTER_UPDATE")
+UpdatePartyNames:RegisterEvent("PLAYER_ENTERING_WORLD")
+UpdatePartyNames:RegisterEvent("PLAYER_ENTERING_BATTLEGROUND")
+UpdatePartyNames:SetScript("OnEvent", function(self, event, ...)
+    for delay = 0, 8 do
+        C_Timer.After(delay, BBF.PartyNameChange)
+    end
+end)
+
+local UpdateTargetAndFocusNames = CreateFrame("Frame")
+UpdateTargetAndFocusNames:RegisterEvent("PLAYER_TARGET_CHANGED")
+UpdateTargetAndFocusNames:RegisterEvent("PLAYER_FOCUS_CHANGED")
+UpdateTargetAndFocusNames:SetScript("OnEvent", function(self, event, ...)
+    local classColorTargetRep = BetterBlizzFramesDB.classColorTargetReputationTexture
+    local classColorFocusRep = BetterBlizzFramesDB.classColorFocusReputationTexture
+    TargetAndFocusNameChange()
+    BBF.PartyNameChange()
+    if classColorTargetRep then
+        BBF.ClassColorReputation(TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor, "target")
+    end
+    if classColorFocusRep then
+        BBF.ClassColorReputation(FocusFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor, "focus")
+    end
+end)
+
+
+
+
+
+
+local function CenterNames()
+    if BetterBlizzFramesDB.centerNames then
+        if not movedName then
+            if not InCombatLockdown() then
+                local targetName = TargetFrame.TargetFrameContent.TargetFrameContentMain.Name
+                local focusName = FocusFrame.TargetFrameContent.TargetFrameContentMain.Name
+                PlayerName:ClearAllPoints()
+                PlayerName:SetPoint("TOP", PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarArea.HealthBar, "TOP", 0, 13)
+                PlayerName:SetJustifyH("CENTER")
+
+                targetName:ClearAllPoints()
+                targetName:SetPoint("TOP", TargetFrame.TargetFrameContent.TargetFrameContentMain.HealthBar, "TOP", 2, 13)
+                targetName:SetJustifyH("CENTER")
+
+                focusName:ClearAllPoints()
+                focusName:SetPoint("TOP", FocusFrame.TargetFrameContent.TargetFrameContentMain.HealthBar, "TOP", 2, 13)
+                focusName:SetJustifyH("CENTER")
+                C_Timer.After(5, function()
+                    movedName = true
+                end)
+            end
+        end
+    else
+        if not movedName then
+            if BetterBlizzFramesDB.playerFrameOCD then
+                if not InCombatLockdown() then
+                    local targetName = TargetFrame.TargetFrameContent.TargetFrameContentMain.Name
+                    local focusName = FocusFrame.TargetFrameContent.TargetFrameContentMain.Name
+                    local a, b, c, d, e = targetName:GetPoint()
+                    targetName:ClearAllPoints()
+                    targetName:SetPoint(a, b, c, d, -3)
+
+                    local a, b, c, d, e = focusName:GetPoint()
+                    focusName:ClearAllPoints()
+                    focusName:SetPoint(a, b, c, d, -3)
+                    C_Timer.After(5, function()
+                        movedName = true
+                    end)
+                end
+            end
+        end
+    end
+end
+
+function BBF.AllCaller()
+    local hidePartyName = BetterBlizzFramesDB.hidePartyNames
+    local hidePartyRole = BetterBlizzFramesDB.hidePartyRoles
+
+    BBF.PartyNameChange()
+    TargetAndFocusNameChange()
+    BBF.OnUpdateName()
+    CenterNames()
+    if hidePartyName or hidePartyRole then
+        BBF.OnUpdateName()
+    end
+end
+
+function BBF.RunOnUpdateName()
+    local hidePartyName = BetterBlizzFramesDB.hidePartyNames
+    local hidePartyRole = BetterBlizzFramesDB.hidePartyRoles
+    CenterNames()
+    if hidePartyName or hidePartyRole then
+        BBF.OnUpdateName()
+    end
+end
+
+function BBF.OnUpdateName()
+    local hideNames = BetterBlizzFramesDB.hidePartyNames
+    local hideRoles = BetterBlizzFramesDB.hidePartyRoles
+    local arenaNames = BetterBlizzFramesDB.partyArenaNames
+    local realmNameFix = BetterBlizzFramesDB.removeRealmNames
+    local scaleNames = true
+    local defaultPartyFrame = PartyFrame
+
+    local groupMembers = GetNumGroupMembers()
+    for i = 1, groupMembers do
+        local compactPartyMember = _G["CompactPartyFrameMember" .. i]
+        local roleIcon = _G["CompactPartyFrameMember" .. i .. "RoleIcon"]
+        local defaultMember = defaultPartyFrame["MemberFrame" .. i]
+
+        if compactPartyMember:IsVisible() then
+            -- Hide the name if hidePartyNames is true
+--[=[
+            if (hideNames and compactPartyMember.name) and not arenaNames then -- mby remove all this cuz already done with realm/arena thing, test bodify
+                compactPartyMember.name:SetAlpha(0)
+                if compactPartyMember.cleanName then
+                    compactPartyMember.cleanName:SetAlpha(0)
+                end
+            end
+
+]=]
+
+            -- Hide the role icon if hidePartyRoles is true
+            if hideRoles and compactPartyMember.roleIcon then
+                compactPartyMember.roleIcon:SetAlpha(0)
+                compactPartyMember.name:SetPoint("TOPLEFT", roleIcon, "TOPRIGHT", -10, -1)
+                if compactPartyMember.cleanName then
+                    compactPartyMember.cleanName:SetPoint("TOPLEFT", roleIcon, "TOPRIGHT", -10, -1)
+                end
+            else
+                compactPartyMember.roleIcon:SetAlpha(1)
+                compactPartyMember.name:SetPoint("TOPLEFT", roleIcon, "TOPRIGHT", 0, -1)
+                if compactPartyMember.cleanName then
+                    compactPartyMember.cleanName:SetPoint("TOPLEFT", roleIcon, "TOPRIGHT", 0, -1)
+                end
+            end
+
+--[=[
+            if hideRoles and not hideNames and compactPartyMember.name and roleIcon then
+                compactPartyMember.name:SetPoint("TOPLEFT", roleIcon, "TOPRIGHT", -10, -1)
+                if compactPartyMember.cleanName then
+                    compactPartyMember.cleanName:SetPoint("TOPLEFT", roleIcon, "TOPRIGHT", -10, -1)
+                end
+            else
+                if compactPartyMember.name and roleIcon then
+                    compactPartyMember.name:SetPoint("TOPLEFT", roleIcon, "TOPRIGHT", 0, -1)
+                    if compactPartyMember.cleanName then
+                        compactPartyMember.cleanName:SetPoint("TOPLEFT", roleIcon, "TOPRIGHT", 0, -1)
+                    end
+                end
+            end
+
+]=]
+
+        else
+            if defaultMember then --will always be true find fix bodify
+                if (hideNames and defaultMember.name) and not arenaNames then
+                    defaultMember.Name:SetAlpha(0)
+                    if defaultMember.cleanName then
+                        defaultMember.cleanName:SetAlpha(0)
+                    end
+                else
+                    defaultMember.Name:SetAlpha(1)
+                    if defaultMember.cleanName then
+                        defaultMember.cleanName:SetAlpha(1)
+                    end
+                end
+
+                if hideRoles and defaultMember.PartyMemberOverlay.RoleIcon then
+                    defaultMember.PartyMemberOverlay.RoleIcon:SetAlpha(0)
+                else
+                    defaultMember.PartyMemberOverlay.RoleIcon:SetAlpha(1)
+                end
+            end
+        end
+    end
+end
+
+hooksecurefunc("CompactUnitFrame_UpdateName", BBF.RunOnUpdateName)
