@@ -217,7 +217,7 @@ hooksecurefunc(TargetFrame.spellbar, "SetPoint", function()
     end
 end);
 
-hooksecurefunc(TargetFrame.spellbar, "SetPoint", function()
+hooksecurefunc(FocusFrame.spellbar, "SetPoint", function()
     local shouldAdjustCastbar = BetterBlizzFramesDB.focusStaticCastbar or BetterBlizzFramesDB.focusDetachCastbar or BetterBlizzFramesDB.playerAuraFiltering
     if shouldAdjustCastbar then
         adjustCastbar(FocusFrame.spellbar)
