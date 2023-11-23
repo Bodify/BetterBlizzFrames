@@ -906,7 +906,7 @@ local function guiGeneralTab()
 
     local darkModeUi = CreateCheckbox("darkModeUi", "Dark Mode", BetterBlizzFrames, nil, BBF.DarkmodeFrames)
     darkModeUi:SetPoint("TOPLEFT", playerFrameOCD, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltip(darkModeUi, "Simple dark mode for: UnitFrames, Actionbars & Aura Icons.")
+    CreateTooltip(darkModeUi, "Simple dark mode for: UnitFrames, Actionbars & Aura Icons.\n\nIf you want a more I recommend the addon FrameColor instead of this setting.")
 
     local darkModeUiAura = CreateCheckbox("darkModeUiAura", "Dark Aura Borders", BetterBlizzFrames, nil, BBF.DarkmodeFrames)
     darkModeUiAura:SetPoint("LEFT", darkModeUi.Text, "RIGHT", 5, 0)
@@ -1349,7 +1349,7 @@ local function guiGeneralTab()
         UpdateCVar()
         BBF.UpdateFrames()
     end)
-    CreateTooltip(classColorFrames, "Class color Player, Target, Focus & Party frames.")
+    CreateTooltip(classColorFrames, "Class color Player, Target, Focus & Party frames.\n\nIf you want a more I recommend the addon HealthBarColor instead of this setting.")
 
     local centerNames = CreateCheckbox("centerNames", "Center Name", BetterBlizzFrames, nil, BBF.RemoveRealmName)
     centerNames:SetPoint("TOPLEFT", classColorFrames, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
