@@ -4,6 +4,8 @@ hiddenFrame:Hide()
 --------------------------------------
 -- Hide UI Frame Elements
 --------------------------------------
+local hookedRaidFrameManager = false
+local hookedChatButtons = false
 function BBF.HideFrames()
     if BetterBlizzFramesDB.hasCheckedUi then
         --Hide group indicator on player unitframe
@@ -130,6 +132,110 @@ function BBF.HideFrames()
             PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.RoleIcon:SetParent(hiddenFrame)
         else
             PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.RoleIcon:SetParent(PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual)
+        end
+
+        if BetterBlizzFramesDB.hideRaidFrameManager then
+            CompactRaidFrameManager:SetAlpha(0)
+            if not hookedRaidFrameManager then
+                CompactRaidFrameManager:HookScript("OnEnter", function()
+                    CompactRaidFrameManager:SetAlpha(1)
+                end)
+                CompactRaidFrameManager:HookScript("OnLeave", function()
+                    C_Timer.After(1, function()
+                        if CompactRaidFrameManager.collapsed then
+                            CompactRaidFrameManager:SetAlpha(0)
+                        end
+                    end)
+                end)
+                hookedRaidFrameManager = true
+            end
+        end
+
+        local function hideChatFrameTextures()
+            for i = 1, NUM_CHAT_WINDOWS do
+                local buttonFrame = _G["ChatFrame"..i.."ButtonFrame"]
+                local topTexture = _G["ChatFrame"..i.."ButtonFrameTopTexture"]
+                local topLeftTexture = _G["ChatFrame"..i.."ButtonFrameTopLeftTexture"]
+                local topRightTexture = _G["ChatFrame"..i.."ButtonFrameTopRightTexture"]
+                local bottomTexture = _G["ChatFrame"..i.."ButtonFrameBottomTexture"]
+                local bottomLeftTexture = _G["ChatFrame"..i.."ButtonFrameBottomLeftTexture"]
+                local bottomRightTexture = _G["ChatFrame"..i.."ButtonFrameBottomRightTexture"]
+                local rightTexture = _G["ChatFrame"..i.."ButtonFrameRightTexture"]
+
+                if buttonFrame then
+                    if BetterBlizzFramesDB.hideChatButtons then
+                        buttonFrame.Background:Hide()
+                        topTexture:Hide()
+                        topLeftTexture:Hide()
+                        topRightTexture:Hide()
+                        bottomTexture:Hide()
+                        bottomLeftTexture:Hide()
+                        bottomRightTexture:Hide()
+                        rightTexture:Hide()
+                    else
+                        buttonFrame.Background:Show()
+                        topTexture:Show()
+                        topLeftTexture:Show()
+                        topRightTexture:Show()
+                        bottomTexture:Show()
+                        bottomLeftTexture:Show()
+                        bottomRightTexture:Show()
+                        rightTexture:Show()
+                    end
+                end
+            end
+        end
+
+        if BetterBlizzFramesDB.hideChatButtons then
+            QuickJoinToastButton:SetAlpha(0)
+            ChatFrameChannelButton:SetAlpha(0)
+            ChatFrameMenuButton:SetAlpha(0)
+            hideChatFrameTextures()
+
+            if not hookedChatButtons then
+                QuickJoinToastButton:HookScript("OnEnter", function()
+                    QuickJoinToastButton:SetAlpha(1)
+                    ChatFrameChannelButton:SetAlpha(1)
+                    ChatFrameMenuButton:SetAlpha(1)
+                end)
+                QuickJoinToastButton:HookScript("OnLeave", function()
+                    C_Timer.After(1, function()
+                        QuickJoinToastButton:SetAlpha(0)
+                        ChatFrameChannelButton:SetAlpha(0)
+                        ChatFrameMenuButton:SetAlpha(0)
+                    end)
+                end)
+                ChatFrameChannelButton:HookScript("OnEnter", function()
+                    QuickJoinToastButton:SetAlpha(1)
+                    ChatFrameChannelButton:SetAlpha(1)
+                    ChatFrameMenuButton:SetAlpha(1)
+                end)
+                ChatFrameChannelButton:HookScript("OnLeave", function()
+                    C_Timer.After(1, function()
+                        QuickJoinToastButton:SetAlpha(0)
+                        ChatFrameChannelButton:SetAlpha(0)
+                        ChatFrameMenuButton:SetAlpha(0)
+                    end)
+                end)
+                ChatFrameMenuButton:HookScript("OnEnter", function()
+                    QuickJoinToastButton:SetAlpha(1)
+                    ChatFrameChannelButton:SetAlpha(1)
+                    ChatFrameMenuButton:SetAlpha(1)
+                end)
+                ChatFrameMenuButton:HookScript("OnLeave", function()
+                    C_Timer.After(1, function()
+                        QuickJoinToastButton:SetAlpha(0)
+                        ChatFrameChannelButton:SetAlpha(0)
+                        ChatFrameMenuButton:SetAlpha(0)
+                    end)
+                end)
+                hookedChatButtons = true
+            end
+        else
+            QuickJoinToastButton:SetAlpha(1)
+            ChatFrameChannelButton:SetAlpha(1)
+            ChatFrameMenuButton:SetAlpha(1)
+            hideChatFrameTextures()
         end
     end
 end

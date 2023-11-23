@@ -8,7 +8,7 @@ local function applySettings(frame, desaturate, colorValue)
             frame:SetDesaturated(desaturate)
         end
         if frame.SetVertexColor then
-            frame:SetVertexColor(colorValue, colorValue, colorValue, 1) -- Alpha set to 1
+            frame:SetVertexColor(colorValue, colorValue, colorValue) -- Alpha set to 1
         end
     end
 end
@@ -71,7 +71,8 @@ function BBF.DarkmodeFrames()
     local vertexColor = BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeColor or 1
     local lighterVertexColor = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.15) or 1
     local birdColor = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.25) or 1
-    local rogueCombo = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.55) or 1
+    local rogueCombo = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.45) or 1
+    local monkChi = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.10) or 1
 
     if BetterBlizzFramesDB.darkModeColor == 0 then
         lighterVertexColor = 0
@@ -195,6 +196,22 @@ function BBF.DarkmodeFrames()
         end
     end
 
+    local monkChiPoints = _G.MonkHarmonyBarFrame
+    if monkChiPoints then
+        for _, v in pairs({monkChiPoints:GetChildren()}) do
+            applySettings(v.Chi_BG, desaturationValue, monkChi)
+            applySettings(v.Chi_BG_Active, desaturationValue, monkChi)
+        end
+    end
+
+    local monkNameplateChiPoints = _G.ClassNameplateBarWindwalkerMonkFrame
+    if monkNameplateChiPoints then
+        for _, v in pairs({monkNameplateChiPoints:GetChildren()}) do
+            applySettings(v.Chi_BG, desaturationValue, monkChi)
+            applySettings(v.Chi_BG_Active, desaturationValue, monkChi)
+        end
+    end
+
     local rogueComboPoints = _G.RogueComboPointBarFrame
     if rogueComboPoints then
         for _, v in pairs({rogueComboPoints:GetChildren()}) do
@@ -240,7 +257,6 @@ function BBF.DarkmodeFrames()
     }) do
         applySettings(v, desaturationValue, birdColor)
     end
-
 
     local BARTENDER4_NUM_MAX_BUTTONS = 180
     for i = 1, BARTENDER4_NUM_MAX_BUTTONS do

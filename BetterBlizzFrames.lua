@@ -187,7 +187,6 @@ local defaultSettings = {
         {name = "Honorless Target"},
         {name = "Guild Champion"},
         {name = "Sign of Iron"},
-        --{name = "Enlisted"},
         {id = 397734}, -- Word of a Worthy Ally
         {id = 186403}, -- Sign of Battle
         {id = 282559}, -- Enlisted
@@ -512,7 +511,8 @@ function BBF.FixStupidBlizzPTRShit()
     PlayerFrame.PlayerFrameContainer.PlayerPortrait:SetScale(1.02)
     PlayerFrame.PlayerFrameContainer.PlayerPortraitMask:SetScale(1.09)
     PlayerFrame.PlayerFrameContainer.PlayerPortrait:SetPoint("TOPLEFT", PlayerFrame.PlayerFrameContainer, "TOPLEFT", 24, -18)
-    PlayerFrame.PlayerFrameContainer.PlayerPortraitMask:SetPoint("TOPLEFT", PlayerFrame.PlayerFrameContainer, "TOPLEFT", 20, -15.5)
+    PlayerFrame.PlayerFrameContainer.PlayerPortraitMask:SetSize(60,61)
+    PlayerFrame.PlayerFrameContainer.PlayerPortraitMask:SetPoint("TOPLEFT", PlayerFrame.PlayerFrameContainer, "TOPLEFT", 20, -15)
     PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarArea.HealthBar.HealthBarMask:SetHeight(33)
     PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar.ManaBarMask:SetPoint("TOPLEFT", PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar, "TOPLEFT", -2, 3)
     PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar.ManaBarMask:SetHeight(17)
@@ -541,6 +541,15 @@ function BBF.FixStupidBlizzPTRShit()
     FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.RightText:SetPoint(p, r, rr, -14, y)
     local a, b, c, d, e = FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.LeftText:GetPoint()
     FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.LeftText:SetPoint(a,b,c,3,e)
+
+    local a, b, c, d, e = TargetFrame.TargetFrameContent.TargetFrameContentMain.LevelText:GetPoint()
+    TargetFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetPoint(a, b, c, d, -3)
+
+    local a, b, c, d, e = FocusFrame.TargetFrameContent.TargetFrameContentMain.LevelText:GetPoint()
+    FocusFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetPoint(a, b, c, d, -3)
+
+    local a, b, c, d, e = PlayerLevelText:GetPoint()
+    PlayerLevelText:SetPoint(a,b,c,d,-28)
     --ToT
     local a, b, c, d, e = TargetFrame.totFrame.HealthBar:GetPoint()
     TargetFrame.totFrame.HealthBar:SetPoint(a,b,c,-5,-3)

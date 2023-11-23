@@ -662,7 +662,7 @@ function BBF.NahjProfile()
 	db.focusToTYPosScale = 20
 	db.targetBuffFilterOnlyMe = false
 	db.targetCastBarScaleScale = 1.100000023841858
-	db.darkModeColor = 0.5999999642372131
+	db.darkModeColor = 0.12
 	db.targetBuffFilterWatchList = false
 	db.targetCastBarIconScale = 1
 	db.targetCastBarTimer = true

@@ -363,7 +363,7 @@ local function CenterNames()
                 PlayerName:SetJustifyH("CENTER")
 
                 targetName:ClearAllPoints()
-                targetName:SetPoint("TOP", TargetFrame.TargetFrameContent.TargetFrameContentMain.HealthBar, "TOP", 2, 13)
+                targetName:SetPoint("TOP", TargetFrame.TargetFrameContent.TargetFrameContentMain.HealthBar, "TOP", 2, 14)
                 targetName:SetJustifyH("CENTER")
 
                 focusName:ClearAllPoints()

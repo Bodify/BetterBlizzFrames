@@ -868,6 +868,9 @@ local function guiGeneralTab()
     addonNameIcon:SetAtlas("gmchat-icon-blizz")
     addonNameIcon:SetSize(22, 22)
     addonNameIcon:SetPoint("LEFT", addonNameText, "RIGHT", -2, -1)
+    local versionText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    versionText:SetPoint("LEFT", addonNameText, "RIGHT", 25, 0)
+    versionText:SetText("v1.0.3")--SetText("v" .. BetterBlizzFramesDB.updates)
 
     ----------------------
     -- General:
@@ -1111,6 +1114,12 @@ local function guiGeneralTab()
     hidePartyFrameTitle:SetPoint("TOPLEFT", hidePartyRoles, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(hidePartyFrameTitle, "Hide the \"Party\" text above \"Raid-Style\" Party Frames.")
 
+    local hideRaidFrameManager = CreateCheckbox("hideRaidFrameManager", "Hide RaidFrameManager", BetterBlizzFrames, nil, BBF.HideFrames)
+    hideRaidFrameManager:SetPoint("TOPLEFT", hidePartyFrameTitle, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltip(hideRaidFrameManager, "Hide the CompactRaidFrameManager. Can still be shown with mouseover.")
+
+
+
 
 
 
@@ -1187,6 +1196,17 @@ local function guiGeneralTab()
 
 
 
+    local chatFrameText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    chatFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 250, -450)
+    chatFrameText:SetText("Chat Frame")
+    local chatFrameIcon = BetterBlizzFrames:CreateTexture(nil, "BORDER")
+    chatFrameIcon:SetAtlas("transmog-icon-chat")
+    chatFrameIcon:SetSize(18, 16)
+    chatFrameIcon:SetPoint("RIGHT", chatFrameText, "LEFT", -3, 0)
+
+    local hideChatButtons = CreateCheckbox("hideChatButtons", "Hide Chat Buttons", BetterBlizzFrames, nil, BBF.HideFrames)
+    hideChatButtons:SetPoint("TOPLEFT", chatFrameText, "BOTTOMLEFT", -4, pixelsOnFirstBox)
+    CreateTooltip(hideChatButtons, "Hide the chat buttons. Can still be shown with mouseover.")
 
 
 
@@ -1619,6 +1639,8 @@ local function guiCastbars()
         BetterBlizzFramesDB.targetStaticCastbar = false
         targetDetachCastbar:SetChecked(false)
         BetterBlizzFramesDB.targetDetachCastbar = false
+        targetToTCastbarAdjustment:Enable()
+        targetToTCastbarAdjustment:SetAlpha(1)
         targetToTCastbarAdjustment:SetChecked(true)
         BetterBlizzFramesDB.targetToTCastbarAdjustment = true
         BBF.CastBarTimerCaller()
@@ -1820,6 +1842,8 @@ local function guiCastbars()
         BetterBlizzFramesDB.focusStaticCastbar = false
         focusDetachCastbar:SetChecked(false)
         BetterBlizzFramesDB.focusDetachCastbar = false
+        focusToTCastbarAdjustment:Enable()
+        focusToTCastbarAdjustment:SetAlpha(1)
         focusToTCastbarAdjustment:SetChecked(true)
         BetterBlizzFramesDB.focusToTCastbarAdjustment = true
         BBF.CastBarTimerCaller()
@@ -2392,6 +2416,8 @@ local function guiFrameAuras()
     focusFrameIcon:SetAtlas("groupfinder-icon-friend")
     focusFrameIcon:SetSize(28, 28)
     focusFrameIcon:SetPoint("RIGHT", friendlyFramesText, "LEFT", -3, 0)
+    focusFrameIcon:SetDesaturated(1)
+    focusFrameIcon:SetVertexColor(0, 1, 0)
 
     CreateBorderedFrame(focusBuffEnable, 185, 317, 65, -144, contentFrame)
 
@@ -2468,14 +2494,6 @@ local function guiFrameAuras()
     personalBarIcon:SetSize(28, 28)
     personalBarIcon:SetPoint("RIGHT", personalBarText, "LEFT", -3, 0)
     personalBarIcon:SetDesaturated(1)
-    local _, playerClass = UnitClass("player")
-    local classColor = RAID_CLASS_COLORS[playerClass]
-    if classColor then
-        personalBarIcon:SetVertexColor(classColor.r, classColor.g, classColor.b)
-    else
-        personalBarIcon:SetVertexColor(1, 0.5, 0)
-    end
-    personalBarIcon:SetBlendMode("ADD")
 
     local PlayerAuraBorder = CreateBorderedFrame(PlayerAuraFrameBuffEnable, 185, 317, 65, -144, contentFrame)
 
@@ -2611,6 +2629,24 @@ local function guiFrameAuras()
     betaHighlightIcon:SetSize(42, 34)
     betaHighlightIcon:SetPoint("RIGHT", playerAuraFiltering, "LEFT", 8, 0)
 end
+
+local function guiChatFrame()
+
+    local guiChatFrame = CreateFrame("Frame")
+    guiChatFrame.name = "ChatFrame"
+    guiChatFrame.parent = BetterBlizzFrames.name
+    InterfaceOptions_AddCategory(guiChatFrame)
+
+    local bgImg = guiChatFrame:CreateTexture(nil, "BACKGROUND")
+    bgImg:SetAtlas("professions-recipe-background")
+    bgImg:SetPoint("CENTER", guiChatFrame, "CENTER", -8, 4)
+    bgImg:SetSize(680, 610)
+    bgImg:SetAlpha(0.4)
+    bgImg:SetVertexColor(0,0,0)
+
+    local playerAuraGlows = CreateCheckbox("playerAuraGlows", "Extra Aura Glow", guiChatFrame)
+    playerAuraGlows:SetPoint("TOPLEFT", debuffDotChecker, "BOTTOMLEFT", -15, -22)
+end
 ------------------------------------------------------------
 -- GUI Setup
 ------------------------------------------------------------
@@ -2624,5 +2660,6 @@ function BBF.InitializeOptions()
         guiPositionAndScale()
         guiFrameAuras()
         guiCastbars()
+        --guiChatFrame()
     end
 end
