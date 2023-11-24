@@ -56,8 +56,6 @@ local specIDToNameShort = {
     [71] = "Arms", [72] = "Fury", [73] = "Prot",
 }
 
-local movedName = false
-
 local function CheckUnit(frame, unit, party)
     local originalNameObject = frame.name or frame.Name
     local newName
@@ -200,9 +198,11 @@ function ChangeName(frame, unit, party)
     local name = GetUnitName(unit, true)
     local newName
 
-    local removeRealm = UnitIsPlayer(unit) and BetterBlizzFramesDB.removeRealmNames
+    local isPlayer = UnitIsPlayer(unit)
+    local removeRealm = isPlayer and BetterBlizzFramesDB.removeRealmNames
     local isInArena = IsActiveBattlefieldArena() and ((BetterBlizzFramesDB.partyArenaNames and party) or BetterBlizzFramesDB.targetAndFocusArenaNames)
     local hidePartyNames = BetterBlizzFramesDB.hidePartyNames
+    local classColorNames = BetterBlizzFramesDB.classColorTargetNames
 
     if not frame.cleanName then
         local a, p, a2, x, y = originalNameObject:GetPoint()
@@ -230,6 +230,23 @@ function ChangeName(frame, unit, party)
                 break
             end
         end
+    end
+
+    if (classColorNames and not party) and isPlayer then
+        local _, class = UnitClass(unit)
+        if class then
+            local classColor = RAID_CLASS_COLORS[class]
+            if classColor then
+                frame.cleanName:SetTextColor(classColor.r, classColor.g, classColor.b)
+                originalNameObject:SetTextColor(classColor.r, classColor.g, classColor.b)
+                if BetterBlizzFramesDB.classColorLevelText then
+                    frame.LevelText:SetTextColor(classColor.r, classColor.g, classColor.b)
+                end
+            end
+        end
+    elseif (classColorNames and not party) and not isPlayer then
+        frame.cleanName:SetTextColor(1, 0.81960791349411, 0, 1)
+        originalNameObject:SetTextColor(1, 0.81960791349411, 0, 1)
     end
 
     if isInArena then
@@ -313,7 +330,7 @@ end
 
 
 local function TargetAndFocusNameChange()
-    if BetterBlizzFramesDB.targetAndFocusArenaNames or BetterBlizzFramesDB.removeRealmNames then
+    if BetterBlizzFramesDB.targetAndFocusArenaNames or BetterBlizzFramesDB.removeRealmNames or BetterBlizzFramesDB.classColorTargetNames then
         ChangeName(TargetFrame.TargetFrameContent.TargetFrameContentMain, "target")
         ChangeName(FocusFrame.TargetFrameContent.TargetFrameContentMain, "focus")
     end
@@ -351,7 +368,7 @@ end)
 
 
 
-
+local movedName = false
 local function CenterNames()
     if BetterBlizzFramesDB.centerNames then
         if not movedName then
@@ -382,17 +399,39 @@ local function CenterNames()
                     local focusName = FocusFrame.TargetFrameContent.TargetFrameContentMain.Name
                     local a, b, c, d, e = targetName:GetPoint()
                     targetName:ClearAllPoints()
-                    targetName:SetPoint(a, b, c, d, -3)
+                    targetName:SetPoint(a, b, c, d, -2)
 
                     local a, b, c, d, e = focusName:GetPoint()
                     focusName:ClearAllPoints()
-                    focusName:SetPoint(a, b, c, d, -3)
+                    focusName:SetPoint(a, b, c, d, -2)
                     C_Timer.After(5, function()
                         movedName = true
                     end)
                 end
             end
         end
+    end
+end
+
+function BBF.ClassColorPlayerName()
+    if BetterBlizzFramesDB.classColorTargetNames then
+        if not coloredName then
+            local _, class = UnitClass("player")
+            if class then
+                local classColor = RAID_CLASS_COLORS[class]
+                if classColor then
+                    PlayerName:SetTextColor(classColor.r, classColor.g, classColor.b)
+                    if BetterBlizzFramesDB.classColorLevelText then
+                        PlayerLevelText:SetTextColor(classColor.r, classColor.g, classColor.b)
+                    else
+                        PlayerLevelText:SetTextColor(1, 0.81960791349411, 0, 1)
+                    end
+                end
+            end
+        end
+    else
+        PlayerName:SetTextColor(1, 0.81960791349411, 0, 1)
+        PlayerLevelText:SetTextColor(1, 0.81960791349411, 0, 1)
     end
 end
 

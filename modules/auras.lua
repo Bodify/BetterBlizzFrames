@@ -11,6 +11,13 @@ end
 
 local BlizzardShouldShowDebuffs = TargetFrame.ShouldShowDebuffs
 
+local ipairs = ipairs
+local math_ceil = math.ceil
+local table_insert = table.insert
+local table_sort = table.sort
+local math_max = math.max
+local print = print
+
 function BBF.isInWhitelist(spellName, spellId)
     for _, entry in pairs(BetterBlizzFramesDB["auraWhitelist"]) do
         if (entry.name and spellName and string.lower(entry.name) == string.lower(spellName)) or entry.id == spellId then
@@ -155,16 +162,14 @@ local function CalculateAuraRowsYOffset(frame, rowHeights)
     return totalHeight + #rowHeights * BetterBlizzFramesDB.targetAndFocusVerticalGap
 end
 
-local function adjustCastbar(self)
+local function adjustCastbar(self, frame)
     local meta = getmetatable(self).__index
     local parent = meta.GetParent(self)
     local rowHeights = parent.rowHeights or {}
-    local frame = self:GetName()
-    local totAdjustment = BetterBlizzFramesDB.targetToTCastbarAdjustment
-    local totFocusAdjustment = BetterBlizzFramesDB.focusToTCastbarAdjustment
 
     meta.ClearAllPoints(self)
-    if frame == "TargetFrameSpellBar" then
+    if frame == "TargetFrame" then
+        local totAdjustment = BetterBlizzFramesDB.targetToTCastbarAdjustment
         if BetterBlizzFramesDB.targetStaticCastbar then
             --meta.SetPoint(self, "TOPLEFT", meta.GetParent(self), "BOTTOMLEFT", 43, 110);
             meta.SetPoint(self, "TOPLEFT", parent, "BOTTOMLEFT", 43 + BetterBlizzFramesDB.targetCastBarXPos, -14 + BetterBlizzFramesDB.targetCastBarYPos);
@@ -173,7 +178,7 @@ local function adjustCastbar(self)
         else
             local yOffset = 14 - CalculateAuraRowsYOffset(parent, rowHeights)
             -- Check if totAdjustment is true and the ToT frame is shown
-            if totAdjustment and TargetFrameToT:IsShown() then
+            if totAdjustment and parent.haveToT then
                 -- Apply the new logic only when totAdjustment is true
                 local minOffset = -40  -- Your minimum offset
                 local dynamicOffset = 14 - CalculateAuraRowsYOffset(parent, rowHeights)
@@ -183,7 +188,8 @@ local function adjustCastbar(self)
             end
             meta.SetPoint(self, "TOPLEFT", parent, "BOTTOMLEFT", 43 + BetterBlizzFramesDB.targetCastBarXPos, yOffset + BetterBlizzFramesDB.targetCastBarYPos);
         end
-    elseif frame == "FocusFrameSpellBar" then
+    elseif frame == "FocusFrame" then
+        local totFocusAdjustment = BetterBlizzFramesDB.focusToTCastbarAdjustment
         if BetterBlizzFramesDB.focusStaticCastbar then
             --meta.SetPoint(self, "TOPLEFT", meta.GetParent(self), "BOTTOMLEFT", 43, 110);
             meta.SetPoint(self, "TOPLEFT", parent, "BOTTOMLEFT", 43 + BetterBlizzFramesDB.focusCastBarXPos, -14 + BetterBlizzFramesDB.focusCastBarYPos);
@@ -192,7 +198,7 @@ local function adjustCastbar(self)
         else
             local yOffset = 14 - CalculateAuraRowsYOffset(parent, rowHeights)
             -- Check if totAdjustment is true and the ToT frame is shown
-            if totFocusAdjustment and FocusFrameToT:IsShown() then
+            if totFocusAdjustment and parent.haveToT then
                 -- Apply the new logic only when totAdjustment is true
                 local minOffset = -40  -- Your minimum offset
                 local dynamicOffset = 14 - CalculateAuraRowsYOffset(parent, rowHeights)
@@ -205,31 +211,73 @@ local function adjustCastbar(self)
     end
 end
 
+local function DefaultCastbarAdjustment(self, frame)
+    local meta = getmetatable(self).__index
+    local parentFrame = meta.GetParent(self)
+
+	-- If the buffs are on the bottom of the frame, and either:
+	--  We have a ToT frame and more than 2 rows of buffs/debuffs.
+	--  We have no ToT frame and any rows of buffs/debuffs.
+	local useSpellbarAnchor = (not parentFrame.buffsOnTop) and ((parentFrame.haveToT and parentFrame.auraRows > 2) or ((not parentFrame.haveToT) and parentFrame.auraRows > 0));
+
+	local relativeKey = useSpellbarAnchor and parentFrame.spellbarAnchor or parentFrame;
+	local pointX = useSpellbarAnchor and 18 or  (parentFrame.smallSize and 38 or 43);
+	local pointY = useSpellbarAnchor and -10 or (parentFrame.smallSize and 3 or 5);
+
+    if (not useSpellbarAnchor) and parentFrame.haveToT then
+        local isTargetFrame = frame == TargetFrame
+        local isFocusFrame = frame == FocusFrame
+        local totAdjustment = (isTargetFrame and BetterBlizzFramesDB.targetToTCastbarAdjustment) or (isFocusFrame and BetterBlizzFramesDB.focusToTCastbarAdjustment)
+
+        if totAdjustment then
+            pointY = parentFrame.smallSize and -48 or -46
+        end
+    end
+
+
+    if frame == TargetFrame then
+        local targetCastBarXPos = BetterBlizzFramesDB.targetCastBarXPos
+        local targetCastBarYPos = BetterBlizzFramesDB.targetCastBarYPos
+        pointX = pointX + targetCastBarXPos
+        pointY = pointY + targetCastBarYPos
+    elseif frame == FocusFrame then
+        local focusCastBarXPos = BetterBlizzFramesDB.focusCastBarXPos
+        local focusCastBarYPos = BetterBlizzFramesDB.focusCastBarYPos
+        pointX = pointX + focusCastBarXPos
+        pointY = pointY + focusCastBarYPos
+    end
+
+	meta.SetPoint(self, "TOPLEFT", relativeKey, "BOTTOMLEFT", pointX, pointY);
+end
+
 function BBF.CastbarAdjustCaller()
-    adjustCastbar(TargetFrame.spellbar)
-    adjustCastbar(FocusFrame.spellbar)
+    local shouldAdjustCastbar = BetterBlizzFramesDB.targetStaticCastbar or BetterBlizzFramesDB.targetDetachCastbar or BetterBlizzFramesDB.playerAuraFiltering
+    if shouldAdjustCastbar then
+        adjustCastbar(TargetFrame.spellbar, TargetFrame)
+        adjustCastbar(FocusFrame.spellbar, FocusFrame)
+    else
+        DefaultCastbarAdjustment(TargetFrame.spellbar, TargetFrame)
+        DefaultCastbarAdjustment(FocusFrame.spellbar, FocusFrame)
+    end
 end
 
 hooksecurefunc(TargetFrame.spellbar, "SetPoint", function()
     local shouldAdjustCastbar = BetterBlizzFramesDB.targetStaticCastbar or BetterBlizzFramesDB.targetDetachCastbar or BetterBlizzFramesDB.playerAuraFiltering
     if shouldAdjustCastbar then
-        adjustCastbar(TargetFrame.spellbar)
+        adjustCastbar(TargetFrame.spellbar, TargetFrame)
+    else
+        DefaultCastbarAdjustment(TargetFrame.spellbar, TargetFrame)
     end
 end);
 
 hooksecurefunc(FocusFrame.spellbar, "SetPoint", function()
     local shouldAdjustCastbar = BetterBlizzFramesDB.focusStaticCastbar or BetterBlizzFramesDB.focusDetachCastbar or BetterBlizzFramesDB.playerAuraFiltering
     if shouldAdjustCastbar then
-        adjustCastbar(FocusFrame.spellbar)
+        adjustCastbar(FocusFrame.spellbar, FocusFrame)
+    else
+        DefaultCastbarAdjustment(TargetFrame.spellbar, TargetFrame)
     end
 end);
-
-local ipairs = ipairs
-local math_ceil = math.ceil
-local table_insert = table.insert
-local table_sort = table.sort
-local math_max = math.max
-local print = print
 
 local trackedBuffs = {};
 local checkBuffsTimer = nil;
@@ -307,14 +355,6 @@ function BBF.AdjustAuras(self, frameType)
     local controlFirstRows = false
     local darkModeOn = (BetterBlizzFramesDB.darkModeUiAura and BetterBlizzFramesDB.darkModeUi)
 
-    if darkModeOn then
-        --auraScale = auraScale - 0.10
-        --auraSpacingX = auraSpacingX + 3
-        --auraSpacingY = auraSpacingY + 4
-        --baseOffsetX = baseOffsetX + 1
-        --baseOffsetY = baseOffsetY - 1
-    end
-
     local initialOffsetX = (baseOffsetX / auraScale)
     local initialOffsetY = (baseOffsetY / auraScale)
 
@@ -326,7 +366,6 @@ function BBF.AdjustAuras(self, frameType)
 
 
         for i, aura in ipairs(auras) do
-            local scaleAdjustment = aura.darkBorder and 0.1 or 0  -- Reduce scale by 0.10 if border is visible
             aura:SetScale(auraScale)
             aura:SetMouseClickEnabled(false)
             local columnIndex, rowIndex
@@ -440,12 +479,6 @@ function BBF.AdjustAuras(self, frameType)
                     aura.isImportant = true
                     if not aura.ImportantGlow then
                         aura.ImportantGlow = aura:CreateTexture(nil, "OVERLAY")
-                        if aura.Cooldown and aura.Cooldown:IsVisible() then
-                            --aura.ImportantGlow:SetParent(aura.Cooldown)
-                        end
-                        if aura.border and aura.border:IsVisible() then
-                            --aura.ImportantGlow:SetParent(aura.border)
-                        end
                         aura.ImportantGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -10, 10)
                         aura.ImportantGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", 10, -10)
                         aura.ImportantGlow:SetAtlas("newplayertutorial-drag-slotgreen")
@@ -471,9 +504,6 @@ function BBF.AdjustAuras(self, frameType)
                 (frameType == "focus" and auraData.isStealable and BetterBlizzFramesDB.focusBuffPurgeGlow) then
                     if not aura.PurgeGlow then
                         aura.PurgeGlow = aura:CreateTexture(nil, "OVERLAY")
-                        if aura.Cooldown and aura.Cooldown:IsVisible() then
-                            --aura.PurgeGlow:SetParent(aura.Cooldown)
-                        end
                         if aura.border:IsVisible() then
                             aura.PurgeGlow:SetParent(aura.border)
                         end
@@ -559,19 +589,10 @@ function BBF.AdjustAuras(self, frameType)
         end
     end
 
---[[
-    if frameType == "target" and (not BetterBlizzFramesDB.targetStaticCastbar and not BetterBlizzFramesDB.targetDetachCastbar) then
-        adjustCastbar(self.spellbar)
-    elseif frameType == "focus" and (not BetterBlizzFramesDB.focusStaticCastbar and not BetterBlizzFramesDB.focusDetachCastbar) then
-        adjustCastbar(self.spellbar)
-    end
-
-]]
-
     if frameType == "target" then
-        adjustCastbar(TargetFrame.spellbar)
+        adjustCastbar(TargetFrame.spellbar, TargetFrame)
     elseif frameType == "focus" then
-        adjustCastbar(FocusFrame.spellbar)
+        adjustCastbar(FocusFrame.spellbar, FocusFrame)
     end
 end
 

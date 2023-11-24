@@ -644,6 +644,7 @@ Frame:SetScript("OnEvent", function(...)
                 end
                 BBF.DarkmodeFrames()
                 BBF.PlayerReputationColor()
+                BBF.ClassColorPlayerName()
             end)
             BBF.HideFrames()
             if BetterBlizzFramesDB.partyCastbars then

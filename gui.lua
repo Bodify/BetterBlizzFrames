@@ -26,7 +26,7 @@ StaticPopupDialogs["BBF_CONFIRM_RELOAD"] = {
 }
 
 StaticPopupDialogs["BBF_TOT_MESSAGE"] = {
-    text = "The default Blizzard code to \"wrap auras\" around the target of target frame is stupid.\n\nThe \"Target of Target\" frames have been moved 31 pixels to the right to make more space for auras.\n\nDo you want to keep this? (pick yes)",
+    text = "The default Blizzard code to \"wrap auras\" around the target of target frame is stupid.\n\nThe \"Target of Target\" frames have been moved 31 pixels to the right to make more space for auras.\nYou can change this at any time.\n\nDo you want to keep this? (pick yes)",
     button1 = "Yes",
     button2 = "No",
     OnCancel = function()
@@ -1351,8 +1351,29 @@ local function guiGeneralTab()
     end)
     CreateTooltip(classColorFrames, "Class color Player, Target, Focus & Party frames.\n\nIf you want a more I recommend the addon HealthBarColor instead of this setting.")
 
+    local classColorTargetNames = CreateCheckbox("classColorTargetNames", "Class Color Names", BetterBlizzFrames, nil, BBF.ClassColorPlayerName)
+    classColorTargetNames:SetPoint("TOPLEFT", classColorFrames, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltip(classColorTargetNames, "Class color Player, Target & Focus Names.")
+
+    local classColorLevelText = CreateCheckbox("classColorLevelText", "Level", classColorTargetNames, nil, BBF.ClassColorPlayerName)
+    classColorLevelText:SetPoint("LEFT", classColorTargetNames.text, "RIGHT", 0, 0)
+    CreateTooltip(classColorLevelText, "Also class color the level text.")
+
+    classColorTargetNames:HookScript("OnClick", function(self)
+        if self:GetChecked() then
+            classColorLevelText:Enable()
+            classColorLevelText:SetAlpha(1)
+        else
+            classColorLevelText:Disable()
+            classColorLevelText:SetAlpha(0)
+        end
+    end)
+    if not BetterBlizzFramesDB.classColorTargetNames then
+        classColorLevelText:SetAlpha(0)
+    end
+
     local centerNames = CreateCheckbox("centerNames", "Center Name", BetterBlizzFrames, nil, BBF.RemoveRealmName)
-    centerNames:SetPoint("TOPLEFT", classColorFrames, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    centerNames:SetPoint("TOPLEFT", classColorTargetNames, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     centerNames:HookScript("OnClick", function()
         StaticPopup_Show("BBF_CONFIRM_RELOAD")
     end)
