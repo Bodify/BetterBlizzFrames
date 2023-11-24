@@ -295,6 +295,7 @@ local function LoadingScreenDetector(_, event)
     elseif event == "LOADING_SCREEN_DISABLED" or event == "PLAYER_LEAVING_WORLD" then
         if BetterBlizzFramesDB.playerFrameOCD then
             BBF.FixStupidBlizzPTRShit()
+            BBF.ClassColorPlayerName()
         end
         C_Timer.After(2, function()
             BetterBlizzFramesDB.wasOnLoadingScreen = false
@@ -553,7 +554,7 @@ function BBF.FixStupidBlizzPTRShit()
     --ToT
     local a, b, c, d, e = TargetFrame.totFrame.HealthBar:GetPoint()
     TargetFrame.totFrame.HealthBar:SetPoint(a,b,c,-5,-3)
-    TargetFrame.totFrame.HealthBar:SetSize(71, 11)
+    TargetFrame.totFrame.HealthBar:SetSize(71, 13)
     --anchor x = 5
     TargetFrame.totFrame.ManaBar:SetSize(77, 8)
     local a, b, c, d, e = TargetFrame.totFrame.ManaBar:GetPoint()
@@ -563,7 +564,7 @@ function BBF.FixStupidBlizzPTRShit()
     TargetFrame.totFrame.Portrait:SetPoint(a, b, c, 6, e)
     local a, b, c, d, e = FocusFrame.totFrame.HealthBar:GetPoint()
     FocusFrame.totFrame.HealthBar:SetPoint(a,b,c,-5,-3)
-    FocusFrame.totFrame.HealthBar:SetSize(71, 11)
+    FocusFrame.totFrame.HealthBar:SetSize(71, 13)
     --anchor x = 5
     FocusFrame.totFrame.ManaBar:SetSize(77, 8)
     local a, b, c, d, e = FocusFrame.totFrame.ManaBar:GetPoint()
@@ -656,6 +657,7 @@ Frame:SetScript("OnEvent", function(...)
                 if BetterBlizzFramesDB.classColorFrames then
                     BBF.UpdateFrames()
                 end
+                BBF.SetCenteredNamesCaller()
                 BBF.DarkmodeFrames()
                 BBF.PlayerReputationColor()
                 BBF.ClassColorPlayerName()

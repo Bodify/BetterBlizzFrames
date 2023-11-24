@@ -171,11 +171,20 @@ local function CreateSlider(parent, label, minValue, maxValue, stepValue, elemen
         slider:SetWidth(sliderWidth)
     end
 
+    local function UpdateSliderRange(newValue)
+        local currentMin, currentMax = slider:GetMinMaxValues()
+        if newValue > currentMax then
+            local newMaxValue = newValue + 50
+            slider:SetMinMaxValues(currentMin, newMaxValue)
+        end
+    end
+
 
     local function SetSliderValue()
         if BBF.variablesLoaded then
             local initialValue = BetterBlizzFramesDB[element]
-            slider:SetValue(BetterBlizzFramesDB[element])
+            UpdateSliderRange(initialValue) -- Update the slider's range based on stored value
+            slider:SetValue(initialValue)
 
             local textValue = initialValue % 1 == 0 and tostring(math.floor(initialValue)) or string.format("%.2f", initialValue)
             slider.Text:SetText(label .. ": " .. textValue)
@@ -213,8 +222,13 @@ local function CreateSlider(parent, label, minValue, maxValue, stepValue, elemen
     -- Function to handle the entered value and update the slider
     local function HandleEditBoxInput()
         local inputValue = tonumber(editBox:GetText())
-        if inputValue and inputValue >= minValue and inputValue <= maxValue then
+        if inputValue then
+            local _, currentMax = slider:GetMinMaxValues()
+            if inputValue > currentMax then
+                UpdateSliderRange(inputValue) -- Extend the slider range if necessary
+            end
             slider:SetValue(inputValue)
+            BetterBlizzFramesDB[element] = inputValue -- Store the new value
         end
         editBox:Hide()
     end
@@ -1351,11 +1365,11 @@ local function guiGeneralTab()
     end)
     CreateTooltip(classColorFrames, "Class color Player, Target, Focus & Party frames.\n\nIf you want a more I recommend the addon HealthBarColor instead of this setting.")
 
-    local classColorTargetNames = CreateCheckbox("classColorTargetNames", "Class Color Names", BetterBlizzFrames, nil, BBF.ClassColorPlayerName)
+    local classColorTargetNames = CreateCheckbox("classColorTargetNames", "Class Color Names", BetterBlizzFrames, nil, BBF.ClassColorNamesCaller)
     classColorTargetNames:SetPoint("TOPLEFT", classColorFrames, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(classColorTargetNames, "Class color Player, Target & Focus Names.")
 
-    local classColorLevelText = CreateCheckbox("classColorLevelText", "Level", classColorTargetNames, nil, BBF.ClassColorPlayerName)
+    local classColorLevelText = CreateCheckbox("classColorLevelText", "Level", classColorTargetNames, nil, BBF.ClassColorNamesCaller)
     classColorLevelText:SetPoint("LEFT", classColorTargetNames.text, "RIGHT", 0, 0)
     CreateTooltip(classColorLevelText, "Also class color the level text.")
 
@@ -1372,11 +1386,8 @@ local function guiGeneralTab()
         classColorLevelText:SetAlpha(0)
     end
 
-    local centerNames = CreateCheckbox("centerNames", "Center Name", BetterBlizzFrames, nil, BBF.RemoveRealmName)
+    local centerNames = CreateCheckbox("centerNames", "Center Name", BetterBlizzFrames, nil, BBF.SetCenteredNamesCaller)
     centerNames:SetPoint("TOPLEFT", classColorTargetNames, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    centerNames:HookScript("OnClick", function()
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
-    end)
     CreateTooltip(centerNames, "Center the name on Player, Target & Focus frames.")
 
     local removeRealmNames = CreateCheckbox("removeRealmNames", "Hide Realm Name", BetterBlizzFrames)
