@@ -870,7 +870,7 @@ local function guiGeneralTab()
     addonNameIcon:SetPoint("LEFT", addonNameText, "RIGHT", -2, -1)
     local versionText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     versionText:SetPoint("LEFT", addonNameText, "RIGHT", 25, 0)
-    versionText:SetText("v1.0.3")--SetText("v" .. BetterBlizzFramesDB.updates)
+    versionText:SetText("v1.0.4")--SetText("v" .. BetterBlizzFramesDB.updates)
 
     ----------------------
     -- General:
