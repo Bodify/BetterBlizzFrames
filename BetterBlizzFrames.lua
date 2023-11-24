@@ -578,6 +578,20 @@ function BBF.FixStupidBlizzPTRShit()
         end
     end
 
+    TargetFrame.totFrame.HealthBar:SetHeight(12)
+    local a, b, c, d, e = TargetFrame.totFrame.HealthBar:GetPoint()
+    TargetFrame.totFrame.HealthBar:SetPoint(a, b, c, d, -4)
+
+    local a,b,c,d,e = TargetFrame.totFrame.ManaBar:GetPoint()
+    TargetFrame.totFrame.ManaBar:SetPoint(a,b,c,-4,1)
+
+    FocusFrame.totFrame.HealthBar:SetHeight(12)
+    local a, b, c, d, e = FocusFrame.totFrame.HealthBar:GetPoint()
+    FocusFrame.totFrame.HealthBar:SetPoint(a, b, c, d, -4)
+
+    local a,b,c,d,e = FocusFrame.totFrame.ManaBar:GetPoint()
+    FocusFrame.totFrame.ManaBar:SetPoint(a,b,c,-4,1)
+
     local a, b, c, d, e = TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:GetPoint()
     TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:SetPoint(a, b, c, d, -24)
     --TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:SetHeight()
