@@ -61,8 +61,10 @@ end
 local function updateFrameColorToggleVer(frame, unit)
     if BetterBlizzFramesDB.classColorFrames then
         local color = UnitIsPlayer(unit) and RAID_CLASS_COLORS[select(2, UnitClass(unit))] or getUnitColor(unit)
-        frame:SetStatusBarDesaturated(true)
-        frame:SetStatusBarColor(color.r, color.g, color.b)
+        if color then
+            frame:SetStatusBarDesaturated(true)
+            frame:SetStatusBarColor(color.r, color.g, color.b)
+        end
     else
         frame:SetStatusBarDesaturated(false)
         frame:SetStatusBarColor(0,1,0)

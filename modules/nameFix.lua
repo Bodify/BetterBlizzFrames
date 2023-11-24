@@ -214,6 +214,7 @@ function ChangeName(frame, unit, party)
         frame.cleanName:SetTextColor(originalNameObject:GetTextColor())
         frame.cleanName:SetShadowOffset(originalNameObject:GetShadowOffset())
         frame.cleanName:SetShadowColor(originalNameObject:GetShadowColor())
+        frame.cleanName:SetHeight(originalNameObject:GetHeight())
 
         for i = 1, 4 do
             if frame == PartyFrame["MemberFrame" .. i] then
@@ -229,6 +230,17 @@ function ChangeName(frame, unit, party)
                 end
                 break
             end
+        end
+        if frame == TargetFrame.totFrame or frame == FocusFrame.totFrame then
+            if BetterBlizzFramesDB.centerNames then
+                frame.cleanName:SetJustifyH("CENTER")
+                local _,anchor,_,_,yPos = originalNameObject:GetPoint()
+                frame.cleanName:ClearAllPoints()
+                frame.cleanName:SetPoint("TOP", anchor, "TOP", 52, yPos)
+            end
+            frame.cleanName:SetWidth(originalNameObject:GetWidth() + 10)
+            --frame.cleanName:SetPoint(a, p, a2, x, y+4)
+            frame.cleanName:SetWordWrap(false)
         end
     end
 
@@ -333,6 +345,8 @@ local function TargetAndFocusNameChange()
     if BetterBlizzFramesDB.targetAndFocusArenaNames or BetterBlizzFramesDB.removeRealmNames or BetterBlizzFramesDB.classColorTargetNames then
         ChangeName(TargetFrame.TargetFrameContent.TargetFrameContentMain, "target")
         ChangeName(FocusFrame.TargetFrameContent.TargetFrameContentMain, "focus")
+        ChangeName(TargetFrame.totFrame, "targettarget")
+        ChangeName(FocusFrame.totFrame, "focustarget")
     end
 end
 
