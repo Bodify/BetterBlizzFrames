@@ -168,7 +168,7 @@ local function adjustCastbar(self, frame)
     local rowHeights = parent.rowHeights or {}
 
     meta.ClearAllPoints(self)
-    if frame == TargetFrame then
+    if frame == TargetFrameSpellBar then
         local totAdjustment = BetterBlizzFramesDB.targetToTCastbarAdjustment
         if BetterBlizzFramesDB.targetStaticCastbar then
             --meta.SetPoint(self, "TOPLEFT", meta.GetParent(self), "BOTTOMLEFT", 43, 110);
@@ -188,7 +188,7 @@ local function adjustCastbar(self, frame)
             end
             meta.SetPoint(self, "TOPLEFT", parent, "BOTTOMLEFT", 43 + BetterBlizzFramesDB.targetCastBarXPos, yOffset + BetterBlizzFramesDB.targetCastBarYPos);
         end
-    elseif frame == FocusFrame then
+    elseif frame == FocusFrameSpellBar then
         local totFocusAdjustment = BetterBlizzFramesDB.focusToTCastbarAdjustment
         if BetterBlizzFramesDB.focusStaticCastbar then
             --meta.SetPoint(self, "TOPLEFT", meta.GetParent(self), "BOTTOMLEFT", 43, 110);
@@ -225,9 +225,7 @@ local function DefaultCastbarAdjustment(self, frame)
 	local pointY = useSpellbarAnchor and -10 or (parentFrame.smallSize and 3 or 5);
 
     if (not useSpellbarAnchor) and parentFrame.haveToT then
-        local isTargetFrame = frame == TargetFrame
-        local isFocusFrame = frame == FocusFrame
-        local totAdjustment = (isTargetFrame and BetterBlizzFramesDB.targetToTCastbarAdjustment) or (isFocusFrame and BetterBlizzFramesDB.focusToTCastbarAdjustment)
+        local totAdjustment = (TargetFrameSpellBar and BetterBlizzFramesDB.targetToTCastbarAdjustment) or (FocusFrameSpellBar and BetterBlizzFramesDB.focusToTCastbarAdjustment)
 
         if totAdjustment then
             pointY = parentFrame.smallSize and -48 or -46
@@ -235,12 +233,12 @@ local function DefaultCastbarAdjustment(self, frame)
     end
 
 
-    if frame == TargetFrame then
+    if frame == TargetFrameSpellBar then
         local targetCastBarXPos = BetterBlizzFramesDB.targetCastBarXPos
         local targetCastBarYPos = BetterBlizzFramesDB.targetCastBarYPos
         pointX = pointX + targetCastBarXPos
         pointY = pointY + targetCastBarYPos
-    elseif frame == FocusFrame then
+    elseif frame == FocusFrameSpellBar then
         local focusCastBarXPos = BetterBlizzFramesDB.focusCastBarXPos
         local focusCastBarYPos = BetterBlizzFramesDB.focusCastBarYPos
         pointX = pointX + focusCastBarXPos
@@ -253,29 +251,29 @@ end
 function BBF.CastbarAdjustCaller()
     local shouldAdjustCastbar = BetterBlizzFramesDB.targetStaticCastbar or BetterBlizzFramesDB.targetDetachCastbar or BetterBlizzFramesDB.playerAuraFiltering
     if shouldAdjustCastbar then
-        adjustCastbar(TargetFrame.spellbar, TargetFrame)
-        adjustCastbar(FocusFrame.spellbar, FocusFrame)
+        adjustCastbar(TargetFrame.spellbar, TargetFrameSpellBar)
+        adjustCastbar(FocusFrame.spellbar, FocusFrameSpellBar)
     else
-        DefaultCastbarAdjustment(TargetFrame.spellbar, TargetFrame)
-        DefaultCastbarAdjustment(FocusFrame.spellbar, FocusFrame)
+        DefaultCastbarAdjustment(TargetFrame.spellbar, TargetFrameSpellBar)
+        DefaultCastbarAdjustment(FocusFrame.spellbar, FocusFrameSpellBar)
     end
 end
 
 hooksecurefunc(TargetFrame.spellbar, "SetPoint", function()
     local shouldAdjustCastbar = BetterBlizzFramesDB.targetStaticCastbar or BetterBlizzFramesDB.targetDetachCastbar or BetterBlizzFramesDB.playerAuraFiltering
     if shouldAdjustCastbar then
-        adjustCastbar(TargetFrame.spellbar, TargetFrame)
+        adjustCastbar(TargetFrame.spellbar, TargetFrameSpellBar)
     else
-        DefaultCastbarAdjustment(TargetFrame.spellbar, TargetFrame)
+        DefaultCastbarAdjustment(TargetFrame.spellbar, TargetFrameSpellBar)
     end
 end);
 
 hooksecurefunc(FocusFrame.spellbar, "SetPoint", function()
     local shouldAdjustCastbar = BetterBlizzFramesDB.focusStaticCastbar or BetterBlizzFramesDB.focusDetachCastbar or BetterBlizzFramesDB.playerAuraFiltering
     if shouldAdjustCastbar then
-        adjustCastbar(FocusFrame.spellbar, FocusFrame)
+        adjustCastbar(FocusFrame.spellbar, FocusFrameSpellBar)
     else
-        DefaultCastbarAdjustment(TargetFrame.spellbar, TargetFrame)
+        DefaultCastbarAdjustment(FocusFrame.spellbar, FocusFrameSpellBar)
     end
 end);
 
@@ -590,9 +588,9 @@ function BBF.AdjustAuras(self, frameType)
     end
 
     if frameType == "target" then
-        adjustCastbar(TargetFrame.spellbar, TargetFrame)
+        adjustCastbar(TargetFrame.spellbar, TargetFrameSpellBar)
     elseif frameType == "focus" then
-        adjustCastbar(FocusFrame.spellbar, FocusFrame)
+        adjustCastbar(FocusFrame.spellbar, FocusFrameSpellBar)
     end
 end
 
