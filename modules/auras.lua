@@ -168,7 +168,7 @@ local function adjustCastbar(self, frame)
     local rowHeights = parent.rowHeights or {}
 
     meta.ClearAllPoints(self)
-    if frame == "TargetFrame" then
+    if frame == TargetFrame then
         local totAdjustment = BetterBlizzFramesDB.targetToTCastbarAdjustment
         if BetterBlizzFramesDB.targetStaticCastbar then
             --meta.SetPoint(self, "TOPLEFT", meta.GetParent(self), "BOTTOMLEFT", 43, 110);
@@ -188,7 +188,7 @@ local function adjustCastbar(self, frame)
             end
             meta.SetPoint(self, "TOPLEFT", parent, "BOTTOMLEFT", 43 + BetterBlizzFramesDB.targetCastBarXPos, yOffset + BetterBlizzFramesDB.targetCastBarYPos);
         end
-    elseif frame == "FocusFrame" then
+    elseif frame == FocusFrame then
         local totFocusAdjustment = BetterBlizzFramesDB.focusToTCastbarAdjustment
         if BetterBlizzFramesDB.focusStaticCastbar then
             --meta.SetPoint(self, "TOPLEFT", meta.GetParent(self), "BOTTOMLEFT", 43, 110);
