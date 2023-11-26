@@ -905,7 +905,7 @@ local function guiGeneralTab()
     addonNameIcon:SetPoint("LEFT", addonNameText, "RIGHT", -2, -1)
     local verNumber = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     verNumber:SetPoint("LEFT", addonNameText, "RIGHT", 25, 0)
-    verNumber:SetText("v1.0.6")--SetText("v" .. BetterBlizzFramesDB.updates)
+    verNumber:SetText("v" .. BBF.VersionNumber)--SetText("v" .. BetterBlizzFramesDB.updates)
 
     ----------------------
     -- General:
@@ -2546,7 +2546,6 @@ local function guiFrameAuras()
     personalBarIcon:SetAtlas("groupfinder-icon-friend")
     personalBarIcon:SetSize(28, 28)
     personalBarIcon:SetPoint("RIGHT", personalBarText, "LEFT", -3, 0)
-    personalBarIcon:SetDesaturated(1)
 
     local PlayerAuraBorder = CreateBorderedFrame(PlayerAuraFrameBuffEnable, 185, 317, 65, -144, contentFrame)
 

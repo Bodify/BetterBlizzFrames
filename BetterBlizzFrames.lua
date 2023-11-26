@@ -7,6 +7,7 @@ BBF = BBF or {}
 
 local addonVersion = "1.00" --too afraid to to touch for now
 local addonUpdates = "1.0.0"
+BBF.VersionNumber = "1.0.7"
 BBF.variablesLoaded = false
 
 local defaultSettings = {
@@ -232,8 +233,7 @@ local function FetchAndSaveValuesOnFirstLogin()
 --[[
                     print(BetterBlizzFramesDB.hideTargetPrestigeBadge)
                     BetterBlizzFramesDB.hideTargetPrestigeBadge = not TargetFrame.TargetFrameContent.TargetFrameContentContextual.PrestigePortrait:IsShown()
-                    print(BetterBlizzFramesDB.hideTargetPrestigeBadge)
-                    
+                    print(BetterBlizzFramesDB.hideTargetPrestigeBadge)              
 ]]
                     BetterBlizzFramesDB.hasCheckedUi = true
                 else
