@@ -7,7 +7,7 @@ BBF = BBF or {}
 
 local addonVersion = "1.00" --too afraid to to touch for now
 local addonUpdates = "1.0.0"
-BBF.VersionNumber = "1.0.7"
+BBF.VersionNumber = "1.0.8"
 BBF.variablesLoaded = false
 
 local defaultSettings = {

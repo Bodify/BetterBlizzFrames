@@ -662,7 +662,7 @@ function BBF.NahjProfile()
 	db.targetBuffFilterOnlyMe = false
 	db.hideRaidFrameManager = true
 	db.targetCastBarScaleScale = 1.069999933242798
-	db.darkModeColor = 0.5999999642372131
+	db.darkModeColor = 0.30
 	db.targetBuffFilterWatchList = false
 	db.targetCastBarIconScale = 1
 	db.targetCastBarTimer = true
@@ -725,7 +725,6 @@ function BBF.NahjProfile()
 	db.focusCastBarTimer = true
 	db.maxTargetBuffs = 32
 	db.targetBuffPurgeGlow = true
-	db.darkModeColorScale = 0.5999999642372131
 	db.PlayerAuraFrameBuffFilterWatchList = false
 	db.hideArenaFrames = true
 	db.targetAuraGlows = true

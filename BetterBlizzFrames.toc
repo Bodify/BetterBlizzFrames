@@ -15,5 +15,6 @@ modules\castbar.lua
 modules\healthbarColor.lua
 modules\arenaframes.lua
 modules\nahjProfile.lua
+modules\chatFrame.lua
 gui.lua
 BetterBlizzFrames.lua

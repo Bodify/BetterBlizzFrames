@@ -72,12 +72,14 @@ function BBF.DarkmodeFrames()
     local lighterVertexColor = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.15) or 1
     local birdColor = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.25) or 1
     local rogueCombo = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.45) or 1
+    local rogueComboActive = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.30) or 1
     local monkChi = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.10) or 1
 
     if BetterBlizzFramesDB.darkModeColor == 0 then
         lighterVertexColor = 0
         birdColor = 0.07
         rogueCombo = 0.25
+        rogueComboActive = 0.15
     end
 
 
@@ -111,33 +113,6 @@ function BBF.DarkmodeFrames()
         createOrUpdateBorders(ToggleHiddenAurasButton, vertexColor)
     end
 
-    --createOrUpdateBorders(TargetFrame, vertexColor, "absorbIcon")
-
-
---[[
-    for unit, frame in pairs(BBF.combatIndicators) do
-        createOrUpdateBorders(frame, vertexColor)
-    end
-
-    for unit, frame in pairs(BBF.absorbIndicators) do
-        createOrUpdateBorders(frame, vertexColor)
-    end
-
-    function BBF.UpdateAbsorbBorder()
-        for unit, frame in pairs(BBF.absorbIndicators) do
-            UpdateBorder(frame, vertexColor)
-        end
-    end
-
-    function BBF:UpdateCombatBorder()
-        for unit, frame in pairs(BBF.combatIndicators) do
-            UpdateBorder(frame, vertexColor)
-        end
-    end
-
-]]
-
---asd
     BBF.DarkModeUnitframeBorders()
 
 
@@ -216,7 +191,7 @@ function BBF.DarkmodeFrames()
     if rogueComboPoints then
         for _, v in pairs({rogueComboPoints:GetChildren()}) do
             applySettings(v.BGInactive, desaturationValue, rogueCombo)
-            applySettings(v.BGActive, desaturationValue, rogueCombo)
+            applySettings(v.BGActive, desaturationValue, rogueComboActive)
         end
     end
 
@@ -286,9 +261,9 @@ function BBF.DarkmodeFrames()
             local DividerArt = child:GetChildren()
             applySettings(DividerArt, desaturationValue, lighterVertexColor)
         end
-        for _, child in ipairs({BT4BarBlizzardArt:GetChildren()}) do
+        --for _, child in ipairs({BT4BarBlizzardArt:GetChildren()}) do
             --applySettings(child, desaturationValue, lighterVertexColor)
-        end
+        --end
     end
 
     for _, v in pairs({BlizzardArtLeftCap, BlizzardArtRightCap}) do
@@ -426,12 +401,17 @@ specChangeListener:SetScript("OnEvent", function(self, event, ...)
         local unitID = ...
         if unitID == "player" then
             local vertexColor = BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeColor or 1
-            local rogueCombo = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.55) or 1
+            local rogueCombo = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.45) or 1
+            local rogueComboActive = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.30) or 1
             local rogueComboPoints = _G.RogueComboPointBarFrame
+            if BetterBlizzFramesDB.darkModeColor == 0 then
+                rogueCombo = 0.25
+                rogueComboActive = 0.15
+            end
             if rogueComboPoints then
                 for _, v in pairs({rogueComboPoints:GetChildren()}) do
                     applySettings(v.BGInactive, desaturationValue, rogueCombo)
-                    applySettings(v.BGActive, desaturationValue, rogueCombo)
+                    applySettings(v.BGActive, desaturationValue, rogueComboActive)
                 end
             end
         end
