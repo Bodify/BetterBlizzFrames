@@ -68,7 +68,6 @@ local function CheckUnit(frame, unit, party)
     if (party and hidePartyNames) and not partyArenaNames then
         frame.cleanName:SetAlpha(0)
         originalNameObject:SetAlpha(0)
-        print("test")
         return
     end
 
@@ -186,10 +185,25 @@ local function CheckUnit(frame, unit, party)
             originalNameObject:SetAlpha(0)
         end
     else
-        frame.cleanName:SetText(GetUnitName(unit, true))
-        frame.cleanName:SetAlpha(0)
-        if not hidePartyNames and party then
-            originalNameObject:SetAlpha(1)
+        if hidePartyNames and party then
+            frame.cleanName:SetAlpha(0)
+            originalNameObject:SetAlpha(0)
+            --originalNameObject:SetAlpha(1)
+        else
+            local removeRealm = BetterBlizzFramesDB.removeRealmNames
+            local isPlayer = UnitIsPlayer(unit)
+            local name = (GetUnitName(unit, true))
+
+            if removeRealm then
+                if isPlayer and name then
+                    newName = string.gsub(name, "-.*$", "")
+                else
+                    newName = name
+                end
+            end
+            frame.cleanName:SetText(newName)
+            frame.cleanName:SetAlpha(1)
+            originalNameObject:SetAlpha(0)
         end
     end
 end
@@ -224,7 +238,7 @@ function ChangeName(frame, unit, party)
             if frame == TargetFrame.totFrame or frame == FocusFrame.totFrame then
                 frame.cleanName:SetJustifyH("CENTER")
                 local _,anchor,_,_,yPos = originalNameObject:GetPoint()
-                frame.cleanName:ClearAllPoints()
+                --frame.cleanName:ClearAllPoints()
                 frame.cleanName:SetPoint("TOP", anchor, "TOP", 52, yPos)
             end
         else
@@ -292,11 +306,15 @@ function ChangeName(frame, unit, party)
         else
             if BetterBlizzFramesDB.targetAndFocusArenaNames then
                 CheckUnit(frame, unit)
+--[=[
             else
                 if frame.cleanName then
                     frame.cleanName:SetAlpha(0)
                 end
                 originalNameObject:SetAlpha(1)
+
+]=]
+
             end
         end
     elseif hideNames and party then
@@ -480,31 +498,38 @@ end
 
 local function UpdateToTName(frame, unit)
     local isPlayer = UnitIsPlayer(unit)
-    local name = GetUnitName(unit)
+    local name = GetUnitName(unit, true)
     local removeRealmNames = BetterBlizzFramesDB.removeRealmNames
     local newName = name
+    local isInArena = IsActiveBattlefieldArena()
+    if BetterBlizzFramesDB.targetAndFocusArenaNames and isInArena then
+        CheckUnit(frame, unit)
+        return
+    end
     if isPlayer and removeRealmNames then
         newName = string.gsub(name, "-.*$", "")
-    end
-    if frame.cleanName then
-        frame.cleanName:SetText(newName)
+        if frame.cleanName then
+            frame.cleanName:SetText(newName)
+        end
+    else
+        frame.cleanName:SetText(name)
     end
 end
 
 
 local frame = CreateFrame("Frame")
 frame:RegisterEvent("UNIT_TARGET")
+frame:RegisterEvent("UNIT_FACTION")
 frame:SetScript("OnEvent", function(self, event, unit)
-    if unit == "target" then
-        UpdateToTName(TargetFrame.totFrame, "targettarget")
-        UpdateToTName(FocusFrame.totFrame, "focustarget")
-
-        ClassColorNames(TargetFrame.totFrame.Name, "targettarget")
-        ClassColorNames(TargetFrame.totFrame.cleanName, "targettarget")
-    elseif unit =="focus" then
-        ClassColorNames(FocusFrame.totFrame.Name, "focustarget")
-        ClassColorNames(FocusFrame.totFrame.cleanName, "focustarget")
-    end
+    UpdateToTName(TargetFrame.totFrame, "targettarget")
+    BBF.UpdateFrameColor(TargetFrame.totFrame.HealthBar, "targettarget")
+    ClassColorNames(TargetFrame.totFrame.Name, "targettarget")
+    ClassColorNames(TargetFrame.totFrame.cleanName, "targettarget")
+    BBF.UpdateToTColor()
+    UpdateToTName(FocusFrame.totFrame, "focustarget")
+    BBF.UpdateFrameColor(FocusFrame.totFrame.HealthBar, "focustarget")
+    ClassColorNames(FocusFrame.totFrame.Name, "focustarget")
+    ClassColorNames(FocusFrame.totFrame.cleanName, "focustarget")
 end)
 
 
@@ -627,7 +652,7 @@ function BBF.CenteredFrameNames(frame, unit)
         frame.cleanName:SetJustifyH("CENTER")
         frame.cleanName:SetJustifyV(originalNameObject:GetJustifyV())
         frame.cleanName:SetWidth(originalNameObject:GetWidth())
-        frame.cleanName:ClearAllPoints()
+        --frame.cleanName:ClearAllPoints()
         frame.cleanName:SetPoint("TOP", frame.HealthBar, "TOP", 2, 13)
         frame.cleanName:SetAlpha(1)
     else
@@ -639,7 +664,7 @@ function BBF.CenteredFrameNames(frame, unit)
             frame.cleanName:SetShadowOffset(originalNameObject:GetShadowOffset())
             frame.cleanName:SetShadowColor(originalNameObject:GetShadowColor())
             frame.cleanName:SetWidth(originalNameObject:GetWidth())
-            frame.cleanName:ClearAllPoints()
+            --frame.cleanName:ClearAllPoints()
             frame.cleanName:SetPoint(a,b,c,x,y-2)
             frame.cleanName:SetAlpha(1)
         end
@@ -660,7 +685,7 @@ local function CenteredPlayerName()
             frame.cleanName:SetJustifyH("CENTER")
             frame.cleanName:SetJustifyV(PlayerName:GetJustifyV())
             frame.cleanName:SetText(GetUnitName("player", true))
-            frame.cleanName:ClearAllPoints()
+            --frame.cleanName:ClearAllPoints()
             frame.cleanName:SetPoint("TOP", frame.HealthBarArea.HealthBar, "TOP", 0, 13)
             --frame.cleanName:SetTextColor(1, 0.81960791349411, 0)
             frame.cleanName:SetShadowColor(PlayerName:GetShadowColor())
@@ -670,6 +695,7 @@ local function CenteredPlayerName()
             frame.cleanName:SetWidth(PlayerName:GetWidth())
         end
         frame.cleanName:SetAlpha(1)
+        ClassColorNames(frame.cleanName, "player", PlayerLevelText)
     else
         PlayerName:SetAlpha(1)
         if frame.cleanName then

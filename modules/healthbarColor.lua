@@ -71,6 +71,10 @@ local function updateFrameColorToggleVer(frame, unit)
     end
 end
 
+function BBF.UpdateToTColor()
+    updateFrameColorToggleVer(TargetFrameToT.HealthBar, "targettarget")
+end
+
 function BBF.UpdateFrames()
     if BetterBlizzFramesDB.classColorFrames then
         if UnitExists("player") then updateFrameColorToggleVer(PlayerFrame.healthbar, "player") end
@@ -88,7 +92,7 @@ function BBF.UpdateFrames()
     end
 end
 
-local function updateFrameColor(frame, unit)
+function BBF.UpdateFrameColor(frame, unit)
     if BetterBlizzFramesDB.classColorFrames then
         local color = getUnitColor(unit)
         if color then
@@ -119,30 +123,27 @@ end
 
 hooksecurefunc("UnitFrameHealthBar_RefreshUpdateEvent", function(self)
     if self.unit then
-        updateFrameColor(self, self.unit)
+        BBF.UpdateFrameColor(self, self.unit)
+        updateFrameColorToggleVer(TargetFrameToT.HealthBar, "targettarget")
+        updateFrameColorToggleVer(FocusFrameToT.HealthBar, "focustarget")
     end
 end)
 
 hooksecurefunc("UnitFrameHealthBar_Update", function(self, unit)
     if unit then
-        updateFrameColor(self, unit)
+        BBF.UpdateFrameColor(self, unit)
+        updateFrameColorToggleVer(TargetFrameToT.HealthBar, "targettarget")
+        updateFrameColorToggleVer(FocusFrameToT.HealthBar, "focustarget")
     end
 end)
 
 hooksecurefunc("HealthBar_OnValueChanged", function(self)
     if self.unit then
-        updateFrameColor(self, self.unit)
+        BBF.UpdateFrameColor(self, self.unit)
+        updateFrameColorToggleVer(TargetFrameToT.HealthBar, "targettarget")
+        updateFrameColorToggleVer(FocusFrameToT.HealthBar, "focustarget")
     end
 end)
-
-local function updateToTFrame()
-    if UnitExists("targettarget") then
-        updateFrameColorToggleVer(TargetFrameToT.HealthBar, "targettarget")
-    end
-end
-
-hooksecurefunc(TargetFrameToT, "HealthCheck", updateToTFrame)
-
 
 
 

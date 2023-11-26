@@ -171,23 +171,37 @@ local function CreateSlider(parent, label, minValue, maxValue, stepValue, elemen
         slider:SetWidth(sliderWidth)
     end
 
-    local function UpdateSliderRange(newValue)
-        local currentMin, currentMax = slider:GetMinMaxValues()
-        if newValue > currentMax then
-            local newMaxValue = newValue + 50
-            slider:SetMinMaxValues(currentMin, newMaxValue)
+    local function UpdateSliderRange(newValue, minValue, maxValue)
+        newValue = tonumber(newValue) -- Convert newValue to a number
+
+        if (axis == "X" or axis == "Y") and (newValue < minValue or newValue > maxValue) then
+            -- For X or Y axis: extend the range by ±30
+            local newMinValue = math.min(newValue - 30, minValue)
+            local newMaxValue = math.max(newValue + 30, maxValue)
+            slider:SetMinMaxValues(newMinValue, newMaxValue)
+        elseif newValue < minValue or newValue > maxValue then
+            -- For other sliders: adjust the range, ensuring it never goes below a specified minimum (e.g., 0)
+            local nonAxisRangeExtension = 2
+            local newMinValue = math.max(newValue - nonAxisRangeExtension, 0.1)  -- Prevent going below 0.1
+            local newMaxValue = math.max(newValue + nonAxisRangeExtension, maxValue)
+            slider:SetMinMaxValues(newMinValue, newMaxValue)
         end
     end
 
-
     local function SetSliderValue()
         if BBF.variablesLoaded then
-            local initialValue = BetterBlizzFramesDB[element]
-            UpdateSliderRange(initialValue) -- Update the slider's range based on stored value
-            slider:SetValue(initialValue)
+            local initialValue = tonumber(BetterBlizzFramesDB[element]) -- Convert to number
 
-            local textValue = initialValue % 1 == 0 and tostring(math.floor(initialValue)) or string.format("%.2f", initialValue)
-            slider.Text:SetText(label .. ": " .. textValue)
+            if initialValue then
+                local currentMin, currentMax = slider:GetMinMaxValues() -- Fetch the latest min and max values
+
+                -- Check if the initial value is outside the current range and update range if necessary
+                UpdateSliderRange(initialValue, currentMin, currentMax)
+
+                slider:SetValue(initialValue) -- Set the initial value
+                local textValue = initialValue % 1 == 0 and tostring(math.floor(initialValue)) or string.format("%.2f", initialValue)
+                slider.Text:SetText(label .. ": " .. textValue)
+            end
         else
             C_Timer.After(0.1, SetSliderValue)
         end
@@ -223,15 +237,22 @@ local function CreateSlider(parent, label, minValue, maxValue, stepValue, elemen
     local function HandleEditBoxInput()
         local inputValue = tonumber(editBox:GetText())
         if inputValue then
-            local _, currentMax = slider:GetMinMaxValues()
-            if inputValue > currentMax then
-                UpdateSliderRange(inputValue) -- Extend the slider range if necessary
+            -- Check if it's a non-axis slider and inputValue is <= 0
+            if (axis ~= "X" and axis ~= "Y") and inputValue <= 0 then
+                inputValue = 0.1  -- Set to minimum allowed value for non-axis sliders
             end
+
+            local currentMin, currentMax = slider:GetMinMaxValues()
+            if inputValue < currentMin or inputValue > currentMax then
+                UpdateSliderRange(inputValue, currentMin, currentMax)
+            end
+
             slider:SetValue(inputValue)
-            BetterBlizzFramesDB[element] = inputValue -- Store the new value
+            BetterBlizzFramesDB[element] = inputValue
         end
         editBox:Hide()
     end
+
 
     editBox:SetScript("OnEnterPressed", HandleEditBoxInput)
 
@@ -884,7 +905,7 @@ local function guiGeneralTab()
     addonNameIcon:SetPoint("LEFT", addonNameText, "RIGHT", -2, -1)
     local versionText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     versionText:SetPoint("LEFT", addonNameText, "RIGHT", 25, 0)
-    versionText:SetText("v1.0.4b")--SetText("v" .. BetterBlizzFramesDB.updates)
+    versionText:SetText("v1.0.5")--SetText("v" .. BetterBlizzFramesDB.updates)
 
     ----------------------
     -- General:
@@ -1201,10 +1222,10 @@ local function guiGeneralTab()
     local targetToTScale = CreateSlider(BetterBlizzFrames, "Size", 0.6, 2.5, 0.01, "targetToTScale", nil, 120)
     targetToTScale:SetPoint("TOPLEFT", targetToTFrameText, "BOTTOMLEFT", 0, -35)
 
-    BBF.targetToTXPos = CreateSlider(BetterBlizzFrames, "x offset", -100, 100, 1, "targetToTXPos", nil, 120)
+    BBF.targetToTXPos = CreateSlider(BetterBlizzFrames, "x offset", -100, 100, 1, "targetToTXPos", "X", 120)
     BBF.targetToTXPos:SetPoint("TOP", targetToTScale, "BOTTOM", 0, -15)
 
-    local targetToTYPos = CreateSlider(BetterBlizzFrames, "y offset", -100, 100, 1, "targetToTYPos", nil, 120)
+    local targetToTYPos = CreateSlider(BetterBlizzFrames, "y offset", -100, 100, 1, "targetToTYPos", "Y", 120)
     targetToTYPos:SetPoint("TOP", BBF.targetToTXPos, "BOTTOM", 0, -15)
 
 
@@ -1316,10 +1337,10 @@ local function guiGeneralTab()
     local focusToTScale = CreateSlider(BetterBlizzFrames, "Size", 0.6, 2.5, 0.01, "focusToTScale", nil, 120)
     focusToTScale:SetPoint("TOPLEFT", focusToTFrameText, "BOTTOMLEFT", 0, -35)
 
-    BBF.focusToTXPos = CreateSlider(BetterBlizzFrames, "x offset", -100, 100, 1, "focusToTXPos", nil, 120)
+    BBF.focusToTXPos = CreateSlider(BetterBlizzFrames, "x offset", -100, 100, 1, "focusToTXPos", "X", 120)
     BBF.focusToTXPos:SetPoint("TOP", focusToTScale, "BOTTOM", 0, -15)
 
-    local focusToTYPos = CreateSlider(BetterBlizzFrames, "y offset", -100, 100, 1, "focusToTYPos", nil, 120)
+    local focusToTYPos = CreateSlider(BetterBlizzFrames, "y offset", -100, 100, 1, "focusToTYPos", "Y", 120)
     focusToTYPos:SetPoint("TOP", BBF.focusToTXPos, "BOTTOM", 0, -15)
 
 
@@ -1518,10 +1539,10 @@ local function guiCastbars()
     local partyCastBarScale = CreateSlider(contentFrame, "Size", 0.5, 1.9, 0.01, "partyCastBarScale")
     partyCastBarScale:SetPoint("TOP", anchorSubPartyCastbar, "BOTTOM", 0, -15)
 
-    local partyCastBarXPos = CreateSlider(contentFrame, "x offset", -200, 200, 1, "partyCastBarXPos")
+    local partyCastBarXPos = CreateSlider(contentFrame, "x offset", -200, 200, 1, "partyCastBarXPos", "X")
     partyCastBarXPos:SetPoint("TOP", partyCastBarScale, "BOTTOM", 0, -15)
 
-    local partyCastBarYPos = CreateSlider(contentFrame, "y offset", -200, 200, 1, "partyCastBarYPos")
+    local partyCastBarYPos = CreateSlider(contentFrame, "y offset", -200, 200, 1, "partyCastBarYPos", "Y")
     partyCastBarYPos:SetPoint("TOP", partyCastBarXPos, "BOTTOM", 0, -15)
 
     local partyCastBarWidth = CreateSlider(contentFrame, "Width", 20, 200, 1, "partyCastBarWidth")
@@ -1578,10 +1599,10 @@ local function guiCastbars()
     local targetCastBarScale = CreateSlider(contentFrame, "Size", 0.1, 1.9, 0.01, "targetCastBarScale")
     targetCastBarScale:SetPoint("TOP", anchorSubTargetCastbar, "BOTTOM", 0, -15)
 
-    local targetCastBarXPos = CreateSlider(contentFrame, "x offset", -130, 130, 1, "targetCastBarXPos")
+    local targetCastBarXPos = CreateSlider(contentFrame, "x offset", -130, 130, 1, "targetCastBarXPos", "X")
     targetCastBarXPos:SetPoint("TOP", targetCastBarScale, "BOTTOM", 0, -15)
 
-    local targetCastBarYPos = CreateSlider(contentFrame, "y offset", -130, 130, 1, "targetCastBarYPos")
+    local targetCastBarYPos = CreateSlider(contentFrame, "y offset", -130, 130, 1, "targetCastBarYPos", "Y")
     targetCastBarYPos:SetPoint("TOP", targetCastBarXPos, "BOTTOM", 0, -15)
 
     local targetCastBarWidth = CreateSlider(contentFrame, "Width", 60, 220, 1, "targetCastBarWidth")
@@ -1698,10 +1719,10 @@ local function guiCastbars()
     local petCastBarScale = CreateSlider(contentFrame, "Size", 0.5, 1.9, 0.01, "petCastBarScale")
     petCastBarScale:SetPoint("TOP", anchorSubPetCastbar, "BOTTOM", 0, -15)
 
-    local petCastBarXPos = CreateSlider(contentFrame, "x offset", -200, 200, 1, "petCastBarXPos")
+    local petCastBarXPos = CreateSlider(contentFrame, "x offset", -200, 200, 1, "petCastBarXPos", "X")
     petCastBarXPos:SetPoint("TOP", petCastBarScale, "BOTTOM", 0, -15)
 
-    local petCastBarYPos = CreateSlider(contentFrame, "y offset", -200, 200, 1, "petCastBarYPos")
+    local petCastBarYPos = CreateSlider(contentFrame, "y offset", -200, 200, 1, "petCastBarYPos", "Y")
     petCastBarYPos:SetPoint("TOP", petCastBarXPos, "BOTTOM", 0, -15)
 
     local petCastBarWidth = CreateSlider(contentFrame, "Width", 20, 200, 1, "petCastBarWidth")
@@ -1782,10 +1803,10 @@ local function guiCastbars()
     local focusCastBarScale = CreateSlider(contentFrame, "Size", 0.1, 1.9, 0.01, "focusCastBarScale")
     focusCastBarScale:SetPoint("TOP", anchorSubFocusCastbar, "BOTTOM", 0, -15)
 
-    local focusCastBarXPos = CreateSlider(contentFrame, "x offset", -130, 130, 1, "focusCastBarXPos")
+    local focusCastBarXPos = CreateSlider(contentFrame, "x offset", -130, 130, 1, "focusCastBarXPos", "X")
     focusCastBarXPos:SetPoint("TOP", focusCastBarScale, "BOTTOM", 0, -15)
 
-    local focusCastBarYPos = CreateSlider(contentFrame, "y offset", -130, 130, 1, "focusCastBarYPos")
+    local focusCastBarYPos = CreateSlider(contentFrame, "y offset", -130, 130, 1, "focusCastBarYPos", "Y")
     focusCastBarYPos:SetPoint("TOP", focusCastBarXPos, "BOTTOM", 0, -15)
 
     local focusCastBarWidth = CreateSlider(contentFrame, "Width", 60, 220, 1, "focusCastBarWidth")
@@ -2095,10 +2116,10 @@ local function guiPositionAndScale()
     local absorbIndicatorScale = CreateSlider(contentFrame, "Size", 0.1, 1.9, 0.1, "absorbIndicatorScale")
     absorbIndicatorScale:SetPoint("TOP", anchorSubAbsorb, "BOTTOM", 0, -15)
 
-    local absorbIndicatorXPos = CreateSlider(contentFrame, "x offset", -100, 100, 1, "playerAbsorbXPos")
+    local absorbIndicatorXPos = CreateSlider(contentFrame, "x offset", -100, 100, 1, "playerAbsorbXPos", "X")
     absorbIndicatorXPos:SetPoint("TOP", absorbIndicatorScale, "BOTTOM", 0, -15)
 
-    local absorbIndicatorYPos = CreateSlider(contentFrame, "y offset", -100, 100, 1, "playerAbsorbYPos")
+    local absorbIndicatorYPos = CreateSlider(contentFrame, "y offset", -100, 100, 1, "playerAbsorbYPos", "Y")
     absorbIndicatorYPos:SetPoint("TOP", absorbIndicatorXPos, "BOTTOM", 0, -15)
 
     local playerAbsorbAnchorDropdown = CreateAnchorDropdown(
@@ -2610,10 +2631,10 @@ local function guiFrameAuras()
     local targetAndFocusAurasPerRow = CreateSlider(playerAuraFiltering, "Max auras per row", 1, 12, 1, "targetAndFocusAurasPerRow")
     targetAndFocusAurasPerRow:SetPoint("TOPLEFT", targetAndFocusAuraScale, "BOTTOMLEFT", 0, -17)
 
-    local targetAndFocusAuraOffsetX = CreateSlider(playerAuraFiltering, "x offset", -50, 50, 1, "targetAndFocusAuraOffsetX")
+    local targetAndFocusAuraOffsetX = CreateSlider(playerAuraFiltering, "x offset", -50, 50, 1, "targetAndFocusAuraOffsetX", "X")
     targetAndFocusAuraOffsetX:SetPoint("TOPLEFT", targetAndFocusAurasPerRow, "BOTTOMLEFT", 0, -17)
 
-    local targetAndFocusAuraOffsetY = CreateSlider(playerAuraFiltering, "y offset", -50, 50, 1, "targetAndFocusAuraOffsetY")
+    local targetAndFocusAuraOffsetY = CreateSlider(playerAuraFiltering, "y offset", -50, 50, 1, "targetAndFocusAuraOffsetY", "Y")
     targetAndFocusAuraOffsetY:SetPoint("TOPLEFT", targetAndFocusAuraOffsetX, "BOTTOMLEFT", 0, -17)
 
     local targetAndFocusHorizontalGap = CreateSlider(playerAuraFiltering, "Horizontal gap", 0, 18, 0.5, "targetAndFocusHorizontalGap")

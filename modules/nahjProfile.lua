@@ -7,9 +7,9 @@ local nahjAuraBlacklist = {
         ["name"] = "Sign of the Skirmisher",
         ["entryColors"] = {
             ["text"] = {
-                ["b"] = 0,
-                ["g"] = 1,
                 ["r"] = 1,
+                ["g"] = 1,
+                ["b"] = 0,
             },
         },
     }, -- [1]
@@ -17,9 +17,9 @@ local nahjAuraBlacklist = {
         ["name"] = "Sign of the Scourge",
         ["entryColors"] = {
             ["text"] = {
-                ["b"] = 0,
-                ["g"] = 1,
                 ["r"] = 1,
+                ["g"] = 1,
+                ["b"] = 0,
             },
         },
     }, -- [2]
@@ -27,9 +27,9 @@ local nahjAuraBlacklist = {
         ["name"] = "Stormwind Champion",
         ["entryColors"] = {
             ["text"] = {
-                ["b"] = 0,
-                ["g"] = 1,
                 ["r"] = 1,
+                ["g"] = 1,
+                ["b"] = 0,
             },
         },
     }, -- [3]
@@ -37,9 +37,9 @@ local nahjAuraBlacklist = {
         ["name"] = "Honorless Target",
         ["entryColors"] = {
             ["text"] = {
-                ["b"] = 0,
-                ["g"] = 1,
                 ["r"] = 1,
+                ["g"] = 1,
+                ["b"] = 0,
             },
         },
     }, -- [4]
@@ -47,9 +47,9 @@ local nahjAuraBlacklist = {
         ["name"] = "Guild Champion",
         ["entryColors"] = {
             ["text"] = {
-                ["b"] = 0,
-                ["g"] = 1,
                 ["r"] = 1,
+                ["g"] = 1,
+                ["b"] = 0,
             },
         },
     }, -- [5]
@@ -57,9 +57,9 @@ local nahjAuraBlacklist = {
         ["name"] = "Sign of Iron",
         ["entryColors"] = {
             ["text"] = {
-                ["b"] = 0,
-                ["g"] = 1,
                 ["r"] = 1,
+                ["g"] = 1,
+                ["b"] = 0,
             },
         },
     }, -- [6]
@@ -67,9 +67,9 @@ local nahjAuraBlacklist = {
         ["id"] = 397734,
         ["entryColors"] = {
             ["text"] = {
-                ["b"] = 0,
-                ["g"] = 1,
                 ["r"] = 1,
+                ["g"] = 1,
+                ["b"] = 0,
             },
         },
     }, -- [7]
@@ -77,9 +77,9 @@ local nahjAuraBlacklist = {
         ["id"] = 186403,
         ["entryColors"] = {
             ["text"] = {
-                ["b"] = 0,
-                ["g"] = 1,
                 ["r"] = 1,
+                ["g"] = 1,
+                ["b"] = 0,
             },
         },
     }, -- [8]
@@ -87,9 +87,9 @@ local nahjAuraBlacklist = {
         ["id"] = 282559,
         ["entryColors"] = {
             ["text"] = {
-                ["b"] = 0,
-                ["g"] = 1,
                 ["r"] = 1,
+                ["g"] = 1,
+                ["b"] = 0,
             },
         },
     }, -- [9]
@@ -97,9 +97,9 @@ local nahjAuraBlacklist = {
         ["id"] = 32727,
         ["entryColors"] = {
             ["text"] = {
-                ["b"] = 0,
-                ["g"] = 1,
                 ["r"] = 1,
+                ["g"] = 1,
+                ["b"] = 0,
             },
         },
     }, -- [10]
@@ -107,9 +107,9 @@ local nahjAuraBlacklist = {
         ["id"] = 418563,
         ["entryColors"] = {
             ["text"] = {
-                ["b"] = 0,
-                ["g"] = 1,
                 ["r"] = 1,
+                ["g"] = 1,
+                ["b"] = 0,
             },
         },
     }, -- [11]
@@ -117,22 +117,22 @@ local nahjAuraBlacklist = {
         ["id"] = 93805,
         ["entryColors"] = {
             ["text"] = {
-                ["b"] = 0,
-                ["g"] = 1,
                 ["r"] = 1,
+                ["g"] = 1,
+                ["b"] = 0,
             },
         },
     }, -- [12]
     {
         ["flags"] = {
-            ["important"] = false,
             ["pandemic"] = false,
+            ["important"] = false,
         },
         ["entryColors"] = {
             ["text"] = {
-                ["r"] = 1,
-                ["g"] = 1,
                 ["b"] = 0,
+                ["g"] = 1,
+                ["r"] = 1,
             },
         },
         ["name"] = "264420 - Solider of the Alliance",
@@ -140,14 +140,14 @@ local nahjAuraBlacklist = {
     }, -- [13]
     {
         ["flags"] = {
-            ["pandemic"] = false,
             ["important"] = false,
+            ["pandemic"] = false,
         },
         ["entryColors"] = {
             ["text"] = {
-                ["b"] = 0,
-                ["g"] = 1,
                 ["r"] = 1,
+                ["g"] = 1,
+                ["b"] = 0,
             },
         },
         ["name"] = "Orgrimmar Champion",
@@ -155,14 +155,14 @@ local nahjAuraBlacklist = {
     }, -- [14]
     {
         ["flags"] = {
-            ["pandemic"] = false,
             ["important"] = false,
+            ["pandemic"] = false,
         },
         ["entryColors"] = {
             ["text"] = {
-                ["b"] = 0,
-                ["g"] = 1,
                 ["r"] = 1,
+                ["g"] = 1,
+                ["b"] = 0,
             },
         },
         ["name"] = "Encapsulated Destiny",
@@ -170,16 +170,16 @@ local nahjAuraBlacklist = {
     }, -- [15]
     {
         ["flags"] = {
-            ["pandemic"] = false,
             ["important"] = false,
+            ["pandemic"] = false,
         },
         ["comment"] = "",
         ["id"] = 245686,
         ["entryColors"] = {
             ["text"] = {
-                ["b"] = 0,
-                ["g"] = 1,
                 ["r"] = 1,
+                ["g"] = 1,
+                ["b"] = 0,
             },
         },
         ["name"] = "",
@@ -188,373 +188,371 @@ local nahjAuraBlacklist = {
 
 
 
-
-
 local nahjAuraWhitelist = {
     {
         ["flags"] = {
-            ["pandemic"] = false,
             ["important"] = true,
+            ["pandemic"] = false,
         },
         ["comment"] = "",
         ["id"] = 248518,
         ["entryColors"] = {
             ["text"] = {
-                ["b"] = 0,
-                ["g"] = 1,
                 ["r"] = 1,
+                ["g"] = 1,
+                ["b"] = 0,
             },
         },
         ["name"] = "",
     }, -- [1]
     {
         ["flags"] = {
-            ["pandemic"] = false,
             ["important"] = true,
+            ["pandemic"] = false,
         },
         ["comment"] = "",
         ["id"] = 7165,
         ["entryColors"] = {
             ["text"] = {
-                ["b"] = 0,
-                ["g"] = 1,
                 ["r"] = 1,
+                ["g"] = 1,
+                ["b"] = 0,
             },
         },
         ["name"] = "",
     }, -- [2]
     {
         ["flags"] = {
-            ["pandemic"] = false,
             ["important"] = true,
+            ["pandemic"] = false,
         },
         ["comment"] = "",
         ["id"] = 378464,
         ["entryColors"] = {
             ["text"] = {
-                ["b"] = 0,
-                ["g"] = 1,
                 ["r"] = 1,
+                ["g"] = 1,
+                ["b"] = 0,
             },
         },
         ["name"] = "",
     }, -- [3]
     {
         ["flags"] = {
-            ["pandemic"] = false,
             ["important"] = true,
+            ["pandemic"] = false,
         },
         ["comment"] = "",
         ["id"] = 48707,
         ["entryColors"] = {
             ["text"] = {
-                ["b"] = 0,
-                ["g"] = 1,
                 ["r"] = 1,
+                ["g"] = 1,
+                ["b"] = 0,
             },
         },
         ["name"] = "",
     }, -- [4]
     {
         ["flags"] = {
-            ["pandemic"] = false,
             ["important"] = true,
+            ["pandemic"] = false,
         },
         ["comment"] = "",
         ["id"] = 29166,
         ["entryColors"] = {
             ["text"] = {
-                ["b"] = 0,
-                ["g"] = 1,
                 ["r"] = 1,
+                ["g"] = 1,
+                ["b"] = 0,
             },
         },
         ["name"] = "",
     }, -- [5]
     {
         ["flags"] = {
-            ["pandemic"] = false,
             ["important"] = true,
+            ["pandemic"] = false,
         },
         ["comment"] = "",
         ["id"] = 115192,
         ["entryColors"] = {
             ["text"] = {
-                ["b"] = 0,
-                ["g"] = 1,
                 ["r"] = 1,
+                ["g"] = 1,
+                ["b"] = 0,
             },
         },
         ["name"] = "",
     }, -- [6]
     {
         ["flags"] = {
-            ["pandemic"] = false,
             ["important"] = true,
+            ["pandemic"] = false,
         },
         ["comment"] = "",
         ["id"] = 6940,
         ["entryColors"] = {
             ["text"] = {
-                ["b"] = 0,
-                ["g"] = 1,
                 ["r"] = 1,
+                ["g"] = 1,
+                ["b"] = 0,
             },
         },
         ["name"] = "",
     }, -- [7]
     {
         ["flags"] = {
-            ["pandemic"] = false,
             ["important"] = true,
+            ["pandemic"] = false,
         },
         ["comment"] = "",
         ["id"] = 199448,
         ["entryColors"] = {
             ["text"] = {
-                ["b"] = 0,
-                ["g"] = 1,
                 ["r"] = 1,
+                ["g"] = 1,
+                ["b"] = 0,
             },
         },
         ["name"] = "",
     }, -- [8]
     {
         ["flags"] = {
-            ["pandemic"] = false,
             ["important"] = true,
+            ["pandemic"] = false,
         },
         ["comment"] = "",
         ["id"] = 360827,
         ["entryColors"] = {
             ["text"] = {
-                ["b"] = 0,
-                ["g"] = 1,
                 ["r"] = 1,
+                ["g"] = 1,
+                ["b"] = 0,
             },
         },
         ["name"] = "",
     }, -- [9]
     {
         ["flags"] = {
-            ["pandemic"] = false,
             ["important"] = true,
+            ["pandemic"] = false,
         },
         ["comment"] = "",
         ["id"] = 204336,
         ["entryColors"] = {
             ["text"] = {
-                ["b"] = 0,
-                ["g"] = 1,
                 ["r"] = 1,
+                ["g"] = 1,
+                ["b"] = 0,
             },
         },
         ["name"] = "",
     }, -- [10]
     {
         ["flags"] = {
-            ["pandemic"] = false,
             ["important"] = true,
+            ["pandemic"] = false,
         },
         ["comment"] = "",
         ["id"] = 31224,
         ["entryColors"] = {
             ["text"] = {
-                ["b"] = 0,
-                ["g"] = 1,
                 ["r"] = 1,
+                ["g"] = 1,
+                ["b"] = 0,
             },
         },
         ["name"] = "",
     }, -- [11]
     {
         ["flags"] = {
-            ["pandemic"] = false,
             ["important"] = true,
+            ["pandemic"] = false,
         },
         ["comment"] = "",
         ["id"] = 278454,
         ["entryColors"] = {
             ["text"] = {
-                ["b"] = 0,
-                ["g"] = 1,
                 ["r"] = 1,
+                ["g"] = 1,
+                ["b"] = 0,
             },
         },
         ["name"] = "",
     }, -- [12]
     {
         ["flags"] = {
-            ["pandemic"] = false,
             ["important"] = true,
+            ["pandemic"] = false,
         },
         ["comment"] = "",
         ["id"] = 185313,
         ["entryColors"] = {
             ["text"] = {
-                ["b"] = 0,
-                ["g"] = 1,
                 ["r"] = 1,
+                ["g"] = 1,
+                ["b"] = 0,
             },
         },
         ["name"] = "",
     }, -- [13]
     {
         ["flags"] = {
-            ["pandemic"] = false,
             ["important"] = true,
+            ["pandemic"] = false,
         },
         ["comment"] = "",
         ["id"] = 410126,
         ["entryColors"] = {
             ["text"] = {
-                ["b"] = 0,
-                ["g"] = 1,
                 ["r"] = 1,
+                ["g"] = 1,
+                ["b"] = 0,
             },
         },
         ["name"] = "",
     }, -- [14]
     {
         ["flags"] = {
-            ["pandemic"] = false,
             ["important"] = true,
+            ["pandemic"] = false,
         },
         ["comment"] = "",
         ["id"] = 408557,
         ["entryColors"] = {
             ["text"] = {
-                ["b"] = 0,
-                ["g"] = 1,
                 ["r"] = 1,
+                ["g"] = 1,
+                ["b"] = 0,
             },
         },
         ["name"] = "",
     }, -- [15]
     {
         ["flags"] = {
-            ["pandemic"] = false,
             ["important"] = true,
+            ["pandemic"] = false,
         },
         ["comment"] = "",
         ["id"] = 323654,
         ["entryColors"] = {
             ["text"] = {
-                ["b"] = 0,
-                ["g"] = 1,
                 ["r"] = 1,
+                ["g"] = 1,
+                ["b"] = 0,
             },
         },
         ["name"] = "",
     }, -- [16]
     {
         ["flags"] = {
-            ["pandemic"] = false,
             ["important"] = true,
+            ["pandemic"] = false,
         },
         ["comment"] = "",
         ["id"] = 210256,
         ["entryColors"] = {
             ["text"] = {
-                ["b"] = 0,
-                ["g"] = 1,
                 ["r"] = 1,
+                ["g"] = 1,
+                ["b"] = 0,
             },
         },
         ["name"] = "",
     }, -- [17]
     {
         ["flags"] = {
-            ["pandemic"] = false,
             ["important"] = true,
+            ["pandemic"] = false,
         },
         ["comment"] = "",
         ["id"] = 3411,
         ["entryColors"] = {
             ["text"] = {
-                ["b"] = 0,
-                ["g"] = 1,
                 ["r"] = 1,
+                ["g"] = 1,
+                ["b"] = 0,
             },
         },
         ["name"] = "",
     }, -- [18]
     {
         ["flags"] = {
-            ["pandemic"] = false,
             ["important"] = true,
+            ["pandemic"] = false,
         },
         ["comment"] = "",
         ["id"] = 102351,
         ["entryColors"] = {
             ["text"] = {
-                ["b"] = 0,
-                ["g"] = 1,
                 ["r"] = 1,
+                ["g"] = 1,
+                ["b"] = 0,
             },
         },
         ["name"] = "",
     }, -- [19]
     {
         ["flags"] = {
-            ["pandemic"] = true,
             ["important"] = false,
+            ["pandemic"] = true,
         },
         ["comment"] = "",
         ["id"] = 703,
         ["entryColors"] = {
             ["text"] = {
-                ["b"] = 0,
-                ["g"] = 1,
                 ["r"] = 1,
+                ["g"] = 1,
+                ["b"] = 0,
             },
         },
         ["name"] = "",
     }, -- [20]
     {
         ["flags"] = {
-            ["pandemic"] = true,
             ["important"] = false,
+            ["pandemic"] = true,
         },
         ["comment"] = "",
         ["id"] = 1943,
         ["entryColors"] = {
             ["text"] = {
-                ["b"] = 0,
-                ["g"] = 1,
                 ["r"] = 1,
+                ["g"] = 1,
+                ["b"] = 0,
             },
         },
         ["name"] = "",
     }, -- [21]
     {
         ["flags"] = {
-            ["pandemic"] = false,
             ["important"] = true,
+            ["pandemic"] = false,
         },
         ["comment"] = "",
         ["id"] = 345231,
         ["entryColors"] = {
             ["text"] = {
-                ["b"] = 0,
-                ["g"] = 1,
                 ["r"] = 1,
+                ["g"] = 1,
+                ["b"] = 0,
             },
         },
         ["name"] = "",
     }, -- [22]
     {
         ["flags"] = {
-            ["important"] = true,
             ["pandemic"] = false,
+            ["important"] = true,
         },
         ["comment"] = "",
         ["id"] = 117906,
         ["entryColors"] = {
             ["text"] = {
-                ["r"] = 1,
-                ["g"] = 1,
                 ["b"] = 0,
+                ["g"] = 1,
+                ["r"] = 1,
             },
         },
         ["name"] = "",
@@ -619,6 +617,7 @@ function BBF.NahjProfile()
 	db.hidePlayerCornerIcon = true
 	db.playerAbsorbAnchor = "TOP"
 	db.playerCastBarTimerCentered = true
+	db.hideChatButtons = true
 	db.focusCastBarXPos = 0
 	db.playerAuraImportantGlow = true
 	db.playerCastBarIconScale = 1
@@ -636,11 +635,11 @@ function BBF.NahjProfile()
 	db.PlayerAuraFramedeBuffEnable = true
 	db.combatIndicatorShowSap = true
 	db.combatIndicatorYPos = 0
-	db.playerCastBarScale = 1.100000023841858
+	db.playerCastBarScale = 1.069999933242798
 	db.focusToTAnchor = "BOTTOMRIGHT"
 	db.focusCastBarYPos = 0
 	db.partyCastBarScale = 1.099999904632568
-	db.playerCastBarScaleScale = 1.100000023841858
+	db.playerCastBarScaleScale = 1.069999933242798
 	db.playerAuraSpacingXScale = 5
 	db.combatIndicatorXPos = 0
 	db.targetAndFocusArenaNames = true
@@ -651,9 +650,9 @@ function BBF.NahjProfile()
 	db.focusdeBuffFilterOnlyMe = false
 	db.focusBuffFilterWatchList = false
 	db.hasSaved = true
+	db.showArenaID = true
 	db.showPetCastBarTimer = false
 	db.playerAuraFiltering = true
-	db.hideTargetReputationColor = true
 	db.targetCombatIndicator = true
 	db.targetCastBarYPos = 0
 	db.focusToTYPos = 20
@@ -661,12 +660,13 @@ function BBF.NahjProfile()
 	db.petCastBarHeight = 10
 	db.focusToTYPosScale = 20
 	db.targetBuffFilterOnlyMe = false
-	db.targetCastBarScaleScale = 1.100000023841858
-	db.darkModeColor = 0.12
+	db.hideRaidFrameManager = true
+	db.targetCastBarScaleScale = 1.069999933242798
+	db.darkModeColor = 0.5999999642372131
 	db.targetBuffFilterWatchList = false
 	db.targetCastBarIconScale = 1
 	db.targetCastBarTimer = true
-	db.hideFocusToTDebuffs = true
+	db.hidePvpTimerText = true
 	db.petDetachCastbar = false
 	db.petCastBarTimer = true
 	db.removeRealmNames = true
@@ -677,37 +677,37 @@ function BBF.NahjProfile()
 	db.petCastbar = false
 	db.focusdeBuffFilterAll = false
 	db.partyCastBarIconScale = 1
-	db.hidePlayerRestGlow = true
+	db.targetToTYPosScale = 20
 	db.centerNames = false
 	db.frameAuraRowAmount = 0
 	db.hidePvpIcon = true
-	db.playerAuraGlows = true
+	db.playerAbsorbYPosScale = 0
 	db.hideTargetToTDebuffs = true
-	db.shortArenaSpecName = true
+	db.wasOnLoadingScreen = false
 	db.targetdeBuffEnable = true
 	db.partyCastBarTimer = true
-	db.targetAndFocusVerticalGap = 4
-	db.targetAbsorbXPos = 0
-	db.partyCastBarTestMode = false
+	db.partyCastBarScaleScale = 1.099999904632568
+	db.targetCastBarScale = 1.069999933242798
+	db.targetBuffEnable = true
 	db.targetToTCastbarAdjustment = true
-	db.targetdeBuffFilterAll = false
+	db.focusdeBuffPandemicGlow = true
 	db.targetdeBuffPandemicGlow = true
 	db.targetdeBuffFilterOnlyMe = false
-	db.showPetCastBarIcon = true
+	db.focusCastBarWidth = 150
 	db.partyCastBarYPos = 0
-	db.playerAbsorbYPosScale = 0
+	db.hideTargetReputationColor = true
 	db.targetdeBuffFilterLessMinite = false
 	db.playerAbsorbXPosScale = -60
 	db.focusBuffPurgeGlow = true
-	db.wasOnLoadingScreen = false
+	db.showPetCastBarIcon = true
 	db.hidePlayerRestAnimation = true
 	db.hidePlayerRoleIcon = true
-	db.targetToTYPosScale = 20
+	db.targetToTYPos = 20
 	db.targetAbsorbYPos = 0
 	db.targetAbsorbAmount = true
 	db.targetAndFocusAuraOffsetX = 0
-	db.hidePartyRoles = true
-	db.reopenOptions = false
+	db.targetAbsorbIcon = false
+	db.combatIndicatorPlayersOnly = true
 	db.targetToTXPosScale = 8
 	db.focusCombatIndicator = true
 	db.playerAbsorbAmount = true
@@ -715,91 +715,91 @@ function BBF.NahjProfile()
 	db.absorbIndicatorFlipIconText = false
 	db.targetBuffFilterAll = true
 	db.petCastBarIconScaleScale = 1
-	db.frameAuraHeightGap = 0
-	db.focusCastBarScaleScale = 1.100000023841858
+	db.focusBuffEnable = true
+	db.focusCastBarScaleScale = 1.069999933242798
 	db.focusAbsorbAmount = true
 	db.PlayerAuraFrameBuffEnable = true
-	db.partyCastbars = false
-	db.focusToTScale = 0.8999999761581421
+	db.focusToTScaleScale = 0.8999999761581421
+	db.hidePrestigeBadge = true
 	db.classColorFrames = true
 	db.focusCastBarTimer = true
 	db.maxTargetBuffs = 32
-	db.absorbIndicatorScale = 1
+	db.targetBuffPurgeGlow = true
 	db.darkModeColorScale = 0.5999999642372131
 	db.PlayerAuraFrameBuffFilterWatchList = false
-	db.focusCastBarScale = 1.100000023841858
+	db.hideArenaFrames = true
 	db.targetAuraGlows = true
-	db.absorbIndicator = false
+	db.focusPrestigeBadgeAlpha = true
 	db.partyCastBarHeight = 12
 	db.targetCastBarXPos = 0
-	db.frameAurasYPos = 0
-	db.absorbIndicatorTestMode = false
-	db.focusToTCastbarAdjustment = true
+	db.partyCastBarWidth = 100
 	db.targetBuffFilterLessMinite = false
-	db.petCastBarTestMode = false
+	db.focusToTCastbarAdjustment = true
+	db.absorbIndicatorTestMode = false
+	db.targetToTScale = 0.8999999761581421
 	db.playerAuraSpacingX = 5
 	db.targetAbsorbAnchor = "TOP"
 	db.focusBuffFilterPurgeable = false
-	db.hidePvpTimerText = true
-	db.playerCastBarTimerCenter = false
-	db.targetToTXPos = 8
-	db.petCastBarYPos = 0
-	db.combatIndicator = true
+	db.hideFocusToTDebuffs = true
+	db.darkModeUiAura = true
+	db.PlayerAuraFramedeBuffFilterWatchList = false
+	db.hasCheckedUi = true
+	db.playerCombatIndicator = false
 	db.focusImportantAuraGlow = true
-	db.playerReputationClassColor = true
-	db.partyCastBarXPos = 0
-	db.hideCombatGlow = true
-	db.hidePartyNames = true
+	db.focusAbsorbIcon = false
 	db.targetdeBuffFilterWatchList = false
+	db.hideCombatGlow = true
+	db.hidePartyNames = false
+	db.partyCastBarXPos = 0
 	db.showSpecName = true
-	db.focusBuffFilterAll = true
-	db.targetBuffFilterPurgeable = false
-	db.combatIndicatorShowSwords = true
+	db.focusBuffFilterLessMinite = false
+	db.playerAbsorbYPos = 0
+	db.targetPrestigeBadgeAlpha = true
 	db.focusCastBarHeight = 10
 	db.playerCastBarHeight = 11
-	db.petCastBarXPos = 0
+	db.targetAndFocusAurasPerRow = 5
 	db.maxAurasOnFrame = 0
 	db.showPartyCastbar = true
-	db.targetToTScaleScale = 0.8999999761581421
 	db.targetCastBarHeight = 10
-	db.targetAndFocusAurasPerRow = 5
-	db.targetPrestigeBadgeAlpha = true
-	db.playerAbsorbYPos = 0
-	db.focusBuffFilterLessMinite = false
+	db.targetToTScaleScale = 0.8999999761581421
+	db.petCastBarXPos = 0
+	db.combatIndicatorShowSwords = true
+	db.targetBuffFilterPurgeable = false
+	db.focusBuffFilterAll = true
 	db.playerAbsorbIcon = false
-	db.focusAbsorbIcon = false
-	db.playerCombatIndicator = false
-	db.hasCheckedUi = true
-	db.PlayerAuraFramedeBuffFilterWatchList = false
-	db.darkModeUiAura = true
+	db.playerReputationClassColor = true
+	db.combatIndicator = true
+	db.petCastBarYPos = 0
+	db.targetToTXPos = 8
+	db.playerCastBarTimerCenter = false
 	db.focusToTXPosScale = 8
 	db.playerFrameOCD = true
 	db.partyArenaNames = true
-	db.targetToTScale = 0.8999999761581421
+	db.petCastBarTestMode = false
 	db.hideGroupIndicator = true
-	db.partyCastBarWidth = 100
+	db.frameAurasYPos = 0
 	db.hideLevelText = true
 	db.playerAbsorbXPos = -60
-	db.focusPrestigeBadgeAlpha = true
-	db.hideArenaFrames = true
-	db.targetBuffPurgeGlow = true
-	db.hidePrestigeBadge = true
-	db.focusToTScaleScale = 0.8999999761581421
-	db.focusBuffEnable = true
+	db.absorbIndicator = false
+	db.focusCastBarScale = 1.069999933242798
+	db.absorbIndicatorScale = 1
+	db.focusToTScale = 0.8999999761581421
+	db.partyCastbars = false
+	db.frameAuraHeightGap = 0
 	db.combatIndicatorAnchor = "RIGHT"
 	db.targetAndFocusAuraScaleScale = 1.149999976158142
 	db.frameAuraScale = 0
-	db.combatIndicatorPlayersOnly = true
-	db.targetAbsorbIcon = false
+	db.reopenOptions = false
+	db.hidePartyRoles = false
 	db.showHiddenAurasIcon = true
-	db.focusAuraGlows = true
-	db.focusCastBarWidth = 150
+	db.shortArenaSpecName = true
+	db.hidePlayerRestGlow = true
 	db.hidePartyFrameTitle = true
-	db.focusdeBuffPandemicGlow = true
-	db.targetBuffEnable = true
-	db.targetCastBarScale = 1.100000023841858
-	db.targetToTYPos = 20
-	db.showArenaID = true
+	db.targetdeBuffFilterAll = false
+	db.partyCastBarTestMode = false
+	db.targetAbsorbXPos = 0
+	db.playerAuraGlows = true
+	db.targetAndFocusVerticalGap = 4
 	db.petCastBarIconScale = 1
-	db.partyCastBarScaleScale = 1.099999904632568
+	db.focusAuraGlows = true
 end
