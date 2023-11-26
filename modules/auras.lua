@@ -502,7 +502,7 @@ function BBF.AdjustAuras(self, frameType)
                 (frameType == "focus" and auraData.isStealable and BetterBlizzFramesDB.focusBuffPurgeGlow) then
                     if not aura.PurgeGlow then
                         aura.PurgeGlow = aura:CreateTexture(nil, "OVERLAY")
-                        if aura.border:IsVisible() then
+                        if aura.border and aura.border:IsVisible() then
                             aura.PurgeGlow:SetParent(aura.border)
                         end
                         aura.PurgeGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -9, 9)

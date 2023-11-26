@@ -249,7 +249,11 @@ function ChangeName(frame, unit, party)
                 frame.cleanName:SetWidth(originalNameObject:GetWidth() + 10)
                 frame.cleanName:SetWordWrap(false)
             else
-                frame.cleanName:SetPoint(a, p, a2, x, y-2)
+                if BetterBlizzFramesDB.playerFrameOCD then
+                    frame.cleanName:SetPoint(a,b,c,x,y-2)
+                else
+                    frame.cleanName:SetPoint(a,b,c,x,y-1)
+                end
             end
         end
 
@@ -665,7 +669,11 @@ function BBF.CenteredFrameNames(frame, unit)
             frame.cleanName:SetShadowColor(originalNameObject:GetShadowColor())
             frame.cleanName:SetWidth(originalNameObject:GetWidth())
             --frame.cleanName:ClearAllPoints()
-            frame.cleanName:SetPoint(a,b,c,x,y-2)
+            if BetterBlizzFramesDB.playerFrameOCD then
+                frame.cleanName:SetPoint(a,b,c,x,y-2)
+            else
+                frame.cleanName:SetPoint(a,b,c,x,y-1)
+            end
             frame.cleanName:SetAlpha(1)
         end
         --frame.cleanName:SetAlpha(0)
