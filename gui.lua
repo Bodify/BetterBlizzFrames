@@ -903,9 +903,9 @@ local function guiGeneralTab()
     addonNameIcon:SetAtlas("gmchat-icon-blizz")
     addonNameIcon:SetSize(22, 22)
     addonNameIcon:SetPoint("LEFT", addonNameText, "RIGHT", -2, -1)
-    local versionText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    versionText:SetPoint("LEFT", addonNameText, "RIGHT", 25, 0)
-    versionText:SetText("v1.0.5")--SetText("v" .. BetterBlizzFramesDB.updates)
+    local verNumber = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    verNumber:SetPoint("LEFT", addonNameText, "RIGHT", 25, 0)
+    verNumber:SetText("v1.0.6")--SetText("v" .. BetterBlizzFramesDB.updates)
 
     ----------------------
     -- General:
