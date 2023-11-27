@@ -169,43 +169,50 @@ local function adjustCastbar(self, frame)
 
     meta.ClearAllPoints(self)
     if frame == TargetFrameSpellBar then
-        local totAdjustment = BetterBlizzFramesDB.targetToTCastbarAdjustment
         if BetterBlizzFramesDB.targetStaticCastbar then
             --meta.SetPoint(self, "TOPLEFT", meta.GetParent(self), "BOTTOMLEFT", 43, 110);
             meta.SetPoint(self, "TOPLEFT", parent, "BOTTOMLEFT", 43 + BetterBlizzFramesDB.targetCastBarXPos, -14 + BetterBlizzFramesDB.targetCastBarYPos);
         elseif BetterBlizzFramesDB.targetDetachCastbar then
             meta.SetPoint(self, "CENTER", UIParent, "CENTER", BetterBlizzFramesDB.targetCastBarXPos, BetterBlizzFramesDB.targetCastBarYPos);
         else
-            local yOffset = 14 - CalculateAuraRowsYOffset(parent, rowHeights)
+            local totAdjustment = BetterBlizzFramesDB.targetToTCastbarAdjustment
+            local buffsOnTop = parent.buffsOnTop
+            local yOffset = 14
+
+            if not buffsOnTop then
+                yOffset = yOffset - CalculateAuraRowsYOffset(parent, rowHeights)
+            end
             -- Check if totAdjustment is true and the ToT frame is shown
             if totAdjustment and parent.haveToT then
-                -- Apply the new logic only when totAdjustment is true
-                local minOffset = -40  -- Your minimum offset
-                local dynamicOffset = 14 - CalculateAuraRowsYOffset(parent, rowHeights)
-
+                local minOffset = -40
                 -- Choose the more negative value
-                yOffset = min(minOffset, dynamicOffset)
+                yOffset = min(minOffset, yOffset)
             end
+
             meta.SetPoint(self, "TOPLEFT", parent, "BOTTOMLEFT", 43 + BetterBlizzFramesDB.targetCastBarXPos, yOffset + BetterBlizzFramesDB.targetCastBarYPos);
         end
     elseif frame == FocusFrameSpellBar then
-        local totFocusAdjustment = BetterBlizzFramesDB.focusToTCastbarAdjustment
         if BetterBlizzFramesDB.focusStaticCastbar then
             --meta.SetPoint(self, "TOPLEFT", meta.GetParent(self), "BOTTOMLEFT", 43, 110);
             meta.SetPoint(self, "TOPLEFT", parent, "BOTTOMLEFT", 43 + BetterBlizzFramesDB.focusCastBarXPos, -14 + BetterBlizzFramesDB.focusCastBarYPos);
         elseif BetterBlizzFramesDB.focusDetachCastbar then
             meta.SetPoint(self, "CENTER", UIParent, "CENTER", BetterBlizzFramesDB.focusCastBarXPos, BetterBlizzFramesDB.focusCastBarYPos);
         else
-            local yOffset = 14 - CalculateAuraRowsYOffset(parent, rowHeights)
+            local totFocusAdjustment = BetterBlizzFramesDB.focusToTCastbarAdjustment
+            local buffsOnTop = parent.buffsOnTop
+            local yOffset = 14
+
+            if not buffsOnTop then
+                yOffset = yOffset - CalculateAuraRowsYOffset(parent, rowHeights)
+            end
+
             -- Check if totAdjustment is true and the ToT frame is shown
             if totFocusAdjustment and parent.haveToT then
-                -- Apply the new logic only when totAdjustment is true
-                local minOffset = -40  -- Your minimum offset
-                local dynamicOffset = 14 - CalculateAuraRowsYOffset(parent, rowHeights)
-
+                local minOffset = -40
                 -- Choose the more negative value
-                yOffset = min(minOffset, dynamicOffset)
+                yOffset = min(minOffset, yOffset)
             end
+
             meta.SetPoint(self, "TOPLEFT", parent, "BOTTOMLEFT", 43 + BetterBlizzFramesDB.focusCastBarXPos, yOffset + BetterBlizzFramesDB.focusCastBarYPos);
         end
     end
@@ -352,16 +359,17 @@ function BBF.AdjustAuras(self, frameType)
     local shortRows = 2
     local controlFirstRows = false
     local darkModeOn = (BetterBlizzFramesDB.darkModeUiAura and BetterBlizzFramesDB.darkModeUi)
+    local buffsOnTop = self.buffsOnTop
 
     local initialOffsetX = (baseOffsetX / auraScale)
     local initialOffsetY = (baseOffsetY / auraScale)
 
     local shortRowCounter = 0
 
-    local function adjustAuraPosition(auras, yOffset, firstRow)
-        local currentYOffset = yOffset + initialOffsetY
+    local function adjustAuraPosition(auras, yOffset, firstRow, buffsOnTop)
+        local adjustmentForBuffsOnTop = -80  -- Height adjustment when buffs are on top
+        local currentYOffset = yOffset + (buffsOnTop and -(initialOffsetY + adjustmentForBuffsOnTop) or initialOffsetY)
         local rowWidths, rowHeights = {}, {}
-
 
         for i, aura in ipairs(auras) do
             aura:SetScale(auraScale)
@@ -371,17 +379,16 @@ function BBF.AdjustAuras(self, frameType)
             local effectiveOffsetX = initialOffsetX --+ xOffsetDarkAdjust
             local effectiveOffsetY = initialOffsetY --+ yOffsetDarkAdjust
 
-
             if controlFirstRows and firstRow and shortRowCounter < shortRows then
-                columnIndex = (i-1) % aurasInShortRow
-                rowIndex = math_ceil(i / aurasInShortRow)
+                columnIndex = (i - 1) % aurasInShortRow
+                rowIndex = math.ceil(i / aurasInShortRow)
                 if columnIndex == 0 and i ~= 1 then
                     shortRowCounter = shortRowCounter + 1 -- Increment the counter when a new row starts
                 end
             else
                 local adjustedIndex = i - (controlFirstRows and firstRow and shortRowCounter * aurasInShortRow or 0)
-                columnIndex = (adjustedIndex-1) % aurasPerRow
-                rowIndex = math_ceil(adjustedIndex / aurasPerRow) + shortRowCounter
+                columnIndex = (adjustedIndex - 1) % aurasPerRow
+                rowIndex = math.ceil(adjustedIndex / aurasPerRow) + shortRowCounter
             end
 
             rowWidths[rowIndex] = rowWidths[rowIndex] or effectiveOffsetX
@@ -389,7 +396,14 @@ function BBF.AdjustAuras(self, frameType)
             if columnIndex == 0 and i ~= 1 then
                 local extraSpacing = aura.darkBorder and 0 or 0
                 local effectiveSpacingY = auraSpacingY + extraSpacing
-                currentYOffset = currentYOffset - (rowHeights[rowIndex-1] or 0) - effectiveSpacingY
+
+                if buffsOnTop then
+                    -- Adjust the Y-offset for stacking upwards when buffs are on top
+                    currentYOffset = currentYOffset + (rowHeights[rowIndex - 1] or 0) + effectiveSpacingY
+                else
+                    -- Existing logic for stacking downwards
+                    currentYOffset = currentYOffset - (rowHeights[rowIndex - 1] or 0) - effectiveSpacingY
+                end
             elseif columnIndex ~= 0 then
                 local extraSpacing = aura.darkBorder and 0 or 0
                 local effectiveSpacingX = auraSpacingX + extraSpacing
@@ -397,11 +411,15 @@ function BBF.AdjustAuras(self, frameType)
             end
 
             local offsetX = rowWidths[rowIndex]
-            rowHeights[rowIndex] = math_max(aura:GetHeight(), (rowHeights[rowIndex] or 0))
+            rowHeights[rowIndex] = math.max(aura:GetHeight(), (rowHeights[rowIndex] or 0))
             rowWidths[rowIndex] = offsetX + aura:GetWidth()
 
             aura:ClearAllPoints()
-            aura:SetPoint("TOPLEFT", self, "BOTTOMLEFT", offsetX, currentYOffset + effectiveOffsetY)
+            if buffsOnTop then
+                aura:SetPoint("BOTTOMLEFT", self, "BOTTOMLEFT", offsetX, currentYOffset + effectiveOffsetY)
+            else
+                aura:SetPoint("TOPLEFT", self, "BOTTOMLEFT", offsetX, currentYOffset + effectiveOffsetY)
+            end
         end
 
         return rowHeights
@@ -568,22 +586,55 @@ function BBF.AdjustAuras(self, frameType)
     local darkmodeAdjustment = darkModeOn and 0 or 0
 
     if not isFriend then
-        -- Adjust debuffs first for enemy
-        self.rowHeights = adjustAuraPosition(debuffs, 0, true)
+        if self.buffsOnTop then
+        -- Adjust debuffs first
+        self.rowHeights = adjustAuraPosition(debuffs, 0, true, buffsOnTop)
         local totalDebuffHeight = sum(self.rowHeights)
-        --local buffRowHeights = adjustAuraPosition(buffs, -totalDebuffHeight - (auraSpacingY * #self.rowHeights), shortRowCounter < shortRows) -- Then adjust buffs
-        local buffRowHeights = adjustAuraPosition(buffs, -totalDebuffHeight - (auraSpacingY * #self.rowHeights) - darkmodeAdjustment, shortRowCounter < shortRows)
+
+        -- Determine the Y-offset for buffs
+        local yOffsetForBuffs
+        if #debuffs == 0 then
+            -- If there are no debuffs, move buffs down by 5 pixels
+            yOffsetForBuffs = totalDebuffHeight + (auraSpacingY * #self.rowHeights) - darkmodeAdjustment + 70
+        else
+            -- If there are debuffs, position buffs below the debuffs
+            yOffsetForBuffs = totalDebuffHeight + (auraSpacingY * #self.rowHeights) - darkmodeAdjustment + 75
+        end
+
+        -- Adjust the position of buffs using the calculated Y-offset
+        local buffRowHeights = adjustAuraPosition(buffs, yOffsetForBuffs, buffsOnTop)
         for _, height in ipairs(buffRowHeights) do
             table_insert(self.rowHeights, height)
         end
+        else
+            -- Adjust debuffs first for enemy
+            self.rowHeights = adjustAuraPosition(debuffs, 0, true, buffsOnTop)
+            local totalDebuffHeight = sum(self.rowHeights)
+            --local buffRowHeights = adjustAuraPosition(buffs, -totalDebuffHeight - (auraSpacingY * #self.rowHeights), shortRowCounter < shortRows) -- Then adjust buffs
+            local buffRowHeights = adjustAuraPosition(buffs, -totalDebuffHeight - (auraSpacingY * #self.rowHeights) - darkmodeAdjustment, shortRowCounter < shortRows, buffsOnTop)
+            for _, height in ipairs(buffRowHeights) do
+                table_insert(self.rowHeights, height)
+            end
+        end
     else
-        -- Adjust buffs first for friendly
-        self.rowHeights = adjustAuraPosition(buffs, 0, true)
-        local totalBuffHeight = sum(self.rowHeights)
-        --local debuffRowHeights = adjustAuraPosition(debuffs, -totalBuffHeight - (auraSpacingY * #self.rowHeights))
-        local debuffRowHeights = adjustAuraPosition(debuffs, -totalBuffHeight - (auraSpacingY * #self.rowHeights) - darkmodeAdjustment)
-        for _, height in ipairs(debuffRowHeights) do
-            table_insert(self.rowHeights, height)
+        if self.buffsOnTop then
+            -- Adjust buffs first for friendly
+            self.rowHeights = adjustAuraPosition(buffs, 0, true, buffsOnTop)
+            local totalBuffHeight = sum(self.rowHeights)
+            local yOffsetForDebuffs = totalBuffHeight + (auraSpacingY * #self.rowHeights) - darkmodeAdjustment + 80
+            local debuffRowHeights = adjustAuraPosition(debuffs, yOffsetForDebuffs, buffsOnTop)
+            for _, height in ipairs(debuffRowHeights) do
+                table_insert(self.rowHeights, height)
+            end
+        else
+            -- Adjust buffs first for friendly
+            self.rowHeights = adjustAuraPosition(buffs, 0, true, buffsOnTop)
+            local totalBuffHeight = sum(self.rowHeights)
+            --local debuffRowHeights = adjustAuraPosition(debuffs, -totalBuffHeight - (auraSpacingY * #self.rowHeights))
+            local debuffRowHeights = adjustAuraPosition(debuffs, -totalBuffHeight - (auraSpacingY * #self.rowHeights) - darkmodeAdjustment, buffsOnTop)
+            for _, height in ipairs(debuffRowHeights) do
+                table_insert(self.rowHeights, height)
+            end
         end
     end
 

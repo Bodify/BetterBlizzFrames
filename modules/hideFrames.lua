@@ -237,6 +237,7 @@ function BBF.HideFrames()
             ChatFrameMenuButton:SetAlpha(1)
             hideChatFrameTextures()
         end
+        BBF.HidePartyInArena()
     end
 end
 
@@ -258,47 +259,46 @@ TargetLevelHider:SetScript("OnEvent", OnTargetOrFocusChanged)
 TargetLevelHider:RegisterEvent("PLAYER_TARGET_CHANGED")
 TargetLevelHider:RegisterEvent("PLAYER_FOCUS_CHANGED")
 
-
 --------------------------------------
 -- Hide Party Frames in Arena
 --------------------------------------
-local function SetPartyFrameAlpha(alphaValue)
-    local framesToAdjust = {
-        "PartyFrame",
-        "PartyMemberBuffTooltip",
-        "CompactPartyFrameMember1Background",
-        "CompactPartyFrameMember2Background",
-        "CompactPartyFrameMember3Background",
-        "CompactPartyFrameMember1SelectionHighlight",
-        "CompactPartyFrameMember2SelectionHighlight",
-        "CompactPartyFrameMember3SelectionHighlight"
-    }
-
-    for _, frameName in ipairs(framesToAdjust) do
-        local frame = _G[frameName]
-        if frame then
-            frame:SetAlpha(alphaValue)
-        end
-    end
-end
-
+local partyAlpha = 1
 function BBF.HidePartyInArena()
-    local partyFrameHider = CreateFrame("Frame")
-    partyFrameHider:RegisterEvent("PLAYER_ENTERING_BATTLEGROUND")
-    partyFrameHider:RegisterEvent("PLAYER_ENTERING_WORLD")
+    if BetterBlizzFramesDB.hidePartyFramesInArena and not partyFrameHider then
+        local partyFrameHider = CreateFrame("Frame")
 
-    partyFrameHider:SetScript("OnEvent", function(self, event)
-        if event == "PLAYER_ENTERING_BATTLEGROUND" or (event == "PLAYER_ENTERING_WORLD" and not C_PvP.IsArena()) then
-            local alphaValue = event == "PLAYER_ENTERING_BATTLEGROUND" and 0 or 1
-            SetPartyFrameAlpha(alphaValue)
+        partyFrameHider:SetScript("OnEvent", function(self, event)
+            if event == "PLAYER_ENTERING_BATTLEGROUND" and BetterBlizzFramesDB.hidePartyFramesInArena then
+                partyAlpha = 0
+            elseif event == "PLAYER_ENTERING_WORLD" and C_PvP.IsArena() == false then
+                partyAlpha = 1
+            end
+
+            PartyFrame:SetAlpha(partyAlpha)
+            PartyMemberBuffTooltip:SetAlpha(partyAlpha)
+            CompactPartyFrameMember1Background:SetAlpha(partyAlpha)
+            CompactPartyFrameMember2Background:SetAlpha(partyAlpha)
+            CompactPartyFrameMember3Background:SetAlpha(partyAlpha)
+            CompactPartyFrameMember1SelectionHighlight:SetAlpha(partyAlpha)
+            CompactPartyFrameMember2SelectionHighlight:SetAlpha(partyAlpha)
+            CompactPartyFrameMember3SelectionHighlight:SetAlpha(partyAlpha)
+        end)
+        partyFrameHider:RegisterEvent("PLAYER_ENTERING_BATTLEGROUND")
+        partyFrameHider:RegisterEvent("PLAYER_ENTERING_WORLD")
+        if not C_PvP.IsArena() == false then
+            partyAlpha = 0
         end
-    end)
-
-    if BetterBlizzFramesDB.hidePartyFramesInArena then
-        SetPartyFrameAlpha(C_PvP.IsArena() and 0 or 1)
-    else
-        partyFrameHider:UnregisterEvent("PLAYER_ENTERING_BATTLEGROUND")
-        partyFrameHider:UnregisterEvent("PLAYER_ENTERING_WORLD")
-        SetPartyFrameAlpha(1)
+    elseif BetterBlizzFramesDB.hidePartyFramesInArena and partyFrameHider then
+        if not C_PvP.IsArena() == false then
+            partyAlpha = 0
+        else
+            partyAlpha = 1
+        end
+    elseif not BetterBlizzFramesDB.hidePartyFramesInArena then
+        if partyFrameHider then
+            partyFrameHider:UnregisterEvent("PLAYER_ENTERING_BATTLEGROUND")
+            partyFrameHider:UnregisterEvent("PLAYER_ENTERING_WORLD")
+        end
+        partyAlpha = 1
     end
 end

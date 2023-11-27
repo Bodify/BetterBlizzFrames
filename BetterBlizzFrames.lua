@@ -6,8 +6,9 @@ BBF = BBF or {}
 -- Things are getting more messy need a lot of cleaning lol
 
 local addonVersion = "1.00" --too afraid to to touch for now
-local addonUpdates = "1.0.0"
-BBF.VersionNumber = "1.0.7"
+local addonUpdates = "1.0.8"
+local sendUpdate = true
+BBF.VersionNumber = addonUpdates
 BBF.variablesLoaded = false
 
 local defaultSettings = {
@@ -271,10 +272,12 @@ StaticPopupDialogs["BetterBlizzFrames_COMBAT_WARNING"] = {
 
 -- Update message
 local function SendUpdateMessage()
-    C_Timer.After(7, function()
-        DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames " .. addonUpdates .. ":")
-        DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a New thing. Access settings with /BBF")
-    end)
+    if sendUpdate then
+        C_Timer.After(7, function()
+            DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames " .. addonUpdates .. ":")
+            DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Added \"Buffs on top\" aura logic for target and focus. Access settings with /bbf")
+        end)
+    end
 end
 
 
@@ -616,7 +619,7 @@ Frame:RegisterEvent("PLAYER_LOGIN")
 --Frame:RegisterEvent("PLAYER_ENTERING_WORLD")
 Frame:SetScript("OnEvent", function(...)
 
-    --CheckForUpdate()
+    CheckForUpdate()
     --BBF.HideFrames()
     DisableClickForClassSpecificFrame()
     BBF.MoveToTFrames()

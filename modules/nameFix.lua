@@ -56,7 +56,7 @@ local specIDToNameShort = {
     [71] = "Arms", [72] = "Fury", [73] = "Prot",
 }
 
-local function CheckUnit(frame, unit, party)
+local function CheckUnit(frame, unit, party, tot)
     local originalNameObject = frame.name or frame.Name
     local newName
     local showSpecName = BetterBlizzFramesDB.showSpecName
@@ -75,6 +75,7 @@ local function CheckUnit(frame, unit, party)
         frame.cleanName:SetText(GetUnitName(unit, true))
         frame.cleanName:SetAlpha(1)
         originalNameObject:SetAlpha(0)
+        return
     elseif UnitIsUnit(unit, "party1") then
         local specID
         local Details = Details
@@ -88,7 +89,9 @@ local function CheckUnit(frame, unit, party)
         end
 
         if specName then
-            if showSpecName and showArenaID then
+            if tot then
+                newName = "Party 1"
+            elseif showSpecName and showArenaID then
                 newName = specName .. " 1"
             elseif showSpecName then
                 newName = specName
@@ -99,6 +102,7 @@ local function CheckUnit(frame, unit, party)
             frame.cleanName:SetAlpha(1)
             originalNameObject:SetAlpha(0)
         end
+        return
 
     elseif UnitIsUnit(unit, "party2") then
         local specID
@@ -113,7 +117,9 @@ local function CheckUnit(frame, unit, party)
         end
 
         if specName then
-            if showSpecName and showArenaID then
+            if tot then
+                newName = "Party 2"
+            elseif showSpecName and showArenaID then
                 newName = specName .. " 2"
             elseif showSpecName then
                 newName = specName
@@ -124,6 +130,7 @@ local function CheckUnit(frame, unit, party)
             frame.cleanName:SetAlpha(1)
             originalNameObject:SetAlpha(0)
         end
+        return
 
     elseif UnitIsUnit(unit, "arena1") then
         local specID = GetArenaOpponentSpec(1)
@@ -144,6 +151,7 @@ local function CheckUnit(frame, unit, party)
             frame.cleanName:SetAlpha(1)
             originalNameObject:SetAlpha(0)
         end
+        return
 
     elseif UnitIsUnit(unit, "arena2") then
         local specID = GetArenaOpponentSpec(2)
@@ -164,6 +172,7 @@ local function CheckUnit(frame, unit, party)
             frame.cleanName:SetAlpha(1)
             originalNameObject:SetAlpha(0)
         end
+        return
 
     elseif UnitIsUnit(unit, "arena3") then
         local specID = GetArenaOpponentSpec(3)
@@ -184,11 +193,13 @@ local function CheckUnit(frame, unit, party)
             frame.cleanName:SetAlpha(1)
             originalNameObject:SetAlpha(0)
         end
+        return
     else
         if hidePartyNames and party then
             frame.cleanName:SetAlpha(0)
             originalNameObject:SetAlpha(0)
             --originalNameObject:SetAlpha(1)
+            return
         else
             local removeRealm = BetterBlizzFramesDB.removeRealmNames
             local isPlayer = UnitIsPlayer(unit)
@@ -208,7 +219,7 @@ local function CheckUnit(frame, unit, party)
     end
 end
 
-function ChangeName(frame, unit, party)
+function ChangeName(frame, unit, party, tot)
     local originalNameObject = frame.name or frame.Name
     local name = GetUnitName(unit, true)
     local newName
@@ -309,7 +320,7 @@ function ChangeName(frame, unit, party)
             end
         else
             if BetterBlizzFramesDB.targetAndFocusArenaNames then
-                CheckUnit(frame, unit)
+                CheckUnit(frame, unit, nil, tot)
 --[=[
             else
                 if frame.cleanName then
@@ -393,8 +404,8 @@ local function TargetAndFocusNameChange()
     if BetterBlizzFramesDB.targetAndFocusArenaNames or BetterBlizzFramesDB.removeRealmNames or BetterBlizzFramesDB.classColorTargetNames then
         ChangeName(TargetFrame.TargetFrameContent.TargetFrameContentMain, "target")
         ChangeName(FocusFrame.TargetFrameContent.TargetFrameContentMain, "focus")
-        ChangeName(TargetFrame.totFrame, "targettarget")
-        ChangeName(FocusFrame.totFrame, "focustarget")
+        ChangeName(TargetFrame.totFrame, "targettarget", nil, true)
+        ChangeName(FocusFrame.totFrame, "focustarget", nil, true)
     end
 end
 
@@ -507,10 +518,9 @@ local function UpdateToTName(frame, unit)
     local newName = name
     local isInArena = IsActiveBattlefieldArena()
     if BetterBlizzFramesDB.targetAndFocusArenaNames and isInArena then
-        CheckUnit(frame, unit)
+        CheckUnit(frame, unit, nil, true)
         return
-    end
-    if isPlayer and removeRealmNames then
+    elseif isPlayer and removeRealmNames then
         newName = string.gsub(name, "-.*$", "")
         if frame.cleanName then
             frame.cleanName:SetText(newName)
@@ -549,11 +559,26 @@ function BBF.AllCaller()
     end
 end
 
-function BBF.RunOnUpdateName()
+local function RemoveRealmName(frame)
+    local name = GetUnitName(frame.unit)
+    if name then
+        name = string.gsub(name, " %(%*%)$", "")
+        frame.name:SetText(name)
+    end
+end
+
+function BBF.RunOnUpdateName(frame)
     local hidePartyName = BetterBlizzFramesDB.hidePartyNames
     local hidePartyRole = BetterBlizzFramesDB.hidePartyRoles
+    local removeRealmName = BetterBlizzFramesDB.removeRealmNames
     if hidePartyName or hidePartyRole then
         BBF.OnUpdateName()
+    end
+    if not frame or frame:IsForbidden() then return end
+    local isNameplate = frame.unit and frame.unit:find("nameplate")
+
+    if removeRealmName and not isNameplate then
+        RemoveRealmName(frame)
     end
 end
 
@@ -580,7 +605,6 @@ function BBF.OnUpdateName()
                     compactPartyMember.cleanName:SetAlpha(0)
                 end
             end
-
 ]=]
 
             -- Hide the role icon if hidePartyRoles is true
@@ -612,7 +636,6 @@ function BBF.OnUpdateName()
                     end
                 end
             end
-
 ]=]
 
         else
