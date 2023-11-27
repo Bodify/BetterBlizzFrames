@@ -358,7 +358,7 @@ function BBF.AdjustAuras(self, frameType)
     local aurasInShortRow = 3
     local shortRows = 2
     local controlFirstRows = false
-    local darkModeOn = (BetterBlizzFramesDB.darkModeUiAura and BetterBlizzFramesDB.darkModeUi)
+    local darkModeOn = (db.darkModeUiAura and db.darkModeUi)
     local buffsOnTop = self.buffsOnTop
 
     local initialOffsetX = (baseOffsetX / auraScale)
@@ -587,25 +587,26 @@ function BBF.AdjustAuras(self, frameType)
 
     if not isFriend then
         if self.buffsOnTop then
-        -- Adjust debuffs first
-        self.rowHeights = adjustAuraPosition(debuffs, 0, true, buffsOnTop)
-        local totalDebuffHeight = sum(self.rowHeights)
+            local userYOffset = BetterBlizzFramesDB.targetAndFocusAuraOffsetY
+            -- Adjust debuffs first
+            self.rowHeights = adjustAuraPosition(debuffs, userYOffset, true, buffsOnTop)
+            local totalDebuffHeight = sum(self.rowHeights)
 
-        -- Determine the Y-offset for buffs
-        local yOffsetForBuffs
-        if #debuffs == 0 then
-            -- If there are no debuffs, move buffs down by 5 pixels
-            yOffsetForBuffs = totalDebuffHeight + (auraSpacingY * #self.rowHeights) - darkmodeAdjustment + 70
-        else
-            -- If there are debuffs, position buffs below the debuffs
-            yOffsetForBuffs = totalDebuffHeight + (auraSpacingY * #self.rowHeights) - darkmodeAdjustment + 75
-        end
+            -- Determine the Y-offset for buffs
+            local yOffsetForBuffs
+            if #debuffs == 0 then
+                -- If there are no debuffs, move buffs down by 5 pixels
+                yOffsetForBuffs = totalDebuffHeight + (auraSpacingY * #self.rowHeights) - darkmodeAdjustment + 0 + userYOffset
+            else
+                -- If there are debuffs, position buffs below the debuffs
+                yOffsetForBuffs = totalDebuffHeight + (auraSpacingY * #self.rowHeights) - darkmodeAdjustment + 5 + userYOffset
+            end
 
-        -- Adjust the position of buffs using the calculated Y-offset
-        local buffRowHeights = adjustAuraPosition(buffs, yOffsetForBuffs, buffsOnTop)
-        for _, height in ipairs(buffRowHeights) do
-            table_insert(self.rowHeights, height)
-        end
+            -- Adjust the position of buffs using the calculated Y-offset
+            local buffRowHeights = adjustAuraPosition(buffs, yOffsetForBuffs, nil, buffsOnTop)
+            for _, height in ipairs(buffRowHeights) do
+                table_insert(self.rowHeights, height)
+            end
         else
             -- Adjust debuffs first for enemy
             self.rowHeights = adjustAuraPosition(debuffs, 0, true, buffsOnTop)
@@ -618,11 +619,21 @@ function BBF.AdjustAuras(self, frameType)
         end
     else
         if self.buffsOnTop then
+            local userYOffset = BetterBlizzFramesDB.targetAndFocusAuraOffsetY
             -- Adjust buffs first for friendly
-            self.rowHeights = adjustAuraPosition(buffs, 0, true, buffsOnTop)
+            self.rowHeights = adjustAuraPosition(buffs, userYOffset, true, buffsOnTop)
             local totalBuffHeight = sum(self.rowHeights)
-            local yOffsetForDebuffs = totalBuffHeight + (auraSpacingY * #self.rowHeights) - darkmodeAdjustment + 80
-            local debuffRowHeights = adjustAuraPosition(debuffs, yOffsetForDebuffs, buffsOnTop)
+
+            local yOffsetForDebuffs
+            if #buffs == 0 then
+                -- If there are no debuffs, move buffs down by 5 pixels
+                yOffsetForDebuffs = totalBuffHeight + (auraSpacingY * #self.rowHeights) - darkmodeAdjustment + 0 + userYOffset
+            else
+                -- If there are debuffs, position buffs below the debuffs
+                yOffsetForDebuffs = totalBuffHeight + (auraSpacingY * #self.rowHeights) - darkmodeAdjustment + 5 + userYOffset
+            end
+
+            local debuffRowHeights = adjustAuraPosition(debuffs, yOffsetForDebuffs, nil, buffsOnTop)
             for _, height in ipairs(debuffRowHeights) do
                 table_insert(self.rowHeights, height)
             end
