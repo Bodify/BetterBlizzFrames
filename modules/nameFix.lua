@@ -526,7 +526,9 @@ local function UpdateToTName(frame, unit)
             frame.cleanName:SetText(newName)
         end
     else
-        frame.cleanName:SetText(name)
+        if frame.cleanName then
+            frame.cleanName:SetText(name)
+        end
     end
 end
 
