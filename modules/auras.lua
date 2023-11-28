@@ -18,7 +18,7 @@ local table_sort = table.sort
 local math_max = math.max
 local print = print
 
-function BBF.isInWhitelist(spellName, spellId)
+local function isInWhitelist(spellName, spellId)
     for _, entry in pairs(BetterBlizzFramesDB["auraWhitelist"]) do
         if (entry.name and spellName and string.lower(entry.name) == string.lower(spellName)) or entry.id == spellId then
             return true
@@ -27,7 +27,7 @@ function BBF.isInWhitelist(spellName, spellId)
     return false
 end
 
-function BBF.isInBlacklist(spellName, spellId)
+local function isInBlacklist(spellName, spellId)
     for _, entry in pairs(BetterBlizzFramesDB["auraBlacklist"]) do
         if (entry.name and spellName and string.lower(entry.name) == string.lower(spellName)) or entry.id == spellId then
             return true
@@ -36,18 +36,7 @@ function BBF.isInBlacklist(spellName, spellId)
     return false
 end
 
-function BBF.isAuraImportant(spellName, spellId)
-    for _, entry in pairs(BetterBlizzFramesDB["auraWhitelist"]) do
-        if (entry.name and spellName and string.lower(entry.name) == string.lower(spellName)) or entry.id == spellId then
-            if entry.flags and entry.flags.important then
-                return true
-            end
-        end
-    end
-    return false
-end
-
-function BBF.getAuraDetails(spellName, spellId)
+local function GetAuraDetails(spellName, spellId)
     for _, entry in pairs(BetterBlizzFramesDB["auraWhitelist"]) do
         if (entry.name and spellName and string.lower(entry.name) == string.lower(spellName)) or entry.id == spellId then
             local isImportant = entry.flags and entry.flags.important or false
@@ -58,7 +47,7 @@ function BBF.getAuraDetails(spellName, spellId)
     return false, false, false
 end
 
-function BBF.ShouldShowBuff(unit, auraData, frameType)
+local function ShouldShowBuff(unit, auraData, frameType)
     local spellName = auraData.name
     local spellId = auraData.spellId
     local duration = auraData.duration
@@ -71,12 +60,12 @@ function BBF.ShouldShowBuff(unit, auraData, frameType)
         -- Buffs
         if BetterBlizzFramesDB["targetBuffEnable"] and auraData.isHelpful then
             local isTargetFriendly = UnitIsFriend("target", "player")
-            local isInWhitelist, isImportant, isPandemic = BBF.getAuraDetails(spellName, spellId)
+            local isInWhitelist, isImportant, isPandemic = GetAuraDetails(spellName, spellId)
             local filterWatchlist = BetterBlizzFramesDB["targetBuffFilterWatchList"] and isInWhitelist
             local filterLessMinite = BetterBlizzFramesDB["targetBuffFilterLessMinite"] and (duration < 61 and duration ~= 0 and expirationTime ~= 0)
             local filterPurgeable = BetterBlizzFramesDB["targetBuffFilterPurgeable"] and isPurgeable
             local filterOnlyMe = BetterBlizzFramesDB["targetBuffFilterOnlyMe"] and isTargetFriendly and (caster == "player" or (caster == "pet" and UnitIsUnit(caster, "pet")))
-            if BBF.isInBlacklist(spellName, spellId) then return end
+            if isInBlacklist(spellName, spellId) then return end
             if filterWatchlist or filterLessMinite or filterPurgeable or filterOnlyMe or isImportant or isPandemic then return true, isImportant, isPandemic end
             if not BetterBlizzFramesDB["targetBuffFilterLessMinite"] and not BetterBlizzFramesDB["targetBuffFilterWatchList"] and not BetterBlizzFramesDB["targetBuffFilterPurgeable"] and not (BetterBlizzFramesDB["targetBuffFilterOnlyMe"] and isTargetFriendly) then
                 return true
@@ -84,12 +73,12 @@ function BBF.ShouldShowBuff(unit, auraData, frameType)
         end
         -- Debuffs
         if BetterBlizzFramesDB["targetdeBuffEnable"] and auraData.isHarmful then
-            local isInWhitelist, isImportant, isPandemic = BBF.getAuraDetails(spellName, spellId)
+            local isInWhitelist, isImportant, isPandemic = GetAuraDetails(spellName, spellId)
             local filterWatchlist = BetterBlizzFramesDB["targetdeBuffFilterWatchList"] and isInWhitelist
             local filterLessMinite = BetterBlizzFramesDB["targetdeBuffFilterLessMinite"] and (duration < 61 and duration ~= 0 and expirationTime ~= 0)
             local filterBlizzard = BetterBlizzFramesDB["targetdeBuffFilterBlizzard"] and BlizzardShouldShowDebuffs
             local filterOnlyMe = BetterBlizzFramesDB["targetdeBuffFilterOnlyMe"] and (caster == "player" or (caster == "pet" and UnitIsUnit(caster, "pet")))
-            if BBF.isInBlacklist(spellName, spellId) then return end
+            if isInBlacklist(spellName, spellId) then return end
             if filterWatchlist or filterLessMinite or filterBlizzard or filterOnlyMe or isImportant or isPandemic then return true, isImportant, isPandemic end
             if not BetterBlizzFramesDB["targetdeBuffFilterLessMinite"] and not BetterBlizzFramesDB["targetdeBuffFilterWatchList"] and not BetterBlizzFramesDB["targetdeBuffFilterBlizzard"] and not BetterBlizzFramesDB["targetdeBuffFilterOnlyMe"] then
                 return true
@@ -99,13 +88,13 @@ function BBF.ShouldShowBuff(unit, auraData, frameType)
     elseif frameType == "focus" then
         -- Buffs
         if BetterBlizzFramesDB["focusBuffEnable"] and auraData.isHelpful then
-            local isInWhitelist, isImportant, isPandemic = BBF.getAuraDetails(spellName, spellId)
+            local isInWhitelist, isImportant, isPandemic = GetAuraDetails(spellName, spellId)
             local isTargetFriendly = UnitIsFriend("focus", "player")
             local filterWatchlist = BetterBlizzFramesDB["focusBuffFilterWatchList"] and isInWhitelist
             local filterLessMinite = BetterBlizzFramesDB["focusBuffFilterLessMinite"] and (duration < 61 and duration ~= 0 and expirationTime ~= 0)
             local filterPurgeable = BetterBlizzFramesDB["focusBuffFilterPurgeable"] and isPurgeable
             local filterOnlyMe = BetterBlizzFramesDB["focusBuffFilterOnlyMe"] and isTargetFriendly and (caster == "player" or (caster == "pet" and UnitIsUnit(caster, "pet")))
-            if BBF.isInBlacklist(spellName, spellId) then return end
+            if isInBlacklist(spellName, spellId) then return end
             if filterWatchlist or filterLessMinite or filterPurgeable or filterOnlyMe or isImportant or isPandemic then return true, isImportant, isPandemic end
             if not BetterBlizzFramesDB["focusBuffFilterLessMinite"] and not BetterBlizzFramesDB["focusBuffFilterWatchList"] and not BetterBlizzFramesDB["focusBuffFilterPurgeable"] and not BetterBlizzFramesDB["focusBuffFilterOnlyMe"] then
                 return true
@@ -113,12 +102,12 @@ function BBF.ShouldShowBuff(unit, auraData, frameType)
         end
         -- Debuffs
         if BetterBlizzFramesDB["focusdeBuffEnable"] and auraData.isHarmful then
-            local isInWhitelist, isImportant, isPandemic = BBF.getAuraDetails(spellName, spellId)
+            local isInWhitelist, isImportant, isPandemic = GetAuraDetails(spellName, spellId)
             local filterWatchlist = BetterBlizzFramesDB["focusdeBuffFilterWatchList"] and isInWhitelist
             local filterLessMinite = BetterBlizzFramesDB["focusdeBuffFilterLessMinite"] and (duration < 61 and duration ~= 0 and expirationTime ~= 0)
             local filterBlizzard = BetterBlizzFramesDB["focusdeBuffFilterBlizzard"] and BlizzardShouldShowDebuffs
             local filterOnlyMe = BetterBlizzFramesDB["focusdeBuffFilterOnlyMe"] and (caster == "player" or (caster == "pet" and UnitIsUnit(caster, "pet")))
-            if BBF.isInBlacklist(spellName, spellId) then return end
+            if isInBlacklist(spellName, spellId) then return end
             if filterWatchlist or filterLessMinite or filterBlizzard or filterOnlyMe or isImportant or isPandemic then return true, isImportant, isPandemic end
             if not BetterBlizzFramesDB["focusdeBuffFilterLessMinite"] and not BetterBlizzFramesDB["focusdeBuffFilterWatchList"] and not BetterBlizzFramesDB["focusdeBuffFilterBlizzard"] and not BetterBlizzFramesDB["focusdeBuffFilterOnlyMe"] then
                 return true
@@ -129,10 +118,10 @@ function BBF.ShouldShowBuff(unit, auraData, frameType)
         if frameType == "playerBuffFrame" then
             -- Buffs
             if BetterBlizzFramesDB["PlayerAuraFrameBuffEnable"] and (auraData.auraType == "Buff" or auraData.auraType == "TempEnchant") then
-                local isInWhitelist, isImportant, isPandemic = BBF.getAuraDetails(spellName, spellId)
+                local isInWhitelist, isImportant, isPandemic = GetAuraDetails(spellName, spellId)
                 local filterWatchlist = BetterBlizzFramesDB["PlayerAuraFrameBuffFilterWatchList"] and isInWhitelist
                 local filterLessMinite = BetterBlizzFramesDB["PlayerAuraFrameBuffFilterLessMinite"] and (duration < 61 and duration ~= 0 and expirationTime ~= 0)
-                if BBF.isInBlacklist(spellName, spellId) then return end
+                if isInBlacklist(spellName, spellId) then return end
                 if filterWatchlist or filterLessMinite or isImportant then return true, isImportant, isPandemic end
                 if not BetterBlizzFramesDB["PlayerAuraFrameBuffFilterLessMinite"] and not BetterBlizzFramesDB["PlayerAuraFrameBuffFilterWatchList"] then
                     return true
@@ -141,10 +130,10 @@ function BBF.ShouldShowBuff(unit, auraData, frameType)
         else
             -- Debuffs
             if BetterBlizzFramesDB["PlayerAuraFramedeBuffEnable"] and auraData.auraType == "Debuff" then
-                local isInWhitelist, isImportant, isPandemic = BBF.getAuraDetails(spellName, spellId)
+                local isInWhitelist, isImportant, isPandemic = GetAuraDetails(spellName, spellId)
                 local filterWatchlist = BetterBlizzFramesDB["PlayerAuraFramedeBuffFilterWatchList"] and isInWhitelist
                 local filterLessMinite = BetterBlizzFramesDB["PlayerAuraFramedeBuffFilterLessMinite"] and (duration < 61 and duration ~= 0 and expirationTime ~= 0)
-                if BBF.isInBlacklist(spellName, spellId) then return end
+                if isInBlacklist(spellName, spellId) then return end
                 if filterWatchlist or filterLessMinite or isImportant then return true, isImportant, isPandemic end
                 if not BetterBlizzFramesDB["PlayerAuraFramedeBuffFilterLessMinite"] and not BetterBlizzFramesDB["PlayerAuraFramedeBuffFilterWatchList"] then
                     return true
@@ -341,9 +330,7 @@ local function StartCheckBuffsTimer()
     end
 end
 
-
-
-function BBF.AdjustAuras(self, frameType)
+local function AdjustAuras(self, frameType)
     if not BetterBlizzFramesDB.playerAuraFiltering then return end
 
     -- Cache commonly used DB values to avoid table lookups
@@ -439,11 +426,11 @@ function BBF.AdjustAuras(self, frameType)
             local shouldShowAura, isImportant, isPandemic
 
             if frameType == "target" then
-                shouldShowAura, isImportant, isPandemic = BBF.ShouldShowBuff(unit, auraData, "target")
+                shouldShowAura, isImportant, isPandemic = ShouldShowBuff(unit, auraData, "target")
                 isImportant = isImportant and BetterBlizzFramesDB.targetImportantAuraGlow
                 isPandemic = isPandemic and BetterBlizzFramesDB.targetdeBuffPandemicGlow
             elseif frameType == "focus" then
-                shouldShowAura, isImportant, isPandemic = BBF.ShouldShowBuff(unit, auraData, "focus")
+                shouldShowAura, isImportant, isPandemic = ShouldShowBuff(unit, auraData, "focus")
                 isImportant = isImportant and BetterBlizzFramesDB.focusImportantAuraGlow
                 isPandemic = isPandemic and BetterBlizzFramesDB.focusdeBuffPandemicGlow
             end
@@ -684,12 +671,12 @@ local function HideFocusToTDebuffs()
 end
 
 hooksecurefunc(TargetFrame, "UpdateAuras", function(self)
-    BBF.AdjustAuras(self, "target")
+    AdjustAuras(self, "target")
     HideTargetToTDebuffs()
 end)
 
 hooksecurefunc(FocusFrame, "UpdateAuras", function(self)
-    BBF.AdjustAuras(self, "focus")
+    AdjustAuras(self, "focus")
     HideFocusToTDebuffs()
 end)
 
@@ -699,6 +686,30 @@ local toggleIconGlobal = nil
 local shouldKeepAurasVisible = false
 local hiddenAuras = 0
 --local BetterBlizzFramesDB.showHiddenAurasIcon = true
+
+local function UpdateHiddenAurasCount()
+    if not BetterBlizzFramesDB.showHiddenAurasIcon then
+        if toggleIconGlobal then
+            toggleIconGlobal:Hide()
+            return
+        end
+    else
+        if toggleIconGlobal then
+            toggleIconGlobal:Show()
+        end
+    end
+
+    if toggleIconGlobal then
+        toggleIconGlobal.hiddenAurasCount:SetText(hiddenAuras)
+        if hiddenAuras == 1 then
+            toggleIconGlobal.hiddenAurasCount:SetPoint("CENTER", ToggleHiddenAurasButton, "CENTER", -1.5, 0)
+        elseif hiddenAuras == 0 then
+            toggleIconGlobal:Hide()
+        else
+            toggleIconGlobal.hiddenAurasCount:SetPoint("CENTER", ToggleHiddenAurasButton, "CENTER", 0, 0)
+        end
+    end
+end
 
 local function ResetHiddenAurasCount()
     hiddenAuras = 0
@@ -783,32 +794,7 @@ local function CreateToggleIcon()
     return toggleIcon
 end
 
-function UpdateHiddenAurasCount()
-    if not BetterBlizzFramesDB.showHiddenAurasIcon then
-        if toggleIconGlobal then
-            toggleIconGlobal:Hide()
-            return
-        end
-    else
-        if toggleIconGlobal then
-            toggleIconGlobal:Show()
-        end
-    end
-
-    if toggleIconGlobal then
-        toggleIconGlobal.hiddenAurasCount:SetText(hiddenAuras)
-        if hiddenAuras == 1 then
-            toggleIconGlobal.hiddenAurasCount:SetPoint("CENTER", ToggleHiddenAurasButton, "CENTER", -1.5, 0)
-        elseif hiddenAuras == 0 then
-            toggleIconGlobal:Hide()
-        else
-            toggleIconGlobal.hiddenAurasCount:SetPoint("CENTER", ToggleHiddenAurasButton, "CENTER", 0, 0)
-        end
-    end
-end
-
-
-function BBF.PersonalBuffFrameFilterAndGrid(self)
+local function PersonalBuffFrameFilterAndGrid(self)
     local auraFilterOn = BetterBlizzFramesDB.playerAuraFiltering
     if not auraFilterOn then return end
     ResetHiddenAurasCount()
@@ -941,7 +927,7 @@ function BBF.PersonalBuffFrameFilterAndGrid(self)
                 end
 
                 local shouldShowAura, isImportant, isPandemic
-                shouldShowAura, isImportant, isPandemic = BBF.ShouldShowBuff(unit, auraData, "playerBuffFrame")
+                shouldShowAura, isImportant, isPandemic = ShouldShowBuff(unit, auraData, "playerBuffFrame")
                 isImportant = isImportant and BetterBlizzFramesDB.playerAuraImportantGlow
                 -- Nonprint logic
                 if shouldShowAura then
@@ -1008,18 +994,7 @@ end
 local tooltip = CreateFrame("GameTooltip", "AuraTooltip", nil, "GameTooltipTemplate")
 tooltip:SetOwner(WorldFrame, "ANCHOR_NONE")
 
-local scannerTooltip = CreateFrame("GameTooltip", "ScannerTooltip", nil, "GameTooltipTemplate")
-scannerTooltip:SetOwner(WorldFrame, "ANCHOR_NONE")
-
-function BBF.GetEnchantName(enchantId)
-    scannerTooltip:ClearLines()
-    -- The enchant link format is: "|cffffd000|Hitem:12345:::::::::::::|h[Enchant Name]|h|r"
-    scannerTooltip:SetHyperlink("item:" .. enchantId)
-    local enchantName = ScannerTooltipTextLeft1:GetText()
-    return enchantName
-end
-
-function BBF.PersonalDebuffFrameFilterAndGrid(self)
+local function PersonalDebuffFrameFilterAndGrid(self)
     local auraFilterOn = BetterBlizzFramesDB.playerAuraFiltering
     if not auraFilterOn then return end
     local nextAuraInfoIndex = 1;
@@ -1154,7 +1129,7 @@ function BBF.PersonalDebuffFrameFilterAndGrid(self)
                         end
                     end)
                 end
-                if BBF.ShouldShowBuff(unit, auraData, "playerDebuffFrame") then
+                if ShouldShowBuff(unit, auraData, "playerDebuffFrame") then
                     -- Check the tooltip for specified keywords
                     tooltip:ClearLines()
                     tooltip:SetHyperlink("spell:" .. auraData.spellId)
@@ -1203,12 +1178,12 @@ function BBF.PersonalDebuffFrameFilterAndGrid(self)
     end
 end
 
-hooksecurefunc(BuffFrame, "UpdateAuraButtons", BBF.PersonalBuffFrameFilterAndGrid)
-hooksecurefunc(DebuffFrame, "UpdateAuraButtons", BBF.PersonalDebuffFrameFilterAndGrid)
+hooksecurefunc(BuffFrame, "UpdateAuraButtons", PersonalBuffFrameFilterAndGrid)
+hooksecurefunc(DebuffFrame, "UpdateAuraButtons", PersonalDebuffFrameFilterAndGrid)
 
 function BBF.RefreshAllAuraFrames()
-    BBF.PersonalBuffFrameFilterAndGrid(BuffFrame)
-    BBF.PersonalDebuffFrameFilterAndGrid(DebuffFrame)
-    BBF.AdjustAuras(TargetFrame, "target")
-    BBF.AdjustAuras(FocusFrame, "focus")
+    PersonalBuffFrameFilterAndGrid(BuffFrame)
+    PersonalDebuffFrameFilterAndGrid(DebuffFrame)
+    AdjustAuras(TargetFrame, "target")
+    AdjustAuras(FocusFrame, "focus")
 end

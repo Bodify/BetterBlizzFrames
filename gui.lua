@@ -2,6 +2,7 @@ BetterBlizzFramesDB = BetterBlizzFramesDB or {}
 BBF = BBF or {}
 
 BetterBlizzFrames = nil
+local LibDD = LibStub:GetLibrary("LibUIDropDownMenu-4.0")
 --local anchorPoints = {"CENTER", "TOPLEFT", "TOP", "TOPRIGHT", "LEFT", "RIGHT", "BOTTOMLEFT", "BOTTOM", "BOTTOMRIGHT"}
 local anchorPoints = {"CENTER", "TOP", "LEFT", "RIGHT", "BOTTOM"}
 local anchorPoints2 = {"TOP", "LEFT", "RIGHT", "BOTTOM"}
@@ -503,8 +504,9 @@ local function CreateTooltip(widget, tooltipText, anchor)
 end
 
 local function CreateAnchorDropdown(name, parent, defaultText, settingKey, toggleFunc, point)
-    local dropdown = CreateFrame("Frame", name, parent, "UIDropDownMenuTemplate")
-    UIDropDownMenu_SetWidth(dropdown, 125)
+    -- Create the dropdown frame using the library's creation function
+    local dropdown = LibDD:Create_UIDropDownMenu(name, parent)
+    LibDD:UIDropDownMenu_SetWidth(dropdown, 125)
 
     -- Function to get the display text based on the setting value
     local function getDisplayTextForSetting(settingValue)
@@ -519,19 +521,20 @@ local function CreateAnchorDropdown(name, parent, defaultText, settingKey, toggl
     end
 
     -- Set the initial dropdown text
-    UIDropDownMenu_SetText(dropdown, getDisplayTextForSetting(BetterBlizzFramesDB[settingKey]) or defaultText)
+    LibDD:UIDropDownMenu_SetText(dropdown, getDisplayTextForSetting(BetterBlizzFramesDB[settingKey]) or defaultText)
 
     local anchorPointsToUse = anchorPoints
     if name == "combatIndicatorDropdown" or name == "playerAbsorbAnchorDropdown" then
         anchorPointsToUse = anchorPoints2
     end
 
-    UIDropDownMenu_Initialize(dropdown, function(self, level, menuList)
-        local info = UIDropDownMenu_CreateInfo()
+    -- Initialize the dropdown using the library's initialize function
+    LibDD:UIDropDownMenu_Initialize(dropdown, function(self, level, menuList)
+        local info = LibDD:UIDropDownMenu_CreateInfo()
         for _, anchor in ipairs(anchorPointsToUse) do
             local displayText = anchor
 
-            -- Customize display text for playerAbsorbAnchorDropdown
+            -- Customize display text for specific dropdowns
             if name == "combatIndicatorDropdown" or name == "playerAbsorbAnchorDropdown" then
                 if anchor == "LEFT" then
                     displayText = "INNER"
@@ -545,26 +548,29 @@ local function CreateAnchorDropdown(name, parent, defaultText, settingKey, toggl
             info.func = function(self, arg1)
                 if BetterBlizzFramesDB[settingKey] ~= arg1 then
                     BetterBlizzFramesDB[settingKey] = arg1
-                    UIDropDownMenu_SetText(dropdown, getDisplayTextForSetting(arg1))
+                    LibDD:UIDropDownMenu_SetText(dropdown, getDisplayTextForSetting(arg1))
                     toggleFunc(arg1)
                     BBF.MoveToTFrames()
                 end
             end
             info.checked = (BetterBlizzFramesDB[settingKey] == anchor)
-            UIDropDownMenu_AddButton(info)
+            LibDD:UIDropDownMenu_AddButton(info)
         end
     end)
 
+    -- Position the dropdown
     dropdown:SetPoint("TOPLEFT", point.anchorFrame, "TOPLEFT", point.x, point.y)
 
+    -- Create and set up the label
     local dropdownText = parent:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     dropdownText:SetPoint("BOTTOM", dropdown, "TOP", 0, 3)
     dropdownText:SetText(point.label)
 
+    -- Enable or disable the dropdown based on the parent's check state
     if parent:GetObjectType() == "CheckButton" and parent:GetChecked() == false then
-        UIDropDownMenu_DisableDropDown(dropdown)
+        LibDD:UIDropDownMenu_DisableDropDown(dropdown)
     else
-        UIDropDownMenu_EnableDropDown(dropdown)
+        LibDD:UIDropDownMenu_EnableDropDown(dropdown)
     end
 
     return dropdown

@@ -5,6 +5,8 @@
 ## IconAtlas: gmchat-icon-blizz
 ## Author: Bodify
 
+embeds.xml
+
 modules\darkmode.lua
 modules\nameFix.lua
 modules\hideFrames.lua
