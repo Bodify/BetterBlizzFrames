@@ -943,11 +943,11 @@ local function guiGeneralTab()
 
     local playerFrameOCD = CreateCheckbox("playerFrameOCD", "OCD Tweaks", BetterBlizzFrames, nil, BBF.FixStupidBlizzPTRShit)
     playerFrameOCD:SetPoint("TOPLEFT", hideArenaFrames, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltip(playerFrameOCD, "Removes small gap around player portrait, player healthbar and manabar, target manabar and portrait this that etc.\nLots of ocd gap fixing.\nTemporary setting I might remove if blizz fixes their stuff.")
+    CreateTooltip(playerFrameOCD, "Removes small gap around player portrait, healthbars and manabars, etc.\nJust in general tiny OCD fixes on a few things. Requires a reload for full effect.\nTemporary setting I might remove if blizz fixes their stuff.")
 
     local darkModeUi = CreateCheckbox("darkModeUi", "Dark Mode", BetterBlizzFrames, nil, BBF.DarkmodeFrames)
     darkModeUi:SetPoint("TOPLEFT", playerFrameOCD, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltip(darkModeUi, "Simple dark mode for: UnitFrames, Actionbars & Aura Icons.\n\nIf you want a more I recommend the addon FrameColor instead of this setting.")
+    CreateTooltip(darkModeUi, "Simple dark mode for: UnitFrames, Actionbars & Aura Icons.\n\nIf you want a more advanced & thorough dark mode\nI recommend the addon FrameColor instead of this setting.")
 
     local darkModeUiAura = CreateCheckbox("darkModeUiAura", "Dark Aura Borders", BetterBlizzFrames, nil, BBF.DarkmodeFrames)
     darkModeUiAura:SetPoint("LEFT", darkModeUi.Text, "RIGHT", 5, 0)

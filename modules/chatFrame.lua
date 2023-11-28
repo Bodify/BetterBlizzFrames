@@ -119,7 +119,7 @@ local function chatFilter(frame, event, message, sender, ...)
                 end
             end
         end
-    elseif event == "CHAT_MSG_SYSTEM" or event == "CHAT_MSG_COMBAT_HONOR_GAIN" or event == "CHAT_MSG_BG_SYSTEM_NEUTRAL" or event == "CHAT_MSG_CHANNEL_NOTICE" then
+    elseif event == "CHAT_MSG_SYSTEM" or event == "CHAT_MSG_COMBAT_HONOR_GAIN" or event == "CHAT_MSG_BG_SYSTEM_NEUTRAL" or event == "CHAT_MSG_CHANNEL_NOTICE" or event == "CHAT_MSG_CURRENCY" then
         if BetterBlizzFramesDB.filterSystemMessages then
             for _, v in ipairs(systemMessages) do
                 if message:find(v) then
@@ -162,6 +162,7 @@ ChatFrame_AddMessageEventFilter("CHAT_MSG_MONSTER_SAY", chatFilter)
 ChatFrame_AddMessageEventFilter("CHAT_MSG_CHANNEL_NOTICE", chatFilter)
 ChatFrame_AddMessageEventFilter("CHAT_MSG_SYSTEM", chatFilter)
 ChatFrame_AddMessageEventFilter("CHAT_MSG_COMBAT_HONOR_GAIN", chatFilter)
+ChatFrame_AddMessageEventFilter("CHAT_MSG_CURRENCY", chatFilter)
 ChatFrame_AddMessageEventFilter("CHAT_MSG_EMOTE", chatFilter)
 ChatFrame_AddMessageEventFilter("CHAT_MSG_TEXT_EMOTE", chatFilter)
 ChatFrame_AddMessageEventFilter("CHAT_MSG_BG_SYSTEM_NEUTRAL", chatFilter)
