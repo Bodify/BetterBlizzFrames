@@ -70,13 +70,14 @@ function BBF.DarkmodeFrames()
     local desaturationValue = BetterBlizzFramesDB.darkModeUi and true or false
     local vertexColor = BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeColor or 1
     local lighterVertexColor = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.15) or 1
-    local birdColor = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.25) or 1
+    local actionBarColor = BetterBlizzFramesDB.darkModeActionBars and (vertexColor + 0.15) or 1
+    local birdColor = BetterBlizzFramesDB.darkModeActionBars and (vertexColor + 0.25) or 1
     local rogueCombo = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.45) or 1
     local rogueComboActive = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.30) or 1
     local monkChi = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.10) or 1
 
     if BetterBlizzFramesDB.darkModeColor == 0 then
-        lighterVertexColor = 0
+        actionBarColor = 0
         birdColor = 0.07
         rogueCombo = 0.25
         rogueComboActive = 0.15
@@ -198,15 +199,15 @@ function BBF.DarkmodeFrames()
 
     -- Actionbars
     for i = 1, 12 do
-        applySettings(_G["ActionButton" .. i .. "NormalTexture"], desaturationValue, lighterVertexColor)
-        applySettings(_G["MultiBarBottomLeftButton" .. i .. "NormalTexture"], desaturationValue, lighterVertexColor)
-        applySettings(_G["MultiBarBottomRightButton" ..i.. "NormalTexture"], desaturationValue, lighterVertexColor)
-        applySettings(_G["MultiBarRightButton" ..i.. "NormalTexture"], desaturationValue, lighterVertexColor)
-        applySettings(_G["MultiBarLeftButton" ..i.. "NormalTexture"], desaturationValue, lighterVertexColor)
-        applySettings(_G["MultiBar5Button" ..i.. "NormalTexture"], desaturationValue, lighterVertexColor)
-        applySettings(_G["MultiBar6Button" ..i.. "NormalTexture"], desaturationValue, lighterVertexColor)
-        applySettings(_G["MultiBar7Button" ..i.. "NormalTexture"], desaturationValue, lighterVertexColor)
-        applySettings(_G["PetActionButton" ..i.. "NormalTexture"], desaturationValue, lighterVertexColor)
+        applySettings(_G["ActionButton" .. i .. "NormalTexture"], desaturationValue, actionBarColor)
+        applySettings(_G["MultiBarBottomLeftButton" .. i .. "NormalTexture"], desaturationValue, actionBarColor)
+        applySettings(_G["MultiBarBottomRightButton" ..i.. "NormalTexture"], desaturationValue, actionBarColor)
+        applySettings(_G["MultiBarRightButton" ..i.. "NormalTexture"], desaturationValue, actionBarColor)
+        applySettings(_G["MultiBarLeftButton" ..i.. "NormalTexture"], desaturationValue, actionBarColor)
+        applySettings(_G["MultiBar5Button" ..i.. "NormalTexture"], desaturationValue, actionBarColor)
+        applySettings(_G["MultiBar6Button" ..i.. "NormalTexture"], desaturationValue, actionBarColor)
+        applySettings(_G["MultiBar7Button" ..i.. "NormalTexture"], desaturationValue, actionBarColor)
+        applySettings(_G["PetActionButton" ..i.. "NormalTexture"], desaturationValue, actionBarColor)
     end
 
     for _, v in pairs({
@@ -223,7 +224,7 @@ function BBF.DarkmodeFrames()
         ActionButton10.RightDivider,
         ActionButton11.RightDivider,
     }) do
-        applySettings(v, desaturationValue, lighterVertexColor)
+        applySettings(v, desaturationValue, actionBarColor)
     end
 
     for _, v in pairs({
@@ -239,7 +240,7 @@ function BBF.DarkmodeFrames()
         if button then
             local normalTexture = button:GetNormalTexture()
             if normalTexture then
-                applySettings(normalTexture, desaturationValue, lighterVertexColor)
+                applySettings(normalTexture, desaturationValue, actionBarColor)
             end
         end
     end
@@ -250,16 +251,16 @@ function BBF.DarkmodeFrames()
         if button then
             local normalTexture = button:GetNormalTexture()
             if normalTexture then
-                applySettings(normalTexture, desaturationValue, lighterVertexColor)
+                applySettings(normalTexture, desaturationValue, actionBarColor)
             end
         end
     end
 
     if BT4BarBlizzardArt and BT4BarBlizzardArt.nineSliceParent then
         for _, child in ipairs({BT4BarBlizzardArt.nineSliceParent:GetChildren()}) do
-            applySettings(child, desaturationValue, lighterVertexColor)
+            applySettings(child, desaturationValue, actionBarColor)
             local DividerArt = child:GetChildren()
-            applySettings(DividerArt, desaturationValue, lighterVertexColor)
+            applySettings(DividerArt, desaturationValue, actionBarColor)
         end
         --for _, child in ipairs({BT4BarBlizzardArt:GetChildren()}) do
             --applySettings(child, desaturationValue, lighterVertexColor)

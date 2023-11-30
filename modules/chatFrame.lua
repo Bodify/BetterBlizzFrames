@@ -22,45 +22,6 @@ local gladiusSpam = {
     "- Hunter",
 }
 
-local npcArenaSpam = {
-    -- Random arena npc chat removed
-    "Today, your cries of",
-    "For Zandalar!",
-    "Grant her an honorable death...",
-    "Grant him an honorable death...",
-    "Friends! We gather today to see",
-    "says something unintelligible.",
-    "Only the last one standing will have earned that honor.",
-    "This likely won't be a clean fight, so keep your distance",
-    "This is a night for Kul Tiras!",
-    "No, no, no. Good save, good save.",
-    "You die... but not as a true Kul Tiran.",
-    "Mortals, I present a lucrative",
-    "Many in the cartel are wagering",
-    "Do not let the cartel down, we",
-    "Victory is clear, our bargain is upheld.",
-    "Ears and noses will litter",
-    "Oopsie-daisy!",
-    "Oopsie",
-    "Now now, there will be blood!",
-    "This is a day for Kul Tiras!",
-    "No matter who wins, we profit.",
-    "Let the games... BEGIN!",
-    "Get in there and fight, stop hiding!",
-    "Finish him!",
-    "Yes, yes!",
-    "All you weaklings do is run around!",
-    "You bore me!",
-    "Finish her!",
-    "Ahhhh?!",
-    "You did not have de loa's blessing this day.",
-    "I see who the strongest mortals are... for now.",
-    "Interesting. I did not expect this outcome.",
-    "So close! This just means more entertainment for me",
-    "Let the best team win! Oh, who am I kidding",
-    "It's time for the show! Don't disappoint me",
-}
-
 local talentSpam = {
     -- Talent rechange spam
     "You have learned a new",
@@ -143,12 +104,8 @@ local function chatFilter(frame, event, message, sender, ...)
             end
         end
     elseif event == "CHAT_MSG_MONSTER_SAY" then
-        if BetterBlizzFramesDB.filterNpcArenaSpam then
-            for _, v in ipairs(npcArenaSpam) do
-                if message:find(v) then
-                    return true
-                end
-            end
+        if BetterBlizzFramesDB.filterNpcArenaSpam and IsActiveBattlefieldArena() then
+            return true
         end
     end
     return false

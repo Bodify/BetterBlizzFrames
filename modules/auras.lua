@@ -810,7 +810,7 @@ local function PersonalBuffFrameFilterAndGrid(self)
     local auraSpacingX = BuffFrame.AuraContainer.iconPadding - 7 + BetterBlizzFramesDB.playerAuraSpacingX
     local auraSpacingY = BuffFrame.AuraContainer.iconPadding + 8
     local auraSize = 32;      -- Set the size of each aura frame
-    local auraScale = BuffFrame.AuraContainer.iconScale
+    --local auraScale = BuffFrame.AuraContainer.iconScale
 
     local printAuraIds = BetterBlizzFramesDB.printAuraSpellIds
 
@@ -860,78 +860,80 @@ local function PersonalBuffFrameFilterAndGrid(self)
 
               local auraData = {
                   name = name,
-                  icon = icon,
-                  count = count,
-                  dispelType = dispelType,
-                  duration = duration,
-                  expirationTime = expirationTime,
-                  sourceUnit = source,
-                  isStealable = isStealable,
-                  nameplateShowPersonal = nameplateShowPersonal,
+                  --icon = icon,
+                  --count = count,
+                  --dispelType = dispelType,
+                  --duration = duration,
+                  --expirationTime = expirationTime,
+                  --sourceUnit = source,
+                  --isStealable = isStealable,
+                  --nameplateShowPersonal = nameplateShowPersonal,
                   spellId = spellId,
-                  auraType = auraInfo.auraType,
+                  auraType = "Buff",
               };
-                local unit = self.unit
+                --local unit = self.unit
                 -- Print spell ID logic
-                if printAuraIds and not auraFrame.bbfHookAdded then
-                    auraFrame.bbfHookAdded = true
-                    auraFrame:HookScript("OnEnter", function()
-                        if printAuraIds then
-                            local currentAuraIndex = auraInfo.index
-                            if auraInfo.auraType == "TempEnchant" then
-                                hasMainHandEnchant, mainHandExpiration, mainHandCharges, mainHandEnchantID, hasOffHandEnchant, offHandExpiration, offHandCharges, offHandEnchantID = GetWeaponEnchantInfo()
-                                if mainHandEnchantID then
-                                    spellId = mainHandEnchantID
-                                    name = "Temp Enchant Mainhand"
-                                elseif offHandEnchantID then
-                                    spellId = offHandEnchantID
-                                    name = "Temp Enchant Offhand"
+                if printAuraIds then
+                    if not auraFrame.bbfHookAdded then
+                        auraFrame.bbfHookAdded = true
+                        auraFrame:HookScript("OnEnter", function()
+                            if printAuraIds then
+                                local currentAuraIndex = auraInfo.index
+                                if auraInfo.auraType == "TempEnchant" then
+                                    hasMainHandEnchant, mainHandExpiration, mainHandCharges, mainHandEnchantID, hasOffHandEnchant, offHandExpiration, offHandCharges, offHandEnchantID = GetWeaponEnchantInfo()
+                                    if mainHandEnchantID then
+                                        spellId = mainHandEnchantID
+                                        name = "Temp Enchant Mainhand"
+                                    elseif offHandEnchantID then
+                                        spellId = offHandEnchantID
+                                        name = "Temp Enchant Offhand"
+                                    end
+                                else
+                                    name, icon, count, dispelType, duration, expirationTime, source,
+                                    isStealable, nameplateShowPersonal, spellId, canApplyAura,
+                                    isBossDebuff, castByPlayer, nameplateShowAll, timeMod
+                                    = UnitAura("player", currentAuraIndex, 'HELPFUL');
                                 end
-                            else
-                                name, icon, count, dispelType, duration, expirationTime, source,
-                                isStealable, nameplateShowPersonal, spellId, canApplyAura,
-                                isBossDebuff, castByPlayer, nameplateShowAll, timeMod
-                                = UnitAura("player", currentAuraIndex, 'HELPFUL');
-                            end
 
-                            auraData = {
-                                name = name,
-                                icon = icon,
-                                count = count,
-                                dispelType = dispelType,
-                                duration = duration,
-                                expirationTime = expirationTime,
-                                sourceUnit = source,
-                                isStealable = isStealable,
-                                nameplateShowPersonal = nameplateShowPersonal,
-                                spellId = spellId,
-                                auraType = auraInfo.auraType,
-                            };
+                                auraData = {
+                                    name = name,
+                                    icon = icon,
+                                    count = count,
+                                    dispelType = dispelType,
+                                    duration = duration,
+                                    expirationTime = expirationTime,
+                                    sourceUnit = source,
+                                    isStealable = isStealable,
+                                    nameplateShowPersonal = nameplateShowPersonal,
+                                    spellId = spellId,
+                                    auraType = auraInfo.auraType,
+                                };
 
-                            if auraData and (not auraFrame.bbfPrinted or auraFrame.bbfLastPrintedAuraIndex ~= currentAuraIndex) then
-                                local iconTexture = auraData.icon and "|T" .. auraData.icon .. ":16:16|t" or ""
-                                print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconTexture .. " " .. (auraData.name or "Unknown") .. "  |A:worldquest-icon-engineering:14:14|a ID: " .. (auraData.spellId or "Unknown"))
-                                auraFrame.bbfPrinted = true
-                                auraFrame.bbfLastPrintedAuraIndex = currentAuraIndex  -- Store the index of the aura that was just printed
-                                -- Cancel existing timer if any
-                                if auraFrame.bbfTimer then
-                                    auraFrame.bbfTimer:Cancel()
+                                if auraData and (not auraFrame.bbfPrinted or auraFrame.bbfLastPrintedAuraIndex ~= currentAuraIndex) then
+                                    local iconTexture = auraData.icon and "|T" .. auraData.icon .. ":16:16|t" or ""
+                                    print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconTexture .. " " .. (auraData.name or "Unknown") .. "  |A:worldquest-icon-engineering:14:14|a ID: " .. (auraData.spellId or "Unknown"))
+                                    auraFrame.bbfPrinted = true
+                                    auraFrame.bbfLastPrintedAuraIndex = currentAuraIndex  -- Store the index of the aura that was just printed
+                                    -- Cancel existing timer if any
+                                    if auraFrame.bbfTimer then
+                                        auraFrame.bbfTimer:Cancel()
+                                    end
+                                    -- Schedule the reset of bbfPrinted flag
+                                    auraFrame.bbfTimer = C_Timer.NewTimer(6, function()
+                                        auraFrame.bbfPrinted = false
+                                    end)
                                 end
-                                -- Schedule the reset of bbfPrinted flag
-                                auraFrame.bbfTimer = C_Timer.NewTimer(6, function()
-                                    auraFrame.bbfPrinted = false
-                                end)
                             end
-                        end
-                    end)
+                        end)
+                    end
                 end
 
                 local shouldShowAura, isImportant, isPandemic
-                shouldShowAura, isImportant, isPandemic = ShouldShowBuff(unit, auraData, "playerBuffFrame")
+                shouldShowAura, isImportant, isPandemic = ShouldShowBuff("player", auraData, "playerBuffFrame")
                 isImportant = isImportant and BetterBlizzFramesDB.playerAuraImportantGlow
                 -- Nonprint logic
                 if shouldShowAura then
-                    auraFrame:Show();
+                    --auraFrame:Show();
                     auraFrame:ClearAllPoints();
                     auraFrame:SetPoint("TOPRIGHT", BuffFrame, "TOPRIGHT", -xOffset - 15, -yOffset);
                     -- Update column and row counters
@@ -1004,7 +1006,7 @@ local function PersonalDebuffFrameFilterAndGrid(self)
     local auraSpacingY = DebuffFrame.AuraContainer.iconPadding + 8
     local auraSize = 32;      -- Set the size of each aura frame
 
-    local dotChecker = BetterBlizzFramesDB.debuffDotChecker
+    --local dotChecker = BetterBlizzFramesDB.debuffDotChecker
     local printAuraIds = BetterBlizzFramesDB.printAuraSpellIds
 
     local currentRow = 1;
@@ -1013,6 +1015,7 @@ local function PersonalDebuffFrameFilterAndGrid(self)
     local yOffset = 0;
 
     -- Create a texture next to the DebuffFrame
+--[=[
     local warningTexture
     if dotChecker then
         if not DebuffFrame.warningTexture then
@@ -1041,6 +1044,9 @@ local function PersonalDebuffFrameFilterAndGrid(self)
 
     local keywordFound = false
     local keywords = {"over", "every",}
+
+]=]
+
 
     for _, auraFrame in ipairs(DebuffFrame.auraFrames) do
         if not auraFrame.isAuraAnchor then
@@ -1131,6 +1137,7 @@ local function PersonalDebuffFrameFilterAndGrid(self)
                 end
                 if ShouldShowBuff(unit, auraData, "playerDebuffFrame") then
                     -- Check the tooltip for specified keywords
+--[=[
                     tooltip:ClearLines()
                     tooltip:SetHyperlink("spell:" .. auraData.spellId)
 
@@ -1146,6 +1153,9 @@ local function PersonalDebuffFrameFilterAndGrid(self)
                             break
                         end
                     end
+
+]=]
+
                     auraFrame:Show();
                     auraFrame:ClearAllPoints();
                     auraFrame:SetPoint("TOPRIGHT", DebuffFrame, "TOPRIGHT", -xOffset, -yOffset);
@@ -1169,6 +1179,7 @@ local function PersonalDebuffFrameFilterAndGrid(self)
             end
         end
     end
+--[=[
     if dotChecker then
         if keywordFound then
             warningTexture:Show()
@@ -1176,6 +1187,8 @@ local function PersonalDebuffFrameFilterAndGrid(self)
             warningTexture:Hide()
         end
     end
+]=]
+
 end
 
 hooksecurefunc(BuffFrame, "UpdateAuraButtons", PersonalBuffFrameFilterAndGrid)

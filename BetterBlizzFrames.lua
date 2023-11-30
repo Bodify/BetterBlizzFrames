@@ -6,8 +6,8 @@ BBF = BBF or {}
 -- Things are getting more messy need a lot of cleaning lol
 
 local addonVersion = "1.00" --too afraid to to touch for now
-local addonUpdates = "1.0.9"
-local sendUpdate = false
+local addonUpdates = "1.1.0"
+local sendUpdate = true
 BBF.VersionNumber = addonUpdates
 BBF.variablesLoaded = false
 
@@ -19,6 +19,8 @@ local defaultSettings = {
     removeRealmNames = true,
     centerNames = false,
     darkModeUi = false,
+    darkModeActionBars = true,
+    darkModeUiAura = true,
     darkModeColor = 0.20,
     hideGroupIndicator = false,
     hideFocusCombatGlow = false,
@@ -275,7 +277,7 @@ local function SendUpdateMessage()
     if sendUpdate then
         C_Timer.After(7, function()
             DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames " .. addonUpdates .. ":")
-            DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Added \"Buffs on top\" aura logic for target and focus. Access settings with /bbf")
+            DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Added hide PlayerFrame resource/power setting and separated actionbars from darkmode. Access settings with /bbf")
         end)
     end
 end
@@ -688,7 +690,12 @@ end)
 -- Slash command
 SLASH_BBF1 = "/BBF"
 SlashCmdList["BBF"] = function(msg)
-    InterfaceOptionsFrame_OpenToCategory(BetterBlizzFrames)
+    if msg == "test" then
+        --playerFrameTest()
+        print("test :)")
+    else
+        InterfaceOptionsFrame_OpenToCategory(BetterBlizzFrames)
+    end
 end
 
 -- Event registration for PLAYER_LOGIN

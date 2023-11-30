@@ -353,7 +353,7 @@ function ChangeName(frame, unit, party, tot)
 
             end
         end
-    elseif hideNames and party then
+    elseif hidePartyNames and party then
         originalNameObject:SetAlpha(0)
         if frame.cleanName then
             frame.cleanName:SetAlpha(0)
@@ -629,16 +629,24 @@ function BBF.OnUpdateName()
             -- Hide the role icon if hidePartyRoles is true
             if hideRoles and compactPartyMember.roleIcon then
                 compactPartyMember.roleIcon:SetAlpha(0)
+--[=[
                 compactPartyMember.name:SetPoint("TOPLEFT", roleIcon, "TOPRIGHT", -10, -1)
                 if compactPartyMember.cleanName then
                     compactPartyMember.cleanName:SetPoint("TOPLEFT", roleIcon, "TOPRIGHT", -10, -1)
                 end
+
+]=]
+
             else
                 compactPartyMember.roleIcon:SetAlpha(1)
+--[=[
                 compactPartyMember.name:SetPoint("TOPLEFT", roleIcon, "TOPRIGHT", 0, -1)
                 if compactPartyMember.cleanName then
                     compactPartyMember.cleanName:SetPoint("TOPLEFT", roleIcon, "TOPRIGHT", 0, -1)
                 end
+
+]=]
+
             end
 
 --[=[
@@ -665,7 +673,7 @@ function BBF.OnUpdateName()
                         defaultMember.cleanName:SetAlpha(0)
                     end
                 else
-                    defaultMember.Name:SetAlpha(1)
+                    defaultMember.Name:SetAlpha(0)
                     if defaultMember.cleanName then
                         defaultMember.cleanName:SetAlpha(1)
                     end

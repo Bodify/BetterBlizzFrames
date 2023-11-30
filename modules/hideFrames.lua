@@ -186,6 +186,22 @@ function BBF.HideFrames()
             end
         end
 
+        if BetterBlizzFramesDB.hidePlayerPower then
+            if WarlockPowerFrame then
+                WarlockPowerFrame:SetParent(hiddenFrame)
+            elseif RogueComboPointBarFrame then
+                RogueComboPointBarFrame:SetParent(hiddenFrame)
+            elseif DruidComboPointBarFrame then
+                DruidComboPointBarFrame:SetParent(hiddenFrame)
+            elseif PaladinPowerBarFrame then
+                PaladinPowerBar:SetParent(hiddenFrame)
+            elseif RuneFrame then
+                RuneFrame:SetParent(hiddenFrame)
+            elseif EssencePlayerFrame then
+                EssencePlayerFrame:SetParent(hiddenFrame)
+            end
+        end
+
         if BetterBlizzFramesDB.hideChatButtons then
             QuickJoinToastButton:SetAlpha(0)
             ChatFrameChannelButton:SetAlpha(0)

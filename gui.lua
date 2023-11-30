@@ -949,9 +949,13 @@ local function guiGeneralTab()
     darkModeUi:SetPoint("TOPLEFT", playerFrameOCD, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(darkModeUi, "Simple dark mode for: UnitFrames, Actionbars & Aura Icons.\n\nIf you want a more advanced & thorough dark mode\nI recommend the addon FrameColor instead of this setting.")
 
-    local darkModeUiAura = CreateCheckbox("darkModeUiAura", "Dark Aura Borders", BetterBlizzFrames, nil, BBF.DarkmodeFrames)
+    local darkModeUiAura = CreateCheckbox("darkModeUiAura", "Auras", BetterBlizzFrames, nil, BBF.DarkmodeFrames)
     darkModeUiAura:SetPoint("LEFT", darkModeUi.Text, "RIGHT", 5, 0)
     CreateTooltip(darkModeUiAura, "Dark borders for Player, Target and Focus aura icons")
+
+    local darkModeActionBars = CreateCheckbox("darkModeActionBars", "ActionBars", BetterBlizzFrames, nil, BBF.DarkmodeFrames)
+    darkModeActionBars:SetPoint("LEFT", darkModeUiAura.Text, "RIGHT", 5, 0)
+    CreateTooltip(darkModeActionBars, "Dark borders for action bars.")
 
     local darkModeColor = CreateSlider(darkModeUi, "Darkness", 0, 1, 0.01, "darkModeColor", nil, 90)
     darkModeColor:SetPoint("TOPLEFT", darkModeUi, "BOTTOMLEFT", sliderUnderBoxX, sliderUnderBoxY)
@@ -963,16 +967,21 @@ local function guiGeneralTab()
             darkModeColor:SetAlpha(1)
             darkModeUiAura:Enable()
             darkModeUiAura:SetAlpha(1)
+            darkModeActionBars:Enable()
+            darkModeActionBars:SetAlpha(1)
         else
             darkModeColor:Disable()
             darkModeColor:SetAlpha(0)
             darkModeUiAura:Disable()
             darkModeUiAura:SetAlpha(0)
+            darkModeActionBars:Disable()
+            darkModeActionBars:SetAlpha(0)
         end
     end)
     if not BetterBlizzFramesDB.darkModeUi then
         darkModeUiAura:SetAlpha(0)
         darkModeColor:SetAlpha(0) --default slider creation only does 0.5 alpha
+        darkModeActionBars:SetAlpha(0)
     end
 
 
@@ -985,7 +994,7 @@ local function guiGeneralTab()
 
 
     local playerFrameText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    playerFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 0, -120)
+    playerFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 0, -115)
     playerFrameText:SetText("Player Frame")
     local playerFrameIcon = BetterBlizzFrames:CreateTexture(nil, "ARTWORK")
     playerFrameIcon:SetAtlas("groupfinder-icon-friend")
@@ -1016,9 +1025,12 @@ local function guiGeneralTab()
         playerReputationClassColor:SetAlpha(0)
     end
 
+    local hidePlayerPower = CreateCheckbox("hidePlayerPower", "Hide Resource/Power", BetterBlizzFrames, nil, BBF.HideFrames)
+    hidePlayerPower:SetPoint("TOPLEFT", playerReputationColor, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltip(hidePlayerPower, "Hide Resource/Power under PlayerFrame. Rogue combopoints, Warlock shards etc.")
 
     local hidePlayerRestAnimation = CreateCheckbox("hidePlayerRestAnimation", "Hide \"Zzz\" Rest Animation", BetterBlizzFrames, nil, BBF.HideFrames)
-    hidePlayerRestAnimation:SetPoint("TOPLEFT", playerReputationColor, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    hidePlayerRestAnimation:SetPoint("TOPLEFT", hidePlayerPower, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(hidePlayerRestAnimation, "Hide the \"Zzz\" animation on PlayerFrame while rested.")
 
     local hidePlayerRestGlow = CreateCheckbox("hidePlayerRestGlow", "Hide Rest Glow", BetterBlizzFrames, nil, BBF.HideFrames)
@@ -1050,7 +1062,7 @@ local function guiGeneralTab()
 
 
     local petFrameText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    petFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 0, -340)
+    petFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 0, -350)
     petFrameText:SetText("Pet Frame")
     local petFrameIcon = BetterBlizzFrames:CreateTexture(nil, "ARTWORK")
     petFrameIcon:SetAtlas("newplayerchat-chaticon-newcomer")
@@ -2368,6 +2380,7 @@ local function guiFrameAuras()
     whitelistText:SetText("Whitelist")
 
     local playerAuraFiltering = CreateCheckbox("playerAuraFiltering", "Enable Aura Settings", contentFrame)
+    CreateTooltip(playerAuraFiltering, "This feature is still a bit beta.\nIf you are noticing anything weird or having performance issues please let me know.")
     playerAuraFiltering:SetPoint("TOPLEFT", contentFrame, "BOTTOMLEFT", 50, 190)
     playerAuraFiltering:HookScript("OnClick", function (self)
         if self:GetChecked() then
@@ -2609,13 +2622,17 @@ local function guiFrameAuras()
     local PlayerAuraFramedeBuffFilterLessMinite = CreateCheckbox("PlayerAuraFramedeBuffFilterLessMinite", "Under one min", PlayerAuraFramedeBuffEnable)
     PlayerAuraFramedeBuffFilterLessMinite:SetPoint("TOPLEFT", PlayerAuraFramedeBuffFilterWatchList, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
 
+--[=[
     local debuffDotChecker = CreateCheckbox("debuffDotChecker", "DoT Indicator", PlayerAuraFramedeBuffEnable)
     debuffDotChecker:SetPoint("TOPLEFT", PlayerAuraFramedeBuffFilterLessMinite, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(debuffDotChecker, "Adds an icon next to the player\ndebuffs if one of them is a DoT.")
 
+]=]
+
+
 
     local playerAuraGlows = CreateCheckbox("playerAuraGlows", "Extra Aura Glow", playerAuraFiltering)
-    playerAuraGlows:SetPoint("TOPLEFT", debuffDotChecker, "BOTTOMLEFT", -15, -22)
+    playerAuraGlows:SetPoint("TOPLEFT", PlayerAuraFramedeBuffFilterLessMinite, "BOTTOMLEFT", -15, -22)
     playerAuraGlows:HookScript("OnClick", function ()
         CheckAndToggleCheckboxes(playerAuraGlows)
     end)
