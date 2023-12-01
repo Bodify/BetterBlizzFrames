@@ -254,6 +254,22 @@ function BBF.HideFrames()
             hideChatFrameTextures()
         end
         BBF.HidePartyInArena()
+        if BetterBlizzFramesDB.hideTargetToTDebuffs then
+            for i = 1, 4 do
+                local targetToTDebuff = _G["TargetFrameToTDebuff" .. i]
+                if targetToTDebuff then
+                    targetToTDebuff:SetParent(hiddenFrame)
+                end
+            end
+        end
+        if BetterBlizzFramesDB.hideFocusToTDebuffs then
+            for i = 1, 4 do
+                local focusToTDebuff = _G["FocusFrameToTDebuff" .. i]
+                if focusToTDebuff then
+                    focusToTDebuff:SetParent(hiddenFrame)
+                end
+            end
+        end
     end
 end
 

@@ -602,6 +602,7 @@ function BBF.NahjProfile()
 	db.targetAndFocusAuraOffsetY = 0
 	db.petCastBarHeightScale = 10
 	db.frameAurasXPos = 0
+    db.filterNpcArenaSpam = true
 	db.maxTargetDebuffs = 16
 	db.targetCastBarWidth = 150
 	db.combatIndicatorArenaOnly = false

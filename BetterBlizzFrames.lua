@@ -282,6 +282,11 @@ local function SendUpdateMessage()
     end
 end
 
+local function NewsUpdateMessage()
+    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames news:")
+    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a #1: Added hide PlayerFrame resource/power setting and separated actionbars from darkmode.")
+    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a #2: General performance improvements.")
+end
 
 local function CheckForUpdate()
     if not BetterBlizzFramesDB.hasSaved then
@@ -690,9 +695,8 @@ end)
 -- Slash command
 SLASH_BBF1 = "/BBF"
 SlashCmdList["BBF"] = function(msg)
-    if msg == "test" then
-        --playerFrameTest()
-        print("test :)")
+    if msg == "news" then
+        NewsUpdateMessage()
     else
         InterfaceOptionsFrame_OpenToCategory(BetterBlizzFrames)
     end
