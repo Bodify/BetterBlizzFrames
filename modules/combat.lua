@@ -45,10 +45,10 @@ function BBF.CombatIndicator(unitFrame, unit)
     if darkModeOn then
         unitFrame.combatIndicator:SetTexCoord(0.08, 0.92, 0.08, 0.92)
         unitFrame.combatIndicator.border:SetBackdropBorderColor(vertexColor, vertexColor, vertexColor)
-        unitFrame.combatIndicator.border:Hide()
+        unitFrame.combatIndicator.border:SetAlpha(0)
     else
         unitFrame.combatIndicator:SetTexCoord(0, 1, 0, 1)
-        unitFrame.combatIndicator.border:Hide()
+        unitFrame.combatIndicator.border:SetAlpha(0)
     end
 
     unitFrame.combatIndicator:ClearAllPoints()
@@ -81,12 +81,12 @@ function BBF.CombatIndicator(unitFrame, unit)
 
     -- Conditions to check before showing textures
     if BetterBlizzFramesDB.combatIndicatorArenaOnly and not (inInstance and instanceType == "arena") then
-        unitFrame.combatIndicator:Hide()
+        unitFrame.combatIndicator:SetAlpha(0)
         return
     end
 
     if BetterBlizzFramesDB.combatIndicatorPlayersOnly and not UnitIsPlayer(unit) then
-        unitFrame.combatIndicator:Hide()
+        unitFrame.combatIndicator:SetAlpha(0)
         return
     end
 
@@ -94,22 +94,22 @@ function BBF.CombatIndicator(unitFrame, unit)
     if inCombat then
         if BetterBlizzFramesDB.combatIndicatorShowSwords then
             unitFrame.combatIndicator:SetTexture("Interface\\Icons\\ABILITY_DUALWIELD")
-            unitFrame.combatIndicator:Show()
+            unitFrame.combatIndicator:SetAlpha(1)
             if unitFrame.combatIndicator:IsVisible() and darkModeOn then
-                unitFrame.combatIndicator.border:Show()
+                unitFrame.combatIndicator.border:SetAlpha(1)
             end
         else
-            unitFrame.combatIndicator:Hide()
+            unitFrame.combatIndicator:SetAlpha(0)
         end
     else
         if BetterBlizzFramesDB.combatIndicatorShowSap then
             unitFrame.combatIndicator:SetTexture("Interface\\Icons\\Ability_Sap")
-            unitFrame.combatIndicator:Show()
+            unitFrame.combatIndicator:SetAlpha(1)
             if unitFrame.combatIndicator:IsVisible() and darkModeOn then
-                unitFrame.combatIndicator.border:Show()
+                unitFrame.combatIndicator.border:SetAlpha(1)
             end
         else
-            unitFrame.combatIndicator:Hide()
+            unitFrame.combatIndicator:SetAlpha(0)
         end
     end
 end
@@ -121,18 +121,18 @@ function BBF.CombatIndicatorCaller()
     BBF.CombatIndicator(FocusFrame, "focus")
     BBF.CombatIndicator(PlayerFrame, "player")
     if not BetterBlizzFramesDB.combatIndicator then
-        if TargetFrame.combatIndicator then TargetFrame.combatIndicator:Hide() TargetFrame.combatIndicator.border:Hide() end
-        if PlayerFrame.combatIndicator then PlayerFrame.combatIndicator:Hide() PlayerFrame.combatIndicator.border:Hide() end
-        if FocusFrame.combatIndicator then FocusFrame.combatIndicator:Hide() FocusFrame.combatIndicator.border:Hide() end
+        if TargetFrame.combatIndicator then TargetFrame.combatIndicator:SetAlpha(0) TargetFrame.combatIndicator.border:SetAlpha(0) end
+        if PlayerFrame.combatIndicator then PlayerFrame.combatIndicator:SetAlpha(0) PlayerFrame.combatIndicator.border:SetAlpha(0) end
+        if FocusFrame.combatIndicator then FocusFrame.combatIndicator:SetAlpha(0) FocusFrame.combatIndicator.border:SetAlpha(0) end
     end
     if not BetterBlizzFramesDB.playerCombatIndicator then
-        if PlayerFrame.combatIndicator then PlayerFrame.combatIndicator:Hide() PlayerFrame.combatIndicator.border:Hide() end
+        if PlayerFrame.combatIndicator then PlayerFrame.combatIndicator:SetAlpha(0) PlayerFrame.combatIndicator.border:SetAlpha(0) end
     end
     if not BetterBlizzFramesDB.targetCombatIndicator then
-        if TargetFrame.combatIndicator then TargetFrame.combatIndicator:Hide() TargetFrame.combatIndicator.border:Hide() end
+        if TargetFrame.combatIndicator then TargetFrame.combatIndicator:SetAlpha(0) TargetFrame.combatIndicator.border:SetAlpha(0) end
     end
     if not BetterBlizzFramesDB.focusCombatIndicator then
-        if FocusFrame.combatIndicator then FocusFrame.combatIndicator:Hide() FocusFrame.combatIndicator.border:Hide() end
+        if FocusFrame.combatIndicator then FocusFrame.combatIndicator:SetAlpha(0) FocusFrame.combatIndicator.border:SetAlpha(0) end
     end
     --BBF:UpdateCombatBorder()
 end

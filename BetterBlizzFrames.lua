@@ -6,7 +6,7 @@ BBF = BBF or {}
 -- Things are getting more messy need a lot of cleaning lol
 
 local addonVersion = "1.00" --too afraid to to touch for now
-local addonUpdates = "1.1.0"
+local addonUpdates = "1.1.1"
 local sendUpdate = true
 BBF.VersionNumber = addonUpdates
 BBF.variablesLoaded = false
@@ -39,6 +39,14 @@ local defaultSettings = {
     --Sort group
     --sortGroupPlayerTop = true,
     --sortGroupPlayerBottom = false,
+
+    --Target castbar
+    playerCastbarIconXPos = 0,
+    playerCastbarIconYPos = 0,
+    targetCastbarIconXPos = 0,
+    targetCastbarIconYPos = 0,
+    focusCastbarIconXPos = 0,
+    focusCastbarIconYPos = 0,
 
     -- Absorb Indicator
     absorbIndicatorScale = 1,
@@ -75,6 +83,8 @@ local defaultSettings = {
     partyCastBarHeight = 12,
     partyCastBarTimer = false,
     showPartyCastBarIcon = true,
+    partyCastbarIconXPos = 0,
+    partyCastbarIconYPos = 0,
 
     --Pet Castbar
     petCastbar = false,
@@ -116,8 +126,9 @@ local defaultSettings = {
     --Auras
     --playerAuraMaxBuffsPerRow = 10,
     --playerAuraMaxDebuffsPerRow = 10,
+    auraTypeGap = 0,
     playerAuraSpacingX = 5,
-    --playerAuraSpacingY = 3,
+    playerAuraSpacingY = 0,
     maxBuffFrameBuffs = 32,
     maxDebuffFrameDebuffs = 16,
     printAuraSpellIds = false,
@@ -277,15 +288,18 @@ local function SendUpdateMessage()
     if sendUpdate then
         C_Timer.After(7, function()
             DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames " .. addonUpdates .. ":")
-            DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Added hide PlayerFrame resource/power setting and separated actionbars from darkmode. Access settings with /bbf")
+            DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a A few new things, for info type /bbf news")
         end)
     end
 end
 
 local function NewsUpdateMessage()
     DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames news:")
-    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a #1: Added hide PlayerFrame resource/power setting and separated actionbars from darkmode.")
-    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a #2: General performance improvements.")
+    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a #1: \"Aura Type Gap\" slider for Target & Focus auras.")
+    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a #2: Vertical gap slider for Player auras.")
+    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a #3: Added TTS chat button into the hide chat buttons setting.")
+    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a #4: \"Hide LossOfControl Background\" setting")
+    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a #5: XY offset settings for target & focus castbar icon")
 end
 
 local function CheckForUpdate()
@@ -496,23 +510,29 @@ ClickthroughFrames:RegisterEvent("MODIFIER_STATE_CHANGED")
 
 
 function BBF.MoveToTFrames()
-    TargetFrameToT:ClearAllPoints()
-    if BetterBlizzFramesDB.targetToTAnchor == "BOTTOMRIGHT" then
-	    TargetFrameToT:SetPoint(BBF.GetOppositeAnchor(BetterBlizzFramesDB.targetToTAnchor),TargetFrame,BetterBlizzFramesDB.targetToTAnchor,BetterBlizzFramesDB.targetToTXPos - 108,BetterBlizzFramesDB.targetToTYPos + 10)
-    else
-        TargetFrameToT:SetPoint(BBF.GetOppositeAnchor(BetterBlizzFramesDB.targetToTAnchor),TargetFrame,BetterBlizzFramesDB.targetToTAnchor,BetterBlizzFramesDB.targetToTXPos,BetterBlizzFramesDB.targetToTYPos)
-    end
-    TargetFrameToT:SetScale(BetterBlizzFramesDB.targetToTScale)
-	--TargetFrameToT.SetPoint=function()end
+    if not InCombatLockdown() then
+        TargetFrameToT:ClearAllPoints()
+        if BetterBlizzFramesDB.targetToTAnchor == "BOTTOMRIGHT" then
+            TargetFrameToT:SetPoint(BBF.GetOppositeAnchor(BetterBlizzFramesDB.targetToTAnchor),TargetFrame,BetterBlizzFramesDB.targetToTAnchor,BetterBlizzFramesDB.targetToTXPos - 108,BetterBlizzFramesDB.targetToTYPos + 10)
+        else
+            TargetFrameToT:SetPoint(BBF.GetOppositeAnchor(BetterBlizzFramesDB.targetToTAnchor),TargetFrame,BetterBlizzFramesDB.targetToTAnchor,BetterBlizzFramesDB.targetToTXPos,BetterBlizzFramesDB.targetToTYPos)
+        end
+        TargetFrameToT:SetScale(BetterBlizzFramesDB.targetToTScale)
+        --TargetFrameToT.SetPoint=function()end
 
-    FocusFrameToT:ClearAllPoints()
-    if BetterBlizzFramesDB.focusToTAnchor == "BOTTOMRIGHT" then
-	    FocusFrameToT:SetPoint(BBF.GetOppositeAnchor(BetterBlizzFramesDB.focusToTAnchor),FocusFrame,BetterBlizzFramesDB.focusToTAnchor,BetterBlizzFramesDB.focusToTXPos - 108,BetterBlizzFramesDB.focusToTYPos + 10)
+        FocusFrameToT:ClearAllPoints()
+        if BetterBlizzFramesDB.focusToTAnchor == "BOTTOMRIGHT" then
+            FocusFrameToT:SetPoint(BBF.GetOppositeAnchor(BetterBlizzFramesDB.focusToTAnchor),FocusFrame,BetterBlizzFramesDB.focusToTAnchor,BetterBlizzFramesDB.focusToTXPos - 108,BetterBlizzFramesDB.focusToTYPos + 10)
+        else
+            FocusFrameToT:SetPoint(BBF.GetOppositeAnchor(BetterBlizzFramesDB.focusToTAnchor),FocusFrame,BetterBlizzFramesDB.focusToTAnchor,BetterBlizzFramesDB.focusToTXPos,BetterBlizzFramesDB.focusToTYPos)
+        end
+        FocusFrameToT:SetScale(BetterBlizzFramesDB.focusToTScale)
+        --FocusFrameToT.SetPoint=function()end
     else
-        FocusFrameToT:SetPoint(BBF.GetOppositeAnchor(BetterBlizzFramesDB.focusToTAnchor),FocusFrame,BetterBlizzFramesDB.focusToTAnchor,BetterBlizzFramesDB.focusToTXPos,BetterBlizzFramesDB.focusToTYPos)
+        C_Timer.After(1.5, function()
+            BBF.MoveToTFrames()
+        end)
     end
-    FocusFrameToT:SetScale(BetterBlizzFramesDB.focusToTScale)
-    --FocusFrameToT.SetPoint=function()end
 end
 
 
@@ -563,25 +583,29 @@ function BBF.FixStupidBlizzPTRShit()
     PlayerLevelText:SetPoint(a,b,c,d,-28)
     --ToT
     local a, b, c, d, e = TargetFrame.totFrame.HealthBar:GetPoint()
-    TargetFrame.totFrame.HealthBar:SetPoint(a,b,c,-5,-3)
+    TargetFrame.totFrame.HealthBar:SetPoint(a,b,c,-5,-5)
     TargetFrame.totFrame.HealthBar:SetSize(71, 13)
     --anchor x = 5
-    TargetFrame.totFrame.ManaBar:SetSize(77, 8)
+    TargetFrame.totFrame.ManaBar:SetSize(76, 8)
     local a, b, c, d, e = TargetFrame.totFrame.ManaBar:GetPoint()
-    TargetFrame.totFrame.ManaBar:SetPoint(a,b,c,-5,0)
+    TargetFrame.totFrame.ManaBar:SetPoint(a,b,c,-5,3)
+    TargetFrame.totFrame.ManaBar.ManaBarMask:SetWidth(130)
+    TargetFrame.totFrame.ManaBar.ManaBarMask:SetHeight(17)
     --anchor x = -5
     local a, b, c, d, e = TargetFrame.totFrame.Portrait:GetPoint()
-    TargetFrame.totFrame.Portrait:SetPoint(a, b, c, 6, e)
+    TargetFrame.totFrame.Portrait:SetPoint(a, b, c, 6, -4)
     local a, b, c, d, e = FocusFrame.totFrame.HealthBar:GetPoint()
-    FocusFrame.totFrame.HealthBar:SetPoint(a,b,c,-5,-3)
+    FocusFrame.totFrame.HealthBar:SetPoint(a,b,c,-5,-5)
     FocusFrame.totFrame.HealthBar:SetSize(71, 13)
     --anchor x = 5
-    FocusFrame.totFrame.ManaBar:SetSize(77, 8)
+    FocusFrame.totFrame.ManaBar:SetSize(77, 10)
     local a, b, c, d, e = FocusFrame.totFrame.ManaBar:GetPoint()
-    FocusFrame.totFrame.ManaBar:SetPoint(a,b,c,-5,0)
+    FocusFrame.totFrame.ManaBar:SetPoint(a,b,c,-5,3)
+    FocusFrame.totFrame.ManaBar.ManaBarMask:SetWidth(130)
+    FocusFrame.totFrame.ManaBar.ManaBarMask:SetHeight(17)
     --anchor x = -5
     local a, b, c, d, e = FocusFrame.totFrame.Portrait:GetPoint()
-    FocusFrame.totFrame.Portrait:SetPoint(a, b, c, 6, e)
+    FocusFrame.totFrame.Portrait:SetPoint(a, b, c, 6, -4)
     for i = 1, 4 do
         local memberFrame = PartyFrame["MemberFrame" .. i]
         if memberFrame and memberFrame.Portrait then
@@ -589,19 +613,9 @@ function BBF.FixStupidBlizzPTRShit()
         end
     end
 
-    TargetFrame.totFrame.HealthBar:SetHeight(12)
-    local a, b, c, d, e = TargetFrame.totFrame.HealthBar:GetPoint()
-    TargetFrame.totFrame.HealthBar:SetPoint(a, b, c, d, -4)
 
-    local a,b,c,d,e = TargetFrame.totFrame.ManaBar:GetPoint()
-    TargetFrame.totFrame.ManaBar:SetPoint(a,b,c,-4,1)
 
-    FocusFrame.totFrame.HealthBar:SetHeight(12)
-    local a, b, c, d, e = FocusFrame.totFrame.HealthBar:GetPoint()
-    FocusFrame.totFrame.HealthBar:SetPoint(a, b, c, d, -4)
 
-    local a,b,c,d,e = FocusFrame.totFrame.ManaBar:GetPoint()
-    FocusFrame.totFrame.ManaBar:SetPoint(a,b,c,-4,1)
 
     local a, b, c, d, e = TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:GetPoint()
     TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:SetPoint(a, b, c, d, -24)
@@ -697,6 +711,8 @@ SLASH_BBF1 = "/BBF"
 SlashCmdList["BBF"] = function(msg)
     if msg == "news" then
         NewsUpdateMessage()
+    elseif msg == "test" then
+        --playerFrameTest()
     else
         InterfaceOptionsFrame_OpenToCategory(BetterBlizzFrames)
     end

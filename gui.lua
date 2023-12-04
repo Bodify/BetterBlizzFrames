@@ -376,6 +376,12 @@ local function CreateSlider(parent, label, minValue, maxValue, stepValue, elemen
                 elseif element == "partyCastBarYPos" then
                     BetterBlizzFramesDB.partyCastBarYPos = value
                     BBF.UpdateCastbars()
+                elseif element == "partyCastbarIconXPos" then
+                    BetterBlizzFramesDB.partyCastbarIconXPos = value
+                    BBF.UpdateCastbars()
+                elseif element == "partyCastbarIconYPos" then
+                    BetterBlizzFramesDB.partyCastbarIconYPos = value
+                    BBF.UpdateCastbars()
                 elseif element == "partyCastBarWidth" then
                     BetterBlizzFramesDB.partyCastBarWidth = value
                     BBF.UpdateCastbars()
@@ -403,6 +409,12 @@ local function CreateSlider(parent, label, minValue, maxValue, stepValue, elemen
                 elseif element == "targetCastBarIconScale" then
                     BetterBlizzFramesDB.targetCastBarIconScale = value
                     BBF.ChangeCastbarSizes()
+                elseif element == "targetCastbarIconXPos" then
+                    BetterBlizzFramesDB.targetCastbarIconXPos = value
+                    BBF.ChangeCastbarSizes()
+                elseif element == "targetCastbarIconYPos" then
+                    BetterBlizzFramesDB.targetCastbarIconYPos = value
+                    BBF.ChangeCastbarSizes()
                 elseif element == "focusCastBarScale" then
                     BetterBlizzFramesDB.focusCastBarScale = value
                     BBF.ChangeCastbarSizes()
@@ -423,6 +435,12 @@ local function CreateSlider(parent, label, minValue, maxValue, stepValue, elemen
                     BBF.ChangeCastbarSizes()
                 elseif element == "playerCastBarScale" then
                     BetterBlizzFramesDB.playerCastBarScale = value
+                    BBF.ChangeCastbarSizes()
+                elseif element == "focusCastbarIconXPos" then
+                    BetterBlizzFramesDB.focusCastbarIconXPos = value
+                    BBF.ChangeCastbarSizes()
+                elseif element == "focusCastbarIconYPos" then
+                    BetterBlizzFramesDB.focusCastbarIconYPos = value
                     BBF.ChangeCastbarSizes()
                 elseif element == "playerCastBarIconScale" then
                     BetterBlizzFramesDB.playerCastBarIconScale = value
@@ -471,6 +489,9 @@ local function CreateSlider(parent, label, minValue, maxValue, stepValue, elemen
                     BBF.RefreshAllAuraFrames()
                 elseif element == "playerAuraSpacingY" then
                     BetterBlizzFramesDB.playerAuraSpacingY = value
+                    BBF.RefreshAllAuraFrames()
+                elseif element == "auraTypeGap" then
+                    BetterBlizzFramesDB.auraTypeGap = value
                     BBF.RefreshAllAuraFrames()
 
 
@@ -945,8 +966,12 @@ local function guiGeneralTab()
     playerFrameOCD:SetPoint("TOPLEFT", hideArenaFrames, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(playerFrameOCD, "Removes small gap around player portrait, healthbars and manabars, etc.\nJust in general tiny OCD fixes on a few things. Requires a reload for full effect.\nTemporary setting I might remove if blizz fixes their stuff.")
 
+    local hideLossOfControlFrameBg = CreateCheckbox("hideLossOfControlFrameBg", "Hide LossOfControl Background", BetterBlizzFrames, nil, BBF.HideFrames)
+    hideLossOfControlFrameBg:SetPoint("TOPLEFT", playerFrameOCD, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltip(hideLossOfControlFrameBg, "Hide the dark background and red bar on top and on bottom of the Loss of Control frame")
+
     local darkModeUi = CreateCheckbox("darkModeUi", "Dark Mode", BetterBlizzFrames, nil, BBF.DarkmodeFrames)
-    darkModeUi:SetPoint("TOPLEFT", playerFrameOCD, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    darkModeUi:SetPoint("TOPLEFT", hideLossOfControlFrameBg, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(darkModeUi, "Simple dark mode for: UnitFrames, Actionbars & Aura Icons.\n\nIf you want a more advanced & thorough dark mode\nI recommend the addon FrameColor instead of this setting.")
 
     local darkModeUiAura = CreateCheckbox("darkModeUiAura", "Auras", BetterBlizzFrames, nil, BBF.DarkmodeFrames)
@@ -994,7 +1019,7 @@ local function guiGeneralTab()
 
 
     local playerFrameText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    playerFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 0, -115)
+    playerFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 0, -130)
     playerFrameText:SetText("Player Frame")
     local playerFrameIcon = BetterBlizzFrames:CreateTexture(nil, "ARTWORK")
     playerFrameIcon:SetAtlas("groupfinder-icon-friend")
@@ -1062,7 +1087,7 @@ local function guiGeneralTab()
 
 
     local petFrameText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    petFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 0, -350)
+    petFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 0, -365)
     petFrameText:SetText("Pet Frame")
     local petFrameIcon = BetterBlizzFrames:CreateTexture(nil, "ARTWORK")
     petFrameIcon:SetAtlas("newplayerchat-chaticon-newcomer")
@@ -1081,7 +1106,7 @@ local function guiGeneralTab()
 
 
     local partyFrameText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    partyFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 0, -420)
+    partyFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 0, -430)
     partyFrameText:SetText("Party Frame")
     local partyFrameIcon = BetterBlizzFrames:CreateTexture(nil, "ARTWORK")
     partyFrameIcon:SetAtlas("groupfinder-icon-friend")
@@ -1576,7 +1601,7 @@ local function guiCastbars()
     anchorSubPartyCastbar:SetPoint("CENTER", mainGuiAnchor2, "CENTER", secondLineX, firstLineY)
     anchorSubPartyCastbar:SetText("Party Castbars")
 
-    local partyCastbarBorder = CreateBorderedFrame(anchorSubPartyCastbar, 157, 320, 0, -112, contentFrame)
+    local partyCastbarBorder = CreateBorderedFrame(anchorSubPartyCastbar, 157, 386, 0, -145, contentFrame)
 
     local partyCastbars = contentFrame:CreateTexture(nil, "ARTWORK")
     partyCastbars:SetAtlas("ui-castingbar-filling-channel")
@@ -1601,8 +1626,14 @@ local function guiCastbars()
     local partyCastBarIconScale = CreateSlider(contentFrame, "Icon Size", 0.4, 2, 0.01, "partyCastBarIconScale")
     partyCastBarIconScale:SetPoint("TOP", partyCastBarHeight, "BOTTOM", 0, -15)
 
+    local partyCastbarIconXPos = CreateSlider(contentFrame, "Icon x offset", -50, 50, 1, "partyCastbarIconXPos")
+    partyCastbarIconXPos:SetPoint("TOP", partyCastBarIconScale, "BOTTOM", 0, -15)
+
+    local partyCastbarIconYPos = CreateSlider(contentFrame, "Icon y offset", -50, 50, 1, "partyCastbarIconYPos")
+    partyCastbarIconYPos:SetPoint("TOP", partyCastbarIconXPos, "BOTTOM", 0, -15)
+
     local partyCastBarTestMode = CreateCheckbox("partyCastBarTestMode", "Test", contentFrame, nil, BBF.partyCastBarTestMode)
-    partyCastBarTestMode:SetPoint("TOPLEFT", partyCastBarIconScale, "BOTTOMLEFT", 10, -4)
+    partyCastBarTestMode:SetPoint("TOPLEFT", partyCastbarIconYPos, "BOTTOMLEFT", 10, -4)
     CreateTooltip(partyCastBarTestMode, "Need to be in party to test")
 
     local partyCastBarTimer = CreateCheckbox("partyCastBarTimer", "Timer", contentFrame, nil, BBF.partyCastBarTestMode)
@@ -1621,6 +1652,8 @@ local function guiCastbars()
         partyCastBarIconScale:SetValue(1)
         partyCastBarXPos:SetValue(0)
         partyCastBarYPos:SetValue(0)
+        partyCastbarIconXPos:SetValue(0)
+        partyCastbarIconYPos:SetValue(0)
         partyCastBarWidth:SetValue(100)
         partyCastBarHeight:SetValue(12)
         partyCastBarTimer:SetChecked(true)
@@ -1636,7 +1669,7 @@ local function guiCastbars()
     anchorSubTargetCastbar:SetPoint("CENTER", mainGuiAnchor2, "CENTER", thirdLineX, firstLineY)
     anchorSubTargetCastbar:SetText("Target Castbar")
 
-    local targetCastbarBorder = CreateBorderedFrame(anchorSubTargetCastbar, 157, 320, 0, -112, contentFrame)
+    local targetCastbarBorder = CreateBorderedFrame(anchorSubTargetCastbar, 157, 386, 0, -145, contentFrame)
 
     local targetCastBar = contentFrame:CreateTexture(nil, "ARTWORK")
     targetCastBar:SetAtlas("ui-castingbar-tier1-empower-2x")
@@ -1661,8 +1694,14 @@ local function guiCastbars()
     local targetCastBarIconScale = CreateSlider(contentFrame, "Icon Size", 0.4, 2, 0.01, "targetCastBarIconScale")
     targetCastBarIconScale:SetPoint("TOP", targetCastBarHeight, "BOTTOM", 0, -15)
 
+    local targetCastbarIconXPos = CreateSlider(contentFrame, "Icon x offset", -160, 160, 1, "targetCastbarIconXPos", "X")
+    targetCastbarIconXPos:SetPoint("TOP", targetCastBarIconScale, "BOTTOM", 0, -15)
+
+    local targetCastbarIconYPos = CreateSlider(contentFrame, "Icon y offset", -160, 160, 1, "targetCastbarIconYPos", "Y")
+    targetCastbarIconYPos:SetPoint("TOP", targetCastbarIconXPos, "BOTTOM", 0, -15)
+
     local targetStaticCastbar = CreateCheckbox("targetStaticCastbar", "Static", contentFrame)
-    targetStaticCastbar:SetPoint("TOPLEFT", targetCastBarIconScale, "BOTTOMLEFT", 10, -4)
+    targetStaticCastbar:SetPoint("TOPLEFT", targetCastbarIconYPos, "BOTTOMLEFT", 10, -4)
     CreateTooltip(targetStaticCastbar, "Lock the castbar in place on its frame.\nNo longer moves depending on aura amount.")
 
     local targetCastBarTimer = CreateCheckbox("targetCastBarTimer", "Timer", contentFrame, nil, BBF.CastBarTimerCaller)
@@ -1731,6 +1770,8 @@ local function guiCastbars()
         targetCastBarIconScale:SetValue(1)
         targetCastBarXPos:SetValue(0)
         targetCastBarYPos:SetValue(0)
+        targetCastbarIconXPos:SetValue(0)
+        targetCastbarIconYPos:SetValue(0)
         targetCastBarWidth:SetValue(150)
         targetCastBarHeight:SetValue(10)
         targetCastBarTimer:SetChecked(false)
@@ -1747,11 +1788,11 @@ local function guiCastbars()
     end)
 
 
-       ----------------------
+    ----------------------
     -- Pet Castbars
     ----------------------
     local anchorSubPetCastbar = contentFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    anchorSubPetCastbar:SetPoint("CENTER", mainGuiAnchor2, "CENTER", firstLineX, secondLineY - 60)
+    anchorSubPetCastbar:SetPoint("CENTER", mainGuiAnchor2, "CENTER", firstLineX, secondLineY + 5)
     anchorSubPetCastbar:SetText("Pet Castbar")
 
     local petCastbarBorder = CreateBorderedFrame(anchorSubPetCastbar, 157, 320, 0, -112, contentFrame)
@@ -1840,7 +1881,7 @@ local function guiCastbars()
     anchorSubFocusCastbar:SetPoint("CENTER", mainGuiAnchor2, "CENTER", fourthLineX, firstLineY)
     anchorSubFocusCastbar:SetText("Focus Castbar")
 
-    local focusCastbarBorder = CreateBorderedFrame(anchorSubFocusCastbar, 157, 320, 0, -112, contentFrame)
+    local focusCastbarBorder = CreateBorderedFrame(anchorSubFocusCastbar, 157, 386, 0, -145, contentFrame)
 
     local focusCastBar = contentFrame:CreateTexture(nil, "ARTWORK")
     focusCastBar:SetAtlas("ui-castingbar-full-applyingcrafting")
@@ -1865,8 +1906,14 @@ local function guiCastbars()
     local focusCastBarIconScale = CreateSlider(contentFrame, "Icon Size", 0.4, 2, 0.01, "focusCastBarIconScale")
     focusCastBarIconScale:SetPoint("TOP", focusCastBarHeight, "BOTTOM", 0, -15)
 
+    local focusCastbarIconXPos = CreateSlider(contentFrame, "Icon x offset", -160, 160, 1, "focusCastbarIconXPos", "X")
+    focusCastbarIconXPos:SetPoint("TOP", focusCastBarIconScale, "BOTTOM", 0, -15)
+
+    local focusCastbarIconYPos = CreateSlider(contentFrame, "Icon y offset", -160, 160, 1, "focusCastbarIconYPos", "Y")
+    focusCastbarIconYPos:SetPoint("TOP", focusCastbarIconXPos, "BOTTOM", 0, -15)
+
     local focusStaticCastbar = CreateCheckbox("focusStaticCastbar", "Static", contentFrame)
-    focusStaticCastbar:SetPoint("TOPLEFT", focusCastBarIconScale, "BOTTOMLEFT", 10, -4)
+    focusStaticCastbar:SetPoint("TOPLEFT", focusCastbarIconYPos, "BOTTOMLEFT", 10, -4)
     CreateTooltip(focusStaticCastbar, "Lock the castbar in place on its frame.\nNo longer moves depending on aura amount.")
 
     local focusCastBarTimer = CreateCheckbox("focusCastBarTimer", "Timer", contentFrame, nil, BBF.CastBarTimerCaller)
@@ -1934,6 +1981,8 @@ local function guiCastbars()
         focusCastBarIconScale:SetValue(1)
         focusCastBarXPos:SetValue(0)
         focusCastBarYPos:SetValue(0)
+        focusCastbarIconXPos:SetValue(0)
+        focusCastbarIconYPos:SetValue(0)
         focusCastBarWidth:SetValue(150)
         focusCastBarHeight:SetValue(10)
         focusCastBarTimer:SetChecked(false)
@@ -1957,7 +2006,7 @@ local function guiCastbars()
     anchorSubPlayerCastbar:SetPoint("CENTER", mainGuiAnchor2, "CENTER", firstLineX, firstLineY)
     anchorSubPlayerCastbar:SetText("Player Castbar")
 
-    local playerCastbarBorder = CreateBorderedFrame(anchorSubPlayerCastbar, 157, 320, 0, -112, contentFrame)
+    local playerCastbarBorder = CreateBorderedFrame(anchorSubPlayerCastbar, 157, 250, 0, -77, contentFrame)
 
     local playerCastBar = contentFrame:CreateTexture(nil, "ARTWORK")
     playerCastBar:SetAtlas("ui-castingbar-filling-standard")
@@ -2656,10 +2705,6 @@ local function guiFrameAuras()
     personalAuraSettings:SetPoint("TOP", PlayerAuraBorder, "BOTTOM", 0, -5)
     personalAuraSettings:SetText("Player Aura Settings:")
 
-    local useEditMode = contentFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-    useEditMode:SetPoint("TOP", PlayerAuraBorder, "BOTTOM", 0, -60)
-    useEditMode:SetText("Use Edit Mode for other settings.")
-
 
 
     local targetAndFocusAuraSettings = contentFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
@@ -2694,6 +2739,10 @@ local function guiFrameAuras()
     local targetAndFocusVerticalGap = CreateSlider(playerAuraFiltering, "Vertical gap", 0, 18, 0.5, "targetAndFocusVerticalGap")
     targetAndFocusVerticalGap:SetPoint("TOPLEFT", targetAndFocusHorizontalGap, "BOTTOMLEFT", 0, -17)
 
+    local auraTypeGap = CreateSlider(playerAuraFiltering, "Aura Type Gap", 0, 30, 1, "auraTypeGap", "Y")
+    auraTypeGap:SetPoint("TOPLEFT", targetAndFocusVerticalGap, "BOTTOMLEFT", 0, -17)
+    CreateTooltip(auraTypeGap, "The gap size between buffs & debuffs")
+
 --[=[
     local maxTargetBuffs = CreateSlider(playerAuraFiltering, "Max Buffs", 1, 32, 1, "maxTargetBuffs")
     maxTargetBuffs:SetPoint("TOPLEFT", targetAndFocusVerticalGap, "BOTTOMLEFT", 0, -17)
@@ -2709,9 +2758,16 @@ local function guiFrameAuras()
 
 
 
-    local playerAuraSpacingX = CreateSlider(playerAuraFiltering, "Horizontal Padding", 0, 5, 1, "playerAuraSpacingX")
+    local playerAuraSpacingX = CreateSlider(playerAuraFiltering, "Horizontal Padding", 0, 5, 1, "playerAuraSpacingX", "X")
     playerAuraSpacingX:SetPoint("TOP", PlayerAuraBorder, "BOTTOM", 0, -35)
     CreateTooltip(playerAuraSpacingX, "Horizontal padding for aura icons.\nAllows you to set gap to 0 (Blizz limit is 5 in EditMode).")
+
+    local playerAuraSpacingY = CreateSlider(playerAuraFiltering, "Vertical Padding", -10, 10, 1, "playerAuraSpacingY", "Y")
+    playerAuraSpacingY:SetPoint("TOP", playerAuraSpacingX, "BOTTOM", 0, -15)
+
+    local useEditMode = contentFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    useEditMode:SetPoint("TOP", PlayerAuraBorder, "BOTTOM", 0, -90)
+    useEditMode:SetText("Use Edit Mode for other settings.")
 
 
 

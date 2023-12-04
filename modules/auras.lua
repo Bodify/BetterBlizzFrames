@@ -547,6 +547,7 @@ local function AdjustAuras(self, frameType)
 
     local unit = self.unit
     local isFriend = unit and UnitIsFriend("player", unit)
+    local auraTypeGap = BetterBlizzFramesDB.auraTypeGap
 
     if not isFriend then
         if buffsOnTop then
@@ -562,7 +563,7 @@ local function AdjustAuras(self, frameType)
                 yOffsetForBuffs = totalDebuffHeight + (auraSpacingY * #self.rowHeights) + userYOffset
             else
                 -- If there are debuffs, position buffs below the debuffs
-                yOffsetForBuffs = totalDebuffHeight + (auraSpacingY * #self.rowHeights) + 5 + userYOffset
+                yOffsetForBuffs = totalDebuffHeight + (auraSpacingY * #self.rowHeights) + 5 + userYOffset + auraTypeGap
             end
 
             -- Adjust the position of buffs using the calculated Y-offset
@@ -575,7 +576,7 @@ local function AdjustAuras(self, frameType)
             self.rowHeights = adjustAuraPosition(debuffs, 0)
             local totalDebuffHeight = sum(self.rowHeights)
             --local buffRowHeights = adjustAuraPosition(buffs, -totalDebuffHeight - (auraSpacingY * #self.rowHeights), shortRowCounter < shortRows) -- Then adjust buffs
-            local buffRowHeights = adjustAuraPosition(buffs, -totalDebuffHeight - (auraSpacingY * #self.rowHeights))
+            local buffRowHeights = adjustAuraPosition(buffs, -totalDebuffHeight - (auraSpacingY * #self.rowHeights) - auraTypeGap)
             for _, height in ipairs(buffRowHeights) do
                 table_insert(self.rowHeights, height)
             end
@@ -593,7 +594,7 @@ local function AdjustAuras(self, frameType)
                 yOffsetForDebuffs = totalBuffHeight + (auraSpacingY * #self.rowHeights) + userYOffset
             else
                 -- If there are debuffs, position buffs below the debuffs
-                yOffsetForDebuffs = totalBuffHeight + (auraSpacingY * #self.rowHeights) + 5 + userYOffset
+                yOffsetForDebuffs = totalBuffHeight + (auraSpacingY * #self.rowHeights) + 5 + userYOffset + auraTypeGap
             end
 
             local debuffRowHeights = adjustAuraPosition(debuffs, yOffsetForDebuffs, buffsOnTop)
@@ -605,7 +606,7 @@ local function AdjustAuras(self, frameType)
             self.rowHeights = adjustAuraPosition(buffs, 0)
             local totalBuffHeight = sum(self.rowHeights)
             --local debuffRowHeights = adjustAuraPosition(debuffs, -totalBuffHeight - (auraSpacingY * #self.rowHeights))
-            local debuffRowHeights = adjustAuraPosition(debuffs, -totalBuffHeight - (auraSpacingY * #self.rowHeights))
+            local debuffRowHeights = adjustAuraPosition(debuffs, -totalBuffHeight - (auraSpacingY * #self.rowHeights) - auraTypeGap)
             for _, height in ipairs(debuffRowHeights) do
                 table_insert(self.rowHeights, height)
             end
@@ -748,14 +749,15 @@ local function PersonalBuffFrameFilterAndGrid(self)
     local isExpanded = BuffFrame:IsExpanded();
     local nextAuraInfoIndex = 1;
     local currentAuraSize = BuffFrame.AuraContainer.iconScale
-        if ToggleHiddenAurasButton then
-            ToggleHiddenAurasButton:SetScale(currentAuraSize)
-        end
+    if ToggleHiddenAurasButton then
+        ToggleHiddenAurasButton:SetScale(currentAuraSize)
+    end
 
     -- Define the parameters for your grid system
+    local playerAuraSpacingY = BetterBlizzFramesDB.playerAuraSpacingY
     local maxAurasPerRow = BuffFrame.AuraContainer.iconStride
     local auraSpacingX = BuffFrame.AuraContainer.iconPadding - 7 + BetterBlizzFramesDB.playerAuraSpacingX
-    local auraSpacingY = BuffFrame.AuraContainer.iconPadding + 8
+    local auraSpacingY = BuffFrame.AuraContainer.iconPadding + 8 + playerAuraSpacingY
     local auraSize = 32;      -- Set the size of each aura frame
     --local auraScale = BuffFrame.AuraContainer.iconScale
 
@@ -765,7 +767,7 @@ local function PersonalBuffFrameFilterAndGrid(self)
     local currentCol = 1;
     local xOffset = 0;
     local yOffset = 0;
-    local hiddenYOffset = -auraSpacingY - auraSize;
+    local hiddenYOffset = -auraSpacingY - auraSize + playerAuraSpacingY;
     local toggleIcon = BetterBlizzFramesDB.showHiddenAurasIcon and CreateToggleIcon() or nil
 
     for _, auraFrame in ipairs(BuffFrame.auraFrames) do
@@ -950,7 +952,7 @@ local function PersonalDebuffFrameFilterAndGrid(self)
 
     local maxAurasPerRow = DebuffFrame.AuraContainer.iconStride
     local auraSpacingX = DebuffFrame.AuraContainer.iconPadding - 7 + BetterBlizzFramesDB.playerAuraSpacingX
-    local auraSpacingY = DebuffFrame.AuraContainer.iconPadding + 8
+    local auraSpacingY = DebuffFrame.AuraContainer.iconPadding + 8 + BetterBlizzFramesDB.playerAuraSpacingY
     local auraSize = 32;      -- Set the size of each aura frame
 
     --local dotChecker = BetterBlizzFramesDB.debuffDotChecker

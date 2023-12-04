@@ -25,15 +25,6 @@ local function GetPartyMemberFrame(unitId)
 
     return nil
 end
-local function DebugSelfProperties(self)
-    if type(self) == 'table' then
-        for key in pairs(self) do
-            DEFAULT_CHAT_FRAME:AddMessage("Key: " .. tostring(key))
-        end
-    else
-        DEFAULT_CHAT_FRAME:AddMessage("self is not a table!")
-    end
-end
 
 local function UpdateCastTimer(self)
     local remainingTime
@@ -78,11 +69,11 @@ function BBF.UpdateCastbars()
                         spellbar.BorderShield:SetAlpha(0)
                     else
                         spellbar.Icon:ClearAllPoints()
-                        spellbar.Icon:SetPoint("RIGHT", spellbar, "LEFT", -4 + 0, -5 + 0)
+                        spellbar.Icon:SetPoint("RIGHT", spellbar, "LEFT", -4 + BetterBlizzFramesDB.partyCastbarIconXPos, -5 + BetterBlizzFramesDB.partyCastbarIconYPos)
                         spellbar.Icon:SetScale(BetterBlizzFramesDB.partyCastBarIconScale)
                         spellbar.Icon:SetAlpha(1)
                         spellbar.BorderShield:ClearAllPoints()
-                        spellbar.BorderShield:SetPoint("RIGHT", spellbar, "LEFT", -1 + 0, -7 + 0)
+                        spellbar.BorderShield:SetPoint("RIGHT", spellbar, "LEFT", -1 + BetterBlizzFramesDB.partyCastbarIconXPos, -7 + BetterBlizzFramesDB.partyCastbarIconYPos)
                         spellbar.BorderShield:SetScale(BetterBlizzFramesDB.partyCastBarIconScale)
                         spellbar.BorderShield:SetAlpha(1)
                     end
@@ -275,7 +266,7 @@ function BBF.partyCastBarTestMode()
                 spellbar.Icon:Hide()
             else
                 spellbar.Icon:Show()
-                spellbar.Icon:SetTexture(GetSpellTexture(116));  -- Example spell texture
+                spellbar.Icon:SetTexture(GetSpellTexture(116));
             end
             spellbar.Text:SetText("Frostbolt")
             if BetterBlizzFramesDB.partyCastBarTimer then
@@ -293,7 +284,6 @@ function BBF.partyCastBarTestMode()
             spellbar.FakeTimer:Hide()
         end
     end
-
 end
 
 function BBF.petCastBarTestMode()
@@ -432,10 +422,10 @@ function BBF.ShowPlayerCastBarIcon()
     if PlayerCastingBarFrame then
         if BetterBlizzFramesDB.playerCastBarShowIcon then
             PlayerCastingBarFrame.Icon:Show()
-            PlayerCastingBarFrame.showShield = true
+            --PlayerCastingBarFrame.showShield = true
         else
             PlayerCastingBarFrame.Icon:Hide()
-            PlayerCastingBarFrame.showShield = false
+            --PlayerCastingBarFrame.showShield = false
         end
     else
         C_Timer.After(1, BBF.ShowPlayerCastBarIcon)
@@ -469,11 +459,11 @@ function BBF.ChangeCastbarSizes()
     PlayerCastingBarFrame.Text:SetPoint("BOTTOM", PlayerCastingBarFrame, "BOTTOM", 0, -14)
     PlayerCastingBarFrame.Icon:SetSize(22,22)
     PlayerCastingBarFrame.Icon:ClearAllPoints()
-    PlayerCastingBarFrame.Icon:SetPoint("RIGHT", PlayerCastingBarFrame, "LEFT", -5, -5)
+    PlayerCastingBarFrame.Icon:SetPoint("RIGHT", PlayerCastingBarFrame, "LEFT", -5 + BetterBlizzFramesDB.playerCastbarIconXPos, -5 + BetterBlizzFramesDB.playerCastbarIconYPos)
     PlayerCastingBarFrame.Icon:SetScale(BetterBlizzFramesDB.playerCastBarIconScale)
     PlayerCastingBarFrame.BorderShield:SetSize(30,36)
     PlayerCastingBarFrame.BorderShield:ClearAllPoints()
-    PlayerCastingBarFrame.BorderShield:SetPoint("RIGHT", PlayerCastingBarFrame, "LEFT", -1.5, -7)
+    PlayerCastingBarFrame.BorderShield:SetPoint("RIGHT", PlayerCastingBarFrame, "LEFT", -1.5 + BetterBlizzFramesDB.playerCastbarIconXPos, -7 + BetterBlizzFramesDB.playerCastbarIconYPos)
     PlayerCastingBarFrame.BorderShield:SetScale(BetterBlizzFramesDB.playerCastBarIconScale)
     PlayerCastingBarFrame.BorderShield:SetDrawLayer("BORDER")
     PlayerCastingBarFrame.Icon:SetDrawLayer("ARTWORK")
@@ -491,6 +481,13 @@ function BBF.ChangeCastbarSizes()
     TargetFrameSpellBar:SetWidth(BetterBlizzFramesDB.targetCastBarWidth)
     TargetFrameSpellBar:SetHeight(BetterBlizzFramesDB.targetCastBarHeight)
     TargetFrameSpellBar.Icon:SetScale(BetterBlizzFramesDB.targetCastBarIconScale)
+    local a,b,c,d,e = TargetFrameSpellBar.Icon:GetPoint()
+    TargetFrameSpellBar.Icon:ClearAllPoints()
+    TargetFrameSpellBar.Icon:SetPoint(a, b, c, -2 + BetterBlizzFramesDB.targetCastbarIconXPos, -5 + BetterBlizzFramesDB.targetCastbarIconYPos)
+
+    local a,b,c,d,e = TargetFrameSpellBar.BorderShield:GetPoint()
+    TargetFrameSpellBar.BorderShield:ClearAllPoints()
+    TargetFrameSpellBar.BorderShield:SetPoint(a, b, c, -27 + BetterBlizzFramesDB.targetCastbarIconXPos, 4 + BetterBlizzFramesDB.targetCastbarIconYPos)
     TargetFrameSpellBar.BorderShield:SetScale(BetterBlizzFramesDB.targetCastBarIconScale)
     TargetFrameSpellBar.Text:ClearAllPoints()
     TargetFrameSpellBar.Text:SetPoint("BOTTOM", TargetFrameSpellBar, "BOTTOM", 0, -14)
@@ -499,7 +496,14 @@ function BBF.ChangeCastbarSizes()
     FocusFrameSpellBar:SetScale(BetterBlizzFramesDB.focusCastBarScale)
     FocusFrameSpellBar:SetWidth(BetterBlizzFramesDB.focusCastBarWidth)
     FocusFrameSpellBar:SetHeight(BetterBlizzFramesDB.focusCastBarHeight)
+    local a,b,c,d,e = FocusFrameSpellBar.Icon:GetPoint()
+    FocusFrameSpellBar.Icon:ClearAllPoints()
+    FocusFrameSpellBar.Icon:SetPoint(a, b, c, -2 + BetterBlizzFramesDB.focusCastbarIconXPos, -5 + BetterBlizzFramesDB.focusCastbarIconYPos)
     FocusFrameSpellBar.Icon:SetScale(BetterBlizzFramesDB.focusCastBarIconScale)
+
+    local a,b,c,d,e = FocusFrameSpellBar.BorderShield:GetPoint()
+    FocusFrameSpellBar.BorderShield:ClearAllPoints()
+    FocusFrameSpellBar.BorderShield:SetPoint(a, b, c, -27 + BetterBlizzFramesDB.focusCastbarIconXPos, 4 + BetterBlizzFramesDB.focusCastbarIconYPos)
     FocusFrameSpellBar.BorderShield:SetScale(BetterBlizzFramesDB.focusCastBarIconScale)
     FocusFrameSpellBar.Text:ClearAllPoints()
     FocusFrameSpellBar.Text:SetPoint("BOTTOM", FocusFrameSpellBar, "BOTTOM", 0, -14)

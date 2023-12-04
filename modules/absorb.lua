@@ -67,10 +67,10 @@ local function UpdateAbsorbIndicator(frame, unit)
     if darkModeOn then
         frame.absorbIcon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
         frame.absorbIcon.border:SetBackdropBorderColor(vertexColor, vertexColor, vertexColor)
-        frame.absorbIcon.border:Hide()
+        frame.absorbIcon.border:SetAlpha(0)
     else
         frame.absorbIcon:SetTexCoord(0, 1, 0, 1)
-        frame.absorbIcon.border:Hide()
+        frame.absorbIcon.border:SetAlpha(0)
     end
 
     frame.absorbIcon:ClearAllPoints()
@@ -82,9 +82,9 @@ local function UpdateAbsorbIndicator(frame, unit)
 
     if testMode then
         frame.absorbIcon:SetTexture("Interface\\Icons\\SPELL_HOLY_POWERWORDSHIELD")
-        frame.absorbIcon:Show()
+        frame.absorbIcon:SetAlpha(1)
         frame.absorbIndicator:SetText("69k")
-        frame.absorbIndicator:Show()
+        frame.absorbIndicator:SetAlpha(1)
         if frame == PlayerFrame then
             if anchor == "LEFT" or anchor == "RIGHT" then
                 frame.absorbIcon:SetPoint(anchor, frame, reverseAnchor, -20 + xPos, -1.5 + yPos)
@@ -93,9 +93,9 @@ local function UpdateAbsorbIndicator(frame, unit)
             end
             if showIcon then
                 if darkModeOn then
-                    frame.absorbIcon.border:Show()
+                    frame.absorbIcon.border:SetAlpha(1)
                 else
-                    frame.absorbIcon.border:Hide()
+                    frame.absorbIcon.border:SetAlpha(0)
                 end
                 if flipIconText then
                     frame.absorbIndicator:SetPoint("RIGHT", frame.absorbIcon, "LEFT", 0, 0)
@@ -113,9 +113,9 @@ local function UpdateAbsorbIndicator(frame, unit)
             end
             if showIcon then
                 if darkModeOn then
-                    frame.absorbIcon.border:Show()
+                    frame.absorbIcon.border:SetAlpha(1)
                 else
-                    frame.absorbIcon.border:Hide()
+                    frame.absorbIcon.border:SetAlpha(0)
                 end
                 if flipIconText then
                     frame.absorbIndicator:SetPoint("LEFT", frame.absorbIcon, "RIGHT", 3, 0)
@@ -138,9 +138,9 @@ local function UpdateAbsorbIndicator(frame, unit)
             end
             if showIcon then
                 if darkModeOn then
-                    frame.absorbIcon.border:Show()
+                    frame.absorbIcon.border:SetAlpha(1)
                 else
-                    frame.absorbIcon.border:Hide()
+                    frame.absorbIcon.border:SetAlpha(0)
                 end
                 if flipIconText then
                     frame.absorbIndicator:SetPoint("RIGHT", frame.absorbIcon, "LEFT", 0, 0)
@@ -158,9 +158,9 @@ local function UpdateAbsorbIndicator(frame, unit)
             end
             if showIcon then
                 if darkModeOn then
-                    frame.absorbIcon.border:Show()
+                    frame.absorbIcon.border:SetAlpha(1)
                 else
-                    frame.absorbIcon.border:Hide()
+                    frame.absorbIcon.border:SetAlpha(0)
                 end
                 if flipIconText then
                     frame.absorbIndicator:SetPoint("LEFT", frame.absorbIcon, "RIGHT", 3, 0)
@@ -179,40 +179,40 @@ local function UpdateAbsorbIndicator(frame, unit)
         if absorb >= 1000 then
             local displayValue = math.floor(absorb / 1000) .. "k"
             frame.absorbIndicator:SetText(displayValue)
-            frame.absorbIndicator:Show()
+            frame.absorbIndicator:SetAlpha(1)
 
             if showIcon then
                 local auraIcon = GetMaxAbsorbAuraIcon(unit)
                 if auraIcon then
                     frame.absorbIcon:SetTexture(auraIcon)
-                    frame.absorbIcon:Show()
+                    frame.absorbIcon:SetAlpha(1)
                     if frame.absorbIcon.border and darkModeUi then
-                        frame.absorbIcon.border:Show()
+                        frame.absorbIcon.border:SetAlpha(1)
                     end
                 else
-                    frame.absorbIcon:Hide()
+                    frame.absorbIcon:SetAlpha(0)
                     if frame.absorbIcon.border then
-                        frame.absorbIcon.border:Hide()
+                        frame.absorbIcon.border:SetAlpha(0)
                     end
                 end
             else
-                frame.absorbIcon:Hide()
+                frame.absorbIcon:SetAlpha(0)
                 if frame.absorbIcon.border then
-                    frame.absorbIcon.border:Hide()
+                    frame.absorbIcon.border:SetAlpha(0)
                 end
             end
         else
-            frame.absorbIndicator:Hide()
-            frame.absorbIcon:Hide()
+            frame.absorbIndicator:SetAlpha(0)
+            frame.absorbIcon:SetAlpha(0)
             if frame.absorbIcon.border then
-                frame.absorbIcon.border:Hide()
+                frame.absorbIcon.border:SetAlpha(0)
             end
         end
     else
-        if frame.absorbIndicator then frame.absorbIndicator:Hide() end
-        if frame.absorbIcon then frame.absorbIcon:Hide() end
+        if frame.absorbIndicator then frame.absorbIndicator:SetAlpha(0) end
+        if frame.absorbIcon then frame.absorbIcon:SetAlpha(0) end
         if frame.absorbIcon.border then
-            frame.absorbIcon.border:Hide()
+            frame.absorbIcon.border:SetAlpha(0)
         end
     end
 end
@@ -224,15 +224,15 @@ function BBF.AbsorbCaller()
     UpdateAbsorbIndicator(TargetFrame, "target")
     UpdateAbsorbIndicator(FocusFrame, "focus")
     if not BetterBlizzFramesDB.absorbIndicator then
-        if TargetFrame.absorbIcon and TargetFrame.absorbIcon.border then TargetFrame.absorbIcon.border:Hide() end
-        if TargetFrame.absorbIndicator then TargetFrame.absorbIndicator:Hide() end
-        if TargetFrame.absorbIcon then TargetFrame.absorbIcon:Hide() end
-        if PlayerFrame.absorbIndicator then PlayerFrame.absorbIndicator:Hide() end
-        if PlayerFrame.absorbIcon then PlayerFrame.absorbIcon:Hide() end
-        if PlayerFrame.absorbIcon and PlayerFrame.absorbIcon.border then PlayerFrame.absorbIcon.border:Hide() end
-        if FocusFrame.absorbIndicator then FocusFrame.absorbIndicator:Hide() end
-        if FocusFrame.absorbIcon then FocusFrame.absorbIcon:Hide() end
-        if FocusFrame.absorbIcon and FocusFrame.absorbIcon.border then FocusFrame.absorbIcon.border:Hide() end
+        if TargetFrame.absorbIcon and TargetFrame.absorbIcon.border then TargetFrame.absorbIcon.border:SetAlpha(0) end
+        if TargetFrame.absorbIndicator then TargetFrame.absorbIndicator:SetAlpha(0) end
+        if TargetFrame.absorbIcon then TargetFrame.absorbIcon:SetAlpha(0) end
+        if PlayerFrame.absorbIndicator then PlayerFrame.absorbIndicator:SetAlpha(0) end
+        if PlayerFrame.absorbIcon then PlayerFrame.absorbIcon:SetAlpha(0) end
+        if PlayerFrame.absorbIcon and PlayerFrame.absorbIcon.border then PlayerFrame.absorbIcon.border:SetAlpha(0) end
+        if FocusFrame.absorbIndicator then FocusFrame.absorbIndicator:SetAlpha(0) end
+        if FocusFrame.absorbIcon then FocusFrame.absorbIcon:SetAlpha(0) end
+        if FocusFrame.absorbIcon and FocusFrame.absorbIcon.border then FocusFrame.absorbIcon.border:SetAlpha(0) end
     end
 end
 
