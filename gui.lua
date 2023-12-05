@@ -493,7 +493,9 @@ local function CreateSlider(parent, label, minValue, maxValue, stepValue, elemen
                 elseif element == "auraTypeGap" then
                     BetterBlizzFramesDB.auraTypeGap = value
                     BBF.RefreshAllAuraFrames()
-
+                elseif element == "targetAndFocusSmallAuraScale" then
+                    BetterBlizzFramesDB.targetAndFocusSmallAuraScale = value
+                    BBF.RefreshAllAuraFrames()
 
 
                     --end
@@ -2721,11 +2723,16 @@ local function guiFrameAuras()
 
 
 
-    local targetAndFocusAuraScale = CreateSlider(playerAuraFiltering, "Aura size", 0.7, 2, 0.01, "targetAndFocusAuraScale")
+    local targetAndFocusAuraScale = CreateSlider(playerAuraFiltering, "All Aura size", 0.7, 2, 0.01, "targetAndFocusAuraScale")
     targetAndFocusAuraScale:SetPoint("TOP", targetAndFocusAuraSettings, "BOTTOM", 0, -20)
+    CreateTooltip(targetAndFocusAuraScale, "Adjusts the size of ALL auras")
+
+    local targetAndFocusSmallAuraScale = CreateSlider(playerAuraFiltering, "Small Aura size", 0.7, 2, 0.01, "targetAndFocusSmallAuraScale")
+    targetAndFocusSmallAuraScale:SetPoint("TOP", targetAndFocusAuraScale, "BOTTOM", 0, -20)
+    CreateTooltip(targetAndFocusSmallAuraScale, "Adjusts the size of small auras / auras that are not yours.")
 
     local targetAndFocusAurasPerRow = CreateSlider(playerAuraFiltering, "Max auras per row", 1, 12, 1, "targetAndFocusAurasPerRow")
-    targetAndFocusAurasPerRow:SetPoint("TOPLEFT", targetAndFocusAuraScale, "BOTTOMLEFT", 0, -17)
+    targetAndFocusAurasPerRow:SetPoint("TOPLEFT", targetAndFocusSmallAuraScale, "BOTTOMLEFT", 0, -17)
 
     local targetAndFocusAuraOffsetX = CreateSlider(playerAuraFiltering, "x offset", -50, 50, 1, "targetAndFocusAuraOffsetX", "X")
     targetAndFocusAuraOffsetX:SetPoint("TOPLEFT", targetAndFocusAurasPerRow, "BOTTOMLEFT", 0, -17)
@@ -2758,7 +2765,7 @@ local function guiFrameAuras()
 
 
 
-    local playerAuraSpacingX = CreateSlider(playerAuraFiltering, "Horizontal Padding", 0, 5, 1, "playerAuraSpacingX", "X")
+    local playerAuraSpacingX = CreateSlider(playerAuraFiltering, "Horizontal Padding", 0, 10, 1, "playerAuraSpacingX", "X")
     playerAuraSpacingX:SetPoint("TOP", PlayerAuraBorder, "BOTTOM", 0, -35)
     CreateTooltip(playerAuraSpacingX, "Horizontal padding for aura icons.\nAllows you to set gap to 0 (Blizz limit is 5 in EditMode).")
 

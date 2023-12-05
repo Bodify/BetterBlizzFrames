@@ -141,6 +141,7 @@ local defaultSettings = {
     targetAndFocusHorizontalGap = 3,
     targetAndFocusVerticalGap = 4,
     targetAndFocusAurasPerRow = 6,
+    targetAndFocusSmallAuraScale = 1,
 
     frameAurasXPos = 0,
     frameAurasYPos = 0,
@@ -295,11 +296,10 @@ end
 
 local function NewsUpdateMessage()
     DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames news:")
-    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a #1: \"Aura Type Gap\" slider for Target & Focus auras.")
-    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a #2: Vertical gap slider for Player auras.")
-    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a #3: Added TTS chat button into the hide chat buttons setting.")
-    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a #4: \"Hide LossOfControl Background\" setting")
-    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a #5: XY offset settings for target & focus castbar icon")
+    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a #1: You can now adjust \"small auras\" on target & focus size.")
+    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a #2: General performance increase with aura filtering.")
+    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a #3: Aura Type Gap bugfix.")
+    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a #4: Probably more bugs.. >.< Please let me know if you encounter one!")
 end
 
 local function CheckForUpdate()

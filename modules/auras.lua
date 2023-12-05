@@ -294,6 +294,13 @@ local function CheckBuffs()
                 if aura.PandemicGlow then
                     aura.PandemicGlow:Hide()
                 end
+                if aura.Border then
+                    aura.Border:SetAlpha(1)
+                end
+                if aura.border then
+                    aura.border:SetAlpha(1)
+                end
+                aura.isPandemicActive = false
             elseif remainingDuration <= 5.1 then
                 if not aura.PandemicGlow then
                     aura.PandemicGlow = aura:CreateTexture(nil, "OVERLAY");
@@ -306,13 +313,34 @@ local function CheckBuffs()
                     aura.PandemicGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -10, 10);
                     aura.PandemicGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", 10, -10);
                 end
+                if aura.Border then
+                    aura.Border:SetAlpha(0)
+                end
+                if aura.border then
+                    aura.border:SetAlpha(0)
+                end
+                aura.isPandemicActive = true
                 aura.PandemicGlow:Show();
             else
                 if aura.PandemicGlow then
                     aura.PandemicGlow:Hide();
                 end
+                if aura.Border then
+                    aura.Border:SetAlpha(1)
+                end
+                if aura.border then
+                    aura.border:SetAlpha(1)
+                end
+                aura.isPandemicActive = false
             end
         else
+            aura.isPandemicActive = false
+            if aura.Border then
+                aura.Border:SetAlpha(1)
+            end
+            if aura.border then
+                aura.border:SetAlpha(1)
+            end
             for auraInstanceID, _ in pairs(trackedBuffs) do
                 trackedBuffs[auraInstanceID] = nil
             end
@@ -330,6 +358,7 @@ local function StartCheckBuffsTimer()
     end
 end
 
+local MIN_AURA_SIZE = 17
 local adjustmentForBuffsOnTop = -80  -- Height adjustment when buffs are on top
 local function AdjustAuras(self, frameType)
     if not BetterBlizzFramesDB.playerAuraFiltering then return end
@@ -339,11 +368,14 @@ local function AdjustAuras(self, frameType)
     local baseOffsetX = 25 + db.targetAndFocusAuraOffsetX
     local baseOffsetY = 12.5 + db.targetAndFocusAuraOffsetY
     local auraScale = db.targetAndFocusAuraScale
+    local CUSTOM_SCALE_FACTOR = db.targetAndFocusSmallAuraScale
+    local adjustedSize = MIN_AURA_SIZE * CUSTOM_SCALE_FACTOR
 
     local auraSpacingX = db.targetAndFocusHorizontalGap
     local auraSpacingY = db.targetAndFocusVerticalGap
     local aurasPerRow = db.targetAndFocusAurasPerRow
     local buffsOnTop = self.buffsOnTop
+    local printSpellId = BetterBlizzFramesDB.printAuraSpellIds
 
     local initialOffsetX = (baseOffsetX / auraScale)
     local initialOffsetY = (baseOffsetY / auraScale)
@@ -355,6 +387,28 @@ local function AdjustAuras(self, frameType)
         for i, aura in ipairs(auras) do
             aura:SetScale(auraScale)
             aura:SetMouseClickEnabled(false)
+            local auraSize = aura:GetHeight()
+            if not aura.isLarge then
+                -- Apply the adjusted size to smaller auras
+                aura:SetSize(adjustedSize, adjustedSize)
+                if aura.PurgeGlow then
+                    aura.PurgeGlow:SetScale(CUSTOM_SCALE_FACTOR)
+                end
+                if aura.ImportantGlow then
+                    aura.ImportantGlow:SetScale(CUSTOM_SCALE_FACTOR)
+                end
+                if aura.PandemicGlow then
+                    aura.PandemicGlow:SetScale(CUSTOM_SCALE_FACTOR)
+                end
+                if aura.Stealable then
+                    aura.Stealable:SetScale(CUSTOM_SCALE_FACTOR)
+                end
+                if aura.Border then
+                    aura.Border:SetScale(CUSTOM_SCALE_FACTOR)
+                end
+                auraSize = adjustedSize
+            end
+
             local columnIndex, rowIndex
 
             columnIndex = (i - 1) % aurasPerRow
@@ -374,7 +428,7 @@ local function AdjustAuras(self, frameType)
                 rowWidths[rowIndex] = rowWidths[rowIndex] + auraSpacingX
             end
 
-            local auraSize = aura:GetHeight()
+
             local offsetX = rowWidths[rowIndex]
             rowHeights[rowIndex] = math_max(auraSize, (rowHeights[rowIndex] or 0))
             rowWidths[rowIndex] = offsetX + auraSize
@@ -414,7 +468,6 @@ local function AdjustAuras(self, frameType)
             end
 
             if shouldShowAura then
-                local printSpellId = BetterBlizzFramesDB.printAuraSpellIds
                 -- Print Logic
                 if printSpellId and not aura.bbfHookAdded then
                     aura:HookScript("OnEnter", function()
@@ -442,6 +495,47 @@ local function AdjustAuras(self, frameType)
                     aura.bbfHookAdded = true
                 end
 
+                -- Important logic
+                if isImportant then
+                    aura.isImportant = true
+                    if not aura.ImportantGlow then
+                        aura.ImportantGlow = aura:CreateTexture(nil, "OVERLAY")
+                        aura.ImportantGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -10, 10)
+                        aura.ImportantGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", 10, -10)
+                        aura.ImportantGlow:SetAtlas("newplayertutorial-drag-slotgreen")
+                    end
+                    aura.ImportantGlow:Show()
+                else
+                    aura.isImportant = false
+                    if aura.ImportantGlow then
+                        aura.ImportantGlow:Hide()
+                        if aura.Stealable and auraData.isStealable then
+                            aura.Stealable:SetAlpha(1)
+                        end
+                    end
+                end
+
+                -- Better Purge Glow
+                if (frameType == "target" and auraData.isStealable and BetterBlizzFramesDB.targetBuffPurgeGlow) or
+                (frameType == "focus" and auraData.isStealable and BetterBlizzFramesDB.focusBuffPurgeGlow) then
+                    if not aura.PurgeGlow then
+                        aura.PurgeGlow = aura:CreateTexture(nil, "OVERLAY")
+                        aura.PurgeGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -9, 9)
+                        aura.PurgeGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", 9, -9)
+                        aura.PurgeGlow:SetAtlas("newplayertutorial-drag-slotblue")
+                    end
+                    aura.isPurgeGlow = true
+                    aura.PurgeGlow:Show()
+                else
+                    if aura.PurgeGlow then
+                        if aura.Stealable and auraData.isStealable then
+                            aura.Stealable:SetAlpha(1)
+                        end
+                        aura.PurgeGlow:Hide()
+                    end
+                    aura.isPurgeGlow = false
+                end
+
                 -- Pandemic Logic
                 if isPandemic then
                     aura.expirationTime = auraData.expirationTime
@@ -455,59 +549,25 @@ local function AdjustAuras(self, frameType)
                     end
                 end
 
-                -- Important logic
-                if isImportant then
-                    aura.isImportant = true
-                    if not aura.ImportantGlow then
-                        aura.ImportantGlow = aura:CreateTexture(nil, "OVERLAY")
-                        aura.ImportantGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -10, 10)
-                        aura.ImportantGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", 10, -10)
-                        aura.ImportantGlow:SetAtlas("newplayertutorial-drag-slotgreen")
-                    end
+                if isImportant or aura.isPurgeGlow or aura.isPandemicActive then
                     if aura.border then
-                        aura.border:Hide()
+                        aura.border:SetAlpha(0)
                     end
                     if aura.Border then
-                        aura.Border:Hide()
-                    end
-                    aura.ImportantGlow:Show()
-                else
-                    if aura.Border then
-                        aura.Border:Show()
-                    end
-                    aura.isImportant = false
-                    if aura.ImportantGlow then
-                        aura.ImportantGlow:Hide()
-                    end
-                end
-
-                if (frameType == "target" and auraData.isStealable and BetterBlizzFramesDB.targetBuffPurgeGlow) or
-                (frameType == "focus" and auraData.isStealable and BetterBlizzFramesDB.focusBuffPurgeGlow) then
-                    if not aura.PurgeGlow then
-                        aura.PurgeGlow = aura:CreateTexture(nil, "OVERLAY")
-                        if aura.border and aura.border:IsVisible() then
-                            aura.PurgeGlow:SetParent(aura.border)
-                        end
-                        aura.PurgeGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -9, 9)
-                        aura.PurgeGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", 9, -9)
-                        aura.PurgeGlow:SetAtlas("newplayertutorial-drag-slotblue")
-                    end
-                    if aura.Border then
-                        aura.Border:Hide()
+                        aura.Border:SetAlpha(0)
                     end
                     if aura.Stealable then
-                        aura.Stealable:Hide()
+                        aura.Stealable:SetAlpha(0)
                     end
-                    aura.PurgeGlow:Show()
                 else
-                    if aura.PurgeGlow then
-                        if aura.Border then
-                            aura.Border:Show()
-                        end
-                        if aura.Stealable and auraData.isStealable then
-                            aura.Stealable:Show()
-                        end
-                        aura.PurgeGlow:Hide()
+                    if aura.border then
+                        aura.border:SetAlpha(1)
+                    end
+                    if aura.Border then
+                        aura.Border:SetAlpha(1)
+                    end
+                    if aura.Stealable then
+                        aura.Stealable:SetAlpha(1)
                     end
                 end
 
@@ -552,31 +612,33 @@ local function AdjustAuras(self, frameType)
     if not isFriend then
         if buffsOnTop then
             local userYOffset = BetterBlizzFramesDB.targetAndFocusAuraOffsetY
-            -- Adjust debuffs first
             self.rowHeights = adjustAuraPosition(debuffs, userYOffset, buffsOnTop)
             local totalDebuffHeight = sum(self.rowHeights)
 
-            -- Determine the Y-offset for buffs
-            local yOffsetForBuffs
-            if #debuffs == 0 then
-                -- If there are no debuffs, move buffs down by 5 pixels
-                yOffsetForBuffs = totalDebuffHeight + (auraSpacingY * #self.rowHeights) + userYOffset
-            else
-                -- If there are debuffs, position buffs below the debuffs
-                yOffsetForBuffs = totalDebuffHeight + (auraSpacingY * #self.rowHeights) + 5 + userYOffset + auraTypeGap
+            local yOffsetForBuffs = totalDebuffHeight + (auraSpacingY * #self.rowHeights) + userYOffset
+            if #debuffs > 0 then
+                yOffsetForBuffs = yOffsetForBuffs + 5 + auraTypeGap
             end
 
-            -- Adjust the position of buffs using the calculated Y-offset
             local buffRowHeights = adjustAuraPosition(buffs, yOffsetForBuffs, buffsOnTop)
+            if #buffs > 0 and #debuffs > 0 then
+                self.rowHeights[#self.rowHeights] = self.rowHeights[#self.rowHeights] + auraTypeGap
+            end
             for _, height in ipairs(buffRowHeights) do
                 table_insert(self.rowHeights, height)
             end
         else
-            -- Adjust debuffs first for enemy
             self.rowHeights = adjustAuraPosition(debuffs, 0)
             local totalDebuffHeight = sum(self.rowHeights)
-            --local buffRowHeights = adjustAuraPosition(buffs, -totalDebuffHeight - (auraSpacingY * #self.rowHeights), shortRowCounter < shortRows) -- Then adjust buffs
-            local buffRowHeights = adjustAuraPosition(buffs, -totalDebuffHeight - (auraSpacingY * #self.rowHeights) - auraTypeGap)
+            local buffRowHeights
+            if #debuffs == 0 then
+                buffRowHeights = adjustAuraPosition(buffs, -totalDebuffHeight - (auraSpacingY * #self.rowHeights))
+            else
+                buffRowHeights = adjustAuraPosition(buffs, -totalDebuffHeight - (auraSpacingY * #self.rowHeights) - auraTypeGap)
+            end
+            if #buffs > 0 and #debuffs > 0 then
+                self.rowHeights[#self.rowHeights] = self.rowHeights[#self.rowHeights] + auraTypeGap
+            end
             for _, height in ipairs(buffRowHeights) do
                 table_insert(self.rowHeights, height)
             end
@@ -584,29 +646,33 @@ local function AdjustAuras(self, frameType)
     else
         if buffsOnTop then
             local userYOffset = BetterBlizzFramesDB.targetAndFocusAuraOffsetY
-            -- Adjust buffs first for friendly
             self.rowHeights = adjustAuraPosition(buffs, userYOffset, buffsOnTop)
             local totalBuffHeight = sum(self.rowHeights)
 
-            local yOffsetForDebuffs
-            if #buffs == 0 then
-                -- If there are no debuffs, move buffs down by 5 pixels
-                yOffsetForDebuffs = totalBuffHeight + (auraSpacingY * #self.rowHeights) + userYOffset
-            else
-                -- If there are debuffs, position buffs below the debuffs
-                yOffsetForDebuffs = totalBuffHeight + (auraSpacingY * #self.rowHeights) + 5 + userYOffset + auraTypeGap
+            local yOffsetForDebuffs = totalBuffHeight + (auraSpacingY * #self.rowHeights) + userYOffset
+            if #buffs > 0 then
+                yOffsetForDebuffs = yOffsetForDebuffs + 5 + auraTypeGap
             end
 
             local debuffRowHeights = adjustAuraPosition(debuffs, yOffsetForDebuffs, buffsOnTop)
+            if #buffs > 0 and #debuffs > 0 then
+                self.rowHeights[#self.rowHeights] = self.rowHeights[#self.rowHeights] + auraTypeGap
+            end
             for _, height in ipairs(debuffRowHeights) do
                 table_insert(self.rowHeights, height)
             end
         else
-            -- Adjust buffs first for friendly
             self.rowHeights = adjustAuraPosition(buffs, 0)
             local totalBuffHeight = sum(self.rowHeights)
-            --local debuffRowHeights = adjustAuraPosition(debuffs, -totalBuffHeight - (auraSpacingY * #self.rowHeights))
-            local debuffRowHeights = adjustAuraPosition(debuffs, -totalBuffHeight - (auraSpacingY * #self.rowHeights) - auraTypeGap)
+            local debuffRowHeights
+            if #buffs == 0 then
+                debuffRowHeights = adjustAuraPosition(debuffs, -totalBuffHeight - (auraSpacingY * #self.rowHeights))
+            else
+                debuffRowHeights = adjustAuraPosition(debuffs, -totalBuffHeight - (auraSpacingY * #self.rowHeights) - auraTypeGap)
+            end
+            if #buffs > 0 and #debuffs > 0 then
+                self.rowHeights[#self.rowHeights] = self.rowHeights[#self.rowHeights] + auraTypeGap
+            end
             for _, height in ipairs(debuffRowHeights) do
                 table_insert(self.rowHeights, height)
             end
@@ -747,7 +813,6 @@ local function PersonalBuffFrameFilterAndGrid(self)
     if not auraFilterOn then return end
     ResetHiddenAurasCount()
     local isExpanded = BuffFrame:IsExpanded();
-    local nextAuraInfoIndex = 1;
     local currentAuraSize = BuffFrame.AuraContainer.iconScale
     if ToggleHiddenAurasButton then
         ToggleHiddenAurasButton:SetScale(currentAuraSize)
@@ -770,21 +835,11 @@ local function PersonalBuffFrameFilterAndGrid(self)
     local hiddenYOffset = -auraSpacingY - auraSize + playerAuraSpacingY;
     local toggleIcon = BetterBlizzFramesDB.showHiddenAurasIcon and CreateToggleIcon() or nil
 
-    for _, auraFrame in ipairs(BuffFrame.auraFrames) do
-        if not auraFrame.isAuraAnchor then
-            -- Mimic the logic to get the auraInfo from the original method
-            local auraInfo;
-            while nextAuraInfoIndex <= #BuffFrame.auraInfo do
-                local potentialAuraInfo = BuffFrame.auraInfo[nextAuraInfoIndex];
-                nextAuraInfoIndex = nextAuraInfoIndex + 1;
+    for auraIndex, auraInfo in ipairs(BuffFrame.auraInfo) do
+        if isExpanded or not auraInfo.hideUnlessExpanded then
+            local auraFrame = BuffFrame.auraFrames[auraIndex]
+            if auraFrame and not auraFrame.isAuraAnchor then
 
-                if isExpanded or not potentialAuraInfo.hideUnlessExpanded then
-                    auraInfo = potentialAuraInfo;
-                    break;
-                end
-            end
-
-            if auraInfo then
                 local name, icon, count, dispelType, duration, expirationTime, source,
                     isStealable, nameplateShowPersonal, spellId, canApplyAura,
                     isBossDebuff, castByPlayer, nameplateShowAll, timeMod
@@ -997,21 +1052,10 @@ local function PersonalDebuffFrameFilterAndGrid(self)
 ]=]
 
 
-    for _, auraFrame in ipairs(DebuffFrame.auraFrames) do
-        if not auraFrame.isAuraAnchor then
-            -- Mimic the logic to get the auraInfo from the original method
-            local auraInfo;
-            while nextAuraInfoIndex <= #DebuffFrame.auraInfo do
-                local potentialAuraInfo = DebuffFrame.auraInfo[nextAuraInfoIndex];
-                nextAuraInfoIndex = nextAuraInfoIndex + 1;
-
-                if not potentialAuraInfo.hideUnlessExpanded then
-                    auraInfo = potentialAuraInfo;
-                    break;
-                end
-            end
-
-            if auraInfo then
+for auraIndex, auraInfo in ipairs(DebuffFrame.auraInfo) do
+    if isExpanded or not auraInfo.hideUnlessExpanded then
+        local auraFrame = DebuffFrame.auraFrames[auraIndex]
+        if auraFrame and not auraFrame.isAuraAnchor then
 --[[
                 if auraInfo then
                     print("Aura Data:")
