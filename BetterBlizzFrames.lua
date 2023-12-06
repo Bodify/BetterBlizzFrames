@@ -35,7 +35,7 @@ local defaultSettings = {
     targetToTCastbarAdjustment = true,
     focusToTCastbarAdjustment = true,
     playerReputationClassColor = true,
-    enlargedAuraSize = 1.35,
+    enlargedAuraSize = 1.4,
 
     --Sort group
     --sortGroupPlayerTop = true,
