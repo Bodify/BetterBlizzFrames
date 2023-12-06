@@ -6,7 +6,7 @@ BBF = BBF or {}
 -- Things are getting more messy need a lot of cleaning lol
 
 local addonVersion = "1.00" --too afraid to to touch for now
-local addonUpdates = "1.1.1"
+local addonUpdates = "1.1.2c"
 local sendUpdate = true
 BBF.VersionNumber = addonUpdates
 BBF.variablesLoaded = false
@@ -35,6 +35,7 @@ local defaultSettings = {
     targetToTCastbarAdjustment = true,
     focusToTCastbarAdjustment = true,
     playerReputationClassColor = true,
+    enlargedAuraSize = 1.35,
 
     --Sort group
     --sortGroupPlayerTop = true,
@@ -126,6 +127,8 @@ local defaultSettings = {
     --Auras
     --playerAuraMaxBuffsPerRow = 10,
     --playerAuraMaxDebuffsPerRow = 10,
+    enablePlayerBuffFiltering = true,
+    enablePlayerDebuffFiltering = false,
     auraTypeGap = 0,
     playerAuraSpacingX = 5,
     playerAuraSpacingY = 0,
@@ -289,7 +292,8 @@ local function SendUpdateMessage()
     if sendUpdate then
         C_Timer.After(7, function()
             DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames " .. addonUpdates .. ":")
-            DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a A few new things, for info type /bbf news")
+            DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Some big changes; I've decided to let player buff & debuff filtering be optional for performance reasons. The debuff one especially is quite performance heavy and I have turned it off by default while I figure out more. I have increased the performance a lot for this patch though.")
+            DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a For more info and news about new features type /bbf news")
         end)
     end
 end
@@ -297,9 +301,11 @@ end
 local function NewsUpdateMessage()
     DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames news:")
     DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a #1: You can now adjust \"small auras\" on target & focus size.")
-    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a #2: General performance increase with aura filtering.")
-    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a #3: Aura Type Gap bugfix.")
-    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a #4: Probably more bugs.. >.< Please let me know if you encounter one!")
+    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a #2: Enlarge specific auras from whitelist similar to Important Glow etc.")
+    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a #3: General performance increase with aura filtering.")
+    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a #4: Player Buff & Debuff filtering optional, with debuff turned off by default.")
+    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a #5: Aura Type Gap bugfix.")
+    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a #6: Probably more bugs.. >.< Please let me know if you encounter one!")
 end
 
 local function CheckForUpdate()

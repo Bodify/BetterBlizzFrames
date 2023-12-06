@@ -496,6 +496,9 @@ local function CreateSlider(parent, label, minValue, maxValue, stepValue, elemen
                 elseif element == "targetAndFocusSmallAuraScale" then
                     BetterBlizzFramesDB.targetAndFocusSmallAuraScale = value
                     BBF.RefreshAllAuraFrames()
+                elseif element == "enlargedAuraSize" then
+                    BetterBlizzFramesDB.enlargedAuraSize = value
+                    BBF.RefreshAllAuraFrames()
 
 
                     --end
@@ -765,17 +768,21 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes)
         if extraBoxes then
             -- Ensure the npc.flags table exists
             if not npc.flags then
-                npc.flags = { important = false, pandemic = false }
+                npc.flags = { important = false, pandemic = false, enlarged = false }
             end
 
             -- Create Checkbox I (Important)
             local checkBoxI = CreateFrame("CheckButton", nil, button, "UICheckButtonTemplate")
             checkBoxI:SetSize(24, 24)
-            checkBoxI:SetPoint("RIGHT", deleteButton, "LEFT", -50, 0)
-            checkBoxI.text = checkBoxI:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-            checkBoxI.text:SetPoint("RIGHT", checkBoxI, "LEFT", 0, 0)
-            checkBoxI.text:SetText("I")
-            CreateTooltip(checkBoxI, "Important aura glow (Target, Focus & Player)")
+            checkBoxI:SetPoint("RIGHT", deleteButton, "LEFT", -38, 0)
+
+            -- Create a texture for the checkbox
+            checkBoxI.texture = checkBoxI:CreateTexture(nil, "ARTWORK",nil,1)
+            checkBoxI.texture:SetAtlas("newplayertutorial-drag-slotgreen")
+            checkBoxI.texture:SetSize(27, 27)
+
+            checkBoxI.texture:SetPoint("CENTER", checkBoxI, "CENTER", -0.5,0.5)
+            CreateTooltip(checkBoxI, "Important Glow\n\nCheck for a green glow on the aura to highlight it.\nAlso check which frame(s) you want this on down below.", "ANCHOR_TOPRIGHT")
 
             -- Handler for the I checkbox
             checkBoxI:SetScript("OnClick", function(self)
@@ -792,11 +799,18 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes)
             -- Create Checkbox P (Pandemic)
             local checkBoxP = CreateFrame("CheckButton", nil, button, "UICheckButtonTemplate")
             checkBoxP:SetSize(24, 24)
-            checkBoxP:SetPoint("LEFT", checkBoxI, "RIGHT", 10, 0)
-            checkBoxP.text = checkBoxP:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-            checkBoxP.text:SetPoint("LEFT", checkBoxP, "RIGHT", 0, 0)
-            checkBoxP.text:SetText("P")
-            CreateTooltip(checkBoxP, "Red glow on auras with less than 5 sec remaining. (Target & Focus)", "ANCHOR_TOPRIGHT")
+            checkBoxP:SetPoint("LEFT", checkBoxI, "RIGHT", 6, 0)
+
+            -- Create a texture for the checkbox
+            checkBoxP.texture = checkBoxP:CreateTexture(nil, "ARTWORK",nil,1)
+            checkBoxP.texture:SetAtlas("newplayertutorial-drag-slotgreen")
+            checkBoxP.texture:SetDesaturated(true)
+            checkBoxP.texture:SetVertexColor(1, 0, 0)
+            checkBoxP.texture:SetSize(27, 27)
+
+            -- Center the texture within the checkbox
+            checkBoxP.texture:SetPoint("CENTER", checkBoxP, "CENTER", -0.5,0.5)
+            CreateTooltip(checkBoxP, "Pandemic Glow\n\nCheck for a red glow when the aura has less than 5 sec remaining.\nAlso check which frame(s) you want this on down below.", "ANCHOR_TOPRIGHT")
 
             -- Handler for the P checkbox
             checkBoxP:SetScript("OnClick", function(self)
@@ -807,6 +821,23 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes)
             -- Initialize state from npc flags
             if npc.flags.pandemic then
                 checkBoxP:SetChecked(true)
+            end
+
+            -- Create Checkbox E (enlarged)
+            local checkBoxE = CreateFrame("CheckButton", nil, button, "UICheckButtonTemplate")
+            checkBoxE:SetSize(24, 24)
+            checkBoxE:SetPoint("RIGHT", checkBoxI, "LEFT", -6, 0)
+            CreateTooltip(checkBoxE, "Enlarged Aura\n\nCheck to make the aura bigger.\nAlso check which frame(s) you want this on down below.", "ANCHOR_TOPRIGHT")
+
+            -- Handler for the E checkbox
+            checkBoxE:SetScript("OnClick", function(self)
+                npc.flags.enlarged = self:GetChecked() -- Save the state in the npc flags
+            end)
+            checkBoxE:HookScript("OnClick", BBF.RefreshAllAuraFrames)
+
+            -- Initialize state from npc flags
+            if npc.flags.enlarged then
+                checkBoxE:SetChecked(true)
             end
         end
 
@@ -2482,7 +2513,7 @@ local function guiFrameAuras()
     targetFrameIcon:SetDesaturated(1)
     targetFrameIcon:SetVertexColor(1, 0, 0)
 
-    local targetAuraBorder = CreateBorderedFrame(targetBuffEnable, 185, 317, 65, -144, contentFrame)
+    local targetAuraBorder = CreateBorderedFrame(targetBuffEnable, 185, 338, 65, -153, contentFrame)
 
     local targetBuffFilterWatchList = CreateCheckbox("targetBuffFilterWatchList", "Whitelist", targetBuffEnable)
     CreateTooltip(targetBuffFilterWatchList, "Only show whitelisted auras.\nWhitelist filter works in addition to the other filters selected")
@@ -2531,14 +2562,18 @@ local function guiFrameAuras()
     local targetdeBuffFilterOnlyMe = CreateCheckbox("targetdeBuffFilterOnlyMe", "Only mine", targetdeBuffEnable)
     targetdeBuffFilterOnlyMe:SetPoint("TOPLEFT", targetdeBuffFilterLessMinite, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
 
-    local targetAuraGlows = CreateCheckbox("targetAuraGlows", "Extra Aura Glow", playerAuraFiltering)
+    local targetAuraGlows = CreateCheckbox("targetAuraGlows", "Extra Aura Settings", playerAuraFiltering)
     targetAuraGlows:SetPoint("TOPLEFT", targetdeBuffFilterOnlyMe, "BOTTOMLEFT", -15, -2)
     targetAuraGlows:HookScript("OnClick", function ()
         CheckAndToggleCheckboxes(targetAuraGlows)
     end)
 
+    local targetEnlargeAura = CreateCheckbox("targetEnlargeAura", "Enlarge Aura", targetAuraGlows)
+    targetEnlargeAura:SetPoint("TOPLEFT", targetAuraGlows, "BOTTOMLEFT", 15, pixelsBetweenBoxes)
+    CreateTooltip(targetEnlargeAura, "Enlarge checked whitelisted auras.")
+
     local targetdeBuffPandemicGlow = CreateCheckbox("targetdeBuffPandemicGlow", "Pandemic Glow", targetAuraGlows)
-    targetdeBuffPandemicGlow:SetPoint("TOPLEFT", targetAuraGlows, "BOTTOMLEFT", 15, pixelsBetweenBoxes)
+    targetdeBuffPandemicGlow:SetPoint("TOPLEFT", targetEnlargeAura, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(targetdeBuffPandemicGlow, "Red glow on whitelisted auras with less than 5 seconds left.")
 
     local targetBuffPurgeGlow = CreateCheckbox("targetBuffPurgeGlow", "Purge Glow", targetAuraGlows)
@@ -2571,7 +2606,7 @@ local function guiFrameAuras()
     focusFrameIcon:SetDesaturated(1)
     focusFrameIcon:SetVertexColor(0, 1, 0)
 
-    CreateBorderedFrame(focusBuffEnable, 185, 317, 65, -144, contentFrame)
+    CreateBorderedFrame(focusBuffEnable, 185, 338, 65, -153, contentFrame)
 
     local focusBuffFilterWatchList = CreateCheckbox("focusBuffFilterWatchList", "Whitelist", focusBuffEnable)
     CreateTooltip(focusBuffFilterWatchList, "Only show whitelisted auras.\nWhitelist filter works in addition to the other filters selected")
@@ -2609,14 +2644,18 @@ local function guiFrameAuras()
     local focusdeBuffFilterOnlyMe = CreateCheckbox("focusdeBuffFilterOnlyMe", "Only mine", focusdeBuffEnable)
     focusdeBuffFilterOnlyMe:SetPoint("TOPLEFT", focusdeBuffFilterLessMinite, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
 
-    local focusAuraGlows = CreateCheckbox("focusAuraGlows", "Extra Aura Glow", playerAuraFiltering)
+    local focusAuraGlows = CreateCheckbox("focusAuraGlows", "Extra Aura Settings", playerAuraFiltering)
     focusAuraGlows:SetPoint("TOPLEFT", focusdeBuffFilterOnlyMe, "BOTTOMLEFT", -15, -2)
     focusAuraGlows:HookScript("OnClick", function ()
         CheckAndToggleCheckboxes(focusAuraGlows)
     end)
 
+    local focusEnlargeAura = CreateCheckbox("focusEnlargeAura", "Enlarge Aura", focusAuraGlows)
+    focusEnlargeAura:SetPoint("TOPLEFT", focusAuraGlows, "BOTTOMLEFT", 15, pixelsBetweenBoxes)
+    CreateTooltip(focusEnlargeAura, "Enlarge checked whitelisted auras.")
+
     local focusdeBuffPandemicGlow = CreateCheckbox("focusdeBuffPandemicGlow", "Pandemic Glow", focusAuraGlows)
-    focusdeBuffPandemicGlow:SetPoint("TOPLEFT", focusAuraGlows, "BOTTOMLEFT", 15, pixelsBetweenBoxes)
+    focusdeBuffPandemicGlow:SetPoint("TOPLEFT", focusEnlargeAura, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(focusdeBuffPandemicGlow, "Red glow on whitelisted auras with less than 5 seconds left.")
 
     local focusBuffPurgeGlow = CreateCheckbox("focusBuffPurgeGlow", "Purge Glow", focusAuraGlows)
@@ -2632,21 +2671,27 @@ local function guiFrameAuras()
     --------------------------
     -- Player Auras
 
-    local PlayerAuraFrameBuffEnable = CreateCheckbox("PlayerAuraFrameBuffEnable", "Show BUFFS", playerAuraFiltering)
-    PlayerAuraFrameBuffEnable:SetPoint("TOPLEFT", contentFrame, "BOTTOMLEFT", 503, 140)
+    local enablePlayerBuffFiltering = CreateCheckbox("enablePlayerBuffFiltering", "Enable Buff Filtering", playerAuraFiltering)
+    enablePlayerBuffFiltering:SetPoint("TOPLEFT", contentFrame, "BOTTOMLEFT", 503, 140)
+    enablePlayerBuffFiltering:HookScript("OnClick", function ()
+        CheckAndToggleCheckboxes(enablePlayerBuffFiltering)
+    end)
+
+    local PlayerAuraFrameBuffEnable = CreateCheckbox("PlayerAuraFrameBuffEnable", "Show BUFFS", enablePlayerBuffFiltering)
+    PlayerAuraFrameBuffEnable:SetPoint("TOPLEFT", enablePlayerBuffFiltering, "BOTTOMLEFT", 15, pixelsBetweenBoxes)
     PlayerAuraFrameBuffEnable:HookScript("OnClick", function ()
         CheckAndToggleCheckboxes(PlayerAuraFrameBuffEnable)
     end)
 
     local personalBarText = contentFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    personalBarText:SetPoint("LEFT", PlayerAuraFrameBuffEnable, "CENTER", 35, 25)
+    personalBarText:SetPoint("LEFT", enablePlayerBuffFiltering, "CENTER", 35, 25)
     personalBarText:SetText("Player Auras")
     local personalBarIcon = contentFrame:CreateTexture(nil, "ARTWORK")
     personalBarIcon:SetAtlas("groupfinder-icon-friend")
     personalBarIcon:SetSize(28, 28)
     personalBarIcon:SetPoint("RIGHT", personalBarText, "LEFT", -3, 0)
 
-    local PlayerAuraBorder = CreateBorderedFrame(PlayerAuraFrameBuffEnable, 185, 317, 65, -144, contentFrame)
+    local PlayerAuraBorder = CreateBorderedFrame(enablePlayerBuffFiltering, 185, 338, 65, -153, contentFrame)
 
     local PlayerAuraFrameBuffFilterWatchList = CreateCheckbox("PlayerAuraFrameBuffFilterWatchList", "Whitelist", PlayerAuraFrameBuffEnable)
     CreateTooltip(PlayerAuraFrameBuffFilterWatchList, "Only show whitelisted auras.\nWhitelist filter works in addition to the other filters selected")
@@ -2654,14 +2699,21 @@ local function guiFrameAuras()
 
     local PlayerAuraFrameBuffFilterLessMinite = CreateCheckbox("PlayerAuraFrameBuffFilterLessMinite", "Under one min", PlayerAuraFrameBuffEnable)
     PlayerAuraFrameBuffFilterLessMinite:SetPoint("TOPLEFT", PlayerAuraFrameBuffFilterWatchList, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltip(PlayerAuraFrameBuffFilterLessMinite, "Only show buffs that are 60sec or shorter.")
 
     local showHiddenAurasIcon = CreateCheckbox("showHiddenAurasIcon", "Filtered Buffs Icon", PlayerAuraFrameBuffEnable)
     showHiddenAurasIcon:SetPoint("TOPLEFT", PlayerAuraFrameBuffFilterLessMinite, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(showHiddenAurasIcon, "Show an icon next to the buff frame displaying\nthe amount of auras filtered out.\nClick icon to show which auras are filtered.")
 
     -- Personal Bar Debuffs
-    local PlayerAuraFramedeBuffEnable = CreateCheckbox("PlayerAuraFramedeBuffEnable", "Show DEBUFFS", playerAuraFiltering)
-    PlayerAuraFramedeBuffEnable:SetPoint("TOPLEFT", showHiddenAurasIcon, "BOTTOMLEFT", -15, -2)
+    local enablePlayerDebuffFiltering = CreateCheckbox("enablePlayerDebuffFiltering", "Enable Debuff Filtering", playerAuraFiltering)
+    enablePlayerDebuffFiltering:SetPoint("TOPLEFT", showHiddenAurasIcon, "BOTTOMLEFT", -30, -2)
+    enablePlayerDebuffFiltering:HookScript("OnClick", function ()
+        CheckAndToggleCheckboxes(enablePlayerDebuffFiltering)
+    end)
+
+    local PlayerAuraFramedeBuffEnable = CreateCheckbox("PlayerAuraFramedeBuffEnable", "Show DEBUFFS", enablePlayerDebuffFiltering)
+    PlayerAuraFramedeBuffEnable:SetPoint("TOPLEFT", enablePlayerDebuffFiltering, "BOTTOMLEFT", 15, pixelsBetweenBoxes)
     PlayerAuraFramedeBuffEnable:HookScript("OnClick", function ()
         CheckAndToggleCheckboxes(PlayerAuraFramedeBuffEnable)
     end)
@@ -2672,6 +2724,7 @@ local function guiFrameAuras()
 
     local PlayerAuraFramedeBuffFilterLessMinite = CreateCheckbox("PlayerAuraFramedeBuffFilterLessMinite", "Under one min", PlayerAuraFramedeBuffEnable)
     PlayerAuraFramedeBuffFilterLessMinite:SetPoint("TOPLEFT", PlayerAuraFramedeBuffFilterWatchList, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltip(PlayerAuraFramedeBuffFilterLessMinite, "Only show debuffs that are 60sec or shorter.")
 
 --[=[
     local debuffDotChecker = CreateCheckbox("debuffDotChecker", "DoT Indicator", PlayerAuraFramedeBuffEnable)
@@ -2682,7 +2735,7 @@ local function guiFrameAuras()
 
 
 
-    local playerAuraGlows = CreateCheckbox("playerAuraGlows", "Extra Aura Glow", playerAuraFiltering)
+    local playerAuraGlows = CreateCheckbox("playerAuraGlows", "Extra Aura Settings", playerAuraFiltering)
     playerAuraGlows:SetPoint("TOPLEFT", PlayerAuraFramedeBuffFilterLessMinite, "BOTTOMLEFT", -15, -22)
     playerAuraGlows:HookScript("OnClick", function ()
         CheckAndToggleCheckboxes(playerAuraGlows)
@@ -2731,8 +2784,12 @@ local function guiFrameAuras()
     targetAndFocusSmallAuraScale:SetPoint("TOP", targetAndFocusAuraScale, "BOTTOM", 0, -20)
     CreateTooltip(targetAndFocusSmallAuraScale, "Adjusts the size of small auras / auras that are not yours.")
 
+    local enlargedAuraSize = CreateSlider(playerAuraFiltering, "Enlarged Aura Scale", 1, 2, 0.01, "enlargedAuraSize")
+    enlargedAuraSize:SetPoint("TOP", targetAndFocusSmallAuraScale, "BOTTOM", 0, -20)
+    CreateTooltip(enlargedAuraSize, "The scale of how much bigger you want enlarged auras to be")
+
     local targetAndFocusAurasPerRow = CreateSlider(playerAuraFiltering, "Max auras per row", 1, 12, 1, "targetAndFocusAurasPerRow")
-    targetAndFocusAurasPerRow:SetPoint("TOPLEFT", targetAndFocusSmallAuraScale, "BOTTOMLEFT", 0, -17)
+    targetAndFocusAurasPerRow:SetPoint("TOPLEFT", enlargedAuraSize, "BOTTOMLEFT", 0, -17)
 
     local targetAndFocusAuraOffsetX = CreateSlider(playerAuraFiltering, "x offset", -50, 50, 1, "targetAndFocusAuraOffsetX", "X")
     targetAndFocusAuraOffsetX:SetPoint("TOPLEFT", targetAndFocusAurasPerRow, "BOTTOMLEFT", 0, -17)
