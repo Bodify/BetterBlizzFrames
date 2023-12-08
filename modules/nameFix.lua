@@ -250,11 +250,12 @@ function ChangeName(frame, unit, party, tot)
     local isInArena = IsActiveBattlefieldArena() and ((BetterBlizzFramesDB.partyArenaNames and party) or BetterBlizzFramesDB.targetAndFocusArenaNames)
     local hidePartyNames = BetterBlizzFramesDB.hidePartyNames
     local classColorNames = BetterBlizzFramesDB.classColorTargetNames
+    local ogFontName, ogFontHeight, ogFontFlags = originalNameObject:GetFont()
 
     if not frame.cleanName then
         local a, p, a2, x, y = originalNameObject:GetPoint()
         frame.cleanName = frame:CreateFontString(nil, "OVERLAY")
-        frame.cleanName:SetFont(originalNameObject:GetFont())
+        frame.cleanName:SetFont(ogFontName, ogFontHeight, ogFontFlags)
         frame.cleanName:SetJustifyH(originalNameObject:GetJustifyH())
         frame.cleanName:SetJustifyV(originalNameObject:GetJustifyV())
         frame.cleanName:SetTextColor(originalNameObject:GetTextColor())
@@ -282,9 +283,9 @@ function ChangeName(frame, unit, party, tot)
                 frame.cleanName:SetWordWrap(false)
             else
                 if BetterBlizzFramesDB.playerFrameOCD then
-                    frame.cleanName:SetPoint(a,b,c,x,y-2)
+                    frame.cleanName:SetPoint(a,p,a2,x,y-2)
                 else
-                    frame.cleanName:SetPoint(a,b,c,x,y-1)
+                    frame.cleanName:SetPoint(a,p,a2,x,y-1)
                 end
             end
         end
@@ -305,6 +306,8 @@ function ChangeName(frame, unit, party, tot)
             end
         end
     end
+
+    frame.cleanName:SetFont(ogFontName, ogFontHeight, ogFontFlags)
 
     if (classColorNames and not party) and isPlayer then
         local _, class = UnitClass(unit)
@@ -402,7 +405,8 @@ end
 
 function BBF.PartyNameChange()
     if CompactPartyFrame:IsVisible() then
-        for i = 1, 3 do
+        local groupMembers = GetNumGroupMembers()
+        for i = 1, groupMembers do
             local memberFrame = _G["CompactPartyFrameMember" .. i]
             if memberFrame and memberFrame.displayedUnit then
                 ChangeName(memberFrame, memberFrame.displayedUnit, true)
@@ -421,12 +425,12 @@ function BBF.PartyNameChange()
 end
 
 local function TargetAndFocusNameChange()
-    if BetterBlizzFramesDB.targetAndFocusArenaNames or BetterBlizzFramesDB.removeRealmNames or BetterBlizzFramesDB.classColorTargetNames then
+    --if BetterBlizzFramesDB.targetAndFocusArenaNames or BetterBlizzFramesDB.removeRealmNames or BetterBlizzFramesDB.classColorTargetNames then
         ChangeName(TargetFrame.TargetFrameContent.TargetFrameContentMain, "target")
         ChangeName(FocusFrame.TargetFrameContent.TargetFrameContentMain, "focus")
         ChangeName(TargetFrame.totFrame, "targettarget", nil, true)
         ChangeName(FocusFrame.totFrame, "focustarget", nil, true)
-    end
+    --end
 end
 
 local UpdatePartyNames = CreateFrame("Frame")
@@ -605,14 +609,14 @@ function BBF.OnUpdateName()
     local hideNames = BetterBlizzFramesDB.hidePartyNames
     local hideRoles = BetterBlizzFramesDB.hidePartyRoles
     local arenaNames = BetterBlizzFramesDB.partyArenaNames
-    local realmNameFix = BetterBlizzFramesDB.removeRealmNames
-    local scaleNames = true
+    --local realmNameFix = BetterBlizzFramesDB.removeRealmNames
+    --local scaleNames = true
     local defaultPartyFrame = PartyFrame
 
     local groupMembers = GetNumGroupMembers()
     for i = 1, groupMembers do
         local compactPartyMember = _G["CompactPartyFrameMember" .. i]
-        local roleIcon = _G["CompactPartyFrameMember" .. i .. "RoleIcon"]
+        --local roleIcon = _G["CompactPartyFrameMember" .. i .. "RoleIcon"]
         local defaultMember = defaultPartyFrame["MemberFrame" .. i]
 
         if compactPartyMember and compactPartyMember:IsVisible() then
