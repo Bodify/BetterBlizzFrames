@@ -6,7 +6,7 @@ BBF = BBF or {}
 -- Things are getting more messy need a lot of cleaning lol
 
 local addonVersion = "1.00" --too afraid to to touch for now
-local addonUpdates = "1.1.2b"
+local addonUpdates = "1.1.3"
 local sendUpdate = false
 BBF.VersionNumber = addonUpdates
 BBF.variablesLoaded = false
@@ -129,6 +129,12 @@ local defaultSettings = {
     --playerAuraMaxDebuffsPerRow = 10,
     enablePlayerBuffFiltering = true,
     enablePlayerDebuffFiltering = false,
+    playerdeBuffFilterBlacklist = true,
+    playerBuffFilterBlacklist = true,
+    focusdeBuffFilterBlacklist = true,
+    focusBuffFilterBlacklist = true,
+    targetdeBuffFilterBlacklist = true,
+    targetBuffFilterBlacklist = true,
     auraTypeGap = 0,
     playerAuraSpacingX = 5,
     playerAuraSpacingY = 0,

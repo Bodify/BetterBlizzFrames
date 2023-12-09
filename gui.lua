@@ -2513,14 +2513,18 @@ local function guiFrameAuras()
     targetFrameIcon:SetDesaturated(1)
     targetFrameIcon:SetVertexColor(1, 0, 0)
 
-    local targetAuraBorder = CreateBorderedFrame(targetBuffEnable, 185, 338, 65, -153, contentFrame)
+    local targetAuraBorder = CreateBorderedFrame(targetBuffEnable, 185, 380, 65, -174, contentFrame)
 
     local targetBuffFilterWatchList = CreateCheckbox("targetBuffFilterWatchList", "Whitelist", targetBuffEnable)
     CreateTooltip(targetBuffFilterWatchList, "Only show whitelisted auras.\nWhitelist filter works in addition to the other filters selected")
     targetBuffFilterWatchList:SetPoint("TOPLEFT", targetBuffEnable, "BOTTOMLEFT", 15, pixelsBetweenBoxes)
 
+    local targetBuffFilterBlacklist = CreateCheckbox("targetBuffFilterBlacklist", "Blacklist", targetBuffEnable)
+    targetBuffFilterBlacklist:SetPoint("TOPLEFT", targetBuffFilterWatchList, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltip(targetBuffFilterBlacklist, "Filter out blacklisted auras.")
+
     local targetBuffFilterLessMinite = CreateCheckbox("targetBuffFilterLessMinite", "Under one min", targetBuffEnable)
-    targetBuffFilterLessMinite:SetPoint("TOPLEFT", targetBuffFilterWatchList, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    targetBuffFilterLessMinite:SetPoint("TOPLEFT", targetBuffFilterBlacklist, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(targetBuffFilterLessMinite, "Only show buffs that are 60sec or shorter.")
 
     local targetBuffFilterOnlyMe = CreateCheckbox("targetBuffFilterOnlyMe", "Only mine", targetBuffEnable)
@@ -2555,8 +2559,12 @@ local function guiFrameAuras()
     CreateTooltip(targetdeBuffFilterWatchList, "Only show whitelisted auras.\nWhitelist filter works in addition to the other filters selected")
     targetdeBuffFilterWatchList:SetPoint("TOPLEFT", targetdeBuffFilterBlizzard, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
 
+    local targetdeBuffFilterBlacklist = CreateCheckbox("targetdeBuffFilterBlacklist", "Blacklist", targetdeBuffEnable)
+    targetdeBuffFilterBlacklist:SetPoint("TOPLEFT", targetdeBuffFilterWatchList, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltip(targetdeBuffFilterBlacklist, "Filter out blacklisted auras.")
+
     local targetdeBuffFilterLessMinite = CreateCheckbox("targetdeBuffFilterLessMinite", "Under one min", targetdeBuffEnable)
-    targetdeBuffFilterLessMinite:SetPoint("TOPLEFT", targetdeBuffFilterWatchList, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    targetdeBuffFilterLessMinite:SetPoint("TOPLEFT", targetdeBuffFilterBlacklist, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(targetdeBuffFilterLessMinite, "Only show debuffs that are 60sec or shorter.")
 
     local targetdeBuffFilterOnlyMe = CreateCheckbox("targetdeBuffFilterOnlyMe", "Only mine", targetdeBuffEnable)
@@ -2606,14 +2614,18 @@ local function guiFrameAuras()
     focusFrameIcon:SetDesaturated(1)
     focusFrameIcon:SetVertexColor(0, 1, 0)
 
-    CreateBorderedFrame(focusBuffEnable, 185, 338, 65, -153, contentFrame)
+    CreateBorderedFrame(focusBuffEnable, 185, 380, 65, -174, contentFrame)
 
     local focusBuffFilterWatchList = CreateCheckbox("focusBuffFilterWatchList", "Whitelist", focusBuffEnable)
     CreateTooltip(focusBuffFilterWatchList, "Only show whitelisted auras.\nWhitelist filter works in addition to the other filters selected")
     focusBuffFilterWatchList:SetPoint("TOPLEFT", focusBuffEnable, "BOTTOMLEFT", 15, pixelsBetweenBoxes)
 
+    local focusBuffFilterBlacklist = CreateCheckbox("focusBuffFilterBlacklist", "Blacklist", focusBuffEnable)
+    focusBuffFilterBlacklist:SetPoint("TOPLEFT", focusBuffFilterWatchList, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltip(focusBuffFilterBlacklist, "Filter out blacklisted auras.")
+
     local focusBuffFilterLessMinite = CreateCheckbox("focusBuffFilterLessMinite", "Under one min", focusBuffEnable)
-    focusBuffFilterLessMinite:SetPoint("TOPLEFT", focusBuffFilterWatchList, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    focusBuffFilterLessMinite:SetPoint("TOPLEFT", focusBuffFilterBlacklist, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(focusBuffFilterLessMinite, "Only show buffs that are 60sec or shorter.")
 
     local focusBuffFilterOnlyMe = CreateCheckbox("focusBuffFilterOnlyMe", "Only mine", focusBuffEnable)
@@ -2637,8 +2649,12 @@ local function guiFrameAuras()
     focusdeBuffFilterWatchList:SetPoint("TOPLEFT", focusdeBuffFilterBlizzard, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(focusdeBuffFilterWatchList, "Only show whitelisted auras.\nWhitelist filter works in addition to the other filters selected")
 
+    local focusdeBuffFilterBlacklist = CreateCheckbox("focusdeBuffFilterBlacklist", "Blacklist", focusdeBuffEnable)
+    focusdeBuffFilterBlacklist:SetPoint("TOPLEFT", focusdeBuffFilterWatchList, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltip(focusdeBuffFilterBlacklist, "Filter out blacklisted auras.")
+
     local focusdeBuffFilterLessMinite = CreateCheckbox("focusdeBuffFilterLessMinite", "Under one min", focusdeBuffEnable)
-    focusdeBuffFilterLessMinite:SetPoint("TOPLEFT", focusdeBuffFilterWatchList, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    focusdeBuffFilterLessMinite:SetPoint("TOPLEFT", focusdeBuffFilterBlacklist, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(focusdeBuffFilterLessMinite, "Only show debuffs that are 60sec or shorter.")
 
     local focusdeBuffFilterOnlyMe = CreateCheckbox("focusdeBuffFilterOnlyMe", "Only mine", focusdeBuffEnable)
@@ -2691,14 +2707,18 @@ local function guiFrameAuras()
     personalBarIcon:SetSize(28, 28)
     personalBarIcon:SetPoint("RIGHT", personalBarText, "LEFT", -3, 0)
 
-    local PlayerAuraBorder = CreateBorderedFrame(enablePlayerBuffFiltering, 185, 338, 65, -153, contentFrame)
+    local PlayerAuraBorder = CreateBorderedFrame(enablePlayerBuffFiltering, 185, 380, 65, -174, contentFrame)
 
     local PlayerAuraFrameBuffFilterWatchList = CreateCheckbox("PlayerAuraFrameBuffFilterWatchList", "Whitelist", PlayerAuraFrameBuffEnable)
     CreateTooltip(PlayerAuraFrameBuffFilterWatchList, "Only show whitelisted auras.\nWhitelist filter works in addition to the other filters selected")
     PlayerAuraFrameBuffFilterWatchList:SetPoint("TOPLEFT", PlayerAuraFrameBuffEnable, "BOTTOMLEFT", 15, pixelsBetweenBoxes)
 
+    local playerBuffFilterBlacklist = CreateCheckbox("playerBuffFilterBlacklist", "Blacklist", PlayerAuraFrameBuffEnable)
+    playerBuffFilterBlacklist:SetPoint("TOPLEFT", PlayerAuraFrameBuffFilterWatchList, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltip(playerBuffFilterBlacklist, "Filter out blacklisted auras.")
+
     local PlayerAuraFrameBuffFilterLessMinite = CreateCheckbox("PlayerAuraFrameBuffFilterLessMinite", "Under one min", PlayerAuraFrameBuffEnable)
-    PlayerAuraFrameBuffFilterLessMinite:SetPoint("TOPLEFT", PlayerAuraFrameBuffFilterWatchList, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    PlayerAuraFrameBuffFilterLessMinite:SetPoint("TOPLEFT", playerBuffFilterBlacklist, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(PlayerAuraFrameBuffFilterLessMinite, "Only show buffs that are 60sec or shorter.")
 
     local showHiddenAurasIcon = CreateCheckbox("showHiddenAurasIcon", "Filtered Buffs Icon", PlayerAuraFrameBuffEnable)
@@ -2722,8 +2742,12 @@ local function guiFrameAuras()
     CreateTooltip(PlayerAuraFramedeBuffFilterWatchList, "Only show whitelisted auras.\nWhitelist filter works in addition to the other filters selected")
     PlayerAuraFramedeBuffFilterWatchList:SetPoint("TOPLEFT", PlayerAuraFramedeBuffEnable, "BOTTOMLEFT", 15, pixelsBetweenBoxes)
 
+    local playerdeBuffFilterBlacklist = CreateCheckbox("playerdeBuffFilterBlacklist", "Blacklist", PlayerAuraFramedeBuffEnable)
+    playerdeBuffFilterBlacklist:SetPoint("TOPLEFT", PlayerAuraFramedeBuffFilterWatchList, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltip(playerdeBuffFilterBlacklist, "Filter out blacklisted auras.")
+
     local PlayerAuraFramedeBuffFilterLessMinite = CreateCheckbox("PlayerAuraFramedeBuffFilterLessMinite", "Under one min", PlayerAuraFramedeBuffEnable)
-    PlayerAuraFramedeBuffFilterLessMinite:SetPoint("TOPLEFT", PlayerAuraFramedeBuffFilterWatchList, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    PlayerAuraFramedeBuffFilterLessMinite:SetPoint("TOPLEFT", playerdeBuffFilterBlacklist, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(PlayerAuraFramedeBuffFilterLessMinite, "Only show debuffs that are 60sec or shorter.")
 
 --[=[
