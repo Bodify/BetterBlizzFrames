@@ -1052,7 +1052,7 @@ local function guiGeneralTab()
 
 
     local playerFrameText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    playerFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 0, -130)
+    playerFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 0, -133)
     playerFrameText:SetText("Player Frame")
     local playerFrameIcon = BetterBlizzFrames:CreateTexture(nil, "ARTWORK")
     playerFrameIcon:SetAtlas("groupfinder-icon-friend")
@@ -1083,8 +1083,11 @@ local function guiGeneralTab()
         playerReputationClassColor:SetAlpha(0)
     end
 
+    local hidePlayerName = CreateCheckbox("hidePlayerName", "Hide Name", BetterBlizzFrames, nil, BBF.SetCenteredNamesCaller)
+    hidePlayerName:SetPoint("TOPLEFT", playerReputationColor, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+
     local hidePlayerPower = CreateCheckbox("hidePlayerPower", "Hide Resource/Power", BetterBlizzFrames, nil, BBF.HideFrames)
-    hidePlayerPower:SetPoint("TOPLEFT", playerReputationColor, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    hidePlayerPower:SetPoint("TOPLEFT", hidePlayerName, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(hidePlayerPower, "Hide Resource/Power under PlayerFrame. Rogue combopoints, Warlock shards etc.")
 
     local hidePlayerRestAnimation = CreateCheckbox("hidePlayerRestAnimation", "Hide \"Zzz\" Rest Animation", BetterBlizzFrames, nil, BBF.HideFrames)
@@ -1120,7 +1123,7 @@ local function guiGeneralTab()
 
 
     local petFrameText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    petFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 0, -365)
+    petFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 460, -455)
     petFrameText:SetText("Pet Frame")
     local petFrameIcon = BetterBlizzFrames:CreateTexture(nil, "ARTWORK")
     petFrameIcon:SetAtlas("newplayerchat-chaticon-newcomer")
@@ -1139,7 +1142,7 @@ local function guiGeneralTab()
 
 
     local partyFrameText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    partyFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 0, -430)
+    partyFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 0, -395)
     partyFrameText:SetText("Party Frame")
     local partyFrameIcon = BetterBlizzFrames:CreateTexture(nil, "ARTWORK")
     partyFrameIcon:SetAtlas("groupfinder-icon-friend")
@@ -1241,7 +1244,7 @@ local function guiGeneralTab()
 
 
     local targetFrameText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    targetFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 250, -200)
+    targetFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 250, -165)
     targetFrameText:SetText("Target Frame")
     local targetFrameIcon = BetterBlizzFrames:CreateTexture(nil, "ARTWORK")
     targetFrameIcon:SetAtlas("groupfinder-icon-friend")
@@ -1254,8 +1257,12 @@ local function guiGeneralTab()
     targetFrameClickthrough:SetPoint("TOPLEFT", targetFrameText, "BOTTOMLEFT", -4, pixelsOnFirstBox)
     CreateTooltip(targetFrameClickthrough, "Makes the TargetFrame clickthrough.\nYou can still hold shift to left/right click it\nwhile out of combat for trade/inspect etc.\n\nNOTE: You will NOT be able to click the frame\nat all during combat with this setting on.")
 
+    local hideTargetName = CreateCheckbox("hideTargetName", "Hide Name", BetterBlizzFrames, nil, BBF.AllCaller)
+    hideTargetName:SetPoint("TOPLEFT", targetFrameClickthrough, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltip(hideTargetName, "Hide the name of the target\n\nWill still show arena names if enabled.")
+
     local hideTargetLeaderIcon = CreateCheckbox("hideTargetLeaderIcon", "Hide Leader Icon", BetterBlizzFrames, nil, BBF.HideFrames)
-    hideTargetLeaderIcon:SetPoint("TOPLEFT", targetFrameClickthrough, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    hideTargetLeaderIcon:SetPoint("TOPLEFT", hideTargetName, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(hideTargetLeaderIcon, "Hide the party leader icon from Target.|A:UI-HUD-UnitFrame-Player-Group-LeaderIcon:22:22|a")
 
     local classColorTargetReputationTexture = CreateCheckbox("classColorTargetReputationTexture", "Reputation Class Color", BetterBlizzFrames)
@@ -1279,7 +1286,7 @@ local function guiGeneralTab()
 
 
     local targetToTFrameText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    targetToTFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 250, -310)
+    targetToTFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 250, -295)
     targetToTFrameText:SetText("Target of Target")
     local targetToTFrameIcon = BetterBlizzFrames:CreateTexture(nil, "BORDER")
     targetToTFrameIcon:SetAtlas("groupfinder-icon-friend")
@@ -1292,12 +1299,15 @@ local function guiGeneralTab()
     targetToTFrameIcon2:SetSize(28, 28)
     targetToTFrameIcon2:SetPoint("TOPLEFT", targetToTFrameIcon, "TOPLEFT", 11, -13)
 
+    local hideTargetToTName = CreateCheckbox("hideTargetToTName", "Hide Name", BetterBlizzFrames, nil, BBF.AllCaller)
+    hideTargetToTName:SetPoint("TOPLEFT", targetToTFrameText, "BOTTOMLEFT", -4, pixelsOnFirstBox)
+
     local hideTargetToTDebuffs = CreateCheckbox("hideTargetToTDebuffs", "Hide ToT Debuffs", BetterBlizzFrames, nil, BBF.HideToTDebuffs)
-    hideTargetToTDebuffs:SetPoint("TOPLEFT", targetToTFrameText, "BOTTOMLEFT", -4, pixelsOnFirstBox)
+    hideTargetToTDebuffs:SetPoint("TOPLEFT", hideTargetToTName, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(hideTargetToTDebuffs, "Hide the 4 small debuff icons to the right of ToT frame.")
 
     local targetToTScale = CreateSlider(BetterBlizzFrames, "Size", 0.6, 2.5, 0.01, "targetToTScale", nil, 120)
-    targetToTScale:SetPoint("TOPLEFT", targetToTFrameText, "BOTTOMLEFT", 0, -35)
+    targetToTScale:SetPoint("TOPLEFT", targetToTFrameText, "BOTTOMLEFT", 0, -55)
     CreateTooltip(targetToTScale, "Target of target size.\n\nYou can right-click sliders to enter a specific value.")
 
     BBF.targetToTXPos = CreateSlider(BetterBlizzFrames, "x offset", -100, 100, 1, "targetToTXPos", "X", 120)
@@ -1312,7 +1322,7 @@ local function guiGeneralTab()
 
 
     local chatFrameText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    chatFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 250, -450)
+    chatFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 250, -455)
     chatFrameText:SetText("Chat Frame")
     local chatFrameIcon = BetterBlizzFrames:CreateTexture(nil, "BORDER")
     chatFrameIcon:SetAtlas("transmog-icon-chat")
@@ -1324,7 +1334,7 @@ local function guiGeneralTab()
     CreateTooltip(hideChatButtons, "Hide the chat buttons. Can still be shown with mouseover.")
 
     local chatFrameFilters = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-    chatFrameFilters:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 250, -490)
+    chatFrameFilters:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 250, -495)
     chatFrameFilters:SetText("Filters")
 
     local filterGladiusSpam = CreateCheckbox("filterGladiusSpam", "Gladius Spam", BetterBlizzFrames)
@@ -1348,7 +1358,7 @@ local function guiGeneralTab()
     CreateTooltip(filterSystemMessages, "Filter out a few excessive system messages. Some examples:\n\"You have joined the queue for Arena Skirmish\"\n\"Your group has been disbanded.\"\n\"You have been awarded x currency\"\n\"You are in both a party and an instance group.\"\n\nFull lists in modules\\chatFrame.lua")
 
     local arenaNamesText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    arenaNamesText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 460, -70)
+    arenaNamesText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 460, -50)
     arenaNamesText:SetText("Arena Names")
     CreateTooltip(arenaNamesText, "Change player names into spec/arena id during arena instead", "ANCHOR_LEFT")
     local arenaNamesIcon = BetterBlizzFrames:CreateTexture(nil, "ARTWORK")
@@ -1379,7 +1389,7 @@ local function guiGeneralTab()
 
 
     local focusFrameText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    focusFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 460, -200)
+    focusFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 460, -170)
     focusFrameText:SetText("Focus Frame")
     local focusFrameIcon = BetterBlizzFrames:CreateTexture(nil, "ARTWORK")
     focusFrameIcon:SetAtlas("groupfinder-icon-friend")
@@ -1392,8 +1402,12 @@ local function guiGeneralTab()
     focusFrameClickthrough:SetPoint("TOPLEFT", focusFrameText, "BOTTOMLEFT", -4, pixelsOnFirstBox)
     CreateTooltip(focusFrameClickthrough, "Makes the FocusFrame clickthrough.\nYou can still hold shift to left/right click it\nwhile out of combat for trade/inspect etc.\n\nNOTE: You will NOT be able to click the frame\nat all during combat with this setting on.")
 
+    local hideFocusName = CreateCheckbox("hideFocusName", "Hide Name", BetterBlizzFrames, nil, BBF.AllCaller)
+    hideFocusName:SetPoint("TOPLEFT", focusFrameClickthrough, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltip(hideFocusName, "Hide the name of the focus\n\nWill still show arena names if enabled.")
+
     local hideFocusLeaderIcon = CreateCheckbox("hideFocusLeaderIcon", "Hide Leader Icon", BetterBlizzFrames, nil, BBF.HideFrames)
-    hideFocusLeaderIcon:SetPoint("TOPLEFT", focusFrameClickthrough, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    hideFocusLeaderIcon:SetPoint("TOPLEFT", hideFocusName, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(hideFocusLeaderIcon, "Hide the party leader icon from Focus.|A:UI-HUD-UnitFrame-Player-Group-LeaderIcon:22:22|a")
 
     local classColorFocusReputationTexture = CreateCheckbox("classColorFocusReputationTexture", "Reputation Class Color", BetterBlizzFrames)
@@ -1418,7 +1432,7 @@ local function guiGeneralTab()
 
 
     local focusToTFrameText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    focusToTFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 460, -310)
+    focusToTFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 460, -300)
     focusToTFrameText:SetText("Focus ToT")
     local focusToTFrameIcon = BetterBlizzFrames:CreateTexture(nil, "BORDER")
     focusToTFrameIcon:SetAtlas("groupfinder-icon-friend")
@@ -1431,13 +1445,15 @@ local function guiGeneralTab()
     focusToTFrameIcon2:SetSize(28, 28)
     focusToTFrameIcon2:SetPoint("TOPLEFT", focusToTFrameIcon, "TOPLEFT", 11, -13)
 
+    local hideFocusToTName = CreateCheckbox("hideFocusToTName", "Hide Name", BetterBlizzFrames, nil, BBF.AllCaller)
+    hideFocusToTName:SetPoint("TOPLEFT", focusToTFrameText, "BOTTOMLEFT", -4, pixelsOnFirstBox)
+
     local hideFocusToTDebuffs = CreateCheckbox("hideFocusToTDebuffs", "Hide FocusToT Debuffs", BetterBlizzFrames, nil, BBF.HideToTDebuffs)
-    hideFocusToTDebuffs:SetPoint("TOPLEFT", focusToTFrameText, "BOTTOMLEFT", -4, pixelsOnFirstBox)
+    hideFocusToTDebuffs:SetPoint("TOPLEFT", hideFocusToTName, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(hideFocusToTDebuffs, "Hide the 4 small debuff icons to the right of ToT frame.")
 
-
     local focusToTScale = CreateSlider(BetterBlizzFrames, "Size", 0.6, 2.5, 0.01, "focusToTScale", nil, 120)
-    focusToTScale:SetPoint("TOPLEFT", focusToTFrameText, "BOTTOMLEFT", 0, -35)
+    focusToTScale:SetPoint("TOPLEFT", focusToTFrameText, "BOTTOMLEFT", 0, -55)
     CreateTooltip(focusToTScale, "Focus target of target size.\n\nYou can right-click sliders to enter a specific value.")
 
     BBF.focusToTXPos = CreateSlider(BetterBlizzFrames, "x offset", -100, 100, 1, "focusToTXPos", "X", 120)
@@ -1453,7 +1469,7 @@ local function guiGeneralTab()
 
 
     local allFrameText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    allFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 250, 5)
+    allFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 250, 25)
     allFrameText:SetText("All Frames")
     local allFrameIcon = BetterBlizzFrames:CreateTexture(nil, "ARTWORK")
     allFrameIcon:SetAtlas("groupfinder-icon-friend")
@@ -1541,7 +1557,7 @@ local function guiGeneralTab()
     CreateTooltip(hidePvpIcon, "Hide PvP Icon on Player, Target & Focus|A:UI-HUD-UnitFrame-Player-PVP-FFAIcon:44:28|a")
 
     local extraFeaturesText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    extraFeaturesText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 460, 5)
+    extraFeaturesText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 460, 25)
     extraFeaturesText:SetText("Extra Features")
     local extraFeaturesIcon = BetterBlizzFrames:CreateTexture(nil, "ARTWORK")
     extraFeaturesIcon:SetAtlas("Campaign-QuestLog-LoreBook")

@@ -6,8 +6,8 @@ BBF = BBF or {}
 -- Things are getting more messy need a lot of cleaning lol
 
 local addonVersion = "1.00" --too afraid to to touch for now
-local addonUpdates = "1.1.3"
-local sendUpdate = false
+local addonUpdates = "1.1.4"
+local sendUpdate = true
 BBF.VersionNumber = addonUpdates
 BBF.variablesLoaded = false
 
@@ -135,7 +135,7 @@ local defaultSettings = {
     focusBuffFilterBlacklist = true,
     targetdeBuffFilterBlacklist = true,
     targetBuffFilterBlacklist = true,
-    auraTypeGap = 0,
+    auraTypeGap = 4,
     playerAuraSpacingX = 5,
     playerAuraSpacingY = 0,
     maxBuffFrameBuffs = 32,
@@ -298,8 +298,8 @@ local function SendUpdateMessage()
     if sendUpdate then
         C_Timer.After(7, function()
             DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames " .. addonUpdates .. ":")
-            DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Some big changes; I've decided to let player buff & debuff filtering be optional for performance reasons. The debuff one especially is quite performance heavy and I have turned it off by default while I figure out more. I have increased the performance a lot for this patch though.")
-            DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a For more info and news about new features type /bbf news")
+            DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Added more \"Hide Name\" options and some bugfixes")
+            --DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a For more info and news about new features type /bbf news")
         end)
     end
 end
@@ -311,7 +311,8 @@ local function NewsUpdateMessage()
     DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a #3: General performance increase with aura filtering.")
     DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a #4: Player Buff & Debuff filtering optional, with debuff turned off by default.")
     DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a #5: Aura Type Gap bugfix.")
-    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a #6: Probably more bugs.. >.< Please let me know if you encounter one!")
+    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a #6: Added more \"Hide Name\" options and some bugfixes")
+    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a #7: Probably more bugs.. >.< Please let me know if you encounter one!")
 end
 
 local function CheckForUpdate()
@@ -373,51 +374,6 @@ function BBF.GetOppositeAnchor(anchor)
     }
     return opposites[anchor] or "CENTER"
 end
---------------------------------------
--- Sort group
---------------------------------------
-function BBF.SortGroup()
---[=[
-    if BetterBlizzFramesDB.sortGroup then
-        if BetterBlizzFramesDB.sortGroupPlayerTop then
-            --RunNextFrame(function()
-                CompactPartyFrame:SetFlowSortFunction(function(t1, t2)
-                    if not UnitExists(t1) then
-                        return false;
-                    elseif not UnitExists(t2) then
-                        return true
-                    elseif UnitIsUnit(t1, 'player') then
-                        return true;
-                    elseif UnitIsUnit(t2, 'player') then
-                        return false;
-                    else
-                        return t1 < t2;
-                    end
-                end)
-            --end)
-        elseif BetterBlizzFramesDB.sortGroupPlayerBottom then
-            --RunNextFrame(function()
-                CompactPartyFrame:SetFlowSortFunction(function(a, b)
-                    if not UnitExists(a) then
-                        return false
-                    elseif not UnitExists(b) then
-                        return true
-                    elseif UnitIsUnit(a, "player") then
-                        return false
-                    elseif UnitIsUnit(b, "player") then
-                        return true
-                    else
-                        return a < b
-                    end
-                end)
-            --end)
-        end
-    end
-
-]=]
-end
-
-
 
 --------------------------------------
 -- CLICKTHROUGH
@@ -674,6 +630,7 @@ Frame:SetScript("OnEvent", function(...)
                 BBF.HideArenaFrames()
             end
             BBF.MoveToTFrames()
+            BBF.UpdateUserAuraSettings()
             local hidePartyName = BetterBlizzFramesDB.hidePartyNames
             local hidePartyRole = BetterBlizzFramesDB.hidePartyRoles
             if hidePartyName or hidePartyRole then
@@ -685,7 +642,6 @@ Frame:SetScript("OnEvent", function(...)
             if BetterBlizzFramesDB.playerFrameOCD then
                 BBF.FixStupidBlizzPTRShit()
             end
-            BBF.SortGroup()
             C_Timer.After(1, function()
                 if BetterBlizzFramesDB.playerFrameOCD then
                     BBF.FixStupidBlizzPTRShit()

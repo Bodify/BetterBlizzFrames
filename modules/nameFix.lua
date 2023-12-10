@@ -242,7 +242,14 @@ end
 
 function ChangeName(frame, unit, party, tot)
     local originalNameObject = frame.name or frame.Name
-    local name = GetUnitName(unit, true)
+    local name
+
+    if party then
+        name = GetUnitName(unit, true)
+    else
+        name = GetUnitName(unit, false)
+    end
+
     local newName
 
     local isPlayer = UnitIsPlayer(unit)
@@ -251,6 +258,10 @@ function ChangeName(frame, unit, party, tot)
     local hidePartyNames = BetterBlizzFramesDB.hidePartyNames
     local classColorNames = BetterBlizzFramesDB.classColorTargetNames
     local ogFontName, ogFontHeight, ogFontFlags = originalNameObject:GetFont()
+    local hideTargetName = BetterBlizzFramesDB.hideTargetName
+    local hideFocusName = BetterBlizzFramesDB.hideFocusName
+    local hideTargetToTName = BetterBlizzFramesDB.hideTargetToTName
+    local hideFocusToTName = BetterBlizzFramesDB.hideFocusToTName
 
     if not frame.cleanName then
         local a, p, a2, x, y = originalNameObject:GetPoint()
@@ -387,18 +398,33 @@ function ChangeName(frame, unit, party, tot)
         if isPlayer then
             newName = string.gsub(name, "%-.+", " (*)")
             frame.cleanName:SetText(newName)
+            frame.cleanName:SetAlpha(1)
         else
             frame.cleanName:SetText(name)
+            frame.cleanName:SetAlpha(1)
         end
-        frame.cleanName:SetAlpha(1)
         if party then
             if hidePartyName then
                 originalNameObject:SetAlpha(0)
             else
                 originalNameObject:SetAlpha(1)
             end
+            frame.cleanName:SetAlpha(0)
         else
             originalNameObject:SetAlpha(0)
+        end
+    end
+    if (frame == TargetFrame.TargetFrameContent.TargetFrameContentMain and hideTargetName) or
+    (frame == FocusFrame.TargetFrameContent.TargetFrameContentMain and hideFocusName) or
+    (frame == FocusFrame.totFrame and hideFocusToTName) or
+    (frame == TargetFrame.totFrame and hideTargetToTName) then
+        originalNameObject:SetAlpha(0)
+        if isInArena then
+            if not party then
+                frame.cleanName:SetAlpha(1)
+            end
+        else
+            frame.cleanName:SetAlpha(0)
         end
     end
 end
@@ -535,7 +561,7 @@ end
 
 local function UpdateToTName(frame, unit)
     local isPlayer = UnitIsPlayer(unit)
-    local name = GetUnitName(unit, true)
+    local name = GetUnitName(unit, false)
     local removeRealmNames = BetterBlizzFramesDB.removeRealmNames
     local newName = name
     local isInArena = IsActiveBattlefieldArena()
@@ -740,6 +766,13 @@ end
 local function CenteredPlayerName()
     local frame = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain
     if BetterBlizzFramesDB.centerNames then
+        if BetterBlizzFramesDB.hidePlayerName then
+            PlayerName:SetAlpha(0)
+            if frame.cleanName then
+                frame.cleanName:SetAlpha(0)
+            end
+            return
+        end
         PlayerName:SetAlpha(0)
         if not frame.cleanName then
             frame.cleanName = frame:CreateFontString(nil, "OVERLAY")
@@ -759,9 +792,16 @@ local function CenteredPlayerName()
         frame.cleanName:SetAlpha(1)
         ClassColorNames(frame.cleanName, "player", PlayerLevelText)
     else
-        PlayerName:SetAlpha(1)
-        if frame.cleanName then
-            frame.cleanName:SetAlpha(0)
+        if BetterBlizzFramesDB.hidePlayerName then
+            PlayerName:SetAlpha(0)
+            if frame.cleanName then
+                frame.cleanName:SetAlpha(0)
+            end
+        else
+            PlayerName:SetAlpha(1)
+            if frame.cleanName then
+                frame.cleanName:SetAlpha(0)
+            end
         end
     end
 end

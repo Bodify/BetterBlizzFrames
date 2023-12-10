@@ -358,30 +358,59 @@ local function StartCheckBuffsTimer()
     end
 end
 
+
+local printSpellId
+local betterTargetPurgeGlow
+local betterFocusPurgeGlow
+local userEnlargedAuraSize = 1
+local auraSpacingX = 4
+local auraSpacingY = 4
+local aurasPerRow = 5
+local baseOffsetX = 25
+local baseOffsetY = 12.5
+local auraScale = 1
+local targetImportantAuraGlow
+local targetdeBuffPandemicGlow
+local targetEnlargeAura
+local focusImportantAuraGlow
+local focusdeBuffPandemicGlow
+local focusEnlargeAura
+local auraTypeGap = 1
+local targetAndFocusSmallAuraScale = 1.4
+local auraFilteringOn
+local enlargedTextureAdjustment = 10
+
+function BBF.UpdateUserAuraSettings()
+    printSpellId = BetterBlizzFramesDB.printAuraSpellIds
+    betterTargetPurgeGlow = BetterBlizzFramesDB.targetBuffPurgeGlow
+    betterFocusPurgeGlow = BetterBlizzFramesDB.focusBuffPurgeGlow
+    userEnlargedAuraSize = BetterBlizzFramesDB.enlargedAuraSize
+    auraSpacingX = BetterBlizzFramesDB.targetAndFocusHorizontalGap
+    auraSpacingY = BetterBlizzFramesDB.targetAndFocusVerticalGap
+    aurasPerRow = BetterBlizzFramesDB.targetAndFocusAurasPerRow
+    baseOffsetX = 25 + BetterBlizzFramesDB.targetAndFocusAuraOffsetX
+    baseOffsetY = 12.5 + BetterBlizzFramesDB.targetAndFocusAuraOffsetY
+    auraScale = BetterBlizzFramesDB.targetAndFocusAuraScale
+    targetImportantAuraGlow = BetterBlizzFramesDB.targetImportantAuraGlow
+    targetdeBuffPandemicGlow = BetterBlizzFramesDB.targetdeBuffPandemicGlow
+    targetEnlargeAura = BetterBlizzFramesDB.targetEnlargeAura
+    focusImportantAuraGlow = BetterBlizzFramesDB.focusImportantAuraGlow
+    focusdeBuffPandemicGlow = BetterBlizzFramesDB.focusdeBuffPandemicGlow
+    focusEnlargeAura = BetterBlizzFramesDB.focusEnlargeAura
+    auraTypeGap = BetterBlizzFramesDB.auraTypeGap
+    targetAndFocusSmallAuraScale = BetterBlizzFramesDB.targetAndFocusSmallAuraScale
+    auraFilteringOn = BetterBlizzFramesDB.playerAuraFiltering
+    enlargedTextureAdjustment = 10 * userEnlargedAuraSize
+end
+
 local MIN_AURA_SIZE = 17
 local defaultLargeAuraSize = 21
 local adjustmentForBuffsOnTop = -80  -- Height adjustment when buffs are on top
 local function AdjustAuras(self, frameType)
-    if not BetterBlizzFramesDB.playerAuraFiltering then return end
+    if not auraFilteringOn then return end
 
-    -- Cache commonly used DB values to avoid table lookups
-    local db = BetterBlizzFramesDB
-    local baseOffsetX = 25 + db.targetAndFocusAuraOffsetX
-    local baseOffsetY = 12.5 + db.targetAndFocusAuraOffsetY
-    local auraScale = db.targetAndFocusAuraScale
-    local CUSTOM_SCALE_FACTOR = db.targetAndFocusSmallAuraScale
-    local adjustedSize = MIN_AURA_SIZE * CUSTOM_SCALE_FACTOR
-
-    local auraSpacingX = db.targetAndFocusHorizontalGap
-    local auraSpacingY = db.targetAndFocusVerticalGap
-    local aurasPerRow = db.targetAndFocusAurasPerRow
+    local adjustedSize = MIN_AURA_SIZE * targetAndFocusSmallAuraScale
     local buffsOnTop = self.buffsOnTop
-    local printSpellId = BetterBlizzFramesDB.printAuraSpellIds
-
-    local betterTargetPurgeGlow = BetterBlizzFramesDB.targetBuffPurgeGlow
-    local betterFocusPurgeGlow = BetterBlizzFramesDB.focusBuffPurgeGlow
-    local userEnlargedAuraSize = BetterBlizzFramesDB.enlargedAuraSize
-    local enlargedTextureAdjustment = 10 * userEnlargedAuraSize
 
     local initialOffsetX = (baseOffsetX / auraScale)
     local initialOffsetY = (baseOffsetY / auraScale)
@@ -399,19 +428,19 @@ local function AdjustAuras(self, frameType)
                 -- Apply the adjusted size to smaller auras
                 aura:SetSize(adjustedSize, adjustedSize)
                 if aura.PurgeGlow then
-                    aura.PurgeGlow:SetScale(CUSTOM_SCALE_FACTOR)
+                    aura.PurgeGlow:SetScale(targetAndFocusSmallAuraScale)
                 end
                 if aura.ImportantGlow then
-                    aura.ImportantGlow:SetScale(CUSTOM_SCALE_FACTOR)
+                    aura.ImportantGlow:SetScale(targetAndFocusSmallAuraScale)
                 end
                 if aura.PandemicGlow then
-                    aura.PandemicGlow:SetScale(CUSTOM_SCALE_FACTOR)
+                    aura.PandemicGlow:SetScale(targetAndFocusSmallAuraScale)
                 end
                 if aura.Stealable then
-                    aura.Stealable:SetScale(CUSTOM_SCALE_FACTOR)
+                    aura.Stealable:SetScale(targetAndFocusSmallAuraScale)
                 end
                 if aura.Border then
-                    aura.Border:SetScale(CUSTOM_SCALE_FACTOR)
+                    aura.Border:SetScale(targetAndFocusSmallAuraScale)
                 end
                 auraSize = adjustedSize
             end
@@ -502,17 +531,18 @@ local function AdjustAuras(self, frameType)
 
             if frameType == "target" then
                 shouldShowAura, isImportant, isPandemic, isEnlarged = ShouldShowBuff(unit, auraData, "target")
-                isImportant = isImportant and BetterBlizzFramesDB.targetImportantAuraGlow
-                isPandemic = isPandemic and BetterBlizzFramesDB.targetdeBuffPandemicGlow
-                isEnlarged = isEnlarged and BetterBlizzFramesDB.targetEnlargeAura
+                isImportant = isImportant and targetImportantAuraGlow
+                isPandemic = isPandemic and targetdeBuffPandemicGlow
+                isEnlarged = isEnlarged and targetEnlargeAura
             elseif frameType == "focus" then
                 shouldShowAura, isImportant, isPandemic, isEnlarged = ShouldShowBuff(unit, auraData, "focus")
-                isImportant = isImportant and BetterBlizzFramesDB.focusImportantAuraGlow
-                isPandemic = isPandemic and BetterBlizzFramesDB.focusdeBuffPandemicGlow
-                isEnlarged = isEnlarged and BetterBlizzFramesDB.focusEnlargeAura
+                isImportant = isImportant and focusImportantAuraGlow
+                isPandemic = isPandemic and focusdeBuffPandemicGlow
+                isEnlarged = isEnlarged and focusEnlargeAura
             end
 
             if shouldShowAura then
+                aura:Show()
                 -- Print Logic
                 if printSpellId and not aura.bbfHookAdded then
                     aura:HookScript("OnEnter", function()
@@ -669,15 +699,13 @@ local function AdjustAuras(self, frameType)
 
     local unit = self.unit
     local isFriend = unit and UnitIsFriend("player", unit)
-    local auraTypeGap = BetterBlizzFramesDB.auraTypeGap
 
     if not isFriend then
         if buffsOnTop then
-            local userYOffset = BetterBlizzFramesDB.targetAndFocusAuraOffsetY
-            self.rowHeights = adjustAuraPosition(debuffs, userYOffset, buffsOnTop)
+            self.rowHeights = adjustAuraPosition(debuffs, targetAndFocusAuraOffsetY, buffsOnTop)
             local totalDebuffHeight = sum(self.rowHeights)
 
-            local yOffsetForBuffs = totalDebuffHeight + (auraSpacingY * #self.rowHeights) + userYOffset
+            local yOffsetForBuffs = totalDebuffHeight + (auraSpacingY * #self.rowHeights) + targetAndFocusAuraOffsetY
             if #debuffs > 0 then
                 yOffsetForBuffs = yOffsetForBuffs + 5 + auraTypeGap
             end
@@ -707,11 +735,10 @@ local function AdjustAuras(self, frameType)
         end
     else
         if buffsOnTop then
-            local userYOffset = BetterBlizzFramesDB.targetAndFocusAuraOffsetY
-            self.rowHeights = adjustAuraPosition(buffs, userYOffset, buffsOnTop)
+            self.rowHeights = adjustAuraPosition(buffs, targetAndFocusAuraOffsetY, buffsOnTop)
             local totalBuffHeight = sum(self.rowHeights)
 
-            local yOffsetForDebuffs = totalBuffHeight + (auraSpacingY * #self.rowHeights) + userYOffset
+            local yOffsetForDebuffs = totalBuffHeight + (auraSpacingY * #self.rowHeights) + targetAndFocusAuraOffsetY
             if #buffs > 0 then
                 yOffsetForDebuffs = yOffsetForDebuffs + 5 + auraTypeGap
             end
@@ -999,7 +1026,7 @@ local function PersonalBuffFrameFilterAndGrid(self)
                 isImportant = isImportant and BetterBlizzFramesDB.playerAuraImportantGlow
                 -- Nonprint logic
                 if shouldShowAura then
-                    --auraFrame:Show();
+                    auraFrame:Show();
                     auraFrame:ClearAllPoints();
                     auraFrame:SetPoint("TOPRIGHT", BuffFrame, "TOPRIGHT", -xOffset - 15, -yOffset);
                     -- Update column and row counters
@@ -1226,9 +1253,7 @@ for auraIndex, auraInfo in ipairs(DebuffFrame.auraInfo) do
                     xOffset = (currentCol - 1) * (auraSize + auraSpacingX);
                     yOffset = (currentRow - 1) * (auraSize + auraSpacingY);
                 else
-                    if auraFilterOn then
-                        auraFrame:Hide();
-                    end
+                    auraFrame:Hide();
                 end
             end
         end
@@ -1249,6 +1274,7 @@ hooksecurefunc(BuffFrame, "UpdateAuraButtons", PersonalBuffFrameFilterAndGrid)
 hooksecurefunc(DebuffFrame, "UpdateAuraButtons", PersonalDebuffFrameFilterAndGrid)
 
 function BBF.RefreshAllAuraFrames()
+    BBF.UpdateUserAuraSettings()
     PersonalBuffFrameFilterAndGrid(BuffFrame)
     PersonalDebuffFrameFilterAndGrid(DebuffFrame)
     AdjustAuras(TargetFrame, "target")

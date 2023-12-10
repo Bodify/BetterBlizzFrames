@@ -6,6 +6,8 @@ hiddenFrame:Hide()
 --------------------------------------
 local hookedRaidFrameManager = false
 local hookedChatButtons = false
+local changedResource = false
+local originalResourceParent
 function BBF.HideFrames()
     if BetterBlizzFramesDB.hasCheckedUi then
         --Hide group indicator on player unitframe
@@ -188,17 +190,40 @@ function BBF.HideFrames()
 
         if BetterBlizzFramesDB.hidePlayerPower then
             if WarlockPowerFrame then
+                originalResourceParent = WarlockPowerFrame:GetParent()
                 WarlockPowerFrame:SetParent(hiddenFrame)
             elseif RogueComboPointBarFrame then
+                originalResourceParent = RogueComboPointBarFrame:GetParent()
                 RogueComboPointBarFrame:SetParent(hiddenFrame)
             elseif DruidComboPointBarFrame then
+                originalResourceParent = DruidComboPointBarFrame:GetParent()
                 DruidComboPointBarFrame:SetParent(hiddenFrame)
             elseif PaladinPowerBarFrame then
+                originalResourceParent = PaladinPowerBar:GetParent()
                 PaladinPowerBar:SetParent(hiddenFrame)
             elseif RuneFrame then
+                originalResourceParent = RuneFrame:GetParent()
                 RuneFrame:SetParent(hiddenFrame)
             elseif EssencePlayerFrame then
+                originalResourceParent = EssencePlayerFrame:GetParent()
                 EssencePlayerFrame:SetParent(hiddenFrame)
+            end
+            changedResource = true
+        else
+            if changedResource then
+                if WarlockPowerFrame then
+                    WarlockPowerFrame:SetParent(originalResourceParent)
+                elseif RogueComboPointBarFrame then
+                    RogueComboPointBarFrame:SetParent(originalResourceParent)
+                elseif DruidComboPointBarFrame then
+                    DruidComboPointBarFrame:SetParent(originalResourceParent)
+                elseif PaladinPowerBarFrame then
+                    PaladinPowerBar:SetParent(originalResourceParent)
+                elseif RuneFrame then
+                    RuneFrame:SetParent(originalResourceParent)
+                elseif EssencePlayerFrame then
+                    EssencePlayerFrame:SetParent(originalResourceParent)
+                end
             end
         end
 
