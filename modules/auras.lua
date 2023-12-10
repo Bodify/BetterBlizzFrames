@@ -366,6 +366,7 @@ local userEnlargedAuraSize = 1
 local auraSpacingX = 4
 local auraSpacingY = 4
 local aurasPerRow = 5
+local targetAndFocusAuraOffsetY = 0
 local baseOffsetX = 25
 local baseOffsetY = 12.5
 local auraScale = 1
@@ -388,6 +389,7 @@ function BBF.UpdateUserAuraSettings()
     auraSpacingX = BetterBlizzFramesDB.targetAndFocusHorizontalGap
     auraSpacingY = BetterBlizzFramesDB.targetAndFocusVerticalGap
     aurasPerRow = BetterBlizzFramesDB.targetAndFocusAurasPerRow
+    targetAndFocusAuraOffsetY = BetterBlizzFramesDB.targetAndFocusAuraOffsetY
     baseOffsetX = 25 + BetterBlizzFramesDB.targetAndFocusAuraOffsetX
     baseOffsetY = 12.5 + BetterBlizzFramesDB.targetAndFocusAuraOffsetY
     auraScale = BetterBlizzFramesDB.targetAndFocusAuraScale
