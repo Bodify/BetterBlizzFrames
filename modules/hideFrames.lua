@@ -192,19 +192,24 @@ function BBF.HideFrames()
             if WarlockPowerFrame then
                 originalResourceParent = WarlockPowerFrame:GetParent()
                 WarlockPowerFrame:SetParent(hiddenFrame)
-            elseif RogueComboPointBarFrame then
+            end
+            if RogueComboPointBarFrame then
                 originalResourceParent = RogueComboPointBarFrame:GetParent()
                 RogueComboPointBarFrame:SetParent(hiddenFrame)
-            elseif DruidComboPointBarFrame then
+            end
+            if DruidComboPointBarFrame then
                 originalResourceParent = DruidComboPointBarFrame:GetParent()
                 DruidComboPointBarFrame:SetParent(hiddenFrame)
-            elseif PaladinPowerBarFrame then
-                originalResourceParent = PaladinPowerBar:GetParent()
-                PaladinPowerBar:SetParent(hiddenFrame)
-            elseif RuneFrame then
+            end
+            if PaladinPowerBarFrame then
+                originalResourceParent = PaladinPowerBarFrame:GetParent()
+                PaladinPowerBarFrame:SetParent(hiddenFrame)
+            end
+            if RuneFrame then
                 originalResourceParent = RuneFrame:GetParent()
                 RuneFrame:SetParent(hiddenFrame)
-            elseif EssencePlayerFrame then
+            end
+            if EssencePlayerFrame then
                 originalResourceParent = EssencePlayerFrame:GetParent()
                 EssencePlayerFrame:SetParent(hiddenFrame)
             end
@@ -213,15 +218,20 @@ function BBF.HideFrames()
             if changedResource then
                 if WarlockPowerFrame then
                     WarlockPowerFrame:SetParent(originalResourceParent)
-                elseif RogueComboPointBarFrame then
+                end
+                if RogueComboPointBarFrame then
                     RogueComboPointBarFrame:SetParent(originalResourceParent)
-                elseif DruidComboPointBarFrame then
+                end
+                if DruidComboPointBarFrame then
                     DruidComboPointBarFrame:SetParent(originalResourceParent)
-                elseif PaladinPowerBarFrame then
-                    PaladinPowerBar:SetParent(originalResourceParent)
-                elseif RuneFrame then
+                end
+                if PaladinPowerBarFrame then
+                    PaladinPowerBarFrame:SetParent(originalResourceParent)
+                end
+                if RuneFrame then
                     RuneFrame:SetParent(originalResourceParent)
-                elseif EssencePlayerFrame then
+                end
+                if EssencePlayerFrame then
                     EssencePlayerFrame:SetParent(originalResourceParent)
                 end
             end
