@@ -1358,7 +1358,7 @@ local function guiGeneralTab()
     CreateTooltip(filterSystemMessages, "Filter out a few excessive system messages. Some examples:\n\"You have joined the queue for Arena Skirmish\"\n\"Your group has been disbanded.\"\n\"You have been awarded x currency\"\n\"You are in both a party and an instance group.\"\n\nFull lists in modules\\chatFrame.lua")
 
     local arenaNamesText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    arenaNamesText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 460, -50)
+    arenaNamesText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 460, -60)
     arenaNamesText:SetText("Arena Names")
     CreateTooltip(arenaNamesText, "Change player names into spec/arena id during arena instead", "ANCHOR_LEFT")
     local arenaNamesIcon = BetterBlizzFrames:CreateTexture(nil, "ARTWORK")
@@ -1566,19 +1566,29 @@ local function guiGeneralTab()
 
     local combatIndicator = CreateCheckbox("combatIndicator", "Combat Indicator", BetterBlizzFrames)
     combatIndicator:SetPoint("TOPLEFT", extraFeaturesText, "BOTTOMLEFT", -4, pixelsOnFirstBox)
-    combatIndicator:HookScript("OnClick", function(self)
+    combatIndicator:HookScript("OnClick", function()
         BBF.CombatIndicatorCaller()
     end)
     CreateTooltip(combatIndicator, "Show combat status on Player, Target and Focus Frame.\nSword icon for combat, Sap icon for no combat.\nMore settings in \"Advanced Settings\"")
 
-
-
     local absorbIndicator = CreateCheckbox("absorbIndicator", "Absorb Indicator", BetterBlizzFrames, nil, BBF.AbsorbCaller)
     absorbIndicator:SetPoint("TOPLEFT", combatIndicator, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    absorbIndicator:HookScript("OnClick", function(self)
+    absorbIndicator:HookScript("OnClick", function()
         BBF.AbsorbCaller()
     end)
     CreateTooltip(absorbIndicator, "Show absorb amount on Player, Target and Focus Frame\nMore settings in \"Advanced Settings\"")
+
+    local overShields = CreateCheckbox("overShields", "Overshields", BetterBlizzFrames)
+    overShields:SetPoint("TOPLEFT", absorbIndicator, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    overShields:HookScript("OnClick", function(self)
+        if self:GetChecked() then
+            BBF.HookOverShields()
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        else
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        end
+    end)
+    CreateTooltip(overShields, "Expand on Blizzards unit frame absorb texture and\nshow shield amount on frames regardless if HP is full or not", "ANCHOR_LEFT")
 
     ----------------------
     -- Reload etc

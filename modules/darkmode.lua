@@ -136,12 +136,12 @@ function BBF.DarkmodeFrames()
         PartyFrame.MemberFrame2.Texture,
         PartyFrame.MemberFrame3.Texture,
         PartyFrame.MemberFrame4.Texture,
+        PaladinPowerBarFrame.Background,
+        PaladinPowerBarFrame.ActiveTexture,
     }) do
         applySettings(v, desaturationValue, vertexColor)
     end
     for _, v in pairs({
-        PaladinPowerBarFrame.Background,
-        PaladinPowerBarFrame.ActiveTexture,
         PlayerFrameAlternateManaBarLeftBorder,
         PlayerFrameAlternateManaBarRightBorder,
         PlayerFrameAlternateManaBarBorder,
@@ -195,7 +195,6 @@ function BBF.DarkmodeFrames()
             applySettings(v.BGActive, desaturationValue, rogueComboActive)
         end
     end
-
 
     -- Actionbars
     for i = 1, 12 do

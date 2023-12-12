@@ -623,6 +623,7 @@ Frame:SetScript("OnEvent", function(...)
 
     local function LoginVariablesLoaded()
         if BBF.variablesLoaded then
+            BBF.HookOverShields()
             BBF.CastBarTimerCaller()
             BBF.ShowPlayerCastBarIcon()
             BBF.CombatIndicator(PlayerFrame, "player")

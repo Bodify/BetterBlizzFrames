@@ -18,5 +18,6 @@ modules\healthbarColor.lua
 modules\arenaframes.lua
 modules\nahjProfile.lua
 modules\chatFrame.lua
+modules\overShields.lua
 gui.lua
 BetterBlizzFrames.lua
