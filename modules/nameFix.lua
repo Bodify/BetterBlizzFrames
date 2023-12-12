@@ -94,7 +94,7 @@ local function CheckUnit(frame, unit, party, tot)
                 newName = "Party 1"
             elseif removeRealm then
                 local name = (GetUnitName(unit, true))
-                newName = string.gsub(name, "-.*$", "")
+                newName = string.gsub(name, "%s*%(.*%)", "")
             else
                 local name = (GetUnitName(unit, true))
                 newName = name
@@ -132,7 +132,7 @@ local function CheckUnit(frame, unit, party, tot)
                 newName = "Party 2"
             elseif removeRealm then
                 local name = (GetUnitName(unit, true))
-                newName = string.gsub(name, "-.*$", "")
+                newName = string.gsub(name, "%s*%(.*%)", "")
             else
                 local name = (GetUnitName(unit, true))
                 newName = name
@@ -228,7 +228,7 @@ local function CheckUnit(frame, unit, party, tot)
 
             if removeRealm then
                 if isPlayer and name then
-                    newName = string.gsub(name, "-.*$", "")
+                    newName = string.gsub(name, "%s*%(.*%)", "")
                 else
                     newName = name
                 end
@@ -378,7 +378,7 @@ function ChangeName(frame, unit, party, tot)
                 frame.cleanName:SetAlpha(0)
             else
                 if name then
-                    newName = string.gsub(name, "-.*$", "")
+                    newName = string.gsub(name, "%s*%(.*%)", "")
                 end
                 frame.cleanName:SetText(newName)
                 frame.cleanName:SetAlpha(1)
@@ -386,7 +386,7 @@ function ChangeName(frame, unit, party, tot)
             originalNameObject:SetAlpha(0)
         else
             if isPlayer and name then
-                newName = string.gsub(name, "-.*$", "")
+                newName = string.gsub(name, "%s*%(.*%)", "")
             else
                 newName = name
             end
@@ -396,7 +396,7 @@ function ChangeName(frame, unit, party, tot)
         end
     else
         if isPlayer then
-            newName = string.gsub(name, "%-.+", " (*)")
+            newName = string.gsub(name, "%s*%(.*%)", "")
             frame.cleanName:SetText(newName)
             frame.cleanName:SetAlpha(1)
         else
@@ -569,7 +569,7 @@ local function UpdateToTName(frame, unit)
         CheckUnit(frame, unit, nil, true)
         return
     elseif isPlayer and removeRealmNames then
-        newName = string.gsub(name, "-.*$", "")
+        newName = string.gsub(name, "%s*%(.*%)", "")
         if frame.cleanName then
             frame.cleanName:SetText(newName)
         end
