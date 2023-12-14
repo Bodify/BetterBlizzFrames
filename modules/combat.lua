@@ -139,13 +139,127 @@ end
 
 
 
+local raceIcons = {
+    ["Orc"] = "Interface\\Icons\\inv_helmet_23",
+    ["Night Elf"] = "Interface\\Icons\\ability_ambush",
+    ["Undead"] = "Interface\\Icons\\spell_shadow_raisedead",
+    ["Human"] = "Interface\\Icons\\spell_shadow_charm"
+}
+
+function BBF.RacialIndicator(unitFrame, unit)
+    if not unitFrame or not BetterBlizzFramesDB.racialIndicator then return end
+
+    local settingsPrefix = unit --== "player" and "player" or "target"
+    local racialIndicatorOn = BetterBlizzFramesDB[settingsPrefix .. "RacialIndicator"]
+    if not racialIndicatorOn then return end
+
+    local xPos = BetterBlizzFramesDB.racialIndicatorXPos + 26
+    local yPos = BetterBlizzFramesDB.racialIndicatorYPos + 20
+    local scale = BetterBlizzFramesDB.racialIndicatorScale
+
+    local showOrc = BetterBlizzFramesDB.racialIndicatorOrc
+    local showNelf = BetterBlizzFramesDB.racialIndicatorNelf
+    local showUndead = BetterBlizzFramesDB.racialIndicatorUndead
+    local showHuman = BetterBlizzFramesDB.racialIndicatorHuman
+
+    local darkModeOn = BetterBlizzFramesDB.darkModeUi
+    local vertexColor = darkModeOn and BetterBlizzFramesDB.darkModeColor or 1
+
+    local unitRace = UnitRace(unit)
+    local isOrc = unitRace == "Orc"
+    local isNelf = unitRace == "Night Elf"
+    local isUndead = unitRace == "Undead"
+    local isHuman = unitRace == "Human"
+    local raceIcon = raceIcons[unitRace]
+    local shouldShow = (isOrc and showOrc) or (isNelf and showNelf) or (isUndead and showUndead) or (isHuman and showHuman)
+
+
+    if not unitFrame.racialIndicator then
+        unitFrame.racialIndicator = CreateFrame("Frame", nil, unitFrame, "BackdropTemplate")
+        unitFrame.racialIndicator:SetSize(20, 20)
+        unitFrame.racialIndicator:SetPoint("CENTER", unitFrame, "CENTER", 23, 21)
+        unitFrame.racialIndicator:SetFrameStrata("HIGH")
+
+        unitFrame.racialIndicator.icon = unitFrame.racialIndicator:CreateTexture(nil, "OVERLAY")
+        unitFrame.racialIndicator.icon:SetAllPoints(unitFrame.racialIndicator)
+
+        unitFrame.racialIndicator.mask = unitFrame.racialIndicator:CreateMaskTexture()
+        unitFrame.racialIndicator.mask:SetTexture("Interface/Masks/CircleMaskScalable")
+        unitFrame.racialIndicator.mask:SetSize(20, 20)
+        unitFrame.racialIndicator.mask:SetPoint("CENTER", unitFrame.racialIndicator.icon)
+
+        unitFrame.racialIndicator.icon:AddMaskTexture(unitFrame.racialIndicator.mask)
+
+        unitFrame.racialIndicator.border = unitFrame.racialIndicator:CreateTexture(nil, "OVERLAY")
+        unitFrame.racialIndicator.border:SetAtlas("ui-frame-genericplayerchoice-portrait-border")
+        unitFrame.racialIndicator.border:SetAllPoints(unitFrame.racialIndicator)
+        unitFrame.racialIndicator.border:SetDesaturated(true)
+--[[
+        -- Create the border within the parent frame
+        local border = CreateFrame("Frame", nil, unitFrame.racialIndicator, "BackdropTemplate")
+        border:SetBackdrop({
+            edgeFile = "Interface/Tooltips/UI-Tooltip-Border",
+            tileEdge = true,
+            edgeSize = 8,
+        })
+        border:SetPoint("TOPLEFT", unitFrame.racialIndicator.icon, "TOPLEFT", -1.5, 1.5)
+        border:SetPoint("BOTTOMRIGHT", unitFrame.racialIndicator.icon, "BOTTOMRIGHT", 1.5, -1.5)
+        border:SetFrameLevel(unitFrame.racialIndicator:GetFrameLevel() + 1)
+        unitFrame.racialIndicator.border = border
+
+]]
+    end
+
+    unitFrame.racialIndicator:SetPoint("CENTER", unitFrame, "CENTER", xPos, yPos)
+    unitFrame.racialIndicator:SetScale(scale)
+
+    if darkModeOn then
+        unitFrame.racialIndicator.border:SetVertexColor(vertexColor, vertexColor, vertexColor)
+    else
+        unitFrame.racialIndicator.border:SetVertexColor(1, 1, 0)
+    end
+
+    if raceIcon then
+        unitFrame.racialIndicator.icon:SetTexture(raceIcon)
+    end
+
+    if shouldShow then
+        unitFrame.racialIndicator:SetAlpha(1)
+        --unitFrame.racialIndicator.border:SetAlpha(1)
+    else
+        unitFrame.racialIndicator:SetAlpha(0)
+        --unitFrame.racialIndicator.border:SetAlpha(0)
+    end
+end
+
+function BBF.RacialIndicatorCaller()
+    BBF.RacialIndicator(TargetFrame, "target")
+    BBF.RacialIndicator(FocusFrame, "focus")
+    if not BetterBlizzFramesDB.racialIndicator then
+        if TargetFrame.racialIndicator then TargetFrame.racialIndicator:SetAlpha(0) end
+        if FocusFrame.racialIndicator then FocusFrame.racialIndicator:SetAlpha(0) end
+    end
+    if not BetterBlizzFramesDB.targetRacialIndicator then
+        if TargetFrame.racialIndicator then TargetFrame.racialIndicator:SetAlpha(0) end
+    end
+    if not BetterBlizzFramesDB.focusRacialIndicator then
+        if FocusFrame.racialIndicator then FocusFrame.racialIndicator:SetAlpha(0) end
+    end
+end
+
+
 
 -- Event Listener for Combat Indicator
 local combatIndicatorFrame = CreateFrame("Frame")
-combatIndicatorFrame:SetScript("OnEvent", function()
+combatIndicatorFrame:SetScript("OnEvent", function(self, event)
     BBF.CombatIndicator(TargetFrame, "target")
     BBF.CombatIndicator(FocusFrame, "focus")
     BBF.CombatIndicator(PlayerFrame, "player")
+
+    if event == "PLAYER_TARGET_CHANGED" or event == "PLAYER_FOCUS_CHANGED" then
+        BBF.RacialIndicator(TargetFrame, "target")
+        BBF.RacialIndicator(FocusFrame, "focus")
+    end
 end)
 combatIndicatorFrame:RegisterEvent("UNIT_FLAGS")
 combatIndicatorFrame:RegisterEvent("UNIT_COMBAT")

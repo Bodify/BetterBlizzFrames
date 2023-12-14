@@ -499,7 +499,15 @@ local function CreateSlider(parent, label, minValue, maxValue, stepValue, elemen
                 elseif element == "enlargedAuraSize" then
                     BetterBlizzFramesDB.enlargedAuraSize = value
                     BBF.RefreshAllAuraFrames()
-
+                elseif element == "racialIndicatorScale" then
+                    BetterBlizzFramesDB.racialIndicatorScale = value
+                    BBF.RacialIndicatorCaller()
+                elseif element == "racialIndicatorXPos" then
+                    BetterBlizzFramesDB.racialIndicatorXPos = value
+                    BBF.RacialIndicatorCaller()
+                elseif element == "racialIndicatorYPos" then
+                    BetterBlizzFramesDB.racialIndicatorYPos = value
+                    BBF.RacialIndicatorCaller()
 
                     --end
                 end
@@ -1358,7 +1366,7 @@ local function guiGeneralTab()
     CreateTooltip(filterSystemMessages, "Filter out a few excessive system messages. Some examples:\n\"You have joined the queue for Arena Skirmish\"\n\"Your group has been disbanded.\"\n\"You have been awarded x currency\"\n\"You are in both a party and an instance group.\"\n\nFull lists in modules\\chatFrame.lua")
 
     local arenaNamesText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    arenaNamesText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 460, -60)
+    arenaNamesText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 460, -70)
     arenaNamesText:SetText("Arena Names")
     CreateTooltip(arenaNamesText, "Change player names into spec/arena id during arena instead", "ANCHOR_LEFT")
     local arenaNamesIcon = BetterBlizzFrames:CreateTexture(nil, "ARTWORK")
@@ -1469,7 +1477,7 @@ local function guiGeneralTab()
 
 
     local allFrameText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    allFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 250, 25)
+    allFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 250, 30)
     allFrameText:SetText("All Frames")
     local allFrameIcon = BetterBlizzFrames:CreateTexture(nil, "ARTWORK")
     allFrameIcon:SetAtlas("groupfinder-icon-friend")
@@ -1557,7 +1565,7 @@ local function guiGeneralTab()
     CreateTooltip(hidePvpIcon, "Hide PvP Icon on Player, Target & Focus|A:UI-HUD-UnitFrame-Player-PVP-FFAIcon:44:28|a")
 
     local extraFeaturesText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    extraFeaturesText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 460, 25)
+    extraFeaturesText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 460, 30)
     extraFeaturesText:SetText("Extra Features")
     local extraFeaturesIcon = BetterBlizzFrames:CreateTexture(nil, "ARTWORK")
     extraFeaturesIcon:SetAtlas("Campaign-QuestLog-LoreBook")
@@ -1578,8 +1586,15 @@ local function guiGeneralTab()
     end)
     CreateTooltip(absorbIndicator, "Show absorb amount on Player, Target and Focus Frame\nMore settings in \"Advanced Settings\"")
 
+    local racialIndicator = CreateCheckbox("racialIndicator", "PvP Racial Indicator", BetterBlizzFrames, nil, BBF.RacialIndicatorCaller)
+    racialIndicator:SetPoint("TOPLEFT", absorbIndicator, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    racialIndicator:HookScript("OnClick", function()
+        BBF.RacialIndicatorCaller()
+    end)
+    CreateTooltip(racialIndicator, "Show important PvP racial icons on Target/Focus Frame")
+
     local overShields = CreateCheckbox("overShields", "Overshields", BetterBlizzFrames)
-    overShields:SetPoint("TOPLEFT", absorbIndicator, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    overShields:SetPoint("TOPLEFT", racialIndicator, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     overShields:HookScript("OnClick", function(self)
         if self:GetChecked() then
             BBF.HookOverShields()
@@ -2096,6 +2111,7 @@ local function guiCastbars()
 
     local playerCastBarShowIcon = CreateCheckbox("playerCastBarShowIcon", "Icon", contentFrame, nil, BBF.ShowPlayerCastBarIcon)
     playerCastBarShowIcon:SetPoint("TOPLEFT", playerCastBarHeight, "BOTTOMLEFT", 10, -4)
+    CreateTooltip(playerCastBarShowIcon, "Show spell icon to the left of the castbar\nlike on every other castbar in the game")
 
     local playerCastBarTimer = CreateCheckbox("playerCastBarTimer", "Timer", contentFrame, nil, BBF.CastBarTimerCaller)
     playerCastBarTimer:SetPoint("LEFT", playerCastBarShowIcon.Text, "RIGHT", 10, 0)
@@ -2423,7 +2439,71 @@ local function guiPositionAndScale()
     end)
 
 
+       --------------------------
+    -- Combat indicator
+    ----------------------
+    local anchorSubracialIndicator = contentFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    anchorSubracialIndicator:SetPoint("CENTER", mainGuiAnchor2, "CENTER", secondLineX-70, secondLineY - 15)
+    anchorSubracialIndicator:SetText("PvP Racial Indicator")
 
+    --CreateBorderBox(anchorSubracialIndicator)
+    CreateBorderedFrame(anchorSubracialIndicator, 200, 293, 0, -98, BetterBlizzFramesSubPanel)
+
+    local racialIndicatorIcon = contentFrame:CreateTexture(nil, "ARTWORK")
+    racialIndicatorIcon:SetTexture("Interface\\Icons\\ability_ambush")
+    racialIndicatorIcon:SetSize(34, 34)
+    racialIndicatorIcon:SetPoint("BOTTOM", anchorSubracialIndicator, "TOP", 0, 1)
+
+    local racialIndicatorScale = CreateSlider(contentFrame, "Size", 0.1, 1.9, 0.01, "racialIndicatorScale")
+    racialIndicatorScale:SetPoint("TOP", anchorSubracialIndicator, "BOTTOM", 0, -15)
+
+    local racialIndicatorXPos = CreateSlider(contentFrame, "x offset", -50, 50, 1, "racialIndicatorXPos", "X")
+    racialIndicatorXPos:SetPoint("TOP", racialIndicatorScale, "BOTTOM", 0, -15)
+
+    local racialIndicatorYPos = CreateSlider(contentFrame, "y offset", -50, 50, 1, "racialIndicatorYPos", "Y")
+    racialIndicatorYPos:SetPoint("TOP", racialIndicatorXPos, "BOTTOM", 0, -15)
+
+    local racialIndicatorOrc = CreateCheckbox("racialIndicatorOrc", "Orc", contentFrame)
+    racialIndicatorOrc:SetPoint("TOPLEFT", racialIndicatorYPos, "BOTTOMLEFT", 5, -5)
+    racialIndicatorOrc:HookScript("OnClick", function(self)
+        BBF.RacialIndicatorCaller()
+    end)
+    CreateTooltip(racialIndicatorOrc, "Show for Orc")
+
+    local racialIndicatorHuman = CreateCheckbox("racialIndicatorHuman", "Human", contentFrame)
+    racialIndicatorHuman:SetPoint("TOPLEFT", racialIndicatorOrc, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    racialIndicatorHuman:HookScript("OnClick", function(self)
+        BBF.RacialIndicatorCaller()
+    end)
+    CreateTooltip(racialIndicatorHuman, "Show for Human")
+
+    local racialIndicatorNelf = CreateCheckbox("racialIndicatorNelf", "Night Elf", contentFrame)
+    racialIndicatorNelf:SetPoint("LEFT", racialIndicatorOrc.Text, "RIGHT", 25, 0)
+    racialIndicatorNelf:HookScript("OnClick", function(self)
+        BBF.RacialIndicatorCaller()
+    end)
+    CreateTooltip(racialIndicatorNelf, "Show for Night Elf")
+
+    local racialIndicatorUndead = CreateCheckbox("racialIndicatorUndead", "Undead", contentFrame)
+    racialIndicatorUndead:SetPoint("TOPLEFT", racialIndicatorNelf, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    racialIndicatorUndead:HookScript("OnClick", function(self)
+        BBF.RacialIndicatorCaller()
+    end)
+    CreateTooltip(racialIndicatorUndead, "Show for Undead")
+
+    local racialIndicatorTarget = CreateCheckbox("targetRacialIndicator", "Target", contentFrame)
+    racialIndicatorTarget:SetPoint("TOPLEFT", racialIndicatorHuman, "BOTTOMLEFT", 0, -10)
+    racialIndicatorTarget:HookScript("OnClick", function(self)
+        BBF.RacialIndicatorCaller()
+    end)
+    CreateTooltip(racialIndicatorTarget, "Show on TargetFrame")
+
+    local racialIndicatorFocus = CreateCheckbox("targetRacialIndicator", "Focus", contentFrame)
+    racialIndicatorFocus:SetPoint("LEFT", racialIndicatorTarget.Text, "RIGHT", 12, 0)
+    racialIndicatorFocus:HookScript("OnClick", function(self)
+        BBF.RacialIndicatorCaller()
+    end)
+    CreateTooltip(racialIndicatorFocus, "Show on FocusFrame")
 
 
 

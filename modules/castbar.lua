@@ -452,6 +452,9 @@ end
 
 function BBF.ChangeCastbarSizes()
     --Player
+    if not BetterBlizzFramesDB.playerCastBarScale then
+        BetterBlizzFramesDB.playerCastBarScale = PlayerCastingBarFrame:GetScale()
+    end
     PlayerCastingBarFrame:SetScale(BetterBlizzFramesDB.playerCastBarScale)
     PlayerCastingBarFrame:SetWidth(BetterBlizzFramesDB.playerCastBarWidth)
     PlayerCastingBarFrame:SetHeight(BetterBlizzFramesDB.playerCastBarHeight)
@@ -510,16 +513,21 @@ function BBF.ChangeCastbarSizes()
 
 end
 
-
 PlayerCastingBarFrame:HookScript("OnShow", function()
     local showIcon = BetterBlizzFramesDB.playerCastBarShowIcon
     if showIcon then
         PlayerCastingBarFrame.Icon:Show()
-        PlayerCastingBarFrame.showShield = true
+        PlayerCastingBarFrame.showShield = true --taint concern TODO: add non-taint method
         PlayerCastingBarFrame.BorderShield:SetSize(30,36)
         PlayerCastingBarFrame.BorderShield:ClearAllPoints()
         PlayerCastingBarFrame.BorderShield:SetPoint("RIGHT", PlayerCastingBarFrame, "LEFT", -1, -7)
         PlayerCastingBarFrame.BorderShield:SetScale(BetterBlizzFramesDB.playerCastBarIconScale)
         PlayerCastingBarFrame.BorderShield:SetDrawLayer("BORDER")
+    end
+end)
+
+hooksecurefunc(PlayerCastingBarFrame, "SetScale", function()
+    if not BetterBlizzFramesDB.wasOnLoadingScreen then
+        BetterBlizzFramesDB.playerCastBarScale = PlayerCastingBarFrame:GetScale()
     end
 end)

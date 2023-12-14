@@ -18,7 +18,7 @@ local function GetMaxAbsorbAuraIcon(unit)
 end
 
 local function UpdateAbsorbIndicator(frame, unit)
-    if not BetterBlizzFramesDB.absorbIndicator then return end
+    if not BetterBlizzFramesDB.absorbIndicator and not BetterBlizzFramesDB.absorbIndicatorTestMode then return end
 
     local settingsPrefix = unit
     local showAmount = BetterBlizzFramesDB[settingsPrefix .. "AbsorbAmount"]
@@ -223,7 +223,7 @@ function BBF.AbsorbCaller()
     UpdateAbsorbIndicator(PlayerFrame, "player")
     UpdateAbsorbIndicator(TargetFrame, "target")
     UpdateAbsorbIndicator(FocusFrame, "focus")
-    if not BetterBlizzFramesDB.absorbIndicator then
+    if not BetterBlizzFramesDB.absorbIndicator and not BetterBlizzFramesDB.absorbIndicatorTestMode then
         if TargetFrame.absorbIcon and TargetFrame.absorbIcon.border then TargetFrame.absorbIcon.border:SetAlpha(0) end
         if TargetFrame.absorbIndicator then TargetFrame.absorbIndicator:SetAlpha(0) end
         if TargetFrame.absorbIcon then TargetFrame.absorbIcon:SetAlpha(0) end

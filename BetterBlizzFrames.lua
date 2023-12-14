@@ -6,7 +6,7 @@ BBF = BBF or {}
 -- Things are getting more messy need a lot of cleaning lol
 
 local addonVersion = "1.00" --too afraid to to touch for now
-local addonUpdates = "1.1.5"
+local addonUpdates = "1.1.6"
 local sendUpdate = true
 BBF.VersionNumber = addonUpdates
 BBF.variablesLoaded = false
@@ -74,6 +74,17 @@ local defaultSettings = {
     combatIndicatorScale = 1,
     combatIndicatorXPos = 0,
     combatIndicatorYPos = 0,
+    --Race Indicator
+    racialIndicator = false,
+    targetRacialIndicator = true,
+    focusRacialIndicator = true,
+    racialIndicatorXPos = 0,
+    racialIndicatorYPos = 0,
+    racialIndicatorScale = 1,
+    racialIndicatorOrc = true,
+    racialIndicatorNelf = true,
+    racialIndicatorHuman = true,
+    racialIndicatorUndead = true,
 
     --Party castbars
     partyCastBarScale = 1,
@@ -117,7 +128,7 @@ local defaultSettings = {
     focusCastBarTimer = false,
 
     --Player castbar
-    playerCastBarScale = 1,
+    --playerCastBarScale = 1,
     playerCastBarIconScale = 1,
     playerCastBarWidth = 208,
     playerCastBarHeight = 11,
@@ -298,7 +309,7 @@ local function SendUpdateMessage()
     if sendUpdate then
         C_Timer.After(7, function()
             DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames " .. addonUpdates .. ":")
-            DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Added Extra Feature \"Overshields\" setting.")
+            DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Added \"PvP Racial Indicator\" setting, might expand on it later. Some minor bugfixes.")
             --DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a For more info and news about new features type /bbf news")
         end)
     end
@@ -307,6 +318,7 @@ end
 local function NewsUpdateMessage()
     DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames news:")
     DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a #1: Added Extra Feature \"Overshields\" setting.")
+    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a #1: Added \"PvP Racial Indicator\" setting.")
 end
 
 local function CheckForUpdate()
