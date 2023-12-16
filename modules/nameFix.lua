@@ -378,7 +378,7 @@ function ChangeName(frame, unit, party, tot)
                 frame.cleanName:SetAlpha(0)
             else
                 if name then
-                    newName = string.gsub(name, "%s*%(.*%)", "")
+                    newName = string.gsub(name, "%-.*$", "")
                 end
                 frame.cleanName:SetText(newName)
                 frame.cleanName:SetAlpha(1)
