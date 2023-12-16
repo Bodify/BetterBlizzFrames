@@ -2505,19 +2505,19 @@ local function guiPositionAndScale()
     end)
     CreateTooltip(racialIndicatorUndead, "Show for Undead")
 
-    local racialIndicatorTarget = CreateCheckbox("targetRacialIndicator", "Target", contentFrame)
-    racialIndicatorTarget:SetPoint("TOPLEFT", racialIndicatorHuman, "BOTTOMLEFT", 0, -10)
-    racialIndicatorTarget:HookScript("OnClick", function(self)
+    local targetRacialIndicator = CreateCheckbox("targetRacialIndicator", "Target", contentFrame)
+    targetRacialIndicator:SetPoint("TOPLEFT", racialIndicatorHuman, "BOTTOMLEFT", 0, -10)
+    targetRacialIndicator:HookScript("OnClick", function(self)
         BBF.RacialIndicatorCaller()
     end)
-    CreateTooltip(racialIndicatorTarget, "Show on TargetFrame")
+    CreateTooltip(targetRacialIndicator, "Show on TargetFrame")
 
-    local racialIndicatorFocus = CreateCheckbox("targetRacialIndicator", "Focus", contentFrame)
-    racialIndicatorFocus:SetPoint("LEFT", racialIndicatorTarget.Text, "RIGHT", 12, 0)
-    racialIndicatorFocus:HookScript("OnClick", function(self)
+    local focusRacialIndicator = CreateCheckbox("focusRacialIndicator", "Focus", contentFrame)
+    focusRacialIndicator:SetPoint("LEFT", targetRacialIndicator.Text, "RIGHT", 12, 0)
+    focusRacialIndicator:HookScript("OnClick", function(self)
         BBF.RacialIndicatorCaller()
     end)
-    CreateTooltip(racialIndicatorFocus, "Show on FocusFrame")
+    CreateTooltip(focusRacialIndicator, "Show on FocusFrame")
 
 
 

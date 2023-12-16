@@ -151,6 +151,7 @@ function BBF.RacialIndicator(unitFrame, unit)
 
     local settingsPrefix = unit --== "player" and "player" or "target"
     local racialIndicatorOn = BetterBlizzFramesDB[settingsPrefix .. "RacialIndicator"]
+    print(racialIndicatorOn)
     if not racialIndicatorOn then return end
 
     local xPos = BetterBlizzFramesDB.racialIndicatorXPos + 26
