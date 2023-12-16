@@ -21,6 +21,7 @@ local defaultSettings = {
     darkModeUi = false,
     darkModeActionBars = true,
     darkModeUiAura = true,
+    darkModeCastbars = true,
     darkModeColor = 0.20,
     hideGroupIndicator = false,
     hideFocusCombatGlow = false,

@@ -1023,6 +1023,10 @@ local function guiGeneralTab()
     darkModeActionBars:SetPoint("LEFT", darkModeUiAura.Text, "RIGHT", 5, 0)
     CreateTooltip(darkModeActionBars, "Dark borders for action bars.")
 
+    local darkModeCastbars = CreateCheckbox("darkModeCastbars", "Castbars", BetterBlizzFrames, nil, BBF.DarkmodeFrames)
+    darkModeCastbars:SetPoint("TOPLEFT", darkModeActionBars, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltip(darkModeCastbars, "Dark borders for castbars.")
+
     local darkModeColor = CreateSlider(darkModeUi, "Darkness", 0, 1, 0.01, "darkModeColor", nil, 90)
     darkModeColor:SetPoint("TOPLEFT", darkModeUi, "BOTTOMLEFT", sliderUnderBoxX, sliderUnderBoxY)
     CreateTooltip(darkModeColor, "Dark mode value.\n\nYou can right-click sliders to enter a specific value.")
@@ -1035,6 +1039,8 @@ local function guiGeneralTab()
             darkModeUiAura:SetAlpha(1)
             darkModeActionBars:Enable()
             darkModeActionBars:SetAlpha(1)
+            darkModeCastbars:Enable()
+            darkModeCastbars:SetAlpha(1)
         else
             darkModeColor:Disable()
             darkModeColor:SetAlpha(0)
@@ -1042,12 +1048,19 @@ local function guiGeneralTab()
             darkModeUiAura:SetAlpha(0)
             darkModeActionBars:Disable()
             darkModeActionBars:SetAlpha(0)
+            darkModeCastbars:Disable()
+            darkModeCastbars:SetAlpha(0)
         end
     end)
     if not BetterBlizzFramesDB.darkModeUi then
         darkModeUiAura:SetAlpha(0)
         darkModeColor:SetAlpha(0) --default slider creation only does 0.5 alpha
         darkModeActionBars:SetAlpha(0)
+        darkModeCastbars:SetAlpha(0)
+        darkModeUiAura:Disable()
+        darkModeColor:Disable()
+        darkModeActionBars:Disable()
+        darkModeCastbars:Disable()
     end
 
 
@@ -1089,6 +1102,7 @@ local function guiGeneralTab()
     end)
     if not BetterBlizzFramesDB.playerReputationColor then
         playerReputationClassColor:SetAlpha(0)
+        playerReputationClassColor:Disable()
     end
 
     local hidePlayerName = CreateCheckbox("hidePlayerName", "Hide Name", BetterBlizzFrames, nil, BBF.SetCenteredNamesCaller)

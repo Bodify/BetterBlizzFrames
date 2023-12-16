@@ -69,12 +69,13 @@ function BBF.DarkmodeFrames()
     BBF.CombatIndicatorCaller()
     local desaturationValue = BetterBlizzFramesDB.darkModeUi and true or false
     local vertexColor = BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeColor or 1
-    local lighterVertexColor = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.15) or 1
+    local lighterVertexColor = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.3) or 1
     local actionBarColor = BetterBlizzFramesDB.darkModeActionBars and (vertexColor + 0.15) or 1
     local birdColor = BetterBlizzFramesDB.darkModeActionBars and (vertexColor + 0.25) or 1
     local rogueCombo = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.45) or 1
     local rogueComboActive = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.30) or 1
     local monkChi = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.10) or 1
+    local castbarBorder = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.1) or 1
 
     if BetterBlizzFramesDB.darkModeColor == 0 then
         actionBarColor = 0
@@ -125,6 +126,24 @@ function BBF.DarkmodeFrames()
     applySettings(TargetFrame.totFrame.FrameTexture, desaturationValue, vertexColor)
     applySettings(PetFrameTexture, desaturationValue, vertexColor)
     applySettings(FocusFrameToT.FrameTexture, desaturationValue, vertexColor)
+
+    --castbars
+    if BetterBlizzFramesDB.darkModeCastbars then
+        applySettings(TargetFrame.spellbar.Border, desaturationValue, castbarBorder)
+        --applySettings(TargetFrame.spellbar.BorderShield, desaturationValue, vertexColor)
+        applySettings(TargetFrame.spellbar.Background, desaturationValue, lighterVertexColor)
+
+        applySettings(FocusFrame.spellbar.Border, desaturationValue, castbarBorder)
+        --applySettings(FocusFrame.spellbar.BorderShield, desaturationValue, vertexColor)
+        applySettings(FocusFrame.spellbar.Background, desaturationValue, lighterVertexColor)
+
+        applySettings(PlayerCastingBarFrame.Border, desaturationValue, castbarBorder)
+        --applySettings(PlayerCastingBarFrame.BorderShield, desaturationValue, vertexColor)
+        applySettings(PlayerCastingBarFrame.Background, desaturationValue, lighterVertexColor)
+    end
+
+
+
 
     applySettings(PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.PlayerPortraitCornerIcon, desaturationValue, vertexColor)
 
