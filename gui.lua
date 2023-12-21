@@ -43,7 +43,7 @@ StaticPopupDialogs["BBF_TOT_MESSAGE"] = {
 }
 
 StaticPopupDialogs["BBF_CONFIRM_NAHJ_PROFILE"] = {
-    text = "This action will modify all settings to Nahj's profile and reload the UI.\n\nYour existing blacklists and whitelists will be retained, with Nahj's additional entries\n\nAre you sure you want to continue?",
+    text = "This action will modify all settings to Nahj's profile and reload the UI.\n\nYour existing blacklists and whitelists will be retained, with Nahj's additional entries.\n\nAre you sure you want to continue?",
     button1 = "Yes",
     button2 = "No",
     OnAccept = function()

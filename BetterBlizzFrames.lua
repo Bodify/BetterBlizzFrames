@@ -689,6 +689,8 @@ SlashCmdList["BBF"] = function(msg)
         NewsUpdateMessage()
     elseif msg == "test" then
         --playerFrameTest()
+    elseif msg == "nahj" then
+        StaticPopup_Show("BBF_CONFIRM_NAHJ_PROFILE")
     else
         InterfaceOptionsFrame_OpenToCategory(BetterBlizzFrames)
     end
