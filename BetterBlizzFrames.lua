@@ -6,8 +6,8 @@ BBF = BBF or {}
 -- Things are getting more messy need a lot of cleaning lol
 
 local addonVersion = "1.00" --too afraid to to touch for now
-local addonUpdates = "1.1.6b"
-local sendUpdate = false
+local addonUpdates = "1.1.7"
+local sendUpdate = true
 BBF.VersionNumber = addonUpdates
 BBF.variablesLoaded = false
 
@@ -258,7 +258,7 @@ local function FetchAndSaveValuesOnFirstLogin()
 
 
 
-    local function GetUIInfo()
+    local function GetUIInfo() --uhhh yeah idk, not needed delete eventually TODO:
         if BBF.variablesLoaded then
             local function ShownChecker()
                 if PlayerFrame:IsShown() then
@@ -310,7 +310,7 @@ local function SendUpdateMessage()
     if sendUpdate then
         C_Timer.After(7, function()
             DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames " .. addonUpdates .. ":")
-            DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Added \"PvP Racial Indicator\" setting, might expand on it later. Some minor bugfixes.")
+            DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Minor bugfix, Nahj profile update, BBP got a lot more love this round.")
             --DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a For more info and news about new features type /bbf news")
         end)
     end
@@ -318,8 +318,7 @@ end
 
 local function NewsUpdateMessage()
     DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames news:")
-    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a #1: Added Extra Feature \"Overshields\" setting.")
-    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a #1: Added \"PvP Racial Indicator\" setting.")
+    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a #1: Minor bugfix, Nahj profile update.")
 end
 
 local function CheckForUpdate()
