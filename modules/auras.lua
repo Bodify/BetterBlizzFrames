@@ -42,7 +42,7 @@ local function GetAuraDetails(spellName, spellId)
             local isImportant = entry.flags and entry.flags.important or false
             local isPandemic = entry.flags and entry.flags.pandemic or false
             local isEnlarged = entry.flags and entry.flags.enlarged or false
-            return true, isImportant, isPandemic, isEnlarged, isEnlarged
+            return true, isImportant, isPandemic, isEnlarged
         end
     end
     return false, false, false
