@@ -200,8 +200,6 @@ local nahjAuraBlacklist = {
     }, -- [17]
 }
 
-
-
 local nahjAuraWhitelist = {
     {
         ["flags"] = {
@@ -511,9 +509,6 @@ local function updateAuraList(nahjList, userList)
         end
     end
 end
-
-
-
 
 function BBF.NahjProfile()
     updateAuraList(nahjAuraWhitelist, BetterBlizzFramesDB.auraWhitelist)
