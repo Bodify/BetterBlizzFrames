@@ -45,7 +45,7 @@ local function GetAuraDetails(spellName, spellId)
             return true, isImportant, isPandemic, isEnlarged
         end
     end
-    return false, false, false
+    return false, false, false, false
 end
 
 local function ShouldShowBuff(unit, auraData, frameType)
