@@ -7,9 +7,9 @@ local nahjAuraBlacklist = {
         ["name"] = "Sign of the Skirmisher",
         ["entryColors"] = {
             ["text"] = {
-                ["r"] = 1,
-                ["g"] = 1,
                 ["b"] = 0,
+                ["g"] = 1,
+                ["r"] = 1,
             },
         },
     }, -- [1]
@@ -17,9 +17,9 @@ local nahjAuraBlacklist = {
         ["name"] = "Sign of the Scourge",
         ["entryColors"] = {
             ["text"] = {
-                ["r"] = 1,
-                ["g"] = 1,
                 ["b"] = 0,
+                ["g"] = 1,
+                ["r"] = 1,
             },
         },
     }, -- [2]
@@ -27,9 +27,9 @@ local nahjAuraBlacklist = {
         ["name"] = "Stormwind Champion",
         ["entryColors"] = {
             ["text"] = {
-                ["r"] = 1,
-                ["g"] = 1,
                 ["b"] = 0,
+                ["g"] = 1,
+                ["r"] = 1,
             },
         },
     }, -- [3]
@@ -37,9 +37,9 @@ local nahjAuraBlacklist = {
         ["name"] = "Honorless Target",
         ["entryColors"] = {
             ["text"] = {
-                ["r"] = 1,
-                ["g"] = 1,
                 ["b"] = 0,
+                ["g"] = 1,
+                ["r"] = 1,
             },
         },
     }, -- [4]
@@ -47,9 +47,9 @@ local nahjAuraBlacklist = {
         ["name"] = "Guild Champion",
         ["entryColors"] = {
             ["text"] = {
-                ["r"] = 1,
-                ["g"] = 1,
                 ["b"] = 0,
+                ["g"] = 1,
+                ["r"] = 1,
             },
         },
     }, -- [5]
@@ -57,9 +57,9 @@ local nahjAuraBlacklist = {
         ["name"] = "Sign of Iron",
         ["entryColors"] = {
             ["text"] = {
-                ["r"] = 1,
-                ["g"] = 1,
                 ["b"] = 0,
+                ["g"] = 1,
+                ["r"] = 1,
             },
         },
     }, -- [6]
@@ -67,9 +67,9 @@ local nahjAuraBlacklist = {
         ["id"] = 397734,
         ["entryColors"] = {
             ["text"] = {
-                ["r"] = 1,
-                ["g"] = 1,
                 ["b"] = 0,
+                ["g"] = 1,
+                ["r"] = 1,
             },
         },
     }, -- [7]
@@ -77,9 +77,9 @@ local nahjAuraBlacklist = {
         ["id"] = 186403,
         ["entryColors"] = {
             ["text"] = {
-                ["r"] = 1,
-                ["g"] = 1,
                 ["b"] = 0,
+                ["g"] = 1,
+                ["r"] = 1,
             },
         },
     }, -- [8]
@@ -87,9 +87,9 @@ local nahjAuraBlacklist = {
         ["id"] = 282559,
         ["entryColors"] = {
             ["text"] = {
-                ["r"] = 1,
-                ["g"] = 1,
                 ["b"] = 0,
+                ["g"] = 1,
+                ["r"] = 1,
             },
         },
     }, -- [9]
@@ -97,9 +97,9 @@ local nahjAuraBlacklist = {
         ["id"] = 32727,
         ["entryColors"] = {
             ["text"] = {
-                ["r"] = 1,
-                ["g"] = 1,
                 ["b"] = 0,
+                ["g"] = 1,
+                ["r"] = 1,
             },
         },
     }, -- [10]
@@ -107,9 +107,9 @@ local nahjAuraBlacklist = {
         ["id"] = 418563,
         ["entryColors"] = {
             ["text"] = {
-                ["r"] = 1,
-                ["g"] = 1,
                 ["b"] = 0,
+                ["g"] = 1,
+                ["r"] = 1,
             },
         },
     }, -- [11]
@@ -117,9 +117,9 @@ local nahjAuraBlacklist = {
         ["id"] = 93805,
         ["entryColors"] = {
             ["text"] = {
-                ["r"] = 1,
-                ["g"] = 1,
                 ["b"] = 0,
+                ["g"] = 1,
+                ["r"] = 1,
             },
         },
     }, -- [12]
@@ -135,7 +135,7 @@ local nahjAuraBlacklist = {
                 ["r"] = 1,
             },
         },
-        ["name"] = "264420 - Solider of the Alliance",
+        ["name"] = "Sign of the Legion",
         ["comment"] = "",
     }, -- [13]
     {
@@ -150,7 +150,7 @@ local nahjAuraBlacklist = {
                 ["b"] = 0,
             },
         },
-        ["name"] = "Orgrimmar Champion",
+        ["name"] = "Sign of the Warrior",
         ["comment"] = "",
     }, -- [14]
     {
@@ -165,7 +165,7 @@ local nahjAuraBlacklist = {
                 ["b"] = 0,
             },
         },
-        ["name"] = "Encapsulated Destiny",
+        ["name"] = "Sign of the emissary",
         ["comment"] = "",
     }, -- [15]
     {
@@ -173,8 +173,6 @@ local nahjAuraBlacklist = {
             ["important"] = false,
             ["pandemic"] = false,
         },
-        ["comment"] = "",
-        ["id"] = 245686,
         ["entryColors"] = {
             ["text"] = {
                 ["r"] = 1,
@@ -182,8 +180,24 @@ local nahjAuraBlacklist = {
                 ["b"] = 0,
             },
         },
-        ["name"] = "",
+        ["name"] = "Fashionable!",
+        ["comment"] = "",
     }, -- [16]
+    {
+        ["flags"] = {
+            ["important"] = false,
+            ["pandemic"] = false,
+        },
+        ["entryColors"] = {
+            ["text"] = {
+                ["r"] = 1,
+                ["g"] = 1,
+                ["b"] = 0,
+            },
+        },
+        ["name"] = "Soldier of the alliance",
+        ["comment"] = "",
+    }, -- [17]
 }
 
 
@@ -191,312 +205,9 @@ local nahjAuraBlacklist = {
 local nahjAuraWhitelist = {
     {
         ["flags"] = {
-            ["important"] = true,
-            ["pandemic"] = false,
-        },
-        ["comment"] = "",
-        ["id"] = 248518,
-        ["entryColors"] = {
-            ["text"] = {
-                ["r"] = 1,
-                ["g"] = 1,
-                ["b"] = 0,
-            },
-        },
-        ["name"] = "",
-    }, -- [1]
-    {
-        ["flags"] = {
-            ["important"] = true,
-            ["pandemic"] = false,
-        },
-        ["comment"] = "",
-        ["id"] = 7165,
-        ["entryColors"] = {
-            ["text"] = {
-                ["r"] = 1,
-                ["g"] = 1,
-                ["b"] = 0,
-            },
-        },
-        ["name"] = "",
-    }, -- [2]
-    {
-        ["flags"] = {
-            ["important"] = true,
-            ["pandemic"] = false,
-        },
-        ["comment"] = "",
-        ["id"] = 378464,
-        ["entryColors"] = {
-            ["text"] = {
-                ["r"] = 1,
-                ["g"] = 1,
-                ["b"] = 0,
-            },
-        },
-        ["name"] = "",
-    }, -- [3]
-    {
-        ["flags"] = {
-            ["important"] = true,
-            ["pandemic"] = false,
-        },
-        ["comment"] = "",
-        ["id"] = 48707,
-        ["entryColors"] = {
-            ["text"] = {
-                ["r"] = 1,
-                ["g"] = 1,
-                ["b"] = 0,
-            },
-        },
-        ["name"] = "",
-    }, -- [4]
-    {
-        ["flags"] = {
-            ["important"] = true,
-            ["pandemic"] = false,
-        },
-        ["comment"] = "",
-        ["id"] = 29166,
-        ["entryColors"] = {
-            ["text"] = {
-                ["r"] = 1,
-                ["g"] = 1,
-                ["b"] = 0,
-            },
-        },
-        ["name"] = "",
-    }, -- [5]
-    {
-        ["flags"] = {
-            ["important"] = true,
-            ["pandemic"] = false,
-        },
-        ["comment"] = "",
-        ["id"] = 115192,
-        ["entryColors"] = {
-            ["text"] = {
-                ["r"] = 1,
-                ["g"] = 1,
-                ["b"] = 0,
-            },
-        },
-        ["name"] = "",
-    }, -- [6]
-    {
-        ["flags"] = {
-            ["important"] = true,
-            ["pandemic"] = false,
-        },
-        ["comment"] = "",
-        ["id"] = 6940,
-        ["entryColors"] = {
-            ["text"] = {
-                ["r"] = 1,
-                ["g"] = 1,
-                ["b"] = 0,
-            },
-        },
-        ["name"] = "",
-    }, -- [7]
-    {
-        ["flags"] = {
-            ["important"] = true,
-            ["pandemic"] = false,
-        },
-        ["comment"] = "",
-        ["id"] = 199448,
-        ["entryColors"] = {
-            ["text"] = {
-                ["r"] = 1,
-                ["g"] = 1,
-                ["b"] = 0,
-            },
-        },
-        ["name"] = "",
-    }, -- [8]
-    {
-        ["flags"] = {
-            ["important"] = true,
-            ["pandemic"] = false,
-        },
-        ["comment"] = "",
-        ["id"] = 360827,
-        ["entryColors"] = {
-            ["text"] = {
-                ["r"] = 1,
-                ["g"] = 1,
-                ["b"] = 0,
-            },
-        },
-        ["name"] = "",
-    }, -- [9]
-    {
-        ["flags"] = {
-            ["important"] = true,
-            ["pandemic"] = false,
-        },
-        ["comment"] = "",
-        ["id"] = 204336,
-        ["entryColors"] = {
-            ["text"] = {
-                ["r"] = 1,
-                ["g"] = 1,
-                ["b"] = 0,
-            },
-        },
-        ["name"] = "",
-    }, -- [10]
-    {
-        ["flags"] = {
-            ["important"] = true,
-            ["pandemic"] = false,
-        },
-        ["comment"] = "",
-        ["id"] = 31224,
-        ["entryColors"] = {
-            ["text"] = {
-                ["r"] = 1,
-                ["g"] = 1,
-                ["b"] = 0,
-            },
-        },
-        ["name"] = "",
-    }, -- [11]
-    {
-        ["flags"] = {
-            ["important"] = true,
-            ["pandemic"] = false,
-        },
-        ["comment"] = "",
-        ["id"] = 278454,
-        ["entryColors"] = {
-            ["text"] = {
-                ["r"] = 1,
-                ["g"] = 1,
-                ["b"] = 0,
-            },
-        },
-        ["name"] = "",
-    }, -- [12]
-    {
-        ["flags"] = {
-            ["important"] = true,
-            ["pandemic"] = false,
-        },
-        ["comment"] = "",
-        ["id"] = 185313,
-        ["entryColors"] = {
-            ["text"] = {
-                ["r"] = 1,
-                ["g"] = 1,
-                ["b"] = 0,
-            },
-        },
-        ["name"] = "",
-    }, -- [13]
-    {
-        ["flags"] = {
-            ["important"] = true,
-            ["pandemic"] = false,
-        },
-        ["comment"] = "",
-        ["id"] = 410126,
-        ["entryColors"] = {
-            ["text"] = {
-                ["r"] = 1,
-                ["g"] = 1,
-                ["b"] = 0,
-            },
-        },
-        ["name"] = "",
-    }, -- [14]
-    {
-        ["flags"] = {
-            ["important"] = true,
-            ["pandemic"] = false,
-        },
-        ["comment"] = "",
-        ["id"] = 408557,
-        ["entryColors"] = {
-            ["text"] = {
-                ["r"] = 1,
-                ["g"] = 1,
-                ["b"] = 0,
-            },
-        },
-        ["name"] = "",
-    }, -- [15]
-    {
-        ["flags"] = {
-            ["important"] = true,
-            ["pandemic"] = false,
-        },
-        ["comment"] = "",
-        ["id"] = 323654,
-        ["entryColors"] = {
-            ["text"] = {
-                ["r"] = 1,
-                ["g"] = 1,
-                ["b"] = 0,
-            },
-        },
-        ["name"] = "",
-    }, -- [16]
-    {
-        ["flags"] = {
-            ["important"] = true,
-            ["pandemic"] = false,
-        },
-        ["comment"] = "",
-        ["id"] = 210256,
-        ["entryColors"] = {
-            ["text"] = {
-                ["r"] = 1,
-                ["g"] = 1,
-                ["b"] = 0,
-            },
-        },
-        ["name"] = "",
-    }, -- [17]
-    {
-        ["flags"] = {
-            ["important"] = true,
-            ["pandemic"] = false,
-        },
-        ["comment"] = "",
-        ["id"] = 3411,
-        ["entryColors"] = {
-            ["text"] = {
-                ["r"] = 1,
-                ["g"] = 1,
-                ["b"] = 0,
-            },
-        },
-        ["name"] = "",
-    }, -- [18]
-    {
-        ["flags"] = {
-            ["important"] = true,
-            ["pandemic"] = false,
-        },
-        ["comment"] = "",
-        ["id"] = 102351,
-        ["entryColors"] = {
-            ["text"] = {
-                ["r"] = 1,
-                ["g"] = 1,
-                ["b"] = 0,
-            },
-        },
-        ["name"] = "",
-    }, -- [19]
-    {
-        ["flags"] = {
             ["important"] = false,
             ["pandemic"] = true,
+            ["enlarged"] = false,
         },
         ["comment"] = "",
         ["id"] = 703,
@@ -508,11 +219,12 @@ local nahjAuraWhitelist = {
             },
         },
         ["name"] = "",
-    }, -- [20]
+    }, -- [1]
     {
         ["flags"] = {
             ["important"] = false,
             ["pandemic"] = true,
+            ["enlarged"] = false,
         },
         ["comment"] = "",
         ["id"] = 1943,
@@ -524,39 +236,248 @@ local nahjAuraWhitelist = {
             },
         },
         ["name"] = "",
-    }, -- [21]
+    }, -- [2]
     {
         ["flags"] = {
             ["important"] = true,
             ["pandemic"] = false,
-        },
-        ["comment"] = "",
-        ["id"] = 345231,
-        ["entryColors"] = {
-            ["text"] = {
-                ["r"] = 1,
-                ["g"] = 1,
-                ["b"] = 0,
-            },
-        },
-        ["name"] = "",
-    }, -- [22]
-    {
-        ["flags"] = {
-            ["pandemic"] = false,
-            ["important"] = true,
+            ["enlarged"] = true,
         },
         ["comment"] = "",
         ["id"] = 117906,
         ["entryColors"] = {
             ["text"] = {
-                ["b"] = 0,
-                ["g"] = 1,
                 ["r"] = 1,
+                ["g"] = 1,
+                ["b"] = 0,
             },
         },
         ["name"] = "",
-    }, -- [23]
+    }, -- [3]
+    {
+        ["flags"] = {
+            ["important"] = true,
+            ["pandemic"] = false,
+            ["enlarged"] = true,
+        },
+        ["entryColors"] = {
+            ["text"] = {
+                ["r"] = 1,
+                ["g"] = 1,
+                ["b"] = 0,
+            },
+        },
+        ["name"] = "Shadow Dance",
+        ["comment"] = "",
+    }, -- [4]
+    {
+        ["flags"] = {
+            ["important"] = true,
+            ["pandemic"] = false,
+            ["enlarged"] = true,
+        },
+        ["entryColors"] = {
+            ["text"] = {
+                ["r"] = 1,
+                ["g"] = 1,
+                ["b"] = 0,
+            },
+        },
+        ["name"] = "Cenarion Ward",
+        ["comment"] = "",
+    }, -- [5]
+    {
+        ["flags"] = {
+            ["important"] = true,
+            ["pandemic"] = false,
+            ["enlarged"] = true,
+        },
+        ["entryColors"] = {
+            ["text"] = {
+                ["r"] = 1,
+                ["g"] = 1,
+                ["b"] = 0,
+            },
+        },
+        ["name"] = "Lifebloom",
+        ["comment"] = "",
+    }, -- [6]
+    {
+        ["flags"] = {
+            ["important"] = true,
+            ["pandemic"] = false,
+            ["enlarged"] = true,
+        },
+        ["entryColors"] = {
+            ["text"] = {
+                ["r"] = 1,
+                ["g"] = 1,
+                ["b"] = 0,
+            },
+        },
+        ["name"] = "Battle Stance",
+        ["comment"] = "",
+    }, -- [7]
+    {
+        ["flags"] = {
+            ["important"] = true,
+            ["pandemic"] = false,
+            ["enlarged"] = true,
+        },
+        ["entryColors"] = {
+            ["text"] = {
+                ["r"] = 1,
+                ["g"] = 1,
+                ["b"] = 0,
+            },
+        },
+        ["name"] = "Intervene",
+        ["comment"] = "",
+    }, -- [8]
+    {
+        ["flags"] = {
+            ["important"] = true,
+            ["pandemic"] = false,
+            ["enlarged"] = true,
+        },
+        ["entryColors"] = {
+            ["text"] = {
+                ["r"] = 1,
+                ["g"] = 1,
+                ["b"] = 0,
+            },
+        },
+        ["name"] = "Blessing of Sanctuary",
+        ["comment"] = "",
+    }, -- [9]
+    {
+        ["flags"] = {
+            ["important"] = true,
+            ["pandemic"] = false,
+            ["enlarged"] = true,
+        },
+        ["entryColors"] = {
+            ["text"] = {
+                ["r"] = 1,
+                ["g"] = 1,
+                ["b"] = 0,
+            },
+        },
+        ["name"] = "Phase Shift",
+        ["comment"] = "",
+    }, -- [10]
+    {
+        ["flags"] = {
+            ["important"] = true,
+            ["pandemic"] = false,
+            ["enlarged"] = true,
+        },
+        ["entryColors"] = {
+            ["text"] = {
+                ["r"] = 1,
+                ["g"] = 1,
+                ["b"] = 0,
+            },
+        },
+        ["name"] = "Roar of Sacrifice",
+        ["comment"] = "",
+    }, -- [11]
+    {
+        ["flags"] = {
+            ["important"] = true,
+            ["pandemic"] = false,
+            ["enlarged"] = true,
+        },
+        ["entryColors"] = {
+            ["text"] = {
+                ["r"] = 1,
+                ["g"] = 1,
+                ["b"] = 0,
+            },
+        },
+        ["name"] = "Grounding Totem",
+        ["comment"] = "",
+    }, -- [12]
+    {
+        ["flags"] = {
+            ["important"] = true,
+            ["pandemic"] = false,
+            ["enlarged"] = true,
+        },
+        ["entryColors"] = {
+            ["text"] = {
+                ["r"] = 1,
+                ["g"] = 1,
+                ["b"] = 0,
+            },
+        },
+        ["name"] = "Blessing of Sacrifice",
+        ["comment"] = "",
+    }, -- [13]
+    {
+        ["flags"] = {
+            ["important"] = true,
+            ["pandemic"] = false,
+            ["enlarged"] = true,
+        },
+        ["entryColors"] = {
+            ["text"] = {
+                ["r"] = 1,
+                ["g"] = 1,
+                ["b"] = 0,
+            },
+        },
+        ["name"] = "Interlope",
+        ["comment"] = "",
+    }, -- [14]
+    {
+        ["flags"] = {
+            ["important"] = true,
+            ["pandemic"] = false,
+            ["enlarged"] = true,
+        },
+        ["entryColors"] = {
+            ["text"] = {
+                ["r"] = 1,
+                ["g"] = 1,
+                ["b"] = 0,
+            },
+        },
+        ["name"] = "Subterfuge",
+        ["comment"] = "",
+    }, -- [15]
+    {
+        ["flags"] = {
+            ["important"] = true,
+            ["pandemic"] = false,
+            ["enlarged"] = true,
+        },
+        ["entryColors"] = {
+            ["text"] = {
+                ["r"] = 1,
+                ["g"] = 1,
+                ["b"] = 0,
+            },
+        },
+        ["name"] = "Gladiator's Emblem",
+        ["comment"] = "",
+    }, -- [16]
+    {
+        ["flags"] = {
+            ["important"] = true,
+            ["pandemic"] = false,
+            ["enlarged"] = true,
+        },
+        ["entryColors"] = {
+            ["text"] = {
+                ["r"] = 1,
+                ["g"] = 1,
+                ["b"] = 0,
+            },
+        },
+        ["name"] = "Flagellation",
+        ["comment"] = "",
+    }, -- [17]
 }
 
 local function updateAuraList(nahjList, userList)
@@ -599,204 +520,239 @@ function BBF.NahjProfile()
     updateAuraList(nahjAuraBlacklist, BetterBlizzFramesDB.auraBlacklist)
 
     local db = BetterBlizzFramesDB
-    db.targetAndFocusAuraOffsetY = 0
+    db.combatIndicatorPlayersOnly = true
+	db.focusBuffFilterWatchList = false
 	db.frameAurasXPos = 0
-	db.maxTargetDebuffs = 16
+	db.enablePlayerBuffFiltering = true
+	db.racialIndicatorXPos = 11
+	db.racialIndicatorOrc = true
 	db.targetCastBarWidth = 150
 	db.petCastBarWidth = 100
 	db.darkModeUi = true
-	db.targetAndFocusAuraScale = 1.149999976158142
+	db.focusToTScaleScale = 0.8999999761581421
+	db.darkModeUiAura = true
 	db.hideFocusLeaderIcon = true
+	db.targetAbsorbIcon = false
+	db.racialIndicatorUndead = false
 	db.focusdeBuffFilterBlizzard = true
-	db.targetdeBuffFilterBlizzard = true
+	db.focusCastbarIconXPos = 0
 	db.petCastBarScale = 1
 	db.focusdeBuffFilterWatchList = false
 	db.hideFocusCombatGlow = false
 	db.hidePlayerCornerIcon = true
-	db.playerAbsorbAnchor = "TOP"
+	db.targetAbsorbAnchor = "TOP"
 	db.playerCastBarTimerCentered = true
+	db.targetStaticCastbar = false
+	db.targetAndFocusAuraOffsetY = 0
+	db.wasOnLoadingScreen = false
 	db.hideChatButtons = true
 	db.focusCastBarXPos = 0
 	db.playerAuraImportantGlow = true
 	db.playerCastBarIconScale = 1
+	db.targetToTAnchor = "BOTTOMRIGHT"
 	db.targetDetachCastbar = true
+	db.focusAuraGlows = true
 	db.focusCastBarIconScale = 1
+	db.maxTargetDebuffs = 16
+	db.enablePlayerDebuffFiltering = false
 	db.focusdeBuffFilterLessMinite = false
 	db.combatIndicatorScale = 1
 	db.playerCastBarTimer = true
+	db.targetAndFocusAuraScale = 1.149999976158142
+	db.targetAndFocusHorizontalGap = 3
 	db.printAuraSpellIds = false
 	db.maxBuffFrameBuffs = 32
+	db.playerAuraSpacingY = 0
+	db.targetAbsorbXPos = 0
+	db.partyCastBarScale = 1.099999904632568
 	db.petCastBarWidthScale = 100
+	db.targetBuffFilterBlacklist = true
 	db.targetImportantAuraGlow = true
-	db.targetToTYPosScale = 20
-	db.focusdeBuffEnable = true
+	db.targetToTYPos = 20
+	db.targetAndFocusAurasPerRowScale = 5
+	db.racialIndicatorXPosXPos = 11
 	db.PlayerAuraFramedeBuffEnable = true
+	db.targetdeBuffFilterBlizzard = true
+	db.targetCastbarIconYPos = 0
 	db.combatIndicatorShowSap = true
 	db.combatIndicatorYPos = 0
-	db.playerCastBarScale = 1.079999923706055
+	db.playerAuraGlows = true
+	db.playerCastBarScale = 1.100000023841858
 	db.focusToTAnchor = "BOTTOMRIGHT"
 	db.focusCastBarYPos = 0
-	db.partyCastBarScale = 1.099999904632568
+	db.showArenaID = true
 	db.playerCastBarScaleScale = 1.079999923706055
+	db.focusCastbarIconYPos = 0
 	db.combatIndicatorXPos = 0
-	db.targetAndFocusArenaNames = true
-	db.targetToTXPosScale = 8
-	db.targetToTAnchor = "BOTTOMRIGHT"
+	db.targetAndFocusSmallAuraScale = 1
+	db.targetAndFocusArenaNames = false
+	db.targetEnlargeAura = true
 	db.hidePrestigeBadge = true
+	db.playerAbsorbAnchor = "TOP"
 	db.frameAuraWidthGap = 0
 	db.playerCastBarWidth = 208
-	db.focusdeBuffFilterOnlyMe = false
-	db.focusBuffFilterWatchList = false
+	db.targetBuffFilterPurgeable = false
+	db.darkModeColorScale = 0.199999988079071
+	db.enlargedAuraSize = 1.5
+	db.reopenOptions = false
 	db.hasSaved = true
-	db.targetCastBarTimer = true
-	db.showPetCastBarTimer = false
+	db.targetCastBarXPosXPos = -254
+	db.playerdeBuffFilterBlacklist = true
+	db.hasCheckedUi = true
 	db.playerAuraFiltering = true
-	db.focusToTScaleScale = 0.8999999761581421
+	db.hideCombatGlow = true
 	db.targetCombatIndicator = true
-	db.targetCastBarYPos = 283
+	db.hidePartyRoles = false
 	db.focusToTYPos = 20
 	db.hideFocusReputationColor = true
-	db.petCastBarHeight = 10
+	db.targetPrestigeBadgeAlpha = true
+	db.racialIndicatorScale = 1.649999976158142
 	db.focusToTYPosScale = 20
 	db.targetBuffFilterOnlyMe = false
 	db.hideRaidFrameManager = true
-	db.targetCastBarScaleScale = 1.200000047683716
-	db.darkModeColor = 0.119999997317791
+	db.partyCastBarScaleScale = 1.099999904632568
+	db.darkModeColor = 0.199999988079071
 	db.targetBuffFilterWatchList = false
+	db.playerCastBarTimerCenter = false
 	db.targetCastBarIconScale = 1
-	db.hidePlayerRestGlow = true
-	db.version = "1.00"
-	db.targetAndFocusHorizontalGap = 3
+	db.targetCastBarTimer = true
+	db.partyCastBarTestMode = false
+	db.targetdeBuffFilterAll = false
+	db.focusBuffFilterBlacklist = true
+	db.hidePvpTimerText = true
+	db.racialIndicatorScaleScale = 1.649999976158142
 	db.absorbIndicator = false
 	db.removeRealmNames = true
 	db.maxDebuffFrameDebuffs = 16
 	db.showPartyCastBarIcon = true
-	db.absorbIndicatorScale = 1
-	db.playerAuraSpacingX = 5
+	db.focusEnlargeAura = true
+	db.targetdeBuffFilterWatchList = false
 	db.focusBuffFilterOnlyMe = false
+	db.targetToTYPosScale = 20
 	db.petCastbar = false
 	db.focusdeBuffFilterAll = false
 	db.partyCastBarIconScale = 1
-	db.combatIndicatorPlayersOnly = true
+	db.playerCombatIndicator = false
 	db.centerNames = false
-	db.wasOnLoadingScreen = true
+	db.frameAuraRowAmount = 0
 	db.hidePvpIcon = true
-	db.targetStaticCastbar = false
+	db.targetdeBuffFilterBlacklist = true
 	db.hideTargetToTDebuffs = true
-	db.targetAbsorbAnchor = "TOP"
+	db.targetdeBuffPandemicGlow = true
 	db.targetdeBuffEnable = true
 	db.partyCastBarTimer = true
-	db.showArenaID = true
-	db.targetCastBarScale = 1.200000047683716
-	db.targetBuffEnable = true
+	db.targetToTXPosScale = 8
+	db.targetAndFocusVerticalGap = 4
+	db.auraTypeGap = 0
 	db.targetToTCastbarAdjustment = true
-	db.focusdeBuffPandemicGlow = true
-	db.targetdeBuffPandemicGlow = true
-	db.focusCombatIndicator = true
+	db.playerCastbarIconYPos = 0
+	db.targetdeBuffFilterOnlyMe = false
 	db.focusCastBarScale = 1.079999923706055
 	db.partyCastBarYPos = 0
-	db.filterNpcArenaSpam = true
+	db.focusToTScale = 0.8999999761581421
 	db.targetdeBuffFilterLessMinite = false
-	db.partyCastBarHeight = 12
-	db.focusBuffPurgeGlow = true
-	db.targetAbsorbIcon = false
+	db.playerAbsorbXPosScale = -60
+	db.focusPrestigeBadgeAlpha = true
+	db.focusdeBuffFilterBlacklist = true
 	db.hidePlayerRestAnimation = true
 	db.hidePlayerRoleIcon = true
-	db.targetdeBuffFilterOnlyMe = false
+	db.playerBuffFilterBlacklist = true
 	db.targetAbsorbYPos = 0
-	db.targetAbsorbAmount = true
+	db.focusAbsorbIcon = false
 	db.playerAbsorbYPos = 0
-	db.targetAndFocusVerticalGap = 4
-	db.targetAndFocusAuraOffsetX = 0
-	db.targetCastBarXPosXPos = -254
-	db.partyCastBarWidth = 100
-	db.shortArenaSpecName = true
-	db.focusBuffEnable = true
+	db.frameAuraHeightGap = 0
+	db.targetRacialIndicator = true
+	db.targetCastBarHeight = 10
+	db.showPetCastBarTimer = false
+	db.targetCastBarYPos = 273
+	db.racialIndicator = true
 	db.targetBuffFilterAll = true
 	db.partyCastbars = false
-	db.hasCheckedUi = true
+	db.partyCastbarIconXPos = 0
 	db.focusCastBarScaleScale = 1.079999923706055
 	db.focusAbsorbAmount = true
 	db.PlayerAuraFrameBuffEnable = true
-	db.frameAuraRowAmount = 0
-	db.targetBuffPurgeGlow = true
+	db.racialIndicatorYPosYPos = 2
+	db.targetCastBarScaleScale = 1.200000047683716
 	db.classColorFrames = true
 	db.focusCastBarTimer = true
-	db.maxTargetBuffs = 32
+	db.hideArenaFrames = true
 	db.targetCastBarXPos = -254
 	db.PlayerAuraFrameBuffFilterWatchList = false
-	db.darkModeColorScale = 0.119999997317791
+	db.showPetCastBarIcon = true
 	db.targetAuraGlows = true
-	db.darkModeUiAura = true
-	db.PlayerAuraFramedeBuffFilterWatchList = false
-	db.focusCastBarWidth = 150
-	db.petCastBarTestMode = false
-	db.hideArenaFrames = true
+	db.hidePlayerRestGlow = true
+	db.racialIndicatorYPos = 2
+	db.partyCastbarIconYPos = 0
+	db.targetCastbarIconXPos = 0
+	db.absorbIndicatorScale = 1
 	db.focusToTCastbarAdjustment = true
-	db.absorbIndicatorTestMode = false
-	db.filterGladiusSpam = true
-	db.darkModeActionBars = true
-	db.targetAndFocusAurasPerRowScale = 5
+	db.targetBuffFilterLessMinite = false
+	db.targetBuffPurgeGlow = true
+	db.enlargedAuraSizeScale = 1.5
+	db.targetToTScale = 0.8999999761581421
 	db.focusBuffFilterPurgeable = false
 	db.hideFocusToTDebuffs = true
-	db.targetPrestigeBadgeAlpha = true
-	db.combatIndicator = true
-	db.targetCastBarYPosYPos = 283
-	db.targetBuffFilterPurgeable = false
-	db.focusImportantAuraGlow = true
-	db.playerCombatIndicator = false
-	db.hideCombatGlow = true
-	db.hidePartyNames = false
-	db.targetdeBuffFilterWatchList = false
-	db.showSpecName = true
-	db.playerCastBarTimerCenter = false
-	db.combatIndicatorShowSwords = true
-	db.petCastBarXPos = 0
-	db.focusCastBarHeight = 10
-	db.playerCastBarHeight = 11
+	db.focusdeBuffEnable = true
 	db.focusBuffFilterLessMinite = false
+	db.focusToTXPosScale = 8
+	db.targetCastBarYPosYPos = 273
+	db.playerAuraSpacingX = 5
+	db.focusImportantAuraGlow = true
+	db.filterNpcArenaSpam = true
+	db.targetAbsorbAmount = true
+	db.playerReputationClassColor = true
+	db.hidePartyNames = false
+	db.partyCastBarXPos = 0
+	db.showSpecName = true
+	db.petCastBarYPos = 0
+	db.playerAbsorbAmount = true
+	db.focusCombatIndicator = true
+	db.combatIndicatorShowSwords = true
+	db.playerCastBarHeight = 11
+	db.focusCastBarWidth = 150
 	db.maxAurasOnFrame = 0
 	db.showPartyCastbar = true
-	db.playerReputationClassColor = true
-	db.focusBuffFilterAll = true
-	db.focusAbsorbIcon = false
+	db.focusBuffPurgeGlow = true
+	db.partyCastBarHeight = 12
+	db.partyCastBarWidth = 100
 	db.targetAndFocusAurasPerRow = 5
-	db.partyCastBarXPos = 0
-	db.focusToTScale = 0.8999999761581421
-	db.targetToTScaleScale = 0.8999999761581421
+	db.playerCastbarIconXPos = 0
+	db.focusBuffFilterAll = true
 	db.playerAbsorbIcon = false
-	db.targetCastBarHeight = 10
-	db.petCastBarYPos = 0
-	db.hidePvpTimerText = true
-	db.targetBuffFilterLessMinite = false
-	db.playerAuraGlows = true
-	db.focusToTXPosScale = 8
+	db.racialIndicatorHuman = false
+	db.combatIndicator = true
+	db.petCastBarXPos = 0
+	db.targetAndFocusAuraOffsetX = 0
+	db.darkModeCastbars = true
+	db.darkModeActionBars = true
 	db.playerFrameOCD = true
 	db.partyArenaNames = false
-	db.targetToTScale = 0.8999999761581421
+	db.petCastBarTestMode = false
 	db.hideGroupIndicator = true
-	db.playerAbsorbXPosScale = -60
+	db.focusRacialIndicator = false
 	db.hideLevelText = true
 	db.playerAbsorbXPos = -60
-	db.focusAuraGlows = true
-	db.focusPrestigeBadgeAlpha = true
-	db.playerAbsorbAmount = true
-	db.focusToTXPos = 8
-	db.frameAurasYPos = 0
-	db.frameAuraHeightGap = 0
+	db.PlayerAuraFramedeBuffFilterWatchList = false
+	db.maxTargetBuffs = 32
+	db.racialIndicatorNelf = false
+	db.focusCastBarHeight = 10
+	db.focusdeBuffFilterOnlyMe = false
+	db.focusBuffEnable = true
 	db.combatIndicatorAnchor = "RIGHT"
 	db.targetAndFocusAuraScaleScale = 1.149999976158142
 	db.frameAuraScale = 0
-	db.reopenOptions = false
+	db.targetToTScaleScale = 0.8999999761581421
+	db.absorbIndicatorTestMode = false
 	db.showHiddenAurasIcon = true
-	db.showPetCastBarIcon = true
-	db.targetToTYPos = 20
+	db.focusToTXPos = 8
+	db.frameAurasYPos = 0
 	db.hidePartyFrameTitle = true
-	db.targetdeBuffFilterAll = false
-	db.partyCastBarTestMode = false
-	db.targetAbsorbXPos = 0
-	db.partyCastBarScaleScale = 1.099999904632568
-	db.hidePartyRoles = false
+	db.focusdeBuffPandemicGlow = true
+	db.targetBuffEnable = true
+	db.targetCastBarScale = 1.200000047683716
+	db.shortArenaSpecName = true
+	db.petCastBarHeight = 10
 	db.petCastBarIconScale = 1
 	db.targetToTXPos = 8
 end
