@@ -6,7 +6,7 @@ BBF = BBF or {}
 -- Things are getting more messy need a lot of cleaning lol
 
 local addonVersion = "1.00" --too afraid to to touch for now
-local addonUpdates = "1.1.7"
+local addonUpdates = "1.1.8"
 local sendUpdate = true
 BBF.VersionNumber = addonUpdates
 BBF.variablesLoaded = false
@@ -139,6 +139,7 @@ local defaultSettings = {
     --Auras
     --playerAuraMaxBuffsPerRow = 10,
     --playerAuraMaxDebuffsPerRow = 10,
+    auraToggleIconTexture = 134430,
     enablePlayerBuffFiltering = true,
     enablePlayerDebuffFiltering = false,
     playerdeBuffFilterBlacklist = true,
@@ -310,7 +311,7 @@ local function SendUpdateMessage()
     if sendUpdate then
         C_Timer.After(7, function()
             DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames " .. addonUpdates .. ":")
-            DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Minor bugfix, Nahj profile update, BBP got a lot more love this round.")
+            DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Change buff filter icon setting + minor bugfixes.")
             --DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a For more info and news about new features type /bbf news")
         end)
     end
@@ -318,7 +319,7 @@ end
 
 local function NewsUpdateMessage()
     DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames news:")
-    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a #1: Minor bugfix, Nahj profile update.")
+    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a #1: Change buff filter icon setting.")
 end
 
 local function CheckForUpdate()
@@ -660,6 +661,7 @@ Frame:SetScript("OnEvent", function(...)
                 BBF.DarkmodeFrames()
                 BBF.PlayerReputationColor()
                 BBF.ClassColorPlayerName()
+                BBF.CheckForAuraBorders()
             end)
             BBF.HideFrames()
             if BetterBlizzFramesDB.partyCastbars then
@@ -678,6 +680,14 @@ Frame:SetScript("OnEvent", function(...)
     if BetterBlizzFramesDB.reopenOptions then
         InterfaceOptionsFrame_OpenToCategory(BetterBlizzFrames)
         BetterBlizzFramesDB.reopenOptions = false
+    end
+
+    if BetterBlizzFramesDB.nahjMessage then
+        C_Timer.After(7, function()
+            DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames:")
+            DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Nahj profile activated. Nahj has the target's castbar detached from the TargetFrame. Because of this, and considering that your UI Scale might be different from Nahj's, your target's castbar might need repositioning in the settings.")
+            BetterBlizzFramesDB.nahjMessage = false
+        end)
     end
 end)
 

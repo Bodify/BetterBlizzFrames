@@ -48,6 +48,7 @@ StaticPopupDialogs["BBF_CONFIRM_NAHJ_PROFILE"] = {
     button2 = "No",
     OnAccept = function()
         BBF.NahjProfile()
+        BetterBlizzFramesDB.nahjMessage = true
         ReloadUI()
     end,
     timeout = 0,
@@ -134,6 +135,103 @@ border:SetBackdrop({
 })
 
 ]]
+
+-- Function to update the icon texture
+local function UpdateIconTexture(editBox, textureFrame)
+    local iconID = tonumber(editBox:GetText())
+    if iconID then
+        textureFrame:SetTexture(iconID)
+    end
+end
+
+local function CreateIconChangeWindow()
+    local window = CreateFrame("Frame", "IconChangeWindow", UIParent, "BasicFrameTemplateWithInset")
+    window:SetSize(300, 180)  -- Adjust size as needed
+    window:SetPoint("CENTER")
+    window:SetFrameStrata("HIGH")
+
+    -- Make the frame movable
+    window:SetMovable(true)
+    window:EnableMouse(true)
+    window:RegisterForDrag("LeftButton")
+    window:SetScript("OnDragStart", window.StartMoving)
+    window:SetScript("OnDragStop", window.StopMovingOrSizing)
+    window:Hide()
+
+    -- Edit box
+    local editBox = CreateFrame("EditBox", nil, window, "InputBoxTemplate")
+    editBox:SetSize(150, 20)
+    editBox:SetPoint("CENTER", window, "CENTER", 20, 10)
+
+    -- Text above the icon
+    local text = window:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    text:SetPoint("BOTTOM", editBox, "TOP", -10, 15)
+    text:SetText("Enter New Icon ID")
+
+    -- Icon texture frame
+    local textureFrame = window:CreateTexture(nil, "ARTWORK")
+    textureFrame:SetSize(50, 50)  -- Enlarged icon
+    textureFrame:SetPoint("RIGHT", editBox, "LEFT", -10, 0)
+    textureFrame:SetTexture(BetterBlizzFramesDB.auraToggleIconTexture)
+
+    -- Text for finding icon IDs
+    local findIconText = window:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    findIconText:SetPoint("CENTER", window, "CENTER", 0, -40)
+    findIconText:SetText("Find Icon IDs @ wowhead.com/icons")
+
+    -- OK button
+    local okButton = CreateFrame("Button", nil, window, "UIPanelButtonTemplate")
+    okButton:SetSize(60, 20)
+    okButton:SetPoint("BOTTOM", window, "BOTTOM", 30, 10)
+    okButton:SetText("OK")
+    okButton:SetScript("OnClick", function()
+        local newIconID = tonumber(editBox:GetText())
+        if newIconID then
+            BetterBlizzFramesDB.auraToggleIconTexture = newIconID
+            if ToggleHiddenAurasButton then
+                ToggleHiddenAurasButton.Icon:SetTexture(newIconID)
+            end
+        end
+        window:Hide()
+    end)
+
+    local resetButton = CreateFrame("Button", nil, window, "UIPanelButtonTemplate")
+    resetButton:SetSize(60, 20)
+    resetButton:SetPoint("BOTTOM", window, "BOTTOM", -30, 10)
+    resetButton:SetText("Default")
+    resetButton:SetScript("OnClick", function()
+        BetterBlizzFramesDB.auraToggleIconTexture = 134430
+        if ToggleHiddenAurasButton then
+            ToggleHiddenAurasButton.Icon:SetTexture(134430)
+        end
+        textureFrame:SetTexture(134430)
+        editBox:SetText(134430)
+    end)
+
+    editBox:SetScript("OnTextChanged", function()
+        UpdateIconTexture(editBox, textureFrame)
+    end)
+
+    editBox:SetScript("OnEnterPressed", function()
+        local newIconID = tonumber(editBox:GetText())
+        if newIconID then
+            BetterBlizzFramesDB.auraToggleIconTexture = newIconID
+            if ToggleHiddenAurasButton then
+                ToggleHiddenAurasButton.Icon:SetTexture(newIconID)
+            end
+        end
+        window:Hide()
+    end)
+
+    editBox:SetScript("OnEscapePressed", function(self)
+        self:ClearFocus()
+        window:Hide()
+    end)
+
+    window.editBox = editBox
+    return window
+end
+
 
 
 function CreateBorderedFrame(point, width, height, xPos, yPos, parent)
@@ -724,6 +822,17 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes)
         bg:SetAllPoints()
         button.bgImg = bg  -- Store the background texture for later color updates
 
+        local iconTexture = button:CreateTexture(nil, "OVERLAY")
+        iconTexture:SetSize(20, 20)  -- Same height as the button
+        iconTexture:SetPoint("LEFT", button, "LEFT", 0, 0)
+
+        -- Set the icon image
+        if npc.id then
+            iconTexture:SetTexture(GetSpellTexture(npc.id))
+        elseif npc.name then
+            iconTexture:SetTexture(GetSpellTexture(npc.name))
+        end
+
         local displayText = npc.id and npc.id or ""
         if npc.id then -- If there is an ID, consider it a spell and fetch the spell name
             local spellName, _, _ = GetSpellInfo(npc.id)
@@ -740,7 +849,7 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes)
         end
 
         local text = button:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-        text:SetPoint("LEFT", button, "LEFT", 5, 0)
+        text:SetPoint("LEFT", button, "LEFT", 25, 0)
         text:SetText(displayText)
 
         -- Initialize the text color and background color for this entry from npc table or with default values
@@ -1382,7 +1491,7 @@ local function guiGeneralTab()
     local arenaNamesText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     arenaNamesText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 460, -70)
     arenaNamesText:SetText("Arena Names")
-    CreateTooltip(arenaNamesText, "Change player names into spec/arena id during arena instead", "ANCHOR_LEFT")
+    CreateTooltip(arenaNamesText, "Change player names into spec/arena id instead during arena", "ANCHOR_LEFT")
     local arenaNamesIcon = BetterBlizzFrames:CreateTexture(nil, "ARTWORK")
     arenaNamesIcon:SetAtlas("questbonusobjective")
     arenaNamesIcon:SetSize(24, 24)
@@ -2844,6 +2953,35 @@ local function guiFrameAuras()
     local showHiddenAurasIcon = CreateCheckbox("showHiddenAurasIcon", "Filtered Buffs Icon", PlayerAuraFrameBuffEnable)
     showHiddenAurasIcon:SetPoint("TOPLEFT", PlayerAuraFrameBuffFilterLessMinite, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(showHiddenAurasIcon, "Show an icon next to the buff frame displaying\nthe amount of auras filtered out.\nClick icon to show which auras are filtered.")
+
+    -- Create a button next to the checkbox
+    local changeIconButton = CreateFrame("Button", "ChangeIconButton", showHiddenAurasIcon, "UIPanelButtonTemplate")
+    changeIconButton:SetPoint("RIGHT", showHiddenAurasIcon, "LEFT", 0, 0)
+    changeIconButton:SetSize(37, 20)  -- Adjust size as needed
+    changeIconButton:SetText("Icon")
+    local iconChangeWindow
+
+    changeIconButton:SetScript("OnClick", function()
+        if not iconChangeWindow then
+            iconChangeWindow = CreateIconChangeWindow()
+        end
+        iconChangeWindow:Show()
+    end)
+
+    showHiddenAurasIcon:HookScript("OnClick", function(self)
+        if self:GetChecked() then
+            changeIconButton:SetAlpha(1)
+            changeIconButton:Enable()
+        else
+            changeIconButton:SetAlpha(0)
+            changeIconButton:Disable()
+        end
+    end)
+
+    if not BetterBlizzFramesDB.showHiddenAurasIcon then
+        changeIconButton:SetAlpha(0)
+        changeIconButton:Disable()
+    end
 
     -- Personal Bar Debuffs
     local enablePlayerDebuffFiltering = CreateCheckbox("enablePlayerDebuffFiltering", "Enable Debuff Filtering", playerAuraFiltering)

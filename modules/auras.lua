@@ -522,8 +522,7 @@ local function AdjustAuras(self, frameType)
     for aura in self.auraPools:EnumerateActive() do
         local auraData = C_UnitAuras.GetAuraDataByAuraInstanceID(self.unit, aura.auraInstanceID)
         if auraData then
-            --aura.isPandemic = false
-            local isLarge = auraData.sourceUnit == "player"
+            local isLarge = auraData.sourceUnit == "player" or auraData.sourceUnit == "pet"
             local canApply = auraData.canApplyAura or false
 
             -- Store the properties with the aura for later sorting
@@ -859,7 +858,7 @@ local function CreateToggleIcon()
 
     local Icon = toggleIcon:CreateTexture(nil, "BACKGROUND")
     Icon:SetAllPoints()
-    Icon:SetTexture("Interface/Icons/INV_Misc_ShadowEgg")
+    Icon:SetTexture(BetterBlizzFramesDB.auraToggleIconTexture)
     toggleIcon.Icon = Icon
 
     -- Creating FontString to display the count of hidden auras

@@ -14,8 +14,8 @@ local function applySettings(frame, desaturate, colorValue)
 end
 
 BBF.auraBorders = {}  -- BuffFrame aura borders for darkmode
-local function createOrUpdateBorders(frame, colorValue, textureName)
-    if (BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeUiAura) then
+local function createOrUpdateBorders(frame, colorValue, textureName, bypass)
+    if (BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeUiAura) or bypass then
         if not BBF.auraBorders[frame] then
             -- Create borders
             local border = CreateFrame("Frame", nil, frame, "BackdropTemplate")
@@ -417,22 +417,52 @@ local specChangeListener = CreateFrame("Frame")
 specChangeListener:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
 specChangeListener:SetScript("OnEvent", function(self, event, ...)
     if event == "PLAYER_SPECIALIZATION_CHANGED" then
-        local unitID = ...
-        if unitID == "player" then
-            local vertexColor = BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeColor or 1
-            local rogueCombo = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.45) or 1
-            local rogueComboActive = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.30) or 1
-            local rogueComboPoints = _G.RogueComboPointBarFrame
-            if BetterBlizzFramesDB.darkModeColor == 0 then
-                rogueCombo = 0.25
-                rogueComboActive = 0.15
-            end
-            if rogueComboPoints then
-                for _, v in pairs({rogueComboPoints:GetChildren()}) do
-                    applySettings(v.BGInactive, desaturationValue, rogueCombo)
-                    applySettings(v.BGActive, desaturationValue, rogueComboActive)
+        if BetterBlizzFramesDB.darkModeUi then
+            local unitID = ...
+            if unitID == "player" then
+                local vertexColor = BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeColor or 1
+                local rogueCombo = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.45) or 1
+                local rogueComboActive = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.30) or 1
+                local rogueComboPoints = _G.RogueComboPointBarFrame
+                if BetterBlizzFramesDB.darkModeColor == 0 then
+                    rogueCombo = 0.25
+                    rogueComboActive = 0.15
+                end
+                if rogueComboPoints then
+                    for _, v in pairs({rogueComboPoints:GetChildren()}) do
+                        applySettings(v.BGInactive, desaturationValue, rogueCombo)
+                        applySettings(v.BGActive, desaturationValue, rogueComboActive)
+                    end
                 end
             end
         end
     end
 end)
+
+function BBF.CheckForAuraBorders()
+    if not (BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeUiAura) then
+        local frames = {_G.BuffFrame.AuraContainer:GetChildren()}
+
+        for _, frame in ipairs(frames) do
+            local iconTexture
+            for i = 1, frame:GetNumChildren() do
+                local child = select(i, frame:GetChildren())
+
+                local bottomEdgeTexture = child.BottomEdge
+                if bottomEdgeTexture and bottomEdgeTexture:IsObjectType("Texture") then
+                    local r, g, b, a = bottomEdgeTexture:GetVertexColor()
+                    local borderColorValue = r
+
+                    iconTexture = frame.Icon
+                    if iconTexture and borderColorValue then
+                        if ToggleHiddenAurasButton then
+                            ToggleHiddenAurasButton.Icon:SetTexCoord(iconTexture:GetTexCoord())
+                            createOrUpdateBorders(ToggleHiddenAurasButton, borderColorValue, nil, true)
+                            return
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
