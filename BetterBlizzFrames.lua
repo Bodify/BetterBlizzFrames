@@ -6,7 +6,7 @@ BBF = BBF or {}
 -- Things are getting more messy need a lot of cleaning lol
 
 local addonVersion = "1.00" --too afraid to to touch for now
-local addonUpdates = "1.1.8"
+local addonUpdates = "1.1.9"
 local sendUpdate = true
 BBF.VersionNumber = addonUpdates
 BBF.variablesLoaded = false
@@ -311,7 +311,7 @@ local function SendUpdateMessage()
     if sendUpdate then
         C_Timer.After(7, function()
             DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames " .. addonUpdates .. ":")
-            DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Change buff filter icon setting + minor bugfixes.")
+            DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Minor adjustments + bugfixes. Please let me know if you run into any bugs so I can fix em :)")
             --DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a For more info and news about new features type /bbf news")
         end)
     end
@@ -319,7 +319,7 @@ end
 
 local function NewsUpdateMessage()
     DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames news:")
-    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a #1: Change buff filter icon setting.")
+    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a #1: Minor bugfixes.")
 end
 
 local function CheckForUpdate()
@@ -514,11 +514,12 @@ end
 function BBF.FixStupidBlizzPTRShit()
     if InCombatLockdown() then return end
     -- For god knows what reason PTR has a gap between Portrait and PlayerFrame. This fixes it.
-    PlayerFrame.PlayerFrameContainer.PlayerPortrait:SetScale(1.02)
-    PlayerFrame.PlayerFrameContainer.PlayerPortraitMask:SetScale(1.09)
-    PlayerFrame.PlayerFrameContainer.PlayerPortrait:SetPoint("TOPLEFT", PlayerFrame.PlayerFrameContainer, "TOPLEFT", 24, -18)
-    PlayerFrame.PlayerFrameContainer.PlayerPortraitMask:SetSize(60,61)
-    PlayerFrame.PlayerFrameContainer.PlayerPortraitMask:SetPoint("TOPLEFT", PlayerFrame.PlayerFrameContainer, "TOPLEFT", 20, -15)
+    --PlayerFrame.PlayerFrameContainer.PlayerPortrait:SetScale(1.02)
+    PlayerFrame.PlayerFrameContainer.PlayerPortrait:SetSize(64,64)
+    --PlayerFrame.PlayerFrameContainer.PlayerPortraitMask:SetScale(1.09)
+    PlayerFrame.PlayerFrameContainer.PlayerPortrait:SetPoint("TOPLEFT", PlayerFrame.PlayerFrameContainer, "TOPLEFT", 22, -17.5)
+    PlayerFrame.PlayerFrameContainer.PlayerPortraitMask:SetSize(65,65)
+    PlayerFrame.PlayerFrameContainer.PlayerPortraitMask:SetPoint("TOPLEFT", PlayerFrame.PlayerFrameContainer, "TOPLEFT", 21, -16)
     PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarArea.HealthBar.HealthBarMask:SetHeight(33)
     PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar.ManaBarMask:SetPoint("TOPLEFT", PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar, "TOPLEFT", -2, 3)
     PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar.ManaBarMask:SetHeight(17)
@@ -737,5 +738,6 @@ local PlayerEnteringWorld = CreateFrame("frame")
 PlayerEnteringWorld:SetScript("OnEvent", function()
     BBF.DarkmodeFrames()
     BBF.ClickthroughFrames()
+    BBF.CheckForAuraBorders()
 end)
 PlayerEnteringWorld:RegisterEvent("PLAYER_ENTERING_WORLD")

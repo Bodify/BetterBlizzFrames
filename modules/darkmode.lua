@@ -19,11 +19,19 @@ local function createOrUpdateBorders(frame, colorValue, textureName, bypass)
         if not BBF.auraBorders[frame] then
             -- Create borders
             local border = CreateFrame("Frame", nil, frame, "BackdropTemplate")
-            border:SetBackdrop({
-                edgeFile = "Interface/Tooltips/UI-Tooltip-Border",
-                tileEdge = true,
-                edgeSize = 8,
-            })
+            if not bypass then
+                border:SetBackdrop({
+                    edgeFile = "Interface/Tooltips/UI-Tooltip-Border",
+                    tileEdge = true,
+                    edgeSize = 8,
+                })
+            else
+                border:SetBackdrop({
+                    edgeFile = "Interface/Tooltips/UI-Tooltip-Border",
+                    tileEdge = true,
+                    edgeSize = 10,
+                })
+            end
 
             local icon = frame.Icon
             if textureName then
@@ -31,8 +39,13 @@ local function createOrUpdateBorders(frame, colorValue, textureName, bypass)
             end
             icon:SetTexCoord(0.08, 0.92, 0.08, 0.92) -- Adjust the icon
 
-            border:SetPoint("TOPLEFT", icon, "TOPLEFT", -1.5, 2)
-            border:SetPoint("BOTTOMRIGHT", icon, "BOTTOMRIGHT", 1.5, -1.5)
+            if not bypass then
+                border:SetPoint("TOPLEFT", icon, "TOPLEFT", -1.5, 2)
+                border:SetPoint("BOTTOMRIGHT", icon, "BOTTOMRIGHT", 1.5, -1.5)
+            else
+                border:SetPoint("TOPLEFT", icon, "TOPLEFT", -2, 2)
+                border:SetPoint("BOTTOMRIGHT", icon, "BOTTOMRIGHT", 2, -2)
+            end
             border:SetBackdropBorderColor(colorValue, colorValue, colorValue)
 
             BBF.auraBorders[frame] = border -- Store the border

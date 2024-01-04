@@ -8,22 +8,30 @@ local petCastbarCreated = false
 
 local function GetPartyMemberFrame(unitId)
     if CompactPartyFrame:IsShown() then
+        local showSelf = BetterBlizzFramesDB.partyCastbarSelf
         for i = 1, 5 do
             local frame = _G["CompactPartyFrameMember"..i]
             if frame and UnitIsUnit(frame.unit, unitId) then
-                return frame
+                return frame, nil
+            else
+                if showSelf then
+                    if UnitIsUnit(frame.unit, "player") then
+                        unitId = "player"
+                        return frame, unitId
+                    end
+                end
             end
         end
     else
         for i = 1, 5 do
             local frame = PartyFrame and PartyFrame["MemberFrame"..i]
             if frame and UnitIsUnit(frame.unit, unitId) then
-                return frame
+                return frame, nil
             end
         end
     end
 
-    return nil
+    return nil, nil
 end
 
 local function UpdateCastTimer(self)
@@ -78,8 +86,11 @@ function BBF.UpdateCastbars()
                         spellbar.BorderShield:SetAlpha(1)
                     end
 
-                    local partyFrame = GetPartyMemberFrame(unitId)
+                    local partyFrame, newUnitId = GetPartyMemberFrame(unitId)
                     if partyFrame then
+                        if newUnitId then
+                            spellbar:SetUnit("player", true, true)
+                        end
                         spellbar:ClearAllPoints()
                         --spellbar:SetParent(partyFrame)
                         spellbar:SetPoint("CENTER", partyFrame, "CENTER", BetterBlizzFramesDB.partyCastBarXPos + 13, BetterBlizzFramesDB.partyCastBarYPos + 3)
@@ -193,9 +204,11 @@ function BBF.CreateCastbars()
             Mixin(spellbar, SmoothStatusBarMixin)
             spellbar:SetMinMaxSmoothedValue(0, 100)
             -- Add hooks for updating the cast timer.
-            spellbar:HookScript("OnUpdate", function(self, elapsed)
-                UpdateCastTimer(self, elapsed)
-            end)
+            if BetterBlizzFramesDB.partyCastBarTimer then
+                spellbar:HookScript("OnUpdate", function(self, elapsed)
+                    UpdateCastTimer(self, elapsed)
+                end)
+            end
 
             spellBars[i] = spellbar
         end
@@ -234,9 +247,11 @@ function BBF.CreateCastbars()
         petSpellBar.FakeTimer:SetText("1.8")
         petSpellBar.FakeTimer:Hide()
 
-        petSpellBar:HookScript("OnUpdate", function(self, elapsed)
-            UpdateCastTimer(self, elapsed)
-        end)
+        if BetterBlizzFramesDB.petCastBarTimer then
+            petSpellBar:HookScript("OnUpdate", function(self, elapsed)
+                UpdateCastTimer(self, elapsed)
+            end)
+        end
 
         spellBars["pet"] = petSpellBar
         petCastbarCreated = true
