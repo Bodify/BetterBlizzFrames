@@ -758,15 +758,19 @@ local function CreateCheckbox(option, label, parent, cvarName, extraFunc)
     return checkBox
 end
 
-local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes)
+local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes, colorText, width, pos)
     -- Create the scroll frame
     local scrollFrame = CreateFrame("ScrollFrame", nil, subPanel, "UIPanelScrollFrameTemplate")
-    scrollFrame:SetSize(322, 270)
-    scrollFrame:SetPoint("TOPLEFT", 10, -10)
+    scrollFrame:SetSize(width or 322, 270)
+    if not pos then
+        scrollFrame:SetPoint("TOPLEFT", 10, -10)
+    else
+        scrollFrame:SetPoint("TOPLEFT", -33, -10)
+    end
 
     -- Create the content frame
     local contentFrame = CreateFrame("Frame", nil, scrollFrame)
-    contentFrame:SetSize(322, 270)
+    contentFrame:SetSize(width or 322, 270)
     scrollFrame:SetScrollChild(contentFrame)
 
     local textLines = {}
@@ -815,7 +819,7 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes)
 
     local function createTextLineButton(npc, index, extraBoxes)
         local button = CreateFrame("Frame", nil, contentFrame)
-        button:SetSize(310, 20)
+        button:SetSize((width and width - 12) or (322 - 12), 20)
         button:SetPoint("TOPLEFT", 10, -(index - 1) * 20)
 
         local bg = button:CreateTexture(nil, "BACKGROUND")
@@ -857,12 +861,20 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes)
         npc.entryColors = entryColors  -- Save the colors back to the npc data
 
         if not entryColors.text then
-            entryColors.text = { r = 1, g = 1, b = 0 } -- Default to yellow color
+            entryColors.text = { r = 0, g = 1, b = 0 } -- Default to green color
         end
 
         -- Function to set the text color
         local function SetTextColor(r, g, b)
-            text:SetTextColor(r, g, b)
+            if colorText then
+                if npc.flags.important then
+                    text:SetTextColor(r, g, b)
+                else
+                    text:SetTextColor(1,1,0)
+                end
+            else
+                text:SetTextColor(1,1,0)
+            end
         end
 
         -- Set initial text and background colors from entryColors
@@ -888,45 +900,18 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes)
                 npc.flags = { important = false, pandemic = false, enlarged = false }
             end
 
-            -- Create Checkbox I (Important)
-            local checkBoxI = CreateFrame("CheckButton", nil, button, "UICheckButtonTemplate")
-            checkBoxI:SetSize(24, 24)
-            checkBoxI:SetPoint("RIGHT", deleteButton, "LEFT", -38, 0)
-
-            -- Create a texture for the checkbox
-            checkBoxI.texture = checkBoxI:CreateTexture(nil, "ARTWORK",nil,1)
-            checkBoxI.texture:SetAtlas("newplayertutorial-drag-slotgreen")
-            checkBoxI.texture:SetSize(27, 27)
-
-            checkBoxI.texture:SetPoint("CENTER", checkBoxI, "CENTER", -0.5,0.5)
-            CreateTooltip(checkBoxI, "Important Glow\n\nCheck for a green glow on the aura to highlight it.\nAlso check which frame(s) you want this on down below.", "ANCHOR_TOPRIGHT")
-
-            -- Handler for the I checkbox
-            checkBoxI:SetScript("OnClick", function(self)
-                npc.flags.important = self:GetChecked() -- Save the state in the npc flags
-            end)
-            checkBoxI:HookScript("OnClick", BBF.RefreshAllAuraFrames)
-
-
-            -- Initialize state from npc flags
-            if npc.flags.important then
-                checkBoxI:SetChecked(true)
-            end
-
             -- Create Checkbox P (Pandemic)
             local checkBoxP = CreateFrame("CheckButton", nil, button, "UICheckButtonTemplate")
             checkBoxP:SetSize(24, 24)
-            checkBoxP:SetPoint("LEFT", checkBoxI, "RIGHT", 6, 0)
+            checkBoxP:SetPoint("RIGHT", deleteButton, "LEFT", -0, 0) -- Positioned first, to the left of deleteButton
 
             -- Create a texture for the checkbox
-            checkBoxP.texture = checkBoxP:CreateTexture(nil, "ARTWORK",nil,1)
+            checkBoxP.texture = checkBoxP:CreateTexture(nil, "ARTWORK", nil, 1)
             checkBoxP.texture:SetAtlas("newplayertutorial-drag-slotgreen")
             checkBoxP.texture:SetDesaturated(true)
             checkBoxP.texture:SetVertexColor(1, 0, 0)
             checkBoxP.texture:SetSize(27, 27)
-
-            -- Center the texture within the checkbox
-            checkBoxP.texture:SetPoint("CENTER", checkBoxP, "CENTER", -0.5,0.5)
+            checkBoxP.texture:SetPoint("CENTER", checkBoxP, "CENTER", -0.5, 0.5)
             CreateTooltip(checkBoxP, "Pandemic Glow\n\nCheck for a red glow when the aura has less than 5 sec remaining.\nAlso check which frame(s) you want this on down below.", "ANCHOR_TOPRIGHT")
 
             -- Handler for the P checkbox
@@ -940,24 +925,99 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes)
                 checkBoxP:SetChecked(true)
             end
 
-            -- Create Checkbox E (enlarged)
+            -- Create Checkbox I (Important)
+            local checkBoxI = CreateFrame("CheckButton", nil, button, "UICheckButtonTemplate")
+            checkBoxI:SetSize(24, 24)
+            checkBoxI:SetPoint("RIGHT", checkBoxP, "LEFT", -17, 0) -- Positioned next to checkBoxP
+
+            -- Create a texture for the checkbox
+            checkBoxI.texture = checkBoxI:CreateTexture(nil, "ARTWORK", nil, 1)
+            checkBoxI.texture:SetAtlas("newplayertutorial-drag-slotgreen")
+            checkBoxI.texture:SetSize(27, 27)
+            checkBoxI.texture:SetDesaturated(true)
+            checkBoxI.texture:SetPoint("CENTER", checkBoxI, "CENTER", -0.5, 0.5)
+            CreateTooltip(checkBoxI, "Important Glow\n\nCheck for a glow on the aura to highlight it.\nAlso check which frame(s) you want this on down below.", "ANCHOR_TOPRIGHT")
+
+            -- Handler for the I checkbox
+            checkBoxI:SetScript("OnClick", function(self)
+                npc.flags.important = self:GetChecked() -- Save the state in the npc flags
+            end)
+            local function SetImportantBoxColor(r, g, b)
+                if npc.flags.important then
+                    checkBoxI.texture:SetVertexColor(r, g, b)
+                else
+                    checkBoxI.texture:SetVertexColor(0,1,0)
+                end
+            end
+            checkBoxI:HookScript("OnClick", function()
+                BBF.RefreshAllAuraFrames()
+                SetTextColor(entryColors.text.r, entryColors.text.g, entryColors.text.b)
+                SetImportantBoxColor(entryColors.text.r, entryColors.text.g, entryColors.text.b)
+            end)
+
+            -- Initialize state from npc flags
+            if npc.flags.important then
+                checkBoxI:SetChecked(true)
+            end
+
+            SetImportantBoxColor(entryColors.text.r, entryColors.text.g, entryColors.text.b)
+
+            local colorPickerButton = CreateFrame("Button", nil, button, "UIPanelButtonTemplate")
+            colorPickerButton:SetSize(20, 18)
+            colorPickerButton:SetPoint("RIGHT", checkBoxP, "LEFT", -3, 1)
+            colorPickerButton:SetText("C")
+            CreateTooltip(colorPickerButton, "Important Glow Color", "ANCHOR_TOPRIGHT")
+
+            -- Function to open the color picker
+            local function OpenColorPicker()
+                local r, g, b = entryColors.text.r, entryColors.text.g, entryColors.text.b
+
+                --ColorPickerFrame:SetColorRGB(r, g, b)
+                ColorPickerFrame.previousValues = { r, g, b }
+
+                ColorPickerFrame.func = function()
+                    r, g, b = ColorPickerFrame:GetColorRGB()
+                    entryColors.text.r, entryColors.text.g, entryColors.text.b = r, g, b
+                    SetTextColor(r, g, b)  -- Update text color when the color picker changes
+                    SetImportantBoxColor(r, g, b)
+                    BBF.RefreshAllAuraFrames()
+
+                    -- Update the npc entry in listData with the new color
+                    npc.entryColors.text.r, npc.entryColors.text.g, npc.entryColors.text.b = r, g, b
+                    listData[index] = npc  -- Update the entry in the listData
+                end
+
+                ColorPickerFrame.cancelFunc = function()
+                    r, g, b = unpack(ColorPickerFrame.previousValues)
+                    entryColors.text.r, entryColors.text.g, entryColors.text.b = r, g, b
+                    SetTextColor(r, g, b)  -- Update text color if canceled
+                    SetImportantBoxColor(r, g, b)
+                end
+                ColorPickerFrame:ClearAllPoints()
+                ColorPickerFrame:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
+                ColorPickerFrame:Show()
+            end
+
+            colorPickerButton:SetScript("OnClick", OpenColorPicker)
+        
+            -- Create Checkbox E (Enlarged)
             local checkBoxE = CreateFrame("CheckButton", nil, button, "UICheckButtonTemplate")
             checkBoxE:SetSize(24, 24)
-            checkBoxE:SetPoint("RIGHT", checkBoxI, "LEFT", -6, 0)
+            checkBoxE:SetPoint("RIGHT", checkBoxI, "LEFT", -3, 0) -- Positioned next to checkBoxI
             CreateTooltip(checkBoxE, "Enlarged Aura\n\nCheck to make the aura bigger.\nAlso check which frame(s) you want this on down below.", "ANCHOR_TOPRIGHT")
-
+        
             -- Handler for the E checkbox
             checkBoxE:SetScript("OnClick", function(self)
                 npc.flags.enlarged = self:GetChecked() -- Save the state in the npc flags
             end)
             checkBoxE:HookScript("OnClick", BBF.RefreshAllAuraFrames)
-
+        
             -- Initialize state from npc flags
             if npc.flags.enlarged then
                 checkBoxE:SetChecked(true)
             end
         end
-
+        
         button.deleteButton = deleteButton
         table.insert(textLines, button)
         updateBackgroundColors()  -- Update background colors after adding a new entry
@@ -995,7 +1055,7 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes)
     }
 
     local editBox = CreateFrame("EditBox", nil, subPanel, "InputBoxTemplate")
-    editBox:SetSize(260, 19)
+    editBox:SetSize((width and width - 62) or (322 - 62), 19)
     editBox:SetPoint("TOP", scrollFrame, "BOTTOM", -15, -5)
     editBox:SetAutoFocus(false)
     CreateTooltip(editBox, "Filter auras by spell id and/or spell name", "ANCHOR_TOP")
@@ -2682,13 +2742,13 @@ local function guiFrameAuras()
     auraBlacklistFrame:SetSize(322, 390)
     auraBlacklistFrame:SetPoint("TOPLEFT", 6, -15)
 
-    CreateList(auraBlacklistFrame, "auraBlacklist", BetterBlizzFramesDB.auraBlacklist, BBF.RefreshAllAuraFrames)
+    CreateList(auraBlacklistFrame, "auraBlacklist", BetterBlizzFramesDB.auraBlacklist, BBF.RefreshAllAuraFrames, nil, nil, 280)
 
     local blacklistText = contentFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     blacklistText:SetPoint("BOTTOM", auraBlacklistFrame, "TOP", 10, 0)
     blacklistText:SetText("Blacklist")
 
-    CreateList(auraWhitelistFrame, "auraWhitelist", BetterBlizzFramesDB.auraWhitelist, BBF.RefreshAllAuraFrames, true)
+    CreateList(auraWhitelistFrame, "auraWhitelist", BetterBlizzFramesDB.auraWhitelist, BBF.RefreshAllAuraFrames, true, true, 364, true)
 
     local whitelistText = contentFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     whitelistText:SetPoint("BOTTOM", auraWhitelistFrame, "TOP", 10, 0)

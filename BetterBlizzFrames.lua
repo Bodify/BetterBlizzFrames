@@ -6,7 +6,7 @@ BBF = BBF or {}
 -- Things are getting more messy need a lot of cleaning lol
 
 local addonVersion = "1.00" --too afraid to to touch for now
-local addonUpdates = "1.1.9"
+local addonUpdates = "1.2.0"
 local sendUpdate = true
 BBF.VersionNumber = addonUpdates
 BBF.variablesLoaded = false
@@ -305,13 +305,27 @@ StaticPopupDialogs["BetterBlizzFrames_COMBAT_WARNING"] = {
     preferredIndex = 3,
 }
 
+local function UpdateAuraColorsToGreen()
+    if BetterBlizzFramesDB and BetterBlizzFramesDB["auraWhitelist"] then
+        for _, entry in pairs(BetterBlizzFramesDB["auraWhitelist"]) do
+            if entry.entryColors and entry.entryColors.text then
+                -- Update to green color
+                entry.entryColors.text.r = 0
+                entry.entryColors.text.g = 1
+                entry.entryColors.text.b = 0
+            else
+                entry.entryColors = { text = { r = 0, g = 1, b = 0 } }
+            end
+        end
+    end
+end
 
 -- Update message
 local function SendUpdateMessage()
     if sendUpdate then
         C_Timer.After(7, function()
             DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames " .. addonUpdates .. ":")
-            DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Minor adjustments + bugfixes. Please let me know if you run into any bugs so I can fix em :)")
+            DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Important Aura Glow: You can now customize colors individually for each aura! Highly recommend using the addon ColorPickerPlus for a more advanced and easier to use color wheel.")
             --DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a For more info and news about new features type /bbf news")
         end)
     end
@@ -319,7 +333,7 @@ end
 
 local function NewsUpdateMessage()
     DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames news:")
-    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a #1: Minor bugfixes.")
+    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a #1: Important Aura Glow: You can now customize colors individually for each aura!")
 end
 
 local function CheckForUpdate()
@@ -719,6 +733,14 @@ First:SetScript("OnEvent", function(_, event, addonName)
             FetchAndSaveValuesOnFirstLogin()
             TurnTestModesOff()
             --TurnOnEnabledFeaturesOnLogin()
+
+            if not BetterBlizzFramesDB.auraWhitelistColorsUpdated then
+                print("test")
+                UpdateAuraColorsToGreen() --update default yellow text to green for new color featur
+                BetterBlizzFramesDB.auraWhitelistColorsUpdated = true
+            end
+
+
             BBF.InitializeOptions()
         end
     end

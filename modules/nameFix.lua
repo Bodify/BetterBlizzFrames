@@ -585,16 +585,18 @@ frame:RegisterEvent("UNIT_TARGET")
 frame:RegisterEvent("UNIT_FACTION")
 frame:SetScript("OnEvent", function(self, event, unit)
     UpdateToTName(TargetFrame.totFrame, "targettarget")
+    UpdateToTName(FocusFrame.totFrame, "focustarget")
     if BetterBlizzFramesDB.classColorFrames then
         BBF.UpdateFrameColor(TargetFrame.totFrame.HealthBar, "targettarget")
         BBF.UpdateFrameColor(FocusFrame.totFrame.HealthBar, "focustarget")
         BBF.UpdateToTColor()
     end
-    ClassColorNames(TargetFrame.totFrame.Name, "targettarget")
-    ClassColorNames(TargetFrame.totFrame.cleanName, "targettarget")
-    UpdateToTName(FocusFrame.totFrame, "focustarget")
-    ClassColorNames(FocusFrame.totFrame.Name, "focustarget")
-    ClassColorNames(FocusFrame.totFrame.cleanName, "focustarget")
+    if BetterBlizzFramesDB.classColorTargetNames then
+        ClassColorNames(TargetFrame.totFrame.Name, "targettarget")
+        ClassColorNames(TargetFrame.totFrame.cleanName, "targettarget")
+        ClassColorNames(FocusFrame.totFrame.Name, "focustarget")
+        ClassColorNames(FocusFrame.totFrame.cleanName, "focustarget")
+    end
 end)
 
 
