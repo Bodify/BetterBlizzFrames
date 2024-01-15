@@ -382,6 +382,7 @@ local auraTypeGap = 1
 local targetAndFocusSmallAuraScale = 1.4
 local auraFilteringOn
 local enlargedTextureAdjustment = 10
+local displayDispelGlowAlways
 
 function BBF.UpdateUserAuraSettings()
     printSpellId = BetterBlizzFramesDB.printAuraSpellIds
@@ -405,6 +406,7 @@ function BBF.UpdateUserAuraSettings()
     targetAndFocusSmallAuraScale = BetterBlizzFramesDB.targetAndFocusSmallAuraScale
     auraFilteringOn = BetterBlizzFramesDB.playerAuraFiltering
     enlargedTextureAdjustment = 10 * userEnlargedAuraSize
+    displayDispelGlowAlways = BetterBlizzFramesDB.displayDispelGlowAlways
 end
 
 local MIN_AURA_SIZE = 17
@@ -520,6 +522,9 @@ local function AdjustAuras(self, frameType)
         return rowHeights
     end
 
+    local unit = self.unit
+    local isFriend = unit and UnitIsFriend("player", unit)
+
     local auras = {}
     for aura in self.auraPools:EnumerateActive() do
         local auraData = C_UnitAuras.GetAuraDataByAuraInstanceID(self.unit, aura.auraInstanceID)
@@ -612,8 +617,8 @@ local function AdjustAuras(self, frameType)
                 end
 
                 -- Better Purge Glow
-                if (frameType == "target" and auraData.isStealable and betterTargetPurgeGlow) or
-                (frameType == "focus" and auraData.isStealable and betterFocusPurgeGlow) then
+                if ((frameType == "target" and (auraData.isStealable or (displayDispelGlowAlways and auraData.dispelName == "Magic" and (not isFriend or (isFriend and auraData.isHarmful)))) and betterTargetPurgeGlow) or
+                (frameType == "focus" and (auraData.isStealable or (displayDispelGlowAlways and auraData.dispelName == "Magic" and (not isFriend or (isFriend and auraData.isHarmful)))) and betterFocusPurgeGlow)) then
                     if not aura.PurgeGlow then
                         aura.PurgeGlow = aura:CreateTexture(nil, "OVERLAY")
                         aura.PurgeGlow:SetAtlas("newplayertutorial-drag-slotblue")
@@ -635,6 +640,17 @@ local function AdjustAuras(self, frameType)
                         aura.PurgeGlow:Hide()
                     end
                     aura.isPurgeGlow = false
+                    if displayDispelGlowAlways then
+                        if auraData.dispelName == "Magic" and (not isFriend or (isFriend and auraData.isHarmful)) then
+                            if aura.Stealable then
+                                aura.Stealable:Show()
+                            end
+                        else
+                            if aura.Stealable then
+                                aura.Stealable:Hide()
+                            end
+                        end
+                    end
                 end
 
                 -- Pandemic Logic
@@ -705,9 +721,6 @@ local function AdjustAuras(self, frameType)
             buffs[#buffs + 1] = aura
         end
     end
-
-    local unit = self.unit
-    local isFriend = unit and UnitIsFriend("player", unit)
 
     if not isFriend then
         if buffsOnTop then

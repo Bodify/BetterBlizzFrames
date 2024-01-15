@@ -4,7 +4,8 @@
 ----------------------------------------------------
 local ABSORB_GLOW_ALPHA = 0.6;
 local ABSORB_GLOW_OFFSET = -5;
-local overShieldsHooked = false
+local UNITFRAME_OVERSHIELD_HOOKED = false
+local COMPACT_UNITFRAME_OVERSHIELD_HOOKED = false
 
 local function BBF_UnitFrame_Update(frame)
     local absorbBar = frame.totalAbsorbBar;
@@ -163,14 +164,30 @@ local function OnTargetChanged(self, event)
 end
 
 function BBF.HookOverShields()
-    if not BetterBlizzFramesDB.overShields or overShieldsHooked then
+    if BetterBlizzFramesDB.overShields then
+        BBF.HookOverShieldCompactUnitFrames()
+        BBF.HookOverShieldUnitFrames()
+    end
+end
+
+function BBF.HookOverShieldCompactUnitFrames()
+    if not BetterBlizzFramesDB.overShieldsCompactUnitFrames or COMPACT_UNITFRAME_OVERSHIELD_HOOKED then
+        return
+    end
+
+    hooksecurefunc("CompactUnitFrame_UpdateAll", BBF_CompactUnitFrame_UpdateAll)
+    hooksecurefunc("CompactUnitFrame_UpdateHealPrediction", BBF_CompactUnitFrame_UpdateHealPrediction)
+
+    COMPACT_UNITFRAME_OVERSHIELD_HOOKED = true
+end
+
+function BBF.HookOverShieldUnitFrames()
+    if not BetterBlizzFramesDB.overShieldsUnitFrames or UNITFRAME_OVERSHIELD_HOOKED then
         return
     end
 
     hooksecurefunc("UnitFrame_Update", BBF_UnitFrame_Update)
-    hooksecurefunc("CompactUnitFrame_UpdateAll", BBF_CompactUnitFrame_UpdateAll)
     hooksecurefunc("UnitFrameHealPredictionBars_Update", BBF_UnitFrameHealPredictionBars_Update)
-    hooksecurefunc("CompactUnitFrame_UpdateHealPrediction", BBF_CompactUnitFrame_UpdateHealPrediction)
 
     BBF_UnitFrameHealPredictionBars_Update(PlayerFrame)
     BBF_UnitFrameHealPredictionBars_Update(TargetFrame)
@@ -180,5 +197,5 @@ function BBF.HookOverShields()
     eventFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
     eventFrame:SetScript("OnEvent", OnTargetChanged)
 
-    overShieldsHooked = true
+    UNITFRAME_OVERSHIELD_HOOKED = true
 end

@@ -8,6 +8,8 @@ local hookedRaidFrameManager = false
 local hookedChatButtons = false
 local changedResource = false
 local originalResourceParent
+local originalBossFrameParent
+
 function BBF.HideFrames()
     if BetterBlizzFramesDB.hasCheckedUi then
         --Hide group indicator on player unitframe
@@ -35,6 +37,19 @@ function BBF.HideFrames()
         else
             PlayerPVPTimerText:SetParent(PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual)
         end
+
+        if not originalBossFrameParent then
+            originalBossFrameParent = BossTargetFrameContainer:GetParent()
+        end
+        if BetterBlizzFramesDB.hideBossFrames then
+            BossTargetFrameContainer:SetParent(hiddenFrame)
+        else
+            BossTargetFrameContainer:SetParent(originalBossFrameParent)
+        end
+
+        -- Player Combat Icon
+        local playerCombatIconAlpha = BetterBlizzFramesDB.hideCombatIcon and 0 or 1
+        PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.AttackIcon:SetAlpha(playerCombatIconAlpha)
 
         -- Hide prestige (honor) icon on player unitframe
         local prestigeBadgeAlpha = BetterBlizzFramesDB.hidePrestigeBadge and 0 or 1
@@ -100,15 +115,19 @@ function BBF.HideFrames()
                 PlayerLevelText:SetParent(hiddenFrame)
             end
             if UnitLevel("target") == 70 then
-                TargetFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetParent(hiddenFrame)
+                --TargetFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetParent(hiddenFrame)
+                TargetFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetAlpha(0)
             end
             if UnitLevel("focus") == 70 then
-                FocusFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetParent(hiddenFrame)
+                --FocusFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetParent(hiddenFrame)
+                FocusFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetAlpha(0)
             end
         else
             PlayerLevelText:SetParent(PlayerFrame.PlayerFrameContent.PlayerFrameContentMain)
-            TargetFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetParent(TargetFrame.TargetFrameContent.TargetFrameContentMain)
-            FocusFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetParent(FocusFrame.TargetFrameContent.TargetFrameContentMain)
+            --TargetFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetParent(TargetFrame.TargetFrameContent.TargetFrameContentMain)
+            --FocusFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetParent(FocusFrame.TargetFrameContent.TargetFrameContentMain)
+            TargetFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetAlpha(1)
+            FocusFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetAlpha(1)
         end
 
         -- Hide "Party" text above party raid frames
@@ -337,9 +356,9 @@ end
 
 local function UpdateLevelTextVisibility(unitFrame, unit)
     if BetterBlizzFramesDB.hideLevelText and UnitLevel(unit) == 70 then
-        unitFrame.LevelText:SetParent(hiddenFrame)
+        unitFrame.LevelText:SetAlpha(0)
     else
-        unitFrame.LevelText:SetParent(unitFrame)
+        unitFrame.LevelText:SetAlpha(1)
     end
 end
 

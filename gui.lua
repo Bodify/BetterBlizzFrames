@@ -1170,10 +1170,17 @@ local function guiGeneralTab()
     end)
     CreateTooltip(hideArenaFrames, "Hide the standard Blizzard Arena Frames.\nThis uses the same code as the addon\n\"Arena Anti-Malware\", also made by me.")
 
---bodify
+    local hideBossFrames = CreateCheckbox("hideBossFrames", "Hide Boss Frames", BetterBlizzFrames, nil, BBF.HideArenaFrames)
+    hideBossFrames:SetPoint("TOPLEFT", hideArenaFrames, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    hideBossFrames:HookScript("OnClick", function(self)
+        if not self:GetChecked() then
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        end
+    end)
+    CreateTooltip(hideBossFrames, "Hide the Blizzard Boss Frames that are underneath the minimap.")
 
     local playerFrameOCD = CreateCheckbox("playerFrameOCD", "OCD Tweaks", BetterBlizzFrames, nil, BBF.FixStupidBlizzPTRShit)
-    playerFrameOCD:SetPoint("TOPLEFT", hideArenaFrames, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    playerFrameOCD:SetPoint("TOPLEFT", hideBossFrames, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(playerFrameOCD, "Removes small gap around player portrait, healthbars and manabars, etc.\nJust in general tiny OCD fixes on a few things. Requires a reload for full effect.\nTemporary setting I might remove if blizz fixes their stuff.")
 
     local hideLossOfControlFrameBg = CreateCheckbox("hideLossOfControlFrameBg", "Hide LossOfControl Background", BetterBlizzFrames, nil, BBF.HideFrames)
@@ -1242,7 +1249,7 @@ local function guiGeneralTab()
 
 
     local playerFrameText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    playerFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 0, -133)
+    playerFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 0, -153)
     playerFrameText:SetText("Player Frame")
     local playerFrameIcon = BetterBlizzFrames:CreateTexture(nil, "ARTWORK")
     playerFrameIcon:SetAtlas("groupfinder-icon-friend")
@@ -1291,10 +1298,14 @@ local function guiGeneralTab()
 
     local hidePlayerCornerIcon = CreateCheckbox("hidePlayerCornerIcon", "Hide Corner Icon", BetterBlizzFrames, nil, BBF.HideFrames)
     hidePlayerCornerIcon:SetPoint("TOPLEFT", hidePlayerRestGlow, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltip(hidePlayerCornerIcon, "Hide corner icon on PlayerFrame.|A:UI-HUD-UnitFrame-Player-PortraitOn-CornerEmbellishment:22:22|a\n\nNOTE: This corner icon turns into some swords during combat,\nso you might not want to hide it.")
+    CreateTooltip(hidePlayerCornerIcon, "Hide corner icon on PlayerFrame.|A:UI-HUD-UnitFrame-Player-PortraitOn-CornerEmbellishment:22:22|a\n")
+
+    local hideCombatIcon = CreateCheckbox("hideCombatIcon", "Hide Combat Icon", BetterBlizzFrames, nil, BBF.HideFrames)
+    hideCombatIcon:SetPoint("TOPLEFT", hidePlayerCornerIcon, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltip(hideCombatIcon, "Hide combat icon on in the bottom right corner of the PlayerFrame.|A:UI-HUD-UnitFrame-Player-CombatIcon:22:22|a\n")
 
     local hideGroupIndicator = CreateCheckbox("hideGroupIndicator", "Hide Group Indicator", BetterBlizzFrames, nil, BBF.HideFrames)
-    hideGroupIndicator:SetPoint("TOPLEFT", hidePlayerCornerIcon, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    hideGroupIndicator:SetPoint("TOPLEFT", hideCombatIcon, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(hideGroupIndicator, "Hide the group indicator on top of PlayerFrame\nwhile you are in a group.")
 
     local hidePlayerLeaderIcon = CreateCheckbox("hidePlayerLeaderIcon", "Hide Leader Icon", BetterBlizzFrames, nil, BBF.HideFrames)
@@ -1333,7 +1344,7 @@ local function guiGeneralTab()
 
 
     local partyFrameText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    partyFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 0, -395)
+    partyFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 0, -430)
     partyFrameText:SetText("Party Frame")
     local partyFrameIcon = BetterBlizzFrames:CreateTexture(nil, "ARTWORK")
     partyFrameIcon:SetAtlas("groupfinder-icon-friend")
@@ -1778,15 +1789,60 @@ local function guiGeneralTab()
 
     local overShields = CreateCheckbox("overShields", "Overshields", BetterBlizzFrames)
     overShields:SetPoint("TOPLEFT", racialIndicator, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltip(overShields, "Expand on Blizzards unit frame absorb texture and\nshow shield amount on frames regardless if HP is full or not", "ANCHOR_LEFT")
+
+    local overShieldsUnitFrames = CreateCheckbox("overShieldsUnitFrames", "A", BetterBlizzFrames)
+    overShieldsUnitFrames:SetPoint("LEFT", overShields.text, "RIGHT", 0, 0)
+    CreateTooltip(overShieldsUnitFrames, "Show Overshields on UnitFrames (Player, Target, Focus)", "ANCHOR_LEFT")
+    overShieldsUnitFrames:HookScript("OnClick", function(self)
+        BBF.HookOverShields()
+        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+    end)
+
+    local overShieldsCompactUnitFrames = CreateCheckbox("overShieldsCompactUnitFrames", "B", BetterBlizzFrames)
+    overShieldsCompactUnitFrames:SetPoint("LEFT", overShieldsUnitFrames.text, "RIGHT", 0, 0)
+    CreateTooltip(overShieldsCompactUnitFrames, "Show Overshields on Compact UnitFrames (Party, Raid)", "ANCHOR_LEFT")
+    overShieldsCompactUnitFrames:HookScript("OnClick", function(self)
+        BBF.HookOverShields()
+        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+    end)
+
     overShields:HookScript("OnClick", function(self)
         if self:GetChecked() then
+            BetterBlizzFramesDB.overShieldsCompact = true
+            BetterBlizzFramesDB.overShieldsUnitFrames = true
             BBF.HookOverShields()
+            overShieldsUnitFrames:SetAlpha(1)
+            overShieldsUnitFrames:Enable()
+            overShieldsUnitFrames:SetChecked(true)
+            overShieldsCompactUnitFrames:SetAlpha(1)
+            overShieldsCompactUnitFrames:Enable()
+            overShieldsCompactUnitFrames:SetChecked(true)
             StaticPopup_Show("BBF_CONFIRM_RELOAD")
         else
+            BetterBlizzFramesDB.overShieldsCompact = false
+            BetterBlizzFramesDB.overShieldsUnitFrames = false
+            overShieldsUnitFrames:SetAlpha(0)
+            overShieldsUnitFrames:Disable()
+            overShieldsUnitFrames:SetChecked(false)
+            overShieldsCompactUnitFrames:SetAlpha(0)
+            overShieldsCompactUnitFrames:Disable()
+            overShieldsCompactUnitFrames:SetChecked(false)
             StaticPopup_Show("BBF_CONFIRM_RELOAD")
         end
     end)
-    CreateTooltip(overShields, "Expand on Blizzards unit frame absorb texture and\nshow shield amount on frames regardless if HP is full or not", "ANCHOR_LEFT")
+
+    if BetterBlizzFramesDB.overShields then
+        overShieldsUnitFrames:SetAlpha(1)
+        overShieldsUnitFrames:Enable()
+        overShieldsCompactUnitFrames:SetAlpha(1)
+        overShieldsCompactUnitFrames:Enable()
+    else
+        overShieldsUnitFrames:SetAlpha(0)
+        overShieldsUnitFrames:Disable()
+        overShieldsCompactUnitFrames:SetAlpha(0)
+        overShieldsCompactUnitFrames:Disable()
+    end
 
     ----------------------
     -- Reload etc
@@ -2626,8 +2682,8 @@ local function guiPositionAndScale()
     end)
 
 
-       --------------------------
-    -- Combat indicator
+    --------------------------
+    -- Racial indicator
     ----------------------
     local anchorSubracialIndicator = contentFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     anchorSubracialIndicator:SetPoint("CENTER", mainGuiAnchor2, "CENTER", secondLineX-70, secondLineY - 15)
@@ -3121,10 +3177,13 @@ local function guiFrameAuras()
 
 
 
-
     local targetAndFocusAuraScale = CreateSlider(playerAuraFiltering, "All Aura size", 0.7, 2, 0.01, "targetAndFocusAuraScale")
     targetAndFocusAuraScale:SetPoint("TOP", targetAndFocusAuraSettings, "BOTTOM", 0, -20)
     CreateTooltip(targetAndFocusAuraScale, "Adjusts the size of ALL auras")
+
+    local displayDispelGlowAlways = CreateCheckbox("displayDispelGlowAlways", "Always show purge texture", playerAuraFiltering)
+    displayDispelGlowAlways:SetPoint("RIGHT", targetAndFocusAuraScale, "LEFT", -133, 15)
+    CreateTooltip(displayDispelGlowAlways, "Always display the purge/steal on auras\nregardless if you have a dispel/purge/steal ability or not.")
 
     local targetAndFocusSmallAuraScale = CreateSlider(playerAuraFiltering, "Small Aura size", 0.7, 2, 0.01, "targetAndFocusSmallAuraScale")
     targetAndFocusSmallAuraScale:SetPoint("TOP", targetAndFocusAuraScale, "BOTTOM", 0, -20)

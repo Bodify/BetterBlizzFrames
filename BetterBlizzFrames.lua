@@ -6,7 +6,7 @@ BBF = BBF or {}
 -- Things are getting more messy need a lot of cleaning lol
 
 local addonVersion = "1.00" --too afraid to to touch for now
-local addonUpdates = "1.2.0"
+local addonUpdates = "1.2.1"
 local sendUpdate = true
 BBF.VersionNumber = addonUpdates
 BBF.variablesLoaded = false
@@ -174,6 +174,9 @@ local defaultSettings = {
     frameAuraHeightGap = 0,
 
     playerAuraFiltering = false,
+    displayDispelGlowAlways = false,
+    overShieldsUnitFrames = true,
+    overShieldsCompactUnitFrames = true,
 
     --Target buffs
     maxTargetBuffs = 32,
@@ -325,7 +328,7 @@ local function SendUpdateMessage()
     if sendUpdate then
         C_Timer.After(7, function()
             DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames " .. addonUpdates .. ":")
-            DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Important Aura Glow: You can now customize colors individually for each aura! Highly recommend using the addon ColorPickerPlus for a more advanced and easier to use color wheel.")
+            DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a New settings: Hide Boss Frames, Hide (Player) Combat Icon, separated \"Overshields\" setting into UnitFrames and Compact UnitFrames (Target etc & Party/Raid), \"Always show purge texture\" in Buffs & Debuffs that shows the purge texture even if you don't have a purge ability.")
             --DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a For more info and news about new features type /bbf news")
         end)
     end
@@ -333,7 +336,10 @@ end
 
 local function NewsUpdateMessage()
     DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames news:")
-    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a #1: Important Aura Glow: You can now customize colors individually for each aura!")
+    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a #1: Hide Boss Frames")
+    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a #2: Hide (Player) Combat Icon")
+    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a #3: Separated \"Overshields\" setting into UnitFrames and Compact UnitFrames (Target etc & Party/Raid)")
+    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a #4: \"Always show purge texture\" in Buffs & Debuffs that shows the purge texture even if you don't have a purge ability.")
 end
 
 local function CheckForUpdate()
@@ -527,12 +533,12 @@ end
 
 function BBF.FixStupidBlizzPTRShit()
     if InCombatLockdown() then return end
-    -- For god knows what reason PTR has a gap between Portrait and PlayerFrame. This fixes it.
+    -- For god knows what reason PTR has a gap between Portrait and PlayerFrame. This fixes it + other gaps.
     --PlayerFrame.PlayerFrameContainer.PlayerPortrait:SetScale(1.02)
     PlayerFrame.PlayerFrameContainer.PlayerPortrait:SetSize(64,64)
-    --PlayerFrame.PlayerFrameContainer.PlayerPortraitMask:SetScale(1.09)
     PlayerFrame.PlayerFrameContainer.PlayerPortrait:SetPoint("TOPLEFT", PlayerFrame.PlayerFrameContainer, "TOPLEFT", 22, -17.5)
-    PlayerFrame.PlayerFrameContainer.PlayerPortraitMask:SetSize(65,65)
+    PlayerFrame.PlayerFrameContainer.PlayerPortraitMask:SetScale(1.02)
+    PlayerFrame.PlayerFrameContainer.PlayerPortraitMask:SetSize(64,64)
     PlayerFrame.PlayerFrameContainer.PlayerPortraitMask:SetPoint("TOPLEFT", PlayerFrame.PlayerFrameContainer, "TOPLEFT", 21, -16)
     PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarArea.HealthBar.HealthBarMask:SetHeight(33)
     PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar.ManaBarMask:SetPoint("TOPLEFT", PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar, "TOPLEFT", -2, 3)
@@ -735,7 +741,6 @@ First:SetScript("OnEvent", function(_, event, addonName)
             --TurnOnEnabledFeaturesOnLogin()
 
             if not BetterBlizzFramesDB.auraWhitelistColorsUpdated then
-                print("test")
                 UpdateAuraColorsToGreen() --update default yellow text to green for new color featur
                 BetterBlizzFramesDB.auraWhitelistColorsUpdated = true
             end
