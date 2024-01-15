@@ -6,7 +6,7 @@ BBF = BBF or {}
 -- Things are getting more messy need a lot of cleaning lol
 
 local addonVersion = "1.00" --too afraid to to touch for now
-local addonUpdates = "1.2.1"
+local addonUpdates = "1.2.2"
 local sendUpdate = true
 BBF.VersionNumber = addonUpdates
 BBF.variablesLoaded = false
@@ -37,6 +37,7 @@ local defaultSettings = {
     focusToTCastbarAdjustment = true,
     playerReputationClassColor = true,
     enlargedAuraSize = 1.4,
+    compactedAuraSize = 0.7,
 
     --Sort group
     --sortGroupPlayerTop = true,
@@ -329,6 +330,7 @@ local function SendUpdateMessage()
         C_Timer.After(7, function()
             DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames " .. addonUpdates .. ":")
             DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a New settings: Hide Boss Frames, Hide (Player) Combat Icon, separated \"Overshields\" setting into UnitFrames and Compact UnitFrames (Target etc & Party/Raid), \"Always show purge texture\" in Buffs & Debuffs that shows the purge texture even if you don't have a purge ability.")
+            DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Buffs & Debuffs: New \"Compacted Aura\" setting and sort aura setting for enlarged auras first and compacted/smaller auras last.")
             --DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a For more info and news about new features type /bbf news")
         end)
     end

@@ -42,8 +42,9 @@ local function GetAuraDetails(spellName, spellId)
             local isImportant = entry.flags and entry.flags.important or false
             local isPandemic = entry.flags and entry.flags.pandemic or false
             local isEnlarged = entry.flags and entry.flags.enlarged or false
+            local isCompacted = entry.flags and entry.flags.compacted or false
             local auraColor = entry.entryColors and entry.entryColors.text or nil
-            return true, isImportant, isPandemic, isEnlarged, auraColor
+            return true, isImportant, isPandemic, isEnlarged, isCompacted, auraColor
         end
     end
     return false, false, false, false, nil
@@ -63,28 +64,28 @@ local function ShouldShowBuff(unit, auraData, frameType)
         -- Buffs
         if BetterBlizzFramesDB["targetBuffEnable"] and auraData.isHelpful then
             local isTargetFriendly = UnitIsFriend("target", "player")
-            local isInWhitelist, isImportant, isPandemic, isEnlarged, auraColor = GetAuraDetails(spellName, spellId)
+            local isInWhitelist, isImportant, isPandemic, isEnlarged, isCompacted, auraColor = GetAuraDetails(spellName, spellId)
             local isInBlacklist = isInBlacklist(spellName, spellId) and BetterBlizzFramesDB["targetBuffFilterBlacklist"]
             local filterWatchlist = BetterBlizzFramesDB["targetBuffFilterWatchList"] and isInWhitelist
             local filterLessMinite = BetterBlizzFramesDB["targetBuffFilterLessMinite"] and (duration < 61 and duration ~= 0 and expirationTime ~= 0)
             local filterPurgeable = BetterBlizzFramesDB["targetBuffFilterPurgeable"] and isPurgeable
             local filterOnlyMe = BetterBlizzFramesDB["targetBuffFilterOnlyMe"] and isTargetFriendly and (caster == "player" or (caster == "pet" and UnitIsUnit(caster, "pet")))
             if isInBlacklist then return end
-            if filterWatchlist or filterLessMinite or filterPurgeable or filterOnlyMe or isImportant or isPandemic or isEnlarged then return true, isImportant, isPandemic, isEnlarged, auraColor end
+            if filterWatchlist or filterLessMinite or filterPurgeable or filterOnlyMe or isImportant or isPandemic or isEnlarged or isCompacted then return true, isImportant, isPandemic, isEnlarged, isCompacted, auraColor end
             if not BetterBlizzFramesDB["targetBuffFilterLessMinite"] and not BetterBlizzFramesDB["targetBuffFilterWatchList"] and not BetterBlizzFramesDB["targetBuffFilterPurgeable"] and not (BetterBlizzFramesDB["targetBuffFilterOnlyMe"] and isTargetFriendly) then
                 return true
             end
         end
         -- Debuffs
         if BetterBlizzFramesDB["targetdeBuffEnable"] and auraData.isHarmful then
-            local isInWhitelist, isImportant, isPandemic, isEnlarged, auraColor = GetAuraDetails(spellName, spellId)
+            local isInWhitelist, isImportant, isPandemic, isEnlarged, isCompacted, auraColor = GetAuraDetails(spellName, spellId)
             local isInBlacklist = isInBlacklist(spellName, spellId) and BetterBlizzFramesDB["targetdeBuffFilterBlacklist"]
             local filterWatchlist = BetterBlizzFramesDB["targetdeBuffFilterWatchList"] and isInWhitelist
             local filterLessMinite = BetterBlizzFramesDB["targetdeBuffFilterLessMinite"] and (duration < 61 and duration ~= 0 and expirationTime ~= 0)
             local filterBlizzard = BetterBlizzFramesDB["targetdeBuffFilterBlizzard"] and BlizzardShouldShowDebuffs
             local filterOnlyMe = BetterBlizzFramesDB["targetdeBuffFilterOnlyMe"] and (caster == "player" or (caster == "pet" and UnitIsUnit(caster, "pet")))
             if isInBlacklist then return end
-            if filterWatchlist or filterLessMinite or filterBlizzard or filterOnlyMe or isImportant or isPandemic or isEnlarged then return true, isImportant, isPandemic, isEnlarged, auraColor end
+            if filterWatchlist or filterLessMinite or filterBlizzard or filterOnlyMe or isImportant or isPandemic or isEnlarged or isCompacted then return true, isImportant, isPandemic, isEnlarged, isCompacted, auraColor end
             if not BetterBlizzFramesDB["targetdeBuffFilterLessMinite"] and not BetterBlizzFramesDB["targetdeBuffFilterWatchList"] and not BetterBlizzFramesDB["targetdeBuffFilterBlizzard"] and not BetterBlizzFramesDB["targetdeBuffFilterOnlyMe"] then
                 return true
             end
@@ -93,7 +94,7 @@ local function ShouldShowBuff(unit, auraData, frameType)
     elseif frameType == "focus" then
         -- Buffs
         if BetterBlizzFramesDB["focusBuffEnable"] and auraData.isHelpful then
-            local isInWhitelist, isImportant, isPandemic, isEnlarged, auraColor = GetAuraDetails(spellName, spellId)
+            local isInWhitelist, isImportant, isPandemic, isEnlarged, isCompacted, auraColor = GetAuraDetails(spellName, spellId)
             local isInBlacklist = isInBlacklist(spellName, spellId) and BetterBlizzFramesDB["focusBuffFilterBlacklist"]
             local isTargetFriendly = UnitIsFriend("focus", "player")
             local filterWatchlist = BetterBlizzFramesDB["focusBuffFilterWatchList"] and isInWhitelist
@@ -101,21 +102,21 @@ local function ShouldShowBuff(unit, auraData, frameType)
             local filterPurgeable = BetterBlizzFramesDB["focusBuffFilterPurgeable"] and isPurgeable
             local filterOnlyMe = BetterBlizzFramesDB["focusBuffFilterOnlyMe"] and isTargetFriendly and (caster == "player" or (caster == "pet" and UnitIsUnit(caster, "pet")))
             if isInBlacklist then return end
-            if filterWatchlist or filterLessMinite or filterPurgeable or filterOnlyMe or isImportant or isPandemic or isEnlarged then return true, isImportant, isPandemic, isEnlarged, auraColor end
+            if filterWatchlist or filterLessMinite or filterPurgeable or filterOnlyMe or isImportant or isPandemic or isEnlarged or isCompacted then return true, isImportant, isPandemic, isEnlarged, isCompacted, auraColor end
             if not BetterBlizzFramesDB["focusBuffFilterLessMinite"] and not BetterBlizzFramesDB["focusBuffFilterWatchList"] and not BetterBlizzFramesDB["focusBuffFilterPurgeable"] and not BetterBlizzFramesDB["focusBuffFilterOnlyMe"] then
                 return true
             end
         end
         -- Debuffs
         if BetterBlizzFramesDB["focusdeBuffEnable"] and auraData.isHarmful then
-            local isInWhitelist, isImportant, isPandemic, isEnlarged, auraColor = GetAuraDetails(spellName, spellId)
+            local isInWhitelist, isImportant, isPandemic, isEnlarged, isCompacted, auraColor = GetAuraDetails(spellName, spellId)
             local filterWatchlist = BetterBlizzFramesDB["focusdeBuffFilterWatchList"] and isInWhitelist
             local isInBlacklist = isInBlacklist(spellName, spellId) and BetterBlizzFramesDB["focusdeBuffFilterBlacklist"]
             local filterLessMinite = BetterBlizzFramesDB["focusdeBuffFilterLessMinite"] and (duration < 61 and duration ~= 0 and expirationTime ~= 0)
             local filterBlizzard = BetterBlizzFramesDB["focusdeBuffFilterBlizzard"] and BlizzardShouldShowDebuffs
             local filterOnlyMe = BetterBlizzFramesDB["focusdeBuffFilterOnlyMe"] and (caster == "player" or (caster == "pet" and UnitIsUnit(caster, "pet")))
             if isInBlacklist then return end
-            if filterWatchlist or filterLessMinite or filterBlizzard or filterOnlyMe or isImportant or isPandemic or isEnlarged then return true, isImportant, isPandemic, isEnlarged, auraColor end
+            if filterWatchlist or filterLessMinite or filterBlizzard or filterOnlyMe or isImportant or isPandemic or isEnlarged or isCompacted then return true, isImportant, isPandemic, isEnlarged, isCompacted, auraColor end
             if not BetterBlizzFramesDB["focusdeBuffFilterLessMinite"] and not BetterBlizzFramesDB["focusdeBuffFilterWatchList"] and not BetterBlizzFramesDB["focusdeBuffFilterBlizzard"] and not BetterBlizzFramesDB["focusdeBuffFilterOnlyMe"] then
                 return true
             end
@@ -125,12 +126,12 @@ local function ShouldShowBuff(unit, auraData, frameType)
         if frameType == "playerBuffFrame" then
             -- Buffs
             if BetterBlizzFramesDB["PlayerAuraFrameBuffEnable"] and (auraData.auraType == "Buff" or auraData.auraType == "TempEnchant") then
-                local isInWhitelist, isImportant, isPandemic, isEnlarged, auraColor = GetAuraDetails(spellName, spellId)
+                local isInWhitelist, isImportant, isPandemic, isEnlarged, isCompacted, auraColor = GetAuraDetails(spellName, spellId)
                 local isInBlacklist = isInBlacklist(spellName, spellId) and BetterBlizzFramesDB["playerBuffFilterBlacklist"]
                 local filterWatchlist = BetterBlizzFramesDB["PlayerAuraFrameBuffFilterWatchList"] and isInWhitelist
                 local filterLessMinite = BetterBlizzFramesDB["PlayerAuraFrameBuffFilterLessMinite"] and (duration < 61 and duration ~= 0 and expirationTime ~= 0)
                 if isInBlacklist then return end
-                if filterWatchlist or filterLessMinite or isImportant then return true, isImportant, isPandemic, isEnlarged, auraColor end
+                if filterWatchlist or filterLessMinite or isImportant then return true, isImportant, isPandemic, isEnlarged, isCompacted, auraColor end
                 if not BetterBlizzFramesDB["PlayerAuraFrameBuffFilterLessMinite"] and not BetterBlizzFramesDB["PlayerAuraFrameBuffFilterWatchList"] then
                     return true
                 end
@@ -138,12 +139,12 @@ local function ShouldShowBuff(unit, auraData, frameType)
         else
             -- Debuffs
             if BetterBlizzFramesDB["PlayerAuraFramedeBuffEnable"] and auraData.auraType == "Debuff" then
-                local isInWhitelist, isImportant, isPandemic, isEnlarged, auraColor = GetAuraDetails(spellName, spellId)
+                local isInWhitelist, isImportant, isPandemic, isEnlarged, isCompacted, auraColor = GetAuraDetails(spellName, spellId)
                 local isInBlacklist = isInBlacklist(spellName, spellId) and BetterBlizzFramesDB["playerdeBuffFilterBlacklist"]
                 local filterWatchlist = BetterBlizzFramesDB["PlayerAuraFramedeBuffFilterWatchList"] and isInWhitelist
                 local filterLessMinite = BetterBlizzFramesDB["PlayerAuraFramedeBuffFilterLessMinite"] and (duration < 61 and duration ~= 0 and expirationTime ~= 0)
                 if isInBlacklist then return end
-                if filterWatchlist or filterLessMinite or isImportant then return true, isImportant, isPandemic, isEnlarged, auraColor end
+                if filterWatchlist or filterLessMinite or isImportant then return true, isImportant, isPandemic, isEnlarged, isCompacted, auraColor end
                 if not BetterBlizzFramesDB["PlayerAuraFramedeBuffFilterLessMinite"] and not BetterBlizzFramesDB["PlayerAuraFramedeBuffFilterWatchList"] then
                     return true
                 end
@@ -365,6 +366,7 @@ local printSpellId
 local betterTargetPurgeGlow
 local betterFocusPurgeGlow
 local userEnlargedAuraSize = 1
+local userCompactedAuraSize = 1
 local auraSpacingX = 4
 local auraSpacingY = 4
 local aurasPerRow = 5
@@ -375,20 +377,25 @@ local auraScale = 1
 local targetImportantAuraGlow
 local targetdeBuffPandemicGlow
 local targetEnlargeAura
+local targetCompactAura
 local focusImportantAuraGlow
 local focusdeBuffPandemicGlow
 local focusEnlargeAura
+local focusCompactAura
 local auraTypeGap = 1
 local targetAndFocusSmallAuraScale = 1.4
 local auraFilteringOn
 local enlargedTextureAdjustment = 10
+local compactedTextureAdjustment = 10
 local displayDispelGlowAlways
+local customLargeSmallAuraSorting
 
 function BBF.UpdateUserAuraSettings()
     printSpellId = BetterBlizzFramesDB.printAuraSpellIds
     betterTargetPurgeGlow = BetterBlizzFramesDB.targetBuffPurgeGlow
     betterFocusPurgeGlow = BetterBlizzFramesDB.focusBuffPurgeGlow
     userEnlargedAuraSize = BetterBlizzFramesDB.enlargedAuraSize
+    userCompactedAuraSize = BetterBlizzFramesDB.compactedAuraSize
     auraSpacingX = BetterBlizzFramesDB.targetAndFocusHorizontalGap
     auraSpacingY = BetterBlizzFramesDB.targetAndFocusVerticalGap
     aurasPerRow = BetterBlizzFramesDB.targetAndFocusAurasPerRow
@@ -399,14 +406,18 @@ function BBF.UpdateUserAuraSettings()
     targetImportantAuraGlow = BetterBlizzFramesDB.targetImportantAuraGlow
     targetdeBuffPandemicGlow = BetterBlizzFramesDB.targetdeBuffPandemicGlow
     targetEnlargeAura = BetterBlizzFramesDB.targetEnlargeAura
+    targetCompactAura = BetterBlizzFramesDB.targetCompactAura
     focusImportantAuraGlow = BetterBlizzFramesDB.focusImportantAuraGlow
     focusdeBuffPandemicGlow = BetterBlizzFramesDB.focusdeBuffPandemicGlow
     focusEnlargeAura = BetterBlizzFramesDB.focusEnlargeAura
+    focusCompactAura = BetterBlizzFramesDB.focusCompactAura
     auraTypeGap = BetterBlizzFramesDB.auraTypeGap
     targetAndFocusSmallAuraScale = BetterBlizzFramesDB.targetAndFocusSmallAuraScale
     auraFilteringOn = BetterBlizzFramesDB.playerAuraFiltering
     enlargedTextureAdjustment = 10 * userEnlargedAuraSize
+    compactedTextureAdjustment = 10 * userCompactedAuraSize
     displayDispelGlowAlways = BetterBlizzFramesDB.displayDispelGlowAlways
+    customLargeSmallAuraSorting = BetterBlizzFramesDB.customLargeSmallAuraSorting
 end
 
 local MIN_AURA_SIZE = 17
@@ -461,6 +472,19 @@ local function AdjustAuras(self, frameType)
                 aura:SetSize(importantSize, importantSize)
                 auraSize = importantSize
             end
+
+            if aura.isCompacted then
+                if aura.isLarge then
+                    defaultLargeAuraSize = 21
+                else
+                    defaultLargeAuraSize = 17
+                end
+                local importantSize = defaultLargeAuraSize * userCompactedAuraSize
+                aura:SetSize(importantSize, importantSize)
+                auraSize = importantSize
+            end
+
+
 
             local columnIndex, rowIndex
 
@@ -535,18 +559,20 @@ local function AdjustAuras(self, frameType)
             -- Store the properties with the aura for later sorting
             aura.isLarge = isLarge
             aura.canApply = canApply
-            local shouldShowAura, isImportant, isPandemic, isEnlarged, auraColor
+            local shouldShowAura, isImportant, isPandemic, isEnlarged, isCompacted, auraColor
 
             if frameType == "target" then
-                shouldShowAura, isImportant, isPandemic, isEnlarged, auraColor = ShouldShowBuff(unit, auraData, "target")
+                shouldShowAura, isImportant, isPandemic, isEnlarged, isCompacted, auraColor = ShouldShowBuff(unit, auraData, "target")
                 isImportant = isImportant and targetImportantAuraGlow
                 isPandemic = isPandemic and targetdeBuffPandemicGlow
                 isEnlarged = isEnlarged and targetEnlargeAura
+                isCompacted = isCompacted and targetCompactAura
             elseif frameType == "focus" then
-                shouldShowAura, isImportant, isPandemic, isEnlarged, auraColor = ShouldShowBuff(unit, auraData, "focus")
+                shouldShowAura, isImportant, isPandemic, isEnlarged, isCompacted, auraColor = ShouldShowBuff(unit, auraData, "focus")
                 isImportant = isImportant and focusImportantAuraGlow
                 isPandemic = isPandemic and focusdeBuffPandemicGlow
                 isEnlarged = isEnlarged and focusEnlargeAura
+                isCompacted = isCompacted and focusCompactAura
             end
 
             if shouldShowAura then
@@ -585,6 +611,13 @@ local function AdjustAuras(self, frameType)
                     aura.isEnlarged = false
                 end
 
+                -- Smaller logic
+                if isCompacted then
+                    aura.isCompacted = true
+                else
+                    aura.isCompacted = false
+                end
+
                 -- Important logic
                 if isImportant then
                     aura.isImportant = true
@@ -596,6 +629,9 @@ local function AdjustAuras(self, frameType)
                     if aura.isEnlarged then
                         aura.ImportantGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -enlargedTextureAdjustment, enlargedTextureAdjustment)
                         aura.ImportantGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", enlargedTextureAdjustment, -enlargedTextureAdjustment)
+                    elseif aura.isCompacted then
+                        aura.ImportantGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -compactedTextureAdjustment, compactedTextureAdjustment)
+                        aura.ImportantGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", compactedTextureAdjustment, -compactedTextureAdjustment)
                     else
                         aura.ImportantGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -10, 10)
                         aura.ImportantGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", 10, -10)
@@ -617,8 +653,8 @@ local function AdjustAuras(self, frameType)
                 end
 
                 -- Better Purge Glow
-                if ((frameType == "target" and (auraData.isStealable or (displayDispelGlowAlways and auraData.dispelName == "Magic" and (not isFriend or (isFriend and auraData.isHarmful)))) and betterTargetPurgeGlow) or
-                (frameType == "focus" and (auraData.isStealable or (displayDispelGlowAlways and auraData.dispelName == "Magic" and (not isFriend or (isFriend and auraData.isHarmful)))) and betterFocusPurgeGlow)) then
+                if ((frameType == "target" and (auraData.isStealable or (displayDispelGlowAlways and auraData.dispelName == "Magic" and ((not isFriend and auraData.isHelpful) or (isFriend and auraData.isHarmful)))) and betterTargetPurgeGlow) or
+                (frameType == "focus" and (auraData.isStealable or (displayDispelGlowAlways and auraData.dispelName == "Magic" and ((not isFriend and auraData.isHelpful) or (isFriend and auraData.isHarmful)))) and betterFocusPurgeGlow)) then
                     if not aura.PurgeGlow then
                         aura.PurgeGlow = aura:CreateTexture(nil, "OVERLAY")
                         aura.PurgeGlow:SetAtlas("newplayertutorial-drag-slotblue")
@@ -626,6 +662,9 @@ local function AdjustAuras(self, frameType)
                     if aura.isEnlarged then
                         aura.PurgeGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -enlargedTextureAdjustment, enlargedTextureAdjustment)
                         aura.PurgeGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", enlargedTextureAdjustment, -enlargedTextureAdjustment)
+                    elseif aura.isCompacted then
+                        aura.PurgeGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -compactedTextureAdjustment, compactedTextureAdjustment)
+                        aura.PurgeGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", compactedTextureAdjustment, -compactedTextureAdjustment)
                     else
                         aura.PurgeGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -10, 10)
                         aura.PurgeGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", 10, -10)
@@ -699,14 +738,55 @@ local function AdjustAuras(self, frameType)
     end
 
     local function customAuraComparator(a, b)
-        if a.isLarge and not b.isLarge then
-            return true
-        elseif not a.isLarge and b.isLarge then
-            return false
-        elseif a.canApply ~= b.canApply then
-            return a.canApply
+        -- Check for custom sorting enabled
+        if customLargeSmallAuraSorting then
+            -- Enlarged auras come first, sorted by auraInstanceID
+            if a.isEnlarged or b.isEnlarged then
+                if a.isEnlarged and not b.isEnlarged then
+                    return true
+                elseif not a.isEnlarged and b.isEnlarged then
+                    return false
+                else
+                    -- Both are enlarged, sort by auraInstanceID
+                    return a.auraInstanceID < b.auraInstanceID
+                end
+            end
+
+            -- Compacted auras come last, sorted by auraInstanceID
+            if a.isCompacted or b.isCompacted then
+                if a.isCompacted and not b.isCompacted then
+                    return false
+                elseif not a.isCompacted and b.isCompacted then
+                    return true
+                else
+                    -- Both are compacted, sort by auraInstanceID
+                    return a.auraInstanceID < b.auraInstanceID
+                end
+            end
+
+            -- For auras that are neither enlarged nor compacted, use default sorting
+            if not a.isEnlarged and not a.isCompacted and not b.isEnlarged and not b.isCompacted then
+                if a.isLarge and not b.isLarge then
+                    return true
+                elseif not a.isLarge and b.isLarge then
+                    return false
+                elseif a.canApply ~= b.canApply then
+                    return a.canApply
+                else
+                    return a.auraInstanceID < b.auraInstanceID
+                end
+            end
         else
-            return a.auraInstanceID < b.auraInstanceID
+            -- Default sorting logic
+            if a.isLarge and not b.isLarge then
+                return true
+            elseif not a.isLarge and b.isLarge then
+                return false
+            elseif a.canApply ~= b.canApply then
+                return a.canApply
+            else
+                return a.auraInstanceID < b.auraInstanceID
+            end
         end
     end
 
@@ -1043,8 +1123,8 @@ local function PersonalBuffFrameFilterAndGrid(self)
                     end
                 end
 
-                local shouldShowAura, isImportant, isPandemic, isEnlarged, auraColor
-                shouldShowAura, isImportant, isPandemic, isEnlarged, auraColor = ShouldShowBuff("player", auraData, "playerBuffFrame")
+                local shouldShowAura, isImportant, isPandemic, isEnlarged, isCompacted, auraColor
+                shouldShowAura, isImportant, isPandemic, isEnlarged, isCompacted, auraColor = ShouldShowBuff("player", auraData, "playerBuffFrame")
                 isImportant = isImportant and BetterBlizzFramesDB.playerAuraImportantGlow
                 -- Nonprint logic
                 if shouldShowAura then
@@ -1244,7 +1324,7 @@ local function PersonalDebuffFrameFilterAndGrid(self)
                         end
                     end)
                 end
-                local shouldShowAura, isImportant, isPandemic, isEnlarged, auraColor = ShouldShowBuff("player", auraData, "playerDebuffFrame")
+                local shouldShowAura, isImportant, isPandemic, isEnlarged, isCompacted, auraColor = ShouldShowBuff("player", auraData, "playerDebuffFrame")
                 if shouldShowAura then
                     -- Check the tooltip for specified keywords
 --[=[
