@@ -1200,6 +1200,27 @@ local function guiGeneralTab()
     playerFrameOCD:SetPoint("TOPLEFT", hideBossFrames, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(playerFrameOCD, "Removes small gap around player portrait, healthbars and manabars, etc.\nJust in general tiny OCD fixes on a few things. Requires a reload for full effect.\nTemporary setting I might remove if blizz fixes their stuff.")
 
+    local playerFrameOCDTextureBypass = CreateCheckbox("playerFrameOCDTextureBypass", "OCD: Skip Bars", BetterBlizzFrames, nil, BBF.HideFrames)
+    playerFrameOCDTextureBypass:SetPoint("LEFT", playerFrameOCD.text, "RIGHT", 0, 0)
+    CreateTooltip(playerFrameOCDTextureBypass, "If healthbars & manabars look weird enable this to skip\nadjusting them and only do portraits + reputation color")
+
+    playerFrameOCD:HookScript("OnClick", function(self)
+        if self:GetChecked() then
+            playerFrameOCDTextureBypass:Enable()
+            playerFrameOCDTextureBypass:SetAlpha(1)
+        else
+            BetterBlizzFramesDB.playerFrameOCDTextureBypass = false
+            playerFrameOCDTextureBypass:SetChecked(false)
+            playerFrameOCDTextureBypass:Disable()
+            playerFrameOCDTextureBypass:SetAlpha(0)
+        end
+    end)
+
+    if not BetterBlizzFramesDB.playerFrameOCD then
+        playerFrameOCDTextureBypass:Disable()
+        playerFrameOCDTextureBypass:SetAlpha(0)
+    end
+
     local hideLossOfControlFrameBg = CreateCheckbox("hideLossOfControlFrameBg", "Hide LossOfControl Background", BetterBlizzFrames, nil, BBF.HideFrames)
     hideLossOfControlFrameBg:SetPoint("TOPLEFT", playerFrameOCD, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(hideLossOfControlFrameBg, "Hide the dark background and red bar on top and on bottom of the Loss of Control frame")

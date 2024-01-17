@@ -542,78 +542,19 @@ function BBF.FixStupidBlizzPTRShit()
     PlayerFrame.PlayerFrameContainer.PlayerPortraitMask:SetScale(1.02)
     PlayerFrame.PlayerFrameContainer.PlayerPortraitMask:SetSize(64,64)
     PlayerFrame.PlayerFrameContainer.PlayerPortraitMask:SetPoint("TOPLEFT", PlayerFrame.PlayerFrameContainer, "TOPLEFT", 21, -16)
-    PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarArea.HealthBar.HealthBarMask:SetHeight(33)
-    PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar.ManaBarMask:SetPoint("TOPLEFT", PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar, "TOPLEFT", -2, 3)
-    PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar.ManaBarMask:SetHeight(17)
-    PlayerFrame.healthbar:SetHeight(21)
-    PlayerFrame.manabar:SetSize(125,12)
-    local p, r, rr, x, y = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar.RightText:GetPoint()
-    PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar.RightText:SetPoint(p, r, rr, -3, 0)
-    --local a, b, c, d, e = TargetFrame.TargetFrameContent.TargetFrameContentMain.Name:GetPoint()
-    --TargetFrame.TargetFrameContent.TargetFrameContentMain.Name:ClearAllPoints()
-    --TargetFrame.TargetFrameContent.TargetFrameContentMain.Name:SetPoint(a, b, c, d, 99)
-    TargetFrame.TargetFrameContent.TargetFrameContentMain.HealthBar.HealthBarMask:SetWidth(129)
-    TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar:SetSize(136, 10)
-    TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.ManaBarMask:SetSize(258, 16)
-    local point, relativeTo, relativePoint, xOffset, yOffset = TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar:GetPoint()
-    TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar:SetPoint(point, relativeTo, relativePoint, 9, yOffset)
-    local p, r, rr, x, y = TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.RightText:GetPoint()
-    TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.RightText:SetPoint(p, r, rr, -14, y)
-    local a, b, c, d, e = TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.LeftText:GetPoint()
-    TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.LeftText:SetPoint(a,b,c,3,e)
-    FocusFrame.TargetFrameContent.TargetFrameContentMain.HealthBar.HealthBarMask:SetWidth(129)
-    FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar:SetSize(136, 10)
-    FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.ManaBarMask:SetSize(258, 16)
-    local point, relativeTo, relativePoint, xOffset, yOffset = FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar:GetPoint()
-    FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar:SetPoint(point, relativeTo, relativePoint, 9, yOffset)
-    local p, r, rr, x, y = FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.RightText:GetPoint()
-    FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.RightText:SetPoint(p, r, rr, -14, y)
-    local a, b, c, d, e = FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.LeftText:GetPoint()
-    FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.LeftText:SetPoint(a,b,c,3,e)
 
-    local a, b, c, d, e = TargetFrame.TargetFrameContent.TargetFrameContentMain.LevelText:GetPoint()
-    TargetFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetPoint(a, b, c, d, -3)
-
-    local a, b, c, d, e = FocusFrame.TargetFrameContent.TargetFrameContentMain.LevelText:GetPoint()
-    FocusFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetPoint(a, b, c, d, -3)
-
-    local a, b, c, d, e = PlayerLevelText:GetPoint()
-    PlayerLevelText:SetPoint(a,b,c,d,-28)
-    --ToT
-    local a, b, c, d, e = TargetFrame.totFrame.HealthBar:GetPoint()
-    TargetFrame.totFrame.HealthBar:SetPoint(a,b,c,-5,-5)
-    TargetFrame.totFrame.HealthBar:SetSize(71, 13)
-    --anchor x = 5
-    TargetFrame.totFrame.ManaBar:SetSize(76, 8)
-    local a, b, c, d, e = TargetFrame.totFrame.ManaBar:GetPoint()
-    TargetFrame.totFrame.ManaBar:SetPoint(a,b,c,-5,3)
-    TargetFrame.totFrame.ManaBar.ManaBarMask:SetWidth(130)
-    TargetFrame.totFrame.ManaBar.ManaBarMask:SetHeight(17)
-    --anchor x = -5
     local a, b, c, d, e = TargetFrame.totFrame.Portrait:GetPoint()
     TargetFrame.totFrame.Portrait:SetPoint(a, b, c, 6, -4)
-    local a, b, c, d, e = FocusFrame.totFrame.HealthBar:GetPoint()
-    FocusFrame.totFrame.HealthBar:SetPoint(a,b,c,-5,-5)
-    FocusFrame.totFrame.HealthBar:SetSize(71, 13)
-    --anchor x = 5
-    FocusFrame.totFrame.ManaBar:SetSize(77, 10)
-    local a, b, c, d, e = FocusFrame.totFrame.ManaBar:GetPoint()
-    FocusFrame.totFrame.ManaBar:SetPoint(a,b,c,-5,3)
-    FocusFrame.totFrame.ManaBar.ManaBarMask:SetWidth(130)
-    FocusFrame.totFrame.ManaBar.ManaBarMask:SetHeight(17)
-    --anchor x = -5
+
     local a, b, c, d, e = FocusFrame.totFrame.Portrait:GetPoint()
     FocusFrame.totFrame.Portrait:SetPoint(a, b, c, 6, -4)
+
     for i = 1, 4 do
         local memberFrame = PartyFrame["MemberFrame" .. i]
         if memberFrame and memberFrame.Portrait then
             memberFrame.Portrait:SetHeight(38)
         end
     end
-
-
-
-
 
     local a, b, c, d, e = TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:GetPoint()
     TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:SetPoint(a, b, c, d, -24)
@@ -624,6 +565,63 @@ function BBF.FixStupidBlizzPTRShit()
     TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:SetHeight(20)
 
     FocusFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:SetHeight(20)
+
+    -- HealthBarColorActive
+    if not BetterBlizzFramesDB.playerFrameOCDTextureBypass then
+        PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarArea.HealthBar.HealthBarMask:SetHeight(33)
+        PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar.ManaBarMask:SetPoint("TOPLEFT", PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar, "TOPLEFT", -2, 3)
+        PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar.ManaBarMask:SetHeight(17)
+        PlayerFrame.healthbar:SetHeight(21)
+        PlayerFrame.manabar:SetSize(125,12)
+        local p, r, rr, x, y = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar.RightText:GetPoint()
+        PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar.RightText:SetPoint(p, r, rr, -3, 0)
+        --local a, b, c, d, e = TargetFrame.TargetFrameContent.TargetFrameContentMain.Name:GetPoint()
+        --TargetFrame.TargetFrameContent.TargetFrameContentMain.Name:ClearAllPoints()
+        --TargetFrame.TargetFrameContent.TargetFrameContentMain.Name:SetPoint(a, b, c, d, 99)
+        TargetFrame.TargetFrameContent.TargetFrameContentMain.HealthBar.HealthBarMask:SetWidth(129)
+        TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar:SetSize(136, 10)
+        TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.ManaBarMask:SetSize(258, 16)
+        local point, relativeTo, relativePoint, xOffset, yOffset = TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar:GetPoint()
+        TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar:SetPoint(point, relativeTo, relativePoint, 9, yOffset)
+        local p, r, rr, x, y = TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.RightText:GetPoint()
+        TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.RightText:SetPoint(p, r, rr, -14, y)
+        local a, b, c, d, e = TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.LeftText:GetPoint()
+        TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.LeftText:SetPoint(a,b,c,3,e)
+        FocusFrame.TargetFrameContent.TargetFrameContentMain.HealthBar.HealthBarMask:SetWidth(129)
+        FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar:SetSize(136, 10)
+        FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.ManaBarMask:SetSize(258, 16)
+        local point, relativeTo, relativePoint, xOffset, yOffset = FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar:GetPoint()
+        FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar:SetPoint(point, relativeTo, relativePoint, 9, yOffset)
+        local p, r, rr, x, y = FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.RightText:GetPoint()
+        FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.RightText:SetPoint(p, r, rr, -14, y)
+        local a, b, c, d, e = FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.LeftText:GetPoint()
+        FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.LeftText:SetPoint(a,b,c,3,e)
+
+        local a, b, c, d, e = TargetFrame.TargetFrameContent.TargetFrameContentMain.LevelText:GetPoint()
+        TargetFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetPoint(a, b, c, d, -3)
+
+        local a, b, c, d, e = FocusFrame.TargetFrameContent.TargetFrameContentMain.LevelText:GetPoint()
+        FocusFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetPoint(a, b, c, d, -3)
+
+        local a, b, c, d, e = PlayerLevelText:GetPoint()
+        PlayerLevelText:SetPoint(a,b,c,d,-28)
+        local a, b, c, d, e = TargetFrame.totFrame.HealthBar:GetPoint()
+        TargetFrame.totFrame.HealthBar:SetPoint(a,b,c,-5,-5)
+        TargetFrame.totFrame.HealthBar:SetSize(71, 13)
+        TargetFrame.totFrame.ManaBar:SetSize(76, 8)
+        local a, b, c, d, e = TargetFrame.totFrame.ManaBar:GetPoint()
+        TargetFrame.totFrame.ManaBar:SetPoint(a,b,c,-5,3)
+        TargetFrame.totFrame.ManaBar.ManaBarMask:SetWidth(130)
+        TargetFrame.totFrame.ManaBar.ManaBarMask:SetHeight(17)
+        local a, b, c, d, e = FocusFrame.totFrame.HealthBar:GetPoint()
+        FocusFrame.totFrame.HealthBar:SetPoint(a,b,c,-5,-5)
+        FocusFrame.totFrame.HealthBar:SetSize(71, 13)
+        FocusFrame.totFrame.ManaBar:SetSize(77, 10)
+        local a, b, c, d, e = FocusFrame.totFrame.ManaBar:GetPoint()
+        FocusFrame.totFrame.ManaBar:SetPoint(a,b,c,-5,3)
+        FocusFrame.totFrame.ManaBar.ManaBarMask:SetWidth(130)
+        FocusFrame.totFrame.ManaBar.ManaBarMask:SetHeight(17)
+    end
 end
 
 local function TurnTestModesOff()

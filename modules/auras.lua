@@ -1361,6 +1361,40 @@ local function PersonalDebuffFrameFilterAndGrid(self)
                     -- Calculate the new offsets
                     xOffset = (currentCol - 1) * (auraSize + auraSpacingX);
                     yOffset = (currentRow - 1) * (auraSize + auraSpacingY);
+
+                    -- Important logic
+                    if isImportant then
+                        local borderFrame = BBF.auraBorders[auraFrame]
+                        auraFrame.isImportant = true
+                        if not auraFrame.ImportantGlow then
+                            auraFrame.ImportantGlow = auraFrame:CreateTexture(nil, "OVERLAY")
+                            if borderFrame then
+                                auraFrame.ImportantGlow:SetParent(borderFrame)
+                                auraFrame.ImportantGlow:SetPoint("TOPLEFT", auraFrame, "TOPLEFT", -15, 16)
+                                auraFrame.ImportantGlow:SetPoint("BOTTOMRIGHT", auraFrame, "BOTTOMRIGHT", 15, -6)
+                            else
+                                auraFrame.ImportantGlow:SetPoint("TOPLEFT", auraFrame, "TOPLEFT", -14, 13)
+                                auraFrame.ImportantGlow:SetPoint("BOTTOMRIGHT", auraFrame, "BOTTOMRIGHT", 13, -3)
+                            end
+                            --auraFrame.ImportantGlow:SetDrawLayer("OVERLAY", 7)
+                            auraFrame.ImportantGlow:SetAtlas("newplayertutorial-drag-slotgreen")
+                            auraFrame.ImportantGlow:SetDesaturated(true)
+                        end
+                        if borderFrame then
+                            auraFrame.ImportantGlow:SetParent(borderFrame)
+                        end
+                        if auraColor then
+                            auraFrame.ImportantGlow:SetVertexColor(auraColor.r, auraColor.g, auraColor.b)
+                        else
+                            auraFrame.ImportantGlow:SetVertexColor(0, 1, 0)
+                        end
+                        auraFrame.ImportantGlow:Show()
+                    else
+                        auraFrame.isImportant = false
+                        if auraFrame.ImportantGlow then
+                            auraFrame.ImportantGlow:Hide()
+                        end
+                    end
                 else
                     auraFrame:Hide();
                 end
