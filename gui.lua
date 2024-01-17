@@ -975,7 +975,7 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
                 --ColorPickerFrame:SetColorRGB(r, g, b)
                 ColorPickerFrame.previousValues = { r, g, b }
 
-                ColorPickerFrame.func = function()
+                ColorPickerFrame.swatchFunc = function()
                     r, g, b = ColorPickerFrame:GetColorRGB()
                     entryColors.text.r, entryColors.text.g, entryColors.text.b = r, g, b
                     SetTextColor(r, g, b)  -- Update text color when the color picker changes
