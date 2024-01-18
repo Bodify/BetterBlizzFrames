@@ -538,8 +538,8 @@ function BBF.FixStupidBlizzPTRShit()
     -- For god knows what reason PTR has a gap between Portrait and PlayerFrame. This fixes it + other gaps.
     --PlayerFrame.PlayerFrameContainer.PlayerPortrait:SetScale(1.02)
     PlayerFrame.PlayerFrameContainer.PlayerPortrait:SetSize(64,64)
-    PlayerFrame.PlayerFrameContainer.PlayerPortrait:SetPoint("TOPLEFT", PlayerFrame.PlayerFrameContainer, "TOPLEFT", 22, -17.5)
-    PlayerFrame.PlayerFrameContainer.PlayerPortraitMask:SetScale(1.02)
+    PlayerFrame.PlayerFrameContainer.PlayerPortrait:SetPoint("TOPLEFT", PlayerFrame.PlayerFrameContainer, "TOPLEFT", 22, -17)
+    PlayerFrame.PlayerFrameContainer.PlayerPortraitMask:SetScale(1.01)
     PlayerFrame.PlayerFrameContainer.PlayerPortraitMask:SetSize(64,64)
     PlayerFrame.PlayerFrameContainer.PlayerPortraitMask:SetPoint("TOPLEFT", PlayerFrame.PlayerFrameContainer, "TOPLEFT", 21, -16)
 
