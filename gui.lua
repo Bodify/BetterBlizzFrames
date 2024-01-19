@@ -992,6 +992,7 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
                     entryColors.text.r, entryColors.text.g, entryColors.text.b = r, g, b
                     SetTextColor(r, g, b)  -- Update text color if canceled
                     SetImportantBoxColor(r, g, b)
+                    BBF.RefreshAllAuraFrames()
                 end
                 ColorPickerFrame:ClearAllPoints()
                 ColorPickerFrame:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
@@ -1202,7 +1203,7 @@ local function guiGeneralTab()
 
     local playerFrameOCDTextureBypass = CreateCheckbox("playerFrameOCDTextureBypass", "OCD: Skip Bars", BetterBlizzFrames, nil, BBF.HideFrames)
     playerFrameOCDTextureBypass:SetPoint("LEFT", playerFrameOCD.text, "RIGHT", 0, 0)
-    CreateTooltip(playerFrameOCDTextureBypass, "If healthbars & manabars look weird enable this to skip\nadjusting them and only do portraits + reputation color")
+    CreateTooltip(playerFrameOCDTextureBypass, "If healthbars & manabars look weird enable this to skip\nadjusting them and only fix portraits + reputation color")
 
     playerFrameOCD:HookScript("OnClick", function(self)
         if self:GetChecked() then
@@ -2859,6 +2860,19 @@ local function guiFrameAuras()
     compactAuraTexture:SetPoint("LEFT", enlargeAuraTexture, "RIGHT", 8, 0)
     compactAuraTexture:SetSize(18,18)
     CreateTooltip(compactAuraTexture, "Compact Aura Checkboxes")
+
+    local importantAuraTexture = guiFrameAuras:CreateTexture(nil, "OVERLAY")
+    importantAuraTexture:SetAtlas("importantavailablequesticon")
+    importantAuraTexture:SetPoint("LEFT", compactAuraTexture, "RIGHT", 8.5, 0)
+    importantAuraTexture:SetSize(17,16)
+    CreateTooltip(importantAuraTexture, "Important Aura Checkboxes")
+
+    local pandemicAuraTexture = guiFrameAuras:CreateTexture(nil, "OVERLAY")
+    pandemicAuraTexture:SetAtlas("elementalstorm-boss-air")
+    pandemicAuraTexture:SetPoint("LEFT", importantAuraTexture, "RIGHT", 20, 1)
+    pandemicAuraTexture:SetSize(26,26)
+    CreateTooltip(pandemicAuraTexture, "Pandemic Aura Checkboxes")
+
 
 
 
