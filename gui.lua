@@ -739,6 +739,7 @@ local function CreateCheckbox(option, label, parent, cvarName, extraFunc)
             checkBox:SetAlpha(1)
         end
 
+        BBF.UpdateUserTargetSettings()
         if extraFunc and not BetterBlizzFramesDB.wasOnLoadingScreen then
             extraFunc(option, value)
         end
@@ -746,6 +747,7 @@ local function CreateCheckbox(option, label, parent, cvarName, extraFunc)
         if not BetterBlizzFramesDB.wasOnLoadingScreen then
             BBF.RefreshAllAuraFrames()
         end
+        --BBF.UpdateUserTargetSettings()
         --print("Checkbox option '" .. option .. "' changed to:", value)
     end
 
@@ -865,20 +867,24 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
         end
 
         -- Function to set the text color
-        local function SetTextColor(r, g, b)
+        local function SetTextColor(r, g, b, a)
+            r = r or 1
+            b = b or 0
+            g = g or 0.8196
+            a = 1
             if colorText then
-                if npc.flags.important then
-                    text:SetTextColor(r, g, b)
+                if npc.flags and npc.flags.important then
+                    text:SetTextColor(r, g, b, a)
                 else
-                    text:SetTextColor(1,1,0)
+                    text:SetTextColor(1, 1, 0, a)  -- Keeping alpha consistent
                 end
             else
-                text:SetTextColor(1,1,0)
+                text:SetTextColor(1, 1, 0, a)  -- Keeping alpha consistent
             end
         end
 
         -- Set initial text and background colors from entryColors
-        SetTextColor(entryColors.text.r, entryColors.text.g, entryColors.text.b)
+        SetTextColor(entryColors.text.r, entryColors.text.g, entryColors.text.b, 1)
 
         local deleteButton = CreateFrame("Button", nil, button, "UIPanelButtonTemplate")
         deleteButton:SetSize(20, 20)
@@ -942,17 +948,17 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
             checkBoxI:SetScript("OnClick", function(self)
                 npc.flags.important = self:GetChecked() -- Save the state in the npc flags
             end)
-            local function SetImportantBoxColor(r, g, b)
-                if npc.flags.important then
-                    checkBoxI.texture:SetVertexColor(r, g, b)
+            local function SetImportantBoxColor(r, g, b, a)
+                if npc.flags and npc.flags.important then
+                    checkBoxI.texture:SetVertexColor(r, g, b, a)
                 else
-                    checkBoxI.texture:SetVertexColor(0,1,0)
+                    checkBoxI.texture:SetVertexColor(0,1,0,1)
                 end
             end
             checkBoxI:HookScript("OnClick", function()
                 BBF.RefreshAllAuraFrames()
-                SetTextColor(entryColors.text.r, entryColors.text.g, entryColors.text.b)
-                SetImportantBoxColor(entryColors.text.r, entryColors.text.g, entryColors.text.b)
+                SetTextColor(entryColors.text.r, entryColors.text.g, entryColors.text.b, 1)
+                SetImportantBoxColor(entryColors.text.r, entryColors.text.g, entryColors.text.b, entryColors.text.a)
             end)
 
             -- Initialize state from npc flags
@@ -960,7 +966,7 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
                 checkBoxI:SetChecked(true)
             end
 
-            SetImportantBoxColor(entryColors.text.r, entryColors.text.g, entryColors.text.b)
+            SetImportantBoxColor(entryColors.text.r, entryColors.text.g, entryColors.text.b, entryColors.text.a)
 
             local colorPickerButton = CreateFrame("Button", nil, button, "UIPanelButtonTemplate")
             colorPickerButton:SetSize(20, 18)
@@ -970,33 +976,43 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
 
             -- Function to open the color picker
             local function OpenColorPicker()
-                local r, g, b = entryColors.text.r, entryColors.text.g, entryColors.text.b
+                local colorData = entryColors.text or {}
+                local r, g, b = colorData.r or 1, colorData.g or 1, colorData.b or 1
+                local a = colorData.a or 1 -- Default alpha to 1 if not present
 
-                --ColorPickerFrame:SetColorRGB(r, g, b)
-                ColorPickerFrame.previousValues = { r, g, b }
+                local function updateColors()
+                    entryColors.text.r, entryColors.text.g, entryColors.text.b, entryColors.text.a = r, g, b, a
+                    SetTextColor(r, g, b, a)  -- Update text color
+                    SetImportantBoxColor(r, g, b, a)  -- Update other elements as needed
+                    BBF.RefreshAllAuraFrames()  -- Refresh frames or elements that depend on these colors
+                end
 
-                ColorPickerFrame.swatchFunc = function()
+                local function swatchFunc()
                     r, g, b = ColorPickerFrame:GetColorRGB()
-                    entryColors.text.r, entryColors.text.g, entryColors.text.b = r, g, b
-                    SetTextColor(r, g, b)  -- Update text color when the color picker changes
-                    SetImportantBoxColor(r, g, b)
-                    BBF.RefreshAllAuraFrames()
-
-                    -- Update the npc entry in listData with the new color
-                    npc.entryColors.text.r, npc.entryColors.text.g, npc.entryColors.text.b = r, g, b
-                    listData[index] = npc  -- Update the entry in the listData
+                    updateColors()  -- Update colors based on the new selection
                 end
 
-                ColorPickerFrame.cancelFunc = function()
-                    r, g, b = unpack(ColorPickerFrame.previousValues)
-                    entryColors.text.r, entryColors.text.g, entryColors.text.b = r, g, b
-                    SetTextColor(r, g, b)  -- Update text color if canceled
-                    SetImportantBoxColor(r, g, b)
-                    BBF.RefreshAllAuraFrames()
+                local function opacityFunc()
+                    a = ColorPickerFrame:GetColorAlpha()
+                    updateColors()  -- Update colors including the alpha value
                 end
-                ColorPickerFrame:ClearAllPoints()
-                ColorPickerFrame:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
-                ColorPickerFrame:Show()
+
+                local function cancelFunc(previousValues)
+                    -- Revert to previous values if the selection is cancelled
+                    if previousValues then
+                        r, g, b, a = previousValues.r, previousValues.g, previousValues.b, previousValues.a
+                        updateColors()  -- Reapply the previous colors
+                    end
+                end
+
+                -- Store the initial values before showing the color picker
+                ColorPickerFrame.previousValues = { r = r, g = g, b = b, a = a }
+
+                -- Setup and show the color picker with the necessary callbacks and initial values
+                ColorPickerFrame:SetupColorPickerAndShow({
+                    r = r, g = g, b = b, opacity = a, hasOpacity = true,
+                    swatchFunc = swatchFunc, opacityFunc = opacityFunc, cancelFunc = cancelFunc
+                })
             end
 
             colorPickerButton:SetScript("OnClick", OpenColorPicker)
@@ -1152,7 +1168,7 @@ local function guiGeneralTab()
     bgImg:SetVertexColor(0,0,0)
 
     local addonNameText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
-    addonNameText:SetPoint("TOPLEFT", mainGuiAnchor, "TOPLEFT", -20, 15)
+    addonNameText:SetPoint("TOPLEFT", mainGuiAnchor, "TOPLEFT", -20, 17)
     addonNameText:SetText("BetterBlizzFrames")
     local addonNameIcon = BetterBlizzFrames:CreateTexture(nil, "ARTWORK")
     addonNameIcon:SetAtlas("gmchat-icon-blizz")
@@ -1167,7 +1183,7 @@ local function guiGeneralTab()
     ----------------------
     -- "General:" text
     local settingsText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    settingsText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 0, 5)
+    settingsText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 0, 8)
     settingsText:SetText("General settings")
     local generalSettingsIcon = BetterBlizzFrames:CreateTexture(nil, "ARTWORK")
     generalSettingsIcon:SetAtlas("optionsicon-brown")
@@ -1190,12 +1206,45 @@ local function guiGeneralTab()
 
     local hideBossFrames = CreateCheckbox("hideBossFrames", "Hide Boss Frames", BetterBlizzFrames, nil, BBF.HideArenaFrames)
     hideBossFrames:SetPoint("TOPLEFT", hideArenaFrames, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltip(hideBossFrames, "Hide the Blizzard Boss Frames that are underneath the minimap.")
+
+    local hideBossFramesParty = CreateCheckbox("hideBossFramesParty", "Party", BetterBlizzFrames, nil, BBF.HideArenaFrames)
+    hideBossFramesParty:SetPoint("LEFT", hideBossFrames.text, "RIGHT", 0, 0)
+    CreateTooltip(hideBossFramesParty, "Hide Boss Frames in Party", "ANCHOR_LEFT")
+
+    local hideBossFramesRaid = CreateCheckbox("hideBossFramesRaid", "Raid", BetterBlizzFrames, nil, BBF.HideArenaFrames)
+    hideBossFramesRaid:SetPoint("LEFT", hideBossFramesParty.text, "RIGHT", 0, 0)
+    CreateTooltip(hideBossFramesRaid, "Hide Boss Frames in Raid", "ANCHOR_LEFT")
+
     hideBossFrames:HookScript("OnClick", function(self)
-        if not self:GetChecked() then
+        if self:GetChecked() then
+            BetterBlizzFramesDB.overShieldsCompact = true
+            BetterBlizzFramesDB.hideBossFramesParty = true
+            hideBossFramesParty:SetAlpha(1)
+            hideBossFramesParty:Enable()
+            hideBossFramesParty:SetChecked(true)
+            hideBossFramesRaid:SetAlpha(1)
+            hideBossFramesRaid:Enable()
+            hideBossFramesRaid:SetChecked(true)
+        else
+            BetterBlizzFramesDB.overShieldsCompact = false
+            BetterBlizzFramesDB.hideBossFramesParty = false
+            hideBossFramesParty:SetAlpha(0)
+            hideBossFramesParty:Disable()
+            hideBossFramesParty:SetChecked(false)
+            hideBossFramesRaid:SetAlpha(0)
+            hideBossFramesRaid:Disable()
+            hideBossFramesRaid:SetChecked(false)
             StaticPopup_Show("BBF_CONFIRM_RELOAD")
         end
     end)
-    CreateTooltip(hideBossFrames, "Hide the Blizzard Boss Frames that are underneath the minimap.")
+
+    if not BetterBlizzFramesDB.hideBossFrames then
+        hideBossFramesParty:SetAlpha(0)
+        hideBossFramesParty:Disable()
+        hideBossFramesRaid:SetAlpha(0)
+        hideBossFramesRaid:Disable()
+    end
 
     local playerFrameOCD = CreateCheckbox("playerFrameOCD", "OCD Tweaks", BetterBlizzFrames, nil, BBF.FixStupidBlizzPTRShit)
     playerFrameOCD:SetPoint("TOPLEFT", hideBossFrames, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
@@ -1543,7 +1592,7 @@ local function guiGeneralTab()
     local hideTargetToTName = CreateCheckbox("hideTargetToTName", "Hide Name", BetterBlizzFrames, nil, BBF.AllCaller)
     hideTargetToTName:SetPoint("TOPLEFT", targetToTFrameText, "BOTTOMLEFT", -4, pixelsOnFirstBox)
 
-    local hideTargetToTDebuffs = CreateCheckbox("hideTargetToTDebuffs", "Hide ToT Debuffs", BetterBlizzFrames, nil, BBF.HideToTDebuffs)
+    local hideTargetToTDebuffs = CreateCheckbox("hideTargetToTDebuffs", "Hide ToT Debuffs", BetterBlizzFrames, nil, BBF.HideFrames)
     hideTargetToTDebuffs:SetPoint("TOPLEFT", hideTargetToTName, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(hideTargetToTDebuffs, "Hide the 4 small debuff icons to the right of ToT frame.")
 
@@ -1578,23 +1627,23 @@ local function guiGeneralTab()
     chatFrameFilters:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 250, -495)
     chatFrameFilters:SetText("Filters")
 
-    local filterGladiusSpam = CreateCheckbox("filterGladiusSpam", "Gladius Spam", BetterBlizzFrames)
+    local filterGladiusSpam = CreateCheckbox("filterGladiusSpam", "Gladius Spam", BetterBlizzFrames, nil, BBF.ChatFilterCaller)
     filterGladiusSpam:SetPoint("TOPLEFT", hideChatButtons, "BOTTOMLEFT", 0, -10)
     CreateTooltip(filterGladiusSpam, "Filter out Gladius \"LOW HEALTH\" spam from chat.")
 
-    local filterNpcArenaSpam = CreateCheckbox("filterNpcArenaSpam", "Arena Npc Talk", BetterBlizzFrames)
+    local filterNpcArenaSpam = CreateCheckbox("filterNpcArenaSpam", "Arena Npc Talk", BetterBlizzFrames, nil, BBF.ChatFilterCaller)
     filterNpcArenaSpam:SetPoint("LEFT", filterGladiusSpam.text, "RIGHT", 0, 0)
     CreateTooltip(filterNpcArenaSpam, "Filter out npc chat messages like \"Get in there and fight, stop hiding!\"\nfrom chat during arena.")
 
-    local filterTalentSpam = CreateCheckbox("filterTalentSpam", "Talent Spam", BetterBlizzFrames)
+    local filterTalentSpam = CreateCheckbox("filterTalentSpam", "Talent Spam", BetterBlizzFrames, nil, BBF.ChatFilterCaller)
     filterTalentSpam:SetPoint("TOPLEFT", filterGladiusSpam, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(filterTalentSpam, "Filter out \"You have learned/unlearned\" spam from chat.\nEspecially annoying during respec.")
 
-    local filterEmoteSpam = CreateCheckbox("filterEmoteSpam", "Emote Spam", BetterBlizzFrames)
+    local filterEmoteSpam = CreateCheckbox("filterEmoteSpam", "Emote Spam", BetterBlizzFrames, nil, BBF.ChatFilterCaller)
     filterEmoteSpam:SetPoint("TOPLEFT", filterTalentSpam, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(filterEmoteSpam, "Filter out \"yells at his/her team members.\" and\n\"makes some strange gestures.\" from chat.")
 
-    local filterSystemMessages = CreateCheckbox("filterSystemMessages", "System Messages", BetterBlizzFrames)
+    local filterSystemMessages = CreateCheckbox("filterSystemMessages", "System Messages", BetterBlizzFrames, nil, BBF.ChatFilterCaller)
     filterSystemMessages:SetPoint("TOPLEFT", filterNpcArenaSpam, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(filterSystemMessages, "Filter out a few excessive system messages. Some examples:\n\"You have joined the queue for Arena Skirmish\"\n\"Your group has been disbanded.\"\n\"You have been awarded x currency\"\n\"You are in both a party and an instance group.\"\n\nFull lists in modules\\chatFrame.lua")
 
@@ -1689,7 +1738,7 @@ local function guiGeneralTab()
     local hideFocusToTName = CreateCheckbox("hideFocusToTName", "Hide Name", BetterBlizzFrames, nil, BBF.AllCaller)
     hideFocusToTName:SetPoint("TOPLEFT", focusToTFrameText, "BOTTOMLEFT", -4, pixelsOnFirstBox)
 
-    local hideFocusToTDebuffs = CreateCheckbox("hideFocusToTDebuffs", "Hide FocusToT Debuffs", BetterBlizzFrames, nil, BBF.HideToTDebuffs)
+    local hideFocusToTDebuffs = CreateCheckbox("hideFocusToTDebuffs", "Hide FocusToT Debuffs", BetterBlizzFrames, nil, BBF.HideFrames)
     hideFocusToTDebuffs:SetPoint("TOPLEFT", hideFocusToTName, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(hideFocusToTDebuffs, "Hide the 4 small debuff icons to the right of ToT frame.")
 
@@ -1792,6 +1841,25 @@ local function guiGeneralTab()
     local hideLevelText = CreateCheckbox("hideLevelText", "Hide Level 70 Text", BetterBlizzFrames, nil, BBF.HideFrames)
     hideLevelText:SetPoint("TOPLEFT", hideCombatGlow, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(hideLevelText, "Hide the level text for Player, Target & Focus frames if they are level 70")
+
+    local hideLevelTextAlways = CreateCheckbox("hideLevelTextAlways", "Always", BetterBlizzFrames, nil, BBF.HideFrames)
+    hideLevelTextAlways:SetPoint("LEFT", hideLevelText.Text, "RIGHT", 0, 0)
+    CreateTooltip(hideLevelTextAlways, "Always hide the level text.")
+
+    hideLevelText:SetScript("OnClick", function(self)
+        if self:GetChecked() then
+            hideLevelTextAlways:Enable()
+            hideLevelTextAlways:Show()
+        else
+            hideLevelTextAlways:Disable()
+            hideLevelTextAlways:Hide()
+        end
+    end)
+
+    if not BetterBlizzFramesDB.hideLevelText then
+        hideLevelTextAlways:Hide()
+        hideLevelTextAlways:Disable()
+    end
 
     local hidePvpIcon = CreateCheckbox("hidePvpIcon", "Hide PvP Icon", BetterBlizzFrames, nil, BBF.HideFrames)
     hidePvpIcon:SetPoint("TOPLEFT", hideLevelText, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
@@ -2849,28 +2917,32 @@ local function guiFrameAuras()
     whitelistText:SetPoint("BOTTOM", auraWhitelistFrame, "TOP", -60, -5)
     whitelistText:SetText("Whitelist")
 
-    local enlargeAuraTexture = guiFrameAuras:CreateTexture(nil, "OVERLAY")
+    local enlargeAuraTexture = contentFrame:CreateTexture(nil, "OVERLAY")
     enlargeAuraTexture:SetAtlas("ui-hud-minimap-zoom-in")
     enlargeAuraTexture:SetPoint("LEFT", whitelistText, "RIGHT", 70, -2)
     enlargeAuraTexture:SetSize(18,18)
     CreateTooltip(enlargeAuraTexture, "Enlarged Aura Checkboxes")
 
-    local compactAuraTexture = guiFrameAuras:CreateTexture(nil, "OVERLAY")
+    local compactAuraTexture = contentFrame:CreateTexture(nil, "OVERLAY")
     compactAuraTexture:SetAtlas("ui-hud-minimap-zoom-out")
     compactAuraTexture:SetPoint("LEFT", enlargeAuraTexture, "RIGHT", 8, 0)
     compactAuraTexture:SetSize(18,18)
     CreateTooltip(compactAuraTexture, "Compact Aura Checkboxes")
 
-    local importantAuraTexture = guiFrameAuras:CreateTexture(nil, "OVERLAY")
+    local importantAuraTexture = contentFrame:CreateTexture(nil, "OVERLAY")
     importantAuraTexture:SetAtlas("importantavailablequesticon")
     importantAuraTexture:SetPoint("LEFT", compactAuraTexture, "RIGHT", 8.5, 0)
     importantAuraTexture:SetSize(17,16)
+    importantAuraTexture:SetDesaturated(true)
+    importantAuraTexture:SetVertexColor(0,1,0)
     CreateTooltip(importantAuraTexture, "Important Aura Checkboxes")
 
-    local pandemicAuraTexture = guiFrameAuras:CreateTexture(nil, "OVERLAY")
+    local pandemicAuraTexture = contentFrame:CreateTexture(nil, "OVERLAY")
     pandemicAuraTexture:SetAtlas("elementalstorm-boss-air")
     pandemicAuraTexture:SetPoint("LEFT", importantAuraTexture, "RIGHT", 20, 1)
     pandemicAuraTexture:SetSize(26,26)
+    pandemicAuraTexture:SetDesaturated(true)
+    pandemicAuraTexture:SetVertexColor(1,0,0)
     CreateTooltip(pandemicAuraTexture, "Pandemic Aura Checkboxes")
 
 
@@ -3372,7 +3444,7 @@ end
 function BBF.InitializeOptions()
     if not BetterBlizzFrames then
         BetterBlizzFrames = CreateFrame("Frame")
-        BetterBlizzFrames.name = "BetterBlizzFrames"
+        BetterBlizzFrames.name = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames"
         InterfaceOptions_AddCategory(BetterBlizzFrames)
 
         guiGeneralTab()

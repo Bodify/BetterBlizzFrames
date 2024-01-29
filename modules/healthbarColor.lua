@@ -2,7 +2,14 @@
 BetterBlizzFramesDB = BetterBlizzFramesDB or {}
 BBF = BBF or {}
 
+local UnitIsFriend = UnitIsFriend
+local UnitIsEnemy = UnitIsEnemy
+local UnitIsPlayer = UnitIsPlayer
+local UnitClass = UnitClass
+
 local healthbarsHooked = nil
+local classColorsOn
+local colorPetAfterOwner
 
 local function getUnitReaction(unit)
     if UnitIsFriend("player", unit) then
@@ -20,7 +27,7 @@ local function getUnitColor(unit)
         if color then
             return {r = color.r, g = color.g, b = color.b}
         end
-    elseif BetterBlizzFramesDB.colorPetAfterOwner and UnitIsUnit(unit, "pet") then
+    elseif colorPetAfterOwner and UnitIsUnit(unit, "pet") then
         -- Check if the unit is the player's pet and the setting is enabled
         local _, playerClass = UnitClass("player")
         local color = RAID_CLASS_COLORS[playerClass]
@@ -41,20 +48,24 @@ local function getUnitColor(unit)
 end
 
 local function updateFrameColorToggleVer(frame, unit)
-    if BetterBlizzFramesDB.classColorFrames then
-        local color = UnitIsPlayer(unit) and RAID_CLASS_COLORS[select(2, UnitClass(unit))] or getUnitColor(unit)
+    if classColorsOn then
+        --local color = UnitIsPlayer(unit) and RAID_CLASS_COLORS[select(2, UnitClass(unit))] or getUnitColor(unit) --bad
+        local color = getUnitColor(unit)
         if color then
             frame:SetStatusBarDesaturated(true)
             frame:SetStatusBarColor(color.r, color.g, color.b)
         end
-    else
-        frame:SetStatusBarDesaturated(false)
-        frame:SetStatusBarColor(0,1,0)
     end
 end
 
+local function resetFrameColor(frame, unit)
+    frame:SetStatusBarDesaturated(false)
+    frame:SetStatusBarColor(0,1,0)
+end
+
 local function UpdateHealthColor(frame, unit)
-    local color = UnitIsPlayer(unit) and RAID_CLASS_COLORS[select(2, UnitClass(unit))] or getUnitColor(unit)
+    --local color = UnitIsPlayer(unit) and RAID_CLASS_COLORS[select(2, UnitClass(unit))] or getUnitColor(unit)
+    local color = getUnitColor(unit)
     if color then
         frame:SetStatusBarDesaturated(true)
         frame:SetStatusBarColor(color.r, color.g, color.b)
@@ -66,7 +77,9 @@ function BBF.UpdateToTColor()
 end
 
 function BBF.UpdateFrames()
-    if BetterBlizzFramesDB.classColorFrames then
+    classColorsOn = BetterBlizzFramesDB.classColorFrames
+    colorPetAfterOwner = BetterBlizzFramesDB.colorPetAfterOwner
+    if classColorsOn then
         BBF.HookHealthbarColors()
         if UnitExists("player") then updateFrameColorToggleVer(PlayerFrame.healthbar, "player") end
         if UnitExists("target") then updateFrameColorToggleVer(TargetFrame.TargetFrameContent.TargetFrameContentMain.HealthBar, "target") end
@@ -77,6 +90,16 @@ function BBF.UpdateFrames()
         if UnitExists("party2") then updateFrameColorToggleVer(PartyFrame.MemberFrame2.HealthBar, "party2") end
         if UnitExists("party3") then updateFrameColorToggleVer(PartyFrame.MemberFrame3.HealthBar, "party3") end
         if UnitExists("party4") then updateFrameColorToggleVer(PartyFrame.MemberFrame4.HealthBar, "party4") end
+    else
+        if UnitExists("player") then resetFrameColor(PlayerFrame.healthbar, "player") end
+        if UnitExists("target") then resetFrameColor(TargetFrame.TargetFrameContent.TargetFrameContentMain.HealthBar, "target") end
+        if UnitExists("focus") then resetFrameColor(FocusFrame.TargetFrameContent.TargetFrameContentMain.HealthBar, "focus") end
+        if UnitExists("targettarget") then resetFrameColor(TargetFrameToT.HealthBar, "targettarget") end
+        if UnitExists("focustarget") then resetFrameColor(FocusFrameToT.HealthBar, "focustarget") end
+        if UnitExists("party1") then resetFrameColor(PartyFrame.MemberFrame1.HealthBar, "party1") end
+        if UnitExists("party2") then resetFrameColor(PartyFrame.MemberFrame2.HealthBar, "party2") end
+        if UnitExists("party3") then resetFrameColor(PartyFrame.MemberFrame3.HealthBar, "party3") end
+        if UnitExists("party4") then resetFrameColor(PartyFrame.MemberFrame4.HealthBar, "party4") end
     end
     if BetterBlizzFramesDB.colorPetAfterOwner then
         if UnitExists("pet") then updateFrameColorToggleVer(PetFrame.healthbar, "pet") end
@@ -108,30 +131,41 @@ function BBF.ResetClassColorReputation(frame, unit)
 end
 
 function BBF.HookHealthbarColors()
-    if not healthbarsHooked and BetterBlizzFramesDB.classColorFrames then
-        hooksecurefunc("UnitFrameHealthBar_RefreshUpdateEvent", function(self)
+    if not healthbarsHooked and classColorsOn then
+--[[
+        hooksecurefunc("UnitFrameHealthBar_RefreshUpdateEvent", function(self) --pet frames only?
             if self.unit then
-                BBF.UpdateFrameColor(self, self.unit)
-                UpdateHealthColor(TargetFrameToT.HealthBar, "targettarget")
-                UpdateHealthColor(FocusFrameToT.HealthBar, "focustarget")
+                print(self:GetName())
+                print(self.unit)
+                --UpdateHealthColor(self, self.unit)
+                --UpdateHealthColor(TargetFrameToT.HealthBar, "targettarget")
+                --UpdateHealthColor(FocusFrameToT.HealthBar, "focustarget")
             end
         end)
+]]
+
 
         hooksecurefunc("UnitFrameHealthBar_Update", function(self, unit)
             if unit then
-                BBF.UpdateFrameColor(self, unit)
+                UpdateHealthColor(self, unit)
                 UpdateHealthColor(TargetFrameToT.HealthBar, "targettarget")
                 UpdateHealthColor(FocusFrameToT.HealthBar, "focustarget")
             end
         end)
 
+--[[
         hooksecurefunc("HealthBar_OnValueChanged", function(self)
             if self.unit then
-                BBF.UpdateFrameColor(self, self.unit)
-                UpdateHealthColor(TargetFrameToT.HealthBar, "targettarget")
-                UpdateHealthColor(FocusFrameToT.HealthBar, "focustarget")
+                UpdateHealthColor(self, self.unit)
+                print(self:GetName())
+                print(self.unit)
+                --UpdateHealthColor(TargetFrameToT.HealthBar, "targettarget")
+                --UpdateHealthColor(FocusFrameToT.HealthBar, "focustarget")
             end
         end)
+
+]]
+
 
         healthbarsHooked = true
     end

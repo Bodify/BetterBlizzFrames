@@ -9,9 +9,11 @@ local hookedChatButtons = false
 local changedResource = false
 local originalResourceParent
 local originalBossFrameParent
+local bossFrameHooked
 
 function BBF.HideFrames()
     if BetterBlizzFramesDB.hasCheckedUi then
+        local playerClass, englishClass = UnitClass("player")
         --Hide group indicator on player unitframe
         local groupIndicatorAlpha = BetterBlizzFramesDB.hideGroupIndicator and 0 or 1
         PlayerFrameGroupIndicatorMiddle:SetAlpha(groupIndicatorAlpha)
@@ -38,11 +40,29 @@ function BBF.HideFrames()
             PlayerPVPTimerText:SetParent(PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual)
         end
 
-        if not originalBossFrameParent then
-            originalBossFrameParent = BossTargetFrameContainer:GetParent()
-        end
         if BetterBlizzFramesDB.hideBossFrames then
+            if not originalBossFrameParent then
+                originalBossFrameParent = BossTargetFrameContainer:GetParent()
+            end
             BossTargetFrameContainer:SetParent(hiddenFrame)
+            if not bossFrameHooked then
+                hiddenFrame:RegisterEvent("ENCOUNTER_START")
+                hiddenFrame:RegisterEvent("ENCOUNTER_END")
+                hiddenFrame:RegisterEvent("GROUP_ROSTER_UPDATE")
+                hiddenFrame:SetScript("OnEvent", function()
+                    local inInstance, instanceType = IsInInstance()
+
+                    if BetterBlizzFramesDB.hideBossFramesParty and inInstance and instanceType == "party" then
+                        BossTargetFrameContainer:SetParent(hiddenFrame)
+                    elseif BetterBlizzFramesDB.hideBossFramesRaid and inInstance and instanceType == "raid" then
+                        BossTargetFrameContainer:SetParent(hiddenFrame)
+                    else
+                        BossTargetFrameContainer:SetParent(originalBossFrameParent)
+                    end
+                end)
+
+                bossFrameHooked = true
+            end
         else
             BossTargetFrameContainer:SetParent(originalBossFrameParent)
         end
@@ -111,16 +131,22 @@ function BBF.HideFrames()
 
         -- Hide Player level text
         if BetterBlizzFramesDB.hideLevelText then
-            if UnitLevel("player") == 70 then
+            if BetterBlizzFramesDB.hideLevelTextAlways then
                 PlayerLevelText:SetParent(hiddenFrame)
-            end
-            if UnitLevel("target") == 70 then
-                --TargetFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetParent(hiddenFrame)
                 TargetFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetAlpha(0)
-            end
-            if UnitLevel("focus") == 70 then
-                --FocusFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetParent(hiddenFrame)
                 FocusFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetAlpha(0)
+            else
+                if UnitLevel("player") == 70 then
+                    PlayerLevelText:SetParent(hiddenFrame)
+                end
+                if UnitLevel("target") == 70 then
+                    --TargetFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetParent(hiddenFrame)
+                    TargetFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetAlpha(0)
+                end
+                if UnitLevel("focus") == 70 then
+                    --FocusFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetParent(hiddenFrame)
+                    FocusFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetAlpha(0)
+                end
             end
         else
             PlayerLevelText:SetParent(PlayerFrame.PlayerFrameContent.PlayerFrameContentMain)
@@ -208,50 +234,62 @@ function BBF.HideFrames()
         end
 
         if BetterBlizzFramesDB.hidePlayerPower then
-            if WarlockPowerFrame then
+            if WarlockPowerFrame and englishClass == "WARLOCK" then
                 originalResourceParent = WarlockPowerFrame:GetParent()
                 WarlockPowerFrame:SetParent(hiddenFrame)
             end
-            if RogueComboPointBarFrame then
+            if RogueComboPointBarFrame and englishClass == "ROGUE" then
                 originalResourceParent = RogueComboPointBarFrame:GetParent()
                 RogueComboPointBarFrame:SetParent(hiddenFrame)
             end
-            if DruidComboPointBarFrame then
-                originalResourceParent = DruidComboPointBarFrame:GetParent()
-                DruidComboPointBarFrame:SetParent(hiddenFrame)
+            if DruidComboPointBarFrame and englishClass == "DRUID" then
+                DruidComboPointBarFrame:SetAlpha(0)
             end
-            if PaladinPowerBarFrame then
+            if PaladinPowerBarFrame and englishClass == "PALADIN" then
                 originalResourceParent = PaladinPowerBarFrame:GetParent()
                 PaladinPowerBarFrame:SetParent(hiddenFrame)
             end
-            if RuneFrame then
+            if RuneFrame and englishClass == "DEATHKNIGHT" then
                 originalResourceParent = RuneFrame:GetParent()
                 RuneFrame:SetParent(hiddenFrame)
             end
-            if EssencePlayerFrame then
+            if EssencePlayerFrame and englishClass == "EVOKER" then
                 originalResourceParent = EssencePlayerFrame:GetParent()
                 EssencePlayerFrame:SetParent(hiddenFrame)
+            end
+            if MonkHarmonyBarFrame and englishClass == "MONK" then
+                originalResourceParent = MonkHarmonyBarFrame:GetParent()
+                MonkHarmonyBarFrame:SetParent(hiddenFrame)
+            end
+            if MageArcaneChargesFrame and englishClass == "MAGE" then
+                MageArcaneChargesFrame:SetAlpha(0)
             end
             changedResource = true
         else
             if changedResource then
-                if WarlockPowerFrame then
+                if WarlockPowerFrame and originalResourceParent and englishClass == "WARLOCK" then
                     WarlockPowerFrame:SetParent(originalResourceParent)
                 end
-                if RogueComboPointBarFrame then
+                if RogueComboPointBarFrame and originalResourceParent and englishClass == "ROGUE" then
                     RogueComboPointBarFrame:SetParent(originalResourceParent)
                 end
-                if DruidComboPointBarFrame then
-                    DruidComboPointBarFrame:SetParent(originalResourceParent)
+                if DruidComboPointBarFrame and englishClass == "DRUID" then
+                    DruidComboPointBarFrame:SetAlpha(1)
                 end
-                if PaladinPowerBarFrame then
+                if PaladinPowerBarFrame and originalResourceParent and englishClass == "PALADIN" then
                     PaladinPowerBarFrame:SetParent(originalResourceParent)
                 end
-                if RuneFrame then
+                if RuneFrame and originalResourceParent and englishClass == "DEATHKNIGHT" then
                     RuneFrame:SetParent(originalResourceParent)
                 end
-                if EssencePlayerFrame then
+                if EssencePlayerFrame and originalResourceParent and englishClass == "EVOKER" then
                     EssencePlayerFrame:SetParent(originalResourceParent)
+                end
+                if MonkHarmonyBarFrame and originalResourceParent and englishClass == "MONK" then
+                    MonkHarmonyBarFrame:SetParent(originalResourceParent)
+                end
+                if MageArcaneChargesFrame and englishClass == "MAGE" then
+                    MageArcaneChargesFrame:SetAlpha(1)
                 end
             end
         end
@@ -355,10 +393,16 @@ function BBF.HideFrames()
 end
 
 local function UpdateLevelTextVisibility(unitFrame, unit)
-    if BetterBlizzFramesDB.hideLevelText and UnitLevel(unit) == 70 then
-        unitFrame.LevelText:SetAlpha(0)
-    else
-        unitFrame.LevelText:SetAlpha(1)
+    if BetterBlizzFramesDB.hideLevelText then
+        if BetterBlizzFramesDB.hideLevelTextAlways then
+            unitFrame.LevelText:SetAlpha(0)
+            return
+        end
+        if UnitLevel(unit) == 70 then
+            unitFrame.LevelText:SetAlpha(0)
+        else
+            unitFrame.LevelText:SetAlpha(1)
+        end
     end
 end
 

@@ -11,6 +11,11 @@ end
 
 local BlizzardShouldShowDebuffs = TargetFrame.ShouldShowDebuffs
 
+local playerBuffsHooked
+local playerDebuffsHooked
+local targetAurasHooked
+local targetCastbarsHooked
+
 local ipairs = ipairs
 local math_ceil = math.ceil
 local table_insert = table.insert
@@ -18,11 +23,126 @@ local table_sort = table.sort
 local math_max = math.max
 local print = print
 
+local printSpellId
+local betterTargetPurgeGlow
+local betterFocusPurgeGlow
+local userEnlargedAuraSize = 1
+local userCompactedAuraSize = 1
+local auraSpacingX = 4
+local auraSpacingY = 4
+local aurasPerRow = 5
+local targetAndFocusAuraOffsetY = 0
+local baseOffsetX = 25
+local baseOffsetY = 12.5
+local auraScale = 1
+local targetImportantAuraGlow
+local targetdeBuffPandemicGlow
+local targetEnlargeAura
+local targetCompactAura
+local focusImportantAuraGlow
+local focusdeBuffPandemicGlow
+local focusEnlargeAura
+local focusCompactAura
+local auraTypeGap = 1
+local targetAndFocusSmallAuraScale = 1.4
+local auraFilteringOn
+local enlargedTextureAdjustment = 10
+local compactedTextureAdjustment = 10
+local displayDispelGlowAlways
+local customLargeSmallAuraSorting
+local shouldAdjustCastbar
+local targetCastBarXPos = 0
+local targetCastBarYPos = 0
+local focusCastBarXPos = 0
+local focusCastBarYPos = 0
+local targetToTCastbarAdjustment
+local targetAndFocusAuraScale = 1
+local targetAndFocusVerticalGap = 4
+local targetDetachCastbar
+local focusToTCastbarAdjustment = 0
+local targetStaticCastbar
+local showHiddenAurasIcon
+local playerAuraSpacingX = 0
+local playerAuraSpacingY = 0
+local playerBuffFilterOn
+local playerDebuffFilterOn
+local printAuraSpellIds
+local playerAuraImportantGlow
+local focusStaticCastbar
+local focusDetachCastbar
+local darkModeUi
+local darkModeUiAura
+local darkModeAurasOn
+local darkModeColor = 1
+
+function BBF.UpdateUserAuraSettings()
+    printSpellId = printAuraSpellIds
+    betterTargetPurgeGlow = BetterBlizzFramesDB.targetBuffPurgeGlow
+    betterFocusPurgeGlow = BetterBlizzFramesDB.focusBuffPurgeGlow
+    userEnlargedAuraSize = BetterBlizzFramesDB.enlargedAuraSize
+    userCompactedAuraSize = BetterBlizzFramesDB.compactedAuraSize
+    auraSpacingX = BetterBlizzFramesDB.targetAndFocusHorizontalGap
+    auraSpacingY = targetAndFocusVerticalGap
+    aurasPerRow = BetterBlizzFramesDB.targetAndFocusAurasPerRow
+    targetAndFocusAuraOffsetY = BetterBlizzFramesDB.targetAndFocusAuraOffsetY
+    baseOffsetX = 25 + BetterBlizzFramesDB.targetAndFocusAuraOffsetX
+    baseOffsetY = 12.5 + BetterBlizzFramesDB.targetAndFocusAuraOffsetY
+    auraScale = BetterBlizzFramesDB.targetAndFocusAuraScale
+    targetImportantAuraGlow = BetterBlizzFramesDB.targetImportantAuraGlow
+    targetdeBuffPandemicGlow = BetterBlizzFramesDB.targetdeBuffPandemicGlow
+    targetEnlargeAura = BetterBlizzFramesDB.targetEnlargeAura
+    targetCompactAura = BetterBlizzFramesDB.targetCompactAura
+    focusImportantAuraGlow = BetterBlizzFramesDB.focusImportantAuraGlow
+    focusdeBuffPandemicGlow = BetterBlizzFramesDB.focusdeBuffPandemicGlow
+    focusEnlargeAura = BetterBlizzFramesDB.focusEnlargeAura
+    focusCompactAura = BetterBlizzFramesDB.focusCompactAura
+    auraTypeGap = BetterBlizzFramesDB.auraTypeGap
+    targetAndFocusSmallAuraScale = BetterBlizzFramesDB.targetAndFocusSmallAuraScale
+    auraFilteringOn = BetterBlizzFramesDB.playerAuraFiltering
+    enlargedTextureAdjustment = 10 * userEnlargedAuraSize
+    compactedTextureAdjustment = 10 * userCompactedAuraSize
+    displayDispelGlowAlways = BetterBlizzFramesDB.displayDispelGlowAlways
+    customLargeSmallAuraSorting = BetterBlizzFramesDB.customLargeSmallAuraSorting
+    focusStaticCastbar = BetterBlizzFramesDB.focusStaticCastbar
+    focusDetachCastbar = BetterBlizzFramesDB.focusDetachCastbar
+    shouldAdjustCastbar = focusStaticCastbar or focusDetachCastbar or BetterBlizzFramesDB.playerAuraFiltering
+    targetCastBarXPos = BetterBlizzFramesDB.targetCastBarXPos
+    targetCastBarYPos = BetterBlizzFramesDB.targetCastBarYPos
+    focusCastBarXPos = BetterBlizzFramesDB.focusCastBarXPos
+    focusCastBarYPos = BetterBlizzFramesDB.focusCastBarYPos
+    targetToTCastbarAdjustment = BetterBlizzFramesDB.targetToTCastbarAdjustment
+    targetAndFocusAuraScale = BetterBlizzFramesDB.targetAndFocusAuraScale
+    targetAndFocusVerticalGap = BetterBlizzFramesDB.targetAndFocusVerticalGap
+    targetDetachCastbar = BetterBlizzFramesDB.targetDetachCastbar
+    focusToTCastbarAdjustment = BetterBlizzFramesDB.focusToTCastbarAdjustment
+    targetStaticCastbar = BetterBlizzFramesDB.targetStaticCastbar
+    showHiddenAurasIcon = BetterBlizzFramesDB.showHiddenAurasIcon
+    playerAuraSpacingX = BetterBlizzFramesDB.playerAuraSpacingX
+    playerAuraSpacingY = BetterBlizzFramesDB.playerAuraSpacingY
+    playerBuffFilterOn = BetterBlizzFramesDB.playerAuraFiltering and BetterBlizzFramesDB.enablePlayerBuffFiltering
+    playerDebuffFilterOn = BetterBlizzFramesDB.playerAuraFiltering and BetterBlizzFramesDB.enablePlayerDebuffFiltering
+    printAuraSpellIds = BetterBlizzFramesDB.printAuraSpellIds
+    playerAuraImportantGlow = BetterBlizzFramesDB.playerAuraImportantGlow
+    darkModeUi = BetterBlizzFramesDB.darkModeUi
+    darkModeUiAura = BetterBlizzFramesDB.darkModeUiAura
+    darkModeAurasOn = darkModeUi and darkModeUiAura
+    darkModeColor = BetterBlizzFramesDB.darkModeColor
+end
+
 local function isInWhitelist(spellName, spellId)
     for _, entry in pairs(BetterBlizzFramesDB["auraWhitelist"]) do
         if (entry.name and spellName and string.lower(entry.name) == string.lower(spellName)) or entry.id == spellId then
             return true
         end
+    end
+    return false
+end
+
+local function isInBlacklist(spellName, spellId)
+    if spellName and BetterBlizzFramesDB["auraBlacklist"][spellName] then
+        return true
+    elseif spellId and (BetterBlizzFramesDB["auraBlacklist"][spellId] or BetterBlizzFramesDB["auraBlacklist"][tostring(spellId)]) then
+        return true
     end
     return false
 end
@@ -37,6 +157,27 @@ local function isInBlacklist(spellName, spellId)
 end
 
 local function GetAuraDetails(spellName, spellId)
+    local entry = nil
+
+    if spellName and BetterBlizzFramesDB["auraWhitelist2"][spellName] then
+        entry = BetterBlizzFramesDB["auraWhitelist2"][spellName]
+    elseif spellId then
+        entry = BetterBlizzFramesDB["auraWhitelist2"][spellId]
+    end
+
+    if entry then
+        local isImportant = entry.important or false
+        local isPandemic = entry.pandemic or false
+        local isEnlarged = entry.enlarged or false
+        local isCompacted = entry.compacted or false
+        local auraColor = entry.auraColor or nil
+        return true, isImportant, isPandemic, isEnlarged, isCompacted, auraColor
+    else
+        return false, false, false, false, false, nil
+    end
+end
+
+local function GetAuraDetails(spellName, spellId)
     for _, entry in pairs(BetterBlizzFramesDB["auraWhitelist"]) do
         if (entry.name and spellName and string.lower(entry.name) == string.lower(spellName)) or entry.id == spellId then
             local isImportant = entry.flags and entry.flags.important or false
@@ -44,12 +185,12 @@ local function GetAuraDetails(spellName, spellId)
             local isEnlarged = entry.flags and entry.flags.enlarged or false
             local isCompacted = entry.flags and entry.flags.compacted or false
             local auraColor = entry.entryColors and entry.entryColors.text or nil
+
             return true, isImportant, isPandemic, isEnlarged, isCompacted, auraColor
         end
     end
     return false, false, false, false, nil
 end
-
 
 local function ShouldShowBuff(unit, auraData, frameType)
     local spellName = auraData.name
@@ -156,9 +297,9 @@ end
 local function CalculateAuraRowsYOffset(frame, rowHeights)
     local totalHeight = 0
     for _, height in ipairs(rowHeights) do
-        totalHeight = totalHeight + (height * BetterBlizzFramesDB.targetAndFocusAuraScale)  -- Scaling each row height
+        totalHeight = totalHeight + (height * targetAndFocusAuraScale)  -- Scaling each row height
     end
-    return totalHeight + #rowHeights * BetterBlizzFramesDB.targetAndFocusVerticalGap
+    return totalHeight + #rowHeights * targetAndFocusVerticalGap
 end
 
 local function adjustCastbar(self, frame)
@@ -168,13 +309,12 @@ local function adjustCastbar(self, frame)
 
     meta.ClearAllPoints(self)
     if frame == TargetFrameSpellBar then
-        if BetterBlizzFramesDB.targetStaticCastbar then
+        if targetStaticCastbar then
             --meta.SetPoint(self, "TOPLEFT", meta.GetParent(self), "BOTTOMLEFT", 43, 110);
-            meta.SetPoint(self, "TOPLEFT", parent, "BOTTOMLEFT", 43 + BetterBlizzFramesDB.targetCastBarXPos, -14 + BetterBlizzFramesDB.targetCastBarYPos);
-        elseif BetterBlizzFramesDB.targetDetachCastbar then
-            meta.SetPoint(self, "CENTER", UIParent, "CENTER", BetterBlizzFramesDB.targetCastBarXPos, BetterBlizzFramesDB.targetCastBarYPos);
+            meta.SetPoint(self, "TOPLEFT", parent, "BOTTOMLEFT", 43 + targetCastBarXPos, -14 + targetCastBarYPos);
+        elseif targetDetachCastbar then
+            meta.SetPoint(self, "CENTER", UIParent, "CENTER", targetCastBarXPos, targetCastBarYPos);
         else
-            local totAdjustment = BetterBlizzFramesDB.targetToTCastbarAdjustment
             local buffsOnTop = parent.buffsOnTop
             local yOffset = 14
 
@@ -182,22 +322,21 @@ local function adjustCastbar(self, frame)
                 yOffset = yOffset - CalculateAuraRowsYOffset(parent, rowHeights)
             end
             -- Check if totAdjustment is true and the ToT frame is shown
-            if totAdjustment and parent.haveToT then
+            if targetToTCastbarAdjustment and parent.haveToT then
                 local minOffset = -40
                 -- Choose the more negative value
                 yOffset = min(minOffset, yOffset)
             end
 
-            meta.SetPoint(self, "TOPLEFT", parent, "BOTTOMLEFT", 43 + BetterBlizzFramesDB.targetCastBarXPos, yOffset + BetterBlizzFramesDB.targetCastBarYPos);
+            meta.SetPoint(self, "TOPLEFT", parent, "BOTTOMLEFT", 43 + targetCastBarXPos, yOffset + targetCastBarYPos);
         end
     elseif frame == FocusFrameSpellBar then
-        if BetterBlizzFramesDB.focusStaticCastbar then
+        if focusStaticCastbar then
             --meta.SetPoint(self, "TOPLEFT", meta.GetParent(self), "BOTTOMLEFT", 43, 110);
-            meta.SetPoint(self, "TOPLEFT", parent, "BOTTOMLEFT", 43 + BetterBlizzFramesDB.focusCastBarXPos, -14 + BetterBlizzFramesDB.focusCastBarYPos);
-        elseif BetterBlizzFramesDB.focusDetachCastbar then
-            meta.SetPoint(self, "CENTER", UIParent, "CENTER", BetterBlizzFramesDB.focusCastBarXPos, BetterBlizzFramesDB.focusCastBarYPos);
+            meta.SetPoint(self, "TOPLEFT", parent, "BOTTOMLEFT", 43 + focusCastBarXPos, -14 + focusCastBarYPos);
+        elseif focusDetachCastbar then
+            meta.SetPoint(self, "CENTER", UIParent, "CENTER", focusCastBarXPos, focusCastBarYPos);
         else
-            local totFocusAdjustment = BetterBlizzFramesDB.focusToTCastbarAdjustment
             local buffsOnTop = parent.buffsOnTop
             local yOffset = 14
 
@@ -206,13 +345,13 @@ local function adjustCastbar(self, frame)
             end
 
             -- Check if totAdjustment is true and the ToT frame is shown
-            if totFocusAdjustment and parent.haveToT then
+            if focusToTCastbarAdjustment and parent.haveToT then
                 local minOffset = -40
                 -- Choose the more negative value
                 yOffset = min(minOffset, yOffset)
             end
 
-            meta.SetPoint(self, "TOPLEFT", parent, "BOTTOMLEFT", 43 + BetterBlizzFramesDB.focusCastBarXPos, yOffset + BetterBlizzFramesDB.focusCastBarYPos);
+            meta.SetPoint(self, "TOPLEFT", parent, "BOTTOMLEFT", 43 + focusCastBarXPos, yOffset + focusCastBarYPos);
         end
     end
 end
@@ -231,22 +370,17 @@ local function DefaultCastbarAdjustment(self, frame)
 	local pointY = useSpellbarAnchor and -10 or (parentFrame.smallSize and 3 or 5);
 
     if (not useSpellbarAnchor) and parentFrame.haveToT then
-        local totAdjustment = (TargetFrameSpellBar and BetterBlizzFramesDB.targetToTCastbarAdjustment) or (FocusFrameSpellBar and BetterBlizzFramesDB.focusToTCastbarAdjustment)
+        local totAdjustment = (TargetFrameSpellBar and targetToTCastbarAdjustment) or (FocusFrameSpellBar and focusToTCastbarAdjustment)
 
         if totAdjustment then
             pointY = parentFrame.smallSize and -48 or -46
         end
     end
 
-
     if frame == TargetFrameSpellBar then
-        local targetCastBarXPos = BetterBlizzFramesDB.targetCastBarXPos
-        local targetCastBarYPos = BetterBlizzFramesDB.targetCastBarYPos
         pointX = pointX + targetCastBarXPos
         pointY = pointY + targetCastBarYPos
     elseif frame == FocusFrameSpellBar then
-        local focusCastBarXPos = BetterBlizzFramesDB.focusCastBarXPos
-        local focusCastBarYPos = BetterBlizzFramesDB.focusCastBarYPos
         pointX = pointX + focusCastBarXPos
         pointY = pointY + focusCastBarYPos
     end
@@ -255,7 +389,7 @@ local function DefaultCastbarAdjustment(self, frame)
 end
 
 function BBF.CastbarAdjustCaller()
-    local shouldAdjustCastbar = BetterBlizzFramesDB.targetStaticCastbar or BetterBlizzFramesDB.targetDetachCastbar or BetterBlizzFramesDB.playerAuraFiltering
+    BBF.UpdateUserAuraSettings()
     if shouldAdjustCastbar then
         adjustCastbar(TargetFrame.spellbar, TargetFrameSpellBar)
         adjustCastbar(FocusFrame.spellbar, FocusFrameSpellBar)
@@ -264,24 +398,6 @@ function BBF.CastbarAdjustCaller()
         DefaultCastbarAdjustment(FocusFrame.spellbar, FocusFrameSpellBar)
     end
 end
-
-hooksecurefunc(TargetFrame.spellbar, "SetPoint", function()
-    local shouldAdjustCastbar = BetterBlizzFramesDB.targetStaticCastbar or BetterBlizzFramesDB.targetDetachCastbar or BetterBlizzFramesDB.playerAuraFiltering
-    if shouldAdjustCastbar then
-        adjustCastbar(TargetFrame.spellbar, TargetFrameSpellBar)
-    else
-        DefaultCastbarAdjustment(TargetFrame.spellbar, TargetFrameSpellBar)
-    end
-end);
-
-hooksecurefunc(FocusFrame.spellbar, "SetPoint", function()
-    local shouldAdjustCastbar = BetterBlizzFramesDB.focusStaticCastbar or BetterBlizzFramesDB.focusDetachCastbar or BetterBlizzFramesDB.playerAuraFiltering
-    if shouldAdjustCastbar then
-        adjustCastbar(FocusFrame.spellbar, FocusFrameSpellBar)
-    else
-        DefaultCastbarAdjustment(FocusFrame.spellbar, FocusFrameSpellBar)
-    end
-end);
 
 local trackedBuffs = {};
 local checkBuffsTimer = nil;
@@ -294,8 +410,6 @@ local function StopCheckBuffsTimer()
 end
 
 local function CheckBuffs()
-    local userEnlargedAuraSize = BetterBlizzFramesDB.enlargedAuraSize
-    local enlargedTextureAdjustment = 10 * userEnlargedAuraSize
     local currentGameTime = GetTime()
     for auraInstanceID, aura in pairs(trackedBuffs) do
         if aura.isPandemic and aura.expirationTime then
@@ -360,72 +474,11 @@ local function StartCheckBuffsTimer()
         checkBuffsTimer = C_Timer.NewTicker(0.1, CheckBuffs);
     end
 end
-
-
-local printSpellId
-local betterTargetPurgeGlow
-local betterFocusPurgeGlow
-local userEnlargedAuraSize = 1
-local userCompactedAuraSize = 1
-local auraSpacingX = 4
-local auraSpacingY = 4
-local aurasPerRow = 5
-local targetAndFocusAuraOffsetY = 0
-local baseOffsetX = 25
-local baseOffsetY = 12.5
-local auraScale = 1
-local targetImportantAuraGlow
-local targetdeBuffPandemicGlow
-local targetEnlargeAura
-local targetCompactAura
-local focusImportantAuraGlow
-local focusdeBuffPandemicGlow
-local focusEnlargeAura
-local focusCompactAura
-local auraTypeGap = 1
-local targetAndFocusSmallAuraScale = 1.4
-local auraFilteringOn
-local enlargedTextureAdjustment = 10
-local compactedTextureAdjustment = 10
-local displayDispelGlowAlways
-local customLargeSmallAuraSorting
-
-function BBF.UpdateUserAuraSettings()
-    printSpellId = BetterBlizzFramesDB.printAuraSpellIds
-    betterTargetPurgeGlow = BetterBlizzFramesDB.targetBuffPurgeGlow
-    betterFocusPurgeGlow = BetterBlizzFramesDB.focusBuffPurgeGlow
-    userEnlargedAuraSize = BetterBlizzFramesDB.enlargedAuraSize
-    userCompactedAuraSize = BetterBlizzFramesDB.compactedAuraSize
-    auraSpacingX = BetterBlizzFramesDB.targetAndFocusHorizontalGap
-    auraSpacingY = BetterBlizzFramesDB.targetAndFocusVerticalGap
-    aurasPerRow = BetterBlizzFramesDB.targetAndFocusAurasPerRow
-    targetAndFocusAuraOffsetY = BetterBlizzFramesDB.targetAndFocusAuraOffsetY
-    baseOffsetX = 25 + BetterBlizzFramesDB.targetAndFocusAuraOffsetX
-    baseOffsetY = 12.5 + BetterBlizzFramesDB.targetAndFocusAuraOffsetY
-    auraScale = BetterBlizzFramesDB.targetAndFocusAuraScale
-    targetImportantAuraGlow = BetterBlizzFramesDB.targetImportantAuraGlow
-    targetdeBuffPandemicGlow = BetterBlizzFramesDB.targetdeBuffPandemicGlow
-    targetEnlargeAura = BetterBlizzFramesDB.targetEnlargeAura
-    targetCompactAura = BetterBlizzFramesDB.targetCompactAura
-    focusImportantAuraGlow = BetterBlizzFramesDB.focusImportantAuraGlow
-    focusdeBuffPandemicGlow = BetterBlizzFramesDB.focusdeBuffPandemicGlow
-    focusEnlargeAura = BetterBlizzFramesDB.focusEnlargeAura
-    focusCompactAura = BetterBlizzFramesDB.focusCompactAura
-    auraTypeGap = BetterBlizzFramesDB.auraTypeGap
-    targetAndFocusSmallAuraScale = BetterBlizzFramesDB.targetAndFocusSmallAuraScale
-    auraFilteringOn = BetterBlizzFramesDB.playerAuraFiltering
-    enlargedTextureAdjustment = 10 * userEnlargedAuraSize
-    compactedTextureAdjustment = 10 * userCompactedAuraSize
-    displayDispelGlowAlways = BetterBlizzFramesDB.displayDispelGlowAlways
-    customLargeSmallAuraSorting = BetterBlizzFramesDB.customLargeSmallAuraSorting
-end
-
+local aurasMade = 0
 local MIN_AURA_SIZE = 17
 local defaultLargeAuraSize = 21
 local adjustmentForBuffsOnTop = -80  -- Height adjustment when buffs are on top
 local function AdjustAuras(self, frameType)
-    if not auraFilteringOn then return end
-
     local adjustedSize = MIN_AURA_SIZE * targetAndFocusSmallAuraScale
     local buffsOnTop = self.buffsOnTop
 
@@ -462,45 +515,19 @@ local function AdjustAuras(self, frameType)
                 auraSize = adjustedSize
             end
 
-            if aura.isEnlarged then
-                if aura.isLarge then
-                    defaultLargeAuraSize = 21
-                else
-                    defaultLargeAuraSize = 17
-                end
-                local importantSize = defaultLargeAuraSize * userEnlargedAuraSize
+            if aura.isEnlarged or aura.isCompacted then
+                local sizeMultiplier = aura.isEnlarged and userEnlargedAuraSize or userCompactedAuraSize
+                local defaultLargeAuraSize = aura.isLarge and 21 or 17
+                local importantSize = defaultLargeAuraSize * sizeMultiplier
                 aura:SetSize(importantSize, importantSize)
                 auraSize = importantSize
             end
-
-            if aura.isCompacted then
-                if aura.isLarge then
-                    defaultLargeAuraSize = 21
-                else
-                    defaultLargeAuraSize = 17
-                end
-                local importantSize = defaultLargeAuraSize * userCompactedAuraSize
-                aura:SetSize(importantSize, importantSize)
-                auraSize = importantSize
-            end
-
-
 
             local columnIndex, rowIndex
-
             columnIndex = (i - 1) % aurasPerRow
             rowIndex = math_ceil(i / aurasPerRow)
 
             rowWidths[rowIndex] = rowWidths[rowIndex] or initialOffsetX
-
-            --if previousAuraWasImportant then
-                --if buffsOnTop then
-                    --currentYOffset = currentYOffset + 2  -- Adjust back down for buffs on top
-                --else
-                    --currentYOffset = currentYOffset - 2  -- Adjust back up for buffs not on top
-                --end
-                --previousAuraWasImportant = false
-            --end
 
             if columnIndex == 0 and i ~= 1 then
                 if buffsOnTop then
@@ -510,24 +537,8 @@ local function AdjustAuras(self, frameType)
                     -- Existing logic for stacking downwards
                     currentYOffset = currentYOffset - (rowHeights[rowIndex - 1] or 0) - auraSpacingY
                 end
-                --if aura.isEnlarged and scaleUpImportantAura then
-                    --previousAuraWasImportant = true
-                    --if buffsOnTop then
-                        --currentYOffset = currentYOffset - 2  -- Adjust up for important aura for buffs on top
-                    --else
-                        --currentYOffset = currentYOffset + 2  -- Adjust down for important aura for buffs not on top
-                    --end
-                --end
             elseif columnIndex ~= 0 then
                 rowWidths[rowIndex] = rowWidths[rowIndex] + auraSpacingX
-                --if aura.isEnlarged and scaleUpImportantAura then
-                    --previousAuraWasImportant = true
-                    --if buffsOnTop then
-                        --currentYOffset = currentYOffset - 2  -- Adjust up for important aura for buffs on top
-                    --else
-                        --currentYOffset = currentYOffset + 2  -- Adjust down for important aura for buffs not on top
-                    --end
-                --end
             end
 
 
@@ -549,7 +560,8 @@ local function AdjustAuras(self, frameType)
     local unit = self.unit
     local isFriend = unit and UnitIsFriend("player", unit)
 
-    local auras = {}
+    local buffs, debuffs = {}, {}
+
     for aura in self.auraPools:EnumerateActive() do
         local auraData = C_UnitAuras.GetAuraDataByAuraInstanceID(self.unit, aura.auraInstanceID)
         if auraData then
@@ -637,7 +649,7 @@ local function AdjustAuras(self, frameType)
                         aura.ImportantGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", 10, -10)
                     end
                     if auraColor then
-                        aura.ImportantGlow:SetVertexColor(auraColor.r, auraColor.g, auraColor.b)
+                        aura.ImportantGlow:SetVertexColor(auraColor.r, auraColor.g, auraColor.b, auraColor.a)
                     else
                         aura.ImportantGlow:SetVertexColor(0, 1, 0)
                     end
@@ -680,7 +692,7 @@ local function AdjustAuras(self, frameType)
                     end
                     aura.isPurgeGlow = false
                     if displayDispelGlowAlways then
-                        if auraData.dispelName == "Magic" and (not isFriend or (isFriend and auraData.isHarmful)) then
+                        if auraData.dispelName == "Magic" and ((not isFriend and auraData.isHelpful) or (isFriend and auraData.isHarmful)) then
                             if aura.Stealable then
                                 aura.Stealable:Show()
                             end
@@ -727,7 +739,11 @@ local function AdjustAuras(self, frameType)
                     end
                 end
 
-                auras[#auras + 1] = aura
+                if aura.Border ~= nil then
+                    debuffs[#debuffs + 1] = aura
+                else
+                    buffs[#buffs + 1] = aura
+                end
             else
                 aura:Hide()
                 if aura.PandemicGlow then
@@ -790,17 +806,8 @@ local function AdjustAuras(self, frameType)
         end
     end
 
-    table_sort(auras, customAuraComparator)
-
-    -- Sorting auras into buffs and debuffs
-    local buffs, debuffs = {}, {}
-    for _, aura in ipairs(auras) do
-        if aura.Border ~= nil then
-            debuffs[#debuffs + 1] = aura
-        else
-            buffs[#buffs + 1] = aura
-        end
-    end
+    table_sort(buffs, customAuraComparator)
+    table_sort(debuffs, customAuraComparator)
 
     if not isFriend then
         if buffsOnTop then
@@ -870,30 +877,25 @@ local function AdjustAuras(self, frameType)
         end
     end
 
+--[[
     if frameType == "target" then
         adjustCastbar(TargetFrame.spellbar, TargetFrameSpellBar)
     elseif frameType == "focus" then
         adjustCastbar(FocusFrame.spellbar, FocusFrameSpellBar)
     end
+
+]]
+
 end
-
-hooksecurefunc(TargetFrame, "UpdateAuras", function(self)
-    AdjustAuras(self, "target")
-end)
-
-hooksecurefunc(FocusFrame, "UpdateAuras", function(self)
-    AdjustAuras(self, "focus")
-end)
-
 
 -- Function to create the toggle icon
 local toggleIconGlobal = nil
 local shouldKeepAurasVisible = false
 local hiddenAuras = 0
---local BetterBlizzFramesDB.showHiddenAurasIcon = true
+--local showHiddenAurasIcon = true
 
 local function UpdateHiddenAurasCount()
-    if not BetterBlizzFramesDB.showHiddenAurasIcon then
+    if not showHiddenAurasIcon then
         if toggleIconGlobal then
             toggleIconGlobal:Hide()
             return
@@ -943,7 +945,7 @@ local function HideHiddenAuras()
 end
 
 local function CreateToggleIcon()
-    if not BetterBlizzFramesDB.showHiddenAurasIcon then return end
+    if not showHiddenAurasIcon then return end
     if toggleIconGlobal then return toggleIconGlobal end
     local toggleIcon = CreateFrame("Button", "ToggleHiddenAurasButton", BuffFrame)
     toggleIcon:SetSize(30, 30)
@@ -1000,8 +1002,6 @@ local function CreateToggleIcon()
 end
 
 local function PersonalBuffFrameFilterAndGrid(self)
-    local auraFilterOn = BetterBlizzFramesDB.playerAuraFiltering and BetterBlizzFramesDB.enablePlayerBuffFiltering
-    if not auraFilterOn then return end
     ResetHiddenAurasCount()
     local isExpanded = BuffFrame:IsExpanded();
     local currentAuraSize = BuffFrame.AuraContainer.iconScale
@@ -1010,21 +1010,18 @@ local function PersonalBuffFrameFilterAndGrid(self)
     end
 
     -- Define the parameters for your grid system
-    local playerAuraSpacingY = BetterBlizzFramesDB.playerAuraSpacingY
     local maxAurasPerRow = BuffFrame.AuraContainer.iconStride
-    local auraSpacingX = BuffFrame.AuraContainer.iconPadding - 7 + BetterBlizzFramesDB.playerAuraSpacingX
+    local auraSpacingX = BuffFrame.AuraContainer.iconPadding - 7 + playerAuraSpacingX
     local auraSpacingY = BuffFrame.AuraContainer.iconPadding + 8 + playerAuraSpacingY
     local auraSize = 32;      -- Set the size of each aura frame
     --local auraScale = BuffFrame.AuraContainer.iconScale
-
-    local printAuraIds = BetterBlizzFramesDB.printAuraSpellIds
 
     local currentRow = 1;
     local currentCol = 1;
     local xOffset = 0;
     local yOffset = 0;
     local hiddenYOffset = -auraSpacingY - auraSize + playerAuraSpacingY;
-    local toggleIcon = BetterBlizzFramesDB.showHiddenAurasIcon and CreateToggleIcon() or nil
+    local toggleIcon = showHiddenAurasIcon and CreateToggleIcon() or nil
 
     for auraIndex, auraInfo in ipairs(BuffFrame.auraInfo) do
         if isExpanded or not auraInfo.hideUnlessExpanded then
@@ -1068,11 +1065,11 @@ local function PersonalBuffFrameFilterAndGrid(self)
               };
                 --local unit = self.unit
                 -- Print spell ID logic
-                if printAuraIds then
+                if printAuraSpellIds then
                     if not auraFrame.bbfHookAdded then
                         auraFrame.bbfHookAdded = true
                         auraFrame:HookScript("OnEnter", function()
-                            if printAuraIds then
+                            if printAuraSpellIds then
                                 local currentAuraIndex = auraInfo.index
                                 if auraInfo.auraType == "TempEnchant" then
                                     hasMainHandEnchant, mainHandExpiration, mainHandCharges, mainHandEnchantID, hasOffHandEnchant, offHandExpiration, offHandCharges, offHandEnchantID = GetWeaponEnchantInfo()
@@ -1125,9 +1122,10 @@ local function PersonalBuffFrameFilterAndGrid(self)
 
                 local shouldShowAura, isImportant, isPandemic, isEnlarged, isCompacted, auraColor
                 shouldShowAura, isImportant, isPandemic, isEnlarged, isCompacted, auraColor = ShouldShowBuff("player", auraData, "playerBuffFrame")
-                isImportant = isImportant and BetterBlizzFramesDB.playerAuraImportantGlow
+                isImportant = isImportant and playerAuraImportantGlow
                 -- Nonprint logic
                 if shouldShowAura then
+                    auraFrame.Duration:SetDrawLayer("OVERLAY", 7)
                     auraFrame:Show();
                     auraFrame:ClearAllPoints();
                     auraFrame:SetPoint("TOPRIGHT", BuffFrame, "TOPRIGHT", -xOffset - 15, -yOffset);
@@ -1164,7 +1162,7 @@ local function PersonalBuffFrameFilterAndGrid(self)
                             auraFrame.ImportantGlow:SetParent(borderFrame)
                         end
                         if auraColor then
-                            auraFrame.ImportantGlow:SetVertexColor(auraColor.r, auraColor.g, auraColor.b)
+                            auraFrame.ImportantGlow:SetVertexColor(auraColor.r, auraColor.g, auraColor.b, auraColor.a)
                         else
                             auraFrame.ImportantGlow:SetVertexColor(0, 1, 0)
                         end
@@ -1194,20 +1192,17 @@ local function PersonalBuffFrameFilterAndGrid(self)
     UpdateHiddenAurasCount()
 end
 
-local tooltip = CreateFrame("GameTooltip", "AuraTooltip", nil, "GameTooltipTemplate")
-tooltip:SetOwner(WorldFrame, "ANCHOR_NONE")
+--local tooltip = CreateFrame("GameTooltip", "AuraTooltip", nil, "GameTooltipTemplate")
+--tooltip:SetOwner(WorldFrame, "ANCHOR_NONE")
 
 local function PersonalDebuffFrameFilterAndGrid(self)
-    local auraFilterOn = BetterBlizzFramesDB.playerAuraFiltering and BetterBlizzFramesDB.enablePlayerDebuffFiltering
-    if not auraFilterOn then return end
-
     local maxAurasPerRow = DebuffFrame.AuraContainer.iconStride
-    local auraSpacingX = DebuffFrame.AuraContainer.iconPadding - 7 + BetterBlizzFramesDB.playerAuraSpacingX
-    local auraSpacingY = DebuffFrame.AuraContainer.iconPadding + 8 + BetterBlizzFramesDB.playerAuraSpacingY
+    local auraSpacingX = DebuffFrame.AuraContainer.iconPadding - 7 + playerAuraSpacingX
+    local auraSpacingY = DebuffFrame.AuraContainer.iconPadding + 8 + playerAuraSpacingY
     local auraSize = 32;      -- Set the size of each aura frame
 
     --local dotChecker = BetterBlizzFramesDB.debuffDotChecker
-    local printAuraIds = BetterBlizzFramesDB.printAuraSpellIds
+    local printAuraIds = printAuraSpellIds
 
     local currentRow = 1;
     local currentCol = 1;
@@ -1384,7 +1379,7 @@ local function PersonalDebuffFrameFilterAndGrid(self)
                             auraFrame.ImportantGlow:SetParent(borderFrame)
                         end
                         if auraColor then
-                            auraFrame.ImportantGlow:SetVertexColor(auraColor.r, auraColor.g, auraColor.b)
+                            auraFrame.ImportantGlow:SetVertexColor(auraColor.r, auraColor.g, auraColor.b, auraColor.a)
                         else
                             auraFrame.ImportantGlow:SetVertexColor(0, 1, 0)
                         end
@@ -1410,11 +1405,7 @@ local function PersonalDebuffFrameFilterAndGrid(self)
         end
     end
 ]=]
-
 end
-
-hooksecurefunc(BuffFrame, "UpdateAuraButtons", PersonalBuffFrameFilterAndGrid)
-hooksecurefunc(DebuffFrame, "UpdateAuraButtons", PersonalDebuffFrameFilterAndGrid)
 
 function BBF.RefreshAllAuraFrames()
     BBF.UpdateUserAuraSettings()
@@ -1422,4 +1413,43 @@ function BBF.RefreshAllAuraFrames()
     PersonalDebuffFrameFilterAndGrid(DebuffFrame)
     AdjustAuras(TargetFrame, "target")
     AdjustAuras(FocusFrame, "focus")
+end
+
+function BBF.HookPlayerAndTargetAuras()
+    --Hook Player BuffFrame
+    if playerBuffFilterOn and not playerBuffsHooked then
+        hooksecurefunc(BuffFrame, "UpdateAuraButtons", PersonalBuffFrameFilterAndGrid)
+        playerBuffsHooked = true
+    end
+
+    --Hook Player DebuffFrame
+    if playerDebuffFilterOn and not playerDebuffsHooked then
+        hooksecurefunc(DebuffFrame, "UpdateAuraButtons", PersonalDebuffFrameFilterAndGrid)
+        playerDebuffsHooked = true
+    end
+
+    --Hook Target & Focus Frame
+    if auraFilteringOn and not targetAurasHooked then
+        hooksecurefunc(TargetFrame, "UpdateAuras", function(self) AdjustAuras(self, "target") end)
+        hooksecurefunc(FocusFrame, "UpdateAuras", function(self) AdjustAuras(self, "focus") end)
+        targetAurasHooked = true
+    end
+
+    --Hook Target & Focus Castbars
+    if not targetCastbarsHooked then
+        hooksecurefunc(TargetFrame.spellbar, "SetPoint", function()
+            if shouldAdjustCastbar then
+                adjustCastbar(TargetFrame.spellbar, TargetFrameSpellBar)
+            else
+                DefaultCastbarAdjustment(TargetFrame.spellbar, TargetFrameSpellBar)
+            end
+        end);
+        hooksecurefunc(FocusFrame.spellbar, "SetPoint", function()
+            if shouldAdjustCastbar then
+                adjustCastbar(FocusFrame.spellbar, FocusFrameSpellBar)
+            else
+                DefaultCastbarAdjustment(FocusFrame.spellbar, FocusFrameSpellBar)
+            end
+        end);
+    end
 end

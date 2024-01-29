@@ -6,7 +6,7 @@ BBF = BBF or {}
 -- Things are getting more messy need a lot of cleaning lol
 
 local addonVersion = "1.00" --too afraid to to touch for now
-local addonUpdates = "1.2.2"
+local addonUpdates = "1.2.3"
 local sendUpdate = true
 BBF.VersionNumber = addonUpdates
 BBF.variablesLoaded = false
@@ -38,10 +38,6 @@ local defaultSettings = {
     playerReputationClassColor = true,
     enlargedAuraSize = 1.4,
     compactedAuraSize = 0.7,
-
-    --Sort group
-    --sortGroupPlayerTop = true,
-    --sortGroupPlayerBottom = false,
 
     --Target castbar
     playerCastbarIconXPos = 0,
@@ -324,13 +320,24 @@ local function UpdateAuraColorsToGreen()
     end
 end
 
+local function AddAlphaValuesToAuraColors()
+    if BetterBlizzFramesDB and BetterBlizzFramesDB["auraWhitelist"] then
+        for _, entry in pairs(BetterBlizzFramesDB["auraWhitelist"]) do
+            if entry.entryColors and entry.entryColors.text then
+                entry.entryColors.text.a = 1
+            else
+                entry.entryColors = { text = { r = 0, g = 1, b = 0, a = 1 } }
+            end
+        end
+    end
+end
+
 -- Update message
 local function SendUpdateMessage()
     if sendUpdate then
         C_Timer.After(7, function()
             DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames " .. addonUpdates .. ":")
-            DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a New settings: Hide Boss Frames, Hide (Player) Combat Icon, separated \"Overshields\" setting into UnitFrames and Compact UnitFrames (Target etc & Party/Raid), \"Always show purge texture\" in Buffs & Debuffs that shows the purge texture even if you don't have a purge ability.")
-            DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Buffs & Debuffs: New \"Compacted Aura\" setting and sort aura setting for enlarged auras first and compacted/smaller auras last.")
+            DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Addon should now use roughly 70-80% less resources. I'll continue optimizing and refactoring, this is just the first (but probably biggest) step. If anything goes wrong please let me know and consider downgrading until fix is ready.")
             --DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a For more info and news about new features type /bbf news")
         end)
     end
@@ -356,13 +363,32 @@ local function CheckForUpdate()
 end
 
 local function LoadingScreenDetector(_, event)
+    --#######TEMPORARY BUGFIX FOR BLIZZARD#########
+    local _, instanceType = GetInstanceInfo()
+    local inArena = instanceType == "arena"
+    --#######TEMPORARY BUGFIX FOR BLIZZARD#########
     if event == "PLAYER_ENTERING_WORLD" or event == "LOADING_SCREEN_ENABLED" then
         BetterBlizzFramesDB.wasOnLoadingScreen = true
+
+        --#######TEMPORARY BUGFIX FOR BLIZZARD#########
+        if inArena and UIWidgetPowerBarContainerFrame then
+            UIWidgetPowerBarContainerFrame:Hide()
+        else
+            UIWidgetPowerBarContainerFrame:Show()
+        end
+        --#######TEMPORARY BUGFIX FOR BLIZZARD#########
     elseif event == "LOADING_SCREEN_DISABLED" or event == "PLAYER_LEAVING_WORLD" then
         if BetterBlizzFramesDB.playerFrameOCD then
             BBF.FixStupidBlizzPTRShit()
             BBF.ClassColorPlayerName()
         end
+        --#######TEMPORARY BUGFIX FOR BLIZZARD#########
+        if inArena and UIWidgetPowerBarContainerFrame then
+            UIWidgetPowerBarContainerFrame:Hide()
+        else
+            UIWidgetPowerBarContainerFrame:Show()
+        end
+        --#######TEMPORARY BUGFIX FOR BLIZZARD#########
         C_Timer.After(2, function()
             BetterBlizzFramesDB.wasOnLoadingScreen = false
         end)
@@ -566,8 +592,17 @@ function BBF.FixStupidBlizzPTRShit()
 
     FocusFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:SetHeight(20)
 
+    local a, b, c, d, e = TargetFrame.TargetFrameContent.TargetFrameContentMain.LevelText:GetPoint()
+    TargetFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetPoint(a, b, c, d, -3)
+
+    local a, b, c, d, e = FocusFrame.TargetFrameContent.TargetFrameContentMain.LevelText:GetPoint()
+    FocusFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetPoint(a, b, c, d, -3)
+
     -- HealthBarColorActive
     if not BetterBlizzFramesDB.playerFrameOCDTextureBypass then
+
+        local a, b, c, d, e = PlayerLevelText:GetPoint()
+        PlayerLevelText:SetPoint(a,b,c,d,-28.5)
         PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarArea.HealthBar.HealthBarMask:SetHeight(33)
         PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar.ManaBarMask:SetPoint("TOPLEFT", PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar, "TOPLEFT", -2, 3)
         PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar.ManaBarMask:SetHeight(17)
@@ -597,14 +632,7 @@ function BBF.FixStupidBlizzPTRShit()
         local a, b, c, d, e = FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.LeftText:GetPoint()
         FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.LeftText:SetPoint(a,b,c,3,e)
 
-        local a, b, c, d, e = TargetFrame.TargetFrameContent.TargetFrameContentMain.LevelText:GetPoint()
-        TargetFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetPoint(a, b, c, d, -3)
 
-        local a, b, c, d, e = FocusFrame.TargetFrameContent.TargetFrameContentMain.LevelText:GetPoint()
-        FocusFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetPoint(a, b, c, d, -3)
-
-        local a, b, c, d, e = PlayerLevelText:GetPoint()
-        PlayerLevelText:SetPoint(a,b,c,d,-28)
         local a, b, c, d, e = TargetFrame.totFrame.HealthBar:GetPoint()
         TargetFrame.totFrame.HealthBar:SetPoint(a,b,c,-5,-5)
         TargetFrame.totFrame.HealthBar:SetSize(71, 13)
@@ -652,6 +680,13 @@ Frame:SetScript("OnEvent", function(...)
 
     local function LoginVariablesLoaded()
         if BBF.variablesLoaded then
+            -- add setings updates
+            BBF.UpdateUserTargetSettings()
+            BBF.UpdateUserDarkModeSettings()
+            BBF.ChatFilterCaller()
+
+
+
             BBF.HookOverShields()
             BBF.CastBarTimerCaller()
             BBF.ShowPlayerCastBarIcon()
@@ -661,6 +696,7 @@ Frame:SetScript("OnEvent", function(...)
             end
             BBF.MoveToTFrames()
             BBF.UpdateUserAuraSettings()
+            BBF.HookPlayerAndTargetAuras()
             local hidePartyName = BetterBlizzFramesDB.hidePartyNames
             local hidePartyRole = BetterBlizzFramesDB.hidePartyRoles
             if hidePartyName or hidePartyRole then
@@ -704,6 +740,7 @@ Frame:SetScript("OnEvent", function(...)
         BetterBlizzFramesDB.reopenOptions = false
     end
 
+--[[
     if BetterBlizzFramesDB.nahjMessage then
         C_Timer.After(7, function()
             DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames:")
@@ -711,16 +748,20 @@ Frame:SetScript("OnEvent", function(...)
             BetterBlizzFramesDB.nahjMessage = false
         end)
     end
+
+]]
+
 end)
 
 -- Slash command
 SLASH_BBF1 = "/BBF"
 SlashCmdList["BBF"] = function(msg)
-    if msg == "news" then
+    local command = string.lower(msg)
+    if command == "news" then
         NewsUpdateMessage()
-    elseif msg == "test" then
+    elseif command == "test" then
         --playerFrameTest()
-    elseif msg == "nahj" or msg == "Nahj" then
+    elseif command == "nahj" then
         StaticPopup_Show("BBF_CONFIRM_NAHJ_PROFILE")
     else
         InterfaceOptionsFrame_OpenToCategory(BetterBlizzFrames)
@@ -741,10 +782,14 @@ First:SetScript("OnEvent", function(_, event, addonName)
             --TurnOnEnabledFeaturesOnLogin()
 
             if not BetterBlizzFramesDB.auraWhitelistColorsUpdated then
-                UpdateAuraColorsToGreen() --update default yellow text to green for new color featur
+                UpdateAuraColorsToGreen() --update default yellow text to green for new color feature
                 BetterBlizzFramesDB.auraWhitelistColorsUpdated = true
             end
 
+            if not BetterBlizzFramesDB.auraWhitelistAlphaUpdated then
+                AddAlphaValuesToAuraColors()
+                BetterBlizzFramesDB.auraWhitelistAlphaUpdated = true
+            end
 
             BBF.InitializeOptions()
         end

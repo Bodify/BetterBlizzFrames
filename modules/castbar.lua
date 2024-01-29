@@ -379,6 +379,7 @@ end)
 
 
 
+--[[
 hooksecurefunc(CompactPartyFrame, "RefreshMembers", function()
     local showPartyCastbars = BetterBlizzFramesDB.showPartyCastbar
     if showPartyCastbars then
@@ -387,6 +388,9 @@ hooksecurefunc(CompactPartyFrame, "RefreshMembers", function()
     end
     --BBF.OnUpdateName()
 end)
+
+]]
+
 
 
 -- Hook into the OnUpdate, OnShow, and OnHide scripts for the spell bar
@@ -531,12 +535,13 @@ end
 PlayerCastingBarFrame:HookScript("OnShow", function()
     local showIcon = BetterBlizzFramesDB.playerCastBarShowIcon
     if showIcon then
+        local playerCastBarIconScale = BetterBlizzFramesDB.playerCastBarIconScale
         PlayerCastingBarFrame.Icon:Show()
         PlayerCastingBarFrame.showShield = true --taint concern TODO: add non-taint method
         PlayerCastingBarFrame.BorderShield:SetSize(30,36)
         PlayerCastingBarFrame.BorderShield:ClearAllPoints()
         PlayerCastingBarFrame.BorderShield:SetPoint("RIGHT", PlayerCastingBarFrame, "LEFT", -1, -7)
-        PlayerCastingBarFrame.BorderShield:SetScale(BetterBlizzFramesDB.playerCastBarIconScale)
+        PlayerCastingBarFrame.BorderShield:SetScale(playerCastBarIconScale)
         PlayerCastingBarFrame.BorderShield:SetDrawLayer("BORDER")
     end
 end)

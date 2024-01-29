@@ -249,20 +249,35 @@ end
 
 
 
+local function isValidUnit(unit)
+    return unit and (unit == "player" or unit == "target" or unit == "focus")
+end
+
 -- Event Listener for Combat Indicator
 local combatIndicatorFrame = CreateFrame("Frame")
-combatIndicatorFrame:SetScript("OnEvent", function(self, event)
-    BBF.CombatIndicator(TargetFrame, "target")
-    BBF.CombatIndicator(FocusFrame, "focus")
-    BBF.CombatIndicator(PlayerFrame, "player")
+combatIndicatorFrame:SetScript("OnEvent", function(self, event, unit)
+    if event == "UNIT_FLAGS" then
+        if isValidUnit(unit) then
+            if UnitIsUnit(unit, "target") then
+                BBF.CombatIndicator(TargetFrame, "target")
+            elseif UnitIsUnit(unit, "focus") then
+                BBF.CombatIndicator(FocusFrame, "focus")
+            elseif UnitIsUnit(unit, "player") then
+                BBF.CombatIndicator(PlayerFrame, "player")
+            end
+        end
+    end
 
     if event == "PLAYER_TARGET_CHANGED" or event == "PLAYER_FOCUS_CHANGED" then
         BBF.RacialIndicator(TargetFrame, "target")
         BBF.RacialIndicator(FocusFrame, "focus")
+        BBF.CombatIndicator(TargetFrame, "target")
+        BBF.CombatIndicator(FocusFrame, "focus")
+        BBF.CombatIndicator(PlayerFrame, "player")
     end
 end)
 combatIndicatorFrame:RegisterEvent("UNIT_FLAGS")
-combatIndicatorFrame:RegisterEvent("UNIT_COMBAT")
+--combatIndicatorFrame:RegisterEvent("UNIT_COMBAT")
 combatIndicatorFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
 combatIndicatorFrame:RegisterEvent("PLAYER_FOCUS_CHANGED")
 combatIndicatorFrame:RegisterEvent("PLAYER_ENTERING_WORLD")

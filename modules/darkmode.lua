@@ -2,6 +2,14 @@
 BetterBlizzFramesDB = BetterBlizzFramesDB or {}
 BBF = BBF or {}
 
+local darkModeUi
+local darkModeUiAura
+local darkModeColor = 1
+local auraFilteringOn
+
+local hookedTotemBar
+local hookedAuras
+
 local function applySettings(frame, desaturate, colorValue)
     if frame then
         if desaturate ~= nil and frame.SetDesaturated then -- Check if SetDesaturated is available
@@ -13,9 +21,71 @@ local function applySettings(frame, desaturate, colorValue)
     end
 end
 
+function BBF.UpdateUserDarkModeSettings()
+    darkModeUi = BetterBlizzFramesDB.darkModeUi
+    darkModeUiAura = BetterBlizzFramesDB.darkModeUiAura
+    hookedTotemBar = BetterBlizzFramesDB.hookedTotemBar
+    darkModeColor = BetterBlizzFramesDB.darkModeColor
+    auraFilteringOn = BetterBlizzFramesDB.playerAuraFiltering
+end
+
+local hooked = {}
+
+local function UpdateFrameAuras(pool)
+    for frame, _ in pairs(pool.activeObjects) do
+        if not hooked[frame] then
+            local icon = frame.Icon
+            hooked[frame] = true
+
+            if not frame.border then
+                local border = CreateFrame("Frame", nil, frame, "BackdropTemplate")
+                border:SetBackdrop({
+                    edgeFile = "Interface/Tooltips/UI-Tooltip-Border",
+                    tileEdge = true,
+                    edgeSize = 8.5,
+                })
+
+                icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+                border:SetPoint("TOPLEFT", icon, "TOPLEFT", -1.5, 1.5)
+                border:SetPoint("BOTTOMRIGHT", icon, "BOTTOMRIGHT", 1.5, -2)
+                frame.border = border
+
+                -- Set the initial border color
+                border:SetBackdropBorderColor(darkModeColor, darkModeColor, darkModeColor)
+            end
+            if frame.Border then
+                frame.border:Hide()
+            else
+                frame.border:Show()
+            end
+        else
+            if frame.Border then
+                frame.border:Hide()
+            else
+                frame.border:Show()
+            end
+        end
+    end
+end
+
+function BBF.DarkModeUnitframeBorders()
+    if (BetterBlizzFramesDB.darkModeUiAura and BetterBlizzFramesDB.darkModeUi) then --and not BetterBlizzFramesDB.playerAuraFiltering) then
+        if not hookedAuras then
+            for poolKey, pool in pairs(TargetFrame.auraPools.pools) do
+                hooksecurefunc(pool, "Acquire", UpdateFrameAuras)
+            end
+
+            for poolKey, pool in pairs(FocusFrame.auraPools.pools) do
+                hooksecurefunc(pool, "Acquire", UpdateFrameAuras)
+            end
+            hookedAuras = true
+        end
+    end
+end
+
 BBF.auraBorders = {}  -- BuffFrame aura borders for darkmode
 local function createOrUpdateBorders(frame, colorValue, textureName, bypass)
-    if (BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeUiAura) or bypass then
+    if (darkModeUi and darkModeUiAura) or bypass then
         if not BBF.auraBorders[frame] then
             -- Create borders
             local border = CreateFrame("Frame", nil, frame, "BackdropTemplate")
@@ -77,12 +147,27 @@ local function createOrUpdateBorders(frame, colorValue, textureName, bypass)
     end
 end
 
+function BBF.updateTotemBorders()
+    local vertexColor = darkModeUi and BetterBlizzFramesDB.darkModeColor or 1
+    for i = 1, TotemFrame:GetNumChildren() do
+        local totemButton = select(i, TotemFrame:GetChildren())
+        if totemButton and totemButton.Border then
+            totemButton.Border:SetDesaturated(true)
+            totemButton.Border:SetVertexColor(vertexColor, vertexColor, vertexColor) -- Set to dark color
+        end
+    end
+end
+
 function BBF.DarkmodeFrames()
+
+
     BBF.AbsorbCaller()
     BBF.CombatIndicatorCaller()
     local desaturationValue = BetterBlizzFramesDB.darkModeUi and true or false
     local vertexColor = BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeColor or 1
     local lighterVertexColor = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.3) or 1
+    local druidComboPoint = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.2) or 1
+    local druidComboPointActive = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.1) or 1
     local actionBarColor = BetterBlizzFramesDB.darkModeActionBars and (vertexColor + 0.15) or 1
     local birdColor = BetterBlizzFramesDB.darkModeActionBars and (vertexColor + 0.25) or 1
     local rogueCombo = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.45) or 1
@@ -199,8 +284,16 @@ function BBF.DarkmodeFrames()
     local druidComboPoints = _G.DruidComboPointBarFrame
     if druidComboPoints then
         for _, v in pairs({druidComboPoints:GetChildren()}) do
-            applySettings(v.BG_Inactive, desaturationValue, vertexColor)
-            applySettings(v.BG_Active, desaturationValue, vertexColor)
+            applySettings(v.BG_Inactive, desaturationValue, druidComboPoint)
+            applySettings(v.BG_Active, desaturationValue, druidComboPointActive)
+        end
+    end
+
+    local mageArcaneCharges = _G.MageArcaneChargesFrame
+    if mageArcaneCharges then
+        for _, v in pairs({mageArcaneCharges:GetChildren()}) do
+            applySettings(v.ArcaneBG, desaturationValue, actionBarColor)
+            --applySettings(v.BG_Active, desaturationValue, druidComboPointActive)
         end
     end
 
@@ -303,6 +396,24 @@ function BBF.DarkmodeFrames()
             applySettings(v, desaturationValue, birdColor)
         end
     end
+
+    if not hookedTotemBar and darkModeUi then
+        hooksecurefunc(TotemFrame, "Update", function()
+            BBF.updateTotemBorders()
+        end)
+        hookedTotemBar = true
+    end
+
+    if not hookedAuras and darkModeUi then
+        for poolKey, pool in pairs(TargetFrame.auraPools.pools) do
+            hooksecurefunc(pool, "Acquire", UpdateFrameAuras)
+        end
+
+        for poolKey, pool in pairs(FocusFrame.auraPools.pools) do
+            hooksecurefunc(pool, "Acquire", UpdateFrameAuras)
+        end
+        hookedAuras = true
+    end
 end
 
 
@@ -315,114 +426,6 @@ function BBF.UpdateFilteredBuffsIcon()
             createOrUpdateBorders(ToggleHiddenAurasButton, vertexColor)
         end
     end
-end
-
-
-function BBF.updateTotemBorders()
-    local darkModeOn = BetterBlizzFramesDB.darkModeUi
-    if not darkModeOn then return end
-    local vertexColor = BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeColor or 1
-    for i = 1, TotemFrame:GetNumChildren() do
-        local totemButton = select(i, TotemFrame:GetChildren())
-        if totemButton and totemButton.Border then
-            totemButton.Border:SetDesaturated(true)
-            totemButton.Border:SetVertexColor(vertexColor, vertexColor, vertexColor) -- Set to dark color
-        end
-    end
-end
-
-hooksecurefunc(TotemFrame, "Update", function()
-    BBF.updateTotemBorders()
-end)
-
-local hooked = {}
-
-local function UpdateFrameAuras(pool)
-    if not (BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeUiAura) then
-        return
-    end
-    local vertexColor = BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeColor or 1
-
-    for frame, _ in pairs(pool.activeObjects) do
-        local icon = frame.Icon
-        if not hooked[frame] then
-            hooked[frame] = true
-
-
-            if not frame.border then
-                local border = CreateFrame("Frame", nil, frame, "BackdropTemplate")
-                border:SetBackdrop({
-                    edgeFile = "Interface/Tooltips/UI-Tooltip-Border",
-                    tileEdge = true,
-                    edgeSize = 8.5,
-                })
-
-                icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
-                border:SetPoint("TOPLEFT", icon, "TOPLEFT", -1.5, 1.5)
-                border:SetPoint("BOTTOMRIGHT", icon, "BOTTOMRIGHT", 1.5, -2)
-
-                --border:SetBackdropBorderColor(0.2, 0.2, 0.2)
-                frame.border = border
-                frame.darkBorder = true --test bodify
-            end
-        end
-        if frame.border then
-            frame.border:SetBackdropBorderColor(vertexColor, vertexColor, vertexColor)
-        end
-        if frame.Border or (frame.Stealable and frame.Stealable:IsVisible()) then
-            frame.darkBorder = false
-            if frame.border then
-                frame.border:Hide()
-                icon:SetTexCoord(0, 1, 0, 1)
-            end
-        else
-            if frame.border then
-                frame.border:Show()
-                icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
-            end
-        end
-    end
-end
-
-local function ResetFrameAuras(pool)
-    for frame, _ in pairs(pool.activeObjects) do
-        if hooked[frame] then
-            local icon = frame.Icon
-            icon:SetTexCoord(0, 1, 0, 1)  -- Reset the icon's texture coordinates
-
-            if frame.border then
-                frame.border:Hide()  -- Hide the custom border
-                frame.border = nil   -- Remove the border reference
-            end
-
-            hooked[frame] = nil  -- Unhook the frame
-        end
-    end
-end
-
-function BBF.DarkModeUnitframeBorders()
-    local function ApplyToAllPools(func)
-        for poolKey, pool in pairs(TargetFrame.auraPools.pools) do
-            func(pool)
-        end
-        for poolKey, pool in pairs(FocusFrame.auraPools.pools) do
-            func(pool)
-        end
-    end
-
-    if (BetterBlizzFramesDB.darkModeUiAura and BetterBlizzFramesDB.darkModeUi) then
-        ApplyToAllPools(UpdateFrameAuras)
-    else
-        ApplyToAllPools(ResetFrameAuras)
-    end
-end
-
-for poolKey, pool in pairs(TargetFrame.auraPools.pools) do
-    hooksecurefunc(pool, "Acquire", UpdateFrameAuras)
-end
-
-for poolKey, pool in pairs(FocusFrame.auraPools.pools) do
-    hooksecurefunc(pool, "Acquire", UpdateFrameAuras)
 end
 
 

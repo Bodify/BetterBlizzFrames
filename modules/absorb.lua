@@ -239,11 +239,23 @@ end
 
 -- Event listener for Absorb Indicator
 local function OnAbsorbEvent(self, event, unit)
-    UpdateAbsorbIndicator(TargetFrame, "target")
-    UpdateAbsorbIndicator(PlayerFrame, "player")
-    UpdateAbsorbIndicator(FocusFrame, "focus")
+    if unit == "target" then
+        UpdateAbsorbIndicator(TargetFrame, "target")
+    elseif unit == "player" then
+        UpdateAbsorbIndicator(PlayerFrame, "player")
+    elseif unit == "focus" then
+        UpdateAbsorbIndicator(FocusFrame, "focus")
+    end
+    if event == "PLAYER_TARGET_CHANGED" then
+        UpdateAbsorbIndicator(TargetFrame, "target")
+    elseif event == "PLAYER_FOCUS_CHANGED" then
+        UpdateAbsorbIndicator(FocusFrame, "focus")
+    elseif event == "PLAYER_ENTERING_WORLD" then
+        UpdateAbsorbIndicator(PlayerFrame, "player")
+        UpdateAbsorbIndicator(FocusFrame, "focus")
+        UpdateAbsorbIndicator(TargetFrame, "target")
+    end
 end
-
 
 -- Event listener for Absorb Indicator
 local absorbEventFrame = CreateFrame("Frame")
