@@ -370,10 +370,12 @@ local function LoadingScreenDetector(_, event)
         BetterBlizzFramesDB.wasOnLoadingScreen = true
 
         --#######TEMPORARY BUGFIX FOR BLIZZARD#########
-        if inArena and UIWidgetPowerBarContainerFrame then
-            UIWidgetPowerBarContainerFrame:SetAlpha(0)
-        else
-            UIWidgetPowerBarContainerFrame:SetAlpha(1)
+        if BetterBlizzFramesDB.hideDragonFlying then
+            if inArena and UIWidgetPowerBarContainerFrame then
+                UIWidgetPowerBarContainerFrame:SetAlpha(0)
+            else
+                UIWidgetPowerBarContainerFrame:SetAlpha(1)
+            end
         end
         --#######TEMPORARY BUGFIX FOR BLIZZARD#########
     elseif event == "LOADING_SCREEN_DISABLED" or event == "PLAYER_LEAVING_WORLD" then
@@ -382,10 +384,12 @@ local function LoadingScreenDetector(_, event)
             BBF.ClassColorPlayerName()
         end
         --#######TEMPORARY BUGFIX FOR BLIZZARD#########
-        if inArena and UIWidgetPowerBarContainerFrame then
-            UIWidgetPowerBarContainerFrame:SetAlpha(0)
-        else
-            UIWidgetPowerBarContainerFrame:SetAlpha(1)
+        if BetterBlizzFramesDB.hideDragonFlying then
+            if inArena and UIWidgetPowerBarContainerFrame then
+                UIWidgetPowerBarContainerFrame:SetAlpha(0)
+            else
+                UIWidgetPowerBarContainerFrame:SetAlpha(1)
+            end
         end
         --#######TEMPORARY BUGFIX FOR BLIZZARD#########
         C_Timer.After(2, function()
