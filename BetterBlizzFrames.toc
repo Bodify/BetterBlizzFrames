@@ -19,5 +19,6 @@ modules\arenaframes.lua
 modules\nahjProfile.lua
 modules\chatFrame.lua
 modules\overShields.lua
+modules\stealthIndicator.lua
 gui.lua
 BetterBlizzFrames.lua

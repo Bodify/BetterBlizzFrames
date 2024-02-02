@@ -877,15 +877,13 @@ local function AdjustAuras(self, frameType)
         end
     end
 
---[[
-    if frameType == "target" then
-        adjustCastbar(TargetFrame.spellbar, TargetFrameSpellBar)
-    elseif frameType == "focus" then
-        adjustCastbar(FocusFrame.spellbar, FocusFrameSpellBar)
+    if not targetStaticCastbar or not targetDetachCastbar then
+        if frameType == "target" then
+            adjustCastbar(TargetFrame.spellbar, TargetFrameSpellBar)
+        elseif frameType == "focus" then
+            adjustCastbar(FocusFrame.spellbar, FocusFrameSpellBar)
+        end
     end
-
-]]
-
 end
 
 -- Function to create the toggle icon

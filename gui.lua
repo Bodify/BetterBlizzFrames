@@ -2855,10 +2855,18 @@ local function guiPositionAndScale()
     end)
     CreateTooltip(focusRacialIndicator, "Show on FocusFrame")
 
+    local hideDragonFlying = CreateCheckbox("hideDragonFlying", "Auto-hide Dragonriding (Temporary)", contentFrame)
+    hideDragonFlying:SetPoint("LEFT", playerAbsorbAmount.Text, "RIGHT", -74, -200)
+    CreateTooltip(hideDragonFlying, "Automatically hide the dragon riding thing\nin zones where it shouldnt be showing.\n\n(Blizzard pls fix ur shit)")
 
-
-
-
+    local stealthIndicatorPlayer = CreateCheckbox("stealthIndicatorPlayer", "Stealth Indicator (Temporary?)", contentFrame, nil, BBF.StealthIndicator)
+    stealthIndicatorPlayer:SetPoint("TOPLEFT", hideDragonFlying, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    stealthIndicatorPlayer:HookScript("OnClick", function(self)
+        if not self:GetChecked() then
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        end
+    end)
+    CreateTooltip(stealthIndicatorPlayer, "Add a blue border texture around the\nplayer frame during stealth abilities")
 
     local reloadUiButton2 = CreateFrame("Button", nil, BetterBlizzFramesSubPanel, "UIPanelButtonTemplate")
     reloadUiButton2:SetText("Reload UI")

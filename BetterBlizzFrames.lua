@@ -6,7 +6,7 @@ BBF = BBF or {}
 -- Things are getting more messy need a lot of cleaning lol
 
 local addonVersion = "1.00" --too afraid to to touch for now
-local addonUpdates = "1.2.4"
+local addonUpdates = "1.2.5"
 local sendUpdate = true
 BBF.VersionNumber = addonUpdates
 BBF.variablesLoaded = false
@@ -25,6 +25,7 @@ local defaultSettings = {
     darkModeColor = 0.20,
     hideGroupIndicator = false,
     hideFocusCombatGlow = false,
+    hideDragonFlying = true,
     targetToTScale = 1,
     focusToTScale = 1,
     targetToTXPos = 0,
@@ -337,7 +338,7 @@ local function SendUpdateMessage()
     if sendUpdate then
         C_Timer.After(7, function()
             DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames " .. addonUpdates .. ":")
-            DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Added a party/raid toggle for hide boss frames. Added a temporary fix for the dragonriding wings in arena (no setting, just on by default). Updated Nahj profile.")
+            DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a New Stealth Indicator setting (Advanced Settings). Fixed(?) auto hiding of dragonriding wings in arenas for those with weakauras for it, also made it a setting you can turn off just in case.")
             --DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a For more info and news about new features type /bbf news")
         end)
     end
@@ -345,10 +346,8 @@ end
 
 local function NewsUpdateMessage()
     DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames news:")
-    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a #1: Hide Boss Frames")
-    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a #2: Hide (Player) Combat Icon")
-    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a #3: Separated \"Overshields\" setting into UnitFrames and Compact UnitFrames (Target etc & Party/Raid)")
-    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a #4: \"Always show purge texture\" in Buffs & Debuffs that shows the purge texture even if you don't have a purge ability.")
+    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a #1: Stealth Indicator: Texture on PlayerFrame during stealth abilities.")
+    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Patreon link: www.patreon.com/bodydev")
 end
 
 local function CheckForUpdate()
@@ -365,16 +364,16 @@ end
 local function LoadingScreenDetector(_, event)
     --#######TEMPORARY BUGFIX FOR BLIZZARD#########
     local _, instanceType = GetInstanceInfo()
-    local inArena = instanceType == "arena"
+    local inArena = instanceType == "arena" or instanceType == "pvp"
     --#######TEMPORARY BUGFIX FOR BLIZZARD#########
     if event == "PLAYER_ENTERING_WORLD" or event == "LOADING_SCREEN_ENABLED" then
         BetterBlizzFramesDB.wasOnLoadingScreen = true
 
         --#######TEMPORARY BUGFIX FOR BLIZZARD#########
         if inArena and UIWidgetPowerBarContainerFrame then
-            UIWidgetPowerBarContainerFrame:Hide()
+            UIWidgetPowerBarContainerFrame:SetAlpha(0)
         else
-            UIWidgetPowerBarContainerFrame:Show()
+            UIWidgetPowerBarContainerFrame:SetAlpha(1)
         end
         --#######TEMPORARY BUGFIX FOR BLIZZARD#########
     elseif event == "LOADING_SCREEN_DISABLED" or event == "PLAYER_LEAVING_WORLD" then
@@ -384,9 +383,9 @@ local function LoadingScreenDetector(_, event)
         end
         --#######TEMPORARY BUGFIX FOR BLIZZARD#########
         if inArena and UIWidgetPowerBarContainerFrame then
-            UIWidgetPowerBarContainerFrame:Hide()
+            UIWidgetPowerBarContainerFrame:SetAlpha(0)
         else
-            UIWidgetPowerBarContainerFrame:Show()
+            UIWidgetPowerBarContainerFrame:SetAlpha(1)
         end
         --#######TEMPORARY BUGFIX FOR BLIZZARD#########
         C_Timer.After(2, function()
@@ -688,6 +687,7 @@ Frame:SetScript("OnEvent", function(...)
 
 
             BBF.HookOverShields()
+            BBF.StealthIndicator()
             BBF.CastBarTimerCaller()
             BBF.ShowPlayerCastBarIcon()
             BBF.CombatIndicator(PlayerFrame, "player")

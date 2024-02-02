@@ -64,6 +64,7 @@ local emoteSpam = {
     ["yells at her team members."] = true,
     ["yells at his team members."] = true,
     ["makes some strange gestures."] = true,
+    ["says something unintelligible."] = true,
 }
 
 -- Function to check if a message is spam based on user settings
