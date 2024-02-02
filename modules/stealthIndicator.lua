@@ -1,11 +1,13 @@
 local stealthBuffs = {
     [1784] = false, -- Stealth
+    [115191] = false, -- Stealth (With Subterfuge Talent)
     [11327] = false, -- Vanish 
     [5215] = false, -- Prowl
     [58984] = false, -- Shadowmeld
     [110960] = false, -- Greater Invisibility
     [32612] = false, -- Invisibility
-    [199483] = false, --Camoflague
+    [199483] = false, -- Camoflague
+    [414664] = false, -- Mass Invisibility
 }
 
 local stealthIndicator
