@@ -162,6 +162,7 @@ local defaultSettings = {
     targetAndFocusVerticalGap = 4,
     targetAndFocusAurasPerRow = 6,
     targetAndFocusSmallAuraScale = 1,
+    purgeTextureColorRGB = {0, 0.92, 1, 0.85},
 
     frameAurasXPos = 0,
     frameAurasYPos = 0,
@@ -338,7 +339,7 @@ local function SendUpdateMessage()
     if sendUpdate then
         C_Timer.After(7, function()
             DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames " .. addonUpdates .. ":")
-            DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a New Stealth Indicator setting (Advanced Settings). Fixed(?) auto hiding of dragonriding wings in arenas for those with weakauras for it, also made it a setting you can turn off just in case.")
+            DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Changed default \"Purge Glow\" color and added a button to change its color. Bugfix on BossFrames (potentially).")
             --DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a For more info and news about new features type /bbf news")
         end)
     end

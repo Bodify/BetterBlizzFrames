@@ -64,7 +64,9 @@ function BBF.HideFrames()
                 bossFrameHooked = true
             end
         else
-            BossTargetFrameContainer:SetParent(originalBossFrameParent)
+            if bossFrameHooked then
+                BossTargetFrameContainer:SetParent(originalBossFrameParent)
+            end
         end
 
         -- Player Combat Icon

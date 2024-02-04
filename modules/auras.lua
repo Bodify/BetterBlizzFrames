@@ -74,6 +74,8 @@ local darkModeUi
 local darkModeUiAura
 local darkModeAurasOn
 local darkModeColor = 1
+local purgeTextureColorRGB = {1, 1, 1, 1}
+local changePurgeTextureColor
 
 function BBF.UpdateUserAuraSettings()
     printSpellId = printAuraSpellIds
@@ -127,6 +129,8 @@ function BBF.UpdateUserAuraSettings()
     darkModeUiAura = BetterBlizzFramesDB.darkModeUiAura
     darkModeAurasOn = darkModeUi and darkModeUiAura
     darkModeColor = BetterBlizzFramesDB.darkModeColor
+    purgeTextureColorRGB = BetterBlizzFramesDB.purgeTextureColorRGB
+    changePurgeTextureColor = BetterBlizzFramesDB.changePurgeTextureColor
 end
 
 local function isInWhitelist(spellName, spellId)
@@ -558,7 +562,7 @@ local function AdjustAuras(self, frameType)
     end
 
     local unit = self.unit
-    local isFriend = unit and UnitIsFriend("player", unit)
+    local isFriend = unit and not UnitCanAttack("player", unit)
 
     local buffs, debuffs = {}, {}
 
@@ -682,6 +686,10 @@ local function AdjustAuras(self, frameType)
                         aura.PurgeGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", 10, -10)
                     end
                     aura.isPurgeGlow = true
+                    if changePurgeTextureColor then
+                        aura.PurgeGlow:SetDesaturated(true)
+                        aura.PurgeGlow:SetVertexColor(unpack(purgeTextureColorRGB))
+                    end
                     aura.PurgeGlow:Show()
                 else
                     if aura.PurgeGlow then
@@ -695,6 +703,9 @@ local function AdjustAuras(self, frameType)
                         if auraData.dispelName == "Magic" and ((not isFriend and auraData.isHelpful) or (isFriend and auraData.isHarmful)) then
                             if aura.Stealable then
                                 aura.Stealable:Show()
+                                if changePurgeTextureColor then
+                                    aura.Stealable:SetVertexColor(unpack(purgeTextureColorRGB))
+                                end
                             end
                         else
                             if aura.Stealable then

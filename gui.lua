@@ -3402,10 +3402,57 @@ local function guiFrameAuras()
 
     local displayDispelGlowAlways = CreateCheckbox("displayDispelGlowAlways", "Always show purge texture", playerAuraFiltering)
     displayDispelGlowAlways:SetPoint("TOPLEFT", moreAuraSettings, "BOTTOMLEFT", -20, -3)
-    CreateTooltip(displayDispelGlowAlways, "Always display the purge/steal on auras\nregardless if you have a dispel/purge/steal ability or not.")
+    CreateTooltip(displayDispelGlowAlways, "Always display the purge/steal texture on auras\nregardless if you have a dispel/purge/steal ability or not.")
+
+    local changePurgeTextureColor = CreateCheckbox("changePurgeTextureColor", "Change Purge Texture Color", playerAuraFiltering)
+    changePurgeTextureColor:SetPoint("TOPLEFT", displayDispelGlowAlways, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltip(changePurgeTextureColor, "Change Purge Texture Color")
+
+    local function OpenColorPicker(colorData)
+        local r, g, b, a = unpack(colorData)
+        local function updateColors()
+            colorData[1], colorData[2], colorData[3], colorData[4] = r, g, b, a
+            BBF.RefreshAllAuraFrames()
+        end
+
+        local function swatchFunc()
+            r, g, b = ColorPickerFrame:GetColorRGB()
+            updateColors()
+        end
+
+        local function opacityFunc()
+            a = ColorPickerFrame:GetColorAlpha()
+            updateColors()
+        end
+
+        local function cancelFunc(previousValues)
+            if previousValues then
+                r, g, b, a = unpack(previousValues)
+                updateColors()
+            end
+        end
+
+        ColorPickerFrame.previousValues = {r, g, b, a}
+
+        ColorPickerFrame:SetupColorPickerAndShow({
+            r = r, g = g, b = b, opacity = a, hasOpacity = true,
+            swatchFunc = swatchFunc,
+            opacityFunc = opacityFunc,
+            cancelFunc = cancelFunc
+        })
+    end
+
+    local dispelGlowButton = CreateFrame("Button", nil, playerAuraFiltering, "UIPanelButtonTemplate")
+    dispelGlowButton:SetText("Color")
+    dispelGlowButton:SetPoint("LEFT", changePurgeTextureColor.text, "RIGHT", -1, 0)
+    dispelGlowButton:SetSize(43, 18)
+    dispelGlowButton:SetScript("OnClick", function()
+        OpenColorPicker(BetterBlizzFramesDB.purgeTextureColorRGB)
+    end)
+    CreateTooltip(dispelGlowButton, "Dispel/Purge Glow Color.")
 
     local customLargeSmallAuraSorting = CreateCheckbox("customLargeSmallAuraSorting", "Sort Enlarged & Compact Auras", playerAuraFiltering)
-    customLargeSmallAuraSorting:SetPoint("TOPLEFT", displayDispelGlowAlways, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    customLargeSmallAuraSorting:SetPoint("TOPLEFT", changePurgeTextureColor, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(customLargeSmallAuraSorting, "Show Enlarged Auras first in the list and Compact Auras last.")
 
 
