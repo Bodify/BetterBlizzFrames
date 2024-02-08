@@ -1,19 +1,20 @@
-local stealthBuffs = {
-    [1784] = false, -- Stealth
-    [115191] = false, -- Stealth (With Subterfuge Talent)
-    [11327] = false, -- Vanish 
-    [5215] = false, -- Prowl
-    [58984] = false, -- Shadowmeld
-    [110960] = false, -- Greater Invisibility
-    [32612] = false, -- Invisibility
-    [199483] = false, -- Camoflague
-    [414664] = false, -- Mass Invisibility
+local stealthSpellIDs = {
+    [1784] = true,    -- Stealth
+    [115191] = true,  -- Stealth (With Subterfuge Talent)
+    [11327] = true,   -- Vanish
+    [5215] = true,    -- Prowl
+    [58984] = true,   -- Shadowmeld
+    [110960] = true,  -- Greater Invisibility
+    [32612] = true,   -- Invisibility
+    [199483] = true,  -- Camouflage
+    [414664] = true,  -- Mass Invisibility
 }
 
+local PlayerAuras = {}
 local stealthIndicator
 local stealthEvent
 
-local function createStealthIndicator()
+local function createOrShowStealthIndicator()
     if not stealthIndicator then
         stealthIndicator = PlayerFrame:CreateTexture(nil, "OVERLAY")
         stealthIndicator:SetAtlas("ui-hud-unitframe-player-portraiton-vehicle-status")
@@ -30,50 +31,69 @@ local function hideStealthIndicator()
     end
 end
 
-local function isAnyStealthBuffActive()
-    for _, isActive in pairs(stealthBuffs) do
-        if isActive then
+local function isStealthAuraActive()
+    for _, aura in pairs(PlayerAuras) do
+        if stealthSpellIDs[aura.spellId] then
             return true
         end
     end
     return false
 end
 
-local function onBuffAdded(spellId)
-    createStealthIndicator()
-end
-
-local function onBuffRemoved(spellId)
-    if not isAnyStealthBuffActive() then
+local function updateStealthIndicator()
+    if isStealthAuraActive() then
+        createOrShowStealthIndicator()
+    else
         hideStealthIndicator()
     end
 end
 
-local function checkForStealth(self, event, ...)
-    local unit = ...
-    if unit ~= "player" then return end
+local function UpdatePlayerAurasFull()
+    PlayerAuras = {}
+    AuraUtil.ForEachAura("player", "HELPFUL", nil, function(aura)
+        if stealthSpellIDs[aura.spellId] then
+            PlayerAuras[aura.auraInstanceID] = aura
+        end
+    end, true)
+    updateStealthIndicator()
+end
 
-    for spellId, wasActive in pairs(stealthBuffs) do
-        local aura = C_UnitAuras.GetPlayerAuraBySpellID(spellId)
-        if aura then
-            if not wasActive then
-                stealthBuffs[spellId] = true
-                onBuffAdded(spellId)
-            end
-        else
-            if wasActive then
-                stealthBuffs[spellId] = false
-                onBuffRemoved(spellId)
+local function UpdatePlayerAurasIncremental(unitAuraUpdateInfo)
+    if unitAuraUpdateInfo.addedAuras then
+        for _, aura in ipairs(unitAuraUpdateInfo.addedAuras) do
+            if stealthSpellIDs[aura.spellId] then
+                PlayerAuras[aura.auraInstanceID] = aura
             end
         end
+    end
+
+    if unitAuraUpdateInfo.removedAuraInstanceIDs then
+        for _, auraInstanceID in ipairs(unitAuraUpdateInfo.removedAuraInstanceIDs) do
+            PlayerAuras[auraInstanceID] = nil
+        end
+    end
+
+    updateStealthIndicator()
+end
+
+local function OnUnitAurasUpdated(self, event, unit, unitAuraUpdateInfo)
+    if not unitAuraUpdateInfo or unitAuraUpdateInfo.isFullUpdate then
+        UpdatePlayerAurasFull()
+    else
+        UpdatePlayerAurasIncremental(unitAuraUpdateInfo)
     end
 end
 
 function BBF.StealthIndicator()
     if BetterBlizzFramesDB.stealthIndicatorPlayer and not stealthEvent then
         stealthEvent = CreateFrame("Frame")
-        stealthEvent:RegisterEvent("UNIT_AURA")
-        stealthEvent:SetScript("OnEvent", checkForStealth)
-        checkForStealth(self, event, "player")
+        stealthEvent:RegisterUnitEvent("UNIT_AURA", "player")
+        stealthEvent:SetScript("OnEvent", OnUnitAurasUpdated)
+        UpdatePlayerAurasFull()
+    elseif not BetterBlizzFramesDB.stealthIndicatorPlayer and stealthEvent then
+        stealthEvent:UnregisterEvent("UNIT_AURA")
+        stealthEvent:SetScript("OnEvent", nil)
+        stealthEvent = nil
+        hideStealthIndicator()
     end
 end

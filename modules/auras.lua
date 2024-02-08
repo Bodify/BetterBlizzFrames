@@ -9,6 +9,11 @@ local function sum(t)
     return sum
 end
 
+local TargetFrame = TargetFrame
+local TargetFrameSpellBar = TargetFrameSpellBar
+local FocusFrame = FocusFrame
+local FocusFrameSpellBar = FocusFrameSpellBar
+
 local BlizzardShouldShowDebuffs = TargetFrame.ShouldShowDebuffs
 
 local playerBuffsHooked
@@ -1010,6 +1015,7 @@ local function CreateToggleIcon()
     return toggleIcon
 end
 
+local BuffFrame = BuffFrame
 local function PersonalBuffFrameFilterAndGrid(self)
     ResetHiddenAurasCount()
     local isExpanded = BuffFrame:IsExpanded();
@@ -1032,8 +1038,9 @@ local function PersonalBuffFrameFilterAndGrid(self)
     local hiddenYOffset = -auraSpacingY - auraSize + playerAuraSpacingY;
     local toggleIcon = showHiddenAurasIcon and CreateToggleIcon() or nil
 
+    if isExpanded then
     for auraIndex, auraInfo in ipairs(BuffFrame.auraInfo) do
-        if isExpanded or not auraInfo.hideUnlessExpanded then
+        --if isExpanded or not auraInfo.hideUnlessExpanded then
             local auraFrame = BuffFrame.auraFrames[auraIndex]
             if auraFrame and not auraFrame.isAuraAnchor then
 
@@ -1203,7 +1210,7 @@ end
 
 --local tooltip = CreateFrame("GameTooltip", "AuraTooltip", nil, "GameTooltipTemplate")
 --tooltip:SetOwner(WorldFrame, "ANCHOR_NONE")
-
+local DebuffFrame = DebuffFrame
 local function PersonalDebuffFrameFilterAndGrid(self)
     local maxAurasPerRow = DebuffFrame.AuraContainer.iconStride
     local auraSpacingX = DebuffFrame.AuraContainer.iconPadding - 7 + playerAuraSpacingX
@@ -1253,7 +1260,7 @@ local function PersonalDebuffFrameFilterAndGrid(self)
 
 
     for auraIndex, auraInfo in ipairs(DebuffFrame.auraInfo) do
-        if isExpanded or not auraInfo.hideUnlessExpanded then
+        --if isExpanded or not auraInfo.hideUnlessExpanded then
             local auraFrame = DebuffFrame.auraFrames[auraIndex]
             if auraFrame and not auraFrame.isAuraAnchor then
 --[[
@@ -1286,7 +1293,7 @@ local function PersonalDebuffFrameFilterAndGrid(self)
                   spellId = spellId,
                   auraType = auraInfo.auraType,
               };
-                local unit = self.unit
+                --local unit = self.unit
                 if printAuraIds and not auraFrame.bbfHookAdded then
                     auraFrame.bbfHookAdded = true
                     auraFrame:HookScript("OnEnter", function()
@@ -1403,7 +1410,7 @@ local function PersonalDebuffFrameFilterAndGrid(self)
                     auraFrame:Hide();
                 end
             end
-        end
+        --end
     end
 --[=[
     if dotChecker then

@@ -6,7 +6,7 @@ BBF = BBF or {}
 -- Things are getting more messy need a lot of cleaning lol
 
 local addonVersion = "1.00" --too afraid to to touch for now
-local addonUpdates = "1.2.6"
+local addonUpdates = "1.2.7"
 local sendUpdate = true
 BBF.VersionNumber = addonUpdates
 BBF.variablesLoaded = false
@@ -334,12 +334,34 @@ local function AddAlphaValuesToAuraColors()
     end
 end
 
+local minimapStatusChanged
+function BBF.MinimapHider(instanceType)
+    local MinimapGroup = Minimap and MinimapCluster
+    local inArena = instanceType == "arena"
+    local hideMinimap = BetterBlizzFramesDB.hideMinimap
+    local hideMinimapAuto = BetterBlizzFramesDB.hideMinimapAuto
+
+    if hideMinimap then
+        MinimapGroup:Hide()
+        minimapStatusChanged = true
+        return
+    elseif minimapStatusChanged then
+        MinimapGroup:Show()
+    end
+
+    if hideMinimapAuto and inArena then
+        MinimapGroup:Hide()
+    elseif hideMinimapAuto and not inArena then
+        MinimapGroup:Show()
+    end
+end
+
 -- Update message
 local function SendUpdateMessage()
     if sendUpdate then
         C_Timer.After(7, function()
             DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames " .. addonUpdates .. ":")
-            DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Changed default \"Purge Glow\" color and added a button to change its color. Bugfix on BossFrames (potentially).")
+            DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Added a \"Misc\" tab in settings and added a Minimap hider to it. Some minor performance increase tweaks.")
             --DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a For more info and news about new features type /bbf news")
         end)
     end
@@ -347,9 +369,11 @@ end
 
 local function NewsUpdateMessage()
     DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames news:")
-    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a #1: Stealth Indicator: Texture on PlayerFrame during stealth abilities.")
+    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Added a \"Misc\" tab in settings and added a Minimap hider to it. Some minor performance increase tweaks.")
     DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Patreon link: www.patreon.com/bodydev")
 end
+
+-- added minimap hider and auto hider
 
 local function CheckForUpdate()
     if not BetterBlizzFramesDB.hasSaved then
@@ -370,6 +394,8 @@ local function LoadingScreenDetector(_, event)
     if event == "PLAYER_ENTERING_WORLD" or event == "LOADING_SCREEN_ENABLED" then
         BetterBlizzFramesDB.wasOnLoadingScreen = true
 
+        BBF.MinimapHider(instanceType)
+
         --#######TEMPORARY BUGFIX FOR BLIZZARD#########
         if BetterBlizzFramesDB.hideDragonFlying then
             if inArena and UIWidgetPowerBarContainerFrame then
@@ -384,6 +410,9 @@ local function LoadingScreenDetector(_, event)
             BBF.FixStupidBlizzPTRShit()
             BBF.ClassColorPlayerName()
         end
+
+        BBF.MinimapHider(instanceType)
+
         --#######TEMPORARY BUGFIX FOR BLIZZARD#########
         if BetterBlizzFramesDB.hideDragonFlying then
             if inArena and UIWidgetPowerBarContainerFrame then

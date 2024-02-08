@@ -2633,6 +2633,7 @@ local function guiPositionAndScale()
     absorbIndicator:SetAtlas("ParagonReputation_Glow")
     absorbIndicator:SetSize(56, 56)
     absorbIndicator:SetPoint("BOTTOM", anchorSubAbsorb, "TOP", -1, -10)
+    CreateTooltip(absorbIndicator, "Show absorb amount on target/focus frame. Enable on the General page.")
 
     local absorbIndicatorScale = CreateSlider(contentFrame, "Size", 0.1, 1.9, 0.01, "absorbIndicatorScale")
     absorbIndicatorScale:SetPoint("TOP", anchorSubAbsorb, "BOTTOM", 0, -15)
@@ -2721,6 +2722,7 @@ local function guiPositionAndScale()
     combatIconSub:SetTexture("Interface\\Icons\\ABILITY_DUALWIELD")
     combatIconSub:SetSize(34, 34)
     combatIconSub:SetPoint("BOTTOM", anchorSubOutOfCombat, "TOP", 0, 1)
+    CreateTooltip(combatIconSub, "Show combat status on target/focus frame. Enable on the General page.")
 
     local combatIndicatorScale = CreateSlider(contentFrame, "Size", 0.1, 1.9, 0.01, "combatIndicatorScale")
     combatIndicatorScale:SetPoint("TOP", anchorSubOutOfCombat, "BOTTOM", 0, -15)
@@ -2803,6 +2805,7 @@ local function guiPositionAndScale()
     racialIndicatorIcon:SetTexture("Interface\\Icons\\ability_ambush")
     racialIndicatorIcon:SetSize(34, 34)
     racialIndicatorIcon:SetPoint("BOTTOM", anchorSubracialIndicator, "TOP", 0, 1)
+    CreateTooltip(racialIndicatorIcon, "Show racial icon on target/focus. Enable on the General page.")
 
     local racialIndicatorScale = CreateSlider(contentFrame, "Size", 0.1, 1.9, 0.01, "racialIndicatorScale")
     racialIndicatorScale:SetPoint("TOP", anchorSubracialIndicator, "BOTTOM", 0, -15)
@@ -2854,19 +2857,6 @@ local function guiPositionAndScale()
         BBF.RacialIndicatorCaller()
     end)
     CreateTooltip(focusRacialIndicator, "Show on FocusFrame")
-
-    local hideDragonFlying = CreateCheckbox("hideDragonFlying", "Auto-hide Dragonriding (Temporary)", contentFrame)
-    hideDragonFlying:SetPoint("LEFT", playerAbsorbAmount.Text, "RIGHT", -74, -200)
-    CreateTooltip(hideDragonFlying, "Automatically hide the dragon riding thing\nin zones where it shouldnt be showing.\n\n(Blizzard pls fix ur shit)")
-
-    local stealthIndicatorPlayer = CreateCheckbox("stealthIndicatorPlayer", "Stealth Indicator (Temporary?)", contentFrame, nil, BBF.StealthIndicator)
-    stealthIndicatorPlayer:SetPoint("TOPLEFT", hideDragonFlying, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    stealthIndicatorPlayer:HookScript("OnClick", function(self)
-        if not self:GetChecked() then
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
-        end
-    end)
-    CreateTooltip(stealthIndicatorPlayer, "Add a blue border texture around the\nplayer frame during stealth abilities")
 
     local reloadUiButton2 = CreateFrame("Button", nil, BetterBlizzFramesSubPanel, "UIPanelButtonTemplate")
     reloadUiButton2:SetText("Reload UI")
@@ -3476,6 +3466,52 @@ local function guiFrameAuras()
     betaHighlightIcon:SetPoint("RIGHT", playerAuraFiltering, "LEFT", 8, 0)
 end
 
+local function guiMisc()
+    local guiMisc = CreateFrame("Frame")
+    guiMisc.name = "Misc"--"|A:GarrMission_CurrencyIcon-Material:19:19|a Misc"
+    guiMisc.parent = BetterBlizzFrames.name
+    InterfaceOptions_AddCategory(guiMisc)
+
+    local bgImg = guiMisc:CreateTexture(nil, "BACKGROUND")
+    bgImg:SetAtlas("professions-recipe-background")
+    bgImg:SetPoint("CENTER", guiMisc, "CENTER", -8, 4)
+    bgImg:SetSize(680, 610)
+    bgImg:SetAlpha(0.4)
+    bgImg:SetVertexColor(0,0,0)
+
+    local settingsText = guiMisc:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    settingsText:SetPoint("TOPLEFT", guiMisc, "TOPLEFT", 20, -10)
+    settingsText:SetText("Misc settings")
+    local miscSettingsIcon = guiMisc:CreateTexture(nil, "ARTWORK")
+    miscSettingsIcon:SetAtlas("optionsicon-brown")
+    miscSettingsIcon:SetSize(22, 22)
+    miscSettingsIcon:SetPoint("RIGHT", settingsText, "LEFT", -3, -1)
+
+    local hideMinimap = CreateCheckbox("hideMinimap", "Hide Minimap", guiMisc, nil, BBF.MinimapHider)
+    hideMinimap:SetPoint("TOPLEFT", settingsText, "BOTTOMLEFT", -4, pixelsOnFirstBox)
+
+    local hideMinimapAuto = CreateCheckbox("hideMinimapAuto", "Hide Minimap only during Arena", guiMisc)
+    hideMinimapAuto:SetPoint("TOPLEFT", hideMinimap, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltip(hideMinimapAuto, "Automatically hide Minimap during arena games.")
+    hideMinimapAuto:HookScript("OnClick", function()
+        local _, instanceType = GetInstanceInfo()
+        BBF.MinimapHider(instanceType)
+    end)
+
+    local hideDragonFlying = CreateCheckbox("hideDragonFlying", "Auto-hide Dragonriding (Temporary)", guiMisc)
+    hideDragonFlying:SetPoint("TOPLEFT", hideMinimapAuto, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltip(hideDragonFlying, "Automatically hide the dragon riding thing\nin zones where it shouldnt be showing.\n\n(Blizzard pls fix ur shit)")
+
+    local stealthIndicatorPlayer = CreateCheckbox("stealthIndicatorPlayer", "Stealth Indicator (Temporary?)", guiMisc, nil, BBF.StealthIndicator)
+    stealthIndicatorPlayer:SetPoint("TOPLEFT", hideDragonFlying, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    stealthIndicatorPlayer:HookScript("OnClick", function(self)
+        if not self:GetChecked() then
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        end
+    end)
+    CreateTooltip(stealthIndicatorPlayer, "Add a blue border texture around the\nplayer frame during stealth abilities")
+end
+
 local function guiChatFrame()
 
     local guiChatFrame = CreateFrame("Frame")
@@ -3506,6 +3542,7 @@ function BBF.InitializeOptions()
         guiPositionAndScale()
         guiFrameAuras()
         guiCastbars()
+        guiMisc()
         --guiChatFrame()
     end
 end
