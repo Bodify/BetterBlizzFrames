@@ -461,3 +461,43 @@ function BBF.HidePartyInArena()
         partyAlpha = 1
     end
 end
+
+--------------------------------------
+-- Minimap Hider
+--------------------------------------
+local minimapStatusChanged
+function BBF.MinimapHider(instanceType)
+    local MinimapGroup = Minimap and MinimapCluster
+    local QueueStatusEye = QueueStatusButtonIcon
+    local ObjectiveTracker = ObjectiveTrackerFrame
+
+    local inArena = instanceType == "arena"
+
+    local hideMinimap = BetterBlizzFramesDB.hideMinimap
+    local hideMinimapAuto = BetterBlizzFramesDB.hideMinimapAuto
+    local hideQueueEye = BetterBlizzFramesDB.hideMinimapAutoQueueEye
+    local hideObjectives = BetterBlizzFramesDB.hideObjectiveTracker
+
+    if hideMinimap then
+        MinimapGroup:Hide()
+        minimapStatusChanged = true
+        return
+    elseif minimapStatusChanged then
+        MinimapGroup:Show()
+    end
+
+    if hideMinimapAuto and inArena then
+        MinimapGroup:Hide()
+        if hideQueueEye then
+            QueueStatusEye:Hide()
+        end
+        if hideObjectives then
+            ObjectiveTracker:Hide()
+        end
+    elseif hideMinimapAuto and not inArena then
+        MinimapGroup:Show()
+        if hideQueueEye then
+            QueueStatusEye:Show()
+        end
+    end
+end

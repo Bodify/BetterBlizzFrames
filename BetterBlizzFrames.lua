@@ -6,7 +6,7 @@ BBF = BBF or {}
 -- Things are getting more messy need a lot of cleaning lol
 
 local addonVersion = "1.00" --too afraid to to touch for now
-local addonUpdates = "1.2.7"
+local addonUpdates = "1.2.8"
 local sendUpdate = true
 BBF.VersionNumber = addonUpdates
 BBF.variablesLoaded = false
@@ -334,34 +334,12 @@ local function AddAlphaValuesToAuraColors()
     end
 end
 
-local minimapStatusChanged
-function BBF.MinimapHider(instanceType)
-    local MinimapGroup = Minimap and MinimapCluster
-    local inArena = instanceType == "arena"
-    local hideMinimap = BetterBlizzFramesDB.hideMinimap
-    local hideMinimapAuto = BetterBlizzFramesDB.hideMinimapAuto
-
-    if hideMinimap then
-        MinimapGroup:Hide()
-        minimapStatusChanged = true
-        return
-    elseif minimapStatusChanged then
-        MinimapGroup:Show()
-    end
-
-    if hideMinimapAuto and inArena then
-        MinimapGroup:Hide()
-    elseif hideMinimapAuto and not inArena then
-        MinimapGroup:Show()
-    end
-end
-
 -- Update message
 local function SendUpdateMessage()
     if sendUpdate then
         C_Timer.After(7, function()
             DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames " .. addonUpdates .. ":")
-            DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Added a \"Misc\" tab in settings and added a Minimap hider to it. Some minor performance increase tweaks.")
+            DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Added subsettings to minimap hider to also hide queue and objective tracker.")
             --DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a For more info and news about new features type /bbf news")
         end)
     end
@@ -369,7 +347,7 @@ end
 
 local function NewsUpdateMessage()
     DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames news:")
-    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Added a \"Misc\" tab in settings and added a Minimap hider to it. Some minor performance increase tweaks.")
+    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Added subsettings to minimap hider to also hide queue and objective tracker.")
     DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Patreon link: www.patreon.com/bodydev")
 end
 
