@@ -3509,7 +3509,7 @@ local function guiMisc()
 
     local hideObjectiveTracker = CreateCheckbox("hideObjectiveTracker", "Also hide Objective Tracker", hideMinimapAuto)
     hideObjectiveTracker:SetPoint("TOPLEFT", hideMinimapAutoQueueEye, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltip(hideObjectiveTracker, "Automatically hide Queue Status Eye during arena games.")
+    CreateTooltip(hideObjectiveTracker, "Automatically hide Objective Tracker during arena games.")
     hideObjectiveTracker:HookScript("OnClick", function()
         local _, instanceType = GetInstanceInfo()
         BBF.MinimapHider(instanceType)
