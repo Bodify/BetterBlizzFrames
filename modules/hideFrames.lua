@@ -499,5 +499,8 @@ function BBF.MinimapHider(instanceType)
         if hideQueueEye then
             QueueStatusEye:Show()
         end
+        if hideObjectives then
+            ObjectiveTracker:Show()
+        end
     end
 end

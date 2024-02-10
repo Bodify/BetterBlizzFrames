@@ -597,6 +597,9 @@ local function CreateSlider(parent, label, minValue, maxValue, stepValue, elemen
                 elseif element == "enlargedAuraSize" then
                     BetterBlizzFramesDB.enlargedAuraSize = value
                     BBF.RefreshAllAuraFrames()
+                elseif element == "compactedAuraSize" then
+                    BetterBlizzFramesDB.compactedAuraSize = value
+                    BBF.RefreshAllAuraFrames()
                 elseif element == "racialIndicatorScale" then
                     BetterBlizzFramesDB.racialIndicatorScale = value
                     BBF.RacialIndicatorCaller()
