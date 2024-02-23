@@ -56,6 +56,7 @@ local compactedTextureAdjustment = 10
 local displayDispelGlowAlways
 local customLargeSmallAuraSorting
 local shouldAdjustCastbar
+local shouldAdjustCastbarFocus
 local targetCastBarXPos = 0
 local targetCastBarYPos = 0
 local focusCastBarXPos = 0
@@ -81,6 +82,8 @@ local darkModeAurasOn
 local darkModeColor = 1
 local purgeTextureColorRGB = {1, 1, 1, 1}
 local changePurgeTextureColor
+local targetToTAdjustmentOffsetY
+local focusToTAdjustmentOffsetY
 
 function BBF.UpdateUserAuraSettings()
     printSpellId = printAuraSpellIds
@@ -112,17 +115,20 @@ function BBF.UpdateUserAuraSettings()
     customLargeSmallAuraSorting = BetterBlizzFramesDB.customLargeSmallAuraSorting
     focusStaticCastbar = BetterBlizzFramesDB.focusStaticCastbar
     focusDetachCastbar = BetterBlizzFramesDB.focusDetachCastbar
-    shouldAdjustCastbar = focusStaticCastbar or focusDetachCastbar or BetterBlizzFramesDB.playerAuraFiltering
+    targetStaticCastbar = BetterBlizzFramesDB.targetStaticCastbar
+    targetDetachCastbar = BetterBlizzFramesDB.targetDetachCastbar
+    shouldAdjustCastbar = targetStaticCastbar or targetDetachCastbar or BetterBlizzFramesDB.playerAuraFiltering
+    shouldAdjustCastbarFocus = focusStaticCastbar or focusDetachCastbar or BetterBlizzFramesDB.playerAuraFiltering
     targetCastBarXPos = BetterBlizzFramesDB.targetCastBarXPos
     targetCastBarYPos = BetterBlizzFramesDB.targetCastBarYPos
     focusCastBarXPos = BetterBlizzFramesDB.focusCastBarXPos
     focusCastBarYPos = BetterBlizzFramesDB.focusCastBarYPos
+    targetToTAdjustmentOffsetY = BetterBlizzFramesDB.targetToTAdjustmentOffsetY
+    focusToTAdjustmentOffsetY = BetterBlizzFramesDB.focusToTAdjustmentOffsetY
     targetToTCastbarAdjustment = BetterBlizzFramesDB.targetToTCastbarAdjustment
     targetAndFocusAuraScale = BetterBlizzFramesDB.targetAndFocusAuraScale
     targetAndFocusVerticalGap = BetterBlizzFramesDB.targetAndFocusVerticalGap
-    targetDetachCastbar = BetterBlizzFramesDB.targetDetachCastbar
     focusToTCastbarAdjustment = BetterBlizzFramesDB.focusToTCastbarAdjustment
-    targetStaticCastbar = BetterBlizzFramesDB.targetStaticCastbar
     showHiddenAurasIcon = BetterBlizzFramesDB.showHiddenAurasIcon
     playerAuraSpacingX = BetterBlizzFramesDB.playerAuraSpacingX
     playerAuraSpacingY = BetterBlizzFramesDB.playerAuraSpacingY
@@ -335,6 +341,11 @@ local function adjustCastbar(self, frame)
                 local minOffset = -40
                 -- Choose the more negative value
                 yOffset = min(minOffset, yOffset)
+                if frame == TargetFrameSpellBar then
+                    yOffset = yOffset + targetToTAdjustmentOffsetY
+                elseif frame == FocusFrameSpellBar then
+                    yOffset = yOffset + focusToTAdjustmentOffsetY
+                end
             end
 
             meta.SetPoint(self, "TOPLEFT", parent, "BOTTOMLEFT", 43 + targetCastBarXPos, yOffset + targetCastBarYPos);
@@ -383,6 +394,11 @@ local function DefaultCastbarAdjustment(self, frame)
 
         if totAdjustment then
             pointY = parentFrame.smallSize and -48 or -46
+            if frame == TargetFrameSpellBar then
+                pointY = pointY + targetToTAdjustmentOffsetY
+            elseif frame == FocusFrameSpellBar then
+                pointY = pointY + focusToTAdjustmentOffsetY
+            end
         end
     end
 
@@ -399,9 +415,13 @@ end
 
 function BBF.CastbarAdjustCaller()
     BBF.UpdateUserAuraSettings()
-    if shouldAdjustCastbar then
-        adjustCastbar(TargetFrame.spellbar, TargetFrameSpellBar)
-        adjustCastbar(FocusFrame.spellbar, FocusFrameSpellBar)
+    if shouldAdjustCastbar or shouldAdjustCastbarFocus then
+        if shouldAdjustCastbar then
+            adjustCastbar(TargetFrame.spellbar, TargetFrameSpellBar)
+        end
+        if shouldAdjustCastbarFocus then
+            adjustCastbar(FocusFrame.spellbar, FocusFrameSpellBar)
+        end
     else
         DefaultCastbarAdjustment(TargetFrame.spellbar, TargetFrameSpellBar)
         DefaultCastbarAdjustment(FocusFrame.spellbar, FocusFrameSpellBar)
@@ -1461,7 +1481,7 @@ function BBF.HookPlayerAndTargetAuras()
             end
         end);
         hooksecurefunc(FocusFrame.spellbar, "SetPoint", function()
-            if shouldAdjustCastbar then
+            if shouldAdjustCastbarFocus then
                 adjustCastbar(FocusFrame.spellbar, FocusFrameSpellBar)
             else
                 DefaultCastbarAdjustment(FocusFrame.spellbar, FocusFrameSpellBar)

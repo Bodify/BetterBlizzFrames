@@ -158,11 +158,12 @@ function BBF.updateTotemBorders()
     end
 end
 
-function BBF.DarkmodeFrames()
-
+function BBF.DarkmodeFrames(bypass)
+    if not bypass and not BetterBlizzFramesDB.darkModeUi then return end
 
     BBF.AbsorbCaller()
     BBF.CombatIndicatorCaller()
+
     local desaturationValue = BetterBlizzFramesDB.darkModeUi and true or false
     local vertexColor = BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeColor or 1
     local lighterVertexColor = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.3) or 1

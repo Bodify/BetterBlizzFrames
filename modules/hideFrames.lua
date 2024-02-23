@@ -11,6 +11,12 @@ local originalResourceParent
 local originalBossFrameParent
 local bossFrameHooked
 
+local function applyAlpha(frame, alpha)
+    if frame then
+        frame:SetAlpha(alpha)
+    end
+end
+
 function BBF.HideFrames()
     if BetterBlizzFramesDB.hasCheckedUi then
         local playerClass, englishClass = UnitClass("player")
@@ -391,6 +397,31 @@ function BBF.HideFrames()
         LossOfControlFrame.blackBg:SetAlpha(LossOfControlFrameAlpha)
         LossOfControlFrame.RedLineTop:SetAlpha(LossOfControlFrameAlpha)
         LossOfControlFrame.RedLineBottom:SetAlpha(LossOfControlFrameAlpha)
+
+        -- action bar macro name hotkey hide
+        local hotKeyAlpha = BetterBlizzFramesDB.hideActionBarHotKey and 0 or 1
+        local macroNameAlpha = BetterBlizzFramesDB.hideActionBarMacroName and 0 or 1
+        for i = 1, 12 do
+            applyAlpha(_G["ActionButton" .. i .. "HotKey"], hotKeyAlpha)
+            applyAlpha(_G["MultiBarBottomLeftButton" .. i .. "HotKey"], hotKeyAlpha)
+            applyAlpha(_G["MultiBarBottomRightButton" ..i.. "HotKey"], hotKeyAlpha)
+            applyAlpha(_G["MultiBarRightButton" ..i.. "HotKey"], hotKeyAlpha)
+            applyAlpha(_G["MultiBarLeftButton" ..i.. "HotKey"], hotKeyAlpha)
+            applyAlpha(_G["MultiBar5Button" ..i.. "HotKey"], hotKeyAlpha)
+            applyAlpha(_G["MultiBar6Button" ..i.. "HotKey"], hotKeyAlpha)
+            applyAlpha(_G["MultiBar7Button" ..i.. "HotKey"], hotKeyAlpha)
+            applyAlpha(_G["PetActionButton" ..i.. "HotKey"], hotKeyAlpha)
+
+            applyAlpha(_G["ActionButton" .. i .. "Name"], macroNameAlpha)
+            applyAlpha(_G["MultiBarBottomLeftButton" .. i .. "Name"], macroNameAlpha)
+            applyAlpha(_G["MultiBarBottomRightButton" ..i.. "Name"], macroNameAlpha)
+            applyAlpha(_G["MultiBarRightButton" ..i.. "Name"], macroNameAlpha)
+            applyAlpha(_G["MultiBarLeftButton" ..i.. "Name"], macroNameAlpha)
+            applyAlpha(_G["MultiBar5Button" ..i.. "Name"], macroNameAlpha)
+            applyAlpha(_G["MultiBar6Button" ..i.. "Name"], macroNameAlpha)
+            applyAlpha(_G["MultiBar7Button" ..i.. "Name"], macroNameAlpha)
+            applyAlpha(_G["PetActionButton" ..i.. "Name"], macroNameAlpha)
+        end
     end
 end
 

@@ -609,6 +609,12 @@ local function CreateSlider(parent, label, minValue, maxValue, stepValue, elemen
                 elseif element == "racialIndicatorYPos" then
                     BetterBlizzFramesDB.racialIndicatorYPos = value
                     BBF.RacialIndicatorCaller()
+                elseif element == "targetToTAdjustmentOffsetY" then
+                    BetterBlizzFramesDB.targetToTAdjustmentOffsetY = value
+                    BBF.CastbarAdjustCaller()
+                elseif element == "focusToTAdjustmentOffsetY" then
+                    BetterBlizzFramesDB.focusToTAdjustmentOffsetY = value
+                    BBF.CastbarAdjustCaller()
 
                     --end
                 end
@@ -747,7 +753,7 @@ local function CreateCheckbox(option, label, parent, cvarName, extraFunc)
             extraFunc(option, value)
         end
 
-        if not BetterBlizzFramesDB.wasOnLoadingScreen then
+        if not BetterBlizzFramesDB.wasOnLoadingScreen and BetterBlizzFramesDB.playerAuraFiltering then
             BBF.RefreshAllAuraFrames()
         end
         --BBF.UpdateUserTargetSettings()
@@ -1278,20 +1284,32 @@ local function guiGeneralTab()
     hideLossOfControlFrameBg:SetPoint("TOPLEFT", playerFrameOCD, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(hideLossOfControlFrameBg, "Hide the dark background and red bar on top and on bottom of the Loss of Control frame")
 
-    local darkModeUi = CreateCheckbox("darkModeUi", "Dark Mode", BetterBlizzFrames, nil, BBF.DarkmodeFrames)
+    local darkModeUi = CreateCheckbox("darkModeUi", "Dark Mode", BetterBlizzFrames)
     darkModeUi:SetPoint("TOPLEFT", hideLossOfControlFrameBg, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    darkModeUi:HookScript("OnClick", function()
+        BBF.DarkmodeFrames(true)
+    end)
     CreateTooltip(darkModeUi, "Simple dark mode for: UnitFrames, Actionbars & Aura Icons.\n\nIf you want a more advanced & thorough dark mode\nI recommend the addon FrameColor instead of this setting.")
 
-    local darkModeUiAura = CreateCheckbox("darkModeUiAura", "Auras", BetterBlizzFrames, nil, BBF.DarkmodeFrames)
+    local darkModeUiAura = CreateCheckbox("darkModeUiAura", "Auras", BetterBlizzFrames)
     darkModeUiAura:SetPoint("LEFT", darkModeUi.Text, "RIGHT", 5, 0)
+    darkModeUiAura:HookScript("OnClick", function()
+        BBF.DarkmodeFrames(true)
+    end)
     CreateTooltip(darkModeUiAura, "Dark borders for Player, Target and Focus aura icons")
 
-    local darkModeActionBars = CreateCheckbox("darkModeActionBars", "ActionBars", BetterBlizzFrames, nil, BBF.DarkmodeFrames)
+    local darkModeActionBars = CreateCheckbox("darkModeActionBars", "ActionBars", BetterBlizzFrames)
     darkModeActionBars:SetPoint("LEFT", darkModeUiAura.Text, "RIGHT", 5, 0)
+    darkModeActionBars:HookScript("OnClick", function()
+        BBF.DarkmodeFrames(true)
+    end)
     CreateTooltip(darkModeActionBars, "Dark borders for action bars.")
 
-    local darkModeCastbars = CreateCheckbox("darkModeCastbars", "Castbars", BetterBlizzFrames, nil, BBF.DarkmodeFrames)
+    local darkModeCastbars = CreateCheckbox("darkModeCastbars", "Castbars", BetterBlizzFrames)
     darkModeCastbars:SetPoint("TOPLEFT", darkModeActionBars, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    darkModeCastbars:HookScript("OnClick", function()
+        BBF.DarkmodeFrames(true)
+    end)
     CreateTooltip(darkModeCastbars, "Dark borders for castbars.")
 
     local darkModeColor = CreateSlider(darkModeUi, "Darkness", 0, 1, 0.01, "darkModeColor", nil, 90)
@@ -1974,6 +1992,15 @@ local function guiGeneralTab()
         StaticPopup_Show("BBF_CONFIRM_NAHJ_PROFILE")
     end)
     CreateTooltip(nahjProfileButton, "Enable all of Nahj's profile settings.", "ANCHOR_LEFT")
+
+    local resetBBFButton = CreateFrame("Button", nil, BetterBlizzFrames, "UIPanelButtonTemplate")
+    resetBBFButton:SetText("Reset BetterBlizzFrames")
+    resetBBFButton:SetWidth(180)
+    resetBBFButton:SetPoint("RIGHT", nahjProfileButton, "LEFT", -170, 0)
+    resetBBFButton:SetScript("OnClick", function()
+        StaticPopup_Show("CONFIRM_RESET_BETTERBLIZZFRAMESDB")
+    end)
+    CreateTooltip(resetBBFButton, "Reset ALL BetterBlizzFrames settings.")
 end
 
 local function guiCastbars()
@@ -2139,6 +2166,20 @@ local function guiCastbars()
     targetToTCastbarAdjustment:SetPoint("TOPLEFT", targetStaticCastbar, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(targetToTCastbarAdjustment, "Make sure the castbar is under ToT frame.\nUncheck this if you have moved your ToT frame out of the way.")
 
+    local targetToTAdjustmentOffsetY = CreateSlider(targetToTCastbarAdjustment, "extra", -20, 50, 1, "targetToTAdjustmentOffsetY", "Y", 55)
+    targetToTAdjustmentOffsetY:SetPoint("LEFT", targetToTCastbarAdjustment.text, "RIGHT", 2, -5)
+    CreateTooltip(targetToTAdjustmentOffsetY, "Extra finetuning for ToT Y offset\n(Right click any slider to input value)")
+
+    targetToTCastbarAdjustment:HookScript("OnClick", function(self)
+        if self:GetChecked() then
+            targetToTAdjustmentOffsetY:Enable()
+            targetToTAdjustmentOffsetY:SetAlpha(1)
+        else
+            targetToTAdjustmentOffsetY:Disable()
+            targetToTAdjustmentOffsetY:SetAlpha(0.5)
+        end
+    end)
+
     local targetDetachCastbar = CreateCheckbox("targetDetachCastbar", "Detach from frame", contentFrame)
     targetDetachCastbar:SetPoint("TOPLEFT", targetToTCastbarAdjustment, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     targetDetachCastbar:HookScript("OnClick", function(self)
@@ -2149,6 +2190,8 @@ local function guiCastbars()
             targetCastBarYPos:SetValue(0)
             targetToTCastbarAdjustment:Disable()
             targetToTCastbarAdjustment:SetAlpha(0.5)
+            targetToTAdjustmentOffsetY:Disable()
+            targetToTAdjustmentOffsetY:SetAlpha(0.5)
             targetStaticCastbar:SetChecked(false)
             BetterBlizzFramesDB.targetStaticCastbar = false
         else
@@ -2156,6 +2199,8 @@ local function guiCastbars()
             targetCastBarXPos:SetValue(0)
             targetToTCastbarAdjustment:Enable()
             targetToTCastbarAdjustment:SetAlpha(1)
+            targetToTAdjustmentOffsetY:Enable()
+            targetToTAdjustmentOffsetY:SetAlpha(1)
         end
     end)
     CreateTooltip(targetDetachCastbar, "Detach castbar from frame and enable wider xy positioning.\nRight-click a slider to enter a specific number.")
@@ -2167,6 +2212,8 @@ local function guiCastbars()
         targetCastBarYPos:SetValue(0)
         targetToTCastbarAdjustment:Disable()
         targetToTCastbarAdjustment:SetAlpha(0.5)
+        targetToTAdjustmentOffsetY:Disable()
+        targetToTAdjustmentOffsetY:SetAlpha(0.5)
         targetStaticCastbar:SetChecked(false)
         BetterBlizzFramesDB.targetStaticCastbar = false
     end
@@ -2174,16 +2221,22 @@ local function guiCastbars()
         if self:GetChecked() then
             targetToTCastbarAdjustment:Disable()
             targetToTCastbarAdjustment:SetAlpha(0.5)
+            targetToTAdjustmentOffsetY:Disable()
+            targetToTAdjustmentOffsetY:SetAlpha(0.5)
             targetDetachCastbar:SetChecked(false)
             BetterBlizzFramesDB.targetDetachCastbar = false
         else
             targetToTCastbarAdjustment:Enable()
             targetToTCastbarAdjustment:SetAlpha(1)
+            targetToTAdjustmentOffsetY:Enable()
+            targetToTAdjustmentOffsetY:SetAlpha(1)
         end
     end)
     if BetterBlizzFramesDB.targetStaticCastbar then
         targetToTCastbarAdjustment:Disable()
         targetToTCastbarAdjustment:SetAlpha(0.5)
+        targetToTAdjustmentOffsetY:Disable()
+        targetToTAdjustmentOffsetY:SetAlpha(0.5)
         targetDetachCastbar:SetChecked(false)
         BetterBlizzFramesDB.targetDetachCastbar = false
     end
@@ -2210,6 +2263,8 @@ local function guiCastbars()
         targetToTCastbarAdjustment:Enable()
         targetToTCastbarAdjustment:SetAlpha(1)
         targetToTCastbarAdjustment:SetChecked(true)
+        targetToTAdjustmentOffsetY:Enable()
+        targetToTAdjustmentOffsetY:SetValue(0)
         BetterBlizzFramesDB.targetToTCastbarAdjustment = true
         BBF.CastBarTimerCaller()
     end)
@@ -2351,6 +2406,20 @@ local function guiCastbars()
     focusToTCastbarAdjustment:SetPoint("TOPLEFT", focusStaticCastbar, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(focusToTCastbarAdjustment, "Make sure the castbar is under Focus ToT frame.\nUncheck this if you have moved your ToT frame out of the way.")
 
+    local focusToTAdjustmentOffsetY = CreateSlider(focusToTCastbarAdjustment, "extra", -20, 50, 1, "focusToTAdjustmentOffsetY", "Y", 55)
+    focusToTAdjustmentOffsetY:SetPoint("LEFT", focusToTCastbarAdjustment.text, "RIGHT", 2, -5)
+    CreateTooltip(focusToTAdjustmentOffsetY, "Extra finetuning for ToT Y offset\n(Right click any slider to input value)")
+
+    focusToTCastbarAdjustment:HookScript("OnClick", function(self)
+        if self:GetChecked() then
+            focusToTAdjustmentOffsetY:Enable()
+            focusToTAdjustmentOffsetY:SetAlpha(1)
+        else
+            focusToTAdjustmentOffsetY:Disable()
+            focusToTAdjustmentOffsetY:SetAlpha(0.5)
+        end
+    end)
+
     local focusDetachCastbar = CreateCheckbox("focusDetachCastbar", "Detach from frame", contentFrame)
     focusDetachCastbar:SetPoint("TOPLEFT", focusToTCastbarAdjustment, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     focusDetachCastbar:HookScript("OnClick", function(self)
@@ -2361,6 +2430,8 @@ local function guiCastbars()
             focusCastBarYPos:SetValue(0)
             focusToTCastbarAdjustment:Disable()
             focusToTCastbarAdjustment:SetAlpha(0.5)
+            focusToTAdjustmentOffsetY:Disable()
+            focusToTAdjustmentOffsetY:SetAlpha(0.5)
             focusStaticCastbar:SetChecked(false)
             BetterBlizzFramesDB.focusStaticCastbar = false
         else
@@ -2368,6 +2439,8 @@ local function guiCastbars()
             focusCastBarXPos:SetValue(0)
             focusToTCastbarAdjustment:Enable()
             focusToTCastbarAdjustment:SetAlpha(1)
+            focusToTAdjustmentOffsetY:Enable()
+            focusToTAdjustmentOffsetY:SetAlpha(1)
         end
     end)
     CreateTooltip(focusDetachCastbar, "Detach castbar from frame and enable wider xy positioning.\nRight-click a slider to enter a specific number.")
@@ -2379,6 +2452,8 @@ local function guiCastbars()
         focusCastBarYPos:SetValue(0)
         focusToTCastbarAdjustment:Disable()
         focusToTCastbarAdjustment:SetAlpha(0.5)
+        focusToTAdjustmentOffsetY:Disable()
+        focusToTAdjustmentOffsetY:SetAlpha(0.5)
         focusStaticCastbar:SetChecked(false)
         BetterBlizzFramesDB.focusStaticCastbar = false
     end
@@ -2386,15 +2461,21 @@ local function guiCastbars()
         if self:GetChecked() then
             focusToTCastbarAdjustment:Disable()
             focusToTCastbarAdjustment:SetAlpha(0.5)
+            focusToTAdjustmentOffsetY:Disable()
+            focusToTAdjustmentOffsetY:SetAlpha(0.5)
             focusDetachCastbar:SetChecked(false)
         else
             focusToTCastbarAdjustment:Enable()
             focusToTCastbarAdjustment:SetAlpha(1)
+            focusToTAdjustmentOffsetY:Enable()
+            focusToTAdjustmentOffsetY:SetAlpha(1)
         end
     end)
     if BetterBlizzFramesDB.focusStaticCastbar then
         focusToTCastbarAdjustment:Disable()
         focusToTCastbarAdjustment:SetAlpha(0.5)
+        focusToTAdjustmentOffsetY:Disable()
+        focusToTAdjustmentOffsetY:SetAlpha(0.5)
         focusDetachCastbar:SetChecked(false)
         BetterBlizzFramesDB.focusDetachCastbar = false
     end
@@ -2421,6 +2502,8 @@ local function guiCastbars()
         focusToTCastbarAdjustment:Enable()
         focusToTCastbarAdjustment:SetAlpha(1)
         focusToTCastbarAdjustment:SetChecked(true)
+        focusToTAdjustmentOffsetY:Enable()
+        focusToTAdjustmentOffsetY:SetValue(0)
         BetterBlizzFramesDB.focusToTCastbarAdjustment = true
         BBF.CastBarTimerCaller()
     end)
@@ -2495,6 +2578,162 @@ local function guiCastbars()
         BBF.ShowPlayerCastBarIcon()
     end)
 
+    local function UpdateColorSquare(icon, r, g, b, a)
+        if r and g and b and a then
+            icon:SetVertexColor(r, g, b, a)
+        else
+            icon:SetVertexColor(r, g, b)
+        end
+    end
+
+    local function OpenColorPicker(colorType, icon)
+        -- Ensure originalColorData has four elements, defaulting alpha (a) to 1 if not present
+        local originalColorData = BetterBlizzFramesDB[colorType] or {1, 1, 1, 1}
+        if #originalColorData == 3 then
+            table.insert(originalColorData, 1) -- Add default alpha value if not present
+        end
+        local r, g, b, a = unpack(originalColorData)
+
+        local function updateColors()
+            UpdateColorSquare(icon, r, g, b, a)
+            ColorPickerFrame.Content.ColorSwatchCurrent:SetAlpha(a)
+        end
+
+        local function swatchFunc()
+            r, g, b = ColorPickerFrame:GetColorRGB()
+            BetterBlizzFramesDB[colorType] = {r, g, b, a}
+            updateColors()
+        end
+
+        local function opacityFunc()
+            a = ColorPickerFrame:GetColorAlpha()
+            BetterBlizzFramesDB[colorType] = {r, g, b, a}
+            updateColors()
+        end
+
+        local function cancelFunc()
+            r, g, b, a = unpack(originalColorData)
+            BetterBlizzFramesDB[colorType] = {r, g, b, a}
+            updateColors()
+        end
+
+        ColorPickerFrame:SetupColorPickerAndShow({
+            r = r, g = g, b = b, opacity = a, hasOpacity = true,
+            swatchFunc = swatchFunc, opacityFunc = opacityFunc, cancelFunc = cancelFunc
+        })
+    end
+
+    local castBarInterruptHighlighterText = contentFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    castBarInterruptHighlighterText:SetPoint("LEFT", contentFrame, "TOPRIGHT", -235, -465)
+    castBarInterruptHighlighterText:SetText("Castbar Edge Highlight settings")
+
+    local castBarInterruptHighlighter = CreateCheckbox("castBarInterruptHighlighter", "Castbar Edge Highlight", contentFrame, nil, BBF.CastbarRecolorWidgets)
+    castBarInterruptHighlighter:SetPoint("TOPLEFT", castBarInterruptHighlighterText, "BOTTOMLEFT", 0, pixelsOnFirstBox)
+    CreateTooltip(castBarInterruptHighlighter, "Color the start and end of the castbar differently.\nSet the percentile of cast to color down below.")
+
+    local targetCastbarEdgeHighlight = CreateCheckbox("targetCastbarEdgeHighlight", "Target", castBarInterruptHighlighter, nil, BBF.CastbarRecolorWidgets)
+    targetCastbarEdgeHighlight:SetPoint("TOPLEFT", castBarInterruptHighlighter, "BOTTOMLEFT", 15, pixelsBetweenBoxes)
+    CreateTooltip(targetCastbarEdgeHighlight, "Enable for TargetFrame Castbar")
+
+    local focusCastbarEdgeHighlight = CreateCheckbox("focusCastbarEdgeHighlight", "Focus", castBarInterruptHighlighter, nil, BBF.CastbarRecolorWidgets)
+    focusCastbarEdgeHighlight:SetPoint("LEFT", targetCastbarEdgeHighlight.text, "RIGHT", 0, 0)
+    CreateTooltip(focusCastbarEdgeHighlight, "Enable for FocusFrame Castbar")
+
+    local castBarInterruptHighlighterColorDontInterrupt = CreateCheckbox("castBarInterruptHighlighterColorDontInterrupt", "Re-color between portion", castBarInterruptHighlighter, nil, BBF.CastbarRecolorWidgets)
+    castBarInterruptHighlighterColorDontInterrupt:SetPoint("TOPLEFT", targetCastbarEdgeHighlight, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltip(castBarInterruptHighlighterColorDontInterrupt,"Re-color the middle part of the castbar between the percentages")
+
+    local castBarInterruptHighlighterDontInterruptRGB = CreateFrame("Button", nil, castBarInterruptHighlighterColorDontInterrupt, "UIPanelButtonTemplate")
+    castBarInterruptHighlighterDontInterruptRGB:SetText("Color")
+    castBarInterruptHighlighterDontInterruptRGB:SetPoint("LEFT", castBarInterruptHighlighterColorDontInterrupt.text, "RIGHT", 2, 0)
+    castBarInterruptHighlighterDontInterruptRGB:SetSize(50, 20)
+    CreateTooltip(castBarInterruptHighlighterDontInterruptRGB, "Castbar color inbetween the start and finish")
+    local castBarInterruptHighlighterDontInterruptRGBIcon = contentFrame:CreateTexture(nil, "ARTWORK")
+    castBarInterruptHighlighterDontInterruptRGBIcon:SetAtlas("newplayertutorial-icon-key")
+    castBarInterruptHighlighterDontInterruptRGBIcon:SetSize(18, 17)
+    castBarInterruptHighlighterDontInterruptRGBIcon:SetPoint("LEFT", castBarInterruptHighlighterDontInterruptRGB, "RIGHT", 0, -1)
+    UpdateColorSquare(castBarInterruptHighlighterDontInterruptRGBIcon, unpack(BetterBlizzFramesDB["castBarInterruptHighlighterDontInterruptRGB"] or {1, 1, 1}))
+    castBarInterruptHighlighterDontInterruptRGB:SetScript("OnClick", function()
+        OpenColorPicker("castBarInterruptHighlighterDontInterruptRGB", castBarInterruptHighlighterDontInterruptRGBIcon)
+    end)
+
+    local castBarInterruptHighlighterStartPercentage = CreateSlider(castBarInterruptHighlighter, "Start Percentile", 0, 50, 1, "castBarInterruptHighlighterStartPercentage", "Height")
+    castBarInterruptHighlighterStartPercentage:SetPoint("TOPLEFT", castBarInterruptHighlighterColorDontInterrupt, "BOTTOMLEFT", 10, -6)
+    CreateTooltip(castBarInterruptHighlighterStartPercentage, "At what percentage of the cast you should stop\ncoloring the castbar, up to 50% of the cast.")
+
+    local castBarInterruptHighlighterEndPercentage = CreateSlider(castBarInterruptHighlighter, "End Percentile", 50, 100, 1, "castBarInterruptHighlighterEndPercentage", "Height")
+    castBarInterruptHighlighterEndPercentage:SetPoint("TOPLEFT", castBarInterruptHighlighterStartPercentage, "BOTTOMLEFT", 0, -10)
+    CreateTooltip(castBarInterruptHighlighterEndPercentage, "At what percentage of the cast you should start\ncoloring the end of the castbar, from end of cast down to 50% of cast.")
+
+    local castBarInterruptHighlighterInterruptRGB = CreateFrame("Button", nil, castBarInterruptHighlighter, "UIPanelButtonTemplate")
+    castBarInterruptHighlighterInterruptRGB:SetText("Color")
+    castBarInterruptHighlighterInterruptRGB:SetPoint("LEFT", castBarInterruptHighlighterEndPercentage, "RIGHT", 0, 15)
+    castBarInterruptHighlighterInterruptRGB:SetSize(50, 20)
+    CreateTooltip(castBarInterruptHighlighterInterruptRGB, "Castbar edge color")
+    local castBarInterruptHighlighterInterruptRGBIcon = contentFrame:CreateTexture(nil, "ARTWORK")
+    castBarInterruptHighlighterInterruptRGBIcon:SetAtlas("newplayertutorial-icon-key")
+    castBarInterruptHighlighterInterruptRGBIcon:SetSize(18, 17)
+    castBarInterruptHighlighterInterruptRGBIcon:SetPoint("LEFT", castBarInterruptHighlighterInterruptRGB, "RIGHT", 0, -1)
+    UpdateColorSquare(castBarInterruptHighlighterInterruptRGBIcon, unpack(BetterBlizzFramesDB["castBarInterruptHighlighterInterruptRGB"] or {1, 1, 1}))
+    castBarInterruptHighlighterInterruptRGB:SetScript("OnClick", function()
+        OpenColorPicker("castBarInterruptHighlighterInterruptRGB", castBarInterruptHighlighterInterruptRGBIcon)
+    end)
+
+    castBarInterruptHighlighter:HookScript("OnClick", function(self)
+        CheckAndToggleCheckboxes(castBarInterruptHighlighter)
+        if self:GetChecked() then
+            if BetterBlizzPlatesDB.castBarInterruptHighlighterColorDontInterrupt then
+                castBarInterruptHighlighterDontInterruptRGBIcon:SetAlpha(1)
+            end
+            castBarInterruptHighlighterInterruptRGBIcon:SetAlpha(1)
+        else
+            castBarInterruptHighlighterDontInterruptRGBIcon:SetAlpha(0)
+            castBarInterruptHighlighterInterruptRGBIcon:SetAlpha(0)
+        end
+    end)
+
+    castBarInterruptHighlighterColorDontInterrupt:HookScript("OnClick", function(self)
+        CheckAndToggleCheckboxes(castBarInterruptHighlighter)
+        if self:GetChecked() then
+            castBarInterruptHighlighterDontInterruptRGBIcon:SetAlpha(1)
+        else
+            castBarInterruptHighlighterDontInterruptRGBIcon:SetAlpha(0)
+        end
+    end)
+
+
+
+    local castBarRecolorInterrupt = CreateCheckbox("castBarRecolorInterrupt", "Interrupt CD color", contentFrame, nil, BBF.CastbarRecolorWidgets)
+    castBarRecolorInterrupt:SetPoint("LEFT", contentFrame, "TOPRIGHT", -435, -465)
+    CreateTooltip(castBarRecolorInterrupt, "Checks if you have interrupt ready\nand colors Target & Focus castbar thereafter.")
+
+    local castBarNoInterruptColor = CreateFrame("Button", nil, castBarRecolorInterrupt, "UIPanelButtonTemplate")
+    castBarNoInterruptColor:SetText("Interrupt on CD")
+    castBarNoInterruptColor:SetPoint("TOPLEFT", castBarRecolorInterrupt, "BOTTOMRIGHT", -35, 3)
+    castBarNoInterruptColor:SetSize(139, 20)
+    CreateTooltip(castBarNoInterruptColor, "Castbar color when interrupt is on CD")
+    local castBarNoInterruptColorIcon = contentFrame:CreateTexture(nil, "ARTWORK")
+    castBarNoInterruptColorIcon:SetAtlas("newplayertutorial-icon-key")
+    castBarNoInterruptColorIcon:SetSize(18, 17)
+    castBarNoInterruptColorIcon:SetPoint("LEFT", castBarNoInterruptColor, "RIGHT", 0, -1)
+    UpdateColorSquare(castBarNoInterruptColorIcon, unpack(BetterBlizzFramesDB["castBarNoInterruptColor"] or {1, 1, 1}))
+    castBarNoInterruptColor:SetScript("OnClick", function()
+        OpenColorPicker("castBarNoInterruptColor", castBarNoInterruptColorIcon)
+    end)
+
+    local castBarDelayedInterruptColor = CreateFrame("Button", nil, castBarRecolorInterrupt, "UIPanelButtonTemplate")
+    castBarDelayedInterruptColor:SetText("Interrupt CD soon")
+    castBarDelayedInterruptColor:SetPoint("TOPLEFT", castBarNoInterruptColor, "BOTTOMLEFT", 0, -5)
+    castBarDelayedInterruptColor:SetSize(139, 20)
+    CreateTooltip(castBarDelayedInterruptColor, "Castbar color when interrupt is on CD but\nwill be ready before the cast ends")
+    local castBarDelayedInterruptColorIcon = contentFrame:CreateTexture(nil, "ARTWORK")
+    castBarDelayedInterruptColorIcon:SetAtlas("newplayertutorial-icon-key")
+    castBarDelayedInterruptColorIcon:SetSize(18, 17)
+    castBarDelayedInterruptColorIcon:SetPoint("LEFT", castBarDelayedInterruptColor, "RIGHT", 0, -1)
+    UpdateColorSquare(castBarDelayedInterruptColorIcon, unpack(BetterBlizzFramesDB["castBarDelayedInterruptColor"] or {1, 1, 1}))
+    castBarDelayedInterruptColor:SetScript("OnClick", function()
+        OpenColorPicker("castBarDelayedInterruptColor", castBarDelayedInterruptColorIcon)
+    end)
 end
 
 local function guiPositionAndScale()
@@ -3518,8 +3757,16 @@ local function guiMisc()
         BBF.MinimapHider(instanceType)
     end)
 
+    local hideActionBarHotKey = CreateCheckbox("hideActionBarHotKey", "Hide ActionBar Keybinds", guiMisc, nil, BBF.HideFrames)
+    hideActionBarHotKey:SetPoint("TOPLEFT", hideObjectiveTracker, "BOTTOMLEFT", -15, pixelsBetweenBoxes)
+    CreateTooltip(hideActionBarHotKey, "Hides the keybind on default actionbars (I highly recommend getting Bartender though, doesnt bug like default does)")
+
+    local hideActionBarMacroName = CreateCheckbox("hideActionBarMacroName", "Hide ActionBar Macro Name", guiMisc, nil, BBF.HideFrames)
+    hideActionBarMacroName:SetPoint("TOPLEFT", hideActionBarHotKey, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltip(hideActionBarMacroName, "Hides the macro name on default actionbars (I highly recommend getting Bartender though, doesnt bug like default does)")
+
     local hideDragonFlying = CreateCheckbox("hideDragonFlying", "Auto-hide Dragonriding (Temporary)", guiMisc)
-    hideDragonFlying:SetPoint("TOPLEFT", hideObjectiveTracker, "BOTTOMLEFT", -15, pixelsBetweenBoxes)
+    hideDragonFlying:SetPoint("TOPLEFT", hideActionBarMacroName, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(hideDragonFlying, "Automatically hide the dragon riding thing\nin zones where it shouldnt be showing.\n\n(Blizzard pls fix ur shit)")
 
     local stealthIndicatorPlayer = CreateCheckbox("stealthIndicatorPlayer", "Stealth Indicator (Temporary?)", guiMisc, nil, BBF.StealthIndicator)

@@ -6,6 +6,9 @@ local spellBars = {}
 local castBarsCreated = false
 local petCastbarCreated = false
 
+local UnitCastingInfo = UnitCastingInfo
+local UnitChannelInfo = UnitChannelInfo
+
 local function GetPartyMemberFrame(unitId)
     if CompactPartyFrame:IsShown() then
         local showSelf = BetterBlizzFramesDB.partyCastbarSelf
@@ -434,6 +437,263 @@ function BBF.CastBarTimerCaller()
     CastBarTimer(PlayerCastingBarFrame)
     CastBarTimer(TargetFrameSpellBar)
     CastBarTimer(FocusFrameSpellBar)
+end
+
+
+local targetSpellBarTexture = TargetFrameSpellBar:GetStatusBarTexture()
+local focusSpellBarTexture = FocusFrameSpellBar:GetStatusBarTexture()
+local targetCastbarEdgeHooked
+local focusCastbarEdgeHooked
+
+local targetLastUpdate = 0
+local focusLastUpdate = 0
+local updateInterval = 0.05
+
+local startPercentile = BetterBlizzFramesDB.castBarInterruptHighlighterStartPercentage
+local endPercentile = BetterBlizzFramesDB.castBarInterruptHighlighterEndPercentage
+local edgeColor = BetterBlizzFramesDB.castBarInterruptHighlighterInterruptRGB
+local middleColor = BetterBlizzFramesDB.castBarInterruptHighlighterDontInterruptRGB
+local colorMiddle = BetterBlizzFramesDB.castBarInterruptHighlighterColorDontInterrupt
+local castBarNoInterruptColor = BetterBlizzFramesDB.castBarNoInterruptColor
+local castBarDelayedInterruptColor = BetterBlizzFramesDB.castBarDelayedInterruptColor
+local castBarRecolorInterrupt = BetterBlizzFramesDB.castBarRecolorInterrupt
+local targetCastbarEdgeHighlight = BetterBlizzFramesDB.targetCastbarEdgeHighlight
+local focusCastbarEdgeHighlight = BetterBlizzFramesDB.focusCastbarEdgeHighlight
+
+local interruptList = {
+    [1766] = true,  -- Kick (Rogue)
+    [2139] = true,  -- Counterspell (Mage)
+    [6552] = true,  -- Pummel (Warrior)
+    [19647] = true, -- Spell Lock (Warlock)
+    [47528] = true, -- Mind Freeze (Death Knight)
+    [57994] = true, -- Wind Shear (Shaman)
+    [91802] = true, -- Shambling Rush (Death Knight)
+    [96231] = true, -- Rebuke (Paladin)
+    [106839] = true,-- Skull Bash (Feral)
+    [115781] = true,-- Optical Blast (Warlock)
+    [116705] = true,-- Spear Hand Strike (Monk)
+    [132409] = true,-- Spell Lock (Warlock)
+    [119910] = true,-- Spell Lock (Warlock Pet)
+    [147362] = true,-- Countershot (Hunter)
+    [171138] = true,-- Shadow Lock (Warlock)
+    [183752] = true,-- Consume Magic (Demon Hunter)
+    [187707] = true,-- Muzzle (Hunter)
+    [212619] = true,-- Call Felhunter (Warlock)
+    [231665] = true,-- Avengers Shield (Paladin)
+    [351338] = true,-- Quell (Evoker)
+    [97547]  = true,-- Solar Beam
+}
+
+local interruptSpellIDs = {}
+function BBF.InitializeInterruptSpellID()
+    interruptSpellIDs = {}
+    for spellID in pairs(interruptList) do
+        if IsSpellKnownOrOverridesKnown(spellID) then
+            table.insert(interruptSpellIDs, spellID)
+        end
+    end
+end
+
+local recheckInterruptListener = CreateFrame("Frame")
+local function OnEvent(self, event, unit, _, spellID)
+    if spellID == 691 or spellID == 108503 then
+        BBF.InitializeInterruptSpellID()
+    end
+end
+recheckInterruptListener:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED", "player")
+recheckInterruptListener:SetScript("OnEvent", OnEvent)
+
+function BBF.CastbarRecolorWidgets()
+    if BetterBlizzFramesDB.castBarInterruptHighlighter or BetterBlizzFramesDB.castBarDelayedInterruptColor then
+        startPercentile = BetterBlizzFramesDB.castBarInterruptHighlighterStartPercentage
+        endPercentile = BetterBlizzFramesDB.castBarInterruptHighlighterEndPercentage
+        edgeColor = BetterBlizzFramesDB.castBarInterruptHighlighterInterruptRGB
+        middleColor = BetterBlizzFramesDB.castBarInterruptHighlighterDontInterruptRGB
+        colorMiddle = BetterBlizzFramesDB.castBarInterruptHighlighterColorDontInterrupt
+        castBarNoInterruptColor = BetterBlizzFramesDB.castBarNoInterruptColor
+        castBarDelayedInterruptColor = BetterBlizzFramesDB.castBarDelayedInterruptColor
+        castBarRecolorInterrupt = BetterBlizzFramesDB.castBarRecolorInterrupt
+        targetCastbarEdgeHighlight = BetterBlizzFramesDB.targetCastbarEdgeHighlight
+        focusCastbarEdgeHighlight = BetterBlizzFramesDB.focusCastbarEdgeHighlight
+
+        if (targetCastbarEdgeHighlight or castBarRecolorInterrupt) and not targetCastbarEdgeHooked then
+            BBF.InitializeInterruptSpellID()
+
+            TargetFrameSpellBar:HookScript("OnUpdate", function(self, elapsed)
+                targetLastUpdate = targetLastUpdate + elapsed
+                if targetLastUpdate < updateInterval then
+                    return
+                end
+                targetLastUpdate = 0
+
+                if self.casting or self.channeling then
+                    local name, _, _, startTime, endTime, _, _, notInterruptible, spellId = UnitCastingInfo("target")
+                    if not name then
+                        name, _, _, startTime, endTime, _, notInterruptible, spellId = UnitChannelInfo("target")
+                    end
+
+                    if name and not notInterruptible then
+                        if castBarRecolorInterrupt then
+                            for _, interruptSpellID in ipairs(interruptSpellIDs) do
+                                local start, duration = GetSpellCooldown(interruptSpellID)
+                                local cooldownRemaining = start + duration - GetTime()
+                                local castRemaining = (endTime/1000) - GetTime()
+
+                                if cooldownRemaining > 0 and cooldownRemaining > castRemaining then
+                                    targetSpellBarTexture:SetDesaturated(true)
+                                    self:SetStatusBarColor(unpack(castBarNoInterruptColor))
+                                    self.Spark:SetVertexColor(unpack(castBarNoInterruptColor))
+                                elseif cooldownRemaining > 0 and cooldownRemaining <= castRemaining then
+                                    targetSpellBarTexture:SetDesaturated(true)
+                                    self:SetStatusBarColor(unpack(castBarDelayedInterruptColor))
+                                    self.Spark:SetVertexColor(unpack(castBarDelayedInterruptColor))
+                                else
+                                    if targetCastbarEdgeHighlight then
+                                        local totalTime = endTime - startTime
+                                        local currentTime = GetTime() * 1000 -- Convert to milliseconds
+                                        local elapsed = currentTime - startTime
+                                        local percentage = (elapsed / totalTime) * 100
+
+                                        if percentage <= startPercentile or percentage >= endPercentile then
+                                            targetSpellBarTexture:SetDesaturated(true)
+                                            self:SetStatusBarColor(unpack(edgeColor))
+                                            self.Spark:SetVertexColor(unpack(edgeColor))
+                                        else
+                                            if colorMiddle then
+                                                targetSpellBarTexture:SetDesaturated(true)
+                                                self:SetStatusBarColor(unpack(middleColor))
+                                            else
+                                                targetSpellBarTexture:SetDesaturated(false)
+                                                self:SetStatusBarColor(1,1,1)
+                                            end
+                                            self.Spark:SetVertexColor(1,1,1)
+                                        end
+                                    else
+                                        targetSpellBarTexture:SetDesaturated(false)
+                                        self:SetStatusBarColor(1, 1, 1)
+                                        self.Spark:SetVertexColor(1,1,1)
+                                    end
+                                end
+                            end
+                        elseif targetCastbarEdgeHighlight then
+                            local totalTime = endTime - startTime
+                            local currentTime = GetTime() * 1000 -- Convert to milliseconds
+                            local elapsed = currentTime - startTime
+                            local percentage = (elapsed / totalTime) * 100
+
+                            if percentage <= startPercentile or percentage >= endPercentile then
+                                targetSpellBarTexture:SetDesaturated(true)
+                                self:SetStatusBarColor(unpack(edgeColor))
+                                self.Spark:SetVertexColor(unpack(edgeColor))
+                            else
+                                if colorMiddle then
+                                    targetSpellBarTexture:SetDesaturated(true)
+                                    self:SetStatusBarColor(unpack(middleColor))
+                                else
+                                    targetSpellBarTexture:SetDesaturated(false)
+                                    self:SetStatusBarColor(1,1,1)
+                                end
+                                self.Spark:SetVertexColor(1,1,1)
+                            end
+                        end
+                    end
+                else
+                    targetSpellBarTexture:SetDesaturated(false)
+                    self:SetStatusBarColor(1, 1, 1)
+                    self.Spark:SetVertexColor(1,1,1)
+                end
+            end)
+            targetCastbarEdgeHooked = true
+        end
+
+        if (focusCastbarEdgeHighlight or castBarRecolorInterrupt) and not focusCastbarEdgeHooked then
+            FocusFrameSpellBar:HookScript("OnUpdate", function(self, elapsed)
+                focusLastUpdate = focusLastUpdate + elapsed
+                if focusLastUpdate < updateInterval then
+                    return
+                end
+                focusLastUpdate = 0
+
+                if self.casting or self.channeling then
+                    local name, _, _, startTime, endTime, _, _, notInterruptible, spellId = UnitCastingInfo("focus")
+                    if not name then
+                        name, _, _, startTime, endTime, _, notInterruptible, spellId = UnitChannelInfo("focus")
+                    end
+
+                    if name and not notInterruptible then
+                        if castBarRecolorInterrupt then
+                            for _, interruptSpellID in ipairs(interruptSpellIDs) do
+                                local start, duration = GetSpellCooldown(interruptSpellID)
+                                local cooldownRemaining = start + duration - GetTime()
+                                local castRemaining = (endTime/1000) - GetTime()
+
+                                if cooldownRemaining > 0 and cooldownRemaining > castRemaining then
+                                    focusSpellBarTexture:SetDesaturated(true)
+                                    self:SetStatusBarColor(unpack(castBarNoInterruptColor))
+                                    self.Spark:SetVertexColor(unpack(castBarNoInterruptColor))
+                                elseif cooldownRemaining > 0 and cooldownRemaining <= castRemaining then
+                                    focusSpellBarTexture:SetDesaturated(true)
+                                    self:SetStatusBarColor(unpack(castBarDelayedInterruptColor))
+                                    self.Spark:SetVertexColor(unpack(castBarDelayedInterruptColor))
+                                else
+                                    if focusCastbarEdgeHighlight then
+                                        local totalTime = endTime - startTime
+                                        local currentTime = GetTime() * 1000 -- Convert to milliseconds
+                                        local elapsed = currentTime - startTime
+                                        local percentage = (elapsed / totalTime) * 100
+
+                                        if percentage <= startPercentile or percentage >= endPercentile then
+                                            focusSpellBarTexture:SetDesaturated(true)
+                                            self:SetStatusBarColor(unpack(edgeColor))
+                                            self.Spark:SetVertexColor(unpack(edgeColor))
+                                        else
+                                            if colorMiddle then
+                                                focusSpellBarTexture:SetDesaturated(true)
+                                                self:SetStatusBarColor(unpack(middleColor))
+                                            else
+                                                focusSpellBarTexture:SetDesaturated(false)
+                                                self:SetStatusBarColor(1,1,1)
+                                            end
+                                            self.Spark:SetVertexColor(1,1,1)
+                                        end
+                                    else
+                                        focusSpellBarTexture:SetDesaturated(false)
+                                        self:SetStatusBarColor(1, 1, 1)
+                                        self.Spark:SetVertexColor(1,1,1)
+                                    end
+                                end
+                            end
+                        elseif focusCastbarEdgeHighlight then
+                            local totalTime = endTime - startTime
+                            local currentTime = GetTime() * 1000 -- Convert to milliseconds
+                            local elapsed = currentTime - startTime
+                            local percentage = (elapsed / totalTime) * 100
+
+                            if percentage <= startPercentile or percentage >= endPercentile then
+                                focusSpellBarTexture:SetDesaturated(true)
+                                self:SetStatusBarColor(unpack(edgeColor))
+                                self.Spark:SetVertexColor(unpack(edgeColor))
+                            else
+                                if colorMiddle then
+                                    focusSpellBarTexture:SetDesaturated(true)
+                                    self:SetStatusBarColor(unpack(middleColor))
+                                else
+                                    focusSpellBarTexture:SetDesaturated(false)
+                                    self:SetStatusBarColor(1,1,1)
+                                end
+                                self.Spark:SetVertexColor(1,1,1)
+                            end
+                        end
+                    end
+                else
+                    focusSpellBarTexture:SetDesaturated(false)
+                    self:SetStatusBarColor(1, 1, 1)
+                    self.Spark:SetVertexColor(1,1,1)
+                end
+            end)
+            focusCastbarEdgeHooked = true
+        end
+    end
 end
 
 local PlayerCastingBarFrameHooked = false

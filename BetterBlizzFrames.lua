@@ -6,7 +6,7 @@ BBF = BBF or {}
 -- Things are getting more messy need a lot of cleaning lol
 
 local addonVersion = "1.00" --too afraid to to touch for now
-local addonUpdates = "1.2.8"
+local addonUpdates = "1.3.0"
 local sendUpdate = true
 BBF.VersionNumber = addonUpdates
 BBF.variablesLoaded = false
@@ -108,6 +108,14 @@ local defaultSettings = {
     showPetCastBarIcon = true,
     showPetCastBarTimer = false,
 
+    --Castbar edge highlight
+    castBarInterruptHighlighterStartPercentage = 15,
+    castBarInterruptHighlighterEndPercentage = 80,
+    castBarInterruptHighlighterDontInterruptRGB = {1,0,0},
+    castBarInterruptHighlighterInterruptRGB = {0,1,0},
+    castBarNoInterruptColor = {1, 0, 0.01568627543747425},
+    castBarDelayedInterruptColor = {1, 0.4784314036369324, 0.9568628072738647},
+
     --Target castbar
     targetCastBarScale = 1,
     targetCastBarIconScale = 1,
@@ -116,6 +124,7 @@ local defaultSettings = {
     targetCastBarWidth = 150,
     targetCastBarHeight = 10,
     targetCastBarTimer = false,
+    targetToTAdjustmentOffsetY = 0,
 
     --Focus castbar
     focusCastBarScale = 1,
@@ -125,6 +134,7 @@ local defaultSettings = {
     focusCastBarWidth = 150,
     focusCastBarHeight = 10,
     focusCastBarTimer = false,
+    focusToTAdjustmentOffsetY = 0,
 
     --Player castbar
     --playerCastBarScale = 1,
@@ -334,12 +344,30 @@ local function AddAlphaValuesToAuraColors()
     end
 end
 
+local function ResetBBF()
+    BetterBlizzFramesDB = {}
+    ReloadUI()
+end
+
+StaticPopupDialogs["CONFIRM_RESET_BETTERBLIZZFRAMESDB"] = {
+    text = "Are you sure you want to reset all BetterBlizzFrames settings?\nThis action cannot be undone.",
+    button1 = "Confirm",
+    button2 = "Cancel",
+    OnAccept = function()
+        ResetBBF()
+    end,
+    timeout = 0,
+    whileDead = true,
+    hideOnEscape = true,
+    preferredIndex = 3,
+}
+
 -- Update message
 local function SendUpdateMessage()
     if sendUpdate then
         C_Timer.After(7, function()
             DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames " .. addonUpdates .. ":")
-            DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Added subsettings to minimap hider to also hide queue and objective tracker.")
+            DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Added hide macro text and keybind for default action bars (I recommend Bartender though). Added a finetuning slider for castbar ToT offset. A few bugfixes and Nahj profile update, for more info type /bbf news")
             --DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a For more info and news about new features type /bbf news")
         end)
     end
@@ -347,7 +375,12 @@ end
 
 local function NewsUpdateMessage()
     DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames news:")
-    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Added subsettings to minimap hider to also hide queue and objective tracker.")
+    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Added hide macro text and keybind for default action bars (I recommend Bartender though).")
+    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Added a slider to finetune the target/focus castbar ToT offsets.")
+    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Fixed Dark Mode clashing with other similar addons.")
+    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Fixed Castbar jank movement with some specific settings.")
+    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Fixed buff filtering function running on checkbox clicks when not enabled.")
+    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Nahj profile updated.")
     DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Patreon link: www.patreon.com/bodydev")
 end
 
@@ -700,6 +733,7 @@ Frame:SetScript("OnEvent", function(...)
 
             BBF.HookOverShields()
             BBF.StealthIndicator()
+            BBF.CastbarRecolorWidgets()
             BBF.CastBarTimerCaller()
             BBF.ShowPlayerCastBarIcon()
             BBF.CombatIndicator(PlayerFrame, "player")
