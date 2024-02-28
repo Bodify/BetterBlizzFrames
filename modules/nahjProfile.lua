@@ -857,6 +857,7 @@ function BBF.NahjProfile()
 	db.targetCastbarEdgeHighlight = true
 	db.targetCombatIndicator = true
 	db.hidePartyRoles = false
+    db.normalCastbarForEmpoweredCasts = true
 	db.hideFocusReputationColor = true
 	db.petCastBarHeight = 10
 	db.racialIndicatorScale = 1.5
