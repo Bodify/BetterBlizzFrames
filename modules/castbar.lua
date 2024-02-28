@@ -812,6 +812,11 @@ hooksecurefunc(PlayerCastingBarFrame, "SetScale", function()
     end
 end)
 
+if TargetFrameSpellBar and FocusFrameSpellBar then
+    TargetFrameSpellBar:SetFrameStrata("DIALOG")
+    FocusFrameSpellBar:SetFrameStrata("DIALOG")
+end
+
 local evokerCastbarsHooked
 function BBF.HookCastbarsForEvoker()
     if (not evokerCastbarsHooked and BetterBlizzFramesDB.normalCastbarForEmpoweredCasts) then

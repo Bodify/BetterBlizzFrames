@@ -325,49 +325,61 @@ local function adjustCastbar(self, frame)
     local rowHeights = parent.rowHeights or {}
 
     meta.ClearAllPoints(self)
-
-    local yOffset = 14 -- Default yOffset
-
-    if buffsOnTopReverseCastbarMovement then
-        yOffset = yOffset + CalculateAuraRowsYOffset(parent, rowHeights) + 100
-    else
-        if not parent.buffsOnTop then
-            yOffset = yOffset - CalculateAuraRowsYOffset(parent, rowHeights)
-        end
-    end
-
-    -- Check if ToT adjustment is needed
-    local totAdjustment = (frame == TargetFrameSpellBar and targetToTCastbarAdjustment) or (frame == FocusFrameSpellBar and focusToTCastbarAdjustment)
-    if totAdjustment and parent.haveToT then
-        local minOffset = -40
-        yOffset = math.min(minOffset, yOffset) -- Choose the more negative value
-        if frame == TargetFrameSpellBar then
-            yOffset = yOffset + targetToTAdjustmentOffsetY
-        elseif frame == FocusFrameSpellBar then
-            yOffset = yOffset + focusToTAdjustmentOffsetY
-        end
-    end
-
-    -- Apply specific frame adjustments
     if frame == TargetFrameSpellBar then
+        local buffsOnTop = parent.buffsOnTop
+        local yOffset = 14
         if targetStaticCastbar then
-            meta.SetPoint(self, "TOPLEFT", parent, "BOTTOMLEFT", 43 + targetCastBarXPos, yOffset + targetCastBarYPos)
+            --meta.SetPoint(self, "TOPLEFT", meta.GetParent(self), "BOTTOMLEFT", 43, 110);
+            meta.SetPoint(self, "TOPLEFT", parent, "BOTTOMLEFT", 43 + targetCastBarXPos, -14 + targetCastBarYPos);
         elseif targetDetachCastbar then
-            meta.SetPoint(self, "CENTER", UIParent, "CENTER", targetCastBarXPos, targetCastBarYPos)
+            meta.SetPoint(self, "CENTER", UIParent, "CENTER", targetCastBarXPos, targetCastBarYPos);
+        elseif buffsOnTopReverseCastbarMovement and buffsOnTop then
+            yOffset = yOffset + CalculateAuraRowsYOffset(parent, rowHeights) + 100
+            meta.SetPoint(self, "TOPLEFT", parent, "BOTTOMLEFT", 43 + targetCastBarXPos, yOffset + targetCastBarYPos);
         else
-            meta.SetPoint(self, "TOPLEFT", parent, "BOTTOMLEFT", 43 + targetCastBarXPos, yOffset + targetCastBarYPos)
+            if not buffsOnTop then
+                yOffset = yOffset - CalculateAuraRowsYOffset(parent, rowHeights)
+            end
+            -- Check if totAdjustment is true and the ToT frame is shown
+            if targetToTCastbarAdjustment and parent.haveToT then
+                local minOffset = -40
+                -- Choose the more negative value
+                yOffset = min(minOffset, yOffset)
+                if frame == TargetFrameSpellBar then
+                    yOffset = yOffset + targetToTAdjustmentOffsetY
+                elseif frame == FocusFrameSpellBar then
+                    yOffset = yOffset + focusToTAdjustmentOffsetY
+                end
+            end
+
+            meta.SetPoint(self, "TOPLEFT", parent, "BOTTOMLEFT", 43 + targetCastBarXPos, yOffset + targetCastBarYPos);
         end
     elseif frame == FocusFrameSpellBar then
+        local buffsOnTop = parent.buffsOnTop
+        local yOffset = 14
         if focusStaticCastbar then
-            meta.SetPoint(self, "TOPLEFT", parent, "BOTTOMLEFT", 43 + focusCastBarXPos, yOffset + focusCastBarYPos)
+            --meta.SetPoint(self, "TOPLEFT", meta.GetParent(self), "BOTTOMLEFT", 43, 110);
+            meta.SetPoint(self, "TOPLEFT", parent, "BOTTOMLEFT", 43 + focusCastBarXPos, -14 + focusCastBarYPos);
         elseif focusDetachCastbar then
-            meta.SetPoint(self, "CENTER", UIParent, "CENTER", focusCastBarXPos, focusCastBarYPos)
+            meta.SetPoint(self, "CENTER", UIParent, "CENTER", focusCastBarXPos, focusCastBarYPos);
+        elseif buffsOnTopReverseCastbarMovement and buffsOnTop then
+            yOffset = yOffset + CalculateAuraRowsYOffset(parent, rowHeights) + 100
+            meta.SetPoint(self, "TOPLEFT", parent, "BOTTOMLEFT", 43 + focusCastBarXPos, yOffset + focusCastBarYPos);
         else
-            meta.SetPoint(self, "TOPLEFT", parent, "BOTTOMLEFT", 43 + focusCastBarXPos, yOffset + focusCastBarYPos)
+            if not buffsOnTop then
+                yOffset = yOffset - CalculateAuraRowsYOffset(parent, rowHeights)
+            end
+            -- Check if totAdjustment is true and the ToT frame is shown
+            if focusToTCastbarAdjustment and parent.haveToT then
+                local minOffset = -40
+                -- Choose the more negative value
+                yOffset = min(minOffset, yOffset)
+            end
+
+            meta.SetPoint(self, "TOPLEFT", parent, "BOTTOMLEFT", 43 + focusCastBarXPos, yOffset + focusCastBarYPos);
         end
     end
 end
-
 
 local function DefaultCastbarAdjustment(self, frame)
     local meta = getmetatable(self).__index
@@ -502,9 +514,8 @@ local function StartCheckBuffsTimer()
         checkBuffsTimer = C_Timer.NewTicker(0.1, CheckBuffs);
     end
 end
-local aurasMade = 0
+
 local MIN_AURA_SIZE = 17
-local defaultLargeAuraSize = 21
 local adjustmentForBuffsOnTop = -80  -- Height adjustment when buffs are on top
 local function AdjustAuras(self, frameType)
     local adjustedSize = MIN_AURA_SIZE * targetAndFocusSmallAuraScale
