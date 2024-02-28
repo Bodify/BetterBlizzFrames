@@ -829,5 +829,6 @@ function BBF.HookCastbarsForEvoker()
                 end
             end
         end)
+        evokerCastbarsHooked = true
     end
 end
