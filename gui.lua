@@ -2734,6 +2734,15 @@ local function guiCastbars()
     castBarDelayedInterruptColor:SetScript("OnClick", function()
         OpenColorPicker("castBarDelayedInterruptColor", castBarDelayedInterruptColorIcon)
     end)
+
+
+    local buffsOnTopReverseCastbarMovement = CreateCheckbox("buffsOnTopReverseCastbarMovement", "Buffs on Top: Reverse Castbar Movement", contentFrame, nil, BBF.CastbarAdjustCaller)
+    buffsOnTopReverseCastbarMovement:SetPoint("LEFT", contentFrame, "TOPRIGHT", -470, -555)
+    CreateTooltip(buffsOnTopReverseCastbarMovement, "Changes the castbar movement to follow the top row of auras on Target/Focus Frame\nsimilar to how it works by default without \"Buffs on Top\" enabled except in reverse.")
+
+    local normalCastbarForEmpoweredCasts = CreateCheckbox("normalCastbarForEmpoweredCasts", "Normal Evoker Empowered Castbar", contentFrame, nil, BBF.HookCastbarsForEvoker)
+    normalCastbarForEmpoweredCasts:SetPoint("TOPLEFT", buffsOnTopReverseCastbarMovement, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltip(normalCastbarForEmpoweredCasts, "Change Evoker empowered castbars to look like normal ones. (Easier to see if you can interrupt)")
 end
 
 local function guiPositionAndScale()

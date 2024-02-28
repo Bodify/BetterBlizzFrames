@@ -367,7 +367,7 @@ local function SendUpdateMessage()
     if sendUpdate then
         C_Timer.After(7, function()
             DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames " .. addonUpdates .. ":")
-            DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Added hide macro text and keybind for default action bars (I recommend Bartender though). Added a finetuning slider for castbar ToT offset. A few bugfixes and Nahj profile update, for more info type /bbf news")
+            DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Added castbar setting for normal evoker empowered castbars. Added \"Reverse castbar movement for \"buffs on top\" setting\".")
             --DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a For more info and news about new features type /bbf news")
         end)
     end
@@ -375,12 +375,9 @@ end
 
 local function NewsUpdateMessage()
     DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames news:")
-    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Added hide macro text and keybind for default action bars (I recommend Bartender though).")
-    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Added a slider to finetune the target/focus castbar ToT offsets.")
-    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Fixed Dark Mode clashing with other similar addons.")
-    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Fixed Castbar jank movement with some specific settings.")
-    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Fixed buff filtering function running on checkbox clicks when not enabled.")
-    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Nahj profile updated.")
+    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Added castbar setting for normal evoker empowered castbars..")
+    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Added \"Reverse castbar movement for \"buffs on top\" setting\"")
+
     DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Patreon link: www.patreon.com/bodydev")
 end
 
@@ -732,6 +729,7 @@ Frame:SetScript("OnEvent", function(...)
 
 
             BBF.HookOverShields()
+            BBF.HookCastbarsForEvoker()
             BBF.StealthIndicator()
             BBF.CastbarRecolorWidgets()
             BBF.CastBarTimerCaller()

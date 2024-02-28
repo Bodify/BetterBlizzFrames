@@ -84,6 +84,7 @@ local purgeTextureColorRGB = {1, 1, 1, 1}
 local changePurgeTextureColor
 local targetToTAdjustmentOffsetY
 local focusToTAdjustmentOffsetY
+local buffsOnTopReverseCastbarMovement
 
 function BBF.UpdateUserAuraSettings()
     printSpellId = printAuraSpellIds
@@ -142,6 +143,7 @@ function BBF.UpdateUserAuraSettings()
     darkModeColor = BetterBlizzFramesDB.darkModeColor
     purgeTextureColorRGB = BetterBlizzFramesDB.purgeTextureColorRGB
     changePurgeTextureColor = BetterBlizzFramesDB.changePurgeTextureColor
+    buffsOnTopReverseCastbarMovement = BetterBlizzFramesDB.buffsOnTopReverseCastbarMovement
 end
 
 local function isInWhitelist(spellName, spellId)
@@ -323,75 +325,67 @@ local function adjustCastbar(self, frame)
     local rowHeights = parent.rowHeights or {}
 
     meta.ClearAllPoints(self)
+
+    local yOffset = 14 -- Default yOffset
+
+    if buffsOnTopReverseCastbarMovement then
+        yOffset = yOffset + CalculateAuraRowsYOffset(parent, rowHeights) + 100
+    else
+        if not parent.buffsOnTop then
+            yOffset = yOffset - CalculateAuraRowsYOffset(parent, rowHeights)
+        end
+    end
+
+    -- Check if ToT adjustment is needed
+    local totAdjustment = (frame == TargetFrameSpellBar and targetToTCastbarAdjustment) or (frame == FocusFrameSpellBar and focusToTCastbarAdjustment)
+    if totAdjustment and parent.haveToT then
+        local minOffset = -40
+        yOffset = math.min(minOffset, yOffset) -- Choose the more negative value
+        if frame == TargetFrameSpellBar then
+            yOffset = yOffset + targetToTAdjustmentOffsetY
+        elseif frame == FocusFrameSpellBar then
+            yOffset = yOffset + focusToTAdjustmentOffsetY
+        end
+    end
+
+    -- Apply specific frame adjustments
     if frame == TargetFrameSpellBar then
         if targetStaticCastbar then
-            --meta.SetPoint(self, "TOPLEFT", meta.GetParent(self), "BOTTOMLEFT", 43, 110);
-            meta.SetPoint(self, "TOPLEFT", parent, "BOTTOMLEFT", 43 + targetCastBarXPos, -14 + targetCastBarYPos);
+            meta.SetPoint(self, "TOPLEFT", parent, "BOTTOMLEFT", 43 + targetCastBarXPos, yOffset + targetCastBarYPos)
         elseif targetDetachCastbar then
-            meta.SetPoint(self, "CENTER", UIParent, "CENTER", targetCastBarXPos, targetCastBarYPos);
+            meta.SetPoint(self, "CENTER", UIParent, "CENTER", targetCastBarXPos, targetCastBarYPos)
         else
-            local buffsOnTop = parent.buffsOnTop
-            local yOffset = 14
-
-            if not buffsOnTop then
-                yOffset = yOffset - CalculateAuraRowsYOffset(parent, rowHeights)
-            end
-            -- Check if totAdjustment is true and the ToT frame is shown
-            if targetToTCastbarAdjustment and parent.haveToT then
-                local minOffset = -40
-                -- Choose the more negative value
-                yOffset = min(minOffset, yOffset)
-                if frame == TargetFrameSpellBar then
-                    yOffset = yOffset + targetToTAdjustmentOffsetY
-                elseif frame == FocusFrameSpellBar then
-                    yOffset = yOffset + focusToTAdjustmentOffsetY
-                end
-            end
-
-            meta.SetPoint(self, "TOPLEFT", parent, "BOTTOMLEFT", 43 + targetCastBarXPos, yOffset + targetCastBarYPos);
+            meta.SetPoint(self, "TOPLEFT", parent, "BOTTOMLEFT", 43 + targetCastBarXPos, yOffset + targetCastBarYPos)
         end
     elseif frame == FocusFrameSpellBar then
         if focusStaticCastbar then
-            --meta.SetPoint(self, "TOPLEFT", meta.GetParent(self), "BOTTOMLEFT", 43, 110);
-            meta.SetPoint(self, "TOPLEFT", parent, "BOTTOMLEFT", 43 + focusCastBarXPos, -14 + focusCastBarYPos);
+            meta.SetPoint(self, "TOPLEFT", parent, "BOTTOMLEFT", 43 + focusCastBarXPos, yOffset + focusCastBarYPos)
         elseif focusDetachCastbar then
-            meta.SetPoint(self, "CENTER", UIParent, "CENTER", focusCastBarXPos, focusCastBarYPos);
+            meta.SetPoint(self, "CENTER", UIParent, "CENTER", focusCastBarXPos, focusCastBarYPos)
         else
-            local buffsOnTop = parent.buffsOnTop
-            local yOffset = 14
-
-            if not buffsOnTop then
-                yOffset = yOffset - CalculateAuraRowsYOffset(parent, rowHeights)
-            end
-
-            -- Check if totAdjustment is true and the ToT frame is shown
-            if focusToTCastbarAdjustment and parent.haveToT then
-                local minOffset = -40
-                -- Choose the more negative value
-                yOffset = min(minOffset, yOffset)
-            end
-
-            meta.SetPoint(self, "TOPLEFT", parent, "BOTTOMLEFT", 43 + focusCastBarXPos, yOffset + focusCastBarYPos);
+            meta.SetPoint(self, "TOPLEFT", parent, "BOTTOMLEFT", 43 + focusCastBarXPos, yOffset + focusCastBarYPos)
         end
     end
 end
+
 
 local function DefaultCastbarAdjustment(self, frame)
     local meta = getmetatable(self).__index
     local parentFrame = meta.GetParent(self)
 
-	-- If the buffs are on the bottom of the frame, and either:
-	--  We have a ToT frame and more than 2 rows of buffs/debuffs.
-	--  We have no ToT frame and any rows of buffs/debuffs.
-	local useSpellbarAnchor = (not parentFrame.buffsOnTop) and ((parentFrame.haveToT and parentFrame.auraRows > 2) or ((not parentFrame.haveToT) and parentFrame.auraRows > 0));
+    -- Determine whether to use the adjusted logic based on BetterBlizzFramesDB setting
+    local useSpellbarAnchor = buffsOnTopReverseCastbarMovement and
+                              ((parentFrame.haveToT and parentFrame.auraRows > 2) or (not parentFrame.haveToT and parentFrame.auraRows > 0)) or
+                              (not buffsOnTopReverseCastbarMovement and not parentFrame.buffsOnTop and 
+                               ((parentFrame.haveToT and parentFrame.auraRows > 2) or (not parentFrame.haveToT and parentFrame.auraRows > 0)))
 
-	local relativeKey = useSpellbarAnchor and parentFrame.spellbarAnchor or parentFrame;
-	local pointX = useSpellbarAnchor and 18 or  (parentFrame.smallSize and 38 or 43);
-	local pointY = useSpellbarAnchor and -10 or (parentFrame.smallSize and 3 or 5);
+    local relativeKey = useSpellbarAnchor and parentFrame.spellbarAnchor or parentFrame
+    local pointX = useSpellbarAnchor and 18 or (parentFrame.smallSize and 38 or 43)
+    local pointY = useSpellbarAnchor and -10 or (parentFrame.smallSize and 3 or 5)
 
+    -- Adjustments for ToT and specific frame adjustments
     if (not useSpellbarAnchor) and parentFrame.haveToT then
         local totAdjustment = (TargetFrameSpellBar and targetToTCastbarAdjustment) or (FocusFrameSpellBar and focusToTCastbarAdjustment)
-
         if totAdjustment then
             pointY = parentFrame.smallSize and -48 or -46
             if frame == TargetFrameSpellBar then
@@ -410,7 +404,12 @@ local function DefaultCastbarAdjustment(self, frame)
         pointY = pointY + focusCastBarYPos
     end
 
-	meta.SetPoint(self, "TOPLEFT", relativeKey, "BOTTOMLEFT", pointX, pointY);
+    -- Apply setting-specific adjustment
+    if buffsOnTopReverseCastbarMovement then
+        meta.SetPoint(self, "TOPLEFT", relativeKey, "BOTTOMLEFT", pointX, -pointY + 50)
+    else
+        meta.SetPoint(self, "TOPLEFT", relativeKey, "BOTTOMLEFT", pointX, pointY)
+    end
 end
 
 function BBF.CastbarAdjustCaller()

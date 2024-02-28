@@ -811,3 +811,23 @@ hooksecurefunc(PlayerCastingBarFrame, "SetScale", function()
         BetterBlizzFramesDB.playerCastBarScale = PlayerCastingBarFrame:GetScale()
     end
 end)
+
+local evokerCastbarsHooked
+function BBF.HookCastbarsForEvoker()
+    if (not evokerCastbarsHooked and BetterBlizzFramesDB.normalCastbarForEmpoweredCasts) then
+        hooksecurefunc(CastingBarMixin, "OnEvent", function(self, event, ...)
+            if self.unit and self.unit:find("target") or self.unit:find("focus") then
+                if ( event == "UNIT_SPELLCAST_EMPOWER_START" ) then
+                    if not self:IsForbidden() then
+                        if self.barType == "empowered" or self.barType == "standard" then
+                            self:SetStatusBarTexture("ui-castingbar-filling-standard")
+                        end
+                        self.ChargeTier1:Hide()
+                        self.ChargeTier2:Hide()
+                        self.ChargeTier3:Hide()
+                    end
+                end
+            end
+        end)
+    end
+end
