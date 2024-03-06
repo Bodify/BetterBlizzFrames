@@ -1453,12 +1453,23 @@ local function PersonalDebuffFrameFilterAndGrid(self)
 ]=]
 end
 
+local auraMsgSent = false
 function BBF.RefreshAllAuraFrames()
     BBF.UpdateUserAuraSettings()
-    PersonalBuffFrameFilterAndGrid(BuffFrame)
-    PersonalDebuffFrameFilterAndGrid(DebuffFrame)
-    AdjustAuras(TargetFrame, "target")
-    AdjustAuras(FocusFrame, "focus")
+    if BetterBlizzFramesDB.playerAuraFiltering then
+        PersonalBuffFrameFilterAndGrid(BuffFrame)
+        PersonalDebuffFrameFilterAndGrid(DebuffFrame)
+        AdjustAuras(TargetFrame, "target")
+        AdjustAuras(FocusFrame, "focus")
+    else
+        if not auraMsgSent then
+            auraMsgSent = true
+            DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: You need to enable aura settings for blacklist and whitelist etc to work.")
+            C_Timer.After(9, function()
+                auraMsgSent = false
+            end)
+        end
+    end
 end
 
 function BBF.HookPlayerAndTargetAuras()
