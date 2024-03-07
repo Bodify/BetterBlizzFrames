@@ -10,6 +10,7 @@ local changedResource = false
 local originalResourceParent
 local originalBossFrameParent
 local bossFrameHooked
+local originalStanceParent
 
 local function applyAlpha(frame, alpha)
     if frame then
@@ -428,6 +429,30 @@ function BBF.HideFrames()
         local focusToTAlpha = BetterBlizzFramesDB.hideFocusToT and 0 or 1
         TargetFrameToT:SetAlpha(targetToTAlpha)
         FocusFrameToT:SetAlpha(focusToTAlpha)
+
+        -- Hide Stance Bar
+        if BetterBlizzFramesDB.hideStanceBar then
+            for i = 1, 10 do
+                local buttonName = "StanceButton" .. i
+                local button = _G[buttonName]
+                if button then
+                    if not originalStanceParent then
+                        originalStanceParent = button:GetParent()
+                    end
+                    button:SetParent(hiddenFrame)
+                end
+            end
+        else
+            if originalStanceParent then
+                for i = 1, 10 do
+                    local buttonName = "StanceButton" .. i
+                    local button = _G[buttonName]
+                    if button then
+                        button:SetParent(originalStanceParent)
+                    end
+                end
+            end
+        end
     end
 end
 
