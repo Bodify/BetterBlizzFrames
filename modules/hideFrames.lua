@@ -422,6 +422,12 @@ function BBF.HideFrames()
             applyAlpha(_G["MultiBar7Button" ..i.. "Name"], macroNameAlpha)
             applyAlpha(_G["PetActionButton" ..i.. "Name"], macroNameAlpha)
         end
+
+        -- Hide ToT Frames
+        local targetToTAlpha = BetterBlizzFramesDB.hideTargetToT and 0 or 1
+        local focusToTAlpha = BetterBlizzFramesDB.hideFocusToT and 0 or 1
+        TargetFrameToT:SetAlpha(targetToTAlpha)
+        FocusFrameToT:SetAlpha(focusToTAlpha)
     end
 end
 
