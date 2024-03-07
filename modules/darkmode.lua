@@ -73,10 +73,12 @@ function BBF.DarkModeUnitframeBorders()
         if not hookedAuras then
             for poolKey, pool in pairs(TargetFrame.auraPools.pools) do
                 hooksecurefunc(pool, "Acquire", UpdateFrameAuras)
+                UpdateFrameAuras(pool)
             end
 
             for poolKey, pool in pairs(FocusFrame.auraPools.pools) do
                 hooksecurefunc(pool, "Acquire", UpdateFrameAuras)
+                UpdateFrameAuras(pool)
             end
             hookedAuras = true
         end
@@ -403,17 +405,6 @@ function BBF.DarkmodeFrames(bypass)
             BBF.updateTotemBorders()
         end)
         hookedTotemBar = true
-    end
-
-    if not hookedAuras and darkModeUi then
-        for poolKey, pool in pairs(TargetFrame.auraPools.pools) do
-            hooksecurefunc(pool, "Acquire", UpdateFrameAuras)
-        end
-
-        for poolKey, pool in pairs(FocusFrame.auraPools.pools) do
-            hooksecurefunc(pool, "Acquire", UpdateFrameAuras)
-        end
-        hookedAuras = true
     end
 end
 

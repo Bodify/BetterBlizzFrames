@@ -1286,14 +1286,17 @@ local function guiGeneralTab()
 
     local darkModeUi = CreateCheckbox("darkModeUi", "Dark Mode", BetterBlizzFrames)
     darkModeUi:SetPoint("TOPLEFT", hideLossOfControlFrameBg, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    darkModeUi:HookScript("OnClick", function()
+    darkModeUi:HookScript("OnClick", function(self)
         BBF.DarkmodeFrames(true)
     end)
     CreateTooltip(darkModeUi, "Simple dark mode for: UnitFrames, Actionbars & Aura Icons.\n\nIf you want a more advanced & thorough dark mode\nI recommend the addon FrameColor instead of this setting.")
 
     local darkModeUiAura = CreateCheckbox("darkModeUiAura", "Auras", BetterBlizzFrames)
     darkModeUiAura:SetPoint("LEFT", darkModeUi.Text, "RIGHT", 5, 0)
-    darkModeUiAura:HookScript("OnClick", function()
+    darkModeUiAura:HookScript("OnClick", function(self)
+        if not self:GetChecked() then
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        end
         BBF.DarkmodeFrames(true)
     end)
     CreateTooltip(darkModeUiAura, "Dark borders for Player, Target and Focus aura icons")
