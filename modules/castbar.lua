@@ -457,6 +457,7 @@ local colorMiddle = BetterBlizzFramesDB.castBarInterruptHighlighterColorDontInte
 local castBarNoInterruptColor = BetterBlizzFramesDB.castBarNoInterruptColor
 local castBarDelayedInterruptColor = BetterBlizzFramesDB.castBarDelayedInterruptColor
 local castBarRecolorInterrupt = BetterBlizzFramesDB.castBarRecolorInterrupt
+local castBarInterruptHighlighter = BetterBlizzFramesDB.castBarInterruptHighlighter
 local targetCastbarEdgeHighlight = BetterBlizzFramesDB.targetCastbarEdgeHighlight
 local focusCastbarEdgeHighlight = BetterBlizzFramesDB.focusCastbarEdgeHighlight
 
@@ -513,8 +514,9 @@ function BBF.CastbarRecolorWidgets()
         castBarNoInterruptColor = BetterBlizzFramesDB.castBarNoInterruptColor
         castBarDelayedInterruptColor = BetterBlizzFramesDB.castBarDelayedInterruptColor
         castBarRecolorInterrupt = BetterBlizzFramesDB.castBarRecolorInterrupt
-        targetCastbarEdgeHighlight = BetterBlizzFramesDB.targetCastbarEdgeHighlight
-        focusCastbarEdgeHighlight = BetterBlizzFramesDB.focusCastbarEdgeHighlight
+        castBarInterruptHighlighter = BetterBlizzFramesDB.castBarInterruptHighlighter
+        targetCastbarEdgeHighlight = BetterBlizzFramesDB.targetCastbarEdgeHighlight and castBarInterruptHighlighter
+        focusCastbarEdgeHighlight = BetterBlizzFramesDB.focusCastbarEdgeHighlight and castBarInterruptHighlighter
 
         if (targetCastbarEdgeHighlight or castBarRecolorInterrupt) and not targetCastbarEdgeHooked then
             BBF.InitializeInterruptSpellID()

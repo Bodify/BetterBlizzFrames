@@ -1876,7 +1876,7 @@ local function guiGeneralTab()
     hideLevelTextAlways:SetPoint("LEFT", hideLevelText.Text, "RIGHT", 0, 0)
     CreateTooltip(hideLevelTextAlways, "Always hide the level text.")
 
-    hideLevelText:SetScript("OnClick", function(self)
+    hideLevelText:HookScript("OnClick", function(self)
         if self:GetChecked() then
             hideLevelTextAlways:Enable()
             hideLevelTextAlways:Show()
