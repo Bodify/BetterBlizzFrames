@@ -58,7 +58,7 @@ StaticPopupDialogs["BBF_CONFIRM_NAHJ_PROFILE"] = {
 ------------------------------------------------------------
 -- GUI Creation Functions
 ------------------------------------------------------------
-local function CheckAndToggleCheckboxes(frame)
+local function CheckAndToggleCheckboxes(frame, alpha)
     for i = 1, frame:GetNumChildren() do
         local child = select(i, frame:GetChildren())
         if child and (child:GetObjectType() == "CheckButton" or child:GetObjectType() == "Slider" or child:GetObjectType() == "Button") then
@@ -67,7 +67,7 @@ local function CheckAndToggleCheckboxes(frame)
                 child:SetAlpha(1)
             else
                 child:Disable()
-                child:SetAlpha(0.5)
+                child:SetAlpha(alpha or 0.5)
             end
         end
 
@@ -1291,8 +1291,29 @@ local function guiGeneralTab()
     end)
     CreateTooltip(darkModeUi, "Simple dark mode for: UnitFrames, Actionbars & Aura Icons.\n\nIf you want a more advanced & thorough dark mode\nI recommend the addon FrameColor instead of this setting.")
 
-    local darkModeUiAura = CreateCheckbox("darkModeUiAura", "Auras", BetterBlizzFrames)
-    darkModeUiAura:SetPoint("LEFT", darkModeUi.Text, "RIGHT", 5, 0)
+    local darkModeActionBars = CreateCheckbox("darkModeActionBars", "ActionBars", darkModeUi)
+    darkModeActionBars:SetPoint("TOPLEFT", darkModeUi, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    darkModeActionBars:HookScript("OnClick", function()
+        BBF.DarkmodeFrames(true)
+    end)
+    CreateTooltip(darkModeActionBars, "Dark borders for action bars.")
+
+    local darkModeMinimap = CreateCheckbox("darkModeMinimap", "Minimap", darkModeUi)
+    darkModeMinimap:SetPoint("TOPLEFT", darkModeActionBars, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    darkModeMinimap:HookScript("OnClick", function()
+        BBF.DarkmodeFrames(true)
+    end)
+    CreateTooltip(darkModeMinimap, "Dark mode for Minimap")
+
+    local darkModeCastbars = CreateCheckbox("darkModeCastbars", "Castbars", darkModeUi)
+    darkModeCastbars:SetPoint("LEFT", darkModeUi.Text, "RIGHT", 5, 0)
+    darkModeCastbars:HookScript("OnClick", function()
+        BBF.DarkmodeFrames(true)
+    end)
+    CreateTooltip(darkModeCastbars, "Dark borders for castbars.")
+
+    local darkModeUiAura = CreateCheckbox("darkModeUiAura", "Auras", darkModeUi)
+    darkModeUiAura:SetPoint("TOPLEFT", darkModeCastbars, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     darkModeUiAura:HookScript("OnClick", function(self)
         if not self:GetChecked() then
             StaticPopup_Show("BBF_CONFIRM_RELOAD")
@@ -1301,54 +1322,22 @@ local function guiGeneralTab()
     end)
     CreateTooltip(darkModeUiAura, "Dark borders for Player, Target and Focus aura icons")
 
-    local darkModeActionBars = CreateCheckbox("darkModeActionBars", "ActionBars", BetterBlizzFrames)
-    darkModeActionBars:SetPoint("LEFT", darkModeUiAura.Text, "RIGHT", 5, 0)
-    darkModeActionBars:HookScript("OnClick", function()
+    local darkModeNameplateResource = CreateCheckbox("darkModeNameplateResource", "Nameplate Resource", darkModeUi)
+    darkModeNameplateResource:SetPoint("TOPLEFT", darkModeUiAura, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    darkModeNameplateResource:HookScript("OnClick", function()
         BBF.DarkmodeFrames(true)
     end)
-    CreateTooltip(darkModeActionBars, "Dark borders for action bars.")
-
-    local darkModeCastbars = CreateCheckbox("darkModeCastbars", "Castbars", BetterBlizzFrames)
-    darkModeCastbars:SetPoint("TOPLEFT", darkModeActionBars, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    darkModeCastbars:HookScript("OnClick", function()
-        BBF.DarkmodeFrames(true)
-    end)
-    CreateTooltip(darkModeCastbars, "Dark borders for castbars.")
+    CreateTooltip(darkModeNameplateResource, "Dark mode for nameplate resource (Combopoints etc)\n\n(If you are using this same feature in BBP\nthat one will be prioritized)")
 
     local darkModeColor = CreateSlider(darkModeUi, "Darkness", 0, 1, 0.01, "darkModeColor", nil, 90)
-    darkModeColor:SetPoint("TOPLEFT", darkModeUi, "BOTTOMLEFT", sliderUnderBoxX, sliderUnderBoxY)
+    darkModeColor:SetPoint("LEFT", darkModeUiAura.text, "RIGHT", 3, -1)
     CreateTooltip(darkModeColor, "Dark mode value.\n\nYou can right-click sliders to enter a specific value.")
 
     darkModeUi:HookScript("OnClick", function(self)
-        if self:GetChecked() then
-            darkModeColor:Enable()
-            darkModeColor:SetAlpha(1)
-            darkModeUiAura:Enable()
-            darkModeUiAura:SetAlpha(1)
-            darkModeActionBars:Enable()
-            darkModeActionBars:SetAlpha(1)
-            darkModeCastbars:Enable()
-            darkModeCastbars:SetAlpha(1)
-        else
-            darkModeColor:Disable()
-            darkModeColor:SetAlpha(0)
-            darkModeUiAura:Disable()
-            darkModeUiAura:SetAlpha(0)
-            darkModeActionBars:Disable()
-            darkModeActionBars:SetAlpha(0)
-            darkModeCastbars:Disable()
-            darkModeCastbars:SetAlpha(0)
-        end
+        CheckAndToggleCheckboxes(darkModeUi, 0)
     end)
     if not BetterBlizzFramesDB.darkModeUi then
-        darkModeUiAura:SetAlpha(0)
-        darkModeColor:SetAlpha(0) --default slider creation only does 0.5 alpha
-        darkModeActionBars:SetAlpha(0)
-        darkModeCastbars:SetAlpha(0)
-        darkModeUiAura:Disable()
-        darkModeColor:Disable()
-        darkModeActionBars:Disable()
-        darkModeCastbars:Disable()
+        CheckAndToggleCheckboxes(darkModeUi, 0)
     end
 
 
@@ -1361,7 +1350,7 @@ local function guiGeneralTab()
 
 
     local playerFrameText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    playerFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 0, -153)
+    playerFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 0, -159)
     playerFrameText:SetText("Player Frame")
     local playerFrameIcon = BetterBlizzFrames:CreateTexture(nil, "ARTWORK")
     playerFrameIcon:SetAtlas("groupfinder-icon-friend")
@@ -1456,7 +1445,7 @@ local function guiGeneralTab()
 
 
     local partyFrameText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    partyFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 0, -430)
+    partyFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 0, -431)
     partyFrameText:SetText("Party Frame")
     local partyFrameIcon = BetterBlizzFrames:CreateTexture(nil, "ARTWORK")
     partyFrameIcon:SetAtlas("groupfinder-icon-friend")
@@ -3750,8 +3739,16 @@ local function guiMisc()
     local hideMinimap = CreateCheckbox("hideMinimap", "Hide Minimap", guiMisc, nil, BBF.MinimapHider)
     hideMinimap:SetPoint("TOPLEFT", settingsText, "BOTTOMLEFT", -4, pixelsOnFirstBox)
 
+    local hideMinimapButtons = CreateCheckbox("hideMinimapButtons", "Hide Minimap Buttons (still shows on mouseover)", guiMisc, nil, BBF.HideFrames)
+    hideMinimapButtons:SetPoint("TOPLEFT", hideMinimap, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    hideMinimapButtons:HookScript("OnClick", function(self)
+        if not self:GetChecked() then
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        end
+    end)
+
     local hideMinimapAuto = CreateCheckbox("hideMinimapAuto", "Hide Minimap only during Arena", guiMisc)
-    hideMinimapAuto:SetPoint("TOPLEFT", hideMinimap, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    hideMinimapAuto:SetPoint("TOPLEFT", hideMinimapButtons, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(hideMinimapAuto, "Automatically hide Minimap during arena games.")
     hideMinimapAuto:HookScript("OnClick", function()
         CheckAndToggleCheckboxes(hideMinimapAuto)

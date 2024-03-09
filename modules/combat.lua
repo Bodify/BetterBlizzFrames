@@ -260,9 +260,11 @@ combatIndicatorFrame:SetScript("OnEvent", function(self, event, unit)
         if isValidUnit(unit) then
             if UnitIsUnit(unit, "target") then
                 BBF.CombatIndicator(TargetFrame, "target")
-            elseif UnitIsUnit(unit, "focus") then
+            end
+            if UnitIsUnit(unit, "focus") then
                 BBF.CombatIndicator(FocusFrame, "focus")
-            elseif UnitIsUnit(unit, "player") then
+            end
+            if UnitIsUnit(unit, "player") then
                 BBF.CombatIndicator(PlayerFrame, "player")
             end
         end

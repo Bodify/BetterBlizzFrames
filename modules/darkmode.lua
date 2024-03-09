@@ -6,6 +6,7 @@ local darkModeUi
 local darkModeUiAura
 local darkModeColor = 1
 local auraFilteringOn
+local minimapChanged =false
 
 local hookedTotemBar
 local hookedAuras
@@ -178,19 +179,19 @@ function BBF.DarkmodeFrames(bypass)
     local monkChi = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.10) or 1
     local castbarBorder = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.1) or 1
 
+    local minimapColor = (BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeMinimap) and BetterBlizzFramesDB.darkModeColor or 1
+    local minimapSat = (BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeMinimap) and true or false
+
+    local darkModeNpBBP = BetterBlizzPlatesDB.darkModeNameplateResource
+    local darkModeNp = BetterBlizzFramesDB.darkModeNameplateResource and not darkModeNpBBP
+    local darkModeNpSatVal = darkModeNp and desaturationValue or false
+
     if BetterBlizzFramesDB.darkModeColor == 0 then
         actionBarColor = 0
         birdColor = 0.07
         rogueCombo = 0.25
         rogueComboActive = 0.15
     end
-
-
-    --MinimapCompassTexture:SetDesaturated(true)
-    --MinimapCompassTexture:SetVertexColor(vertexColor, vertexColor, vertexColor)
-
-
-
 
 
     local function UpdateBorder(frame, colorValue)
@@ -228,6 +229,48 @@ function BBF.DarkmodeFrames(bypass)
     applySettings(PetFrameTexture, desaturationValue, vertexColor)
     applySettings(FocusFrameToT.FrameTexture, desaturationValue, vertexColor)
 
+    for i = 1, Minimap:GetNumChildren() do
+        local child = select(i, Minimap:GetChildren())
+        for j = 1, child:GetNumRegions() do
+            local region = select(j, child:GetRegions())
+            if region:IsObjectType("Texture") then
+                local texturePath = region:GetTexture()
+                if texturePath and string.find(texturePath, "136430") then
+                    applySettings(region, minimapSat, minimapColor)
+                end
+            end
+        end
+    end
+
+    --Minimap + and - zoom buttons
+    local zoomOutButton = MinimapCluster.MinimapContainer.Minimap.ZoomOut
+    local zoomInButton = MinimapCluster.MinimapContainer.Minimap.ZoomIn
+
+    -- Desaturate all textures in ZoomOut button
+    for i = 1, zoomOutButton:GetNumRegions() do
+        local region = select(i, zoomOutButton:GetRegions())
+        if region:IsObjectType("Texture") then
+            applySettings(region, minimapSat, minimapColor)
+        end
+    end
+
+    -- Desaturate all textures in ZoomIn button
+    for i = 1, zoomInButton:GetNumRegions() do
+        local region = select(i, zoomInButton:GetRegions())
+        if region:IsObjectType("Texture") then
+            applySettings(region, minimapSat, minimapColor)
+        end
+    end
+
+    applySettings(MinimapCompassTexture, minimapSat, minimapColor)
+
+    for i = 1, ExpansionLandingPageMinimapButton:GetNumRegions() do
+        local region = select(i, ExpansionLandingPageMinimapButton:GetRegions())
+        if region:IsObjectType("Texture") then
+            applySettings(region, minimapSat, minimapColor)
+        end
+    end
+
     --castbars
     if BetterBlizzFramesDB.darkModeCastbars then
         applySettings(TargetFrame.spellbar.Border, desaturationValue, castbarBorder)
@@ -241,6 +284,18 @@ function BBF.DarkmodeFrames(bypass)
         applySettings(PlayerCastingBarFrame.Border, desaturationValue, castbarBorder)
         --applySettings(PlayerCastingBarFrame.BorderShield, desaturationValue, vertexColor)
         applySettings(PlayerCastingBarFrame.Background, desaturationValue, lighterVertexColor)
+    else
+        applySettings(TargetFrame.spellbar.Border, false, 1)
+        --applySettings(TargetFrame.spellbar.BorderShield, desaturationValue, vertexColor)
+        applySettings(TargetFrame.spellbar.Background, false, 1)
+
+        applySettings(FocusFrame.spellbar.Border, false, 1)
+        --applySettings(FocusFrame.spellbar.BorderShield, desaturationValue, vertexColor)
+        applySettings(FocusFrame.spellbar.Background, false, 1)
+
+        applySettings(PlayerCastingBarFrame.Border, false, 1)
+        --applySettings(PlayerCastingBarFrame.BorderShield, desaturationValue, vertexColor)
+        applySettings(PlayerCastingBarFrame.Background, false, 1)
     end
 
 
@@ -277,10 +332,27 @@ function BBF.DarkmodeFrames(bypass)
         end
     end
 
+    local nameplateRunes = _G.DeathKnightResourceOverlayFrame
+    if nameplateRunes and not darkModeNpBBP then
+        local dkNpRunes = darkModeNp and vertexColor or 1
+        for i = 1, 6 do
+            applySettings(nameplateRunes["Rune" .. i].BG_Active, darkModeNpSatVal, dkNpRunes)
+            applySettings(nameplateRunes["Rune" .. i].BG_Inactive, darkModeNpSatVal, dkNpRunes)
+        end
+    end
+
     local soulShards = _G.WarlockPowerFrame
     if soulShards then
         for _, v in pairs({soulShards:GetChildren()}) do
             applySettings(v.Background, desaturationValue, vertexColor)
+        end
+    end
+
+    local soulShardsNameplate = _G.ClassNameplateBarWarlockFrame
+    if soulShardsNameplate and not darkModeNpBBP then
+        local soulShardNp = darkModeNp and vertexColor or 1
+        for _, v in pairs({soulShardsNameplate:GetChildren()}) do
+            applySettings(v.Background, darkModeNpSatVal, soulShardNp)
         end
     end
 
@@ -292,10 +364,29 @@ function BBF.DarkmodeFrames(bypass)
         end
     end
 
+    local druidComboPointsNameplate = _G.ClassNameplateBarFeralDruidFrame
+    if druidComboPointsNameplate and not darkModeNpBBP then
+        local druidComboPointNp = darkModeNp and druidComboPoint or 1
+        local druidComboPointActiveNp = darkModeNp and druidComboPointActive or 1
+        for _, v in pairs({druidComboPointsNameplate:GetChildren()}) do
+            applySettings(v.BG_Inactive, darkModeNpSatVal, druidComboPointNp)
+            applySettings(v.BG_Active, darkModeNpSatVal, druidComboPointActiveNp)
+        end
+    end
+
     local mageArcaneCharges = _G.MageArcaneChargesFrame
     if mageArcaneCharges then
         for _, v in pairs({mageArcaneCharges:GetChildren()}) do
             applySettings(v.ArcaneBG, desaturationValue, actionBarColor)
+            --applySettings(v.BG_Active, desaturationValue, druidComboPointActive)
+        end
+    end
+
+    local mageArcaneChargesNameplate = _G.ClassNameplateBarMageFrame
+    if mageArcaneChargesNameplate and not darkModeNpBBP then
+        local mageChargeNp = darkModeNp and actionBarColor or 1
+        for _, v in pairs({mageArcaneChargesNameplate:GetChildren()}) do
+            applySettings(v.ArcaneBG, darkModeNpSatVal, mageChargeNp)
             --applySettings(v.BG_Active, desaturationValue, druidComboPointActive)
         end
     end
@@ -308,11 +399,12 @@ function BBF.DarkmodeFrames(bypass)
         end
     end
 
-    local monkNameplateChiPoints = _G.ClassNameplateBarWindwalkerMonkFrame
-    if monkNameplateChiPoints then
-        for _, v in pairs({monkNameplateChiPoints:GetChildren()}) do
-            applySettings(v.Chi_BG, desaturationValue, monkChi)
-            applySettings(v.Chi_BG_Active, desaturationValue, monkChi)
+    local monkChiPointsNameplate = _G.ClassNameplateBarWindwalkerMonkFrame
+    if monkChiPointsNameplate and not darkModeNpBBP then
+        local monkChiNp = darkModeNp and monkChi or 1
+        for _, v in pairs({monkChiPointsNameplate:GetChildren()}) do
+            applySettings(v.Chi_BG, darkModeNpSatVal, monkChiNp)
+            applySettings(v.Chi_BG_Active, darkModeNpSatVal, monkChiNp)
         end
     end
 
@@ -321,6 +413,62 @@ function BBF.DarkmodeFrames(bypass)
         for _, v in pairs({rogueComboPoints:GetChildren()}) do
             applySettings(v.BGInactive, desaturationValue, rogueCombo)
             applySettings(v.BGActive, desaturationValue, rogueComboActive)
+        end
+    end
+
+    local rogueComboPointsNameplate = _G.ClassNameplateBarRogueFrame
+    if rogueComboPointsNameplate and not darkModeNpBBP then
+        local rogueComboNp = darkModeNp and rogueCombo or 1
+        local rogueComboActiveNp = darkModeNp and rogueComboActive or 1
+        for _, v in pairs({rogueComboPointsNameplate:GetChildren()}) do
+            applySettings(v.BGInactive, darkModeNpSatVal, rogueComboNp)
+            applySettings(v.BGActive, darkModeNpSatVal, rogueComboActiveNp)
+        end
+    end
+
+
+    -- PaladinPowerBarFrame.Background,
+    -- PaladinPowerBarFrame.ActiveTexture,
+
+
+    local paladinHolyPowerNameplate = _G.ClassNameplateBarPaladinFrame
+    if paladinHolyPowerNameplate and not darkModeNpBBP then
+        local palaPowerNp = darkModeNp and vertexColor or 1
+        applySettings(ClassNameplateBarPaladinFrame.Background, darkModeNpSatVal, palaPowerNp)
+        applySettings(ClassNameplateBarPaladinFrame.ActiveTexture, darkModeNpSatVal, palaPowerNp)
+    end
+
+    local evokerEssencePoints = _G.EssencePlayerFrame
+    if evokerEssencePoints then
+        for _, v in pairs({evokerEssencePoints:GetChildren()}) do
+            applySettings(v.EssenceFillDone.CircBG, desaturationValue, monkChi)
+            applySettings(v.EssenceFilling.EssenceBG, desaturationValue, vertexColor)
+            applySettings(v.EssenceEmpty.EssenceBG, desaturationValue, vertexColor)
+            applySettings(v.EssenceFillDone.CircBGActive, desaturationValue, vertexColor)
+
+            applySettings(v.EssenceDepleting.EssenceBG, desaturationValue, vertexColor)
+            applySettings(v.EssenceDepleting.CircBGActive, desaturationValue, vertexColor)
+
+            applySettings(v.EssenceFillDone.RimGlow, desaturationValue, monkChi)
+            applySettings(v.EssenceDepleting.RimGlow, desaturationValue, monkChi)
+        end
+    end
+
+    local evokerEssencePointsNameplate = _G.ClassNameplateBarDracthyrFrame
+    if evokerEssencePointsNameplate and not darkModeNpBBP then
+        local evokerColorOne = darkModeNp and monkChi or 1
+        local evokerColorTwo = darkModeNp and vertexColor or 1
+        for _, v in pairs({evokerEssencePointsNameplate:GetChildren()}) do
+            applySettings(v.EssenceFillDone.CircBG, darkModeNpSatVal, evokerColorOne)
+            applySettings(v.EssenceFilling.EssenceBG, darkModeNpSatVal, evokerColorTwo)
+            applySettings(v.EssenceEmpty.EssenceBG, darkModeNpSatVal, evokerColorTwo)
+            applySettings(v.EssenceFillDone.CircBGActive, darkModeNpSatVal, evokerColorTwo)
+
+            applySettings(v.EssenceDepleting.EssenceBG, darkModeNpSatVal, evokerColorTwo)
+            applySettings(v.EssenceDepleting.CircBGActive, darkModeNpSatVal, evokerColorTwo)
+
+            applySettings(v.EssenceFillDone.RimGlow, darkModeNpSatVal, evokerColorOne)
+            applySettings(v.EssenceDepleting.RimGlow, darkModeNpSatVal, evokerColorOne)
         end
     end
 
@@ -335,6 +483,7 @@ function BBF.DarkmodeFrames(bypass)
         applySettings(_G["MultiBar6Button" ..i.. "NormalTexture"], desaturationValue, actionBarColor)
         applySettings(_G["MultiBar7Button" ..i.. "NormalTexture"], desaturationValue, actionBarColor)
         applySettings(_G["PetActionButton" ..i.. "NormalTexture"], desaturationValue, actionBarColor)
+        applySettings(_G["StanceButton" ..i.. "NormalTexture"], desaturationValue, actionBarColor)
     end
 
     for _, v in pairs({
