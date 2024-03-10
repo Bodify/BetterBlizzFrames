@@ -182,7 +182,7 @@ function BBF.DarkmodeFrames(bypass)
     local minimapColor = (BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeMinimap) and BetterBlizzFramesDB.darkModeColor or 1
     local minimapSat = (BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeMinimap) and true or false
 
-    local darkModeNpBBP = BetterBlizzPlatesDB.darkModeNameplateResource
+    local darkModeNpBBP = BetterBlizzPlatesDB and BetterBlizzPlatesDB.darkModeNameplateResource
     local darkModeNp = BetterBlizzFramesDB.darkModeNameplateResource and not darkModeNpBBP
     local darkModeNpSatVal = darkModeNp and desaturationValue or false
 
