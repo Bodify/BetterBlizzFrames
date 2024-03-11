@@ -1014,7 +1014,7 @@ local function CreateToggleIcon()
                 Icon:SetTexCoord(0.10000000149012, 0.89999997615814, 0.89999997615814, 0.10000000149012)
                 -- Border creation
                 local border = CreateFrame("Frame", nil, toggleIcon)
-                border:SetSize(34, 34) -- Slightly larger than the toggleIcon to create a border effect
+                border:SetSize(34, 34)
                 border:SetPoint("CENTER", toggleIcon, "CENTER", 0, 0)
 
                 border.texture = border:CreateTexture()
