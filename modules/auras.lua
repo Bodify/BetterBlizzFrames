@@ -1006,6 +1006,43 @@ local function CreateToggleIcon()
     local Icon = toggleIcon:CreateTexture(nil, "BACKGROUND")
     Icon:SetAllPoints()
     Icon:SetTexture(BetterBlizzFramesDB.auraToggleIconTexture)
+    -------
+    if IsAddOnLoaded("SUI") then
+        if SUIDB and SUIDB["profiles"] and SUIDB["profiles"]["Default"] and SUIDB["profiles"]["Default"]["general"] then
+            -- Now check if the theme variable doesn't exist or is nil
+            if SUIDB["profiles"]["Default"]["general"]["theme"] == "Dark" or SUIDB["profiles"]["Default"]["general"]["theme"] == "Custom" or SUIDB["profiles"]["Default"]["general"]["theme"] == "Class" then
+                Icon:SetTexCoord(0.10000000149012, 0.89999997615814, 0.89999997615814, 0.10000000149012)
+                -- Border creation
+                local border = CreateFrame("Frame", nil, toggleIcon)
+                border:SetSize(34, 34) -- Slightly larger than the toggleIcon to create a border effect
+                border:SetPoint("CENTER", toggleIcon, "CENTER", 0, 0)
+
+                border.texture = border:CreateTexture()
+                border.texture:SetAllPoints()
+                border.texture:SetTexture("Interface\\Addons\\SUI\\Media\\Textures\\Core\\gloss")
+                border.texture:SetTexCoord(0, 1, 0, 1)
+                border.texture:SetDrawLayer("BACKGROUND", -7)
+                border.texture:SetVertexColor(0.4, 0.35, 0.35)
+
+                -- Optional shadow effect
+                local Backdrop = {
+                    bgFile = nil,
+                    edgeFile = "Interface\\Addons\\SUI\\Media\\Textures\\Core\\outer_shadow",
+                    tile = false,
+                    tileSize = 32,
+                    edgeSize = 6,
+                    insets = { left = 6, right = 6, top = 6, bottom = 6 },
+                }
+
+                border.shadow = CreateFrame("Frame", nil, border, "BackdropTemplate")
+                border.shadow:SetPoint("TOPLEFT", border, "TOPLEFT", -4, 4)
+                border.shadow:SetPoint("BOTTOMRIGHT", border, "BOTTOMRIGHT", 4, -4)
+                border.shadow:SetBackdrop(Backdrop)
+                border.shadow:SetBackdropBorderColor(unpack(SUI:Color(0.25, 0.9)))
+            end
+        end
+    end
+    -------
     toggleIcon.Icon = Icon
 
     -- Creating FontString to display the count of hidden auras
