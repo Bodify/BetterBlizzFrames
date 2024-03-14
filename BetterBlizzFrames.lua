@@ -367,7 +367,7 @@ local function SendUpdateMessage()
     if sendUpdate then
         C_Timer.After(7, function()
             DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames " .. addonUpdates .. ":")
-            DEFAULT_CHAT_FRAME:AddMessage("|A:QuestNormal:16:16|a New Features:")
+            DEFAULT_CHAT_FRAME:AddMessage("|A:QuestNormal:16:16|a New Settings:")
             DEFAULT_CHAT_FRAME:AddMessage("   - \"Hide Aggro Highlight\" for Party Frames (General).")
             DEFAULT_CHAT_FRAME:AddMessage("   - More aura sorting settings (Buffs & Debuffs).")
             --DEFAULT_CHAT_FRAME:AddMessage("Added a \"Hide Minimap Buttons\" setting in Misc.")
