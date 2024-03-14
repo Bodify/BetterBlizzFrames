@@ -85,6 +85,8 @@ local changePurgeTextureColor
 local targetToTAdjustmentOffsetY
 local focusToTAdjustmentOffsetY
 local buffsOnTopReverseCastbarMovement
+local customImportantAuraSorting
+local allowLargeAuraFirst
 
 function BBF.UpdateUserAuraSettings()
     printSpellId = printAuraSpellIds
@@ -139,8 +141,8 @@ function BBF.UpdateUserAuraSettings()
     playerAuraImportantGlow = BetterBlizzFramesDB.playerAuraImportantGlow
     darkModeUi = BetterBlizzFramesDB.darkModeUi
     darkModeUiAura = BetterBlizzFramesDB.darkModeUiAura
-    darkModeAurasOn = darkModeUi and darkModeUiAura
-    darkModeColor = BetterBlizzFramesDB.darkModeColor
+    allowLargeAuraFirst = BetterBlizzFramesDB.allowLargeAuraFirst
+    customImportantAuraSorting = BetterBlizzFramesDB.customImportantAuraSorting
     purgeTextureColorRGB = BetterBlizzFramesDB.purgeTextureColorRGB
     changePurgeTextureColor = BetterBlizzFramesDB.changePurgeTextureColor
     buffsOnTopReverseCastbarMovement = BetterBlizzFramesDB.buffsOnTopReverseCastbarMovement
@@ -601,6 +603,195 @@ local function AdjustAuras(self, frameType)
 
     local buffs, debuffs = {}, {}
 
+    local function defaultComparator(a, b)
+        -- Default sorting logic
+        if a.isLarge and not b.isLarge then
+            return true
+        elseif not a.isLarge and b.isLarge then
+            return false
+        elseif a.canApply ~= b.canApply then
+            return a.canApply
+        else
+            return a.auraInstanceID < b.auraInstanceID
+        end
+    end
+
+    local function importantAuraComparator(a, b)
+        if a.isImportant ~= b.isImportant then
+            return a.isImportant
+        end
+
+        return defaultComparator(a, b)
+    end
+
+    local function importantAllowEnlargedAuraComparator(a, b)
+        if a.isEnlarged ~= b.isEnlarged then
+            return a.isEnlarged
+        end
+
+        if a.isImportant ~= b.isImportant then
+            return a.isImportant
+        end
+
+        return defaultComparator(a, b)
+    end
+
+    local function largeSmallAuraComparator(a, b)
+        if a.isEnlarged or b.isEnlarged then
+            if a.isEnlarged and not b.isEnlarged then
+                return true
+            elseif not a.isEnlarged and b.isEnlarged then
+                return false
+            else
+                return defaultComparator(a, b)
+            end
+        end
+
+        if a.isCompacted or b.isCompacted then
+            if a.isCompacted and not b.isCompacted then
+                return false
+            elseif not a.isCompacted and b.isCompacted then
+                return true
+            else
+                return defaultComparator(a, b)
+            end
+        end
+
+        -- For auras that are neither enlarged nor compacted, use default sorting
+        if not a.isEnlarged and not a.isCompacted and not b.isEnlarged and not b.isCompacted then
+            if a.isLarge and not b.isLarge then
+                return true
+            elseif not a.isLarge and b.isLarge then
+                return false
+            elseif a.canApply ~= b.canApply then
+                return a.canApply
+            else
+                return defaultComparator(a, b)
+            end
+        end
+        return defaultComparator(a, b)
+    end
+
+    local function largeSmallAndImportantAuraComparator(a, b)
+        if a.isImportant ~= b.isImportant then
+            return a.isImportant
+        end
+
+        if a.isEnlarged or b.isEnlarged then
+            if a.isEnlarged and not b.isEnlarged then
+                return true
+            elseif not a.isEnlarged and b.isEnlarged then
+                return false
+            else
+                -- Both are enlarged, sort by auraInstanceID
+                return defaultComparator(a, b)
+            end
+        end
+
+        -- Compacted auras come last, sorted by auraInstanceID
+        if a.isCompacted or b.isCompacted then
+            if a.isCompacted and not b.isCompacted then
+                return false
+            elseif not a.isCompacted and b.isCompacted then
+                return true
+            else
+                -- Both are compacted, sort by auraInstanceID
+                return defaultComparator(a, b)
+            end
+        end
+
+        -- For auras that are neither enlarged nor compacted, use default sorting
+        if not a.isEnlarged and not a.isCompacted and not b.isEnlarged and not b.isCompacted then
+            if a.isLarge and not b.isLarge then
+                return true
+            elseif not a.isLarge and b.isLarge then
+                return false
+            elseif a.canApply ~= b.canApply then
+                return a.canApply
+            else
+                return defaultComparator(a, b)
+            end
+        end
+        return defaultComparator(a, b)
+    end
+
+    local function largeSmallAndImportantAndEnlargedFirstAuraComparator(a, b)
+        if a.isEnlarged or b.isEnlarged then
+            if a.isEnlarged and not b.isEnlarged then
+                return true
+            elseif not a.isEnlarged and b.isEnlarged then
+                return false
+            else
+                -- Both are enlarged, sort by auraInstanceID
+                return defaultComparator(a, b)
+            end
+        end
+
+        -- Compacted auras come last, sorted by auraInstanceID
+        if a.isCompacted or b.isCompacted then
+            if a.isCompacted and not b.isCompacted then
+                return false
+            elseif not a.isCompacted and b.isCompacted then
+                return true
+            else
+                -- Both are compacted, sort by auraInstanceID
+                return defaultComparator(a, b)
+            end
+        end
+
+        if a.isImportant ~= b.isImportant then
+            return a.isImportant
+        end
+
+        -- For auras that are neither enlarged nor compacted, use default sorting
+        if not a.isEnlarged and not a.isCompacted and not b.isEnlarged and not b.isCompacted then
+            if a.isLarge and not b.isLarge then
+                return true
+            elseif not a.isLarge and b.isLarge then
+                return false
+            elseif a.canApply ~= b.canApply then
+                return a.canApply
+            else
+                return defaultComparator(a, b)
+            end
+        end
+        return defaultComparator(a, b)
+    end
+
+    local function allowLargeAuraFirstComparator(a, b)
+        if a.isEnlarged ~= b.isEnlarged then
+            return a.isEnlarged
+        end
+        -- Proceed with other sorting criteria without giving special treatment to isImportant
+        if a.isLarge and not b.isLarge then
+            return true
+        elseif not a.isLarge and b.isLarge then
+            return false
+        elseif a.canApply ~= b.canApply then
+            return a.canApply
+        else
+            return defaultComparator(a, b)
+        end
+    end
+
+    local function getCustomAuraComparator()
+        if customImportantAuraSorting and customLargeSmallAuraSorting and allowLargeAuraFirst then
+            return largeSmallAndImportantAndEnlargedFirstAuraComparator
+        elseif customImportantAuraSorting and customLargeSmallAuraSorting then
+            return largeSmallAndImportantAuraComparator
+        elseif customImportantAuraSorting and allowLargeAuraFirst then
+            return importantAllowEnlargedAuraComparator
+        elseif customImportantAuraSorting then
+            return importantAuraComparator
+        elseif customLargeSmallAuraSorting then
+            return largeSmallAuraComparator
+        elseif allowLargeAuraFirst then
+            return allowLargeAuraFirstComparator
+        else
+            return defaultComparator
+        end
+    end
+
     for aura in self.auraPools:EnumerateActive() do
         local auraData = C_UnitAuras.GetAuraDataByAuraInstanceID(self.unit, aura.auraInstanceID)
         if auraData then
@@ -799,59 +990,7 @@ local function AdjustAuras(self, frameType)
         end
     end
 
-    local function customAuraComparator(a, b)
-        -- Check for custom sorting enabled
-        if customLargeSmallAuraSorting then
-            -- Enlarged auras come first, sorted by auraInstanceID
-            if a.isEnlarged or b.isEnlarged then
-                if a.isEnlarged and not b.isEnlarged then
-                    return true
-                elseif not a.isEnlarged and b.isEnlarged then
-                    return false
-                else
-                    -- Both are enlarged, sort by auraInstanceID
-                    return a.auraInstanceID < b.auraInstanceID
-                end
-            end
-
-            -- Compacted auras come last, sorted by auraInstanceID
-            if a.isCompacted or b.isCompacted then
-                if a.isCompacted and not b.isCompacted then
-                    return false
-                elseif not a.isCompacted and b.isCompacted then
-                    return true
-                else
-                    -- Both are compacted, sort by auraInstanceID
-                    return a.auraInstanceID < b.auraInstanceID
-                end
-            end
-
-            -- For auras that are neither enlarged nor compacted, use default sorting
-            if not a.isEnlarged and not a.isCompacted and not b.isEnlarged and not b.isCompacted then
-                if a.isLarge and not b.isLarge then
-                    return true
-                elseif not a.isLarge and b.isLarge then
-                    return false
-                elseif a.canApply ~= b.canApply then
-                    return a.canApply
-                else
-                    return a.auraInstanceID < b.auraInstanceID
-                end
-            end
-        else
-            -- Default sorting logic
-            if a.isLarge and not b.isLarge then
-                return true
-            elseif not a.isLarge and b.isLarge then
-                return false
-            elseif a.canApply ~= b.canApply then
-                return a.canApply
-            else
-                return a.auraInstanceID < b.auraInstanceID
-            end
-        end
-    end
-
+    local customAuraComparator = getCustomAuraComparator()
     table_sort(buffs, customAuraComparator)
     table_sort(debuffs, customAuraComparator)
 

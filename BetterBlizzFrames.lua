@@ -6,7 +6,7 @@ BBF = BBF or {}
 -- Things are getting more messy need a lot of cleaning lol
 
 local addonVersion = "1.00" --too afraid to to touch for now
-local addonUpdates = "1.3.3"
+local addonUpdates = "1.3.4"
 local sendUpdate = true
 BBF.VersionNumber = addonUpdates
 BBF.variablesLoaded = false
@@ -368,10 +368,12 @@ local function SendUpdateMessage()
         C_Timer.After(7, function()
             DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames " .. addonUpdates .. ":")
             DEFAULT_CHAT_FRAME:AddMessage("|A:QuestNormal:16:16|a New Features:")
-            DEFAULT_CHAT_FRAME:AddMessage("   Added more stuff to Dark Mode: Evoker Resource, Minimap, StanceBar, Nameplate Resource. Added a \"Hide Minimap Buttons\" setting in Misc.")
+            DEFAULT_CHAT_FRAME:AddMessage("   - \"Hide Aggro Highlight\" for Party Frames (General).")
+            DEFAULT_CHAT_FRAME:AddMessage("   - More aura sorting settings (Buffs & Debuffs).")
             --DEFAULT_CHAT_FRAME:AddMessage("Added a \"Hide Minimap Buttons\" setting in Misc.")
-            DEFAULT_CHAT_FRAME:AddMessage("|A:Professions-Crafting-Orders-Icon:16:16|a Bugfixes:")
-            DEFAULT_CHAT_FRAME:AddMessage("   Fix \"Hide Level Text\" checkbox not saving. Fix Combat Indicator not updating focus if target and focus are the same")
+
+            --DEFAULT_CHAT_FRAME:AddMessage("|A:Professions-Crafting-Orders-Icon:16:16|a Bugfixes:")
+            --DEFAULT_CHAT_FRAME:AddMessage("   Fix \"Hide Level Text\" checkbox not saving. Fix Combat Indicator not updating focus if target and focus are the same")
             --DEFAULT_CHAT_FRAME:AddMessage("Fix Combat Indicator not updating focus if target and focus are the same.")
             --DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a For more info and news about new features type /bbf news")
         end)
@@ -381,12 +383,12 @@ end
 local function NewsUpdateMessage()
     DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames news:")
     DEFAULT_CHAT_FRAME:AddMessage("|A:QuestNormal:16:16|a New Features:")
-    DEFAULT_CHAT_FRAME:AddMessage("   Added more stuff to Dark Mode: Evoker Resource, Minimap, StanceBar, Nameplate Resource.")
-    DEFAULT_CHAT_FRAME:AddMessage("   Added a \"Hide Minimap Buttons\" setting in Misc.")
+    DEFAULT_CHAT_FRAME:AddMessage("   - \"Hide Aggro Highlight\" for Party Frames (General).")
+    DEFAULT_CHAT_FRAME:AddMessage("   - More aura sorting settings (Buffs & Debuffs).")
 
-    DEFAULT_CHAT_FRAME:AddMessage("|A:Professions-Crafting-Orders-Icon:16:16|a Bugfixes:")
-    DEFAULT_CHAT_FRAME:AddMessage("   Fix \"Hide Level Text\" checkbox not saving.")
-    DEFAULT_CHAT_FRAME:AddMessage("   Fix Combat Indicator not updating focus if target and focus are the same")
+    -- DEFAULT_CHAT_FRAME:AddMessage("|A:Professions-Crafting-Orders-Icon:16:16|a Bugfixes:")
+    -- DEFAULT_CHAT_FRAME:AddMessage("   Fix \"Hide Level Text\" checkbox not saving.")
+    -- DEFAULT_CHAT_FRAME:AddMessage("   Fix Combat Indicator not updating focus if target and focus are the same")
 
     DEFAULT_CHAT_FRAME:AddMessage("|A:GarrisonTroops-Health:16:16|a Patreon link: www.patreon.com/bodydev")
 end

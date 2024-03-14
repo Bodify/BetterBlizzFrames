@@ -1520,6 +1520,10 @@ local function guiGeneralTab()
         BBF.PartyNameChange()
     end)
 
+    local hidePartyAggroHighlight = CreateCheckbox("hidePartyAggroHighlight", "Hide Aggro Highlight", BetterBlizzFrames, nil, BBF.HideFrames)
+    hidePartyAggroHighlight:SetPoint("LEFT", hidePartyNames.text, "RIGHT", 0, 0)
+    CreateTooltip(hidePartyAggroHighlight, "Hide the Aggro Highlight border around each party frame.")
+
     local hidePartyRoles = CreateCheckbox("hidePartyRoles", "Hide Role Icons", BetterBlizzFrames)
     hidePartyRoles:SetPoint("TOPLEFT", hidePartyNames, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     hidePartyRoles:HookScript("OnClick", function()
@@ -3640,7 +3644,7 @@ local function guiFrameAuras()
     moreAuraSettings:SetText("More Aura Settings:")
 
     local displayDispelGlowAlways = CreateCheckbox("displayDispelGlowAlways", "Always show purge texture", playerAuraFiltering)
-    displayDispelGlowAlways:SetPoint("TOPLEFT", moreAuraSettings, "BOTTOMLEFT", -20, -3)
+    displayDispelGlowAlways:SetPoint("TOPLEFT", moreAuraSettings, "BOTTOMLEFT", -10, -3)
     CreateTooltip(displayDispelGlowAlways, "Always display the purge/steal texture on auras\nregardless if you have a dispel/purge/steal ability or not.")
 
     local changePurgeTextureColor = CreateCheckbox("changePurgeTextureColor", "Change Purge Texture Color", playerAuraFiltering)
@@ -3690,11 +3694,25 @@ local function guiFrameAuras()
     end)
     CreateTooltip(dispelGlowButton, "Dispel/Purge Glow Color.")
 
+    local sortingSettings = contentFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    sortingSettings:SetPoint("TOPLEFT", changePurgeTextureColor, "BOTTOMLEFT", 10, -4)
+    sortingSettings:SetText("Sorting:")
+
+    local customImportantAuraSorting = CreateCheckbox("customImportantAuraSorting", "Sort Important Auras", playerAuraFiltering)
+    customImportantAuraSorting:SetPoint("TOPLEFT", changePurgeTextureColor, "BOTTOMLEFT", 0, -20)
+    CreateTooltip(customImportantAuraSorting, "Show Important Auras first in the list\n\n(Remember to enable Important Auras on\nTarget/Focus Frame and check checkbox in whitelist)")
+
     local customLargeSmallAuraSorting = CreateCheckbox("customLargeSmallAuraSorting", "Sort Enlarged & Compact Auras", playerAuraFiltering)
-    customLargeSmallAuraSorting:SetPoint("TOPLEFT", changePurgeTextureColor, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltip(customLargeSmallAuraSorting, "Show Enlarged Auras first in the list and Compact Auras last.")
+    customLargeSmallAuraSorting:SetPoint("TOPLEFT", customImportantAuraSorting, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltip(customLargeSmallAuraSorting, "Show Enlarged Auras first in the list and Compact Auras last.\n\n(Remember to enable Enlarged Auras on\nTarget/Focus Frame and check checkbox in whitelist)")
 
+    local allowLargeAuraFirst = CreateCheckbox("allowLargeAuraFirst", "Sort Enlarged before Important", playerAuraFiltering)
+    allowLargeAuraFirst:SetPoint("TOPLEFT", customLargeSmallAuraSorting, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltip(allowLargeAuraFirst, "If there are both Enlarged and Important auras\nthen show the Enlarged ones first.")
 
+    -- local customPandemicAuraSorting = CreateCheckbox("customPandemicAuraSorting", "Sort Pandemic Auras before all", playerAuraFiltering)
+    -- customPandemicAuraSorting:SetPoint("TOPLEFT", allowLargeAuraFirst, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    -- CreateTooltip(customPandemicAuraSorting, "Sort Pandemic Auras before all other auras during their pandemic window.")
 
 
 
@@ -3795,6 +3813,40 @@ local function guiMisc()
         end
     end)
     CreateTooltip(stealthIndicatorPlayer, "Add a blue border texture around the\nplayer frame during stealth abilities")
+
+    local discordLinkEditBox = CreateFrame("EditBox", nil, guiMisc, "InputBoxTemplate")
+    discordLinkEditBox:SetPoint("TOPLEFT", settingsText, "BOTTOMLEFT", 210, -540)
+    discordLinkEditBox:SetSize(180, 20)
+    discordLinkEditBox:SetAutoFocus(false)
+    discordLinkEditBox:SetFontObject("ChatFontNormal")
+    discordLinkEditBox:SetText("https://discord.gg/cjqVaEMm25")
+    discordLinkEditBox:SetCursorPosition(0) -- Places cursor at start of the text
+    discordLinkEditBox:ClearFocus() -- Removes focus from the EditBox
+    discordLinkEditBox:SetScript("OnEscapePressed", function(self)
+        self:ClearFocus() -- Allows user to press escape to unfocus the EditBox
+    end)
+
+    -- Make the EditBox text selectable and readonly
+    discordLinkEditBox:SetScript("OnTextChanged", function(self)
+        self:SetText("https://discord.gg/cjqVaEMm25")
+    end)
+    --discordLinkEditBox:HighlightText() -- Highlights the text for easy copying
+    discordLinkEditBox:SetScript("OnCursorChanged", function() end) -- Prevents cursor changes
+    discordLinkEditBox:SetScript("OnEditFocusGained", function(self) self:HighlightText() end) -- Re-highlights text when focused
+    discordLinkEditBox:SetScript("OnMouseUp", function(self)
+        if not self:IsMouseOver() then
+            self:ClearFocus()
+        end
+    end)
+
+    local discordText = guiMisc:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+    discordText:SetPoint("BOTTOM", discordLinkEditBox, "TOP", 18, 8)
+    discordText:SetText("Join the Discord for info\nand help with BBP/BBF")
+
+    local joinDiscord = guiMisc:CreateTexture(nil, "ARTWORK")
+    joinDiscord:SetAtlas("token-choice-bnet")
+    joinDiscord:SetSize(68, 68)
+    joinDiscord:SetPoint("RIGHT", discordText, "LEFT", 5, 1)
 end
 
 local function guiChatFrame()

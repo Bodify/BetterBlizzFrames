@@ -14,6 +14,7 @@ local originalStanceParent
 local iconMouseOver = false -- flag to indicate if any LibDBIcon is currently moused over
 local minimapButtonsHooked = false
 local bagButtonsHooked = false
+local keybindAlphaChanged = false
 
 local function applyAlpha(frame, alpha)
     if frame then
@@ -405,26 +406,30 @@ function BBF.HideFrames()
         -- action bar macro name hotkey hide
         local hotKeyAlpha = BetterBlizzFramesDB.hideActionBarHotKey and 0 or 1
         local macroNameAlpha = BetterBlizzFramesDB.hideActionBarMacroName and 0 or 1
-        for i = 1, 12 do
-            applyAlpha(_G["ActionButton" .. i .. "HotKey"], hotKeyAlpha)
-            applyAlpha(_G["MultiBarBottomLeftButton" .. i .. "HotKey"], hotKeyAlpha)
-            applyAlpha(_G["MultiBarBottomRightButton" ..i.. "HotKey"], hotKeyAlpha)
-            applyAlpha(_G["MultiBarRightButton" ..i.. "HotKey"], hotKeyAlpha)
-            applyAlpha(_G["MultiBarLeftButton" ..i.. "HotKey"], hotKeyAlpha)
-            applyAlpha(_G["MultiBar5Button" ..i.. "HotKey"], hotKeyAlpha)
-            applyAlpha(_G["MultiBar6Button" ..i.. "HotKey"], hotKeyAlpha)
-            applyAlpha(_G["MultiBar7Button" ..i.. "HotKey"], hotKeyAlpha)
-            applyAlpha(_G["PetActionButton" ..i.. "HotKey"], hotKeyAlpha)
+        if BetterBlizzFramesDB.hideActionBarHotKey or BetterBlizzFramesDB.hideActionBarMacroName or keybindAlphaChanged then
+            for i = 1, 12 do
+                applyAlpha(_G["ActionButton" .. i .. "HotKey"], hotKeyAlpha)
+                applyAlpha(_G["MultiBarBottomLeftButton" .. i .. "HotKey"], hotKeyAlpha)
+                applyAlpha(_G["MultiBarBottomRightButton" ..i.. "HotKey"], hotKeyAlpha)
+                applyAlpha(_G["MultiBarRightButton" ..i.. "HotKey"], hotKeyAlpha)
+                applyAlpha(_G["MultiBarLeftButton" ..i.. "HotKey"], hotKeyAlpha)
+                applyAlpha(_G["MultiBar5Button" ..i.. "HotKey"], hotKeyAlpha)
+                applyAlpha(_G["MultiBar6Button" ..i.. "HotKey"], hotKeyAlpha)
+                applyAlpha(_G["MultiBar7Button" ..i.. "HotKey"], hotKeyAlpha)
+                applyAlpha(_G["PetActionButton" ..i.. "HotKey"], hotKeyAlpha)
 
-            applyAlpha(_G["ActionButton" .. i .. "Name"], macroNameAlpha)
-            applyAlpha(_G["MultiBarBottomLeftButton" .. i .. "Name"], macroNameAlpha)
-            applyAlpha(_G["MultiBarBottomRightButton" ..i.. "Name"], macroNameAlpha)
-            applyAlpha(_G["MultiBarRightButton" ..i.. "Name"], macroNameAlpha)
-            applyAlpha(_G["MultiBarLeftButton" ..i.. "Name"], macroNameAlpha)
-            applyAlpha(_G["MultiBar5Button" ..i.. "Name"], macroNameAlpha)
-            applyAlpha(_G["MultiBar6Button" ..i.. "Name"], macroNameAlpha)
-            applyAlpha(_G["MultiBar7Button" ..i.. "Name"], macroNameAlpha)
-            applyAlpha(_G["PetActionButton" ..i.. "Name"], macroNameAlpha)
+                applyAlpha(_G["ActionButton" .. i .. "Name"], macroNameAlpha)
+                applyAlpha(_G["MultiBarBottomLeftButton" .. i .. "Name"], macroNameAlpha)
+                applyAlpha(_G["MultiBarBottomRightButton" ..i.. "Name"], macroNameAlpha)
+                applyAlpha(_G["MultiBarRightButton" ..i.. "Name"], macroNameAlpha)
+                applyAlpha(_G["MultiBarLeftButton" ..i.. "Name"], macroNameAlpha)
+                applyAlpha(_G["MultiBar5Button" ..i.. "Name"], macroNameAlpha)
+                applyAlpha(_G["MultiBar6Button" ..i.. "Name"], macroNameAlpha)
+                applyAlpha(_G["MultiBar7Button" ..i.. "Name"], macroNameAlpha)
+                applyAlpha(_G["PetActionButton" ..i.. "Name"], macroNameAlpha)
+
+            end
+            keybindAlphaChanged = true
         end
 
         -- Hide ToT Frames
@@ -532,6 +537,18 @@ function BBF.HideFrames()
                 end
                 minimapButtonsHooked = true
             end)
+        end
+
+        local aggroAlpha = BetterBlizzFramesDB.hidePartyAggroHighlight and 0 or 1
+
+        for i = 1, 5 do
+            local aggroHighlight = _G["CompactPartyFrameMember" .. i .. "AggroHighlight"]
+            if aggroHighlight then
+                -- Only adjust alpha if it differs from the desired state
+                if aggroHighlight:GetAlpha() ~= aggroAlpha then
+                    aggroHighlight:SetAlpha(aggroAlpha)
+                end
+            end
         end
     end
 end
