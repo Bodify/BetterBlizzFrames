@@ -543,6 +543,18 @@ function BBF.DarkmodeFrames(bypass)
         --end
     end
 
+    local NUM_ACTIONBAR_BUTTONS = NUM_ACTIONBAR_BUTTONS
+    local DOMINOS_NUM_MAX_BUTTONS = 14 * NUM_ACTIONBAR_BUTTONS
+    for i = 1, DOMINOS_NUM_MAX_BUTTONS do
+        local button = _G["DominosActionButton" .. i]
+        if button then
+            local normalTexture = button:GetNormalTexture()
+            if normalTexture then
+                applySettings(normalTexture, desaturationValue, actionBarColor)
+            end
+        end
+    end
+
     for _, v in pairs({BlizzardArtLeftCap, BlizzardArtRightCap}) do
         if v then
             applySettings(v, desaturationValue, birdColor)

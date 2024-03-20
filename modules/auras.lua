@@ -1133,11 +1133,16 @@ local function CreateToggleIcon()
     local toggleIcon = CreateFrame("Button", "ToggleHiddenAurasButton", BuffFrame)
     toggleIcon:SetSize(30, 30)
     local currentAuraSize = BuffFrame.AuraContainer.iconScale
+    local addIconsToRight = BuffFrame.AuraContainer.addIconsToRight or false
     if currentAuraSize then
         toggleIcon:SetScale(currentAuraSize)
     end
     if BuffFrame.CollapseAndExpandButton then
-        toggleIcon:SetPoint("LEFT", BuffFrame.CollapseAndExpandButton, "RIGHT", 0, 0)
+        if addIconsToRight then
+            toggleIcon:SetPoint("RIGHT", BuffFrame.CollapseAndExpandButton, "LEFT", 0, 0)
+        else
+            toggleIcon:SetPoint("LEFT", BuffFrame.CollapseAndExpandButton, "RIGHT", 0, 0)
+        end
     else
         toggleIcon:SetPoint("TOPLEFT", BuffFrame, "TOPRIGHT", 0, -6)
     end
@@ -1226,6 +1231,7 @@ local function PersonalBuffFrameFilterAndGrid(self)
     ResetHiddenAurasCount()
     local isExpanded = BuffFrame:IsExpanded();
     local currentAuraSize = BuffFrame.AuraContainer.iconScale
+    local addIconsToRight = BuffFrame.AuraContainer.addIconsToRight or false
     if ToggleHiddenAurasButton then
         ToggleHiddenAurasButton:SetScale(currentAuraSize)
     end
@@ -1350,7 +1356,12 @@ local function PersonalBuffFrameFilterAndGrid(self)
                     auraFrame.Duration:SetDrawLayer("OVERLAY", 7)
                     auraFrame:Show();
                     auraFrame:ClearAllPoints();
-                    auraFrame:SetPoint("TOPRIGHT", BuffFrame, "TOPRIGHT", -xOffset - 15, -yOffset);
+                    if addIconsToRight then
+                        auraFrame:SetPoint("TOPLEFT", BuffFrame, "TOPLEFT", xOffset + 15, -yOffset);
+                    else
+                        auraFrame:SetPoint("TOPRIGHT", BuffFrame, "TOPRIGHT", -xOffset - 15, -yOffset);
+                    end
+
                     -- Update column and row counters
                     currentCol = currentCol + 1;
                     if currentCol > maxAurasPerRow then
