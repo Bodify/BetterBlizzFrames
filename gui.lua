@@ -1280,9 +1280,13 @@ local function guiGeneralTab()
         playerFrameOCDTextureBypass:SetAlpha(0)
     end
 
-    local hideLossOfControlFrameBg = CreateCheckbox("hideLossOfControlFrameBg", "Hide LossOfControl Background", BetterBlizzFrames, nil, BBF.HideFrames)
+    local hideLossOfControlFrameBg = CreateCheckbox("hideLossOfControlFrameBg", "Hide CC Background", BetterBlizzFrames, nil, BBF.HideFrames)
     hideLossOfControlFrameBg:SetPoint("TOPLEFT", playerFrameOCD, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltip(hideLossOfControlFrameBg, "Hide the dark background and red bar on top and on bottom of the Loss of Control frame")
+    CreateTooltip(hideLossOfControlFrameBg, "Hide the dark background on the LossOfControl frame (displaying CC on you)")
+
+    local hideLossOfControlFrameLines = CreateCheckbox("hideLossOfControlFrameLines", "Hide CC Red-lines", BetterBlizzFrames, nil, BBF.HideFrames)
+    hideLossOfControlFrameLines:SetPoint("LEFT", hideLossOfControlFrameBg.text, "RIGHT", 0, 0)
+    CreateTooltip(hideLossOfControlFrameLines, "Hide the red lines on top and bottom of the LossOfControl frame (displaying CC on you)")
 
     local darkModeUi = CreateCheckbox("darkModeUi", "Dark Mode", BetterBlizzFrames)
     darkModeUi:SetPoint("TOPLEFT", hideLossOfControlFrameBg, "BOTTOMLEFT", 0, pixelsBetweenBoxes)

@@ -1034,6 +1034,12 @@ First:SetScript("OnEvent", function(_, event, addonName)
                 BetterBlizzFramesDB.auraWhitelistAlphaUpdated = true
             end
 
+            if BetterBlizzFramesDB.hideLossOfControlFrameLines == nil then
+                if BetterBlizzFramesDB.hideLossOfControlFrameBg then
+                    BetterBlizzFramesDB.hideLossOfControlFrameLines = true
+                end
+            end
+
             BBF.InitializeOptions()
         end
     end

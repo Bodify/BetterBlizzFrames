@@ -398,10 +398,11 @@ function BBF.HideFrames()
             end
         end
 
-        local LossOfControlFrameAlpha = BetterBlizzFramesDB.hideLossOfControlFrameBg and 0 or 1
-        LossOfControlFrame.blackBg:SetAlpha(LossOfControlFrameAlpha)
-        LossOfControlFrame.RedLineTop:SetAlpha(LossOfControlFrameAlpha)
-        LossOfControlFrame.RedLineBottom:SetAlpha(LossOfControlFrameAlpha)
+        local LossOfControlFrameAlphaBg = BetterBlizzFramesDB.hideLossOfControlFrameBg and 0 or 0.6
+        local LossOfControlFrameAlphaLines = BetterBlizzFramesDB.hideLossOfControlFrameLines and 0 or 1
+        LossOfControlFrame.blackBg:SetAlpha(LossOfControlFrameAlphaBg)
+        LossOfControlFrame.RedLineTop:SetAlpha(LossOfControlFrameAlphaLines)
+        LossOfControlFrame.RedLineBottom:SetAlpha(LossOfControlFrameAlphaLines)
 
         -- action bar macro name hotkey hide
         local hotKeyAlpha = BetterBlizzFramesDB.hideActionBarHotKey and 0 or 1
