@@ -719,7 +719,7 @@ function BBF.CenteredFrameNames(frame, unit)
         frame.cleanName:SetJustifyV(originalNameObject:GetJustifyV())
         frame.cleanName:SetWidth(originalNameObject:GetWidth())
         --frame.cleanName:ClearAllPoints()
-        frame.cleanName:SetPoint("TOP", frame.HealthBar, "TOP", 2, 14)
+        frame.cleanName:SetPoint("TOP", frame.HealthBar, "TOP", 2, 13)
         frame.cleanName:SetAlpha(1)
     else
         if frame.cleanName then
@@ -732,7 +732,7 @@ function BBF.CenteredFrameNames(frame, unit)
             frame.cleanName:SetWidth(originalNameObject:GetWidth())
             --frame.cleanName:ClearAllPoints()
             if playerFrameOCD then
-                frame.cleanName:SetPoint(a,b,c,x,y-1)
+                frame.cleanName:SetPoint(a,b,c,x,y-2)
             else
                 if BetterBlizzFramesDB.playerFrameOCDTextureBypass then
                     frame.cleanName:SetPoint(a,b,c,x,y-1)

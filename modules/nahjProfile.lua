@@ -825,7 +825,8 @@ function BBF.NahjProfile()
     updateAuraList(nahjAuraBlacklist, BetterBlizzFramesDB.auraBlacklist)
 
     local db = BetterBlizzFramesDB
-    db.petCastBarWidth = 100
+	db.targetCastBarIconScaleScale = 0.9800000190734863
+	db.petCastBarWidth = 100
 	db.hideFocusLeaderIcon = true
 	db.targetToTYPos = 20
 	db.focusCastbarIconXPos = 0
@@ -843,26 +844,36 @@ function BBF.NahjProfile()
 	db.printAuraSpellIds = false
 	db.maxBuffFrameBuffs = 32
 	db.focusCastbarIconXPosXPos = 0
+	db.petCastBarWidthScale = 100
 	db.targetBuffFilterBlacklist = true
 	db.enablePlayerBuffFiltering = true
 	db.playerdeBuffFilterBlacklist = true
 	db.targetStaticCastbar = true
 	db.targetAndFocusHorizontalGap = 3
 	db.combatIndicatorShowSap = true
-	db.playerCastBarScale = 1.1
+	db.playerCastBarScale = 1.100000023841858
+	db.playerCastBarScaleScale = 1.079999923706055
+	db.focusToTAdjustmentOffsetY = 0
 	db.combatIndicatorXPos = 0
 	db.targetAndFocusSmallAuraScale = 1
+	db.targetToTXPosScale = 8
 	db.playerCastBarWidth = 208
 	db.auraTypeGap = 0
+	db.targetToTAdjustmentOffsetY = 0
+	db.reopenOptions = false
+	db.hasSaved = true
 	db.targetCastbarEdgeHighlight = true
+	db.hasCheckedUi = true
 	db.targetCombatIndicator = true
 	db.hidePartyRoles = false
-    db.normalCastbarForEmpoweredCasts = true
 	db.hideFocusReputationColor = true
 	db.petCastBarHeight = 10
 	db.racialIndicatorScale = 1.5
+	db.focusToTYPosScale = 20
 	db.racialIndicatorYPosYPos = 2
+	db.partyCastBarScaleScale = 1.099999904632568
 	db.hidePlayerRestGlow = true
+	db.racialIndicatorScaleScale = 1.5
 	db.absorbIndicator = true
 	db.stealthIndicatorPlayer = false
 	db.maxDebuffFrameDebuffs = 16
@@ -880,6 +891,7 @@ function BBF.NahjProfile()
 	db.showPetCastBarIcon = true
 	db.partyCastBarYPos = 0
 	db.targetdeBuffFilterLessMinite = false
+	db.playerAbsorbXPosScale = -60
 	db.focusBuffPurgeGlow = true
 	db.focusdeBuffFilterBlacklist = true
 	db.hidePlayerRoleIcon = true
@@ -889,6 +901,7 @@ function BBF.NahjProfile()
 	db.targetRacialIndicator = true
 	db.targetBuffFilterAll = true
 	db.partyCastbarIconXPos = 0
+	db.focusCastBarScaleScale = 1.299999952316284
 	db.classColorFrames = true
 	db.focusCastBarTimer = true
 	db.hideArenaFrames = true
@@ -907,6 +920,7 @@ function BBF.NahjProfile()
 	db.combatIndicatorShowSwords = true
 	db.petCastBarXPos = 0
 	db.playerCastbarIconXPos = 0
+	db.targetToTScaleScale = 0.8799999952316284
 	db.combatIndicator = true
 	db.darkModeCastbars = true
 	db.focusCastBarXPosXPos = 0
@@ -922,6 +936,8 @@ function BBF.NahjProfile()
 	}
 	db.focusBuffEnable = true
 	db.combatIndicatorAnchor = "RIGHT"
+	db.targetAndFocusAuraScaleScale = 1.099999904632568
+	db.normalCastbarForEmpoweredCasts = true
 	db.petCastBarIconScale = 1
 	db.targetAbsorbIcon = true
 	db.frameAurasXPos = 0
@@ -930,7 +946,7 @@ function BBF.NahjProfile()
 	db.targetCastBarWidth = 150
 	db.combatIndicatorArenaOnly = true
 	db.darkModeUi = true
-	db.targetAndFocusAuraScale = 1.1
+	db.targetAndFocusAuraScale = 1.099999904632568
 	db.focusdeBuffFilterWatchList = false
 	db.hidePlayerCornerIcon = true
 	db.playerCastBarTimerCentered = true
@@ -954,7 +970,7 @@ function BBF.NahjProfile()
 	db.combatIndicatorYPos = 0
 	db.focusToTAnchor = "BOTTOMRIGHT"
 	db.focusCastBarYPos = 0
-	db.partyCastBarScale = 1.1
+	db.partyCastBarScale = 1.099999904632568
 	db.targetAndFocusArenaNames = false
 	db.compactedAuraSize = 0.7
 	db.targetToTAnchor = "BOTTOMRIGHT"
@@ -964,29 +980,37 @@ function BBF.NahjProfile()
 	db.focusBuffFilterWatchList = false
 	db.showPetCastBarTimer = false
 	db.playerAuraFiltering = true
-	db.filterNpcArenaSpam = true
+	db.targetBuffPurgeGlow = true
+	db.focusToTYPos = 20
 	db.targetPrestigeBadgeAlpha = true
 	db.targetBuffFilterOnlyMe = false
 	db.hideRaidFrameManager = true
+	db.targetCastBarScaleScale = 1.299999952316284
 	db.darkModeColor = 0.15
 	db.targetBuffFilterWatchList = false
 	db.racialIndicatorUndead = false
-	db.targetCastBarIconScale = 0.98
+	db.targetCastBarIconScale = 0.9800000190734863
 	db.targetCastBarTimer = true
+	db.focusToTXPos = 8
 	db.focusBuffFilterBlacklist = true
 	db.targetCastbarIconXPos = 0
 	db.removeRealmNames = true
-	db.hideLossOfControlFrameBg = false
-	db.focusToTXPos = 8
+	db.enablePlayerDebuffFiltering = false
+	db.focusEnlargeAura = true
 	db.focusBuffFilterOnlyMe = false
-	db.targetAndFocusVerticalGap = 4
 	db.petCastbar = false
-	db.PlayerAuraFramedeBuffEnable = true
+	db.purgeTextureColorRGB = {
+		0, -- [1]
+		0.92, -- [2]
+		1, -- [3]
+		0.85, -- [4]
+	}
+	db.customImportantAuraSorting = true
 	db.centerNames = false
 	db.wasOnLoadingScreen = false
 	db.hidePvpIcon = true
+	db.targetdeBuffFilterBlizzard = true
 	db.hideTargetToTDebuffs = true
-	db.targetdeBuffFilterBlacklist = true
 	db.playerAuraSpacingX = 5
 	db.auraToggleIconTexture = 134430
 	db.targetToTCastbarAdjustment = true
@@ -994,68 +1018,72 @@ function BBF.NahjProfile()
 	db.targetdeBuffPandemicGlow = true
 	db.targetdeBuffFilterOnlyMe = false
 	db.focusCastBarWidth = 150
-	db.hideMinimap = false
+	db.darkModeColorScale = 0.1499999910593033
+	db.focusToTScaleScale = 0.8999999761581421
 	db.targetToTXPosXPos = 10
-	db.enlargedAuraSize = 1.5
+	db.focusStaticCastbar = false
+	db.filterNpcArenaSpam = true
 	db.hidePlayerRestAnimation = true
-	db.castBarInterruptHighlighterStartPercentageHeight = 15
+	db.targetAbsorbXPos = 0
 	db.partyCastBarTestMode = false
+	db.focusdeBuffPandemicGlow = true
 	db.focusDetachCastbar = false
 	db.focusAbsorbIcon = true
 	db.targetAndFocusAuraOffsetX = 0
-	db.focusdeBuffPandemicGlow = true
+	db.auraWhitelistColorsUpdated = true
 	db.castBarInterruptHighlighterEndPercentageHeight = 75
 	db.castBarDelayedInterruptColor = {
 		1, -- [1]
 		0.4784314036369324, -- [2]
 		0.9568628072738647, -- [3]
 	}
-	db.maxTargetDebuffs = 16
-	db.auraWhitelistColorsUpdated = true
+	db.playerCastBarTimerCenter = false
+	db.focusdeBuffFilterBlizzard = true
 	db.castBarNoInterruptColor = {
 		1, -- [1]
 		0, -- [2]
 		0.01568627543747425, -- [3]
 	}
-	db.partyCastBarHeight = 12
+	db.petCastBarYPos = 0
+	db.targetEnlargeAura = true
 	db.partyCastbars = false
-	db.focusToTScale = 0.9
+	db.focusCastBarScale = 1.299999952316284
 	db.focusRacialIndicator = false
 	db.focusAbsorbAmount = true
 	db.PlayerAuraFrameBuffEnable = true
-	db.focusdeBuffFilterBlizzard = true
 	db.hideDragonFlying = true
+	db.focusBuffFilterLessMinite = false
 	db.PlayerAuraFramedeBuffFilterWatchList = false
-	db.targetCastBarYPos = 100
+	db.racialIndicatorHuman = false
 	db.maxTargetBuffs = 32
-	db.updates = "1.2.9"
-	db.targetCastBarXPos = -20
+	db.enlargedAuraSize = 1.5
+	db.racialIndicatorNelf = false
 	db.PlayerAuraFrameBuffFilterWatchList = false
-	db.targetAbsorbAmount = true
-	db.enablePlayerDebuffFiltering = false
-	db.focusCastBarScale = 1.3
-	db.targetAbsorbXPos = 0
+	db.targetAndFocusAuraOffsetY = 0
 	db.targetAuraGlows = true
-	db.showArenaID = true
-	db.focusCastbarIconYPos = 0
-	db.targetEnlargeAura = true
+	db.partyCastBarHeight = 12
+	db.castBarInterruptHighlighterColorDontInterrupt = true
+	db.targetCastBarXPos = -20
+	db.hideLossOfControlFrameBg = false
+	db.castBarInterruptHighlighterStartPercentageHeight = 15
+	db.maxTargetDebuffs = 16
 	db.absorbIndicatorTestMode = false
-	db.hideObjectiveTracker = true
-	db.focusToTYPos = 20
+	db.focusdeBuffFilterOnlyMe = false
 	db.targetToTScale = 0.88
+	db.focusCastbarIconYPos = 0
 	db.focusBuffFilterPurgeable = false
 	db.hidePvpTimerText = true
-	db.racialIndicatorHuman = false
-	db.focusdeBuffFilterOnlyMe = false
-	db.frameAuraHeightGap = 0
-	db.focusEnlargeAura = true
-	db.racialIndicatorNelf = false
+	db.focusToTXPosScale = 8
+	db.PlayerAuraFramedeBuffEnable = true
+	db.targetAbsorbAmount = true
+	db.focusToTScale = 0.8999999761581421
+	db.hidePrestigeBadge = true
 	db.filterTalentSpam = false
 	db.hideCombatGlow = true
-	db.racialIndicator = true
+	db.focusBuffFilterAll = true
 	db.partyCastBarXPos = 0
 	db.showSpecName = true
-	db.focusBuffFilterAll = true
+	db.targetToTYPosScale = 20
 	db.focusCastBarHeight = 10
 	db.playerCastBarHeight = 11
 	db.auraWhitelistAlphaUpdated = true
@@ -1065,45 +1093,41 @@ function BBF.NahjProfile()
 	db.targetAbsorbAnchor = "TOP"
 	db.playerCastbarIconYPos = 0
 	db.targetAndFocusAurasPerRow = 5
-	db.castBarInterruptHighlighterStartPercentage = 15
-	db.playerAbsorbIcon = true
 	db.focusPrestigeBadgeAlpha = true
-	db.shortArenaSpecName = true
-	db.displayDispelGlowAlways = false
-	db.castBarInterruptHighlighterColorDontInterrupt = true
+	db.targetAndFocusVerticalGap = 4
+	db.playerAbsorbIcon = true
+	db.focusdeBuffEnable = true
+	db.targetAndFocusAurasPerRowScale = 5
+	db.targetCastBarYPos = 100
+	db.hideMinimap = false
 	db.darkModeActionBars = true
 	db.targetImportantAuraGlow = true
-	db.targetdeBuffFilterBlizzard = true
+	db.darkModeUiAura = true
 	db.petCastBarTestMode = false
 	db.hideGroupIndicator = true
-	db.hidePrestigeBadge = true
-	db.partyCastBarWidth = 100
+	db.displayDispelGlowAlways = false
+	db.shortArenaSpecName = true
 	db.playerAbsorbXPos = -60
-	db.targetAndFocusAuraOffsetY = 0
-	db.darkModeUiAura = true
-	db.playerCastBarTimerCenter = false
-	db.targetBuffPurgeGlow = true
-	db.hideMinimapAuto = true
-	db.combatIndicatorPlayersOnly = true
-	db.frameAurasYPos = 0
+	db.frameAuraHeightGap = 0
+	db.targetdeBuffFilterBlacklist = true
+	db.racialIndicator = true
+	db.partyCastBarWidth = 100
+	db.hidePartyAggroHighlight = true
+	db.showArenaID = true
+	db.castBarInterruptHighlighterStartPercentage = 15
 	db.overShieldsCompactUnitFrames = true
-	db.petCastBarYPos = 0
+	db.targetBuffFilterLessMinite = false
 	db.frameAuraScale = 0
 	db.customLargeSmallAuraSorting = true
 	db.showHiddenAurasIcon = true
-	db.focusBuffFilterLessMinite = false
-	db.focusdeBuffEnable = true
+	db.frameAurasYPos = 0
+	db.combatIndicatorPlayersOnly = true
 	db.hidePartyFrameTitle = true
 	db.targetdeBuffFilterAll = false
 	db.targetBuffEnable = true
-	db.targetCastBarScale = 1.3
-	db.focusStaticCastbar = false
+	db.targetCastBarScale = 1.299999952316284
+	db.focusCastBarIconScaleScale = 0.9800000190734863
 	db.hideMinimapAutoQueueEye = false
-	db.purgeTextureColorRGB = {
-		0, -- [1]
-		0.92, -- [2]
-		1, -- [3]
-		0.85, -- [4]
-	}
-	db.targetBuffFilterLessMinite = false
+	db.hideObjectiveTracker = true
+	db.hideMinimapAuto = true
 end
