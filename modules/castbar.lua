@@ -769,9 +769,8 @@ function BBF.ChangeCastbarSizes()
     TargetFrameSpellBar.Icon:ClearAllPoints()
     TargetFrameSpellBar.Icon:SetPoint(a, b, c, -2 + BetterBlizzFramesDB.targetCastbarIconXPos, -5 + BetterBlizzFramesDB.targetCastbarIconYPos)
 
-    local a,b,c,d,e = TargetFrameSpellBar.BorderShield:GetPoint()
     TargetFrameSpellBar.BorderShield:ClearAllPoints()
-    TargetFrameSpellBar.BorderShield:SetPoint(a, b, c, -27 + BetterBlizzFramesDB.targetCastbarIconXPos, 4 + BetterBlizzFramesDB.targetCastbarIconYPos)
+    TargetFrameSpellBar.BorderShield:SetPoint("CENTER", TargetFrameSpellBar.Icon, "CENTER", BetterBlizzFramesDB.targetCastbarIconXPos - 0.5, BetterBlizzFramesDB.targetCastbarIconYPos - 1)
     TargetFrameSpellBar.BorderShield:SetScale(BetterBlizzFramesDB.targetCastBarIconScale)
     TargetFrameSpellBar.Text:ClearAllPoints()
     TargetFrameSpellBar.Text:SetPoint("BOTTOM", TargetFrameSpellBar, "BOTTOM", 0, -14)
@@ -785,9 +784,8 @@ function BBF.ChangeCastbarSizes()
     FocusFrameSpellBar.Icon:SetPoint(a, b, c, -2 + BetterBlizzFramesDB.focusCastbarIconXPos, -5 + BetterBlizzFramesDB.focusCastbarIconYPos)
     FocusFrameSpellBar.Icon:SetScale(BetterBlizzFramesDB.focusCastBarIconScale)
 
-    local a,b,c,d,e = FocusFrameSpellBar.BorderShield:GetPoint()
     FocusFrameSpellBar.BorderShield:ClearAllPoints()
-    FocusFrameSpellBar.BorderShield:SetPoint(a, b, c, -27 + BetterBlizzFramesDB.focusCastbarIconXPos, 4 + BetterBlizzFramesDB.focusCastbarIconYPos)
+    FocusFrameSpellBar.BorderShield:SetPoint("CENTER", FocusFrameSpellBar.Icon, "CENTER", BetterBlizzFramesDB.focusCastbarIconXPos - 0.5, BetterBlizzFramesDB.focusCastbarIconYPos - 1)
     FocusFrameSpellBar.BorderShield:SetScale(BetterBlizzFramesDB.focusCastBarIconScale)
     FocusFrameSpellBar.Text:ClearAllPoints()
     FocusFrameSpellBar.Text:SetPoint("BOTTOM", FocusFrameSpellBar, "BOTTOM", 0, -14)
@@ -815,8 +813,9 @@ hooksecurefunc(PlayerCastingBarFrame, "SetScale", function()
 end)
 
 if TargetFrameSpellBar and FocusFrameSpellBar then
-    TargetFrameSpellBar:SetFrameStrata("DIALOG")
-    FocusFrameSpellBar:SetFrameStrata("DIALOG")
+    TargetFrame:SetFrameStrata("MEDIUM")
+    TargetFrameSpellBar:SetFrameStrata("HIGH")
+    FocusFrameSpellBar:SetFrameStrata("HIGH")
 end
 
 local evokerCastbarsHooked

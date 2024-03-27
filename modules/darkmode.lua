@@ -262,6 +262,16 @@ function BBF.DarkmodeFrames(bypass)
         end
     end
 
+    if BetterBlizzFramesDB.darkModeUiAura then
+        local BuffFrameButton = BuffFrame.CollapseAndExpandButton
+        for i = 1, BuffFrameButton:GetNumRegions() do
+            local region = select(i, BuffFrameButton:GetRegions())
+            if region:IsObjectType("Texture") then
+                applySettings(region, desaturationValue, 0.2)
+            end
+        end
+    end
+
     applySettings(MinimapCompassTexture, minimapSat, minimapColor)
 
     for i = 1, ExpansionLandingPageMinimapButton:GetNumRegions() do
@@ -333,7 +343,7 @@ function BBF.DarkmodeFrames(bypass)
     end
 
     local nameplateRunes = _G.DeathKnightResourceOverlayFrame
-    if nameplateRunes and not darkModeNpBBP then
+    if nameplateRunes and not nameplateRunes:IsForbidden() and not darkModeNpBBP then
         local dkNpRunes = darkModeNp and vertexColor or 1
         for i = 1, 6 do
             applySettings(nameplateRunes["Rune" .. i].BG_Active, darkModeNpSatVal, dkNpRunes)
@@ -349,7 +359,7 @@ function BBF.DarkmodeFrames(bypass)
     end
 
     local soulShardsNameplate = _G.ClassNameplateBarWarlockFrame
-    if soulShardsNameplate and not darkModeNpBBP then
+    if soulShardsNameplate and not soulShardsNameplate:IsForbidden() and not darkModeNpBBP then
         local soulShardNp = darkModeNp and vertexColor or 1
         for _, v in pairs({soulShardsNameplate:GetChildren()}) do
             applySettings(v.Background, darkModeNpSatVal, soulShardNp)
@@ -365,7 +375,7 @@ function BBF.DarkmodeFrames(bypass)
     end
 
     local druidComboPointsNameplate = _G.ClassNameplateBarFeralDruidFrame
-    if druidComboPointsNameplate and not darkModeNpBBP then
+    if druidComboPointsNameplate and not druidComboPointsNameplate:IsForbidden() and not darkModeNpBBP then
         local druidComboPointNp = darkModeNp and druidComboPoint or 1
         local druidComboPointActiveNp = darkModeNp and druidComboPointActive or 1
         for _, v in pairs({druidComboPointsNameplate:GetChildren()}) do
@@ -383,7 +393,7 @@ function BBF.DarkmodeFrames(bypass)
     end
 
     local mageArcaneChargesNameplate = _G.ClassNameplateBarMageFrame
-    if mageArcaneChargesNameplate and not darkModeNpBBP then
+    if mageArcaneChargesNameplate and not mageArcaneChargesNameplate:IsForbidden() and not darkModeNpBBP then
         local mageChargeNp = darkModeNp and actionBarColor or 1
         for _, v in pairs({mageArcaneChargesNameplate:GetChildren()}) do
             applySettings(v.ArcaneBG, darkModeNpSatVal, mageChargeNp)
@@ -400,7 +410,7 @@ function BBF.DarkmodeFrames(bypass)
     end
 
     local monkChiPointsNameplate = _G.ClassNameplateBarWindwalkerMonkFrame
-    if monkChiPointsNameplate and not darkModeNpBBP then
+    if monkChiPointsNameplate and not monkChiPointsNameplate:IsForbidden() and not darkModeNpBBP then
         local monkChiNp = darkModeNp and monkChi or 1
         for _, v in pairs({monkChiPointsNameplate:GetChildren()}) do
             applySettings(v.Chi_BG, darkModeNpSatVal, monkChiNp)
@@ -417,7 +427,7 @@ function BBF.DarkmodeFrames(bypass)
     end
 
     local rogueComboPointsNameplate = _G.ClassNameplateBarRogueFrame
-    if rogueComboPointsNameplate and not darkModeNpBBP then
+    if rogueComboPointsNameplate and not rogueComboPointsNameplate:IsForbidden() and not darkModeNpBBP then
         local rogueComboNp = darkModeNp and rogueCombo or 1
         local rogueComboActiveNp = darkModeNp and rogueComboActive or 1
         for _, v in pairs({rogueComboPointsNameplate:GetChildren()}) do
@@ -432,7 +442,7 @@ function BBF.DarkmodeFrames(bypass)
 
 
     local paladinHolyPowerNameplate = _G.ClassNameplateBarPaladinFrame
-    if paladinHolyPowerNameplate and not darkModeNpBBP then
+    if paladinHolyPowerNameplate and not paladinHolyPowerNameplate:IsForbidden() and not darkModeNpBBP then
         local palaPowerNp = darkModeNp and vertexColor or 1
         applySettings(ClassNameplateBarPaladinFrame.Background, darkModeNpSatVal, palaPowerNp)
         applySettings(ClassNameplateBarPaladinFrame.ActiveTexture, darkModeNpSatVal, palaPowerNp)
@@ -455,7 +465,7 @@ function BBF.DarkmodeFrames(bypass)
     end
 
     local evokerEssencePointsNameplate = _G.ClassNameplateBarDracthyrFrame
-    if evokerEssencePointsNameplate and not darkModeNpBBP then
+    if evokerEssencePointsNameplate and not evokerEssencePointsNameplate:IsForbidden() and not darkModeNpBBP then
         local evokerColorOne = darkModeNp and monkChi or 1
         local evokerColorTwo = darkModeNp and vertexColor or 1
         for _, v in pairs({evokerEssencePointsNameplate:GetChildren()}) do

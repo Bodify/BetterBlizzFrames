@@ -8,12 +8,14 @@ local filterTalentSpam
 local filterSystemMessages
 local filterEmoteSpam
 local filterNpcArenaSpam
+local filterMiscInfo
 
 local filterGladiusSpamHooked = false
 local filterTalentSpamHooked = false
 local filterSystemMessagesHooked = false
 local filterEmoteSpamHooked = false
 local filterNpcArenaSpamHooked = false
+local filterMiscInfoHooked = false
 
 local gladiusSpam = {
     ["LOW HEALTH:"] = true, ["WENIG LEBEN:"] = true, ["NIEDRIGE GESUNDHEIT:"] = true, ["VIDA BAJA:"] = true,
@@ -56,8 +58,16 @@ local systemMessages = {
     ["You have been awarded"] = true,
     ["You are in both a party and an instance group."] = true,
     ["This is now a cross-faction"] = true,
+    ["You aren't in a party"] = true,
+    ["You are now queued in the Dungeon Finder."] = true,
+    ["Dungeon Difficulty set to"] = true,
+    ["Loot Specialization set to"] = true,
     ["SUSPENDED"] = true,
     ["YOU_CHANGED"] = true,
+}
+
+local miscInfo = {
+    ["Your equipped items suffer a"] = true,
 }
 
 local emoteSpam = {
@@ -77,7 +87,7 @@ local function isSpam(message, spamTable)
     return false
 end
 
-
+--CHAT_MSG_COMBAT_MISC_INFO
 local function chatFilter(frame, event, message, sender, ...)
     -- Check and filter user-defined spam (applies to all channels)
 --[[
@@ -104,6 +114,8 @@ local function chatFilter(frame, event, message, sender, ...)
         return true
     elseif event == "CHAT_MSG_MONSTER_SAY" and filterNpcArenaSpam and IsActiveBattlefieldArena() then
         return true
+    elseif event == "CHAT_MSG_COMBAT_MISC_INFO" and isSpam(message, miscInfo) then
+        return true
     end
 
     return false
@@ -116,6 +128,7 @@ function BBF.ChatFilterCaller()
     filterSystemMessages = BetterBlizzFramesDB.filterSystemMessages
     filterEmoteSpam = BetterBlizzFramesDB.filterEmoteSpam
     filterNpcArenaSpam = BetterBlizzFramesDB.filterNpcArenaSpam
+    filterMiscInfo = BetterBlizzFramesDB.filterMiscInfo
 
     -- Gladius Spam
     if filterGladiusSpam and not filterGladiusSpamHooked then
@@ -128,7 +141,9 @@ function BBF.ChatFilterCaller()
 
     -- Talent Spam
     if filterTalentSpam and not filterTalentSpamHooked then
-        ChatFrame_AddMessageEventFilter("CHAT_MSG_SYSTEM", chatFilter)
+        if not filterSystemMessagesHooked then
+            ChatFrame_AddMessageEventFilter("CHAT_MSG_SYSTEM", chatFilter)
+        end
         filterTalentSpamHooked = true
     end
 
@@ -138,7 +153,15 @@ function BBF.ChatFilterCaller()
         ChatFrame_AddMessageEventFilter("CHAT_MSG_BG_SYSTEM_NEUTRAL", chatFilter)
         ChatFrame_AddMessageEventFilter("CHAT_MSG_CHANNEL_NOTICE", chatFilter)
         ChatFrame_AddMessageEventFilter("CHAT_MSG_CURRENCY", chatFilter)
+        if not filterTalentSpamHooked then
+            ChatFrame_AddMessageEventFilter("CHAT_MSG_SYSTEM", chatFilter)
+        end
         filterSystemMessagesHooked = true
+    end
+
+    if filterMiscInfo and not filterMiscInfoHooked then
+        ChatFrame_AddMessageEventFilter("CHAT_MSG_COMBAT_MISC_INFO", chatFilter)
+        filterMiscInfoHooked = true
     end
 
     -- Emote Spam

@@ -1671,6 +1671,10 @@ local function guiGeneralTab()
     filterSystemMessages:SetPoint("TOPLEFT", filterNpcArenaSpam, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(filterSystemMessages, "Filter out a few excessive system messages. Some examples:\n\"You have joined the queue for Arena Skirmish\"\n\"Your group has been disbanded.\"\n\"You have been awarded x currency\"\n\"You are in both a party and an instance group.\"\n\nFull lists in modules\\chatFrame.lua")
 
+    local filterMiscInfo = CreateCheckbox("filterMiscInfo", "Misc Info", BetterBlizzFrames, nil, BBF.ChatFilterCaller)
+    filterMiscInfo:SetPoint("TOPLEFT", filterSystemMessages, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltip(filterMiscInfo, "Filter out \"Your equipped items suffer a durability loss\" message.")
+
     local arenaNamesText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     arenaNamesText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 460, -70)
     arenaNamesText:SetText("Arena Names")
@@ -2580,6 +2584,7 @@ local function guiCastbars()
         BetterBlizzFramesDB.playerCastBarTimer = false
         BetterBlizzFramesDB.playerStaticCastbar = false
         BetterBlizzFramesDB.playerCastBarTimerCentered = false
+        PlayerCastingBarFrame.showShield = false
         BBF.CastBarTimerCaller()
         BBF.ShowPlayerCastBarIcon()
     end)

@@ -6,8 +6,8 @@ BBF = BBF or {}
 -- Things are getting more messy need a lot of cleaning lol
 
 local addonVersion = "1.00" --too afraid to to touch for now
-local addonUpdates = "1.3.5"
-local sendUpdate = true
+local addonUpdates = "1.3.5b"
+local sendUpdate = false
 BBF.VersionNumber = addonUpdates
 BBF.variablesLoaded = false
 
@@ -229,6 +229,7 @@ local defaultSettings = {
 
 
     auraWhitelist = {
+        {["name"] = "Example Aura :3 (delete me)"}
     },
     auraBlacklist = {
         {name = "Sign of the Skirmisher"},
@@ -623,7 +624,8 @@ function SetupClassComboPoints(comboPointFrame, positions, expectedClass, scale,
             self.changing = true
 
             comboPointFrame:SetParent(TargetFrame)
-            comboPointFrame:SetFrameStrata("HIGH")
+            comboPointFrame:SetFrameStrata(FocusFrameSpellBar:GetFrameStrata())
+            comboPointFrame:SetFrameLevel(FocusFrameSpellBar:GetParent():GetFrameLevel() + 1)
             comboPointFrame:ClearAllPoints()
             comboPointFrame:SetPoint("LEFT", TargetFrame, "RIGHT", xPos, yPos or -2)
             comboPointFrame:SetMouseClickEnabled(false)
