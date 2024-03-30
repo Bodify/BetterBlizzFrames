@@ -6,8 +6,8 @@ BBF = BBF or {}
 -- Things are getting more messy need a lot of cleaning lol
 
 local addonVersion = "1.00" --too afraid to to touch for now
-local addonUpdates = "1.3.5c"
-local sendUpdate = false
+local addonUpdates = "1.3.6"
+local sendUpdate = true
 BBF.VersionNumber = addonUpdates
 BBF.variablesLoaded = false
 
@@ -39,6 +39,7 @@ local defaultSettings = {
     playerReputationClassColor = true,
     enlargedAuraSize = 1.4,
     compactedAuraSize = 0.7,
+    onlyPandemicAuraMine = true,
 
     --Target castbar
     playerCastbarIconXPos = 0,
@@ -368,13 +369,13 @@ local function SendUpdateMessage()
     if sendUpdate then
         C_Timer.After(7, function()
             DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames " .. addonUpdates .. ":")
-            DEFAULT_CHAT_FRAME:AddMessage("|A:QuestNormal:16:16|a New Settings:")
-            DEFAULT_CHAT_FRAME:AddMessage("   - Mini-FocusFrame (Misc).")
-            DEFAULT_CHAT_FRAME:AddMessage("   - Move combo points etc to TargetFrame (Misc).")
+            DEFAULT_CHAT_FRAME:AddMessage("|A:QuestNormal:16:16|a New Stuff:")
+            DEFAULT_CHAT_FRAME:AddMessage("   - Only mine checkbox for individual whitelisted auras (Buffs & Debuffs).")
+            DEFAULT_CHAT_FRAME:AddMessage("   - Only pandemic my auras (On by default) (Buffs & Debuffs).")
             --DEFAULT_CHAT_FRAME:AddMessage("Added a \"Hide Minimap Buttons\" setting in Misc.")
 
             DEFAULT_CHAT_FRAME:AddMessage("|A:Professions-Crafting-Orders-Icon:16:16|a Bugfixes:")
-            DEFAULT_CHAT_FRAME:AddMessage("   Left to right player auras now supported (Buffs & Debuffs).")
+            DEFAULT_CHAT_FRAME:AddMessage("   Fix combopoints on TargetFrame setting sometimes messing up after respec.")
             --DEFAULT_CHAT_FRAME:AddMessage("Fix Combat Indicator not updating focus if target and focus are the same.")
             --DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a For more info and news about new features type /bbf news")
         end)
@@ -586,23 +587,46 @@ ClickthroughFrames:RegisterEvent("MODIFIER_STATE_CHANGED")
 --######################################################################
 -- Move Resource Frames to TargetFrame
 local hookedResourceFrames
--- Function to setup combo points for any class
-function SetupClassComboPoints(comboPointFrame, positions, expectedClass, scale, xPos, yPos, changeDrawLayer)
-    -- local _, playerClass = UnitClass("player")
-    -- if playerClass ~= expectedClass then
-    --     return
-    -- end
-    -- Set up individual combo points
-    local function RepositionIndividualComboPoints()
-        for i = 1, comboPointFrame:GetNumChildren() do
-            local child = select(i, comboPointFrame:GetChildren())
-            if child ~= comboPointFrame.layoutParent and positions[i] then
-                child:ClearAllPoints()
-                child:SetPoint(unpack(positions[i]))
-                child:SetScale(scale)
+local function RepositionIndividualComboPoints(comboPointFrame, positions, scale)
+    local comboPoints = {}
+    local allPointsReady = true
+
+    for i = 1, comboPointFrame:GetNumChildren() do
+        local child = select(i, comboPointFrame:GetChildren())
+        if child ~= comboPointFrame.layoutParent and child:IsShown() then -- Check if child is shown
+            local point, relativeTo, relativePoint, x, y = child:GetPoint()
+            if x then
+                table.insert(comboPoints, {child = child, x = x})
+            else
+                allPointsReady = false
+                break -- Exit the loop early if any child is not ready
             end
         end
     end
+
+    if allPointsReady and #comboPoints > 0 then
+        -- Proceed if all combo points have valid 'x' values and there's at least one combo point
+        table.sort(comboPoints, function(a, b) return a.x < b.x end)
+
+        for i, info in ipairs(comboPoints) do
+            if positions[i] then
+                info.child:ClearAllPoints()
+                info.child:SetPoint(unpack(positions[i]))
+                info.child:SetScale(scale)
+            end
+        end
+    else
+        -- Retry after a short delay if not all combo points are ready
+        C_Timer.After(0.5, function()
+            RepositionIndividualComboPoints(comboPointFrame, positions, scale)
+        end)
+    end
+end
+
+-- Function to setup combo points for any class
+function SetupClassComboPoints(comboPointFrame, positions, expectedClass, scale, xPos, yPos, changeDrawLayer)
+    -- Reposition individual combo points based on their x position
+
 
     -- Adjust the texture draw layers
     if comboPointFrame and changeDrawLayer then
@@ -629,14 +653,14 @@ function SetupClassComboPoints(comboPointFrame, positions, expectedClass, scale,
             comboPointFrame:ClearAllPoints()
             comboPointFrame:SetPoint("LEFT", TargetFrame, "RIGHT", xPos, yPos or -2)
             comboPointFrame:SetMouseClickEnabled(false)
-            RepositionIndividualComboPoints()
+            RepositionIndividualComboPoints(comboPointFrame, positions, scale)
 
             self.changing = false
         end)
     end
 
     -- Initial repositioning of combo points
-    RepositionIndividualComboPoints()
+    RepositionIndividualComboPoints(comboPointFrame, positions, scale)
 end
 
 local roguePositions = {

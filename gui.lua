@@ -776,7 +776,7 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
     if not pos then
         scrollFrame:SetPoint("TOPLEFT", 10, -10)
     else
-        scrollFrame:SetPoint("TOPLEFT", -33, -10)
+        scrollFrame:SetPoint("TOPLEFT", -48, -10)
     end
 
     -- Create the content frame
@@ -866,6 +866,11 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
         local text = button:CreateFontString(nil, "OVERLAY", "GameFontNormal")
         text:SetPoint("LEFT", button, "LEFT", 25, 0)
         text:SetText(displayText)
+        if pos then
+            text:SetWidth(210)
+            text:SetWordWrap(false)
+            text:SetJustifyH("LEFT")
+        end
 
         -- Initialize the text color and background color for this entry from npc table or with default values
         local entryColors = npc.entryColors or {}
@@ -918,7 +923,7 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
             -- Create Checkbox P (Pandemic)
             local checkBoxP = CreateFrame("CheckButton", nil, button, "UICheckButtonTemplate")
             checkBoxP:SetSize(24, 24)
-            checkBoxP:SetPoint("RIGHT", deleteButton, "LEFT", -0, 0) -- Positioned first, to the left of deleteButton
+            checkBoxP:SetPoint("RIGHT", deleteButton, "LEFT", 4, 0) -- Positioned first, to the left of deleteButton
 
             -- Create a texture for the checkbox
             checkBoxP.texture = checkBoxP:CreateTexture(nil, "ARTWORK", nil, 1)
@@ -927,7 +932,7 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
             checkBoxP.texture:SetVertexColor(1, 0, 0)
             checkBoxP.texture:SetSize(27, 27)
             checkBoxP.texture:SetPoint("CENTER", checkBoxP, "CENTER", -0.5, 0.5)
-            CreateTooltip(checkBoxP, "Pandemic Glow\n\nCheck for a red glow when the aura has less than 5 sec remaining.\nAlso check which frame(s) you want this on down below.", "ANCHOR_TOPRIGHT")
+            CreateTooltip(checkBoxP, "Pandemic Glow |A:elementalstorm-boss-air:22:22|a\n\nCheck for a red glow when the aura has less than 5 sec remaining.\nAlso check which frame(s) you want this on down below.", "ANCHOR_TOPRIGHT")
 
             -- Handler for the P checkbox
             checkBoxP:SetScript("OnClick", function(self)
@@ -943,7 +948,7 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
             -- Create Checkbox I (Important)
             local checkBoxI = CreateFrame("CheckButton", nil, button, "UICheckButtonTemplate")
             checkBoxI:SetSize(24, 24)
-            checkBoxI:SetPoint("RIGHT", checkBoxP, "LEFT", -17, 0) -- Positioned next to checkBoxP
+            checkBoxI:SetPoint("RIGHT", checkBoxP, "LEFT", -12, 0) -- Positioned next to checkBoxP
 
             -- Create a texture for the checkbox
             checkBoxI.texture = checkBoxI:CreateTexture(nil, "ARTWORK", nil, 1)
@@ -951,7 +956,7 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
             checkBoxI.texture:SetSize(27, 27)
             checkBoxI.texture:SetDesaturated(true)
             checkBoxI.texture:SetPoint("CENTER", checkBoxI, "CENTER", -0.5, 0.5)
-            CreateTooltip(checkBoxI, "Important Glow\n\nCheck for a glow on the aura to highlight it.\nAlso check which frame(s) you want this on down below.", "ANCHOR_TOPRIGHT")
+            CreateTooltip(checkBoxI, "Important Glow |A:importantavailablequesticon:22:22|a\n\nCheck for a glow on the aura to highlight it.\nAlso check which frame(s) you want this on down below.", "ANCHOR_TOPRIGHT")
 
             -- Handler for the I checkbox
             checkBoxI:SetScript("OnClick", function(self)
@@ -979,7 +984,7 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
 
             local colorPickerButton = CreateFrame("Button", nil, button, "UIPanelButtonTemplate")
             colorPickerButton:SetSize(20, 18)
-            colorPickerButton:SetPoint("RIGHT", checkBoxP, "LEFT", -3, 1)
+            colorPickerButton:SetPoint("RIGHT", checkBoxP, "LEFT", 1, 1)
             colorPickerButton:SetText("C")
             CreateTooltip(colorPickerButton, "Important Glow Color", "ANCHOR_TOPRIGHT")
 
@@ -1029,7 +1034,7 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
             -- Create Checkbox C (Compacted)
             local checkBoxC = CreateFrame("CheckButton", nil, button, "UICheckButtonTemplate")
             checkBoxC:SetSize(24, 24)
-            checkBoxC:SetPoint("RIGHT", checkBoxI, "LEFT", -3, 0)
+            checkBoxC:SetPoint("RIGHT", checkBoxI, "LEFT", 3, 0)
             CreateTooltip(checkBoxC, "Compacted Aura |A:ui-hud-minimap-zoom-out:22:22|a\n\nCheck to make the aura smaller.\nAlso check which frame(s) you want this on down below.", "ANCHOR_TOPRIGHT")
 
             -- Handler for the C checkbox
@@ -1046,7 +1051,7 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
             -- Create Checkbox E (Enlarged)
             local checkBoxE = CreateFrame("CheckButton", nil, button, "UICheckButtonTemplate")
             checkBoxE:SetSize(24, 24)
-            checkBoxE:SetPoint("RIGHT", checkBoxC, "LEFT", -3, 0)
+            checkBoxE:SetPoint("RIGHT", checkBoxC, "LEFT", 3, 0)
             CreateTooltip(checkBoxE, "Enlarged Aura |A:ui-hud-minimap-zoom-in:22:22|a\n\nCheck to make the aura bigger.\nAlso check which frame(s) you want this on down below.", "ANCHOR_TOPRIGHT")
 
             -- Handler for the E checkbox
@@ -1058,6 +1063,23 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
             -- Initialize state from npc flags
             if npc.flags.enlarged then
                 checkBoxE:SetChecked(true)
+            end
+
+            -- Create Checkbox Only Mine
+            local checkBoxOnlyMine = CreateFrame("CheckButton", nil, button, "UICheckButtonTemplate")
+            checkBoxOnlyMine:SetSize(24, 24)
+            checkBoxOnlyMine:SetPoint("RIGHT", checkBoxE, "LEFT", 3, 0)
+            CreateTooltip(checkBoxOnlyMine, "Only My Aura |A:UI-HUD-UnitFrame-Player-Group-FriendOnlineIcon:22:22|a\n\nOnly show my aura.", "ANCHOR_TOPRIGHT")
+
+            -- Handler for the E checkbox
+            checkBoxOnlyMine:SetScript("OnClick", function(self)
+                npc.flags.onlyMine = self:GetChecked()
+            end)
+            checkBoxOnlyMine:HookScript("OnClick", BBF.RefreshAllAuraFrames)
+
+            -- Initialize state from npc flags
+            if npc.flags.onlyMine then
+                checkBoxOnlyMine:SetChecked(true)
             end
         end
 
@@ -3165,33 +3187,39 @@ local function guiFrameAuras()
     auraBlacklistFrame:SetSize(322, 390)
     auraBlacklistFrame:SetPoint("TOPLEFT", 6, -15)
 
-    CreateList(auraBlacklistFrame, "auraBlacklist", BetterBlizzFramesDB.auraBlacklist, BBF.RefreshAllAuraFrames, nil, nil, 280)
+    CreateList(auraBlacklistFrame, "auraBlacklist", BetterBlizzFramesDB.auraBlacklist, BBF.RefreshAllAuraFrames, nil, nil, 265)
 
     local blacklistText = contentFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     blacklistText:SetPoint("BOTTOM", auraBlacklistFrame, "TOP", 10, -5)
     blacklistText:SetText("Blacklist")
 
-    CreateList(auraWhitelistFrame, "auraWhitelist", BetterBlizzFramesDB.auraWhitelist, BBF.RefreshAllAuraFrames, true, true, 364, true)
+    CreateList(auraWhitelistFrame, "auraWhitelist", BetterBlizzFramesDB.auraWhitelist, BBF.RefreshAllAuraFrames, true, true, 379, true)
 
     local whitelistText = contentFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     whitelistText:SetPoint("BOTTOM", auraWhitelistFrame, "TOP", -60, -5)
     whitelistText:SetText("Whitelist")
 
+    local onlyMeTexture = contentFrame:CreateTexture(nil, "OVERLAY")
+    onlyMeTexture:SetAtlas("UI-HUD-UnitFrame-Player-Group-FriendOnlineIcon")
+    onlyMeTexture:SetPoint("LEFT", whitelistText, "RIGHT", 68.5, -2)
+    onlyMeTexture:SetSize(18,20)
+    CreateTooltip(onlyMeTexture, "Only My Aura Checkboxes")
+
     local enlargeAuraTexture = contentFrame:CreateTexture(nil, "OVERLAY")
     enlargeAuraTexture:SetAtlas("ui-hud-minimap-zoom-in")
-    enlargeAuraTexture:SetPoint("LEFT", whitelistText, "RIGHT", 70, -2)
+    enlargeAuraTexture:SetPoint("LEFT", onlyMeTexture, "RIGHT", 4, 0)
     enlargeAuraTexture:SetSize(18,18)
     CreateTooltip(enlargeAuraTexture, "Enlarged Aura Checkboxes")
 
     local compactAuraTexture = contentFrame:CreateTexture(nil, "OVERLAY")
     compactAuraTexture:SetAtlas("ui-hud-minimap-zoom-out")
-    compactAuraTexture:SetPoint("LEFT", enlargeAuraTexture, "RIGHT", 8, 0)
+    compactAuraTexture:SetPoint("LEFT", enlargeAuraTexture, "RIGHT", 4, 0)
     compactAuraTexture:SetSize(18,18)
     CreateTooltip(compactAuraTexture, "Compact Aura Checkboxes")
 
     local importantAuraTexture = contentFrame:CreateTexture(nil, "OVERLAY")
     importantAuraTexture:SetAtlas("importantavailablequesticon")
-    importantAuraTexture:SetPoint("LEFT", compactAuraTexture, "RIGHT", 8.5, 0)
+    importantAuraTexture:SetPoint("LEFT", compactAuraTexture, "RIGHT", 2, 0)
     importantAuraTexture:SetSize(17,16)
     importantAuraTexture:SetDesaturated(true)
     importantAuraTexture:SetVertexColor(0,1,0)
@@ -3199,12 +3227,11 @@ local function guiFrameAuras()
 
     local pandemicAuraTexture = contentFrame:CreateTexture(nil, "OVERLAY")
     pandemicAuraTexture:SetAtlas("elementalstorm-boss-air")
-    pandemicAuraTexture:SetPoint("LEFT", importantAuraTexture, "RIGHT", 20, 1)
+    pandemicAuraTexture:SetPoint("LEFT", importantAuraTexture, "RIGHT", 15, 1)
     pandemicAuraTexture:SetSize(26,26)
     pandemicAuraTexture:SetDesaturated(true)
     pandemicAuraTexture:SetVertexColor(1,0,0)
     CreateTooltip(pandemicAuraTexture, "Pandemic Aura Checkboxes")
-
 
 
 
@@ -3656,8 +3683,12 @@ local function guiFrameAuras()
     displayDispelGlowAlways:SetPoint("TOPLEFT", moreAuraSettings, "BOTTOMLEFT", -10, -3)
     CreateTooltip(displayDispelGlowAlways, "Always display the purge/steal texture on auras\nregardless if you have a dispel/purge/steal ability or not.")
 
+    local onlyPandemicAuraMine = CreateCheckbox("onlyPandemicAuraMine", "Only Pandemic Mine", playerAuraFiltering)
+    onlyPandemicAuraMine:SetPoint("TOPLEFT", displayDispelGlowAlways, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltip(onlyPandemicAuraMine, "Only show the red pandemic aura glow on my own auras", "ANCHOR_LEFT")
+
     local changePurgeTextureColor = CreateCheckbox("changePurgeTextureColor", "Change Purge Texture Color", playerAuraFiltering)
-    changePurgeTextureColor:SetPoint("TOPLEFT", displayDispelGlowAlways, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    changePurgeTextureColor:SetPoint("TOPLEFT", onlyPandemicAuraMine, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(changePurgeTextureColor, "Change Purge Texture Color")
 
     local function OpenColorPicker(colorData)
