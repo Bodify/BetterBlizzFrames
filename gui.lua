@@ -48,7 +48,19 @@ StaticPopupDialogs["BBF_CONFIRM_NAHJ_PROFILE"] = {
     button2 = "No",
     OnAccept = function()
         BBF.NahjProfile()
-        BetterBlizzFramesDB.nahjMessage = true
+        ReloadUI()
+    end,
+    timeout = 0,
+    whileDead = true,
+    hideOnEscape = true,
+}
+
+StaticPopupDialogs["BBF_CONFIRM_MAGNUSZ_PROFILE"] = {
+    text = "This action will modify all settings to Magnusz's profile and reload the UI.\n\nYour existing blacklists and whitelists will be retained, with Magnusz's additional entries.\n\nAre you sure you want to continue?",
+    button1 = "Yes",
+    button2 = "No",
+    OnAccept = function()
+        BBF.MagnuszProfile()
         ReloadUI()
     end,
     timeout = 0,
@@ -644,6 +656,41 @@ local function CreateTooltip(widget, tooltipText, anchor)
     end)
 end
 
+local function CreateTooltipTwo(widget, title, mainText, subText, anchor, cvarName)
+    widget:SetScript("OnEnter", function(self)
+        -- Clear the tooltip before showing new information
+        GameTooltip:ClearLines()
+        if GameTooltip:IsShown() then
+            GameTooltip:Hide()
+        end
+        if anchor then
+            GameTooltip:SetOwner(self, anchor)
+        else
+            GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+        end
+        -- Set the bold title
+        GameTooltip:AddLine(title)
+        --GameTooltip:AddLine(" ") -- Adding an empty line as a separator
+        -- Set the main text
+        GameTooltip:AddLine(mainText, 1, 1, 1, true) -- true for wrap text
+        -- Set the subtext
+        if subText then
+            GameTooltip:AddLine("____________________________", 0.8, 0.8, 0.8, true)
+            GameTooltip:AddLine(subText, 0.8, 0.80, 0.80, true)
+        end
+        -- Add CVar information if provided
+        if cvarName then
+            --GameTooltip:AddLine(" ")
+            --GameTooltip:AddLine("Default Value: " .. cvarName, 0.5, 0.5, 0.5) -- grey color for subtext
+            GameTooltip:AddDoubleLine("Changes CVar:", cvarName, 0.2, 1, 0.6, 0.2, 1, 0.6)
+        end
+        GameTooltip:Show()
+    end)
+    widget:SetScript("OnLeave", function(self)
+        GameTooltip:Hide()
+    end)
+end
+
 local function CreateAnchorDropdown(name, parent, defaultText, settingKey, toggleFunc, point)
     -- Create the dropdown frame using the library's creation function
     local dropdown = LibDD:Create_UIDropDownMenu(name, parent)
@@ -1199,7 +1246,7 @@ local function guiGeneralTab()
     bgImg:SetVertexColor(0,0,0)
 
     local addonNameText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
-    addonNameText:SetPoint("TOPLEFT", mainGuiAnchor, "TOPLEFT", -20, 17)
+    addonNameText:SetPoint("TOPLEFT", mainGuiAnchor, "TOPLEFT", -20, 47)
     addonNameText:SetText("BetterBlizzFrames")
     local addonNameIcon = BetterBlizzFrames:CreateTexture(nil, "ARTWORK")
     addonNameIcon:SetAtlas("gmchat-icon-blizz")
@@ -1214,7 +1261,7 @@ local function guiGeneralTab()
     ----------------------
     -- "General:" text
     local settingsText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    settingsText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 0, 8)
+    settingsText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 0, 30)
     settingsText:SetText("General settings")
     local generalSettingsIcon = BetterBlizzFrames:CreateTexture(nil, "ARTWORK")
     generalSettingsIcon:SetAtlas("optionsicon-brown")
@@ -1376,7 +1423,7 @@ local function guiGeneralTab()
 
 
     local playerFrameText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    playerFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 0, -159)
+    playerFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 0, -145)
     playerFrameText:SetText("Player Frame")
     local playerFrameIcon = BetterBlizzFrames:CreateTexture(nil, "ARTWORK")
     playerFrameIcon:SetAtlas("groupfinder-icon-friend")
@@ -1471,7 +1518,7 @@ local function guiGeneralTab()
 
 
     local partyFrameText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    partyFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 0, -431)
+    partyFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 0, -425)
     partyFrameText:SetText("Party Frame")
     local partyFrameIcon = BetterBlizzFrames:CreateTexture(nil, "ARTWORK")
     partyFrameIcon:SetAtlas("groupfinder-icon-friend")
@@ -2019,16 +2066,25 @@ local function guiGeneralTab()
     local nahjProfileButton = CreateFrame("Button", nil, BetterBlizzFrames, "UIPanelButtonTemplate")
     nahjProfileButton:SetText("Nahj Profile")
     nahjProfileButton:SetWidth(100)
-    nahjProfileButton:SetPoint("RIGHT", reloadUiButton, "LEFT", -10, 0)
+    nahjProfileButton:SetPoint("RIGHT", reloadUiButton, "LEFT", -50, 0)
     nahjProfileButton:SetScript("OnClick", function()
         StaticPopup_Show("BBF_CONFIRM_NAHJ_PROFILE")
     end)
-    CreateTooltip(nahjProfileButton, "Enable all of Nahj's profile settings.", "ANCHOR_LEFT")
+    CreateTooltipTwo(nahjProfileButton, "Nahj Profile", "Enable all of Nahj's profile settings.", "www.twitch.tv/nahj", "ANCHOR_TOP")
+
+    local magnuszProfileButton = CreateFrame("Button", nil, BetterBlizzFrames, "UIPanelButtonTemplate")
+    magnuszProfileButton:SetText("Magnusz Profile")
+    magnuszProfileButton:SetWidth(120)
+    magnuszProfileButton:SetPoint("RIGHT", nahjProfileButton, "LEFT", -5, 0)
+    magnuszProfileButton:SetScript("OnClick", function()
+        StaticPopup_Show("BBF_CONFIRM_MAGNUSZ_PROFILE")
+    end)
+    CreateTooltipTwo(magnuszProfileButton, "Magnusz Profile", "Enable all of Magnusz's profile settings.", "www.twitch.tv/magnusz", "ANCHOR_TOP")
 
     local resetBBFButton = CreateFrame("Button", nil, BetterBlizzFrames, "UIPanelButtonTemplate")
     resetBBFButton:SetText("Reset BetterBlizzFrames")
-    resetBBFButton:SetWidth(180)
-    resetBBFButton:SetPoint("RIGHT", nahjProfileButton, "LEFT", -170, 0)
+    resetBBFButton:SetWidth(165)
+    resetBBFButton:SetPoint("RIGHT", nahjProfileButton, "LEFT", -180, 0)
     resetBBFButton:SetScript("OnClick", function()
         StaticPopup_Show("CONFIRM_RESET_BETTERBLIZZFRAMESDB")
     end)

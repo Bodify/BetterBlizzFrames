@@ -6,7 +6,7 @@ BBF = BBF or {}
 -- Things are getting more messy need a lot of cleaning lol
 
 local addonVersion = "1.00" --too afraid to to touch for now
-local addonUpdates = "1.3.6"
+local addonUpdates = "1.3.7"
 local sendUpdate = true
 BBF.VersionNumber = addonUpdates
 BBF.variablesLoaded = false
@@ -319,6 +319,14 @@ StaticPopupDialogs["BetterBlizzFrames_COMBAT_WARNING"] = {
     preferredIndex = 3,
 }
 
+StaticPopupDialogs["BBF_NEW_VERSION"] = {
+    text = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames " .. addonUpdates .. ":\n\n|A:Professions-Crafting-Orders-Icon:16:16|a Bugfix:\n-Fix Target/Focus castbar moving too much when scaled up/down.\nYou might have to re-adjust the position slightly because of this.",
+    button1 = "OK",
+    timeout = 0,
+    whileDead = true,
+    hideOnEscape = true,
+}
+
 local function UpdateAuraColorsToGreen()
     if BetterBlizzFramesDB and BetterBlizzFramesDB["auraWhitelist"] then
         for _, entry in pairs(BetterBlizzFramesDB["auraWhitelist"]) do
@@ -368,14 +376,15 @@ StaticPopupDialogs["CONFIRM_RESET_BETTERBLIZZFRAMESDB"] = {
 local function SendUpdateMessage()
     if sendUpdate then
         C_Timer.After(7, function()
+            StaticPopup_Show("BBF_NEW_VERSION")
             DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames " .. addonUpdates .. ":")
             DEFAULT_CHAT_FRAME:AddMessage("|A:QuestNormal:16:16|a New Stuff:")
-            DEFAULT_CHAT_FRAME:AddMessage("   - Only mine checkbox for individual whitelisted auras (Buffs & Debuffs).")
-            DEFAULT_CHAT_FRAME:AddMessage("   - Only pandemic my auras (On by default) (Buffs & Debuffs).")
+            DEFAULT_CHAT_FRAME:AddMessage("   - Magnusz profile (www.twitch.tv/magnusz)")
+            --DEFAULT_CHAT_FRAME:AddMessage("   - Only pandemic my auras (On by default) (Buffs & Debuffs).")
             --DEFAULT_CHAT_FRAME:AddMessage("Added a \"Hide Minimap Buttons\" setting in Misc.")
 
             DEFAULT_CHAT_FRAME:AddMessage("|A:Professions-Crafting-Orders-Icon:16:16|a Bugfixes:")
-            DEFAULT_CHAT_FRAME:AddMessage("   Fix combopoints on TargetFrame setting sometimes messing up after respec.")
+            DEFAULT_CHAT_FRAME:AddMessage("   Fix Target/Focus castbar moving too much when scaled up/down. You might have to re-adjust the position.")
             --DEFAULT_CHAT_FRAME:AddMessage("Fix Combat Indicator not updating focus if target and focus are the same.")
             --DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a For more info and news about new features type /bbf news")
         end)
@@ -1008,18 +1017,6 @@ Frame:SetScript("OnEvent", function(...)
         InterfaceOptionsFrame_OpenToCategory(BetterBlizzFrames)
         BetterBlizzFramesDB.reopenOptions = false
     end
-
---[[
-    if BetterBlizzFramesDB.nahjMessage then
-        C_Timer.After(7, function()
-            DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames:")
-            DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Nahj profile activated. Nahj has the target's castbar detached from the TargetFrame. Because of this, and considering that your UI Scale might be different from Nahj's, your target's castbar might need repositioning in the settings.")
-            BetterBlizzFramesDB.nahjMessage = false
-        end)
-    end
-
-]]
-
 end)
 
 -- Slash command
@@ -1032,6 +1029,8 @@ SlashCmdList["BBF"] = function(msg)
         --playerFrameTest()
     elseif command == "nahj" then
         StaticPopup_Show("BBF_CONFIRM_NAHJ_PROFILE")
+    elseif command == "magnusz" then
+        StaticPopup_Show("BBF_CONFIRM_MAGNUSZ_PROFILE")
     else
         InterfaceOptionsFrame_OpenToCategory(BetterBlizzFrames)
     end

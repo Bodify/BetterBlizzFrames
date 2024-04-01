@@ -788,6 +788,433 @@ local nahjAuraWhitelist = {
     }, -- [33]
 }
 
+local magnuszAuraBlacklist = {
+    {
+        ["name"] = "Sign of the Skirmisher",
+        ["entryColors"] = {
+            ["text"] = {
+                ["r"] = 0,
+                ["g"] = 1,
+                ["b"] = 0,
+            },
+        },
+    }, -- [1]
+    {
+        ["name"] = "Sign of the Scourge",
+        ["entryColors"] = {
+            ["text"] = {
+                ["r"] = 0,
+                ["g"] = 1,
+                ["b"] = 0,
+            },
+        },
+    }, -- [2]
+    {
+        ["name"] = "Stormwind Champion",
+        ["entryColors"] = {
+            ["text"] = {
+                ["r"] = 0,
+                ["g"] = 1,
+                ["b"] = 0,
+            },
+        },
+    }, -- [3]
+    {
+        ["name"] = "Honorless Target",
+        ["entryColors"] = {
+            ["text"] = {
+                ["r"] = 0,
+                ["g"] = 1,
+                ["b"] = 0,
+            },
+        },
+    }, -- [4]
+    {
+        ["name"] = "Guild Champion",
+        ["entryColors"] = {
+            ["text"] = {
+                ["r"] = 0,
+                ["g"] = 1,
+                ["b"] = 0,
+            },
+        },
+    }, -- [5]
+    {
+        ["name"] = "Sign of Iron",
+        ["entryColors"] = {
+            ["text"] = {
+                ["r"] = 0,
+                ["g"] = 1,
+                ["b"] = 0,
+            },
+        },
+    }, -- [6]
+    {
+        ["id"] = 397734,
+        ["entryColors"] = {
+            ["text"] = {
+                ["r"] = 0,
+                ["g"] = 1,
+                ["b"] = 0,
+            },
+        },
+    }, -- [7]
+    {
+        ["id"] = 186403,
+        ["entryColors"] = {
+            ["text"] = {
+                ["r"] = 0,
+                ["g"] = 1,
+                ["b"] = 0,
+            },
+        },
+    }, -- [8]
+    {
+        ["id"] = 282559,
+        ["entryColors"] = {
+            ["text"] = {
+                ["r"] = 0,
+                ["g"] = 1,
+                ["b"] = 0,
+            },
+        },
+    }, -- [9]
+    {
+        ["id"] = 32727,
+        ["entryColors"] = {
+            ["text"] = {
+                ["r"] = 0,
+                ["g"] = 1,
+                ["b"] = 0,
+            },
+        },
+    }, -- [10]
+    {
+        ["id"] = 418563,
+        ["entryColors"] = {
+            ["text"] = {
+                ["r"] = 0,
+                ["g"] = 1,
+                ["b"] = 0,
+            },
+        },
+    }, -- [11]
+    {
+        ["id"] = 93805,
+        ["entryColors"] = {
+            ["text"] = {
+                ["r"] = 0,
+                ["g"] = 1,
+                ["b"] = 0,
+            },
+        },
+    }, -- [12]
+    {
+        ["flags"] = {
+            ["important"] = false,
+            ["pandemic"] = false,
+        },
+        ["entryColors"] = {
+            ["text"] = {
+                ["r"] = 0,
+                ["g"] = 1,
+                ["b"] = 0,
+            },
+        },
+        ["name"] = "Fashionable!",
+        ["comment"] = "",
+    }, -- [13]
+    {
+        ["flags"] = {
+            ["important"] = false,
+            ["pandemic"] = false,
+        },
+        ["entryColors"] = {
+            ["text"] = {
+                ["r"] = 0,
+                ["g"] = 1,
+                ["b"] = 0,
+            },
+        },
+        ["name"] = "Encapsulated Destiny",
+        ["comment"] = "",
+    }, -- [14]
+    {
+        ["flags"] = {
+            ["important"] = false,
+            ["pandemic"] = false,
+        },
+        ["entryColors"] = {
+            ["text"] = {
+                ["r"] = 0,
+                ["g"] = 1,
+                ["b"] = 0,
+            },
+        },
+        ["name"] = "Sign of the Emissary",
+        ["comment"] = "",
+    }, -- [15]
+    {
+        ["flags"] = {
+            ["pandemic"] = false,
+            ["important"] = false,
+        },
+        ["entryColors"] = {
+            ["text"] = {
+                ["b"] = 0,
+                ["g"] = 1,
+                ["r"] = 0,
+            },
+        },
+        ["name"] = "Sign of the Destroyer",
+        ["comment"] = "",
+    }, -- [16]
+    {
+        ["flags"] = {
+            ["pandemic"] = false,
+            ["important"] = false,
+        },
+        ["entryColors"] = {
+            ["text"] = {
+                ["b"] = 0,
+                ["g"] = 1,
+                ["r"] = 0,
+            },
+        },
+        ["name"] = "Time Travelling",
+        ["comment"] = "",
+    }, -- [17]
+    {
+        ["flags"] = {
+            ["pandemic"] = false,
+            ["important"] = false,
+        },
+        ["entryColors"] = {
+            ["text"] = {
+                ["b"] = 0,
+                ["g"] = 1,
+                ["r"] = 0,
+            },
+        },
+        ["name"] = "Enlisted",
+        ["comment"] = "",
+    }, -- [18]
+    {
+        ["flags"] = {
+            ["pandemic"] = false,
+            ["important"] = false,
+        },
+        ["entryColors"] = {
+            ["text"] = {
+                ["b"] = 0,
+                ["g"] = 1,
+                ["r"] = 0,
+            },
+        },
+        ["name"] = "Sign of the Critter",
+        ["comment"] = "",
+    }, -- [19]
+    {
+        ["flags"] = {
+            ["important"] = false,
+            ["pandemic"] = false,
+        },
+        ["entryColors"] = {
+            ["text"] = {
+                ["r"] = 0,
+                ["g"] = 1,
+                ["b"] = 0,
+            },
+        },
+        ["name"] = "Sign of the Warrior",
+        ["comment"] = "",
+    }, -- [20]
+    {
+        ["flags"] = {
+            ["pandemic"] = false,
+            ["important"] = false,
+        },
+        ["entryColors"] = {
+            ["text"] = {
+                ["b"] = 0,
+                ["g"] = 1,
+                ["r"] = 0,
+            },
+        },
+        ["name"] = "Sign of the Mists",
+        ["comment"] = "",
+    }, -- [21]
+    {
+        ["flags"] = {
+            ["important"] = false,
+            ["pandemic"] = false,
+        },
+        ["entryColors"] = {
+            ["text"] = {
+                ["r"] = 0,
+                ["g"] = 1,
+                ["b"] = 0,
+            },
+        },
+        ["name"] = "Eternal Black Diamond Ring",
+        ["comment"] = "",
+    }, -- [22]
+}
+
+local magnuszAuraWhitelist = {
+    {
+        ["flags"] = {
+            ["important"] = true,
+            ["pandemic"] = false,
+            ["enlarged"] = true,
+        },
+        ["entryColors"] = {
+            ["text"] = {
+                ["a"] = 1,
+                ["r"] = 0,
+                ["g"] = 1,
+                ["b"] = 0,
+            },
+        },
+        ["name"] = "Cenarion Ward",
+        ["comment"] = "",
+    }, -- [1]
+    {
+        ["flags"] = {
+            ["important"] = false,
+            ["enlarged"] = true,
+            ["pandemic"] = false,
+        },
+        ["entryColors"] = {
+            ["text"] = {
+                ["a"] = 1,
+                ["r"] = 0,
+                ["g"] = 1,
+                ["b"] = 0,
+            },
+        },
+        ["name"] = "Mortal Wounds",
+        ["comment"] = "",
+    }, -- [2]
+    {
+        ["flags"] = {
+            ["important"] = false,
+            ["pandemic"] = true,
+            ["enlarged"] = true,
+        },
+        ["entryColors"] = {
+            ["text"] = {
+                ["a"] = 1,
+                ["r"] = 0,
+                ["g"] = 1,
+                ["b"] = 0,
+            },
+        },
+        ["name"] = "Sharpen Blade",
+        ["comment"] = "",
+    }, -- [3]
+    {
+        ["flags"] = {
+            ["important"] = false,
+            ["pandemic"] = true,
+            ["enlarged"] = true,
+        },
+        ["comment"] = "",
+        ["id"] = 388539,
+        ["entryColors"] = {
+            ["text"] = {
+                ["a"] = 1,
+                ["r"] = 0,
+                ["g"] = 1,
+                ["b"] = 0,
+            },
+        },
+        ["name"] = "",
+    }, -- [4]
+    {
+        ["flags"] = {
+            ["important"] = false,
+            ["pandemic"] = true,
+            ["enlarged"] = false,
+        },
+        ["entryColors"] = {
+            ["text"] = {
+                ["a"] = 1,
+                ["r"] = 0,
+                ["g"] = 1,
+                ["b"] = 0,
+            },
+        },
+        ["name"] = "Fatal Mark",
+        ["comment"] = "",
+    }, -- [5]
+    {
+        ["flags"] = {
+            ["important"] = true,
+            ["enlarged"] = true,
+            ["pandemic"] = false,
+        },
+        ["entryColors"] = {
+            ["text"] = {
+                ["a"] = 1,
+                ["b"] = 0.07450980693101883,
+                ["g"] = 0.5568627715110779,
+                ["r"] = 1,
+            },
+        },
+        ["name"] = "Flame Shock",
+        ["comment"] = "",
+    }, -- [6]
+    {
+        ["flags"] = {
+            ["important"] = false,
+            ["enlarged"] = true,
+            ["pandemic"] = true,
+        },
+        ["entryColors"] = {
+            ["text"] = {
+                ["b"] = 0,
+                ["g"] = 1,
+                ["r"] = 0,
+            },
+        },
+        ["name"] = "Garrote",
+        ["comment"] = "",
+    }, -- [7]
+    {
+        ["flags"] = {
+            ["important"] = false,
+            ["enlarged"] = true,
+            ["pandemic"] = true,
+        },
+        ["entryColors"] = {
+            ["text"] = {
+                ["b"] = 0,
+                ["g"] = 1,
+                ["r"] = 0,
+            },
+        },
+        ["name"] = "Rupture",
+        ["comment"] = "",
+    }, -- [8]
+    {
+        ["flags"] = {
+            ["important"] = false,
+            ["enlarged"] = true,
+            ["pandemic"] = true,
+        },
+        ["entryColors"] = {
+            ["text"] = {
+                ["b"] = 0,
+                ["g"] = 1,
+                ["r"] = 0,
+            },
+        },
+        ["name"] = "Crimson Tempest",
+        ["comment"] = "",
+    }, -- [9]
+}
+
 local function updateAuraList(nahjList, userList)
     for _, newEntry in ipairs(nahjList) do
         local isEntryExists = false
@@ -1130,4 +1557,248 @@ function BBF.NahjProfile()
 	db.hideMinimapAutoQueueEye = false
 	db.hideObjectiveTracker = true
 	db.hideMinimapAuto = true
+end
+
+function BBF.MagnuszProfile()
+    updateAuraList(magnuszAuraWhitelist, BetterBlizzFramesDB.auraWhitelist)
+    updateAuraList(magnuszAuraBlacklist, BetterBlizzFramesDB.auraBlacklist)
+
+    local db = BetterBlizzFramesDB
+	db.targetAndFocusAuraOffsetY = 0
+	db.maxTargetDebuffs = 16
+	db.racialIndicatorOrc = true
+	db.targetCastBarWidth = 150
+	db.petCastBarWidth = 103
+	db.darkModeUi = true
+	db.targetAndFocusAuraScale = 1
+	db.targetToTYPos = 0
+	db.targetdeBuffFilterBlizzard = true
+	db.petCastBarScale = 1
+	db.focusdeBuffFilterWatchList = false
+	db.hideFocusCombatGlow = false
+	db.hidePlayerCornerIcon = true
+	db.targetAbsorbAnchor = "TOP"
+	db.hideChatButtons = false
+	db.focusCastBarXPos = 0
+	db.playerCastBarIconScale = 1
+	db.targetToTXPos = 31
+	db.purgeTextureColorRGB = {
+		0, -- [1]
+		0.92, -- [2]
+		1, -- [3]
+		0.85, -- [4]
+	}
+	db.focusdeBuffFilterLessMinite = false
+	db.combatIndicatorScale = 1
+	db.playerCastBarTimer = false
+	db.targetAbsorbAmount = true
+	db.printAuraSpellIds = false
+	db.castBarInterruptHighlighterDontInterruptRGB = {
+		1, -- [1]
+		0, -- [2]
+		0, -- [3]
+	}
+	db.playerAuraSpacingY = 0
+	db.wasOnLoadingScreen = false
+	db.absorbIndicatorTestMode = false
+	db.playerCombatIndicator = true
+	db.targetBuffFilterBlacklist = true
+	db.targetImportantAuraGlow = true
+	db.playerdeBuffFilterBlacklist = true
+	db.focusdeBuffEnable = true
+	db.PlayerAuraFramedeBuffEnable = true
+	db.targetAndFocusVerticalGap = 4
+	db.targetCastbarIconYPos = 0
+	db.combatIndicatorShowSap = true
+	db.combatIndicatorYPos = 0
+	db.playerCastBarScale = 1.100000023841858
+	db.focusToTAnchor = "BOTTOMRIGHT"
+	db.focusCastBarYPos = 0
+	db.partyCastBarScale = 1
+	db.focusToTAdjustmentOffsetY = 0
+	db.combatIndicatorXPos = 0
+	db.hideMinimap = false
+	db.targetAndFocusArenaNames = false
+	db.auraWhitelistColorsUpdated = true
+	db.targetToTAnchor = "BOTTOMRIGHT"
+	db.targetAbsorbIcon = true
+	db.frameAuraWidthGap = 0
+	db.playerCastBarWidth = 208
+	db.targetBuffFilterPurgeable = false
+	db.targetToTAdjustmentOffsetY = 0
+	db.showPetCastBarTimer = false
+	db.reopenOptions = false
+	db.hasSaved = true
+	db.racialIndicator = false
+	db.racialIndicatorXPos = 0
+	db.hasCheckedUi = true
+	db.playerAuraFiltering = true
+	db.showArenaID = true
+	db.targetCombatIndicator = true
+	db.targetCastBarYPos = 0
+	db.focusToTYPos = 0
+	db.targetToTXPosXPos = 31
+	db.petCastBarHeight = 10
+	db.racialIndicatorScale = 1
+	db.auraTypeGap = 4
+	db.targetBuffFilterOnlyMe = false
+	db.focusdeBuffFilterBlizzard = true
+	db.focusCastbarIconXPos = 0
+	db.darkModeColor = 0.12
+	db.targetBuffFilterWatchList = false
+	db.castBarInterruptHighlighterStartPercentage = 15
+	db.targetCastBarIconScale = 1
+	db.hidePlayerRestGlow = true
+	db.focusCastbarIconYPos = 0
+	db.playerAbsorbAnchor = "TOP"
+	db.focusBuffFilterBlacklist = true
+	db.focusCastBarIconScale = 1
+	db.targetCastbarIconXPos = 0
+	db.enablePlayerBuffFiltering = true
+	db.removeRealmNames = true
+	db.maxDebuffFrameDebuffs = 16
+	db.showPartyCastBarIcon = true
+	db.focusToTXPos = 31
+	db.playerCastBarTimerCenter = false
+	db.focusBuffFilterOnlyMe = false
+	db.filterEmoteSpam = true
+	db.petCastbar = false
+	db.focusdeBuffFilterAll = false
+	db.filterSystemMessages = true
+	db.partyCastBarIconScale = 1
+	db.centerNames = false
+	db.frameAuraRowAmount = 0
+	db.hidePvpIcon = true
+	db.maxBuffFrameBuffs = 32
+	db.targetBuffEnable = true
+	db.focusBuffEnable = true
+	db.playerAuraSpacingX = 5
+	db.partyCastBarTimer = false
+	db.auraToggleIconTexture = 134430
+	db.focusToTScale = 1
+	db.targetAndFocusHorizontalGap = 3
+	db.targetToTCastbarAdjustment = true
+	db.petCastBarTestMode = false
+	db.playerCastbarIconYPos = 0
+	db.focusCombatIndicator = true
+	db.focusCastBarWidth = 150
+	db.partyCastBarYPos = 0
+	db.targetdeBuffFilterBlacklist = true
+	db.targetdeBuffFilterLessMinite = false
+	db.partyCastBarHeight = 12
+	db.focusBuffPurgeGlow = true
+	db.focusdeBuffFilterBlacklist = true
+	db.hidePlayerRestAnimation = true
+	db.focusdeBuffPandemicGlow = true
+	db.playerBuffFilterBlacklist = true
+	db.targetAbsorbYPos = 0
+	db.darkModeNameplateResource = false
+	db.focusAbsorbIcon = true
+	db.playerAbsorbYPos = 0
+	db.targetAndFocusSmallAuraScale = 1
+	db.targetRacialIndicator = true
+	db.castBarDelayedInterruptColor = {
+		1, -- [1]
+		0.4784314036369324, -- [2]
+		0.9568628072738647, -- [3]
+	}
+	db.compactedAuraSize = 0.7
+	db.hidePrestigeBadge = true
+	db.focusdeBuffFilterOnlyMe = false
+	db.showPetCastBarIcon = true
+	db.targetBuffFilterAll = true
+	db.focusBuffFilterWatchList = false
+	db.partyCastbarIconXPos = 0
+	db.focusRacialIndicator = true
+	db.focusAbsorbAmount = true
+	db.PlayerAuraFrameBuffEnable = true
+	db.partyCastBarWidth = 100
+	db.targetCastBarXPos = 0
+	db.PlayerAuraFramedeBuffFilterWatchList = false
+	db.focusCastBarTimer = false
+	db.hideArenaFrames = true
+	db.filterNpcArenaSpam = true
+	db.racialIndicatorNelf = true
+	db.PlayerAuraFrameBuffFilterWatchList = false
+	db.darkModeUiAura = false
+	db.enablePlayerDebuffFiltering = false
+	db.combatIndicatorShowSwords = true
+	db.frameAuraHeightGap = 0
+	db.displayDispelGlowAlways = true
+	db.racialIndicatorUndead = true
+	db.targetCastBarTimer = false
+	db.focusToTCastbarAdjustment = true
+	db.targetCastBarHeight = 10
+	db.focusEnlargeAura = true
+	db.enlargedAuraSizeScale = 1.200000047683716
+	db.focusAuraGlows = true
+	db.focusBuffFilterPurgeable = false
+	db.targetdeBuffEnable = true
+	db.racialIndicatorYPos = 0
+	db.partyCastBarXPos = 0
+	db.overShieldsUnitFrames = true
+	db.enlargedAuraSize = 1.200000047683716
+	db.focusImportantAuraGlow = true
+	db.targetdeBuffFilterOnlyMe = false
+	db.filterTalentSpam = true
+	db.playerReputationClassColor = true
+	db.focusCastBarScale = 1
+	db.targetdeBuffFilterWatchList = false
+	db.focusPrestigeBadgeAlpha = true
+	db.castBarInterruptHighlighterEndPercentage = 80
+	db.targetAndFocusAuraOffsetX = 0
+	db.focusCastBarHeight = 10
+	db.playerCastBarHeight = 11
+	db.auraWhitelistAlphaUpdated = true
+	db.maxAurasOnFrame = 0
+	db.targetEnlargeAura = true
+	db.targetBuffPurgeGlow = true
+	db.targetCastBarScale = 1
+	db.targetAndFocusAurasPerRow = 6
+	db.maxTargetBuffs = 32
+	db.playerCastbarIconXPos = 0
+	db.focusBuffFilterAll = true
+	db.playerAbsorbIcon = true
+	db.darkModeColorScale = 0.119999997317791
+	db.petCastBarYPos = 0
+	db.targetAuraGlows = true
+	db.targetdeBuffPandemicGlow = true
+	db.darkModeCastbars = false
+	db.darkModeActionBars = false
+	db.playerFrameOCD = false
+	db.targetPrestigeBadgeAlpha = true
+	db.targetToTScale = 1
+	db.hideGroupIndicator = false
+	db.focusBuffFilterLessMinite = false
+	db.showHiddenAurasIcon = false
+	db.playerAbsorbXPos = 0
+	db.targetBuffFilterLessMinite = false
+	db.focusToTXPosXPos = 31
+	db.absorbIndicatorScale = 1
+	db.castBarInterruptHighlighterInterruptRGB = {
+		0, -- [1]
+		1, -- [2]
+		0, -- [3]
+	}
+	db.overShieldsCompactUnitFrames = true
+	db.hideDragonFlying = true
+	db.combatIndicatorAnchor = "RIGHT"
+	db.partyCastbarIconYPos = 0
+	db.frameAuraScale = 0
+	db.customLargeSmallAuraSorting = true
+	db.playerAbsorbAmount = true
+	db.castBarNoInterruptColor = {
+		1, -- [1]
+		0, -- [2]
+		0.01568627543747425, -- [3]
+	}
+	db.petCastBarXPos = 0
+	db.racialIndicatorHuman = true
+	db.combatIndicator = false
+	db.targetdeBuffFilterAll = false
+	db.partyCastBarTestMode = false
+	db.targetAbsorbXPos = 0
+	db.frameAurasYPos = 0
+	db.petCastBarIconScale = 1
+	db.filterGladiusSpam = true
 end

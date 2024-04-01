@@ -88,6 +88,8 @@ local buffsOnTopReverseCastbarMovement
 local customImportantAuraSorting
 local allowLargeAuraFirst
 local onlyPandemicMine
+local targetCastBarScale
+local focusCastBarScale
 
 function BBF.UpdateUserAuraSettings()
     printSpellId = printAuraSpellIds
@@ -140,8 +142,8 @@ function BBF.UpdateUserAuraSettings()
     playerDebuffFilterOn = BetterBlizzFramesDB.playerAuraFiltering and BetterBlizzFramesDB.enablePlayerDebuffFiltering
     printAuraSpellIds = BetterBlizzFramesDB.printAuraSpellIds
     playerAuraImportantGlow = BetterBlizzFramesDB.playerAuraImportantGlow
-    darkModeUi = BetterBlizzFramesDB.darkModeUi
-    darkModeUiAura = BetterBlizzFramesDB.darkModeUiAura
+    targetCastBarScale = BetterBlizzFramesDB.targetCastBarScale
+    focusCastBarScale = BetterBlizzFramesDB.focusCastBarScale
     allowLargeAuraFirst = BetterBlizzFramesDB.allowLargeAuraFirst
     customImportantAuraSorting = BetterBlizzFramesDB.customImportantAuraSorting
     purgeTextureColorRGB = BetterBlizzFramesDB.purgeTextureColorRGB
@@ -321,10 +323,10 @@ local function ShouldShowBuff(unit, auraData, frameType)
     end
 end
 
-local function CalculateAuraRowsYOffset(frame, rowHeights)
+local function CalculateAuraRowsYOffset(frame, rowHeights, castBarScale)
     local totalHeight = 0
     for _, height in ipairs(rowHeights) do
-        totalHeight = totalHeight + (height * targetAndFocusAuraScale)  -- Scaling each row height
+        totalHeight = totalHeight + (height * targetAndFocusAuraScale) / castBarScale  -- Scaling each row height
     end
     return totalHeight + #rowHeights * targetAndFocusVerticalGap
 end
@@ -344,11 +346,11 @@ local function adjustCastbar(self, frame)
         elseif targetDetachCastbar then
             meta.SetPoint(self, "CENTER", UIParent, "CENTER", targetCastBarXPos, targetCastBarYPos);
         elseif buffsOnTopReverseCastbarMovement and buffsOnTop then
-            yOffset = yOffset + CalculateAuraRowsYOffset(parent, rowHeights) + 100
+            yOffset = yOffset + CalculateAuraRowsYOffset(parent, rowHeights, targetCastBarScale) + 100/targetCastBarScale
             meta.SetPoint(self, "TOPLEFT", parent, "BOTTOMLEFT", 43 + targetCastBarXPos, yOffset + targetCastBarYPos);
         else
             if not buffsOnTop then
-                yOffset = yOffset - CalculateAuraRowsYOffset(parent, rowHeights)
+                yOffset = yOffset - CalculateAuraRowsYOffset(parent, rowHeights, targetCastBarScale)
             end
             -- Check if totAdjustment is true and the ToT frame is shown
             if targetToTCastbarAdjustment and parent.haveToT then
@@ -373,11 +375,11 @@ local function adjustCastbar(self, frame)
         elseif focusDetachCastbar then
             meta.SetPoint(self, "CENTER", UIParent, "CENTER", focusCastBarXPos, focusCastBarYPos);
         elseif buffsOnTopReverseCastbarMovement and buffsOnTop then
-            yOffset = yOffset + CalculateAuraRowsYOffset(parent, rowHeights) + 100
+            yOffset = yOffset + CalculateAuraRowsYOffset(parent, rowHeights, focusCastBarScale) + 100/focusCastBarScale
             meta.SetPoint(self, "TOPLEFT", parent, "BOTTOMLEFT", 43 + focusCastBarXPos, yOffset + focusCastBarYPos);
         else
             if not buffsOnTop then
-                yOffset = yOffset - CalculateAuraRowsYOffset(parent, rowHeights)
+                yOffset = yOffset - CalculateAuraRowsYOffset(parent, rowHeights, focusCastBarScale)
             end
             -- Check if totAdjustment is true and the ToT frame is shown
             if focusToTCastbarAdjustment and parent.haveToT then
