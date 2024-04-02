@@ -1084,12 +1084,6 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
             checkBoxC:SetPoint("RIGHT", checkBoxI, "LEFT", 3, 0)
             CreateTooltip(checkBoxC, "Compacted Aura |A:ui-hud-minimap-zoom-out:22:22|a\n\nCheck to make the aura smaller.\nAlso check which frame(s) you want this on down below.", "ANCHOR_TOPRIGHT")
 
-            -- Handler for the C checkbox
-            checkBoxC:SetScript("OnClick", function(self)
-                npc.flags.compacted = self:GetChecked()
-            end)
-            checkBoxC:HookScript("OnClick", BBF.RefreshAllAuraFrames)
-
             -- Initialize state from npc flags
             if npc.flags.compacted then
                 checkBoxC:SetChecked(true)
@@ -1101,11 +1095,21 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
             checkBoxE:SetPoint("RIGHT", checkBoxC, "LEFT", 3, 0)
             CreateTooltip(checkBoxE, "Enlarged Aura |A:ui-hud-minimap-zoom-in:22:22|a\n\nCheck to make the aura bigger.\nAlso check which frame(s) you want this on down below.", "ANCHOR_TOPRIGHT")
 
+            -- Handler for the C checkbox
+            checkBoxC:SetScript("OnClick", function(self)
+                npc.flags.compacted = self:GetChecked()
+                checkBoxE:SetChecked(false)
+                npc.flags.enlarged = false
+                BBF.RefreshAllAuraFrames()
+            end)
+
             -- Handler for the E checkbox
             checkBoxE:SetScript("OnClick", function(self)
                 npc.flags.enlarged = self:GetChecked()
+                checkBoxC:SetChecked(false)
+                npc.flags.compacted = false
+                BBF.RefreshAllAuraFrames()
             end)
-            checkBoxE:HookScript("OnClick", BBF.RefreshAllAuraFrames)
 
             -- Initialize state from npc flags
             if npc.flags.enlarged then
