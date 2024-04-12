@@ -6,7 +6,7 @@ BBF = BBF or {}
 -- Things are getting more messy need a lot of cleaning lol
 
 local addonVersion = "1.00" --too afraid to to touch for now
-local addonUpdates = "1.3.8"
+local addonUpdates = "1.3.8b"
 local sendUpdate = true
 BBF.VersionNumber = addonUpdates
 BBF.variablesLoaded = false
@@ -380,12 +380,12 @@ local function SendUpdateMessage()
             --StaticPopup_Show("BBF_NEW_VERSION")
             DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames " .. addonUpdates .. ":")
             DEFAULT_CHAT_FRAME:AddMessage("|A:QuestNormal:16:16|a New Stuff:")
-            DEFAULT_CHAT_FRAME:AddMessage("   - Added Import/Export settings.")
+            DEFAULT_CHAT_FRAME:AddMessage("   - LossOfControlFrame test mode + scale slider")
             --DEFAULT_CHAT_FRAME:AddMessage("   - Only pandemic my auras (On by default) (Buffs & Debuffs).")
             --DEFAULT_CHAT_FRAME:AddMessage("Added a \"Hide Minimap Buttons\" setting in Misc.")
 
-            DEFAULT_CHAT_FRAME:AddMessage("|A:Professions-Crafting-Orders-Icon:16:16|a Bugfixes and Tweaks:")
-            DEFAULT_CHAT_FRAME:AddMessage("   - Only interrupt color enemy castbars with setting on.")
+            -- DEFAULT_CHAT_FRAME:AddMessage("|A:Professions-Crafting-Orders-Icon:16:16|a Bugfixes and Tweaks:")
+            -- DEFAULT_CHAT_FRAME:AddMessage("   - Only interrupt color enemy castbars with setting on.")
             --DEFAULT_CHAT_FRAME:AddMessage("Fix Combat Indicator not updating focus if target and focus are the same.")
             --DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a For more info and news about new features type /bbf news")
         end)
@@ -514,6 +514,85 @@ function BBF.ClickthroughFrames()
             FocusFrameToT:SetMouseClickEnabled(false)
         end
 	end
+end
+
+-- Function to toggle test mode on and off
+function BBF.ToggleLossOfControlTestMode()
+    local LossOfControlFrameAlphaBg = BetterBlizzFramesDB.hideLossOfControlFrameBg and 0 or 0.6
+    local LossOfControlFrameAlphaLines = BetterBlizzFramesDB.hideLossOfControlFrameLines and 0 or 1
+    if not _G.FakeBBFLossOfControlFrame then  -- Changed to a global reference for wider access
+        -- Main Frame Creation
+        local frame = CreateFrame("Frame", "FakeBBFLossOfControlFrame", UIParent, "BackdropTemplate")
+        frame:SetSize(256, 58)
+        frame:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
+        frame:SetFrameStrata("MEDIUM")
+        frame:SetToplevel(true)
+        frame:Hide()
+
+        -- Background Texture
+        local blackBg = frame:CreateTexture(nil, "BACKGROUND")
+        blackBg:SetTexture(LossOfControlFrame.blackBg:GetTexture())
+        blackBg:SetPoint("BOTTOM", frame, "BOTTOM", 0, 0)
+        blackBg:SetSize(256, 58)
+        frame.blackBg = blackBg  -- Correctly scoped
+
+        -- Red Lines Textures
+        local redLineTop = frame:CreateTexture(nil, "BACKGROUND")
+        redLineTop:SetTexture("Interface\\Cooldown\\Loc-RedLine")
+        redLineTop:SetSize(236, 27)
+        redLineTop:SetPoint("BOTTOM", frame, "TOP", 0, 0)
+        frame.RedLineTop = redLineTop  -- Correctly scoped
+
+        local redLineBottom = frame:CreateTexture(nil, "BACKGROUND")
+        redLineBottom:SetTexture("Interface\\Cooldown\\Loc-RedLine")
+        redLineBottom:SetSize(236, 27)
+        redLineBottom:SetPoint("TOP", frame, "BOTTOM", 0, 0)
+        redLineBottom:SetTexCoord(0, 1, 1, 0)
+        frame.RedLineBottom = redLineBottom  -- Correctly scoped
+
+        -- Icon Texture
+        local icon = frame:CreateTexture(nil, "ARTWORK")
+        icon:SetSize(48, 48)
+        icon:SetPoint("LEFT", frame, "LEFT", 42, 0)
+        icon:SetTexture(132298)
+        frame.Icon = icon  -- Correctly scoped
+
+        -- Ability Name FontString
+        local abilityName = frame:CreateFontString(nil, "ARTWORK", "MovieSubtitleFont")
+        abilityName:SetPoint("TOPLEFT", icon, "TOPRIGHT", 5, -4)
+        abilityName:SetSize(0, 20)
+        abilityName:SetText("Stunned")
+        frame.AbilityName = abilityName  -- Correctly scoped
+
+        -- Time Left Frame
+        local timeLeft = CreateFrame("Frame", nil, frame)
+        timeLeft:SetSize(200, 20)
+        timeLeft:SetPoint("TOPLEFT", abilityName, "BOTTOMLEFT", 0, 0)
+        frame.TimeLeft = timeLeft  -- Correctly scoped
+
+        -- Number and Seconds Text
+        local numberText = timeLeft:CreateFontString(nil, "ARTWORK", "GameFontNormalHuge")
+        numberText:SetText("5.5 seconds")
+        numberText:SetPoint("LEFT", timeLeft, "LEFT", 0, -3)
+        numberText:SetShadowOffset(2, -2)
+        numberText:SetTextColor(1,1,1)
+        timeLeft.NumberText = numberText  -- Correctly scoped
+
+        -- Stop Testing Button
+        local stopButton = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
+        stopButton:SetSize(120, 30)
+        stopButton:SetPoint("BOTTOM", redLineBottom, "BOTTOM", 0, -35)
+        stopButton:SetText("Stop Testing")
+        stopButton:SetScript("OnClick", function() frame:Hide() end)
+        frame.StopButton = stopButton  -- Correctly scoped
+
+        _G.FakeBBFLossOfControlFrame = frame  -- Store the frame globally
+    end
+    FakeBBFLossOfControlFrame:SetScale(BetterBlizzFramesDB.lossOfControlScale)
+    FakeBBFLossOfControlFrame.blackBg:SetAlpha(LossOfControlFrameAlphaBg)
+    FakeBBFLossOfControlFrame.RedLineTop:SetAlpha(LossOfControlFrameAlphaLines)
+    FakeBBFLossOfControlFrame.RedLineBottom:SetAlpha(LossOfControlFrameAlphaLines)
+    FakeBBFLossOfControlFrame:Show()
 end
 
 function BBF.ChangeLossOfControlScale()

@@ -485,6 +485,7 @@ local function CreateSlider(parent, label, minValue, maxValue, stepValue, elemen
                     end
                 elseif element == "lossOfControlScale" then
                     BetterBlizzFramesDB.lossOfControlScale = value
+                    BBF.ToggleLossOfControlTestMode()
                     BBF.ChangeLossOfControlScale()
                 elseif element == "targetAndFocusAuraOffsetX" then
                     BetterBlizzFramesDB.targetAndFocusAuraOffsetX = value
@@ -1535,10 +1536,16 @@ local function guiGeneralTab()
     local hideLossOfControlFrameBg = CreateCheckbox("hideLossOfControlFrameBg", "Hide CC Background", BetterBlizzFrames, nil, BBF.HideFrames)
     hideLossOfControlFrameBg:SetPoint("TOPLEFT", playerFrameOCD, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(hideLossOfControlFrameBg, "Hide the dark background on the LossOfControl frame (displaying CC on you)")
+    hideLossOfControlFrameBg:HookScript("OnClick", function()
+        BBF.ToggleLossOfControlTestMode()
+    end)
 
     local hideLossOfControlFrameLines = CreateCheckbox("hideLossOfControlFrameLines", "Hide CC Red-lines", BetterBlizzFrames, nil, BBF.HideFrames)
     hideLossOfControlFrameLines:SetPoint("TOPLEFT", hideLossOfControlFrameBg, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(hideLossOfControlFrameLines, "Hide the red lines on top and bottom of the LossOfControl frame (displaying CC on you)")
+    hideLossOfControlFrameLines:HookScript("OnClick", function()
+        BBF.ToggleLossOfControlTestMode()
+    end)
 
     local lossOfControlScale = CreateSlider(BetterBlizzFrames, "CC Scale", 0.4, 1.4, 0.01, "lossOfControlScale", nil, 90)
     lossOfControlScale:SetPoint("LEFT", hideLossOfControlFrameBg.text, "RIGHT", 3, -16)
