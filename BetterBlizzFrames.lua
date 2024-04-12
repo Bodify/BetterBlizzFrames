@@ -6,7 +6,7 @@ BBF = BBF or {}
 -- Things are getting more messy need a lot of cleaning lol
 
 local addonVersion = "1.00" --too afraid to to touch for now
-local addonUpdates = "1.3.7"
+local addonUpdates = "1.3.8"
 local sendUpdate = true
 BBF.VersionNumber = addonUpdates
 BBF.variablesLoaded = false
@@ -40,6 +40,7 @@ local defaultSettings = {
     enlargedAuraSize = 1.4,
     compactedAuraSize = 0.7,
     onlyPandemicAuraMine = true,
+    lossOfControlScale = 1,
 
     --Target castbar
     playerCastbarIconXPos = 0,
@@ -376,15 +377,15 @@ StaticPopupDialogs["CONFIRM_RESET_BETTERBLIZZFRAMESDB"] = {
 local function SendUpdateMessage()
     if sendUpdate then
         C_Timer.After(7, function()
-            StaticPopup_Show("BBF_NEW_VERSION")
+            --StaticPopup_Show("BBF_NEW_VERSION")
             DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames " .. addonUpdates .. ":")
             DEFAULT_CHAT_FRAME:AddMessage("|A:QuestNormal:16:16|a New Stuff:")
-            DEFAULT_CHAT_FRAME:AddMessage("   - Magnusz profile (www.twitch.tv/magnusz)")
+            DEFAULT_CHAT_FRAME:AddMessage("   - Added Import/Export settings.")
             --DEFAULT_CHAT_FRAME:AddMessage("   - Only pandemic my auras (On by default) (Buffs & Debuffs).")
             --DEFAULT_CHAT_FRAME:AddMessage("Added a \"Hide Minimap Buttons\" setting in Misc.")
 
-            DEFAULT_CHAT_FRAME:AddMessage("|A:Professions-Crafting-Orders-Icon:16:16|a Bugfixes:")
-            DEFAULT_CHAT_FRAME:AddMessage("   Fix Target/Focus castbar moving too much when scaled up/down. You might have to re-adjust the position.")
+            DEFAULT_CHAT_FRAME:AddMessage("|A:Professions-Crafting-Orders-Icon:16:16|a Bugfixes and Tweaks:")
+            DEFAULT_CHAT_FRAME:AddMessage("   - Only interrupt color enemy castbars with setting on.")
             --DEFAULT_CHAT_FRAME:AddMessage("Fix Combat Indicator not updating focus if target and focus are the same.")
             --DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a For more info and news about new features type /bbf news")
         end)
@@ -513,6 +514,10 @@ function BBF.ClickthroughFrames()
             FocusFrameToT:SetMouseClickEnabled(false)
         end
 	end
+end
+
+function BBF.ChangeLossOfControlScale()
+    LossOfControlFrame:SetScale(BetterBlizzFramesDB.lossOfControlScale)
 end
 
 --TODO Bodify, already in aura function, this is better perf tho so figure out how (debuffs only)
@@ -998,6 +1003,8 @@ Frame:SetScript("OnEvent", function(...)
                 if BetterBlizzFramesDB.useMiniFocusFrame then
                     BBF.MiniFocusFrame()
                 end
+                BBF.UpdateCastbars()
+                BBF.ChangeLossOfControlScale()
             end)
             BBF.HideFrames()
             if BetterBlizzFramesDB.partyCastbars then

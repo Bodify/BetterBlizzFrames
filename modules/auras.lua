@@ -172,7 +172,7 @@ end
 
 local function isInBlacklist(spellName, spellId)
     for _, entry in pairs(BetterBlizzFramesDB["auraBlacklist"]) do
-        if (entry.name and spellName and string.lower(entry.name) == string.lower(spellName)) or entry.id == spellId then
+        if entry.id == spellId or (entry.name and not entry.id and spellName and string.lower(entry.name) == string.lower(spellName)) then
             return true
         end
     end
@@ -202,7 +202,7 @@ end
 
 local function GetAuraDetails(spellName, spellId)
     for _, entry in pairs(BetterBlizzFramesDB["auraWhitelist"]) do
-        if (entry.name and spellName and string.lower(entry.name) == string.lower(spellName)) or entry.id == spellId then
+        if entry.id == spellId or (entry.name and not entry.id and spellName and string.lower(entry.name) == string.lower(spellName)) then
             local isImportant = entry.flags and entry.flags.important or false
             local isPandemic = entry.flags and entry.flags.pandemic or false
             local isEnlarged = entry.flags and entry.flags.enlarged or false
