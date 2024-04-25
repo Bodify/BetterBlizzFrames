@@ -1343,7 +1343,7 @@ function BBF.NahjProfile()
 	db.playerReputationClassColor = true
 	db.hidePartyNames = false
 	db.targetdeBuffFilterWatchList = false
-	db.castBarInterruptHighlighterEndPercentage = 80
+	db.castBarInterruptHighlighterEndTime = 80
 	db.combatIndicatorShowSwords = true
 	db.petCastBarXPos = 0
 	db.playerCastbarIconXPos = 0
@@ -1458,7 +1458,7 @@ function BBF.NahjProfile()
 	db.focusAbsorbIcon = true
 	db.targetAndFocusAuraOffsetX = 0
 	db.auraWhitelistColorsUpdated = true
-	db.castBarInterruptHighlighterEndPercentageHeight = 75
+	db.castBarInterruptHighlighterEndTimeHeight = 75
 	db.castBarDelayedInterruptColor = {
 		1, -- [1]
 		0.4784314036369324, -- [2]
@@ -1492,7 +1492,7 @@ function BBF.NahjProfile()
 	db.castBarInterruptHighlighterColorDontInterrupt = true
 	db.targetCastBarXPos = -20
 	db.hideLossOfControlFrameBg = false
-	db.castBarInterruptHighlighterStartPercentageHeight = 15
+	db.castBarInterruptHighlighterStartTimeHeight = 15
 	db.maxTargetDebuffs = 16
 	db.absorbIndicatorTestMode = false
 	db.focusdeBuffFilterOnlyMe = false
@@ -1541,7 +1541,7 @@ function BBF.NahjProfile()
 	db.partyCastBarWidth = 100
 	db.hidePartyAggroHighlight = true
 	db.showArenaID = true
-	db.castBarInterruptHighlighterStartPercentage = 15
+	db.castBarInterruptHighlighterStartTime = 15
 	db.overShieldsCompactUnitFrames = true
 	db.targetBuffFilterLessMinite = false
 	db.frameAuraScale = 0
@@ -1646,7 +1646,7 @@ function BBF.MagnuszProfile()
 	db.focusCastbarIconXPos = 0
 	db.darkModeColor = 0.12
 	db.targetBuffFilterWatchList = false
-	db.castBarInterruptHighlighterStartPercentage = 15
+	db.castBarInterruptHighlighterStartTime = 15
 	db.targetCastBarIconScale = 1
 	db.hidePlayerRestGlow = true
 	db.focusCastbarIconYPos = 0
@@ -1745,7 +1745,7 @@ function BBF.MagnuszProfile()
 	db.focusCastBarScale = 1
 	db.targetdeBuffFilterWatchList = false
 	db.focusPrestigeBadgeAlpha = true
-	db.castBarInterruptHighlighterEndPercentage = 80
+	db.castBarInterruptHighlighterEndTime = 80
 	db.targetAndFocusAuraOffsetX = 0
 	db.focusCastBarHeight = 10
 	db.playerCastBarHeight = 11

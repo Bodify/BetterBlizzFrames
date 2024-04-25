@@ -7,13 +7,21 @@ local ABSORB_GLOW_OFFSET = -5;
 local UNITFRAME_OVERSHIELD_HOOKED = false
 local COMPACT_UNITFRAME_OVERSHIELD_HOOKED = false
 
+local function getAbsorbOverlay(frame)
+    if frame == PlayerFrame then
+        return frame.PlayerFrameContent.PlayerFrameContentMain.HealthBarArea.HealthBar.TotalAbsorbBar.TiledFillOverlay
+    elseif frame == TargetFrame or frame == FocusFrame then
+        return frame.TargetFrameContent.TargetFrameContentMain.HealthBar.TotalAbsorbBar.TiledFillOverlay
+    end
+end
+
 local function BBF_UnitFrame_Update(frame)
     local absorbBar = frame.totalAbsorbBar;
     if not absorbBar or absorbBar:IsForbidden() then
         return
     end
 
-    local absorbOverlay = frame.totalAbsorbBarOverlay;
+    local absorbOverlay = getAbsorbOverlay(frame)
     if not absorbOverlay or absorbOverlay:IsForbidden() then
         return
     end
@@ -41,7 +49,7 @@ local function BBF_UnitFrameHealPredictionBars_Update(frame)
         return
     end
 
-    local absorbOverlay = frame.totalAbsorbBarOverlay;
+    local absorbOverlay = getAbsorbOverlay(frame)
     if not absorbOverlay or absorbOverlay:IsForbidden() then
         return
     end
@@ -74,10 +82,12 @@ local function BBF_UnitFrameHealPredictionBars_Update(frame)
         local barSize = totalAbsorb / maxHealth * totalWidth;
 
         absorbOverlay:SetWidth(barSize);
-        absorbOverlay:SetTexCoord(0, barSize / absorbOverlay.tileSize, 0, totalHeight / absorbOverlay.tileSize);
+        --absorbOverlay:SetTexCoord(0, barSize / absorbOverlay.tileSize, 0, totalHeight / absorbOverlay.tileSize);
         absorbOverlay:Show();
 
         -- frame.overAbsorbGlow:Show();	--uncomment this if you want to ALWAYS show the glow to the left of the shield overlay
+    else
+        absorbOverlay:Hide();
     end
 end
 
@@ -186,12 +196,16 @@ function BBF.HookOverShieldUnitFrames()
         return
     end
 
+
     hooksecurefunc("UnitFrame_Update", BBF_UnitFrame_Update)
     hooksecurefunc("UnitFrameHealPredictionBars_Update", BBF_UnitFrameHealPredictionBars_Update)
 
-    BBF_UnitFrameHealPredictionBars_Update(PlayerFrame)
-    BBF_UnitFrameHealPredictionBars_Update(TargetFrame)
-    BBF_UnitFrameHealPredictionBars_Update(FocusFrame)
+    C_Timer.After(3, function()
+        BBF_UnitFrameHealPredictionBars_Update(PlayerFrame)
+        BBF_UnitFrameHealPredictionBars_Update(TargetFrame)
+        BBF_UnitFrameHealPredictionBars_Update(FocusFrame)
+    end)
+
 
     local eventFrame = CreateFrame("Frame")
     eventFrame:RegisterEvent("PLAYER_TARGET_CHANGED")

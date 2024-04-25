@@ -189,9 +189,17 @@ function BBF.HideFrames()
 
         -- Hide role icons
         if BetterBlizzFramesDB.hidePlayerRoleIcon then
-            PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.RoleIcon:SetParent(hiddenFrame)
+            --PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.RoleIcon:SetParent(hiddenFrame)
+            PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.RoleIcon:SetAlpha(0)
         else
-            PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.RoleIcon:SetParent(PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual)
+            --PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.RoleIcon:SetParent(PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual)
+            PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.RoleIcon:SetAlpha(1)
+        end
+
+        if BetterBlizzFramesDB.hidePlayerGuideIcon then
+            PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.GuideIcon:SetAlpha(0)
+        else
+            PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.GuideIcon:SetAlpha(1)
         end
 
         if BetterBlizzFramesDB.hideRaidFrameManager then

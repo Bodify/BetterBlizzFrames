@@ -6,7 +6,7 @@ BBF = BBF or {}
 -- Things are getting more messy need a lot of cleaning lol
 
 local addonVersion = "1.00" --too afraid to to touch for now
-local addonUpdates = "1.3.8b"
+local addonUpdates = "1.3.9"
 local sendUpdate = true
 BBF.VersionNumber = addonUpdates
 BBF.variablesLoaded = false
@@ -111,8 +111,8 @@ local defaultSettings = {
     showPetCastBarTimer = false,
 
     --Castbar edge highlight
-    castBarInterruptHighlighterStartPercentage = 15,
-    castBarInterruptHighlighterEndPercentage = 80,
+    castBarInterruptHighlighterStartTime = 0.8,
+    castBarInterruptHighlighterEndTime = 0.6,
     castBarInterruptHighlighterDontInterruptRGB = {1,0,0},
     castBarInterruptHighlighterInterruptRGB = {0,1,0},
     castBarNoInterruptColor = {1, 0, 0.01568627543747425},
@@ -246,6 +246,9 @@ local defaultSettings = {
         {id = 32727}, -- Arena Preparation
         {id = 418563}, -- WoW's 19th Anniversary
         {id = 93805}, -- Ironforge Champion
+        {id = 335148}, -- Sign of the Twisting Nether
+        {id = 269083}, -- Enlisted 2
+        {id = 394005}, -- A cultivators colors
     },
 }
 
@@ -378,16 +381,14 @@ local function SendUpdateMessage()
     if sendUpdate then
         C_Timer.After(7, function()
             --StaticPopup_Show("BBF_NEW_VERSION")
-            DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames " .. addonUpdates .. ":")
-            DEFAULT_CHAT_FRAME:AddMessage("|A:QuestNormal:16:16|a New Stuff:")
-            DEFAULT_CHAT_FRAME:AddMessage("   - LossOfControlFrame test mode + scale slider")
-            --DEFAULT_CHAT_FRAME:AddMessage("   - Only pandemic my auras (On by default) (Buffs & Debuffs).")
-            --DEFAULT_CHAT_FRAME:AddMessage("Added a \"Hide Minimap Buttons\" setting in Misc.")
-
-            -- DEFAULT_CHAT_FRAME:AddMessage("|A:Professions-Crafting-Orders-Icon:16:16|a Bugfixes and Tweaks:")
-            -- DEFAULT_CHAT_FRAME:AddMessage("   - Only interrupt color enemy castbars with setting on.")
-            --DEFAULT_CHAT_FRAME:AddMessage("Fix Combat Indicator not updating focus if target and focus are the same.")
-            --DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a For more info and news about new features type /bbf news")
+            DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames news:")
+            DEFAULT_CHAT_FRAME:AddMessage("|A:QuestNormal:16:16|a New Settings:")
+            DEFAULT_CHAT_FRAME:AddMessage("   - Castbar Edge Highlighter now uses seconds instead of percentages.")
+            DEFAULT_CHAT_FRAME:AddMessage("   - Added \"Hide Player Guide Flag\" setting.")
+        
+            DEFAULT_CHAT_FRAME:AddMessage("|A:Professions-Crafting-Orders-Icon:16:16|a Bugfixes:")
+            DEFAULT_CHAT_FRAME:AddMessage("   Fixed Overshields for PlayerFrame/TargetFrame etc after Blizzard change.")
+            DEFAULT_CHAT_FRAME:AddMessage("   A lot of behind the scenes Name logic changed. Should now work better and be happier with other addons.")
         end)
     end
 end
@@ -395,11 +396,12 @@ end
 local function NewsUpdateMessage()
     DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames news:")
     DEFAULT_CHAT_FRAME:AddMessage("|A:QuestNormal:16:16|a New Settings:")
-    DEFAULT_CHAT_FRAME:AddMessage("   - Mini-FocusFrame (Misc).")
-    DEFAULT_CHAT_FRAME:AddMessage("   - Move combo points etc to TargetFrame (Misc).")
+    DEFAULT_CHAT_FRAME:AddMessage("   - Castbar Edge Highlighter now uses seconds instead of percentages.")
+    DEFAULT_CHAT_FRAME:AddMessage("   - Added \"Hide Player Guide Flag\" setting.")
 
     DEFAULT_CHAT_FRAME:AddMessage("|A:Professions-Crafting-Orders-Icon:16:16|a Bugfixes:")
-    DEFAULT_CHAT_FRAME:AddMessage("   Left to right player auras now supported (Buffs & Debuffs).")
+    DEFAULT_CHAT_FRAME:AddMessage("   Fixed Overshields for PlayerFrame/TargetFrame etc after Blizzard change.")
+    DEFAULT_CHAT_FRAME:AddMessage("   A lot of behind the scenes Name logic changed. Should now work better and be happier with other addons.")
 
     DEFAULT_CHAT_FRAME:AddMessage("|A:GarrisonTroops-Health:16:16|a Patreon link: www.patreon.com/bodydev")
 end
@@ -439,7 +441,6 @@ local function LoadingScreenDetector(_, event)
     elseif event == "LOADING_SCREEN_DISABLED" or event == "PLAYER_LEAVING_WORLD" then
         if BetterBlizzFramesDB.playerFrameOCD then
             BBF.FixStupidBlizzPTRShit()
-            BBF.ClassColorPlayerName()
         end
 
         BBF.MinimapHider(instanceType)
@@ -938,6 +939,8 @@ function BBF.FixStupidBlizzPTRShit()
         end
     end
 
+    BBF.ShiftNamesCuzOCD()
+
     local a, b, c, d, e = TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:GetPoint()
     TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:SetPoint(a, b, c, d, -24)
     --TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:SetHeight()
@@ -948,16 +951,18 @@ function BBF.FixStupidBlizzPTRShit()
 
     FocusFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:SetHeight(20)
 
+
+
     local a, b, c, d, e = TargetFrame.TargetFrameContent.TargetFrameContentMain.LevelText:GetPoint()
-    TargetFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetPoint(a, b, c, d, -4)
+    TargetFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetPoint(a, b, c, d, -3)
 
     local a, b, c, d, e = FocusFrame.TargetFrameContent.TargetFrameContentMain.LevelText:GetPoint()
-    FocusFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetPoint(a, b, c, d, -4)
+    FocusFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetPoint(a, b, c, d, -3)
 
     -- HealthBarColorActive
     if not BetterBlizzFramesDB.playerFrameOCDTextureBypass then
         local a, b, c, d, e = PlayerLevelText:GetPoint()
-        PlayerLevelText:SetPoint(a,b,c,d,-29)
+        PlayerLevelText:SetPoint(a,b,c,d,-28)
         PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarArea.HealthBar.HealthBarMask:SetHeight(33)
         PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar.ManaBarMask:SetPoint("TOPLEFT", PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar, "TOPLEFT", -2, 3)
         PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar.ManaBarMask:SetHeight(17)
@@ -1056,14 +1061,6 @@ Frame:SetScript("OnEvent", function(...)
             BBF.MoveToTFrames()
             BBF.UpdateUserAuraSettings()
             BBF.HookPlayerAndTargetAuras()
-            local hidePartyName = BetterBlizzFramesDB.hidePartyNames
-            local hidePartyRole = BetterBlizzFramesDB.hidePartyRoles
-            if hidePartyName or hidePartyRole then
-                BBF.OnUpdateName()
-            end
-            if BetterBlizzFramesDB.removeRealmNames or (BetterBlizzFramesDB.partyArenaNames or BetterBlizzFramesDB.targetAndFocusArenaNames) then
-                BBF.AllCaller()
-            end
             if BetterBlizzFramesDB.playerFrameOCD then
                 BBF.FixStupidBlizzPTRShit()
             end
@@ -1074,10 +1071,11 @@ Frame:SetScript("OnEvent", function(...)
                 if BetterBlizzFramesDB.classColorFrames then
                     BBF.UpdateFrames()
                 end
-                BBF.SetCenteredNamesCaller()
+                if BetterBlizzFramesDB.centerNames then
+                    BBF.SetCenteredNamesCaller()
+                end
                 BBF.DarkmodeFrames()
                 BBF.PlayerReputationColor()
-                BBF.ClassColorPlayerName()
                 BBF.CheckForAuraBorders()
                 if BetterBlizzFramesDB.useMiniFocusFrame then
                     BBF.MiniFocusFrame()
