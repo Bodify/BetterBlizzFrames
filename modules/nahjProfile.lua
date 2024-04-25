@@ -1343,7 +1343,7 @@ function BBF.NahjProfile()
 	db.playerReputationClassColor = true
 	db.hidePartyNames = false
 	db.targetdeBuffFilterWatchList = false
-	db.castBarInterruptHighlighterEndTime = 80
+	db.castBarInterruptHighlighterEndTime = 0.5
 	db.combatIndicatorShowSwords = true
 	db.petCastBarXPos = 0
 	db.playerCastbarIconXPos = 0
@@ -1541,7 +1541,7 @@ function BBF.NahjProfile()
 	db.partyCastBarWidth = 100
 	db.hidePartyAggroHighlight = true
 	db.showArenaID = true
-	db.castBarInterruptHighlighterStartTime = 15
+	db.castBarInterruptHighlighterStartTime = 0.8
 	db.overShieldsCompactUnitFrames = true
 	db.targetBuffFilterLessMinite = false
 	db.frameAuraScale = 0
