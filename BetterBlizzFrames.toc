@@ -1,4 +1,4 @@
-## Interface: 100206
+## Interface: 100207
 ## Title: Better|cff00c0ffBlizz|rFrames
 ## Notes: More options for Blizzard frames. Aura filtering, Party castbars, Combat indicator, Dark Mode etc.
 ## SavedVariables: BetterBlizzFramesDB
@@ -6,6 +6,8 @@
 ## Author: Bodify
 
 embeds.xml
+
+init.lua
 
 modules\darkmode.lua
 modules\nameFix.lua

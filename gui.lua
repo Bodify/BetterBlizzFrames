@@ -1,6 +1,3 @@
-BetterBlizzFramesDB = BetterBlizzFramesDB or {}
-BBF = BBF or {}
-
 BetterBlizzFrames = nil
 local LibDD = LibStub:GetLibrary("LibUIDropDownMenu-4.0")
 --local anchorPoints = {"CENTER", "TOPLEFT", "TOP", "TOPRIGHT", "LEFT", "RIGHT", "BOTTOMLEFT", "BOTTOM", "BOTTOMRIGHT"}
@@ -295,7 +292,7 @@ end
 
 
 
-function CreateBorderedFrame(point, width, height, xPos, yPos, parent)
+local function CreateBorderedFrame(point, width, height, xPos, yPos, parent)
     local border = CreateFrame("Frame", nil, parent, "BackdropTemplate")
     border:SetBackdrop({
         bgFile = "Interface\\FriendsFrame\\UI-Toast-Background",
@@ -423,6 +420,17 @@ local function CreateSlider(parent, label, minValue, maxValue, stepValue, elemen
         end
     end)
 
+    slider:SetScript("OnMouseWheel", function(slider, delta)
+        if IsShiftKeyDown() then
+            local currentVal = slider:GetValue()
+            if delta > 0 then
+                slider:SetValue(currentVal + stepValue)
+            else
+                slider:SetValue(currentVal - stepValue)
+            end
+        end
+    end)
+
     slider:SetScript("OnValueChanged", function(self, value)
         if not BetterBlizzFramesDB.wasOnLoadingScreen then
             local textValue = value % 1 == 0 and tostring(math.floor(value)) or string.format("%.2f", value)
@@ -508,8 +516,10 @@ local function CreateSlider(parent, label, minValue, maxValue, stepValue, elemen
                     --
                 elseif element == "castBarInterruptHighlighterStartTime" then
                     BetterBlizzFramesDB.castBarInterruptHighlighterStartTime = value
+                    BBF.CastbarRecolorWidgets()
                 elseif element == "castBarInterruptHighlighterEndTime" then
                     BetterBlizzFramesDB.castBarInterruptHighlighterEndTime = value
+                    BBF.CastbarRecolorWidgets()
                 elseif element == "combatIndicatorScale" then
                     BetterBlizzFramesDB.combatIndicatorScale = value
                     BBF.CombatIndicatorCaller()
@@ -689,6 +699,7 @@ local function CreateSlider(parent, label, minValue, maxValue, stepValue, elemen
                 end
             end
         end)
+        
     return slider
 end
 
@@ -1264,6 +1275,16 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
         button.deleteButton = deleteButton
         table.insert(textLines, button)
         updateBackgroundColors()  -- Update background colors after adding a new entry
+
+        if npc.id then
+            button:SetScript("OnEnter", function(self)
+                GameTooltip:SetOwner(self, "ANCHOR_LEFT")
+                GameTooltip:SetSpellByID(npc.id)
+            end)
+            button:SetScript("OnLeave", function(self)
+                GameTooltip:Hide()
+            end)
+        end
     end
 
 
@@ -1669,14 +1690,23 @@ local function guiGeneralTab()
         playerReputationClassColor:Disable()
     end
 
-    local hidePlayerName = CreateCheckbox("hidePlayerName", "Hide Name", BetterBlizzFrames)
+    local hidePlayerName = CreateCheckbox("hidePlayerName", "Hide Name", BetterBlizzFrames, nil, BBF.UpdateNameSettings)
     hidePlayerName:SetPoint("TOPLEFT", playerReputationColor, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     hidePlayerName:HookScript("OnClick", function(self)
-        if self:GetChecked() then
-            PlayerFrame.name:SetText("")
-        else
-            PlayerFrame.name:SetText(GetUnitName("player"))
-        end
+        -- if self:GetChecked() then
+        --     PlayerFrame.name:SetAlpha(0)
+        --     if PlayerFrame.cleanName then
+        --         PlayerFrame.cleanName:SetAlpha(0)
+        --     end
+        -- else
+        --     PlayerFrame.name:SetAlpha(0)
+        --     if PlayerFrame.cleanName then
+        --         PlayerFrame.cleanName:SetAlpha(1)
+        --     else
+        --         PlayerFrame.name:SetAlpha(1)
+        --     end
+        -- end
+        BBF.SetCenteredNamesCaller()
     end)
 
     local hidePlayerPower = CreateCheckbox("hidePlayerPower", "Hide Resource/Power", BetterBlizzFrames, nil, BBF.HideFrames)
@@ -1819,7 +1849,18 @@ local function guiGeneralTab()
             if frame then
                 local nameFrame = frame.name
                 if nameFrame then
-                    BBF.updateTextForUnit(nameFrame, frame, BetterBlizzFramesDB.hidePartyNames, true)
+                    if self:GetChecked() then
+                        nameFrame:SetAlpha(0)
+                        if frame.cleanName then
+                            frame.cleanName:SetAlpha(0)
+                        end
+                    else
+                        if frame.cleanName then
+                            frame.cleanName:SetAlpha(1)
+                        else
+                            nameFrame:SetAlpha(1)
+                        end
+                    end
                 end
             end
         end
@@ -1832,8 +1873,8 @@ local function guiGeneralTab()
     local hidePartyRoles = CreateCheckbox("hidePartyRoles", "Hide Role Icons", BetterBlizzFrames)
     hidePartyRoles:SetPoint("TOPLEFT", hidePartyNames, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     hidePartyRoles:HookScript("OnClick", function()
-        --BBF.OnUpdateName()
-        --BBF.PartyNameChange()
+        BBF.OnUpdateName()
+        BBF.PartyNameChange()
     end)
     CreateTooltip(hidePartyRoles, "Hide the role icons from party frame|A:roleicon-tiny-dps:22:22|a|A:spec-role-dps:22:22|a")
 
@@ -1869,16 +1910,26 @@ local function guiGeneralTab()
     targetFrameClickthrough:SetPoint("TOPLEFT", targetFrameText, "BOTTOMLEFT", -4, pixelsOnFirstBox)
     CreateTooltip(targetFrameClickthrough, "Makes the TargetFrame clickthrough.\nYou can still hold shift to left/right click it\nwhile out of combat for trade/inspect etc.\n\nNOTE: You will NOT be able to click the frame\nat all during combat with this setting on.")
 
-    local hideTargetName = CreateCheckbox("hideTargetName", "Hide Name", BetterBlizzFrames)
+    local hideTargetName = CreateCheckbox("hideTargetName", "Hide Name", BetterBlizzFrames, nil, BBF.UpdateNameSettings)
     hideTargetName:SetPoint("TOPLEFT", targetFrameClickthrough, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(hideTargetName, "Hide the name of the target\n\nWill still show arena names if enabled.")
     hideTargetName:HookScript("OnClick", function(self)
-        if self:GetChecked() then
-            TargetFrame.name:SetText("")
-        else
-            TargetFrame.name:SetText(GetUnitName("target") or "test")
-        end
+        -- if self:GetChecked() then
+        --     TargetFrame.name:SetAlpha(0)
+        --     if TargetFrame.cleanName then
+        --         TargetFrame.cleanName:SetAlpha(0)
+        --     end
+        -- else
+        --     TargetFrame.name:SetAlpha(0)
+        --     if TargetFrame.cleanName then
+        --         TargetFrame.cleanName:SetAlpha(1)
+        --     else
+        --         TargetFrame.name:SetAlpha(1)
+        --     end
+        -- end
+        BBF.AllCaller()
     end)
+
 
     local hideTargetLeaderIcon = CreateCheckbox("hideTargetLeaderIcon", "Hide Leader Icon", BetterBlizzFrames, nil, BBF.HideFrames)
     hideTargetLeaderIcon:SetPoint("TOPLEFT", hideTargetName, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
@@ -1925,12 +1976,17 @@ local function guiGeneralTab()
     hideTargetToTName:SetPoint("LEFT", hideTargetToT.Text, "RIGHT", 0, 0)
     hideTargetToTName:HookScript("OnClick", function(self)
         if self:GetChecked() then
-            TargetFrame.totFrame.Name:SetText("")
+            TargetFrame.totFrame.Name:SetAlpha(0)
+            if TargetFrame.totFrame.cleanName then
+                TargetFrame.totFrame.cleanName:SetAlpha(0)
+            end
         else
-            TargetFrame.totFrame.Name:SetText(GetUnitName("targettarget") or "test")
+            TargetFrame.totFrame.Name:SetAlpha(0)
+            if TargetFrame.totFrame.cleanName then
+                TargetFrame.totFrame.cleanName:SetAlpha(1)
+            end
         end
     end)
-
 
     local hideTargetToTDebuffs = CreateCheckbox("hideTargetToTDebuffs", "Hide ToT Debuffs", BetterBlizzFrames, nil, BBF.HideFrames)
     hideTargetToTDebuffs:SetPoint("TOPLEFT", hideTargetToT, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
@@ -2002,11 +2058,11 @@ local function guiGeneralTab()
 
     local targetAndFocusArenaNames = CreateCheckbox("targetAndFocusArenaNames", "Target & Focus", BetterBlizzFrames)
     targetAndFocusArenaNames:SetPoint("TOPLEFT", arenaNamesText, "BOTTOMLEFT", -4, pixelsOnFirstBox)
-    CreateTooltip(targetAndFocusArenaNames, "Change Target & Focus name to arena ID and/or spec name during arena", "ANCHOR_LEFT")
+    CreateTooltipTwo(targetAndFocusArenaNames, "Arena Names","Change Target & Focus name to arena ID and/or spec name during arena", "Will enable a fake name. Because of this other addons like HealthBarColor's name stuff will not work properly.", "ANCHOR_LEFT")
 
     local partyArenaNames = CreateCheckbox("partyArenaNames", "Party", BetterBlizzFrames)
     partyArenaNames:SetPoint("LEFT", targetAndFocusArenaNames.text, "RIGHT", 0, 0)
-    CreateTooltip(partyArenaNames, "Change party frame names to party ID and/or spec name during arena", "ANCHOR_LEFT")
+    CreateTooltipTwo(partyArenaNames, "Arena Names", "Change party frame names to party ID and/or spec name during arena","Will enable a fake name. Because of this other addons like HealthBarColor's name stuff will not work properly.", "ANCHOR_LEFT")
 
     local showSpecName = CreateCheckbox("showSpecName", "Show Spec Name", BetterBlizzFrames)
     showSpecName:SetPoint("TOPLEFT", targetAndFocusArenaNames, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
@@ -2054,15 +2110,24 @@ local function guiGeneralTab()
     focusFrameClickthrough:SetPoint("TOPLEFT", focusFrameText, "BOTTOMLEFT", -4, pixelsOnFirstBox)
     CreateTooltip(focusFrameClickthrough, "Makes the FocusFrame clickthrough.\nYou can still hold shift to left/right click it\nwhile out of combat for trade/inspect etc.\n\nNOTE: You will NOT be able to click the frame\nat all during combat with this setting on.")
 
-    local hideFocusName = CreateCheckbox("hideFocusName", "Hide Name", BetterBlizzFrames)
+    local hideFocusName = CreateCheckbox("hideFocusName", "Hide Name", BetterBlizzFrames, nil, BBF.UpdateNameSettings)
     hideFocusName:SetPoint("TOPLEFT", focusFrameClickthrough, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(hideFocusName, "Hide the name of the focus\n\nWill still show arena names if enabled.")
     hideFocusName:HookScript("OnClick", function(self)
-        if self:GetChecked() then
-            FocusFrame.name:SetText("")
-        else
-            FocusFrame.name:SetText(GetUnitName("focus") or "test")
-        end
+        -- if self:GetChecked() then
+        --     FocusFrame.name:SetAlpha(0)
+        --     if FocusFrame.cleanName then
+        --         FocusFrame.cleanName:SetAlpha(0)
+        --     end
+        -- else
+        --     FocusFrame.name:SetAlpha(0)
+        --     if FocusFrame.cleanName then
+        --         FocusFrame.cleanName:SetAlpha(1)
+        --     else
+        --         FocusFrame.name:SetAlpha(1)
+        --     end
+        -- end
+        BBF.AllCaller()
     end)
 
     local hideFocusLeaderIcon = CreateCheckbox("hideFocusLeaderIcon", "Hide Leader Icon", BetterBlizzFrames, nil, BBF.HideFrames)
@@ -2111,9 +2176,15 @@ local function guiGeneralTab()
     hideFocusToTName:SetPoint("LEFT", hideFocusToT.Text, "RIGHT", 0, 0)
     hideFocusToTName:HookScript("OnClick", function(self)
         if self:GetChecked() then
-            FocusFrame.totFrame.Name:SetText("")
+            FocusFrame.totFrame.Name:SetAlpha(0)
+            if FocusFrame.totFrame.cleanName then
+                FocusFrame.totFrame.cleanName:SetAlpha(0)
+            end
         else
-            FocusFrame.totFrame.Name:SetText(GetUnitName("focustarget") or "test")
+            FocusFrame.totFrame.Name:SetAlpha(0)
+            if FocusFrame.totFrame.cleanName then
+                FocusFrame.totFrame.cleanName:SetAlpha(1)
+            end
         end
     end)
 
@@ -2174,11 +2245,11 @@ local function guiGeneralTab()
         UpdateCVar()
         BBF.UpdateFrames()
     end)
-    CreateTooltip(classColorFrames, "Class color Player, Target, Focus & Party frames.\n\nIf you want a more I recommend the addon HealthBarColor instead of this setting.")
+    CreateTooltipTwo(classColorFrames, "Class Color Healthbars", "Class color Player, Target, Focus & Party frames.", "If you want a more I recommend the addon HealthBarColor instead of this setting.")
 
     local classColorTargetNames = CreateCheckbox("classColorTargetNames", "Class Color Names", BetterBlizzFrames)
     classColorTargetNames:SetPoint("TOPLEFT", classColorFrames, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltip(classColorTargetNames, "Class color Player, Target & Focus Names.")
+    CreateTooltipTwo(classColorTargetNames, "Class Color Names","Class color Player, Target & Focus Names.", "Will enable a fake name. Because of this other addons like HealthBarColor's name stuff will not work properly.")
 
     local classColorLevelText = CreateCheckbox("classColorLevelText", "Level", classColorTargetNames)
     classColorLevelText:SetPoint("LEFT", classColorTargetNames.text, "RIGHT", 0, 0)
@@ -2209,14 +2280,17 @@ local function guiGeneralTab()
 
     local centerNames = CreateCheckbox("centerNames", "Center Name", BetterBlizzFrames, nil, BBF.SetCenteredNamesCaller)
     centerNames:SetPoint("TOPLEFT", classColorTargetNames, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltip(centerNames, "Center the name on Player, Target & Focus frames.")
+    CreateTooltipTwo(centerNames, "Center Names", "Center the name on Player, Target & Focus frames.", "Will enable a fake name. Because of this other addons like HealthBarColor's name stuff will not work properly.")
+    centerNames:HookScript("OnClick", function()
+        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+    end)
 
     local removeRealmNames = CreateCheckbox("removeRealmNames", "Hide Realm Name", BetterBlizzFrames)
     removeRealmNames:SetPoint("TOPLEFT", centerNames, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     removeRealmNames:HookScript("OnClick", function()
         --StaticPopup_Show("BBF_CONFIRM_RELOAD")
     end)
-    CreateTooltip(removeRealmNames, "Hide realm name and different realm indicator \"(*)\" from Target, Focus & Party frames.")
+    CreateTooltipTwo(removeRealmNames, "Hide Realm Indicator", "Hide realm name and different realm indicator \"(*)\" from Target, Focus & Party frames.", "Will enable a fake name. Because of this other addons like HealthBarColor's name stuff will not work properly.")
 
     local hidePrestigeBadge = CreateCheckbox("hidePrestigeBadge", "Hide Prestige Badge", BetterBlizzFrames, nil, BBF.HideFrames)
     hidePrestigeBadge:SetPoint("TOPLEFT", removeRealmNames, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
@@ -2951,7 +3025,7 @@ local function guiCastbars()
         BetterBlizzFramesDB.playerCastBarTimer = false
         BetterBlizzFramesDB.playerStaticCastbar = false
         BetterBlizzFramesDB.playerCastBarTimerCentered = false
-        PlayerCastingBarFrame.showShield = false
+        --PlayerCastingBarFrame.showShield = false
         BBF.CastBarTimerCaller()
         BBF.ShowPlayerCastBarIcon()
     end)

@@ -59,6 +59,7 @@ local specIDToNameShort = {
 local hidePartyNames
 local hidePartyRoles
 local removeRealmNames
+local classColorFrames
 local classColorTargetNames
 local showSpecName
 local shortArenaSpecName
@@ -68,16 +69,21 @@ local classColorTargetReputationTexture
 local classColorFocusReputationTexture
 local partyArenaNames
 local hideTargetName
-local hidePlayerName
 local hideFocusName
 local hideTargetToTName
 local hideFocusToTName
 local classColorLevelText
+local centerNames
+local playerFrameOCD
+local playerFrameOCDTextureBypass
+local hidePlayerName
+local isAddonLoaded = C_AddOns.IsAddOnLoaded
 
 function BBF.UpdateUserTargetSettings()
     hidePartyNames = BetterBlizzFramesDB.hidePartyNames
     hidePartyRoles = BetterBlizzFramesDB.hidePartyRoles
     removeRealmNames = BetterBlizzFramesDB.removeRealmNames
+    classColorFrames = BetterBlizzFramesDB.classColorFrames
     classColorTargetNames = BetterBlizzFramesDB.classColorTargetNames
     showSpecName = BetterBlizzFramesDB.showSpecName
     shortArenaSpecName = BetterBlizzFramesDB.shortArenaSpecName
@@ -86,200 +92,478 @@ function BBF.UpdateUserTargetSettings()
     classColorTargetReputationTexture = BetterBlizzFramesDB.classColorTargetReputationTexture
     classColorFocusReputationTexture = BetterBlizzFramesDB.classColorFocusReputationTexture
     partyArenaNames = BetterBlizzFramesDB.partyArenaNames
-    hidePlayerName = BetterBlizzFramesDB.hidePlayerName
     hideTargetName = BetterBlizzFramesDB.hideTargetName
     hideFocusName = BetterBlizzFramesDB.hideFocusName
     hideTargetToTName = BetterBlizzFramesDB.hideTargetToTName
     hideFocusToTName = BetterBlizzFramesDB.hideFocusToTName
     classColorLevelText = BetterBlizzFramesDB.classColorLevelText
+    centerNames = BetterBlizzFramesDB.centerNames
+    playerFrameOCD = BetterBlizzFramesDB.playerFrameOCD and not BetterBlizzFramesDB.playerFrameOCDTextureBypass
+    playerFrameOCDTextureBypass = BetterBlizzFramesDB.playerFrameOCDTextureBypass
+    hidePlayerName = BetterBlizzFramesDB.hidePlayerName
 end
 
--- Dictionary to store original points of frames
-local originalPoints = {}
-
--- General function to center and adjust a frame
-local function adjustFramePosition(frame, xOffset)
-    -- Ensure we do not re-enter or mess with protected frames
-    if frame.changing or frame:IsProtected() then return end
-    frame.changing = true
-
-    -- Capture the original point only once
-    if not originalPoints[frame] then
-        originalPoints[frame] = {frame:GetPoint()}
-    end
-
-    local a, b, c, d, e = unpack(originalPoints[frame])
-
-    -- Clearing all previous points
-    frame:ClearAllPoints()
-    frame:SetJustifyH("CENTER")
-    local playerFrameOCD = BetterBlizzFramesDB.playerFrameOCD and not BetterBlizzFramesDB.playerFrameOCDTextureBypass
-    local ocdAdjustment = (frame == (TargetFrame.name or FocusFrame.name) and playerFrameOCD) and 1 or 0
-
-    -- Setting the new point with customized x-offset
-    frame:SetPoint("TOP", b, "TOP", xOffset, e-ocdAdjustment)
-    if not BetterBlizzFramesDB.centerNames then
-        frame:ClearAllPoints()
-        frame:SetJustifyH("LEFT")
-        frame:SetPoint(a, b, c, d, e)
-    end
-
-    frame.changing = false
-end
-
-local function adjustFramePositionOCD(frame)
-    -- Ensure we do not re-enter or mess with protected frames
-    if frame.changing or frame:IsProtected() then return end
-    frame.changing = true
-
-    -- Capture the original point only once
-    if not originalPoints[frame] then
-        originalPoints[frame] = {frame:GetPoint()}
-    end
-
-    local a, b, c, d, e = unpack(originalPoints[frame])
-
-    -- Clearing all previous points
-    frame:ClearAllPoints()
-    local playerFrameOCD = BetterBlizzFramesDB.playerFrameOCD and not BetterBlizzFramesDB.playerFrameOCDTextureBypass
-    local ocdAdjustment = (frame == (TargetFrame.name or FocusFrame.name) and playerFrameOCD) and 1 or 0
-    -- Setting the new point with customized x-offset
-    frame:SetPoint(a, b, c, d, e-ocdAdjustment)
-
-    frame.changing = false
-end
-
-function BBF.ShiftNamesCuzOCD()
-    if not BetterBlizzFramesDB.centerNames then
-        adjustFramePositionOCD(TargetFrame.name)
-        adjustFramePositionOCD(FocusFrame.name)
-    else
-        adjustFramePosition(TargetFrame.name, -2)
-        adjustFramePosition(FocusFrame.name, -2)
-    end
-end
-
-local function updateArenaName(self, arenaIndex)
-    local specID = GetArenaOpponentSpec(arenaIndex)
-    local specName = specID and (shortArenaSpecName and specIDToNameShort[specID] or specIDToName[specID])
-
-    if specName then
-        local newName
-        if showSpecName and showArenaID then
-            newName = specName .. " " .. arenaIndex
-        elseif showSpecName then
-            newName = specName
-        elseif showArenaID then
-            newName = "Arena " .. arenaIndex
-        end
-
-        self:SetText(newName)
-    end
-end
-
--- Function to update the party member's name display
-local function updatePartyName(self, partyIndex)
-    local unit = "party" .. partyIndex
-    local specID
-    local Details = Details
-
-    -- Fetch specID if Details is available and updated
-    if Details and Details.realversion >= 134 then
-        local unitGUID = UnitGUID(unit)
-        specID = Details:GetSpecByGUID(unitGUID)
-    end
-
-    local specName = specID and (shortArenaSpecName and specIDToNameShort[specID] or specIDToName[specID])
-
-    -- Determine the new name to display based on settings
+local function CheckUnit(frame, unit, party, tot)
+    if isAddonLoaded("ClassicFrames") then return end
+    local originalNameObject = frame.name or frame.Name
     local newName
-    if not specName then
-        if showArenaID then
-            newName = "Party " .. partyIndex
+
+    local ogFontName, ogFontHeight, ogFontFlags = originalNameObject:GetFont()
+    if not frame.cleanName then
+        local a, p, a2, x, y = originalNameObject:GetPoint()
+        frame.cleanName = frame:CreateFontString(nil, "OVERLAY")
+        frame.cleanName:SetFont(ogFontName, ogFontHeight, ogFontFlags)
+        frame.cleanName:SetJustifyH(originalNameObject:GetJustifyH())
+        frame.cleanName:SetJustifyV(originalNameObject:GetJustifyV())
+        frame.cleanName:SetTextColor(originalNameObject:GetTextColor())
+        frame.cleanName:SetShadowColor(PlayerName:GetShadowColor())
+        frame.cleanName:SetShadowOffset(originalNameObject:GetShadowOffset())
+        frame.cleanName:SetShadowColor(originalNameObject:GetShadowColor())
+        frame.cleanName:SetWidth(originalNameObject:GetWidth() + 10)
+        frame.cleanName:SetHeight(originalNameObject:GetHeight())
+        frame.cleanName:SetWordWrap(false)
+
+        if centerNames and not party then
+            frame.cleanName:SetJustifyH("CENTER")
+            frame.cleanName:SetPoint("TOP", frame.HealthBar, "TOP", 2, 13)
+            if frame == TargetFrame.totFrame or frame == FocusFrame.totFrame then
+                frame.cleanName:SetJustifyH("CENTER")
+                local _,anchor,_,_,yPos = originalNameObject:GetPoint()
+                --frame.cleanName:ClearAllPoints()
+                frame.cleanName:SetPoint("TOP", anchor, "TOP", 52, yPos)
+            end
+        else
+            if party then
+                frame.cleanName:SetPoint(a, p, a2, x, y)
+            elseif frame == TargetFrame.totFrame or frame == FocusFrame.totFrame then
+                frame.cleanName:SetPoint(a, p, a2, x, y)
+                frame.cleanName:SetWidth(originalNameObject:GetWidth() + 10)
+                frame.cleanName:SetWordWrap(false)
+            else
+                --if playerFrameOCD then
+                    --frame.cleanName:SetPoint(a,p,a2,x,y-2)
+                --else
+                    frame.cleanName:SetPoint(a,p,a2,x,y)
+                --end
+            end
         end
-    else
-        if tot then
-            newName = "Party " .. partyIndex
-        elseif showSpecName and showArenaID then
-            newName = specName .. " " .. partyIndex
-        elseif showSpecName then
-            newName = specName
-        elseif showArenaID then
-            newName = "Party " .. partyIndex
+
+        for i = 1, 4 do
+            if frame == PartyFrame["MemberFrame" .. i] then
+                if hidePartyRoles then
+                    frame.cleanName:SetWidth(originalNameObject:GetWidth() + 13)
+                    --frame.cleanName:SetPoint(a, p, a2, x, y+4)
+                    frame.cleanName:SetWordWrap(false)
+                else
+                    frame.cleanName:SetWidth(originalNameObject:GetWidth() + 10)
+                    --frame.cleanName:SetPoint(a, p, a2, x, y+4)
+                    frame.cleanName:SetWordWrap(false)
+                end
+                break
+            end
         end
     end
 
-    self:SetText(newName)
-end
-
-local function updateTextForUnit(textElement, frame, hideName, isParty)
-    if textElement.changing or textElement:IsProtected() then return end
-    textElement.changing = true
-    if not frame then return end
-
-    local unit = frame.unit
-    local isPlayer = UnitIsPlayer(unit)
-    local isEnemy = UnitCanAttack("player", unit)
-
-    -- Early return if the name should be hidden
-    if hideName then
-        textElement:SetText("")
-        textElement.changing = false
+    if (party and hidePartyNames) and not partyArenaNames then
+        frame.cleanName:SetAlpha(0)
+        originalNameObject:SetAlpha(0)
         return
     end
 
-    -- Remove realm names for players
-    if removeRealmNames and isPlayer then
-        local currentText = GetUnitName(frame.unit, true)
-        local newName = string.gsub(currentText, "%s*%-(.*)", "")  -- Remove diff realm indicator (*) from the name
-        textElement:SetText(newName)
-    end
+    if UnitIsUnit(unit, "player") then
+        frame.cleanName:SetText(GetUnitName(unit, true))
+        frame.cleanName:SetAlpha(1)
+        originalNameObject:SetAlpha(0)
+        return
+    elseif UnitIsUnit(unit, "party1") then
+        local specID
+        local Details = Details
+        if Details and Details.realversion >= 134 then
+            local unitGUID = UnitGUID(unit)
+            specID = Details:GetSpecByGUID(unitGUID)
+        end
+        local specName = specID and specIDToName[specID]
+        if shortArenaSpecName then
+            specName = specID and specIDToNameShort[specID]
+        end
 
-    -- Set class colors for players
-    if classColorTargetNames and not isParty then
-        if isPlayer then
-            local _, class = UnitClass(unit)
-            local classColor = RAID_CLASS_COLORS[class]
-            if classColor then
-                textElement:SetTextColor(classColor.r, classColor.g, classColor.b)
-                if classColorLevelText and frame.LevelText then
-                    frame.LevelText:SetTextColor(classColor.r, classColor.g, classColor.b)
-                end
+        if not specName then
+            if showArenaID then
+                newName = "Party 1"
+            elseif removeRealmNames then
+                local name = (GetUnitName(unit, true))
+                newName = string.gsub(name, "%s*%(.*%)", "")
+            else
+                local name = (GetUnitName(unit, true))
+                newName = name
             end
         else
-            textElement:SetTextColor(1, 0.81960791349411, 0)
+            if tot then
+                newName = "Party 1"
+            elseif showSpecName and showArenaID then
+                newName = specName .. " 1"
+            elseif showSpecName then
+                newName = specName
+            elseif showArenaID then
+                newName = "Party 1"
+            end
+        end
+        frame.cleanName:SetText(newName)
+        frame.cleanName:SetAlpha(1)
+        originalNameObject:SetAlpha(0)
+        return
+
+    elseif UnitIsUnit(unit, "party2") then
+        local specID
+        local Details = Details
+        if Details and Details.realversion >= 134 then
+            local unitGUID = UnitGUID(unit)
+            specID = Details:GetSpecByGUID(unitGUID)
+        end
+        local specName = specID and specIDToName[specID]
+        if shortArenaSpecName then
+            specName = specID and specIDToNameShort[specID]
+        end
+
+        if not specName then
+            if showArenaID then
+                newName = "Party 2"
+            elseif removeRealmNames then
+                local name = (GetUnitName(unit, true))
+                newName = string.gsub(name, "%s*%(.*%)", "")
+            else
+                local name = (GetUnitName(unit, true))
+                newName = name
+            end
+        else
+            if tot then
+                newName = "Party 2"
+            elseif showSpecName and showArenaID then
+                newName = specName .. " 2"
+            elseif showSpecName then
+                newName = specName
+            elseif showArenaID then
+                newName = "Party 2"
+            end
+        end
+        frame.cleanName:SetText(newName)
+        frame.cleanName:SetAlpha(1)
+        originalNameObject:SetAlpha(0)
+        return
+
+    elseif UnitIsUnit(unit, "arena1") then
+        local specID = GetArenaOpponentSpec(1)
+        local specName = specID and specIDToName[specID]
+        if shortArenaSpecName then
+            specName = specID and specIDToNameShort[specID]
+        end
+
+        if specName then
+            if showSpecName and showArenaID then
+                newName = specName .. " 1"
+            elseif showSpecName then
+                newName = specName
+            elseif showArenaID then
+                newName = "Arena 1"
+            end
+            frame.cleanName:SetText(newName)
+            frame.cleanName:SetAlpha(1)
+            originalNameObject:SetAlpha(0)
+        end
+        return
+
+    elseif UnitIsUnit(unit, "arena2") then
+        local specID = GetArenaOpponentSpec(2)
+        local specName = specID and specIDToName[specID]
+        if shortArenaSpecName then
+            specName = specID and specIDToNameShort[specID]
+        end
+
+        if specName then
+            if showSpecName and showArenaID then
+                newName = specName .. " 2"
+            elseif showSpecName then
+                newName = specName
+            elseif showArenaID then
+                newName = "Arena 2"
+            end
+            frame.cleanName:SetText(newName)
+            frame.cleanName:SetAlpha(1)
+            originalNameObject:SetAlpha(0)
+        end
+        return
+
+    elseif UnitIsUnit(unit, "arena3") then
+        local specID = GetArenaOpponentSpec(3)
+        local specName = specID and specIDToName[specID]
+        if shortArenaSpecName then
+            specName = specID and specIDToNameShort[specID]
+        end
+
+        if specName then
+            if showSpecName and showArenaID then
+                newName = specName .. " 3"
+            elseif showSpecName then
+                newName = specName
+            elseif showArenaID then
+                newName = "Arena 3"
+            end
+            frame.cleanName:SetText(newName)
+            frame.cleanName:SetAlpha(1)
+            originalNameObject:SetAlpha(0)
+        end
+        return
+    else
+        if hidePartyNames and party then
+            frame.cleanName:SetAlpha(0)
+            originalNameObject:SetAlpha(0)
+            --originalNameObject:SetAlpha(1)
+            return
+        else
+            local isPlayer = UnitIsPlayer(unit)
+            local name = (GetUnitName(unit, true))
+
+            if removeRealmNames then
+                if isPlayer and name then
+                    newName = string.gsub(name, "%s*%(.*%)", "")
+                else
+                    newName = name
+                end
+            end
+            frame.cleanName:SetText(newName)
+            frame.cleanName:SetAlpha(1)
+            originalNameObject:SetAlpha(0)
+        end
+    end
+end
+
+local function ChangeName(frame, unit, party, tot)
+    if isAddonLoaded("ClassicFrames") then return end
+    local originalNameObject = frame.name or frame.Name
+    local name
+
+    if party then
+        name = GetUnitName(unit, true)
+    else
+        name = GetUnitName(unit, false)
+    end
+
+    local newName
+
+    local isPlayer = UnitIsPlayer(unit)
+    local isInArena = IsActiveBattlefieldArena() and ((partyArenaNames and party) or targetAndFocusArenaNames)
+    local ogFontName, ogFontHeight, ogFontFlags = originalNameObject:GetFont()
+
+    if not frame.cleanName then
+        local a, p, a2, x, y = originalNameObject:GetPoint()
+        frame.cleanName = frame:CreateFontString(nil, "OVERLAY")
+        frame.cleanName:SetFont(ogFontName, ogFontHeight, ogFontFlags)
+        frame.cleanName:SetJustifyH(originalNameObject:GetJustifyH())
+        frame.cleanName:SetJustifyV(originalNameObject:GetJustifyV())
+        frame.cleanName:SetTextColor(originalNameObject:GetTextColor())
+        frame.cleanName:SetShadowColor(PlayerName:GetShadowColor())
+        frame.cleanName:SetShadowOffset(originalNameObject:GetShadowOffset())
+        frame.cleanName:SetShadowColor(originalNameObject:GetShadowColor())
+        frame.cleanName:SetWidth(originalNameObject:GetWidth() + 10)
+        frame.cleanName:SetHeight(originalNameObject:GetHeight())
+        frame.cleanName:SetWordWrap(false)
+
+        if centerNames and not party then
+            frame.cleanName:SetJustifyH("CENTER")
+            frame.cleanName:SetPoint("TOP", frame.HealthBar, "TOP", 2, 13)
+            if frame == TargetFrame.totFrame or frame == FocusFrame.totFrame then
+                frame.cleanName:SetJustifyH("CENTER")
+                local _,anchor,_,_,yPos = originalNameObject:GetPoint()
+                --frame.cleanName:ClearAllPoints()
+                frame.cleanName:SetPoint("TOP", anchor, "TOP", 52, yPos)
+            end
+        else
+            if party then
+                frame.cleanName:SetPoint(a, p, a2, x, y)
+            elseif frame == TargetFrame.totFrame or frame == FocusFrame.totFrame then
+                frame.cleanName:SetPoint(a, p, a2, x, y)
+                frame.cleanName:SetWidth(originalNameObject:GetWidth() + 10)
+                frame.cleanName:SetWordWrap(false)
+            else
+                --if playerFrameOCD then
+                    --frame.cleanName:SetPoint(a,p,a2,x,y-2)
+                --else
+                    frame.cleanName:SetPoint(a,p,a2,x,y)
+                --end
+            end
+        end
+
+        for i = 1, 4 do
+            if frame == PartyFrame["MemberFrame" .. i] then
+                if hidePartyRoles then
+                    frame.cleanName:SetWidth(originalNameObject:GetWidth() + 13)
+                    --frame.cleanName:SetPoint(a, p, a2, x, y+4)
+                    frame.cleanName:SetWordWrap(false)
+                else
+                    frame.cleanName:SetWidth(originalNameObject:GetWidth() + 10)
+                    --frame.cleanName:SetPoint(a, p, a2, x, y+4)
+                    frame.cleanName:SetWordWrap(false)
+                end
+                break
+            end
         end
     end
 
-    -- Arena name handling
-    if (targetAndFocusArenaNames or partyArenaNames) and IsActiveBattlefieldArena() then
-        if isEnemy then
-            for i = 1, 3 do
-                if UnitIsUnit(unit, "arena" .. i) then
-                    updateArenaName(textElement, i)
-                    textElement.changing = false
-                    return
-                end
-            end
-        else
-            for i = 1, 2 do
-                if UnitIsUnit(unit, "party" .. i) then
-                    if (isParty and partyArenaNames) or (not isParty and targetAndFocusArenaNames) then
-                        updatePartyName(textElement, i)
-                        textElement.changing = false
-                        return
+    frame.cleanName:SetFont(ogFontName, ogFontHeight, ogFontFlags)
+
+    if (classColorTargetNames and not party) and isPlayer then
+        local _, class = UnitClass(unit)
+        if class then
+            local classColor = RAID_CLASS_COLORS[class]
+            if classColor then
+                frame.cleanName:SetTextColor(classColor.r, classColor.g, classColor.b)
+                originalNameObject:SetTextColor(classColor.r, classColor.g, classColor.b)
+                if classColorLevelText then
+                    if frame.LevelText then
+                        frame.LevelText:SetTextColor(classColor.r, classColor.g, classColor.b)
                     end
                 end
             end
         end
+    elseif (classColorTargetNames and not party) and not isPlayer then
+        frame.cleanName:SetTextColor(1, 0.81960791349411, 0, 1)
+        originalNameObject:SetTextColor(1, 0.81960791349411, 0, 1)
     end
 
-    textElement.changing = false
+    if isInArena then
+        if party then
+            if partyArenaNames then
+                CheckUnit(frame, unit, true)
+            else
+                if frame.cleanName then
+                    frame.cleanName:SetAlpha(0)
+                end
+                if hidePartyNames and party then
+                    originalNameObject:SetAlpha(0)
+                else
+                    originalNameObject:SetAlpha(1)
+                end
+            end
+        else
+            if targetAndFocusArenaNames then
+                CheckUnit(frame, unit, nil, tot)
+--[=[
+            else
+                if frame.cleanName then
+                    frame.cleanName:SetAlpha(0)
+                end
+                originalNameObject:SetAlpha(1)
+
+]=]
+
+            end
+        end
+    elseif hidePartyNames and party then
+        originalNameObject:SetAlpha(0)
+        if frame.cleanName then
+            frame.cleanName:SetAlpha(0)
+        end
+    elseif removeRealmNames then
+        if party then
+            if hidePartyNames then
+                frame.cleanName:SetAlpha(0)
+            else
+                if name then
+                    newName = string.gsub(name, "%-.*$", "")
+                end
+                frame.cleanName:SetText(newName)
+                frame.cleanName:SetAlpha(1)
+            end
+            originalNameObject:SetAlpha(0)
+        else
+            if isPlayer and name then
+                newName = string.gsub(name, "%s*%(.*%)", "")
+            else
+                newName = name
+            end
+            frame.cleanName:SetText(newName)
+            frame.cleanName:SetAlpha(1)
+            originalNameObject:SetAlpha(0)
+        end
+    else
+        if isPlayer then
+            frame.cleanName:SetText(name)
+            frame.cleanName:SetAlpha(1)
+        else
+            frame.cleanName:SetText(name)
+            frame.cleanName:SetAlpha(1)
+        end
+        if party then
+            if hidePartyNames then
+                originalNameObject:SetAlpha(0)
+            else
+                originalNameObject:SetAlpha(1)
+            end
+            frame.cleanName:SetAlpha(0)
+        else
+            originalNameObject:SetAlpha(0)
+        end
+    end
+    if (frame == TargetFrame.TargetFrameContent.TargetFrameContentMain and hideTargetName) or
+    (frame == FocusFrame.TargetFrameContent.TargetFrameContentMain and hideFocusName) or
+    (frame == FocusFrame.totFrame and hideFocusToTName) or
+    (frame == TargetFrame.totFrame and hideTargetToTName) then
+        originalNameObject:SetAlpha(0)
+        if isInArena then
+            if not party then
+                frame.cleanName:SetAlpha(1)
+            end
+        else
+            frame.cleanName:SetAlpha(0)
+        end
+    end
 end
 
-BBF.updateTextForUnit = updateTextForUnit
+function BBF.PartyNameChange()
+    if CompactPartyFrame:IsVisible() then
+        local groupMembers = GetNumGroupMembers()
+        for i = 1, groupMembers do
+            local memberFrame = _G["CompactPartyFrameMember" .. i]
+            if memberFrame and memberFrame.displayedUnit then
+                ChangeName(memberFrame, memberFrame.displayedUnit, true)
+            end
+        end
+    else
+        if PartyFrame:IsVisible() then ---PartyFrame:IsVisible() always true?
+            for i = 1, 4 do
+                local memberFrame = PartyFrame["MemberFrame" .. i]
+                if memberFrame and memberFrame.unit then
+                    ChangeName(memberFrame, memberFrame.unit, true)
+                end
+            end
+        end
+    end
+end
 
-local function RecolorReputationGlow()
+local function TargetAndFocusNameChange()
+    if isAddonLoaded("ClassicFrames") then return end
+    --if BetterBlizzFramesDB.targetAndFocusArenaNames or BetterBlizzFramesDB.removeRealmNames or BetterBlizzFramesDB.classColorTargetNames then
+        ChangeName(TargetFrame.TargetFrameContent.TargetFrameContentMain, "target")
+        ChangeName(FocusFrame.TargetFrameContent.TargetFrameContentMain, "focus")
+        ChangeName(TargetFrame.totFrame, "targettarget", nil, true)
+        ChangeName(FocusFrame.totFrame, "focustarget", nil, true)
+    --end
+end
+
+local UpdatePartyNames = CreateFrame("Frame")
+UpdatePartyNames:RegisterEvent("GROUP_ROSTER_UPDATE")
+UpdatePartyNames:RegisterEvent("PLAYER_ENTERING_WORLD")
+UpdatePartyNames:RegisterEvent("PLAYER_ENTERING_BATTLEGROUND")
+UpdatePartyNames:SetScript("OnEvent", function(self, event, ...)
+    for delay = 0, 8 do
+        C_Timer.After(delay, BBF.PartyNameChange)
+    end
+end)
+
+local function checkWeight()
+    if isAddonLoaded("ClassicFrames") then return end
+    TargetAndFocusNameChange()
+    BBF.PartyNameChange()
     if classColorTargetReputationTexture then
         BBF.ClassColorReputation(TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor, "target")
     end
@@ -292,81 +576,317 @@ local UpdateTargetAndFocusNames = CreateFrame("Frame")
 UpdateTargetAndFocusNames:RegisterEvent("PLAYER_TARGET_CHANGED")
 UpdateTargetAndFocusNames:RegisterEvent("PLAYER_FOCUS_CHANGED")
 UpdateTargetAndFocusNames:SetScript("OnEvent", function(self, event, ...)
-    RecolorReputationGlow()
+    if isAddonLoaded("ClassicFrames") then return end
+    checkWeight()
 end)
 
---bodify fix class color names toggle
---hide name, hide tot names
+function BBF.ClassColorPlayerName()
+    if isAddonLoaded("ClassicFrames") then return end
+    local frame = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain
+    if classColorTargetNames then
+        if not coloredName then
+            local _, class = UnitClass("player")
+            if class then
+                local classColor = RAID_CLASS_COLORS[class]
+                if classColor then
+                    if frame.cleanName then
+                        frame.cleanName:SetTextColor(classColor.r, classColor.g, classColor.b)
+                    end
+                    PlayerName:SetTextColor(classColor.r, classColor.g, classColor.b)
+                    if classColorLevelText then
+                        PlayerLevelText:SetTextColor(classColor.r, classColor.g, classColor.b)
+                    else
+                        PlayerLevelText:SetTextColor(1, 0.81960791349411, 0, 1)
+                    end
+                end
+            end
+        end
+    else
+        PlayerName:SetTextColor(1, 0.81960791349411, 0)
+        PlayerLevelText:SetTextColor(1, 0.81960791349411, 0)
+        if frame.cleanName then
+            frame.cleanName:SetTextColor(1, 0.81960791349411, 0)
+        end
+    end
+end
 
--- hooksecurefunc("PlayerFrame_UpdatePlayerNameTextAnchor", function()
---     print("PlayerFrame_UpdatePlayerNameTextAnchor has been called")
--- end)
+local function ClassColorNames(name, unit, level)
+    if classColorTargetNames then
+        local _, class = UnitClass(unit)
+        local isPlayer = UnitIsPlayer(unit)
+        if class and isPlayer then
+            local classColor = RAID_CLASS_COLORS[class]
+            if classColor then
+                if name then
+                    name:SetTextColor(classColor.r, classColor.g, classColor.b)
+                end
+                if classColorLevelText then
+                    if level then
+                        level:SetTextColor(classColor.r, classColor.g, classColor.b)
+                    end
+                else
+                    if level then
+                        level:SetTextColor(1, 0.81960791349411, 0, 1)
+                    end
+                end
+            end
+        else
+            if name then
+                name:SetTextColor(1, 0.81960791349411, 0)
+            end
+        end
+    else
+        if name then
+            name:SetTextColor(1, 0.81960791349411, 0)
+        end
+        if level then
+            level:SetTextColor(1, 0.81960791349411, 0, 1)
+        end
+    end
+end
 
-local centerNameHooked
+function BBF.ClassColorNamesCaller()
+    if isAddonLoaded("ClassicFrames") then return end
+    ClassColorNames(PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.cleanName, "player", PlayerLevelText)
+    ClassColorNames(TargetFrame.TargetFrameContent.TargetFrameContentMain.cleanName, "target", TargetFrame.TargetFrameContent.TargetFrameContentMain.LevelText)
+    ClassColorNames(FocusFrame.TargetFrameContent.TargetFrameContentMain.cleanName, "focus", FocusFrame.TargetFrameContent.TargetFrameContentMain.LevelText)
+    ClassColorNames(TargetFrame.totFrame.cleanName, "targettarget")
+    ClassColorNames(TargetFrame.totFrame.cleanName, "focustarget")
+    ClassColorNames(TargetFrame.totFrame.Name, "targettarget")
+    ClassColorNames(TargetFrame.totFrame.Name, "focustarget")
+end
+
+local function UpdateToTName(frame, unit)
+    if isAddonLoaded("ClassicFrames") then return end
+    local isPlayer = UnitIsPlayer(unit)
+    local name = GetUnitName(unit, false)
+    local newName = name
+    local isInArena = IsActiveBattlefieldArena()
+    if targetAndFocusArenaNames and isInArena then
+        CheckUnit(frame, unit, nil, true)
+        return
+    elseif isPlayer and removeRealmNames then
+        newName = string.gsub(name, "%s*%(.*%)", "")
+        if frame.cleanName then
+            frame.cleanName:SetText(newName)
+            frame.name:SetAlpha(0)
+        end
+    else
+        if frame.cleanName then
+            frame.cleanName:SetText(name)
+            frame.name:SetAlpha(0)
+        end
+    end
+end
+
+local frame = CreateFrame("Frame")
+frame:RegisterEvent("UNIT_TARGET")
+frame:RegisterEvent("UNIT_FACTION")
+frame:SetScript("OnEvent", function(self, event, unit)
+    if isAddonLoaded("ClassicFrames") then return end
+    UpdateToTName(TargetFrame.totFrame, "targettarget")
+    UpdateToTName(FocusFrame.totFrame, "focustarget")
+--[[
+    if classColorFrames then
+        BBF.UpdateFrameColor(TargetFrame.totFrame.HealthBar, "targettarget")
+        BBF.UpdateFrameColor(FocusFrame.totFrame.HealthBar, "focustarget")
+        BBF.UpdateToTColor()
+    end
+
+]]
+
+    if classColorTargetNames then
+        ClassColorNames(TargetFrame.totFrame.Name, "targettarget")
+        ClassColorNames(TargetFrame.totFrame.cleanName, "targettarget")
+        ClassColorNames(FocusFrame.totFrame.Name, "focustarget")
+        ClassColorNames(FocusFrame.totFrame.cleanName, "focustarget")
+    end
+end)
+
+
+function BBF.AllCaller()
+    if isAddonLoaded("ClassicFrames") then return end
+    BBF.PartyNameChange()
+    TargetAndFocusNameChange()
+    BBF.OnUpdateName()
+    -- if hidePartyNames or hidePartyRoles then
+    --     BBF.OnUpdateName()
+    -- end
+end
+
+local function RemoveRealmName(frame)
+    if isAddonLoaded("ClassicFrames") then return end
+    local name = GetUnitName(frame.unit)
+    if name then
+        name = string.gsub(name, " %(%*%)$", "")
+        if frame.cleanName then
+            frame.cleanName:SetText(name)
+        end
+    end
+end
+
+local function RunOnUpdateName(frame)
+    -- if isAddonLoaded("ClassicFrames") then return end
+    -- if hidePartyNames or hidePartyRoles then
+    --     BBF.OnUpdateName()
+    -- end
+    -- if not frame or frame:IsForbidden() then return end
+    -- local isNameplate = frame.unit and frame.unit:find("nameplate")
+
+    -- if removeRealmNames and not isNameplate then
+    --     RemoveRealmName(frame)
+    -- end
+end
+
+function BBF.OnUpdateName()
+    if isAddonLoaded("ClassicFrames") then return end
+    local defaultPartyFrame = PartyFrame
+
+    local groupMembers = GetNumGroupMembers()
+    for i = 1, groupMembers do
+        local compactPartyMember = _G["CompactPartyFrameMember" .. i]
+        local roleIcon = _G["CompactPartyFrameMember" .. i .. "RoleIcon"]
+        local defaultMember = defaultPartyFrame["MemberFrame" .. i]
+
+        if compactPartyMember and compactPartyMember:IsShown() then
+            -- Hide the role icon if hidePartyRoles is true
+            if hidePartyRoles and roleIcon then
+                roleIcon:SetAlpha(0)
+            else
+                roleIcon:SetAlpha(1)
+            end
+        else
+            if defaultMember then --will always be true find fix bodify
+                if (hidePartyNames and defaultMember.name) and not partyArenaNames then
+                    -- defaultMember.Name:SetAlpha(0)
+                    -- if defaultMember.cleanName then
+                    --     defaultMember.cleanName:SetAlpha(0)
+                    -- end
+                else
+                    defaultMember.Name:SetAlpha(0)
+                    if defaultMember.cleanName then
+                        defaultMember.cleanName:SetAlpha(1)
+                    end
+                end
+
+                if hidePartyRoles and defaultMember.PartyMemberOverlay.RoleIcon then
+                    defaultMember.PartyMemberOverlay.RoleIcon:SetAlpha(0)
+                else
+                    defaultMember.PartyMemberOverlay.RoleIcon:SetAlpha(1)
+                end
+            end
+        end
+    end
+end
+
+function BBF.CenteredFrameNames(frame, unit)
+    if isAddonLoaded("ClassicFrames") then return end
+    local originalNameObject = frame.Name
+
+    local a, b, c, x, y = originalNameObject:GetPoint()
+    originalNameObject:SetAlpha(0)
+    if centerNames then
+        if not frame.cleanName then
+            ChangeName(frame, unit)
+        end
+        frame.cleanName:SetJustifyH("CENTER")
+        frame.cleanName:SetJustifyV(originalNameObject:GetJustifyV())
+        frame.cleanName:SetWidth(originalNameObject:GetWidth())
+        --frame.cleanName:ClearAllPoints()
+        frame.cleanName:SetPoint("TOP", frame.HealthBar, "TOP", 2, 14)
+        frame.cleanName:SetAlpha(1)
+    else
+        if frame.cleanName then
+            frame.cleanName:SetJustifyH(originalNameObject:GetJustifyH())
+            frame.cleanName:SetJustifyV(originalNameObject:GetJustifyV())
+            --frame.cleanName:SetTextColor(1, 0.81960791349411, 0)
+            frame.cleanName:SetShadowColor(originalNameObject:GetShadowColor())
+            frame.cleanName:SetShadowOffset(originalNameObject:GetShadowOffset())
+            frame.cleanName:SetShadowColor(originalNameObject:GetShadowColor())
+            frame.cleanName:SetWidth(originalNameObject:GetWidth())
+            --frame.cleanName:ClearAllPoints()
+            if playerFrameOCD then
+                frame.cleanName:SetPoint(a,b,c,x,y-1.5)
+            else
+                if playerFrameOCDTextureBypass then
+                    frame.cleanName:SetPoint(a,b,c,x,y-1)
+                else
+                    frame.cleanName:SetPoint(a,b,c,x,y)
+                end
+            end
+            frame.cleanName:SetAlpha(1)
+        end
+        --frame.cleanName:SetAlpha(0)
+        --originalNameObject:SetAlpha(1)
+    end
+end
+
+
+
+local function CenteredPlayerName()
+    if isAddonLoaded("ClassicFrames") then return end
+    local frame = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain
+    if centerNames then
+        if hidePlayerName then
+            PlayerName:SetAlpha(0)
+            if frame.cleanName then
+                frame.cleanName:SetAlpha(0)
+            end
+            return
+        end
+        PlayerName:SetAlpha(0)
+        if not frame.cleanName then
+            frame.cleanName = frame:CreateFontString(nil, "OVERLAY")
+            frame.cleanName:SetFont(PlayerName:GetFont())
+            frame.cleanName:SetJustifyH("CENTER")
+            frame.cleanName:SetJustifyV(PlayerName:GetJustifyV())
+            frame.cleanName:SetText(GetUnitName("player", true))
+            --frame.cleanName:ClearAllPoints()
+            if playerFrameOCD then
+                frame.cleanName:SetPoint("TOP", frame.HealthBarArea.HealthBar, "TOP", 0, 13.5)
+            else
+                frame.cleanName:SetPoint("TOP", frame.HealthBarArea.HealthBar, "TOP", 0, 14.5)
+            end
+            --frame.cleanName:SetTextColor(1, 0.81960791349411, 0)
+            frame.cleanName:SetShadowColor(PlayerName:GetShadowColor())
+            frame.cleanName:SetShadowOffset(PlayerName:GetShadowOffset())
+            frame.cleanName:SetShadowColor(PlayerName:GetShadowColor())
+            frame.cleanName:SetHeight(PlayerName:GetHeight())
+            frame.cleanName:SetWidth(PlayerName:GetWidth())
+        end
+        frame.cleanName:SetAlpha(1)
+        ClassColorNames(frame.cleanName, "player", PlayerLevelText)
+    else
+        if hidePlayerName then
+            PlayerName:SetAlpha(0)
+            if frame.cleanName then
+                frame.cleanName:SetAlpha(0)
+            end
+        else
+            PlayerName:SetAlpha(1)
+            if frame.cleanName then
+                frame.cleanName:SetAlpha(0)
+            end
+        end
+    end
+end
+
 function BBF.SetCenteredNamesCaller()
-    if not centerNameHooked then
-        hooksecurefunc(PlayerFrame.name, "SetPoint", function(self)
-            adjustFramePosition(self, 32)
-        end)
-        centerNameHooked = true
+    if isAddonLoaded("ClassicFrames") then
+        return
     end
-
-    adjustFramePosition(PlayerFrame.name, 32)
-    adjustFramePosition(TargetFrame.name, -2)
-    adjustFramePosition(FocusFrame.name, -2)
-    adjustFramePosition(TargetFrame.totFrame.Name, 55)
-    adjustFramePosition(FocusFrame.totFrame.Name, 55)
+    
+    BBF.UpdateUserTargetSettings()
+    CenteredPlayerName()
+    --BBF.CenteredFrameNames(PlayerFrame.PlayerFrameContent.PlayerFrameContentMain, "player")
+    BBF.CenteredFrameNames(TargetFrame.TargetFrameContent.TargetFrameContentMain, "target")
+    BBF.CenteredFrameNames(FocusFrame.TargetFrameContent.TargetFrameContentMain, "focus")
 end
 
-hooksecurefunc("CompactUnitFrame_UpdateName", function(frame)
-    if not frame or not frame.unit then return end
-    local isNameplate = frame.unit:find("nameplate")
-    if isNameplate then return end
+-- function BBF.ChangeNameFocus()
+--     ChangeName(FocusFrame.TargetFrameContent.TargetFrameContentMain, "focus")
+-- end
 
-    updateTextForUnit(frame.name, frame, hidePartyNames, true)
+hooksecurefunc("CompactUnitFrame_UpdateName", RunOnUpdateName)
 
-    if hidePartyRoles then
-        if frame.roleIcon then
-            frame.roleIcon:SetAlpha(0)
-        end
-    end
-end)
-
-hooksecurefunc("CompactUnitFrame_UpdateRoleIcon", function(frame)
-    if not frame then return end
-    if hidePartyRoles then
-        if frame.roleIcon then
-            frame.roleIcon:SetAlpha(0)
-        end
-    end
-end)
-
-
-hooksecurefunc(TargetFrame.name, "SetText", function(self)
-    updateTextForUnit(self, TargetFrame, hideTargetName)
-end)
-
-hooksecurefunc(PlayerFrame.name, "SetText", function(self)
-    updateTextForUnit(self, PlayerFrame, hidePlayerName)
-end)
-
-hooksecurefunc(FocusFrame.name, "SetText", function(self)
-    updateTextForUnit(self, FocusFrame, hideFocusName)
-end)
-
-hooksecurefunc(TargetFrame.totFrame.Name, "SetText", function(self)
-    updateTextForUnit(self, TargetFrameToT, hideTargetToTName)
-end)
-
-hooksecurefunc(FocusFrame.totFrame.Name, "SetText", function(self)
-    updateTextForUnit(self, FocusFrameToT, hideFocusToTName)
-end)
-
-for i = 1, 4 do
-    local memberFrame = PartyFrame["MemberFrame" .. i]
-    local memberFrameName = memberFrame.Name
-
-    hooksecurefunc(memberFrameName, "SetText", function(self, text)
-        updateTextForUnit(self, memberFrame, hidePartyNames, true)
-    end)
-end
+-- i cba this whole fucking module is fkn aids causing taint and shit idek i cba i cba i cba

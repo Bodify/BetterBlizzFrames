@@ -1,7 +1,3 @@
--- Setting up the database
-BetterBlizzFramesDB = BetterBlizzFramesDB or {}
-BBF = BBF or {}
-
 local darkModeUi
 local darkModeUiAura
 local darkModeColor = 1

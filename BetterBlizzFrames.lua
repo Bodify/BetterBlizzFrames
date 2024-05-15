@@ -6,10 +6,11 @@ BBF = BBF or {}
 -- Things are getting more messy need a lot of cleaning lol
 
 local addonVersion = "1.00" --too afraid to to touch for now
-local addonUpdates = "1.3.9"
+local addonUpdates = "1.3.9g"
 local sendUpdate = true
 BBF.VersionNumber = addonUpdates
 BBF.variablesLoaded = false
+local isAddonLoaded = C_AddOns.IsAddOnLoaded
 
 local defaultSettings = {
     version = addonVersion,
@@ -308,7 +309,9 @@ local function FetchAndSaveValuesOnFirstLogin()
 
 
     C_Timer.After(5, function()
+        if not C_AddOns.IsAddOnLoaded("SkillCapped") then
         DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|aBetter|cff00c0ffBlizz|rFrames first run. Thank you for trying out my AddOn. Access settings with /bbf")
+        end
         BetterBlizzFramesDB.hasSaved = true
     end)
 end
@@ -379,17 +382,23 @@ StaticPopupDialogs["CONFIRM_RESET_BETTERBLIZZFRAMESDB"] = {
 -- Update message
 local function SendUpdateMessage()
     if sendUpdate then
-        C_Timer.After(7, function()
-            --StaticPopup_Show("BBF_NEW_VERSION")
-            DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames news:")
-            DEFAULT_CHAT_FRAME:AddMessage("|A:QuestNormal:16:16|a New Settings:")
-            DEFAULT_CHAT_FRAME:AddMessage("   - Castbar Edge Highlighter now uses seconds instead of percentages.")
-            DEFAULT_CHAT_FRAME:AddMessage("   - Added \"Hide Player Guide Flag\" setting.")
-        
-            DEFAULT_CHAT_FRAME:AddMessage("|A:Professions-Crafting-Orders-Icon:16:16|a Bugfixes:")
-            DEFAULT_CHAT_FRAME:AddMessage("   Fixed Overshields for PlayerFrame/TargetFrame etc after Blizzard change.")
-            DEFAULT_CHAT_FRAME:AddMessage("   A lot of behind the scenes Name logic changed. Should now work better and be happier with other addons.")
-        end)
+        if not BetterBlizzFramesDB.scStart then
+            C_Timer.After(7, function()
+                --StaticPopup_Show("BBF_NEW_VERSION")
+                DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames news:")
+                -- DEFAULT_CHAT_FRAME:AddMessage("|A:QuestNormal:16:16|a New Stuff:")
+                -- DEFAULT_CHAT_FRAME:AddMessage("   - Made BBF semi-compatible with ClassicFrames (most name settings wont work yet, might add support later if I get time).")
+                --DEFAULT_CHAT_FRAME:AddMessage("   - Added \"Hide Player Guide Flag\" setting.")
+
+                DEFAULT_CHAT_FRAME:AddMessage("|A:Professions-Crafting-Orders-Icon:16:16|a Bugfixes:")
+                DEFAULT_CHAT_FRAME:AddMessage("   Party Castbar testing now works better and when alone in party.")
+                DEFAULT_CHAT_FRAME:AddMessage("   Maybe other stuff i lowkey forget >_> pls report bugs.")
+                -- DEFAULT_CHAT_FRAME:AddMessage("   Reverted all name logic to 1.3.8b version. It's old and not optimal but at least it doesn't taint(?). I will never touch this again until TWW >_>")
+                --DEFAULT_CHAT_FRAME:AddMessage("   A lot of behind the scenes Name logic changed. Should now work better and be happier with other addons.")
+            end)
+        else
+            BetterBlizzFramesDB.scStart = nil
+        end
     end
 end
 
@@ -718,7 +727,7 @@ local function RepositionIndividualComboPoints(comboPointFrame, positions, scale
 end
 
 -- Function to setup combo points for any class
-function SetupClassComboPoints(comboPointFrame, positions, expectedClass, scale, xPos, yPos, changeDrawLayer)
+local function SetupClassComboPoints(comboPointFrame, positions, expectedClass, scale, xPos, yPos, changeDrawLayer)
     -- Reposition individual combo points based on their x position
 
 
@@ -853,6 +862,9 @@ function BBF.MiniFocusFrame()
         FocusFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:SetAlpha(0)
 
         --Name
+        -- if not FocusFrame.TargetFrameContent.TargetFrameContentMain.cleanName then
+        --     BBF.ChangeNameFocus()
+        -- end
         FocusFrame.TargetFrameContent.TargetFrameContentMain.cleanName:SetScale(1.4)
         FocusFrame.TargetFrameContent.TargetFrameContentMain.cleanName:ClearAllPoints()
         FocusFrame.TargetFrameContent.TargetFrameContentMain.cleanName:SetJustifyH("RIGHT")
@@ -918,16 +930,18 @@ end
 
 function BBF.FixStupidBlizzPTRShit()
     if InCombatLockdown() then return end
+    if isAddonLoaded("ClassicFrames") then return end
     -- For god knows what reason PTR has a gap between Portrait and PlayerFrame. This fixes it + other gaps.
     --PlayerFrame.PlayerFrameContainer.PlayerPortrait:SetScale(1.02)
     PlayerFrame.PlayerFrameContainer.PlayerPortrait:SetSize(64,64)
     PlayerFrame.PlayerFrameContainer.PlayerPortrait:SetPoint("TOPLEFT", PlayerFrame.PlayerFrameContainer, "TOPLEFT", 22, -17)
     PlayerFrame.PlayerFrameContainer.PlayerPortraitMask:SetScale(1.01)
-    PlayerFrame.PlayerFrameContainer.PlayerPortraitMask:SetSize(64,64)
-    PlayerFrame.PlayerFrameContainer.PlayerPortraitMask:SetPoint("TOPLEFT", PlayerFrame.PlayerFrameContainer, "TOPLEFT", 21, -16)
+    PlayerFrame.PlayerFrameContainer.PlayerPortraitMask:SetSize(63,63)
+    PlayerFrame.PlayerFrameContainer.PlayerPortraitMask:SetPoint("TOPLEFT", PlayerFrame.PlayerFrameContainer, "TOPLEFT", 22, -16)
 
     local a, b, c, d, e = TargetFrame.totFrame.Portrait:GetPoint()
     TargetFrame.totFrame.Portrait:SetPoint(a, b, c, 6, -4)
+    TargetFrame.TargetFrameContainer.Portrait:SetSize(57,57)
 
     local a, b, c, d, e = FocusFrame.totFrame.Portrait:GetPoint()
     FocusFrame.totFrame.Portrait:SetPoint(a, b, c, 6, -4)
@@ -939,7 +953,7 @@ function BBF.FixStupidBlizzPTRShit()
         end
     end
 
-    BBF.ShiftNamesCuzOCD()
+    --BBF.ShiftNamesCuzOCD()
 
     local a, b, c, d, e = TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:GetPoint()
     TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:SetPoint(a, b, c, d, -24)
@@ -950,6 +964,7 @@ function BBF.FixStupidBlizzPTRShit()
     TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:SetHeight(20)
 
     FocusFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:SetHeight(20)
+    
 
 
 
@@ -1061,6 +1076,17 @@ Frame:SetScript("OnEvent", function(...)
             BBF.MoveToTFrames()
             BBF.UpdateUserAuraSettings()
             BBF.HookPlayerAndTargetAuras()
+
+
+            local hidePartyName = BetterBlizzFramesDB.hidePartyNames
+            local hidePartyRole = BetterBlizzFramesDB.hidePartyRoles
+            if hidePartyName or hidePartyRole then
+                BBF.OnUpdateName()
+            end
+            if BetterBlizzFramesDB.removeRealmNames or (BetterBlizzFramesDB.partyArenaNames or BetterBlizzFramesDB.targetAndFocusArenaNames) then
+                BBF.AllCaller()
+            end
+
             if BetterBlizzFramesDB.playerFrameOCD then
                 BBF.FixStupidBlizzPTRShit()
             end
@@ -1071,23 +1097,24 @@ Frame:SetScript("OnEvent", function(...)
                 if BetterBlizzFramesDB.classColorFrames then
                     BBF.UpdateFrames()
                 end
-                if BetterBlizzFramesDB.centerNames then
+                if not isAddonLoaded("ClassicFrames") then
                     BBF.SetCenteredNamesCaller()
                 end
                 BBF.DarkmodeFrames()
                 BBF.PlayerReputationColor()
+                BBF.ClassColorPlayerName()
                 BBF.CheckForAuraBorders()
                 if BetterBlizzFramesDB.useMiniFocusFrame then
                     BBF.MiniFocusFrame()
                 end
                 BBF.UpdateCastbars()
                 BBF.ChangeLossOfControlScale()
+                BBF.ChangeCastbarSizes()
             end)
             BBF.HideFrames()
             if BetterBlizzFramesDB.partyCastbars then
                 BBF.CreateCastbars()
             end
-            BBF.ChangeCastbarSizes()
 
         else
             C_Timer.After(1, function()
@@ -1170,5 +1197,11 @@ PlayerEnteringWorld:SetScript("OnEvent", function()
     BBF.DarkmodeFrames()
     BBF.ClickthroughFrames()
     BBF.CheckForAuraBorders()
+    if not isAddonLoaded("ClassicFrames") then
+        --BBF.HookNameChangeStuff()
+        TargetFrame:SetFrameStrata("MEDIUM")
+        TargetFrameSpellBar:SetFrameStrata("HIGH")
+        FocusFrameSpellBar:SetFrameStrata("HIGH")
+    end
 end)
 PlayerEnteringWorld:RegisterEvent("PLAYER_ENTERING_WORLD")

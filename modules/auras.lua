@@ -1,6 +1,3 @@
-BetterBlizzFramesDB = BetterBlizzFramesDB or {}
-BBF = BBF or {}
-
 local function sum(t)
     local sum = 0
     for k,v in pairs(t) do

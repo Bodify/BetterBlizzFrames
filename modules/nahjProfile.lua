@@ -1,7 +1,3 @@
--- Setting up the database
-BetterBlizzFramesDB = BetterBlizzFramesDB or {}
-BBF = BBF or {}
-
 local nahjAuraBlacklist = {
     {
         ["name"] = "Sign of the Skirmisher",

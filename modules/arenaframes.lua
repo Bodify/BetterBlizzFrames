@@ -1,6 +1,3 @@
-BetterBlizzFramesDB = BetterBlizzFramesDB or {}
-BBF = BBF or {}
-
 local hidingArenaFrames = nil
 
 function BBF.HideArenaFrames()

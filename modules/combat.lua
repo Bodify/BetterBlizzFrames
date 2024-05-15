@@ -1,7 +1,3 @@
--- Setting up the database
-BetterBlizzFramesDB = BetterBlizzFramesDB or {}
-BBF = BBF or {}
-
 function BBF.CombatIndicator(unitFrame, unit)
     if not BetterBlizzFramesDB.combatIndicator or not unitFrame then return end
 

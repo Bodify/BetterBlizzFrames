@@ -1,8 +1,3 @@
--- Setting up the database
-BetterBlizzFramesDB = BetterBlizzFramesDB or {}
-BBF = BBF or {}
---BetterBlizzFramesDB.userDefinedSpam = BetterBlizzFramesDB.userDefinedSpam or {}
-
 local filterGladiusSpam
 local filterTalentSpam
 local filterSystemMessages

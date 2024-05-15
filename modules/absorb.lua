@@ -1,18 +1,17 @@
--- Setting up the database
-BetterBlizzFramesDB = BetterBlizzFramesDB or {}
-BBF = BBF or {}
-
 local function GetMaxAbsorbAuraIcon(unit)
     local maxAbsorb = 0
     local maxAbsorbIcon = nil
 
-    for i = 1, 40 do
-        local name, icon, count, debuffType, duration, expirationTime, unitCaster, _, _, spellId, _, _, _, _, _, absorb = UnitBuff(unit, i)
+    -- Function to process each aura
+    local function processAura(name, icon, _, _, _, _, _, _, _, spellId, _, _, _, _, _, absorb)
         if absorb and absorb > maxAbsorb then
             maxAbsorb = absorb
             maxAbsorbIcon = icon
         end
     end
+
+    -- Iterate over all helpful auras on the unit
+    AuraUtil.ForEachAura(unit, "HELPFUL", nil, processAura)
 
     return maxAbsorbIcon
 end
@@ -186,7 +185,7 @@ local function UpdateAbsorbIndicator(frame, unit)
                 if auraIcon then
                     frame.absorbIcon:SetTexture(auraIcon)
                     frame.absorbIcon:SetAlpha(1)
-                    if frame.absorbIcon.border and darkModeUi then
+                    if frame.absorbIcon.border and darkModeOn then
                         frame.absorbIcon.border:SetAlpha(1)
                     end
                 else
