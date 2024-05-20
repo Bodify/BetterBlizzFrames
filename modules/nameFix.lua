@@ -902,9 +902,9 @@ local partyFrames = {
 }
 
 hooksecurefunc("CompactUnitFrame_UpdateName", function(frame)
-    if partyFrames[frame:GetName()] then
+    --if partyFrames[frame:GetName()] then
         RunOnUpdateName(frame)
-    end
+    --end
 end)
 
 -- i cba this whole fucking module is fkn aids causing taint and shit idek i cba i cba i cba
