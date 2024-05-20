@@ -73,10 +73,6 @@ local printAuraSpellIds
 local playerAuraImportantGlow
 local focusStaticCastbar
 local focusDetachCastbar
-local darkModeUi
-local darkModeUiAura
-local darkModeAurasOn
-local darkModeColor = 1
 local purgeTextureColorRGB = {1, 1, 1, 1}
 local changePurgeTextureColor
 local targetToTAdjustmentOffsetY
@@ -87,6 +83,8 @@ local allowLargeAuraFirst
 local onlyPandemicMine
 local targetCastBarScale
 local focusCastBarScale
+local purgeableBuffSorting
+local purgeableBuffSortingFirst
 
 function BBF.UpdateUserAuraSettings()
     printSpellId = printAuraSpellIds
@@ -147,6 +145,8 @@ function BBF.UpdateUserAuraSettings()
     changePurgeTextureColor = BetterBlizzFramesDB.changePurgeTextureColor
     buffsOnTopReverseCastbarMovement = BetterBlizzFramesDB.buffsOnTopReverseCastbarMovement
     onlyPandemicMine = BetterBlizzFramesDB.onlyPandemicAuraMine
+    purgeableBuffSorting = BetterBlizzFramesDB.purgeableBuffSorting
+    purgeableBuffSortingFirst = BetterBlizzFramesDB.purgeableBuffSortingFirst
 end
 
 local function isInWhitelist(spellName, spellId)
@@ -540,7 +540,7 @@ local function AdjustAuras(self, frameType)
 
         for i, aura in ipairs(auras) do
             aura:SetScale(auraScale)
-            aura:SetMouseClickEnabled(false)
+            --aura:SetMouseClickEnabled(false)
             local auraSize = aura:GetHeight()
             if not aura.isLarge then
                 -- Apply the adjusted size to smaller auras
@@ -627,7 +627,6 @@ local function AdjustAuras(self, frameType)
         if a.isImportant ~= b.isImportant then
             return a.isImportant
         end
-
         return defaultComparator(a, b)
     end
 
@@ -635,11 +634,9 @@ local function AdjustAuras(self, frameType)
         if a.isEnlarged ~= b.isEnlarged then
             return a.isEnlarged
         end
-
         if a.isImportant ~= b.isImportant then
             return a.isImportant
         end
-
         return defaultComparator(a, b)
     end
 
@@ -781,7 +778,7 @@ local function AdjustAuras(self, frameType)
         end
     end
 
-    local function getCustomAuraComparator()
+    local function getCustomAuraComparatorWithoutPurgeable()
         if customImportantAuraSorting and customLargeSmallAuraSorting and allowLargeAuraFirst then
             return largeSmallAndImportantAndEnlargedFirstAuraComparator
         elseif customImportantAuraSorting and customLargeSmallAuraSorting then
@@ -797,6 +794,40 @@ local function AdjustAuras(self, frameType)
         else
             return defaultComparator
         end
+    end
+
+    local function purgeableFirstComparator(a, b)
+        if a.isPurgeable ~= b.isPurgeable then
+            return a.isPurgeable
+        end
+        return getCustomAuraComparatorWithoutPurgeable()(a, b)
+    end
+
+    local function purgeableAfterImportantAndEnlargedComparator(a, b)
+        if a.isImportant ~= b.isImportant then
+            return a.isImportant
+        end
+
+        if a.isEnlarged ~= b.isEnlarged then
+            return a.isEnlarged
+        end
+
+        if a.isPurgeable ~= b.isPurgeable then
+            return a.isPurgeable
+        end
+
+        return getCustomAuraComparatorWithoutPurgeable()(a, b)
+    end
+
+    local function getCustomAuraComparator()
+        if purgeableBuffSorting then
+            if purgeableBuffSortingFirst then
+                return purgeableFirstComparator
+            else
+                return purgeableAfterImportantAndEnlargedComparator
+            end
+        end
+        return getCustomAuraComparatorWithoutPurgeable()
     end
 
     for aura in self.auraPools:EnumerateActive() do
@@ -830,6 +861,32 @@ local function AdjustAuras(self, frameType)
 
             if shouldShowAura then
                 aura:Show()
+
+                aura.spellId = auraData.spellId
+
+                if (auraData.isStealable or (auraData.dispelName == "Magic" and ((not isFriend and auraData.isHelpful) or (isFriend and auraData.isHarmful)))) then
+                    aura.isPurgeable = true
+                end
+
+                if not aura.filterClick then
+                    aura:HookScript("OnMouseDown", function(self, button)
+                        if IsShiftKeyDown() and IsAltKeyDown() then
+                            local spellName, _, icon = GetSpellInfo(aura.spellId)
+                            local spellId = tostring(aura.spellId)
+                            local iconString = "|T" .. icon .. ":16:16:0:0|t" -- Format the icon for display
+
+                            if button == "LeftButton" then
+                                BBF.auraWhitelist(aura.spellId)
+                                print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") was added to |cff00ff00whitelist|r.")
+                            elseif button == "RightButton" then
+                                BBF.auraBlacklist(aura.spellId)
+                                print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") was added to |cffff0000blacklist|r.")
+                            end
+                        end
+                    end)
+                    aura.filterClick = true
+                end
+
                 -- Print Logic
                 if printSpellId and not aura.bbfHookAdded then
                     aura:HookScript("OnEnter", function()
@@ -1373,6 +1430,27 @@ local function PersonalBuffFrameFilterAndGrid(self)
                         auraFrame:SetPoint("TOPRIGHT", BuffFrame, "TOPRIGHT", -xOffset - 15, -yOffset);
                     end
 
+                    auraFrame.spellId = auraData.spellId
+
+                    if not auraFrame.filterClick then
+                        auraFrame:HookScript("OnMouseDown", function(self, button)
+                            if IsShiftKeyDown() and IsAltKeyDown() then
+                                local spellName, _, icon = GetSpellInfo(auraFrame.spellId)
+                                local spellId = tostring(auraFrame.spellId)
+                                local iconString = "|T" .. icon .. ":16:16:0:0|t" -- Format the icon for display
+
+                                if button == "LeftButton" then
+                                    BBF.auraWhitelist(auraFrame.spellId)
+                                    print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") was added to |cff00ff00whitelist|r.")
+                                elseif button == "RightButton" then
+                                    BBF.auraBlacklist(auraFrame.spellId)
+                                    print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") was added to |cffff0000blacklist|r.")
+                                end
+                            end
+                        end)
+                        auraFrame.filterClick = true
+                    end
+
                     -- Update column and row counters
                     currentCol = currentCol + 1;
                     if currentCol > maxAurasPerRow then
@@ -1584,6 +1662,27 @@ local function PersonalDebuffFrameFilterAndGrid(self)
                     end
 
 ]=]
+
+                    auraFrame.spellId = auraData.spellId
+
+                    if not auraFrame.filterClick then
+                        auraFrame:HookScript("OnMouseDown", function(self, button)
+                            if IsShiftKeyDown() and IsAltKeyDown() then
+                                local spellName, _, icon = GetSpellInfo(auraFrame.spellId)
+                                local spellId = tostring(auraFrame.spellId)
+                                local iconString = "|T" .. icon .. ":16:16:0:0|t" -- Format the icon for display
+
+                                if button == "LeftButton" then
+                                    BBF.auraWhitelist(auraFrame.spellId)
+                                    print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") was added to |cff00ff00whitelist|r.")
+                                elseif button == "RightButton" then
+                                    BBF.auraBlacklist(auraFrame.spellId)
+                                    print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") was added to |cffff0000blacklist|r.")
+                                end
+                            end
+                        end)
+                        auraFrame.filterClick = true
+                    end
 
                     auraFrame:Show();
                     auraFrame:ClearAllPoints();

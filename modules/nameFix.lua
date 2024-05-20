@@ -522,7 +522,7 @@ end
 function BBF.PartyNameChange()
     if CompactPartyFrame:IsVisible() then
         local groupMembers = GetNumGroupMembers()
-        for i = 1, groupMembers do
+        for i = 1, groupMembers+1 do
             local memberFrame = _G["CompactPartyFrameMember" .. i]
             if memberFrame and memberFrame.displayedUnit then
                 ChangeName(memberFrame, memberFrame.displayedUnit, true)
@@ -727,9 +727,9 @@ end
 
 local function RunOnUpdateName(frame)
     -- if isAddonLoaded("ClassicFrames") then return end
-    -- if hidePartyNames or hidePartyRoles then
-    --     BBF.OnUpdateName()
-    -- end
+    if hidePartyNames or hidePartyRoles then
+        BBF.OnUpdateName()
+    end
     -- if not frame or frame:IsForbidden() then return end
     -- local isNameplate = frame.unit and frame.unit:find("nameplate")
 
@@ -743,13 +743,21 @@ function BBF.OnUpdateName()
     local defaultPartyFrame = PartyFrame
 
     local groupMembers = GetNumGroupMembers()
-    for i = 1, groupMembers do
+    for i = 1, groupMembers+1 do
         local compactPartyMember = _G["CompactPartyFrameMember" .. i]
         local roleIcon = _G["CompactPartyFrameMember" .. i .. "RoleIcon"]
         local defaultMember = defaultPartyFrame["MemberFrame" .. i]
 
         if compactPartyMember and compactPartyMember:IsShown() then
             -- Hide the role icon if hidePartyRoles is true
+            if hidePartyNames then
+                compactPartyMember.name:SetAlpha(0)
+                if not partyArenaNames then
+                    if compactPartyMember.cleanName then
+                        compactPartyMember.cleanName:SetAlpha(0)
+                    end
+                end
+            end
             if hidePartyRoles and roleIcon then
                 roleIcon:SetAlpha(0)
             else
@@ -758,10 +766,10 @@ function BBF.OnUpdateName()
         else
             if defaultMember then --will always be true find fix bodify
                 if (hidePartyNames and defaultMember.name) and not partyArenaNames then
-                    -- defaultMember.Name:SetAlpha(0)
-                    -- if defaultMember.cleanName then
-                    --     defaultMember.cleanName:SetAlpha(0)
-                    -- end
+                    defaultMember.Name:SetAlpha(0)
+                    if defaultMember.cleanName then
+                        defaultMember.cleanName:SetAlpha(0)
+                    end
                 else
                     defaultMember.Name:SetAlpha(0)
                     if defaultMember.cleanName then
@@ -820,8 +828,6 @@ function BBF.CenteredFrameNames(frame, unit)
         --originalNameObject:SetAlpha(1)
     end
 end
-
-
 
 local function CenteredPlayerName()
     if isAddonLoaded("ClassicFrames") then return end
@@ -887,6 +893,18 @@ end
 --     ChangeName(FocusFrame.TargetFrameContent.TargetFrameContentMain, "focus")
 -- end
 
-hooksecurefunc("CompactUnitFrame_UpdateName", RunOnUpdateName)
+local partyFrames = {
+    ["CompactPartyFrameMember1"] = true,
+    -- ["CompactPartyFrameMember2"] = true,
+    -- ["CompactPartyFrameMember3"] = true,
+    -- ["CompactPartyFrameMember4"] = true,
+    -- ["CompactPartyFrameMember5"] = true,
+}
+
+hooksecurefunc("CompactUnitFrame_UpdateName", function(frame)
+    if partyFrames[frame:GetName()] then
+        RunOnUpdateName(frame)
+    end
+end)
 
 -- i cba this whole fucking module is fkn aids causing taint and shit idek i cba i cba i cba

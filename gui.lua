@@ -1044,10 +1044,10 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
         local displayText = npc.id and npc.id or ""
 
         if npc.name and npc.name ~= "" then
-            displayText = displayText .. (displayText ~= "" and " - " or "") .. npc.name
+            displayText = npc.name .. (displayText ~= "" and " - " or "") .. displayText
         end
         if npc.comment and npc.comment ~= "" then
-            displayText = displayText .. (displayText ~= "" and " - " or "") .. npc.comment
+            displayText = npc.comment .. (displayText ~= "" and " - " or "") .. displayText
         end
 
         local text = button:CreateFontString(nil, "OVERLAY", "GameFontNormal")
@@ -1280,6 +1280,8 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
             button:SetScript("OnEnter", function(self)
                 GameTooltip:SetOwner(self, "ANCHOR_LEFT")
                 GameTooltip:SetSpellByID(npc.id)
+                GameTooltip:AddLine("Spell ID: " .. npc.id, 1, 1, 1)
+                GameTooltip:Show()
             end)
             button:SetScript("OnLeave", function(self)
                 GameTooltip:Hide()
@@ -1322,7 +1324,7 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
     editBox:SetSize((width and width - 62) or (322 - 62), 19)
     editBox:SetPoint("TOP", scrollFrame, "BOTTOM", -15, -5)
     editBox:SetAutoFocus(false)
-    CreateTooltip(editBox, "Filter auras by spell id and/or spell name", "ANCHOR_TOP")
+    CreateTooltipTwo(editBox, "Filter auras by spell id and/or spell name", "You can hold Shift+Alt and click auras to add to lists.\nShift+Alt + Left-Click to Whitelist.\nShift+Alt + Right-Click to Blacklist.", nil, "ANCHOR_TOP")
 
     local function updateNamesInListData()
         for _, entry in ipairs(listData) do
@@ -1400,7 +1402,7 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
             for i, npc in ipairs(listData) do
                 if (id and npc.id == id) or (not id and npc.name and strlower(npc.name) == strlower(name)) then
                     isDuplicate = true
-                    selectedLineIndex = i
+                    selectedLineIndex = npc
                     break
                 end
             end
@@ -1420,6 +1422,8 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
 
         editBox:SetText("") -- Clear the EditBox
     end
+
+    BBF[listName] = addOrUpdateEntry
 
     editBox:SetScript("OnEnterPressed", function(self)
         addOrUpdateEntry(self:GetText())
@@ -3690,6 +3694,10 @@ local function guiFrameAuras()
     printAuraSpellIds:SetPoint("LEFT", playerAuraFiltering.Text, "RIGHT", 5, 0)
     CreateTooltip(printAuraSpellIds, "Show aura spell id in chat when mousing over the aura.\n\nUsecase: Find spell ID to filter by ID, some spells have identical names.")
 
+    -- local tipText = playerAuraFiltering:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    -- tipText:SetPoint("LEFT", printAuraSpellIds.Text, "RIGHT", 5, 0)
+    -- tipText:SetText("Tip")
+
     --------------------------
     -- Target Frame
     --------------------------
@@ -4170,6 +4178,17 @@ local function guiFrameAuras()
     local allowLargeAuraFirst = CreateCheckbox("allowLargeAuraFirst", "Sort Enlarged before Important", playerAuraFiltering)
     allowLargeAuraFirst:SetPoint("TOPLEFT", customLargeSmallAuraSorting, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(allowLargeAuraFirst, "If there are both Enlarged and Important auras\nthen show the Enlarged ones first.")
+
+    local purgeableBuffSorting = CreateCheckbox("purgeableBuffSorting", "Sort Purgeable Auras", playerAuraFiltering)
+    purgeableBuffSorting:SetPoint("TOPLEFT", allowLargeAuraFirst, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(purgeableBuffSorting, "Sort Purgeable Auras", "Sort purgeable auras before normal auras.\nEnlarged and Important auras will still be prioritized over Purgeable ones unless \"Sort Purgeable before Enlarged/Important\" is checked.")
+
+    local purgeableBuffSortingFirst = CreateCheckbox("purgeableBuffSortingFirst", "Sort Purgeable before Enlarged/Important", purgeableBuffSorting)
+    purgeableBuffSortingFirst:SetPoint("TOPLEFT", purgeableBuffSorting, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(purgeableBuffSortingFirst, "Sort Purgeable before Enlarged/Important", "Sort Purgeable before Enlarged and Important auras.")
+    purgeableBuffSorting:HookScript("OnClick", function(self)
+        CheckAndToggleCheckboxes(purgeableBuffSorting)
+    end)
 
     -- local customPandemicAuraSorting = CreateCheckbox("customPandemicAuraSorting", "Sort Pandemic Auras before all", playerAuraFiltering)
     -- customPandemicAuraSorting:SetPoint("TOPLEFT", allowLargeAuraFirst, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
