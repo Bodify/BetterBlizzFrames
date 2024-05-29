@@ -6,8 +6,8 @@ BBF = BBF or {}
 -- Things are getting more messy need a lot of cleaning lol
 
 local addonVersion = "1.00" --too afraid to to touch for now
-local addonUpdates = "1.4.1"
-local sendUpdate = true
+local addonUpdates = "1.4.0"
+local sendUpdate = false
 BBF.VersionNumber = addonUpdates
 BBF.variablesLoaded = false
 local isAddonLoaded = C_AddOns.IsAddOnLoaded
@@ -23,10 +23,10 @@ local defaultSettings = {
     darkModeActionBars = true,
     darkModeUiAura = true,
     darkModeCastbars = true,
-    darkModeColor = 0.20,
+    darkModeColor = 0.30,
     hideGroupIndicator = false,
     hideFocusCombatGlow = false,
-    hideDragonFlying = true,
+    --hideDragonFlying = true,
     targetToTScale = 1,
     focusToTScale = 1,
     targetToTXPos = 0,
@@ -40,6 +40,7 @@ local defaultSettings = {
     playerReputationClassColor = true,
     enlargedAuraSize = 1.4,
     compactedAuraSize = 0.7,
+    purgeableAuraSize = 1,
     onlyPandemicAuraMine = true,
     lossOfControlScale = 1,
 
@@ -89,12 +90,12 @@ local defaultSettings = {
     racialIndicatorUndead = true,
 
     --Party castbars
-    partyCastBarScale = 1,
-    partyCastBarIconScale = 1,
+    partyCastBarScale = 0.9,
+    partyCastBarIconScale = 0.9,
     partyCastBarXPos = 0,
     partyCastBarYPos = 0,
-    partyCastBarWidth = 100,
-    partyCastBarHeight = 12,
+    partyCastBarWidth = 137,
+    partyCastBarHeight = 10,
     partyCastBarTimer = false,
     showPartyCastBarIcon = true,
     partyCastbarIconXPos = 0,
@@ -102,11 +103,11 @@ local defaultSettings = {
 
     --Pet Castbar
     petCastbar = false,
-    petCastBarScale = 1,
+    petCastBarScale = 0.92,
     petCastBarIconScale = 1,
     petCastBarXPos = 0,
     petCastBarYPos = 0,
-    petCastBarWidth = 103,
+    petCastBarWidth = 137,
     petCastBarHeight = 10,
     showPetCastBarIcon = true,
     showPetCastBarTimer = false,
@@ -140,10 +141,12 @@ local defaultSettings = {
     focusToTAdjustmentOffsetY = 0,
 
     --Player castbar
-    --playerCastBarScale = 1,
+    playerCastBarXPos = 0,
+    playerCastBarYPos = 0,
+    playerCastBarScale = 1,
     playerCastBarIconScale = 1,
-    playerCastBarWidth = 208,
-    playerCastBarHeight = 11,
+    playerCastBarWidth = 195,
+    playerCastBarHeight = 13,
     playerCastBarTimer = false,
     playerCastBarTimerCenter = false,
 
@@ -160,8 +163,12 @@ local defaultSettings = {
     targetdeBuffFilterBlacklist = true,
     targetBuffFilterBlacklist = true,
     auraTypeGap = 4,
-    playerAuraSpacingX = 5,
+    maxPlayerAurasPerRow = 10,
+    playerAuraBuffScale = 1,
+    playerAuraSpacingX = 3,
     playerAuraSpacingY = 0,
+    playerAuraXOffset = 0,
+    playerAuraYOffset = 0,
     maxBuffFrameBuffs = 32,
     maxDebuffFrameDebuffs = 16,
     printAuraSpellIds = false,
@@ -175,7 +182,7 @@ local defaultSettings = {
     targetAndFocusVerticalGap = 4,
     targetAndFocusAurasPerRow = 6,
     targetAndFocusSmallAuraScale = 1,
-    purgeTextureColorRGB = {0, 0.92, 1, 0.85},
+    purgeTextureColorRGB = {0.3686274588108063,0.9803922176361084,1,1,},
 
     frameAurasXPos = 0,
     frameAurasYPos = 0,
@@ -191,6 +198,10 @@ local defaultSettings = {
     overShieldsCompactUnitFrames = true,
 
     --Target buffs
+    targetAuraGlows = true,
+    targetEnlargeAura = true,
+    targetCompactAura = true,
+
     maxTargetBuffs = 32,
     maxTargetDebuffs = 16,
     targetBuffEnable = true,
@@ -198,33 +209,37 @@ local defaultSettings = {
     targetBuffFilterWatchList = false,
     targetBuffFilterLessMinite = false,
     targetBuffFilterPurgeable = false,
-    targetImportantAuraGlow = false,
+    targetImportantAuraGlow = true,
     targetBuffFilterOnlyMe = false,
     --Target debuffs
     targetdeBuffEnable = true,
     targetdeBuffFilterAll = false,
-    targetdeBuffFilterBlizzard = true,
+    targetdeBuffFilterBlizzard = false,
     targetdeBuffFilterWatchList = false,
     targetdeBuffFilterLessMinite = false,
     targetdeBuffFilterOnlyMe = false,
-    targetdeBuffPandemicGlow = false,
+    targetdeBuffPandemicGlow = true,
 
     --Focus buffs
+    focusAuraGlows = true,
+    focusEnlargeAura = true,
+    focusCompactAura = true,
+
     focusBuffEnable = true,
     focusBuffFilterAll = true,
     focusBuffFilterWatchList = false,
     focusBuffFilterLessMinite = false,
     focusBuffFilterOnlyMe = false,
     focusBuffFilterPurgeable = false,
-    focusImportantAuraGlow = false,
+    focusImportantAuraGlow = true,
     --Focus debuffs
     focusdeBuffEnable = true,
     focusdeBuffFilterAll = false,
-    focusdeBuffFilterBlizzard = true,
+    focusdeBuffFilterBlizzard = false,
     focusdeBuffFilterWatchList = false,
     focusdeBuffFilterLessMinite = false,
     focusdeBuffFilterOnlyMe = false,
-    focusdeBuffPandemicGlow = false,
+    focusdeBuffPandemicGlow = true,
 
     PlayerAuraFrameBuffFilterWatchList = false,
     PlayerAuraFramedeBuffFilterWatchList = false,
@@ -234,23 +249,7 @@ local defaultSettings = {
     auraWhitelist = {
         {["name"] = "Example Aura :3 (delete me)"}
     },
-    auraBlacklist = {
-        {name = "Sign of the Skirmisher"},
-        {name = "Sign of the Scourge"},
-        {name = "Stormwind Champion"},
-        {name = "Honorless Target"},
-        {name = "Guild Champion"},
-        {name = "Sign of Iron"},
-        {id = 397734}, -- Word of a Worthy Ally
-        {id = 186403}, -- Sign of Battle
-        {id = 282559}, -- Enlisted
-        {id = 32727}, -- Arena Preparation
-        {id = 418563}, -- WoW's 19th Anniversary
-        {id = 93805}, -- Ironforge Champion
-        {id = 335148}, -- Sign of the Twisting Nether
-        {id = 269083}, -- Enlisted 2
-        {id = 394005}, -- A cultivators colors
-    },
+    auraBlacklist = {},
 }
 
 local function InitializeSavedVariables()
@@ -278,34 +277,7 @@ local function FetchAndSaveValuesOnFirstLogin()
 
 
 
-    local function GetUIInfo() --uhhh yeah idk, not needed delete eventually TODO:
-        if BBF.variablesLoaded then
-            local function ShownChecker()
-                if PlayerFrame:IsShown() then
-                    BetterBlizzFramesDB.hidePrestigeBadge = PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.PrestigeBadge:GetAlpha() ~= 1 or not PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.PrestigeBadge:IsShown()
-                    BetterBlizzFramesDB.targetPrestigeBadgeAlpha = TargetFrame.TargetFrameContent.TargetFrameContentContextual.PrestigeBadge:GetAlpha() ~= 1 or not TargetFrame.TargetFrameContent.TargetFrameContentContextual.PrestigeBadge:IsShown()
-                    BetterBlizzFramesDB.focusPrestigeBadgeAlpha = FocusFrame.TargetFrameContent.TargetFrameContentContextual.PrestigeBadge:GetAlpha() ~= 1 or not FocusFrame.TargetFrameContent.TargetFrameContentContextual.PrestigeBadge:IsShown()
-
---[[
-                    print(BetterBlizzFramesDB.hideTargetPrestigeBadge)
-                    BetterBlizzFramesDB.hideTargetPrestigeBadge = not TargetFrame.TargetFrameContent.TargetFrameContentContextual.PrestigePortrait:IsShown()
-                    print(BetterBlizzFramesDB.hideTargetPrestigeBadge)              
-]]
-                    BetterBlizzFramesDB.hasCheckedUi = true
-                else
-                    C_Timer.After(0.1, function()
-                        ShownChecker()
-                    end)
-                end
-            end
-            ShownChecker()
-        else
-            C_Timer.After(1, function()
-                GetUIInfo()
-            end)
-        end
-    end
-    GetUIInfo()
+    BetterBlizzFramesDB.hasCheckedUi = true
 
 
     C_Timer.After(5, function()
@@ -387,11 +359,11 @@ local function SendUpdateMessage()
                 --StaticPopup_Show("BBF_NEW_VERSION")
                 DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames news:")
                 DEFAULT_CHAT_FRAME:AddMessage("|A:QuestNormal:16:16|a New Stuff:")
-                DEFAULT_CHAT_FRAME:AddMessage("   - Cataclysm version now in Beta and is this same version. Go ahead and install on cataclysm.")
-                -- DEFAULT_CHAT_FRAME:AddMessage("   - Sort Purgeable Auras setting (Buffs & Debuffs).")
+                DEFAULT_CHAT_FRAME:AddMessage("   - You can now Shift+Alt LeftClick auras to whitelist and Shift+Alt RightClick to blacklist.")
+                DEFAULT_CHAT_FRAME:AddMessage("   - Sort Purgeable Auras setting (Buffs & Debuffs).")
 
-                -- DEFAULT_CHAT_FRAME:AddMessage("|A:Professions-Crafting-Orders-Icon:16:16|a Bugfixes:")
-                -- DEFAULT_CHAT_FRAME:AddMessage("   Attempted fix for hidden party names popping back up during shuffle.")
+                DEFAULT_CHAT_FRAME:AddMessage("|A:Professions-Crafting-Orders-Icon:16:16|a Bugfixes:")
+                DEFAULT_CHAT_FRAME:AddMessage("   Attempted fix for hidden party names popping back up during shuffle.")
                 -- DEFAULT_CHAT_FRAME:AddMessage("   Reverted all name logic to 1.3.8b version. It's old and not optimal but at least it doesn't taint(?). I will never touch this again until TWW >_>")
                 --DEFAULT_CHAT_FRAME:AddMessage("   A lot of behind the scenes Name logic changed. Should now work better and be happier with other addons.")
             end)
@@ -437,15 +409,6 @@ local function LoadingScreenDetector(_, event)
 
         BBF.MinimapHider(instanceType)
 
-        --#######TEMPORARY BUGFIX FOR BLIZZARD#########
-        if BetterBlizzFramesDB.hideDragonFlying then
-            if inArena and UIWidgetPowerBarContainerFrame then
-                UIWidgetPowerBarContainerFrame:SetAlpha(0)
-            else
-                UIWidgetPowerBarContainerFrame:SetAlpha(1)
-            end
-        end
-        --#######TEMPORARY BUGFIX FOR BLIZZARD#########
     elseif event == "LOADING_SCREEN_DISABLED" or event == "PLAYER_LEAVING_WORLD" then
         if BetterBlizzFramesDB.playerFrameOCD then
             BBF.FixStupidBlizzPTRShit()
@@ -453,15 +416,6 @@ local function LoadingScreenDetector(_, event)
 
         BBF.MinimapHider(instanceType)
 
-        --#######TEMPORARY BUGFIX FOR BLIZZARD#########
-        if BetterBlizzFramesDB.hideDragonFlying then
-            if inArena and UIWidgetPowerBarContainerFrame then
-                UIWidgetPowerBarContainerFrame:SetAlpha(0)
-            else
-                UIWidgetPowerBarContainerFrame:SetAlpha(1)
-            end
-        end
-        --#######TEMPORARY BUGFIX FOR BLIZZARD#########
         C_Timer.After(2, function()
             BetterBlizzFramesDB.wasOnLoadingScreen = false
         end)
@@ -527,6 +481,7 @@ end
 
 -- Function to toggle test mode on and off
 function BBF.ToggleLossOfControlTestMode()
+    if not cataReady then return end
     local LossOfControlFrameAlphaBg = BetterBlizzFramesDB.hideLossOfControlFrameBg and 0 or 0.6
     local LossOfControlFrameAlphaLines = BetterBlizzFramesDB.hideLossOfControlFrameLines and 0 or 1
     if not _G.FakeBBFLossOfControlFrame then  -- Changed to a global reference for wider access
@@ -604,21 +559,6 @@ function BBF.ToggleLossOfControlTestMode()
     FakeBBFLossOfControlFrame:Show()
 end
 
-function BBF.ChangeLossOfControlScale()
-    LossOfControlFrame:SetScale(BetterBlizzFramesDB.lossOfControlScale)
-end
-
---TODO Bodify, already in aura function, this is better perf tho so figure out how (debuffs only)
--- Make player debuffs clickthrough
-local debuffFrame = DebuffFrame and DebuffFrame.AuraContainer
-if debuffFrame then
-    for i = 1, debuffFrame:GetNumChildren() do
-        local child = select(i, debuffFrame:GetChildren())
-        if child then
-            child:SetMouseClickEnabled(false)
-        end
-    end
-end
 
 -- Warlock Alternate Power Clickthrough
 local function DisableClickForWarlockPowerFrame()
@@ -663,6 +603,7 @@ local function DisableClickForEssencePlayerFrame()
 end
 
 local function DisableClickForClassSpecificFrame()
+    if not cataReady then return end
     local _, playerClass = UnitClass("player")
     if playerClass == "WARLOCK" and WarlockPowerFrame then
         hooksecurefunc(WarlockPowerBar, "UpdatePower", DisableClickForWarlockPowerFrame)
@@ -686,219 +627,7 @@ end)
 ClickthroughFrames:RegisterEvent("MODIFIER_STATE_CHANGED")
 
 
---######################################################################
--- Move Resource Frames to TargetFrame
-local hookedResourceFrames
-local function RepositionIndividualComboPoints(comboPointFrame, positions, scale)
-    local comboPoints = {}
-    local allPointsReady = true
 
-    for i = 1, comboPointFrame:GetNumChildren() do
-        local child = select(i, comboPointFrame:GetChildren())
-        if child ~= comboPointFrame.layoutParent and child:IsShown() then -- Check if child is shown
-            local point, relativeTo, relativePoint, x, y = child:GetPoint()
-            if x then
-                table.insert(comboPoints, {child = child, x = x})
-            else
-                allPointsReady = false
-                break -- Exit the loop early if any child is not ready
-            end
-        end
-    end
-
-    if allPointsReady and #comboPoints > 0 then
-        -- Proceed if all combo points have valid 'x' values and there's at least one combo point
-        table.sort(comboPoints, function(a, b) return a.x < b.x end)
-
-        for i, info in ipairs(comboPoints) do
-            if positions[i] then
-                info.child:ClearAllPoints()
-                info.child:SetPoint(unpack(positions[i]))
-                info.child:SetScale(scale)
-            end
-        end
-    else
-        -- Retry after a short delay if not all combo points are ready
-        C_Timer.After(0.5, function()
-            RepositionIndividualComboPoints(comboPointFrame, positions, scale)
-        end)
-    end
-end
-
--- Function to setup combo points for any class
-local function SetupClassComboPoints(comboPointFrame, positions, expectedClass, scale, xPos, yPos, changeDrawLayer)
-    -- Reposition individual combo points based on their x position
-
-
-    -- Adjust the texture draw layers
-    if comboPointFrame and changeDrawLayer then
-        for _, frameChild in pairs({comboPointFrame:GetChildren()}) do
-            for i = 1, frameChild:GetNumRegions() do
-                local region = select(i, frameChild:GetRegions())
-                if region:IsObjectType("Texture") then
-                    local layer, sublevel = region:GetDrawLayer()
-                    region:SetDrawLayer("ARTWORK", sublevel + 1)
-                end
-            end
-        end
-    end
-
-    -- Secure hook to reposition the combo point bar frame
-    if not hookedResourceFrames then
-        hooksecurefunc(comboPointFrame, "SetPoint", function(self)
-            if self.changing or self:IsProtected() then return end
-            self.changing = true
-
-            comboPointFrame:SetParent(TargetFrame)
-            comboPointFrame:SetFrameStrata(FocusFrameSpellBar:GetFrameStrata())
-            comboPointFrame:SetFrameLevel(FocusFrameSpellBar:GetParent():GetFrameLevel() + 1)
-            comboPointFrame:ClearAllPoints()
-            comboPointFrame:SetPoint("LEFT", TargetFrame, "RIGHT", xPos, yPos or -2)
-            comboPointFrame:SetMouseClickEnabled(false)
-            RepositionIndividualComboPoints(comboPointFrame, positions, scale)
-
-            self.changing = false
-        end)
-    end
-
-    -- Initial repositioning of combo points
-    RepositionIndividualComboPoints(comboPointFrame, positions, scale)
-end
-
-local roguePositions = {
-    { "TOPLEFT", RogueComboPointBarFrame, "TOPLEFT", 2, 44 },
-    { "TOPLEFT", RogueComboPointBarFrame, "TOPLEFT", 18.5, 30 },
-    { "TOPLEFT", RogueComboPointBarFrame, "TOPLEFT", 29, 11.5 },
-    { "TOPLEFT", RogueComboPointBarFrame, "TOPLEFT", 33, -11 },
-    { "TOPLEFT", RogueComboPointBarFrame, "TOPLEFT", 29, -34 },
-    { "TOPLEFT", RogueComboPointBarFrame, "TOPLEFT", 18.5, -53 },
-    { "TOPLEFT", RogueComboPointBarFrame, "TOPLEFT", 2.5, -67.5 },
-}
-
-local druidPositions = {
-    { "TOPLEFT", DruidComboPointBarFrame, "TOPLEFT", 34, 32.5 },
-    { "TOPLEFT", DruidComboPointBarFrame, "TOPLEFT", 45, 14 },
-    { "TOPLEFT", DruidComboPointBarFrame, "TOPLEFT", 48, -7 },
-    { "TOPLEFT", DruidComboPointBarFrame, "TOPLEFT", 44, -28 },
-    { "TOPLEFT", DruidComboPointBarFrame, "TOPLEFT", 33.5, -46.5 },
-}
-
-local warlockPositions = {
-    { "TOPLEFT", WarlockPowerFrame, "TOPLEFT", 34, 32.5 },
-    { "TOPLEFT", WarlockPowerFrame, "TOPLEFT", 45, 14 },
-    { "TOPLEFT", WarlockPowerFrame, "TOPLEFT", 48, -7 },
-    { "TOPLEFT", WarlockPowerFrame, "TOPLEFT", 44, -28 },
-    { "TOPLEFT", WarlockPowerFrame, "TOPLEFT", 33.5, -46.5 },
-}
-
-local magePositions = {
-    { "TOPLEFT", MageArcaneChargesFrame, "TOPLEFT", 39, 33 },
-    { "TOPLEFT", MageArcaneChargesFrame, "TOPLEFT", 48, 11.5 },
-    { "TOPLEFT", MageArcaneChargesFrame, "TOPLEFT", 48, -11.5 },
-    { "TOPLEFT", MageArcaneChargesFrame, "TOPLEFT", 39, -33 },
-}
-
-local monkPositions = {
-    { "TOPLEFT", MonkHarmonyBarFrame, "TOPLEFT", 15, 38.5 },
-    { "TOPLEFT", MonkHarmonyBarFrame, "TOPLEFT", 27, 22 },
-    { "TOPLEFT", MonkHarmonyBarFrame, "TOPLEFT", 33, 2 },
-    { "TOPLEFT", MonkHarmonyBarFrame, "TOPLEFT", 33, -19 },
-    { "TOPLEFT", MonkHarmonyBarFrame, "TOPLEFT", 27, -39 },
-    { "TOPLEFT", MonkHarmonyBarFrame, "TOPLEFT", 15, -55 },
-}
-
-local evokerPositions = {
-    { "TOPLEFT", EssencePlayerFrame, "TOPLEFT", 15, 33 },
-    { "TOPLEFT", EssencePlayerFrame, "TOPLEFT", 27, 19 },
-    { "TOPLEFT", EssencePlayerFrame, "TOPLEFT", 33, 1 },
-    { "TOPLEFT", EssencePlayerFrame, "TOPLEFT", 33, -18 },
-    { "TOPLEFT", EssencePlayerFrame, "TOPLEFT", 27, -36 },
-    { "TOPLEFT", EssencePlayerFrame, "TOPLEFT", 15, -50 },
-}
-
-
-local function HookClassComboPoints()
-    local db = BetterBlizzFramesDB
-    if db.moveResourceToTarget then
-        if db.moveResourceToTargetRogue then SetupClassComboPoints(RogueComboPointBarFrame, roguePositions, "ROGUE", 0.5, -44, -2, true) end
-        if db.moveResourceToTargetDruid then SetupClassComboPoints(DruidComboPointBarFrame, druidPositions, "DRUID", 0.55, -53, -2, true) end
-        if db.moveResourceToTargetWarlock then SetupClassComboPoints(WarlockPowerFrame, warlockPositions, "DRUID", 0.6, -56, 1) end
-        if db.moveResourceToTargetMage then SetupClassComboPoints(MageArcaneChargesFrame, magePositions, "DRUID", 0.7, -61, -4) end
-        if db.moveResourceToTargetMonk then SetupClassComboPoints(MonkHarmonyBarFrame, monkPositions, "ROGUE", 0.5, -44, -2, true) end
-        if db.moveResourceToTargetEvoker then SetupClassComboPoints(EssencePlayerFrame, evokerPositions, "ROGUE", 0.65, -50, 0.5, true) end
-        hookedResourceFrames = true
-    end
-end
-
---########################################################
-local hiddenFrame = CreateFrame("Frame")
-hiddenFrame:Hide()
-function BBF.MiniFocusFrame()
-    if BetterBlizzFramesDB.useMiniFocusFrame then
-        FocusFrame.TargetFrameContent.TargetFrameContentMain.HealthBar:SetAlpha(0)
-        FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar:SetAlpha(0)
-
-        if not FocusFrame.TargetFrameContainer.compactRing then
-            FocusFrame.TargetFrameContainer.compactRing = FocusFrame.TargetFrameContainer:CreateTexture(nil, "ARTWORK")
-            FocusFrame.TargetFrameContainer.compactRing:SetAtlas("Map_Faction_Ring")
-            FocusFrame.TargetFrameContainer.compactRing:SetSize(71,70)
-            FocusFrame.TargetFrameContainer.compactRing:SetPoint("CENTER", FocusFrame.TargetFrameContainer.Portrait, "CENTER", 0, -2)
-
-            if BetterBlizzFramesDB.darkModeUi then
-                FocusFrame.TargetFrameContainer.compactRing:SetDesaturated(true)
-                local color = BetterBlizzFramesDB.darkModeColor
-                FocusFrame.TargetFrameContainer.compactRing:SetVertexColor(color,color,color)
-            end
-        end
-
-        if FocusFrame.TargetFrameContainer.compactRing then
-            FocusFrame.TargetFrameContainer.compactRing:Show()
-        end
-
-        FocusFrame.TargetFrameContainer.FrameTexture:Hide()
-        --FocusFrame.TargetFrameContainer.Flash:Hide()
-        FocusFrame.TargetFrameContainer.Flash:SetAlpha(0)
-        FocusFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:SetAlpha(0)
-
-        --Name
-        -- if not FocusFrame.TargetFrameContent.TargetFrameContentMain.cleanName then
-        --     BBF.ChangeNameFocus()
-        -- end
-        FocusFrame.TargetFrameContent.TargetFrameContentMain.cleanName:SetScale(1.4)
-        FocusFrame.TargetFrameContent.TargetFrameContentMain.cleanName:ClearAllPoints()
-        FocusFrame.TargetFrameContent.TargetFrameContentMain.cleanName:SetJustifyH("RIGHT")
-        FocusFrame.TargetFrameContent.TargetFrameContentMain.cleanName:SetPoint("RIGHT", FocusFrame.TargetFrameContainer.Portrait, "LEFT", -10, 10)
-
-        FocusFrame.TargetFrameContent.TargetFrameContentMain.LevelText:Hide()
-        FocusFrame.TargetFrameContent.TargetFrameContentMain.LevelText:ClearAllPoints()
-        FocusFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetPoint("CENTER", hiddenFrame, "CENTER")
-    else
-        --reset to original
-        FocusFrame.TargetFrameContent.TargetFrameContentMain.HealthBar:SetAlpha(1)
-        FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar:SetAlpha(1)
-
-        if FocusFrame.TargetFrameContainer.compactRing then
-            FocusFrame.TargetFrameContainer.compactRing:Hide()
-        end
-
-        FocusFrame.TargetFrameContainer.FrameTexture:Show()
-        --FocusFrame.TargetFrameContainer.Flash:Hide()
-        FocusFrame.TargetFrameContainer.Flash:SetAlpha(1)
-        if not BetterBlizzFramesDB.hideFocusReputationColor then
-            FocusFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:SetAlpha(1)
-        end
-
-        if not BetterBlizzFramesDB.hideLevelText then
-            FocusFrame.TargetFrameContent.TargetFrameContentMain.LevelText:Show()
-        end
-
-        local ogName = FocusFrame.TargetFrameContent.TargetFrameContentMain.Name
-        FocusFrame.TargetFrameContent.TargetFrameContentMain.cleanName:SetScale(ogName:GetScale())
-        FocusFrame.TargetFrameContent.TargetFrameContentMain.cleanName:ClearAllPoints()
-        FocusFrame.TargetFrameContent.TargetFrameContentMain.cleanName:SetJustifyH(ogName:GetJustifyH())
-        FocusFrame.TargetFrameContent.TargetFrameContentMain.cleanName:SetPoint(ogName:GetPoint())
-    end
-end
 
 function BBF.MoveToTFrames()
     if not InCombatLockdown() then
@@ -926,104 +655,103 @@ function BBF.MoveToTFrames()
     end
 end
 
-
 function BBF.FixStupidBlizzPTRShit()
-    if InCombatLockdown() then return end
-    if isAddonLoaded("ClassicFrames") then return end
-    -- For god knows what reason PTR has a gap between Portrait and PlayerFrame. This fixes it + other gaps.
-    --PlayerFrame.PlayerFrameContainer.PlayerPortrait:SetScale(1.02)
-    PlayerFrame.PlayerFrameContainer.PlayerPortrait:SetSize(64,64)
-    PlayerFrame.PlayerFrameContainer.PlayerPortrait:SetPoint("TOPLEFT", PlayerFrame.PlayerFrameContainer, "TOPLEFT", 22, -17)
-    PlayerFrame.PlayerFrameContainer.PlayerPortraitMask:SetScale(1.01)
-    PlayerFrame.PlayerFrameContainer.PlayerPortraitMask:SetSize(63,63)
-    PlayerFrame.PlayerFrameContainer.PlayerPortraitMask:SetPoint("TOPLEFT", PlayerFrame.PlayerFrameContainer, "TOPLEFT", 22, -16)
+    -- if InCombatLockdown() then return end
+    -- if isAddonLoaded("ClassicFrames") then return end
+    -- -- For god knows what reason PTR has a gap between Portrait and PlayerFrame. This fixes it + other gaps.
+    -- --PlayerFrame.PlayerFrameContainer.PlayerPortrait:SetScale(1.02)
+    -- PlayerFrame.PlayerFrameContainer.PlayerPortrait:SetSize(64,64)
+    -- PlayerFrame.PlayerFrameContainer.PlayerPortrait:SetPoint("TOPLEFT", PlayerFrame.PlayerFrameContainer, "TOPLEFT", 22, -17)
+    -- PlayerFrame.PlayerFrameContainer.PlayerPortraitMask:SetScale(1.01)
+    -- PlayerFrame.PlayerFrameContainer.PlayerPortraitMask:SetSize(63,63)
+    -- PlayerFrame.PlayerFrameContainer.PlayerPortraitMask:SetPoint("TOPLEFT", PlayerFrame.PlayerFrameContainer, "TOPLEFT", 22, -16)
 
-    local a, b, c, d, e = TargetFrame.totFrame.Portrait:GetPoint()
-    TargetFrame.totFrame.Portrait:SetPoint(a, b, c, 6, -4)
-    TargetFrame.TargetFrameContainer.Portrait:SetSize(57,57)
+    -- local a, b, c, d, e = TargetFrame.totFrame.Portrait:GetPoint()
+    -- TargetFrame.totFrame.Portrait:SetPoint(a, b, c, 6, -4)
+    -- TargetFrame.TargetFrameContainer.Portrait:SetSize(57,57)
 
-    local a, b, c, d, e = FocusFrame.totFrame.Portrait:GetPoint()
-    FocusFrame.totFrame.Portrait:SetPoint(a, b, c, 6, -4)
+    -- local a, b, c, d, e = FocusFrame.totFrame.Portrait:GetPoint()
+    -- FocusFrame.totFrame.Portrait:SetPoint(a, b, c, 6, -4)
 
-    for i = 1, 4 do
-        local memberFrame = PartyFrame["MemberFrame" .. i]
-        if memberFrame and memberFrame.Portrait then
-            memberFrame.Portrait:SetHeight(38)
-        end
-    end
+    -- for i = 1, 4 do
+    --     local memberFrame = PartyFrame["MemberFrame" .. i]
+    --     if memberFrame and memberFrame.Portrait then
+    --         memberFrame.Portrait:SetHeight(38)
+    --     end
+    -- end
 
-    --BBF.ShiftNamesCuzOCD()
+    -- --BBF.ShiftNamesCuzOCD()
 
-    local a, b, c, d, e = TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:GetPoint()
-    TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:SetPoint(a, b, c, d, -24)
-    --TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:SetHeight()
+    -- local a, b, c, d, e = TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:GetPoint()
+    -- TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:SetPoint(a, b, c, d, -24)
+    -- --TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:SetHeight()
 
-    local a, b, c, d, e = FocusFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:GetPoint()
-    FocusFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:SetPoint(a, b, c, d, -24)
-    TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:SetHeight(20)
+    -- local a, b, c, d, e = FocusFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:GetPoint()
+    -- FocusFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:SetPoint(a, b, c, d, -24)
+    -- TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:SetHeight(20)
 
-    FocusFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:SetHeight(20)
+    -- FocusFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:SetHeight(20)
     
 
 
 
-    local a, b, c, d, e = TargetFrame.TargetFrameContent.TargetFrameContentMain.LevelText:GetPoint()
-    TargetFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetPoint(a, b, c, d, -3)
+    -- local a, b, c, d, e = TargetFrame.TargetFrameContent.TargetFrameContentMain.LevelText:GetPoint()
+    -- TargetFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetPoint(a, b, c, d, -3)
 
-    local a, b, c, d, e = FocusFrame.TargetFrameContent.TargetFrameContentMain.LevelText:GetPoint()
-    FocusFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetPoint(a, b, c, d, -3)
+    -- local a, b, c, d, e = FocusFrame.TargetFrameContent.TargetFrameContentMain.LevelText:GetPoint()
+    -- FocusFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetPoint(a, b, c, d, -3)
 
-    -- HealthBarColorActive
-    if not BetterBlizzFramesDB.playerFrameOCDTextureBypass then
-        local a, b, c, d, e = PlayerLevelText:GetPoint()
-        PlayerLevelText:SetPoint(a,b,c,d,-28)
-        PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarArea.HealthBar.HealthBarMask:SetHeight(33)
-        PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar.ManaBarMask:SetPoint("TOPLEFT", PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar, "TOPLEFT", -2, 3)
-        PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar.ManaBarMask:SetHeight(17)
-        PlayerFrame.healthbar:SetHeight(21)
-        PlayerFrame.manabar:SetSize(125,12)
-        local p, r, rr, x, y = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar.RightText:GetPoint()
-        PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar.RightText:SetPoint(p, r, rr, -3, 0)
-        --local a, b, c, d, e = TargetFrame.TargetFrameContent.TargetFrameContentMain.Name:GetPoint()
-        --TargetFrame.TargetFrameContent.TargetFrameContentMain.Name:ClearAllPoints()
-        --TargetFrame.TargetFrameContent.TargetFrameContentMain.Name:SetPoint(a, b, c, d, 99)
-        TargetFrame.TargetFrameContent.TargetFrameContentMain.HealthBar.HealthBarMask:SetWidth(129)
-        TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar:SetSize(136, 10)
-        TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.ManaBarMask:SetSize(258, 16)
-        local point, relativeTo, relativePoint, xOffset, yOffset = TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar:GetPoint()
-        TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar:SetPoint(point, relativeTo, relativePoint, 9, yOffset)
-        local p, r, rr, x, y = TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.RightText:GetPoint()
-        TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.RightText:SetPoint(p, r, rr, -14, y)
-        local a, b, c, d, e = TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.LeftText:GetPoint()
-        TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.LeftText:SetPoint(a,b,c,3,e)
-        FocusFrame.TargetFrameContent.TargetFrameContentMain.HealthBar.HealthBarMask:SetWidth(129)
-        FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar:SetSize(136, 10)
-        FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.ManaBarMask:SetSize(258, 16)
-        local point, relativeTo, relativePoint, xOffset, yOffset = FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar:GetPoint()
-        FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar:SetPoint(point, relativeTo, relativePoint, 9, yOffset)
-        local p, r, rr, x, y = FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.RightText:GetPoint()
-        FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.RightText:SetPoint(p, r, rr, -14, y)
-        local a, b, c, d, e = FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.LeftText:GetPoint()
-        FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.LeftText:SetPoint(a,b,c,3,e)
+    -- -- HealthBarColorActive
+    -- if not BetterBlizzFramesDB.playerFrameOCDTextureBypass then
+    --     local a, b, c, d, e = PlayerLevelText:GetPoint()
+    --     PlayerLevelText:SetPoint(a,b,c,d,-28)
+    --     PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarArea.HealthBar.HealthBarMask:SetHeight(33)
+    --     PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar.ManaBarMask:SetPoint("TOPLEFT", PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar, "TOPLEFT", -2, 3)
+    --     PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar.ManaBarMask:SetHeight(17)
+    --     PlayerFrame.healthbar:SetHeight(21)
+    --     PlayerFrame.manabar:SetSize(125,12)
+    --     local p, r, rr, x, y = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar.RightText:GetPoint()
+    --     PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar.RightText:SetPoint(p, r, rr, -3, 0)
+    --     --local a, b, c, d, e = TargetFrame.TargetFrameContent.TargetFrameContentMain.Name:GetPoint()
+    --     --TargetFrame.TargetFrameContent.TargetFrameContentMain.Name:ClearAllPoints()
+    --     --TargetFrame.TargetFrameContent.TargetFrameContentMain.Name:SetPoint(a, b, c, d, 99)
+    --     TargetFrame.TargetFrameContent.TargetFrameContentMain.HealthBar.HealthBarMask:SetWidth(129)
+    --     TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar:SetSize(136, 10)
+    --     TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.ManaBarMask:SetSize(258, 16)
+    --     local point, relativeTo, relativePoint, xOffset, yOffset = TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar:GetPoint()
+    --     TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar:SetPoint(point, relativeTo, relativePoint, 9, yOffset)
+    --     local p, r, rr, x, y = TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.RightText:GetPoint()
+    --     TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.RightText:SetPoint(p, r, rr, -14, y)
+    --     local a, b, c, d, e = TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.LeftText:GetPoint()
+    --     TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.LeftText:SetPoint(a,b,c,3,e)
+    --     FocusFrame.TargetFrameContent.TargetFrameContentMain.HealthBar.HealthBarMask:SetWidth(129)
+    --     FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar:SetSize(136, 10)
+    --     FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.ManaBarMask:SetSize(258, 16)
+    --     local point, relativeTo, relativePoint, xOffset, yOffset = FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar:GetPoint()
+    --     FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar:SetPoint(point, relativeTo, relativePoint, 9, yOffset)
+    --     local p, r, rr, x, y = FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.RightText:GetPoint()
+    --     FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.RightText:SetPoint(p, r, rr, -14, y)
+    --     local a, b, c, d, e = FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.LeftText:GetPoint()
+    --     FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.LeftText:SetPoint(a,b,c,3,e)
 
 
-        local a, b, c, d, e = TargetFrame.totFrame.HealthBar:GetPoint()
-        TargetFrame.totFrame.HealthBar:SetPoint(a,b,c,-5,-5)
-        TargetFrame.totFrame.HealthBar:SetSize(71, 13)
-        TargetFrame.totFrame.ManaBar:SetSize(76, 8)
-        local a, b, c, d, e = TargetFrame.totFrame.ManaBar:GetPoint()
-        TargetFrame.totFrame.ManaBar:SetPoint(a,b,c,-5,3)
-        TargetFrame.totFrame.ManaBar.ManaBarMask:SetWidth(130)
-        TargetFrame.totFrame.ManaBar.ManaBarMask:SetHeight(17)
-        local a, b, c, d, e = FocusFrame.totFrame.HealthBar:GetPoint()
-        FocusFrame.totFrame.HealthBar:SetPoint(a,b,c,-5,-5)
-        FocusFrame.totFrame.HealthBar:SetSize(71, 13)
-        FocusFrame.totFrame.ManaBar:SetSize(77, 10)
-        local a, b, c, d, e = FocusFrame.totFrame.ManaBar:GetPoint()
-        FocusFrame.totFrame.ManaBar:SetPoint(a,b,c,-5,3)
-        FocusFrame.totFrame.ManaBar.ManaBarMask:SetWidth(130)
-        FocusFrame.totFrame.ManaBar.ManaBarMask:SetHeight(17)
-    end
+    --     local a, b, c, d, e = TargetFrame.totFrame.HealthBar:GetPoint()
+    --     TargetFrame.totFrame.HealthBar:SetPoint(a,b,c,-5,-5)
+    --     TargetFrame.totFrame.HealthBar:SetSize(71, 13)
+    --     TargetFrame.totFrame.ManaBar:SetSize(76, 8)
+    --     local a, b, c, d, e = TargetFrame.totFrame.ManaBar:GetPoint()
+    --     TargetFrame.totFrame.ManaBar:SetPoint(a,b,c,-5,3)
+    --     TargetFrame.totFrame.ManaBar.ManaBarMask:SetWidth(130)
+    --     TargetFrame.totFrame.ManaBar.ManaBarMask:SetHeight(17)
+    --     local a, b, c, d, e = FocusFrame.totFrame.HealthBar:GetPoint()
+    --     FocusFrame.totFrame.HealthBar:SetPoint(a,b,c,-5,-5)
+    --     FocusFrame.totFrame.HealthBar:SetSize(71, 13)
+    --     FocusFrame.totFrame.ManaBar:SetSize(77, 10)
+    --     local a, b, c, d, e = FocusFrame.totFrame.ManaBar:GetPoint()
+    --     FocusFrame.totFrame.ManaBar:SetPoint(a,b,c,-5,3)
+    --     FocusFrame.totFrame.ManaBar.ManaBarMask:SetWidth(130)
+    --     FocusFrame.totFrame.ManaBar.ManaBarMask:SetHeight(17)
+    -- end
 end
 
 local function TurnTestModesOff()
@@ -1043,26 +771,14 @@ Frame:SetScript("OnEvent", function(...)
     DisableClickForClassSpecificFrame()
     BBF.MoveToTFrames()
     BBF.HookHealthbarColors()
-    C_Timer.After(1, function()
-       -- BBF.HideFrames()
-        --BBF.MoveToTFrames()
-       -- BBF.ChangeCastbarSizes()
-        if BetterBlizzFramesDB.partyCastbars then
-            --BBF.CreateCastbars()
-        end
-    end)
 
     local function LoginVariablesLoaded()
         if BBF.variablesLoaded then
             -- add setings updates
-            BBF.UpdateUserTargetSettings()
             BBF.UpdateUserDarkModeSettings()
             BBF.ChatFilterCaller()
-            HookClassComboPoints()
 
-
-
-            BBF.HookOverShields()
+            --BBF.HookOverShields()
             BBF.HookCastbarsForEvoker()
             BBF.StealthIndicator()
             BBF.CastbarRecolorWidgets()
@@ -1074,43 +790,45 @@ Frame:SetScript("OnEvent", function(...)
             end
             BBF.MoveToTFrames()
             BBF.UpdateUserAuraSettings()
-            BBF.HookPlayerAndTargetAuras()
+            --BBF.HookPlayerAndTargetAuras()
 
 
-            local hidePartyName = BetterBlizzFramesDB.hidePartyNames
-            local hidePartyRole = BetterBlizzFramesDB.hidePartyRoles
-            if hidePartyName or hidePartyRole then
-                BBF.OnUpdateName()
-            end
-            if BetterBlizzFramesDB.removeRealmNames or (BetterBlizzFramesDB.partyArenaNames or BetterBlizzFramesDB.targetAndFocusArenaNames) then
-                BBF.AllCaller()
-            end
+            -- local hidePartyName = BetterBlizzFramesDB.hidePartyNames
+            -- local hidePartyRole = BetterBlizzFramesDB.hidePartyRoles
+            -- if hidePartyName or hidePartyRole then
+            --     BBF.OnUpdateName()
+            -- end
 
             if BetterBlizzFramesDB.playerFrameOCD then
                 BBF.FixStupidBlizzPTRShit()
             end
             C_Timer.After(1, function()
+                if BetterBlizzFramesDB.classColorTargetNames and BetterBlizzFramesDB.classColorLevelText then
+                    BBF.HookLevelText()
+                end
+                BBF.HookPlayerAndTargetAuras()
                 if BetterBlizzFramesDB.playerFrameOCD then
                     BBF.FixStupidBlizzPTRShit()
                 end
                 if BetterBlizzFramesDB.classColorFrames then
                     BBF.UpdateFrames()
                 end
-                if not isAddonLoaded("ClassicFrames") then
-                    BBF.SetCenteredNamesCaller()
-                end
                 BBF.DarkmodeFrames()
                 BBF.PlayerReputationColor()
                 BBF.ClassColorPlayerName()
-                BBF.CheckForAuraBorders()
-                if BetterBlizzFramesDB.useMiniFocusFrame then
-                    BBF.MiniFocusFrame()
+                --BBF.CheckForAuraBorders() bodify cata
+                -- if BetterBlizzFramesDB.useMiniFocusFrame then
+                --     BBF.MiniFocusFrame()
+                -- end
+                if BetterBlizzFramesDB.biggerHealthbars then
+                    BBF.HookBiggerHealthbars()
                 end
+                BBF.UpdateUserTargetSettings()
                 BBF.UpdateCastbars()
-                BBF.ChangeLossOfControlScale()
                 BBF.ChangeCastbarSizes()
+                BBF.HideFrames()
+                --BBF.HookUnitFrameName()
             end)
-            BBF.HideFrames()
             if BetterBlizzFramesDB.partyCastbars then
                 BBF.CreateCastbars()
             end
@@ -1196,11 +914,12 @@ PlayerEnteringWorld:SetScript("OnEvent", function()
     BBF.DarkmodeFrames()
     BBF.ClickthroughFrames()
     BBF.CheckForAuraBorders()
-    if not isAddonLoaded("ClassicFrames") then
-        --BBF.HookNameChangeStuff()
-        TargetFrame:SetFrameStrata("MEDIUM")
-        TargetFrameSpellBar:SetFrameStrata("HIGH")
-        FocusFrameSpellBar:SetFrameStrata("HIGH")
-    end
+    BBF.RepositionBuffFrame()
+    -- if not isAddonLoaded("ClassicFrames") then
+    --     --BBF.HookNameChangeStuff()
+    --     TargetFrame:SetFrameStrata("MEDIUM")
+    --     TargetFrameSpellBar:SetFrameStrata("HIGH")
+    --     FocusFrameSpellBar:SetFrameStrata("HIGH")
+    -- end
 end)
 PlayerEnteringWorld:RegisterEvent("PLAYER_ENTERING_WORLD")

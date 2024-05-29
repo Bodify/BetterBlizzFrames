@@ -1,0 +1,435 @@
+local UnitIsFriend = UnitIsFriend
+local UnitIsEnemy = UnitIsEnemy
+local UnitIsPlayer = UnitIsPlayer
+local UnitClass = UnitClass
+
+local LSM = LibStub("LibSharedMedia-3.0")
+
+local healthbarsHooked = nil
+local classColorsOn
+local colorPetAfterOwner
+
+local function getUnitReaction(unit)
+    if UnitIsFriend("player", unit) then
+        return "FRIENDLY"
+    elseif UnitIsEnemy("player", unit) then
+        return "HOSTILE"
+    else
+        return "NEUTRAL"
+    end
+end
+
+local OnSetPointHookScript = function(point, relativeTo, relativePoint, xOffset, yOffset)
+    return function(frame, _, _, _, _, _, flag)
+        if flag ~= "BBFHookSetPoint" then
+            frame:ClearAllPoints()
+            frame:SetPoint(point, relativeTo, relativePoint, xOffset, yOffset, "BBFHookSetPoint")
+        end
+    end
+end
+
+function BBF.MoveRegion(frame, point, relativeTo, relativePoint, xOffset, yOffset)
+    frame:ClearAllPoints()
+    frame:SetPoint(point, relativeTo, relativePoint, xOffset, yOffset, "BBFHookSetPoint")
+
+    if (not frame.BBFHookSetPoint) then
+        hooksecurefunc(frame, "SetPoint", OnSetPointHookScript(point, relativeTo, relativePoint, xOffset, yOffset))
+        frame.BBFHookSetPoint = true
+    end
+end
+
+local OnShowHookScript = function()
+    return function(frame)
+        frame:Hide()
+    end
+end
+
+
+local OnSetWidthHookScript = function()
+    return function(frame)
+        frame:SetWidth(value)
+    end
+end
+
+function BBF.HideRegion(frame)
+    frame:Hide()
+
+    if not frame.BBFHookHide then
+        hooksecurefunc(frame, "Show", OnShowHookScript())
+        frame.BBFHookHide = true
+    end
+end
+
+local OnSetWidthHookScript = function(width)
+    return function(frame, width, flag)
+        if flag ~= "BBFHookSetWidth" then
+            frame:SetWidth(width, "BBFHookSetWidth")
+        end
+    end
+end
+
+function BBF.SetRegionWidth(frame, width)
+    frame:SetWidth(width, "BBFHookSetWidth")
+
+    if (not frame.BBFHookSetWidth) then
+        hooksecurefunc(frame, "SetWidth", OnSetWidthHookScript(width))
+        frame.BBFHookSetWidth = true
+    end
+end
+
+
+local OnSetHeightHookScript = function(height)
+    return function(frame, height, flag)
+        if flag ~= "BBFHookSetHeight" then
+            frame:SetWidth(height, "BBFHookSetHeight")
+        end
+    end
+end
+
+function BBF.SetRegionHeight(frame, height)
+    frame:SetHeight(height, "BBFHookSetHeight")
+
+    if (not frame.BBFHookSetWidth) then
+        hooksecurefunc(frame, "SetHeight", OnSetHeightHookScript(height))
+        frame.BBFHookSetHeight = true
+    end
+end
+
+
+local OnSetSizeHookScript = function(width, height)
+    return function(frame, width, height, flag)
+        if flag ~= "BBFHookSetSize" then
+            frame:SetSize(width, height, "BBFHookSetSize")
+        end
+    end
+end
+
+function BBF.SetRegionSize(frame, width, height)
+    frame:SetSize(width, height, "BBFHookSetSize")
+
+    if (not frame.BBFHookSetSize) then
+        hooksecurefunc(frame, "SetSize", OnSetSizeHookScript(width, height))
+        frame.BBFHookSetSize = true
+    end
+end
+
+
+
+local function getUnitColor(unit)
+    if UnitIsPlayer(unit) then
+        local color = RAID_CLASS_COLORS[select(2, UnitClass(unit))]
+        if color then
+            return {r = color.r, g = color.g, b = color.b}
+        end
+    elseif colorPetAfterOwner and UnitIsUnit(unit, "pet") then
+        -- Check if the unit is the player's pet and the setting is enabled
+        local _, playerClass = UnitClass("player")
+        local color = RAID_CLASS_COLORS[playerClass]
+        if color then
+            return {r = color.r, g = color.g, b = color.b}
+        end
+    else
+        if ( not UnitPlayerControlled(unit) and UnitIsTapDenied(unit) ) then
+            return {r = 0.5, g = 0.5, b = 0.5}
+        end
+
+        local reaction = getUnitReaction(unit)
+
+        if reaction == "HOSTILE" then
+            return {r = 1, g = 0, b = 0}
+        elseif reaction == "NEUTRAL" then
+            return {r = 1, g = 1, b = 0}
+        else -- if reaction is "FRIENDLY"
+            return {r = 0, g = 1, b = 0}
+        end
+    end
+end
+
+local function updateFrameColorToggleVer(frame, unit)
+    if classColorsOn then
+        --local color = UnitIsPlayer(unit) and RAID_CLASS_COLORS[select(2, UnitClass(unit))] or getUnitColor(unit) --bad
+        local color = getUnitColor(unit)
+        if color then
+            frame:SetStatusBarDesaturated(true)
+            frame:SetStatusBarColor(color.r, color.g, color.b)
+        end
+    end
+end
+
+local function resetFrameColor(frame, unit)
+    frame:SetStatusBarDesaturated(false)
+    frame:SetStatusBarColor(0,1,0)
+end
+
+local function UpdateHealthColor(frame, unit)
+    --local color = UnitIsPlayer(unit) and RAID_CLASS_COLORS[select(2, UnitClass(unit))] or getUnitColor(unit)
+    if not frame then return end
+    local color = getUnitColor(unit)
+    if color then
+        frame:SetStatusBarDesaturated(true)
+        frame:SetStatusBarColor(color.r, color.g, color.b)
+    end
+end
+
+function BBF.UpdateToTColor()
+    updateFrameColorToggleVer(TargetFrameToTHealthBar, "targettarget")
+end
+
+function BBF.UpdateFrames()
+    classColorsOn = BetterBlizzFramesDB.classColorFrames
+    colorPetAfterOwner = BetterBlizzFramesDB.colorPetAfterOwner
+    if classColorsOn then
+        BBF.HookHealthbarColors()
+        if UnitExists("player") then updateFrameColorToggleVer(PlayerFrameHealthBar, "player") end
+        if UnitExists("target") then updateFrameColorToggleVer(TargetFrameHealthBar, "target") end
+        if UnitExists("focus") then updateFrameColorToggleVer(FocusFrameHealthBar, "focus") end
+        if UnitExists("targettarget") then updateFrameColorToggleVer(TargetFrameToTHealthBar, "targettarget") end
+        if UnitExists("focustarget") then updateFrameColorToggleVer(FocusFrameToTHealthBar, "focustarget") end
+        if UnitExists("party1") then updateFrameColorToggleVer(PartyMemberFrame1HealthBar, "party1") end
+        if UnitExists("party2") then updateFrameColorToggleVer(PartyMemberFrame2HealthBar, "party2") end
+        if UnitExists("party3") then updateFrameColorToggleVer(PartyMemberFrame3HealthBar, "party3") end
+        if UnitExists("party4") then updateFrameColorToggleVer(PartyMemberFrame4HealthBar, "party4") end
+    else
+        if UnitExists("player") then resetFrameColor(PlayerFrameHealthBar, "player") end
+        if UnitExists("target") then resetFrameColor(TargetFrameHealthBar, "target") end
+        if UnitExists("focus") then resetFrameColor(FocusFrameHealthBar, "focus") end
+        if UnitExists("targettarget") then resetFrameColor(TargetFrameToTHealthBar, "targettarget") end
+        if UnitExists("focustarget") then resetFrameColor(FocusFrameToTHealthBar, "focustarget") end
+        if UnitExists("party1") then resetFrameColor(PartyMemberFrame1HealthBar, "party1") end
+        if UnitExists("party2") then resetFrameColor(PartyMemberFrame2HealthBar, "party2") end
+        if UnitExists("party3") then resetFrameColor(PartyMemberFrame3HealthBar, "party3") end
+        if UnitExists("party4") then resetFrameColor(PartyMemberFrame4HealthBar, "party4") end
+    end
+    if BetterBlizzFramesDB.colorPetAfterOwner then
+        if UnitExists("pet") then updateFrameColorToggleVer(PetFrameHealthBar, "pet") end
+    end
+end
+
+function BBF.UpdateFrameColor(frame, unit)
+    local color = getUnitColor(unit)
+    if color then
+        frame:SetStatusBarDesaturated(true)
+        frame:SetStatusBarColor(color.r, color.g, color.b)
+    end
+end
+
+function BBF.ClassColorReputation(frame, unit)
+    local color = getUnitColor(unit)
+    if color then
+        frame:SetDesaturated(true)
+        frame:SetVertexColor(color.r, color.g, color.b)
+    end
+end
+
+function BBF.ResetClassColorReputation(frame, unit)
+    local color = getUnitColor(unit)
+    if color then
+        frame:SetDesaturated(false)
+        frame:SetVertexColor(UnitSelectionColor(unit))
+    end
+end
+
+function BBF.HookHealthbarColors()
+    if not healthbarsHooked and classColorsOn then
+--[[
+        hooksecurefunc("UnitFrameHealthBar_RefreshUpdateEvent", function(self) --pet frames only?
+            if self.unit then
+                print(self:GetName())
+                print(self.unit)
+                --UpdateHealthColor(self, self.unit)
+                --UpdateHealthColor(TargetFrameToTHealthBar, "targettarget")
+                --UpdateHealthColor(FocusFrameToT.HealthBar, "focustarget")
+            end
+        end)
+]]
+
+
+        hooksecurefunc("UnitFrameHealthBar_Update", function(self, unit)
+            if unit then
+                UpdateHealthColor(self, unit)
+                UpdateHealthColor(TargetFrameToTHealthBar, "targettarget")
+                UpdateHealthColor(FocusFrameToTHealthBar, "focustarget")
+            end
+        end)
+
+
+        hooksecurefunc("HealthBar_OnValueChanged", function(self)
+            if self.unit then
+                UpdateHealthColor(self, self.unit)
+                UpdateHealthColor(TargetFrameToTHealthBar, "targettarget")
+                UpdateHealthColor(FocusFrameToTHealthBar, "focustarget")
+            end
+        end)
+
+
+
+        healthbarsHooked = true
+    end
+end
+
+function BBF.PlayerReputationColor()
+    local frame = PlayerFrameBackground
+    if BetterBlizzFramesDB.playerReputationColor and not BetterBlizzFramesDB.biggerHealthbars then
+        frame:Show()
+        if BetterBlizzFramesDB.playerReputationClassColor then
+            local color = getUnitColor("player")
+            if color then
+                frame:SetTexture(137017)
+                frame:SetDesaturated(true)
+                frame:SetVertexColor(color.r, color.g, color.b)
+                frame:SetTexCoord(0,0,0,2)
+            end
+        else
+            frame:SetTexture(137017)
+            frame:SetDesaturated(false)
+            frame:SetVertexColor(UnitSelectionColor("player"))
+            frame:SetTexCoord(0,0,0,2)
+        end
+    else
+        -- if frame then
+        --     --frame:Hide()
+        --     frame:SetTexture(nil)
+        --     frame:Show()
+        -- end
+    end
+end
+
+local biggerHealthbarHooked
+local frameTextureHooked
+function BBF.BiggerHealthbars(frame, name)
+    local texture = _G[frame.."Texture"] or _G[frame.."TextureFrameTexture"]
+    local playerGlowTexture = _G["PlayerStatusTexture"]
+    local healthbar = _G[frame.."HealthBar"]
+    local manabar = _G[frame.."ManaBar"]
+    local leftText = _G[frame.."HealthBarTextLeft"] or _G[frame].textureFrame.HealthBarTextLeft
+    local leftTextMana = _G[frame].textureFrame and _G[frame].textureFrame.ManaBarTextLeft
+    local rightText = _G[frame.."HealthBarTextRight"] or _G[frame].textureFrame.HealthBarTextRight
+    local centerText = _G[frame.."HealthBarText"] or _G[frame].textureFrame.HealthBarText
+    local nameBackground = _G[frame.."NameBackground"]
+    local background = _G[frame.."Background"]
+    local deadText = _G[frame.."TextureFrameDeadText"]
+    -- Texture
+    texture:SetTexture("Interface\\Addons\\BetterBlizzFrames\\media\\UI-TargetingFrame")
+    playerGlowTexture:SetTexture("Interface\\Addons\\BetterBlizzFrames\\media\\UI-Player-Status")
+    playerGlowTexture:SetHeight(69)
+
+    -- Healthbar
+    local point, relativeTo, relativePoint, xOfs, yOfs = healthbar:GetPoint()
+    local newYOffset = yOfs + 19
+    BBF.MoveRegion(healthbar, point, relativeTo, relativePoint, xOfs, newYOffset)
+    healthbar:SetHeight(28)
+    healthbar:SetStatusBarTexture(LSM:Fetch(LSM.MediaType.STATUSBAR, "Smooth"))
+
+    BBF.SetRegionWidth(manabar, 120)
+    --BBF.SetRegionSize(manabar, 120, 12)
+
+    if nameBackground then
+        BBF.HideRegion(nameBackground)
+        -- nameBackground:Hide()
+        -- nameBackground:SetAlpha(0)
+    end
+    if background then
+    -- background:SetHeight(41)
+    -- background:SetWidth(120)
+        -- BBF.SetRegionHeight(background, 41)
+        -- BBF.SetRegionWidth(background, 120)
+        BBF.HookAndDo(background, "SetSize", function(frame, width, height, flag)
+            frame:SetSize(119, 42, flag)
+        end)
+        -- if not background.bbfHooked then
+        --     hooksecurefunc("PlayerFrame_UpdateArt", function()
+        --         background:SetWidth(120)
+        --     end)
+        --     background.bbfHooked = true
+        -- end
+        --BBF.SetRegionWidth(background, 120)
+        --BBF.SetRegionSize(background, 120, 41)
+    end
+
+    if deadText then
+        local point, relativeTo, relativePoint, xOfs, yOfs = deadText:GetPoint()
+        local newYOffset = yOfs + 10
+        BBF.MoveRegion(deadText, point, relativeTo, relativePoint, xOfs, newYOffset)
+    end
+
+    -- Name
+    local point, relativeTo, relativePoint, xOfs, yOfs = name:GetPoint()
+    local newYOffset = yOfs + 17
+    BBF.MoveRegion(name, point, relativeTo, relativePoint, xOfs, newYOffset)
+
+
+    -- Statustext
+    if leftTextMana then
+        local point, relativeTo, relativePoint, xOfs, yOfs = leftTextMana:GetPoint()
+        local newXOffset = xOfs + 1
+        BBF.MoveRegion(leftTextMana, point, relativeTo, relativePoint, newXOffset, yOfs)
+    end
+    local point, relativeTo, relativePoint, xOfs, yOfs = leftText:GetPoint()
+    local newYOffset = yOfs + 9.5
+    local newXOffset = xOfs + 1
+    if not leftTextMana then
+        BBF.MoveRegion(leftText, point, relativeTo, relativePoint, xOfs, newYOffset)
+    else
+        BBF.MoveRegion(leftText, point, relativeTo, relativePoint, newXOffset, newYOffset)
+    end
+
+    local point, relativeTo, relativePoint, xOfs, yOfs = rightText:GetPoint()
+    local newYOffset = yOfs + 9.5
+    BBF.MoveRegion(rightText, point, relativeTo, relativePoint, xOfs, newYOffset)
+
+    local point, relativeTo, relativePoint, xOfs, yOfs = centerText:GetPoint()
+    local newYOffset = yOfs + 9.5
+    BBF.MoveRegion(centerText, point, relativeTo, relativePoint, xOfs, newYOffset)
+
+    if not frameTextureHooked then
+        hooksecurefunc("TargetFrame_CheckClassification", function(frame)
+            if not frame or not frame.unit then return end
+            local classification = UnitClassification(frame.unit);
+        
+            if BetterBlizzFramesDB.biggerHealthbars then
+                if (classification == "minus") then
+                    -- frame.borderTexture:SetTexture(Media:Fetch("frames", "minus"));
+                    -- frame.nameBackground:Hide();
+                    -- frame.Background:SetHeight(31)
+                    -- frame.manabar:Hide();
+                    -- frame.manabar.TextString:Hide();
+                    -- forceNormalTexture = true;
+                    frame.borderTexture:SetTexture("Interface\\Addons\\BetterBlizzFrames\\media\\UI-TargetingFrame-Minus")
+                elseif (classification == "worldboss" or classification == "elite") then
+                    frame.borderTexture:SetTexture("Interface\\Addons\\BetterBlizzFrames\\media\\UI-TargetingFrame-Elite")
+                elseif (classification == "rareelite") then
+                    frame.borderTexture:SetTexture("Interface\\Addons\\BetterBlizzFrames\\media\\UI-TargetingFrame-Rare-Elite")
+                elseif (classification == "rare") then
+                    frame.borderTexture:SetTexture("Interface\\Addons\\BetterBlizzFrames\\media\\UI-TargetingFrame-Rare")
+                else
+                    frame.borderTexture:SetTexture("Interface\\Addons\\BetterBlizzFrames\\media\\UI-TargetingFrame")
+                end
+            end
+        end)
+        frameTextureHooked = true
+    end
+end
+
+function BBF.HookBiggerHealthbars()
+    if BetterBlizzFramesDB.biggerHealthbars and not biggerHealthbarHooked then
+        local playerName = FocusFrame.cleanName or PlayerName
+        local targetName = PlayerFrame.cleanName or TargetFrameTextureFrameName
+        local focusName = TargetFrame.cleanName or TargetFrameTextureFrameName
+        BBF.BiggerHealthbars("PlayerFrame", playerName)
+        BBF.BiggerHealthbars("TargetFrame", targetName)
+        BBF.BiggerHealthbars("FocusFrame",focusName)
+
+        -- BBF.BiggerHealthbars("PlayerFrame", PlayerName)
+        -- BBF.BiggerHealthbars("TargetFrame", TargetFrameTextureFrameName)
+        -- BBF.BiggerHealthbars("FocusFrame", FocusFrameTextureFrameName)
+
+        biggerHealthbarHooked = true
+    end
+end
+
+--TargetFrame.textureFrame.HealthBarTextRight
+
+--PlayerFrameHealthBar   PlayerFrameHealthBarTextRight
+--/run BBF.LargeUnitFrameHealthbars("PlayerFrame", PlayerName)
+
+--PlayerName
