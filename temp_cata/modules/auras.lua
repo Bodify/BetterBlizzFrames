@@ -363,7 +363,7 @@ local function adjustCastbar(self, frame)
             --meta.SetPoint(self, "TOPLEFT", meta.GetParent(self), "BOTTOMLEFT", 43, 110);
             meta.SetPoint(self, "TOPLEFT", parent, "BOTTOMLEFT", xOffset + targetCastBarXPos, -14 + targetCastBarYPos);
         elseif targetDetachCastbar then
-            meta.SetPoint(self, "CENTER", UIParent, "CENTER", targetCastBarXPos, targetCastBarYPos);
+            meta.SetPoint(self, "CENTER", parent, "CENTER", targetCastBarXPos, targetCastBarYPos);
         elseif buffsOnTopReverseCastbarMovement and buffsOnTop then
             yOffset = yOffset + CalculateAuraRowsYOffset(parent, rowHeights, targetCastBarScale) + 100/targetCastBarScale
             meta.SetPoint(self, "TOPLEFT", parent, "BOTTOMLEFT", xOffset + targetCastBarXPos, yOffset + targetCastBarYPos);
@@ -393,7 +393,7 @@ local function adjustCastbar(self, frame)
             --meta.SetPoint(self, "TOPLEFT", meta.GetParent(self), "BOTTOMLEFT", 43, 110);
             meta.SetPoint(self, "TOPLEFT", parent, "BOTTOMLEFT", xOffset + focusCastBarXPos, -14 + focusCastBarYPos);
         elseif focusDetachCastbar then
-            meta.SetPoint(self, "CENTER", UIParent, "CENTER", focusCastBarXPos, focusCastBarYPos);
+            meta.SetPoint(self, "CENTER", parent, "CENTER", focusCastBarXPos, focusCastBarYPos);
         elseif buffsOnTopReverseCastbarMovement and buffsOnTop then
             yOffset = yOffset + CalculateAuraRowsYOffset(parent, rowHeights, focusCastBarScale) + 100/focusCastBarScale
             meta.SetPoint(self, "TOPLEFT", parent, "BOTTOMLEFT", xOffset + focusCastBarXPos, yOffset + focusCastBarYPos);
@@ -1045,14 +1045,14 @@ local function AdjustAuras(self, frameType)
 
                 if buffFrame.Stealable and buffFrame.Stealable:IsShown() then
                     if buffFrame.isEnlarged then
-                        buffFrame.Stealable:SetPoint("TOPLEFT", buffFrame, "TOPLEFT", -enlargedTextureAdjustment, enlargedTextureAdjustment)
-                        buffFrame.Stealable:SetPoint("BOTTOMRIGHT", buffFrame, "BOTTOMRIGHT", enlargedTextureAdjustment, -enlargedTextureAdjustment)
+                        buffFrame.Stealable:SetPoint("TOPLEFT", buffFrame, "TOPLEFT", -3, 4)
+                        buffFrame.Stealable:SetPoint("BOTTOMRIGHT", buffFrame, "BOTTOMRIGHT", 3, -3)
                     elseif buffFrame.isCompacted then
                         buffFrame.Stealable:SetPoint("TOPLEFT", buffFrame, "TOPLEFT", -compactedTextureAdjustment, compactedTextureAdjustment)
                         buffFrame.Stealable:SetPoint("BOTTOMRIGHT", buffFrame, "BOTTOMRIGHT", compactedTextureAdjustment, -compactedTextureAdjustment)
                     else
-                        buffFrame.Stealable:SetPoint("TOPLEFT", buffFrame, "TOPLEFT", -purgeableTextureAdjustment, purgeableTextureAdjustment)
-                        buffFrame.Stealable:SetPoint("BOTTOMRIGHT", buffFrame, "BOTTOMRIGHT", purgeableTextureAdjustment, -purgeableTextureAdjustment)
+                        buffFrame.Stealable:SetPoint("TOPLEFT", buffFrame, "TOPLEFT", -2, 2)
+                        buffFrame.Stealable:SetPoint("BOTTOMRIGHT", buffFrame, "BOTTOMRIGHT", 2, -2)
                     end
                 end
 
@@ -2317,6 +2317,9 @@ end
 
 
 function BBF.RepositionBuffFrame()
+    playerAuraXOffset = BetterBlizzFramesDB.playerAuraXOffset
+    playerAuraYOffset = BetterBlizzFramesDB.playerAuraYOffset
+
     BuffFrame:ClearAllPoints()
     BuffFrame:SetPoint("TOPRIGHT", MinimapCluster, "TOPLEFT", -10 + playerAuraXOffset, -13 + playerAuraYOffset)
 end
@@ -2329,7 +2332,7 @@ function BBF.RefreshAllAuraFrames()
     if BetterBlizzFramesDB.playerAuraFiltering then
         if BetterBlizzFramesDB.enablePlayerBuffFiltering then
             PersonalBuffFrameFilterAndGrid(BuffFrame)
-            BuffFrame_Update()
+            --BuffFrame_Update()
         end
         --PersonalDebuffFrameFilterAndGrid(DebuffFrame)
         AdjustAuras(TargetFrame, "target")

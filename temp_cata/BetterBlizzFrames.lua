@@ -6,7 +6,7 @@ BBF = BBF or {}
 -- Things are getting more messy need a lot of cleaning lol
 
 local addonVersion = "1.00" --too afraid to to touch for now
-local addonUpdates = "1.4.0"
+local addonUpdates = "1.4.1"
 local sendUpdate = false
 BBF.VersionNumber = addonUpdates
 BBF.variablesLoaded = false
@@ -196,6 +196,8 @@ local defaultSettings = {
     displayDispelGlowAlways = false,
     overShieldsUnitFrames = true,
     overShieldsCompactUnitFrames = true,
+    playerAuraGlows = true,
+    playerAuraImportantGlow = true,
 
     --Target buffs
     targetAuraGlows = true,

@@ -670,70 +670,70 @@ BBF.changeparent = ChangeParent
 local partyAlpha = 1
 local partyFrameHider
 function BBF.HidePartyInArena()
-    if BetterBlizzFramesDB.hidePartyFramesInArena and not partyFrameHider then
-        partyFrameHider = CreateFrame("Frame")
+    -- if BetterBlizzFramesDB.hidePartyFramesInArena and not partyFrameHider then
+    --     partyFrameHider = CreateFrame("Frame")
 
-        partyFrameHider:SetScript("OnEvent", function(self, event)
-            -- if event == "PLAYER_ENTERING_BATTLEGROUND" and BetterBlizzFramesDB.hidePartyFramesInArena then
-            --     partyAlpha = 0
-            -- elseif event == "PLAYER_ENTERING_WORLD" and IsActiveBattlefieldArena() == false then
-            --     partyAlpha = 1
-            -- end
-            local isInArena = IsActiveBattlefieldArena()
-            ChangeParent(CompactRaidFrameContainer, isInArena)
-            if CompactPartyFrame then
-                ChangeParent(CompactPartyFrame, isInArena)
-            end
-            -- ChangeParent(CompactRaidFrame1Background, true)
-            -- ChangeParent(CompactRaidFrame2Background, IsActiveBattlefieldArena())
-            -- ChangeParent(CompactRaidFrame3Background, IsActiveBattlefieldArena())
-            -- CompactRaidFrameContainer:SetParent()
-            -- PartyFrame:SetAlpha(partyAlpha)
-            -- PartyMemberBuffTooltip:SetAlpha(partyAlpha)
-            -- CompactPartyFrameMember1Background:SetAlpha(partyAlpha)
-            -- CompactPartyFrameMember2Background:SetAlpha(partyAlpha)
-            -- CompactPartyFrameMember3Background:SetAlpha(partyAlpha)
-            -- CompactPartyFrameMember1SelectionHighlight:SetAlpha(partyAlpha)
-            -- CompactPartyFrameMember2SelectionHighlight:SetAlpha(partyAlpha)
-            -- CompactPartyFrameMember3SelectionHighlight:SetAlpha(partyAlpha)
-        end)
-        partyFrameHider:RegisterEvent("PLAYER_ENTERING_BATTLEGROUND")
-        partyFrameHider:RegisterEvent("PLAYER_ENTERING_WORLD")
-        -- if not IsActiveBattlefieldArena() == false then
-        --     partyAlpha = 0
-        -- end
-        local isInArena = IsActiveBattlefieldArena()
-        ChangeParent(CompactRaidFrameContainer, isInArena)
-        if CompactPartyFrame then
-            ChangeParent(CompactPartyFrame, isInArena)
-        end
-        -- ChangeParent(CompactRaidFrame1Background, true)
-        -- ChangeParent(CompactRaidFrame2Background, IsActiveBattlefieldArena())
-        -- ChangeParent(CompactRaidFrame3Background, IsActiveBattlefieldArena())
-    elseif BetterBlizzFramesDB.hidePartyFramesInArena and partyFrameHider then
-        -- if not IsActiveBattlefieldArena() == false then
-        --     partyAlpha = 0
-        -- else
-        --     partyAlpha = 1
-        -- end
-        partyFrameHider:UnregisterAllEvents()
-        partyFrameHider:RegisterEvent("PLAYER_ENTERING_BATTLEGROUND")
-        partyFrameHider:RegisterEvent("PLAYER_ENTERING_WORLD")
-        ChangeParent(CompactRaidFrameContainer, IsActiveBattlefieldArena())
-        if CompactPartyFrame then
-            ChangeParent(CompactPartyFrame, IsActiveBattlefieldArena())
-        end
-    elseif not BetterBlizzFramesDB.hidePartyFramesInArena then
-        if partyFrameHider then
-            partyFrameHider:UnregisterEvent("PLAYER_ENTERING_BATTLEGROUND")
-            partyFrameHider:UnregisterEvent("PLAYER_ENTERING_WORLD")
-        end
-        -- partyAlpha = 1
-        ChangeParent(CompactRaidFrameContainer, IsActiveBattlefieldArena())
-        if CompactPartyFrame then
-            ChangeParent(CompactPartyFrame, IsActiveBattlefieldArena())
-        end
-    end
+    --     partyFrameHider:SetScript("OnEvent", function(self, event)
+    --         -- if event == "PLAYER_ENTERING_BATTLEGROUND" and BetterBlizzFramesDB.hidePartyFramesInArena then
+    --         --     partyAlpha = 0
+    --         -- elseif event == "PLAYER_ENTERING_WORLD" and IsActiveBattlefieldArena() == false then
+    --         --     partyAlpha = 1
+    --         -- end
+    --         local isInArena = IsActiveBattlefieldArena()
+    --         ChangeParent(CompactRaidFrameContainer, isInArena)
+    --         if CompactPartyFrame then
+    --             ChangeParent(CompactPartyFrame, isInArena)
+    --         end
+    --         -- ChangeParent(CompactRaidFrame1Background, true)
+    --         -- ChangeParent(CompactRaidFrame2Background, IsActiveBattlefieldArena())
+    --         -- ChangeParent(CompactRaidFrame3Background, IsActiveBattlefieldArena())
+    --         -- CompactRaidFrameContainer:SetParent()
+    --         -- PartyFrame:SetAlpha(partyAlpha)
+    --         -- PartyMemberBuffTooltip:SetAlpha(partyAlpha)
+    --         -- CompactPartyFrameMember1Background:SetAlpha(partyAlpha)
+    --         -- CompactPartyFrameMember2Background:SetAlpha(partyAlpha)
+    --         -- CompactPartyFrameMember3Background:SetAlpha(partyAlpha)
+    --         -- CompactPartyFrameMember1SelectionHighlight:SetAlpha(partyAlpha)
+    --         -- CompactPartyFrameMember2SelectionHighlight:SetAlpha(partyAlpha)
+    --         -- CompactPartyFrameMember3SelectionHighlight:SetAlpha(partyAlpha)
+    --     end)
+    --     partyFrameHider:RegisterEvent("PLAYER_ENTERING_BATTLEGROUND")
+    --     partyFrameHider:RegisterEvent("PLAYER_ENTERING_WORLD")
+    --     -- if not IsActiveBattlefieldArena() == false then
+    --     --     partyAlpha = 0
+    --     -- end
+    --     local isInArena = IsActiveBattlefieldArena()
+    --     ChangeParent(CompactRaidFrameContainer, isInArena)
+    --     if CompactPartyFrame then
+    --         ChangeParent(CompactPartyFrame, isInArena)
+    --     end
+    --     -- ChangeParent(CompactRaidFrame1Background, true)
+    --     -- ChangeParent(CompactRaidFrame2Background, IsActiveBattlefieldArena())
+    --     -- ChangeParent(CompactRaidFrame3Background, IsActiveBattlefieldArena())
+    -- elseif BetterBlizzFramesDB.hidePartyFramesInArena and partyFrameHider then
+    --     -- if not IsActiveBattlefieldArena() == false then
+    --     --     partyAlpha = 0
+    --     -- else
+    --     --     partyAlpha = 1
+    --     -- end
+    --     partyFrameHider:UnregisterAllEvents()
+    --     partyFrameHider:RegisterEvent("PLAYER_ENTERING_BATTLEGROUND")
+    --     partyFrameHider:RegisterEvent("PLAYER_ENTERING_WORLD")
+    --     ChangeParent(CompactRaidFrameContainer, IsActiveBattlefieldArena())
+    --     if CompactPartyFrame then
+    --         ChangeParent(CompactPartyFrame, IsActiveBattlefieldArena())
+    --     end
+    -- elseif not BetterBlizzFramesDB.hidePartyFramesInArena then
+    --     if partyFrameHider then
+    --         partyFrameHider:UnregisterEvent("PLAYER_ENTERING_BATTLEGROUND")
+    --         partyFrameHider:UnregisterEvent("PLAYER_ENTERING_WORLD")
+    --     end
+    --     -- partyAlpha = 1
+    --     ChangeParent(CompactRaidFrameContainer, false)
+    --     if CompactPartyFrame then
+    --         ChangeParent(CompactPartyFrame, false)
+    --     end
+    -- end
 end
 
 --------------------------------------

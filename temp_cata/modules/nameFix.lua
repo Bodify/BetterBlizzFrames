@@ -216,10 +216,10 @@ local function updateTextForUnit(textElement, frame, hideName, isParty)
         frame.cleanName:SetShadowColor(PlayerName:GetShadowColor())
         frame.cleanName:SetShadowOffset(textElement:GetShadowOffset())
         frame.cleanName:SetShadowColor(textElement:GetShadowColor())
-        frame.cleanName:SetWidth(textElement:GetWidth())
         frame.cleanName:SetHeight(textElement:GetHeight())
         frame.cleanName:SetWordWrap(false)
     end
+    frame.cleanName:SetWidth(textElement:GetWidth())
     frame.cleanName:SetFont(ogFontName, ogFontHeight, ogFontFlags)
     frame.cleanName:SetPoint(a,p,a2,x,y)
 
@@ -437,16 +437,16 @@ end)
 local hideFocusToTName = BetterBlizzFramesDB.hideFocusToTName
 updateTextForUnit(focusToTName, FocusFrameToT, hideFocusToTName)
 
-for i = 1, 4 do
-    --local memberFrame = PartyFrame["MemberFrame" .. i]
-    local memberFrame = _G["PartyMemberFrame"..i]
-    local memberFrameName = memberFrame.name
+-- for i = 1, 4 do
+--     --local memberFrame = PartyFrame["MemberFrame" .. i]
+--     local memberFrame = _G["PartyMemberFrame"..i]
+--     local memberFrameName = memberFrame.name
 
-    hooksecurefunc(memberFrameName, "SetText", function(self, text)
-        local hidePartyNames = BetterBlizzFramesDB.hidePartyNames
-        updateTextForUnit(self, memberFrame, hidePartyNames, true)
-    end)
-end
+--     hooksecurefunc(memberFrameName, "SetText", function(self, text)
+--         local hidePartyNames = BetterBlizzFramesDB.hidePartyNames
+--         updateTextForUnit(self, memberFrame, hidePartyNames, true)
+--     end)
+-- end
 
 function BBF.UpdateAllNames()
     BBF.UpdateUserTargetSettings()
@@ -470,15 +470,29 @@ function BBF.UpdateAllNames()
     local hideFocusToTName = BetterBlizzFramesDB.hideFocusToTName
     updateTextForUnit(focusToTName, FocusFrameToT, hideFocusToTName)
 
-    for i = 1, 4 do
-        --local memberFrame = PartyFrame["MemberFrame" .. i]
-        local memberFrame = _G["PartyMemberFrame"..i]
-        local memberFrameName = memberFrame.name
+    local hidePartyNames = BetterBlizzFramesDB.hidePartyNames
+    for i = 1, 40 do
+        local memberFrame = nil
 
-        hooksecurefunc(memberFrameName, "SetText", function(self, text)
-            local hidePartyNames = BetterBlizzFramesDB.hidePartyNames
-            updateTextForUnit(self, memberFrame, hidePartyNames, true)
-        end)
+        -- Check PartyMemberFrame
+        memberFrame = _G["PartyMemberFrame"..i]
+        if memberFrame and memberFrame.name then
+            updateTextForUnit(memberFrame.name, memberFrame, hidePartyNames, true)
+        end
+
+        -- Check CompactRaidGroup
+        for j = 1, 8 do
+            memberFrame = _G["CompactRaidGroup"..j.."Member"..i]
+            if memberFrame and memberFrame.name then
+                updateTextForUnit(memberFrame.name, memberFrame, hidePartyNames, true)
+            end
+        end
+
+        -- Check RaidFrameMember
+        memberFrame = _G["RaidFrameMember"..i]
+        if memberFrame and memberFrame.name then
+            updateTextForUnit(memberFrame.name, memberFrame, hidePartyNames, true)
+        end
     end
 end
 

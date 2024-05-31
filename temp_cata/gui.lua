@@ -1511,7 +1511,7 @@ local function CreateTitle(parent)
     addonNameIcon:SetPoint("LEFT", addonNameText, "RIGHT", -2, -1)
     local verNumber = parent:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     verNumber:SetPoint("LEFT", addonNameText, "RIGHT", 25, 0)
-    verNumber:SetText("CATA BETA v0.0.1" )--.. BBF.VersionNumber.."b")
+    verNumber:SetText("CATA BETA v0.0.3" )--.. BBF.VersionNumber.."b")
 end
 
 ------------------------------------------------------------
@@ -1929,7 +1929,8 @@ local function guiGeneralTab()
 
     local hidePartyFramesInArena = CreateCheckbox("hidePartyFramesInArena", "Hide Party in Arena (GEX)", BetterBlizzFrames, nil, BBF.HidePartyInArena)
     hidePartyFramesInArena:SetPoint("TOPLEFT", showPartyCastbar, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltip(hidePartyFramesInArena, "Hide Party Frames in Arena. Made with GladiusEx Party Frames in mind.")
+    CreateTooltip(hidePartyFramesInArena, "Hide Party Frames in Arena. Made with GladiusEx Party Frames in mind.") 
+    notWorking(hidePartyFramesInArena, true)
 
     local hidePartyNames = CreateCheckbox("hidePartyNames", "Hide Names", BetterBlizzFrames)
     hidePartyNames:SetPoint("TOPLEFT", hidePartyFramesInArena, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
@@ -2393,7 +2394,7 @@ local function guiGeneralTab()
     local removeRealmNames = CreateCheckbox("removeRealmNames", "Hide Realm Name", BetterBlizzFrames)
     removeRealmNames:SetPoint("TOPLEFT", classColorTargetNames, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     removeRealmNames:HookScript("OnClick", function()
-        --StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.UpdateAllNames()
     end)
     CreateTooltipTwo(removeRealmNames, "Hide Realm Indicator", "Hide realm name and different realm indicator \"(*)\" from Target, Focus & Party frames.", "Will enable a fake name. Because of this other addons like HealthBarColor's name stuff will not work properly.")
 
@@ -2746,6 +2747,9 @@ local function guiCastbars()
         end
     end)
 
+    if BetterBlizzFramesDB.targetDetachCastbar then
+        BetterBlizzFramesDB.targetDetachCastbar = false
+    end
     local targetDetachCastbar = CreateCheckbox("targetDetachCastbar", "Detach from frame", contentFrame)
     targetDetachCastbar:SetPoint("TOPLEFT", targetToTCastbarAdjustment, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     targetDetachCastbar:HookScript("OnClick", function(self)
@@ -2770,6 +2774,7 @@ local function guiCastbars()
         end
     end)
     CreateTooltip(targetDetachCastbar, "Detach castbar from frame and enable wider xy positioning.\nRight-click a slider to enter a specific number.")
+    notWorking(targetDetachCastbar, true)
 
     if BetterBlizzFramesDB.targetDetachCastbar then
         targetCastBarXPos:SetMinMaxValues(-900, 900)
@@ -2986,6 +2991,9 @@ local function guiCastbars()
         end
     end)
 
+    if BetterBlizzFramesDB.focusDetachCastbar then
+        BetterBlizzFramesDB.focusDetachCastbar = false
+    end
     local focusDetachCastbar = CreateCheckbox("focusDetachCastbar", "Detach from frame", contentFrame)
     focusDetachCastbar:SetPoint("TOPLEFT", focusToTCastbarAdjustment, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     focusDetachCastbar:HookScript("OnClick", function(self)
@@ -3010,6 +3018,7 @@ local function guiCastbars()
         end
     end)
     CreateTooltip(focusDetachCastbar, "Detach castbar from frame and enable wider xy positioning.\nRight-click a slider to enter a specific number.")
+    notWorking(focusDetachCastbar, true)
 
     if BetterBlizzFramesDB.focusDetachCastbar then
         focusCastBarXPos:SetMinMaxValues(-900, 900)
