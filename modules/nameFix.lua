@@ -408,7 +408,13 @@ local function ChangeName(frame, unit, party, tot)
             end
         end
     end
-
+    if party then
+        local a, p, a2, x, y = originalNameObject:GetPoint()
+        frame.cleanName:ClearAllPoints()
+        frame.cleanName:SetPoint(a, p, a2, x, y)
+    end
+    frame.cleanName:SetWidth(originalNameObject:GetWidth() + 10)
+    frame.cleanName:SetHeight(originalNameObject:GetHeight())
     frame.cleanName:SetFont(ogFontName, ogFontHeight, ogFontFlags)
 
     if (classColorTargetNames and not party) and isPlayer then
