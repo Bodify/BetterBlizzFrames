@@ -6,8 +6,8 @@ BBF = BBF or {}
 -- Things are getting more messy need a lot of cleaning lol
 
 local addonVersion = "1.00" --too afraid to to touch for now
-local addonUpdates = "1.4.1d"
-local sendUpdate = true
+local addonUpdates = "1.4.1e"
+local sendUpdate = false
 BBF.VersionNumber = addonUpdates
 BBF.variablesLoaded = false
 local isAddonLoaded = C_AddOns.IsAddOnLoaded

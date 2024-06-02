@@ -912,21 +912,21 @@ local function AdjustAuras(self, frameType)
             buffFrame.canApply = canApply
             --buffFrame.isStealable = stealable
 
-            local shouldShowAura, isImportant, isPandemic, isEnlarged, isCompacted, auraColor
+            local shouldShowAura, isImportant, isPandemic, isEnlarged, isCompacted, auraColor = ShouldShowBuff(unit, auraData, self.unit)
 
-            if frameType == "target" then
-                shouldShowAura, isImportant, isPandemic, isEnlarged, isCompacted, auraColor = ShouldShowBuff(unit, auraData, "target")
-                isImportant = isImportant and targetImportantAuraGlow
-                isPandemic = isPandemic and targetdeBuffPandemicGlow
-                isEnlarged = isEnlarged and targetEnlargeAura
-                isCompacted = isCompacted and targetCompactAura
-            elseif frameType == "focus" then
-                shouldShowAura, isImportant, isPandemic, isEnlarged, isCompacted, auraColor = ShouldShowBuff(unit, auraData, "focus")
-                isImportant = isImportant and focusImportantAuraGlow
-                isPandemic = isPandemic and focusdeBuffPandemicGlow
-                isEnlarged = isEnlarged and focusEnlargeAura
-                isCompacted = isCompacted and focusCompactAura
-            end
+            -- if frameType == "target" then
+            --     shouldShowAura, isImportant, isPandemic, isEnlarged, isCompacted, auraColor = ShouldShowBuff(unit, auraData, self.unit)
+            --     isImportant = isImportant and targetImportantAuraGlow
+            --     isPandemic = isPandemic and targetdeBuffPandemicGlow
+            --     isEnlarged = isEnlarged and targetEnlargeAura
+            --     isCompacted = isCompacted and targetCompactAura
+            -- elseif frameType == "focus" then
+            --     shouldShowAura, isImportant, isPandemic, isEnlarged, isCompacted, auraColor = ShouldShowBuff(unit, auraData, "focus")
+            --     isImportant = isImportant and focusImportantAuraGlow
+            --     isPandemic = isPandemic and focusdeBuffPandemicGlow
+            --     isEnlarged = isEnlarged and focusEnlargeAura
+            --     isCompacted = isCompacted and focusCompactAura
+            -- end
 
             if onlyPandemicMine and not isLarge then
                 isPandemic = false
@@ -2368,7 +2368,7 @@ function BBF.HookPlayerAndTargetAuras()
 
     --Hook Target & Focus Frame
     if auraFilteringOn and not targetAurasHooked then
-        hooksecurefunc("TargetFrame_UpdateAuras", function(self) AdjustAuras(self, "target") end)
+        hooksecurefunc("TargetFrame_UpdateAuras", function(self) AdjustAuras(self, self.unit) end)
         --hooksecurefunc(FocusFrame, "UpdateAuras", function(self) AdjustAuras(self, "focus") end)
         targetAurasHooked = true
     end

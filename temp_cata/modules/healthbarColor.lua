@@ -268,29 +268,48 @@ function BBF.HookHealthbarColors()
 end
 
 function BBF.PlayerReputationColor()
-    local frame = PlayerFrameBackground
+    BBF.HookAndDo(PlayerFrameBackground, "SetSize", function(frame, width, height, flag)
+        frame:SetSize(120, 41, flag)
+    end)
+    PlayerFrameBackground:SetSize(120, 41)
+    if not BBF.reputationFrame then
+        -- Create the new frame and texture
+        local reputationFrame = CreateFrame("Frame", "PlayerReputationFrame", PlayerFrame)
+        reputationFrame:SetFrameStrata("LOW")
+        reputationFrame:SetSize(119, 19)
+        reputationFrame:SetPoint("TOP", PlayerFrameBackground, "TOP")
+
+        local reputationTexture = reputationFrame:CreateTexture(nil, "ARTWORK")
+        reputationTexture:SetAllPoints(reputationFrame)
+        reputationFrame.texture = reputationTexture
+
+        BBF.reputationFrame = reputationFrame
+        BBF.reputationTexture = reputationTexture
+    end
+
+    local reputationFrame = BBF.reputationFrame
+    local reputationTexture = BBF.reputationTexture
+
     if BetterBlizzFramesDB.playerReputationColor and not BetterBlizzFramesDB.biggerHealthbars then
-        frame:Show()
+        reputationFrame:Show()
         if BetterBlizzFramesDB.playerReputationClassColor then
             local color = getUnitColor("player")
             if color then
-                frame:SetTexture(137017)
-                frame:SetDesaturated(true)
-                frame:SetVertexColor(color.r, color.g, color.b)
-                frame:SetTexCoord(0,0,0,2)
+                reputationFrame:SetSize(119, 19)
+                reputationTexture:SetTexture(137017)
+                reputationTexture:SetDesaturated(true)
+                reputationTexture:SetVertexColor(color.r, color.g, color.b)
+                reputationTexture:SetTexCoord(0, 1, 0, 1)
             end
         else
-            frame:SetTexture(137017)
-            frame:SetDesaturated(false)
-            frame:SetVertexColor(UnitSelectionColor("player"))
-            frame:SetTexCoord(0,0,0,2)
+            reputationTexture:SetTexture(137017)
+            reputationTexture:SetDesaturated(false)
+            local r, g, b = UnitSelectionColor("player")
+            reputationTexture:SetVertexColor(r, g, b)
+            reputationTexture:SetTexCoord(0, 1, 0, 1)
         end
     else
-        -- if frame then
-        --     --frame:Hide()
-        --     frame:SetTexture(nil)
-        --     frame:Show()
-        -- end
+        reputationFrame:Hide()
     end
 end
 
