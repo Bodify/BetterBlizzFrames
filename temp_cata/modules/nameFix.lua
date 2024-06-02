@@ -208,8 +208,9 @@ local function updateTextForUnit(textElement, frame, hideName, isParty)
     local ogFontName, ogFontHeight, ogFontFlags = textElement:GetFont()
     local a, p, a2, x, y = textElement:GetPoint()
     if not frame.cleanName then
-        frame.cleanName = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+        frame.cleanName = frame:CreateFontString(nil, "BORDER", "GameFontNormal")
     end
+    frame.cleanName:SetParent(frame.name:GetParent())
     frame.cleanName:SetFont(ogFontName, ogFontHeight, ogFontFlags)
     frame.cleanName:SetJustifyH(textElement:GetJustifyH())
     frame.cleanName:SetJustifyV(textElement:GetJustifyV())
