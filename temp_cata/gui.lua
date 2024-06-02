@@ -1939,7 +1939,7 @@ local function guiGeneralTab()
         if self:GetChecked() then
             for i = 1, 5 do
                 local frame = _G["CompactRaidFrame"..i] or _G["CompactPartyFrameMember"..i]
-                if frame.cleanName then
+                if frame and frame.cleanName then
                     frame.cleanName:SetAlpha(0)
                 end
             end
