@@ -1511,7 +1511,7 @@ local function CreateTitle(parent)
     addonNameIcon:SetPoint("LEFT", addonNameText, "RIGHT", -2, -1)
     local verNumber = parent:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     verNumber:SetPoint("LEFT", addonNameText, "RIGHT", 25, 0)
-    verNumber:SetText("CATA BETA v0.0.4" )--.. BBF.VersionNumber.."b")
+    verNumber:SetText("CATA BETA v0.0.6" )--.. BBF.VersionNumber.."b")
 end
 
 ------------------------------------------------------------

@@ -210,7 +210,9 @@ local function updateTextForUnit(textElement, frame, hideName, isParty)
     if not frame.cleanName then
         frame.cleanName = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     end
-    frame.cleanName:SetParent(frame.name:GetParent())
+    if not isParty then
+        frame.cleanName:SetParent(frame.name:GetParent())
+    end
     frame.cleanName:SetFont(ogFontName, ogFontHeight, ogFontFlags)
     frame.cleanName:SetJustifyH(textElement:GetJustifyH())
     frame.cleanName:SetJustifyV(textElement:GetJustifyV())
@@ -229,7 +231,7 @@ local function updateTextForUnit(textElement, frame, hideName, isParty)
     frame.cleanName:SetAlpha(1)
 
     local textElement = frame.cleanName
-    frame.cleanName:SetText(GetUnitName(unit))
+    textElement:SetText(GetUnitName(unit))
 
     -- Early return if the name should be hidden
     if hideName then
