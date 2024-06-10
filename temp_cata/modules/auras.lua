@@ -91,6 +91,11 @@ local playerAuraBuffScale
 local playerAuraXOffset
 local playerAuraYOffset
 local maxPlayerAurasPerRow
+local customPurgeSize
+local enlargedTextureAdjustmentSmall = 1
+local compactedTextureAdjustmentSmall = 1
+local purgeableTextureAdjustment = 1
+local purgeableAuraSize = 1
 
 local function UpdateMore()
     purgeableBuffSorting = BetterBlizzFramesDB.purgeableBuffSorting
@@ -101,6 +106,11 @@ local function UpdateMore()
     maxPlayerAurasPerRow = BetterBlizzFramesDB.maxPlayerAurasPerRow
     onlyPandemicMine = BetterBlizzFramesDB.onlyPandemicAuraMine
     buffsOnTopReverseCastbarMovement = BetterBlizzFramesDB.buffsOnTopReverseCastbarMovement
+    customPurgeSize = BetterBlizzFramesDB.customPurgeSize
+    enlargedTextureAdjustmentSmall = 18 * userEnlargedAuraSize
+    compactedTextureAdjustmentSmall = 18 * userCompactedAuraSize
+    purgeableAuraSize = BetterBlizzFramesDB.purgeableAuraSize
+    purgeableTextureAdjustment = 20 * purgeableAuraSize
 
     if BetterBlizzFramesDB.targetdeBuffFilterBlizzard or BetterBlizzFramesDB.focusdeBuffFilterBlizzard then
         BetterBlizzFramesDB.targetdeBuffFilterBlizzard = false
@@ -109,7 +119,7 @@ local function UpdateMore()
 end
 
 function BBF.UpdateUserAuraSettings()
-    printSpellId = printAuraSpellIds
+    printSpellId = BetterBlizzFramesDB.printAuraSpellIds
     betterTargetPurgeGlow = BetterBlizzFramesDB.targetBuffPurgeGlow
     betterFocusPurgeGlow = BetterBlizzFramesDB.focusBuffPurgeGlow
     userEnlargedAuraSize = BetterBlizzFramesDB.enlargedAuraSize
@@ -133,9 +143,8 @@ function BBF.UpdateUserAuraSettings()
     auraTypeGap = BetterBlizzFramesDB.auraTypeGap
     targetAndFocusSmallAuraScale = BetterBlizzFramesDB.targetAndFocusSmallAuraScale
     auraFilteringOn = BetterBlizzFramesDB.playerAuraFiltering
-    enlargedTextureAdjustment = 5 * userEnlargedAuraSize
-    compactedTextureAdjustment = 5 * userCompactedAuraSize
-    purgeableTextureAdjustment = 5 * userPurgeableAuraSize
+    enlargedTextureAdjustment = 23 * userEnlargedAuraSize
+    compactedTextureAdjustment = 23 * userCompactedAuraSize
     displayDispelGlowAlways = BetterBlizzFramesDB.displayDispelGlowAlways
     customLargeSmallAuraSorting = BetterBlizzFramesDB.customLargeSmallAuraSorting
     focusStaticCastbar = BetterBlizzFramesDB.focusStaticCastbar
@@ -353,12 +362,13 @@ local function adjustCastbar(self, frame)
     local meta = getmetatable(self).__index
     local parent = meta.GetParent(self)
     local rowHeights = parent.rowHeights or {}
+    local noAuras = #rowHeights == 0
 
     meta.ClearAllPoints(self)
     if frame == TargetFrameSpellBar then
         local buffsOnTop = parent.buffsOnTop
-        local yOffset = 23
-        local xOffset = 23
+        local yOffset = 23 / targetCastBarScale
+        local xOffset = 24
         if targetStaticCastbar then
             --meta.SetPoint(self, "TOPLEFT", meta.GetParent(self), "BOTTOMLEFT", 43, 110);
             meta.SetPoint(self, "TOPLEFT", parent, "BOTTOMLEFT", xOffset + targetCastBarXPos, -14 + targetCastBarYPos);
@@ -370,6 +380,9 @@ local function adjustCastbar(self, frame)
         else
             if not buffsOnTop then
                 yOffset = yOffset - CalculateAuraRowsYOffset(parent, rowHeights, targetCastBarScale)
+                if noAuras then
+                    yOffset = yOffset - 13
+                end
             end
             -- Check if totAdjustment is true and the ToT frame is shown
             if targetToTCastbarAdjustment and parent.haveToT then
@@ -387,8 +400,8 @@ local function adjustCastbar(self, frame)
         end
     elseif frame == FocusFrameSpellBar then
         local buffsOnTop = parent.buffsOnTop
-        local yOffset = 23
-        local xOffset = 23
+        local yOffset = 23 / focusCastBarScale
+        local xOffset = 24
         if focusStaticCastbar then
             --meta.SetPoint(self, "TOPLEFT", meta.GetParent(self), "BOTTOMLEFT", 43, 110);
             meta.SetPoint(self, "TOPLEFT", parent, "BOTTOMLEFT", xOffset + focusCastBarXPos, -14 + focusCastBarYPos);
@@ -400,6 +413,9 @@ local function adjustCastbar(self, frame)
         else
             if not buffsOnTop then
                 yOffset = yOffset - CalculateAuraRowsYOffset(parent, rowHeights, focusCastBarScale)
+                if noAuras then
+                    yOffset = yOffset - 13
+                end
             end
             -- Check if totAdjustment is true and the ToT frame is shown
             if focusToTCastbarAdjustment and parent.haveToT then
@@ -424,7 +440,7 @@ local function DefaultCastbarAdjustment(self, frame)
                                ((parentFrame.haveToT and parentFrame.auraRows > 2) or (not parentFrame.haveToT and parentFrame.auraRows > 0)))
 
     local relativeKey = useSpellbarAnchor and parentFrame.spellbarAnchor or parentFrame
-    local pointX = useSpellbarAnchor and 18 or (parentFrame.smallSize and 38 or 43)
+    local pointX = 21--useSpellbarAnchor and 18 or (parentFrame.smallSize and 38 or 43)
     local pointY = useSpellbarAnchor and -10 or (parentFrame.smallSize and 3 or 5)
 
     -- Adjustments for ToT and specific frame adjustments
@@ -438,6 +454,10 @@ local function DefaultCastbarAdjustment(self, frame)
                 pointY = pointY + focusToTAdjustmentOffsetY
             end
         end
+    end
+
+    if not useSpellbarAnchor then
+        pointX = pointX + 5
     end
 
     if frame == TargetFrameSpellBar then
@@ -492,33 +512,51 @@ local function CheckBuffs()
                 if aura.PandemicGlow then
                     aura.PandemicGlow:Hide()
                 end
+                if aura.ImportantGlow then
+                    aura.ImportantGlow:SetAlpha(1)
+                end
                 aura.isPandemicActive = false
             elseif remainingDuration <= 5.1 then
                 if not aura.PandemicGlow then
-                    aura.PandemicGlow = aura:CreateTexture(nil, "OVERLAY");
-                    aura.PandemicGlow:SetAtlas("AlliedRace-UnlockingFrame-BottomButtonsSelectionGlow");
+                    aura.PandemicGlow = aura.GlowFrame:CreateTexture(nil, "OVERLAY");
+                    aura.PandemicGlow:SetTexture(BBF.squareGreenGlow);
                     aura.PandemicGlow:SetDesaturated(true)
                     aura.PandemicGlow:SetVertexColor(1, 0, 0)
-                    if aura.Cooldown then
-                        aura.PandemicGlow:SetParent(aura.Cooldown)
-                    end
                 end
-                if aura.isEnlarged then
-                    aura.PandemicGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -enlargedTextureAdjustment, enlargedTextureAdjustment)
-                    aura.PandemicGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", enlargedTextureAdjustment, -enlargedTextureAdjustment)
+                local texAdjust = aura.isEnlarged and enlargedTextureAdjustment or compactedTextureAdjustment
+                local texAdjustSmall = aura.isEnlarged and enlargedTextureAdjustmentSmall or compactedTextureAdjustmentSmall
+                if aura.isEnlarged or aura.isCompacted then
+                    if aura.isLarge then
+                        aura.PandemicGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -texAdjust, texAdjust)
+                        aura.PandemicGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", texAdjust, -texAdjust)
+                    else
+                        aura.PandemicGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -texAdjustSmall, texAdjustSmall)
+                        aura.PandemicGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", texAdjustSmall, -texAdjustSmall)
+                    end
                 else
-                    aura.PandemicGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -10, 10)
-                    aura.PandemicGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", 10, -10)
+                    if aura.isLarge then
+                        aura.PandemicGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -24, 25)
+                        aura.PandemicGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", 24, -24)
+                    else
+                        aura.PandemicGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -18, 18)
+                        aura.PandemicGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", 18, -18)
+                    end
                 end
 
                 aura.isPandemicActive = true
                 aura.PandemicGlow:Show();
+                if aura.ImportantGlow then
+                    aura.ImportantGlow:SetAlpha(0)
+                end
                 if aura.Border then
                     aura.Border:SetAlpha(0)
                 end
             else
                 if aura.PandemicGlow then
                     aura.PandemicGlow:Hide();
+                end
+                if aura.ImportantGlow then
+                    aura.ImportantGlow:SetAlpha(1)
                 end
                 aura.isPandemicActive = false
             end
@@ -529,6 +567,9 @@ local function CheckBuffs()
             end
             if aura.border then
                 aura.border:SetAlpha(1)
+            end
+            if aura.ImportantGlow then
+                aura.ImportantGlow:SetAlpha(1)
             end
             for auraInstanceID, _ in pairs(trackedBuffs) do
                 trackedBuffs[auraInstanceID] = nil
@@ -796,43 +837,112 @@ local function AdjustAuras(self, frameType)
         for i, aura in ipairs(auras) do
             aura:SetScale(auraScale)
             local auraSize = aura:GetHeight()
-            if not aura.isLarge then
-                aura:SetSize(adjustedSize, adjustedSize)
-                if aura.PurgeGlow then
-                    aura.PurgeGlow:SetScale(targetAndFocusSmallAuraScale)
-                end
-                if aura.ImportantGlow then
-                    aura.ImportantGlow:SetScale(targetAndFocusSmallAuraScale)
-                end
-                if aura.PandemicGlow then
-                    aura.PandemicGlow:SetScale(targetAndFocusSmallAuraScale)
-                end
-                if aura.Stealable then
-                    aura.Stealable:SetScale(targetAndFocusSmallAuraScale)
-                end
-                if aura.Border then
-                    aura.Border:SetScale(targetAndFocusSmallAuraScale)
-                end
-                auraSize = adjustedSize
-            end
+            -- if not aura.isLarge then
+            --     aura:SetSize(adjustedSize, adjustedSize)
+            --     if aura.ImportantGlow then
+            --         aura.ImportantGlow:SetScale(targetAndFocusSmallAuraScale)
+            --     end
+            --     if aura.PandemicGlow then
+            --         aura.PandemicGlow:SetScale(targetAndFocusSmallAuraScale)
+            --     end
+            --     if not customPurgeSize then
+            --         if aura.PurgeGlow then
+            --             aura.PurgeGlow:SetScale(targetAndFocusSmallAuraScale)
+            --         end
+            --         if aura.Stealable then
+            --             aura.Stealable:SetScale(targetAndFocusSmallAuraScale)
+            --         end
+            --     end
+            --     if aura.Border then
+            --         aura.Border:SetScale(targetAndFocusSmallAuraScale)
+            --     end
+            --     auraSize = adjustedSize
+            -- end
 
-            if aura.isPurgeable then
+            if aura.isEnlarged or aura.isCompacted then
+                local sizeMultiplier = aura.isEnlarged and userEnlargedAuraSize or userCompactedAuraSize
+                local texAdjust = aura.isEnlarged and enlargedTextureAdjustment or compactedTextureAdjustment
+                local texAdjustSmall = aura.isEnlarged and enlargedTextureAdjustmentSmall or compactedTextureAdjustmentSmall
+                local defaultLargeAuraSize = aura.isLarge and 21 or 17
+                local importantSize = defaultLargeAuraSize * sizeMultiplier
+                aura:SetSize(importantSize, importantSize)
+                if aura.isImportant then
+                    if aura.isLarge then
+                        aura.ImportantGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -texAdjust, texAdjust)
+                        aura.ImportantGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", texAdjust, -texAdjust)
+                    else
+                        aura.ImportantGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -texAdjustSmall, texAdjustSmall)
+                        aura.ImportantGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", texAdjustSmall, -texAdjustSmall)
+                    end
+                end
+                if aura.isPurgeable then
+                    local scale = aura.isEnlarged and userEnlargedAuraSize or userCompactedAuraSize
+                    if aura.Stealable then
+                        aura.Stealable:SetScale(scale)
+                    end
+                end
+                if aura.PurgeGlow then
+                    -- --aura.PurgeGlow:SetScale(userPurgeableAuraSize)
+                    -- if aura.isLarge then
+                    --     aura.PurgeGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -enlargedTextureAdjustment, enlargedTextureAdjustment)
+                    --     aura.PurgeGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", enlargedTextureAdjustment, -enlargedTextureAdjustment)
+                    -- else
+                        aura.PurgeGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -purgeableTextureAdjustment, purgeableTextureAdjustment)
+                        aura.PurgeGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", purgeableTextureAdjustment, -purgeableTextureAdjustment)
+                    --end
+                end
+                auraSize = importantSize
+            elseif aura.isPurgeable and customPurgeSize then
                 local sizeMultiplier = userPurgeableAuraSize
                 local defaultLargeAuraSize = aura.isLarge and 21 or 17
                 local purgeableSize = defaultLargeAuraSize * sizeMultiplier
                 aura:SetSize(purgeableSize, purgeableSize)
-                auraSize = purgeableSize
-                if aura.Stealable then
-                    aura.Stealable:SetScale(userPurgeableAuraSize)
+                if aura.isImportant then
+                    if aura.isLarge then
+                        aura.ImportantGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -enlargedTextureAdjustment, enlargedTextureAdjustment)
+                        aura.ImportantGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", enlargedTextureAdjustment, -enlargedTextureAdjustment)
+                    else
+                        aura.ImportantGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -enlargedTextureAdjustmentSmall, enlargedTextureAdjustmentSmall)
+                        aura.ImportantGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", enlargedTextureAdjustmentSmall, -enlargedTextureAdjustmentSmall)
+                    end
                 end
-            end
-
-            if aura.isEnlarged or aura.isCompacted then
-                local sizeMultiplier = aura.isEnlarged and userEnlargedAuraSize or userCompactedAuraSize
-                local defaultLargeAuraSize = aura.isLarge and 21 or 17
-                local importantSize = defaultLargeAuraSize * sizeMultiplier
-                aura:SetSize(importantSize, importantSize)
-                auraSize = importantSize
+                auraSize = purgeableSize
+                if aura.PurgeGlow then
+                    --aura.PurgeGlow:SetScale(userPurgeableAuraSize)
+                    -- if aura.isLarge then
+                    --     aura.PurgeGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -purgeableTextureAdjustment, purgeableTextureAdjustment)
+                    --     aura.PurgeGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", purgeableTextureAdjustment, -purgeableTextureAdjustment)
+                    -- else
+                        aura.PurgeGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -purgeableTextureAdjustment, purgeableTextureAdjustment)
+                        aura.PurgeGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", purgeableTextureAdjustment, -purgeableTextureAdjustment)
+                    --end
+                else
+                    if aura.Stealable then
+                        aura.Stealable:SetScale(purgeableAuraSize)
+                    end
+                end
+            elseif not aura.isLarge then
+                if aura.isPurgeable then
+                    if aura.Stealable then
+                        aura.Stealable:SetScale(1)
+                    end
+                end
+                if aura.isHarmful then
+                    if aura.isImportant then
+                        aura.ImportantGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -22.5, 22)
+                        aura.ImportantGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", 22.5, -22.5)
+                    end
+                else
+                    if aura.isImportant then
+                        aura.ImportantGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -18, 18)
+                        aura.ImportantGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", 18, -18)
+                    end
+                end
+            else
+                if aura.isImportant then
+                    aura.ImportantGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -24, 25)
+                    aura.ImportantGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", 24, -24)
+                end
             end
 
             local columnIndex, rowIndex
@@ -875,6 +985,7 @@ local function AdjustAuras(self, frameType)
     for i = 1, MAX_TARGET_BUFFS do
         local buffName = self:GetName().."Buff"..i
         local stealable = buffName.."Stealable"
+        local cooldown = buffName.."Cooldown"
         local icon = self:GetName().."Buff"..i.."Icon"
 
         local buffFrame = _G[buffName]
@@ -883,6 +994,7 @@ local function AdjustAuras(self, frameType)
         if buffFrame and buffFrame:IsShown() then
             buffFrame.Icon = iconTexture
             buffFrame.Stealable = stealableTexture
+            buffFrame.Cooldown = cooldown
 
 
 
@@ -903,6 +1015,7 @@ local function AdjustAuras(self, frameType)
                 expirationTime = expirationTime,
                 icon = icon,
                 name = spellName,
+                duration = duration,
             }
 
             local isLarge = auraData.sourceUnit == "player" or auraData.sourceUnit == "pet"
@@ -910,6 +1023,7 @@ local function AdjustAuras(self, frameType)
 
             buffFrame.isLarge = isLarge
             buffFrame.canApply = canApply
+            buffFrame.isHelpful = true
             --buffFrame.isStealable = stealable
 
             local shouldShowAura, isImportant, isPandemic, isEnlarged, isCompacted, auraColor = ShouldShowBuff(unit, auraData, self.unit)
@@ -1009,24 +1123,29 @@ local function AdjustAuras(self, frameType)
 
                 --stealableTexture:SetScale(3)
 
+                if not buffFrame.GlowFrame then
+                    buffFrame.GlowFrame = CreateFrame("Frame", nil, buffFrame)
+                    buffFrame.GlowFrame:SetAllPoints(buffFrame)
+                    buffFrame.GlowFrame:SetFrameLevel(buffFrame:GetFrameLevel() + 1)  -- Ensure it's above the cooldown texture
+                end
 
                 if isImportant then
                     buffFrame.isImportant = true
                     if not buffFrame.ImportantGlow then
-                        buffFrame.ImportantGlow = buffFrame:CreateTexture(nil, "OVERLAY")
-                        buffFrame.ImportantGlow:SetAtlas("AlliedRace-UnlockingFrame-BottomButtonsSelectionGlow")
+                        buffFrame.ImportantGlow = buffFrame.GlowFrame:CreateTexture(nil, "OVERLAY")
+                        buffFrame.ImportantGlow:SetTexture(BBF.squareGreenGlow)
                         buffFrame.ImportantGlow:SetDesaturated(true)
                     end
-                    if buffFrame.isEnlarged then
-                        buffFrame.ImportantGlow:SetPoint("TOPLEFT", buffFrame, "TOPLEFT", -enlargedTextureAdjustment, enlargedTextureAdjustment)
-                        buffFrame.ImportantGlow:SetPoint("BOTTOMRIGHT", buffFrame, "BOTTOMRIGHT", enlargedTextureAdjustment, -enlargedTextureAdjustment)
-                    elseif buffFrame.isCompacted then
-                        buffFrame.ImportantGlow:SetPoint("TOPLEFT", buffFrame, "TOPLEFT", -compactedTextureAdjustment, compactedTextureAdjustment)
-                        buffFrame.ImportantGlow:SetPoint("BOTTOMRIGHT", buffFrame, "BOTTOMRIGHT", compactedTextureAdjustment, -compactedTextureAdjustment)
-                    else
-                        buffFrame.ImportantGlow:SetPoint("TOPLEFT", buffFrame, "TOPLEFT", -5, 5)
-                        buffFrame.ImportantGlow:SetPoint("BOTTOMRIGHT", buffFrame, "BOTTOMRIGHT", 5, -5)
-                    end
+                    -- if buffFrame.isEnlarged then
+                    --     buffFrame.ImportantGlow:SetPoint("TOPLEFT", buffFrame, "TOPLEFT", -enlargedTextureAdjustment, enlargedTextureAdjustment)
+                    --     buffFrame.ImportantGlow:SetPoint("BOTTOMRIGHT", buffFrame, "BOTTOMRIGHT", enlargedTextureAdjustment, -enlargedTextureAdjustment)
+                    -- elseif buffFrame.isCompacted then
+                    --     buffFrame.ImportantGlow:SetPoint("TOPLEFT", buffFrame, "TOPLEFT", -compactedTextureAdjustment, compactedTextureAdjustment)
+                    --     buffFrame.ImportantGlow:SetPoint("BOTTOMRIGHT", buffFrame, "BOTTOMRIGHT", compactedTextureAdjustment, -compactedTextureAdjustment)
+                    -- else
+                    --     buffFrame.ImportantGlow:SetPoint("TOPLEFT", buffFrame, "TOPLEFT", -23, 23)
+                    --     buffFrame.ImportantGlow:SetPoint("BOTTOMRIGHT", buffFrame, "BOTTOMRIGHT", 23, -23)
+                    -- end
                     if auraColor then
                         buffFrame.ImportantGlow:SetVertexColor(auraColor.r, auraColor.g, auraColor.b, auraColor.a)
                     else
@@ -1043,37 +1162,44 @@ local function AdjustAuras(self, frameType)
                     end
                 end
 
-                if buffFrame.Stealable and buffFrame.Stealable:IsShown() then
-                    if buffFrame.isEnlarged then
-                        buffFrame.Stealable:SetPoint("TOPLEFT", buffFrame, "TOPLEFT", -3, 4)
-                        buffFrame.Stealable:SetPoint("BOTTOMRIGHT", buffFrame, "BOTTOMRIGHT", 3, -3)
-                    elseif buffFrame.isCompacted then
-                        buffFrame.Stealable:SetPoint("TOPLEFT", buffFrame, "TOPLEFT", -compactedTextureAdjustment, compactedTextureAdjustment)
-                        buffFrame.Stealable:SetPoint("BOTTOMRIGHT", buffFrame, "BOTTOMRIGHT", compactedTextureAdjustment, -compactedTextureAdjustment)
-                    else
-                        buffFrame.Stealable:SetPoint("TOPLEFT", buffFrame, "TOPLEFT", -2, 2)
-                        buffFrame.Stealable:SetPoint("BOTTOMRIGHT", buffFrame, "BOTTOMRIGHT", 2, -2)
-                    end
-                end
+                -- if buffFrame.Stealable and buffFrame.Stealable:IsShown() then
+                --     if buffFrame.isEnlarged then
+                --         buffFrame.Stealable:SetPoint("TOPLEFT", buffFrame, "TOPLEFT", -3, 4)
+                --         buffFrame.Stealable:SetPoint("BOTTOMRIGHT", buffFrame, "BOTTOMRIGHT", 3, -3)
+                --     elseif buffFrame.isCompacted then
+                --         buffFrame.Stealable:SetPoint("TOPLEFT", buffFrame, "TOPLEFT", -compactedTextureAdjustment, compactedTextureAdjustment)
+                --         buffFrame.Stealable:SetPoint("BOTTOMRIGHT", buffFrame, "BOTTOMRIGHT", compactedTextureAdjustment, -compactedTextureAdjustment)
+                --     else
+                --         buffFrame.Stealable:SetPoint("TOPLEFT", buffFrame, "TOPLEFT", -2, 2)
+                --         buffFrame.Stealable:SetPoint("BOTTOMRIGHT", buffFrame, "BOTTOMRIGHT", 2, -2)
+                --     end
+                -- end
 
                 if ((frameType == "target" and (auraData.isStealable or (displayDispelGlowAlways and auraData.dispelName == "Magic" and ((not isFriend and auraData.isHelpful) or (isFriend and auraData.isHarmful)))) and betterTargetPurgeGlow) or
                 (frameType == "focus" and (auraData.isStealable or (displayDispelGlowAlways and auraData.dispelName == "Magic" and ((not isFriend and auraData.isHelpful) or (isFriend and auraData.isHarmful)))) and betterFocusPurgeGlow)) then
                     if not buffFrame.PurgeGlow then
-                        buffFrame.PurgeGlow = buffFrame:CreateTexture(nil, "OVERLAY")
-                        buffFrame.PurgeGlow:SetAtlas("AlliedRace-UnlockingFrame-BottomButtonsMouseOverGlow")
+                        buffFrame.PurgeGlow = buffFrame.GlowFrame:CreateTexture(nil, "OVERLAY")
+                        buffFrame.PurgeGlow:SetTexture(BBF.squareBlueGlow)
                         buffFrame.PurgeGlow:SetDesaturated(true)
                         buffFrame.PurgeGlow:SetVertexColor(0.27, 0.858, 1)
                     end
-                    if buffFrame.isEnlarged then
-                        buffFrame.PurgeGlow:SetPoint("TOPLEFT", buffFrame, "TOPLEFT", -enlargedTextureAdjustment, enlargedTextureAdjustment)
-                        buffFrame.PurgeGlow:SetPoint("BOTTOMRIGHT", buffFrame, "BOTTOMRIGHT", enlargedTextureAdjustment, -enlargedTextureAdjustment)
-                    elseif buffFrame.isCompacted then
-                        buffFrame.PurgeGlow:SetPoint("TOPLEFT", buffFrame, "TOPLEFT", -compactedTextureAdjustment, compactedTextureAdjustment)
-                        buffFrame.PurgeGlow:SetPoint("BOTTOMRIGHT", buffFrame, "BOTTOMRIGHT", compactedTextureAdjustment, -compactedTextureAdjustment)
-                    else
-                        buffFrame.PurgeGlow:SetPoint("TOPLEFT", buffFrame, "TOPLEFT", -purgeableTextureAdjustment, purgeableTextureAdjustment)
-                        buffFrame.PurgeGlow:SetPoint("BOTTOMRIGHT", buffFrame, "BOTTOMRIGHT", purgeableTextureAdjustment, -purgeableTextureAdjustment)
-                    end
+                    -- if buffFrame.isEnlarged then
+                    --     buffFrame.PurgeGlow:SetPoint("TOPLEFT", buffFrame, "TOPLEFT", -enlargedTextureAdjustment, enlargedTextureAdjustment)
+                    --     buffFrame.PurgeGlow:SetPoint("BOTTOMRIGHT", buffFrame, "BOTTOMRIGHT", enlargedTextureAdjustment, -enlargedTextureAdjustment)
+                    --     -- buffFrame.PurgeGlow:SetPoint("TOPLEFT", buffFrame, "TOPLEFT", -enlargedPurgeTextureAdjustment, enlargedPurgeTextureAdjustment)
+                    --     -- buffFrame.PurgeGlow:SetPoint("BOTTOMRIGHT", buffFrame, "BOTTOMRIGHT", enlargedPurgeTextureAdjustment, -enlargedPurgeTextureAdjustment)
+                    -- elseif buffFrame.isCompacted then
+                    --     buffFrame.PurgeGlow:SetPoint("TOPLEFT", buffFrame, "TOPLEFT", -compactedTextureAdjustment, compactedTextureAdjustment)
+                    --     buffFrame.PurgeGlow:SetPoint("BOTTOMRIGHT", buffFrame, "BOTTOMRIGHT", compactedTextureAdjustment, -compactedTextureAdjustment)
+                    -- else
+                    --     if customPurgeSize then
+                    --         buffFrame.PurgeGlow:SetPoint("TOPLEFT", buffFrame, "TOPLEFT", -purgeableTextureAdjustment, purgeableTextureAdjustment)
+                    --         buffFrame.PurgeGlow:SetPoint("BOTTOMRIGHT", buffFrame, "BOTTOMRIGHT", purgeableTextureAdjustment, -purgeableTextureAdjustment)
+                    --     else
+                    --         buffFrame.PurgeGlow:SetPoint("TOPLEFT", buffFrame, "TOPLEFT", -22, 22)
+                    --         buffFrame.PurgeGlow:SetPoint("BOTTOMRIGHT", buffFrame, "BOTTOMRIGHT", 22, -22)
+                    --     end
+                    -- end
                     buffFrame.isPurgeGlow = true
                     if changePurgeTextureColor then
                         buffFrame.PurgeGlow:SetDesaturated(true)
@@ -1173,8 +1299,10 @@ local function AdjustAuras(self, frameType)
     for i = 1, 40 do
         local debuffName = self:GetName().."Debuff"..i
         local debuffFrame = _G[debuffName]
+        local border = _G[debuffName.."Border"]
         if debuffFrame and debuffFrame:IsShown() then
-            debuffFrame.Icon = _G[icon]
+            --debuffFrame.Icon = _G[icon]
+            debuffFrame.Border = border
 
 
 
@@ -1198,10 +1326,12 @@ local function AdjustAuras(self, frameType)
                 expirationTime = expirationTime,
                 icon = icon,
                 name = spellName,
+                duration = duration,
             }
 
             local isLarge = auraData.sourceUnit == "player" or auraData.sourceUnit == "pet"
             local canApply = auraData.canApplyAura or false
+            debuffFrame.isHarmful = true
 
             debuffFrame.isLarge = isLarge
             debuffFrame.canApply = canApply
@@ -1231,6 +1361,12 @@ local function AdjustAuras(self, frameType)
 
                 if (auraData.isStealable or (auraData.dispelName == "Magic" and ((not isFriend and auraData.isHelpful) or (isFriend and auraData.isHarmful)))) then
                     debuffFrame.isPurgeable = true
+                end
+
+                if not debuffFrame.GlowFrame then
+                    debuffFrame.GlowFrame = CreateFrame("Frame", nil, debuffFrame)
+                    debuffFrame.GlowFrame:SetAllPoints(debuffFrame)
+                    debuffFrame.GlowFrame:SetFrameLevel(debuffFrame:GetFrameLevel() + 1)  -- Ensure it's above the cooldown texture
                 end
 
                 if not debuffFrame.filterClick then
@@ -1295,20 +1431,20 @@ local function AdjustAuras(self, frameType)
                 if isImportant then
                     debuffFrame.isImportant = true
                     if not debuffFrame.ImportantGlow then
-                        debuffFrame.ImportantGlow = debuffFrame:CreateTexture(nil, "OVERLAY")
-                        debuffFrame.ImportantGlow:SetAtlas("AlliedRace-UnlockingFrame-BottomButtonsSelectionGlow")
+                        debuffFrame.ImportantGlow = debuffFrame.GlowFrame:CreateTexture(nil, "OVERLAY")
+                        debuffFrame.ImportantGlow:SetTexture(BBF.squareGreenGlow)
                         debuffFrame.ImportantGlow:SetDesaturated(true)
                     end
-                    if debuffFrame.isEnlarged then
-                        debuffFrame.ImportantGlow:SetPoint("TOPLEFT", debuffFrame, "TOPLEFT", -enlargedTextureAdjustment, enlargedTextureAdjustment)
-                        debuffFrame.ImportantGlow:SetPoint("BOTTOMRIGHT", debuffFrame, "BOTTOMRIGHT", enlargedTextureAdjustment, -enlargedTextureAdjustment)
-                    elseif debuffFrame.isCompacted then
-                        debuffFrame.ImportantGlow:SetPoint("TOPLEFT", debuffFrame, "TOPLEFT", -compactedTextureAdjustment, compactedTextureAdjustment)
-                        debuffFrame.ImportantGlow:SetPoint("BOTTOMRIGHT", debuffFrame, "BOTTOMRIGHT", compactedTextureAdjustment, -compactedTextureAdjustment)
-                    else
-                        debuffFrame.ImportantGlow:SetPoint("TOPLEFT", debuffFrame, "TOPLEFT", -5, 5)
-                        debuffFrame.ImportantGlow:SetPoint("BOTTOMRIGHT", debuffFrame, "BOTTOMRIGHT", 5, -5)
-                    end
+                    -- if debuffFrame.isEnlarged then
+                    --     debuffFrame.ImportantGlow:SetPoint("TOPLEFT", debuffFrame, "TOPLEFT", -enlargedTextureAdjustment, enlargedTextureAdjustment)
+                    --     debuffFrame.ImportantGlow:SetPoint("BOTTOMRIGHT", debuffFrame, "BOTTOMRIGHT", enlargedTextureAdjustment, -enlargedTextureAdjustment)
+                    -- elseif debuffFrame.isCompacted then
+                    --     debuffFrame.ImportantGlow:SetPoint("TOPLEFT", debuffFrame, "TOPLEFT", -compactedTextureAdjustment, compactedTextureAdjustment)
+                    --     debuffFrame.ImportantGlow:SetPoint("BOTTOMRIGHT", debuffFrame, "BOTTOMRIGHT", compactedTextureAdjustment, -compactedTextureAdjustment)
+                    -- else
+                    --     debuffFrame.ImportantGlow:SetPoint("TOPLEFT", debuffFrame, "TOPLEFT", -20, 20)
+                    --     debuffFrame.ImportantGlow:SetPoint("BOTTOMRIGHT", debuffFrame, "BOTTOMRIGHT", 20, -20)
+                    -- end
                     if auraColor then
                         debuffFrame.ImportantGlow:SetVertexColor(auraColor.r, auraColor.g, auraColor.b, auraColor.a)
                     else
@@ -1328,19 +1464,19 @@ local function AdjustAuras(self, frameType)
                 if ((frameType == "target" and (auraData.isStealable or (displayDispelGlowAlways and auraData.dispelName == "Magic" and ((not isFriend and auraData.isHelpful) or (isFriend and auraData.isHarmful)))) and betterTargetPurgeGlow) or
                 (frameType == "focus" and (auraData.isStealable or (displayDispelGlowAlways and auraData.dispelName == "Magic" and ((not isFriend and auraData.isHelpful) or (isFriend and auraData.isHarmful)))) and betterFocusPurgeGlow)) then
                     if not debuffFrame.PurgeGlow then
-                        debuffFrame.PurgeGlow = debuffFrame:CreateTexture(nil, "OVERLAY")
-                        debuffFrame.PurgeGlow:SetAtlas("AlliedRace-UnlockingFrame-BottomButtonsMouseOverGlow")
+                        debuffFrame.PurgeGlow = debuffFrame.GlowFrame:CreateTexture(nil, "OVERLAY")
+                        debuffFrame.PurgeGlow:SetTexture(BBF.squareBlueGlow)
                     end
-                    if debuffFrame.isEnlarged then
-                        debuffFrame.PurgeGlow:SetPoint("TOPLEFT", debuffFrame, "TOPLEFT", -enlargedTextureAdjustment, enlargedTextureAdjustment)
-                        debuffFrame.PurgeGlow:SetPoint("BOTTOMRIGHT", debuffFrame, "BOTTOMRIGHT", enlargedTextureAdjustment, -enlargedTextureAdjustment)
-                    elseif debuffFrame.isCompacted then
-                        debuffFrame.PurgeGlow:SetPoint("TOPLEFT", debuffFrame, "TOPLEFT", -compactedTextureAdjustment, compactedTextureAdjustment)
-                        debuffFrame.PurgeGlow:SetPoint("BOTTOMRIGHT", debuffFrame, "BOTTOMRIGHT", compactedTextureAdjustment, -compactedTextureAdjustment)
-                    else
-                        debuffFrame.PurgeGlow:SetPoint("TOPLEFT", debuffFrame, "TOPLEFT", -10, 10)
-                        debuffFrame.PurgeGlow:SetPoint("BOTTOMRIGHT", debuffFrame, "BOTTOMRIGHT", 10, -10)
-                    end
+                    -- if debuffFrame.isEnlarged then
+                    --     debuffFrame.PurgeGlow:SetPoint("TOPLEFT", debuffFrame, "TOPLEFT", -enlargedTextureAdjustment, enlargedTextureAdjustment)
+                    --     debuffFrame.PurgeGlow:SetPoint("BOTTOMRIGHT", debuffFrame, "BOTTOMRIGHT", enlargedTextureAdjustment, -enlargedTextureAdjustment)
+                    -- elseif debuffFrame.isCompacted then
+                    --     debuffFrame.PurgeGlow:SetPoint("TOPLEFT", debuffFrame, "TOPLEFT", -compactedTextureAdjustment, compactedTextureAdjustment)
+                    --     debuffFrame.PurgeGlow:SetPoint("BOTTOMRIGHT", debuffFrame, "BOTTOMRIGHT", compactedTextureAdjustment, -compactedTextureAdjustment)
+                    -- else
+                    --     debuffFrame.PurgeGlow:SetPoint("TOPLEFT", debuffFrame, "TOPLEFT", -23, 23)
+                    --     debuffFrame.PurgeGlow:SetPoint("BOTTOMRIGHT", debuffFrame, "BOTTOMRIGHT", 23, -23)
+                    -- end
                     debuffFrame.isPurgeGlow = true
                     if changePurgeTextureColor then
                         debuffFrame.PurgeGlow:SetDesaturated(true)
@@ -1788,11 +1924,11 @@ local function PersonalBuffFrameFilterAndGrid(self)
                                     auraFrame.ImportantGlow:SetPoint("TOPLEFT", auraFrame, "TOPLEFT", -15, 16)
                                     auraFrame.ImportantGlow:SetPoint("BOTTOMRIGHT", auraFrame, "BOTTOMRIGHT", 15, -6)
                                 else
-                                    auraFrame.ImportantGlow:SetPoint("TOPLEFT", auraFrame, "TOPLEFT", -6, 6)
-                                    auraFrame.ImportantGlow:SetPoint("BOTTOMRIGHT", auraFrame, "BOTTOMRIGHT", 6, -6)
+                                    auraFrame.ImportantGlow:SetPoint("TOPLEFT", auraFrame, "TOPLEFT", -32, 33)
+                                    auraFrame.ImportantGlow:SetPoint("BOTTOMRIGHT", auraFrame, "BOTTOMRIGHT", 32, -32)
                                 end
                                 --auraFrame.ImportantGlow:SetDrawLayer("OVERLAY", 7)
-                                auraFrame.ImportantGlow:SetAtlas("AlliedRace-UnlockingFrame-BottomButtonsSelectionGlow")
+                                auraFrame.ImportantGlow:SetTexture(BBF.squareGreenGlow)
                                 auraFrame.ImportantGlow:SetDesaturated(true)
                             end
                             if borderFrame then
@@ -1865,6 +2001,7 @@ local function PersonalBuffFrameFilterAndGrid(self)
                     icon = icon,
                     name = spellName,
                     auraType = "Buff",
+                    duration = duration,
                 }
         --if isExpanded or not auraInfo.hideUnlessExpanded then
             --local auraFrame = BuffFrame.auraFrames[auraIndex]
@@ -2030,11 +2167,11 @@ local function PersonalBuffFrameFilterAndGrid(self)
                                 auraFrame.ImportantGlow:SetPoint("TOPLEFT", auraFrame, "TOPLEFT", -15, 16)
                                 auraFrame.ImportantGlow:SetPoint("BOTTOMRIGHT", auraFrame, "BOTTOMRIGHT", 15, -6)
                             else
-                                auraFrame.ImportantGlow:SetPoint("TOPLEFT", auraFrame, "TOPLEFT", -6, 6)
-                                auraFrame.ImportantGlow:SetPoint("BOTTOMRIGHT", auraFrame, "BOTTOMRIGHT", 6, -6)
+                                auraFrame.ImportantGlow:SetPoint("TOPLEFT", auraFrame, "TOPLEFT", -32, 33)
+                                auraFrame.ImportantGlow:SetPoint("BOTTOMRIGHT", auraFrame, "BOTTOMRIGHT", 32, -32)
                             end
                             --auraFrame.ImportantGlow:SetDrawLayer("OVERLAY", 7)
-                            auraFrame.ImportantGlow:SetAtlas("AlliedRace-UnlockingFrame-BottomButtonsSelectionGlow")
+                            auraFrame.ImportantGlow:SetTexture(BBF.squareGreenGlow)
                             auraFrame.ImportantGlow:SetDesaturated(true)
                         end
                         if borderFrame then
@@ -2272,7 +2409,7 @@ local function PersonalDebuffFrameFilterAndGrid(self)
                                 auraFrame.ImportantGlow:SetPoint("BOTTOMRIGHT", auraFrame, "BOTTOMRIGHT", 13, -3)
                             end
                             --auraFrame.ImportantGlow:SetDrawLayer("OVERLAY", 7)
-                            auraFrame.ImportantGlow:SetAtlas("AlliedRace-UnlockingFrame-BottomButtonsSelectionGlow")
+                            auraFrame.ImportantGlow:SetTexture(BBF.squareGreenGlow)
                             auraFrame.ImportantGlow:SetDesaturated(true)
                         end
                         if borderFrame then

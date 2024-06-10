@@ -6,8 +6,8 @@ BBF = BBF or {}
 -- Things are getting more messy need a lot of cleaning lol
 
 local addonVersion = "1.00" --too afraid to to touch for now
-local addonUpdates = "1.4.1e"
-local sendUpdate = false
+local addonUpdates = "1.4.2"
+local sendUpdate = true
 BBF.VersionNumber = addonUpdates
 BBF.variablesLoaded = false
 local isAddonLoaded = C_AddOns.IsAddOnLoaded
@@ -26,7 +26,7 @@ local defaultSettings = {
     darkModeColor = 0.30,
     hideGroupIndicator = false,
     hideFocusCombatGlow = false,
-    --hideDragonFlying = true,
+    fixHealthbarText = true,
     targetToTScale = 1,
     focusToTScale = 1,
     targetToTXPos = 0,
@@ -43,6 +43,7 @@ local defaultSettings = {
     purgeableAuraSize = 1,
     onlyPandemicAuraMine = true,
     lossOfControlScale = 1,
+    hidePetText = true,
 
     --Target castbar
     playerCastbarIconXPos = 0,
@@ -126,7 +127,7 @@ local defaultSettings = {
     targetCastBarXPos = 0,
     targetCastBarYPos = 0,
     targetCastBarWidth = 150,
-    targetCastBarHeight = 10,
+    targetCastBarHeight = 11,
     targetCastBarTimer = false,
     targetToTAdjustmentOffsetY = 0,
 
@@ -136,7 +137,7 @@ local defaultSettings = {
     focusCastBarXPos = 0,
     focusCastBarYPos = 0,
     focusCastBarWidth = 150,
-    focusCastBarHeight = 10,
+    focusCastBarHeight = 11,
     focusCastBarTimer = false,
     focusToTAdjustmentOffsetY = 0,
 
@@ -301,7 +302,7 @@ StaticPopupDialogs["BetterBlizzFrames_COMBAT_WARNING"] = {
 }
 
 StaticPopupDialogs["BBF_NEW_VERSION"] = {
-    text = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames " .. addonUpdates .. ":\n\n|A:Professions-Crafting-Orders-Icon:16:16|a Bugfix:\n-Fix Target/Focus castbar moving too much when scaled up/down.\nYou might have to re-adjust the position slightly because of this.",
+    text = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames " .. "Cata Beta 0.0.7" .. ":\n\nBugfixes/Tweaks:\n-Target/Focus castbar and aura settings have been tweaked slighly and may have moved for you. Re-adjust if needed.\n\nFor more info on changes read CurseForge changelog.",
     button1 = "OK",
     timeout = 0,
     whileDead = true,
@@ -358,16 +359,18 @@ local function SendUpdateMessage()
     if sendUpdate then
         if not BetterBlizzFramesDB.scStart then
             C_Timer.After(7, function()
-                --StaticPopup_Show("BBF_NEW_VERSION")
+                StaticPopup_Show("BBF_NEW_VERSION")
+
                 DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames news:")
                 DEFAULT_CHAT_FRAME:AddMessage("|A:QuestNormal:16:16|a New Stuff:")
-                DEFAULT_CHAT_FRAME:AddMessage("   - You can now Shift+Alt LeftClick auras to whitelist and Shift+Alt RightClick to blacklist.")
-                DEFAULT_CHAT_FRAME:AddMessage("   - Sort Purgeable Auras setting (Buffs & Debuffs).")
+                DEFAULT_CHAT_FRAME:AddMessage("   - Absorb Indicator + Overshields now working (Potentially).")
+                -- DEFAULT_CHAT_FRAME:AddMessage("   - Sort Purgeable Auras setting (Buffs & Debuffs).")
 
                 DEFAULT_CHAT_FRAME:AddMessage("|A:Professions-Crafting-Orders-Icon:16:16|a Bugfixes:")
-                DEFAULT_CHAT_FRAME:AddMessage("   Attempted fix for hidden party names popping back up during shuffle.")
-                -- DEFAULT_CHAT_FRAME:AddMessage("   Reverted all name logic to 1.3.8b version. It's old and not optimal but at least it doesn't taint(?). I will never touch this again until TWW >_>")
-                --DEFAULT_CHAT_FRAME:AddMessage("   A lot of behind the scenes Name logic changed. Should now work better and be happier with other addons.")
+                DEFAULT_CHAT_FRAME:AddMessage("   Castbar settings should now be better on Cata, might still need some tweaks.")
+                DEFAULT_CHAT_FRAME:AddMessage("   +Many more... Keep bug reporting please.")
+                -- -- DEFAULT_CHAT_FRAME:AddMessage("   Reverted all name logic to 1.3.8b version. It's old and not optimal but at least it doesn't taint(?). I will never touch this again until TWW >_>")
+                -- --DEFAULT_CHAT_FRAME:AddMessage("   A lot of behind the scenes Name logic changed. Should now work better and be happier with other addons.")
             end)
         else
             BetterBlizzFramesDB.scStart = nil
@@ -780,7 +783,7 @@ Frame:SetScript("OnEvent", function(...)
             BBF.UpdateUserDarkModeSettings()
             BBF.ChatFilterCaller()
 
-            --BBF.HookOverShields()
+            BBF.HookOverShields()
             BBF.HookCastbarsForEvoker()
             BBF.StealthIndicator()
             BBF.CastbarRecolorWidgets()
@@ -923,5 +926,32 @@ PlayerEnteringWorld:SetScript("OnEvent", function()
     --     TargetFrameSpellBar:SetFrameStrata("HIGH")
     --     FocusFrameSpellBar:SetFrameStrata("HIGH")
     -- end
+    if BetterBlizzFramesDB.fixHealthbarText then
+        --temp fix blizz bodify
+        SetTextStatusBarText(PlayerFrameManaBar, PlayerFrameManaBarText)
+        SetTextStatusBarText(PlayerFrameHealthBar, PlayerFrameHealthBarText)
+        TextStatusBar_UpdateTextString(PlayerFrameHealthBar)
+        TextStatusBar_UpdateTextString(PlayerFrameManaBar)
+    end
 end)
 PlayerEnteringWorld:RegisterEvent("PLAYER_ENTERING_WORLD")
+
+
+TargetFrame.HealthBar.OtherHealPredictionBar.Fill:SetVertexColor(0,1,0)
+TargetFrame.HealthBar.MyHealPredictionBar.Fill:SetVertexColor(0,1,0)
+
+-- TargetFrame.HealthBar.BBPFill = TargetFrame.HealthBar.OtherHealPredictionBar:CreateTexture(nil, "OVERLAY");
+-- TargetFrame.HealthBar.BBPFill:SetTexture(137012)
+-- TargetFrame.HealthBar.BBPFill:SetPoint("CENTER", TargetFrame.HealthBar.MyHealPredictionBar.FillMask, "CENTER", 0, 0)
+-- -- TargetFrame.HealthBar.MyHealPredictionBar.FillMask:HookScript("OnUpdate", function()
+-- --     TargetFrame.HealthBar.BBPFill:SetWidth(TargetFrame.HealthBar.MyHealPredictionBar.FillMask:GetWidth())
+-- -- end)
+
+-- BBF.HookAndDo(TargetFrame.HealthBar.MyHealPredictionBar.FillMask, "SetSize", function(frame, width, height, flag)
+--     TargetFrame.HealthBar.BBPFill:SetSize(120, 42, flag)
+-- end)
+
+-- BBF.HookAndDo(TargetFrame.HealthBar.MyHealPredictionBar.FillMask, "SetWidth", function(frame, width, flag)
+--     TargetFrame.HealthBar.BBPFill:SetWidth(TargetFrame.HealthBar.MyHealPredictionBar.FillMask:GetWidth(), flag)
+-- end)
+--TargetFrame.HealthBar.OtherHealPredictionBar.Fill:SetBlendMode("MOD")

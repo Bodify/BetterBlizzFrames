@@ -4348,44 +4348,6 @@ local function guiMisc()
     moveResourceToTarget:HookScript("OnClick", function()
         CheckAndToggleCheckboxes(moveResourceToTarget)
     end)
-
-
-
-
-
-    local discordLinkEditBox = CreateFrame("EditBox", nil, guiMisc, "InputBoxTemplate")
-    discordLinkEditBox:SetPoint("TOPLEFT", settingsText, "BOTTOMLEFT", 210, -540)
-    discordLinkEditBox:SetSize(180, 20)
-    discordLinkEditBox:SetAutoFocus(false)
-    discordLinkEditBox:SetFontObject("ChatFontNormal")
-    discordLinkEditBox:SetText("https://discord.gg/cjqVaEMm25")
-    discordLinkEditBox:SetCursorPosition(0) -- Places cursor at start of the text
-    discordLinkEditBox:ClearFocus() -- Removes focus from the EditBox
-    discordLinkEditBox:SetScript("OnEscapePressed", function(self)
-        self:ClearFocus() -- Allows user to press escape to unfocus the EditBox
-    end)
-
-    -- Make the EditBox text selectable and readonly
-    discordLinkEditBox:SetScript("OnTextChanged", function(self)
-        self:SetText("https://discord.gg/cjqVaEMm25")
-    end)
-    --discordLinkEditBox:HighlightText() -- Highlights the text for easy copying
-    discordLinkEditBox:SetScript("OnCursorChanged", function() end) -- Prevents cursor changes
-    discordLinkEditBox:SetScript("OnEditFocusGained", function(self) self:HighlightText() end) -- Re-highlights text when focused
-    discordLinkEditBox:SetScript("OnMouseUp", function(self)
-        if not self:IsMouseOver() then
-            self:ClearFocus()
-        end
-    end)
-
-    local discordText = guiMisc:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
-    discordText:SetPoint("BOTTOM", discordLinkEditBox, "TOP", 18, 8)
-    discordText:SetText("Join the Discord for info\nand help with BBP/BBF")
-
-    local joinDiscord = guiMisc:CreateTexture(nil, "ARTWORK")
-    joinDiscord:SetAtlas("token-choice-bnet")
-    joinDiscord:SetSize(68, 68)
-    joinDiscord:SetPoint("RIGHT", discordText, "LEFT", 5, 1)
 end
 
 local function guiChatFrame()
@@ -4433,6 +4395,119 @@ local function guiImportAndExport()
     local auraWhitelist = CreateImportExportUI(fullProfile, "Aura Whitelist", BetterBlizzFramesDB.auraWhitelist, 0, -100, "auraWhitelist")
     local auraBlacklist = CreateImportExportUI(auraWhitelist, "Aura Blacklist", BetterBlizzFramesDB.auraBlacklist, 210, 0, "auraBlacklist")
 end
+
+local function guiSupport()
+    local guiSupport = CreateFrame("Frame")
+    guiSupport.name = "|A:GarrisonTroops-Health:10:10|a Support"
+    guiSupport.parent = BetterBlizzFrames.name
+    InterfaceOptions_AddCategory(guiSupport)
+    CreateTitle(guiSupport)
+
+    local bgImg = guiSupport:CreateTexture(nil, "BACKGROUND")
+    bgImg:SetAtlas("professions-recipe-background")
+    bgImg:SetPoint("CENTER", guiSupport, "CENTER", -8, 4)
+    bgImg:SetSize(680, 610)
+    bgImg:SetAlpha(0.4)
+    bgImg:SetVertexColor(0,0,0)
+
+    local discordLinkEditBox = CreateFrame("EditBox", nil, guiSupport, "InputBoxTemplate")
+    discordLinkEditBox:SetPoint("TOP", guiSupport, "TOP", 0, -170)
+    discordLinkEditBox:SetSize(180, 20)
+    discordLinkEditBox:SetAutoFocus(false)
+    discordLinkEditBox:SetFontObject("ChatFontNormal")
+    discordLinkEditBox:SetText("https://discord.gg/cjqVaEMm25")
+    discordLinkEditBox:SetCursorPosition(0) -- Places cursor at start of the text
+    discordLinkEditBox:ClearFocus() -- Removes focus from the EditBox
+    discordLinkEditBox:SetScript("OnEscapePressed", function(self)
+        self:ClearFocus() -- Allows user to press escape to unfocus the EditBox
+    end)
+
+    -- Make the EditBox text selectable and readonly
+    discordLinkEditBox:SetScript("OnTextChanged", function(self)
+        self:SetText("https://discord.gg/cjqVaEMm25")
+    end)
+    --discordLinkEditBox:HighlightText() -- Highlights the text for easy copying
+    discordLinkEditBox:SetScript("OnCursorChanged", function() end) -- Prevents cursor changes
+    discordLinkEditBox:SetScript("OnEditFocusGained", function(self) self:HighlightText() end) -- Re-highlights text when focused
+    discordLinkEditBox:SetScript("OnMouseUp", function(self)
+        if not self:IsMouseOver() then
+            self:ClearFocus()
+        end
+    end)
+
+    local discordText = guiSupport:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+    discordText:SetPoint("BOTTOM", discordLinkEditBox, "TOP", 18, 8)
+    discordText:SetText("Join the Discord for info\nand help with BBP/BBF")
+
+    local joinDiscord = guiSupport:CreateTexture(nil, "ARTWORK")
+    joinDiscord:SetTexture("Interface\\AddOns\\BetterBlizzPlates\\media\\logos\\discord.tga")
+    joinDiscord:SetSize(52, 52)
+    joinDiscord:SetPoint("RIGHT", discordText, "LEFT", 0, 1)
+
+    local supportText = guiSupport:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+    supportText:SetPoint("TOP", guiSupport, "TOP", 0, -230)
+    supportText:SetText("If you wish to support me and my projects\nit would be greatly appreciated |A:GarrisonTroops-Health:10:10|a")
+
+    local boxOne = CreateFrame("EditBox", nil, guiSupport, "InputBoxTemplate")
+    boxOne:SetPoint("TOP", guiSupport, "TOP", -110, -360)
+    boxOne:SetSize(180, 20)
+    boxOne:SetAutoFocus(false)
+    boxOne:SetFontObject("ChatFontNormal")
+    boxOne:SetText("https://patreon.com/bodifydev")
+    boxOne:SetCursorPosition(0) -- Places cursor at start of the text
+    boxOne:ClearFocus() -- Removes focus from the EditBox
+    boxOne:SetScript("OnEscapePressed", function(self)
+        self:ClearFocus() -- Allows user to press escape to unfocus the EditBox
+    end)
+
+    -- Make the EditBox text selectable and readonly
+    boxOne:SetScript("OnTextChanged", function(self)
+        self:SetText("https://patreon.com/bodifydev")
+    end)
+    --boxOne:HighlightText() -- Highlights the text for easy copying
+    boxOne:SetScript("OnCursorChanged", function() end) -- Prevents cursor changes
+    boxOne:SetScript("OnEditFocusGained", function(self) self:HighlightText() end) -- Re-highlights text when focused
+    boxOne:SetScript("OnMouseUp", function(self)
+        if not self:IsMouseOver() then
+            self:ClearFocus()
+        end
+    end)
+
+    local boxOneTex = guiSupport:CreateTexture(nil, "ARTWORK")
+    boxOneTex:SetTexture("Interface\\AddOns\\BetterBlizzPlates\\media\\logos\\patreon.tga")
+    boxOneTex:SetSize(58, 58)
+    boxOneTex:SetPoint("BOTTOM", boxOne, "TOP", 0, 1)
+
+    local boxTwo = CreateFrame("EditBox", nil, guiSupport, "InputBoxTemplate")
+    boxTwo:SetPoint("TOP", guiSupport, "TOP", 110, -360)
+    boxTwo:SetSize(180, 20)
+    boxTwo:SetAutoFocus(false)
+    boxTwo:SetFontObject("ChatFontNormal")
+    boxTwo:SetText("https://paypal.me/bodifydev")
+    boxTwo:SetCursorPosition(0) -- Places cursor at start of the text
+    boxTwo:ClearFocus() -- Removes focus from the EditBox
+    boxTwo:SetScript("OnEscapePressed", function(self)
+        self:ClearFocus() -- Allows user to press escape to unfocus the EditBox
+    end)
+
+    -- Make the EditBox text selectable and readonly
+    boxTwo:SetScript("OnTextChanged", function(self)
+        self:SetText("https://paypal.me/bodifydev")
+    end)
+    --boxTwo:HighlightText() -- Highlights the text for easy copying
+    boxTwo:SetScript("OnCursorChanged", function() end) -- Prevents cursor changes
+    boxTwo:SetScript("OnEditFocusGained", function(self) self:HighlightText() end) -- Re-highlights text when focused
+    boxTwo:SetScript("OnMouseUp", function(self)
+        if not self:IsMouseOver() then
+            self:ClearFocus()
+        end
+    end)
+
+    local boxTwoTex = guiSupport:CreateTexture(nil, "ARTWORK")
+    boxTwoTex:SetTexture("Interface\\AddOns\\BetterBlizzPlates\\media\\logos\\paypal.tga")
+    boxTwoTex:SetSize(58, 58)
+    boxTwoTex:SetPoint("BOTTOM", boxTwo, "TOP", 0, 1)
+end
 ------------------------------------------------------------
 -- GUI Setup
 ------------------------------------------------------------
@@ -4449,5 +4524,6 @@ function BBF.InitializeOptions()
         guiImportAndExport()
         guiMisc()
         --guiChatFrame()
+        guiSupport()
     end
 end

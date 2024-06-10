@@ -12,6 +12,49 @@ local sliderUnderBox = "12, -10"
 local LibDeflate = LibStub("LibDeflate")
 local LibSerialize = LibStub("LibSerialize")
 
+BBF.partyPointerTargetIconReplacement = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-QuestPoiImportant-QuestBang.tga"
+BBF.squareGreenGlow = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\newplayertutorial-drag-slotgreen.tga"
+BBF.squareBlueGlow = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\newplayertutorial-drag-slotblue.tga"
+BBF.PandemicIcon = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\ElementalStorm-Boss-Air.tga"
+BBF.ImportantIcon = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-QuestPoiImportant-QuestBang.tga"
+BBF.OwnAuraIcon = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-Group-FriendOnlineIcon.tga"
+BBF.EnlargedIcon = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-Minimap-Zoom-In.tga"
+BBF.CompactIcon = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-Minimap-Zoom-Out.tga"
+
+
+-- local function ExportProfile(profileTable, dataType)
+--     -- Include a dataType in the table being serialized
+--     local exportTable = {
+--         dataType = dataType,
+--         data = profileTable
+--     }
+--     local serialized = LibSerialize:Serialize(exportTable)
+--     local compressed = LibDeflate:CompressDeflate(serialized)
+--     local encoded = LibDeflate:EncodeForPrint(compressed)
+--     return "!BBFCata" .. encoded .. "!BBFCata"
+-- end
+
+-- local function ImportProfile(encodedString, expectedDataType)
+--     if encodedString:sub(1, 8) == "!BBFCata" and encodedString:sub(-8) == "!BBFCata" then
+--         encodedString = encodedString:sub(9, -9) -- Remove both prefix and suffix
+--     else
+--         return nil, "Invalid format: Prefix or suffix not found."
+--     end
+
+--     local compressed = LibDeflate:DecodeForPrint(encodedString)
+--     local serialized, decompressMsg = LibDeflate:DecompressDeflate(compressed)
+--     if not serialized then
+--         return nil, "Error decompressing: " .. tostring(decompressMsg)
+--     end
+
+--     local success, importTable = LibSerialize:Deserialize(serialized)
+--     if not success or importTable.dataType ~= expectedDataType then
+--         return nil, "Error deserializing or data type mismatch"
+--     end
+
+--     return importTable.data, nil
+-- end
+
 local function ExportProfile(profileTable, dataType)
     -- Include a dataType in the table being serialized
     local exportTable = {
@@ -806,7 +849,7 @@ local function notWorking(element, re)
     if element.Text then
         element.Text:SetTextColor(1,0,0)
     end
-    CreateTooltipTwo(element, "Not Working", "Currently not working and disabled for cata. May or may not be removed TBD.", "A lot of other features might also not work in this Alpha version. Keep an eye out for errors.")
+    CreateTooltipTwo(element, "Not Working", "Currently not working and disabled for cata. May or may not be removed TBD.", "A lot of other features might also not work 100% in this Beta version. Keep an eye out for errors.")
 
     if re then
         C_Timer.After(4, function()
@@ -1173,12 +1216,12 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
 
             -- Create a texture for the checkbox
             checkBoxP.texture = checkBoxP:CreateTexture(nil, "ARTWORK", nil, 1)
-            checkBoxP.texture:SetAtlas("AlliedRace-UnlockingFrame-BottomButtonsSelectionGlow")
+            checkBoxP.texture:SetTexture(BBF.squareGreenGlow)
             checkBoxP.texture:SetDesaturated(true)
             checkBoxP.texture:SetVertexColor(1, 0, 0)
-            checkBoxP.texture:SetSize(23, 23)
+            checkBoxP.texture:SetSize(46, 46)
             checkBoxP.texture:SetPoint("CENTER", checkBoxP, "CENTER", -0.5, 0)
-            CreateTooltipTwo(checkBoxP, "Pandemic Glow |A:elementalstorm-boss-air:22:22|a", "Check for a red glow when the aura has less than 5 sec remaining.", "Also check which frame(s) you want this on down below in settings.", "ANCHOR_TOPRIGHT")
+            CreateTooltipTwo(checkBoxP, "Pandemic Glow |T"..BBF.PandemicIcon..":22:22:0:0|t", "Check for a red glow when the aura has less than 5 sec remaining.", "Also check which frame(s) you want this on down below in settings.", "ANCHOR_TOPRIGHT")
 
             -- Handler for the P checkbox
             checkBoxP:SetScript("OnClick", function(self)
@@ -1198,11 +1241,11 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
 
             -- Create a texture for the checkbox
             checkBoxI.texture = checkBoxI:CreateTexture(nil, "ARTWORK", nil, 1)
-            checkBoxI.texture:SetAtlas("AlliedRace-UnlockingFrame-BottomButtonsSelectionGlow")
-            checkBoxI.texture:SetSize(23, 23)
+            checkBoxI.texture:SetTexture(BBF.squareGreenGlow)
+            checkBoxI.texture:SetSize(46, 46)
             checkBoxI.texture:SetDesaturated(true)
             checkBoxI.texture:SetPoint("CENTER", checkBoxI, "CENTER", -0.5, 0)
-            CreateTooltipTwo(checkBoxI, "Important Glow |A:importantavailablequesticon:22:22|a", "Check for a glow on the aura to highlight it.\n|cff32f795Right-click to change color.|r", "Also check which frame(s) you want this on down below in settings.", "ANCHOR_TOPRIGHT")
+            CreateTooltipTwo(checkBoxI, "Important Glow |T"..BBF.ImportantIcon..":22:22:0:0|t", "Check for a glow on the aura to highlight it.\n|cff32f795Right-click to change color.|r", "Also check which frame(s) you want this on down below in settings.", "ANCHOR_TOPRIGHT")
 
             -- Handler for the I checkbox
             checkBoxI:SetScript("OnClick", function(self)
@@ -1279,7 +1322,7 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
             local checkBoxC = CreateFrame("CheckButton", nil, button, "UICheckButtonTemplate")
             checkBoxC:SetSize(24, 24)
             checkBoxC:SetPoint("RIGHT", checkBoxI, "LEFT", 3, 0)
-            CreateTooltipTwo(checkBoxC, "Compacted Aura |A:ui-hud-minimap-zoom-out:22:22|a", "Check to make the aura smaller.", "Also check which frame(s) you want this on down below in settings.", "ANCHOR_TOPRIGHT")
+            CreateTooltipTwo(checkBoxC, "Compacted Aura |T"..BBF.CompactIcon..":22:22:0:0|t", "Check to make the aura smaller.", "Also check which frame(s) you want this on down below in settings.", "ANCHOR_TOPRIGHT")
 
             -- Initialize state from npc flags
             if npc.flags.compacted then
@@ -1290,7 +1333,7 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
             local checkBoxE = CreateFrame("CheckButton", nil, button, "UICheckButtonTemplate")
             checkBoxE:SetSize(24, 24)
             checkBoxE:SetPoint("RIGHT", checkBoxC, "LEFT", 3, 0)
-            CreateTooltipTwo(checkBoxE, "Enlarged Aura |A:ui-hud-minimap-zoom-in:22:22|a", "Check to make the aura bigger.", "Also check which frame(s) you want this on down below in settings.", "ANCHOR_TOPRIGHT")
+            CreateTooltipTwo(checkBoxE, "Enlarged Aura |T"..BBF.EnlargedIcon..":22:22:0:0|t", "Check to make the aura bigger.", "Also check which frame(s) you want this on down below in settings.", "ANCHOR_TOPRIGHT")
 
             -- Handler for the C checkbox
             checkBoxC:SetScript("OnClick", function(self)
@@ -1317,7 +1360,7 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
             local checkBoxOnlyMine = CreateFrame("CheckButton", nil, button, "UICheckButtonTemplate")
             checkBoxOnlyMine:SetSize(24, 24)
             checkBoxOnlyMine:SetPoint("RIGHT", checkBoxE, "LEFT", 3, 0)
-            CreateTooltipTwo(checkBoxOnlyMine, "Only My Aura |A:UI-HUD-UnitFrame-Player-Group-FriendOnlineIcon:22:22|a", "Only show my aura.", nil, "ANCHOR_TOPRIGHT")
+            CreateTooltipTwo(checkBoxOnlyMine, "Only My Aura |T"..BBF.OwnAuraIcon..":22:22:0:0|t", "Only show my aura.", nil, "ANCHOR_TOPRIGHT")
 
             -- Handler for the E checkbox
             checkBoxOnlyMine:SetScript("OnClick", function(self)
@@ -1511,7 +1554,7 @@ local function CreateTitle(parent)
     addonNameIcon:SetPoint("LEFT", addonNameText, "RIGHT", -2, -1)
     local verNumber = parent:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     verNumber:SetPoint("LEFT", addonNameText, "RIGHT", 25, 0)
-    verNumber:SetText("CATA BETA v0.0.6" )--.. BBF.VersionNumber.."b")
+    verNumber:SetText("CATA BETA v0.0.7" )--.. BBF.VersionNumber.."b")
 end
 
 ------------------------------------------------------------
@@ -1855,12 +1898,16 @@ local function guiGeneralTab()
     petCastbar:SetPoint("TOPLEFT", petFrameText, "BOTTOMLEFT", -4, pixelsOnFirstBox)
     CreateTooltip(petCastbar, "Show pet castbar.\n\nMore settings in the \"Castbars\" tab")
 
-    local colorPetAfterOwner = CreateCheckbox("colorPetAfterOwner", "Color Pet After Player Class", BetterBlizzFrames)
+    local colorPetAfterOwner = CreateCheckbox("colorPetAfterOwner", "Class Color Pet", BetterBlizzFrames)
     colorPetAfterOwner:SetPoint("TOPLEFT", petCastbar, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     colorPetAfterOwner:HookScript("OnClick", function (self)
         BBF.UpdateFrames()
     end)
+    CreateTooltipTwo(colorPetAfterOwner, "Class Color Pet", "Color pet healthbar after player class")
 
+    local hidePetText = CreateCheckbox("hidePetText", "Hide Pet Statusbar Text", BetterBlizzFrames, nil, BBF.HideFrames)
+    hidePetText:SetPoint("TOPLEFT", colorPetAfterOwner, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(hidePetText, "Hide Pet Statusbar Text", "Hide the health and mana text on PetFrame.")
 
     local partyFrameText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     partyFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 0, -430)
@@ -2132,7 +2179,7 @@ local function guiGeneralTab()
     filterGladiusSpam:SetPoint("TOPLEFT", hideChatButtons, "BOTTOMLEFT", 0, -10)
     CreateTooltip(filterGladiusSpam, "Filter out Gladius \"LOW HEALTH\" spam from chat.")
 
-    local filterNpcArenaSpam = CreateCheckbox("filterNpcArenaSpam", "Arena Npc Talk", BetterBlizzFrames, nil, BBF.ChatFilterCaller)
+    local filterNpcArenaSpam = CreateCheckbox("filterNpcArenaSpam", "PvP Npc Talk", BetterBlizzFrames, nil, BBF.ChatFilterCaller)
     filterNpcArenaSpam:SetPoint("LEFT", filterGladiusSpam.text, "RIGHT", 0, 0)
     CreateTooltip(filterNpcArenaSpam, "Filter out npc chat messages like \"Get in there and fight, stop hiding!\"\nfrom chat during arena.")
 
@@ -2144,7 +2191,7 @@ local function guiGeneralTab()
     filterEmoteSpam:SetPoint("TOPLEFT", filterTalentSpam, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(filterEmoteSpam, "Filter out \"yells at his/her team members.\" and\n\"makes some strange gestures.\" from chat.")
 
-    local filterSystemMessages = CreateCheckbox("filterSystemMessages", "System Messages", BetterBlizzFrames, nil, BBF.ChatFilterCaller)
+    local filterSystemMessages = CreateCheckbox("filterSystemMessages", "System Msg", BetterBlizzFrames, nil, BBF.ChatFilterCaller)
     filterSystemMessages:SetPoint("TOPLEFT", filterNpcArenaSpam, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(filterSystemMessages, "Filter out a few excessive system messages. Some examples:\n\"You have joined the queue for Arena Skirmish\"\n\"Your group has been disbanded.\"\n\"You have been awarded x currency\"\n\"You are in both a party and an instance group.\"\n\nFull lists in modules\\chatFrame.lua")
 
@@ -2454,7 +2501,7 @@ local function guiGeneralTab()
         BBF.AbsorbCaller()
     end)
     CreateTooltip(absorbIndicator, "Show absorb amount on Player, Target and Focus Frame\nMore settings in \"Advanced Settings\"")
-    notWorking(absorbIndicator, true)
+    --notWorking(absorbIndicator, true)
 
     local racialIndicator = CreateCheckbox("racialIndicator", "PvP Racial Indicator", BetterBlizzFrames, nil, BBF.RacialIndicatorCaller)
     racialIndicator:SetPoint("TOPLEFT", absorbIndicator, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
@@ -2465,63 +2512,60 @@ local function guiGeneralTab()
 
     local overShields = CreateCheckbox("overShields", "Overshields", BetterBlizzFrames)
     overShields:SetPoint("TOPLEFT", racialIndicator, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltip(overShields, "Expand on Blizzards unit frame absorb texture and\nshow shield amount on frames regardless if HP is full or not", "ANCHOR_LEFT")
-    notWorking(overShields, true)
+    CreateTooltip(overShields, "Show shield amount on UnitFrames", "ANCHOR_LEFT")
 
-    local overShieldsUnitFrames = CreateCheckbox("overShieldsUnitFrames", "A", BetterBlizzFrames)
-    overShieldsUnitFrames:SetPoint("LEFT", overShields.text, "RIGHT", 0, 0)
-    CreateTooltip(overShieldsUnitFrames, "Show Overshields on UnitFrames (Player, Target, Focus)", "ANCHOR_LEFT")
-    overShieldsUnitFrames:HookScript("OnClick", function(self)
-        BBF.HookOverShields()
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
-    end)
-    notWorking(overShieldsUnitFrames, true)
+    -- local overShieldsUnitFrames = CreateCheckbox("overShieldsUnitFrames", "A", BetterBlizzFrames)
+    -- overShieldsUnitFrames:SetPoint("LEFT", overShields.text, "RIGHT", 0, 0)
+    -- CreateTooltip(overShieldsUnitFrames, "Show Overshields on UnitFrames (Player, Target, Focus)", "ANCHOR_LEFT")
+    -- overShieldsUnitFrames:HookScript("OnClick", function(self)
+    --     BBF.HookOverShields()
+    --     StaticPopup_Show("BBF_CONFIRM_RELOAD")
+    -- end)
 
-    local overShieldsCompactUnitFrames = CreateCheckbox("overShieldsCompactUnitFrames", "B", BetterBlizzFrames)
-    overShieldsCompactUnitFrames:SetPoint("LEFT", overShieldsUnitFrames.text, "RIGHT", 0, 0)
-    CreateTooltip(overShieldsCompactUnitFrames, "Show Overshields on Compact UnitFrames (Party, Raid)", "ANCHOR_LEFT")
-    overShieldsCompactUnitFrames:HookScript("OnClick", function(self)
-        BBF.HookOverShields()
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
-    end)
-    notWorking(overShieldsCompactUnitFrames, true)
+    -- local overShieldsCompactUnitFrames = CreateCheckbox("overShieldsCompactUnitFrames", "B", BetterBlizzFrames)
+    -- overShieldsCompactUnitFrames:SetPoint("LEFT", overShieldsUnitFrames.text, "RIGHT", 0, 0)
+    -- CreateTooltip(overShieldsCompactUnitFrames, "Show Overshields on Compact UnitFrames (Party, Raid)", "ANCHOR_LEFT")
+    -- overShieldsCompactUnitFrames:HookScript("OnClick", function(self)
+    --     BBF.HookOverShields()
+    --     StaticPopup_Show("BBF_CONFIRM_RELOAD")
+    -- end)
 
     overShields:HookScript("OnClick", function(self)
         if self:GetChecked() then
             BetterBlizzFramesDB.overShieldsCompact = true
             BetterBlizzFramesDB.overShieldsUnitFrames = true
             BBF.HookOverShields()
-            overShieldsUnitFrames:SetAlpha(1)
-            overShieldsUnitFrames:Enable()
-            overShieldsUnitFrames:SetChecked(true)
-            overShieldsCompactUnitFrames:SetAlpha(1)
-            overShieldsCompactUnitFrames:Enable()
-            overShieldsCompactUnitFrames:SetChecked(true)
+            -- overShieldsUnitFrames:SetAlpha(1)
+            -- overShieldsUnitFrames:Enable()
+            -- overShieldsUnitFrames:SetChecked(true)
+            -- overShieldsCompactUnitFrames:SetAlpha(1)
+            -- overShieldsCompactUnitFrames:Enable()
+            -- overShieldsCompactUnitFrames:SetChecked(true)
             StaticPopup_Show("BBF_CONFIRM_RELOAD")
         else
             BetterBlizzFramesDB.overShieldsCompact = false
             BetterBlizzFramesDB.overShieldsUnitFrames = false
-            overShieldsUnitFrames:SetAlpha(0)
-            overShieldsUnitFrames:Disable()
-            overShieldsUnitFrames:SetChecked(false)
-            overShieldsCompactUnitFrames:SetAlpha(0)
-            overShieldsCompactUnitFrames:Disable()
-            overShieldsCompactUnitFrames:SetChecked(false)
+            -- overShieldsUnitFrames:SetAlpha(0)
+            -- overShieldsUnitFrames:Disable()
+            -- overShieldsUnitFrames:SetChecked(false)
+            -- overShieldsCompactUnitFrames:SetAlpha(0)
+            -- overShieldsCompactUnitFrames:Disable()
+            -- overShieldsCompactUnitFrames:SetChecked(false)
             StaticPopup_Show("BBF_CONFIRM_RELOAD")
         end
     end)
 
-    if BetterBlizzFramesDB.overShields then
-        overShieldsUnitFrames:SetAlpha(1)
-        overShieldsUnitFrames:Enable()
-        overShieldsCompactUnitFrames:SetAlpha(1)
-        overShieldsCompactUnitFrames:Enable()
-    else
-        overShieldsUnitFrames:SetAlpha(0)
-        overShieldsUnitFrames:Disable()
-        overShieldsCompactUnitFrames:SetAlpha(0)
-        overShieldsCompactUnitFrames:Disable()
-    end
+    -- if BetterBlizzFramesDB.overShields then
+    --     overShieldsUnitFrames:SetAlpha(1)
+    --     overShieldsUnitFrames:Enable()
+    --     overShieldsCompactUnitFrames:SetAlpha(1)
+    --     overShieldsCompactUnitFrames:Enable()
+    -- else
+    --     overShieldsUnitFrames:SetAlpha(0)
+    --     overShieldsUnitFrames:Disable()
+    --     overShieldsCompactUnitFrames:SetAlpha(0)
+    --     overShieldsCompactUnitFrames:Disable()
+    -- end
 
     ----------------------
     -- Reload etc
@@ -2566,7 +2610,7 @@ local function guiGeneralTab()
 
     local alphaWarn = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     alphaWarn:SetPoint("LEFT", resetBBFButton, "RIGHT", 5, 0)
-    alphaWarn:SetText("ALPHA (Expect things to be broken, use BugGrabber)")
+    alphaWarn:SetText("BETA (Expect things to be buggy, use BugGrabber)")
 end
 
 local function guiCastbars()
@@ -3747,33 +3791,33 @@ local function guiFrameAuras()
     whitelistText:SetText("Whitelist")
 
     local onlyMeTexture = contentFrame:CreateTexture(nil, "OVERLAY")
-    onlyMeTexture:SetAtlas("UI-HUD-UnitFrame-Player-Group-FriendOnlineIcon")
+    onlyMeTexture:SetTexture(BBF.OwnAuraIcon)
     onlyMeTexture:SetPoint("RIGHT", whitelist, "TOPRIGHT", 296, 9)
     onlyMeTexture:SetSize(18,20)
     CreateTooltip(onlyMeTexture, "Only My Aura Checkboxes")
 
     local enlargeAuraTexture = contentFrame:CreateTexture(nil, "OVERLAY")
-    enlargeAuraTexture:SetAtlas("ui-hud-minimap-zoom-in")
+    enlargeAuraTexture:SetTexture(BBF.EnlargedIcon)
     enlargeAuraTexture:SetPoint("LEFT", onlyMeTexture, "RIGHT", 4, 0)
     enlargeAuraTexture:SetSize(18,18)
     CreateTooltip(enlargeAuraTexture, "Enlarged Aura Checkboxes")
 
     local compactAuraTexture = contentFrame:CreateTexture(nil, "OVERLAY")
-    compactAuraTexture:SetAtlas("ui-hud-minimap-zoom-out")
+    compactAuraTexture:SetTexture(BBF.CompactIcon)
     compactAuraTexture:SetPoint("LEFT", enlargeAuraTexture, "RIGHT", 3, 0)
     compactAuraTexture:SetSize(18,18)
     CreateTooltip(compactAuraTexture, "Compact Aura Checkboxes")
 
     local importantAuraTexture = contentFrame:CreateTexture(nil, "OVERLAY")
-    importantAuraTexture:SetAtlas("importantavailablequesticon")
+    importantAuraTexture:SetTexture(BBF.ImportantIcon)
     importantAuraTexture:SetPoint("LEFT", compactAuraTexture, "RIGHT", 2, 0)
-    importantAuraTexture:SetSize(17,16)
+    importantAuraTexture:SetSize(17,18)
     importantAuraTexture:SetDesaturated(true)
     importantAuraTexture:SetVertexColor(0,1,0)
     CreateTooltip(importantAuraTexture, "Important Aura Checkboxes")
 
     local pandemicAuraTexture = contentFrame:CreateTexture(nil, "OVERLAY")
-    pandemicAuraTexture:SetAtlas("elementalstorm-boss-air")
+    pandemicAuraTexture:SetTexture(BBF.PandemicIcon)
     pandemicAuraTexture:SetPoint("LEFT", importantAuraTexture, "RIGHT", -1, 1)
     pandemicAuraTexture:SetSize(26,26)
     pandemicAuraTexture:SetDesaturated(true)
@@ -4178,9 +4222,21 @@ local function guiFrameAuras()
     targetAndFocusSmallAuraScale:SetPoint("TOP", targetAndFocusAuraScale, "BOTTOM", 0, -20)
     CreateTooltip(targetAndFocusSmallAuraScale, "Adjusts the size of small auras / auras that are not yours.")
 
-    local purgeableAuraSize = CreateSlider(playerAuraFiltering, "Purgeable Aura Scale", 0.7, 2, 0.01, "purgeableAuraSize")
+    local customPurgeSize = CreateCheckbox("customPurgeSize", "On", playerAuraGlows)
+
+    local purgeableAuraSize = CreateSlider(customPurgeSize, "Purgeable Aura Scale", 0.7, 2, 0.01, "purgeableAuraSize")
     purgeableAuraSize:SetPoint("TOP", targetAndFocusSmallAuraScale, "BOTTOM", 0, -20)
     CreateTooltip(purgeableAuraSize, "Adjusts the size of small auras / auras that are not yours.")
+
+    customPurgeSize:SetPoint("LEFT", purgeableAuraSize, "RIGHT", 5, 0)
+    CreateTooltip(customPurgeSize, "Custom aura size for all purgeable auras")
+    customPurgeSize:HookScript("OnClick", function(self)
+        if self:GetChecked() then
+            EnableElement(purgeableAuraSize)
+        else
+            DisableElement(purgeableAuraSize)
+        end
+    end)
 
     local enlargedAuraSize = CreateSlider(playerAuraFiltering, "Enlarged Aura Scale", 1, 2, 0.01, "enlargedAuraSize")
     enlargedAuraSize:SetPoint("TOP", purgeableAuraSize, "BOTTOM", 0, -20)
@@ -4355,6 +4411,17 @@ local function guiFrameAuras()
     betaHighlightIcon:SetAtlas("CharacterCreate-NewLabel")
     betaHighlightIcon:SetSize(42, 34)
     betaHighlightIcon:SetPoint("RIGHT", playerAuraFiltering, "LEFT", 8, 0)
+
+
+
+    local reloadUiButton = CreateFrame("Button", nil, guiFrameAuras, "UIPanelButtonTemplate")
+    reloadUiButton:SetText("Reload UI")
+    reloadUiButton:SetWidth(85)
+    reloadUiButton:SetPoint("TOP", guiFrameAuras, "BOTTOMRIGHT", -140, -9)
+    reloadUiButton:SetScript("OnClick", function()
+        BetterBlizzFramesDB.reopenOptions = true
+        ReloadUI()
+    end)
 end
 
 local function guiMisc()
@@ -4427,13 +4494,12 @@ local function guiMisc()
     local hideStanceBar = CreateCheckbox("hideStanceBar", "Hide StanceBar (ActionBar)", guiMisc, nil, BBF.HideFrames)
     hideStanceBar:SetPoint("TOPLEFT", hideActionBarMacroName, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
 
-    local hideDragonFlying = CreateCheckbox("hideDragonFlying", "Auto-hide Dragonriding (Temporary)", guiMisc)
-    hideDragonFlying:SetPoint("TOPLEFT", hideStanceBar, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltip(hideDragonFlying, "Automatically hide the dragon riding thing\nin zones where it shouldnt be showing.\n\n(Blizzard pls fix ur shit)")
-    notWorking(hideDragonFlying, true)
+    local fixHealthbarText = CreateCheckbox("fixHealthbarText", "Fix PlayerFrame Text", guiMisc)
+    fixHealthbarText:SetPoint("TOPLEFT", hideStanceBar, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltip(fixHealthbarText, "Fixes PlayerFrame health text missing\n\n(Blizzard pls fix ur shit)")
 
     local stealthIndicatorPlayer = CreateCheckbox("stealthIndicatorPlayer", "Stealth Indicator (Temporary?)", guiMisc, nil, BBF.StealthIndicator)
-    stealthIndicatorPlayer:SetPoint("TOPLEFT", hideDragonFlying, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    stealthIndicatorPlayer:SetPoint("TOPLEFT", fixHealthbarText, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     stealthIndicatorPlayer:HookScript("OnClick", function(self)
         if not self:GetChecked() then
             StaticPopup_Show("BBF_CONFIRM_RELOAD")
@@ -4490,44 +4556,6 @@ local function guiMisc()
     moveResourceToTarget:HookScript("OnClick", function()
         CheckAndToggleCheckboxes(moveResourceToTarget)
     end)
-
-
-
-
-
-    local discordLinkEditBox = CreateFrame("EditBox", nil, guiMisc, "InputBoxTemplate")
-    discordLinkEditBox:SetPoint("TOPLEFT", settingsText, "BOTTOMLEFT", 210, -540)
-    discordLinkEditBox:SetSize(180, 20)
-    discordLinkEditBox:SetAutoFocus(false)
-    discordLinkEditBox:SetFontObject("ChatFontNormal")
-    discordLinkEditBox:SetText("https://discord.gg/cjqVaEMm25")
-    discordLinkEditBox:SetCursorPosition(0) -- Places cursor at start of the text
-    discordLinkEditBox:ClearFocus() -- Removes focus from the EditBox
-    discordLinkEditBox:SetScript("OnEscapePressed", function(self)
-        self:ClearFocus() -- Allows user to press escape to unfocus the EditBox
-    end)
-
-    -- Make the EditBox text selectable and readonly
-    discordLinkEditBox:SetScript("OnTextChanged", function(self)
-        self:SetText("https://discord.gg/cjqVaEMm25")
-    end)
-    --discordLinkEditBox:HighlightText() -- Highlights the text for easy copying
-    discordLinkEditBox:SetScript("OnCursorChanged", function() end) -- Prevents cursor changes
-    discordLinkEditBox:SetScript("OnEditFocusGained", function(self) self:HighlightText() end) -- Re-highlights text when focused
-    discordLinkEditBox:SetScript("OnMouseUp", function(self)
-        if not self:IsMouseOver() then
-            self:ClearFocus()
-        end
-    end)
-
-    local discordText = guiMisc:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
-    discordText:SetPoint("BOTTOM", discordLinkEditBox, "TOP", 18, 8)
-    discordText:SetText("Join the Discord for info\nand help with BBP/BBF")
-
-    local joinDiscord = guiMisc:CreateTexture(nil, "ARTWORK")
-    joinDiscord:SetAtlas("token-choice-bnet")
-    joinDiscord:SetSize(68, 68)
-    joinDiscord:SetPoint("RIGHT", discordText, "LEFT", 5, 1)
 end
 
 local function guiChatFrame()
@@ -4575,6 +4603,119 @@ local function guiImportAndExport()
     local auraWhitelist = CreateImportExportUI(fullProfile, "Aura Whitelist", BetterBlizzFramesDB.auraWhitelist, 0, -100, "auraWhitelist")
     local auraBlacklist = CreateImportExportUI(auraWhitelist, "Aura Blacklist", BetterBlizzFramesDB.auraBlacklist, 210, 0, "auraBlacklist")
 end
+
+local function guiSupport()
+    local guiSupport = CreateFrame("Frame")
+    guiSupport.name = "|A:GarrisonTroops-Health:10:10|a Support"
+    guiSupport.parent = BetterBlizzFrames.name
+    InterfaceOptions_AddCategory(guiSupport)
+    CreateTitle(guiSupport)
+
+    local bgImg = guiSupport:CreateTexture(nil, "BACKGROUND")
+    bgImg:SetAtlas("professions-recipe-background")
+    bgImg:SetPoint("CENTER", guiSupport, "CENTER", -8, 4)
+    bgImg:SetSize(680, 610)
+    bgImg:SetAlpha(0.4)
+    bgImg:SetVertexColor(0,0,0)
+
+    local discordLinkEditBox = CreateFrame("EditBox", nil, guiSupport, "InputBoxTemplate")
+    discordLinkEditBox:SetPoint("TOP", guiSupport, "TOP", 0, -170)
+    discordLinkEditBox:SetSize(180, 20)
+    discordLinkEditBox:SetAutoFocus(false)
+    discordLinkEditBox:SetFontObject("ChatFontNormal")
+    discordLinkEditBox:SetText("https://discord.gg/cjqVaEMm25")
+    discordLinkEditBox:SetCursorPosition(0) -- Places cursor at start of the text
+    discordLinkEditBox:ClearFocus() -- Removes focus from the EditBox
+    discordLinkEditBox:SetScript("OnEscapePressed", function(self)
+        self:ClearFocus() -- Allows user to press escape to unfocus the EditBox
+    end)
+
+    -- Make the EditBox text selectable and readonly
+    discordLinkEditBox:SetScript("OnTextChanged", function(self)
+        self:SetText("https://discord.gg/cjqVaEMm25")
+    end)
+    --discordLinkEditBox:HighlightText() -- Highlights the text for easy copying
+    discordLinkEditBox:SetScript("OnCursorChanged", function() end) -- Prevents cursor changes
+    discordLinkEditBox:SetScript("OnEditFocusGained", function(self) self:HighlightText() end) -- Re-highlights text when focused
+    discordLinkEditBox:SetScript("OnMouseUp", function(self)
+        if not self:IsMouseOver() then
+            self:ClearFocus()
+        end
+    end)
+
+    local discordText = guiSupport:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+    discordText:SetPoint("BOTTOM", discordLinkEditBox, "TOP", 18, 8)
+    discordText:SetText("Join the Discord for info\nand help with BBP/BBF")
+
+    local joinDiscord = guiSupport:CreateTexture(nil, "ARTWORK")
+    joinDiscord:SetTexture("Interface\\AddOns\\BetterBlizzPlates\\media\\logos\\discord.tga")
+    joinDiscord:SetSize(52, 52)
+    joinDiscord:SetPoint("RIGHT", discordText, "LEFT", 0, 1)
+
+    local supportText = guiSupport:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+    supportText:SetPoint("TOP", guiSupport, "TOP", 0, -230)
+    supportText:SetText("If you wish to support me and my projects\nit would be greatly appreciated |A:GarrisonTroops-Health:10:10|a")
+
+    local boxOne = CreateFrame("EditBox", nil, guiSupport, "InputBoxTemplate")
+    boxOne:SetPoint("TOP", guiSupport, "TOP", -110, -360)
+    boxOne:SetSize(180, 20)
+    boxOne:SetAutoFocus(false)
+    boxOne:SetFontObject("ChatFontNormal")
+    boxOne:SetText("https://patreon.com/bodifydev")
+    boxOne:SetCursorPosition(0) -- Places cursor at start of the text
+    boxOne:ClearFocus() -- Removes focus from the EditBox
+    boxOne:SetScript("OnEscapePressed", function(self)
+        self:ClearFocus() -- Allows user to press escape to unfocus the EditBox
+    end)
+
+    -- Make the EditBox text selectable and readonly
+    boxOne:SetScript("OnTextChanged", function(self)
+        self:SetText("https://patreon.com/bodifydev")
+    end)
+    --boxOne:HighlightText() -- Highlights the text for easy copying
+    boxOne:SetScript("OnCursorChanged", function() end) -- Prevents cursor changes
+    boxOne:SetScript("OnEditFocusGained", function(self) self:HighlightText() end) -- Re-highlights text when focused
+    boxOne:SetScript("OnMouseUp", function(self)
+        if not self:IsMouseOver() then
+            self:ClearFocus()
+        end
+    end)
+
+    local boxOneTex = guiSupport:CreateTexture(nil, "ARTWORK")
+    boxOneTex:SetTexture("Interface\\AddOns\\BetterBlizzPlates\\media\\logos\\patreon.tga")
+    boxOneTex:SetSize(58, 58)
+    boxOneTex:SetPoint("BOTTOM", boxOne, "TOP", 0, 1)
+
+    local boxTwo = CreateFrame("EditBox", nil, guiSupport, "InputBoxTemplate")
+    boxTwo:SetPoint("TOP", guiSupport, "TOP", 110, -360)
+    boxTwo:SetSize(180, 20)
+    boxTwo:SetAutoFocus(false)
+    boxTwo:SetFontObject("ChatFontNormal")
+    boxTwo:SetText("https://paypal.me/bodifydev")
+    boxTwo:SetCursorPosition(0) -- Places cursor at start of the text
+    boxTwo:ClearFocus() -- Removes focus from the EditBox
+    boxTwo:SetScript("OnEscapePressed", function(self)
+        self:ClearFocus() -- Allows user to press escape to unfocus the EditBox
+    end)
+
+    -- Make the EditBox text selectable and readonly
+    boxTwo:SetScript("OnTextChanged", function(self)
+        self:SetText("https://paypal.me/bodifydev")
+    end)
+    --boxTwo:HighlightText() -- Highlights the text for easy copying
+    boxTwo:SetScript("OnCursorChanged", function() end) -- Prevents cursor changes
+    boxTwo:SetScript("OnEditFocusGained", function(self) self:HighlightText() end) -- Re-highlights text when focused
+    boxTwo:SetScript("OnMouseUp", function(self)
+        if not self:IsMouseOver() then
+            self:ClearFocus()
+        end
+    end)
+
+    local boxTwoTex = guiSupport:CreateTexture(nil, "ARTWORK")
+    boxTwoTex:SetTexture("Interface\\AddOns\\BetterBlizzPlates\\media\\logos\\paypal.tga")
+    boxTwoTex:SetSize(58, 58)
+    boxTwoTex:SetPoint("BOTTOM", boxTwo, "TOP", 0, 1)
+end
 ------------------------------------------------------------
 -- GUI Setup
 ------------------------------------------------------------
@@ -4591,5 +4732,6 @@ function BBF.InitializeOptions()
         guiImportAndExport()
         guiMisc()
         --guiChatFrame()
+        guiSupport()
     end
 end

@@ -656,6 +656,13 @@ function BBF.HideFrames()
             end
         end
     -- end
+
+    if BetterBlizzFramesDB.hidePetText then
+        PetFrameHealthBarText:SetAlpha(0)
+        PetFrameHealthBarText:Hide()
+        PetFrameManaBarText:SetAlpha(0)
+        PetFrameManaBarText:Hide()
+    end
 end
 
 local TargetLevelHider = CreateFrame("Frame")

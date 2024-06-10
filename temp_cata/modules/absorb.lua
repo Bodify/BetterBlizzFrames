@@ -1,23 +1,48 @@
-local function GetMaxAbsorbAuraIcon(unit)
-    local maxAbsorb = 0
-    local maxAbsorbIcon = nil
+local CataAbsorb = {}
+CataAbsorb.spells = {
+    [17] = true, -- Priest: Power Word: Shield
+    [47753] = true, -- Priest: Divine Aegis
+    [86273] = true, -- Paladin: Illuminated Healing
+    [96263] = true, -- Paladin: Sacred Shield
+    [62606] = true, -- Druid: Savage Defense
+    [77535] = true, -- DK: Blood Shield
+    [1463] = true, -- Mage: Mana Shield
+    [11426] = true, -- Mage: Ice Barrier
+    [98864] = true, -- Mage: Ice Barrier
+    [55277] = true, -- Shaman: Totem Shield
+}
 
-    -- Function to process each aura
-    local function processAura(name, icon, _, _, _, _, _, _, _, spellId, _, _, _, _, _, absorb)
-        if absorb and absorb > maxAbsorb then
-            maxAbsorb = absorb
-            maxAbsorbIcon = icon
+local function ComputeAbsorb(unit)
+    local value = 0
+    local maxAbsorbIcon = nil
+    for index = 1, 40 do
+        local name, icon, _, _, _, _, _, _, _, spellId, _, _, _, _, _, _, absorb = UnitAura(unit, index)
+        if not name then break end
+        if CataAbsorb.spells[spellId] and absorb then
+            value = value + absorb
+            maxAbsorbIcon = icon -- Always use the last matching icon
         end
     end
+    return value, maxAbsorbIcon
+end
 
-    -- Iterate over all helpful auras on the unit
-    AuraUtil.ForEachAura(unit, "HELPFUL", nil, processAura)
+local function RaiseStrataOnHpText(frame)
+    local leftText = _G[frame.."HealthBarTextLeft"] or _G[frame].textureFrame.HealthBarTextLeft
+    local rightText = _G[frame.."HealthBarTextRight"] or _G[frame].textureFrame.HealthBarTextRight
+    local centerText = _G[frame.."HealthBarText"] or _G[frame].textureFrame.HealthBarText
 
-    return maxAbsorbIcon
+    if leftText then
+        leftText:SetDrawLayer("OVERLAY")
+    end
+    if rightText then
+        rightText:SetDrawLayer("OVERLAY")
+    end
+    if centerText then
+        centerText:SetDrawLayer("OVERLAY")
+    end
 end
 
 local function UpdateAbsorbIndicator(frame, unit)
-    if not cataReady then return end
     if not BetterBlizzFramesDB.absorbIndicator and not BetterBlizzFramesDB.absorbIndicatorTestMode then return end
 
     local settingsPrefix = unit
@@ -63,7 +88,6 @@ local function UpdateAbsorbIndicator(frame, unit)
         frame.absorbIcon.border = border
     end
 
-
     if darkModeOn then
         frame.absorbIcon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
         frame.absorbIcon.border:SetBackdropBorderColor(vertexColor, vertexColor, vertexColor)
@@ -87,9 +111,9 @@ local function UpdateAbsorbIndicator(frame, unit)
         frame.absorbIndicator:SetAlpha(1)
         if frame == PlayerFrame then
             if anchor == "LEFT" or anchor == "RIGHT" then
-                frame.absorbIcon:SetPoint(anchor, frame, reverseAnchor, -20 + xPos, -1.5 + yPos)
+                frame.absorbIcon:SetPoint(anchor, frame, reverseAnchor, -45 + xPos, 2.5 + yPos)
             else
-                frame.absorbIcon:SetPoint(reverseAnchor, frame, anchor, -30 + xPos, -25.5 + yPos)
+                frame.absorbIcon:SetPoint(reverseAnchor, frame, anchor, -5 + xPos, -21.5 + yPos)
             end
             if showIcon then
                 if darkModeOn then
@@ -107,9 +131,9 @@ local function UpdateAbsorbIndicator(frame, unit)
             end
         else
             if anchor == "LEFT" or anchor =="RIGHT" then
-                frame.absorbIcon:SetPoint(reverseAnchor, frame, anchor, 20 + xPos, -1 + yPos)
+                frame.absorbIcon:SetPoint(reverseAnchor, frame, anchor, -5 + xPos, 3 + yPos)
             else
-                frame.absorbIcon:SetPoint(reverseAnchor, frame, anchor, 30 + xPos, -25 + yPos)
+                frame.absorbIcon:SetPoint(reverseAnchor, frame, anchor, 5 + xPos, -21 + yPos)
             end
             if showIcon then
                 if darkModeOn then
@@ -132,9 +156,9 @@ local function UpdateAbsorbIndicator(frame, unit)
     if showAmount then
         if frame == PlayerFrame then
             if anchor == "LEFT" or anchor == "RIGHT" then
-                frame.absorbIcon:SetPoint(anchor, frame, reverseAnchor, -20 + xPos, -1.5 + yPos)
+                frame.absorbIcon:SetPoint(anchor, frame, reverseAnchor, -45 + xPos, 2.5 + yPos)
             else
-                frame.absorbIcon:SetPoint(reverseAnchor, frame, anchor, -30 + xPos, -25.5 + yPos)
+                frame.absorbIcon:SetPoint(reverseAnchor, frame, anchor, -5 + xPos, -21.5 + yPos)
             end
             if showIcon then
                 if darkModeOn then
@@ -152,9 +176,9 @@ local function UpdateAbsorbIndicator(frame, unit)
             end
         else
             if anchor == "LEFT" or anchor =="RIGHT" then
-                frame.absorbIcon:SetPoint(reverseAnchor, frame, anchor, 20 + xPos, -1 + yPos)
+                frame.absorbIcon:SetPoint(reverseAnchor, frame, anchor, -5 + xPos, 3 + yPos)
             else
-                frame.absorbIcon:SetPoint(reverseAnchor, frame, anchor, 30 + xPos, -25 + yPos)
+                frame.absorbIcon:SetPoint(reverseAnchor, frame, anchor, 5 + xPos, -21 + yPos)
             end
             if showIcon then
                 if darkModeOn then
@@ -175,14 +199,19 @@ local function UpdateAbsorbIndicator(frame, unit)
         frame.absorbIndicator:SetScale(BetterBlizzFramesDB.absorbIndicatorScale)
         frame.absorbIcon:SetScale(BetterBlizzFramesDB.absorbIndicatorScale)
 
-        local absorb = UnitGetTotalAbsorbs(unit) or 0
-        if absorb >= 1000 then
-            local displayValue = math.floor(absorb / 1000) .. "k"
+        local totalAbsorb, auraIcon = ComputeAbsorb(unit)
+        if totalAbsorb >= 100 then
+            --local displayValue = math.floor(totalAbsorb / 1000) .. "k"
+            local displayValue
+            if totalAbsorb >= 1000 then
+                displayValue = string.format("%.1fk", totalAbsorb / 1000)
+            else
+                displayValue = tostring(totalAbsorb)
+            end
             frame.absorbIndicator:SetText(displayValue)
             frame.absorbIndicator:SetAlpha(1)
 
             if showIcon then
-                local auraIcon = GetMaxAbsorbAuraIcon(unit)
                 if auraIcon then
                     frame.absorbIcon:SetTexture(auraIcon)
                     frame.absorbIcon:SetAlpha(1)
@@ -218,9 +247,9 @@ local function UpdateAbsorbIndicator(frame, unit)
 end
 
 
-
+local absorbHooked = false
 function BBF.AbsorbCaller()
-    if not cataReady then return end
+    --if not cataReady then return end
 
     UpdateAbsorbIndicator(PlayerFrame, "player")
     UpdateAbsorbIndicator(TargetFrame, "target")
@@ -236,34 +265,413 @@ function BBF.AbsorbCaller()
         if FocusFrame.absorbIcon then FocusFrame.absorbIcon:SetAlpha(0) end
         if FocusFrame.absorbIcon and FocusFrame.absorbIcon.border then FocusFrame.absorbIcon.border:SetAlpha(0) end
     end
+    if not absorbHooked then
+        local frame = CreateFrame("Frame")
+        frame:RegisterEvent("PLAYER_ENTERING_WORLD")
+        frame:RegisterEvent("GROUP_ROSTER_UPDATE")
+        frame:RegisterEvent("UNIT_HEALTH")
+        frame:RegisterEvent("UNIT_MAXHEALTH")
+        frame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+        frame:RegisterEvent("PLAYER_TARGET_CHANGED")
+        frame:RegisterEvent("PLAYER_FOCUS_CHANGED")
+        frame:SetScript("OnEvent", function(self, event, ...)
+            if event == "PLAYER_ENTERING_WORLD" or event == "GROUP_ROSTER_UPDATE" then
+                BBF.AbsorbCaller()
+            elseif event == "UNIT_HEALTH" or event == "UNIT_MAXHEALTH" then
+                local unit = ...
+                if unit == "player" then
+                    UpdateAbsorbIndicator(PlayerFrame, unit)
+                elseif unit == "target" then
+                    UpdateAbsorbIndicator(TargetFrame, unit)
+                elseif unit == "focus" then
+                    UpdateAbsorbIndicator(FocusFrame, unit)
+                end
+                -- UpdateAbsorbIndicator(PlayerFrame, unit)
+                -- UpdateAbsorbIndicator(TargetFrame, unit)
+                -- UpdateAbsorbIndicator(FocusFrame, unit)
+            elseif event == "COMBAT_LOG_EVENT_UNFILTERED" then
+                local timestamp, subEvent, _, sourceGUID, sourceName, sourceFlags, sourceRaidFlags, destGUID, destName = CombatLogGetCurrentEventInfo()
+                if subEvent == "SPELL_AURA_APPLIED" or subEvent == "SPELL_AURA_REFRESH" or subEvent == "SPELL_AURA_REMOVED" then
+                    local spellId = select(12, CombatLogGetCurrentEventInfo())
+                    if not CataAbsorb.spells[spellId] then return end
+                    UpdateAbsorbIndicator(PlayerFrame, "player")
+                    UpdateAbsorbIndicator(TargetFrame, "target")
+                    UpdateAbsorbIndicator(FocusFrame, "focus")
+                end
+            elseif event == "PLAYER_TARGET_CHANGED" then
+                UpdateAbsorbIndicator(TargetFrame, "target")
+            elseif event == "PLAYER_FOCUS_CHANGED" then
+                UpdateAbsorbIndicator(FocusFrame, "focus")
+            end
+        end)
+
+        RaiseStrataOnHpText("PlayerFrame")
+        RaiseStrataOnHpText("TargetFrame")
+        RaiseStrataOnHpText("FocusFrame")
+
+        absorbHooked = true
+    end
 end
 
 
--- -- Event listener for Absorb Indicator
--- local function OnAbsorbEvent(self, event, unit)
---     if unit == "target" then
---         UpdateAbsorbIndicator(TargetFrame, "target")
---     elseif unit == "player" then
---         UpdateAbsorbIndicator(PlayerFrame, "player")
---     elseif unit == "focus" then
---         UpdateAbsorbIndicator(FocusFrame, "focus")
---     end
---     if event == "PLAYER_TARGET_CHANGED" then
---         UpdateAbsorbIndicator(TargetFrame, "target")
---     elseif event == "PLAYER_FOCUS_CHANGED" then
---         UpdateAbsorbIndicator(FocusFrame, "focus")
---     elseif event == "PLAYER_ENTERING_WORLD" then
---         UpdateAbsorbIndicator(PlayerFrame, "player")
---         UpdateAbsorbIndicator(FocusFrame, "focus")
---         UpdateAbsorbIndicator(TargetFrame, "target")
---     end
--- end
+local CataAbsorb = {}
+CataAbsorb.spells = {
+    [17] = true, -- Priest: Power Word: Shield
+    [47753] = true, -- Priest: Divine Aegis
+    [86273] = true, -- Paladin: Illuminated Healing
+    [96263] = true, -- Paladin: Sacred Shield
+    [62606] = true, -- Druid: Savage Defense
+    [77535] = true, -- DK: Blood Shield
+    [1463] = true, -- Mage: Mana Shield
+    [11426] = true, -- Mage: Ice Barrier
+    [98864] = true, -- Mage: Ice Barrier
+}
 
--- -- Event listener for Absorb Indicator
--- local absorbEventFrame = CreateFrame("Frame")
--- absorbEventFrame:RegisterEvent("UNIT_ABSORB_AMOUNT_CHANGED")
--- absorbEventFrame:RegisterEvent("UNIT_HEAL_ABSORB_AMOUNT_CHANGED")
--- absorbEventFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
--- absorbEventFrame:RegisterEvent("PLAYER_FOCUS_CHANGED")
--- absorbEventFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
--- absorbEventFrame:SetScript("OnEvent", OnAbsorbEvent)
+local function CreateAbsorbBar(frame)
+    local absorbBar = CreateFrame("StatusBar", nil, frame)
+    absorbBar:SetStatusBarTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\absorbStripes")
+    absorbBar:SetMinMaxValues(0, 100)
+    absorbBar:SetValue(0)
+    absorbBar:SetStatusBarColor(0.7, 0.7, 1, 0.7)
+    absorbBar:SetFrameLevel(frame:GetFrameLevel() + 1)
+    PlayerFrameTexture:GetParent():SetFrameLevel(56)--5
+    TargetFrameTextureFrame:SetFrameLevel(55)
+    FocusFrameTextureFrame:SetFrameLevel(55)
+
+    -- Maintain the aspect ratio of the texture
+    local tex = absorbBar:GetStatusBarTexture()
+    tex:SetHorizTile(true) -- Repeat the texture horizontally
+    --tex:SetVertTile(true) -- Repeat the texture vertically
+
+    -- -- Hook the SetValue method to update the texture coordinates
+    -- hooksecurefunc(absorbBar, "SetValue", function(self, value)
+    --     local min, max = self:GetMinMaxValues()
+    --     local percentage = value / max
+    --     local width = self:GetWidth() * percentage
+    --     local height = self:GetHeight()
+
+    --     -- Calculate texCoord to maintain aspect ratio
+    --     local texWidth = width / tex:GetWidth()
+    --     local texHeight = height / tex:GetHeight()
+
+    --     if texWidth > 1 then
+    --         texWidth = 1
+    --     end
+
+    --     tex:SetTexCoord(0, texWidth, 0, texHeight)
+    -- end)
+
+    return absorbBar
+end
+
+
+local function HookUnitFrame(frame)
+    if not frame then return end
+
+    if not frame.absorbBar then
+        frame.absorbBar = CreateAbsorbBar(frame)
+        frame.absorbBar:SetPoint("TOPLEFT", frame, "TOPLEFT")
+        frame.absorbBar:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT")
+        frame.absorbBar:SetWidth(frame:GetWidth())
+    end
+end
+
+local function HookAllFrames()
+    -- Hook party frames
+    for i = 1, 5 do
+        local frame = _G["CompactPartyFrameMember" .. i]
+        if frame then
+            HookUnitFrame(frame.healthBar)
+        end
+    end
+
+    -- Hook raid frames
+    for i = 1, 5 do
+        local frame = _G["CompactRaidFrame" .. i]
+        if frame then
+            HookUnitFrame(frame.healthBar)
+        end
+    end
+
+    -- Hook other frames
+    HookUnitFrame(_G["PlayerFrame"].healthbar)
+    HookUnitFrame(_G["TargetFrame"].healthbar)
+    HookUnitFrame(_G["FocusFrame"].healthbar)
+end
+
+local function UpdateFrame(unit)
+    local function CheckAndHookFrame(frame, healthBar)
+        if frame and frame.unit and UnitIsUnit(unit, frame.unit) then
+            if not healthBar.absorbBar then
+                healthBar.absorbBar = CreateAbsorbBar(healthBar)
+            end
+
+            local state = CataAbsorb.allstates[unit]
+            if state and state.show then
+                local width, height = healthBar:GetSize()
+
+                healthBar.absorbBar:SetOrientation("HORIZONTAL")
+                healthBar.absorbBar:ClearAllPoints()
+                local additionalOffset = 0
+                if frame == _G["TargetFrame"] or frame == _G["FocusFrame"] then
+                    additionalOffset = 3
+                end
+
+                if state.healthPercent + (state.value / 100) > 1 then
+                    local absorbWidth = width * (state.value / 100)
+                    healthBar.absorbBar:SetPoint("TOPLEFT", healthBar, "TOPLEFT", width - absorbWidth - additionalOffset, 0)
+                    healthBar.absorbBar:SetPoint("BOTTOMLEFT", healthBar, "BOTTOMLEFT", width - absorbWidth - additionalOffset, 0)
+                else
+                    local offset = math.floor(width * state.healthPercent)
+                    healthBar.absorbBar:SetPoint("TOPLEFT", healthBar, "TOPLEFT", offset - additionalOffset, 0)
+                    healthBar.absorbBar:SetPoint("BOTTOMLEFT", healthBar, "BOTTOMLEFT", offset - additionalOffset, 0)
+                    healthBar.absorbBar:SetWidth(width - offset + additionalOffset)
+                end
+
+                healthBar.absorbBar:SetSize(width, height)
+                healthBar.absorbBar:SetValue(state.value)
+                healthBar.absorbBar:Show()
+            else
+                if healthBar.absorbBar then
+                    healthBar.absorbBar:Hide()
+                end
+            end
+        end
+    end
+
+    local framesToCheck = {
+        {frame = _G["PlayerFrame"], healthBar = _G["PlayerFrame"].healthbar},
+        {frame = _G["TargetFrame"], healthBar = _G["TargetFrameHealthBar"]},
+        {frame = _G["FocusFrame"], healthBar = _G["FocusFrameHealthBar"]}
+    }
+
+    for i = 1, 5 do
+        local partyFrame = _G["CompactPartyFrameMember" .. i]
+        if partyFrame then
+            table.insert(framesToCheck, {frame = partyFrame, healthBar = partyFrame.healthBar})
+        end
+    end
+
+    for i = 1, 5 do
+        local raidFrame = _G["CompactRaidFrame" .. i]
+        if raidFrame then
+            table.insert(framesToCheck, {frame = raidFrame, healthBar = raidFrame.healthBar})
+        end
+    end
+
+    for _, frameInfo in ipairs(framesToCheck) do
+        CheckAndHookFrame(frameInfo.frame, frameInfo.healthBar)
+    end
+end
+
+
+CataAbsorb.playerName = UnitName("player")
+
+local validUnits = {
+    ["player"] = true,
+    ["target"] = true,
+    ["focus"] = true,
+    ["party1"] = true,
+    ["party2"] = true,
+    ["party3"] = true,
+    ["party4"] = true,
+    ["raid1"] = true,
+    ["raid2"] = true,
+    ["raid3"] = true,
+    ["raid4"] = true,
+    ["raid5"] = true,
+}
+
+local function UnitValid(unit)
+    return unit and UnitExists(unit)-- and (unit == "player" or unit == "target" or unit == "focus" or UnitInParty(unit) or UnitInRaid(unit))
+end
+
+local function SetupState(allstates, unit, absorb)
+    if absorb > 0 then
+        local maxHealth = UnitHealthMax(unit)
+        local health = UnitHealth(unit)
+        local healthPercent = health / maxHealth
+        local healthDeficitPercent = 1.0 - healthPercent
+        local absorbPercent = absorb / maxHealth
+
+        if healthPercent < 1.0 and absorbPercent > healthDeficitPercent then
+            if absorbPercent < 2 * healthDeficitPercent then
+                absorbPercent = healthDeficitPercent
+            else
+                absorbPercent = absorbPercent - healthDeficitPercent
+            end
+        end
+
+        allstates[unit] = {
+            unit = unit,
+            name = unit,
+            progressType = "static",
+            value = absorbPercent * 100,
+            total = 100,
+            show = true,
+            changed = true,
+            healthPercent = healthPercent,
+        }
+    else
+        allstates[unit] = {
+            show = false,
+            changed = true,
+        }
+    end
+end
+
+local function ResetAll(allstates)
+    for _, state in pairs(allstates) do
+        state.show = false
+        state.changed = true
+    end
+end
+
+local function RosterUpdated(allstates)
+    for unit, state in pairs(allstates) do
+        if not UnitValid(unit) then
+            state.show = false
+            state.changed = true
+        end
+    end
+end
+
+local function RefreshUnit(allstates, unit)
+    if not UnitValid(unit) then return end
+    local absorb = ComputeAbsorb(unit)
+    SetupState(allstates, unit, absorb)
+    UpdateFrame(unit)
+end
+
+local function GetRelevantUnitsByName(name)
+    local units = {}
+    if UnitName("player") == name then table.insert(units, "player") end
+    if UnitName("target") == name then table.insert(units, "target") end
+    if UnitName("focus") == name then table.insert(units, "focus") end
+    for i = 1, 5 do
+        if UnitName("party" .. i) == name then table.insert(units, "party" .. i) end
+    end
+    for i = 1, 5 do
+        if UnitName("raid" .. i) == name then table.insert(units, "raid" .. i) end
+    end
+    return units
+end
+
+local relevantUnits = {}
+
+local function UpdateRelevantUnits()
+    relevantUnits = {}
+
+    -- Add the player, target, and focus units if they exist
+    local playerName = UnitName("player")
+    if playerName then
+        relevantUnits[playerName] = "player"
+    end
+
+    local targetName = UnitName("target")
+    if targetName then
+        relevantUnits[targetName] = "target"
+    end
+
+    local focusName = UnitName("focus")
+    if focusName then
+        relevantUnits[focusName] = "focus"
+    end
+
+    -- Add party units
+    for i = 1, 5 do
+        local unit = "party" .. i
+        local name = UnitName(unit)
+        if name then
+            relevantUnits[name] = unit
+        end
+    end
+
+    -- Add raid units
+    for i = 1, 5 do
+        local unit = "raid" .. i
+        local name = UnitName(unit)
+        if name then
+            relevantUnits[name] = unit
+        end
+    end
+end
+
+
+local function OnEvent(self, event, ...)
+    if event == "PLAYER_ENTERING_WORLD" then
+        ResetAll(CataAbsorb.allstates)
+        UpdateRelevantUnits()
+        HookAllFrames()
+        RefreshUnit(CataAbsorb.allstates, "player")
+    elseif event == "GROUP_ROSTER_UPDATE" then
+        UpdateRelevantUnits()
+        RosterUpdated(CataAbsorb.allstates)
+    elseif event == "UNIT_HEALTH" or event == "UNIT_MAXHEALTH" then
+        local unit = select(1, ...)
+        if validUnits[unit] then
+            RefreshUnit(CataAbsorb.allstates, unit)
+        end
+    elseif event == "COMBAT_LOG_EVENT_UNFILTERED" then
+        local _, subEvent, _, _, _, _, _, destGUID, destName = CombatLogGetCurrentEventInfo()
+        if destName then
+            destName = Ambiguate(destName, "short")
+            if subEvent == "SPELL_AURA_APPLIED" or subEvent == "SPELL_AURA_REFRESH" or subEvent == "SPELL_AURA_REMOVED" then
+                local spellId = select(12, CombatLogGetCurrentEventInfo())
+                if not CataAbsorb.spells[spellId] then return end
+                -- local units = GetRelevantUnitsByName(destName)
+                -- for _, unit in ipairs(units) do
+                --     RefreshUnit(CataAbsorb.allstates, unit)
+                -- end
+                -- Directly refresh the unit if its name matches
+                local unit = relevantUnits[destName]
+                if unit then
+                    RefreshUnit(CataAbsorb.allstates, unit)
+                end
+            end
+        end
+    elseif event == "PLAYER_TARGET_CHANGED" then
+        UpdateRelevantUnits()
+        RefreshUnit(CataAbsorb.allstates, "target")
+    elseif event == "PLAYER_FOCUS_CHANGED" then
+        UpdateRelevantUnits()
+        RefreshUnit(CataAbsorb.allstates, "focus")
+    end
+end
+
+local overshieldSetup = false
+function BBF.HookOverShields()
+    if BetterBlizzFramesDB.overShields and not overshieldSetup then
+        local frame = CreateFrame("Frame")
+        frame:RegisterEvent("PLAYER_ENTERING_WORLD")
+        frame:RegisterEvent("GROUP_ROSTER_UPDATE")
+        frame:RegisterEvent("PLAYER_TARGET_CHANGED")
+        frame:RegisterEvent("PLAYER_FOCUS_CHANGED")
+        -- frame:RegisterUnitEvent("UNIT_HEALTH", "player", "party", "raid", "focus", "target") --4max
+        -- frame:RegisterUnitEvent("UNIT_MAXHEALTH", "player", "party", "raid", "focus", "target")
+        frame:RegisterEvent("UNIT_HEALTH")
+        frame:RegisterEvent("UNIT_MAXHEALTH")
+        frame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+        frame:SetScript("OnEvent", OnEvent)
+
+        overshieldSetup = true
+    end
+end
+
+
+
+-- Initialize allstates
+CataAbsorb.allstates = {}
+
+-- Slash command to reset absorbs (for testing)
+SLASH_MYABSORB1 = "/myabsorb"
+SlashCmdList["MYABSORB"] = function(msg)
+    if msg == "reset" then
+        ResetAll(CataAbsorb.allstates)
+    elseif msg == "test" then
+        print("Absorb values:")
+        for unit, state in pairs(CataAbsorb.allstates) do
+            print(unit, state.value)
+        end
+    end
+end

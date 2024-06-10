@@ -87,13 +87,13 @@ local purgeableBuffSorting
 local purgeableBuffSortingFirst
 
 function BBF.UpdateUserAuraSettings()
-    printSpellId = printAuraSpellIds
+    printSpellId = BetterBlizzFramesDB.printAuraSpellIds
     betterTargetPurgeGlow = BetterBlizzFramesDB.targetBuffPurgeGlow
     betterFocusPurgeGlow = BetterBlizzFramesDB.focusBuffPurgeGlow
     userEnlargedAuraSize = BetterBlizzFramesDB.enlargedAuraSize
     userCompactedAuraSize = BetterBlizzFramesDB.compactedAuraSize
     auraSpacingX = BetterBlizzFramesDB.targetAndFocusHorizontalGap
-    auraSpacingY = targetAndFocusVerticalGap
+    auraSpacingY = BetterBlizzFramesDB.targetAndFocusVerticalGap
     aurasPerRow = BetterBlizzFramesDB.targetAndFocusAurasPerRow
     targetAndFocusAuraOffsetY = BetterBlizzFramesDB.targetAndFocusAuraOffsetY
     baseOffsetX = 25 + BetterBlizzFramesDB.targetAndFocusAuraOffsetX
