@@ -96,6 +96,10 @@ local enlargedTextureAdjustmentSmall = 1
 local compactedTextureAdjustmentSmall = 1
 local purgeableTextureAdjustment = 1
 local purgeableAuraSize = 1
+local targetEnlargeAuraEnemy
+local targetEnlargeAuraFriendly
+local focusEnlargeAuraEnemy
+local focusEnlargeAuraFriendly
 
 local function UpdateMore()
     purgeableBuffSorting = BetterBlizzFramesDB.purgeableBuffSorting
@@ -111,6 +115,10 @@ local function UpdateMore()
     compactedTextureAdjustmentSmall = 18 * userCompactedAuraSize
     purgeableAuraSize = BetterBlizzFramesDB.purgeableAuraSize
     purgeableTextureAdjustment = 20 * purgeableAuraSize
+    targetEnlargeAuraEnemy = BetterBlizzFramesDB.targetEnlargeAuraEnemy
+    targetEnlargeAuraFriendly = BetterBlizzFramesDB.targetEnlargeAuraFriendly
+    focusEnlargeAuraEnemy = BetterBlizzFramesDB.focusEnlargeAuraEnemy
+    focusEnlargeAuraFriendly = BetterBlizzFramesDB.focusEnlargeAuraFriendly
 
     if BetterBlizzFramesDB.targetdeBuffFilterBlizzard or BetterBlizzFramesDB.focusdeBuffFilterBlizzard then
         BetterBlizzFramesDB.targetdeBuffFilterBlizzard = false
@@ -1046,6 +1054,24 @@ local function AdjustAuras(self, frameType)
                 isPandemic = false
             end
 
+            if isEnlarged then
+                if frameType == "target" then
+                    if not targetEnlargeAuraFriendly and isFriend then
+                        isEnlarged = false
+                    end
+                    if not targetEnlargeAuraEnemy and not isFriend then
+                        isEnlarged = false
+                    end
+                elseif frameType == "focus" then
+                    if not focusEnlargeAuraFriendly and isFriend then
+                        isEnlarged = false
+                    end
+                    if not focusEnlargeAuraEnemy and not isFriend then
+                        isEnlarged = false
+                    end
+                end
+            end
+
             if shouldShowAura then
                 buffFrame:Show()
 
@@ -1357,6 +1383,23 @@ local function AdjustAuras(self, frameType)
             end
 
             if shouldShowAura then
+                if isEnlarged then
+                    if frameType == "target" then
+                        if not targetEnlargeAuraFriendly and isFriend then
+                            isEnlarged = false
+                        end
+                        if not targetEnlargeAuraEnemy and not isFriend then
+                            isEnlarged = false
+                        end
+                    elseif frameType == "focus" then
+                        if not focusEnlargeAuraFriendly and isFriend then
+                            isEnlarged = false
+                        end
+                        if not focusEnlargeAuraEnemy and not isFriend then
+                            isEnlarged = false
+                        end
+                    end
+                end
                 debuffFrame:Show()
 
                 if (auraData.isStealable or (auraData.dispelName == "Magic" and ((not isFriend and auraData.isHelpful) or (isFriend and auraData.isHarmful)))) then

@@ -658,20 +658,5 @@ function BBF.HookOverShields()
     end
 end
 
-
-
 -- Initialize allstates
 CataAbsorb.allstates = {}
-
--- Slash command to reset absorbs (for testing)
-SLASH_MYABSORB1 = "/myabsorb"
-SlashCmdList["MYABSORB"] = function(msg)
-    if msg == "reset" then
-        ResetAll(CataAbsorb.allstates)
-    elseif msg == "test" then
-        print("Absorb values:")
-        for unit, state in pairs(CataAbsorb.allstates) do
-            print(unit, state.value)
-        end
-    end
-end
