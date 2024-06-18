@@ -223,7 +223,7 @@ function BBF.DarkmodeFrames(bypass)
     applySettings(FocusFrameTextureFrameTexture, desaturationValue, vertexColor)
     applySettings(TargetFrameToTTextureFrameTexture, desaturationValue, vertexColor)
     applySettings(PetFrameTexture, desaturationValue, vertexColor)
-    applySettings(FocusFrameToTTextureFrame, desaturationValue, vertexColor)
+    applySettings(FocusFrameToTTextureFrameTexture, desaturationValue, vertexColor)
 
     -- for i = 1, Minimap:GetNumChildren() do
     --     local child = select(i, Minimap:GetChildren())

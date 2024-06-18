@@ -413,7 +413,11 @@ local function ChangeName(frame, unit, party, tot)
         frame.cleanName:ClearAllPoints()
         frame.cleanName:SetPoint(a, p, a2, x, y)
     end
-    frame.cleanName:SetWidth(originalNameObject:GetWidth() + 10)
+    if tot then
+        frame.cleanName:SetWidth(originalNameObject:GetWidth() + 5)
+    else
+        frame.cleanName:SetWidth(originalNameObject:GetWidth() + 10)
+    end
     frame.cleanName:SetHeight(originalNameObject:GetHeight())
     frame.cleanName:SetFont(ogFontName, ogFontHeight, ogFontFlags)
 

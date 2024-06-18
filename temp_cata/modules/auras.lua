@@ -930,9 +930,10 @@ local function AdjustAuras(self, frameType)
                     end
                 end
             elseif not aura.isLarge then
+                aura:SetSize(adjustedSize, adjustedSize)
                 if aura.isPurgeable then
                     if aura.Stealable then
-                        aura.Stealable:SetScale(1)
+                        aura.Stealable:SetScale(targetAndFocusSmallAuraScale)
                     end
                 end
                 if aura.isHarmful then
@@ -946,6 +947,7 @@ local function AdjustAuras(self, frameType)
                         aura.ImportantGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", 18, -18)
                     end
                 end
+                auraSize = adjustedSize
             else
                 if aura.isImportant then
                     aura.ImportantGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -24, 25)

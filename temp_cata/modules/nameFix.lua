@@ -345,11 +345,21 @@ local function RecolorReputationGlow()
     end
 end
 
-local UpdateTargetAndFocusNames = CreateFrame("Frame")
-UpdateTargetAndFocusNames:RegisterEvent("PLAYER_TARGET_CHANGED")
-UpdateTargetAndFocusNames:RegisterEvent("PLAYER_FOCUS_CHANGED")
-UpdateTargetAndFocusNames:SetScript("OnEvent", function(self, event, ...)
+-- local UpdateTargetAndFocusNames = CreateFrame("Frame")
+-- UpdateTargetAndFocusNames:RegisterEvent("PLAYER_TARGET_CHANGED")
+-- UpdateTargetAndFocusNames:RegisterEvent("PLAYER_FOCUS_CHANGED")
+-- UpdateTargetAndFocusNames:SetScript("OnEvent", function(self, event, ...)
+--     RecolorReputationGlow()
+-- end)
+
+hooksecurefunc("TargetFrame_Update", function()
     RecolorReputationGlow()
+end)
+
+local playerName = _G["PlayerFrame"].name
+hooksecurefunc("PlayerFrame_OnEvent", function()
+    local hidePlayerName = BetterBlizzFramesDB.hidePlayerName
+    updateTextForUnit(playerName, PlayerFrame, hidePlayerName)
 end)
 
 --bodify fix class color names toggle
@@ -401,7 +411,7 @@ end)
 --     end
 -- end)
 
-local playerName = _G["PlayerFrame"].name
+--local playerName = _G["PlayerFrame"].name
 hooksecurefunc(playerName, "SetText", function(self)
     local hidePlayerName = BetterBlizzFramesDB.hidePlayerName
     updateTextForUnit(self, PlayerFrame, hidePlayerName)
