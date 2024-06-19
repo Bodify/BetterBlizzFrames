@@ -6,7 +6,7 @@ BBF = BBF or {}
 -- Things are getting more messy need a lot of cleaning lol
 
 local addonVersion = "1.00" --too afraid to to touch for now
-local addonUpdates = "1.4.2"
+local addonUpdates = "1.4.3"
 local sendUpdate = true
 BBF.VersionNumber = addonUpdates
 BBF.variablesLoaded = false
@@ -44,6 +44,9 @@ local defaultSettings = {
     onlyPandemicAuraMine = true,
     lossOfControlScale = 1,
     hidePetText = true,
+    playerFrameScale = 1,
+    targetFrameScale = 1,
+    focusFrameScale = 1,
 
     --Target castbar
     playerCastbarIconXPos = 0,
@@ -306,7 +309,7 @@ StaticPopupDialogs["BetterBlizzFrames_COMBAT_WARNING"] = {
 }
 
 StaticPopupDialogs["BBF_NEW_VERSION"] = {
-    text = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames " .. "Cata Beta 0.0.7" .. ":\n\nBugfixes/Tweaks:\n-Target/Focus castbar and aura settings have been tweaked slighly and may have moved for you. Re-adjust if needed.\n\nFor more info on changes read CurseForge changelog.",
+    text = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames " .. "Cata Beta 0.0.8" .. ":\n\nTWO IMPORTANT CHANGES:\n\n1) I've reset TargetToT & FocusToT positions.\nYou will have to change them to your preferred locations again.\n\n2) I've also added scale settings for Player, Target and FocusFrame.\n\nIf you have scripts/other addons adjusting this make sure you set the same value in BBF or turn off the other things.\n\nSorry for the inconvenience.\nThis change was needed due to wrong initial values when making the Beta.\nIt wont happen again.",
     button1 = "OK",
     timeout = 0,
     whileDead = true,
@@ -362,17 +365,42 @@ StaticPopupDialogs["CONFIRM_RESET_BETTERBLIZZFRAMESDB"] = {
 local function SendUpdateMessage()
     if sendUpdate then
         if not BetterBlizzFramesDB.scStart then
+            if not BetterBlizzFramesDB.totPosUpdatedForCata then
+                if BetterBlizzFramesDB.playerAuraFiltering then
+                    BetterBlizzFramesDB.targetToTXPos = 42
+                    BBF.targetToTXPos:SetValue(42)
+                    BetterBlizzFramesDB.targetToTYPos = -10
+                    BBF.targetToTYPos:SetValue(-10)
+                    BetterBlizzFramesDB.focusToTXPos = 42
+                    BBF.focusToTXPos:SetValue(42)
+                    BetterBlizzFramesDB.focusToTYPos = -10
+                    BBF.focusToTYPos:SetValue(-10)
+                    BBF.MoveToTFrames()
+                else
+                    BetterBlizzFramesDB.targetToTXPos = 0
+                    BBF.targetToTXPos:SetValue(0)
+                    BetterBlizzFramesDB.focusToTXPos = 0
+                    BBF.focusToTXPos:SetValue(0)
+                    BetterBlizzFramesDB.targetToTYPos = 0
+                    BBF.targetToTYPos:SetValue(0)
+                    BetterBlizzFramesDB.focusToTYPos = 0
+                    BBF.focusToTYPos:SetValue(0)
+                    BBF.MoveToTFrames()
+                end
+                BetterBlizzFramesDB.totPosUpdatedForCata = true
+            end
             C_Timer.After(7, function()
                 StaticPopup_Show("BBF_NEW_VERSION")
 
                 DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames news:")
-                DEFAULT_CHAT_FRAME:AddMessage("|A:QuestNormal:16:16|a New Stuff:")
-                DEFAULT_CHAT_FRAME:AddMessage("   - Absorb Indicator + Overshields now working (Potentially).")
-                -- DEFAULT_CHAT_FRAME:AddMessage("   - Sort Purgeable Auras setting (Buffs & Debuffs).")
+                -- DEFAULT_CHAT_FRAME:AddMessage("|A:QuestNormal:16:16|a New Stuff:")
+                DEFAULT_CHAT_FRAME:AddMessage("|A:QuestNormal:16:16|a Two important changes. To read again type /bbf news")
+                -- DEFAULT_CHAT_FRAME:AddMessage("   - Absorb Indicator + Overshields now working (Potentially).")
+                -- -- DEFAULT_CHAT_FRAME:AddMessage("   - Sort Purgeable Auras setting (Buffs & Debuffs).")
 
-                DEFAULT_CHAT_FRAME:AddMessage("|A:Professions-Crafting-Orders-Icon:16:16|a Bugfixes:")
-                DEFAULT_CHAT_FRAME:AddMessage("   Castbar settings should now be better on Cata, might still need some tweaks.")
-                DEFAULT_CHAT_FRAME:AddMessage("   +Many more... Keep bug reporting please.")
+                -- DEFAULT_CHAT_FRAME:AddMessage("|A:Professions-Crafting-Orders-Icon:16:16|a Bugfixes:")
+                -- DEFAULT_CHAT_FRAME:AddMessage("   Castbar settings should now be better on Cata, might still need some tweaks.")
+                -- DEFAULT_CHAT_FRAME:AddMessage("   +Many more... Keep bug reporting please.")
                 -- -- DEFAULT_CHAT_FRAME:AddMessage("   Reverted all name logic to 1.3.8b version. It's old and not optimal but at least it doesn't taint(?). I will never touch this again until TWW >_>")
                 -- --DEFAULT_CHAT_FRAME:AddMessage("   A lot of behind the scenes Name logic changed. Should now work better and be happier with other addons.")
             end)
@@ -486,6 +514,13 @@ function BBF.ClickthroughFrames()
             FocusFrameToT:SetMouseClickEnabled(false)
         end
 	end
+end
+
+function BBF.ScaleUnitFrames()
+    local db = BetterBlizzFramesDB
+    PlayerFrame:SetScale(db.playerFrameScale)
+    TargetFrame:SetScale(db.targetFrameScale)
+    FocusFrame:SetScale(db.focusFrameScale)
 end
 
 -- Function to toggle test mode on and off
@@ -642,7 +677,8 @@ function BBF.MoveToTFrames()
     if not InCombatLockdown() then
         TargetFrameToT:ClearAllPoints()
         if BetterBlizzFramesDB.targetToTAnchor == "BOTTOMRIGHT" then
-            TargetFrameToT:SetPoint(BBF.GetOppositeAnchor(BetterBlizzFramesDB.targetToTAnchor),TargetFrame,BetterBlizzFramesDB.targetToTAnchor,BetterBlizzFramesDB.targetToTXPos - 108,BetterBlizzFramesDB.targetToTYPos + 10)
+            --TargetFrameToT:SetPoint(BBF.GetOppositeAnchor(BetterBlizzFramesDB.targetToTAnchor),TargetFrame,BetterBlizzFramesDB.targetToTAnchor,BetterBlizzFramesDB.targetToTXPos - 108,BetterBlizzFramesDB.targetToTYPos + 10)
+            TargetFrameToT:SetPoint(BetterBlizzFramesDB.targetToTAnchor,TargetFrame,BetterBlizzFramesDB.targetToTAnchor,BetterBlizzFramesDB.targetToTXPos - 35,BetterBlizzFramesDB.targetToTYPos - 10)
         else
             TargetFrameToT:SetPoint(BBF.GetOppositeAnchor(BetterBlizzFramesDB.targetToTAnchor),TargetFrame,BetterBlizzFramesDB.targetToTAnchor,BetterBlizzFramesDB.targetToTXPos,BetterBlizzFramesDB.targetToTYPos)
         end
@@ -651,7 +687,8 @@ function BBF.MoveToTFrames()
 
         FocusFrameToT:ClearAllPoints()
         if BetterBlizzFramesDB.focusToTAnchor == "BOTTOMRIGHT" then
-            FocusFrameToT:SetPoint(BBF.GetOppositeAnchor(BetterBlizzFramesDB.focusToTAnchor),FocusFrame,BetterBlizzFramesDB.focusToTAnchor,BetterBlizzFramesDB.focusToTXPos - 108,BetterBlizzFramesDB.focusToTYPos + 10)
+            --FocusFrameToT:SetPoint(BBF.GetOppositeAnchor(BetterBlizzFramesDB.focusToTAnchor),FocusFrame,BetterBlizzFramesDB.focusToTAnchor,BetterBlizzFramesDB.focusToTXPos - 108,BetterBlizzFramesDB.focusToTYPos + 10)
+            FocusFrameToT:SetPoint(BetterBlizzFramesDB.focusToTAnchor,FocusFrame,BetterBlizzFramesDB.focusToTAnchor,BetterBlizzFramesDB.focusToTXPos - 35,BetterBlizzFramesDB.focusToTYPos - 10)
         else
             FocusFrameToT:SetPoint(BBF.GetOppositeAnchor(BetterBlizzFramesDB.focusToTAnchor),FocusFrame,BetterBlizzFramesDB.focusToTAnchor,BetterBlizzFramesDB.focusToTXPos,BetterBlizzFramesDB.focusToTYPos)
         end
@@ -797,6 +834,7 @@ Frame:SetScript("OnEvent", function(...)
             if BetterBlizzFramesDB.hideArenaFrames then
                 BBF.HideArenaFrames()
             end
+            BBF.ScaleUnitFrames()
             BBF.MoveToTFrames()
             BBF.UpdateUserAuraSettings()
             --BBF.HookPlayerAndTargetAuras()
@@ -861,7 +899,8 @@ SLASH_BBF1 = "/BBF"
 SlashCmdList["BBF"] = function(msg)
     local command = string.lower(msg)
     if command == "news" then
-        NewsUpdateMessage()
+        --NewsUpdateMessage()
+        StaticPopup_Show("BBF_NEW_VERSION")
     elseif command == "test" then
         --playerFrameTest()
     elseif command == "nahj" then

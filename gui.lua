@@ -3393,7 +3393,7 @@ local function guiPositionAndScale()
 
     local targetAbsorbAmount = CreateCheckbox("targetAbsorbAmount", "Target", contentFrame, nil, BBF.AbsorbCaller)
     targetAbsorbAmount:SetPoint("LEFT", playerAbsorbAmount.Text, "RIGHT", 5, 0)
-    CreateTooltip(playerAbsorbAmount, "Show absorb indicator on TargetFrame")
+    CreateTooltip(targetAbsorbAmount, "Show absorb indicator on TargetFrame")
 
     local targetAbsorbIcon = CreateCheckbox("targetAbsorbIcon", "Icon", contentFrame, nil, BBF.AbsorbCaller)
     targetAbsorbIcon:SetPoint("TOPLEFT", targetAbsorbAmount, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
@@ -3401,7 +3401,7 @@ local function guiPositionAndScale()
 
     local focusAbsorbAmount = CreateCheckbox("focusAbsorbAmount", "Focus", contentFrame, nil, BBF.AbsorbCaller)
     focusAbsorbAmount:SetPoint("LEFT", targetAbsorbAmount.Text, "RIGHT", 5, 0)
-    CreateTooltip(playerAbsorbAmount, "Show absorb indicator on TargetFrame")
+    CreateTooltip(focusAbsorbAmount, "Show absorb indicator on FocusFrame")
 
     local focusAbsorbIcon = CreateCheckbox("focusAbsorbIcon", "Icon", contentFrame, nil, BBF.AbsorbCaller)
     focusAbsorbIcon:SetPoint("TOPLEFT", focusAbsorbAmount, "BOTTOMLEFT", 0, pixelsBetweenBoxes)

@@ -1963,7 +1963,7 @@ local function PersonalBuffFrameFilterAndGrid(self)
                             local borderFrame = BBF.auraBorders[auraFrame]
                             auraFrame.isImportant = true
                             if not auraFrame.ImportantGlow then
-                                auraFrame.ImportantGlow = auraFrame:CreateTexture(nil, "OVERLAY")
+                                auraFrame.ImportantGlow = auraFrame:CreateTexture(nil, "BACKGROUND")
                                 if borderFrame then
                                     auraFrame.ImportantGlow:SetParent(borderFrame)
                                     auraFrame.ImportantGlow:SetPoint("TOPLEFT", auraFrame, "TOPLEFT", -15, 16)
@@ -2206,7 +2206,7 @@ local function PersonalBuffFrameFilterAndGrid(self)
                         local borderFrame = BBF.auraBorders[auraFrame]
                         auraFrame.isImportant = true
                         if not auraFrame.ImportantGlow then
-                            auraFrame.ImportantGlow = auraFrame:CreateTexture(nil, "OVERLAY")
+                            auraFrame.ImportantGlow = auraFrame:CreateTexture(nil, "BACKGROUND")
                             if borderFrame then
                                 auraFrame.ImportantGlow:SetParent(borderFrame)
                                 auraFrame.ImportantGlow:SetPoint("TOPLEFT", auraFrame, "TOPLEFT", -15, 16)

@@ -646,16 +646,33 @@ function BBF.HideFrames()
 
         local aggroAlpha = BetterBlizzFramesDB.hidePartyAggroHighlight and 0 or 1
 
-        for i = 1, 5 do
-            local aggroHighlight = _G["CompactRaidFrame" .. i .. "AggroHighlight"]
-            if aggroHighlight then
-                -- Only adjust alpha if it differs from the desired state
-                if aggroHighlight:GetAlpha() ~= aggroAlpha then
-                    aggroHighlight:SetAlpha(aggroAlpha)
+        local function adjustAggroHighlight(framePrefix, startIndex, endIndex)
+            for i = startIndex, endIndex do
+                local aggroHighlight = _G[framePrefix .. i .. "AggroHighlight"]
+                if aggroHighlight then
+                    -- Only adjust alpha if it differs from the desired state
+                    if aggroHighlight:GetAlpha() ~= aggroAlpha then
+                        aggroHighlight:SetAlpha(aggroAlpha)
+                    end
                 end
             end
         end
-    -- end
+
+        adjustAggroHighlight("CompactRaidFrame", 1, 40)
+
+        for group = 1, 8 do
+            for member = 1, 5 do
+                local aggroHighlight = _G["CompactRaidGroup" .. group .. "Member" .. member .. "AggroHighlight"]
+                if aggroHighlight then
+                    -- Only adjust alpha if it differs from the desired state
+                    if aggroHighlight:GetAlpha() ~= aggroAlpha then
+                        aggroHighlight:SetAlpha(aggroAlpha)
+                    end
+                end
+            end
+        end
+
+        adjustAggroHighlight("CompactPartyFrameMember", 1, 5)
 
     if BetterBlizzFramesDB.hidePetText then
         PetFrameHealthBarText:SetAlpha(0)

@@ -3,7 +3,7 @@ local LibDD = LibStub:GetLibrary("LibUIDropDownMenu-4.0")
 --local anchorPoints = {"CENTER", "TOPLEFT", "TOP", "TOPRIGHT", "LEFT", "RIGHT", "BOTTOMLEFT", "BOTTOM", "BOTTOMRIGHT"}
 local anchorPoints = {"CENTER", "TOP", "LEFT", "RIGHT", "BOTTOM"}
 local anchorPoints2 = {"TOP", "LEFT", "RIGHT", "BOTTOM"}
-local pixelsBetweenBoxes = 5
+local pixelsBetweenBoxes = 6
 local pixelsOnFirstBox = -1
 local sliderUnderBoxX = 12
 local sliderUnderBoxY = -10
@@ -116,7 +116,7 @@ StaticPopupDialogs["BBF_CONFIRM_RELOAD"] = {
 }
 
 StaticPopupDialogs["BBF_TOT_MESSAGE"] = {
-    text = "The default Blizzard code to \"wrap auras\" around the target of target frame is stupid.\n\nThe \"Target of Target\" frames have been moved 31 pixels to the right to make more space for auras.\nYou can change this at any time.\n\nDo you want to keep this? (pick yes)",
+    text = "The default Blizzard code to \"wrap auras\" around the target of target frame is stupid.\n\nThe \"Target of Target\" frames have been moved slightly to make more space for auras.\nYou can change this at any time.\n\nDo you want to keep this? (pick yes)",
     button1 = "Yes",
     button2 = "No",
     OnCancel = function()
@@ -124,6 +124,10 @@ StaticPopupDialogs["BBF_TOT_MESSAGE"] = {
         BBF.targetToTXPos:SetValue(0)
         BetterBlizzFramesDB.focusToTXPos = 0
         BBF.focusToTXPos:SetValue(0)
+        BetterBlizzFramesDB.targetToTYPos = 0
+        BBF.targetToTYPos:SetValue(0)
+        BetterBlizzFramesDB.focusToTYPos = 0
+        BBF.focusToTYPos:SetValue(0)
         BBF.MoveToTFrames()
     end,
     timeout = 0,
@@ -773,6 +777,15 @@ local function CreateSlider(parent, label, minValue, maxValue, stepValue, elemen
                 elseif element == "focusToTAdjustmentOffsetY" then
                     BetterBlizzFramesDB.focusToTAdjustmentOffsetY = value
                     BBF.CastbarAdjustCaller()
+                elseif element == "playerFrameScale" then
+                    BetterBlizzFramesDB.playerFrameScale = value
+                    BBF.ScaleUnitFrames()
+                elseif element == "targetFrameScale" then
+                    BetterBlizzFramesDB.targetFrameScale = value
+                    BBF.ScaleUnitFrames()
+                elseif element == "focusFrameScale" then
+                    BetterBlizzFramesDB.focusFrameScale = value
+                    BBF.ScaleUnitFrames()
 
                     --end
                 end
@@ -1031,6 +1044,7 @@ local function CreateCheckbox(option, label, parent, cvarName, extraFunc)
     checkBox.Text:SetFont("Fonts\\FRIZQT__.TTF", 11)
     local a,b,c,d,e = checkBox.Text:GetPoint()
     checkBox.Text:SetPoint(a,b,c,d-4,e-1)
+    checkBox:SetSize(25,25)
 
     local function UpdateOption(value)
         if option == 'friendlyFrameClickthrough' and BBF.checkCombatAndWarn() then
@@ -1554,7 +1568,7 @@ local function CreateTitle(parent)
     addonNameIcon:SetPoint("LEFT", addonNameText, "RIGHT", -2, -1)
     local verNumber = parent:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     verNumber:SetPoint("LEFT", addonNameText, "RIGHT", 25, 0)
-    verNumber:SetText("CATA BETA v0.0.7" )--.. BBF.VersionNumber.."b")
+    verNumber:SetText("CATA BETA v0.0.8" )--.. BBF.VersionNumber.."b")
 end
 
 ------------------------------------------------------------
@@ -1790,15 +1804,19 @@ local function guiGeneralTab()
 
 
     local playerFrameText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    playerFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 0, -160)
+    playerFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 0, -155)
     playerFrameText:SetText("Player Frame")
     local playerFrameIcon = BetterBlizzFrames:CreateTexture(nil, "ARTWORK")
     playerFrameIcon:SetAtlas("groupfinder-icon-friend")
     playerFrameIcon:SetSize(28, 28)
     playerFrameIcon:SetPoint("RIGHT", playerFrameText, "LEFT", -3, 0)
 
+    local playerFrameScale = CreateSlider(BetterBlizzFrames, "Size", 0.7, 1.4, 0.01, "playerFrameScale", nil, 120)
+    playerFrameScale:SetPoint("TOP", playerFrameText, "BOTTOM", 23, -13)
+    CreateTooltipTwo(playerFrameScale, "PlayerFrame Size", "Change the size of the PlayerFrame", "Right-click to input specific value")
+
     local playerFrameClickthrough = CreateCheckbox("playerFrameClickthrough", "Clickthrough", BetterBlizzFrames, nil, BBF.ClickthroughFrames)
-    playerFrameClickthrough:SetPoint("TOPLEFT", playerFrameText, "BOTTOMLEFT", -4, pixelsOnFirstBox)
+    playerFrameClickthrough:SetPoint("TOPLEFT", playerFrameText, "BOTTOMLEFT", -4, -26)
     CreateTooltip(playerFrameClickthrough, "Makes the PlayerFrame clickthrough.\nYou can still hold shift to left/right click it\nwhile out of combat for trade/inspect etc.\n\nNOTE: You will NOT be able to click the frame\nat all during combat with this setting on.")
 
     local playerReputationColor = CreateCheckbox("playerReputationColor", "Add Name Bg", BetterBlizzFrames, nil, BBF.PlayerReputationColor)
@@ -1836,13 +1854,13 @@ local function guiGeneralTab()
         end
     end)
 
-    local hidePlayerPower = CreateCheckbox("hidePlayerPower", "Hide Resource/Power", BetterBlizzFrames, nil, BBF.HideFrames)
-    hidePlayerPower:SetPoint("TOPLEFT", hidePlayerName, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltip(hidePlayerPower, "Hide Resource/Power under PlayerFrame. Rogue combopoints, Warlock shards etc.")
-    notWorking(hidePlayerPower, true)
+    -- local hidePlayerPower = CreateCheckbox("hidePlayerPower", "Hide Resource/Power", BetterBlizzFrames, nil, BBF.HideFrames)
+    -- hidePlayerPower:SetPoint("TOPLEFT", hidePlayerName, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    -- CreateTooltip(hidePlayerPower, "Hide Resource/Power under PlayerFrame. Rogue combopoints, Warlock shards etc.")
+    -- notWorking(hidePlayerPower, true)
 
     local hidePlayerRestAnimation = CreateCheckbox("hidePlayerRestAnimation", "Hide \"Zzz\" Rest Icon", BetterBlizzFrames, nil, BBF.HideFrames)
-    hidePlayerRestAnimation:SetPoint("TOPLEFT", hidePlayerPower, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    hidePlayerRestAnimation:SetPoint("TOPLEFT", hidePlayerName, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(hidePlayerRestAnimation, "Hide the \"Zzz\" animation on PlayerFrame while rested.")
 
     local hidePlayerRestGlow = CreateCheckbox("hidePlayerRestGlow", "Hide Rest Glow", BetterBlizzFrames, nil, BBF.HideFrames)
@@ -2059,7 +2077,7 @@ local function guiGeneralTab()
 
 
     local targetFrameText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    targetFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 250, -165)
+    targetFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 250, -155)
     targetFrameText:SetText("Target Frame")
     local targetFrameIcon = BetterBlizzFrames:CreateTexture(nil, "ARTWORK")
     targetFrameIcon:SetAtlas("groupfinder-icon-friend")
@@ -2068,8 +2086,12 @@ local function guiGeneralTab()
     targetFrameIcon:SetDesaturated(1)
     targetFrameIcon:SetVertexColor(1, 0, 0)
 
+    local targetFrameScale = CreateSlider(BetterBlizzFrames, "Size", 0.7, 1.4, 0.01, "targetFrameScale", nil, 120)
+    targetFrameScale:SetPoint("TOP", targetFrameText, "BOTTOM", 23, -13)
+    CreateTooltipTwo(targetFrameScale, "TargetFrame Size", "Change the size of the TargetFrame", "Right-click to input specific value")
+
     local targetFrameClickthrough = CreateCheckbox("targetFrameClickthrough", "Clickthrough", BetterBlizzFrames, nil, BBF.ClickthroughFrames)
-    targetFrameClickthrough:SetPoint("TOPLEFT", targetFrameText, "BOTTOMLEFT", -4, pixelsOnFirstBox)
+    targetFrameClickthrough:SetPoint("TOPLEFT", targetFrameText, "BOTTOMLEFT", -4, -26)
     CreateTooltip(targetFrameClickthrough, "Makes the TargetFrame clickthrough.\nYou can still hold shift to left/right click it\nwhile out of combat for trade/inspect etc.\n\nNOTE: You will NOT be able to click the frame\nat all during combat with this setting on.")
 
     local hideTargetName = CreateCheckbox("hideTargetName", "Hide Name", BetterBlizzFrames, nil, BBF.UpdateNameSettings)
@@ -2152,9 +2174,9 @@ local function guiGeneralTab()
     BBF.targetToTXPos:SetPoint("TOP", targetToTScale, "BOTTOM", 0, -15)
     CreateTooltip(BBF.targetToTXPos, "Target of target x offset.\n\nYou can right-click sliders to enter a specific value.")
 
-    local targetToTYPos = CreateSlider(BetterBlizzFrames, "y offset", -100, 100, 1, "targetToTYPos", "Y", 120)
-    targetToTYPos:SetPoint("TOP", BBF.targetToTXPos, "BOTTOM", 0, -15)
-    CreateTooltip(targetToTYPos, "Target of target y offset.\n\nYou can right-click sliders to enter a specific value.")
+    BBF.targetToTYPos = CreateSlider(BetterBlizzFrames, "y offset", -100, 100, 1, "targetToTYPos", "Y", 120)
+    BBF.targetToTYPos:SetPoint("TOP", BBF.targetToTXPos, "BOTTOM", 0, -15)
+    CreateTooltip(BBF.targetToTYPos, "Target of target y offset.\n\nYou can right-click sliders to enter a specific value.")
 
 
 
@@ -2200,7 +2222,7 @@ local function guiGeneralTab()
     CreateTooltip(filterMiscInfo, "Filter out \"Your equipped items suffer a durability loss\" message.")
 
     local arenaNamesText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    arenaNamesText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 460, -78)
+    arenaNamesText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 460, -70)
     arenaNamesText:SetText("Arena Names")
     CreateTooltip(arenaNamesText, "Change player names into spec/arena id instead during arena", "ANCHOR_LEFT")
     local arenaNamesIcon = BetterBlizzFrames:CreateTexture(nil, "ARTWORK")
@@ -2249,7 +2271,7 @@ local function guiGeneralTab()
     partyArenaNames:HookScript("OnClick", ToggleDependentCheckboxes)
 
     local focusFrameText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    focusFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 460, -170)
+    focusFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 460, -155)
     focusFrameText:SetText("Focus Frame")
     local focusFrameIcon = BetterBlizzFrames:CreateTexture(nil, "ARTWORK")
     focusFrameIcon:SetAtlas("groupfinder-icon-friend")
@@ -2258,8 +2280,12 @@ local function guiGeneralTab()
     focusFrameIcon:SetDesaturated(1)
     focusFrameIcon:SetVertexColor(0, 1, 0)
 
+    local focusFrameScale = CreateSlider(BetterBlizzFrames, "Size", 0.7, 1.4, 0.01, "focusFrameScale", nil, 120)
+    focusFrameScale:SetPoint("TOP", focusFrameText, "BOTTOM", 23, -13)
+    CreateTooltipTwo(focusFrameScale, "FocusFrame Size", "Change the size of the FocusFrame", "Right-click to input specific value")
+
     local focusFrameClickthrough = CreateCheckbox("focusFrameClickthrough", "Clickthrough", BetterBlizzFrames, nil, BBF.ClickthroughFrames)
-    focusFrameClickthrough:SetPoint("TOPLEFT", focusFrameText, "BOTTOMLEFT", -4, pixelsOnFirstBox)
+    focusFrameClickthrough:SetPoint("TOPLEFT", focusFrameText, "BOTTOMLEFT", -4, -26)
     CreateTooltip(focusFrameClickthrough, "Makes the FocusFrame clickthrough.\nYou can still hold shift to left/right click it\nwhile out of combat for trade/inspect etc.\n\nNOTE: You will NOT be able to click the frame\nat all during combat with this setting on.")
 
     local hideFocusName = CreateCheckbox("hideFocusName", "Hide Name", BetterBlizzFrames, nil, BBF.UpdateNameSettings)
@@ -2343,9 +2369,9 @@ local function guiGeneralTab()
     BBF.focusToTXPos:SetPoint("TOP", focusToTScale, "BOTTOM", 0, -15)
     CreateTooltip(BBF.focusToTXPos, "Focus target of target x offset.\n\nYou can right-click sliders to enter a specific value.")
 
-    local focusToTYPos = CreateSlider(BetterBlizzFrames, "y offset", -100, 100, 1, "focusToTYPos", "Y", 120)
-    focusToTYPos:SetPoint("TOP", BBF.focusToTXPos, "BOTTOM", 0, -15)
-    CreateTooltip(focusToTYPos, "Focus target of target y offset.\n\nYou can right-click sliders to enter a specific value.")
+    BBF.focusToTYPos = CreateSlider(BetterBlizzFrames, "y offset", -100, 100, 1, "focusToTYPos", "Y", 120)
+    BBF.focusToTYPos:SetPoint("TOP", BBF.focusToTXPos, "BOTTOM", 0, -15)
+    CreateTooltip(BBF.focusToTYPos, "Focus target of target y offset.\n\nYou can right-click sliders to enter a specific value.")
 
 
 
@@ -2390,9 +2416,21 @@ local function guiGeneralTab()
     end)
     CreateTooltipTwo(classColorFrames, "Class Color Healthbars", "Class color Player, Target, Focus & Party frames.", "If you want a more I recommend the addon HealthBarColor instead of this setting.")
 
-    local biggerHealthbars = CreateCheckbox("biggerHealthbars", "Bigger Healthbars |cff00ff00CATA|r", BetterBlizzFrames, nil, BBF.HookBiggerHealthbars)
+    local biggerHealthbars = CreateCheckbox("biggerHealthbars", "Bigger Healthbars", BetterBlizzFrames, nil, BBF.HookBiggerHealthbars)
     biggerHealthbars:SetPoint("TOPLEFT", classColorFrames, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(biggerHealthbars, "Bigger Healthbars","Increases the height of healthbars on Player, Target & Focus Frames.")
+
+    local biggerHealthbarsNameInside = CreateCheckbox("biggerHealthbarsNameInside", "Name", biggerHealthbars)
+    biggerHealthbarsNameInside:SetPoint("LEFT", biggerHealthbars.text, "RIGHT", 0, 0)
+    CreateTooltipTwo(biggerHealthbarsNameInside, "Bigger Healthbars: Name Inside","Put the name inside of the healthbar instead of on top.")
+    biggerHealthbarsNameInside:HookScript("OnClick", function()
+        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+    end)
+
+    biggerHealthbars:HookScript("OnClick", function()
+        CheckAndToggleCheckboxes(biggerHealthbars)
+    end)
+
 
     local classColorTargetNames = CreateCheckbox("classColorTargetNames", "Class Color Names", BetterBlizzFrames)
     classColorTargetNames:SetPoint("TOPLEFT", biggerHealthbars, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
@@ -3559,7 +3597,7 @@ local function guiPositionAndScale()
 
     local targetAbsorbAmount = CreateCheckbox("targetAbsorbAmount", "Target", contentFrame, nil, BBF.AbsorbCaller)
     targetAbsorbAmount:SetPoint("LEFT", playerAbsorbAmount.Text, "RIGHT", 5, 0)
-    CreateTooltip(playerAbsorbAmount, "Show absorb indicator on TargetFrame")
+    CreateTooltip(targetAbsorbAmount, "Show absorb indicator on TargetFrame")
 
     local targetAbsorbIcon = CreateCheckbox("targetAbsorbIcon", "Icon", contentFrame, nil, BBF.AbsorbCaller)
     targetAbsorbIcon:SetPoint("TOPLEFT", targetAbsorbAmount, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
@@ -3567,7 +3605,7 @@ local function guiPositionAndScale()
 
     local focusAbsorbAmount = CreateCheckbox("focusAbsorbAmount", "Focus", contentFrame, nil, BBF.AbsorbCaller)
     focusAbsorbAmount:SetPoint("LEFT", targetAbsorbAmount.Text, "RIGHT", 5, 0)
-    CreateTooltip(playerAbsorbAmount, "Show absorb indicator on TargetFrame")
+    CreateTooltip(focusAbsorbAmount, "Show absorb indicator on FocusFrame")
 
     local focusAbsorbIcon = CreateCheckbox("focusAbsorbIcon", "Icon", contentFrame, nil, BBF.AbsorbCaller)
     focusAbsorbIcon:SetPoint("TOPLEFT", focusAbsorbAmount, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
@@ -3837,20 +3875,30 @@ local function guiFrameAuras()
             BBF.HookPlayerAndTargetAuras()
             if BetterBlizzFramesDB.targetToTXPos == 0 then
                 StaticPopup_Show("BBF_TOT_MESSAGE")
-                BetterBlizzFramesDB.targetToTXPos = 31
-                BBF.targetToTXPos:SetValue(31)
-                BetterBlizzFramesDB.focusToTXPos = 31
-                BBF.focusToTXPos:SetValue(31)
+                BetterBlizzFramesDB.targetToTXPos = 42
+                BBF.targetToTXPos:SetValue(42)
+                BetterBlizzFramesDB.targetToTYPos = -10
+                BBF.targetToTYPos:SetValue(-10)
+
+                BetterBlizzFramesDB.focusToTXPos = 42
+                BBF.focusToTXPos:SetValue(42)
+                BetterBlizzFramesDB.focusToTYPos = -10
+                BBF.focusToTYPos:SetValue(-10)
                 BBF.MoveToTFrames()
                 BBF.UpdateFilteredBuffsIcon()
             end
         else
-            if BetterBlizzFramesDB.targetToTXPos == 31 then
+            if BetterBlizzFramesDB.targetToTXPos == 42 then
                 DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: Aura Settings Off. Target of Target Frame changed back to its default position.")
                 BetterBlizzFramesDB.targetToTXPos = 0
                 BBF.targetToTXPos:SetValue(0)
+                BetterBlizzFramesDB.targetToTYPos = 0
+                BBF.targetToTYPos:SetValue(0)
+
                 BetterBlizzFramesDB.focusToTXPos = 0
                 BBF.focusToTXPos:SetValue(0)
+                BetterBlizzFramesDB.focusToTYPos = 0
+                BBF.focusToTYPos:SetValue(0)
                 BBF.MoveToTFrames()
             end
         end
