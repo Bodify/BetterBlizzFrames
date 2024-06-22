@@ -837,7 +837,10 @@ Frame:SetScript("OnEvent", function(...)
             BBF.ScaleUnitFrames()
             BBF.MoveToTFrames()
             BBF.UpdateUserAuraSettings()
-            --BBF.HookPlayerAndTargetAuras()
+            --BBF.HookPlayerAndTargetAuras()a
+            if BetterBlizzFramesDB.enableMasque then
+                BBF.SetupMasqueSupport()
+            end
 
 
             -- local hidePartyName = BetterBlizzFramesDB.hidePartyNames

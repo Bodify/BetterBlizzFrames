@@ -1,3 +1,20 @@
+1.4.4:
+Retail & Cata:
+New stuff:
+- Masque support for Player, Target & Focus Auras.
+- Buffs & Debuffs: Increase Frame Strata setting.
+
+Cata:
+Bugfixes:
+- Fixed Player Debuff filtering
+- Fixed "Hide pet statusbar text"
+
+Retail:
+Bugfixes & Tweaks:
+- Target & Focus names shortened a little bit to make it not overlap frame
+- Fix layering issue with "Combo Points on TargetFrame" settings.
+
+
 1.4.3:
 Cata:
 New stuff:

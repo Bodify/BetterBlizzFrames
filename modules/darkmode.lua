@@ -66,6 +66,7 @@ local function UpdateFrameAuras(pool)
 end
 
 function BBF.DarkModeUnitframeBorders()
+    if BetterBlizzFramesDB.enableMasque then return end
     if (BetterBlizzFramesDB.darkModeUiAura and BetterBlizzFramesDB.darkModeUi) then --and not BetterBlizzFramesDB.playerAuraFiltering) then
         if not hookedAuras then
             for poolKey, pool in pairs(TargetFrame.auraPools.pools) do
@@ -84,6 +85,7 @@ end
 
 BBF.auraBorders = {}  -- BuffFrame aura borders for darkmode
 local function createOrUpdateBorders(frame, colorValue, textureName, bypass)
+    if BetterBlizzFramesDB.enableMasque then return end
     if (darkModeUi and darkModeUiAura) or bypass then
         if not BBF.auraBorders[frame] then
             -- Create borders
@@ -102,7 +104,7 @@ local function createOrUpdateBorders(frame, colorValue, textureName, bypass)
                 })
             end
 
-            local icon = frame.Icon
+            local icon = frame.Icon or frame.icon
             if textureName then
                 icon = frame[textureName]
             end
@@ -579,6 +581,7 @@ end
 
 
 function BBF.UpdateFilteredBuffsIcon()
+    if BetterBlizzFramesDB.enableMasque then return end
     if BetterBlizzFramesDB.darkModeUi then
         local vertexColor = BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeColor or 1
         if ToggleHiddenAurasButton then
@@ -615,6 +618,7 @@ specChangeListener:SetScript("OnEvent", function(self, event, ...)
 end)
 
 function BBF.CheckForAuraBorders()
+    if BetterBlizzFramesDB.enableMasque then return end
     if not (BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeUiAura) then
         local frames = {_G.BuffFrame.AuraContainer:GetChildren()}
 

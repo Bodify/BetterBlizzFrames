@@ -6,7 +6,7 @@ BBF = BBF or {}
 -- Things are getting more messy need a lot of cleaning lol
 
 local addonVersion = "1.00" --too afraid to to touch for now
-local addonUpdates = "1.4.3"
+local addonUpdates = "1.4.4"
 local sendUpdate = false
 BBF.VersionNumber = addonUpdates
 BBF.variablesLoaded = false
@@ -728,15 +728,38 @@ end
 local function SetupClassComboPoints(comboPointFrame, positions, expectedClass, scale, xPos, yPos, changeDrawLayer)
     -- Reposition individual combo points based on their x position
 
-
-    -- Adjust the texture draw layers
     if comboPointFrame and changeDrawLayer then
+        local drawLayerOrder = {
+            "BACKGROUND",
+            "BORDER",
+            "ARTWORK",
+            "OVERLAY"
+        }
+
+        local function getNextDrawLayer(currentLayer)
+            for i, layer in ipairs(drawLayerOrder) do
+                if layer == currentLayer then
+                    if i < #drawLayerOrder then
+                        return drawLayerOrder[i + 1], false
+                    else
+                        return currentLayer, true  -- Indicate it's already the top layer
+                    end
+                end
+            end
+            return currentLayer  -- Default fallback, should not happen
+        end
+
         for _, frameChild in pairs({comboPointFrame:GetChildren()}) do
             for i = 1, frameChild:GetNumRegions() do
                 local region = select(i, frameChild:GetRegions())
                 if region:IsObjectType("Texture") then
-                    local layer, sublevel = region:GetDrawLayer()
-                    region:SetDrawLayer("ARTWORK", sublevel + 1)
+                    local currentLayer, sublevel = region:GetDrawLayer()
+                    local nextLayer, isOverlay = getNextDrawLayer(currentLayer)
+                    if isOverlay then
+                        region:SetDrawLayer(currentLayer, sublevel + 1)
+                    else
+                        region:SetDrawLayer(nextLayer, sublevel + 1)
+                    end
                 end
             end
         end
@@ -1073,6 +1096,9 @@ Frame:SetScript("OnEvent", function(...)
             end
             BBF.MoveToTFrames()
             BBF.UpdateUserAuraSettings()
+            if BetterBlizzFramesDB.enableMasque then
+                BBF.SetupMasqueSupport()
+            end
             BBF.HookPlayerAndTargetAuras()
 
 

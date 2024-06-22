@@ -677,8 +677,17 @@ function BBF.HideFrames()
     if BetterBlizzFramesDB.hidePetText then
         PetFrameHealthBarText:SetAlpha(0)
         PetFrameHealthBarText:Hide()
+        PetFrameHealthBarTextLeft:SetAlpha(0)
+        PetFrameHealthBarTextLeft:Hide()
+        PetFrameHealthBarTextRight:SetAlpha(0)
+        PetFrameHealthBarTextRight:Hide()
+
         PetFrameManaBarText:SetAlpha(0)
         PetFrameManaBarText:Hide()
+        PetFrameManaBarTextLeft:SetAlpha(0)
+        PetFrameManaBarTextLeft:Hide()
+        PetFrameManaBarTextRight:SetAlpha(0)
+        PetFrameManaBarTextRight:Hide()
     end
 end
 

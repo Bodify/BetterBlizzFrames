@@ -25,6 +25,21 @@ local table_sort = table.sort
 local math_max = math.max
 local print = print
 
+local Masque
+local MasquePlayerAuras
+local MasqueTargetAuras
+local MasqueFocusAuras
+local MasqueOn
+
+-- Function to add buffs and debuffs to Masque group
+local function addToMasque(frame, masqueGroup)
+    if frame and not frame.bbfMsq then
+        masqueGroup:AddButton(frame)
+        frame.bbfMsq = true
+        --print(frame:GetName())
+    end
+end
+
 local printSpellId
 local betterTargetPurgeGlow
 local betterFocusPurgeGlow
@@ -85,6 +100,15 @@ local targetCastBarScale
 local focusCastBarScale
 local purgeableBuffSorting
 local purgeableBuffSortingFirst
+local increaseAuraStrata
+
+local function UpdateMore()
+    onlyPandemicMine = BetterBlizzFramesDB.onlyPandemicAuraMine
+    purgeableBuffSorting = BetterBlizzFramesDB.purgeableBuffSorting
+    purgeableBuffSortingFirst = BetterBlizzFramesDB.purgeableBuffSortingFirst
+    increaseAuraStrata = BetterBlizzFramesDB.increaseAuraStrata
+
+end
 
 function BBF.UpdateUserAuraSettings()
     printSpellId = BetterBlizzFramesDB.printAuraSpellIds
@@ -144,9 +168,7 @@ function BBF.UpdateUserAuraSettings()
     purgeTextureColorRGB = BetterBlizzFramesDB.purgeTextureColorRGB
     changePurgeTextureColor = BetterBlizzFramesDB.changePurgeTextureColor
     buffsOnTopReverseCastbarMovement = BetterBlizzFramesDB.buffsOnTopReverseCastbarMovement
-    onlyPandemicMine = BetterBlizzFramesDB.onlyPandemicAuraMine
-    purgeableBuffSorting = BetterBlizzFramesDB.purgeableBuffSorting
-    purgeableBuffSortingFirst = BetterBlizzFramesDB.purgeableBuffSortingFirst
+    UpdateMore()
 end
 
 local function isInWhitelist(spellName, spellId)
@@ -860,6 +882,9 @@ local function AdjustAuras(self, frameType)
             end
 
             if shouldShowAura then
+                if increaseAuraStrata then
+                    aura:SetFrameStrata("HIGH")
+                end
                 aura:Show()
 
                 aura.spellId = auraData.spellId
@@ -1137,6 +1162,13 @@ local function AdjustAuras(self, frameType)
             adjustCastbar(FocusFrame.spellbar, FocusFrameSpellBar)
         end
     end
+    if MasqueOn then
+        if frameType == "target" then
+            MasqueTargetAuras:ReSkin(true)
+        else
+            MasqueFocusAuras:ReSkin(true)
+        end
+    end
 end
 
 -- Function to create the toggle icon
@@ -1255,6 +1287,7 @@ local function CreateToggleIcon()
         end
     end
     -------
+    toggleIcon.icon = Icon
     toggleIcon.Icon = Icon
 
     -- Creating FontString to display the count of hidden auras
@@ -1766,6 +1799,123 @@ function BBF.RefreshAllAuraFrames()
                 auraMsgSent = false
             end)
         end
+    end
+end
+
+function BBF.SetupMasqueSupport()
+    Masque = LibStub("Masque", true)
+    if Masque then
+        MasqueOn = true
+        MasquePlayerAuras = Masque:Group("Better|cff00c0ffBlizz|rFrames", "Player Auras")
+        MasqueTargetAuras = Masque:Group("Better|cff00c0ffBlizz|rFrames", "Target Auras")
+        MasqueFocusAuras = Masque:Group("Better|cff00c0ffBlizz|rFrames", "Focus Auras")
+
+        -- Props to Masque Skinner: Blizz Buffs by Cybeloras of Aerie Peak
+        local skinned = {}
+        local function makeHook(group, container)
+            local function updateFrames(frames)
+                for i = 1, #frames do
+                    local frame = frames[i]
+                    if not skinned[frame] and frame.Icon.GetTexture then
+                        skinned[frame] = 1
+
+                        -- We have to make a wrapper to hold the skinnable components of the Icon
+                        -- because the aura frames are not square (and so if we skinned them directly
+                        -- with Masque, they'd get all distorted and weird).
+                        local skinWrapper = CreateFrame("Frame")
+                        skinWrapper:SetParent(frame)
+                        skinWrapper:SetSize(30, 30)
+                        skinWrapper:SetPoint("TOP")
+
+                        -- Blizzard's code constantly tries to reposition the icon,
+                        -- so we have to make our own icon that it won't try to move.
+                        frame.Icon:Hide()
+                        frame.SkinnedIcon = skinWrapper:CreateTexture(nil, "BACKGROUND")
+                        frame.SkinnedIcon:SetSize(30, 30)
+                        frame.SkinnedIcon:SetPoint("CENTER")
+                        frame.SkinnedIcon:SetTexture(frame.Icon:GetTexture())
+                        hooksecurefunc(frame.Icon, "SetTexture", function(_, tex)
+                            frame.SkinnedIcon:SetTexture(tex)
+                        end)
+
+                        if frame.Count then
+                            -- edit mode versions don't have stack text
+                            frame.Count:SetParent(skinWrapper);
+                        end
+                        if frame.DebuffBorder then
+                            frame.DebuffBorder:SetParent(skinWrapper);
+                        end
+                        if frame.TempEnchantBorder then
+                            frame.TempEnchantBorder:SetParent(skinWrapper);
+                            frame.TempEnchantBorder:SetVertexColor(.75, 0, 1)
+                        end
+                        if frame.Symbol then
+                            -- Shows debuff types as text in colorblind mode (except it currently doesnt work)
+                            frame.Symbol:SetParent(skinWrapper);
+                        end
+
+                        local bType = frame.auraType or "Aura"
+
+                        if bType == "DeadlyDebuff" then
+                            bType = "Debuff"
+                        end
+
+                        group:AddButton(skinWrapper, {
+                            Icon = frame.SkinnedIcon,
+                            DebuffBorder = frame.DebuffBorder,
+                            EnchantBorder = frame.TempEnchantBorder,
+                            Count = frame.Count,
+                            HotKey = frame.Symbol
+                        }, bType)
+                    end
+                end
+            end
+
+            return function(self)
+                updateFrames(self.auraFrames, group)
+                if self.exampleAuraFrames then
+                    updateFrames(self.exampleAuraFrames, group)
+                end
+            end
+        end
+
+        hooksecurefunc(BuffFrame, "UpdateAuraButtons", makeHook(MasquePlayerAuras, BuffFrame))
+        hooksecurefunc(BuffFrame, "OnEditModeEnter", makeHook(MasquePlayerAuras, BuffFrame))
+        hooksecurefunc(DebuffFrame, "UpdateAuraButtons", makeHook(MasquePlayerAuras, DebuffFrame))
+        hooksecurefunc(DebuffFrame, "OnEditModeEnter", makeHook(MasquePlayerAuras, DebuffFrame))
+
+        C_Timer.After(1.5, function()
+            if toggleIconGlobal then
+                MasquePlayerAuras:AddButton(toggleIconGlobal)
+            end
+        end)
+
+        -- Function to hook TargetFrame and FocusFrame auras
+        local function hookUnitFrameAuras(frame, group)
+            local function updateUnitFrameAuras()
+                for aura in frame.auraPools:EnumerateActive() do
+                    if not skinned[aura] then
+                        skinned[aura] = true
+                        group:AddButton(aura, {
+                            Icon = aura.Icon,
+                            DebuffBorder = aura.Border,
+                            Cooldown = aura.Cooldown,
+                        })
+                    end
+                end
+                if not auraFilteringOn then
+                    group:ReSkin(true)
+                end
+            end
+
+            updateUnitFrameAuras()
+
+            hooksecurefunc(frame, "UpdateAuras", updateUnitFrameAuras)
+        end
+
+        -- Hook for TargetFrame and FocusFrame
+        hookUnitFrameAuras(TargetFrame, MasqueTargetAuras)
+        hookUnitFrameAuras(FocusFrame, MasqueFocusAuras)
     end
 end
 

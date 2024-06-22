@@ -25,6 +25,23 @@ local table_sort = table.sort
 local math_max = math.max
 local print = print
 
+local Masque = LibStub("Masque", true)
+local MasquePlayerAuras
+local MasqueTargetAuras
+local MasqueFocusAuras
+local MasqueOn
+
+-- Function to add buffs and debuffs to Masque group
+local function addToMasque(frameName, masqueGroup)
+    local frame = _G[frameName]
+    if frame and not frame.bbfMsq then
+        masqueGroup:AddButton(frame)
+        frame.bbfMsq = true
+        --print(frame:GetName())
+    end
+end
+
+
 local printSpellId
 local betterTargetPurgeGlow
 local betterFocusPurgeGlow
@@ -100,6 +117,7 @@ local targetEnlargeAuraEnemy
 local targetEnlargeAuraFriendly
 local focusEnlargeAuraEnemy
 local focusEnlargeAuraFriendly
+local increaseAuraStrata
 
 local function UpdateMore()
     purgeableBuffSorting = BetterBlizzFramesDB.purgeableBuffSorting
@@ -119,6 +137,7 @@ local function UpdateMore()
     targetEnlargeAuraFriendly = BetterBlizzFramesDB.targetEnlargeAuraFriendly
     focusEnlargeAuraEnemy = BetterBlizzFramesDB.focusEnlargeAuraEnemy
     focusEnlargeAuraFriendly = BetterBlizzFramesDB.focusEnlargeAuraFriendly
+    increaseAuraStrata = BetterBlizzFramesDB.increaseAuraStrata
 
     if BetterBlizzFramesDB.targetdeBuffFilterBlizzard or BetterBlizzFramesDB.focusdeBuffFilterBlizzard then
         BetterBlizzFramesDB.targetdeBuffFilterBlizzard = false
@@ -950,7 +969,7 @@ local function AdjustAuras(self, frameType)
                 auraSize = adjustedSize
             else
                 if aura.isImportant then
-                    aura.ImportantGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -24, 25)
+                    aura.ImportantGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -24, 24)
                     aura.ImportantGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", 24, -24)
                 end
             end
@@ -1002,6 +1021,14 @@ local function AdjustAuras(self, frameType)
         local iconTexture = _G[icon]
         local stealableTexture = _G[stealable]
         if buffFrame and buffFrame:IsShown() then
+            if increaseAuraStrata then
+                buffFrame:SetFrameStrata("HIGH")
+            end
+
+            -- if MasqueUnitFrameAuras and not buffFrame.added then
+            --     MasqueUnitFrameAuras:AddButton(buffFrame)
+            --     buffFrame.added = true
+            -- end
             buffFrame.Icon = iconTexture
             buffFrame.Stealable = stealableTexture
             buffFrame.Cooldown = cooldown
@@ -1329,9 +1356,11 @@ local function AdjustAuras(self, frameType)
         local debuffFrame = _G[debuffName]
         local border = _G[debuffName.."Border"]
         if debuffFrame and debuffFrame:IsShown() then
+            if increaseAuraStrata then
+                debuffFrame:SetFrameStrata("HIGH")
+            end
             --debuffFrame.Icon = _G[icon]
             debuffFrame.Border = border
-
 
 
 
@@ -1680,6 +1709,13 @@ local function AdjustAuras(self, frameType)
             adjustCastbar(FocusFrame.spellbar, FocusFrameSpellBar)
         end
     end
+    if MasqueOn then
+        if frameType == "target" then
+            MasqueTargetAuras:ReSkin(true)
+        else
+            MasqueFocusAuras:ReSkin(true)
+        end
+    end
 end
 
 
@@ -1726,7 +1762,7 @@ local function ShowHiddenAuras()
         for i = 1, 40 do
             local buffName = "BuffButton"..i
             local auraFrame = _G[buffName]
-            
+
         --for _, auraFrame in ipairs(BuffFrame.auraFrames) do
             if auraFrame and auraFrame.isAuraHidden then
                 auraFrame:Show()
@@ -1735,7 +1771,7 @@ local function ShowHiddenAuras()
         for i = 1, BuffFrame.numEnchants do
             local buffName = "TempEnchant"..i
             local auraFrame = _G[buffName]
-            
+
         --for _, auraFrame in ipairs(BuffFrame.auraFrames) do
             if auraFrame and auraFrame.isAuraHidden then
                 auraFrame:Show()
@@ -1783,12 +1819,13 @@ local function CreateToggleIcon()
             toggleIcon:SetPoint("LEFT", BuffFrame.CollapseAndExpandButton, "RIGHT", 0, 0)
         end
     else
-        toggleIcon:SetPoint("TOPLEFT", BuffFrame, "TOPRIGHT", 5, 0)
+        toggleIcon:SetPoint("TOPLEFT", BuffFrame, "TOPRIGHT", 2 + BetterBlizzFramesDB.playerAuraSpacingX, 0)
     end
 
     local Icon = toggleIcon:CreateTexture(nil, "BACKGROUND")
     Icon:SetAllPoints()
     Icon:SetTexture(BetterBlizzFramesDB.auraToggleIconTexture)
+    Icon:SetParent(toggleIcon)
     -------
     if IsAddOnLoaded("SUI") then
         if SUIDB and SUIDB["profiles"] and SUIDB["profiles"]["Default"] and SUIDB["profiles"]["Default"]["general"] then
@@ -1825,8 +1862,12 @@ local function CreateToggleIcon()
             end
         end
     end
+
+    if BetterBlizzFramesDB.enableMasque then
+        addToMasque(toggleIcon, MasquePlayerAuras)
+    end
     -------
-    toggleIcon.Icon = Icon
+    toggleIcon.icon = Icon
 
     -- Creating FontString to display the count of hidden auras
     toggleIcon.hiddenAurasCount = toggleIcon:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
@@ -1916,7 +1957,7 @@ local function PersonalBuffFrameFilterAndGrid(self)
 
                      -- Nonprint logic
                     if shouldShowAura then
-                        --auraFrame.Duration:SetDrawLayer("OVERLAY", 7)
+                        auraFrame.duration:SetDrawLayer("OVERLAY", 7)
                         auraFrame:Show();
                         auraFrame:ClearAllPoints();
                         if addIconsToRight then
@@ -2018,22 +2059,17 @@ local function PersonalBuffFrameFilterAndGrid(self)
 
         end
 
-        for i = 1, 40 do
+        for i = 1, BUFF_ACTUAL_DISPLAY do
             local buffName = "BuffButton"..i
             --local icon = self:GetName().."Buff"..i.."Icon"
             local auraFrame = _G[buffName]
-            if auraFrame and auraFrame:IsShown() then
+            if auraFrame then
+                auraFrame.duration:SetDrawLayer("OVERLAY", 7)
                 --buffFrame.Icon = _G[icon]
-    
-    
-    
+
                 local spellName, icon, count, debuffType, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, castByPlayer, nameplateShowAll, timeMod = UnitBuff("player", i)
-    
                 auraFrame.spellId = spellId
 
-    
-    
-    
                 local auraData = { -- Manually create the aura data structure as needed
                     sourceUnit = sourceUnit,
                     canApplyAura = canApplyAura,
@@ -2160,7 +2196,7 @@ local function PersonalBuffFrameFilterAndGrid(self)
 
                 -- Nonprint logic
                 if shouldShowAura and shouldBeAdded then
-                    --auraFrame.Duration:SetDrawLayer("OVERLAY", 7)
+                    auraFrame.duration:SetDrawLayer("OVERLAY", 7)
                     auraFrame:Show();
                     auraFrame:ClearAllPoints();
                     if addIconsToRight then
@@ -2206,7 +2242,7 @@ local function PersonalBuffFrameFilterAndGrid(self)
                         local borderFrame = BBF.auraBorders[auraFrame]
                         auraFrame.isImportant = true
                         if not auraFrame.ImportantGlow then
-                            auraFrame.ImportantGlow = auraFrame:CreateTexture(nil, "BACKGROUND")
+                            auraFrame.ImportantGlow = auraFrame:CreateTexture(nil, "ARTWORK", nil, 1)
                             if borderFrame then
                                 auraFrame.ImportantGlow:SetParent(borderFrame)
                                 auraFrame.ImportantGlow:SetPoint("TOPLEFT", auraFrame, "TOPLEFT", -15, 16)
@@ -2255,11 +2291,15 @@ end
 
 --local tooltip = CreateFrame("GameTooltip", "AuraTooltip", nil, "GameTooltipTemplate")
 --tooltip:SetOwner(WorldFrame, "ANCHOR_NONE")
-local DebuffFrame = DebuffFrame
+local DebuffFrame = BuffFrame
 local function PersonalDebuffFrameFilterAndGrid(self)
-    local maxAurasPerRow = DebuffFrame.AuraContainer.iconStride
-    local auraSpacingX = DebuffFrame.AuraContainer.iconPadding - 7 + playerAuraSpacingX
-    local auraSpacingY = DebuffFrame.AuraContainer.iconPadding + 8 + playerAuraSpacingY
+    -- local maxAurasPerRow = DebuffFrame.AuraContainer.iconStride
+    -- local auraSpacingX = DebuffFrame.AuraContainer.iconPadding - 7 + playerAuraSpacingX
+    -- local auraSpacingY = DebuffFrame.AuraContainer.iconPadding + 8 + playerAuraSpacingY
+
+    local maxAurasPerRow = maxPlayerAurasPerRow
+    local auraSpacingX = playerAuraSpacingX--BuffFrame.AuraContainer.iconPadding - 7 + playerAuraSpacingX
+    local auraSpacingY = 13 + playerAuraSpacingY--BuffFrame.AuraContainer.iconPadding + 8 + playerAuraSpacingY
     local auraSize = 32;      -- Set the size of each aura frame
 
     --local dotChecker = BetterBlizzFramesDB.debuffDotChecker
@@ -2268,7 +2308,7 @@ local function PersonalDebuffFrameFilterAndGrid(self)
     local currentRow = 1;
     local currentCol = 1;
     local xOffset = 0;
-    local yOffset = 0;
+    local yOffset = 110;
 
     -- Create a texture next to the DebuffFrame
 --[=[
@@ -2304,10 +2344,11 @@ local function PersonalDebuffFrameFilterAndGrid(self)
 ]=]
 
 
-    for auraIndex, auraInfo in ipairs(DebuffFrame.auraInfo) do
-        --if isExpanded or not auraInfo.hideUnlessExpanded then
-            local auraFrame = DebuffFrame.auraFrames[auraIndex]
-            if auraFrame and not auraFrame.isAuraAnchor then
+        for i = 1, DEBUFF_ACTUAL_DISPLAY do
+            local debuffName = "DebuffButton"..i
+            --local icon = self:GetName().."Buff"..i.."Icon"
+            local auraFrame = _G[debuffName]
+            if auraFrame and auraFrame:IsShown() then
 --[[
                 if auraInfo then
                     print("Aura Data:")
@@ -2320,66 +2361,71 @@ local function PersonalDebuffFrameFilterAndGrid(self)
 ]]
                 --local spellID = select(10, UnitAura("player", auraInfo.index));
                 --if ShouldHideSpell(spellID) then
-                    local name, icon, count, dispelType, duration, expirationTime, source, 
-                    isStealable, nameplateShowPersonal, spellId, canApplyAura, 
-                    isBossDebuff, castByPlayer, nameplateShowAll, timeMod 
-                  = UnitAura("player", auraInfo.index, 'HARMFUL');
+                -- if MasquePlayerAuras and not auraFrame.added then
+                --     MasquePlayerAuras:AddButton(auraFrame)
+                --     auraFrame.added = true
+                -- end
+                --buffFrame.Icon = _G[icon]
 
-              local auraData = {
-                  name = name,
-                  icon = icon,
-                  count = count,
-                  dispelType = dispelType,
-                  duration = duration,
-                  expirationTime = expirationTime,
-                  sourceUnit = source,
-                  isStealable = isStealable,
-                  nameplateShowPersonal = nameplateShowPersonal,
-                  spellId = spellId,
-                  auraType = auraInfo.auraType,
-              };
+                local spellName, icon, count, debuffType, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, castByPlayer, nameplateShowAll, timeMod = UnitDebuff("player", i)
+                auraFrame.spellId = spellId
+
+                local auraData = { -- Manually create the aura data structure as needed
+                    sourceUnit = sourceUnit,
+                    canApplyAura = canApplyAura,
+                    isStealable = isStealable,
+                    debuffType = debuffType,
+                    isHelpful = true,
+                    isHarmful = false,
+                    spellId = spellId,
+                    expirationTime = expirationTime,
+                    icon = icon,
+                    name = spellName,
+                    auraType = "Debuff",
+                    duration = duration,
+                }
                 --local unit = self.unit
-                if printAuraIds and not auraFrame.bbfHookAdded then
-                    auraFrame.bbfHookAdded = true
-                    auraFrame:HookScript("OnEnter", function()
-                        if printAuraIds then
-                            local currentAuraIndex = auraInfo.index
-                            local name, icon, count, dispelType, duration, expirationTime, source, 
-                            isStealable, nameplateShowPersonal, spellId, canApplyAura, 
-                            isBossDebuff, castByPlayer, nameplateShowAll, timeMod 
-                            = UnitAura("player", currentAuraIndex, 'HARMFUL');
+                -- if printAuraIds and not auraFrame.bbfHookAdded then
+                --     auraFrame.bbfHookAdded = true
+                --     auraFrame:HookScript("OnEnter", function()
+                --         if printAuraIds then
+                --             local currentAuraIndex = auraInfo.index
+                --             local name, icon, count, dispelType, duration, expirationTime, source, 
+                --             isStealable, nameplateShowPersonal, spellId, canApplyAura, 
+                --             isBossDebuff, castByPlayer, nameplateShowAll, timeMod 
+                --             = UnitAura("player", currentAuraIndex, 'HARMFUL');
 
-                            local auraData = {
-                                name = name,
-                                icon = icon,
-                                count = count,
-                                dispelType = dispelType,
-                                duration = duration,
-                                expirationTime = expirationTime,
-                                sourceUnit = source,
-                                isStealable = isStealable,
-                                nameplateShowPersonal = nameplateShowPersonal,
-                                spellId = spellId,
-                                auraType = auraInfo.auraType,
-                            };
+                --             local auraData = {
+                --                 name = name,
+                --                 icon = icon,
+                --                 count = count,
+                --                 dispelType = dispelType,
+                --                 duration = duration,
+                --                 expirationTime = expirationTime,
+                --                 sourceUnit = source,
+                --                 isStealable = isStealable,
+                --                 nameplateShowPersonal = nameplateShowPersonal,
+                --                 spellId = spellId,
+                --                 auraType = auraInfo.auraType,
+                --             };
 
-                            if auraData and (not auraFrame.bbfPrinted or auraFrame.bbfLastPrintedAuraIndex ~= currentAuraIndex) then
-                                local iconTexture = auraData.icon and "|T" .. auraData.icon .. ":16:16|t" or ""
-                                print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconTexture .. " " .. (auraData.name or "Unknown") .. "  |A:worldquest-icon-engineering:14:14|a ID: " .. (auraData.spellId or "Unknown"))
-                                auraFrame.bbfPrinted = true
-                                auraFrame.bbfLastPrintedAuraIndex = currentAuraIndex
-                                -- Cancel existing timer if any
-                                if auraFrame.bbfTimer then
-                                    auraFrame.bbfTimer:Cancel()
-                                end
-                                -- Schedule the reset of bbfPrinted flag
-                                auraFrame.bbfTimer = C_Timer.NewTimer(6, function()
-                                    auraFrame.bbfPrinted = false
-                                end)
-                            end
-                        end
-                    end)
-                end
+                --             if auraData and (not auraFrame.bbfPrinted or auraFrame.bbfLastPrintedAuraIndex ~= currentAuraIndex) then
+                --                 local iconTexture = auraData.icon and "|T" .. auraData.icon .. ":16:16|t" or ""
+                --                 print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconTexture .. " " .. (auraData.name or "Unknown") .. "  |A:worldquest-icon-engineering:14:14|a ID: " .. (auraData.spellId or "Unknown"))
+                --                 auraFrame.bbfPrinted = true
+                --                 auraFrame.bbfLastPrintedAuraIndex = currentAuraIndex
+                --                 -- Cancel existing timer if any
+                --                 if auraFrame.bbfTimer then
+                --                     auraFrame.bbfTimer:Cancel()
+                --                 end
+                --                 -- Schedule the reset of bbfPrinted flag
+                --                 auraFrame.bbfTimer = C_Timer.NewTimer(6, function()
+                --                     auraFrame.bbfPrinted = false
+                --                 end)
+                --             end
+                --         end
+                --     end)
+                -- end
                 local shouldShowAura, isImportant, isPandemic, isEnlarged, isCompacted, auraColor = ShouldShowBuff("player", auraData, "playerDebuffFrame")
                 if shouldShowAura then
                     -- Check the tooltip for specified keywords
@@ -2425,7 +2471,7 @@ local function PersonalDebuffFrameFilterAndGrid(self)
 
                     auraFrame:Show();
                     auraFrame:ClearAllPoints();
-                    auraFrame:SetPoint("TOPRIGHT", DebuffFrame, "TOPRIGHT", -xOffset, -yOffset);
+                    auraFrame:SetPoint("TOPRIGHT", BuffFrame, "TOPRIGHT", -xOffset, -yOffset);
                     --print(auraFrame:GetSize())
 
                     -- Update column and row counters
@@ -2516,9 +2562,16 @@ function BBF.RefreshAllAuraFrames()
             PersonalBuffFrameFilterAndGrid(BuffFrame)
             --BuffFrame_Update()
         end
+        if BetterBlizzFramesDB.enablePlayerDebuffFiltering then
+            PersonalDebuffFrameFilterAndGrid(DebuffFrame)
+        end
         --PersonalDebuffFrameFilterAndGrid(DebuffFrame)
         AdjustAuras(TargetFrame, "target")
         AdjustAuras(FocusFrame, "focus")
+
+        if ToggleHiddenAurasButton then
+            ToggleHiddenAurasButton:SetPoint("TOPLEFT", BuffFrame, "TOPRIGHT", 2 + BetterBlizzFramesDB.playerAuraSpacingX, 0)
+        end
     else
         if not auraMsgSent then
             auraMsgSent = true
@@ -2527,6 +2580,173 @@ function BBF.RefreshAllAuraFrames()
                 auraMsgSent = false
             end)
         end
+    end
+end
+
+function BBF.SetupMasqueSupport()
+    if Masque then
+        MasqueOn = true
+        MasquePlayerAuras = Masque:Group("Better|cff00c0ffBlizz|rFrames", "Player Auras")
+        MasqueTargetAuras = Masque:Group("Better|cff00c0ffBlizz|rFrames", "Target Auras")
+        MasqueFocusAuras = Masque:Group("Better|cff00c0ffBlizz|rFrames", "Focus Auras")
+        --MasquePartyFrameAuras = Masque:Group("Better|cff00c0ffBlizz|rFrames", "Party Auras")
+
+        function BBF.MasqueUnitFrames(self, msqGroup)
+            for i = 1, MAX_TARGET_BUFFS do
+                local buffName = self:GetName().."Buff"..i
+                if _G[buffName] and _G[buffName]:IsShown() then
+                    addToMasque(buffName, msqGroup)
+                else
+                    break
+                end
+            end
+            for i = 1, 40 do
+                local debuffName = self:GetName().."Debuff"..i
+                if _G[debuffName] and _G[debuffName]:IsShown() then
+                    addToMasque(debuffName, msqGroup)
+                else
+                    break
+                end
+            end
+            if not auraFilteringOn then
+                msqGroup:ReSkin(true)
+            end
+        end
+        hooksecurefunc("TargetFrame_UpdateAuras", function(self)
+            if self == TargetFrame then
+                BBF.MasqueUnitFrames(self, MasqueTargetAuras)
+            elseif self == FocusFrame then
+                BBF.MasqueUnitFrames(self, MasqueFocusAuras)
+            end
+        end)
+
+
+
+        -- function BBF.MasqueUnitFrames(self)
+        --     for i = 1, MAX_TARGET_BUFFS do
+        --         local buffName = self:GetName().."Buff"..i
+        --         if _G[buffName] and _G[buffName]:IsShown() then
+        --             addToMasque(buffName, MasqueUnitFrameAuras)
+        --         else
+        --             break
+        --         end
+        --     end
+        --     for i = 1, 40 do
+        --         local debuffName = self:GetName().."Debuff"..i
+        --         if _G[debuffName] and _G[debuffName]:IsShown() then
+        --             addToMasque(debuffName, MasqueUnitFrameAuras)
+        --         else
+        --             break
+        --         end
+        --     end
+        --     MasqueUnitFrameAuras:ReSkin(true)
+        -- end
+        -- hooksecurefunc("TargetFrame_UpdateAuras", function(self)
+        --     BBF.MasqueUnitFrames(self)
+        -- end)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        function BBF.MasquePlayerAuras()
+            -- Player Buffs
+            for i = 1, BUFF_ACTUAL_DISPLAY do
+                local buffName = "BuffButton"..i
+                if _G[buffName] then
+                    addToMasque(buffName, MasquePlayerAuras)
+                end
+            end
+            -- Player Debuffs
+            for i = 1, DEBUFF_ACTUAL_DISPLAY do
+                local debuffName = "DebuffButton"..i
+                if _G[debuffName] then
+                    addToMasque(debuffName, MasquePlayerAuras)
+                end
+            end
+        end
+        C_Timer.After(3, function()
+            if ToggleHiddenAurasButton then
+                addToMasque("ToggleHiddenAurasButton", MasquePlayerAuras)
+            end
+        end)
+        hooksecurefunc("BuffFrame_Update", BBF.MasquePlayerAuras)
+
+        -- function BBF.MasqueRaidFrames()
+        --     local numGroupMembers = GetNumGroupMembers()
+        --     local isInRaid = IsInRaid()
+        --     local isInGroup = IsInGroup()
+
+        --     if not isInGroup then
+        --         numGroupMembers = 1
+        --     end
+
+        --     -- Iterate over raid frames if in a raid group
+        --     if isInRaid then
+        --         for groupIndex = 1, 8 do
+        --             for memberIndex = 1, 5 do
+        --                 local unitIndex = (groupIndex - 1) * 5 + memberIndex
+        --                 if unitIndex <= numGroupMembers then
+        --                     for buffIndex = 1, 6 do
+        --                         addToMasque("CompactRaidGroup" .. groupIndex .. "Member" .. memberIndex .. "Buff" .. buffIndex, MasquePartyFrameAuras)
+        --                         addToMasque("CompactRaidGroup" .. groupIndex .. "Member" .. memberIndex .. "Debuff" .. buffIndex, MasquePartyFrameAuras)
+        --                     end
+        --                 end
+        --             end
+        --         end
+        --     else
+        --         -- Iterate over party frames if in a party group
+        --         for memberIndex = 1, numGroupMembers do
+        --             for buffIndex = 1, 6 do
+        --                 addToMasque("CompactPartyFrameMember" .. memberIndex .. "Buff" .. buffIndex, MasquePartyFrameAuras)
+        --                 addToMasque("CompactPartyFrameMember" .. memberIndex .. "Debuff" .. buffIndex, MasquePartyFrameAuras)
+        --                 addToMasque("CompactRaidFrame" .. memberIndex .. "Buff" .. buffIndex, MasquePartyFrameAuras)
+        --                 addToMasque("CompactRaidFrame" .. memberIndex .. "Debuff" .. buffIndex, MasquePartyFrameAuras)
+        --                 addToMasque("CompactRaidFrame" .. memberIndex .. "BigDebuffsRaid" .. buffIndex, MasquePartyFrameAuras)
+        --                 addToMasque("CompactPartyFrameMember" .. memberIndex .. "BigDebuffsRaid" .. buffIndex, MasquePartyFrameAuras)
+        --             end
+        --         end
+        --     end
+        -- end
+        -- BBF.MasqueRaidFrames()
+
+        -- function BBF.MasquePartyFrames()
+        --     for memberIndex = 1, 5 do
+        --         for buffIndex = 1, 10 do
+        --             addToMasque("PartyMemberFrame" .. memberIndex .. "Debuff" .. buffIndex, MasquePartyFrameAuras)
+        --             addToMasque("PartyMemberBuffTooltipBuff" .. buffIndex, MasquePartyFrameAuras)
+        --         end
+        --     end
+        -- end
+        -- BBF.MasquePartyFrames()
+
+        -- local eventFrame = CreateFrame("Frame")
+        -- eventFrame:SetScript("OnEvent", BBF.MasqueRaidFrames)
+        -- eventFrame:RegisterEvent("GROUP_ROSTER_UPDATE")
+        -- C_Timer.After(1, function()
+        --     BBF.MasqueRaidFrames()
+        --     --BBF.MasquePartyFrames()
+        -- end)
+
+        -- hooksecurefunc("CompactUnitFrame_UpdateAuras", function()
+        --     MasquePartyFrameAuras:ReSkin(true)
+        -- end)
     end
 end
 
@@ -2544,7 +2764,8 @@ function BBF.HookPlayerAndTargetAuras()
 
     --Hook Player DebuffFrame
     if playerDebuffFilterOn and not playerDebuffsHooked then
-        --hooksecurefunc(DebuffFrame, "UpdateAuraButtons", PersonalDebuffFrameFilterAndGrid)
+        hooksecurefunc("BuffFrame_Update", PersonalDebuffFrameFilterAndGrid)
+        PersonalDebuffFrameFilterAndGrid(DebuffFrame)
         playerDebuffsHooked = true
     end
 

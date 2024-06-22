@@ -416,7 +416,7 @@ local function ChangeName(frame, unit, party, tot)
     if tot then
         frame.cleanName:SetWidth(originalNameObject:GetWidth() + 5)
     else
-        frame.cleanName:SetWidth(originalNameObject:GetWidth() + 10)
+        frame.cleanName:SetWidth(originalNameObject:GetWidth() + 6)
     end
     frame.cleanName:SetHeight(originalNameObject:GetHeight())
     frame.cleanName:SetFont(ogFontName, ogFontHeight, ogFontFlags)
