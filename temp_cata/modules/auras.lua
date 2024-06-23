@@ -996,7 +996,7 @@ local function AdjustAuras(self, frameType)
 
             aura:ClearAllPoints()
             if buffsOnTop then
-                aura:SetPoint("BOTTOMLEFT", self, "BOTTOMLEFT", offsetX, currentYOffset + initialOffsetY)
+                aura:SetPoint("BOTTOMLEFT", self, "BOTTOMLEFT", offsetX, (currentYOffset + initialOffsetY)/auraScale)
             else
                 aura:SetPoint("TOPLEFT", self, "BOTTOMLEFT", offsetX, currentYOffset + initialOffsetY)
             end
