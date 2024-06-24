@@ -3928,7 +3928,6 @@ local function guiFrameAuras()
     targetBuffEnable:SetPoint("TOPLEFT", contentFrame, "BOTTOMLEFT", 64, 140)
     targetBuffEnable:HookScript("OnClick", function ()
         CheckAndToggleCheckboxes(targetBuffEnable)
-        TargetFrame:UpdateAuras()
     end)
 
     local bigEnemyBorderText = contentFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
