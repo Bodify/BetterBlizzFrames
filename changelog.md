@@ -1,3 +1,25 @@
+1.4.5:
+Retail & Cata:
+- Masque: Split single Aura category into Buffs & Debuffs
+
+Cata:
+New Stuff:
+- Added the "OCD Tweaks" setting for cata as well.
+- Added "Hide MultiGroupFrame" setting on PlayerFrame
+- Properly updated darkmode for default actionbars on cata
+
+Bugfixes & Tweaks:
+- More updates on Overshields should now update better on dmg taken
+- Fixed name background popping back up when hide setting is on
+- Fixed player name sometimes moving out of position
+- Fixed Arena Names to rely on Details to get spec names instead of missing Blizzard function (not available in cata)
+- Fixed Party Castbar borders not adjusting for height.
+
+Retail:
+Bugfixes & Tweaks:
+- Castbars should not reset back to white after being re-colored if ClassicFrames is on to allow the classic castbars to look normal.
+- Masque border on auras falling under the "Other auras" category now scales properly if youve changed the scale.
+
 1.4.4:
 Retail & Cata:
 New stuff:

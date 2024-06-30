@@ -142,7 +142,11 @@ function BBF.ShiftNamesCuzOCD()
 end
 
 local function updateArenaName(self, arenaIndex)
-    local specID = GetArenaOpponentSpec(arenaIndex)
+    local specID
+    if Details and Details.realversion >= 134 then
+        local unitGUID = UnitGUID(frame.unit)
+        specID = Details:GetSpecByGUID(unitGUID)
+    end
     local specName = specID and (shortArenaSpecName and specIDToNameShort[specID] or specIDToName[specID])
 
     if specName then
@@ -416,6 +420,12 @@ hooksecurefunc(playerName, "SetText", function(self)
     local hidePlayerName = BetterBlizzFramesDB.hidePlayerName
     updateTextForUnit(self, PlayerFrame, hidePlayerName)
 end)
+if not BetterBlizzFramesDB.biggerHealthbars then
+    hooksecurefunc(playerName, "SetPoint", function(self)
+        local hidePlayerName = BetterBlizzFramesDB.hidePlayerName
+        updateTextForUnit(self, PlayerFrame, hidePlayerName)
+    end)
+end
 local hidePlayerName = BetterBlizzFramesDB.hidePlayerName
 updateTextForUnit(playerName, PlayerFrame, hidePlayerName)
 

@@ -537,6 +537,7 @@ recheckInterruptListener:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED", "player")
 recheckInterruptListener:SetScript("OnEvent", OnEvent)
 
 function BBF.CastbarRecolorWidgets()
+    local classicFrames = C_AddOns.IsAddOnLoaded("ClassicFrames")
     if BetterBlizzFramesDB.castBarInterruptHighlighter or BetterBlizzFramesDB.castBarDelayedInterruptColor then
         highlightStartTime = BetterBlizzFramesDB.castBarInterruptHighlighterStartTime
         highlightEndTime = BetterBlizzFramesDB.castBarInterruptHighlighterEndTime
@@ -599,13 +600,17 @@ function BBF.CastbarRecolorWidgets()
                                                 self:SetStatusBarColor(unpack(middleColor))
                                             else
                                                 targetSpellBarTexture:SetDesaturated(false)
-                                                self:SetStatusBarColor(1,1,1)
+                                                if not classicFrames then
+                                                    self:SetStatusBarColor(1,1,1)
+                                                end
                                             end
                                             self.Spark:SetVertexColor(1,1,1)
                                         end
                                     else
                                         targetSpellBarTexture:SetDesaturated(false)
-                                        self:SetStatusBarColor(1, 1, 1)
+                                        if not classicFrames then
+                                            self:SetStatusBarColor(1,1,1)
+                                        end
                                         self.Spark:SetVertexColor(1,1,1)
                                     end
                                 end
@@ -627,23 +632,31 @@ function BBF.CastbarRecolorWidgets()
                                     self:SetStatusBarColor(unpack(middleColor))
                                 else
                                     targetSpellBarTexture:SetDesaturated(false)
-                                    self:SetStatusBarColor(1,1,1)
+                                    if not classicFrames then
+                                        self:SetStatusBarColor(1,1,1)
+                                    end
                                 end
                                 self.Spark:SetVertexColor(1,1,1)
                             end
                         else
                             targetSpellBarTexture:SetDesaturated(false)
-                            self:SetStatusBarColor(1, 1, 1)
+                            if not classicFrames then
+                                self:SetStatusBarColor(1,1,1)
+                            end
                             self.Spark:SetVertexColor(1,1,1)
                         end
                     else
                         targetSpellBarTexture:SetDesaturated(false)
-                        self:SetStatusBarColor(1, 1, 1)
+                        if not classicFrames then
+                            self:SetStatusBarColor(1,1,1)
+                        end
                         self.Spark:SetVertexColor(1,1,1)
                     end
                 else
                     targetSpellBarTexture:SetDesaturated(false)
-                    self:SetStatusBarColor(1, 1, 1)
+                    if not classicFrames then
+                        self:SetStatusBarColor(1,1,1)
+                    end
                     self.Spark:SetVertexColor(1,1,1)
                 end
             end)
@@ -696,13 +709,17 @@ function BBF.CastbarRecolorWidgets()
                                                 self:SetStatusBarColor(unpack(middleColor))
                                             else
                                                 focusSpellBarTexture:SetDesaturated(false)
-                                                self:SetStatusBarColor(1,1,1)
+                                                if not classicFrames then
+                                                    self:SetStatusBarColor(1,1,1)
+                                                end
                                             end
                                             self.Spark:SetVertexColor(1,1,1)
                                         end
                                     else
                                         focusSpellBarTexture:SetDesaturated(false)
-                                        self:SetStatusBarColor(1, 1, 1)
+                                        if not classicFrames then
+                                            self:SetStatusBarColor(1,1,1)
+                                        end
                                         self.Spark:SetVertexColor(1,1,1)
                                     end
                                 end
@@ -724,23 +741,33 @@ function BBF.CastbarRecolorWidgets()
                                     self:SetStatusBarColor(unpack(middleColor))
                                 else
                                     focusSpellBarTexture:SetDesaturated(false)
+                                    if not classicFrames then
+                                        self:SetStatusBarColor(1,1,1)
+                                    end
+                                end
+                                if not classicFrames then
                                     self:SetStatusBarColor(1,1,1)
                                 end
-                                self.Spark:SetVertexColor(1,1,1)
                             end
                         else
                             focusSpellBarTexture:SetDesaturated(false)
-                            self:SetStatusBarColor(1, 1, 1)
+                            if not classicFrames then
+                                self:SetStatusBarColor(1,1,1)
+                            end
                             self.Spark:SetVertexColor(1,1,1)
                         end
                     else
                         focusSpellBarTexture:SetDesaturated(false)
-                        self:SetStatusBarColor(1, 1, 1)
+                        if not classicFrames then
+                            self:SetStatusBarColor(1,1,1)
+                        end
                         self.Spark:SetVertexColor(1,1,1)
                     end
                 else
                     focusSpellBarTexture:SetDesaturated(false)
-                    self:SetStatusBarColor(1, 1, 1)
+                    if not classicFrames then
+                        self:SetStatusBarColor(1,1,1)
+                    end
                     self.Spark:SetVertexColor(1,1,1)
                 end
             end)

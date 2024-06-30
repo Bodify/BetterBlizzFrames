@@ -18,6 +18,25 @@ local function applySettings(frame, desaturate, colorValue)
     end
 end
 
+-- Hook function for SetVertexColor
+local function OnSetVertexColorHookScript(r, g, b, a)
+    return function(frame, _, _, _, _, flag)
+        if flag ~= "BBFHookSetVertexColor" then
+            frame:SetVertexColor(r, g, b, a, "BBFHookSetVertexColor")
+        end
+    end
+end
+
+-- Function to hook SetVertexColor and keep the color on updates
+function BBF.HookVertexColor(frame, r, g, b, a)
+    frame:SetVertexColor(r, g, b, a, "BBFHookSetVertexColor")
+
+    if not frame.BBFHookSetVertexColor then
+        hooksecurefunc(frame, "SetVertexColor", OnSetVertexColorHookScript(r, g, b, a))
+        frame.BBFHookSetVertexColor = true
+    end
+end
+
 function BBF.UpdateUserDarkModeSettings()
     darkModeUi = BetterBlizzFramesDB.darkModeUi
     darkModeUiAura = BetterBlizzFramesDB.darkModeUiAura
@@ -168,7 +187,7 @@ function BBF.DarkmodeFrames(bypass)
     local lighterVertexColor = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.3) or 1
     local druidComboPoint = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.2) or 1
     local druidComboPointActive = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.1) or 1
-    local actionBarColor = BetterBlizzFramesDB.darkModeActionBars and (vertexColor) or 1
+    local actionBarColor = BetterBlizzFramesDB.darkModeActionBars and (vertexColor + 0.25) or 1
     local birdColor = BetterBlizzFramesDB.darkModeActionBars and (vertexColor + 0.25) or 1
     local rogueCombo = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.45) or 1
     local rogueComboActive = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.30) or 1
@@ -496,17 +515,43 @@ function BBF.DarkmodeFrames(bypass)
 
     -- Actionbars
     for i = 1, 12 do
-        applySettings(_G["ActionButton" .. i .. "NormalTexture"], desaturationValue, actionBarColor)
-        applySettings(_G["MultiBarBottomLeftButton" .. i .. "NormalTexture"], desaturationValue, actionBarColor)
-        applySettings(_G["MultiBarBottomRightButton" ..i.. "NormalTexture"], desaturationValue, actionBarColor)
-        applySettings(_G["MultiBarRightButton" ..i.. "NormalTexture"], desaturationValue, actionBarColor)
-        applySettings(_G["MultiBarLeftButton" ..i.. "NormalTexture"], desaturationValue, actionBarColor)
-        applySettings(_G["MultiBar5Button" ..i.. "NormalTexture"], desaturationValue, actionBarColor)
-        applySettings(_G["MultiBar6Button" ..i.. "NormalTexture"], desaturationValue, actionBarColor)
-        applySettings(_G["MultiBar7Button" ..i.. "NormalTexture"], desaturationValue, actionBarColor)
-        applySettings(_G["PetActionButton" ..i.. "NormalTexture"], desaturationValue, actionBarColor)
-        applySettings(_G["StanceButton" ..i.. "NormalTexture"], desaturationValue, actionBarColor)
+        local buttons = {
+            _G["ActionButton" .. i .. "NormalTexture"],
+            _G["MultiBarBottomLeftButton" .. i .. "NormalTexture"],
+            _G["MultiBarBottomRightButton" .. i .. "NormalTexture"],
+            _G["MultiBarRightButton" .. i .. "NormalTexture"],
+            _G["MultiBarLeftButton" .. i .. "NormalTexture"],
+            _G["MultiBar5Button" .. i .. "NormalTexture"],
+            _G["MultiBar6Button" .. i .. "NormalTexture"],
+            _G["MultiBar7Button" .. i .. "NormalTexture"],
+            _G["PetActionButton" .. i .. "NormalTexture"],
+            _G["StanceButton" .. i .. "NormalTexture"]
+        }
+        
+        for _, button in ipairs(buttons) do
+            applySettings(button, desaturationValue, actionBarColor)
+            BBF.HookVertexColor(button, actionBarColor, actionBarColor, actionBarColor, 1)
+        end
     end
+
+    
+
+    for i = 0, 3 do
+        local buttons = {
+            _G["CharacterBag"..i.."SlotNormalTexture"],
+            _G["MainMenuBarTexture"..i],
+            _G["MainMenuBarTextureExtender"],
+            _G["MainMenuMaxLevelBar"..i]
+        }
+        for _, button in ipairs(buttons) do
+            applySettings(button, desaturationValue, actionBarColor)
+            BBF.HookVertexColor(button, actionBarColor, actionBarColor, actionBarColor, 1)
+        end
+    end
+
+    applySettings(MainMenuBarBackpackButtonNormalTexture, desaturationValue, actionBarColor)
+    BBF.HookVertexColor(MainMenuBarBackpackButtonNormalTexture, actionBarColor, actionBarColor, actionBarColor, 1)
+    
 
     -- for _, v in pairs({
     --     MainMenuBar.BorderArt,

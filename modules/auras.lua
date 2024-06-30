@@ -26,9 +26,12 @@ local math_max = math.max
 local print = print
 
 local Masque
-local MasquePlayerAuras
-local MasqueTargetAuras
-local MasqueFocusAuras
+local MasquePlayerBuffs
+local MasquePlayerDebuffs
+local MasqueTargetBuffs
+local MasqueTargetDebuffs
+local MasqueFocusBuffs
+local MasqueFocusDebuffs
 local MasqueOn
 
 -- Function to add buffs and debuffs to Masque group
@@ -548,6 +551,19 @@ end
 
 local MIN_AURA_SIZE = 17
 local adjustmentForBuffsOnTop = -80  -- Height adjustment when buffs are on top
+
+local function addMasque(frameType)
+    if MasqueOn then
+        if frameType == "target" then
+            MasqueTargetBuffs:ReSkin(true)
+            MasqueTargetDebuffs:ReSkin(true)
+        else
+            MasqueFocusBuffs:ReSkin(true)
+            MasqueFocusDebuffs:ReSkin(true)
+        end
+    end
+end
+
 local function AdjustAuras(self, frameType)
     local adjustedSize = MIN_AURA_SIZE * targetAndFocusSmallAuraScale
     local buffsOnTop = self.buffsOnTop
@@ -580,7 +596,9 @@ local function AdjustAuras(self, frameType)
                     aura.Stealable:SetScale(targetAndFocusSmallAuraScale)
                 end
                 if aura.Border then
-                    aura.Border:SetScale(targetAndFocusSmallAuraScale)
+                    if not MasqueOn then
+                        aura.Border:SetScale(targetAndFocusSmallAuraScale)
+                    end
                 end
                 auraSize = adjustedSize
             end
@@ -1162,13 +1180,7 @@ local function AdjustAuras(self, frameType)
             adjustCastbar(FocusFrame.spellbar, FocusFrameSpellBar)
         end
     end
-    if MasqueOn then
-        if frameType == "target" then
-            MasqueTargetAuras:ReSkin(true)
-        else
-            MasqueFocusAuras:ReSkin(true)
-        end
-    end
+    addMasque(frameType)
 end
 
 -- Function to create the toggle icon
@@ -1806,9 +1818,12 @@ function BBF.SetupMasqueSupport()
     Masque = LibStub("Masque", true)
     if Masque then
         MasqueOn = true
-        MasquePlayerAuras = Masque:Group("Better|cff00c0ffBlizz|rFrames", "Player Auras")
-        MasqueTargetAuras = Masque:Group("Better|cff00c0ffBlizz|rFrames", "Target Auras")
-        MasqueFocusAuras = Masque:Group("Better|cff00c0ffBlizz|rFrames", "Focus Auras")
+        MasquePlayerBuffs = Masque:Group("Better|cff00c0ffBlizz|rFrames", "Player Buffs")
+        MasquePlayerDebuffs = Masque:Group("Better|cff00c0ffBlizz|rFrames", "Player Debuffs")
+        MasqueTargetBuffs = Masque:Group("Better|cff00c0ffBlizz|rFrames", "Target Buffs")
+        MasqueTargetDebuffs = Masque:Group("Better|cff00c0ffBlizz|rFrames", "Target Debuffs")
+        MasqueFocusBuffs = Masque:Group("Better|cff00c0ffBlizz|rFrames", "Focus Buffs")
+        MasqueFocusDebuffs = Masque:Group("Better|cff00c0ffBlizz|rFrames", "Focus Debuffs")
 
         -- Props to Masque Skinner: Blizz Buffs by Cybeloras of Aerie Peak
         local skinned = {}
@@ -1879,32 +1894,40 @@ function BBF.SetupMasqueSupport()
             end
         end
 
-        hooksecurefunc(BuffFrame, "UpdateAuraButtons", makeHook(MasquePlayerAuras, BuffFrame))
-        hooksecurefunc(BuffFrame, "OnEditModeEnter", makeHook(MasquePlayerAuras, BuffFrame))
-        hooksecurefunc(DebuffFrame, "UpdateAuraButtons", makeHook(MasquePlayerAuras, DebuffFrame))
-        hooksecurefunc(DebuffFrame, "OnEditModeEnter", makeHook(MasquePlayerAuras, DebuffFrame))
+        hooksecurefunc(BuffFrame, "UpdateAuraButtons", makeHook(MasquePlayerBuffs, BuffFrame))
+        hooksecurefunc(BuffFrame, "OnEditModeEnter", makeHook(MasquePlayerBuffs, BuffFrame))
+        hooksecurefunc(DebuffFrame, "UpdateAuraButtons", makeHook(MasquePlayerDebuffs, DebuffFrame))
+        hooksecurefunc(DebuffFrame, "OnEditModeEnter", makeHook(MasquePlayerDebuffs, DebuffFrame))
 
         C_Timer.After(1.5, function()
             if toggleIconGlobal then
-                MasquePlayerAuras:AddButton(toggleIconGlobal)
+                MasquePlayerBuffs:AddButton(toggleIconGlobal)
             end
         end)
 
-        -- Function to hook TargetFrame and FocusFrame auras
-        local function hookUnitFrameAuras(frame, group)
+        local function hookUnitFrameAuras(frame, buffGroup, debuffGroup)
             local function updateUnitFrameAuras()
                 for aura in frame.auraPools:EnumerateActive() do
                     if not skinned[aura] then
                         skinned[aura] = true
-                        group:AddButton(aura, {
-                            Icon = aura.Icon,
-                            DebuffBorder = aura.Border,
-                            Cooldown = aura.Cooldown,
-                        })
+                        -- Check if the aura is a debuff
+                        if aura.Border then
+                            debuffGroup:AddButton(aura, {
+                                Icon = aura.Icon,
+                                DebuffBorder = aura.Border,
+                                Cooldown = aura.Cooldown,
+                            })
+                        else
+                            buffGroup:AddButton(aura, {
+                                Icon = aura.Icon,
+                                Cooldown = aura.Cooldown,
+                            })
+                        end
                     end
                 end
                 if not auraFilteringOn then
-                    group:ReSkin(true)
+                    buffGroup:ReSkin(true)
+                    debuffGroup:ReSkin(true)
                 end
             end
 
@@ -1913,9 +1936,8 @@ function BBF.SetupMasqueSupport()
             hooksecurefunc(frame, "UpdateAuras", updateUnitFrameAuras)
         end
 
-        -- Hook for TargetFrame and FocusFrame
-        hookUnitFrameAuras(TargetFrame, MasqueTargetAuras)
-        hookUnitFrameAuras(FocusFrame, MasqueFocusAuras)
+        hookUnitFrameAuras(TargetFrame, MasqueTargetBuffs, MasqueTargetDebuffs)
+        hookUnitFrameAuras(FocusFrame, MasqueFocusBuffs, MasqueFocusDebuffs)
     end
 end
 

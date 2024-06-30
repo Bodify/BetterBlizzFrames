@@ -672,6 +672,31 @@ ClickthroughFrames:RegisterEvent("MODIFIER_STATE_CHANGED")
 
 
 
+function BBF.ActionBarIconZoom()
+    local function applyTexCoord(frame)
+        if frame and frame.SetTexCoord then
+            frame:SetTexCoord(0.06, 0.94, 0.06, 0.94) -- Zoom in slightly
+        end
+    end
+    for i = 1, 12 do
+        local icons = {
+            _G["ActionButton" .. i .. "Icon"],
+            _G["MultiBarBottomLeftButton" .. i .. "Icon"],
+            _G["MultiBarBottomRightButton" .. i .. "Icon"],
+            _G["MultiBarRightButton" .. i .. "Icon"],
+            _G["MultiBarLeftButton" .. i .. "Icon"],
+            _G["MultiBar5Button" .. i .. "Icon"],
+            _G["MultiBar6Button" .. i .. "Icon"],
+            _G["MultiBar7Button" .. i .. "Icon"],
+            _G["PetActionButton" .. i .. "Icon"],
+            _G["StanceButton" .. i .. "Icon"]
+        }
+        for _, icon in ipairs(icons) do
+            applyTexCoord(icon)
+        end
+    end
+end
+
 
 function BBF.MoveToTFrames()
     if not InCombatLockdown() then
@@ -702,102 +727,68 @@ function BBF.MoveToTFrames()
 end
 
 function BBF.FixStupidBlizzPTRShit()
-    -- if InCombatLockdown() then return end
-    -- if isAddonLoaded("ClassicFrames") then return end
-    -- -- For god knows what reason PTR has a gap between Portrait and PlayerFrame. This fixes it + other gaps.
-    -- --PlayerFrame.PlayerFrameContainer.PlayerPortrait:SetScale(1.02)
-    -- PlayerFrame.PlayerFrameContainer.PlayerPortrait:SetSize(64,64)
-    -- PlayerFrame.PlayerFrameContainer.PlayerPortrait:SetPoint("TOPLEFT", PlayerFrame.PlayerFrameContainer, "TOPLEFT", 22, -17)
-    -- PlayerFrame.PlayerFrameContainer.PlayerPortraitMask:SetScale(1.01)
-    -- PlayerFrame.PlayerFrameContainer.PlayerPortraitMask:SetSize(63,63)
-    -- PlayerFrame.PlayerFrameContainer.PlayerPortraitMask:SetPoint("TOPLEFT", PlayerFrame.PlayerFrameContainer, "TOPLEFT", 22, -16)
+    MainMenuBarTextureExtender:Hide()
+    MainMenuBarTexture3:SetPoint("BOTTOM", MainMenuBarArtFrame, "BOTTOM", 367, 0)
+    MainMenuBarTexture3:SetWidth(260)
+    CharacterMicroButton:SetPoint("BOTTOMLEFT", MainMenuBarArtFrame, "BOTTOMLEFT", 548, 2)
+    SpellbookMicroButton:SetPoint("BOTTOMLEFT", CharacterMicroButton, "BOTTOMRIGHT", -3.5, 0)
+    TalentMicroButton:SetPoint("BOTTOMLEFT", SpellbookMicroButton, "BOTTOMRIGHT", -3.5, 0)
+    AchievementMicroButton:SetPoint("BOTTOMLEFT", TalentMicroButton, "BOTTOMRIGHT", -3.5, 0)
+    QuestLogMicroButton:SetPoint("BOTTOMLEFT", AchievementMicroButton, "BOTTOMRIGHT", -3.5, 0)
+    GuildMicroButton:SetPoint("BOTTOMLEFT", QuestLogMicroButton, "BOTTOMRIGHT", -3.5, 0)
+    CollectionsMicroButton:SetPoint("BOTTOMLEFT", GuildMicroButton, "BOTTOMRIGHT", -3.5, 0)
+    PVPMicroButton:SetPoint("BOTTOMLEFT", CollectionsMicroButton, "BOTTOMRIGHT", -3.5, 0)
+    LFGMicroButton:SetPoint("BOTTOMLEFT", PVPMicroButton, "BOTTOMRIGHT", -3.5, 0)
+    EJMicroButton:SetPoint("BOTTOMLEFT", LFGMicroButton, "BOTTOMRIGHT", -3.5, 0)
+    MainMenuMicroButton:SetPoint("BOTTOMLEFT", EJMicroButton, "BOTTOMRIGHT", -3.5, 0)
+    HelpMicroButton:SetPoint("BOTTOMLEFT", MainMenuMicroButton, "BOTTOMRIGHT", -3.5, 0)
 
-    -- local a, b, c, d, e = TargetFrame.totFrame.Portrait:GetPoint()
-    -- TargetFrame.totFrame.Portrait:SetPoint(a, b, c, 6, -4)
-    -- TargetFrame.TargetFrameContainer.Portrait:SetSize(57,57)
+    MainMenuBarBackpackButton:SetPoint("BOTTOMRIGHT", MainMenuBarArtFrame, "BOTTOMRIGHT", -28, 6)
+    CharacterBag1Slot:SetPoint("RIGHT", CharacterBag0Slot, "LEFT", -2, 0)
+    CharacterBag2Slot:SetPoint("RIGHT", CharacterBag1Slot, "LEFT", -2, 0)
+    CharacterBag3Slot:SetPoint("RIGHT", CharacterBag2Slot, "LEFT", -2, 0)
 
-    -- local a, b, c, d, e = FocusFrame.totFrame.Portrait:GetPoint()
-    -- FocusFrame.totFrame.Portrait:SetPoint(a, b, c, 6, -4)
-
-    -- for i = 1, 4 do
-    --     local memberFrame = PartyFrame["MemberFrame" .. i]
-    --     if memberFrame and memberFrame.Portrait then
-    --         memberFrame.Portrait:SetHeight(38)
-    --     end
-    -- end
-
-    -- --BBF.ShiftNamesCuzOCD()
-
-    -- local a, b, c, d, e = TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:GetPoint()
-    -- TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:SetPoint(a, b, c, d, -24)
-    -- --TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:SetHeight()
-
-    -- local a, b, c, d, e = FocusFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:GetPoint()
-    -- FocusFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:SetPoint(a, b, c, d, -24)
-    -- TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:SetHeight(20)
-
-    -- FocusFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:SetHeight(20)
-    
+    MainMenuBarBackpackButton:SetSize(32,32)
+    MainMenuBarBackpackButtonNormalTexture:SetSize(51,52)
+    for i = 0, 3 do
+        local border = _G["CharacterBag"..i.."SlotNormalTexture"]
+        local icon = _G["CharacterBag"..i.."SlotIconTexture"]
+        icon:SetSize(32,33)
+        icon:SetTexCoord(0.06, 0.94, 0.06, 0.94)
+        border:SetSize(52,53)
+    end
 
 
 
-    -- local a, b, c, d, e = TargetFrame.TargetFrameContent.TargetFrameContentMain.LevelText:GetPoint()
-    -- TargetFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetPoint(a, b, c, d, -3)
+    MainMenuExpBar:SetWidth(1012)
+    MainMenuExpBar:SetPoint("TOP", MainMenuBar, "TOP", -10, 0)
+    MainMenuXPBarTexture0:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", -383, 3)
+    MainMenuXPBarTexture0:SetWidth(254)
+    MainMenuXPBarTexture1:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", -128, 3)
+    MainMenuXPBarTexture1:SetWidth(254)
+    MainMenuXPBarTexture2:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", 124, 3)
+    MainMenuXPBarTexture2:SetWidth(254)
+    MainMenuXPBarTexture3:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", 379, 3)
+    MainMenuXPBarTexture3:SetWidth(254)
+    MainMenuBarRightEndCap:SetPoint("BOTTOM", MainMenuBarArtFrame, "BOTTOM", 531, 0)
 
-    -- local a, b, c, d, e = FocusFrame.TargetFrameContent.TargetFrameContentMain.LevelText:GetPoint()
-    -- FocusFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetPoint(a, b, c, d, -3)
+    MainMenuMaxLevelBar0:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", -383, 3)
+    MainMenuMaxLevelBar0:SetWidth(254)
+    MainMenuMaxLevelBar1:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", -128, 3)
+    MainMenuMaxLevelBar1:SetWidth(254)
+    MainMenuMaxLevelBar2:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", 124, 3)
+    MainMenuMaxLevelBar2:SetWidth(254)
+    MainMenuMaxLevelBar3:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", 379, 3)
+    MainMenuMaxLevelBar3:SetWidth(254)
 
-    -- -- HealthBarColorActive
-    -- if not BetterBlizzFramesDB.playerFrameOCDTextureBypass then
-    --     local a, b, c, d, e = PlayerLevelText:GetPoint()
-    --     PlayerLevelText:SetPoint(a,b,c,d,-28)
-    --     PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarArea.HealthBar.HealthBarMask:SetHeight(33)
-    --     PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar.ManaBarMask:SetPoint("TOPLEFT", PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar, "TOPLEFT", -2, 3)
-    --     PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar.ManaBarMask:SetHeight(17)
-    --     PlayerFrame.healthbar:SetHeight(21)
-    --     PlayerFrame.manabar:SetSize(125,12)
-    --     local p, r, rr, x, y = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar.RightText:GetPoint()
-    --     PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar.RightText:SetPoint(p, r, rr, -3, 0)
-    --     --local a, b, c, d, e = TargetFrame.TargetFrameContent.TargetFrameContentMain.Name:GetPoint()
-    --     --TargetFrame.TargetFrameContent.TargetFrameContentMain.Name:ClearAllPoints()
-    --     --TargetFrame.TargetFrameContent.TargetFrameContentMain.Name:SetPoint(a, b, c, d, 99)
-    --     TargetFrame.TargetFrameContent.TargetFrameContentMain.HealthBar.HealthBarMask:SetWidth(129)
-    --     TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar:SetSize(136, 10)
-    --     TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.ManaBarMask:SetSize(258, 16)
-    --     local point, relativeTo, relativePoint, xOffset, yOffset = TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar:GetPoint()
-    --     TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar:SetPoint(point, relativeTo, relativePoint, 9, yOffset)
-    --     local p, r, rr, x, y = TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.RightText:GetPoint()
-    --     TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.RightText:SetPoint(p, r, rr, -14, y)
-    --     local a, b, c, d, e = TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.LeftText:GetPoint()
-    --     TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.LeftText:SetPoint(a,b,c,3,e)
-    --     FocusFrame.TargetFrameContent.TargetFrameContentMain.HealthBar.HealthBarMask:SetWidth(129)
-    --     FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar:SetSize(136, 10)
-    --     FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.ManaBarMask:SetSize(258, 16)
-    --     local point, relativeTo, relativePoint, xOffset, yOffset = FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar:GetPoint()
-    --     FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar:SetPoint(point, relativeTo, relativePoint, 9, yOffset)
-    --     local p, r, rr, x, y = FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.RightText:GetPoint()
-    --     FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.RightText:SetPoint(p, r, rr, -14, y)
-    --     local a, b, c, d, e = FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.LeftText:GetPoint()
-    --     FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.LeftText:SetPoint(a,b,c,3,e)
+    TargetFrameToTPortrait:SetSize(36,36)
+    TargetFrameToTPortrait:SetPoint("TOPLEFT", TargetFrameToT, "TOPLEFT", 5, -5)
+
+    FocusFrameToTPortrait:SetSize(36,36)
+    FocusFrameToTPortrait:SetPoint("TOPLEFT", TargetFrameToT, "TOPLEFT", 5, -5)
 
 
-    --     local a, b, c, d, e = TargetFrame.totFrame.HealthBar:GetPoint()
-    --     TargetFrame.totFrame.HealthBar:SetPoint(a,b,c,-5,-5)
-    --     TargetFrame.totFrame.HealthBar:SetSize(71, 13)
-    --     TargetFrame.totFrame.ManaBar:SetSize(76, 8)
-    --     local a, b, c, d, e = TargetFrame.totFrame.ManaBar:GetPoint()
-    --     TargetFrame.totFrame.ManaBar:SetPoint(a,b,c,-5,3)
-    --     TargetFrame.totFrame.ManaBar.ManaBarMask:SetWidth(130)
-    --     TargetFrame.totFrame.ManaBar.ManaBarMask:SetHeight(17)
-    --     local a, b, c, d, e = FocusFrame.totFrame.HealthBar:GetPoint()
-    --     FocusFrame.totFrame.HealthBar:SetPoint(a,b,c,-5,-5)
-    --     FocusFrame.totFrame.HealthBar:SetSize(71, 13)
-    --     FocusFrame.totFrame.ManaBar:SetSize(77, 10)
-    --     local a, b, c, d, e = FocusFrame.totFrame.ManaBar:GetPoint()
-    --     FocusFrame.totFrame.ManaBar:SetPoint(a,b,c,-5,3)
-    --     FocusFrame.totFrame.ManaBar.ManaBarMask:SetWidth(130)
-    --     FocusFrame.totFrame.ManaBar.ManaBarMask:SetHeight(17)
-    -- end
+    BBF.ActionBarIconZoom()
 end
 
 local function TurnTestModesOff()

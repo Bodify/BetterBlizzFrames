@@ -25,6 +25,22 @@ local function applyAlpha(frame, alpha)
     end
 end
 
+local OnSetVertexColorHookScript = function(r, g, b, a)
+    return function(texture, red, green, blue, alpha, flag)
+        if flag ~= "BBFHookSetVertexColor" then
+            texture:SetVertexColor(r, g, b, a, "BBFHookSetVertexColor")
+        end
+    end
+end
+
+function BBF.SetTextureColor(texture, r, g, b, a)
+    texture:SetVertexColor(r, g, b, a, "BBFHookSetVertexColor")
+
+    if (not texture.BBFHookSetVertexColor) then
+        hooksecurefunc(texture, "SetVertexColor", OnSetVertexColorHookScript(r, g, b, a))
+        texture.BBFHookSetVertexColor = true
+    end
+end
 
 
 
@@ -193,7 +209,8 @@ function BBF.HideFrames()
 
         -- Hide reputation color on target frame (color tint behind name)
         if BetterBlizzFramesDB.hideTargetReputationColor then
-            BBF.SetAlphaRegion(TargetFrameNameBackground)
+            --BBF.SetAlphaRegion(TargetFrameNameBackground)
+            BBF.SetTextureColor(TargetFrameNameBackground, 1, 1, 1, 0)
             --TargetFrameNameBackground:Hide()
             --TargetFrameBackground:SetHeight(42)
             -- BBF.HookAndDo(TargetFrameBackground, "SetHeight", function(frame)
@@ -210,7 +227,8 @@ function BBF.HideFrames()
         end
 
         if BetterBlizzFramesDB.hideFocusReputationColor then
-            BBF.SetAlphaRegion(FocusFrameNameBackground)
+            --BBF.SetAlphaRegion(FocusFrameNameBackground)
+            BBF.SetTextureColor(FocusFrameNameBackground, 1, 1, 1, 0)
             --FocusFrameNameBackground:Hide()
 
             --FocusFrameBackground:SetHeight(42)
@@ -541,6 +559,22 @@ function BBF.HideFrames()
         local focusToTAlpha = BetterBlizzFramesDB.hideFocusToT and 0 or 1
         TargetFrameToT:SetAlpha(targetToTAlpha)
         FocusFrameToT:SetAlpha(focusToTAlpha)
+
+        -- Hide MultiGroupFrame
+        if BetterBlizzFramesDB.hideMultiGroupFrame then
+            local multiGroupFrame
+            for i = 1, PlayerFrame:GetNumChildren() do
+                local child = select(i, PlayerFrame:GetChildren())
+                if child:IsObjectType("Frame") and child.MultiGroupFrame then
+                    multiGroupFrame = child.MultiGroupFrame
+                    break
+                end
+            end
+
+            if multiGroupFrame then
+                multiGroupFrame:SetAlpha(0)
+            end
+        end
 
         -- Hide Stance Bar
         if BetterBlizzFramesDB.hideStanceBar then

@@ -337,6 +337,7 @@ local function CreateAbsorbBar(frame)
     PlayerFrameTexture:GetParent():SetFrameLevel(56)--5
     TargetFrameTextureFrame:SetFrameLevel(55)
     FocusFrameTextureFrame:SetFrameLevel(55)
+    TargetFrameToT:SetFrameLevel(56)
 
     -- Maintain the aspect ratio of the texture
     local tex = absorbBar:GetStatusBarTexture()
@@ -624,6 +625,11 @@ local function OnEvent(self, event, ...)
                 --     RefreshUnit(CataAbsorb.allstates, unit)
                 -- end
                 -- Directly refresh the unit if its name matches
+                local unit = relevantUnits[destName]
+                if unit then
+                    RefreshUnit(CataAbsorb.allstates, unit)
+                end
+            elseif subEvent == "SPELL_ABSORBED" then
                 local unit = relevantUnits[destName]
                 if unit then
                     RefreshUnit(CataAbsorb.allstates, unit)

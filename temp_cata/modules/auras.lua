@@ -26,9 +26,12 @@ local math_max = math.max
 local print = print
 
 local Masque = LibStub("Masque", true)
-local MasquePlayerAuras
-local MasqueTargetAuras
-local MasqueFocusAuras
+local MasquePlayerBuffs
+local MasquePlayerDebuffs
+local MasqueTargetBuffs
+local MasqueTargetDebuffs
+local MasqueFocusBuffs
+local MasqueFocusDebuffs
 local MasqueOn
 
 -- Function to add buffs and debuffs to Masque group
@@ -848,6 +851,18 @@ local spammyAuras = {
 
 local function getSpammyGroup(spellId)
     return spammyAuras[spellId]
+end
+
+local function addMasque(frameType)
+    if MasqueOn then
+        if frameType == "target" then
+            MasqueTargetBuffs:ReSkin(true)
+            MasqueTargetDebuffs:ReSkin(true)
+        else
+            MasqueFocusBuffs:ReSkin(true)
+            MasqueFocusDebuffs:ReSkin(true)
+        end
+    end
 end
 
 local function AdjustAuras(self, frameType)
@@ -1709,13 +1724,7 @@ local function AdjustAuras(self, frameType)
             adjustCastbar(FocusFrame.spellbar, FocusFrameSpellBar)
         end
     end
-    if MasqueOn then
-        if frameType == "target" then
-            MasqueTargetAuras:ReSkin(true)
-        else
-            MasqueFocusAuras:ReSkin(true)
-        end
-    end
+    addMasque(frameType)
 end
 
 
@@ -1864,7 +1873,7 @@ local function CreateToggleIcon()
     end
 
     if BetterBlizzFramesDB.enableMasque then
-        addToMasque(toggleIcon, MasquePlayerAuras)
+        addToMasque(toggleIcon, MasquePlayerBuffs)
     end
     -------
     toggleIcon.icon = Icon
@@ -2586,37 +2595,45 @@ end
 function BBF.SetupMasqueSupport()
     if Masque then
         MasqueOn = true
-        MasquePlayerAuras = Masque:Group("Better|cff00c0ffBlizz|rFrames", "Player Auras")
-        MasqueTargetAuras = Masque:Group("Better|cff00c0ffBlizz|rFrames", "Target Auras")
-        MasqueFocusAuras = Masque:Group("Better|cff00c0ffBlizz|rFrames", "Focus Auras")
-        --MasquePartyFrameAuras = Masque:Group("Better|cff00c0ffBlizz|rFrames", "Party Auras")
+        MasquePlayerBuffs = Masque:Group("Better|cff00c0ffBlizz|rFrames", "Player Buffs")
+        MasquePlayerDebuffs = Masque:Group("Better|cff00c0ffBlizz|rFrames", "Player Debuffs")
+        MasqueTargetBuffs = Masque:Group("Better|cff00c0ffBlizz|rFrames", "Target Buffs")
+        MasqueTargetDebuffs = Masque:Group("Better|cff00c0ffBlizz|rFrames", "Target Debuffs")
+        MasqueFocusBuffs = Masque:Group("Better|cff00c0ffBlizz|rFrames", "Focus Buffs")
+        MasqueFocusDebuffs = Masque:Group("Better|cff00c0ffBlizz|rFrames", "Focus Debuffs")
 
-        function BBF.MasqueUnitFrames(self, msqGroup)
+        function BBF.MasqueUnitFrames(self, buffGroup, debuffGroup)
+            -- Handling Buffs
             for i = 1, MAX_TARGET_BUFFS do
                 local buffName = self:GetName().."Buff"..i
                 if _G[buffName] and _G[buffName]:IsShown() then
-                    addToMasque(buffName, msqGroup)
+                    addToMasque(buffName, buffGroup)
                 else
                     break
                 end
             end
+
+            -- Handling Debuffs
             for i = 1, 40 do
                 local debuffName = self:GetName().."Debuff"..i
                 if _G[debuffName] and _G[debuffName]:IsShown() then
-                    addToMasque(debuffName, msqGroup)
+                    addToMasque(debuffName, debuffGroup)
                 else
                     break
                 end
             end
+
             if not auraFilteringOn then
-                msqGroup:ReSkin(true)
+                buffGroup:ReSkin(true)
+                debuffGroup:ReSkin(true)
             end
         end
+
         hooksecurefunc("TargetFrame_UpdateAuras", function(self)
             if self == TargetFrame then
-                BBF.MasqueUnitFrames(self, MasqueTargetAuras)
+                BBF.MasqueUnitFrames(self, MasqueTargetBuffs, MasqueTargetDebuffs)
             elseif self == FocusFrame then
-                BBF.MasqueUnitFrames(self, MasqueFocusAuras)
+                BBF.MasqueUnitFrames(self, MasqueFocusBuffs, MasqueFocusDebuffs)
             end
         end)
 
@@ -2670,20 +2687,20 @@ function BBF.SetupMasqueSupport()
             for i = 1, BUFF_ACTUAL_DISPLAY do
                 local buffName = "BuffButton"..i
                 if _G[buffName] then
-                    addToMasque(buffName, MasquePlayerAuras)
+                    addToMasque(buffName, MasquePlayerBuffs)
                 end
             end
             -- Player Debuffs
             for i = 1, DEBUFF_ACTUAL_DISPLAY do
                 local debuffName = "DebuffButton"..i
                 if _G[debuffName] then
-                    addToMasque(debuffName, MasquePlayerAuras)
+                    addToMasque(debuffName, MasquePlayerDebuffs)
                 end
             end
         end
         C_Timer.After(3, function()
             if ToggleHiddenAurasButton then
-                addToMasque("ToggleHiddenAurasButton", MasquePlayerAuras)
+                addToMasque("ToggleHiddenAurasButton", MasquePlayerBuffs)
             end
         end)
         hooksecurefunc("BuffFrame_Update", BBF.MasquePlayerAuras)

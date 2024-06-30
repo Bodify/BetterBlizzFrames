@@ -5,6 +5,35 @@ local petCastbarCreated = false
 local UnitCastingInfo = UnitCastingInfo
 local UnitChannelInfo = UnitChannelInfo
 
+local function adjustCastBarBorder(castBar, border, adjust, shield, player)
+    -- Default values for width
+    local defaultCastBarWidth = player or 150
+    local defaultBorderWidth = 200
+    local widthAdjustmentFactor = adjust / 50  -- Adjustment per unit width change
+
+    -- Default values for height
+    local defaultCastBarHeight = 10
+    local defaultBorderHeight = 56
+    local heightAdjustmentFactor = 5.00  -- Average adjustment per unit height change
+
+    -- Get current dimensions of the cast bar
+    local currentCastBarWidth = castBar:GetWidth()
+    local currentCastBarHeight = castBar:GetHeight()
+    
+    -- Calculate the new border width based on the current cast bar width
+    local widthDifference = currentCastBarWidth - defaultCastBarWidth
+    local borderWidth = defaultBorderWidth + widthDifference + (widthDifference * widthAdjustmentFactor)
+    
+    -- Calculate the new border height based on the current cast bar height
+    local heightDifference = currentCastBarHeight - defaultCastBarHeight
+    local borderHeight = defaultBorderHeight + (heightDifference * heightAdjustmentFactor)
+
+    -- Apply the new border size
+    border:ClearAllPoints()
+    border:SetPoint("CENTER", castBar, "CENTER", shield and -4 or 0, 0)
+    border:SetSize(borderWidth, shield and borderHeight-1 or borderHeight)
+end
+
 local function GetPartyMemberFrame(unitId)
     if ( (CompactPartyFrameMember1 and CompactPartyFrameMember1:IsShown()) or (CompactRaidFrame1 and CompactRaidFrame1:IsShown()) ) and UnitExists(unitId) then
         local showSelf = BetterBlizzFramesDB.partyCastbarSelf
@@ -73,6 +102,11 @@ function BBF.UpdateCastbars()
                     spellbar:SetScale(BetterBlizzFramesDB.partyCastBarScale)
                     spellbar:SetWidth(BetterBlizzFramesDB.partyCastBarWidth)
                     spellbar:SetHeight(BetterBlizzFramesDB.partyCastBarHeight)
+                    spellbar.Icon:SetDrawLayer("OVERLAY")
+                    spellbar.Text:ClearAllPoints()
+                    spellbar.Text:SetPoint("CENTER", spellbar, "CENTER", 0, 0)
+                    adjustCastBarBorder(spellbar, spellbar.Border, 15)
+                    adjustCastBarBorder(spellbar, spellbar.BorderShield, 12, true)
 
                     if not BetterBlizzFramesDB.showPartyCastBarIcon then
                         spellbar.Icon:SetAlpha(0)
@@ -777,35 +811,6 @@ local function CastingBarFrameMiscAdjustments()
 
     CastingBarFrame.Spark:SetSize(8, BetterBlizzFramesDB.playerCastBarHeight + 9)
     --CastingBarFrame.StandardGlow:SetSize(37, BetterBlizzFramesDB.playerCastBarHeight + 1)
-end
-
-local function adjustCastBarBorder(castBar, border, adjust, shield, player)
-    -- Default values for width
-    local defaultCastBarWidth = player or 150
-    local defaultBorderWidth = 200
-    local widthAdjustmentFactor = adjust / 50  -- Adjustment per unit width change
-
-    -- Default values for height
-    local defaultCastBarHeight = 10
-    local defaultBorderHeight = 56
-    local heightAdjustmentFactor = 5.00  -- Average adjustment per unit height change
-
-    -- Get current dimensions of the cast bar
-    local currentCastBarWidth = castBar:GetWidth()
-    local currentCastBarHeight = castBar:GetHeight()
-    
-    -- Calculate the new border width based on the current cast bar width
-    local widthDifference = currentCastBarWidth - defaultCastBarWidth
-    local borderWidth = defaultBorderWidth + widthDifference + (widthDifference * widthAdjustmentFactor)
-    
-    -- Calculate the new border height based on the current cast bar height
-    local heightDifference = currentCastBarHeight - defaultCastBarHeight
-    local borderHeight = defaultBorderHeight + (heightDifference * heightAdjustmentFactor)
-
-    -- Apply the new border size
-    border:ClearAllPoints()
-    border:SetPoint("CENTER", castBar, "CENTER", shield and -4 or 0, 0)
-    border:SetSize(borderWidth, shield and borderHeight-1 or borderHeight)
 end
 
 local hookedPlayerCastbar = false
