@@ -254,7 +254,16 @@ local defaultSettings = {
     PlayerAuraFrameBuffFilterWatchList = false,
     PlayerAuraFramedeBuffFilterWatchList = false,
 
-
+    -- Interrupt icon
+    castBarInterruptIconScale = 1,
+    castBarInterruptIconXPos = 0,
+    castBarInterruptIconYPos = 0,
+    castBarInterruptIconAnchor = "RIGHT",
+    castBarInterruptIconTarget = true,
+    castBarInterruptIconFocus = true,
+    castBarInterruptIconShowActiveOnly = false,
+    castBarInterruptIconDisplayCD = true,
+    interruptIconBorder = true,
 
     auraWhitelist = {
         {["name"] = "Example Aura :3 (delete me)"}
@@ -727,8 +736,9 @@ function BBF.MoveToTFrames()
 end
 
 function BBF.FixStupidBlizzPTRShit()
+    if C_AddOns.IsAddOnLoaded("Bartender4") then return end
     MainMenuBarTextureExtender:Hide()
-    MainMenuBarTexture3:SetPoint("BOTTOM", MainMenuBarArtFrame, "BOTTOM", 367, 0)
+    MainMenuBarTexture3:SetPoint("BOTTOM", MainMenuBarArtFrame, "BOTTOM", 369, 0)
     MainMenuBarTexture3:SetWidth(260)
     CharacterMicroButton:SetPoint("BOTTOMLEFT", MainMenuBarArtFrame, "BOTTOMLEFT", 548, 2)
     SpellbookMicroButton:SetPoint("BOTTOMLEFT", CharacterMicroButton, "BOTTOMRIGHT", -3.5, 0)
@@ -743,7 +753,7 @@ function BBF.FixStupidBlizzPTRShit()
     MainMenuMicroButton:SetPoint("BOTTOMLEFT", EJMicroButton, "BOTTOMRIGHT", -3.5, 0)
     HelpMicroButton:SetPoint("BOTTOMLEFT", MainMenuMicroButton, "BOTTOMRIGHT", -3.5, 0)
 
-    MainMenuBarBackpackButton:SetPoint("BOTTOMRIGHT", MainMenuBarArtFrame, "BOTTOMRIGHT", -28, 6)
+    MainMenuBarBackpackButton:SetPoint("BOTTOMRIGHT", MainMenuBarArtFrame, "BOTTOMRIGHT", -27, 6)
     CharacterBag1Slot:SetPoint("RIGHT", CharacterBag0Slot, "LEFT", -2, 0)
     CharacterBag2Slot:SetPoint("RIGHT", CharacterBag1Slot, "LEFT", -2, 0)
     CharacterBag3Slot:SetPoint("RIGHT", CharacterBag2Slot, "LEFT", -2, 0)
@@ -769,8 +779,8 @@ function BBF.FixStupidBlizzPTRShit()
     MainMenuXPBarTexture2:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", 124, 3)
     MainMenuXPBarTexture2:SetWidth(254)
     MainMenuXPBarTexture3:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", 379, 3)
-    MainMenuXPBarTexture3:SetWidth(254)
-    MainMenuBarRightEndCap:SetPoint("BOTTOM", MainMenuBarArtFrame, "BOTTOM", 531, 0)
+    MainMenuXPBarTexture3:SetWidth(255)
+    MainMenuBarRightEndCap:SetPoint("BOTTOM", MainMenuBarArtFrame, "BOTTOM", 532, 0)
 
     MainMenuMaxLevelBar0:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", -383, 3)
     MainMenuMaxLevelBar0:SetWidth(254)
@@ -779,13 +789,13 @@ function BBF.FixStupidBlizzPTRShit()
     MainMenuMaxLevelBar2:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", 124, 3)
     MainMenuMaxLevelBar2:SetWidth(254)
     MainMenuMaxLevelBar3:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", 379, 3)
-    MainMenuMaxLevelBar3:SetWidth(254)
+    MainMenuMaxLevelBar3:SetWidth(255)
 
-    TargetFrameToTPortrait:SetSize(36,36)
-    TargetFrameToTPortrait:SetPoint("TOPLEFT", TargetFrameToT, "TOPLEFT", 5, -5)
+    --TargetFrameToTPortrait:SetSize(36,36)
+    --TargetFrameToTPortrait:SetPoint("TOPLEFT", TargetFrameToT, "TOPLEFT", 5, -5)
 
-    FocusFrameToTPortrait:SetSize(36,36)
-    FocusFrameToTPortrait:SetPoint("TOPLEFT", TargetFrameToT, "TOPLEFT", 5, -5)
+    --FocusFrameToTPortrait:SetSize(36,36)
+    --FocusFrameToTPortrait:SetPoint("TOPLEFT", TargetFrameToT, "TOPLEFT", 5, -5)
 
 
     BBF.ActionBarIconZoom()
@@ -864,6 +874,7 @@ Frame:SetScript("OnEvent", function(...)
                 if BetterBlizzFramesDB.biggerHealthbars then
                     BBF.HookBiggerHealthbars()
                 end
+                BBF.ToggleCastbarInterruptIcon()
                 BBF.UpdateUserTargetSettings()
                 BBF.UpdateCastbars()
                 BBF.ChangeCastbarSizes()

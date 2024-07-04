@@ -5,7 +5,7 @@ local petCastbarCreated = false
 local UnitCastingInfo = UnitCastingInfo
 local UnitChannelInfo = UnitChannelInfo
 
-local function adjustCastBarBorder(castBar, border, adjust, shield, player)
+local function adjustCastBarBorder(castBar, border, adjust, shield, player, party)
     -- Default values for width
     local defaultCastBarWidth = player or 150
     local defaultBorderWidth = 200
@@ -13,7 +13,7 @@ local function adjustCastBarBorder(castBar, border, adjust, shield, player)
 
     -- Default values for height
     local defaultCastBarHeight = 10
-    local defaultBorderHeight = 56
+    local defaultBorderHeight = party and 55 or 56
     local heightAdjustmentFactor = 5.00  -- Average adjustment per unit height change
 
     -- Get current dimensions of the cast bar
@@ -105,8 +105,13 @@ function BBF.UpdateCastbars()
                     spellbar.Icon:SetDrawLayer("OVERLAY")
                     spellbar.Text:ClearAllPoints()
                     spellbar.Text:SetPoint("CENTER", spellbar, "CENTER", 0, 0)
-                    adjustCastBarBorder(spellbar, spellbar.Border, 15)
-                    adjustCastBarBorder(spellbar, spellbar.BorderShield, 12, true)
+                    adjustCastBarBorder(spellbar, spellbar.Border, 15, nil, nil, true)
+                    adjustCastBarBorder(spellbar, spellbar.BorderShield, 12, true, nil, true)
+
+                    if BetterBlizzFramesDB.partyCastbarHideBorder then
+                        spellbar.Border:SetAlpha(0)
+                        spellbar.BorderShield:SetAlpha(0)
+                    end
 
                     if not BetterBlizzFramesDB.showPartyCastBarIcon then
                         spellbar.Icon:SetAlpha(0)
@@ -215,6 +220,11 @@ function BBF.CreateCastbars()
             spellbar:SetScale(BetterBlizzFramesDB.partyCastBarScale)
             spellbar:SetWidth(BetterBlizzFramesDB.partyCastBarWidth)
             spellbar:SetHeight(BetterBlizzFramesDB.partyCastBarHeight)
+
+            if BetterBlizzFramesDB.partyCastbarHideBorder then
+                spellbar.Border:SetAlpha(0)
+                spellbar.BorderShield:SetAlpha(0)
+            end
 
             spellbar.Timer = spellbar:CreateFontString(nil, "OVERLAY", "SystemFont_Shadow_Med1_Outline")
             spellbar.Timer:SetPoint("LEFT", spellbar, "RIGHT", 5, 0)

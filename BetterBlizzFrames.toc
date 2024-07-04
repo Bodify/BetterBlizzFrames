@@ -22,5 +22,6 @@ modules\nahjProfile.lua
 modules\chatFrame.lua
 modules\overShields.lua
 modules\stealthIndicator.lua
+temp_cata\modules\interruptIcon.lua
 gui.lua
 BetterBlizzFrames.lua

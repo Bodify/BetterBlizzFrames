@@ -1692,7 +1692,7 @@ local function guiGeneralTab()
 
     local playerFrameOCD = CreateCheckbox("playerFrameOCD", "OCD Tweaks", BetterBlizzFrames, nil, BBF.FixStupidBlizzPTRShit)
     playerFrameOCD:SetPoint("TOPLEFT", hideBossFrames, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltipTwo(playerFrameOCD, "OCD Tweaks", "Fixes some of Blizzards laziness with the UI.\n\nFixes Actionbar layout & centers it properly.\nGap between frame and portrait on ToT frames.\nAdds minor zoom on actionbar icons so the double border effect gets removed.")
+    CreateTooltipTwo(playerFrameOCD, "OCD Tweaks", "Fixes some of Blizzards laziness with the UI.\n\nFixes Actionbar layout & centers it properly.\nAdds minor zoom on actionbar icons so the double border effect gets removed.")
     --notWorking(playerFrameOCD, true)
 
     local playerFrameOCDTextureBypass = CreateCheckbox("playerFrameOCDTextureBypass", "OCD: Skip Bars", BetterBlizzFrames, nil, BBF.HideFrames)
@@ -2745,6 +2745,9 @@ local function guiCastbars()
     local showPartyCastBarIcon = CreateCheckbox("showPartyCastBarIcon", "Icon", contentFrame, nil, BBF.partyCastBarTestMode)
     showPartyCastBarIcon:SetPoint("TOPLEFT", partyCastBarTestMode, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
 
+    local partyCastbarHideBorder = CreateCheckbox("partyCastbarHideBorder", "Hide borders", contentFrame, nil, BBF.partyCastBarTestMode)
+    partyCastbarHideBorder:SetPoint("TOPLEFT", showPartyCastBarIcon, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+
     local resetPartyCastbar = CreateFrame("Button", nil, contentFrame, "UIPanelButtonTemplate")
     resetPartyCastbar:SetText("Reset")
     resetPartyCastbar:SetWidth(70)
@@ -3364,6 +3367,10 @@ local function guiCastbars()
     castBarRecolorInterrupt:SetPoint("LEFT", contentFrame, "TOPRIGHT", -435, -465)
     CreateTooltip(castBarRecolorInterrupt, "Checks if you have interrupt ready\nand colors Target & Focus castbar thereafter.")
 
+    local castBarInterruptIconEnabled = CreateCheckbox("castBarInterruptIconEnabled", "Interrupt CD Icon", contentFrame, nil, BBF.UpdateInterruptIconSettings)
+    castBarInterruptIconEnabled:SetPoint("BOTTOMLEFT", castBarRecolorInterrupt, "TOPLEFT", 0, -pixelsBetweenBoxes)
+    CreateTooltipTwo(castBarInterruptIconEnabled, "Interrupt CD Icon", "Shows your interrupt CD next to the enemy castbars.\nMore settings in Advanced Settings", "Needs a few tweaks still for pet class interrupts etc.")
+
     local castBarNoInterruptColor = CreateFrame("Button", nil, castBarRecolorInterrupt, "UIPanelButtonTemplate")
     castBarNoInterruptColor:SetText("Interrupt on CD")
     castBarNoInterruptColor:SetPoint("TOPLEFT", castBarRecolorInterrupt, "BOTTOMRIGHT", -35, 3)
@@ -3395,13 +3402,13 @@ local function guiCastbars()
 
     local buffsOnTopReverseCastbarMovement = CreateCheckbox("buffsOnTopReverseCastbarMovement", "Buffs on Top: Reverse Castbar Movement", contentFrame, nil, BBF.CastbarAdjustCaller)
     buffsOnTopReverseCastbarMovement:SetPoint("LEFT", contentFrame, "TOPRIGHT", -470, -555)
-    CreateTooltip(buffsOnTopReverseCastbarMovement, "Changes the castbar movement to follow the top row of auras on Target/Focus Frame\nsimilar to how it works by default without \"Buffs on Top\" enabled except in reverse.")
-    notWorking(buffsOnTopReverseCastbarMovement, true)
+    CreateTooltipTwo(buffsOnTopReverseCastbarMovement, "Reverse Castbar Movement", "Changes the castbar movement to follow the top row of auras on Target/Focus Frame when \"Buffs on Top\" is activated. Similar to how it works by default without \"Buffs on Top\" enabled except it's in reverse and moves upwards.")
+    --notWorking(buffsOnTopReverseCastbarMovement, true)
 
-    local normalCastbarForEmpoweredCasts = CreateCheckbox("normalCastbarForEmpoweredCasts", "Normal Evoker Empowered Castbar", contentFrame, nil, BBF.HookCastbarsForEvoker)
-    normalCastbarForEmpoweredCasts:SetPoint("TOPLEFT", buffsOnTopReverseCastbarMovement, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltip(normalCastbarForEmpoweredCasts, "Change Evoker empowered castbars to look like normal ones. (Easier to see if you can interrupt)")
-    notWorking(normalCastbarForEmpoweredCasts, true)
+    -- local normalCastbarForEmpoweredCasts = CreateCheckbox("normalCastbarForEmpoweredCasts", "Normal Evoker Empowered Castbar", contentFrame, nil, BBF.HookCastbarsForEvoker)
+    -- normalCastbarForEmpoweredCasts:SetPoint("TOPLEFT", buffsOnTopReverseCastbarMovement, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    -- CreateTooltip(normalCastbarForEmpoweredCasts, "Change Evoker empowered castbars to look like normal ones. (Easier to see if you can interrupt)")
+    -- notWorking(normalCastbarForEmpoweredCasts, true)
 end
 
 local function guiPositionAndScale()
@@ -3768,6 +3775,61 @@ local function guiPositionAndScale()
         BBF.RacialIndicatorCaller()
     end)
     CreateTooltip(focusRacialIndicator, "Show on FocusFrame")
+
+   ----------------------
+    -- Castbar Interrupt Icon
+    ----------------------
+    local anchorSubInterruptIcon = contentFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    anchorSubInterruptIcon:SetPoint("CENTER", mainGuiAnchor2, "CENTER", fourthLineX - 120, secondLineY-15)
+    anchorSubInterruptIcon:SetText("Interrupt Icon")
+
+    --CreateBorderBox(anchorSubInterruptIcon)
+    CreateBorderedFrame(anchorSubInterruptIcon, 200, 293, 0, -98, BetterBlizzFramesSubPanel)
+
+    local castBarInterruptIcon = contentFrame:CreateTexture(nil, "ARTWORK")
+    castBarInterruptIcon:SetTexture("Interface\\Icons\\ability_ambush")
+    castBarInterruptIcon:SetSize(34, 34)
+    castBarInterruptIcon:SetPoint("BOTTOM", anchorSubInterruptIcon, "TOP", 0, 0)
+    CreateTooltip(castBarInterruptIcon, "Show interrupt icon next to castbar")
+
+    local castBarInterruptIconScale = CreateSlider(contentFrame, "Size", 0.1, 1.9, 0.01, "castBarInterruptIconScale")
+    castBarInterruptIconScale:SetPoint("TOP", anchorSubInterruptIcon, "BOTTOM", 0, -15)
+
+    local castBarInterruptIconXPos = CreateSlider(contentFrame, "x offset", -100, 100, 1, "castBarInterruptIconXPos", "X")
+    castBarInterruptIconXPos:SetPoint("TOP", castBarInterruptIconScale, "BOTTOM", 0, -15)
+
+    local castBarInterruptIconYPos = CreateSlider(contentFrame, "y offset", -100, 100, 1, "castBarInterruptIconYPos", "Y")
+    castBarInterruptIconYPos:SetPoint("TOP", castBarInterruptIconXPos, "BOTTOM", 0, -15)
+
+    local castBarInterruptIconAnchorDropdown = CreateAnchorDropdown(
+        "castBarInterruptIconAnchorDropdown",
+        contentFrame,
+        "Select Anchor Point",
+        "castBarInterruptIconAnchor",
+        function(arg1)
+        BBF.UpdateInterruptIconSettings()
+    end,
+        { anchorFrame = castBarInterruptIconYPos, x = -16, y = -35, label = "Anchor" }
+    )
+
+    local castBarInterruptIconTarget = CreateCheckbox("castBarInterruptIconTarget", "Target", contentFrame, nil, BBF.UpdateInterruptIconSettings)
+    castBarInterruptIconTarget:SetPoint("TOPLEFT", castBarInterruptIconAnchorDropdown, "BOTTOMLEFT", 24, pixelsBetweenBoxes)
+    CreateTooltipTwo(castBarInterruptIconTarget, "Show on Target")
+
+    local castBarInterruptIconFocus = CreateCheckbox("castBarInterruptIconFocus", "Focus", contentFrame, nil, BBF.UpdateInterruptIconSettings)
+    castBarInterruptIconFocus:SetPoint("LEFT", castBarInterruptIconTarget.text, "RIGHT", 5, 0)
+    CreateTooltipTwo(castBarInterruptIconFocus, "Show on Focus")
+
+    local castBarInterruptIconShowActiveOnly = CreateCheckbox("castBarInterruptIconShowActiveOnly", "Only show icon if available", contentFrame, nil, BBF.UpdateInterruptIconSettings)
+    castBarInterruptIconShowActiveOnly:SetPoint("TOPLEFT", castBarInterruptIconTarget, "BOTTOMLEFT", -28, pixelsBetweenBoxes)
+    CreateTooltipTwo(castBarInterruptIconShowActiveOnly, "Only show icon if available", "Hides the icon if interrupt is on cooldown")
+
+    local interruptIconBorder = CreateCheckbox("interruptIconBorder", "Border Status Color", contentFrame, nil, BBF.UpdateInterruptIconSettings)
+    interruptIconBorder:SetPoint("TOPLEFT", castBarInterruptIconShowActiveOnly, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(interruptIconBorder, "Border Status Color", "Colors the border on the icon after interrupt status.\nBy default red if on cooldown, purple if will be ready before cast ends and green if ready.")
+
+
+
 
     local reloadUiButton2 = CreateFrame("Button", nil, BetterBlizzFramesSubPanel, "UIPanelButtonTemplate")
     reloadUiButton2:SetText("Reload UI")

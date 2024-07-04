@@ -229,6 +229,15 @@ local defaultSettings = {
     PlayerAuraFrameBuffFilterWatchList = false,
     PlayerAuraFramedeBuffFilterWatchList = false,
 
+    -- Interrupt icon
+    castBarInterruptIconScale = 1,
+    castBarInterruptIconXPos = 0,
+    castBarInterruptIconYPos = 0,
+    castBarInterruptIconAnchor = "RIGHT",
+    castBarInterruptIconTarget = true,
+    castBarInterruptIconFocus = true,
+    castBarInterruptIconShowActiveOnly = false,
+    castBarInterruptIconDisplayCD = true,
 
 
     auraWhitelist = {
@@ -1124,6 +1133,7 @@ Frame:SetScript("OnEvent", function(...)
                 if not isAddonLoaded("ClassicFrames") then
                     BBF.SetCenteredNamesCaller()
                 end
+                BBF.ToggleCastbarInterruptIcon()
                 BBF.DarkmodeFrames()
                 BBF.PlayerReputationColor()
                 BBF.ClassColorPlayerName()
