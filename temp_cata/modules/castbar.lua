@@ -34,33 +34,35 @@ local function adjustCastBarBorder(castBar, border, adjust, shield, player, part
     border:SetSize(borderWidth, shield and borderHeight-1 or borderHeight)
 end
 
-local function GetPartyMemberFrame(unitId)
-    if ( (CompactPartyFrameMember1 and CompactPartyFrameMember1:IsShown()) or (CompactRaidFrame1 and CompactRaidFrame1:IsShown()) ) and UnitExists(unitId) then
-        local showSelf = BetterBlizzFramesDB.partyCastbarSelf
-        for i = 1, 5 do
-            local frame = _G["CompactPartyFrameMember"..i] or _G["CompactRaidFrame"..i]
-            if frame and unitId and frame.unit and UnitIsUnit(frame.unit, unitId) then
-                return frame, nil
-            else
-                if showSelf then
-                    if frame.displayedUnit and UnitIsUnit(frame.displayedUnit, "player") then
-                        unitId = "player"
-                        return frame, unitId
-                    end
-                end
-            end
-        end
-    else
-        for i = 1, 5 do
-            local frame = PartyFrame and PartyFrame["MemberFrame"..i]
-            if frame and unitId and frame.unit and UnitIsUnit(frame.unit, unitId) then
-                return frame, nil
+local function GetPartyMemberFrame(unitId, isPlayer)
+    local frame = nil
+    local isPartyMemberFrame = false
+
+    -- Check CompactPartyFrameMember or CompactRaidFrame
+    for i = 1, 5 do
+        local compactFrame = _G["CompactPartyFrameMember"..i] or _G["CompactRaidFrame"..i] or _G["PartyMemberFrame"..i]
+        if compactFrame and compactFrame:IsShown() and UnitExists(unitId) then
+            if UnitIsUnit(compactFrame.displayedUnit, unitId) then
+                frame = compactFrame
+            elseif isPlayer and UnitIsUnit(compactFrame.displayedUnit, "player") then
+                frame = compactFrame
             end
         end
     end
 
-    return nil, nil
+    -- Check traditional PartyFrame
+    for i = 1, 5 do
+        local partyFrame = PartyFrame and PartyFrame["MemberFrame"..i]
+        if partyFrame and partyFrame:IsShown() and UnitExists(unitId) and UnitIsUnit(partyFrame.unit, unitId) then
+            frame = partyFrame
+            isPartyMemberFrame = true
+        end
+    end
+
+    return frame, isPartyMemberFrame
 end
+
+
 
 local function UpdateCastTimer(self)
     local remainingTime
@@ -88,14 +90,19 @@ local hiddenFrame = CreateFrame("Frame")
 hiddenFrame:Hide()
 
 function BBF.UpdateCastbars()
+    local numGroupMembers = GetNumGroupMembers()
+    local compactFrame = (_G["PartyMemberFrame1"] and _G["PartyMemberFrame1"]:IsShown() and _G["PartyMemberFrame1"])
+                         or (_G["CompactPartyFrameMember1"] and _G["CompactPartyFrameMember1"]:IsShown() and _G["CompactPartyFrameMember1"])
+                         or (_G["CompactRaidFrame1"] and _G["CompactRaidFrame1"]:IsShown() and _G["CompactRaidFrame1"])
+
     if BetterBlizzFramesDB.showPartyCastbar or BetterBlizzFramesDB.partyCastBarTestMode then
-        local numGroupMembers = GetNumGroupMembers()
-        if numGroupMembers <= 5 then
+        if compactFrame and compactFrame:IsShown() and numGroupMembers <= 5 then
+            local defaultPartyFrame
+            if string.match(compactFrame:GetName(), "PartyMemberFrame") then
+                defaultPartyFrame = true
+                numGroupMembers = numGroupMembers - 1
+            end
             for i = 1, numGroupMembers do
-                local unitId = "party" .. i
-                if BetterBlizzFramesDB.partyCastBarTestMode and numGroupMembers == 1 then
-                    unitId = "player"
-                end
                 local spellbar = spellBars[i]
                 if spellbar then
                     spellbar:SetParent(UIParent)
@@ -122,17 +129,35 @@ function BBF.UpdateCastbars()
                         spellbar.Icon:SetAlpha(1)
                     end
 
-                    local partyFrame, newUnitId = GetPartyMemberFrame(unitId)
-                    if partyFrame then
-                        if newUnitId and UnitIsUnit(partyFrame.unit, "player") then
-                            CastingBarFrame_SetUnit(spellbar, "player", true, true)
-                        else
-                            CastingBarFrame_SetUnit(spellbar, unitId, true, true)
+                    local partyFrame = nil
+
+                    if _G["PartyMemberFrame"..i] and _G["PartyMemberFrame"..i]:IsShown() then
+                        partyFrame = _G["PartyMemberFrame"..i]
+                    elseif _G["CompactPartyFrameMember"..i] and _G["CompactPartyFrameMember"..i]:IsShown() then
+                        partyFrame = _G["CompactPartyFrameMember"..i]
+                    elseif _G["CompactRaidFrame"..i] and _G["CompactRaidFrame"..i]:IsShown() then
+                        partyFrame = _G["CompactRaidFrame"..i]
+                    end
+
+                    if partyFrame and partyFrame:IsShown() then
+                        local xPos = BetterBlizzFramesDB.partyCastBarXPos + 10
+                        local yPos = BetterBlizzFramesDB.partyCastBarYPos
+                        if defaultPartyFrame then
+                            xPos = xPos + 15
+                            yPos = yPos - 20
                         end
-                        spellbar:ClearAllPoints()
-                        spellbar:SetPoint("CENTER", partyFrame, "CENTER", BetterBlizzFramesDB.partyCastBarXPos + 10, BetterBlizzFramesDB.partyCastBarYPos + 3)
-                        spellbar:SetParent(UIParent)
+
+                        local unitId = partyFrame.displayedUnit or partyFrame.unit
+                        CastingBarFrame_SetUnit(spellbar, unitId, true, true)
+
                         spellbar:SetFrameStrata("MEDIUM")
+
+                        if unitId == "player" and not BetterBlizzFramesDB.partyCastbarSelf then
+                            spellbar:SetParent(hiddenFrame)
+                        end
+
+                        spellbar:ClearAllPoints()
+                        spellbar:SetPoint("CENTER", partyFrame, "CENTER", xPos, yPos + 3)
                     else
                         spellbar:SetParent(hiddenFrame)
                     end
@@ -157,6 +182,7 @@ function BBF.UpdateCastbars()
         end
     end
 end
+
 
 function BBF.UpdatePetCastbar()
     local petSpellBar = spellBars["pet"]
