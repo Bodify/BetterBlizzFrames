@@ -2696,10 +2696,10 @@ local function guiCastbars()
     -- Party Castbars
     ----------------------
     local anchorSubPartyCastbar = contentFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    anchorSubPartyCastbar:SetPoint("CENTER", mainGuiAnchor2, "CENTER", secondLineX, firstLineY)
+    anchorSubPartyCastbar:SetPoint("CENTER", mainGuiAnchor2, "CENTER", secondLineX, firstLineY+30)
     anchorSubPartyCastbar:SetText("Party Castbars")
 
-    local partyCastbarBorder = CreateBorderedFrame(anchorSubPartyCastbar, 157, 386, 0, -145, contentFrame)
+    local partyCastbarBorder = CreateBorderedFrame(anchorSubPartyCastbar, 157, 386, 0, -175, contentFrame)
 
     local partyCastbars = contentFrame:CreateTexture(nil, "ARTWORK")
     partyCastbars:SetAtlas("ui-castingbar-filling-channel")
@@ -2745,8 +2745,13 @@ local function guiCastbars()
     local showPartyCastBarIcon = CreateCheckbox("showPartyCastBarIcon", "Icon", contentFrame, nil, BBF.partyCastBarTestMode)
     showPartyCastBarIcon:SetPoint("TOPLEFT", partyCastBarTestMode, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
 
-    local partyCastbarHideBorder = CreateCheckbox("partyCastbarHideBorder", "Hide borders", contentFrame, nil, BBF.partyCastBarTestMode)
-    partyCastbarHideBorder:SetPoint("TOPLEFT", showPartyCastBarIcon, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    local partyCastbarShowText = CreateCheckbox("partyCastbarShowText", "Text", contentFrame, nil, BBF.partyCastBarTestMode)
+    partyCastbarShowText:SetPoint("TOPLEFT", showPartyCastBarIcon, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(partyCastbarShowText, "Show Castbar Text", "Show castbar text with spellname")
+
+    local partyCastbarShowBorder = CreateCheckbox("partyCastbarShowBorder", "Border", contentFrame, nil, BBF.partyCastBarTestMode)
+    partyCastbarShowBorder:SetPoint("TOPLEFT", partyCastbarSelf, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(partyCastbarShowBorder, "Show Castbar Borders", "Show castbar borders")
 
     local resetPartyCastbar = CreateFrame("Button", nil, contentFrame, "UIPanelButtonTemplate")
     resetPartyCastbar:SetText("Reset")
@@ -2771,10 +2776,10 @@ local function guiCastbars()
     -- Target Castbar
     ----------------------
     local anchorSubTargetCastbar = contentFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    anchorSubTargetCastbar:SetPoint("CENTER", mainGuiAnchor2, "CENTER", thirdLineX, firstLineY)
+    anchorSubTargetCastbar:SetPoint("CENTER", mainGuiAnchor2, "CENTER", thirdLineX, firstLineY+30)
     anchorSubTargetCastbar:SetText("Target Castbar")
 
-    local targetCastbarBorder = CreateBorderedFrame(anchorSubTargetCastbar, 157, 386, 0, -145, contentFrame)
+    local targetCastbarBorder = CreateBorderedFrame(anchorSubTargetCastbar, 157, 386, 0, -175, contentFrame)
 
     local targetCastBar = contentFrame:CreateTexture(nil, "ARTWORK")
     targetCastBar:SetAtlas("ui-castingbar-tier1-empower-2x")
@@ -2815,7 +2820,7 @@ local function guiCastbars()
 
     local targetToTCastbarAdjustment = CreateCheckbox("targetToTCastbarAdjustment", "ToT Offset", contentFrame)
     targetToTCastbarAdjustment:SetPoint("TOPLEFT", targetStaticCastbar, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltip(targetToTCastbarAdjustment, "Make sure the castbar is under ToT frame.\nUncheck this if you have moved your ToT frame out of the way.")
+    CreateTooltipTwo(targetToTCastbarAdjustment, "ToT Offset", "Pushes the castbar down below the ToT frame. Assumes default location. Uncheck this if you have moved tot elsewhere and not need this.")
 
     local targetToTAdjustmentOffsetY = CreateSlider(targetToTCastbarAdjustment, "extra", -20, 50, 1, "targetToTAdjustmentOffsetY", "Y", 55)
     targetToTAdjustmentOffsetY:SetPoint("LEFT", targetToTCastbarAdjustment.text, "RIGHT", 2, -5)
@@ -2896,6 +2901,14 @@ local function guiCastbars()
         BetterBlizzFramesDB.targetDetachCastbar = false
     end
 
+    local targetCastBarShowText = CreateCheckbox("targetCastBarShowText", "Text", contentFrame, nil, BBF.ChangeCastbarSizes)
+    targetCastBarShowText:SetPoint("TOPLEFT", targetDetachCastbar, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(targetCastBarShowText, "Show Castbar Text", "Show castbar text with spellname")
+
+    local targetCastBarShowBorder = CreateCheckbox("targetCastBarShowBorder", "Border", contentFrame, nil, BBF.ChangeCastbarSizes)
+    targetCastBarShowBorder:SetPoint("LEFT", targetCastBarShowText.text, "RIGHT", 5, 0)
+    CreateTooltipTwo(targetCastBarShowBorder, "Show Castbar Border", "Show castbar borders. If unchecked it will still show uninterruptible border.")
+
     local resetTargetCastbar = CreateFrame("Button", nil, contentFrame, "UIPanelButtonTemplate")
     resetTargetCastbar:SetText("Reset")
     resetTargetCastbar:SetWidth(70)
@@ -2915,6 +2928,10 @@ local function guiCastbars()
         BetterBlizzFramesDB.targetStaticCastbar = false
         targetDetachCastbar:SetChecked(false)
         BetterBlizzFramesDB.targetDetachCastbar = false
+        targetCastBarShowText:SetChecked(true)
+        BetterBlizzFramesDB.targetCastBarShowText = true
+        targetCastBarShowBorder:SetChecked(true)
+        BetterBlizzFramesDB.targetCastBarShowBorder = true
         targetToTCastbarAdjustment:Enable()
         targetToTCastbarAdjustment:SetAlpha(1)
         targetToTCastbarAdjustment:SetChecked(true)
@@ -2929,10 +2946,10 @@ local function guiCastbars()
     -- Pet Castbars
     ----------------------
     local anchorSubPetCastbar = contentFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    anchorSubPetCastbar:SetPoint("CENTER", mainGuiAnchor2, "CENTER", firstLineX, secondLineY - 120)
+    anchorSubPetCastbar:SetPoint("CENTER", mainGuiAnchor2, "CENTER", firstLineX, secondLineY - 90)
     anchorSubPetCastbar:SetText("Pet Castbar")
 
-    local petCastbarBorder = CreateBorderedFrame(anchorSubPetCastbar, 157, 320, 0, -112, contentFrame)
+    local petCastbarBorder = CreateBorderedFrame(anchorSubPetCastbar, 157, 320, 0, -142, contentFrame)
 
     local petCastbars = contentFrame:CreateTexture(nil, "ARTWORK")
     petCastbars:SetAtlas("ui-castingbar-filling-channel")
@@ -2986,6 +3003,14 @@ local function guiCastbars()
     end)
     CreateTooltip(petDetachCastbar, "Detach castbar from frame and enable wider xy positioning.\nRight-click a slider to enter a specific number.")
 
+    local petCastBarShowText = CreateCheckbox("petCastBarShowText", "Text", contentFrame, nil, BBF.partyCastBarTestMode)
+    petCastBarShowText:SetPoint("TOPLEFT", petDetachCastbar, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(petCastBarShowText, "Show Castbar Text", "Show castbar text with spellname")
+
+    local petCastBarShowBorder = CreateCheckbox("petCastBarShowBorder", "Border", contentFrame, nil, BBF.partyCastBarTestMode)
+    petCastBarShowBorder:SetPoint("TOPLEFT", petCastBarTimer, "BOTTOMLEFT", 0, -32)
+    CreateTooltipTwo(petCastBarShowBorder, "Show Castbar Border", "Show castbar borders. If unchecked it will still show uninterruptible border.")
+
     if BetterBlizzFramesDB.petDetachCastbar then
         petCastBarXPos:SetMinMaxValues(-900, 900)
         petCastBarXPos:SetValue(0)
@@ -3005,7 +3030,11 @@ local function guiCastbars()
         petCastBarWidth:SetValue(100)
         petCastBarHeight:SetValue(12)
         petCastBarTimer:SetChecked(true)
+        petCastBarShowText:SetChecked(true)
+        petCastBarShowBorder:SetChecked(true)
         petDetachCastbar:SetChecked(false)
+        BetterBlizzFramesDB.petCastBarShowText = true
+        BetterBlizzFramesDB.petCastBarShowBorder = true
         BetterBlizzFramesDB.petDetachCastbar = false
         BetterBlizzFramesDB.petCastBarTimer = true
         BBF.CastBarTimerCaller()
@@ -3015,10 +3044,10 @@ local function guiCastbars()
     -- Focus Castbar
     ----------------------
     local anchorSubFocusCastbar = contentFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    anchorSubFocusCastbar:SetPoint("CENTER", mainGuiAnchor2, "CENTER", fourthLineX, firstLineY)
+    anchorSubFocusCastbar:SetPoint("CENTER", mainGuiAnchor2, "CENTER", fourthLineX, firstLineY+30)
     anchorSubFocusCastbar:SetText("Focus Castbar")
 
-    local focusCastbarBorder = CreateBorderedFrame(anchorSubFocusCastbar, 157, 386, 0, -145, contentFrame)
+    local focusCastbarBorder = CreateBorderedFrame(anchorSubFocusCastbar, 157, 386, 0, -175, contentFrame)
 
     local focusCastBar = contentFrame:CreateTexture(nil, "ARTWORK")
     focusCastBar:SetAtlas("ui-castingbar-full-applyingcrafting")
@@ -3059,7 +3088,7 @@ local function guiCastbars()
 
     local focusToTCastbarAdjustment = CreateCheckbox("focusToTCastbarAdjustment", "ToT Offset", contentFrame)
     focusToTCastbarAdjustment:SetPoint("TOPLEFT", focusStaticCastbar, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltip(focusToTCastbarAdjustment, "Make sure the castbar is under Focus ToT frame.\nUncheck this if you have moved your ToT frame out of the way.")
+    CreateTooltipTwo(focusToTCastbarAdjustment, "ToT Offset", "Pushes the castbar down below the focus ToT frame. Assumes default location. Uncheck this if you have moved tot elsewhere and not need this.")
 
     local focusToTAdjustmentOffsetY = CreateSlider(focusToTCastbarAdjustment, "extra", -20, 50, 1, "focusToTAdjustmentOffsetY", "Y", 55)
     focusToTAdjustmentOffsetY:SetPoint("LEFT", focusToTCastbarAdjustment.text, "RIGHT", 2, -5)
@@ -3139,6 +3168,14 @@ local function guiCastbars()
         BetterBlizzFramesDB.focusDetachCastbar = false
     end
 
+    local focusCastBarShowText = CreateCheckbox("focusCastBarShowText", "Text", contentFrame, nil, BBF.ChangeCastbarSizes)
+    focusCastBarShowText:SetPoint("TOPLEFT", focusDetachCastbar, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(focusCastBarShowText, "Show Castbar Text", "Show castbar text with spellname")
+
+    local focusCastBarShowBorder = CreateCheckbox("focusCastBarShowBorder", "Border", contentFrame, nil, BBF.ChangeCastbarSizes)
+    focusCastBarShowBorder:SetPoint("LEFT", focusCastBarShowText.text, "RIGHT", 5, 0)
+    CreateTooltipTwo(focusCastBarShowBorder, "Show Castbar Border", "Show castbar borders. If unchecked it will still show uninterruptible border.")
+
     local resetFocusCastbar = CreateFrame("Button", nil, contentFrame, "UIPanelButtonTemplate")
     resetFocusCastbar:SetText("Reset")
     resetFocusCastbar:SetWidth(70)
@@ -3158,6 +3195,10 @@ local function guiCastbars()
         BetterBlizzFramesDB.focusStaticCastbar = false
         focusDetachCastbar:SetChecked(false)
         BetterBlizzFramesDB.focusDetachCastbar = false
+        focusCastBarShowText:SetChecked(true)
+        BetterBlizzFramesDB.focusCastBarShowText = true
+        focusCastBarShowBorder:SetChecked(true)
+        BetterBlizzFramesDB.focusCastBarShowBorder = true
         focusToTCastbarAdjustment:Enable()
         focusToTCastbarAdjustment:SetAlpha(1)
         focusToTCastbarAdjustment:SetChecked(true)
@@ -3172,10 +3213,10 @@ local function guiCastbars()
     -- Player Castbar
     ----------------------
     local anchorSubPlayerCastbar = contentFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    anchorSubPlayerCastbar:SetPoint("CENTER", mainGuiAnchor2, "CENTER", firstLineX, firstLineY)
+    anchorSubPlayerCastbar:SetPoint("CENTER", mainGuiAnchor2, "CENTER", firstLineX, firstLineY+30)
     anchorSubPlayerCastbar:SetText("Player Castbar")
 
-    local playerCastbarBorder = CreateBorderedFrame(anchorSubPlayerCastbar, 157, 386, 0, -145, contentFrame)
+    local playerCastbarBorder = CreateBorderedFrame(anchorSubPlayerCastbar, 157, 386, 0, -175, contentFrame)
 
     local playerCastBar = contentFrame:CreateTexture(nil, "ARTWORK")
     playerCastBar:SetAtlas("ui-castingbar-filling-standard")
@@ -3215,6 +3256,14 @@ local function guiCastbars()
     playerCastBarTimerCentered:SetPoint("TOPLEFT", playerCastBarShowIcon, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(playerCastBarTimerCentered, "Center the timer in the middle of the castbar")
 
+    local playerCastBarShowText = CreateCheckbox("playerCastBarShowText", "Text", contentFrame, nil, BBF.ChangeCastbarSizes)
+    playerCastBarShowText:SetPoint("TOPLEFT", playerCastBarTimerCentered, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(playerCastBarShowText, "Show Castbar Text", "Show castbar text with spellname")
+
+    local playerCastBarShowBorder = CreateCheckbox("playerCastBarShowBorder", "Border", contentFrame, nil, BBF.ChangeCastbarSizes)
+    playerCastBarShowBorder:SetPoint("TOPLEFT", playerCastBarTimer, "BOTTOMLEFT", 0, -13)
+    CreateTooltipTwo(playerCastBarShowBorder, "Show Castbar Border", "Show castbar borders. If unchecked it will still show uninterruptible border.")
+
     local resetPlayerCastbar = CreateFrame("Button", nil, contentFrame, "UIPanelButtonTemplate")
     resetPlayerCastbar:SetText("Reset")
     resetPlayerCastbar:SetWidth(70)
@@ -3229,6 +3278,10 @@ local function guiCastbars()
         playerCastBarShowIcon:SetChecked(false)
         playerCastBarTimer:SetChecked(false)
         playerCastBarTimerCentered:SetChecked(false)
+        playerCastBarShowText:SetChecked(true)
+        playerCastBarShowBorder:SetChecked(true)
+        BetterBlizzFramesDB.playerCastBarShowText = true
+        BetterBlizzFramesDB.playerCastBarShowBorder = true
         BetterBlizzFramesDB.playerCastBarShowIcon = false
         BetterBlizzFramesDB.playerCastBarTimer = false
         BetterBlizzFramesDB.playerStaticCastbar = false

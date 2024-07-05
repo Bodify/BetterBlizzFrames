@@ -108,6 +108,8 @@ local defaultSettings = {
     showPartyCastBarIcon = true,
     partyCastbarIconXPos = 0,
     partyCastbarIconYPos = 0,
+    partyCastbarShowBorder = true,
+    partyCastbarShowText = true,
 
     --Pet Castbar
     petCastbar = false,
@@ -119,6 +121,8 @@ local defaultSettings = {
     petCastBarHeight = 10,
     showPetCastBarIcon = true,
     showPetCastBarTimer = false,
+    petCastBarShowText = true,
+    petCastBarShowBorder = true,
 
     --Castbar edge highlight
     castBarInterruptHighlighterStartTime = 0.8,
@@ -137,6 +141,8 @@ local defaultSettings = {
     targetCastBarHeight = 11,
     targetCastBarTimer = false,
     targetToTAdjustmentOffsetY = 0,
+    targetCastBarShowText = true,
+    targetCastBarShowBorder = true,
 
     --Focus castbar
     focusCastBarScale = 1,
@@ -147,6 +153,8 @@ local defaultSettings = {
     focusCastBarHeight = 11,
     focusCastBarTimer = false,
     focusToTAdjustmentOffsetY = 0,
+    focusCastBarShowText = true,
+    focusCastBarShowBorder = true,
 
     --Player castbar
     playerCastBarXPos = 0,
@@ -157,6 +165,8 @@ local defaultSettings = {
     playerCastBarHeight = 13,
     playerCastBarTimer = false,
     playerCastBarTimerCenter = false,
+    playerCastBarShowText = true,
+    playerCastBarShowBorder = true,
 
     --Auras
     --playerAuraMaxBuffsPerRow = 10,
@@ -938,6 +948,11 @@ First:SetScript("OnEvent", function(_, event, addonName)
             if not BetterBlizzFramesDB.auraWhitelistAlphaUpdated then
                 AddAlphaValuesToAuraColors()
                 BetterBlizzFramesDB.auraWhitelistAlphaUpdated = true
+            end
+
+            if BetterBlizzFramesDB.partyCastbarHideBorder then
+                BetterBlizzFramesDB.partyCastbarShowBorder = false
+                BetterBlizzFramesDB.partyCastbarHideBorder = nil
             end
 
             if BetterBlizzFramesDB.hideLossOfControlFrameLines == nil then

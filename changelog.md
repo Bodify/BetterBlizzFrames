@@ -1,5 +1,9 @@
-# BetterBlizzFrames 1.4.6
+# BetterBlizzFrames 1.4.6b
+## Cata
+### New stuff:
+- Castbar hide text & border settings.
 
+# BetterBlizzFrames 1.4.6
 ## Retail & Cata
 ### New stuff:
 - Castbar Interrupt Icon setting in Castbars section.

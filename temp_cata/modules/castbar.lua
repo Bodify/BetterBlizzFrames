@@ -115,10 +115,9 @@ function BBF.UpdateCastbars()
                     adjustCastBarBorder(spellbar, spellbar.Border, 15, nil, nil, true)
                     adjustCastBarBorder(spellbar, spellbar.BorderShield, 12, true, nil, true)
 
-                    if BetterBlizzFramesDB.partyCastbarHideBorder then
-                        spellbar.Border:SetAlpha(0)
-                        spellbar.BorderShield:SetAlpha(0)
-                    end
+                    spellbar.Text:SetAlpha(BetterBlizzFramesDB.partyCastbarShowText and 1 or 0)
+                    spellbar.Border:SetAlpha(BetterBlizzFramesDB.partyCastbarShowBorder and 1 or 0)
+                    spellbar.BorderShield:SetAlpha(BetterBlizzFramesDB.partyCastbarShowBorder and 1 or 0)
 
                     if not BetterBlizzFramesDB.showPartyCastBarIcon then
                         spellbar.Icon:SetAlpha(0)
@@ -211,6 +210,9 @@ function BBF.UpdatePetCastbar()
         petSpellBar:SetScale(castbarScale)
         petSpellBar:SetWidth(width)
         petSpellBar:SetHeight(height)
+        petSpellBar.Text:SetAlpha(BetterBlizzFramesDB.petCastbarShowText and 1 or 0)
+        petSpellBar.Border:SetAlpha(BetterBlizzFramesDB.petCastbarShowBorder and 1 or 0)
+        petSpellBar.BorderShield:SetAlpha(BetterBlizzFramesDB.petCastbarShowBorder and 1 or 0)
 
         local petFrame = PetFrame -- Assuming PetFrame is the frame you want to attach to
         if petFrame then
@@ -247,10 +249,9 @@ function BBF.CreateCastbars()
             spellbar:SetWidth(BetterBlizzFramesDB.partyCastBarWidth)
             spellbar:SetHeight(BetterBlizzFramesDB.partyCastBarHeight)
 
-            if BetterBlizzFramesDB.partyCastbarHideBorder then
-                spellbar.Border:SetAlpha(0)
-                spellbar.BorderShield:SetAlpha(0)
-            end
+            spellbar.Text:SetAlpha(BetterBlizzFramesDB.partyCastbarShowText and 1 or 0)
+            spellbar.Border:SetAlpha(BetterBlizzFramesDB.partyCastbarShowBorder and 1 or 0)
+            spellbar.BorderShield:SetAlpha(BetterBlizzFramesDB.partyCastbarShowBorder and 1 or 0)
 
             spellbar.Timer = spellbar:CreateFontString(nil, "OVERLAY", "SystemFont_Shadow_Med1_Outline")
             spellbar.Timer:SetPoint("LEFT", spellbar, "RIGHT", 5, 0)
@@ -871,6 +872,8 @@ function BBF.ChangeCastbarSizes()
     -- CastingBarFrame.BorderShield:SetScale(BetterBlizzFramesDB.playerCastBarIconScale)
     -- CastingBarFrame.BorderShield:SetDrawLayer("BORDER")
     CastingBarFrame.Icon:SetDrawLayer("ARTWORK")
+    CastingBarFrame.Text:SetAlpha(BetterBlizzFramesDB.playerCastBarShowText and 1 or 0)
+    CastingBarFrame.Border:SetAlpha(BetterBlizzFramesDB.playerCastBarShowBorder and 1 or 0)
 
     adjustCastBarBorder(CastingBarFrame, CastingBarFrame.Border, 15)
     adjustCastBarBorder(CastingBarFrame, CastingBarFrame.BorderShield, 12, true)
@@ -895,6 +898,8 @@ function BBF.ChangeCastbarSizes()
     adjustCastBarBorder(TargetFrameSpellBar, TargetFrameSpellBar.Border, 15)
     adjustCastBarBorder(TargetFrameSpellBar, TargetFrameSpellBar.BorderShield, 12, true)
     TargetFrameSpellBar.Icon:SetDrawLayer("OVERLAY", 7)
+    TargetFrameSpellBar.Text:SetAlpha(BetterBlizzFramesDB.targetCastBarShowText and 1 or 0)
+    TargetFrameSpellBar.Border:SetAlpha(BetterBlizzFramesDB.targetCastBarShowBorder and 1 or 0)
 
     -- 227, 56
 
@@ -919,6 +924,8 @@ function BBF.ChangeCastbarSizes()
     adjustCastBarBorder(FocusFrameSpellBar, FocusFrameSpellBar.Border, 15)
     adjustCastBarBorder(FocusFrameSpellBar, FocusFrameSpellBar.BorderShield, 12, true)
     FocusFrameSpellBar.Icon:SetDrawLayer("OVERLAY", 7)
+    FocusFrameSpellBar.Text:SetAlpha(BetterBlizzFramesDB.focusCastBarShowText and 1 or 0)
+    FocusFrameSpellBar.Border:SetAlpha(BetterBlizzFramesDB.focusCastBarShowBorder and 1 or 0)
 
     -- 227, 56
 
