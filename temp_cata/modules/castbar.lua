@@ -118,6 +118,7 @@ function BBF.UpdateCastbars()
                     spellbar.Text:SetAlpha(BetterBlizzFramesDB.partyCastbarShowText and 1 or 0)
                     spellbar.Border:SetAlpha(BetterBlizzFramesDB.partyCastbarShowBorder and 1 or 0)
                     spellbar.BorderShield:SetAlpha(BetterBlizzFramesDB.partyCastbarShowBorder and 1 or 0)
+                    spellbar.Flash:SetParent(BetterBlizzFramesDB.partyCastbarShowBorder and spellbar or hiddenFrame)
 
                     if not BetterBlizzFramesDB.showPartyCastBarIcon then
                         spellbar.Icon:SetAlpha(0)
@@ -213,6 +214,7 @@ function BBF.UpdatePetCastbar()
         petSpellBar.Text:SetAlpha(BetterBlizzFramesDB.petCastbarShowText and 1 or 0)
         petSpellBar.Border:SetAlpha(BetterBlizzFramesDB.petCastbarShowBorder and 1 or 0)
         petSpellBar.BorderShield:SetAlpha(BetterBlizzFramesDB.petCastbarShowBorder and 1 or 0)
+        petSpellBar.Flash:SetParent(BetterBlizzFramesDB.petCastbarShowBorder and petSpellBar or hiddenFrame)
 
         local petFrame = PetFrame -- Assuming PetFrame is the frame you want to attach to
         if petFrame then
@@ -252,6 +254,7 @@ function BBF.CreateCastbars()
             spellbar.Text:SetAlpha(BetterBlizzFramesDB.partyCastbarShowText and 1 or 0)
             spellbar.Border:SetAlpha(BetterBlizzFramesDB.partyCastbarShowBorder and 1 or 0)
             spellbar.BorderShield:SetAlpha(BetterBlizzFramesDB.partyCastbarShowBorder and 1 or 0)
+            spellbar.Flash:SetParent(BetterBlizzFramesDB.partyCastbarShowBorder and spellbar or hiddenFrame)
 
             spellbar.Timer = spellbar:CreateFontString(nil, "OVERLAY", "SystemFont_Shadow_Med1_Outline")
             spellbar.Timer:SetPoint("LEFT", spellbar, "RIGHT", 5, 0)
@@ -900,6 +903,7 @@ function BBF.ChangeCastbarSizes()
     TargetFrameSpellBar.Icon:SetDrawLayer("OVERLAY", 7)
     TargetFrameSpellBar.Text:SetAlpha(BetterBlizzFramesDB.targetCastBarShowText and 1 or 0)
     TargetFrameSpellBar.Border:SetAlpha(BetterBlizzFramesDB.targetCastBarShowBorder and 1 or 0)
+    TargetFrameSpellBar.Flash:SetParent(BetterBlizzFramesDB.targetCastBarShowBorder and TargetFrameSpellBar or hiddenFrame)
 
     -- 227, 56
 
@@ -926,6 +930,7 @@ function BBF.ChangeCastbarSizes()
     FocusFrameSpellBar.Icon:SetDrawLayer("OVERLAY", 7)
     FocusFrameSpellBar.Text:SetAlpha(BetterBlizzFramesDB.focusCastBarShowText and 1 or 0)
     FocusFrameSpellBar.Border:SetAlpha(BetterBlizzFramesDB.focusCastBarShowBorder and 1 or 0)
+    FocusFrameSpellBar.Flash:SetParent(BetterBlizzFramesDB.focusCastBarShowBorder and FocusFrameSpellBar or hiddenFrame)
 
     -- 227, 56
 

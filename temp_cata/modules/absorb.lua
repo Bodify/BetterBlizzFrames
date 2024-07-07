@@ -327,6 +327,7 @@ CataAbsorb.spells = {
     [98864] = true, -- Mage: Ice Barrier
 }
 
+
 local function CreateAbsorbBar(frame)
     local absorbBar = CreateFrame("StatusBar", nil, frame)
     absorbBar:SetStatusBarTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\absorbStripes")
@@ -334,10 +335,15 @@ local function CreateAbsorbBar(frame)
     absorbBar:SetValue(0)
     absorbBar:SetStatusBarColor(0.7, 0.7, 1, 0.7)
     absorbBar:SetFrameLevel(frame:GetFrameLevel() + 1)
-    PlayerFrameTexture:GetParent():SetFrameLevel(56)--5
-    TargetFrameTextureFrame:SetFrameLevel(55)
-    FocusFrameTextureFrame:SetFrameLevel(55)
-    TargetFrameToT:SetFrameLevel(56)
+    if not TargetFrameToT.adjustedLevel then
+        PlayerFrameTexture:GetParent():SetFrameLevel(56)--5
+        TargetFrameTextureFrame:SetFrameLevel(55)
+        FocusFrameTextureFrame:SetFrameLevel(55)
+        if not InCombatLockdown() then
+            TargetFrameToT:SetFrameLevel(56)
+        end
+        TargetFrameToT.adjustedLevel = true
+    end
 
     -- Maintain the aspect ratio of the texture
     local tex = absorbBar:GetStatusBarTexture()

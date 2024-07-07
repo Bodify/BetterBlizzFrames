@@ -1,3 +1,9 @@
+# BetterBlizzFrames 1.4.6c
+## Cata
+### Tweaks:
+- Castbar hide border setting now also hides the "flash" border at end of a cast.
+- Made sure absorb bar setting doesnt try to change frame level in combat to avoid lua error
+
 # BetterBlizzFrames 1.4.6b
 ## Cata
 ### New stuff:
