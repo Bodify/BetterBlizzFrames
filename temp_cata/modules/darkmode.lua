@@ -541,7 +541,8 @@ function BBF.DarkmodeFrames(bypass)
             _G["CharacterBag"..i.."SlotNormalTexture"],
             _G["MainMenuBarTexture"..i],
             _G["MainMenuBarTextureExtender"],
-            _G["MainMenuMaxLevelBar"..i]
+            _G["MainMenuMaxLevelBar"..i],
+            _G["ReputationWatchBar"].StatusBar["XPBarTexture"..i]
         }
         for _, button in ipairs(buttons) do
             applySettings(button, desaturationValue, actionBarColor)

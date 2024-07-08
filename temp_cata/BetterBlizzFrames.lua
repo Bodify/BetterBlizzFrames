@@ -801,6 +801,23 @@ function BBF.FixStupidBlizzPTRShit()
     MainMenuMaxLevelBar3:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", 379, 3)
     MainMenuMaxLevelBar3:SetWidth(255)
 
+
+
+
+    ReputationWatchBar:SetWidth(1012)
+    ReputationWatchBar.StatusBar:SetWidth(1012)
+    ReputationWatchBar:SetPoint("TOP", MainMenuBar, "TOP", -14, 0)
+    ReputationWatchBar.StatusBar.XPBarTexture0:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", -383, 3)
+    ReputationWatchBar.StatusBar.XPBarTexture0:SetWidth(254)
+    ReputationWatchBar.StatusBar.XPBarTexture1:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", -128, 3)
+    ReputationWatchBar.StatusBar.XPBarTexture1:SetWidth(254)
+    ReputationWatchBar.StatusBar.XPBarTexture2:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", 124, 3)
+    ReputationWatchBar.StatusBar.XPBarTexture2:SetWidth(254)
+    ReputationWatchBar.StatusBar.XPBarTexture3:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", 379, 3)
+    ReputationWatchBar.StatusBar.XPBarTexture3:SetWidth(255)
+
+    --ReputationWatchBar.StatusBar.XPBarTexture3
+
     --TargetFrameToTPortrait:SetSize(36,36)
     --TargetFrameToTPortrait:SetPoint("TOPLEFT", TargetFrameToT, "TOPLEFT", 5, -5)
 

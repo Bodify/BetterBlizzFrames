@@ -1,3 +1,8 @@
+# BetterBlizzFrames 1.4.6d
+## Cata
+### Tweaks:
+- Added Reputation XP Bar to OCD Tweaks & Darkmode
+
 # BetterBlizzFrames 1.4.6c
 ## Cata
 ### Tweaks:
