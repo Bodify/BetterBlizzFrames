@@ -1568,7 +1568,7 @@ local function CreateTitle(parent)
     addonNameIcon:SetPoint("LEFT", addonNameText, "RIGHT", -2, -1)
     local verNumber = parent:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     verNumber:SetPoint("LEFT", addonNameText, "RIGHT", 25, 0)
-    verNumber:SetText("CATA BETA v0.1.1c" )--.. BBF.VersionNumber.."b")
+    verNumber:SetText("CATA BETA v0.1.1e" )--.. BBF.VersionNumber.."b")
 end
 
 ------------------------------------------------------------
@@ -4712,12 +4712,17 @@ local function guiMisc()
     local hideStanceBar = CreateCheckbox("hideStanceBar", "Hide StanceBar (ActionBar)", guiMisc, nil, BBF.HideFrames)
     hideStanceBar:SetPoint("TOPLEFT", hideActionBarMacroName, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
 
-    local fixHealthbarText = CreateCheckbox("fixHealthbarText", "Fix PlayerFrame Text", guiMisc)
-    fixHealthbarText:SetPoint("TOPLEFT", hideStanceBar, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltip(fixHealthbarText, "Fixes PlayerFrame health text missing\n\n(Blizzard pls fix ur shit)")
+    local fixPlayerPetPosition = CreateCheckbox("fixPlayerPetPosition", "Fix Pet ActionBar Location", guiMisc, nil, BBF.MovePetFrame)
+    fixPlayerPetPosition:SetPoint("TOPLEFT", hideStanceBar, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltip(fixPlayerPetPosition, "Fixes Blizzard bug with Pet ActionBar Positioning")
+    fixPlayerPetPosition:HookScript("OnClick", function(self)
+        if not self:GetChecked() then
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        end
+    end)
 
     local stealthIndicatorPlayer = CreateCheckbox("stealthIndicatorPlayer", "Stealth Indicator (Temporary?)", guiMisc, nil, BBF.StealthIndicator)
-    stealthIndicatorPlayer:SetPoint("TOPLEFT", fixHealthbarText, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    stealthIndicatorPlayer:SetPoint("TOPLEFT", fixPlayerPetPosition, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     stealthIndicatorPlayer:HookScript("OnClick", function(self)
         if not self:GetChecked() then
             StaticPopup_Show("BBF_CONFIRM_RELOAD")

@@ -748,9 +748,9 @@ end
 function BBF.FixStupidBlizzPTRShit()
     if C_AddOns.IsAddOnLoaded("Bartender4") then return end
     MainMenuBarTextureExtender:Hide()
-    MainMenuBarTexture3:SetPoint("BOTTOM", MainMenuBarArtFrame, "BOTTOM", 369, 0)
+    MainMenuBarTexture3:SetPoint("BOTTOM", MainMenuBarArtFrame, "BOTTOM", 371, 0)
     MainMenuBarTexture3:SetWidth(260)
-    CharacterMicroButton:SetPoint("BOTTOMLEFT", MainMenuBarArtFrame, "BOTTOMLEFT", 548, 2)
+    CharacterMicroButton:SetPoint("BOTTOMLEFT", MainMenuBarArtFrame, "BOTTOMLEFT", 550, 2)
     SpellbookMicroButton:SetPoint("BOTTOMLEFT", CharacterMicroButton, "BOTTOMRIGHT", -3.5, 0)
     TalentMicroButton:SetPoint("BOTTOMLEFT", SpellbookMicroButton, "BOTTOMRIGHT", -3.5, 0)
     AchievementMicroButton:SetPoint("BOTTOMLEFT", TalentMicroButton, "BOTTOMRIGHT", -3.5, 0)
@@ -763,7 +763,7 @@ function BBF.FixStupidBlizzPTRShit()
     MainMenuMicroButton:SetPoint("BOTTOMLEFT", EJMicroButton, "BOTTOMRIGHT", -3.5, 0)
     HelpMicroButton:SetPoint("BOTTOMLEFT", MainMenuMicroButton, "BOTTOMRIGHT", -3.5, 0)
 
-    MainMenuBarBackpackButton:SetPoint("BOTTOMRIGHT", MainMenuBarArtFrame, "BOTTOMRIGHT", -27, 6)
+    MainMenuBarBackpackButton:SetPoint("BOTTOMRIGHT", MainMenuBarArtFrame, "BOTTOMRIGHT", -25, 6)
     CharacterBag1Slot:SetPoint("RIGHT", CharacterBag0Slot, "LEFT", -2, 0)
     CharacterBag2Slot:SetPoint("RIGHT", CharacterBag1Slot, "LEFT", -2, 0)
     CharacterBag3Slot:SetPoint("RIGHT", CharacterBag2Slot, "LEFT", -2, 0)
@@ -782,38 +782,35 @@ function BBF.FixStupidBlizzPTRShit()
 
     MainMenuExpBar:SetWidth(1012)
     MainMenuExpBar:SetPoint("TOP", MainMenuBar, "TOP", -10, 0)
-    MainMenuXPBarTexture0:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", -383, 3)
-    MainMenuXPBarTexture0:SetWidth(254)
-    MainMenuXPBarTexture1:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", -128, 3)
-    MainMenuXPBarTexture1:SetWidth(254)
-    MainMenuXPBarTexture2:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", 124, 3)
-    MainMenuXPBarTexture2:SetWidth(254)
-    MainMenuXPBarTexture3:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", 379, 3)
+    MainMenuXPBarTexture0:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", -382, 3)
+    MainMenuXPBarTexture0:SetWidth(255)
+    MainMenuXPBarTexture1:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", -126, 3)
+    MainMenuXPBarTexture1:SetWidth(255)
+    MainMenuXPBarTexture2:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", 126, 3)
+    MainMenuXPBarTexture2:SetWidth(255)
+    MainMenuXPBarTexture3:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", 381, 3)
     MainMenuXPBarTexture3:SetWidth(255)
-    MainMenuBarRightEndCap:SetPoint("BOTTOM", MainMenuBarArtFrame, "BOTTOM", 532, 0)
+    MainMenuBarRightEndCap:SetPoint("BOTTOM", MainMenuBarArtFrame, "BOTTOM", 535, 0)
 
-    MainMenuMaxLevelBar0:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", -383, 3)
-    MainMenuMaxLevelBar0:SetWidth(254)
-    MainMenuMaxLevelBar1:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", -128, 3)
-    MainMenuMaxLevelBar1:SetWidth(254)
-    MainMenuMaxLevelBar2:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", 124, 3)
-    MainMenuMaxLevelBar2:SetWidth(254)
-    MainMenuMaxLevelBar3:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", 379, 3)
+    MainMenuMaxLevelBar0:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", -382, 3)
+    MainMenuMaxLevelBar0:SetWidth(255)
+    MainMenuMaxLevelBar1:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", -126, 3)
+    MainMenuMaxLevelBar1:SetWidth(255)
+    MainMenuMaxLevelBar2:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", 126, 3)
+    MainMenuMaxLevelBar2:SetWidth(255)
+    MainMenuMaxLevelBar3:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", 381, 3)
     MainMenuMaxLevelBar3:SetWidth(255)
-
-
-
 
     ReputationWatchBar:SetWidth(1012)
     ReputationWatchBar.StatusBar:SetWidth(1012)
     ReputationWatchBar:SetPoint("TOP", MainMenuBar, "TOP", -14, 0)
-    ReputationWatchBar.StatusBar.XPBarTexture0:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", -383, 3)
-    ReputationWatchBar.StatusBar.XPBarTexture0:SetWidth(254)
-    ReputationWatchBar.StatusBar.XPBarTexture1:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", -128, 3)
-    ReputationWatchBar.StatusBar.XPBarTexture1:SetWidth(254)
-    ReputationWatchBar.StatusBar.XPBarTexture2:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", 124, 3)
-    ReputationWatchBar.StatusBar.XPBarTexture2:SetWidth(254)
-    ReputationWatchBar.StatusBar.XPBarTexture3:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", 379, 3)
+    ReputationWatchBar.StatusBar.XPBarTexture0:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", -382, 3)
+    ReputationWatchBar.StatusBar.XPBarTexture0:SetWidth(255)
+    ReputationWatchBar.StatusBar.XPBarTexture1:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", -126, 3)
+    ReputationWatchBar.StatusBar.XPBarTexture1:SetWidth(255)
+    ReputationWatchBar.StatusBar.XPBarTexture2:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", 126, 3)
+    ReputationWatchBar.StatusBar.XPBarTexture2:SetWidth(255)
+    ReputationWatchBar.StatusBar.XPBarTexture3:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", 381, 3)
     ReputationWatchBar.StatusBar.XPBarTexture3:SetWidth(255)
 
     --ReputationWatchBar.StatusBar.XPBarTexture3
@@ -833,6 +830,13 @@ local function TurnTestModesOff()
     BetterBlizzFramesDB.partyCastBarTestMode = false
     BetterBlizzFramesDB.petCastBarTestMode = false
 end
+
+
+function BBF.MovePetFrame()
+    BBF.MoveRegion(PetActionBarFrame, "LEFT", MainMenuBar, "LEFT", 36, 93)
+end
+
+
 
 -- Event registration for PLAYER_LOGIN
 local Frame = CreateFrame("Frame")
@@ -861,6 +865,9 @@ Frame:SetScript("OnEvent", function(...)
             BBF.CombatIndicator(PlayerFrame, "player")
             if BetterBlizzFramesDB.hideArenaFrames then
                 BBF.HideArenaFrames()
+            end
+            if BetterBlizzFramesDB.fixPlayerPetPosition then
+                BBF.MovePetFrame()
             end
             BBF.ScaleUnitFrames()
             BBF.MoveToTFrames()

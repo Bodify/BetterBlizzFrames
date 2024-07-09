@@ -1,3 +1,10 @@
+# BetterBlizzFrames 1.4.6e
+## Cata
+### New stuff:
+- Pet ActionBar fix setting (blizz bug) in Misc section.
+### Tweaks:
+- More mini adjustments to OCD Tweaks. Yes I have a problem.
+
 # BetterBlizzFrames 1.4.6d
 ## Cata
 ### Tweaks:
