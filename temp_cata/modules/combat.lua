@@ -14,6 +14,17 @@ function BBF.CombatIndicator(unitFrame, unit)
     local darkModeOn = BetterBlizzFramesDB.darkModeUi
     local vertexColor = darkModeOn and BetterBlizzFramesDB.darkModeColor or 1
 
+    if BetterBlizzFramesDB.combatIndicatorAssumePalaCombat then
+        for i = 1, 40 do
+            local name, _, _, _, _, _, _, _, _, spellId = UnitBuff(unit, i)
+            if not name then break end
+            if spellId == 86698 then -- Guardian of the Ancient Kings (UnitAffectingCombat returns false even tho unit is on combat if guardian is in combat)
+                inCombat = true
+                break
+            end
+        end
+    end
+
     if not unitFrame.combatParent then
         unitFrame.combatParent = CreateFrame("Frame", nil, unitFrame, "BackdropTemplate")
         unitFrame.combatParent:SetSize(38, 38)

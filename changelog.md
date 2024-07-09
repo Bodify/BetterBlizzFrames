@@ -1,3 +1,8 @@
+# BetterBlizzFrames 1.4.6f:
+## Cata
+### New Stuff:
+- Combat Indicator: `Assume Pala Combat` setting. (Combat status while Guardian is out is bugged, crude workaround)
+
 # BetterBlizzFrames 1.4.6e
 ## Cata
 ### New stuff:
