@@ -790,7 +790,7 @@ local function backupSettings()
             ReputationWatchBar_StatusBar_XPBarTexture2 = {ReputationWatchBar.StatusBar.XPBarTexture2:GetPoint()},
             ReputationWatchBar_StatusBar_XPBarTexture3 = {ReputationWatchBar.StatusBar.XPBarTexture3:GetPoint()}
         }
-        
+
         -- Back up other sizes
         originalSettings.sizes = {
             MainMenuBarTexture3 = {MainMenuBarTexture3:GetSize()},
@@ -808,7 +808,7 @@ local function backupSettings()
             ReputationWatchBar = {ReputationWatchBar:GetSize()},
             ReputationWatchBar_StatusBar = {ReputationWatchBar.StatusBar:GetSize()}
         }
-        
+
         -- Mark as backed up
         originalSettings.backedUp = true
     end
@@ -850,7 +850,7 @@ local function restoreSettings()
         ReputationWatchBar.StatusBar.XPBarTexture1:SetPoint(unpack(originalSettings.positions.ReputationWatchBar_StatusBar_XPBarTexture1))
         ReputationWatchBar.StatusBar.XPBarTexture2:SetPoint(unpack(originalSettings.positions.ReputationWatchBar_StatusBar_XPBarTexture2))
         ReputationWatchBar.StatusBar.XPBarTexture3:SetPoint(unpack(originalSettings.positions.ReputationWatchBar_StatusBar_XPBarTexture3))
-        
+
         -- Restore sizes and texCoords for character bags
         for i = 0, 3 do
             local border = _G["CharacterBag"..i.."SlotNormalTexture"]
@@ -859,7 +859,7 @@ local function restoreSettings()
             icon:SetSize(30,30)
             icon:SetTexCoord(0,1,0,1)
         end
-        
+
         -- Restore other sizes
         MainMenuBarTexture3:SetSize(unpack(originalSettings.sizes.MainMenuBarTexture3))
         MainMenuBarBackpackButton:SetSize(unpack(originalSettings.sizes.MainMenuBarBackpackButton))
@@ -883,7 +883,7 @@ function BBF.FixStupidBlizzPTRShit()
         if not originalSettings.backedUp then
             backupSettings()
         end
-        
+
         if C_AddOns.IsAddOnLoaded("Bartender4") then return end
         MainMenuBarTextureExtender:Hide()
         MainMenuBarTexture3:SetPoint("BOTTOM", MainMenuBarArtFrame, "BOTTOM", 371, 0)
@@ -928,14 +928,14 @@ function BBF.FixStupidBlizzPTRShit()
         MainMenuXPBarTexture3:SetWidth(255)
         MainMenuBarRightEndCap:SetPoint("BOTTOM", MainMenuBarArtFrame, "BOTTOM", 533, 0)
 
-        MainMenuMaxLevelBar0:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", -382, 3)
+        MainMenuMaxLevelBar0:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", -382, 2)
         MainMenuMaxLevelBar0:SetWidth(255)
-        MainMenuMaxLevelBar1:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", -126, 3)
+        MainMenuMaxLevelBar1:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", -126, 2)
         MainMenuMaxLevelBar1:SetWidth(255)
-        MainMenuMaxLevelBar2:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", 126, 3)
+        MainMenuMaxLevelBar2:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", 126, 2)
         MainMenuMaxLevelBar2:SetWidth(255)
-        MainMenuMaxLevelBar3:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", 381, 3)
-        MainMenuMaxLevelBar3:SetWidth(255)
+        MainMenuMaxLevelBar3:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", 381, 2)
+        MainMenuMaxLevelBar3:SetWidth(254)
 
         ReputationWatchBar:SetWidth(1012)
         ReputationWatchBar.StatusBar:SetWidth(1015)
@@ -948,7 +948,7 @@ function BBF.FixStupidBlizzPTRShit()
         ReputationWatchBar.StatusBar.XPBarTexture2:SetWidth(255)
         ReputationWatchBar.StatusBar.XPBarTexture3:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", 381, 3)
         ReputationWatchBar.StatusBar.XPBarTexture3:SetWidth(255)
-        
+
         BBF.ActionBarIconZoom()
     else
         MainMenuBarTextureExtender:Show()
