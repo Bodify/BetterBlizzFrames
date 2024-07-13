@@ -807,11 +807,13 @@ end
 -- Minimap Hider
 --------------------------------------
 local minimapStatusChanged
-function BBF.MinimapHider(instanceType)
+
+function BBF.MinimapHider()
     local MinimapGroup = Minimap and MinimapCluster
     local QueueStatusEye = QueueStatusButtonIcon
-    local ObjectiveTracker = WatchFrame
+    local ObjectiveTracker = ObjectiveTrackerFrame
 
+    local _, instanceType = GetInstanceInfo()
     local inArena = instanceType == "arena"
 
     local hideMinimap = BetterBlizzFramesDB.hideMinimap
@@ -819,28 +821,34 @@ function BBF.MinimapHider(instanceType)
     local hideQueueEye = BetterBlizzFramesDB.hideMinimapAutoQueueEye
     local hideObjectives = BetterBlizzFramesDB.hideObjectiveTracker
 
+    -- Handle MinimapGroup visibility
+    if hideMinimapAuto and inArena then
+        MinimapGroup:Hide()
+    elseif hideMinimapAuto and not inArena then
+        MinimapGroup:Show()
+    end
+
     if hideMinimap then
         MinimapGroup:Hide()
         minimapStatusChanged = true
-        return
     elseif minimapStatusChanged then
         MinimapGroup:Show()
     end
 
-    if hideMinimapAuto and inArena then
-        MinimapGroup:Hide()
-        -- if hideQueueEye then
-        --     QueueStatusEye:Hide()
-        -- end
-        if hideObjectives then
+    -- Handle QueueStatusEye visibility
+    -- if hideQueueEye then
+    --     if inArena then
+    --         QueueStatusEye:Hide()
+    --     else
+    --         QueueStatusEye:Show()
+    --     end
+    -- end
+
+    -- Handle ObjectiveTracker visibility
+    if hideObjectives then
+        if inArena then
             ObjectiveTracker:Hide()
-        end
-    elseif hideMinimapAuto and not inArena then
-        MinimapGroup:Show()
-        -- if hideQueueEye then
-        --     QueueStatusEye:Show()
-        -- end
-        if hideObjectives then
+        else
             ObjectiveTracker:Show()
         end
     end

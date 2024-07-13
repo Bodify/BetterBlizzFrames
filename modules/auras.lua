@@ -583,20 +583,20 @@ local function AdjustAuras(self, frameType)
             if not aura.isLarge then
                 -- Apply the adjusted size to smaller auras
                 aura:SetSize(adjustedSize, adjustedSize)
-                if aura.PurgeGlow then
-                    aura.PurgeGlow:SetScale(targetAndFocusSmallAuraScale)
-                end
-                if aura.ImportantGlow then
-                    aura.ImportantGlow:SetScale(targetAndFocusSmallAuraScale)
-                end
-                if aura.PandemicGlow then
-                    aura.PandemicGlow:SetScale(targetAndFocusSmallAuraScale)
-                end
-                if aura.Stealable then
-                    aura.Stealable:SetScale(targetAndFocusSmallAuraScale)
-                end
-                if aura.Border then
-                    if not MasqueOn then
+                if not MasqueOn then
+                    if aura.PurgeGlow then
+                        aura.PurgeGlow:SetScale(targetAndFocusSmallAuraScale)
+                    end
+                    if aura.ImportantGlow then
+                        aura.ImportantGlow:SetScale(targetAndFocusSmallAuraScale)
+                    end
+                    if aura.PandemicGlow then
+                        aura.PandemicGlow:SetScale(targetAndFocusSmallAuraScale)
+                    end
+                    if aura.Stealable then
+                        aura.Stealable:SetScale(targetAndFocusSmallAuraScale)
+                    end
+                    if aura.Border then
                         aura.Border:SetScale(targetAndFocusSmallAuraScale)
                     end
                 end
@@ -1512,9 +1512,11 @@ local function PersonalBuffFrameFilterAndGrid(self)
                         local borderFrame = BBF.auraBorders[auraFrame]
                         auraFrame.isImportant = true
                         if not auraFrame.ImportantGlow then
-                            auraFrame.ImportantGlow = auraFrame:CreateTexture(nil, "OVERLAY")
+                            auraFrame.GlowFrame = CreateFrame("Frame", nil, auraFrame)
+                            auraFrame.GlowFrame:SetAllPoints(auraFrame)
+                            auraFrame.GlowFrame:SetFrameLevel(auraFrame:GetFrameLevel() + 1)
+                            auraFrame.ImportantGlow = auraFrame.GlowFrame:CreateTexture(nil, "OVERLAY")
                             if borderFrame then
-                                auraFrame.ImportantGlow:SetParent(borderFrame)
                                 auraFrame.ImportantGlow:SetPoint("TOPLEFT", auraFrame, "TOPLEFT", -15, 16)
                                 auraFrame.ImportantGlow:SetPoint("BOTTOMRIGHT", auraFrame, "BOTTOMRIGHT", 15, -6)
                             else
@@ -1524,9 +1526,6 @@ local function PersonalBuffFrameFilterAndGrid(self)
                             --auraFrame.ImportantGlow:SetDrawLayer("OVERLAY", 7)
                             auraFrame.ImportantGlow:SetAtlas("newplayertutorial-drag-slotgreen")
                             auraFrame.ImportantGlow:SetDesaturated(true)
-                        end
-                        if borderFrame then
-                            auraFrame.ImportantGlow:SetParent(borderFrame)
                         end
                         if auraColor then
                             auraFrame.ImportantGlow:SetVertexColor(auraColor.r, auraColor.g, auraColor.b, auraColor.a)
@@ -1824,6 +1823,41 @@ function BBF.SetupMasqueSupport()
         MasqueTargetDebuffs = Masque:Group("Better|cff00c0ffBlizz|rFrames", "Target Debuffs")
         MasqueFocusBuffs = Masque:Group("Better|cff00c0ffBlizz|rFrames", "Focus Buffs")
         MasqueFocusDebuffs = Masque:Group("Better|cff00c0ffBlizz|rFrames", "Focus Debuffs")
+        local MasqueCastbars = Masque:Group("Better|cff00c0ffBlizz|rFrames", "Castbars")
+
+        local function MsqSkinIcon(frame, group)
+            local skinWrapper = CreateFrame("Frame")
+            skinWrapper:SetParent(frame)
+            skinWrapper:SetSize(30, 30)
+            skinWrapper:SetAllPoints(frame.Icon)
+            frame.Icon:Hide()
+            frame.SkinnedIcon = skinWrapper:CreateTexture(nil, "BACKGROUND")
+            frame.SkinnedIcon:SetSize(30, 30)
+            frame.SkinnedIcon:SetPoint("CENTER")
+            frame.SkinnedIcon:SetTexture(frame.Icon:GetTexture())
+            hooksecurefunc(frame.Icon, "SetTexture", function(_, tex)
+                skinWrapper:SetScale(frame.Icon:GetScale())
+                frame.SkinnedIcon:SetTexture(tex)
+            end)
+            group:AddButton(skinWrapper, {
+                Icon = frame.SkinnedIcon,
+            })
+        end
+        if BetterBlizzFramesDB.playerCastBarShowIcon then
+            MsqSkinIcon(PlayerCastingBarFrame, MasqueCastbars)
+        end
+        MsqSkinIcon(TargetFrameSpellBar, MasqueCastbars)
+        MsqSkinIcon(FocusFrameSpellBar, MasqueCastbars)
+        if BetterBlizzFramesDB.showPartyCastbar and BetterBlizzFramesDB.showPartyCastBarIcon then
+            C_Timer.After(3, function()
+                for i = 1, 5 do
+                    local castbar = _G["Party"..i.."SpellBar"]
+                    if castbar then
+                        MsqSkinIcon(castbar, MasqueCastbars)
+                    end
+                end
+            end)
+        end
 
         -- Props to Masque Skinner: Blizz Buffs by Cybeloras of Aerie Peak
         local skinned = {}

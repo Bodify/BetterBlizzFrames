@@ -819,6 +819,7 @@ function BBF.ChangeCastbarSizes()
     PlayerCastingBarFrame:SetHeight(BetterBlizzFramesDB.playerCastBarHeight)
     PlayerCastingBarFrame.Text:ClearAllPoints()
     PlayerCastingBarFrame.Text:SetPoint("BOTTOM", PlayerCastingBarFrame, "BOTTOM", 0, -14)
+    PlayerCastingBarFrame.Text:SetWidth(BetterBlizzFramesDB.playerCastBarWidth)
     PlayerCastingBarFrame.Icon:SetSize(22,22)
     PlayerCastingBarFrame.Icon:ClearAllPoints()
     PlayerCastingBarFrame.Icon:SetPoint("RIGHT", PlayerCastingBarFrame, "LEFT", -5 + BetterBlizzFramesDB.playerCastbarIconXPos, -5 + BetterBlizzFramesDB.playerCastbarIconYPos)
@@ -852,6 +853,7 @@ function BBF.ChangeCastbarSizes()
     TargetFrameSpellBar.BorderShield:SetScale(BetterBlizzFramesDB.targetCastBarIconScale)
     TargetFrameSpellBar.Text:ClearAllPoints()
     TargetFrameSpellBar.Text:SetPoint("BOTTOM", TargetFrameSpellBar, "BOTTOM", 0, -14)
+    TargetFrameSpellBar.Text:SetWidth(BetterBlizzFramesDB.targetCastBarWidth)
 
     --Focus
     FocusFrameSpellBar:SetScale(BetterBlizzFramesDB.focusCastBarScale)
@@ -867,6 +869,7 @@ function BBF.ChangeCastbarSizes()
     FocusFrameSpellBar.BorderShield:SetScale(BetterBlizzFramesDB.focusCastBarIconScale)
     FocusFrameSpellBar.Text:ClearAllPoints()
     FocusFrameSpellBar.Text:SetPoint("BOTTOM", FocusFrameSpellBar, "BOTTOM", 0, -14)
+    FocusFrameSpellBar.Text:SetWidth(BetterBlizzFramesDB.focusCastBarWidth)
 
 end
 

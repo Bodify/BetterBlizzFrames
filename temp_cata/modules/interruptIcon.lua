@@ -201,6 +201,7 @@ local function UpdateSettings()
 
     if BetterBlizzFramesDB.castBarInterruptIconTarget and TargetFrameSpellBar.interruptIconFrame then
         local frame = TargetFrameSpellBar.interruptIconFrame
+        frame:ClearAllPoints()
         frame:SetPoint("CENTER", TargetFrameSpellBar, BetterBlizzFramesDB.castBarInterruptIconAnchor, BetterBlizzFramesDB.castBarInterruptIconXPos+45, BetterBlizzFramesDB.castBarInterruptIconYPos)
         frame:SetScale(BetterBlizzFramesDB.castBarInterruptIconScale)
         frame:Show()
@@ -224,7 +225,8 @@ local function UpdateSettings()
     end
     if BetterBlizzFramesDB.castBarInterruptIconFocus and FocusFrameSpellBar.interruptIconFrame then
         local frame = FocusFrameSpellBar.interruptIconFrame
-        frame:SetPoint("CENTER", FocusFrameSpellBar, BetterBlizzFramesDB.castBarInterruptIconAnchor, BetterBlizzFramesDB.castBarInterruptIconXPos, BetterBlizzFramesDB.castBarInterruptIconYPos)
+        frame:ClearAllPoints()
+        frame:SetPoint("CENTER", FocusFrameSpellBar, BetterBlizzFramesDB.castBarInterruptIconAnchor, BetterBlizzFramesDB.castBarInterruptIconXPos+45, BetterBlizzFramesDB.castBarInterruptIconYPos)
         frame:SetScale(BetterBlizzFramesDB.castBarInterruptIconScale)
         frame:Show()
 

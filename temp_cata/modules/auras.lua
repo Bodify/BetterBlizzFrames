@@ -2606,6 +2606,51 @@ function BBF.SetupMasqueSupport()
         MasqueTargetDebuffs = Masque:Group("Better|cff00c0ffBlizz|rFrames", "Target Debuffs")
         MasqueFocusBuffs = Masque:Group("Better|cff00c0ffBlizz|rFrames", "Focus Buffs")
         MasqueFocusDebuffs = Masque:Group("Better|cff00c0ffBlizz|rFrames", "Focus Debuffs")
+        local MasqueCastbars = Masque:Group("Better|cff00c0ffBlizz|rFrames", "Castbars")
+
+        local function MsqSkinIcon(frame, group)
+            local skinWrapper = CreateFrame("Frame")
+            skinWrapper:SetParent(frame)
+            skinWrapper:SetSize(30, 30)
+            skinWrapper:SetAllPoints(frame.Icon)
+            frame.Icon:Hide()
+            frame.SkinnedIcon = skinWrapper:CreateTexture(nil, "BACKGROUND")
+            frame.SkinnedIcon:SetSize(30, 30)
+            frame.SkinnedIcon:SetPoint("CENTER")
+            frame.SkinnedIcon:SetTexture(frame.Icon:GetTexture())
+            hooksecurefunc(frame.Icon, "SetTexture", function(_, tex)
+                skinWrapper:SetScale(frame.Icon:GetScale())
+                frame.SkinnedIcon:SetTexture(tex)
+            end)
+            group:AddButton(skinWrapper, {
+                Icon = frame.SkinnedIcon,
+            })
+        end
+        if BetterBlizzFramesDB.playerCastBarShowIcon then
+            MsqSkinIcon(CastingBarFrame, MasqueCastbars)
+        end
+        MsqSkinIcon(TargetFrameSpellBar, MasqueCastbars)
+        MsqSkinIcon(FocusFrameSpellBar, MasqueCastbars)
+        if BetterBlizzFramesDB.showPartyCastbar and BetterBlizzFramesDB.showPartyCastBarIcon then
+            C_Timer.After(3, function()
+                for i = 1, 5 do
+                    local castbar = _G["Party"..i.."SpellBar"]
+                    if castbar then
+                        MsqSkinIcon(castbar, MasqueCastbars)
+                    end
+                end
+            end)
+        end
+
+
+
+        -- addToMasque(CastingBarFrame.Icon, MasqueCastbars)
+        -- addToMasque(TargetFrameSpellBar.Icon, MasqueCastbars)
+        -- addToMasque(FocusFrameSpellBar.Icon, MasqueCastbars)
+
+        -- CastingBarFrame.Icon
+        -- TargetFrameSpellBar.Icon
+        -- FocusFrameSpellBar.Icon
 
         function BBF.MasqueUnitFrames(self, buffGroup, debuffGroup)
             -- Handling Buffs

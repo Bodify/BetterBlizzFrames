@@ -1,3 +1,21 @@
+# BetterBlizzFrames 1.4.7:
+## Retail & Cata
+### New stuff:
+- Added Masque support for castbar icons.
+### Tweaks:
+- Misc: The "hide during arena" settings are no longer tied to the minimap setting.
+### Bugfixes:
+- Fix Interrupt Icon Size, x offset & y offset sliders (i forgor :x)
+- Fix castbar spell names not being capped at max castbar width.
+
+## Cata
+### Tweak:
+- OCD Tweak: Made it toggleable and improved icon zoom. Icon zoom is now optional (on by default). Toggle icon zoom on/off with right click.
+
+## Retail
+### Bugfix:
+- Fix some aura stuff not scaling properly with Masque enabled for them
+
 # BetterBlizzFrames 1.4.6f:
 ## Cata
 ### New Stuff:

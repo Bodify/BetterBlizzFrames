@@ -694,6 +694,15 @@ local function CreateSlider(parent, label, minValue, maxValue, stepValue, elemen
                 elseif element == "focusToTAdjustmentOffsetY" then
                     BetterBlizzFramesDB.focusToTAdjustmentOffsetY = value
                     BBF.CastbarAdjustCaller()
+                elseif element == "castBarInterruptIconScale" then
+                    BetterBlizzFramesDB.castBarInterruptIconScale = value
+                    BBF.UpdateInterruptIconSettings()
+                elseif element == "castBarInterruptIconXPos" then
+                    BetterBlizzFramesDB.castBarInterruptIconXPos = value
+                    BBF.UpdateInterruptIconSettings()
+                elseif element == "castBarInterruptIconYPos" then
+                    BetterBlizzFramesDB.castBarInterruptIconYPos = value
+                    BBF.UpdateInterruptIconSettings()
 
                     --end
                 end
@@ -4312,33 +4321,30 @@ local function guiMisc()
         end
     end)
 
-    local hideMinimapAuto = CreateCheckbox("hideMinimapAuto", "Hide Minimap only during Arena", guiMisc)
+    local hideMinimapAuto = CreateCheckbox("hideMinimapAuto", "Hide Minimap during Arena", guiMisc)
     hideMinimapAuto:SetPoint("TOPLEFT", hideMinimapButtons, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(hideMinimapAuto, "Automatically hide Minimap during arena games.")
     hideMinimapAuto:HookScript("OnClick", function()
         CheckAndToggleCheckboxes(hideMinimapAuto)
-        local _, instanceType = GetInstanceInfo()
-        BBF.MinimapHider(instanceType)
+        BBF.MinimapHider()
     end)
 
-    local hideMinimapAutoQueueEye = CreateCheckbox("hideMinimapAutoQueueEye", "Also hide Queue Status Eye", hideMinimapAuto)
-    hideMinimapAutoQueueEye:SetPoint("TOPLEFT", hideMinimapAuto, "BOTTOMLEFT", 15, pixelsBetweenBoxes)
+    local hideMinimapAutoQueueEye = CreateCheckbox("hideMinimapAutoQueueEye", "Hide Queue Status Eye during Arena", guiMisc)
+    hideMinimapAutoQueueEye:SetPoint("TOPLEFT", hideMinimapAuto, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(hideMinimapAutoQueueEye, "Automatically hide Queue Status Eye during arena games.")
     hideMinimapAutoQueueEye:HookScript("OnClick", function()
-        local _, instanceType = GetInstanceInfo()
-        BBF.MinimapHider(instanceType)
+        BBF.MinimapHider()
     end)
 
-    local hideObjectiveTracker = CreateCheckbox("hideObjectiveTracker", "Also hide Objective Tracker", hideMinimapAuto)
+    local hideObjectiveTracker = CreateCheckbox("hideObjectiveTracker", "Hide Objective Tracker during Arena", guiMisc)
     hideObjectiveTracker:SetPoint("TOPLEFT", hideMinimapAutoQueueEye, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(hideObjectiveTracker, "Automatically hide Objective Tracker during arena games.")
     hideObjectiveTracker:HookScript("OnClick", function()
-        local _, instanceType = GetInstanceInfo()
-        BBF.MinimapHider(instanceType)
+        BBF.MinimapHider()
     end)
 
     local hideActionBarHotKey = CreateCheckbox("hideActionBarHotKey", "Hide ActionBar Keybinds", guiMisc, nil, BBF.HideFrames)
-    hideActionBarHotKey:SetPoint("TOPLEFT", hideObjectiveTracker, "BOTTOMLEFT", -15, pixelsBetweenBoxes)
+    hideActionBarHotKey:SetPoint("TOPLEFT", hideObjectiveTracker, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(hideActionBarHotKey, "Hides the keybind on default actionbars (I highly recommend getting Bartender though, doesnt bug like default does)")
 
     local hideActionBarMacroName = CreateCheckbox("hideActionBarMacroName", "Hide ActionBar Macro Name", guiMisc, nil, BBF.HideFrames)

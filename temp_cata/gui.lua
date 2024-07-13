@@ -786,6 +786,15 @@ local function CreateSlider(parent, label, minValue, maxValue, stepValue, elemen
                 elseif element == "focusFrameScale" then
                     BetterBlizzFramesDB.focusFrameScale = value
                     BBF.ScaleUnitFrames()
+                elseif element == "castBarInterruptIconScale" then
+                    BetterBlizzFramesDB.castBarInterruptIconScale = value
+                    BBF.UpdateInterruptIconSettings()
+                elseif element == "castBarInterruptIconXPos" then
+                    BetterBlizzFramesDB.castBarInterruptIconXPos = value
+                    BBF.UpdateInterruptIconSettings()
+                elseif element == "castBarInterruptIconYPos" then
+                    BetterBlizzFramesDB.castBarInterruptIconYPos = value
+                    BBF.UpdateInterruptIconSettings()
 
                     --end
                 end
@@ -1568,7 +1577,7 @@ local function CreateTitle(parent)
     addonNameIcon:SetPoint("LEFT", addonNameText, "RIGHT", -2, -1)
     local verNumber = parent:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     verNumber:SetPoint("LEFT", addonNameText, "RIGHT", 25, 0)
-    verNumber:SetText("CATA BETA v0.1.1e" )--.. BBF.VersionNumber.."b")
+    verNumber:SetText("CATA BETA v0.1.2" )--.. BBF.VersionNumber.."b")
 end
 
 ------------------------------------------------------------
@@ -1692,8 +1701,13 @@ local function guiGeneralTab()
 
     local playerFrameOCD = CreateCheckbox("playerFrameOCD", "OCD Tweaks", BetterBlizzFrames, nil, BBF.FixStupidBlizzPTRShit)
     playerFrameOCD:SetPoint("TOPLEFT", hideBossFrames, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltipTwo(playerFrameOCD, "OCD Tweaks", "Fixes some of Blizzards laziness with the UI.\n\nFixes Actionbar layout & centers it properly.\nAdds minor zoom on actionbar icons so the double border effect gets removed.")
-    --notWorking(playerFrameOCD, true)
+    CreateTooltipTwo(playerFrameOCD, "OCD Tweaks", "Fixes some of Blizzards laziness with the UI.\n\nFixes Actionbar layout & centers it properly.\nAdds minor zoom on actionbar icons so the double border effect gets removed.\n\n|cff32f795Right-click to toggle icon zoom on/off.|r")
+    playerFrameOCD:SetScript("OnMouseDown", function(self, button)
+        if button == "RightButton" and BetterBlizzFramesDB.playerFrameOCD then
+            BetterBlizzFramesDB.playerFrameOCDZoom = not BetterBlizzFramesDB.playerFrameOCDZoom
+            BBF.ActionBarIconZoom()
+        end
+    end)
 
     local playerFrameOCDTextureBypass = CreateCheckbox("playerFrameOCDTextureBypass", "OCD: Skip Bars", BetterBlizzFrames, nil, BBF.HideFrames)
     playerFrameOCDTextureBypass:SetPoint("LEFT", playerFrameOCD.text, "RIGHT", 0, 0)
@@ -4679,34 +4693,30 @@ local function guiMisc()
         end
     end)
 
-    local hideMinimapAuto = CreateCheckbox("hideMinimapAuto", "Hide Minimap only during Arena", guiMisc)
+    local hideMinimapAuto = CreateCheckbox("hideMinimapAuto", "Hide Minimap during Arena", guiMisc)
     hideMinimapAuto:SetPoint("TOPLEFT", hideMinimapButtons, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(hideMinimapAuto, "Automatically hide Minimap during arena games.")
     hideMinimapAuto:HookScript("OnClick", function()
-        CheckAndToggleCheckboxes(hideMinimapAuto)
-        local _, instanceType = GetInstanceInfo()
-        BBF.MinimapHider(instanceType)
+        BBF.MinimapHider()
     end)
 
-    local hideMinimapAutoQueueEye = CreateCheckbox("hideMinimapAutoQueueEye", "Also hide Queue Status Eye", hideMinimapAuto)
-    hideMinimapAutoQueueEye:SetPoint("TOPLEFT", hideMinimapAuto, "BOTTOMLEFT", 15, pixelsBetweenBoxes)
+    local hideMinimapAutoQueueEye = CreateCheckbox("hideMinimapAutoQueueEye", "Hide Queue Status Eye during Arena", guiMisc)
+    hideMinimapAutoQueueEye:SetPoint("TOPLEFT", hideMinimapAuto, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(hideMinimapAutoQueueEye, "Automatically hide Queue Status Eye during arena games.")
     hideMinimapAutoQueueEye:HookScript("OnClick", function()
-        local _, instanceType = GetInstanceInfo()
-        BBF.MinimapHider(instanceType)
+        BBF.MinimapHider()
     end)
     notWorking(hideMinimapAutoQueueEye, true)
 
-    local hideObjectiveTracker = CreateCheckbox("hideObjectiveTracker", "Also hide Objective Tracker", hideMinimapAuto)
+    local hideObjectiveTracker = CreateCheckbox("hideObjectiveTracker", "Hide Objective Tracker during Arena", guiMisc)
     hideObjectiveTracker:SetPoint("TOPLEFT", hideMinimapAutoQueueEye, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(hideObjectiveTracker, "Automatically hide Objective Tracker during arena games.")
     hideObjectiveTracker:HookScript("OnClick", function()
-        local _, instanceType = GetInstanceInfo()
-        BBF.MinimapHider(instanceType)
+        BBF.MinimapHider()
     end)
 
     local hideActionBarHotKey = CreateCheckbox("hideActionBarHotKey", "Hide ActionBar Keybinds", guiMisc, nil, BBF.HideFrames)
-    hideActionBarHotKey:SetPoint("TOPLEFT", hideObjectiveTracker, "BOTTOMLEFT", -15, pixelsBetweenBoxes)
+    hideActionBarHotKey:SetPoint("TOPLEFT", hideObjectiveTracker, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(hideActionBarHotKey, "Hides the keybind on default actionbars (I highly recommend getting Bartender though, doesnt bug like default does)")
 
     local hideActionBarMacroName = CreateCheckbox("hideActionBarMacroName", "Hide ActionBar Macro Name", guiMisc, nil, BBF.HideFrames)

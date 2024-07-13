@@ -6,7 +6,7 @@ BBF = BBF or {}
 -- Things are getting more messy need a lot of cleaning lol
 
 local addonVersion = "1.00" --too afraid to to touch for now
-local addonUpdates = "1.4.6f"
+local addonUpdates = "1.4.7"
 local sendUpdate = false
 BBF.VersionNumber = addonUpdates
 BBF.variablesLoaded = false
@@ -443,7 +443,7 @@ local function LoadingScreenDetector(_, event)
     if event == "PLAYER_ENTERING_WORLD" or event == "LOADING_SCREEN_ENABLED" then
         BetterBlizzFramesDB.wasOnLoadingScreen = true
 
-        BBF.MinimapHider(instanceType)
+        BBF.MinimapHider()
 
         --#######TEMPORARY BUGFIX FOR BLIZZARD#########
         if BetterBlizzFramesDB.hideDragonFlying then
@@ -459,7 +459,7 @@ local function LoadingScreenDetector(_, event)
             BBF.FixStupidBlizzPTRShit()
         end
 
-        BBF.MinimapHider(instanceType)
+        BBF.MinimapHider()
 
         --#######TEMPORARY BUGFIX FOR BLIZZARD#########
         if BetterBlizzFramesDB.hideDragonFlying then
