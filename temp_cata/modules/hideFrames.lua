@@ -811,7 +811,7 @@ local minimapStatusChanged
 function BBF.MinimapHider()
     local MinimapGroup = Minimap and MinimapCluster
     local QueueStatusEye = QueueStatusButtonIcon
-    local ObjectiveTracker = ObjectiveTrackerFrame
+    local ObjectiveTracker = WatchFrame
 
     local _, instanceType = GetInstanceInfo()
     local inArena = instanceType == "arena"

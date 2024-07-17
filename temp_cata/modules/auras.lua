@@ -25,7 +25,7 @@ local table_sort = table.sort
 local math_max = math.max
 local print = print
 
-local Masque = LibStub("Masque", true)
+local Masque
 local MasquePlayerBuffs
 local MasquePlayerDebuffs
 local MasqueTargetBuffs
@@ -2598,6 +2598,7 @@ function BBF.RefreshAllAuraFrames()
 end
 
 function BBF.SetupMasqueSupport()
+    Masque = LibStub("Masque", true)
     if Masque then
         MasqueOn = true
         MasquePlayerBuffs = Masque:Group("Better|cff00c0ffBlizz|rFrames", "Player Buffs")

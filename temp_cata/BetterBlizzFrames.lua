@@ -470,6 +470,7 @@ local function LoadingScreenDetector(_, event)
         BBF.MinimapHider()
 
         C_Timer.After(2, function()
+            BBF.ChangeCastbarSizes()
             BetterBlizzFramesDB.wasOnLoadingScreen = false
         end)
     end
@@ -878,6 +879,24 @@ local function restoreSettings()
     end
 end
 
+local function ChangeHotkeyWidth(width)
+    local function changeWidth(frame, width)
+        if not frame then return end
+        frame:SetWidth(width)
+    end
+    for i = 1, 12 do
+        changeWidth(_G["ActionButton" .. i .. "HotKey"], width)
+        changeWidth(_G["MultiBarBottomLeftButton" .. i .. "HotKey"], width)
+        changeWidth(_G["MultiBarBottomRightButton" ..i.. "HotKey"], width)
+        changeWidth(_G["MultiBarRightButton" ..i.. "HotKey"], width)
+        changeWidth(_G["MultiBarLeftButton" ..i.. "HotKey"], width)
+        changeWidth(_G["MultiBar5Button" ..i.. "HotKey"], width)
+        changeWidth(_G["MultiBar6Button" ..i.. "HotKey"], width)
+        changeWidth(_G["MultiBar7Button" ..i.. "HotKey"], width)
+        changeWidth(_G["PetActionButton" ..i.. "HotKey"], width)
+    end
+end
+
 function BBF.FixStupidBlizzPTRShit()
     if BetterBlizzFramesDB.playerFrameOCD then
         if not originalSettings.backedUp then
@@ -950,8 +969,10 @@ function BBF.FixStupidBlizzPTRShit()
         ReputationWatchBar.StatusBar.XPBarTexture3:SetWidth(255)
 
         BBF.ActionBarIconZoom()
+        ChangeHotkeyWidth(30)
     else
         MainMenuBarTextureExtender:Show()
+        ChangeHotkeyWidth(28)
         restoreSettings()
         BBF.ActionBarIconZoom()
     end
@@ -962,11 +983,6 @@ local function TurnTestModesOff()
     BetterBlizzFramesDB.absorbIndicatorTestMode = false
     BetterBlizzFramesDB.partyCastBarTestMode = false
     BetterBlizzFramesDB.petCastBarTestMode = false
-end
-
-
-function BBF.MovePetFrame()
-    BBF.MoveRegion(PetActionBarFrame, "LEFT", MainMenuBar, "LEFT", 36, 93)
 end
 
 
@@ -999,9 +1015,7 @@ Frame:SetScript("OnEvent", function(...)
             if BetterBlizzFramesDB.hideArenaFrames then
                 BBF.HideArenaFrames()
             end
-            if BetterBlizzFramesDB.fixPlayerPetPosition then
-                BBF.MovePetFrame()
-            end
+
             BBF.ScaleUnitFrames()
             BBF.MoveToTFrames()
             BBF.UpdateUserAuraSettings()

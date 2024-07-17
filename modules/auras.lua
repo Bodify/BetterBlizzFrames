@@ -1837,6 +1837,7 @@ function BBF.SetupMasqueSupport()
             frame.SkinnedIcon:SetTexture(frame.Icon:GetTexture())
             hooksecurefunc(frame.Icon, "SetTexture", function(_, tex)
                 skinWrapper:SetScale(frame.Icon:GetScale())
+                frame.Icon:SetAlpha(0)
                 frame.SkinnedIcon:SetTexture(tex)
             end)
             group:AddButton(skinWrapper, {

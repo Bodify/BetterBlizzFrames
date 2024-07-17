@@ -244,19 +244,41 @@ function BBF.DarkmodeFrames(bypass)
     applySettings(PetFrameTexture, desaturationValue, vertexColor)
     applySettings(FocusFrameToTTextureFrameTexture, desaturationValue, vertexColor)
 
-    -- for i = 1, Minimap:GetNumChildren() do
-    --     local child = select(i, Minimap:GetChildren())
-    --     for j = 1, child:GetNumRegions() do
-    --         local region = select(j, child:GetRegions())
-    --         if region:IsObjectType("Texture") then
-    --             local texturePath = region:GetTexture()
-    --             if texturePath and string.find(texturePath, "136430") then
-    --                 applySettings(region, minimapSat, minimapColor)
-    --             end
-    --             applySettings(region, minimapSat, minimapColor)
-    --         end
-    --     end
-    -- end
+    function checkAndApplySettings(object, minimapSat, minimapColor)
+        if object:IsObjectType("Texture") then
+            local texturePath = object:GetTexture()
+            if texturePath and string.find(texturePath, "136430") then
+                applySettings(object, minimapSat, minimapColor)
+            end
+        end
+
+        if object.GetNumChildren and object:GetNumChildren() > 0 then
+            for i = 1, object:GetNumChildren() do
+                local child = select(i, object:GetChildren())
+                if not child then return end
+                checkAndApplySettings(child, minimapSat, minimapColor)
+            end
+        end
+
+        if object.GetNumChildren and object:GetNumRegions() > 0 then
+            for j = 1, object:GetNumRegions() do
+                local region = select(j, object:GetRegions())
+                checkAndApplySettings(region, minimapSat, minimapColor)
+            end
+        end
+    end
+
+    for i = 1, MinimapBackdrop:GetNumChildren() do
+        local child = select(i, MinimapBackdrop:GetChildren())
+        if not child then return end
+        checkAndApplySettings(child, minimapSat, minimapColor)
+    end
+
+    for i = 1, Minimap:GetNumChildren() do
+        local child = select(i, Minimap:GetChildren())
+        if not child then return end
+        checkAndApplySettings(child, minimapSat, minimapColor)
+    end
 
     for i = 1, TimeManagerClockButton:GetNumChildren() do
         local child = select(i, Minimap:GetChildren())

@@ -229,6 +229,7 @@ function BBF.DarkmodeFrames(bypass)
 
     for i = 1, Minimap:GetNumChildren() do
         local child = select(i, Minimap:GetChildren())
+        if not child then return end
         for j = 1, child:GetNumRegions() do
             local region = select(j, child:GetRegions())
             if region:IsObjectType("Texture") then

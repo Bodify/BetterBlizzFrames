@@ -1,3 +1,17 @@
+# BetterBlizzFrames 1.4.7b:
+## Retail
+### Bugfix:
+- Fixed Masque support for Player Castbar not properly adjusting
+- Fixed Player Castbar settings resetting on some loading screens.
+
+## Cata
+### Tweak:
+- OCD Tweaks: Fixed a Blizzard issue where on smaller resolutions (1080p and below?) combined with a small UI Scale would truncate all hotkey text on actionbars even though it is not needed.
+- Removed Pet Actionbar fix as it has been fixed by Blizzard.
+### Bugfix:
+- Fix Masque support timing issue causing it not to be detected on login.
+- Fix "Hide Objective Tracker" setting using retail name for frame accidentally.
+
 # BetterBlizzFrames 1.4.7:
 ## Retail & Cata
 ### New stuff:

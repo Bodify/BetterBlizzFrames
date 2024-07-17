@@ -471,6 +471,7 @@ local function LoadingScreenDetector(_, event)
         end
         --#######TEMPORARY BUGFIX FOR BLIZZARD#########
         C_Timer.After(2, function()
+            BBF.ChangeCastbarSizes()
             BetterBlizzFramesDB.wasOnLoadingScreen = false
         end)
     end
