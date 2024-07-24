@@ -1058,6 +1058,12 @@ function BBF.FixStupidBlizzPTRShit()
     end
 end
 
+function BBF.NormalizeGameMenu(enabled)
+    GameMenuFrame:ClearAllPoints()
+    GameMenuFrame:SetPoint("CENTER", UIParent, "CENTER", 0, enabled and 65 or 0)
+    GameMenuFrame:SetScale(enabled and 0.75 or 1)
+end
+
 local function TurnTestModesOff()
     BetterBlizzFramesDB.absorbIndicatorTestMode = false
     BetterBlizzFramesDB.partyCastBarTestMode = false
@@ -1130,6 +1136,9 @@ Frame:SetScript("OnEvent", function(...)
                 end
                 if BetterBlizzFramesDB.classColorFrames then
                     BBF.UpdateFrames()
+                end
+                if BetterBlizzFramesDB.normalizeGameMenu then
+                    BBF.NormalizeGameMenu(true)
                 end
                 if not isAddonLoaded("ClassicFrames") then
                     BBF.SetCenteredNamesCaller()
