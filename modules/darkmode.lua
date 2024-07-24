@@ -66,25 +66,34 @@ local function UpdateFrameAuras(pool)
 end
 
 function BBF.DarkModeUnitframeBorders()
-    if BetterBlizzFramesDB.enableMasque then return end
-    if (BetterBlizzFramesDB.darkModeUiAura and BetterBlizzFramesDB.darkModeUi) then --and not BetterBlizzFramesDB.playerAuraFiltering) then
-        if not hookedAuras then
-            for poolKey, pool in pairs(TargetFrame.auraPools.pools) do
-                hooksecurefunc(pool, "Acquire", UpdateFrameAuras)
-                UpdateFrameAuras(pool)
-            end
+    if BetterBlizzFramesDB.darkModeUiAura and BetterBlizzFramesDB.darkModeUi then
+        -- if not hookedAuras then
+        --     local function HookAuraPool(auraPool)
+        --         if auraPool then
+        --             hooksecurefunc(auraPool, "Acquire", UpdateFrameAuras)
+        --             UpdateFrameAuras(auraPool)
+        --         end
+        --     end
 
-            for poolKey, pool in pairs(FocusFrame.auraPools.pools) do
-                hooksecurefunc(pool, "Acquire", UpdateFrameAuras)
-                UpdateFrameAuras(pool)
-            end
-            hookedAuras = true
-        end
+        --     local targetAuraPools = TargetFrame.auraPools
+        --     local focusAuraPools = FocusFrame.auraPools
+
+
+        --         HookAuraPool(TargetFrame.auraPools)
+
+
+
+        --         HookAuraPool(FocusFrame.auraPools)
+
+
+        --     hookedAuras = true
+        -- end
     end
 end
 
 BBF.auraBorders = {}  -- BuffFrame aura borders for darkmode
 local function createOrUpdateBorders(frame, colorValue, textureName, bypass)
+    --if not twwrdy then return end
     if BetterBlizzFramesDB.enableMasque then return end
     if (darkModeUi and darkModeUiAura) or bypass then
         if not BBF.auraBorders[frame] then
@@ -108,6 +117,7 @@ local function createOrUpdateBorders(frame, colorValue, textureName, bypass)
             if textureName then
                 icon = frame[textureName]
             end
+            if not icon then return end
             icon:SetTexCoord(0.08, 0.92, 0.08, 0.92) -- Adjust the icon
 
             if not bypass then

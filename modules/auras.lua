@@ -914,7 +914,7 @@ local function AdjustAuras(self, frameType)
                 if not aura.filterClick then
                     aura:HookScript("OnMouseDown", function(self, button)
                         if IsShiftKeyDown() and IsAltKeyDown() then
-                            local spellName, _, icon = GetSpellInfo(aura.spellId)
+                            local spellName, _, icon = BBF.TWWGetSpellInfo(aura.spellId)
                             local spellId = tostring(aura.spellId)
                             local iconString = "|T" .. icon .. ":16:16:0:0|t" -- Format the icon for display
 
@@ -1263,7 +1263,7 @@ local function CreateToggleIcon()
     Icon:SetAllPoints()
     Icon:SetTexture(BetterBlizzFramesDB.auraToggleIconTexture)
     -------
-    if IsAddOnLoaded("SUI") then
+    if C_AddOns.IsAddOnLoaded("SUI") then
         if SUIDB and SUIDB["profiles"] and SUIDB["profiles"]["Default"] and SUIDB["profiles"]["Default"]["general"] then
             -- Now check if the theme variable doesn't exist or is nil
             if SUIDB["profiles"]["Default"]["general"]["theme"] == "Dark" or SUIDB["profiles"]["Default"]["general"]["theme"] == "Custom" or SUIDB["profiles"]["Default"]["general"]["theme"] == "Class" then
@@ -1388,7 +1388,7 @@ local function PersonalBuffFrameFilterAndGrid(self)
                     name, icon, count, dispelType, duration, expirationTime, source,
                     isStealable, nameplateShowPersonal, spellId, canApplyAura,
                     isBossDebuff, castByPlayer, nameplateShowAll, timeMod
-                    = UnitAura("player", auraInfo.index, 'HELPFUL');
+                    = BBF.TWWUnitAura("player", auraInfo.index, 'HELPFUL');
                 end
 
               local auraData = {
@@ -1425,7 +1425,7 @@ local function PersonalBuffFrameFilterAndGrid(self)
                                     name, icon, count, dispelType, duration, expirationTime, source,
                                     isStealable, nameplateShowPersonal, spellId, canApplyAura,
                                     isBossDebuff, castByPlayer, nameplateShowAll, timeMod
-                                    = UnitAura("player", currentAuraIndex, 'HELPFUL');
+                                    = BBF.TWWUnitAura("player", currentAuraIndex, 'HELPFUL');
                                 end
 
                                 auraData = {
@@ -1480,7 +1480,7 @@ local function PersonalBuffFrameFilterAndGrid(self)
                     if not auraFrame.filterClick then
                         auraFrame:HookScript("OnMouseDown", function(self, button)
                             if IsShiftKeyDown() and IsAltKeyDown() then
-                                local spellName, _, icon = GetSpellInfo(auraFrame.spellId)
+                                local spellName, _, icon = BBF.TWWGetSpellInfo(auraFrame.spellId)
                                 local spellId = tostring(auraFrame.spellId)
                                 local iconString = "|T" .. icon .. ":16:16:0:0|t" -- Format the icon for display
 
@@ -1628,7 +1628,7 @@ local function PersonalDebuffFrameFilterAndGrid(self)
                     local name, icon, count, dispelType, duration, expirationTime, source, 
                     isStealable, nameplateShowPersonal, spellId, canApplyAura, 
                     isBossDebuff, castByPlayer, nameplateShowAll, timeMod 
-                  = UnitAura("player", auraInfo.index, 'HARMFUL');
+                  = BBF.TWWUnitAura("player", auraInfo.index, 'HARMFUL');
 
               local auraData = {
                   name = name,
@@ -1652,7 +1652,7 @@ local function PersonalDebuffFrameFilterAndGrid(self)
                             local name, icon, count, dispelType, duration, expirationTime, source, 
                             isStealable, nameplateShowPersonal, spellId, canApplyAura, 
                             isBossDebuff, castByPlayer, nameplateShowAll, timeMod 
-                            = UnitAura("player", currentAuraIndex, 'HARMFUL');
+                            = BBF.TWWUnitAura("player", currentAuraIndex, 'HARMFUL');
 
                             local auraData = {
                                 name = name,
@@ -1712,7 +1712,7 @@ local function PersonalDebuffFrameFilterAndGrid(self)
                     if not auraFrame.filterClick then
                         auraFrame:HookScript("OnMouseDown", function(self, button)
                             if IsShiftKeyDown() and IsAltKeyDown() then
-                                local spellName, _, icon = GetSpellInfo(auraFrame.spellId)
+                                local spellName, _, icon = BBF.TWWGetSpellInfo(auraFrame.spellId)
                                 local spellId = tostring(auraFrame.spellId)
                                 local iconString = "|T" .. icon .. ":16:16:0:0|t" -- Format the icon for display
 

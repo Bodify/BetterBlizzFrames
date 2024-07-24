@@ -6,7 +6,7 @@ BBF = BBF or {}
 -- Things are getting more messy need a lot of cleaning lol
 
 local addonVersion = "1.00" --too afraid to to touch for now
-local addonUpdates = "1.4.7"
+local addonUpdates = "1.4.8"
 local sendUpdate = false
 BBF.VersionNumber = addonUpdates
 BBF.variablesLoaded = false
@@ -867,7 +867,7 @@ local hiddenFrame = CreateFrame("Frame")
 hiddenFrame:Hide()
 function BBF.MiniFocusFrame()
     if BetterBlizzFramesDB.useMiniFocusFrame then
-        FocusFrame.TargetFrameContent.TargetFrameContentMain.HealthBar:SetAlpha(0)
+        FocusFrame.TargetFrameContent.TargetFrameContentMain.HealthBarsContainer:SetAlpha(0)
         FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar:SetAlpha(0)
 
         if not FocusFrame.TargetFrameContainer.compactRing then
@@ -906,7 +906,7 @@ function BBF.MiniFocusFrame()
         FocusFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetPoint("CENTER", hiddenFrame, "CENTER")
     else
         --reset to original
-        FocusFrame.TargetFrameContent.TargetFrameContentMain.HealthBar:SetAlpha(1)
+        FocusFrame.TargetFrameContent.TargetFrameContentMain.HealthBarsContainer:SetAlpha(1)
         FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar:SetAlpha(1)
 
         if FocusFrame.TargetFrameContainer.compactRing then
@@ -1009,7 +1009,7 @@ function BBF.FixStupidBlizzPTRShit()
     if not BetterBlizzFramesDB.playerFrameOCDTextureBypass then
         local a, b, c, d, e = PlayerLevelText:GetPoint()
         PlayerLevelText:SetPoint(a,b,c,d,-28)
-        PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarArea.HealthBar.HealthBarMask:SetHeight(33)
+        PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer.HealthBarMask:SetHeight(33)
         PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar.ManaBarMask:SetPoint("TOPLEFT", PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar, "TOPLEFT", -2, 3)
         PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar.ManaBarMask:SetHeight(17)
         PlayerFrame.healthbar:SetHeight(21)
@@ -1019,7 +1019,7 @@ function BBF.FixStupidBlizzPTRShit()
         --local a, b, c, d, e = TargetFrame.TargetFrameContent.TargetFrameContentMain.Name:GetPoint()
         --TargetFrame.TargetFrameContent.TargetFrameContentMain.Name:ClearAllPoints()
         --TargetFrame.TargetFrameContent.TargetFrameContentMain.Name:SetPoint(a, b, c, d, 99)
-        TargetFrame.TargetFrameContent.TargetFrameContentMain.HealthBar.HealthBarMask:SetWidth(129)
+        TargetFrame.TargetFrameContent.TargetFrameContentMain.HealthBarsContainer.HealthBarMask:SetWidth(129)
         TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar:SetSize(136, 10)
         TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.ManaBarMask:SetSize(258, 16)
         local point, relativeTo, relativePoint, xOffset, yOffset = TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar:GetPoint()
@@ -1028,7 +1028,7 @@ function BBF.FixStupidBlizzPTRShit()
         TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.RightText:SetPoint(p, r, rr, -14, y)
         local a, b, c, d, e = TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.LeftText:GetPoint()
         TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.LeftText:SetPoint(a,b,c,3,e)
-        FocusFrame.TargetFrameContent.TargetFrameContentMain.HealthBar.HealthBarMask:SetWidth(129)
+        FocusFrame.TargetFrameContent.TargetFrameContentMain.HealthBarsContainer.HealthBarMask:SetWidth(129)
         FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar:SetSize(136, 10)
         FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.ManaBarMask:SetSize(258, 16)
         local point, relativeTo, relativePoint, xOffset, yOffset = FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar:GetPoint()
@@ -1160,7 +1160,8 @@ Frame:SetScript("OnEvent", function(...)
     LoginVariablesLoaded()
 
     if BetterBlizzFramesDB.reopenOptions then
-        InterfaceOptionsFrame_OpenToCategory(BetterBlizzFrames)
+        --InterfaceOptionsFrame_OpenToCategory(BetterBlizzFrames)
+        Settings.OpenToCategory(BBF.category.ID)
         BetterBlizzFramesDB.reopenOptions = false
     end
 end)
@@ -1178,7 +1179,8 @@ SlashCmdList["BBF"] = function(msg)
     elseif command == "magnusz" then
         StaticPopup_Show("BBF_CONFIRM_MAGNUSZ_PROFILE")
     else
-        InterfaceOptionsFrame_OpenToCategory(BetterBlizzFrames)
+        --InterfaceOptionsFrame_OpenToCategory(BetterBlizzFrames)
+        Settings.OpenToCategory(BBF.category.ID)
     end
 end
 

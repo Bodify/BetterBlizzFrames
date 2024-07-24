@@ -810,7 +810,7 @@ function BBF.CenteredFrameNames(frame, unit)
         frame.cleanName:SetJustifyH("CENTER")
         frame.cleanName:SetJustifyV(originalNameObject:GetJustifyV())
         frame.cleanName:SetWidth(originalNameObject:GetWidth())
-        --frame.cleanName:ClearAllPoints()
+        frame.cleanName:ClearAllPoints()
         frame.cleanName:SetPoint("TOP", frame.HealthBar, "TOP", 2, 14)
         frame.cleanName:SetAlpha(1)
     else
@@ -859,9 +859,9 @@ local function CenteredPlayerName()
             frame.cleanName:SetText(GetUnitName("player", true))
             --frame.cleanName:ClearAllPoints()
             if playerFrameOCD then
-                frame.cleanName:SetPoint("TOP", frame.HealthBarArea.HealthBar, "TOP", 0, 13.5)
+                frame.cleanName:SetPoint("TOP", frame.HealthBarsContainer, "TOP", 0, 13.5)
             else
-                frame.cleanName:SetPoint("TOP", frame.HealthBarArea.HealthBar, "TOP", 0, 14.5)
+                frame.cleanName:SetPoint("TOP", frame.HealthBarsContainer, "TOP", 0, 14.5)
             end
             --frame.cleanName:SetTextColor(1, 0.81960791349411, 0)
             frame.cleanName:SetShadowColor(PlayerName:GetShadowColor())

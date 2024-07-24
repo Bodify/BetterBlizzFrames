@@ -9,9 +9,9 @@ local COMPACT_UNITFRAME_OVERSHIELD_HOOKED = false
 
 local function getAbsorbOverlay(frame)
     if frame == PlayerFrame then
-        return frame.PlayerFrameContent.PlayerFrameContentMain.HealthBarArea.HealthBar.TotalAbsorbBar.TiledFillOverlay
+        return frame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer.HealthBar.TotalAbsorbBar.TiledFillOverlay
     elseif frame == TargetFrame or frame == FocusFrame then
-        return frame.TargetFrameContent.TargetFrameContentMain.HealthBar.TotalAbsorbBar.TiledFillOverlay
+        return frame.TargetFrameContent.TargetFrameContentMain.HealthBarsContainer.HealthBar.TotalAbsorbBar.TiledFillOverlay
     end
 end
 

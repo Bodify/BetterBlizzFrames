@@ -1,3 +1,7 @@
+# BetterBlizzFrames 1.4.8
+## The War Within
+- Updated to support TWW. Might some things I've missed that needs a quick rename fix. Please report errors.
+
 # BetterBlizzFrames 1.4.7b:
 ## Retail
 ### Bugfix:

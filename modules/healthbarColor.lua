@@ -37,34 +37,43 @@ local function getUnitColor(unit)
             return {r = 1, g = 0, b = 0}
         elseif reaction == "NEUTRAL" then
             return {r = 1, g = 1, b = 0}
-        else -- if reaction is "FRIENDLY"
-            return {r = 0, g = 1, b = 0}
+        elseif reaction == "FRIENDLY" then
+            return "FRIENDLY"
         end
     end
 end
 
 local function updateFrameColorToggleVer(frame, unit)
     if classColorsOn then
-        --local color = UnitIsPlayer(unit) and RAID_CLASS_COLORS[select(2, UnitClass(unit))] or getUnitColor(unit) --bad
         local color = getUnitColor(unit)
         if color then
-            frame:SetStatusBarDesaturated(true)
-            frame:SetStatusBarColor(color.r, color.g, color.b)
+            if color == "FRIENDLY" then
+                frame:SetStatusBarDesaturated(false)
+                frame:SetStatusBarColor(1, 1, 1)
+            else
+                frame:SetStatusBarDesaturated(true)
+                frame:SetStatusBarColor(color.r, color.g, color.b)
+            end
         end
     end
 end
 
 local function resetFrameColor(frame, unit)
     frame:SetStatusBarDesaturated(false)
-    frame:SetStatusBarColor(0,1,0)
+    frame:SetStatusBarColor(1,1,1)
 end
 
 local function UpdateHealthColor(frame, unit)
     --local color = UnitIsPlayer(unit) and RAID_CLASS_COLORS[select(2, UnitClass(unit))] or getUnitColor(unit)
     local color = getUnitColor(unit)
     if color then
-        frame:SetStatusBarDesaturated(true)
-        frame:SetStatusBarColor(color.r, color.g, color.b)
+        if color == "FRIENDLY" then
+            frame:SetStatusBarDesaturated(false)
+            frame:SetStatusBarColor(1, 1, 1)
+        else
+            frame:SetStatusBarDesaturated(true)
+            frame:SetStatusBarColor(color.r, color.g, color.b)
+        end
     end
 end
 
@@ -78,8 +87,8 @@ function BBF.UpdateFrames()
     if classColorsOn then
         BBF.HookHealthbarColors()
         if UnitExists("player") then updateFrameColorToggleVer(PlayerFrame.healthbar, "player") end
-        if UnitExists("target") then updateFrameColorToggleVer(TargetFrame.TargetFrameContent.TargetFrameContentMain.HealthBar, "target") end
-        if UnitExists("focus") then updateFrameColorToggleVer(FocusFrame.TargetFrameContent.TargetFrameContentMain.HealthBar, "focus") end
+        if UnitExists("target") then updateFrameColorToggleVer(TargetFrame.TargetFrameContent.TargetFrameContentMain.HealthBarsContainer, "target") end
+        if UnitExists("focus") then updateFrameColorToggleVer(FocusFrame.TargetFrameContent.TargetFrameContentMain.HealthBarsContainer, "focus") end
         if UnitExists("targettarget") then updateFrameColorToggleVer(TargetFrameToT.HealthBar, "targettarget") end
         if UnitExists("focustarget") then updateFrameColorToggleVer(FocusFrameToT.HealthBar, "focustarget") end
         if UnitExists("party1") then updateFrameColorToggleVer(PartyFrame.MemberFrame1.HealthBar, "party1") end
@@ -88,8 +97,8 @@ function BBF.UpdateFrames()
         if UnitExists("party4") then updateFrameColorToggleVer(PartyFrame.MemberFrame4.HealthBar, "party4") end
     else
         if UnitExists("player") then resetFrameColor(PlayerFrame.healthbar, "player") end
-        if UnitExists("target") then resetFrameColor(TargetFrame.TargetFrameContent.TargetFrameContentMain.HealthBar, "target") end
-        if UnitExists("focus") then resetFrameColor(FocusFrame.TargetFrameContent.TargetFrameContentMain.HealthBar, "focus") end
+        if UnitExists("target") then resetFrameColor(TargetFrame.TargetFrameContent.TargetFrameContentMain.HealthBarsContainer, "target") end
+        if UnitExists("focus") then resetFrameColor(FocusFrame.TargetFrameContent.TargetFrameContentMain.HealthBarsContainer, "focus") end
         if UnitExists("targettarget") then resetFrameColor(TargetFrameToT.HealthBar, "targettarget") end
         if UnitExists("focustarget") then resetFrameColor(FocusFrameToT.HealthBar, "focustarget") end
         if UnitExists("party1") then resetFrameColor(PartyFrame.MemberFrame1.HealthBar, "party1") end
@@ -105,8 +114,13 @@ end
 function BBF.UpdateFrameColor(frame, unit)
     local color = getUnitColor(unit)
     if color then
-        frame:SetStatusBarDesaturated(true)
-        frame:SetStatusBarColor(color.r, color.g, color.b)
+        if color == "FRIENDLY" then
+            frame:SetStatusBarDesaturated(false)
+            frame:SetStatusBarColor(1, 1, 1)
+        else
+            frame:SetStatusBarDesaturated(true)
+            frame:SetStatusBarColor(color.r, color.g, color.b)
+        end
     end
 end
 

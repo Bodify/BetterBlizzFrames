@@ -306,7 +306,7 @@ function BBF.partyCastBarTestMode()
                 spellbar.Icon:Hide()
             else
                 spellbar.Icon:Show()
-                spellbar.Icon:SetTexture(GetSpellTexture(116))
+                spellbar.Icon:SetTexture(C_Spell.GetSpellTexture(116))
             end
             if BetterBlizzFramesDB.partyCastBarTimer then
                 if not spellbar.FakeTimer then
@@ -354,7 +354,7 @@ function BBF.petCastBarTestMode()
             spellBars["pet"].Icon:Hide()
         else
             spellBars["pet"].Icon:Show()
-            spellBars["pet"].Icon:SetTexture(GetSpellTexture(6358));
+            spellBars["pet"].Icon:SetTexture(C_Spell.GetSpellTexture(6358))
         end
         spellBars["pet"].Text:SetText("Seduction")
         if BetterBlizzFramesDB.petCastBarTimer then
@@ -570,7 +570,7 @@ function BBF.CastbarRecolorWidgets()
                     if name and not notInterruptible then
                         if castBarRecolorInterrupt then
                             for _, interruptSpellID in ipairs(interruptSpellIDs) do
-                                local start, duration = GetSpellCooldown(interruptSpellID)
+                                local start, duration = BBF.TWWGetSpellCooldown(interruptSpellID)
                                 local cooldownRemaining = start + duration - GetTime()
                                 local castRemaining = (endTime/1000) - GetTime()
 
@@ -679,7 +679,7 @@ function BBF.CastbarRecolorWidgets()
                     if name then--and not notInterruptible then
                         if castBarRecolorInterrupt then
                             for _, interruptSpellID in ipairs(interruptSpellIDs) do
-                                local start, duration = GetSpellCooldown(interruptSpellID)
+                                local start, duration = BBF.TWWGetSpellCooldown(interruptSpellID)
                                 local cooldownRemaining = start + duration - GetTime()
                                 local castRemaining = (endTime/1000) - GetTime()
 
