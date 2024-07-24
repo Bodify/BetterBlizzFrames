@@ -1,3 +1,7 @@
+# BetterBlizzFrames 1.4.8b
+## The War Within't (Prepatch)
+- Added "Normal Size Game Menu" setting in Misc section. We're old boomers but we're not that old jesus.
+
 # BetterBlizzFrames 1.4.8
 ## The War Within
 - Updated to support TWW. Might some things I've missed that needs a quick rename fix. Please report errors.
