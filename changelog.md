@@ -1,6 +1,7 @@
 # BetterBlizzFrames 1.4.8b
 ## The War Within't (Prepatch)
 - Added "Normal Size Game Menu" setting in Misc section. We're old boomers but we're not that old jesus.
+- Fix "Center Names" setting not displaying name due to naming mistake after blizzard switchup.
 
 # BetterBlizzFrames 1.4.8
 ## The War Within

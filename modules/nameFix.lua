@@ -125,7 +125,7 @@ local function CheckUnit(frame, unit, party, tot)
 
         if centerNames and not party then
             frame.cleanName:SetJustifyH("CENTER")
-            frame.cleanName:SetPoint("TOP", frame.HealthBar, "TOP", 2, 13)
+            frame.cleanName:SetPoint("TOP", frame.HealthBarsContainer, "TOP", 2, 13)
             if frame == TargetFrame.totFrame or frame == FocusFrame.totFrame then
                 frame.cleanName:SetJustifyH("CENTER")
                 local _,anchor,_,_,yPos = originalNameObject:GetPoint()
@@ -370,7 +370,7 @@ local function ChangeName(frame, unit, party, tot)
 
         if centerNames and not party then
             frame.cleanName:SetJustifyH("CENTER")
-            frame.cleanName:SetPoint("TOP", frame.HealthBar, "TOP", 2, 13)
+            frame.cleanName:SetPoint("TOP", frame.HealthBarsContainer, "TOP", 2, 13)
             if frame == TargetFrame.totFrame or frame == FocusFrame.totFrame then
                 frame.cleanName:SetJustifyH("CENTER")
                 local _,anchor,_,_,yPos = originalNameObject:GetPoint()
@@ -698,8 +698,8 @@ frame:SetScript("OnEvent", function(self, event, unit)
     UpdateToTName(FocusFrame.totFrame, "focustarget")
 --[[
     if classColorFrames then
-        BBF.UpdateFrameColor(TargetFrame.totFrame.HealthBar, "targettarget")
-        BBF.UpdateFrameColor(FocusFrame.totFrame.HealthBar, "focustarget")
+        BBF.UpdateFrameColor(TargetFrame.totframe.HealthBarsContainer, "targettarget")
+        BBF.UpdateFrameColor(FocusFrame.totframe.HealthBarsContainer, "focustarget")
         BBF.UpdateToTColor()
     end
 
@@ -811,7 +811,7 @@ function BBF.CenteredFrameNames(frame, unit)
         frame.cleanName:SetJustifyV(originalNameObject:GetJustifyV())
         frame.cleanName:SetWidth(originalNameObject:GetWidth())
         frame.cleanName:ClearAllPoints()
-        frame.cleanName:SetPoint("TOP", frame.HealthBar, "TOP", 2, 14)
+        frame.cleanName:SetPoint("TOP", frame.HealthBarsContainer, "TOP", 2, 14)
         frame.cleanName:SetAlpha(1)
     else
         if frame.cleanName then
