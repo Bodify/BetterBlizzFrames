@@ -4344,7 +4344,7 @@ local function guiMisc()
 
     local normalizeGameMenu = CreateCheckbox("normalizeGameMenu", "Normal Size Game Menu", guiMisc)
     normalizeGameMenu:SetPoint("TOPLEFT", settingsText, "BOTTOMLEFT", -4, pixelsOnFirstBox)
-    CreateTooltipTwo(normalizeGameMenu, "Normal Size Game Menu", "Enable to make the Game Menu normal size again.\nWe're old boomers but we're not that old jesus.")
+    CreateTooltipTwo(normalizeGameMenu, "Normal Size Game Menu", "Enable to make the Game Menu (Escape) normal size again.\nWe're old boomers but we're not that old jesus.")
     normalizeGameMenu:HookScript("OnClick", function(self)
         if self:GetChecked() then
             BBF.NormalizeGameMenu(true)
