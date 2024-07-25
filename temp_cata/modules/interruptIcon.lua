@@ -100,7 +100,11 @@ local function UpdateInterruptIcon(frame)
             end
         end
 
-        local _, _, _, _, _, _, _, notInterruptible = UnitCastingInfo(frame.unit) or UnitChannelInfo(frame.unit)
+        local name, _, _, startTime, endTime, _, _, notInterruptible, spellId = UnitCastingInfo(frame.unit)
+        if not name then
+            name, _, _, startTime, endTime, _, notInterruptible, spellId = UnitChannelInfo(frame.unit)
+        end
+
         if notInterruptible then
             frame:SetAlpha(0)
         else

@@ -42,7 +42,7 @@ end
 local function CreateInterruptIconFrame(parentFrame)
     local frame = CreateFrame("Frame", nil, parentFrame)
     frame:SetSize(30, 30)
-    frame:SetPoint("CENTER", parentFrame, BetterBlizzFramesDB.castBarInterruptIconAnchor, BetterBlizzFramesDB.castBarInterruptIconXPos+45, BetterBlizzFramesDB.castBarInterruptIconYPos)
+    frame:SetPoint("CENTER", parentFrame, BetterBlizzFramesDB.castBarInterruptIconAnchor, BetterBlizzFramesDB.castBarInterruptIconXPos+45, BetterBlizzFramesDB.castBarInterruptIconYPos-7)
     frame:SetScale(BetterBlizzFramesDB.castBarInterruptIconScale)
 
     frame.icon = frame:CreateTexture(nil, "OVERLAY")
@@ -72,7 +72,7 @@ local function UpdateInterruptIcon(frame)
 
     if knownInterruptSpellID then
         local start, duration, enabled = BBF.TWWGetSpellCooldown(knownInterruptSpellID)
-        local isOnCooldown = enabled == 1 and duration > 0
+        local isOnCooldown = enabled and duration > 0
         local willBeReadyBeforeCastEnd = false
 
         if isOnCooldown then
@@ -100,11 +100,15 @@ local function UpdateInterruptIcon(frame)
             end
         end
 
-        local _, _, _, _, _, _, _, notInterruptible = UnitCastingInfo(frame.unit) or UnitChannelInfo(frame.unit)
+        local name, _, _, startTime, endTime, _, _, notInterruptible, spellId = UnitCastingInfo(frame.unit)
+        if not name then
+            name, _, _, startTime, endTime, _, notInterruptible, spellId = UnitChannelInfo(frame.unit)
+        end
+
         if notInterruptible then
             frame:SetAlpha(0)
         else
-            if enabled == 1 and (not BetterBlizzFramesDB.castBarInterruptIconShowActiveOnly or duration == 0) then
+            if enabled and (not BetterBlizzFramesDB.castBarInterruptIconShowActiveOnly or duration == 0) then
                 frame.icon:SetTexture(GetSpellTexture(knownInterruptSpellID))
                 frame.cooldown:SetCooldown(start, duration)
                 frame:SetAlpha(1)
@@ -127,7 +131,7 @@ local function OnEvent(self, event, unit)
             local spellID = GetInterruptSpell()
             if spellID then
                 local start, duration, enabled = BBF.TWWGetSpellCooldown(spellID)
-                if enabled == 1 and duration > 0 then
+                if enabled and duration > 0 then
                     local castEndTime = select(5, UnitCastingInfo(unit)) or select(5, UnitChannelInfo(unit))
                     if castEndTime and start + duration <= (castEndTime / 1000) then
                         local delay = (start + duration) - GetTime()
@@ -202,7 +206,7 @@ local function UpdateSettings()
     if BetterBlizzFramesDB.castBarInterruptIconTarget and TargetFrameSpellBar.interruptIconFrame then
         local frame = TargetFrameSpellBar.interruptIconFrame
         frame:ClearAllPoints()
-        frame:SetPoint("CENTER", TargetFrameSpellBar, BetterBlizzFramesDB.castBarInterruptIconAnchor, BetterBlizzFramesDB.castBarInterruptIconXPos+45, BetterBlizzFramesDB.castBarInterruptIconYPos)
+        frame:SetPoint("CENTER", TargetFrameSpellBar, BetterBlizzFramesDB.castBarInterruptIconAnchor, BetterBlizzFramesDB.castBarInterruptIconXPos+45, BetterBlizzFramesDB.castBarInterruptIconYPos-7)
         frame:SetScale(BetterBlizzFramesDB.castBarInterruptIconScale)
         frame:Show()
 
@@ -226,7 +230,7 @@ local function UpdateSettings()
     if BetterBlizzFramesDB.castBarInterruptIconFocus and FocusFrameSpellBar.interruptIconFrame then
         local frame = FocusFrameSpellBar.interruptIconFrame
         frame:ClearAllPoints()
-        frame:SetPoint("CENTER", FocusFrameSpellBar, BetterBlizzFramesDB.castBarInterruptIconAnchor, BetterBlizzFramesDB.castBarInterruptIconXPos+45, BetterBlizzFramesDB.castBarInterruptIconYPos)
+        frame:SetPoint("CENTER", FocusFrameSpellBar, BetterBlizzFramesDB.castBarInterruptIconAnchor, BetterBlizzFramesDB.castBarInterruptIconXPos+45, BetterBlizzFramesDB.castBarInterruptIconYPos-7)
         frame:SetScale(BetterBlizzFramesDB.castBarInterruptIconScale)
         frame:Show()
 

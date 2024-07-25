@@ -3858,7 +3858,7 @@ local function guiPositionAndScale()
     CreateBorderedFrame(anchorSubInterruptIcon, 200, 293, 0, -98, BetterBlizzFramesSubPanel)
 
     local castBarInterruptIcon = contentFrame:CreateTexture(nil, "ARTWORK")
-    castBarInterruptIcon:SetTexture("Interface\\Icons\\ability_ambush")
+    castBarInterruptIcon:SetTexture("Interface\\Icons\\ability_kick")
     castBarInterruptIcon:SetSize(34, 34)
     castBarInterruptIcon:SetPoint("BOTTOM", anchorSubInterruptIcon, "TOP", 0, 0)
     CreateTooltip(castBarInterruptIcon, "Show interrupt icon next to castbar")
