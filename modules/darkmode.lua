@@ -28,66 +28,51 @@ end
 
 local hooked = {}
 
-local function UpdateFrameAuras(pool)
-    for frame, _ in pairs(pool.activeObjects) do
-        if not hooked[frame] then
-            local icon = frame.Icon
-            hooked[frame] = true
-
-            if not frame.border then
-                local border = CreateFrame("Frame", nil, frame, "BackdropTemplate")
-                border:SetBackdrop({
-                    edgeFile = "Interface/Tooltips/UI-Tooltip-Border",
-                    tileEdge = true,
-                    edgeSize = 8.5,
-                })
-
-                icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
-                border:SetPoint("TOPLEFT", icon, "TOPLEFT", -1.5, 1.5)
-                border:SetPoint("BOTTOMRIGHT", icon, "BOTTOMRIGHT", 1.5, -2)
-                frame.border = border
-
-                -- Set the initial border color
-                border:SetBackdropBorderColor(darkModeColor, darkModeColor, darkModeColor)
-            end
-            if frame.Border then
-                frame.border:Hide()
-            else
-                frame.border:Show()
-            end
-        else
-            if frame.Border then
-                frame.border:Hide()
-            else
-                frame.border:Show()
-            end
-        end
-    end
-end
-
 function BBF.DarkModeUnitframeBorders()
     if BetterBlizzFramesDB.darkModeUiAura and BetterBlizzFramesDB.darkModeUi then
-        -- if not hookedAuras then
-        --     local function HookAuraPool(auraPool)
-        --         if auraPool then
-        --             hooksecurefunc(auraPool, "Acquire", UpdateFrameAuras)
-        --             UpdateFrameAuras(auraPool)
-        --         end
-        --     end
+        if not hookedAuras then
+            local function styleAuras(self)
+                for frame, _ in self.auraPools:EnumerateActive() do
+                    if not hooked[frame] then
+                        local icon = frame.Icon
+                        hooked[frame] = true
 
-        --     local targetAuraPools = TargetFrame.auraPools
-        --     local focusAuraPools = FocusFrame.auraPools
+                        if not frame.border then
+                            local border = CreateFrame("Frame", nil, frame, "BackdropTemplate")
+                            border:SetBackdrop({
+                                edgeFile = "Interface/Tooltips/UI-Tooltip-Border",
+                                tileEdge = true,
+                                edgeSize = 8.5,
+                            })
 
+                            icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+                            border:SetPoint("TOPLEFT", icon, "TOPLEFT", -1.5, 1.5)
+                            border:SetPoint("BOTTOMRIGHT", icon, "BOTTOMRIGHT", 1.5, -2)
+                            frame.border = border
 
-        --         HookAuraPool(TargetFrame.auraPools)
+                            border:SetBackdropBorderColor(darkModeColor, darkModeColor, darkModeColor)
+                        end
 
+                        if frame.Border then
+                            frame.border:Hide()
+                        else
+                            frame.border:Show()
+                        end
+                    else
+                        if frame.Border then
+                            frame.border:Hide()
+                        else
+                            frame.border:Show()
+                        end
+                    end
+                end
+            end
 
+            hooksecurefunc(TargetFrame, "OnEvent", styleAuras)
+            hooksecurefunc(FocusFrame, "OnEvent", styleAuras)
 
-        --         HookAuraPool(FocusFrame.auraPools)
-
-
-        --     hookedAuras = true
-        -- end
+            hookedAuras = true
+        end
     end
 end
 

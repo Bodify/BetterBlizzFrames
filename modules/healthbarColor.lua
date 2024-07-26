@@ -44,6 +44,7 @@ local function getUnitColor(unit)
 end
 
 local function updateFrameColorToggleVer(frame, unit)
+    if not frame then return end
     if classColorsOn then
         local color = getUnitColor(unit)
         if color then

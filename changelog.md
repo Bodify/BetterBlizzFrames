@@ -1,3 +1,14 @@
+# BetterBlizzFrames 1.4.8d
+## The War Within't (Prepatch)
+- Fix target/focus frame dark mode aura borders and re-enabled them.
+- Fix the fix for ObjectiveFrame not hiding properly. Delay was not enough as Blizzard now calls to show this frame all the time. Put a hook on it so now it works.
+
+# BetterBlizzFrames 1.4.8c
+## The War Within't (Prepatch)
+- Fix Interrupt Icon setting due to Blizzard function now returning true/false instead of 1/0
+- Tweak default Interrupt Icon position and reset y offset due to this.
+- Add a slight delay to fix hiding objective frame etc when entering arena.
+
 # BetterBlizzFrames 1.4.8b
 ## The War Within't (Prepatch)
 - Added "Normal Size Game Menu" setting in Misc section. We're old boomers but we're not that old jesus.

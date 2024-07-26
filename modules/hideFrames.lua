@@ -590,9 +590,10 @@ TargetLevelHider:RegisterEvent("PLAYER_FOCUS_CHANGED")
 -- Hide Party Frames in Arena
 --------------------------------------
 local partyAlpha = 1
+local partyFrameHider
 function BBF.HidePartyInArena()
     if BetterBlizzFramesDB.hidePartyFramesInArena and not partyFrameHider then
-        local partyFrameHider = CreateFrame("Frame")
+        partyFrameHider = CreateFrame("Frame")
 
         partyFrameHider:SetScript("OnEvent", function(self, event)
             if event == "PLAYER_ENTERING_BATTLEGROUND" and BetterBlizzFramesDB.hidePartyFramesInArena then
@@ -673,6 +674,17 @@ function BBF.MinimapHider()
 
     -- Handle ObjectiveTracker visibility
     if hideObjectives then
+        if not ObjectiveTracker.bbpHook then
+            ObjectiveTrackerFrame:HookScript("OnShow", function()
+                local _, instanceType = GetInstanceInfo()
+                local inArena = instanceType == "arena"
+
+                if inArena then
+                    ObjectiveTrackerFrame:Hide()
+                end
+            end)
+            ObjectiveTracker.bbpHook = true
+        end
         if inArena then
             ObjectiveTracker:Hide()
         else

@@ -76,12 +76,16 @@ StaticPopupDialogs["BBF_TOT_MESSAGE"] = {
     text = "The default Blizzard code to \"wrap auras\" around the target of target frame is stupid.\n\nThe \"Target of Target\" frames have been moved 31 pixels to the right to make more space for auras.\nYou can change this at any time.\n\nDo you want to keep this? (pick yes)",
     button1 = "Yes",
     button2 = "No",
+    OnAccept = function()
+        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+    end,
     OnCancel = function()
         BetterBlizzFramesDB.targetToTXPos = 0
         BBF.targetToTXPos:SetValue(0)
         BetterBlizzFramesDB.focusToTXPos = 0
         BBF.focusToTXPos:SetValue(0)
         BBF.MoveToTFrames()
+        StaticPopup_Show("BBF_CONFIRM_RELOAD")
     end,
     timeout = 0,
     whileDead = true,
@@ -3771,6 +3775,8 @@ local function guiFrameAuras()
                 BBF.focusToTXPos:SetValue(31)
                 BBF.MoveToTFrames()
                 BBF.UpdateFilteredBuffsIcon()
+            else
+                StaticPopup_Show("BBF_CONFIRM_RELOAD")
             end
         else
             if BetterBlizzFramesDB.targetToTXPos == 31 then
@@ -3781,6 +3787,7 @@ local function guiFrameAuras()
                 BBF.focusToTXPos:SetValue(0)
                 BBF.MoveToTFrames()
             end
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
         end
     end)
 
