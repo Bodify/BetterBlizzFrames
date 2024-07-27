@@ -103,6 +103,10 @@ local targetCastBarScale
 local focusCastBarScale
 local purgeableBuffSorting
 local purgeableBuffSortingFirst
+local targetEnlargeAuraEnemy
+local targetEnlargeAuraFriendly
+local focusEnlargeAuraEnemy
+local focusEnlargeAuraFriendly
 local increaseAuraStrata
 
 local function UpdateMore()
@@ -110,7 +114,10 @@ local function UpdateMore()
     purgeableBuffSorting = BetterBlizzFramesDB.purgeableBuffSorting
     purgeableBuffSortingFirst = BetterBlizzFramesDB.purgeableBuffSortingFirst
     increaseAuraStrata = BetterBlizzFramesDB.increaseAuraStrata
-
+    targetEnlargeAuraEnemy = BetterBlizzFramesDB.targetEnlargeAuraEnemy
+    targetEnlargeAuraFriendly = BetterBlizzFramesDB.targetEnlargeAuraFriendly
+    focusEnlargeAuraEnemy = BetterBlizzFramesDB.focusEnlargeAuraEnemy
+    focusEnlargeAuraFriendly = BetterBlizzFramesDB.focusEnlargeAuraFriendly
 end
 
 function BBF.UpdateUserAuraSettings()
@@ -897,6 +904,24 @@ local function AdjustAuras(self, frameType)
 
             if onlyPandemicMine and not isLarge then
                 isPandemic = false
+            end
+
+            if isEnlarged then
+                if frameType == "target" then
+                    if not targetEnlargeAuraFriendly and isFriend then
+                        isEnlarged = false
+                    end
+                    if not targetEnlargeAuraEnemy and not isFriend then
+                        isEnlarged = false
+                    end
+                elseif frameType == "focus" then
+                    if not focusEnlargeAuraFriendly and isFriend then
+                        isEnlarged = false
+                    end
+                    if not focusEnlargeAuraEnemy and not isFriend then
+                        isEnlarged = false
+                    end
+                end
             end
 
             if shouldShowAura then

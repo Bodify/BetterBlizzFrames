@@ -1,3 +1,10 @@
+# BetterBlizzFrames 1.4.8e
+## The War Within't (Prepatch)
+### New:
+- Added aura settings to enable enlarged auras depending on friendly/enemy target/focus for retail as well (was already on cata).
+### Tweaks:
+- Made it so if the addon Classic Frames is enabled the un-interruptible shield around castbars don't get moved.
+
 # BetterBlizzFrames 1.4.8d
 ## The War Within't (Prepatch)
 - Fix target/focus frame dark mode aura borders and re-enabled them.

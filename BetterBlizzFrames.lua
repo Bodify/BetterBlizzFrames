@@ -50,6 +50,10 @@ local defaultSettings = {
     targetCastbarIconYPos = 0,
     focusCastbarIconXPos = 0,
     focusCastbarIconYPos = 0,
+    targetEnlargeAuraEnemy = true,
+    targetEnlargeAuraFriendly = true,
+    focusEnlargeAuraEnemy = true,
+    focusEnlargeAuraFriendly = true,
 
     -- Absorb Indicator
     absorbIndicatorScale = 1,

@@ -810,6 +810,7 @@ local function PlayerCastingBarFrameMiscAdjustments()
 end
 
 function BBF.ChangeCastbarSizes()
+    local classicFrames = C_AddOns.IsAddOnLoaded("ClassicFrames")
     --Player
     if not BetterBlizzFramesDB.playerCastBarScale then
         BetterBlizzFramesDB.playerCastBarScale = PlayerCastingBarFrame:GetScale()
@@ -848,9 +849,11 @@ function BBF.ChangeCastbarSizes()
     TargetFrameSpellBar.Icon:ClearAllPoints()
     TargetFrameSpellBar.Icon:SetPoint(a, b, c, -2 + BetterBlizzFramesDB.targetCastbarIconXPos, -5 + BetterBlizzFramesDB.targetCastbarIconYPos)
 
-    TargetFrameSpellBar.BorderShield:ClearAllPoints()
-    TargetFrameSpellBar.BorderShield:SetPoint("CENTER", TargetFrameSpellBar.Icon, "CENTER", 0, 0)
-    TargetFrameSpellBar.BorderShield:SetScale(BetterBlizzFramesDB.targetCastBarIconScale)
+    if not classicFrames then
+        TargetFrameSpellBar.BorderShield:ClearAllPoints()
+        TargetFrameSpellBar.BorderShield:SetPoint("CENTER", TargetFrameSpellBar.Icon, "CENTER", 0, 0)
+        TargetFrameSpellBar.BorderShield:SetScale(BetterBlizzFramesDB.targetCastBarIconScale)
+    end
     TargetFrameSpellBar.Text:ClearAllPoints()
     TargetFrameSpellBar.Text:SetPoint("BOTTOM", TargetFrameSpellBar, "BOTTOM", 0, -14)
     TargetFrameSpellBar.Text:SetWidth(BetterBlizzFramesDB.targetCastBarWidth)
@@ -864,9 +867,11 @@ function BBF.ChangeCastbarSizes()
     FocusFrameSpellBar.Icon:SetPoint(a, b, c, -2 + BetterBlizzFramesDB.focusCastbarIconXPos, -5 + BetterBlizzFramesDB.focusCastbarIconYPos)
     FocusFrameSpellBar.Icon:SetScale(BetterBlizzFramesDB.focusCastBarIconScale)
 
-    FocusFrameSpellBar.BorderShield:ClearAllPoints()
-    FocusFrameSpellBar.BorderShield:SetPoint("CENTER", FocusFrameSpellBar.Icon, "CENTER", 0, 0)
-    FocusFrameSpellBar.BorderShield:SetScale(BetterBlizzFramesDB.focusCastBarIconScale)
+    if not classicFrames then
+        FocusFrameSpellBar.BorderShield:ClearAllPoints()
+        FocusFrameSpellBar.BorderShield:SetPoint("CENTER", FocusFrameSpellBar.Icon, "CENTER", 0, 0)
+        FocusFrameSpellBar.BorderShield:SetScale(BetterBlizzFramesDB.focusCastBarIconScale)
+    end
     FocusFrameSpellBar.Text:ClearAllPoints()
     FocusFrameSpellBar.Text:SetPoint("BOTTOM", FocusFrameSpellBar, "BOTTOM", 0, -14)
     FocusFrameSpellBar.Text:SetWidth(BetterBlizzFramesDB.focusCastBarWidth)

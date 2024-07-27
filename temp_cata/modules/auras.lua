@@ -1433,6 +1433,24 @@ local function AdjustAuras(self, frameType)
                 isPandemic = false
             end
 
+            if isEnlarged then
+                if frameType == "target" then
+                    if not targetEnlargeAuraFriendly and isFriend then
+                        isEnlarged = false
+                    end
+                    if not targetEnlargeAuraEnemy and not isFriend then
+                        isEnlarged = false
+                    end
+                elseif frameType == "focus" then
+                    if not focusEnlargeAuraFriendly and isFriend then
+                        isEnlarged = false
+                    end
+                    if not focusEnlargeAuraEnemy and not isFriend then
+                        isEnlarged = false
+                    end
+                end
+            end
+
             if shouldShowAura then
                 if isEnlarged then
                     if frameType == "target" then
