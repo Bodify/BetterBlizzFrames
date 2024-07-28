@@ -5,8 +5,8 @@
 
 ## The War Within
 ### New:
-- Class coloring now works with Classic Frames as well.
-- Reputation color and reputation color on playerframe.
+- Class coloring now works with Classic Frames.
+- Reputation color also works with Classic Frames.
 ### Bugfix:
 - Updated Interrupt icon function to TWW.
 
