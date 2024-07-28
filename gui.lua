@@ -1467,7 +1467,7 @@ local function CreateTitle(parent)
     addonNameIcon:SetPoint("LEFT", addonNameText, "RIGHT", -2, -1)
     local verNumber = parent:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     verNumber:SetPoint("LEFT", addonNameText, "RIGHT", 25, 0)
-    verNumber:SetText("v" .. "1.4.8e")--BBF.VersionNumber)
+    verNumber:SetText("v" .. "1.4.9")--BBF.VersionNumber)
 end
 
 ------------------------------------------------------------
@@ -2249,6 +2249,22 @@ local function guiGeneralTab()
 
     local classColorFrames = CreateCheckbox("classColorFrames", "Class Color Frames", BetterBlizzFrames)
     classColorFrames:SetPoint("TOPLEFT", allFrameText, "BOTTOMLEFT", -4, pixelsOnFirstBox)
+
+    local classColorFramesSkipPlayer = CreateCheckbox("classColorFramesSkipPlayer", "Skip Self", BetterBlizzFrames)
+    classColorFramesSkipPlayer:SetPoint("LEFT", classColorFrames.Text, "RIGHT", 0, 0)
+    CreateTooltipTwo(classColorFramesSkipPlayer, "Skip Self", "Skip PlayerFrame healthbar coloring and leave it default green.")
+    classColorFramesSkipPlayer:HookScript("OnClick", function(self)
+        if self:GetChecked() then
+            PlayerFrame.healthbar:SetStatusBarDesaturated(false)
+            PlayerFrame.healthbar:SetStatusBarColor(1, 1, 1)
+        else
+            BBF.updateFrameColorToggleVer(PlayerFrame.healthbar, "player")
+            if CfPlayerFrameHealthBar then
+                BBF.updateFrameColorToggleVer(CfPlayerFrameHealthBar, "player")
+            end
+        end
+    end)
+
     classColorFrames:HookScript("OnClick", function (self)
         local function UpdateCVar()
             if not InCombatLockdown() then
@@ -2263,8 +2279,17 @@ local function guiGeneralTab()
         end
         UpdateCVar()
         BBF.UpdateFrames()
+        if self:GetChecked() then
+            classColorFramesSkipPlayer:Show()
+        else
+            classColorFramesSkipPlayer:Hide()
+        end
     end)
     CreateTooltipTwo(classColorFrames, "Class Color Healthbars", "Class color Player, Target, Focus & Party frames.", "If you want a more I recommend the addon HealthBarColor instead of this setting.")
+
+    if not BetterBlizzFramesDB.classColorFrames then
+        classColorFramesSkipPlayer:Hide()
+    end
 
     local classColorTargetNames = CreateCheckbox("classColorTargetNames", "Class Color Names", BetterBlizzFrames)
     classColorTargetNames:SetPoint("TOPLEFT", classColorFrames, "BOTTOMLEFT", 0, pixelsBetweenBoxes)

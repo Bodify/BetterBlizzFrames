@@ -1,3 +1,15 @@
+# BetterBlizzFrames 1.4.9
+## The War Within & Cata
+### New:
+- You can now choose to skip coloring the PlayerFrame healthbar with "Skip self" next to "Class Color Frames".
+
+## The War Within
+### New:
+- Class coloring now works with Classic Frames as well.
+- Reputation color and reputation color on playerframe.
+### Bugfix:
+- Updated Interrupt icon function to TWW.
+
 # BetterBlizzFrames 1.4.8e
 ## The War Within't (Prepatch)
 ### New:

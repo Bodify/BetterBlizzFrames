@@ -109,7 +109,7 @@ local function UpdateInterruptIcon(frame)
             frame:SetAlpha(0)
         else
             if enabled and (not BetterBlizzFramesDB.castBarInterruptIconShowActiveOnly or duration == 0) then
-                frame.icon:SetTexture(GetSpellTexture(knownInterruptSpellID))
+                frame.icon:SetTexture(C_Spell.GetSpellTexture(knownInterruptSpellID))
                 frame.cooldown:SetCooldown(start, duration)
                 frame:SetAlpha(1)
             else

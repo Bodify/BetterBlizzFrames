@@ -793,6 +793,22 @@ end
 
 
 local function PlayerCastingBarFrameMiscAdjustments()
+    PlayerCastingBarFrame:SetScale(BetterBlizzFramesDB.playerCastBarScale)
+    PlayerCastingBarFrame:SetWidth(BetterBlizzFramesDB.playerCastBarWidth)
+    PlayerCastingBarFrame:SetHeight(BetterBlizzFramesDB.playerCastBarHeight)
+    PlayerCastingBarFrame.Text:ClearAllPoints()
+    PlayerCastingBarFrame.Text:SetPoint("BOTTOM", PlayerCastingBarFrame, "BOTTOM", 0, -14)
+    PlayerCastingBarFrame.Text:SetWidth(BetterBlizzFramesDB.playerCastBarWidth)
+    PlayerCastingBarFrame.Icon:SetSize(22,22)
+    PlayerCastingBarFrame.Icon:ClearAllPoints()
+    PlayerCastingBarFrame.Icon:SetPoint("RIGHT", PlayerCastingBarFrame, "LEFT", -5 + BetterBlizzFramesDB.playerCastbarIconXPos, -5 + BetterBlizzFramesDB.playerCastbarIconYPos)
+    PlayerCastingBarFrame.Icon:SetScale(BetterBlizzFramesDB.playerCastBarIconScale)
+    PlayerCastingBarFrame.BorderShield:SetSize(30,36)
+    PlayerCastingBarFrame.BorderShield:ClearAllPoints()
+    PlayerCastingBarFrame.BorderShield:SetPoint("RIGHT", PlayerCastingBarFrame, "LEFT", -1.5 + BetterBlizzFramesDB.playerCastbarIconXPos, -7 + BetterBlizzFramesDB.playerCastbarIconYPos)
+    PlayerCastingBarFrame.BorderShield:SetScale(BetterBlizzFramesDB.playerCastBarIconScale)
+    PlayerCastingBarFrame.BorderShield:SetDrawLayer("BORDER")
+    PlayerCastingBarFrame.Icon:SetDrawLayer("ARTWORK")
     -- InterruptGlow
     local baseWidthRatio = 444 / 208
     local baseHeightRatio = 50 / 11
@@ -815,23 +831,6 @@ function BBF.ChangeCastbarSizes()
     if not BetterBlizzFramesDB.playerCastBarScale then
         BetterBlizzFramesDB.playerCastBarScale = PlayerCastingBarFrame:GetScale()
     end
-    PlayerCastingBarFrame:SetScale(BetterBlizzFramesDB.playerCastBarScale)
-    PlayerCastingBarFrame:SetWidth(BetterBlizzFramesDB.playerCastBarWidth)
-    PlayerCastingBarFrame:SetHeight(BetterBlizzFramesDB.playerCastBarHeight)
-    PlayerCastingBarFrame.Text:ClearAllPoints()
-    PlayerCastingBarFrame.Text:SetPoint("BOTTOM", PlayerCastingBarFrame, "BOTTOM", 0, -14)
-    PlayerCastingBarFrame.Text:SetWidth(BetterBlizzFramesDB.playerCastBarWidth)
-    PlayerCastingBarFrame.Icon:SetSize(22,22)
-    PlayerCastingBarFrame.Icon:ClearAllPoints()
-    PlayerCastingBarFrame.Icon:SetPoint("RIGHT", PlayerCastingBarFrame, "LEFT", -5 + BetterBlizzFramesDB.playerCastbarIconXPos, -5 + BetterBlizzFramesDB.playerCastbarIconYPos)
-    PlayerCastingBarFrame.Icon:SetScale(BetterBlizzFramesDB.playerCastBarIconScale)
-    PlayerCastingBarFrame.BorderShield:SetSize(30,36)
-    PlayerCastingBarFrame.BorderShield:ClearAllPoints()
-    PlayerCastingBarFrame.BorderShield:SetPoint("RIGHT", PlayerCastingBarFrame, "LEFT", -1.5 + BetterBlizzFramesDB.playerCastbarIconXPos, -7 + BetterBlizzFramesDB.playerCastbarIconYPos)
-    PlayerCastingBarFrame.BorderShield:SetScale(BetterBlizzFramesDB.playerCastBarIconScale)
-    PlayerCastingBarFrame.BorderShield:SetDrawLayer("BORDER")
-    PlayerCastingBarFrame.Icon:SetDrawLayer("ARTWORK")
-
     --
     PlayerCastingBarFrameMiscAdjustments()
 
@@ -893,8 +892,14 @@ PlayerCastingBarFrame:HookScript("OnShow", function()
 end)
 
 hooksecurefunc(PlayerCastingBarFrame, "SetScale", function()
-    if not BetterBlizzFramesDB.wasOnLoadingScreen then
+    if EditModeManagerFrame.editModeActive then
         BetterBlizzFramesDB.playerCastBarScale = PlayerCastingBarFrame:GetScale()
+    end
+
+    if not PlayerCastingBarFrame.isUpdating then
+        PlayerCastingBarFrame.isUpdating = true
+        PlayerCastingBarFrameMiscAdjustments()
+        PlayerCastingBarFrame.isUpdating = false
     end
 end)
 

@@ -571,22 +571,21 @@ UpdatePartyNames:SetScript("OnEvent", function(self, event, ...)
 end)
 
 local function checkWeight()
-    if isAddonLoaded("ClassicFrames") then return end
-    TargetAndFocusNameChange()
-    BBF.PartyNameChange()
     if classColorTargetReputationTexture then
         BBF.ClassColorReputation(TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor, "target")
     end
     if classColorFocusReputationTexture then
         BBF.ClassColorReputation(FocusFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor, "focus")
     end
+    if isAddonLoaded("ClassicFrames") then return end
+    TargetAndFocusNameChange()
+    BBF.PartyNameChange()
 end
 
 local UpdateTargetAndFocusNames = CreateFrame("Frame")
 UpdateTargetAndFocusNames:RegisterEvent("PLAYER_TARGET_CHANGED")
 UpdateTargetAndFocusNames:RegisterEvent("PLAYER_FOCUS_CHANGED")
 UpdateTargetAndFocusNames:SetScript("OnEvent", function(self, event, ...)
-    if isAddonLoaded("ClassicFrames") then return end
     checkWeight()
 end)
 
@@ -594,20 +593,18 @@ function BBF.ClassColorPlayerName()
     if isAddonLoaded("ClassicFrames") then return end
     local frame = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain
     if classColorTargetNames then
-        if not coloredName then
-            local _, class = UnitClass("player")
-            if class then
-                local classColor = RAID_CLASS_COLORS[class]
-                if classColor then
-                    if frame.cleanName then
-                        frame.cleanName:SetTextColor(classColor.r, classColor.g, classColor.b)
-                    end
-                    PlayerName:SetTextColor(classColor.r, classColor.g, classColor.b)
-                    if classColorLevelText then
-                        PlayerLevelText:SetTextColor(classColor.r, classColor.g, classColor.b)
-                    else
-                        PlayerLevelText:SetTextColor(1, 0.81960791349411, 0, 1)
-                    end
+        local _, class = UnitClass("player")
+        if class then
+            local classColor = RAID_CLASS_COLORS[class]
+            if classColor then
+                if frame.cleanName then
+                    frame.cleanName:SetTextColor(classColor.r, classColor.g, classColor.b)
+                end
+                PlayerName:SetTextColor(classColor.r, classColor.g, classColor.b)
+                if classColorLevelText then
+                    PlayerLevelText:SetTextColor(classColor.r, classColor.g, classColor.b)
+                else
+                    PlayerLevelText:SetTextColor(1, 0.81960791349411, 0, 1)
                 end
             end
         end

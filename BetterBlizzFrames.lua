@@ -1,9 +1,4 @@
--- Setting up the database
-BetterBlizzFramesDB = BetterBlizzFramesDB or {}
-BBF = BBF or {}
-
--- My first addon, a lot could be done better but its a start for now
--- Things are getting more messy need a lot of cleaning lol
+-- I did not know what a variable was when I started. I know a little bit more now and I am so sorry.
 
 local addonVersion = "1.00" --too afraid to to touch for now
 local addonUpdates = "1.4.8c"
@@ -481,7 +476,6 @@ local function LoadingScreenDetector(_, event)
         end
         --#######TEMPORARY BUGFIX FOR BLIZZARD#########
         C_Timer.After(2, function()
-            BBF.ChangeCastbarSizes()
             BetterBlizzFramesDB.wasOnLoadingScreen = false
         end)
     end

@@ -147,6 +147,7 @@ end
 
 local function updateFrameColorToggleVer(frame, unit)
     if classColorsOn then
+        if unit == "player" and BetterBlizzFramesDB.classColorFramesSkipPlayer then return end
         --local color = UnitIsPlayer(unit) and RAID_CLASS_COLORS[select(2, UnitClass(unit))] or getUnitColor(unit) --bad
         local color = getUnitColor(unit)
         if color then
@@ -156,6 +157,8 @@ local function updateFrameColorToggleVer(frame, unit)
     end
 end
 
+BBF.updateFrameColorToggleVer = updateFrameColorToggleVer
+
 local function resetFrameColor(frame, unit)
     frame:SetStatusBarDesaturated(false)
     frame:SetStatusBarColor(0,1,0)
@@ -164,6 +167,7 @@ end
 local function UpdateHealthColor(frame, unit)
     --local color = UnitIsPlayer(unit) and RAID_CLASS_COLORS[select(2, UnitClass(unit))] or getUnitColor(unit)
     if not frame then return end
+    if unit == "player" and BetterBlizzFramesDB.classColorFramesSkipPlayer then return end
     local color = getUnitColor(unit)
     if color then
         frame:SetStatusBarDesaturated(true)
