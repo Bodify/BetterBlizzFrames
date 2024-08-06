@@ -1,3 +1,19 @@
+# BetterBlizzFrames 1.5.0
+## The War Within
+### New stuff:
+- Misc: Hide UI Error Frame setting (Red text: "Not enough mana" etc)
+- Dark Mode: Added Dark Mode settings for Game Tooltip, Objective Frame & Vigor
+### Bugfix:
+- Fix some issues with Party Castbars.
+- Fixed an issue on first install where it was not able to get Player Castbar Scale and resulting in an error and causing mischief.
+### Tweak:
+- Adjusted default position of Target/Focus Castbar Icon when ClassicFrames is enabled. If you are using ClassicFrames you might have to tweak the position because of this.
+- Skip moving Target/Focus castbar text when ClassicFrames is enabled so they look like ClassicFrames intend.
+
+## Cata
+### Bugfix:
+- Fixed an issue where the arena minimap hide setting could cause Lua errors in Cataclysm due to attempts to show or hide the minimap while in combat, specifically when entering or leaving the arena during combat.
+
 # BetterBlizzFrames 1.4.9
 ## The War Within & Cata
 ### New:

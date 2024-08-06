@@ -187,6 +187,10 @@ function BBF.HookHealthbarColors()
                         frame.recoloring = false
                     end
                 end)
+                local color = getUnitColor(unit)
+                if color then
+                    frame:SetStatusBarColor(color.r, color.g, color.b)
+                end
                 frame.SetStatusBarColorHooked = true
             end
         end

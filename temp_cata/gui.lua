@@ -1577,7 +1577,7 @@ local function CreateTitle(parent)
     addonNameIcon:SetPoint("LEFT", addonNameText, "RIGHT", -2, -1)
     local verNumber = parent:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     verNumber:SetPoint("LEFT", addonNameText, "RIGHT", 25, 0)
-    verNumber:SetText("CATA BETA v0.1.3" )--.. BBF.VersionNumber.."b")
+    verNumber:SetText(BBF.VersionNumber)
 end
 
 ------------------------------------------------------------
@@ -4703,8 +4703,12 @@ local function guiMisc()
     miscSettingsIcon:SetSize(22, 22)
     miscSettingsIcon:SetPoint("RIGHT", settingsText, "LEFT", -3, -1)
 
+    local hideUiErrorFrame = CreateCheckbox("hideUiErrorFrame", "Hide UI Error Frame", guiMisc, nil, BBF.HideFrames)
+    hideUiErrorFrame:SetPoint("TOPLEFT", settingsText, "BOTTOMLEFT", -4, pixelsOnFirstBox)
+    CreateTooltipTwo(hideUiErrorFrame, "Hide UI Error Frame", "Hides the UI Error Frame (The red text displaying \"Not enough mana\" etc)")
+
     local hideMinimap = CreateCheckbox("hideMinimap", "Hide Minimap", guiMisc, nil, BBF.MinimapHider)
-    hideMinimap:SetPoint("TOPLEFT", settingsText, "BOTTOMLEFT", -4, pixelsOnFirstBox)
+    hideMinimap:SetPoint("TOPLEFT", hideUiErrorFrame, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
 
     local hideMinimapButtons = CreateCheckbox("hideMinimapButtons", "Hide Minimap Buttons (still shows on mouseover)", guiMisc, nil, BBF.HideFrames)
     hideMinimapButtons:SetPoint("TOPLEFT", hideMinimap, "BOTTOMLEFT", 0, pixelsBetweenBoxes)

@@ -1467,7 +1467,7 @@ local function CreateTitle(parent)
     addonNameIcon:SetPoint("LEFT", addonNameText, "RIGHT", -2, -1)
     local verNumber = parent:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     verNumber:SetPoint("LEFT", addonNameText, "RIGHT", 25, 0)
-    verNumber:SetText("v" .. "1.4.9")--BBF.VersionNumber)
+    verNumber:SetText("v" .. BBF.VersionNumber)
 end
 
 ------------------------------------------------------------
@@ -1656,6 +1656,20 @@ local function guiGeneralTab()
     end)
     CreateTooltip(darkModeNameplateResource, "Dark mode for nameplate resource (Combopoints etc)\n\n(If you are using this same feature in BBP\nthat one will be prioritized)")
 
+    local darkModeGameTooltip = CreateCheckbox("darkModeGameTooltip", "Tooltip", darkModeUi)
+    darkModeGameTooltip:SetPoint("TOPLEFT", darkModeMinimap, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    darkModeGameTooltip:HookScript("OnClick", function()
+        BBF.DarkmodeFrames(true)
+    end)
+    CreateTooltipTwo(darkModeGameTooltip, "Dark Mode: Tooltip", "Dark mode for the Game Tooltip.")
+
+    local darkModeObjectiveFrame = CreateCheckbox("darkModeObjectiveFrame", "Objectives", darkModeUi)
+    darkModeObjectiveFrame:SetPoint("LEFT", darkModeGameTooltip.Text, "RIGHT", 5, 0)
+    darkModeObjectiveFrame:HookScript("OnClick", function()
+        BBF.DarkmodeFrames(true)
+    end)
+    CreateTooltipTwo(darkModeObjectiveFrame, "Dark Mode: Objectives", "Dark mode for Objectives/Quest Tracker")
+
     local darkModeColor = CreateSlider(darkModeUi, "Darkness", 0, 1, 0.01, "darkModeColor", nil, 90)
     darkModeColor:SetPoint("LEFT", darkModeUiAura.text, "RIGHT", 3, -1)
     CreateTooltip(darkModeColor, "Dark mode value.\n\nYou can right-click sliders to enter a specific value.")
@@ -1677,7 +1691,7 @@ local function guiGeneralTab()
 
 
     local playerFrameText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    playerFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 0, -160)
+    playerFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 0, -180)
     playerFrameText:SetText("Player Frame")
     local playerFrameIcon = BetterBlizzFrames:CreateTexture(nil, "ARTWORK")
     playerFrameIcon:SetAtlas("groupfinder-icon-friend")
@@ -1765,7 +1779,7 @@ local function guiGeneralTab()
     CreateTooltip(hidePlayerRoleIcon, "Hide the role icon from PlayerFrame|A:roleicon-tiny-dps:22:22|a")
 
     local hidePvpTimerText = CreateCheckbox("hidePvpTimerText", "Hide PvP Timer", BetterBlizzFrames, nil, BBF.HideFrames)
-    hidePvpTimerText:SetPoint("TOPLEFT", hidePlayerRoleIcon, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    hidePvpTimerText:SetPoint("LEFT", hidePlayerRoleIcon.text, "RIGHT", 0, 0)
     CreateTooltip(hidePvpTimerText, "Hide the PvP timer text under the Prestige Badge.\nI don't even know what it is a timer for.\nMy best guess is for when you're no longer PvP tagged.")
 
 
@@ -4433,8 +4447,12 @@ local function guiMisc()
         end
     end)
 
+    local hideUiErrorFrame = CreateCheckbox("hideUiErrorFrame", "Hide UI Error Frame", guiMisc, nil, BBF.HideFrames)
+    hideUiErrorFrame:SetPoint("TOPLEFT", normalizeGameMenu, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(hideUiErrorFrame, "Hide UI Error Frame", "Hides the UI Error Frame (The red text displaying \"Not enough mana\" etc)")
+
     local hideMinimap = CreateCheckbox("hideMinimap", "Hide Minimap", guiMisc, nil, BBF.MinimapHider)
-    hideMinimap:SetPoint("TOPLEFT", normalizeGameMenu, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    hideMinimap:SetPoint("TOPLEFT", hideUiErrorFrame, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
 
     local hideMinimapButtons = CreateCheckbox("hideMinimapButtons", "Hide Minimap Buttons (still shows on mouseover)", guiMisc, nil, BBF.HideFrames)
     hideMinimapButtons:SetPoint("TOPLEFT", hideMinimap, "BOTTOMLEFT", 0, pixelsBetweenBoxes)

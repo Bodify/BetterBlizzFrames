@@ -441,6 +441,10 @@ function BBF.HideFrames()
             keybindAlphaChanged = true
         end
 
+        if BetterBlizzFramesDB.hideUiErrorFrame then
+            UIErrorsFrame:Hide()
+        end
+
         -- Hide ToT Frames
         local targetToTAlpha = BetterBlizzFramesDB.hideTargetToT and 0 or 1
         local focusToTAlpha = BetterBlizzFramesDB.hideFocusToT and 0 or 1

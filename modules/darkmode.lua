@@ -174,6 +174,11 @@ function BBF.DarkmodeFrames(bypass)
 
     local minimapColor = (BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeMinimap) and BetterBlizzFramesDB.darkModeColor or 1
     local minimapSat = (BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeMinimap) and true or false
+    local tooltipColor = (BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeGameTooltip) and BetterBlizzFramesDB.darkModeColor or 1
+    local tooltipSat = (BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeGameTooltip) and true or false
+
+    local objectiveColor = (BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeObjectiveFrame) and BetterBlizzFramesDB.darkModeColor or 1
+    local objectiveSat  = (BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeObjectiveFrame) and true or false
 
     local darkModeNpBBP = BetterBlizzPlatesDB and BetterBlizzPlatesDB.darkModeNameplateResource
     local darkModeNp = BetterBlizzFramesDB.darkModeNameplateResource and not darkModeNpBBP
@@ -186,6 +191,32 @@ function BBF.DarkmodeFrames(bypass)
         rogueComboActive = 0.15
     end
 
+
+
+    for key, region in pairs(GameTooltip.NineSlice) do
+        if key ~= "Center" and type(region) == "table" and (region.SetDesaturated or region.SetVertexColor) then
+            applySettings(region, tooltipSat, tooltipColor)
+        end
+    end
+
+    for _, child in ipairs({UIWidgetPowerBarContainerFrame:GetChildren()}) do
+        if child.DecorLeft and child.DecorLeft.GetAtlas then
+            local atlasName = child.DecorLeft:GetAtlas()
+            if atlasName == "dragonriding_vigor_decor" then
+                applySettings(child.DecorLeft, desaturationValue, druidComboPointActive)
+                applySettings(child.DecorRight, desaturationValue, druidComboPointActive)
+            end
+        end
+        for _, grandchild in ipairs({child:GetChildren()}) do
+            -- Check for textures with specific atlas names
+            if grandchild.Frame and grandchild.Frame.GetAtlas then
+                local atlasName = grandchild.Frame:GetAtlas()
+                if atlasName == "dragonriding_vigor_frame" then
+                    applySettings(grandchild.Frame, desaturationValue, druidComboPointActive)
+                end
+            end
+        end
+    end
 
     local function UpdateBorder(frame, colorValue)
         if BBF.auraBorders[frame] then
@@ -235,6 +266,32 @@ function BBF.DarkmodeFrames(bypass)
             end
         end
     end
+
+
+    applySettings(ObjectiveTrackerFrame.Header.Background, objectiveSat, objectiveColor)
+    applySettings(CampaignQuestObjectiveTracker.Header.Background, objectiveSat, objectiveColor)
+    applySettings(QuestObjectiveTracker.Header.Background, objectiveSat, objectiveColor)
+    applySettings(ProfessionsRecipeTracker.Header.Background, objectiveSat, objectiveColor)
+    applySettings(WorldQuestObjectiveTracker.Header.Background, objectiveSat, objectiveColor)
+    applySettings(BonusObjectiveTracker.Header.Background, objectiveSat, objectiveColor)
+    applySettings(MonthlyActivitiesObjectiveTracker.Header.Background, objectiveSat, objectiveColor)
+    applySettings(AchievementObjectiveTracker.Header.Background, objectiveSat, objectiveColor)
+    applySettings(AdventureObjectiveTracker.Header.Background, objectiveSat, objectiveColor)
+    applySettings(CampaignQuestObjectiveTracker.Header.Background, objectiveSat, objectiveColor)
+    applySettings(UIWidgetObjectiveTracker.Header.Background, objectiveSat, objectiveColor)
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     --Minimap + and - zoom buttons
     local zoomOutButton = MinimapCluster.MinimapContainer.Minimap.ZoomOut
@@ -348,7 +405,7 @@ function BBF.DarkmodeFrames(bypass)
     local soulShards = _G.WarlockPowerFrame
     if soulShards then
         for _, v in pairs({soulShards:GetChildren()}) do
-            applySettings(v.Background, desaturationValue, vertexColor)
+            applySettings(v.Background, objectiveSat, objectiveColor)
         end
     end
 

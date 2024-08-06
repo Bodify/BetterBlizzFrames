@@ -1924,8 +1924,9 @@ local function CreateToggleIcon()
     end)
 
     toggleIcon:SetScript("OnEnter", function(self)
-        GameTooltip:SetOwner(self, "ANCHOR_RIGHT", 8, 5)
-        GameTooltip:SetText("Better|cff00c0ffBlizz|rFrames\nFiltered Buffs\nClick to show", 1, 1, 1)
+        GameTooltip:SetOwner(self, "ANCHOR_BOTTOMLEFT", 0, -10)
+        GameTooltip:AddLine("Better|cff00c0ffBlizz|rFrames")
+        GameTooltip:AddLine("Filtered buffs. Click to show/hide.\nShift+Alt+RightClick to blacklist buffs.", 1, 1, 1, true)
         GameTooltip:Show()
         if not self.isAurasShown then
             ShowHiddenAuras()

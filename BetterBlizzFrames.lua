@@ -1,7 +1,7 @@
 -- I did not know what a variable was when I started. I know a little bit more now and I am so sorry.
 
 local addonVersion = "1.00" --too afraid to to touch for now
-local addonUpdates = "1.4.8c"
+local addonUpdates = "1.5.0"
 local sendUpdate = true
 BBF.VersionNumber = addonUpdates
 BBF.variablesLoaded = false
@@ -335,7 +335,7 @@ StaticPopupDialogs["BetterBlizzFrames_COMBAT_WARNING"] = {
 }
 
 StaticPopupDialogs["BBF_NEW_VERSION"] = {
-    text = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames " .. addonUpdates .. ":\n\n|A:Professions-Crafting-Orders-Icon:16:16|a Bugfix:\n-Fix Target/Focus castbar moving too much when scaled up/down.\nYou might have to re-adjust the position slightly because of this.",
+    text = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames " .. addonUpdates .. ":\n\n|A:Professions-Crafting-Orders-Icon:16:16|a Tweak:   \nI've adjusted the default target/focus castbar icon position for users of ClassicFrames to have it fit the old style castbars.\n\nYou might have to re-adjust the position slightly because of this.",
     button1 = "OK",
     timeout = 0,
     whileDead = true,
@@ -393,18 +393,20 @@ local function SendUpdateMessage()
         BetterBlizzFramesDB.castBarInterruptIconYPos = 0
         if not BetterBlizzFramesDB.scStart then
             C_Timer.After(7, function()
-                --StaticPopup_Show("BBF_NEW_VERSION")
-                if BetterBlizzFramesDB.castBarInterruptIconEnabled then
-
-
-                DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames news:")
-                --DEFAULT_CHAT_FRAME:AddMessage("|A:QuestNormal:16:16|a New Stuff:")
-                -- DEFAULT_CHAT_FRAME:AddMessage("   - Sort Purgeable Auras setting (Buffs & Debuffs).")
-
-                DEFAULT_CHAT_FRAME:AddMessage("|A:Professions-Crafting-Orders-Icon:16:16|a Tweak:")
-                DEFAULT_CHAT_FRAME:AddMessage("   - Reset castbar interrupt icon y offset to 0 due to default positional changes You may have to readjust to your liking.")
-
+                if C_AddOns.IsAddOnLoaded("ClassicFrames") then
+                    StaticPopup_Show("BBF_NEW_VERSION")
                 end
+                -- if BetterBlizzFramesDB.castBarInterruptIconEnabled then
+
+
+                -- DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames news:")
+                -- --DEFAULT_CHAT_FRAME:AddMessage("|A:QuestNormal:16:16|a New Stuff:")
+                -- -- DEFAULT_CHAT_FRAME:AddMessage("   - Sort Purgeable Auras setting (Buffs & Debuffs).")
+
+                -- DEFAULT_CHAT_FRAME:AddMessage("|A:Professions-Crafting-Orders-Icon:16:16|a Tweak:")
+                -- DEFAULT_CHAT_FRAME:AddMessage("   - Reset castbar interrupt icon y offset to 0 due to default positional changes You may have to readjust to your liking.")
+
+                -- end
                 -- DEFAULT_CHAT_FRAME:AddMessage("   Reverted all name logic to 1.3.8b version. It's old and not optimal but at least it doesn't taint(?). I will never touch this again until TWW >_>")
                 --DEFAULT_CHAT_FRAME:AddMessage("   A lot of behind the scenes Name logic changed. Should now work better and be happier with other addons.")
             end)
@@ -900,10 +902,11 @@ function BBF.MiniFocusFrame()
         -- if not FocusFrame.TargetFrameContent.TargetFrameContentMain.cleanName then
         --     BBF.ChangeNameFocus()
         -- end
-        FocusFrame.TargetFrameContent.TargetFrameContentMain.cleanName:SetScale(1.4)
-        FocusFrame.TargetFrameContent.TargetFrameContentMain.cleanName:ClearAllPoints()
-        FocusFrame.TargetFrameContent.TargetFrameContentMain.cleanName:SetJustifyH("RIGHT")
-        FocusFrame.TargetFrameContent.TargetFrameContentMain.cleanName:SetPoint("RIGHT", FocusFrame.TargetFrameContainer.Portrait, "LEFT", -10, 10)
+        local name = FocusFrame.TargetFrameContent.TargetFrameContentMain.cleanName or FocusFrame.TargetFrameContent.TargetFrameContentMain.Name
+        name:SetScale(1.4)
+        name:ClearAllPoints()
+        name:SetJustifyH("RIGHT")
+        name:SetPoint("RIGHT", FocusFrame.TargetFrameContainer.Portrait, "LEFT", -10, 10)
 
         FocusFrame.TargetFrameContent.TargetFrameContentMain.LevelText:Hide()
         FocusFrame.TargetFrameContent.TargetFrameContentMain.LevelText:ClearAllPoints()
@@ -929,10 +932,12 @@ function BBF.MiniFocusFrame()
         end
 
         local ogName = FocusFrame.TargetFrameContent.TargetFrameContentMain.Name
-        FocusFrame.TargetFrameContent.TargetFrameContentMain.cleanName:SetScale(ogName:GetScale())
-        FocusFrame.TargetFrameContent.TargetFrameContentMain.cleanName:ClearAllPoints()
-        FocusFrame.TargetFrameContent.TargetFrameContentMain.cleanName:SetJustifyH(ogName:GetJustifyH())
-        FocusFrame.TargetFrameContent.TargetFrameContentMain.cleanName:SetPoint(ogName:GetPoint())
+        if FocusFrame.TargetFrameContent.TargetFrameContentMain.cleanName then
+            FocusFrame.TargetFrameContent.TargetFrameContentMain.cleanName:SetScale(ogName:GetScale())
+            FocusFrame.TargetFrameContent.TargetFrameContentMain.cleanName:ClearAllPoints()
+            FocusFrame.TargetFrameContent.TargetFrameContentMain.cleanName:SetJustifyH(ogName:GetJustifyH())
+            FocusFrame.TargetFrameContent.TargetFrameContentMain.cleanName:SetPoint(ogName:GetPoint())
+        end
     end
 end
 
@@ -1247,7 +1252,7 @@ PlayerEnteringWorld:SetScript("OnEvent", function()
     BBF.DarkmodeFrames()
     BBF.ClickthroughFrames()
     BBF.CheckForAuraBorders()
-    if not isAddonLoaded("ClassicFrames") then
+    if not isAddonLoaded("ClassicFrames") and not isAddonLoaded("MyRolePlay") then
         --BBF.HookNameChangeStuff()
         TargetFrame:SetFrameStrata("MEDIUM")
         TargetFrameSpellBar:SetFrameStrata("HIGH")

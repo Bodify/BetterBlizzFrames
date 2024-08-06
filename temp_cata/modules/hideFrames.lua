@@ -554,6 +554,10 @@ function BBF.HideFrames()
             keybindAlphaChanged = true
         end
 
+        if BetterBlizzFramesDB.hideUiErrorFrame then
+            UIErrorsFrame:Hide()
+        end
+
         -- Hide ToT Frames
         local targetToTAlpha = BetterBlizzFramesDB.hideTargetToT and 0 or 1
         local focusToTAlpha = BetterBlizzFramesDB.hideFocusToT and 0 or 1
@@ -821,35 +825,56 @@ function BBF.MinimapHider()
     local hideQueueEye = BetterBlizzFramesDB.hideMinimapAutoQueueEye
     local hideObjectives = BetterBlizzFramesDB.hideObjectiveTracker
 
-    -- Handle MinimapGroup visibility
-    if hideMinimapAuto and inArena then
-        MinimapGroup:Hide()
-    elseif hideMinimapAuto and not inArena then
-        MinimapGroup:Show()
-    end
-
-    if hideMinimap then
-        MinimapGroup:Hide()
-        minimapStatusChanged = true
-    elseif minimapStatusChanged then
-        MinimapGroup:Show()
-    end
-
-    -- Handle QueueStatusEye visibility
-    -- if hideQueueEye then
-    --     if inArena then
-    --         QueueStatusEye:Hide()
-    --     else
-    --         QueueStatusEye:Show()
-    --     end
-    -- end
-
-    -- Handle ObjectiveTracker visibility
-    if hideObjectives then
-        if inArena then
-            ObjectiveTracker:Hide()
-        else
-            ObjectiveTracker:Show()
+    local function handleVisibility()
+        -- Handle MinimapGroup visibility
+        if hideMinimapAuto and inArena then
+            MinimapGroup:Hide()
+        elseif hideMinimapAuto and not inArena then
+            MinimapGroup:Show()
         end
+
+        if hideMinimap then
+            MinimapGroup:Hide()
+            minimapStatusChanged = true
+        elseif minimapStatusChanged then
+            MinimapGroup:Show()
+        end
+
+        -- Handle QueueStatusEye visibility
+        -- if hideQueueEye then
+        --     if inArena then
+        --         QueueStatusEye:Hide()
+        --     else
+        --         QueueStatusEye:Show()
+        --     end
+        -- end
+
+        -- Handle ObjectiveTracker visibility
+        if hideObjectives then
+            if inArena then
+                ObjectiveTracker:Hide()
+            else
+                ObjectiveTracker:Show()
+            end
+        end
+    end
+
+    if InCombatLockdown() then
+        -- Check if the event is already registered
+        if not BBF.MinimapHiderFrame then
+            BBF.MinimapHiderFrame = CreateFrame("Frame")
+        end
+
+        if not BBF.MinimapHiderFrame:IsEventRegistered("PLAYER_REGEN_ENABLED") then
+            BBF.MinimapHiderFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
+            BBF.MinimapHiderFrame:SetScript("OnEvent", function(self, event)
+                if event == "PLAYER_REGEN_ENABLED" then
+                    handleVisibility()
+                    self:UnregisterEvent("PLAYER_REGEN_ENABLED")
+                end
+            end)
+        end
+    else
+        handleVisibility()
     end
 end
