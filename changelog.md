@@ -1,3 +1,9 @@
+# BetterBlizzFrames 1.5.0b
+## The War Within
+### Bugfix:
+- Fixed Target/Focus Castbar Icon reposition tweak meant only for ClassicFrames users being active for all.
+- Fix party castbars sometimes showing when no party frame is displayed due to shitty blizzard api.
+
 # BetterBlizzFrames 1.5.0
 ## The War Within
 ### New stuff:

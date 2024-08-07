@@ -101,13 +101,13 @@ function BBF.UpdateCastbars()
 
                     if _G["PartyFrame"]["MemberFrame"..i] and _G["PartyFrame"]["MemberFrame"..i]:IsShown() then
                         partyFrame = _G["PartyFrame"]["MemberFrame"..i]
-                    elseif _G["CompactPartyFrameMember"..i] and _G["CompactPartyFrameMember"..i]:IsShown() then
+                    elseif _G["CompactPartyFrameMember"..i] and _G["CompactPartyFrameMember"..i]:IsVisible() then
                         partyFrame = _G["CompactPartyFrameMember"..i]
                     -- elseif _G["CompactRaidFrame"..i] and _G["CompactRaidFrame"..i]:IsShown() then
                     --     partyFrame = _G["CompactRaidFrame"..i]
                     end
 
-                    if partyFrame and partyFrame:IsShown() then
+                    if partyFrame and partyFrame:IsShown() and partyFrame:IsVisible() then
                         local xPos = BetterBlizzFramesDB.partyCastBarXPos + 13
                         local yPos = BetterBlizzFramesDB.partyCastBarYPos + 3
                         if defaultPartyFrame then
@@ -849,8 +849,8 @@ end
 
 function BBF.ChangeCastbarSizes()
     local classicFrames = C_AddOns.IsAddOnLoaded("ClassicFrames")
-    local xClassicAdjustment = -1
-    local yClassicAdjustment = 6
+    local xClassicAdjustment = classicFrames and -1 or 0
+    local yClassicAdjustment = classicFrames and 6 or 0
     --Player
     if not BetterBlizzFramesDB.playerCastBarScale then
         BetterBlizzFramesDB.playerCastBarScale = PlayerCastingBarFrame:GetScale()
