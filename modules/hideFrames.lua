@@ -451,6 +451,17 @@ function BBF.HideFrames()
         TargetFrameToT:SetAlpha(targetToTAlpha)
         FocusFrameToT:SetAlpha(focusToTAlpha)
 
+        -- Hide Rare Textures
+        if BetterBlizzFramesDB.hideRareDragonTexture then
+            TargetFrame.TargetFrameContainer.BossPortraitFrameTexture:SetAlpha(0)
+            FocusFrame.TargetFrameContainer.BossPortraitFrameTexture:SetAlpha(0)
+            TargetFrame.TargetFrameContainer.BossPortraitFrameTexture.bbfHidden = true
+        elseif TargetFrame.TargetFrameContainer.BossPortraitFrameTexture.bbfHidden then
+            TargetFrame.TargetFrameContainer.BossPortraitFrameTexture:SetAlpha(1)
+            FocusFrame.TargetFrameContainer.BossPortraitFrameTexture:SetAlpha(1)
+            TargetFrame.TargetFrameContainer.BossPortraitFrameTexture.bbfHidden = nil
+        end
+
         -- Hide Stance Bar
         if BetterBlizzFramesDB.hideStanceBar then
             for i = 1, 10 do

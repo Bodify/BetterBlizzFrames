@@ -1,3 +1,16 @@
+# BetterBlizzFrames 1.5.0c
+## The War Within
+### New stuff:
+- "Hide Dragon" setting for Target & FocusFrame.
+- "Dark Mode: Vigor" setting is now optional, on by default.
+### Bugfix:
+- Fix Vigor sometimes not being colored due to the frame not existing yet.
+
+## Cata
+### Tweak:
+- OCD Tweak: Increased Hotkey text width slightly to allow some longer keybind text like it used to be before Blizzard messed up.
+- OCD Tweak: Re-apply hotkey text width after instancing because of resets.
+
 # BetterBlizzFrames 1.5.0b
 ## The War Within
 ### Bugfix:

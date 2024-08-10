@@ -1,8 +1,8 @@
 -- I did not know what a variable was when I started. I know a little bit more now and I am so sorry.
 
 local addonVersion = "1.00" --too afraid to to touch for now
-local addonUpdates = "1.5.0"
-local sendUpdate = true
+local addonUpdates = "1.5.0c"
+local sendUpdate = false
 BBF.VersionNumber = addonUpdates
 BBF.variablesLoaded = false
 local isAddonLoaded = C_AddOns.IsAddOnLoaded
@@ -19,6 +19,7 @@ local defaultSettings = {
     darkModeUiAura = true,
     darkModeCastbars = true,
     darkModeColor = 0.20,
+    darkModeVigor = true,
     hideGroupIndicator = false,
     hideFocusCombatGlow = false,
     hideDragonFlying = true,
@@ -390,12 +391,8 @@ StaticPopupDialogs["CONFIRM_RESET_BETTERBLIZZFRAMESDB"] = {
 -- Update message
 local function SendUpdateMessage()
     if sendUpdate then
-        BetterBlizzFramesDB.castBarInterruptIconYPos = 0
         if not BetterBlizzFramesDB.scStart then
             C_Timer.After(7, function()
-                if C_AddOns.IsAddOnLoaded("ClassicFrames") then
-                    StaticPopup_Show("BBF_NEW_VERSION")
-                end
                 -- if BetterBlizzFramesDB.castBarInterruptIconEnabled then
 
 

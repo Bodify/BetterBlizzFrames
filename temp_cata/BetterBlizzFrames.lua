@@ -969,7 +969,7 @@ function BBF.FixStupidBlizzPTRShit()
         ReputationWatchBar.StatusBar.XPBarTexture3:SetWidth(255)
 
         BBF.ActionBarIconZoom()
-        ChangeHotkeyWidth(30)
+        ChangeHotkeyWidth(32)
     else
         MainMenuBarTextureExtender:Show()
         ChangeHotkeyWidth(28)
@@ -1154,19 +1154,22 @@ PlayerEnteringWorld:SetScript("OnEvent", function()
     BBF.ClickthroughFrames()
     BBF.CheckForAuraBorders()
     BBF.RepositionBuffFrame()
+    if BetterBlizzFramesDB.playerFrameOCD then
+        ChangeHotkeyWidth(32)
+    end
     -- if not isAddonLoaded("ClassicFrames") then
     --     --BBF.HookNameChangeStuff()
     --     TargetFrame:SetFrameStrata("MEDIUM")
     --     TargetFrameSpellBar:SetFrameStrata("HIGH")
     --     FocusFrameSpellBar:SetFrameStrata("HIGH")
     -- end
-    if BetterBlizzFramesDB.fixHealthbarText then
-        --temp fix blizz bodify
-        SetTextStatusBarText(PlayerFrameManaBar, PlayerFrameManaBarText)
-        SetTextStatusBarText(PlayerFrameHealthBar, PlayerFrameHealthBarText)
-        TextStatusBar_UpdateTextString(PlayerFrameHealthBar)
-        TextStatusBar_UpdateTextString(PlayerFrameManaBar)
-    end
+    -- if BetterBlizzFramesDB.fixHealthbarText then
+    --     --temp fix blizz bodify
+    --     SetTextStatusBarText(PlayerFrameManaBar, PlayerFrameManaBarText)
+    --     SetTextStatusBarText(PlayerFrameHealthBar, PlayerFrameHealthBarText)
+    --     TextStatusBar_UpdateTextString(PlayerFrameHealthBar)
+    --     TextStatusBar_UpdateTextString(PlayerFrameManaBar)
+    -- end
 end)
 PlayerEnteringWorld:RegisterEvent("PLAYER_ENTERING_WORLD")
 

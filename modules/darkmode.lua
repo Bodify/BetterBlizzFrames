@@ -79,7 +79,7 @@ end
 BBF.auraBorders = {}  -- BuffFrame aura borders for darkmode
 local function createOrUpdateBorders(frame, colorValue, textureName, bypass)
     --if not twwrdy then return end
-    if BetterBlizzFramesDB.enableMasque then return end
+    if BetterBlizzFramesDB.enableMasque and C_AddOns.IsAddOnLoaded("Masque") then return end
     if (darkModeUi and darkModeUiAura) or bypass then
         if not BBF.auraBorders[frame] then
             -- Create borders
@@ -199,22 +199,38 @@ function BBF.DarkmodeFrames(bypass)
         end
     end
 
-    for _, child in ipairs({UIWidgetPowerBarContainerFrame:GetChildren()}) do
-        if child.DecorLeft and child.DecorLeft.GetAtlas then
-            local atlasName = child.DecorLeft:GetAtlas()
-            if atlasName == "dragonriding_vigor_decor" then
-                applySettings(child.DecorLeft, desaturationValue, druidComboPointActive)
-                applySettings(child.DecorRight, desaturationValue, druidComboPointActive)
-            end
-        end
-        for _, grandchild in ipairs({child:GetChildren()}) do
-            -- Check for textures with specific atlas names
-            if grandchild.Frame and grandchild.Frame.GetAtlas then
-                local atlasName = grandchild.Frame:GetAtlas()
-                if atlasName == "dragonriding_vigor_frame" then
-                    applySettings(grandchild.Frame, desaturationValue, druidComboPointActive)
+    local function RecolorVigor()
+        for _, child in ipairs({UIWidgetPowerBarContainerFrame:GetChildren()}) do
+            if child.DecorLeft and child.DecorLeft.GetAtlas then
+                local atlasName = child.DecorLeft:GetAtlas()
+                if atlasName == "dragonriding_vigor_decor" then
+                    applySettings(child.DecorLeft, desaturationValue, druidComboPointActive)
+                    applySettings(child.DecorRight, desaturationValue, druidComboPointActive)
                 end
             end
+            for _, grandchild in ipairs({child:GetChildren()}) do
+                -- Check for textures with specific atlas names
+                if grandchild.Frame and grandchild.Frame.GetAtlas then
+                    local atlasName = grandchild.Frame:GetAtlas()
+                    if atlasName == "dragonriding_vigor_frame" then
+                        applySettings(grandchild.Frame, desaturationValue, druidComboPointActive)
+                    end
+                end
+            end
+        end
+    end
+
+    if BetterBlizzFramesDB.darkModeVigor then
+        RecolorVigor()
+        if not BBF.vigorRecolor then
+            BBF.vigorRecolor = CreateFrame("Frame")
+            BBF.vigorRecolor:RegisterEvent("PLAYER_MOUNT_DISPLAY_CHANGED")
+            BBF.vigorRecolor:SetScript("OnEvent", function()
+                C_Timer.After(0, function()
+                    RecolorVigor()
+                    BBF.vigorRecolor:UnregisterAllEvents()
+                end)
+            end)
         end
     end
 
@@ -279,8 +295,7 @@ function BBF.DarkmodeFrames(bypass)
     applySettings(AdventureObjectiveTracker.Header.Background, objectiveSat, objectiveColor)
     applySettings(CampaignQuestObjectiveTracker.Header.Background, objectiveSat, objectiveColor)
     applySettings(UIWidgetObjectiveTracker.Header.Background, objectiveSat, objectiveColor)
-
-
+    applySettings(ScenarioObjectiveTracker.Header.Background, objectiveSat, objectiveColor)
 
 
 
