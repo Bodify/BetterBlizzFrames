@@ -1,3 +1,16 @@
+# BetterBlizzFrames 1.5.1
+## The War Within & Cata
+### New stuff:
+- Custom Code: Added a section for custom code that runs at login. Made for smaller custom scripts that don't really fit the addon.
+- Buffs & Debuffs: "Same Size" setting that makes all auras on target/focus frame the same size. (By default yours are a little bigger)
+- Buffs & Debuffs: "Aura Stack Size" setting that lets you re-size the stack text on auras.
+### Bugfix:
+- Fix SUI + Masque causing Player aura durations to be hidden due to SUI moving them up and Masque overlaying it.
+
+## The War Within
+### Tweak:
+- Dark Mode Objectives: Add the objective header from the addon "World Quest Tracker".
+
 # BetterBlizzFrames 1.5.0c
 ## The War Within
 ### New stuff:

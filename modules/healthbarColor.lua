@@ -109,8 +109,8 @@ function BBF.UpdateFrames()
     if classColorsOn then
         BBF.HookHealthbarColors()
         if UnitExists("player") then updateFrameColorToggleVer(PlayerFrame.healthbar, "player") end
-        if UnitExists("target") then updateFrameColorToggleVer(TargetFrame.TargetFrameContent.TargetFrameContentMain.HealthBarsContainer, "target") end
-        if UnitExists("focus") then updateFrameColorToggleVer(FocusFrame.TargetFrameContent.TargetFrameContentMain.HealthBarsContainer, "focus") end
+        if UnitExists("target") then updateFrameColorToggleVer(TargetFrame.healthbar, "target") end
+        if UnitExists("focus") then updateFrameColorToggleVer(FocusFrame.healthbar, "target", "focus") end
         if UnitExists("targettarget") then updateFrameColorToggleVer(TargetFrameToT.HealthBar, "targettarget") end
         if UnitExists("focustarget") then updateFrameColorToggleVer(FocusFrameToT.HealthBar, "focustarget") end
         if UnitExists("party1") then updateFrameColorToggleVer(PartyFrame.MemberFrame1.HealthBar, "party1") end
@@ -119,8 +119,8 @@ function BBF.UpdateFrames()
         if UnitExists("party4") then updateFrameColorToggleVer(PartyFrame.MemberFrame4.HealthBar, "party4") end
     else
         if UnitExists("player") then resetFrameColor(PlayerFrame.healthbar, "player") end
-        if UnitExists("target") then resetFrameColor(TargetFrame.TargetFrameContent.TargetFrameContentMain.HealthBarsContainer, "target") end
-        if UnitExists("focus") then resetFrameColor(FocusFrame.TargetFrameContent.TargetFrameContentMain.HealthBarsContainer, "focus") end
+        if UnitExists("target") then resetFrameColor(TargetFrame.healthbar, "target") end
+        if UnitExists("focus") then resetFrameColor(FocusFrame.healthbar, "focus") end
         if UnitExists("targettarget") then resetFrameColor(TargetFrameToT.HealthBar, "targettarget") end
         if UnitExists("focustarget") then resetFrameColor(FocusFrameToT.HealthBar, "focustarget") end
         if UnitExists("party1") then resetFrameColor(PartyFrame.MemberFrame1.HealthBar, "party1") end

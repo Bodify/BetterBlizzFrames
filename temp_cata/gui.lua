@@ -750,6 +750,9 @@ local function CreateSlider(parent, label, minValue, maxValue, stepValue, elemen
                 elseif element == "auraTypeGap" then
                     BetterBlizzFramesDB.auraTypeGap = value
                     BBF.RefreshAllAuraFrames()
+                elseif element == "auraStackSize" then
+                    BetterBlizzFramesDB.auraStackSize = value
+                    BBF.RefreshAllAuraFrames()
                 elseif element == "targetAndFocusSmallAuraScale" then
                     BetterBlizzFramesDB.targetAndFocusSmallAuraScale = value
                     BBF.RefreshAllAuraFrames()
@@ -4475,6 +4478,20 @@ local function guiFrameAuras()
     targetAndFocusSmallAuraScale:SetPoint("TOP", targetAndFocusAuraScale, "BOTTOM", 0, -20)
     CreateTooltip(targetAndFocusSmallAuraScale, "Adjusts the size of small auras / auras that are not yours.")
 
+    local sameSizeAuras = CreateCheckbox("sameSizeAuras", "Same Size", playerAuraFiltering)
+    sameSizeAuras:SetPoint("LEFT", targetAndFocusSmallAuraScale, "RIGHT", 3, 0)
+    CreateTooltipTwo(sameSizeAuras, "Same Size", "Enable same sized auras.\n\nBy default your own auras are a little bigger than others. This makes them same size.")
+    sameSizeAuras:HookScript("OnClick", function(self)
+        if self:GetChecked() then
+            DisableElement(targetAndFocusSmallAuraScale)
+        else
+            EnableElement(targetAndFocusSmallAuraScale)
+        end
+    end)
+    if BetterBlizzFramesDB.sameSizeAuras then
+        DisableElement(targetAndFocusSmallAuraScale)
+    end
+
     local customPurgeSize = CreateCheckbox("customPurgeSize", "On", playerAuraGlows)
 
     local purgeableAuraSize = CreateSlider(customPurgeSize, "Purgeable Aura Scale", 0.7, 2, 0.01, "purgeableAuraSize")
@@ -4517,6 +4534,10 @@ local function guiFrameAuras()
     local auraTypeGap = CreateSlider(playerAuraFiltering, "Aura Type Gap", 0, 30, 1, "auraTypeGap", "Y")
     auraTypeGap:SetPoint("TOPLEFT", targetAndFocusVerticalGap, "BOTTOMLEFT", 0, -17)
     CreateTooltip(auraTypeGap, "The gap size between buffs & debuffs")
+
+    local auraStackSize = CreateSlider(playerAuraFiltering, "Aura Stack Size", 0.4, 2, 0.01, "auraStackSize")
+    auraStackSize:SetPoint("TOPLEFT", auraTypeGap, "BOTTOMLEFT", 0, -17)
+    CreateTooltipTwo(auraStackSize, "Aura Stack Size", "Size of the stack number on auras.")
 
 --[=[
     local maxTargetBuffs = CreateSlider(playerAuraFiltering, "Max Buffs", 1, 32, 1, "maxTargetBuffs")
@@ -4872,10 +4893,10 @@ local function guiSupport()
     bgImg:SetVertexColor(0,0,0)
 
     local discordLinkEditBox = CreateFrame("EditBox", nil, guiSupport, "InputBoxTemplate")
-    discordLinkEditBox:SetPoint("TOP", guiSupport, "TOP", 0, -170)
+    discordLinkEditBox:SetPoint("TOPLEFT", guiSupport, "TOPLEFT", 25, -45)
     discordLinkEditBox:SetSize(180, 20)
     discordLinkEditBox:SetAutoFocus(false)
-    discordLinkEditBox:SetFontObject("ChatFontNormal")
+    discordLinkEditBox:SetFontObject("ChatFontSmall")
     discordLinkEditBox:SetText("https://discord.gg/cjqVaEMm25")
     discordLinkEditBox:SetCursorPosition(0) -- Places cursor at start of the text
     discordLinkEditBox:ClearFocus() -- Removes focus from the EditBox
@@ -4906,14 +4927,14 @@ local function guiSupport()
     joinDiscord:SetPoint("RIGHT", discordText, "LEFT", 0, 1)
 
     local supportText = guiSupport:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
-    supportText:SetPoint("TOP", guiSupport, "TOP", 0, -230)
+    supportText:SetPoint("TOP", guiSupport, "TOP", 0, -90)
     supportText:SetText("If you wish to support me and my projects\nit would be greatly appreciated |A:GarrisonTroops-Health:10:10|a")
 
     local boxOne = CreateFrame("EditBox", nil, guiSupport, "InputBoxTemplate")
-    boxOne:SetPoint("TOP", guiSupport, "TOP", -110, -360)
+    boxOne:SetPoint("LEFT", discordLinkEditBox, "RIGHT", 50, 0)
     boxOne:SetSize(180, 20)
     boxOne:SetAutoFocus(false)
-    boxOne:SetFontObject("ChatFontNormal")
+    boxOne:SetFontObject("ChatFontSmall")
     boxOne:SetText("https://patreon.com/bodifydev")
     boxOne:SetCursorPosition(0) -- Places cursor at start of the text
     boxOne:ClearFocus() -- Removes focus from the EditBox
@@ -4937,13 +4958,17 @@ local function guiSupport()
     local boxOneTex = guiSupport:CreateTexture(nil, "ARTWORK")
     boxOneTex:SetTexture("Interface\\AddOns\\BetterBlizzPlates\\media\\logos\\patreon.tga")
     boxOneTex:SetSize(58, 58)
-    boxOneTex:SetPoint("BOTTOM", boxOne, "TOP", 0, 1)
+    boxOneTex:SetPoint("BOTTOMLEFT", boxOne, "TOPLEFT", 3, -2)
+
+    local patText = guiSupport:CreateFontString(nil, "OVERLAY", "GameFontNormalHuge")
+    patText:SetPoint("LEFT", boxOneTex, "RIGHT", 14, -1)
+    patText:SetText("Patreon")
 
     local boxTwo = CreateFrame("EditBox", nil, guiSupport, "InputBoxTemplate")
-    boxTwo:SetPoint("TOP", guiSupport, "TOP", 110, -360)
+    boxTwo:SetPoint("LEFT", boxOne, "RIGHT", 35, 0)
     boxTwo:SetSize(180, 20)
     boxTwo:SetAutoFocus(false)
-    boxTwo:SetFontObject("ChatFontNormal")
+    boxTwo:SetFontObject("ChatFontSmall")
     boxTwo:SetText("https://paypal.me/bodifydev")
     boxTwo:SetCursorPosition(0) -- Places cursor at start of the text
     boxTwo:ClearFocus() -- Removes focus from the EditBox
@@ -4967,7 +4992,162 @@ local function guiSupport()
     local boxTwoTex = guiSupport:CreateTexture(nil, "ARTWORK")
     boxTwoTex:SetTexture("Interface\\AddOns\\BetterBlizzPlates\\media\\logos\\paypal.tga")
     boxTwoTex:SetSize(58, 58)
-    boxTwoTex:SetPoint("BOTTOM", boxTwo, "TOP", 0, 1)
+    boxTwoTex:SetPoint("BOTTOMLEFT", boxTwo, "TOPLEFT", 3, -2)
+
+    local palText = guiSupport:CreateFontString(nil, "OVERLAY", "GameFontNormalHuge")
+    palText:SetPoint("LEFT", boxTwoTex, "RIGHT", 14, -1)
+    palText:SetText("Paypal")
+
+
+
+
+
+
+
+    -- Implementing the code editor inside the guiSupport frame
+    local FAIAP = BBF.indent
+
+    -- Define your color table for syntax highlighting
+    local colorTable = {
+        [FAIAP.tokens.TOKEN_SPECIAL] = "|c00F1D710",
+        [FAIAP.tokens.TOKEN_KEYWORD] = "|c00BD6CCC",
+        [FAIAP.tokens.TOKEN_COMMENT_SHORT] = "|c00999999",
+        [FAIAP.tokens.TOKEN_COMMENT_LONG] = "|c00999999",
+        [FAIAP.tokens.TOKEN_STRING] = "|c00E2A085",
+        [FAIAP.tokens.TOKEN_NUMBER] = "|c00B1FF87",
+        [FAIAP.tokens.TOKEN_ASSIGNMENT] = "|c0055ff88",
+        [FAIAP.tokens.TOKEN_WOW_API] = "|c00ff8000",
+        [FAIAP.tokens.TOKEN_WOW_EVENTS] = "|c004ec9b0",
+        [0] = "|r",  -- Reset color
+    }
+
+    -- Add a scroll frame for the code editor
+    local scrollFrame = CreateFrame("ScrollFrame", nil, guiSupport, "UIPanelScrollFrameTemplate")
+    scrollFrame:SetPoint("TOP", guiSupport, "TOP", -10, -170)
+    scrollFrame:SetSize(620, 370)  -- Fixed size for the entire editor box
+
+    -- Label for the custom code box
+    local customCodeText = guiSupport:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+    customCodeText:SetPoint("BOTTOM", scrollFrame, "TOP", 0, 5)
+    customCodeText:SetText("Enter Custom Lua Code (Executes at Login)")
+
+    -- Create the code editor
+    local codeEditBox = CreateFrame("EditBox", nil, scrollFrame)
+    codeEditBox:SetMultiLine(true)
+    codeEditBox:SetFontObject("ChatFontSmall")
+    codeEditBox:SetSize(600, 370)  -- Smaller than the scroll frame to allow scrolling
+    codeEditBox:SetAutoFocus(false)
+    codeEditBox:SetCursorPosition(0)
+    codeEditBox:SetText(BetterBlizzFramesDB.customCode or "")
+    codeEditBox:ClearFocus()
+
+    -- Attach the EditBox to the scroll frame
+    scrollFrame:SetScrollChild(codeEditBox)
+
+    -- Add a static custom background to the scroll frame
+    local bg = scrollFrame:CreateTexture(nil, "BACKGROUND")
+    bg:SetColorTexture(0, 0, 0, 0.6)  -- Semi-transparent black background
+    bg:SetAllPoints(scrollFrame)  -- Apply the background to the entire scroll frame
+
+    -- Add a static custom border around the scroll frame
+    local border = CreateFrame("Frame", nil, scrollFrame, BackdropTemplateMixin and "BackdropTemplate")
+    border:SetPoint("TOPLEFT", scrollFrame, -2, 2)
+    border:SetPoint("BOTTOMRIGHT", scrollFrame, 2, -2)
+    border:SetBackdrop({
+        edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+        edgeSize = 14,
+    })
+    border:SetBackdropBorderColor(0.8, 0.8, 0.8, 1)  -- Light gray border
+
+    -- Optional: Set padding or insets if needed
+    codeEditBox:SetTextInsets(6, 10, 4, 10)
+
+    -- Track changes to detect unsaved edits
+    local unsavedChanges = false
+    codeEditBox:SetScript("OnTextChanged", function(self, userInput)
+        if userInput then
+            -- Compare current text with saved code
+            local currentText = self:GetText()
+            if currentText ~= BetterBlizzFramesDB.customCode then
+                unsavedChanges = true
+            else
+                unsavedChanges = false
+            end
+        end
+    end)
+
+    -- Enable syntax highlighting and indentation with FAIAP
+    FAIAP.enable(codeEditBox, colorTable, 4)  -- Assuming a tab width of 4
+
+    local customCodeSaved = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: Custom code has been saved."
+
+    -- Create Save Button
+    local saveButton = CreateFrame("Button", nil, guiSupport, "UIPanelButtonTemplate")
+    saveButton:SetSize(120, 30)
+    saveButton:SetPoint("TOP", scrollFrame, "BOTTOM", 0, -10)
+    saveButton:SetText("Save")
+    saveButton:SetScript("OnClick", function()
+        BetterBlizzFramesDB.customCode = codeEditBox:GetText()
+        unsavedChanges = false
+        print(customCodeSaved)
+    end)
+
+    -- Flag to prevent double triggering of the prompt
+    local promptShown = false
+
+    -- Function to show the save prompt if needed
+    local function showSavePrompt()
+        if unsavedChanges and not promptShown then
+            promptShown = true
+            StaticPopup_Show("UNSAVED_CHANGES_PROMPT")
+        end
+    end
+
+    -- Prevent the EditBox from clearing focus with ESC if there are unsaved changes
+    codeEditBox:SetScript("OnEscapePressed", function(self)
+        if unsavedChanges then
+            showSavePrompt()
+        else
+            self:ClearFocus()
+        end
+    end)
+
+    StaticPopupDialogs["UNSAVED_CHANGES_PROMPT"] = {
+        text = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames \n\nYou have unsaved changes to the custom code.\n\nDo you want to save them?",
+        button1 = "Yes",
+        button2 = "No",
+        OnAccept = function()
+            BetterBlizzFramesDB.customCode = codeEditBox:GetText()
+            unsavedChanges = false
+            codeEditBox:ClearFocus()
+            print(customCodeSaved)
+            if BetterBlizzFramesDB.reopenOptions then
+                ReloadUI()
+            end
+        end,
+        OnCancel = function()
+            unsavedChanges = false
+            codeEditBox:ClearFocus()
+            BetterBlizzFramesDB.reopenOptions = false
+        end,
+        timeout = 0,
+        whileDead = true,
+        hideOnEscape = true,
+    }
+
+    local reloadUiButton = CreateFrame("Button", nil, guiSupport, "UIPanelButtonTemplate")
+    reloadUiButton:SetText("Reload UI")
+    reloadUiButton:SetWidth(85)
+    reloadUiButton:SetPoint("TOP", guiSupport, "BOTTOMRIGHT", -140, -9)
+    reloadUiButton:SetScript("OnClick", function()
+        if unsavedChanges then
+            showSavePrompt()
+            BetterBlizzFramesDB.reopenOptions = true
+            return
+        end
+        BetterBlizzFramesDB.reopenOptions = true
+        ReloadUI()
+    end)
 end
 ------------------------------------------------------------
 -- GUI Setup

@@ -5,9 +5,9 @@
 ## IconAtlas: gmchat-icon-blizz
 ## Author: Bodify
 
-temp_cata\embeds.xml
-
 init.lua
+
+temp_cata\embeds.xml
 
 temp_cata\modules\darkmode.lua
 temp_cata\modules\nameFix.lua

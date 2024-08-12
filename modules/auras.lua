@@ -108,6 +108,8 @@ local targetEnlargeAuraFriendly
 local focusEnlargeAuraEnemy
 local focusEnlargeAuraFriendly
 local increaseAuraStrata
+local sameSizeAuras
+local auraStackSize
 
 local function UpdateMore()
     onlyPandemicMine = BetterBlizzFramesDB.onlyPandemicAuraMine
@@ -118,6 +120,8 @@ local function UpdateMore()
     targetEnlargeAuraFriendly = BetterBlizzFramesDB.targetEnlargeAuraFriendly
     focusEnlargeAuraEnemy = BetterBlizzFramesDB.focusEnlargeAuraEnemy
     focusEnlargeAuraFriendly = BetterBlizzFramesDB.focusEnlargeAuraFriendly
+    sameSizeAuras = BetterBlizzFramesDB.sameSizeAuras
+    auraStackSize = BetterBlizzFramesDB.auraStackSize
 end
 
 function BBF.UpdateUserAuraSettings()
@@ -556,9 +560,6 @@ local function StartCheckBuffsTimer()
     end
 end
 
-local MIN_AURA_SIZE = 17
-local adjustmentForBuffsOnTop = -80  -- Height adjustment when buffs are on top
-
 local function addMasque(frameType)
     if MasqueOn then
         if frameType == "target" then
@@ -572,13 +573,14 @@ local function addMasque(frameType)
 end
 
 local function AdjustAuras(self, frameType)
-    local adjustedSize = MIN_AURA_SIZE * targetAndFocusSmallAuraScale
+    local adjustedSize = sameSizeAuras and 21 or 17 * targetAndFocusSmallAuraScale
     local buffsOnTop = self.buffsOnTop
 
     local initialOffsetX = (baseOffsetX / auraScale)
     local initialOffsetY = (baseOffsetY / auraScale)
 
     local function adjustAuraPosition(auras, yOffset, buffsOnTop)
+        local adjustmentForBuffsOnTop = -80
         local currentYOffset = yOffset + (buffsOnTop and -(initialOffsetY + adjustmentForBuffsOnTop) or initialOffsetY)
         local rowWidths, rowHeights = {}, {}
         --local previousAuraWasImportant = false
@@ -608,6 +610,10 @@ local function AdjustAuras(self, frameType)
                     end
                 end
                 auraSize = adjustedSize
+            end
+
+            if aura.Count then
+                aura.Count:SetScale(auraStackSize)
             end
 
             if aura.isEnlarged or aura.isCompacted then
@@ -1928,6 +1934,14 @@ function BBF.SetupMasqueSupport()
                         if frame.Symbol then
                             -- Shows debuff types as text in colorblind mode (except it currently doesnt work)
                             frame.Symbol:SetParent(skinWrapper);
+                        end
+
+                        if C_AddOns.IsAddOnLoaded("SUI") then
+                            local skinWrapper2 = CreateFrame("Frame")
+                            skinWrapper2:SetParent(skinWrapper)
+                            skinWrapper2:SetSize(30, 40)
+                            skinWrapper2:SetPoint("TOP")
+                            frame.Duration:SetParent(skinWrapper2)
                         end
 
                         local bType = frame.auraType or "Aura"

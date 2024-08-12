@@ -1,7 +1,7 @@
 -- I did not know what a variable was when I started. I know a little bit more now and I am so sorry.
 
 local addonVersion = "1.00" --too afraid to to touch for now
-local addonUpdates = "1.5.0c"
+local addonUpdates = "1.5.1"
 local sendUpdate = false
 BBF.VersionNumber = addonUpdates
 BBF.variablesLoaded = false
@@ -38,6 +38,7 @@ local defaultSettings = {
     compactedAuraSize = 0.7,
     onlyPandemicAuraMine = true,
     lossOfControlScale = 1,
+    customCode = "-- Enter custom code below here. Feel free to contact me @bodify",
 
     --Target castbar
     playerCastbarIconXPos = 0,
@@ -150,6 +151,7 @@ local defaultSettings = {
     --Auras
     --playerAuraMaxBuffsPerRow = 10,
     --playerAuraMaxDebuffsPerRow = 10,
+    auraStackSize = 1,
     auraToggleIconTexture = 134430,
     enablePlayerBuffFiltering = true,
     enablePlayerDebuffFiltering = false,
@@ -1076,12 +1078,24 @@ local function TurnTestModesOff()
     BetterBlizzFramesDB.petCastBarTestMode = false
 end
 
+local function executeCustomCode()
+    if BetterBlizzFramesDB and BetterBlizzFramesDB.customCode then
+        local func, errorMsg = loadstring(BetterBlizzFramesDB.customCode)
+        if func then
+            func() -- Execute the custom code
+        else
+            print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: Error in custom code:", errorMsg)
+        end
+    end
+end
+
 -- Event registration for PLAYER_LOGIN
 local Frame = CreateFrame("Frame")
 Frame:RegisterEvent("PLAYER_LOGIN")
 --Frame:RegisterEvent("PLAYER_ENTERING_WORLD")
 Frame:SetScript("OnEvent", function(...)
 
+    executeCustomCode()
     CheckForUpdate()
     --BBF.HideFrames()
     DisableClickForClassSpecificFrame()

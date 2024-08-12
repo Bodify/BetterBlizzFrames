@@ -121,6 +121,8 @@ local targetEnlargeAuraFriendly
 local focusEnlargeAuraEnemy
 local focusEnlargeAuraFriendly
 local increaseAuraStrata
+local sameSizeAuras
+local auraStackSize
 
 local function UpdateMore()
     purgeableBuffSorting = BetterBlizzFramesDB.purgeableBuffSorting
@@ -141,6 +143,8 @@ local function UpdateMore()
     focusEnlargeAuraEnemy = BetterBlizzFramesDB.focusEnlargeAuraEnemy
     focusEnlargeAuraFriendly = BetterBlizzFramesDB.focusEnlargeAuraFriendly
     increaseAuraStrata = BetterBlizzFramesDB.increaseAuraStrata
+    sameSizeAuras = BetterBlizzFramesDB.sameSizeAuras
+    auraStackSize = BetterBlizzFramesDB.auraStackSize
 
     if BetterBlizzFramesDB.targetdeBuffFilterBlizzard or BetterBlizzFramesDB.focusdeBuffFilterBlizzard then
         BetterBlizzFramesDB.targetdeBuffFilterBlizzard = false
@@ -843,8 +847,6 @@ local function getCustomAuraComparator()
     return getCustomAuraComparatorWithoutPurgeable()
 end
 
-local MIN_AURA_SIZE = 17
-local adjustmentForBuffsOnTop = -80  -- Height adjustment when buffs are on top
 local spammyAuras = {
     [51701] = "Honor Among Thieves",
     [51699] = "Honor Among Thieves",
@@ -871,13 +873,14 @@ local function addMasque(frameType)
 end
 
 local function AdjustAuras(self, frameType)
-    local adjustedSize = MIN_AURA_SIZE * targetAndFocusSmallAuraScale
+    local adjustedSize = sameSizeAuras and 21 or 17 * targetAndFocusSmallAuraScale
     local buffsOnTop = self.buffsOnTop
 
     local initialOffsetX = (baseOffsetX / auraScale)
     local initialOffsetY = (baseOffsetY / auraScale)
 
     local function adjustAuraPosition(auras, yOffset, buffsOnTop)
+        local adjustmentForBuffsOnTop = -80
         local currentYOffset = yOffset + (buffsOnTop and -((initialOffsetY + adjustmentForBuffsOnTop)/auraScale) or initialOffsetY)
         local rowWidths, rowHeights = {}, {}
 
@@ -994,6 +997,10 @@ local function AdjustAuras(self, frameType)
                 end
             end
 
+            if aura.Count then
+                aura.Count:SetScale(auraStackSize)
+            end
+
             local columnIndex, rowIndex
             columnIndex = (i - 1) % aurasPerRow
             rowIndex = math.ceil(i / aurasPerRow)
@@ -1033,13 +1040,12 @@ local function AdjustAuras(self, frameType)
 
     for i = 1, MAX_TARGET_BUFFS do
         local buffName = self:GetName().."Buff"..i
-        local stealable = buffName.."Stealable"
-        local cooldown = buffName.."Cooldown"
-        local icon = self:GetName().."Buff"..i.."Icon"
+        local stealable = _G[buffName.."Stealable"]
+        local cooldown = _G[buffName.."Cooldown"]
+        local count = _G[buffName.."Count"]
+        local icon = _G[buffName.."Icon"]
 
         local buffFrame = _G[buffName]
-        local iconTexture = _G[icon]
-        local stealableTexture = _G[stealable]
         if buffFrame and buffFrame:IsShown() then
             if increaseAuraStrata then
                 buffFrame:SetFrameStrata("HIGH")
@@ -1049,11 +1055,16 @@ local function AdjustAuras(self, frameType)
             --     MasqueUnitFrameAuras:AddButton(buffFrame)
             --     buffFrame.added = true
             -- end
-            buffFrame.Icon = iconTexture
-            buffFrame.Stealable = stealableTexture
+            buffFrame.Icon = icon
+            buffFrame.Stealable = stealable
             buffFrame.Cooldown = cooldown
+            buffFrame.Count = count
 
-
+            if buffFrame.Cooldown:IsShown() then
+                buffFrame.Count:SetParent(buffFrame.Cooldown)
+            else
+                buffFrame.Count:SetParent(buffFrame)
+            end
 
             local spellName, icon, count, debuffType, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, castByPlayer, nameplateShowAll, timeMod = UnitBuff(unit, i)
 
@@ -1372,8 +1383,12 @@ local function AdjustAuras(self, frameType)
     end
 
     for i = 1, 40 do
+
         local debuffName = self:GetName().."Debuff"..i
         local debuffFrame = _G[debuffName]
+        local count = _G[debuffName.."Count"]
+        local cooldown = _G[debuffName.."Cooldown"]
+
         local border = _G[debuffName.."Border"]
         if debuffFrame and debuffFrame:IsShown() then
             if increaseAuraStrata then
@@ -1381,6 +1396,9 @@ local function AdjustAuras(self, frameType)
             end
             --debuffFrame.Icon = _G[icon]
             debuffFrame.Border = border
+            debuffFrame.Cooldown = cooldown
+            debuffFrame.Count = count
+            debuffFrame.Count:SetParent(debuffFrame.Cooldown)
 
 
 
@@ -2768,12 +2786,44 @@ function BBF.SetupMasqueSupport()
                 end
             end
         end
+
+        function BBF.MasquePlayerAurasSUI()
+            -- Player Buffs
+            for i = 1, BUFF_ACTUAL_DISPLAY do
+                local buffName = "BuffButton"..i
+                local duration = "BuffButton"..i.."Duration"
+                if _G[buffName] then
+                    addToMasque(buffName, MasquePlayerBuffs)
+                end
+                if _G[duration] then
+                    _G[duration]:ClearAllPoints()
+                    _G[duration]:SetPoint("BOTTOM", _G[buffName], "BOTTOM", 0, 0)
+                end
+            end
+            -- Player Debuffs
+            for i = 1, DEBUFF_ACTUAL_DISPLAY do
+                local debuffName = "DebuffButton"..i
+                local duration = "DebuffButton"..i.."Duration"
+                if _G[debuffName] then
+                    addToMasque(debuffName, MasquePlayerDebuffs)
+                end
+                if _G[duration] then
+                    _G[duration]:ClearAllPoints()
+                    _G[duration]:SetPoint("BOTTOM", _G[debuffName], "BOTTOM", 0, 0)
+                end
+            end
+        end
+
         C_Timer.After(3, function()
             if ToggleHiddenAurasButton then
                 addToMasque("ToggleHiddenAurasButton", MasquePlayerBuffs)
             end
         end)
-        hooksecurefunc("BuffFrame_Update", BBF.MasquePlayerAuras)
+        if C_AddOns.IsAddOnLoaded("SUI") then
+            hooksecurefunc("BuffFrame_Update", BBF.MasquePlayerAurasSUI)
+        else
+            hooksecurefunc("BuffFrame_Update", BBF.MasquePlayerAuras)
+        end
 
         -- function BBF.MasqueRaidFrames()
         --     local numGroupMembers = GetNumGroupMembers()

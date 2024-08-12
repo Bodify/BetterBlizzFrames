@@ -296,6 +296,9 @@ function BBF.DarkmodeFrames(bypass)
     applySettings(CampaignQuestObjectiveTracker.Header.Background, objectiveSat, objectiveColor)
     applySettings(UIWidgetObjectiveTracker.Header.Background, objectiveSat, objectiveColor)
     applySettings(ScenarioObjectiveTracker.Header.Background, objectiveSat, objectiveColor)
+    if WorldQuestTrackerQuestsHeader and WorldQuestTrackerQuestsHeader.Background then
+        applySettings(WorldQuestTrackerQuestsHeader.Background, objectiveSat, objectiveColor)
+    end
 
 
 

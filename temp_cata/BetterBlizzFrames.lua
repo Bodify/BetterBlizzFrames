@@ -6,7 +6,7 @@ BBF = BBF or {}
 -- Things are getting more messy need a lot of cleaning lol
 
 local addonVersion = "1.00" --too afraid to to touch for now
-local addonUpdates = "1.5.0c"
+local addonUpdates = "1.5.1"
 local sendUpdate = false
 BBF.VersionNumber = addonUpdates
 BBF.variablesLoaded = false
@@ -48,6 +48,7 @@ local defaultSettings = {
     targetFrameScale = 1,
     focusFrameScale = 1,
     playerFrameOCDZoom = true,
+    customCode = "-- Enter custom code below here. Feel free to contact me @bodify",
 
     --Target castbar
     playerCastbarIconXPos = 0,
@@ -172,6 +173,7 @@ local defaultSettings = {
     --Auras
     --playerAuraMaxBuffsPerRow = 10,
     --playerAuraMaxDebuffsPerRow = 10,
+    auraStackSize = 1,
     auraToggleIconTexture = 134430,
     enablePlayerBuffFiltering = true,
     enablePlayerDebuffFiltering = false,
@@ -985,7 +987,16 @@ local function TurnTestModesOff()
     BetterBlizzFramesDB.petCastBarTestMode = false
 end
 
-
+local function executeCustomCode()
+    if BetterBlizzFramesDB and BetterBlizzFramesDB.customCode then
+        local func, errorMsg = loadstring(BetterBlizzFramesDB.customCode)
+        if func then
+            func() -- Execute the custom code
+        else
+            print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: Error in custom code:", errorMsg)
+        end
+    end
+end
 
 -- Event registration for PLAYER_LOGIN
 local Frame = CreateFrame("Frame")
@@ -993,6 +1004,7 @@ Frame:RegisterEvent("PLAYER_LOGIN")
 --Frame:RegisterEvent("PLAYER_ENTERING_WORLD")
 Frame:SetScript("OnEvent", function(...)
 
+    executeCustomCode()
     CheckForUpdate()
     --BBF.HideFrames()
     DisableClickForClassSpecificFrame()
