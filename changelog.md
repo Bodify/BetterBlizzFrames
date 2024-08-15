@@ -1,3 +1,8 @@
+# BetterBlizzFrames 1.5.1b
+## The War Within
+### New stuff:
+- Recolor Temp Max HP Loss (Player, Target, Focus, Party) to transparent red. (Misc section)
+
 # BetterBlizzFrames 1.5.1
 ## The War Within & Cata
 ### New stuff:

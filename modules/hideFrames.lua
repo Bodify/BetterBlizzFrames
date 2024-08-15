@@ -202,6 +202,28 @@ function BBF.HideFrames()
             PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.GuideIcon:SetAlpha(1)
         end
 
+        -- if BetterBlizzFramesDB.hidePartyMaxHpReduction then
+        --     for i = 1, 5 do
+        --         local frame = _G["CompactPartyFrameMember"..i.."TempMaxHealthLoss"]
+        --         if frame then
+        --             frame:SetAlpha(0)
+        --         end
+        --     end
+        -- end
+
+        -- if BetterBlizzFramesDB.hideTargetMaxHpReduction then
+        --     TargetFrame.TargetFrameContent.TargetFrameContentMain.HealthBarsContainer.TempMaxHealthLoss:SetAlpha(0)
+        -- end
+
+        -- if BetterBlizzFramesDB.hideFocusMaxHpReduction then
+        --     FocusFrame.TargetFrameContent.TargetFrameContentMain.HealthBarsContainer.TempMaxHealthLoss:SetAlpha(0)
+        -- end
+
+        -- if BetterBlizzFramesDB.hidePlayerMaxHpReduction then
+        --     PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer.PlayerFrameTempMaxHealthLoss:SetAlpha(0)
+        --     PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer.TempMaxHealthLossDivider:SetAlpha(0)
+        -- end
+
         if BetterBlizzFramesDB.hideRaidFrameManager then
             CompactRaidFrameManager:SetAlpha(0)
             if not hookedRaidFrameManager then

@@ -966,6 +966,47 @@ function BBF.MoveToTFrames()
     end
 end
 
+function BBF.RecolorHpTempLoss()
+    -- Player Frame
+    local player = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer
+    local playerTexture = player.PlayerFrameTempMaxHealthLoss:GetStatusBarTexture()
+    if playerTexture then
+        playerTexture:SetVertexColor(1,0,0)
+        playerTexture:SetBlendMode("ADD")
+    end
+
+    -- Hide the TempMaxHealthLossDivider if it exists
+    if player.TempMaxHealthLossDivider then
+        player.TempMaxHealthLossDivider:SetAlpha(0)
+    end
+
+    -- Target Frame
+    local target = TargetFrame.TargetFrameContent.TargetFrameContentMain.HealthBarsContainer.TempMaxHealthLoss.TempMaxHealthLossTexture
+    if target then
+        target:SetVertexColor(1,0,0)
+        target:SetBlendMode("ADD")
+    end
+
+    -- Focus Frame
+    local focus = FocusFrame.TargetFrameContent.TargetFrameContentMain.HealthBarsContainer.TempMaxHealthLoss.TempMaxHealthLossTexture
+    if focus then
+        focus:SetVertexColor(1,0,0)
+        focus:SetBlendMode("ADD")
+    end
+
+    -- Party Frames
+    for i = 1, 5 do
+        local frame = _G["CompactPartyFrameMember"..i.."TempMaxHealthLoss"]
+        if frame then
+            local texture = frame:GetStatusBarTexture()
+            if texture then
+                texture:SetVertexColor(1,0,0,0.9)
+                texture:SetBlendMode("ADD")
+            end
+        end
+    end
+end
+
 
 function BBF.FixStupidBlizzPTRShit()
     if InCombatLockdown() then return end
@@ -1063,6 +1104,15 @@ function BBF.FixStupidBlizzPTRShit()
         FocusFrame.totFrame.ManaBar:SetPoint(a,b,c,-5,3)
         FocusFrame.totFrame.ManaBar.ManaBarMask:SetWidth(130)
         FocusFrame.totFrame.ManaBar.ManaBarMask:SetHeight(17)
+
+
+        -- local a,b,c,d,e = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar.RightText:GetPoint()
+        -- PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar.RightText:ClearAllPoints()
+        -- PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar.RightText:SetPoint(a,b,c,d,e-0.2)
+
+        -- local a,b,c,d,e = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar.LeftText:GetPoint()
+        -- PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar.LeftText:ClearAllPoints()
+        -- PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar.LeftText:SetPoint(a,b,c,d,e-0.2)
     end
 end
 
@@ -1149,6 +1199,10 @@ Frame:SetScript("OnEvent", function(...)
 
             if BetterBlizzFramesDB.playerFrameOCD then
                 BBF.FixStupidBlizzPTRShit()
+            end
+
+            if BetterBlizzFramesDB.recolorTempHpLoss then
+                BBF.RecolorHpTempLoss()
             end
             C_Timer.After(1, function()
                 if BetterBlizzFramesDB.playerFrameOCD then
