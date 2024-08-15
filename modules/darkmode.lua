@@ -199,6 +199,15 @@ function BBF.DarkmodeFrames(bypass)
         end
     end
 
+    local aceTooltip = AceConfigDialogTooltip
+    if aceTooltip then
+        for key, region in pairs(aceTooltip.NineSlice) do
+            if key ~= "Center" and type(region) == "table" and (region.SetDesaturated or region.SetVertexColor) then
+                applySettings(region, tooltipSat, tooltipColor)
+            end
+        end
+    end
+
     local function RecolorVigor()
         for _, child in ipairs({UIWidgetPowerBarContainerFrame:GetChildren()}) do
             if child.DecorLeft and child.DecorLeft.GetAtlas then

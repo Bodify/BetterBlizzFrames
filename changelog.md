@@ -2,6 +2,8 @@
 ## The War Within
 ### New stuff:
 - Recolor Temp Max HP Loss (Player, Target, Focus, Party) to transparent red. (Misc section)
+### Tweak:
+- Add Ace3 tooltips to DarkMode: Tooltip
 
 # BetterBlizzFrames 1.5.1
 ## The War Within & Cata
