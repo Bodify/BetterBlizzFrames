@@ -639,14 +639,27 @@ function BBF.HidePartyInArena()
                 partyAlpha = 1
             end
 
-            PartyFrame:SetAlpha(partyAlpha)
-            PartyMemberBuffTooltip:SetAlpha(partyAlpha)
-            CompactPartyFrameMember1Background:SetAlpha(partyAlpha)
-            CompactPartyFrameMember2Background:SetAlpha(partyAlpha)
-            CompactPartyFrameMember3Background:SetAlpha(partyAlpha)
-            CompactPartyFrameMember1SelectionHighlight:SetAlpha(partyAlpha)
-            CompactPartyFrameMember2SelectionHighlight:SetAlpha(partyAlpha)
-            CompactPartyFrameMember3SelectionHighlight:SetAlpha(partyAlpha)
+            local frames = {
+                "PartyFrame",
+                "PartyMemberBuffTooltip",
+            }
+
+            for i = 1, 3 do
+                table.insert(frames, "CompactPartyFrameMember" .. i .. "Background")
+                table.insert(frames, "CompactPartyFrameMember" .. i .. "SelectionHighlight")
+                table.insert(frames, "CompactPartyFrameMember" .. i .. "HorizDivider")
+                table.insert(frames, "CompactPartyFrameMember" .. i .. "HorizTopBorder")
+                table.insert(frames, "CompactPartyFrameMember" .. i .. "HorizBottomBorder")
+                table.insert(frames, "CompactPartyFrameMember" .. i .. "VertLeftBorder")
+                table.insert(frames, "CompactPartyFrameMember" .. i .. "VertRightBorder")
+            end
+
+            for _, frame in ipairs(frames) do
+                local frameObject = _G[frame]
+                if frameObject then
+                    frameObject:SetAlpha(partyAlpha)
+                end
+            end
         end)
         partyFrameHider:RegisterEvent("PLAYER_ENTERING_BATTLEGROUND")
         partyFrameHider:RegisterEvent("PLAYER_ENTERING_WORLD")
