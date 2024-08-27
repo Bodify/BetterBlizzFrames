@@ -20,7 +20,7 @@ modules\combat.lua
 modules\castbar.lua
 modules\healthbarColor.lua
 modules\arenaframes.lua
-modules\nahjProfile.lua
+modules\profiles.lua
 modules\chatFrame.lua
 modules\overShields.lua
 modules\stealthIndicator.lua

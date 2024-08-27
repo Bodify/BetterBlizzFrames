@@ -123,6 +123,10 @@ local focusEnlargeAuraFriendly
 local increaseAuraStrata
 local sameSizeAuras
 local auraStackSize
+local addCooldownFramePlayerDebuffs
+local addCooldownFramePlayerBuffs
+local hideDefaultPlayerAuraDuration
+local hideDefaultPlayerAuraCdText
 
 local function UpdateMore()
     purgeableBuffSorting = BetterBlizzFramesDB.purgeableBuffSorting
@@ -145,6 +149,10 @@ local function UpdateMore()
     increaseAuraStrata = BetterBlizzFramesDB.increaseAuraStrata
     sameSizeAuras = BetterBlizzFramesDB.sameSizeAuras
     auraStackSize = BetterBlizzFramesDB.auraStackSize
+    addCooldownFramePlayerBuffs = BetterBlizzFramesDB.addCooldownFramePlayerBuffs
+    addCooldownFramePlayerDebuffs = BetterBlizzFramesDB.addCooldownFramePlayerDebuffs
+    hideDefaultPlayerAuraDuration = BetterBlizzFramesDB.hideDefaultPlayerAuraDuration
+    hideDefaultPlayerAuraCdText = BetterBlizzFramesDB.hideDefaultPlayerAuraCdText
 
     if BetterBlizzFramesDB.targetdeBuffFilterBlizzard or BetterBlizzFramesDB.focusdeBuffFilterBlizzard then
         BetterBlizzFramesDB.targetdeBuffFilterBlizzard = false
@@ -1855,6 +1863,7 @@ end
 local function CreateToggleIcon()
     if not showHiddenAurasIcon then return end
     if toggleIconGlobal then return toggleIconGlobal end
+
     local toggleIcon = CreateFrame("Button", "ToggleHiddenAurasButton", BuffFrame)
     toggleIcon:SetSize(30, 30)
     local currentAuraSize = 1--BuffFrame.AuraContainer.iconScale
@@ -1875,9 +1884,9 @@ local function CreateToggleIcon()
     local Icon = toggleIcon:CreateTexture(nil, "BACKGROUND")
     Icon:SetAllPoints()
     Icon:SetTexture(BetterBlizzFramesDB.auraToggleIconTexture)
-    Icon:SetParent(toggleIcon)
+
     -------
-    if IsAddOnLoaded("SUI") then
+    if C_AddOns.IsAddOnLoaded("SUI") then
         if SUIDB and SUIDB["profiles"] and SUIDB["profiles"]["Default"] and SUIDB["profiles"]["Default"]["general"] then
             -- Now check if the theme variable doesn't exist or is nil
             if SUIDB["profiles"]["Default"]["general"]["theme"] == "Dark" or SUIDB["profiles"]["Default"]["general"]["theme"] == "Custom" or SUIDB["profiles"]["Default"]["general"]["theme"] == "Class" then
@@ -1912,12 +1921,12 @@ local function CreateToggleIcon()
             end
         end
     end
-
-    if BetterBlizzFramesDB.enableMasque then
+    -------
+    if BetterBlizzFramesDB.enableMasque and C_AddOns.IsAddOnLoaded("Masque") then
         addToMasque(toggleIcon, MasquePlayerBuffs)
     end
-    -------
     toggleIcon.icon = Icon
+    toggleIcon.Icon = Icon
 
     -- Creating FontString to display the count of hidden auras
     toggleIcon.hiddenAurasCount = toggleIcon:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
@@ -1926,25 +1935,55 @@ local function CreateToggleIcon()
 
     toggleIcon.isAurasShown = false
 
-    toggleIcon:SetScript("OnClick", function(self)
-        shouldKeepAurasVisible = not shouldKeepAurasVisible
-        --BuffFrame_UpdateAllBuffAnchors()--BuffFrame:UpdateAuraButtons()
-        keepIcon = true
-        TemporaryEnchantFrame_Update(GetWeaponEnchantInfo())
-        BuffFrame_Update()
-        keepIcon = false
-        if shouldKeepAurasVisible then
-            ShowHiddenAuras()
+    -- Toggle hidden auras visibility on click or rotate direction with Alt + Left Click
+    toggleIcon:SetScript("OnClick", function(self, button)
+        if IsAltKeyDown() and button == "LeftButton" then
+            -- Rotate the hiddenIconDirection
+            if BetterBlizzFramesDB.hiddenIconDirection == "BOTTOM" then
+                BetterBlizzFramesDB.hiddenIconDirection = "LEFT"
+            elseif BetterBlizzFramesDB.hiddenIconDirection == "LEFT" then
+                BetterBlizzFramesDB.hiddenIconDirection = "TOP"
+            elseif BetterBlizzFramesDB.hiddenIconDirection == "TOP" then
+                BetterBlizzFramesDB.hiddenIconDirection = "RIGHT"
+            elseif BetterBlizzFramesDB.hiddenIconDirection == "RIGHT" then
+                BetterBlizzFramesDB.hiddenIconDirection = "BOTTOM"
+            end
+
+            BBF.RefreshAllAuraFrames()
+
+            print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: Hidden Icon Direction set to: " .. BetterBlizzFramesDB.hiddenIconDirection)
+
+        elseif IsShiftKeyDown() then
+            -- Reset position to default
+            toggleIcon:ClearAllPoints()
+            if BuffFrame.CollapseAndExpandButton then
+                if BuffFrame.AuraContainer.addIconsToRight then
+                    toggleIcon:SetPoint("RIGHT", BuffFrame.CollapseAndExpandButton, "LEFT", 0, 0)
+                else
+                    toggleIcon:SetPoint("LEFT", BuffFrame.CollapseAndExpandButton, "RIGHT", 0, 0)
+                end
+            else
+                toggleIcon:SetPoint("TOPLEFT", BuffFrame, "TOPRIGHT", 0, -6)
+            end
+            BetterBlizzFramesDB.toggleIconPosition = nil
         else
-            HideHiddenAuras()
+            -- Toggle hidden auras visibility
+            shouldKeepAurasVisible = not shouldKeepAurasVisible
+            BuffFrame:UpdateAuraButtons()
+            if shouldKeepAurasVisible then
+                ShowHiddenAuras()
+            else
+                HideHiddenAuras()
+            end
+            UpdateHiddenAurasCount()
         end
-        UpdateHiddenAurasCount()
     end)
+
 
     toggleIcon:SetScript("OnEnter", function(self)
         GameTooltip:SetOwner(self, "ANCHOR_BOTTOMLEFT", 0, -10)
-        GameTooltip:AddLine("Better|cff00c0ffBlizz|rFrames")
-        GameTooltip:AddLine("Filtered buffs. Click to show/hide.\nShift+Alt+RightClick to blacklist buffs.", 1, 1, 1, true)
+        GameTooltip:AddLine("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames")
+        GameTooltip:AddLine("Filtered buffs. Click to show/hide.\nShift+Alt+RightClick to blacklist buffs.\n\nCtrl+LeftClick to move.\nShift+LeftClick to reset position.\nAlt+LeftClick to change direction.\n\n(You can hide this icon in settings)", 1, 1, 1, true)
         GameTooltip:Show()
         if not self.isAurasShown then
             ShowHiddenAuras()
@@ -1957,6 +1996,30 @@ local function CreateToggleIcon()
             HideHiddenAuras()
         end
     end)
+
+    -- Enable dragging with Ctrl + Left Click
+    toggleIcon:SetMovable(true)
+    toggleIcon:EnableMouse(true)
+    toggleIcon:RegisterForDrag("LeftButton")
+    toggleIcon:SetScript("OnDragStart", function(self)
+        if IsControlKeyDown() then
+            self:StartMoving()
+        end
+    end)
+    toggleIcon:SetScript("OnDragStop", function(self)
+        self:StopMovingOrSizing()
+        -- Save the new position
+        local point, relativeTo, relativePoint, xOffset, yOffset = self:GetPoint()
+        BetterBlizzFramesDB.toggleIconPosition = {point, relativeTo, relativePoint, xOffset, yOffset}
+    end)
+
+    -- Load saved position if available
+    if BetterBlizzFramesDB.toggleIconPosition then
+        local pos = BetterBlizzFramesDB.toggleIconPosition
+        toggleIcon:ClearAllPoints()
+        toggleIcon:SetPoint(pos[1], pos[2], pos[3], pos[4], pos[5])
+    end
+
     toggleIconGlobal = toggleIcon
     return toggleIcon
 end
@@ -1981,7 +2044,8 @@ local function PersonalBuffFrameFilterAndGrid(self)
     local currentCol = 1;
     local xOffset = 0;
     local yOffset = 0;
-    local hiddenYOffset = -auraSpacingY - auraSize + playerAuraSpacingY;
+    local hiddenYOffset = 0 -- -auraSpacingY - auraSize + playerAuraSpacingY;
+    local hiddenXOffset = 0
     local toggleIcon = showHiddenAurasIcon and CreateToggleIcon() or nil
 
     local addedGroups = {}
@@ -1993,12 +2057,13 @@ local function PersonalBuffFrameFilterAndGrid(self)
             local name = "TempEnchant"
             local spellId = "TempEnchantID"
 
-            local auraData = { -- Manually create the aura data structure as needed
+            local auraData = {
                 name = name,
                 isHelpful = true,
                 isHarmful = false,
                 spellId = spellId,
                 auraType = "Buff",
+                duration = 0,
             }
 
             if auraFrame then
@@ -2099,10 +2164,20 @@ local function PersonalBuffFrameFilterAndGrid(self)
                         end
                         auraFrame:ClearAllPoints()
                         if toggleIcon then
-                            auraFrame:SetPoint("TOP", ToggleHiddenAurasButton, "TOP", 0, hiddenYOffset + 10)
-                            --auraFrame:SetPoint("TOPRIGHT", BuffFrame, "TOPRIGHT", -auraSize - auraSpacingX + 60, hiddenYOffset)
+                            if BetterBlizzFramesDB.hiddenIconDirection == "BOTTOM" then
+                                auraFrame:SetPoint("TOP", ToggleHiddenAurasButton, "TOP", 0, hiddenYOffset - 35)
+                                hiddenYOffset = hiddenYOffset - auraSize - auraSpacingY + 10
+                            elseif BetterBlizzFramesDB.hiddenIconDirection == "TOP" then
+                                auraFrame:SetPoint("BOTTOM", ToggleHiddenAurasButton, "BOTTOM", 0, hiddenYOffset + 25)
+                                hiddenYOffset = hiddenYOffset + auraSize + auraSpacingY - 10
+                            elseif BetterBlizzFramesDB.hiddenIconDirection == "LEFT" then
+                                auraFrame:SetPoint("RIGHT", ToggleHiddenAurasButton, "LEFT", hiddenXOffset + 30, -5)
+                                hiddenXOffset = hiddenXOffset - auraSize - auraSpacingX
+                            elseif BetterBlizzFramesDB.hiddenIconDirection == "RIGHT" then
+                                auraFrame:SetPoint("LEFT", ToggleHiddenAurasButton, "RIGHT", hiddenXOffset - 30, -5)
+                                hiddenXOffset = hiddenXOffset + auraSize + auraSpacingX
+                            end
                         end
-                        hiddenYOffset = hiddenYOffset - auraSize - auraSpacingY + 10
                     end
 
 
@@ -2112,8 +2187,9 @@ local function PersonalBuffFrameFilterAndGrid(self)
 
         for i = 1, BUFF_ACTUAL_DISPLAY do
             local buffName = "BuffButton"..i
-            --local icon = self:GetName().."Buff"..i.."Icon"
+            local icon = buffName.."Icon"
             local auraFrame = _G[buffName]
+            auraFrame.Icon = icon
             if auraFrame then
                 auraFrame.duration:SetDrawLayer("OVERLAY", 7)
                 --buffFrame.Icon = _G[icon]
@@ -2247,6 +2323,30 @@ local function PersonalBuffFrameFilterAndGrid(self)
 
                 -- Nonprint logic
                 if shouldShowAura and shouldBeAdded then
+                    if addCooldownFramePlayerBuffs then
+                        if not auraFrame.Cooldown then
+                            local cooldownFrame = CreateFrame("Cooldown", nil, auraFrame, "CooldownFrameTemplate")
+                            cooldownFrame:SetAllPoints(auraFrame.Icon)
+                            cooldownFrame:SetDrawEdge(false)
+                            cooldownFrame:SetDrawSwipe(true)
+                            cooldownFrame:SetReverse(true)
+                            if hideDefaultPlayerAuraCdText then
+                                cooldownFrame:SetHideCountdownNumbers(true)
+                            end
+                            auraFrame.Cooldown = cooldownFrame
+                        end
+
+                        if duration and duration > 0 and expirationTime then
+                            local startTime = expirationTime - duration
+                            auraFrame.Cooldown:SetCooldown(startTime, duration)
+                        else
+                            auraFrame.Cooldown:Hide()
+                        end
+
+                        if hideDefaultPlayerAuraDuration then
+                            auraFrame.duration:SetAlpha(0)
+                        end
+                    end
                     auraFrame.duration:SetDrawLayer("OVERLAY", 7)
                     auraFrame:Show();
                     auraFrame:ClearAllPoints();
@@ -2329,10 +2429,20 @@ local function PersonalBuffFrameFilterAndGrid(self)
                     end
                     auraFrame:ClearAllPoints()
                     if toggleIcon then
-                        auraFrame:SetPoint("TOP", ToggleHiddenAurasButton, "TOP", 0, hiddenYOffset + 10)
-                        --auraFrame:SetPoint("TOPRIGHT", BuffFrame, "TOPRIGHT", -auraSize - auraSpacingX + 60, hiddenYOffset)
+                        if BetterBlizzFramesDB.hiddenIconDirection == "BOTTOM" then
+                            auraFrame:SetPoint("TOP", ToggleHiddenAurasButton, "TOP", 0, hiddenYOffset - 35)
+                            hiddenYOffset = hiddenYOffset - auraSize - auraSpacingY + 10
+                        elseif BetterBlizzFramesDB.hiddenIconDirection == "TOP" then
+                            auraFrame:SetPoint("BOTTOM", ToggleHiddenAurasButton, "BOTTOM", 0, hiddenYOffset + 25)
+                            hiddenYOffset = hiddenYOffset + auraSize + auraSpacingY - 10
+                        elseif BetterBlizzFramesDB.hiddenIconDirection == "LEFT" then
+                            auraFrame:SetPoint("RIGHT", ToggleHiddenAurasButton, "LEFT", hiddenXOffset + 30, -5)
+                            hiddenXOffset = hiddenXOffset - auraSize - auraSpacingX
+                        elseif BetterBlizzFramesDB.hiddenIconDirection == "RIGHT" then
+                            auraFrame:SetPoint("LEFT", ToggleHiddenAurasButton, "RIGHT", hiddenXOffset - 30, -5)
+                            hiddenXOffset = hiddenXOffset + auraSize + auraSpacingX
+                        end
                     end
-                    hiddenYOffset = hiddenYOffset - auraSize - auraSpacingY + 10
                 end
             end
         end
@@ -2397,8 +2507,9 @@ local function PersonalDebuffFrameFilterAndGrid(self)
 
         for i = 1, DEBUFF_ACTUAL_DISPLAY do
             local debuffName = "DebuffButton"..i
-            --local icon = self:GetName().."Buff"..i.."Icon"
+            local icon = debuffName.."Icon"
             local auraFrame = _G[debuffName]
+            auraFrame.Icon = icon
             if auraFrame and auraFrame:IsShown() then
 --[[
                 if auraInfo then
@@ -2498,6 +2609,31 @@ local function PersonalDebuffFrameFilterAndGrid(self)
                     end
 
 ]=]
+
+                    if addCooldownFramePlayerDebuffs then
+                        if not auraFrame.Cooldown then
+                            local cooldownFrame = CreateFrame("Cooldown", nil, auraFrame, "CooldownFrameTemplate")
+                            cooldownFrame:SetAllPoints(auraFrame.Icon)
+                            cooldownFrame:SetDrawEdge(false)
+                            cooldownFrame:SetDrawSwipe(true)
+                            cooldownFrame:SetReverse(true)
+                            if hideDefaultPlayerAuraCdText then
+                                cooldownFrame:SetHideCountdownNumbers(true)
+                            end
+                            auraFrame.Cooldown = cooldownFrame
+                        end
+
+                        if duration and duration > 0 and expirationTime then
+                            local startTime = expirationTime - duration
+                            auraFrame.Cooldown:SetCooldown(startTime, duration)
+                        else
+                            auraFrame.Cooldown:Hide()
+                        end
+
+                        if hideDefaultPlayerAuraDuration then
+                            auraFrame.duration:SetAlpha(0)
+                        end
+                    end
 
                     auraFrame.spellId = auraData.spellId
 

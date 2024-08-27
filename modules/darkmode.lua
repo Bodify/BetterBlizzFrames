@@ -317,9 +317,6 @@ function BBF.DarkmodeFrames(bypass)
 
 
 
-
-
-
     --Minimap + and - zoom buttons
     local zoomOutButton = MinimapCluster.MinimapContainer.Minimap.ZoomOut
     local zoomInButton = MinimapCluster.MinimapContainer.Minimap.ZoomIn
@@ -401,6 +398,9 @@ function BBF.DarkmodeFrames(bypass)
         PartyFrame.MemberFrame4.Texture,
         PaladinPowerBarFrame.Background,
         PaladinPowerBarFrame.ActiveTexture,
+        PlayerFrameGroupIndicatorLeft,
+        PlayerFrameGroupIndicatorRight,
+        PlayerFrameGroupIndicatorMiddle
     }) do
         applySettings(v, desaturationValue, vertexColor)
     end
@@ -432,7 +432,16 @@ function BBF.DarkmodeFrames(bypass)
     local soulShards = _G.WarlockPowerFrame
     if soulShards then
         for _, v in pairs({soulShards:GetChildren()}) do
-            applySettings(v.Background, objectiveSat, objectiveColor)
+            applySettings(v.Background, desaturationValue, druidComboPointActive)
+        end
+    end
+
+    local actionbarsplits = _G.MainMenuBar
+    if actionbarsplits then
+        for _, v in pairs({actionbarsplits:GetChildren()}) do
+            applySettings(v.TopEdge, desaturationValue, actionBarColor)
+            applySettings(v.BottomEdge, desaturationValue, actionBarColor)
+            applySettings(v.Center, desaturationValue, actionBarColor)
         end
     end
 
@@ -573,6 +582,9 @@ function BBF.DarkmodeFrames(bypass)
         applySettings(_G["PetActionButton" ..i.. "NormalTexture"], desaturationValue, actionBarColor)
         applySettings(_G["StanceButton" ..i.. "NormalTexture"], desaturationValue, actionBarColor)
     end
+
+    applySettings(StatusTrackingBarManager.MainStatusTrackingBarContainer.BarFrameTexture, desaturationValue, actionBarColor)
+    applySettings(StatusTrackingBarManager.SecondaryStatusTrackingBarContainer.BarFrameTexture, desaturationValue, actionBarColor)
 
     for _, v in pairs({
         MainMenuBar.BorderArt,

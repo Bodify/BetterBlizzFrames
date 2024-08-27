@@ -43,6 +43,10 @@ local function addToMasque(frame, masqueGroup)
     end
 end
 
+-- How did this spaghetti start?
+-- For some reason accessing the global BetterBlizzFramesDB.variable inside of the target/focus aura function caused taint error.
+-- and making it local like this fixed it. Idk why idk how and idk why im still doing it like this.
+
 local printSpellId
 local betterTargetPurgeGlow
 local betterFocusPurgeGlow
@@ -110,6 +114,10 @@ local focusEnlargeAuraFriendly
 local increaseAuraStrata
 local sameSizeAuras
 local auraStackSize
+local addCooldownFramePlayerDebuffs
+local addCooldownFramePlayerBuffs
+local hideDefaultPlayerAuraDuration
+local hideDefaultPlayerAuraCdText
 
 local function UpdateMore()
     onlyPandemicMine = BetterBlizzFramesDB.onlyPandemicAuraMine
@@ -122,6 +130,10 @@ local function UpdateMore()
     focusEnlargeAuraFriendly = BetterBlizzFramesDB.focusEnlargeAuraFriendly
     sameSizeAuras = BetterBlizzFramesDB.sameSizeAuras
     auraStackSize = BetterBlizzFramesDB.auraStackSize
+    addCooldownFramePlayerBuffs = BetterBlizzFramesDB.addCooldownFramePlayerBuffs
+    addCooldownFramePlayerDebuffs = BetterBlizzFramesDB.addCooldownFramePlayerDebuffs
+    hideDefaultPlayerAuraDuration = BetterBlizzFramesDB.hideDefaultPlayerAuraDuration
+    hideDefaultPlayerAuraCdText = BetterBlizzFramesDB.hideDefaultPlayerAuraCdText
 end
 
 function BBF.UpdateUserAuraSettings()
@@ -271,7 +283,7 @@ local function ShouldShowBuff(unit, auraData, frameType)
             local filterOnlyMe = BetterBlizzFramesDB["targetBuffFilterOnlyMe"] and isTargetFriendly and (caster == "player" or (caster == "pet" and UnitIsUnit(caster, "pet")))
             if isInBlacklist then return end
             if not castByPlayer and onlyMine then return end
-            if filterWatchlist or filterLessMinite or filterPurgeable or filterOnlyMe or isImportant or isPandemic or isEnlarged or isCompacted then return true, isImportant, isPandemic, isEnlarged, isCompacted, auraColor end
+            if filterWatchlist or filterLessMinite or filterPurgeable or ((filterOnlyMe and filterLessMinite) or (filterOnlyMe and not BetterBlizzFramesDB["targetBuffFilterLessMinite"])) or isImportant or isPandemic or isEnlarged or isCompacted then return true, isImportant, isPandemic, isEnlarged, isCompacted, auraColor end
             if not BetterBlizzFramesDB["targetBuffFilterLessMinite"] and not BetterBlizzFramesDB["targetBuffFilterWatchList"] and not BetterBlizzFramesDB["targetBuffFilterPurgeable"] and not (BetterBlizzFramesDB["targetBuffFilterOnlyMe"] and isTargetFriendly) then
                 return true
             end
@@ -304,7 +316,7 @@ local function ShouldShowBuff(unit, auraData, frameType)
             local filterOnlyMe = BetterBlizzFramesDB["focusBuffFilterOnlyMe"] and isTargetFriendly and (caster == "player" or (caster == "pet" and UnitIsUnit(caster, "pet")))
             if isInBlacklist then return end
             if not castByPlayer and onlyMine then return end
-            if filterWatchlist or filterLessMinite or filterPurgeable or filterOnlyMe or isImportant or isPandemic or isEnlarged or isCompacted then return true, isImportant, isPandemic, isEnlarged, isCompacted, auraColor end
+            if filterWatchlist or filterLessMinite or filterPurgeable or ((filterOnlyMe and filterLessMinite) or (filterOnlyMe and not BetterBlizzFramesDB["focusBuffFilterLessMinite"])) or isImportant or isPandemic or isEnlarged or isCompacted then return true, isImportant, isPandemic, isEnlarged, isCompacted, auraColor end
             if not BetterBlizzFramesDB["focusBuffFilterLessMinite"] and not BetterBlizzFramesDB["focusBuffFilterWatchList"] and not BetterBlizzFramesDB["focusBuffFilterPurgeable"] and not BetterBlizzFramesDB["focusBuffFilterOnlyMe"] then
                 return true
             end
@@ -1273,10 +1285,11 @@ end
 local function CreateToggleIcon()
     if not showHiddenAurasIcon then return end
     if toggleIconGlobal then return toggleIconGlobal end
+
     local toggleIcon = CreateFrame("Button", "ToggleHiddenAurasButton", BuffFrame)
     toggleIcon:SetSize(30, 30)
     local currentAuraSize = BuffFrame.AuraContainer.iconScale
-    local addIconsToRight = BuffFrame.AuraContainer.addIconsToRight or false
+    local addIconsToRight = BuffFrame.AuraContainer.addIconsToRight
     if currentAuraSize then
         toggleIcon:SetScale(currentAuraSize)
     end
@@ -1293,6 +1306,7 @@ local function CreateToggleIcon()
     local Icon = toggleIcon:CreateTexture(nil, "BACKGROUND")
     Icon:SetAllPoints()
     Icon:SetTexture(BetterBlizzFramesDB.auraToggleIconTexture)
+
     -------
     if C_AddOns.IsAddOnLoaded("SUI") then
         if SUIDB and SUIDB["profiles"] and SUIDB["profiles"]["Default"] and SUIDB["profiles"]["Default"]["general"] then
@@ -1330,6 +1344,9 @@ local function CreateToggleIcon()
         end
     end
     -------
+    if BetterBlizzFramesDB.enableMasque and C_AddOns.IsAddOnLoaded("Masque") then
+        addToMasque(toggleIcon, MasquePlayerBuffs)
+    end
     toggleIcon.icon = Icon
     toggleIcon.Icon = Icon
 
@@ -1340,21 +1357,55 @@ local function CreateToggleIcon()
 
     toggleIcon.isAurasShown = false
 
-    toggleIcon:SetScript("OnClick", function(self)
-        shouldKeepAurasVisible = not shouldKeepAurasVisible
-        BuffFrame:UpdateAuraButtons()
-        if shouldKeepAurasVisible then
-            ShowHiddenAuras()
+    -- Toggle hidden auras visibility on click or rotate direction with Alt + Left Click
+    toggleIcon:SetScript("OnClick", function(self, button)
+        if IsAltKeyDown() and button == "LeftButton" then
+            -- Rotate the hiddenIconDirection
+            if BetterBlizzFramesDB.hiddenIconDirection == "BOTTOM" then
+                BetterBlizzFramesDB.hiddenIconDirection = "LEFT"
+            elseif BetterBlizzFramesDB.hiddenIconDirection == "LEFT" then
+                BetterBlizzFramesDB.hiddenIconDirection = "TOP"
+            elseif BetterBlizzFramesDB.hiddenIconDirection == "TOP" then
+                BetterBlizzFramesDB.hiddenIconDirection = "RIGHT"
+            elseif BetterBlizzFramesDB.hiddenIconDirection == "RIGHT" then
+                BetterBlizzFramesDB.hiddenIconDirection = "BOTTOM"
+            end
+
+            BBF.RefreshAllAuraFrames()
+
+            print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: Hidden Icon Direction set to: " .. BetterBlizzFramesDB.hiddenIconDirection)
+
+        elseif IsShiftKeyDown() then
+            -- Reset position to default
+            toggleIcon:ClearAllPoints()
+            if BuffFrame.CollapseAndExpandButton then
+                if BuffFrame.AuraContainer.addIconsToRight then
+                    toggleIcon:SetPoint("RIGHT", BuffFrame.CollapseAndExpandButton, "LEFT", 0, 0)
+                else
+                    toggleIcon:SetPoint("LEFT", BuffFrame.CollapseAndExpandButton, "RIGHT", 0, 0)
+                end
+            else
+                toggleIcon:SetPoint("TOPLEFT", BuffFrame, "TOPRIGHT", 0, -6)
+            end
+            BetterBlizzFramesDB.toggleIconPosition = nil
         else
-            HideHiddenAuras()
+            -- Toggle hidden auras visibility
+            shouldKeepAurasVisible = not shouldKeepAurasVisible
+            BuffFrame:UpdateAuraButtons()
+            if shouldKeepAurasVisible then
+                ShowHiddenAuras()
+            else
+                HideHiddenAuras()
+            end
+            UpdateHiddenAurasCount()
         end
-        UpdateHiddenAurasCount()
     end)
+
 
     toggleIcon:SetScript("OnEnter", function(self)
         GameTooltip:SetOwner(self, "ANCHOR_BOTTOMLEFT", 0, -10)
-        GameTooltip:AddLine("Better|cff00c0ffBlizz|rFrames")
-        GameTooltip:AddLine("Filtered buffs. Click to show/hide.\nShift+Alt+RightClick to blacklist buffs.", 1, 1, 1, true)
+        GameTooltip:AddLine("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames")
+        GameTooltip:AddLine("Filtered buffs. Click to show/hide.\nShift+Alt+RightClick to blacklist buffs.\n\nCtrl+LeftClick to move.\nShift+LeftClick to reset position.\nAlt+LeftClick to change direction.\n\n(You can hide this icon in settings)", 1, 1, 1, true)
         GameTooltip:Show()
         if not self.isAurasShown then
             ShowHiddenAuras()
@@ -1367,16 +1418,43 @@ local function CreateToggleIcon()
             HideHiddenAuras()
         end
     end)
+
+    -- Enable dragging with Ctrl + Left Click
+    toggleIcon:SetMovable(true)
+    toggleIcon:EnableMouse(true)
+    toggleIcon:RegisterForDrag("LeftButton")
+    toggleIcon:SetScript("OnDragStart", function(self)
+        if IsControlKeyDown() then
+            self:StartMoving()
+        end
+    end)
+    toggleIcon:SetScript("OnDragStop", function(self)
+        self:StopMovingOrSizing()
+        -- Save the new position
+        local point, relativeTo, relativePoint, xOffset, yOffset = self:GetPoint()
+        BetterBlizzFramesDB.toggleIconPosition = {point, relativeTo, relativePoint, xOffset, yOffset}
+    end)
+
+    -- Load saved position if available
+    if BetterBlizzFramesDB.toggleIconPosition then
+        local pos = BetterBlizzFramesDB.toggleIconPosition
+        toggleIcon:ClearAllPoints()
+        toggleIcon:SetPoint(pos[1], pos[2], pos[3], pos[4], pos[5])
+    end
+
     toggleIconGlobal = toggleIcon
     return toggleIcon
 end
+
+
 
 local BuffFrame = BuffFrame
 local function PersonalBuffFrameFilterAndGrid(self)
     ResetHiddenAurasCount()
     local isExpanded = BuffFrame:IsExpanded();
     local currentAuraSize = BuffFrame.AuraContainer.iconScale
-    local addIconsToRight = BuffFrame.AuraContainer.addIconsToRight or false
+    local addIconsToRight = BuffFrame.AuraContainer.addIconsToRight
+    local addIconsToTop = BuffFrame.AuraContainer.addIconsToTop
     if ToggleHiddenAurasButton then
         ToggleHiddenAurasButton:SetScale(currentAuraSize)
     end
@@ -1392,8 +1470,20 @@ local function PersonalBuffFrameFilterAndGrid(self)
     local currentCol = 1;
     local xOffset = 0;
     local yOffset = 0;
-    local hiddenYOffset = -auraSpacingY - auraSize + playerAuraSpacingY;
+    local hiddenYOffset = 0-- -auraSpacingY - auraSize + playerAuraSpacingY;
+    local hiddenXOffset = 0
     local toggleIcon = showHiddenAurasIcon and CreateToggleIcon() or nil
+
+    -- Initialize offsets based on the direction setting
+    if BetterBlizzFramesDB.hiddenIconDirection == "DOWN" then
+        hiddenYOffset = -auraSpacingY - auraSize + playerAuraSpacingY
+    elseif BetterBlizzFramesDB.hiddenIconDirection == "UP" then
+        hiddenYOffset = auraSpacingY + auraSize - playerAuraSpacingY
+    elseif BetterBlizzFramesDB.hiddenIconDirection == "LEFT" then
+        hiddenXOffset = -auraSpacingX - auraSize
+    elseif BetterBlizzFramesDB.hiddenIconDirection == "RIGHT" then
+        hiddenXOffset = auraSpacingX + auraSize
+    end
 
     if isExpanded then
     for auraIndex, auraInfo in ipairs(BuffFrame.auraInfo) do
@@ -1425,14 +1515,14 @@ local function PersonalBuffFrameFilterAndGrid(self)
 
               local auraData = {
                   name = name,
-                  --icon = icon,
-                  --count = count,
-                  --dispelType = dispelType,
-                  --duration = duration,
-                  --expirationTime = expirationTime,
-                  --sourceUnit = source,
-                  --isStealable = isStealable,
-                  --nameplateShowPersonal = nameplateShowPersonal,
+                  icon = icon,
+                  count = count,
+                  dispelType = dispelType,
+                  duration = duration,
+                  expirationTime = expirationTime,
+                  sourceUnit = source,
+                  isStealable = isStealable,
+                  nameplateShowPersonal = nameplateShowPersonal,
                   spellId = spellId,
                   auraType = "Buff",
               };
@@ -1496,15 +1586,62 @@ local function PersonalBuffFrameFilterAndGrid(self)
                 local shouldShowAura, isImportant, isPandemic, isEnlarged, isCompacted, auraColor
                 shouldShowAura, isImportant, isPandemic, isEnlarged, isCompacted, auraColor = ShouldShowBuff("player", auraData, "playerBuffFrame")
                 isImportant = isImportant and playerAuraImportantGlow
+
                 -- Nonprint logic
                 if shouldShowAura then
-                    auraFrame.Duration:SetDrawLayer("OVERLAY", 7)
+
+                    if not auraFrame.GlowFrame then
+                        auraFrame.GlowFrame = CreateFrame("Frame", nil, auraFrame)
+                        auraFrame.GlowFrame:SetAllPoints(auraFrame)
+                        auraFrame.GlowFrame:SetFrameLevel(auraFrame:GetFrameLevel() + 1)
+                        auraFrame.GlowFrame:SetFrameStrata("MEDIUM")
+                    end
+
+                    if addCooldownFramePlayerBuffs then
+                        if not auraFrame.Cooldown then
+                            local cooldownFrame = CreateFrame("Cooldown", nil, auraFrame, "CooldownFrameTemplate")
+                            cooldownFrame:SetAllPoints(auraFrame.Icon)
+                            cooldownFrame:SetDrawEdge(false)
+                            cooldownFrame:SetDrawSwipe(true)
+                            cooldownFrame:SetReverse(true)
+                            auraFrame.Count:SetParent(auraFrame.GlowFrame)
+                            if hideDefaultPlayerAuraCdText then
+                                cooldownFrame:SetHideCountdownNumbers(true)
+                            else
+                                local cdText = cooldownFrame:GetRegions()
+                                if cdText then
+                                    cdText:SetScale(0.85)
+                                end
+                            end
+                            auraFrame.Cooldown = cooldownFrame
+                        end
+
+                        if duration and duration > 0 and expirationTime then
+                            local startTime = expirationTime - duration
+                            auraFrame.Cooldown:SetCooldown(startTime, duration)
+                        else
+                            auraFrame.Cooldown:Hide()
+                        end
+
+                        if hideDefaultPlayerAuraDuration then
+                            auraFrame.Duration:SetAlpha(0)
+                        end
+                    end
+
                     auraFrame:Show();
                     auraFrame:ClearAllPoints();
                     if addIconsToRight then
-                        auraFrame:SetPoint("TOPLEFT", BuffFrame, "TOPLEFT", xOffset + 15, -yOffset);
+                        if addIconsToTop then
+                            auraFrame:SetPoint("BOTTOMLEFT", BuffFrame, "BOTTOMLEFT", xOffset + 15, -yOffset);
+                        else
+                            auraFrame:SetPoint("TOPLEFT", BuffFrame, "TOPLEFT", xOffset + 15, -yOffset);
+                        end
                     else
-                        auraFrame:SetPoint("TOPRIGHT", BuffFrame, "TOPRIGHT", -xOffset - 15, -yOffset);
+                        if addIconsToTop then
+                            auraFrame:SetPoint("BOTTOMRIGHT", BuffFrame, "BOTTOMRIGHT", -xOffset - 15, -yOffset);
+                        else
+                            auraFrame:SetPoint("TOPRIGHT", BuffFrame, "TOPRIGHT", -xOffset - 15, -yOffset);
+                        end
                     end
 
                     auraFrame.spellId = auraData.spellId
@@ -1544,18 +1681,25 @@ local function PersonalBuffFrameFilterAndGrid(self)
                         local borderFrame = BBF.auraBorders[auraFrame]
                         auraFrame.isImportant = true
                         if not auraFrame.ImportantGlow then
-                            auraFrame.GlowFrame = CreateFrame("Frame", nil, auraFrame)
-                            auraFrame.GlowFrame:SetAllPoints(auraFrame)
-                            auraFrame.GlowFrame:SetFrameLevel(auraFrame:GetFrameLevel() + 1)
                             auraFrame.ImportantGlow = auraFrame.GlowFrame:CreateTexture(nil, "OVERLAY")
-                            if borderFrame then
-                                auraFrame.ImportantGlow:SetPoint("TOPLEFT", auraFrame, "TOPLEFT", -15, 16)
-                                auraFrame.ImportantGlow:SetPoint("BOTTOMRIGHT", auraFrame, "BOTTOMRIGHT", 15, -6)
+                            if addIconsToTop then
+                                if borderFrame then
+                                    auraFrame.ImportantGlow:SetPoint("TOPLEFT", auraFrame, "TOPLEFT", -15, 6)
+                                    auraFrame.ImportantGlow:SetPoint("BOTTOMRIGHT", auraFrame, "BOTTOMRIGHT", 15, -16)
+                                else
+                                    auraFrame.ImportantGlow:SetPoint("TOPLEFT", auraFrame, "TOPLEFT", -14, 3)
+                                    auraFrame.ImportantGlow:SetPoint("BOTTOMRIGHT", auraFrame, "BOTTOMRIGHT", 13, -13)
+                                end
                             else
-                                auraFrame.ImportantGlow:SetPoint("TOPLEFT", auraFrame, "TOPLEFT", -14, 13)
-                                auraFrame.ImportantGlow:SetPoint("BOTTOMRIGHT", auraFrame, "BOTTOMRIGHT", 13, -3)
+                                if borderFrame then
+                                    auraFrame.ImportantGlow:SetPoint("TOPLEFT", auraFrame, "TOPLEFT", -15, 16)
+                                    auraFrame.ImportantGlow:SetPoint("BOTTOMRIGHT", auraFrame, "BOTTOMRIGHT", 15, -6)
+                                else
+                                    auraFrame.ImportantGlow:SetPoint("TOPLEFT", auraFrame, "TOPLEFT", -14, 13)
+                                    auraFrame.ImportantGlow:SetPoint("BOTTOMRIGHT", auraFrame, "BOTTOMRIGHT", 13, -3)
+                                end
                             end
-                            --auraFrame.ImportantGlow:SetDrawLayer("OVERLAY", 7)
+                            auraFrame.ImportantGlow:SetDrawLayer("OVERLAY", 7)
                             auraFrame.ImportantGlow:SetAtlas("newplayertutorial-drag-slotgreen")
                             auraFrame.ImportantGlow:SetDesaturated(true)
                         end
@@ -1564,6 +1708,7 @@ local function PersonalBuffFrameFilterAndGrid(self)
                         else
                             auraFrame.ImportantGlow:SetVertexColor(0, 1, 0)
                         end
+                        auraFrame.Duration:SetParent(auraFrame.GlowFrame)
                         auraFrame.ImportantGlow:Show()
                     else
                         auraFrame.isImportant = false
@@ -1571,6 +1716,7 @@ local function PersonalBuffFrameFilterAndGrid(self)
                             auraFrame.ImportantGlow:Hide()
                         end
                     end
+                    auraFrame.Duration:SetDrawLayer("OVERLAY")
                 else
                     hiddenAuras = hiddenAuras + 1
                     if not shouldKeepAurasVisible then
@@ -1579,10 +1725,20 @@ local function PersonalBuffFrameFilterAndGrid(self)
                     end
                     auraFrame:ClearAllPoints()
                     if toggleIcon then
-                        auraFrame:SetPoint("TOP", ToggleHiddenAurasButton, "TOP", 0, hiddenYOffset + 10)
-                        --auraFrame:SetPoint("TOPRIGHT", BuffFrame, "TOPRIGHT", -auraSize - auraSpacingX + 60, hiddenYOffset)
+                        if BetterBlizzFramesDB.hiddenIconDirection == "BOTTOM" then
+                            auraFrame:SetPoint("TOP", ToggleHiddenAurasButton, "TOP", 0, hiddenYOffset - 35)
+                            hiddenYOffset = hiddenYOffset - auraSize - auraSpacingY + 10
+                        elseif BetterBlizzFramesDB.hiddenIconDirection == "TOP" then
+                            auraFrame:SetPoint("BOTTOM", ToggleHiddenAurasButton, "BOTTOM", 0, hiddenYOffset + 25)
+                            hiddenYOffset = hiddenYOffset + auraSize + auraSpacingY - 10
+                        elseif BetterBlizzFramesDB.hiddenIconDirection == "LEFT" then
+                            auraFrame:SetPoint("RIGHT", ToggleHiddenAurasButton, "LEFT", hiddenXOffset + 30, -5)
+                            hiddenXOffset = hiddenXOffset - auraSize - auraSpacingX
+                        elseif BetterBlizzFramesDB.hiddenIconDirection == "RIGHT" then
+                            auraFrame:SetPoint("LEFT", ToggleHiddenAurasButton, "RIGHT", hiddenXOffset - 30, -5)
+                            hiddenXOffset = hiddenXOffset + auraSize + auraSpacingX
+                        end
                     end
-                    hiddenYOffset = hiddenYOffset - auraSize - auraSpacingY + 10
                 end
             end
         end
@@ -1598,6 +1754,8 @@ local function PersonalDebuffFrameFilterAndGrid(self)
     local auraSpacingX = DebuffFrame.AuraContainer.iconPadding - 7 + playerAuraSpacingX
     local auraSpacingY = DebuffFrame.AuraContainer.iconPadding + 8 + playerAuraSpacingY
     local auraSize = 32;      -- Set the size of each aura frame
+    local addIconsToRight = DebuffFrame.AuraContainer.addIconsToRight
+    local addIconsToTop = DebuffFrame.AuraContainer.addIconsToTop
 
     --local dotChecker = BetterBlizzFramesDB.debuffDotChecker
     local printAuraIds = printAuraSpellIds
@@ -1739,6 +1897,31 @@ local function PersonalDebuffFrameFilterAndGrid(self)
 
 ]=]
 
+                    if addCooldownFramePlayerDebuffs then
+                        if not auraFrame.Cooldown then
+                            local cooldownFrame = CreateFrame("Cooldown", nil, auraFrame, "CooldownFrameTemplate")
+                            cooldownFrame:SetAllPoints(auraFrame.Icon)
+                            cooldownFrame:SetDrawEdge(false)
+                            cooldownFrame:SetDrawSwipe(true)
+                            cooldownFrame:SetReverse(true)
+                            if hideDefaultPlayerAuraCdText then
+                                cooldownFrame:SetHideCountdownNumbers(true)
+                            end
+                            auraFrame.Cooldown = cooldownFrame
+                        end
+
+                        if duration and duration > 0 and expirationTime then
+                            local startTime = expirationTime - duration
+                            auraFrame.Cooldown:SetCooldown(startTime, duration)
+                        else
+                            auraFrame.Cooldown:Hide()
+                        end
+
+                        if hideDefaultPlayerAuraDuration then
+                            auraFrame.Duration:SetAlpha(0)
+                        end
+                    end
+
                     auraFrame.spellId = auraData.spellId
 
                     if not auraFrame.filterClick then
@@ -1762,7 +1945,11 @@ local function PersonalDebuffFrameFilterAndGrid(self)
 
                     auraFrame:Show();
                     auraFrame:ClearAllPoints();
-                    auraFrame:SetPoint("TOPRIGHT", DebuffFrame, "TOPRIGHT", -xOffset, -yOffset);
+                    if addIconsToRight then
+                        auraFrame:SetPoint("TOPLEFT", DebuffFrame, "TOPLEFT", xOffset, -yOffset);
+                    else
+                        auraFrame:SetPoint("TOPRIGHT", DebuffFrame, "TOPRIGHT", -xOffset, -yOffset);
+                    end
                     --print(auraFrame:GetSize())
 
                     -- Update column and row counters
@@ -1776,38 +1963,53 @@ local function PersonalDebuffFrameFilterAndGrid(self)
                     xOffset = (currentCol - 1) * (auraSize + auraSpacingX);
                     yOffset = (currentRow - 1) * (auraSize + auraSpacingY);
 
+
                     -- Important logic
                     if isImportant then
                         local borderFrame = BBF.auraBorders[auraFrame]
                         auraFrame.isImportant = true
                         if not auraFrame.ImportantGlow then
-                            auraFrame.ImportantGlow = auraFrame:CreateTexture(nil, "OVERLAY")
-                            if borderFrame then
-                                auraFrame.ImportantGlow:SetParent(borderFrame)
-                                auraFrame.ImportantGlow:SetPoint("TOPLEFT", auraFrame, "TOPLEFT", -15, 16)
-                                auraFrame.ImportantGlow:SetPoint("BOTTOMRIGHT", auraFrame, "BOTTOMRIGHT", 15, -6)
+                            auraFrame.GlowFrame = CreateFrame("Frame", nil, auraFrame)
+                            auraFrame.GlowFrame:SetAllPoints(auraFrame)
+                            auraFrame.GlowFrame:SetFrameLevel(auraFrame:GetFrameLevel() + 1)
+                            auraFrame.ImportantGlow = auraFrame.GlowFrame:CreateTexture(nil, "OVERLAY")
+                            if addIconsToTop then
+                                if borderFrame then
+                                    auraFrame.ImportantGlow:SetPoint("TOPLEFT", auraFrame, "TOPLEFT", -15, 6)
+                                    auraFrame.ImportantGlow:SetPoint("BOTTOMRIGHT", auraFrame, "BOTTOMRIGHT", 15, -16)
+                                else
+                                    auraFrame.ImportantGlow:SetPoint("TOPLEFT", auraFrame, "TOPLEFT", -14, 3)
+                                    auraFrame.ImportantGlow:SetPoint("BOTTOMRIGHT", auraFrame, "BOTTOMRIGHT", 13, -13)
+                                end
                             else
-                                auraFrame.ImportantGlow:SetPoint("TOPLEFT", auraFrame, "TOPLEFT", -14, 13)
-                                auraFrame.ImportantGlow:SetPoint("BOTTOMRIGHT", auraFrame, "BOTTOMRIGHT", 13, -3)
+                                if borderFrame then
+                                    auraFrame.ImportantGlow:SetPoint("TOPLEFT", auraFrame, "TOPLEFT", -15, 16)
+                                    auraFrame.ImportantGlow:SetPoint("BOTTOMRIGHT", auraFrame, "BOTTOMRIGHT", 15, -6)
+                                else
+                                    auraFrame.ImportantGlow:SetPoint("TOPLEFT", auraFrame, "TOPLEFT", -14, 13)
+                                    auraFrame.ImportantGlow:SetPoint("BOTTOMRIGHT", auraFrame, "BOTTOMRIGHT", 13, -3)
+                                end
                             end
                             --auraFrame.ImportantGlow:SetDrawLayer("OVERLAY", 7)
                             auraFrame.ImportantGlow:SetAtlas("newplayertutorial-drag-slotgreen")
                             auraFrame.ImportantGlow:SetDesaturated(true)
-                        end
-                        if borderFrame then
-                            auraFrame.ImportantGlow:SetParent(borderFrame)
                         end
                         if auraColor then
                             auraFrame.ImportantGlow:SetVertexColor(auraColor.r, auraColor.g, auraColor.b, auraColor.a)
                         else
                             auraFrame.ImportantGlow:SetVertexColor(0, 1, 0)
                         end
+                        auraFrame.DebuffBorder:Hide()
+                        auraFrame.Duration:SetParent(auraFrame.GlowFrame)
+                        auraFrame.Duration:SetDrawLayer("OVERLAY")
                         auraFrame.ImportantGlow:Show()
                     else
                         auraFrame.isImportant = false
                         if auraFrame.ImportantGlow then
                             auraFrame.ImportantGlow:Hide()
                         end
+                        auraFrame.DebuffBorder:Show()
+                        auraFrame.Duration:SetParent(auraFrame)
                     end
                 else
                     auraFrame:Hide();

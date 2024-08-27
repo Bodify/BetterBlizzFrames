@@ -848,6 +848,7 @@ local function PlayerCastingBarFrameMiscAdjustments()
 end
 
 function BBF.ChangeCastbarSizes()
+    BBF.UpdateUserAuraSettings()
     local classicFrames = C_AddOns.IsAddOnLoaded("ClassicFrames")
     local xClassicAdjustment = classicFrames and -1 or 0
     local yClassicAdjustment = classicFrames and 6 or 0

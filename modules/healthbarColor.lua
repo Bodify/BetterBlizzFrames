@@ -99,6 +99,15 @@ local function UpdateHealthColor(frame, unit)
     end
 end
 
+local function UpdateHealthColorCF(frame, unit)
+    if unit == "player" and BetterBlizzFramesDB.classColorFramesSkipPlayer then return end
+    local color, isFriendly = getUnitColor(unit)
+    if color then
+        --frame:SetStatusBarDesaturated(true)
+        frame:SetStatusBarColor(color.r, color.g, color.b)
+    end
+end
+
 function BBF.UpdateToTColor()
     updateFrameColorToggleVer(TargetFrameToT.HealthBar, "targettarget")
 end
@@ -198,8 +207,8 @@ function BBF.HookHealthbarColors()
         if C_AddOns.IsAddOnLoaded("ClassicFrames") then
             hooksecurefunc("UnitFrameHealthBar_Update", function(self, unit)
                 if unit then
-                    UpdateHealthColor(TargetFrameToT.HealthBar, "targettarget")
-                    UpdateHealthColor(FocusFrameToT.HealthBar, "focustarget")
+                    UpdateHealthColorCF(TargetFrameToT.HealthBar, "targettarget")
+                    UpdateHealthColorCF(FocusFrameToT.HealthBar, "focustarget")
                 end
             end)
             if CfPlayerFrameHealthBar then

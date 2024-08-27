@@ -1,7 +1,7 @@
 -- I did not know what a variable was when I started. I know a little bit more now and I am so sorry.
 
 local addonVersion = "1.00" --too afraid to to touch for now
-local addonUpdates = "1.5.1b"
+local addonUpdates = "1.5.2b"
 local sendUpdate = false
 BBF.VersionNumber = addonUpdates
 BBF.variablesLoaded = false
@@ -178,6 +178,7 @@ local defaultSettings = {
     targetAndFocusAurasPerRow = 6,
     targetAndFocusSmallAuraScale = 1,
     purgeTextureColorRGB = {0, 0.92, 1, 0.85},
+    hiddenIconDirection = "BOTTOM",
 
     frameAurasXPos = 0,
     frameAurasYPos = 0,
@@ -200,8 +201,12 @@ local defaultSettings = {
     targetBuffFilterWatchList = false,
     targetBuffFilterLessMinite = false,
     targetBuffFilterPurgeable = false,
-    targetImportantAuraGlow = false,
+    targetImportantAuraGlow = true,
     targetBuffFilterOnlyMe = false,
+    targetAuraGlows = true,
+    targetEnlargeAura = true,
+    targetCompactAura = true,
+
     --Target debuffs
     targetdeBuffEnable = true,
     targetdeBuffFilterAll = false,
@@ -209,7 +214,7 @@ local defaultSettings = {
     targetdeBuffFilterWatchList = false,
     targetdeBuffFilterLessMinite = false,
     targetdeBuffFilterOnlyMe = false,
-    targetdeBuffPandemicGlow = false,
+    targetdeBuffPandemicGlow = true,
 
     --Focus buffs
     focusBuffEnable = true,
@@ -218,7 +223,11 @@ local defaultSettings = {
     focusBuffFilterLessMinite = false,
     focusBuffFilterOnlyMe = false,
     focusBuffFilterPurgeable = false,
-    focusImportantAuraGlow = false,
+    focusAuraGlows = true,
+    focusEnlargeAura = true,
+    focusCompactAura = true,
+    focusImportantAuraGlow = true,
+
     --Focus debuffs
     focusdeBuffEnable = true,
     focusdeBuffFilterAll = false,
@@ -226,7 +235,7 @@ local defaultSettings = {
     focusdeBuffFilterWatchList = false,
     focusdeBuffFilterLessMinite = false,
     focusdeBuffFilterOnlyMe = false,
-    focusdeBuffPandemicGlow = false,
+    focusdeBuffPandemicGlow = true,
 
     PlayerAuraFrameBuffFilterWatchList = false,
     PlayerAuraFramedeBuffFilterWatchList = false,
@@ -1252,7 +1261,9 @@ end)
 -- Slash command
 SLASH_BBF1 = "/BBF"
 SlashCmdList["BBF"] = function(msg)
-    local command = string.lower(msg)
+    local command, arg = msg:match("^(%S*)%s*(.-)$") -- Capture the command and argument
+    command = string.lower(command or "")
+
     if command == "news" then
         NewsUpdateMessage()
     elseif command == "test" then
@@ -1261,8 +1272,52 @@ SlashCmdList["BBF"] = function(msg)
         StaticPopup_Show("BBF_CONFIRM_NAHJ_PROFILE")
     elseif command == "magnusz" then
         StaticPopup_Show("BBF_CONFIRM_MAGNUSZ_PROFILE")
+    elseif command == "whitelist" or command == "wl" then
+        if arg and arg ~= "" then
+            if tonumber(arg) then
+                -- The argument is a number, treat it as a spell ID
+                local spellId = tonumber(arg)
+                local spellName, _, icon = BBF.TWWGetSpellInfo(spellId)
+                if spellName then
+                    local iconString = "|T" .. icon .. ":16:16:0:0|t" -- Format the icon for display
+                    BBF.auraWhitelist(spellId)
+                    print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") was added to |cff00ff00whitelist|r.")
+                else
+                    print("Error: Invalid spell ID.")
+                end
+            else
+                -- The argument is not a number, treat it as a spell name
+                local spellName = arg
+                BBF.auraWhitelist(spellName)
+                print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. spellName .. " was added to |cff00ff00whitelist|r.")
+            end
+        else
+            print("Usage: /bbf whitelist <spellID or auraName>")
+        end
+    elseif command == "blacklist" or command == "bl" then
+        if arg and arg ~= "" then
+            if tonumber(arg) then
+                -- The argument is a number, treat it as a spell ID
+                local spellId = tonumber(arg)
+                local spellName, _, icon = BBF.TWWGetSpellInfo(spellId)
+                if spellName then
+                    local iconString = "|T" .. icon .. ":16:16:0:0|t" -- Format the icon for display
+                    BBF.auraBlacklist(spellId)
+                    print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") was added to |cffff0000blacklist|r.")
+                else
+                    print("Error: Invalid spell ID.")
+                end
+            else
+                -- The argument is not a number, treat it as a spell name
+                local spellName = arg
+                BBF.auraBlacklist(spellName)
+                print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. spellName .. " was added to |cffff0000blacklist|r.")
+            end
+        else
+            print("Usage: /bbf blacklist <spellID or auraName>")
+        end
     else
-        --InterfaceOptionsFrame_OpenToCategory(BetterBlizzFrames)
+        -- InterfaceOptionsFrame_OpenToCategory(BetterBlizzFrames)
         Settings.OpenToCategory(BBF.category.ID)
     end
 end
@@ -1317,11 +1372,11 @@ PlayerEnteringWorld:SetScript("OnEvent", function()
     BBF.DarkmodeFrames()
     BBF.ClickthroughFrames()
     BBF.CheckForAuraBorders()
-    if not isAddonLoaded("ClassicFrames") and not isAddonLoaded("MyRolePlay") then
-        --BBF.HookNameChangeStuff()
-        TargetFrame:SetFrameStrata("MEDIUM")
-        TargetFrameSpellBar:SetFrameStrata("HIGH")
-        FocusFrameSpellBar:SetFrameStrata("HIGH")
-    end
+    -- if not isAddonLoaded("ClassicFrames") and not isAddonLoaded("MyRolePlay") then
+    --     --BBF.HookNameChangeStuff()
+    --     TargetFrame:SetFrameStrata("MEDIUM")
+    --     TargetFrameSpellBar:SetFrameStrata("HIGH")
+    --     FocusFrameSpellBar:SetFrameStrata("HIGH")
+    -- end
 end)
 PlayerEnteringWorld:RegisterEvent("PLAYER_ENTERING_WORLD")

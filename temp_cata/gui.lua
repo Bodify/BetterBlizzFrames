@@ -103,7 +103,7 @@ local function deepMergeTables(destination, source)
 end
 
 StaticPopupDialogs["BBF_CONFIRM_RELOAD"] = {
-    text = "This requires a reload. Reload now?",
+    text = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: \n\nThis requires a reload. Reload now?",
     button1 = "Yes",
     button2 = "No",
     OnAccept = function()
@@ -1056,7 +1056,7 @@ local function CreateCheckbox(option, label, parent, cvarName, extraFunc)
     checkBox.Text:SetFont("Fonts\\FRIZQT__.TTF", 11)
     local a,b,c,d,e = checkBox.Text:GetPoint()
     checkBox.Text:SetPoint(a,b,c,d-4,e-1)
-    checkBox:SetSize(25,25)
+    checkBox:SetSize(24,24)
 
     local function UpdateOption(value)
         if option == 'friendlyFrameClickthrough' and BBF.checkCombatAndWarn() then
@@ -1580,7 +1580,7 @@ local function CreateTitle(parent)
     addonNameIcon:SetPoint("LEFT", addonNameText, "RIGHT", -2, -1)
     local verNumber = parent:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     verNumber:SetPoint("LEFT", addonNameText, "RIGHT", 25, 0)
-    verNumber:SetText(BBF.VersionNumber)
+    verNumber:SetText("v" .. BBF.VersionNumber)
 end
 
 ------------------------------------------------------------
@@ -2554,6 +2554,24 @@ local function guiGeneralTab()
     local hidePvpIcon = CreateCheckbox("hidePvpIcon", "Hide PvP Icon", BetterBlizzFrames, nil, BBF.HideFrames)
     hidePvpIcon:SetPoint("TOPLEFT", hideLevelText, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(hidePvpIcon, "Hide PvP Icon on Player, Target & Focus|A:UI-HUD-UnitFrame-Player-PVP-FFAIcon:44:28|a")
+
+    local classPortraits = CreateCheckbox("classPortraits", "Class Portraits", BetterBlizzFrames)
+    classPortraits:SetPoint("TOPLEFT", hidePvpIcon, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltip(classPortraits, "Show class portraits instead of player portraits. |A:groupfinder-icon-class-paladin:18:18|a")
+
+    local classPortraitsIgnoreSelf = CreateCheckbox("classPortraitsIgnoreSelf", "Ignore Self", classPortraits)
+    classPortraitsIgnoreSelf:SetPoint("LEFT", classPortraits.text, "RIGHT", 0, 0)
+    CreateTooltipTwo(classPortraitsIgnoreSelf, "Class Portraits: Ignore Self","Ignore player portrait.")
+    classPortraitsIgnoreSelf:HookScript("OnClick", function()
+        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+    end)
+
+    classPortraits:HookScript("OnClick", function(self)
+        if self:GetChecked() then
+            EnableElement(classPortraitsIgnoreSelf)
+        end
+        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+    end)
 
     local extraFeaturesText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     extraFeaturesText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 460, 30)
@@ -4431,7 +4449,7 @@ local function guiFrameAuras()
 
 
     local playerAuraGlows = CreateCheckbox("playerAuraGlows", "Extra Aura Settings", playerAuraFiltering)
-    playerAuraGlows:SetPoint("TOPLEFT", PlayerAuraFramedeBuffFilterLessMinite, "BOTTOMLEFT", -15, -22)
+    playerAuraGlows:SetPoint("TOPLEFT", PlayerAuraFramedeBuffFilterLessMinite, "BOTTOMLEFT", -30, -22)
     playerAuraGlows:HookScript("OnClick", function ()
         CheckAndToggleCheckboxes(playerAuraGlows)
     end)
@@ -4449,6 +4467,22 @@ local function guiFrameAuras()
     local playerAuraImportantGlow = CreateCheckbox("playerAuraImportantGlow", "Important Glow", playerAuraGlows)
     playerAuraImportantGlow:SetPoint("TOPLEFT", playerAuraGlows, "BOTTOMLEFT", 15, pixelsBetweenBoxes)
     CreateTooltip(playerAuraImportantGlow, "Green glow on auras marked as important in whitelist")
+
+    local addCooldownFramePlayerBuffs = CreateCheckbox("addCooldownFramePlayerBuffs", "Buff Cooldown", playerAuraGlows)
+    addCooldownFramePlayerBuffs:SetPoint("TOPLEFT", playerAuraImportantGlow, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(addCooldownFramePlayerBuffs, "Buff Cooldown", "Add a cooldown spiral to player buffs similar to other aura icons.")
+
+    local addCooldownFramePlayerDebuffs = CreateCheckbox("addCooldownFramePlayerDebuffs", "Debuff Cooldown", playerAuraGlows)
+    addCooldownFramePlayerDebuffs:SetPoint("TOPLEFT", addCooldownFramePlayerBuffs, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(addCooldownFramePlayerDebuffs, "Debuff Cooldown", "Add a cooldown spiral to player debuffs similar to other aura icons.")
+
+    local hideDefaultPlayerAuraDuration = CreateCheckbox("hideDefaultPlayerAuraDuration", "Hide Duration Text", playerAuraGlows)
+    hideDefaultPlayerAuraDuration:SetPoint("TOPLEFT", addCooldownFramePlayerDebuffs, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(hideDefaultPlayerAuraDuration, "Hide Duration Text", "Hide the default duration text if Buff Cooldown or Debuff Cooldown is on.")
+
+    local hideDefaultPlayerAuraCdText = CreateCheckbox("hideDefaultPlayerAuraCdText", "Hide CD Duration Text", playerAuraGlows)
+    hideDefaultPlayerAuraCdText:SetPoint("TOPLEFT", hideDefaultPlayerAuraDuration, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(hideDefaultPlayerAuraCdText, "Hide CD Duration Text", "Hide the cd text on the new cooldown frame from Buff & Debuff Cooldown.", "This setting will get overwritten by OmniCC unless you make a rule for it.")
 
 
     local personalAuraSettings = contentFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
@@ -4880,7 +4914,7 @@ end
 
 local function guiSupport()
     local guiSupport = CreateFrame("Frame")
-    guiSupport.name = "|A:GarrisonTroops-Health:10:10|a Support"
+    guiSupport.name = "|A:GarrisonTroops-Health:10:10|a Support & Code"
     guiSupport.parent = BetterBlizzFrames.name
     InterfaceOptions_AddCategory(guiSupport)
     CreateTitle(guiSupport)

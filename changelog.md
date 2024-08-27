@@ -1,3 +1,39 @@
+# BetterBlizzFrames 1.5.2b
+## The War Within & Cata
+### New stuff:
+- Buffs & Debuffs: The filtered buffs icon is now moveable with ctrl+leftclick and you can also change which direction the hidden auras grow.
+- Buffs & Debuffs: New setting to hide the duration text on Buff/Debuff cooldown spiral.
+
+## The War Within
+### Bugfix:
+- Fix player buff filter lua erroring with the 1 min filter due to an oopsie.
+- Fix Target & Focus "Only Mine" filters conflicting with "Under 1 Min" filters and causing it to show auras longer than 1min.
+- Fix issue with SUI + Masque causing Duration text on player auras to be hidden (again >.<)
+
+# BetterBlizzFrames 1.5.2
+## The War Within & Cataclysm
+### New stuff:
+- Buffs & Debufs: Add cooldown spiral to Player Auras settings.
+- Slash Command: You can now also add auras to aura whitelist/blacklist by typing /bbf whitelist/blacklist spellId/spellname. For example /bbf blacklist 113 or /bbf whitelist agony. Can also be shortened to wl/bl.
+
+## The War Within
+### Tweak:
+- Updated Nahj & Magnusz profiles.
+- Hide level 70 text is now Hide level 80 text.
+- Dark Mode: Added XP & Honor bar. Added some missing actionbar separators. Fixed soulshards not always being colored.
+- Buffs & Debuffs: The duration of Player Auras are now correctly layered above the Important Glow making it more readable.
+### Bugfix:
+- Fix "Hide party frames" setting not hiding the border around the healthbars.
+- Fix missing support for Player Auras stacking left to right and bottom to top with filtering on.
+- Fix friendly npcs target of target frames having a white healthbar when used together with the ClassicFrames addon and "Class color frames" setting.
+
+## Cataclysm
+### New stuff:
+- Class Portraits setting.
+
+## Shoutout
+- Shoutout to small-time streamer sodapoppin for trying out the addon.
+
 # BetterBlizzFrames 1.5.1b
 ## The War Within
 ### New stuff:

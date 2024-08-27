@@ -6,7 +6,7 @@ BBF = BBF or {}
 -- Things are getting more messy need a lot of cleaning lol
 
 local addonVersion = "1.00" --too afraid to to touch for now
-local addonUpdates = "1.5.1b"
+local addonUpdates = "1.5.2b"
 local sendUpdate = false
 BBF.VersionNumber = addonUpdates
 BBF.variablesLoaded = false
@@ -204,6 +204,7 @@ local defaultSettings = {
     targetAndFocusAurasPerRow = 6,
     targetAndFocusSmallAuraScale = 1,
     purgeTextureColorRGB = {0.3686274588108063,0.9803922176361084,1,1,},
+    hiddenIconDirection = "BOTTOM",
 
     frameAurasXPos = 0,
     frameAurasYPos = 0,
@@ -980,6 +981,24 @@ function BBF.FixStupidBlizzPTRShit()
     end
 end
 
+function BBF.ClassPortraits()
+    hooksecurefunc("SetPortraitTexture", function(portrait, unit)
+        if UnitIsPlayer(unit) then
+            if BetterBlizzFramesDB.classPortraitsIgnoreSelf and portrait:GetParent():GetName() == "PlayerFrame" then return end
+            local _, class = UnitClass(unit)
+
+            local texture = "Interface\\TargetingFrame\\UI-Classes-Circles"
+            local coords = CLASS_ICON_TCOORDS[class]
+
+            if coords then
+                portrait:SetTexture(texture)
+                portrait:SetTexCoord(unpack(coords))
+            end
+        else
+            portrait:SetTexCoord(0, 1, 0, 1)
+        end
+    end)
+end
 
 local function TurnTestModesOff()
     BetterBlizzFramesDB.absorbIndicatorTestMode = false
@@ -1010,6 +1029,9 @@ Frame:SetScript("OnEvent", function(...)
     DisableClickForClassSpecificFrame()
     BBF.MoveToTFrames()
     BBF.HookHealthbarColors()
+    if BetterBlizzFramesDB.classPortraits then
+        BBF.ClassPortraits()
+    end
 
     local function LoginVariablesLoaded()
         if BBF.variablesLoaded then
@@ -1095,16 +1117,61 @@ end)
 -- Slash command
 SLASH_BBF1 = "/BBF"
 SlashCmdList["BBF"] = function(msg)
-    local command = string.lower(msg)
+    local command, arg = msg:match("^(%S*)%s*(.-)$") -- Capture the command and argument
+    command = string.lower(command or "")
+
     if command == "news" then
-        --NewsUpdateMessage()
-        StaticPopup_Show("BBF_NEW_VERSION")
+        NewsUpdateMessage()
     elseif command == "test" then
         --playerFrameTest()
     elseif command == "nahj" then
         StaticPopup_Show("BBF_CONFIRM_NAHJ_PROFILE")
     elseif command == "magnusz" then
         StaticPopup_Show("BBF_CONFIRM_MAGNUSZ_PROFILE")
+    elseif command == "whitelist" or command == "wl" then
+        if arg and arg ~= "" then
+            if tonumber(arg) then
+                -- The argument is a number, treat it as a spell ID
+                local spellId = tonumber(arg)
+                local spellName, _, icon = GetSpellInfo(spellId)
+                if spellName then
+                    local iconString = "|T" .. icon .. ":16:16:0:0|t" -- Format the icon for display
+                    BBF.auraWhitelist(spellId)
+                    print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") was added to |cff00ff00whitelist|r.")
+                else
+                    print("Error: Invalid spell ID.")
+                end
+            else
+                -- The argument is not a number, treat it as a spell name
+                local spellName = arg
+                BBF.auraWhitelist(spellName)
+                print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. spellName .. " was added to |cff00ff00whitelist|r.")
+            end
+        else
+            print("Usage: /bbf whitelist <spellID or auraName>")
+        end
+    elseif command == "blacklist" or command == "bl" then
+        if arg and arg ~= "" then
+            if tonumber(arg) then
+                -- The argument is a number, treat it as a spell ID
+                local spellId = tonumber(arg)
+                local spellName, _, icon = GetSpellInfo(spellId)
+                if spellName then
+                    local iconString = "|T" .. icon .. ":16:16:0:0|t" -- Format the icon for display
+                    BBF.auraBlacklist(spellId)
+                    print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") was added to |cffff0000blacklist|r.")
+                else
+                    print("Error: Invalid spell ID.")
+                end
+            else
+                -- The argument is not a number, treat it as a spell name
+                local spellName = arg
+                BBF.auraBlacklist(spellName)
+                print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. spellName .. " was added to |cffff0000blacklist|r.")
+            end
+        else
+            print("Usage: /bbf blacklist <spellID or auraName>")
+        end
     else
         InterfaceOptionsFrame_OpenToCategory(BetterBlizzFrames)
     end

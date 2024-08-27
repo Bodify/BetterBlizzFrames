@@ -149,14 +149,14 @@ function BBF.HideFrames()
                 TargetFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetAlpha(0)
                 FocusFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetAlpha(0)
             else
-                if UnitLevel("player") == 70 then
+                if UnitLevel("player") == 80 then
                     PlayerLevelText:SetParent(hiddenFrame)
                 end
-                if UnitLevel("target") == 70 then
+                if UnitLevel("target") == 80 then
                     --TargetFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetParent(hiddenFrame)
                     TargetFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetAlpha(0)
                 end
-                if UnitLevel("focus") == 70 then
+                if UnitLevel("focus") == 80 then
                     --FocusFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetParent(hiddenFrame)
                     FocusFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetAlpha(0)
                 end
@@ -652,6 +652,14 @@ function BBF.HidePartyInArena()
                 table.insert(frames, "CompactPartyFrameMember" .. i .. "HorizBottomBorder")
                 table.insert(frames, "CompactPartyFrameMember" .. i .. "VertLeftBorder")
                 table.insert(frames, "CompactPartyFrameMember" .. i .. "VertRightBorder")
+
+                table.insert(frames, "CompactPartyFramePet" .. i .. "Background")
+                table.insert(frames, "CompactPartyFramePet" .. i .. "SelectionHighlight")
+                table.insert(frames, "CompactPartyFramePet" .. i .. "HorizDivider")
+                table.insert(frames, "CompactPartyFramePet" .. i .. "HorizTopBorder")
+                table.insert(frames, "CompactPartyFramePet" .. i .. "HorizBottomBorder")
+                table.insert(frames, "CompactPartyFramePet" .. i .. "VertLeftBorder")
+                table.insert(frames, "CompactPartyFramePet" .. i .. "VertRightBorder")
             end
 
             for _, frame in ipairs(frames) do

@@ -8,6 +8,7 @@ local pixelsOnFirstBox = -1
 local sliderUnderBoxX = 12
 local sliderUnderBoxY = -10
 local sliderUnderBox = "12, -10"
+local titleText = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: \n\n"
 
 local LibDeflate = LibStub("LibDeflate")
 local LibSerialize = LibStub("LibSerialize")
@@ -26,7 +27,7 @@ local function ExportProfile(profileTable, dataType)
     return "!BBF" .. encoded .. "!BBF"
 end
 
-local function ImportProfile(encodedString, expectedDataType)
+function BBF.ImportProfile(encodedString, expectedDataType)
     if encodedString:sub(1, 4) == "!BBF" and encodedString:sub(-4) == "!BBF" then
         encodedString = encodedString:sub(5, -5) -- Remove both prefix and suffix
     else
@@ -62,7 +63,7 @@ local function deepMergeTables(destination, source)
 end
 
 StaticPopupDialogs["BBF_CONFIRM_RELOAD"] = {
-    text = "This requires a reload. Reload now?",
+    text = titleText.."This requires a reload. Reload now?",
     button1 = "Yes",
     button2 = "No",
     OnAccept = function()
@@ -75,7 +76,7 @@ StaticPopupDialogs["BBF_CONFIRM_RELOAD"] = {
 }
 
 StaticPopupDialogs["BBF_TOT_MESSAGE"] = {
-    text = "The default Blizzard code to \"wrap auras\" around the target of target frame is stupid.\n\nThe \"Target of Target\" frames have been moved 31 pixels to the right to make more space for auras.\nYou can change this at any time.\n\nDo you want to keep this? (pick yes)",
+    text = titleText.."The default Blizzard code to \"wrap auras\" around the target of target frame is stupid.\n\nThe \"Target of Target\" frames have been moved 31 pixels to the right to make more space for auras.\nYou can change this at any time.\n\nDo you want to keep this? (pick yes)",
     button1 = "Yes",
     button2 = "No",
     OnAccept = function()
@@ -95,12 +96,11 @@ StaticPopupDialogs["BBF_TOT_MESSAGE"] = {
 }
 
 StaticPopupDialogs["BBF_CONFIRM_NAHJ_PROFILE"] = {
-    text = "This action will modify all settings to Nahj's profile and reload the UI.\n\nYour existing blacklists and whitelists will be retained, with Nahj's additional entries.\n\nAre you sure you want to continue?",
+    text = titleText.."This action will modify all settings to Nahj's profile and reload the UI.\n\nAre you sure you want to continue?",
     button1 = "Yes",
     button2 = "No",
     OnAccept = function()
         BBF.NahjProfile()
-        ReloadUI()
     end,
     timeout = 0,
     whileDead = true,
@@ -108,12 +108,11 @@ StaticPopupDialogs["BBF_CONFIRM_NAHJ_PROFILE"] = {
 }
 
 StaticPopupDialogs["BBF_CONFIRM_MAGNUSZ_PROFILE"] = {
-    text = "This action will modify all settings to Magnusz's profile and reload the UI.\n\nYour existing blacklists and whitelists will be retained, with Magnusz's additional entries.\n\nAre you sure you want to continue?",
+    text = titleText.."This action will modify all settings to Magnusz's profile and reload the UI.\n\nAre you sure you want to continue?",
     button1 = "Yes",
     button2 = "No",
     OnAccept = function()
         BBF.MagnuszProfile()
-        ReloadUI()
     end,
     timeout = 0,
     whileDead = true,
@@ -848,7 +847,7 @@ local function CreateImportExportUI(parent, title, dataTable, posX, posY, tableN
 
     importBtn:SetScript("OnClick", function()
         local importString = importBox:GetText()
-        local profileData, errorMessage = ImportProfile(importString, tableName)
+        local profileData, errorMessage = BBF.ImportProfile(importString, tableName)
         if errorMessage then
             print("|A:gmchat-icon-blizz:16:16|aBetter|cff00c0ffBlizz|rFrames: Error importing " .. title .. ":", errorMessage)
         else
@@ -857,7 +856,7 @@ local function CreateImportExportUI(parent, title, dataTable, posX, posY, tableN
                 deepMergeTables(dataTable, profileData)
             else
                 -- Replace existing data with imported data
-                --for k in pairs(dataTable) do dataTable[k] = nil end -- Clear current table
+                for k in pairs(dataTable) do dataTable[k] = nil end -- Clear current table
                 for k, v in pairs(profileData) do
                     dataTable[k] = v -- Populate with new data
                 end
@@ -1442,6 +1441,7 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
     end
 
     BBF[listName] = addOrUpdateEntry
+    --BBF.auraWhitelist & BBF.auraBlacklist
 
     editBox:SetScript("OnEnterPressed", function(self)
         addOrUpdateEntry(self:GetText())
@@ -1680,7 +1680,7 @@ local function guiGeneralTab()
 
     local darkModeColor = CreateSlider(darkModeUi, "Darkness", 0, 1, 0.01, "darkModeColor", nil, 90)
     darkModeColor:SetPoint("LEFT", darkModeUiAura.text, "RIGHT", 3, -1)
-    CreateTooltip(darkModeColor, "Dark mode value.\n\nYou can right-click sliders to enter a specific value.")
+    CreateTooltipTwo(darkModeColor, "Dark Mode Value", "Adjust how dark you want the dark mode to be.\nTip: You can rightclick all sliders to input a specific value.")
 
     darkModeUi:HookScript("OnClick", function(self)
         CheckAndToggleCheckboxes(darkModeUi, 0)
@@ -2405,9 +2405,9 @@ local function guiGeneralTab()
     hideCombatGlow:SetPoint("TOPLEFT", hidePrestigeBadge, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(hideCombatGlow, "Hide the red combat around Player, Target & Focus.|A:UI-HUD-UnitFrame-Player-PortraitOn-InCombat:30:80|a")
 
-    local hideLevelText = CreateCheckbox("hideLevelText", "Hide Level 70 Text", BetterBlizzFrames, nil, BBF.HideFrames)
+    local hideLevelText = CreateCheckbox("hideLevelText", "Hide Level 80 Text", BetterBlizzFrames, nil, BBF.HideFrames)
     hideLevelText:SetPoint("TOPLEFT", hideCombatGlow, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltip(hideLevelText, "Hide the level text for Player, Target & Focus frames if they are level 70")
+    CreateTooltip(hideLevelText, "Hide the level text for Player, Target & Focus frames if they are level 80")
 
     local hideLevelTextAlways = CreateCheckbox("hideLevelTextAlways", "Always", BetterBlizzFrames, nil, BBF.HideFrames)
     hideLevelTextAlways:SetPoint("LEFT", hideLevelText.Text, "RIGHT", 0, 0)
@@ -2764,6 +2764,7 @@ local function guiCastbars()
             targetToTAdjustmentOffsetY:Enable()
             targetToTAdjustmentOffsetY:SetAlpha(1)
         end
+        BBF.ChangeCastbarSizes()
     end)
     CreateTooltip(targetDetachCastbar, "Detach castbar from frame and enable wider xy positioning.\nRight-click a slider to enter a specific number.")
 
@@ -2829,6 +2830,7 @@ local function guiCastbars()
         targetToTAdjustmentOffsetY:SetValue(0)
         BetterBlizzFramesDB.targetToTCastbarAdjustment = true
         BBF.CastBarTimerCaller()
+        BBF.ChangeCastbarSizes()
     end)
 
 
@@ -2890,6 +2892,7 @@ local function guiCastbars()
             petCastBarXPos:SetValue(0)
         end
         BBF.petCastBarTestMode()
+        BBF.ChangeCastbarSizes()
     end)
     CreateTooltip(petDetachCastbar, "Detach castbar from frame and enable wider xy positioning.\nRight-click a slider to enter a specific number.")
 
@@ -2916,6 +2919,7 @@ local function guiCastbars()
         BetterBlizzFramesDB.petDetachCastbar = false
         BetterBlizzFramesDB.petCastBarTimer = true
         BBF.CastBarTimerCaller()
+        BBF.ChangeCastbarSizes()
     end)
 
    ----------------------
@@ -3004,6 +3008,7 @@ local function guiCastbars()
             focusToTAdjustmentOffsetY:Enable()
             focusToTAdjustmentOffsetY:SetAlpha(1)
         end
+        BBF.ChangeCastbarSizes()
     end)
     CreateTooltip(focusDetachCastbar, "Detach castbar from frame and enable wider xy positioning.\nRight-click a slider to enter a specific number.")
 
@@ -3068,6 +3073,7 @@ local function guiCastbars()
         focusToTAdjustmentOffsetY:SetValue(0)
         BetterBlizzFramesDB.focusToTCastbarAdjustment = true
         BBF.CastBarTimerCaller()
+        BBF.ChangeCastbarSizes()
     end)
 
 
@@ -3139,6 +3145,7 @@ local function guiCastbars()
         --PlayerCastingBarFrame.showShield = false
         BBF.CastBarTimerCaller()
         BBF.ShowPlayerCastBarIcon()
+        BBF.ChangeCastbarSizes()
     end)
 
     local function UpdateColorSquare(icon, r, g, b, a)
@@ -3744,6 +3751,74 @@ local function guiPositionAndScale()
 
 end
 
+local function guiFrameLook()
+    ----------------------
+    -- Frame Auras
+    ----------------------
+    local guiFrameLook = CreateFrame("Frame")
+    guiFrameLook.name = "Font & Texture"
+    guiFrameLook.parent = BetterBlizzFrames.name
+    --InterfaceOptions_AddCategory(guiFrameAuras)
+    local aurasSubCategory = Settings.RegisterCanvasLayoutSubcategory(BBF.category, guiFrameLook, guiFrameLook.name, guiFrameLook.name)
+    aurasSubCategory.ID = guiFrameLook.name;
+    CreateTitle(guiFrameLook)
+
+    local bgImg = guiFrameLook:CreateTexture(nil, "BACKGROUND")
+    bgImg:SetAtlas("professions-recipe-background")
+    bgImg:SetPoint("CENTER", guiFrameLook, "CENTER", -8, 4)
+    bgImg:SetSize(680, 610)
+    bgImg:SetAlpha(0.4)
+    bgImg:SetVertexColor(0,0,0)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- Define the path to your custom power bar texture
+local pathToPowerBarTexture = "Interface\\TargetingFrame\\UI-StatusBar"
+
+-- Function to set the power bar texture and color
+local units = {
+    ["player"] = true,
+    ["target"] = true,
+    ["focus"] = true,
+}
+
+local function UpdatePowerBarAppearance(powerBar)
+    local unit = powerBar.unit
+
+    if units[unit] then
+        -- Set the texture of the power bar
+        powerBar:SetStatusBarTexture(pathToPowerBarTexture)
+        
+        -- Determine and set the power bar color
+        local powerType = UnitPowerType(unit)
+        local powerColor = PowerBarColor[powerType] or PowerBarColor["MANA"] -- Default to mana color if not found
+
+        if powerColor then
+            -- Apply the power bar color
+            powerBar:SetStatusBarColor(powerColor.r, powerColor.g, powerColor.b)
+        end
+    end
+end
+
+-- Hook the function to update the mana bar type using the secure function
+hooksecurefunc("UnitFrameManaBar_UpdateType", UpdatePowerBarAppearance)
+
+end
+
 local function guiFrameAuras()
     ----------------------
     -- Frame Auras
@@ -3831,7 +3906,7 @@ local function guiFrameAuras()
 
 
     local playerAuraFiltering = CreateCheckbox("playerAuraFiltering", "Enable Aura Settings", contentFrame)
-    CreateTooltip(playerAuraFiltering, "This feature is still a bit beta.\nIf you are noticing anything weird or having performance issues please let me know.")
+    CreateTooltip(playerAuraFiltering, "Enable Aura Settings and Filtering.")
     playerAuraFiltering:SetPoint("TOPLEFT", contentFrame, "BOTTOMLEFT", 50, 190)
     playerAuraFiltering:HookScript("OnClick", function (self)
         if self:GetChecked() then
@@ -4226,7 +4301,7 @@ local function guiFrameAuras()
 
 
     local playerAuraGlows = CreateCheckbox("playerAuraGlows", "Extra Aura Settings", playerAuraFiltering)
-    playerAuraGlows:SetPoint("TOPLEFT", PlayerAuraFramedeBuffFilterLessMinite, "BOTTOMLEFT", -15, -22)
+    playerAuraGlows:SetPoint("TOPLEFT", PlayerAuraFramedeBuffFilterLessMinite, "BOTTOMLEFT", -30, -22)
     playerAuraGlows:HookScript("OnClick", function ()
         CheckAndToggleCheckboxes(playerAuraGlows)
     end)
@@ -4244,6 +4319,22 @@ local function guiFrameAuras()
     local playerAuraImportantGlow = CreateCheckbox("playerAuraImportantGlow", "Important Glow", playerAuraGlows)
     playerAuraImportantGlow:SetPoint("TOPLEFT", playerAuraGlows, "BOTTOMLEFT", 15, pixelsBetweenBoxes)
     CreateTooltip(playerAuraImportantGlow, "Green glow on auras marked as important in whitelist")
+
+    local addCooldownFramePlayerBuffs = CreateCheckbox("addCooldownFramePlayerBuffs", "Buff Cooldown", playerAuraGlows)
+    addCooldownFramePlayerBuffs:SetPoint("TOPLEFT", playerAuraImportantGlow, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(addCooldownFramePlayerBuffs, "Buff Cooldown", "Add a cooldown spiral to player buffs similar to other aura icons.")
+
+    local addCooldownFramePlayerDebuffs = CreateCheckbox("addCooldownFramePlayerDebuffs", "Debuff Cooldown", playerAuraGlows)
+    addCooldownFramePlayerDebuffs:SetPoint("TOPLEFT", addCooldownFramePlayerBuffs, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(addCooldownFramePlayerDebuffs, "Debuff Cooldown", "Add a cooldown spiral to player debuffs similar to other aura icons.")
+
+    local hideDefaultPlayerAuraDuration = CreateCheckbox("hideDefaultPlayerAuraDuration", "Hide Duration Text", playerAuraGlows)
+    hideDefaultPlayerAuraDuration:SetPoint("TOPLEFT", addCooldownFramePlayerDebuffs, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(hideDefaultPlayerAuraDuration, "Hide Duration Text", "Hide the default duration text if Buff Cooldown or Debuff Cooldown is on.")
+
+    local hideDefaultPlayerAuraCdText = CreateCheckbox("hideDefaultPlayerAuraCdText", "Hide CD Duration Text", playerAuraGlows)
+    hideDefaultPlayerAuraCdText:SetPoint("TOPLEFT", hideDefaultPlayerAuraDuration, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(hideDefaultPlayerAuraCdText, "Hide CD Duration Text", "Hide the cd text on the new cooldown frame from Buff & Debuff Cooldown.", "This setting will get overwritten by OmniCC unless you make a rule for it.")
 
 
     local personalAuraSettings = contentFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
@@ -4953,6 +5044,7 @@ function BBF.InitializeOptions()
         guiGeneralTab()
         guiPositionAndScale()
         guiFrameAuras()
+        --guiFrameLook()
         guiCastbars()
         guiImportAndExport()
         guiMisc()
