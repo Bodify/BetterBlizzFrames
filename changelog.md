@@ -10,7 +10,7 @@
 - Fix darkmode causing some errors on evoker class.
 
 ### Known issue:
-- Buff filtering + Collapsed BuffFrame is not supported and will cause issues with positonining of buffs etc. Added a message in chat to mention this and I am working on it.
+- Buff filtering + Collapsed BuffFrame is not supported and will cause issues with positioning of buffs etc. Added a message in chat to mention this and I am working on it.
 
 # BetterBlizzFrames 1.5.2b
 ## The War Within & Cata
