@@ -1,3 +1,17 @@
+# BetterBlizzFrames 1.5.3
+## The War Within & Cataclysm
+### New stuff:
+- Added cooldown timer to Smoke Bomb debuffs to show the duration of Smoke Bomb. Buffs & Debuffs settings need to be on for this to be active.
+- Add "Show Mine" checkbox for blacklisted auras.
+- Add "Mount" filter for auras. (Needs testing, if you use this and see a mount NOT show up please lmk)
+
+## The War Within
+### Bugfix:
+- Fix darkmode causing some errors on evoker class.
+
+### Known issue:
+- Buff filtering + Collapsed BuffFrame is not supported and will cause issues with positonining of buffs etc. Added a message in chat to mention this and I am working on it.
+
 # BetterBlizzFrames 1.5.2b
 ## The War Within & Cata
 ### New stuff:

@@ -17,6 +17,7 @@ local playerBuffsHooked
 local playerDebuffsHooked
 local targetAurasHooked
 local targetCastbarsHooked
+local smokeBombDetector
 
 local ipairs = ipairs
 local math_ceil = math.ceil
@@ -41,6 +42,54 @@ local function addToMasque(frame, masqueGroup)
         frame.bbfMsq = true
         --print(frame:GetName())
     end
+end
+
+local smokeBombId = 212182
+local smokeBombCast = 0
+local smokeTracker
+local updateInterval = 0.1
+local remainingTime = 5
+
+local function UpdateAuraDuration(self, elapsed)
+    self.timeSinceLastUpdate = (self.timeSinceLastUpdate or 0) + elapsed
+
+    -- Only update every second
+    if self.timeSinceLastUpdate >= updateInterval then
+        remainingTime = remainingTime - 0.1
+        if remainingTime <= 0 then
+            self.Duration:SetText("0 s")
+            self:SetScript("OnUpdate", nil)
+        else
+            local displayTime = math.floor(remainingTime-0.2)
+            self.Duration:SetText(displayTime .. " s")
+        end
+        self.timeSinceLastUpdate = 0
+    end
+end
+
+local function SmokeBombCheck(self, event)
+    local timestamp, subEvent, _, sourceGUID, sourceName, sourceFlags, _, destGUID, destName, destFlags, _, spellID = CombatLogGetCurrentEventInfo()
+    if subEvent == "SPELL_CAST_SUCCESS" and spellID == smokeBombId then
+        if smokeTracker then
+            smokeTracker:Cancel()
+        end
+        smokeBombCast = GetTime()
+        smokeTracker = C_Timer.NewTimer(5, function()
+            smokeBombCast = 0
+        end)
+    end
+end
+
+MountAuraTooltip = CreateFrame("GameTooltip", "MountAuraTooltip", nil, "GameTooltipTemplate")
+MountAuraTooltip:SetOwner(WorldFrame, "ANCHOR_NONE")
+local function isMountAura(spellId)
+    MountAuraTooltip:ClearLines()
+    MountAuraTooltip:SetHyperlink("spell:" .. spellId)
+    local secondLineText = _G["MountAuraTooltipTextLeft2"]:GetText()
+    if secondLineText and secondLineText:find("Warband Mount") then
+        return true
+    end
+    return false
 end
 
 -- How did this spaghetti start?
@@ -218,10 +267,11 @@ end
 local function isInBlacklist(spellName, spellId)
     for _, entry in pairs(BetterBlizzFramesDB["auraBlacklist"]) do
         if entry.id == spellId or (entry.name and not entry.id and spellName and string.lower(entry.name) == string.lower(spellName)) then
-            return true
+            local showMine = entry.showMine
+            return true, showMine
         end
     end
-    return false
+    return false, false
 end
 
 local function GetAuraDetails(spellName, spellId)
@@ -276,12 +326,19 @@ local function ShouldShowBuff(unit, auraData, frameType)
         if BetterBlizzFramesDB["targetBuffEnable"] and auraData.isHelpful then
             local isTargetFriendly = UnitIsFriend("target", "player")
             local isInWhitelist, isImportant, isPandemic, isEnlarged, isCompacted, auraColor, onlyMine = GetAuraDetails(spellName, spellId)
-            local isInBlacklist = isInBlacklist(spellName, spellId) and BetterBlizzFramesDB["targetBuffFilterBlacklist"]
+            local shouldBlacklist = BetterBlizzFramesDB["targetBuffFilterBlacklist"]
+            local filterMount = BetterBlizzFramesDB["targetBuffFilterMount"]
             local filterWatchlist = BetterBlizzFramesDB["targetBuffFilterWatchList"] and isInWhitelist
             local filterLessMinite = BetterBlizzFramesDB["targetBuffFilterLessMinite"] and (duration < 61 and duration ~= 0 and expirationTime ~= 0)
             local filterPurgeable = BetterBlizzFramesDB["targetBuffFilterPurgeable"] and isPurgeable
             local filterOnlyMe = BetterBlizzFramesDB["targetBuffFilterOnlyMe"] and isTargetFriendly and (caster == "player" or (caster == "pet" and UnitIsUnit(caster, "pet")))
-            if isInBlacklist then return end
+            if shouldBlacklist then
+                local isInBlacklist, allowMine = isInBlacklist(spellName, spellId)
+                if isInBlacklist and not allowMine then return end
+            end
+            if filterMount then
+                if isMountAura(spellId) then return true end
+            end
             if not castByPlayer and onlyMine then return end
             if filterWatchlist or filterLessMinite or filterPurgeable or ((filterOnlyMe and filterLessMinite) or (filterOnlyMe and not BetterBlizzFramesDB["targetBuffFilterLessMinite"])) or isImportant or isPandemic or isEnlarged or isCompacted then return true, isImportant, isPandemic, isEnlarged, isCompacted, auraColor end
             if not BetterBlizzFramesDB["targetBuffFilterLessMinite"] and not BetterBlizzFramesDB["targetBuffFilterWatchList"] and not BetterBlizzFramesDB["targetBuffFilterPurgeable"] and not (BetterBlizzFramesDB["targetBuffFilterOnlyMe"] and isTargetFriendly) then
@@ -291,12 +348,15 @@ local function ShouldShowBuff(unit, auraData, frameType)
         -- Debuffs
         if BetterBlizzFramesDB["targetdeBuffEnable"] and auraData.isHarmful then
             local isInWhitelist, isImportant, isPandemic, isEnlarged, isCompacted, auraColor, onlyMine = GetAuraDetails(spellName, spellId)
-            local isInBlacklist = isInBlacklist(spellName, spellId) and BetterBlizzFramesDB["targetdeBuffFilterBlacklist"]
+            local shouldBlacklist = BetterBlizzFramesDB["targetdeBuffFilterBlacklist"]
             local filterWatchlist = BetterBlizzFramesDB["targetdeBuffFilterWatchList"] and isInWhitelist
             local filterLessMinite = BetterBlizzFramesDB["targetdeBuffFilterLessMinite"] and (duration < 61 and duration ~= 0 and expirationTime ~= 0)
             local filterBlizzard = BetterBlizzFramesDB["targetdeBuffFilterBlizzard"] and BlizzardShouldShowDebuffs
             local filterOnlyMe = BetterBlizzFramesDB["targetdeBuffFilterOnlyMe"] and (caster == "player" or (caster == "pet" and UnitIsUnit(caster, "pet")))
-            if isInBlacklist then return end
+            if shouldBlacklist then
+                local isInBlacklist, allowMine = isInBlacklist(spellName, spellId)
+                if isInBlacklist and not allowMine then return end
+            end
             if not castByPlayer and onlyMine then return end
             if filterWatchlist or filterLessMinite or filterBlizzard or filterOnlyMe or isImportant or isPandemic or isEnlarged or isCompacted then return true, isImportant, isPandemic, isEnlarged, isCompacted, auraColor end
             if not BetterBlizzFramesDB["targetdeBuffFilterLessMinite"] and not BetterBlizzFramesDB["targetdeBuffFilterWatchList"] and not BetterBlizzFramesDB["targetdeBuffFilterBlizzard"] and not BetterBlizzFramesDB["targetdeBuffFilterOnlyMe"] then
@@ -308,13 +368,20 @@ local function ShouldShowBuff(unit, auraData, frameType)
         -- Buffs
         if BetterBlizzFramesDB["focusBuffEnable"] and auraData.isHelpful then
             local isInWhitelist, isImportant, isPandemic, isEnlarged, isCompacted, auraColor, onlyMine = GetAuraDetails(spellName, spellId)
-            local isInBlacklist = isInBlacklist(spellName, spellId) and BetterBlizzFramesDB["focusBuffFilterBlacklist"]
+            local shouldBlacklist = BetterBlizzFramesDB["focusBuffFilterBlacklist"]
             local isTargetFriendly = UnitIsFriend("focus", "player")
+            local filterMount = BetterBlizzFramesDB["focusBuffFilterMount"]
             local filterWatchlist = BetterBlizzFramesDB["focusBuffFilterWatchList"] and isInWhitelist
             local filterLessMinite = BetterBlizzFramesDB["focusBuffFilterLessMinite"] and (duration < 61 and duration ~= 0 and expirationTime ~= 0)
             local filterPurgeable = BetterBlizzFramesDB["focusBuffFilterPurgeable"] and isPurgeable
             local filterOnlyMe = BetterBlizzFramesDB["focusBuffFilterOnlyMe"] and isTargetFriendly and (caster == "player" or (caster == "pet" and UnitIsUnit(caster, "pet")))
-            if isInBlacklist then return end
+            if shouldBlacklist then
+                local isInBlacklist, allowMine = isInBlacklist(spellName, spellId)
+                if isInBlacklist and not allowMine then return end
+            end
+            if filterMount then
+                if isMountAura(spellId) then return true end
+            end
             if not castByPlayer and onlyMine then return end
             if filterWatchlist or filterLessMinite or filterPurgeable or ((filterOnlyMe and filterLessMinite) or (filterOnlyMe and not BetterBlizzFramesDB["focusBuffFilterLessMinite"])) or isImportant or isPandemic or isEnlarged or isCompacted then return true, isImportant, isPandemic, isEnlarged, isCompacted, auraColor end
             if not BetterBlizzFramesDB["focusBuffFilterLessMinite"] and not BetterBlizzFramesDB["focusBuffFilterWatchList"] and not BetterBlizzFramesDB["focusBuffFilterPurgeable"] and not BetterBlizzFramesDB["focusBuffFilterOnlyMe"] then
@@ -325,11 +392,14 @@ local function ShouldShowBuff(unit, auraData, frameType)
         if BetterBlizzFramesDB["focusdeBuffEnable"] and auraData.isHarmful then
             local isInWhitelist, isImportant, isPandemic, isEnlarged, isCompacted, auraColor, onlyMine = GetAuraDetails(spellName, spellId)
             local filterWatchlist = BetterBlizzFramesDB["focusdeBuffFilterWatchList"] and isInWhitelist
-            local isInBlacklist = isInBlacklist(spellName, spellId) and BetterBlizzFramesDB["focusdeBuffFilterBlacklist"]
+            local shouldBlacklist = BetterBlizzFramesDB["focusdeBuffFilterBlacklist"]
             local filterLessMinite = BetterBlizzFramesDB["focusdeBuffFilterLessMinite"] and (duration < 61 and duration ~= 0 and expirationTime ~= 0)
             local filterBlizzard = BetterBlizzFramesDB["focusdeBuffFilterBlizzard"] and BlizzardShouldShowDebuffs
             local filterOnlyMe = BetterBlizzFramesDB["focusdeBuffFilterOnlyMe"] and (caster == "player" or (caster == "pet" and UnitIsUnit(caster, "pet")))
-            if isInBlacklist then return end
+            if shouldBlacklist then
+                local isInBlacklist, allowMine = isInBlacklist(spellName, spellId)
+                if isInBlacklist and not allowMine then return end
+            end
             if not castByPlayer and onlyMine then return end
             if filterWatchlist or filterLessMinite or filterBlizzard or filterOnlyMe or isImportant or isPandemic or isEnlarged or isCompacted then return true, isImportant, isPandemic, isEnlarged, isCompacted, auraColor end
             if not BetterBlizzFramesDB["focusdeBuffFilterLessMinite"] and not BetterBlizzFramesDB["focusdeBuffFilterWatchList"] and not BetterBlizzFramesDB["focusdeBuffFilterBlizzard"] and not BetterBlizzFramesDB["focusdeBuffFilterOnlyMe"] then
@@ -342,10 +412,17 @@ local function ShouldShowBuff(unit, auraData, frameType)
             -- Buffs
             if BetterBlizzFramesDB["PlayerAuraFrameBuffEnable"] and (auraData.auraType == "Buff" or auraData.auraType == "TempEnchant") then
                 local isInWhitelist, isImportant, isPandemic, isEnlarged, isCompacted, auraColor, onlyMine = GetAuraDetails(spellName, spellId)
-                local isInBlacklist = isInBlacklist(spellName, spellId) and BetterBlizzFramesDB["playerBuffFilterBlacklist"]
+                local shouldBlacklist = BetterBlizzFramesDB["playerBuffFilterBlacklist"]
+                local filterMount = BetterBlizzFramesDB["playerBuffFilterMount"]
                 local filterWatchlist = BetterBlizzFramesDB["PlayerAuraFrameBuffFilterWatchList"] and isInWhitelist
                 local filterLessMinite = BetterBlizzFramesDB["PlayerAuraFrameBuffFilterLessMinite"] and (duration < 61 and duration ~= 0 and expirationTime ~= 0)
-                if isInBlacklist then return end
+                if shouldBlacklist then
+                    local isInBlacklist, allowMine = isInBlacklist(spellName, spellId)
+                    if isInBlacklist and not allowMine then return end
+                end
+                if filterMount then
+                    if isMountAura(spellId) then return true end
+                end
                 if filterWatchlist or filterLessMinite or isImportant then return true, isImportant, isPandemic, isEnlarged, isCompacted, auraColor end
                 if not BetterBlizzFramesDB["PlayerAuraFrameBuffFilterLessMinite"] and not BetterBlizzFramesDB["PlayerAuraFrameBuffFilterWatchList"] then
                     return true
@@ -355,10 +432,13 @@ local function ShouldShowBuff(unit, auraData, frameType)
             -- Debuffs
             if BetterBlizzFramesDB["PlayerAuraFramedeBuffEnable"] and auraData.auraType == "Debuff" then
                 local isInWhitelist, isImportant, isPandemic, isEnlarged, isCompacted, auraColor, onlyMine = GetAuraDetails(spellName, spellId)
-                local isInBlacklist = isInBlacklist(spellName, spellId) and BetterBlizzFramesDB["playerdeBuffFilterBlacklist"]
+                local shouldBlacklist = BetterBlizzFramesDB["playerdeBuffFilterBlacklist"]
                 local filterWatchlist = BetterBlizzFramesDB["PlayerAuraFramedeBuffFilterWatchList"] and isInWhitelist
                 local filterLessMinite = BetterBlizzFramesDB["PlayerAuraFramedeBuffFilterLessMinite"] and (duration < 61 and duration ~= 0 and expirationTime ~= 0)
-                if isInBlacklist then return end
+                if shouldBlacklist then
+                    local isInBlacklist, allowMine = isInBlacklist(spellName, spellId)
+                    if isInBlacklist and not allowMine then return end
+                end
                 if filterWatchlist or filterLessMinite or isImportant then return true, isImportant, isPandemic, isEnlarged, isCompacted, auraColor end
                 if not BetterBlizzFramesDB["PlayerAuraFramedeBuffFilterLessMinite"] and not BetterBlizzFramesDB["PlayerAuraFramedeBuffFilterWatchList"] then
                     return true
@@ -584,6 +664,226 @@ local function addMasque(frameType)
     end
 end
 
+local function defaultComparator(a, b)
+    -- Default sorting logic
+    if a.isLarge and not b.isLarge then
+        return true
+    elseif not a.isLarge and b.isLarge then
+        return false
+    elseif a.canApply ~= b.canApply then
+        return a.canApply
+    else
+        return a.auraInstanceID < b.auraInstanceID
+    end
+end
+
+local function importantAuraComparator(a, b)
+    if a.isImportant ~= b.isImportant then
+        return a.isImportant
+    end
+    return defaultComparator(a, b)
+end
+
+local function importantAllowEnlargedAuraComparator(a, b)
+    if a.isEnlarged ~= b.isEnlarged then
+        return a.isEnlarged
+    end
+    if a.isImportant ~= b.isImportant then
+        return a.isImportant
+    end
+    return defaultComparator(a, b)
+end
+
+local function largeSmallAuraComparator(a, b)
+    if a.isEnlarged or b.isEnlarged then
+        if a.isEnlarged and not b.isEnlarged then
+            return true
+        elseif not a.isEnlarged and b.isEnlarged then
+            return false
+        else
+            return defaultComparator(a, b)
+        end
+    end
+
+    if a.isCompacted or b.isCompacted then
+        if a.isCompacted and not b.isCompacted then
+            return false
+        elseif not a.isCompacted and b.isCompacted then
+            return true
+        else
+            return defaultComparator(a, b)
+        end
+    end
+
+    -- For auras that are neither enlarged nor compacted, use default sorting
+    if not a.isEnlarged and not a.isCompacted and not b.isEnlarged and not b.isCompacted then
+        if a.isLarge and not b.isLarge then
+            return true
+        elseif not a.isLarge and b.isLarge then
+            return false
+        elseif a.canApply ~= b.canApply then
+            return a.canApply
+        else
+            return defaultComparator(a, b)
+        end
+    end
+    return defaultComparator(a, b)
+end
+
+local function largeSmallAndImportantAuraComparator(a, b)
+    if a.isImportant ~= b.isImportant then
+        return a.isImportant
+    end
+
+    if a.isEnlarged or b.isEnlarged then
+        if a.isEnlarged and not b.isEnlarged then
+            return true
+        elseif not a.isEnlarged and b.isEnlarged then
+            return false
+        else
+            -- Both are enlarged, sort by auraInstanceID
+            return defaultComparator(a, b)
+        end
+    end
+
+    -- Compacted auras come last, sorted by auraInstanceID
+    if a.isCompacted or b.isCompacted then
+        if a.isCompacted and not b.isCompacted then
+            return false
+        elseif not a.isCompacted and b.isCompacted then
+            return true
+        else
+            -- Both are compacted, sort by auraInstanceID
+            return defaultComparator(a, b)
+        end
+    end
+
+    -- For auras that are neither enlarged nor compacted, use default sorting
+    if not a.isEnlarged and not a.isCompacted and not b.isEnlarged and not b.isCompacted then
+        if a.isLarge and not b.isLarge then
+            return true
+        elseif not a.isLarge and b.isLarge then
+            return false
+        elseif a.canApply ~= b.canApply then
+            return a.canApply
+        else
+            return defaultComparator(a, b)
+        end
+    end
+    return defaultComparator(a, b)
+end
+
+local function largeSmallAndImportantAndEnlargedFirstAuraComparator(a, b)
+    if a.isEnlarged or b.isEnlarged then
+        if a.isEnlarged and not b.isEnlarged then
+            return true
+        elseif not a.isEnlarged and b.isEnlarged then
+            return false
+        else
+            -- Both are enlarged, sort by auraInstanceID
+            return defaultComparator(a, b)
+        end
+    end
+
+    -- Compacted auras come last, sorted by auraInstanceID
+    if a.isCompacted or b.isCompacted then
+        if a.isCompacted and not b.isCompacted then
+            return false
+        elseif not a.isCompacted and b.isCompacted then
+            return true
+        else
+            -- Both are compacted, sort by auraInstanceID
+            return defaultComparator(a, b)
+        end
+    end
+
+    if a.isImportant ~= b.isImportant then
+        return a.isImportant
+    end
+
+    -- For auras that are neither enlarged nor compacted, use default sorting
+    if not a.isEnlarged and not a.isCompacted and not b.isEnlarged and not b.isCompacted then
+        if a.isLarge and not b.isLarge then
+            return true
+        elseif not a.isLarge and b.isLarge then
+            return false
+        elseif a.canApply ~= b.canApply then
+            return a.canApply
+        else
+            return defaultComparator(a, b)
+        end
+    end
+    return defaultComparator(a, b)
+end
+
+local function allowLargeAuraFirstComparator(a, b)
+    if a.isEnlarged ~= b.isEnlarged then
+        return a.isEnlarged
+    end
+    -- Proceed with other sorting criteria without giving special treatment to isImportant
+    if a.isLarge and not b.isLarge then
+        return true
+    elseif not a.isLarge and b.isLarge then
+        return false
+    elseif a.canApply ~= b.canApply then
+        return a.canApply
+    else
+        return defaultComparator(a, b)
+    end
+end
+
+local function getCustomAuraComparatorWithoutPurgeable()
+    if customImportantAuraSorting and customLargeSmallAuraSorting and allowLargeAuraFirst then
+        return largeSmallAndImportantAndEnlargedFirstAuraComparator
+    elseif customImportantAuraSorting and customLargeSmallAuraSorting then
+        return largeSmallAndImportantAuraComparator
+    elseif customImportantAuraSorting and allowLargeAuraFirst then
+        return importantAllowEnlargedAuraComparator
+    elseif customImportantAuraSorting then
+        return importantAuraComparator
+    elseif customLargeSmallAuraSorting then
+        return largeSmallAuraComparator
+    elseif allowLargeAuraFirst then
+        return allowLargeAuraFirstComparator
+    else
+        return defaultComparator
+    end
+end
+
+local function purgeableFirstComparator(a, b)
+    if a.isPurgeable ~= b.isPurgeable then
+        return a.isPurgeable
+    end
+    return getCustomAuraComparatorWithoutPurgeable()(a, b)
+end
+
+local function purgeableAfterImportantAndEnlargedComparator(a, b)
+    if a.isImportant ~= b.isImportant then
+        return a.isImportant
+    end
+
+    if a.isEnlarged ~= b.isEnlarged then
+        return a.isEnlarged
+    end
+
+    if a.isPurgeable ~= b.isPurgeable then
+        return a.isPurgeable
+    end
+
+    return getCustomAuraComparatorWithoutPurgeable()(a, b)
+end
+
+local function getCustomAuraComparator()
+    if purgeableBuffSorting then
+        if purgeableBuffSortingFirst then
+            return purgeableFirstComparator
+        else
+            return purgeableAfterImportantAndEnlargedComparator
+        end
+    end
+    return getCustomAuraComparatorWithoutPurgeable()
+end
+
 local function AdjustAuras(self, frameType)
     local adjustedSize = sameSizeAuras and 21 or 17 * targetAndFocusSmallAuraScale
     local buffsOnTop = self.buffsOnTop
@@ -675,225 +975,7 @@ local function AdjustAuras(self, frameType)
 
     local buffs, debuffs = {}, {}
 
-    local function defaultComparator(a, b)
-        -- Default sorting logic
-        if a.isLarge and not b.isLarge then
-            return true
-        elseif not a.isLarge and b.isLarge then
-            return false
-        elseif a.canApply ~= b.canApply then
-            return a.canApply
-        else
-            return a.auraInstanceID < b.auraInstanceID
-        end
-    end
 
-    local function importantAuraComparator(a, b)
-        if a.isImportant ~= b.isImportant then
-            return a.isImportant
-        end
-        return defaultComparator(a, b)
-    end
-
-    local function importantAllowEnlargedAuraComparator(a, b)
-        if a.isEnlarged ~= b.isEnlarged then
-            return a.isEnlarged
-        end
-        if a.isImportant ~= b.isImportant then
-            return a.isImportant
-        end
-        return defaultComparator(a, b)
-    end
-
-    local function largeSmallAuraComparator(a, b)
-        if a.isEnlarged or b.isEnlarged then
-            if a.isEnlarged and not b.isEnlarged then
-                return true
-            elseif not a.isEnlarged and b.isEnlarged then
-                return false
-            else
-                return defaultComparator(a, b)
-            end
-        end
-
-        if a.isCompacted or b.isCompacted then
-            if a.isCompacted and not b.isCompacted then
-                return false
-            elseif not a.isCompacted and b.isCompacted then
-                return true
-            else
-                return defaultComparator(a, b)
-            end
-        end
-
-        -- For auras that are neither enlarged nor compacted, use default sorting
-        if not a.isEnlarged and not a.isCompacted and not b.isEnlarged and not b.isCompacted then
-            if a.isLarge and not b.isLarge then
-                return true
-            elseif not a.isLarge and b.isLarge then
-                return false
-            elseif a.canApply ~= b.canApply then
-                return a.canApply
-            else
-                return defaultComparator(a, b)
-            end
-        end
-        return defaultComparator(a, b)
-    end
-
-    local function largeSmallAndImportantAuraComparator(a, b)
-        if a.isImportant ~= b.isImportant then
-            return a.isImportant
-        end
-
-        if a.isEnlarged or b.isEnlarged then
-            if a.isEnlarged and not b.isEnlarged then
-                return true
-            elseif not a.isEnlarged and b.isEnlarged then
-                return false
-            else
-                -- Both are enlarged, sort by auraInstanceID
-                return defaultComparator(a, b)
-            end
-        end
-
-        -- Compacted auras come last, sorted by auraInstanceID
-        if a.isCompacted or b.isCompacted then
-            if a.isCompacted and not b.isCompacted then
-                return false
-            elseif not a.isCompacted and b.isCompacted then
-                return true
-            else
-                -- Both are compacted, sort by auraInstanceID
-                return defaultComparator(a, b)
-            end
-        end
-
-        -- For auras that are neither enlarged nor compacted, use default sorting
-        if not a.isEnlarged and not a.isCompacted and not b.isEnlarged and not b.isCompacted then
-            if a.isLarge and not b.isLarge then
-                return true
-            elseif not a.isLarge and b.isLarge then
-                return false
-            elseif a.canApply ~= b.canApply then
-                return a.canApply
-            else
-                return defaultComparator(a, b)
-            end
-        end
-        return defaultComparator(a, b)
-    end
-
-    local function largeSmallAndImportantAndEnlargedFirstAuraComparator(a, b)
-        if a.isEnlarged or b.isEnlarged then
-            if a.isEnlarged and not b.isEnlarged then
-                return true
-            elseif not a.isEnlarged and b.isEnlarged then
-                return false
-            else
-                -- Both are enlarged, sort by auraInstanceID
-                return defaultComparator(a, b)
-            end
-        end
-
-        -- Compacted auras come last, sorted by auraInstanceID
-        if a.isCompacted or b.isCompacted then
-            if a.isCompacted and not b.isCompacted then
-                return false
-            elseif not a.isCompacted and b.isCompacted then
-                return true
-            else
-                -- Both are compacted, sort by auraInstanceID
-                return defaultComparator(a, b)
-            end
-        end
-
-        if a.isImportant ~= b.isImportant then
-            return a.isImportant
-        end
-
-        -- For auras that are neither enlarged nor compacted, use default sorting
-        if not a.isEnlarged and not a.isCompacted and not b.isEnlarged and not b.isCompacted then
-            if a.isLarge and not b.isLarge then
-                return true
-            elseif not a.isLarge and b.isLarge then
-                return false
-            elseif a.canApply ~= b.canApply then
-                return a.canApply
-            else
-                return defaultComparator(a, b)
-            end
-        end
-        return defaultComparator(a, b)
-    end
-
-    local function allowLargeAuraFirstComparator(a, b)
-        if a.isEnlarged ~= b.isEnlarged then
-            return a.isEnlarged
-        end
-        -- Proceed with other sorting criteria without giving special treatment to isImportant
-        if a.isLarge and not b.isLarge then
-            return true
-        elseif not a.isLarge and b.isLarge then
-            return false
-        elseif a.canApply ~= b.canApply then
-            return a.canApply
-        else
-            return defaultComparator(a, b)
-        end
-    end
-
-    local function getCustomAuraComparatorWithoutPurgeable()
-        if customImportantAuraSorting and customLargeSmallAuraSorting and allowLargeAuraFirst then
-            return largeSmallAndImportantAndEnlargedFirstAuraComparator
-        elseif customImportantAuraSorting and customLargeSmallAuraSorting then
-            return largeSmallAndImportantAuraComparator
-        elseif customImportantAuraSorting and allowLargeAuraFirst then
-            return importantAllowEnlargedAuraComparator
-        elseif customImportantAuraSorting then
-            return importantAuraComparator
-        elseif customLargeSmallAuraSorting then
-            return largeSmallAuraComparator
-        elseif allowLargeAuraFirst then
-            return allowLargeAuraFirstComparator
-        else
-            return defaultComparator
-        end
-    end
-
-    local function purgeableFirstComparator(a, b)
-        if a.isPurgeable ~= b.isPurgeable then
-            return a.isPurgeable
-        end
-        return getCustomAuraComparatorWithoutPurgeable()(a, b)
-    end
-
-    local function purgeableAfterImportantAndEnlargedComparator(a, b)
-        if a.isImportant ~= b.isImportant then
-            return a.isImportant
-        end
-
-        if a.isEnlarged ~= b.isEnlarged then
-            return a.isEnlarged
-        end
-
-        if a.isPurgeable ~= b.isPurgeable then
-            return a.isPurgeable
-        end
-
-        return getCustomAuraComparatorWithoutPurgeable()(a, b)
-    end
-
-    local function getCustomAuraComparator()
-        if purgeableBuffSorting then
-            if purgeableBuffSortingFirst then
-                return purgeableFirstComparator
-            else
-                return purgeableAfterImportantAndEnlargedComparator
-            end
-        end
-        return getCustomAuraComparatorWithoutPurgeable()
-    end
 
     for aura in self.auraPools:EnumerateActive() do
         local auraData = C_UnitAuras.GetAuraDataByAuraInstanceID(self.unit, aura.auraInstanceID)
@@ -949,6 +1031,10 @@ local function AdjustAuras(self, frameType)
                 aura:Show()
 
                 aura.spellId = auraData.spellId
+
+                if auraData.spellId == 212183 then
+                    aura.Cooldown:SetCooldown(smokeBombCast, 5)
+                end
 
                 if (auraData.isStealable or (auraData.dispelName == "Magic" and ((not isFriend and auraData.isHelpful) or (isFriend and auraData.isHarmful)))) then
                     aura.isPurgeable = true
@@ -1449,6 +1535,7 @@ end
 
 
 local BuffFrame = BuffFrame
+local printedMsg
 local function PersonalBuffFrameFilterAndGrid(self)
     ResetHiddenAurasCount()
     local isExpanded = BuffFrame:IsExpanded();
@@ -1742,6 +1829,14 @@ local function PersonalBuffFrameFilterAndGrid(self)
                 end
             end
         end
+    else
+        if not printedMsg then
+            printedMsg = true
+            print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: Buff Filtering with auras collapsed is currently not supported. Expand them (Pointy arrow next to Buffs) and reload or turn Player Buff filtering off. It is being worked on.")
+            C_Timer.After(30, function()
+                printedMsg = false
+            end)
+        end
     end
     UpdateHiddenAurasCount()
 end
@@ -1923,6 +2018,16 @@ local function PersonalDebuffFrameFilterAndGrid(self)
                     end
 
                     auraFrame.spellId = auraData.spellId
+
+                    if auraData.spellId == 212183 then
+                        if auraFrame.Cooldown then
+                            auraFrame.Cooldown:SetCooldown(smokeBombCast, 5)
+                        end
+                        auraFrame.Duration:Show()
+                        auraFrame.Duration:SetTextColor(1,1,1)
+                        auraFrame.timeSinceLastUpdate = 0
+                        auraFrame:SetScript("OnUpdate", UpdateAuraDuration)
+                    end
 
                     if not auraFrame.filterClick then
                         auraFrame:HookScript("OnMouseDown", function(self, button)
@@ -2254,5 +2359,11 @@ function BBF.HookPlayerAndTargetAuras()
                 DefaultCastbarAdjustment(FocusFrame.spellbar, FocusFrameSpellBar)
             end
         end);
+    end
+
+    if not smokeBombDetector then
+        smokeBombDetector = CreateFrame("Frame")
+        smokeBombDetector:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+        smokeBombDetector:SetScript("OnEvent", SmokeBombCheck)
     end
 end

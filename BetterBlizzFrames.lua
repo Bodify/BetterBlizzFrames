@@ -1,8 +1,8 @@
 -- I did not know what a variable was when I started. I know a little bit more now and I am so sorry.
 
 local addonVersion = "1.00" --too afraid to to touch for now
-local addonUpdates = "1.5.2b"
-local sendUpdate = false
+local addonUpdates = "1.5.3"
+local sendUpdate = true
 BBF.VersionNumber = addonUpdates
 BBF.variablesLoaded = false
 local isAddonLoaded = C_AddOns.IsAddOnLoaded
@@ -347,7 +347,7 @@ StaticPopupDialogs["BetterBlizzFrames_COMBAT_WARNING"] = {
 }
 
 StaticPopupDialogs["BBF_NEW_VERSION"] = {
-    text = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames " .. addonUpdates .. ":\n\n|A:Professions-Crafting-Orders-Icon:16:16|a Tweak:   \nI've adjusted the default target/focus castbar icon position for users of ClassicFrames to have it fit the old style castbars.\n\nYou might have to re-adjust the position slightly because of this.",
+    text = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames " .. addonUpdates .. ":\n\nHey Sodapoppin.\n\nIf you need help settings things up or have questions feel free to contact me @bodify on discord.",
     button1 = "OK",
     timeout = 0,
     whileDead = true,
@@ -405,8 +405,13 @@ local function SendUpdateMessage()
         if not BetterBlizzFramesDB.scStart then
             C_Timer.After(7, function()
                 -- if BetterBlizzFramesDB.castBarInterruptIconEnabled then
-
-
+                    if UnitName("player") == "Dirtykitten" then
+                        local realmName = GetRealmName()
+                        if realmName and realmName == "Illidan" then
+                            print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: Hey Sodapoppin. If you need help settings things up or have questions feel free to contact me @bodify on discord.")
+                            StaticPopup_Show("BBF_NEW_VERSION")
+                        end
+                    end
                 -- DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames news:")
                 -- --DEFAULT_CHAT_FRAME:AddMessage("|A:QuestNormal:16:16|a New Stuff:")
                 -- -- DEFAULT_CHAT_FRAME:AddMessage("   - Sort Purgeable Auras setting (Buffs & Debuffs).")

@@ -1289,6 +1289,29 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
             end
         end
 
+        if listName == "auraBlacklist" then
+            -- Create Checkbox Only Mine
+            local checkBoxShowMine = CreateFrame("CheckButton", nil, button, "UICheckButtonTemplate")
+            checkBoxShowMine:SetSize(24, 24)
+            checkBoxShowMine:SetPoint("RIGHT", deleteButton, "LEFT", 3, 0)
+            CreateTooltipTwo(checkBoxShowMine, "Show mine |A:UI-HUD-UnitFrame-Player-Group-FriendOnlineIcon:22:22|a", "Disregard the blacklist and show aura if it is mine.", nil, "ANCHOR_TOPRIGHT")
+
+            -- Handler for the E checkbox
+            checkBoxShowMine:SetScript("OnClick", function(self)
+                npc.showMine = self:GetChecked()
+            end)
+            checkBoxShowMine:HookScript("OnClick", BBF.RefreshAllAuraFrames)
+
+            -- Initialize state from npc flags
+            if npc.showMine then
+                checkBoxShowMine:SetChecked(true)
+            end
+
+            text:SetWidth(196)
+            text:SetWordWrap(false)
+            text:SetJustifyH("LEFT")
+        end
+
         button.deleteButton = deleteButton
         table.insert(textLines, button)
         updateBackgroundColors()  -- Update background colors after adding a new entry
@@ -3866,6 +3889,11 @@ local function guiFrameAuras()
     whitelistText:SetPoint("BOTTOM", auraWhitelistFrame, "TOP", -60, -5)
     whitelistText:SetText("Whitelist")
 
+    if not BetterBlizzFramesDB.playerAuraFiltering then
+        auraWhitelistFrame:SetAlpha(0.3)
+        auraBlacklistFrame:SetAlpha(0.3)
+    end
+
     local onlyMeTexture = contentFrame:CreateTexture(nil, "OVERLAY")
     onlyMeTexture:SetAtlas("UI-HUD-UnitFrame-Player-Group-FriendOnlineIcon")
     onlyMeTexture:SetPoint("RIGHT", whitelist, "TOPRIGHT", 296, 9)
@@ -3918,9 +3946,10 @@ local function guiFrameAuras()
                 BBF.focusToTXPos:SetValue(31)
                 BBF.MoveToTFrames()
                 BBF.UpdateFilteredBuffsIcon()
-            else
-                StaticPopup_Show("BBF_CONFIRM_RELOAD")
             end
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            auraWhitelistFrame:SetAlpha(1)
+            auraBlacklistFrame:SetAlpha(1)
         else
             if BetterBlizzFramesDB.targetToTXPos == 31 then
                 DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: Aura Settings Off. Target of Target Frame changed back to its default position.")
@@ -3930,6 +3959,8 @@ local function guiFrameAuras()
                 BBF.focusToTXPos:SetValue(0)
                 BBF.MoveToTFrames()
             end
+            auraWhitelistFrame:SetAlpha(0.3)
+            auraBlacklistFrame:SetAlpha(0.3)
             StaticPopup_Show("BBF_CONFIRM_RELOAD")
         end
     end)
@@ -3991,6 +4022,10 @@ local function guiFrameAuras()
     local targetBuffFilterPurgeable = CreateCheckbox("targetBuffFilterPurgeable", "Purgeable", targetBuffEnable)
     targetBuffFilterPurgeable:SetPoint("TOPLEFT", targetBuffFilterOnlyMe, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
 
+    local targetBuffFilterMount = CreateCheckbox("targetBuffFilterMount", "Mount", targetBuffEnable)
+    targetBuffFilterMount:SetPoint("TOPLEFT", targetBuffFilterPurgeable, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(targetBuffFilterMount, "Mount", "Show all mounts.\n(Needs testing, please report if you see a mount that is not displayed by this filter)")
+
 
 --[[targetBuffPurgeGlow
     local otherNpBuffBlueBorder = CreateCheckbox("otherNpBuffBlueBorder", "Blue border on buffs", targetBuffEnable)
@@ -4004,7 +4039,7 @@ local function guiFrameAuras()
 
     -- Target Debuffs
     local targetdeBuffEnable = CreateCheckbox("targetdeBuffEnable", "Show DEBUFFS", playerAuraFiltering)
-    targetdeBuffEnable:SetPoint("TOPLEFT", targetBuffFilterPurgeable, "BOTTOMLEFT", -15, -2)
+    targetdeBuffEnable:SetPoint("TOPLEFT", targetBuffFilterMount, "BOTTOMLEFT", -15, 0)
     targetdeBuffEnable:HookScript("OnClick", function ()
         CheckAndToggleCheckboxes(targetdeBuffEnable)
     end)
@@ -4028,7 +4063,7 @@ local function guiFrameAuras()
     targetdeBuffFilterOnlyMe:SetPoint("TOPLEFT", targetdeBuffFilterLessMinite, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
 
     local targetAuraGlows = CreateCheckbox("targetAuraGlows", "Extra Aura Settings", playerAuraFiltering)
-    targetAuraGlows:SetPoint("TOPLEFT", targetdeBuffFilterOnlyMe, "BOTTOMLEFT", -15, -2)
+    targetAuraGlows:SetPoint("TOPLEFT", targetdeBuffFilterOnlyMe, "BOTTOMLEFT", -15, 0)
     targetAuraGlows:HookScript("OnClick", function ()
         CheckAndToggleCheckboxes(targetAuraGlows)
     end)
@@ -4119,9 +4154,13 @@ local function guiFrameAuras()
     local focusBuffFilterPurgeable = CreateCheckbox("focusBuffFilterPurgeable", "Purgeable", focusBuffEnable)
     focusBuffFilterPurgeable:SetPoint("TOPLEFT", focusBuffFilterOnlyMe, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
 
+    local focusBuffFilterMount = CreateCheckbox("focusBuffFilterMount", "Mount", focusBuffEnable)
+    focusBuffFilterMount:SetPoint("TOPLEFT", focusBuffFilterPurgeable, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(focusBuffFilterMount, "Mount", "Show all mounts.\n(Needs testing, please report if you see a mount that is not displayed by this filter)")
+
     -- Focus Debuffs
     local focusdeBuffEnable = CreateCheckbox("focusdeBuffEnable", "Show DEBUFFS", playerAuraFiltering)
-    focusdeBuffEnable:SetPoint("TOPLEFT", focusBuffFilterPurgeable, "BOTTOMLEFT", -15, -2)
+    focusdeBuffEnable:SetPoint("TOPLEFT", focusBuffFilterMount, "BOTTOMLEFT", -15, 0)
     focusdeBuffEnable:HookScript("OnClick", function ()
         CheckAndToggleCheckboxes(focusdeBuffEnable)
     end)
@@ -4145,7 +4184,7 @@ local function guiFrameAuras()
     focusdeBuffFilterOnlyMe:SetPoint("TOPLEFT", focusdeBuffFilterLessMinite, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
 
     local focusAuraGlows = CreateCheckbox("focusAuraGlows", "Extra Aura Settings", playerAuraFiltering)
-    focusAuraGlows:SetPoint("TOPLEFT", focusdeBuffFilterOnlyMe, "BOTTOMLEFT", -15, -2)
+    focusAuraGlows:SetPoint("TOPLEFT", focusdeBuffFilterOnlyMe, "BOTTOMLEFT", -15, 0)
     focusAuraGlows:HookScript("OnClick", function ()
         CheckAndToggleCheckboxes(focusAuraGlows)
     end)
@@ -4265,9 +4304,13 @@ local function guiFrameAuras()
         changeIconButton:Disable()
     end
 
+    local playerBuffFilterMount = CreateCheckbox("playerBuffFilterMount", "Mount", PlayerAuraFrameBuffEnable)
+    playerBuffFilterMount:SetPoint("TOPLEFT", showHiddenAurasIcon, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(playerBuffFilterMount, "Mount", "Show all mounts.\n(Needs testing, please report if you see a mount that is not displayed by this filter)")
+
     -- Personal Bar Debuffs
     local enablePlayerDebuffFiltering = CreateCheckbox("enablePlayerDebuffFiltering", "Enable Debuff Filtering", playerAuraFiltering)
-    enablePlayerDebuffFiltering:SetPoint("TOPLEFT", showHiddenAurasIcon, "BOTTOMLEFT", -30, -2)
+    enablePlayerDebuffFiltering:SetPoint("TOPLEFT", playerBuffFilterMount, "BOTTOMLEFT", -30, 0)
     enablePlayerDebuffFiltering:HookScript("OnClick", function ()
         CheckAndToggleCheckboxes(enablePlayerDebuffFiltering)
     end)
@@ -4301,7 +4344,7 @@ local function guiFrameAuras()
 
 
     local playerAuraGlows = CreateCheckbox("playerAuraGlows", "Extra Aura Settings", playerAuraFiltering)
-    playerAuraGlows:SetPoint("TOPLEFT", PlayerAuraFramedeBuffFilterLessMinite, "BOTTOMLEFT", -30, -22)
+    playerAuraGlows:SetPoint("TOPLEFT", PlayerAuraFramedeBuffFilterLessMinite, "BOTTOMLEFT", -30, -20)
     playerAuraGlows:HookScript("OnClick", function ()
         CheckAndToggleCheckboxes(playerAuraGlows)
     end)

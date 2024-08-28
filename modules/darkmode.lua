@@ -7,13 +7,28 @@ local minimapChanged =false
 local hookedTotemBar
 local hookedAuras
 
-local function applySettings(frame, desaturate, colorValue)
+local function applySettings(frame, desaturate, colorValue, hook)
     if frame then
-        if desaturate ~= nil and frame.SetDesaturated then -- Check if SetDesaturated is available
+        if desaturate ~= nil and frame.SetDesaturated then
             frame:SetDesaturated(desaturate)
         end
+
         if frame.SetVertexColor then
-            frame:SetVertexColor(colorValue, colorValue, colorValue) -- Alpha set to 1
+            frame:SetVertexColor(colorValue, colorValue, colorValue)
+            if hook then
+                if not frame.bbfHooked then
+                    frame.bbfHooked = true
+
+                    hooksecurefunc(frame, "SetVertexColor", function(self)
+                        if not self.changing then
+                            self.changing = true
+                            frame:SetDesaturated(desaturate)
+                            frame:SetVertexColor(colorValue, colorValue, colorValue)
+                            self.changing = false
+                        end
+                    end)
+                end
+            end
         end
     end
 end
@@ -456,8 +471,8 @@ function BBF.DarkmodeFrames(bypass)
     local druidComboPoints = _G.DruidComboPointBarFrame
     if druidComboPoints then
         for _, v in pairs({druidComboPoints:GetChildren()}) do
-            applySettings(v.BG_Inactive, desaturationValue, druidComboPoint)
-            applySettings(v.BG_Active, desaturationValue, druidComboPointActive)
+            applySettings(v.BG_Inactive, desaturationValue, druidComboPoint, true)
+            applySettings(v.BG_Active, desaturationValue, druidComboPointActive, true)
         end
     end
 
@@ -538,16 +553,30 @@ function BBF.DarkmodeFrames(bypass)
     local evokerEssencePoints = _G.EssencePlayerFrame
     if evokerEssencePoints then
         for _, v in pairs({evokerEssencePoints:GetChildren()}) do
-            applySettings(v.EssenceFillDone.CircBG, desaturationValue, monkChi)
-            applySettings(v.EssenceFilling.EssenceBG, desaturationValue, vertexColor)
-            applySettings(v.EssenceEmpty.EssenceBG, desaturationValue, vertexColor)
-            applySettings(v.EssenceFillDone.CircBGActive, desaturationValue, vertexColor)
-
-            applySettings(v.EssenceDepleting.EssenceBG, desaturationValue, vertexColor)
-            applySettings(v.EssenceDepleting.CircBGActive, desaturationValue, vertexColor)
-
-            applySettings(v.EssenceFillDone.RimGlow, desaturationValue, monkChi)
-            applySettings(v.EssenceDepleting.RimGlow, desaturationValue, monkChi)
+            if v.EssenceFillDone and v.EssenceFillDone.CircBG then
+                applySettings(v.EssenceFillDone.CircBG, desaturationValue, monkChi)
+            end
+            if v.EssenceFilling and v.EssenceFilling.EssenceBG then
+                applySettings(v.EssenceFilling.EssenceBG, desaturationValue, vertexColor)
+            end
+            if v.EssenceEmpty and v.EssenceEmpty.EssenceBG then
+                applySettings(v.EssenceEmpty.EssenceBG, desaturationValue, vertexColor)
+            end
+            if v.EssenceFillDone and v.EssenceFillDone.CircBGActive then
+                applySettings(v.EssenceFillDone.CircBGActive, desaturationValue, vertexColor)
+            end
+            if v.EssenceDepleting and v.EssenceDepleting.EssenceBG then
+                applySettings(v.EssenceDepleting.EssenceBG, desaturationValue, vertexColor)
+            end
+            if v.EssenceDepleting and v.EssenceDepleting.CircBGActive then
+                applySettings(v.EssenceDepleting.CircBGActive, desaturationValue, vertexColor)
+            end
+            if v.EssenceFillDone and v.EssenceFillDone.RimGlow then
+                applySettings(v.EssenceFillDone.RimGlow, desaturationValue, monkChi)
+            end
+            if v.EssenceDepleting and v.EssenceDepleting.RimGlow then
+                applySettings(v.EssenceDepleting.RimGlow, desaturationValue, monkChi)
+            end
         end
     end
 
@@ -556,16 +585,30 @@ function BBF.DarkmodeFrames(bypass)
         local evokerColorOne = darkModeNp and monkChi or 1
         local evokerColorTwo = darkModeNp and vertexColor or 1
         for _, v in pairs({evokerEssencePointsNameplate:GetChildren()}) do
-            applySettings(v.EssenceFillDone.CircBG, darkModeNpSatVal, evokerColorOne)
-            applySettings(v.EssenceFilling.EssenceBG, darkModeNpSatVal, evokerColorTwo)
-            applySettings(v.EssenceEmpty.EssenceBG, darkModeNpSatVal, evokerColorTwo)
-            applySettings(v.EssenceFillDone.CircBGActive, darkModeNpSatVal, evokerColorTwo)
-
-            applySettings(v.EssenceDepleting.EssenceBG, darkModeNpSatVal, evokerColorTwo)
-            applySettings(v.EssenceDepleting.CircBGActive, darkModeNpSatVal, evokerColorTwo)
-
-            applySettings(v.EssenceFillDone.RimGlow, darkModeNpSatVal, evokerColorOne)
-            applySettings(v.EssenceDepleting.RimGlow, darkModeNpSatVal, evokerColorOne)
+            if v.EssenceFillDone and v.EssenceFillDone.CircBG then
+                applySettings(v.EssenceFillDone.CircBG, darkModeNpSatVal, evokerColorOne)
+            end
+            if v.EssenceFilling and v.EssenceFilling.EssenceBG then
+                applySettings(v.EssenceFilling.EssenceBG, darkModeNpSatVal, evokerColorTwo)
+            end
+            if v.EssenceEmpty and v.EssenceEmpty.EssenceBG then
+                applySettings(v.EssenceEmpty.EssenceBG, darkModeNpSatVal, evokerColorTwo)
+            end
+            if v.EssenceFillDone and v.EssenceFillDone.CircBGActive then
+                applySettings(v.EssenceFillDone.CircBGActive, darkModeNpSatVal, evokerColorTwo)
+            end
+            if v.EssenceDepleting and v.EssenceDepleting.EssenceBG then
+                applySettings(v.EssenceDepleting.EssenceBG, darkModeNpSatVal, evokerColorTwo)
+            end
+            if v.EssenceDepleting and v.EssenceDepleting.CircBGActive then
+                applySettings(v.EssenceDepleting.CircBGActive, darkModeNpSatVal, evokerColorTwo)
+            end
+            if v.EssenceFillDone and v.EssenceFillDone.RimGlow then
+                applySettings(v.EssenceFillDone.RimGlow, darkModeNpSatVal, evokerColorOne)
+            end
+            if v.EssenceDepleting and v.EssenceDepleting.RimGlow then
+                applySettings(v.EssenceDepleting.RimGlow, darkModeNpSatVal, evokerColorOne)
+            end
         end
     end
 
