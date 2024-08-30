@@ -1,3 +1,18 @@
+# BetterBlizzFrames 1.5.3b
+## The War Within & Cataclysm
+### New stuff:
+- Buffs & Debuffs: Ctrl+Alt Rightclick to blacklist aura with "Show Mine" tag already added.
+### Bugfix:
+- Fixed new blacklist setting "allow mine" accidentally missing the castByPlayer check.
+
+## The War Within
+### New stuff:
+- New setting "Quick Hide Castbars": Hide target/focus castbars immediately when cast is finished.
+### Bugfix:
+- Hide level 80 text now definitely hides level 80 text.
+- Fixed Player Aura Filtering making player auras go downwards regardless of settings. Also fixed debuffs in the same go. I mustve been sleep deprived.
+- Fixed Party Castbars showing self castbar despite not set to.
+
 # BetterBlizzFrames 1.5.3
 ## The War Within & Cataclysm
 ### New stuff:

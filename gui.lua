@@ -1364,7 +1364,7 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
     editBox:SetSize((width and width - 62) or (322 - 62), 19)
     editBox:SetPoint("TOP", scrollFrame, "BOTTOM", -15, -5)
     editBox:SetAutoFocus(false)
-    CreateTooltipTwo(editBox, "Filter auras by spell id and/or spell name", "You can hold Shift+Alt and click auras to add to lists.\nShift+Alt + Left-Click to Whitelist.\nShift+Alt + Right-Click to Blacklist.", nil, "ANCHOR_TOP")
+    CreateTooltipTwo(editBox, "Filter auras by spell id and/or spell name", "You can click auras to add to lists.\n\nShift+Alt + Left-Click to Whitelist.\n\nShift+Alt + Right-Click to Blacklist.\nCtrl+Alt Right-click to Blacklist with \"Show Mine\" tag", nil, "ANCHOR_TOP")
 
     local function updateNamesInListData()
         for _, entry in ipairs(listData) do
@@ -1419,7 +1419,7 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
     end
     contentFrame.refreshList = refreshList
 
-    local function addOrUpdateEntry(inputText)
+    local function addOrUpdateEntry(inputText, addShowMineTag)
         selectedLineIndex = nil
         local name, comment = strsplit("/", inputText, 2)
         name = strtrim(name or "")
@@ -1452,6 +1452,9 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
             else
                 -- Initialize the flags table for the new entry
                 local newEntry = { name = name, id = id, comment = comment, flags = { important = false, pandemic = false } }
+                if addShowMineTag and listName == "auraBlacklist" then
+                    newEntry = { name = name, id = id, comment = comment, flags = { important = false, pandemic = false }, showMine = true }
+                end
                 table.insert(listData, newEntry)
                 createTextLineButton(newEntry, #textLines + 1, extraBoxes)
                 refreshList()
@@ -3334,12 +3337,19 @@ local function guiCastbars()
 
 
     local buffsOnTopReverseCastbarMovement = CreateCheckbox("buffsOnTopReverseCastbarMovement", "Buffs on Top: Reverse Castbar Movement", contentFrame, nil, BBF.CastbarAdjustCaller)
-    buffsOnTopReverseCastbarMovement:SetPoint("LEFT", contentFrame, "TOPRIGHT", -470, -555)
-    CreateTooltip(buffsOnTopReverseCastbarMovement, "Changes the castbar movement to follow the top row of auras on Target/Focus Frame\nsimilar to how it works by default without \"Buffs on Top\" enabled except in reverse.")
+    buffsOnTopReverseCastbarMovement:SetPoint("LEFT", contentFrame, "TOPRIGHT", -470, -545)
+    CreateTooltipTwo(buffsOnTopReverseCastbarMovement, "Buffs on Top: Reverse Castbar Movement", "Changes the castbar movement to follow the top row of auras on Target/Focus Frame similar to how it works by default without \"Buffs on Top\" enabled except in reverse.\n\nBy default with Buffs on Top enabled your castbar will just sit beneath the target frame and not move.")
 
     local normalCastbarForEmpoweredCasts = CreateCheckbox("normalCastbarForEmpoweredCasts", "Normal Evoker Empowered Castbar", contentFrame, nil, BBF.HookCastbarsForEvoker)
     normalCastbarForEmpoweredCasts:SetPoint("TOPLEFT", buffsOnTopReverseCastbarMovement, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltip(normalCastbarForEmpoweredCasts, "Change Evoker empowered castbars to look like normal ones. (Easier to see if you can interrupt)")
+    CreateTooltipTwo(normalCastbarForEmpoweredCasts, "Normal Evoker Castbar", "Change Evoker empowered castbars to look like normal ones.\n(Easier to see if you can interrupt)")
+
+    local quickHideCastbars = CreateCheckbox("quickHideCastbars", "Quick Hide Castbars", contentFrame)
+    quickHideCastbars:SetPoint("TOPLEFT", normalCastbarForEmpoweredCasts, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(quickHideCastbars, "Quick Hide Castbars", "Instantly hide target and focus castbars after their cast is finished or interrupted.\nBy default there is a slow fade out animation.")
+    quickHideCastbars:HookScript("OnClick", function()
+        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+    end)
 end
 
 local function guiPositionAndScale()
@@ -3880,7 +3890,7 @@ local function guiFrameAuras()
     local whitelist = CreateList(auraBlacklistFrame, "auraBlacklist", BetterBlizzFramesDB.auraBlacklist, BBF.RefreshAllAuraFrames, nil, nil, 265)
 
     local blacklistText = contentFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    blacklistText:SetPoint("BOTTOM", auraBlacklistFrame, "TOP", 10, -5)
+    blacklistText:SetPoint("BOTTOM", auraBlacklistFrame, "TOP", -20, -5)
     blacklistText:SetText("Blacklist")
 
     local blacklist = CreateList(auraWhitelistFrame, "auraWhitelist", BetterBlizzFramesDB.auraWhitelist, BBF.RefreshAllAuraFrames, true, true, 379, true)
@@ -3946,8 +3956,9 @@ local function guiFrameAuras()
                 BBF.focusToTXPos:SetValue(31)
                 BBF.MoveToTFrames()
                 BBF.UpdateFilteredBuffsIcon()
+            else
+                StaticPopup_Show("BBF_CONFIRM_RELOAD")
             end
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
             auraWhitelistFrame:SetAlpha(1)
             auraBlacklistFrame:SetAlpha(1)
         else
@@ -4239,8 +4250,11 @@ local function guiFrameAuras()
 
     local enablePlayerBuffFiltering = CreateCheckbox("enablePlayerBuffFiltering", "Enable Buff Filtering", playerAuraFiltering)
     enablePlayerBuffFiltering:SetPoint("TOPLEFT", contentFrame, "BOTTOMLEFT", 503, 140)
-    enablePlayerBuffFiltering:HookScript("OnClick", function ()
+    enablePlayerBuffFiltering:HookScript("OnClick", function (self)
         CheckAndToggleCheckboxes(enablePlayerBuffFiltering)
+        if not self:GetChecked() then
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        end
     end)
 
     local PlayerAuraFrameBuffEnable = CreateCheckbox("PlayerAuraFrameBuffEnable", "Show BUFFS", enablePlayerBuffFiltering)
@@ -4311,8 +4325,11 @@ local function guiFrameAuras()
     -- Personal Bar Debuffs
     local enablePlayerDebuffFiltering = CreateCheckbox("enablePlayerDebuffFiltering", "Enable Debuff Filtering", playerAuraFiltering)
     enablePlayerDebuffFiltering:SetPoint("TOPLEFT", playerBuffFilterMount, "BOTTOMLEFT", -30, 0)
-    enablePlayerDebuffFiltering:HookScript("OnClick", function ()
+    enablePlayerDebuffFiltering:HookScript("OnClick", function (self)
         CheckAndToggleCheckboxes(enablePlayerDebuffFiltering)
+        if not self:GetChecked() then
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        end
     end)
     CreateTooltip(enablePlayerDebuffFiltering, "Enables Debuff Filtering.\nThis boy is a bit too heavy to run for my liking so I've turned it off by default.\nUntil I manage to optimize it use at your own risk.\n(It's probably fine, I'm just too cautious)")
 

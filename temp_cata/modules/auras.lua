@@ -358,7 +358,7 @@ local function ShouldShowBuff(unit, auraData, frameType)
             local filterOnlyMe = BetterBlizzFramesDB["targetBuffFilterOnlyMe"] and isTargetFriendly and (caster == "player" or (caster == "pet" and UnitIsUnit(caster, "pet")))
             if shouldBlacklist then
                 local isInBlacklist, allowMine = isInBlacklist(spellName, spellId)
-                if isInBlacklist and not allowMine then return end
+                if isInBlacklist and not (allowMine and castByPlayer) then return end
             end
             if filterMount then
                 if isMountAura(spellId) then return true end
@@ -379,7 +379,7 @@ local function ShouldShowBuff(unit, auraData, frameType)
             local filterOnlyMe = BetterBlizzFramesDB["targetdeBuffFilterOnlyMe"] and (caster == "player" or (caster == "pet" and UnitIsUnit(caster, "pet")))
             if shouldBlacklist then
                 local isInBlacklist, allowMine = isInBlacklist(spellName, spellId)
-                if isInBlacklist and not allowMine then return end
+                if isInBlacklist and not (allowMine and castByPlayer) then return end
             end
             if not castByPlayer and onlyMine then return end
             if filterWatchlist or filterLessMinite or filterBlizzard or filterOnlyMe or isImportant or isPandemic or isEnlarged or isCompacted then return true, isImportant, isPandemic, isEnlarged, isCompacted, auraColor end
@@ -401,7 +401,7 @@ local function ShouldShowBuff(unit, auraData, frameType)
             local filterOnlyMe = BetterBlizzFramesDB["focusBuffFilterOnlyMe"] and isTargetFriendly and (caster == "player" or (caster == "pet" and UnitIsUnit(caster, "pet")))
             if shouldBlacklist then
                 local isInBlacklist, allowMine = isInBlacklist(spellName, spellId)
-                if isInBlacklist and not allowMine then return end
+                if isInBlacklist and not (allowMine and castByPlayer) then return end
             end
             if filterMount then
                 if isMountAura(spellId) then return true end
@@ -422,7 +422,7 @@ local function ShouldShowBuff(unit, auraData, frameType)
             local filterOnlyMe = BetterBlizzFramesDB["focusdeBuffFilterOnlyMe"] and (caster == "player" or (caster == "pet" and UnitIsUnit(caster, "pet")))
             if shouldBlacklist then
                 local isInBlacklist, allowMine = isInBlacklist(spellName, spellId)
-                if isInBlacklist and not allowMine then return end
+                if isInBlacklist and not (allowMine and castByPlayer) then return end
             end
             if not castByPlayer and onlyMine then return end
             if filterWatchlist or filterLessMinite or filterBlizzard or filterOnlyMe or isImportant or isPandemic or isEnlarged or isCompacted then return true, isImportant, isPandemic, isEnlarged, isCompacted, auraColor end
@@ -442,7 +442,7 @@ local function ShouldShowBuff(unit, auraData, frameType)
                 local filterLessMinite = BetterBlizzFramesDB["PlayerAuraFrameBuffFilterLessMinite"] and (duration < 61 and duration ~= 0 and expirationTime ~= 0)
                 if shouldBlacklist then
                     local isInBlacklist, allowMine = isInBlacklist(spellName, spellId)
-                    if isInBlacklist and not allowMine then return end
+                    if isInBlacklist and not (allowMine and castByPlayer) then return end
                 end
                 if filterMount then
                     if isMountAura(spellId) then return true end
@@ -461,7 +461,7 @@ local function ShouldShowBuff(unit, auraData, frameType)
                 local filterLessMinite = BetterBlizzFramesDB["PlayerAuraFramedeBuffFilterLessMinite"] and (duration < 61 and duration ~= 0 and expirationTime ~= 0)
                 if shouldBlacklist then
                     local isInBlacklist, allowMine = isInBlacklist(spellName, spellId)
-                    if isInBlacklist and not allowMine then return end
+                    if isInBlacklist and not (allowMine and castByPlayer) then return end
                 end
                 if filterWatchlist or filterLessMinite or isImportant then return true, isImportant, isPandemic, isEnlarged, isCompacted, auraColor end
                 if not BetterBlizzFramesDB["PlayerAuraFramedeBuffFilterLessMinite"] and not BetterBlizzFramesDB["PlayerAuraFramedeBuffFilterWatchList"] then
@@ -1240,10 +1240,19 @@ local function AdjustAuras(self, frameType)
 
                             if button == "LeftButton" then
                                 BBF.auraWhitelist(buffFrame.spellId)
-                                print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") was added to |cff00ff00whitelist|r.")
+                                print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") added to |cff00ff00whitelist|r.")
                             elseif button == "RightButton" then
                                 BBF.auraBlacklist(buffFrame.spellId)
-                                print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") was added to |cffff0000blacklist|r.")
+                                print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") added to |cffff0000blacklist|r.")
+                            end
+                        elseif IsControlKeyDown() and IsAltKeyDown() then
+                            local spellName, _, icon = GetSpellInfo(buffFrame.spellId)
+                            local spellId = tostring(buffFrame.spellId)
+                            local iconString = "|T" .. icon .. ":16:16:0:0|t"
+
+                            if button == "RightButton" then
+                                BBF.auraBlacklist(buffFrame.spellId, true)
+                                print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") added to |cffff0000blacklist|r with tag.")
                             end
                         end
                     end)
@@ -1599,10 +1608,19 @@ local function AdjustAuras(self, frameType)
 
                             if button == "LeftButton" then
                                 BBF.auraWhitelist(debuffFrame.spellId)
-                                print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") was added to |cff00ff00whitelist|r.")
+                                print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") added to |cff00ff00whitelist|r.")
                             elseif button == "RightButton" then
                                 BBF.auraBlacklist(debuffFrame.spellId)
-                                print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") was added to |cffff0000blacklist|r.")
+                                print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") added to |cffff0000blacklist|r.")
+                            end
+                        elseif IsControlKeyDown() and IsAltKeyDown() then
+                            local spellName, _, icon = GetSpellInfo(debuffFrame.spellId)
+                            local spellId = tostring(debuffFrame.spellId)
+                            local iconString = "|T" .. icon .. ":16:16:0:0|t"
+
+                            if button == "RightButton" then
+                                BBF.auraBlacklist(debuffFrame.spellId, true)
+                                print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") added to |cffff0000blacklist|r with tag.")
                             end
                         end
                     end)
@@ -2173,14 +2191,23 @@ local function PersonalBuffFrameFilterAndGrid(self)
                                 if IsShiftKeyDown() and IsAltKeyDown() then
                                     local spellName = auraFrame.name
                                     local spellId = tostring(auraFrame.spellId)
-                                    --local iconString = "|T" .. icon .. ":16:16:0:0|t" -- Format the icon for display
+                                    --local iconString = "|T" .. icon .. ":16:16:0:0|t"
     
                                     if button == "LeftButton" then
                                         BBF.auraWhitelist(auraFrame.spellId)
-                                        print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. spellName .. " (" .. spellId .. ") was added to |cff00ff00whitelist|r.")
+                                        print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. spellName .. " (" .. spellId .. ") added to |cff00ff00whitelist|r.")
                                     elseif button == "RightButton" then
                                         BBF.auraBlacklist(auraFrame.spellId)
-                                        print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. spellName .. " (" .. spellId .. ") was added to |cffff0000blacklist|r.")
+                                        print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. spellName .. " (" .. spellId .. ") added to |cffff0000blacklist|r.")
+                                    end
+                                elseif IsControlKeyDown() and IsAltKeyDown() then
+                                    local spellName, _, icon = GetSpellInfo(auraFrame.spellId)
+                                    local spellId = tostring(auraFrame.spellId)
+                                    local iconString = "|T" .. icon .. ":16:16:0:0|t"
+        
+                                    if button == "RightButton" then
+                                        BBF.auraBlacklist(auraFrame.spellId, true)
+                                        print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") added to |cffff0000blacklist|r with tag.")
                                     end
                                 end
                             end)
@@ -2446,14 +2473,23 @@ local function PersonalBuffFrameFilterAndGrid(self)
                             if IsShiftKeyDown() and IsAltKeyDown() then
                                 local spellName, _, icon = GetSpellInfo(auraFrame.spellId)
                                 local spellId = tostring(auraFrame.spellId)
-                                local iconString = "|T" .. icon .. ":16:16:0:0|t" -- Format the icon for display
+                                local iconString = "|T" .. icon .. ":16:16:0:0|t"
 
                                 if button == "LeftButton" then
                                     BBF.auraWhitelist(auraFrame.spellId)
-                                    print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") was added to |cff00ff00whitelist|r.")
+                                    print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") added to |cff00ff00whitelist|r.")
                                 elseif button == "RightButton" then
                                     BBF.auraBlacklist(auraFrame.spellId)
-                                    print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") was added to |cffff0000blacklist|r.")
+                                    print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") added to |cffff0000blacklist|r.")
+                                end
+                            elseif IsControlKeyDown() and IsAltKeyDown() then
+                                local spellName, _, icon = GetSpellInfo(auraFrame.spellId)
+                                local spellId = tostring(auraFrame.spellId)
+                                local iconString = "|T" .. icon .. ":16:16:0:0|t"
+    
+                                if button == "RightButton" then
+                                    BBF.auraBlacklist(auraFrame.spellId, true)
+                                    print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") added to |cffff0000blacklist|r with tag.")
                                 end
                             end
                         end)
@@ -2735,14 +2771,23 @@ local function PersonalDebuffFrameFilterAndGrid(self)
                             if IsShiftKeyDown() and IsAltKeyDown() then
                                 local spellName, _, icon = GetSpellInfo(auraFrame.spellId)
                                 local spellId = tostring(auraFrame.spellId)
-                                local iconString = "|T" .. icon .. ":16:16:0:0|t" -- Format the icon for display
+                                local iconString = "|T" .. icon .. ":16:16:0:0|t"
 
                                 if button == "LeftButton" then
                                     BBF.auraWhitelist(auraFrame.spellId)
-                                    print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") was added to |cff00ff00whitelist|r.")
+                                    print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") added to |cff00ff00whitelist|r.")
                                 elseif button == "RightButton" then
                                     BBF.auraBlacklist(auraFrame.spellId)
-                                    print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") was added to |cffff0000blacklist|r.")
+                                    print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") added to |cffff0000blacklist|r.")
+                                end
+                            elseif IsControlKeyDown() and IsAltKeyDown() then
+                                local spellName, _, icon = GetSpellInfo(auraFrame.spellId)
+                                local spellId = tostring(auraFrame.spellId)
+                                local iconString = "|T" .. icon .. ":16:16:0:0|t"
+
+                                if button == "RightButton" then
+                                    BBF.auraBlacklist(auraFrame.spellId, true)
+                                    print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") added to |cffff0000blacklist|r with tag.")
                                 end
                             end
                         end)

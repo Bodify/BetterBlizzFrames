@@ -1475,7 +1475,7 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
     editBox:SetSize((width and width - 62) or (322 - 62), 19)
     editBox:SetPoint("TOP", scrollFrame, "BOTTOM", -15, -5)
     editBox:SetAutoFocus(false)
-    CreateTooltipTwo(editBox, "Filter auras by spell id and/or spell name", "You can hold Shift+Alt and click auras to add to lists.\nShift+Alt + Left-Click to Whitelist.\nShift+Alt + Right-Click to Blacklist.", nil, "ANCHOR_TOP")
+    CreateTooltipTwo(editBox, "Filter auras by spell id and/or spell name", "You can click auras to add to lists.\n\nShift+Alt + Left-Click to Whitelist.\n\nShift+Alt + Right-Click to Blacklist.\nCtrl+Alt Right-click to Blacklist with \"Show Mine\" tag", nil, "ANCHOR_TOP")
 
     local function updateNamesInListData()
         for _, entry in ipairs(listData) do
@@ -1530,7 +1530,7 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
     end
     contentFrame.refreshList = refreshList
 
-    local function addOrUpdateEntry(inputText)
+    local function addOrUpdateEntry(inputText, addShowMineTag)
         selectedLineIndex = nil
         local name, comment = strsplit("/", inputText, 2)
         name = strtrim(name or "")
@@ -1563,6 +1563,9 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
             else
                 -- Initialize the flags table for the new entry
                 local newEntry = { name = name, id = id, comment = comment, flags = { important = false, pandemic = false } }
+                if addShowMineTag and listName == "auraBlacklist" then
+                    newEntry = { name = name, id = id, comment = comment, flags = { important = false, pandemic = false }, showMine = true }
+                end
                 table.insert(listData, newEntry)
                 createTextLineButton(newEntry, #textLines + 1, extraBoxes)
                 refreshList()
@@ -4016,7 +4019,7 @@ local function guiFrameAuras()
     local whitelist = CreateList(auraBlacklistFrame, "auraBlacklist", BetterBlizzFramesDB.auraBlacklist, BBF.RefreshAllAuraFrames, nil, nil, 265)
 
     local blacklistText = contentFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    blacklistText:SetPoint("BOTTOM", auraBlacklistFrame, "TOP", 10, -5)
+    blacklistText:SetPoint("BOTTOM", auraBlacklistFrame, "TOP", -20, -5)
     blacklistText:SetText("Blacklist")
 
     local blacklist = CreateList(auraWhitelistFrame, "auraWhitelist", BetterBlizzFramesDB.auraWhitelist, BBF.RefreshAllAuraFrames, true, true, 379, true)

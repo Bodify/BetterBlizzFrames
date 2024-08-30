@@ -228,8 +228,8 @@ function BBF.DarkmodeFrames(bypass)
             if child.DecorLeft and child.DecorLeft.GetAtlas then
                 local atlasName = child.DecorLeft:GetAtlas()
                 if atlasName == "dragonriding_vigor_decor" then
-                    applySettings(child.DecorLeft, desaturationValue, druidComboPointActive)
-                    applySettings(child.DecorRight, desaturationValue, druidComboPointActive)
+                    applySettings(child.DecorLeft, desaturationValue, druidComboPointActive, true)
+                    applySettings(child.DecorRight, desaturationValue, druidComboPointActive, true)
                 end
             end
             for _, grandchild in ipairs({child:GetChildren()}) do
@@ -237,7 +237,7 @@ function BBF.DarkmodeFrames(bypass)
                 if grandchild.Frame and grandchild.Frame.GetAtlas then
                     local atlasName = grandchild.Frame:GetAtlas()
                     if atlasName == "dragonriding_vigor_frame" then
-                        applySettings(grandchild.Frame, desaturationValue, druidComboPointActive)
+                        applySettings(grandchild.Frame, desaturationValue, druidComboPointActive, true)
                     end
                 end
             end

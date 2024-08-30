@@ -1,8 +1,8 @@
 -- I did not know what a variable was when I started. I know a little bit more now and I am so sorry.
 
 local addonVersion = "1.00" --too afraid to to touch for now
-local addonUpdates = "1.5.3"
-local sendUpdate = true
+local addonUpdates = "1.5.3b"
+local sendUpdate = false
 BBF.VersionNumber = addonUpdates
 BBF.variablesLoaded = false
 local isAddonLoaded = C_AddOns.IsAddOnLoaded
@@ -405,13 +405,6 @@ local function SendUpdateMessage()
         if not BetterBlizzFramesDB.scStart then
             C_Timer.After(7, function()
                 -- if BetterBlizzFramesDB.castBarInterruptIconEnabled then
-                    if UnitName("player") == "Dirtykitten" then
-                        local realmName = GetRealmName()
-                        if realmName and realmName == "Illidan" then
-                            print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: Hey Sodapoppin. If you need help settings things up or have questions feel free to contact me @bodify on discord.")
-                            StaticPopup_Show("BBF_NEW_VERSION")
-                        end
-                    end
                 -- DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames news:")
                 -- --DEFAULT_CHAT_FRAME:AddMessage("|A:QuestNormal:16:16|a New Stuff:")
                 -- -- DEFAULT_CHAT_FRAME:AddMessage("   - Sort Purgeable Auras setting (Buffs & Debuffs).")
@@ -1286,7 +1279,7 @@ SlashCmdList["BBF"] = function(msg)
                 if spellName then
                     local iconString = "|T" .. icon .. ":16:16:0:0|t" -- Format the icon for display
                     BBF.auraWhitelist(spellId)
-                    print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") was added to |cff00ff00whitelist|r.")
+                    print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") added to |cff00ff00whitelist|r.")
                 else
                     print("Error: Invalid spell ID.")
                 end
@@ -1308,7 +1301,7 @@ SlashCmdList["BBF"] = function(msg)
                 if spellName then
                     local iconString = "|T" .. icon .. ":16:16:0:0|t" -- Format the icon for display
                     BBF.auraBlacklist(spellId)
-                    print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") was added to |cffff0000blacklist|r.")
+                    print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") added to |cffff0000blacklist|r.")
                 else
                     print("Error: Invalid spell ID.")
                 end
@@ -1338,6 +1331,7 @@ First:SetScript("OnEvent", function(_, event, addonName)
             InitializeSavedVariables()
             FetchAndSaveValuesOnFirstLogin()
             TurnTestModesOff()
+            BBF.HookCastbars()
             --TurnOnEnabledFeaturesOnLogin()
 
             if not BetterBlizzFramesDB.auraWhitelistColorsUpdated then
@@ -1377,11 +1371,5 @@ PlayerEnteringWorld:SetScript("OnEvent", function()
     BBF.DarkmodeFrames()
     BBF.ClickthroughFrames()
     BBF.CheckForAuraBorders()
-    -- if not isAddonLoaded("ClassicFrames") and not isAddonLoaded("MyRolePlay") then
-    --     --BBF.HookNameChangeStuff()
-    --     TargetFrame:SetFrameStrata("MEDIUM")
-    --     TargetFrameSpellBar:SetFrameStrata("HIGH")
-    --     FocusFrameSpellBar:SetFrameStrata("HIGH")
-    -- end
 end)
 PlayerEnteringWorld:RegisterEvent("PLAYER_ENTERING_WORLD")

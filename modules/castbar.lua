@@ -5,34 +5,6 @@ local petCastbarCreated = false
 local UnitCastingInfo = UnitCastingInfo
 local UnitChannelInfo = UnitChannelInfo
 
-local function GetPartyMemberFrame(unitId)
-    if CompactPartyFrame:IsShown() then
-        local showSelf = BetterBlizzFramesDB.partyCastbarSelf
-        for i = 1, 5 do
-            local frame = _G["CompactPartyFrameMember"..i]
-            if frame and UnitIsUnit(frame.unit, unitId) then
-                return frame, nil
-            else
-                if showSelf then
-                    if UnitIsUnit(frame.displayedUnit, "player") then
-                        unitId = "player"
-                        return frame, unitId
-                    end
-                end
-            end
-        end
-    else
-        for i = 1, 5 do
-            local frame = PartyFrame and PartyFrame["MemberFrame"..i]
-            if frame and UnitIsUnit(frame.unit, unitId) then
-                return frame, nil
-            end
-        end
-    end
-
-    return nil, nil
-end
-
 local function UpdateCastTimer(self)
     local remainingTime
     if self.casting or self.reverseChanneling then
@@ -95,6 +67,8 @@ function BBF.UpdateCastbars()
                         spellbar.Icon:SetPoint("RIGHT", spellbar, "LEFT", -4 + BetterBlizzFramesDB.partyCastbarIconXPos, -5 + BetterBlizzFramesDB.partyCastbarIconYPos)
                         spellbar.Icon:SetScale(BetterBlizzFramesDB.partyCastBarIconScale)
                         spellbar.Icon:SetAlpha(1)
+                        spellbar.BorderShield:ClearAllPoints()
+                        spellbar.BorderShield:SetPoint("CENTER", spellbar.Icon, "CENTER", 0, 0)
                     end
 
                     local partyFrame = nil
@@ -116,12 +90,12 @@ function BBF.UpdateCastbars()
                         end
 
                         local unitId = partyFrame.displayedUnit or partyFrame.unit
-                        spellbar:SetUnit(unitId, true, true)
 
-                        spellbar:SetFrameStrata("MEDIUM")
-
-                        if unitId == "player" and not BetterBlizzFramesDB.partyCastbarSelf then
+                        if UnitIsUnit(unitId, "player") and not BetterBlizzFramesDB.partyCastbarSelf then
                             spellbar:SetParent(hiddenFrame)
+                        else
+                            spellbar:SetUnit(unitId, true, true)
+                            spellbar:SetFrameStrata("MEDIUM")
                         end
 
                         spellbar:ClearAllPoints()
@@ -425,14 +399,6 @@ end)
 
 ]]
 
-
-local petUpdate = CreateFrame("Frame")
-petUpdate:RegisterEvent("UNIT_PET")
-petUpdate:SetScript("OnEvent", function(self, event, ...)
-    if BetterBlizzFramesDB.petCastbar then
-        BBF.UpdatePetCastbar()
-    end
-end)
 
 
 
@@ -964,5 +930,28 @@ function BBF.HookCastbarsForEvoker()
             end
         end)
         evokerCastbarsHooked = true
+    end
+end
+
+function BBF.HookCastbars()
+    if BetterBlizzFramesDB.quickHideCastbars then
+        TargetFrameSpellBar:HookScript("OnEvent", function(self, event, ...)
+            if event == "UNIT_SPELLCAST_STOP" then
+                self:Hide()
+            end
+        end)
+        FocusFrameSpellBar:HookScript("OnEvent", function(self, event, ...)
+            if event == "UNIT_SPELLCAST_STOP" then
+                self:Hide()
+            end
+        end)
+    end
+
+    if BetterBlizzFramesDB.petCastbar then
+        local petUpdate = CreateFrame("Frame")
+        petUpdate:RegisterEvent("UNIT_PET")
+        petUpdate:SetScript("OnEvent", function(self, event, ...)
+            BBF.UpdatePetCastbar()
+        end)
     end
 end
