@@ -44,7 +44,6 @@ local function addToMasque(frame, masqueGroup)
     end
 end
 
-local smokeBombId = 212182
 local smokeBombCast = 0
 local smokeTracker
 local updateInterval = 0.1
@@ -68,8 +67,8 @@ local function UpdateAuraDuration(self, elapsed)
 end
 
 local function SmokeBombCheck(self, event)
-    local timestamp, subEvent, _, sourceGUID, sourceName, sourceFlags, _, destGUID, destName, destFlags, _, spellID = CombatLogGetCurrentEventInfo()
-    if subEvent == "SPELL_CAST_SUCCESS" and spellID == smokeBombId then
+    local _, subEvent, _, _, _, _, _, _, _, _, _, spellID = CombatLogGetCurrentEventInfo()
+    if subEvent == "SPELL_CAST_SUCCESS" and (spellID == 212182 or spellID == 359053) then
         if smokeTracker then
             smokeTracker:Cancel()
         end
@@ -598,19 +597,19 @@ local function CheckBuffs()
                     aura.PandemicGlow:Hide()
                 end
                 aura.isPandemicActive = false
-            elseif remainingDuration <= 5.1 then
+            elseif remainingDuration <= ((aura.spellId == 980 and IsPlayerSpell(453034) and 10) or (aura.spellId == 316099 and IsPlayerSpell(459376) and 8) or 5.1) then
                 if not aura.PandemicGlow then
                     aura.PandemicGlow = aura:CreateTexture(nil, "OVERLAY");
                     aura.PandemicGlow:SetAtlas("newplayertutorial-drag-slotgreen");
                     aura.PandemicGlow:SetDesaturated(true)
                     aura.PandemicGlow:SetVertexColor(1, 0, 0)
-                    if aura.Cooldown then
-                        aura.PandemicGlow:SetParent(aura.Cooldown)
-                    end
                 end
                 if aura.isEnlarged then
                     aura.PandemicGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -enlargedTextureAdjustment, enlargedTextureAdjustment)
                     aura.PandemicGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", enlargedTextureAdjustment, -enlargedTextureAdjustment)
+                elseif aura.isCompacted then
+                    aura.PandemicGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -compactedTextureAdjustment, compactedTextureAdjustment)
+                    aura.PandemicGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", compactedTextureAdjustment, -compactedTextureAdjustment)
                 else
                     aura.PandemicGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -10, 10)
                     aura.PandemicGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", 10, -10)
@@ -618,12 +617,18 @@ local function CheckBuffs()
 
                 aura.isPandemicActive = true
                 aura.PandemicGlow:Show();
+                if aura.border then
+                    aura.border:SetAlpha(0)
+                end
                 if aura.Border then
                     aura.Border:SetAlpha(0)
                 end
             else
                 if aura.PandemicGlow then
                     aura.PandemicGlow:Hide();
+                end
+                if aura.Border and not aura.isImportant and not aura.isPurgeGlow then
+                    aura.Border:SetAlpha(1)
                 end
                 aura.isPandemicActive = false
             end

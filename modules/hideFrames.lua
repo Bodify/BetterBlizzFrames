@@ -25,6 +25,7 @@ end
 function BBF.HideFrames()
     if BetterBlizzFramesDB.hasCheckedUi then
         local playerClass, englishClass = UnitClass("player")
+        local classicFrames = C_AddOns.IsAddOnLoaded("ClassicFrames")
         --Hide group indicator on player unitframe
         local groupIndicatorAlpha = BetterBlizzFramesDB.hideGroupIndicator and 0 or 1
         PlayerFrameGroupIndicatorMiddle:SetAlpha(groupIndicatorAlpha)
@@ -96,19 +97,49 @@ function BBF.HideFrames()
         -- Hide reputation color on target frame (color tint behind name)
         if BetterBlizzFramesDB.hideTargetReputationColor then
             TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:Hide()
+            if classicFrames then
+                if not TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor.bbfHooked then
+                    hooksecurefunc(TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor, "Show", function(self)
+                        self:SetVertexColor(0,0,0,0.45)
+                    end)
+                    TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor.bbfHooked = true
+                end
+            end
         else
             TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:Show()
         end
 
         if BetterBlizzFramesDB.hideFocusReputationColor then
             FocusFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:Hide()
+            if classicFrames then
+                if not FocusFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor.bbfHooked then
+                    hooksecurefunc(FocusFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor, "Show", function(self)
+                        self:SetVertexColor(0,0,0,0.45)
+                    end)
+                    FocusFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor.bbfHooked = true
+                end
+            end
         else
             FocusFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:Show()
+        end
+
+        if BetterBlizzFramesDB.hideThreatOnFrame then
+            TargetFrame.TargetFrameContent.TargetFrameContentContextual.NumericalThreat:SetAlpha(0)
+            FocusFrame.TargetFrameContent.TargetFrameContentContextual.NumericalThreat:SetAlpha(0)
         end
 
         -- Hide rest loop animation
         if BetterBlizzFramesDB.hidePlayerRestAnimation then
             PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.PlayerRestLoop:SetParent(hiddenFrame)
+            if classicFrames then
+                --PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.PlayerRestIcon:SetParent(hiddenFrame)
+                hooksecurefunc(PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.PlayerRestIcon, "Show", function(self)
+                    self:Hide()
+                end)
+                hooksecurefunc(PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.PlayerRestGlow, "Show", function(self)
+                    self:Hide()
+                end)
+            end
         else
             PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.PlayerRestLoop:SetParent(PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual)
         end
@@ -116,6 +147,23 @@ function BBF.HideFrames()
         -- Hide rested glow on unit frame
         if BetterBlizzFramesDB.hidePlayerRestGlow then
             PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.StatusTexture:SetParent(hiddenFrame)
+            if classicFrames and not PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.bbfCf then
+                C_Timer.After(1, function()
+                    for i = 1, PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual:GetNumRegions() do
+                        local region = select(i, PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual:GetRegions())
+                        if region:IsObjectType("Texture") and region:GetTexture() == 130935 then
+                            region:SetParent(hiddenFrame)
+                        end
+                    end
+                end)
+                for i = 1, PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual:GetNumRegions() do
+                    local region = select(i, PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual:GetRegions())
+                    if region:IsObjectType("Texture") and region:GetTexture() == 130935 then
+                        region:SetParent(hiddenFrame)
+                    end
+                end
+                PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.bbfCf = true
+            end
         else
             PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.StatusTexture:SetParent(PlayerFrame.PlayerFrameContent.PlayerFrameContentMain)
         end

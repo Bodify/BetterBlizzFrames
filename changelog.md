@@ -1,3 +1,12 @@
+# BetterBlizzFrames 1.5.3c
+## The War Within
+### Tweak:
+- Adapt "Hide reputation color" and "Hide rest glow" settings to work with ClassicFrames addon.
+- Pandemic timer for Agony and Unstable Affliction is now 10s and 8s instead of the regular 5s if the talents are learned.
+### Bugfix:
+- Added a missing second Smoke Bomb spell id for displaying Smoke Bomb CD.
+- Pandemic Glow should now properly hide darkmode border during its activation
+
 # BetterBlizzFrames 1.5.3b
 ## The War Within & Cataclysm
 ### New stuff:

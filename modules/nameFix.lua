@@ -856,7 +856,7 @@ local function CenteredPlayerName()
             frame.cleanName:SetText(GetUnitName("player", true))
             --frame.cleanName:ClearAllPoints()
             if playerFrameOCD then
-                frame.cleanName:SetPoint("TOP", frame.HealthBarsContainer, "TOP", 0, 13.5)
+                frame.cleanName:SetPoint("TOP", frame.HealthBarsContainer, "TOP", 0, 14.5)
             else
                 frame.cleanName:SetPoint("TOP", frame.HealthBarsContainer, "TOP", 0, 14.5)
             end
