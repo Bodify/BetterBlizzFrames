@@ -77,14 +77,16 @@ function BBF.DarkModeUnitframeBorders()
                         if frame.Border then
                             frame.border:Hide()
                         else
-                            frame.border:Show()
+                            if not frame.Stealable then
+                                frame.border:Show()
+                            end
                         end
                     end
                 end
             end
 
-            hooksecurefunc(TargetFrame, "OnEvent", styleAuras)
-            hooksecurefunc(FocusFrame, "OnEvent", styleAuras)
+            hooksecurefunc(TargetFrame, "UpdateAuras", styleAuras)
+            hooksecurefunc(FocusFrame, "UpdateAuras", styleAuras)
 
             hookedAuras = true
         end

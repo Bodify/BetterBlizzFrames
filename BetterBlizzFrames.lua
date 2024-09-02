@@ -1350,6 +1350,47 @@ First:SetScript("OnEvent", function(_, event, addonName)
                 end
             end
 
+            if not BetterBlizzFramesDB.optimizedAuraLists then
+                BetterBlizzFramesDB.optimizedAuraLists = true
+
+                local optimizedWhitelist = {}
+                for _, aura in ipairs(BetterBlizzFramesDB["auraWhitelist"]) do
+                    local key = aura["id"] or string.lower(aura["name"])
+                    local flags = aura["flags"] or {}
+                    local entryColors = aura["entryColors"] or {}
+                    local textColors = entryColors["text"] or {}
+
+                    optimizedWhitelist[key] = {
+                        name = aura["name"] or nil,
+                        id = aura["id"] or nil,
+                        important = flags["important"] or nil,
+                        pandemic = flags["pandemic"] or nil,
+                        enlarged = flags["enlarged"] or nil,
+                        compacted = flags["compacted"] or nil,
+                        color = {textColors["r"] or 0, textColors["g"] or 1, textColors["b"] or 0, textColors["a"] or 1}
+                    }
+                end
+                BetterBlizzFramesDB.auraWhitelist = optimizedWhitelist
+
+
+
+                local optimizedBlacklist = {}
+                for _, aura in ipairs(BetterBlizzFramesDB["auraBlacklist"]) do
+                    local key = aura["id"] or string.lower(aura["name"])
+
+                    optimizedBlacklist[key] = {
+                        name = aura["name"] or nil,
+                        id = aura["id"] or nil,
+                        showMine = aura["showMine"] or nil,
+                    }
+                end
+
+                BetterBlizzFramesDB.auraBlacklist = optimizedBlacklist
+
+
+
+            end
+
             BBF.InitializeOptions()
         end
     end

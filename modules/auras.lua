@@ -245,69 +245,28 @@ function BBF.UpdateUserAuraSettings()
     UpdateMore()
 end
 
-local function isInWhitelist(spellName, spellId)
-    for _, entry in pairs(BetterBlizzFramesDB["auraWhitelist"]) do
-        if (entry.name and spellName and string.lower(entry.name) == string.lower(spellName)) or entry.id == spellId then
-            return true
-        end
-    end
-    return false
-end
-
 local function isInBlacklist(spellName, spellId)
-    if spellName and BetterBlizzFramesDB["auraBlacklist"][spellName] then
-        return true
-    elseif spellId and (BetterBlizzFramesDB["auraBlacklist"][spellId] or BetterBlizzFramesDB["auraBlacklist"][tostring(spellId)]) then
-        return true
+    local db = BetterBlizzFramesDB
+    local entry = db["auraBlacklist"][spellId] or db["auraBlacklist"][string.lower(spellName)]
+    if entry then
+        local showMine = entry.showMine
+        return true, showMine
     end
-    return false
-end
-
-local function isInBlacklist(spellName, spellId)
-    for _, entry in pairs(BetterBlizzFramesDB["auraBlacklist"]) do
-        if entry.id == spellId or (entry.name and not entry.id and spellName and string.lower(entry.name) == string.lower(spellName)) then
-            local showMine = entry.showMine
-            return true, showMine
-        end
-    end
-    return false, false
 end
 
 local function GetAuraDetails(spellName, spellId)
-    local entry = nil
-
-    if spellName and BetterBlizzFramesDB["auraWhitelist2"][spellName] then
-        entry = BetterBlizzFramesDB["auraWhitelist2"][spellName]
-    elseif spellId then
-        entry = BetterBlizzFramesDB["auraWhitelist2"][spellId]
-    end
+    local db = BetterBlizzFramesDB
+    local entry = db["auraWhitelist"][spellId or (string.lower(spellName))] or db["auraWhitelist"][string.lower(spellName)]
 
     if entry then
-        local isImportant = entry.important or false
-        local isPandemic = entry.pandemic or false
-        local isEnlarged = entry.enlarged or false
-        local isCompacted = entry.compacted or false
-        local auraColor = entry.auraColor or nil
-        return true, isImportant, isPandemic, isEnlarged, isCompacted, auraColor
-    else
-        return false, false, false, false, false, nil
+        local isImportant = entry.important
+        local isPandemic = entry.pandemic
+        local isEnlarged = entry.enlarged
+        local isCompacted = entry.compacted
+        local auraColor = entry.color
+        local onlyMine = entry.onlyMine
+        return true, isImportant, isPandemic, isEnlarged, isCompacted, auraColor, onlyMine
     end
-end
-
-local function GetAuraDetails(spellName, spellId)
-    for _, entry in pairs(BetterBlizzFramesDB["auraWhitelist"]) do
-        if entry.id == spellId or (entry.name and not entry.id and spellName and string.lower(entry.name) == string.lower(spellName)) then
-            local isImportant = entry.flags and entry.flags.important or false
-            local isPandemic = entry.flags and entry.flags.pandemic or false
-            local isEnlarged = entry.flags and entry.flags.enlarged or false
-            local isCompacted = entry.flags and entry.flags.compacted or false
-            local auraColor = entry.entryColors and entry.entryColors.text or nil
-            local onlyMine = entry.flags and entry.flags.onlyMine or false
-
-            return true, isImportant, isPandemic, isEnlarged, isCompacted, auraColor, onlyMine
-        end
-    end
-    return false, false, false, false, nil
 end
 
 local function ShouldShowBuff(unit, auraData, frameType)
@@ -318,19 +277,20 @@ local function ShouldShowBuff(unit, auraData, frameType)
     local caster = auraData.sourceUnit
     local isPurgeable = auraData.isStealable
     local castByPlayer = (caster == "player" or caster == "pet")
+    local db = BetterBlizzFramesDB
 
     -- TargetFrame
     if frameType == "target" then
         -- Buffs
-        if BetterBlizzFramesDB["targetBuffEnable"] and auraData.isHelpful then
+        if db["targetBuffEnable"] and auraData.isHelpful then
             local isTargetFriendly = UnitIsFriend("target", "player")
             local isInWhitelist, isImportant, isPandemic, isEnlarged, isCompacted, auraColor, onlyMine = GetAuraDetails(spellName, spellId)
-            local shouldBlacklist = BetterBlizzFramesDB["targetBuffFilterBlacklist"]
-            local filterMount = BetterBlizzFramesDB["targetBuffFilterMount"]
-            local filterWatchlist = BetterBlizzFramesDB["targetBuffFilterWatchList"] and isInWhitelist
-            local filterLessMinite = BetterBlizzFramesDB["targetBuffFilterLessMinite"] and (duration < 61 and duration ~= 0 and expirationTime ~= 0)
-            local filterPurgeable = BetterBlizzFramesDB["targetBuffFilterPurgeable"] and isPurgeable
-            local filterOnlyMe = BetterBlizzFramesDB["targetBuffFilterOnlyMe"] and isTargetFriendly and (caster == "player" or (caster == "pet" and UnitIsUnit(caster, "pet")))
+            local shouldBlacklist = db["targetBuffFilterBlacklist"]
+            local filterMount = db["targetBuffFilterMount"]
+            local filterWatchlist = db["targetBuffFilterWatchList"] and isInWhitelist
+            local filterLessMinite = db["targetBuffFilterLessMinite"] and (duration < 61 and duration ~= 0 and expirationTime ~= 0)
+            local filterPurgeable = db["targetBuffFilterPurgeable"] and isPurgeable
+            local filterOnlyMe = db["targetBuffFilterOnlyMe"] and isTargetFriendly and (caster == "player" or (caster == "pet" and UnitIsUnit(caster, "pet")))
             if shouldBlacklist then
                 local isInBlacklist, allowMine = isInBlacklist(spellName, spellId)
                 if isInBlacklist and not (allowMine and castByPlayer) then return end
@@ -339,41 +299,41 @@ local function ShouldShowBuff(unit, auraData, frameType)
                 if isMountAura(spellId) then return true end
             end
             if not castByPlayer and onlyMine then return end
-            if filterWatchlist or filterLessMinite or filterPurgeable or ((filterOnlyMe and filterLessMinite) or (filterOnlyMe and not BetterBlizzFramesDB["targetBuffFilterLessMinite"])) or isImportant or isPandemic or isEnlarged or isCompacted then return true, isImportant, isPandemic, isEnlarged, isCompacted, auraColor end
-            if not BetterBlizzFramesDB["targetBuffFilterLessMinite"] and not BetterBlizzFramesDB["targetBuffFilterWatchList"] and not BetterBlizzFramesDB["targetBuffFilterPurgeable"] and not (BetterBlizzFramesDB["targetBuffFilterOnlyMe"] and isTargetFriendly) then
+            if filterWatchlist or filterLessMinite or filterPurgeable or ((filterOnlyMe and filterLessMinite) or (filterOnlyMe and not db["targetBuffFilterLessMinite"])) or isImportant or isPandemic or isEnlarged or isCompacted then return true, isImportant, isPandemic, isEnlarged, isCompacted, auraColor end
+            if not db["targetBuffFilterLessMinite"] and not db["targetBuffFilterWatchList"] and not db["targetBuffFilterPurgeable"] and not (db["targetBuffFilterOnlyMe"] and isTargetFriendly) then
                 return true
             end
         end
         -- Debuffs
-        if BetterBlizzFramesDB["targetdeBuffEnable"] and auraData.isHarmful then
+        if db["targetdeBuffEnable"] and auraData.isHarmful then
             local isInWhitelist, isImportant, isPandemic, isEnlarged, isCompacted, auraColor, onlyMine = GetAuraDetails(spellName, spellId)
-            local shouldBlacklist = BetterBlizzFramesDB["targetdeBuffFilterBlacklist"]
-            local filterWatchlist = BetterBlizzFramesDB["targetdeBuffFilterWatchList"] and isInWhitelist
-            local filterLessMinite = BetterBlizzFramesDB["targetdeBuffFilterLessMinite"] and (duration < 61 and duration ~= 0 and expirationTime ~= 0)
-            local filterBlizzard = BetterBlizzFramesDB["targetdeBuffFilterBlizzard"] and BlizzardShouldShowDebuffs
-            local filterOnlyMe = BetterBlizzFramesDB["targetdeBuffFilterOnlyMe"] and (caster == "player" or (caster == "pet" and UnitIsUnit(caster, "pet")))
+            local shouldBlacklist = db["targetdeBuffFilterBlacklist"]
+            local filterWatchlist = db["targetdeBuffFilterWatchList"] and isInWhitelist
+            local filterLessMinite = db["targetdeBuffFilterLessMinite"] and (duration < 61 and duration ~= 0 and expirationTime ~= 0)
+            local filterBlizzard = db["targetdeBuffFilterBlizzard"] and BlizzardShouldShowDebuffs
+            local filterOnlyMe = db["targetdeBuffFilterOnlyMe"] and (caster == "player" or (caster == "pet" and UnitIsUnit(caster, "pet")))
             if shouldBlacklist then
                 local isInBlacklist, allowMine = isInBlacklist(spellName, spellId)
                 if isInBlacklist and not (allowMine and castByPlayer) then return end
             end
             if not castByPlayer and onlyMine then return end
             if filterWatchlist or filterLessMinite or filterBlizzard or filterOnlyMe or isImportant or isPandemic or isEnlarged or isCompacted then return true, isImportant, isPandemic, isEnlarged, isCompacted, auraColor end
-            if not BetterBlizzFramesDB["targetdeBuffFilterLessMinite"] and not BetterBlizzFramesDB["targetdeBuffFilterWatchList"] and not BetterBlizzFramesDB["targetdeBuffFilterBlizzard"] and not BetterBlizzFramesDB["targetdeBuffFilterOnlyMe"] then
+            if not db["targetdeBuffFilterLessMinite"] and not db["targetdeBuffFilterWatchList"] and not db["targetdeBuffFilterBlizzard"] and not db["targetdeBuffFilterOnlyMe"] then
                 return true
             end
         end
     -- FocusFrame
     elseif frameType == "focus" then
         -- Buffs
-        if BetterBlizzFramesDB["focusBuffEnable"] and auraData.isHelpful then
+        if db["focusBuffEnable"] and auraData.isHelpful then
             local isInWhitelist, isImportant, isPandemic, isEnlarged, isCompacted, auraColor, onlyMine = GetAuraDetails(spellName, spellId)
-            local shouldBlacklist = BetterBlizzFramesDB["focusBuffFilterBlacklist"]
+            local shouldBlacklist = db["focusBuffFilterBlacklist"]
             local isTargetFriendly = UnitIsFriend("focus", "player")
-            local filterMount = BetterBlizzFramesDB["focusBuffFilterMount"]
-            local filterWatchlist = BetterBlizzFramesDB["focusBuffFilterWatchList"] and isInWhitelist
-            local filterLessMinite = BetterBlizzFramesDB["focusBuffFilterLessMinite"] and (duration < 61 and duration ~= 0 and expirationTime ~= 0)
-            local filterPurgeable = BetterBlizzFramesDB["focusBuffFilterPurgeable"] and isPurgeable
-            local filterOnlyMe = BetterBlizzFramesDB["focusBuffFilterOnlyMe"] and isTargetFriendly and (caster == "player" or (caster == "pet" and UnitIsUnit(caster, "pet")))
+            local filterMount = db["focusBuffFilterMount"]
+            local filterWatchlist = db["focusBuffFilterWatchList"] and isInWhitelist
+            local filterLessMinite = db["focusBuffFilterLessMinite"] and (duration < 61 and duration ~= 0 and expirationTime ~= 0)
+            local filterPurgeable = db["focusBuffFilterPurgeable"] and isPurgeable
+            local filterOnlyMe = db["focusBuffFilterOnlyMe"] and isTargetFriendly and (caster == "player" or (caster == "pet" and UnitIsUnit(caster, "pet")))
             if shouldBlacklist then
                 local isInBlacklist, allowMine = isInBlacklist(spellName, spellId)
                 if isInBlacklist and not (allowMine and castByPlayer) then return end
@@ -382,26 +342,26 @@ local function ShouldShowBuff(unit, auraData, frameType)
                 if isMountAura(spellId) then return true end
             end
             if not castByPlayer and onlyMine then return end
-            if filterWatchlist or filterLessMinite or filterPurgeable or ((filterOnlyMe and filterLessMinite) or (filterOnlyMe and not BetterBlizzFramesDB["focusBuffFilterLessMinite"])) or isImportant or isPandemic or isEnlarged or isCompacted then return true, isImportant, isPandemic, isEnlarged, isCompacted, auraColor end
-            if not BetterBlizzFramesDB["focusBuffFilterLessMinite"] and not BetterBlizzFramesDB["focusBuffFilterWatchList"] and not BetterBlizzFramesDB["focusBuffFilterPurgeable"] and not BetterBlizzFramesDB["focusBuffFilterOnlyMe"] then
+            if filterWatchlist or filterLessMinite or filterPurgeable or ((filterOnlyMe and filterLessMinite) or (filterOnlyMe and not db["focusBuffFilterLessMinite"])) or isImportant or isPandemic or isEnlarged or isCompacted then return true, isImportant, isPandemic, isEnlarged, isCompacted, auraColor end
+            if not db["focusBuffFilterLessMinite"] and not db["focusBuffFilterWatchList"] and not db["focusBuffFilterPurgeable"] and not db["focusBuffFilterOnlyMe"] then
                 return true
             end
         end
         -- Debuffs
-        if BetterBlizzFramesDB["focusdeBuffEnable"] and auraData.isHarmful then
+        if db["focusdeBuffEnable"] and auraData.isHarmful then
             local isInWhitelist, isImportant, isPandemic, isEnlarged, isCompacted, auraColor, onlyMine = GetAuraDetails(spellName, spellId)
-            local filterWatchlist = BetterBlizzFramesDB["focusdeBuffFilterWatchList"] and isInWhitelist
-            local shouldBlacklist = BetterBlizzFramesDB["focusdeBuffFilterBlacklist"]
-            local filterLessMinite = BetterBlizzFramesDB["focusdeBuffFilterLessMinite"] and (duration < 61 and duration ~= 0 and expirationTime ~= 0)
-            local filterBlizzard = BetterBlizzFramesDB["focusdeBuffFilterBlizzard"] and BlizzardShouldShowDebuffs
-            local filterOnlyMe = BetterBlizzFramesDB["focusdeBuffFilterOnlyMe"] and (caster == "player" or (caster == "pet" and UnitIsUnit(caster, "pet")))
+            local filterWatchlist = db["focusdeBuffFilterWatchList"] and isInWhitelist
+            local shouldBlacklist = db["focusdeBuffFilterBlacklist"]
+            local filterLessMinite = db["focusdeBuffFilterLessMinite"] and (duration < 61 and duration ~= 0 and expirationTime ~= 0)
+            local filterBlizzard = db["focusdeBuffFilterBlizzard"] and BlizzardShouldShowDebuffs
+            local filterOnlyMe = db["focusdeBuffFilterOnlyMe"] and (caster == "player" or (caster == "pet" and UnitIsUnit(caster, "pet")))
             if shouldBlacklist then
                 local isInBlacklist, allowMine = isInBlacklist(spellName, spellId)
                 if isInBlacklist and not (allowMine and castByPlayer) then return end
             end
             if not castByPlayer and onlyMine then return end
             if filterWatchlist or filterLessMinite or filterBlizzard or filterOnlyMe or isImportant or isPandemic or isEnlarged or isCompacted then return true, isImportant, isPandemic, isEnlarged, isCompacted, auraColor end
-            if not BetterBlizzFramesDB["focusdeBuffFilterLessMinite"] and not BetterBlizzFramesDB["focusdeBuffFilterWatchList"] and not BetterBlizzFramesDB["focusdeBuffFilterBlizzard"] and not BetterBlizzFramesDB["focusdeBuffFilterOnlyMe"] then
+            if not db["focusdeBuffFilterLessMinite"] and not db["focusdeBuffFilterWatchList"] and not db["focusdeBuffFilterBlizzard"] and not db["focusdeBuffFilterOnlyMe"] then
                 return true
             end
         end
@@ -409,12 +369,12 @@ local function ShouldShowBuff(unit, auraData, frameType)
     else
         if frameType == "playerBuffFrame" then
             -- Buffs
-            if BetterBlizzFramesDB["PlayerAuraFrameBuffEnable"] and (auraData.auraType == "Buff" or auraData.auraType == "TempEnchant") then
+            if db["PlayerAuraFrameBuffEnable"] and (auraData.auraType == "Buff" or auraData.auraType == "TempEnchant") then
                 local isInWhitelist, isImportant, isPandemic, isEnlarged, isCompacted, auraColor, onlyMine = GetAuraDetails(spellName, spellId)
-                local shouldBlacklist = BetterBlizzFramesDB["playerBuffFilterBlacklist"]
-                local filterMount = BetterBlizzFramesDB["playerBuffFilterMount"]
-                local filterWatchlist = BetterBlizzFramesDB["PlayerAuraFrameBuffFilterWatchList"] and isInWhitelist
-                local filterLessMinite = BetterBlizzFramesDB["PlayerAuraFrameBuffFilterLessMinite"] and (duration < 61 and duration ~= 0 and expirationTime ~= 0)
+                local shouldBlacklist = db["playerBuffFilterBlacklist"]
+                local filterMount = db["playerBuffFilterMount"]
+                local filterWatchlist = db["PlayerAuraFrameBuffFilterWatchList"] and isInWhitelist
+                local filterLessMinite = db["PlayerAuraFrameBuffFilterLessMinite"] and (duration < 61 and duration ~= 0 and expirationTime ~= 0)
                 if shouldBlacklist then
                     local isInBlacklist, allowMine = isInBlacklist(spellName, spellId)
                     if isInBlacklist and not (allowMine and castByPlayer) then return end
@@ -423,23 +383,23 @@ local function ShouldShowBuff(unit, auraData, frameType)
                     if isMountAura(spellId) then return true end
                 end
                 if filterWatchlist or filterLessMinite or isImportant then return true, isImportant, isPandemic, isEnlarged, isCompacted, auraColor end
-                if not BetterBlizzFramesDB["PlayerAuraFrameBuffFilterLessMinite"] and not BetterBlizzFramesDB["PlayerAuraFrameBuffFilterWatchList"] then
+                if not db["PlayerAuraFrameBuffFilterLessMinite"] and not db["PlayerAuraFrameBuffFilterWatchList"] then
                     return true
                 end
             end
         else
             -- Debuffs
-            if BetterBlizzFramesDB["PlayerAuraFramedeBuffEnable"] and auraData.auraType == "Debuff" then
+            if db["PlayerAuraFramedeBuffEnable"] and auraData.auraType == "Debuff" then
                 local isInWhitelist, isImportant, isPandemic, isEnlarged, isCompacted, auraColor, onlyMine = GetAuraDetails(spellName, spellId)
-                local shouldBlacklist = BetterBlizzFramesDB["playerdeBuffFilterBlacklist"]
-                local filterWatchlist = BetterBlizzFramesDB["PlayerAuraFramedeBuffFilterWatchList"] and isInWhitelist
-                local filterLessMinite = BetterBlizzFramesDB["PlayerAuraFramedeBuffFilterLessMinite"] and (duration < 61 and duration ~= 0 and expirationTime ~= 0)
+                local shouldBlacklist = db["playerdeBuffFilterBlacklist"]
+                local filterWatchlist = db["PlayerAuraFramedeBuffFilterWatchList"] and isInWhitelist
+                local filterLessMinite = db["PlayerAuraFramedeBuffFilterLessMinite"] and (duration < 61 and duration ~= 0 and expirationTime ~= 0)
                 if shouldBlacklist then
                     local isInBlacklist, allowMine = isInBlacklist(spellName, spellId)
                     if isInBlacklist and not (allowMine and castByPlayer) then return end
                 end
                 if filterWatchlist or filterLessMinite or isImportant then return true, isImportant, isPandemic, isEnlarged, isCompacted, auraColor end
-                if not BetterBlizzFramesDB["PlayerAuraFramedeBuffFilterLessMinite"] and not BetterBlizzFramesDB["PlayerAuraFramedeBuffFilterWatchList"] then
+                if not db["PlayerAuraFramedeBuffFilterLessMinite"] and not db["PlayerAuraFramedeBuffFilterWatchList"] then
                     return true
                 end
             end
@@ -1133,7 +1093,7 @@ local function AdjustAuras(self, frameType)
                         aura.ImportantGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", 10, -10)
                     end
                     if auraColor then
-                        aura.ImportantGlow:SetVertexColor(auraColor.r, auraColor.g, auraColor.b, auraColor.a)
+                        aura.ImportantGlow:SetVertexColor(auraColor[1], auraColor[2], auraColor[3], auraColor[4])
                     else
                         aura.ImportantGlow:SetVertexColor(0, 1, 0)
                     end
@@ -1814,7 +1774,7 @@ local function PersonalBuffFrameFilterAndGrid(self)
                             auraFrame.ImportantGlow:SetDesaturated(true)
                         end
                         if auraColor then
-                            auraFrame.ImportantGlow:SetVertexColor(auraColor.r, auraColor.g, auraColor.b, auraColor.a)
+                            auraFrame.ImportantGlow:SetVertexColor(auraColor[1], auraColor[2], auraColor[3], auraColor[4])
                         else
                             auraFrame.ImportantGlow:SetVertexColor(0, 1, 0)
                         end
@@ -2139,7 +2099,7 @@ local function PersonalDebuffFrameFilterAndGrid(self)
                             auraFrame.ImportantGlow:SetDesaturated(true)
                         end
                         if auraColor then
-                            auraFrame.ImportantGlow:SetVertexColor(auraColor.r, auraColor.g, auraColor.b, auraColor.a)
+                            auraFrame.ImportantGlow:SetVertexColor(auraColor[1], auraColor[2], auraColor[3], auraColor[4])
                         else
                             auraFrame.ImportantGlow:SetVertexColor(0, 1, 0)
                         end

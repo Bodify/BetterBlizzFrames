@@ -245,37 +245,41 @@ end
 
 
 
-local function isValidUnit(unit)
-    return unit and (unit == "player" or unit == "target" or unit == "focus")
+local unitFrameMap = {
+    player = PlayerFrame,
+    target = TargetFrame,
+    focus = FocusFrame
+}
+
+local validUnits = {
+    player = true,
+    target = true,
+    focus = true
+}
+
+local function updateIndicators(frame, unit)
+    BBF.CombatIndicator(frame, unit)
+    BBF.RacialIndicator(frame, unit)
 end
 
--- Event Listener for Combat Indicator
-local combatIndicatorFrame = CreateFrame("Frame")
-combatIndicatorFrame:SetScript("OnEvent", function(self, event, unit)
+local function UpdateCombatIndicator(self, event, unit)
     if event == "UNIT_FLAGS" then
-        if isValidUnit(unit) then
-            if UnitIsUnit(unit, "target") then
-                BBF.CombatIndicator(TargetFrame, "target")
-            end
-            if UnitIsUnit(unit, "focus") then
-                BBF.CombatIndicator(FocusFrame, "focus")
-            end
-            if UnitIsUnit(unit, "player") then
-                BBF.CombatIndicator(PlayerFrame, "player")
+        if validUnits[unit] then
+            local frame = unitFrameMap[unit]
+            if frame then
+                updateIndicators(frame, unit)
             end
         end
+    else
+        for unit, frame in pairs(unitFrameMap) do
+            updateIndicators(frame, unit)
+        end
     end
+end
 
-    if event == "PLAYER_TARGET_CHANGED" or event == "PLAYER_FOCUS_CHANGED" then
-        BBF.RacialIndicator(TargetFrame, "target")
-        BBF.RacialIndicator(FocusFrame, "focus")
-        BBF.CombatIndicator(TargetFrame, "target")
-        BBF.CombatIndicator(FocusFrame, "focus")
-        BBF.CombatIndicator(PlayerFrame, "player")
-    end
-end)
-combatIndicatorFrame:RegisterEvent("UNIT_FLAGS")
---combatIndicatorFrame:RegisterEvent("UNIT_COMBAT")
+local combatIndicatorFrame = CreateFrame("Frame")
+combatIndicatorFrame:SetScript("OnEvent", UpdateCombatIndicator)
+combatIndicatorFrame:RegisterUnitEvent("UNIT_FLAGS", "player", "target", "focus")
 combatIndicatorFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
 combatIndicatorFrame:RegisterEvent("PLAYER_FOCUS_CHANGED")
 combatIndicatorFrame:RegisterEvent("PLAYER_ENTERING_WORLD")

@@ -188,6 +188,7 @@ function BBF.HideFrames()
 
         -- Hide Player level text
         if BetterBlizzFramesDB.hideLevelText then
+            BBF.hideLevelText = true
             if BetterBlizzFramesDB.hideLevelTextAlways then
                 PlayerLevelText:SetParent(hiddenFrame)
                 TargetFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetAlpha(0)
@@ -205,7 +206,8 @@ function BBF.HideFrames()
                     FocusFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetAlpha(0)
                 end
             end
-        else
+        elseif BBF.hideLevelText then
+            BBF.hideLevelText = nil
             PlayerLevelText:SetParent(PlayerFrame.PlayerFrameContent.PlayerFrameContentMain)
             --TargetFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetParent(TargetFrame.TargetFrameContent.TargetFrameContentMain)
             --FocusFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetParent(FocusFrame.TargetFrameContent.TargetFrameContentMain)
@@ -215,17 +217,21 @@ function BBF.HideFrames()
 
         -- Hide "Party" text above party raid frames
         if BetterBlizzFramesDB.hidePartyFrameTitle then
+            BBF.hidePartyFrameTitle = true
             CompactPartyFrameTitle:Hide()
-        else
+        elseif BBF.hidePartyFrameTitle then
+            BBF.hidePartyFrameTitle = nil
             CompactPartyFrameTitle:Show()
         end
 
         -- Hide PvP Icon
         if BetterBlizzFramesDB.hidePvpIcon then
+            BBF.hidePvpIcon = true
             TargetFrame.TargetFrameContent.TargetFrameContentContextual.PvpIcon:SetParent(hiddenFrame)
             PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.PVPIcon:SetParent(hiddenFrame)
             FocusFrame.TargetFrameContent.TargetFrameContentContextual.PvpIcon:SetParent(hiddenFrame)
-        else
+        elseif BBF.hidePvpIcon then
+            BBF.hidePvpIcon = nil
             TargetFrame.TargetFrameContent.TargetFrameContentContextual.PvpIcon:SetParent(TargetFrame.TargetFrameContent.TargetFrameContentContextual)
             PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.PVPIcon:SetParent(PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual)
             FocusFrame.TargetFrameContent.TargetFrameContentContextual.PvpIcon:SetParent(FocusFrame.TargetFrameContent.TargetFrameContentContextual)
@@ -233,16 +239,20 @@ function BBF.HideFrames()
 
         -- Hide role icons
         if BetterBlizzFramesDB.hidePlayerRoleIcon then
+            BBF.hidePlayerRoleIcon = true
             --PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.RoleIcon:SetParent(hiddenFrame)
             PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.RoleIcon:SetAlpha(0)
-        else
+        elseif BBF.hidePlayerRoleIcon then
+            BBF.hidePlayerRoleIcon = nil
             --PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.RoleIcon:SetParent(PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual)
             PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.RoleIcon:SetAlpha(1)
         end
 
         if BetterBlizzFramesDB.hidePlayerGuideIcon then
+            BBF.hidePlayerGuideIcon = true
             PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.GuideIcon:SetAlpha(0)
-        else
+        elseif BBF.hidePlayerGuideIcon then
+            BBF.hidePlayerGuideIcon = nil
             PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.GuideIcon:SetAlpha(1)
         end
 

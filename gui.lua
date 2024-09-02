@@ -1077,12 +1077,12 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
         end
 
         -- Initialize the text color and background color for this entry from npc table or with default values
-        local entryColors = npc.entryColors or {}
-        npc.entryColors = entryColors  -- Save the colors back to the npc data
-
-        if not entryColors.text then
-            entryColors.text = { r = 0, g = 1, b = 0 } -- Default to green color
+        local entryColors = npc.color
+        if npc.color == nil and listName == "auraWhitelist" then
+            npc.color = {0,1,0,1}
         end
+
+        -- npc.color = entryColors  -- Save the colors back to the npc data
 
         -- Function to set the text color
         local function SetTextColor(r, g, b, a)
@@ -1091,7 +1091,7 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
             g = g or 0.8196
             a = 1
             if colorText then
-                if npc.flags and npc.flags.important then
+                if npc and npc.important then
                     text:SetTextColor(r, g, b, a)
                 else
                     text:SetTextColor(1, 1, 0, a)  -- Keeping alpha consistent
@@ -1102,7 +1102,11 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
         end
 
         -- Set initial text and background colors from entryColors
-        SetTextColor(entryColors.text.r, entryColors.text.g, entryColors.text.b, 1)
+        if entryColors then
+            SetTextColor(entryColors[1], entryColors[2], entryColors[3], 1)
+        else
+            SetTextColor(1, 0, 0.8196, 1)
+        end
 
         local deleteButton = CreateFrame("Button", nil, button, "UIPanelButtonTemplate")
         deleteButton:SetSize(20, 20)
@@ -1119,11 +1123,6 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
         end)
 
         if extraBoxes then
-            -- Ensure the npc.flags table exists
-            if not npc.flags then
-                npc.flags = { important = false, pandemic = false, enlarged = false }
-            end
-
             -- Create Checkbox P (Pandemic)
             local checkBoxP = CreateFrame("CheckButton", nil, button, "UICheckButtonTemplate")
             checkBoxP:SetSize(24, 24)
@@ -1140,12 +1139,12 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
 
             -- Handler for the P checkbox
             checkBoxP:SetScript("OnClick", function(self)
-                npc.flags.pandemic = self:GetChecked() -- Save the state in the npc flags
+                npc.pandemic = self:GetChecked() -- Save the state in the npc flags
             end)
             checkBoxP:HookScript("OnClick", BBF.RefreshAllAuraFrames)
 
             -- Initialize state from npc flags
-            if npc.flags.pandemic then
+            if npc.pandemic then
                 checkBoxP:SetChecked(true)
             end
 
@@ -1164,10 +1163,10 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
 
             -- Handler for the I checkbox
             checkBoxI:SetScript("OnClick", function(self)
-                npc.flags.important = self:GetChecked() -- Save the state in the npc flags
+                npc.important = self:GetChecked() -- Save the state in the npc flags
             end)
             local function SetImportantBoxColor(r, g, b, a)
-                if npc.flags and npc.flags.important then
+                if npc and npc.important then
                     checkBoxI.texture:SetVertexColor(r, g, b, a)
                 else
                     checkBoxI.texture:SetVertexColor(0,1,0,1)
@@ -1175,45 +1174,54 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
             end
             checkBoxI:HookScript("OnClick", function()
                 BBF.RefreshAllAuraFrames()
-                SetTextColor(entryColors.text.r, entryColors.text.g, entryColors.text.b, 1)
-                SetImportantBoxColor(entryColors.text.r, entryColors.text.g, entryColors.text.b, entryColors.text.a)
+                SetTextColor(entryColors[1], entryColors[2], entryColors[3], 1)
+                SetImportantBoxColor(entryColors[1], entryColors[2], entryColors[3], entryColors[4] or 1)
             end)
 
             -- Initialize state from npc flags
-            if npc.flags.important then
+            if npc.important then
                 checkBoxI:SetChecked(true)
             end
 
-            SetImportantBoxColor(entryColors.text.r, entryColors.text.g, entryColors.text.b, entryColors.text.a)
+            if entryColors then
+                SetImportantBoxColor(entryColors[1], entryColors[2], entryColors[3], entryColors[4] or 1)
+            end
 
             -- Function to open the color picker
             local function OpenColorPicker()
-                local colorData = entryColors.text or {}
-                local r, g, b = colorData.r or 1, colorData.g or 1, colorData.b or 1
-                local a = colorData.a or 1 -- Default alpha to 1 if not present
+                local colorData = entryColors or {0, 1, 0, 1}
+                local r, g, b = colorData[1] or 1, colorData[2] or 1, colorData[3] or 1
+                local a = colorData[4] or 1 -- Default alpha to 1 if not present
 
-                local function updateColors()
-                    entryColors.text.r, entryColors.text.g, entryColors.text.b, entryColors.text.a = r, g, b, a
-                    SetTextColor(r, g, b, a)  -- Update text color
-                    SetImportantBoxColor(r, g, b, a)  -- Update other elements as needed
-                    BBF.RefreshAllAuraFrames()  -- Refresh frames or elements that depend on these colors
+                local function updateColors(newR, newG, newB, newA)
+                    -- Assign RGB values directly, and set alpha to 1 if not provided
+                    entryColors[1] = newR
+                    entryColors[2] = newG
+                    entryColors[3] = newB
+                    entryColors[4] = newA or 1  -- Default alpha value to 1 if not provided
+
+                    -- Update text and box colors
+                    SetTextColor(newR, newG, newB, newA or 1)  -- Update text color with default alpha if needed
+                    SetImportantBoxColor(newR, newG, newB, newA or 1)  -- Update important box color with default alpha if needed
+                    -- Refresh frames or elements that depend on these colors
+                    BBF.RefreshAllAuraFrames()
                 end
 
                 local function swatchFunc()
                     r, g, b = ColorPickerFrame:GetColorRGB()
-                    updateColors()  -- Update colors based on the new selection
+                    updateColors(r, g, b, a)  -- Pass current color values to updateColors
                 end
 
                 local function opacityFunc()
                     a = ColorPickerFrame:GetColorAlpha()
-                    updateColors()  -- Update colors including the alpha value
+                    updateColors(r, g, b, a)  -- Pass current color values to updateColors including the alpha value
                 end
 
                 local function cancelFunc(previousValues)
                     -- Revert to previous values if the selection is cancelled
                     if previousValues then
                         r, g, b, a = previousValues.r, previousValues.g, previousValues.b, previousValues.a
-                        updateColors()  -- Reapply the previous colors
+                        updateColors(r, g, b, a)  -- Reapply the previous colors
                     end
                 end
 
@@ -1240,7 +1248,7 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
             CreateTooltipTwo(checkBoxC, "Compacted Aura |A:ui-hud-minimap-zoom-out:22:22|a", "Check to make the aura smaller.", "Also check which frame(s) you want this on down below in settings.", "ANCHOR_TOPRIGHT")
 
             -- Initialize state from npc flags
-            if npc.flags.compacted then
+            if npc.compacted then
                 checkBoxC:SetChecked(true)
             end
 
@@ -1252,22 +1260,22 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
 
             -- Handler for the C checkbox
             checkBoxC:SetScript("OnClick", function(self)
-                npc.flags.compacted = self:GetChecked()
+                npc.compacted = self:GetChecked()
                 checkBoxE:SetChecked(false)
-                npc.flags.enlarged = false
+                npc.enlarged = false
                 BBF.RefreshAllAuraFrames()
             end)
 
             -- Handler for the E checkbox
             checkBoxE:SetScript("OnClick", function(self)
-                npc.flags.enlarged = self:GetChecked()
+                npc.enlarged = self:GetChecked()
                 checkBoxC:SetChecked(false)
-                npc.flags.compacted = false
+                npc.compacted = false
                 BBF.RefreshAllAuraFrames()
             end)
 
             -- Initialize state from npc flags
-            if npc.flags.enlarged then
+            if npc.enlarged then
                 checkBoxE:SetChecked(true)
             end
 
@@ -1279,12 +1287,12 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
 
             -- Handler for the E checkbox
             checkBoxOnlyMine:SetScript("OnClick", function(self)
-                npc.flags.onlyMine = self:GetChecked()
+                npc.onlyMine = self:GetChecked()
             end)
             checkBoxOnlyMine:HookScript("OnClick", BBF.RefreshAllAuraFrames)
 
             -- Initialize state from npc flags
-            if npc.flags.onlyMine then
+            if npc.onlyMine then
                 checkBoxOnlyMine:SetChecked(true)
             end
         end
@@ -1367,7 +1375,7 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
     CreateTooltipTwo(editBox, "Filter auras by spell id and/or spell name", "You can click auras to add to lists.\n\nShift+Alt + Left-Click to Whitelist.\n\nShift+Alt + Right-Click to Blacklist.\nCtrl+Alt Right-click to Blacklist with \"Show Mine\" tag", nil, "ANCHOR_TOP")
 
     local function updateNamesInListData()
-        for _, entry in ipairs(listData) do
+        for key, entry in pairs(listData) do
             if entry.id and (not entry.name or entry.name == "") then
                 local spellName = BBF.TWWGetSpellInfo(entry.id)
                 if spellName then
@@ -1381,13 +1389,16 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
         updateNamesInListData()  -- Ensure names are updated before sorting
 
         local sortableNpcList = {}
-        for _, entry in ipairs(listData) do
-            table.insert(sortableNpcList, entry)  -- Directly use entry, no need to separate into npcId and npcData
+
+        -- Iterate over the new structure using pairs to access all entries
+        for key, entry in pairs(listData) do
+            table.insert(sortableNpcList, entry)  -- Collect all entries into a sortable list
         end
 
+        -- Sort the list alphabetically by the 'name' field
         table.sort(sortableNpcList, function(a, b)
-            local nameA = a.name:lower()
-            local nameB = b.name:lower()
+            local nameA = a.name and a.name:lower() or ""  -- Ensure safe lowercasing if 'name' exists
+            local nameB = b.name and b.name:lower() or ""
             return nameA < nameB
         end)
 
@@ -1423,47 +1434,62 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
         selectedLineIndex = nil
         local name, comment = strsplit("/", inputText, 2)
         name = strtrim(name or "")
-        comment = strtrim(comment or "")
+        comment = comment and strtrim(comment) or nil
         local id = tonumber(name)
 
         -- Check if there's a numeric ID within the name and clear the name if found
         if id then
-            local spellName, _, _ = BBF.TWWGetSpellInfo(id)
+            local spellName = BBF.TWWGetSpellInfo(id)
             name = spellName or ""
         end
 
         -- Remove unwanted characters from name and comment individually
         name = gsub(name, "[%/%(%)%[%]]", "")
-        comment = gsub(comment, "[%/%(%)%[%]]", "")
+        if comment then
+            comment = gsub(comment, "[%/%(%)%[%]]", "")
+        end
 
         if (name ~= "" or id) then
+            local key = id or name  -- Use id if available, otherwise use name
             local isDuplicate = false
 
-            for i, npc in ipairs(listData) do
-                if (id and npc.id == id) or (not id and npc.name and strlower(npc.name) == strlower(name)) then
-                    isDuplicate = true
-                    selectedLineIndex = npc
-                    break
-                end
+            -- Directly check if the key already exists in the list
+            if BetterBlizzFramesDB[listName][key] then
+                isDuplicate = true
+                selectedLineIndex = key  -- Use key to identify the duplicate
             end
 
             if isDuplicate then
                 StaticPopup_Show("BBF_DUPLICATE_NPC_CONFIRM_" .. listName)
             else
-                -- Initialize the flags table for the new entry
-                local newEntry = { name = name, id = id, comment = comment, flags = { important = false, pandemic = false } }
-                if addShowMineTag and listName == "auraBlacklist" then
-                    newEntry = { name = name, id = id, comment = comment, flags = { important = false, pandemic = false }, showMine = true }
+                -- Initialize the new entry with appropriate structure
+                local newEntry = {
+                    name = name,
+                    id = id,
+                    comment = comment or nil,
+                }
+
+                if listName == "auraWhitelist" then
+                    newEntry = {name = name, id = id, comment = comment or nil, color = {0,1,0,1}}
                 end
-                table.insert(listData, newEntry)
+
+                -- If adding to auraBlacklist and addShowMineTag is true, set showMine to true
+                if addShowMineTag and listName == "auraBlacklist" then
+                    newEntry.showMine = true
+                end
+
+                -- Add the new entry to the list using key
+                BetterBlizzFramesDB[listName][key] = newEntry
+
+                -- Update UI: Re-create text line button and refresh the list display
                 createTextLineButton(newEntry, #textLines + 1, extraBoxes)
                 refreshList()
                 refreshFunc()
             end
         end
-        BBF.RefreshAllAuraFrames()
 
-        editBox:SetText("") -- Clear the EditBox
+        BBF.RefreshAllAuraFrames()
+        editBox:SetText("")  -- Clear the EditBox
     end
 
     BBF[listName] = addOrUpdateEntry

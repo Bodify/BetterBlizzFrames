@@ -216,26 +216,6 @@ local function UpdateAbsorbIndicator(frame, unit)
     end
 end
 
-
-
-function BBF.AbsorbCaller()
-    UpdateAbsorbIndicator(PlayerFrame, "player")
-    UpdateAbsorbIndicator(TargetFrame, "target")
-    UpdateAbsorbIndicator(FocusFrame, "focus")
-    if not BetterBlizzFramesDB.absorbIndicator and not BetterBlizzFramesDB.absorbIndicatorTestMode then
-        if TargetFrame.absorbIcon and TargetFrame.absorbIcon.border then TargetFrame.absorbIcon.border:SetAlpha(0) end
-        if TargetFrame.absorbIndicator then TargetFrame.absorbIndicator:SetAlpha(0) end
-        if TargetFrame.absorbIcon then TargetFrame.absorbIcon:SetAlpha(0) end
-        if PlayerFrame.absorbIndicator then PlayerFrame.absorbIndicator:SetAlpha(0) end
-        if PlayerFrame.absorbIcon then PlayerFrame.absorbIcon:SetAlpha(0) end
-        if PlayerFrame.absorbIcon and PlayerFrame.absorbIcon.border then PlayerFrame.absorbIcon.border:SetAlpha(0) end
-        if FocusFrame.absorbIndicator then FocusFrame.absorbIndicator:SetAlpha(0) end
-        if FocusFrame.absorbIcon then FocusFrame.absorbIcon:SetAlpha(0) end
-        if FocusFrame.absorbIcon and FocusFrame.absorbIcon.border then FocusFrame.absorbIcon.border:SetAlpha(0) end
-    end
-end
-
-
 -- Event listener for Absorb Indicator
 local function OnAbsorbEvent(self, event, unit)
     if unit == "target" then
@@ -256,11 +236,29 @@ local function OnAbsorbEvent(self, event, unit)
     end
 end
 
--- Event listener for Absorb Indicator
-local absorbEventFrame = CreateFrame("Frame")
-absorbEventFrame:RegisterEvent("UNIT_ABSORB_AMOUNT_CHANGED")
-absorbEventFrame:RegisterEvent("UNIT_HEAL_ABSORB_AMOUNT_CHANGED")
-absorbEventFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
-absorbEventFrame:RegisterEvent("PLAYER_FOCUS_CHANGED")
-absorbEventFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
-absorbEventFrame:SetScript("OnEvent", OnAbsorbEvent)
+local absorbEventFrame
+function BBF.AbsorbCaller()
+    if BetterBlizzFramesDB.absorbIndicator and not absorbEventFrame then
+        absorbEventFrame = CreateFrame("Frame")
+        absorbEventFrame:RegisterEvent("UNIT_ABSORB_AMOUNT_CHANGED")
+        absorbEventFrame:RegisterEvent("UNIT_HEAL_ABSORB_AMOUNT_CHANGED")
+        absorbEventFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
+        absorbEventFrame:RegisterEvent("PLAYER_FOCUS_CHANGED")
+        absorbEventFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
+        absorbEventFrame:SetScript("OnEvent", OnAbsorbEvent)
+    end
+    UpdateAbsorbIndicator(PlayerFrame, "player")
+    UpdateAbsorbIndicator(TargetFrame, "target")
+    UpdateAbsorbIndicator(FocusFrame, "focus")
+    if not BetterBlizzFramesDB.absorbIndicator and not BetterBlizzFramesDB.absorbIndicatorTestMode then
+        if TargetFrame.absorbIcon and TargetFrame.absorbIcon.border then TargetFrame.absorbIcon.border:SetAlpha(0) end
+        if TargetFrame.absorbIndicator then TargetFrame.absorbIndicator:SetAlpha(0) end
+        if TargetFrame.absorbIcon then TargetFrame.absorbIcon:SetAlpha(0) end
+        if PlayerFrame.absorbIndicator then PlayerFrame.absorbIndicator:SetAlpha(0) end
+        if PlayerFrame.absorbIcon then PlayerFrame.absorbIcon:SetAlpha(0) end
+        if PlayerFrame.absorbIcon and PlayerFrame.absorbIcon.border then PlayerFrame.absorbIcon.border:SetAlpha(0) end
+        if FocusFrame.absorbIndicator then FocusFrame.absorbIndicator:SetAlpha(0) end
+        if FocusFrame.absorbIcon then FocusFrame.absorbIcon:SetAlpha(0) end
+        if FocusFrame.absorbIcon and FocusFrame.absorbIcon.border then FocusFrame.absorbIcon.border:SetAlpha(0) end
+    end
+end
