@@ -85,8 +85,23 @@ local function resetFrameColor(frame, unit)
     frame:SetStatusBarColor(1,1,1)
 end
 
+local validUnits = {
+    player = true,
+    target = true,
+    targettarget = true,
+    focus = true,
+    focustarget = true,
+    pet = true,
+    party1 = true,
+    party2 = true,
+    party3 = true,
+    party4 = true,
+}
+
 local function UpdateHealthColor(frame, unit)
-    if unit == "player" and BetterBlizzFramesDB.classColorFramesSkipPlayer then return end
+    if not validUnits[unit] then return end
+    local skipPlayer = BetterBlizzFramesDB.classColorFramesSkipPlayer
+    if unit == "player" and skipPlayer then return end
     local color, isFriendly = getUnitColor(unit)
     if color then
         if isFriendly then

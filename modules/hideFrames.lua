@@ -47,8 +47,10 @@ function BBF.HideFrames()
 
         -- PvP Timer Text
         if BetterBlizzFramesDB.hidePvpTimerText then
+            BBF.hidePvpTimerText = true
             PlayerPVPTimerText:SetParent(hiddenFrame)
-        else
+        elseif BBF.hidePvpTimerText then
+            BBF.hidePvpTimerText = nil
             PlayerPVPTimerText:SetParent(PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual)
         end
 
@@ -96,6 +98,7 @@ function BBF.HideFrames()
 
         -- Hide reputation color on target frame (color tint behind name)
         if BetterBlizzFramesDB.hideTargetReputationColor then
+            BBF.hideTargetReputationColor = true
             TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:Hide()
             if classicFrames and not TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor.bbfHooked then
                 hooksecurefunc(TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor, "Show", function(self)
@@ -103,11 +106,13 @@ function BBF.HideFrames()
                 end)
                 TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor.bbfHooked = true
             end
-        else
+        elseif BBF.hideTargetReputationColor then
+            BBF.hideTargetReputationColor = nil
             TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:Show()
         end
 
         if BetterBlizzFramesDB.hideFocusReputationColor then
+            BBF.hideFocusReputationColor = true
             FocusFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:Hide()
             if classicFrames and not FocusFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor.bbfCF then
                 hooksecurefunc(FocusFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor, "Show", function(self)
@@ -115,7 +120,8 @@ function BBF.HideFrames()
                 end)
                 FocusFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor.bbfCF = true
             end
-        else
+        elseif BBF.hideFocusReputationColor then
+            BBF.hideFocusReputationColor = nil
             FocusFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:Show()
         end
 
@@ -169,6 +175,17 @@ function BBF.HideFrames()
             PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.PlayerPortraitCornerIcon:SetParent(hiddenFrame)
         else
             PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.PlayerPortraitCornerIcon:SetParent(PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual)
+        end
+
+        -- Hide totem frame
+        if BetterBlizzFramesDB.hideTotemFrame then
+            local totemFrame = TotemFrame
+            if totemFrame then
+                totemFrame:HookScript(totemFrame, "OnShow", function()
+                    totemFrame:Hide()
+                end)
+                totemFrame:Hide()
+            end
         end
 
         -- Hide combat glow on player frame

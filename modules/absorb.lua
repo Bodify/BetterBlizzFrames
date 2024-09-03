@@ -216,8 +216,15 @@ local function UpdateAbsorbIndicator(frame, unit)
     end
 end
 
+local units = {
+    ["target"] = true,
+    ["player"] = true,
+    ["focus"] = true,
+}
+
 -- Event listener for Absorb Indicator
 local function OnAbsorbEvent(self, event, unit)
+    if not units[unit] then return end
     if unit == "target" then
         UpdateAbsorbIndicator(TargetFrame, "target")
     elseif unit == "player" then
@@ -225,6 +232,9 @@ local function OnAbsorbEvent(self, event, unit)
     elseif unit == "focus" then
         UpdateAbsorbIndicator(FocusFrame, "focus")
     end
+end
+
+local function OnTargetChange(self, event)
     if event == "PLAYER_TARGET_CHANGED" then
         UpdateAbsorbIndicator(TargetFrame, "target")
     elseif event == "PLAYER_FOCUS_CHANGED" then
@@ -242,10 +252,13 @@ function BBF.AbsorbCaller()
         absorbEventFrame = CreateFrame("Frame")
         absorbEventFrame:RegisterEvent("UNIT_ABSORB_AMOUNT_CHANGED")
         absorbEventFrame:RegisterEvent("UNIT_HEAL_ABSORB_AMOUNT_CHANGED")
-        absorbEventFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
-        absorbEventFrame:RegisterEvent("PLAYER_FOCUS_CHANGED")
-        absorbEventFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
         absorbEventFrame:SetScript("OnEvent", OnAbsorbEvent)
+
+        local targetChangeFrame = CreateFrame("Frame")
+        targetChangeFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
+        targetChangeFrame:RegisterEvent("PLAYER_FOCUS_CHANGED")
+        targetChangeFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
+        targetChangeFrame:SetScript("OnEvent", OnTargetChange)
     end
     UpdateAbsorbIndicator(PlayerFrame, "player")
     UpdateAbsorbIndicator(TargetFrame, "target")

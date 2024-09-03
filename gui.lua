@@ -1027,12 +1027,13 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
 
     local function deleteEntry(dataEntry)
         if not dataEntry then return end
-        for i, entry in ipairs(listData) do
-            if entry == dataEntry then
-                table.remove(listData, i)
-                break
-            end
+
+        local key = dataEntry.id or dataEntry.name
+
+        if BetterBlizzFramesDB[listName][key] then
+            BetterBlizzFramesDB[listName][key] = nil
         end
+
         contentFrame.refreshList()
         BBF.RefreshAllAuraFrames()
     end
@@ -1450,7 +1451,7 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
         end
 
         if (name ~= "" or id) then
-            local key = id or name  -- Use id if available, otherwise use name
+            local key = id or string.lower(name)  -- Use id if available, otherwise use name
             local isDuplicate = false
 
             -- Directly check if the key already exists in the list
@@ -1483,7 +1484,7 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
 
                 -- Update UI: Re-create text line button and refresh the list display
                 createTextLineButton(newEntry, #textLines + 1, extraBoxes)
-                refreshList()
+                --refreshList()
                 refreshFunc()
             end
         end
@@ -1829,6 +1830,10 @@ local function guiGeneralTab()
     local hideGroupIndicator = CreateCheckbox("hideGroupIndicator", "Hide Group Indicator", BetterBlizzFrames, nil, BBF.HideFrames)
     hideGroupIndicator:SetPoint("TOPLEFT", hideCombatIcon, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(hideGroupIndicator, "Hide the group indicator on top of PlayerFrame\nwhile you are in a group.")
+
+    local hideTotemFrame = CreateCheckbox("hideTotemFrame", "Hide Totem Frame", BetterBlizzFrames, nil, BBF.HideFrames)
+    hideTotemFrame:SetPoint("LEFT", hideGroupIndicator.text, "RIGHT", 0, 0)
+    CreateTooltip(hideTotemFrame, "Hide the TotemFrame under PlayerFrame.")
 
     local hidePlayerLeaderIcon = CreateCheckbox("hidePlayerLeaderIcon", "Hide Leader Icon", BetterBlizzFrames, nil, BBF.HideFrames)
     hidePlayerLeaderIcon:SetPoint("TOPLEFT", hideGroupIndicator, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
@@ -2487,6 +2492,10 @@ local function guiGeneralTab()
     local hideRareDragonTexture = CreateCheckbox("hideRareDragonTexture", "Hide Dragon", BetterBlizzFrames, nil, BBF.HideFrames)
     hideRareDragonTexture:SetPoint("TOPLEFT", hidePvpIcon, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(hideRareDragonTexture, "Hide Elite Dragon texture on Target & Focus|A:UI-HUD-UnitFrame-Target-PortraitOn-Boss-Gold:38:28|a")
+
+    local hideThreatOnFrame = CreateCheckbox("hideThreatOnFrame", "Hide Threat", BetterBlizzFrames, nil, BBF.HideFrames)
+    hideThreatOnFrame:SetPoint("LEFT", hideRareDragonTexture.Text, "RIGHT", 0, 0)
+    CreateTooltipTwo(hideThreatOnFrame, "Hide Threat Meter", "Hide the threat meter displaying on Target & Focus frames.")
 
     local extraFeaturesText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     extraFeaturesText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 460, 30)

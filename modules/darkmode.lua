@@ -71,13 +71,15 @@ function BBF.DarkModeUnitframeBorders()
                         if frame.Border then
                             frame.border:Hide()
                         else
-                            frame.border:Show()
+                            if frame.Stealable and not frame.Stealable:IsShown() then
+                                frame.border:Show()
+                            end
                         end
                     else
                         if frame.Border then
                             frame.border:Hide()
                         else
-                            if not frame.Stealable then
+                            if frame.Stealable and not frame.Stealable:IsShown() then
                                 frame.border:Show()
                             end
                         end
@@ -255,6 +257,12 @@ function BBF.DarkmodeFrames(bypass)
                 C_Timer.After(0, function()
                     RecolorVigor()
                     BBF.vigorRecolor:UnregisterAllEvents()
+                end)
+                C_Timer.After(0.1, function()
+                    RecolorVigor()
+                end)
+                C_Timer.After(0.5, function()
+                    RecolorVigor()
                 end)
             end)
         end

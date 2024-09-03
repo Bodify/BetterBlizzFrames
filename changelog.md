@@ -1,3 +1,11 @@
+# BetterBlizzFrames 1.5.4
+## The War Within
+### New stuff:
+- You can now set a keybind to toggle all blacklists on/off to view all 
+
+### Bugfix:
+- Fix default purge glow not scaling properly with enlarged/compacted auras
+
 # BetterBlizzFrames 1.5.3c
 ## The War Within
 ### Tweak:

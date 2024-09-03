@@ -251,12 +251,6 @@ local unitFrameMap = {
     focus = FocusFrame
 }
 
-local validUnits = {
-    player = true,
-    target = true,
-    focus = true
-}
-
 local function updateIndicators(frame, unit)
     BBF.CombatIndicator(frame, unit)
     BBF.RacialIndicator(frame, unit)
@@ -264,11 +258,10 @@ end
 
 local function UpdateCombatIndicator(self, event, unit)
     if event == "UNIT_FLAGS" then
-        if validUnits[unit] then
-            local frame = unitFrameMap[unit]
-            if frame then
-                updateIndicators(frame, unit)
-            end
+        local frame = unitFrameMap[unit]
+        if frame then
+            --updateIndicators(frame, unit)
+            BBF.CombatIndicator(frame, unit)
         end
     else
         for unit, frame in pairs(unitFrameMap) do
