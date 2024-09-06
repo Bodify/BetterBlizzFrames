@@ -1,10 +1,17 @@
 # BetterBlizzFrames 1.5.4
 ## The War Within
 ### New stuff:
-- You can now set a keybind to toggle all blacklists on/off to view all 
+- You can now set a keybind to toggle all filters on/off to view all unfiltered auras momentarily. Or macro `/run BBF.ToggleFilterOverride()`
+- Misc: Minimize Objective Frame Better: Hides the objectives header as well when clicking the minimize button.
+
+### Tweak:
+- Smokebomb timer now works without debuff filtering on.
+- Large restructure of aura lists that should both be cleaner and have better performance.
 
 ### Bugfix:
 - Fix default purge glow not scaling properly with enlarged/compacted auras
+- Added missing smokebomb spell id to player debuffs for timer
+- Fix issue with BBF Filter Icon potentially saving bad position data and causing lua error on next reload/login.
 
 # BetterBlizzFrames 1.5.3c
 ## The War Within

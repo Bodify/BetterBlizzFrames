@@ -43,25 +43,30 @@ local function addToMasque(frame, masqueGroup)
     end
 end
 
-local smokeBombCast = 0
 local smokeTracker
+local smokeDuration = 5
 local updateInterval = 0.1
-local remainingTime = 5
+local timeSinceLastUpdate = 0
+BBF.ActiveSmokeCheck = CreateFrame("Frame")
 
 local function UpdateAuraDuration(self, elapsed)
-    self.timeSinceLastUpdate = (self.timeSinceLastUpdate or 0) + elapsed
+    timeSinceLastUpdate = timeSinceLastUpdate + elapsed
 
-    -- Only update every second
-    if self.timeSinceLastUpdate >= updateInterval then
-        remainingTime = remainingTime - 0.1
+    self.Duration:Show()
+    self.Duration:SetTextColor(1, 1, 1)
+
+    if timeSinceLastUpdate >= updateInterval then
+        local remainingTime = BBF.smokeBombCast + smokeDuration - GetTime()
+
         if remainingTime <= 0 then
             self.Duration:SetText("0 s")
             self:SetScript("OnUpdate", nil)
+            timeSinceLastUpdate = 0
         else
-            local displayTime = math.floor(remainingTime-0.2)
+            local displayTime = math.floor(remainingTime)
             self.Duration:SetText(displayTime .. " s")
         end
-        self.timeSinceLastUpdate = 0
+        timeSinceLastUpdate = 0
     end
 end
 
@@ -75,6 +80,43 @@ local uas = {
     [316099] = true,
 }
 
+function BBF.CheckDebuffsForSmoke()
+    local activeSmoke = false
+
+    for auraIndex, auraInfo in ipairs(DebuffFrame.auraInfo) do
+        local auraFrame = DebuffFrame.auraFrames[auraIndex]
+        if auraFrame and not auraFrame.isAuraAnchor then
+            local aura = C_UnitAuras.GetAuraDataByIndex("player", auraInfo.index, "HARMFUL")
+            if not aura then return end
+            if aura.spellId == 212183 then
+                activeSmoke = true
+                if auraFrame.Cooldown then
+                    auraFrame.Cooldown:SetCooldown(BBF.smokeBombCast, smokeDuration)
+                end
+                auraFrame:SetScript("OnUpdate", UpdateAuraDuration)
+            else
+                auraFrame:SetScript("OnUpdate", nil)
+            end
+        end
+    end
+
+    if activeSmoke then
+        BBF.ActiveSmokeCheck.isChecking = false
+    else
+        if not BBF.ActiveSmokeCheck.isChecking then
+            BBF.ActiveSmokeCheck.isChecking = true
+            C_Timer.After(2.5, function()
+                BBF.CheckDebuffsForSmoke()
+            end)
+        else
+            BBF.ActiveSmokeCheck:UnregisterAllEvents()
+            BBF.ActiveSmokeCheck.isChecking = false
+        end
+    end
+end
+
+BBF.ActiveSmokeCheck:SetScript("OnEvent", BBF.CheckDebuffsForSmoke)
+
 local function SmokeBombCheck()
     local _, subEvent, _, _, _, _, _, _, _, _, _, spellID = CombatLogGetCurrentEventInfo()
     if subEvent == "SPELL_CAST_SUCCESS" and smokeIDs[spellID] then
@@ -82,13 +124,23 @@ local function SmokeBombCheck()
             smokeTracker:Cancel()
         end
         BBF.smokeBombCast = GetTime()
-        if BBP and BBP.smokeBombCast then
+        if BBP and BBP.ActiveSmokeCheck then
             BBP.smokeBombCast = BBF.smokeBombCast
+            BBP.ActiveSmokeCheck:RegisterEvent("UNIT_AURA")
         end
-        smokeTracker = C_Timer.NewTimer(5, function()
+        BBF.ActiveSmokeCheck:RegisterUnitEvent("UNIT_AURA", "player")
+        C_Timer.After(0.1, function()
+            BBF.CheckDebuffsForSmoke()
+            if BBP and BBP.CheckAllNameplatesForSmoke then
+                BBP.CheckAllNameplatesForSmoke()
+            end
+        end)
+        smokeTracker = C_Timer.NewTimer(smokeDuration, function()
             BBF.smokeBombCast = 0
-            if BBP and BBP.smokeBombCast then
+            timeSinceLastUpdate = 0
+            if BBP and BBP.ActiveSmokeCheck then
                 BBP.smokeBombCast = 0
+                BBP.ActiveSmokeCheck:UnregisterAllEvents()
             end
         end)
     end
@@ -1021,7 +1073,10 @@ local function AdjustAuras(self, frameType)
                 aura.spellId = auraData.spellId
 
                 if auraData.spellId == 212183 then
-                    aura.Cooldown:SetCooldown(smokeBombCast, 5)
+                    aura.Cooldown:SetCooldown(BBF.smokeBombCast, 5)
+                    C_Timer.After(0.1, function()
+                        aura.Cooldown:SetCooldown(BBF.smokeBombCast, 5)
+                    end)
                 end
 
                 if (auraData.isStealable or (auraData.dispelName == "Magic" and ((not isFriend and auraData.isHelpful) or (isFriend and auraData.isHarmful)))) then
@@ -2039,15 +2094,9 @@ local function PersonalDebuffFrameFilterAndGrid(self)
 
                     auraFrame.spellId = auraData.spellId
 
-                    if auraData.spellId == 212183 then
-                        if auraFrame.Cooldown then
-                            auraFrame.Cooldown:SetCooldown(smokeBombCast, 5)
-                        end
-                        auraFrame.Duration:Show()
-                        auraFrame.Duration:SetTextColor(1,1,1)
-                        auraFrame.timeSinceLastUpdate = 0
-                        auraFrame:SetScript("OnUpdate", UpdateAuraDuration)
-                    end
+                    -- if auraData.spellId == 212183 then
+                    --     --moved
+                    -- end
 
                     if not auraFrame.filterClick then
                         auraFrame:HookScript("OnMouseDown", function(self, button)

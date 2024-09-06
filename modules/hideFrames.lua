@@ -101,8 +101,11 @@ function BBF.HideFrames()
             BBF.hideTargetReputationColor = true
             TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:Hide()
             if classicFrames and not TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor.bbfHooked then
-                hooksecurefunc(TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor, "Show", function(self)
+                hooksecurefunc(TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor, "SetVertexColor", function(self)
+                    if self.changing then return end
+                    self.changing = true
                     self:SetVertexColor(0,0,0,0.45)
+                    self.changing = false
                 end)
                 TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor.bbfHooked = true
             end
@@ -115,8 +118,11 @@ function BBF.HideFrames()
             BBF.hideFocusReputationColor = true
             FocusFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:Hide()
             if classicFrames and not FocusFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor.bbfCF then
-                hooksecurefunc(FocusFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor, "Show", function(self)
+                hooksecurefunc(FocusFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor, "SetVertexColor", function(self)
+                    if self.changing then return end
+                    self.changing = true
                     self:SetVertexColor(0,0,0,0.45)
+                    self.changing = false
                 end)
                 FocusFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor.bbfCF = true
             end

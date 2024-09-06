@@ -7,7 +7,7 @@ local minimapChanged =false
 local hookedTotemBar
 local hookedAuras
 
-local function applySettings(frame, desaturate, colorValue, hook)
+local function applySettings(frame, desaturate, colorValue, hook, hookShow)
     if frame then
         if desaturate ~= nil and frame.SetDesaturated then
             frame:SetDesaturated(desaturate)
@@ -22,13 +22,26 @@ local function applySettings(frame, desaturate, colorValue, hook)
                     hooksecurefunc(frame, "SetVertexColor", function(self)
                         if not self.changing then
                             self.changing = true
-                            frame:SetDesaturated(desaturate)
-                            frame:SetVertexColor(colorValue, colorValue, colorValue)
+                            self:SetDesaturated(desaturate)
+                            self:SetVertexColor(colorValue, colorValue, colorValue)
                             self.changing = false
                         end
                     end)
                 end
             end
+            -- if hookShow then
+            --     if not frame.bbfHookedShow then
+            --         frame.bbfHookedShow = true
+            --         --hooksecurefunc(UIWidgetPowerBarContainerFrame, "Show", function()
+            --             UIWidgetPowerBarContainerFrame:HookScript("OnShow", function()
+            --                 frame:SetDesaturated(desaturate)
+            --                 frame:SetVertexColor(colorValue, colorValue, colorValue)
+            --             end)
+
+            --         --     print("showh")
+            --         -- end)
+            --     end
+            -- end
         end
     end
 end
@@ -79,9 +92,9 @@ function BBF.DarkModeUnitframeBorders()
                         if frame.Border then
                             frame.border:Hide()
                         else
-                            if frame.Stealable and not frame.Stealable:IsShown() then
+                            --if frame.Stealable and not frame.Stealable:IsShown() then
                                 frame.border:Show()
-                            end
+                            --end
                         end
                     end
                 end
@@ -232,8 +245,8 @@ function BBF.DarkmodeFrames(bypass)
             if child.DecorLeft and child.DecorLeft.GetAtlas then
                 local atlasName = child.DecorLeft:GetAtlas()
                 if atlasName == "dragonriding_vigor_decor" then
-                    applySettings(child.DecorLeft, desaturationValue, druidComboPointActive, true)
-                    applySettings(child.DecorRight, desaturationValue, druidComboPointActive, true)
+                    applySettings(child.DecorLeft, desaturationValue, druidComboPointActive, true, true)
+                    applySettings(child.DecorRight, desaturationValue, druidComboPointActive, true, true)
                 end
             end
             for _, grandchild in ipairs({child:GetChildren()}) do
@@ -241,7 +254,7 @@ function BBF.DarkmodeFrames(bypass)
                 if grandchild.Frame and grandchild.Frame.GetAtlas then
                     local atlasName = grandchild.Frame:GetAtlas()
                     if atlasName == "dragonriding_vigor_frame" then
-                        applySettings(grandchild.Frame, desaturationValue, druidComboPointActive, true)
+                        applySettings(grandchild.Frame, desaturationValue, druidComboPointActive, true, true)
                     end
                 end
             end

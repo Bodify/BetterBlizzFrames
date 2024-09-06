@@ -1,8 +1,8 @@
 -- I did not know what a variable was when I started. I know a little bit more now and I am so sorry.
 
 local addonVersion = "1.00" --too afraid to to touch for now
-local addonUpdates = "1.5.3c"
-local sendUpdate = false
+local addonUpdates = "1.5.4"
+local sendUpdate = true
 BBF.VersionNumber = addonUpdates
 BBF.variablesLoaded = false
 local isAddonLoaded = C_AddOns.IsAddOnLoaded
@@ -405,9 +405,9 @@ local function SendUpdateMessage()
         if not BetterBlizzFramesDB.scStart then
             C_Timer.After(7, function()
                 -- if BetterBlizzFramesDB.castBarInterruptIconEnabled then
-                -- DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames news:")
-                -- --DEFAULT_CHAT_FRAME:AddMessage("|A:QuestNormal:16:16|a New Stuff:")
-                -- -- DEFAULT_CHAT_FRAME:AddMessage("   - Sort Purgeable Auras setting (Buffs & Debuffs).")
+                DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames "..addonUpdates..":")
+                --DEFAULT_CHAT_FRAME:AddMessage("|A:QuestNormal:16:16|a New stuff:")
+                DEFAULT_CHAT_FRAME:AddMessage("- Pro tip: Enable the new \"Minimize Objective Frame Better\" setting in Misc.")
 
                 -- DEFAULT_CHAT_FRAME:AddMessage("|A:Professions-Crafting-Orders-Icon:16:16|a Tweak:")
                 -- DEFAULT_CHAT_FRAME:AddMessage("   - Reset castbar interrupt icon y offset to 0 due to default positional changes You may have to readjust to your liking.")
@@ -1129,6 +1129,17 @@ function BBF.NormalizeGameMenu(enabled)
     GameMenuFrame:SetScale(enabled and 0.75 or 1)
 end
 
+function BBF.MinimizeObjectiveTracker()
+    if not ObjectiveTrackerFrame.Header.MinimizeButton.bbfHook then
+        ObjectiveTrackerFrame.Header.MinimizeButton:HookScript("OnClick", function(self)
+            local isCollapsed = ObjectiveTrackerFrame.isCollapsed
+            ObjectiveTrackerFrame.Header.Background:SetAlpha(isCollapsed and 0 or 1)
+            ObjectiveTrackerFrame.Header.Text:SetAlpha(isCollapsed and 0 or 1)
+        end)
+        ObjectiveTrackerFrame.Header.MinimizeButton.bbfHook = true
+    end
+end
+
 local function TurnTestModesOff()
     BetterBlizzFramesDB.absorbIndicatorTestMode = false
     BetterBlizzFramesDB.partyCastBarTestMode = false
@@ -1186,6 +1197,9 @@ Frame:SetScript("OnEvent", function(...)
             BBF.CombatIndicator(PlayerFrame, "player")
             if BetterBlizzFramesDB.hideArenaFrames then
                 BBF.HideArenaFrames()
+            end
+            if BetterBlizzFramesDB.minimizeObjectiveTracker then
+                BBF.MinimizeObjectiveTracker()
             end
             BBF.MoveToTFrames()
             BBF.UpdateUserAuraSettings()

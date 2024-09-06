@@ -17,6 +17,7 @@ BBF.squareGreenGlow = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\ne
 
 local function ExportProfile(profileTable, dataType)
     -- Include a dataType in the table being serialized
+    BetterBlizzFramesDB.exportVersion = BBF.VersionNumber
     local exportTable = {
         dataType = dataType,
         data = profileTable
@@ -2787,11 +2788,11 @@ local function guiCastbars()
 
     local targetToTCastbarAdjustment = CreateCheckbox("targetToTCastbarAdjustment", "ToT Offset", contentFrame)
     targetToTCastbarAdjustment:SetPoint("TOPLEFT", targetStaticCastbar, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltip(targetToTCastbarAdjustment, "Make sure the castbar is under ToT frame.\nUncheck this if you have moved your ToT frame out of the way.")
+    CreateTooltipTwo(targetToTCastbarAdjustment, "Enable ToT Offset", "Makes sure the castbar is under Target ToT frame until enough auras are displayed to push it down.\nUncheck this if you have moved your ToT frame out of the way and want to have the castbar follow the bottom of the auras no matter what")
 
     local targetToTAdjustmentOffsetY = CreateSlider(targetToTCastbarAdjustment, "extra", -20, 50, 1, "targetToTAdjustmentOffsetY", "Y", 55)
     targetToTAdjustmentOffsetY:SetPoint("LEFT", targetToTCastbarAdjustment.text, "RIGHT", 2, -5)
-    CreateTooltip(targetToTAdjustmentOffsetY, "Extra finetuning for ToT Y offset\n(Right click any slider to input value)")
+    CreateTooltipTwo(targetToTAdjustmentOffsetY, "Extra Finetuning for ToT Offset", "Finetune the space between castbar and auras when ToT is showing. This extra offset is only active when the ToT frame is showing.")
 
     targetToTCastbarAdjustment:HookScript("OnClick", function(self)
         if self:GetChecked() then
@@ -3031,11 +3032,11 @@ local function guiCastbars()
 
     local focusToTCastbarAdjustment = CreateCheckbox("focusToTCastbarAdjustment", "ToT Offset", contentFrame)
     focusToTCastbarAdjustment:SetPoint("TOPLEFT", focusStaticCastbar, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltip(focusToTCastbarAdjustment, "Make sure the castbar is under Focus ToT frame.\nUncheck this if you have moved your ToT frame out of the way.")
+    CreateTooltipTwo(focusToTCastbarAdjustment, "Enable ToT Offset", "Makes sure the castbar is under Focus ToT frame until enough auras are displayed to push it down.\nUncheck this if you have moved your ToT frame out of the way and want to have the castbar follow the bottom of the auras no matter what.")
 
     local focusToTAdjustmentOffsetY = CreateSlider(focusToTCastbarAdjustment, "extra", -20, 50, 1, "focusToTAdjustmentOffsetY", "Y", 55)
     focusToTAdjustmentOffsetY:SetPoint("LEFT", focusToTCastbarAdjustment.text, "RIGHT", 2, -5)
-    CreateTooltip(focusToTAdjustmentOffsetY, "Extra finetuning for ToT Y offset\n(Right click any slider to input value)")
+    CreateTooltipTwo(focusToTAdjustmentOffsetY, "Extra Finetuning for ToT Offset", "Finetune the space between castbar and auras when ToT is showing. This extra offset is only active when the ToT frame is showing.")
 
     focusToTCastbarAdjustment:HookScript("OnClick", function(self)
         if self:GetChecked() then
@@ -3979,7 +3980,7 @@ local function guiFrameAuras()
 
 
     local playerAuraFiltering = CreateCheckbox("playerAuraFiltering", "Enable Aura Settings", contentFrame)
-    CreateTooltip(playerAuraFiltering, "Enable Aura Settings and Filtering.")
+    CreateTooltipTwo(playerAuraFiltering, "Enable Buff Filtering & Aura settings", "Enables all the buff filtering settings. This setting is cpu heavy and un-optimized so use at your own risk.")
     playerAuraFiltering:SetPoint("TOPLEFT", contentFrame, "BOTTOMLEFT", 50, 190)
     playerAuraFiltering:HookScript("OnClick", function (self)
         if self:GetChecked() then
@@ -4678,8 +4679,12 @@ local function guiMisc()
         end
     end)
 
+    local minimizeObjectiveTracker = CreateCheckbox("minimizeObjectiveTracker", "Minimize Objective Frame Better", guiMisc, nil, BBF.MinimizeObjectiveTracker)
+    minimizeObjectiveTracker:SetPoint("TOPLEFT", normalizeGameMenu, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(minimizeObjectiveTracker, "Minimize Objective Frame Better", "Also minimized the objectives header when clicking the -+ button |A:UI-QuestTrackerButton-Collapse-All:19:19|a")
+
     local hideUiErrorFrame = CreateCheckbox("hideUiErrorFrame", "Hide UI Error Frame", guiMisc, nil, BBF.HideFrames)
-    hideUiErrorFrame:SetPoint("TOPLEFT", normalizeGameMenu, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    hideUiErrorFrame:SetPoint("TOPLEFT", minimizeObjectiveTracker, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(hideUiErrorFrame, "Hide UI Error Frame", "Hides the UI Error Frame (The red text displaying \"Not enough mana\" etc)")
 
     local hideMinimap = CreateCheckbox("hideMinimap", "Hide Minimap", guiMisc, nil, BBF.MinimapHider)

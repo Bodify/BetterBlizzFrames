@@ -27,9 +27,6 @@ local function UpdateCastTimer(self)
     end
 end
 
-local hiddenFrame = CreateFrame("Frame")
-hiddenFrame:Hide()
-
 function BBF.UpdateCastbars()
     local numGroupMembers = GetNumGroupMembers()
     local compactFrame = (_G["PartyFrame"]["MemberFrame1"] and _G["PartyFrame"]["MemberFrame1"]:IsShown() and _G["PartyFrame"]["MemberFrame1"])
