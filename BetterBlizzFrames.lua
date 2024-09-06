@@ -1,7 +1,7 @@
 -- I did not know what a variable was when I started. I know a little bit more now and I am so sorry.
 
 local addonVersion = "1.00" --too afraid to to touch for now
-local addonUpdates = "1.5.4"
+local addonUpdates = "1.5.3"
 local sendUpdate = true
 BBF.VersionNumber = addonUpdates
 BBF.variablesLoaded = false
@@ -1265,7 +1265,13 @@ Frame:SetScript("OnEvent", function(...)
 
     if BetterBlizzFramesDB.reopenOptions then
         --InterfaceOptionsFrame_OpenToCategory(BetterBlizzFrames)
-        Settings.OpenToCategory(BBF.category.ID)
+        if not BBF.category then
+            print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: Settings disabled. Likely due to error. Please update your addon.")
+            --BBF.InitializeOptions()
+            --Settings.OpenToCategory(BBF.category.ID)
+        else
+            Settings.OpenToCategory(BBF.category.ID)
+        end
         BetterBlizzFramesDB.reopenOptions = false
     end
 end)
@@ -1330,7 +1336,13 @@ SlashCmdList["BBF"] = function(msg)
         end
     else
         -- InterfaceOptionsFrame_OpenToCategory(BetterBlizzFrames)
-        Settings.OpenToCategory(BBF.category.ID)
+        if not BBF.category then
+            print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: Settings disabled. Likely due to error. Please update your addon.")
+            --BBF.InitializeOptions()
+            --Settings.OpenToCategory(BBF.category.ID)
+        else
+            Settings.OpenToCategory(BBF.category.ID)
+        end
     end
 end
 
@@ -1400,7 +1412,6 @@ First:SetScript("OnEvent", function(_, event, addonName)
                 end
 
                 BetterBlizzFramesDB.auraBlacklist = optimizedBlacklist
-
 
 
             end

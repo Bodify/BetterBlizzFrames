@@ -852,6 +852,10 @@ local function CreateImportExportUI(parent, title, dataTable, posX, posY, tableN
         if errorMessage then
             print("|A:gmchat-icon-blizz:16:16|aBetter|cff00c0ffBlizz|rFrames: Error importing " .. title .. ":", errorMessage)
         else
+            if not profileData then
+                print("|A:gmchat-icon-blizz:16:16|aBetter|cff00c0ffBlizz|rFrames: Error importing.")
+                return
+            end
             if keepOldCheckbox and keepOldCheckbox:GetChecked() then
                 -- Perform a deep merge if "Keep Old" is checked
                 deepMergeTables(dataTable, profileData)
@@ -1026,10 +1030,8 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
         end
     end
 
-    local function deleteEntry(dataEntry)
-        if not dataEntry then return end
-
-        local key = dataEntry.id or dataEntry.name
+    local function deleteEntry(key)
+        if not key then return end
 
         if BetterBlizzFramesDB[listName][key] then
             BetterBlizzFramesDB[listName][key] = nil
@@ -1374,7 +1376,7 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
     editBox:SetSize((width and width - 62) or (322 - 62), 19)
     editBox:SetPoint("TOP", scrollFrame, "BOTTOM", -15, -5)
     editBox:SetAutoFocus(false)
-    CreateTooltipTwo(editBox, "Filter auras by spell id and/or spell name", "You can click auras to add to lists.\n\nShift+Alt + Left-Click to Whitelist.\n\nShift+Alt + Right-Click to Blacklist.\nCtrl+Alt Right-click to Blacklist with \"Show Mine\" tag", nil, "ANCHOR_TOP")
+    CreateTooltipTwo(editBox, "Filter auras by spell id and/or spell name", "You can click auras to add to lists.\n\nTo whitelist:\nShift+Alt + LeftClick\n\nTo blacklist:\nShift+Alt + RightClick\nCtrl+Alt RightClick with \"Show Mine\" tag", nil, "ANCHOR_TOP")
 
     local function updateNamesInListData()
         for key, entry in pairs(listData) do
