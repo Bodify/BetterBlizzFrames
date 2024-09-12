@@ -7,170 +7,128 @@ local ABSORB_GLOW_OFFSET = -5;
 local UNITFRAME_OVERSHIELD_HOOKED = false
 local COMPACT_UNITFRAME_OVERSHIELD_HOOKED = false
 
-local function getAbsorbOverlay(frame)
-    if frame == PlayerFrame then
-        return frame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer.HealthBar.TotalAbsorbBar.TiledFillOverlay
-    elseif frame == TargetFrame or frame == FocusFrame then
-        return frame.TargetFrameContent.TargetFrameContentMain.HealthBarsContainer.HealthBar.TotalAbsorbBar.TiledFillOverlay
-    end
-end
-
-local function BBF_UnitFrame_Update(frame)
-    local absorbBar = frame.totalAbsorbBar;
-    if not absorbBar or absorbBar:IsForbidden() then
-        return
-    end
-
-    local absorbOverlay = getAbsorbOverlay(frame)
-    if not absorbOverlay or absorbOverlay:IsForbidden() then
-        return
-    end
-
-    local healthBar = frame.healthbar;
-    if not healthBar or healthBar:IsForbidden() then
-        return
-    end
-
-    absorbOverlay:SetParent(healthBar);
-    absorbOverlay:ClearAllPoints(); -- we'll be attaching the overlay on heal prediction update.
-
-    local absorbGlow = frame.overAbsorbGlow;
-    if absorbGlow and not absorbGlow:IsForbidden() then
-        absorbGlow:ClearAllPoints();
-        absorbGlow:SetPoint("TOPLEFT", absorbOverlay, "TOPLEFT", ABSORB_GLOW_OFFSET, 0);
-        absorbGlow:SetPoint("BOTTOMLEFT", absorbOverlay, "BOTTOMLEFT", ABSORB_GLOW_OFFSET, 0);
-        absorbGlow:SetAlpha(ABSORB_GLOW_ALPHA);
-    end
-end
-
 local function BBF_UnitFrameHealPredictionBars_Update(frame)
-    local absorbBar = frame.totalAbsorbBar;
+    local absorbBar = frame.totalAbsorbBar
     if not absorbBar or absorbBar:IsForbidden() then
         return
     end
 
-    local absorbOverlay = getAbsorbOverlay(frame)
-    if not absorbOverlay or absorbOverlay:IsForbidden() then
+    local absorbGlow = frame.overAbsorbGlow
+    if not absorbGlow or absorbGlow:IsForbidden() then
         return
     end
 
-    local healthBar = frame.healthbar;
+    local healthBar = frame.healthbar
     if not healthBar or healthBar:IsForbidden() then
         return
     end
 
-    local _, maxHealth = healthBar:GetMinMaxValues();
+    -- From StatusBar
+    local healthBarTexture = healthBar:GetStatusBarTexture()
+
+    -- From StatusBarOverlaySegmentTemplate
+    local absorbFillTexture = absorbBar.Fill
+    local absorbFillMaskTexture = absorbBar.FillMask
+
+    local curHealth = healthBar:GetValue()
+    if curHealth <= 0 then
+        return
+    end
+
+    local _, maxHealth = healthBar:GetMinMaxValues()
     if maxHealth <= 0 then
         return
     end
 
-    local totalAbsorb = UnitGetTotalAbsorbs(frame.unit) or 0;
-    if totalAbsorb > maxHealth then
-        totalAbsorb = maxHealth;
+    local totalAbsorb = UnitGetTotalAbsorbs(frame.unit) or 0
+    if totalAbsorb <= 0 then
+        return
     end
 
-    if totalAbsorb > 0 then -- show overlay when there's a positive absorb amount
-        if absorbBar:IsShown() then -- If absorb bar is shown, attach absorb overlay to it; otherwise, attach to health bar.
-            absorbOverlay:SetPoint("TOPRIGHT", absorbBar.FillMask, "TOPRIGHT", 0, 0);
-            absorbOverlay:SetPoint("BOTTOMRIGHT", absorbBar.FillMask, "BOTTOMRIGHT", 0, 0);
-        else
-            absorbOverlay:SetPoint("TOPRIGHT", healthBar, "TOPRIGHT", 0, 0);
-            absorbOverlay:SetPoint("BOTTOMRIGHT", healthBar, "BOTTOMRIGHT", 0, 0);
-        end
-
-        local totalWidth, totalHeight = healthBar:GetSize();
-        local barSize = totalAbsorb / maxHealth * totalWidth;
-
-        absorbOverlay:SetWidth(barSize);
-        --absorbOverlay:SetTexCoord(0, barSize / absorbOverlay.tileSize, 0, totalHeight / absorbOverlay.tileSize);
-        absorbOverlay:Show();
-
-        -- frame.overAbsorbGlow:Show();	--uncomment this if you want to ALWAYS show the glow to the left of the shield overlay
+    local effectiveHealth = curHealth + totalAbsorb
+    if effectiveHealth <= maxHealth then
+        -- normal - fill health deficit with absorb bar
+        absorbGlow:ClearAllPoints()
+        absorbGlow:SetPoint("TOPLEFT", healthBarTexture, "TOPRIGHT", ABSORB_GLOW_OFFSET, 0)
+        absorbGlow:SetPoint("BOTTOMLEFT", healthBarTexture, "BOTTOMRIGHT", ABSORB_GLOW_OFFSET, 0)
+        absorbGlow:SetAlpha(ABSORB_GLOW_ALPHA)
     else
-        absorbOverlay:Hide();
-    end
-end
+        -- overshield - fill health deficit and remaining absorb percentage into health bar
+        local xOffset = (maxHealth / effectiveHealth) - 1
+        absorbBar:UpdateFillPosition(healthBar:GetStatusBarTexture(), totalAbsorb, xOffset)
 
-local function BBF_CompactUnitFrame_UpdateAll(frame)
-    if frame.unit and frame.unit:find("nameplate") then return end
-    local absorbBar = frame.totalAbsorb;
-    if not absorbBar or absorbBar:IsForbidden() then
-        return
-    end
-
-    local absorbOverlay = frame.totalAbsorbOverlay;
-    if not absorbOverlay or absorbOverlay:IsForbidden() then
-        return
-    end
-
-    local healthBar = frame.healthBar;
-    if not healthBar or healthBar:IsForbidden() then
-        return
-    end
-
-    absorbOverlay:SetParent(healthBar);
-    absorbOverlay:ClearAllPoints(); -- we'll be attaching the overlay on heal prediction update.
-
-    local absorbGlow = frame.overAbsorbGlow;
-    if absorbGlow and not absorbGlow:IsForbidden() then
-        absorbGlow:ClearAllPoints();
-        absorbGlow:SetPoint("TOPLEFT", absorbOverlay, "TOPLEFT", ABSORB_GLOW_OFFSET, 0);
-        absorbGlow:SetPoint("BOTTOMLEFT", absorbOverlay, "BOTTOMLEFT", ABSORB_GLOW_OFFSET, 0);
-        absorbGlow:SetAlpha(ABSORB_GLOW_ALPHA);
+        -- anchor overabsorb glow left into health bar
+        absorbGlow:ClearAllPoints()
+        absorbGlow:SetPoint("TOPLEFT", absorbFillMaskTexture, "TOPLEFT", ABSORB_GLOW_OFFSET, 0)
+        absorbGlow:SetPoint("BOTTOMLEFT", absorbFillMaskTexture, "BOTTOMLEFT", ABSORB_GLOW_OFFSET, 0)
+        absorbGlow:SetAlpha(ABSORB_GLOW_ALPHA)
     end
 end
 
 local function BBF_CompactUnitFrame_UpdateHealPrediction(frame)
     if frame.unit and frame.unit:find("nameplate") then return end
-    local absorbBar = frame.totalAbsorb;
+    local absorbBar = frame.totalAbsorb
     if not absorbBar or absorbBar:IsForbidden() then
         return
     end
 
-    local absorbOverlay = frame.totalAbsorbOverlay;
+    local absorbOverlay = frame.totalAbsorbOverlay
     if not absorbOverlay or absorbOverlay:IsForbidden() then
         return
     end
 
-    local healthBar = frame.healthBar;
+    local absorbGlow = frame.overAbsorbGlow
+    if not absorbGlow or absorbGlow:IsForbidden() then
+        return
+    end
+
+    local healthBar = frame.healthBar
     if not healthBar or healthBar:IsForbidden() then
         return
     end
 
-    local _, maxHealth = healthBar:GetMinMaxValues();
+    local _, maxHealth = healthBar:GetMinMaxValues()
     if maxHealth <= 0 then
         return
     end
 
-    local totalAbsorb = UnitGetTotalAbsorbs(frame.displayedUnit) or 0;
+    local totalAbsorb = UnitGetTotalAbsorbs(frame.displayedUnit) or 0
     if totalAbsorb > maxHealth then
-        totalAbsorb = maxHealth;
+        totalAbsorb = maxHealth
     end
 
     if totalAbsorb > 0 then -- show overlay when there's a positive absorb amount
+        absorbOverlay:SetParent(healthBar)
+        absorbOverlay:ClearAllPoints() -- we'll be attaching the overlay on heal prediction update.
+
         if absorbBar:IsShown() then -- If absorb bar is shown, attach absorb overlay to it; otherwise, attach to health bar.
-            absorbOverlay:SetPoint("TOPRIGHT", absorbBar, "TOPRIGHT", 0, 0);
-            absorbOverlay:SetPoint("BOTTOMRIGHT", absorbBar, "BOTTOMRIGHT", 0, 0);
+            absorbOverlay:SetPoint("TOPRIGHT", absorbBar, "TOPRIGHT", 0, 0)
+            absorbOverlay:SetPoint("BOTTOMRIGHT", absorbBar, "BOTTOMRIGHT", 0, 0)
         else
-            absorbOverlay:SetPoint("TOPRIGHT", healthBar, "TOPRIGHT", 0, 0);
-            absorbOverlay:SetPoint("BOTTOMRIGHT", healthBar, "BOTTOMRIGHT", 0, 0);
+            absorbOverlay:SetPoint("TOPRIGHT", healthBar, "TOPRIGHT", 0, 0)
+            absorbOverlay:SetPoint("BOTTOMRIGHT", healthBar, "BOTTOMRIGHT", 0, 0)
         end
 
-        local totalWidth, totalHeight = healthBar:GetSize();
-        local barSize = totalAbsorb / maxHealth * totalWidth;
+        local totalWidth, totalHeight = healthBar:GetSize()
+        local barSize = totalAbsorb / maxHealth * totalWidth
 
-        absorbOverlay:SetWidth(barSize);
-        absorbOverlay:SetTexCoord(0, barSize / absorbOverlay.tileSize, 0, totalHeight / absorbOverlay.tileSize);
-        absorbOverlay:Show();
+        absorbOverlay:SetWidth(barSize)
+        absorbOverlay:SetTexCoord(0, barSize / absorbOverlay.tileSize, 0, totalHeight / absorbOverlay.tileSize)
+        absorbOverlay:Show()
 
-        -- frame.overAbsorbGlow:Show();	--uncomment this if you want to ALWAYS show the glow to the left of the shield overlay
+        absorbGlow:ClearAllPoints()
+        absorbGlow:SetPoint("TOPLEFT", absorbOverlay, "TOPLEFT", ABSORB_GLOW_OFFSET, 0)
+        absorbGlow:SetPoint("BOTTOMLEFT", absorbOverlay, "BOTTOMLEFT", ABSORB_GLOW_OFFSET, 0)
+        absorbGlow:SetAlpha(ABSORB_GLOW_ALPHA)
+
+    -- frame.overAbsorbGlow:Show();	--uncomment this if you want to ALWAYS show the glow to the left of the shield overlay
     end
 end
 
 local function OnTargetChanged(self, event)
     BBF_UnitFrameHealPredictionBars_Update(TargetFrame)
-    BBF_UnitFrameHealPredictionBars_Update(FocusFrame)
-    --self:UnregisterEvent(event)
+    --BBF_UnitFrameHealPredictionBars_Update(FocusFrame)
+    self:UnregisterEvent(event)
 end
 
 function BBF.HookOverShields()
@@ -185,7 +143,6 @@ function BBF.HookOverShieldCompactUnitFrames()
         return
     end
 
-    hooksecurefunc("CompactUnitFrame_UpdateAll", BBF_CompactUnitFrame_UpdateAll)
     hooksecurefunc("CompactUnitFrame_UpdateHealPrediction", BBF_CompactUnitFrame_UpdateHealPrediction)
 
     COMPACT_UNITFRAME_OVERSHIELD_HOOKED = true
@@ -196,8 +153,6 @@ function BBF.HookOverShieldUnitFrames()
         return
     end
 
-
-    hooksecurefunc("UnitFrame_Update", BBF_UnitFrame_Update)
     hooksecurefunc("UnitFrameHealPredictionBars_Update", BBF_UnitFrameHealPredictionBars_Update)
 
     C_Timer.After(3, function()

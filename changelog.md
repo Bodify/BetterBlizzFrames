@@ -2,16 +2,23 @@
 ## The War Within
 ### New stuff:
 - You can now set a keybind to toggle all filters on/off to view all unfiltered auras momentarily. Or macro `/run BBF.ToggleFilterOverride()`
-- Misc: Minimize Objective Frame Better: Hides the objectives header as well when clicking the minimize button.
-
+- Queue Timer: Display the amount of time you have to accept PvP and PvE queues ala SafeQueue.
+- Misc: Minimize Objective Frame Better: Hides the objectives header as well when clicking the minimize button. (on by default)
+- Misc: Surrender over Leave: Makes typing /afk in arena Surrender instead of Leaving so you don't lose honor/conquest gain.
+- You can now "merge" aura list imports with your current list instead of chosing one or the other. Only new auras will be added doing this and you will not lose your settings on the current auras.
+- Show Druid Overcharge charges on PlayerFrame combo points.
 ### Tweak:
-- Smokebomb timer now works without debuff filtering on.
+- Nahj profile update
+- Smokebomb timer on Player Debuffs now works without Player Debuff filtering on.
 - Large restructure of aura lists that should both be cleaner and have better performance.
-
+- Absorb Indicator now says millions instead of thousands. 7300k -> 7.3m
+- General performance tweaks
 ### Bugfix:
 - Fix default purge glow not scaling properly with enlarged/compacted auras
 - Added missing smokebomb spell id to player debuffs for timer
 - Fix issue with BBF Filter Icon potentially saving bad position data and causing lua error on next reload/login.
+- Fix rare issue causing checkbox settings not to save for some people.
+- Added some missing stop casting events to the Castbar Quick Hide setting.
 
 # BetterBlizzFrames 1.5.3c
 ## The War Within

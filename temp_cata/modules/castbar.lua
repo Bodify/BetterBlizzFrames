@@ -19,11 +19,11 @@ local function adjustCastBarBorder(castBar, border, adjust, shield, player, part
     -- Get current dimensions of the cast bar
     local currentCastBarWidth = castBar:GetWidth()
     local currentCastBarHeight = castBar:GetHeight()
-    
+
     -- Calculate the new border width based on the current cast bar width
     local widthDifference = currentCastBarWidth - defaultCastBarWidth
     local borderWidth = defaultBorderWidth + widthDifference + (widthDifference * widthAdjustmentFactor)
-    
+
     -- Calculate the new border height based on the current cast bar height
     local heightDifference = currentCastBarHeight - defaultCastBarHeight
     local borderHeight = defaultBorderHeight + (heightDifference * heightAdjustmentFactor)

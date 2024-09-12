@@ -156,14 +156,14 @@ function BBF.ToggleCastbarInterruptIcon()
     if TargetFrameSpellBar.interruptIconFrame then
         TargetFrameSpellBar.interruptIconFrame:UnregisterAllEvents()
         TargetFrameSpellBar.interruptIconFrame:SetScript("OnEvent", nil)
-        TargetFrameSpellBar.interruptIconFrame:Hide()
-        TargetFrameSpellBar.interruptIconFrame = nil
+        TargetFrameSpellBar.interruptIconFrame:SetAlpha(0)
+        --TargetFrameSpellBar.interruptIconFrame = nil
     end
     if FocusFrameSpellBar.interruptIconFrame then
         FocusFrameSpellBar.interruptIconFrame:UnregisterAllEvents()
         FocusFrameSpellBar.interruptIconFrame:SetScript("OnEvent", nil)
-        FocusFrameSpellBar.interruptIconFrame:Hide()
-        FocusFrameSpellBar.interruptIconFrame = nil
+        FocusFrameSpellBar.interruptIconFrame:SetAlpha(0)
+        --FocusFrameSpellBar.interruptIconFrame = nil
     end
 
     if not BetterBlizzFramesDB.castBarInterruptIconEnabled then

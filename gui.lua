@@ -15,6 +15,41 @@ local LibSerialize = LibStub("LibSerialize")
 
 BBF.squareGreenGlow = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\newplayertutorial-drag-slotgreen.tga"
 
+local function ConvertOldWhitelist(oldWhitelist)
+    local optimizedWhitelist = {}
+    for _, aura in ipairs(oldWhitelist) do
+        local key = aura["id"] or string.lower(aura["name"])
+        local flags = aura["flags"] or {}
+        local entryColors = aura["entryColors"] or {}
+        local textColors = entryColors["text"] or {}
+
+        optimizedWhitelist[key] = {
+            name = aura["name"] or nil,
+            id = aura["id"] or nil,
+            important = flags["important"] or nil,
+            pandemic = flags["pandemic"] or nil,
+            enlarged = flags["enlarged"] or nil,
+            compacted = flags["compacted"] or nil,
+            color = {textColors["r"] or 0, textColors["g"] or 1, textColors["b"] or 0, textColors["a"] or 1}
+        }
+    end
+    return optimizedWhitelist
+end
+
+local function ConvertOldBlacklist(oldBlacklist)
+    local optimizedBlacklist = {}
+    for _, aura in ipairs(oldBlacklist) do
+        local key = aura["id"] or string.lower(aura["name"])
+
+        optimizedBlacklist[key] = {
+            name = aura["name"] or nil,
+            id = aura["id"] or nil,
+            showMine = aura["showMine"] or nil,
+        }
+    end
+    return optimizedBlacklist
+end
+
 local function ExportProfile(profileTable, dataType)
     -- Include a dataType in the table being serialized
     BetterBlizzFramesDB.exportVersion = BBF.VersionNumber
@@ -44,6 +79,27 @@ function BBF.ImportProfile(encodedString, expectedDataType)
     local success, importTable = LibSerialize:Deserialize(serialized)
     if not success or importTable.dataType ~= expectedDataType then
         return nil, "Error deserializing or data type mismatch"
+    end
+
+    -- Check if the imported data matches the new optimized format
+    local function IsNewFormat(auraList)
+        for key, aura in pairs(auraList) do
+            if type(aura) ~= "table" then
+                return false
+            end
+            if aura["id"] ~= nil or aura["flags"] ~= nil then
+                return true
+            end
+            return false
+        end
+        return true
+    end
+
+    -- Convert if the data is in the old format
+    if expectedDataType == "auraBlacklist" and not IsNewFormat(importTable.data) then
+        importTable.data = ConvertOldBlacklist(importTable.data)
+    elseif expectedDataType == "auraWhitelist" and not IsNewFormat(importTable.data) then
+        importTable.data = ConvertOldWhitelist(importTable.data)
     end
 
     return importTable.data, nil
@@ -102,6 +158,46 @@ StaticPopupDialogs["BBF_CONFIRM_NAHJ_PROFILE"] = {
     button2 = "No",
     OnAccept = function()
         BBF.NahjProfile()
+    end,
+    timeout = 0,
+    whileDead = true,
+    hideOnEscape = true,
+}
+
+StaticPopupDialogs["BBF_CONFIRM_PVP_WHITELIST"] = {
+    text = titleText.."This will import a color coded PvP whitelist tailored by me.\nIt will only add auras you don't already have in your whitelist.\n\nAre you sure you want to continue?",
+    button1 = "Yes",
+    button2 = "No",
+    OnAccept = function()
+        local importString = "!BBFfM1BSXrXvCoF2xoGkKjjagWkzln0qutfTr1rOayN78)r2Pw(mofKQKNBV5UBK3BNRZU7zzteqS4dujhfuGpKqBPguebK4djbjtneBkO0ecvbUMwjci5eseTuvObKrq5dTK(EZEZE7fV3MpGiEN3BM38E)E)EV3Cr(HjZqSjp5STe7EV0OjnjfOhDO8elQwQ8SS2ttnniIC0mJDhSmOi7JvOixytmThByDUbx8arIgjA8NqpB5gkER9BQteMeBg3CBAJiOunEwTbyzPLBe3aqSYnnw5ypq0(64V3wBB)AUMRPVoUu7Tpg8pIUpDEHIeDBAM8T00XokSFlpKGvGlYWigA7KuQYMGl6TlFCZnRbkhjA545JFKhD0YnSV(1PAjn46Jx5mpYJ6kT0o39CGifBEicZulLtXIcQLfySveD3ZvFZRLg31xd6(2DXkXmbVJnLMPIbbROoIOrBjYb6g9fn)GMuZmmZCAdtT4gsRVoBnOmUnGIWTOReO2RjPbAzG2GdShWrMHxWDdWZWvHUsGx6Vy)O8RoLJOeRe4O630YMzQBBD1opqtq)wIC(FpCTotxSSzDGO(GKCm9k3lyPq8hr)nFFqXxyNeHwsIPjvurl47vD4Te5P2l6XxFniJeLaiNaVAjSYtkqmvHwq6vgABjYctJNuclDWJsm19KEHPxP0XFYzLU)DqTZtfw2CrbTEmi5uEViQR)tolE9JM(nG9U83tz8PFdFHYME5MX96g7UavqmYO1jVqbhtp8cUE9Dq4U3WNVpy3pAk0kgNsl65KGfc4Igl53iT9eM2SFSmsazHudJkkblx1ZIBFt7(BLGLo5ywc4DPzapQfXXWwzH7(BdmxPLOT)XYJAK8q2cLyzRTtMDEM6Mbl7QxFD8V)FFhQgSbN6ah4nV8LVS7r)rZ2t9HxqEs3eHDEKeHAKrAjF0Sq4Dwem0AnGHoZZTOMiyOBdhFiHzdWbfTJTdBqYKgoEOTo2Eiy0gU1d1ZvE5rRR4nldjBwtALBwJyMrRhMGkdn36HIx(FI25nom3fLMIOlyzzkGhSCy5fPxOwe1c(qunE(ZTvjLX5phEa9rHZhpbaRcbaJmQ0MON9q4MSA1MC2dfG3OPLgdZl6IZlakBMXsf0xASGK(dVtxWvAEbMRZhOMlK2JNWVlsUnF4D6MHSyT3Nf9t2DKIONAT9kOa6taSpLywS0mdM9KQi5rkgI3k2LEFWQUyIsuZCiD3ofe78k8(LE)6aENAvGsVqsdsgQmdxzBtTQ6OG2fK39Ha(EkqGGU8bbpwDV7GcY83)2oa9E7u5jz4tO1vfUNGvbKfvj2xIxOI3Yaa)n4qQxQ8x((1Mk34l)qGJm9i55ctvCe(w99CXFOwbfMojrmU14Q8w4JHHm3YHrQ(hgY26HR7yPncLO8CB5W(iTBAUbabV4Wut6eyqbC0t5v9DUbc7iU(wq8Wn5V81vK9GYeY16N8hClIpP2OuMYvaFni2GMFA8WwZWKCuvsukd)0SGebrZEY3qwjhGS5b6hS)gvy5K(P)BCR71pYh(t)i)JDcCX7qHYp2jcXT00Ydlt7H)pAWDXSkAq0PfOM2i7Rourr56F6TG2wcHob7YWPQTbReKp4(7fGBh1TAh0LKq1ucSqTiSiN(ML9(0fJQLEsxN1eCp5HLR)fyFmti72GxKkdoQ)OS)AQY8SR)2WZy1pOHnRaqieqS)28HZISRxdVSdtmmMeblDk8in21RfgkRTHcaLbn94q82bqMq2Hil9IyH5Uifkczd9r8OqGfcbCE8Nd0sKe6RGku9xE8NlGWsd)LrLvMDR)H23OabhTgcK61hiORScBMnIM4qa8GobfA)vbQHf85dJUU(HtAFqhV8mgow21NsBD9l5NIfd95ylraDKSmGc8hlwqLnSEyPNcsR0sIS8k2zyHGU4FWrKx8ewfP6EL26MKZqbbajcMKo2MoOSQBLoShsWTHTWN9TPdgsOzT)o4CfDxIuPF(q9XG0Yt8uyR6LVf1bCQUVIuM9I54t3VGBMMOc44xddBEXvvt5YlUk)KgV4xiZUTSH(jDNWsTPV4xeYLBszFEn3PbNmUeSlliD1BXFYVvwf7Y)zSpbxoIjigQlc8D)aPlgVwdpEvdp(F9DWkhdc9jsfB0sRtIQsgSIV7x02knA1zK6HuI7Xe3wjFNvtV9QX6Qq5yDEotMVGmSsnXG4BuwkAi(eYUlGzuQoU2ghiicXnnp2qXdAMNBmPVUHRtsXMMhpKFPSlMMtvesjG51YA4h4bR630p3eOBQDL9EUjcYiAVpKvgAMbAQgyL9C5WcvDxsgZlED161VoFE9bkb7Yzsc94ihbUARrWkbNd1G(7IDg1hWRt9n2t0i91XVT1w3U)2v0Fxje)qposP3faV1gcM(wbhp0JhcgVHet6vhaACZlZoXK(Cun8PC0uGzMsd0s(tkxrNtFk31vCT16kUwFiRyR6PqmC3PHUwhKLlVYqHVhG)p2BLf9)dsmOL4g0WABdefo8N5WirW97UPpZHd25gDgoAG3LYaNHhsk7xrqz7Ts86Ri(Uln9sNcZMgb6TsRxOKvggXd()sNke)Et7zgqXL)5PTyOoAP0HlOxx)7zMqun2()zUKRKkT)6oXHPQ8pSUpIVyF(R4pua)zvZ)t6a3OB2FT3RKQ(t6imcYwxg3GwQP4nM4nb6jmZP8UTUC93e7XL9nq1hh3et4)C1YE8aadnXWwQe9AWku0YRBk2w8NuFbzKDa1IxG7FX)1pvAWP4ogPDeWiRDrlWnHo67Kj09QRbI5lghPdKjS4ACjU2jKpUnnOxDbZRmoiriEPip)jrlABkHF(tg0n7eJjdQ7WXWGLv2cvQ8cUJkOcRx9EeFES7FXWKI2oc1KSZF4WsZ1pnY)Ka2CjQPkFsFD8Up7Z(hbBOVo(Sh5rMfLUkVYPLDVqppA)DOSe65dW(B4doaA)RT2MfgXry7RBHdegwAprHn4OdtMevUp3wsLON9enmN7cpbACRr5Cx4jwPX9j3hkYTvbqFFHLA1(PbrtN0ri4tOYyA)0HLhFp)dKAmHboY8iScx9EcbnK07tEwzDyQnPaxump3IPs)HLcIi84FisB6oQJp(D4713(2WDLv(IGUp0PSd2RMbUH7clJUyo0NLTc2AXCHfc(OhdpKktw7ojFD5ObHXT)2BfjP38vZwa5KS13Y)1TOU6LrhbU(mDL)cwoe27J9RrIwPBdA3jrMsvF2rynF55XEUZ4hNd)zq48LEvuipm9sVAacf5TWM8EHuoPburwNCbwYkV0D8wY26A6RVb0FC711TbcilXFWTI4t3hDvb5p4wxPjSH1Jwzcxr2W6dl69o)kmVdFzFTo56CV23Gfclt59sHw8guoR3l1kncmq)o4mTlpedMpr4(a486pydinQtFDIT9vz0miTcFuGYnI(lyj3JPEVLz0PKXqVkptDMqqgp02qu1n1JGAofJMb6wmh0bKW3GuGiHOFBZ1dktBYFQHgworgyJigyM2Wow5VIBy8f7unGszVbTL5wDkraZ8l8xMg(ZQiZ437CYzggfgXLjGIvDxiTGC1h)e0tcAAlRKAofQSno0GSX)ERSfYyDBzdLAUr02s7ri3yy4PZofMV1dxyxPogmQPIlfwmmU0)ZFcd8YgyL)cbwH1QjiTS)M19DOX59ACR77ciHSPJFb0fS6DqWcMWLp1eW8AvB2afOSV2eMBqCp)rQfNBWqS6gUNLWlSVxh8H5v7J(Ewkea06X2NwUxOmV7pV0iqVxvE9cyTquC(lilfWGITcFtrn)fcZ7oZnGChdJVdOxxfZCdHOrJx36LV)PhTBLQ69WSTP(YIRxLoqFmDExZGa)FqDt631mYxnnhfeB6reouR886pMhiNmFz(7w6ceKCCtbP6tRn)Dhq8pwCnmGMsbsIRTsHI)M7fF9Lby65tZfMkgN3CVHY4eFX9lrw9RttJHrnjW32jJQeZI7pmSt5nJE412T8kScgOWDVy9tWaE9xrcIQm8HMBwELd)1FLWcVF2J5(dy8zpg0b(i55oWSyw2uIHxEWjKpif2wJwkBErLp(e9xnzbmHPXF25rMSi9mehbzN5z2udML9))!BBF"
+        local profileData, errorMessage = BBF.ImportProfile(importString, "auraWhitelist")
+        if errorMessage then
+            print("|A:gmchat-icon-blizz:16:16|aBetter|cff00c0ffBlizz|rFrames: Error importing whitelist:", errorMessage)
+            return
+        end
+        deepMergeTables(BetterBlizzFramesDB.auraWhitelist, profileData)
+        BBF.auraWhitelistRefresh()
+        Settings.OpenToCategory(BBF.aurasSubCategory)
+    end,
+    timeout = 0,
+    whileDead = true,
+    hideOnEscape = true,
+}
+
+StaticPopupDialogs["BBF_CONFIRM_PVP_BLACKLIST"] = {
+    text = titleText.."This will import a large PvP blacklist focused on removing trash buffs, created by me.\nIt will only add auras you don't already have in your blacklist.\n\nAre you sure you want to continue?",
+    button1 = "Yes",
+    button2 = "No",
+    OnAccept = function()
+        local importString = "!BBF1XxcCYrzzEZ0xZaKqUjDUGcqt2ffq0LfniIZmzUiZKeMzsMfCbTMURPNIP6QARURmzYgxK4cSi76IakckIlEJciymz5qnjeu0fw7FjbnHqascqchbYK7eHKV)phv19K4N6pFGPFR3JN7R33AMzdznlzE7XoC6KpWD(pEU2zjydUM5TwFtflA5MXYOHa)ILwEX(9gSdBxRVqDR8oMjghaLJvyIlWYVONRPJ9sTYA0JLzP(T8tNALZNNkalhBTD65vYyEwLg0ZFGYj(cPJFMpo)RaIzyS9y67B75B41NrtobUw0qsnC9YemC9yiJBr2l2mJDPHOX0SVxXsYyAqhtdN4yA3ox)8ysSI1ZJbWYXwEpwoognBLL)6hTl5RF0UWwSPLKXQyXQN75OZ9CoP13ZpJShxPodReZqHX3vjFZsw5SZy0MBFbfT9C5nWF65LnWF65PZAdalyz5AaSKrtdzvKgsYh8Uf8(dE3yiNztow5TClz6y0y)MEfNTrtM(L6Nh47DZYaFVBUCS92P5sbsRzFZC0W5zQ2ecwdqAxph8H2U5mAnai4mMcMn(mMTG8NXSbgPHahNIwdPNNfQNNfwow5rJ)uDl)uO)cayOn65xWZ30Hh6nMrg6nMbl0KBlNTV5SkA0OFGLJX8iKFEtFl5WDp6H7E(BE4QGXFL2LP8vANwS(Tn6XCXY(69BAM8V8(nvo2d0PvXGcfCSTad4Dk8H3j2UjXEXs3tw0EQBB3Sy3IDvZEdcQUjw1I2M8eUlDP2v7eHRh7Iz9YtKwIQ0JPdDeR7jVd(O)KGjF7ZXkVNliSnA7NXr2tV(8KP41Nhw8tJP0Z8ycLEMhdZ6u7WeSc4C2MBjFMBWyoM5ly5A5ZFFpfLZupfjHOMCZywOyGdyGYAmhRIGSneM7fORXccxJuN(Ti)Pt)watBZb(mh5)uGLRCU0pyx0hmf(p9SxT8NE2RMy)6WlNVjKHbwPJqrKuFJ(KH8n6JLgTHmIIlMJ5GYe)NxKmK)8IWY2a2FEdgjJv3kVlHmCxmzi2b)d8ybe0Xf5zNTpp)88S8h(CYS8h(C0zU(cEa)muHseI1Z9lgyjmcjp8TlCmh(2XWMup(MfkaSYclaujPGzXGLMh3gVxzCB8EbjQzFlRLsm79a6ojmux5Vgtal)1kh7X62olifedvrbn(1u0i(XcNB9oe7Krp(2flLlW0plD(B0lFbtxq3k2VDb(JErD7)Iy7VxOfih(MUTCzfd8a20)SmGn9ptiYUkaTn9z7Bz0vbOtKzBQD0IEraXC0TfKl71XYyr2fnZjsNTTkr6STvvoMFx9h0xFkd3T7jmm3UhM8PaDM9A6M1Odim55Jns7wl2YbN)0j389jOLnFFe6Rtlhmehs5wBahBx0gJNMWyVIOzeqqtbbOOvgOatvBvBIU4LdqiZ1Gx(EbAXgA2t(mFFz6FMVpn9vKNBctUJDV(2bcXoLymbqsvul97f4yxS)rOBm5o(oYCTJVdPBOzBYmsPHMTrdoMzgWybEdMvKwsUMFOmW18djmlRZyW(TCka(46Tf15RvL(xlj9poIpXYh)C3bLSCuKBYDOOMDqOMjwz9AAX2fZyrQVfgR)BLX6)gN9g9CYsAPCfHLT(5LLzRF(YXUdI7UFlOLv2b9juO12hFIjrDw)Zc630X0DjPt90QG2ttdyYnvSKfqEzf97WMqt5bVaJ8ITpHnbqqB6gAvnAalJY4NAT50JAoW4Vi7LAZN0Umx8Iz(WKVNIwFpGwFmsdVvjiXQcHpVUjEEEx2v)MLkzrmqQXEEm3VVmM73hJzcn445L9c6YZCamSw89cCfm(pPGmQFsbAM6WeSyZb8xUWiyiQm1npKmMBEiWo3gWiLevWXU0troHx6Pq7rAfateyczMVtvuAbirUBhNBl6Wtyi4TblNm9we5KP3s5yRVjqgTmwGLRRPqMIp9FV(Z)Em9mcEqWaRQjVK)lztDj)xSEOSMqh0IHyAjpxRIqNKQK4Uhug2DpiTl62oVfPNcSv5cruXpVFNSmN3Vd7IgWNdZAq)PsOI)XAu(5pwJGq1Txjl2kd0Oj2ZJTXxuqcB8fj7qWC9a59GHIMHsJbbguSu8nuu43aOW13IJLzEcv0P5qYUmZnlCDzUzEo8XVxmaBrJwH8bWwqe(6eSzIRd6C6WYpJnRoai9bvCzBkYQnICVaFY(toBVGIJaLE47qg1HHfX1JbLXUiWz97jUEK6Du(Q3Pp2Ggqt9g47sB12Y5AhQxjX0MgVDbewhAYf6eGjV014MN)ZasNI2G4wFKcwYlH8fW3IL9o1Lh6t6DrEGPwy238djm7B(Hyd1w4md7w5YfYOmM)p57gZ)hXL29qKOYCGQsSbnd53xLsPxfrPNCJ(dvemJGkcF0YxWBqlFshhpBV83wMTx(BZ7txRLaxIiv41xSOzGJ4Z5IRJheGmQiFV(MWlAq5ByqWHBMpRnVQBpVSQBNpZn6abCXdZfeapTkk6IE7FMC8E7FgnOgikhHtj2issZxwWtvxWtL4uRAbxG5SgiGfPs0NYeqKNX3cuQbnoZVa8ORuGRAaR2rNvg0OZcoLwjfBdzmcFMVTBs2Y32nrkSbta5xerBPfRn3IrUDV4tx3rNoH1RAhnx789gi(qEB3SozeN7KoHjRlpydWsMRrPZ1OOTE1Zf89DwdkU0nUFKigmUFenz94jgXnnW)uP(hYaM4hQUT(U0ebauDphRswzc5kt(O)wbl)O)wcb2QPpSubDzzSlqCbyi1n)lI)25FrGT9kdYMlKJi1p7gLtXp7gb)hhPeJ4jUg67EJFo)DVXpVCSg6eQq4VzFQMZ9bnN3rxdLVxBVI2m7Anx(tX)eGqXvxbzjY0C88eD37w1lVBFw3DaytX2llwTsqLK4eYv8DLXCfFx6Oq6u6ZbbZvTUZdFpQO09eQ7TOL1akVuQlqW2PUaYTaOUXpJj5pkPrRUF)k4tZVFfG)yUIIoJomZ0VTg12wwIS4Bzj8g8e8asuu8TUvzmFRBLiNlOFBt2FtYkxe)tYxFLcb51xjmb3LLfRYtycRzDImiGGw0HPRj8cJzcso93s(QP)wqhb8i0DPmojXyUq5mnMlKIBcEk5dvxnbhZ9kiiT)0)QSN(t)RGGCnaLVGahram1HljmwhUef8HDwiQd7u5sNQ(hq(M6FamPlW3opohiASmLc0iFo2Vu2nh7xsclsiKKsv8pz3hIniI7B7cnhqwg3KJwllZI3SPTyRi19PUSEFKlRNzNKbpsmb6WknIzlXvmt5WEfZemKq)PTlWCMr86X)hufI)dqH4ER3NIleltE48MPyW5Uef9asMdApW103O(8qsO6LjvkHcbiwgqHk1prJ4O64Lz0InCalZX9AMreSxKn04iiOd9KY5(qpj2jeNkCeZe26HrbMFp5UuXYDbXYhOzhZI9xWZwK7sU(Nr(T1)m0XGiL9JajwGNDrDdEP)CzdEP)CslChiSaWgApG1SjfvMH68sUrDE24ZefK1UVbvm7gGtlDBHO2KitIT13G)baXA2Op2psuqUHEM9glx(Y3y5eBBbWT4h6mqnZOoXe3miRcJJnGcUbynQt7E7fw4sThvtYEGMKL3Pzw7q7tX)eDk4YprNqMSd4IWaGOwFGpX1x3DYoKda2SDcF4dSfft1(Rfg3A)1qkNft6QGphHWp5fKJ8p5faPRDlZceLRzslHiHgtq7asmaDLH9PimMqYNxAu1oQVepkaJqCw)yzjT(XKTyF1vfoIS0PUxjCnaXSo9WqQR3V0Sn6WJYAeh1vi)tYn(CkD55IM(uRwz5wnMHPmx7mdW7QMHJmSIipsPSe(rYJUo5Zp66kZrmaVyWQv9qIFoxJGvpNRHy)cdX3mY9TuR9UK1BT3frXAersbfHuQl8CZQy5K7454JmGSyj0TyYAfNdSn55cQBtdzLovtRqqmnTc6SppRbnMNDF9b9mZZ7c6Yf)J2UZYOBAda3bub9Tdb9T3t)2mheCo1YsmB(nu9oFJhGmJHi0Dc1AwZZAW)eGKTikikVGsgeI6C4p9D(pLp9D(pzZ3qPqivnmyCvP3p8(Lb(dVF4Rx39dp(b5btOihKOLlvuX0YLY8Cz9c6L)HAhJ4FaGGrTlkMdJkQHRDu3SYXCZHK0Kp6wfY0JUvSqKdezzvKTjQqJVlX7habpC7EqPywyxw9lO5pLSlA(tHt7C9wShuGmxezyGyLTMB7JjyJB7JHDzRMbWDjMZn523GSOBFdeAOn3SWsp0FJWbHs1gn9D14ftDA)rbnCA)rmWz0JecMrxUEdA0cCxd21cCZbSsrwWPUBGp9aG1RjeOGRy2Ug3LOo3swfhBl2oUwMfR4ABYF6Rj7NF6RHFFQvSiAbfiglcgRGwxNWKm8wkt5BrmLNjyfHQp4mSK2i)Gi98PEYVNmWN87rCVl01NZeaFaST0d4(vv97N8PVt6e1nKAlQwWITt2HjcsP9HYCKbNNf5x)bIAsalpIm7X8jZ2Ov8)lRYY)fYQS8FbgyAk9ryASTGwbJbH5nJf6NPKi1h7h8L158ltd9KMZoO50xuC7CibR5CiS5ApaKpe8wyKzj3(lQ0yeAv57N3gJUSSngDzCyB0pOiBXIcdI)5ycxbGuOQqPFParDyC9hItSlJF(W7H(unonHaAZjKLLVc9mss4t5KpJ1B5p4qUcL5YKOgbK4h6Km5rrL0mDcubW79rKHCVpcgcy5n71ZbANGz)atN)2km33MLt8(2moEDzIaA7UFeWz9C6mtN8a6pFGntBWM99YBqMCPLKY1LvXkjnp19QeS7Liyt5Kw9fyxYOD4HnXZ)QtG55F1jeksxZs(KIy3s(KejCUqRsP(PKdRsG4lZmGLM5rXdjaz7As4IDvs9d55(rYV(CWL(92wEIa7wcS55TvK0rehbbKStfQBNWkqwOGPTmnBxYMdGC2sYz7aBbg9ywkd5yvDpSKI7h(uy7eCQgkEcLzqvgomugEhZFj0gmmWX3tLXEVVhl)qMSbD3lJW5KCf7rW5RypK(J2YqUQhkD3ONVFqHssS8Q44JRu9hhu9YYIFkVS8NoLxgtXKGvLmIzZaocKi3XIpPRNhhGKoe4qm5uEUiR2D45wLOZLpwXO1LpwjlYSo3wmxQvDgtJXggu05n7yxWy(bY(i2ROshVcLpqkMHm(MIIGK7FhYXC)7ay46ls5YQrti1oKIa)W)f5B)W)fstuB5CTO1RvWUz0nCrIgtIp3vYJbqYDsobgvfgv6u78hlZXo)XeDQns7kmVa2QwcSLmKgBGZu0DmWzsoFz2h0wdMoXm9dFqzl(WhKKH7kJPVJvjdo1pv8dFd7wg0g2nOMDyMlVjRKUxDlC(BsmIF(Bc8JsEWm6AaBIXeHdCNQtt3jCAA9mZt1ARIVmrjcGvBAgcE96XR9A3VS2RD)0KhMT0kgptDNQZp35QjAgfuvvtFQ1PQFw3kOO28jF6RWMMCh6bBh7MqEnWXp3SNVb0YbFa4HC43ugYHFtwwI8wgEeo0j4S8UFhzu7(DczqtUwvn8AHA4hRzlAlLpsrs8DkBR47K9GIlpeMWc2vY0CQ1TkDRVkkxN2q(RQTEnfoMy7SavuLXVqYreUqCrwptTDvz12jLvucnZ6nic4pdCBnIYEaDFFG3HCTUFZcf9Yk0L1j15dqkwyt)EHmkLulERDmX9daXuprjCwMYgjFX7XL9PL94Y(0G2s8JzRkVvRRjDbAcOSnjNPJRNPJtgoR4EvqF9v15AhkjDhKffevOdHtWMJkZiuyize42LITai46QNsSi45HlOsYhUH)cxzMBGL7Qh8sMgiUJcMc2pDQd(OYxFWhLwIreJhPFseRo6reXQJEeAqDdERI9HTlPvjs8SMLD5kk4YXP8fHAI9OQlGMVh4kdO0X5AkQsITkj3qag5g4UpOOqA3hK4RsxZV7JWdbqs1VlIrTKyIunwxJ7nQUuDJSnz)CW)T8io1i0xn)iX2cGykA3YIPxvfFy8d8PfcZb(0K0ocP3ZRielcejQyVIekhGC0baZAqfCzowzmfzHT8bcp1w(aW3QXrtblYYZXhTiwaiqaW7AGUcZXtSEfp4bKYDDjc14iXFXNTDVD5ST7Tt1icUPeyx5CfBFsvgbKDX2Ym7qvS4eFIlww2jU4qhW71NTPr)ATNXVukQZzqzKySTs1fvTpGybgaXAftosBmgPeOleSTdBbzEwoWgUVUgxPOQaqim1QxjOKvQiq8d)BKF5W)MYCgZleo9q0rmQN4)sQXmGKJnTaVnX5No8fhGgCtUz5Kt3mW3E51ibtO7QeG54D5)0MJl)PnhhhtrPqGVFyk5UpPYwaI1yYKIUEWKXBKgOSz2nCywokF7)mJqauksOLITaJ1xrzW(kL1uZxKodvriESVUqiESVoLepOWUivYjEdSTNw2aB7Pj7(ZVqbFkTTWJS5djp2QvBU95ee6SATN6tWJhqWq0ogOZqgC5cehqFR1kt3BTwcTcuuahhs3Er5Lo5AgTGqwZOj1yEUwqGWvREwn7(1ugQxJsRBG31d)4RCo2Vq0beKZ6HLjFvBFnU)Bko4FJzhSDW5JlqrfLuFGA17d4ufuPMxnTKcuTE0KyVVyI49(IX8fuYOOsJ3PvjI(No1hrm(biPNTzoGwOOBihRzBiS4YHCm6HCmGr4Om7ukjXDacIaLOb4pG61rkrqbqCQ5eZEcUSVt1n8Dc3W3ouaqMUGpUfdd))MuxEUPxjYBS)Qsj(ReLyCuW3L6hhb4uRDyoGsU6Xl7YvpEqkynKgDnOL6f(wfDFasYN2f6hyZUIQn3E1D0E)Dmc3Y3NBiaUWsCURK9LOFaqwzzQ3Aq5F)TgKTsvkil5NmLCqyqHlCw6u3Lwa)7ArYmdkPOTIQ6zGMA2KR5ouemN5VU73VQEbaE6OPhAQkIDQhJYkNhvUObnD4o7P2txqqasjVWMIsHtUKTw)7r1R87JQ3OS6STNxfwEEYXjhihZw39fFIJ9lMSWE(lMmD66PF7Ifup0R2ZKACVzLxLkMWeAW2jNucTQ5vVmLx9Y4eIbUmxJ5NxRj4rEw5hpYZsFpRVNkc0aSzNomLgxQ2rlPOdqS9)Ccx0NvW(78ZcSbNfjU8BPtoSsQhMlbs9dAoGfLR(R0mRvFk6i1lOAQEH1tLPCjSVtUATtRD050flx4ILOfPRtaKeK6Y2TId(MUcx9CedpawEe5)VR(HhRsvC(1sOGasN1odk1pRZT(C5y9uQ9XJkIwasEPioBgUAAG5e)Wh6APH9HUwCa4yrnG7LUAgchuj2dgsSJFzxRmPx21sU5AgYFekcuxNsbg6CfSl2Ibe4KCEDkt(jfJ2as(4tQpYRvOjDnoFFHfWH7mHq6oNjfSmMlfgOH7aI3maYU8anWfHdvouyezJcRBVQxv79peUXRnUKkiaj2q117ztsLqDjjHk7VHvvudpgc1IP3MKfB0ZndIxoA()Ms(CbKQlm5ZaTfyDu8ILsxSuyXUdQvOI(PAEk5tbKczgryHGb72lGJLnDn)hsqcacYbNr9UcYKXtRsONW8SypCQUAEJ8uTkBKNQ1YX2untKh2koQmSvC0i3ZEH0YP6fshj1EK)KkV8NyoXHYlPiyr2zaPuux)KNT8vp5zt(MQOIi3CsU7JQ(8DuXNp3mQem1szJN5igKuOxraEyvAzyYU(4waewmf3XBNWSIf9jRXbp5RNtOyjpMFTzFXPTuRABYuSQTrlsNbUCc)wmfyo18v8CK4zL2Ocqkn)uVVGqfDP4zfh4sCqHiaix4cxPCKGqDbxPuA3HBw3PntSIv39G8UXuL)J9SFtECas5zLsWgjn0I6SuQxsfuFjsqDQnh4MdX0A6Ai0DQH7Cckg2Nax17ld(QEFQixSzmk)Krzhown)qgbdy5y92Wf2m(VPt9k6s8kBM1sbLRssHB1eM6dvP8vvvkFvYHuYwGnLkXOm1K4kLmbciXm0IJN)j29aPIpornz8XHHKURmbosUpAx6yuo5x(dbN8082VX1rEvbwQbmAtLAg(XvK6JZX6KHRqBKHIex5xEMYM4lt8Y)dPtEOjjt1HMerRPschPTCb0(JN0mcxiGKwUQAFI2jJU94bFEkMo1E0mySN)sy2pOe8l5n8Av8(1c8EHPh6r7FRo6tqetqgE8jWcofiHuSR6WmlLkowYy9VQSXx)RY0eoSSHgz0ljkls6acviWsyjkZtv(9KUsYXbeAcAZfi3k53l57lHCdi(4W2pQhlZcQQ)F7kf3I)TRKY1GzX(H4h1LdNt6eN6WY6EQdtzicHkMlqllR7xsLF)sKQVwC9YdFmYzwT3IXNKYequKjvVrJboLGSH4sCJEGVb46mFGsrqCv7TllhXpgBw9bcO8)vqFX(FzNDCmdWHk0iIpCrIZe)M7GgfaL5K6rfLVDBRGswv4hptDRCMSnqVmdqLGPJkcGPtD)VNSu3)7vMBbyUfXCOLXYnNuv2ehx8RcqkPR9lFEfe9gv3Y34OfDAMK6Ay8md2QHTny8R49fS9v8(KdJqhqyqi1gxy7aKM9G85PMdYY1FijCUA2K8Z1SjAd2aL4HtSoyPoYlQ6PPwmAcC98L2C1UeNTznf3PvMY0ecREW87jE(qoIjfuBJRrpkRjYSWdjLvhqQLCI6HXuxNerbGufOPYKAxDPHtfFk6QnfInOzB53P40QVujQgfApioM)SC(gZFMWEvA0TaepvEtPFhs(qxKUjUiGJG5hwZtJdP9PBY3)NOS6)ekdTw9XURwj5tVYou1F7GuA8XjENTTfM3zBBHlpEo2(TYbxor)GVmUYFgN0y0JxpylDXFkkf)UUuxfv0e6XsDphqM475aL5QVKf(Tgq6c6miQ(IXNMIhMgzgH89I6OupdQZk4b82Q1Q3EBSIalwtjWrWSvu)NKsQFnGLP86BxS0)FlkAQzylJDg2usj6JKBYhs0UOXj)2fnogzB6K13Ca4YkL1fZflUqK6jLccbi7RU5GsW6HXVKutiFYVnlCAzxmpLR6mzcYtAcdZg3YVCHMS8lN6Xfl3IvLjPApTTie9tBluKS25m46oj6yQDmVOYrqCZJnQjpxGVxw7Ck)WNq5h(eefDHefD6SHdaiVP8w6qrHJK6DvY)7cY)6zN(zEEf)NC)NRmx7)CPwEZXe66QkDkPs)1eoH0ulzm56l5LNcRfXU3PfG29YrVLovNsGaasS7sck998kXDtPDHcAB5K4S)wIUKZ(BXzqw7N5oXPN3m7s6Rdallf(d(1NtYK3ikeuQvTDz9w12jmW5tyaJzWyaJzaL2xTPPPp(pclOHYcAW2ure7LO(JliRmvZwYZcGeX4cjNgmiwmEdDKZt2qh58if1MU5cOoMRQgeDBsIIauIaN6LPQtQFYdQwOp4KyJuJiVWjFkTX(EQhIMEnTUv6XS622Ye50LvowNDzk12TUh6n5mE(qVjPkTsQoR7C4erdamO1dN5(iBL1TTxI)MT9su246DeP3yMAUPN5QOWBCGXSgmDdBH)yY5hqOMBHuBP5yODNMWCTlL5AxSLE4vbRgusuLKjW9jXZbiM)w8Lo62XsuDTETKaRNYkY4BWxQ0GuoX2T7twKLMswKLMI4kIkSqNw2uhuMPIEI981fM1981b6SjxSxSeZMnyMlDQ9P719H96ALwXPQtY1PPy)6OuSFMqEg7rcXsgDXEMlboHj)N5(laaMrN8GNsAb3BYolUshkTthHrFNouuVIhQwQiEIvVoXnUvVozTSc9zRn3SqaRe5hs6uhs6oeazTvEoLmHMgEjz33ODZzYbRdaipZliFVJ0dQKRs9qAvFk6kkrrcuDbvmKGLaKmdS0aFlGtPl6uymCpRQG)zzf8q0jCF2IJP9I1cJPzUC)j4(xYBqYLzj6(e70vrcUKu6xM(B146QUq5wws6OlqSbvAvGeCJ7K4fi(PgjvhoJ8mL6jKgChqYYlCOQyrWugDvps(0sTzbeQc5g8e8IsKR76dRQx(W0(565PB16Tnz13cDgP7CGJzwIE2AqKsWxqZD3lqCPtGD9Psoj8ljUQK63ibvciL3lYP3EdYzCLs8djF9lww7x)IPtwB(2z1s5p7WM(l5WQVgdFH0w5QdMLd3DnHnelnMApvHjgqC6yV07v706uBrSkaiTcDaptHAAtJUSk1lKyyTaBv0cSvYmA1jpGojZfr57sjCfHREyzJS7dhMvWApntzDpnt6oBGaZGWd)dNHUHodsdWeR0ndGtYUyLQipEvl74jpkgh1Gbf5BtxdE9g2ZMjFtPNIbeAPUgk2eYiFuLM3)ht50(yCVJLRskMU)KYKF)jXKp1WR0NEUKqzUQaljlyjpS6m1HHZupqBu34AwkKz(D)4s86V7hNi0DfytgWiN26csLKhCPtCgpOWtFgpinKUra6fLK6NJkyLQjkrnsatas3BhsjvFbor3BN0jMJWediolumMosVgadjA7QSn6szrnIgv3c6UnOTF63Tw53)U1sfr(KAnYynixAaajUaUrlLCAf1MLXFyhXz8h2PmNRDQb1PDoLINGIWvCjOaazXEJoiZAsNy4h2p9diDghGCLLCknIORs(qltqYp0Y4A0ysL)iYPIK7x9Fz)FcQsUCg1qi3AovIpb9EnmHFpWnTG)kvWk(SFWVIC2pivWIXwFVdXI(ZbQmDdZO3xud04l((S7zu(pdZNxE7ISFRjUn5Urai7tJBoOPV4SO2LGRlljAYCK19hyDBaqlhuFY3IlPLguLrF3ttPgNwKMHtU37JTPZtYkXMiROH7PgmlvIuZNqumaiFOCloiFxvwGV5qQGrQxtsOhGukVcWzUBkL8IrVNquadirTQI5xuGWyLtr6znajDI2vkkFDB7LfvcVmR9Bi)8uSdv13wp20fs1JnDsDDBz94KLF1E5YDbDz6Rt)a3GYmCdspJMzaPF(uRuWOQ2wsxxzAwA23oh4Rh59oy)3lTr2p14KJTvpxpF2T7UPuFGqIxOKNnaXbODkFyu1OKZV6DWtqEhmbiRvYMkpaxtp7GLAk9EqhYoaqYUnFdT4av6DiJUPnCy8kgIDBabPI)5rysSMyYfAaq6KWBu(UrmhR(SclgvQNqLrFIAPbnxi1ZTG0iZF25jnHoG0GMFVuFbA6EcwG)OsrIbK0SjzIDWWu2l34pUiA8GVrP5qaK4RBhKNSMstxbl(gCpHBlNI)pXufGyKgNulOb7Us1RK0nWiWDQb0SteqZExOlDT(ajgrehQ4zoYDUfWY8T4aivjR8vDtvsEe1HKJ8P4lKhI2WXRamGjoK8UQf039O8A4yNNvaxXz6LjLEbqyyko)NwXCL)0kMl1XBMsXCU6Iw(YDMO()ozkR)VRAPJOSYZJPvjdgas8gS6e1VX6999YvjL5AwW2lPBz8uRse4QPqWKQPlpOJRYQhNs((yNpSC3hDXlxKnqLEsixxIgY1LCUL5(9OVaP)xd7vnEE2EnY8S9AWGoZO8nYnkq2Q7cWTixalaz(FUSxzLXvvF)SgPDwbeJAATIzBPCz5yLDK3RdA3xPOSZnLsYONsjsFHPTt0DRl(0eKfGS9f(wm2wgRHaVJIptECPiuaY6m4yEyMfk(jtXoxYvR0TvpxAEaX2YSy)K12O2bk5Bk30BaPix5AqwvRlx7OK46ammBnXkF(cpy5ZVCSEBY1pmW)Tk3epalFcx(jWd6WytTF7oW)JmYd8)avTr3DiT343TOgfqIMi19mYpqlGK8LUHnro5cKciRVTQMal1TkTPdGmZw1Tio5vuKFaxSAw4IjZctgXg6H)hiuTdAeOCxGrZHzq)(0ixUpkYLXhERjQp71huvhiDXFCD6(4SIKtE6QUDcVmXtlaPZjFx(IYRpFVuhsty2hCfcf6dUckKkUGIfSm1RztTjLUhbqU9sCKez0acnv7ZxTM5P4AMpX2CCc4oiyUEKLDJ2rajPRTorZpGKp7Vm)DBriZasfiIA7)gnlsxNeEtDi5jtaqQGddAl3wPMdVUMVNAV89sqXpe4t2bwGDMbmxI(7QZKVxsAb3o)32GC9SaKiAHAz4MkNRUMNQE7LLBziGuxszNdEwy0Ihbe3(UfPnlbSm3v2qbjhSNrhesHAklTk1BuU9(asIRTLVGVhvahUYsWvWCbwv5TvnFkjBiasBVOITnh7IfOBywuhu8z8f3B)m(u4GM0LBuI1pDQX8zKt4y(mK4yRuwNOypMh(yTIqjFh1NU3zzKIgGe4q1JeGuFD(QsxicieGihEjZvrzduFnlItVMfts73lMBLAzLOUnlX9ljzdqMXW3NA7uYuG0hmEAhp(zlk7Opl9adm2irWkOMsSOrPFHK5RSiEOQcKCRQg2Twd3oMzYeiv8j0XI3wUXHasr2IynMvut7N6vvgIxDuuhbsr9kg35T1Lkofci1TjyEjEm(xEy5cdbi5DHyPVKbx2g63JxJeBcGLJ6ZpJUTY0VRn92bWJ5A(pKXCn)hismyFbAuf)M)iscUbekDQV3a3OIXgBWNrCaDWNb7O2980mmCC11PJNI(cwlyO(Ix9m0d4zqsb7LLNtmdrumXma(Shyvi0ejvKO6(18nFaakftzCSlaUl(IvXZ3XvxIoETuAzPLQsPIxNCIaKnPqfe12DewdtUHRsqCB4QOQ14eSekhs6n2lD8FP0DiaIZrZwosqJPtDtZsM4BAwu61ka3oPA1uXNLuhFg6UAg0P8i8FBBJv(BBBSePL6X3Qk(8ZjTsjGu43W2xwFZ(4u1nr(UIbafCkmcJGD4lKsIFLgQ3V6(IkS8XNUUStNw23NpHhtAoyaP03r9xzLA9Ko1S(SYxmRpBfRUNqsY)oAQ6(oNhnKf4XjnfEm644P9SvCBjlTawMtKgDJ05BSDpiaTwn9dr3X27FVieV3)EEU894lskunxPSphQdz)EOoWbEbEUimuRLW)YAgq(L1maXeh1kxvxtPuV95OYwNdDAdVaq1R2FEcLS8eZOmxQgyQtuIZTGgVd3OypdqU2GdmK8GkeXWSlP81ac2Xgc8Dnk5zq9TTGp3NwjG9XLQDHuTfj1WARmfWriP3pNlDQcs7sNkDNjOa5f5TeTkTtdGumU61y1kmBmV9zPNWZQ6R4uL35MnkV0gawM7drh(Qotpsbv67K0PgwXedtyIzW3egZmWvbUc1QRECSGIcKKhxs2kGL50tkOCsCQ(SCox06XnQFGCOg1pGmubmh1X(C7xjmTnjxSoavZb(Lk2l19NSbZ0PwPs)w55qL3WZb8pTeMk1Khsfwp0vr3OjIJzqRW(gm5l9pj)4l9pHzEknLHm5rKwUOYuX8ZwXX8H16ip8eg5PVryTmJnBdEoE(UWfD9f7r9B5gj)woNUYt3aCFohAW7d(j5qxkYfAnNcpTgGWt)3rrwcM4If0oHQgN7rB2g6z9zIvNVSonZpGz)wu)AmrDlorikhBAmYB()wb5n)FlK4NF6KVU8EAaijqmIu)1GtGQdulsX6mi0cJWdDXG6MkqS9lekPp8K01CsrRzQELaRaSS((guu8pj7IP4a0(hy1sLcbSm1zq6fOpaSjvfqrArDmGy7)vKvuJSCykYYZUcHOEepv(EDI66d6TjqzC1QToCAApEE8F7UVaXDV7MU21HLXSv44t64NRCbwaKfYSZe(avm8K15zYvMN7rYtkGL5lDSmrr9xlhuoRK49LONbSAN51(8)tloZdyz(TEiVvw7QUSjDilmGHQTtCQsTAbKWESIn2)LWMAHN2pqnX)b8DcwUPiJS5WtUM(LHSM(PZen31njUr0aGuLWvlK80Xu8A4nK3ChajEJgcCguBOIo5QkWhEvPu8P)HKT90)qeVwL8tuvFQKC3QQNDdvpRTTIdyA6BsQwLNaOHNQqLgg67kmTk06wHxVEd2h57R0e(PtUdPt3aedDYTmeIniJxbeoZCHpH2z5)njHdoFBvuICOB6NyQNdBpJo5mSEkshbaiDeMNhCD3rJpoQsUdRLvE4PrOWlIP2t71fQ90ED561Sy7fZnDrdMI2K3w1L(2S7lHAKJABZ6eECaPOvSxmxOVQ7yUHvR2dtwTJXnswQnCwcYAdNLupt3LAZVysuVvSfjmFajR8VQSitwxKjhfntItvpVNkFEbNywTBrGdXAlXLCxspyaizUJEJT42GOZaPWPXN(mfpGM(mP92fGfiTUqPRe20WQjPHpRWdqDBqUoNB4Mynt67werwQCr52N(v7J)QXqF105MYaa6YIbf7fIUcthqh8bolI7xCG9eE4D(MsnEbeI68BkG(QoSpnhF77SdxieRHu2baX5oSTsPAGLNzwtUv5frcqkz(zSQkJvPoMsVp2mOw6I8ZHUFFw9gv729P6C3NrLfClIlJashG5jTJG8sWe60yncxpGud1l3SL(cly8rvD9hL01pJE63Se32pEuR38rrSGEz5gpb)BxbpzBxZ902hn1AhwLOSgpl(gvZt3RkpPjawM97RYtJYCckYwPs0MuMqaPMZLqpnyPxI5ultBC3LrUno(o5ivPE1I7PulZ(sNSJMLqc7OzS(l0LrosD2XIMtx8CN0IRpAAjVvPmaasMiJI8KEyXQ0NT1nvUX4aGUITCAVPqDdkLo5Rj3fwazdsUU29t3DXrOsTgN7tvEqpPvN7jQ8OfkLs2MIP9wh66nDa7WtRSf0LtykTBLd8yJidguVbjU0h)n1RtYBU4YC1qONzbQdMQQ2WX)ccrk(xG0SKrB9C2)zwQEucxpGrU4F6st8cy0F6y6TA(y3fjskDw9ROzY4voFI4XDMxy1ttUI9khIvSxUfnp5Rsz8jR93f124tTEUfrKlh9faxCGtdscagkDQ)O6y0FKCmAIrzVfFG00zAFg9SYZwcGK2mQErGvSE)8I50A(RlL)zaPuTk9mQ8WcYBNlwcEfWYu7pEYPyQ(Wcaf)cLcQci98Muv77e7isgLaKfOhYO7WNmR6myxTaaCrTW3c1wqONQ72x3gLf)62i1am(dfLv56UA2AlayxbCNJd3MHn6xXPf(zmOOdvVfrVG6s4(OCgdBz9BvY2G0Lznyy34WTpGCxHzm3g0uvUH6llpukEepPtuttNAgYdufGmJo1xsApQ5KnSoMXpDjtEakntcBlPQlRE8P)rv18FuIIhETQKWbNJTzESAQr06K7ddGKPz4HEw7kjRKEmajZAPt9r2JWc9rOBV7KpHBLYadbxvPzl52Lc5diOkxva1XQ0lvaVNgq7H(bGVllNOynLv6nbJPl0lyUS8AyS02Kgoaq26aDxdHc5(CQ6vkAtAl4TP1qxPTGmiWUw9qihfrCcmISw9n4Q2(i320x)ZkxCJ9R5sy)uUeg3cDZ4XDuy1yXuBtBRHTDa2fTCqvd0iqPGA(zL4OQzp6vYCp0vYCcsgdgXfYaHIRVsEZ6ZtwpsYF2uftoasZmT9RIjJBL2epI2CPpYWmHH6fzF5QXjEVgvSJexP6xWvs(fmXUgWYXIsgrhEUdyne1ihS()uZsvonRVaDIBaX7SuRti3a1oQBrvqDlrn24r1ITF06GonQ)Uj8yduVpOoERzCyy20r1T398mdF(FsDivL2HOhQHjiV4w5Olut19SqIvlVboas9zIe0XIGDIOhvYBvsBkGKMXVf)32K(2kUP7KUW1YvpCbGjW1MZYqT1iVtnasOA5s5YSczgc4BEDVqjv7asD2eDPvYhw526wj)aCcaqimTl2BjVYjaseMU9c8PhiyOLPZaCymQNtaccqtFtGw3kXx(KcQsBSOHPwGyC1NX3RxUjyRobofLlZjG8nbi5F5NkO))YpLEgN4BeepU7wVTc3DRL)B9SemIseCxkA7UO30UjX21y3JoXh0T3vCEeqYHfFs6n6nTl5oKusdiT5R8Er2jS2esM)1pHS5)1pbBIKE)aLoJI5xaUqtE86OKhpHkx4KruuPuV5LiJ6nVeIFMYhV6THh13jurM4HfxDdm(zZsNUKVqspye9eCL8HLHK8HP9CLYxw9tNX61()E9RI9sd(N5yf(iALAnkZ9AiM7t4sG1CONVXxZ)UG3wZ)E41Ao5BiD)bG0MtJsyeLSn5gL6hay4v5m11(xLL7A)Re)9Lr8FB7FH5)22)cuO20s63mOyKkWFSSSaI1yAi2Oc2wzKKKq3mz6niTQUI5f1cB)ILXmrL2VRm9BPx)KTkDsbGvKHQ(spSC9o6S8oR0ehvUwAj)vhx(8F1XzFd73db6xvRpUAPWJawME0gPocZOko5hxUu4aQPpNAbevA4A1h5TRLFK3ihA4s0mK)SiolXI(YVBDZrVy0t6KFTrwG8K1MCJ3GIVPlMXuO6E6txVm9kTXZB0ZCXLOVQOxc5r7470JBcajkL(cV0oPoFrZiGenUYlkBL0)N8ruhLEKBLUCb5lmemVW2HLxlI4VN8oqbiToJK)Is4HipO3vV38Y(Bip0Auk9EWBtwRh82WWsh92ACcVY08m(6sozbmYPtdXYnG0HrTomcg2AhT0noaYcC8L4tsyl1PHYeRpM0VE7rLA9DL(2gq6iY7zV(4ROhIxxVPs1M4FuM6e)JSjSaN(c8VG213Zp6jsrM(10Iko2czkvs50r1eADukHwJVY7J6iklWM1hQ3n)9jhwTSCKo(cQU5F(LeLUasI5ZZkGvkrxSNmWzOog4talI6R50OUPOtMP8ufbiL5wpFkv8Gc6QL1m(60x8011yOAHugFrfl)fzfs5Plrr2tOvo(sYtXfGK9Lk5vH96NYapSDkNQRxVuzxpRbmkb6n4t9IU4k(VrE8CbSCvpLivYo)U0N)PDXVNpsATjBh0lkC(W4QM3BltY8EB6IftjeHUmAcpXYvEILhDjqVu9P88sZxMU1zmMUZ(HXwPpatmBLupBIgEpcnuFG5p6CuK7YP3H)UhQG16nbTG9BLA(S)Fd!BBF"
+        local profileData, errorMessage = BBF.ImportProfile(importString, "auraBlacklist")
+        if errorMessage then
+            print("|A:gmchat-icon-blizz:16:16|aBetter|cff00c0ffBlizz|rFrames: Error importing blacklist:", errorMessage)
+            return
+        end
+        deepMergeTables(BetterBlizzFramesDB.auraBlacklist, profileData)
+        BBF.auraBlacklistRefresh()
+        Settings.OpenToCategory(BBF.aurasSubCategory)
     end,
     timeout = 0,
     whileDead = true,
@@ -822,20 +918,20 @@ local function CreateImportExportUI(parent, title, dataTable, posX, posY, tableN
     -- Import Button
     local importBtn = CreateFrame("Button", nil, frame, "GameMenuButtonTemplate")
     importBtn:SetPoint("RIGHT", importBox, "LEFT", -10, 0)
-    --importBtn:SetSize(title ~= "Full Profile" and 52 or 73, 20)
-    importBtn:SetSize(73, 20)
+    importBtn:SetSize(title ~= "Full Profile" and 52 or 73, 20)
     importBtn:SetText("Import")
     importBtn:SetNormalFontObject("GameFontNormal")
     importBtn:SetHighlightFontObject("GameFontHighlight")
     CreateTooltipTwo(importBtn, "Import Data", "Import an export string.\nWill remove any current data (optional setting coming in non-beta)")
 
     -- Keep Old Checkbox
-    -- if title ~= "Full Profile" then
-    --     local keepOldCheckbox = CreateFrame("CheckButton", nil, frame, "InterfaceOptionsCheckButtonTemplate")
-    --     keepOldCheckbox:SetPoint("RIGHT", importBtn, "LEFT", 3, -1)
-    --     keepOldCheckbox:SetChecked(true)
-    --     CreateTooltipTwo(keepOldCheckbox, "Keep Old Data (BETA)", "(BETA) Not expected to work currently. Import new data while keeping your old one. Uncheck to remove current data.")
-    -- end
+    local keepOldCheckbox
+    if title ~= "Full Profile" then
+        keepOldCheckbox = CreateFrame("CheckButton", nil, frame, "InterfaceOptionsCheckButtonTemplate")
+        keepOldCheckbox:SetPoint("RIGHT", importBtn, "LEFT", 3, -1)
+        keepOldCheckbox:SetChecked(true)
+        CreateTooltipTwo(keepOldCheckbox, "Keep Old Data", "Merge the imported data into your current data.\nWill keep your settings but add any new data.")
+    end
 
     -- Button scripts
     exportBtn:SetScript("OnClick", function()
@@ -1016,6 +1112,7 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
     scrollFrame:SetScrollChild(contentFrame)
 
     local textLines = {}
+    local framePool = {}
     local selectedLineIndex = nil
 
     -- Function to update the background colors of the entries
@@ -1041,157 +1138,132 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
         BBF.RefreshAllAuraFrames()
     end
 
-    local function createTextLineButton(npc, index, extraBoxes)
-        local button = CreateFrame("Frame", nil, contentFrame)
-        button:SetSize((width and width - 12) or (322 - 12), 20)
-        button:SetPoint("TOPLEFT", 10, -(index - 1) * 20)
-        button.npcData = npc
+    local function createOrUpdateTextLineButton(npc, index, extraBoxes)
+        local button
 
-        local bg = button:CreateTexture(nil, "BACKGROUND")
-        bg:SetAllPoints()
-        button.bgImg = bg  -- Store the background texture for later color updates
-
-        local iconTexture = button:CreateTexture(nil, "OVERLAY")
-        iconTexture:SetSize(20, 20)  -- Same height as the button
-        iconTexture:SetPoint("LEFT", button, "LEFT", 0, 0)
-
-        -- Set the icon image
-        if npc.id then
-            iconTexture:SetTexture(C_Spell.GetSpellTexture(npc.id))
-        elseif npc.name then
-            iconTexture:SetTexture(C_Spell.GetSpellTexture(npc.name))
-        end
-
-        local displayText = npc.id and npc.id or ""
-
-        if npc.name and npc.name ~= "" then
-            displayText = npc.name .. (displayText ~= "" and " - " or "") .. displayText
-        end
-        if npc.comment and npc.comment ~= "" then
-            displayText = npc.comment .. (displayText ~= "" and " - " or "") .. displayText
-        end
-
-        local text = button:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-        text:SetPoint("LEFT", button, "LEFT", 25, 0)
-        text:SetText(displayText)
-        if pos then
-            text:SetWidth(225)
-            text:SetWordWrap(false)
-            text:SetJustifyH("LEFT")
-        end
-
-        -- Initialize the text color and background color for this entry from npc table or with default values
-        local entryColors = npc.color
-        if npc.color == nil and listName == "auraWhitelist" then
-            npc.color = {0,1,0,1}
-        end
-
-        -- npc.color = entryColors  -- Save the colors back to the npc data
-
-        -- Function to set the text color
-        local function SetTextColor(r, g, b, a)
-            r = r or 1
-            b = b or 0
-            g = g or 0.8196
-            a = 1
-            if colorText then
-                if npc and npc.important then
-                    text:SetTextColor(r, g, b, a)
-                else
-                    text:SetTextColor(1, 1, 0, a)  -- Keeping alpha consistent
-                end
-            else
-                text:SetTextColor(1, 1, 0, a)  -- Keeping alpha consistent
-            end
-        end
-
-        -- Set initial text and background colors from entryColors
-        if entryColors then
-            SetTextColor(entryColors[1], entryColors[2], entryColors[3], 1)
+        -- Reuse frame from the pool if available
+        if framePool[index] then
+            button = framePool[index]
+            button:Show()
         else
-            SetTextColor(1, 0, 0.8196, 1)
+            -- Create a new frame if pool is exhausted
+            button = CreateFrame("Frame", nil, contentFrame)
+            button:SetSize((width and width - 12) or (322 - 12), 20)
+            button:SetPoint("TOPLEFT", 10, -(index - 1) * 20)
+
+            -- Background
+            local bg = button:CreateTexture(nil, "BACKGROUND")
+            bg:SetAllPoints()
+            button.bgImg = bg  -- Store the background texture for later updates
+
+            -- Icon
+            local iconTexture = button:CreateTexture(nil, "OVERLAY")
+            iconTexture:SetSize(20, 20)  -- Same height as the button
+            iconTexture:SetPoint("LEFT", button, "LEFT", 0, 0)
+            button.iconTexture = iconTexture
+
+            -- Text
+            local text = button:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+            text:SetPoint("LEFT", button, "LEFT", 25, 0)
+            button.text = text
+
+            -- Delete Button
+            local deleteButton = CreateFrame("Button", nil, button, "UIPanelButtonTemplate")
+            deleteButton:SetSize(20, 20)
+            deleteButton:SetPoint("RIGHT", button, "RIGHT", 4, 0)
+            deleteButton:SetText("X")
+            deleteButton:SetScript("OnClick", function()
+                if IsShiftKeyDown() then
+                    deleteEntry(button.npcData.id or button.npcData.name:lower())
+                else
+                    selectedLineIndex = button.npcData.id or button.npcData.name:lower()
+                    StaticPopup_Show("BBF_DELETE_NPC_CONFIRM_" .. listName)
+                end
+            end)
+            button.deleteButton = deleteButton
+
+            -- Save button to the pool
+            framePool[index] = button
         end
 
-        local deleteButton = CreateFrame("Button", nil, button, "UIPanelButtonTemplate")
-        deleteButton:SetSize(20, 20)
-        deleteButton:SetPoint("RIGHT", button, "RIGHT", 4, 0)
-        deleteButton:SetText("X")
+        -- Update button's content
+        button.npcData = npc
+        local displayText
+        if npc.id then
+            displayText = string.format("%s (%d)", npc.name, npc.id)  -- Display as "Name (id)"
+        else
+            displayText = npc.name  -- Display just the name if there's no id
+        end
+        button.text:SetText(displayText)
+        button.iconTexture:SetTexture(C_Spell.GetSpellTexture(npc.id or npc.name))
 
-        deleteButton:SetScript("OnClick", function()
-            if IsShiftKeyDown() then
-                deleteEntry(button.npcData)
+        -- Function to set text color
+        local function SetTextColor(r, g, b, a)
+            if colorText and button.checkBoxI and button.checkBoxI:GetChecked() then
+                button.text:SetTextColor(r or 1, g or 1, b or 0, a or 1)
             else
-                selectedLineIndex = button.npcData
-                StaticPopup_Show("BBF_DELETE_NPC_CONFIRM_" .. listName)
+                button.text:SetTextColor(1, 1, 0, 1)
             end
-        end)
+        end
 
-        if extraBoxes then
-            -- Create Checkbox P (Pandemic)
-            local checkBoxP = CreateFrame("CheckButton", nil, button, "UICheckButtonTemplate")
-            checkBoxP:SetSize(24, 24)
-            checkBoxP:SetPoint("RIGHT", deleteButton, "LEFT", 4, 0) -- Positioned first, to the left of deleteButton
-
-            -- Create a texture for the checkbox
-            checkBoxP.texture = checkBoxP:CreateTexture(nil, "ARTWORK", nil, 1)
-            checkBoxP.texture:SetAtlas("newplayertutorial-drag-slotgreen")
-            checkBoxP.texture:SetDesaturated(true)
-            checkBoxP.texture:SetVertexColor(1, 0, 0)
-            checkBoxP.texture:SetSize(27, 27)
-            checkBoxP.texture:SetPoint("CENTER", checkBoxP, "CENTER", -0.5, 0.5)
-            CreateTooltipTwo(checkBoxP, "Pandemic Glow |A:elementalstorm-boss-air:22:22|a", "Check for a red glow when the aura has less than 5 sec remaining.", "Also check which frame(s) you want this on down below in settings.", "ANCHOR_TOPRIGHT")
-
-            -- Handler for the P checkbox
-            checkBoxP:SetScript("OnClick", function(self)
-                npc.pandemic = self:GetChecked() -- Save the state in the npc flags
-            end)
-            checkBoxP:HookScript("OnClick", BBF.RefreshAllAuraFrames)
-
-            -- Initialize state from npc flags
-            if npc.pandemic then
-                checkBoxP:SetChecked(true)
-            end
-
-            -- Create Checkbox I (Important)
-            local checkBoxI = CreateFrame("CheckButton", nil, button, "UICheckButtonTemplate")
-            checkBoxI:SetSize(24, 24)
-            checkBoxI:SetPoint("RIGHT", checkBoxP, "LEFT", 4, 0) -- Positioned next to checkBoxP
-
-            -- Create a texture for the checkbox
-            checkBoxI.texture = checkBoxI:CreateTexture(nil, "ARTWORK", nil, 1)
-            checkBoxI.texture:SetAtlas("newplayertutorial-drag-slotgreen")
-            checkBoxI.texture:SetSize(27, 27)
-            checkBoxI.texture:SetDesaturated(true)
-            checkBoxI.texture:SetPoint("CENTER", checkBoxI, "CENTER", -0.5, 0.5)
-            CreateTooltipTwo(checkBoxI, "Important Glow |A:importantavailablequesticon:22:22|a", "Check for a glow on the aura to highlight it.\n|cff32f795Right-click to change color.|r", "Also check which frame(s) you want this on down below in settings.", "ANCHOR_TOPRIGHT")
-
-            -- Handler for the I checkbox
-            checkBoxI:SetScript("OnClick", function(self)
-                npc.important = self:GetChecked() -- Save the state in the npc flags
-            end)
-            local function SetImportantBoxColor(r, g, b, a)
-                if npc and npc.important then
-                    checkBoxI.texture:SetVertexColor(r, g, b, a)
+        -- Function to set important box color
+        local function SetImportantBoxColor(r, g, b, a)
+            if button.checkBoxI then
+                if button.checkBoxI:GetChecked() then
+                    button.checkBoxI.texture:SetVertexColor(r or 0, g or 1, b or 0, a or 1)
                 else
-                    checkBoxI.texture:SetVertexColor(0,1,0,1)
+                    button.checkBoxI.texture:SetVertexColor(0, 1, 0, 1)
                 end
             end
-            checkBoxI:HookScript("OnClick", function()
-                BBF.RefreshAllAuraFrames()
-                SetTextColor(entryColors[1], entryColors[2], entryColors[3], 1)
-                SetImportantBoxColor(entryColors[1], entryColors[2], entryColors[3], entryColors[4] or 1)
-            end)
+        end
 
-            -- Initialize state from npc flags
-            if npc.important then
-                checkBoxI:SetChecked(true)
+        -- Initialize colors based on npc data
+        local entryColors = npc.color or {1, 0.8196, 0, 1}  -- Default yellowish color
+
+        -- Extra logic for handling additional checkboxes and flags
+        if extraBoxes then
+            -- CheckBox for Pandemic
+            if not button.checkBoxP then
+                local checkBoxP = CreateFrame("CheckButton", nil, button, "UICheckButtonTemplate")
+                checkBoxP:SetSize(24, 24)
+                checkBoxP:SetPoint("RIGHT", button.deleteButton, "LEFT", 4, 0)
+                checkBoxP:SetScript("OnClick", function(self)
+                    button.npcData.pandemic = self:GetChecked() -- Save the state in npc flags
+                    BBF.RefreshAllAuraFrames()
+                end)
+                checkBoxP.texture = checkBoxP:CreateTexture(nil, "ARTWORK", nil, 1)
+                checkBoxP.texture:SetAtlas("newplayertutorial-drag-slotgreen")
+                checkBoxP.texture:SetDesaturated(true)
+                checkBoxP.texture:SetVertexColor(1, 0, 0)
+                checkBoxP.texture:SetSize(27, 27)
+                checkBoxP.texture:SetPoint("CENTER", checkBoxP, "CENTER", -0.5, 0.5)
+                button.checkBoxP = checkBoxP
+                CreateTooltipTwo(checkBoxP, "Pandemic Glow |A:elementalstorm-boss-air:22:22|a", "Check for a red glow when the aura has less than 5 sec remaining.", "Also check which frame(s) you want this on down below in settings.", "ANCHOR_TOPRIGHT")
             end
-
-            if entryColors then
-                SetImportantBoxColor(entryColors[1], entryColors[2], entryColors[3], entryColors[4] or 1)
+            button.checkBoxP:SetChecked(button.npcData.pandemic)
+    
+            -- CheckBox for Important with color picker
+            if not button.checkBoxI then
+                local checkBoxI = CreateFrame("CheckButton", nil, button, "UICheckButtonTemplate")
+                checkBoxI:SetSize(24, 24)
+                checkBoxI:SetPoint("RIGHT", button.checkBoxP, "LEFT", 4, 0)
+                checkBoxI:SetScript("OnClick", function(self)
+                    button.npcData.important = self:GetChecked() -- Save the state in npc flags
+                    BBF.RefreshAllAuraFrames()
+                    SetImportantBoxColor(button.npcData.color[1], button.npcData.color[2], button.npcData.color[3], button.npcData.color[4])
+                    SetTextColor(button.npcData.color[1], button.npcData.color[2], button.npcData.color[3], button.npcData.color[4])
+                end)
+                checkBoxI.texture = checkBoxI:CreateTexture(nil, "ARTWORK", nil, 1)
+                checkBoxI.texture:SetAtlas("newplayertutorial-drag-slotgreen")
+                checkBoxI.texture:SetSize(27, 27)
+                checkBoxI.texture:SetDesaturated(true)
+                checkBoxI.texture:SetPoint("CENTER", checkBoxI, "CENTER", -0.5, 0.5)
+                button.checkBoxI = checkBoxI
+                CreateTooltipTwo(checkBoxI, "Important Glow |A:importantavailablequesticon:22:22|a", "Check for a glow on the aura to highlight it.\n|cff32f795Right-click to change color.|r", "Also check which frame(s) you want this on down below in settings.", "ANCHOR_TOPRIGHT")
             end
-
-            -- Function to open the color picker
+            button.checkBoxI:SetChecked(button.npcData.important)
+    
+            -- Color picker logic
             local function OpenColorPicker()
                 local colorData = entryColors or {0, 1, 0, 1}
                 local r, g, b = colorData[1] or 1, colorData[2] or 1, colorData[3] or 1
@@ -1238,114 +1310,117 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
                     swatchFunc = swatchFunc, opacityFunc = opacityFunc, cancelFunc = cancelFunc
                 })
             end
-
-            checkBoxI:HookScript("OnMouseDown", function(self, button)
+    
+            -- Right-click to open color picker
+            button.checkBoxI:SetScript("OnMouseDown", function(self, button)
                 if button == "RightButton" then
                     OpenColorPicker()
                 end
             end)
-
-            -- Create Checkbox C (Compacted)
-            local checkBoxC = CreateFrame("CheckButton", nil, button, "UICheckButtonTemplate")
-            checkBoxC:SetSize(24, 24)
-            checkBoxC:SetPoint("RIGHT", checkBoxI, "LEFT", 3, 0)
-            CreateTooltipTwo(checkBoxC, "Compacted Aura |A:ui-hud-minimap-zoom-out:22:22|a", "Check to make the aura smaller.", "Also check which frame(s) you want this on down below in settings.", "ANCHOR_TOPRIGHT")
-
-            -- Initialize state from npc flags
-            if npc.compacted then
-                checkBoxC:SetChecked(true)
+    
+            -- CheckBox for Compacted
+            if not button.checkBoxC then
+                local checkBoxC = CreateFrame("CheckButton", nil, button, "UICheckButtonTemplate")
+                checkBoxC:SetSize(24, 24)
+                checkBoxC:SetPoint("RIGHT", button.checkBoxI, "LEFT", 3, 0)
+                button.checkBoxC = checkBoxC
+                CreateTooltipTwo(checkBoxC, "Compacted Aura |A:ui-hud-minimap-zoom-out:22:22|a", "Check to make the aura smaller.", "Also check which frame(s) you want this on down below in settings.", "ANCHOR_TOPRIGHT")
             end
-
-            -- Create Checkbox E (Enlarged)
-            local checkBoxE = CreateFrame("CheckButton", nil, button, "UICheckButtonTemplate")
-            checkBoxE:SetSize(24, 24)
-            checkBoxE:SetPoint("RIGHT", checkBoxC, "LEFT", 3, 0)
-            CreateTooltipTwo(checkBoxE, "Enlarged Aura |A:ui-hud-minimap-zoom-in:22:22|a", "Check to make the aura bigger.", "Also check which frame(s) you want this on down below in settings.", "ANCHOR_TOPRIGHT")
-
-            -- Handler for the C checkbox
-            checkBoxC:SetScript("OnClick", function(self)
-                npc.compacted = self:GetChecked()
-                checkBoxE:SetChecked(false)
-                npc.enlarged = false
-                BBF.RefreshAllAuraFrames()
-            end)
-
-            -- Handler for the E checkbox
-            checkBoxE:SetScript("OnClick", function(self)
-                npc.enlarged = self:GetChecked()
-                checkBoxC:SetChecked(false)
-                npc.compacted = false
-                BBF.RefreshAllAuraFrames()
-            end)
-
-            -- Initialize state from npc flags
-            if npc.enlarged then
-                checkBoxE:SetChecked(true)
+            button.checkBoxC:SetChecked(button.npcData.compacted)
+    
+            -- CheckBox for Enlarged
+            if not button.checkBoxE then
+                local checkBoxE = CreateFrame("CheckButton", nil, button, "UICheckButtonTemplate")
+                checkBoxE:SetSize(24, 24)
+                checkBoxE:SetPoint("RIGHT", button.checkBoxC, "LEFT", 3, 0)
+                checkBoxE:SetScript("OnClick", function(self)
+                    button.npcData.enlarged = self:GetChecked()
+                    button.checkBoxC:SetChecked(false)
+                    button.npcData.compacted = false
+                    BBF.RefreshAllAuraFrames()
+                end)
+                button.checkBoxC:SetScript("OnClick", function(self)
+                    button.npcData.compacted = self:GetChecked()
+                    button.checkBoxE:SetChecked(false)
+                    button.npcData.enlarged = false
+                    BBF.RefreshAllAuraFrames()
+                end)
+                CreateTooltipTwo(checkBoxE, "Enlarged Aura |A:ui-hud-minimap-zoom-in:22:22|a", "Check to make the aura bigger.", "Also check which frame(s) you want this on down below in settings.", "ANCHOR_TOPRIGHT")
+                button.checkBoxE = checkBoxE
             end
-
-            -- Create Checkbox Only Mine
-            local checkBoxOnlyMine = CreateFrame("CheckButton", nil, button, "UICheckButtonTemplate")
-            checkBoxOnlyMine:SetSize(24, 24)
-            checkBoxOnlyMine:SetPoint("RIGHT", checkBoxE, "LEFT", 3, 0)
-            CreateTooltipTwo(checkBoxOnlyMine, "Only My Aura |A:UI-HUD-UnitFrame-Player-Group-FriendOnlineIcon:22:22|a", "Only show my aura.", nil, "ANCHOR_TOPRIGHT")
-
-            -- Handler for the E checkbox
-            checkBoxOnlyMine:SetScript("OnClick", function(self)
-                npc.onlyMine = self:GetChecked()
-            end)
-            checkBoxOnlyMine:HookScript("OnClick", BBF.RefreshAllAuraFrames)
-
-            -- Initialize state from npc flags
-            if npc.onlyMine then
-                checkBoxOnlyMine:SetChecked(true)
+            button.checkBoxE:SetChecked(button.npcData.enlarged)
+    
+            -- CheckBox for "Only Mine"
+            if not button.checkBoxOnlyMine then
+                local checkBoxOnlyMine = CreateFrame("CheckButton", nil, button, "UICheckButtonTemplate")
+                checkBoxOnlyMine:SetSize(24, 24)
+                checkBoxOnlyMine:SetPoint("RIGHT", button.checkBoxE, "LEFT", 3, 0)
+                checkBoxOnlyMine:SetScript("OnClick", function(self)
+                    button.npcData.onlyMine = self:GetChecked()
+                    BBF.RefreshAllAuraFrames()
+                end)
+                button.checkBoxOnlyMine = checkBoxOnlyMine
+                CreateTooltipTwo(checkBoxOnlyMine, "Only My Aura |A:UI-HUD-UnitFrame-Player-Group-FriendOnlineIcon:22:22|a", "Only show my aura.", nil, "ANCHOR_TOPRIGHT")
             end
+            button.checkBoxOnlyMine:SetChecked(button.npcData.onlyMine)
         end
 
         if listName == "auraBlacklist" then
-            -- Create Checkbox Only Mine
-            local checkBoxShowMine = CreateFrame("CheckButton", nil, button, "UICheckButtonTemplate")
-            checkBoxShowMine:SetSize(24, 24)
-            checkBoxShowMine:SetPoint("RIGHT", deleteButton, "LEFT", 3, 0)
-            CreateTooltipTwo(checkBoxShowMine, "Show mine |A:UI-HUD-UnitFrame-Player-Group-FriendOnlineIcon:22:22|a", "Disregard the blacklist and show aura if it is mine.", nil, "ANCHOR_TOPRIGHT")
+            if not button.checkBoxShowMine then
+                -- Create Checkbox Only Mine if not already created
+                local checkBoxShowMine = CreateFrame("CheckButton", nil, button, "UICheckButtonTemplate")
+                checkBoxShowMine:SetSize(24, 24)
+                checkBoxShowMine:SetPoint("RIGHT", button, "RIGHT", -13, 0)
+                CreateTooltipTwo(checkBoxShowMine, "Show mine |A:UI-HUD-UnitFrame-Player-Group-FriendOnlineIcon:22:22|a", "Disregard the blacklist and show aura if it is mine.", nil, "ANCHOR_TOPRIGHT")
 
-            -- Handler for the E checkbox
-            checkBoxShowMine:SetScript("OnClick", function(self)
-                npc.showMine = self:GetChecked()
-            end)
-            checkBoxShowMine:HookScript("OnClick", BBF.RefreshAllAuraFrames)
+                -- Handler for the show mine checkbox
+                checkBoxShowMine:SetScript("OnClick", function(self)
+                    button.npcData.showMine = self:GetChecked()
+                    BBF.RefreshAllAuraFrames()
+                end)
 
-            -- Initialize state from npc flags
-            if npc.showMine then
-                checkBoxShowMine:SetChecked(true)
+                -- Set the checkbox state based on npc.showMine
+                checkBoxShowMine:SetChecked(button.npcData.showMine)
+
+                -- Adjust text width and settings
+                button.text:SetWidth(196)
+                button.text:SetWordWrap(false)
+                button.text:SetJustifyH("LEFT")
+
+                -- Save the reference to the button
+                button.checkBoxShowMine = checkBoxShowMine
             end
-
-            text:SetWidth(196)
-            text:SetWordWrap(false)
-            text:SetJustifyH("LEFT")
         end
 
-        button.deleteButton = deleteButton
-        table.insert(textLines, button)
-        updateBackgroundColors()  -- Update background colors after adding a new entry
+        if button.checkBoxI then
+            if button.checkBoxI:GetChecked() then
+                SetImportantBoxColor(entryColors[1], entryColors[2], entryColors[3], entryColors[4])
+                SetTextColor(entryColors[1], entryColors[2], entryColors[3], entryColors[4])
+            else
+                SetImportantBoxColor(0, 1, 0, 1)
+                SetTextColor(1, 0.8196, 0, 1)
+            end
+        end
 
-        if npc.id then
+        if npc.id and not button.idTip then
             button:SetScript("OnEnter", function(self)
+                if not button.npcData.id then return end
                 GameTooltip:SetOwner(self, "ANCHOR_LEFT")
-                GameTooltip:SetSpellByID(npc.id)
-                GameTooltip:AddLine("Spell ID: " .. npc.id, 1, 1, 1)
+                GameTooltip:SetSpellByID(button.npcData.id)
+                GameTooltip:AddLine("Spell ID: " .. button.npcData.id, 1, 1, 1)
                 GameTooltip:Show()
             end)
             button:SetScript("OnLeave", function(self)
                 GameTooltip:Hide()
             end)
+            button.idTip = true
         end
+
+        -- Update background colors
+        updateBackgroundColors()
+
+        return button
     end
-
-
-    -- Create and initialize textLine buttons with or without color pickers
-    -- for i, npc in ipairs(listData) do
-    --     createTextLineButton(npc, i, extraBoxes)
-    -- end
 
     -- Create static popup dialogs for duplicate and delete confirmations
     StaticPopupDialogs["BBF_DUPLICATE_NPC_CONFIRM_" .. listName] = {
@@ -1378,20 +1453,7 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
     editBox:SetAutoFocus(false)
     CreateTooltipTwo(editBox, "Filter auras by spell id and/or spell name", "You can click auras to add to lists.\n\nTo whitelist:\nShift+Alt + LeftClick\n\nTo blacklist:\nShift+Alt + RightClick\nCtrl+Alt RightClick with \"Show Mine\" tag", nil, "ANCHOR_TOP")
 
-    local function updateNamesInListData()
-        for key, entry in pairs(listData) do
-            if entry.id and (not entry.name or entry.name == "") then
-                local spellName = BBF.TWWGetSpellInfo(entry.id)
-                if spellName then
-                    entry.name = spellName  -- Update the name field with the fetched spell name
-                end
-            end
-        end
-    end
-
     local function getSortedNpcList()
-        updateNamesInListData()  -- Ensure names are updated before sorting
-
         local sortableNpcList = {}
 
         -- Iterate over the new structure using pairs to access all entries
@@ -1401,40 +1463,55 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
 
         -- Sort the list alphabetically by the 'name' field
         table.sort(sortableNpcList, function(a, b)
-            local nameA = a.name and a.name:lower() or ""  -- Ensure safe lowercasing if 'name' exists
+            local nameA = a.name and a.name:lower() or ""
             local nameB = b.name and b.name:lower() or ""
             return nameA < nameB
         end)
-
+        --print("Number of entries in the list: " .. #sortableNpcList)
         return sortableNpcList
     end
 
-    local sortedListData = getSortedNpcList()
-    for i, npc in ipairs(sortedListData) do
-        createTextLineButton(npc, i, extraBoxes)
-    end
-
     local function refreshList()
-        -- Clear existing buttons
-        for _, button in ipairs(textLines) do
-            button:Hide()
-        end
-        wipe(textLines)
-
-        -- Fetch sorted list and recreate UI elements
         local sortedListData = getSortedNpcList()
-        for i, npc in ipairs(sortedListData) do
-            local button = createTextLineButton(npc, i, extraBoxes)
-            table.insert(textLines, button)
+        local totalEntries = #sortedListData
+        local batchSize = 35  -- Number of entries to process per frame
+        local currentIndex = 1
+
+        local function processNextBatch()
+            for i = currentIndex, math.min(currentIndex + batchSize - 1, totalEntries) do
+                local npc = sortedListData[i]
+                local button = createOrUpdateTextLineButton(npc, i, extraBoxes)
+                textLines[i] = button
+            end
+
+            -- Hide any extra frames
+            for i = totalEntries + 1, #framePool do
+                if framePool[i] then
+                    framePool[i]:Hide()
+                end
+            end
+
+            -- Update the content frame height
+            contentFrame:SetHeight(totalEntries * 20)
+            updateBackgroundColors()
+
+            -- Continue processing if there are more entries
+            currentIndex = currentIndex + batchSize
+            if currentIndex <= totalEntries then
+                C_Timer.After(0.04, processNextBatch)  -- Defer to the next frame
+            end
         end
-
-        updateBackgroundColors()
-        -- Update the content frame size if necessary
-        contentFrame:SetHeight(#textLines * 20)
+        -- Start processing in the first frame
+        processNextBatch()
+        --print("refreshing.....")
     end
-    contentFrame.refreshList = refreshList
 
-    local function addOrUpdateEntry(inputText, addShowMineTag)
+    contentFrame.refreshList = refreshList
+    refreshList()
+    --BBF[listName.."DelayedUpdate"] = refreshList
+    BBF[listName.."Refresh"] = refreshList
+
+    local function addOrUpdateEntry(inputText, addShowMineTag, skipRefresh, color)
         selectedLineIndex = nil
         local name, comment = strsplit("/", inputText, 2)
         name = strtrim(name or "")
@@ -1477,6 +1554,15 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
                     newEntry = {name = name, id = id, comment = comment or nil, color = {0,1,0,1}}
                 end
 
+                -- if color then
+                --     --newEntry.color = {1,0.501960813999176,0,1} -- offensive
+                --     --newEntry.color = {1,0.6627451181411743,0.9450981020927429,1} -- defensive
+                --     newEntry.color = {0,1,1,1} -- mobility
+                --     --newEntry.color = {0,1,0,1} --muy importante
+                --     newEntry.important = true
+                --     newEntry.enlarged = true
+                -- end
+
                 -- If adding to auraBlacklist and addShowMineTag is true, set showMine to true
                 if addShowMineTag and listName == "auraBlacklist" then
                     newEntry.showMine = true
@@ -1486,8 +1572,21 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
                 BetterBlizzFramesDB[listName][key] = newEntry
 
                 -- Update UI: Re-create text line button and refresh the list display
-                createTextLineButton(newEntry, #textLines + 1, extraBoxes)
-                --refreshList()
+                createOrUpdateTextLineButton(newEntry, #textLines + 1, extraBoxes)
+
+                if not skipRefresh then
+                    refreshList()
+                    --print("not skipping so sending")
+                else
+                    if SettingsPanel:IsShown() then
+                        --print("refreshing list cuz settings are open")
+                        refreshList()
+                    else
+                        --print("prepping delayed update")
+                        BBF[listName.."DelayedUpdate"] = refreshList
+                    end
+                end
+
                 refreshFunc()
             end
         end
@@ -1510,8 +1609,33 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
     addButton:SetScript("OnClick", function()
         addOrUpdateEntry(editBox:GetText())
     end)
+    scrollFrame:HookScript("OnShow", function()
+        if BBF.auraWhitelistDelayedUpdate then
+            BBF.auraWhitelistDelayedUpdate()
+            --print("Ran delayed update WHITELIST, then set it to not run next time")
+            BBF.auraWhitelistDelayedUpdate = nil
+        end
+        if BBF.auraBlacklistDelayedUpdate then
+            BBF.auraBlacklistDelayedUpdate()
+            --print("Ran delayed update BLACKLIST, then set it to not run next time")
+            BBF.auraBlacklistDelayedUpdate = nil
+        end
+    end)
     return scrollFrame
 end
+
+SettingsPanel:HookScript("OnShow", function()
+    if BBF.auraWhitelistDelayedUpdate then
+        BBF.auraWhitelistDelayedUpdate()
+        --print("Ran delayed update WHITELIST, then set it to not run next time")
+        BBF.auraWhitelistDelayedUpdate = nil
+    end
+    if BBF.auraBlacklistDelayedUpdate then
+        BBF.auraBlacklistDelayedUpdate()
+        --print("Ran delayed update BLACKLIST, then set it to not run next time")
+        BBF.auraBlacklistDelayedUpdate = nil
+    end
+end)
 
 local function CreateTitle(parent)
     local mainGuiAnchor = parent:CreateFontString(nil, "OVERLAY", "GameFontNormal")
@@ -2160,7 +2284,7 @@ local function guiGeneralTab()
     CreateTooltip(filterMiscInfo, "Filter out \"Your equipped items suffer a durability loss\" message.")
 
     local arenaNamesText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    arenaNamesText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 460, -78)
+    arenaNamesText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 460, -91)
     arenaNamesText:SetText("Arena Names")
     CreateTooltip(arenaNamesText, "Change player names into spec/arena id instead during arena", "ANCHOR_LEFT")
     local arenaNamesIcon = BetterBlizzFrames:CreateTexture(nil, "ARTWORK")
@@ -2585,6 +2709,23 @@ local function guiGeneralTab()
         overShieldsCompactUnitFrames:SetAlpha(0)
         overShieldsCompactUnitFrames:Disable()
     end
+
+    local queueTimer = CreateCheckbox("queueTimer", "Queue Timer", BetterBlizzFrames)
+    queueTimer:SetPoint("TOPLEFT", overShields, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(queueTimer, "Queue Timer", "Displays the remaining time to accept when a queue pops.", nil, "ANCHOR_LEFT")
+
+    local queueTimerAudio = CreateCheckbox("queueTimerAudio", "SFX", queueTimer)
+    queueTimerAudio:SetPoint("LEFT", queueTimer.text, "RIGHT", 0, 0)
+    CreateTooltipTwo(queueTimerAudio, "Sound Effect", "Play an alarm sound when queue pops.", "(Plays with game sounds muted)", "ANCHOR_LEFT")
+
+    local queueTimerWarning = CreateCheckbox("queueTimerWarning", "!", queueTimer)
+    queueTimerWarning:SetPoint("LEFT", queueTimerAudio.text, "RIGHT", 0, 0)
+    CreateTooltipTwo(queueTimerWarning, "Sound Alert!", "Warning sound if there is less than 6 seconds left to accept the queue.", "(Plays with game sounds muted)", "ANCHOR_LEFT")
+
+    queueTimer:HookScript("OnClick", function()
+        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        CheckAndToggleCheckboxes(queueTimer)
+    end)
 
     ----------------------
     -- Reload etc
@@ -3900,6 +4041,7 @@ local function guiFrameAuras()
     --InterfaceOptions_AddCategory(guiFrameAuras)
     local aurasSubCategory = Settings.RegisterCanvasLayoutSubcategory(BBF.category, guiFrameAuras, guiFrameAuras.name, guiFrameAuras.name)
     aurasSubCategory.ID = guiFrameAuras.name;
+    BBF.aurasSubCategory = aurasSubCategory.ID
     CreateTitle(guiFrameAuras)
 
     local bgImg = guiFrameAuras:CreateTexture(nil, "BACKGROUND")
@@ -3982,7 +4124,7 @@ local function guiFrameAuras()
 
 
     local playerAuraFiltering = CreateCheckbox("playerAuraFiltering", "Enable Aura Settings", contentFrame)
-    CreateTooltipTwo(playerAuraFiltering, "Enable Buff Filtering & Aura settings", "Enables all the buff filtering settings. This setting is cpu heavy and un-optimized so use at your own risk.")
+    CreateTooltipTwo(playerAuraFiltering, "Enable Buff Filtering & Aura settings", "Enables all the buff filtering settings.\nThis setting is cpu heavy and un-optimized so use at your own risk.")
     playerAuraFiltering:SetPoint("TOPLEFT", contentFrame, "BOTTOMLEFT", 50, 190)
     playerAuraFiltering:HookScript("OnClick", function (self)
         if self:GetChecked() then
@@ -4683,7 +4825,7 @@ local function guiMisc()
 
     local minimizeObjectiveTracker = CreateCheckbox("minimizeObjectiveTracker", "Minimize Objective Frame Better", guiMisc, nil, BBF.MinimizeObjectiveTracker)
     minimizeObjectiveTracker:SetPoint("TOPLEFT", normalizeGameMenu, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltipTwo(minimizeObjectiveTracker, "Minimize Objective Frame Better", "Also minimized the objectives header when clicking the -+ button |A:UI-QuestTrackerButton-Collapse-All:19:19|a")
+    CreateTooltipTwo(minimizeObjectiveTracker, "Minimize Objective Frame Better", "Also minimize the objectives header when clicking the -+ button |A:UI-QuestTrackerButton-Collapse-All:19:19|a")
 
     local hideUiErrorFrame = CreateCheckbox("hideUiErrorFrame", "Hide UI Error Frame", guiMisc, nil, BBF.HideFrames)
     hideUiErrorFrame:SetPoint("TOPLEFT", minimizeObjectiveTracker, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
@@ -4757,8 +4899,16 @@ local function guiMisc()
     useMiniFocusFrame:SetPoint("TOPLEFT", stealthIndicatorPlayer, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(useMiniFocusFrame, "Removes healthbar and manabar from the FocusFrame\nand just leaves Portrait and name.\n\nMove castbar and/or disable auras to your liking.")
 
+    local surrenderArena = CreateCheckbox("surrenderArena", "Surrender over Leaving Arena", guiMisc)
+    surrenderArena:SetPoint("TOPLEFT", useMiniFocusFrame, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(surrenderArena, "Surrender over Leave", "Makes typing /afk in arena Surrender instead of Leaving so you don't lose honor/conquest gain.")
+
+    local druidOverstacks = CreateCheckbox("druidOverstacks", "Druid: Color Berserk Overstack Combo Points Blue", guiMisc)
+    druidOverstacks:SetPoint("TOPLEFT", surrenderArena, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(druidOverstacks, "Druid: Color Berserk Overstack Combo Points Blue", "Color the Druid Berserk Overstack Combo Points blue similar to Rogue's Echoing Reprimand.")
+
     local moveResourceToTarget = CreateCheckbox("moveResourceToTarget", "Move Resource to TargetFrame", guiMisc)
-    moveResourceToTarget:SetPoint("TOPLEFT", useMiniFocusFrame, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    moveResourceToTarget:SetPoint("TOPLEFT", druidOverstacks, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(moveResourceToTarget, "Move resource (Combo points, Warlock shards etc) to the TargetFrame.")
 
     local moveResourceToTargetRogue = CreateCheckbox("moveResourceToTargetRogue", "Rogue: Combo Points", moveResourceToTarget)
@@ -4854,6 +5004,25 @@ local function guiImportAndExport()
 
     local auraWhitelist = CreateImportExportUI(fullProfile, "Aura Whitelist", BetterBlizzFramesDB.auraWhitelist, 0, -100, "auraWhitelist")
     local auraBlacklist = CreateImportExportUI(auraWhitelist, "Aura Blacklist", BetterBlizzFramesDB.auraBlacklist, 210, 0, "auraBlacklist")
+
+    local importPVPWhitelist = CreateFrame("Button", nil, guiImportAndExport, "UIPanelButtonTemplate")
+    importPVPWhitelist:SetSize(150, 35)
+    importPVPWhitelist:SetPoint("TOP", auraWhitelist, "BOTTOM", 0, -25)
+    importPVPWhitelist:SetText("Import PvP Whitelist")
+    importPVPWhitelist:SetScript("OnClick", function()
+        StaticPopup_Show("BBF_CONFIRM_PVP_WHITELIST")
+    end)
+    CreateTooltipTwo(importPVPWhitelist, "Import PvP Whitelist", "Import a color coded Whitelist with most important Offensives, Defensives & Freedoms for TWW added.\n\nThis will only add NEW entries and not mess with existing ones in your current whitelist.\n\nWill tweak this as time goes on probably.")
+
+    local importPVPBlacklist = CreateFrame("Button", nil, guiImportAndExport, "UIPanelButtonTemplate")
+    importPVPBlacklist:SetSize(150, 35)
+    importPVPBlacklist:SetPoint("TOP", auraBlacklist, "BOTTOM", 0, -25)
+    importPVPBlacklist:SetText("Import PvP Blacklist")
+    importPVPBlacklist:SetScript("OnClick", function()
+        StaticPopup_Show("BBF_CONFIRM_PVP_BLACKLIST")
+    end)
+    CreateTooltipTwo(importPVPBlacklist, "Import PvP Blacklist", "Import a Blacklist with A LOT (750+) of trash buffs blacklisted.\n\nThis will only add NEW entries and not mess with existing ones already in your blacklist.")
+
 end
 
 local function guiSupport()

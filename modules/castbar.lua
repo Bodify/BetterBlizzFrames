@@ -917,13 +917,19 @@ end
 
 function BBF.HookCastbars()
     if BetterBlizzFramesDB.quickHideCastbars then
+        local hideEvents = {
+            ["UNIT_SPELLCAST_STOP"] = true,
+            ["UNIT_SPELLCAST_CHANNEL_STOP"] = true,
+            ["UNIT_SPELLCAST_INTERRUPTED"] = true,
+            ["UNIT_SPELLCAST_EMPOWER_STOP"] = true,
+        }
         TargetFrameSpellBar:HookScript("OnEvent", function(self, event, ...)
-            if event == "UNIT_SPELLCAST_STOP" then
+            if hideEvents[event] then
                 self:Hide()
             end
         end)
         FocusFrameSpellBar:HookScript("OnEvent", function(self, event, ...)
-            if event == "UNIT_SPELLCAST_STOP" then
+            if hideEvents[event] then
                 self:Hide()
             end
         end)

@@ -496,6 +496,9 @@ function BBF.DarkmodeFrames(bypass)
         for _, v in pairs({druidComboPoints:GetChildren()}) do
             applySettings(v.BG_Inactive, desaturationValue, druidComboPoint, true)
             applySettings(v.BG_Active, desaturationValue, druidComboPointActive, true)
+            if BetterBlizzFramesDB.druidOverstacks then
+                applySettings(v.ChargedFrameActive, desaturationValue, druidComboPointActive, true)
+            end
         end
     end
 

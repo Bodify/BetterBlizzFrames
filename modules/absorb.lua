@@ -164,7 +164,7 @@ local function UpdateAbsorbIndicator(frame, unit)
                 if flipIconText then
                     frame.absorbIndicator:SetPoint("LEFT", frame.absorbIcon, "RIGHT", 3, 0)
                 else
-                    frame.absorbIndicator:SetPoint("RIGHT", frame.absorbIcon, "LEFT", 0, 0)
+                    frame.absorbIndicator:SetPoint("RIGHT", frame.absorbIcon, "LEFT", -2, 0)
                 end
             else
                 frame.absorbIndicator:SetPoint("RIGHT", frame.absorbIcon, "LEFT", 20, 0)
@@ -175,11 +175,27 @@ local function UpdateAbsorbIndicator(frame, unit)
         frame.absorbIcon:SetScale(BetterBlizzFramesDB.absorbIndicatorScale)
 
         local absorb = UnitGetTotalAbsorbs(unit) or 0
-        if absorb >= 1000 then
-            local displayValue = math.floor(absorb / 1000) .. "k"
+        local absorbActive
+        if absorb >= 1000000 then
+            local displayValue = string.format("%.1fm", absorb / 1000000)
             frame.absorbIndicator:SetText(displayValue)
             frame.absorbIndicator:SetAlpha(1)
+            absorbActive = true
+        elseif absorb >= 1000 then
+            local displayValue = math.floor(absorb / 1000) .. "k"  -- Truncate to thousands
+            frame.absorbIndicator:SetText(displayValue)
+            frame.absorbIndicator:SetAlpha(1)
+            absorbActive = true
+        else
+            absorbActive = false
+            frame.absorbIndicator:SetAlpha(0)
+            frame.absorbIcon:SetAlpha(0)
+            if frame.absorbIcon.border then
+                frame.absorbIcon.border:SetAlpha(0)
+            end
+        end
 
+        if absorbActive then
             if showIcon then
                 local auraIcon = GetMaxAbsorbAuraIcon(unit)
                 if auraIcon then

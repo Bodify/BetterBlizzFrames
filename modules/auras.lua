@@ -87,15 +87,18 @@ function BBF.CheckDebuffsForSmoke()
         local auraFrame = DebuffFrame.auraFrames[auraIndex]
         if auraFrame and not auraFrame.isAuraAnchor then
             local aura = C_UnitAuras.GetAuraDataByIndex("player", auraInfo.index, "HARMFUL")
-            if not aura then return end
-            if aura.spellId == 212183 then
+            if aura and aura.spellId == 212183 then
                 activeSmoke = true
                 if auraFrame.Cooldown then
                     auraFrame.Cooldown:SetCooldown(BBF.smokeBombCast, smokeDuration)
                 end
+                auraFrame.ogSetScript = auraFrame:GetScript("OnUpdate")
                 auraFrame:SetScript("OnUpdate", UpdateAuraDuration)
             else
-                auraFrame:SetScript("OnUpdate", nil)
+                if auraFrame.ogSetScript then
+                    auraFrame:SetScript("OnUpdate", auraFrame.ogSetScript)
+                    auraFrame.ogSetScript = nil
+                end
             end
         end
     end
@@ -249,6 +252,8 @@ local function UpdateMore()
     addCooldownFramePlayerDebuffs = BetterBlizzFramesDB.addCooldownFramePlayerDebuffs
     hideDefaultPlayerAuraDuration = BetterBlizzFramesDB.hideDefaultPlayerAuraDuration
     hideDefaultPlayerAuraCdText = BetterBlizzFramesDB.hideDefaultPlayerAuraCdText
+    TargetFrame.staticCastbar = (BetterBlizzFramesDB.targetStaticCastbar or BetterBlizzFramesDB.targetDetachCastbar) and true or false
+    FocusFrame.staticCastbar = (BetterBlizzFramesDB.focusStaticCastbar or BetterBlizzFramesDB.focusDetachCastbar) and true or false
 end
 
 function BBF.UpdateUserAuraSettings()
@@ -912,12 +917,32 @@ local function purgeableAfterImportantAndEnlargedComparator(a, b)
     return getCustomAuraComparatorWithoutPurgeable()(a, b)
 end
 
+local function purgeableAfterEnlargedAndImportantComparator(a, b)
+    if a.isEnlarged ~= b.isEnlarged then
+        return a.isEnlarged
+    end
+
+    if a.isImportant ~= b.isImportant then
+        return a.isImportant
+    end
+
+    if a.isPurgeable ~= b.isPurgeable then
+        return a.isPurgeable
+    end
+
+    return getCustomAuraComparatorWithoutPurgeable()(a, b)
+end
+
 local function getCustomAuraComparator()
     if purgeableBuffSorting then
         if purgeableBuffSortingFirst then
             return purgeableFirstComparator
         else
-            return purgeableAfterImportantAndEnlargedComparator
+            if allowLargeAuraFirst then
+                return purgeableAfterEnlargedAndImportantComparator
+            else
+                return purgeableAfterImportantAndEnlargedComparator
+            end
         end
     end
     return getCustomAuraComparatorWithoutPurgeable()
@@ -926,6 +951,7 @@ end
 local function AdjustAuras(self, frameType)
     local adjustedSize = sameSizeAuras and 21 or 17 * targetAndFocusSmallAuraScale
     local buffsOnTop = self.buffsOnTop
+    self.previousAuraRows = self.previousAuraRows or 0
 
     local initialOffsetX = (baseOffsetX / auraScale)
     local initialOffsetY = (baseOffsetY / auraScale)
@@ -972,7 +998,9 @@ local function AdjustAuras(self, frameType)
                 local defaultLargeAuraSize = aura.isLarge and 21 or 17
                 local importantSize = defaultLargeAuraSize * sizeMultiplier
                 aura:SetSize(importantSize, importantSize)
-                aura.Stealable:SetScale(sizeMultiplier)
+                if aura.Stealable then
+                    aura.Stealable:SetScale(sizeMultiplier)
+                end
                 auraSize = importantSize
             end
 
@@ -1091,10 +1119,10 @@ local function AdjustAuras(self, frameType)
                             local iconString = "|T" .. icon .. ":16:16:0:0|t"
 
                             if button == "LeftButton" then
-                                BBF.auraWhitelist(aura.spellId)
+                                BBF.auraWhitelist(aura.spellId, nil, true)
                                 print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") added to |cff00ff00whitelist|r.")
                             elseif button == "RightButton" then
-                                BBF.auraBlacklist(aura.spellId)
+                                BBF.auraBlacklist(aura.spellId, nil, true)
                                 print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") added to |cffff0000blacklist|r.")
                             end
                         elseif IsControlKeyDown() and IsAltKeyDown() then
@@ -1103,7 +1131,7 @@ local function AdjustAuras(self, frameType)
                             local iconString = "|T" .. icon .. ":16:16:0:0|t"
 
                             if button == "RightButton" then
-                                BBF.auraBlacklist(aura.spellId, true)
+                                BBF.auraBlacklist(aura.spellId, true, true)
                                 print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") added to |cffff0000blacklist|r with tag.")
                             end
                         end
@@ -1258,7 +1286,9 @@ local function AdjustAuras(self, frameType)
                     end
                 else
                     if aura.border then
-                        aura.border:SetAlpha(1)
+                        if not aura.Border then
+                            aura.border:SetAlpha(1)
+                        end
                     end
                     if aura.Border then
                         aura.Border:SetAlpha(1)
@@ -1270,15 +1300,27 @@ local function AdjustAuras(self, frameType)
 
                 --print(aura.Stealable, aura.Stealable:IsShown())
 
-                if aura.Stealable and aura.Stealable:IsShown() then
-                    if aura.border then
-                        aura.border:Hide()
-                        aura.Icon:SetTexCoord(0, 1, 0, 1)
-                    end
-                else
-                    if aura.border then
-                        aura.border:Show()
-                        aura.Icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+                -- if aura.Stealable and aura.Stealable:IsShown() then
+                --     if aura.border then
+                --         aura.border:Hide()
+                --         aura.Icon:SetTexCoord(0, 1, 0, 1)
+                --     end
+                -- else
+                --     if aura.border then
+                --         aura.border:Show()
+                --         aura.Icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+                --     end
+                -- end
+
+                if BBF.purge then
+                    if auraData.dispelName == "Magic" and auraData.isHelpful then
+                        if aura.Stealable then
+                            aura.Stealable:Show()
+                        end
+                    else
+                        if aura.Stealable then
+                            aura.Stealable:Hide()
+                        end
                     end
                 end
 
@@ -1368,13 +1410,30 @@ local function AdjustAuras(self, frameType)
         end
     end
 
-    if not targetStaticCastbar or not targetDetachCastbar then
-        if frameType == "target" then
-            adjustCastbar(TargetFrame.spellbar, TargetFrameSpellBar)
-        elseif frameType == "focus" then
-            adjustCastbar(FocusFrame.spellbar, FocusFrameSpellBar)
+    -- if not targetStaticCastbar or not targetDetachCastbar then
+    --     if frameType == "target" then
+    --         adjustCastbar(TargetFrame.spellbar, TargetFrameSpellBar)
+    --     elseif frameType == "focus" then
+    --         adjustCastbar(FocusFrame.spellbar, FocusFrameSpellBar)
+    --     end
+    -- end
+
+    -- Check if the number of aura rows has changed
+    local currentAuraRows = #self.rowHeights
+    if currentAuraRows ~= self.previousAuraRows then
+        -- The number of aura rows has changed, adjust the castbar
+        if not self.staticCastbar and self.spellbar:IsShown() then
+            if frameType == "target" then
+                adjustCastbar(self.spellbar, TargetFrameSpellBar)
+            elseif frameType == "focus" then
+                adjustCastbar(self.spellbar, FocusFrameSpellBar)
+            end
         end
     end
+
+    -- Store the current number of rows for the next check
+    self.previousAuraRows = currentAuraRows
+
     addMasque(frameType)
 end
 
@@ -1807,19 +1866,19 @@ local function PersonalBuffFrameFilterAndGrid(self)
                                 local iconString = "|T" .. icon .. ":16:16:0:0|t"
 
                                 if button == "LeftButton" then
-                                    BBF.auraWhitelist(auraFrame.spellId)
+                                    BBF.auraWhitelist(auraFrame.spellId, nil, true)
                                     print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") added to |cff00ff00whitelist|r.")
                                 elseif button == "RightButton" then
-                                    BBF.auraBlacklist(auraFrame.spellId)
+                                    BBF.auraBlacklist(auraFrame.spellId, nil, true)
                                     print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") added to |cffff0000blacklist|r.")
                                 end
                             elseif IsControlKeyDown() and IsAltKeyDown() then
                                 local spellName, _, icon = BBF.TWWGetSpellInfo(auraFrame.spellId)
                                 local spellId = tostring(auraFrame.spellId)
                                 local iconString = "|T" .. icon .. ":16:16:0:0|t"
-    
+
                                 if button == "RightButton" then
-                                    BBF.auraBlacklist(auraFrame.spellId, true)
+                                    BBF.auraBlacklist(auraFrame.spellId, true, true)
                                     print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") added to |cffff0000blacklist|r with tag.")
                                 end
                             end
@@ -2106,10 +2165,10 @@ local function PersonalDebuffFrameFilterAndGrid(self)
                                 local iconString = "|T" .. icon .. ":16:16:0:0|t"
 
                                 if button == "LeftButton" then
-                                    BBF.auraWhitelist(auraFrame.spellId)
+                                    BBF.auraWhitelist(auraFrame.spellId, nil, true)
                                     print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") added to |cff00ff00whitelist|r.")
                                 elseif button == "RightButton" then
-                                    BBF.auraBlacklist(auraFrame.spellId)
+                                    BBF.auraBlacklist(auraFrame.spellId, nil, true)
                                     print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") added to |cffff0000blacklist|r.")
                                 end
                             elseif IsControlKeyDown() and IsAltKeyDown() then
@@ -2118,7 +2177,7 @@ local function PersonalDebuffFrameFilterAndGrid(self)
                                 local iconString = "|T" .. icon .. ":16:16:0:0|t"
 
                                 if button == "RightButton" then
-                                    BBF.auraBlacklist(auraFrame.spellId, true)
+                                    BBF.auraBlacklist(auraFrame.spellId, true, true)
                                     print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") added to |cffff0000blacklist|r with tag.")
                                 end
                             end
@@ -2455,6 +2514,18 @@ function BBF.HookPlayerAndTargetAuras()
             end
         end);
     end
+
+    -- --Hook Target & Focus Castbars
+    -- if not targetCastbarsHooked then
+    --     if not shouldAdjustCastbar then
+    --         hooksecurefunc(TargetFrame.spellbar, "SetPoint", function()
+    --             DefaultCastbarAdjustment(TargetFrame.spellbar, TargetFrameSpellBar)
+    --         end);
+    --         hooksecurefunc(FocusFrame.spellbar, "SetPoint", function()
+    --             DefaultCastbarAdjustment(FocusFrame.spellbar, FocusFrameSpellBar)
+    --         end);
+    --     end
+    -- end
 
     if not BBF.smokeBombDetector and not (BBP and BBP.smokeBombDetector) then
         BBF.smokeBombDetector = CreateFrame("Frame")

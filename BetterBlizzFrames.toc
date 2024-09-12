@@ -25,5 +25,8 @@ modules\chatFrame.lua
 modules\overShields.lua
 modules\stealthIndicator.lua
 modules\interruptIcon.lua
+modules\queueTimer.lua
+modules\druid\overcharges.lua
+
 gui.lua
 BetterBlizzFrames.lua

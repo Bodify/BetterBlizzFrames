@@ -39,6 +39,11 @@ local defaultSettings = {
     onlyPandemicAuraMine = true,
     lossOfControlScale = 1,
     customCode = "-- Enter custom code below here. Feel free to contact me @bodify",
+    queueTimerID = 567458,
+    queueTimerWarning = false,
+    queueTimerAudio = true,
+    queueTimerWarningTime = 6,
+    minimizeObjectiveTracker = true,
 
     --Target castbar
     playerCastbarIconXPos = 0,
@@ -252,24 +257,21 @@ local defaultSettings = {
 
 
     auraWhitelist = {
-        {["name"] = "Example Aura :3 (delete me)"}
+        ["example"] = {name = "Example Aura :3 (delete me)"}
     },
     auraBlacklist = {
-        {name = "Sign of the Skirmisher"},
-        {name = "Sign of the Scourge"},
-        {name = "Stormwind Champion"},
-        {name = "Honorless Target"},
-        {name = "Guild Champion"},
-        {name = "Sign of Iron"},
-        {id = 397734}, -- Word of a Worthy Ally
-        {id = 186403}, -- Sign of Battle
-        {id = 282559}, -- Enlisted
-        {id = 32727}, -- Arena Preparation
-        {id = 418563}, -- WoW's 19th Anniversary
-        {id = 93805}, -- Ironforge Champion
-        {id = 335148}, -- Sign of the Twisting Nether
-        {id = 269083}, -- Enlisted 2
-        {id = 394005}, -- A cultivators colors
+        ["example"] = {name = "Example Aura :3 (delete me)"},
+        ["sign of the skirmisher"] = {name = "Sign of the Skirmisher"},
+        ["sign of the scourge"] = {name = "Sign of the Scourge"},
+        ["stormwind champion"] = {name = "Stormwind Champion"},
+        ["honorless target"] = {name = "Honorless Target"},
+        ["guild champion"] = {name = "Guild Champion"},
+        ["sign of iron"] = {name = "Sign of Iron"},
+        ["enlisted"] = {name = "Enlisted"},
+        [397734] = {name = "Word of a Worthy Ally", id = 397734},
+        [186403] = {name = "Sign of Battle", id = 186403},
+        [32727] = {name = "Arena Preparation", id = 32727},
+        [93805] = {name = "Ironforge Champion", id = 93805},
     },
 }
 
@@ -300,25 +302,26 @@ local function FetchAndSaveValuesOnFirstLogin()
 
     local function GetUIInfo() --uhhh yeah idk, not needed delete eventually TODO:
         if BBF.variablesLoaded then
-            local function ShownChecker()
-                if PlayerFrame:IsShown() then
-                    BetterBlizzFramesDB.hidePrestigeBadge = PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.PrestigeBadge:GetAlpha() ~= 1 or not PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.PrestigeBadge:IsShown()
-                    BetterBlizzFramesDB.targetPrestigeBadgeAlpha = TargetFrame.TargetFrameContent.TargetFrameContentContextual.PrestigeBadge:GetAlpha() ~= 1 or not TargetFrame.TargetFrameContent.TargetFrameContentContextual.PrestigeBadge:IsShown()
-                    BetterBlizzFramesDB.focusPrestigeBadgeAlpha = FocusFrame.TargetFrameContent.TargetFrameContentContextual.PrestigeBadge:GetAlpha() ~= 1 or not FocusFrame.TargetFrameContent.TargetFrameContentContextual.PrestigeBadge:IsShown()
+--             local function ShownChecker()
+--                 if PlayerFrame:IsShown() then
+--                     BetterBlizzFramesDB.hidePrestigeBadge = PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.PrestigeBadge:GetAlpha() ~= 1 or not PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.PrestigeBadge:IsShown()
+--                     BetterBlizzFramesDB.targetPrestigeBadgeAlpha = TargetFrame.TargetFrameContent.TargetFrameContentContextual.PrestigeBadge:GetAlpha() ~= 1 or not TargetFrame.TargetFrameContent.TargetFrameContentContextual.PrestigeBadge:IsShown()
+--                     BetterBlizzFramesDB.focusPrestigeBadgeAlpha = FocusFrame.TargetFrameContent.TargetFrameContentContextual.PrestigeBadge:GetAlpha() ~= 1 or not FocusFrame.TargetFrameContent.TargetFrameContentContextual.PrestigeBadge:IsShown()
 
---[[
-                    print(BetterBlizzFramesDB.hideTargetPrestigeBadge)
-                    BetterBlizzFramesDB.hideTargetPrestigeBadge = not TargetFrame.TargetFrameContent.TargetFrameContentContextual.PrestigePortrait:IsShown()
-                    print(BetterBlizzFramesDB.hideTargetPrestigeBadge)              
-]]
-                    BetterBlizzFramesDB.hasCheckedUi = true
-                else
-                    C_Timer.After(0.1, function()
-                        ShownChecker()
-                    end)
-                end
-            end
-            ShownChecker()
+-- --[[
+--                     print(BetterBlizzFramesDB.hideTargetPrestigeBadge)
+--                     BetterBlizzFramesDB.hideTargetPrestigeBadge = not TargetFrame.TargetFrameContent.TargetFrameContentContextual.PrestigePortrait:IsShown()
+--                     print(BetterBlizzFramesDB.hideTargetPrestigeBadge)              
+-- ]]
+--                     BetterBlizzFramesDB.hasCheckedUi = true
+--                 else
+--                     C_Timer.After(0.1, function()
+--                         ShownChecker()
+--                     end)
+--                 end
+--             end
+--             ShownChecker()
+            BetterBlizzFramesDB.hasCheckedUi = true
         else
             C_Timer.After(1, function()
                 GetUIInfo()
@@ -347,39 +350,12 @@ StaticPopupDialogs["BetterBlizzFrames_COMBAT_WARNING"] = {
 }
 
 StaticPopupDialogs["BBF_NEW_VERSION"] = {
-    text = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames " .. addonUpdates .. ":\n\nHey Sodapoppin.\n\nIf you need help settings things up or have questions feel free to contact me @bodify on discord.",
+    text = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames " .. addonUpdates .. ":\n\nIMPORTANT CHANGE\n\nPlease verify your aura white & blacklists are still intact.\n\nIf they are not go to your SavedVariables and backup both BetterBlizzFrames.lua and .lua.bak files before logging out or reloading.",
     button1 = "OK",
     timeout = 0,
     whileDead = true,
     hideOnEscape = true,
 }
-
-local function UpdateAuraColorsToGreen()
-    if BetterBlizzFramesDB and BetterBlizzFramesDB["auraWhitelist"] then
-        for _, entry in pairs(BetterBlizzFramesDB["auraWhitelist"]) do
-            if entry.entryColors and entry.entryColors.text then
-                -- Update to green color
-                entry.entryColors.text.r = 0
-                entry.entryColors.text.g = 1
-                entry.entryColors.text.b = 0
-            else
-                entry.entryColors = { text = { r = 0, g = 1, b = 0 } }
-            end
-        end
-    end
-end
-
-local function AddAlphaValuesToAuraColors()
-    if BetterBlizzFramesDB and BetterBlizzFramesDB["auraWhitelist"] then
-        for _, entry in pairs(BetterBlizzFramesDB["auraWhitelist"]) do
-            if entry.entryColors and entry.entryColors.text then
-                entry.entryColors.text.a = 1
-            else
-                entry.entryColors = { text = { r = 0, g = 1, b = 0, a = 1 } }
-            end
-        end
-    end
-end
 
 local function ResetBBF()
     BetterBlizzFramesDB = {}
@@ -404,10 +380,10 @@ local function SendUpdateMessage()
     if sendUpdate then
         if not BetterBlizzFramesDB.scStart then
             C_Timer.After(7, function()
-                -- if BetterBlizzFramesDB.castBarInterruptIconEnabled then
+                StaticPopup_Show("BBF_NEW_VERSION")
                 DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames "..addonUpdates..":")
                 --DEFAULT_CHAT_FRAME:AddMessage("|A:QuestNormal:16:16|a New stuff:")
-                DEFAULT_CHAT_FRAME:AddMessage("- Pro tip: Enable the new \"Minimize Objective Frame Better\" setting in Misc.")
+                DEFAULT_CHAT_FRAME:AddMessage("- Lots of updates. Read changelog for more info.")
 
                 -- DEFAULT_CHAT_FRAME:AddMessage("|A:Professions-Crafting-Orders-Icon:16:16|a Tweak:")
                 -- DEFAULT_CHAT_FRAME:AddMessage("   - Reset castbar interrupt icon y offset to 0 due to default positional changes You may have to readjust to your liking.")
@@ -461,9 +437,23 @@ local function LoadingScreenDetector(_, event)
         --#######TEMPORARY BUGFIX FOR BLIZZARD#########
         if BetterBlizzFramesDB.hideDragonFlying then
             if inArena and UIWidgetPowerBarContainerFrame then
-                UIWidgetPowerBarContainerFrame:SetAlpha(0)
+                for _, child in ipairs({UIWidgetPowerBarContainerFrame:GetChildren()}) do
+                    if child.DecorLeft then
+                        child.DecorLeft:SetAlpha(0)
+                    end
+                    if child.DecorRight then
+                        child.DecorRight:SetAlpha(0)
+                    end
+                end
             else
-                UIWidgetPowerBarContainerFrame:SetAlpha(1)
+                for _, child in ipairs({UIWidgetPowerBarContainerFrame:GetChildren()}) do
+                    if child.DecorLeft then
+                        child.DecorLeft:SetAlpha(1)
+                    end
+                    if child.DecorRight then
+                        child.DecorRight:SetAlpha(1)
+                    end
+                end
             end
         end
         --#######TEMPORARY BUGFIX FOR BLIZZARD#########
@@ -477,9 +467,23 @@ local function LoadingScreenDetector(_, event)
         --#######TEMPORARY BUGFIX FOR BLIZZARD#########
         if BetterBlizzFramesDB.hideDragonFlying then
             if inArena and UIWidgetPowerBarContainerFrame then
-                UIWidgetPowerBarContainerFrame:SetAlpha(0)
+                for _, child in ipairs({UIWidgetPowerBarContainerFrame:GetChildren()}) do
+                    if child.DecorLeft then
+                        child.DecorLeft:SetAlpha(0)
+                    end
+                    if child.DecorRight then
+                        child.DecorRight:SetAlpha(0)
+                    end
+                end
             else
-                UIWidgetPowerBarContainerFrame:SetAlpha(1)
+                for _, child in ipairs({UIWidgetPowerBarContainerFrame:GetChildren()}) do
+                    if child.DecorLeft then
+                        child.DecorLeft:SetAlpha(1)
+                    end
+                    if child.DecorRight then
+                        child.DecorRight:SetAlpha(1)
+                    end
+                end
             end
         end
         --#######TEMPORARY BUGFIX FOR BLIZZARD#########
@@ -536,12 +540,12 @@ function BBF.ClickthroughFrames()
 
         if BetterBlizzFramesDB.targetFrameClickthrough then
             TargetFrame:SetMouseClickEnabled(shift)
-            TargetFrameToT:SetMouseClickEnabled(false)
+            TargetFrameToT:SetMouseClickEnabled(shift)
         end
 
         if BetterBlizzFramesDB.focusFrameClickthrough then
             FocusFrame:SetMouseClickEnabled(shift)
-            FocusFrameToT:SetMouseClickEnabled(false)
+            FocusFrameToT:SetMouseClickEnabled(shift)
         end
 	end
 end
@@ -705,6 +709,33 @@ ClickthroughFrames:SetScript("OnEvent", function()
     BBF.ClickthroughFrames()
 end)
 ClickthroughFrames:RegisterEvent("MODIFIER_STATE_CHANGED")
+
+function BBF.SurrenderNotLeaveArena()
+    if not BetterBlizzFramesDB.surrenderArena then return end
+    local function bbfPrint(msg)
+        print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: "..msg)
+    end
+
+    local surrenderFailed
+
+    SlashCmdList["CHAT_AFK"] = function(msg)
+        if IsActiveBattlefieldArena() then
+            if CanSurrenderArena() then
+                SurrenderArena()
+            else
+                if not surrenderFailed then
+                    surrenderFailed = true
+                    bbfPrint("Can't surrender. Type /afk again to leave.")
+                else
+                    LeaveBattlefield()
+                    surrenderFailed = nil
+                end
+            end
+        else
+            SendChatMessage(msg, "AFK")
+        end
+    end
+end
 
 
 --######################################################################
@@ -1358,17 +1389,10 @@ First:SetScript("OnEvent", function(_, event, addonName)
             FetchAndSaveValuesOnFirstLogin()
             TurnTestModesOff()
             BBF.HookCastbars()
+            BBF.EnableQueueTimer()
+            BBF.SurrenderNotLeaveArena()
+            BBF.DruidBlueComboPoints()
             --TurnOnEnabledFeaturesOnLogin()
-
-            if not BetterBlizzFramesDB.auraWhitelistColorsUpdated then
-                UpdateAuraColorsToGreen() --update default yellow text to green for new color feature
-                BetterBlizzFramesDB.auraWhitelistColorsUpdated = true
-            end
-
-            if not BetterBlizzFramesDB.auraWhitelistAlphaUpdated then
-                AddAlphaValuesToAuraColors()
-                BetterBlizzFramesDB.auraWhitelistAlphaUpdated = true
-            end
 
             if BetterBlizzFramesDB.hideLossOfControlFrameLines == nil then
                 if BetterBlizzFramesDB.hideLossOfControlFrameBg then
@@ -1377,7 +1401,9 @@ First:SetScript("OnEvent", function(_, event, addonName)
             end
 
             if not BetterBlizzFramesDB.optimizedAuraLists then
-                BetterBlizzFramesDB.optimizedAuraLists = true
+                BetterBlizzFramesDB.auraBackups = {}
+                BetterBlizzFramesDB.auraBackups.whitelist = BetterBlizzFramesDB.auraWhitelist
+                BetterBlizzFramesDB.auraBackups.blacklist = BetterBlizzFramesDB.auraBlacklist
 
                 local optimizedWhitelist = {}
                 for _, aura in ipairs(BetterBlizzFramesDB["auraWhitelist"]) do
@@ -1398,8 +1424,6 @@ First:SetScript("OnEvent", function(_, event, addonName)
                 end
                 BetterBlizzFramesDB.auraWhitelist = optimizedWhitelist
 
-
-
                 local optimizedBlacklist = {}
                 for _, aura in ipairs(BetterBlizzFramesDB["auraBlacklist"]) do
                     local key = aura["id"] or string.lower(aura["name"])
@@ -1410,10 +1434,10 @@ First:SetScript("OnEvent", function(_, event, addonName)
                         showMine = aura["showMine"] or nil,
                     }
                 end
-
                 BetterBlizzFramesDB.auraBlacklist = optimizedBlacklist
 
 
+                BetterBlizzFramesDB.optimizedAuraLists = true
             end
 
             BBF.InitializeOptions()
