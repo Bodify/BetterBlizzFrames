@@ -1,3 +1,12 @@
+# BetterBlizzFrames 1.5.4b
+## The War Within
+### Tweak:
+- Added Holy Ward (213610) & Time Dilation (357170) to aura whitelist preset.
+- Added a few more spell ids to aura blacklist preset.
+- PSA: These presets are free and found in the Import/Export section.
+### Bugfix:
+- Fix "Hide TotemFrame" setting.
+
 # BetterBlizzFrames 1.5.4
 ## The War Within
 ### New stuff:

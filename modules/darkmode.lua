@@ -269,13 +269,6 @@ function BBF.DarkmodeFrames(bypass)
             BBF.vigorRecolor:SetScript("OnEvent", function()
                 C_Timer.After(0, function()
                     RecolorVigor()
-                    BBF.vigorRecolor:UnregisterAllEvents()
-                end)
-                C_Timer.After(0.1, function()
-                    RecolorVigor()
-                end)
-                C_Timer.After(0.5, function()
-                    RecolorVigor()
                 end)
             end)
         end
@@ -769,8 +762,8 @@ specChangeListener:SetScript("OnEvent", function(self, event, ...)
                 end
                 if rogueComboPoints then
                     for _, v in pairs({rogueComboPoints:GetChildren()}) do
-                        applySettings(v.BGInactive, desaturationValue, rogueCombo)
-                        applySettings(v.BGActive, desaturationValue, rogueComboActive)
+                        applySettings(v.BGInactive, true, rogueCombo)
+                        applySettings(v.BGActive, true, rogueComboActive)
                     end
                 end
             end

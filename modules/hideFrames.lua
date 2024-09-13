@@ -186,10 +186,11 @@ function BBF.HideFrames()
         -- Hide totem frame
         if BetterBlizzFramesDB.hideTotemFrame then
             local totemFrame = TotemFrame
-            if totemFrame then
-                totemFrame:HookScript(totemFrame, "OnShow", function()
+            if totemFrame and not totemFrame.bbfHook then
+                totemFrame:HookScript("OnShow", function()
                     totemFrame:Hide()
                 end)
+                totemFrame.bbfHook = true
                 totemFrame:Hide()
             end
         end

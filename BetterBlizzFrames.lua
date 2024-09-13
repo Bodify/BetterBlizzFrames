@@ -534,16 +534,17 @@ end
 function BBF.ClickthroughFrames()
 	if not InCombatLockdown() then
         local shift = IsShiftKeyDown()
-        if BetterBlizzFramesDB.playerFrameClickthrough then
+        local db = BetterBlizzFramesDB
+        if db.playerFrameClickthrough then
             PlayerFrame:SetMouseClickEnabled(shift)
         end
 
-        if BetterBlizzFramesDB.targetFrameClickthrough then
+        if db.targetFrameClickthrough then
             TargetFrame:SetMouseClickEnabled(shift)
             TargetFrameToT:SetMouseClickEnabled(shift)
         end
 
-        if BetterBlizzFramesDB.focusFrameClickthrough then
+        if db.focusFrameClickthrough then
             FocusFrame:SetMouseClickEnabled(shift)
             FocusFrameToT:SetMouseClickEnabled(shift)
         end

@@ -1218,7 +1218,8 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
         end
 
         -- Initialize colors based on npc data
-        local entryColors = npc.color or {1, 0.8196, 0, 1}  -- Default yellowish color
+        local entryColors = npc.color or {1, 0.8196, 0, 1}  -- Default yellowish color 
+        
 
         -- Extra logic for handling additional checkboxes and flags
         if extraBoxes then
@@ -1379,9 +1380,6 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
                     BBF.RefreshAllAuraFrames()
                 end)
 
-                -- Set the checkbox state based on npc.showMine
-                checkBoxShowMine:SetChecked(button.npcData.showMine)
-
                 -- Adjust text width and settings
                 button.text:SetWidth(196)
                 button.text:SetWordWrap(false)
@@ -1390,6 +1388,7 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
                 -- Save the reference to the button
                 button.checkBoxShowMine = checkBoxShowMine
             end
+            button.checkBoxShowMine:SetChecked(button.npcData.showMine)
         end
 
         if button.checkBoxI then

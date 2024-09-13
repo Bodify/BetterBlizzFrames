@@ -59,12 +59,12 @@ local function OnUpdate(elapsed)
         local db = BetterBlizzFramesDB
         if db.queueTimerAudio and db.queueTimerWarning then
             if GetBattlefieldPortExpiration(bgId) == db.queueTimerWarningTime and not soundPlayed then
-                PlaySoundFile(db.queueTimerID, "master")
+                PlaySoundFile(567458, "master")
                 C_Timer.After(0.1, function()
-                    PlaySoundFile(db.queueTimerID, "master")
+                    PlaySoundFile(567458, "master")
                 end)
                 C_Timer.After(0.2, function()
-                    PlaySoundFile(db.queueTimerID, "master")
+                    PlaySoundFile(567458, "master")
                 end)
                 soundPlayed = true
             end
@@ -85,12 +85,12 @@ local function OnUpdate(elapsed)
         local db = BetterBlizzFramesDB
         if db.queueTimerAudio and db.queueTimerWarning then
             if proposalTimeLeft == db.queueTimerWarningTime and not soundPlayed then
-                PlaySoundFile(db.queueTimerID, "master")
+                PlaySoundFile(567458, "master")
                 C_Timer.After(0.1, function()
-                    PlaySoundFile(db.queueTimerID, "master")
+                    PlaySoundFile(567458, "master")
                 end)
                 C_Timer.After(0.2, function()
-                    PlaySoundFile(db.queueTimerID, "master")
+                    PlaySoundFile(567458, "master")
                 end)
                 soundPlayed = true
             end
