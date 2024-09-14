@@ -1452,12 +1452,16 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
     editBox:SetAutoFocus(false)
     CreateTooltipTwo(editBox, "Filter auras by spell id and/or spell name", "You can click auras to add to lists.\n\nTo whitelist:\nShift+Alt + LeftClick\n\nTo blacklist:\nShift+Alt + RightClick\nCtrl+Alt RightClick with \"Show Mine\" tag", nil, "ANCHOR_TOP")
 
+    local currentSearchFilter = ""
     local function getSortedNpcList()
         local sortableNpcList = {}
 
-        -- Iterate over the new structure using pairs to access all entries
+        -- Iterate over the structure using pairs to access all entries
         for key, entry in pairs(listData) do
-            table.insert(sortableNpcList, entry)  -- Collect all entries into a sortable list
+            -- Apply the search filter
+            if currentSearchFilter == "" or (entry.name and entry.name:lower():match(currentSearchFilter)) or (entry.id and tostring(entry.id):match(currentSearchFilter)) then
+                table.insert(sortableNpcList, entry)
+            end
         end
 
         -- Sort the list alphabetically by the 'name' field
@@ -1466,10 +1470,11 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
             local nameB = b.name and b.name:lower() or ""
             return nameA < nameB
         end)
-        --print("Number of entries in the list: " .. #sortableNpcList)
+
         return sortableNpcList
     end
 
+    -- Function to update the list with batching logic
     local function refreshList()
         local sortedListData = getSortedNpcList()
         local totalEntries = #sortedListData
@@ -1502,7 +1507,6 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
         end
         -- Start processing in the first frame
         processNextBatch()
-        --print("refreshing.....")
     end
 
     contentFrame.refreshList = refreshList
@@ -1600,6 +1604,19 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
     editBox:SetScript("OnEnterPressed", function(self)
         addOrUpdateEntry(self:GetText())
     end)
+
+        -- Function to search and filter the list
+        local function searchList(searchText)
+            currentSearchFilter = searchText:lower()
+            refreshList()
+        end
+    
+        -- Update the list as the user types
+        editBox:SetScript("OnTextChanged", function(self, userInput)
+            if userInput then
+                searchList(self:GetText())
+            end
+        end, true)
 
     local addButton = CreateFrame("Button", nil, subPanel, "UIPanelButtonTemplate")
     addButton:SetSize(60, 24)
