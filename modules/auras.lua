@@ -1042,7 +1042,7 @@ local function AdjustAuras(self, frameType)
     local isFriend = unit and not UnitCanAttack("player", unit)
 
     local buffs, debuffs = {}, {}
-
+    local customAuraComparator = getCustomAuraComparator()
 
 
     for aura in self.auraPools:EnumerateActive() do
@@ -1236,7 +1236,9 @@ local function AdjustAuras(self, frameType)
                         aura.PurgeGlow:SetDesaturated(true)
                         aura.PurgeGlow:SetVertexColor(unpack(purgeTextureColorRGB))
                     end
-                    aura.PurgeGlow:Show()
+                    if not aura.isImportant then
+                        aura.PurgeGlow:Show()
+                    end
                 else
                     if aura.PurgeGlow then
                         if aura.Stealable and auraData.isStealable then
@@ -1338,7 +1340,6 @@ local function AdjustAuras(self, frameType)
         end
     end
 
-    local customAuraComparator = getCustomAuraComparator()
     table_sort(buffs, customAuraComparator)
     table_sort(debuffs, customAuraComparator)
 

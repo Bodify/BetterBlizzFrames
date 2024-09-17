@@ -911,6 +911,9 @@ local partyFrames = {
 hooksecurefunc("CompactUnitFrame_UpdateName", function(frame)
     --if partyFrames[frame:GetName()] then
         RunOnUpdateName(frame)
+        -- if frame.name then
+        --     frame.name:SetText("test")
+        -- end
     --end
 end)
 

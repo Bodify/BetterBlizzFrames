@@ -633,16 +633,16 @@ function BBF.DarkmodeFrames(bypass)
 
     -- Actionbars
     for i = 1, 12 do
-        applySettings(_G["ActionButton" .. i .. "NormalTexture"], desaturationValue, actionBarColor)
-        applySettings(_G["MultiBarBottomLeftButton" .. i .. "NormalTexture"], desaturationValue, actionBarColor)
-        applySettings(_G["MultiBarBottomRightButton" ..i.. "NormalTexture"], desaturationValue, actionBarColor)
-        applySettings(_G["MultiBarRightButton" ..i.. "NormalTexture"], desaturationValue, actionBarColor)
-        applySettings(_G["MultiBarLeftButton" ..i.. "NormalTexture"], desaturationValue, actionBarColor)
-        applySettings(_G["MultiBar5Button" ..i.. "NormalTexture"], desaturationValue, actionBarColor)
-        applySettings(_G["MultiBar6Button" ..i.. "NormalTexture"], desaturationValue, actionBarColor)
-        applySettings(_G["MultiBar7Button" ..i.. "NormalTexture"], desaturationValue, actionBarColor)
-        applySettings(_G["PetActionButton" ..i.. "NormalTexture"], desaturationValue, actionBarColor)
-        applySettings(_G["StanceButton" ..i.. "NormalTexture"], desaturationValue, actionBarColor)
+        applySettings(_G["ActionButton" .. i .. "NormalTexture"], desaturationValue, actionBarColor, true)
+        applySettings(_G["MultiBarBottomLeftButton" .. i .. "NormalTexture"], desaturationValue, actionBarColor, true)
+        applySettings(_G["MultiBarBottomRightButton" ..i.. "NormalTexture"], desaturationValue, actionBarColor, true)
+        applySettings(_G["MultiBarRightButton" ..i.. "NormalTexture"], desaturationValue, actionBarColor, true)
+        applySettings(_G["MultiBarLeftButton" ..i.. "NormalTexture"], desaturationValue, actionBarColor, true)
+        applySettings(_G["MultiBar5Button" ..i.. "NormalTexture"], desaturationValue, actionBarColor, true)
+        applySettings(_G["MultiBar6Button" ..i.. "NormalTexture"], desaturationValue, actionBarColor, true)
+        applySettings(_G["MultiBar7Button" ..i.. "NormalTexture"], desaturationValue, actionBarColor, true)
+        applySettings(_G["PetActionButton" ..i.. "NormalTexture"], desaturationValue, actionBarColor, true)
+        applySettings(_G["StanceButton" ..i.. "NormalTexture"], desaturationValue, actionBarColor, true)
     end
 
     applySettings(StatusTrackingBarManager.MainStatusTrackingBarContainer.BarFrameTexture, desaturationValue, actionBarColor)
@@ -662,14 +662,14 @@ function BBF.DarkmodeFrames(bypass)
         ActionButton10.RightDivider,
         ActionButton11.RightDivider,
     }) do
-        applySettings(v, desaturationValue, actionBarColor)
+        applySettings(v, desaturationValue, actionBarColor, true)
     end
 
     for _, v in pairs({
         MainMenuBar.EndCaps.LeftEndCap,
         MainMenuBar.EndCaps.RightEndCap,
     }) do
-        applySettings(v, desaturationValue, birdColor)
+        applySettings(v, desaturationValue, birdColor, true)
     end
 
     local BARTENDER4_NUM_MAX_BUTTONS = 180

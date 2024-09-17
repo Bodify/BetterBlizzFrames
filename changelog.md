@@ -2,9 +2,8 @@
 ## The War Within
 ### Tweak:
 - Typing in aura lists input field now searches in the list as well.
-- Added Holy Ward (213610) & Time Dilation (357170) to aura whitelist preset.
-- Added a few more spell ids to aura blacklist preset.
-- PSA: These presets are free and found in the Import/Export section.
+- Added more auras to the pvp preset for aura blacklist and whitelist.
+- PSA: These presets can be found in the Import/Export section.
 ### Bugfix:
 - Fix "Hide TotemFrame" setting.
 
