@@ -2,7 +2,7 @@
 ## The War Within
 ### Tweak:
 - Typing in aura lists input field now searches in the list as well.
-- Added more auras to the pvp preset for aura blacklist and whitelist.
+- Added more auras to the pvp preset for aura blacklist and whitelist. (Remember this can be re-imported as it will merge your with your current settings and only add new auras)
 - PSA: These presets can be found in the Import/Export section.
 ### Bugfix:
 - Fix "Hide TotemFrame" setting.
