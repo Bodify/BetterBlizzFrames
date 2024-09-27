@@ -1,3 +1,20 @@
+# BetterBlizzFrames 1.5.5
+## The War Within
+### New stuff:
+- Hide Hit Indicator setting, hides inc dmg/healing numbers on PlayerFrame portrait.
+### Tweak:
+- "Full Profile" export strings can now be imported in the other import windows and will then only import that portion of the profile.
+- Added a missing line texture on the left of ChatFrame to "Hide ChatFrame Buttons".
+- Add a few more spell ids to blacklist preset.
+- Updated Nahj profile.
+### Bugfix:
+- Improved Queue Timer for PvE queues. Should now stay accurate between reloads etc.
+- Added a fake duration to Temp Enchants (Blizzard API is ass) to avoid errors when "Less than one min" filter is selected for Player.
+- Fix FocusFrame Castbar Extra ToT Offset not being active on the frame.
+- Fix some unintended changes to Overshields on PlayerFrame, TargetFrame & FocusFrame.
+- Fix issue with Absorb Indicator not displaying on login/reload.
+- Fixed Druid Blue ComboPoints not getting activated if Druid was not in catform during login/reload.
+
 # BetterBlizzFrames 1.5.4b
 ## The War Within
 ### Tweak:

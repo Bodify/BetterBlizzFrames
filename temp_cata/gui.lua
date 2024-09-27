@@ -85,6 +85,16 @@ local function ImportProfile(encodedString, expectedDataType)
         return nil, "Error deserializing or data type mismatch"
     end
 
+    if importTable.dataType == "fullProfile" then
+        if importTable.data[expectedDataType] then
+            return importTable.data[expectedDataType], nil
+        else
+            return importTable.data, nil
+        end
+    elseif importTable.dataType ~= expectedDataType then
+        return nil, "Data type mismatch"
+    end
+
     return importTable.data, nil
 end
 

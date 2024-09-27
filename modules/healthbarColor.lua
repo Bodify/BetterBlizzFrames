@@ -2,10 +2,12 @@ local UnitIsFriend = UnitIsFriend
 local UnitIsEnemy = UnitIsEnemy
 local UnitIsPlayer = UnitIsPlayer
 local UnitClass = UnitClass
+local UnitIsUnit = UnitIsUnit
 
 local healthbarsHooked = nil
 local classColorsOn
 local colorPetAfterOwner
+local skipPlayer
 
 local OnSetVertexColorHookScript = function(r, g, b, a)
     return function(frame, red, green, blue, alpha, flag)
@@ -63,7 +65,7 @@ end
 local function updateFrameColorToggleVer(frame, unit)
     if not frame then return end
     if not frame.SetStatusBarDesaturated then return end
-    if unit == "player" and BetterBlizzFramesDB.classColorFramesSkipPlayer then return end
+    if unit == "player" and skipPlayer then return end
     if classColorsOn then
         local color, isFriendly = getUnitColor(unit)
         if color then
@@ -100,7 +102,6 @@ local validUnits = {
 
 local function UpdateHealthColor(frame, unit)
     if not validUnits[unit] then return end
-    local skipPlayer = BetterBlizzFramesDB.classColorFramesSkipPlayer
     if unit == "player" and skipPlayer then return end
     local color, isFriendly = getUnitColor(unit)
     if color then
@@ -130,11 +131,12 @@ end
 function BBF.UpdateFrames()
     classColorsOn = BetterBlizzFramesDB.classColorFrames
     colorPetAfterOwner = BetterBlizzFramesDB.colorPetAfterOwner
+    skipPlayer = BetterBlizzFramesDB.classColorFramesSkipPlayer
     if classColorsOn then
         BBF.HookHealthbarColors()
         if UnitExists("player") then updateFrameColorToggleVer(PlayerFrame.healthbar, "player") end
         if UnitExists("target") then updateFrameColorToggleVer(TargetFrame.healthbar, "target") end
-        if UnitExists("focus") then updateFrameColorToggleVer(FocusFrame.healthbar, "target", "focus") end
+        if UnitExists("focus") then updateFrameColorToggleVer(FocusFrame.healthbar, "focus") end
         if UnitExists("targettarget") then updateFrameColorToggleVer(TargetFrameToT.HealthBar, "targettarget") end
         if UnitExists("focustarget") then updateFrameColorToggleVer(FocusFrameToT.HealthBar, "focustarget") end
         if UnitExists("party1") then updateFrameColorToggleVer(PartyFrame.MemberFrame1.HealthBarContainer.HealthBar, "party1") end

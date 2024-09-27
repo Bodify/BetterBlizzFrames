@@ -236,6 +236,7 @@ local addCooldownFramePlayerDebuffs
 local addCooldownFramePlayerBuffs
 local hideDefaultPlayerAuraDuration
 local hideDefaultPlayerAuraCdText
+local clickthroughAuras
 
 local function UpdateMore()
     onlyPandemicMine = BetterBlizzFramesDB.onlyPandemicAuraMine
@@ -252,6 +253,7 @@ local function UpdateMore()
     addCooldownFramePlayerDebuffs = BetterBlizzFramesDB.addCooldownFramePlayerDebuffs
     hideDefaultPlayerAuraDuration = BetterBlizzFramesDB.hideDefaultPlayerAuraDuration
     hideDefaultPlayerAuraCdText = BetterBlizzFramesDB.hideDefaultPlayerAuraCdText
+    clickthroughAuras = BetterBlizzFramesDB.clickthroughAuras
     TargetFrame.staticCastbar = (BetterBlizzFramesDB.targetStaticCastbar or BetterBlizzFramesDB.targetDetachCastbar) and true or false
     FocusFrame.staticCastbar = (BetterBlizzFramesDB.focusStaticCastbar or BetterBlizzFramesDB.focusDetachCastbar) and true or false
 end
@@ -520,11 +522,7 @@ local function adjustCastbar(self, frame)
                 local minOffset = -40
                 -- Choose the more negative value
                 yOffset = min(minOffset, yOffset)
-                if frame == TargetFrameSpellBar then
-                    yOffset = yOffset + targetToTAdjustmentOffsetY
-                elseif frame == FocusFrameSpellBar then
-                    yOffset = yOffset + focusToTAdjustmentOffsetY
-                end
+                yOffset = yOffset + targetToTAdjustmentOffsetY
             end
 
             meta.SetPoint(self, "TOPLEFT", parent, "BOTTOMLEFT", 43 + targetCastBarXPos, yOffset + targetCastBarYPos);
@@ -549,6 +547,7 @@ local function adjustCastbar(self, frame)
                 local minOffset = -40
                 -- Choose the more negative value
                 yOffset = min(minOffset, yOffset)
+                yOffset = yOffset + focusToTAdjustmentOffsetY
             end
 
             meta.SetPoint(self, "TOPLEFT", parent, "BOTTOMLEFT", 43 + focusCastBarXPos, yOffset + focusCastBarYPos);
@@ -1111,7 +1110,9 @@ local function AdjustAuras(self, frameType)
                     aura.isPurgeable = true
                 end
 
-                if not aura.filterClick then
+                if clickthroughAuras then
+                    aura:SetMouseClickEnabled(false)
+                elseif not aura.filterClick then
                     aura:HookScript("OnMouseDown", function(self, button)
                         if IsShiftKeyDown() and IsAltKeyDown() then
                             local spellName, _, icon = BBF.TWWGetSpellInfo(aura.spellId)
@@ -1120,10 +1121,10 @@ local function AdjustAuras(self, frameType)
 
                             if button == "LeftButton" then
                                 BBF.auraWhitelist(aura.spellId, nil, true)
-                                print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") added to |cff00ff00whitelist|r.")
+                                --print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") added to |cff00ff00whitelist|r.")
                             elseif button == "RightButton" then
                                 BBF.auraBlacklist(aura.spellId, nil, true)
-                                print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") added to |cffff0000blacklist|r.")
+                                --print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") added to |cffff0000blacklist|r.")
                             end
                         elseif IsControlKeyDown() and IsAltKeyDown() then
                             local spellName, _, icon = BBF.TWWGetSpellInfo(aura.spellId)
@@ -1132,7 +1133,7 @@ local function AdjustAuras(self, frameType)
 
                             if button == "RightButton" then
                                 BBF.auraBlacklist(aura.spellId, true, true)
-                                print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") added to |cffff0000blacklist|r with tag.")
+                                --print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") added to |cffff0000blacklist|r with tag.")
                             end
                         end
                     end)
@@ -1714,9 +1715,13 @@ local function PersonalBuffFrameFilterAndGrid(self)
                     hasMainHandEnchant, mainHandExpiration, mainHandCharges, mainHandEnchantID, hasOffHandEnchant, offHandExpiration, offHandCharges, offHandEnchantID = GetWeaponEnchantInfo()
                     if mainHandEnchantID then
                         spellId = mainHandEnchantID
+                        duration = 120
+                        expirationTime = mainHandExpiration
                         name = "Temp Enchant"
                     elseif offHandEnchantID then
                         spellId = offHandEnchantID
+                        duration = 120
+                        expirationTime = offHandExpiration
                         name = "Temp Enchant"
                     end
                 else
@@ -1868,10 +1873,10 @@ local function PersonalBuffFrameFilterAndGrid(self)
 
                                 if button == "LeftButton" then
                                     BBF.auraWhitelist(auraFrame.spellId, nil, true)
-                                    print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") added to |cff00ff00whitelist|r.")
+                                    --print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") added to |cff00ff00whitelist|r.")
                                 elseif button == "RightButton" then
                                     BBF.auraBlacklist(auraFrame.spellId, nil, true)
-                                    print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") added to |cffff0000blacklist|r.")
+                                    --print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") added to |cffff0000blacklist|r.")
                                 end
                             elseif IsControlKeyDown() and IsAltKeyDown() then
                                 local spellName, _, icon = BBF.TWWGetSpellInfo(auraFrame.spellId)
@@ -1880,7 +1885,7 @@ local function PersonalBuffFrameFilterAndGrid(self)
 
                                 if button == "RightButton" then
                                     BBF.auraBlacklist(auraFrame.spellId, true, true)
-                                    print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") added to |cffff0000blacklist|r with tag.")
+                                    --print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") added to |cffff0000blacklist|r with tag.")
                                 end
                             end
                         end)
@@ -1947,17 +1952,18 @@ local function PersonalBuffFrameFilterAndGrid(self)
                     end
                     auraFrame:ClearAllPoints()
                     if toggleIcon then
-                        if BetterBlizzFramesDB.hiddenIconDirection == "BOTTOM" then
-                            auraFrame:SetPoint("TOP", ToggleHiddenAurasButton, "TOP", 0, hiddenYOffset - 35)
+                        local direction = BetterBlizzFramesDB.hiddenIconDirection
+                        if direction == "BOTTOM" then
+                            auraFrame:SetPoint("TOP", ToggleHiddenAurasButton, "TOP", 0, hiddenYOffset - 35 + (addIconsToTop and 10 or 0))
                             hiddenYOffset = hiddenYOffset - auraSize - auraSpacingY + 10
-                        elseif BetterBlizzFramesDB.hiddenIconDirection == "TOP" then
-                            auraFrame:SetPoint("BOTTOM", ToggleHiddenAurasButton, "BOTTOM", 0, hiddenYOffset + 25)
+                        elseif direction == "TOP" then
+                            auraFrame:SetPoint("BOTTOM", ToggleHiddenAurasButton, "BOTTOM", 0, hiddenYOffset + 25 + (addIconsToTop and 10 or 0))
                             hiddenYOffset = hiddenYOffset + auraSize + auraSpacingY - 10
-                        elseif BetterBlizzFramesDB.hiddenIconDirection == "LEFT" then
-                            auraFrame:SetPoint("RIGHT", ToggleHiddenAurasButton, "LEFT", hiddenXOffset + 30, -5)
+                        elseif direction == "LEFT" then
+                            auraFrame:SetPoint("RIGHT", ToggleHiddenAurasButton, "LEFT", hiddenXOffset + 30, addIconsToTop and 5 or -5)
                             hiddenXOffset = hiddenXOffset - auraSize - auraSpacingX
-                        elseif BetterBlizzFramesDB.hiddenIconDirection == "RIGHT" then
-                            auraFrame:SetPoint("LEFT", ToggleHiddenAurasButton, "RIGHT", hiddenXOffset - 30, -5)
+                        elseif direction == "RIGHT" then
+                            auraFrame:SetPoint("LEFT", ToggleHiddenAurasButton, "RIGHT", hiddenXOffset - 30, addIconsToTop and 5 or -5)
                             hiddenXOffset = hiddenXOffset + auraSize + auraSpacingX
                         end
                     end
@@ -2167,10 +2173,10 @@ local function PersonalDebuffFrameFilterAndGrid(self)
 
                                 if button == "LeftButton" then
                                     BBF.auraWhitelist(auraFrame.spellId, nil, true)
-                                    print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") added to |cff00ff00whitelist|r.")
+                                    --print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") added to |cff00ff00whitelist|r.")
                                 elseif button == "RightButton" then
                                     BBF.auraBlacklist(auraFrame.spellId, nil, true)
-                                    print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") added to |cffff0000blacklist|r.")
+                                    --print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") added to |cffff0000blacklist|r.")
                                 end
                             elseif IsControlKeyDown() and IsAltKeyDown() then
                                 local spellName, _, icon = BBF.TWWGetSpellInfo(auraFrame.spellId)
@@ -2179,7 +2185,7 @@ local function PersonalDebuffFrameFilterAndGrid(self)
 
                                 if button == "RightButton" then
                                     BBF.auraBlacklist(auraFrame.spellId, true, true)
-                                    print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") added to |cffff0000blacklist|r with tag.")
+                                    --print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") added to |cffff0000blacklist|r with tag.")
                                 end
                             end
                         end)

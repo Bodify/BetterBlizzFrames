@@ -329,6 +329,7 @@ function BBF.HideFrames()
                 local bottomLeftTexture = _G["ChatFrame"..i.."ButtonFrameBottomLeftTexture"]
                 local bottomRightTexture = _G["ChatFrame"..i.."ButtonFrameBottomRightTexture"]
                 local rightTexture = _G["ChatFrame"..i.."ButtonFrameRightTexture"]
+                local leftTexture = _G["ChatFrame1ButtonFrameLeftTexture"]
 
                 if buttonFrame then
                     if BetterBlizzFramesDB.hideChatButtons then
@@ -340,6 +341,7 @@ function BBF.HideFrames()
                         bottomLeftTexture:Hide()
                         bottomRightTexture:Hide()
                         rightTexture:Hide()
+                        leftTexture:Hide()
                     else
                         buttonFrame.Background:Show()
                         topTexture:Show()
@@ -349,9 +351,15 @@ function BBF.HideFrames()
                         bottomLeftTexture:Show()
                         bottomRightTexture:Show()
                         rightTexture:Show()
+                        leftTexture:Show()
                     end
                 end
             end
+        end
+
+        if BetterBlizzFramesDB.hideHitIndicator then
+            PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HitIndicator:SetAlpha(0)
+            PetHitIndicator:SetParent(hiddenFrame)
         end
 
         if BetterBlizzFramesDB.hidePlayerPower then
@@ -828,3 +836,73 @@ function BBF.MinimapHider()
         end
     end
 end
+
+
+-- temp inc settings
+
+-- MicroMenuContainer:HookScript("OnEnter", function(self)
+--     self:SetAlpha(1)
+-- end)
+-- MicroMenuContainer:HookScript("OnLeave", function(self)
+--     if not self:IsMouseOver() then
+--         self:SetAlpha(0)
+--     end
+-- end)
+-- MicroMenuContainer:SetAlpha(0)
+-- BagsBar:Hide()
+
+-- -- QueueStatusButton:HookScript("OnShow", function(self)
+-- --     if self:IsProtected() then return end
+-- --     self:ClearAllPoints()
+-- --     self:SetPoint("CENTER", Minimap, "BOTTOMLEFT", 29, 33)
+-- --     self:SetParent(Minimap)
+-- --     self:SetFrameStrata("HIGH")
+-- -- end)
+
+-- hooksecurefunc(QueueStatusButton, "SetPoint", function(self)
+--     if self:IsProtected() or self.changing then return end
+--     self.changing = true
+--     self:ClearAllPoints()
+--     self:SetPoint("CENTER", Minimap, "BOTTOMLEFT", 29, 33)
+--     self:SetParent(Minimap)
+--     self:SetFrameStrata("HIGH")
+--     self.changing = false
+-- end)
+
+-- local combatControl = true
+-- --------------------------------------------------------------------------------------------------------------------
+-- --------------------------------------------------------------------------------------------------------------------
+-- function OnTooltipSetUnit( tooltip, data )
+-- 	if combatControl and InCombatLockdown() and not C_PetBattles.IsInBattle() then
+-- 		if data and data.guid then
+-- 			local type, _, _, _, _, npcID = string.split( "-", data.guid )
+-- 			if ( type ~= "Player" ) and ( type ~= "Vignette" ) then
+-- 				npcID = tonumber( npcID )
+-- 				local t = { 131616, 134064, 139573, 144605, 147834, 147876, 147861, 147774, 147775, 147780, 147784, 155909, 155910, 155911 }
+-- 				for i = 1, #t do
+-- 					if ( npcID == t[i] ) then
+-- 						return
+-- 					end
+-- 				end
+-- 			elseif ( type == "Player" ) then
+-- 				local unit = select( 2, tooltip:GetUnit() )
+-- 				if unit then
+-- 					for i = 1, 40 do
+-- 						local _, _, _, _, _, _, _, _, _, spellID = UnitAura( unit, i, "HARMFUL" )
+-- 						if not spellID then
+-- 							break
+-- 						elseif ( spellID == 286105 ) then
+-- 							return
+-- 						end
+-- 					end
+-- 				end
+-- 			end
+-- 		end
+-- 		GameTooltip:Hide()
+-- 	end
+-- end
+-- TooltipDataProcessor.AddTooltipPostCall(Enum.TooltipDataType.Unit, OnTooltipSetUnit)
+
+-- CompactPartyFrameMember1SelectionHighlight:SetParent(hiddenFrame)
+-- CompactPartyFrameMember2SelectionHighlight:SetParent(hiddenFrame)
+-- CompactPartyFrameMember3SelectionHighlight:SetParent(hiddenFrame)

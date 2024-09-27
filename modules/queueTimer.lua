@@ -96,12 +96,11 @@ local function OnUpdate(elapsed)
             end
         end
 
-        SetExpiresText(proposalTimeLeft, LFGDungeonReadyDialog)
-
         if proposalTimeLeft <= 0 then
-            StopUpdateFrame()
-            proposalTimeLeft = nil
+            proposalTimeLeft = 40
         end
+
+        SetExpiresText(proposalTimeLeft, LFGDungeonReadyDialog)
     end
 end
 
@@ -130,13 +129,40 @@ local function CaptureDungeonQueuedTime()
     end
 end
 
+local function SaveQueuePopTime()
+    BetterBlizzFramesDB.pveQueuePopTime = GetTime()
+end
+
+-- Function to recalculate proposalTimeLeft if the user reloads or crosses a loading screen
+local function RecalculateProposalTimeLeft()
+    if BetterBlizzFramesDB.pveQueuePopTime then
+        -- Calculate how much time has passed since the queue popped
+        local timeElapsed = GetTime() - BetterBlizzFramesDB.pveQueuePopTime
+        proposalTimeLeft = proposalTimeLeft - timeElapsed
+
+        -- Ensure the timer doesn't go below zero
+        if proposalTimeLeft < 0 then
+            proposalTimeLeft = 0
+        end
+    end
+end
+
 local function HandleDungeonReadyDialog()
     local proposalExists, _, _, _, _, _, _, hasResponded = GetLFGProposal()
 
     if proposalExists and not hasResponded then
-        proposalTimeLeft = 40
+        -- Set initial proposalTimeLeft or recalculate if the UI was reloaded
+        if not BetterBlizzFramesDB.pveQueuePopTime then
+            proposalTimeLeft = 40
+        else
+            RecalculateProposalTimeLeft()
+        end
+
         SetExpiresText(proposalTimeLeft, LFGDungeonReadyDialog)
         StartUpdateFrame()
+
+        -- Save the queue pop time and proposal time
+        SaveQueuePopTime()
 
         if dungeonQueuedTime then
             local timeWaited = GetTime() - dungeonQueuedTime
@@ -199,6 +225,9 @@ function BBF.EnableQueueTimer()
                 HandleDungeonReadyDialog()
             elseif event == "LFG_PROPOSAL_SUCCEEDED" or event == "LFG_PROPOSAL_FAILED" then
                 StopUpdateFrame()
+                -- Clear saved data once the proposal is accepted or failed
+                BetterBlizzFramesDB.pveQueuePopTime = nil
+                proposalTimeLeft = 40
             elseif event == "LFG_QUEUE_STATUS_UPDATE" then
                 CaptureDungeonQueuedTime()
             elseif event == "UPDATE_BATTLEFIELD_STATUS" then

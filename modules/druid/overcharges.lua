@@ -5,16 +5,17 @@ function BBF.DruidBlueComboPoints()
 
     local function CreateChargedPoints(comboPointFrame)
         if not comboPointFrame then return end
+        if comboPointFrame.blueOverchargePoints then return end
         local comboPoints = {}
 
         -- Gather all visible combo points
+        local comboPointsChecked = 0
         for i = 1, comboPointFrame:GetNumChildren() do
             local child = select(i, comboPointFrame:GetChildren())
-            if child:IsShown() then
-                local point, relativeTo, relativePoint, x, y = child:GetPoint()
-                if x then
-                    table.insert(comboPoints, {child = child, x = x})
-                end
+            local point, relativeTo, relativePoint, x, y = child:GetPoint()
+            if x then
+                comboPointsChecked = comboPointsChecked + 1
+                table.insert(comboPoints, {child = child, x = x})
             end
         end
 
@@ -39,6 +40,10 @@ function BBF.DruidBlueComboPoints()
                 -- Initially hide the active overlay
                 overlayActive:Hide()
             end
+        end
+
+        if comboPointsChecked == 5 then
+            comboPointFrame.blueOverchargePoints = true
         end
     end
 
@@ -100,7 +105,22 @@ function BBF.DruidBlueComboPoints()
         end
     end
 
-    druid.auraWatch = CreateFrame("Frame", nil, UIParent)
+    -- Create a frame to listen to form changes
+    local currentForm = GetShapeshiftFormID()
+    if currentForm ~= 1 then
+        local formWatch = CreateFrame("Frame")
+        local function OnFormChanged()
+            local currentForm = GetShapeshiftFormID()
+            if currentForm == 1 then
+                CreateChargedPoints(druid)
+                formWatch:UnregisterAllEvents()
+            end
+        end
+        formWatch:RegisterEvent("UPDATE_SHAPESHIFT_FORM")
+        formWatch:SetScript("OnEvent", OnFormChanged)
+    end
+
+    druid.auraWatch = CreateFrame("Frame")
     druid.auraWatch:SetScript("OnEvent", function()
         UpdateComboPoints(druid)
     end)

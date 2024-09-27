@@ -212,6 +212,8 @@ function BBF.CreateCastbars()
                 end)
             end
 
+            spellbar:Hide()
+
             spellBars[i] = spellbar
         end
         BBF.UpdateCastbars()
@@ -254,6 +256,8 @@ function BBF.CreateCastbars()
                 UpdateCastTimer(self, elapsed)
             end)
         end
+
+        petSpellBar:Hide()
 
         spellBars["pet"] = petSpellBar
         petCastbarCreated = true

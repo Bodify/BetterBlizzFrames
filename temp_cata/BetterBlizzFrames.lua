@@ -6,7 +6,7 @@ BBF = BBF or {}
 -- Things are getting more messy need a lot of cleaning lol
 
 local addonVersion = "1.00" --too afraid to to touch for now
-local addonUpdates = "1.5.4b"
+local addonUpdates = "1.5.5"
 local sendUpdate = false
 BBF.VersionNumber = addonUpdates
 BBF.variablesLoaded = false
@@ -1172,6 +1172,8 @@ SlashCmdList["BBF"] = function(msg)
         else
             print("Usage: /bbf blacklist <spellID or auraName>")
         end
+    elseif command == "ver" or command == "version" then
+        DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames Version "..addonUpdates)
     else
         InterfaceOptionsFrame_OpenToCategory(BetterBlizzFrames)
     end

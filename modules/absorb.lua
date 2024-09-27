@@ -279,9 +279,6 @@ function BBF.AbsorbCaller()
         UpdateAbsorbIndicator(FocusFrame, "focus")
         UpdateAbsorbIndicator(TargetFrame, "target")
     end
-    UpdateAbsorbIndicator(PlayerFrame, "player")
-    UpdateAbsorbIndicator(TargetFrame, "target")
-    UpdateAbsorbIndicator(FocusFrame, "focus")
     if not BetterBlizzFramesDB.absorbIndicator and not BetterBlizzFramesDB.absorbIndicatorTestMode then
         if TargetFrame.absorbIcon and TargetFrame.absorbIcon.border then TargetFrame.absorbIcon.border:SetAlpha(0) end
         if TargetFrame.absorbIndicator then TargetFrame.absorbIndicator:SetAlpha(0) end

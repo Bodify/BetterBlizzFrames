@@ -7,61 +7,70 @@ local ABSORB_GLOW_OFFSET = -5;
 local UNITFRAME_OVERSHIELD_HOOKED = false
 local COMPACT_UNITFRAME_OVERSHIELD_HOOKED = false
 
+local function getAbsorbOverlay(frame)
+    if frame == PlayerFrame then
+        return frame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer.HealthBar.TotalAbsorbBar.TiledFillOverlay
+    elseif frame == TargetFrame or frame == FocusFrame then
+        return frame.TargetFrameContent.TargetFrameContentMain.HealthBarsContainer.HealthBar.TotalAbsorbBar.TiledFillOverlay
+    end
+end
+
 local function BBF_UnitFrameHealPredictionBars_Update(frame)
-    local absorbBar = frame.totalAbsorbBar
+    local absorbOverlay = frame.totalAbsorbBar and frame.totalAbsorbBar.TiledFillOverlay
+    if not absorbOverlay or absorbOverlay:IsForbidden() then
+        return
+    end
+
+    local absorbBar = frame.totalAbsorbBar;
     if not absorbBar or absorbBar:IsForbidden() then
         return
     end
 
-    local absorbGlow = frame.overAbsorbGlow
-    if not absorbGlow or absorbGlow:IsForbidden() then
-        return
-    end
-
-    local healthBar = frame.healthbar
+    local healthBar = frame.healthbar;
     if not healthBar or healthBar:IsForbidden() then
         return
     end
 
-    -- From StatusBar
-    local healthBarTexture = healthBar:GetStatusBarTexture()
+    absorbOverlay:SetParent(healthBar);
+    absorbOverlay:ClearAllPoints(); -- we'll be attaching the overlay on heal prediction update.
 
-    -- From StatusBarOverlaySegmentTemplate
-    local absorbFillTexture = absorbBar.Fill
-    local absorbFillMaskTexture = absorbBar.FillMask
-
-    local curHealth = healthBar:GetValue()
-    if curHealth <= 0 then
-        return
+    -- Handle absorbGlow if it exists and is not forbidden
+    local absorbGlow = frame.overAbsorbGlow;
+    if absorbGlow and not absorbGlow:IsForbidden() then
+        absorbGlow:ClearAllPoints();
+        absorbGlow:SetPoint("TOPLEFT", absorbOverlay, "TOPLEFT", ABSORB_GLOW_OFFSET, 0);
+        absorbGlow:SetPoint("BOTTOMLEFT", absorbOverlay, "BOTTOMLEFT", ABSORB_GLOW_OFFSET, 0);
+        absorbGlow:SetAlpha(ABSORB_GLOW_ALPHA);
     end
 
-    local _, maxHealth = healthBar:GetMinMaxValues()
+    -- Update absorb overlay and handle heal prediction bars
+    local _, maxHealth = healthBar:GetMinMaxValues();
     if maxHealth <= 0 then
         return
     end
 
-    local totalAbsorb = UnitGetTotalAbsorbs(frame.unit) or 0
-    if totalAbsorb <= 0 then
-        return
+    local totalAbsorb = UnitGetTotalAbsorbs(frame.unit) or 0;
+    if totalAbsorb > maxHealth then
+        totalAbsorb = maxHealth;
     end
 
-    local effectiveHealth = curHealth + totalAbsorb
-    if effectiveHealth <= maxHealth then
-        -- normal - fill health deficit with absorb bar
-        absorbGlow:ClearAllPoints()
-        absorbGlow:SetPoint("TOPLEFT", healthBarTexture, "TOPRIGHT", ABSORB_GLOW_OFFSET, 0)
-        absorbGlow:SetPoint("BOTTOMLEFT", healthBarTexture, "BOTTOMRIGHT", ABSORB_GLOW_OFFSET, 0)
-        absorbGlow:SetAlpha(ABSORB_GLOW_ALPHA)
-    else
-        -- overshield - fill health deficit and remaining absorb percentage into health bar
-        local xOffset = (maxHealth / effectiveHealth) - 1
-        absorbBar:UpdateFillPosition(healthBar:GetStatusBarTexture(), totalAbsorb, xOffset)
+    if totalAbsorb > 0 then
+        -- Attach absorb overlay to absorb bar if shown, otherwise attach to health bar
+        if absorbBar:IsShown() then
+            absorbOverlay:SetPoint("TOPRIGHT", absorbBar.FillMask, "TOPRIGHT", 0, 0);
+            absorbOverlay:SetPoint("BOTTOMRIGHT", absorbBar.FillMask, "BOTTOMRIGHT", 0, 0);
+        else
+            absorbOverlay:SetPoint("TOPRIGHT", healthBar, "TOPRIGHT", 0, 0);
+            absorbOverlay:SetPoint("BOTTOMRIGHT", healthBar, "BOTTOMRIGHT", 0, 0);
+        end
 
-        -- anchor overabsorb glow left into health bar
-        absorbGlow:ClearAllPoints()
-        absorbGlow:SetPoint("TOPLEFT", absorbFillMaskTexture, "TOPLEFT", ABSORB_GLOW_OFFSET, 0)
-        absorbGlow:SetPoint("BOTTOMLEFT", absorbFillMaskTexture, "BOTTOMLEFT", ABSORB_GLOW_OFFSET, 0)
-        absorbGlow:SetAlpha(ABSORB_GLOW_ALPHA)
+        local totalWidth = healthBar:GetWidth();
+        local barSize = totalAbsorb / maxHealth * totalWidth;
+
+        absorbOverlay:SetWidth(barSize);
+        absorbOverlay:Show();
+    else
+        absorbOverlay:Hide();
     end
 end
 

@@ -1,7 +1,7 @@
 -- I did not know what a variable was when I started. I know a little bit more now and I am so sorry.
 
 local addonVersion = "1.00" --too afraid to to touch for now
-local addonUpdates = "1.5.4b"
+local addonUpdates = "1.5.5"
 local sendUpdate = false
 BBF.VersionNumber = addonUpdates
 BBF.variablesLoaded = false
@@ -1366,6 +1366,8 @@ SlashCmdList["BBF"] = function(msg)
         else
             print("Usage: /bbf blacklist <spellID or auraName>")
         end
+    elseif command == "ver" or command == "version" then
+        DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames Version "..addonUpdates)
     else
         -- InterfaceOptionsFrame_OpenToCategory(BetterBlizzFrames)
         if not BBF.category then
@@ -1393,6 +1395,7 @@ First:SetScript("OnEvent", function(_, event, addonName)
             BBF.EnableQueueTimer()
             BBF.SurrenderNotLeaveArena()
             BBF.DruidBlueComboPoints()
+            BBF.AbsorbCaller()
             --TurnOnEnabledFeaturesOnLogin()
 
             if BetterBlizzFramesDB.hideLossOfControlFrameLines == nil then

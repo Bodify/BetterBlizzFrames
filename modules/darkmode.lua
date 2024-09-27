@@ -20,12 +20,14 @@ local function applySettings(frame, desaturate, colorValue, hook, hookShow)
                     frame.bbfHooked = true
 
                     hooksecurefunc(frame, "SetVertexColor", function(self)
-                        if not self.changing then
-                            self.changing = true
-                            self:SetDesaturated(desaturate)
-                            self:SetVertexColor(colorValue, colorValue, colorValue)
-                            self.changing = false
+                        if self:IsProtected() then
+                            print("asdasdasd")
                         end
+                        if self.changing or self:IsProtected() then return end
+                        self.changing = true
+                        self:SetDesaturated(desaturate)
+                        self:SetVertexColor(colorValue, colorValue, colorValue)
+                        self.changing = false
                     end)
                 end
             end
@@ -266,6 +268,7 @@ function BBF.DarkmodeFrames(bypass)
         if not BBF.vigorRecolor then
             BBF.vigorRecolor = CreateFrame("Frame")
             BBF.vigorRecolor:RegisterEvent("PLAYER_MOUNT_DISPLAY_CHANGED")
+            BBF.vigorRecolor:RegisterEvent("PLAYER_ENTERING_WORLD")
             BBF.vigorRecolor:SetScript("OnEvent", function()
                 C_Timer.After(0, function()
                     RecolorVigor()
