@@ -86,16 +86,19 @@ function BBF.ImportProfile(encodedString, expectedDataType)
 
     -- Function to check if the data is in the new format
     local function IsNewFormat(auraList)
-        for key, aura in pairs(auraList) do
-            if type(aura) ~= "table" then
-                return false
-            end
-            if aura["id"] ~= nil or aura["flags"] ~= nil then
+        local consecutiveIndex = 1  -- Start with the first numeric index
+        -- Loop through the table to inspect its structure
+        for key, _ in pairs(auraList) do
+            if type(key) == "number" then
+                if key ~= consecutiveIndex then
+                    return true
+                end
+                consecutiveIndex = consecutiveIndex + 1
+            elseif type(key) == "string" then
                 return true
             end
-            return false
         end
-        return true
+        return false
     end
 
     -- Convert old format to the new format if necessary
@@ -1221,7 +1224,7 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
         button.npcData = npc
         local displayText
         if npc.id then
-            displayText = string.format("%s (%d)", npc.name, npc.id)  -- Display as "Name (id)"
+            displayText = string.format("%s (%d)", (npc.name or "Name Missing"), npc.id)  -- Display as "Name (id)"
         else
             displayText = npc.name  -- Display just the name if there's no id
         end
