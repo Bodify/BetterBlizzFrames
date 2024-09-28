@@ -319,6 +319,14 @@ function BBF.HideFrames()
             end
         end
 
+        if BetterBlizzFramesDB.hideBagsBar then
+            if not BagsBar.bbfHooked then
+                BagsBar:Hide()
+                hooksecurefunc(BagsBar, "Show", BagsBar.Hide)
+                BagsBar.bbfHooked = true
+            end
+        end
+
         local function hideChatFrameTextures()
             for i = 1, NUM_CHAT_WINDOWS do
                 local buttonFrame = _G["ChatFrame"..i.."ButtonFrame"]
@@ -839,17 +847,88 @@ end
 
 
 -- temp inc settings
+function BBF.FadeMicroMenu()
+    if not BetterBlizzFramesDB.fadeMicroMenu then return end
+    if not MicroMenuContainer.bffHooked then
+        MicroMenuContainer:HookScript("OnEnter", function(self)
+            self:SetAlpha(1)
+        end)
+        MicroMenuContainer:HookScript("OnLeave", function(self)
+            if not self:IsMouseOver() then
+                self:SetAlpha(0)
+            end
+        end)
+        MicroMenuContainer:SetAlpha(0)
+        if BetterBlizzFramesDB.fadeMicroMenuExceptQueue then
+            QueueStatusButton:SetParent(UIParent)
+        end
+        MicroMenuContainer.bffHooked = true
+    end
+end
 
--- MicroMenuContainer:HookScript("OnEnter", function(self)
---     self:SetAlpha(1)
--- end)
--- MicroMenuContainer:HookScript("OnLeave", function(self)
---     if not self:IsMouseOver() then
---         self:SetAlpha(0)
---     end
--- end)
--- MicroMenuContainer:SetAlpha(0)
--- BagsBar:Hide()
+function BBF.MoveQueueStatusEye()
+    if not BetterBlizzFramesDB.moveQueueStatusEye then return end
+    if C_AddOns.IsAddOnLoaded("Bartender4") then
+        DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|aBetter|cff00c0ffBlizz|rFrames: This setting is disabled with Bartender4. You can already move it with Bartender4.")
+        return
+    end
+
+    local button = QueueStatusButton
+    if button.bbfHooked then return end
+
+    -- Hook the SetPoint function to prevent automatic resets
+    hooksecurefunc(button, "SetPoint", function(self, _, _, _, _, _)
+        if self:IsProtected() or self.changing then return end
+        self.changing = true
+        self:ClearAllPoints()
+
+        if BetterBlizzFramesDB.queueStatusButtonPosition then
+            local pos = BetterBlizzFramesDB.queueStatusButtonPosition
+            self:SetPoint(pos[1], UIParent, pos[3], pos[4], pos[5])
+        else
+            self:SetPoint("CENTER", Minimap, "BOTTOMLEFT", 29, 33)
+        end
+
+        self.changing = false
+    end)
+
+    -- Enable dragging with Ctrl + Left Click
+    button:SetMovable(true)
+    button:EnableMouse(true)
+    button:RegisterForDrag("LeftButton")
+
+    -- Start dragging when Ctrl + Left Click is held
+    button:SetScript("OnDragStart", function(self)
+        if IsControlKeyDown() then
+            self:StartMoving()
+        end
+    end)
+
+    -- Stop dragging and save position
+    button:SetScript("OnDragStop", function(self)
+        self:StopMovingOrSizing()
+
+        -- Save the new position
+        local point, _, relativePoint, xOffset, yOffset = self:GetPoint()
+        BetterBlizzFramesDB.queueStatusButtonPosition = {point, nil, relativePoint, xOffset, yOffset}
+    end)
+
+    if BetterBlizzFramesDB.queueStatusButtonPosition then
+        local pos = BetterBlizzFramesDB.queueStatusButtonPosition
+        button:ClearAllPoints()
+        button:SetPoint(pos[1], UIParent, pos[3], pos[4], pos[5])
+    else
+        button:ClearAllPoints()
+        button:SetPoint("CENTER", Minimap, "BOTTOMLEFT", 29, 33)
+        local point, _, relativePoint, xOffset, yOffset = button:GetPoint()
+        BetterBlizzFramesDB.queueStatusButtonPosition = {point, nil, relativePoint, xOffset, yOffset}
+    end
+
+    button:SetParent(UIParent)
+    button:SetFrameStrata("HIGH")
+
+    button.bbfHooked = true
+end
 
 -- -- QueueStatusButton:HookScript("OnShow", function(self)
 -- --     if self:IsProtected() then return end

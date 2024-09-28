@@ -4923,7 +4923,7 @@ local function guiMisc()
     bgImg:SetVertexColor(0,0,0)
 
     local settingsText = guiMisc:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    settingsText:SetPoint("TOPLEFT", guiMisc, "TOPLEFT", 20, -10)
+    settingsText:SetPoint("TOPLEFT", guiMisc, "TOPLEFT", 20, 0)
     settingsText:SetText("Misc settings")
     local miscSettingsIcon = guiMisc:CreateTexture(nil, "ARTWORK")
     miscSettingsIcon:SetAtlas("optionsicon-brown")
@@ -4949,8 +4949,43 @@ local function guiMisc()
     hideUiErrorFrame:SetPoint("TOPLEFT", minimizeObjectiveTracker, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(hideUiErrorFrame, "Hide UI Error Frame", "Hides the UI Error Frame (The red text displaying \"Not enough mana\" etc)")
 
+    local fadeMicroMenu = CreateCheckbox("fadeMicroMenu", "Fade Micro Menu", guiMisc, nil, BBF.FadeMicroMenu)
+    fadeMicroMenu:SetPoint("TOPLEFT", hideUiErrorFrame, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(fadeMicroMenu, "Fade Micro Menu", "Fade out the Micro Menu bottom right and only show on mouseover.")
+
+    local fadeMicroMenuExceptQueue = CreateCheckbox("fadeMicroMenuExceptQueue", "Except Queue Eye", fadeMicroMenu, nil, BBF.FadeMicroMenu)
+    fadeMicroMenuExceptQueue:SetPoint("LEFT", fadeMicroMenu.text, "RIGHT", 0, 0)
+    CreateTooltipTwo(fadeMicroMenuExceptQueue, "Except Queue Eye", "Do not fade Queue Status Eye together with the Micro Menu.")
+
+    fadeMicroMenu:HookScript("OnClick", function(self)
+        CheckAndToggleCheckboxes(self)
+        if not self:GetChecked() then
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        end
+    end)
+
+    local moveQueueStatusEye = CreateCheckbox("moveQueueStatusEye", "Move Queue Status Eye", guiMisc, nil, BBF.MoveQueueStatusEye)
+    moveQueueStatusEye:SetPoint("TOPLEFT", fadeMicroMenu, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(moveQueueStatusEye, "Move Queue Status Eye", "Makes the Queue Status Eye movable. Default position on Minimap but can also be dragged with Ctrl + Leftclick.")
+
+    moveQueueStatusEye:HookScript("OnClick", function(self)
+        if not self:GetChecked() then
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        end
+    end)
+
+    local hideBagsBar = CreateCheckbox("hideBagsBar", "Hide Bags Bar", guiMisc, nil, BBF.HideFrames)
+    hideBagsBar:SetPoint("TOPLEFT", moveQueueStatusEye, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(hideBagsBar, "Hide Bags Bar", "Hide the default Bag Bar showing your bags bottom right.")
+
+    hideBagsBar:HookScript("OnClick", function(self)
+        if not self:GetChecked() then
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        end
+    end)
+
     local hideMinimap = CreateCheckbox("hideMinimap", "Hide Minimap", guiMisc, nil, BBF.MinimapHider)
-    hideMinimap:SetPoint("TOPLEFT", hideUiErrorFrame, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    hideMinimap:SetPoint("TOPLEFT", hideBagsBar, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
 
     local hideMinimapButtons = CreateCheckbox("hideMinimapButtons", "Hide Minimap Buttons (still shows on mouseover)", guiMisc, nil, BBF.HideFrames)
     hideMinimapButtons:SetPoint("TOPLEFT", hideMinimap, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
@@ -5069,6 +5104,32 @@ local function guiMisc()
     CreateTooltip(moveResourceToTargetMage, "Move Mage Arcane Charges to TargetFrame.")
     moveResourceToTargetMage:HookScript("OnClick", function()
         StaticPopup_Show("BBF_CONFIRM_RELOAD")
+    end)
+
+    local moveResourceToTargetDK = CreateCheckbox("moveResourceToTargetDK", "Death Knight: Runes", moveResourceToTarget)
+    moveResourceToTargetDK:SetPoint("TOPLEFT", moveResourceToTargetMage, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltip(moveResourceToTargetDK, "Move Death Knight Runes to TargetFrame.")
+    moveResourceToTargetDK:HookScript("OnClick", function()
+        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+    end)
+
+    local moveResourceToTargetPaladin = CreateCheckbox("moveResourceToTargetPaladin", "Paladin: Holy Charges", moveResourceToTarget)
+    moveResourceToTargetPaladin:SetPoint("TOPLEFT", moveResourceToTargetDK, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltip(moveResourceToTargetPaladin, "Move Paladin Holy Charges to TargetFrame.")
+    moveResourceToTargetPaladin:HookScript("OnClick", function()
+        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+    end)
+
+    local moveResourceToTargetPaladinBG = CreateCheckbox("moveResourceToTargetPaladinBG", "BG", moveResourceToTargetPaladin)
+    moveResourceToTargetPaladinBG:SetPoint("LEFT", moveResourceToTargetPaladin.text, "RIGHT", 0, 0)
+    CreateTooltipTwo(moveResourceToTargetPaladinBG, "Background", "Show background for unfilled charges.")
+
+    moveResourceToTargetPaladinBG:HookScript("OnClick", function(self)
+        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+    end)
+
+    moveResourceToTargetPaladin:HookScript("OnClick", function(self)
+        CheckAndToggleCheckboxes(self)
     end)
 
     moveResourceToTarget:HookScript("OnClick", function()

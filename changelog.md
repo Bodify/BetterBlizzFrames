@@ -1,3 +1,8 @@
+# BetterBlizzFrames 1.5.5b
+## The War Within
+### Bugfix:
+- Fixed an issue with the function that checks whether aura lists are in the old format. This issue caused the system to mistakenly treat new lists as old ones, preventing them from importing correctly.
+
 # BetterBlizzFrames 1.5.5
 ## The War Within
 ### New stuff:

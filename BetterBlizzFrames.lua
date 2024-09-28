@@ -7,6 +7,9 @@ BBF.VersionNumber = addonUpdates
 BBF.variablesLoaded = false
 local isAddonLoaded = C_AddOns.IsAddOnLoaded
 
+local hiddenFrame = CreateFrame("Frame")
+hiddenFrame:Hide()
+
 local defaultSettings = {
     version = addonVersion,
     updates = "empty",
@@ -44,6 +47,8 @@ local defaultSettings = {
     queueTimerAudio = true,
     queueTimerWarningTime = 6,
     minimizeObjectiveTracker = true,
+    fadeMicroMenuExceptQueue = true,
+    surrenderArena = true,
 
     --Target castbar
     playerCastbarIconXPos = 0,
@@ -255,12 +260,13 @@ local defaultSettings = {
     castBarInterruptIconShowActiveOnly = false,
     castBarInterruptIconDisplayCD = true,
 
+    moveResourceToTargetPaladinBG = true,
+
 
     auraWhitelist = {
         ["example"] = {name = "Example Aura :3 (delete me)"}
     },
     auraBlacklist = {
-        ["example"] = {name = "Example Aura :3 (delete me)"},
         ["sign of the skirmisher"] = {name = "Sign of the Skirmisher"},
         ["sign of the scourge"] = {name = "Sign of the Scourge"},
         ["stormwind champion"] = {name = "Stormwind Champion"},
@@ -742,16 +748,29 @@ end
 --######################################################################
 -- Move Resource Frames to TargetFrame
 local hookedResourceFrames
-local function RepositionIndividualComboPoints(comboPointFrame, positions, scale)
-    local comboPoints = {}
-    local allPointsReady = true
+local comboPointCache = {}  -- Cache for original combo point order and number of points
 
+local function RepositionIndividualComboPoints(comboPointFrame, positions, scale)
+    -- Check if we have the cache or need to initialize it
+    if not comboPointCache[comboPointFrame] then
+        comboPointCache[comboPointFrame] = {
+            points = {},  -- Combo points cache
+            numPoints = 0 -- Cache the number of points
+        }
+    end
+
+    local currentComboPoints = {}
+    local allPointsReady = true
+    local numComboPoints = 0
+
+    -- Gather current visible combo points
     for i = 1, comboPointFrame:GetNumChildren() do
         local child = select(i, comboPointFrame:GetChildren())
         if child ~= comboPointFrame.layoutParent and child:IsShown() then -- Check if child is shown
             local point, relativeTo, relativePoint, x, y = child:GetPoint()
             if x then
-                table.insert(comboPoints, {child = child, x = x})
+                table.insert(currentComboPoints, {child = child, x = x})
+                numComboPoints = numComboPoints + 1
             else
                 allPointsReady = false
                 break -- Exit the loop early if any child is not ready
@@ -759,22 +778,33 @@ local function RepositionIndividualComboPoints(comboPointFrame, positions, scale
         end
     end
 
-    if allPointsReady and #comboPoints > 0 then
-        -- Proceed if all combo points have valid 'x' values and there's at least one combo point
-        table.sort(comboPoints, function(a, b) return a.x < b.x end)
+    -- Check if number of combo points changed, or if there was no cache yet
+    if numComboPoints ~= comboPointCache[comboPointFrame].numPoints then
+        comboPointCache[comboPointFrame].numPoints = numComboPoints
 
-        for i, info in ipairs(comboPoints) do
-            if positions[i] then
-                info.child:ClearAllPoints()
-                info.child:SetPoint(unpack(positions[i]))
-                info.child:SetScale(scale)
-            end
+        -- Rebuild the cache, sort by x position
+        table.sort(currentComboPoints, function(a, b) return a.x < b.x end)
+        comboPointCache[comboPointFrame].points = {}
+
+        for i, info in ipairs(currentComboPoints) do
+            table.insert(comboPointCache[comboPointFrame].points, info.child)  -- Store the combo points
         end
-    else
+
+    elseif not allPointsReady then
         -- Retry after a short delay if not all combo points are ready
         C_Timer.After(0.5, function()
             RepositionIndividualComboPoints(comboPointFrame, positions, scale)
         end)
+        return
+    end
+
+    -- Reposition the combo points using cached order
+    for i, child in ipairs(comboPointCache[comboPointFrame].points) do
+        if positions[i] then
+            child:ClearAllPoints()
+            child:SetPoint(unpack(positions[i]))
+            child:SetScale(scale)
+        end
     end
 end
 
@@ -814,6 +844,38 @@ local function SetupClassComboPoints(comboPointFrame, positions, expectedClass, 
                     else
                         region:SetDrawLayer(nextLayer, sublevel + 1)
                     end
+                end
+            end
+        end
+    end
+
+    if expectedClass == "PALADIN" then
+        -- Hide unnecessary Paladin textures
+        comboPointFrame.Background:SetParent(hiddenFrame)
+        comboPointFrame.Glow:SetParent(hiddenFrame)
+        comboPointFrame.ThinGlow:SetParent(hiddenFrame)
+        comboPointFrame.ActiveTexture:SetParent(hiddenFrame)
+
+        if BetterBlizzFramesDB.moveResourceToTargetPaladinBG then
+            -- Create new texture under each rune
+            local paladinRunes = {
+                comboPointFrame.rune1,
+                comboPointFrame.rune2,
+                comboPointFrame.rune3,
+                comboPointFrame.rune4,
+                comboPointFrame.rune5
+            }
+
+            for i, rune in ipairs(paladinRunes) do
+                local glowTexture = rune.ActiveTexture
+                if glowTexture and glowTexture:GetAtlas() then
+                    local atlasName = glowTexture:GetAtlas()
+                    local bgTexture = rune:CreateTexture(nil, "BACKGROUND")
+                    bgTexture:SetAtlas(atlasName, true)
+                    bgTexture:SetPoint("CENTER", rune, "CENTER", 0, 0)
+                    bgTexture:SetDesaturated(true)
+                    bgTexture:SetVertexColor(0, 0, 0)
+                    bgTexture:SetDrawLayer("BACKGROUND", -1)
                 end
             end
         end
@@ -892,23 +954,40 @@ local evokerPositions = {
     { "TOPLEFT", EssencePlayerFrame, "TOPLEFT", 15, -50 },
 }
 
+local paladinPositions = {
+    { "TOPLEFT", PaladinPowerBarFrame, "TOPLEFT", 30, 32 },
+    { "TOPLEFT", PaladinPowerBarFrame, "TOPLEFT", 41, 13 },
+    { "TOPLEFT", PaladinPowerBarFrame, "TOPLEFT", 48, -7 },
+    { "TOPLEFT", PaladinPowerBarFrame, "TOPLEFT", 44, -27 },
+    { "TOPLEFT", PaladinPowerBarFrame, "TOPLEFT", 33, -45 },
+}
+
+local dkPositions = {
+    { "TOPLEFT", RuneFrame, "TOPLEFT", 11, 40 },
+    { "TOPLEFT", RuneFrame, "TOPLEFT", 25, 24 },
+    { "TOPLEFT", RuneFrame, "TOPLEFT", 33, 4 },
+    { "TOPLEFT", RuneFrame, "TOPLEFT", 33, -18 },
+    { "TOPLEFT", RuneFrame, "TOPLEFT", 25, -38 },
+    { "TOPLEFT", RuneFrame, "TOPLEFT", 11, -54 },
+}
 
 local function HookClassComboPoints()
     local db = BetterBlizzFramesDB
     if db.moveResourceToTarget then
         if db.moveResourceToTargetRogue then SetupClassComboPoints(RogueComboPointBarFrame, roguePositions, "ROGUE", 0.5, -44, -2, true) end
         if db.moveResourceToTargetDruid then SetupClassComboPoints(DruidComboPointBarFrame, druidPositions, "DRUID", 0.55, -53, -2, true) end
-        if db.moveResourceToTargetWarlock then SetupClassComboPoints(WarlockPowerFrame, warlockPositions, "DRUID", 0.6, -56, 1) end
-        if db.moveResourceToTargetMage then SetupClassComboPoints(MageArcaneChargesFrame, magePositions, "DRUID", 0.7, -61, -4) end
+        if db.moveResourceToTargetWarlock then SetupClassComboPoints(WarlockPowerFrame, warlockPositions, "WARLOCK", 0.6, -56, 1) end
+        if db.moveResourceToTargetMage then SetupClassComboPoints(MageArcaneChargesFrame, magePositions, "MAGE", 0.7, -61, -4) end
         if db.moveResourceToTargetMonk then SetupClassComboPoints(MonkHarmonyBarFrame, monkPositions, "ROGUE", 0.5, -44, -2, true) end
-        if db.moveResourceToTargetEvoker then SetupClassComboPoints(EssencePlayerFrame, evokerPositions, "ROGUE", 0.65, -50, 0.5, true) end
+        if db.moveResourceToTargetEvoker then SetupClassComboPoints(EssencePlayerFrame, evokerPositions, "EVOKER", 0.65, -50, 0.5, true) end
+        if db.moveResourceToTargetPaladin then SetupClassComboPoints(PaladinPowerBarFrame, paladinPositions, "PALADIN", 0.75, -61, -8, true) end
+        if db.moveResourceToTargetDK then SetupClassComboPoints(RuneFrame, dkPositions, "DK", 0.7, -50.5, 0.5, true) end
+
         hookedResourceFrames = true
     end
 end
 
 --########################################################
-local hiddenFrame = CreateFrame("Frame")
-hiddenFrame:Hide()
 function BBF.MiniFocusFrame()
     if BetterBlizzFramesDB.useMiniFocusFrame then
         FocusFrame.TargetFrameContent.TargetFrameContentMain.HealthBarsContainer:SetAlpha(0)
@@ -1217,6 +1296,8 @@ Frame:SetScript("OnEvent", function(...)
             BBF.UpdateUserDarkModeSettings()
             BBF.ChatFilterCaller()
             HookClassComboPoints()
+            BBF.FadeMicroMenu()
+            BBF.MoveQueueStatusEye()
 
 
 
