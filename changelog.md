@@ -1,3 +1,12 @@
+# BetterBlizzFrames 1.5.6
+## The War Within
+### New stuff:
+- Misc: Move Queue Status Eye
+- Misc: Fade out Micro Menu
+- Misc: Hide BagsBar
+### Tweak:
+- Pandemic Glow for auras that have a pandemic effect is now properly glowing when 30% of their duration is left instead of a flat 5 sec like it was before. For non-pandemic auras the default timer is still 5sec. For UA and Agony if their refresh talents are picked the Pandemic Glow will first be orange when it enters that range and then turn red when it also enters the 30% window.
+
 # BetterBlizzFrames 1.5.5b
 ## The War Within
 ### Bugfix:

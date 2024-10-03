@@ -849,6 +849,7 @@ end
 -- temp inc settings
 function BBF.FadeMicroMenu()
     if not BetterBlizzFramesDB.fadeMicroMenu then return end
+    MicroMenuContainer:SetAlpha(0)
     if not MicroMenuContainer.bffHooked then
         MicroMenuContainer:HookScript("OnEnter", function(self)
             self:SetAlpha(1)
@@ -858,7 +859,6 @@ function BBF.FadeMicroMenu()
                 self:SetAlpha(0)
             end
         end)
-        MicroMenuContainer:SetAlpha(0)
         if BetterBlizzFramesDB.fadeMicroMenuExceptQueue then
             QueueStatusButton:SetParent(UIParent)
         end
@@ -875,9 +875,25 @@ function BBF.MoveQueueStatusEye()
 
     local button = QueueStatusButton
     if button.bbfHooked then return end
+    QueueStatusButton:SetParent(UIParent)
 
     -- Hook the SetPoint function to prevent automatic resets
     hooksecurefunc(button, "SetPoint", function(self, _, _, _, _, _)
+        if self:IsProtected() or self.changing then return end
+        self.changing = true
+        self:ClearAllPoints()
+
+        if BetterBlizzFramesDB.queueStatusButtonPosition then
+            local pos = BetterBlizzFramesDB.queueStatusButtonPosition
+            self:SetPoint(pos[1], UIParent, pos[3], pos[4], pos[5])
+        else
+            self:SetPoint("CENTER", Minimap, "BOTTOMLEFT", 29, 33)
+        end
+
+        self.changing = false
+    end)
+
+    button:HookScript("OnShow", function(self)
         if self:IsProtected() or self.changing then return end
         self.changing = true
         self:ClearAllPoints()
@@ -930,13 +946,13 @@ function BBF.MoveQueueStatusEye()
     button.bbfHooked = true
 end
 
--- -- QueueStatusButton:HookScript("OnShow", function(self)
--- --     if self:IsProtected() then return end
--- --     self:ClearAllPoints()
--- --     self:SetPoint("CENTER", Minimap, "BOTTOMLEFT", 29, 33)
--- --     self:SetParent(Minimap)
--- --     self:SetFrameStrata("HIGH")
--- -- end)
+-- QueueStatusButton:HookScript("OnShow", function(self)
+--     if self:IsProtected() then return end
+--     self:ClearAllPoints()
+--     self:SetPoint("CENTER", Minimap, "BOTTOMLEFT", 29, 33)
+--     self:SetParent(Minimap)
+--     self:SetFrameStrata("HIGH")
+-- end)
 
 -- hooksecurefunc(QueueStatusButton, "SetPoint", function(self)
 --     if self:IsProtected() or self.changing then return end

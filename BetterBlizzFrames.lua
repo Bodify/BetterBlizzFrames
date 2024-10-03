@@ -1,7 +1,7 @@
 -- I did not know what a variable was when I started. I know a little bit more now and I am so sorry.
 
 local addonVersion = "1.00" --too afraid to to touch for now
-local addonUpdates = "1.5.5"
+local addonUpdates = "1.5.6"
 local sendUpdate = false
 BBF.VersionNumber = addonUpdates
 BBF.variablesLoaded = false
@@ -439,6 +439,7 @@ local function LoadingScreenDetector(_, event)
         BetterBlizzFramesDB.wasOnLoadingScreen = true
 
         BBF.MinimapHider()
+        BBF.FadeMicroMenu()
 
         --#######TEMPORARY BUGFIX FOR BLIZZARD#########
         if BetterBlizzFramesDB.hideDragonFlying then
@@ -1486,43 +1487,47 @@ First:SetScript("OnEvent", function(_, event, addonName)
             end
 
             if not BetterBlizzFramesDB.optimizedAuraLists then
-                BetterBlizzFramesDB.auraBackups = {}
-                BetterBlizzFramesDB.auraBackups.whitelist = BetterBlizzFramesDB.auraWhitelist
-                BetterBlizzFramesDB.auraBackups.blacklist = BetterBlizzFramesDB.auraBlacklist
+                if BetterBlizzFramesDB.hasSaved then
+                    BetterBlizzFramesDB.auraBackups = {}
+                    BetterBlizzFramesDB.auraBackups.whitelist = BetterBlizzFramesDB.auraWhitelist
+                    BetterBlizzFramesDB.auraBackups.blacklist = BetterBlizzFramesDB.auraBlacklist
 
-                local optimizedWhitelist = {}
-                for _, aura in ipairs(BetterBlizzFramesDB["auraWhitelist"]) do
-                    local key = aura["id"] or string.lower(aura["name"])
-                    local flags = aura["flags"] or {}
-                    local entryColors = aura["entryColors"] or {}
-                    local textColors = entryColors["text"] or {}
+                    local optimizedWhitelist = {}
+                    for _, aura in ipairs(BetterBlizzFramesDB["auraWhitelist"]) do
+                        local key = aura["id"] or string.lower(aura["name"])
+                        local flags = aura["flags"] or {}
+                        local entryColors = aura["entryColors"] or {}
+                        local textColors = entryColors["text"] or {}
 
-                    optimizedWhitelist[key] = {
-                        name = aura["name"] or nil,
-                        id = aura["id"] or nil,
-                        important = flags["important"] or nil,
-                        pandemic = flags["pandemic"] or nil,
-                        enlarged = flags["enlarged"] or nil,
-                        compacted = flags["compacted"] or nil,
-                        color = {textColors["r"] or 0, textColors["g"] or 1, textColors["b"] or 0, textColors["a"] or 1}
-                    }
+                        optimizedWhitelist[key] = {
+                            name = aura["name"] or nil,
+                            id = aura["id"] or nil,
+                            important = flags["important"] or nil,
+                            pandemic = flags["pandemic"] or nil,
+                            enlarged = flags["enlarged"] or nil,
+                            compacted = flags["compacted"] or nil,
+                            color = {textColors["r"] or 0, textColors["g"] or 1, textColors["b"] or 0, textColors["a"] or 1}
+                        }
+                    end
+                    BetterBlizzFramesDB.auraWhitelist = optimizedWhitelist
+
+                    local optimizedBlacklist = {}
+                    for _, aura in ipairs(BetterBlizzFramesDB["auraBlacklist"]) do
+                        local key = aura["id"] or string.lower(aura["name"])
+
+                        optimizedBlacklist[key] = {
+                            name = aura["name"] or nil,
+                            id = aura["id"] or nil,
+                            showMine = aura["showMine"] or nil,
+                        }
+                    end
+                    BetterBlizzFramesDB.auraBlacklist = optimizedBlacklist
+
+
+                    BetterBlizzFramesDB.optimizedAuraLists = true
+                else
+                    BetterBlizzFramesDB.optimizedAuraLists = true
                 end
-                BetterBlizzFramesDB.auraWhitelist = optimizedWhitelist
-
-                local optimizedBlacklist = {}
-                for _, aura in ipairs(BetterBlizzFramesDB["auraBlacklist"]) do
-                    local key = aura["id"] or string.lower(aura["name"])
-
-                    optimizedBlacklist[key] = {
-                        name = aura["name"] or nil,
-                        id = aura["id"] or nil,
-                        showMine = aura["showMine"] or nil,
-                    }
-                end
-                BetterBlizzFramesDB.auraBlacklist = optimizedBlacklist
-
-
-                BetterBlizzFramesDB.optimizedAuraLists = true
             end
 
             BBF.InitializeOptions()

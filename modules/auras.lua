@@ -623,11 +623,119 @@ local function StopCheckBuffsTimer()
     end
 end
 
+local pandemicSpells = {
+    -- Death Knight
+        -- Blood
+        [55078] = true, -- Blood Plague
+        -- Frost
+        [55095] = true, -- Frost Fever
+        -- Unholy
+        [191587] = true, -- Virulent Plague
+
+    -- Demon Hunter
+        -- Havoc
+        [390181] = true, -- Soulscar
+
+    -- Druid
+        -- Feral
+        [1079] = true, -- Rip
+        [155722] = true, -- Rake
+        [106830] = true, -- Thrash
+        [155625] = true, -- Moonfire
+        -- Balance
+        [164815] = true, -- Sunfire
+        [202347] = true, -- Stellar Flare
+        -- Resto
+        [774] = true, -- Rejuvenation
+        [33763] = true, -- Lifebloom
+        [8936] = true, -- Regrowth
+
+    -- Evoker
+        -- Preservation
+        [355941] = true, -- Dream Breath
+        -- Augmentation
+        [395152] = true, -- Ebon Might
+
+    -- Hunter
+        -- Survival
+        [259491] = true, -- Serpent Sting
+        -- Marksman
+        [271788] = true, -- Serpent Sting (Aimed Shot)
+
+    -- Monk
+        -- Brewmaster
+        [116847] = true, -- Rushing Jade Wind
+        -- Mistweaver
+        [119611] = true, -- Renewing Mist
+        [124682] = true, -- Enveloping Mist
+
+    -- Priest
+        [139] = true, -- Renew
+        [589] = true, -- Shadow Word: Pain
+        -- Discipline
+        [204213] = true, -- Purge the Wicked
+        -- Shadow
+        [34914] = true, -- Vampiric Touch
+        [335467] = true, -- Devouring Plague
+
+    -- Rogue
+        [1943] = true, -- Rupture
+        [315496] = true, -- Slice and Dice
+        -- Assassination
+        [703] = true, -- Garrote
+        [121411] = true, -- Crimson Tempest
+
+    -- Shaman
+        [188389] = true, -- Flame Shock
+        -- Restoration
+        [382024] = true, -- Earthliving Weapon
+        [61295] = true, -- Riptide
+
+    -- Warlock
+            [445474] = true, -- Wither
+            -- Destruction
+            [157736] = true, -- Immolate
+            -- Demonology
+            [460553] = true, -- Doom
+            -- Affliction
+            [146739] = true, -- Corruption
+            [980] = true, -- Agony
+            [316099] = true, -- Unstable Affliction
+    -- Warrior
+        [388539] = true, -- Rend
+        -- Arms
+        [262115] = true, -- Deep Wounds
+}
+
+local nonPandemic = 5
+local defaultPandemic = 0.3
+local uaPandemic = 8
+local agonyPandemic = 10
+
+local function GetPandemicThresholds(buff)
+    if buff.spellID == 980 and IsPlayerSpell(453034) then
+        -- Agony with talent
+        return agonyPandemic, buff.duration * defaultPandemic
+    elseif buff.spellID == 316099 and IsPlayerSpell(459376) then
+        -- Unstable Affliction with talent
+        return uaPandemic, buff.duration * defaultPandemic
+    elseif pandemicSpells[buff.spellID] then
+        -- Use 30% of the full duration for Pandemic spells
+        return nil, buff.duration * defaultPandemic
+    else
+        -- Default non-pandemic (5 seconds)
+        return nil, nonPandemic
+    end
+end
+
 local function CheckBuffs()
     local currentGameTime = GetTime()
+
     for auraInstanceID, aura in pairs(trackedBuffs) do
         if aura.isPandemic and aura.expirationTime then
             local remainingDuration = aura.expirationTime - currentGameTime
+            local specialPandemicThreshold, defaultPandemicThreshold = GetPandemicThresholds(aura)
+
             if remainingDuration <= 0 then
                 aura.isPandemic = false
                 trackedBuffs[auraInstanceID] = nil
@@ -635,58 +743,87 @@ local function CheckBuffs()
                     aura.PandemicGlow:Hide()
                 end
                 aura.isPandemicActive = false
-            elseif remainingDuration <= ((aura.spellId == 980 and IsPlayerSpell(453034) and 10) or (uas[aura.spellId] and IsPlayerSpell(459376) and 8) or 5.1) then
+            else
                 if not aura.PandemicGlow then
-                    aura.PandemicGlow = aura:CreateTexture(nil, "OVERLAY");
-                    aura.PandemicGlow:SetAtlas("newplayertutorial-drag-slotgreen");
+                    aura.PandemicGlow = aura:CreateTexture(nil, "OVERLAY")
+                    aura.PandemicGlow:SetAtlas("newplayertutorial-drag-slotgreen")
                     aura.PandemicGlow:SetDesaturated(true)
-                    aura.PandemicGlow:SetVertexColor(1, 0, 0)
-                end
-                if aura.isEnlarged then
-                    aura.PandemicGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -enlargedTextureAdjustment, enlargedTextureAdjustment)
-                    aura.PandemicGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", enlargedTextureAdjustment, -enlargedTextureAdjustment)
-                elseif aura.isCompacted then
-                    aura.PandemicGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -compactedTextureAdjustment, compactedTextureAdjustment)
-                    aura.PandemicGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", compactedTextureAdjustment, -compactedTextureAdjustment)
-                else
-                    aura.PandemicGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -10, 10)
-                    aura.PandemicGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", 10, -10)
                 end
 
-                aura.isPandemicActive = true
-                aura.PandemicGlow:Show();
-                if aura.border then
-                    aura.border:SetAlpha(0)
+                if remainingDuration <= defaultPandemicThreshold then
+                    -- Set the glow to red
+                    aura.PandemicGlow:SetVertexColor(1, 0, 0) -- Red color
+                    aura.PandemicGlow:Show()
+                    if aura.isEnlarged then
+                        aura.PandemicGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -enlargedTextureAdjustment, enlargedTextureAdjustment)
+                        aura.PandemicGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", enlargedTextureAdjustment, -enlargedTextureAdjustment)
+                    elseif aura.isCompacted then
+                        aura.PandemicGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -compactedTextureAdjustment, compactedTextureAdjustment)
+                        aura.PandemicGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", compactedTextureAdjustment, -compactedTextureAdjustment)
+                    else
+                        aura.PandemicGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -10, 10)
+                        aura.PandemicGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", 10, -10)
+                    end
+                    aura.isPandemicActive = true
+                elseif specialPandemicThreshold and remainingDuration <= specialPandemicThreshold and remainingDuration > defaultPandemicThreshold then
+                    -- Set the glow to reddish-orange
+                    aura.PandemicGlow:SetVertexColor(1, 0.25, 0) -- Reddish-orange color
+                    aura.PandemicGlow:Show()
+                    if aura.isEnlarged then
+                        aura.PandemicGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -enlargedTextureAdjustment, enlargedTextureAdjustment)
+                        aura.PandemicGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", enlargedTextureAdjustment, -enlargedTextureAdjustment)
+                    elseif aura.isCompacted then
+                        aura.PandemicGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -compactedTextureAdjustment, compactedTextureAdjustment)
+                        aura.PandemicGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", compactedTextureAdjustment, -compactedTextureAdjustment)
+                    else
+                        aura.PandemicGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -10, 10)
+                        aura.PandemicGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", 10, -10)
+                    end
+                    aura.isPandemicActive = true
+                else
+                    -- Outside the pandemic window, hide the glow
+                    if aura.PandemicGlow then
+                        aura.PandemicGlow:Hide()
+                    end
+                    aura.isPandemicActive = false
                 end
-                if aura.Border then
-                    aura.Border:SetAlpha(0)
+
+                -- Handle borders
+                if aura.isPandemicActive then
+                    if aura.border then
+                        aura.border:SetAlpha(0)
+                    end
+                    if aura.Border then
+                        aura.Border:SetAlpha(0)
+                    end
+                else
+                    if aura.Border and not aura.isImportant and not aura.isPurgeGlow then
+                        aura.Border:SetAlpha(1)
+                    end
+                    if aura.border then
+                        aura.border:SetAlpha(1)
+                    end
                 end
-            else
-                if aura.PandemicGlow then
-                    aura.PandemicGlow:Hide();
-                end
-                if aura.Border and not aura.isImportant and not aura.isPurgeGlow then
-                    aura.Border:SetAlpha(1)
-                end
-                aura.isPandemicActive = false
             end
         else
             aura.isPandemicActive = false
+
             if aura.Border and not aura.isImportant and not aura.isPurgeGlow then
                 aura.Border:SetAlpha(1)
             end
             if aura.border then
                 aura.border:SetAlpha(1)
             end
-            for auraInstanceID, _ in pairs(trackedBuffs) do
-                trackedBuffs[auraInstanceID] = nil
-            end
+
+            trackedBuffs[auraInstanceID] = nil
         end
     end
+
     if next(trackedBuffs) == nil then
-        StopCheckBuffsTimer();
+        StopCheckBuffsTimer()
     end
 end
+
 
 local function StartCheckBuffsTimer()
     if not checkBuffsTimer then
@@ -1000,7 +1137,13 @@ local function AdjustAuras(self, frameType)
                 if aura.Stealable then
                     aura.Stealable:SetScale(sizeMultiplier)
                 end
+                aura.wasEnlarged = true
                 auraSize = importantSize
+            -- elseif aura.wasEnlarged then
+            --     if aura.Stealable then
+            --         aura.Stealable:SetScale(1)
+            --         aura.wasEnlarged = nil
+            --     end
             end
 
             local columnIndex, rowIndex
@@ -1098,11 +1241,12 @@ local function AdjustAuras(self, frameType)
                 aura:Show()
 
                 aura.spellId = auraData.spellId
+                aura.duration = auraData.duration
 
                 if auraData.spellId == 212183 then
-                    aura.Cooldown:SetCooldown(BBF.smokeBombCast, 5)
+                    aura.Cooldown:SetCooldown(BBF.smokeBombCast or 0, 5)
                     C_Timer.After(0.1, function()
-                        aura.Cooldown:SetCooldown(BBF.smokeBombCast, 5)
+                        aura.Cooldown:SetCooldown(BBF.smokeBombCast or 0, 5)
                     end)
                 end
 
@@ -1949,6 +2093,12 @@ local function PersonalBuffFrameFilterAndGrid(self)
                     if not shouldKeepAurasVisible then
                         auraFrame:Hide()
                         auraFrame.isAuraHidden = true
+                    end
+                    if auraFrame.isImportant then
+                        if auraFrame.ImportantGlow then
+                            auraFrame.ImportantGlow:Hide()
+                            auraFrame.isImportant = false
+                        end
                     end
                     auraFrame:ClearAllPoints()
                     if toggleIcon then

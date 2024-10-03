@@ -1139,6 +1139,7 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
     local textLines = {}
     local framePool = {}
     local selectedLineIndex = nil
+    local currentSearchFilter = ""
 
     -- Function to update the background colors of the entries
     local function updateBackgroundColors()
@@ -1168,7 +1169,16 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
             BetterBlizzFramesDB[listName][key] = nil
         end
 
-        contentFrame.refreshList()
+        currentSearchFilter = ""
+
+        if SettingsPanel:IsShown() then
+            --print("refreshing list cuz settings are open")
+            contentFrame.refreshList()
+        else
+            --print("prepping delayed update")
+            BBF[listName.."DelayedUpdate"] = contentFrame.refreshList
+        end
+
         BBF.RefreshAllAuraFrames()
     end
 
@@ -1273,7 +1283,9 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
                 checkBoxP.texture:SetSize(27, 27)
                 checkBoxP.texture:SetPoint("CENTER", checkBoxP, "CENTER", -0.5, 0.5)
                 button.checkBoxP = checkBoxP
-                CreateTooltipTwo(checkBoxP, "Pandemic Glow |A:elementalstorm-boss-air:22:22|a", "Check for a red glow when the aura has less than 5 sec remaining.", "Also check which frame(s) you want this on down below in settings.", "ANCHOR_TOPRIGHT")
+                local isWarlock = select(2, UnitClass("player")) == "WARLOCK"
+                local extraText = isWarlock and "\n\nIf Agony or Unstable Affliction refresh talents are specced it will first glow orange when entering this window then switch to red once it enters the pandemic window as well." or ""
+                CreateTooltipTwo(checkBoxP, "Pandemic Glow |A:elementalstorm-boss-air:22:22|a", "Check for a red glow when the aura has less than 30% of its duration remaining.\nOr last 5sec if the aura has no pandemic effect."..extraText, "Also check which frame(s) you want this on down below in settings.", "ANCHOR_TOPRIGHT")
             end
             button.checkBoxP:SetChecked(button.npcData.pandemic)
     
@@ -1495,7 +1507,6 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
         end
     end
 
-    local currentSearchFilter = ""
     local function getSortedNpcList()
         local sortableNpcList = {}
 
@@ -1661,7 +1672,9 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
                     end
                 end
 
-                print(printMsg)
+                if printMsg then
+                    print(printMsg)
+                end
 
                 refreshFunc()
             end
@@ -4923,7 +4936,7 @@ local function guiMisc()
     bgImg:SetVertexColor(0,0,0)
 
     local settingsText = guiMisc:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    settingsText:SetPoint("TOPLEFT", guiMisc, "TOPLEFT", 20, 0)
+    settingsText:SetPoint("TOPLEFT", guiMisc, "TOPLEFT", 20, -10)
     settingsText:SetText("Misc settings")
     local miscSettingsIcon = guiMisc:CreateTexture(nil, "ARTWORK")
     miscSettingsIcon:SetAtlas("optionsicon-brown")
@@ -5191,7 +5204,13 @@ local function guiImportAndExport()
     importPVPWhitelist:SetScript("OnClick", function()
         StaticPopup_Show("BBF_CONFIRM_PVP_WHITELIST")
     end)
-    CreateTooltipTwo(importPVPWhitelist, "Import PvP Whitelist", "Import a color coded Whitelist with most important Offensives, Defensives & Freedoms for TWW added.\n\nThis will only add NEW entries and not mess with existing ones in your current whitelist.\n\nWill tweak this as time goes on probably.")
+    local coloredText = "|cff00FF00Important/Immunity|r\n" ..
+                    "|cffFF8000Offensive Buff|r\n" ..
+                    "|cffFFA9F1Defensive Buffs|r\n" ..
+                    "|cff00FFFFFreedom/Speed|r\n" ..
+                    "|cffEFFF33Fear Immunity|r"
+
+    CreateTooltipTwo(importPVPWhitelist, "Import PvP Whitelist", "Import a color coded Whitelist with most important Offensives, Defensives & Freedoms for TWW added.\n\n"..coloredText.."\n\nThis will only add NEW entries and not mess with existing ones in your current whitelist.\n\nWill tweak this as time goes on probably.")
 
     local importPVPBlacklist = CreateFrame("Button", nil, guiImportAndExport, "UIPanelButtonTemplate")
     importPVPBlacklist:SetSize(150, 35)
@@ -5502,3 +5521,23 @@ function BBF.InitializeOptions()
         guiSupport()
     end
 end
+
+
+-- local frame = CreateFrame("Frame")
+-- frame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+
+-- local function OnEvent(self, event)
+--     local combatInfo = { CombatLogGetCurrentEventInfo() }
+
+--     -- Check if the event is related to the player
+--     local sourceGUID = combatInfo[4]
+--     if sourceGUID == UnitGUID("player") then
+--         -- Print all information related to the event
+--         print("Combat Log Info: ")
+--         for i, v in ipairs(combatInfo) do
+--             print(i, v)
+--         end
+--     end
+-- end
+
+-- frame:SetScript("OnEvent", OnEvent)
