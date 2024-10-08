@@ -66,6 +66,7 @@ end
 
 -- Function to update the cooldown icon
 local function UpdateInterruptIcon(frame)
+    if not frame then return end
     if not knownInterruptSpellID then
         knownInterruptSpellID = GetInterruptSpell()
     end

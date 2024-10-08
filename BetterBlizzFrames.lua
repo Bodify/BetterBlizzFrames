@@ -1126,6 +1126,14 @@ function BBF.RecolorHpTempLoss()
     end
 end
 
+function BBF.HideTalkingHeads()
+    if not BetterBlizzFramesDB.hideTalkingHeads then return end
+    if BBF.hidingTalkingHeads then return end
+    hooksecurefunc(TalkingHeadFrame, "PlayCurrent", function(self)
+        self:Hide()
+    end)
+    BBF.hidingTalkingHeads = true
+end
 
 function BBF.FixStupidBlizzPTRShit()
     if InCombatLockdown() then return end
@@ -1163,8 +1171,6 @@ function BBF.FixStupidBlizzPTRShit()
     TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:SetHeight(20)
 
     FocusFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:SetHeight(20)
-    
-
 
 
     local a, b, c, d, e = TargetFrame.TargetFrameContent.TargetFrameContentMain.LevelText:GetPoint()
@@ -1299,6 +1305,7 @@ Frame:SetScript("OnEvent", function(...)
             HookClassComboPoints()
             BBF.FadeMicroMenu()
             BBF.MoveQueueStatusEye()
+            BBF.HideTalkingHeads()
 
 
 
@@ -1478,6 +1485,7 @@ First:SetScript("OnEvent", function(_, event, addonName)
             BBF.SurrenderNotLeaveArena()
             BBF.DruidBlueComboPoints()
             BBF.AbsorbCaller()
+            BBF.HookStatusBarText()
             --TurnOnEnabledFeaturesOnLogin()
 
             if BetterBlizzFramesDB.hideLossOfControlFrameLines == nil then

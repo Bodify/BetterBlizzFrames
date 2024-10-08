@@ -19,6 +19,7 @@ modules\absorb.lua
 modules\combat.lua
 modules\castbar.lua
 modules\healthbarColor.lua
+modules\statusBarTextFormat.lua
 modules\arenaframes.lua
 modules\profiles.lua
 modules\chatFrame.lua

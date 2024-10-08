@@ -2038,7 +2038,75 @@ local function guiGeneralTab()
 
     local hidePlayerPower = CreateCheckbox("hidePlayerPower", "Hide Resource/Power", BetterBlizzFrames, nil, BBF.HideFrames)
     hidePlayerPower:SetPoint("TOPLEFT", hidePlayerName, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltip(hidePlayerPower, "Hide Resource/Power under PlayerFrame. Rogue combopoints, Warlock shards etc.")
+    CreateTooltipTwo(hidePlayerPower, "Hide Resource/Power", "Hide Resource/Power under PlayerFrame. Rogue combopoints, Warlock shards etc.\n\n|cff32f795Right-click for class specific options.|r")
+
+    local function OpenClassSpecificWindow()
+        -- Create a new frame
+        local classOptionsFrame = CreateFrame("Frame", "ClassOptionsFrame", UIParent, "BasicFrameTemplateWithInset")
+        classOptionsFrame:SetSize(185, 210)  -- Increased size for all classes
+        classOptionsFrame:SetPoint("CENTER")
+        classOptionsFrame:SetFrameStrata("HIGH")
+        classOptionsFrame:SetMovable(true)  -- Allow the frame to be movable
+        classOptionsFrame:EnableMouse(true)  -- Enable mouse interaction for dragging
+        classOptionsFrame:RegisterForDrag("LeftButton")  -- Set the mouse button to drag the frame
+        classOptionsFrame:SetScript("OnDragStart", classOptionsFrame.StartMoving)  -- Start moving the frame
+        classOptionsFrame:SetScript("OnDragStop", classOptionsFrame.StopMovingOrSizing)
+        classOptionsFrame.title = classOptionsFrame:CreateFontString(nil, "OVERLAY")
+        classOptionsFrame.title:SetFontObject("GameFontHighlight")
+        classOptionsFrame.title:SetPoint("LEFT", classOptionsFrame.TitleBg, "LEFT", 5, 0)
+        classOptionsFrame.title:SetText("Class Specific Options")
+
+        -- Create checkboxes for each class
+        local classes = {
+            { class = "Druid", var = "hidePlayerPowerNoDruid", color = RAID_CLASS_COLORS["DRUID"] },
+            { class = "Rogue", var = "hidePlayerPowerNoRogue", color = RAID_CLASS_COLORS["ROGUE"] },
+            { class = "Warlock", var = "hidePlayerPowerNoWarlock", color = RAID_CLASS_COLORS["WARLOCK"] },
+            { class = "Paladin", var = "hidePlayerPowerNoPaladin", color = RAID_CLASS_COLORS["PALADIN"] },
+            { class = "Death Knight", var = "hidePlayerPowerNoDeathKnight", color = RAID_CLASS_COLORS["DEATHKNIGHT"] },
+            { class = "Evoker", var = "hidePlayerPowerNoEvoker", color = RAID_CLASS_COLORS["EVOKER"] },
+            { class = "Monk", var = "hidePlayerPowerNoMonk", color = RAID_CLASS_COLORS["MONK"] },
+            { class = "Mage", var = "hidePlayerPowerNoMage", color = RAID_CLASS_COLORS["MAGE"] },
+        }
+
+        local previousCheckbox
+        for i, classData in ipairs(classes) do
+            local classCheckbox = CreateFrame("CheckButton", nil, classOptionsFrame, "UICheckButtonTemplate")
+            classCheckbox:SetSize(24, 24)
+            classCheckbox.Text:SetText("Ignore " .. classData.class)
+
+            -- Set the color of the checkbox label to the class color
+            local r, g, b = classData.color.r, classData.color.g, classData.color.b
+            classCheckbox.Text:SetTextColor(r, g, b)
+
+            -- Position the checkboxes
+            if i == 1 then
+                classCheckbox:SetPoint("TOPLEFT", classOptionsFrame, "TOPLEFT", 10, -30)
+            else
+                classCheckbox:SetPoint("TOPLEFT", previousCheckbox, "BOTTOMLEFT", 0, 3)
+            end
+
+            -- Set the state from the DB
+            classCheckbox:SetChecked(BetterBlizzFramesDB[classData.var])
+
+            -- Save the state back to the DB when toggled
+            classCheckbox:SetScript("OnClick", function(self)
+                if self:GetChecked() then
+                    BetterBlizzFramesDB[classData.var] = true
+                else
+                    BetterBlizzFramesDB[classData.var] = nil
+                end
+                BBF.HideFrames()
+            end)
+
+            previousCheckbox = classCheckbox
+        end
+    end
+
+    hidePlayerPower:SetScript("OnMouseUp", function(self, button)
+        if button == "RightButton" then
+            OpenClassSpecificWindow()
+        end
+    end)
 
     local hidePlayerRestAnimation = CreateCheckbox("hidePlayerRestAnimation", "Hide \"Zzz\" Rest Animation", BetterBlizzFrames, nil, BBF.HideFrames)
     hidePlayerRestAnimation:SetPoint("TOPLEFT", hidePlayerPower, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
@@ -2681,15 +2749,28 @@ local function guiGeneralTab()
         StaticPopup_Show("BBF_CONFIRM_RELOAD")
     end)
 
-    local removeRealmNames = CreateCheckbox("removeRealmNames", "Hide Realm Name", BetterBlizzFrames)
-    removeRealmNames:SetPoint("TOPLEFT", centerNames, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    removeRealmNames:HookScript("OnClick", function()
-        --StaticPopup_Show("BBF_CONFIRM_RELOAD")
-    end)
+    local removeRealmNames = CreateCheckbox("removeRealmNames", "Hide Realm", BetterBlizzFrames)
+    removeRealmNames:SetPoint("LEFT", centerNames.text, "RIGHT", 0, 0)
     CreateTooltipTwo(removeRealmNames, "Hide Realm Indicator", "Hide realm name and different realm indicator \"(*)\" from Target, Focus & Party frames.", "Will enable a fake name. Because of this other addons like HealthBarColor's name stuff will not work properly.")
 
+    local formatStatusBarText = CreateCheckbox("formatStatusBarText", "Format Numbers", BetterBlizzFrames, nil, BBF.HookStatusBarText)
+    formatStatusBarText:SetPoint("TOPLEFT", centerNames, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(formatStatusBarText, "Format Numbers", "Format the health & mana numbers on Player, Target & Focus frames to be millions instead of thousands.\n\n6800 K -> 6.8 M", "Requires reload.")
+
+    local singleValueStatusBarText = CreateCheckbox("singleValueStatusBarText", "No Max", formatStatusBarText)
+    singleValueStatusBarText:SetPoint("LEFT", formatStatusBarText.text, "RIGHT", 0, 0)
+    CreateTooltipTwo(singleValueStatusBarText, "No Max Value", "If Numeric Value is selected as Status Text this setting will make it only display current HP instead of max HP as well.\n\n6800 K / 6800 K -> 6.8 M", "Requires reload.")
+    singleValueStatusBarText:HookScript("OnClick", function()
+        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+    end)
+
+    formatStatusBarText:HookScript("OnClick", function(self)
+        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        CheckAndToggleCheckboxes(self)
+    end)
+
     local hidePrestigeBadge = CreateCheckbox("hidePrestigeBadge", "Hide Prestige Badge", BetterBlizzFrames, nil, BBF.HideFrames)
-    hidePrestigeBadge:SetPoint("TOPLEFT", removeRealmNames, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    hidePrestigeBadge:SetPoint("TOPLEFT", formatStatusBarText, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(hidePrestigeBadge, "Hide the Prestige/Honor level icon from Player, Target & Focus frames. |A:honorsystem-portrait-alliance:40:42|a |A:honorsystem-portrait-horde:40:42|a |A:honorsystem-portrait-neutral:40:42|a")
 
     local hideCombatGlow = CreateCheckbox("hideCombatGlow", "Hide Combat Glow", BetterBlizzFrames, nil, BBF.HideFrames)
@@ -5073,8 +5154,17 @@ local function guiMisc()
     druidOverstacks:SetPoint("TOPLEFT", surrenderArena, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(druidOverstacks, "Druid: Color Berserk Overstack Combo Points Blue", "Color the Druid Berserk Overstack Combo Points blue similar to Rogue's Echoing Reprimand.")
 
+    local hideTalkingHeads = CreateCheckbox("hideTalkingHeads", "Hide Talking Heads Frame", guiMisc, nil, BBF.HideTalkingHeads)
+    hideTalkingHeads:SetPoint("TOPLEFT", druidOverstacks, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(hideTalkingHeads, "Hide Talking Heads Frame", "Hide the frame showing npcs talking during quests etc.")
+    hideTalkingHeads:HookScript("OnClick", function(self)
+        if not self:GetChecked() then
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        end
+    end)
+
     local moveResourceToTarget = CreateCheckbox("moveResourceToTarget", "Move Resource to TargetFrame", guiMisc)
-    moveResourceToTarget:SetPoint("TOPLEFT", druidOverstacks, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    moveResourceToTarget:SetPoint("TOPLEFT", settingsText, "BOTTOMLEFT", 310, pixelsOnFirstBox)
     CreateTooltip(moveResourceToTarget, "Move resource (Combo points, Warlock shards etc) to the TargetFrame.")
 
     local moveResourceToTargetRogue = CreateCheckbox("moveResourceToTargetRogue", "Rogue: Combo Points", moveResourceToTarget)

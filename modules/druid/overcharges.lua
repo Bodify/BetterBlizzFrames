@@ -6,17 +6,27 @@ function BBF.DruidBlueComboPoints()
     local function CreateChargedPoints(comboPointFrame)
         if not comboPointFrame then return end
         if comboPointFrame.blueOverchargePoints then return end
-        local comboPoints = {}
 
-        local comboPointsChecked = 0
+        local comboPoints = {}
+        local visibleComboPoints = 0
+
+        -- Loop through the combo point children and gather visible ones
         for i = 1, comboPointFrame:GetNumChildren() do
             local child = select(i, comboPointFrame:GetChildren())
+
+            -- Only consider shown combo points
             if child:IsShown() then
-                comboPointsChecked = comboPointsChecked + 1
+                visibleComboPoints = visibleComboPoints + 1
                 table.insert(comboPoints, child)
             end
         end
 
+        -- Sort the combo points by their layoutIndex
+        table.sort(comboPoints, function(a, b)
+            return (a.layoutIndex or 0) < (b.layoutIndex or 0)
+        end)
+
+        -- Apply textures to the first three combo points
         for i = 1, 3 do
             if comboPoints[i] then
                 local comboPoint = comboPoints[i]
@@ -34,7 +44,8 @@ function BBF.DruidBlueComboPoints()
             end
         end
 
-        if comboPointsChecked == 5 then
+        -- Mark as overcharge points if all points are visible
+        if visibleComboPoints == 5 then
             comboPointFrame.blueOverchargePoints = true
         end
     end

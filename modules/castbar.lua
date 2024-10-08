@@ -40,7 +40,7 @@ function BBF.UpdateCastbars()
                 defaultPartyFrame = true
                 numGroupMembers = numGroupMembers - 1
             end
-            for i = 1, numGroupMembers do
+            for i = 1, 5 do
                 local spellbar = spellBars[i]
                 if spellbar then
                     spellbar:SetParent(UIParent)
@@ -150,7 +150,7 @@ function BBF.UpdatePetCastbar()
         petSpellBar:SetWidth(width)
         petSpellBar:SetHeight(height)
 
-        local petFrame = PetFrame -- Assuming PetFrame is the frame you want to attach to
+        local petFrame = PetFrame
         if petFrame then
             local petDetachCastbar = BetterBlizzFramesDB.petDetachCastbar
             petSpellBar:ClearAllPoints()
@@ -915,6 +915,60 @@ function BBF.HookCastbarsForEvoker()
                 end
             end
         end)
+
+        local castBars = {}
+        local function NormalEvokerCastbar(castBar)
+            if castBar.empoweredFix then return end
+
+            castBar:HookScript("OnEvent", function(self)
+                if self:IsForbidden() then return end
+                if self.barType == "uninterruptable" then
+                    if self.ChargeTier1 then
+                        self.ChargeTier1:Hide()
+                        self.ChargeTier2:Hide()
+                        self.ChargeTier3:Hide()
+                        if self.isSArena then
+                            self:SetStatusBarTexture("Interface\\RaidFrame\\Raid-Bar-Hp-Fill")
+                            self:SetStatusBarColor(0.7, 0.7, 0.7, 1)
+                        end
+                    end
+                    if self.ChargeTier4 then
+                        self.ChargeTier4:Hide()
+                    end
+                elseif self.barType == "empowered" then
+                    if self.isSArena then
+                        self:SetStatusBarTexture("Interface\\RaidFrame\\Raid-Bar-Hp-Fill")
+                        self:SetStatusBarColor(1, 0.7, 0, 1)
+                    else
+                        self:SetStatusBarTexture("ui-castingbar-filling-standard")
+                    end
+                    self.ChargeTier1:Hide()
+                    self.ChargeTier2:Hide()
+                    self.ChargeTier3:Hide()
+                    if self.ChargeTier4 then
+                        self.ChargeTier4:Hide()
+                    end
+                end
+            end)
+
+            castBar.empoweredFix = true
+        end
+
+        if sArena then
+            for i = 1, 3 do
+                local arenaFrame = sArena["arena" .. i]
+                if arenaFrame and arenaFrame.CastBar then
+                    -- Mark the cast bars as belonging to sArena
+                    arenaFrame.CastBar.isSArena = true
+                    table.insert(castBars, arenaFrame.CastBar)
+                end
+            end
+        end
+
+        for _, castBar in ipairs(castBars) do
+            NormalEvokerCastbar(castBar)
+        end
+
         evokerCastbarsHooked = true
     end
 end

@@ -1,12 +1,12 @@
 local hiddenFrame = CreateFrame("Frame")
 hiddenFrame:Hide()
+BBF.hiddenFrame = hiddenFrame
 
 --------------------------------------
 -- Hide UI Frame Elements
 --------------------------------------
 local hookedRaidFrameManager = false
 local hookedChatButtons = false
-local changedResource = false
 local originalResourceParent
 local originalBossFrameParent
 local bossFrameHooked
@@ -15,6 +15,8 @@ local iconMouseOver = false -- flag to indicate if any LibDBIcon is currently mo
 local minimapButtonsHooked = false
 local bagButtonsHooked = false
 local keybindAlphaChanged = false
+
+local changes = {}
 
 local function applyAlpha(frame, alpha)
     if frame then
@@ -38,7 +40,7 @@ function BBF.HideFrames()
         TargetFrame.TargetFrameContent.TargetFrameContentContextual.LeaderIcon:SetAlpha(targetLeaderIconAlpha)
 
         -- Hide focus leader icon
-        local focusLeaderIconAlpha = BetterBlizzFramesDB.hideTargetLeaderIcon and 0 or 1
+        local focusLeaderIconAlpha = BetterBlizzFramesDB.hideFocusLeaderIcon and 0 or 1
         FocusFrame.TargetFrameContent.TargetFrameContentContextual.LeaderIcon:SetAlpha(focusLeaderIconAlpha)
 
         -- Hide Player Leader Icon
@@ -47,10 +49,10 @@ function BBF.HideFrames()
 
         -- PvP Timer Text
         if BetterBlizzFramesDB.hidePvpTimerText then
-            BBF.hidePvpTimerText = true
+            changes.hidePvpTimerText = true
             PlayerPVPTimerText:SetParent(hiddenFrame)
-        elseif BBF.hidePvpTimerText then
-            BBF.hidePvpTimerText = nil
+        elseif changes.hidePvpTimerText then
+            changes.hidePvpTimerText = nil
             PlayerPVPTimerText:SetParent(PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual)
         end
 
@@ -77,10 +79,8 @@ function BBF.HideFrames()
 
                 bossFrameHooked = true
             end
-        else
-            if bossFrameHooked then
-                BossTargetFrameContainer:SetParent(originalBossFrameParent)
-            end
+        elseif bossFrameHooked then
+            BossTargetFrameContainer:SetParent(originalBossFrameParent)
         end
 
         -- Player Combat Icon
@@ -98,7 +98,7 @@ function BBF.HideFrames()
 
         -- Hide reputation color on target frame (color tint behind name)
         if BetterBlizzFramesDB.hideTargetReputationColor then
-            BBF.hideTargetReputationColor = true
+            changes.hideTargetReputationColor = true
             TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:Hide()
             if classicFrames and not TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor.bbfHooked then
                 hooksecurefunc(TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor, "SetVertexColor", function(self)
@@ -109,13 +109,13 @@ function BBF.HideFrames()
                 end)
                 TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor.bbfHooked = true
             end
-        elseif BBF.hideTargetReputationColor then
-            BBF.hideTargetReputationColor = nil
+        elseif changes.hideTargetReputationColor then
+            changes.hideTargetReputationColor = nil
             TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:Show()
         end
 
         if BetterBlizzFramesDB.hideFocusReputationColor then
-            BBF.hideFocusReputationColor = true
+            changes.hideFocusReputationColor = true
             FocusFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:Hide()
             if classicFrames and not FocusFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor.bbfCF then
                 hooksecurefunc(FocusFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor, "SetVertexColor", function(self)
@@ -126,8 +126,8 @@ function BBF.HideFrames()
                 end)
                 FocusFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor.bbfCF = true
             end
-        elseif BBF.hideFocusReputationColor then
-            BBF.hideFocusReputationColor = nil
+        elseif changes.hideFocusReputationColor then
+            changes.hideFocusReputationColor = nil
             FocusFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:Show()
         end
 
@@ -138,6 +138,7 @@ function BBF.HideFrames()
 
         -- Hide rest loop animation
         if BetterBlizzFramesDB.hidePlayerRestAnimation then
+            changes.hidePlayerRestAnimation = true
             PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.PlayerRestLoop:SetParent(hiddenFrame)
             if classicFrames and not PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.PlayerRestIcon.bbfCF then
                 hooksecurefunc(PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.PlayerRestIcon, "Show", function(self)
@@ -148,12 +149,14 @@ function BBF.HideFrames()
                 end)
                 PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.PlayerRestIcon.bbfCF = true
             end
-        else
+        elseif changes.hidePlayerRestAnimation then
             PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.PlayerRestLoop:SetParent(PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual)
+            changes.hidePlayerRestAnimation = nil
         end
 
         -- Hide rested glow on unit frame
         if BetterBlizzFramesDB.hidePlayerRestGlow then
+            changes.hidePlayerRestGlow = true
             PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.StatusTexture:SetParent(hiddenFrame)
             if classicFrames and not PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.bbfCF then
                 C_Timer.After(1, function()
@@ -172,15 +175,18 @@ function BBF.HideFrames()
                 end
                 PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.bbfCF = true
             end
-        else
+        elseif changes.hidePlayerRestGlow then
             PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.StatusTexture:SetParent(PlayerFrame.PlayerFrameContent.PlayerFrameContentMain)
+            changes.hidePlayerRestGlow = nil
         end
 
         -- Hide corner icon
         if BetterBlizzFramesDB.hidePlayerCornerIcon then
+            changes.hidePlayerCornerIcon = true
             PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.PlayerPortraitCornerIcon:SetParent(hiddenFrame)
-        else
+        elseif changes.hidePlayerCornerIcon then
             PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.PlayerPortraitCornerIcon:SetParent(PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual)
+            changes.hidePlayerCornerIcon = nil
         end
 
         -- Hide totem frame
@@ -202,17 +208,19 @@ function BBF.HideFrames()
             FocusFrame.TargetFrameContainer.Flash:SetParent(hiddenFrame)
             PetFrameFlash:SetParent(hiddenFrame)
             PetAttackModeTexture:SetParent(hiddenFrame)
-        else
+            changes.hideCombatGlow = true
+        elseif changes.hideCombatGlow then
             PlayerFrame.PlayerFrameContainer.FrameFlash:SetParent(PlayerFrame.PlayerFrameContainer)
             TargetFrame.TargetFrameContainer.Flash:SetParent(TargetFrame.TargetFrameContainer)
             FocusFrame.TargetFrameContainer.Flash:SetParent(FocusFrame.TargetFrameContainer)
             PetFrameFlash:SetParent(PetFrame)
             PetAttackModeTexture:SetParent(PetFrame)
+            changes.hideCombatGlow = nil
         end
 
         -- Hide Player level text
         if BetterBlizzFramesDB.hideLevelText then
-            BBF.hideLevelText = true
+            changes.hideLevelText = true
             if BetterBlizzFramesDB.hideLevelTextAlways then
                 PlayerLevelText:SetParent(hiddenFrame)
                 TargetFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetAlpha(0)
@@ -230,8 +238,8 @@ function BBF.HideFrames()
                     FocusFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetAlpha(0)
                 end
             end
-        elseif BBF.hideLevelText then
-            BBF.hideLevelText = nil
+        elseif changes.hideLevelText then
+            changes.hideLevelText = nil
             PlayerLevelText:SetParent(PlayerFrame.PlayerFrameContent.PlayerFrameContentMain)
             --TargetFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetParent(TargetFrame.TargetFrameContent.TargetFrameContentMain)
             --FocusFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetParent(FocusFrame.TargetFrameContent.TargetFrameContentMain)
@@ -241,21 +249,21 @@ function BBF.HideFrames()
 
         -- Hide "Party" text above party raid frames
         if BetterBlizzFramesDB.hidePartyFrameTitle then
-            BBF.hidePartyFrameTitle = true
+            changes.hidePartyFrameTitle = true
             CompactPartyFrameTitle:Hide()
-        elseif BBF.hidePartyFrameTitle then
-            BBF.hidePartyFrameTitle = nil
+        elseif changes.hidePartyFrameTitle then
+            changes.hidePartyFrameTitle = nil
             CompactPartyFrameTitle:Show()
         end
 
         -- Hide PvP Icon
         if BetterBlizzFramesDB.hidePvpIcon then
-            BBF.hidePvpIcon = true
+            changes.hidePvpIcon = true
             TargetFrame.TargetFrameContent.TargetFrameContentContextual.PvpIcon:SetParent(hiddenFrame)
             PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.PVPIcon:SetParent(hiddenFrame)
             FocusFrame.TargetFrameContent.TargetFrameContentContextual.PvpIcon:SetParent(hiddenFrame)
-        elseif BBF.hidePvpIcon then
-            BBF.hidePvpIcon = nil
+        elseif changes.hidePvpIcon then
+            changes.hidePvpIcon = nil
             TargetFrame.TargetFrameContent.TargetFrameContentContextual.PvpIcon:SetParent(TargetFrame.TargetFrameContent.TargetFrameContentContextual)
             PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.PVPIcon:SetParent(PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual)
             FocusFrame.TargetFrameContent.TargetFrameContentContextual.PvpIcon:SetParent(FocusFrame.TargetFrameContent.TargetFrameContentContextual)
@@ -263,20 +271,20 @@ function BBF.HideFrames()
 
         -- Hide role icons
         if BetterBlizzFramesDB.hidePlayerRoleIcon then
-            BBF.hidePlayerRoleIcon = true
+            changes.hidePlayerRoleIcon = true
             --PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.RoleIcon:SetParent(hiddenFrame)
             PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.RoleIcon:SetAlpha(0)
-        elseif BBF.hidePlayerRoleIcon then
-            BBF.hidePlayerRoleIcon = nil
+        elseif changes.hidePlayerRoleIcon then
+            changes.hidePlayerRoleIcon = nil
             --PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.RoleIcon:SetParent(PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual)
             PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.RoleIcon:SetAlpha(1)
         end
 
         if BetterBlizzFramesDB.hidePlayerGuideIcon then
-            BBF.hidePlayerGuideIcon = true
+            changes.hidePlayerGuideIcon = true
             PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.GuideIcon:SetAlpha(0)
-        elseif BBF.hidePlayerGuideIcon then
-            BBF.hidePlayerGuideIcon = nil
+        elseif changes.hidePlayerGuideIcon then
+            changes.hidePlayerGuideIcon = nil
             PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.GuideIcon:SetAlpha(1)
         end
 
@@ -337,7 +345,7 @@ function BBF.HideFrames()
                 local bottomLeftTexture = _G["ChatFrame"..i.."ButtonFrameBottomLeftTexture"]
                 local bottomRightTexture = _G["ChatFrame"..i.."ButtonFrameBottomRightTexture"]
                 local rightTexture = _G["ChatFrame"..i.."ButtonFrameRightTexture"]
-                local leftTexture = _G["ChatFrame1ButtonFrameLeftTexture"]
+                local leftTexture = _G["ChatFrame"..i.."ButtonFrameLeftTexture"]
 
                 if buttonFrame then
                     if BetterBlizzFramesDB.hideChatButtons then
@@ -372,64 +380,80 @@ function BBF.HideFrames()
 
         if BetterBlizzFramesDB.hidePlayerPower then
             if WarlockPowerFrame and englishClass == "WARLOCK" then
-                originalResourceParent = WarlockPowerFrame:GetParent()
-                WarlockPowerFrame:SetParent(hiddenFrame)
+                if BetterBlizzFramesDB.hidePlayerPowerNoWarlock then
+                    if originalResourceParent then WarlockPowerFrame:SetParent(originalResourceParent) end
+                else
+                    if not originalResourceParent then originalResourceParent = WarlockPowerFrame:GetParent() end
+                    WarlockPowerFrame:SetParent(hiddenFrame)
+                end
             end
             if RogueComboPointBarFrame and englishClass == "ROGUE" then
-                originalResourceParent = RogueComboPointBarFrame:GetParent()
-                RogueComboPointBarFrame:SetParent(hiddenFrame)
+                if BetterBlizzFramesDB.hidePlayerPowerNoRogue then
+                    if originalResourceParent then RogueComboPointBarFrame:SetParent(originalResourceParent) end
+                else
+                    if not originalResourceParent then originalResourceParent = RogueComboPointBarFrame:GetParent() end
+                    RogueComboPointBarFrame:SetParent(hiddenFrame)
+                end
             end
             if DruidComboPointBarFrame and englishClass == "DRUID" then
-                DruidComboPointBarFrame:SetAlpha(0)
+                if BetterBlizzFramesDB.hidePlayerPowerNoDruid then
+                    DruidComboPointBarFrame:SetAlpha(1)
+                else
+                    DruidComboPointBarFrame:SetAlpha(0)
+                end
             end
             if PaladinPowerBarFrame and englishClass == "PALADIN" then
-                originalResourceParent = PaladinPowerBarFrame:GetParent()
-                PaladinPowerBarFrame:SetParent(hiddenFrame)
+                if BetterBlizzFramesDB.hidePlayerPowerNoPaladin then
+                    if originalResourceParent then PaladinPowerBarFrame:SetParent(originalResourceParent) end
+                else
+                    if not originalResourceParent then originalResourceParent = PaladinPowerBarFrame:GetParent() end
+                    PaladinPowerBarFrame:SetParent(hiddenFrame)
+                end
             end
             if RuneFrame and englishClass == "DEATHKNIGHT" then
-                originalResourceParent = RuneFrame:GetParent()
-                RuneFrame:SetParent(hiddenFrame)
+                if BetterBlizzFramesDB.hidePlayerPowerNoDeathKnight then
+                    if originalResourceParent then RuneFrame:SetParent(originalResourceParent) end
+                else
+                    if not originalResourceParent then originalResourceParent = RuneFrame:GetParent() end
+                    RuneFrame:SetParent(hiddenFrame)
+                end
             end
             if EssencePlayerFrame and englishClass == "EVOKER" then
-                originalResourceParent = EssencePlayerFrame:GetParent()
-                EssencePlayerFrame:SetParent(hiddenFrame)
+                if BetterBlizzFramesDB.hidePlayerPowerNoEvoker then
+                    if originalResourceParent then EssencePlayerFrame:SetParent(originalResourceParent) end
+                else
+                    if not originalResourceParent then originalResourceParent = EssencePlayerFrame:GetParent() end
+                    EssencePlayerFrame:SetParent(hiddenFrame)
+                end
             end
             if MonkHarmonyBarFrame and englishClass == "MONK" then
-                originalResourceParent = MonkHarmonyBarFrame:GetParent()
-                MonkHarmonyBarFrame:SetParent(hiddenFrame)
+                if BetterBlizzFramesDB.hidePlayerPowerNoMonk then
+                    if originalResourceParent then MonkHarmonyBarFrame:SetParent(originalResourceParent) end
+                else
+                    if not originalResourceParent then originalResourceParent = MonkHarmonyBarFrame:GetParent() end
+                    MonkHarmonyBarFrame:SetParent(hiddenFrame)
+                end
             end
             if MageArcaneChargesFrame and englishClass == "MAGE" then
-                MageArcaneChargesFrame:SetAlpha(0)
-            end
-            changedResource = true
-        else
-            if changedResource then
-                if WarlockPowerFrame and originalResourceParent and englishClass == "WARLOCK" then
-                    WarlockPowerFrame:SetParent(originalResourceParent)
-                end
-                if RogueComboPointBarFrame and originalResourceParent and englishClass == "ROGUE" then
-                    RogueComboPointBarFrame:SetParent(originalResourceParent)
-                end
-                if DruidComboPointBarFrame and englishClass == "DRUID" then
-                    DruidComboPointBarFrame:SetAlpha(1)
-                end
-                if PaladinPowerBarFrame and originalResourceParent and englishClass == "PALADIN" then
-                    PaladinPowerBarFrame:SetParent(originalResourceParent)
-                end
-                if RuneFrame and originalResourceParent and englishClass == "DEATHKNIGHT" then
-                    RuneFrame:SetParent(originalResourceParent)
-                end
-                if EssencePlayerFrame and originalResourceParent and englishClass == "EVOKER" then
-                    EssencePlayerFrame:SetParent(originalResourceParent)
-                end
-                if MonkHarmonyBarFrame and originalResourceParent and englishClass == "MONK" then
-                    MonkHarmonyBarFrame:SetParent(originalResourceParent)
-                end
-                if MageArcaneChargesFrame and englishClass == "MAGE" then
+                if BetterBlizzFramesDB.hidePlayerPowerNoMage then
                     MageArcaneChargesFrame:SetAlpha(1)
+                else
+                    MageArcaneChargesFrame:SetAlpha(0)
                 end
             end
+            changes.hidePlayerPower = true
+        elseif originalResourceParent then
+            if WarlockPowerFrame and englishClass == "WARLOCK" then WarlockPowerFrame:SetParent(originalResourceParent) end
+            if RogueComboPointBarFrame and englishClass == "ROGUE" then RogueComboPointBarFrame:SetParent(originalResourceParent) end
+            if DruidComboPointBarFrame and englishClass == "DRUID" then DruidComboPointBarFrame:SetAlpha(1) end
+            if PaladinPowerBarFrame and englishClass == "PALADIN" then PaladinPowerBarFrame:SetParent(originalResourceParent) end
+            if RuneFrame and englishClass == "DEATHKNIGHT" then RuneFrame:SetParent(originalResourceParent) end
+            if EssencePlayerFrame and englishClass == "EVOKER" then EssencePlayerFrame:SetParent(originalResourceParent) end
+            if MonkHarmonyBarFrame and englishClass == "MONK" then MonkHarmonyBarFrame:SetParent(originalResourceParent) end
+            if MageArcaneChargesFrame and englishClass == "MAGE" then MageArcaneChargesFrame:SetAlpha(1) end
+            changes.hidePlayerPower = nil
         end
+        
 
         if BetterBlizzFramesDB.hideChatButtons then
             QuickJoinToastButton:SetAlpha(0)
@@ -571,11 +595,11 @@ function BBF.HideFrames()
         if BetterBlizzFramesDB.hideRareDragonTexture then
             TargetFrame.TargetFrameContainer.BossPortraitFrameTexture:SetAlpha(0)
             FocusFrame.TargetFrameContainer.BossPortraitFrameTexture:SetAlpha(0)
-            TargetFrame.TargetFrameContainer.BossPortraitFrameTexture.bbfHidden = true
-        elseif TargetFrame.TargetFrameContainer.BossPortraitFrameTexture.bbfHidden then
+            changes.hideRareDragonTexture = true
+        elseif changes.hideRareDragonTexture then
             TargetFrame.TargetFrameContainer.BossPortraitFrameTexture:SetAlpha(1)
             FocusFrame.TargetFrameContainer.BossPortraitFrameTexture:SetAlpha(1)
-            TargetFrame.TargetFrameContainer.BossPortraitFrameTexture.bbfHidden = nil
+            changes.hideRareDragonTexture = nil
         end
 
         -- Hide Stance Bar
@@ -590,14 +614,12 @@ function BBF.HideFrames()
                     button:SetParent(hiddenFrame)
                 end
             end
-        else
-            if originalStanceParent then
-                for i = 1, 10 do
-                    local buttonName = "StanceButton" .. i
-                    local button = _G[buttonName]
-                    if button then
-                        button:SetParent(originalStanceParent)
-                    end
+        elseif originalStanceParent then
+            for i = 1, 10 do
+                local buttonName = "StanceButton" .. i
+                local button = _G[buttonName]
+                if button then
+                    button:SetParent(originalStanceParent)
                 end
             end
         end
@@ -849,20 +871,73 @@ end
 -- temp inc settings
 function BBF.FadeMicroMenu()
     if not BetterBlizzFramesDB.fadeMicroMenu then return end
-    MicroMenuContainer:SetAlpha(0)
-    if not MicroMenuContainer.bffHooked then
-        MicroMenuContainer:HookScript("OnEnter", function(self)
-            self:SetAlpha(1)
-        end)
-        MicroMenuContainer:HookScript("OnLeave", function(self)
-            if not self:IsMouseOver() then
-                self:SetAlpha(0)
+    local function SetAlphaForMicroMenu(alpha)
+        MicroMenu:SetAlpha(alpha)
+        MicroMenuContainer:SetAlpha(alpha)
+        for _, child in ipairs({MicroMenu:GetChildren()}) do
+            child:SetAlpha(alpha)
+        end
+    end
+
+    SetAlphaForMicroMenu(0) -- Start with hidden
+
+    local function IsAnyMouseOver()
+        if MicroMenu:IsMouseOver() then return true end
+        for _, child in ipairs({MicroMenu:GetChildren()}) do
+            if child:IsMouseOver() then
+                return true
             end
+        end
+        return false
+    end
+
+    if not MicroMenu.bffHooked then
+        MicroMenu:HookScript("OnEnter", function()
+            SetAlphaForMicroMenu(1)
         end)
+
+        MicroMenu:HookScript("OnLeave", function()
+            C_Timer.After(0.5, function()
+                if not IsAnyMouseOver() then
+                    SetAlphaForMicroMenu(0)
+                end
+            end)
+        end)
+
+        MicroMenuContainer:HookScript("OnEnter", function()
+            SetAlphaForMicroMenu(1)
+        end)
+
+        MicroMenuContainer:HookScript("OnLeave", function()
+            C_Timer.After(0.5, function()
+                if not IsAnyMouseOver() then
+                    SetAlphaForMicroMenu(0)
+                end
+            end)
+        end)
+
+        -- Apply hooks to all children
+        for _, child in ipairs({MicroMenu:GetChildren()}) do
+            child:HookScript("OnEnter", function()
+                SetAlphaForMicroMenu(1)
+            end)
+
+            child:HookScript("OnLeave", function()
+                C_Timer.After(0.5, function()
+                if not IsAnyMouseOver() then
+                        SetAlphaForMicroMenu(0)
+                    end
+                end)
+            end)
+        end
+
+        -- Special case for QueueStatusButton if required
         if BetterBlizzFramesDB.fadeMicroMenuExceptQueue then
             QueueStatusButton:SetParent(UIParent)
+            QueueStatusButton:SetFrameLevel(10)
         end
-        MicroMenuContainer.bffHooked = true
+
+        MicroMenu.bffHooked = true
     end
 end
 
@@ -876,6 +951,7 @@ function BBF.MoveQueueStatusEye()
     local button = QueueStatusButton
     if button.bbfHooked then return end
     QueueStatusButton:SetParent(UIParent)
+    QueueStatusButton:SetFrameLevel(10)
 
     -- Hook the SetPoint function to prevent automatic resets
     hooksecurefunc(button, "SetPoint", function(self, _, _, _, _, _)
@@ -887,7 +963,7 @@ function BBF.MoveQueueStatusEye()
             local pos = BetterBlizzFramesDB.queueStatusButtonPosition
             self:SetPoint(pos[1], UIParent, pos[3], pos[4], pos[5])
         else
-            self:SetPoint("CENTER", Minimap, "BOTTOMLEFT", 29, 33)
+            self:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", -180, -141)
         end
 
         self.changing = false
@@ -902,7 +978,7 @@ function BBF.MoveQueueStatusEye()
             local pos = BetterBlizzFramesDB.queueStatusButtonPosition
             self:SetPoint(pos[1], UIParent, pos[3], pos[4], pos[5])
         else
-            self:SetPoint("CENTER", Minimap, "BOTTOMLEFT", 29, 33)
+            self:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", -180, -141)
         end
 
         self.changing = false
@@ -935,7 +1011,7 @@ function BBF.MoveQueueStatusEye()
         button:SetPoint(pos[1], UIParent, pos[3], pos[4], pos[5])
     else
         button:ClearAllPoints()
-        button:SetPoint("CENTER", Minimap, "BOTTOMLEFT", 29, 33)
+        button:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", -180, -141)
         local point, _, relativePoint, xOffset, yOffset = button:GetPoint()
         BetterBlizzFramesDB.queueStatusButtonPosition = {point, nil, relativePoint, xOffset, yOffset}
     end
