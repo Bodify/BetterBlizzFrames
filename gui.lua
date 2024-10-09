@@ -15,6 +15,9 @@ local LibSerialize = LibStub("LibSerialize")
 
 BBF.squareGreenGlow = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\newplayertutorial-drag-slotgreen.tga"
 
+local checkBoxList = {}
+local sliderList = {}
+
 local function ConvertOldWhitelist(oldWhitelist)
     local optimizedWhitelist = {}
     for _, aura in ipairs(oldWhitelist) do
@@ -451,6 +454,12 @@ local function CreateSlider(parent, label, minValue, maxValue, stepValue, elemen
     slider.Low:SetText(" ")
     slider.High:SetText(" ")
 
+    table.insert(sliderList, {
+        slider = slider,
+        label = label,
+        element = element
+    })
+
     if sliderWidth then
         slider:SetWidth(sliderWidth)
     end
@@ -843,6 +852,7 @@ local function CreateSlider(parent, label, minValue, maxValue, stepValue, elemen
 end
 
 local function CreateTooltip(widget, tooltipText, anchor)
+    widget.tooltipTitle = tooltipText
     widget:SetScript("OnEnter", function(self)
         if GameTooltip:IsShown() then
             GameTooltip:Hide()
@@ -864,6 +874,10 @@ local function CreateTooltip(widget, tooltipText, anchor)
 end
 
 local function CreateTooltipTwo(widget, title, mainText, subText, anchor, cvarName)
+    widget.tooltipTitle = title
+    widget.tooltipMainText = mainText
+    widget.tooltipSubText = subText
+    widget.tooltipCVarName = cvarName
     widget:SetScript("OnEnter", function(self)
         -- Clear the tooltip before showing new information
         GameTooltip:ClearLines()
@@ -1070,6 +1084,7 @@ end
 local function CreateCheckbox(option, label, parent, cvarName, extraFunc)
     local checkBox = CreateFrame("CheckButton", nil, parent, "InterfaceOptionsCheckButtonTemplate")
     checkBox.Text:SetText(label)
+    table.insert(checkBoxList, {checkbox = checkBox, label = label})
 
     local function UpdateOption(value)
         if option == 'friendlyFrameClickthrough' and BBF.checkCombatAndWarn() then
@@ -1755,6 +1770,261 @@ local function CreateTitle(parent)
     verNumber:SetText("v" .. BBF.VersionNumber)
 end
 
+local function CreateSearchFrame()
+    local searchFrame = CreateFrame("Frame", "BBFSearchFrame", UIParent)
+    searchFrame:SetSize(680, 610)
+    searchFrame:SetPoint("CENTER", UIParent, "CENTER")
+    searchFrame:SetFrameStrata("HIGH")
+    searchFrame:Hide()
+
+    local wipText = searchFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+    wipText:SetPoint("BOTTOM", searchFrame, "BOTTOM", -10, 10)
+    wipText:SetText("Search is not complete and is WIP.")
+
+    CreateTitle(searchFrame)
+
+    local bgImg = searchFrame:CreateTexture(nil, "BACKGROUND")
+    bgImg:SetAtlas("professions-recipe-background")
+    bgImg:SetPoint("CENTER", searchFrame, "CENTER", -8, 4)
+    bgImg:SetSize(680, 610)
+    bgImg:SetAlpha(0.4)
+    bgImg:SetVertexColor(0, 0, 0)
+
+    local settingsText = searchFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+    settingsText:SetPoint("TOPLEFT", searchFrame, "TOPLEFT", 20, 0)
+    settingsText:SetText("Search results:")
+
+    -- Icon next to the title
+    local searchIcon = searchFrame:CreateTexture(nil, "ARTWORK")
+    searchIcon:SetAtlas("communities-icon-searchmagnifyingglass")
+    searchIcon:SetSize(28, 28)
+    searchIcon:SetPoint("RIGHT", settingsText, "LEFT", -3, -1)
+
+    -- Reference the existing SettingsPanel.SearchBox to copy properties
+    local referenceBox = SettingsPanel.SearchBox
+
+    -- Create the search input field on top of SettingsPanel.SearchBox
+    local searchBox = CreateFrame("EditBox", nil, SettingsPanel, "InputBoxTemplate")
+    searchBox:SetSize(referenceBox:GetWidth() + 1, referenceBox:GetHeight() + 1)
+    searchBox:SetPoint("CENTER", referenceBox, "CENTER")
+    searchBox:SetFrameStrata("HIGH")
+    searchBox:SetAutoFocus(false)
+    searchBox.Left:Hide()
+    searchBox.Right:Hide()
+    searchBox.Middle:Hide()
+    searchBox:SetFontObject(referenceBox:GetFontObject())
+    searchBox:SetTextInsets(16, 8, 0, 0)
+    searchBox:Hide()
+    searchBox:SetScript("OnEnterPressed", function(self)
+        self:ClearFocus()
+    end)
+    CreateTooltipTwo(searchBox, "Search |A:shop-games-magnifyingglass:17:17|a", "You can now search for settings in BetterBlizzPlates. (WIP)", nil, "TOP")
+
+    local resultsList = CreateFrame("Frame", nil, searchFrame)
+    resultsList:SetSize(640, 500)
+    resultsList:SetPoint("TOP", settingsText, "BOTTOM", 0, -10)
+
+    local checkboxPool = {}
+    local sliderPool = {}
+
+    local function SearchElements(query)
+        -- Clear existing results
+        for _, child in ipairs({resultsList:GetChildren()}) do
+            child:Hide()
+        end
+
+        if query == "" then
+            return
+        end
+
+        local checkboxCount = 0
+        local sliderCount = 0
+        local yOffsetCheckbox = -20  -- Starting position for the first checkbox
+        local yOffsetSlider = -20    -- Starting position for the first slider
+        query = string.lower(query)
+
+        -- Search through checkboxes
+        for _, data in ipairs(checkBoxList) do
+            if checkboxCount >= 20 then break end
+
+            -- Convert label and tooltips to lowercase for case-insensitive comparison
+            local label = string.lower(data.label)
+            local tooltipTitle = data.checkbox.tooltipTitle and string.lower(data.checkbox.tooltipTitle) or ""
+            local tooltipMainText = data.checkbox.tooltipMainText and string.lower(data.checkbox.tooltipMainText) or ""
+            local tooltipSubText = data.checkbox.tooltipSubText and string.lower(data.checkbox.tooltipSubText) or ""
+            local tooltipCVarName = data.checkbox.tooltipCVarName and string.lower(data.checkbox.tooltipCVarName) or ""
+
+            -- Check if the query is found in the label or any tooltip text
+            if string.find(label, query) or string.find(tooltipTitle, query) or string.find(tooltipMainText, query) or string.find(tooltipSubText, query) or string.find(tooltipCVarName, query) then
+                checkboxCount = checkboxCount + 1
+
+                -- Re-use or create a new checkbox from the pool
+                local resultCheckBox = checkboxPool[checkboxCount]
+                if not resultCheckBox then
+                    resultCheckBox = CreateFrame("CheckButton", nil, resultsList, "InterfaceOptionsCheckButtonTemplate")
+                    resultCheckBox:SetSize(24, 24)
+                    checkboxPool[checkboxCount] = resultCheckBox
+                end
+
+                -- Update checkbox properties and position
+                resultCheckBox:ClearAllPoints()
+                resultCheckBox:SetPoint("TOPLEFT", searchIcon, "TOPLEFT", 27, yOffsetCheckbox)
+                resultCheckBox.Text:SetText(data.label)
+                if not data.label or data.label == "" then
+                    resultCheckBox.Text:SetText(data.checkbox.tooltipTitle)
+                end
+                resultCheckBox:SetChecked(data.checkbox:GetChecked())
+
+                -- Link the result checkbox to the main checkbox
+                resultCheckBox:SetScript("OnClick", function()
+                    data.checkbox:Click()
+                end)
+
+                -- Reapply tooltip
+                if data.checkbox.tooltipMainText then
+                    CreateTooltipTwo(resultCheckBox, data.checkbox.tooltipTitle, data.checkbox.tooltipMainText, data.checkbox.tooltipSubText, nil, data.checkbox.tooltipCVarName)
+                elseif data.checkbox.tooltipTitle then
+                    CreateTooltipTwo(resultCheckBox, data.checkbox.tooltipTitle)
+                else
+                    CreateTooltipTwo(resultCheckBox, "No data yet WIP")
+                end
+
+                resultCheckBox:Show()
+
+                -- Move down for the next checkbox
+                yOffsetCheckbox = yOffsetCheckbox - 24
+            end
+        end
+
+        -- Search through sliders
+        for _, data in ipairs(sliderList) do
+            if sliderCount >= 13 then break end
+
+            -- Convert label to lowercase for case-insensitive comparison
+            local label = string.lower(data.label)
+            local tooltipTitle = data.slider.tooltipTitle and string.lower(data.slider.tooltipTitle) or ""
+            local tooltipMainText = data.slider.tooltipMainText and string.lower(data.slider.tooltipMainText) or ""
+            local tooltipSubText = data.slider.tooltipSubText and string.lower(data.slider.tooltipSubText) or ""
+            local tooltipCVarName = data.slider.tooltipCVarName and string.lower(data.slider.tooltipCVarName) or ""
+
+            -- Check if the query is found in the label or any tooltip text
+            if string.find(label, query) or string.find(tooltipTitle, query) or string.find(tooltipMainText, query) or string.find(tooltipSubText, query) or string.find(tooltipCVarName, query) then
+                sliderCount = sliderCount + 1
+
+                -- Re-use or create a new slider from the slider pool
+                local resultSlider = sliderPool[sliderCount]
+                if not resultSlider then
+                    resultSlider = CreateFrame("Slider", nil, resultsList, "OptionsSliderTemplate")
+                    resultSlider:SetOrientation('HORIZONTAL')
+                    resultSlider:SetValueStep(data.slider:GetValueStep())
+                    resultSlider:SetObeyStepOnDrag(true)
+                    resultSlider.Text = resultSlider:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+                    resultSlider.Text:SetTextColor(1, 0.81, 0, 1)
+                    resultSlider.Text:SetPoint("TOP", resultSlider, "BOTTOM", 0, -1)
+                    resultSlider.Low:SetText(" ")
+                    resultSlider.High:SetText(" ")
+                    sliderPool[sliderCount] = resultSlider
+                end
+
+                -- Format the slider text value
+                local function formatSliderValue(value)
+                    return value % 1 == 0 and tostring(math.floor(value)) or string.format("%.2f", value)
+                end
+
+                -- Update slider properties and position
+                resultSlider:ClearAllPoints()
+                resultSlider:SetPoint("TOPLEFT", searchIcon, "TOPLEFT", 277, yOffsetSlider) -- Offset by 250 pixels to the right
+                --resultSlider:SetMinMaxValues(data.slider:GetMinMaxValues())
+
+                -- Temporarily remove the script
+                resultSlider:SetScript("OnValueChanged", nil)
+                resultSlider:SetMinMaxValues(data.slider:GetMinMaxValues())
+                resultSlider:SetValue(data.slider:GetValue())
+                resultSlider.Text:SetText(data.label .. ": " .. formatSliderValue(data.slider:GetValue()))
+
+                -- Reapply the script after setting the value
+                resultSlider:SetScript("OnValueChanged", function(self, value)
+                    data.slider:SetValue(value) -- Trigger the original slider's script
+                    resultSlider.Text:SetText(data.label .. ": " .. formatSliderValue(value))
+                end)
+
+                -- Tooltip setup for sliders
+                if data.slider.tooltipMainText then
+                    CreateTooltipTwo(resultSlider, data.slider.tooltipTitle, data.slider.tooltipMainText, data.slider.tooltipSubText, nil, data.slider.tooltipCVarName)
+                elseif data.slider.tooltipTitle then
+                    CreateTooltipTwo(resultSlider, data.slider.tooltipTitle)
+                else
+                    CreateTooltipTwo(resultSlider, "No data yet WIP")
+                end
+
+                -- Show the slider and prepare for the next slider
+                resultSlider:Show()
+                yOffsetSlider = yOffsetSlider - 42  -- More space for sliders
+            end
+        end
+    end
+
+    searchBox:SetScript("OnTextChanged", function(self)
+        local query = self:GetText()
+        if #query > 0 then
+            SettingsPanelSearchIcon:SetVertexColor(1, 1, 1)
+            SettingsPanel.SearchBox.Instructions:SetAlpha(0)
+            searchFrame:Show()
+            if SettingsPanel.currentLayout and SettingsPanel.currentLayout.frame then
+                SettingsPanel.currentLayout.frame:Hide()
+            end
+        else
+            SettingsPanelSearchIcon:SetVertexColor(0.6, 0.6, 0.6)
+            SettingsPanel.SearchBox.Instructions:SetAlpha(1)
+            searchFrame:Hide()
+            if SettingsPanel.currentLayout and SettingsPanel.currentLayout.frame then
+                SettingsPanel.currentLayout.frame:Show()
+            end
+        end
+        if #query >= 1 then
+            SearchElements(query)
+        else
+            SearchElements("")
+        end
+
+        if not searchBox.hookedSettings then
+            SettingsPanel:HookScript("OnHide", function()
+                SettingsPanelSearchIcon:SetVertexColor(0.6, 0.6, 0.6)
+                SettingsPanel.SearchBox.Instructions:SetAlpha(1)
+                searchFrame:Hide()
+                searchBox:Hide()
+                if SettingsPanel.currentLayout and SettingsPanel.currentLayout.frame then
+                    searchBox:SetText("")
+                    SettingsPanel.currentLayout.frame:Show()
+                end
+            end)
+            searchBox.hookedSettings = true
+        end
+    end)
+
+    hooksecurefunc(SettingsPanel, "DisplayLayout", function()
+        if SettingsPanel.currentLayout.frame and SettingsPanel.currentLayout.frame.name == "Better|cff00c0ffBlizz|rFrames |A:gmchat-icon-blizz:16:16|a" or
+        (SettingsPanel.currentLayout.frame and SettingsPanel.currentLayout.frame.parent == "Better|cff00c0ffBlizz|rFrames |A:gmchat-icon-blizz:16:16|a") then
+            SettingsPanel.SearchBox.Instructions:SetText("Search in BetterBlizzFrames")
+            searchBox:Show()
+            searchBox:SetText("")
+            searchFrame:Hide()
+            searchFrame:ClearAllPoints()
+            searchFrame:SetPoint("TOPLEFT", SettingsPanel.currentLayout.frame, "TOPLEFT")
+            searchFrame:SetPoint("BOTTOMRIGHT", SettingsPanel.currentLayout.frame, "BOTTOMRIGHT")
+            if not SettingsPanel.currentLayout.frame:IsShown() then
+                SettingsPanel.currentLayout.frame:Show()
+            end
+        else
+            if SettingsPanel.SearchBox.Instructions:GetText() == "Search in BetterBlizzFrames" then
+                SettingsPanel.SearchBox.Instructions:SetText("Search")
+            end
+            searchBox:Hide()
+            searchFrame:Hide()
+        end
+    end)
+end
+
 ------------------------------------------------------------
 -- GUI Panels
 ------------------------------------------------------------
@@ -1773,6 +2043,17 @@ local function guiGeneralTab()
     bgImg:SetAlpha(0.4)
     bgImg:SetVertexColor(0,0,0)
 
+    local newSearch = BetterBlizzFrames:CreateTexture(nil, "BACKGROUND")
+    newSearch:SetAtlas("NewCharacter-Horde", true)
+    newSearch:SetPoint("BOTTOM", BetterBlizzFrames, "TOP", -70, 2)
+    CreateTooltipTwo(newSearch, "Search |A:shop-games-magnifyingglass:17:17|a", "You can now search for settings in BetterBlizzFrames. (WIP)")
+
+    local newSearchPoint = BetterBlizzFrames:CreateTexture(nil, "BACKGROUND")
+    newSearchPoint:SetAtlas("auctionhouse-icon-buyallarrow", true)
+    newSearchPoint:SetPoint("LEFT", newSearch, "RIGHT", -25, 0)
+    newSearchPoint:SetRotation(math.pi / 2)
+
+    CreateSearchFrame()
     -- local addonNameText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
     -- addonNameText:SetPoint("TOPLEFT", mainGuiAnchor, "TOPLEFT", -20, 47)
     -- addonNameText:SetText("BetterBlizzFrames")
@@ -2755,11 +3036,11 @@ local function guiGeneralTab()
 
     local formatStatusBarText = CreateCheckbox("formatStatusBarText", "Format Numbers", BetterBlizzFrames, nil, BBF.HookStatusBarText)
     formatStatusBarText:SetPoint("TOPLEFT", centerNames, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltipTwo(formatStatusBarText, "Format Numbers", "Format the health & mana numbers on Player, Target & Focus frames to be millions instead of thousands.\n\n6800 K -> 6.8 M", "Requires reload.")
+    CreateTooltipTwo(formatStatusBarText, "Format Numbers", "Format the health & mana numbers on Player, Target & Focus frames to be millions instead of thousands.\n\n6800 K |A:glueannouncementpopup-arrow:20:20|a 6.8 M", "Requires reload.")
 
     local singleValueStatusBarText = CreateCheckbox("singleValueStatusBarText", "No Max", formatStatusBarText)
     singleValueStatusBarText:SetPoint("LEFT", formatStatusBarText.text, "RIGHT", 0, 0)
-    CreateTooltipTwo(singleValueStatusBarText, "No Max Value", "If Numeric Value is selected as Status Text this setting will make it only display current HP instead of max HP as well.\n\n6800 K / 6800 K -> 6.8 M", "Requires reload.")
+    CreateTooltipTwo(singleValueStatusBarText, "No Max Value", "If Numeric Value is selected as Status Text this setting will make it only display current HP instead of max HP as well.\n\n6800 K / 6800 K |A:glueannouncementpopup-arrow:20:20|a 6.8 M", "Requires reload.")
     singleValueStatusBarText:HookScript("OnClick", function()
         StaticPopup_Show("BBF_CONFIRM_RELOAD")
     end)
@@ -5017,7 +5298,7 @@ local function guiMisc()
     bgImg:SetVertexColor(0,0,0)
 
     local settingsText = guiMisc:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    settingsText:SetPoint("TOPLEFT", guiMisc, "TOPLEFT", 20, -10)
+    settingsText:SetPoint("TOPLEFT", guiMisc, "TOPLEFT", 20, 0)
     settingsText:SetText("Misc settings")
     local miscSettingsIcon = guiMisc:CreateTexture(nil, "ARTWORK")
     miscSettingsIcon:SetAtlas("optionsicon-brown")

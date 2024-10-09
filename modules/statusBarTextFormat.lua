@@ -4,8 +4,6 @@ local function FormatText(value)
         return string.format("%.1f M", value / 1000000)
     elseif value >= 100000 then
         return string.format("%d K", value / 1000)
-    elseif value >= 1000 then
-        return string.format("%d K", value / 1000)
     else
         return tostring(value)
     end

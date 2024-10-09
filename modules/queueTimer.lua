@@ -140,9 +140,9 @@ local function RecalculateProposalTimeLeft()
         local timeElapsed = GetTime() - BetterBlizzFramesDB.pveQueuePopTime
         proposalTimeLeft = proposalTimeLeft - timeElapsed
 
-        -- Ensure the timer doesn't go below zero
-        if proposalTimeLeft < 0 then
-            proposalTimeLeft = 0
+        -- Ensure the timer doesn't go weird
+        if proposalTimeLeft < 0 or proposalTimeLeft > 40 then
+            proposalTimeLeft = 40
         end
     end
 end

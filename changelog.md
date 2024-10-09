@@ -1,14 +1,18 @@
-# BetterBlizzFrames 1.5.6b
+# BetterBlizzFrames 1.5.7
 ## The War Within
 ### New stuff:
+- Search feature! Top right SearchBox that normally searches Blizzard settings has now been hijacked and will search BetterBlizzFrames settings instead if you have the BBF settings open.
 - Hide Resource/Power setting now has individual class settings. Access them by rightclicking the checkbox.
 - The "Normal Evoker Empowered Castbar" setting now also makes sArena castbars normal.
 - Misc: Hide Talking Heads setting.
 ### Tweak:
 - Nahj profile update
+- Tweak Pandemic Timers to never go below base duration (Rot and Decay refresh caused wrong timings)
 ### Bugfix:
 - Fix an issue with the red threat border overlapping auras with ClassicFrames addon.
 - Fix issue with the new Misc settings for Queue Status Eye from last patch making the eye unclickable with the settings on.
+- Fix/improve the Fade Out Micromenu setting being a bit wonky.
+- Fix rare issue with QueueTimer displaying wrong accept timer for PvE.
 
 # BetterBlizzFrames 1.5.6
 ## The War Within
