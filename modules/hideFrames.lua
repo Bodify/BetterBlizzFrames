@@ -25,7 +25,8 @@ local function applyAlpha(frame, alpha)
 end
 
 function BBF.HideFrames()
-    if BetterBlizzFramesDB.hasCheckedUi then
+    local db = BetterBlizzFramesDB
+    if db.hasCheckedUi then
         local playerClass, englishClass = UnitClass("player")
         local classicFrames = C_AddOns.IsAddOnLoaded("ClassicFrames")
         --Hide group indicator on player unitframe
@@ -453,7 +454,11 @@ function BBF.HideFrames()
             if MageArcaneChargesFrame and englishClass == "MAGE" then MageArcaneChargesFrame:SetAlpha(1) end
             changes.hidePlayerPower = nil
         end
-        
+
+        if db.hideExpAndHonorBar then
+            MainStatusTrackingBarContainer:SetParent(hiddenFrame)
+            SecondaryStatusTrackingBarContainer:SetParent(hiddenFrame)
+        end
 
         if BetterBlizzFramesDB.hideChatButtons then
             QuickJoinToastButton:SetAlpha(0)

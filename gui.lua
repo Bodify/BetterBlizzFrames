@@ -1828,7 +1828,6 @@ local function CreateSearchFrame()
     local sliderPool = {}
 
     local function SearchElements(query)
-        -- Clear existing results
         for _, child in ipairs({resultsList:GetChildren()}) do
             child:Hide()
         end
@@ -1837,25 +1836,50 @@ local function CreateSearchFrame()
             return
         end
 
+        -- Convert the query into lowercase and split it into individual words
+        query = string.lower(query)
+        local queryWords = { strsplit(" ", query) }
+
         local checkboxCount = 0
         local sliderCount = 0
         local yOffsetCheckbox = -20  -- Starting position for the first checkbox
         local yOffsetSlider = -20    -- Starting position for the first slider
-        query = string.lower(query)
+
+        -- Helper function to check if all query words are in the label
+        local function matchesQuery(label)
+            label = string.lower(label)
+            for _, queryWord in ipairs(queryWords) do
+                if not string.find(label, queryWord) then
+                    return false
+                end
+            end
+            return true
+        end
+
+        local function applyRightClickScript(searchCheckbox, originalCheckbox)
+            local originalScript = originalCheckbox:GetScript("OnMouseDown")
+            if originalScript then
+                searchCheckbox:SetScript("OnMouseDown", function(self, button)
+                    if button == "RightButton" then
+                        originalScript(originalCheckbox, button)
+                    end
+                end)
+            end
+        end
 
         -- Search through checkboxes
         for _, data in ipairs(checkBoxList) do
             if checkboxCount >= 20 then break end
 
-            -- Convert label and tooltips to lowercase for case-insensitive comparison
-            local label = string.lower(data.label)
-            local tooltipTitle = data.checkbox.tooltipTitle and string.lower(data.checkbox.tooltipTitle) or ""
-            local tooltipMainText = data.checkbox.tooltipMainText and string.lower(data.checkbox.tooltipMainText) or ""
-            local tooltipSubText = data.checkbox.tooltipSubText and string.lower(data.checkbox.tooltipSubText) or ""
-            local tooltipCVarName = data.checkbox.tooltipCVarName and string.lower(data.checkbox.tooltipCVarName) or ""
+            -- Prepare the label and tooltip text
+            local label = string.lower(data.label or "")
+            local tooltipTitle = string.lower(data.checkbox.tooltipTitle or "")
+            local tooltipMainText = string.lower(data.checkbox.tooltipMainText or "")
+            local tooltipSubText = string.lower(data.checkbox.tooltipSubText or "")
+            local tooltipCVarName = string.lower(data.checkbox.tooltipCVarName or "")
 
-            -- Check if the query is found in the label or any tooltip text
-            if string.find(label, query) or string.find(tooltipTitle, query) or string.find(tooltipMainText, query) or string.find(tooltipSubText, query) or string.find(tooltipCVarName, query) then
+            -- Check if all query words are found in any of the searchable fields
+            if matchesQuery(label) or matchesQuery(tooltipTitle) or matchesQuery(tooltipMainText) or matchesQuery(tooltipSubText) or matchesQuery(tooltipCVarName) then
                 checkboxCount = checkboxCount + 1
 
                 -- Re-use or create a new checkbox from the pool
@@ -1880,6 +1904,8 @@ local function CreateSearchFrame()
                     data.checkbox:Click()
                 end)
 
+                applyRightClickScript(resultCheckBox, data.checkbox)
+
                 -- Reapply tooltip
                 if data.checkbox.tooltipMainText then
                     CreateTooltipTwo(resultCheckBox, data.checkbox.tooltipTitle, data.checkbox.tooltipMainText, data.checkbox.tooltipSubText, nil, data.checkbox.tooltipCVarName)
@@ -1900,15 +1926,15 @@ local function CreateSearchFrame()
         for _, data in ipairs(sliderList) do
             if sliderCount >= 13 then break end
 
-            -- Convert label to lowercase for case-insensitive comparison
-            local label = string.lower(data.label)
-            local tooltipTitle = data.slider.tooltipTitle and string.lower(data.slider.tooltipTitle) or ""
-            local tooltipMainText = data.slider.tooltipMainText and string.lower(data.slider.tooltipMainText) or ""
-            local tooltipSubText = data.slider.tooltipSubText and string.lower(data.slider.tooltipSubText) or ""
-            local tooltipCVarName = data.slider.tooltipCVarName and string.lower(data.slider.tooltipCVarName) or ""
+            -- Prepare the label and tooltip text
+            local label = string.lower(data.label or "")
+            local tooltipTitle = string.lower(data.slider.tooltipTitle or "")
+            local tooltipMainText = string.lower(data.slider.tooltipMainText or "")
+            local tooltipSubText = string.lower(data.slider.tooltipSubText or "")
+            local tooltipCVarName = string.lower(data.slider.tooltipCVarName or "")
 
-            -- Check if the query is found in the label or any tooltip text
-            if string.find(label, query) or string.find(tooltipTitle, query) or string.find(tooltipMainText, query) or string.find(tooltipSubText, query) or string.find(tooltipCVarName, query) then
+            -- Check if all query words are found in any of the searchable fields
+            if matchesQuery(label) or matchesQuery(tooltipTitle) or matchesQuery(tooltipMainText) or matchesQuery(tooltipSubText) or matchesQuery(tooltipCVarName) then
                 sliderCount = sliderCount + 1
 
                 -- Re-use or create a new slider from the slider pool
@@ -1933,16 +1959,12 @@ local function CreateSearchFrame()
 
                 -- Update slider properties and position
                 resultSlider:ClearAllPoints()
-                resultSlider:SetPoint("TOPLEFT", searchIcon, "TOPLEFT", 277, yOffsetSlider) -- Offset by 250 pixels to the right
-                --resultSlider:SetMinMaxValues(data.slider:GetMinMaxValues())
-
-                -- Temporarily remove the script
+                resultSlider:SetPoint("TOPLEFT", searchIcon, "TOPLEFT", 277, yOffsetSlider)
                 resultSlider:SetScript("OnValueChanged", nil)
                 resultSlider:SetMinMaxValues(data.slider:GetMinMaxValues())
                 resultSlider:SetValue(data.slider:GetValue())
                 resultSlider.Text:SetText(data.label .. ": " .. formatSliderValue(data.slider:GetValue()))
 
-                -- Reapply the script after setting the value
                 resultSlider:SetScript("OnValueChanged", function(self, value)
                     data.slider:SetValue(value) -- Trigger the original slider's script
                     resultSlider.Text:SetText(data.label .. ": " .. formatSliderValue(value))
@@ -1959,7 +1981,7 @@ local function CreateSearchFrame()
 
                 -- Show the slider and prepare for the next slider
                 resultSlider:Show()
-                yOffsetSlider = yOffsetSlider - 42  -- More space for sliders
+                yOffsetSlider = yOffsetSlider - 42
             end
         end
     end
@@ -2321,69 +2343,74 @@ local function guiGeneralTab()
     hidePlayerPower:SetPoint("TOPLEFT", hidePlayerName, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(hidePlayerPower, "Hide Resource/Power", "Hide Resource/Power under PlayerFrame. Rogue combopoints, Warlock shards etc.\n\n|cff32f795Right-click for class specific options.|r")
 
+    local classOptionsFrame
     local function OpenClassSpecificWindow()
-        -- Create a new frame
-        local classOptionsFrame = CreateFrame("Frame", "ClassOptionsFrame", UIParent, "BasicFrameTemplateWithInset")
-        classOptionsFrame:SetSize(185, 210)  -- Increased size for all classes
-        classOptionsFrame:SetPoint("CENTER")
-        classOptionsFrame:SetFrameStrata("HIGH")
-        classOptionsFrame:SetMovable(true)  -- Allow the frame to be movable
-        classOptionsFrame:EnableMouse(true)  -- Enable mouse interaction for dragging
-        classOptionsFrame:RegisterForDrag("LeftButton")  -- Set the mouse button to drag the frame
-        classOptionsFrame:SetScript("OnDragStart", classOptionsFrame.StartMoving)  -- Start moving the frame
-        classOptionsFrame:SetScript("OnDragStop", classOptionsFrame.StopMovingOrSizing)
-        classOptionsFrame.title = classOptionsFrame:CreateFontString(nil, "OVERLAY")
-        classOptionsFrame.title:SetFontObject("GameFontHighlight")
-        classOptionsFrame.title:SetPoint("LEFT", classOptionsFrame.TitleBg, "LEFT", 5, 0)
-        classOptionsFrame.title:SetText("Class Specific Options")
+        if not classOptionsFrame then
+            classOptionsFrame = CreateFrame("Frame", "ClassOptionsFrame", UIParent, "BasicFrameTemplateWithInset")
+            classOptionsFrame:SetSize(185, 210)
+            classOptionsFrame:SetPoint("CENTER")
+            classOptionsFrame:SetFrameStrata("DIALOG")
+            classOptionsFrame:SetMovable(true)
+            classOptionsFrame:EnableMouse(true)
+            classOptionsFrame:RegisterForDrag("LeftButton")
+            classOptionsFrame:SetScript("OnDragStart", classOptionsFrame.StartMoving)
+            classOptionsFrame:SetScript("OnDragStop", classOptionsFrame.StopMovingOrSizing)
+            classOptionsFrame.title = classOptionsFrame:CreateFontString(nil, "OVERLAY")
+            classOptionsFrame.title:SetFontObject("GameFontHighlight")
+            classOptionsFrame.title:SetPoint("LEFT", classOptionsFrame.TitleBg, "LEFT", 5, 0)
+            classOptionsFrame.title:SetText("Class Specific Options")
 
-        -- Create checkboxes for each class
-        local classes = {
-            { class = "Druid", var = "hidePlayerPowerNoDruid", color = RAID_CLASS_COLORS["DRUID"] },
-            { class = "Rogue", var = "hidePlayerPowerNoRogue", color = RAID_CLASS_COLORS["ROGUE"] },
-            { class = "Warlock", var = "hidePlayerPowerNoWarlock", color = RAID_CLASS_COLORS["WARLOCK"] },
-            { class = "Paladin", var = "hidePlayerPowerNoPaladin", color = RAID_CLASS_COLORS["PALADIN"] },
-            { class = "Death Knight", var = "hidePlayerPowerNoDeathKnight", color = RAID_CLASS_COLORS["DEATHKNIGHT"] },
-            { class = "Evoker", var = "hidePlayerPowerNoEvoker", color = RAID_CLASS_COLORS["EVOKER"] },
-            { class = "Monk", var = "hidePlayerPowerNoMonk", color = RAID_CLASS_COLORS["MONK"] },
-            { class = "Mage", var = "hidePlayerPowerNoMage", color = RAID_CLASS_COLORS["MAGE"] },
-        }
+            local classes = {
+                { class = "Druid", var = "hidePlayerPowerNoDruid", color = RAID_CLASS_COLORS["DRUID"] },
+                { class = "Rogue", var = "hidePlayerPowerNoRogue", color = RAID_CLASS_COLORS["ROGUE"] },
+                { class = "Warlock", var = "hidePlayerPowerNoWarlock", color = RAID_CLASS_COLORS["WARLOCK"] },
+                { class = "Paladin", var = "hidePlayerPowerNoPaladin", color = RAID_CLASS_COLORS["PALADIN"] },
+                { class = "Death Knight", var = "hidePlayerPowerNoDeathKnight", color = RAID_CLASS_COLORS["DEATHKNIGHT"] },
+                { class = "Evoker", var = "hidePlayerPowerNoEvoker", color = RAID_CLASS_COLORS["EVOKER"] },
+                { class = "Monk", var = "hidePlayerPowerNoMonk", color = RAID_CLASS_COLORS["MONK"] },
+                { class = "Mage", var = "hidePlayerPowerNoMage", color = RAID_CLASS_COLORS["MAGE"] },
+            }
 
-        local previousCheckbox
-        for i, classData in ipairs(classes) do
-            local classCheckbox = CreateFrame("CheckButton", nil, classOptionsFrame, "UICheckButtonTemplate")
-            classCheckbox:SetSize(24, 24)
-            classCheckbox.Text:SetText("Ignore " .. classData.class)
+            local previousCheckbox
+            for i, classData in ipairs(classes) do
+                local classCheckbox = CreateFrame("CheckButton", nil, classOptionsFrame, "UICheckButtonTemplate")
+                classCheckbox:SetSize(24, 24)
+                classCheckbox.Text:SetText("Ignore " .. classData.class)
 
-            -- Set the color of the checkbox label to the class color
-            local r, g, b = classData.color.r, classData.color.g, classData.color.b
-            classCheckbox.Text:SetTextColor(r, g, b)
+                -- Set the color of the checkbox label to the class color
+                local r, g, b = classData.color.r, classData.color.g, classData.color.b
+                classCheckbox.Text:SetTextColor(r, g, b)
 
-            -- Position the checkboxes
-            if i == 1 then
-                classCheckbox:SetPoint("TOPLEFT", classOptionsFrame, "TOPLEFT", 10, -30)
-            else
-                classCheckbox:SetPoint("TOPLEFT", previousCheckbox, "BOTTOMLEFT", 0, 3)
-            end
-
-            -- Set the state from the DB
-            classCheckbox:SetChecked(BetterBlizzFramesDB[classData.var])
-
-            -- Save the state back to the DB when toggled
-            classCheckbox:SetScript("OnClick", function(self)
-                if self:GetChecked() then
-                    BetterBlizzFramesDB[classData.var] = true
+                -- Position the checkboxes
+                if i == 1 then
+                    classCheckbox:SetPoint("TOPLEFT", classOptionsFrame, "TOPLEFT", 10, -30)
                 else
-                    BetterBlizzFramesDB[classData.var] = nil
+                    classCheckbox:SetPoint("TOPLEFT", previousCheckbox, "BOTTOMLEFT", 0, 3)
                 end
-                BBF.HideFrames()
-            end)
 
-            previousCheckbox = classCheckbox
+                -- Set the state from the DB
+                classCheckbox:SetChecked(BetterBlizzFramesDB[classData.var])
+
+                -- Save the state back to the DB when toggled
+                classCheckbox:SetScript("OnClick", function(self)
+                    BetterBlizzFramesDB[classData.var] = self:GetChecked() or nil
+                    BBF.HideFrames()
+                end)
+
+                previousCheckbox = classCheckbox
+            end
+            classOptionsFrame:Show()
+        else
+            -- Toggle visibility of the frame when the function is called
+            if classOptionsFrame:IsShown() then
+                classOptionsFrame:Hide()
+            else
+                classOptionsFrame:Show()
+            end
         end
     end
 
-    hidePlayerPower:SetScript("OnMouseUp", function(self, button)
+    hidePlayerPower:SetScript("OnMouseDown", function(self, button)
         if button == "RightButton" then
             OpenClassSpecificWindow()
         end
@@ -5423,9 +5450,35 @@ local function guiMisc()
     end)
     CreateTooltip(stealthIndicatorPlayer, "Add a blue border texture around the\nplayer frame during stealth abilities")
 
-    local useMiniFocusFrame = CreateCheckbox("useMiniFocusFrame", "Enable Mini-FocusFrame", guiMisc, nil, BBF.MiniFocusFrame)
-    useMiniFocusFrame:SetPoint("TOPLEFT", stealthIndicatorPlayer, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    local useMiniPlayerFrame = CreateCheckbox("useMiniPlayerFrame", "Enable Mini-PlayerFrame", guiMisc)
+    useMiniPlayerFrame:SetPoint("TOPLEFT", stealthIndicatorPlayer, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltip(useMiniPlayerFrame, "Removes healthbar and manabar from the PlayerFrame\nand just leaves Portrait and name.\n\nMove castbar and/or disable auras to your liking.")
+    useMiniPlayerFrame:HookScript("OnClick", function(self)
+        BBF.MiniFrame(PlayerFrame)
+        if not self:GetChecked() then
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        end
+    end)
+
+    local useMiniTargetFrame = CreateCheckbox("useMiniTargetFrame", "Enable Mini-TargetFrame", guiMisc)
+    useMiniTargetFrame:SetPoint("TOPLEFT", useMiniPlayerFrame, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltip(useMiniTargetFrame, "Removes healthbar and manabar from the TargetFrame\nand just leaves Portrait and name.\n\nMove castbar and/or disable auras to your liking.")
+    useMiniTargetFrame:HookScript("OnClick", function(self)
+        BBF.MiniFrame(TargetFrame)
+        if not self:GetChecked() then
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        end
+    end)
+
+    local useMiniFocusFrame = CreateCheckbox("useMiniFocusFrame", "Enable Mini-FocusFrame", guiMisc)
+    useMiniFocusFrame:SetPoint("TOPLEFT", useMiniTargetFrame, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(useMiniFocusFrame, "Removes healthbar and manabar from the FocusFrame\nand just leaves Portrait and name.\n\nMove castbar and/or disable auras to your liking.")
+    useMiniFocusFrame:HookScript("OnClick", function(self)
+        BBF.MiniFrame(FocusFrame)
+        if not self:GetChecked() then
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        end
+    end)
 
     local surrenderArena = CreateCheckbox("surrenderArena", "Surrender over Leaving Arena", guiMisc)
     surrenderArena:SetPoint("TOPLEFT", useMiniFocusFrame, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
@@ -5439,6 +5492,15 @@ local function guiMisc()
     hideTalkingHeads:SetPoint("TOPLEFT", druidOverstacks, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(hideTalkingHeads, "Hide Talking Heads Frame", "Hide the frame showing npcs talking during quests etc.")
     hideTalkingHeads:HookScript("OnClick", function(self)
+        if not self:GetChecked() then
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        end
+    end)
+
+    local hideExpAndHonorBar = CreateCheckbox("hideExpAndHonorBar", "Hide XP & Honor Bar", guiMisc, nil, BBF.HideFrames)
+    hideExpAndHonorBar:SetPoint("TOPLEFT", hideTalkingHeads, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(hideExpAndHonorBar, "Hide XP & Honor Bar", "Hide XP & Honor Bar.")
+    hideExpAndHonorBar:HookScript("OnClick", function(self)
         if not self:GetChecked() then
             StaticPopup_Show("BBF_CONFIRM_RELOAD")
         end

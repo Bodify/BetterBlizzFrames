@@ -4,6 +4,7 @@ local proposalTimeLeft = 40
 local queues = {}
 local dungeonQueuedTime
 local soundPlayed
+local isPveQueueActive
 
 local function StopUpdateFrame()
     if updateFrame then
@@ -159,6 +160,7 @@ local function HandleDungeonReadyDialog()
         end
 
         SetExpiresText(proposalTimeLeft, LFGDungeonReadyDialog)
+        isPveQueueActive = true
         StartUpdateFrame()
 
         -- Save the queue pop time and proposal time
@@ -192,7 +194,7 @@ local function UpdateBattlefieldStatus()
         end
     end
 
-    if not isConfirm then
+    if not isConfirm and not isPveQueueActive then
         bgId = nil
         StopUpdateFrame()
     end
@@ -224,6 +226,7 @@ function BBF.EnableQueueTimer()
             if event == "LFG_PROPOSAL_SHOW" then
                 HandleDungeonReadyDialog()
             elseif event == "LFG_PROPOSAL_SUCCEEDED" or event == "LFG_PROPOSAL_FAILED" then
+                isPveQueueActive = false
                 StopUpdateFrame()
                 -- Clear saved data once the proposal is accepted or failed
                 BetterBlizzFramesDB.pveQueuePopTime = nil

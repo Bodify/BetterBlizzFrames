@@ -5,6 +5,7 @@
 - Hide Resource/Power setting now has individual class settings. Access them by rightclicking the checkbox.
 - The "Normal Evoker Empowered Castbar" setting now also makes sArena castbars normal.
 - Misc: Hide Talking Heads setting.
+- Misc: Hide XP & Honor Bar setting.
 ### Tweak:
 - Nahj profile update
 - Tweak Pandemic Timers to never go below base duration (Rot and Decay refresh caused wrong timings)
@@ -13,6 +14,7 @@
 - Fix issue with the new Misc settings for Queue Status Eye from last patch making the eye unclickable with the settings on.
 - Fix/improve the Fade Out Micromenu setting being a bit wonky.
 - Fix rare issue with QueueTimer displaying wrong accept timer for PvE.
+- Fix issue with QueueTimer stopping updating on queue pop if also queued for PvP same time.
 
 # BetterBlizzFrames 1.5.6
 ## The War Within

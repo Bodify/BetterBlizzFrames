@@ -989,73 +989,102 @@ local function HookClassComboPoints()
 end
 
 --########################################################
-function BBF.MiniFocusFrame()
-    if BetterBlizzFramesDB.useMiniFocusFrame then
-        FocusFrame.TargetFrameContent.TargetFrameContentMain.HealthBarsContainer:SetAlpha(0)
-        FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar:SetAlpha(0)
+function BBF.MiniFrame(frame)
+    local db = BetterBlizzFramesDB
+    local useMiniFrame
 
-        if not FocusFrame.TargetFrameContainer.compactRing then
-            FocusFrame.TargetFrameContainer.compactRing = FocusFrame.TargetFrameContainer:CreateTexture(nil, "ARTWORK")
-            FocusFrame.TargetFrameContainer.compactRing:SetAtlas("Map_Faction_Ring")
-            FocusFrame.TargetFrameContainer.compactRing:SetSize(71,70)
-            FocusFrame.TargetFrameContainer.compactRing:SetPoint("CENTER", FocusFrame.TargetFrameContainer.Portrait, "CENTER", 0, -2)
+    -- Determine which setting to use based on frame type
+    if frame == PlayerFrame then
+        useMiniFrame = db.useMiniPlayerFrame
+    elseif frame == TargetFrame then
+        useMiniFrame = db.useMiniTargetFrame
+    elseif frame == FocusFrame then
+        useMiniFrame = db.useMiniFocusFrame
+    end
 
-            if BetterBlizzFramesDB.darkModeUi then
-                FocusFrame.TargetFrameContainer.compactRing:SetDesaturated(true)
-                local color = BetterBlizzFramesDB.darkModeColor
-                FocusFrame.TargetFrameContainer.compactRing:SetVertexColor(color,color,color)
+    if not useMiniFrame then return end
+
+    -- Set up common variables for target/focus frames
+    local healthBar, manaBar, compactRing, frameTexture, flash, reputationColor, levelText, name
+
+    if frame ~= PlayerFrame then
+        -- Variables for Target and Focus Frames
+        healthBar = frame.TargetFrameContent.TargetFrameContentMain.HealthBarsContainer
+        manaBar = frame.TargetFrameContent.TargetFrameContentMain.ManaBar
+        compactRing = frame.TargetFrameContainer.compactRing
+        frameTexture = frame.TargetFrameContainer.FrameTexture
+        flash = frame.TargetFrameContainer.Flash
+        reputationColor = frame.TargetFrameContent.TargetFrameContentMain.ReputationColor
+        levelText = frame.TargetFrameContent.TargetFrameContentMain.LevelText
+        name = frame.TargetFrameContent.TargetFrameContentMain.cleanName or frame.TargetFrameContent.TargetFrameContentMain.Name
+
+        -- Common customization for Target and Focus Frames
+        healthBar:SetAlpha(0)
+        manaBar:SetAlpha(0)
+
+        if not compactRing then
+            compactRing = frame.TargetFrameContainer:CreateTexture(nil, "ARTWORK")
+            compactRing:SetAtlas("Map_Faction_Ring")
+            compactRing:SetSize(71, 70)
+            compactRing:SetPoint("CENTER", frame.TargetFrameContainer.Portrait, "CENTER", 0, -2)
+            frame.TargetFrameContainer.compactRing = compactRing
+
+            if db.darkModeUi then
+                compactRing:SetDesaturated(true)
+                local color = db.darkModeColor
+                compactRing:SetVertexColor(color, color, color)
             end
         end
+        compactRing:Show()
 
-        if FocusFrame.TargetFrameContainer.compactRing then
-            FocusFrame.TargetFrameContainer.compactRing:Show()
-        end
+        frameTexture:Hide()
+        flash:SetAlpha(0)
+        reputationColor:SetAlpha(0)
 
-        FocusFrame.TargetFrameContainer.FrameTexture:Hide()
-        --FocusFrame.TargetFrameContainer.Flash:Hide()
-        FocusFrame.TargetFrameContainer.Flash:SetAlpha(0)
-        FocusFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:SetAlpha(0)
-
-        --Name
-        -- if not FocusFrame.TargetFrameContent.TargetFrameContentMain.cleanName then
-        --     BBF.ChangeNameFocus()
-        -- end
-        local name = FocusFrame.TargetFrameContent.TargetFrameContentMain.cleanName or FocusFrame.TargetFrameContent.TargetFrameContentMain.Name
         name:SetScale(1.4)
         name:ClearAllPoints()
         name:SetJustifyH("RIGHT")
-        name:SetPoint("RIGHT", FocusFrame.TargetFrameContainer.Portrait, "LEFT", -10, 10)
+        name:SetPoint("RIGHT", frame.TargetFrameContainer.Portrait, "LEFT", -10, 10)
 
-        FocusFrame.TargetFrameContent.TargetFrameContentMain.LevelText:Hide()
-        FocusFrame.TargetFrameContent.TargetFrameContentMain.LevelText:ClearAllPoints()
-        FocusFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetPoint("CENTER", hiddenFrame, "CENTER")
+        levelText:Hide()
+        levelText:ClearAllPoints()
+        levelText:SetPoint("CENTER", hiddenFrame, "CENTER")
+
     else
-        --reset to original
-        FocusFrame.TargetFrameContent.TargetFrameContentMain.HealthBarsContainer:SetAlpha(1)
-        FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar:SetAlpha(1)
+        -- Variables specific to the Player Frame
+        healthBar = frame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer
+        manaBar = frame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar
+        frameTexture = frame.PlayerFrameContainer.FrameTexture
+        flash = frame.PlayerFrameContainer.FrameFlash
+        name = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.cleanName or PlayerName
 
-        if FocusFrame.TargetFrameContainer.compactRing then
-            FocusFrame.TargetFrameContainer.compactRing:Hide()
-        end
+        -- Customize Player Frame differently if needed
+        healthBar:SetAlpha(0)
+        manaBar:SetAlpha(0)
+        frameTexture:SetParent(hiddenFrame)
+        flash:SetAlpha(0)
+        PlayerFrame.PlayerFrameContainer.PlayerPortraitMask:SetAtlas("CircleMask")
+        PlayerFrame.PlayerFrameContainer.PlayerPortraitMask:SetSize(57,57)
 
-        FocusFrame.TargetFrameContainer.FrameTexture:Show()
-        --FocusFrame.TargetFrameContainer.Flash:Hide()
-        FocusFrame.TargetFrameContainer.Flash:SetAlpha(1)
-        if not BetterBlizzFramesDB.hideFocusReputationColor then
-            FocusFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:SetAlpha(1)
-        end
+        if not compactRing then
+            compactRing = frame.PlayerFrameContainer:CreateTexture(nil, "ARTWORK")
+            compactRing:SetAtlas("Map_Faction_Ring")
+            compactRing:SetSize(71, 70)
+            compactRing:SetPoint("CENTER", frame.PlayerFrameContainer.PlayerPortrait, "CENTER", 0, -2)
+            frame.PlayerFrameContainer.compactRing = compactRing
 
-        if not BetterBlizzFramesDB.hideLevelText then
-            FocusFrame.TargetFrameContent.TargetFrameContentMain.LevelText:Show()
+            if db.darkModeUi then
+                compactRing:SetDesaturated(true)
+                local color = db.darkModeColor
+                compactRing:SetVertexColor(color, color, color)
+            end
         end
+        compactRing:Show()
 
-        local ogName = FocusFrame.TargetFrameContent.TargetFrameContentMain.Name
-        if FocusFrame.TargetFrameContent.TargetFrameContentMain.cleanName then
-            FocusFrame.TargetFrameContent.TargetFrameContentMain.cleanName:SetScale(ogName:GetScale())
-            FocusFrame.TargetFrameContent.TargetFrameContentMain.cleanName:ClearAllPoints()
-            FocusFrame.TargetFrameContent.TargetFrameContentMain.cleanName:SetJustifyH(ogName:GetJustifyH())
-            FocusFrame.TargetFrameContent.TargetFrameContentMain.cleanName:SetPoint(ogName:GetPoint())
-        end
+        name:SetScale(1.4)
+        name:ClearAllPoints()
+        name:SetJustifyH("LEFT")
+        name:SetPoint("TOP", frame.PlayerFrameContainer, "TOP", 32, -20)
     end
 end
 
@@ -1364,9 +1393,9 @@ Frame:SetScript("OnEvent", function(...)
                 BBF.PlayerReputationColor()
                 BBF.ClassColorPlayerName()
                 BBF.CheckForAuraBorders()
-                if BetterBlizzFramesDB.useMiniFocusFrame then
-                    BBF.MiniFocusFrame()
-                end
+                BBF.MiniFrame(FocusFrame)
+                BBF.MiniFrame(TargetFrame)
+                BBF.MiniFrame(PlayerFrame)
                 BBF.UpdateCastbars()
                 BBF.ChangeLossOfControlScale()
                 BBF.ChangeCastbarSizes()
