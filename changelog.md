@@ -3,10 +3,12 @@
 ### New stuff:
 - Search feature! Top right SearchBox that normally searches Blizzard settings has now been hijacked and will search BetterBlizzFrames settings instead if you have the BBF settings open. (WIP)
 - Hide Resource/Power setting now has individual class settings. Access them by rightclicking the checkbox.
-- The "Normal Evoker Empowered Castbar" setting now also makes sArena castbars normal.
 - Misc: Hide Talking Heads setting.
 - Misc: Hide XP & Honor Bar setting.
+- MIsc: Mini-TargetFrame setting.
+- Misc: Mini-PlayerFrame setting.
 ### Tweak:
+- The "Normal Evoker Empowered Castbar" setting now also makes sArena castbars normal.
 - Nahj profile update
 - Tweak Pandemic Timers to never go below base duration (Rot and Decay refresh caused wrong timings)
 ### Bugfix:

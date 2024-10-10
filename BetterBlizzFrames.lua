@@ -308,25 +308,6 @@ local function FetchAndSaveValuesOnFirstLogin()
 
     local function GetUIInfo() --uhhh yeah idk, not needed delete eventually TODO:
         if BBF.variablesLoaded then
---             local function ShownChecker()
---                 if PlayerFrame:IsShown() then
---                     BetterBlizzFramesDB.hidePrestigeBadge = PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.PrestigeBadge:GetAlpha() ~= 1 or not PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.PrestigeBadge:IsShown()
---                     BetterBlizzFramesDB.targetPrestigeBadgeAlpha = TargetFrame.TargetFrameContent.TargetFrameContentContextual.PrestigeBadge:GetAlpha() ~= 1 or not TargetFrame.TargetFrameContent.TargetFrameContentContextual.PrestigeBadge:IsShown()
---                     BetterBlizzFramesDB.focusPrestigeBadgeAlpha = FocusFrame.TargetFrameContent.TargetFrameContentContextual.PrestigeBadge:GetAlpha() ~= 1 or not FocusFrame.TargetFrameContent.TargetFrameContentContextual.PrestigeBadge:IsShown()
-
--- --[[
---                     print(BetterBlizzFramesDB.hideTargetPrestigeBadge)
---                     BetterBlizzFramesDB.hideTargetPrestigeBadge = not TargetFrame.TargetFrameContent.TargetFrameContentContextual.PrestigePortrait:IsShown()
---                     print(BetterBlizzFramesDB.hideTargetPrestigeBadge)              
--- ]]
---                     BetterBlizzFramesDB.hasCheckedUi = true
---                 else
---                     C_Timer.After(0.1, function()
---                         ShownChecker()
---                     end)
---                 end
---             end
---             ShownChecker()
             BetterBlizzFramesDB.hasCheckedUi = true
         else
             C_Timer.After(1, function()
