@@ -69,7 +69,7 @@ local function updateFrameColorToggleVer(frame, unit)
     if classColorsOn then
         local color, isFriendly = getUnitColor(unit)
         if color then
-            if isFriendly then
+            if isFriendly and not frame.bbfChangedTexture then
                 frame:SetStatusBarDesaturated(false)
                 frame:SetStatusBarColor(1, 1, 1)
             else
@@ -105,7 +105,7 @@ local function UpdateHealthColor(frame, unit)
     if unit == "player" and skipPlayer then return end
     local color, isFriendly = getUnitColor(unit)
     if color then
-        if isFriendly then
+        if isFriendly and not frame.bbfChangedTexture then
             frame:SetStatusBarDesaturated(false)
             frame:SetStatusBarColor(1, 1, 1)
         else
@@ -162,7 +162,7 @@ end
 function BBF.UpdateFrameColor(frame, unit)
     local color = getUnitColor(unit)
     if color then
-        if color == "FRIENDLY" then
+        if color == "FRIENDLY" and not frame.bbfChangedTexture then
             frame:SetStatusBarDesaturated(false)
             frame:SetStatusBarColor(1, 1, 1)
         else

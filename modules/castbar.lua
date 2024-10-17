@@ -898,42 +898,39 @@ end)
 local evokerCastbarsHooked
 function BBF.HookCastbarsForEvoker()
     if (not evokerCastbarsHooked and BetterBlizzFramesDB.normalCastbarForEmpoweredCasts) then
-        hooksecurefunc(CastingBarMixin, "OnEvent", function(self, event, ...)
-            if self.unit and self.unit:find("target") or self.unit:find("focus") then
-                if ( event == "UNIT_SPELLCAST_EMPOWER_START" ) then
-                    if not self:IsForbidden() then
-                        if self.barType == "empowered" or self.barType == "standard" then
-                            self:SetStatusBarTexture("ui-castingbar-filling-standard")
-                        end
-                        self.ChargeTier1:Hide()
-                        self.ChargeTier2:Hide()
-                        self.ChargeTier3:Hide()
-                        if self.ChargeTier4 then
-                            self.ChargeTier4:Hide()
-                        end
-                    end
-                end
-            end
-        end)
-
-        local castBars = {}
+        local castBars = {
+            TargetFrameSpellBar,
+            FocusFrameSpellBar,
+        }
         local function NormalEvokerCastbar(castBar)
             if castBar.empoweredFix then return end
+
+            local function UpdateSparkPosition(castBar)
+                local progressPercent = castBar.value / castBar.maxValue
+                local newX = castBar:GetWidth() * progressPercent
+                castBar.Spark:SetPoint("CENTER", castBar, "LEFT", newX, 0)
+            end
+
+            local function HideChargeTiers(castBar)
+                castBar.ChargeTier1:Hide()
+                castBar.ChargeTier2:Hide()
+                castBar.ChargeTier3:Hide()
+                if castBar.ChargeTier4 then
+                    castBar.ChargeTier4:Hide()
+                end
+            end
 
             castBar:HookScript("OnEvent", function(self)
                 if self:IsForbidden() then return end
                 if self.barType == "uninterruptable" then
                     if self.ChargeTier1 then
-                        self.ChargeTier1:Hide()
-                        self.ChargeTier2:Hide()
-                        self.ChargeTier3:Hide()
                         if self.isSArena then
                             self:SetStatusBarTexture("Interface\\RaidFrame\\Raid-Bar-Hp-Fill")
                             self:SetStatusBarColor(0.7, 0.7, 0.7, 1)
+                        else
+                            self:SetStatusBarTexture("UI-CastingBar-Uninterruptable")
                         end
-                    end
-                    if self.ChargeTier4 then
-                        self.ChargeTier4:Hide()
+                        HideChargeTiers(self)
                     end
                 elseif self.barType == "empowered" then
                     if self.isSArena then
@@ -942,12 +939,23 @@ function BBF.HookCastbarsForEvoker()
                     else
                         self:SetStatusBarTexture("ui-castingbar-filling-standard")
                     end
-                    self.ChargeTier1:Hide()
-                    self.ChargeTier2:Hide()
-                    self.ChargeTier3:Hide()
-                    if self.ChargeTier4 then
-                        self.ChargeTier4:Hide()
+                    HideChargeTiers(self)
+                end
+            end)
+
+            local sparkWidth = castBar.isSArena and 2 or 6
+            castBar:HookScript("OnUpdate", function(self)
+                if self:IsForbidden() then return end
+                if self.barType == "uninterruptable" then
+                    if self.ChargeTier1 then
+                        self.Spark:SetAtlas("UI-CastingBar-Pip")
+                        self.Spark:SetSize(sparkWidth,16)
+                        UpdateSparkPosition(castBar)
                     end
+                elseif self.barType == "empowered" then
+                    self.Spark:SetAtlas("UI-CastingBar-Pip")
+                    self.Spark:SetSize(sparkWidth,16)
+                    UpdateSparkPosition(castBar)
                 end
             end)
 

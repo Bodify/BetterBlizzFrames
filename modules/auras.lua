@@ -349,7 +349,7 @@ local function ShouldShowBuff(unit, auraData, frameType)
     local duration = auraData.duration
     local expirationTime = auraData.expirationTime
     local caster = auraData.sourceUnit
-    local isPurgeable = auraData.isStealable
+    local isPurgeable = auraData.isStealable or (displayDispelGlowAlways and auraData.dispelName == "Magic")
     local castByPlayer = (caster == "player" or caster == "pet")
     local db = BetterBlizzFramesDB
     local filterOverride = BBF.filterOverride

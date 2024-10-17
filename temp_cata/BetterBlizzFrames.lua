@@ -6,7 +6,7 @@ BBF = BBF or {}
 -- Things are getting more messy need a lot of cleaning lol
 
 local addonVersion = "1.00" --too afraid to to touch for now
-local addonUpdates = "1.5.7"
+local addonUpdates = "1.5.8"
 local sendUpdate = false
 BBF.VersionNumber = addonUpdates
 BBF.variablesLoaded = false
@@ -973,7 +973,17 @@ function BBF.FixStupidBlizzPTRShit()
 
         BBF.ActionBarIconZoom()
         ChangeHotkeyWidth(32)
+
+        if not BBF.hookedActionBarTextWidth then
+            hooksecurefunc("ActionButton_UpdateHotkeys", function(self)
+                if BBF.hotkeyCancel then return end
+                self.HotKey:SetWidth(32)
+            end)
+            BBF.hookedActionBarTextWidth = true
+        end
+        BBF.hotkeyCancel = nil
     else
+        BBF.hotkeyCancel = true
         MainMenuBarTextureExtender:Show()
         ChangeHotkeyWidth(28)
         restoreSettings()

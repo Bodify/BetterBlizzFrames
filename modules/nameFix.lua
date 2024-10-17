@@ -408,6 +408,7 @@ local function ChangeName(frame, unit, party, tot)
             end
         end
     end
+    frame.cleanName:SetFont(ogFontName, ogFontHeight, ogFontFlags)
     if party then
         local a, p, a2, x, y = originalNameObject:GetPoint()
         frame.cleanName:ClearAllPoints()

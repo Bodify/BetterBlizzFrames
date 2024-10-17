@@ -1,3 +1,22 @@
+# BetterBlizzFrames 1.5.8
+## The War Within
+### New stuff:
+- General: "Hide shadow" setting that hides the dark texture behind names on Player, Target, Focus, ToT & Pet.
+- Misc: Hide ActionBar Big Proc Glow
+- Misc: Hide ActionBar Cast Animation
+- Misc: UIWidgetPowerBarFrame scale setting (Dragonflying charges, also ahcievements etc I think? idk I just PvP)
+### Tweak:
+- Removed a few purgeable auras accidentally added to the pvp blacklist. Purgeable auras can be useful info so should not be hidden.
+- Hide XP & Honor Bar setting now shows them when you opener character panel.
+- Minor tweaks to evoker normal castbar setting (changed the spark texture as well to be like default)
+- Purgeable Buff filter now also activates if "Always show purge texture" is enabled. Used to only follow Blizzard logic requiring a purge ability.
+- Mini adjustment to Mini-Frame settings. Hopefully better now?
+### Bugfix:
+- Fix Darkmode setting missing some Dominos Actionbars.
+## Cataclysm
+### Bugfix:
+- Fix issue with a Blizzard update resetting the OCD settings new ActionButton HotKey Width.
+
 # BetterBlizzFrames 1.5.7
 ## The War Within
 ### New stuff:
@@ -5,7 +24,7 @@
 - Hide Resource/Power setting now has individual class settings. Access them by rightclicking the checkbox.
 - Misc: Hide Talking Heads setting.
 - Misc: Hide XP & Honor Bar setting.
-- MIsc: Mini-TargetFrame setting.
+- Misc: Mini-TargetFrame setting.
 - Misc: Mini-PlayerFrame setting.
 ### Tweak:
 - The "Normal Evoker Empowered Castbar" setting now also makes sArena castbars normal.

@@ -1,7 +1,7 @@
 -- I did not know what a variable was when I started. I know a little bit more now and I am so sorry.
 
 local addonVersion = "1.00" --too afraid to to touch for now
-local addonUpdates = "1.5.7"
+local addonUpdates = "1.5.8"
 local sendUpdate = false
 BBF.VersionNumber = addonUpdates
 BBF.variablesLoaded = false
@@ -49,6 +49,7 @@ local defaultSettings = {
     minimizeObjectiveTracker = true,
     fadeMicroMenuExceptQueue = true,
     surrenderArena = true,
+    uiWidgetPowerBarScale = 1,
 
     --Target castbar
     playerCastbarIconXPos = 0,
@@ -1007,7 +1008,7 @@ function BBF.MiniFrame(frame)
             compactRing = frame.TargetFrameContainer:CreateTexture(nil, "ARTWORK")
             compactRing:SetAtlas("Map_Faction_Ring")
             compactRing:SetSize(71, 70)
-            compactRing:SetPoint("CENTER", frame.TargetFrameContainer.Portrait, "CENTER", 0, -2)
+            compactRing:SetPoint("CENTER", frame.TargetFrameContainer.Portrait, "CENTER", 1, -2)
             frame.TargetFrameContainer.compactRing = compactRing
 
             if db.darkModeUi then
@@ -1025,7 +1026,7 @@ function BBF.MiniFrame(frame)
         name:SetScale(1.4)
         name:ClearAllPoints()
         name:SetJustifyH("RIGHT")
-        name:SetPoint("RIGHT", frame.TargetFrameContainer.Portrait, "LEFT", -10, 10)
+        name:SetPoint("RIGHT", frame.TargetFrameContainer.Portrait, "LEFT", -9, 10)
 
         levelText:Hide()
         levelText:ClearAllPoints()
@@ -1046,6 +1047,8 @@ function BBF.MiniFrame(frame)
         flash:SetAlpha(0)
         PlayerFrame.PlayerFrameContainer.PlayerPortraitMask:SetAtlas("CircleMask")
         PlayerFrame.PlayerFrameContainer.PlayerPortraitMask:SetSize(57,57)
+        local a,b,c,d,e = PlayerFrame.PlayerFrameContainer.PlayerPortraitMask:GetPoint()
+        PlayerFrame.PlayerFrameContainer.PlayerPortraitMask:SetPoint(a,b,c,d,e-2)
 
         if not compactRing then
             compactRing = frame.PlayerFrameContainer:CreateTexture(nil, "ARTWORK")
@@ -1135,6 +1138,141 @@ function BBF.RecolorHpTempLoss()
         end
     end
 end
+
+function BBF.ResizeUIWidgetPowerBarFrame()
+    if not UIWidgetPowerBarContainerFrame then return end
+    local scale = BetterBlizzFramesDB.uiWidgetPowerBarScale
+    if scale == 1 and UIWidgetPowerBarContainerFrame:GetScale() == 1 then return end
+    UIWidgetPowerBarContainerFrame:SetScale(scale)
+end
+
+local texture = "Interface\\Addons\\BetterBlizzPlates\\media\\DragonflightTextureHD"
+
+local manaTextureUnits = {}
+
+-- -- Helper function to change the texture and retain the original draw layer
+-- local function ApplyTextureChange(type, statusBar, parent)
+--     -- Get the original texture and draw layer
+--     local originalTexture = statusBar:GetStatusBarTexture()
+--     local originalLayer = originalTexture:GetDrawLayer()
+
+--     -- Change the texture
+--     statusBar:SetStatusBarTexture(texture)
+--     statusBar.bbfChangedTexture = true
+
+--     -- Restore the original draw layer
+--     originalTexture:SetDrawLayer(originalLayer)
+
+--     -- Hook SetStatusBarTexture to ensure the texture remains consistent
+--     if parent and type == "health" then
+--         hooksecurefunc(parent, "Update", function()
+--             statusBar:SetStatusBarTexture(texture)
+--             originalTexture:SetDrawLayer(originalLayer)
+--         end)
+--     elseif type == "mana" then
+--         -- Function to get the color of the unit's current power type and apply it
+--         local function SetUnitPowerColor(manabar, unit)
+--             -- Retrieve the unit's power type
+--             local _, powerToken = UnitPowerType(unit)
+--             -- Use the WoW PowerBarColor table to get the color
+--             local color = PowerBarColor[powerToken]
+--             if color then
+--                 manabar:SetStatusBarColor(color.r, color.g, color.b)
+--             end
+--         end
+--         SetUnitPowerColor(statusBar, statusBar.unit)
+
+--         if not BBF.hookedManaBars then
+--             hooksecurefunc("UnitFrameManaBar_UpdateType", function(manabar)
+--                 if not manaTextureUnits[manabar.unit] then return end
+--                 manabar:SetStatusBarTexture(texture)
+--                 SetUnitPowerColor(manabar, manabar.unit)
+--             end)
+--             BBF.hookedManaBars = true
+--         end
+--     end
+-- end
+
+-- -- Main function to apply texture changes to raid frames and additional frames
+-- function HookUnitFrameTextures()
+--     -- Hook Player, Target & Focus Healthbars
+--     if true then
+--         ApplyTextureChange("health", PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer.HealthBar)
+--         ApplyTextureChange("health", TargetFrame.TargetFrameContent.TargetFrameContentMain.HealthBarsContainer.HealthBar, TargetFrame)
+--         ApplyTextureChange("health", FocusFrame.TargetFrameContent.TargetFrameContentMain.HealthBarsContainer.HealthBar, FocusFrame)
+--     end
+
+--     -- Hook Target of targets Healthbars
+--     if true then
+--         ApplyTextureChange("health", TargetFrame.totFrame.HealthBar, TargetFrame.totFrame)
+--         ApplyTextureChange("health", FocusFrame.totFrame.HealthBar, FocusFrame.totFrame)
+--     end
+
+--     -- Hook Player, Target & Focus Manabars
+--     if true then
+--         manaTextureUnits["player"] = true
+--         manaTextureUnits["target"] = true
+--         manaTextureUnits["focus"] = true
+--         ApplyTextureChange("mana", PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar)
+--         ApplyTextureChange("mana", TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar)
+--         ApplyTextureChange("mana", FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar)
+--     end
+
+--     -- Hook Target of targets Manabars
+--     if true then
+--         manaTextureUnits["targettarget"] = true
+--         manaTextureUnits["focustarget"] = true
+--         ApplyTextureChange("mana", TargetFrame.totFrame.ManaBar)
+--         ApplyTextureChange("mana", FocusFrame.totFrame.ManaBar)
+--     end
+-- end
+
+-- local function SetRaidFrameTextures(frame)
+--     if not frame:IsShown() then return end
+
+--     -- Retexture healthbars
+--     local originalTexture = frame.healthBar:GetStatusBarTexture()
+--     local originalLayer = originalTexture:GetDrawLayer()
+--     frame.healthBar:SetStatusBarTexture(texture)
+--     originalTexture:SetDrawLayer(originalLayer)
+
+--     -- Retexture manabars
+--     if true then
+--         local originalTexture = frame.powerBar:GetStatusBarTexture()
+--         if not originalTexture then return end
+--         local originalLayer = originalTexture:GetDrawLayer()
+--         frame.powerBar:SetStatusBarTexture(texture)
+--         originalTexture:SetDrawLayer(originalLayer)
+--     end
+-- end
+
+-- local function HookRaidFrameTextures()
+--     hooksecurefunc("DefaultCompactUnitFrameSetup", SetRaidFrameTextures)
+-- end
+
+-- local function HookTextures()
+--     -- Hook UnitFrames
+--     if true then
+--         HookUnitFrameTextures()
+--     end
+
+--     -- Hook Raidframes
+--     if true then
+--         HookRaidFrameTextures()
+--     end
+
+--     C_Timer.After(1, function()
+--         for i = 1, 5 do
+--             local frame = _G["CompactPartyFramePet"..i]
+--             if frame then
+--                 SetRaidFrameTextures(frame)
+--             end
+--         end
+--     end)
+
+-- end
+
+--HookTextures()
 
 function BBF.HideTalkingHeads()
     if not BetterBlizzFramesDB.hideTalkingHeads then return end
@@ -1268,6 +1406,49 @@ function BBF.MinimizeObjectiveTracker()
     end
 end
 
+function BBF.ActionBarMods()
+    local db = BetterBlizzFramesDB
+
+    -- Hide cast animation on action bar icons
+    if db.hideActionBarCastAnimation then
+        if not BBF.hideActionBarCastAnimation then
+            local events = {
+                "UNIT_SPELLCAST_INTERRUPTED",
+                "UNIT_SPELLCAST_SUCCEEDED",
+                "UNIT_SPELLCAST_FAILED",
+                "UNIT_SPELLCAST_START",
+                "UNIT_SPELLCAST_STOP",
+                "UNIT_SPELLCAST_CHANNEL_START",
+                "UNIT_SPELLCAST_CHANNEL_STOP",
+                "UNIT_SPELLCAST_RETICLE_TARGET",
+                "UNIT_SPELLCAST_RETICLE_CLEAR",
+                "UNIT_SPELLCAST_EMPOWER_START",
+                "UNIT_SPELLCAST_EMPOWER_STOP",
+            }
+
+            for _, event in ipairs(events) do
+                ActionBarActionEventsFrame:UnregisterEvent(event)
+            end
+            BBF.hideActionBarCastAnimation = true
+        end
+    end
+
+    -- Hide big proc glow on action bars
+    if db.hideActionBarBigProcGlow then
+        if not BBF.hideActionBarBigProcGlow then
+            hooksecurefunc("ActionButton_ShowOverlayGlow", function(button)
+                if button.SpellActivationAlert.ProcStartAnim:IsPlaying() then
+                    button.SpellActivationAlert:SetAlpha(0)
+                    C_Timer.After(0.26, function()
+                        button.SpellActivationAlert:SetAlpha(1)
+                    end)
+                end
+            end)
+            BBF.hideActionBarBigProcGlow = true
+        end
+    end
+end
+
 local function TurnTestModesOff()
     BetterBlizzFramesDB.absorbIndicatorTestMode = false
     BetterBlizzFramesDB.partyCastBarTestMode = false
@@ -1297,14 +1478,7 @@ Frame:SetScript("OnEvent", function(...)
     DisableClickForClassSpecificFrame()
     BBF.MoveToTFrames()
     BBF.HookHealthbarColors()
-    C_Timer.After(1, function()
-       -- BBF.HideFrames()
-        --BBF.MoveToTFrames()
-       -- BBF.ChangeCastbarSizes()
-        if BetterBlizzFramesDB.partyCastbars then
-            --BBF.CreateCastbars()
-        end
-    end)
+    BBF.ResizeUIWidgetPowerBarFrame()
 
     local function LoginVariablesLoaded()
         if BBF.variablesLoaded then
@@ -1346,7 +1520,7 @@ Frame:SetScript("OnEvent", function(...)
                 BBF.OnUpdateName()
             end
             if BetterBlizzFramesDB.removeRealmNames or (BetterBlizzFramesDB.partyArenaNames or BetterBlizzFramesDB.targetAndFocusArenaNames) then
-                BBF.AllCaller()
+                BBF.AllCaller()--bodify
             end
 
             if BetterBlizzFramesDB.playerFrameOCD then
@@ -1372,7 +1546,7 @@ Frame:SetScript("OnEvent", function(...)
                 BBF.ToggleCastbarInterruptIcon()
                 BBF.DarkmodeFrames()
                 BBF.PlayerReputationColor()
-                BBF.ClassColorPlayerName()
+                BBF.ClassColorPlayerName()--bodify
                 BBF.CheckForAuraBorders()
                 BBF.MiniFrame(FocusFrame)
                 BBF.MiniFrame(TargetFrame)
@@ -1496,6 +1670,7 @@ First:SetScript("OnEvent", function(_, event, addonName)
             BBF.DruidBlueComboPoints()
             BBF.AbsorbCaller()
             BBF.HookStatusBarText()
+            BBF.ActionBarMods()
             --TurnOnEnabledFeaturesOnLogin()
 
             if BetterBlizzFramesDB.hideLossOfControlFrameLines == nil then
@@ -1545,6 +1720,46 @@ First:SetScript("OnEvent", function(_, event, addonName)
                     BetterBlizzFramesDB.optimizedAuraLists = true
                 else
                     BetterBlizzFramesDB.optimizedAuraLists = true
+                end
+            end
+
+            if not BetterBlizzFramesDB.cleanedAuraBlacklist then
+                local auraBlacklistFaulty = {
+                    173183,  -- Elemental Blast: Haste
+                    173184,  -- Elemental Blast: Mastery
+                    117828,  -- Backdraft
+                    59052,   -- Rime
+                    202425,  -- Warrior of Elune
+                    443454,  -- Ancestral Swiftness
+                    260734,  -- Master of the Elements
+                    266030,  -- Reverse Entropy
+                    118522,  -- Elemental Blast: Critical Strike
+                    156322,  -- Eternal Flame
+                    236502,  -- Tidebringer
+                    53390,   -- Tidal Waves
+                    377253,  -- Frostwhelp's Aid
+                    205146,  -- Demonic Calling
+                    390105,  -- Save Them All
+                    209746,  -- Moonkin Aura
+                    116768,  -- Blackout Kick!
+                    376850,  -- Power Swell
+                    383997,  -- Arcane Tempo
+                }
+
+                -- Remove accidentally purgeable auras added to blacklist preset
+                local removedAura = false
+                for _, faultyId in ipairs(auraBlacklistFaulty) do
+                    if BetterBlizzFramesDB.auraBlacklist[faultyId] then
+                        print("BBF: Removed dispellable aura in blacklist: " .. (BetterBlizzFramesDB.auraBlacklist[faultyId].name or "Unknown") .. " (" .. faultyId .. ")")
+                        BetterBlizzFramesDB.auraBlacklist[faultyId] = nil
+                        removedAura = true
+                    end
+                end
+                BetterBlizzFramesDB.cleanedAuraBlacklist = true
+                if removedAura then
+                    C_Timer.After(3, function()
+                        DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|aBetter|cff00c0ffBlizz|rFrames: Removed roughly 20 auras from from the PvP blacklist preset (and your imported blacklist) due to them accidentally being added. They are purgeable and can be useful info and should not be blacklisted due to that.")
+                    end)
                 end
             end
 
