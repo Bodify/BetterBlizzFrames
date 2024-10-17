@@ -14,6 +14,8 @@
 ### Bugfix:
 - Fix Darkmode setting missing some Dominos Actionbars.
 ## Cataclysm
+### Tweak:
+- Update to 4.4.1 Settings API Support
 ### Bugfix:
 - Fix issue with a Blizzard update resetting the OCD settings new ActionButton HotKey Width.
 
