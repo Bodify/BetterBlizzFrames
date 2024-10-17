@@ -2758,7 +2758,9 @@ local function guiCastbars()
     local BetterBlizzFramesCastbars = CreateFrame("Frame")
     BetterBlizzFramesCastbars.name = "Castbars"
     BetterBlizzFramesCastbars.parent = BetterBlizzFrames.name
-    InterfaceOptions_AddCategory(BetterBlizzFramesCastbars)
+    --InterfaceOptions_AddCategory(BetterBlizzFramesCastbars)
+    local castbarsSubCategory = Settings.RegisterCanvasLayoutSubcategory(BBF.category, BetterBlizzFramesCastbars, BetterBlizzFramesCastbars.name, BetterBlizzFramesCastbars.name)
+    castbarsSubCategory.ID = BetterBlizzFramesCastbars.name;
     CreateTitle(BetterBlizzFramesCastbars)
 
     local bgImg = BetterBlizzFramesCastbars:CreateTexture(nil, "BACKGROUND")
@@ -3572,7 +3574,9 @@ local function guiPositionAndScale()
     local BetterBlizzFramesSubPanel = CreateFrame("Frame")
     BetterBlizzFramesSubPanel.name = "Advanced Settings"
     BetterBlizzFramesSubPanel.parent = BetterBlizzFrames.name
-    InterfaceOptions_AddCategory(BetterBlizzFramesSubPanel)
+    --InterfaceOptions_AddCategory(BetterBlizzFramesSubPanel)
+    local advancedSubCategory = Settings.RegisterCanvasLayoutSubcategory(BBF.category, BetterBlizzFramesSubPanel, BetterBlizzFramesSubPanel.name, BetterBlizzFramesSubPanel.name)
+    advancedSubCategory.ID = BetterBlizzFramesSubPanel.name;
     CreateTitle(BetterBlizzFramesSubPanel)
 
     local bgImg = BetterBlizzFramesSubPanel:CreateTexture(nil, "BACKGROUND")
@@ -4000,7 +4004,10 @@ local function guiFrameAuras()
     local guiFrameAuras = CreateFrame("Frame")
     guiFrameAuras.name = "Buffs & Debuffs"
     guiFrameAuras.parent = BetterBlizzFrames.name
-    InterfaceOptions_AddCategory(guiFrameAuras)
+    --InterfaceOptions_AddCategory(guiFrameAuras)
+    local aurasSubCategory = Settings.RegisterCanvasLayoutSubcategory(BBF.category, guiFrameAuras, guiFrameAuras.name, guiFrameAuras.name)
+    aurasSubCategory.ID = guiFrameAuras.name;
+    BBF.aurasSubCategory = aurasSubCategory.ID
     CreateTitle(guiFrameAuras)
 
     local bgImg = guiFrameAuras:CreateTexture(nil, "BACKGROUND")
@@ -4788,7 +4795,9 @@ local function guiMisc()
     local guiMisc = CreateFrame("Frame")
     guiMisc.name = "Misc"--"|A:GarrMission_CurrencyIcon-Material:19:19|a Misc"
     guiMisc.parent = BetterBlizzFrames.name
-    InterfaceOptions_AddCategory(guiMisc)
+    --InterfaceOptions_AddCategory(guiMisc)
+    local guiMiscSubcategory = Settings.RegisterCanvasLayoutSubcategory(BBF.category, guiMisc, guiMisc.name, guiMisc.name)
+    guiMiscSubcategory.ID = guiMisc.name;
     CreateTitle(guiMisc)
 
     local bgImg = guiMisc:CreateTexture(nil, "BACKGROUND")
@@ -4936,7 +4945,9 @@ local function guiImportAndExport()
     local guiImportAndExport = CreateFrame("Frame")
     guiImportAndExport.name = "Import & Export"--"|A:GarrMission_CurrencyIcon-Material:19:19|a Misc"
     guiImportAndExport.parent = BetterBlizzFrames.name
-    InterfaceOptions_AddCategory(guiImportAndExport)
+    --InterfaceOptions_AddCategory(guiImportAndExport)
+    local guiImportSubcategory = Settings.RegisterCanvasLayoutSubcategory(BBF.category, guiImportAndExport, guiImportAndExport.name, guiImportAndExport.name)
+    guiImportSubcategory.ID = guiImportAndExport.name;
     CreateTitle(guiImportAndExport)
 
     local bgImg = guiImportAndExport:CreateTexture(nil, "BACKGROUND")
@@ -4964,7 +4975,9 @@ local function guiSupport()
     local guiSupport = CreateFrame("Frame")
     guiSupport.name = "|A:GarrisonTroops-Health:10:10|a Support & Code"
     guiSupport.parent = BetterBlizzFrames.name
-    InterfaceOptions_AddCategory(guiSupport)
+    --InterfaceOptions_AddCategory(guiSupport)
+    local guiSupportSubCategory = Settings.RegisterCanvasLayoutSubcategory(BBF.category, guiSupport, guiSupport.name, guiSupport.name)
+    guiSupportSubCategory.ID = guiSupport.name;
     CreateTitle(guiSupport)
 
     local bgImg = guiSupport:CreateTexture(nil, "BACKGROUND")
@@ -5238,7 +5251,10 @@ function BBF.InitializeOptions()
     if not BetterBlizzFrames then
         BetterBlizzFrames = CreateFrame("Frame")
         BetterBlizzFrames.name = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames"
-        InterfaceOptions_AddCategory(BetterBlizzFrames)
+        --InterfaceOptions_AddCategory(BetterBlizzFrames)
+        BBF.category = Settings.RegisterCanvasLayoutCategory(BetterBlizzFrames, BetterBlizzFrames.name, BetterBlizzFrames.name)
+        BBF.category.ID = BetterBlizzFrames.name
+        Settings.RegisterAddOnCategory(BBF.category)
 
         guiGeneralTab()
         guiPositionAndScale()

@@ -1119,7 +1119,8 @@ Frame:SetScript("OnEvent", function(...)
     LoginVariablesLoaded()
 
     if BetterBlizzFramesDB.reopenOptions then
-        InterfaceOptionsFrame_OpenToCategory(BetterBlizzFrames)
+        --InterfaceOptionsFrame_OpenToCategory(BetterBlizzFrames)
+        Settings.OpenToCategory(BBF.category.ID)
         BetterBlizzFramesDB.reopenOptions = false
     end
 end)
@@ -1185,7 +1186,8 @@ SlashCmdList["BBF"] = function(msg)
     elseif command == "ver" or command == "version" then
         DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames Version "..addonUpdates)
     else
-        InterfaceOptionsFrame_OpenToCategory(BetterBlizzFrames)
+        --InterfaceOptionsFrame_OpenToCategory(BetterBlizzFrames)
+        Settings.OpenToCategory(BBF.category.ID)
     end
 end
 
