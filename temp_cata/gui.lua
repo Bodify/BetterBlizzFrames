@@ -1062,10 +1062,10 @@ local function CreateCheckbox(option, label, parent, cvarName, extraFunc)
     local checkBox = CreateFrame("CheckButton", nil, parent, "InterfaceOptionsCheckButtonTemplate")
     checkBox.Text:SetText(label)
     checkBox.text = checkBox.Text
-    checkBox:SetHitRectInsets(0, 0, 0, 0)
+    --checkBox:SetHitRectInsets(0, 0, 0, 0)
     checkBox.Text:SetFont("Fonts\\FRIZQT__.TTF", 11)
-    local a,b,c,d,e = checkBox.Text:GetPoint()
-    checkBox.Text:SetPoint(a,b,c,d-4,e-1)
+    --local a,b,c,d,e = checkBox.Text:GetPoint()
+    --checkBox.Text:SetPoint(a,b,c,d-4,e-1)
     checkBox:SetSize(24,24)
 
     local function UpdateOption(value)
@@ -1115,6 +1115,253 @@ local function CreateCheckbox(option, label, parent, cvarName, extraFunc)
 
     return checkBox
 end
+
+
+local LSM = LibStub("LibSharedMedia-3.0")
+
+
+local function CreateFontDropdown(name, parentFrame, defaultText, settingKey, toggleFunc, point, dropdownWidth, maxVisibleItems)
+    maxVisibleItems = maxVisibleItems or 25  -- Default to 25 visible items if not provided
+
+    -- Create container for label and dropdown
+    local container = CreateFrame("Frame", nil, parentFrame)
+    container:SetSize(dropdownWidth or 155, 50)
+
+    -- Create and position label
+    local label = container:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall2")
+    label:SetPoint("LEFT", container, "LEFT", -50, -12)
+    label:SetText("Font")
+
+    -- Create the dropdown button with the new dropdown template
+    local dropdown = CreateFrame("DropdownButton", nil, parentFrame, "WowStyle1DropdownTemplate")
+    dropdown:SetPoint("BOTTOMLEFT", container, "BOTTOMLEFT", 0, 0)
+    dropdown:SetWidth(dropdownWidth or 155)
+    dropdown:SetDefaultText(BetterBlizzFramesDB[settingKey] or defaultText)
+    dropdown.Background:SetVertexColor(0.9,0.9,0.9)
+    dropdown.Arrow:SetVertexColor(0.9,0.9,0.9)
+
+    -- Custom font display for the selected font
+    -- dropdown.customFontText = dropdown:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    -- dropdown.customFontText:SetPoint("LEFT", dropdown, "LEFT", 8, 0)
+    -- dropdown.customFontText:SetText(BetterBlizzFramesDB[settingKey] or defaultText)
+    -- dropdown.customFontText:SetTextColor(1,1,1)
+    -- local initialFont = LSM:Fetch(LSM.MediaType.FONT, BetterBlizzFramesDB[settingKey] or "")
+    -- if initialFont then
+    --     dropdown.customFontText:SetFont(initialFont, 12)
+    -- end
+
+    -- Initialize a unique font pool for this dropdown
+    dropdown.fontPool = {}
+
+    -- Fetch and sort fonts
+    C_Timer.After(1, function()
+        local fonts = LSM:HashTable(LSM.MediaType.FONT)
+        local sortedFonts = {}
+        for fontName in pairs(fonts) do
+            table.insert(sortedFonts, fontName)
+        end
+        table.sort(sortedFonts)
+
+        -- Define the generator function for the dropdown menu
+        local function GeneratorFunction(owner, rootDescription)
+            local itemHeight = 20  -- Each item's height
+            local maxScrollExtent = maxVisibleItems * itemHeight
+            rootDescription:SetScrollMode(maxScrollExtent)
+
+            for index, fontName in ipairs(sortedFonts) do
+                local fontPath = fonts[fontName]
+
+                -- Create each item as a button with the custom font
+                local button = rootDescription:CreateButton("                                                  ", function()
+                    BetterBlizzFramesDB[settingKey] = fontName
+                    -- dropdown.customFontText:SetText(fontName)
+                    -- dropdown.customFontText:SetFont(fontPath, 12)
+                    dropdown:SetDefaultText(BetterBlizzFramesDB[settingKey] or defaultText)
+                    toggleFunc(fontPath)
+                end)
+
+                -- Use the pooled font string for each button
+                button:AddInitializer(function(button)
+                    local fontDisplay = dropdown.fontPool[index]
+                    if not fontDisplay then
+                        fontDisplay = dropdown:CreateFontString(nil, "BACKGROUND")
+                        dropdown.fontPool[index] = fontDisplay
+                    end
+
+                    -- Attach the font display to the button and set the font
+                    fontDisplay:SetParent(button)
+                    fontDisplay:SetPoint("LEFT", button, "LEFT", 5, 0)
+                    fontDisplay:SetFont(fontPath, 12)
+                    fontDisplay:SetText(fontName)
+                    fontDisplay:Show()
+                end)
+            end
+        end
+
+        -- Hide any unused font strings when the menu is closed
+        hooksecurefunc(dropdown, "OnMenuClosed", function()
+            for _, fontDisplay in pairs(dropdown.fontPool) do
+                fontDisplay:Hide()
+            end
+        end)
+
+        -- Set up the dropdown menu with the generator function
+        dropdown:SetupMenu(GeneratorFunction)
+    end)
+
+    -- Position the container on the specified anchor point
+    container:SetPoint("TOPLEFT", point.anchorFrame, "TOPLEFT", point.x, point.y)
+
+    return dropdown, container
+end
+
+local function CreateTextureDropdown(name, parentFrame, labelText, settingKey, toggleFunc, point, dropdownWidth, maxVisibleItems)
+    maxVisibleItems = maxVisibleItems or 25  -- Default to 25 visible items if not provided
+
+    -- Create container for label and dropdown
+    local container = CreateFrame("Frame", nil, parentFrame)
+    container:SetSize(dropdownWidth or 155, 50)
+
+    -- -- Create and position label
+    -- local label = container:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    -- label:SetPoint("BOTTOMLEFT", container, "TOPLEFT", 0, 2)
+    -- label:SetText(labelText)
+
+    -- Create the dropdown button with the new dropdown template
+    local dropdown = CreateFrame("DropdownButton", nil, parentFrame, "WowStyle1DropdownTemplate")
+    dropdown:SetPoint("BOTTOMLEFT", container, "BOTTOMLEFT", 0, 0)
+    dropdown:SetWidth(dropdownWidth or 155)
+    dropdown:SetDefaultText(BetterBlizzFramesDB[settingKey] or "Select texture")
+    dropdown.Background:SetVertexColor(0.9,0.9,0.9)
+    dropdown.Arrow:SetVertexColor(0.9,0.9,0.9)
+
+    -- Initialize a unique texture pool for this dropdown
+    dropdown.texturePool = {}
+
+    -- Fetch and sort textures
+    C_Timer.After(1, function()
+        local textures = LSM:HashTable(LSM.MediaType.STATUSBAR)
+        local sortedTextures = {}
+        for textureName in pairs(textures) do
+            table.insert(sortedTextures, textureName)
+        end
+        table.sort(sortedTextures)
+
+        -- Get class colors table
+        local classColors = RAID_CLASS_COLORS
+        local classKeys = {}
+        for class in pairs(classColors) do
+            table.insert(classKeys, class)
+        end
+
+        -- Define the generator function for the dropdown menu
+        local function GeneratorFunction(owner, rootDescription)
+            local itemHeight = 20  -- Each item's height
+            local maxScrollExtent = maxVisibleItems * itemHeight
+            rootDescription:SetScrollMode(maxScrollExtent)
+
+            for index, textureName in ipairs(sortedTextures) do
+                local texturePath = textures[textureName]
+
+                -- Create each item as a button with the background texture
+                local button = rootDescription:CreateButton(textureName, function()
+                    BetterBlizzFramesDB[settingKey] = textureName
+                    dropdown:SetDefaultText(textureName)
+                    toggleFunc(texturePath)
+                end)
+
+                -- Use the pooled texture for the background on each button
+                button:AddInitializer(function(button)
+                    local textureBackground = dropdown.texturePool[index]
+                    if not textureBackground then
+                        textureBackground = dropdown:CreateTexture(nil, "BACKGROUND")
+                        dropdown.texturePool[index] = textureBackground
+                    end
+
+                    -- Attach the background to the button and set the texture
+                    textureBackground:SetParent(button)
+                    textureBackground:SetAllPoints(button)
+                    textureBackground:SetTexture(texturePath)
+
+                    -- Pick a random class color and apply it
+                    local randomClass = classKeys[math.random(#classKeys)]
+                    local color = classColors[randomClass]
+                    textureBackground:SetVertexColor(color.r, color.g, color.b)
+
+                    textureBackground:Show()
+                end)
+            end
+        end
+
+        hooksecurefunc(dropdown, "OnMenuClosed", function()
+            for _, texture in pairs(dropdown.texturePool) do
+                texture:Hide()
+            end
+        end)
+
+        dropdown:SetupMenu(GeneratorFunction)
+    end)
+
+    container:SetPoint("TOPLEFT", point.anchorFrame, "TOPLEFT", point.x, point.y)
+
+    return dropdown, container
+end
+
+local function CreateSimpleDropdown(name, parentFrame, labelText, settingKey, optionsTable, toggleFunc, point, dropdownWidth)
+    dropdownWidth = dropdownWidth or 155  -- Default dropdown width if not provided
+
+    -- Create container for label and dropdown
+    local container = CreateFrame("Frame", nil, parentFrame)
+    container:SetSize(dropdownWidth, 50)
+
+    -- Create the dropdown button with the new dropdown template
+    local dropdown = CreateFrame("DropdownButton", nil, parentFrame, "WowStyle1DropdownTemplate")
+    dropdown:SetPoint("BOTTOMLEFT", container, "BOTTOMLEFT", 0, 0)
+    dropdown:SetWidth(dropdownWidth)
+    dropdown:SetDefaultText(BetterBlizzFramesDB[settingKey] or ("Select "..labelText))
+    dropdown.Background:SetVertexColor(0.9, 0.9, 0.9)
+    dropdown.Arrow:SetVertexColor(0.9, 0.9, 0.9)
+
+    -- Create and position label
+    local label = container:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall2")
+    label:SetPoint("LEFT", container, "LEFT", -50, -12)
+    label:SetText(labelText)
+    dropdown.LabelText = label
+
+    -- Define the generator function for the dropdown menu
+    local function GeneratorFunction(owner, rootDescription)
+        local itemHeight = 20  -- Each item's height
+        local maxScrollExtent = math.min(#optionsTable, 25) * itemHeight
+        rootDescription:SetScrollMode(maxScrollExtent)
+
+        for _, option in ipairs(optionsTable) do
+            -- Create each item as a button
+            local button = rootDescription:CreateButton(option, function()
+                BetterBlizzFramesDB[settingKey] = option
+                dropdown:SetDefaultText(option)
+                if toggleFunc then
+                    toggleFunc(option)
+                end
+            end)
+
+            -- Add the text initializer for the button
+            button:AddInitializer(function(button)
+                button.Text:SetText(option)
+            end)
+        end
+    end
+
+    -- Reset dropdown contents when closed
+    hooksecurefunc(dropdown, "OnMenuClosed", function()
+        dropdown:SetDefaultText(BetterBlizzFramesDB[settingKey] or ("Select "..labelText))
+    end)
+
+    dropdown:SetupMenu(GeneratorFunction)
+    container:SetPoint("TOPLEFT", point.anchorFrame, "TOPLEFT", point.x, point.y)
+
+    return dropdown, container
+end
+
 
 local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes, colorText, width, pos)
     -- Create the scroll frame
@@ -1898,12 +2145,12 @@ local function guiGeneralTab()
     hidePlayerName:HookScript("OnClick", function(self)
         BBF.UpdateUserTargetSettings()
         if self:GetChecked() then
-            PlayerFrame.cleanName:SetAlpha(0)
+            PlayerFrame.bbfName:SetAlpha(0)
         else
             if UnitExists("player") then
-                PlayerFrame.cleanName:SetText(GetUnitName("player"))
+                PlayerFrame.bbfName:SetText(GetUnitName("player"))
             end
-            PlayerFrame.cleanName:SetAlpha(1)
+            PlayerFrame.bbfName:SetAlpha(1)
         end
     end)
 
@@ -2056,8 +2303,8 @@ local function guiGeneralTab()
         if self:GetChecked() then
             for i = 1, 5 do
                 local frame = _G["CompactRaidFrame"..i] or _G["CompactPartyFrameMember"..i]
-                if frame and frame.cleanName then
-                    frame.cleanName:SetAlpha(0)
+                if frame and frame.name then
+                    frame.name:SetAlpha(0)
                 end
             end
         else
@@ -2065,12 +2312,12 @@ local function guiGeneralTab()
                 local frame = _G["CompactPartyFrameMember"..i] or _G["CompactRaidFrame"..i]
                 if frame then
                     local unit = frame.displayedUnit
-            
-                    if frame.cleanName and unit then
-                        frame.cleanName:SetAlpha(1)
-                        frame.cleanName:SetText(GetUnitName(unit))
+
+                    if frame.name and unit then
+                        frame.name:SetAlpha(1)
+                        frame.name:SetText(GetUnitName(unit))
                     end
-        
+
                 end
             end
         end
@@ -2152,12 +2399,12 @@ local function guiGeneralTab()
     hideTargetName:HookScript("OnClick", function(self)
         BBF.UpdateUserTargetSettings()
         if self:GetChecked() then
-            TargetFrame.cleanName:SetAlpha(0)
+            TargetFrame.bbfName:SetAlpha(0)
         else
             if UnitExists("target") then
-                TargetFrame.cleanName:SetText(GetUnitName("target"))
+                TargetFrame.bbfName:SetText(GetUnitName("target"))
             end
-            TargetFrame.cleanName:SetAlpha(1)
+            TargetFrame.bbfName:SetAlpha(1)
         end
     end)
 
@@ -2207,10 +2454,10 @@ local function guiGeneralTab()
     hideTargetToTName:SetPoint("LEFT", hideTargetToT.Text, "RIGHT", 0, 0)
     hideTargetToTName:HookScript("OnClick", function(self)
         if self:GetChecked() then
-            TargetFrame.totFrame.cleanName:SetAlpha(0)
+            TargetFrame.totFrame.bbfName:SetAlpha(0)
         else
-            TargetFrame.totFrame.cleanName:SetAlpha(1)
-            TargetFrame.totFrame.cleanName:SetText(GetUnitName("targettarget"))
+            TargetFrame.totFrame.bbfName:SetAlpha(1)
+            TargetFrame.totFrame.bbfName:SetText(GetUnitName("targettarget"))
         end
     end)
 
@@ -2346,12 +2593,12 @@ local function guiGeneralTab()
     hideFocusName:HookScript("OnClick", function(self)
         BBF.UpdateUserTargetSettings()
         if self:GetChecked() then
-            FocusFrame.cleanName:SetAlpha(0)
+            FocusFrame.bbfName:SetAlpha(0)
         else
             if UnitExists("focus") then
-                FocusFrame.cleanName:SetText(GetUnitName("focus"))
+                FocusFrame.bbfName:SetText(GetUnitName("focus"))
             end
-            FocusFrame.cleanName:SetAlpha(1)
+            FocusFrame.bbfName:SetAlpha(1)
         end
     end)
 
@@ -2401,11 +2648,10 @@ local function guiGeneralTab()
     hideFocusToTName:SetPoint("LEFT", hideFocusToT.Text, "RIGHT", 0, 0)
     hideFocusToTName:HookScript("OnClick", function(self)
         if self:GetChecked() then
-            BBF.HookUnitFrameName()
-            FocusFrame.totFrame.cleanName:SetAlpha(0)
+            FocusFrame.totFrame.bbfName:SetAlpha(0)
         else
-            FocusFrame.totFrame.cleanName:SetAlpha(1)
-            FocusFrame.totFrame.cleanName:SetText(GetUnitName("focustarget"))
+            FocusFrame.totFrame.bbfName:SetAlpha(1)
+            FocusFrame.totFrame.bbfName:SetText(GetUnitName("focustarget"))
         end
     end)
 
@@ -2509,31 +2755,32 @@ local function guiGeneralTab()
     classColorTargetNames:SetPoint("TOPLEFT", biggerHealthbars, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(classColorTargetNames, "Class Color Names","Class color Player, Target & Focus Names.", "Will enable a fake name. Because of this other addons like HealthBarColor's name stuff will not work properly.")
     classColorTargetNames:HookScript("OnClick", function()
-        BBF.UpdateAllNames()
+        BBF.AllCaller()
     end)
 
     local classColorLevelText = CreateCheckbox("classColorLevelText", "Level", classColorTargetNames)
     classColorLevelText:SetPoint("LEFT", classColorTargetNames.text, "RIGHT", 0, 0)
     CreateTooltip(classColorLevelText, "Also class color the level text.")
     classColorLevelText:HookScript("OnClick", function()
-        BBF.HookLevelText()
+        --BBF.HookLevelText()
+        BBF.AllCaller()
     end)
 
     classColorTargetNames:HookScript("OnClick", function(self)
         if self:GetChecked() then
             classColorLevelText:Enable()
             classColorLevelText:SetAlpha(1)
-            if TargetFrame and TargetFrame.cleanName then BBF.updateTextForUnit(TargetFrame.cleanName, TargetFrame) end
-            if PlayerFrame and PlayerFrame.cleanName then BBF.updateTextForUnit(PlayerFrame.cleanName, PlayerFrame) end
-            if FocusFrame and FocusFrame.cleanName then BBF.updateTextForUnit(FocusFrame.cleanName, FocusFrame) end
+            if TargetFrame and TargetFrame.bbfName then BBF.updateTextForUnit(TargetFrame.bbfName, TargetFrame) end
+            if PlayerFrame and PlayerFrame.bbfName then BBF.updateTextForUnit(PlayerFrame.bbfName, PlayerFrame) end
+            if FocusFrame and FocusFrame.bbfName then BBF.updateTextForUnit(FocusFrame.bbfName, FocusFrame) end
             if TargetFrame.totFrame and TargetFrame.totFrame.Name then BBF.updateTextForUnit(TargetFrame.totFrame.Name, TargetFrameToT) end
             if FocusFrame.totFrame and FocusFrame.totFrame.Name then BBF.updateTextForUnit(FocusFrame.totFrame.Name, FocusFrameToT) end
         else
             classColorLevelText:Disable()
             classColorLevelText:SetAlpha(0)
-            if TargetFrame and TargetFrame.cleanName then TargetFrame.cleanName:SetTextColor(1, 0.81960791349411, 0) end
-            if PlayerFrame and PlayerFrame.cleanName then PlayerFrame.cleanName:SetTextColor(1, 0.81960791349411, 0) end
-            if FocusFrame and FocusFrame.cleanName then FocusFrame.cleanName:SetTextColor(1, 0.81960791349411, 0) end
+            if TargetFrame and TargetFrame.bbfName then TargetFrame.bbfName:SetTextColor(1, 0.81960791349411, 0) end
+            if PlayerFrame and PlayerFrame.bbfName then PlayerFrame.bbfName:SetTextColor(1, 0.81960791349411, 0) end
+            if FocusFrame and FocusFrame.bbfName then FocusFrame.bbfName:SetTextColor(1, 0.81960791349411, 0) end
             if TargetFrame.totFrame and TargetFrame.totFrame.Name then TargetFrame.totFrame.Name:SetTextColor(1, 0.81960791349411, 0) end
             if FocusFrame.totFrame and FocusFrame.totFrame.Name then FocusFrame.totFrame.Name:SetTextColor(1, 0.81960791349411, 0) end
         end
@@ -2552,7 +2799,7 @@ local function guiGeneralTab()
     local removeRealmNames = CreateCheckbox("removeRealmNames", "Hide Realm Name", BetterBlizzFrames)
     removeRealmNames:SetPoint("TOPLEFT", classColorTargetNames, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     removeRealmNames:HookScript("OnClick", function()
-        BBF.UpdateAllNames()
+        BBF.AllCaller()
     end)
     CreateTooltipTwo(removeRealmNames, "Hide Realm Indicator", "Hide realm name and different realm indicator \"(*)\" from Target, Focus & Party frames.", "Will enable a fake name. Because of this other addons like HealthBarColor's name stuff will not work properly.")
 
@@ -2643,58 +2890,58 @@ local function guiGeneralTab()
     overShields:SetPoint("TOPLEFT", racialIndicator, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(overShields, "Show shield amount on UnitFrames", "ANCHOR_LEFT")
 
-    -- local overShieldsUnitFrames = CreateCheckbox("overShieldsUnitFrames", "A", BetterBlizzFrames)
-    -- overShieldsUnitFrames:SetPoint("LEFT", overShields.text, "RIGHT", 0, 0)
-    -- CreateTooltip(overShieldsUnitFrames, "Show Overshields on UnitFrames (Player, Target, Focus)", "ANCHOR_LEFT")
-    -- overShieldsUnitFrames:HookScript("OnClick", function(self)
-    --     BBF.HookOverShields()
-    --     StaticPopup_Show("BBF_CONFIRM_RELOAD")
-    -- end)
+    local overShieldsUnitFrames = CreateCheckbox("overShieldsUnitFrames", "A", BetterBlizzFrames)
+    overShieldsUnitFrames:SetPoint("LEFT", overShields.text, "RIGHT", 0, 0)
+    CreateTooltip(overShieldsUnitFrames, "Show Overshields on UnitFrames (Player, Target, Focus)", "ANCHOR_LEFT")
+    overShieldsUnitFrames:HookScript("OnClick", function(self)
+        BBF.HookOverShields()
+        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+    end)
 
-    -- local overShieldsCompactUnitFrames = CreateCheckbox("overShieldsCompactUnitFrames", "B", BetterBlizzFrames)
-    -- overShieldsCompactUnitFrames:SetPoint("LEFT", overShieldsUnitFrames.text, "RIGHT", 0, 0)
-    -- CreateTooltip(overShieldsCompactUnitFrames, "Show Overshields on Compact UnitFrames (Party, Raid)", "ANCHOR_LEFT")
-    -- overShieldsCompactUnitFrames:HookScript("OnClick", function(self)
-    --     BBF.HookOverShields()
-    --     StaticPopup_Show("BBF_CONFIRM_RELOAD")
-    -- end)
+    local overShieldsCompactUnitFrames = CreateCheckbox("overShieldsCompactUnitFrames", "B", BetterBlizzFrames)
+    overShieldsCompactUnitFrames:SetPoint("LEFT", overShieldsUnitFrames.text, "RIGHT", 0, 0)
+    CreateTooltip(overShieldsCompactUnitFrames, "Show Overshields on Compact UnitFrames (Party, Raid)", "ANCHOR_LEFT")
+    overShieldsCompactUnitFrames:HookScript("OnClick", function(self)
+        BBF.HookOverShields()
+        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+    end)
 
     overShields:HookScript("OnClick", function(self)
         if self:GetChecked() then
             BetterBlizzFramesDB.overShieldsCompact = true
             BetterBlizzFramesDB.overShieldsUnitFrames = true
             BBF.HookOverShields()
-            -- overShieldsUnitFrames:SetAlpha(1)
-            -- overShieldsUnitFrames:Enable()
-            -- overShieldsUnitFrames:SetChecked(true)
-            -- overShieldsCompactUnitFrames:SetAlpha(1)
-            -- overShieldsCompactUnitFrames:Enable()
-            -- overShieldsCompactUnitFrames:SetChecked(true)
+            overShieldsUnitFrames:SetAlpha(1)
+            overShieldsUnitFrames:Enable()
+            overShieldsUnitFrames:SetChecked(true)
+            overShieldsCompactUnitFrames:SetAlpha(1)
+            overShieldsCompactUnitFrames:Enable()
+            overShieldsCompactUnitFrames:SetChecked(true)
             StaticPopup_Show("BBF_CONFIRM_RELOAD")
         else
             BetterBlizzFramesDB.overShieldsCompact = false
             BetterBlizzFramesDB.overShieldsUnitFrames = false
-            -- overShieldsUnitFrames:SetAlpha(0)
-            -- overShieldsUnitFrames:Disable()
-            -- overShieldsUnitFrames:SetChecked(false)
-            -- overShieldsCompactUnitFrames:SetAlpha(0)
-            -- overShieldsCompactUnitFrames:Disable()
-            -- overShieldsCompactUnitFrames:SetChecked(false)
+            overShieldsUnitFrames:SetAlpha(0)
+            overShieldsUnitFrames:Disable()
+            overShieldsUnitFrames:SetChecked(false)
+            overShieldsCompactUnitFrames:SetAlpha(0)
+            overShieldsCompactUnitFrames:Disable()
+            overShieldsCompactUnitFrames:SetChecked(false)
             StaticPopup_Show("BBF_CONFIRM_RELOAD")
         end
     end)
 
-    -- if BetterBlizzFramesDB.overShields then
-    --     overShieldsUnitFrames:SetAlpha(1)
-    --     overShieldsUnitFrames:Enable()
-    --     overShieldsCompactUnitFrames:SetAlpha(1)
-    --     overShieldsCompactUnitFrames:Enable()
-    -- else
-    --     overShieldsUnitFrames:SetAlpha(0)
-    --     overShieldsUnitFrames:Disable()
-    --     overShieldsCompactUnitFrames:SetAlpha(0)
-    --     overShieldsCompactUnitFrames:Disable()
-    -- end
+    if BetterBlizzFramesDB.overShields then
+        overShieldsUnitFrames:SetAlpha(1)
+        overShieldsUnitFrames:Enable()
+        overShieldsCompactUnitFrames:SetAlpha(1)
+        overShieldsCompactUnitFrames:Enable()
+    else
+        overShieldsUnitFrames:SetAlpha(0)
+        overShieldsUnitFrames:Disable()
+        overShieldsCompactUnitFrames:SetAlpha(0)
+        overShieldsCompactUnitFrames:Disable()
+    end
 
     ----------------------
     -- Reload etc
@@ -3997,6 +4244,408 @@ local function guiPositionAndScale()
 
 end
 
+local function guiFrameLook()
+    ----------------------
+    -- Frame Auras
+    ----------------------
+    local guiFrameLook = CreateFrame("Frame")
+    guiFrameLook.name = "Font & Texture"
+    guiFrameLook.parent = BetterBlizzFrames.name
+    --InterfaceOptions_AddCategory(guiFrameAuras)
+    local aurasSubCategory = Settings.RegisterCanvasLayoutSubcategory(BBF.category, guiFrameLook, guiFrameLook.name, guiFrameLook.name)
+    aurasSubCategory.ID = guiFrameLook.name;
+    CreateTitle(guiFrameLook)
+
+    local bgImg = guiFrameLook:CreateTexture(nil, "BACKGROUND")
+    bgImg:SetAtlas("professions-recipe-background")
+    bgImg:SetPoint("CENTER", guiFrameLook, "CENTER", -8, 4)
+    bgImg:SetSize(680, 610)
+    bgImg:SetAlpha(0.4)
+    bgImg:SetVertexColor(0,0,0)
+
+    local mainGuiAnchor = guiFrameLook:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    mainGuiAnchor:SetPoint("TOPLEFT", 15, -15)
+    mainGuiAnchor:SetText(" ")
+
+    local settingsText = guiFrameLook:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    settingsText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 0, 30)
+    settingsText:SetText("Font & Texture (WIP)")
+    local generalSettingsIcon = guiFrameLook:CreateTexture(nil, "ARTWORK")
+    generalSettingsIcon:SetAtlas("optionsicon-brown")
+    generalSettingsIcon:SetSize(22, 22)
+    generalSettingsIcon:SetPoint("RIGHT", settingsText, "LEFT", -3, -1)
+
+    local changeUnitFrameFont = CreateCheckbox("changeUnitFrameFont", "Change UnitFrame Font", guiFrameLook)
+    changeUnitFrameFont:SetPoint("TOPLEFT", settingsText, "BOTTOMLEFT", -4, pixelsOnFirstBox)
+    CreateTooltipTwo(changeUnitFrameFont, "Change UnitFrame Font","Changes the font on Player, Target & Focus etc.")
+
+    local unitFrameFont = CreateFontDropdown(
+        "unitFrameFont",
+        guiFrameLook,
+        "Select Font",
+        "unitFrameFont",
+        function(arg1)
+            BBF.SetCustomFonts()
+        end,
+        { anchorFrame = changeUnitFrameFont, x = 55, y = 1, label = "Font" }
+    )
+
+    -- For font outline
+    local unitFrameFontOutline = CreateSimpleDropdown("FontOutlineDropdown", guiFrameLook, "Outline", "unitFrameFontOutline", {
+        "THICKOUTLINE", "THINOUTLINE", "NONE"
+    }, function(selectedSize)
+        BBF.SetCustomFonts()
+    end, { anchorFrame = unitFrameFont, x = 0, y = -5 }, 155)
+
+    -- For font size
+    local fontSizeOptions = {}
+    for i = 6, 24 do
+        table.insert(fontSizeOptions, tostring(i))
+    end
+
+    local unitFrameFontSize = CreateSimpleDropdown("FontSizeDropdown", guiFrameLook, "Size", "unitFrameFontSize", fontSizeOptions, function(selectedSize)
+        BBF.SetCustomFonts()
+    end, { anchorFrame = unitFrameFontOutline, x = 0, y = -5 }, 155)
+
+    changeUnitFrameFont:HookScript("OnClick", function(self)
+        BBF.SetCustomFonts()
+        if not self:GetChecked() then
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            unitFrameFont:Disable()
+            unitFrameFontOutline:Disable()
+            unitFrameFontSize:Disable()
+        else
+            unitFrameFont:Enable()
+            unitFrameFontOutline:Enable()
+            unitFrameFontSize:Enable()
+        end
+    end)
+
+    if not changeUnitFrameFont:GetChecked() then
+        unitFrameFont:Disable()
+        unitFrameFontOutline:Disable()
+        unitFrameFontSize:Disable()
+    end
+
+
+
+
+
+    local changeUnitFrameValueFont = CreateCheckbox("changeUnitFrameValueFont", "Change UnitFrame Number Font", guiFrameLook)
+    changeUnitFrameValueFont:SetPoint("TOPLEFT", changeUnitFrameFont, "BOTTOMLEFT", 0, -85)
+    CreateTooltipTwo(changeUnitFrameValueFont, "Change UnitFrame Number Font","Changes the font on numbers on Player, Target & Focus etc.")
+    
+    local unitFrameValueFont = CreateFontDropdown(
+        "unitFrameValueFont",
+        guiFrameLook,
+        "Select Font",
+        "unitFrameValueFont",
+        function(arg1)
+            BBF.SetCustomFonts()
+        end,
+        { anchorFrame = changeUnitFrameValueFont, x = 55, y = 1, label = "Font" }
+    )
+    
+    -- For font outline
+    local unitFrameValueFontOutline = CreateSimpleDropdown("FontOutlineDropdown", guiFrameLook, "Outline", "unitFrameValueFontOutline", {
+        "THICKOUTLINE", "THINOUTLINE", "NONE"
+    }, function(selectedSize)
+        BBF.SetCustomFonts()
+    end, { anchorFrame = unitFrameValueFont, x = 0, y = -5 }, 155)
+    
+    
+    local unitFrameValueFontSize = CreateSimpleDropdown("FontSizeDropdown", guiFrameLook, "Size", "unitFrameValueFontSize", fontSizeOptions, function(selectedSize)
+        BBF.SetCustomFonts()
+    end, { anchorFrame = unitFrameValueFontOutline, x = 0, y = -5 }, 155)
+    
+    changeUnitFrameValueFont:HookScript("OnClick", function(self)
+        BBF.SetCustomFonts()
+        if not self:GetChecked() then
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            unitFrameValueFont:Disable()
+            unitFrameValueFontOutline:Disable()
+            unitFrameValueFontSize:Disable()
+        else
+            unitFrameValueFont:Enable()
+            unitFrameValueFontOutline:Enable()
+            unitFrameValueFontSize:Enable()
+        end
+    end)
+    
+    if not changeUnitFrameValueFont:GetChecked() then
+        unitFrameValueFont:Disable()
+        unitFrameValueFontOutline:Disable()
+        unitFrameValueFontSize:Disable()
+    end
+
+
+
+
+
+    local changePartyFrameFont = CreateCheckbox("changePartyFrameFont", "Change Party Font", guiFrameLook)
+    changePartyFrameFont:SetPoint("TOPLEFT", changeUnitFrameValueFont, "BOTTOMLEFT", 0, -85)
+    CreateTooltipTwo(changePartyFrameFont, "Change Party Font","Changes the font on PartyFrames")
+    
+    local partyFrameFont = CreateFontDropdown(
+        "partyFrameFont",
+        guiFrameLook,
+        "Select Font",
+        "partyFrameFont",
+        function(arg1)
+            BBF.SetCustomFonts()
+        end,
+        { anchorFrame = changePartyFrameFont, x = 55, y = 1, label = "Font" }
+    )
+    
+    -- For font outline
+    local partyFrameFontOutline = CreateSimpleDropdown("FontOutlineDropdown", guiFrameLook, "Outline", "partyFrameFontOutline", {
+        "THICKOUTLINE", "THINOUTLINE", "NONE"
+    }, function(selectedSize)
+        BBF.SetCustomFonts()
+    end, { anchorFrame = partyFrameFont, x = 0, y = -5 }, 155)
+
+    
+    local partyFrameFontSize = CreateSimpleDropdown("FontSizeDropdown", guiFrameLook, "Size", "partyFrameFontSize", fontSizeOptions, function(selectedSize)
+        BBF.SetCustomFonts()
+    end, { anchorFrame = partyFrameFontOutline, x = 0, y = -5 }, 77.5)
+    CreateTooltipTwo(partyFrameFontSize, "Name Size")
+
+    local partyFrameStatusFontSize = CreateSimpleDropdown("FontSizeDropdown", guiFrameLook, "", "partyFrameStatusFontSize", fontSizeOptions, function(selectedSize)
+        BBF.SetCustomFonts()
+    end, { anchorFrame = partyFrameFontSize, x = 77.5, y = 25 }, 77.5)
+    CreateTooltipTwo(partyFrameStatusFontSize, "Status Text Size")
+    
+    changePartyFrameFont:HookScript("OnClick", function(self)
+        BBF.SetCustomFonts()
+        if not self:GetChecked() then
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            partyFrameFont:Disable()
+            partyFrameFontOutline:Disable()
+            partyFrameFontSize:Disable()
+            partyFrameStatusFontSize:Disable()
+        else
+            partyFrameFont:Enable()
+            partyFrameFontOutline:Enable()
+            partyFrameFontSize:Enable()
+            partyFrameStatusFontSize:Enable()
+        end
+    end)
+    
+    if not changePartyFrameFont:GetChecked() then
+        partyFrameFont:Disable()
+        partyFrameFontOutline:Disable()
+        partyFrameFontSize:Disable()
+        partyFrameStatusFontSize:Disable()
+    end
+
+
+
+
+
+
+    local changeActionBarFont = CreateCheckbox("changeActionBarFont", "Change ActionBar Font", guiFrameLook)
+    changeActionBarFont:SetPoint("TOPLEFT", changePartyFrameFont, "BOTTOMLEFT", 0, -85)
+    CreateTooltipTwo(changeActionBarFont, "Change ActionBar Font","Changes the font on Player, Target & Focus etc.")
+
+    local actionBarFont = CreateFontDropdown(
+        "actionBarFont",
+        guiFrameLook,
+        "Select Font",
+        "actionBarFont",
+        function(arg1)
+            BBF.SetCustomFonts()
+        end,
+        { anchorFrame = changeActionBarFont, x = 55, y = 1, label = "Font" }
+    )
+
+    -- For font outline
+    local actionBarFontOutline = CreateSimpleDropdown("FontOutlineDropdown", guiFrameLook, "Outline", "actionBarFontOutline", {
+        "THICKOUTLINE", "THINOUTLINE", "NONE"
+    }, function(selectedSize)
+        BBF.SetCustomFonts()
+    end, { anchorFrame = actionBarFont, x = 0, y = -5 }, 77.5)
+    CreateTooltipTwo(actionBarFontOutline, "Macro Text Outline")
+
+    local actionBarKeyFontOutline = CreateSimpleDropdown("FontOutlineDropdown", guiFrameLook, "", "actionBarKeyFontOutline", {
+        "THICKOUTLINE", "THINOUTLINE", "NONE"
+    }, function(selectedSize)
+        BBF.SetCustomFonts()
+    end, { anchorFrame = actionBarFontOutline, x = 77.5, y = 25 }, 77.5)
+    CreateTooltipTwo(actionBarKeyFontOutline, "Keybinding Text Outline")
+
+
+    local actionBarFontSize = CreateSimpleDropdown("FontSizeDropdown", guiFrameLook, "Size", "actionBarFontSize", fontSizeOptions, function(selectedSize)
+        BBF.SetCustomFonts()
+    end, { anchorFrame = actionBarFontOutline, x = 0, y = -5 }, 77.5)
+    CreateTooltipTwo(actionBarFontSize, "Macro Text Size")
+
+    local actionBarKeyFontSize = CreateSimpleDropdown("FontSizeDropdown", guiFrameLook, "", "actionBarKeyFontSize", fontSizeOptions, function(selectedSize)
+        BBF.SetCustomFonts()
+    end, { anchorFrame = actionBarFontSize, x = 77.5, y = 25 }, 77.5)
+    CreateTooltipTwo(actionBarKeyFontSize, "Keybinding Text Size")
+
+
+
+    local function ToggleDropdowns(enable)
+        for _, dd in ipairs({
+            actionBarFont,
+            actionBarFontOutline,
+            actionBarKeyFontOutline,
+            actionBarFontSize,
+            actionBarKeyFontSize
+        }) do
+            dd:SetEnabled(enable)
+        end
+    end
+
+    changeActionBarFont:HookScript("OnClick", function(self)
+        BBF.SetCustomFonts()
+        if not self:GetChecked() then
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        end
+        ToggleDropdowns(self:GetChecked())
+    end)
+
+    ToggleDropdowns(changeActionBarFont:GetChecked())
+
+
+
+
+
+
+
+
+
+
+    local changeAllFontsIngame = CreateCheckbox("changeAllFontsIngame", "One font for all text ingame", guiFrameLook)
+    changeAllFontsIngame:SetPoint("TOPLEFT", changeActionBarFont, "BOTTOMLEFT", 0, -125)
+    CreateTooltipTwo(changeAllFontsIngame, "One font for all text ingame","Changes the font on all* text ingame.")
+
+    local allIngameFont = CreateFontDropdown(
+        "allIngameFont",
+        guiFrameLook,
+        "Select Font",
+        "allIngameFont",
+        function(arg1)
+            BBF.SetCustomFonts()
+        end,
+        { anchorFrame = changeAllFontsIngame, x = 55, y = 1, label = "Font" }
+    )
+
+    changeAllFontsIngame:HookScript("OnClick", function(self)
+        BBF.SetCustomFonts()
+        if not self:GetChecked() then
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        end
+        allIngameFont:SetEnabled(self:GetChecked())
+    end)
+    allIngameFont:SetEnabled(changeAllFontsIngame:GetChecked())
+
+
+
+
+
+
+
+    local changeUnitFrameHealthbarTexture = CreateCheckbox("changeUnitFrameHealthbarTexture", "Change UnitFrame Healthbar Texture", guiFrameLook)
+    changeUnitFrameHealthbarTexture:SetPoint("TOPLEFT", settingsText, "BOTTOMLEFT", 260, pixelsOnFirstBox)
+    CreateTooltipTwo(changeUnitFrameHealthbarTexture, "Change UnitFrame Healthbar Texture","Changes the healthbar texture on Player, Target & Focus etc.")
+
+    local unitFrameHealthbarTexture = CreateTextureDropdown(
+        "unitFrameHealthbarTexture",
+        guiFrameLook,
+        "Select Texture",
+        "unitFrameHealthbarTexture",
+        function(arg1)
+            BBF.UpdateCustomTextures()
+        end,
+        { anchorFrame = changeUnitFrameHealthbarTexture, x = 5, y = 1, label = "Texture" }
+    )
+    
+    changeUnitFrameHealthbarTexture:HookScript("OnClick", function(self)
+        unitFrameHealthbarTexture:SetEnabled(self:GetChecked())
+        BBF.UpdateCustomTextures()
+    end)
+    unitFrameHealthbarTexture:SetEnabled(changeUnitFrameHealthbarTexture:GetChecked())
+
+    local changeUnitFrameManabarTexture = CreateCheckbox("changeUnitFrameManabarTexture", "Change UnitFrame Manabar Texture", guiFrameLook)
+    changeUnitFrameManabarTexture:SetPoint("TOPLEFT", changeUnitFrameHealthbarTexture, "BOTTOMLEFT", 0, -25)
+    CreateTooltipTwo(changeUnitFrameManabarTexture, "Change UnitFrame Manabar Texture","Changes the manabar texture on Player, Target & Focus etc. This is more cpu heavy than it should be.")
+
+    local unitFrameManabarTexture = CreateTextureDropdown(
+        "unitFrameManabarTexture",
+        guiFrameLook,
+        "Select Texture",
+        "unitFrameManabarTexture",
+        function(arg1)
+            BBF.UpdateCustomTextures()
+        end,
+        { anchorFrame = changeUnitFrameManabarTexture, x = 5, y = 1, label = "Texture" }
+    )
+    changeUnitFrameManabarTexture:HookScript("OnClick", function(self)
+        unitFrameManabarTexture:SetEnabled(self:GetChecked())
+        BBF.UpdateCustomTextures()
+    end)
+    unitFrameManabarTexture:SetEnabled(changeUnitFrameManabarTexture:GetChecked())
+
+
+    local changeRaidFrameHealthbarTexture = CreateCheckbox("changeRaidFrameHealthbarTexture", "Change RaidFrame Healthbar Texture", guiFrameLook)
+    changeRaidFrameHealthbarTexture:SetPoint("TOPLEFT", changeUnitFrameManabarTexture, "BOTTOMLEFT", 0, -25)
+    CreateTooltipTwo(changeRaidFrameHealthbarTexture, "Change RaidFrame Healthbar Texture","Changes the healthbar texture on the RaidFrames")
+    
+    local raidFrameHealthbarTexture = CreateTextureDropdown(
+        "raidFrameHealthbarTexture",
+        guiFrameLook,
+        "Select Texture",
+        "raidFrameHealthbarTexture",
+        function(arg1)
+            BBF.UpdateCustomTextures()
+        end,
+        { anchorFrame = changeRaidFrameHealthbarTexture, x = 5, y = 1, label = "Texture" }
+    )
+
+    changeRaidFrameHealthbarTexture:HookScript("OnClick", function(self)
+        raidFrameHealthbarTexture:SetEnabled(self:GetChecked())
+        BBF.UpdateCustomTextures()
+    end)
+    raidFrameHealthbarTexture:SetEnabled(changeRaidFrameHealthbarTexture:GetChecked())
+    
+    local changeRaidFrameManabarTexture = CreateCheckbox("changeRaidFrameManabarTexture", "Change RaidFrame Manabar Texture", guiFrameLook)
+    changeRaidFrameManabarTexture:SetPoint("TOPLEFT", changeRaidFrameHealthbarTexture, "BOTTOMLEFT", 0, -25)
+    CreateTooltipTwo(changeRaidFrameManabarTexture, "Change RaidFrame Manabar Texture","Changes the manabar texture on the RaidFrames. This is more cpu heavy than it should be.")
+    
+    local raidFrameManabarTexture = CreateTextureDropdown(
+        "raidFrameManabarTexture",
+        guiFrameLook,
+        "Select Texture",
+        "raidFrameManabarTexture",
+        function(arg1)
+            BBF.UpdateCustomTextures()
+        end,
+        { anchorFrame = changeRaidFrameManabarTexture, x = 5, y = 1, label = "Texture" }
+    )
+
+    changeRaidFrameManabarTexture:HookScript("OnClick", function(self)
+        raidFrameManabarTexture:SetEnabled(self:GetChecked())
+        BBF.UpdateCustomTextures()
+    end)
+    raidFrameManabarTexture:SetEnabled(changeRaidFrameManabarTexture:GetChecked())
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+end
+
 local function guiFrameAuras()
     ----------------------
     -- Frame Auras
@@ -4873,8 +5522,56 @@ local function guiMisc()
     CreateTooltip(stealthIndicatorPlayer, "Add a blue border texture around the\nplayer frame during stealth abilities")
     notWorking(stealthIndicatorPlayer, true)
 
+    local addUnitFrameBgTexture = CreateCheckbox("addUnitFrameBgTexture", "UnitFrame Background Color", guiMisc)
+    addUnitFrameBgTexture:SetPoint("TOPLEFT", stealthIndicatorPlayer, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(addUnitFrameBgTexture, "UnitFrame Background Color", "Enables background color behind health and mana on UnitFrames.\n\n|cff32f795Right-click to change color.|r")
+    addUnitFrameBgTexture:HookScript("OnClick", function(self)
+        BBF.UnitFrameBackgroundTexture()
+    end)
+    addUnitFrameBgTexture:SetScript("OnMouseDown", function(self, button)
+        if button == "RightButton" then
+            local function OpenColorPicker(colorType)
+                -- Ensure originalColorData has four elements, defaulting alpha (a) to 1 if not present
+                local originalColorData = BetterBlizzFramesDB[colorType] or {1, 1, 1, 1}
+                if #originalColorData == 3 then
+                    table.insert(originalColorData, 1) -- Add default alpha value if not present
+                end
+                local r, g, b, a = unpack(originalColorData)
+        
+                local function updateColors()
+                    BBF.UnitFrameBackgroundTexture()
+                    --ColorPickerFrame.Content.ColorSwatchCurrent:SetAlpha(a)
+                end
+        
+                local function swatchFunc()
+                    r, g, b = ColorPickerFrame:GetColorRGB()
+                    BetterBlizzFramesDB[colorType] = {r, g, b, a}
+                    updateColors()
+                end
+        
+                local function opacityFunc()
+                    a = ColorPickerFrame:GetColorAlpha()
+                    BetterBlizzFramesDB[colorType] = {r, g, b, a}
+                    updateColors()
+                end
+        
+                local function cancelFunc()
+                    r, g, b, a = unpack(originalColorData)
+                    BetterBlizzFramesDB[colorType] = {r, g, b, a}
+                    updateColors()
+                end
+        
+                ColorPickerFrame:SetupColorPickerAndShow({
+                    r = r, g = g, b = b, opacity = a, hasOpacity = true,
+                    swatchFunc = swatchFunc, opacityFunc = opacityFunc, cancelFunc = cancelFunc
+                })
+            end
+            OpenColorPicker("unitFrameBgTextureColor")
+        end
+    end)
+
     local useMiniFocusFrame = CreateCheckbox("useMiniFocusFrame", "Enable Mini-FocusFrame", guiMisc, nil, BBF.MiniFocusFrame)
-    useMiniFocusFrame:SetPoint("TOPLEFT", stealthIndicatorPlayer, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    useMiniFocusFrame:SetPoint("TOPLEFT", addUnitFrameBgTexture, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(useMiniFocusFrame, "Removes healthbar and manabar from the FocusFrame\nand just leaves Portrait and name.\n\nMove castbar and/or disable auras to your liking.")
     notWorking(useMiniFocusFrame, true)
 
@@ -5250,7 +5947,7 @@ end
 function BBF.InitializeOptions()
     if not BetterBlizzFrames then
         BetterBlizzFrames = CreateFrame("Frame")
-        BetterBlizzFrames.name = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames"
+        BetterBlizzFrames.name = "Better|cff00c0ffBlizz|rFrames |A:gmchat-icon-blizz:16:16|a"
         --InterfaceOptions_AddCategory(BetterBlizzFrames)
         BBF.category = Settings.RegisterCanvasLayoutCategory(BetterBlizzFrames, BetterBlizzFrames.name, BetterBlizzFrames.name)
         BBF.category.ID = BetterBlizzFrames.name
@@ -5258,6 +5955,7 @@ function BBF.InitializeOptions()
 
         guiGeneralTab()
         guiPositionAndScale()
+        guiFrameLook()
         guiFrameAuras()
         guiCastbars()
         guiImportAndExport()

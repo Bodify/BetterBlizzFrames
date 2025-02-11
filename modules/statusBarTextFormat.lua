@@ -10,6 +10,7 @@ local function FormatText(value)
 end
 
 local function UpdateNumericText(bar, centerText)
+    if not centerText then return end
     local value = bar:GetValue()
     local _, maxValue = bar:GetMinMaxValues()
     local formattedValue = FormatText(value)
@@ -18,6 +19,7 @@ local function UpdateNumericText(bar, centerText)
 end
 
 local function UpdateSingleText(bar, fontObj)
+    if not fontObj then return end
     local value = bar:GetValue()
     fontObj:SetText(FormatText(value))
 end
@@ -37,6 +39,18 @@ function BBF.HookStatusBarText()
         {PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar,
          PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar.ManaBarText,
          PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar.RightText},
+
+        {AlternatePowerBar,
+         AlternatePowerBar.ManaBarText,
+         AlternatePowerBar.RightText},
+
+        {PetFrame.healthbar,
+         PetFrame.healthbar.TextString,
+         PetFrame.healthbar.RightText},
+
+        {PetFrame.manabar,
+         PetFrame.manabar.TextString,
+         PetFrame.manabar.RightText},
 
         {TargetFrame.TargetFrameContent.TargetFrameContentMain.HealthBarsContainer.HealthBar,
          TargetFrame.TargetFrameContent.TargetFrameContentMain.HealthBarsContainer.HealthBarText,

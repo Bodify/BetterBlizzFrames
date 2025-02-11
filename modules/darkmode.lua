@@ -193,6 +193,7 @@ function BBF.DarkmodeFrames(bypass)
 
     local desaturationValue = BetterBlizzFramesDB.darkModeUi and true or false
     local vertexColor = BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeColor or 1
+    local darkerVertexColor = BetterBlizzFramesDB.darkModeUi and (vertexColor - 0.2) or 1
     local lighterVertexColor = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.3) or 1
     local druidComboPoint = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.2) or 1
     local druidComboPointActive = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.1) or 1
@@ -389,18 +390,24 @@ function BBF.DarkmodeFrames(bypass)
 
     --castbars
     if BetterBlizzFramesDB.darkModeCastbars then
+        BBF.darkModeCastbars = true
+        local skip = BetterBlizzFramesDB.classicCastbars
         applySettings(TargetFrame.spellbar.Border, desaturationValue, castbarBorder)
         --applySettings(TargetFrame.spellbar.BorderShield, desaturationValue, vertexColor)
-        applySettings(TargetFrame.spellbar.Background, desaturationValue, lighterVertexColor)
 
         applySettings(FocusFrame.spellbar.Border, desaturationValue, castbarBorder)
         --applySettings(FocusFrame.spellbar.BorderShield, desaturationValue, vertexColor)
-        applySettings(FocusFrame.spellbar.Background, desaturationValue, lighterVertexColor)
-
+        if not skip then
+            applySettings(FocusFrame.spellbar.Background, desaturationValue, lighterVertexColor)
+            applySettings(TargetFrame.spellbar.Background, desaturationValue, lighterVertexColor)
+        end
+        if not BetterBlizzFramesDB.classicCastbarsPlayer then
+            applySettings(PlayerCastingBarFrame.Background, desaturationValue, lighterVertexColor)
+        end
         applySettings(PlayerCastingBarFrame.Border, desaturationValue, castbarBorder)
         --applySettings(PlayerCastingBarFrame.BorderShield, desaturationValue, vertexColor)
-        applySettings(PlayerCastingBarFrame.Background, desaturationValue, lighterVertexColor)
-    else
+        
+    elseif BBF.darkModeCastbars then
         applySettings(TargetFrame.spellbar.Border, false, 1)
         --applySettings(TargetFrame.spellbar.BorderShield, desaturationValue, vertexColor)
         applySettings(TargetFrame.spellbar.Background, false, 1)
@@ -412,6 +419,7 @@ function BBF.DarkmodeFrames(bypass)
         applySettings(PlayerCastingBarFrame.Border, false, 1)
         --applySettings(PlayerCastingBarFrame.BorderShield, desaturationValue, vertexColor)
         applySettings(PlayerCastingBarFrame.Background, false, 1)
+        BBF.darkModeCastbars = nil
     end
 
 
@@ -441,6 +449,14 @@ function BBF.DarkmodeFrames(bypass)
         PlayerFrameAlternateManaBarBorder,
     }) do
         applySettings(v, false, vertexColor)  -- Only applying vertex color, desaturation is kept false
+    end
+
+    for _, v in pairs({
+        AlternatePowerBar.Border,
+        AlternatePowerBar.LeftBorder,
+        AlternatePowerBar.RightBorder
+    }) do
+        applySettings(v, desaturationValue, darkerVertexColor)
     end
 
     local runes = _G.RuneFrame

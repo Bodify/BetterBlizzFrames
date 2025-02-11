@@ -53,9 +53,17 @@ local function getUnitColor(unit)
         local reaction = getUnitReaction(unit)
 
         if reaction == "HOSTILE" then
-            return {r = 1, g = 0, b = 0}, false
+            if UnitIsTapDenied(unit) then
+                return {r = 0.9, g = 0.9, b = 0.9}, false
+            else
+                return {r = 1, g = 0, b = 0}, false
+            end
         elseif reaction == "NEUTRAL" then
-            return {r = 1, g = 1, b = 0}, false
+            if UnitIsTapDenied(unit) then
+                return {r = 0.9, g = 0.9, b = 0.9}, false
+            else
+                return {r = 1, g = 1, b = 0}, false
+            end
         elseif reaction == "FRIENDLY" then
             return {r = 0, g = 1, b = 0}, true
         end
@@ -154,7 +162,7 @@ function BBF.UpdateFrames()
         if UnitExists("party3") then resetFrameColor(PartyFrame.MemberFrame3.HealthBarContainer.HealthBar, "party3") end
         if UnitExists("party4") then resetFrameColor(PartyFrame.MemberFrame4.HealthBarContainer.HealthBar, "party4") end
     end
-    if BetterBlizzFramesDB.colorPetAfterOwner then
+    if colorPetAfterOwner then
         if UnitExists("pet") then updateFrameColorToggleVer(PetFrame.healthbar, "pet") end
     end
 end
@@ -177,6 +185,30 @@ function BBF.ClassColorReputation(frame, unit)
     if color then
         frame:SetDesaturated(true)
         frame:SetVertexColor(color.r, color.g, color.b)
+    end
+
+    if not frame.bbfColorHook then
+        hooksecurefunc(frame, "SetVertexColor", function(self)
+            if self.changing then return end
+            self.changing = true
+            local color = getUnitColor(unit)
+            if color then
+                frame:SetDesaturated(true)
+                frame:SetVertexColor(color.r, color.g, color.b)
+            end
+            self.changing = false
+        end)
+        frame.bbfColorHook = true
+    end
+end
+
+function BBF.ClassColorReputationCaller()
+    if BetterBlizzFramesDB.classColorTargetReputationTexture then
+        BBF.ClassColorReputation(TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor, "target")
+    end
+
+    if BetterBlizzFramesDB.classColorFocusReputationTexture then
+        BBF.ClassColorReputation(FocusFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor, "focus")
     end
 end
 

@@ -57,6 +57,8 @@ local defaultSettings = {
     focusEnlargeAuraEnemy = true,
     focusEnlargeAuraFriendly = true,
 
+    hunterFeignRaidFrameFix = true,
+
     -- Absorb Indicator
     absorbIndicatorScale = 1,
     playerAbsorbAnchor = "TOP",
@@ -93,6 +95,8 @@ local defaultSettings = {
     racialIndicatorNelf = true,
     racialIndicatorHuman = true,
     racialIndicatorUndead = true,
+
+    unitFrameBgTextureColor = {0,0,0,0.5},
 
     --Party castbars
     partyCastBarScale = 0.9,
@@ -500,10 +504,10 @@ function BBF.ClickthroughFrames()
             TargetFrameToT:SetMouseClickEnabled(false)
         end
 
-        if BetterBlizzFramesDB.focusFrameClickthrough then
-            FocusFrame:SetMouseClickEnabled(shift)
-            FocusFrameToT:SetMouseClickEnabled(false)
-        end
+        -- if BetterBlizzFramesDB.focusFrameClickthrough then
+        --     FocusFrame:SetMouseClickEnabled(shift)
+        --     FocusFrameToT:SetMouseClickEnabled(false)
+        -- end
 	end
 end
 
@@ -511,7 +515,7 @@ function BBF.ScaleUnitFrames()
     local db = BetterBlizzFramesDB
     PlayerFrame:SetScale(db.playerFrameScale)
     TargetFrame:SetScale(db.targetFrameScale)
-    FocusFrame:SetScale(db.focusFrameScale)
+    --FocusFrame:SetScale(db.focusFrameScale)
 end
 
 -- Function to toggle test mode on and off
@@ -704,15 +708,15 @@ function BBF.MoveToTFrames()
         TargetFrameToT:SetFrameStrata("MEDIUM")
         --TargetFrameToT.SetPoint=function()end
 
-        FocusFrameToT:ClearAllPoints()
-        if BetterBlizzFramesDB.focusToTAnchor == "BOTTOMRIGHT" then
-            --FocusFrameToT:SetPoint(BBF.GetOppositeAnchor(BetterBlizzFramesDB.focusToTAnchor),FocusFrame,BetterBlizzFramesDB.focusToTAnchor,BetterBlizzFramesDB.focusToTXPos - 108,BetterBlizzFramesDB.focusToTYPos + 10)
-            FocusFrameToT:SetPoint(BetterBlizzFramesDB.focusToTAnchor,FocusFrame,BetterBlizzFramesDB.focusToTAnchor,BetterBlizzFramesDB.focusToTXPos - 35,BetterBlizzFramesDB.focusToTYPos - 10)
-        else
-            FocusFrameToT:SetPoint(BBF.GetOppositeAnchor(BetterBlizzFramesDB.focusToTAnchor),FocusFrame,BetterBlizzFramesDB.focusToTAnchor,BetterBlizzFramesDB.focusToTXPos,BetterBlizzFramesDB.focusToTYPos)
-        end
-        FocusFrameToT:SetScale(BetterBlizzFramesDB.focusToTScale)
-        FocusFrameToT:SetFrameStrata("MEDIUM")
+        -- FocusFrameToT:ClearAllPoints()
+        -- if BetterBlizzFramesDB.focusToTAnchor == "BOTTOMRIGHT" then
+        --     --FocusFrameToT:SetPoint(BBF.GetOppositeAnchor(BetterBlizzFramesDB.focusToTAnchor),FocusFrame,BetterBlizzFramesDB.focusToTAnchor,BetterBlizzFramesDB.focusToTXPos - 108,BetterBlizzFramesDB.focusToTYPos + 10)
+        --     FocusFrameToT:SetPoint(BetterBlizzFramesDB.focusToTAnchor,FocusFrame,BetterBlizzFramesDB.focusToTAnchor,BetterBlizzFramesDB.focusToTXPos - 35,BetterBlizzFramesDB.focusToTYPos - 10)
+        -- else
+        --     FocusFrameToT:SetPoint(BBF.GetOppositeAnchor(BetterBlizzFramesDB.focusToTAnchor),FocusFrame,BetterBlizzFramesDB.focusToTAnchor,BetterBlizzFramesDB.focusToTXPos,BetterBlizzFramesDB.focusToTYPos)
+        -- end
+        -- FocusFrameToT:SetScale(BetterBlizzFramesDB.focusToTScale)
+        -- FocusFrameToT:SetFrameStrata("MEDIUM")
         --FocusFrameToT.SetPoint=function()end
     else
         C_Timer.After(1.5, function()
@@ -720,11 +724,6 @@ function BBF.MoveToTFrames()
         end)
     end
 end
-
-
-
-
-
 
 
 
@@ -808,18 +807,18 @@ function HookUnitFrameTextures()
             ApplyTextureChange("health", PlayerFrameHealthBar)
             ApplyTextureChange("health", PetFrame.healthbar, PetFrame)
             ApplyTextureChange("health", TargetFrameHealthBar, TargetFrame)
-            ApplyTextureChange("health", FocusFrameHealthBar, FocusFrame)
 
             if PlayerReputationFrame then
                 ApplyTextureChange("health", PlayerReputationFrame.texture, PlayerFrame)
             end
             ApplyTextureChange("health", TargetFrameNameBackground, TargetFrame)
+            --ApplyTextureChange("health", FocusFrameHealthBar, FocusFrame)
         end
 
         -- Hook Target of targets Healthbars
         if true then
             ApplyTextureChange("health", TargetFrameToTHealthBar, TargetFrameToT)
-            ApplyTextureChange("health", FocusFrameToTHealthBar, FocusFrameToT)
+            --ApplyTextureChange("health", FocusFrameToTHealthBar, FocusFrameToT)
         end
 
         if not BetterBlizzFramesDB.classColorFrames then
@@ -827,9 +826,9 @@ function HookUnitFrameTextures()
                 PlayerFrameHealthBar,
                 PetFrame.healthbar,
                 TargetFrameHealthBar,
-                FocusFrameHealthBar,
+                --FocusFrameHealthBar,
                 TargetFrameToTHealthBar,
-                FocusFrameToTHealthBar
+                --FocusFrameToTHealthBar
             }
 
             for _, healthbar in ipairs(healthbars) do
@@ -844,12 +843,12 @@ function HookUnitFrameTextures()
         if true then
             manaTextureUnits["player"] = true
             manaTextureUnits["target"] = true
-            manaTextureUnits["focus"] = true
+            --manaTextureUnits["focus"] = true
             manaTextureUnits["pet"] = true
             ApplyTextureChange("mana", PlayerFrameManaBar)
             ApplyTextureChange("mana", PetFrame.manabar)
             ApplyTextureChange("mana", TargetFrameManaBar)
-            ApplyTextureChange("mana", FocusFrameManaBar)
+            --ApplyTextureChange("mana", FocusFrameManaBar)
         end
 
         -- Hook Target of targets Manabars
@@ -858,7 +857,7 @@ function HookUnitFrameTextures()
             manaTextureUnits["targettarget"] = true
             manaTextureUnits["focustarget"] = true
             ApplyTextureChange("mana", TargetFrameToTManaBar)
-            ApplyTextureChange("mana", FocusFrameToTManaBar)
+            --ApplyTextureChange("mana", FocusFrameToTManaBar)
         end
     end
 end
@@ -968,11 +967,6 @@ end
 
 
 
-
-
-
-
-
 -- Local table to store the original settings
 local originalSettings = {
     backedUp = false,
@@ -990,13 +984,13 @@ local function backupSettings()
             CharacterMicroButton = {CharacterMicroButton:GetPoint()},
             SpellbookMicroButton = {SpellbookMicroButton:GetPoint()},
             TalentMicroButton = {TalentMicroButton:GetPoint()},
-            AchievementMicroButton = {AchievementMicroButton:GetPoint()},
+            --AchievementMicroButton = {AchievementMicroButton:GetPoint()},
             QuestLogMicroButton = {QuestLogMicroButton:GetPoint()},
             GuildMicroButton = {GuildMicroButton:GetPoint()},
-            CollectionsMicroButton = {CollectionsMicroButton:GetPoint()},
-            PVPMicroButton = {PVPMicroButton:GetPoint()},
-            LFGMicroButton = {LFGMicroButton:GetPoint()},
-            EJMicroButton = {EJMicroButton:GetPoint()},
+            --CollectionsMicroButton = {CollectionsMicroButton:GetPoint()},
+            --PVPMicroButton = {PVPMicroButton:GetPoint()},
+            --LFGMicroButton = {LFGMicroButton:GetPoint()},
+            --EJMicroButton = {EJMicroButton:GetPoint()},
             MainMenuMicroButton = {MainMenuMicroButton:GetPoint()},
             HelpMicroButton = {HelpMicroButton:GetPoint()},
             MainMenuBarBackpackButton = {MainMenuBarBackpackButton:GetPoint()},
@@ -1051,13 +1045,13 @@ local function restoreSettings()
         CharacterMicroButton:SetPoint(unpack(originalSettings.positions.CharacterMicroButton))
         SpellbookMicroButton:SetPoint(unpack(originalSettings.positions.SpellbookMicroButton))
         TalentMicroButton:SetPoint(unpack(originalSettings.positions.TalentMicroButton))
-        AchievementMicroButton:SetPoint(unpack(originalSettings.positions.AchievementMicroButton))
+        --AchievementMicroButton:SetPoint(unpack(originalSettings.positions.AchievementMicroButton))
         QuestLogMicroButton:SetPoint(unpack(originalSettings.positions.QuestLogMicroButton))
         GuildMicroButton:SetPoint(unpack(originalSettings.positions.GuildMicroButton))
-        CollectionsMicroButton:SetPoint(unpack(originalSettings.positions.CollectionsMicroButton))
-        PVPMicroButton:SetPoint(unpack(originalSettings.positions.PVPMicroButton))
-        LFGMicroButton:SetPoint(unpack(originalSettings.positions.LFGMicroButton))
-        EJMicroButton:SetPoint(unpack(originalSettings.positions.EJMicroButton))
+        --CollectionsMicroButton:SetPoint(unpack(originalSettings.positions.CollectionsMicroButton))
+        --PVPMicroButton:SetPoint(unpack(originalSettings.positions.PVPMicroButton))
+        --LFGMicroButton:SetPoint(unpack(originalSettings.positions.LFGMicroButton))
+        --EJMicroButton:SetPoint(unpack(originalSettings.positions.EJMicroButton))
         MainMenuMicroButton:SetPoint(unpack(originalSettings.positions.MainMenuMicroButton))
         HelpMicroButton:SetPoint(unpack(originalSettings.positions.HelpMicroButton))
         MainMenuBarBackpackButton:SetPoint(unpack(originalSettings.positions.MainMenuBarBackpackButton))
@@ -1127,74 +1121,77 @@ end
 
 function BBF.FixStupidBlizzPTRShit()
     if BetterBlizzFramesDB.playerFrameOCD then
-        if not originalSettings.backedUp then
-            backupSettings()
-        end
+        -- if not originalSettings.backedUp then
+        --     backupSettings()
+        -- end
 
         if C_AddOns.IsAddOnLoaded("Bartender4") then return end
-        MainMenuBarTextureExtender:Hide()
-        MainMenuBarTexture3:SetPoint("BOTTOM", MainMenuBarArtFrame, "BOTTOM", 371, 0)
-        MainMenuBarTexture3:SetWidth(260)
-        CharacterMicroButton:SetPoint("BOTTOMLEFT", MainMenuBarArtFrame, "BOTTOMLEFT", 550, 2)
-        SpellbookMicroButton:SetPoint("BOTTOMLEFT", CharacterMicroButton, "BOTTOMRIGHT", -3.5, 0)
-        TalentMicroButton:SetPoint("BOTTOMLEFT", SpellbookMicroButton, "BOTTOMRIGHT", -3.5, 0)
-        AchievementMicroButton:SetPoint("BOTTOMLEFT", TalentMicroButton, "BOTTOMRIGHT", -3.5, 0)
-        QuestLogMicroButton:SetPoint("BOTTOMLEFT", AchievementMicroButton, "BOTTOMRIGHT", -3.5, 0)
-        GuildMicroButton:SetPoint("BOTTOMLEFT", QuestLogMicroButton, "BOTTOMRIGHT", -3.5, 0)
-        CollectionsMicroButton:SetPoint("BOTTOMLEFT", GuildMicroButton, "BOTTOMRIGHT", -3.5, 0)
-        PVPMicroButton:SetPoint("BOTTOMLEFT", CollectionsMicroButton, "BOTTOMRIGHT", -3.5, 0)
-        LFGMicroButton:SetPoint("BOTTOMLEFT", PVPMicroButton, "BOTTOMRIGHT", -3.5, 0)
-        EJMicroButton:SetPoint("BOTTOMLEFT", LFGMicroButton, "BOTTOMRIGHT", -3.5, 0)
-        MainMenuMicroButton:SetPoint("BOTTOMLEFT", EJMicroButton, "BOTTOMRIGHT", -3.5, 0)
-        HelpMicroButton:SetPoint("BOTTOMLEFT", MainMenuMicroButton, "BOTTOMRIGHT", -3.5, 0)
+        -- MainMenuBarTextureExtender:Hide()
+        -- MainMenuBarTexture3:SetPoint("BOTTOM", MainMenuBarArtFrame, "BOTTOM", 371, 0)
+        -- MainMenuBarTexture3:SetWidth(260)
+        -- CharacterMicroButton:SetPoint("BOTTOMLEFT", MainMenuBarArtFrame, "BOTTOMLEFT", 550, 2)
+        -- SpellbookMicroButton:SetPoint("BOTTOMLEFT", CharacterMicroButton, "BOTTOMRIGHT", -3.5, 0)
+        -- TalentMicroButton:SetPoint("BOTTOMLEFT", SpellbookMicroButton, "BOTTOMRIGHT", -3.5, 0)
+        -- --AchievementMicroButton:SetPoint("BOTTOMLEFT", TalentMicroButton, "BOTTOMRIGHT", -3.5, 0)
+        -- QuestLogMicroButton:SetPoint("BOTTOMLEFT", TalentMicroButton, "BOTTOMRIGHT", -3.5, 0)
+        -- GuildMicroButton:SetPoint("BOTTOMLEFT", QuestLogMicroButton, "BOTTOMRIGHT", -3.5, 0)
+        -- --CollectionsMicroButton:SetPoint("BOTTOMLEFT", GuildMicroButton, "BOTTOMRIGHT", -3.5, 0)
+        -- --PVPMicroButton:SetPoint("BOTTOMLEFT", GuildMicroButton, "BOTTOMRIGHT", -3.5, 0)
+        -- --LFGMicroButton:SetPoint("BOTTOMLEFT", GuildMicroButton, "BOTTOMRIGHT", -3.5, 0)
+        -- --EJMicroButton:SetPoint("BOTTOMLEFT", GuildMicroButton, "BOTTOMRIGHT", -3.5, 0)
+        -- MainMenuMicroButton:SetPoint("BOTTOMLEFT", GuildMicroButton, "BOTTOMRIGHT", -3.5, 0)
+        -- HelpMicroButton:SetPoint("BOTTOMLEFT", MainMenuMicroButton, "BOTTOMRIGHT", -3.5, 0)
 
-        MainMenuBarBackpackButton:SetPoint("BOTTOMRIGHT", MainMenuBarArtFrame, "BOTTOMRIGHT", -25, 6)
-        CharacterBag1Slot:SetPoint("RIGHT", CharacterBag0Slot, "LEFT", -2, 0)
-        CharacterBag2Slot:SetPoint("RIGHT", CharacterBag1Slot, "LEFT", -2, 0)
-        CharacterBag3Slot:SetPoint("RIGHT", CharacterBag2Slot, "LEFT", -2, 0)
+        -- MainMenuBarBackpackButton:SetPoint("BOTTOMRIGHT", MainMenuBarArtFrame, "BOTTOMRIGHT", -25, 6)
+        -- CharacterBag1Slot:SetPoint("RIGHT", CharacterBag0Slot, "LEFT", -2, 0)
+        -- CharacterBag2Slot:SetPoint("RIGHT", CharacterBag1Slot, "LEFT", -2, 0)
+        -- CharacterBag3Slot:SetPoint("RIGHT", CharacterBag2Slot, "LEFT", -2, 0)
 
-        MainMenuBarBackpackButton:SetSize(32, 32)
-        MainMenuBarBackpackButtonNormalTexture:SetSize(51, 52)
-        for i = 0, 3 do
-            local border = _G["CharacterBag" .. i .. "SlotNormalTexture"]
-            local icon = _G["CharacterBag" .. i .. "SlotIconTexture"]
-            icon:SetSize(32, 33)
-            icon:SetTexCoord(0.06, 0.94, 0.06, 0.94)
-            border:SetSize(52, 53)
-        end
+        -- MainMenuBarBackpackButton:SetSize(32, 32)
+        -- MainMenuBarBackpackButtonNormalTexture:SetSize(51, 52)
+        -- for i = 0, 3 do
+        --     local border = _G["CharacterBag" .. i .. "SlotNormalTexture"]
+        --     local icon = _G["CharacterBag" .. i .. "SlotIconTexture"]
+        --     icon:SetSize(32, 33)
+        --     icon:SetTexCoord(0.06, 0.94, 0.06, 0.94)
+        --     border:SetSize(52, 53)
+        -- end
 
-        MainMenuExpBar:SetWidth(1012)
-        MainMenuExpBar:SetPoint("TOP", MainMenuBar, "TOP", -10, 0)
-        MainMenuXPBarTexture0:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", -382, 3)
-        MainMenuXPBarTexture0:SetWidth(255)
-        MainMenuXPBarTexture1:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", -126, 3)
-        MainMenuXPBarTexture1:SetWidth(255)
-        MainMenuXPBarTexture2:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", 126, 3)
-        MainMenuXPBarTexture2:SetWidth(255)
-        MainMenuXPBarTexture3:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", 381, 3)
-        MainMenuXPBarTexture3:SetWidth(255)
-        MainMenuBarRightEndCap:SetPoint("BOTTOM", MainMenuBarArtFrame, "BOTTOM", 533, 0)
+        local a,b,c,d,e = TargetFrameToTPortrait:GetPoint()
+        TargetFrameToTPortrait:SetPoint(a,b,c,4.5,-5.5)
 
-        MainMenuMaxLevelBar0:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", -382, 2)
-        MainMenuMaxLevelBar0:SetWidth(255)
-        MainMenuMaxLevelBar1:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", -126, 2)
-        MainMenuMaxLevelBar1:SetWidth(255)
-        MainMenuMaxLevelBar2:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", 126, 2)
-        MainMenuMaxLevelBar2:SetWidth(255)
-        MainMenuMaxLevelBar3:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", 381, 2)
-        MainMenuMaxLevelBar3:SetWidth(254)
+        -- MainMenuExpBar:SetWidth(1012)
+        -- MainMenuExpBar:SetPoint("TOP", MainMenuBar, "TOP", -10, 0)
+        -- MainMenuXPBarTexture0:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", -382, 3)
+        -- MainMenuXPBarTexture0:SetWidth(255)
+        -- MainMenuXPBarTexture1:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", -126, 3)
+        -- MainMenuXPBarTexture1:SetWidth(255)
+        -- MainMenuXPBarTexture2:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", 126, 3)
+        -- MainMenuXPBarTexture2:SetWidth(255)
+        -- MainMenuXPBarTexture3:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", 381, 3)
+        -- MainMenuXPBarTexture3:SetWidth(255)
+        -- MainMenuBarRightEndCap:SetPoint("BOTTOM", MainMenuBarArtFrame, "BOTTOM", 533, 0)
 
-        ReputationWatchBar:SetWidth(1012)
-        ReputationWatchBar.StatusBar:SetWidth(1015)
-        ReputationWatchBar:SetPoint("TOP", MainMenuBar, "TOP", -13, 0)
-        ReputationWatchBar.StatusBar.XPBarTexture0:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", -382, 3)
-        ReputationWatchBar.StatusBar.XPBarTexture0:SetWidth(255)
-        ReputationWatchBar.StatusBar.XPBarTexture1:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", -126, 3)
-        ReputationWatchBar.StatusBar.XPBarTexture1:SetWidth(255)
-        ReputationWatchBar.StatusBar.XPBarTexture2:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", 126, 3)
-        ReputationWatchBar.StatusBar.XPBarTexture2:SetWidth(255)
-        ReputationWatchBar.StatusBar.XPBarTexture3:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", 381, 3)
-        ReputationWatchBar.StatusBar.XPBarTexture3:SetWidth(255)
+        -- MainMenuMaxLevelBar0:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", -382, 2)
+        -- MainMenuMaxLevelBar0:SetWidth(255)
+        -- MainMenuMaxLevelBar1:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", -126, 2)
+        -- MainMenuMaxLevelBar1:SetWidth(255)
+        -- MainMenuMaxLevelBar2:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", 126, 2)
+        -- MainMenuMaxLevelBar2:SetWidth(255)
+        -- MainMenuMaxLevelBar3:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", 381, 2)
+        -- MainMenuMaxLevelBar3:SetWidth(254)
+
+        -- ReputationWatchBar:SetWidth(1012)
+        -- ReputationWatchBar.StatusBar:SetWidth(1015)
+        -- ReputationWatchBar:SetPoint("TOP", MainMenuBar, "TOP", -13, 0)
+        -- ReputationWatchBar.StatusBar.XPBarTexture0:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", -382, 3)
+        -- ReputationWatchBar.StatusBar.XPBarTexture0:SetWidth(255)
+        -- ReputationWatchBar.StatusBar.XPBarTexture1:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", -126, 3)
+        -- ReputationWatchBar.StatusBar.XPBarTexture1:SetWidth(255)
+        -- ReputationWatchBar.StatusBar.XPBarTexture2:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", 126, 3)
+        -- ReputationWatchBar.StatusBar.XPBarTexture2:SetWidth(255)
+        -- ReputationWatchBar.StatusBar.XPBarTexture3:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", 381, 3)
+        -- ReputationWatchBar.StatusBar.XPBarTexture3:SetWidth(255)
 
         BBF.ActionBarIconZoom()
         ChangeHotkeyWidth(32)
@@ -1211,7 +1208,7 @@ function BBF.FixStupidBlizzPTRShit()
         BBF.hotkeyCancel = true
         MainMenuBarTextureExtender:Show()
         ChangeHotkeyWidth(28)
-        restoreSettings()
+        --restoreSettings()
         BBF.ActionBarIconZoom()
     end
 end
@@ -1233,6 +1230,68 @@ function BBF.ClassPortraits()
             portrait:SetTexCoord(0, 1, 0, 1)
         end
     end)
+end
+
+function BBF.HunterFeignRaidFrameFix()
+    if BBF.HunterFeignFix then return end
+    if not BetterBlizzFramesDB.hunterFeignRaidFrameFix then return end
+
+    local function checkFeignDeath(unit)
+        if UnitIsDead(unit) and select(2, UnitClass(unit)) == "HUNTER" then
+            for i = 1, 40 do
+                local buffName, _, _, _, _, _, _, _, _, spellId = UnitBuff(unit, i)
+                if not buffName then break end
+                if spellId == 5384 then
+                    return true
+                end
+            end
+        end
+    end
+
+    local function GetHealthText(unit, frame)
+        local statusTextDisplay = (frame.optionTable and frame.optionTable.displayStatusText) and frame.optionTable.healthText
+        local health, maxHealth = frame.lastKnownHealth, UnitHealthMax(unit)
+
+        if statusTextDisplay == "losthealth" then
+            return "-" .. (maxHealth - health)
+        elseif statusTextDisplay == "perc" then
+            return math.floor((health / maxHealth) * 100 + 0.5) .. "%"
+        elseif statusTextDisplay == "health" then
+            return health
+        end
+        return "not dead lol"
+    end
+
+    hooksecurefunc("CompactUnitFrame_UpdateHealth", function(frame)
+        local unit = frame.unit
+        if unit and unit:find("nameplate") then return end
+
+        if select(2, UnitClass(unit)) ~= "HUNTER" then return end
+
+        local health = UnitHealth(unit)
+        if health > 0 then
+            frame.lastKnownHealth = health
+        end
+
+        local isFeignDeath = checkFeignDeath(unit)
+        if isFeignDeath then
+            if not frame.statusText.hookedStatusTextBBF then
+                hooksecurefunc(frame.statusText, "SetText", function(self)
+                    if self.changing then return end
+                    local isFeignDeath = checkFeignDeath(frame.unit)
+                    if isFeignDeath then
+                        self.changing = true
+                        self:SetText(GetHealthText(frame.unit, frame))
+                        self.changing = false
+                    end
+                end)
+                frame.statusText.hookedStatusTextBBF = true
+            end
+            frame.healthBar:SetValue(frame.lastKnownHealth)
+        end
+    end)
+
+    BBF.HunterFeignFix = true
 end
 
 local function TurnTestModesOff()
@@ -1281,7 +1340,7 @@ end
 function BBF.UnitFrameBackgroundTexture()
     BBF.AddBackgroundTextureToUnitFrames(PlayerFrame)
     BBF.AddBackgroundTextureToUnitFrames(TargetFrame)
-    BBF.AddBackgroundTextureToUnitFrames(FocusFrame)
+    --BBF.AddBackgroundTextureToUnitFrames(FocusFrame)
 end
 
 -- Event registration for PLAYER_LOGIN
@@ -1297,19 +1356,18 @@ Frame:SetScript("OnEvent", function(...)
     BBF.MoveToTFrames()
     BBF.HookHealthbarColors()
     BBF.UnitFrameBackgroundTexture()
+    BBF.HunterFeignRaidFrameFix()
     if BetterBlizzFramesDB.classPortraits then
         BBF.ClassPortraits()
     end
-    BBF.ClassColorReputationCaller()
 
-    C_Timer.After(0, function()
-        BBF.PlayerReputationColor()
+    C_Timer.After(0.2, function()
         BBF.SetCustomFonts()
         BBF.UpdateCustomTextures()
     end)
 
     local function LoginVariablesLoaded()
-        if BBF.variablesLoaded then
+        if true then
             -- add setings updates
             BBF.UpdateUserDarkModeSettings()
             BBF.ChatFilterCaller()
@@ -1327,6 +1385,7 @@ Frame:SetScript("OnEvent", function(...)
             if BetterBlizzFramesDB.hideArenaFrames then
                 BBF.HideArenaFrames()
             end
+            BBF.ClassColorReputationCaller()
 
             BBF.ScaleUnitFrames()
             BBF.MoveToTFrames()
@@ -1346,9 +1405,7 @@ Frame:SetScript("OnEvent", function(...)
             if BetterBlizzFramesDB.playerFrameOCD then
                 BBF.FixStupidBlizzPTRShit()
             end
-            BBF.UpdateUserTargetSettings()
-            BBF.AllCaller()
-            C_Timer.After(1, function()
+            C_Timer.After(0, function()
                 -- if BetterBlizzFramesDB.classColorTargetNames and BetterBlizzFramesDB.classColorLevelText then
                 --     BBF.HookLevelText()
                 -- end
@@ -1360,6 +1417,7 @@ Frame:SetScript("OnEvent", function(...)
                     BBF.UpdateFrames()
                 end
                 BBF.DarkmodeFrames()
+                BBF.PlayerReputationColor()
                 --BBF.ClassColorPlayerName()
                 --BBF.CheckForAuraBorders() bodify cata
                 -- if BetterBlizzFramesDB.useMiniFocusFrame then
@@ -1536,8 +1594,8 @@ end)
 PlayerEnteringWorld:RegisterEvent("PLAYER_ENTERING_WORLD")
 
 
-TargetFrame.HealthBar.OtherHealPredictionBar.Fill:SetVertexColor(0,1,0)
-TargetFrame.HealthBar.MyHealPredictionBar.Fill:SetVertexColor(0,1,0)
+-- TargetFrame.HealthBar.OtherHealPredictionBar.Fill:SetVertexColor(0,1,0)
+-- TargetFrame.HealthBar.MyHealPredictionBar.Fill:SetVertexColor(0,1,0)
 
 -- TargetFrame.HealthBar.BBPFill = TargetFrame.HealthBar.OtherHealPredictionBar:CreateTexture(nil, "OVERLAY");
 -- TargetFrame.HealthBar.BBPFill:SetTexture(137012)

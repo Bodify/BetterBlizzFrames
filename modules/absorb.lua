@@ -1,3 +1,5 @@
+local LSM = LibStub("LibSharedMedia-3.0")
+
 local function GetMaxAbsorbAuraIcon(unit)
     local maxAbsorb = 0
     local maxAbsorbIcon = nil
@@ -17,19 +19,20 @@ local function GetMaxAbsorbAuraIcon(unit)
 end
 
 local function UpdateAbsorbIndicator(frame, unit)
-    if not BetterBlizzFramesDB.absorbIndicator and not BetterBlizzFramesDB.absorbIndicatorTestMode then return end
+    local db = BetterBlizzFramesDB
+    if not db.absorbIndicator and not db.absorbIndicatorTestMode then return end
 
     local settingsPrefix = unit
-    local showAmount = BetterBlizzFramesDB[settingsPrefix .. "AbsorbAmount"]
-    local showIcon = BetterBlizzFramesDB[settingsPrefix .. "AbsorbIcon"]
-    local xPos = BetterBlizzFramesDB.playerAbsorbXPos
-    local yPos = BetterBlizzFramesDB.playerAbsorbYPos
-    local anchor = BetterBlizzFramesDB.playerAbsorbAnchor
+    local showAmount = db[settingsPrefix .. "AbsorbAmount"]
+    local showIcon = db[settingsPrefix .. "AbsorbIcon"]
+    local xPos = db.playerAbsorbXPos
+    local yPos = db.playerAbsorbYPos
+    local anchor = db.playerAbsorbAnchor
     local reverseAnchor = BBF.GetOppositeAnchor(anchor)
-    local darkModeOn = BetterBlizzFramesDB.darkModeUi
-    local vertexColor = darkModeOn and BetterBlizzFramesDB.darkModeColor or 1
-    local testMode = BetterBlizzFramesDB.absorbIndicatorTestMode
-    local flipIconText = BetterBlizzFramesDB.absorbIndicatorFlipIconText
+    local darkModeOn = db.darkModeUi
+    local vertexColor = darkModeOn and db.darkModeColor or 1
+    local testMode = db.absorbIndicatorTestMode
+    local flipIconText = db.absorbIndicatorFlipIconText
 
     if not frame.absorbParent then
         frame.absorbParent = CreateFrame("Frame", nil, frame, "BackdropTemplate")
@@ -42,7 +45,15 @@ local function UpdateAbsorbIndicator(frame, unit)
         frame.absorbIcon:SetPoint("CENTER", frame.absorbParent, "CENTER") -- Position the icon inside the parent frame
 
         frame.absorbIndicator = frame.absorbParent:CreateFontString(nil, "OVERLAY")
-        frame.absorbIndicator:SetFont("Fonts\\FRIZQT__.TTF", 16, "OUTLINE")
+
+        if db.changeUnitFrameFont then
+            local fontName = db.unitFrameFont
+            local fontPath = LSM:Fetch(LSM.MediaType.FONT, fontName)
+            local outline = db.unitFrameFontOutline or "THINOUTLINE"
+            frame.absorbIndicator:SetFont(fontPath, 16, outline)
+        else
+            frame.absorbIndicator:SetFont("Fonts\\FRIZQT__.TTF", 16, "OUTLINE")
+        end
         frame.absorbIndicator:SetPoint("CENTER", frame.absorbParent, "CENTER") -- Position the text inside the parent frame
         frame.absorbIndicator:SetDrawLayer("OVERLAY", 7)
     end
@@ -275,10 +286,10 @@ function BBF.AbsorbCaller()
         targetChangeFrame:RegisterEvent("PLAYER_FOCUS_CHANGED")
         targetChangeFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
         targetChangeFrame:SetScript("OnEvent", OnTargetChange)
-        UpdateAbsorbIndicator(PlayerFrame, "player")
-        UpdateAbsorbIndicator(FocusFrame, "focus")
-        UpdateAbsorbIndicator(TargetFrame, "target")
     end
+    UpdateAbsorbIndicator(PlayerFrame, "player")
+    UpdateAbsorbIndicator(FocusFrame, "focus")
+    UpdateAbsorbIndicator(TargetFrame, "target")
     if not BetterBlizzFramesDB.absorbIndicator and not BetterBlizzFramesDB.absorbIndicatorTestMode then
         if TargetFrame.absorbIcon and TargetFrame.absorbIcon.border then TargetFrame.absorbIcon.border:SetAlpha(0) end
         if TargetFrame.absorbIndicator then TargetFrame.absorbIndicator:SetAlpha(0) end

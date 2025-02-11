@@ -609,12 +609,12 @@ function BBF.CastbarAdjustCaller()
         if shouldAdjustCastbar then
             adjustCastbar(TargetFrame.spellbar, TargetFrameSpellBar)
         end
-        if shouldAdjustCastbarFocus then
-            adjustCastbar(FocusFrame.spellbar, FocusFrameSpellBar)
-        end
+        -- if shouldAdjustCastbarFocus then
+        --     adjustCastbar(FocusFrame.spellbar, FocusFrameSpellBar)
+        -- end
     else
         DefaultCastbarAdjustment(TargetFrame.spellbar, TargetFrameSpellBar)
-        DefaultCastbarAdjustment(FocusFrame.spellbar, FocusFrameSpellBar)
+        --DefaultCastbarAdjustment(FocusFrame.spellbar, FocusFrameSpellBar)
     end
 end
 
@@ -1091,7 +1091,7 @@ local function AdjustAuras(self, frameType)
 
             local columnIndex, rowIndex
             columnIndex = (i - 1) % aurasPerRow
-            rowIndex = math.ceil(i / aurasPerRow)
+            rowIndex = math_ceil(i / aurasPerRow)
 
             rowWidths[rowIndex] = rowWidths[rowIndex] or initialOffsetX
 
@@ -1106,7 +1106,7 @@ local function AdjustAuras(self, frameType)
             end
 
             local offsetX = rowWidths[rowIndex]
-            rowHeights[rowIndex] = math.max(auraSize, (rowHeights[rowIndex] or 0))
+            rowHeights[rowIndex] = math_max(auraSize, (rowHeights[rowIndex] or 0))
             rowWidths[rowIndex] = offsetX + auraSize
 
             aura:ClearAllPoints()
@@ -1813,7 +1813,7 @@ local function AdjustAuras(self, frameType)
                 self.rowHeights[#self.rowHeights] = self.rowHeights[#self.rowHeights] + auraTypeGap
             end
             for _, height in ipairs(buffRowHeights) do
-                table.insert(self.rowHeights, height)
+                table_insert(self.rowHeights, height)
             end
         else
             self.rowHeights = adjustAuraPosition(debuffs, 0)
@@ -1828,7 +1828,7 @@ local function AdjustAuras(self, frameType)
                 self.rowHeights[#self.rowHeights] = self.rowHeights[#self.rowHeights] + auraTypeGap
             end
             for _, height in ipairs(buffRowHeights) do
-                table.insert(self.rowHeights, height)
+                table_insert(self.rowHeights, height)
             end
         end
     else
@@ -1846,7 +1846,7 @@ local function AdjustAuras(self, frameType)
                 self.rowHeights[#self.rowHeights] = self.rowHeights[#self.rowHeights] + auraTypeGap
             end
             for _, height in ipairs(debuffRowHeights) do
-                table.insert(self.rowHeights, height)
+                table_insert(self.rowHeights, height)
             end
         else
             self.rowHeights = adjustAuraPosition(buffs, 0)
@@ -1861,7 +1861,7 @@ local function AdjustAuras(self, frameType)
                 self.rowHeights[#self.rowHeights] = self.rowHeights[#self.rowHeights] + auraTypeGap
             end
             for _, height in ipairs(debuffRowHeights) do
-                table.insert(self.rowHeights, height)
+                table_insert(self.rowHeights, height)
             end
         end
     end
@@ -1871,7 +1871,7 @@ local function AdjustAuras(self, frameType)
         if frameType == "target" then
             adjustCastbar(TargetFrame.spellbar, TargetFrameSpellBar)
         elseif frameType == "focus" then
-            adjustCastbar(FocusFrame.spellbar, FocusFrameSpellBar)
+            --adjustCastbar(FocusFrame.spellbar, FocusFrameSpellBar)
         end
     end
     addMasque(frameType)
@@ -2892,7 +2892,7 @@ function BBF.RefreshAllAuraFrames()
         end
         --PersonalDebuffFrameFilterAndGrid(DebuffFrame)
         AdjustAuras(TargetFrame, "target")
-        AdjustAuras(FocusFrame, "focus")
+        --AdjustAuras(FocusFrame, "focus")
 
         if ToggleHiddenAurasButton then
             ToggleHiddenAurasButton:SetPoint("TOPLEFT", BuffFrame, "TOPRIGHT", 2 + BetterBlizzFramesDB.playerAuraSpacingX, 0)
@@ -2942,7 +2942,7 @@ function BBF.SetupMasqueSupport()
             MsqSkinIcon(CastingBarFrame, MasqueCastbars)
         end
         MsqSkinIcon(TargetFrameSpellBar, MasqueCastbars)
-        MsqSkinIcon(FocusFrameSpellBar, MasqueCastbars)
+        --MsqSkinIcon(FocusFrameSpellBar, MasqueCastbars)
         if BetterBlizzFramesDB.showPartyCastbar and BetterBlizzFramesDB.showPartyCastBarIcon then
             C_Timer.After(3, function()
                 for i = 1, 5 do
@@ -2994,8 +2994,8 @@ function BBF.SetupMasqueSupport()
         hooksecurefunc("TargetFrame_UpdateAuras", function(self)
             if self == TargetFrame then
                 BBF.MasqueUnitFrames(self, MasqueTargetBuffs, MasqueTargetDebuffs)
-            elseif self == FocusFrame then
-                BBF.MasqueUnitFrames(self, MasqueFocusBuffs, MasqueFocusDebuffs)
+            -- elseif self == FocusFrame then
+            --     BBF.MasqueUnitFrames(self, MasqueFocusBuffs, MasqueFocusDebuffs)
             end
         end)
 
@@ -3196,13 +3196,13 @@ function BBF.HookPlayerAndTargetAuras()
                 DefaultCastbarAdjustment(TargetFrame.spellbar, TargetFrameSpellBar)
             end
         end);
-        hooksecurefunc(FocusFrame.spellbar, "SetPoint", function()
-            if shouldAdjustCastbarFocus then
-                adjustCastbar(FocusFrame.spellbar, FocusFrameSpellBar)
-            else
-                DefaultCastbarAdjustment(FocusFrame.spellbar, FocusFrameSpellBar)
-            end
-        end);
+        -- hooksecurefunc(FocusFrame.spellbar, "SetPoint", function()
+        --     if shouldAdjustCastbarFocus then
+        --         adjustCastbar(FocusFrame.spellbar, FocusFrameSpellBar)
+        --     else
+        --         DefaultCastbarAdjustment(FocusFrame.spellbar, FocusFrameSpellBar)
+        --     end
+        -- end);
     end
 
     if not smokeBombDetector then

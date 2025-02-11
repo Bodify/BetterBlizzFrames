@@ -217,10 +217,10 @@ function BBF.UpdatePetCastbar()
         petSpellBar:SetScale(castbarScale)
         petSpellBar:SetWidth(width)
         petSpellBar:SetHeight(height)
-        petSpellBar.Text:SetAlpha(BetterBlizzFramesDB.petCastbarShowText and 1 or 0)
-        petSpellBar.Border:SetAlpha(BetterBlizzFramesDB.petCastbarShowBorder and 1 or 0)
-        petSpellBar.BorderShield:SetAlpha(BetterBlizzFramesDB.petCastbarShowBorder and 1 or 0)
-        petSpellBar.Flash:SetParent(BetterBlizzFramesDB.petCastbarShowBorder and petSpellBar or hiddenFrame)
+        petSpellBar.Text:SetAlpha(BetterBlizzFramesDB.petCastBarShowText and 1 or 0)
+        petSpellBar.Border:SetAlpha(BetterBlizzFramesDB.petCastBarShowBorder and 1 or 0)
+        petSpellBar.BorderShield:SetAlpha(BetterBlizzFramesDB.petCastBarShowBorder and 1 or 0)
+        petSpellBar.Flash:SetParent(BetterBlizzFramesDB.petCastBarShowBorder and petSpellBar or hiddenFrame)
 
         local petFrame = PetFrame -- Assuming PetFrame is the frame you want to attach to
         if petFrame then
@@ -283,7 +283,7 @@ function BBF.CreateCastbars()
         BBF.UpdateCastbars()
         castBarsCreated = true
     end
-    if not petCastbarCreated and (BetterBlizzFramesDB.petCastbar or BetterBlizzFramesDB.petCastbarTestmode) then
+    if not petCastbarCreated and (BetterBlizzFramesDB.petCastbar or BetterBlizzFramesDB.petCastBarTestMode) then
         local petSpellBar = CreateFrame("StatusBar", "PetSpellBar", UIParent, "SmallCastingBarFrameTemplate")
         petSpellBar:SetScale(1)
 
@@ -300,6 +300,11 @@ function BBF.CreateCastbars()
         petSpellBar:SetHeight(BetterBlizzFramesDB.petCastBarHeight)
         Mixin(petSpellBar, SmoothStatusBarMixin)
         petSpellBar:SetMinMaxSmoothedValue(0, 100)
+
+        petSpellBar.Text:SetAlpha(BetterBlizzFramesDB.petCastBarShowBorder and 1 or 0)
+        petSpellBar.Border:SetAlpha(BetterBlizzFramesDB.petCastBarShowBorder and 1 or 0)
+        petSpellBar.BorderShield:SetAlpha(BetterBlizzFramesDB.petCastBarShowBorder and 1 or 0)
+        petSpellBar.Flash:SetParent(BetterBlizzFramesDB.petCastBarShowBorder and petSpellBar or hiddenFrame)
 
         petSpellBar.Timer = petSpellBar:CreateFontString(nil, "OVERLAY", "SystemFont_Shadow_Med1_Outline")
         petSpellBar.Timer:SetPoint("LEFT", petSpellBar, "RIGHT", 3, 0)
@@ -423,12 +428,14 @@ function BBF.petCastBarTestMode()
         end
     else
         -- Stop the timer when exiting test mode
-        if spellBars["pet"].tickTimer then
-            spellBars["pet"].tickTimer:Cancel()
-            spellBars["pet"].tickTimer = nil
+        if spellBars["pet"] then
+            if spellBars["pet"].tickTimer then
+                spellBars["pet"].tickTimer:Cancel()
+                spellBars["pet"].tickTimer = nil
+            end
+            spellBars["pet"]:SetAlpha(0)
+            spellBars["pet"].FakeTimer:Hide()
         end
-        spellBars["pet"]:SetAlpha(0)
-        spellBars["pet"].FakeTimer:Hide()
     end
 end
 
@@ -494,8 +501,8 @@ local function CastBarTimer(bar)
         castBarSetting = BetterBlizzFramesDB.playerCastBarTimer
     elseif bar == TargetFrameSpellBar then
         castBarSetting = BetterBlizzFramesDB.targetCastBarTimer
-    elseif bar == FocusFrameSpellBar then
-        castBarSetting = BetterBlizzFramesDB.focusCastBarTimer
+    -- elseif bar == FocusFrameSpellBar then
+    --     castBarSetting = BetterBlizzFramesDB.focusCastBarTimer
     end
     if castBarSetting and not bar.Timer then
         bar.Timer = bar:CreateFontString(nil, "OVERLAY")
@@ -527,12 +534,12 @@ end
 function BBF.CastBarTimerCaller()
     CastBarTimer(CastingBarFrame)
     CastBarTimer(TargetFrameSpellBar)
-    CastBarTimer(FocusFrameSpellBar)
+    --CastBarTimer(FocusFrameSpellBar)
 end
 
 
 local targetSpellBarTexture = TargetFrameSpellBar:GetStatusBarTexture()
-local focusSpellBarTexture = FocusFrameSpellBar:GetStatusBarTexture()
+--local focusSpellBarTexture = FocusFrameSpellBar:GetStatusBarTexture()
 local targetCastbarEdgeHooked
 local focusCastbarEdgeHooked
 
@@ -720,109 +727,109 @@ function BBF.CastbarRecolorWidgets()
             targetCastbarEdgeHooked = true
         end
 
-        if (focusCastbarEdgeHighlight or castBarRecolorInterrupt) and not focusCastbarEdgeHooked then
-            FocusFrameSpellBar:HookScript("OnUpdate", function(self, elapsed)
-                -- focusLastUpdate = focusLastUpdate + elapsed
-                -- if focusLastUpdate < updateInterval then
-                --     return
-                -- end
-                -- focusLastUpdate = 0
-                if UnitCanAttack(FocusFrame.unit, "player") then
-                    local channeling
-                    local name, _, _, startTime, endTime, _, _, notInterruptible, spellId = UnitCastingInfo("focus")
-                    if not name then
-                        name, _, _, startTime, endTime, _, notInterruptible, spellId = UnitChannelInfo("focus")
-                        channeling = true
-                    end
+        -- if (focusCastbarEdgeHighlight or castBarRecolorInterrupt) and not focusCastbarEdgeHooked then
+        --     FocusFrameSpellBar:HookScript("OnUpdate", function(self, elapsed)
+        --         -- focusLastUpdate = focusLastUpdate + elapsed
+        --         -- if focusLastUpdate < updateInterval then
+        --         --     return
+        --         -- end
+        --         -- focusLastUpdate = 0
+        --         if UnitCanAttack(FocusFrame.unit, "player") then
+        --             local channeling
+        --             local name, _, _, startTime, endTime, _, _, notInterruptible, spellId = UnitCastingInfo("focus")
+        --             if not name then
+        --                 name, _, _, startTime, endTime, _, notInterruptible, spellId = UnitChannelInfo("focus")
+        --                 channeling = true
+        --             end
 
-                    if name then--and not notInterruptible then
-                        if castBarRecolorInterrupt then
-                            for _, interruptSpellID in ipairs(interruptSpellIDs) do
-                                local start, duration = GetSpellCooldown(interruptSpellID)
-                                local cooldownRemaining = start + duration - GetTime()
-                                local castRemaining = (endTime/1000) - GetTime()
+        --             if name then--and not notInterruptible then
+        --                 if castBarRecolorInterrupt then
+        --                     for _, interruptSpellID in ipairs(interruptSpellIDs) do
+        --                         local start, duration = GetSpellCooldown(interruptSpellID)
+        --                         local cooldownRemaining = start + duration - GetTime()
+        --                         local castRemaining = (endTime/1000) - GetTime()
 
-                                if cooldownRemaining > 0 and cooldownRemaining > castRemaining then
-                                    focusSpellBarTexture:SetDesaturated(true)
-                                    self:SetStatusBarColor(unpack(castBarNoInterruptColor))
-                                    self.Spark:SetVertexColor(unpack(castBarNoInterruptColor))
-                                elseif cooldownRemaining > 0 and cooldownRemaining <= castRemaining then
-                                    focusSpellBarTexture:SetDesaturated(true)
-                                    self:SetStatusBarColor(unpack(castBarDelayedInterruptColor))
-                                    self.Spark:SetVertexColor(unpack(castBarDelayedInterruptColor))
-                                else
-                                    if focusCastbarEdgeHighlight then
-                                        local currentTime = GetTime()  -- Current time in seconds
-                                        local startTimeSeconds = startTime / 1000  -- Convert start time to seconds
-                                        local endTimeSeconds = endTime / 1000
-                                        local elapsed = currentTime - startTimeSeconds  -- Time elapsed since the start of the cast in seconds
-                                        local timeRemaining = endTimeSeconds - currentTime  -- Time remaining until the cast ends in seconds
+        --                         if cooldownRemaining > 0 and cooldownRemaining > castRemaining then
+        --                             focusSpellBarTexture:SetDesaturated(true)
+        --                             self:SetStatusBarColor(unpack(castBarNoInterruptColor))
+        --                             self.Spark:SetVertexColor(unpack(castBarNoInterruptColor))
+        --                         elseif cooldownRemaining > 0 and cooldownRemaining <= castRemaining then
+        --                             focusSpellBarTexture:SetDesaturated(true)
+        --                             self:SetStatusBarColor(unpack(castBarDelayedInterruptColor))
+        --                             self.Spark:SetVertexColor(unpack(castBarDelayedInterruptColor))
+        --                         else
+        --                             if focusCastbarEdgeHighlight then
+        --                                 local currentTime = GetTime()  -- Current time in seconds
+        --                                 local startTimeSeconds = startTime / 1000  -- Convert start time to seconds
+        --                                 local endTimeSeconds = endTime / 1000
+        --                                 local elapsed = currentTime - startTimeSeconds  -- Time elapsed since the start of the cast in seconds
+        --                                 local timeRemaining = endTimeSeconds - currentTime  -- Time remaining until the cast ends in seconds
 
-                                        if (elapsed <= highlightStartTime) or (timeRemaining <= highlightEndTime) then
-                                            focusSpellBarTexture:SetDesaturated(true)
-                                            self:SetStatusBarColor(unpack(edgeColor))
-                                            self.Spark:SetVertexColor(unpack(edgeColor))
-                                        else
-                                            if colorMiddle then
-                                                focusSpellBarTexture:SetDesaturated(true)
-                                                self:SetStatusBarColor(unpack(middleColor))
-                                            else
-                                                focusSpellBarTexture:SetDesaturated(false)
-                                                if not channeling then
-                                                    resetCastbarColor(self, channeling)
-                                                else
-                                                    resetCastbarColor(self, channeling)
-                                                end
-                                            end
-                                            self.Spark:SetVertexColor(1,1,1)
-                                        end
-                                    else
-                                        focusSpellBarTexture:SetDesaturated(false)
-                                        resetCastbarColor(self, channeling)
-                                        self.Spark:SetVertexColor(1,1,1)
-                                    end
-                                end
-                            end
-                        elseif focusCastbarEdgeHighlight then
-                            local currentTime = GetTime()  -- Current time in seconds
-                            local startTimeSeconds = startTime / 1000  -- Convert start time to seconds
-                            local endTimeSeconds = endTime / 1000
-                            local elapsed = currentTime - startTimeSeconds  -- Time elapsed since the start of the cast in seconds
-                            local timeRemaining = endTimeSeconds - currentTime  -- Time remaining until the cast ends in seconds
+        --                                 if (elapsed <= highlightStartTime) or (timeRemaining <= highlightEndTime) then
+        --                                     focusSpellBarTexture:SetDesaturated(true)
+        --                                     self:SetStatusBarColor(unpack(edgeColor))
+        --                                     self.Spark:SetVertexColor(unpack(edgeColor))
+        --                                 else
+        --                                     if colorMiddle then
+        --                                         focusSpellBarTexture:SetDesaturated(true)
+        --                                         self:SetStatusBarColor(unpack(middleColor))
+        --                                     else
+        --                                         focusSpellBarTexture:SetDesaturated(false)
+        --                                         if not channeling then
+        --                                             resetCastbarColor(self, channeling)
+        --                                         else
+        --                                             resetCastbarColor(self, channeling)
+        --                                         end
+        --                                     end
+        --                                     self.Spark:SetVertexColor(1,1,1)
+        --                                 end
+        --                             else
+        --                                 focusSpellBarTexture:SetDesaturated(false)
+        --                                 resetCastbarColor(self, channeling)
+        --                                 self.Spark:SetVertexColor(1,1,1)
+        --                             end
+        --                         end
+        --                     end
+        --                 elseif focusCastbarEdgeHighlight then
+        --                     local currentTime = GetTime()  -- Current time in seconds
+        --                     local startTimeSeconds = startTime / 1000  -- Convert start time to seconds
+        --                     local endTimeSeconds = endTime / 1000
+        --                     local elapsed = currentTime - startTimeSeconds  -- Time elapsed since the start of the cast in seconds
+        --                     local timeRemaining = endTimeSeconds - currentTime  -- Time remaining until the cast ends in seconds
 
-                            if (elapsed <= highlightStartTime) or (timeRemaining <= highlightEndTime) then
-                                focusSpellBarTexture:SetDesaturated(true)
-                                self:SetStatusBarColor(unpack(edgeColor))
-                                self.Spark:SetVertexColor(unpack(edgeColor))
-                            else
-                                if colorMiddle then
-                                    focusSpellBarTexture:SetDesaturated(true)
-                                    self:SetStatusBarColor(unpack(middleColor))
-                                else
-                                    focusSpellBarTexture:SetDesaturated(false)
-                                    resetCastbarColor(self, channeling)
-                                end
-                                self.Spark:SetVertexColor(1,1,1)
-                            end
-                        else
-                            focusSpellBarTexture:SetDesaturated(false)
-                            resetCastbarColor(self, channeling)
-                            self.Spark:SetVertexColor(1,1,1)
-                        end
-                    else
-                        focusSpellBarTexture:SetDesaturated(false)
-                        resetCastbarColor(self, channeling)
-                        self.Spark:SetVertexColor(1,1,1)
-                    end
-                else
-                    local channeling = UnitChannelInfo("target")
-                    focusSpellBarTexture:SetDesaturated(false)
-                    resetCastbarColor(self, channeling)
-                    self.Spark:SetVertexColor(1,1,1)
-                end
-            end)
-            focusCastbarEdgeHooked = true
-        end
+        --                     if (elapsed <= highlightStartTime) or (timeRemaining <= highlightEndTime) then
+        --                         focusSpellBarTexture:SetDesaturated(true)
+        --                         self:SetStatusBarColor(unpack(edgeColor))
+        --                         self.Spark:SetVertexColor(unpack(edgeColor))
+        --                     else
+        --                         if colorMiddle then
+        --                             focusSpellBarTexture:SetDesaturated(true)
+        --                             self:SetStatusBarColor(unpack(middleColor))
+        --                         else
+        --                             focusSpellBarTexture:SetDesaturated(false)
+        --                             resetCastbarColor(self, channeling)
+        --                         end
+        --                         self.Spark:SetVertexColor(1,1,1)
+        --                     end
+        --                 else
+        --                     focusSpellBarTexture:SetDesaturated(false)
+        --                     resetCastbarColor(self, channeling)
+        --                     self.Spark:SetVertexColor(1,1,1)
+        --                 end
+        --             else
+        --                 focusSpellBarTexture:SetDesaturated(false)
+        --                 resetCastbarColor(self, channeling)
+        --                 self.Spark:SetVertexColor(1,1,1)
+        --             end
+        --         else
+        --             local channeling = UnitChannelInfo("target")
+        --             focusSpellBarTexture:SetDesaturated(false)
+        --             resetCastbarColor(self, channeling)
+        --             self.Spark:SetVertexColor(1,1,1)
+        --         end
+        --     end)
+        --     focusCastbarEdgeHooked = true
+        -- end
     end
 end
 
@@ -930,25 +937,25 @@ function BBF.ChangeCastbarSizes()
     -- TargetFrameSpellBar.Text:SetPoint("BOTTOM", TargetFrameSpellBar, "BOTTOM", 0, -14)
 
     --Focus
-    FocusFrameSpellBar:SetScale(BetterBlizzFramesDB.focusCastBarScale)
-    FocusFrameSpellBar:SetWidth(BetterBlizzFramesDB.focusCastBarWidth)
-    FocusFrameSpellBar:SetHeight(BetterBlizzFramesDB.focusCastBarHeight)
-    adjustCastBarBorder(FocusFrameSpellBar, FocusFrameSpellBar.Border, 15)
-    adjustCastBarBorder(FocusFrameSpellBar, FocusFrameSpellBar.BorderShield, 12, true)
-    FocusFrameSpellBar.Icon:SetDrawLayer("OVERLAY", 7)
-    FocusFrameSpellBar.Text:SetAlpha(BetterBlizzFramesDB.focusCastBarShowText and 1 or 0)
-    FocusFrameSpellBar.Border:SetAlpha(BetterBlizzFramesDB.focusCastBarShowBorder and 1 or 0)
-    FocusFrameSpellBar.Flash:SetParent(BetterBlizzFramesDB.focusCastBarShowBorder and FocusFrameSpellBar or hiddenFrame)
+    -- FocusFrameSpellBar:SetScale(BetterBlizzFramesDB.focusCastBarScale)
+    -- FocusFrameSpellBar:SetWidth(BetterBlizzFramesDB.focusCastBarWidth)
+    -- FocusFrameSpellBar:SetHeight(BetterBlizzFramesDB.focusCastBarHeight)
+    -- adjustCastBarBorder(FocusFrameSpellBar, FocusFrameSpellBar.Border, 15)
+    -- adjustCastBarBorder(FocusFrameSpellBar, FocusFrameSpellBar.BorderShield, 12, true)
+    -- FocusFrameSpellBar.Icon:SetDrawLayer("OVERLAY", 7)
+    -- FocusFrameSpellBar.Text:SetAlpha(BetterBlizzFramesDB.focusCastBarShowText and 1 or 0)
+    -- FocusFrameSpellBar.Border:SetAlpha(BetterBlizzFramesDB.focusCastBarShowBorder and 1 or 0)
+    -- FocusFrameSpellBar.Flash:SetParent(BetterBlizzFramesDB.focusCastBarShowBorder and FocusFrameSpellBar or hiddenFrame)
 
-    -- 227, 56
+    -- -- 227, 56
 
-    FocusFrameSpellBar.Icon:SetScale(BetterBlizzFramesDB.focusCastBarIconScale)
-    local a,b,c,d,e = FocusFrameSpellBar.Icon:GetPoint()
-    FocusFrameSpellBar.Icon:ClearAllPoints()
-    FocusFrameSpellBar.Icon:SetPoint(a, b, c, -5 + BetterBlizzFramesDB.focusCastbarIconXPos, 1 + BetterBlizzFramesDB.focusCastbarIconYPos)
-    FocusFrameSpellBar.Text:ClearAllPoints()
-    FocusFrameSpellBar.Text:SetPoint("CENTER", FocusFrameSpellBar, "CENTER", 0, 0)
-    FocusFrameSpellBar.Text:SetWidth(BetterBlizzFramesDB.focusCastBarWidth)
+    -- FocusFrameSpellBar.Icon:SetScale(BetterBlizzFramesDB.focusCastBarIconScale)
+    -- local a,b,c,d,e = FocusFrameSpellBar.Icon:GetPoint()
+    -- FocusFrameSpellBar.Icon:ClearAllPoints()
+    -- FocusFrameSpellBar.Icon:SetPoint(a, b, c, -5 + BetterBlizzFramesDB.focusCastbarIconXPos, 1 + BetterBlizzFramesDB.focusCastbarIconYPos)
+    -- FocusFrameSpellBar.Text:ClearAllPoints()
+    -- FocusFrameSpellBar.Text:SetPoint("CENTER", FocusFrameSpellBar, "CENTER", 0, 0)
+    -- FocusFrameSpellBar.Text:SetWidth(BetterBlizzFramesDB.focusCastBarWidth)
 
 end
 

@@ -116,7 +116,7 @@ end
 
 local function OnTargetOrFocusChanged(event, ...)
     UpdateLevelTextVisibility(TargetFrameTextureFrameLevelText, "target")
-    UpdateLevelTextVisibility(FocusFrameTextureFrameLevelText, "focus")
+    --UpdateLevelTextVisibility(FocusFrameTextureFrameLevelText, "focus")
 end
 
 local function ChangeParent(element, hide)
@@ -149,7 +149,7 @@ function BBF.HideFrames()
 
         -- Hide focus leader icon
         local focusLeaderIconAlpha = BetterBlizzFramesDB.hideTargetLeaderIcon and 0 or 1
-        FocusFrameTextureFrameLeaderIcon:SetAlpha(focusLeaderIconAlpha)
+        --FocusFrameTextureFrameLeaderIcon:SetAlpha(focusLeaderIconAlpha)
 
         -- Hide Player Leader Icon
         local playerLeaderIconAlpha = BetterBlizzFramesDB.hidePlayerLeaderIcon and 0 or 1
@@ -226,22 +226,22 @@ function BBF.HideFrames()
             -- TargetFrameBackground:SetHeight(25)
         end
 
-        if BetterBlizzFramesDB.hideFocusReputationColor then
-            --BBF.SetAlphaRegion(FocusFrameNameBackground)
-            BBF.SetTextureColor(FocusFrameNameBackground, 1, 1, 1, 0)
-            --FocusFrameNameBackground:Hide()
+        -- if BetterBlizzFramesDB.hideFocusReputationColor then
+        --     --BBF.SetAlphaRegion(FocusFrameNameBackground)
+        --     --BBF.SetTextureColor(FocusFrameNameBackground, 1, 1, 1, 0)
+        --     --FocusFrameNameBackground:Hide()
 
-            --FocusFrameBackground:SetHeight(42)
-            --BBF.SetRegionHeight(FocusFrameBackground, 42)
-            BBF.HookAndDo(FocusFrameBackground, "SetSize", function(frame, width, height, flag)
-                -- Custom behavior: Resize the frame
-                frame:SetSize(119, 42, flag)
-            end)
-            FocusFrameBackground:SetSize(119, 42)
-        else
-            -- FocusFrameNameBackground:Show()
-            -- FocusFrameBackground:SetHeight(25)
-        end
+        --     --FocusFrameBackground:SetHeight(42)
+        --     --BBF.SetRegionHeight(FocusFrameBackground, 42)
+        --     BBF.HookAndDo(FocusFrameBackground, "SetSize", function(frame, width, height, flag)
+        --         -- Custom behavior: Resize the frame
+        --         frame:SetSize(119, 42, flag)
+        --     end)
+        --     FocusFrameBackground:SetSize(119, 42)
+        -- else
+        --     -- FocusFrameNameBackground:Show()
+        --     -- FocusFrameBackground:SetHeight(25)
+        -- end
 
         -- -- Hide rest loop animation
         -- if BetterBlizzFramesDB.hidePlayerRestAnimation then
@@ -323,29 +323,30 @@ function BBF.HideFrames()
                 return function(frame)
                     PlayerStatusGlow:Hide()
                     PlayerStatusTexture:Hide()
-                    TargetFrameFlash:Hide()
-                    FocusFrameFlash:Hide()
+                    --TargetFrameFlash:Hide()
+                    --FocusFrameFlash:Hide()
                 end
             end
 
-            if not TargetFrameFlash.BBFHookHide then
-                hooksecurefunc(PlayerStatusGlow, "Show", OnShowHookScript())
-                PlayerStatusGlow.BBFHookHide = true
+            -- if not TargetFrameFlash.BBFHookHide then
+            --     hooksecurefunc(PlayerStatusGlow, "Show", OnShowHookScript())
+            --     PlayerStatusGlow.BBFHookHide = true
 
-                hooksecurefunc(TargetFrameFlash, "Show", OnShowHookScript())
-                TargetFrameFlash.BBFHookHide = true
+            --     -- hooksecurefunc(TargetFrameFlash, "Show", OnShowHookScript())
+            --     -- TargetFrameFlash.BBFHookHide = true
 
-                hooksecurefunc(FocusFrameFlash, "Show", OnShowHookScript())
-                FocusFrameFlash.BBFHookHide = true
-            end
+            --     --hooksecurefunc(FocusFrameFlash, "Show", OnShowHookScript())
+            --     --FocusFrameFlash.BBFHookHide = true
+            -- end
             --PetFrameFlash:SetParent(hiddenFrame)
             --PetAttackModeTexture:SetParent(hiddenFrame)
         end
 
     --     -- Hide Player level text
     UpdateLevelTextVisibility(TargetFrameTextureFrameLevelText, "target")
-    UpdateLevelTextVisibility(FocusFrameTextureFrameLevelText, "focus")
+    --UpdateLevelTextVisibility(FocusFrameTextureFrameLevelText, "focus")
     UpdateLevelTextVisibility(PlayerLevelText, "player")
+
 
     if BetterBlizzFramesDB.hideLevelTextAlways and not BBF.classicFramesLevelHide then
         local targetTexture = BetterBlizzFramesDB.biggerHealthbars and "Interface\\Addons\\BetterBlizzFrames\\media\\UI-TargetingFrame-NoLevel" or "Interface\\TargetingFrame\\UI-TargetingFrame-NoLevel"
@@ -385,8 +386,8 @@ function BBF.HideFrames()
             TargetFrameTextureFramePVPIcon:Hide()
             PlayerPVPIcon:SetAlpha(0)
             PlayerPVPIcon:Hide()
-            FocusFrameTextureFramePVPIcon:SetAlpha(0)
-            FocusFrameTextureFramePVPIcon:Hide()
+            --FocusFrameTextureFramePVPIcon:SetAlpha(0)
+            --FocusFrameTextureFramePVPIcon:Hide()
         end
 
 
@@ -534,14 +535,14 @@ function BBF.HideFrames()
                 end
             end
         end
-        if BetterBlizzFramesDB.hideFocusToTDebuffs then
-            for i = 1, 4 do
-                local focusToTDebuff = _G["FocusFrameToTDebuff" .. i]
-                if focusToTDebuff then
-                    focusToTDebuff:SetParent(hiddenFrame)
-                end
-            end
-        end
+        -- if BetterBlizzFramesDB.hideFocusToTDebuffs then
+        --     for i = 1, 4 do
+        --         local focusToTDebuff = _G["FocusFrameToTDebuff" .. i]
+        --         if focusToTDebuff then
+        --             focusToTDebuff:SetParent(hiddenFrame)
+        --         end
+        --     end
+        -- end
 
         -- action bar macro name hotkey hide
         local hotKeyAlpha = BetterBlizzFramesDB.hideActionBarHotKey and 0 or 1
@@ -580,7 +581,7 @@ function BBF.HideFrames()
         local targetToTAlpha = BetterBlizzFramesDB.hideTargetToT and 0 or 1
         local focusToTAlpha = BetterBlizzFramesDB.hideFocusToT and 0 or 1
         TargetFrameToT:SetAlpha(targetToTAlpha)
-        FocusFrameToT:SetAlpha(focusToTAlpha)
+        --FocusFrameToT:SetAlpha(focusToTAlpha)
 
         -- Hide MultiGroupFrame
         if BetterBlizzFramesDB.hideMultiGroupFrame then
@@ -626,15 +627,15 @@ function BBF.HideFrames()
                     if show then
                         child:Show()
                         --ExpansionLandingPageMinimapButton:Show()
-                        MiniMapTrackingButton:Show()
+                        --MiniMapTrackingButton:Show()
                         MiniMapTracking:Show()
-                        MiniMapWorldMapButton:Show()
+                        --MiniMapWorldMapButton:Show()
                     else
                         child:Hide()
                         --ExpansionLandingPageMinimapButton:Hide()
-                        MiniMapTrackingButton:Hide()
+                        --MiniMapTrackingButton:Hide()
                         MiniMapTracking:Hide()
-                        MiniMapWorldMapButton:Hide()
+                        --MiniMapWorldMapButton:Hide()
                     end
                 end
             end
@@ -868,13 +869,13 @@ function BBF.MinimapHider()
         -- end
 
         -- Handle ObjectiveTracker visibility
-        if hideObjectives then
-            if inArena then
-                ObjectiveTracker:Hide()
-            else
-                ObjectiveTracker:Show()
-            end
-        end
+        -- if hideObjectives then
+        --     if inArena then
+        --         ObjectiveTracker:Hide()
+        --     else
+        --         ObjectiveTracker:Show()
+        --     end
+        -- end
     end
 
     if InCombatLockdown() then

@@ -8,6 +8,7 @@ local LSM = LibStub("LibSharedMedia-3.0")
 local healthbarsHooked = nil
 local classColorsOn
 local colorPetAfterOwner
+local raidClassColorsHooked
 
 local function getUnitReaction(unit)
     if UnitIsFriend("player", unit) then
@@ -117,13 +118,22 @@ end
 
 local function getUnitColor(unit)
     if UnitIsPlayer(unit) then
-        local color = RAID_CLASS_COLORS[select(2, UnitClass(unit))]
+        local class = select(2, UnitClass(unit))
+        local color = RAID_CLASS_COLORS[class]
+        if class == "SHAMAN" then
+            -- Specific color override for Shaman
+            return {r = 0.00, g = 0.44, b = 0.87}
+        end
         if color then
             return {r = color.r, g = color.g, b = color.b}
         end
     elseif colorPetAfterOwner and UnitIsUnit(unit, "pet") then
         -- Check if the unit is the player's pet and the setting is enabled
         local _, playerClass = UnitClass("player")
+        if playerClass == "SHAMAN" then
+            -- Specific color override for Shaman pets
+            return {r = 0.00, g = 0.44, b = 0.87}
+        end
         local color = RAID_CLASS_COLORS[playerClass]
         if color then
             return {r = color.r, g = color.g, b = color.b}
@@ -186,9 +196,9 @@ function BBF.UpdateFrames()
         BBF.HookHealthbarColors()
         if UnitExists("player") then updateFrameColorToggleVer(PlayerFrameHealthBar, "player") end
         if UnitExists("target") then updateFrameColorToggleVer(TargetFrameHealthBar, "target") end
-        if UnitExists("focus") then updateFrameColorToggleVer(FocusFrameHealthBar, "focus") end
+        --if UnitExists("focus") then updateFrameColorToggleVer(FocusFrameHealthBar, "focus") end
         if UnitExists("targettarget") then updateFrameColorToggleVer(TargetFrameToTHealthBar, "targettarget") end
-        if UnitExists("focustarget") then updateFrameColorToggleVer(FocusFrameToTHealthBar, "focustarget") end
+        --if UnitExists("focustarget") then updateFrameColorToggleVer(FocusFrameToTHealthBar, "focustarget") end
         if UnitExists("party1") then updateFrameColorToggleVer(PartyMemberFrame1HealthBar, "party1") end
         if UnitExists("party2") then updateFrameColorToggleVer(PartyMemberFrame2HealthBar, "party2") end
         if UnitExists("party3") then updateFrameColorToggleVer(PartyMemberFrame3HealthBar, "party3") end
@@ -196,15 +206,15 @@ function BBF.UpdateFrames()
     else
         if UnitExists("player") then resetFrameColor(PlayerFrameHealthBar, "player") end
         if UnitExists("target") then resetFrameColor(TargetFrameHealthBar, "target") end
-        if UnitExists("focus") then resetFrameColor(FocusFrameHealthBar, "focus") end
+        --if UnitExists("focus") then resetFrameColor(FocusFrameHealthBar, "focus") end
         if UnitExists("targettarget") then resetFrameColor(TargetFrameToTHealthBar, "targettarget") end
-        if UnitExists("focustarget") then resetFrameColor(FocusFrameToTHealthBar, "focustarget") end
+        --if UnitExists("focustarget") then resetFrameColor(FocusFrameToTHealthBar, "focustarget") end
         if UnitExists("party1") then resetFrameColor(PartyMemberFrame1HealthBar, "party1") end
         if UnitExists("party2") then resetFrameColor(PartyMemberFrame2HealthBar, "party2") end
         if UnitExists("party3") then resetFrameColor(PartyMemberFrame3HealthBar, "party3") end
         if UnitExists("party4") then resetFrameColor(PartyMemberFrame4HealthBar, "party4") end
     end
-    if colorPetAfterOwner then
+    if BetterBlizzFramesDB.colorPetAfterOwner then
         if UnitExists("pet") then updateFrameColorToggleVer(PetFrameHealthBar, "pet") end
     end
 end
@@ -244,9 +254,9 @@ function BBF.ClassColorReputationCaller()
         BBF.ClassColorReputation(TargetFrameNameBackground, "target")
     end
 
-    if BetterBlizzFramesDB.classColorFocusReputationTexture then
-        BBF.ClassColorReputation(FocusFrameNameBackground, "focus")
-    end
+    -- if BetterBlizzFramesDB.classColorFocusReputationTexture then
+    --     BBF.ClassColorReputation(FocusFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor, "focus")
+    -- end
 end
 
 function BBF.ResetClassColorReputation(frame, unit)
@@ -276,7 +286,7 @@ function BBF.HookHealthbarColors()
             if unit then
                 UpdateHealthColor(self, unit)
                 UpdateHealthColor(TargetFrameToTHealthBar, "targettarget")
-                UpdateHealthColor(FocusFrameToTHealthBar, "focustarget")
+                --UpdateHealthColor(FocusFrameToTHealthBar, "focustarget")
             end
         end)
 
@@ -285,13 +295,32 @@ function BBF.HookHealthbarColors()
             if self.unit then
                 UpdateHealthColor(self, self.unit)
                 UpdateHealthColor(TargetFrameToTHealthBar, "targettarget")
-                UpdateHealthColor(FocusFrameToTHealthBar, "focustarget")
+                --UpdateHealthColor(FocusFrameToTHealthBar, "focustarget")
             end
         end)
 
-
-
         healthbarsHooked = true
+    end
+    if C_CVar.GetCVarBool("raidFramesDisplayClassColor") and not raidClassColorsHooked then
+        hooksecurefunc("CompactUnitFrame_UpdateHealthColor", function(frame)
+            if not frame.unit or frame.unit:find("nameplate") then return end
+
+            local _, class = UnitClass(frame.unit)
+            if class == "SHAMAN" then
+                frame.healthBar:SetStatusBarColor(0.00, 0.44, 0.87)
+            end
+        end)
+
+        for i = 1, 40 do
+            local frame = _G["CompactRaidFrame"..i]
+            if frame and frame.unit then
+                local _, class = UnitClass(frame.unit)
+                if class == "SHAMAN" then
+                    frame.healthBar:SetStatusBarColor(0.00, 0.44, 0.87)
+                end
+            end
+        end
+        raidClassColorsHooked = true
     end
 end
 
@@ -348,10 +377,10 @@ function BBF.BiggerHealthbars(frame, name)
     local playerGlowTexture = _G["PlayerStatusTexture"]
     local healthbar = _G[frame.."HealthBar"]
     local manabar = _G[frame.."ManaBar"]
-    local leftText = _G[frame.."HealthBarTextLeft"] or _G[frame].textureFrame.HealthBarTextLeft
-    local leftTextMana = _G[frame].textureFrame and _G[frame].textureFrame.ManaBarTextLeft
-    local rightText = _G[frame.."HealthBarTextRight"] or _G[frame].textureFrame.HealthBarTextRight
-    local centerText = _G[frame.."HealthBarText"] or _G[frame].textureFrame.HealthBarText
+    local leftText = _G[frame.."HealthBarTextLeft"] or _G[frame].textureFrame.HealthBarTextLeft or healthbar.LeftText
+    local leftTextMana = _G[frame].textureFrame and _G[frame].textureFrame.ManaBarTextLeft or manabar.LeftText
+    local rightText = _G[frame.."HealthBarTextRight"] or _G[frame].textureFrame.HealthBarTextRight or healthbar.RightText
+    local centerText = _G[frame.."HealthBarText"] or _G[frame].textureFrame.HealthBarText or healthbar.TextString
     local nameBackground = _G[frame.."NameBackground"]
     local background = _G[frame.."Background"]
     local deadText = _G[frame.."TextureFrameDeadText"]
@@ -367,9 +396,7 @@ function BBF.BiggerHealthbars(frame, name)
     local newYOffset = yOfs + 19
     BBF.MoveRegion(healthbar, point, relativeTo, relativePoint, xOfs, newYOffset)
     healthbar:SetHeight(28)
-    if not BetterBlizzFramesDB.changeUnitFrameHealthbarTexture then
-        healthbar:SetStatusBarTexture(LSM:Fetch(LSM.MediaType.STATUSBAR, "Smooth"))
-    end
+    healthbar:SetStatusBarTexture(LSM:Fetch(LSM.MediaType.STATUSBAR, "Smooth"))
 
     BBF.SetRegionWidth(manabar, 120)
     --BBF.SetRegionSize(manabar, 120, 12)
@@ -419,22 +446,26 @@ function BBF.BiggerHealthbars(frame, name)
             local newXOffset = xOfs + 1
             BBF.MoveRegion(leftTextMana, point, relativeTo, relativePoint, newXOffset, yOfs)
         end
-        local point, relativeTo, relativePoint, xOfs, yOfs = leftText:GetPoint()
-        local newYOffset = yOfs + 4
-        local newXOffset = xOfs + 1
-        if not leftTextMana then
-            BBF.MoveRegion(leftText, point, relativeTo, relativePoint, xOfs, newYOffset)
-        else
-            BBF.MoveRegion(leftText, point, relativeTo, relativePoint, newXOffset, newYOffset)
+        if leftText then
+            local point, relativeTo, relativePoint, xOfs, yOfs = leftText:GetPoint()
+            local newYOffset = yOfs + 4
+            local newXOffset = xOfs + 1
+            if not leftTextMana then
+                BBF.MoveRegion(leftText, point, relativeTo, relativePoint, xOfs, newYOffset)
+            else
+                BBF.MoveRegion(leftText, point, relativeTo, relativePoint, newXOffset, newYOffset)
+            end
         end
 
-        local point, relativeTo, relativePoint, xOfs, yOfs = rightText:GetPoint()
-        local newYOffset = yOfs + 4
-        BBF.MoveRegion(rightText, point, relativeTo, relativePoint, xOfs, newYOffset)
+        if rightText then
+            local point, relativeTo, relativePoint, xOfs, yOfs = rightText:GetPoint()
+            local newYOffset = yOfs + 4
+            BBF.MoveRegion(rightText, point, relativeTo, relativePoint, xOfs, newYOffset)
 
-        local point, relativeTo, relativePoint, xOfs, yOfs = centerText:GetPoint()
-        local newYOffset = yOfs + 4
-        BBF.MoveRegion(centerText, point, relativeTo, relativePoint, xOfs, newYOffset)
+            local point, relativeTo, relativePoint, xOfs, yOfs = centerText:GetPoint()
+            local newYOffset = yOfs + 4
+            BBF.MoveRegion(centerText, point, relativeTo, relativePoint, xOfs, newYOffset)
+        end
     else
         if deadText then
             local point, relativeTo, relativePoint, xOfs, yOfs = deadText:GetPoint()
@@ -454,22 +485,26 @@ function BBF.BiggerHealthbars(frame, name)
             local newXOffset = xOfs + 1
             BBF.MoveRegion(leftTextMana, point, relativeTo, relativePoint, newXOffset, yOfs)
         end
-        local point, relativeTo, relativePoint, xOfs, yOfs = leftText:GetPoint()
-        local newYOffset = yOfs + 9.5
-        local newXOffset = xOfs + 1
-        if not leftTextMana then
-            BBF.MoveRegion(leftText, point, relativeTo, relativePoint, xOfs, newYOffset)
-        else
-            BBF.MoveRegion(leftText, point, relativeTo, relativePoint, newXOffset, newYOffset)
+        if leftText then
+            local point, relativeTo, relativePoint, xOfs, yOfs = leftText:GetPoint()
+            local newYOffset = yOfs + 9.5
+            local newXOffset = xOfs + 1
+            if not leftTextMana then
+                BBF.MoveRegion(leftText, point, relativeTo, relativePoint, xOfs, newYOffset)
+            else
+                BBF.MoveRegion(leftText, point, relativeTo, relativePoint, newXOffset, newYOffset)
+            end
         end
 
-        local point, relativeTo, relativePoint, xOfs, yOfs = rightText:GetPoint()
-        local newYOffset = yOfs + 9.5
-        BBF.MoveRegion(rightText, point, relativeTo, relativePoint, xOfs, newYOffset)
+        if rightText then
+            local point, relativeTo, relativePoint, xOfs, yOfs = rightText:GetPoint()
+            local newYOffset = yOfs + 9.5
+            BBF.MoveRegion(rightText, point, relativeTo, relativePoint, xOfs, newYOffset)
 
-        local point, relativeTo, relativePoint, xOfs, yOfs = centerText:GetPoint()
-        local newYOffset = yOfs + 9.5
-        BBF.MoveRegion(centerText, point, relativeTo, relativePoint, xOfs, newYOffset)
+            local point, relativeTo, relativePoint, xOfs, yOfs = centerText:GetPoint()
+            local newYOffset = yOfs + 9.5
+            BBF.MoveRegion(centerText, point, relativeTo, relativePoint, xOfs, newYOffset)
+        end
     end
 
     if not frameTextureHooked then
@@ -503,12 +538,12 @@ end
 
 function BBF.HookBiggerHealthbars()
     if BetterBlizzFramesDB.biggerHealthbars and not biggerHealthbarHooked then
-        local playerName = FocusFrame.bbfName or PlayerName
-        local targetName = PlayerFrame.bbfName or TargetFrameTextureFrameName
-        local focusName = TargetFrame.bbfName or TargetFrameTextureFrameName
+        local playerName = PlayerFrame.bbfName
+        local targetName = TargetFrame.bbfName or TargetFrameTextureFrameName
+        --local focusName = TargetFrame.bbfName or TargetFrameTextureFrameName
         BBF.BiggerHealthbars("PlayerFrame", playerName)
         BBF.BiggerHealthbars("TargetFrame", targetName)
-        BBF.BiggerHealthbars("FocusFrame",focusName)
+        --BBF.BiggerHealthbars("FocusFrame",focusName)
 
         -- BBF.BiggerHealthbars("PlayerFrame", PlayerName)
         -- BBF.BiggerHealthbars("TargetFrame", TargetFrameTextureFrameName)
@@ -517,6 +552,20 @@ function BBF.HookBiggerHealthbars()
         biggerHealthbarHooked = true
     end
 end
+
+local function RecolorReputationGlow()
+    if BetterBlizzFramesDB.classColorTargetReputationTexture then
+        BBF.ClassColorReputation(TargetFrameNameBackground, "target")
+    end
+    -- local focusExists = UnitExists("focus")
+
+    -- if focusExists and BetterBlizzFramesDB.classColorFocusReputationTexture then
+    --     BBF.ClassColorReputation(FocusFrameNameBackground, "focus")
+    -- end
+end
+hooksecurefunc("TargetFrame_Update", function()
+    RecolorReputationGlow()
+end)
 
 --TargetFrame.textureFrame.HealthBarTextRight
 

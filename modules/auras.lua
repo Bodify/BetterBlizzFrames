@@ -237,6 +237,9 @@ local addCooldownFramePlayerBuffs
 local hideDefaultPlayerAuraDuration
 local hideDefaultPlayerAuraCdText
 local clickthroughAuras
+local importantDispel
+local targetAuraGlows
+local focusAuraGlows
 
 local function UpdateMore()
     onlyPandemicMine = BetterBlizzFramesDB.onlyPandemicAuraMine
@@ -256,6 +259,9 @@ local function UpdateMore()
     clickthroughAuras = BetterBlizzFramesDB.clickthroughAuras
     TargetFrame.staticCastbar = (BetterBlizzFramesDB.targetStaticCastbar or BetterBlizzFramesDB.targetDetachCastbar) and true or false
     FocusFrame.staticCastbar = (BetterBlizzFramesDB.focusStaticCastbar or BetterBlizzFramesDB.focusDetachCastbar) and true or false
+    importantDispel = BetterBlizzFramesDB.auraImportantDispelIcon
+    targetAuraGlows = BetterBlizzFramesDB.targetAuraGlows
+    focusAuraGlows = BetterBlizzFramesDB.focusAuraGlows
 end
 
 function BBF.UpdateUserAuraSettings()
@@ -330,7 +336,7 @@ end
 
 local function GetAuraDetails(spellName, spellId)
     local db = BetterBlizzFramesDB
-    local entry = db["auraWhitelist"][spellId] or db["auraWhitelist"][string.lower(spellName)]
+    local entry = db["auraWhitelist"][spellId] or (spellName and db["auraWhitelist"][string.lower(spellName)])
 
     if entry then
         local isImportant = entry.important
@@ -1291,6 +1297,8 @@ local function AdjustAuras(self, frameType)
     local buffs, debuffs = {}, {}
     local customAuraComparator = getCustomAuraComparator()
 
+    local auraGlowsEnabled = (frameType == "target" and targetAuraGlows) or (frameType == "focus" and focusAuraGlows)
+
 
     for aura in self.auraPools:EnumerateActive() do
         local auraData = C_UnitAuras.GetAuraDataByAuraInstanceID(self.unit, aura.auraInstanceID)
@@ -1305,16 +1313,30 @@ local function AdjustAuras(self, frameType)
 
             if frameType == "target" then
                 shouldShowAura, isImportant, isPandemic, isEnlarged, isCompacted, auraColor = ShouldShowBuff(unit, auraData, "target")
-                isImportant = isImportant and targetImportantAuraGlow
-                isPandemic = isPandemic and targetdeBuffPandemicGlow
-                isEnlarged = isEnlarged and targetEnlargeAura
-                isCompacted = isCompacted and targetCompactAura
+                if auraGlowsEnabled then
+                    isImportant = isImportant and targetImportantAuraGlow
+                    isPandemic = isPandemic and targetdeBuffPandemicGlow
+                    isEnlarged = isEnlarged and targetEnlargeAura
+                    isCompacted = isCompacted and targetCompactAura
+                else
+                    isImportant = nil
+                    isPandemic = nil
+                    isEnlarged = nil
+                    isCompacted = nil
+                end
             elseif frameType == "focus" then
                 shouldShowAura, isImportant, isPandemic, isEnlarged, isCompacted, auraColor = ShouldShowBuff(unit, auraData, "focus")
-                isImportant = isImportant and focusImportantAuraGlow
-                isPandemic = isPandemic and focusdeBuffPandemicGlow
-                isEnlarged = isEnlarged and focusEnlargeAura
-                isCompacted = isCompacted and focusCompactAura
+                if auraGlowsEnabled then
+                    isImportant = isImportant and focusImportantAuraGlow
+                    isPandemic = isPandemic and focusdeBuffPandemicGlow
+                    isEnlarged = isEnlarged and focusEnlargeAura
+                    isCompacted = isCompacted and focusCompactAura
+                else
+                    isImportant = nil
+                    isPandemic = nil
+                    isEnlarged = nil
+                    isCompacted = nil
+                end
             end
 
             if onlyPandemicMine and not isLarge then
@@ -1357,6 +1379,8 @@ local function AdjustAuras(self, frameType)
 
                 if (auraData.isStealable or (auraData.dispelName == "Magic" and ((not isFriend and auraData.isHelpful) or (isFriend and auraData.isHarmful)))) then
                     aura.isPurgeable = true
+                else
+                    aura.isPurgeable = false
                 end
 
                 if clickthroughAuras then
@@ -1369,10 +1393,10 @@ local function AdjustAuras(self, frameType)
                             local iconString = "|T" .. icon .. ":16:16:0:0|t"
 
                             if button == "LeftButton" then
-                                BBF.auraWhitelist(aura.spellId, nil, true)
+                                BBF.auraWhitelist(aura.spellId, "auraWhitelist", nil, true)
                                 --print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") added to |cff00ff00whitelist|r.")
                             elseif button == "RightButton" then
-                                BBF.auraBlacklist(aura.spellId, nil, true)
+                                BBF.auraBlacklist(aura.spellId, "auraBlacklist", nil, true)
                                 --print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") added to |cffff0000blacklist|r.")
                             end
                         elseif IsControlKeyDown() and IsAltKeyDown() then
@@ -1381,7 +1405,7 @@ local function AdjustAuras(self, frameType)
                             local iconString = "|T" .. icon .. ":16:16:0:0|t"
 
                             if button == "RightButton" then
-                                BBF.auraBlacklist(aura.spellId, true, true)
+                                BBF.auraBlacklist(aura.spellId, "auraBlacklist", true, true)
                                 --print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") added to |cffff0000blacklist|r with tag.")
                             end
                         end
@@ -1454,6 +1478,19 @@ local function AdjustAuras(self, frameType)
                         aura.ImportantGlow:SetVertexColor(0, 1, 0)
                     end
                     aura.ImportantGlow:Show()
+                    if importantDispel and aura.isPurgeable then
+                        if not aura.ImportantDispell then
+                            aura.ImportantDispell = aura:CreateTexture(nil, "OVERLAY")
+                            aura.ImportantDispell:SetAtlas("AdventureMapIcon-DailyQuest")
+                            aura.ImportantDispell:SetDrawLayer("OVERLAY", 7)
+                            aura.ImportantDispell:SetSize(11,13)
+                            aura.ImportantDispell:SetPoint("BOTTOMLEFT", aura, "BOTTOMLEFT", -2.5, -2)
+                        else
+                            aura.ImportantDispell:Show()
+                        end
+                    elseif aura.ImportantDispell then
+                        aura.ImportantDispell:Hide()
+                    end
                 else
                     aura.isImportant = false
                     if aura.ImportantGlow then
@@ -1461,32 +1498,35 @@ local function AdjustAuras(self, frameType)
                         if aura.Stealable and auraData.isStealable then
                             aura.Stealable:SetAlpha(1)
                         end
+                        if aura.ImportantDispell then
+                            aura.ImportantDispell:Hide()
+                        end
                     end
                 end
 
                 -- Better Purge Glow
-                if ((frameType == "target" and (auraData.isStealable or (displayDispelGlowAlways and auraData.dispelName == "Magic" and ((not isFriend and auraData.isHelpful) or (isFriend and auraData.isHarmful)))) and betterTargetPurgeGlow) or
-                (frameType == "focus" and (auraData.isStealable or (displayDispelGlowAlways and auraData.dispelName == "Magic" and ((not isFriend and auraData.isHelpful) or (isFriend and auraData.isHarmful)))) and betterFocusPurgeGlow)) then
-                    if not aura.PurgeGlow then
-                        aura.PurgeGlow = aura:CreateTexture(nil, "OVERLAY")
-                        aura.PurgeGlow:SetAtlas("newplayertutorial-drag-slotblue")
-                    end
-                    if aura.isEnlarged then
-                        aura.PurgeGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -enlargedTextureAdjustment, enlargedTextureAdjustment)
-                        aura.PurgeGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", enlargedTextureAdjustment, -enlargedTextureAdjustment)
-                    elseif aura.isCompacted then
-                        aura.PurgeGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -compactedTextureAdjustment, compactedTextureAdjustment)
-                        aura.PurgeGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", compactedTextureAdjustment, -compactedTextureAdjustment)
-                    else
-                        aura.PurgeGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -10, 10)
-                        aura.PurgeGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", 10, -10)
-                    end
-                    aura.isPurgeGlow = true
-                    if changePurgeTextureColor then
-                        aura.PurgeGlow:SetDesaturated(true)
-                        aura.PurgeGlow:SetVertexColor(unpack(purgeTextureColorRGB))
-                    end
+                if ((frameType == "target" and (auraData.isStealable or (displayDispelGlowAlways and aura.isPurgeable)) and betterTargetPurgeGlow) or
+                (frameType == "focus" and (auraData.isStealable or (displayDispelGlowAlways and aura.isPurgeable)) and betterFocusPurgeGlow)) then
                     if not aura.isImportant then
+                        if not aura.PurgeGlow then
+                            aura.PurgeGlow = aura:CreateTexture(nil, "OVERLAY")
+                            aura.PurgeGlow:SetAtlas("newplayertutorial-drag-slotblue")
+                        end
+                        if aura.isEnlarged then
+                            aura.PurgeGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -enlargedTextureAdjustment, enlargedTextureAdjustment)
+                            aura.PurgeGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", enlargedTextureAdjustment, -enlargedTextureAdjustment)
+                        elseif aura.isCompacted then
+                            aura.PurgeGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -compactedTextureAdjustment, compactedTextureAdjustment)
+                            aura.PurgeGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", compactedTextureAdjustment, -compactedTextureAdjustment)
+                        else
+                            aura.PurgeGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -10, 10)
+                            aura.PurgeGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", 10, -10)
+                        end
+                        aura.isPurgeGlow = true
+                        if changePurgeTextureColor then
+                            aura.PurgeGlow:SetDesaturated(true)
+                            aura.PurgeGlow:SetVertexColor(unpack(purgeTextureColorRGB))
+                        end
                         aura.PurgeGlow:Show()
                     end
                 else
@@ -2121,10 +2161,10 @@ local function PersonalBuffFrameFilterAndGrid(self)
                                 local iconString = "|T" .. icon .. ":16:16:0:0|t"
 
                                 if button == "LeftButton" then
-                                    BBF.auraWhitelist(auraFrame.spellId, nil, true)
+                                    BBF.auraWhitelist(auraFrame.spellId, "auraWhitelist", nil, true)
                                     --print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") added to |cff00ff00whitelist|r.")
                                 elseif button == "RightButton" then
-                                    BBF.auraBlacklist(auraFrame.spellId, nil, true)
+                                    BBF.auraBlacklist(auraFrame.spellId, "auraBlacklist", nil, true)
                                     --print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") added to |cffff0000blacklist|r.")
                                 end
                             elseif IsControlKeyDown() and IsAltKeyDown() then
@@ -2133,7 +2173,7 @@ local function PersonalBuffFrameFilterAndGrid(self)
                                 local iconString = "|T" .. icon .. ":16:16:0:0|t"
 
                                 if button == "RightButton" then
-                                    BBF.auraBlacklist(auraFrame.spellId, true, true)
+                                    BBF.auraBlacklist(auraFrame.spellId, "auraBlacklist", true, true)
                                     --print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") added to |cffff0000blacklist|r with tag.")
                                 end
                             end
@@ -2427,10 +2467,10 @@ local function PersonalDebuffFrameFilterAndGrid(self)
                                 local iconString = "|T" .. icon .. ":16:16:0:0|t"
 
                                 if button == "LeftButton" then
-                                    BBF.auraWhitelist(auraFrame.spellId, nil, true)
+                                    BBF.auraWhitelist(auraFrame.spellId, "auraWhitelist", nil, true)
                                     --print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") added to |cff00ff00whitelist|r.")
                                 elseif button == "RightButton" then
-                                    BBF.auraBlacklist(auraFrame.spellId, nil, true)
+                                    BBF.auraBlacklist(auraFrame.spellId, "auraBlacklist", nil, true)
                                     --print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") added to |cffff0000blacklist|r.")
                                 end
                             elseif IsControlKeyDown() and IsAltKeyDown() then
@@ -2439,7 +2479,7 @@ local function PersonalDebuffFrameFilterAndGrid(self)
                                 local iconString = "|T" .. icon .. ":16:16:0:0|t"
 
                                 if button == "RightButton" then
-                                    BBF.auraBlacklist(auraFrame.spellId, true, true)
+                                    BBF.auraBlacklist(auraFrame.spellId, "auraBlacklist", true, true)
                                     --print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") added to |cffff0000blacklist|r with tag.")
                                 end
                             end

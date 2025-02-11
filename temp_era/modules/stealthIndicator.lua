@@ -18,13 +18,9 @@ local function createOrShowStealthIndicator()
     if not stealthIndicator then
         stealthIndicator = PlayerFrame:CreateTexture(nil, "OVERLAY")
         stealthIndicator:SetAtlas("ui-hud-unitframe-player-portraiton-vehicle-status")
-        stealthIndicator:SetSize(BetterBlizzFramesDB.symmetricPlayerFrame and 200 or 201, 83.5)
+        stealthIndicator:SetSize(201, 83.5)
         stealthIndicator:SetVertexColor(0.212, 0.486, 1)
-        if BetterBlizzFramesDB.symmetricPlayerFrame then
-            stealthIndicator:SetPoint("CENTER", PlayerFrame, "CENTER", -3, 1)
-        else
-            stealthIndicator:SetPoint("CENTER", PlayerFrame, "CENTER", -4, 0)
-        end
+        stealthIndicator:SetPoint("CENTER", PlayerFrame, "CENTER", -4, 0)
     end
     stealthIndicator:Show()
 end

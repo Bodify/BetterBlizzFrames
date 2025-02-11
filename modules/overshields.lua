@@ -16,7 +16,7 @@ local function getAbsorbOverlay(frame)
 end
 
 local function BBF_UnitFrameHealPredictionBars_Update(frame)
-    local absorbOverlay = frame.totalAbsorbBar and frame.totalAbsorbBar.TiledFillOverlay
+    local absorbOverlay = frame.totalAbsorbBar and frame.totalAbsorbBar.TiledFillOverlay or frame.totalAbsorbBarOverlay
     if not absorbOverlay or absorbOverlay:IsForbidden() then
         return
     end
@@ -57,8 +57,8 @@ local function BBF_UnitFrameHealPredictionBars_Update(frame)
     if totalAbsorb > 0 then
         -- Attach absorb overlay to absorb bar if shown, otherwise attach to health bar
         if absorbBar:IsShown() then
-            absorbOverlay:SetPoint("TOPRIGHT", absorbBar.FillMask, "TOPRIGHT", 0, 0);
-            absorbOverlay:SetPoint("BOTTOMRIGHT", absorbBar.FillMask, "BOTTOMRIGHT", 0, 0);
+            absorbOverlay:SetPoint("TOPRIGHT", absorbBar.FillMask or absorbBar, "TOPRIGHT", 0, 0);
+            absorbOverlay:SetPoint("BOTTOMRIGHT", absorbBar.FillMask or absorbBar, "BOTTOMRIGHT", 0, 0);
         else
             absorbOverlay:SetPoint("TOPRIGHT", healthBar, "TOPRIGHT", 0, 0);
             absorbOverlay:SetPoint("BOTTOMRIGHT", healthBar, "BOTTOMRIGHT", 0, 0);
@@ -162,13 +162,37 @@ function BBF.HookOverShieldUnitFrames()
         return
     end
 
-    hooksecurefunc("UnitFrameHealPredictionBars_Update", BBF_UnitFrameHealPredictionBars_Update)
+    local classicFramesEnabled = C_AddOns.IsAddOnLoaded("ClassicFrames")
 
-    C_Timer.After(3, function()
-        BBF_UnitFrameHealPredictionBars_Update(PlayerFrame)
-        BBF_UnitFrameHealPredictionBars_Update(TargetFrame)
-        BBF_UnitFrameHealPredictionBars_Update(FocusFrame)
-    end)
+    if not classicFramesEnabled then
+        hooksecurefunc("UnitFrameHealPredictionBars_Update", BBF_UnitFrameHealPredictionBars_Update)
+
+        C_Timer.After(3, function()
+            BBF_UnitFrameHealPredictionBars_Update(PlayerFrame)
+            BBF_UnitFrameHealPredictionBars_Update(TargetFrame)
+            BBF_UnitFrameHealPredictionBars_Update(FocusFrame)
+        end)
+
+    else
+        local classicFrames = {
+            [PlayerFrame] = CfPlayerFrame,
+            [TargetFrame] = CfTargetFrame,
+            [FocusFrame] = CfFocusFrame
+        }
+        hooksecurefunc("UnitFrameHealPredictionBars_Update", function(frame)
+            local classicFrame = classicFrames[frame]
+            if classicFrame then
+                BBF_UnitFrameHealPredictionBars_Update(classicFrame)
+            end
+        end)
+
+        C_Timer.After(3, function()
+            BBF_UnitFrameHealPredictionBars_Update(CfPlayerFrame)
+            BBF_UnitFrameHealPredictionBars_Update(CfTargetFrame)
+            BBF_UnitFrameHealPredictionBars_Update(CfFocusFrame)
+        end)
+
+    end
 
 
     local eventFrame = CreateFrame("Frame")

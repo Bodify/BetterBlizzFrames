@@ -14,32 +14,38 @@ local function StopUpdateFrame()
 end
 
 local function CreateCustomFontStrings(dialog)
+    if dialog.queueTimerLabels then return end
     local maxWidth
-    if not dialog.customLabel then
-        maxWidth = dialog:GetWidth()
-        dialog.customLabel = dialog:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-        dialog.customLabel:SetPoint("TOP", dialog.label, "TOP", 0, 0)
-        dialog.customLabel:SetText("Queue expires in")
-        dialog.customLabel:SetFont("Fonts\\FRIZQT__.TTF", 15, "OUTLINE")
-        dialog.customLabel:SetWidth(maxWidth)
-    end
+    maxWidth = dialog:GetWidth()
+    dialog.customLabel = dialog:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    dialog.customLabel:SetPoint("TOP", dialog.label, "TOP", 0, 0)
+    dialog.customLabel:SetText("Queue expires in")
+    local font, size, outline = dialog.customLabel:GetFont()
+    dialog.customLabel:SetFont(font, 15, "OUTLINE")
+    dialog.customLabel:SetWidth(maxWidth)
 
-    if not dialog.timerLabel then
-        dialog.timerLabel = dialog:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
-        dialog.timerLabel:SetPoint("TOP", dialog.customLabel, "BOTTOM", 0, -5)
-        dialog.timerLabel:SetFont("Fonts\\FRIZQT__.TTF", 24, "OUTLINE")
-        dialog.timerLabel:SetWidth(maxWidth)
-    end
+    dialog.timerLabel = dialog:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    dialog.timerLabel:SetPoint("TOP", dialog.customLabel, "BOTTOM", 0, -5)
+    local font, size, outline = dialog.timerLabel:GetFont()
+    dialog.timerLabel:SetFont(font, 24, "OUTLINE")
+    dialog.timerLabel:SetWidth(maxWidth)
 
-    if not dialog.bgLabel then
-        dialog.bgLabel = dialog:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-        dialog.bgLabel:SetPoint("TOP", dialog.timerLabel, "BOTTOM", 0, -4)
-        dialog.bgLabel:SetFont("Fonts\\FRIZQT__.TTF", 15, "OUTLINE")
-        dialog.bgLabel:SetWidth(maxWidth)
-    end
+    dialog.bgLabel = dialog:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    dialog.bgLabel:SetPoint("TOP", dialog.timerLabel, "BOTTOM", 0, -4)
+    local font, size, outline = dialog.bgLabel:GetFont()
+    dialog.bgLabel:SetFont(font, 15, "OUTLINE")
+    dialog.bgLabel:SetWidth(maxWidth)
+
+    dialog.statusTextLabel = dialog:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    dialog.statusTextLabel:SetPoint("TOP", dialog.bgLabel, "BOTTOM", 0, -3)
+    local font, size, outline = dialog.statusTextLabel:GetFont()
+    dialog.statusTextLabel:SetFont(font, 11, "OUTLINE")
+    dialog.statusTextLabel:SetWidth(maxWidth)
+
+    dialog.queueTimerLabels = true
 end
 
-local function SetExpiresText(timeRemaining, dialog)
+local function SetExpiresText(timeRemaining, dialog, pvp)
     local secs = timeRemaining > 0 and timeRemaining or 1
     local color = secs > 20 and "20ff20" or secs > 10 and "ffff00" or "ff0000"
     local timerText = format("|cff%s%s|r", color, SecondsToTime(secs))
@@ -48,8 +54,12 @@ local function SetExpiresText(timeRemaining, dialog)
     dialog.label:SetText("")
     dialog.instanceInfo:SetAlpha(0)
     dialog.timerLabel:SetText(timerText)
-    if dialog.instanceInfo.name then
+    if dialog.instanceInfo.name and (dialog.instanceInfo:IsShown() or pvp) then
         dialog.bgLabel:SetText(dialog.instanceInfo.name:GetText())
+        dialog.statusTextLabel:SetText(dialog.instanceInfo.statusText:GetText())
+    else
+        dialog.bgLabel:SetText("")
+        dialog.statusTextLabel:SetText("")
     end
 end
 
@@ -76,7 +86,7 @@ local function OnUpdate(elapsed)
                 StopUpdateFrame()
                 return
             end
-            SetExpiresText(GetBattlefieldPortExpiration(bgId), PVPReadyDialog)
+            SetExpiresText(GetBattlefieldPortExpiration(bgId), PVPReadyDialog, true)
             updateFrame.timer = 1
         end
     elseif proposalTimeLeft then
@@ -212,7 +222,7 @@ function BBF.EnableQueueTimer()
             hooksecurefunc("PVPReadyDialog_Display", function(_, i)
                 bgId = i
                 StartUpdateFrame()
-                SetExpiresText(GetBattlefieldPortExpiration(bgId), PVPReadyDialog)
+                SetExpiresText(GetBattlefieldPortExpiration(bgId), PVPReadyDialog, true)
             end)
         end
 

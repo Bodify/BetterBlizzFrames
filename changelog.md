@@ -1,3 +1,40 @@
+# BetterBlizzFrames TEMP
+### New:
+- UnitFrame & RaidFrame texture swap
+- Font settings
+- New: UnitFrame Background Color (Misc)
+- Fix Alternative Frame Texture & Alternative ManaBar not being hidden with the Mini-Frame settings in Misc. Also slight adjustments due to new name settings.
+- Fix Format Number setting sometimes causing lua errors for certain classes with Alternate Power.
+- Fix Shield Border on Uninteruptible casts for Classic Castbars settings not always wrapping around the castbar perfectly.
+- Fix OCD Tweaks settings for Classic Era (Disabled unnecessary things from cata and fixed up ToT Portrait a little)
+- Hide Level setting now hides the circle texture around the level when using ClassiFrames addon
+- Overshields setting updated to look identical to retail for both Classic Era and Cataclysm
+- Retail: Misc option to not load BBF GUI until needed (helps with memory and load times)
+- Classic Era: Added misc setting that is on by default: Makes it so Hunters popping feign death in raid does not show as dead. Less Hardcore Heart Attacks.
+
+# BetterBlizzFrames 1.5.9b
+## The War Within
+### Tweak:
+- Add AlternatePowerBar to Format Numbers
+### Bugfix:
+- Fix oopsie with "Hide Shadow" setting not hiding it on PlayerFrame after introducing the "Mirror TargetFrame" setting.
+## Cataclysm
+### Bugfix:
+- Fix Buffs & Debuffs setting "Always show purge texture" not working.
+
+# BetterBlizzFrames 1.5.9
+## The War Within
+### New stuff:
+- Snupy profile (www.twitch.tv/snupy)
+- PlayerFrame: Mirror TargetFrame (Makes PlayerFrame symmetrical and round like TargetFrame is) (Experimental)
+- Classic Castbars setting
+### Tweak:
+- Overshields now supported for ClassicFrames addon.
+- Few more auras in the blacklist preset.
+- Hide Role Icon, Hide Names and Hide Realm Names (for Party) is now active in raid as well. (The name stuff still needs a rework when I get time)
+### Note:
+- I wanted to push a few more new features but it will have to wait until I have had more time developing and testing them.
+
 # BetterBlizzFrames 1.5.8
 ## The War Within
 ### New stuff:

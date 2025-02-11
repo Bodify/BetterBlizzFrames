@@ -31,10 +31,11 @@ function BBF.HideFrames()
         local classicFrames = C_AddOns.IsAddOnLoaded("ClassicFrames")
         --Hide group indicator on player unitframe
         local groupIndicatorAlpha = BetterBlizzFramesDB.hideGroupIndicator and 0 or 1
-        PlayerFrameGroupIndicatorMiddle:SetAlpha(groupIndicatorAlpha)
-        PlayerFrameGroupIndicatorText:SetAlpha(groupIndicatorAlpha)
-        PlayerFrameGroupIndicatorLeft:SetAlpha(groupIndicatorAlpha)
-        PlayerFrameGroupIndicatorRight:SetAlpha(groupIndicatorAlpha)
+        PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.GroupIndicator:SetAlpha(groupIndicatorAlpha)
+        -- PlayerFrameGroupIndicatorMiddle:SetAlpha(groupIndicatorAlpha)
+        -- PlayerFrameGroupIndicatorText:SetAlpha(groupIndicatorAlpha)
+        -- PlayerFrameGroupIndicatorLeft:SetAlpha(groupIndicatorAlpha)
+        -- PlayerFrameGroupIndicatorRight:SetAlpha(groupIndicatorAlpha)
 
         -- Hide target leader icon
         local targetLeaderIconAlpha = BetterBlizzFramesDB.hideTargetLeaderIcon and 0 or 1
@@ -222,6 +223,39 @@ function BBF.HideFrames()
         -- Hide Player level text
         if BetterBlizzFramesDB.hideLevelText then
             changes.hideLevelText = true
+            if classicFrames and not BBF.classicFramesLevelHide then
+
+                hooksecurefunc(PlayerFrame.PlayerFrameContainer.FrameTexture, "SetTexture", function(self)
+                    if self.changing then return end
+                    self.changing = true
+                    self:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-NoLevel")
+                    self.changing = false
+                end)
+                hooksecurefunc(PlayerFrame.PlayerFrameContainer.AlternatePowerFrameTexture, "SetTexture", function(self)
+                    if self.changing then return end
+                    self.changing = true
+                    self:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-NoLevel")
+                    self.changing = false
+                end)
+                hooksecurefunc(TargetFrame.TargetFrameContainer.FrameTexture, "SetTexture", function(self, texture)
+                    if self.changing then return end
+                    if texture == "Interface\\TargetingFrame\\UI-TargetingFrame" then
+                        self.changing = true
+                        self:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-NoLevel")
+                        self.changing = false
+                    end
+                end)
+                hooksecurefunc(FocusFrame.TargetFrameContainer.FrameTexture, "SetTexture", function(self, texture)
+                    if self.changing then return end
+                    if texture == "Interface\\TargetingFrame\\UI-TargetingFrame" then
+                        self.changing = true
+                        self:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-NoLevel")
+                        self.changing = false
+                    end
+                end)
+
+                BBF.classicFramesLevelHide = true
+            end
             if BetterBlizzFramesDB.hideLevelTextAlways then
                 PlayerLevelText:SetParent(hiddenFrame)
                 TargetFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetAlpha(0)
@@ -229,6 +263,11 @@ function BBF.HideFrames()
             else
                 if UnitLevel("player") == 80 then
                     PlayerLevelText:SetParent(hiddenFrame)
+                    if classicFrames then
+                        C_Timer.After(1, function()
+                            PlayerLevelText:SetParent(hiddenFrame)
+                        end)
+                    end
                 end
                 if UnitLevel("target") == 80 then
                     --TargetFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetParent(hiddenFrame)
@@ -474,17 +513,19 @@ function BBF.HideFrames()
         if BetterBlizzFramesDB.hideUnitFrameShadow then
             if not BBF.hideUnitFrameShadow then
                 -- Player
-                local playerTex = PlayerFrame.PlayerFrameContainer.FrameTexture
-                playerTex:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOn-NoShadow")
-                hooksecurefunc(playerTex, "SetAtlas", function(self)
-                    self:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOn-NoShadow")
-                end)
+                if not BetterBlizzFramesDB.symmetricPlayerFrame then
+                    local playerTex = PlayerFrame.PlayerFrameContainer.FrameTexture
+                    playerTex:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOn-NoShadow")
+                    hooksecurefunc(playerTex, "SetAtlas", function(self)
+                        self:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOn-NoShadow")
+                    end)
 
-                local playerAltTex = PlayerFrame.PlayerFrameContainer.AlternatePowerFrameTexture
-                playerAltTex:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOn-ClassResource-NoShadow")
-                hooksecurefunc(playerAltTex, "SetAtlas", function(self)
-                    self:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOn-ClassResource-NoShadow")
-                end)
+                    local playerAltTex = PlayerFrame.PlayerFrameContainer.AlternatePowerFrameTexture
+                    playerAltTex:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOn-ClassResource-NoShadow")
+                    hooksecurefunc(playerAltTex, "SetAtlas", function(self)
+                        self:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOn-ClassResource-NoShadow")
+                    end)
+                end
 
                 -- Target & Focus
                 local targetTex = TargetFrame.TargetFrameContainer.FrameTexture
@@ -784,6 +825,22 @@ function BBF.HideFrames()
                     aggroHighlight:SetAlpha(aggroAlpha)
                 end
             end
+        end
+
+        if BetterBlizzFramesDB.hidePetText then
+            PetFrameHealthBarText:SetAlpha(0)
+            PetFrameHealthBarText:Hide()
+            PetFrameHealthBarTextLeft:SetAlpha(0)
+            PetFrameHealthBarTextLeft:Hide()
+            PetFrameHealthBarTextRight:SetAlpha(0)
+            PetFrameHealthBarTextRight:Hide()
+
+            PetFrameManaBarText:SetAlpha(0)
+            PetFrameManaBarText:Hide()
+            PetFrameManaBarTextLeft:SetAlpha(0)
+            PetFrameManaBarTextLeft:Hide()
+            PetFrameManaBarTextRight:SetAlpha(0)
+            PetFrameManaBarTextRight:Hide()
         end
     end
 end

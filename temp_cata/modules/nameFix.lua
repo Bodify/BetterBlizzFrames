@@ -56,488 +56,929 @@ local specIDToNameShort = {
     [71] = "Arms", [72] = "Fury", [73] = "Prot",
 }
 
+local hidePartyNames
+local hidePartyRoles
 local removeRealmNames
 local classColorTargetNames
 local showSpecName
 local shortArenaSpecName
 local showArenaID
 local targetAndFocusArenaNames
-local classColorTargetReputationTexture
-local classColorFocusReputationTexture
+
 local partyArenaNames
+local hideTargetName
+local hideFocusName
+local hideTargetToTName
+local hideFocusToTName
 local classColorLevelText
+local hidePlayerName
+local hidePetName
+local isAddonLoaded = C_AddOns.IsAddOnLoaded
 
 function BBF.UpdateUserTargetSettings()
+    hidePartyNames = BetterBlizzFramesDB.hidePartyNames
+    hidePartyRoles = BetterBlizzFramesDB.hidePartyRoles
     removeRealmNames = BetterBlizzFramesDB.removeRealmNames
     classColorTargetNames = BetterBlizzFramesDB.classColorTargetNames
     showSpecName = BetterBlizzFramesDB.showSpecName
     shortArenaSpecName = BetterBlizzFramesDB.shortArenaSpecName
     showArenaID = BetterBlizzFramesDB.showArenaID
     targetAndFocusArenaNames = BetterBlizzFramesDB.targetAndFocusArenaNames
-    classColorTargetReputationTexture = BetterBlizzFramesDB.classColorTargetReputationTexture
-    classColorFocusReputationTexture = BetterBlizzFramesDB.classColorFocusReputationTexture
     partyArenaNames = BetterBlizzFramesDB.partyArenaNames
+    hideTargetName = BetterBlizzFramesDB.hideTargetName
+    hideFocusName = BetterBlizzFramesDB.hideFocusName
+    hideTargetToTName = BetterBlizzFramesDB.hideTargetToTName
+    hideFocusToTName = BetterBlizzFramesDB.hideFocusToTName
     classColorLevelText = BetterBlizzFramesDB.classColorLevelText
+    hidePlayerName = BetterBlizzFramesDB.hidePlayerName
+    hidePetName = BetterBlizzFramesDB.hidePetName
 end
 
--- Dictionary to store original points of frames
-local originalPoints = {}
+local validPartyUnits = {
+    ["party1"] = true,
+    ["party2"] = true,
+    ["party3"] = true,
+    ["party4"] = true,
+    ["raid1"] =  true,
+    ["raid2"] =  true,
+    ["raid3"] =  true,
+    ["raid4"] =  true,
+}
 
--- General function to center and adjust a frame
-local function adjustFramePosition(frame, xOffset)
-    -- Ensure we do not re-enter or mess with protected frames
-    if frame.changing or frame:IsProtected() then return end
-    frame.changing = true
-
-    -- Capture the original point only once
-    if not originalPoints[frame] then
-        originalPoints[frame] = {frame:GetPoint()}
+local function GetSpecName(unitGUID)
+    if Details then
+        local specID = Details:GetSpecByGUID(unitGUID)
+        return specID and (shortArenaSpecName and specIDToNameShort[specID] or specIDToName[specID])
     end
-
-    local a, b, c, d, e = unpack(originalPoints[frame])
-
-    -- Clearing all previous points
-    frame:ClearAllPoints()
-    frame:SetJustifyH("CENTER")
-    local playerFrameOCD = BetterBlizzFramesDB.playerFrameOCD and not BetterBlizzFramesDB.playerFrameOCDTextureBypass
-    local ocdAdjustment = (frame == (TargetFrame.name or FocusFrame.name) and playerFrameOCD) and 1 or 0
-
-    -- Setting the new point with customized x-offset
-    frame:SetPoint("TOP", b, "TOP", xOffset, e-ocdAdjustment)
-    if not BetterBlizzFramesDB.centerNames then
-        frame:ClearAllPoints()
-        frame:SetJustifyH("LEFT")
-        frame:SetPoint(a, b, c, d, e)
-    end
-
-    frame.changing = false
+    return nil
 end
 
-local function adjustFramePositionOCD(frame)
-    -- Capture the original point only once
-    if not originalPoints[frame] then
-        originalPoints[frame] = {frame:GetPoint()}
+local function GetNameWithoutRealm(frame)
+    local name = GetUnitName(frame.unit)
+    if name then
+        name = string.gsub(name, " %(%*%)$", "")
+        return name
     end
-
-    local a, b, c, d, e = unpack(originalPoints[frame])
-
-    -- Clearing all previous points
-    frame:ClearAllPoints()
-    local playerFrameOCD = BetterBlizzFramesDB.playerFrameOCD and not BetterBlizzFramesDB.playerFrameOCDTextureBypass
-    local ocdAdjustment = (frame == (TargetFrame.name or FocusFrame.name) and playerFrameOCD) and 1 or 0
-    -- Setting the new point with customized x-offset
-    frame:SetPoint(a, b, c, d, e-ocdAdjustment)
-
-    frame.changing = false
+    return nil
 end
 
-function BBF.ShiftNamesCuzOCD()
-    if not BetterBlizzFramesDB.centerNames then
-        adjustFramePositionOCD(TargetFrame.cleanName)
-        adjustFramePositionOCD(FocusFrame.cleanName)
-    else
-        adjustFramePosition(TargetFrame.cleanName, -2)
-        adjustFramePosition(FocusFrame.cleanName, -2)
-    end
-end
-
-local function updateArenaName(self, arenaIndex)
-    local specID
-    if Details and Details.realversion >= 134 then
-        local unitGUID = UnitGUID(frame.unit)
-        specID = Details:GetSpecByGUID(unitGUID)
-    end
-    local specName = specID and (shortArenaSpecName and specIDToNameShort[specID] or specIDToName[specID])
+local function SetArenaName(frame, unit, textObject)
+    local unitGUID = UnitGUID(unit)
+    local specName = GetSpecName(unitGUID)
+    local nameText
+    local partyID = UnitIsUnit(unit, "party1") and " 1" or " 2"
 
     if specName then
-        local newName
         if showSpecName and showArenaID then
-            newName = specName .. " " .. arenaIndex
+            nameText = specName .. partyID
         elseif showSpecName then
-            newName = specName
+            nameText = specName
         elseif showArenaID then
-            newName = "Arena " .. arenaIndex
-        end
-
-        self:SetText(newName)
-    end
-end
-
--- Function to update the party member's name display
-local function updatePartyName(self, partyIndex)
-    local unit = "party" .. partyIndex
-    local specID
-    local Details = Details
-
-    -- Fetch specID if Details is available and updated
-    if Details and Details.realversion >= 134 then
-        local unitGUID = UnitGUID(unit)
-        specID = Details:GetSpecByGUID(unitGUID)
-    end
-
-    local specName = specID and (shortArenaSpecName and specIDToNameShort[specID] or specIDToName[specID])
-
-    -- Determine the new name to display based on settings
-    local newName
-    if not specName then
-        if showArenaID then
-            newName = "Party " .. partyIndex
+            nameText = "Party" .. partyID
         end
     else
-        if tot then
-            newName = "Party " .. partyIndex
-        elseif showSpecName and showArenaID then
-            newName = specName .. " " .. partyIndex
-        elseif showSpecName then
-            newName = specName
-        elseif showArenaID then
-            newName = "Party " .. partyIndex
-        end
+        nameText = showArenaID and "Party" .. partyID or removeRealmNames and GetNameWithoutRealm(frame)
     end
 
-    self:SetText(newName)
+    if nameText then
+        textObject:SetText(nameText)
+    end
 end
 
-local hookedLevels
-local function updateTextForUnit(textElement, frame, hideName, isParty)
-    -- if textElement.changing or textElement:IsProtected() then return end
-    -- textElement.changing = true
-    if not frame then return end
+local function PartyArenaName(frame)
+    local unit = frame.displayedUnit
+    if not validPartyUnits[unit] then return end
+    if UnitIsUnit(unit, "player") then return end
+    if not IsActiveBattlefieldArena() then return end
+    SetArenaName(frame, unit, frame.name)
+end
 
-    local unit = frame.unit
-    local isPlayer = UnitIsPlayer(unit)
-    local isEnemy = UnitCanAttack("player", unit)
-
-    -- create new fake name
-    local ogFontName, ogFontHeight, ogFontFlags = textElement:GetFont()
-    local a, p, a2, x, y = textElement:GetPoint()
-    if not frame.cleanName then
-        frame.cleanName = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+function BBF.PartyNameChange()
+    if true then --EditModeManagerFrame:UseRaidStylePartyFrames()
+        for i = 1, 3 do
+            local memberFrame = _G["CompactPartyFrameMember" .. i]
+            if memberFrame and memberFrame.displayedUnit then
+                PartyArenaName(memberFrame)
+            end
+        end
+    else
+        for i = 1, 4 do
+            local memberFrame = PartyFrame["MemberFrame" .. i]
+            if memberFrame and memberFrame.unit then
+                PartyArenaName(memberFrame)
+            end
+        end
     end
-    if not isParty then
-        frame.cleanName:SetParent(frame.name:GetParent())
+end
+
+local UpdatePartyNames = CreateFrame("Frame")
+UpdatePartyNames:RegisterEvent("GROUP_ROSTER_UPDATE")
+UpdatePartyNames:RegisterEvent("PLAYER_ENTERING_WORLD")
+UpdatePartyNames:RegisterEvent("PLAYER_ENTERING_BATTLEGROUND")
+UpdatePartyNames:SetScript("OnEvent", function(self, event, ...)
+    if partyArenaNames and IsActiveBattlefieldArena() then
+        for delay = 0, 8 do
+            C_Timer.After(delay, BBF.PartyNameChange)
+        end
     end
-    frame.cleanName:SetFont(ogFontName, ogFontHeight, ogFontFlags)
-    frame.cleanName:SetJustifyH(textElement:GetJustifyH())
-    frame.cleanName:SetJustifyV(textElement:GetJustifyV())
-    frame.cleanName:SetTextColor(textElement:GetTextColor())
-    frame.cleanName:SetShadowColor(PlayerName:GetShadowColor())
-    frame.cleanName:SetShadowOffset(textElement:GetShadowOffset())
-    frame.cleanName:SetShadowColor(textElement:GetShadowColor())
-    frame.cleanName:SetWordWrap(false)
-    frame.cleanName:SetHeight(textElement:GetHeight())
-    frame.cleanName:SetWidth(textElement:GetWidth())
-    frame.cleanName:SetFont(ogFontName, ogFontHeight, ogFontFlags)
-    frame.cleanName:ClearAllPoints()
-    frame.cleanName:SetPoint(a,p,a2,x,y)
+end)
 
-    frame.name:SetAlpha(0)
-    frame.cleanName:SetAlpha(1)
 
-    local textElement = frame.cleanName
-    textElement:SetText(GetUnitName(unit))
-
-    -- Early return if the name should be hidden
-    if hideName then
-        textElement:SetText("")
+local function CompactPartyFrameNameChanges(frame)
+    if not frame or not frame.unit then return end
+    if frame.unit:find("nameplate") then return end
+    if hidePartyNames then
+        frame.name:SetText("")
         return
     end
-
-    -- Remove realm names for players
-    if removeRealmNames and isPlayer then
-        local currentText = GetUnitName(frame.unit, true)
-        local newName = string.gsub(currentText, "%s*%-(.*)", "")  -- Remove diff realm indicator (*) from the name
-        textElement:SetText(newName)
+    if partyArenaNames and IsActiveBattlefieldArena() then
+        PartyArenaName(frame)
+        return
     end
-
-    -- Set class colors for players
-    if classColorTargetNames and not isParty then
-        if isPlayer then
-            local _, class = UnitClass(unit)
-            local classColor = RAID_CLASS_COLORS[class]
-            if classColor then
-                textElement:SetTextColor(classColor.r, classColor.g, classColor.b)
-                if classColorLevelText and frame.levelText then
-                    if not hookedLevels then
-                        BBF.HookLevelText()
-                        hookedLevels = true
-                    end
-                    frame.levelText:SetTextColor(classColor.r, classColor.g, classColor.b)
-                end
-            end
-        else
-            textElement:SetTextColor(1, 0.81960791349411, 0)
-        end
+    if removeRealmNames then
+        frame.name:SetText(GetNameWithoutRealm(frame))
     end
-
-    -- Arena name handling
-    if (targetAndFocusArenaNames or partyArenaNames) and IsActiveBattlefieldArena() then
-        if isEnemy then
-            for i = 1, 3 do
-                if UnitIsUnit(unit, "arena" .. i) then
-                    updateArenaName(textElement, i)
-                    textElement.changing = false
-                    return
-                end
-            end
-        else
-            for i = 1, 2 do
-                if UnitIsUnit(unit, "party" .. i) then
-                    if (isParty and partyArenaNames) or (not isParty and targetAndFocusArenaNames) then
-                        updatePartyName(textElement, i)
-                        textElement.changing = false
-                        return
-                    end
-                end
-            end
-        end
-    end
-
-    textElement.changing = false
 end
 
-function BBF.HookLevelText()
-    hooksecurefunc(PlayerLevelText, "SetVertexColor", function(self)
-        if not self.changing then
-            self.changing = true
-            local _, class = UnitClass("player")
-            local classColor = RAID_CLASS_COLORS[class]
-            self:SetTextColor(classColor.r, classColor.g, classColor.b)
-            self.changing = false
-        end
-    end)
-    local _, class = UnitClass("player")
-    local classColor = RAID_CLASS_COLORS[class]
-    PlayerLevelText:SetVertexColor(classColor.r, classColor.g, classColor.b)
+local function HideRoleIcon(frame)
+    if not hidePartyRoles then return end
+    if not frame.roleIcon then return end
+    frame.roleIcon:SetAlpha(0)
+end
+hooksecurefunc("CompactUnitFrame_UpdateRoleIcon", HideRoleIcon)
+--hooksecurefunc("CompactUnitFrame_SetUnit", CompactPartyFrameNameChanges)
+hooksecurefunc("CompactUnitFrame_UpdateName", CompactPartyFrameNameChanges)
 
-    hooksecurefunc("TargetFrame_CheckLevel", function()
-        if UnitIsPlayer("target") then
-            local _, class = UnitClass("target")
-            local classColor = RAID_CLASS_COLORS[class]
-            TargetFrameTextureFrameLevelText:SetTextColor(classColor.r, classColor.g, classColor.b)
-        end
-        if UnitExists("focus") and UnitIsPlayer("focus") then
-            local _, class = UnitClass("focus")
-            local classColor = RAID_CLASS_COLORS[class]
-            FocusFrameTextureFrameLevelText:SetTextColor(classColor.r, classColor.g, classColor.b)
-        end
-    end)
 
-    if UnitExists("target") and UnitIsPlayer("target") then
-        local _, class = UnitClass("target")
+local function InitializeFontString(frame)
+    -- Determine the original FontString based on available properties
+    local name = frame.name or frame.Name
+    if not name or not name:GetParent() then return end
+
+    -- Create the new FontString on the specified frame with a fixed name "bbfName"
+    frame.bbfName = name:GetParent():CreateFontString(nil, name:GetDrawLayer() or "OVERLAY", "GameFontNormal")
+
+    -- Copy font settings
+    local font, fontHeight, fontFlags = name:GetFont()
+    frame.bbfName:SetFont(font, fontHeight, fontFlags)
+
+    -- Copy alignment, color, shadow, and dimensions
+    frame.bbfName:SetJustifyH(name:GetJustifyH())
+    frame.bbfName:SetJustifyV(name:GetJustifyV())
+    frame.bbfName:SetTextColor(name:GetTextColor())
+    frame.bbfName:SetShadowColor(name:GetShadowColor())
+    frame.bbfName:SetShadowOffset(name:GetShadowOffset())
+    frame.bbfName:SetWidth(name:GetWidth())
+    frame.bbfName:SetHeight(name:GetHeight())
+    frame.bbfName:SetWordWrap(false)
+
+    -- Copy position
+    local point, relativeTo, relativePoint, xOffset, yOffset = name:GetPoint()
+    if point then
+        frame.bbfName:SetPoint(point, relativeTo, relativePoint, xOffset, yOffset)
+    end
+
+    -- Set initial text from the original FontString
+    frame.bbfName:SetText(name:GetText())
+
+    -- Hide original
+    name:SetAlpha(0)
+end
+
+local frames = {
+    PlayerFrame,
+    TargetFrame,
+    FocusFrame,
+    TargetFrameToT,
+    FocusFrameToT,
+    PartyMemberFrame1,
+    PartyMemberFrame2,
+    PartyMemberFrame3,
+    PartyMemberFrame4,
+    PetFrame,
+}
+
+local function InitializeFontStringsForFrames()
+    -- Initialize FontStrings for each frame in the list
+    for _, frame in ipairs(frames) do
+        InitializeFontString(frame)
+    end
+end
+
+-- Run the function to initialize font strings on all specified frames
+InitializeFontStringsForFrames()
+
+local function SetPartyFont(font, size, outline, size2)
+    if outline == "NONE" then
+        outline = nil
+    end
+    for i = 1, 5 do
+        local frame = _G["CompactPartyFrameMember"..i]
+        if frame then
+            frame.name:SetFont(font, size, outline)
+            frame.bbfSetFont = true
+            if frame.statusText then
+                frame.statusText:SetFont(font, size2, outline)
+            end
+        end
+    end
+    for i = 1, 5 do
+        local frame = _G["CompactRaidFrame"..i]
+        if frame then
+            frame.name:SetFont(font, size, outline)
+            frame.bbfSetFont = true
+            if frame.statusText then
+                frame.statusText:SetFont(font, size2, outline)
+            end
+        end
+    end
+    for group = 1, 8 do
+        for member = 1, 5 do
+            local raidFrame = _G["CompactRaidGroup" .. group .. "Member" .. member]
+            if raidFrame then
+                raidFrame.name:SetFont(font, size, outline)
+                if raidFrame.statusText then
+                    raidFrame.statusText:SetFont(font, size2, outline)
+                end
+            end
+        end
+    end
+end
+
+local function SetUnitFramesFont(font, size, outline)
+    if outline == "NONE" then
+        outline = nil
+    end
+    for _, frame in ipairs(frames) do
+        local newSize = size
+        if frame == PetFrame or frame == TargetFrameToT or frame == FocusFrameToT then
+            if tonumber(size) >= 13 then
+                newSize = size - 3
+            elseif tonumber(size) <= 10 then
+                newSize = size -1
+            else
+                newSize = size -2
+            end
+        end
+        frame.bbfName:SetFont(font, newSize, outline)
+        --if frame.TargetFrameContent and frame.TargetFrameContent.TargetFrameContentMain.LevelText then
+            --frame.TargetFrameContent.TargetFrameContentMain.LevelText:SetFont(font, size, outline)
+            local a,b = PlayerLevelText:GetFont()
+            PlayerLevelText:SetFont(font, b, outline)
+            FocusFrameTextureFrameLevelText:SetFont(font, b, outline)
+            TargetFrameTextureFrameLevelText:SetFont(font, b, outline)
+        --end
+        frame.bbfForcedFont = true
+    end
+end
+
+
+local playerManaBar = PlayerFrameManaBar
+local playerHealthBar = PlayerFrameHealthBar
+
+local petHealthBar = PetFrame.healthbar
+local petManaBar = PetFrame.manabar
+
+local targetManaBar = TargetFrameManaBar
+local targetHealthBar = TargetFrameHealthBar
+
+local focusManaBar = FocusFrameManaBar
+local focusHealthBar = FocusFrameHealthBar
+
+-- local altBar = AlternatePowerBar
+-- local staggerBar = MonkStaggerBar
+
+local statusTexts = {
+    playerManaBar.LeftText,
+    playerManaBar.RightText,
+    playerManaBar.ManaBarText,
+    --
+    playerHealthBar.LeftText,
+    playerHealthBar.RightText,
+    playerHealthBar.TextString,
+    --
+    petHealthBar.LeftText,
+    petHealthBar.RightText,
+    petHealthBar.TextString,
+    --
+    petManaBar.LeftText,
+    petManaBar.RightText,
+    petManaBar.TextString,
+    --
+    targetManaBar.LeftText,
+    targetManaBar.RightText,
+    targetManaBar.ManaBarText,
+    --
+    targetHealthBar.LeftText,
+    targetHealthBar.RightText,
+    targetHealthBar.TextString,
+    --
+    focusManaBar.LeftText,
+    focusManaBar.RightText,
+    focusManaBar.ManaBarText,
+    --
+    focusHealthBar.LeftText,
+    focusHealthBar.RightText,
+    focusHealthBar.TextString,
+    --
+    -- altBar.LeftText,
+    -- altBar.RightText,
+    -- altBar.TextString,
+    -- staggerBar.LeftText,
+    -- staggerBar.RightText,
+    -- staggerBar.TextString,
+}
+
+local petFrames = {
+    [petHealthBar.LeftText] = true,
+    [petHealthBar.RightText] = true,
+    [petHealthBar.TextString] = true,
+    [petManaBar.LeftText] = true,
+    [petManaBar.RightText] = true,
+    [petManaBar.TextString] = true
+}
+
+local function SetUnitFramesValuesFont(font, size, outline)
+    for _, textObject in ipairs(statusTexts) do
+        local ogFont, ogSize, ogOutline = textObject:GetFont()
+
+        local newFont = font or ogFont
+        local newSize = size or ogSize
+        local newOutline = outline or ogOutline
+
+        if petFrames[textObject] then
+            if tonumber(newSize) >= 12 then
+                if tonumber(newSize) > 13 then
+                    newSize = newSize - 3
+                else
+                    newSize = newSize - 2
+                end
+            else
+                newSize = newSize - 1
+            end
+        end
+
+        if newOutline == "NONE" then
+            newOutline = nil
+        end
+
+        textObject:SetFont(newFont, newSize, newOutline)
+    end
+end
+
+
+
+
+
+
+local function SetActionBarFonts(font, size, kbSize, outline, kbOutline)
+    -- Define lists of button prefixes for hotkeys and macro names
+    local buttons = {
+        "ActionButton", "MultiBarBottomLeftButton", "MultiBarBottomRightButton",
+        "MultiBarRightButton", "MultiBarLeftButton", "MultiBar5Button",
+        "MultiBar6Button", "MultiBar7Button", "PetActionButton"
+    }
+
+    for _, buttonPrefix in ipairs(buttons) do
+        for i = 1, 12 do
+            -- Set font for hotkey text
+            local hotKeyText = _G[buttonPrefix .. i .. "HotKey"]
+            if hotKeyText then
+                local ogFont, ogSize, ogOutline = hotKeyText:GetFont()
+                local outline = outline or ogOutline
+                if outline == "NONE" then
+                    outline = nil
+                end
+                hotKeyText:SetFont(font or ogFont, kbSize or ogSize, kbOutline)
+            end
+
+            -- Set font for macro name text
+            local macroText = _G[buttonPrefix .. i .. "Name"]
+            if macroText then
+                local ogFont, ogSize, ogOutline = macroText:GetFont()
+                local outline = outline or ogOutline
+                if outline == "NONE" then
+                    outline = nil
+                end
+                macroText:SetFont(font or ogFont, size or ogSize, outline)
+            end
+        end
+    end
+end
+
+
+
+
+local LSM = LibStub("LibSharedMedia-3.0")
+local oldChatFont = nil
+
+function BBF.SetCustomFonts()
+    local db = BetterBlizzFramesDB
+
+    if db.changeAllFontsIngame then
+        local fontName = db.allIngameFont
+        local fontPath = LSM:Fetch(LSM.MediaType.FONT, fontName)
+
+        local ForcedFontSize = { 9, 9, 14, 14, 12, 64, 64 }
+        local FontObjects = {
+            SystemFont_NamePlateCastBar,
+            SystemFont_NamePlateFixed,
+            SystemFont_LargeNamePlateFixed,
+            SystemFont_LargeNamePlate,
+            SystemFont_NamePlate,
+            SystemFont_World,
+            SystemFont_World_ThickOutline,
+            SystemFont_Outline_Small,
+            SystemFont_Outline,
+            SystemFont_InverseShadow_Small,
+            SystemFont_Med2,
+            SystemFont_Med3,
+            SystemFont_Shadow_Med3,
+            SystemFont_Huge1,
+            SystemFont_Huge1_Outline,
+            SystemFont_OutlineThick_Huge2,
+            SystemFont_OutlineThick_Huge4,
+            SystemFont_OutlineThick_WTF,
+            NumberFont_GameNormal,
+            NumberFont_Shadow_Small,
+            NumberFont_OutlineThick_Mono_Small,
+            NumberFont_Shadow_Med,
+            NumberFont_Normal_Med,
+            NumberFont_Outline_Med,
+            NumberFont_Outline_Large,
+            NumberFont_Outline_Huge,
+            Fancy22Font,
+            QuestFont_Huge,
+            QuestFont_Outline_Huge,
+            QuestFont_Super_Huge,
+            QuestFont_Super_Huge_Outline,
+            SplashHeaderFont,
+            Game10Font_o1,
+            Game11Font,
+            Game12Font,
+            Game13Font,
+            Game13FontShadow,
+            Game15Font,
+            Game18Font,
+            Game20Font,
+            Game24Font,
+            Game27Font,
+            Game30Font,
+            Game32Font,
+            Game36Font,
+            Game48Font,
+            Game48FontShadow,
+            Game60Font,
+            Game72Font,
+            Game11Font_o1,
+            Game12Font_o1,
+            Game13Font_o1,
+            Game15Font_o1,
+            QuestFont_Enormous,
+            DestinyFontLarge,
+            CoreAbilityFont,
+            DestinyFontHuge,
+            QuestFont_Shadow_Small,
+            MailFont_Large,
+            SpellFont_Small,
+            InvoiceFont_Med,
+            InvoiceFont_Small,
+            Tooltip_Med,
+            Tooltip_Small,
+            AchievementFont_Small,
+            ReputationDetailFont,
+            FriendsFont_Normal,
+            FriendsFont_Small,
+            FriendsFont_Large,
+            FriendsFont_UserText,
+            GameFont_Gigantic,
+            GameFontNormalMed3,
+            ChatBubbleFont,
+            Fancy16Font,
+            Fancy18Font,
+            Fancy20Font,
+            Fancy24Font,
+            Fancy27Font,
+            Fancy30Font,
+            Fancy32Font,
+            Fancy48Font,
+            SystemFont_Tiny2,
+            SystemFont_Tiny,
+            SystemFont_Shadow_Small,
+            SystemFont_Small,
+            SystemFont_Small2,
+            SystemFont_Shadow_Small2,
+            SystemFont_Shadow_Med1_Outline,
+            SystemFont_Shadow_Med1,
+            QuestFont_Large,
+            SystemFont_Large,
+            SystemFont_Shadow_Large_Outline,
+            SystemFont_Shadow_Med2,
+            SystemFont_Shadow_Large,
+            SystemFont_Shadow_Large2,
+            SystemFont_Shadow_Huge1,
+            SystemFont_Huge2,
+            SystemFont_Shadow_Huge2,
+            SystemFont_Shadow_Huge3,
+            SystemFont_Shadow_Outline_Huge3,
+            SystemFont_Shadow_Outline_Huge2,
+            SystemFont_Med1,
+            SystemFont_WTF2,
+            SystemFont_Outline_WTF2,
+            GameTooltipHeader,
+            System_IME,
+            Number12Font_o1
+        }
+
+        -- Backup function for the chat font
+        local function BackupChatFont()
+            if not oldChatFont then
+                local chatFrame = _G["ChatFrame1"]
+                local fontPath, fontSize, fontStyle = chatFrame:GetFont()
+                oldChatFont = {fontPath, fontSize, fontStyle}
+            end
+        end
+
+        -- Set function for the chat font
+        local function SetChatFont()
+            BackupChatFont() -- Ensure we backup before setting a new font
+            for i = 1, NUM_CHAT_WINDOWS do
+                local chatFrame = _G["ChatFrame" .. i]
+                chatFrame:SetFont(fontPath, oldChatFont[2], oldChatFont[3])
+            end
+        end
+
+        local function SetAllFonts()
+            SetChatFont()
+            for i, FontObject in pairs(FontObjects) do
+                local _, size, style = FontObject:GetFont()
+                FontObject:SetFont(fontPath, ForcedFontSize[i] or size, style)
+            end
+
+            for _, frame in ipairs(frames) do
+                local _, size, style = frame.bbfName:GetFont()
+                frame.bbfName:SetFont(fontPath, size, style)
+            end
+        end
+
+        SetAllFonts()
+    end
+
+    if db.changePartyFrameFont then
+        local fontName = db.partyFrameFont
+        local fontPath = LSM:Fetch(LSM.MediaType.FONT, fontName)
+        local fontSize = db.partyFrameFontSize or 10
+        local fontSize2 = db.partyFrameStatusFontSize or 10
+        local outline = db.partyFrameFontOutline or "THINOUTLINE"
+
+        SetPartyFont(fontPath, fontSize, outline, fontSize2)
+
+        if not BBF.hookedRaidFramesFont then
+            local function SetRaidFrameFont(raidFrame)
+                --if raidFrame.bbfSetFont then return end
+                raidFrame.name:SetFont(fontPath, fontSize, outline)
+                if raidFrame.statusText then
+                    raidFrame.statusText:SetFont(fontPath, fontSize2, outline)
+                end
+                ---raidFrame.bbfSetFont = true
+            end
+            local function SetRaidFramePetFont(raidFrame)
+                --if raidFrame.bbfSetFont then return end
+                raidFrame.name:SetFont(fontPath, fontSize, outline)
+                if raidFrame.statusText then
+                    raidFrame.statusText:SetFont(fontPath, fontSize2, outline)
+                end
+                ---raidFrame.bbfSetFont = true
+            end
+            hooksecurefunc("DefaultCompactUnitFrameSetup", SetRaidFrameFont)
+            if C_CVar.GetCVar("raidOptionDisplayPets") == "1" or C_CVar.GetCVar("raidOptionDisplayMainTankAndAssist") == "1" then
+                hooksecurefunc("DefaultCompactMiniFrameSetup", SetRaidFramePetFont)
+                hooksecurefunc("CompactUnitFrame_SetUnit", function(frame)
+                    if frame.unit and (frame.unit:match("raidpet") or frame.unit:match("target")) then
+                        SetRaidFramePetFont(frame)
+                    end
+                end)
+            end
+            BBF.hookedRaidFramesFont = true
+        end
+    end
+
+    if db.changeUnitFrameFont then
+        local fontName = db.unitFrameFont
+        local fontPath = LSM:Fetch(LSM.MediaType.FONT, fontName)
+        local fontSize = db.unitFrameFontSize or 10
+        local outline = db.unitFrameFontOutline or "THINOUTLINE"
+
+        SetUnitFramesFont(fontPath, fontSize, outline)
+    end
+
+    if db.changeActionBarFont then
+        local fontName = db.actionBarFont
+        local fontPath = LSM:Fetch(LSM.MediaType.FONT, fontName)
+        local fontSize = db.actionBarFontSize or 10
+        local kbSize = db.actionBarKeyFontSize or 10
+        local outline = db.actionBarFontOutline or "THINOUTLINE"
+        local kbOutline = db.actionBarKeyFontOutline or "THINOUTLINE"
+
+        SetActionBarFonts(fontPath, fontSize, kbSize, outline, kbOutline)
+    end
+
+    if db.changeUnitFrameValueFont then
+        local fontName = db.unitFrameValueFont
+        local fontPath = LSM:Fetch(LSM.MediaType.FONT, fontName)
+        local fontSize = db.unitFrameValueFontSize or 10
+        local outline = db.unitFrameValueFontOutline or "THINOUTLINE"
+
+        SetUnitFramesValuesFont(fontPath, fontSize, outline)
+    end
+end
+
+local unitToArenaName = {
+    ["party1"] = "Party 1",
+    ["party2"] = "Party 2",
+    ["arena1"] = "Arena 1",
+    ["arena2"] = "Arena 2",
+    ["arena3"] = "Arena 3",
+}
+
+local function SetArenaNameUnitFrame(frame, unit, textObject)
+    local unitGUID = UnitGUID(unit)
+    local specName = GetSpecName(unitGUID)
+    local nameText
+
+    -- Lookup the friendly/arena name based on the unit
+    local unitID = unitToArenaName[unit]
+
+    -- Construct the nameText based on specName and unitID settings
+    if specName then
+        if showSpecName and showArenaID then
+            nameText = specName .. " " .. unitID
+        elseif showSpecName then
+            nameText = specName
+        elseif showArenaID then
+            nameText = unitID
+        end
+    else
+        nameText = showArenaID and unitID or (removeRealmNames and GetNameWithoutRealm(frame))
+    end
+
+    -- Update the text object with the nameText if available
+    if nameText then
+        textObject:SetText(nameText)
+    end
+end
+
+local function ClassColorName(textObject, unit)
+    if UnitIsPlayer(unit) then
+        local _, class = UnitClass(unit)
         local classColor = RAID_CLASS_COLORS[class]
-        TargetFrameTextureFrameLevelText:SetTextColor(classColor.r, classColor.g, classColor.b)
+
+        if classColor then
+            textObject:SetTextColor(classColor.r, classColor.g, classColor.b)
+        else
+            textObject:SetTextColor(1, 0.8196, 0)
+        end
+    else
+        local reaction = UnitReaction(unit, "player")
+        local r, g, b
+
+        if reaction then
+            if reaction <= 3 then
+                -- Hostile
+                r, g, b = 1, 0, 0
+            elseif reaction == 4 then
+                -- Neutral
+                r, g, b = 1, 1, 0
+            else
+                -- Friendly
+                if UnitIsUnit(unit, "pet") then
+                    -- Color pet name with player class color
+                    local _, playerClass = UnitClass("player")
+                    local playerClassColor = RAID_CLASS_COLORS[playerClass]
+
+                    if playerClassColor then
+                        r, g, b = playerClassColor.r, playerClassColor.g, playerClassColor.b
+                    else
+                        r, g, b = 0, 1, 0
+                    end
+                else
+                    r, g, b = 0, 1, 0
+                end
+            end
+        else
+            r, g, b = 1, 0.8196, 0
+        end
+
+        textObject:SetTextColor(r, g, b)
+    end
+end
+
+local function PlayerFrameNameChanges(frame)
+    if not frame.unit then return end
+    local unit = frame.unit
+    if hidePlayerName then
+        frame.bbfName:SetText("")
+        return
+    end
+    if classColorTargetNames then
+        ClassColorName(frame.bbfName, unit)
+    end
+    if classColorLevelText then
+        local _, class = UnitClass(unit)
+        local classColor = RAID_CLASS_COLORS[class]
+        PlayerLevelText:SetTextColor(classColor.r, classColor.g, classColor.b)
+    end
+end
+C_Timer.After(1, function()
+    PlayerFrameNameChanges(PlayerFrame)
+end)
+hooksecurefunc("PlayerFrame_OnEvent", function()
+    PlayerFrameNameChanges(PlayerFrame)
+end)
+
+
+local function TargetFrameNameChanges(frame)
+    if not frame.unit then return end
+    local unit = frame.unit
+
+    if targetAndFocusArenaNames and IsActiveBattlefieldArena() then
+        SetArenaNameUnitFrame(frame, unit, frame.bbfName)
+    else
+        if hideTargetName then
+            frame.bbfName:SetText("")
+            return
+        end
+        if removeRealmNames then
+            frame.bbfName:SetText(GetNameWithoutRealm(frame))
+        else
+            frame.bbfName:SetText(frame.name:GetText())
+        end
+        if classColorTargetNames then
+            ClassColorName(frame.bbfName, unit)
+        end
+    end
+    frame.name:SetAlpha(0)
+end
+
+hooksecurefunc(TargetFrame.name, "SetText", function(self)
+    TargetFrameNameChanges(TargetFrame)
+end)
+
+-- local function ClassColorLevelText(frame)
+--     if not classColorLevelText then return end
+--     ClassColorName(frame.TargetFrameContent.TargetFrameContentMain.LevelText, frame.unit)
+-- end
+-- hooksecurefunc(TargetFrame, "CheckLevel", ClassColorLevelText)
+-- hooksecurefunc(FocusFrame, "CheckLevel", ClassColorLevelText)
+hooksecurefunc("TargetFrame_CheckLevel", function()
+    if not classColorLevelText then return end
+    if UnitIsPlayer("target") then
+        ClassColorName(TargetFrameTextureFrameLevelText, "target")
     end
     if UnitExists("focus") and UnitIsPlayer("focus") then
-        local _, class = UnitClass("focus")
+        ClassColorName(FocusFrameTextureFrameLevelText, "focus")
+    end
+end)
+hooksecurefunc("PlayerFrame_OnEvent", function()
+    if not classColorLevelText then return end
+    ClassColorName(PlayerLevelText, "player")
+end)
+
+
+
+
+local function PetFrameNameChanges(frame)
+    if not frame.unit then return end
+    local unit = frame.unit
+
+    if hidePetName then
+        frame.bbfName:SetText("")
+        return
+    end
+    frame.bbfName:SetText(frame.name:GetText())
+    if classColorTargetNames then
+        ClassColorName(frame.bbfName, unit)
+    end
+    frame.name:SetAlpha(0)
+end
+
+hooksecurefunc(PetFrame.name, "SetText", function(self)
+    PetFrameNameChanges(PetFrame)
+end)
+
+
+
+
+
+
+
+local function FocusFrameNameChanges(frame)
+    if not frame.unit then return end
+    local unit = frame.unit
+
+    if classColorLevelText and UnitIsPlayer(unit) then
+        local _, class = UnitClass(unit)
         local classColor = RAID_CLASS_COLORS[class]
         FocusFrameTextureFrameLevelText:SetTextColor(classColor.r, classColor.g, classColor.b)
     end
-    hookedLevels = true
-end
 
-BBF.updateTextForUnit = updateTextForUnit
-
-local function RecolorReputationGlow()
-    if BetterBlizzFramesDB.classColorTargetReputationTexture then
-        BBF.ClassColorReputation(TargetFrameNameBackground, "target")
-    end
-    local focusExists = UnitExists("focus")
-
-    if focusExists and BetterBlizzFramesDB.classColorFocusReputationTexture then
-        BBF.ClassColorReputation(FocusFrameNameBackground, "focus")
-    end
-end
-
--- local UpdateTargetAndFocusNames = CreateFrame("Frame")
--- UpdateTargetAndFocusNames:RegisterEvent("PLAYER_TARGET_CHANGED")
--- UpdateTargetAndFocusNames:RegisterEvent("PLAYER_FOCUS_CHANGED")
--- UpdateTargetAndFocusNames:SetScript("OnEvent", function(self, event, ...)
---     RecolorReputationGlow()
--- end)
-
-hooksecurefunc("TargetFrame_Update", function()
-    RecolorReputationGlow()
-end)
-
-local playerName = _G["PlayerFrame"].name
-hooksecurefunc("PlayerFrame_OnEvent", function()
-    local hidePlayerName = BetterBlizzFramesDB.hidePlayerName
-    updateTextForUnit(playerName, PlayerFrame, hidePlayerName)
-end)
-
---bodify fix class color names toggle
---hide name, hide tot names
-
--- hooksecurefunc("PlayerFrame_UpdatePlayerNameTextAnchor", function()
---     print("PlayerFrame_UpdatePlayerNameTextAnchor has been called")
--- end)
-
--- local centerNameHooked
--- function BBF.SetCenteredNamesCaller()
---     if not centerNameHooked then
---         hooksecurefunc(PlayerFrame.name, "SetPoint", function(self)
---             adjustFramePosition(self, 32)
---         end)
---         centerNameHooked = true
---     end
-
---     adjustFramePosition(PlayerFrame.name, 32)
---     adjustFramePosition(TargetFrame.name, -2)
---     adjustFramePosition(FocusFrame.name, -2)
---     adjustFramePosition(TargetFrame.totFrame.Name, 55)
---     adjustFramePosition(FocusFrame.totFrame.Name, 55)
--- end
-
-hooksecurefunc("CompactUnitFrame_UpdateName", function(frame)
-    if not frame or not frame.unit then return end
-    local isNameplate = frame.unit:find("nameplate")
-    if isNameplate then return end
-
-    local hidePartyNames = BetterBlizzFramesDB.hidePartyNames
-
-    updateTextForUnit(frame.name, frame, hidePartyNames, true)
-
-    local hidePartyRoles = BetterBlizzFramesDB.hidePartyRoles
-    if hidePartyRoles then
-        if frame.roleIcon then
-            frame.roleIcon:SetAlpha(0)
-        end
-    end
-end)
-
--- hooksecurefunc("CompactUnitFrame_UpdateRoleIcon", function(frame)
---     if not frame then return end
---     if hidePartyRoles then
---         if frame.roleIcon then
---             frame.roleIcon:SetAlpha(0)
---         end
---     end
--- end)
-
---local playerName = _G["PlayerFrame"].name
-hooksecurefunc(playerName, "SetText", function(self)
-    local hidePlayerName = BetterBlizzFramesDB.hidePlayerName
-    updateTextForUnit(self, PlayerFrame, hidePlayerName)
-end)
-if not BetterBlizzFramesDB.biggerHealthbars then
-    hooksecurefunc(playerName, "SetPoint", function(self)
-        local hidePlayerName = BetterBlizzFramesDB.hidePlayerName
-        updateTextForUnit(self, PlayerFrame, hidePlayerName)
-    end)
-end
-local hidePlayerName = BetterBlizzFramesDB.hidePlayerName
-updateTextForUnit(playerName, PlayerFrame, hidePlayerName)
-
-local targetName = _G["TargetFrame"].name
-hooksecurefunc(targetName, "SetText", function(self)
-    local hideTargetName = BetterBlizzFramesDB.hideTargetName
-    updateTextForUnit(self, TargetFrame, hideTargetName)
-end)
-local hideTargetName = BetterBlizzFramesDB.hideTargetName
-updateTextForUnit(targetName, TargetFrame, hideTargetName)
-
-local focusName = _G["FocusFrame"].name
-hooksecurefunc(focusName, "SetText", function(self)
-    local hideFocusName = BetterBlizzFramesDB.hideFocusName
-    updateTextForUnit(self, FocusFrame, hideFocusName)
-end)
-local hideFocusName = BetterBlizzFramesDB.hideFocusName
-updateTextForUnit(focusName, FocusFrame, hideFocusName)
-
-local targetToTName = _G["TargetFrameToTTextureFrameName"]
-hooksecurefunc(targetToTName, "SetText", function(self)
-    local hideTargetToTName = BetterBlizzFramesDB.hideTargetToTName
-    updateTextForUnit(self, TargetFrameToT, hideTargetToTName)
-end)
-local hideTargetToTName = BetterBlizzFramesDB.hideTargetToTName
-updateTextForUnit(targetToTName, TargetFrameToT, hideTargetToTName)
-
-local focusToTName = _G["FocusFrameToTTextureFrameName"]
-hooksecurefunc(focusToTName, "SetText", function(self)
-    local hideFocusToTName = BetterBlizzFramesDB.hideFocusToTName
-    updateTextForUnit(self, FocusFrameToT, hideFocusToTName)
-end)
-local hideFocusToTName = BetterBlizzFramesDB.hideFocusToTName
-updateTextForUnit(focusToTName, FocusFrameToT, hideFocusToTName)
-
--- for i = 1, 4 do
---     --local memberFrame = PartyFrame["MemberFrame" .. i]
---     local memberFrame = _G["PartyMemberFrame"..i]
---     local memberFrameName = memberFrame.name
-
---     hooksecurefunc(memberFrameName, "SetText", function(self, text)
---         local hidePartyNames = BetterBlizzFramesDB.hidePartyNames
---         updateTextForUnit(self, memberFrame, hidePartyNames, true)
---     end)
--- end
-
-function BBF.UpdateAllNames()
-    BBF.UpdateUserTargetSettings()
-    local playerName = _G["PlayerFrame"].name
-    local hidePlayerName = BetterBlizzFramesDB.hidePlayerName
-    updateTextForUnit(playerName, PlayerFrame, hidePlayerName)
-
-    local targetName = _G["TargetFrame"].name
-    local hideTargetName = BetterBlizzFramesDB.hideTargetName
-    updateTextForUnit(targetName, TargetFrame, hideTargetName)
-
-    local focusName = _G["FocusFrame"].name
-    local hideFocusName = BetterBlizzFramesDB.hideFocusName
-    updateTextForUnit(focusName, FocusFrame, hideFocusName)
-
-    local targetToTName = _G["TargetFrameToTTextureFrameName"]
-    local hideTargetToTName = BetterBlizzFramesDB.hideTargetToTName
-    updateTextForUnit(targetToTName, TargetFrameToT, hideTargetToTName)
-
-    local focusToTName = _G["FocusFrameToTTextureFrameName"]
-    local hideFocusToTName = BetterBlizzFramesDB.hideFocusToTName
-    updateTextForUnit(focusToTName, FocusFrameToT, hideFocusToTName)
-
-    local hidePartyNames = BetterBlizzFramesDB.hidePartyNames
-    for i = 1, 40 do
-        local memberFrame = nil
-
-        -- Check PartyMemberFrame
-        memberFrame = _G["PartyMemberFrame"..i]
-        if memberFrame and memberFrame.name then
-            updateTextForUnit(memberFrame.name, memberFrame, hidePartyNames, true)
-        end
-
-        -- Check CompactRaidGroup
-        for j = 1, 8 do
-            memberFrame = _G["CompactRaidGroup"..j.."Member"..i]
-            if memberFrame and memberFrame.name then
-                updateTextForUnit(memberFrame.name, memberFrame, hidePartyNames, true)
-            end
-        end
-
-        -- Check RaidFrameMember
-        memberFrame = _G["RaidFrameMember"..i]
-        if memberFrame and memberFrame.name then
-            updateTextForUnit(memberFrame.name, memberFrame, hidePartyNames, true)
-        end
-    end
-end
-
-
-function BBF.ClassColorPlayerName()
-    local frame = PlayerFrame
-    if BetterBlizzFramesDB.classColorTargetNames then
-        local _, class = UnitClass("player")
-        if class then
-            local classColor = RAID_CLASS_COLORS[class]
-            if classColor then
-                frame.cleanName:SetTextColor(classColor.r, classColor.g, classColor.b)
-                if classColorLevelText then
-                    --PlayerLevelText:SetTextColor(classColor.r, classColor.g, classColor.b)
-                else
-                    --PlayerLevelText:SetTextColor(1, 0.81960791349411, 0, 1)
-                end
-            end
-        end
+    if targetAndFocusArenaNames and IsActiveBattlefieldArena() then
+        SetArenaNameUnitFrame(frame, unit, frame.bbfName)
     else
-        frame.cleanName:SetTextColor(1, 0.81960791349411, 0)
-        --PlayerLevelText:SetTextColor(1, 0.81960791349411, 0)
+        if hideFocusName then
+            frame.bbfName:SetText("")
+            return
+        end
+        if removeRealmNames then
+            frame.bbfName:SetText(GetNameWithoutRealm(frame))
+        else
+            frame.bbfName:SetText(frame.name:GetText())
+        end
+        if classColorTargetNames then
+            ClassColorName(frame.bbfName, unit)
+        end
+    end
+    frame.name:SetAlpha(0)
+end
+
+hooksecurefunc(FocusFrame.name, "SetText", function()
+    FocusFrameNameChanges(FocusFrame)
+end)
+
+local function TargetFrameToTNameChanges(frame)
+    if not frame.unit then return end
+    local unit = frame.unit
+    if targetAndFocusArenaNames and IsActiveBattlefieldArena() then
+        SetArenaNameUnitFrame(frame, unit, frame.bbfName)
+    else
+        if hideTargetToTName then
+            frame.bbfName:SetText("")
+            return
+        end
+        if removeRealmNames then
+            frame.bbfName:SetText(GetNameWithoutRealm(frame))
+        else
+            frame.bbfName:SetText(frame.name:GetText())
+        end
+        if classColorTargetNames then
+            ClassColorName(frame.bbfName, unit)
+        end
+    end
+    frame.name:SetAlpha(0)
+end
+
+hooksecurefunc(TargetFrameToTTextureFrameName, "SetText", function()
+    TargetFrameToTNameChanges(TargetFrameToT)
+end)
+
+local function FocusFrameToTNameChanges(frame)
+    if not frame.unit then return end
+    local unit = frame.unit
+    if targetAndFocusArenaNames and IsActiveBattlefieldArena() then
+        SetArenaNameUnitFrame(frame, unit, frame.bbfName)
+    else
+        if hideFocusToTName then
+            frame.bbfName:SetText("")
+            return
+        end
+        if removeRealmNames then
+            frame.bbfName:SetText(GetNameWithoutRealm(frame))
+        else
+            frame.bbfName:SetText(frame.name:GetText())
+        end
+        if classColorTargetNames then
+            ClassColorName(frame.bbfName, unit)
+        end
+    end
+    frame.name:SetAlpha(0)
+end
+
+hooksecurefunc(FocusFrameToTTextureFrameName, "SetText", function()
+    FocusFrameToTNameChanges(TargetFrameToT)
+end)
+
+
+
+function BBF.AllCaller()
+    if isAddonLoaded("ClassicFrames") then return end
+    BBF.UpdateUserTargetSettings()
+    BBF.PartyNameChange()
+
+    PlayerFrameNameChanges(PlayerFrame)
+    TargetFrameNameChanges(TargetFrame)
+    FocusFrameNameChanges(FocusFrame)
+    TargetFrameToTNameChanges(TargetFrameToT)
+    FocusFrameToTNameChanges(TargetFrameToT)
+
+    if classColorLevelText then
+        ClassColorName(TargetFrameTextureFrameLevelText, "target")
+        ClassColorName(FocusFrameTextureFrameLevelText, "focus")
+        ClassColorName(PlayerLevelText, "player")
+        BBF.colorLvl = true
+    elseif BBF.colorLvl then
+        PlayerLevelText:SetTextColor(1, 0.81960791349411, 0)
+        TargetFrameTextureFrameLevelText:SetTextColor(1, 0.81960791349411, 0)
+        FocusFrameTextureFrameLevelText:SetTextColor(1, 0.81960791349411, 0)
+        BBF.colorLvl = nil
     end
 end
