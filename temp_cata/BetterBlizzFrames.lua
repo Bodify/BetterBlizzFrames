@@ -11,6 +11,7 @@ local defaultSettings = {
     version = addonVersion,
     updates = "empty",
     wasOnLoadingScreen = true,
+    skipGUI = true,
     -- General
     removeRealmNames = true,
     centerNames = false,
@@ -168,6 +169,9 @@ local defaultSettings = {
     --Auras
     --playerAuraMaxBuffsPerRow = 10,
     --playerAuraMaxDebuffsPerRow = 10,
+    customImportantAuraSorting = true,
+    customLargeSmallAuraSorting = true,
+    allowLargeAuraFirst = true,
     auraStackSize = 1,
     auraToggleIconTexture = 134430,
     enablePlayerBuffFiltering = true,
@@ -275,7 +279,7 @@ local defaultSettings = {
     interruptIconBorder = true,
 
     auraWhitelist = {
-        {["name"] = "Example Aura :3 (delete me)"}
+        ["example aura :3 (delete me)"] = {name = "Example Aura :3 (delete me)"}
     },
     auraBlacklist = {},
 }
@@ -334,33 +338,6 @@ StaticPopupDialogs["BBF_NEW_VERSION"] = {
     hideOnEscape = true,
 }
 
-local function UpdateAuraColorsToGreen()
-    if BetterBlizzFramesDB and BetterBlizzFramesDB["auraWhitelist"] then
-        for _, entry in pairs(BetterBlizzFramesDB["auraWhitelist"]) do
-            if entry.entryColors and entry.entryColors.text then
-                -- Update to green color
-                entry.entryColors.text.r = 0
-                entry.entryColors.text.g = 1
-                entry.entryColors.text.b = 0
-            else
-                entry.entryColors = { text = { r = 0, g = 1, b = 0 } }
-            end
-        end
-    end
-end
-
-local function AddAlphaValuesToAuraColors()
-    if BetterBlizzFramesDB and BetterBlizzFramesDB["auraWhitelist"] then
-        for _, entry in pairs(BetterBlizzFramesDB["auraWhitelist"]) do
-            if entry.entryColors and entry.entryColors.text then
-                entry.entryColors.text.a = 1
-            else
-                entry.entryColors = { text = { r = 0, g = 1, b = 0, a = 1 } }
-            end
-        end
-    end
-end
-
 local function ResetBBF()
     BetterBlizzFramesDB = {}
     ReloadUI()
@@ -382,13 +359,16 @@ StaticPopupDialogs["CONFIRM_RESET_BETTERBLIZZFRAMESDB"] = {
 -- Update message
 local function SendUpdateMessage()
     if sendUpdate then
+        BetterBlizzFramesDB.skipGUI = true
         if not BetterBlizzFramesDB.scStart then
             C_Timer.After(7, function()
                 --StaticPopup_Show("BBF_NEW_VERSION")
 
-                DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames news:")
-                -- DEFAULT_CHAT_FRAME:AddMessage("|A:QuestNormal:16:16|a New Stuff:")
-                DEFAULT_CHAT_FRAME:AddMessage("|A:QuestNormal:16:16|a Two important changes. To read again type /bbf news")
+                if BetterBlizzFramesDB.playerAuraFiltering then
+                    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames "..addonUpdates..":")
+                    --DEFAULT_CHAT_FRAME:AddMessage("|A:QuestNormal:16:16|a New stuff:")
+                    DEFAULT_CHAT_FRAME:AddMessage("|A:QuestNormal:16:16|a Important Note: Some of the Buffs & Debuffs sorting settings are now enabled by default. Because of this they may have turned on for you, please double check your aura settings in the Buffs & Debuffs section.")
+                end
                 -- DEFAULT_CHAT_FRAME:AddMessage("   - Absorb Indicator + Overshields now working (Potentially).")
                 -- -- DEFAULT_CHAT_FRAME:AddMessage("   - Sort Purgeable Auras setting (Buffs & Debuffs).")
 
@@ -1346,8 +1326,7 @@ Frame:SetScript("OnEvent", function(...)
             if BetterBlizzFramesDB.playerFrameOCD then
                 BBF.FixStupidBlizzPTRShit()
             end
-            BBF.UpdateUserTargetSettings()
-            BBF.AllCaller()
+            BBF.AllNameChanges()
             C_Timer.After(1, function()
                 -- if BetterBlizzFramesDB.classColorTargetNames and BetterBlizzFramesDB.classColorLevelText then
                 --     BBF.HookLevelText()
@@ -1369,7 +1348,6 @@ Frame:SetScript("OnEvent", function(...)
                     BBF.HookBiggerHealthbars()
                 end
                 BBF.ToggleCastbarInterruptIcon()
-                BBF.UpdateUserTargetSettings()
                 BBF.UpdateCastbars()
                 BBF.ChangeCastbarSizes()
                 BBF.HideFrames()
@@ -1456,7 +1434,11 @@ SlashCmdList["BBF"] = function(msg)
         DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames Version "..addonUpdates)
     else
         --InterfaceOptionsFrame_OpenToCategory(BetterBlizzFrames)
-        Settings.OpenToCategory(BBF.category.ID)
+        if not BetterBlizzFrames.guiLoaded then
+            BBF.LoadGUI()
+        else
+            Settings.OpenToCategory(BBF.category.ID)
+        end
     end
 end
 
@@ -1473,16 +1455,6 @@ First:SetScript("OnEvent", function(_, event, addonName)
             TurnTestModesOff()
             --TurnOnEnabledFeaturesOnLogin()
 
-            if not BetterBlizzFramesDB.auraWhitelistColorsUpdated then
-                UpdateAuraColorsToGreen() --update default yellow text to green for new color feature
-                BetterBlizzFramesDB.auraWhitelistColorsUpdated = true
-            end
-
-            if not BetterBlizzFramesDB.auraWhitelistAlphaUpdated then
-                AddAlphaValuesToAuraColors()
-                BetterBlizzFramesDB.auraWhitelistAlphaUpdated = true
-            end
-
             if BetterBlizzFramesDB.partyCastbarHideBorder then
                 BetterBlizzFramesDB.partyCastbarShowBorder = false
                 BetterBlizzFramesDB.partyCastbarHideBorder = nil
@@ -1491,6 +1463,50 @@ First:SetScript("OnEvent", function(_, event, addonName)
             if BetterBlizzFramesDB.hideLossOfControlFrameLines == nil then
                 if BetterBlizzFramesDB.hideLossOfControlFrameBg then
                     BetterBlizzFramesDB.hideLossOfControlFrameLines = true
+                end
+            end
+
+            if not BetterBlizzFramesDB.optimizedAuraLists then
+                if BetterBlizzFramesDB.hasSaved then
+                    BetterBlizzFramesDB.auraBackups = {}
+                    BetterBlizzFramesDB.auraBackups.whitelist = BetterBlizzFramesDB.auraWhitelist
+                    BetterBlizzFramesDB.auraBackups.blacklist = BetterBlizzFramesDB.auraBlacklist
+
+                    local optimizedWhitelist = {}
+                    for _, aura in ipairs(BetterBlizzFramesDB["auraWhitelist"]) do
+                        local key = aura["id"] or string.lower(aura["name"])
+                        local flags = aura["flags"] or {}
+                        local entryColors = aura["entryColors"] or {}
+                        local textColors = entryColors["text"] or {}
+
+                        optimizedWhitelist[key] = {
+                            name = aura["name"] or nil,
+                            id = aura["id"] or nil,
+                            important = flags["important"] or nil,
+                            pandemic = flags["pandemic"] or nil,
+                            enlarged = flags["enlarged"] or nil,
+                            compacted = flags["compacted"] or nil,
+                            color = {textColors["r"] or 0, textColors["g"] or 1, textColors["b"] or 0, textColors["a"] or 1}
+                        }
+                    end
+                    BetterBlizzFramesDB.auraWhitelist = optimizedWhitelist
+
+                    local optimizedBlacklist = {}
+                    for _, aura in ipairs(BetterBlizzFramesDB["auraBlacklist"]) do
+                        local key = aura["id"] or string.lower(aura["name"])
+
+                        optimizedBlacklist[key] = {
+                            name = aura["name"] or nil,
+                            id = aura["id"] or nil,
+                            showMine = aura["showMine"] or nil,
+                        }
+                    end
+                    BetterBlizzFramesDB.auraBlacklist = optimizedBlacklist
+
+
+                    BetterBlizzFramesDB.optimizedAuraLists = true
+                else
+                    BetterBlizzFramesDB.optimizedAuraLists = true
                 end
             end
 

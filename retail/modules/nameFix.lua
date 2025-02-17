@@ -423,50 +423,6 @@ local function SetPartyFont(font, size, outline, size2)
 end
 
 
-C_Timer.After(2, function()
-    -- Make the frame movable
-    FramerateFrame:SetMovable(true)
-    FramerateFrame:EnableMouse(true)
-    FramerateFrame:RegisterForDrag("LeftButton")
-    --FramerateFrame:SetFrameStrata("FULLSCREEN_DIALOG")
-
-
-
-
-    -- Restore position if saved
-    local pos = BetterBlizzFramesDB.fpsFramePos
-    if pos and pos.point then
-        FramerateFrame:ClearAllPoints()
-        FramerateFrame:SetPoint(pos.point, UIParent, pos.relativePoint, pos.xOfs, pos.yOfs)
-
-        hooksecurefunc(FramerateFrame, "UpdatePosition", function(self)
-            local pos = BetterBlizzFramesDB.fpsFramePos
-            self:ClearAllPoints()
-            self:SetPoint(pos.point, UIParent, pos.relativePoint, pos.xOfs, pos.yOfs)
-        end)
-    end
-
-    -- Drag handlers
-    FramerateFrame:SetScript("OnDragStart", function(self)
-        self:StartMoving()
-    end)
-
-    FramerateFrame:SetScript("OnDragStop", function(self)
-        self:StopMovingOrSizing()
-
-        -- Save new position
-        local point, _, relativePoint, xOfs, yOfs = self:GetPoint()
-        BetterBlizzFramesDB.fpsFramePos = {
-            point = point,
-            relativePoint = relativePoint,
-            xOfs = xOfs,
-            yOfs = yOfs
-        }
-    end)
-end)
-
-
-
 local function SetUnitFramesFont(font, size, outline)
     if outline == "NONE" then
         outline = nil
@@ -559,7 +515,7 @@ local petFrames = {
 }
 
 local function SetUnitFramesValuesFont(font, size, outline)
-    if C_AddOns.IsAddOnLoaded("ClassicFrames") and not BBF.classicFramesText then
+    if isAddonLoaded("ClassicFrames") and not BBF.classicFramesText then
         -- ClassicFrames unit frame text elements
         local classicTexts = {
             CfPlayerFrameHealthBar.LeftText, CfPlayerFrameHealthBar.RightText, CfPlayerFrameHealthBar.TextString,
@@ -870,14 +826,6 @@ function BBF.SetCustomFonts()
     end
 end
 
-
-
-
-
-
-
-
-
 local function UpdateNamePositionForClassic()
     if not isAddonLoaded("ClassicFrames") then return end
 
@@ -907,11 +855,6 @@ local function UpdateNamePositionForClassic()
     end
 end
 C_Timer.After(1, UpdateNamePositionForClassic)
-
-
-
-
-
 
 
 local unitToArenaName = {
@@ -995,6 +938,7 @@ local function ClassColorName(textObject, unit)
 end
 
 local function PlayerFrameNameChanges(frame)
+    frame.name:SetAlpha(0)
     if not frame.unit then return end
     local unit = frame.unit
     if hidePlayerName then
@@ -1016,6 +960,7 @@ end)
 
 
 local function TargetFrameNameChanges(frame)
+    frame.name:SetAlpha(0)
     if not frame.unit then return end
     local unit = frame.unit
 
@@ -1035,7 +980,6 @@ local function TargetFrameNameChanges(frame)
             ClassColorName(frame.bbfName, unit)
         end
     end
-    frame.name:SetAlpha(0)
 end
 
 hooksecurefunc(TargetFrame.name, "SetText", function(self)
@@ -1057,6 +1001,7 @@ end)
 
 
 local function PetFrameNameChanges(frame)
+    frame.name:SetAlpha(0)
     if not frame.unit then return end
     local unit = frame.unit
 
@@ -1068,7 +1013,6 @@ local function PetFrameNameChanges(frame)
     if classColorTargetNames then
         ClassColorName(frame.bbfName, unit)
     end
-    frame.name:SetAlpha(0)
 end
 
 hooksecurefunc(PetFrame.name, "SetText", function(self)
@@ -1082,6 +1026,7 @@ end)
 
 
 local function FocusFrameNameChanges(frame)
+    frame.name:SetAlpha(0)
     if not frame.unit then return end
     local unit = frame.unit
 
@@ -1107,7 +1052,6 @@ local function FocusFrameNameChanges(frame)
             ClassColorName(frame.bbfName, unit)
         end
     end
-    frame.name:SetAlpha(0)
 end
 
 hooksecurefunc(FocusFrame.name, "SetText", function()
@@ -1122,6 +1066,7 @@ end)
 
 
 local function TargetFrameToTNameChanges(frame)
+    frame.name:SetAlpha(0)
     if not frame.unit then return end
     local unit = frame.unit
     if targetAndFocusArenaNames and IsActiveBattlefieldArena() then
@@ -1140,7 +1085,6 @@ local function TargetFrameToTNameChanges(frame)
             ClassColorName(frame.bbfName, unit)
         end
     end
-    frame.name:SetAlpha(0)
 end
 
 hooksecurefunc(TargetFrame.totFrame.Name, "SetText", function()
@@ -1148,6 +1092,7 @@ hooksecurefunc(TargetFrame.totFrame.Name, "SetText", function()
 end)
 
 local function FocusFrameToTNameChanges(frame)
+    frame.name:SetAlpha(0)
     if not frame.unit then return end
     local unit = frame.unit
     if targetAndFocusArenaNames and IsActiveBattlefieldArena() then
@@ -1166,22 +1111,80 @@ local function FocusFrameToTNameChanges(frame)
             ClassColorName(frame.bbfName, unit)
         end
     end
-    frame.name:SetAlpha(0)
 end
 
 hooksecurefunc(FocusFrame.totFrame.Name, "SetText", function()
-    FocusFrameToTNameChanges(TargetFrameToT)
+    FocusFrameToTNameChanges(FocusFrameToT)
 end)
 
 
+local function ResetTextColors()
+    -- Table of frames to process
+    local frames = {
+        PlayerFrame,
+        PetFrame,
+        TargetFrame,
+        FocusFrame,
+        TargetFrameToT,
+        FocusFrameToT,
+    }
 
-function BBF.AllCaller()
-    if isAddonLoaded("ClassicFrames") then return end
+    -- Iterate through each frame and reset the text color
+    for _, frame in pairs(frames) do
+        if frame and frame.name then
+            frame.bbfName:SetTextColor(1, 0.8196, 0)
+        end
+    end
+end
+
+
+function BBF.AllNameChanges()
+    BBF.UpdateUserTargetSettings()
+    ResetTextColors()
     BBF.PartyNameChange()
 
     PlayerFrameNameChanges(PlayerFrame)
+    PetFrameNameChanges(PetFrame)
     TargetFrameNameChanges(TargetFrame)
     FocusFrameNameChanges(FocusFrame)
     TargetFrameToTNameChanges(TargetFrameToT)
-    FocusFrameToTNameChanges(TargetFrameToT)
+    FocusFrameToTNameChanges(FocusFrameToT)
+
+
+    if HealthBarColorDB then
+        local playerName = UnitName("player")
+        local realmName = GetRealmName()
+        local playerRealm = playerName .. " - " .. realmName
+        local profileName = HealthBarColorDB["profileKeys"][playerRealm]
+        if HealthBarColorDB["profiles"] and HealthBarColorDB["profiles"][profileName] and HealthBarColorDB["profiles"][profileName]["Font_player"] and HealthBarColorDB["profiles"][profileName]["Font_player"].enabled then
+            local frames = {
+                PlayerFrame,
+                PetFrame,
+                TargetFrame,
+                FocusFrame,
+                TargetFrameToT,
+                FocusFrameToT,
+            }
+        
+            -- Iterate through each frame and reset the text color
+            for _, frame in pairs(frames) do
+                if frame and frame.name then
+                    local a,b,c = frame.name:GetFont()
+                    frame.bbfName:SetFont(a,b,c)
+                    frame.bbfName:SetTextColor(frame.name:GetTextColor())
+                    if not frame.bbfhbcHook then
+                        hooksecurefunc(frame.name, "SetFont", function(self)
+                            local f,s,o = self:GetFont()
+                            self:SetAlpha(0)
+                            frame.bbfName:SetFont(f,s,o)
+                        end)
+                        hooksecurefunc(frame.name, "SetTextColor", function(self)
+                            frame.bbfName:SetTextColor(self:GetTextColor())
+                        end)
+                        frame.bbfhbcHook = true
+                    end
+                end
+            end
+        end
+    end
 end

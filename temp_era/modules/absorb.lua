@@ -820,23 +820,6 @@ local function RefreshUnit(allstates, unit, absorbValue)
     end
 end
 
-
-local function GetRelevantUnitsByName(name)
-    local units = {}
-    if UnitName("player") == name then table.insert(units, "player") end
-    if UnitName("target") == name then table.insert(units, "target") end
-    if UnitName("focus") == name then table.insert(units, "focus") end
-    for i = 1, 5 do
-        if UnitName("party" .. i) == name then table.insert(units, "party" .. i) end
-    end
-    for i = 1, 5 do
-        if UnitName("raid" .. i) == name then table.insert(units, "raid" .. i) end
-    end
-    return units
-end
-
-
-
 local function OnEvent(self, event, ...)
     if event == "PLAYER_ENTERING_WORLD" then
         ResetAll(CataAbsorb.allstates)

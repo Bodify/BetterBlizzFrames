@@ -1,16 +1,46 @@
-# BetterBlizzFrames TEMP
+# BetterBlizzFrames 1.6.0
+## The War Within, Cata & Era
+### Important Note:
+- Some of the Buffs & Debuffs sorting settings are now enabled by default. Because of this they may have turned on for you, please double check your aura settings in the Buffs & Debuffs section.
 ### New:
+- Aeghis Profile (www.twitch.tv/aeghis)
 - UnitFrame & RaidFrame texture swap
 - Font settings
 - New: UnitFrame Background Color (Misc)
-- Fix Alternative Frame Texture & Alternative ManaBar not being hidden with the Mini-Frame settings in Misc. Also slight adjustments due to new name settings.
-- Fix Format Number setting sometimes causing lua errors for certain classes with Alternate Power.
+- Skip GUI setting, on by default.
+- Search functionality is now on Classic versions as well.
+### Tweaks:
+- Overshields setting updated to look identical to Retail for both Classic Era and Cataclysm
+- Hide Level setting now hides the circle texture around the level when using ClassiFrames addon or on Classic version of the game.
+- Fix OCD Tweaks settings for Classic Era and tweaked a few things on retail.
+- Aura filter settings on Classic versions updated to the more optimized version thats been on retail awhile.
+- Added missing Touch of Karma buff to the pvp whitelist.
+- Filter toggle keybind/function now on classic versions as well.
+
+## The War Within
+### New stuff:
+- Move Resource to Target setting now also has a setting to drag Resource/ComboPoints to wherever you want.
+- Resource/ComboPoints Scale setting in Misc
+- Moveable FPS Counter & Outline FPS Font (Misc)
+- CompactPartyFrame Scale Setting
+### Bugfix:
 - Fix Shield Border on Uninteruptible casts for Classic Castbars settings not always wrapping around the castbar perfectly.
-- Fix OCD Tweaks settings for Classic Era (Disabled unnecessary things from cata and fixed up ToT Portrait a little)
-- Hide Level setting now hides the circle texture around the level when using ClassiFrames addon
-- Overshields setting updated to look identical to retail for both Classic Era and Cataclysm
-- Retail: Misc option to not load BBF GUI until needed (helps with memory and load times)
-- Classic Era: Added misc setting that is on by default: Makes it so Hunters popping feign death in raid does not show as dead. Less Hardcore Heart Attacks.
+- Fix Format Number setting sometimes causing lua errors for certain classes with Alternate Power.
+- Fix Alternative Frame Texture & Alternative ManaBar not being hidden with the Mini-Frame settings in Misc. Also slight adjustments due to new name settings.
+
+## Classic Era
+### New stuff:
+- Added misc setting that is on by default: Makes it so Hunters popping feign death in raid does not show as dead. Less Hardcore Heart Attacks.
+### Bugfix:
+- All absorb settings fixed and updated.
+
+### Note
+- May have missed some other minor bugfixes in the patch notes, and may have introduced new ones. Please keep reporting bugs, however minor.
+
+
+
+
+
 
 # BetterBlizzFrames 1.5.9b
 ## The War Within

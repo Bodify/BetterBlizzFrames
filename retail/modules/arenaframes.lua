@@ -41,6 +41,8 @@ function BBF.HideArenaFrames()
     CompactArenaFrameTitle:SetScript("OnLoad", MalwareProtector)
     CompactArenaFrameTitle:SetScript("OnShow", MalwareProtector)
 
+    CompactArenaFrame.isHidden = true
+
     if CompactArenaFrame or CompactArenaFrameTitle then
         MalwareProtector()
     end

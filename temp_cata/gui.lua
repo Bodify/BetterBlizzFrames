@@ -21,42 +21,48 @@ BBF.OwnAuraIcon = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD
 BBF.EnlargedIcon = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-Minimap-Zoom-In.tga"
 BBF.CompactIcon = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-Minimap-Zoom-Out.tga"
 
+local checkBoxList = {}
+local sliderList = {}
 
--- local function ExportProfile(profileTable, dataType)
---     -- Include a dataType in the table being serialized
---     local exportTable = {
---         dataType = dataType,
---         data = profileTable
---     }
---     local serialized = LibSerialize:Serialize(exportTable)
---     local compressed = LibDeflate:CompressDeflate(serialized)
---     local encoded = LibDeflate:EncodeForPrint(compressed)
---     return "!BBFCata" .. encoded .. "!BBFCata"
--- end
+local function ConvertOldWhitelist(oldWhitelist)
+    local optimizedWhitelist = {}
+    for _, aura in ipairs(oldWhitelist) do
+        local key = aura["id"] or string.lower(aura["name"])
+        local flags = aura["flags"] or {}
+        local entryColors = aura["entryColors"] or {}
+        local textColors = entryColors["text"] or {}
 
--- local function ImportProfile(encodedString, expectedDataType)
---     if encodedString:sub(1, 8) == "!BBFCata" and encodedString:sub(-8) == "!BBFCata" then
---         encodedString = encodedString:sub(9, -9) -- Remove both prefix and suffix
---     else
---         return nil, "Invalid format: Prefix or suffix not found."
---     end
+        optimizedWhitelist[key] = {
+            name = aura["name"] or nil,
+            id = aura["id"] or nil,
+            important = flags["important"] or nil,
+            pandemic = flags["pandemic"] or nil,
+            enlarged = flags["enlarged"] or nil,
+            compacted = flags["compacted"] or nil,
+            color = {textColors["r"] or 0, textColors["g"] or 1, textColors["b"] or 0, textColors["a"] or 1}
+        }
+    end
+    return optimizedWhitelist
+end
 
---     local compressed = LibDeflate:DecodeForPrint(encodedString)
---     local serialized, decompressMsg = LibDeflate:DecompressDeflate(compressed)
---     if not serialized then
---         return nil, "Error decompressing: " .. tostring(decompressMsg)
---     end
+local function ConvertOldBlacklist(oldBlacklist)
+    local optimizedBlacklist = {}
+    for _, aura in ipairs(oldBlacklist) do
+        local key = aura["id"] or string.lower(aura["name"])
 
---     local success, importTable = LibSerialize:Deserialize(serialized)
---     if not success or importTable.dataType ~= expectedDataType then
---         return nil, "Error deserializing or data type mismatch"
---     end
-
---     return importTable.data, nil
--- end
+        optimizedBlacklist[key] = {
+            name = aura["name"] or nil,
+            id = aura["id"] or nil,
+            showMine = aura["showMine"] or nil,
+        }
+    end
+    return optimizedBlacklist
+end
 
 local function ExportProfile(profileTable, dataType)
     -- Include a dataType in the table being serialized
+    local wowVersion = GetBuildInfo()
+    BetterBlizzFramesDB.exportVersion = "BBF: "..BBF.VersionNumber.." WoW: "..wowVersion
     local exportTable = {
         dataType = dataType,
         data = profileTable
@@ -67,26 +73,61 @@ local function ExportProfile(profileTable, dataType)
     return "!BBF" .. encoded .. "!BBF"
 end
 
-local function ImportProfile(encodedString, expectedDataType)
+function BBF.ImportProfile(encodedString, expectedDataType)
+    -- Check if the string starts and ends with !BBF
     if encodedString:sub(1, 4) == "!BBF" and encodedString:sub(-4) == "!BBF" then
         encodedString = encodedString:sub(5, -5) -- Remove both prefix and suffix
+    elseif encodedString:sub(1, 4) == "!BBP" and encodedString:sub(-4) == "!BBP" then
+        return nil, "This is a BetterBlizz|cffff4040Plates|r profile string, not a BetterBlizz|cff40ff40Frames|r one. Two different addons."
     else
         return nil, "Invalid format: Prefix or suffix not found."
     end
 
+    -- Decode and decompress the data
     local compressed = LibDeflate:DecodeForPrint(encodedString)
     local serialized, decompressMsg = LibDeflate:DecompressDeflate(compressed)
     if not serialized then
         return nil, "Error decompressing: " .. tostring(decompressMsg)
     end
 
+    -- Deserialize the data
     local success, importTable = LibSerialize:Deserialize(serialized)
-    if not success or importTable.dataType ~= expectedDataType then
-        return nil, "Error deserializing or data type mismatch"
+    if not success then
+        return nil, "Error deserializing the data."
     end
 
+    -- Function to check if the data is in the new format
+    local function IsNewFormat(auraList)
+        local consecutiveIndex = 1  -- Start with the first numeric index
+        -- Loop through the table to inspect its structure
+        for key, _ in pairs(auraList) do
+            if type(key) == "number" then
+                if key ~= consecutiveIndex then
+                    return true
+                end
+                consecutiveIndex = consecutiveIndex + 1
+            elseif type(key) == "string" then
+                return true
+            end
+        end
+        return false
+    end
+
+    -- Convert old format to the new format if necessary
+    local function ConvertIfNeeded(subTable, expectedType)
+        if expectedType == "auraBlacklist" and not IsNewFormat(subTable) then
+            return ConvertOldBlacklist(subTable)
+        elseif expectedType == "auraWhitelist" and not IsNewFormat(subTable) then
+            return ConvertOldWhitelist(subTable)
+        end
+        return subTable -- Return as-is if no conversion is needed
+    end
+
+    -- Handling full profile import by checking and converting the relevant portion if needed
     if importTable.dataType == "fullProfile" then
         if importTable.data[expectedDataType] then
+            -- Check the subtable and convert if necessary
+            importTable.data[expectedDataType] = ConvertIfNeeded(importTable.data[expectedDataType], expectedDataType)
             return importTable.data[expectedDataType], nil
         else
             return importTable.data, nil
@@ -94,6 +135,9 @@ local function ImportProfile(encodedString, expectedDataType)
     elseif importTable.dataType ~= expectedDataType then
         return nil, "Data type mismatch"
     end
+
+    -- For normal imports, check if conversion is needed for auraWhitelist and auraBlacklist
+    importTable.data = ConvertIfNeeded(importTable.data, expectedDataType)
 
     return importTable.data, nil
 end
@@ -382,7 +426,7 @@ local function CreateBorderedFrame(point, width, height, xPos, yPos, parent)
 end
 
 local function CreateSlider(parent, label, minValue, maxValue, stepValue, element, axis, sliderWidth)
-    local slider = CreateFrame("Slider", name, parent, "OptionsSliderTemplate")
+    local slider = CreateFrame("Slider", nil, parent, "OptionsSliderTemplate")
     slider:SetOrientation('HORIZONTAL')
     slider:SetMinMaxValues(minValue, maxValue)
     slider:SetValueStep(stepValue)
@@ -393,6 +437,27 @@ local function CreateSlider(parent, label, minValue, maxValue, stepValue, elemen
 
     slider.Low:SetText(" ")
     slider.High:SetText(" ")
+
+    table.insert(sliderList, {
+        slider = slider,
+        label = label,
+        element = element
+    })
+
+    local category
+    if parent.name then
+        category = parent.name
+    elseif parent:GetParent() and parent:GetParent().name then
+        category = parent:GetParent().name
+    elseif parent:GetParent() and parent:GetParent():GetParent() and parent:GetParent():GetParent().name then
+        category = parent:GetParent():GetParent().name
+    end
+
+    if category == "Better|cff00c0ffBlizz|rFrames |A:gmchat-icon-blizz:16:16|a" then
+        category = "General"
+    end
+
+    slider.searchCategory = category
 
     if sliderWidth then
         slider:SetWidth(sliderWidth)
@@ -837,7 +902,7 @@ local function CreateTooltip(widget, tooltipText, anchor)
     end)
 end
 
-local function CreateTooltipTwo(widget, title, mainText, subText, anchor, cvarName)
+local function CreateTooltipTwo(widget, title, mainText, subText, anchor, cvarName, category)
     widget:SetScript("OnEnter", function(self)
         -- Clear the tooltip before showing new information
         GameTooltip:ClearLines()
@@ -864,6 +929,10 @@ local function CreateTooltipTwo(widget, title, mainText, subText, anchor, cvarNa
             --GameTooltip:AddLine(" ")
             --GameTooltip:AddLine("Default Value: " .. cvarName, 0.5, 0.5, 0.5) -- grey color for subtext
             GameTooltip:AddDoubleLine("Changes CVar:", cvarName, 0.2, 1, 0.6, 0.2, 1, 0.6)
+        end
+        if category then
+            GameTooltip:AddLine("")
+            GameTooltip:AddLine("|A:shop-games-magnifyingglass:17:17|a Setting located in "..category.." section.", 0.2, 1, 0.6, true)
         end
         GameTooltip:Show()
     end)
@@ -959,6 +1028,43 @@ local function CreateImportExportUI(parent, title, dataTable, posX, posY, tableN
         exportBox:SetText(exportString)
         exportBox:SetFocus()
         exportBox:HighlightText()
+    end)
+
+    local wipeButton = exportBox:CreateTexture(nil, "OVERLAY")
+    wipeButton:SetSize(14,14)
+    wipeButton:SetPoint("CENTER", exportBox, "TOPRIGHT", 8,6)
+    wipeButton:SetAtlas("transmog-icon-remove")
+    wipeButton:Hide()
+
+    wipeButton:SetScript("OnMouseDown", function(self, button)
+        if button == "RightButton" and IsShiftKeyDown() and IsAltKeyDown() then
+            if title == "Full Profile" then
+                BetterBlizzFramesDB = nil
+            else
+                BetterBlizzFramesDB[tableName] = nil
+            end
+            ReloadUI()
+        end
+    end)
+
+    local function HideWipeButton()
+        if not wipeButton:IsMouseOver() then
+            wipeButton:Hide()
+        end
+    end
+
+    frame:HookScript("OnEnter", function()
+        wipeButton:Show()
+        C_Timer.After(4, HideWipeButton)
+    end)
+    CreateTooltipTwo(wipeButton, "Delete "..title, "Delete all the data in "..title.."\n\nHold Shift+Alt and Right-Click to delete and reload.")
+
+    wipeButton:HookScript("OnEnter", function()
+        wipeButton:Show()
+    end)
+
+    wipeButton:HookScript("OnLeave", function()
+        C_Timer.After(0.5, HideWipeButton)
     end)
 
 
@@ -1061,12 +1167,28 @@ end
 local function CreateCheckbox(option, label, parent, cvarName, extraFunc)
     local checkBox = CreateFrame("CheckButton", nil, parent, "InterfaceOptionsCheckButtonTemplate")
     checkBox.Text:SetText(label)
+    table.insert(checkBoxList, {checkbox = checkBox, label = label})
     checkBox.text = checkBox.Text
     --checkBox:SetHitRectInsets(0, 0, 0, 0)
     checkBox.Text:SetFont("Fonts\\FRIZQT__.TTF", 11)
     --local a,b,c,d,e = checkBox.Text:GetPoint()
     --checkBox.Text:SetPoint(a,b,c,d-4,e-1)
     checkBox:SetSize(24,24)
+
+    local category
+    if parent.name then
+        category = parent.name
+    elseif parent:GetParent() and parent:GetParent().name then
+        category = parent:GetParent().name
+    elseif parent:GetParent() and parent:GetParent():GetParent() and parent:GetParent():GetParent().name then
+        category = parent:GetParent():GetParent().name
+    end
+
+    if category == "Better|cff00c0ffBlizz|rFrames |A:gmchat-icon-blizz:16:16|a" then
+        category = "General"
+    end
+
+    checkBox.searchCategory = category
 
     local function UpdateOption(value)
         if option == 'friendlyFrameClickthrough' and BBF.checkCombatAndWarn() then
@@ -1095,7 +1217,7 @@ local function CreateCheckbox(option, label, parent, cvarName, extraFunc)
             checkBox:SetAlpha(1)
         end
 
-        if extraFunc and not BetterBlizzFramesDB.wasOnLoadingScreen then
+        if extraFunc and not BetterBlizzFramesDB.wasOnLoadingScreen and BetterBlizzFrames.guiLoaded then
             extraFunc(option, value)
         end
 
@@ -1118,6 +1240,666 @@ end
 
 
 local LSM = LibStub("LibSharedMedia-3.0")
+
+
+
+
+local function deleteEntry(listName, key)
+    if not key then return end
+
+    local entry = BetterBlizzFramesDB[listName][key]
+
+    if not entry then
+        if key == "example aura :3 (delete me)" then
+            entry = BetterBlizzFramesDB[listName]["example"]
+            key = "example"
+        end
+    end
+
+    if entry then
+        if entry.id then
+            local spellName, _, icon = GetSpellInfo(entry.id)
+            local iconString = "|T" .. icon .. ":16:16:0:0|t"
+            print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. entry.id .. ") removed from list.")
+        else
+            print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. entry.name .. " removed from list.")
+        end
+        BetterBlizzFramesDB[listName][key] = nil
+    end
+
+    BBF.currentSearchFilter = ""
+
+    if SettingsPanel:IsShown() then
+        if BBF[listName.."Refresh"] then
+            BBF[listName.."Refresh"]()
+        end
+    else
+        --print("prepping delayed update")
+        BBF[listName.."DelayedUpdate"] = BBF[listName.."Refresh"]
+    end
+
+    BBF.RefreshAllAuraFrames()
+end
+
+local lists = { "auraBlacklist", "auraWhitelist" }
+
+for _, listName in ipairs(lists) do
+    -- Create static popup dialogs for duplicate confirmations
+    StaticPopupDialogs["BBF_DUPLICATE_NPC_CONFIRM_" .. listName] = {
+        text = "This name or spellID is already in the list. Do you want to remove it from the list?",
+        button1 = "Yes",
+        button2 = "No",
+        OnAccept = function()
+            deleteEntry(listName, BBF.entryToDelete)  -- Delete the entry when "Yes" is clicked
+        end,
+        timeout = 0,
+        whileDead = true,
+        hideOnEscape = true,
+    }
+
+    -- Create static popup dialogs for delete confirmations
+    StaticPopupDialogs["BBF_DELETE_NPC_CONFIRM_" .. listName] = {
+        text = "Are you sure you want to delete this entry?\nHold shift to delete without this prompt",
+        button1 = "Yes",
+        button2 = "No",
+        OnAccept = function()
+            deleteEntry(listName, BBF.entryToDelete)  -- Delete the entry when "Yes" is clicked
+        end,
+        timeout = 0,
+        whileDead = true,
+        hideOnEscape = true,
+    }
+end
+
+
+local function addOrUpdateEntry(inputText, listName, addShowMineTag, skipRefresh, color)
+    BBF.entryToDelete = nil
+    local name, comment = strsplit("/", inputText, 2)
+    name = strtrim(name or "")
+    comment = comment and strtrim(comment) or nil
+    local id = tonumber(name)
+    local printMsg
+    local spellName
+    local icon
+    local iconString
+    local _
+
+    -- Check if there's a numeric ID within the name and clear the name if found
+    if id then
+        spellName, _, icon = GetSpellInfo(id)
+        name = spellName or ""
+
+        if not spellName then
+            print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: No spell found for ID: "..id)
+            return
+        end
+
+        if icon then
+            iconString = "|T" .. icon .. ":16:16:0:0|t"
+        else
+            iconString = ""
+        end
+
+        -- Check if the spell is being added to blacklist or whitelist
+        if listName == "auraBlacklist" then
+            printMsg = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. id .. ") added to |cffff0000blacklist|r."
+        elseif listName == "auraWhitelist" then
+            printMsg = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. id .. ") added to |cff00ff00whitelist|r."
+        end
+    end
+
+    -- Remove unwanted characters from name and comment individually
+    name = gsub(name, "[%/%(%)%[%]]", "")
+    if comment then
+        comment = gsub(comment, "[%/%(%)%[%]]", "")
+    end
+
+    if (name ~= "" or id) then
+        local key = id or string.lower(name)  -- Use id if available, otherwise use name
+        local isDuplicate = false
+
+        -- Directly check if the key already exists in the list
+        if BetterBlizzFramesDB[listName][key] then
+            isDuplicate = true
+            BBF.entryToDelete = key  -- Use key to identify the duplicate
+        end
+
+        if isDuplicate then
+            StaticPopup_Show("BBF_DUPLICATE_NPC_CONFIRM_" .. listName)
+        else
+            -- Initialize the new entry with appropriate structure
+            local newEntry = {
+                name = name,
+                id = id,
+                comment = comment or nil,
+            }
+
+            if listName == "auraWhitelist" then
+                newEntry = {name = name, id = id, comment = comment or nil, color = {0,1,0,1}}
+            end
+
+            -- if color then
+            --     --newEntry.color = {1,0.501960813999176,0,1} -- offensive
+            --     --newEntry.color = {1,0.6627451181411743,0.9450981020927429,1} -- defensive
+            --     newEntry.color = {0,1,1,1} -- mobility
+            --     --newEntry.color = {0,1,0,1} --muy importante
+            --     newEntry.important = true
+            --     newEntry.enlarged = true
+            -- end
+
+            -- If adding to auraBlacklist and addShowMineTag is true, set showMine to true
+            if addShowMineTag and listName == "auraBlacklist" then
+                newEntry.showMine = true
+                if id then
+                    printMsg = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. id .. ") added to |cffff0000blacklist|r with tag."
+                end
+            end
+
+            -- Add the new entry to the list using key
+            BetterBlizzFramesDB[listName][key] = newEntry
+
+            -- Update UI: Re-create text line button and refresh the list display
+            if BBF["UpdateTextLine"..listName] then
+                BBF["UpdateTextLine"..listName](newEntry, #BBF[listName.."TextLines"] + 1, BBF[listName.."ExtraBoxes"])
+            end
+
+            BBF.currentSearchFilter = ""
+
+            if not skipRefresh then
+                if BBF[listName.."Refresh"] then
+                    BBF[listName.."Refresh"]()
+                end
+            else
+                if SettingsPanel:IsShown() then
+                    if BBF[listName.."Refresh"] then
+                        BBF[listName.."Refresh"]()
+                    end
+                else
+                    --print("prepping delayed update")
+                    BBF[listName.."DelayedUpdate"] = BBF[listName.."Refresh"]
+                end
+            end
+
+            if printMsg then
+                print(printMsg)
+            end
+
+        end
+    end
+
+    BBF.RefreshAllAuraFrames()
+    if BBF[listName.."EditBox"] then
+        BBF[listName.."EditBox"]:SetText("")  -- Clear the EditBox
+    end
+end
+BBF["auraBlacklist"] = addOrUpdateEntry
+BBF["auraWhitelist"] = addOrUpdateEntry
+
+
+
+
+
+
+
+local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes, colorText, width, pos)
+    -- Create the scroll frame
+    local scrollFrame = CreateFrame("ScrollFrame", nil, subPanel, "UIPanelScrollFrameTemplate")
+    scrollFrame:SetSize(width or 322, 270)
+    if not pos then
+        scrollFrame:SetPoint("TOPLEFT", 10, -10)
+    else
+        scrollFrame:SetPoint("TOPLEFT", -48, -10)
+    end
+
+    -- Create the content frame
+    local contentFrame = CreateFrame("Frame", nil, scrollFrame)
+    contentFrame:SetSize(width or 322, 270)
+    scrollFrame:SetScrollChild(contentFrame)
+
+    local textLines = {}
+    BBF[listName.."TextLines"] = textLines
+    BBF[listName.."ExtraBoxes"] = extraBoxes
+    local framePool = {}
+    BBF.entryToDelete = nil
+    BBF.currentSearchFilter = ""
+
+    -- Function to update the background colors of the entries
+    local function updateBackgroundColors()
+        for i, button in ipairs(textLines) do
+            local bg = button.bgImg
+            if i % 2 == 0 then
+                bg:SetColorTexture(0.3, 0.3, 0.3, 0.1)  -- Dark color for even lines
+            else
+                bg:SetColorTexture(0.3, 0.3, 0.3, 0.3)  -- Light color for odd lines
+            end
+        end
+    end
+
+    local function createOrUpdateTextLineButton(npc, index, extraBoxes)
+        local button
+
+        -- Reuse frame from the pool if available
+        if framePool[index] then
+            button = framePool[index]
+            button:Show()
+        else
+            -- Create a new frame if pool is exhausted
+            button = CreateFrame("Frame", nil, contentFrame)
+            button:SetSize((width and width - 12) or (322 - 12), 20)
+            button:SetPoint("TOPLEFT", 10, -(index - 1) * 20)
+
+            -- Background
+            local bg = button:CreateTexture(nil, "BACKGROUND")
+            bg:SetAllPoints()
+            button.bgImg = bg  -- Store the background texture for later updates
+
+            -- Icon
+            local iconTexture = button:CreateTexture(nil, "OVERLAY")
+            iconTexture:SetSize(20, 20)  -- Same height as the button
+            iconTexture:SetPoint("LEFT", button, "LEFT", 0, 0)
+            button.iconTexture = iconTexture
+
+            -- Text
+            local text = button:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+            text:SetPoint("LEFT", button, "LEFT", 25, 0)
+            button.text = text
+
+            -- Delete Button
+            local deleteButton = CreateFrame("Button", nil, button, "UIPanelButtonTemplate")
+            deleteButton:SetSize(20, 20)
+            deleteButton:SetPoint("RIGHT", button, "RIGHT", 4, 0)
+            deleteButton:SetText("X")
+            deleteButton:SetScript("OnClick", function()
+                if IsShiftKeyDown() then
+                    deleteEntry(listName, button.npcData.id or button.npcData.name:lower())
+                else
+                    BBF.entryToDelete = button.npcData.id or button.npcData.name:lower()
+                    StaticPopup_Show("BBF_DELETE_NPC_CONFIRM_" .. listName)
+                end
+            end)
+            button.deleteButton = deleteButton
+
+            -- Save button to the pool
+            framePool[index] = button
+        end
+
+        -- Update button's content
+        button.npcData = npc
+        local displayText
+        if npc.id then
+            displayText = string.format("%s (%d)", (npc.name or "Name Missing"), npc.id)  -- Display as "Name (id)"
+        else
+            displayText = npc.name  -- Display just the name if there's no id
+        end
+        button.text:SetText(displayText)
+        button.iconTexture:SetTexture(C_Spell.GetSpellTexture(npc.id or npc.name))
+
+        -- Function to set text color
+        local function SetTextColor(r, g, b, a)
+            if colorText and button.checkBoxI and button.checkBoxI:GetChecked() then
+                button.text:SetTextColor(r or 1, g or 1, b or 0, a or 1)
+            else
+                button.text:SetTextColor(1, 1, 0, 1)
+            end
+        end
+
+        -- Function to set important box color
+        local function SetImportantBoxColor(r, g, b, a)
+            if button.checkBoxI then
+                if button.checkBoxI:GetChecked() then
+                    button.checkBoxI.texture:SetVertexColor(r or 0, g or 1, b or 0, a or 1)
+                else
+                    button.checkBoxI.texture:SetVertexColor(0, 1, 0, 1)
+                end
+            end
+        end
+
+        -- Initialize colors based on npc data
+        local entryColors = npc.color or {1, 0.8196, 0, 1}  -- Default yellowish color 
+        
+
+        -- Extra logic for handling additional checkboxes and flags
+        if extraBoxes then
+            -- CheckBox for Pandemic
+            if not button.checkBoxP then
+                local checkBoxP = CreateFrame("CheckButton", nil, button, "UICheckButtonTemplate")
+                checkBoxP:SetSize(24, 24)
+                checkBoxP:SetPoint("RIGHT", button.deleteButton, "LEFT", 4, 0)
+                checkBoxP:SetScript("OnClick", function(self)
+                    button.npcData.pandemic = self:GetChecked() and true or nil
+                    BBF.RefreshAllAuraFrames()
+                end)
+                checkBoxP.texture = checkBoxP:CreateTexture(nil, "ARTWORK", nil, 1)
+                checkBoxP.texture:SetAtlas("newplayertutorial-drag-slotgreen")
+                checkBoxP.texture:SetDesaturated(true)
+                checkBoxP.texture:SetVertexColor(1, 0, 0)
+                checkBoxP.texture:SetSize(27, 27)
+                checkBoxP.texture:SetPoint("CENTER", checkBoxP, "CENTER", -0.5, 0.5)
+                button.checkBoxP = checkBoxP
+                local isWarlock = select(2, UnitClass("player")) == "WARLOCK"
+                local extraText = isWarlock and "\n\nIf Agony or Unstable Affliction refresh talents are specced it will first glow orange when entering this window then switch to red once it enters the pandemic window as well." or ""
+                CreateTooltipTwo(checkBoxP, "Pandemic Glow |T" .. BBF.PandemicIcon .. ":22:22|t", "Check for a red glow when the aura has less than 30% of its duration remaining.\nOr last 5sec if the aura has no pandemic effect."..extraText, "Also check which frame(s) you want this on down below in settings.", "ANCHOR_TOPRIGHT")
+            end
+            button.checkBoxP:SetChecked(button.npcData.pandemic)
+    
+            -- CheckBox for Important with color picker
+            if not button.checkBoxI then
+                local checkBoxI = CreateFrame("CheckButton", nil, button, "UICheckButtonTemplate")
+                checkBoxI:SetSize(24, 24)
+                checkBoxI:SetPoint("RIGHT", button.checkBoxP, "LEFT", 4, 0)
+                checkBoxI:SetScript("OnClick", function(self)
+                    button.npcData.important = self:GetChecked() and true or nil
+                    BBF.RefreshAllAuraFrames()
+                    SetImportantBoxColor(button.npcData.color[1], button.npcData.color[2], button.npcData.color[3], button.npcData.color[4])
+                    SetTextColor(button.npcData.color[1], button.npcData.color[2], button.npcData.color[3], button.npcData.color[4])
+                end)
+                checkBoxI.texture = checkBoxI:CreateTexture(nil, "ARTWORK", nil, 1)
+                checkBoxI.texture:SetAtlas("newplayertutorial-drag-slotgreen")
+                checkBoxI.texture:SetSize(27, 27)
+                checkBoxI.texture:SetDesaturated(true)
+                checkBoxI.texture:SetPoint("CENTER", checkBoxI, "CENTER", -0.5, 0.5)
+                button.checkBoxI = checkBoxI
+                CreateTooltipTwo(checkBoxI, "Important Glow |T" .. BBF.ImportantIcon .. ":22:22|t", "Check for a glow on the aura to highlight it.\n|cff32f795Right-click to change color.|r", "Also check which frame(s) you want this on down below in settings.", "ANCHOR_TOPRIGHT")
+            end
+            button.checkBoxI:SetChecked(button.npcData.important)
+    
+            -- Color picker logic
+            local function OpenColorPicker()
+                local colorData = entryColors or {0, 1, 0, 1}
+                local r, g, b = colorData[1] or 1, colorData[2] or 1, colorData[3] or 1
+                local a = colorData[4] or 1 -- Default alpha to 1 if not present
+
+                local function updateColors(newR, newG, newB, newA)
+                    -- Assign RGB values directly, and set alpha to 1 if not provided
+                    entryColors[1] = newR
+                    entryColors[2] = newG
+                    entryColors[3] = newB
+                    entryColors[4] = newA or 1  -- Default alpha value to 1 if not provided
+
+                    -- Update text and box colors
+                    SetTextColor(newR, newG, newB, newA or 1)  -- Update text color with default alpha if needed
+                    SetImportantBoxColor(newR, newG, newB, newA or 1)  -- Update important box color with default alpha if needed
+                    -- Refresh frames or elements that depend on these colors
+                    BBF.RefreshAllAuraFrames()
+                end
+
+                local function swatchFunc()
+                    r, g, b = ColorPickerFrame:GetColorRGB()
+                    updateColors(r, g, b, a)  -- Pass current color values to updateColors
+                end
+
+                local function opacityFunc()
+                    a = ColorPickerFrame:GetColorAlpha()
+                    updateColors(r, g, b, a)  -- Pass current color values to updateColors including the alpha value
+                end
+
+                local function cancelFunc(previousValues)
+                    -- Revert to previous values if the selection is cancelled
+                    if previousValues then
+                        r, g, b, a = previousValues.r, previousValues.g, previousValues.b, previousValues.a
+                        updateColors(r, g, b, a)  -- Reapply the previous colors
+                    end
+                end
+
+                -- Store the initial values before showing the color picker
+                ColorPickerFrame.previousValues = { r = r, g = g, b = b, a = a }
+
+                -- Setup and show the color picker with the necessary callbacks and initial values
+                ColorPickerFrame:SetupColorPickerAndShow({
+                    r = r, g = g, b = b, opacity = a, hasOpacity = true,
+                    swatchFunc = swatchFunc, opacityFunc = opacityFunc, cancelFunc = cancelFunc
+                })
+            end
+    
+            -- Right-click to open color picker
+            button.checkBoxI:SetScript("OnMouseDown", function(self, button)
+                if button == "RightButton" then
+                    OpenColorPicker()
+                end
+            end)
+    
+            -- CheckBox for Compacted
+            if not button.checkBoxC then
+                local checkBoxC = CreateFrame("CheckButton", nil, button, "UICheckButtonTemplate")
+                checkBoxC:SetSize(24, 24)
+                checkBoxC:SetPoint("RIGHT", button.checkBoxI, "LEFT", 3, 0)
+                button.checkBoxC = checkBoxC
+                CreateTooltipTwo(checkBoxC, "Compacted Aura |T" .. BBF.CompactIcon .. ":22:22|t", "Check to make the aura smaller.", "Also check which frame(s) you want this on down below in settings.", "ANCHOR_TOPRIGHT")
+            end
+            button.checkBoxC:SetChecked(button.npcData.compacted)
+    
+            -- CheckBox for Enlarged
+            if not button.checkBoxE then
+                local checkBoxE = CreateFrame("CheckButton", nil, button, "UICheckButtonTemplate")
+                checkBoxE:SetSize(24, 24)
+                checkBoxE:SetPoint("RIGHT", button.checkBoxC, "LEFT", 3, 0)
+                checkBoxE:SetScript("OnClick", function(self)
+                    button.npcData.enlarged = self:GetChecked() and true or nil
+                    button.checkBoxC:SetChecked(false)
+                    button.npcData.compacted = false
+                    BBF.RefreshAllAuraFrames()
+                end)
+                button.checkBoxC:SetScript("OnClick", function(self)
+                    button.npcData.compacted = self:GetChecked() and true or nil
+                    button.checkBoxE:SetChecked(false)
+                    button.npcData.enlarged = false
+                    BBF.RefreshAllAuraFrames()
+                end)
+                CreateTooltipTwo(checkBoxE, "Enlarged Aura |T" .. BBF.EnlargedIcon .. ":22:22|t", "Check to make the aura bigger.", "Also check which frame(s) you want this on down below in settings.", "ANCHOR_TOPRIGHT")
+                button.checkBoxE = checkBoxE
+            end
+            button.checkBoxE:SetChecked(button.npcData.enlarged)
+    
+            -- CheckBox for "Only Mine"
+            if not button.checkBoxOnlyMine then
+                local checkBoxOnlyMine = CreateFrame("CheckButton", nil, button, "UICheckButtonTemplate")
+                checkBoxOnlyMine:SetSize(24, 24)
+                checkBoxOnlyMine:SetPoint("RIGHT", button.checkBoxE, "LEFT", 3, 0)
+                checkBoxOnlyMine:SetScript("OnClick", function(self)
+                    button.npcData.onlyMine = self:GetChecked() and true or nil
+                    BBF.RefreshAllAuraFrames()
+                end)
+                button.checkBoxOnlyMine = checkBoxOnlyMine
+                CreateTooltipTwo(checkBoxOnlyMine, "Only My Aura |T" .. BBF.OwnAuraIcon .. ":22:22|t", "Only show my aura.", nil, "ANCHOR_TOPRIGHT")
+            end
+            button.checkBoxOnlyMine:SetChecked(button.npcData.onlyMine)
+        end
+
+        if listName == "auraBlacklist" then
+            if not button.checkBoxShowMine then
+                -- Create Checkbox Only Mine if not already created
+                local checkBoxShowMine = CreateFrame("CheckButton", nil, button, "UICheckButtonTemplate")
+                checkBoxShowMine:SetSize(24, 24)
+                checkBoxShowMine:SetPoint("RIGHT", button, "RIGHT", -13, 0)
+                CreateTooltipTwo(checkBoxShowMine, "Show mine |T" .. BBF.OwnAuraIcon .. ":22:22|t", "Disregard the blacklist and show aura if it is mine.", nil, "ANCHOR_TOPRIGHT")
+
+                -- Handler for the show mine checkbox
+                checkBoxShowMine:SetScript("OnClick", function(self)
+                    button.npcData.showMine = self:GetChecked() and true or nil
+                    BBF.RefreshAllAuraFrames()
+                end)
+
+                -- Adjust text width and settings
+                button.text:SetWidth(196)
+                button.text:SetWordWrap(false)
+                button.text:SetJustifyH("LEFT")
+
+                -- Save the reference to the button
+                button.checkBoxShowMine = checkBoxShowMine
+            end
+            button.checkBoxShowMine:SetChecked(button.npcData.showMine)
+        end
+
+        if button.checkBoxI then
+            if button.checkBoxI:GetChecked() then
+                SetImportantBoxColor(entryColors[1], entryColors[2], entryColors[3], entryColors[4])
+                SetTextColor(entryColors[1], entryColors[2], entryColors[3], entryColors[4])
+            else
+                SetImportantBoxColor(0, 1, 0, 1)
+                SetTextColor(1, 0.8196, 0, 1)
+            end
+        end
+
+        if npc.id and not button.idTip then
+            button:SetScript("OnEnter", function(self)
+                if not button.npcData.id then return end
+                GameTooltip:SetOwner(self, "ANCHOR_LEFT")
+                GameTooltip:SetSpellByID(button.npcData.id)
+                GameTooltip:AddLine("Spell ID: " .. button.npcData.id, 1, 1, 1)
+                GameTooltip:Show()
+            end)
+            button:SetScript("OnLeave", function(self)
+                GameTooltip:Hide()
+            end)
+            button.idTip = true
+        end
+
+        -- Update background colors
+        updateBackgroundColors()
+
+        return button
+    end
+    BBF["UpdateTextLine"..listName] = createOrUpdateTextLineButton
+
+    local editBox = CreateFrame("EditBox", nil, subPanel, "InputBoxTemplate")
+    editBox:SetSize((width and width - 62) or (322 - 62), 19)
+    editBox:SetPoint("TOP", scrollFrame, "BOTTOM", -15, -5)
+    editBox:SetAutoFocus(false)
+    BBF[listName.."EditBox"] = editBox
+    CreateTooltipTwo(editBox, "Filter auras by spell id and/or spell name", "You can click auras to add to lists.\n\n|cff00ff00To Whitelist:|r\nShift+Alt + LeftClick\n\n|cffff0000To Blacklist:|r\nShift+Alt + RightClick\nCtrl+Alt RightClick with \"Show Mine\" tag", nil, "ANCHOR_TOP")
+
+    local function cleanUpEntry(entry)
+        -- Iterate through each field in the entry
+        for key, value in pairs(entry) do
+            if value == false then
+                entry[key] = nil
+            end
+        end
+    end
+
+    local function getSortedNpcList()
+        local sortableNpcList = {}
+
+        -- Iterate over the structure using pairs to access all entries
+        for key, entry in pairs(listData) do
+            cleanUpEntry(entry)
+            -- Apply the search filter
+            if BBF.currentSearchFilter == "" or (entry.name and entry.name:lower():match(BBF.currentSearchFilter)) or (entry.id and tostring(entry.id):match(BBF.currentSearchFilter)) then
+                table.insert(sortableNpcList, entry)
+            end
+        end
+
+        -- Sort the list alphabetically by the 'name' field, and then by 'id' if the names are the same
+        table.sort(sortableNpcList, function(a, b)
+            local nameA = a.name and a.name:lower() or ""
+            local nameB = b.name and b.name:lower() or ""
+
+            -- First, compare by name
+            if nameA ~= nameB then
+                return nameA < nameB
+            end
+
+            -- If names are the same, compare by id (sort low to high)
+            local idA = a.id or math.huge
+            local idB = b.id or math.huge
+            return idA < idB
+        end)
+
+        return sortableNpcList
+    end
+
+    -- Function to update the list with batching logic
+    local function refreshList()
+        local sortedListData = getSortedNpcList()
+        local totalEntries = #sortedListData
+        local batchSize = 35  -- Number of entries to process per frame
+        local currentIndex = 1
+
+        local function processNextBatch()
+            for i = currentIndex, math.min(currentIndex + batchSize - 1, totalEntries) do
+                local npc = sortedListData[i]
+                local button = createOrUpdateTextLineButton(npc, i, extraBoxes)
+                textLines[i] = button
+            end
+
+            -- Hide any extra frames
+            for i = totalEntries + 1, #framePool do
+                if framePool[i] then
+                    framePool[i]:Hide()
+                end
+            end
+
+            -- Update the content frame height
+            contentFrame:SetHeight(totalEntries * 20)
+            updateBackgroundColors()
+
+            -- Continue processing if there are more entries
+            currentIndex = currentIndex + batchSize
+            if currentIndex <= totalEntries then
+                C_Timer.After(0.04, processNextBatch)  -- Defer to the next frame
+            end
+        end
+        -- Start processing in the first frame
+        processNextBatch()
+    end
+
+    contentFrame.refreshList = refreshList
+    refreshList()
+    --BBF[listName.."DelayedUpdate"] = refreshList
+    BBF[listName.."Refresh"] = refreshList
+    --BBF.auraWhitelist & BBF.auraBlacklist
+
+    editBox:SetScript("OnEnterPressed", function(self)
+        addOrUpdateEntry(self:GetText(), listName)
+    end)
+
+        -- Function to search and filter the list
+        local function searchList(searchText)
+            BBF.currentSearchFilter = searchText:lower()
+            refreshList()
+        end
+
+        -- Update the list as the user types
+        editBox:SetScript("OnTextChanged", function(self, userInput)
+            if userInput then
+                searchList(self:GetText())
+            end
+        end, true)
+
+    local addButton = CreateFrame("Button", nil, subPanel, "UIPanelButtonTemplate")
+    addButton:SetSize(60, 24)
+    addButton:SetText("Add")
+    addButton:SetPoint("LEFT", editBox, "RIGHT", 10, 0)
+    addButton:SetScript("OnClick", function()
+        addOrUpdateEntry(editBox:GetText(), listName)
+    end)
+    scrollFrame:HookScript("OnShow", function()
+        if BBF.auraWhitelistDelayedUpdate then
+            BBF.auraWhitelistDelayedUpdate()
+            --print("Ran delayed update WHITELIST, then set it to not run next time")
+            BBF.auraWhitelistDelayedUpdate = nil
+        end
+        if BBF.auraBlacklistDelayedUpdate then
+            BBF.auraBlacklistDelayedUpdate()
+            --print("Ran delayed update BLACKLIST, then set it to not run next time")
+            BBF.auraBlacklistDelayedUpdate = nil
+        end
+    end)
+    return scrollFrame
+end
+
+SettingsPanel:HookScript("OnShow", function()
+    if BBF.auraWhitelistDelayedUpdate then
+        BBF.auraWhitelistDelayedUpdate()
+        --print("Ran delayed update WHITELIST, then set it to not run next time")
+        BBF.auraWhitelistDelayedUpdate = nil
+    end
+    if BBF.auraBlacklistDelayedUpdate then
+        BBF.auraBlacklistDelayedUpdate()
+        --print("Ran delayed update BLACKLIST, then set it to not run next time")
+        BBF.auraBlacklistDelayedUpdate = nil
+    end
+end)
 
 
 local function CreateFontDropdown(name, parentFrame, defaultText, settingKey, toggleFunc, point, dropdownWidth, maxVisibleItems)
@@ -1363,493 +2145,6 @@ local function CreateSimpleDropdown(name, parentFrame, labelText, settingKey, op
 end
 
 
-local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes, colorText, width, pos)
-    -- Create the scroll frame
-    local scrollFrame = CreateFrame("ScrollFrame", nil, subPanel, "UIPanelScrollFrameTemplate")
-    scrollFrame:SetSize(width or 322, 270)
-    if not pos then
-        scrollFrame:SetPoint("TOPLEFT", 10, -10)
-    else
-        scrollFrame:SetPoint("TOPLEFT", -48, -10)
-    end
-
-    -- Create the content frame
-    local contentFrame = CreateFrame("Frame", nil, scrollFrame)
-    contentFrame:SetSize(width or 322, 270)
-    scrollFrame:SetScrollChild(contentFrame)
-
-    local textLines = {}
-    local selectedLineIndex = nil
-
-    -- Function to update the background colors of the entries
-    local function updateBackgroundColors()
-        for i, button in ipairs(textLines) do
-            local bg = button.bgImg
-            if i % 2 == 0 then
-                bg:SetColorTexture(0.3, 0.3, 0.3, 0.1)  -- Dark color for even lines
-            else
-                bg:SetColorTexture(0.3, 0.3, 0.3, 0.3)  -- Light color for odd lines
-            end
-        end
-    end
-
-    local function deleteEntry(dataEntry)
-        if not dataEntry then return end
-        for i, entry in ipairs(listData) do
-            if entry == dataEntry then
-                table.remove(listData, i)
-                break
-            end
-        end
-        contentFrame.refreshList()
-        BBF.RefreshAllAuraFrames()
-    end
-
-    local function createTextLineButton(npc, index, extraBoxes)
-        local button = CreateFrame("Frame", nil, contentFrame)
-        button:SetSize((width and width - 12) or (322 - 12), 20)
-        button:SetPoint("TOPLEFT", 10, -(index - 1) * 20)
-        button.npcData = npc
-
-        local bg = button:CreateTexture(nil, "BACKGROUND")
-        bg:SetAllPoints()
-        button.bgImg = bg  -- Store the background texture for later color updates
-
-        local iconTexture = button:CreateTexture(nil, "OVERLAY")
-        iconTexture:SetSize(20, 20)  -- Same height as the button
-        iconTexture:SetPoint("LEFT", button, "LEFT", 0, 0)
-
-        -- Set the icon image
-        if npc.id then
-            iconTexture:SetTexture(GetSpellTexture(npc.id))
-        elseif npc.name then
-            iconTexture:SetTexture(GetSpellTexture(npc.name))
-        end
-
-        local displayText = npc.id and npc.id or ""
-
-        if npc.name and npc.name ~= "" then
-            displayText = npc.name .. (displayText ~= "" and " - " or "") .. displayText
-        end
-        if npc.comment and npc.comment ~= "" then
-            displayText = npc.comment .. (displayText ~= "" and " - " or "") .. displayText
-        end
-
-        local text = button:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-        text:SetPoint("LEFT", button, "LEFT", 25, 0)
-        text:SetText(displayText)
-        if pos then
-            text:SetWidth(225)
-            text:SetWordWrap(false)
-            text:SetJustifyH("LEFT")
-        end
-
-        -- Initialize the text color and background color for this entry from npc table or with default values
-        local entryColors = npc.entryColors or {}
-        npc.entryColors = entryColors  -- Save the colors back to the npc data
-
-        if not entryColors.text then
-            entryColors.text = { r = 0, g = 1, b = 0 } -- Default to green color
-        end
-
-        -- Function to set the text color
-        local function SetTextColor(r, g, b, a)
-            r = r or 1
-            b = b or 0
-            g = g or 0.8196
-            a = 1
-            if colorText then
-                if npc.flags and npc.flags.important then
-                    text:SetTextColor(r, g, b, a)
-                else
-                    text:SetTextColor(1, 1, 0, a)  -- Keeping alpha consistent
-                end
-            else
-                text:SetTextColor(1, 1, 0, a)  -- Keeping alpha consistent
-            end
-        end
-
-        -- Set initial text and background colors from entryColors
-        SetTextColor(entryColors.text.r, entryColors.text.g, entryColors.text.b, 1)
-
-        local deleteButton = CreateFrame("Button", nil, button, "UIPanelButtonTemplate")
-        deleteButton:SetSize(20, 20)
-        deleteButton:SetPoint("RIGHT", button, "RIGHT", 4, 0)
-        deleteButton:SetText("X")
-
-        deleteButton:SetScript("OnClick", function()
-            if IsShiftKeyDown() then
-                deleteEntry(button.npcData)
-            else
-                selectedLineIndex = button.npcData
-                StaticPopup_Show("BBF_DELETE_NPC_CONFIRM_" .. listName)
-            end
-        end)
-
-        if extraBoxes then
-            -- Ensure the npc.flags table exists
-            if not npc.flags then
-                npc.flags = { important = false, pandemic = false, enlarged = false }
-            end
-
-            -- Create Checkbox P (Pandemic)
-            local checkBoxP = CreateFrame("CheckButton", nil, button, "UICheckButtonTemplate")
-            checkBoxP:SetSize(24, 24)
-            checkBoxP:SetPoint("RIGHT", deleteButton, "LEFT", 4, 0) -- Positioned first, to the left of deleteButton
-
-            -- Create a texture for the checkbox
-            checkBoxP.texture = checkBoxP:CreateTexture(nil, "ARTWORK", nil, 1)
-            checkBoxP.texture:SetTexture(BBF.squareGreenGlow)
-            checkBoxP.texture:SetDesaturated(true)
-            checkBoxP.texture:SetVertexColor(1, 0, 0)
-            checkBoxP.texture:SetSize(46, 46)
-            checkBoxP.texture:SetPoint("CENTER", checkBoxP, "CENTER", -0.5, 0)
-            CreateTooltipTwo(checkBoxP, "Pandemic Glow |T"..BBF.PandemicIcon..":22:22:0:0|t", "Check for a red glow when the aura has less than 5 sec remaining.", "Also check which frame(s) you want this on down below in settings.", "ANCHOR_TOPRIGHT")
-
-            -- Handler for the P checkbox
-            checkBoxP:SetScript("OnClick", function(self)
-                npc.flags.pandemic = self:GetChecked() -- Save the state in the npc flags
-            end)
-            checkBoxP:HookScript("OnClick", BBF.RefreshAllAuraFrames)
-
-            -- Initialize state from npc flags
-            if npc.flags.pandemic then
-                checkBoxP:SetChecked(true)
-            end
-
-            -- Create Checkbox I (Important)
-            local checkBoxI = CreateFrame("CheckButton", nil, button, "UICheckButtonTemplate")
-            checkBoxI:SetSize(24, 24)
-            checkBoxI:SetPoint("RIGHT", checkBoxP, "LEFT", 4, 0) -- Positioned next to checkBoxP
-
-            -- Create a texture for the checkbox
-            checkBoxI.texture = checkBoxI:CreateTexture(nil, "ARTWORK", nil, 1)
-            checkBoxI.texture:SetTexture(BBF.squareGreenGlow)
-            checkBoxI.texture:SetSize(46, 46)
-            checkBoxI.texture:SetDesaturated(true)
-            checkBoxI.texture:SetPoint("CENTER", checkBoxI, "CENTER", -0.5, 0)
-            CreateTooltipTwo(checkBoxI, "Important Glow |T"..BBF.ImportantIcon..":22:22:0:0|t", "Check for a glow on the aura to highlight it.\n|cff32f795Right-click to change color.|r", "Also check which frame(s) you want this on down below in settings.", "ANCHOR_TOPRIGHT")
-
-            -- Handler for the I checkbox
-            checkBoxI:SetScript("OnClick", function(self)
-                npc.flags.important = self:GetChecked() -- Save the state in the npc flags
-            end)
-            local function SetImportantBoxColor(r, g, b, a)
-                if npc.flags and npc.flags.important then
-                    checkBoxI.texture:SetVertexColor(r, g, b, a)
-                else
-                    checkBoxI.texture:SetVertexColor(0,1,0,1)
-                end
-            end
-            checkBoxI:HookScript("OnClick", function()
-                BBF.RefreshAllAuraFrames()
-                SetTextColor(entryColors.text.r, entryColors.text.g, entryColors.text.b, 1)
-                SetImportantBoxColor(entryColors.text.r, entryColors.text.g, entryColors.text.b, entryColors.text.a)
-            end)
-
-            -- Initialize state from npc flags
-            if npc.flags.important then
-                checkBoxI:SetChecked(true)
-            end
-
-            SetImportantBoxColor(entryColors.text.r, entryColors.text.g, entryColors.text.b, entryColors.text.a)
-
-            -- Function to open the color picker
-            local function OpenColorPicker()
-                local colorData = entryColors.text or {}
-                local r, g, b = colorData.r or 1, colorData.g or 1, colorData.b or 1
-                local a = colorData.a or 1 -- Default alpha to 1 if not present
-
-                local function updateColors()
-                    entryColors.text.r, entryColors.text.g, entryColors.text.b, entryColors.text.a = r, g, b, a
-                    SetTextColor(r, g, b, a)  -- Update text color
-                    SetImportantBoxColor(r, g, b, a)  -- Update other elements as needed
-                    BBF.RefreshAllAuraFrames()  -- Refresh frames or elements that depend on these colors
-                end
-
-                local function swatchFunc()
-                    r, g, b = ColorPickerFrame:GetColorRGB()
-                    updateColors()  -- Update colors based on the new selection
-                end
-
-                local function opacityFunc()
-                    a = ColorPickerFrame:GetColorAlpha()
-                    updateColors()  -- Update colors including the alpha value
-                end
-
-                local function cancelFunc(previousValues)
-                    -- Revert to previous values if the selection is cancelled
-                    if previousValues then
-                        r, g, b, a = previousValues.r, previousValues.g, previousValues.b, previousValues.a
-                        updateColors()  -- Reapply the previous colors
-                    end
-                end
-
-                -- Store the initial values before showing the color picker
-                ColorPickerFrame.previousValues = { r = r, g = g, b = b, a = a }
-
-                -- Setup and show the color picker with the necessary callbacks and initial values
-                ColorPickerFrame:SetupColorPickerAndShow({
-                    r = r, g = g, b = b, opacity = a, hasOpacity = true,
-                    swatchFunc = swatchFunc, opacityFunc = opacityFunc, cancelFunc = cancelFunc
-                })
-            end
-
-            checkBoxI:HookScript("OnMouseDown", function(self, button)
-                if button == "RightButton" then
-                    OpenColorPicker()
-                end
-            end)
-
-            -- Create Checkbox C (Compacted)
-            local checkBoxC = CreateFrame("CheckButton", nil, button, "UICheckButtonTemplate")
-            checkBoxC:SetSize(24, 24)
-            checkBoxC:SetPoint("RIGHT", checkBoxI, "LEFT", 3, 0)
-            CreateTooltipTwo(checkBoxC, "Compacted Aura |T"..BBF.CompactIcon..":22:22:0:0|t", "Check to make the aura smaller.", "Also check which frame(s) you want this on down below in settings.", "ANCHOR_TOPRIGHT")
-
-            -- Initialize state from npc flags
-            if npc.flags.compacted then
-                checkBoxC:SetChecked(true)
-            end
-
-            -- Create Checkbox E (Enlarged)
-            local checkBoxE = CreateFrame("CheckButton", nil, button, "UICheckButtonTemplate")
-            checkBoxE:SetSize(24, 24)
-            checkBoxE:SetPoint("RIGHT", checkBoxC, "LEFT", 3, 0)
-            CreateTooltipTwo(checkBoxE, "Enlarged Aura |T"..BBF.EnlargedIcon..":22:22:0:0|t", "Check to make the aura bigger.", "Also check which frame(s) you want this on down below in settings.", "ANCHOR_TOPRIGHT")
-
-            -- Handler for the C checkbox
-            checkBoxC:SetScript("OnClick", function(self)
-                npc.flags.compacted = self:GetChecked()
-                checkBoxE:SetChecked(false)
-                npc.flags.enlarged = false
-                BBF.RefreshAllAuraFrames()
-            end)
-
-            -- Handler for the E checkbox
-            checkBoxE:SetScript("OnClick", function(self)
-                npc.flags.enlarged = self:GetChecked()
-                checkBoxC:SetChecked(false)
-                npc.flags.compacted = false
-                BBF.RefreshAllAuraFrames()
-            end)
-
-            -- Initialize state from npc flags
-            if npc.flags.enlarged then
-                checkBoxE:SetChecked(true)
-            end
-
-            -- Create Checkbox Only Mine
-            local checkBoxOnlyMine = CreateFrame("CheckButton", nil, button, "UICheckButtonTemplate")
-            checkBoxOnlyMine:SetSize(24, 24)
-            checkBoxOnlyMine:SetPoint("RIGHT", checkBoxE, "LEFT", 3, 0)
-            CreateTooltipTwo(checkBoxOnlyMine, "Only My Aura |T"..BBF.OwnAuraIcon..":22:22:0:0|t", "Only show my aura.", nil, "ANCHOR_TOPRIGHT")
-
-            -- Handler for the E checkbox
-            checkBoxOnlyMine:SetScript("OnClick", function(self)
-                npc.flags.onlyMine = self:GetChecked()
-            end)
-            checkBoxOnlyMine:HookScript("OnClick", BBF.RefreshAllAuraFrames)
-
-            -- Initialize state from npc flags
-            if npc.flags.onlyMine then
-                checkBoxOnlyMine:SetChecked(true)
-            end
-        end
-
-        if listName == "auraBlacklist" then
-            -- Create Checkbox Only Mine
-            local checkBoxShowMine = CreateFrame("CheckButton", nil, button, "UICheckButtonTemplate")
-            checkBoxShowMine:SetSize(24, 24)
-            checkBoxShowMine:SetPoint("RIGHT", deleteButton, "LEFT", 3, 0)
-            CreateTooltipTwo(checkBoxShowMine, "Show mine |T"..BBF.OwnAuraIcon..":22:22:0:0|t", "Disregard the blacklist and show aura if it is mine.", nil, "ANCHOR_TOPRIGHT")
-
-            -- Handler for the E checkbox
-            checkBoxShowMine:SetScript("OnClick", function(self)
-                npc.showMine = self:GetChecked()
-            end)
-            checkBoxShowMine:HookScript("OnClick", BBF.RefreshAllAuraFrames)
-
-            -- Initialize state from npc flags
-            if npc.showMine then
-                checkBoxShowMine:SetChecked(true)
-            end
-
-            text:SetWidth(196)
-            text:SetWordWrap(false)
-            text:SetJustifyH("LEFT")
-        end
-
-        button.deleteButton = deleteButton
-        table.insert(textLines, button)
-        updateBackgroundColors()  -- Update background colors after adding a new entry
-
-        if npc.id then
-            button:SetScript("OnEnter", function(self)
-                GameTooltip:SetOwner(self, "ANCHOR_LEFT")
-                GameTooltip:SetSpellByID(npc.id)
-                GameTooltip:AddLine("Spell ID: " .. npc.id, 1, 1, 1)
-                GameTooltip:Show()
-            end)
-            button:SetScript("OnLeave", function(self)
-                GameTooltip:Hide()
-            end)
-        end
-    end
-
-
-    -- Create and initialize textLine buttons with or without color pickers
-    -- for i, npc in ipairs(listData) do
-    --     createTextLineButton(npc, i, extraBoxes)
-    -- end
-
-    -- Create static popup dialogs for duplicate and delete confirmations
-    StaticPopupDialogs["BBF_DUPLICATE_NPC_CONFIRM_" .. listName] = {
-        text = "This name or spellID is already in the list. Do you want to remove it from the list?",
-        button1 = "Yes",
-        button2 = "No",
-        OnAccept = function()
-            deleteEntry(selectedLineIndex)  -- Delete the entry when "Yes" is clicked
-        end,
-        timeout = 0,
-        whileDead = true,
-        hideOnEscape = true,
-    }
-
-    StaticPopupDialogs["BBF_DELETE_NPC_CONFIRM_" .. listName] = {
-        text = "Are you sure you want to delete this entry?\nHold shift to delete without this prompt",
-        button1 = "Yes",
-        button2 = "No",
-        OnAccept = function()
-            deleteEntry(selectedLineIndex)  -- Delete the entry when "Yes" is clicked
-        end,
-        timeout = 0,
-        whileDead = true,
-        hideOnEscape = true,
-    }
-
-    local editBox = CreateFrame("EditBox", nil, subPanel, "InputBoxTemplate")
-    editBox:SetSize((width and width - 62) or (322 - 62), 19)
-    editBox:SetPoint("TOP", scrollFrame, "BOTTOM", -15, -5)
-    editBox:SetAutoFocus(false)
-    CreateTooltipTwo(editBox, "Filter auras by spell id and/or spell name", "You can click auras to add to lists.\n\nShift+Alt + Left-Click to Whitelist.\n\nShift+Alt + Right-Click to Blacklist.\nCtrl+Alt Right-click to Blacklist with \"Show Mine\" tag", nil, "ANCHOR_TOP")
-
-    local function updateNamesInListData()
-        for _, entry in ipairs(listData) do
-            if entry.id and (not entry.name or entry.name == "") then
-                local spellName = GetSpellInfo(entry.id)
-                if spellName then
-                    entry.name = spellName  -- Update the name field with the fetched spell name
-                end
-            end
-        end
-    end
-
-    local function getSortedNpcList()
-        updateNamesInListData()  -- Ensure names are updated before sorting
-
-        local sortableNpcList = {}
-        for _, entry in ipairs(listData) do
-            table.insert(sortableNpcList, entry)  -- Directly use entry, no need to separate into npcId and npcData
-        end
-
-        table.sort(sortableNpcList, function(a, b)
-            local nameA = a.name and a.name:lower()
-            local nameB = b.name and b.name:lower()
-            return nameA < nameB
-        end)
-
-        return sortableNpcList
-    end
-
-    local sortedListData = getSortedNpcList()
-    for i, npc in ipairs(sortedListData) do
-        createTextLineButton(npc, i, extraBoxes)
-    end
-
-    local function refreshList()
-        -- Clear existing buttons
-        for _, button in ipairs(textLines) do
-            button:Hide()
-        end
-        wipe(textLines)
-
-        -- Fetch sorted list and recreate UI elements
-        local sortedListData = getSortedNpcList()
-        for i, npc in ipairs(sortedListData) do
-            local button = createTextLineButton(npc, i, extraBoxes)
-            table.insert(textLines, button)
-        end
-
-        updateBackgroundColors()
-        -- Update the content frame size if necessary
-        contentFrame:SetHeight(#textLines * 20)
-    end
-    contentFrame.refreshList = refreshList
-
-    local function addOrUpdateEntry(inputText, addShowMineTag)
-        selectedLineIndex = nil
-        local name, comment = strsplit("/", inputText, 2)
-        name = strtrim(name or "")
-        comment = strtrim(comment or "")
-        local id = tonumber(name)
-
-        -- Check if there's a numeric ID within the name and clear the name if found
-        if id then
-            local spellName, _, _ = GetSpellInfo(id)
-            name = spellName or ""
-        end
-
-        -- Remove unwanted characters from name and comment individually
-        name = gsub(name, "[%/%(%)%[%]]", "")
-        comment = gsub(comment, "[%/%(%)%[%]]", "")
-
-        if (name ~= "" or id) then
-            local isDuplicate = false
-
-            for i, npc in ipairs(listData) do
-                if (id and npc.id == id) or (not id and npc.name and strlower(npc.name) == strlower(name)) then
-                    isDuplicate = true
-                    selectedLineIndex = npc
-                    break
-                end
-            end
-
-            if isDuplicate then
-                StaticPopup_Show("BBF_DUPLICATE_NPC_CONFIRM_" .. listName)
-            else
-                -- Initialize the flags table for the new entry
-                local newEntry = { name = name, id = id, comment = comment, flags = { important = false, pandemic = false } }
-                if addShowMineTag and listName == "auraBlacklist" then
-                    newEntry = { name = name, id = id, comment = comment, flags = { important = false, pandemic = false }, showMine = true }
-                end
-                table.insert(listData, newEntry)
-                createTextLineButton(newEntry, #textLines + 1, extraBoxes)
-                refreshList()
-                refreshFunc()
-            end
-        end
-        BBF.RefreshAllAuraFrames()
-
-        editBox:SetText("") -- Clear the EditBox
-    end
-
-    BBF[listName] = addOrUpdateEntry
-
-    editBox:SetScript("OnEnterPressed", function(self)
-        addOrUpdateEntry(self:GetText())
-    end)
-
-    local addButton = CreateFrame("Button", nil, subPanel, "UIPanelButtonTemplate")
-    addButton:SetSize(60, 24)
-    addButton:SetText("Add")
-    addButton:SetPoint("LEFT", editBox, "RIGHT", 10, 0)
-    addButton:SetScript("OnClick", function()
-        addOrUpdateEntry(editBox:GetText())
-    end)
-    return scrollFrame
-end
-
 local function CreateTitle(parent)
     local mainGuiAnchor = parent:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     mainGuiAnchor:SetPoint("TOPLEFT", 15, -15)
@@ -1864,6 +2159,283 @@ local function CreateTitle(parent)
     local verNumber = parent:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     verNumber:SetPoint("LEFT", addonNameText, "RIGHT", 25, 0)
     verNumber:SetText("v" .. BBF.VersionNumber)
+end
+
+local function CreateSearchFrame()
+    local searchFrame = CreateFrame("Frame", "BBFSearchFrame", UIParent)
+    searchFrame:SetSize(680, 610)
+    searchFrame:SetPoint("CENTER", UIParent, "CENTER")
+    searchFrame:SetFrameStrata("HIGH")
+    searchFrame:Hide()
+
+    local wipText = searchFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+    wipText:SetPoint("BOTTOM", searchFrame, "BOTTOM", -10, 10)
+    wipText:SetText("Search is not complete and is WIP.")
+
+    CreateTitle(searchFrame)
+
+    local bgImg = searchFrame:CreateTexture(nil, "BACKGROUND")
+    bgImg:SetAtlas("professions-recipe-background")
+    bgImg:SetPoint("CENTER", searchFrame, "CENTER", -8, 4)
+    bgImg:SetSize(680, 610)
+    bgImg:SetAlpha(0.4)
+    bgImg:SetVertexColor(0, 0, 0)
+
+    local settingsText = searchFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+    settingsText:SetPoint("TOPLEFT", searchFrame, "TOPLEFT", 20, 0)
+    settingsText:SetText("Search results:")
+
+    -- Icon next to the title
+    local searchIcon = searchFrame:CreateTexture(nil, "ARTWORK")
+    searchIcon:SetAtlas("communities-icon-searchmagnifyingglass")
+    searchIcon:SetSize(28, 28)
+    searchIcon:SetPoint("RIGHT", settingsText, "LEFT", -3, -1)
+
+    -- Reference the existing SettingsPanel.SearchBox to copy properties
+    local referenceBox = SettingsPanel.SearchBox
+
+    -- Create the search input field on top of SettingsPanel.SearchBox
+    local searchBox = CreateFrame("EditBox", nil, SettingsPanel, "InputBoxTemplate")
+    searchBox:SetSize(referenceBox:GetWidth() + 1, referenceBox:GetHeight() + 1)
+    searchBox:SetPoint("CENTER", referenceBox, "CENTER")
+    searchBox:SetFrameStrata("HIGH")
+    searchBox:SetAutoFocus(false)
+    searchBox.Left:Hide()
+    searchBox.Right:Hide()
+    searchBox.Middle:Hide()
+    searchBox:SetFontObject(referenceBox:GetFontObject())
+    searchBox:SetTextInsets(16, 8, 0, 0)
+    searchBox:Hide()
+    searchBox:SetScript("OnEnterPressed", function(self)
+        self:ClearFocus()
+    end)
+    CreateTooltipTwo(searchBox, "Search |A:shop-games-magnifyingglass:17:17|a", "You can now search for settings in BetterBlizzPlates. (WIP)", nil, "TOP")
+
+    local resultsList = CreateFrame("Frame", nil, searchFrame)
+    resultsList:SetSize(640, 500)
+    resultsList:SetPoint("TOP", settingsText, "BOTTOM", 0, -10)
+
+    local checkboxPool = {}
+    local sliderPool = {}
+
+    local function SearchElements(query)
+        for _, child in ipairs({resultsList:GetChildren()}) do
+            child:Hide()
+        end
+
+        if query == "" then
+            return
+        end
+
+        -- Convert the query into lowercase and split it into individual words
+        query = string.lower(query)
+        local queryWords = { strsplit(" ", query) }
+
+        local checkboxCount = 0
+        local sliderCount = 0
+        local yOffsetCheckbox = -20  -- Starting position for the first checkbox
+        local yOffsetSlider = -20    -- Starting position for the first slider
+
+        -- Helper function to check if all query words are in the label
+        local function matchesQuery(label)
+            label = string.lower(label)
+            for _, queryWord in ipairs(queryWords) do
+                if not string.find(label, queryWord) then
+                    return false
+                end
+            end
+            return true
+        end
+
+        local function applyRightClickScript(searchCheckbox, originalCheckbox)
+            local originalScript = originalCheckbox:GetScript("OnMouseDown")
+            if originalScript then
+                searchCheckbox:SetScript("OnMouseDown", function(self, button)
+                    if button == "RightButton" then
+                        originalScript(originalCheckbox, button)
+                    end
+                end)
+            end
+        end
+
+        -- Search through checkboxes
+        for _, data in ipairs(checkBoxList) do
+            if checkboxCount >= 20 then break end
+
+            -- Prepare the label and tooltip text
+            local label = string.lower(data.label or "")
+            local tooltipTitle = string.lower(data.checkbox.tooltipTitle or "")
+            local tooltipMainText = string.lower(data.checkbox.tooltipMainText or "")
+            local tooltipSubText = string.lower(data.checkbox.tooltipSubText or "")
+            local tooltipCVarName = string.lower(data.checkbox.tooltipCVarName or "")
+
+            -- Check if all query words are found in any of the searchable fields
+            if matchesQuery(label) or matchesQuery(tooltipTitle) or matchesQuery(tooltipMainText) or matchesQuery(tooltipSubText) or matchesQuery(tooltipCVarName) then
+                checkboxCount = checkboxCount + 1
+
+                -- Re-use or create a new checkbox from the pool
+                local resultCheckBox = checkboxPool[checkboxCount]
+                if not resultCheckBox then
+                    resultCheckBox = CreateFrame("CheckButton", nil, resultsList, "InterfaceOptionsCheckButtonTemplate")
+                    resultCheckBox:SetSize(24, 24)
+                    checkboxPool[checkboxCount] = resultCheckBox
+                end
+
+                -- Update checkbox properties and position
+                resultCheckBox:ClearAllPoints()
+                resultCheckBox:SetPoint("TOPLEFT", searchIcon, "TOPLEFT", 27, yOffsetCheckbox)
+                resultCheckBox.Text:SetText(data.label)
+                if not data.label or data.label == "" then
+                    resultCheckBox.Text:SetText(data.checkbox.tooltipTitle)
+                end
+                resultCheckBox:SetChecked(data.checkbox:GetChecked())
+
+                -- Link the result checkbox to the main checkbox
+                resultCheckBox:SetScript("OnClick", function()
+                    data.checkbox:Click()
+                end)
+
+                applyRightClickScript(resultCheckBox, data.checkbox)
+
+                -- Reapply tooltip
+                if data.checkbox.tooltipMainText then
+                    CreateTooltipTwo(resultCheckBox, data.checkbox.tooltipTitle, data.checkbox.tooltipMainText, data.checkbox.tooltipSubText, nil, data.checkbox.tooltipCVarName, data.checkbox.searchCategory)
+                elseif data.checkbox.tooltipTitle then
+                    CreateTooltipTwo(resultCheckBox, data.checkbox.tooltipTitle, nil, nil, nil, nil, data.checkbox.searchCategory)
+                else
+                    CreateTooltipTwo(resultCheckBox, "No data yet WIP", nil, nil, nil, nil, data.checkbox.searchCategory)
+                end
+
+                resultCheckBox:Show()
+
+                -- Move down for the next checkbox
+                yOffsetCheckbox = yOffsetCheckbox - 24
+            end
+        end
+
+        -- Search through sliders
+        for _, data in ipairs(sliderList) do
+            if sliderCount >= 13 then break end
+
+            -- Prepare the label and tooltip text
+            local label = string.lower(data.label or "")
+            local tooltipTitle = string.lower(data.slider.tooltipTitle or "")
+            local tooltipMainText = string.lower(data.slider.tooltipMainText or "")
+            local tooltipSubText = string.lower(data.slider.tooltipSubText or "")
+            local tooltipCVarName = string.lower(data.slider.tooltipCVarName or "")
+
+            -- Check if all query words are found in any of the searchable fields
+            if matchesQuery(label) or matchesQuery(tooltipTitle) or matchesQuery(tooltipMainText) or matchesQuery(tooltipSubText) or matchesQuery(tooltipCVarName) then
+                sliderCount = sliderCount + 1
+
+                -- Re-use or create a new slider from the slider pool
+                local resultSlider = sliderPool[sliderCount]
+                if not resultSlider then
+                    resultSlider = CreateFrame("Slider", nil, resultsList, "OptionsSliderTemplate")
+                    resultSlider:SetOrientation('HORIZONTAL')
+                    resultSlider:SetValueStep(data.slider:GetValueStep())
+                    resultSlider:SetObeyStepOnDrag(true)
+                    resultSlider.Text = resultSlider:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+                    resultSlider.Text:SetTextColor(1, 0.81, 0, 1)
+                    resultSlider.Text:SetPoint("TOP", resultSlider, "BOTTOM", 0, -1)
+                    resultSlider.Low:SetText(" ")
+                    resultSlider.High:SetText(" ")
+                    sliderPool[sliderCount] = resultSlider
+                end
+
+                -- Format the slider text value
+                local function formatSliderValue(value)
+                    return value % 1 == 0 and tostring(math.floor(value)) or string.format("%.2f", value)
+                end
+
+                -- Update slider properties and position
+                resultSlider:ClearAllPoints()
+                resultSlider:SetPoint("TOPLEFT", searchIcon, "TOPLEFT", 277, yOffsetSlider)
+                resultSlider:SetScript("OnValueChanged", nil)
+                resultSlider:SetMinMaxValues(data.slider:GetMinMaxValues())
+                resultSlider:SetValue(data.slider:GetValue())
+                resultSlider.Text:SetText(data.label .. ": " .. formatSliderValue(data.slider:GetValue()))
+
+                resultSlider:SetScript("OnValueChanged", function(self, value)
+                    data.slider:SetValue(value) -- Trigger the original slider's script
+                    resultSlider.Text:SetText(data.label .. ": " .. formatSliderValue(value))
+                end)
+
+                -- Tooltip setup for sliders
+                if data.slider.tooltipMainText then
+                    CreateTooltipTwo(resultSlider, data.slider.tooltipTitle, data.slider.tooltipMainText, data.slider.tooltipSubText, nil, data.slider.tooltipCVarName, data.slider.searchCategory)
+                elseif data.slider.tooltipTitle then
+                    CreateTooltipTwo(resultSlider, data.slider.tooltipTitle, nil, nil, nil, nil, data.slider.searchCategory)
+                else
+                    CreateTooltipTwo(resultSlider, "No data yet WIP", nil, nil, nil, nil, data.slider.searchCategory)
+                end
+
+                -- Show the slider and prepare for the next slider
+                resultSlider:Show()
+                yOffsetSlider = yOffsetSlider - 42
+            end
+        end
+    end
+
+    searchBox:SetScript("OnTextChanged", function(self)
+        local query = self:GetText()
+        if #query > 0 then
+            SettingsPanelSearchIcon:SetVertexColor(1, 1, 1)
+            SettingsPanel.SearchBox.Instructions:SetAlpha(0)
+            searchFrame:Show()
+            if SettingsPanel.currentLayout and SettingsPanel.currentLayout.frame then
+                SettingsPanel.currentLayout.frame:Hide()
+            end
+        else
+            SettingsPanelSearchIcon:SetVertexColor(0.6, 0.6, 0.6)
+            SettingsPanel.SearchBox.Instructions:SetAlpha(1)
+            searchFrame:Hide()
+            if SettingsPanel.currentLayout and SettingsPanel.currentLayout.frame then
+                SettingsPanel.currentLayout.frame:Show()
+            end
+        end
+        if #query >= 1 then
+            SearchElements(query)
+        else
+            SearchElements("")
+        end
+
+        if not searchBox.hookedSettings then
+            SettingsPanel:HookScript("OnHide", function()
+                SettingsPanelSearchIcon:SetVertexColor(0.6, 0.6, 0.6)
+                SettingsPanel.SearchBox.Instructions:SetAlpha(1)
+                searchFrame:Hide()
+                searchBox:Hide()
+                if SettingsPanel.currentLayout and SettingsPanel.currentLayout.frame then
+                    searchBox:SetText("")
+                    SettingsPanel.currentLayout.frame:Show()
+                end
+            end)
+            searchBox.hookedSettings = true
+        end
+    end)
+
+    hooksecurefunc(SettingsPanel, "DisplayLayout", function()
+        if SettingsPanel.currentLayout.frame and SettingsPanel.currentLayout.frame.name == "Better|cff00c0ffBlizz|rFrames |A:gmchat-icon-blizz:16:16|a" or
+        (SettingsPanel.currentLayout.frame and SettingsPanel.currentLayout.frame.parent == "Better|cff00c0ffBlizz|rFrames |A:gmchat-icon-blizz:16:16|a") then
+            SettingsPanel.SearchBox.Instructions:SetText("Search in BetterBlizzFrames")
+            searchBox:Show()
+            searchBox:SetText("")
+            searchFrame:Hide()
+            searchFrame:ClearAllPoints()
+            searchFrame:SetPoint("TOPLEFT", SettingsPanel.currentLayout.frame, "TOPLEFT")
+            searchFrame:SetPoint("BOTTOMRIGHT", SettingsPanel.currentLayout.frame, "BOTTOMRIGHT")
+            if not SettingsPanel.currentLayout.frame:IsShown() then
+                SettingsPanel.currentLayout.frame:Show()
+            end
+        else
+            if SettingsPanel.SearchBox.Instructions:GetText() == "Search in BetterBlizzFrames" then
+                SettingsPanel.SearchBox.Instructions:SetText("Search")
+            end
+            searchBox:Hide()
+            searchFrame:Hide()
+        end
+    end)
 end
 
 ------------------------------------------------------------
@@ -1902,6 +2474,23 @@ local function guiGeneralTab()
     BetterBlizzFrames:HookScript("OnHide",function()
         alpha2:Hide()
     end)
+
+    if BetterBlizzFrames.titleText then
+        BetterBlizzFrames.titleText:Hide()
+        BetterBlizzFrames.loadGUI:Hide()
+    end
+
+    local newSearch = BetterBlizzFrames:CreateTexture(nil, "BACKGROUND")
+    newSearch:SetAtlas("NewCharacter-Horde", true)
+    newSearch:SetPoint("BOTTOM", BetterBlizzFrames, "TOP", -70, 2)
+    CreateTooltipTwo(newSearch, "Search |A:shop-games-magnifyingglass:17:17|a", "You can now search for settings in BetterBlizzFrames. (WIP)")
+
+    local newSearchPoint = BetterBlizzFrames:CreateTexture(nil, "BACKGROUND")
+    newSearchPoint:SetAtlas("auctionhouse-icon-buyallarrow", true)
+    newSearchPoint:SetPoint("LEFT", newSearch, "RIGHT", -25, 0)
+    newSearchPoint:SetRotation(math.pi / 2)
+
+    CreateSearchFrame()
 
     -- local addonNameText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
     -- addonNameText:SetPoint("TOPLEFT", mainGuiAnchor, "TOPLEFT", -20, 47)
@@ -2215,12 +2804,18 @@ local function guiGeneralTab()
     petCastbar:SetPoint("TOPLEFT", petFrameText, "BOTTOMLEFT", -4, pixelsOnFirstBox)
     CreateTooltip(petCastbar, "Show pet castbar.\n\nMore settings in the \"Castbars\" tab")
 
-    local colorPetAfterOwner = CreateCheckbox("colorPetAfterOwner", "Class Color Pet", BetterBlizzFrames)
-    colorPetAfterOwner:SetPoint("TOPLEFT", petCastbar, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    local hidePetName = CreateCheckbox("hidePetName", "Hide Name", BetterBlizzFrames)
+    hidePetName:SetPoint("TOPLEFT", petCastbar, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    hidePetName:HookScript("OnClick", function (self)
+        BBF.AllNameChanges()
+    end)
+    CreateTooltipTwo(hidePetName, "Hide Pet Name", "Hide the pet name on PetFrame")
+
+    local colorPetAfterOwner = CreateCheckbox("colorPetAfterOwner", "Color Pet After Player Class", BetterBlizzFrames)
+    colorPetAfterOwner:SetPoint("TOPLEFT", hidePetName, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     colorPetAfterOwner:HookScript("OnClick", function (self)
         BBF.UpdateFrames()
     end)
-    CreateTooltipTwo(colorPetAfterOwner, "Class Color Pet", "Color pet healthbar after player class")
 
     local hidePetText = CreateCheckbox("hidePetText", "Hide Pet Statusbar Text", BetterBlizzFrames, nil, BBF.HideFrames)
     hidePetText:SetPoint("TOPLEFT", colorPetAfterOwner, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
@@ -2755,7 +3350,7 @@ local function guiGeneralTab()
     classColorTargetNames:SetPoint("TOPLEFT", biggerHealthbars, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(classColorTargetNames, "Class Color Names","Class color Player, Target & Focus Names.", "Will enable a fake name. Because of this other addons like HealthBarColor's name stuff will not work properly.")
     classColorTargetNames:HookScript("OnClick", function()
-        BBF.AllCaller()
+        BBF.AllNameChanges()
     end)
 
     local classColorLevelText = CreateCheckbox("classColorLevelText", "Level", classColorTargetNames)
@@ -2763,7 +3358,7 @@ local function guiGeneralTab()
     CreateTooltip(classColorLevelText, "Also class color the level text.")
     classColorLevelText:HookScript("OnClick", function()
         --BBF.HookLevelText()
-        BBF.AllCaller()
+        BBF.AllNameChanges()
     end)
 
     classColorTargetNames:HookScript("OnClick", function(self)
@@ -2799,7 +3394,7 @@ local function guiGeneralTab()
     local removeRealmNames = CreateCheckbox("removeRealmNames", "Hide Realm Name", BetterBlizzFrames)
     removeRealmNames:SetPoint("TOPLEFT", classColorTargetNames, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     removeRealmNames:HookScript("OnClick", function()
-        BBF.AllCaller()
+        BBF.AllNameChanges()
     end)
     CreateTooltipTwo(removeRealmNames, "Hide Realm Indicator", "Hide realm name and different realm indicator \"(*)\" from Target, Focus & Party frames.", "Will enable a fake name. Because of this other addons like HealthBarColor's name stuff will not work properly.")
 
@@ -3027,6 +3622,7 @@ local function guiCastbars()
 
     local contentFrame = CreateFrame("Frame", nil, scrollFrame)
     contentFrame:SetSize(680, 520)
+    contentFrame.name = BetterBlizzFramesCastbars.name
     scrollFrame:SetScrollChild(contentFrame)
 
     local mainGuiAnchor2 = contentFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
@@ -3842,6 +4438,7 @@ local function guiPositionAndScale()
     scrollFrame:SetPoint("CENTER", BetterBlizzFramesSubPanel, "CENTER", -20, 3)
 
     local contentFrame = CreateFrame("Frame", nil, scrollFrame)
+    contentFrame.name = BetterBlizzFramesSubPanel.name
     contentFrame:SetSize(680, 520)
     scrollFrame:SetScrollChild(contentFrame)
 
@@ -4519,7 +5116,7 @@ local function guiFrameLook()
 
     local changeAllFontsIngame = CreateCheckbox("changeAllFontsIngame", "One font for all text ingame", guiFrameLook)
     changeAllFontsIngame:SetPoint("TOPLEFT", changeActionBarFont, "BOTTOMLEFT", 0, -125)
-    CreateTooltipTwo(changeAllFontsIngame, "One font for all text ingame","Changes the font on all* text ingame.")
+    CreateTooltipTwo(changeAllFontsIngame, "One font for all text ingame","Changes the font on all* text ingame.", "*Some text in the game world, like damage numbers, can not be changed with an addon. It's possible by editing the game files though.")
 
     local allIngameFont = CreateFontDropdown(
         "allIngameFont",
@@ -4672,6 +5269,7 @@ local function guiFrameAuras()
 
     local contentFrame = CreateFrame("Frame", nil, scrollFrame)
     contentFrame:SetSize(680, 520)
+    contentFrame.name = guiFrameAuras.name
     scrollFrame:SetScrollChild(contentFrame)
 
     local auraWhitelistFrame = CreateFrame("Frame", nil, contentFrame)
@@ -4681,6 +5279,11 @@ local function guiFrameAuras()
     local auraBlacklistFrame = CreateFrame("Frame", nil, contentFrame)
     auraBlacklistFrame:SetSize(322, 390)
     auraBlacklistFrame:SetPoint("TOPLEFT", 6, -15)
+
+    if not BetterBlizzFramesDB.playerAuraFiltering then
+        auraWhitelistFrame:SetAlpha(0.3)
+        auraBlacklistFrame:SetAlpha(0.3)
+    end
 
     local whitelist = CreateList(auraBlacklistFrame, "auraBlacklist", BetterBlizzFramesDB.auraBlacklist, BBF.RefreshAllAuraFrames, nil, nil, 265)
 
@@ -4734,6 +5337,7 @@ local function guiFrameAuras()
 
 
     local playerAuraFiltering = CreateCheckbox("playerAuraFiltering", "Enable Aura Settings", contentFrame)
+    playerAuraFiltering.name = guiFrameAuras.name
     CreateTooltip(playerAuraFiltering, "This feature is still a bit beta.\nIf you are noticing anything weird or having performance issues please let me know.")
     playerAuraFiltering:SetPoint("TOPLEFT", contentFrame, "BOTTOMLEFT", 50, 190)
     playerAuraFiltering:HookScript("OnClick", function (self)
@@ -4753,6 +5357,8 @@ local function guiFrameAuras()
                 BBF.MoveToTFrames()
                 BBF.UpdateFilteredBuffsIcon()
             end
+            auraWhitelistFrame:SetAlpha(1)
+            auraBlacklistFrame:SetAlpha(1)
         else
             if BetterBlizzFramesDB.targetToTXPos == 42 then
                 DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: Aura Settings Off. Target of Target Frame changed back to its default position.")
@@ -4767,6 +5373,8 @@ local function guiFrameAuras()
                 BBF.focusToTYPos:SetValue(0)
                 BBF.MoveToTFrames()
             end
+            auraWhitelistFrame:SetAlpha(0.3)
+            auraBlacklistFrame:SetAlpha(0.3)
         end
     end)
 
@@ -5618,6 +6226,11 @@ local function guiMisc()
     moveResourceToTarget:HookScript("OnClick", function()
         CheckAndToggleCheckboxes(moveResourceToTarget)
     end)
+
+    local skipGUI = CreateCheckbox("skipGUI", "Skip GUI", guiMisc)
+    skipGUI:SetPoint("BOTTOMRIGHT", bgImg, "BOTTOMRIGHT", -60, 0)
+    CreateTooltipTwo(skipGUI, "Skip GUI", "Skip creating the BBF Settings GUI on login/reload.\n\nIt will be created when typing /bbf\n\nFrees a little memory, makes reload a little faster.")
+    skipGUI:SetScale(1.3)
 end
 
 local function guiChatFrame()
@@ -5675,6 +6288,7 @@ local function guiSupport()
     --InterfaceOptions_AddCategory(guiSupport)
     local guiSupportSubCategory = Settings.RegisterCanvasLayoutSubcategory(BBF.category, guiSupport, guiSupport.name, guiSupport.name)
     guiSupportSubCategory.ID = guiSupport.name;
+    BBF.guiSupport = guiSupport.name
     CreateTitle(guiSupport)
 
     local bgImg = guiSupport:CreateTexture(nil, "BACKGROUND")
@@ -5953,14 +6567,50 @@ function BBF.InitializeOptions()
         BBF.category.ID = BetterBlizzFrames.name
         Settings.RegisterAddOnCategory(BBF.category)
 
-        guiGeneralTab()
-        guiPositionAndScale()
-        guiFrameLook()
-        guiFrameAuras()
-        guiCastbars()
-        guiImportAndExport()
-        guiMisc()
-        --guiChatFrame()
-        guiSupport()
+        if not BetterBlizzFramesDB.skipGUI then
+            guiGeneralTab()
+            guiPositionAndScale()
+            guiFrameAuras()
+            guiFrameLook()
+            guiCastbars()
+            guiImportAndExport()
+            guiMisc()
+            --guiChatFrame()
+            guiSupport()
+            BetterBlizzFrames.guiLoaded = true
+        else
+            local titleText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFont_Gigantic")
+            titleText:SetPoint("CENTER", BetterBlizzFrames, "CENTER", -15, 33)
+            titleText:SetText("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames")
+            BetterBlizzFrames.titleText = titleText
+
+            local loadGUI = CreateFrame("Button", nil, BetterBlizzFrames, "UIPanelButtonTemplate")
+            loadGUI:SetText("Load Settings")
+            loadGUI:SetWidth(100)
+            loadGUI:SetPoint("CENTER", BetterBlizzFrames, "CENTER", -18, 6)
+            BetterBlizzFrames.loadGUI = loadGUI
+            loadGUI:SetScript("OnClick", function(self)
+                titleText:Hide()
+                self:Hide()
+                BBF.LoadGUI()
+            end)
+        end
     end
+end
+
+function BBF.LoadGUI()
+    if BetterBlizzFrames.guiLoaded then return end
+    guiGeneralTab()
+    guiPositionAndScale()
+    guiFrameAuras()
+    guiFrameLook()
+    guiCastbars()
+    guiImportAndExport()
+    guiMisc()
+    --guiChatFrame()
+    guiSupport()
+    BetterBlizzFrames.guiLoaded = true
+
+    Settings.OpenToCategory(BBF.guiSupport)
+    Settings.OpenToCategory(BBF.category.ID)
 end

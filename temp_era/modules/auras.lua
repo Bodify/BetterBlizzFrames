@@ -93,6 +93,24 @@ local function isMountAura(spellId)
     return false
 end
 
+local function SetupAuraFilterClicks(auraFrame)
+    if auraFrame.filterClick then return end
+    auraFrame:HookScript("OnMouseDown", function(self, button)
+        if IsShiftKeyDown() and IsAltKeyDown() then
+            if button == "LeftButton" then
+                BBF.auraWhitelist(auraFrame.spellId, "auraWhitelist", nil, true)
+            elseif button == "RightButton" then
+                BBF.auraBlacklist(auraFrame.spellId, "auraBlacklist", nil, true)
+            end
+        elseif IsControlKeyDown() and IsAltKeyDown() then
+            if button == "RightButton" then
+                BBF.auraBlacklist(auraFrame.spellId, "auraBlacklist", true, true)
+            end
+        end
+    end)
+    auraFrame.filterClick = true
+end
+
 
 local printSpellId
 local betterTargetPurgeGlow
@@ -176,6 +194,10 @@ local addCooldownFramePlayerDebuffs
 local addCooldownFramePlayerBuffs
 local hideDefaultPlayerAuraDuration
 local hideDefaultPlayerAuraCdText
+local clickthroughAuras
+local importantDispel
+local targetAuraGlows
+local focusAuraGlows
 
 local function UpdateMore()
     purgeableBuffSorting = BetterBlizzFramesDB.purgeableBuffSorting
@@ -202,6 +224,10 @@ local function UpdateMore()
     addCooldownFramePlayerDebuffs = BetterBlizzFramesDB.addCooldownFramePlayerDebuffs
     hideDefaultPlayerAuraDuration = BetterBlizzFramesDB.hideDefaultPlayerAuraDuration
     hideDefaultPlayerAuraCdText = BetterBlizzFramesDB.hideDefaultPlayerAuraCdText
+    importantDispel = BetterBlizzFramesDB.auraImportantDispelIcon
+    targetAuraGlows = BetterBlizzFramesDB.targetAuraGlows
+    focusAuraGlows = BetterBlizzFramesDB.focusAuraGlows
+    clickthroughAuras = BetterBlizzFramesDB.clickthroughAuras
 
     if BetterBlizzFramesDB.targetdeBuffFilterBlizzard or BetterBlizzFramesDB.focusdeBuffFilterBlizzard then
         BetterBlizzFramesDB.targetdeBuffFilterBlizzard = false
@@ -270,69 +296,28 @@ function BBF.UpdateUserAuraSettings()
     UpdateMore()
 end
 
-local function isInWhitelist(spellName, spellId)
-    for _, entry in pairs(BetterBlizzFramesDB["auraWhitelist"]) do
-        if (entry.name and spellName and string.lower(entry.name) == string.lower(spellName)) or entry.id == spellId then
-            return true
-        end
-    end
-    return false
-end
-
 local function isInBlacklist(spellName, spellId)
-    if spellName and BetterBlizzFramesDB["auraBlacklist"][spellName] then
-        return true
-    elseif spellId and (BetterBlizzFramesDB["auraBlacklist"][spellId] or BetterBlizzFramesDB["auraBlacklist"][tostring(spellId)]) then
-        return true
+    local db = BetterBlizzFramesDB
+    local entry = db["auraBlacklist"][spellId] or db["auraBlacklist"][string.lower(spellName)]
+    if entry then
+        local showMine = entry.showMine
+        return true, showMine
     end
-    return false
-end
-
-local function isInBlacklist(spellName, spellId)
-    for _, entry in pairs(BetterBlizzFramesDB["auraBlacklist"]) do
-        if entry.id == spellId or (entry.name and not entry.id and spellName and string.lower(entry.name) == string.lower(spellName)) then
-            local showMine = entry.showMine
-            return true, showMine
-        end
-    end
-    return false, false
 end
 
 local function GetAuraDetails(spellName, spellId)
-    local entry = nil
-
-    if spellName and BetterBlizzFramesDB["auraWhitelist2"][spellName] then
-        entry = BetterBlizzFramesDB["auraWhitelist2"][spellName]
-    elseif spellId then
-        entry = BetterBlizzFramesDB["auraWhitelist2"][spellId]
-    end
+    local db = BetterBlizzFramesDB
+    local entry = db["auraWhitelist"][spellId] or (spellName and db["auraWhitelist"][string.lower(spellName)])
 
     if entry then
-        local isImportant = entry.important or false
-        local isPandemic = entry.pandemic or false
-        local isEnlarged = entry.enlarged or false
-        local isCompacted = entry.compacted or false
-        local auraColor = entry.auraColor or nil
-        return true, isImportant, isPandemic, isEnlarged, isCompacted, auraColor
-    else
-        return false, false, false, false, false, nil
+        local isImportant = entry.important
+        local isPandemic = entry.pandemic
+        local isEnlarged = entry.enlarged
+        local isCompacted = entry.compacted
+        local auraColor = entry.color
+        local onlyMine = entry.onlyMine
+        return true, isImportant, isPandemic, isEnlarged, isCompacted, auraColor, onlyMine
     end
-end
-
-local function GetAuraDetails(spellName, spellId)
-    for _, entry in pairs(BetterBlizzFramesDB["auraWhitelist"]) do
-        if entry.id == spellId or (entry.name and not entry.id and spellName and string.lower(entry.name) == string.lower(spellName)) then
-            local isImportant = entry.flags and entry.flags.important or false
-            local isPandemic = entry.flags and entry.flags.pandemic or false
-            local isEnlarged = entry.flags and entry.flags.enlarged or false
-            local isCompacted = entry.flags and entry.flags.compacted or false
-            local auraColor = entry.entryColors and entry.entryColors.text or nil
-            local onlyMine = entry.flags and entry.flags.onlyMine or false
-
-            return true, isImportant, isPandemic, isEnlarged, isCompacted, auraColor, onlyMine
-        end
-    end
-    return false, false, false, false, nil
 end
 
 local function ShouldShowBuff(unit, auraData, frameType)
@@ -341,21 +326,24 @@ local function ShouldShowBuff(unit, auraData, frameType)
     local duration = auraData.duration
     local expirationTime = auraData.expirationTime
     local caster = auraData.sourceUnit
-    local isPurgeable = auraData.isStealable
+    local isPurgeable = auraData.isStealable or (displayDispelGlowAlways and auraData.dispelName == "Magic")
     local castByPlayer = (caster == "player" or caster == "pet")
+    local db = BetterBlizzFramesDB
+    local filterOverride = BBF.filterOverride
 
     -- TargetFrame
     if frameType == "target" then
         -- Buffs
-        if BetterBlizzFramesDB["targetBuffEnable"] and auraData.isHelpful then
+        if db["targetBuffEnable"] and auraData.isHelpful then
             local isTargetFriendly = UnitIsFriend("target", "player")
             local isInWhitelist, isImportant, isPandemic, isEnlarged, isCompacted, auraColor, onlyMine = GetAuraDetails(spellName, spellId)
-            local shouldBlacklist = BetterBlizzFramesDB["targetBuffFilterBlacklist"]
-            local filterMount = BetterBlizzFramesDB["targetBuffFilterMount"]
-            local filterWatchlist = BetterBlizzFramesDB["targetBuffFilterWatchList"] and isInWhitelist
-            local filterLessMinite = BetterBlizzFramesDB["targetBuffFilterLessMinite"] and (duration < 61 and duration ~= 0 and expirationTime ~= 0)
-            local filterPurgeable = BetterBlizzFramesDB["targetBuffFilterPurgeable"] and isPurgeable
-            local filterOnlyMe = BetterBlizzFramesDB["targetBuffFilterOnlyMe"] and isTargetFriendly and (caster == "player" or (caster == "pet" and UnitIsUnit(caster, "pet")))
+            local shouldBlacklist = db["targetBuffFilterBlacklist"]
+            local filterMount = db["targetBuffFilterMount"]
+            local filterWatchlist = db["targetBuffFilterWatchList"] and isInWhitelist
+            local filterLessMinite = db["targetBuffFilterLessMinite"] and (duration < 61 and duration ~= 0 and expirationTime ~= 0)
+            local filterPurgeable = db["targetBuffFilterPurgeable"] and isPurgeable
+            local filterOnlyMe = db["targetBuffFilterOnlyMe"] and isTargetFriendly and (caster == "player" or (caster == "pet" and UnitIsUnit(caster, "pet")))
+            if filterOverride then return true, isImportant, isPandemic, isEnlarged, isCompacted, auraColor end
             if shouldBlacklist then
                 local isInBlacklist, allowMine = isInBlacklist(spellName, spellId)
                 if isInBlacklist and not (allowMine and castByPlayer) then return end
@@ -364,82 +352,86 @@ local function ShouldShowBuff(unit, auraData, frameType)
                 if isMountAura(spellId) then return true end
             end
             if not castByPlayer and onlyMine then return end
-            if filterWatchlist or filterLessMinite or filterPurgeable or filterOnlyMe or isImportant or isPandemic or isEnlarged or isCompacted then return true, isImportant, isPandemic, isEnlarged, isCompacted, auraColor end
-            if not BetterBlizzFramesDB["targetBuffFilterLessMinite"] and not BetterBlizzFramesDB["targetBuffFilterWatchList"] and not BetterBlizzFramesDB["targetBuffFilterPurgeable"] and not (BetterBlizzFramesDB["targetBuffFilterOnlyMe"] and isTargetFriendly) then
+            if filterWatchlist or filterLessMinite or filterPurgeable or ((filterOnlyMe and filterLessMinite) or (filterOnlyMe and not db["targetBuffFilterLessMinite"])) or isImportant or isPandemic or isEnlarged or isCompacted then return true, isImportant, isPandemic, isEnlarged, isCompacted, auraColor end
+            if not db["targetBuffFilterLessMinite"] and not db["targetBuffFilterWatchList"] and not db["targetBuffFilterPurgeable"] and not (db["targetBuffFilterOnlyMe"] and isTargetFriendly) then
                 return true
             end
         end
         -- Debuffs
-        if BetterBlizzFramesDB["targetdeBuffEnable"] and auraData.isHarmful then
+        if db["targetdeBuffEnable"] and auraData.isHarmful then
             local isInWhitelist, isImportant, isPandemic, isEnlarged, isCompacted, auraColor, onlyMine = GetAuraDetails(spellName, spellId)
-            local shouldBlacklist = BetterBlizzFramesDB["targetdeBuffFilterBlacklist"]
-            local filterWatchlist = BetterBlizzFramesDB["targetdeBuffFilterWatchList"] and isInWhitelist
-            local filterLessMinite = BetterBlizzFramesDB["targetdeBuffFilterLessMinite"] and (duration < 61 and duration ~= 0 and expirationTime ~= 0)
-            local filterBlizzard = BetterBlizzFramesDB["targetdeBuffFilterBlizzard"] and BlizzardShouldShowDebuffs
-            local filterOnlyMe = BetterBlizzFramesDB["targetdeBuffFilterOnlyMe"] and (caster == "player" or (caster == "pet" and UnitIsUnit(caster, "pet")))
+            local shouldBlacklist = db["targetdeBuffFilterBlacklist"]
+            local filterWatchlist = db["targetdeBuffFilterWatchList"] and isInWhitelist
+            local filterLessMinite = db["targetdeBuffFilterLessMinite"] and (duration < 61 and duration ~= 0 and expirationTime ~= 0)
+            local filterBlizzard = db["targetdeBuffFilterBlizzard"] and BlizzardShouldShowDebuffs
+            local filterOnlyMe = db["targetdeBuffFilterOnlyMe"] and (caster == "player" or (caster == "pet" and UnitIsUnit(caster, "pet")))
+            if filterOverride then return true, isImportant, isPandemic, isEnlarged, isCompacted, auraColor end
             if shouldBlacklist then
                 local isInBlacklist, allowMine = isInBlacklist(spellName, spellId)
                 if isInBlacklist and not (allowMine and castByPlayer) then return end
             end
             if not castByPlayer and onlyMine then return end
             if filterWatchlist or filterLessMinite or filterBlizzard or filterOnlyMe or isImportant or isPandemic or isEnlarged or isCompacted then return true, isImportant, isPandemic, isEnlarged, isCompacted, auraColor end
-            if not BetterBlizzFramesDB["targetdeBuffFilterLessMinite"] and not BetterBlizzFramesDB["targetdeBuffFilterWatchList"] and not BetterBlizzFramesDB["targetdeBuffFilterBlizzard"] and not BetterBlizzFramesDB["targetdeBuffFilterOnlyMe"] then
+            if not db["targetdeBuffFilterLessMinite"] and not db["targetdeBuffFilterWatchList"] and not db["targetdeBuffFilterBlizzard"] and not db["targetdeBuffFilterOnlyMe"] then
                 return true
             end
         end
-    -- FocusFrame
-    elseif frameType == "focus" then
-        -- Buffs
-        if BetterBlizzFramesDB["focusBuffEnable"] and auraData.isHelpful then
-            local isInWhitelist, isImportant, isPandemic, isEnlarged, isCompacted, auraColor, onlyMine = GetAuraDetails(spellName, spellId)
-            local shouldBlacklist = BetterBlizzFramesDB["focusBuffFilterBlacklist"]
-            local isTargetFriendly = UnitIsFriend("focus", "player")
-            local filterMount = BetterBlizzFramesDB["focusBuffFilterMount"]
-            local filterWatchlist = BetterBlizzFramesDB["focusBuffFilterWatchList"] and isInWhitelist
-            local filterLessMinite = BetterBlizzFramesDB["focusBuffFilterLessMinite"] and (duration < 61 and duration ~= 0 and expirationTime ~= 0)
-            local filterPurgeable = BetterBlizzFramesDB["focusBuffFilterPurgeable"] and isPurgeable
-            local filterOnlyMe = BetterBlizzFramesDB["focusBuffFilterOnlyMe"] and isTargetFriendly and (caster == "player" or (caster == "pet" and UnitIsUnit(caster, "pet")))
-            if shouldBlacklist then
-                local isInBlacklist, allowMine = isInBlacklist(spellName, spellId)
-                if isInBlacklist and not (allowMine and castByPlayer) then return end
-            end
-            if filterMount then
-                if isMountAura(spellId) then return true end
-            end
-            if not castByPlayer and onlyMine then return end
-            if filterWatchlist or filterLessMinite or filterPurgeable or filterOnlyMe or isImportant or isPandemic or isEnlarged or isCompacted then return true, isImportant, isPandemic, isEnlarged, isCompacted, auraColor end
-            if not BetterBlizzFramesDB["focusBuffFilterLessMinite"] and not BetterBlizzFramesDB["focusBuffFilterWatchList"] and not BetterBlizzFramesDB["focusBuffFilterPurgeable"] and not BetterBlizzFramesDB["focusBuffFilterOnlyMe"] then
-                return true
-            end
-        end
-        -- Debuffs
-        if BetterBlizzFramesDB["focusdeBuffEnable"] and auraData.isHarmful then
-            local isInWhitelist, isImportant, isPandemic, isEnlarged, isCompacted, auraColor, onlyMine = GetAuraDetails(spellName, spellId)
-            local filterWatchlist = BetterBlizzFramesDB["focusdeBuffFilterWatchList"] and isInWhitelist
-            local shouldBlacklist = BetterBlizzFramesDB["focusdeBuffFilterBlacklist"]
-            local filterLessMinite = BetterBlizzFramesDB["focusdeBuffFilterLessMinite"] and (duration < 61 and duration ~= 0 and expirationTime ~= 0)
-            local filterBlizzard = BetterBlizzFramesDB["focusdeBuffFilterBlizzard"] and BlizzardShouldShowDebuffs
-            local filterOnlyMe = BetterBlizzFramesDB["focusdeBuffFilterOnlyMe"] and (caster == "player" or (caster == "pet" and UnitIsUnit(caster, "pet")))
-            if shouldBlacklist then
-                local isInBlacklist, allowMine = isInBlacklist(spellName, spellId)
-                if isInBlacklist and not (allowMine and castByPlayer) then return end
-            end
-            if not castByPlayer and onlyMine then return end
-            if filterWatchlist or filterLessMinite or filterBlizzard or filterOnlyMe or isImportant or isPandemic or isEnlarged or isCompacted then return true, isImportant, isPandemic, isEnlarged, isCompacted, auraColor end
-            if not BetterBlizzFramesDB["focusdeBuffFilterLessMinite"] and not BetterBlizzFramesDB["focusdeBuffFilterWatchList"] and not BetterBlizzFramesDB["focusdeBuffFilterBlizzard"] and not BetterBlizzFramesDB["focusdeBuffFilterOnlyMe"] then
-                return true
-            end
-        end
+    -- -- FocusFrame
+    -- elseif frameType == "focus" then
+    --     -- Buffs
+    --     if db["focusBuffEnable"] and auraData.isHelpful then
+    --         local isInWhitelist, isImportant, isPandemic, isEnlarged, isCompacted, auraColor, onlyMine = GetAuraDetails(spellName, spellId)
+    --         local shouldBlacklist = db["focusBuffFilterBlacklist"]
+    --         local isTargetFriendly = UnitIsFriend("focus", "player")
+    --         local filterMount = db["focusBuffFilterMount"]
+    --         local filterWatchlist = db["focusBuffFilterWatchList"] and isInWhitelist
+    --         local filterLessMinite = db["focusBuffFilterLessMinite"] and (duration < 61 and duration ~= 0 and expirationTime ~= 0)
+    --         local filterPurgeable = db["focusBuffFilterPurgeable"] and isPurgeable
+    --         local filterOnlyMe = db["focusBuffFilterOnlyMe"] and isTargetFriendly and (caster == "player" or (caster == "pet" and UnitIsUnit(caster, "pet")))
+    --         if filterOverride then return true, isImportant, isPandemic, isEnlarged, isCompacted, auraColor end
+    --         if shouldBlacklist then
+    --             local isInBlacklist, allowMine = isInBlacklist(spellName, spellId)
+    --             if isInBlacklist and not (allowMine and castByPlayer) then return end
+    --         end
+    --         if filterMount then
+    --             if isMountAura(spellId) then return true end
+    --         end
+    --         if not castByPlayer and onlyMine then return end
+    --         if filterWatchlist or filterLessMinite or filterPurgeable or ((filterOnlyMe and filterLessMinite) or (filterOnlyMe and not db["focusBuffFilterLessMinite"])) or isImportant or isPandemic or isEnlarged or isCompacted then return true, isImportant, isPandemic, isEnlarged, isCompacted, auraColor end
+    --         if not db["focusBuffFilterLessMinite"] and not db["focusBuffFilterWatchList"] and not db["focusBuffFilterPurgeable"] and not db["focusBuffFilterOnlyMe"] then
+    --             return true
+    --         end
+    --     end
+    --     -- Debuffs
+    --     if db["focusdeBuffEnable"] and auraData.isHarmful then
+    --         local isInWhitelist, isImportant, isPandemic, isEnlarged, isCompacted, auraColor, onlyMine = GetAuraDetails(spellName, spellId)
+    --         local filterWatchlist = db["focusdeBuffFilterWatchList"] and isInWhitelist
+    --         local shouldBlacklist = db["focusdeBuffFilterBlacklist"]
+    --         local filterLessMinite = db["focusdeBuffFilterLessMinite"] and (duration < 61 and duration ~= 0 and expirationTime ~= 0)
+    --         local filterBlizzard = db["focusdeBuffFilterBlizzard"] and BlizzardShouldShowDebuffs
+    --         local filterOnlyMe = db["focusdeBuffFilterOnlyMe"] and (caster == "player" or (caster == "pet" and UnitIsUnit(caster, "pet")))
+    --         if filterOverride then return true, isImportant, isPandemic, isEnlarged, isCompacted, auraColor end
+    --         if shouldBlacklist then
+    --             local isInBlacklist, allowMine = isInBlacklist(spellName, spellId)
+    --             if isInBlacklist and not (allowMine and castByPlayer) then return end
+    --         end
+    --         if not castByPlayer and onlyMine then return end
+    --         if filterWatchlist or filterLessMinite or filterBlizzard or filterOnlyMe or isImportant or isPandemic or isEnlarged or isCompacted then return true, isImportant, isPandemic, isEnlarged, isCompacted, auraColor end
+    --         if not db["focusdeBuffFilterLessMinite"] and not db["focusdeBuffFilterWatchList"] and not db["focusdeBuffFilterBlizzard"] and not db["focusdeBuffFilterOnlyMe"] then
+    --             return true
+    --         end
+    --     end
     -- Player Buffs and Debuffs
     else
         if frameType == "playerBuffFrame" then
             -- Buffs
-            if BetterBlizzFramesDB["PlayerAuraFrameBuffEnable"] and (auraData.auraType == "Buff" or auraData.auraType == "TempEnchant") then
+            if db["PlayerAuraFrameBuffEnable"] and (auraData.auraType == "Buff" or auraData.auraType == "TempEnchant") then
                 local isInWhitelist, isImportant, isPandemic, isEnlarged, isCompacted, auraColor, onlyMine = GetAuraDetails(spellName, spellId)
-                local shouldBlacklist = BetterBlizzFramesDB["playerBuffFilterBlacklist"]
-                local filterMount = BetterBlizzFramesDB["playerBuffFilterMount"]
-                local filterWatchlist = BetterBlizzFramesDB["PlayerAuraFrameBuffFilterWatchList"] and isInWhitelist
-                local filterLessMinite = BetterBlizzFramesDB["PlayerAuraFrameBuffFilterLessMinite"] and (duration < 61 and duration ~= 0 and expirationTime ~= 0)
+                local shouldBlacklist = db["playerBuffFilterBlacklist"]
+                local filterMount = db["playerBuffFilterMount"]
+                local filterWatchlist = db["PlayerAuraFrameBuffFilterWatchList"] and isInWhitelist
+                local filterLessMinite = db["PlayerAuraFrameBuffFilterLessMinite"] and (duration < 61 and duration ~= 0 and expirationTime ~= 0)
+                if filterOverride then return true, isImportant, isPandemic, isEnlarged, isCompacted, auraColor end
                 if shouldBlacklist then
                     local isInBlacklist, allowMine = isInBlacklist(spellName, spellId)
                     if isInBlacklist and not (allowMine and castByPlayer) then return end
@@ -448,23 +440,24 @@ local function ShouldShowBuff(unit, auraData, frameType)
                     if isMountAura(spellId) then return true end
                 end
                 if filterWatchlist or filterLessMinite or isImportant then return true, isImportant, isPandemic, isEnlarged, isCompacted, auraColor end
-                if not BetterBlizzFramesDB["PlayerAuraFrameBuffFilterLessMinite"] and not BetterBlizzFramesDB["PlayerAuraFrameBuffFilterWatchList"] then
+                if not db["PlayerAuraFrameBuffFilterLessMinite"] and not db["PlayerAuraFrameBuffFilterWatchList"] then
                     return true
                 end
             end
         else
             -- Debuffs
-            if BetterBlizzFramesDB["PlayerAuraFramedeBuffEnable"] and auraData.auraType == "Debuff" then
+            if db["PlayerAuraFramedeBuffEnable"] and auraData.auraType == "Debuff" then
                 local isInWhitelist, isImportant, isPandemic, isEnlarged, isCompacted, auraColor, onlyMine = GetAuraDetails(spellName, spellId)
-                local shouldBlacklist = BetterBlizzFramesDB["playerdeBuffFilterBlacklist"]
-                local filterWatchlist = BetterBlizzFramesDB["PlayerAuraFramedeBuffFilterWatchList"] and isInWhitelist
-                local filterLessMinite = BetterBlizzFramesDB["PlayerAuraFramedeBuffFilterLessMinite"] and (duration < 61 and duration ~= 0 and expirationTime ~= 0)
+                local shouldBlacklist = db["playerdeBuffFilterBlacklist"]
+                local filterWatchlist = db["PlayerAuraFramedeBuffFilterWatchList"] and isInWhitelist
+                local filterLessMinite = db["PlayerAuraFramedeBuffFilterLessMinite"] and (duration < 61 and duration ~= 0 and expirationTime ~= 0)
+                if filterOverride then return true, isImportant, isPandemic, isEnlarged, isCompacted, auraColor end
                 if shouldBlacklist then
                     local isInBlacklist, allowMine = isInBlacklist(spellName, spellId)
                     if isInBlacklist and not (allowMine and castByPlayer) then return end
                 end
                 if filterWatchlist or filterLessMinite or isImportant then return true, isImportant, isPandemic, isEnlarged, isCompacted, auraColor end
-                if not BetterBlizzFramesDB["PlayerAuraFramedeBuffFilterLessMinite"] and not BetterBlizzFramesDB["PlayerAuraFramedeBuffFilterWatchList"] then
+                if not db["PlayerAuraFramedeBuffFilterLessMinite"] and not db["PlayerAuraFramedeBuffFilterWatchList"] then
                     return true
                 end
             end
@@ -960,6 +953,18 @@ local function addMasque(frameType)
     end
 end
 
+local function AdjustCastbarAfterAuras(unit)
+    if unit == "target" then
+        if (not targetStaticCastbar and not targetDetachCastbar) then
+            adjustCastbar(TargetFrame.spellbar, TargetFrameSpellBar)
+        end
+    elseif unit == "focus" then
+        if (not focusStaticCastbar and not focusDetachCastbar) then
+            adjustCastbar(FocusFrame.spellbar, FocusFrameSpellBar)
+        end
+    end
+end
+
 local function AdjustAuras(self, frameType)
     local adjustedSize = sameSizeAuras and 21 or 17 * targetAndFocusSmallAuraScale
     local buffsOnTop = self.buffsOnTop
@@ -1126,450 +1131,111 @@ local function AdjustAuras(self, frameType)
     local buffs, debuffs = {}, {}
     local addedGroups = {}
 
-    for i = 1, MAX_TARGET_BUFFS do
-        local buffName = self:GetName().."Buff"..i
-        local stealable = _G[buffName.."Stealable"]
-        local cooldown = _G[buffName.."Cooldown"]
-        local count = _G[buffName.."Count"]
-        local icon = _G[buffName.."Icon"]
+    local auraGlowsEnabled = (frameType == "target" and targetAuraGlows) or (frameType == "focus" and focusAuraGlows)
 
-        local buffFrame = _G[buffName]
-        if buffFrame and buffFrame:IsShown() then
-            if increaseAuraStrata then
-                buffFrame:SetFrameStrata("HIGH")
-            end
+    local function UpdateAuraFrames(self, unit, isBuff)
+        local maxAuras = isBuff and MAX_TARGET_BUFFS or 60
+        local auraType = isBuff and "Buff" or "Debuff"
 
-            -- if MasqueUnitFrameAuras and not buffFrame.added then
-            --     MasqueUnitFrameAuras:AddButton(buffFrame)
-            --     buffFrame.added = true
-            -- end
-            buffFrame.Icon = icon
-            buffFrame.Stealable = stealable
-            buffFrame.Cooldown = cooldown
-            buffFrame.Count = count
+        for i = 1, maxAuras do
+            local auraName = self:GetName()..auraType..i
+            local stealable = _G[auraName.."Stealable"]
+            local cooldown = _G[auraName.."Cooldown"]
+            local count = _G[auraName.."Count"]
+            local icon = _G[auraName.."Icon"]
 
-            if buffFrame.Cooldown:IsShown() then
-                buffFrame.Count:SetParent(buffFrame.Cooldown)
-            else
-                buffFrame.Count:SetParent(buffFrame)
-            end
-
-            local spellName, icon, count, dispelName, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, castByPlayer, nameplateShowAll, timeMod = UnitBuff(unit, i)
-
-
-            buffFrame.spellId = spellId
-            buffFrame.auraInstanceID = i
-
-            local auraData = {
-                sourceUnit = sourceUnit,
-                canApplyAura = canApplyAura,
-                isStealable = isStealable,
-                dispelName = dispelName,
-                isHelpful = true,
-                isHarmful = false,
-                spellId = spellId,
-                expirationTime = expirationTime,
-                icon = icon,
-                name = spellName,
-                duration = duration,
-            }
-
-            local isLarge = auraData.sourceUnit == "player" or auraData.sourceUnit == "pet"
-            local canApply = auraData.canApplyAura or false
-
-            buffFrame.isLarge = isLarge
-            buffFrame.canApply = canApply
-            buffFrame.isHelpful = true
-            --buffFrame.isStealable = stealable
-
-            local shouldShowAura, isImportant, isPandemic, isEnlarged, isCompacted, auraColor = ShouldShowBuff(unit, auraData, self.unit)
-
-            -- if frameType == "target" then
-            --     shouldShowAura, isImportant, isPandemic, isEnlarged, isCompacted, auraColor = ShouldShowBuff(unit, auraData, self.unit)
-            --     isImportant = isImportant and targetImportantAuraGlow
-            --     isPandemic = isPandemic and targetdeBuffPandemicGlow
-            --     isEnlarged = isEnlarged and targetEnlargeAura
-            --     isCompacted = isCompacted and targetCompactAura
-            -- elseif frameType == "focus" then
-            --     shouldShowAura, isImportant, isPandemic, isEnlarged, isCompacted, auraColor = ShouldShowBuff(unit, auraData, "focus")
-            --     isImportant = isImportant and focusImportantAuraGlow
-            --     isPandemic = isPandemic and focusdeBuffPandemicGlow
-            --     isEnlarged = isEnlarged and focusEnlargeAura
-            --     isCompacted = isCompacted and focusCompactAura
-            -- end
-
-            if onlyPandemicMine and not isLarge then
-                isPandemic = false
-            end
-
-            if isEnlarged then
-                if frameType == "target" then
-                    if not targetEnlargeAuraFriendly and isFriend then
-                        isEnlarged = false
-                    end
-                    if not targetEnlargeAuraEnemy and not isFriend then
-                        isEnlarged = false
-                    end
-                elseif frameType == "focus" then
-                    if not focusEnlargeAuraFriendly and isFriend then
-                        isEnlarged = false
-                    end
-                    if not focusEnlargeAuraEnemy and not isFriend then
-                        isEnlarged = false
-                    end
-                end
-            end
-
-            if shouldShowAura then
-                buffFrame:Show()
-
-                if (auraData.isStealable or (auraData.dispelName == "Magic" and ((not isFriend and auraData.isHelpful) or (isFriend and auraData.isHarmful)))) then
-                    buffFrame.isPurgeable = true
-                else
-                    buffFrame.isPurgeable = false
+            local auraFrame = _G[auraName]
+            if auraFrame and auraFrame:IsShown() then
+                if increaseAuraStrata then
+                    auraFrame:SetFrameStrata("HIGH")
                 end
 
-                -- buffFrame.isPurgeable = auraData.isStealable
-
-                if not buffFrame.filterClick then
-                    buffFrame:HookScript("OnMouseDown", function(self, button)
-                        if IsShiftKeyDown() and IsAltKeyDown() then
-                            local spellName, _, icon = GetSpellInfo(buffFrame.spellId)
-                            local spellId = tostring(buffFrame.spellId)
-                            local iconString = "|T" .. icon .. ":16:16:0:0|t"
-
-                            if button == "LeftButton" then
-                                BBF.auraWhitelist(buffFrame.spellId)
-                                print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") added to |cff00ff00whitelist|r.")
-                            elseif button == "RightButton" then
-                                BBF.auraBlacklist(buffFrame.spellId)
-                                print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") added to |cffff0000blacklist|r.")
-                            end
-                        elseif IsControlKeyDown() and IsAltKeyDown() then
-                            local spellName, _, icon = GetSpellInfo(buffFrame.spellId)
-                            local spellId = tostring(buffFrame.spellId)
-                            local iconString = "|T" .. icon .. ":16:16:0:0|t"
-
-                            if button == "RightButton" then
-                                BBF.auraBlacklist(buffFrame.spellId, true)
-                                print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") added to |cffff0000blacklist|r with tag.")
-                            end
-                        end
-                    end)
-                    buffFrame.filterClick = true
-                end
-
-                if printSpellId and not buffFrame.bbfHookAdded then
-                    buffFrame:HookScript("OnEnter", function()
-                        local currentAuraID = buffFrame.auraInstanceID
-                        if not buffFrame.bbfPrinted or buffFrame.bbfLastPrintedAuraID ~= currentAuraID then
-                            local thisAuraData = { -- Manually create the aura data structure as needed
-                                icon = buffFrame.icon,
-                                name = buffFrame.name,
-                                spellId = buffFrame.spellId,
-                            }
-                            if thisAuraData then
-                                local iconTexture = thisAuraData.icon and "|T" .. thisAuraData.icon .. ":16:16|t" or ""
-                                print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconTexture .. " " .. (thisAuraData.name or "Unknown") .. "  |A:worldquest-icon-engineering:14:14|a ID: " .. (thisAuraData.spellId or "Unknown"))
-                                buffFrame.bbfPrinted = true
-                                buffFrame.bbfLastPrintedAuraID = currentAuraID
-
-                                if buffFrame.bbfTimer then
-                                    buffFrame.bbfTimer:Cancel()
-                                end
-
-                                buffFrame.bbfTimer = C_Timer.NewTimer(6, function()
-                                    buffFrame.bbfPrinted = false
-                                end)
-                            end
-                        end
-                    end)
-                    buffFrame.bbfHookAdded = true
-                end
-
-                if isEnlarged then
-                    buffFrame.isEnlarged = true
-                else
-                    buffFrame.isEnlarged = false
-                end
-
-                if isCompacted then
-                    buffFrame.isCompacted = true
-                else
-                    buffFrame.isCompacted = false
-                end
-
-                -- if buffFrame.Stealable and buffFrame.Stealable:IsShown() then
-                --     buffFrame.Stealable:SetScale(userPurgeableAuraSize)
-                --     print("setting size")
+                -- if MasqueUnitFrameAuras and not auraFrame.added then
+                --     MasqueUnitFrameAuras:AddButton(auraFrame)
+                --     auraFrame.added = true
                 -- end
+                auraFrame.Icon = icon
+                auraFrame.Stealable = stealable
+                auraFrame.Cooldown = cooldown
+                auraFrame.Count = count
 
-                --stealableTexture:SetScale(3)
-
-                if not buffFrame.GlowFrame then
-                    buffFrame.GlowFrame = CreateFrame("Frame", nil, buffFrame)
-                    buffFrame.GlowFrame:SetAllPoints(buffFrame)
-                    buffFrame.GlowFrame:SetFrameLevel(buffFrame:GetFrameLevel() + 1)  -- Ensure it's above the cooldown texture
-                end
-
-                if isImportant then
-                    buffFrame.isImportant = true
-                    if not buffFrame.ImportantGlow then
-                        buffFrame.ImportantGlow = buffFrame.GlowFrame:CreateTexture(nil, "OVERLAY")
-                        buffFrame.ImportantGlow:SetTexture(BBF.squareGreenGlow)
-                        buffFrame.ImportantGlow:SetDesaturated(true)
-                    end
-                    -- if buffFrame.isEnlarged then
-                    --     buffFrame.ImportantGlow:SetPoint("TOPLEFT", buffFrame, "TOPLEFT", -enlargedTextureAdjustment, enlargedTextureAdjustment)
-                    --     buffFrame.ImportantGlow:SetPoint("BOTTOMRIGHT", buffFrame, "BOTTOMRIGHT", enlargedTextureAdjustment, -enlargedTextureAdjustment)
-                    -- elseif buffFrame.isCompacted then
-                    --     buffFrame.ImportantGlow:SetPoint("TOPLEFT", buffFrame, "TOPLEFT", -compactedTextureAdjustment, compactedTextureAdjustment)
-                    --     buffFrame.ImportantGlow:SetPoint("BOTTOMRIGHT", buffFrame, "BOTTOMRIGHT", compactedTextureAdjustment, -compactedTextureAdjustment)
-                    -- else
-                    --     buffFrame.ImportantGlow:SetPoint("TOPLEFT", buffFrame, "TOPLEFT", -23, 23)
-                    --     buffFrame.ImportantGlow:SetPoint("BOTTOMRIGHT", buffFrame, "BOTTOMRIGHT", 23, -23)
-                    -- end
-                    if auraColor then
-                        buffFrame.ImportantGlow:SetVertexColor(auraColor.r, auraColor.g, auraColor.b, auraColor.a)
-                    else
-                        buffFrame.ImportantGlow:SetVertexColor(0, 1, 0)
-                    end
-                    buffFrame.ImportantGlow:Show()
+                if auraFrame.Cooldown:IsShown() then
+                    auraFrame.Count:SetParent(auraFrame.Cooldown)
                 else
-                    buffFrame.isImportant = false
-                    if buffFrame.ImportantGlow then
-                        buffFrame.ImportantGlow:Hide()
-                        if buffFrame.Stealable and auraData.isStealable then
-                            buffFrame.Stealable:SetAlpha(1)
-                        end
-                    end
+                    auraFrame.Count:SetParent(auraFrame)
                 end
 
-                -- if buffFrame.Stealable and buffFrame.Stealable:IsShown() then
-                --     if buffFrame.isEnlarged then
-                --         buffFrame.Stealable:SetPoint("TOPLEFT", buffFrame, "TOPLEFT", -3, 4)
-                --         buffFrame.Stealable:SetPoint("BOTTOMRIGHT", buffFrame, "BOTTOMRIGHT", 3, -3)
-                --     elseif buffFrame.isCompacted then
-                --         buffFrame.Stealable:SetPoint("TOPLEFT", buffFrame, "TOPLEFT", -compactedTextureAdjustment, compactedTextureAdjustment)
-                --         buffFrame.Stealable:SetPoint("BOTTOMRIGHT", buffFrame, "BOTTOMRIGHT", compactedTextureAdjustment, -compactedTextureAdjustment)
+                local spellName, icon, count, dispelName, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, canApplyAura
+                if isBuff then
+                    spellName, icon, count, dispelName, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, canApplyAura = UnitBuff(unit, i)
+                else
+                    spellName, icon, count, dispelName, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, canApplyAura = UnitDebuff(unit, i)
+                end
+
+
+                auraFrame.spellId = spellId
+                auraFrame.auraInstanceID = i
+
+                if spellId == 88611 then
+                    auraFrame.Cooldown:SetCooldown(smokeBombCast, 5)
+                end
+
+                local auraData = {
+                    sourceUnit = sourceUnit,
+                    canApplyAura = canApplyAura,
+                    isStealable = isStealable,
+                    dispelName = dispelName,
+                    isHelpful = true,
+                    isHarmful = false,
+                    spellId = spellId,
+                    expirationTime = expirationTime,
+                    icon = icon,
+                    name = spellName,
+                    duration = duration,
+                }
+
+                local isLarge = auraData.sourceUnit == "player" or auraData.sourceUnit == "pet"
+                local canApply = auraData.canApplyAura or false
+
+                auraFrame.isLarge = isLarge
+                auraFrame.canApply = canApply
+                auraFrame.isHelpful = true
+                --auraFrame.isStealable = stealable
+
+                local shouldShowAura, isImportant, isPandemic, isEnlarged, isCompacted, auraColor
+
+                if frameType == "target" then
+                    shouldShowAura, isImportant, isPandemic, isEnlarged, isCompacted, auraColor = ShouldShowBuff(unit, auraData, "target")
+                    if auraGlowsEnabled then
+                        isImportant = isImportant and targetImportantAuraGlow
+                        isPandemic = isPandemic and targetdeBuffPandemicGlow
+                        isEnlarged = isEnlarged and targetEnlargeAura
+                        isCompacted = isCompacted and targetCompactAura
+                    else
+                        isImportant = nil
+                        isPandemic = nil
+                        isEnlarged = nil
+                        isCompacted = nil
+                    end
+                -- elseif frameType == "focus" then
+                --     shouldShowAura, isImportant, isPandemic, isEnlarged, isCompacted, auraColor = ShouldShowBuff(unit, auraData, "focus")
+                --     if auraGlowsEnabled then
+                --         isImportant = isImportant and focusImportantAuraGlow
+                --         isPandemic = isPandemic and focusdeBuffPandemicGlow
+                --         isEnlarged = isEnlarged and focusEnlargeAura
+                --         isCompacted = isCompacted and focusCompactAura
                 --     else
-                --         buffFrame.Stealable:SetPoint("TOPLEFT", buffFrame, "TOPLEFT", -2, 2)
-                --         buffFrame.Stealable:SetPoint("BOTTOMRIGHT", buffFrame, "BOTTOMRIGHT", 2, -2)
+                --         isImportant = nil
+                --         isPandemic = nil
+                --         isEnlarged = nil
+                --         isCompacted = nil
                 --     end
-                -- end
-
-                if ((frameType == "target" and (auraData.isStealable or (displayDispelGlowAlways and auraData.dispelName == "Magic" and ((not isFriend and auraData.isHelpful) or (isFriend and auraData.isHarmful)))) and betterTargetPurgeGlow) or
-                (frameType == "focus" and (auraData.isStealable or (displayDispelGlowAlways and auraData.dispelName == "Magic" and ((not isFriend and auraData.isHelpful) or (isFriend and auraData.isHarmful)))) and betterFocusPurgeGlow)) then
-                    if not buffFrame.PurgeGlow then
-                        buffFrame.PurgeGlow = buffFrame.GlowFrame:CreateTexture(nil, "OVERLAY")
-                        buffFrame.PurgeGlow:SetTexture(BBF.squareBlueGlow)
-                        buffFrame.PurgeGlow:SetDesaturated(true)
-                        buffFrame.PurgeGlow:SetVertexColor(0.27, 0.858, 1)
-                    end
-                    -- if buffFrame.isEnlarged then
-                    --     buffFrame.PurgeGlow:SetPoint("TOPLEFT", buffFrame, "TOPLEFT", -enlargedTextureAdjustment, enlargedTextureAdjustment)
-                    --     buffFrame.PurgeGlow:SetPoint("BOTTOMRIGHT", buffFrame, "BOTTOMRIGHT", enlargedTextureAdjustment, -enlargedTextureAdjustment)
-                    --     -- buffFrame.PurgeGlow:SetPoint("TOPLEFT", buffFrame, "TOPLEFT", -enlargedPurgeTextureAdjustment, enlargedPurgeTextureAdjustment)
-                    --     -- buffFrame.PurgeGlow:SetPoint("BOTTOMRIGHT", buffFrame, "BOTTOMRIGHT", enlargedPurgeTextureAdjustment, -enlargedPurgeTextureAdjustment)
-                    -- elseif buffFrame.isCompacted then
-                    --     buffFrame.PurgeGlow:SetPoint("TOPLEFT", buffFrame, "TOPLEFT", -compactedTextureAdjustment, compactedTextureAdjustment)
-                    --     buffFrame.PurgeGlow:SetPoint("BOTTOMRIGHT", buffFrame, "BOTTOMRIGHT", compactedTextureAdjustment, -compactedTextureAdjustment)
-                    -- else
-                    --     if customPurgeSize then
-                    --         buffFrame.PurgeGlow:SetPoint("TOPLEFT", buffFrame, "TOPLEFT", -purgeableTextureAdjustment, purgeableTextureAdjustment)
-                    --         buffFrame.PurgeGlow:SetPoint("BOTTOMRIGHT", buffFrame, "BOTTOMRIGHT", purgeableTextureAdjustment, -purgeableTextureAdjustment)
-                    --     else
-                    --         buffFrame.PurgeGlow:SetPoint("TOPLEFT", buffFrame, "TOPLEFT", -22, 22)
-                    --         buffFrame.PurgeGlow:SetPoint("BOTTOMRIGHT", buffFrame, "BOTTOMRIGHT", 22, -22)
-                    --     end
-                    -- end
-                    buffFrame.isPurgeGlow = true
-                    if changePurgeTextureColor then
-                        buffFrame.PurgeGlow:SetDesaturated(true)
-                        buffFrame.PurgeGlow:SetVertexColor(unpack(purgeTextureColorRGB))
-                    end
-                    buffFrame.PurgeGlow:Show()
-                else
-                    if buffFrame.PurgeGlow then
-                        if buffFrame.Stealable and auraData.isStealable then
-                            buffFrame.Stealable:SetAlpha(1)
-                        end
-                        buffFrame.PurgeGlow:Hide()
-                    end
-                    buffFrame.isPurgeGlow = false
-                    if displayDispelGlowAlways then
-                        if auraData.dispelName == "Magic" and ((not isFriend and auraData.isHelpful) or (isFriend and auraData.isHarmful)) then
-                            if buffFrame.Stealable then
-                                buffFrame.Stealable:Show()
-                                if changePurgeTextureColor then
-                                    buffFrame.Stealable:SetVertexColor(unpack(purgeTextureColorRGB))
-                                end
-                            end
-                        else
-                            if buffFrame.Stealable then
-                                buffFrame.Stealable:Hide()
-                            end
-                        end
-                    else
-                        if changePurgeTextureColor and buffFrame.Stealable then
-                            buffFrame.Stealable:SetDesaturated(true)
-                            buffFrame.Stealable:SetVertexColor(unpack(purgeTextureColorRGB))
-                        end
-                    end
                 end
 
-                if isPandemic then
-                    buffFrame.expirationTime = auraData.expirationTime
-                    buffFrame.isPandemic = true
-                    trackedBuffs[buffFrame.auraInstanceID] = buffFrame
-                    StartCheckBuffsTimer()
-                else
-                    buffFrame.isPandemic = false
-                    if buffFrame.PandemicGlow then
-                        buffFrame.PandemicGlow:Hide()
-                    end
+                if onlyPandemicMine and not isLarge then
+                    isPandemic = false
                 end
 
-                if buffFrame.isImportant or buffFrame.isPurgeGlow or (buffFrame.isPandemicActive and isPandemic) then
-                    if buffFrame.border then
-                        buffFrame.border:SetAlpha(0)
-                    end
-                    if buffFrame.Border then
-                        buffFrame.Border:SetAlpha(0)
-                    end
-                    if buffFrame.Stealable then
-                        buffFrame.Stealable:SetAlpha(0)
-                    end
-                else
-                    if buffFrame.border then
-                        buffFrame.border:SetAlpha(1)
-                    end
-                    if buffFrame.Border then
-                        buffFrame.Border:SetAlpha(1)
-                    end
-                    if buffFrame.Stealable then
-                        buffFrame.Stealable:SetAlpha(1)
-                    end
-                end
-
-                -- if buffFrame.Border ~= nil then
-                --     debuffs[#debuffs + 1] = buffFrame
-                -- else
-                    local groupName = getSpammyGroup(spellId)
-                    if groupName then
-                        if addedGroups[groupName] then
-                            buffFrame:Hide()
-                        else
-                            addedGroups[groupName] = true
-                            buffs[#buffs + 1] = buffFrame
-                        end
-                    else
-                        buffs[#buffs + 1] = buffFrame
-                    end
-                    
-                --end
-            else
-                buffFrame:Hide()
-                if buffFrame.PandemicGlow then
-                    buffFrame.PandemicGlow:Hide()
-                end
-            end
-        else
-            break
-        end
-    end
-
-    for i = 1, 40 do
-
-        local debuffName = self:GetName().."Debuff"..i
-        local debuffFrame = _G[debuffName]
-        local count = _G[debuffName.."Count"]
-        local cooldown = _G[debuffName.."Cooldown"]
-
-        local border = _G[debuffName.."Border"]
-        if debuffFrame and debuffFrame:IsShown() then
-            if increaseAuraStrata then
-                debuffFrame:SetFrameStrata("HIGH")
-            end
-            --debuffFrame.Icon = _G[icon]
-            debuffFrame.Border = border
-            debuffFrame.Cooldown = cooldown
-            debuffFrame.Count = count
-            debuffFrame.Count:SetParent(debuffFrame.Cooldown)
-
-
-
-
-            local spellName, icon, count, dispelName, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, castByPlayer, nameplateShowAll, timeMod = UnitDebuff(unit, i)
-
-            debuffFrame.spellId = spellId
-            debuffFrame.auraInstanceID = i
-
-            if spellId == 88611 then
-                debuffFrame.Cooldown:SetCooldown(smokeBombCast, 5)
-            end
-
-
-            local auraData = { -- Manually create the aura data structure as needed
-                sourceUnit = sourceUnit,
-                canApplyAura = canApplyAura,
-                isStealable = isStealable,
-                dispelName = dispelName,
-                isHelpful = false,
-                isHarmful = true,
-                spellId = spellId,
-                expirationTime = expirationTime,
-                icon = icon,
-                name = spellName,
-                duration = duration,
-            }
-
-            local isLarge = auraData.sourceUnit == "player" or auraData.sourceUnit == "pet"
-            local canApply = auraData.canApplyAura or false
-            debuffFrame.isHarmful = true
-
-            debuffFrame.isLarge = isLarge
-            debuffFrame.canApply = canApply
-
-            local shouldShowAura, isImportant, isPandemic, isEnlarged, isCompacted, auraColor
-
-            if frameType == "target" then
-                shouldShowAura, isImportant, isPandemic, isEnlarged, isCompacted, auraColor = ShouldShowBuff(unit, auraData, "target")
-                isImportant = isImportant and targetImportantAuraGlow
-                isPandemic = isPandemic and targetdeBuffPandemicGlow
-                isEnlarged = isEnlarged and targetEnlargeAura
-                isCompacted = isCompacted and targetCompactAura
-            elseif frameType == "focus" then
-                shouldShowAura, isImportant, isPandemic, isEnlarged, isCompacted, auraColor = ShouldShowBuff(unit, auraData, "focus")
-                isImportant = isImportant and focusImportantAuraGlow
-                isPandemic = isPandemic and focusdeBuffPandemicGlow
-                isEnlarged = isEnlarged and focusEnlargeAura
-                isCompacted = isCompacted and focusCompactAura
-            end
-
-            if onlyPandemicMine and not isLarge then
-                isPandemic = false
-            end
-
-            if isEnlarged then
-                if frameType == "target" then
-                    if not targetEnlargeAuraFriendly and isFriend then
-                        isEnlarged = false
-                    end
-                    if not targetEnlargeAuraEnemy and not isFriend then
-                        isEnlarged = false
-                    end
-                elseif frameType == "focus" then
-                    if not focusEnlargeAuraFriendly and isFriend then
-                        isEnlarged = false
-                    end
-                    if not focusEnlargeAuraEnemy and not isFriend then
-                        isEnlarged = false
-                    end
-                end
-            end
-
-            if shouldShowAura then
                 if isEnlarged then
                     if frameType == "target" then
                         if not targetEnlargeAuraFriendly and isFriend then
@@ -1587,212 +1253,256 @@ local function AdjustAuras(self, frameType)
                         end
                     end
                 end
-                debuffFrame:Show()
 
-                if (auraData.isStealable or (auraData.dispelName == "Magic" and ((not isFriend and auraData.isHelpful) or (isFriend and auraData.isHarmful)))) then
-                    debuffFrame.isPurgeable = true
-                end
+                if shouldShowAura then
+                    auraFrame:Show()
 
-                if not debuffFrame.GlowFrame then
-                    debuffFrame.GlowFrame = CreateFrame("Frame", nil, debuffFrame)
-                    debuffFrame.GlowFrame:SetAllPoints(debuffFrame)
-                    debuffFrame.GlowFrame:SetFrameLevel(debuffFrame:GetFrameLevel() + 1)  -- Ensure it's above the cooldown texture
-                end
-
-                if not debuffFrame.filterClick then
-                    debuffFrame:HookScript("OnMouseDown", function(self, button)
-                        if IsShiftKeyDown() and IsAltKeyDown() then
-                            local spellName, _, icon = GetSpellInfo(debuffFrame.spellId)
-                            local spellId = tostring(debuffFrame.spellId)
-                            local iconString = "|T" .. icon .. ":16:16:0:0|t"
-
-                            if button == "LeftButton" then
-                                BBF.auraWhitelist(debuffFrame.spellId)
-                                print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") added to |cff00ff00whitelist|r.")
-                            elseif button == "RightButton" then
-                                BBF.auraBlacklist(debuffFrame.spellId)
-                                print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") added to |cffff0000blacklist|r.")
-                            end
-                        elseif IsControlKeyDown() and IsAltKeyDown() then
-                            local spellName, _, icon = GetSpellInfo(debuffFrame.spellId)
-                            local spellId = tostring(debuffFrame.spellId)
-                            local iconString = "|T" .. icon .. ":16:16:0:0|t"
-
-                            if button == "RightButton" then
-                                BBF.auraBlacklist(debuffFrame.spellId, true)
-                                print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") added to |cffff0000blacklist|r with tag.")
-                            end
-                        end
-                    end)
-                    debuffFrame.filterClick = true
-                end
-
-                if printSpellId and not debuffFrame.bbfHookAdded then
-                    debuffFrame:HookScript("OnEnter", function()
-                        local currentAuraID = debuffFrame.auraInstanceID
-                        if not debuffFrame.bbfPrinted or debuffFrame.bbfLastPrintedAuraID ~= currentAuraID then
-                            local thisAuraData = { -- Manually create the aura data structure as needed
-                                icon = debuffFrame.icon,
-                                name = debuffFrame.name,
-                                spellId = debuffFrame.spellId,
-                            }
-                            if thisAuraData then
-                                local iconTexture = thisAuraData.icon and "|T" .. thisAuraData.icon .. ":16:16|t" or ""
-                                print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconTexture .. " " .. (thisAuraData.name or "Unknown") .. "  |A:worldquest-icon-engineering:14:14|a ID: " .. (thisAuraData.spellId or "Unknown"))
-                                debuffFrame.bbfPrinted = true
-                                debuffFrame.bbfLastPrintedAuraID = currentAuraID
-
-                                if debuffFrame.bbfTimer then
-                                    debuffFrame.bbfTimer:Cancel()
-                                end
-
-                                debuffFrame.bbfTimer = C_Timer.NewTimer(6, function()
-                                    debuffFrame.bbfPrinted = false
-                                end)
-                            end
-                        end
-                    end)
-                    debuffFrame.bbfHookAdded = true
-                end
-
-                if isEnlarged then
-                    debuffFrame.isEnlarged = true
-                else
-                    debuffFrame.isEnlarged = false
-                end
-
-                if isCompacted then
-                    debuffFrame.isCompacted = true
-                else
-                    debuffFrame.isCompacted = false
-                end
-
-                if isImportant then
-                    debuffFrame.isImportant = true
-                    if not debuffFrame.ImportantGlow then
-                        debuffFrame.ImportantGlow = debuffFrame.GlowFrame:CreateTexture(nil, "OVERLAY")
-                        debuffFrame.ImportantGlow:SetTexture(BBF.squareGreenGlow)
-                        debuffFrame.ImportantGlow:SetDesaturated(true)
-                    end
-                    -- if debuffFrame.isEnlarged then
-                    --     debuffFrame.ImportantGlow:SetPoint("TOPLEFT", debuffFrame, "TOPLEFT", -enlargedTextureAdjustment, enlargedTextureAdjustment)
-                    --     debuffFrame.ImportantGlow:SetPoint("BOTTOMRIGHT", debuffFrame, "BOTTOMRIGHT", enlargedTextureAdjustment, -enlargedTextureAdjustment)
-                    -- elseif debuffFrame.isCompacted then
-                    --     debuffFrame.ImportantGlow:SetPoint("TOPLEFT", debuffFrame, "TOPLEFT", -compactedTextureAdjustment, compactedTextureAdjustment)
-                    --     debuffFrame.ImportantGlow:SetPoint("BOTTOMRIGHT", debuffFrame, "BOTTOMRIGHT", compactedTextureAdjustment, -compactedTextureAdjustment)
-                    -- else
-                    --     debuffFrame.ImportantGlow:SetPoint("TOPLEFT", debuffFrame, "TOPLEFT", -20, 20)
-                    --     debuffFrame.ImportantGlow:SetPoint("BOTTOMRIGHT", debuffFrame, "BOTTOMRIGHT", 20, -20)
-                    -- end
-                    if auraColor then
-                        debuffFrame.ImportantGlow:SetVertexColor(auraColor.r, auraColor.g, auraColor.b, auraColor.a)
+                    if (auraData.isStealable or (auraData.dispelName == "Magic" and ((not isFriend and auraData.isHelpful) or (isFriend and auraData.isHarmful)))) then
+                        auraFrame.isPurgeable = true
                     else
-                        debuffFrame.ImportantGlow:SetVertexColor(0, 1, 0)
+                        auraFrame.isPurgeable = false
                     end
-                    debuffFrame.ImportantGlow:Show()
-                else
-                    debuffFrame.isImportant = false
-                    if debuffFrame.ImportantGlow then
-                        debuffFrame.ImportantGlow:Hide()
-                        if debuffFrame.Stealable and auraData.isStealable then
-                            debuffFrame.Stealable:SetAlpha(1)
-                        end
-                    end
-                end
 
-                if ((frameType == "target" and (auraData.isStealable or (displayDispelGlowAlways and auraData.dispelName == "Magic" and ((not isFriend and auraData.isHelpful) or (isFriend and auraData.isHarmful)))) and betterTargetPurgeGlow) or
-                (frameType == "focus" and (auraData.isStealable or (displayDispelGlowAlways and auraData.dispelName == "Magic" and ((not isFriend and auraData.isHelpful) or (isFriend and auraData.isHarmful)))) and betterFocusPurgeGlow)) then
-                    if not debuffFrame.PurgeGlow then
-                        debuffFrame.PurgeGlow = debuffFrame.GlowFrame:CreateTexture(nil, "OVERLAY")
-                        debuffFrame.PurgeGlow:SetTexture(BBF.squareBlueGlow)
+                    -- auraFrame.isPurgeable = auraData.isStealable
+
+                    if clickthroughAuras then
+                        auraFrame:SetMouseClickEnabled(false)
+                    else
+                        SetupAuraFilterClicks(auraFrame)
                     end
-                    -- if debuffFrame.isEnlarged then
-                    --     debuffFrame.PurgeGlow:SetPoint("TOPLEFT", debuffFrame, "TOPLEFT", -enlargedTextureAdjustment, enlargedTextureAdjustment)
-                    --     debuffFrame.PurgeGlow:SetPoint("BOTTOMRIGHT", debuffFrame, "BOTTOMRIGHT", enlargedTextureAdjustment, -enlargedTextureAdjustment)
-                    -- elseif debuffFrame.isCompacted then
-                    --     debuffFrame.PurgeGlow:SetPoint("TOPLEFT", debuffFrame, "TOPLEFT", -compactedTextureAdjustment, compactedTextureAdjustment)
-                    --     debuffFrame.PurgeGlow:SetPoint("BOTTOMRIGHT", debuffFrame, "BOTTOMRIGHT", compactedTextureAdjustment, -compactedTextureAdjustment)
-                    -- else
-                    --     debuffFrame.PurgeGlow:SetPoint("TOPLEFT", debuffFrame, "TOPLEFT", -23, 23)
-                    --     debuffFrame.PurgeGlow:SetPoint("BOTTOMRIGHT", debuffFrame, "BOTTOMRIGHT", 23, -23)
+
+                    if printSpellId and not auraFrame.bbfHookAdded then
+                        auraFrame:HookScript("OnEnter", function()
+                            local currentAuraID = auraFrame.auraInstanceID
+                            if not auraFrame.bbfPrinted or auraFrame.bbfLastPrintedAuraID ~= currentAuraID then
+                                local thisAuraData = { -- Manually create the aura data structure as needed
+                                    icon = auraFrame.icon,
+                                    name = auraFrame.name,
+                                    spellId = auraFrame.spellId,
+                                }
+                                if thisAuraData then
+                                    local iconTexture = thisAuraData.icon and "|T" .. thisAuraData.icon .. ":16:16|t" or ""
+                                    print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconTexture .. " " .. (thisAuraData.name or "Unknown") .. "  |A:worldquest-icon-engineering:14:14|a ID: " .. (thisAuraData.spellId or "Unknown"))
+                                    auraFrame.bbfPrinted = true
+                                    auraFrame.bbfLastPrintedAuraID = currentAuraID
+    
+                                    if auraFrame.bbfTimer then
+                                        auraFrame.bbfTimer:Cancel()
+                                    end
+    
+                                    auraFrame.bbfTimer = C_Timer.NewTimer(6, function()
+                                        auraFrame.bbfPrinted = false
+                                    end)
+                                end
+                            end
+                        end)
+                        auraFrame.bbfHookAdded = true
+                    end
+    
+                    if isEnlarged then
+                        auraFrame.isEnlarged = true
+                    else
+                        auraFrame.isEnlarged = false
+                    end
+    
+                    if isCompacted then
+                        auraFrame.isCompacted = true
+                    else
+                        auraFrame.isCompacted = false
+                    end
+    
+                    -- if auraFrame.Stealable and auraFrame.Stealable:IsShown() then
+                    --     auraFrame.Stealable:SetScale(userPurgeableAuraSize)
+                    --     print("setting size")
                     -- end
-                    debuffFrame.isPurgeGlow = true
-                    if changePurgeTextureColor then
-                        debuffFrame.PurgeGlow:SetDesaturated(true)
-                        debuffFrame.PurgeGlow:SetVertexColor(unpack(purgeTextureColorRGB))
+    
+                    --stealableTexture:SetScale(3)
+    
+                    if not auraFrame.GlowFrame then
+                        auraFrame.GlowFrame = CreateFrame("Frame", nil, auraFrame)
+                        auraFrame.GlowFrame:SetAllPoints(auraFrame)
+                        auraFrame.GlowFrame:SetFrameLevel(auraFrame:GetFrameLevel() + 1)  -- Ensure it's above the cooldown texture
                     end
-                    debuffFrame.PurgeGlow:Show()
-                else
-                    if debuffFrame.PurgeGlow then
-                        if debuffFrame.Stealable and auraData.isStealable then
-                            debuffFrame.Stealable:SetAlpha(1)
+    
+                    if isImportant then
+                        auraFrame.isImportant = true
+                        if not auraFrame.ImportantGlow then
+                            auraFrame.ImportantGlow = auraFrame.GlowFrame:CreateTexture(nil, "OVERLAY")
+                            auraFrame.ImportantGlow:SetTexture(BBF.squareGreenGlow)
+                            auraFrame.ImportantGlow:SetDesaturated(true)
                         end
-                        debuffFrame.PurgeGlow:Hide()
+                        -- if auraFrame.isEnlarged then
+                        --     auraFrame.ImportantGlow:SetPoint("TOPLEFT", auraFrame, "TOPLEFT", -enlargedTextureAdjustment, enlargedTextureAdjustment)
+                        --     auraFrame.ImportantGlow:SetPoint("BOTTOMRIGHT", auraFrame, "BOTTOMRIGHT", enlargedTextureAdjustment, -enlargedTextureAdjustment)
+                        -- elseif auraFrame.isCompacted then
+                        --     auraFrame.ImportantGlow:SetPoint("TOPLEFT", auraFrame, "TOPLEFT", -compactedTextureAdjustment, compactedTextureAdjustment)
+                        --     auraFrame.ImportantGlow:SetPoint("BOTTOMRIGHT", auraFrame, "BOTTOMRIGHT", compactedTextureAdjustment, -compactedTextureAdjustment)
+                        -- else
+                        --     auraFrame.ImportantGlow:SetPoint("TOPLEFT", auraFrame, "TOPLEFT", -23, 23)
+                        --     auraFrame.ImportantGlow:SetPoint("BOTTOMRIGHT", auraFrame, "BOTTOMRIGHT", 23, -23)
+                        -- end
+                        if auraColor then
+                            auraFrame.ImportantGlow:SetVertexColor(auraColor[1], auraColor[2], auraColor[3], auraColor[4])
+                        else
+                            auraFrame.ImportantGlow:SetVertexColor(0, 1, 0)
+                        end
+                        auraFrame.ImportantGlow:Show()
+                    else
+                        auraFrame.isImportant = false
+                        if auraFrame.ImportantGlow then
+                            auraFrame.ImportantGlow:Hide()
+                            if auraFrame.Stealable and auraData.isStealable then
+                                auraFrame.Stealable:SetAlpha(1)
+                            end
+                        end
                     end
-                    debuffFrame.isPurgeGlow = false
-                    if displayDispelGlowAlways then
-                        if auraData.dispelName == "Magic" and ((not isFriend and auraData.isHelpful) or (isFriend and auraData.isHarmful)) then
-                            if debuffFrame.Stealable then
-                                debuffFrame.Stealable:Show()
-                                if changePurgeTextureColor then
-                                    debuffFrame.Stealable:SetVertexColor(unpack(purgeTextureColorRGB))
+    
+                    -- if auraFrame.Stealable and auraFrame.Stealable:IsShown() then
+                    --     if auraFrame.isEnlarged then
+                    --         auraFrame.Stealable:SetPoint("TOPLEFT", auraFrame, "TOPLEFT", -3, 4)
+                    --         auraFrame.Stealable:SetPoint("BOTTOMRIGHT", auraFrame, "BOTTOMRIGHT", 3, -3)
+                    --     elseif auraFrame.isCompacted then
+                    --         auraFrame.Stealable:SetPoint("TOPLEFT", auraFrame, "TOPLEFT", -compactedTextureAdjustment, compactedTextureAdjustment)
+                    --         auraFrame.Stealable:SetPoint("BOTTOMRIGHT", auraFrame, "BOTTOMRIGHT", compactedTextureAdjustment, -compactedTextureAdjustment)
+                    --     else
+                    --         auraFrame.Stealable:SetPoint("TOPLEFT", auraFrame, "TOPLEFT", -2, 2)
+                    --         auraFrame.Stealable:SetPoint("BOTTOMRIGHT", auraFrame, "BOTTOMRIGHT", 2, -2)
+                    --     end
+                    -- end
+    
+                    if (frameType == "target" and (auraData.isStealable or (displayDispelGlowAlways and auraFrame.isPurgeable)) and betterTargetPurgeGlow) or
+                    (frameType == "focus" and (auraData.isStealable or (displayDispelGlowAlways and auraFrame.isPurgeable)) and betterFocusPurgeGlow) then
+                        if not auraFrame.PurgeGlow then
+                            auraFrame.PurgeGlow = auraFrame.GlowFrame:CreateTexture(nil, "OVERLAY")
+                            auraFrame.PurgeGlow:SetTexture(BBF.squareBlueGlow)
+                            auraFrame.PurgeGlow:SetDesaturated(true)
+                            auraFrame.PurgeGlow:SetVertexColor(0.27, 0.858, 1)
+                        end
+                        -- if auraFrame.isEnlarged then
+                        --     auraFrame.PurgeGlow:SetPoint("TOPLEFT", auraFrame, "TOPLEFT", -enlargedTextureAdjustment, enlargedTextureAdjustment)
+                        --     auraFrame.PurgeGlow:SetPoint("BOTTOMRIGHT", auraFrame, "BOTTOMRIGHT", enlargedTextureAdjustment, -enlargedTextureAdjustment)
+                        --     -- auraFrame.PurgeGlow:SetPoint("TOPLEFT", auraFrame, "TOPLEFT", -enlargedPurgeTextureAdjustment, enlargedPurgeTextureAdjustment)
+                        --     -- auraFrame.PurgeGlow:SetPoint("BOTTOMRIGHT", auraFrame, "BOTTOMRIGHT", enlargedPurgeTextureAdjustment, -enlargedPurgeTextureAdjustment)
+                        -- elseif auraFrame.isCompacted then
+                        --     auraFrame.PurgeGlow:SetPoint("TOPLEFT", auraFrame, "TOPLEFT", -compactedTextureAdjustment, compactedTextureAdjustment)
+                        --     auraFrame.PurgeGlow:SetPoint("BOTTOMRIGHT", auraFrame, "BOTTOMRIGHT", compactedTextureAdjustment, -compactedTextureAdjustment)
+                        -- else
+                        --     if customPurgeSize then
+                        --         auraFrame.PurgeGlow:SetPoint("TOPLEFT", auraFrame, "TOPLEFT", -purgeableTextureAdjustment, purgeableTextureAdjustment)
+                        --         auraFrame.PurgeGlow:SetPoint("BOTTOMRIGHT", auraFrame, "BOTTOMRIGHT", purgeableTextureAdjustment, -purgeableTextureAdjustment)
+                        --     else
+                        --         auraFrame.PurgeGlow:SetPoint("TOPLEFT", auraFrame, "TOPLEFT", -22, 22)
+                        --         auraFrame.PurgeGlow:SetPoint("BOTTOMRIGHT", auraFrame, "BOTTOMRIGHT", 22, -22)
+                        --     end
+                        -- end
+                        auraFrame.isPurgeGlow = true
+                        if changePurgeTextureColor then
+                            auraFrame.PurgeGlow:SetDesaturated(true)
+                            auraFrame.PurgeGlow:SetVertexColor(unpack(purgeTextureColorRGB))
+                        end
+                        auraFrame.PurgeGlow:Show()
+                    else
+                        if auraFrame.PurgeGlow then
+                            if auraFrame.Stealable and auraData.isStealable then
+                                auraFrame.Stealable:SetAlpha(1)
+                            end
+                            auraFrame.PurgeGlow:Hide()
+                        end
+                        auraFrame.isPurgeGlow = false
+                        if displayDispelGlowAlways then
+                            if auraData.dispelName == "Magic" and ((not isFriend and auraData.isHelpful) or (isFriend and auraData.isHarmful)) then
+                                if auraFrame.Stealable then
+                                    auraFrame.Stealable:Show()
+                                    if changePurgeTextureColor then
+                                        auraFrame.Stealable:SetVertexColor(unpack(purgeTextureColorRGB))
+                                    end
+                                end
+                            else
+                                if auraFrame.Stealable then
+                                    auraFrame.Stealable:Hide()
                                 end
                             end
                         else
-                            if debuffFrame.Stealable then
-                                debuffFrame.Stealable:Hide()
+                            if changePurgeTextureColor and auraFrame.Stealable then
+                                auraFrame.Stealable:SetDesaturated(true)
+                                auraFrame.Stealable:SetVertexColor(unpack(purgeTextureColorRGB))
                             end
                         end
                     end
-                end
-
-                if isPandemic then
-                    debuffFrame.expirationTime = auraData.expirationTime
-                    debuffFrame.isPandemic = true
-                    trackedBuffs[debuffFrame.auraInstanceID] = debuffFrame
-                    StartCheckBuffsTimer()
+    
+                    if isPandemic then
+                        auraFrame.expirationTime = auraData.expirationTime
+                        auraFrame.isPandemic = true
+                        trackedBuffs[auraFrame.auraInstanceID] = auraFrame
+                        StartCheckBuffsTimer()
+                    else
+                        auraFrame.isPandemic = false
+                        if auraFrame.PandemicGlow then
+                            auraFrame.PandemicGlow:Hide()
+                        end
+                    end
+    
+                    if auraFrame.isImportant or auraFrame.isPurgeGlow or (auraFrame.isPandemicActive and isPandemic) then
+                        if auraFrame.border then
+                            auraFrame.border:SetAlpha(0)
+                        end
+                        if auraFrame.Border then
+                            auraFrame.Border:SetAlpha(0)
+                        end
+                        if auraFrame.Stealable then
+                            auraFrame.Stealable:SetAlpha(0)
+                        end
+                    else
+                        if auraFrame.border then
+                            auraFrame.border:SetAlpha(1)
+                        end
+                        if auraFrame.Border then
+                            auraFrame.Border:SetAlpha(1)
+                        end
+                        if auraFrame.Stealable then
+                            auraFrame.Stealable:SetAlpha(1)
+                        end
+                    end
+    
+                    -- if auraFrame.Border ~= nil then
+                    --     debuffs[#debuffs + 1] = auraFrame
+                    -- else
+                        local groupName = getSpammyGroup(spellId)
+                        if groupName then
+                            if addedGroups[groupName] then
+                                auraFrame:Hide()
+                            else
+                                addedGroups[groupName] = true
+                                if isBuff then
+                                    buffs[#buffs + 1] = auraFrame
+                                else
+                                    debuffs[#debuffs + 1] = auraFrame
+                                end
+                            end
+                        else
+                            if isBuff then
+                                buffs[#buffs + 1] = auraFrame
+                            else
+                                debuffs[#debuffs + 1] = auraFrame
+                            end
+                        end
+                        
+                    --end
                 else
-                    debuffFrame.isPandemic = false
-                    if debuffFrame.PandemicGlow then
-                        debuffFrame.PandemicGlow:Hide()
+                    auraFrame:Hide()
+                    if auraFrame.PandemicGlow then
+                        auraFrame.PandemicGlow:Hide()
                     end
                 end
-
-                if debuffFrame.isImportant or debuffFrame.isPurgeGlow or (debuffFrame.isPandemicActive and isPandemic) then
-                    if debuffFrame.border then
-                        debuffFrame.border:SetAlpha(0)
-                    end
-                    if debuffFrame.Border then
-                        debuffFrame.Border:SetAlpha(0)
-                    end
-                    if debuffFrame.Stealable then
-                        debuffFrame.Stealable:SetAlpha(0)
-                    end
-                else
-                    if debuffFrame.border then
-                        debuffFrame.border:SetAlpha(1)
-                    end
-                    if debuffFrame.Border then
-                        debuffFrame.Border:SetAlpha(1)
-                    end
-                    if debuffFrame.Stealable then
-                        debuffFrame.Stealable:SetAlpha(1)
-                    end
-                end
-
-                --if debuffFrame.Border ~= nil then
-                    debuffs[#debuffs + 1] = debuffFrame
-                -- else
-                --     buffs[#buffs + 1] = debuffFrame
-                -- end
             else
-                debuffFrame:Hide()
-                if debuffFrame.PandemicGlow then
-                    debuffFrame.PandemicGlow:Hide()
-                end
+                break
             end
         end
     end
+
+    UpdateAuraFrames(self, unit, true)
+    UpdateAuraFrames(self, unit, false)
+
 
     local customAuraComparator = getCustomAuraComparator()
     table_sort(buffs, customAuraComparator)
@@ -1867,13 +1577,7 @@ local function AdjustAuras(self, frameType)
     end
 
     -- Adjust castbar position if needed
-    if not targetStaticCastbar or not targetDetachCastbar then
-        if frameType == "target" then
-            adjustCastbar(TargetFrame.spellbar, TargetFrameSpellBar)
-        elseif frameType == "focus" then
-            --adjustCastbar(FocusFrame.spellbar, FocusFrameSpellBar)
-        end
-    end
+    AdjustCastbarAfterAuras(unit)
     addMasque(frameType)
 end
 
@@ -2186,33 +1890,7 @@ local function PersonalBuffFrameFilterAndGrid(self)
                         auraFrame.spellId = "TempEnchant"
                         auraFrame.name = "TempEnchant"
     
-                        if not auraFrame.filterClick then
-                            auraFrame:HookScript("OnMouseDown", function(self, button)
-                                if IsShiftKeyDown() and IsAltKeyDown() then
-                                    local spellName = auraFrame.name
-                                    local spellId = tostring(auraFrame.spellId)
-                                    --local iconString = "|T" .. icon .. ":16:16:0:0|t"
-    
-                                    if button == "LeftButton" then
-                                        BBF.auraWhitelist(auraFrame.spellId)
-                                        print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. spellName .. " (" .. spellId .. ") added to |cff00ff00whitelist|r.")
-                                    elseif button == "RightButton" then
-                                        BBF.auraBlacklist(auraFrame.spellId)
-                                        print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. spellName .. " (" .. spellId .. ") added to |cffff0000blacklist|r.")
-                                    end
-                                elseif IsControlKeyDown() and IsAltKeyDown() then
-                                    local spellName, _, icon = GetSpellInfo(auraFrame.spellId)
-                                    local spellId = tostring(auraFrame.spellId)
-                                    local iconString = "|T" .. icon .. ":16:16:0:0|t"
-        
-                                    if button == "RightButton" then
-                                        BBF.auraBlacklist(auraFrame.spellId, true)
-                                        print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") added to |cffff0000blacklist|r with tag.")
-                                    end
-                                end
-                            end)
-                            auraFrame.filterClick = true
-                        end
+                        SetupAuraFilterClicks(auraFrame)
     
                         -- Update column and row counters
                         currentCol = currentCol + 1;
@@ -2247,7 +1925,7 @@ local function PersonalBuffFrameFilterAndGrid(self)
                                 auraFrame.ImportantGlow:SetParent(borderFrame)
                             end
                             if auraColor then
-                                auraFrame.ImportantGlow:SetVertexColor(auraColor.r, auraColor.g, auraColor.b, auraColor.a)
+                                auraFrame.ImportantGlow:SetVertexColor(auraColor[1], auraColor[2], auraColor[3], auraColor[4])
                             else
                                 auraFrame.ImportantGlow:SetVertexColor(0, 1, 0)
                             end
@@ -2468,33 +2146,7 @@ local function PersonalBuffFrameFilterAndGrid(self)
 
                     auraFrame.spellId = auraData.spellId
 
-                    if not auraFrame.filterClick then
-                        auraFrame:HookScript("OnMouseDown", function(self, button)
-                            if IsShiftKeyDown() and IsAltKeyDown() then
-                                local spellName, _, icon = GetSpellInfo(auraFrame.spellId)
-                                local spellId = tostring(auraFrame.spellId)
-                                local iconString = "|T" .. icon .. ":16:16:0:0|t"
-
-                                if button == "LeftButton" then
-                                    BBF.auraWhitelist(auraFrame.spellId)
-                                    print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") added to |cff00ff00whitelist|r.")
-                                elseif button == "RightButton" then
-                                    BBF.auraBlacklist(auraFrame.spellId)
-                                    print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") added to |cffff0000blacklist|r.")
-                                end
-                            elseif IsControlKeyDown() and IsAltKeyDown() then
-                                local spellName, _, icon = GetSpellInfo(auraFrame.spellId)
-                                local spellId = tostring(auraFrame.spellId)
-                                local iconString = "|T" .. icon .. ":16:16:0:0|t"
-    
-                                if button == "RightButton" then
-                                    BBF.auraBlacklist(auraFrame.spellId, true)
-                                    print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") added to |cffff0000blacklist|r with tag.")
-                                end
-                            end
-                        end)
-                        auraFrame.filterClick = true
-                    end
+                    SetupAuraFilterClicks(auraFrame)
 
                     -- Update column and row counters
                     currentCol = currentCol + 1;
@@ -2529,7 +2181,7 @@ local function PersonalBuffFrameFilterAndGrid(self)
                             auraFrame.ImportantGlow:SetParent(borderFrame)
                         end
                         if auraColor then
-                            auraFrame.ImportantGlow:SetVertexColor(auraColor.r, auraColor.g, auraColor.b, auraColor.a)
+                            auraFrame.ImportantGlow:SetVertexColor(auraColor[1], auraColor[2], auraColor[3], auraColor[4])
                         else
                             auraFrame.ImportantGlow:SetVertexColor(0, 1, 0)
                         end
@@ -2766,33 +2418,7 @@ local function PersonalDebuffFrameFilterAndGrid(self)
 
                     auraFrame.spellId = auraData.spellId
 
-                    if not auraFrame.filterClick then
-                        auraFrame:HookScript("OnMouseDown", function(self, button)
-                            if IsShiftKeyDown() and IsAltKeyDown() then
-                                local spellName, _, icon = GetSpellInfo(auraFrame.spellId)
-                                local spellId = tostring(auraFrame.spellId)
-                                local iconString = "|T" .. icon .. ":16:16:0:0|t"
-
-                                if button == "LeftButton" then
-                                    BBF.auraWhitelist(auraFrame.spellId)
-                                    print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") added to |cff00ff00whitelist|r.")
-                                elseif button == "RightButton" then
-                                    BBF.auraBlacklist(auraFrame.spellId)
-                                    print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") added to |cffff0000blacklist|r.")
-                                end
-                            elseif IsControlKeyDown() and IsAltKeyDown() then
-                                local spellName, _, icon = GetSpellInfo(auraFrame.spellId)
-                                local spellId = tostring(auraFrame.spellId)
-                                local iconString = "|T" .. icon .. ":16:16:0:0|t"
-
-                                if button == "RightButton" then
-                                    BBF.auraBlacklist(auraFrame.spellId, true)
-                                    print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") added to |cffff0000blacklist|r with tag.")
-                                end
-                            end
-                        end)
-                        auraFrame.filterClick = true
-                    end
+                    SetupAuraFilterClicks(auraFrame)
 
                     auraFrame:Show();
                     auraFrame:ClearAllPoints();
@@ -2832,7 +2458,7 @@ local function PersonalDebuffFrameFilterAndGrid(self)
                             auraFrame.ImportantGlow:SetParent(borderFrame)
                         end
                         if auraColor then
-                            auraFrame.ImportantGlow:SetVertexColor(auraColor.r, auraColor.g, auraColor.b, auraColor.a)
+                            auraFrame.ImportantGlow:SetVertexColor(auraColor[1], auraColor[2], auraColor[3], auraColor[4])
                         else
                             auraFrame.ImportantGlow:SetVertexColor(0, 1, 0)
                         end
@@ -2906,6 +2532,12 @@ function BBF.RefreshAllAuraFrames()
             end)
         end
     end
+end
+
+BBF.filterOverride = false
+function BBF.ToggleFilterOverride()
+    BBF.filterOverride = not BBF.filterOverride
+    BBF.RefreshAllAuraFrames()
 end
 
 function BBF.SetupMasqueSupport()

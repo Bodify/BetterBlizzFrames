@@ -111,7 +111,7 @@ BBF.auraBorders = {}  -- BuffFrame aura borders for darkmode
 local function createOrUpdateBorders(frame, colorValue, textureName, bypass)
     --if not twwrdy then return end
     if BetterBlizzFramesDB.enableMasque and C_AddOns.IsAddOnLoaded("Masque") then return end
-    if (darkModeUi and darkModeUiAura) or bypass then
+    if (BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeUiAura) or bypass then
         if not BBF.auraBorders[frame] then
             -- Create borders
             local border = CreateFrame("Frame", nil, frame, "BackdropTemplate")
@@ -783,18 +783,32 @@ specChangeListener:SetScript("OnEvent", function(self, event, ...)
         if BetterBlizzFramesDB.darkModeUi then
             local unitID = ...
             if unitID == "player" then
+                local playerClass = select(2, UnitClass("player"))
                 local vertexColor = BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeColor or 1
-                local rogueCombo = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.45) or 1
-                local rogueComboActive = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.30) or 1
-                local rogueComboPoints = _G.RogueComboPointBarFrame
-                if BetterBlizzFramesDB.darkModeColor == 0 then
-                    rogueCombo = 0.25
-                    rogueComboActive = 0.15
-                end
-                if rogueComboPoints then
-                    for _, v in pairs({rogueComboPoints:GetChildren()}) do
-                        applySettings(v.BGInactive, true, rogueCombo)
-                        applySettings(v.BGActive, true, rogueComboActive)
+                local desaturationValue = BetterBlizzFramesDB.darkModeUi
+
+                if playerClass == "ROGUE" then
+                    local rogueCombo = vertexColor + 0.45
+                    local rogueComboActive = vertexColor + 0.30
+                    local rogueComboPoints = _G.RogueComboPointBarFrame
+                    if BetterBlizzFramesDB.darkModeColor == 0 then
+                        rogueCombo = 0.25
+                        rogueComboActive = 0.15
+                    end
+                    if rogueComboPoints then
+                        for _, v in pairs({rogueComboPoints:GetChildren()}) do
+                            applySettings(v.BGInactive, desaturationValue, rogueCombo)
+                            applySettings(v.BGActive, desaturationValue, rogueComboActive)
+                        end
+                    end
+                elseif playerClass == "MONK" then
+                    local monkChi = vertexColor + 0.10
+                    local monkChiPoints = _G.MonkHarmonyBarFrame
+                    if monkChiPoints then
+                        for _, v in pairs({monkChiPoints:GetChildren()}) do
+                            applySettings(v.Chi_BG, desaturationValue, monkChi)
+                            applySettings(v.Chi_BG_Active, desaturationValue, monkChi)
+                        end
                     end
                 end
             end

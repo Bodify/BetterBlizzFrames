@@ -172,9 +172,14 @@ function BBF.ClassicCastbar(castBar, isParty)
         castBar.iconXPos = BetterBlizzFramesDB[castBar.unit.."CastbarIconXPos"]
         castBar.iconYPos = BetterBlizzFramesDB[castBar.unit.."CastbarIconYPos"]
     else
-        castBar.iconXPos = BetterBlizzFramesDB["partyCastBarXPos"]
-        castBar.iconYPos = BetterBlizzFramesDB["partyCastBarYPos"]
+        castBar.iconXPos = BetterBlizzFramesDB["partyCastbarIconXPos"]
+        castBar.iconYPos = BetterBlizzFramesDB["partyCastbarIconYPos"]
     end
+
+    castBar.Icon:ClearAllPoints()
+    --self.Icon:SetPoint("RIGHT", castBar, "LEFT", -5, -0.5)
+    castBar.Icon:SetPoint("RIGHT", castBar, "LEFT", -5 + castBar.iconXPos, -0.5 + castBar.iconYPos)
+    castBar.Icon:SetSize(18,18)
 
     AdjustBorderSize(castBar)
     AdjustBorderShieldSize(castBar)
@@ -264,7 +269,7 @@ function BBF.UpdateCastbars()
         for i = 1, 5 do
             local spellbar = spellBars[i]
             if spellbar then
-                spellbar:SetUnit(nil)
+                spellbar:SetUnit(BetterBlizzFramesDB.partyCastBarTestMode and "player" or nil)
             end
         end
         if compactFrame and compactFrame:IsShown() and numGroupMembers <= 5 then
@@ -276,7 +281,9 @@ function BBF.UpdateCastbars()
             for i = 1, 5 do
                 local spellbar = spellBars[i]
                 if spellbar then
-                    spellbar:SetUnit(nil)
+                    if not BetterBlizzFramesDB.partyCastBarTestMode then
+                        spellbar:SetUnit(nil)
+                    end
                     spellbar:SetParent(UIParent)
                     spellbar:SetScale(BetterBlizzFramesDB.partyCastBarScale)
                     spellbar:SetWidth(BetterBlizzFramesDB.partyCastBarWidth)

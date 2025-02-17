@@ -493,11 +493,11 @@ function BBF.UpdateValidUnits()
     if ufEnabled then
         CataAbsorb.unitFrames["player"] = PlayerFrame
         CataAbsorb.unitFrames["target"] = TargetFrame
-        --CataAbsorb.unitFrames["focus"] = FocusFrame
+        CataAbsorb.unitFrames["focus"] = FocusFrame
     else
         CataAbsorb.unitFrames["player"] = nil
         CataAbsorb.unitFrames["target"] = nil
-        --CataAbsorb.unitFrames["focus"] = nil
+        CataAbsorb.unitFrames["focus"] = nil
     end
 
     -- Update compact unit frames (raid)

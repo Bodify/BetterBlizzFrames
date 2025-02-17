@@ -1,4 +1,4 @@
-## Interface: 110005
+## Interface: 110100
 ## Title: Better|cff00c0ffBlizz|rFrames
 ## Notes: More options for Blizzard frames. Aura filtering, Party castbars, Combat indicator, Dark Mode etc.
 ## Version: 1.6.0
@@ -8,27 +8,27 @@
 
 init.lua
 
-embeds.xml
+retail\embeds.xml
 
-temp_tww.lua
+retail\temp_tww.lua
 
-modules\darkmode.lua
-modules\nameFix.lua
-modules\hideFrames.lua
-modules\auras.lua
-modules\absorb.lua
-modules\combat.lua
-modules\castbar.lua
-modules\healthbarColor.lua
-modules\statusBarTextFormat.lua
-modules\arenaframes.lua
-modules\profiles.lua
-modules\chatFrame.lua
-modules\overShields.lua
-modules\stealthIndicator.lua
-modules\interruptIcon.lua
-modules\queueTimer.lua
-modules\druid\overcharges.lua
+retail\modules\darkmode.lua
+retail\modules\nameFix.lua
+retail\modules\hideFrames.lua
+retail\modules\auras.lua
+retail\modules\absorb.lua
+retail\modules\combat.lua
+retail\modules\castbar.lua
+retail\modules\healthbarColor.lua
+retail\modules\statusBarTextFormat.lua
+retail\modules\arenaframes.lua
+retail\modules\profiles.lua
+retail\modules\chatFrame.lua
+retail\modules\overShields.lua
+retail\modules\stealthIndicator.lua
+retail\modules\interruptIcon.lua
+retail\modules\queueTimer.lua
+retail\modules\druid\overcharges.lua
 
-gui.lua
-BetterBlizzFrames.lua
+retail\gui.lua
+retail\BetterBlizzFrames.lua

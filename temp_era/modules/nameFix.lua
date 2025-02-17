@@ -157,7 +157,7 @@ local function PartyArenaName(frame)
 end
 
 function BBF.PartyNameChange()
-    if true then --EditModeManagerFrame:UseRaidStylePartyFrames()
+    if GetCVarBool("useCompactPartyFrames") then --EditModeManagerFrame:UseRaidStylePartyFrames()
         for i = 1, 3 do
             local memberFrame = _G["CompactPartyFrameMember" .. i]
             if memberFrame and memberFrame.displayedUnit then
@@ -166,7 +166,7 @@ function BBF.PartyNameChange()
         end
     else
         for i = 1, 4 do
-            local memberFrame = PartyFrame["MemberFrame" .. i]
+            local memberFrame = _G["PartyMemberFrame" .. i]
             if memberFrame and memberFrame.unit then
                 PartyArenaName(memberFrame)
             end
@@ -784,6 +784,7 @@ local function ClassColorName(textObject, unit)
 end
 
 local function PlayerFrameNameChanges(frame)
+    frame.name:SetAlpha(0)
     if not frame.unit then return end
     local unit = frame.unit
     if hidePlayerName then
@@ -811,6 +812,7 @@ end)
 
 
 local function TargetFrameNameChanges(frame)
+    frame.name:SetAlpha(0)
     if not frame.unit then return end
     local unit = frame.unit
 
@@ -830,7 +832,6 @@ local function TargetFrameNameChanges(frame)
             ClassColorName(frame.bbfName, unit)
         end
     end
-    frame.name:SetAlpha(0)
 end
 
 hooksecurefunc(TargetFrame.name, "SetText", function(self)
@@ -861,6 +862,7 @@ end)
 
 
 local function PetFrameNameChanges(frame)
+    frame.name:SetAlpha(0)
     if not frame.unit then return end
     local unit = frame.unit
 
@@ -872,7 +874,6 @@ local function PetFrameNameChanges(frame)
     if classColorTargetNames then
         ClassColorName(frame.bbfName, unit)
     end
-    frame.name:SetAlpha(0)
 end
 
 hooksecurefunc(PetFrame.name, "SetText", function(self)
@@ -922,6 +923,7 @@ end)
 -- end)
 
 local function TargetFrameToTNameChanges(frame)
+    frame.name:SetAlpha(0)
     if not frame.unit then return end
     local unit = frame.unit
     if targetAndFocusArenaNames and IsActiveBattlefieldArena() then
@@ -940,7 +942,6 @@ local function TargetFrameToTNameChanges(frame)
             ClassColorName(frame.bbfName, unit)
         end
     end
-    frame.name:SetAlpha(0)
 end
 
 hooksecurefunc(TargetFrameToTTextureFrameName, "SetText", function()
@@ -970,21 +971,39 @@ end)
 -- end
 
 -- hooksecurefunc(FocusFrameToTTextureFrameName, "SetText", function()
---     FocusFrameToTNameChanges(TargetFrameToT)
+--     FocusFrameToTNameChanges(FocusFrameToT)
 -- end)
 
+local function ResetTextColors()
+    -- Table of frames to process
+    local frames = {
+        PlayerFrame,
+        PetFrame,
+        TargetFrame,
+        FocusFrame,
+        TargetFrameToT,
+        FocusFrameToT,
+    }
 
+    -- Iterate through each frame and reset the text color
+    for _, frame in pairs(frames) do
+        if frame and frame.name then
+            frame.bbfName:SetTextColor(1, 0.8196, 0)
+        end
+    end
+end
 
-function BBF.AllCaller()
-    if isAddonLoaded("ClassicFrames") then return end
+function BBF.AllNameChanges()
+    ResetTextColors()
     BBF.UpdateUserTargetSettings()
     BBF.PartyNameChange()
 
     PlayerFrameNameChanges(PlayerFrame)
+    PetFrameNameChanges(PetFrame)
     TargetFrameNameChanges(TargetFrame)
     --FocusFrameNameChanges(FocusFrame)
     TargetFrameToTNameChanges(TargetFrameToT)
-    --FocusFrameToTNameChanges(TargetFrameToT)
+    --FocusFrameToTNameChanges(FocusFrameToT)
 
     if classColorLevelText then
         ClassColorName(TargetFrameTextureFrameLevelText, "target")

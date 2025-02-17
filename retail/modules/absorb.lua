@@ -277,8 +277,8 @@ local absorbEventFrame
 function BBF.AbsorbCaller()
     if BetterBlizzFramesDB.absorbIndicator and not absorbEventFrame then
         absorbEventFrame = CreateFrame("Frame")
-        absorbEventFrame:RegisterEvent("UNIT_ABSORB_AMOUNT_CHANGED")
-        absorbEventFrame:RegisterEvent("UNIT_HEAL_ABSORB_AMOUNT_CHANGED")
+        absorbEventFrame:RegisterUnitEvent("UNIT_ABSORB_AMOUNT_CHANGED", "player", "target", "focus")
+        absorbEventFrame:RegisterUnitEvent("UNIT_HEAL_ABSORB_AMOUNT_CHANGED", "player", "target", "focus")
         absorbEventFrame:SetScript("OnEvent", OnAbsorbEvent)
 
         local targetChangeFrame = CreateFrame("Frame")
