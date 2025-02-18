@@ -835,7 +835,7 @@ function HookUnitFrameTextures()
         -- BetterBlizzFramesDB.textureSwapUnitFramesMana
         if true then
             manaTextureUnits["targettarget"] = true
-            manaTextureUnits["focustarget"] = true
+            --manaTextureUnits["focustarget"] = true
             ApplyTextureChange("mana", TargetFrameToTManaBar)
             --ApplyTextureChange("mana", FocusFrameToTManaBar)
         end

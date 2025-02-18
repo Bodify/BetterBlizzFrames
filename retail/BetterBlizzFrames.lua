@@ -1286,6 +1286,15 @@ function BBF.UpdateCustomTextures()
     BBF.HookTextures()
 end
 
+local LocalPowerBarColor = {}
+for k, v in pairs(PowerBarColor) do
+    if type(v) == "table" then
+        LocalPowerBarColor[k] = { r = v.r, g = v.g, b = v.b }
+    else
+        LocalPowerBarColor[k] = v
+    end
+end
+BBF.LocalPowerBarColor = LocalPowerBarColor
 
 -- Helper function to change the texture and retain the original draw layer
 local function ApplyTextureChange(type, statusBar, parent, classic)
@@ -1319,7 +1328,7 @@ local function ApplyTextureChange(type, statusBar, parent, classic)
             -- Retrieve the unit's power type
             local _, powerToken = UnitPowerType(unit)
             -- Use the WoW PowerBarColor table to get the color
-            local color = PowerBarColor[powerToken]
+            local color = LocalPowerBarColor[powerToken]
             if color then
                 manabar:SetStatusBarColor(color.r, color.g, color.b)
             end
@@ -1348,12 +1357,11 @@ local function ApplyTextureChange(type, statusBar, parent, classic)
     end
 end
 
--- Main function to apply texture changes to raid frames and additional frames
 -- Main function to apply texture changes to unit frames
     function HookUnitFrameTextures()
         local db = BetterBlizzFramesDB
         local classicFramesLoaded = C_AddOns.IsAddOnLoaded("ClassicFrames")
-    
+
         if classicFramesLoaded then
             -- ClassicFrames is enabled: Modify ClassicFrames unit frames only
             if db.changeUnitFrameHealthbarTexture then
@@ -1365,14 +1373,17 @@ end
                 if PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ReputationColor then
                     ApplyTextureChange("health", PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ReputationColor)
                 end
+
+                ApplyTextureChange("health", TargetFrame.totFrame.HealthBar, TargetFrameToT)
+                ApplyTextureChange("health", FocusFrame.totFrame.HealthBar, FocusFrameToT)
             end
-    
+
             if db.changeUnitFrameManabarTexture then
                 ApplyTextureChange("mana", CfPlayerFrameManaBar)
                 ApplyTextureChange("mana", CfTargetFrameManaBar, nil, true)
                 ApplyTextureChange("mana", CfFocusFrameManaBar, nil, true)
             end
-    
+
             -- Apply class color override if enabled
             if not db.classColorFrames then
                 local healthbars = {
@@ -1380,7 +1391,7 @@ end
                     CfTargetFrameHealthBar,
                     CfFocusFrameHealthBar
                 }
-    
+
                 for _, healthbar in ipairs(healthbars) do
                     healthbar:SetStatusBarColor(0,1,0)
                 end
@@ -1392,20 +1403,28 @@ end
                 ApplyTextureChange("health", PetFrame.healthbar, PetFrame)
                 ApplyTextureChange("health", TargetFrame.TargetFrameContent.TargetFrameContentMain.HealthBarsContainer.HealthBar, TargetFrame)
                 ApplyTextureChange("health", FocusFrame.TargetFrameContent.TargetFrameContentMain.HealthBarsContainer.HealthBar, FocusFrame)
+
+                ApplyTextureChange("health", TargetFrame.totFrame.HealthBar, TargetFrameToT)
+                ApplyTextureChange("health", FocusFrame.totFrame.HealthBar, FocusFrameToT)
             end
-    
+
             if db.changeUnitFrameManabarTexture then
                 manaTextureUnits["player"] = true
                 manaTextureUnits["target"] = true
                 manaTextureUnits["focus"] = true
                 manaTextureUnits["pet"] = true
-    
+
                 ApplyTextureChange("mana", PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar)
                 ApplyTextureChange("mana", PetFrame.manabar)
                 ApplyTextureChange("mana", TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar)
                 ApplyTextureChange("mana", FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar)
+
+                manaTextureUnits["targettarget"] = true
+                manaTextureUnits["focustarget"] = true
+                ApplyTextureChange("mana", TargetFrame.totFrame.ManaBar)
+                ApplyTextureChange("mana", FocusFrame.totFrame.ManaBar)
             end
-    
+
             -- Apply class color override if enabled
             if not db.classColorFrames then
                 local healthbars = {
@@ -1416,14 +1435,14 @@ end
                     TargetFrame.totFrame.HealthBar,
                     FocusFrame.totFrame.HealthBar
                 }
-    
+
                 for _, healthbar in ipairs(healthbars) do
                     healthbar:SetStatusBarColor(0,1,0)
                 end
             end
         end
     end
-    
+
 
 local function SetRaidFrameTextures(frame)
     --if not frame:IsShown() then return end

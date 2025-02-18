@@ -3457,6 +3457,13 @@ local function guiGeneralTab()
 
     classColorTargetNames:HookScript("OnClick", function(self)
         BBF.AllNameChanges()
+        if self:GetChecked() then
+            classColorLevelText:Enable()
+            classColorLevelText:SetAlpha(1)
+        else
+            classColorLevelText:Disable()
+            classColorLevelText:SetAlpha(0)
+        end
     end)
     if not BetterBlizzFramesDB.classColorTargetNames then
         classColorLevelText:SetAlpha(0)

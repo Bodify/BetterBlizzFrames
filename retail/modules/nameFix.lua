@@ -856,42 +856,6 @@ local function UpdateNamePositionForClassic()
 end
 C_Timer.After(1, UpdateNamePositionForClassic)
 
-
-local unitToArenaName = {
-    ["party1"] = "Party 1",
-    ["party2"] = "Party 2",
-    ["arena1"] = "Arena 1",
-    ["arena2"] = "Arena 2",
-    ["arena3"] = "Arena 3",
-}
-
-local function SetArenaNameUnitFrame(frame, unit, textObject)
-    local unitGUID = UnitGUID(unit)
-    local specName = GetSpecName(unitGUID)
-    local nameText
-
-    -- Lookup the friendly/arena name based on the unit
-    local unitID = unitToArenaName[unit]
-
-    -- Construct the nameText based on specName and unitID settings
-    if specName then
-        if showSpecName and showArenaID then
-            nameText = specName .. " " .. unitID
-        elseif showSpecName then
-            nameText = specName
-        elseif showArenaID then
-            nameText = unitID
-        end
-    else
-        nameText = showArenaID and unitID or (removeRealmNames and GetNameWithoutRealm(frame))
-    end
-
-    -- Update the text object with the nameText if available
-    if nameText then
-        textObject:SetText(nameText)
-    end
-end
-
 local function ClassColorName(textObject, unit)
     if UnitIsPlayer(unit) then
         local _, class = UnitClass(unit)
@@ -934,6 +898,53 @@ local function ClassColorName(textObject, unit)
         end
 
         textObject:SetTextColor(r, g, b)
+    end
+end
+
+local unitToArenaName = {
+    ["party1"] = "Party 1",
+    ["party2"] = "Party 2",
+    ["arena1"] = "Arena 1",
+    ["arena2"] = "Arena 2",
+    ["arena3"] = "Arena 3",
+}
+
+local function GetArenaUnitName(unit)
+    for arenaUnit, arenaName in pairs(unitToArenaName) do
+        if UnitIsUnit(unit, arenaUnit) then
+            return arenaName
+        end
+    end
+    return nil
+end
+
+local function SetArenaNameUnitFrame(frame, unit, textObject)
+    local unitGUID = UnitGUID(unit)
+    local specName = GetSpecName(unitGUID)
+    local nameText
+
+    -- Determine the arena name using UnitIsUnit
+    local unitID = GetArenaUnitName(unit)
+
+    -- Construct the nameText based on specName and unitID settings
+    if specName then
+        if showSpecName and showArenaID and unitID then
+            nameText = specName .. " " .. unitID
+        elseif showSpecName then
+            nameText = specName
+        elseif showArenaID and unitID then
+            nameText = unitID
+        end
+    else
+        nameText = showArenaID and unitID or (removeRealmNames and GetNameWithoutRealm(frame))
+    end
+
+    -- Update the text object with the nameText if available
+    if nameText then
+        textObject:SetText(nameText)
+        if classColorTargetNames then
+            ClassColorName(frame.bbfName, unit)
+        end
     end
 end
 

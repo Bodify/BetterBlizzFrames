@@ -298,7 +298,7 @@ end
 
 local function isInBlacklist(spellName, spellId)
     local db = BetterBlizzFramesDB
-    local entry = db["auraBlacklist"][spellId] or db["auraBlacklist"][string.lower(spellName)]
+    local entry = db["auraBlacklist"][spellId] or spellName and db["auraBlacklist"][string.lower(spellName)]
     if entry then
         local showMine = entry.showMine
         return true, showMine
@@ -323,6 +323,7 @@ end
 local function ShouldShowBuff(unit, auraData, frameType)
     local spellName = auraData.name
     local spellId = auraData.spellId
+    if not spellId then return false end
     local duration = auraData.duration
     local expirationTime = auraData.expirationTime
     local caster = auraData.sourceUnit
@@ -1185,8 +1186,8 @@ local function AdjustAuras(self, frameType)
                     canApplyAura = canApplyAura,
                     isStealable = isStealable,
                     dispelName = dispelName,
-                    isHelpful = true,
-                    isHarmful = false,
+                    isHelpful = isBuff,
+                    isHarmful = not isBuff,
                     spellId = spellId,
                     expirationTime = expirationTime,
                     icon = icon,
@@ -1199,7 +1200,8 @@ local function AdjustAuras(self, frameType)
 
                 auraFrame.isLarge = isLarge
                 auraFrame.canApply = canApply
-                auraFrame.isHelpful = true
+                auraFrame.isHelpful = isBuff
+                auraFrame.isHarmful = not isBuff
                 --auraFrame.isStealable = stealable
 
                 local shouldShowAura, isImportant, isPandemic, isEnlarged, isCompacted, auraColor
@@ -1467,26 +1469,22 @@ local function AdjustAuras(self, frameType)
                     -- if auraFrame.Border ~= nil then
                     --     debuffs[#debuffs + 1] = auraFrame
                     -- else
-                        local groupName = getSpammyGroup(spellId)
-                        if groupName then
-                            if addedGroups[groupName] then
-                                auraFrame:Hide()
-                            else
-                                addedGroups[groupName] = true
-                                if isBuff then
-                                    buffs[#buffs + 1] = auraFrame
+                        if isBuff then
+                            local groupName = getSpammyGroup(spellId)
+                            if groupName then
+                                if addedGroups[groupName] then
+                                    auraFrame:Hide()
                                 else
-                                    debuffs[#debuffs + 1] = auraFrame
+                                    addedGroups[groupName] = true
+                                    buffs[#buffs + 1] = auraFrame
                                 end
+                            else
+                                buffs[#buffs + 1] = auraFrame
                             end
                         else
-                            if isBuff then
-                                buffs[#buffs + 1] = auraFrame
-                            else
-                                debuffs[#debuffs + 1] = auraFrame
-                            end
+                            debuffs[#debuffs + 1] = auraFrame
                         end
-                        
+
                     --end
                 else
                     auraFrame:Hide()
@@ -1620,8 +1618,8 @@ local function ResetHiddenAurasCount(keepTrack)
 end
 
 -- Functions to show and hide the hidden auras
-local function ShowHiddenAuras()
-    if ToggleHiddenAurasButton.isDropdownExpanded then
+local function ShowHiddenAuras(bypass)
+    if ToggleHiddenAurasButton.isDropdownExpanded or bypass then
         for i = 1, 40 do
             local buffName = "BuffButton"..i
             local auraFrame = _G[buffName]
@@ -1774,9 +1772,9 @@ local function CreateToggleIcon()
         else
             -- Toggle hidden auras visibility
             shouldKeepAurasVisible = not shouldKeepAurasVisible
-            BuffFrame:UpdateAuraButtons()
+            --BuffFrame:UpdateAuraButtons()
             if shouldKeepAurasVisible then
-                ShowHiddenAuras()
+                ShowHiddenAuras(true)
             else
                 HideHiddenAuras()
             end
