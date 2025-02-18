@@ -3,6 +3,7 @@
 - Fix Arena Names on Target/Focus for Retail/Cata
 - Fix aura issues from Buff Filtering on Classic versions after update
 - Add missing ToT frames to retexture unitframes setting
+- Fix class color names not recoloring when arena names are in effect
 
 # BetterBlizzFrames 1.6.0
 ## The War Within, Cata & Era
