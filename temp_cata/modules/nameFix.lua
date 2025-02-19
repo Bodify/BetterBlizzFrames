@@ -74,6 +74,7 @@ local classColorLevelText
 local hidePlayerName
 local hidePetName
 local isAddonLoaded = C_AddOns.IsAddOnLoaded
+local changeUnitFrameFont
 
 function BBF.UpdateUserTargetSettings()
     hidePartyNames = BetterBlizzFramesDB.hidePartyNames
@@ -92,6 +93,7 @@ function BBF.UpdateUserTargetSettings()
     classColorLevelText = BetterBlizzFramesDB.classColorLevelText
     hidePlayerName = BetterBlizzFramesDB.hidePlayerName
     hidePetName = BetterBlizzFramesDB.hidePetName
+    changeUnitFrameFont = BetterBlizzFramesDB.changeUnitFrameFont
 end
 
 local validPartyUnits = {
@@ -271,6 +273,28 @@ end
 
 -- Run the function to initialize font strings on all specified frames
 InitializeFontStringsForFrames()
+
+local function UpdateFontStringPosition(frame)
+    local name = frame.name or frame.Name
+    if not name or not name:GetParent() then return end
+    local point, relativeTo, relativePoint, xOffset, yOffset = name:GetPoint()
+    if point then
+        frame.bbfName:ClearAllPoints()
+        frame.bbfName:SetPoint(point, relativeTo, relativePoint, xOffset, yOffset)
+    end
+end
+
+local function UpdateAllFontStringPositions()
+    for _, frame in ipairs(frames) do
+        UpdateFontStringPosition(frame)
+    end
+end
+
+C_Timer.After(1, function()
+    if C_AddOns.IsAddOnLoaded("DragonflightUI") or C_AddOns.IsAddOnLoaded("EasyFrames") then
+        UpdateAllFontStringPositions()
+    end
+end)
 
 local function SetPartyFont(font, size, outline, size2)
     if outline == "NONE" then
@@ -770,7 +794,8 @@ local function SetArenaNameUnitFrame(frame, unit, textObject)
     -- Construct the nameText based on specName and unitID settings
     if specName then
         if showSpecName and showArenaID and unitID then
-            nameText = specName .. " " .. unitID
+            local arenaNumber = string.match(unitID, "%d+")
+            nameText = specName .. " " .. (arenaNumber or "")
         elseif showSpecName then
             nameText = specName
         elseif showArenaID and unitID then
@@ -797,6 +822,9 @@ local function PlayerFrameNameChanges(frame)
         frame.bbfName:SetText("")
         return
     end
+    if not changeUnitFrameFont then
+        frame.bbfName:SetFont(frame.name:GetFont())
+    end
     if classColorTargetNames then
         ClassColorName(frame.bbfName, unit)
     end
@@ -818,6 +846,10 @@ local function TargetFrameNameChanges(frame)
     frame.name:SetAlpha(0)
     if not frame.unit then return end
     local unit = frame.unit
+
+    if not changeUnitFrameFont then
+        frame.bbfName:SetFont(frame.name:GetFont())
+    end
 
     if targetAndFocusArenaNames and IsActiveBattlefieldArena() then
         SetArenaNameUnitFrame(frame, unit, frame.bbfName)
@@ -873,6 +905,9 @@ local function PetFrameNameChanges(frame)
         frame.bbfName:SetText("")
         return
     end
+    if not changeUnitFrameFont then
+        frame.bbfName:SetFont(frame.name:GetFont())
+    end
     frame.bbfName:SetText(frame.name:GetText())
     if classColorTargetNames then
         ClassColorName(frame.bbfName, unit)
@@ -898,6 +933,10 @@ local function FocusFrameNameChanges(frame)
         local _, class = UnitClass(unit)
         local classColor = RAID_CLASS_COLORS[class]
         FocusFrameTextureFrameLevelText:SetTextColor(classColor.r, classColor.g, classColor.b)
+    end
+
+    if not changeUnitFrameFont then
+        frame.bbfName:SetFont(frame.name:GetFont())
     end
 
     if targetAndFocusArenaNames and IsActiveBattlefieldArena() then
@@ -926,6 +965,11 @@ local function TargetFrameToTNameChanges(frame)
     frame.name:SetAlpha(0)
     if not frame.unit then return end
     local unit = frame.unit
+
+    if not changeUnitFrameFont then
+        frame.bbfName:SetFont(frame.name:GetFont())
+    end
+
     if targetAndFocusArenaNames and IsActiveBattlefieldArena() then
         SetArenaNameUnitFrame(frame, unit, frame.bbfName)
     else
@@ -952,6 +996,11 @@ local function FocusFrameToTNameChanges(frame)
     frame.name:SetAlpha(0)
     if not frame.unit then return end
     local unit = frame.unit
+
+    if not changeUnitFrameFont then
+        frame.bbfName:SetFont(frame.name:GetFont())
+    end
+
     if targetAndFocusArenaNames and IsActiveBattlefieldArena() then
         SetArenaNameUnitFrame(frame, unit, frame.bbfName)
     else

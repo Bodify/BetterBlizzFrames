@@ -5796,9 +5796,13 @@ local function guiFrameAuras()
 
     local PlayerAuraFrameBuffEnable = CreateCheckbox("PlayerAuraFrameBuffEnable", "Show BUFFS", enablePlayerBuffFiltering)
     PlayerAuraFrameBuffEnable:SetPoint("TOPLEFT", enablePlayerBuffFiltering, "BOTTOMLEFT", 15, pixelsBetweenBoxes)
-    PlayerAuraFrameBuffEnable:HookScript("OnClick", function ()
+    PlayerAuraFrameBuffEnable:HookScript("OnClick", function (self)
         CheckAndToggleCheckboxes(PlayerAuraFrameBuffEnable)
+        if not self:GetChecked() then
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        end
     end)
+    CreateTooltipTwo(PlayerAuraFrameBuffEnable, "Show Player Buffs", "Show Player Buffs (Top Right)", "If disabled all filtering will be skipped and instead just hide the BuffFrame entirely.")
 
     local personalBarText = contentFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     personalBarText:SetPoint("LEFT", enablePlayerBuffFiltering, "CENTER", 35, 25)
@@ -5872,9 +5876,13 @@ local function guiFrameAuras()
 
     local PlayerAuraFramedeBuffEnable = CreateCheckbox("PlayerAuraFramedeBuffEnable", "Show DEBUFFS", enablePlayerDebuffFiltering)
     PlayerAuraFramedeBuffEnable:SetPoint("TOPLEFT", enablePlayerDebuffFiltering, "BOTTOMLEFT", 15, pixelsBetweenBoxes)
-    PlayerAuraFramedeBuffEnable:HookScript("OnClick", function ()
+    PlayerAuraFramedeBuffEnable:HookScript("OnClick", function (self)
         CheckAndToggleCheckboxes(PlayerAuraFramedeBuffEnable)
+        if not self:GetChecked() then
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        end
     end)
+    CreateTooltipTwo(PlayerAuraFramedeBuffEnable, "Show Player Debuffs", "Show Player Debuffs (Top Right)", "If disabled all filtering will be skipped and instead just hide the DebuffFrame entirely.")
 
     local PlayerAuraFramedeBuffFilterWatchList = CreateCheckbox("PlayerAuraFramedeBuffFilterWatchList", "Whitelist", PlayerAuraFramedeBuffEnable)
     CreateTooltipTwo(PlayerAuraFramedeBuffFilterWatchList, "Whitelist", "Only show whitelisted auras.\n(Plus other filters)", "You can have spells whitelisted to add settings such as \"Only Mine\" and \"Important\" etc without needing to enable the whitelist filter here.\n\nOnly check this if you only want whitelisted auras here or the addition of them.\n(Plus other filters)")

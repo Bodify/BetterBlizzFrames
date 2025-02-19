@@ -1498,7 +1498,9 @@ function BBF.HookTextures()
     local db = BetterBlizzFramesDB
     -- Hook UnitFrames
     -- BetterBlizzFramesDB.textureSwapUnitFrames
-    HookUnitFrameTextures()
+    if db.changeUnitFrameHealthbarTexture or db.changeUnitFrameManabarTexture then
+        HookUnitFrameTextures()
+    end
 
     -- Hook Raidframes
     -- BetterBlizzFramesDB.textureSwapRaidFrames

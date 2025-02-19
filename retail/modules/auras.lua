@@ -2724,14 +2724,32 @@ end
 function BBF.HookPlayerAndTargetAuras()
     --Hook Player BuffFrame
     if playerBuffFilterOn and not playerBuffsHooked then
-        hooksecurefunc(BuffFrame, "UpdateAuraButtons", PersonalBuffFrameFilterAndGrid)
-        playerBuffsHooked = true
+        if BetterBlizzFramesDB.PlayerAuraFrameBuffEnable then
+            hooksecurefunc(BuffFrame, "UpdateAuraButtons", PersonalBuffFrameFilterAndGrid)
+            playerBuffsHooked = true
+            if BBF.BuffFrameHidden then
+                BuffFrame:Show()
+                BBF.BuffFrameHidden = nil
+            end
+        else
+            BuffFrame:Hide()
+            BBF.BuffFrameHidden = true
+        end
     end
 
     --Hook Player DebuffFrame
     if playerDebuffFilterOn and not playerDebuffsHooked then
-        hooksecurefunc(DebuffFrame, "UpdateAuraButtons", PersonalDebuffFrameFilterAndGrid)
-        playerDebuffsHooked = true
+        if BetterBlizzFramesDB.PlayerAuraFramedeBuffEnable then
+            hooksecurefunc(DebuffFrame, "UpdateAuraButtons", PersonalDebuffFrameFilterAndGrid)
+            playerDebuffsHooked = true
+            if BBF.DebuffFrameHidden then
+                DebuffFrame:Show()
+                BBF.DebuffFrameHidden = nil
+            end
+        else
+            DebuffFrame:Hide()
+            BBF.DebuffFrameHidden = true
+        end
     end
 
     --Hook Target & Focus Frame

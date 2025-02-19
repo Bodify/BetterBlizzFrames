@@ -502,6 +502,13 @@ function BBF.BiggerHealthbars(frame, name)
 end
 
 function BBF.HookBiggerHealthbars()
+    if C_AddOns.IsAddOnLoaded("DragonflightUI") then
+        if not BBF.DFUIUnsupported then
+            print("|A:gmchat-icon-blizz:16:16|aBetter|cff00c0ffBlizz|rFrames: Bigger Healthbars is not supported with DragonflightUI")
+            BBF.DFUIUnsupported = true
+        end
+        return
+    end
     if BetterBlizzFramesDB.biggerHealthbars and not biggerHealthbarHooked then
         local playerName = FocusFrame.bbfName or PlayerName
         local targetName = PlayerFrame.bbfName or TargetFrameTextureFrameName

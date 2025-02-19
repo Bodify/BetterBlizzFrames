@@ -4,6 +4,12 @@
 - Fix aura issues from Buff Filtering on Classic versions after update
 - Add missing ToT frames to retexture unitframes setting
 - Fix class color names not recoloring when arena names are in effect
+- Fix a missing if statement causing some of the new texture logic to go through and color healthbars unintentionally
+- Fix name position when using DragonflightUI & EasyFrames
+- Fix non-english names having font issues (squares) with default font
+- Fix Arena Names with Spec Name + Arena ID showing "Frost Arena 1" instead of "Frost 1"
+- Change player aura filtering setting to just hide Buff/Debuff Frame if Show Buff or Show Debuff is unselected. This will stop it from doing a lot of unneccesary filter logic.
+- Fix Filtered Buffs Icon causing a lua error on Classic versions due to Blizzard just removing a function that still exists on Retail..
 
 # BetterBlizzFrames 1.6.0
 ## The War Within, Cata & Era
