@@ -1931,20 +1931,24 @@ function BBF.FixStupidBlizzPTRShit()
 
     local a, b, c, d, e = TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:GetPoint()
     TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:SetPoint(a, b, c, d, -24)
+    if not BBF.ocdAdjusted then
+        local a,b,c,d,e = TargetFrame.bbfName:GetPoint()
+        TargetFrame.bbfName:SetPoint(a,b,c,d,-2)
+        local a,b,c,d,e = FocusFrame.bbfName:GetPoint()
+        FocusFrame.bbfName:SetPoint(a,b,c,d,-2)
+        BBF.ocdAdjusted = true
+    end
     --TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:SetHeight()
-
-    local a, b, c, d, e = FocusFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:GetPoint()
-    FocusFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:SetPoint(a, b, c, d, -24)
     TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:SetHeight(20)
-
-    FocusFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:SetHeight(20)
-
-
     local a, b, c, d, e = TargetFrame.TargetFrameContent.TargetFrameContentMain.LevelText:GetPoint()
     TargetFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetPoint(a, b, c, d, -3)
 
+    local a, b, c, d, e = FocusFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:GetPoint()
+    FocusFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:SetPoint(a, b, c, d, -24)
+    FocusFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:SetHeight(20)
     local a, b, c, d, e = FocusFrame.TargetFrameContent.TargetFrameContentMain.LevelText:GetPoint()
     FocusFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetPoint(a, b, c, d, -3)
+
 
     -- HealthBarColorActive
     --if not BetterBlizzFramesDB.playerFrameOCDTextureBypass then

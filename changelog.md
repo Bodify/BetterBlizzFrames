@@ -10,6 +10,7 @@
 - Fix Arena Names with Spec Name + Arena ID showing "Frost Arena 1" instead of "Frost 1"
 - Change player aura filtering setting to just hide Buff/Debuff Frame if Show Buff or Show Debuff is unselected. This will stop it from doing a lot of unneccesary filter logic.
 - Fix Filtered Buffs Icon causing a lua error on Classic versions due to Blizzard just removing a function that still exists on Retail..
+- Fix Arena Names only accounting for party and arena units and others when Hide Realm Name setting was not on.
 
 # BetterBlizzFrames 1.6.0
 ## The War Within, Cata & Era

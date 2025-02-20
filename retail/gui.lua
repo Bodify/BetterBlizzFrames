@@ -6977,24 +6977,24 @@ end
 function BBF.CreateIntroMessageWindow()
     if BBF.IntroMessageWindow then
         if BBP and BBP.IntroMessageWindow and BBP.IntroMessageWindow:IsShown() then
-            BBP.IntroMessageWindow:SetPoint("CENTER", UIParent, "CENTER", 240, 35)
-            BBF.IntroMessageWindow:SetPoint("CENTER", UIParent, "CENTER", -240, 35)
+            BBP.IntroMessageWindow:SetPoint("CENTER", UIParent, "CENTER", 240, 45)
+            BBF.IntroMessageWindow:SetPoint("CENTER", UIParent, "CENTER", -240, 45)
         else
-            BBF.IntroMessageWindow:SetPoint("CENTER", UIParent, "CENTER", 0, 35)
+            BBF.IntroMessageWindow:SetPoint("CENTER", UIParent, "CENTER", 0, 45)
         end
         BBF.IntroMessageWindow:Show()
         return
     end
 
     BBF.IntroMessageWindow = CreateFrame("Frame", "BBFIntro", UIParent, "PortraitFrameTemplate")
-    BBF.IntroMessageWindow:SetSize(470, 520)
+    BBF.IntroMessageWindow:SetSize(470, 550)
     BBF.IntroMessageWindow.Bg:SetDesaturated(true)
     BBF.IntroMessageWindow.Bg:SetVertexColor(0.5,0.5,0.5, 0.98)
     if BBP and BBP.IntroMessageWindow and BBP.IntroMessageWindow:IsShown() then
-        BBP.IntroMessageWindow:SetPoint("CENTER", UIParent, "CENTER", 240, 35)
-        BBF.IntroMessageWindow:SetPoint("CENTER", UIParent, "CENTER", -240, 35)
+        BBP.IntroMessageWindow:SetPoint("CENTER", UIParent, "CENTER", 240, 45)
+        BBF.IntroMessageWindow:SetPoint("CENTER", UIParent, "CENTER", -240, 45)
     else
-        BBF.IntroMessageWindow:SetPoint("CENTER", UIParent, "CENTER", 0, 35)
+        BBF.IntroMessageWindow:SetPoint("CENTER", UIParent, "CENTER", 0, 45)
     end
     BBF.IntroMessageWindow:SetMovable(true)
     BBF.IntroMessageWindow:EnableMouse(true)

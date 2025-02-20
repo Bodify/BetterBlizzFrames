@@ -787,22 +787,27 @@ local function SetArenaNameUnitFrame(frame, unit, textObject)
     local unitGUID = UnitGUID(unit)
     local specName = GetSpecName(unitGUID)
     local nameText
+    local isSelf = UnitIsUnit(unit, "player")
 
-    -- Determine the arena name using UnitIsUnit
-    local unitID = GetArenaUnitName(unit)
-
-    -- Construct the nameText based on specName and unitID settings
-    if specName then
-        if showSpecName and showArenaID and unitID then
-            local arenaNumber = string.match(unitID, "%d+")
-            nameText = specName .. " " .. (arenaNumber or "")
-        elseif showSpecName then
-            nameText = specName
-        elseif showArenaID and unitID then
-            nameText = unitID
-        end
+    if isSelf then
+        nameText = UnitName("player")
     else
-        nameText = showArenaID and unitID or (removeRealmNames and GetNameWithoutRealm(frame))
+        -- Determine the arena name using UnitIsUnit
+        local unitID = GetArenaUnitName(unit)
+
+        -- Construct the nameText based on specName and unitID settings
+        if specName then
+            if showSpecName and showArenaID and unitID then
+                local arenaNumber = string.match(unitID, "%d+")
+                nameText = specName .. " " .. (arenaNumber or "")
+            elseif showSpecName then
+                nameText = specName
+            elseif showArenaID and unitID then
+                nameText = unitID
+            end
+        else
+            nameText = showArenaID and unitID or (removeRealmNames and GetNameWithoutRealm(frame))
+        end
     end
 
     -- Update the text object with the nameText if available

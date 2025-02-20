@@ -960,7 +960,7 @@ local function SetArenaNameUnitFrame(frame, unit, textObject)
             nameText = unitID
         end
     else
-        nameText = showArenaID and unitID or (removeRealmNames and GetNameWithoutRealm(frame))
+        nameText = (showArenaID and unitID) or (removeRealmNames and GetNameWithoutRealm(frame)) or UnitName(unit)
     end
 
     -- Update the text object with the nameText if available
