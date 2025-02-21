@@ -2913,28 +2913,7 @@ local function guiGeneralTab()
     local hidePartyNames = CreateCheckbox("hidePartyNames", "Hide Names", BetterBlizzFrames)
     hidePartyNames:SetPoint("TOPLEFT", hidePartyFramesInArena, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     hidePartyNames:HookScript("OnClick", function(self)
-        BBF.UpdateUserTargetSettings()
-        if self:GetChecked() then
-            for i = 1, 5 do
-                local frame = _G["CompactRaidFrame"..i] or _G["CompactPartyFrameMember"..i]
-                if frame and frame.bbfName then
-                    frame.bbfName:SetAlpha(0)
-                end
-            end
-        else
-            for i = 1, 5 do
-                local frame = _G["CompactPartyFrameMember"..i] or _G["CompactRaidFrame"..i]
-                if frame then
-                    local unit = frame.displayedUnit
-            
-                    if frame.bbfName and unit then
-                        frame.bbfName:SetAlpha(1)
-                        frame.bbfName:SetText(GetUnitName(unit))
-                    end
-        
-                end
-            end
-        end
+        BBF.AllNameChanges()
     end)
 
     local hidePartyAggroHighlight = CreateCheckbox("hidePartyAggroHighlight", "Hide Aggro Highlight", BetterBlizzFrames, nil, BBF.HideFrames)

@@ -2754,8 +2754,29 @@ function BBF.HookPlayerAndTargetAuras()
 
     --Hook Target & Focus Frame
     if auraFilteringOn and not targetAurasHooked then
-        hooksecurefunc(TargetFrame, "UpdateAuras", function(self) AdjustAuras(self, "target") end)
-        hooksecurefunc(FocusFrame, "UpdateAuras", function(self) AdjustAuras(self, "focus") end)
+
+        if not BetterBlizzFramesDB.targetBuffEnable and not BetterBlizzFramesDB.targetdeBuffEnable then
+            hooksecurefunc(TargetFrame, "UpdateAuras", function(self)
+                for aura in self.auraPools:EnumerateActive() do
+                    aura:Hide()
+                end
+            end)
+            BBF.HidingAllTargetAuras = true
+        else
+            hooksecurefunc(TargetFrame, "UpdateAuras", function(self) AdjustAuras(self, "target") end)
+        end
+
+        if not BetterBlizzFramesDB.focusBuffEnable and not BetterBlizzFramesDB.focusdeBuffEnable then
+            hooksecurefunc(FocusFrame, "UpdateAuras", function(self)
+                for aura in self.auraPools:EnumerateActive() do
+                    aura:Hide()
+                end
+            end)
+            BBF.HidingAllFocusAuras = true
+        else
+            hooksecurefunc(FocusFrame, "UpdateAuras", function(self) AdjustAuras(self, "focus") end)
+        end
+
         targetAurasHooked = true
     end
 

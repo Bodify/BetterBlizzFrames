@@ -215,6 +215,38 @@ hooksecurefunc("CompactUnitFrame_UpdateRoleIcon", HideRoleIcon)
 --hooksecurefunc("CompactUnitFrame_SetUnit", CompactPartyFrameNameChanges)
 hooksecurefunc("CompactUnitFrame_UpdateName", CompactPartyFrameNameChanges)
 
+local function PartyFrameNameChange(frame)
+    if not frame or not frame.unit then return end
+    if hidePartyNames then
+        frame.bbfName:SetText("")
+        return
+    end
+    if partyArenaNames and IsActiveBattlefieldArena() then
+        SetArenaName(frame, frame.unit, frame.bbfName)
+        return
+    end
+    if removeRealmNames then
+        frame.bbfName:SetText(GetNameWithoutRealm(frame))
+    else
+        frame.bbfName:SetText(frame.Name:GetText())
+    end
+end
+
+if not GetCVarBool("useCompactPartyFrames") then
+    local frames = {
+        PartyMemberFrame1,
+        PartyMemberFrame2,
+        PartyMemberFrame3,
+        PartyMemberFrame4,
+    }
+
+    for _, frame in ipairs(frames) do
+        hooksecurefunc(frame.name, "SetText", function(self)
+            PartyFrameNameChange(frame)
+        end)
+    end
+end
+
 
 local function InitializeFontString(frame)
     -- Determine the original FontString based on available properties
@@ -785,18 +817,18 @@ end
 
 local function SetArenaNameUnitFrame(frame, unit, textObject)
     local unitGUID = UnitGUID(unit)
+    local unitID = GetArenaUnitName(unit)
     local specName = GetSpecName(unitGUID)
     local nameText
-    local isSelf = UnitIsUnit(unit, "player")
 
-    if isSelf then
-        nameText = UnitName("player")
+    -- Check if the unit is the player or a party member
+    if UnitIsUnit(unit, "player") then
+        nameText = UnitName("player") -- Show player's name only
+    elseif unitID and string.match(unitID, "Party") then
+        nameText = unitID -- Show "Party 1" or "Party 2"
     else
-        -- Determine the arena name using UnitIsUnit
-        local unitID = GetArenaUnitName(unit)
-
         -- Construct the nameText based on specName and unitID settings
-        if specName then
+        if specName and not UnitIsUnit(unit, "player") and not unitToArenaName[unit] then
             if showSpecName and showArenaID and unitID then
                 local arenaNumber = string.match(unitID, "%d+")
                 nameText = specName .. " " .. (arenaNumber or "")
@@ -806,7 +838,7 @@ local function SetArenaNameUnitFrame(frame, unit, textObject)
                 nameText = unitID
             end
         else
-            nameText = showArenaID and unitID or (removeRealmNames and GetNameWithoutRealm(frame))
+            nameText = (showArenaID and unitID) or (removeRealmNames and GetNameWithoutRealm(frame)) or UnitName(unit)
         end
     end
 
@@ -1060,6 +1092,19 @@ function BBF.AllNameChanges()
     FocusFrameNameChanges(FocusFrame)
     TargetFrameToTNameChanges(TargetFrameToT)
     FocusFrameToTNameChanges(FocusFrameToT)
+
+    if not GetCVarBool("useCompactPartyFrames") then
+        local frames = {
+            PartyMemberFrame1,
+            PartyMemberFrame2,
+            PartyMemberFrame2,
+            PartyMemberFrame2,
+        }
+
+        for _, frame in ipairs(frames) do
+            PartyFrameNameChange(frame)
+        end
+    end
 
     if classColorLevelText then
         ClassColorName(TargetFrameTextureFrameLevelText, "target")

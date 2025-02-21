@@ -1,6 +1,5 @@
 # BetterBlizzFrames 1.6.0b
 - Fix Hide Names not working on Era
-- Fix Arena Names on Target/Focus for Retail/Cata
 - Fix aura issues from Buff Filtering on Classic versions after update
 - Add missing ToT frames to retexture unitframes setting
 - Fix class color names not recoloring when arena names are in effect
@@ -11,6 +10,8 @@
 - Change player aura filtering setting to just hide Buff/Debuff Frame if Show Buff or Show Debuff is unselected. This will stop it from doing a lot of unneccesary filter logic.
 - Fix Filtered Buffs Icon causing a lua error on Classic versions due to Blizzard just removing a function that still exists on Retail..
 - Fix Arena Names only accounting for party and arena units and others when Hide Realm Name setting was not on.
+- Fix Arena Names to again always show friendly units as Party 1 and Party 2 or your own name trumping Spec Names (Its more clear this way imo).
+- Fix default party frame names being hidden due to some missing logic.
 
 # BetterBlizzFrames 1.6.0
 ## The War Within, Cata & Era

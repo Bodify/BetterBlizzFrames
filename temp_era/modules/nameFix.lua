@@ -219,6 +219,38 @@ hooksecurefunc("CompactUnitFrame_UpdateRoleIcon", HideRoleIcon)
 --hooksecurefunc("CompactUnitFrame_SetUnit", CompactPartyFrameNameChanges)
 hooksecurefunc("CompactUnitFrame_UpdateName", CompactPartyFrameNameChanges)
 
+local function PartyFrameNameChange(frame)
+    if not frame or not frame.unit then return end
+    if hidePartyNames then
+        frame.bbfName:SetText("")
+        return
+    end
+    if partyArenaNames and IsActiveBattlefieldArena() then
+        SetArenaName(frame, frame.unit, frame.bbfName)
+        return
+    end
+    if removeRealmNames then
+        frame.bbfName:SetText(GetNameWithoutRealm(frame))
+    else
+        frame.bbfName:SetText(frame.Name:GetText())
+    end
+end
+
+if not GetCVarBool("useCompactPartyFrames") then
+    local frames = {
+        PartyMemberFrame1,
+        PartyMemberFrame2,
+        PartyMemberFrame3,
+        PartyMemberFrame4,
+    }
+
+    for _, frame in ipairs(frames) do
+        hooksecurefunc(frame.name, "SetText", function(self)
+            PartyFrameNameChange(frame)
+        end)
+    end
+end
+
 
 local function InitializeFontString(frame)
     -- Determine the original FontString based on available properties
@@ -1055,6 +1087,19 @@ function BBF.AllNameChanges()
     --FocusFrameNameChanges(FocusFrame)
     TargetFrameToTNameChanges(TargetFrameToT)
     --FocusFrameToTNameChanges(FocusFrameToT)
+
+    if not GetCVarBool("useCompactPartyFrames") then
+        local frames = {
+            PartyMemberFrame1,
+            PartyMemberFrame2,
+            PartyMemberFrame2,
+            PartyMemberFrame2,
+        }
+
+        for _, frame in ipairs(frames) do
+            PartyFrameNameChange(frame)
+        end
+    end
 
     if classColorLevelText then
         ClassColorName(TargetFrameTextureFrameLevelText, "target")

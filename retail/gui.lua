@@ -3014,26 +3014,7 @@ local function guiGeneralTab()
     local hidePartyNames = CreateCheckbox("hidePartyNames", "Hide Names", BetterBlizzFrames)
     hidePartyNames:SetPoint("TOPLEFT", hidePartyFramesInArena, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     hidePartyNames:HookScript("OnClick", function(self)
-        for i = 1, 5 do
-            local frame = _G["CompactPartyFrameMember" .. i]
-            if frame then
-                local nameFrame = frame.name
-                if nameFrame then
-                    if self:GetChecked() then
-                        nameFrame:SetAlpha(0)
-                        if frame.bbfName then
-                            frame.bbfName:SetAlpha(0)
-                        end
-                    else
-                        if frame.bbfName then
-                            frame.bbfName:SetAlpha(1)
-                        else
-                            nameFrame:SetAlpha(1)
-                        end
-                    end
-                end
-            end
-        end
+        BBF.AllNameChanges()
     end)
 
     local hidePartyAggroHighlight = CreateCheckbox("hidePartyAggroHighlight", "Hide Aggro Highlight", BetterBlizzFrames, nil, BBF.HideFrames)
@@ -5537,6 +5518,9 @@ local function guiFrameAuras()
     targetBuffEnable:HookScript("OnClick", function ()
         CheckAndToggleCheckboxes(targetBuffEnable)
         TargetFrame:UpdateAuras()
+        if BBF.HidingAllTargetAuras then
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        end
     end)
 
     local bigEnemyBorderText = contentFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
@@ -5590,6 +5574,9 @@ local function guiFrameAuras()
     targetdeBuffEnable:SetPoint("TOPLEFT", targetBuffFilterMount, "BOTTOMLEFT", -15, 0)
     targetdeBuffEnable:HookScript("OnClick", function ()
         CheckAndToggleCheckboxes(targetdeBuffEnable)
+        if BBF.HidingAllTargetAuras then
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        end
     end)
 
     local targetdeBuffFilterBlizzard = CreateCheckbox("targetdeBuffFilterBlizzard", "Blizzard Default Filter", targetdeBuffEnable)
@@ -5669,6 +5656,9 @@ local function guiFrameAuras()
     focusBuffEnable:SetPoint("TOPLEFT", contentFrame, "BOTTOMLEFT", 285, 140)
     focusBuffEnable:HookScript("OnClick", function ()
         CheckAndToggleCheckboxes(focusBuffEnable)
+        if BBF.HidingAllFocusAuras then
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        end
     end)
 
     local friendlyFramesText = contentFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
@@ -5711,6 +5701,9 @@ local function guiFrameAuras()
     focusdeBuffEnable:SetPoint("TOPLEFT", focusBuffFilterMount, "BOTTOMLEFT", -15, 0)
     focusdeBuffEnable:HookScript("OnClick", function ()
         CheckAndToggleCheckboxes(focusdeBuffEnable)
+        if BBF.HidingAllFocusAuras then
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        end
     end)
 
     local focusdeBuffFilterBlizzard = CreateCheckbox("focusdeBuffFilterBlizzard", "Blizzard Default Filter", focusdeBuffEnable)
@@ -6976,7 +6969,9 @@ end
 
 function BBF.CreateIntroMessageWindow()
     if BBF.IntroMessageWindow then
+        BBF.IntroMessageWindow:ClearAllPoints()
         if BBP and BBP.IntroMessageWindow and BBP.IntroMessageWindow:IsShown() then
+            BBP.IntroMessageWindow:ClearAllPoints()
             BBP.IntroMessageWindow:SetPoint("CENTER", UIParent, "CENTER", 240, 45)
             BBF.IntroMessageWindow:SetPoint("CENTER", UIParent, "CENTER", -240, 45)
         else
