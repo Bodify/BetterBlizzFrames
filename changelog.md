@@ -12,6 +12,8 @@
 - Fix Arena Names only accounting for party and arena units and others when Hide Realm Name setting was not on.
 - Fix Arena Names to again always show friendly units as Party 1 and Party 2 or your own name trumping Spec Names (Its more clear this way imo).
 - Fix default party frame names being hidden due to some missing logic.
+- Added Dwarf and Dark Iron Dwarf to racial indicator
+- Added "Show Race Icon" setting to Racial Indicator. Previously only showed Spell icon for the racial (Shadowmeld etc)
 
 # BetterBlizzFrames 1.6.0
 ## The War Within, Cata & Era

@@ -4849,6 +4849,13 @@ local function guiPositionAndScale()
     end)
     CreateTooltip(racialIndicatorHuman, "Show for Human")
 
+    local racialIndicatorDwarf = CreateCheckbox("racialIndicatorDwarf", "Dwarf", contentFrame)
+    racialIndicatorDwarf:SetPoint("TOPLEFT", racialIndicatorHuman, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    racialIndicatorDwarf:HookScript("OnClick", function(self)
+        BBF.RacialIndicatorCaller()
+    end)
+    CreateTooltip(racialIndicatorDwarf, "Show for Dwarf")
+
     local racialIndicatorNelf = CreateCheckbox("racialIndicatorNelf", "Night Elf", contentFrame)
     racialIndicatorNelf:SetPoint("LEFT", racialIndicatorOrc.Text, "RIGHT", 25, 0)
     racialIndicatorNelf:HookScript("OnClick", function(self)
@@ -4863,8 +4870,15 @@ local function guiPositionAndScale()
     end)
     CreateTooltip(racialIndicatorUndead, "Show for Undead")
 
+    local racialIndicatorDarkIronDwarf = CreateCheckbox("racialIndicatorDarkIronDwarf", "D.I.Dwarf", contentFrame)
+    racialIndicatorDarkIronDwarf:SetPoint("TOPLEFT", racialIndicatorUndead, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    racialIndicatorDarkIronDwarf:HookScript("OnClick", function(self)
+        BBF.RacialIndicatorCaller()
+    end)
+    CreateTooltip(racialIndicatorDarkIronDwarf, "Show for Dark Iron Dwarf")
+
     local targetRacialIndicator = CreateCheckbox("targetRacialIndicator", "Target", contentFrame)
-    targetRacialIndicator:SetPoint("TOPLEFT", racialIndicatorHuman, "BOTTOMLEFT", 0, -10)
+    targetRacialIndicator:SetPoint("TOPLEFT", racialIndicatorDwarf, "BOTTOMLEFT", 0, -10)
     targetRacialIndicator:HookScript("OnClick", function(self)
         BBF.RacialIndicatorCaller()
     end)
@@ -4877,7 +4891,14 @@ local function guiPositionAndScale()
     end)
     CreateTooltip(focusRacialIndicator, "Show on FocusFrame")
 
-       ----------------------
+    local racialIndicatorRaceIcons = CreateCheckbox("racialIndicatorRaceIcons", "Race Icon", contentFrame)
+    racialIndicatorRaceIcons:SetPoint("TOPLEFT", targetRacialIndicator, "BOTTOMLEFT", 12, pixelsBetweenBoxes)
+    racialIndicatorRaceIcons:HookScript("OnClick", function(self)
+        BBF.RacialIndicatorCaller()
+    end)
+    CreateTooltip(racialIndicatorRaceIcons, "Show race icon instead of the racial spell icon")
+
+    ----------------------
     -- Castbar Interrupt Icon
     ----------------------
     local anchorSubInterruptIcon = contentFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
@@ -7116,6 +7137,14 @@ function BBF.CreateIntroMessageWindow()
         end
     end)
     CreateTooltipTwo(buttonLast, "Exit, No Profile", "Exit and customize everything yourself.")
+
+    BBF.IntroMessageWindow.CloseButton:HookScript("OnClick", function()
+        if not BetterBlizzFrames.guiLoaded then
+            BBF.LoadGUI()
+        else
+            Settings.OpenToCategory(BBF.category.ID)
+        end
+    end)
 
 
     -- -- Create exit button

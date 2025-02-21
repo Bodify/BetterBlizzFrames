@@ -102,6 +102,8 @@ local defaultSettings = {
     racialIndicatorNelf = true,
     racialIndicatorHuman = true,
     racialIndicatorUndead = true,
+    racialIndicatorDwarf = true,
+    racialIndicatorDarkIronDwarf = true,
 
     --Party castbars
     partyCastBarScale = 1,
