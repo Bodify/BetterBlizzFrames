@@ -137,28 +137,28 @@ end
 
 local raceIcons = {
     ["Orc"] = {
-        [2] = "raceicon-orc-male",    -- Male icon for Orc
-        [3] = "raceicon-orc-female",  -- Female icon for Orc
+        [2] = "raceicon-orc-male",
+        [3] = "raceicon-orc-female",
     },
     ["Night Elf"] = {
-        [2] = "raceicon-nightelf-male",   -- Male icon for Night Elf
-        [3] = "raceicon-nightelf-female", -- Female icon for Night Elf
+        [2] = "raceicon-nightelf-male",
+        [3] = "raceicon-nightelf-female",
     },
     ["Undead"] = {
-        [2] = "raceicon-undead-male",    -- Male icon for Undead
-        [3] = "raceicon-undead-female",  -- Female icon for Undead
+        [2] = "raceicon-undead-male",
+        [3] = "raceicon-undead-female",
     },
     ["Human"] = {
-        [2] = "raceicon-human-male",    -- Male icon for Human
-        [3] = "raceicon-human-female",  -- Female icon for Human
+        [2] = "raceicon-human-male",
+        [3] = "raceicon-human-female",
     },
     ["Dwarf"] = {
-        [2] = "raceicon-dwarf-male",    -- Male icon for Dwarf
-        [3] = "raceicon-dwarf-female",  -- Female icon for Dwarf
+        [2] = "raceicon-dwarf-male",
+        [3] = "raceicon-dwarf-female",
     },
     ["DarkIronDwarf"] = {
-        [2] = "raceicon-darkirondwarf-male",    -- Male icon for DarkIronDwarf
-        [3] = "raceicon-darkirondwarf-female",  -- Female icon for DarkIronDwarf
+        [2] = "raceicon-darkirondwarf-male",
+        [3] = "raceicon-darkirondwarf-female",
     },
 }
 
