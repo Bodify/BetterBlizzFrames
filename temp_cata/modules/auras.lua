@@ -1808,14 +1808,14 @@ local function CreateToggleIcon()
         self:StopMovingOrSizing()
         -- Save the new position
         local point, relativeTo, relativePoint, xOffset, yOffset = self:GetPoint()
-        BetterBlizzFramesDB.toggleIconPosition = {point, relativeTo, relativePoint, xOffset, yOffset}
+        BetterBlizzFramesDB.toggleIconPosition = {point, nil, relativePoint, xOffset, yOffset}
     end)
 
     -- Load saved position if available
     if BetterBlizzFramesDB.toggleIconPosition then
         local pos = BetterBlizzFramesDB.toggleIconPosition
         toggleIcon:ClearAllPoints()
-        toggleIcon:SetPoint(pos[1], pos[2], pos[3], pos[4], pos[5])
+        toggleIcon:SetPoint(pos[1], UIParent, pos[3], pos[4], pos[5])
     end
 
     toggleIconGlobal = toggleIcon
