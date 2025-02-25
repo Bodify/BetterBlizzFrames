@@ -3,7 +3,7 @@
 local addonVersion = "1.00" --too afraid to to touch for now
 local addonUpdates = C_AddOns.GetAddOnMetadata("BetterBlizzFrames", "Version")
 local sendUpdate = true
-BBF.VersionNumber = addonUpdates
+BBF.VersionNumber = addonUpdates.."c"
 BBF.variablesLoaded = false
 local isAddonLoaded = C_AddOns.IsAddOnLoaded
 

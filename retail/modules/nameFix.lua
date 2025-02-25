@@ -144,24 +144,75 @@ function BBF.SetCenteredNamesCaller()
     end)
 end
 
+local function GetLocalizedSpecs()
+    local specs = {}
 
+    for classID = 1, GetNumClasses() do
+        local _, class = GetClassInfo(classID)
+        local classMale = LOCALIZED_CLASS_NAMES_MALE[class]
+        local classFemale = LOCALIZED_CLASS_NAMES_FEMALE[class]
 
+        for specIndex = 1, GetNumSpecializationsForClassID(classID) do
+            local specID, specName = GetSpecializationInfoForClassID(classID, specIndex)
 
-
-
-local validPartyUnits = {
-    ["party1"] = true,
-    ["party2"] = true,
-    ["raid1"] = true,
-    ["raid2"] =  true,
-}
-
-local function GetSpecName(unitGUID)
-    if Details then
-        local specID = Details:GetSpecByGUID(unitGUID)
-        return specID and (shortArenaSpecName and specIDToNameShort[specID] or specIDToName[specID])
+            if classMale then
+                specs[string.format("%s %s", specName, classMale)] = specID
+            end
+            if classFemale and classFemale ~= classMale then
+                specs[string.format("%s %s", specName, classFemale)] = specID
+            end
+        end
     end
-    return nil
+
+    return specs
+end
+
+-- Store all specs in a lookup table
+local ALL_SPECS = GetLocalizedSpecs()
+
+-- Caching Tables
+local SpecCache = {}  -- Stores GUID -> specID
+local GetUnitTooltip = C_TooltipInfo.GetUnit
+
+-- Function to retrieve the specialization ID of a unit
+local function GetSpecID(unit)
+    -- Check if the unit is a player
+    if not UnitIsPlayer(unit) then
+        return nil
+    end
+
+    local guid = UnitGUID(unit)
+
+    -- Return cached specID if already found
+    if SpecCache[guid] then
+        return SpecCache[guid]
+    end
+
+    -- Fetch tooltip data
+    local tooltipData = GetUnitTooltip(unit)
+    if not tooltipData or not tooltipData.guid or not tooltipData.lines then
+        return nil
+    end
+
+    local tooltipGUID = tooltipData.guid
+
+    -- Iterate through tooltip lines to find the spec name
+    for _, line in ipairs(tooltipData.lines) do
+        if line and line.type == Enum.TooltipDataLineType.None and line.leftText and line.leftText ~= "" then
+            local specID = ALL_SPECS[line.leftText]
+            if specID then
+                SpecCache[tooltipGUID] = specID -- Cache result
+                return specID
+            end
+        end
+    end
+
+    return nil -- Return nil if no spec ID was found
+end
+
+local function GetSpecName(unit)
+    local specID = GetSpecID(unit)
+    return specID and (shortArenaSpecName and specIDToNameShort[specID] or specIDToName[specID]) or nil
 end
 
 local function GetNameWithoutRealm(frame)
@@ -174,8 +225,7 @@ local function GetNameWithoutRealm(frame)
 end
 
 local function SetArenaName(frame, unit, textObject)
-    local unitGUID = UnitGUID(unit)
-    local specName = GetSpecName(unitGUID)
+    local specName = GetSpecName(unit)
     local nameText
     local partyID = UnitIsUnit(unit, "party1") and " 1" or " 2"
 
@@ -196,40 +246,42 @@ local function SetArenaName(frame, unit, textObject)
     end
 end
 
-local function PartyArenaName(frame)
-    local unit = frame.displayedUnit
-    if not validPartyUnits[unit] then return end
-    if UnitIsUnit(unit, "player") then return end
-    if not IsActiveBattlefieldArena() then return end
-    SetArenaName(frame, unit, frame.name)
-end
-
 function BBF.PartyNameChange()
     if EditModeManagerFrame:UseRaidStylePartyFrames() then
         for i = 1, 3 do
             local memberFrame = _G["CompactPartyFrameMember" .. i]
             if memberFrame and memberFrame.displayedUnit then
-                PartyArenaName(memberFrame)
+                SetArenaName(memberFrame, memberFrame.displayedUnit, memberFrame.name)
             end
         end
     else
         for i = 1, 4 do
             local memberFrame = PartyFrame["MemberFrame" .. i]
             if memberFrame and memberFrame.unit then
-                PartyArenaName(memberFrame)
+                SetArenaName(memberFrame, memberFrame.unit, memberFrame.bbfName)
             end
         end
     end
 end
 
 local UpdatePartyNames = CreateFrame("Frame")
-UpdatePartyNames:RegisterEvent("GROUP_ROSTER_UPDATE")
 UpdatePartyNames:RegisterEvent("PLAYER_ENTERING_WORLD")
 UpdatePartyNames:RegisterEvent("PLAYER_ENTERING_BATTLEGROUND")
 UpdatePartyNames:SetScript("OnEvent", function(self, event, ...)
-    if partyArenaNames and IsActiveBattlefieldArena() then
-        for delay = 0, 8 do
-            C_Timer.After(delay, BBF.PartyNameChange)
+    if event == "PLAYER_ENTERING_WORLD" or event == "PLAYER_ENTERING_BATTLEGROUND" then
+        SpecCache = {}
+        if IsActiveBattlefieldArena() then
+            if not self:IsEventRegistered("GROUP_ROSTER_UPDATE") then
+                self:RegisterEvent("GROUP_ROSTER_UPDATE")
+            end
+        else
+            self:UnregisterEvent("GROUP_ROSTER_UPDATE")
+        end
+    elseif event == "GROUP_ROSTER_UPDATE" then
+        if partyArenaNames and IsActiveBattlefieldArena() then
+            for delay = 0, 8 do
+                C_Timer.After(delay, BBF.PartyNameChange)
+            end
         end
     end
 end)
@@ -238,18 +290,15 @@ end)
 
 
 
-
-
-
 local function CompactPartyFrameNameChanges(frame)
     if not frame or not frame.unit then return end
     if frame.unit:find("nameplate") then return end
-    if hidePartyNames then
-        frame.name:SetText("")
+    if partyArenaNames and IsActiveBattlefieldArena() then
+        SetArenaName(frame, frame.unit, frame.name)
         return
     end
-    if partyArenaNames and IsActiveBattlefieldArena() then
-        PartyArenaName(frame)
+    if hidePartyNames then
+        frame.name:SetText("")
         return
     end
     if removeRealmNames then
@@ -261,6 +310,10 @@ local function HideRoleIcon(frame)
     if not hidePartyRoles then return end
     if not frame.roleIcon then return end
     frame.roleIcon:SetAlpha(0)
+end
+local function HideRoleIconDefault(frame)
+    if not hidePartyRoles then return end
+    frame.PartyMemberOverlay.RoleIcon:SetAlpha(0)
 end
 hooksecurefunc("CompactUnitFrame_UpdateRoleIcon", HideRoleIcon)
 
@@ -472,6 +525,12 @@ local function SetPartyFont(font, size, outline, size2)
                     raidFrame.statusText:SetFont(font, size2, outline)
                 end
             end
+        end
+    end
+    for i = 1, 4 do
+        local partyFrameMember = _G["PartyFrame"]["MemberFrame"..i]
+        if partyFrameMember then
+            partyFrameMember.bbfName:SetFont(font, size, outline)
         end
     end
 end
@@ -973,9 +1032,8 @@ local function GetArenaUnitName(unit)
 end
 
 local function SetArenaNameUnitFrame(frame, unit, textObject)
-    local unitGUID = UnitGUID(unit)
     local unitID = GetArenaUnitName(unit)
-    local specName = GetSpecName(unitGUID)
+    local specName = GetSpecName(unit)
     local nameText
 
     -- Check if the unit is the player or a party member
@@ -1253,6 +1311,7 @@ function BBF.AllNameChanges()
 
         for _, frame in ipairs(frames) do
             PartyFrameNameChange(frame)
+            HideRoleIconDefault(frame)
         end
     end
 

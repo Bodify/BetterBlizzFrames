@@ -363,6 +363,12 @@ local function SetPartyFont(font, size, outline, size2)
             end
         end
     end
+    for i = 1, 4 do
+        local partyFrameMember = _G["PartyMemberFrame"..i]
+        if partyFrameMember then
+            partyFrameMember.bbfName:SetFont(font, size, outline)
+        end
+    end
 end
 
 local function SetUnitFramesFont(font, size, outline)

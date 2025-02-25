@@ -1,3 +1,9 @@
+# BetterBlizzFrames 1.6.0c
+- Update Arena Names logic to no longer require Details to get spec names
+- Fix missing logic for hiding role icon on default party frames
+- Fix old function name in GUI related to hiding role icons causing a lua error when clicked.
+- Fix moving of Filtered Buffs Icon potentially causing lua error on Classic versions.
+
 # BetterBlizzFrames 1.6.0b
 - Fix Hide Names not working on Era
 - Fix aura issues from Buff Filtering on Classic versions after update

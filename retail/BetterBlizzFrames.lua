@@ -3,7 +3,7 @@
 local addonVersion = "1.00" --too afraid to to touch for now
 local addonUpdates = C_AddOns.GetAddOnMetadata("BetterBlizzFrames", "Version")
 local sendUpdate = true
-BBF.VersionNumber = addonUpdates
+BBF.VersionNumber = addonUpdates.."c"
 BBF.variablesLoaded = false
 local isAddonLoaded = C_AddOns.IsAddOnLoaded
 
@@ -1905,6 +1905,7 @@ function BBF.FixStupidBlizzPTRShit()
 
     TargetFrame.totFrame.Portrait:SetSize(36,36)
     FocusFrame.totFrame.Portrait:SetSize(36,36)
+    PlayerFrame.PlayerFrameContainer.PlayerPortraitMask:SetSize(61,60)
 
     for i = 1, 4 do
         local memberFrame = PartyFrame["MemberFrame" .. i]
