@@ -1,3 +1,6 @@
+# BetterBlizzFrames 1.6.0d
+- Add a new setting for Arena Names to chose between Party1 or SpecName for Party units. (Right-click Show Spec Names)
+
 # BetterBlizzFrames 1.6.0c
 - Update Arena Names logic to no longer require Details to get spec names
 - Fix missing logic for hiding role icon on default party frames

@@ -3105,15 +3105,33 @@ local function guiGeneralTab()
 
     local targetAndFocusArenaNames = CreateCheckbox("targetAndFocusArenaNames", "Target & Focus", BetterBlizzFrames)
     targetAndFocusArenaNames:SetPoint("TOPLEFT", arenaNamesText, "BOTTOMLEFT", -4, pixelsOnFirstBox)
-    CreateTooltipTwo(targetAndFocusArenaNames, "Arena Names","Change Target & Focus name to arena ID and/or spec name during arena", "Will enable a fake name. Because of this other addons like HealthBarColor's name stuff will not work properly.", "ANCHOR_LEFT")
+    CreateTooltipTwo(targetAndFocusArenaNames, "Arena Names","Change Target & Focus name to arena ID and/or spec name during arena\n\n|cff32f795Right-click to change if Party units should override Spec.|r", nil, "ANCHOR_LEFT")
 
     local partyArenaNames = CreateCheckbox("partyArenaNames", "Party", BetterBlizzFrames)
     partyArenaNames:SetPoint("LEFT", targetAndFocusArenaNames.text, "RIGHT", 0, 0)
-    CreateTooltipTwo(partyArenaNames, "Arena Names", "Change party frame names to party ID and/or spec name during arena","Will enable a fake name. Because of this other addons like HealthBarColor's name stuff will not work properly.", "ANCHOR_LEFT")
+    CreateTooltipTwo(partyArenaNames, "Arena Names", "Change party frame names to party ID and/or spec name during arena", nil, "ANCHOR_LEFT")
 
     local showSpecName = CreateCheckbox("showSpecName", "Show Spec Name", BetterBlizzFrames)
     showSpecName:SetPoint("TOPLEFT", targetAndFocusArenaNames, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltip(showSpecName, "Show spec name instead of name\n\nIf both spec name and arena id is selected\nit will display as for instance \"Fury 3\"")
+    CreateTooltipTwo(showSpecName, "Show Spec Name", "Show spec name instead of player names.\n\nIf both spec name and arena id is selected it will display as for instance \"Fury 3\".\n\n|cff32f795Right-click to change whether Party units should have spec names or not.\nShow spec for Party units: "..(BetterBlizzFramesDB.targetAndFocusArenaNamePartyOverride and "True" or "|cffff0000False|r").."|r")
+    showSpecName:SetScript("OnMouseDown", function(self, button)
+        if button == "RightButton" then
+            if BetterBlizzFramesDB.targetAndFocusArenaNamePartyOverride then
+                BetterBlizzFramesDB.targetAndFocusArenaNamePartyOverride = false
+            else
+                BetterBlizzFramesDB.targetAndFocusArenaNamePartyOverride = true
+            end
+            local value = (BetterBlizzFramesDB.targetAndFocusArenaNamePartyOverride and "True" or "|cffff0000False|r")
+            local showSpecNameTip = "Show spec name instead of player names.\n\nIf both spec name and arena id is selected it will display as for instance \"Fury 3\".\n\n|cff32f795Right-click to change whether Party units should have spec names or not.\nShow spec for Party units: "..value.."|r"
+            GameTooltip:ClearLines()
+            GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+            GameTooltip:AddLine("Show Spec Name")
+            GameTooltip:AddLine(showSpecNameTip, 1, 1, 1, true)
+            GameTooltip:Show()
+            CreateTooltipTwo(showSpecName, "Show Spec Name", "Show spec name instead of player names.\n\nIf both spec name and arena id is selected it will display as for instance \"Fury 3\".\n\n|cff32f795Right-click to change whether Party units should have spec names or not.\nShow spec for Party units: "..(BetterBlizzFramesDB.targetAndFocusArenaNamePartyOverride and "True" or "|cffff0000False|r").."|r")
+            BBF.AllNameChanges()
+        end
+    end)
 
     local shortArenaSpecName = CreateCheckbox("shortArenaSpecName", "Short", BetterBlizzFrames)
     shortArenaSpecName:SetPoint("LEFT", showSpecName.Text, "RIGHT", 0, 0)

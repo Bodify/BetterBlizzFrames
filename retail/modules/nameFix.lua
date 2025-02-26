@@ -78,6 +78,7 @@ local hidePlayerName
 local hidePetName
 local isAddonLoaded = C_AddOns.IsAddOnLoaded
 local changeUnitFrameFont
+local targetAndFocusArenaNamePartyOverride
 
 function BBF.UpdateUserTargetSettings()
     hidePartyNames = BetterBlizzFramesDB.hidePartyNames
@@ -101,6 +102,7 @@ function BBF.UpdateUserTargetSettings()
     hidePlayerName = BetterBlizzFramesDB.hidePlayerName
     hidePetName = BetterBlizzFramesDB.hidePetName
     changeUnitFrameFont = BetterBlizzFramesDB.changeUnitFrameFont
+    targetAndFocusArenaNamePartyOverride = BetterBlizzFramesDB.targetAndFocusArenaNamePartyOverride
 end
 
 local function CenterPlayerName()
@@ -225,6 +227,7 @@ local function GetNameWithoutRealm(frame)
 end
 
 local function SetArenaName(frame, unit, textObject)
+    if UnitIsUnit(unit, "player") then return end
     local specName = GetSpecName(unit)
     local nameText
     local partyID = UnitIsUnit(unit, "party1") and " 1" or " 2"
@@ -1037,13 +1040,13 @@ local function SetArenaNameUnitFrame(frame, unit, textObject)
     local nameText
 
     -- Check if the unit is the player or a party member
-    if UnitIsUnit(unit, "player") then
-        nameText = UnitName("player") -- Show player's name only
-    elseif unitID and string.match(unitID, "Party") then
+    if UnitIsUnit(unit, "player") or not UnitIsPlayer(unit) then
+        nameText = UnitName(unit) -- Show default target name
+    elseif targetAndFocusArenaNamePartyOverride and unitID and string.match(unitID, "Party") then
         nameText = unitID -- Show "Party 1" or "Party 2"
     else
         -- Construct the nameText based on specName and unitID settings
-        if specName and not UnitIsUnit(unit, "player") and not unitToArenaName[unit] then
+        if specName then
             if showSpecName and showArenaID and unitID then
                 local arenaNumber = string.match(unitID, "%d+")
                 nameText = specName .. " " .. (arenaNumber or "")
