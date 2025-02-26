@@ -32,7 +32,8 @@
 
 ## Buff filters
 
-![BuffFilters](https://s13.gifyu.com/images/b2LpN.gif)
+![BuffFilters](https://github.com/user-attachments/assets/cd896246-9720-4a18-85a0-c7f36060a079)
+
 
 Default settings ![DefaultNameplate](https://i.imgur.com/S063bAX.png)
 
