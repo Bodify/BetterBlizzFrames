@@ -3,7 +3,7 @@
 local addonVersion = "1.00" --too afraid to to touch for now
 local addonUpdates = C_AddOns.GetAddOnMetadata("BetterBlizzFrames", "Version")
 local sendUpdate = true
-BBF.VersionNumber = addonUpdates.."d"
+BBF.VersionNumber = addonUpdates.."e"
 BBF.variablesLoaded = false
 local isAddonLoaded = C_AddOns.IsAddOnLoaded
 
@@ -749,6 +749,31 @@ end
 local hookedResourceFrames
 local comboPointCache = {} -- Cache for original combo point order and number of points
 
+local function DetectComboPointsOrder(comboPointFrame)
+    local points = {}
+
+    for i = 1, comboPointFrame:GetNumChildren() do
+        local child = select(i, comboPointFrame:GetChildren())
+        if child ~= comboPointFrame.layoutParent and child:IsShown() then
+            if child.layoutIndex then
+                points[child.layoutIndex] = child
+            else
+                print("BetterBlizzFrames: Reason for concern. Contact bodify :P")
+            end
+        end
+    end
+
+    -- Ensure table is sequential
+    local orderedPoints = {}
+    for i = 1, #points do
+        if points[i] then
+            table.insert(orderedPoints, points[i])
+        end
+    end
+
+    return orderedPoints
+end
+
 -- Function to reposition combo points after dragging
 local function RepositionIndividualComboPoints(comboPointFrame, positions, scale, expectedClass)
     if not comboPointCache[comboPointFrame] then
@@ -758,40 +783,20 @@ local function RepositionIndividualComboPoints(comboPointFrame, positions, scale
         }
     end
 
-    local currentComboPoints = {}
-    local allPointsReady = true
-    local numComboPoints = 0
-
-    for i = 1, comboPointFrame:GetNumChildren() do
-        local child = select(i, comboPointFrame:GetChildren())
-        if child ~= comboPointFrame.layoutParent and child:IsShown() then
-            local point, _, relativePoint, x, y = child:GetPoint()
-            if x then
-                table.insert(currentComboPoints, { child = child, x = x, index = i })
-                numComboPoints = numComboPoints + 1
-            else
-                allPointsReady = false
-                break
-            end
-        end
-    end
+    local currentComboPoints = DetectComboPointsOrder(comboPointFrame)
+    local numComboPoints = #currentComboPoints
 
     if numComboPoints ~= comboPointCache[comboPointFrame].numPoints then
         comboPointCache[comboPointFrame].numPoints = numComboPoints
-        table.sort(currentComboPoints, function(a, b) return a.x < b.x end)
-        comboPointCache[comboPointFrame].points = {}
-        for i, info in ipairs(currentComboPoints) do
-            table.insert(comboPointCache[comboPointFrame].points, info.child)
-        end
-    elseif not allPointsReady then
-        C_Timer.After(0.5, function()
-            RepositionIndividualComboPoints(comboPointFrame, positions, scale, expectedClass)
-        end)
-        return
+        comboPointCache[comboPointFrame].points = currentComboPoints
     end
 
     for i, child in ipairs(comboPointCache[comboPointFrame].points) do
-        local savedPos = BetterBlizzFramesDB.moveResourceToTargetCustom and BetterBlizzFramesDB.customComboPositions and BetterBlizzFramesDB.customComboPositions[expectedClass] and BetterBlizzFramesDB.customComboPositions[expectedClass][i]
+        local savedPos = BetterBlizzFramesDB.moveResourceToTargetCustom 
+            and BetterBlizzFramesDB.customComboPositions 
+            and BetterBlizzFramesDB.customComboPositions[expectedClass] 
+            and BetterBlizzFramesDB.customComboPositions[expectedClass][i]
+
         child:ClearAllPoints()
         if savedPos then
             savedPos[2] = _G.UIParent
@@ -1036,7 +1041,7 @@ local function HookClassComboPoints()
         if db.moveResourceToTargetDruid then SetupClassComboPoints(DruidComboPointBarFrame, druidPositions, "DRUID", 0.55, -53, -2, true) end
         if db.moveResourceToTargetWarlock then SetupClassComboPoints(WarlockPowerFrame, warlockPositions, "WARLOCK", 0.6, -56, 1) end
         if db.moveResourceToTargetMage then SetupClassComboPoints(MageArcaneChargesFrame, magePositions, "MAGE", 0.7, -61, -4) end
-        if db.moveResourceToTargetMonk then SetupClassComboPoints(MonkHarmonyBarFrame, monkPositions, "ROGUE", 0.5, -44, -2, true) end
+        if db.moveResourceToTargetMonk then SetupClassComboPoints(MonkHarmonyBarFrame, monkPositions, "MONK", 0.5, -44, -2, true) end
         if db.moveResourceToTargetEvoker then SetupClassComboPoints(EssencePlayerFrame, evokerPositions, "EVOKER", 0.65, -50, 0.5, true) end
         if db.moveResourceToTargetPaladin then SetupClassComboPoints(PaladinPowerBarFrame, paladinPositions, "PALADIN", 0.75, -61, -8, true) end
         if db.moveResourceToTargetDK then SetupClassComboPoints(RuneFrame, dkPositions, "DEATHKNIGHT", 0.7, -50.5, 0.5, true) end

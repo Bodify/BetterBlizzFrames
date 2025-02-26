@@ -475,7 +475,7 @@ local function UpdateFontStringPosition(frame)
     local point, relativeTo, relativePoint, xOffset, yOffset = name:GetPoint()
     if point then
         frame.bbfName:ClearAllPoints()
-        frame.bbfName:SetPoint(point, relativeTo, relativePoint, xOffset, yOffset)
+        frame.bbfName:SetPoint("CENTER", name, "CENTER", 0, 0)
     end
 end
 
@@ -488,6 +488,20 @@ end
 C_Timer.After(1, function()
     if C_AddOns.IsAddOnLoaded("EasyFrames") then
         UpdateAllFontStringPositions()
+        local playerName = UnitName("player")
+        local realmName = GetRealmName()
+        local playerNameAndRealm = playerName .. " - " .. realmName
+        local selectedProfile = EasyFramesDB["profileKeys"][playerNameAndRealm]
+        if EasyFramesDB["profiles"][selectedProfile] then
+            local useEFTextures = EasyFramesDB["profiles"][selectedProfile]["general"] and EasyFramesDB["profiles"][selectedProfile]["general"].useEFTextures
+            if centerNames and useEFTextures == false then
+                CenterPlayerName()
+                CenterXName(TargetFrame.bbfName, TargetFrame.TargetFrameContent.TargetFrameContentMain.HealthBarsContainer)
+                CenterXName(FocusFrame.bbfName, FocusFrame.TargetFrameContent.TargetFrameContentMain.HealthBarsContainer)
+                CenterXName(TargetFrameToT.bbfName, TargetFrame.totFrame.HealthBar, true)
+                CenterXName(FocusFrameToT.bbfName, FocusFrame.totFrame.HealthBar, true)
+            end
+        end
     end
 end)
 

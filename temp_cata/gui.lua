@@ -1259,11 +1259,18 @@ local function deleteEntry(listName, key)
     if entry then
         if entry.id then
             local spellName, _, icon = GetSpellInfo(entry.id)
-            local iconString = "|T" .. icon .. ":16:16:0:0|t"
-            print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. entry.id .. ") removed from list.")
+            if spellName and icon then
+                local iconString = "|T" .. icon .. ":16:16:0:0|t"
+                print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. entry.id .. ") removed from list.")
+            elseif entry.name then
+                print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. entry.name .. " (" .. entry.id .. ") removed from list.")
+            else
+                print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: Spell ID " .. entry.id .. " removed from list (info not found).")
+            end
         else
             print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. entry.name .. " removed from list.")
         end
+
         BetterBlizzFramesDB[listName][key] = nil
     end
 

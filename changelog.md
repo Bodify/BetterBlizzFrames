@@ -1,3 +1,11 @@
+
+# BetterBlizzFrames 1.6.0e
+- Added new pvp auras to whitelist preset and removed the ones purged by Blizzard.
+- Fix issue with deleting a spell from whitelist/blacklist that no longer has any valid spell information because of removal from Blizzard.
+- Fix Monk Combo Points not getting moved to TargetFrame with the setting for that on.
+- Potential fix for rare issue with rogue combo points sometimes not being in proper order with the move to targetframe setting.
+- Fix frame name issues with EasyFrames
+
 # BetterBlizzFrames 1.6.0d
 - Add a new setting for Arena Names to chose between Party1 or SpecName for Party units. (Right-click Show Spec Names)
 
