@@ -111,7 +111,8 @@ function BBF.UpdateCastbars()
             for i = 1, 5 do
                 local spellbar = spellBars[i]
                 if spellbar then
-                    spellbar:SetParent(UIParent)
+                    --spellbar:SetParent(UIParent)
+                    spellbar:SetIgnoreParentAlpha(true)
                     spellbar:SetScale(BetterBlizzFramesDB.partyCastBarScale)
                     spellbar:SetWidth(BetterBlizzFramesDB.partyCastBarWidth)
                     spellbar:SetHeight(BetterBlizzFramesDB.partyCastBarHeight)
@@ -200,7 +201,8 @@ function BBF.UpdatePetCastbar()
         local width = BetterBlizzFramesDB.petCastBarWidth
         local height = BetterBlizzFramesDB.petCastBarHeight
 
-        petSpellBar:SetParent(UIParent)
+        --petSpellBar:SetParent(UIParent)
+        petSpellBar:SetIgnoreParentAlpha(true)
         if not BetterBlizzFramesDB.showPetCastBarIcon then
             petSpellBar.Icon:SetAlpha(0)
             petSpellBar.BorderShield:SetAlpha(0)
@@ -335,7 +337,8 @@ function BBF.partyCastBarTestMode()
     for i = 1, 5 do
         local spellbar = spellBars[i]
         if spellbar and BetterBlizzFramesDB.partyCastBarTestMode then
-            spellbar:SetParent(UIParent)
+            --spellbar:SetParent(UIParent)
+            spellbar:SetIgnoreParentAlpha(true)
             spellbar:Show()
             spellbar:SetAlpha(1)
 
