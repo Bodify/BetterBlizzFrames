@@ -392,7 +392,7 @@ local function CreateSimpleDropdown(name, parentFrame, labelText, settingKey, op
 
             -- Add the text initializer for the button
             button:AddInitializer(function(button)
-                --button.Text:SetText(option)
+                --button.Text:SetText(option) -- 11.1 error
             end)
         end
     end
