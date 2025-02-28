@@ -1,3 +1,10 @@
+# BetterBlizzFrames 1.6.0f
+## The War Within
+- Adding Mage Barriers to Whitelist now only Glows/Enlarges if they are specced into Overpowered Barriers. (This can be turned off with /run BetterBlizzFramesDB.opBarriersOn = false)
+- Added Ancient of Lore, Prismatic Barrier Immunity & Bloodstones Haste buff to PvP Whitelist Preset.
+
+## The War Within, Classic Era & Cataclysm
+- Fix some default party frame name stuff
 
 # BetterBlizzFrames 1.6.0e
 - Added new pvp auras to whitelist preset and removed the ones purged by Blizzard.

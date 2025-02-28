@@ -98,6 +98,12 @@ local uas = {
     [316099] = true,
 }
 
+local opBarriers = {
+    [235313] = true, -- Blazing Barrier
+    [11426] = true, -- Ice Barrier
+    [235450] = true, -- Prismatic Barrier
+}
+
 function BBF.CheckDebuffsForSmoke()
     local activeSmoke = false
 
@@ -258,6 +264,7 @@ local clickthroughAuras
 local importantDispel
 local targetAuraGlows
 local focusAuraGlows
+local opBarriersOn
 
 local function UpdateMore()
     onlyPandemicMine = BetterBlizzFramesDB.onlyPandemicAuraMine
@@ -280,6 +287,7 @@ local function UpdateMore()
     importantDispel = BetterBlizzFramesDB.auraImportantDispelIcon
     targetAuraGlows = BetterBlizzFramesDB.targetAuraGlows
     focusAuraGlows = BetterBlizzFramesDB.focusAuraGlows
+    opBarriersOn = BetterBlizzFramesDB.opBarriersOn
 end
 
 function BBF.UpdateUserAuraSettings()
@@ -1357,6 +1365,11 @@ local function AdjustAuras(self, frameType)
                 end
             end
 
+            if opBarriersOn and opBarriers[auraData.spellId] and auraData.duration ~= 5 then
+                isImportant = nil
+                isEnlarged = nil
+            end
+
             if onlyPandemicMine and not isLarge then
                 isPandemic = false
             end
@@ -2090,6 +2103,10 @@ local function PersonalBuffFrameFilterAndGrid(self)
 
                 -- Nonprint logic
                 if shouldShowAura then
+
+                    if opBarriersOn and opBarriers[auraData.spellId] and auraData.duration ~= 5 then
+                        isImportant = nil
+                    end
 
                     if not auraFrame.GlowFrame then
                         auraFrame.GlowFrame = CreateFrame("Frame", nil, auraFrame)

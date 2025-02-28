@@ -220,6 +220,7 @@ hooksecurefunc("CompactUnitFrame_UpdateName", CompactPartyFrameNameChanges)
 
 local function PartyFrameNameChange(frame)
     if not frame or not frame.unit then return end
+    frame.name:SetAlpha(0)
     if hidePartyNames then
         frame.bbfName:SetText("")
         return
@@ -247,9 +248,11 @@ if not GetCVarBool("useCompactPartyFrames") then
         hooksecurefunc(frame.name, "SetText", function(self)
             PartyFrameNameChange(frame)
         end)
+        C_Timer.After(1, function()
+            PartyFrameNameChange(frame)
+        end)
     end
 end
-
 
 local function InitializeFontString(frame)
     -- Determine the original FontString based on available properties

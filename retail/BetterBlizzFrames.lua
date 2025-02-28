@@ -53,6 +53,7 @@ local defaultSettings = {
     uiWidgetPowerBarScale = 1,
     druidOverstacks = true,
     --partyFrameScale = 1,
+    opBarriersOn = true,
 
     --Target castbar
     playerCastbarIconXPos = 0,

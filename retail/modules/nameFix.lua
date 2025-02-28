@@ -325,6 +325,7 @@ hooksecurefunc("CompactUnitFrame_UpdateName", CompactPartyFrameNameChanges)
 
 local function PartyFrameNameChange(frame)
     if not frame or not frame.unit then return end
+    frame.Name:SetAlpha(0)
     if hidePartyNames then
         frame.bbfName:SetText("")
         return
@@ -350,6 +351,9 @@ if not EditModeManagerFrame:UseRaidStylePartyFrames() then
 
     for _, frame in ipairs(frames) do
         hooksecurefunc(frame.Name, "SetText", function(self)
+            PartyFrameNameChange(frame)
+        end)
+        C_Timer.After(1, function()
             PartyFrameNameChange(frame)
         end)
     end
