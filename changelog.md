@@ -6,6 +6,8 @@
 ## The War Within, Classic Era & Cataclysm
 - Fix some default party frame name stuff
 
+
+
 # BetterBlizzFrames 1.6.0e
 - Added new pvp auras to whitelist preset and removed the ones purged by Blizzard.
 - Fix issue with deleting a spell from whitelist/blacklist that no longer has any valid spell information because of removal from Blizzard.
