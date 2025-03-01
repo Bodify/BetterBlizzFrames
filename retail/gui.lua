@@ -3733,7 +3733,7 @@ local function guiGeneralTab()
     local resetBBFButton = CreateFrame("Button", nil, BetterBlizzFrames, "UIPanelButtonTemplate")
     resetBBFButton:SetText("Reset BetterBlizzFrames")
     resetBBFButton:SetWidth(165)
-    resetBBFButton:SetPoint("RIGHT", magnuszProfileButton, "LEFT", -200, 0)
+    resetBBFButton:SetPoint("BOTTOMLEFT", SettingsPanel, "BOTTOMLEFT", 16, 16)
     resetBBFButton:SetScript("OnClick", function()
         StaticPopup_Show("CONFIRM_RESET_BETTERBLIZZFRAMESDB")
     end)
@@ -6580,13 +6580,6 @@ local function guiMisc()
         StaticPopup_Show("BBF_CONFIRM_RELOAD")
         CheckAndToggleCheckboxes(moveResourceToTarget)
     end)
-
-
-    local skipGUI = CreateCheckbox("skipGUI", "Skip GUI", guiMisc)
-    skipGUI:SetPoint("BOTTOMRIGHT", bgImg, "BOTTOMRIGHT", -60, 0)
-    CreateTooltipTwo(skipGUI, "Skip GUI", "Skip creating the BBF Settings GUI on login/reload.\n\nIt will be created when typing /bbf\n\nFrees a little memory, makes reload a little faster.")
-    skipGUI:SetScale(1.3)
-
 end
 
 local function guiChatFrame()
@@ -6950,34 +6943,21 @@ function BBF.InitializeOptions()
         BBF.category.ID = BetterBlizzFrames.name
         Settings.RegisterAddOnCategory(BBF.category)
 
-        if not BetterBlizzFramesDB.skipGUI then
-            guiGeneralTab()
-            guiPositionAndScale()
-            guiFrameAuras()
-            guiFrameLook()
-            guiCastbars()
-            guiImportAndExport()
-            guiMisc()
-            --guiChatFrame()
-            guiSupport()
-            BetterBlizzFrames.guiLoaded = true
-        else
-            local titleText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFont_Gigantic")
-            titleText:SetPoint("CENTER", BetterBlizzFrames, "CENTER", -15, 33)
-            titleText:SetText("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames")
-            BetterBlizzFrames.titleText = titleText
+        local titleText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFont_Gigantic")
+        titleText:SetPoint("CENTER", BetterBlizzFrames, "CENTER", -15, 33)
+        titleText:SetText("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames")
+        BetterBlizzFrames.titleText = titleText
 
-            local loadGUI = CreateFrame("Button", nil, BetterBlizzFrames, "UIPanelButtonTemplate")
-            loadGUI:SetText("Load Settings")
-            loadGUI:SetWidth(100)
-            loadGUI:SetPoint("CENTER", BetterBlizzFrames, "CENTER", -18, 6)
-            BetterBlizzFrames.loadGUI = loadGUI
-            loadGUI:SetScript("OnClick", function(self)
-                titleText:Hide()
-                self:Hide()
-                BBF.LoadGUI()
-            end)
-        end
+        local loadGUI = CreateFrame("Button", nil, BetterBlizzFrames, "UIPanelButtonTemplate")
+        loadGUI:SetText("Load Settings")
+        loadGUI:SetWidth(100)
+        loadGUI:SetPoint("CENTER", BetterBlizzFrames, "CENTER", -18, 6)
+        BetterBlizzFrames.loadGUI = loadGUI
+        loadGUI:SetScript("OnClick", function(self)
+            titleText:Hide()
+            self:Hide()
+            BBF.LoadGUI()
+        end)
     end
 end
 
@@ -7129,7 +7109,7 @@ function BBF.CreateIntroMessageWindow()
     button4:SetNormalFontObject("GameFontNormal")
     button4:SetHighlightFontObject("GameFontHighlight")
     button4:SetScript("OnClick", function()
-        ShowProfileConfirmation("Snupy Profile", BBF.NahjProfile)
+        ShowProfileConfirmation("Snupy Profile", BBF.SnupyProfile)
     end)
     CreateTooltipTwo(button4, "|A:groupfinder-icon-class-druid:16:16|a |cffff7d0aSnupy Profile|r", "www.twitch.tv/snupy")
 
@@ -7162,25 +7142,6 @@ function BBF.CreateIntroMessageWindow()
         end
     end)
 
-
-    -- -- Create exit button
-    -- local exitButton = CreateFrame("Button", nil, BBF.IntroMessageWindow, "GameMenuButtonTemplate")
-    -- exitButton:SetPoint("BOTTOM", BBF.IntroMessageWindow, "BOTTOM", 0, 10)
-    -- exitButton:SetSize(100, 30)
-    -- exitButton:SetText("Exit")
-    -- exitButton:SetNormalFontObject("GameFontNormal")
-    -- exitButton:SetHighlightFontObject("GameFontHighlight")
-    -- exitButton:SetScript("OnClick", function()
-    --     BBF.IntroMessageWindow:Hide()
-    --     if not BetterBlizzFrames.guiLoaded then
-    --         BBF.LoadGUI()
-    --     else
-    --         Settings.OpenToCategory(BBF.category.ID)
-    --     end
-    -- end)
-
-
-
     local function SetFontWithOutline(fontString)
         local font, size = fontString:GetFont()
         fontString:SetFont(font, size, "OUTLINE")
@@ -7197,4 +7158,17 @@ function BBF.CreateIntroMessageWindow()
             SetFontWithOutline(element)
         end
     end
+    local function AdjustWindowHeight()
+        local baseHeight = 334
+        local perButtonHeight = 29
+        local buttonCount = -1
+        for _, child in ipairs({BBF.IntroMessageWindow:GetChildren()}) do
+            if child and child:IsObjectType("Button") then
+                buttonCount = buttonCount + 1
+            end
+        end
+        local newHeight = baseHeight + (buttonCount * perButtonHeight)
+        BBF.IntroMessageWindow:SetSize(470, newHeight)
+    end
+    AdjustWindowHeight()
 end

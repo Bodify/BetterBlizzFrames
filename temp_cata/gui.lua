@@ -8,6 +8,7 @@ local pixelsOnFirstBox = -1
 local sliderUnderBoxX = 12
 local sliderUnderBoxY = -10
 local sliderUnderBox = "12, -10"
+local titleText = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: \n\n"
 
 local LibDeflate = LibStub("LibDeflate")
 local LibSerialize = LibStub("LibSerialize")
@@ -189,31 +190,20 @@ StaticPopupDialogs["BBF_TOT_MESSAGE"] = {
     hideOnEscape = true,
 }
 
-StaticPopupDialogs["BBF_CONFIRM_NAHJ_PROFILE"] = {
-    text = "This action will modify all settings to Nahj's profile and reload the UI.\n\nYour existing blacklists and whitelists will be retained, with Nahj's additional entries.\n\nAre you sure you want to continue?",
+StaticPopupDialogs["BBF_CONFIRM_PROFILE"] = {
+    text = "",
     button1 = "Yes",
     button2 = "No",
-    OnAccept = function()
-        BBF.NahjProfile()
-        ReloadUI()
+    OnAccept = function(self)
+        if self.data and self.data.func then
+            self.data.func()
+        end
     end,
     timeout = 0,
     whileDead = true,
     hideOnEscape = true,
 }
 
-StaticPopupDialogs["BBF_CONFIRM_MAGNUSZ_PROFILE"] = {
-    text = "This action will modify all settings to Magnusz's profile and reload the UI.\n\nYour existing blacklists and whitelists will be retained, with Magnusz's additional entries.\n\nAre you sure you want to continue?",
-    button1 = "Yes",
-    button2 = "No",
-    OnAccept = function()
-        BBF.MagnuszProfile()
-        ReloadUI()
-    end,
-    timeout = 0,
-    whileDead = true,
-    hideOnEscape = true,
-}
 ------------------------------------------------------------
 -- GUI Creation Functions
 ------------------------------------------------------------
@@ -3554,38 +3544,48 @@ local function guiGeneralTab()
         ReloadUI()
     end)
 
-    local nahjProfileButton = CreateFrame("Button", nil, BetterBlizzFrames, "UIPanelButtonTemplate")
-    nahjProfileButton:SetText("Nahj Profile")
-    nahjProfileButton:SetWidth(100)
-    nahjProfileButton:Hide()
-    nahjProfileButton:SetPoint("RIGHT", reloadUiButton, "LEFT", -50, 0)
-    -- nahjProfileButton:SetScript("OnClick", function()
-    --     StaticPopup_Show("BBF_CONFIRM_NAHJ_PROFILE")
-    -- end)
-    -- CreateTooltipTwo(nahjProfileButton, "Nahj Profile", "Enable all of Nahj's profile settings.", "www.twitch.tv/nahj", "ANCHOR_TOP")
+    -- Function to show the confirmation popup with dynamic profile information
+    local function ShowProfileConfirmation(profileName, profileFunction, additionalNote)
+        local noteText = additionalNote or ""
+        local confirmationText = titleText .. "This action will delete all settings and apply " .. profileName .. "'s profile and reload the UI.\n\n" .. noteText .. "Are you sure you want to continue?"
+        StaticPopupDialogs["BBP_CONFIRM_PROFILE"].text = confirmationText
+        StaticPopup_Show("BBP_CONFIRM_PROFILE", nil, nil, { func = profileFunction })
+    end
 
-    -- local magnuszProfileButton = CreateFrame("Button", nil, BetterBlizzFrames, "UIPanelButtonTemplate")
-    -- magnuszProfileButton:SetText("Magnusz Profile")
-    -- magnuszProfileButton:SetWidth(120)
-    -- magnuszProfileButton:SetPoint("RIGHT", nahjProfileButton, "LEFT", -5, 0)
-    -- magnuszProfileButton:SetScript("OnClick", function()
-    --     StaticPopup_Show("BBF_CONFIRM_MAGNUSZ_PROFILE")
-    -- end)
-    -- CreateTooltipTwo(magnuszProfileButton, "Magnusz Profile", "Enable all of Magnusz's profile settings.", "www.twitch.tv/magnusz", "ANCHOR_TOP")
+    -- Create the buttons and hook them to show the confirmation popup
+    local snupyProfileButton = CreateFrame("Button", nil, BetterBlizzFrames, "UIPanelButtonTemplate")
+    snupyProfileButton:SetText("Snupy")
+    snupyProfileButton:SetWidth(80)
+    snupyProfileButton:SetPoint("RIGHT", reloadUiButton, "LEFT", -160, 0)
+    snupyProfileButton:SetScript("OnClick", function()
+        ShowProfileConfirmation("Snupy", BBF.SnupyProfile)
+    end)
+    CreateTooltipTwo(snupyProfileButton, "|A:groupfinder-icon-class-druid:16:16|a |cffff7d0aSnupy Profile|r", "Enable all of Snupy's profile settings.", "www.twitch.tv/snupy", "ANCHOR_TOP")
+
+    -- Create the buttons and hook them to show the confirmation popup
+    local nahjProfileButton = CreateFrame("Button", nil, BetterBlizzFrames, "UIPanelButtonTemplate")
+    nahjProfileButton:SetText("Nahj")
+    nahjProfileButton:SetWidth(80)
+    nahjProfileButton:SetPoint("RIGHT", snupyProfileButton, "LEFT", -10, 0)
+    nahjProfileButton:SetScript("OnClick", function()
+        ShowProfileConfirmation("Nahj", BBF.NahjProfile)
+    end)
+    CreateTooltipTwo(nahjProfileButton, "|A:groupfinder-icon-class-rogue:16:16|a |cfffff569Nahj Profile|r", "Enable all of Nahj's profile settings.", "www.twitch.tv/nahj", "ANCHOR_TOP")
+
+
+
+    local profileText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+    profileText:SetPoint("RIGHT", nahjProfileButton, "LEFT", -5, 0)
+    profileText:SetText("Profiles:")
 
     local resetBBFButton = CreateFrame("Button", nil, BetterBlizzFrames, "UIPanelButtonTemplate")
     resetBBFButton:SetText("Reset BetterBlizzFrames")
     resetBBFButton:SetWidth(165)
-    resetBBFButton:SetPoint("RIGHT", nahjProfileButton, "LEFT", -180, 0)
+    resetBBFButton:SetPoint("BOTTOMLEFT", SettingsPanel, "BOTTOMLEFT", 16, 16)
     resetBBFButton:SetScript("OnClick", function()
         StaticPopup_Show("CONFIRM_RESET_BETTERBLIZZFRAMESDB")
     end)
     CreateTooltip(resetBBFButton, "Reset ALL BetterBlizzFrames settings.")
-
-
-    local alphaWarn = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    alphaWarn:SetPoint("LEFT", resetBBFButton, "RIGHT", 5, 0)
-    alphaWarn:SetText("BETA (Expect things to be buggy, use BugGrabber)")
 end
 
 local function guiCastbars()
@@ -6230,11 +6230,6 @@ local function guiMisc()
     moveResourceToTarget:HookScript("OnClick", function()
         CheckAndToggleCheckboxes(moveResourceToTarget)
     end)
-
-    local skipGUI = CreateCheckbox("skipGUI", "Skip GUI", guiMisc)
-    skipGUI:SetPoint("BOTTOMRIGHT", bgImg, "BOTTOMRIGHT", -60, 0)
-    CreateTooltipTwo(skipGUI, "Skip GUI", "Skip creating the BBF Settings GUI on login/reload.\n\nIt will be created when typing /bbf\n\nFrees a little memory, makes reload a little faster.")
-    skipGUI:SetScale(1.3)
 end
 
 local function guiChatFrame()
@@ -6571,39 +6566,31 @@ function BBF.InitializeOptions()
         BBF.category.ID = BetterBlizzFrames.name
         Settings.RegisterAddOnCategory(BBF.category)
 
-        if not BetterBlizzFramesDB.skipGUI then
-            guiGeneralTab()
-            guiPositionAndScale()
-            guiFrameAuras()
-            guiFrameLook()
-            guiCastbars()
-            guiImportAndExport()
-            guiMisc()
-            --guiChatFrame()
-            guiSupport()
-            BetterBlizzFrames.guiLoaded = true
-        else
-            local titleText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFont_Gigantic")
-            titleText:SetPoint("CENTER", BetterBlizzFrames, "CENTER", -15, 33)
-            titleText:SetText("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames")
-            BetterBlizzFrames.titleText = titleText
+        local titleText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFont_Gigantic")
+        titleText:SetPoint("CENTER", BetterBlizzFrames, "CENTER", -15, 33)
+        titleText:SetText("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames")
+        BetterBlizzFrames.titleText = titleText
 
-            local loadGUI = CreateFrame("Button", nil, BetterBlizzFrames, "UIPanelButtonTemplate")
-            loadGUI:SetText("Load Settings")
-            loadGUI:SetWidth(100)
-            loadGUI:SetPoint("CENTER", BetterBlizzFrames, "CENTER", -18, 6)
-            BetterBlizzFrames.loadGUI = loadGUI
-            loadGUI:SetScript("OnClick", function(self)
-                titleText:Hide()
-                self:Hide()
-                BBF.LoadGUI()
-            end)
-        end
+        local loadGUI = CreateFrame("Button", nil, BetterBlizzFrames, "UIPanelButtonTemplate")
+        loadGUI:SetText("Load Settings")
+        loadGUI:SetWidth(100)
+        loadGUI:SetPoint("CENTER", BetterBlizzFrames, "CENTER", -18, 6)
+        BetterBlizzFrames.loadGUI = loadGUI
+        loadGUI:SetScript("OnClick", function(self)
+            titleText:Hide()
+            self:Hide()
+            BBF.LoadGUI()
+        end)
     end
 end
 
 function BBF.LoadGUI()
     if BetterBlizzFrames.guiLoaded then return end
+    if BetterBlizzFramesDB.hasNotOpenedSettings then
+        BBF.CreateIntroMessageWindow()
+        BetterBlizzFramesDB.hasNotOpenedSettings = nil
+        return
+    end
     guiGeneralTab()
     guiPositionAndScale()
     guiFrameAuras()
@@ -6617,4 +6604,171 @@ function BBF.LoadGUI()
 
     Settings.OpenToCategory(BBF.guiSupport)
     Settings.OpenToCategory(BBF.category.ID)
+end
+
+
+function BBF.CreateIntroMessageWindow()
+    if BBF.IntroMessageWindow then
+        BBF.IntroMessageWindow:ClearAllPoints()
+        if BBP and BBP.IntroMessageWindow and BBP.IntroMessageWindow:IsShown() then
+            BBP.IntroMessageWindow:ClearAllPoints()
+            BBP.IntroMessageWindow:SetPoint("CENTER", UIParent, "CENTER", 240, 45)
+            BBF.IntroMessageWindow:SetPoint("CENTER", UIParent, "CENTER", -240, 45)
+        else
+            BBF.IntroMessageWindow:SetPoint("CENTER", UIParent, "CENTER", 0, 45)
+        end
+        BBF.IntroMessageWindow:Show()
+        return
+    end
+
+    BBF.IntroMessageWindow = CreateFrame("Frame", "BBFIntro", UIParent, "PortraitFrameTemplate")
+    BBF.IntroMessageWindow:SetSize(470, 550)
+    BBF.IntroMessageWindow.Bg:SetDesaturated(true)
+    BBF.IntroMessageWindow.Bg:SetVertexColor(0.5,0.5,0.5, 0.98)
+    if BBP and BBP.IntroMessageWindow and BBP.IntroMessageWindow:IsShown() then
+        BBP.IntroMessageWindow:SetPoint("CENTER", UIParent, "CENTER", 240, 45)
+        BBF.IntroMessageWindow:SetPoint("CENTER", UIParent, "CENTER", -240, 45)
+    else
+        BBF.IntroMessageWindow:SetPoint("CENTER", UIParent, "CENTER", 0, 45)
+    end
+    BBF.IntroMessageWindow:SetMovable(true)
+    BBF.IntroMessageWindow:EnableMouse(true)
+    BBF.IntroMessageWindow:RegisterForDrag("LeftButton")
+    BBF.IntroMessageWindow:SetScript("OnDragStart", BBF.IntroMessageWindow.StartMoving)
+    BBF.IntroMessageWindow:SetScript("OnDragStop", BBF.IntroMessageWindow.StopMovingOrSizing)
+    BBF.IntroMessageWindow:SetTitle("Better|cff00c0ffBlizz|rFrames v"..BBF.VersionNumber)
+    BBF.IntroMessageWindow:SetFrameStrata("HIGH")
+
+    -- Add background texture
+    BBF.IntroMessageWindow.textureTest = BBF.IntroMessageWindow:CreateTexture(nil, "BACKGROUND")
+    BBF.IntroMessageWindow.textureTest:SetAtlas("communities-widebackground")
+    BBF.IntroMessageWindow.textureTest:SetSize(465, 150)
+    BBF.IntroMessageWindow.textureTest:SetPoint("TOP", BBF.IntroMessageWindow, "TOP", 0, -15)
+
+    -- Create a mask texture
+    local maskTexture = BBF.IntroMessageWindow:CreateMaskTexture()
+    maskTexture:SetAtlas("Azerite-CenterBG-ChannelGlowBar-FillingMask")
+    maskTexture:SetSize(665, 300)
+    maskTexture:SetPoint("CENTER", BBF.IntroMessageWindow.textureTest, "CENTER", 0, 50)
+    BBF.IntroMessageWindow.textureTest:AddMaskTexture(maskTexture)
+
+    BBF.IntroMessageWindow:SetPortraitToAsset(135724)
+
+    local welcomeText = BBF.IntroMessageWindow:CreateFontString(nil, "OVERLAY", "GameFontNormalHuge2")
+    welcomeText:SetPoint("TOP", BBF.IntroMessageWindow, "TOP", 0, -45)
+    welcomeText:SetText("Welcome to Better|cff00c0ffBlizz|rFrames!")
+    welcomeText:SetJustifyH("CENTER")
+
+    local description1 = BBF.IntroMessageWindow:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    description1:SetPoint("TOP", welcomeText, "BOTTOM", 0, -10)
+    description1:SetText("Thank you for trying out my addon!\n\nBelow you can pick a profile to start with or you can exit and customize everything by yourself.\n\nIf you just want a quick start with only the essentials I highly recommend the Starter Profile.")
+    description1:SetJustifyH("CENTER")
+    description1:SetWidth(410)
+
+    local btnWidth, btnHeight, btnGap = 150, 30, -3
+
+    local function ShowProfileConfirmation(profileName, profileFunction, additionalNote)
+        local noteText = additionalNote or ""
+        local confirmationText = titleText .. "Are you sure you want to go with the " .. profileName .. "?\n\n" .. noteText .. "Click yes to apply and Reload UI."
+        StaticPopupDialogs["BBF_CONFIRM_PROFILE"].text = confirmationText
+        StaticPopup_Show("BBF_CONFIRM_PROFILE", nil, nil, { func = profileFunction })
+    end
+
+    -- Create button for your profile
+    local myProfileButton = CreateFrame("Button", nil, BBF.IntroMessageWindow, "GameMenuButtonTemplate")
+    myProfileButton:SetPoint("TOP", description1, "BOTTOM", 0, -20)
+    myProfileButton:SetSize(btnWidth, btnHeight)
+    myProfileButton:SetText("Starter Profile")
+    myProfileButton:SetNormalFontObject("GameFontNormal")
+    myProfileButton:SetHighlightFontObject("GameFontHighlight")
+    myProfileButton:SetScript("OnClick", function()
+        ShowProfileConfirmation("Starter Profile", BBF.StarterProfile)
+    end)
+    CreateTooltipTwo(myProfileButton, "Starter Profile", "A basic starter profile that only enables the few things you need. Intended to work as a very minimal quick start that can be built upon.")
+
+    local orText = BBF.IntroMessageWindow:CreateFontString(nil, "OVERLAY", "GameFontNormalMed2")
+    orText:SetPoint("CENTER", myProfileButton, "BOTTOM", 0, -20)
+    orText:SetText("OR")
+    orText:SetJustifyH("CENTER")
+
+    local button1 = CreateFrame("Button", nil, BBF.IntroMessageWindow, "GameMenuButtonTemplate")
+    button1:SetSize(btnWidth, btnHeight)
+    button1:SetText("|A:groupfinder-icon-class-rogue:16:16|a |cfffff569Nahj Profile|r")
+    button1:SetPoint("TOP", myProfileButton, "BOTTOM", 0, -40)
+    button1:SetNormalFontObject("GameFontNormal")
+    button1:SetHighlightFontObject("GameFontHighlight")
+    button1:SetScript("OnClick", function()
+        ShowProfileConfirmation("Nahj Profile", BBF.NahjProfile)
+    end)
+    CreateTooltipTwo(button1, "|A:groupfinder-icon-class-rogue:16:16|a |cfffff569Nahj Profile|r", "www.twitch.tv/nahj")
+
+    local button2 = CreateFrame("Button", nil, BBF.IntroMessageWindow, "GameMenuButtonTemplate")
+    button2:SetSize(btnWidth, btnHeight)
+    button2:SetText("|A:groupfinder-icon-class-druid:16:16|a |cffff7d0aSnupy Profile|r")
+    button2:SetPoint("TOP", button1, "BOTTOM", 0, btnGap)
+    button2:SetNormalFontObject("GameFontNormal")
+    button2:SetHighlightFontObject("GameFontHighlight")
+    button2:SetScript("OnClick", function()
+        ShowProfileConfirmation("Snupy Profile", BBF.SnupyProfile)
+    end)
+    CreateTooltipTwo(button2, "|A:groupfinder-icon-class-druid:16:16|a |cffff7d0aSnupy Profile|r", "www.twitch.tv/snupy")
+
+    local orText2 = BBF.IntroMessageWindow:CreateFontString(nil, "OVERLAY", "GameFontNormalMed2")
+    orText2:SetPoint("CENTER", button2, "BOTTOM", 0, -20)
+    orText2:SetText("OR")
+    orText2:SetJustifyH("CENTER")
+
+    local buttonLast = CreateFrame("Button", nil, BBF.IntroMessageWindow, "GameMenuButtonTemplate")
+    buttonLast:SetSize(btnWidth, btnHeight)
+    buttonLast:SetText("Exit, No Profile.")
+    buttonLast:SetPoint("TOP", button2, "BOTTOM", 0, -40)
+    buttonLast:SetNormalFontObject("GameFontNormal")
+    buttonLast:SetHighlightFontObject("GameFontHighlight")
+    buttonLast:SetScript("OnClick", function()
+        BBF.IntroMessageWindow:Hide()
+        if not BetterBlizzFrames.guiLoaded then
+            BBF.LoadGUI()
+        else
+            Settings.OpenToCategory(BBF.category.ID)
+        end
+    end)
+    CreateTooltipTwo(buttonLast, "Exit, No Profile", "Exit and customize everything yourself.")
+
+    BBF.IntroMessageWindow.CloseButton:HookScript("OnClick", function()
+        if not BetterBlizzFrames.guiLoaded then
+            BBF.LoadGUI()
+        else
+            Settings.OpenToCategory(BBF.category.ID)
+        end
+    end)
+
+    local function SetFontWithOutline(fontString)
+        local font, size = fontString:GetFont()
+        fontString:SetFont(font, size, "OUTLINE")
+    end
+
+    local textElements = {
+        welcomeText, description1, orText, orText2,
+        myProfileButton.Text, button1.Text, button2.Text, buttonLast.Text
+    }
+
+    -- Apply outline to all text elements
+    for _, element in ipairs(textElements) do
+        if element then
+            SetFontWithOutline(element)
+        end
+    end
+    local function AdjustWindowHeight()
+        local baseHeight = 334
+        local perButtonHeight = 29
+        local buttonCount = -1
+        for _, child in ipairs({BBF.IntroMessageWindow:GetChildren()}) do
+            if child and child:IsObjectType("Button") then
+                buttonCount = buttonCount + 1
+            end
+        end
+        local newHeight = baseHeight + (buttonCount * perButtonHeight)
+        BBF.IntroMessageWindow:SetSize(470, newHeight)
+    end
+    AdjustWindowHeight()
 end

@@ -1,3 +1,17 @@
+# BetterBlizzFrames 1.6.0g
+## All versions
+- Remove Skip GUI setting, now on by default.
+
+## Retail
+- Move Resource to TargetFrame setting fixed for some classes with unique power.
+
+## Classics
+- New Intro screen with profiles for new users.
+- Darkmode: Add Minimap texture around Clock Time to be colored as well.
+
+
+
+
 # BetterBlizzFrames 1.6.0f
 ## The War Within
 - Adding Mage Barriers to Whitelist now only Glows/Enlarges if they are specced into Overpowered Barriers. (This can be turned off with /run BetterBlizzFramesDB.opBarriersOn = false)
@@ -15,14 +29,20 @@
 - Potential fix for rare issue with rogue combo points sometimes not being in proper order with the move to targetframe setting.
 - Fix frame name issues with EasyFrames
 
+
+
 # BetterBlizzFrames 1.6.0d
 - Add a new setting for Arena Names to chose between Party1 or SpecName for Party units. (Right-click Show Spec Names)
+
+
 
 # BetterBlizzFrames 1.6.0c
 - Update Arena Names logic to no longer require Details to get spec names
 - Fix missing logic for hiding role icon on default party frames
 - Fix old function name in GUI related to hiding role icons causing a lua error when clicked.
 - Fix moving of Filtered Buffs Icon potentially causing lua error on Classic versions.
+
+
 
 # BetterBlizzFrames 1.6.0b
 - Fix Hide Names not working on Era

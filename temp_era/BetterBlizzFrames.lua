@@ -2,8 +2,8 @@
 
 local addonVersion = "1.00" --too afraid to to touch for now
 local addonUpdates = C_AddOns.GetAddOnMetadata("BetterBlizzFrames", "Version")
-local sendUpdate = true
-BBF.VersionNumber = addonUpdates.."f"
+local sendUpdate = false
+BBF.VersionNumber = addonUpdates
 BBF.variablesLoaded = false
 local isAddonLoaded = C_AddOns.IsAddOnLoaded
 
@@ -11,7 +11,6 @@ local defaultSettings = {
     version = addonVersion,
     updates = "empty",
     wasOnLoadingScreen = true,
-    skipGUI = true,
     -- General
     removeRealmNames = true,
     centerNames = false,
@@ -312,10 +311,8 @@ local function FetchAndSaveValuesOnFirstLogin()
         return
     end
 
-
-
     BetterBlizzFramesDB.hasCheckedUi = true
-
+    BetterBlizzFramesDB.hasNotOpenedSettings = true
 
     C_Timer.After(5, function()
         if not C_AddOns.IsAddOnLoaded("SkillCapped") then
@@ -364,7 +361,6 @@ StaticPopupDialogs["CONFIRM_RESET_BETTERBLIZZFRAMESDB"] = {
 -- Update message
 local function SendUpdateMessage()
     if sendUpdate then
-        BetterBlizzFramesDB.skipGUI = true
         if not BetterBlizzFramesDB.scStart then
             C_Timer.After(7, function()
                 --StaticPopup_Show("BBF_NEW_VERSION")
@@ -1331,8 +1327,6 @@ local Frame = CreateFrame("Frame")
 Frame:RegisterEvent("PLAYER_LOGIN")
 --Frame:RegisterEvent("PLAYER_ENTERING_WORLD")
 Frame:SetScript("OnEvent", function(...)
-
-    executeCustomCode()
     CheckForUpdate()
     --BBF.HideFrames()
     DisableClickForClassSpecificFrame()
@@ -1434,6 +1428,8 @@ Frame:SetScript("OnEvent", function(...)
         Settings.OpenToCategory(BBF.category.ID)
         BetterBlizzFramesDB.reopenOptions = false
     end
+
+    executeCustomCode()
 end)
 
 -- Slash command
@@ -1444,18 +1440,12 @@ SlashCmdList["BBF"] = function(msg)
 
     if command == "news" then
         NewsUpdateMessage()
-    elseif command == "test" then
-        --playerFrameTest()
-    elseif command == "nahj" then
-        StaticPopup_Show("BBF_CONFIRM_NAHJ_PROFILE")
-    elseif command == "magnusz" then
-        StaticPopup_Show("BBF_CONFIRM_MAGNUSZ_PROFILE")
     elseif command == "whitelist" or command == "wl" then
         if arg and arg ~= "" then
             if tonumber(arg) then
                 -- The argument is a number, treat it as a spell ID
                 local spellId = tonumber(arg)
-                local spellName, _, icon = GetSpellInfo(spellId)
+                local spellName, _, icon = BBF.TWWGetSpellInfo(spellId)
                 if spellName then
                     local iconString = "|T" .. icon .. ":16:16:0:0|t" -- Format the icon for display
                     BBF.auraWhitelist(spellId)
@@ -1477,7 +1467,7 @@ SlashCmdList["BBF"] = function(msg)
             if tonumber(arg) then
                 -- The argument is a number, treat it as a spell ID
                 local spellId = tonumber(arg)
-                local spellName, _, icon = GetSpellInfo(spellId)
+                local spellName, _, icon = BBF.TWWGetSpellInfo(spellId)
                 if spellName then
                     local iconString = "|T" .. icon .. ":16:16:0:0|t" -- Format the icon for display
                     BBF.auraBlacklist(spellId)
@@ -1496,12 +1486,23 @@ SlashCmdList["BBF"] = function(msg)
         end
     elseif command == "ver" or command == "version" then
         DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames Version "..addonUpdates)
+    elseif command == "dump" then
+        local exportVersion = BetterBlizzFramesDB.exportVersion or "No export version registered"
+        DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: "..exportVersion)
+    elseif command == "intro" then
+        BBF.CreateIntroMessageWindow()
     else
-        --InterfaceOptionsFrame_OpenToCategory(BetterBlizzFrames)
-        if not BetterBlizzFrames.guiLoaded then
-            BBF.LoadGUI()
+        -- InterfaceOptionsFrame_OpenToCategory(BetterBlizzFrames)
+        if not BBF.category then
+            print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: Settings disabled. Likely due to error. Please update your addon.")
+            --BBF.InitializeOptions()
+            --Settings.OpenToCategory(BBF.category.ID)
         else
-            Settings.OpenToCategory(BBF.category.ID)
+            if not BetterBlizzFrames.guiLoaded then
+                BBF.LoadGUI()
+            else
+                Settings.OpenToCategory(BBF.category.ID)
+            end
         end
     end
 end

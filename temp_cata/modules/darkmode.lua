@@ -244,6 +244,16 @@ function BBF.DarkmodeFrames(bypass)
     applySettings(PetFrameTexture, desaturationValue, vertexColor)
     applySettings(FocusFrameToTTextureFrameTexture, desaturationValue, vertexColor)
 
+    if TimeManagerClockButton then
+        -- Desaturate all textures in ZoomOut button
+        for i = 1, TimeManagerClockButton:GetNumRegions() do
+            local region = select(i, TimeManagerClockButton:GetRegions())
+            if region:IsObjectType("Texture") and region:GetName() ~= "" then
+                applySettings(region, minimapSat, minimapColor)
+            end
+        end
+    end
+
     function checkAndApplySettings(object, minimapSat, minimapColor)
         if object:IsObjectType("Texture") then
             local texturePath = object:GetTexture()
@@ -360,7 +370,6 @@ function BBF.DarkmodeFrames(bypass)
         --applySettings(CastingBarFrame.BorderShield, desaturationValue, vertexColor)
         applySettings(CastingBarFrame.Background, false, 1)
     end
-
 
 
 

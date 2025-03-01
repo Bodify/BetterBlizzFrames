@@ -2,8 +2,8 @@
 
 local addonVersion = "1.00" --too afraid to to touch for now
 local addonUpdates = C_AddOns.GetAddOnMetadata("BetterBlizzFrames", "Version")
-local sendUpdate = true
-BBF.VersionNumber = addonUpdates.."f"
+local sendUpdate = false
+BBF.VersionNumber = addonUpdates
 BBF.variablesLoaded = false
 local isAddonLoaded = C_AddOns.IsAddOnLoaded
 
@@ -14,7 +14,6 @@ local defaultSettings = {
     version = addonVersion,
     updates = "empty",
     wasOnLoadingScreen = true,
-    skipGUI = true,
     -- General
     removeRealmNames = true,
     centerNames = false,
@@ -381,7 +380,6 @@ StaticPopupDialogs["CONFIRM_RESET_BETTERBLIZZFRAMESDB"] = {
 -- Update message
 local function SendUpdateMessage()
     if sendUpdate then
-        BetterBlizzFramesDB.skipGUI = true
         if not BetterBlizzFramesDB.scStart then
             C_Timer.After(7, function()
                 --StaticPopup_Show("BBF_NEW_VERSION")
@@ -750,17 +748,45 @@ end
 local hookedResourceFrames
 local comboPointCache = {} -- Cache for original combo point order and number of points
 
-local function DetectComboPointsOrder(comboPointFrame)
+local function DetectComboPointsOrder(comboPointFrame, expectedClass)
+    -- If the class is not Rogue and already cached, return cached points
+    if expectedClass ~= "ROGUE" and comboPointCache[comboPointFrame] and #comboPointCache[comboPointFrame].points > 0 then
+        return comboPointCache[comboPointFrame].points
+    end
+
     local points = {}
 
-    for i = 1, comboPointFrame:GetNumChildren() do
-        local child = select(i, comboPointFrame:GetChildren())
-        if child ~= comboPointFrame.layoutParent and child:IsShown() then
-            if child.layoutIndex then
-                points[child.layoutIndex] = child
-            else
-                print("BetterBlizzFrames: Reason for concern. Contact bodify :P")
+    if expectedClass == "ROGUE" then
+        -- Rogues use layoutIndex (Dynamic Order)
+        for i = 1, comboPointFrame:GetNumChildren() do
+            local child = select(i, comboPointFrame:GetChildren())
+            if child ~= comboPointFrame.layoutParent and child:IsShown() then
+                if child.layoutIndex then
+                    points[child.layoutIndex] = child
+                end
             end
+        end
+    else
+        -- All other classes (Fixed Order, Cached)
+        local currentComboPoints = {}
+        for i = 1, comboPointFrame:GetNumChildren() do
+            local child = select(i, comboPointFrame:GetChildren())
+            if child ~= comboPointFrame.layoutParent and child:IsShown() then
+                local point, _, relativePoint, x, y = child:GetPoint()
+                if x then
+                    table.insert(currentComboPoints, { child = child, x = x, index = i })
+                end
+            end
+        end
+
+        -- Sort by x position (left to right)
+        table.sort(currentComboPoints, function(a, b)
+            return a.x < b.x
+        end)
+
+        -- Extract ordered children
+        for _, data in ipairs(currentComboPoints) do
+            table.insert(points, data.child)
         end
     end
 
@@ -770,6 +796,11 @@ local function DetectComboPointsOrder(comboPointFrame)
         if points[i] then
             table.insert(orderedPoints, points[i])
         end
+    end
+
+    -- Cache the combo points for non-Rogues
+    if expectedClass ~= "ROGUE" then
+        comboPointCache[comboPointFrame] = { points = orderedPoints, numPoints = #orderedPoints }
     end
 
     return orderedPoints
@@ -784,10 +815,11 @@ local function RepositionIndividualComboPoints(comboPointFrame, positions, scale
         }
     end
 
-    local currentComboPoints = DetectComboPointsOrder(comboPointFrame)
+    local currentComboPoints = DetectComboPointsOrder(comboPointFrame, expectedClass)
     local numComboPoints = #currentComboPoints
 
-    if numComboPoints ~= comboPointCache[comboPointFrame].numPoints then
+    -- Only update cache dynamically for Rogues
+    if expectedClass == "ROGUE" or comboPointCache[comboPointFrame].numPoints == 0 then
         comboPointCache[comboPointFrame].numPoints = numComboPoints
         comboPointCache[comboPointFrame].points = currentComboPoints
     end
@@ -2188,7 +2220,6 @@ Frame:RegisterEvent("PLAYER_LOGIN")
 --Frame:RegisterEvent("PLAYER_ENTERING_WORLD")
 Frame:SetScript("OnEvent", function(...)
 
-    executeCustomCode()
     CheckForUpdate()
     BBF.CompactPartyFrameScale()
     --BBF.HideFrames()
@@ -2284,6 +2315,8 @@ Frame:SetScript("OnEvent", function(...)
         end
         BetterBlizzFramesDB.reopenOptions = false
     end
+
+    executeCustomCode()
 end)
 
 -- Slash command
@@ -2294,12 +2327,6 @@ SlashCmdList["BBF"] = function(msg)
 
     if command == "news" then
         NewsUpdateMessage()
-    elseif command == "test" then
-        --playerFrameTest()
-    elseif command == "nahj" then
-        StaticPopup_Show("BBF_CONFIRM_NAHJ_PROFILE")
-    elseif command == "magnusz" then
-        StaticPopup_Show("BBF_CONFIRM_MAGNUSZ_PROFILE")
     elseif command == "whitelist" or command == "wl" then
         if arg and arg ~= "" then
             if tonumber(arg) then
