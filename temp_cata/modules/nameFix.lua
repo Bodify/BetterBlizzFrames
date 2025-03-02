@@ -232,7 +232,7 @@ local function PartyFrameNameChange(frame)
     if removeRealmNames then
         frame.bbfName:SetText(GetNameWithoutRealm(frame))
     else
-        frame.bbfName:SetText(frame.Name:GetText())
+        frame.bbfName:SetText(frame.name:GetText())
     end
 end
 

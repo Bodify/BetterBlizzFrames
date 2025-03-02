@@ -8,6 +8,7 @@
 ## Classics
 - New Intro screen with profiles for new users.
 - Darkmode: Add Minimap texture around Clock Time to be colored as well.
+- Fix typo causing lua errors for people without hide realm name on
 
 
 
