@@ -1,3 +1,8 @@
+# BetterBlizzFrames 1.6.0h
+## The War Within
+- Added Smoke Bomb ID's to PvP Whitelist. Not sure why I didn't have these included before but I feel theyre important enough. This whitelist is still meant as complimentary to all auras and not meant to be a pure whitelist.
+- Nahj profile update
+
 # BetterBlizzFrames 1.6.0g
 ## All versions
 - Remove Skip GUI setting, now on by default.
