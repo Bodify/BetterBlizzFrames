@@ -2392,7 +2392,7 @@ SlashCmdList["BBF"] = function(msg)
     elseif command == "dump" then
         local exportVersion = BetterBlizzFramesDB.exportVersion or "No export version registered"
         DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: "..exportVersion)
-    elseif command == "intro" then
+    elseif command == "profiles" then
         BBF.CreateIntroMessageWindow()
     else
         -- InterfaceOptionsFrame_OpenToCategory(BetterBlizzFrames)
