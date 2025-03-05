@@ -749,12 +749,17 @@ local hookedResourceFrames
 local comboPointCache = {} -- Cache for original combo point order and number of points
 
 local function DetectComboPointsOrder(comboPointFrame, expectedClass)
-    -- If the class is not Rogue and already cached, return cached points
-    if expectedClass ~= "ROGUE" and comboPointCache[comboPointFrame] and #comboPointCache[comboPointFrame].points > 0 then
-        return comboPointCache[comboPointFrame].points
-    end
-
+    -- Get the actual number of usable points
+    local expectedPoints = comboPointFrame.maxUsablePoints or 0
     local points = {}
+
+    -- If maxUsablePoints isn't ready yet, retry after a short delay
+    if expectedPoints == 0 then
+        C_Timer.After(0.5, function()
+            DetectComboPointsOrder(comboPointFrame, expectedClass)
+        end)
+        return {}
+    end
 
     if expectedClass == "ROGUE" then
         -- Rogues use layoutIndex (Dynamic Order)
@@ -769,14 +774,23 @@ local function DetectComboPointsOrder(comboPointFrame, expectedClass)
     else
         -- All other classes (Fixed Order, Cached)
         local currentComboPoints = {}
+
         for i = 1, comboPointFrame:GetNumChildren() do
             local child = select(i, comboPointFrame:GetChildren())
             if child ~= comboPointFrame.layoutParent and child:IsShown() then
-                local point, _, relativePoint, x, y = child:GetPoint()
+                local _, _, _, x = child:GetPoint()
                 if x then
                     table.insert(currentComboPoints, { child = child, x = x, index = i })
                 end
             end
+        end
+
+        -- If we haven't detected all expected points, retry
+        if #currentComboPoints < expectedPoints then
+            C_Timer.After(0.5, function()
+                DetectComboPointsOrder(comboPointFrame, expectedClass)
+            end)
+            return {}
         end
 
         -- Sort by x position (left to right)
@@ -790,20 +804,12 @@ local function DetectComboPointsOrder(comboPointFrame, expectedClass)
         end
     end
 
-    -- Ensure table is sequential
-    local orderedPoints = {}
-    for i = 1, #points do
-        if points[i] then
-            table.insert(orderedPoints, points[i])
-        end
-    end
-
-    -- Cache the combo points for non-Rogues
+    -- Cache for non-Rogues
     if expectedClass ~= "ROGUE" then
-        comboPointCache[comboPointFrame] = { points = orderedPoints, numPoints = #orderedPoints }
+        comboPointCache[comboPointFrame] = { points = points, numPoints = #points }
     end
 
-    return orderedPoints
+    return points
 end
 
 -- Function to reposition combo points after dragging
@@ -816,6 +822,8 @@ local function RepositionIndividualComboPoints(comboPointFrame, positions, scale
     end
 
     local currentComboPoints = DetectComboPointsOrder(comboPointFrame, expectedClass)
+    if #currentComboPoints == 0 then return end -- Avoid repositioning if points are not ready
+
     local numComboPoints = #currentComboPoints
 
     -- Only update cache dynamically for Rogues
@@ -894,6 +902,14 @@ local function SetupClassComboPoints(comboPointFrame, positions, expectedClass, 
                     end
                 end
             end
+        end
+
+        if expectedClass == "ROGUE" then
+            local frame = CreateFrame("Frame")
+            frame:RegisterEvent("TRAIT_CONFIG_UPDATED")
+            frame:SetScript("OnEvent", function()
+                RepositionIndividualComboPoints(comboPointFrame, positions, scale, expectedClass)
+            end)
         end
 
         hooksecurefunc(comboPointFrame, "SetPoint", function(self)

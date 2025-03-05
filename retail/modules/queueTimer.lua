@@ -210,14 +210,34 @@ local function UpdateBattlefieldStatus()
     end
 end
 
+function BBF.SBUncheck()
+    -- If my optional setting is on, turn off this forced setting.
+    if SweepyBoopDB then
+        local sbdb = SweepyBoopDB
+        local playerName = UnitName("player")
+        local realmName = GetRealmName()
+        local profileKey = playerName .. " - " .. realmName
+        local profileName = sbdb["profileKeys"][profileKey]
+        local profile = sbdb["profiles"][profileName]
+        if profile then
+            profile.misc = profile.misc or {}
+            profile.misc.queueReminder = false
+        end
+    end
+end
+
 function BBF.EnableQueueTimer()
     if BetterBlizzFramesDB.queueTimer then
         if C_AddOns.IsAddOnLoaded("SafeQueue") then
-            C_Timer.After(2, function()
-                DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a |cff00c0ffQueueTimer:|r SafeQueue is enabled, turn it off to use BBF QueueTimer.")
+            C_Timer.After(1, function()
+                C_AddOns.DisableAddOn("SafeQueue")
             end)
             return
         end
+        C_Timer.After(1, function()
+            BBF.SBUncheck()
+        end)
+
         if PVPReadyDialog_Display then
             hooksecurefunc("PVPReadyDialog_Display", function(_, i)
                 bgId = i

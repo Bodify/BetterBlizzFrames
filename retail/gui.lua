@@ -3662,6 +3662,7 @@ local function guiGeneralTab()
             DisableElement(queueTimerWarning)
         end
         if self:GetChecked() then
+            BBF.SBUncheck()
             if C_AddOns.IsAddOnLoaded("SafeQueue") then
                 C_AddOns.DisableAddOn("SafeQueue")
             end

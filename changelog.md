@@ -1,3 +1,10 @@
+# BetterBlizzFrames 1.6.0i
+## The War Within
+### Bugfix:
+- Another tweak to "Move Resource to TargetFrame" setting that should hopefully make it not bug out when Blizzard have not created the combopoints in time.
+
+
+
 # BetterBlizzFrames 1.6.0h
 ## The War Within
 - Added Smoke Bomb ID's to PvP Whitelist. Not sure why I didn't have these included before but I feel theyre important enough. This whitelist is still meant as complimentary to all auras and not meant to be a pure whitelist.
