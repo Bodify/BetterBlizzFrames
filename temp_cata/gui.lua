@@ -5811,7 +5811,11 @@ local function guiFrameAuras()
         BBF.RepositionBuffFrame()
     end)
     CreateTooltipTwo(repositionBuffFrame, "Move Player Auras", "Enable to move Player Auras. You can right-click sliders to input values outside of slider range.")
-
+    repositionBuffFrame:HookScript("OnClick", function(self)
+        if not self:GetChecked() then
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        end
+    end)
 
 
     local targetAndFocusAuraSettings = contentFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
