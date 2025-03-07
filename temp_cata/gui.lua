@@ -3581,7 +3581,7 @@ local function guiGeneralTab()
     local resetBBFButton = CreateFrame("Button", nil, BetterBlizzFrames, "UIPanelButtonTemplate")
     resetBBFButton:SetText("Reset BetterBlizzFrames")
     resetBBFButton:SetWidth(165)
-    resetBBFButton:SetPoint("BOTTOMLEFT", SettingsPanel, "BOTTOMLEFT", 16, 16)
+    resetBBFButton:SetPoint("RIGHT", reloadUiButton, -615, 0)
     resetBBFButton:SetScript("OnClick", function()
         StaticPopup_Show("CONFIRM_RESET_BETTERBLIZZFRAMESDB")
     end)
@@ -5805,6 +5805,13 @@ local function guiFrameAuras()
     personalAuraSettings:SetPoint("TOP", PlayerAuraBorder, "BOTTOM", 0, -5)
     personalAuraSettings:SetText("Player Aura Settings:")
 
+    local repositionBuffFrame = CreateCheckbox("repositionBuffFrame", "Move Auras", contentFrame)
+    repositionBuffFrame:SetPoint("LEFT", personalAuraSettings, "RIGHT", 2, 0)
+    repositionBuffFrame:HookScript("OnClick", function(self)
+        BBF.RepositionBuffFrame()
+    end)
+    CreateTooltipTwo(repositionBuffFrame, "Move Player Auras", "Enable to move Player Auras. You can right-click sliders to input values outside of slider range.")
+
 
 
     local targetAndFocusAuraSettings = contentFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
@@ -6280,25 +6287,25 @@ local function guiImportAndExport()
     local auraBlacklist = CreateImportExportUI(auraWhitelist, "Aura Blacklist", BetterBlizzFramesDB.auraBlacklist, 210, 0, "auraBlacklist")
 end
 
-local function guiSupport()
-    local guiSupport = CreateFrame("Frame")
-    guiSupport.name = "|A:GarrisonTroops-Health:10:10|a Support & Code"
-    guiSupport.parent = BetterBlizzFrames.name
-    --InterfaceOptions_AddCategory(guiSupport)
-    local guiSupportSubCategory = Settings.RegisterCanvasLayoutSubcategory(BBF.category, guiSupport, guiSupport.name, guiSupport.name)
-    guiSupportSubCategory.ID = guiSupport.name;
-    BBF.guiSupport = guiSupport.name
-    CreateTitle(guiSupport)
+local function guiCustomCode()
+    local guiCustomCode = CreateFrame("Frame")
+    guiCustomCode.name = "Custom Code"
+    guiCustomCode.parent = BetterBlizzFrames.name
+    --InterfaceOptions_AddCategory(guiCustomCode)
+    local guiCustomCodeSubCategory = Settings.RegisterCanvasLayoutSubcategory(BBF.category, guiCustomCode, guiCustomCode.name, guiCustomCode.name)
+    guiCustomCodeSubCategory.ID = guiCustomCode.name;
+    BBF.guiCustomCode = guiCustomCode.name
+    CreateTitle(guiCustomCode)
 
-    local bgImg = guiSupport:CreateTexture(nil, "BACKGROUND")
+    local bgImg = guiCustomCode:CreateTexture(nil, "BACKGROUND")
     bgImg:SetAtlas("professions-recipe-background")
-    bgImg:SetPoint("CENTER", guiSupport, "CENTER", -8, 4)
+    bgImg:SetPoint("CENTER", guiCustomCode, "CENTER", -8, 4)
     bgImg:SetSize(680, 610)
     bgImg:SetAlpha(0.4)
     bgImg:SetVertexColor(0,0,0)
 
-    local discordLinkEditBox = CreateFrame("EditBox", nil, guiSupport, "InputBoxTemplate")
-    discordLinkEditBox:SetPoint("TOPLEFT", guiSupport, "TOPLEFT", 25, -45)
+    local discordLinkEditBox = CreateFrame("EditBox", nil, guiCustomCode, "InputBoxTemplate")
+    discordLinkEditBox:SetPoint("TOPLEFT", guiCustomCode, "TOPLEFT", 25, -45)
     discordLinkEditBox:SetSize(180, 20)
     discordLinkEditBox:SetAutoFocus(false)
     discordLinkEditBox:SetFontObject("ChatFontSmall")
@@ -6322,20 +6329,16 @@ local function guiSupport()
         end
     end)
 
-    local discordText = guiSupport:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+    local discordText = guiCustomCode:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
     discordText:SetPoint("BOTTOM", discordLinkEditBox, "TOP", 18, 8)
     discordText:SetText("Join the Discord for info\nand help with BBP/BBF")
 
-    local joinDiscord = guiSupport:CreateTexture(nil, "ARTWORK")
+    local joinDiscord = guiCustomCode:CreateTexture(nil, "ARTWORK")
     joinDiscord:SetTexture("Interface\\AddOns\\BetterBlizzPlates\\media\\logos\\discord.tga")
     joinDiscord:SetSize(52, 52)
     joinDiscord:SetPoint("RIGHT", discordText, "LEFT", 0, 1)
 
-    local supportText = guiSupport:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
-    supportText:SetPoint("TOP", guiSupport, "TOP", 0, -90)
-    supportText:SetText("If you wish to support me and my projects\nit would be greatly appreciated |A:GarrisonTroops-Health:10:10|a")
-
-    local boxOne = CreateFrame("EditBox", nil, guiSupport, "InputBoxTemplate")
+    local boxOne = CreateFrame("EditBox", nil, guiCustomCode, "InputBoxTemplate")
     boxOne:SetPoint("LEFT", discordLinkEditBox, "RIGHT", 50, 0)
     boxOne:SetSize(180, 20)
     boxOne:SetAutoFocus(false)
@@ -6360,16 +6363,16 @@ local function guiSupport()
         end
     end)
 
-    local boxOneTex = guiSupport:CreateTexture(nil, "ARTWORK")
+    local boxOneTex = guiCustomCode:CreateTexture(nil, "ARTWORK")
     boxOneTex:SetTexture("Interface\\AddOns\\BetterBlizzPlates\\media\\logos\\patreon.tga")
     boxOneTex:SetSize(58, 58)
     boxOneTex:SetPoint("BOTTOMLEFT", boxOne, "TOPLEFT", 3, -2)
 
-    local patText = guiSupport:CreateFontString(nil, "OVERLAY", "GameFontNormalHuge")
+    local patText = guiCustomCode:CreateFontString(nil, "OVERLAY", "GameFontNormalHuge")
     patText:SetPoint("LEFT", boxOneTex, "RIGHT", 14, -1)
     patText:SetText("Patreon")
 
-    local boxTwo = CreateFrame("EditBox", nil, guiSupport, "InputBoxTemplate")
+    local boxTwo = CreateFrame("EditBox", nil, guiCustomCode, "InputBoxTemplate")
     boxTwo:SetPoint("LEFT", boxOne, "RIGHT", 35, 0)
     boxTwo:SetSize(180, 20)
     boxTwo:SetAutoFocus(false)
@@ -6394,12 +6397,12 @@ local function guiSupport()
         end
     end)
 
-    local boxTwoTex = guiSupport:CreateTexture(nil, "ARTWORK")
+    local boxTwoTex = guiCustomCode:CreateTexture(nil, "ARTWORK")
     boxTwoTex:SetTexture("Interface\\AddOns\\BetterBlizzPlates\\media\\logos\\paypal.tga")
     boxTwoTex:SetSize(58, 58)
     boxTwoTex:SetPoint("BOTTOMLEFT", boxTwo, "TOPLEFT", 3, -2)
 
-    local palText = guiSupport:CreateFontString(nil, "OVERLAY", "GameFontNormalHuge")
+    local palText = guiCustomCode:CreateFontString(nil, "OVERLAY", "GameFontNormalHuge")
     palText:SetPoint("LEFT", boxTwoTex, "RIGHT", 14, -1)
     palText:SetText("Paypal")
 
@@ -6409,7 +6412,7 @@ local function guiSupport()
 
 
 
-    -- Implementing the code editor inside the guiSupport frame
+    -- Implementing the code editor inside the guiCustomCode frame
     local FAIAP = BBF.indent
 
     -- Define your color table for syntax highlighting
@@ -6427,12 +6430,12 @@ local function guiSupport()
     }
 
     -- Add a scroll frame for the code editor
-    local scrollFrame = CreateFrame("ScrollFrame", nil, guiSupport, "UIPanelScrollFrameTemplate")
-    scrollFrame:SetPoint("TOP", guiSupport, "TOP", -10, -170)
-    scrollFrame:SetSize(620, 370)  -- Fixed size for the entire editor box
+    local scrollFrame = CreateFrame("ScrollFrame", nil, guiCustomCode, "UIPanelScrollFrameTemplate")
+    scrollFrame:SetPoint("TOP", guiCustomCode, "TOP", -10, -110)
+    scrollFrame:SetSize(620, 440)  -- Fixed size for the entire editor box
 
     -- Label for the custom code box
-    local customCodeText = guiSupport:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+    local customCodeText = guiCustomCode:CreateFontString(nil, "OVERLAY", "GameFontNormalHuge")
     customCodeText:SetPoint("BOTTOM", scrollFrame, "TOP", 0, 5)
     customCodeText:SetText("Enter Custom Lua Code (Executes at Login)")
 
@@ -6487,7 +6490,7 @@ local function guiSupport()
     local customCodeSaved = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: Custom code has been saved."
 
     -- Create Save Button
-    local saveButton = CreateFrame("Button", nil, guiSupport, "UIPanelButtonTemplate")
+    local saveButton = CreateFrame("Button", nil, guiCustomCode, "UIPanelButtonTemplate")
     saveButton:SetSize(120, 30)
     saveButton:SetPoint("TOP", scrollFrame, "BOTTOM", 0, -10)
     saveButton:SetText("Save")
@@ -6533,17 +6536,19 @@ local function guiSupport()
         OnCancel = function()
             unsavedChanges = false
             codeEditBox:ClearFocus()
-            BetterBlizzFramesDB.reopenOptions = false
+            if BetterBlizzFramesDB.reopenOptions then
+                ReloadUI()
+            end
         end,
         timeout = 0,
         whileDead = true,
         hideOnEscape = true,
     }
 
-    local reloadUiButton = CreateFrame("Button", nil, guiSupport, "UIPanelButtonTemplate")
+    local reloadUiButton = CreateFrame("Button", nil, guiCustomCode, "UIPanelButtonTemplate")
     reloadUiButton:SetText("Reload UI")
     reloadUiButton:SetWidth(85)
-    reloadUiButton:SetPoint("TOP", guiSupport, "BOTTOMRIGHT", -140, -9)
+    reloadUiButton:SetPoint("TOP", guiCustomCode, "BOTTOMRIGHT", -140, -9)
     reloadUiButton:SetScript("OnClick", function()
         if unsavedChanges then
             showSavePrompt()
@@ -6553,6 +6558,123 @@ local function guiSupport()
         BetterBlizzFramesDB.reopenOptions = true
         ReloadUI()
     end)
+end
+
+local function guiSupport()
+    local guiSupport = CreateFrame("Frame")
+    guiSupport.name = "|A:GarrisonTroops-Health:10:10|a Support"
+    guiSupport.parent = BetterBlizzFrames.name
+    --InterfaceOptions_AddCategory(guiSupport)
+    local guiSupportCategory = Settings.RegisterCanvasLayoutSubcategory(BBF.category, guiSupport, guiSupport.name, guiSupport.name)
+    guiSupportCategory.ID = guiSupport.name;
+    BBF.guiSupport = guiSupport.name
+    BBF.category.guiSupportCategory = guiSupportCategory.ID
+    CreateTitle(guiSupport)
+
+    local bgImg = guiSupport:CreateTexture(nil, "BACKGROUND")
+    bgImg:SetAtlas("professions-recipe-background")
+    bgImg:SetPoint("CENTER", guiSupport, "CENTER", -8, 4)
+    bgImg:SetSize(680, 610)
+    bgImg:SetAlpha(0.4)
+    bgImg:SetVertexColor(0,0,0)
+
+    local discordLinkEditBox = CreateFrame("EditBox", nil, guiSupport, "InputBoxTemplate")
+    discordLinkEditBox:SetPoint("TOP", guiSupport, "TOP", 0, -170)
+    discordLinkEditBox:SetSize(180, 20)
+    discordLinkEditBox:SetAutoFocus(false)
+    discordLinkEditBox:SetFontObject("ChatFontNormal")
+    discordLinkEditBox:SetText("https://discord.gg/cjqVaEMm25")
+    discordLinkEditBox:SetCursorPosition(0) -- Places cursor at start of the text
+    discordLinkEditBox:ClearFocus() -- Removes focus from the EditBox
+    discordLinkEditBox:SetScript("OnEscapePressed", function(self)
+        self:ClearFocus() -- Allows user to press escape to unfocus the EditBox
+    end)
+
+    -- Make the EditBox text selectable and readonly
+    discordLinkEditBox:SetScript("OnTextChanged", function(self)
+        self:SetText("https://discord.gg/cjqVaEMm25")
+    end)
+    --discordLinkEditBox:HighlightText() -- Highlights the text for easy copying
+    discordLinkEditBox:SetScript("OnCursorChanged", function() end) -- Prevents cursor changes
+    discordLinkEditBox:SetScript("OnEditFocusGained", function(self) self:HighlightText() end) -- Re-highlights text when focused
+    discordLinkEditBox:SetScript("OnMouseUp", function(self)
+        if not self:IsMouseOver() then
+            self:ClearFocus()
+        end
+    end)
+
+    local discordText = guiSupport:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+    discordText:SetPoint("BOTTOM", discordLinkEditBox, "TOP", 18, 8)
+    discordText:SetText("Join the Discord for info\nand help with BBF/BBF")
+
+    local joinDiscord = guiSupport:CreateTexture(nil, "ARTWORK")
+    joinDiscord:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\logos\\discord.tga")
+    joinDiscord:SetSize(52, 52)
+    joinDiscord:SetPoint("RIGHT", discordText, "LEFT", 0, 1)
+
+    local supportText = guiSupport:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+    supportText:SetPoint("TOP", guiSupport, "TOP", 0, -230)
+    supportText:SetText("If you wish to support me and my projects\nit would be greatly appreciated |A:GarrisonTroops-Health:10:10|a")
+
+    local boxOne = CreateFrame("EditBox", nil, guiSupport, "InputBoxTemplate")
+    boxOne:SetPoint("TOP", guiSupport, "TOP", -110, -360)
+    boxOne:SetSize(180, 20)
+    boxOne:SetAutoFocus(false)
+    boxOne:SetFontObject("ChatFontNormal")
+    boxOne:SetText("https://patreon.com/bodifydev")
+    boxOne:SetCursorPosition(0) -- Places cursor at start of the text
+    boxOne:ClearFocus() -- Removes focus from the EditBox
+    boxOne:SetScript("OnEscapePressed", function(self)
+        self:ClearFocus() -- Allows user to press escape to unfocus the EditBox
+    end)
+
+    -- Make the EditBox text selectable and readonly
+    boxOne:SetScript("OnTextChanged", function(self)
+        self:SetText("https://patreon.com/bodifydev")
+    end)
+    --boxOne:HighlightText() -- Highlights the text for easy copying
+    boxOne:SetScript("OnCursorChanged", function() end) -- Prevents cursor changes
+    boxOne:SetScript("OnEditFocusGained", function(self) self:HighlightText() end) -- Re-highlights text when focused
+    boxOne:SetScript("OnMouseUp", function(self)
+        if not self:IsMouseOver() then
+            self:ClearFocus()
+        end
+    end)
+
+    local boxOneTex = guiSupport:CreateTexture(nil, "ARTWORK")
+    boxOneTex:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\logos\\patreon.tga")
+    boxOneTex:SetSize(58, 58)
+    boxOneTex:SetPoint("BOTTOM", boxOne, "TOP", 0, 1)
+
+    local boxTwo = CreateFrame("EditBox", nil, guiSupport, "InputBoxTemplate")
+    boxTwo:SetPoint("TOP", guiSupport, "TOP", 110, -360)
+    boxTwo:SetSize(180, 20)
+    boxTwo:SetAutoFocus(false)
+    boxTwo:SetFontObject("ChatFontNormal")
+    boxTwo:SetText("https://paypal.me/bodifydev")
+    boxTwo:SetCursorPosition(0) -- Places cursor at start of the text
+    boxTwo:ClearFocus() -- Removes focus from the EditBox
+    boxTwo:SetScript("OnEscapePressed", function(self)
+        self:ClearFocus() -- Allows user to press escape to unfocus the EditBox
+    end)
+
+    -- Make the EditBox text selectable and readonly
+    boxTwo:SetScript("OnTextChanged", function(self)
+        self:SetText("https://paypal.me/bodifydev")
+    end)
+    --boxTwo:HighlightText() -- Highlights the text for easy copying
+    boxTwo:SetScript("OnCursorChanged", function() end) -- Prevents cursor changes
+    boxTwo:SetScript("OnEditFocusGained", function(self) self:HighlightText() end) -- Re-highlights text when focused
+    boxTwo:SetScript("OnMouseUp", function(self)
+        if not self:IsMouseOver() then
+            self:ClearFocus()
+        end
+    end)
+
+    local boxTwoTex = guiSupport:CreateTexture(nil, "ARTWORK")
+    boxTwoTex:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\logos\\paypal.tga")
+    boxTwoTex:SetSize(58, 58)
+    boxTwoTex:SetPoint("BOTTOM", boxTwo, "TOP", 0, 1)
 end
 ------------------------------------------------------------
 -- GUI Setup
@@ -6577,6 +6699,10 @@ function BBF.InitializeOptions()
         loadGUI:SetPoint("CENTER", BetterBlizzFrames, "CENTER", -18, 6)
         BetterBlizzFrames.loadGUI = loadGUI
         loadGUI:SetScript("OnClick", function(self)
+            if InCombatLockdown() then
+                print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: Leave combat to open settings for the first time.")
+                return
+            end
             titleText:Hide()
             self:Hide()
             BBF.LoadGUI()
@@ -6591,6 +6717,10 @@ function BBF.LoadGUI()
         BetterBlizzFramesDB.hasNotOpenedSettings = nil
         return
     end
+    if InCombatLockdown() then
+        print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: Leave combat to open settings for the first time.")
+        return
+    end
     guiGeneralTab()
     guiPositionAndScale()
     guiFrameAuras()
@@ -6599,6 +6729,7 @@ function BBF.LoadGUI()
     guiImportAndExport()
     guiMisc()
     --guiChatFrame()
+    guiCustomCode()
     guiSupport()
     BetterBlizzFrames.guiLoaded = true
 

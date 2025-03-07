@@ -478,7 +478,7 @@ StaticPopupDialogs["BBF_CONFIRM_PVP_WHITELIST"] = {
     button1 = "Yes",
     button2 = "No",
     OnAccept = function()
-        local importString = "!BBFfQ1FSrX1X)C(8D(sIALTd)yjycRQifqLQ0MgJIiuBUZNnNtmGLpZ5aFvK4D398DB8E7ED39ox7qsas(JujqGiOkiQbmueKiLirivKqc)OXYfc8vKCLwLarciyrBJAOqKJsk)rsCN5T7BV9W7T8py8(MzFZBMpZNzM3AF)0iPjgKxAmHGp2nserHKJE4UZs0PIXZk1VXMOkYeTm00R7NiLgfz7s5YRQzqumwxpPuLv1ECF(953yXjkvZHbnOYPf7JilxQwubJfxkW6kf8X9hR1)rZnVS76UURyTEJwAzDW)XVqJ79RbLYFFRQivlV6GunAAXiennjQgOnOf(Ib9XngKn0lMcfFwDQKIOPqmKuvwIyVAuQOA)IDj1p1ClbXQ(Eg6dxo8oMOBjz4qH61HMQUH5UbY)51xViigFxbPfQj8qGgBVtfdQwrQI1MGp2CxqBm0gpcAz13nrsrmEH851O66G5zzqB8iE4eQD9FdO7OrLkkPaUCdknT1waRW3c)(fQ7XAgT8WkPKOkgSJSQgDk(jqSOHzE1iYOrOKX8ucVw1CCP9BjD0WHU5orHBmEbTIsfjYIDQOBiPKYq32Nmft2Y3CZDk4FZQG2j7nRQMIULvdpZJtBGlmheN0wwnvfv4eOM3snyHY(tbFFX3cInEVQfsLfT)NGOLJyjjSMhBGVTTv8an3kajHlcaCw4oSEwsoIDueK2(Dzh7f8D8nbVJ9fwpfvjnrjLT0hFttv6qV0iSy)kPgzPA6gQA5e7qMK52JmGCc(t((GSL(rCxvY33ra2)9ghFrpqCa9qsJbUEZsf7tvl9se7wt1GMYWgsHc7HtOMRVDw2iAmdqP5z5tmu713UlN3Gr(w2riSIH0pFfKmsPGuFkpfgx2rOjWgVfdE1MkyzsGhgsAdRRtkiBWdLB8wUSj(B5ZzBcEOIqj6gI9jzKvY(a1YNBQuSw)pF)pG6aAFMDTRto5Kt6p063mchcd5FzqhtFAeJSvnPD9BwW3f7dtQwLwsmO3nYTWJHxSp((C9V77fz(Tto3526Kt(dymO1Lb6fjICbU8Wt8YrpRdIhQzW80lsSDIMr2fjsusl2HKMnvXSoOlWMsFbQzd9OAcmJtsPj1VehRbl7X26p5XRehDCh4OAVYL7GrFCLlZbGW(eJc2gUrgiOssgjzec8MDJCkRYIWc8SO5WdJVz3od7xADyoruv1CG6kP5P7WZDjyh4IpOjIkPAojZSqGHoxYQfZqfGJXjQ8uDchNQAQTfgr1kjgf0OZxxm(GqXjfWS5E5ABXH5g8gFm(UAIdHVXh7AE(lIcnD707x0nCR4vn52bxef4cqF4kahqvpkGccn(7rh7(IiRQMgOeS5BGN7w(3xHgB(z2fCAOAIvln8R(yhhWAF91G2Edwlc)A1XlHwttGSBckToG(a8mo4HEHWE4dbQC(1sve7qnvbDXEPC(xyjN4IJ0fMA2duzCqeafrMmm)0cR51wCVc4PE6oRtDBzbOmwVbFXA9DfewMjh)fzN95yhc(0zotZm5rm9P8qbiyOFX7MalFNAiXeujEvk4PUfQR)LzuB9qYq5PkXLDYFcs4w870iT(OrPaRKyBzXUL4XSt7KHV2fVvNaC4xDSOVJDkCZN2Yb2FOvdOqCrjDPKsYsgdXbOh7uE4pdoYFKbuJcgCwGowSnTH0niY2EPrBSrtV04AABWHxcuecQnIqKOaeXrof8up2WAx82Q84Snhhh))ASrRdBwveAiuJ3vdSGd4JVZndtJwIkMCitp(GQ2cdl71jEYGlMDaMmiJSbRxJTDjUG20KmwOfS5pnTPjAb4UFgfYQLnKYb(yxqB3VttB9Vdgv7b6LDieEcUtUvT(3XlCDZD7cUgAPQaX(naY4XBW3UAN5uwTc0)bJvMQRkxKw6o0sgQOGVlDa0XhLKlpK8gdACIB1x6aESNbE96X9SH2Zr1iql8TPMlxbLYnCaR7LfFL9G0frL6V)cWGdmYl(2EL94LZk5j5yOso7mfxa6jigEuGQ9qNc4qfdWDFTeRmul0jmBHTZu0KQfWsVW0jsgfsZlLEID6HbuZFFLyuoEwsA1bfJA1TN7m7GScbdjIm7TNeGzRqktwEtpWZDHziWrFiu6OAKmQkW)yZmE0hYfPR5VMGX)ynffGBsan8qRWMQwOh0viq65J(RUPKu0bPKI20wWcoa2(FGorkrwXj5cvF6huqHaNIjCVs5WHtk3U(P6S8Bm0B9CMCSqNDYQPSIsWtDUPt)WONaAHdAdXbQeEUxOY)7FbRUG0sI2P3v1EbPfcgmigpXoWHsNehTmdR4we6ZgPJQ7zH3eRNorZqcBt(SrecQSIkzs6MQizqlpPaiGxNk91YsrbIAXiiDFwUxvFTUbl(03IblcRNhMbGxyQDsgz7om)03Yf981ZlG6nRLdepPLikS5FSgF8jaAfolpiNxP2h4MOdnSUbWlyELaC9oWn9ICEH7NrOyny7uMGbw3R0Yh9sjyt7A3k0Al3ffSy1vn00EvqtT2lsQaRuTPyN2RcDjGTWWANGDSUyxCCRZy2rWqEPFgpsDeVcWbpdsGxAw8J6zA3zDLTIf63uNWeWjbCnFx3Qx12B8v(DyEqeyatQ2aqbvR(0l5(8sw5dGwc(hVUeoBQE86CWCoBSVWsl6o6KMDtcbUQkBQc4NS8I81hppKGbLM6x2kUwna0fFYkDVpPPfeR1R2qdwg(y7yhJWMk6V9HyDKvaJhs1GM8BZ(IKGvCy4dXMbT(2KvjdWQVYOVVZ3zXq3siWl)Wm8SwkcEFlfk3SgSIBzFt()JexMnYmy5AqWZDsVnEOkDZHkBTcb35J0HLGm4WoFewIbXAAcZjYytueASDJGxR4S1jFSDpvZk0JzEJtjGY8sAq6r75sQrUZ1ja9eceLDfjnUCzcqlatUcoAqDzkNtgeWJ8RJItgO1djpoiMLjE0d5b41FZftu(gU6Guu1UD6Ml60hUWJIG8vRKvvEih3PG7K9G0cbgf7ADuy0SuQzagyhTRmAJoFZrEASavm896Sv0ipDzHcnF2GmS7kaA(g6JP8f4n)UCbyeCY6S6(So0Bw(2Iexqme)Uq(UhyIEycc)ePXJkPNxgcv5qE4iqTAwQJPKJDzmYmT4ym1abBSSGW0ms2ZBp2LDCWcC5bryxN8fV8GUyObogw6DIU1KYHxzdWI3hPOnO)yh2fv8p(9ujC(ECK81fgopFeQUb7DPzx)cwXTeOuNftGIb7n1XnJHTM)hAQPL5S)QuNvW3b3agQyv87MKYUwZb3Gx8TFeE1zW42K0u2nWXjE)O4UzqLweZl3oRJS0afwgy6vnEVcEM)GkBmac66HMAaSd)YJlzmGBOK6ydjTmUfv32CrOAZqXsc9QvGQNvT6yEqob)N90j43hTSA(PEdWGaHwpI3Nim4XbmwuA)aYKFN6EWnS(No0xtqRnHv88RjoyXQDaeRLVb2SmWytGNB5Ayd3whnyDNiZTGxz3eRkPUeR3J4PiG3Id62YM9GGzOFib7kIHgJeJwU7i45EbbU(B4eXc)Azt)ATIg(mCoq2T3oY1A1lcSMMaFbcvmrhw9BqSXkLm8SKMMWRxY43DLPu3TdFBajSOK2YLLYLx3o1u6HD4q91kM2L)(mjOmVw4YFSewosRf9y)d8V)LSdrC1cYjlOPSeW3MtvbkD0MKwk7wjbXCyxbNCol28fEZ9SN)SjuK1jQ9K2MLQhAHMmHZrW3Er4zP)pUnT3t7gJ0M)XGqj7bVYio8bEMxH3jBYISTjed6KSnbuS0MRTMuNdjNclllXwTmFtSwp7R8kWraOD(YN5zgbFRL5DoNqGVbnP8nvX3nOTSQ6uwFZTlxqP6dgckd9GVlgRsLDP3BbndhTPVlVaiBXpI77HmeQCmZuBguzl(9uTArh(ZBlCTvx45TGeSP0n)utSrAUtKcZBbc1m0fq1wb1GafqYd(e7QrWsUfEF0)jshhwgVhlCYX70MGAiuZLEB8GSr(R(sVTB0PJDr8vBEvBoQpap3dFKVp83GUw8Bek2MAkv72eGf8Gi6ezqd6fSOForgV2Hp75rFK11iywiQQWfqybFBd)SrLEwUHSTrM6Pn0jAlH1yevqXdpp0XWbcMG5hWoesxS83PcwRCkC(zt)TqpIYursbnI4s(vIlinvMcZSMJUWzaa2z3U16HN66cbhgVz6ThN0pntHYnobp2lFXhCl2OcWpV9ZFn7lEHKaQO)cSUUfc8SSHeRh7Z)2(4evjt7z3VGV9JFR5KMFupU)B)lEQ(V5nx091TPiZBUELeDb874uAA8KOl4YxSrW)s)ee7fpN6auXiQ2FndhxA1s)eb)dFE8vTb(RA4Z7bclwBONc(bktfZ3H3vK7d3jem(OjWbitHGzz7ys8r9yJwZsq)807qJQmS0u75bnI1Sep0V5JWm0MzFjBOZI0WlIiJ0i9uqp7u8udZg60(66gUoxlc8Kolic)QJcp(N53Xag2Fx6EHCDPu2xm9m)oVaGn3FcxAJE5wdiXWln3VhVGa6y54ZZU0ROsvClsWsEvMQfS8tYif00uhKhyA5CvxJRTu0VETLYCRLE8QIpVV9MGFxuqbPY)9vGR41bzm8Jxv6b5g)yxTKJokUWWihc76s7NDf3r0OCRgw0R37PWVgy(gwzbOqRPUXZcndAxm)uRR8gfAUy7tty2Si77Ad9Ez1IoSMxBZRDgwCaAtqKFlw8D41oJhW1NkpESxT1E8u5DCQR9EqwH8Z0gzzr70HKHb1XLHwTsvG(HoeEFNJZ6qfppoBs9qpNhM1rVkR4fmaiKOxoZ7OxT66SdCA7srnLChhYL8OGFaI2p8kG(RlQkt96cSbrdDYTYYKpjBe)A2ExsPYMuvtPQSn18VW)gp2xBaFxbDdVU(vqsHG7MX(1fh7V7Zpvlo079gm8a)AjnttT8fV3B4bEO2V85zDbc)eYg6nRAHmznG(pjY8OBGH3cU)BzkuZWcBc)ZCQ3HYtppwkSVSsguzjDJ)3d!BBF"
+        local importString = "!BBFnQvFWrrzAEMzYmmRuRlecq7zW01wClWvSL7XzOSqnHzYNObivMWeHTUsENzENm9LE6ES)yYnrWfz3)qQckOyTUsS2vICuYAvAjIxHB2vGBtXHIwOZM7diwlFLY7oVtpyR4PR)HRzFEE7(TNEs6PZ(pIP7NN333NN3Fp)E(ONaFV4zigKN9FxiYdD7KXvi5PNU3CeDQyICszn2hvrMOninZU(UszqroIu(cQAgefJD1xAvzvThnqOaHm2qYYbpnObvoJ4aez5Y1HkySHYH3v5ipAOUB9)S5M30cwWc6U1B3sl7c(Fcje5p83akvyjXsPRkBAaBivJQizuYsx89wAJBGq9V0NJsV0TvKQvqDyq0mIXjAAsunqEBPa5rnbzfcTLfzT6fPkdkPmOyBAM6KmCP96ezRnOPq43(0G2t3RMuEvTmsezWOksTpyWlDmRBU4flc6chWGXkbQCKnRyq1G9Klm84kwr07Tr8qTS4YuDD8qPMvmbjTMuwP0057Gbkh9jVDN2lf(GN82Snub2qIbQVqD7(lGny82LkkPaoudknJ95aEd)CekKWcFOMr7lMsAjQIbEm6rvJohhjiw7XyUD3N4o1GLvnpx6q2s3ESO355rHRpHPwrPIGtBZk6gskPn0NxB7opVqGd)IO233Mvst0uigsQkBuSltc6)vW9D7A6QPDwjhpV9zfuxi0buHLiv)5u1u0TnC4z(acdF1vIi32YPPQOcob1c8l5RUsxOVaFYxcInv)QMPZHhLhJOLNylj8oF2Gah(qOv1uvwvm4(IOHlum9CK8eh0ciThqRaNDFWAC8y6PPkzikPDK(S7BUsh9zhf3WfVvQroQMUHQwEXoLjdo7lxqoHqP(1GSL)oCxvQFTlmsOfLGDFKOGgLKbV77phvCaiEyJI9QPAqtJgdx1fLWhNqWp7im(b8WmeLwGffYIo(SJ4H9gj(xYmHykgsF)Tqguknqgr5Kk4RDD1e(z(kgcTnvmsf8WaXqmDDIPSb)Q8z(kp2KqTCt2MGgvCkr3qCajJCsogul30sPUB9)7p(nOoG2x6Oh98ZmZmHIU7dGWbhULb0ig5QfYeewiWKdGXLBtlfEP3lYFXVdNCa((8zF9FuK53oFtn16mZ8nHWB(FmEbjuBu)z)XcbVNtIwYYzU31j2brZi36ejkze7usZHh6EoPhyLYFcJKSpvl0OBUi8Kx(t85snuQZwn45SUapbE)xhVXDH65277)6(SM1DJR3jJT6gxNdwHJx3uWKWZNbcaLKronHWVwVif22kaWtlQj0k4x5VwVUHixBxy8t7QQ5b1vYWPgGN7v02r7Gbm2UceTXwxkKGQ48YpJkke4ghduEI2LYM1eYHYaVCl)ghZpIOj)lTW8PuZlz5Xe7rkFQAEZdka(8Zv9vW5CDfeSUwySXBLyyQrxTUyIHHe6kGZIdjQRfxoPi3(dX1QjEq2T)qpzI(jC8Of67N4vK16pf6d2jvrSt10M6I9t5CLWRCTLHAgVcND6qiFbq6ZRcaKP2ETONZkHZMtttPAIaEO0ejdZmCa85EE)aWI3I5Y7faquGvf3(TaWJA6YbfeQ)FapZhpUSQAgGC1H5gEUxUIuNNFbv2DUs8fcr(9OhVWk6bSEQMyTy7(9FOlxwDVYoWfSb7xc)PpENDGvBSpOkPH0hItSbp0hxsKOIO11rka9TfPbZXPqHN7H1v3K)piRwmtncG01HcFkvE2LqaYie(m9G0L9bvfnmEnhxMmItXuNPh)UIwKaAUFBoyyrc2chO7w)LccBYk0zS7NfERrguvb(pol9y3Vxq4jzEqrNB5RSIvyr7oQLmoHZtUJO)GFzsSeR0LetsL4Luap1RR6f)tXBZL2hCa4CvjKDNSdKWd9I8oyo4XBNcPqeBlhwSn3P)oUthx3goK7yD4pDt3(2xe38g6csvdxdqHxfL0LsjjxPCAqe)U4h9FKfl0oCGZb5oHYLlPBqKD8sJxF9wEPP002RlVeOievxpc0AhaAUOxGN6hF3pD9mSJwAcwPQzfZgEJhUPW75zzUjWaX6zSXMvJ1azec(VTvuUe5izuhwSD7QL8oEgKviWLxULHlrftvY6wByOscUx7YlV2gXh)WyYQp(HrjcoolVROvpq10nptKnW8AZeHr2Jv0PJu9RPnnjJ1AJS)NAObrB4)FbJFB7Ygs5jylsvNGgfWn5WgoC1qKdxbIe9VTaZotuaOwGuAzLDx)g8wxRt4roigqLiV6qqTrQojHQqFbsie6(2mgCWycLn1nQnT59T5OVXtBfibRNSA6HS3134PRSRrBAAqKP7sdjYzvBcLyM3wWMM2psIilaHF4Id8)5R95iYcec(GxljRXhhU2DwHdhEPFi2FXLavNOFGcZPTeoK9xCjFjXWodNI1ngYm0f01CP5MryrLGIo7gK80q5KqPOyF0dXVNBPB3r7xDe0iyj7YwIXOQrhMJyV6i(DwADtGQXJlB6Wk16M8r(GHNcHn3lqOGGHTkzocrDDSWeGfp9qIB7VV88vxeSgr)xFx03zLKakfPnNreaVXLLf83MKrIApjbWzLekXMwvuCn3MFBsHWzwn6a7LssthMcTS7uqyMv7cQn2TyjmK0bYz9kbbJDl)yiv2s1XI9IdRGwPBmqa)qp)Um4DwCydPAdbu0jYPAAhZ4vlg8aTFhCdTmCyehh62aQcUBIwE(n3YoDT3WOp0zyX7jj5liPb48oYNsJm)UrqpHiTCzq3uXn10u5Wk4z(zD)H)feIJzaeDi1QzGiiTqO1ogQX2vYPkxYvdB1i0DTJjewFN4DlMHcX7wDCXwo9D6rcJGx5nyqPyWLCANUh6GmOSt4(vEdp0lqFylxfUh3tEGpNKhdI14P3a58loB)xbwfn7HovB7A)xriYApbUHlXEOnZP1A49(blJeb0ECSdFGy3DNwWBMR5fTHFoEU6OiPQBOAbgA4NdLbHfVXQxIz2t2dpqQQ8Al0oV2cXyKktQqCnDJX8RLNAjYLWMRk3i)mEPoCL3jWHUiJixtvjfGK474H8RWL6FH9J4OkXv2Db6FyfOLqOPwys3npn1cDref(cxhVuAibg8ymmWeZ4TIrhuYP7XlCDxN9W3sL15k8V4tdwUTADIdm5JxTd9XTwMUB9wlzj2h3l8Cp3Owvh(b4qyG2naueBwoCh3hKWJl3sSrHS42KvjdXAMIvf08p9TsFLq4))NaJUIdzFXK0eEoA8f(LFyM3hpFwdBA4kjSGN7Y5eAQOv7QJ6YvhzeSnOJKGKLoigZXTWr(q)IVAdN03rIRMPexj)Zoakie69ENK8r0kRwyUZ7eeqiC7Sb2vFxGlxIaUC4Ah4oL51IGc4ZbRUHgMfnZ6Jfkvds5BvsJT2W7D7yAUyYkZRTtsrvN0YnxSICrF3UWKh9kbr4AwJGvT2fCbsleECSK8XHwBtRoiKNQcTa8g3HCV8Dq5IPBOrKTg5phx(Y3P2Mz0vZ6OJnilOzJSMUYIU6E8Gvn80hNDjROoCgnRnXBgrqqHWVYIz(WoYtHtvgX2uZN3uXLj8kl2pOXvXXHvEfCh5v9yWxcHI)3HNNUXKpdub0bp2Dm91X7YY7IVTxFyVwPPURQX23LBSDIXtAxAABQYoq7eJ7xiv63ddP6gAcH6AYTyJb)SgBCtU7Fj97je4K7fnewM3EjPDU9o5E9ZfnYejztPY6Zey1YI95FKj8tXdwhYs0hPeIc72kgIP2bRR2QTQ1GEOrMVy0vTgJHqWyF00dHteQsVKgd5HJpyPRIgXwOgK8QAfYPQ7qndVYl2XVjjBu)qPdITxP(b45(a03nItMogCxOGALfYRn)FdjqROFobn6ET3JpN4cve4WSr03yvFtG2adGYQ2OdztxFqGr9kA6G48NNEBP0LyLOKinbCyCy6bpGp3GbAfzCkSuRqxRP5x57OX2Ywl6J(r(Sx1nCh(Zkg2h3kU0l3948MD1mFCR(HUAeBbSGqvZde7xDySumLb5yTg9RBWWh4UHfjvF4OM4GA4z(PHeokcTUKLYxq3zkesR3ntWxGlA59wBARV4Ufc))(xZo(junLtzQb3PTtZRQa1E3MKwANYobXCZqmZk3G1sENJDS)zRLKv1QZKbSNS2AzU7zwPqGxcZIPzxXd)s7LEhpq8pJvpa9sGwwtyApPChI6N5m(DpptJ2v01isf7UIUKWo7uqxW0yVctetwwI92kewD3679cVayraV1N(up1O4QwH46YaJri0L(uoeiH8Jt8khfTKgQUy((n1mCvn)r9BbU2BI72E4cFT30d31fWpaz59B7EUWl6fB)iSIgZ6WwUqptj8TQoLW3Y1fE4h8)cP3JjJZPRFP8ZBhzOgcrwiB0oRNh2TWd7X(g5ctIlT1OeDLmaEUFmcV7tI8I9iLftsLwTYNQ5DFsFigp3G4b6q2oRZnOF7Wh9JqmI9m5SQLTMrsGWr7b5OMiouXl7tVRvHRUNIECVDU2sA3trz3LZbpp6BJDhmnZJGLVNPyLpFk8o3CY7(TsI5EiYYLS(5c4m40D)w(rEmDFS4e4FX4wCMcYqB25X0fXPK0G3KxQ1V5RyDia)7ST8GhpHzkapK1KnfuHW7H1s4IXXKmRV7vnOF2ZjecCc8hHrkRVTm)SFInmx)1QAcDxpHLiRQj)IAkVowyxhSXQNrSp6GufOMmJ)m6Devwi0d)FG7v7LN9aeHxie55Fax)AgW)K1gmX(tXyz0mo8OD3g66G)bpSv1ThoUFVB1tiW1Ezey3ojFbiXQRbNaVWhG9o2iAZlRtnQYisZ1OXZXo2Op638zyN1MzSRqPdzGfIiJfA1NPEUzJDhd)wzA9rkGFKo7LFSt5hG7apUBYf4pDHIdTIVMbCC(fy0pWciL2zK8R4R9lmT5Sj9ON3UShBeZZ1Cw)oA6yI0jqsnX2LQAyeWR8XLnwzCJxAh5z)YEa)e4SgGsku7zibQiu3GuqT91VMjvpNATBPaKti0sFPK8z0dGHk)eLW34NjDbCuHL)R4MXfUvzxvfCr2eWz2BcJk)0rU4MRsi8JpxyjB1esrAnT2e5GocDQn5I7YL0bV52Dhta)jo5ymPhR)m7p7HqKxelGV8pKtW)It4r6GWF0ODw7quq9nX2)pAuH6UlKsOWkCGn2HFDkzyqD1OzTc1b9JEkCc)tXQUgTr3fyFQN2pp8zW5Qw(b4UJZ4ZuuFomyPChwI(CNYdBoYVbXWNElq9WfvLP(91FarJE(dXIvppRJ(GhPhP05sPQPutkLG)34yhoo0qAktDd)MXjiPqWVe)Ib7lPQuMS(9Hja5I(RWYQN2zOJwXG2(VF1R6J)RUp9hXsab)laW7pNQjGrGkgjYCmvOhbNEWPTMrtvD7(iDvb6Tp8Nby)LkqNGyQrgiNKbvws34p9d!BBF"
         local profileData, errorMessage = BBF.ImportProfile(importString, "auraWhitelist")
         if errorMessage then
             print("|A:gmchat-icon-blizz:16:16|aBetter|cff00c0ffBlizz|rFrames: Error importing whitelist:", errorMessage)
@@ -3637,11 +3637,11 @@ local function guiGeneralTab()
 
     local queueTimerAudio = CreateCheckbox("queueTimerAudio", "SFX", queueTimer)
     queueTimerAudio:SetPoint("LEFT", queueTimer.text, "RIGHT", 0, 0)
-    CreateTooltipTwo(queueTimerAudio, "Sound Effect", "Play an alarm sound when queue pops.", "(Plays with game sounds muted)", "ANCHOR_LEFT")
+    CreateTooltipTwo(queueTimerAudio, "Sound Effect", "Play an alarm sound when queue pops.", "(Plays with game sounds muted)\n\nNote that \"Enable Sound\" needs to be on in the audio settings but you can disable the subcategories: Sound Effects, Ambience, Dialog and Music.", "ANCHOR_LEFT")
 
     local queueTimerWarning = CreateCheckbox("queueTimerWarning", "!", queueTimer)
     queueTimerWarning:SetPoint("LEFT", queueTimerAudio.text, "RIGHT", 0, 0)
-    CreateTooltipTwo(queueTimerWarning, "Sound Alert!", "Warning sound if there is less than 6 seconds left to accept the queue.", "(Plays with game sounds muted)", "ANCHOR_LEFT")
+    CreateTooltipTwo(queueTimerWarning, "Sound Alert!", "Warning sound if there is less than 6 seconds left to accept the queue.", "(Plays with game sounds muted.)\n\nNote that \"Enable Sound\" needs to be on in the audio settings but you can disable the subcategories: Sound Effects, Ambience, Dialog and Music.", "ANCHOR_LEFT")
 
     queueTimerAudio:HookScript("OnClick", function(self)
         if self:GetChecked() then
@@ -3734,7 +3734,7 @@ local function guiGeneralTab()
     local resetBBFButton = CreateFrame("Button", nil, BetterBlizzFrames, "UIPanelButtonTemplate")
     resetBBFButton:SetText("Reset BetterBlizzFrames")
     resetBBFButton:SetWidth(165)
-    resetBBFButton:SetPoint("BOTTOMLEFT", SettingsPanel, "BOTTOMLEFT", 16, 16)
+    resetBBFButton:SetPoint("RIGHT", reloadUiButton, -615, 0)
     resetBBFButton:SetScript("OnClick", function()
         StaticPopup_Show("CONFIRM_RESET_BETTERBLIZZFRAMESDB")
     end)
@@ -4507,6 +4507,15 @@ local function guiCastbars()
     local normalCastbarForEmpoweredCasts = CreateCheckbox("normalCastbarForEmpoweredCasts", "Normal Evoker Empowered Castbar", contentFrame, nil, BBF.HookCastbarsForEvoker)
     normalCastbarForEmpoweredCasts:SetPoint("TOPLEFT", buffsOnTopReverseCastbarMovement, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(normalCastbarForEmpoweredCasts, "Normal Evoker Castbar", "Change Evoker empowered castbars to look like normal ones.\n(Easier to see if you can interrupt)")
+    normalCastbarForEmpoweredCasts:HookScript("OnClick", function(self)
+        if BetterBlizzPlatesDB then
+            if self:GetChecked() then
+                BetterBlizzPlatesDB.normalCastbarForEmpoweredCasts = true
+            else
+                BetterBlizzPlatesDB.normalCastbarForEmpoweredCasts = false
+            end
+        end
+    end)
 
     local quickHideCastbars = CreateCheckbox("quickHideCastbars", "Quick Hide Castbars", contentFrame)
     quickHideCastbars:SetPoint("TOPLEFT", normalCastbarForEmpoweredCasts, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
@@ -6469,8 +6478,17 @@ local function guiMisc()
     hideActionBarCastAnimation:SetPoint("TOPLEFT", hideActionBarBigProcGlow, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(hideActionBarCastAnimation, "Hide ActionBar Cast Animation", "Hide the cast animation on default ActionBar buttons.")
 
+    local instantComboPoints = CreateCheckbox("instantComboPoints", "Instant Combo Points", guiMisc, nil, BBF.InstantComboPoints)
+    instantComboPoints:SetPoint("TOPLEFT", hideActionBarCastAnimation, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(instantComboPoints, "Instant Combo Points", "Remove the combo point animations for instant feedback. Currently works for Rogues, Druids, Monks and Mages.")
+    instantComboPoints:HookScript("OnClick", function(self)
+        if not self:GetChecked() then
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        end
+    end)
+
     local moveResourceToTarget = CreateCheckbox("moveResourceToTarget", "Move Resource to TargetFrame", guiMisc)
-    moveResourceToTarget:SetPoint("TOPLEFT", hideActionBarCastAnimation, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    moveResourceToTarget:SetPoint("TOPLEFT", instantComboPoints, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(moveResourceToTarget, "Move resource (Combo points, Warlock shards etc) to the TargetFrame.")
 
     local moveResourceToTargetCustom = CreateCheckbox("moveResourceToTargetCustom", "Free-Move", moveResourceToTarget)
@@ -6656,25 +6674,25 @@ local function guiImportAndExport()
 
 end
 
-local function guiSupport()
-    local guiSupport = CreateFrame("Frame")
-    guiSupport.name = "|A:GarrisonTroops-Health:10:10|a Support & Code"
-    guiSupport.parent = BetterBlizzFrames.name
-    --InterfaceOptions_AddCategory(guiSupport)
-    local guiSupportSubCategory = Settings.RegisterCanvasLayoutSubcategory(BBF.category, guiSupport, guiSupport.name, guiSupport.name)
-    guiSupportSubCategory.ID = guiSupport.name;
-    BBF.guiSupport = guiSupport.name
-    CreateTitle(guiSupport)
+local function guiCustomCode()
+    local guiCustomCode = CreateFrame("Frame")
+    guiCustomCode.name = "Custom Code"
+    guiCustomCode.parent = BetterBlizzFrames.name
+    --InterfaceOptions_AddCategory(guiCustomCode)
+    local guiCustomCodeSubCategory = Settings.RegisterCanvasLayoutSubcategory(BBF.category, guiCustomCode, guiCustomCode.name, guiCustomCode.name)
+    guiCustomCodeSubCategory.ID = guiCustomCode.name;
+    BBF.guiCustomCode = guiCustomCode.name
+    CreateTitle(guiCustomCode)
 
-    local bgImg = guiSupport:CreateTexture(nil, "BACKGROUND")
+    local bgImg = guiCustomCode:CreateTexture(nil, "BACKGROUND")
     bgImg:SetAtlas("professions-recipe-background")
-    bgImg:SetPoint("CENTER", guiSupport, "CENTER", -8, 4)
+    bgImg:SetPoint("CENTER", guiCustomCode, "CENTER", -8, 4)
     bgImg:SetSize(680, 610)
     bgImg:SetAlpha(0.4)
     bgImg:SetVertexColor(0,0,0)
 
-    local discordLinkEditBox = CreateFrame("EditBox", nil, guiSupport, "InputBoxTemplate")
-    discordLinkEditBox:SetPoint("TOPLEFT", guiSupport, "TOPLEFT", 25, -45)
+    local discordLinkEditBox = CreateFrame("EditBox", nil, guiCustomCode, "InputBoxTemplate")
+    discordLinkEditBox:SetPoint("TOPLEFT", guiCustomCode, "TOPLEFT", 25, -45)
     discordLinkEditBox:SetSize(180, 20)
     discordLinkEditBox:SetAutoFocus(false)
     discordLinkEditBox:SetFontObject("ChatFontSmall")
@@ -6698,20 +6716,16 @@ local function guiSupport()
         end
     end)
 
-    local discordText = guiSupport:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+    local discordText = guiCustomCode:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
     discordText:SetPoint("BOTTOM", discordLinkEditBox, "TOP", 18, 8)
     discordText:SetText("Join the Discord for info\nand help with BBP/BBF")
 
-    local joinDiscord = guiSupport:CreateTexture(nil, "ARTWORK")
+    local joinDiscord = guiCustomCode:CreateTexture(nil, "ARTWORK")
     joinDiscord:SetTexture("Interface\\AddOns\\BetterBlizzPlates\\media\\logos\\discord.tga")
     joinDiscord:SetSize(52, 52)
     joinDiscord:SetPoint("RIGHT", discordText, "LEFT", 0, 1)
 
-    local supportText = guiSupport:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
-    supportText:SetPoint("TOP", guiSupport, "TOP", 0, -90)
-    supportText:SetText("If you wish to support me and my projects\nit would be greatly appreciated |A:GarrisonTroops-Health:10:10|a")
-
-    local boxOne = CreateFrame("EditBox", nil, guiSupport, "InputBoxTemplate")
+    local boxOne = CreateFrame("EditBox", nil, guiCustomCode, "InputBoxTemplate")
     boxOne:SetPoint("LEFT", discordLinkEditBox, "RIGHT", 50, 0)
     boxOne:SetSize(180, 20)
     boxOne:SetAutoFocus(false)
@@ -6736,16 +6750,16 @@ local function guiSupport()
         end
     end)
 
-    local boxOneTex = guiSupport:CreateTexture(nil, "ARTWORK")
+    local boxOneTex = guiCustomCode:CreateTexture(nil, "ARTWORK")
     boxOneTex:SetTexture("Interface\\AddOns\\BetterBlizzPlates\\media\\logos\\patreon.tga")
     boxOneTex:SetSize(58, 58)
     boxOneTex:SetPoint("BOTTOMLEFT", boxOne, "TOPLEFT", 3, -2)
 
-    local patText = guiSupport:CreateFontString(nil, "OVERLAY", "GameFontNormalHuge")
+    local patText = guiCustomCode:CreateFontString(nil, "OVERLAY", "GameFontNormalHuge")
     patText:SetPoint("LEFT", boxOneTex, "RIGHT", 14, -1)
     patText:SetText("Patreon")
 
-    local boxTwo = CreateFrame("EditBox", nil, guiSupport, "InputBoxTemplate")
+    local boxTwo = CreateFrame("EditBox", nil, guiCustomCode, "InputBoxTemplate")
     boxTwo:SetPoint("LEFT", boxOne, "RIGHT", 35, 0)
     boxTwo:SetSize(180, 20)
     boxTwo:SetAutoFocus(false)
@@ -6770,12 +6784,12 @@ local function guiSupport()
         end
     end)
 
-    local boxTwoTex = guiSupport:CreateTexture(nil, "ARTWORK")
+    local boxTwoTex = guiCustomCode:CreateTexture(nil, "ARTWORK")
     boxTwoTex:SetTexture("Interface\\AddOns\\BetterBlizzPlates\\media\\logos\\paypal.tga")
     boxTwoTex:SetSize(58, 58)
     boxTwoTex:SetPoint("BOTTOMLEFT", boxTwo, "TOPLEFT", 3, -2)
 
-    local palText = guiSupport:CreateFontString(nil, "OVERLAY", "GameFontNormalHuge")
+    local palText = guiCustomCode:CreateFontString(nil, "OVERLAY", "GameFontNormalHuge")
     palText:SetPoint("LEFT", boxTwoTex, "RIGHT", 14, -1)
     palText:SetText("Paypal")
 
@@ -6785,7 +6799,7 @@ local function guiSupport()
 
 
 
-    -- Implementing the code editor inside the guiSupport frame
+    -- Implementing the code editor inside the guiCustomCode frame
     local FAIAP = BBF.indent
 
     -- Define your color table for syntax highlighting
@@ -6803,12 +6817,12 @@ local function guiSupport()
     }
 
     -- Add a scroll frame for the code editor
-    local scrollFrame = CreateFrame("ScrollFrame", nil, guiSupport, "UIPanelScrollFrameTemplate")
-    scrollFrame:SetPoint("TOP", guiSupport, "TOP", -10, -170)
-    scrollFrame:SetSize(620, 370)  -- Fixed size for the entire editor box
+    local scrollFrame = CreateFrame("ScrollFrame", nil, guiCustomCode, "UIPanelScrollFrameTemplate")
+    scrollFrame:SetPoint("TOP", guiCustomCode, "TOP", -10, -110)
+    scrollFrame:SetSize(620, 440)  -- Fixed size for the entire editor box
 
     -- Label for the custom code box
-    local customCodeText = guiSupport:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+    local customCodeText = guiCustomCode:CreateFontString(nil, "OVERLAY", "GameFontNormalHuge")
     customCodeText:SetPoint("BOTTOM", scrollFrame, "TOP", 0, 5)
     customCodeText:SetText("Enter Custom Lua Code (Executes at Login)")
 
@@ -6863,7 +6877,7 @@ local function guiSupport()
     local customCodeSaved = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: Custom code has been saved."
 
     -- Create Save Button
-    local saveButton = CreateFrame("Button", nil, guiSupport, "UIPanelButtonTemplate")
+    local saveButton = CreateFrame("Button", nil, guiCustomCode, "UIPanelButtonTemplate")
     saveButton:SetSize(120, 30)
     saveButton:SetPoint("TOP", scrollFrame, "BOTTOM", 0, -10)
     saveButton:SetText("Save")
@@ -6918,10 +6932,10 @@ local function guiSupport()
         hideOnEscape = true,
     }
 
-    local reloadUiButton = CreateFrame("Button", nil, guiSupport, "UIPanelButtonTemplate")
+    local reloadUiButton = CreateFrame("Button", nil, guiCustomCode, "UIPanelButtonTemplate")
     reloadUiButton:SetText("Reload UI")
     reloadUiButton:SetWidth(85)
-    reloadUiButton:SetPoint("TOP", guiSupport, "BOTTOMRIGHT", -140, -9)
+    reloadUiButton:SetPoint("TOP", guiCustomCode, "BOTTOMRIGHT", -140, -9)
     reloadUiButton:SetScript("OnClick", function()
         if unsavedChanges then
             showSavePrompt()
@@ -6931,6 +6945,123 @@ local function guiSupport()
         BetterBlizzFramesDB.reopenOptions = true
         ReloadUI()
     end)
+end
+
+local function guiSupport()
+    local guiSupport = CreateFrame("Frame")
+    guiSupport.name = "|A:GarrisonTroops-Health:10:10|a Support"
+    guiSupport.parent = BetterBlizzFrames.name
+    --InterfaceOptions_AddCategory(guiSupport)
+    local guiSupportCategory = Settings.RegisterCanvasLayoutSubcategory(BBF.category, guiSupport, guiSupport.name, guiSupport.name)
+    guiSupportCategory.ID = guiSupport.name;
+    BBF.guiSupport = guiSupport.name
+    BBF.category.guiSupportCategory = guiSupportCategory.ID
+    CreateTitle(guiSupport)
+
+    local bgImg = guiSupport:CreateTexture(nil, "BACKGROUND")
+    bgImg:SetAtlas("professions-recipe-background")
+    bgImg:SetPoint("CENTER", guiSupport, "CENTER", -8, 4)
+    bgImg:SetSize(680, 610)
+    bgImg:SetAlpha(0.4)
+    bgImg:SetVertexColor(0,0,0)
+
+    local discordLinkEditBox = CreateFrame("EditBox", nil, guiSupport, "InputBoxTemplate")
+    discordLinkEditBox:SetPoint("TOP", guiSupport, "TOP", 0, -170)
+    discordLinkEditBox:SetSize(180, 20)
+    discordLinkEditBox:SetAutoFocus(false)
+    discordLinkEditBox:SetFontObject("ChatFontNormal")
+    discordLinkEditBox:SetText("https://discord.gg/cjqVaEMm25")
+    discordLinkEditBox:SetCursorPosition(0) -- Places cursor at start of the text
+    discordLinkEditBox:ClearFocus() -- Removes focus from the EditBox
+    discordLinkEditBox:SetScript("OnEscapePressed", function(self)
+        self:ClearFocus() -- Allows user to press escape to unfocus the EditBox
+    end)
+
+    -- Make the EditBox text selectable and readonly
+    discordLinkEditBox:SetScript("OnTextChanged", function(self)
+        self:SetText("https://discord.gg/cjqVaEMm25")
+    end)
+    --discordLinkEditBox:HighlightText() -- Highlights the text for easy copying
+    discordLinkEditBox:SetScript("OnCursorChanged", function() end) -- Prevents cursor changes
+    discordLinkEditBox:SetScript("OnEditFocusGained", function(self) self:HighlightText() end) -- Re-highlights text when focused
+    discordLinkEditBox:SetScript("OnMouseUp", function(self)
+        if not self:IsMouseOver() then
+            self:ClearFocus()
+        end
+    end)
+
+    local discordText = guiSupport:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+    discordText:SetPoint("BOTTOM", discordLinkEditBox, "TOP", 18, 8)
+    discordText:SetText("Join the Discord for info\nand help with BBF/BBF")
+
+    local joinDiscord = guiSupport:CreateTexture(nil, "ARTWORK")
+    joinDiscord:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\logos\\discord.tga")
+    joinDiscord:SetSize(52, 52)
+    joinDiscord:SetPoint("RIGHT", discordText, "LEFT", 0, 1)
+
+    local supportText = guiSupport:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+    supportText:SetPoint("TOP", guiSupport, "TOP", 0, -230)
+    supportText:SetText("If you wish to support me and my projects\nit would be greatly appreciated |A:GarrisonTroops-Health:10:10|a")
+
+    local boxOne = CreateFrame("EditBox", nil, guiSupport, "InputBoxTemplate")
+    boxOne:SetPoint("TOP", guiSupport, "TOP", -110, -360)
+    boxOne:SetSize(180, 20)
+    boxOne:SetAutoFocus(false)
+    boxOne:SetFontObject("ChatFontNormal")
+    boxOne:SetText("https://patreon.com/bodifydev")
+    boxOne:SetCursorPosition(0) -- Places cursor at start of the text
+    boxOne:ClearFocus() -- Removes focus from the EditBox
+    boxOne:SetScript("OnEscapePressed", function(self)
+        self:ClearFocus() -- Allows user to press escape to unfocus the EditBox
+    end)
+
+    -- Make the EditBox text selectable and readonly
+    boxOne:SetScript("OnTextChanged", function(self)
+        self:SetText("https://patreon.com/bodifydev")
+    end)
+    --boxOne:HighlightText() -- Highlights the text for easy copying
+    boxOne:SetScript("OnCursorChanged", function() end) -- Prevents cursor changes
+    boxOne:SetScript("OnEditFocusGained", function(self) self:HighlightText() end) -- Re-highlights text when focused
+    boxOne:SetScript("OnMouseUp", function(self)
+        if not self:IsMouseOver() then
+            self:ClearFocus()
+        end
+    end)
+
+    local boxOneTex = guiSupport:CreateTexture(nil, "ARTWORK")
+    boxOneTex:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\logos\\patreon.tga")
+    boxOneTex:SetSize(58, 58)
+    boxOneTex:SetPoint("BOTTOM", boxOne, "TOP", 0, 1)
+
+    local boxTwo = CreateFrame("EditBox", nil, guiSupport, "InputBoxTemplate")
+    boxTwo:SetPoint("TOP", guiSupport, "TOP", 110, -360)
+    boxTwo:SetSize(180, 20)
+    boxTwo:SetAutoFocus(false)
+    boxTwo:SetFontObject("ChatFontNormal")
+    boxTwo:SetText("https://paypal.me/bodifydev")
+    boxTwo:SetCursorPosition(0) -- Places cursor at start of the text
+    boxTwo:ClearFocus() -- Removes focus from the EditBox
+    boxTwo:SetScript("OnEscapePressed", function(self)
+        self:ClearFocus() -- Allows user to press escape to unfocus the EditBox
+    end)
+
+    -- Make the EditBox text selectable and readonly
+    boxTwo:SetScript("OnTextChanged", function(self)
+        self:SetText("https://paypal.me/bodifydev")
+    end)
+    --boxTwo:HighlightText() -- Highlights the text for easy copying
+    boxTwo:SetScript("OnCursorChanged", function() end) -- Prevents cursor changes
+    boxTwo:SetScript("OnEditFocusGained", function(self) self:HighlightText() end) -- Re-highlights text when focused
+    boxTwo:SetScript("OnMouseUp", function(self)
+        if not self:IsMouseOver() then
+            self:ClearFocus()
+        end
+    end)
+
+    local boxTwoTex = guiSupport:CreateTexture(nil, "ARTWORK")
+    boxTwoTex:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\logos\\paypal.tga")
+    boxTwoTex:SetSize(58, 58)
+    boxTwoTex:SetPoint("BOTTOM", boxTwo, "TOP", 0, 1)
 end
 ------------------------------------------------------------
 -- GUI Setup
@@ -6955,6 +7086,10 @@ function BBF.InitializeOptions()
         loadGUI:SetPoint("CENTER", BetterBlizzFrames, "CENTER", -18, 6)
         BetterBlizzFrames.loadGUI = loadGUI
         loadGUI:SetScript("OnClick", function(self)
+            if InCombatLockdown() then
+                print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: Leave combat to open settings for the first time.")
+                return
+            end
             titleText:Hide()
             self:Hide()
             BBF.LoadGUI()
@@ -6969,6 +7104,10 @@ function BBF.LoadGUI()
         BetterBlizzFramesDB.hasNotOpenedSettings = nil
         return
     end
+    if InCombatLockdown() then
+        print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: Leave combat to open settings for the first time.")
+        return
+    end
     guiGeneralTab()
     guiPositionAndScale()
     guiFrameAuras()
@@ -6977,10 +7116,11 @@ function BBF.LoadGUI()
     guiImportAndExport()
     guiMisc()
     --guiChatFrame()
+    guiCustomCode()
     guiSupport()
     BetterBlizzFrames.guiLoaded = true
 
-    Settings.OpenToCategory(BBF.guiSupport)
+    Settings.OpenToCategory(BBF.guiCustomCode)
     Settings.OpenToCategory(BBF.category.ID)
 end
 

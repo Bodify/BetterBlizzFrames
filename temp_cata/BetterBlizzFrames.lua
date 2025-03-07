@@ -2,7 +2,7 @@
 
 local addonVersion = "1.00" --too afraid to to touch for now
 local addonUpdates = C_AddOns.GetAddOnMetadata("BetterBlizzFrames", "Version")
-local sendUpdate = false
+local sendUpdate = true
 BBF.VersionNumber = addonUpdates
 BBF.variablesLoaded = false
 local isAddonLoaded = C_AddOns.IsAddOnLoaded
@@ -43,6 +43,7 @@ local defaultSettings = {
     targetFrameScale = 1,
     focusFrameScale = 1,
     playerFrameOCDZoom = true,
+    repositionBuffFrame = true,
     customCode = "-- Enter custom code below here. Feel free to contact me @bodify",
 
     --Target castbar
@@ -364,7 +365,7 @@ local function SendUpdateMessage()
                 if BetterBlizzFramesDB.playerAuraFiltering then
                     DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames "..addonUpdates..":")
                     --DEFAULT_CHAT_FRAME:AddMessage("|A:QuestNormal:16:16|a New stuff:")
-                    DEFAULT_CHAT_FRAME:AddMessage("|A:QuestNormal:16:16|a Important Note: Some of the Buffs & Debuffs sorting settings are now enabled by default. Because of this they may have turned on for you, please double check your aura settings in the Buffs & Debuffs section.")
+                    DEFAULT_CHAT_FRAME:AddMessage("|A:QuestNormal:16:16|a Important Note: Moving BuffFrame/DebuffFrame is now optional but on by default. Depending on your addons BetterBlizzFrames might've taken control over other things moving it. Please double check your aura settings in the Buffs & Debuffs section.")
                 end
                 -- DEFAULT_CHAT_FRAME:AddMessage("   - Absorb Indicator + Overshields now working (Potentially).")
                 -- -- DEFAULT_CHAT_FRAME:AddMessage("   - Sort Purgeable Auras setting (Buffs & Debuffs).")

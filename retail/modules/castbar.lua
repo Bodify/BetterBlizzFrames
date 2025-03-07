@@ -1235,6 +1235,10 @@ function BBF.HookCastbarsForEvoker()
     if (not evokerCastbarsHooked and BetterBlizzFramesDB.normalCastbarForEmpoweredCasts) then
         local castBars = {}
 
+        if BetterBlizzPlatesDB and not BetterBlizzPlatesDB.normalCastbarForEmpoweredCasts then
+            BetterBlizzPlatesDB.normalCastbarForEmpoweredCasts = true
+        end
+
         if not BetterBlizzFramesDB.classicCastbars then
             table.insert(castBars, TargetFrameSpellBar)
             table.insert(castBars, FocusFrameSpellBar)

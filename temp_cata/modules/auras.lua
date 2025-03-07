@@ -2489,11 +2489,23 @@ end
 
 
 function BBF.RepositionBuffFrame()
+    if not BetterBlizzFramesDB.repositionBuffFrame then return end
     playerAuraXOffset = BetterBlizzFramesDB.playerAuraXOffset
     playerAuraYOffset = BetterBlizzFramesDB.playerAuraYOffset
 
     BuffFrame:ClearAllPoints()
     BuffFrame:SetPoint("TOPRIGHT", MinimapCluster, "TOPLEFT", -10 + playerAuraXOffset, -13 + playerAuraYOffset)
+
+    if not BBF.BuffFrameRepos then
+        hooksecurefunc(BuffFrame, "SetPoint", function(self)
+            if self.changing then return end
+            self.changing = true
+            BuffFrame:ClearAllPoints()
+            BuffFrame:SetPoint("TOPRIGHT", MinimapCluster, "TOPLEFT", -10 + BetterBlizzFramesDB.playerAuraXOffset, -13 + BetterBlizzFramesDB.playerAuraYOffset)
+            self.changing = false
+        end)
+        BBF.BuffFrameRepos = true
+    end
 end
 
 local auraMsgSent = false
@@ -2673,6 +2685,12 @@ function BBF.SetupMasqueSupport()
             -- Player Buffs
             for i = 1, BUFF_ACTUAL_DISPLAY do
                 local buffName = "BuffButton"..i
+                if _G[buffName] then
+                    addToMasque(buffName, MasquePlayerBuffs)
+                end
+            end
+            for i = 1, 3 do
+                local buffName = "TempEnchant"..i
                 if _G[buffName] then
                     addToMasque(buffName, MasquePlayerBuffs)
                 end

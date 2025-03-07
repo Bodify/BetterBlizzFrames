@@ -1,3 +1,18 @@
+# BetterBlizzFrames 1.6.1
+## The War Within
+### New:
+- Instant Combo Points setting (in Misc). Remove combo points animations for instant feedback on Rogue, Druid, Monk and Arcane Mage.
+### Tweak:
+- Add more auras to to PvP Whitelist. Thanks to Zwacky for gathering the ids.
+
+## Classic Era & Cata
+### Tweak:
+- Moving BuffFrame/DebuffFrame is now optional but on by default. Depending on your addons BetterBlizzFrames might've taken control over other things moving it.
+- Added TempEnchants (Weapon Enchants etc) to Masque frames.
+### Bugfix:
+- Fix issues with name not showing on default party frames sometimes.
+
+
 # BetterBlizzFrames 1.6.0i
 ## The War Within
 ### Bugfix:

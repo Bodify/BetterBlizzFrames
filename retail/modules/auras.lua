@@ -173,7 +173,7 @@ local function SmokeBombCheck()
     end
 end
 
-MountAuraTooltip = CreateFrame("GameTooltip", "MountAuraTooltip", nil, "GameTooltipTemplate")
+local MountAuraTooltip = CreateFrame("GameTooltip", "MountAuraTooltip", nil, "GameTooltipTemplate")
 MountAuraTooltip:SetOwner(WorldFrame, "ANCHOR_NONE")
 local function isMountAura(spellId)
     MountAuraTooltip:ClearLines()

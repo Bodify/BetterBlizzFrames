@@ -229,6 +229,9 @@ local function PartyFrameNameChange(frame)
         frame.bbfName:SetText("")
         return
     end
+    frame.bbfName:ClearAllPoints()
+    frame.bbfName:SetPoint("LEFT", frame.name, "LEFT")
+    frame.bbfName:SetWidth(frame.name:GetWidth())
     if partyArenaNames and IsActiveBattlefieldArena() then
         SetArenaName(frame, frame.unit, frame.bbfName)
         return
