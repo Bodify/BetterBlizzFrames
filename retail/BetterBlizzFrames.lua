@@ -650,64 +650,211 @@ if debuffFrame then
     end
 end
 
--- Warlock Alternate Power Clickthrough
-local function DisableClickForWarlockPowerFrame()
-    if WarlockPowerFrame then
-        WarlockPowerFrame:SetMouseClickEnabled(false)
-    end
-end
+local resourceFrames = {
+    WARLOCK = WarlockPowerFrame,
+    ROGUE = RogueComboPointBarFrame,
+    DRUID = DruidComboPointBarFrame,
+    PALADIN = PaladinPowerBarFrame,
+    DEATHKNIGHT = RuneFrame,
+    EVOKER = EssencePlayerFrame,
+}
 
--- Rogue Alternate Power Clickthrough
-local function DisableClickForRogueComboPointBarFrame()
-    if RogueComboPointBarFrame then
-        RogueComboPointBarFrame:SetMouseClickEnabled(false)
-    end
-end
-
--- Druid Alternate Power Clickthrough
-local function DisableClickForDruidComboPointBarFrame()
-    if DruidComboPointBarFrame then
-        DruidComboPointBarFrame:SetMouseClickEnabled(false)
-    end
-end
-
--- Paladin Alternate Power Clickthrough
-local function DisableClickForPaladinPowerBarFrame()
-    if PaladinPowerBarFrame then
-        PaladinPowerBarFrame:SetMouseClickEnabled(false)
-    end
-end
-
--- Death Knight Alternate Power Clickthrough
-local function DisableClickForRuneFrame()
-    if RuneFrame then
-        RuneFrame:SetMouseClickEnabled(false)
-    end
-end
-
--- Evoker Alternate Power Clickthrough
-local function DisableClickForEssencePlayerFrame()
-    if EssencePlayerFrame then
-        EssencePlayerFrame:SetMouseClickEnabled(false)
-    end
+local function DisableClickForResourceFrame(frame)
+    if BBF.MovingResource then return end
+    frame:SetMouseClickEnabled(false)
 end
 
 local function DisableClickForClassSpecificFrame()
-    local _, playerClass = UnitClass("player")
-    if playerClass == "WARLOCK" and WarlockPowerFrame then
-        hooksecurefunc(WarlockPowerBar, "UpdatePower", DisableClickForWarlockPowerFrame)
-    elseif playerClass == "ROGUE" and RogueComboPointBarFrame then
-        hooksecurefunc(RogueComboPointBarFrame, "UpdatePower", DisableClickForRogueComboPointBarFrame)
-    elseif playerClass == "DRUID" and DruidComboPointBarFrame then
-        hooksecurefunc(DruidComboPointBarFrame, "UpdatePower", DisableClickForDruidComboPointBarFrame)
-    elseif playerClass == "PALADIN" and PaladinPowerBarFrame then
-        hooksecurefunc(PaladinPowerBar, "UpdatePower", DisableClickForPaladinPowerBarFrame)
-    elseif playerClass == "DEATHKNIGHT" and RuneFrame then
-        hooksecurefunc(RuneFrame, "UpdateRunes", DisableClickForRuneFrame)
-    elseif playerClass == "EVOKER" and EssencePlayerFrame then
-        hooksecurefunc(EssencePlayerFrame, "UpdatePower", DisableClickForEssencePlayerFrame)
+    local _, class = UnitClass("player")
+    local frame = resourceFrames[class]
+
+    if frame then
+        local updateFunction = (class == "DEATHKNIGHT") and "UpdateRunes" or "UpdatePower"
+        hooksecurefunc(frame, updateFunction, function() DisableClickForResourceFrame(frame) end)
     end
 end
+
+local function CheckForResourceConflicts()
+    local db = BetterBlizzFramesDB
+    local conflicts = {
+        ROGUE = db.moveResourceToTargetRogue,
+        DRUID = db.moveResourceToTargetDruid,
+        WARLOCK = db.moveResourceToTargetWarlock,
+        MAGE = db.moveResourceToTargetMage,
+        MONK = db.moveResourceToTargetMonk,
+        EVOKER = db.moveResourceToTargetEvoker,
+        PALADIN = db.moveResourceToTargetPaladin,
+        DEATHKNIGHT = db.moveResourceToTargetDK,
+    }
+
+    local _, class = UnitClass("player")
+    if conflicts[class] then
+        --print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: Disable \"Move Resource to TargetFrame\" for this class in order to move Resource normally.")
+        return true
+    end
+    return false
+end
+
+function BBF.SetResourcePosition()
+    if not BetterBlizzFramesDB.moveResource then return end
+    if CheckForResourceConflicts() then return end
+
+    local _, class = UnitClass("player")
+    local frame = resourceFrames[class]
+    if not frame then return end
+
+    if not BetterBlizzFramesDB.moveResourceStackPos then
+        BetterBlizzFramesDB.moveResourceStackPos = {}
+    end
+
+    local pos = BetterBlizzFramesDB.moveResourceStackPos[class]
+    if pos then
+        if not frame.ogPoint then
+            local point, relativeTo, relativePoint, xOfs, yOfs = frame:GetPoint()
+            frame.ogPoint = { point = point, relativeTo = relativeTo, relativePoint = relativePoint, xOfs = xOfs, yOfs = yOfs }
+        end
+
+        frame:ClearAllPoints()
+        frame:SetPoint(pos.point, UIParent, pos.relativePoint, pos.xOfs, pos.yOfs)
+
+        hooksecurefunc(frame, "SetPoint", function(self)
+            if self.changing then return end
+            self.changing = true
+            local pos = BetterBlizzFramesDB.moveResourceStackPos[class]
+            if pos then
+                self:ClearAllPoints()
+                self:SetPoint(pos.point, UIParent, pos.relativePoint, pos.xOfs, pos.yOfs)
+            else
+                self:ClearAllPoints()
+                self:SetPoint(frame.ogPoint.point, frame.ogPoint.relativeTo, frame.ogPoint.relativePoint, frame.ogPoint.xOfs, frame.ogPoint.yOfs)
+            end
+            self.changing = false
+        end)
+    end
+end
+
+
+function BBF.ResetResourcePosition()
+    local _, class = UnitClass("player")
+    local frame = resourceFrames[class]
+    if not frame or not frame.ogPoint then return end
+
+    -- Reset frame to its original position
+    frame:ClearAllPoints()
+    frame:SetPoint(frame.ogPoint.point, frame.ogPoint.relativeTo, frame.ogPoint.relativePoint, frame.ogPoint.xOfs, frame.ogPoint.yOfs)
+end
+
+function BBF.EnableResourceMovement()
+    if CheckForResourceConflicts() then return end
+
+    local _, class = UnitClass("player")
+    local frame = resourceFrames[class]
+    if not frame then return end
+
+    if BBF.MovingResource then return end
+
+    -- Make the frame draggable
+    frame:SetMovable(true)
+    frame:EnableMouse(true)
+    frame:SetClampedToScreen(true)
+    frame:SetMouseClickEnabled(true)
+
+    frame:SetScript("OnMouseDown", function(self, button)
+        if button == "LeftButton" and IsControlKeyDown() then
+            self:StartMoving()
+        end
+    end)
+
+    frame:SetScript("OnMouseUp", function(self)
+        self:StopMovingOrSizing()
+
+        -- Ensure the database exists
+        if not BetterBlizzFramesDB.moveResourceStackPos then
+            BetterBlizzFramesDB.moveResourceStackPos = {}
+        end
+
+        -- Save class-specific position
+        local point, _, relativePoint, xOfs, yOfs = self:GetPoint()
+        BetterBlizzFramesDB.moveResourceStackPos[class] = {
+            point = point,
+            relativePoint = relativePoint,
+            xOfs = xOfs,
+            yOfs = yOfs
+        }
+    end)
+    BBF.MovingResource = true
+end
+
+
+function BBF.RemoveAddonCategories()
+    if not BetterBlizzFramesDB.removeAddonListCategories then return end
+    if BBF.RemovedAddonCategories then return end
+    local function RemoveAddonCategories()
+        local dataProvider = CreateTreeDataProvider();
+        local addonGroupToTreeNode = {};
+        local addonGroupPendingChildren = {};
+
+        local filterText = AddonList.SearchBox:GetText():lower();
+
+        local function RemoveColorCodes(str)
+            return (str:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", ""));
+        end
+
+        for i = 1, C_AddOns.GetNumAddOns() do
+            local name, title = C_AddOns.GetAddOnInfo(i);
+            local group = C_AddOns.GetAddOnMetadata(i, "Group") or name;
+
+            local titleClean = RemoveColorCodes(title or name):lower();
+            local groupClean = RemoveColorCodes(group):lower();
+
+            local match = #filterText == 0 or titleClean:find(filterText, 1, true) or groupClean:find(filterText, 1, true);
+
+            if match then
+                local nodeData = { addonIndex = i };
+
+                if addonGroupToTreeNode[group] then
+                    addonGroupToTreeNode[group]:Insert(nodeData);
+                elseif name == group then
+                    local groupNode = dataProvider:Insert(nodeData);
+                    addonGroupToTreeNode[group] = groupNode;
+
+                    if addonGroupPendingChildren[group] then
+                        for _, child in ipairs(addonGroupPendingChildren[group]) do
+                            groupNode:Insert(child);
+                        end
+                        addonGroupPendingChildren[group] = nil;
+                    end
+                else
+                    addonGroupPendingChildren[group] = addonGroupPendingChildren[group] or {};
+                    table.insert(addonGroupPendingChildren[group], nodeData);
+                end
+            end
+        end
+
+        dataProvider:SetSortComparator(function(aNode, bNode)
+            local aName = RemoveColorCodes(select(2, C_AddOns.GetAddOnInfo(aNode:GetData().addonIndex))):lower();
+            local bName = RemoveColorCodes(select(2, C_AddOns.GetAddOnInfo(bNode:GetData().addonIndex))):lower();
+            return aName < bName;
+        end);
+
+        AddonList.ScrollBox:SetDataProvider(dataProvider, ScrollBoxConstants.RetainScrollPosition);
+        AddonList.ScrollBox:Show()
+    end
+
+    AddonList.SearchBox:HookScript("OnTextChanged", RemoveAddonCategories);
+
+    AddonList:HookScript("OnShow", function()
+        AddonList.ScrollBox:Hide()
+        C_Timer.After(0, RemoveAddonCategories)
+    end)
+
+    BBF.RemovedAddonCategories = true
+end
+
+
+
+
+
 
 local ClickthroughFrames = CreateFrame("frame")
 ClickthroughFrames:SetScript("OnEvent", function()
@@ -2380,6 +2527,7 @@ Frame:SetScript("OnEvent", function(...)
     BBF.CompactPartyFrameScale()
     --BBF.HideFrames()
     DisableClickForClassSpecificFrame()
+    BBF.SetResourcePosition()
     BBF.MoveToTFrames()
     BBF.HookHealthbarColors()
     BBF.ResizeUIWidgetPowerBarFrame()
@@ -2475,6 +2623,15 @@ Frame:SetScript("OnEvent", function(...)
     executeCustomCode()
 end)
 
+local function MoveableSettingsPanel()
+    local frame = SettingsPanel
+    if frame and not frame:GetScript("OnDragStart") and not C_AddOns.IsAddOnLoaded("BlizzMove") then
+        frame:RegisterForDrag("LeftButton")
+        frame:SetScript("OnDragStart", frame.StartMoving)
+        frame:SetScript("OnDragStop", frame.StopMovingOrSizing)
+    end
+end
+
 -- Slash command
 SLASH_BBF1 = "/BBF"
 SlashCmdList["BBF"] = function(msg)
@@ -2547,6 +2704,7 @@ SlashCmdList["BBF"] = function(msg)
                 Settings.OpenToCategory(BBF.category.ID)
             end
         end
+        MoveableSettingsPanel()
     end
 end
 
@@ -2567,6 +2725,7 @@ First:SetScript("OnEvent", function(_, event, addonName)
             ScaleClassResource()
             BBF.SurrenderNotLeaveArena()
             BBF.DruidBlueComboPoints()
+            BBF.RemoveAddonCategories()
             --BBF.AbsorbCaller()
             BBF.HookStatusBarText()
             BBF.ActionBarMods()

@@ -146,13 +146,13 @@ end
 
 local function deepMergeTables(destination, source)
     for k, v in pairs(source) do
-        if type(v) == "table" then
-            if not destination[k] then
+        if destination[k] == nil then
+            if type(v) == "table" then
                 destination[k] = {}
+                deepMergeTables(destination[k], v)
+            else
+                destination[k] = v
             end
-            deepMergeTables(destination[k], v) -- Recursive merge for nested tables
-        else
-            destination[k] = v
         end
     end
 end
@@ -6609,7 +6609,7 @@ local function guiSupport()
 
     local discordText = guiSupport:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
     discordText:SetPoint("BOTTOM", discordLinkEditBox, "TOP", 18, 8)
-    discordText:SetText("Join the Discord for info\nand help with BBF/BBF")
+    discordText:SetText("Join the Discord for info\nand help with BBP/BBF")
 
     local joinDiscord = guiSupport:CreateTexture(nil, "ARTWORK")
     joinDiscord:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\logos\\discord.tga")

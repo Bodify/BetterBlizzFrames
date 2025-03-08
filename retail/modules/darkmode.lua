@@ -760,6 +760,8 @@ function BBF.DarkmodeFrames(bypass)
         end)
         hookedTotemBar = true
     end
+
+    BBF.DarkModeActive = true
 end
 
 

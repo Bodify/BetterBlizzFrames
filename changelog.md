@@ -1,3 +1,14 @@
+# BetterBlizzFrames 1.6.2
+## The War Within
+### New:
+- Move Resource setting (Misc). Lets you move Resource freely. (Not wrapped around TargetFrame like the existing setting, which still is there)
+- Remove AddonList Categories setting (Misc)
+- Kalvish profile (www.twitch.tv/kalvish)
+### Tweak:
+- Castbar Interrupt Color setting now also now also puts a green line exactly where your interrupt gets ready.
+- Blacklisting auras that are already in the blacklist but with a "Show Mine" tag now overwrites it and removes the tag instead of notifying about duplicate.
+- "Reset BBF" button moved to show in Advanced Settings section.
+
 # BetterBlizzFrames 1.6.1
 ## The War Within
 ### New:

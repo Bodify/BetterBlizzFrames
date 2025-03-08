@@ -820,8 +820,10 @@ function BBF.CastbarRecolorWidgets()
 
                 if UnitCanAttack(TargetFrame.unit, "player") then
                     local name, _, _, startTime, endTime, _, _, notInterruptible, spellId = UnitCastingInfo("target")
+                    local channeling
                     if not name then
                         name, _, _, startTime, endTime, _, notInterruptible, spellId = UnitChannelInfo("target")
+                        channeling = true
                     end
 
                     if name and not notInterruptible then
@@ -830,6 +832,7 @@ function BBF.CastbarRecolorWidgets()
                                 local start, duration = BBF.TWWGetSpellCooldown(interruptSpellID)
                                 local cooldownRemaining = start + duration - GetTime()
                                 local castRemaining = (endTime/1000) - GetTime()
+                                local totalCastTime = (endTime / 1000) - (startTime / 1000)
 
                                 if cooldownRemaining > 0 and cooldownRemaining > castRemaining then
                                     targetSpellBarTexture:SetDesaturated(true)
@@ -839,6 +842,45 @@ function BBF.CastbarRecolorWidgets()
                                     targetSpellBarTexture:SetDesaturated(true)
                                     self:SetStatusBarColor(unpack(castBarDelayedInterruptColor))
                                     self.Spark:SetVertexColor(unpack(castBarDelayedInterruptColor))
+                                    if not self.interruptSark then
+                                        self.interruptSark = self:CreateTexture(nil, "OVERLAY")
+                                        self.interruptSark:SetColorTexture(0, 1, 0, 1) -- Solid green color with full opacity
+                                        self.interruptSark:SetSize(2, self:GetHeight())
+                                        --castBar.spark:SetBlendMode("ADD")
+                                        --castBar.spark:SetVertexColor(0, 1, 0)
+                                    end
+
+                                    -- Calculate the interrupt percentage
+                                    local interruptPercent = (totalCastTime - castRemaining + cooldownRemaining) / totalCastTime
+
+                                    -- Adjust the spark position based on the percentage, reverse if channeling
+                                    local sparkPosition
+                                    if channeling then
+                                        -- Channeling: reverse the direction, starting from the right
+                                        sparkPosition = (1 - interruptPercent) * self:GetWidth()
+                                    else
+                                        -- Casting: normal direction, from left to right
+                                        sparkPosition = interruptPercent * self:GetWidth()
+                                    end
+
+                                    self.interruptSark:SetPoint("CENTER", self, "LEFT", sparkPosition, 0)
+                                    self.interruptSark:Show()
+
+                                    -- Schedule the color update for when the interrupt will be ready
+                                    if not self.timerReset then
+                                        self.timerReset = true
+                                        C_Timer.After(cooldownRemaining, function()
+                                            if self then
+                                                if not classicFrames then
+                                                    self:SetStatusBarColor(1, 1, 1)
+                                                end
+                                                if self.interruptSark then
+                                                    self.interruptSark:Hide()
+                                                end
+                                                self.timerReset = nil
+                                            end
+                                        end)
+                                    end
                                 else
                                     if targetCastbarEdgeHighlight then
                                         local currentTime = GetTime()  -- Current time in seconds
@@ -929,8 +971,10 @@ function BBF.CastbarRecolorWidgets()
                 -- focusLastUpdate = 0
                 if UnitCanAttack(FocusFrame.unit, "player") then
                     local name, _, _, startTime, endTime, _, _, notInterruptible, spellId = UnitCastingInfo("focus")
+                    local channeling
                     if not name then
                         name, _, _, startTime, endTime, _, notInterruptible, spellId = UnitChannelInfo("focus")
+                        channeling = true
                     end
 
                     if name then--and not notInterruptible then
@@ -948,6 +992,45 @@ function BBF.CastbarRecolorWidgets()
                                     focusSpellBarTexture:SetDesaturated(true)
                                     self:SetStatusBarColor(unpack(castBarDelayedInterruptColor))
                                     self.Spark:SetVertexColor(unpack(castBarDelayedInterruptColor))
+                                    if not self.interruptSark then
+                                        self.interruptSark = self:CreateTexture(nil, "OVERLAY")
+                                        self.interruptSark:SetColorTexture(0, 1, 0, 1) -- Solid green color with full opacity
+                                        self.interruptSark:SetSize(2, self:GetHeight())
+                                        --castBar.spark:SetBlendMode("ADD")
+                                        --castBar.spark:SetVertexColor(0, 1, 0)
+                                    end
+
+                                    -- Calculate the interrupt percentage
+                                    local interruptPercent = (totalCastTime - castRemaining + cooldownRemaining) / totalCastTime
+
+                                    -- Adjust the spark position based on the percentage, reverse if channeling
+                                    local sparkPosition
+                                    if channeling then
+                                        -- Channeling: reverse the direction, starting from the right
+                                        sparkPosition = (1 - interruptPercent) * self:GetWidth()
+                                    else
+                                        -- Casting: normal direction, from left to right
+                                        sparkPosition = interruptPercent * self:GetWidth()
+                                    end
+
+                                    self.interruptSark:SetPoint("CENTER", self, "LEFT", sparkPosition, 0)
+                                    self.interruptSark:Show()
+
+                                    -- Schedule the color update for when the interrupt will be ready
+                                    if not self.timerReset then
+                                        self.timerReset = true
+                                        C_Timer.After(cooldownRemaining, function()
+                                            if self then
+                                                if not classicFrames then
+                                                    self:SetStatusBarColor(1, 1, 1)
+                                                end
+                                                if self.interruptSark then
+                                                    self.interruptSark:Hide()
+                                                end
+                                                self.timerReset = nil
+                                            end
+                                        end)
+                                    end
                                 else
                                     if focusCastbarEdgeHighlight then
                                         local currentTime = GetTime()  -- Current time in seconds
