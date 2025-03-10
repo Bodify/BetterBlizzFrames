@@ -983,6 +983,7 @@ function BBF.CastbarRecolorWidgets()
                                 local start, duration = BBF.TWWGetSpellCooldown(interruptSpellID)
                                 local cooldownRemaining = start + duration - GetTime()
                                 local castRemaining = (endTime/1000) - GetTime()
+                                local totalCastTime = (endTime / 1000) - (startTime / 1000)
 
                                 if cooldownRemaining > 0 and cooldownRemaining > castRemaining then
                                     focusSpellBarTexture:SetDesaturated(true)
