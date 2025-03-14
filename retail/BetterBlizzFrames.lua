@@ -1580,17 +1580,44 @@ end
 
 function BBF.RaiseTargetFrameLevel()
     if not BetterBlizzFramesDB.raiseTargetFrameLevel then return end
-    TargetFrame:SetFrameLevel(501)
+    if BBF.raisingTargetFrameLevel then return end
+    if C_AddOns.IsAddOnLoaded("ClassicFrames") then
+        print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: Raise TargetFrame Level not supported with ClassicFrames. Maybe in a future patch.")
+        return
+    end
+    -- local TargetFrameProxy = CreateFrame("Frame", nil, UIParent)
+    -- TargetFrameProxy:SetFrameStrata("MEDIUM")
+    -- TargetFrameProxy:SetFrameLevel(0)
+    -- TargetFrame:SetParent(TargetFrameProxy)
+
+    -- TargetFrameProxy:RegisterEvent("PLAYER_TARGET_CHANGED")
+    -- TargetFrameProxy:RegisterEvent("PLAYER_FOCUS_CHANGED")
+    -- TargetFrameProxy:SetScript("OnEvent", function()
+    --     TargetFrame:SetParent(TargetFrameProxy)
+    -- end)
+    TargetFrame:SetFrameStrata("MEDIUM")
+    TargetFrame:SetFrameLevel(0)
+
+    BBF.raisingTargetFrameLevel = true
 end
 
-function BBF.RaiseTargetCastbarStratas()
-    if not BetterBlizzFramesDB.raiseTargetCastbarStrata then return end
-    TargetFrameSpellBar:SetFrameStrata("MEDIUM")
-    FocusFrameSpellBar:SetFrameStrata("MEDIUM")
-end
+-- works with default frames but NOT ClassicFrames
+-- function BBF.RaiseTargetFrameLevel()
+--     if not BetterBlizzFramesDB.raiseTargetFrameLevel then return end
+--     if BBF.raisingTargetFrameLevel then return end
+--     local TargetFrameProxy = CreateFrame("Frame", nil, UIParent)
+--     TargetFrameProxy:SetFrameStrata("MEDIUM")
+--     TargetFrameProxy:SetFrameLevel(1)
+--     TargetFrame:SetParent(TargetFrameProxy)
 
+--     TargetFrameProxy:RegisterEvent("PLAYER_TARGET_CHANGED")
+--     TargetFrameProxy:RegisterEvent("PLAYER_FOCUS_CHANGED")
+--     TargetFrameProxy:SetScript("OnEvent", function()
+--         TargetFrame:SetParent(TargetFrameProxy)
+--     end)
 
-
+--     BBF.raisingTargetFrameLevel = true
+-- end
 
 
 
@@ -2806,14 +2833,13 @@ First:SetScript("OnEvent", function(_, event, addonName)
             BBF.HookStatusBarText()
             BBF.ActionBarMods()
             BBF.UnitFrameBackgroundTexture()
-            BBF.RaiseTargetFrameLevel()
-            BBF.RaiseTargetCastbarStratas()
 
             BBF.ClassColorReputationCaller()
 
             BBF.MoveableFPSCounter(false, BetterBlizzFramesDB.fpsCounterFontOutline)
 
             C_Timer.After(1, function()
+                BBF.RaiseTargetFrameLevel()
                 BBF.ShowCooldownDuringCC()
                 BBF.InstantComboPoints()
                 BBF.AbsorbCaller()

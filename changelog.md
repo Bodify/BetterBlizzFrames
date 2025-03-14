@@ -1,3 +1,15 @@
+# BetterBlizzFrames 1.6.3b
+## All versions
+- Fix "Hide Error Frame" setting only hides actual errors and not quest progress text etc.
+## Classic Era
+- Fix typo causing lua error
+## Retail
+- Remove castbar strata setting after more testing and updated "Raise TargetFrame Level" setting. They essentially had the same purpose. This setting will see more tweaks.
+
+
+
+
+
 # BetterBlizzFrames 1.6.3
 ## The War Within
 ### New:

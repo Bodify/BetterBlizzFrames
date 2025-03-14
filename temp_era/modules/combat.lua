@@ -127,19 +127,22 @@ function BBF.CombatIndicatorCaller()
     BBF.CombatIndicator(TargetFrame, "target")
     --BBF.CombatIndicator(FocusFrame, "focus")
     BBF.CombatIndicator(PlayerFrame, "player")
-    if not BetterBlizzFramesDB.combatIndicator then
-        if TargetFrame.combatIndicator then TargetFrame.combatIndicator:SetAlpha(0) TargetFrame.combatIndicator.border:SetAlpha(0) end
-        if PlayerFrame.combatIndicator then PlayerFrame.combatIndicator:SetAlpha(0) PlayerFrame.combatIndicator.border:SetAlpha(0) end
-        --if FocusFrame.combatIndicator then FocusFrame.combatIndicator:SetAlpha(0) FocusFrame.combatIndicator.border:SetAlpha(0) end
-    end
-    if not BetterBlizzFramesDB.playerCombatIndicator then
-        if PlayerFrame.combatIndicator then PlayerFrame.combatIndicator:SetAlpha(0) PlayerFrame.combatIndicator.border:SetAlpha(0) end
-    end
-    if not BetterBlizzFramesDB.targetCombatIndicator then
-        if TargetFrame.combatIndicator then TargetFrame.combatIndicator:SetAlpha(0) TargetFrame.combatIndicator.border:SetAlpha(0) end
-    end
-    if not BetterBlizzFramesDB.focusCombatIndicator then
-        --if FocusFrame.combatIndicator then FocusFrame.combatIndicator:SetAlpha(0) FocusFrame.combatIndicator.border:SetAlpha(0) end
+    local combatIndicators = {
+        { frame = TargetFrame, setting = "targetCombatIndicator" },
+        { frame = PlayerFrame, setting = "playerCombatIndicator" },
+        --{ frame = FocusFrame, setting = "focusCombatIndicator" },
+    }
+
+    for _, data in pairs(combatIndicators) do
+        local frame, setting = data.frame, data.setting
+        if frame and frame.combatIndicator then
+            if not BetterBlizzFramesDB[setting] or not BetterBlizzFramesDB.combatIndicator then
+                frame.combatIndicator:SetAlpha(0)
+                if frame.combatIndicator.border then
+                    frame.combatIndicator.border:SetAlpha(0)
+                end
+            end
+        end
     end
     --BBF:UpdateCombatBorder()
 end
