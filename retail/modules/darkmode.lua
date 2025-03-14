@@ -198,6 +198,7 @@ function BBF.DarkmodeFrames(bypass)
     local druidComboPoint = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.2) or 1
     local druidComboPointActive = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.1) or 1
     local actionBarColor = BetterBlizzFramesDB.darkModeActionBars and (vertexColor + 0.15) or 1
+    local comboColor = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.15) or 1
     local birdColor = BetterBlizzFramesDB.darkModeActionBars and (vertexColor + 0.25) or 1
     local rogueCombo = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.45) or 1
     local rogueComboActive = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.30) or 1
@@ -524,14 +525,14 @@ function BBF.DarkmodeFrames(bypass)
     local mageArcaneCharges = _G.MageArcaneChargesFrame
     if mageArcaneCharges then
         for _, v in pairs({mageArcaneCharges:GetChildren()}) do
-            applySettings(v.ArcaneBG, desaturationValue, actionBarColor)
+            applySettings(v.ArcaneBG, desaturationValue, comboColor)
             --applySettings(v.BG_Active, desaturationValue, druidComboPointActive)
         end
     end
 
     local mageArcaneChargesNameplate = _G.ClassNameplateBarMageFrame
     if mageArcaneChargesNameplate and not mageArcaneChargesNameplate:IsForbidden() and not darkModeNpBBP then
-        local mageChargeNp = darkModeNp and actionBarColor or 1
+        local mageChargeNp = darkModeNp and comboColor or 1
         for _, v in pairs({mageArcaneChargesNameplate:GetChildren()}) do
             applySettings(v.ArcaneBG, darkModeNpSatVal, mageChargeNp)
             --applySettings(v.BG_Active, desaturationValue, druidComboPointActive)

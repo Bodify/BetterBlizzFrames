@@ -5954,42 +5954,42 @@ local function guiFrameAuras()
     increaseAuraStrata:SetPoint("TOPLEFT", changePurgeTextureColor, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(increaseAuraStrata, "Increase Aura Frame Strata", "Inrease the strata of auras in order to make them appear above the Target & ToT Frames so they are not covered.")
 
-    local function OpenColorPicker(colorData)
-        -- Make a copy of the colorData array to avoid modifying the original table
-        local r, g, b, a = unpack(colorData)
-        
-        local function updateColors()
-            -- Update the original colorData array with the new values
-            colorData[1], colorData[2], colorData[3], colorData[4] = r, g, b, a
+    local function OpenColorPicker(entryColors)
+        local colorData = entryColors or {0, 1, 0, 1}
+        local r, g, b = colorData[1] or 1, colorData[2] or 1, colorData[3] or 1
+        local a = colorData[4] or 1
+
+        local function updateColors(newR, newG, newB, newA)
+            entryColors[1] = newR
+            entryColors[2] = newG
+            entryColors[3] = newB
+            entryColors[4] = newA or 1
+
             BBF.RefreshAllAuraFrames()
         end
-    
+
         local function swatchFunc()
-            r, g, b, a = ColorPickerFrame:GetColorRGB()
-            updateColors()
+            r, g, b = ColorPickerFrame:GetColorRGB()
+            updateColors(r, g, b, a)
         end
-    
+
         local function opacityFunc()
             a = ColorPickerFrame:GetColorAlpha()
-            updateColors()
+            updateColors(r, g, b, a)
         end
-    
+
         local function cancelFunc(previousValues)
             if previousValues then
                 r, g, b, a = previousValues.r, previousValues.g, previousValues.b, previousValues.a
-                updateColors()
+                updateColors(r, g, b, a)
             end
         end
-    
-        -- Store the initial values before showing the color picker
+
         ColorPickerFrame.previousValues = { r = r, g = g, b = b, a = a }
-    
-        -- Setup and show the color picker with the necessary callbacks and initial values
+
         ColorPickerFrame:SetupColorPickerAndShow({
             r = r, g = g, b = b, opacity = a, hasOpacity = true,
-            swatchFunc = swatchFunc,
-            opacityFunc = opacityFunc,
-            cancelFunc = cancelFunc
+            swatchFunc = swatchFunc, opacityFunc = opacityFunc, cancelFunc = cancelFunc
         })
     end
 
@@ -6153,43 +6153,45 @@ local function guiMisc()
     end)
     addUnitFrameBgTexture:SetScript("OnMouseDown", function(self, button)
         if button == "RightButton" then
-            local function OpenColorPicker(colorType)
-                -- Ensure originalColorData has four elements, defaulting alpha (a) to 1 if not present
-                local originalColorData = BetterBlizzFramesDB[colorType] or {1, 1, 1, 1}
-                if #originalColorData == 3 then
-                    table.insert(originalColorData, 1) -- Add default alpha value if not present
-                end
-                local r, g, b, a = unpack(originalColorData)
-        
-                local function updateColors()
+            local function OpenColorPicker(entryColors)
+                local colorData = entryColors or {0, 1, 0, 1}
+                local r, g, b = colorData[1] or 1, colorData[2] or 1, colorData[3] or 1
+                local a = colorData[4] or 1
+
+                local function updateColors(newR, newG, newB, newA)
+                    entryColors[1] = newR
+                    entryColors[2] = newG
+                    entryColors[3] = newB
+                    entryColors[4] = newA or 1
+
                     BBF.UnitFrameBackgroundTexture()
-                    --ColorPickerFrame.Content.ColorSwatchCurrent:SetAlpha(a)
                 end
-        
+
                 local function swatchFunc()
                     r, g, b = ColorPickerFrame:GetColorRGB()
-                    BetterBlizzFramesDB[colorType] = {r, g, b, a}
-                    updateColors()
+                    updateColors(r, g, b, a)
                 end
-        
+
                 local function opacityFunc()
                     a = ColorPickerFrame:GetColorAlpha()
-                    BetterBlizzFramesDB[colorType] = {r, g, b, a}
-                    updateColors()
+                    updateColors(r, g, b, a)
                 end
-        
-                local function cancelFunc()
-                    r, g, b, a = unpack(originalColorData)
-                    BetterBlizzFramesDB[colorType] = {r, g, b, a}
-                    updateColors()
+
+                local function cancelFunc(previousValues)
+                    if previousValues then
+                        r, g, b, a = previousValues.r, previousValues.g, previousValues.b, previousValues.a
+                        updateColors(r, g, b, a)
+                    end
                 end
-        
+
+                ColorPickerFrame.previousValues = { r = r, g = g, b = b, a = a }
+
                 ColorPickerFrame:SetupColorPickerAndShow({
                     r = r, g = g, b = b, opacity = a, hasOpacity = true,
                     swatchFunc = swatchFunc, opacityFunc = opacityFunc, cancelFunc = cancelFunc
                 })
             end
-            OpenColorPicker("unitFrameBgTextureColor")
+            OpenColorPicker(BetterBlizzFramesDB.unitFrameBgTextureColor)
         end
     end)
 
@@ -6276,14 +6278,6 @@ local function guiImportAndExport()
     bgImg:SetSize(680, 610)
     bgImg:SetAlpha(0.4)
     bgImg:SetVertexColor(0,0,0)
-
-    local text = guiImportAndExport:CreateFontString(nil, "OVERLAY", "GameFontNormalHuge")
-    text:SetText("BETA")
-    text:SetPoint("TOP", guiImportAndExport, "TOPRIGHT", -220, 0)
-
-    local text2 = guiImportAndExport:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    text2:SetText("Please backup your settings just in case.\nWTF\\Account\\ACCOUNT_NAME\\SavedVariables\n\nWhile this is beta any export codes\nwill be temporary until non-beta.")
-    text2:SetPoint("TOP", text, "BOTTOM", 0, 0)
 
     local fullProfile = CreateImportExportUI(guiImportAndExport, "Full Profile", BetterBlizzFramesDB, 20, -20, "fullProfile")
 

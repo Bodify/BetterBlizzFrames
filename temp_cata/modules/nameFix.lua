@@ -225,6 +225,9 @@ local function PartyFrameNameChange(frame)
         frame.bbfName:SetText("")
         return
     end
+    if not changeUnitFrameFont then
+        frame.bbfName:SetFont(frame.name:GetFont())
+    end
     frame.bbfName:ClearAllPoints()
     frame.bbfName:SetPoint("LEFT", frame.name, "LEFT")
     frame.bbfName:SetWidth(frame.name:GetWidth())

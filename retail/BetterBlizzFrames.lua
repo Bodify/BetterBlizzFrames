@@ -53,6 +53,7 @@ local defaultSettings = {
     druidOverstacks = true,
     --partyFrameScale = 1,
     opBarriersOn = true,
+    classicCastbarsPlayerBorder = true,
 
     --Target castbar
     playerCastbarIconXPos = 0,
@@ -842,6 +843,7 @@ function BBF.RemoveAddonCategories()
     end
 
     AddonList.SearchBox:HookScript("OnTextChanged", RemoveAddonCategories);
+    hooksecurefunc("AddonList_Update", RemoveAddonCategories)
 
     AddonList:HookScript("OnShow", function()
         AddonList.ScrollBox:Hide()
@@ -897,7 +899,7 @@ local comboPointCache = {} -- Cache for original combo point order and number of
 
 local function DetectComboPointsOrder(comboPointFrame, expectedClass)
     -- Get the actual number of usable points
-    local expectedPoints = comboPointFrame.maxUsablePoints or 0
+    local expectedPoints = comboPointFrame.maxUsablePoints or expectedClass == "DEATHKNIGHT" and 6 or 0
     local points = {}
 
     -- If maxUsablePoints isn't ready yet, retry after a short delay
@@ -908,46 +910,16 @@ local function DetectComboPointsOrder(comboPointFrame, expectedClass)
         return {}
     end
 
-    if expectedClass == "ROGUE" then
-        -- Rogues use layoutIndex (Dynamic Order)
-        for i = 1, comboPointFrame:GetNumChildren() do
-            local child = select(i, comboPointFrame:GetChildren())
-            if child ~= comboPointFrame.layoutParent and child:IsShown() then
-                if child.layoutIndex then
-                    points[child.layoutIndex] = child
-                end
+    for i = 1, comboPointFrame:GetNumChildren() do
+        local child = select(i, comboPointFrame:GetChildren())
+        if child ~= comboPointFrame.layoutParent and child:IsShown() then
+            if child.layoutIndex then
+                points[child.layoutIndex] = child
+            elseif child.runeNumber then -- pala
+                points[child.runeNumber] = child
+            elseif child.runeIndex then -- dk
+                points[child.runeIndex] = child
             end
-        end
-    else
-        -- All other classes (Fixed Order, Cached)
-        local currentComboPoints = {}
-
-        for i = 1, comboPointFrame:GetNumChildren() do
-            local child = select(i, comboPointFrame:GetChildren())
-            if child ~= comboPointFrame.layoutParent and child:IsShown() then
-                local _, _, _, x = child:GetPoint()
-                if x then
-                    table.insert(currentComboPoints, { child = child, x = x, index = i })
-                end
-            end
-        end
-
-        -- If we haven't detected all expected points, retry
-        if #currentComboPoints < expectedPoints then
-            C_Timer.After(0.5, function()
-                DetectComboPointsOrder(comboPointFrame, expectedClass)
-            end)
-            return {}
-        end
-
-        -- Sort by x position (left to right)
-        table.sort(currentComboPoints, function(a, b)
-            return a.x < b.x
-        end)
-
-        -- Extract ordered children
-        for _, data in ipairs(currentComboPoints) do
-            table.insert(points, data.child)
         end
     end
 
@@ -1434,9 +1406,8 @@ function BBF.InstantComboPoints()
     local _, class = UnitClass("player")
 
     local function UpdateRogueComboPoints(self)
-        local unit = self.unit
-        local comboPoints = UnitPower(unit, self.powerType)
-        local chargedPowerPoints = GetUnitChargedPowerPoints(unit) or {}
+        local comboPoints = UnitPower("player", self.powerType)
+        local chargedPowerPoints = GetUnitChargedPowerPoints("player") or {}
 
         for i, point in ipairs(self.classResourceButtonTable) do
             local isFull = i <= comboPoints
@@ -1473,8 +1444,7 @@ function BBF.InstantComboPoints()
     end
 
     local function UpdateDruidComboPoints(self)
-        local unit = self.unit
-        local comboPoints = UnitPower(unit, self.powerType)
+        local comboPoints = UnitPower("player", self.powerType)
 
         for i, point in ipairs(self.classResourceButtonTable) do
             local isFull = i <= comboPoints
@@ -1493,8 +1463,7 @@ function BBF.InstantComboPoints()
     end
 
     local function UpdateMonkChi(self)
-        local unit = self.unit
-        local numChi = UnitPower(unit, self.powerType)
+        local numChi = UnitPower("player", self.powerType)
 
         for i, point in ipairs(self.classResourceButtonTable) do
             local isFull = i <= numChi
@@ -1515,8 +1484,7 @@ function BBF.InstantComboPoints()
     end
 
     local function UpdateArcaneCharges(self)
-        local unit = self.unit
-        local numCharges = UnitPower(unit, self.powerType, true)
+        local numCharges = UnitPower("player", self.powerType, true)
 
         for i, point in ipairs(self.classResourceButtonTable) do
             local isFull = i <= numCharges
@@ -1609,6 +1577,120 @@ function BBF.ResizeUIWidgetPowerBarFrame()
     if scale == 1 and UIWidgetPowerBarContainerFrame:GetScale() == 1 then return end
     UIWidgetPowerBarContainerFrame:SetScale(scale)
 end
+
+function BBF.RaiseTargetFrameLevel()
+    if not BetterBlizzFramesDB.raiseTargetFrameLevel then return end
+    TargetFrame:SetFrameLevel(501)
+end
+
+function BBF.RaiseTargetCastbarStratas()
+    if not BetterBlizzFramesDB.raiseTargetCastbarStrata then return end
+    TargetFrameSpellBar:SetFrameStrata("MEDIUM")
+    FocusFrameSpellBar:SetFrameStrata("MEDIUM")
+end
+
+
+
+
+
+
+
+
+function BBF.ShowCooldownDuringCC()
+    if not BetterBlizzFramesDB.fixActionBarCDs then return end
+    if BBF.ShowCooldownDuringCCActive then return end
+    local usingOmniCC = C_AddOns.IsAddOnLoaded("OmniCC")
+    local ccActive = false
+
+    local OmniCCTextUpdater = CreateFrame("Frame")
+    local trackedButtons = {}
+
+    local function StopTracking(button)
+        if trackedButtons[button] then
+            trackedButtons[button] = nil
+        end
+        if not next(trackedButtons) then
+            OmniCCTextUpdater:SetScript("OnUpdate", nil)
+        end
+    end
+
+    local function TrackButton(button)
+        if not trackedButtons[button] then
+            trackedButtons[button] = true
+            OmniCCTextUpdater:SetScript("OnUpdate", function()
+                for button in pairs(trackedButtons) do
+                    if button.chargeCooldown and button.chargeCooldown._occ_display then
+                        local occText = button.chargeCooldown._occ_display.text
+                        if occText and not occText:IsShown() then
+                            occText:Show()
+                        end
+                    end
+                end
+            end)
+        end
+    end
+
+    local function UpdateCooldown(self)
+        if not ccActive then return end
+        if not self:IsVisible() then return end
+        if not self.action then return end
+
+        local start, duration
+        local actionType, actionID = GetActionInfo(self.action)
+        local chargeInfo
+
+        if actionType == "spell" and actionID then
+            chargeInfo = C_Spell.GetSpellCharges(actionID)
+            if chargeInfo and chargeInfo.currentCharges ~= chargeInfo.maxCharges then
+                start, duration = chargeInfo.cooldownStartTime, chargeInfo.cooldownDuration
+            else
+                start, duration = GetActionCooldown(self.action)
+            end
+        else
+            start, duration = GetActionCooldown(self.action)
+        end
+
+        if duration == 0 then return end
+
+        self.cooldown:SetHideCountdownNumbers(false)
+        self.cooldown:SetCooldown(start, duration)
+
+        -- Ensure OmniCC properly shows the cooldown text
+        if usingOmniCC then
+            if self.cooldown._occ_display then
+                local occText = self.cooldown._occ_display.text
+                C_Timer.After(0, function()
+                    occText:Show()
+                end)
+            end
+
+            if self.chargeCooldown then
+                self.chargeCooldown:SetHideCountdownNumbers(false)
+                self.chargeCooldown:SetCooldown(start, duration)
+                TrackButton(self)
+                C_Timer.After(0.15, function()
+                    StopTracking(self)
+                end)
+            end
+        end
+    end
+
+    hooksecurefunc("ActionButton_UpdateCooldown", UpdateCooldown)
+    local f = CreateFrame("Frame")
+    f:RegisterUnitEvent("LOSS_OF_CONTROL_ADDED", "player")
+    f:RegisterUnitEvent("LOSS_OF_CONTROL_UPDATE", "player")
+    f:SetScript("OnEvent", function()
+        ccActive = C_LossOfControl.GetActiveLossOfControlData(1) and true or false
+    end)
+    BBF.ShowCooldownDuringCCActive = true
+end
+
+
+
+
+
+
+
 
 
 local LSM = LibStub("LibSharedMedia-3.0")
@@ -2187,13 +2269,16 @@ function BBF.SymmetricPlayerFrame()
 end
 
 function BBF.AddBackgroundTextureToUnitFrames(frame)
-    if not BetterBlizzFramesDB.addUnitFrameBgTexture and not frame.bbfBgTexture then
+    if not BetterBlizzFramesDB.addUnitFrameBgTexture then
+        if frame.bbfBgTexture then
+            frame.bbfBgTexture:Hide()
+        end
         return
     end
 
     local color = BetterBlizzFramesDB.unitFrameBgTextureColor
     if frame.bbfBgTexture then
-        frame.bbfBgTexture:SetShown(not frame.bbfBgTexture:IsShown())
+        frame.bbfBgTexture:Show()
         frame.bbfBgTexture:SetColorTexture(unpack(color))
         return
     end
@@ -2563,6 +2648,7 @@ Frame:SetScript("OnEvent", function(...)
             if BetterBlizzFramesDB.enableMasque then
                 BBF.SetupMasqueSupport()
             end
+            BBF.DarkmodeFrames()
             BBF.HookPlayerAndTargetAuras()
 
             if BetterBlizzFramesDB.playerFrameOCD then
@@ -2622,15 +2708,6 @@ Frame:SetScript("OnEvent", function(...)
 
     executeCustomCode()
 end)
-
-local function MoveableSettingsPanel()
-    local frame = SettingsPanel
-    if frame and not frame:GetScript("OnDragStart") and not C_AddOns.IsAddOnLoaded("BlizzMove") then
-        frame:RegisterForDrag("LeftButton")
-        frame:SetScript("OnDragStart", frame.StartMoving)
-        frame:SetScript("OnDragStop", frame.StopMovingOrSizing)
-    end
-end
 
 -- Slash command
 SLASH_BBF1 = "/BBF"
@@ -2704,7 +2781,6 @@ SlashCmdList["BBF"] = function(msg)
                 Settings.OpenToCategory(BBF.category.ID)
             end
         end
-        MoveableSettingsPanel()
     end
 end
 
@@ -2730,12 +2806,15 @@ First:SetScript("OnEvent", function(_, event, addonName)
             BBF.HookStatusBarText()
             BBF.ActionBarMods()
             BBF.UnitFrameBackgroundTexture()
+            BBF.RaiseTargetFrameLevel()
+            BBF.RaiseTargetCastbarStratas()
 
             BBF.ClassColorReputationCaller()
 
             BBF.MoveableFPSCounter(false, BetterBlizzFramesDB.fpsCounterFontOutline)
 
             C_Timer.After(1, function()
+                BBF.ShowCooldownDuringCC()
                 BBF.InstantComboPoints()
                 BBF.AbsorbCaller()
                 BBF.SetCustomFonts()

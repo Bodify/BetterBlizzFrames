@@ -1498,16 +1498,14 @@ local function AdjustAuras(self, frameType)
                     elseif aura.ImportantDispell then
                         aura.ImportantDispell:Hide()
                     end
-                else
+                elseif aura.isImportant then
                     aura.isImportant = false
-                    if aura.ImportantGlow then
-                        aura.ImportantGlow:Hide()
-                        if aura.Stealable and auraData.isStealable then
-                            aura.Stealable:SetAlpha(1)
-                        end
-                        if aura.ImportantDispell then
-                            aura.ImportantDispell:Hide()
-                        end
+                    aura.ImportantGlow:Hide()
+                    if aura.Stealable and auraData.isStealable then
+                        aura.Stealable:SetAlpha(1)
+                    end
+                    if aura.ImportantDispell then
+                        aura.ImportantDispell:Hide()
                     end
                 end
 
@@ -1566,7 +1564,7 @@ local function AdjustAuras(self, frameType)
                     aura.isPandemic = true
                     trackedBuffs[aura.auraInstanceID] = aura
                     StartCheckBuffsTimer()
-                else
+                elseif aura.isPandemic then
                     aura.isPandemic = false
                     if aura.PandemicGlow then
                         aura.PandemicGlow:Hide()
@@ -1968,6 +1966,7 @@ local function PersonalBuffFrameFilterAndGrid(self)
     if ToggleHiddenAurasButton then
         ToggleHiddenAurasButton:SetScale(currentAuraSize)
     end
+    local db = BetterBlizzFramesDB
 
     -- Define the parameters for your grid system
     local maxAurasPerRow = BuffFrame.AuraContainer.iconStride
@@ -1985,13 +1984,13 @@ local function PersonalBuffFrameFilterAndGrid(self)
     local toggleIcon = showHiddenAurasIcon and CreateToggleIcon() or nil
 
     -- Initialize offsets based on the direction setting
-    if BetterBlizzFramesDB.hiddenIconDirection == "DOWN" then
+    if db.hiddenIconDirection == "DOWN" then
         hiddenYOffset = -auraSpacingY - auraSize + playerAuraSpacingY
-    elseif BetterBlizzFramesDB.hiddenIconDirection == "UP" then
+    elseif db.hiddenIconDirection == "UP" then
         hiddenYOffset = auraSpacingY + auraSize - playerAuraSpacingY
-    elseif BetterBlizzFramesDB.hiddenIconDirection == "LEFT" then
+    elseif db.hiddenIconDirection == "LEFT" then
         hiddenXOffset = -auraSpacingX - auraSize
-    elseif BetterBlizzFramesDB.hiddenIconDirection == "RIGHT" then
+    elseif db.hiddenIconDirection == "RIGHT" then
         hiddenXOffset = auraSpacingX + auraSize
     end
 
@@ -2104,6 +2103,8 @@ local function PersonalBuffFrameFilterAndGrid(self)
                 -- Nonprint logic
                 if shouldShowAura then
 
+                    local isPurgeable = dispelType == "Magic"
+
                     if opBarriersOn and opBarriers[auraData.spellId] and auraData.duration ~= 5 then
                         isImportant = nil
                     end
@@ -2182,23 +2183,13 @@ local function PersonalBuffFrameFilterAndGrid(self)
                         local borderFrame = BBF.auraBorders[auraFrame]
                         auraFrame.isImportant = true
                         if not auraFrame.ImportantGlow then
-                            auraFrame.ImportantGlow = auraFrame.GlowFrame:CreateTexture(nil, "OVERLAY")
-                            if addIconsToTop then
-                                if borderFrame then
-                                    auraFrame.ImportantGlow:SetPoint("TOPLEFT", auraFrame, "TOPLEFT", -15, 6)
-                                    auraFrame.ImportantGlow:SetPoint("BOTTOMRIGHT", auraFrame, "BOTTOMRIGHT", 15, -16)
-                                else
-                                    auraFrame.ImportantGlow:SetPoint("TOPLEFT", auraFrame, "TOPLEFT", -14, 3)
-                                    auraFrame.ImportantGlow:SetPoint("BOTTOMRIGHT", auraFrame, "BOTTOMRIGHT", 13, -13)
-                                end
+                            auraFrame.ImportantGlow = auraFrame.GlowFrame:CreateTexture(nil, "OVERLAY", nil, 2)
+                            if borderFrame then
+                                auraFrame.ImportantGlow:SetPoint("TOPLEFT", auraFrame.Icon, "TOPLEFT", -15, 17)
+                                auraFrame.ImportantGlow:SetPoint("BOTTOMRIGHT", auraFrame.Icon, "BOTTOMRIGHT", 15, -16)
                             else
-                                if borderFrame then
-                                    auraFrame.ImportantGlow:SetPoint("TOPLEFT", auraFrame, "TOPLEFT", -15, 16)
-                                    auraFrame.ImportantGlow:SetPoint("BOTTOMRIGHT", auraFrame, "BOTTOMRIGHT", 15, -6)
-                                else
-                                    auraFrame.ImportantGlow:SetPoint("TOPLEFT", auraFrame, "TOPLEFT", -14, 13)
-                                    auraFrame.ImportantGlow:SetPoint("BOTTOMRIGHT", auraFrame, "BOTTOMRIGHT", 13, -3)
-                                end
+                                auraFrame.ImportantGlow:SetPoint("TOPLEFT", auraFrame.Icon, "TOPLEFT", -15, 14.5)
+                                auraFrame.ImportantGlow:SetPoint("BOTTOMRIGHT", auraFrame.Icon, "BOTTOMRIGHT", 15, -15)
                             end
                             auraFrame.ImportantGlow:SetDrawLayer("OVERLAY", 7)
                             auraFrame.ImportantGlow:SetAtlas("newplayertutorial-drag-slotgreen")
@@ -2211,11 +2202,46 @@ local function PersonalBuffFrameFilterAndGrid(self)
                         end
                         auraFrame.Duration:SetParent(auraFrame.GlowFrame)
                         auraFrame.ImportantGlow:Show()
-                    else
+                    elseif auraFrame.isImportant then
                         auraFrame.isImportant = false
-                        if auraFrame.ImportantGlow then
-                            auraFrame.ImportantGlow:Hide()
+                        auraFrame.ImportantGlow:Hide()
+                    end
+                    if isPurgeable and db.showPurgeTextureOnSelf and not isImportant then
+                        local borderFrame = BBF.auraBorders[auraFrame]
+                        auraFrame.isPurgeGlow = true
+                        if not auraFrame.PurgeGlow then
+                            auraFrame.PurgeGlow = auraFrame.GlowFrame:CreateTexture(nil, "OVERLAY", nil, 1)
+                            if (betterTargetPurgeGlow or betterFocusPurgeGlow) then
+                                if borderFrame then
+                                    auraFrame.PurgeGlow:SetPoint("TOPLEFT", auraFrame.Icon, "TOPLEFT", -15, 17)
+                                    auraFrame.PurgeGlow:SetPoint("BOTTOMRIGHT", auraFrame.Icon, "BOTTOMRIGHT", 15, -16)
+                                else
+                                    auraFrame.PurgeGlow:SetPoint("TOPLEFT", auraFrame.Icon, "TOPLEFT", -15, 14.5)
+                                    auraFrame.PurgeGlow:SetPoint("BOTTOMRIGHT", auraFrame.Icon, "BOTTOMRIGHT", 15, -15)
+                                end
+                                auraFrame.PurgeGlow:SetAtlas("newplayertutorial-drag-slotblue")
+                            else
+                                if borderFrame then
+                                    auraFrame.PurgeGlow:SetPoint("TOPLEFT", auraFrame.Icon, "TOPLEFT", -5, 5.5)
+                                    auraFrame.PurgeGlow:SetPoint("BOTTOMRIGHT", auraFrame.Icon, "BOTTOMRIGHT", 3, -3.5)
+                                else
+                                    auraFrame.PurgeGlow:SetPoint("TOPLEFT", auraFrame.Icon, "TOPLEFT", -5, 4.5)
+                                    auraFrame.PurgeGlow:SetPoint("BOTTOMRIGHT", auraFrame.Icon, "BOTTOMRIGHT", 3, -2.5)
+                                end
+                                auraFrame.PurgeGlow:SetTexture(237671)
+                                auraFrame.PurgeGlow:SetBlendMode("ADD")
+                            end
+                            auraFrame.PurgeGlow:SetDrawLayer("OVERLAY", 7)
                         end
+                        if changePurgeTextureColor then
+                            auraFrame.PurgeGlow:SetDesaturated(true)
+                            auraFrame.PurgeGlow:SetVertexColor(unpack(purgeTextureColorRGB))
+                        end
+                        auraFrame.Duration:SetParent(auraFrame.GlowFrame)
+                        auraFrame.PurgeGlow:Show()
+                    elseif auraFrame.isPurgeGlow then
+                        auraFrame.isPurgeGlow = false
+                        auraFrame.PurgeGlow:Hide()
                     end
                     auraFrame.Duration:SetDrawLayer("OVERLAY")
                 else
@@ -2225,10 +2251,12 @@ local function PersonalBuffFrameFilterAndGrid(self)
                         auraFrame.isAuraHidden = true
                     end
                     if auraFrame.isImportant then
-                        if auraFrame.ImportantGlow then
-                            auraFrame.ImportantGlow:Hide()
-                            auraFrame.isImportant = false
-                        end
+                        auraFrame.ImportantGlow:Hide()
+                        auraFrame.isImportant = false
+                    end
+                    if auraFrame.isPurgeGlow then
+                        auraFrame.PurgeGlow:Hide()
+                        auraFrame.isPurgeGlow = false
                     end
                     auraFrame:ClearAllPoints()
                     if toggleIcon then
@@ -2483,22 +2511,12 @@ local function PersonalDebuffFrameFilterAndGrid(self)
                             auraFrame.GlowFrame:SetAllPoints(auraFrame)
                             auraFrame.GlowFrame:SetFrameLevel(auraFrame:GetFrameLevel() + 1)
                             auraFrame.ImportantGlow = auraFrame.GlowFrame:CreateTexture(nil, "OVERLAY")
-                            if addIconsToTop then
-                                if borderFrame then
-                                    auraFrame.ImportantGlow:SetPoint("TOPLEFT", auraFrame, "TOPLEFT", -15, 6)
-                                    auraFrame.ImportantGlow:SetPoint("BOTTOMRIGHT", auraFrame, "BOTTOMRIGHT", 15, -16)
-                                else
-                                    auraFrame.ImportantGlow:SetPoint("TOPLEFT", auraFrame, "TOPLEFT", -14, 3)
-                                    auraFrame.ImportantGlow:SetPoint("BOTTOMRIGHT", auraFrame, "BOTTOMRIGHT", 13, -13)
-                                end
+                            if borderFrame then
+                                auraFrame.ImportantGlow:SetPoint("TOPLEFT", auraFrame.Icon, "TOPLEFT", -15, 17)
+                                auraFrame.ImportantGlow:SetPoint("BOTTOMRIGHT", auraFrame.Icon, "BOTTOMRIGHT", 15, -16)
                             else
-                                if borderFrame then
-                                    auraFrame.ImportantGlow:SetPoint("TOPLEFT", auraFrame, "TOPLEFT", -15, 16)
-                                    auraFrame.ImportantGlow:SetPoint("BOTTOMRIGHT", auraFrame, "BOTTOMRIGHT", 15, -6)
-                                else
-                                    auraFrame.ImportantGlow:SetPoint("TOPLEFT", auraFrame, "TOPLEFT", -14, 13)
-                                    auraFrame.ImportantGlow:SetPoint("BOTTOMRIGHT", auraFrame, "BOTTOMRIGHT", 13, -3)
-                                end
+                                auraFrame.ImportantGlow:SetPoint("TOPLEFT", auraFrame.Icon, "TOPLEFT", -15, 14.5)
+                                auraFrame.ImportantGlow:SetPoint("BOTTOMRIGHT", auraFrame.Icon, "BOTTOMRIGHT", 15, -15)
                             end
                             --auraFrame.ImportantGlow:SetDrawLayer("OVERLAY", 7)
                             auraFrame.ImportantGlow:SetAtlas("newplayertutorial-drag-slotgreen")

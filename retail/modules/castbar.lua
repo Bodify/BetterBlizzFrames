@@ -1285,6 +1285,11 @@ function BBF.ChangeCastbarSizes()
     end
     if BetterBlizzFramesDB.classicCastbarsPlayer then
         BBF.ClassicCastbar(PlayerCastingBarFrame)
+        if BetterBlizzFramesDB.classicCastbarsPlayerBorder then
+            PlayerCastingBarFrame.Border:SetTexture(130874)
+        else
+            PlayerCastingBarFrame.Border:SetTexture(130873)
+        end
     end
 end
 

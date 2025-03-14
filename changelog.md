@@ -1,3 +1,26 @@
+# BetterBlizzFrames 1.6.3
+## The War Within
+### New:
+- ActionBar Cooldown Fix for CC, enable to have your ActionBar cooldowns show their proper duration while youre cced. By default if a CD is lower than the duration of the CC youre in it will not show, potentially baiting you to trinket kick while kick still has 3 sec CD etc.
+- Add "Show Purge Texture on Player Buffs" setting (Buffs & Debuffs)
+- Raise TargetFrame Level setting (Misc)
+- Raise Castbar Stratas setting (Misc)
+### Tweak:
+- Kalvish profile update
+- Tweak to "Remove AddonList Categories" setting to be more reliable.
+### Bugfix:
+- Even more bugfixes for some classes "Move Resource to TargetFrame" setting.
+
+
+
+
+# BetterBlizzFrames 1.6.2b
+### Bugfix:
+- Fix missing variable on focus castbar for castbar interrupt color
+
+
+
+
 # BetterBlizzFrames 1.6.2
 ## The War Within
 ### New:
@@ -8,6 +31,8 @@
 - Castbar Interrupt Color setting now also now also puts a green line exactly where your interrupt gets ready.
 - Blacklisting auras that are already in the blacklist but with a "Show Mine" tag now overwrites it and removes the tag instead of notifying about duplicate.
 - "Reset BBF" button moved to show in Advanced Settings section.
+
+
 
 # BetterBlizzFrames 1.6.1
 ## The War Within
@@ -22,6 +47,8 @@
 - Added TempEnchants (Weapon Enchants etc) to Masque frames.
 ### Bugfix:
 - Fix issues with name not showing on default party frames sometimes.
+
+
 
 
 # BetterBlizzFrames 1.6.0i

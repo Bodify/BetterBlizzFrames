@@ -330,6 +330,9 @@ local function PartyFrameNameChange(frame)
         frame.bbfName:SetText("")
         return
     end
+    if not changeUnitFrameFont then
+        frame.bbfName:SetFont(frame.Name:GetFont())
+    end
     if partyArenaNames and IsActiveBattlefieldArena() then
         SetArenaName(frame, frame.unit, frame.bbfName)
         return

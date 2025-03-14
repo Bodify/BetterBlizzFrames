@@ -228,14 +228,13 @@ end
 
 function BBF.EnableQueueTimer()
     if BetterBlizzFramesDB.queueTimer then
-        if C_AddOns.IsAddOnLoaded("SafeQueue") then
-            C_Timer.After(1, function()
-                C_AddOns.DisableAddOn("SafeQueue")
-            end)
-            return
-        end
         C_Timer.After(1, function()
             BBF.SBUncheck()
+            if C_AddOns.IsAddOnLoaded("SafeQueue") then
+                C_Timer.After(1, function()
+                    C_AddOns.DisableAddOn("SafeQueue")
+                end)
+            end
         end)
 
         if PVPReadyDialog_Display then

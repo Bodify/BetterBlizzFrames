@@ -934,6 +934,9 @@ local function CreateSlider(parent, label, minValue, maxValue, stepValue, elemen
                 elseif element == "targetAndFocusVerticalGap" then
                     BetterBlizzFramesDB.targetAndFocusVerticalGap = value
                     BBF.RefreshAllAuraFrames()
+                elseif element == "selfAuraPurgeGlowAlpha" then
+                    BetterBlizzFramesDB.selfAuraPurgeGlowAlpha = value
+                    BBF.RefreshAllAuraFrames()
                 elseif element == "targetAndFocusAurasPerRow" then
                     BetterBlizzFramesDB.targetAndFocusAurasPerRow = value
                     BBF.RefreshAllAuraFrames()
@@ -1226,19 +1229,6 @@ local function CreateTooltipTwo(widget, title, mainText, subText, anchor, cvarNa
     end)
 end
 
--- Function to show the confirmation popup with dynamic profile information
-local function ShowProfileConfirmation(profileName, profileFunction, additionalNote)
-    local noteText = additionalNote or ""
-    local confirmationText
-    if profileName == "Starter Profile" or profileName == "Blitz Profile" then
-        confirmationText = titleText .. "Are you sure you want to enable the " .. profileName .. "?\n\n" .. noteText .. "Click yes to apply and Reload UI."
-    else
-        confirmationText = titleText .. "This action will delete all settings and apply " .. profileName .. "'s profile and reload the UI.\n\n" .. noteText .. "Are you sure you want to continue?"
-    end
-    StaticPopupDialogs["BBF_CONFIRM_PROFILE"].text = confirmationText
-    StaticPopup_Show("BBF_CONFIRM_PROFILE", nil, nil, { func = profileFunction })
-end
-
 local CLASS_COLORS = {
     ROGUE = "|cfffff569",
     WARRIOR = "|cffc79c6e",
@@ -1276,6 +1266,17 @@ local CLASS_ICONS = {
     BLITZ = "questlog-questtypeicon-pvp",
     MYTHIC = "worldquest-icon-dungeon",
 }
+
+local function ShowProfileConfirmation(profileName, class, profileFunction, additionalNote)
+    local noteText = additionalNote or ""
+    local color = CLASS_COLORS[class] or "|cffffffff"
+    local icon = CLASS_ICONS[class] or "groupfinder-icon-role-leader"
+    local profileText = string.format("|A:%s:16:16|a %s%s|r", icon, color, profileName.." Profile")
+    local confirmationText = titleText .. "This action will delete all settings and apply\nthe " .. profileText .. " and reload the UI.\n\n" .. noteText .. "Are you sure you want to continue?"
+
+    StaticPopupDialogs["BBF_CONFIRM_PROFILE"].text = confirmationText
+    StaticPopup_Show("BBF_CONFIRM_PROFILE", nil, nil, { func = profileFunction })
+end
 
 local function CreateClassButton(parent, class, name, twitchName, onClickFunc)
     local bbfParent = parent == BetterBlizzFrames
@@ -1669,6 +1670,21 @@ for _, listName in ipairs(lists) do
     }
 end
 
+StaticPopupDialogs["BBF_DUPLICATE_UPDATE_OR_DELETE"] = {
+    text = "This name or spellID is already in the\nblacklist with \"Show Mine\" tag.\n\nDo you want to update the tag or\ndelete it from the blacklist?",
+    button1 = "Update and always hide",
+    button2 = "Delete from blacklist",
+    OnAccept = function()
+        BBF["auraBlacklist"](BBF.entryToDelete, "auraBlacklist", nil, true)  -- Update when accepted
+    end,
+    OnCancel = function()
+        deleteEntry("auraBlacklist", BBF.entryToDelete)  -- Delete the entry when "Yes" is clicked
+    end,
+    timeout = 0,
+    whileDead = true,
+    hideOnEscape = true,
+}
+
 
 local function addOrUpdateEntry(inputText, listName, addShowMineTag, skipRefresh, color)
     BBF.entryToDelete = nil
@@ -1727,6 +1743,9 @@ local function addOrUpdateEntry(inputText, listName, addShowMineTag, skipRefresh
                 else
                     isDuplicate = true
                     BBF.entryToDelete = key  -- Use key to identify the duplicate
+                    if addShowMineTag then
+                        BBF.DuplicateWithTag = true
+                    end
                 end
             elseif listName == "auraWhitelist" then
                 isDuplicate = true
@@ -1735,7 +1754,12 @@ local function addOrUpdateEntry(inputText, listName, addShowMineTag, skipRefresh
         end
 
         if isDuplicate then
-            StaticPopup_Show("BBF_DUPLICATE_NPC_CONFIRM_" .. listName)
+            if BBF.DuplicateWithTag then
+                StaticPopup_Show("BBF_DUPLICATE_UPDATE_OR_DELETE")
+                BBF.DuplicateWithTag = nil
+            else
+                StaticPopup_Show("BBF_DUPLICATE_NPC_CONFIRM_" .. listName)
+            end
         else
             -- Initialize the new entry with appropriate structure
             local newEntry = {
@@ -3773,32 +3797,32 @@ local function guiGeneralTab()
 
     local btnGap = 5
     local starterButton = CreateClassButton(BetterBlizzFrames, "STARTER", "Starter", nil, function()
-        ShowProfileConfirmation("Starter Profile", BBF.StarterProfile)
+        ShowProfileConfirmation("Starter", "STARTER", BBF.StarterProfile, "|cff808080(If you want to completely reset BBF there\nis a button in Advanced Settings)|r\n\n")
     end)
     starterButton:SetPoint("TOPLEFT", SettingsPanel, "BOTTOMLEFT", 258, 38)
 
     local aeghisButton = CreateClassButton(BetterBlizzFrames, "MAGE", "Aeghis", "aeghis", function()
-        ShowProfileConfirmation("Aeghis Profile", BBF.AeghisProfile)
+        ShowProfileConfirmation("Aeghis", "MAGE", BBF.AeghisProfile)
     end)
     aeghisButton:SetPoint("LEFT", starterButton, "RIGHT", btnGap, 0)
 
     local kalvishButton = CreateClassButton(BetterBlizzFrames, "ROGUE", "Kalvish", "kalvish", function()
-        ShowProfileConfirmation("Kalvish Profile", BBF.KalvishProfile)
+        ShowProfileConfirmation("Kalvish", "ROGUE", BBF.KalvishProfile)
     end)
     kalvishButton:SetPoint("LEFT", aeghisButton, "RIGHT", btnGap, 0)
 
     local magnuszButton = CreateClassButton(BetterBlizzFrames, "WARRIOR", "Magnusz", "magnusz", function()
-        ShowProfileConfirmation("Magnusz Profile", BBF.MagnuszProfile)
+        ShowProfileConfirmation("Magnusz", "WARRIOR", BBF.MagnuszProfile)
     end)
     magnuszButton:SetPoint("LEFT", kalvishButton, "RIGHT", btnGap, 0)
 
     local nahjButton = CreateClassButton(BetterBlizzFrames, "ROGUE", "Nahj", "nahj", function()
-        ShowProfileConfirmation("Nahj Profile", BBF.NahjProfile)
+        ShowProfileConfirmation("Nahj", "ROGUE", BBF.NahjProfile)
     end)
     nahjButton:SetPoint("LEFT", magnuszButton, "RIGHT", btnGap, 0)
 
     local snupyButton = CreateClassButton(BetterBlizzFrames, "DRUID", "Snupy", "snupy", function()
-        ShowProfileConfirmation("Snupy Profile", BBF.SnupyProfile)
+        ShowProfileConfirmation("Snupy", "DRUID", BBF.SnupyProfile)
     end)
     snupyButton:SetPoint("LEFT", nahjButton, "RIGHT", btnGap, 0)
 
@@ -4405,8 +4429,16 @@ local function guiCastbars()
     CreateTooltip(playerCastBarTimerCentered, "Center the timer in the middle of the castbar")
 
     local classicCastbarsPlayer = CreateCheckbox("classicCastbarsPlayer", "Classic Castbar", contentFrame, nil, BBF.ChangeCastbarSizes)
-    classicCastbarsPlayer:SetPoint("TOPLEFT", playerCastBarTimerCentered, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    classicCastbarsPlayer:SetPoint("TOPLEFT", playerCastBarTimerCentered, "BOTTOMLEFT", -15, pixelsBetweenBoxes)
     CreateTooltipTwo(classicCastbarsPlayer, "Classic Castbar", "Use Classic layout for Player Castbar")
+
+    local classicCastbarsPlayerBorder = CreateCheckbox("classicCastbarsPlayerBorder", "Border", classicCastbarsPlayer, nil, BBF.ChangeCastbarSizes)
+    classicCastbarsPlayerBorder:SetPoint("LEFT", classicCastbarsPlayer.text, "RIGHT", 0, 0)
+    CreateTooltipTwo(classicCastbarsPlayerBorder, "Classic Border", "Use the default Player Classic Castbar Boder")
+
+    classicCastbarsPlayer:HookScript("OnClick", function(self)
+        CheckAndToggleCheckboxes(self)
+    end)
 
     local resetPlayerCastbar = CreateFrame("Button", nil, contentFrame, "UIPanelButtonTemplate")
     resetPlayerCastbar:SetText("Reset")
@@ -6180,23 +6212,27 @@ local function guiFrameAuras()
     useEditMode:SetText("Use Edit Mode for other settings.")
 
     local moreAuraSettings = contentFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    moreAuraSettings:SetPoint("TOP", PlayerAuraBorder, "BOTTOM", -100, -140)
+    moreAuraSettings:SetPoint("TOP", PlayerAuraBorder, "BOTTOM", -100, -125)
     moreAuraSettings:SetText("More Aura Settings:")
 
     local displayDispelGlowAlways = CreateCheckbox("displayDispelGlowAlways", "Always show purge texture", playerAuraFiltering)
     displayDispelGlowAlways:SetPoint("TOPLEFT", moreAuraSettings, "BOTTOMLEFT", -10, -3)
     CreateTooltip(displayDispelGlowAlways, "Always display the purge/steal texture on auras\nregardless if you have a dispel/purge/steal ability or not.")
 
-    local onlyPandemicAuraMine = CreateCheckbox("onlyPandemicAuraMine", "Only Pandemic Mine", playerAuraFiltering)
-    onlyPandemicAuraMine:SetPoint("TOPLEFT", displayDispelGlowAlways, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltip(onlyPandemicAuraMine, "Only show the red pandemic aura glow on my own auras", "ANCHOR_LEFT")
-
     local changePurgeTextureColor = CreateCheckbox("changePurgeTextureColor", "Change Purge Texture Color", playerAuraFiltering)
-    changePurgeTextureColor:SetPoint("TOPLEFT", onlyPandemicAuraMine, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    changePurgeTextureColor:SetPoint("TOPLEFT", displayDispelGlowAlways, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(changePurgeTextureColor, "Change Purge Texture Color")
 
+    local showPurgeTextureOnSelf = CreateCheckbox("showPurgeTextureOnSelf", "Show Purge Texture on Player Auras", playerAuraFiltering)
+    showPurgeTextureOnSelf:SetPoint("TOPLEFT", changePurgeTextureColor, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(showPurgeTextureOnSelf, "Show Purge Texture on Player Auras", "Show Purge Texture on Player Auras (Top Right).")
+
+    local onlyPandemicAuraMine = CreateCheckbox("onlyPandemicAuraMine", "Only Pandemic Mine", playerAuraFiltering)
+    onlyPandemicAuraMine:SetPoint("TOPLEFT", showPurgeTextureOnSelf, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltip(onlyPandemicAuraMine, "Only show the red pandemic aura glow on my own auras", "ANCHOR_LEFT")
+
     local increaseAuraStrata = CreateCheckbox("increaseAuraStrata", "Increase Aura Frame Strata", playerAuraFiltering)
-    increaseAuraStrata:SetPoint("TOPLEFT", changePurgeTextureColor, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    increaseAuraStrata:SetPoint("TOPLEFT", onlyPandemicAuraMine, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(increaseAuraStrata, "Increase Aura Frame Strata", "Increase the strata of auras in order to make them appear above the Target & ToT Frames so they are not covered.")
 
     local clickthroughAuras = CreateCheckbox("clickthroughAuras", "Clickthrough Auras", playerAuraFiltering)
@@ -6212,37 +6248,42 @@ local function guiFrameAuras()
     auraImportantDispelIcon:SetPoint("TOPLEFT", clickthroughAuras, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(auraImportantDispelIcon, "Important Glow: Dispel Icon", "If an aura is marked as Important and has a glow, this setting adds a blue exclamation mark in the bottom left corner if the aura is dispellable.\n\nSince the Important Glow hides the default dispellable glow, this helps you quickly see if an aura can be dispelled (especially for auras that have both dispellable and non-dispellable versions).")
 
-    local function OpenColorPicker(colorData)
-        local r, g, b, a = unpack(colorData)
-        local function updateColors()
-            colorData[1], colorData[2], colorData[3], colorData[4] = r, g, b, a
+    local function OpenColorPicker(entryColors)
+        local colorData = entryColors or {0, 1, 0, 1}
+        local r, g, b = colorData[1] or 1, colorData[2] or 1, colorData[3] or 1
+        local a = colorData[4] or 1
+
+        local function updateColors(newR, newG, newB, newA)
+            entryColors[1] = newR
+            entryColors[2] = newG
+            entryColors[3] = newB
+            entryColors[4] = newA or 1
+
             BBF.RefreshAllAuraFrames()
         end
 
         local function swatchFunc()
             r, g, b = ColorPickerFrame:GetColorRGB()
-            updateColors()
+            updateColors(r, g, b, a)
         end
 
         local function opacityFunc()
             a = ColorPickerFrame:GetColorAlpha()
-            updateColors()
+            updateColors(r, g, b, a)
         end
 
         local function cancelFunc(previousValues)
             if previousValues then
-                r, g, b, a = unpack(previousValues)
-                updateColors()
+                r, g, b, a = previousValues.r, previousValues.g, previousValues.b, previousValues.a
+                updateColors(r, g, b, a)
             end
         end
 
-        ColorPickerFrame.previousValues = {r, g, b, a}
+        ColorPickerFrame.previousValues = { r = r, g = g, b = b, a = a }
 
         ColorPickerFrame:SetupColorPickerAndShow({
             r = r, g = g, b = b, opacity = a, hasOpacity = true,
-            swatchFunc = swatchFunc,
-            opacityFunc = opacityFunc,
-            cancelFunc = cancelFunc
+            swatchFunc = swatchFunc, opacityFunc = opacityFunc, cancelFunc = cancelFunc
         })
     end
 
@@ -6474,37 +6515,42 @@ local function guiMisc()
     end)
     addUnitFrameBgTexture:SetScript("OnMouseDown", function(self, button)
         if button == "RightButton" then
-            local function OpenColorPicker(colorData)
-                local r, g, b, a = unpack(colorData)
-                local function updateColors()
-                    colorData[1], colorData[2], colorData[3], colorData[4] = r, g, b, a
+            local function OpenColorPicker(entryColors)
+                local colorData = entryColors or {0, 1, 0, 1}
+                local r, g, b = colorData[1] or 1, colorData[2] or 1, colorData[3] or 1
+                local a = colorData[4] or 1
+
+                local function updateColors(newR, newG, newB, newA)
+                    entryColors[1] = newR
+                    entryColors[2] = newG
+                    entryColors[3] = newB
+                    entryColors[4] = newA or 1
+
                     BBF.UnitFrameBackgroundTexture()
                 end
-        
+
                 local function swatchFunc()
                     r, g, b = ColorPickerFrame:GetColorRGB()
-                    updateColors()
+                    updateColors(r, g, b, a)
                 end
-        
+
                 local function opacityFunc()
                     a = ColorPickerFrame:GetColorAlpha()
-                    updateColors()
+                    updateColors(r, g, b, a)
                 end
-        
+
                 local function cancelFunc(previousValues)
                     if previousValues then
-                        r, g, b, a = unpack(previousValues)
-                        updateColors()
+                        r, g, b, a = previousValues.r, previousValues.g, previousValues.b, previousValues.a
+                        updateColors(r, g, b, a)
                     end
                 end
-        
-                ColorPickerFrame.previousValues = {r, g, b, a}
-        
+
+                ColorPickerFrame.previousValues = { r = r, g = g, b = b, a = a }
+
                 ColorPickerFrame:SetupColorPickerAndShow({
                     r = r, g = g, b = b, opacity = a, hasOpacity = true,
-                    swatchFunc = swatchFunc,
-                    opacityFunc = opacityFunc,
-                    cancelFunc = cancelFunc
+                    swatchFunc = swatchFunc, opacityFunc = opacityFunc, cancelFunc = cancelFunc
                 })
             end
             OpenColorPicker(BetterBlizzFramesDB.unitFrameBgTextureColor)
@@ -6579,8 +6625,20 @@ local function guiMisc()
     hideActionBarCastAnimation:SetPoint("TOPLEFT", hideActionBarBigProcGlow, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(hideActionBarCastAnimation, "Hide ActionBar Cast Animation", "Hide the cast animation on default ActionBar buttons.")
 
+    local fixActionBarCDs = CreateCheckbox("fixActionBarCDs", "Fix ActionBar Cooldowns During CC", guiMisc, nil, BBF.ShowCooldownDuringCC)
+    fixActionBarCDs:SetPoint("TOPLEFT", hideActionBarCastAnimation, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(fixActionBarCDs, "Fix ActionBar Cooldowns During CC", "Always show ability cooldowns when you're CC'ed.\n\nBy default if the CC is longer than the ability cooldown it gets hidden. You've probably been in situations where you Trinket to interrupt someone only for interrupt to still be on a few seconds CD. No more!")
+
+    local raiseTargetFrameLevel = CreateCheckbox("raiseTargetFrameLevel", "Raise TargetFrame Layer", guiMisc, nil, BBF.RaiseTargetFrameLevel)
+    raiseTargetFrameLevel:SetPoint("TOPLEFT", fixActionBarCDs, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(raiseTargetFrameLevel, "Raise TargetFrame Layer", "Raise the frame level of TargetFrame so it is above FocusFrame.\n\nThis makes it so if you have TargetFrame positioned above FocusFrame and the Target has so many auras that the castbar goes down to the FocusFrame the castbar will not be hidden behind the FocusFrame.")
+
+    local raiseTargetCastbarStrata = CreateCheckbox("raiseTargetCastbarStrata", "Raise Castbar Stratas", guiMisc, nil, BBF.RaiseTargetCastbarStratas)
+    raiseTargetCastbarStrata:SetPoint("TOPLEFT", raiseTargetFrameLevel, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(raiseTargetCastbarStrata, "Raise Castbar Stratas", "Raise the Strata of Target & Focus frame so it does not appear behind the frames.")
+
     local instantComboPoints = CreateCheckbox("instantComboPoints", "Instant Combo Points", guiMisc, nil, BBF.InstantComboPoints)
-    instantComboPoints:SetPoint("TOPLEFT", hideActionBarCastAnimation, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    instantComboPoints:SetPoint("TOPLEFT", raiseTargetCastbarStrata, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(instantComboPoints, "Instant Combo Points", "Remove the combo point animations for instant feedback. Currently works for Rogues, Druids, Monks and Mages.")
     instantComboPoints:HookScript("OnClick", function(self)
         if not self:GetChecked() then
@@ -6760,14 +6818,6 @@ local function guiImportAndExport()
     bgImg:SetSize(680, 610)
     bgImg:SetAlpha(0.4)
     bgImg:SetVertexColor(0,0,0)
-
-    local text = guiImportAndExport:CreateFontString(nil, "OVERLAY", "GameFontNormalHuge")
-    text:SetText("BETA")
-    text:SetPoint("TOP", guiImportAndExport, "TOPRIGHT", -220, 0)
-
-    local text2 = guiImportAndExport:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    text2:SetText("Please backup your settings just in case.\nWTF\\Account\\ACCOUNT_NAME\\SavedVariables\n\nWhile this is beta any export codes\nwill be temporary until non-beta.")
-    text2:SetPoint("TOP", text, "BOTTOM", 0, 0)
 
     local fullProfile = CreateImportExportUI(guiImportAndExport, "Full Profile", BetterBlizzFramesDB, 20, -20, "fullProfile")
 
@@ -7223,6 +7273,15 @@ function BBF.InitializeOptions()
     end
 end
 
+local function MoveableSettingsPanel()
+    local frame = SettingsPanel
+    if frame and not frame:GetScript("OnDragStart") and not C_AddOns.IsAddOnLoaded("BlizzMove") then
+        frame:RegisterForDrag("LeftButton")
+        frame:SetScript("OnDragStart", frame.StartMoving)
+        frame:SetScript("OnDragStop", frame.StopMovingOrSizing)
+    end
+end
+
 function BBF.LoadGUI()
     if BetterBlizzFrames.guiLoaded then return end
     if BetterBlizzFramesDB.hasNotOpenedSettings then
@@ -7234,6 +7293,8 @@ function BBF.LoadGUI()
         print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: Leave combat to open settings for the first time.")
         return
     end
+    MoveableSettingsPanel()
+
     guiGeneralTab()
     guiPositionAndScale()
     guiFrameAuras()
@@ -7311,15 +7372,18 @@ function BBF.CreateIntroMessageWindow()
 
     local btnWidth, btnHeight, btnGap = 150, 30, -3
 
-    local function ShowProfileConfirmation(profileName, profileFunction, additionalNote)
+    local function ShowProfileConfirmation(profileName, class, profileFunction, additionalNote)
         local noteText = additionalNote or ""
-        local confirmationText = titleText .. "Are you sure you want to go with the " .. profileName .. "?\n\n" .. noteText .. "Click yes to apply and Reload UI."
+        local color = CLASS_COLORS[class] or "|cffffffff"
+        local icon = CLASS_ICONS[class] or "groupfinder-icon-role-leader"
+        local profileText = string.format("|A:%s:16:16|a %s%s|r", icon, color, profileName.." Profile")
+        local confirmationText = titleText .. "Are you sure you want to go\nwith the " .. profileText .. "?\n\n" .. noteText .. "Click yes to apply and Reload UI."
         StaticPopupDialogs["BBF_CONFIRM_PROFILE"].text = confirmationText
         StaticPopup_Show("BBF_CONFIRM_PROFILE", nil, nil, { func = profileFunction })
     end
 
     local starterButton = CreateClassButton(BBF.IntroMessageWindow, "STARTER", "Starter", nil, function()
-        ShowProfileConfirmation("Starter Profile", BBF.StarterProfile)
+        ShowProfileConfirmation("Starter", "STARTER", BBF.StarterProfile)
     end)
     starterButton:SetPoint("TOP", description1, "BOTTOM", 0, -20)
 
@@ -7329,27 +7393,27 @@ function BBF.CreateIntroMessageWindow()
     orText:SetJustifyH("CENTER")
 
     local aeghisButton = CreateClassButton(BBF.IntroMessageWindow, "MAGE", "Aeghis", "aeghis", function()
-        ShowProfileConfirmation("Aeghis Profile", BBF.AeghisProfile)
+        ShowProfileConfirmation("Aeghis", "MAGE", BBF.AeghisProfile)
     end)
     aeghisButton:SetPoint("TOP", starterButton, "BOTTOM", 0, -40)
 
     local kalvishButton = CreateClassButton(BBF.IntroMessageWindow, "ROGUE", "Kalvish", "kalvish", function()
-        ShowProfileConfirmation("Kalvish Profile", BBF.KalvishProfile)
+        ShowProfileConfirmation("Kalvish", "ROGUE", BBF.KalvishProfile)
     end)
     kalvishButton:SetPoint("TOP", aeghisButton, "BOTTOM", 0, btnGap)
 
     local magnuszButton = CreateClassButton(BBF.IntroMessageWindow, "WARRIOR", "Magnusz", "magnusz", function()
-        ShowProfileConfirmation("Magnusz Profile", BBF.MagnuszProfile)
+        ShowProfileConfirmation("Magnusz", "WARRIOR", BBF.MagnuszProfile)
     end)
     magnuszButton:SetPoint("TOP", kalvishButton, "BOTTOM", 0, btnGap)
 
     local nahjButton = CreateClassButton(BBF.IntroMessageWindow, "ROGUE", "Nahj", "nahj", function()
-        ShowProfileConfirmation("Nahj Profile", BBF.NahjProfile)
+        ShowProfileConfirmation("Nahj", "ROGUE", BBF.NahjProfile)
     end)
     nahjButton:SetPoint("TOP", magnuszButton, "BOTTOM", 0, btnGap)
 
     local snupyButton = CreateClassButton(BBF.IntroMessageWindow, "DRUID", "Snupy", "snupy", function()
-        ShowProfileConfirmation("Snupy Profile", BBF.SnupyProfile)
+        ShowProfileConfirmation("Snupy", "DRUID", BBF.SnupyProfile)
     end)
     snupyButton:SetPoint("TOP", nahjButton, "BOTTOM", 0, btnGap)
 

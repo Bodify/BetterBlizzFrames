@@ -278,6 +278,7 @@ local defaultSettings = {
     castBarInterruptIconShowActiveOnly = false,
     castBarInterruptIconDisplayCD = true,
     interruptIconBorder = true,
+    unitFrameBgTextureColor = {0,0,0,0.5},
 
     auraWhitelist = {
         ["example aura :3 (delete me)"] = {name = "Example Aura :3 (delete me)"}
@@ -1232,13 +1233,16 @@ local function executeCustomCode()
 end
 
 function BBF.AddBackgroundTextureToUnitFrames(frame)
-    if not BetterBlizzFramesDB.addUnitFrameBgTexture and not frame.bbfBgTexture then
+    if not BetterBlizzFramesDB.addUnitFrameBgTexture then
+        if frame.bbfBgTexture then
+            frame.bbfBgTexture:Hide()
+        end
         return
     end
 
     local color = BetterBlizzFramesDB.unitFrameBgTextureColor
     if frame.bbfBgTexture then
-        frame.bbfBgTexture:SetShown(BetterBlizzFramesDB.addUnitFrameBgTexture or false)
+        frame.bbfBgTexture:Show()
         frame.bbfBgTexture:SetColorTexture(unpack(color))
         return
     end

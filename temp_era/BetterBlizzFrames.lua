@@ -2,7 +2,7 @@
 
 local addonVersion = "1.00" --too afraid to to touch for now
 local addonUpdates = C_AddOns.GetAddOnMetadata("BetterBlizzFrames", "Version")
-local sendUpdate = true
+local sendUpdate = false
 BBF.VersionNumber = addonUpdates
 BBF.variablesLoaded = false
 local isAddonLoaded = C_AddOns.IsAddOnLoaded
@@ -1292,13 +1292,16 @@ local function executeCustomCode()
 end
 
 function BBF.AddBackgroundTextureToUnitFrames(frame)
-    if not BetterBlizzFramesDB.addUnitFrameBgTexture and not frame.bbfBgTexture then
+    if not BetterBlizzFramesDB.addUnitFrameBgTexture then
+        if frame.bbfBgTexture then
+            frame.bbfBgTexture:Hide()
+        end
         return
     end
 
     local color = BetterBlizzFramesDB.unitFrameBgTextureColor
     if frame.bbfBgTexture then
-        frame.bbfBgTexture:SetShown(BetterBlizzFramesDB.addUnitFrameBgTexture or false)
+        frame.bbfBgTexture:Show()
         frame.bbfBgTexture:SetColorTexture(unpack(color))
         return
     end
