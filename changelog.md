@@ -1,3 +1,10 @@
+# BetterBlizzFrames 1.6.3c
+## Retail
+- Tweaks to the new "ActionBar Cooldown Fix for CC" setting. Should be more efficient and reliable now.
+- Fixed up some typos relying on my other addon BetterBlizzPlates, instead the addon itself BetterBlizzFrames. Who named these...
+
+
+
 # BetterBlizzFrames 1.6.3b
 ## All versions
 - Fix "Hide Error Frame" setting only hides actual errors and not quest progress text etc.

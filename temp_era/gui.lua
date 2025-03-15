@@ -2223,7 +2223,7 @@ local function CreateSearchFrame()
     searchBox:SetScript("OnEnterPressed", function(self)
         self:ClearFocus()
     end)
-    CreateTooltipTwo(searchBox, "Search |A:shop-games-magnifyingglass:17:17|a", "You can now search for settings in BetterBlizzPlates. (WIP)", nil, "TOP")
+    CreateTooltipTwo(searchBox, "Search |A:shop-games-magnifyingglass:17:17|a", "You can now search for settings in BetterBlizzFrames. (WIP)", nil, "TOP")
 
     local resultsList = CreateFrame("Frame", nil, searchFrame)
     resultsList:SetSize(640, 500)
@@ -6314,7 +6314,7 @@ local function guiCustomCode()
     discordText:SetText("Join the Discord for info\nand help with BBP/BBF")
 
     local joinDiscord = guiCustomCode:CreateTexture(nil, "ARTWORK")
-    joinDiscord:SetTexture("Interface\\AddOns\\BetterBlizzPlates\\media\\logos\\discord.tga")
+    joinDiscord:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\logos\\discord.tga")
     joinDiscord:SetSize(52, 52)
     joinDiscord:SetPoint("RIGHT", discordText, "LEFT", 0, 1)
 
@@ -6344,7 +6344,7 @@ local function guiCustomCode()
     end)
 
     local boxOneTex = guiCustomCode:CreateTexture(nil, "ARTWORK")
-    boxOneTex:SetTexture("Interface\\AddOns\\BetterBlizzPlates\\media\\logos\\patreon.tga")
+    boxOneTex:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\logos\\patreon.tga")
     boxOneTex:SetSize(58, 58)
     boxOneTex:SetPoint("BOTTOMLEFT", boxOne, "TOPLEFT", 3, -2)
 
@@ -6378,7 +6378,7 @@ local function guiCustomCode()
     end)
 
     local boxTwoTex = guiCustomCode:CreateTexture(nil, "ARTWORK")
-    boxTwoTex:SetTexture("Interface\\AddOns\\BetterBlizzPlates\\media\\logos\\paypal.tga")
+    boxTwoTex:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\logos\\paypal.tga")
     boxTwoTex:SetSize(58, 58)
     boxTwoTex:SetPoint("BOTTOMLEFT", boxTwo, "TOPLEFT", 3, -2)
 
@@ -6659,6 +6659,22 @@ end
 ------------------------------------------------------------
 -- GUI Setup
 ------------------------------------------------------------
+local function CombatOnGUICreation()
+    if InCombatLockdown() then
+        print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: Waiting for combat to drop before opening settings for the first time.")
+        if not BBF.waitingCombat then
+            local f = CreateFrame("Frame")
+            f:RegisterEvent("PLAYER_REGEN_ENABLED")
+            f:SetScript("OnEvent", function(self)
+                self:UnregisterEvent("PLAYER_REGEN_ENABLED")
+                BBF.LoadGUI()
+            end)
+            BBF.waitingCombat = true
+        end
+        return true
+    end
+end
+
 function BBF.InitializeOptions()
     if not BetterBlizzFrames then
         BetterBlizzFrames = CreateFrame("Frame")
@@ -6679,10 +6695,7 @@ function BBF.InitializeOptions()
         loadGUI:SetPoint("CENTER", BetterBlizzFrames, "CENTER", -18, 6)
         BetterBlizzFrames.loadGUI = loadGUI
         loadGUI:SetScript("OnClick", function(self)
-            if InCombatLockdown() then
-                print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: Leave combat to open settings for the first time.")
-                return
-            end
+            if CombatOnGUICreation() then return end
             titleText:Hide()
             self:Hide()
             BBF.LoadGUI()
@@ -6697,10 +6710,7 @@ function BBF.LoadGUI()
         BetterBlizzFramesDB.hasNotOpenedSettings = nil
         return
     end
-    if InCombatLockdown() then
-        print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: Leave combat to open settings for the first time.")
-        return
-    end
+    if CombatOnGUICreation() then return end
     guiGeneralTab()
     guiPositionAndScale()
     guiFrameAuras()

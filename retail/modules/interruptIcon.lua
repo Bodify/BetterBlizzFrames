@@ -55,7 +55,7 @@ local function CreateInterruptIconFrame(parentFrame)
 
     if BetterBlizzFramesDB.interruptIconBorder then
         frame.border = frame:CreateTexture(nil, "OVERLAY")
-        frame.border:SetTexture("Interface\\AddOns\\BetterBlizzPlates\\media\\blizzTex\\UI-HUD-ActionBar-IconFrame-AddRow-Light")
+        frame.border:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-ActionBar-IconFrame-AddRow-Light")
         frame.border:SetSize(45, 45)
         frame.border:SetPoint("CENTER", frame, "CENTER", 2, -2)
         frame.border:SetDrawLayer("OVERLAY", 7)
@@ -214,7 +214,7 @@ local function UpdateSettings()
         if BetterBlizzFramesDB.interruptIconBorder then
             if not frame.border then
                 frame.border = frame:CreateTexture(nil, "OVERLAY")
-                frame.border:SetTexture("Interface\\AddOns\\BetterBlizzPlates\\media\\blizzTex\\UI-HUD-ActionBar-IconFrame-AddRow-Light")
+                frame.border:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-ActionBar-IconFrame-AddRow-Light")
                 frame.border:SetSize(45, 45)
                 frame.border:SetPoint("CENTER", frame, "CENTER", 2, -2)
                 frame.border:SetDrawLayer("OVERLAY", 7)
@@ -238,7 +238,7 @@ local function UpdateSettings()
         if BetterBlizzFramesDB.interruptIconBorder then
             if not frame.border then
                 frame.border = frame:CreateTexture(nil, "OVERLAY")
-                frame.border:SetTexture("Interface\\AddOns\\BetterBlizzPlates\\media\\blizzTex\\UI-HUD-ActionBar-IconFrame-AddRow-Light")
+                frame.border:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-ActionBar-IconFrame-AddRow-Light")
                 frame.border:SetSize(45, 45)
                 frame.border:SetPoint("CENTER", frame, "CENTER", 2, -2)
                 frame.border:SetDrawLayer("OVERLAY", 7)
