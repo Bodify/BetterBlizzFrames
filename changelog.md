@@ -1,3 +1,10 @@
+# BetterBlizzFrames 1.6.3e
+## Retail
+- New sub setting to "ActionBar Cooldown Fix for CC" to always hide CC duration from ActionBars
+- Fix "ActionBar Cooldown Fix for CC" causing a nil error due to some macros.
+
+
+
 # BetterBlizzFrames 1.6.3d
 ## Retail
 - Tweaks to "ActionBar Cooldown Fix for CC" to work with macros properly.

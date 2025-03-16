@@ -1627,6 +1627,7 @@ function BBF.ShowCooldownDuringCC()
     if not BetterBlizzFramesDB.fixActionBarCDs then return end
     if BBF.ShowCooldownDuringCCActive then return end
     local usingOmniCC = C_AddOns.IsAddOnLoaded("OmniCC")
+    local alwaysHideCCDuration = BetterBlizzFramesDB.fixActionBarCDsAlwaysHideCD
 
     local OmniCCTextUpdater = CreateFrame("Frame")
     local trackedButtons = {}
@@ -1672,7 +1673,11 @@ function BBF.ShowCooldownDuringCC()
             else
                 locStart, locDuration = C_Spell.GetSpellLossOfControlCooldown(actionID);
                 local spellCooldownInfo = C_Spell.GetSpellCooldown(actionID)
-                start, duration, modRate = spellCooldownInfo.startTime, spellCooldownInfo.duration, spellCooldownInfo.modRate
+                if spellCooldownInfo then
+                    start, duration, modRate = spellCooldownInfo.startTime, spellCooldownInfo.duration, spellCooldownInfo.modRate
+                else
+                    start, duration, enable, modRate = GetActionCooldown(self.action)
+                end
             end
         else
             local charges, maxCharges, chargeStart, chargeDuration, chargeModRate = GetActionCharges(self.action)
@@ -1685,7 +1690,13 @@ function BBF.ShowCooldownDuringCC()
             locStart, locDuration = GetActionLossOfControlCooldown(self.action);
         end
 
-        if duration == 0 then return end
+        if duration == 0 then
+            if alwaysHideCCDuration then
+                self.cooldown:SetHideCountdownNumbers(true)
+                self.cooldown:SetCooldown(0, 0)
+            end
+            return
+        end
 
         if not chargeInfo then
             local now = GetTime()
