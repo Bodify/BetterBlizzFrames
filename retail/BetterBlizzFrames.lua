@@ -1660,12 +1660,12 @@ function BBF.ShowCooldownDuringCC()
         if self.cooldown.currentCooldownType ~= 1 then return end
         if not self:IsVisible() or not self.action then return end
 
-        local start, duration, enable, modRate
+        local start, duration, enable, modRate = 0, 0
         local actionType, actionID = GetActionInfo(self.action)
         local locStart, locDuration = 0, 0
         local chargeInfo
 
-        if actionType == "spell" and actionID then
+        if (actionType == "spell" or actionType == "macro") and actionID then
             chargeInfo = C_Spell.GetSpellCharges(actionID)
             if chargeInfo and chargeInfo.currentCharges ~= chargeInfo.maxCharges then
                 start, duration, modRate = chargeInfo.cooldownStartTime, chargeInfo.cooldownDuration, chargeInfo.chargeModRate

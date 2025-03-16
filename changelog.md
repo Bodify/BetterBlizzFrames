@@ -1,3 +1,8 @@
+# BetterBlizzFrames 1.6.3d
+## Retail
+- Tweaks to "ActionBar Cooldown Fix for CC" to work with macros properly.
+
+
 # BetterBlizzFrames 1.6.3c
 ## Retail
 - Tweaks to the new "ActionBar Cooldown Fix for CC" setting. Should be more efficient and reliable now.
