@@ -79,6 +79,7 @@ local hidePetName
 local isAddonLoaded = C_AddOns.IsAddOnLoaded
 local changeUnitFrameFont
 local targetAndFocusArenaNamePartyOverride
+local classicFramesMode
 
 function BBF.UpdateUserTargetSettings()
     hidePartyNames = BetterBlizzFramesDB.hidePartyNames
@@ -96,7 +97,8 @@ function BBF.UpdateUserTargetSettings()
     hideTargetToTName = BetterBlizzFramesDB.hideTargetToTName
     hideFocusToTName = BetterBlizzFramesDB.hideFocusToTName
     classColorLevelText = BetterBlizzFramesDB.classColorLevelText
-    centerNames = BetterBlizzFramesDB.centerNames
+    centerNames = BetterBlizzFramesDB.centerNames or BetterBlizzFramesDB.classicFrames
+    classicFramesMode = BetterBlizzFramesDB.classicFrames
     playerFrameOCD = BetterBlizzFramesDB.playerFrameOCD and not BetterBlizzFramesDB.playerFrameOCDTextureBypass
     playerFrameOCDTextureBypass = BetterBlizzFramesDB.playerFrameOCDTextureBypass
     hidePlayerName = BetterBlizzFramesDB.hidePlayerName
@@ -111,21 +113,23 @@ local function CenterPlayerName()
     name:SetJustifyH("CENTER")
     name:SetJustifyV(PlayerName:GetJustifyV())
     name:ClearAllPoints()
-    if playerFrameOCD then
+    if playerFrameOCD and not classicFramesMode then
         name:SetPoint("TOP", healthBar, "TOP", 0, 14.5)
     else
-        local xPos = true and -2 or 0
-        local yPos = BetterBlizzFramesDB.symmetricPlayerFrame and 15 or 14.5
+        local xPos = classicFramesMode and 0 or true and -2 or 0
+        local yPos = BetterBlizzFramesDB.symmetricPlayerFrame and 15 or classicFramesMode and 7.5 or 14.5
         name:SetPoint("TOP", healthBar, "TOP", xPos, yPos)
     end
 end
 
-local function CenterXName(fontObject, healthBar, ToT)
+local function CenterXName(fontObject, healthBar, ToT, pet)
     fontObject:ClearAllPoints()
-    fontObject:SetJustifyH("CENTER")
-    local xPos = ToT and -2 or 2
-    local yPos = ToT and 12 or 14
-    fontObject:SetPoint("TOP", healthBar, "TOP", xPos, yPos)
+    if not (classicFramesMode and ToT) then
+        fontObject:SetJustifyH("CENTER")
+    end
+    local xPos = ToT and (classicFramesMode and 8 or -2) or (classicFramesMode and 1) or 2
+    local yPos = ((pet and classicFramesMode) and 2) or ToT and (classicFramesMode and -18 or 12) or (classicFramesMode and 6.3 or 14)
+    fontObject:SetPoint(pet and "BOTTOM" or "TOP", healthBar, "TOP", xPos, yPos)
 end
 
 
@@ -142,7 +146,7 @@ function BBF.SetCenteredNamesCaller()
     CenterXName(TargetFrameToT.bbfName, TargetFrame.totFrame.HealthBar, true)
     CenterXName(FocusFrameToT.bbfName, FocusFrame.totFrame.HealthBar, true)
     C_Timer.After(0, function() --idk why but this wont update unless delayed a frame
-        CenterXName(PetFrame.bbfName, PetFrameHealthBar, true)
+        CenterXName(PetFrame.bbfName, PetFrameHealthBar, true, true)
     end)
 end
 

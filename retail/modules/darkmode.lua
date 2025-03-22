@@ -107,6 +107,15 @@ function BBF.DarkModeUnitframeBorders()
     end
 end
 
+local function UpdateUnitFrameDarkModeBorderColors(color)
+    if not BetterBlizzFramesDB.darkModeColor then return end
+    for frame, _ in pairs(hooked) do
+        if frame.border then
+            frame.border:SetBackdropBorderColor(color, color, color)
+        end
+    end
+end
+
 BBF.auraBorders = {}  -- BuffFrame aura borders for darkmode
 local function createOrUpdateBorders(frame, colorValue, textureName, bypass)
     --if not twwrdy then return end
@@ -224,6 +233,8 @@ function BBF.DarkmodeFrames(bypass)
         rogueComboActive = 0.15
     end
 
+    UpdateUnitFrameDarkModeBorderColors(vertexColor)
+
 
 
     for key, region in pairs(GameTooltip.NineSlice) do
@@ -306,6 +317,7 @@ function BBF.DarkmodeFrames(bypass)
 
     -- Applying settings based on BetterBlizzFramesDB.darkModeUi value
     applySettings(TargetFrame.TargetFrameContainer.FrameTexture, desaturationValue, vertexColor)
+    applySettings(TargetFrame.TargetFrameContainer.FrameTextureBBF, desaturationValue, vertexColor)
     applySettings(FocusFrame.TargetFrameContainer.FrameTexture, desaturationValue, vertexColor)
     applySettings(TargetFrame.totFrame.FrameTexture, desaturationValue, vertexColor)
     applySettings(PetFrameTexture, desaturationValue, vertexColor)
@@ -430,6 +442,7 @@ function BBF.DarkmodeFrames(bypass)
 
     for _, v in pairs({
         PlayerFrame.PlayerFrameContainer.FrameTexture,
+        PlayerFrame.PlayerFrameContainer.FrameTextureBBF,
         PlayerFrame.PlayerFrameContainer.AlternatePowerFrameTexture,
         PlayerFrame.PlayerFrameContainer.VehicleFrameTexture,
         PartyFrame.MemberFrame1.Texture,

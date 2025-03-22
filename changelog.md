@@ -1,3 +1,14 @@
+# BetterBlizzFrames 1.6.4
+## Retail
+## New:
+- ClassicFrames setting, finally.
+## Tweaks:
+- Aura Filtering now also shows duration on Power Word: Barrier, Earthen Wall and Grounding Totem in addition to Smoke Bomb.
+- HealthBar texture change now also changes the textures of Heal Prediction/Absorb textures on the bar.
+- Tweaks to interrupt list for interrupt color, only counting pure kicks again.
+- Aeghis profile update
+
+
 # BetterBlizzFrames 1.6.3e
 ## Retail
 - New sub setting to "ActionBar Cooldown Fix for CC" to always hide CC duration from ActionBars

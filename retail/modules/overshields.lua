@@ -15,7 +15,7 @@ local function getAbsorbOverlay(frame)
     end
 end
 
-local function BBF_UnitFrameHealPredictionBars_Update(frame)
+local function BBF_UnitFrameHealPredictionBars_Update(frame, classicOffset)
     local absorbOverlay = frame.totalAbsorbBar and frame.totalAbsorbBar.TiledFillOverlay or frame.totalAbsorbBarOverlay
     if not absorbOverlay or absorbOverlay:IsForbidden() then
         return
@@ -57,10 +57,12 @@ local function BBF_UnitFrameHealPredictionBars_Update(frame)
     if totalAbsorb > 0 then
         -- Attach absorb overlay to absorb bar if shown, otherwise attach to health bar
         if absorbBar:IsShown() then
-            absorbOverlay:SetPoint("TOPRIGHT", absorbBar.FillMask or absorbBar, "TOPRIGHT", 0, 0);
+            local offset = (frame == TargetFrame or frame == FocusFrame) and classicOffset or 0
+            absorbOverlay:SetPoint("TOPRIGHT", absorbBar.FillMask or absorbBar, "TOPRIGHT", offset, 0);
             absorbOverlay:SetPoint("BOTTOMRIGHT", absorbBar.FillMask or absorbBar, "BOTTOMRIGHT", 0, 0);
         else
-            absorbOverlay:SetPoint("TOPRIGHT", healthBar, "TOPRIGHT", 0, 0);
+            local offset = (frame == TargetFrame or frame == FocusFrame) and classicOffset or 0
+            absorbOverlay:SetPoint("TOPRIGHT", healthBar, "TOPRIGHT", offset, 0);
             absorbOverlay:SetPoint("BOTTOMRIGHT", healthBar, "BOTTOMRIGHT", 0, 0);
         end
 
@@ -165,12 +167,15 @@ function BBF.HookOverShieldUnitFrames()
     local classicFramesEnabled = C_AddOns.IsAddOnLoaded("ClassicFrames")
 
     if not classicFramesEnabled then
-        hooksecurefunc("UnitFrameHealPredictionBars_Update", BBF_UnitFrameHealPredictionBars_Update)
+        local classicOffset = BetterBlizzFramesDB.classicFrames and -3 or 0
+        hooksecurefunc("UnitFrameHealPredictionBars_Update", function(frame)
+            BBF_UnitFrameHealPredictionBars_Update(frame, classicOffset)
+        end)
 
         C_Timer.After(3, function()
             BBF_UnitFrameHealPredictionBars_Update(PlayerFrame)
-            BBF_UnitFrameHealPredictionBars_Update(TargetFrame)
-            BBF_UnitFrameHealPredictionBars_Update(FocusFrame)
+            BBF_UnitFrameHealPredictionBars_Update(TargetFrame, classicOffset)
+            BBF_UnitFrameHealPredictionBars_Update(FocusFrame, classicOffset)
         end)
 
     else

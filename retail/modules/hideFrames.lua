@@ -90,6 +90,7 @@ function BBF.HideFrames()
         PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.AttackIcon:SetAlpha(playerCombatIconAlpha)
 
         -- Hide prestige (honor) icon on player unitframe
+        --local prestigeBadgeAlpha = (BetterBlizzFramesDB.hidePrestigeBadge or BetterBlizzFramesDB.classicFrames) and 0 or 1
         local prestigeBadgeAlpha = BetterBlizzFramesDB.hidePrestigeBadge and 0 or 1
         PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.PrestigeBadge:SetAlpha(prestigeBadgeAlpha)
         PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.PrestigePortrait:SetAlpha(prestigeBadgeAlpha)

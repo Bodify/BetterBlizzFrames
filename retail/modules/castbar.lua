@@ -50,7 +50,7 @@ local function AdjustBorderSize(castBar)
     -- Only calculate scaling factors once based on initial castBar dimensions
     --if not castBar.borderAdjusted then
         local baseWidth, baseHeight = 150, 10       -- Original castBar dimensions
-        local baseBorderWidth, baseBorderHeight = 200, 55 -- Original border dimensions
+        local baseBorderWidth, baseBorderHeight = 200, 54.5 -- Original border dimensions
 
         -- Calculate scaling factors based on castBar's current size
         local widthScale = castBar:GetWidth() / baseWidth
@@ -71,7 +71,7 @@ local function AdjustBorderShieldSize(castBar)
     -- Only calculate scaling factors once based on initial castBar dimensions
     --if not castBar.borderShieldAdjusted then
         local baseWidth, baseHeight = 150, 10       -- Original castBar dimensions
-        local baseBorderWidth, baseBorderHeight = 196, 55 -- Original BorderShield dimensions
+        local baseBorderWidth, baseBorderHeight = 196, 54.5 -- Original BorderShield dimensions
         local baseXOffset, baseYOffset = -28, 23    -- Original anchor offsets
         local baseIconSize = 18
         local baseIconYOffset = 1
@@ -754,24 +754,28 @@ local interruptList = {
     [1766] = true,  -- Kick (Rogue)
     [2139] = true,  -- Counterspell (Mage)
     [6552] = true,  -- Pummel (Warrior)
-    [19647] = true, -- Spell Lock (Warlock)
-    [47528] = true, -- Mind Freeze (Death Knight)
     [57994] = true, -- Wind Shear (Shaman)
-    [91802] = true, -- Shambling Rush (Death Knight)
-    [96231] = true, -- Rebuke (Paladin)
+    [47528] = true, -- Mind Freeze (Death Knight)
+    --[91802] = true, -- Shambling Rush (Death Knight)
+    --[91807] = true,  -- Shambling Rush (Death Knight)
     [106839] = true,-- Skull Bash (Feral)
-    [115781] = true,-- Optical Blast (Warlock)
+    --[97547]  = true,-- Solar Beam (Druid)
+    [93985] = true,  -- Skull Bash (Druid)
     [116705] = true,-- Spear Hand Strike (Monk)
+    [19647] = true, -- Spell Lock (Warlock)
+    --[115781] = true,-- Optical Blast (Warlock)
     [132409] = true,-- Spell Lock (Warlock)
     [119910] = true,-- Spell Lock (Warlock Pet)
-    [147362] = true,-- Countershot (Hunter)
     [171138] = true,-- Shadow Lock (Warlock)
-    [183752] = true,-- Consume Magic (Demon Hunter)
-    [187707] = true,-- Muzzle (Hunter)
     [212619] = true,-- Call Felhunter (Warlock)
-    [231665] = true,-- Avengers Shield (Paladin)
+    [147362] = true,-- Countershot (Hunter)
+    [187707] = true,-- Muzzle (Hunter)
+    [183752] = true,-- Disrupt (Demon Hunter)
     [351338] = true,-- Quell (Evoker)
-    [97547]  = true,-- Solar Beam
+    [96231] = true, -- Rebuke (Paladin)
+    --[231665] = true,-- Avengers Shield (Paladin)
+    --[31935] = true, -- Avenger's Shield (Paladin)
+    --[217824] = true,-- Shield of Virtue (Protection PvP Talent)
 }
 
 local interruptSpellIDs = {}

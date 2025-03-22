@@ -6414,8 +6414,15 @@ local function guiMisc()
         end
     end)
 
+    local reduceEditModeSelectionAlpha = CreateCheckbox("reduceEditModeSelectionAlpha", "Reduce Edit Mode Glow", guiMisc)
+    reduceEditModeSelectionAlpha:SetPoint("TOPLEFT", moveQueueStatusEye, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(reduceEditModeSelectionAlpha, "Reduce Edit Mode Selection Glow", "Reduces the alpha of the edit mode selection so you can actually see the changes you are making.")
+    reduceEditModeSelectionAlpha:HookScript("OnClick", function(self)
+        BBF.ReduceEditModeAlpha(not self:GetChecked() and true)
+    end)
+
     local hideBagsBar = CreateCheckbox("hideBagsBar", "Hide Bags Bar", guiMisc, nil, BBF.HideFrames)
-    hideBagsBar:SetPoint("TOPLEFT", moveQueueStatusEye, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    hideBagsBar:SetPoint("TOPLEFT", reduceEditModeSelectionAlpha, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(hideBagsBar, "Hide Bags Bar", "Hide the default Bag Bar showing your bags bottom right.")
 
     hideBagsBar:HookScript("OnClick", function(self)
@@ -6557,7 +6564,7 @@ local function guiMisc()
         end
     end)
 
-    local useMiniPlayerFrame = CreateCheckbox("useMiniPlayerFrame", "Enable Mini-PlayerFrame", guiMisc)
+    local useMiniPlayerFrame = CreateCheckbox("useMiniPlayerFrame", "Mini-PlayerFrame", guiMisc)
     useMiniPlayerFrame:SetPoint("TOPLEFT", addUnitFrameBgTexture, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(useMiniPlayerFrame, "Removes healthbar and manabar from the PlayerFrame\nand just leaves Portrait and name.\n\nMove castbar and/or disable auras to your liking.")
     useMiniPlayerFrame:HookScript("OnClick", function(self)
@@ -6567,8 +6574,8 @@ local function guiMisc()
         end
     end)
 
-    local useMiniTargetFrame = CreateCheckbox("useMiniTargetFrame", "Enable Mini-TargetFrame", guiMisc)
-    useMiniTargetFrame:SetPoint("TOPLEFT", useMiniPlayerFrame, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    local useMiniTargetFrame = CreateCheckbox("useMiniTargetFrame", "Mini-TargetFrame", guiMisc)
+    useMiniTargetFrame:SetPoint("LEFT", useMiniPlayerFrame.Text, "RIGHT", 0, 0)
     CreateTooltip(useMiniTargetFrame, "Removes healthbar and manabar from the TargetFrame\nand just leaves Portrait and name.\n\nMove castbar and/or disable auras to your liking.")
     useMiniTargetFrame:HookScript("OnClick", function(self)
         BBF.MiniFrame(TargetFrame)
@@ -6577,8 +6584,8 @@ local function guiMisc()
         end
     end)
 
-    local useMiniFocusFrame = CreateCheckbox("useMiniFocusFrame", "Enable Mini-FocusFrame", guiMisc)
-    useMiniFocusFrame:SetPoint("TOPLEFT", useMiniTargetFrame, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    local useMiniFocusFrame = CreateCheckbox("useMiniFocusFrame", "Mini-FocusFrame", guiMisc)
+    useMiniFocusFrame:SetPoint("LEFT", useMiniTargetFrame.Text, "RIGHT", 0, 0)
     CreateTooltip(useMiniFocusFrame, "Removes healthbar and manabar from the FocusFrame\nand just leaves Portrait and name.\n\nMove castbar and/or disable auras to your liking.")
     useMiniFocusFrame:HookScript("OnClick", function(self)
         BBF.MiniFrame(FocusFrame)
@@ -6588,7 +6595,7 @@ local function guiMisc()
     end)
 
     local surrenderArena = CreateCheckbox("surrenderArena", "Surrender over Leaving Arena", guiMisc)
-    surrenderArena:SetPoint("TOPLEFT", useMiniFocusFrame, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    surrenderArena:SetPoint("TOPLEFT", useMiniPlayerFrame, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(surrenderArena, "Surrender over Leave", "Makes typing /afk in arena Surrender instead of Leaving so you don't lose honor/conquest gain.")
 
     local druidOverstacks = CreateCheckbox("druidOverstacks", "Druid: Color Berserk Overstack Combo Points Blue", guiMisc)
@@ -6653,7 +6660,7 @@ local function guiMisc()
     instantComboPoints:HookScript("OnClick", function(self)
         if not self:GetChecked() then
             StaticPopup_Show("BBF_CONFIRM_RELOAD")
-            if BetterBlizzPlatesDB and not BetterBlizzPlatesDB.instantComboPoints then
+            if BetterBlizzPlatesDB then
                 BetterBlizzPlatesDB.instantComboPoints = false
             end
         end

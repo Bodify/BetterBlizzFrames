@@ -1144,6 +1144,16 @@ local roguePositions = {
     { "TOPLEFT", RogueComboPointBarFrame, "TOPLEFT", 2.5, -67.5 },
 }
 
+local roguePositionsClassic = {
+    { "TOPLEFT", RogueComboPointBarFrame, "TOPLEFT", 2.5, 42.5 },
+    { "TOPLEFT", RogueComboPointBarFrame, "TOPLEFT", 18, 29 },
+    { "TOPLEFT", RogueComboPointBarFrame, "TOPLEFT", 29.5, 10.5 },
+    { "TOPLEFT", RogueComboPointBarFrame, "TOPLEFT", 36.5, -11 },
+    { "TOPLEFT", RogueComboPointBarFrame, "TOPLEFT", 35.5, -34 },
+    { "TOPLEFT", RogueComboPointBarFrame, "TOPLEFT", 56.5, -30 },
+    { "TOPLEFT", RogueComboPointBarFrame, "TOPLEFT", 56.5, -6 },
+}
+
 local druidPositions = {
     { "TOPLEFT", DruidComboPointBarFrame, "TOPLEFT", 34, 32.5 },
     { "TOPLEFT", DruidComboPointBarFrame, "TOPLEFT", 45, 14 },
@@ -1205,7 +1215,7 @@ local dkPositions = {
 local function HookClassComboPoints()
     local db = BetterBlizzFramesDB
     if db.moveResourceToTarget then
-        if db.moveResourceToTargetRogue then SetupClassComboPoints(RogueComboPointBarFrame, roguePositions, "ROGUE", 0.5, -44, -2, true) end
+        if db.moveResourceToTargetRogue then SetupClassComboPoints(RogueComboPointBarFrame, BetterBlizzFramesDB.classicFrames and roguePositionsClassic or roguePositions, "ROGUE", 0.5, -44, -2, true) end
         if db.moveResourceToTargetDruid then SetupClassComboPoints(DruidComboPointBarFrame, druidPositions, "DRUID", 0.55, -53, -2, true) end
         if db.moveResourceToTargetWarlock then SetupClassComboPoints(WarlockPowerFrame, warlockPositions, "WARLOCK", 0.6, -56, 1) end
         if db.moveResourceToTargetMage then SetupClassComboPoints(MageArcaneChargesFrame, magePositions, "MAGE", 0.7, -61, -4) end
@@ -1509,7 +1519,7 @@ function BBF.InstantComboPoints()
         end
     end
 
-    if BetterBlizzPlatesDB and not BetterBlizzPlatesDB.instantComboPoints then
+    if BetterBlizzPlatesDB then
         BetterBlizzPlatesDB.instantComboPoints = true
     end
     local BBP = BetterBlizzPlatesDB
@@ -1734,14 +1744,58 @@ function BBF.ShowCooldownDuringCC()
 end
 
 
+function BBF.ReduceEditModeAlpha(disable)
+    if not BetterBlizzFramesDB.reduceEditModeSelectionAlpha and not disable then return end
 
+    local alpha = (disable and 1) or BetterBlizzFramesDB.editModeSelectionAlpha or 0.15
 
+    local frames = {
+        ArcheologyDigsiteProgressBar,
+        BagsBar,
+        BossTargetFrameContainer,
+        BuffFrame,
+        ChatFrame1,
+        CompactArenaFrame,
+        CompactRaidFrameContainer,
+        DebuffFrame,
+        DurabilityFrame,
+        ExtraAbilityContainer,
+        FocusFrame,
+        GameTooltipDefaultContainer,
+        LootFrame,
+        MainMenuBar,
+        MainMenuBar.VehicleLeaveButton,
+        MicroMenuContainer,
+        MinimapCluster,
+        MirrorTimerContainer,
+        MultiBarBottomLeft,
+        MultiBarBottomRight,
+        MultiBarLeft,
+        MultiBarRight,
+        PartyFrame,
+        PetActionBar,
+        PetFrame,
+        PlayerCastingBarFrame,
+        PlayerFrame,
+        PossessActionBar,
+        StanceBar,
+        StatusTrackingBarManager and StatusTrackingBarManager.MainStatusTrackingBarContainer,
+        StatusTrackingBarManager and StatusTrackingBarManager.SecondaryStatusTrackingBarContainer,
+        TargetFrame,
+        TalkingHeadFrame,
+        VehicleSeatIndicator,
+    }
 
-
-
+    for _, frame in ipairs(frames) do
+        if frame and frame.Selection then
+            frame.Selection:SetAlpha(alpha)
+        end
+    end
+end
 
 
 local LSM = LibStub("LibSharedMedia-3.0")
+LSM:Register("statusbar", "Blizzard DF", [[Interface\TargetingFrame\UI-TargetingFrame-BarFill]])
 
 local texture = "Interface\\Addons\\BetterBlizzPlates\\media\\DragonflightTextureHD"
 local manaTexture = "Interface\\Addons\\BetterBlizzPlates\\media\\DragonflightTextureHD"
@@ -1778,22 +1832,50 @@ local function ApplyTextureChange(type, statusBar, parent, classic)
     end
     -- Get the original texture and draw layer
     local originalTexture = statusBar:GetStatusBarTexture()
-    local originalLayer = originalTexture:GetDrawLayer()
+    local originalLayer, subLayer = originalTexture:GetDrawLayer()
+    local classicTexture = (BetterBlizzFramesDB.classicFrames and (parent == TargetFrame or parent == FocusFrame or statusBar == PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer.HealthBar) and texture == "Interface\\TargetingFrame\\UI-TargetingFrame-BarFill") and "Interface\\AddOns\\BetterBlizzFrames\\media\\ui-targetingframe-barfill"
+    local playerHp = statusBar == PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer.HealthBar
 
     -- Change the texture
-    statusBar:SetStatusBarTexture(type == "health" and texture or manaTexture)
+    statusBar:SetStatusBarTexture((type == "health" and (classicTexture or texture)) or manaTexture)
     statusBar.bbfChangedTexture = true
 
+    if statusBar == playerHp then
+        PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer.PlayerFrameHealthBarAnimatedLoss:SetStatusBarTexture(texture)
+        statusBar.MyHealPredictionBar.Fill:SetTexture(texture)
+        statusBar.OtherHealPredictionBar.Fill:SetTexture(texture)
+        statusBar.HealAbsorbBar.Fill:SetTexture(texture)
+        statusBar.TotalAbsorbBar.Fill:SetTexture(texture)
+    elseif parent == TargetFrame or parent == FocusFrame then
+        statusBar.MyHealPredictionBar.Fill:SetTexture(texture)
+        statusBar.OtherHealPredictionBar.Fill:SetTexture(texture)
+        statusBar.HealAbsorbBar.Fill:SetTexture(texture)
+        statusBar.TotalAbsorbBar.Fill:SetTexture(texture)
+    end
+
     -- Restore the original draw layer
-    originalTexture:SetDrawLayer(originalLayer)
+    originalTexture:SetDrawLayer(originalLayer, subLayer)
+    if playerHp then
+        local hpTex = statusBar:GetStatusBarTexture()
+        local originalLayer, subLayer = hpTex:GetDrawLayer()
+        PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer.HealthBar.TotalAbsorbBar.TiledFillOverlay:SetDrawLayer(originalLayer, subLayer + 1)
+        PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer.HealthBar.OverAbsorbGlow:SetDrawLayer(originalLayer, subLayer + 1)
+    end
 
     -- Hook SetStatusBarTexture to ensure the texture remains consistent
     if parent and type == "health" then
         if not parent.hookedHealthBarsTexture then
-            hooksecurefunc(parent, "Update", function()
-                statusBar:SetStatusBarTexture(texture)
-                originalTexture:SetDrawLayer(originalLayer)
-            end)
+            if classicTexture then
+                hooksecurefunc(parent, "Update", function()
+                    statusBar:SetStatusBarTexture(classicTexture)
+                    originalTexture:SetDrawLayer(originalLayer)
+                end)
+            else
+                hooksecurefunc(parent, "Update", function()
+                    statusBar:SetStatusBarTexture(texture)
+                    originalTexture:SetDrawLayer(originalLayer)
+                end)
+            end
             parent.hookedHealthBarsTexture = true
         end
     elseif type == "mana" then
@@ -1832,90 +1914,90 @@ local function ApplyTextureChange(type, statusBar, parent, classic)
 end
 
 -- Main function to apply texture changes to unit frames
-    function HookUnitFrameTextures()
-        local db = BetterBlizzFramesDB
-        local classicFramesLoaded = C_AddOns.IsAddOnLoaded("ClassicFrames")
+function HookUnitFrameTextures()
+    local db = BetterBlizzFramesDB
+    local classicFramesLoaded = C_AddOns.IsAddOnLoaded("ClassicFrames")
 
-        if classicFramesLoaded then
-            -- ClassicFrames is enabled: Modify ClassicFrames unit frames only
-            if db.changeUnitFrameHealthbarTexture then
-                ApplyTextureChange("health", CfPlayerFrameHealthBar)
-                ApplyTextureChange("health", CfTargetFrameHealthBar, TargetFrame)
-                ApplyTextureChange("health", TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor, TargetFrame)
-                ApplyTextureChange("health", FocusFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor, FocusFrame)
-                ApplyTextureChange("health", CfFocusFrameHealthBar, FocusFrame)
-                if PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ReputationColor then
-                    ApplyTextureChange("health", PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ReputationColor)
-                end
-
-                ApplyTextureChange("health", TargetFrame.totFrame.HealthBar, TargetFrameToT)
-                ApplyTextureChange("health", FocusFrame.totFrame.HealthBar, FocusFrameToT)
+    if classicFramesLoaded then
+        -- ClassicFrames is enabled: Modify ClassicFrames unit frames only
+        if db.changeUnitFrameHealthbarTexture then
+            ApplyTextureChange("health", CfPlayerFrameHealthBar)
+            ApplyTextureChange("health", CfTargetFrameHealthBar, TargetFrame)
+            ApplyTextureChange("health", TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor, TargetFrame)
+            ApplyTextureChange("health", FocusFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor, FocusFrame)
+            ApplyTextureChange("health", CfFocusFrameHealthBar, FocusFrame)
+            if PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ReputationColor then
+                ApplyTextureChange("health", PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ReputationColor)
             end
 
-            if db.changeUnitFrameManabarTexture then
-                ApplyTextureChange("mana", CfPlayerFrameManaBar)
-                ApplyTextureChange("mana", CfTargetFrameManaBar, nil, true)
-                ApplyTextureChange("mana", CfFocusFrameManaBar, nil, true)
+            ApplyTextureChange("health", TargetFrame.totFrame.HealthBar, TargetFrameToT)
+            ApplyTextureChange("health", FocusFrame.totFrame.HealthBar, FocusFrameToT)
+        end
+
+        if db.changeUnitFrameManabarTexture then
+            ApplyTextureChange("mana", CfPlayerFrameManaBar)
+            ApplyTextureChange("mana", CfTargetFrameManaBar, nil, true)
+            ApplyTextureChange("mana", CfFocusFrameManaBar, nil, true)
+        end
+
+        -- Apply class color override if enabled
+        if not db.classColorFrames then
+            local healthbars = {
+                CfPlayerFrameHealthBar,
+                CfTargetFrameHealthBar,
+                CfFocusFrameHealthBar
+            }
+
+            for _, healthbar in ipairs(healthbars) do
+                healthbar:SetStatusBarColor(0,1,0)
             end
+        end
+    else
+        -- ClassicFrames is NOT enabled: Modify Blizzard's default unit frames
+        if db.changeUnitFrameHealthbarTexture then
+            ApplyTextureChange("health", PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer.HealthBar)
+            ApplyTextureChange("health", PetFrame.healthbar, PetFrame)
+            ApplyTextureChange("health", TargetFrame.TargetFrameContent.TargetFrameContentMain.HealthBarsContainer.HealthBar, TargetFrame)
+            ApplyTextureChange("health", FocusFrame.TargetFrameContent.TargetFrameContentMain.HealthBarsContainer.HealthBar, FocusFrame)
 
-            -- Apply class color override if enabled
-            if not db.classColorFrames then
-                local healthbars = {
-                    CfPlayerFrameHealthBar,
-                    CfTargetFrameHealthBar,
-                    CfFocusFrameHealthBar
-                }
+            ApplyTextureChange("health", TargetFrame.totFrame.HealthBar, TargetFrameToT)
+            ApplyTextureChange("health", FocusFrame.totFrame.HealthBar, FocusFrameToT)
+        end
 
-                for _, healthbar in ipairs(healthbars) do
-                    healthbar:SetStatusBarColor(0,1,0)
-                end
-            end
-        else
-            -- ClassicFrames is NOT enabled: Modify Blizzard's default unit frames
-            if db.changeUnitFrameHealthbarTexture then
-                ApplyTextureChange("health", PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer.HealthBar)
-                ApplyTextureChange("health", PetFrame.healthbar, PetFrame)
-                ApplyTextureChange("health", TargetFrame.TargetFrameContent.TargetFrameContentMain.HealthBarsContainer.HealthBar, TargetFrame)
-                ApplyTextureChange("health", FocusFrame.TargetFrameContent.TargetFrameContentMain.HealthBarsContainer.HealthBar, FocusFrame)
+        if db.changeUnitFrameManabarTexture then
+            manaTextureUnits["player"] = true
+            manaTextureUnits["target"] = true
+            manaTextureUnits["focus"] = true
+            manaTextureUnits["pet"] = true
 
-                ApplyTextureChange("health", TargetFrame.totFrame.HealthBar, TargetFrameToT)
-                ApplyTextureChange("health", FocusFrame.totFrame.HealthBar, FocusFrameToT)
-            end
+            ApplyTextureChange("mana", PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar)
+            ApplyTextureChange("mana", PetFrame.manabar)
+            ApplyTextureChange("mana", TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar)
+            ApplyTextureChange("mana", FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar)
 
-            if db.changeUnitFrameManabarTexture then
-                manaTextureUnits["player"] = true
-                manaTextureUnits["target"] = true
-                manaTextureUnits["focus"] = true
-                manaTextureUnits["pet"] = true
+            manaTextureUnits["targettarget"] = true
+            manaTextureUnits["focustarget"] = true
+            ApplyTextureChange("mana", TargetFrame.totFrame.ManaBar)
+            ApplyTextureChange("mana", FocusFrame.totFrame.ManaBar)
+        end
 
-                ApplyTextureChange("mana", PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar)
-                ApplyTextureChange("mana", PetFrame.manabar)
-                ApplyTextureChange("mana", TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar)
-                ApplyTextureChange("mana", FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar)
+        -- Apply class color override if enabled
+        if not db.classColorFrames then
+            local healthbars = {
+                PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer.HealthBar,
+                PetFrame.healthbar,
+                TargetFrame.TargetFrameContent.TargetFrameContentMain.HealthBarsContainer.HealthBar,
+                FocusFrame.TargetFrameContent.TargetFrameContentMain.HealthBarsContainer.HealthBar,
+                TargetFrame.totFrame.HealthBar,
+                FocusFrame.totFrame.HealthBar
+            }
 
-                manaTextureUnits["targettarget"] = true
-                manaTextureUnits["focustarget"] = true
-                ApplyTextureChange("mana", TargetFrame.totFrame.ManaBar)
-                ApplyTextureChange("mana", FocusFrame.totFrame.ManaBar)
-            end
-
-            -- Apply class color override if enabled
-            if not db.classColorFrames then
-                local healthbars = {
-                    PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer.HealthBar,
-                    PetFrame.healthbar,
-                    TargetFrame.TargetFrameContent.TargetFrameContentMain.HealthBarsContainer.HealthBar,
-                    FocusFrame.TargetFrameContent.TargetFrameContentMain.HealthBarsContainer.HealthBar,
-                    TargetFrame.totFrame.HealthBar,
-                    FocusFrame.totFrame.HealthBar
-                }
-
-                for _, healthbar in ipairs(healthbars) do
-                    healthbar:SetStatusBarColor(0,1,0)
-                end
+            for _, healthbar in ipairs(healthbars) do
+                healthbar:SetStatusBarColor(0,1,0)
             end
         end
     end
+end
 
 
 local function SetRaidFrameTextures(frame)
@@ -2015,6 +2097,10 @@ end
 
 function BBF.SymmetricPlayerFrame()
     if not BetterBlizzFramesDB.symmetricPlayerFrame then return end
+    if BetterBlizzFramesDB.classicFrames then
+        print("BBF: Symmetric Player Frame not available with Classic Frames setting.")
+        return
+    end
     if InCombatLockdown() then
         print("BBF: Leave combat to enable this setting")
         return
@@ -2363,6 +2449,7 @@ end
 function BBF.FixStupidBlizzPTRShit()
     if InCombatLockdown() then return end
     if isAddonLoaded("ClassicFrames") then return end
+    if BetterBlizzFramesDB.classicFrames then return end
     -- For god knows what reason PTR has a gap between Portrait and PlayerFrame. This fixes it + other gaps.
     --PlayerFrame.PlayerFrameContainer.PlayerPortrait:SetScale(1.02)
     PlayerFrame.PlayerFrameContainer.PlayerPortrait:SetSize(61,61)
@@ -2843,6 +2930,8 @@ First:SetScript("OnEvent", function(_, event, addonName)
             InitializeSavedVariables()
             FetchAndSaveValuesOnFirstLogin()
             TurnTestModesOff()
+            BBF.ClassicFrames()
+            BBF.ReduceEditModeAlpha()
             BBF.SymmetricPlayerFrame()
             BBF.HookCastbars()
             BBF.EnableQueueTimer()
@@ -3031,3 +3120,139 @@ PlayerEnteringWorld:RegisterEvent("PLAYER_ENTERING_WORLD")
 --         end
 --     end)
 -- end)
+
+
+
+
+-- local texturePaths =
+-- {
+--   --BiggerHealthBar
+--   biggerHealthBarTexture = "Interface\\AddOns\\HealthBarColor\\Media\\Textures\\UIUnitFrame2x.tga",
+--   biggerHealthBarMask = "Interface\\AddOns\\HealthBarColor\\Media\\Textures\\BiggerHealthBar_PlayerFrameHealthMask.tga",
+--   --BetterBossFrames
+--   betterBossFramesFrameTexture = "Interface\\AddOns\\HealthBarColor\\Media\\Textures\\BetterBossFrames.png",
+--   betterBossFramesFrameFlash = "Interface\\AddOns\\HealthBarColor\\Media\\Textures\\BetterBossFlash.png",
+--   betterBossFramesMask = "Interface\\AddOns\\HealthBarColor\\Media\\Textures\\MaskTextureBoss.png",
+--   portraitIcon = "Interface\\AddOns\\HealthBarColor\\Media\\Textures\\Icon.tga",
+-- }
+-- local textures = {
+--   frameTexture =
+--   {
+--     path = texturePaths.biggerHealthBarTexture,
+--     coords =
+--     {
+--       0.00048828125, --left
+--       0.19384765625, --right
+--       0.1669921875, --top
+--       0.3056640625 -- bottom
+--     },
+--   },
+--   frameFlash =
+--   {
+--     path = texturePaths.biggerHealthBarTexture,
+--     coords =
+--     {
+--       0.57568359375, --left
+--       0.76318359375, --right
+--       0.1669921875, --top
+--       0.3056640625, -- bottom
+--     },
+--   },
+--   alternateFrameTexture =
+--   {
+--     path = texturePaths.biggerHealthBarTexture,
+--     coords =
+--     {
+--       0.78466796875, --left
+--       0.97802734375, --right
+--       0.0009765625, --top
+--       0.1455078125, -- bottom
+--     },
+--   },
+--   alternateFrameFlash =
+--   {
+--     path = texturePaths.biggerHealthBarTexture,
+--     coords =
+--     {
+--       0.38720703125, --left
+--       0.57470703125, --right
+--       0.1669921875, --top
+--       0.3056640625, -- bottom
+--     },
+--   },
+--   healthBarMask =
+--   {
+--     path = texturePaths.biggerHealthBarMask,
+--     coords =
+--     {
+--       2/128, --left
+--       126/128, --right
+--       15/64, --top
+--       52/64, -- bottom
+--     },
+--   },
+-- }
+
+-- local resourceBars =
+-- {
+-- 	PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar,
+-- 	InsanityBarFrame,
+-- 	AlternatePowerBar,
+-- 	MonkStaggerBar,
+-- }
+
+
+-- local function onToPlayerArt()
+--   if InCombatLockdown() then
+--     --Player's health bar is protected.
+--     --addon:DelayUntilAfterCombat(onToPlayerArt)
+--     print("combut")
+--     return
+--   end
+--   local isAlterntePowerFrame = PlayerFrame.activeAlternatePowerBar
+-- 	local frameTexture = isAlterntePowerFrame and PlayerFrame.PlayerFrameContainer.AlternatePowerFrameTexture or PlayerFrame.PlayerFrameContainer.FrameTexture
+--   local frameFlash =  PlayerFrame.PlayerFrameContainer.FrameFlash
+--   frameTexture:SetTexture(textures.frameTexture.path)
+--   frameFlash:SetTexture(textures.frameFlash.path)
+--   if isAlterntePowerFrame then
+--     frameTexture:SetTexCoord(unpack(textures.alternateFrameTexture.coords))
+--     frameFlash:SetTexCoord(unpack(textures.alternateFrameFlash.coords))
+--   else
+--     frameTexture:SetTexCoord(unpack(textures.frameTexture.coords))
+--     frameFlash:SetTexCoord(unpack(textures.frameFlash.coords))
+--   end
+--   local mask = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer.HealthBarMask
+--   local healthBar = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer.HealthBar
+-- 	mask:SetTexture(textures.healthBarMask.path)
+-- 	mask:SetPoint("TOPLEFT",healthBar,-3,7)
+-- 	mask:SetPoint("BOTTOMRIGHT",healthBar,2,-12)
+--   mask:Show()
+--   healthBar:SetHeight(31)
+--   -- Font since tww the halth text is anchored to the container.
+--   local healthTextLeft = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer.LeftText
+--   local healthTextMiddle = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer.HealthBarText
+--   local healthTextRight = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer.RightText
+--   healthTextLeft:SetPoint("LEFT", healthBar, "LEFT")
+--   healthTextMiddle:SetPoint("CENTER", healthBar, "CENTER")
+--   healthTextRight:SetPoint("RIGHT", healthBar, "RIGHT")
+-- end
+
+-- local function onToVehicleArt()
+--   PlayerFrame.PlayerFrameContainer.FrameFlash:SetTexCoord(0,1,0,1)
+--   PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer.HealthBarMask:Hide()
+-- end
+
+-- function BigHealthBar()
+--   hooksecurefunc("PlayerFrame_ToPlayerArt", onToPlayerArt)
+--   hooksecurefunc("PlayerFrame_ToVehicleArt", onToVehicleArt)
+--   for i=1, #resourceBars do
+-- 		local statusBar = resourceBars[i]
+-- 		statusBar:SetAlpha(0) --hiding it can cause taint
+-- 		statusBar:HookScript(statusBar, "OnShow", function()
+-- 			statusBar:SetAlpha(0)
+-- 		end)
+-- 	end
+--   onToPlayerArt()
+-- end
+
+-- BigHealthBar()

@@ -61,36 +61,16 @@ local function SetupAuraFilterClicks(auraFrame)
     auraFrame.filterClick = true
 end
 
-local smokeTracker
-local smokeDuration = 5
-local updateInterval = 0.1
-local timeSinceLastUpdate = 0
-BBF.ActiveSmokeCheck = CreateFrame("Frame")
-
-local function UpdateAuraDuration(self, elapsed)
-    timeSinceLastUpdate = timeSinceLastUpdate + elapsed
-
-    self.Duration:Show()
-    self.Duration:SetTextColor(1, 1, 1)
-
-    if timeSinceLastUpdate >= updateInterval then
-        local remainingTime = BBF.smokeBombCast + smokeDuration - GetTime()
-
-        if remainingTime <= 0 then
-            self.Duration:SetText("0 s")
-            self:SetScript("OnUpdate", nil)
-            timeSinceLastUpdate = 0
-        else
-            local displayTime = math.floor(remainingTime)
-            self.Duration:SetText(displayTime .. " s")
-        end
-        timeSinceLastUpdate = 0
-    end
-end
 
 local smokeIDs = {
     [212182] = true,
     [359053] = true,
+    [198838] = true, --earthen
+}
+
+local auraIDs = {
+    [212183] = true, -- smoke
+    [201633] = true, -- earthen
 }
 
 local uas = {
@@ -104,18 +84,77 @@ local opBarriers = {
     [235450] = true, -- Prismatic Barrier
 }
 
-function BBF.CheckDebuffsForSmoke()
-    local activeSmoke = false
 
-    for auraIndex, auraInfo in ipairs(DebuffFrame.auraInfo) do
-        local auraFrame = DebuffFrame.auraFrames[auraIndex]
+
+local buffTracker = {}
+local updateInterval = 0.1
+local timeSinceLastUpdate = {}
+BBF.ActiveBuffCheck = CreateFrame("Frame")
+
+local castTracker = {
+    [212182] = {duration = 5, helpful = false, auraID = 212183},  -- Smoke Bomb
+    [359053] = {duration = 5, helpful = false, auraID = 212183},  -- Smoke Bomb
+    [198838] = {duration = 18, helpful = true, auraID = 201633},  -- Earthen Wall Totem
+
+    [212183] = {duration = 5, helpful = false, auraID = 212183}, -- Smoke Bomb Aura
+    [201633] = {duration = 18, helpful = true, auraID = 201633}, -- Earthen Wall Aura
+    [62618] = {duration = 10, helpful = true, auraID = 81782}, -- Power Word: Barrier
+    [204336] = {duration = 3, helpful = true, auraID = 8178}, -- Grounding Totem
+}
+
+local auraIDs, castFromAura = {}, {}
+for castID, data in pairs(castTracker) do
+    if data.auraID then
+        auraIDs[data.auraID] = true
+        castFromAura[data.auraID] = castID
+    end
+end
+
+local function UpdateAuraDuration(self, elapsed)
+    local auraID = self.trackedSpellId
+    local castID = castFromAura[auraID]
+    local spellData = castTracker[castID]
+    if not spellData then return end
+
+    timeSinceLastUpdate[auraID] = (timeSinceLastUpdate[auraID] or 0) + elapsed
+    self.Duration:Show()
+    self.Duration:SetTextColor(1, 1, 1)
+
+    if timeSinceLastUpdate[auraID] >= updateInterval then
+        local remainingTime = (buffTracker[auraID] or 0) + spellData.duration - GetTime()
+
+        if remainingTime <= 0 then
+            self.Duration:SetText("0 s")
+            self:SetScript("OnUpdate", nil)
+            buffTracker[auraID] = nil
+        else
+            self.Duration:SetText(math.floor(remainingTime) .. " s")
+        end
+        timeSinceLastUpdate[auraID] = 0
+    end
+end
+
+function BBF.CheckActiveAuras(auraID)
+    local frameType = auraIDs[auraID] and BuffFrame or DebuffFrame
+    local activeAuras = {}
+
+    for auraIndex, auraInfo in ipairs(frameType.auraInfo) do
+        local auraFrame = frameType.auraFrames[auraIndex]
         if auraFrame and not auraFrame.isAuraAnchor then
-            local aura = C_UnitAuras.GetAuraDataByIndex("player", auraInfo.index, "HARMFUL")
-            if aura and aura.spellId == 212183 then
-                activeSmoke = true
+            local aura = C_UnitAuras.GetAuraDataByIndex("player", auraInfo.index, auraIDs[auraID] and "HELPFUL" or "HARMFUL")
+            if aura and aura.spellId == auraID then
+                activeAuras[aura.spellId] = true
+
                 if auraFrame.Cooldown then
-                    auraFrame.Cooldown:SetCooldown(BBF.smokeBombCast, smokeDuration)
+                    local castTime = buffTracker[auraID] or 0
+                    local duration = castFromAura[auraID] and castTracker[castFromAura[auraID]].duration or 5
+                    auraFrame.Cooldown:SetCooldown(castTime, duration)
+                    C_Timer.After(0.1, function()
+                        auraFrame.Cooldown:SetCooldown(castTime, duration)
+                    end)
                 end
+
+                auraFrame.trackedSpellId = auraID
                 auraFrame.ogSetScript = auraFrame:GetScript("OnUpdate")
                 auraFrame:SetScript("OnUpdate", UpdateAuraDuration)
             else
@@ -127,51 +166,59 @@ function BBF.CheckDebuffsForSmoke()
         end
     end
 
-    if activeSmoke then
-        BBF.ActiveSmokeCheck.isChecking = false
+    if next(activeAuras) then
+        BBF.ActiveBuffCheck.isChecking = false
     else
-        if not BBF.ActiveSmokeCheck.isChecking then
-            BBF.ActiveSmokeCheck.isChecking = true
+        if not BBF.ActiveBuffCheck.isChecking then
+            BBF.ActiveBuffCheck.isChecking = true
             C_Timer.After(2.5, function()
-                BBF.CheckDebuffsForSmoke()
+                BBF.CheckActiveAuras(auraID)
             end)
         else
-            BBF.ActiveSmokeCheck:UnregisterAllEvents()
-            BBF.ActiveSmokeCheck.isChecking = false
+            BBF.ActiveBuffCheck:UnregisterAllEvents()
+            BBF.ActiveBuffCheck.isChecking = false
         end
     end
 end
 
-BBF.ActiveSmokeCheck:SetScript("OnEvent", BBF.CheckDebuffsForSmoke)
+BBF.ActiveBuffCheck:SetScript("OnEvent", function(_, _, unit)
+    if unit == "player" then
+        for auraID, _ in pairs(buffTracker) do
+            BBF.CheckActiveAuras(auraID)
+        end
+    end
+end)
 
-local function SmokeBombCheck()
+local function BuffCastCheck()
     local _, subEvent, _, _, _, _, _, _, _, _, _, spellID = CombatLogGetCurrentEventInfo()
-    if subEvent == "SPELL_CAST_SUCCESS" and smokeIDs[spellID] then
-        if smokeTracker then
-            smokeTracker:Cancel()
+    if subEvent == "SPELL_CAST_SUCCESS" and castTracker[spellID] then
+        local data = castTracker[spellID]
+        local auraID = data.auraID
+        local duration = data.duration
+
+        if buffTracker[auraID] then
+            buffTracker[auraID]:Cancel()
         end
-        BBF.smokeBombCast = GetTime()
-        if BBP and BBP.ActiveSmokeCheck then
-            BBP.smokeBombCast = BBF.smokeBombCast
-            BBP.ActiveSmokeCheck:RegisterEvent("UNIT_AURA")
-        end
-        BBF.ActiveSmokeCheck:RegisterUnitEvent("UNIT_AURA", "player")
+        buffTracker[auraID] = GetTime()
+
+        BBF.ActiveBuffCheck:RegisterUnitEvent("UNIT_AURA", "player")
         C_Timer.After(0.1, function()
-            BBF.CheckDebuffsForSmoke()
-            if BBP and BBP.CheckAllNameplatesForSmoke then
-                BBP.CheckAllNameplatesForSmoke()
-            end
+            BBF.CheckActiveAuras(auraID)
         end)
-        smokeTracker = C_Timer.NewTimer(smokeDuration, function()
-            BBF.smokeBombCast = 0
-            timeSinceLastUpdate = 0
-            if BBP and BBP.ActiveSmokeCheck then
-                BBP.smokeBombCast = 0
-                BBP.ActiveSmokeCheck:UnregisterAllEvents()
-            end
+
+        C_Timer.NewTimer(duration, function()
+            buffTracker[auraID] = nil
+            timeSinceLastUpdate[auraID] = 0
+            BBF.ActiveBuffCheck:UnregisterAllEvents()
         end)
     end
 end
+
+
+
+
+
+
 
 local MountAuraTooltip = CreateFrame("GameTooltip", "MountAuraTooltip", nil, "GameTooltipTemplate")
 MountAuraTooltip:SetOwner(WorldFrame, "ANCHOR_NONE")
@@ -265,6 +312,7 @@ local importantDispel
 local targetAuraGlows
 local focusAuraGlows
 local opBarriersOn
+local db2
 
 local function UpdateMore()
     onlyPandemicMine = BetterBlizzFramesDB.onlyPandemicAuraMine
@@ -288,6 +336,7 @@ local function UpdateMore()
     targetAuraGlows = BetterBlizzFramesDB.targetAuraGlows
     focusAuraGlows = BetterBlizzFramesDB.focusAuraGlows
     opBarriersOn = BetterBlizzFramesDB.opBarriersOn
+    db2 = BetterBlizzFramesDB
 end
 
 function BBF.UpdateUserAuraSettings()
@@ -300,8 +349,8 @@ function BBF.UpdateUserAuraSettings()
     auraSpacingY = BetterBlizzFramesDB.targetAndFocusVerticalGap
     aurasPerRow = BetterBlizzFramesDB.targetAndFocusAurasPerRow
     targetAndFocusAuraOffsetY = BetterBlizzFramesDB.targetAndFocusAuraOffsetY
-    baseOffsetX = 25 + BetterBlizzFramesDB.targetAndFocusAuraOffsetX
-    baseOffsetY = 12.5 + BetterBlizzFramesDB.targetAndFocusAuraOffsetY
+    baseOffsetX = 25 + BetterBlizzFramesDB.targetAndFocusAuraOffsetX + (BetterBlizzFramesDB.classicFrames and 3 or 0)
+    baseOffsetY = 12.5 + BetterBlizzFramesDB.targetAndFocusAuraOffsetY + (BetterBlizzFramesDB.classicFrames and -1 or 0)
     auraScale = BetterBlizzFramesDB.targetAndFocusAuraScale
     targetImportantAuraGlow = BetterBlizzFramesDB.targetImportantAuraGlow
     targetdeBuffPandemicGlow = BetterBlizzFramesDB.targetdeBuffPandemicGlow
@@ -1223,7 +1272,7 @@ end
 
 local function AdjustAuras(self, frameType)
     local adjustedSize = sameSizeAuras and 21 or 17 * targetAndFocusSmallAuraScale
-    local buffsOnTop = self.buffsOnTop
+    --local buffsOnTop = self.buffsOnTop
     self.previousAuraRows = self.previousAuraRows or 0
 
     local initialOffsetX = (baseOffsetX / auraScale)
@@ -1393,7 +1442,7 @@ local function AdjustAuras(self, frameType)
             end
 
             if shouldShowAura then
-                if increaseAuraStrata then
+                if db2.increaseAuraStrata then
                     aura:SetFrameStrata("HIGH")
                 end
                 aura:Show()
@@ -1401,10 +1450,10 @@ local function AdjustAuras(self, frameType)
                 aura.spellId = auraData.spellId
                 aura.duration = auraData.duration
 
-                if auraData.spellId == 212183 then
-                    aura.Cooldown:SetCooldown(BBF.smokeBombCast or 0, 5)
+                if auraIDs[auraData.spellId] then
+                    aura.Cooldown:SetCooldown(buffTracker[auraData.spellId] or 0, (castFromAura[auraData.spellId] and castTracker[castFromAura[auraData.spellId]] and castTracker[castFromAura[auraData.spellId]].duration) or 0)
                     C_Timer.After(0.1, function()
-                        aura.Cooldown:SetCooldown(BBF.smokeBombCast or 0, 5)
+                        aura.Cooldown:SetCooldown(buffTracker[auraData.spellId] or 0,(castFromAura[auraData.spellId] and castTracker[castFromAura[auraData.spellId]] and castTracker[castFromAura[auraData.spellId]].duration) or 0)
                     end)
                 end
 
@@ -1414,14 +1463,14 @@ local function AdjustAuras(self, frameType)
                     aura.isPurgeable = false
                 end
 
-                if clickthroughAuras then
+                if db2.clickthroughAuras then
                     aura:SetMouseClickEnabled(false)
                 else
                     SetupAuraFilterClicks(aura)
                 end
 
                 -- Print Logic
-                if printSpellId and not aura.bbfHookAdded then
+                if db2.printSpellId and not aura.bbfHookAdded then
                     aura:HookScript("OnEnter", function()
                         local currentAuraID = aura.auraInstanceID
                         if not aura.bbfPrinted or aura.bbfLastPrintedAuraID ~= currentAuraID then
@@ -1609,17 +1658,17 @@ local function AdjustAuras(self, frameType)
                 --     end
                 -- end
 
-                if BBF.purge then
-                    if auraData.dispelName == "Magic" and auraData.isHelpful then
-                        if aura.Stealable then
-                            aura.Stealable:Show()
-                        end
-                    else
-                        if aura.Stealable then
-                            aura.Stealable:Hide()
-                        end
-                    end
-                end
+                -- if BBF.purge then
+                --     if auraData.dispelName == "Magic" and auraData.isHelpful then
+                --         if aura.Stealable then
+                --             aura.Stealable:Show()
+                --         end
+                --     else
+                --         if aura.Stealable then
+                --             aura.Stealable:Hide()
+                --         end
+                --     end
+                -- end
 
                 if aura.Border ~= nil then
                     debuffs[#debuffs + 1] = aura
@@ -1635,12 +1684,12 @@ local function AdjustAuras(self, frameType)
         end
     end
 
-    table_sort(buffs, customAuraComparator)
-    table_sort(debuffs, customAuraComparator)
+    table.sort(buffs, customAuraComparator)
+    table.sort(debuffs, customAuraComparator)
 
     if not isFriend then
-        if buffsOnTop then
-            self.rowHeights = adjustAuraPosition(debuffs, targetAndFocusAuraOffsetY, buffsOnTop)
+        if self.buffsOnTop then
+            self.rowHeights = adjustAuraPosition(debuffs, targetAndFocusAuraOffsetY, self.buffsOnTop)
             local totalDebuffHeight = sum(self.rowHeights)
 
             local yOffsetForBuffs = totalDebuffHeight + (auraSpacingY * #self.rowHeights) + targetAndFocusAuraOffsetY
@@ -1648,7 +1697,7 @@ local function AdjustAuras(self, frameType)
                 yOffsetForBuffs = yOffsetForBuffs + 5 + auraTypeGap
             end
 
-            local buffRowHeights = adjustAuraPosition(buffs, yOffsetForBuffs, buffsOnTop)
+            local buffRowHeights = adjustAuraPosition(buffs, yOffsetForBuffs, self.buffsOnTop)
             if #buffs > 0 and #debuffs > 0 then
                 self.rowHeights[#self.rowHeights] = self.rowHeights[#self.rowHeights] + auraTypeGap
             end
@@ -1672,8 +1721,8 @@ local function AdjustAuras(self, frameType)
             end
         end
     else
-        if buffsOnTop then
-            self.rowHeights = adjustAuraPosition(buffs, targetAndFocusAuraOffsetY, buffsOnTop)
+        if self.buffsOnTop then
+            self.rowHeights = adjustAuraPosition(buffs, targetAndFocusAuraOffsetY, self.buffsOnTop)
             local totalBuffHeight = sum(self.rowHeights)
 
             local yOffsetForDebuffs = totalBuffHeight + (auraSpacingY * #self.rowHeights) + targetAndFocusAuraOffsetY
@@ -1681,7 +1730,7 @@ local function AdjustAuras(self, frameType)
                 yOffsetForDebuffs = yOffsetForDebuffs + 5 + auraTypeGap
             end
 
-            local debuffRowHeights = adjustAuraPosition(debuffs, yOffsetForDebuffs, buffsOnTop)
+            local debuffRowHeights = adjustAuraPosition(debuffs, yOffsetForDebuffs, self.buffsOnTop)
             if #buffs > 0 and #debuffs > 0 then
                 self.rowHeights[#self.rowHeights] = self.rowHeights[#self.rowHeights] + auraTypeGap
             end
@@ -1715,8 +1764,7 @@ local function AdjustAuras(self, frameType)
     -- end
 
     -- Check if the number of aura rows has changed
-    local currentAuraRows = #self.rowHeights
-    if currentAuraRows ~= self.previousAuraRows then
+    if #self.rowHeights ~= self.previousAuraRows then
         -- The number of aura rows has changed, adjust the castbar
         if not self.staticCastbar and self.spellbar:IsShown() then
             if frameType == "target" then
@@ -1728,7 +1776,7 @@ local function AdjustAuras(self, frameType)
     end
 
     -- Store the current number of rows for the next check
-    self.previousAuraRows = currentAuraRows
+    self.previousAuraRows = #self.rowHeights
 
     addMasque(frameType)
 end
@@ -2845,9 +2893,9 @@ function BBF.HookPlayerAndTargetAuras()
     --     end
     -- end
 
-    if not BBF.smokeBombDetector and not (BBP and BBP.smokeBombDetector) then
-        BBF.smokeBombDetector = CreateFrame("Frame")
-        BBF.smokeBombDetector:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
-        BBF.smokeBombDetector:SetScript("OnEvent", SmokeBombCheck)
+    if not BBF.buffDetector then
+        BBF.buffDetector = CreateFrame("Frame")
+        BBF.buffDetector:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+        BBF.buffDetector:SetScript("OnEvent", BuffCastCheck)
     end
 end

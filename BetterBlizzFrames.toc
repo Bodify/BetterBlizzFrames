@@ -13,6 +13,7 @@ retail\embeds.xml
 retail\temp_tww.lua
 
 retail\modules\darkmode.lua
+retail\modules\classicFrames.lua
 retail\modules\nameFix.lua
 retail\modules\hideFrames.lua
 retail\modules\auras.lua
