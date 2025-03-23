@@ -57,8 +57,8 @@ local function BBF_UnitFrameHealPredictionBars_Update(frame, classicOffset)
     if totalAbsorb > 0 then
         -- Attach absorb overlay to absorb bar if shown, otherwise attach to health bar
         if absorbBar:IsShown() then
-            local offset = (frame == TargetFrame or frame == FocusFrame) and classicOffset or 0
-            absorbOverlay:SetPoint("TOPRIGHT", absorbBar.FillMask or absorbBar, "TOPRIGHT", offset, 0);
+            --local offset = (frame == TargetFrame or frame == FocusFrame) and 0 or 0
+            absorbOverlay:SetPoint("TOPRIGHT", absorbBar.FillMask or absorbBar, "TOPRIGHT", 0, 0);
             absorbOverlay:SetPoint("BOTTOMRIGHT", absorbBar.FillMask or absorbBar, "BOTTOMRIGHT", 0, 0);
         else
             local offset = (frame == TargetFrame or frame == FocusFrame) and classicOffset or 0

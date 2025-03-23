@@ -61,59 +61,35 @@ local function SetupAuraFilterClicks(auraFrame)
     auraFrame.filterClick = true
 end
 
-
-local smokeIDs = {
-    [212182] = true,
-    [359053] = true,
-    [198838] = true, --earthen
-}
-
-local auraIDs = {
-    [212183] = true, -- smoke
-    [201633] = true, -- earthen
-}
-
-local uas = {
-    [342938] = true,
-    [316099] = true,
-}
-
 local opBarriers = {
     [235313] = true, -- Blazing Barrier
     [11426] = true, -- Ice Barrier
     [235450] = true, -- Prismatic Barrier
 }
 
-
-
-local buffTracker = {}
+local activeNonDurationAuras = {}
 local updateInterval = 0.1
 local timeSinceLastUpdate = {}
 BBF.ActiveBuffCheck = CreateFrame("Frame")
 
-local castTracker = {
-    [212182] = {duration = 5, helpful = false, auraID = 212183},  -- Smoke Bomb
-    [359053] = {duration = 5, helpful = false, auraID = 212183},  -- Smoke Bomb
-    [198838] = {duration = 18, helpful = true, auraID = 201633},  -- Earthen Wall Totem
-
-    [212183] = {duration = 5, helpful = false, auraID = 212183}, -- Smoke Bomb Aura
-    [201633] = {duration = 18, helpful = true, auraID = 201633}, -- Earthen Wall Aura
-    [62618] = {duration = 10, helpful = true, auraID = 81782}, -- Power Word: Barrier
-    [204336] = {duration = 3, helpful = true, auraID = 8178}, -- Grounding Totem
+local castToAuraMap = {
+    [212182] = 212183, -- Smoke Bomb
+    [359053] = 212183, -- Smoke Bomb
+    [198838] = 201633, -- Earthen Wall Totem
+    [62618]  = 81782,  -- Power Word: Barrier
+    [204336] = 8178,   -- Grounding Totem
 }
 
-local auraIDs, castFromAura = {}, {}
-for castID, data in pairs(castTracker) do
-    if data.auraID then
-        auraIDs[data.auraID] = true
-        castFromAura[data.auraID] = castID
-    end
-end
+local trackedAuras = {
+    [212183] = {duration = 5, helpful = false, texture = 458733},  -- Smoke Bomb
+    [201633] = {duration = 18, helpful = true, texture = 136098},  -- Earthen Wall
+    [81782]  = {duration = 10, helpful = true, texture = 253400},  -- Barrier
+    [8178]   = {duration = 3,  helpful = true, texture = 136039},  -- Grounding
+}
 
 local function UpdateAuraDuration(self, elapsed)
     local auraID = self.trackedSpellId
-    local castID = castFromAura[auraID]
-    local spellData = castTracker[castID]
+    local spellData = trackedAuras[auraID]
     if not spellData then return end
 
     timeSinceLastUpdate[auraID] = (timeSinceLastUpdate[auraID] or 0) + elapsed
@@ -121,12 +97,12 @@ local function UpdateAuraDuration(self, elapsed)
     self.Duration:SetTextColor(1, 1, 1)
 
     if timeSinceLastUpdate[auraID] >= updateInterval then
-        local remainingTime = (buffTracker[auraID] or 0) + spellData.duration - GetTime()
+        local remainingTime = (activeNonDurationAuras[auraID] or 0) + spellData.duration - GetTime()
 
         if remainingTime <= 0 then
             self.Duration:SetText("0 s")
             self:SetScript("OnUpdate", nil)
-            buffTracker[auraID] = nil
+            activeNonDurationAuras[auraID] = nil
         else
             self.Duration:SetText(math.floor(remainingTime) .. " s")
         end
@@ -135,19 +111,19 @@ local function UpdateAuraDuration(self, elapsed)
 end
 
 function BBF.CheckActiveAuras(auraID)
-    local frameType = auraIDs[auraID] and BuffFrame or DebuffFrame
+    local frameType = trackedAuras[auraID] and BuffFrame or DebuffFrame
     local activeAuras = {}
 
     for auraIndex, auraInfo in ipairs(frameType.auraInfo) do
         local auraFrame = frameType.auraFrames[auraIndex]
         if auraFrame and not auraFrame.isAuraAnchor then
-            local aura = C_UnitAuras.GetAuraDataByIndex("player", auraInfo.index, auraIDs[auraID] and "HELPFUL" or "HARMFUL")
+            local aura = C_UnitAuras.GetAuraDataByIndex("player", auraInfo.index, trackedAuras[auraID] and "HELPFUL" or "HARMFUL")
             if aura and aura.spellId == auraID then
                 activeAuras[aura.spellId] = true
 
                 if auraFrame.Cooldown then
-                    local castTime = buffTracker[auraID] or 0
-                    local duration = castFromAura[auraID] and castTracker[castFromAura[auraID]].duration or 5
+                    local castTime = activeNonDurationAuras[auraID] or 0
+                    local duration = trackedAuras[auraID].duration or 5
                     auraFrame.Cooldown:SetCooldown(castTime, duration)
                     C_Timer.After(0.1, function()
                         auraFrame.Cooldown:SetCooldown(castTime, duration)
@@ -183,7 +159,7 @@ end
 
 BBF.ActiveBuffCheck:SetScript("OnEvent", function(_, _, unit)
     if unit == "player" then
-        for auraID, _ in pairs(buffTracker) do
+        for auraID, _ in pairs(activeNonDurationAuras) do
             BBF.CheckActiveAuras(auraID)
         end
     end
@@ -191,30 +167,45 @@ end)
 
 local function BuffCastCheck()
     local _, subEvent, _, _, _, _, _, _, _, _, _, spellID = CombatLogGetCurrentEventInfo()
-    if subEvent == "SPELL_CAST_SUCCESS" and castTracker[spellID] then
-        local data = castTracker[spellID]
-        local auraID = data.auraID
-        local duration = data.duration
+    if subEvent ~= "SPELL_CAST_SUCCESS" then return end
+    if not castToAuraMap[spellID] then return end
 
-        if buffTracker[auraID] then
-            buffTracker[auraID]:Cancel()
-        end
-        buffTracker[auraID] = GetTime()
+    local auraID = castToAuraMap[spellID]
 
+    local data = trackedAuras[auraID]
+    local duration = data.duration
+
+    activeNonDurationAuras[auraID] = GetTime()
+
+    -- Register UNIT_AURA if not already done
+    if not BBF.ActiveBuffCheck.isRegistered then
         BBF.ActiveBuffCheck:RegisterUnitEvent("UNIT_AURA", "player")
-        C_Timer.After(0.1, function()
-            BBF.CheckActiveAuras(auraID)
-        end)
-
-        C_Timer.NewTimer(duration, function()
-            buffTracker[auraID] = nil
-            timeSinceLastUpdate[auraID] = 0
-            BBF.ActiveBuffCheck:UnregisterAllEvents()
-        end)
+        BBF.ActiveBuffCheck.isRegistered = true
     end
+
+    C_Timer.After(0.1, function()
+        BBF.CheckActiveAuras(auraID)
+    end)
+
+    C_Timer.NewTimer(duration, function()
+        activeNonDurationAuras[auraID] = nil
+        timeSinceLastUpdate[auraID] = 0
+
+        -- Check if all tracked buffs are gone
+        local anyActive = false
+        for _, activeTime in pairs(activeNonDurationAuras) do
+            if activeTime then
+                anyActive = true
+                break
+            end
+        end
+
+        if not anyActive and BBF.ActiveBuffCheck.isRegistered then
+            BBF.ActiveBuffCheck:UnregisterAllEvents()
+            BBF.ActiveBuffCheck.isRegistered = false
+        end
+    end)
 end
-
-
 
 
 
@@ -349,8 +340,8 @@ function BBF.UpdateUserAuraSettings()
     auraSpacingY = BetterBlizzFramesDB.targetAndFocusVerticalGap
     aurasPerRow = BetterBlizzFramesDB.targetAndFocusAurasPerRow
     targetAndFocusAuraOffsetY = BetterBlizzFramesDB.targetAndFocusAuraOffsetY
-    baseOffsetX = 25 + BetterBlizzFramesDB.targetAndFocusAuraOffsetX + (BetterBlizzFramesDB.classicFrames and 3 or 0)
-    baseOffsetY = 12.5 + BetterBlizzFramesDB.targetAndFocusAuraOffsetY + (BetterBlizzFramesDB.classicFrames and -1 or 0)
+    baseOffsetX = 25 + BetterBlizzFramesDB.targetAndFocusAuraOffsetX + (BetterBlizzFramesDB.classicFrames and 1.5 or 0)
+    baseOffsetY = 12.5 + BetterBlizzFramesDB.targetAndFocusAuraOffsetY + (BetterBlizzFramesDB.classicFrames and -0.5 or 0)
     auraScale = BetterBlizzFramesDB.targetAndFocusAuraScale
     targetImportantAuraGlow = BetterBlizzFramesDB.targetImportantAuraGlow
     targetdeBuffPandemicGlow = BetterBlizzFramesDB.targetdeBuffPandemicGlow
@@ -1450,10 +1441,10 @@ local function AdjustAuras(self, frameType)
                 aura.spellId = auraData.spellId
                 aura.duration = auraData.duration
 
-                if auraIDs[auraData.spellId] then
-                    aura.Cooldown:SetCooldown(buffTracker[auraData.spellId] or 0, (castFromAura[auraData.spellId] and castTracker[castFromAura[auraData.spellId]] and castTracker[castFromAura[auraData.spellId]].duration) or 0)
+                if trackedAuras[auraData.spellId] then
+                    aura.Cooldown:SetCooldown(activeNonDurationAuras[auraData.spellId] or 0, trackedAuras[auraData.spellId].duration or 0)
                     C_Timer.After(0.1, function()
-                        aura.Cooldown:SetCooldown(buffTracker[auraData.spellId] or 0,(castFromAura[auraData.spellId] and castTracker[castFromAura[auraData.spellId]] and castTracker[castFromAura[auraData.spellId]].duration) or 0)
+                        aura.Cooldown:SetCooldown(activeNonDurationAuras[auraData.spellId] or 0, trackedAuras[auraData.spellId].duration or 0)
                     end)
                 end
 

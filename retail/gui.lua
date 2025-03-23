@@ -3,7 +3,7 @@ local LibDD = LibStub:GetLibrary("LibUIDropDownMenu-4.0")
 --local anchorPoints = {"CENTER", "TOPLEFT", "TOP", "TOPRIGHT", "LEFT", "RIGHT", "BOTTOMLEFT", "BOTTOM", "BOTTOMRIGHT"}
 local anchorPoints = {"CENTER", "TOP", "LEFT", "RIGHT", "BOTTOM"}
 local anchorPoints2 = {"TOP", "LEFT", "RIGHT", "BOTTOM"}
-local pixelsBetweenBoxes = 6
+local pixelsBetweenBoxes = 5
 local pixelsOnFirstBox = -1
 local sliderUnderBoxX = 12
 local sliderUnderBoxY = -10
@@ -155,7 +155,46 @@ end
 
 
 
+local function OpenColorOptions(entryColors, func)
+    local colorData = entryColors or {0, 1, 0, 1}
+    local r, g, b = colorData[1] or 1, colorData[2] or 1, colorData[3] or 1
+    local a = colorData[4] or 1
 
+    local function updateColors(newR, newG, newB, newA)
+        entryColors[1] = newR
+        entryColors[2] = newG
+        entryColors[3] = newB
+        entryColors[4] = newA or 1
+
+        if func then
+            func()
+        end
+    end
+
+    local function swatchFunc()
+        r, g, b = ColorPickerFrame:GetColorRGB()
+        updateColors(r, g, b, a)
+    end
+
+    local function opacityFunc()
+        a = ColorPickerFrame:GetColorAlpha()
+        updateColors(r, g, b, a)
+    end
+
+    local function cancelFunc(previousValues)
+        if previousValues then
+            r, g, b, a = previousValues.r, previousValues.g, previousValues.b, previousValues.a
+            updateColors(r, g, b, a)
+        end
+    end
+
+    ColorPickerFrame.previousValues = { r = r, g = g, b = b, a = a }
+
+    ColorPickerFrame:SetupColorPickerAndShow({
+        r = r, g = g, b = b, opacity = a, hasOpacity = true,
+        swatchFunc = swatchFunc, opacityFunc = opacityFunc, cancelFunc = cancelFunc
+    })
+end
 
 
 
@@ -177,6 +216,7 @@ local function CreateFontDropdown(name, parentFrame, defaultText, settingKey, to
     local label = container:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall2")
     label:SetPoint("LEFT", container, "LEFT", -50, -12)
     label:SetText("Font")
+    label:SetFont("Fonts\\ARIALN.TTF", 13)
 
     -- Create the dropdown button with the new dropdown template
     local dropdown = CreateFrame("DropdownButton", nil, parentFrame, "WowStyle1DropdownTemplate")
@@ -372,6 +412,7 @@ local function CreateSimpleDropdown(name, parentFrame, labelText, settingKey, op
     local label = container:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall2")
     label:SetPoint("LEFT", container, "LEFT", -50, -12)
     label:SetText(labelText)
+    label:SetFont("Fonts\\ARIALN.TTF", 13)
     dropdown.LabelText = label
 
     -- Define the generator function for the dropdown menu
@@ -720,6 +761,7 @@ local function CreateSlider(parent, label, minValue, maxValue, stepValue, elemen
 
     slider.Text:SetFontObject(GameFontHighlightSmall)
     slider.Text:SetTextColor(1, 0.81, 0, 1)
+    slider.Text:SetFont("Fonts\\ARIALN.TTF", 11)
 
     slider.Low:SetText(" ")
     slider.High:SetText(" ")
@@ -1524,6 +1566,8 @@ end
 local function CreateCheckbox(option, label, parent, cvarName, extraFunc)
     local checkBox = CreateFrame("CheckButton", nil, parent, "InterfaceOptionsCheckButtonTemplate")
     checkBox.Text:SetText(label)
+    checkBox:SetSize(23,23)
+    checkBox.Text:SetFont("Fonts\\ARIALN.TTF", 12)
 
     local category
     if parent.name then
@@ -1897,6 +1941,7 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
             local text = button:CreateFontString(nil, "OVERLAY", "GameFontNormal")
             text:SetPoint("LEFT", button, "LEFT", 25, 0)
             button.text = text
+            text:SetFont("Fonts\\ARIALN.TTF", 13)
 
             -- Delete Button
             local deleteButton = CreateFrame("Button", nil, button, "UIPanelButtonTemplate")
@@ -2427,7 +2472,8 @@ local function CreateSearchFrame()
                 local resultCheckBox = checkboxPool[checkboxCount]
                 if not resultCheckBox then
                     resultCheckBox = CreateFrame("CheckButton", nil, resultsList, "InterfaceOptionsCheckButtonTemplate")
-                    resultCheckBox:SetSize(24, 24)
+                    resultCheckBox:SetSize(23, 23)
+                    resultCheckBox.Text:SetFont("Fonts\\ARIALN.TTF", 12)
                     checkboxPool[checkboxCount] = resultCheckBox
                 end
 
@@ -2487,6 +2533,7 @@ local function CreateSearchFrame()
                     resultSlider:SetObeyStepOnDrag(true)
                     resultSlider.Text = resultSlider:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
                     resultSlider.Text:SetTextColor(1, 0.81, 0, 1)
+                    resultSlider.Text:SetFont("Fonts\\ARIALN.TTF", 11)
                     resultSlider.Text:SetPoint("TOP", resultSlider, "BOTTOM", 0, -1)
                     resultSlider.Low:SetText(" ")
                     resultSlider.High:SetText(" ")
@@ -2638,6 +2685,8 @@ local function guiGeneralTab()
     local settingsText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     settingsText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 0, 30)
     settingsText:SetText("General settings")
+    settingsText:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\Expressway_Free.ttf", 16)
+    settingsText:SetTextColor(1,1,1)
     local generalSettingsIcon = BetterBlizzFrames:CreateTexture(nil, "ARTWORK")
     generalSettingsIcon:SetAtlas("optionsicon-brown")
     generalSettingsIcon:SetSize(22, 22)
@@ -2652,7 +2701,7 @@ local function guiGeneralTab()
 
 
     local hideArenaFrames = CreateCheckbox("hideArenaFrames", "Hide Arena Frames", BetterBlizzFrames, nil, BBF.HideArenaFrames)
-    hideArenaFrames:SetPoint("TOPLEFT", settingsText, "BOTTOMLEFT", -4, pixelsOnFirstBox)
+    hideArenaFrames:SetPoint("TOPLEFT", settingsText, "BOTTOMLEFT", -24, pixelsOnFirstBox)
     hideArenaFrames:HookScript("OnClick", function(self)
         if not self:GetChecked() then
             StaticPopup_Show("BBF_CONFIRM_RELOAD")
@@ -2824,14 +2873,21 @@ local function guiGeneralTab()
     local playerFrameText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     playerFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 0, -173)
     playerFrameText:SetText("Player Frame")
+    playerFrameText:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\Expressway_Free.ttf", 16)
+    playerFrameText:SetTextColor(1,1,1)
     local playerFrameIcon = BetterBlizzFrames:CreateTexture(nil, "ARTWORK")
     playerFrameIcon:SetAtlas("groupfinder-icon-friend")
     playerFrameIcon:SetSize(28, 28)
-    playerFrameIcon:SetPoint("RIGHT", playerFrameText, "LEFT", -3, 0)
+    playerFrameIcon:SetPoint("RIGHT", playerFrameText, "LEFT", -0.5, 0)
 
     local playerFrameClickthrough = CreateCheckbox("playerFrameClickthrough", "Clickthrough", BetterBlizzFrames, nil, BBF.ClickthroughFrames)
-    playerFrameClickthrough:SetPoint("TOPLEFT", playerFrameText, "BOTTOMLEFT", -4, pixelsOnFirstBox)
+    playerFrameClickthrough:SetPoint("TOPLEFT", playerFrameText, "BOTTOMLEFT", -24, pixelsOnFirstBox)
     CreateTooltip(playerFrameClickthrough, "Makes the PlayerFrame clickthrough.\nYou can still hold shift to left/right click it\nwhile out of combat for trade/inspect etc.\n\nNOTE: You will NOT be able to click the frame\nat all during combat with this setting on.")
+    playerFrameClickthrough:HookScript("OnClick", function(self)
+        if not self:GetChecked() then
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        end
+    end)
 
     local playerReputationColor = CreateCheckbox("playerReputationColor", "Add Reputation Color", BetterBlizzFrames, nil, BBF.PlayerReputationColor)
     playerReputationColor:SetPoint("TOPLEFT", playerFrameClickthrough, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
@@ -2980,20 +3036,28 @@ local function guiGeneralTab()
         end
     end)
 
+    local hideManaFeedback = CreateCheckbox("hideManaFeedback", "Hide Mana Feedback", BetterBlizzFrames, nil, BBF.HideFrames)
+    hideManaFeedback:SetPoint("TOPLEFT", hidePlayerPower, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(hideManaFeedback, "Hide Mana Feedback", "Remove the manabar feedback animations for instant feedback on your mana/energy/rage etc.")
+
     local hidePlayerRestAnimation = CreateCheckbox("hidePlayerRestAnimation", "Hide \"Zzz\" Rest Animation", BetterBlizzFrames, nil, BBF.HideFrames)
-    hidePlayerRestAnimation:SetPoint("TOPLEFT", hidePlayerPower, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    hidePlayerRestAnimation:SetPoint("TOPLEFT", hideManaFeedback, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(hidePlayerRestAnimation, "Hide the \"Zzz\" animation on PlayerFrame while rested.")
 
-    local hidePlayerRestGlow = CreateCheckbox("hidePlayerRestGlow", "Hide Rest Glow", BetterBlizzFrames, nil, BBF.HideFrames)
-    hidePlayerRestGlow:SetPoint("TOPLEFT", hidePlayerRestAnimation, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltip(hidePlayerRestGlow, "Hide the flashing yellow rest glow animation around PlayerFrame while rested.|A:UI-HUD-UnitFrame-Player-PortraitOn-Status:30:80|a")
-
     local hidePlayerCornerIcon = CreateCheckbox("hidePlayerCornerIcon", "Hide Corner Icon", BetterBlizzFrames, nil, BBF.HideFrames)
-    hidePlayerCornerIcon:SetPoint("TOPLEFT", hidePlayerRestGlow, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    hidePlayerCornerIcon:SetPoint("TOPLEFT", hidePlayerRestAnimation, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(hidePlayerCornerIcon, "Hide corner icon on PlayerFrame.|A:UI-HUD-UnitFrame-Player-PortraitOn-CornerEmbellishment:22:22|a\n")
 
+    local hidePlayerRestGlow = CreateCheckbox("hidePlayerRestGlow", "Hide Rest Glow", BetterBlizzFrames, nil, BBF.HideFrames)
+    hidePlayerRestGlow:SetPoint("TOPLEFT", hidePlayerCornerIcon, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltip(hidePlayerRestGlow, "Hide the flashing yellow rest glow animation around PlayerFrame while rested.|A:UI-HUD-UnitFrame-Player-PortraitOn-Status:30:80|a")
+
+    local hideFullPower = CreateCheckbox("hideFullPower", "Hide Full Mana FX", BetterBlizzFrames, nil, BBF.HideFrames)
+    hideFullPower:SetPoint("LEFT", hidePlayerRestGlow.text, "RIGHT", 0, 0)
+    CreateTooltipTwo(hideFullPower, "Hide Full Mana Animations |A:FullAlert-FrameGlow:27:51|a", "Hide the flashing mana/energy animation on the right side of the manabar when its full.")
+
     local hideCombatIcon = CreateCheckbox("hideCombatIcon", "Hide Combat Icon", BetterBlizzFrames, nil, BBF.HideFrames)
-    hideCombatIcon:SetPoint("TOPLEFT", hidePlayerCornerIcon, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    hideCombatIcon:SetPoint("TOPLEFT", hidePlayerRestGlow, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(hideCombatIcon, "Hide combat icon on in the bottom right corner of the PlayerFrame.|A:UI-HUD-UnitFrame-Player-CombatIcon:22:22|a\n")
 
     local hideHitIndicator = CreateCheckbox("hideHitIndicator", "Hide Hit Indicator", BetterBlizzFrames, nil, BBF.HideFrames)
@@ -3031,13 +3095,15 @@ local function guiGeneralTab()
     local petFrameText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     petFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 460, -455)
     petFrameText:SetText("Pet Frame")
+    petFrameText:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\Expressway_Free.ttf", 16)
+    petFrameText:SetTextColor(1,1,1)
     local petFrameIcon = BetterBlizzFrames:CreateTexture(nil, "ARTWORK")
     petFrameIcon:SetAtlas("newplayerchat-chaticon-newcomer")
     petFrameIcon:SetSize(21, 21)
     petFrameIcon:SetPoint("RIGHT", petFrameText, "LEFT", -2, 0)
 
     local petCastbar = CreateCheckbox("petCastbar", "Pet Castbar", BetterBlizzFrames, nil, BBF.UpdatePetCastbar)
-    petCastbar:SetPoint("TOPLEFT", petFrameText, "BOTTOMLEFT", -4, pixelsOnFirstBox)
+    petCastbar:SetPoint("TOPLEFT", petFrameText, "BOTTOMLEFT", -24, pixelsOnFirstBox)
     CreateTooltip(petCastbar, "Show pet castbar.\n\nMore settings in the \"Castbars\" tab")
 
     local hidePetName = CreateCheckbox("hidePetName", "Hide Name", BetterBlizzFrames)
@@ -3058,8 +3124,10 @@ local function guiGeneralTab()
     CreateTooltipTwo(hidePetText, "Hide Pet Statusbar Text", "Hide the health and mana text on PetFrame.")
 
     local partyFrameText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    partyFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 0, -417)
+    partyFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 0, -427)
     partyFrameText:SetText("Party Frame")
+    partyFrameText:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\Expressway_Free.ttf", 16)
+    partyFrameText:SetTextColor(1,1,1)
     local partyFrameIcon = BetterBlizzFrames:CreateTexture(nil, "ARTWORK")
     partyFrameIcon:SetAtlas("groupfinder-icon-friend")
     partyFrameIcon:SetSize(25, 25)
@@ -3070,7 +3138,7 @@ local function guiGeneralTab()
     partyFrameIcon2:SetPoint("RIGHT", partyFrameText, "LEFT", 0, 4)
 
     local showPartyCastbar = CreateCheckbox("showPartyCastbar", "Party Castbars", BetterBlizzFrames, nil, BBF.UpdateCastbars)
-    showPartyCastbar:SetPoint("TOPLEFT", partyFrameText, "BOTTOMLEFT", -4, pixelsOnFirstBox)
+    showPartyCastbar:SetPoint("TOPLEFT", partyFrameText, "BOTTOMLEFT", -24, pixelsOnFirstBox)
     showPartyCastbar:HookScript("OnClick", function(self)
         --BBF.AbsorbCaller()
     end)
@@ -3169,16 +3237,23 @@ local function guiGeneralTab()
     local targetFrameText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     targetFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 250, -173)
     targetFrameText:SetText("Target Frame")
+    targetFrameText:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\Expressway_Free.ttf", 16)
+    targetFrameText:SetTextColor(1,1,1)
     local targetFrameIcon = BetterBlizzFrames:CreateTexture(nil, "ARTWORK")
     targetFrameIcon:SetAtlas("groupfinder-icon-friend")
     targetFrameIcon:SetSize(28, 28)
-    targetFrameIcon:SetPoint("RIGHT", targetFrameText, "LEFT", -3, 0)
+    targetFrameIcon:SetPoint("RIGHT", targetFrameText, "LEFT", -0.5, 0)
     targetFrameIcon:SetDesaturated(1)
     targetFrameIcon:SetVertexColor(1, 0, 0)
 
     local targetFrameClickthrough = CreateCheckbox("targetFrameClickthrough", "Clickthrough", BetterBlizzFrames, nil, BBF.ClickthroughFrames)
-    targetFrameClickthrough:SetPoint("TOPLEFT", targetFrameText, "BOTTOMLEFT", -4, pixelsOnFirstBox)
+    targetFrameClickthrough:SetPoint("TOPLEFT", targetFrameText, "BOTTOMLEFT", -24, pixelsOnFirstBox)
     CreateTooltip(targetFrameClickthrough, "Makes the TargetFrame clickthrough.\nYou can still hold shift to left/right click it\nwhile out of combat for trade/inspect etc.\n\nNOTE: You will NOT be able to click the frame\nat all during combat with this setting on.")
+    targetFrameClickthrough:HookScript("OnClick", function(self)
+        if not self:GetChecked() then
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        end
+    end)
 
     local hideTargetName = CreateCheckbox("hideTargetName", "Hide Name", BetterBlizzFrames, nil, BBF.UpdateNameSettings)
     hideTargetName:SetPoint("TOPLEFT", targetFrameClickthrough, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
@@ -3231,19 +3306,21 @@ local function guiGeneralTab()
     local targetToTFrameText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     targetToTFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 250, -298)
     targetToTFrameText:SetText("Target of Target")
+    targetToTFrameText:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\Expressway_Free.ttf", 16)
+    targetToTFrameText:SetTextColor(1,1,1)
     local targetToTFrameIcon = BetterBlizzFrames:CreateTexture(nil, "BORDER")
     targetToTFrameIcon:SetAtlas("groupfinder-icon-friend")
     targetToTFrameIcon:SetSize(28, 28)
-    targetToTFrameIcon:SetPoint("RIGHT", targetToTFrameText, "LEFT", -3, 0)
+    targetToTFrameIcon:SetPoint("RIGHT", targetToTFrameText, "LEFT", -0.5, 0)
     targetToTFrameIcon:SetDesaturated(1)
     targetToTFrameIcon:SetVertexColor(1, 0, 0)
     local targetToTFrameIcon2 = BetterBlizzFrames:CreateTexture(nil, "ARTWORK")
     targetToTFrameIcon2:SetAtlas("TargetCrosshairs")
     targetToTFrameIcon2:SetSize(28, 28)
-    targetToTFrameIcon2:SetPoint("TOPLEFT", targetToTFrameIcon, "TOPLEFT", 11, -13)
+    targetToTFrameIcon2:SetPoint("TOPLEFT", targetToTFrameIcon, "TOPLEFT", 13.5, -13)
 
     local hideTargetToT = CreateCheckbox("hideTargetToT", "Hide Frame", BetterBlizzFrames, nil, BBF.HideFrames)
-    hideTargetToT:SetPoint("TOPLEFT", targetToTFrameText, "BOTTOMLEFT", -4, pixelsOnFirstBox)
+    hideTargetToT:SetPoint("TOPLEFT", targetToTFrameText, "BOTTOMLEFT", -24, pixelsOnFirstBox)
 
     local hideTargetToTName = CreateCheckbox("hideTargetToTName", "Hide Name", BetterBlizzFrames)
     hideTargetToTName:SetPoint("LEFT", hideTargetToT.Text, "RIGHT", 0, 0)
@@ -3266,7 +3343,7 @@ local function guiGeneralTab()
     CreateTooltip(hideTargetToTDebuffs, "Hide the 4 small debuff icons to the right of ToT frame.")
 
     local targetToTScale = CreateSlider(BetterBlizzFrames, "Size", 0.6, 2.5, 0.01, "targetToTScale", nil, 120)
-    targetToTScale:SetPoint("TOPLEFT", targetToTFrameText, "BOTTOMLEFT", 0, -55)
+    targetToTScale:SetPoint("TOPLEFT", targetToTFrameText, "BOTTOMLEFT", -20, -50)
     CreateTooltip(targetToTScale, "Target of target size.\n\nYou can right-click sliders to enter a specific value.")
 
     BBF.targetToTXPos = CreateSlider(BetterBlizzFrames, "x offset", -100, 100, 1, "targetToTXPos", "X", 120)
@@ -3283,18 +3360,22 @@ local function guiGeneralTab()
     local chatFrameText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     chatFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 250, -455)
     chatFrameText:SetText("Chat Frame")
+    chatFrameText:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\Expressway_Free.ttf", 16)
+    chatFrameText:SetTextColor(1,1,1)
     local chatFrameIcon = BetterBlizzFrames:CreateTexture(nil, "BORDER")
     chatFrameIcon:SetAtlas("transmog-icon-chat")
     chatFrameIcon:SetSize(18, 16)
-    chatFrameIcon:SetPoint("RIGHT", chatFrameText, "LEFT", -3, 0)
+    chatFrameIcon:SetPoint("RIGHT", chatFrameText, "LEFT", -4, 0)
 
     local hideChatButtons = CreateCheckbox("hideChatButtons", "Hide Chat Buttons", BetterBlizzFrames, nil, BBF.HideFrames)
-    hideChatButtons:SetPoint("TOPLEFT", chatFrameText, "BOTTOMLEFT", -4, pixelsOnFirstBox)
+    hideChatButtons:SetPoint("TOPLEFT", chatFrameText, "BOTTOMLEFT", -24, pixelsOnFirstBox)
     CreateTooltip(hideChatButtons, "Hide the chat buttons. Can still be shown with mouseover.")
 
     local chatFrameFilters = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-    chatFrameFilters:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 250, -495)
-    chatFrameFilters:SetText("Filters")
+    chatFrameFilters:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 232, -495)
+    chatFrameFilters:SetText("Filters:")
+    chatFrameFilters:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\Expressway_Free.ttf", 12)
+    chatFrameFilters:SetTextColor(1,1,1)
 
     local filterGladiusSpam = CreateCheckbox("filterGladiusSpam", "Gladius Spam", BetterBlizzFrames, nil, BBF.ChatFilterCaller)
     filterGladiusSpam:SetPoint("TOPLEFT", hideChatButtons, "BOTTOMLEFT", 0, -10)
@@ -3323,14 +3404,16 @@ local function guiGeneralTab()
     local arenaNamesText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     arenaNamesText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 460, -91)
     arenaNamesText:SetText("Arena Names")
+    arenaNamesText:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\Expressway_Free.ttf", 16)
+    arenaNamesText:SetTextColor(1,1,1)
     CreateTooltip(arenaNamesText, "Change player names into spec/arena id instead during arena", "ANCHOR_LEFT")
     local arenaNamesIcon = BetterBlizzFrames:CreateTexture(nil, "ARTWORK")
-    arenaNamesIcon:SetAtlas("questbonusobjective")
-    arenaNamesIcon:SetSize(24, 24)
-    arenaNamesIcon:SetPoint("RIGHT", arenaNamesText, "LEFT", -3, 0)
+    arenaNamesIcon:SetAtlas("questlog-questtypeicon-pvp")
+    arenaNamesIcon:SetSize(19, 22)
+    arenaNamesIcon:SetPoint("RIGHT", arenaNamesText, "LEFT", -3.5, 0)
 
     local targetAndFocusArenaNames = CreateCheckbox("targetAndFocusArenaNames", "Target & Focus", BetterBlizzFrames)
-    targetAndFocusArenaNames:SetPoint("TOPLEFT", arenaNamesText, "BOTTOMLEFT", -4, pixelsOnFirstBox)
+    targetAndFocusArenaNames:SetPoint("TOPLEFT", arenaNamesText, "BOTTOMLEFT", -24, pixelsOnFirstBox)
     CreateTooltipTwo(targetAndFocusArenaNames, "Arena Names","Change Target & Focus name to arena ID and/or spec name during arena.", nil, "ANCHOR_LEFT")
 
     local partyArenaNames = CreateCheckbox("partyArenaNames", "Party", BetterBlizzFrames)
@@ -3390,16 +3473,23 @@ local function guiGeneralTab()
     local focusFrameText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     focusFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 460, -173)
     focusFrameText:SetText("Focus Frame")
+    focusFrameText:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\Expressway_Free.ttf", 16)
+    focusFrameText:SetTextColor(1,1,1)
     local focusFrameIcon = BetterBlizzFrames:CreateTexture(nil, "ARTWORK")
     focusFrameIcon:SetAtlas("groupfinder-icon-friend")
     focusFrameIcon:SetSize(28, 28)
-    focusFrameIcon:SetPoint("RIGHT", focusFrameText, "LEFT", -3, 0)
+    focusFrameIcon:SetPoint("RIGHT", focusFrameText, "LEFT", -0.5, 0)
     focusFrameIcon:SetDesaturated(1)
     focusFrameIcon:SetVertexColor(0, 1, 0)
 
     local focusFrameClickthrough = CreateCheckbox("focusFrameClickthrough", "Clickthrough", BetterBlizzFrames, nil, BBF.ClickthroughFrames)
-    focusFrameClickthrough:SetPoint("TOPLEFT", focusFrameText, "BOTTOMLEFT", -4, pixelsOnFirstBox)
+    focusFrameClickthrough:SetPoint("TOPLEFT", focusFrameText, "BOTTOMLEFT", -24, pixelsOnFirstBox)
     CreateTooltip(focusFrameClickthrough, "Makes the FocusFrame clickthrough.\nYou can still hold shift to left/right click it\nwhile out of combat for trade/inspect etc.\n\nNOTE: You will NOT be able to click the frame\nat all during combat with this setting on.")
+    focusFrameClickthrough:HookScript("OnClick", function(self)
+        if not self:GetChecked() then
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        end
+    end)
 
     local hideFocusName = CreateCheckbox("hideFocusName", "Hide Name", BetterBlizzFrames, nil, BBF.UpdateNameSettings)
     hideFocusName:SetPoint("TOPLEFT", focusFrameClickthrough, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
@@ -3453,19 +3543,21 @@ local function guiGeneralTab()
     local focusToTFrameText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     focusToTFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 460, -298)
     focusToTFrameText:SetText("Focus ToT")
+    focusToTFrameText:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\Expressway_Free.ttf", 16)
+    focusToTFrameText:SetTextColor(1,1,1)
     local focusToTFrameIcon = BetterBlizzFrames:CreateTexture(nil, "BORDER")
     focusToTFrameIcon:SetAtlas("groupfinder-icon-friend")
     focusToTFrameIcon:SetSize(28, 28)
-    focusToTFrameIcon:SetPoint("RIGHT", focusToTFrameText, "LEFT", -3, 0)
+    focusToTFrameIcon:SetPoint("RIGHT", focusToTFrameText, "LEFT", -0.5, 0)
     focusToTFrameIcon:SetDesaturated(1)
     focusToTFrameIcon:SetVertexColor(0, 1, 0)
     local focusToTFrameIcon2 = BetterBlizzFrames:CreateTexture(nil, "ARTWORK")
     focusToTFrameIcon2:SetAtlas("TargetCrosshairs")
     focusToTFrameIcon2:SetSize(28, 28)
-    focusToTFrameIcon2:SetPoint("TOPLEFT", focusToTFrameIcon, "TOPLEFT", 11, -13)
+    focusToTFrameIcon2:SetPoint("TOPLEFT", focusToTFrameIcon, "TOPLEFT", 13.5, -13)
 
     local hideFocusToT = CreateCheckbox("hideFocusToT", "Hide Frame", BetterBlizzFrames, nil, BBF.HideFrames)
-    hideFocusToT:SetPoint("TOPLEFT", focusToTFrameText, "BOTTOMLEFT", -4, pixelsOnFirstBox)
+    hideFocusToT:SetPoint("TOPLEFT", focusToTFrameText, "BOTTOMLEFT", -24, pixelsOnFirstBox)
 
     local hideFocusToTName = CreateCheckbox("hideFocusToTName", "Hide Name", BetterBlizzFrames)
     hideFocusToTName:SetPoint("LEFT", hideFocusToT.Text, "RIGHT", 0, 0)
@@ -3488,7 +3580,7 @@ local function guiGeneralTab()
     CreateTooltip(hideFocusToTDebuffs, "Hide the 4 small debuff icons to the right of ToT frame.")
 
     local focusToTScale = CreateSlider(BetterBlizzFrames, "Size", 0.6, 2.5, 0.01, "focusToTScale", nil, 120)
-    focusToTScale:SetPoint("TOPLEFT", focusToTFrameText, "BOTTOMLEFT", 0, -55)
+    focusToTScale:SetPoint("TOPLEFT", focusToTFrameText, "BOTTOMLEFT", -20, -50)
     CreateTooltip(focusToTScale, "Focus target of target size.\n\nYou can right-click sliders to enter a specific value.")
 
     BBF.focusToTXPos = CreateSlider(BetterBlizzFrames, "x offset", -100, 100, 1, "focusToTXPos", "X", 120)
@@ -3506,25 +3598,135 @@ local function guiGeneralTab()
     local allFrameText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     allFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 250, 30)
     allFrameText:SetText("All Frames")
+    allFrameText:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\Expressway_Free.ttf", 16)
+    allFrameText:SetTextColor(1,1,1)
     local allFrameIcon = BetterBlizzFrames:CreateTexture(nil, "ARTWORK")
     allFrameIcon:SetAtlas("groupfinder-icon-friend")
     allFrameIcon:SetSize(25, 25)
-    allFrameIcon:SetPoint("RIGHT", allFrameText, "LEFT", -4, -1)
+    allFrameIcon:SetPoint("RIGHT", allFrameText, "LEFT", -2, -1)
     local allFrameIcon2 = BetterBlizzFrames:CreateTexture(nil, "BORDER")
     allFrameIcon2:SetAtlas("groupfinder-icon-friend")
     allFrameIcon2:SetSize(20, 20)
-    allFrameIcon2:SetPoint("RIGHT", allFrameText, "LEFT", 0, 4)
+    allFrameIcon2:SetPoint("RIGHT", allFrameText, "LEFT", 2, 4)
     allFrameIcon2:SetDesaturated(1)
     allFrameIcon2:SetVertexColor(0, 1, 0)
     local allFrameIcon3 = BetterBlizzFrames:CreateTexture(nil, "BORDER")
     allFrameIcon3:SetAtlas("groupfinder-icon-friend")
     allFrameIcon3:SetSize(20, 20)
-    allFrameIcon3:SetPoint("RIGHT", allFrameText, "LEFT", -12, 4)
+    allFrameIcon3:SetPoint("RIGHT", allFrameText, "LEFT", -10, 4)
     allFrameIcon3:SetDesaturated(1)
     allFrameIcon3:SetVertexColor(1, 0, 0)
 
+    local classicFrames = CreateCheckbox("classicFrames", "Classic Frames", BetterBlizzFrames)
+    classicFrames:SetPoint("TOPLEFT", allFrameText, "BOTTOMLEFT", -24, pixelsOnFirstBox)
+    CreateTooltipTwo(classicFrames, "Classic Frames", "Enable for the old style UnitFrames from before Dragonflight.")
+    classicFrames:HookScript("OnClick", function(self)
+        if self:GetChecked() and C_AddOns.IsAddOnLoaded("ClassicFrames") then
+            C_AddOns.DisableAddOn("ClassicFrames")
+        end
+        if not BBF.ClassicReloadWindow then
+            local statusText = classicFrames:GetChecked() and "|cff00ff00ON|r" or "|cffff0000OFF|r"
+            StaticPopupDialogs["BBF_CLASSIC_RELOAD"] = {
+                text = titleText.."Classic Frames will turn "..statusText.." after reload.\n\nSelect which optional settings you want.\n|cFFAAAAAA(These can be changed individually later)|r\n\n\n\n\n ",
+                button1 = "Reload UI",
+                button2 = "Cancel",
+                OnAccept = function()
+                    BetterBlizzFramesDB.reopenOptions = true
+                    if BBF.ChangesOnReload then
+                        for key, value in pairs(BBF.ChangesOnReload) do
+                            BetterBlizzFramesDB[key] = value
+                            if key == "comboPointLocation" and not InCombatLockdown() then
+                                C_CVar.SetCVar("comboPointLocation", value)
+                            end
+                        end
+                    end
+                    ReloadUI()
+                end,
+                OnShow = function(self)
+                    local statusText = classicFrames:GetChecked() and "|cff00ff00ON|r" or "|cffff0000OFF|r"
+                    self.text:SetText(titleText.."Classic Frames will turn "..statusText.." after reload.\n\nSelect which optional settings you want.\n|cFFAAAAAA(These can be changed individually later)|r\n\n\n\n\n ")
+                    if not self.classicSettings then
+                        BBF.ChangesOnReload = {}
+                        self.cfTextures = CreateFrame("CheckButton", nil, self, "UICheckButtonTemplate")
+                        self.cfTextures:SetSize(26, 26)
+                        CreateTooltipTwo(self.cfTextures, "Use Classic Textures for Bars", "Use the old Classic Textures for Health & Manabars.\n\nUnchecked will keep the default retail textures and use a little less CPU.")
+                        self.cfTextures.Text:SetText("Classic Health & Mana Textures")
+
+                        self.cfCastbars = CreateFrame("CheckButton", nil, self, "UICheckButtonTemplate")
+                        self.cfCastbars:SetSize(26, 26)
+                        CreateTooltipTwo(self.cfCastbars, "Use Classic Castbars", "Use the old Classic Castbar look for Player, Target, Focus & Party.")
+                        self.cfCastbars.Text:SetText("Classic Castbars")
+
+                        self.cfComboPoints = CreateFrame("CheckButton", nil, self, "UICheckButtonTemplate")
+                        self.cfComboPoints:SetSize(26, 26)
+                        CreateTooltipTwo(self.cfComboPoints, "Use Classic Combo Points", "Use the old Classic Combo Points look on TargetFrame.\n\nNote: If you would rather move the new Combo Points to TargetFrame you can do so in the Misc section.")
+                        self.cfComboPoints.Text:SetText("Classic Combo Points")
+
+                        local firstClick = BetterBlizzFramesDB.classicFramesClicked == nil
+                        BetterBlizzFramesDB.classicFramesClicked = true
+
+                        self.cfCastbars:SetChecked((firstClick and true) or BetterBlizzFramesDB.classicCastbars or false)
+                        self.cfComboPoints:SetChecked(C_CVar.GetCVar("comboPointLocation") == "1" and true or false)
+                        self.cfTextures:SetChecked(BetterBlizzFramesDB.changeUnitFrameHealthbarTexture or false)
+
+                        self.classicSettings = true
+                    end
+
+                    local function CheckBoxes()
+                        local castbarsEnabled = self.cfCastbars:GetChecked()
+                        BBF.ChangesOnReload["classicCastbarsParty"] = castbarsEnabled or false
+                        BBF.ChangesOnReload["classicCastbarsPlayer"] = castbarsEnabled or false
+                        BBF.ChangesOnReload["classicCastbarsPlayerBorder"] = castbarsEnabled or false
+                        BBF.ChangesOnReload["classicCastbars"] = castbarsEnabled or false
+                        BBF.ChangesOnReload["classicCastbarsParty"] = castbarsEnabled or false
+
+
+                        local comboPointsEnabled = self.cfComboPoints:GetChecked()
+                        BBF.ChangesOnReload["comboPointLocation"] = comboPointsEnabled and "1" or "2"
+
+                        local statusBarsEnabled = self.cfTextures:GetChecked()
+                        BBF.ChangesOnReload["changeUnitFrameHealthbarTexture"] = statusBarsEnabled or false
+                        BBF.ChangesOnReload["changeUnitFrameManabarTexture"] = statusBarsEnabled or false
+                        BBF.ChangesOnReload["unitFrameHealthbarTexture"] = statusBarsEnabled and "Blizzard DF" or nil
+                        BBF.ChangesOnReload["unitFrameManabarTexture"] = statusBarsEnabled and "Blizzard DF" or nil
+                    end
+                    CheckBoxes()
+
+                    self.cfCastbars:SetScript("OnClick", function()
+                        CheckBoxes()
+                    end)
+                    self.cfComboPoints:SetScript("OnClick", function()
+                        CheckBoxes()
+                    end)
+                    self.cfTextures:SetScript("OnClick", function()
+                        CheckBoxes()
+                    end)
+                    self.cfCastbars:SetPoint("BOTTOMLEFT", self.button1, "TOPLEFT", 15, 43)
+                    self.cfComboPoints:SetPoint("TOPLEFT", self.cfCastbars, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+                    self.cfTextures:SetPoint("TOPLEFT", self.cfComboPoints, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+                    self.cfTextures:Show()
+                end,
+                OnHide = function(self)
+                    if self.cfTextures then
+                        self.cfTextures:Hide()
+                    end
+                end,
+                timeout = 0,
+                whileDead = true,
+                hideOnEscape = true,
+            }
+            BBF.ClassicReloadWindow = true
+        end
+        StaticPopup_Show("BBF_CLASSIC_RELOAD")
+    end)
+
     local classColorFrames = CreateCheckbox("classColorFrames", "Class Color Frames", BetterBlizzFrames)
-    classColorFrames:SetPoint("TOPLEFT", allFrameText, "BOTTOMLEFT", -4, pixelsOnFirstBox)
+    classColorFrames:SetPoint("TOPLEFT", classicFrames, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    classColorFrames:HookScript("OnClick", function(self)
+        if not self:GetChecked() then
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        end
+    end)
 
     local classColorFramesSkipPlayer = CreateCheckbox("classColorFramesSkipPlayer", "Skip Self", BetterBlizzFrames)
     classColorFramesSkipPlayer:SetPoint("LEFT", classColorFrames.Text, "RIGHT", 0, 0)
@@ -3562,7 +3764,7 @@ local function guiGeneralTab()
             classColorFramesSkipPlayer:Hide()
         end
     end)
-    CreateTooltipTwo(classColorFrames, "Class Color Healthbars", "Class color Player, Target, Focus & Party frames.", "If you want a more I recommend the addon HealthBarColor instead of this setting.")
+    CreateTooltipTwo(classColorFrames, "Class Color Healthbars", "Class color Player, Target, Focus & Party frames.")
 
     if not BetterBlizzFramesDB.classColorFrames then
         classColorFramesSkipPlayer:Hide()
@@ -3672,13 +3874,15 @@ local function guiGeneralTab()
     local extraFeaturesText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     extraFeaturesText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 460, 30)
     extraFeaturesText:SetText("Extra Features")
+    extraFeaturesText:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\Expressway_Free.ttf", 16)
+    extraFeaturesText:SetTextColor(1,1,1)
     local extraFeaturesIcon = BetterBlizzFrames:CreateTexture(nil, "ARTWORK")
     extraFeaturesIcon:SetAtlas("Campaign-QuestLog-LoreBook")
     extraFeaturesIcon:SetSize(24, 24)
-    extraFeaturesIcon:SetPoint("RIGHT", extraFeaturesText, "LEFT", -3, 0)
+    extraFeaturesIcon:SetPoint("RIGHT", extraFeaturesText, "LEFT", -1, 0)
 
     local combatIndicator = CreateCheckbox("combatIndicator", "Combat Indicator", BetterBlizzFrames)
-    combatIndicator:SetPoint("TOPLEFT", extraFeaturesText, "BOTTOMLEFT", -4, pixelsOnFirstBox)
+    combatIndicator:SetPoint("TOPLEFT", extraFeaturesText, "BOTTOMLEFT", -24, pixelsOnFirstBox)
     combatIndicator:HookScript("OnClick", function()
         BBF.CombatIndicatorCaller()
     end)
@@ -5155,6 +5359,18 @@ local function guiFrameLook()
     changeUnitFrameFont:SetPoint("TOPLEFT", settingsText, "BOTTOMLEFT", -4, pixelsOnFirstBox)
     CreateTooltipTwo(changeUnitFrameFont, "Change UnitFrame Font","Changes the font on Player, Target & Focus etc.")
 
+    local unitFrameFontColor = CreateCheckbox("unitFrameFontColor", "Color", guiFrameLook)
+    unitFrameFontColor:SetPoint("LEFT", changeUnitFrameFont.Text, "RIGHT", 0, 0)
+    CreateTooltipTwo(unitFrameFontColor, "UnitFrame Font Color","Change the font color on UnitFrames.\n\nRight-click to change color.")
+    unitFrameFontColor:HookScript("OnClick", function()
+        BBF.FontColors()
+    end)
+    unitFrameFontColor:SetScript("OnMouseDown", function(self, button)
+        if button == "RightButton" then
+            OpenColorOptions(BetterBlizzFramesDB.unitFrameFontColorRGB,  BBF.FontColors)
+        end
+    end)
+
     local unitFrameFont = CreateFontDropdown(
         "unitFrameFont",
         guiFrameLook,
@@ -5208,8 +5424,20 @@ local function guiFrameLook()
 
 
     local changeUnitFrameValueFont = CreateCheckbox("changeUnitFrameValueFont", "Change UnitFrame Number Font", guiFrameLook)
-    changeUnitFrameValueFont:SetPoint("TOPLEFT", changeUnitFrameFont, "BOTTOMLEFT", 0, -85)
+    changeUnitFrameValueFont:SetPoint("TOPLEFT", changeUnitFrameFont, "BOTTOMLEFT", 0, -100)
     CreateTooltipTwo(changeUnitFrameValueFont, "Change UnitFrame Number Font","Changes the font on numbers on Player, Target & Focus etc.")
+
+    local unitFrameValueFontColor = CreateCheckbox("unitFrameValueFontColor", "Color", guiFrameLook)
+    unitFrameValueFontColor:SetPoint("LEFT", changeUnitFrameValueFont.Text, "RIGHT", 0, 0)
+    CreateTooltipTwo(unitFrameValueFontColor, "UnitFrame Numbers Font Color","Change the font color on UnitFrames numbers.\n\nRight-click to change color.")
+    unitFrameValueFontColor:HookScript("OnClick", function()
+        BBF.FontColors()
+    end)
+    unitFrameValueFontColor:SetScript("OnMouseDown", function(self, button)
+        if button == "RightButton" then
+            OpenColorOptions(BetterBlizzFramesDB.unitFrameValueFontColorRGB,  BBF.FontColors)
+        end
+    end)
 
     local unitFrameValueFont = CreateFontDropdown(
         "unitFrameValueFont",
@@ -5258,8 +5486,20 @@ local function guiFrameLook()
 
 
     local changePartyFrameFont = CreateCheckbox("changePartyFrameFont", "Change Party Font", guiFrameLook)
-    changePartyFrameFont:SetPoint("TOPLEFT", changeUnitFrameValueFont, "BOTTOMLEFT", 0, -85)
+    changePartyFrameFont:SetPoint("TOPLEFT", changeUnitFrameValueFont, "BOTTOMLEFT", 0, -100)
     CreateTooltipTwo(changePartyFrameFont, "Change Party Font","Changes the font on PartyFrames")
+
+    local partyFrameFontColor = CreateCheckbox("partyFrameFontColor", "Color", guiFrameLook)
+    partyFrameFontColor:SetPoint("LEFT", changePartyFrameFont.Text, "RIGHT", 0, 0)
+    CreateTooltipTwo(partyFrameFontColor, "Party Frame Font Color","Change the font color on Party Frames.\n\nRight-click to change color.")
+    partyFrameFontColor:HookScript("OnClick", function()
+        BBF.FontColors()
+    end)
+    partyFrameFontColor:SetScript("OnMouseDown", function(self, button)
+        if button == "RightButton" then
+            OpenColorOptions(BetterBlizzFramesDB.partyFrameFontColorRGB,  BBF.FontColors)
+        end
+    end)
 
     local partyFrameFont = CreateFontDropdown(
         "partyFrameFont",
@@ -5314,8 +5554,20 @@ local function guiFrameLook()
 
 
     local changeActionBarFont = CreateCheckbox("changeActionBarFont", "Change ActionBar Font", guiFrameLook)
-    changeActionBarFont:SetPoint("TOPLEFT", changePartyFrameFont, "BOTTOMLEFT", 0, -85)
+    changeActionBarFont:SetPoint("TOPLEFT", changePartyFrameFont, "BOTTOMLEFT", 0, -100)
     CreateTooltipTwo(changeActionBarFont, "Change ActionBar Font","Changes the font on Player, Target & Focus etc.")
+
+    local actionBarFontColor = CreateCheckbox("actionBarFontColor", "Color", guiFrameLook)
+    actionBarFontColor:SetPoint("LEFT", changeActionBarFont.Text, "RIGHT", 0, 0)
+    CreateTooltipTwo(actionBarFontColor, "Action Bar Font Color","Change the font color on ActionBars.\n\nRight-click to change color.")
+    actionBarFontColor:HookScript("OnClick", function()
+        BBF.FontColors()
+    end)
+    actionBarFontColor:SetScript("OnMouseDown", function(self, button)
+        if button == "RightButton" then
+            OpenColorOptions(BetterBlizzFramesDB.actionBarFontColorRGB,  BBF.FontColors)
+        end
+    end)
 
     local actionBarFont = CreateFontDropdown(
         "actionBarFont",
@@ -5387,7 +5639,7 @@ local function guiFrameLook()
 
 
     local changeAllFontsIngame = CreateCheckbox("changeAllFontsIngame", "One font for all text ingame", guiFrameLook)
-    changeAllFontsIngame:SetPoint("TOPLEFT", changeActionBarFont, "BOTTOMLEFT", 0, -125)
+    changeAllFontsIngame:SetPoint("TOPLEFT", changeActionBarFont, "BOTTOMLEFT", 0, -115)
     CreateTooltipTwo(changeAllFontsIngame, "One font for all text ingame","Changes the font on all* text ingame.", "*Some text in the game world, like damage numbers, can not be changed with an addon. It's possible by editing the game files though.")
 
     local allIngameFont = CreateFontDropdown(
@@ -5459,7 +5711,7 @@ local function guiFrameLook()
 
 
     local changeRaidFrameHealthbarTexture = CreateCheckbox("changeRaidFrameHealthbarTexture", "Change RaidFrame Healthbar Texture", guiFrameLook)
-    changeRaidFrameHealthbarTexture:SetPoint("TOPLEFT", changeUnitFrameManabarTexture, "BOTTOMLEFT", 0, -25)
+    changeRaidFrameHealthbarTexture:SetPoint("TOPLEFT", changeUnitFrameManabarTexture, "BOTTOMLEFT", 0, -40)
     CreateTooltipTwo(changeRaidFrameHealthbarTexture, "Change RaidFrame Healthbar Texture","Changes the healthbar texture on the RaidFrames")
 
     local raidFrameHealthbarTexture = CreateTextureDropdown(
@@ -6654,9 +6906,24 @@ local function guiMisc()
     raiseTargetFrameLevel:SetPoint("TOPLEFT", fixActionBarCDs, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(raiseTargetFrameLevel, "Raise TargetFrame Layer", "Raise the frame level of TargetFrame so it is above FocusFrame.\n\nThis makes it so if you have TargetFrame positioned above FocusFrame and the Target has so many auras that the castbar goes down to the FocusFrame the castbar will not be hidden behind the FocusFrame.")
 
+    local raiseTargetCastbarStrata = CreateCheckbox("raiseTargetCastbarStrata", "Raise Castbar Stratas", guiMisc, nil, BBF.RaiseTargetCastbarStratas)
+    raiseTargetCastbarStrata:SetPoint("TOPLEFT", raiseTargetFrameLevel, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(raiseTargetCastbarStrata, "Raise Castbar Stratas", "Raise the Strata of Target & Focus frame so it does not appear behind the frames.")
+
+    local enableLegacyComboPoints = CreateCheckbox("enableLegacyComboPoints", "Legacy Combo Points", guiMisc)
+    enableLegacyComboPoints:SetPoint("TOPLEFT", raiseTargetCastbarStrata, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(enableLegacyComboPoints, "Legacy Combo Points", "Enable the old Classic Combo Points and fix their position to work with the new UnitFrames")
+    enableLegacyComboPoints:HookScript("OnClick", function()
+        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        if not InCombatLockdown() then
+            C_CVar.SetCVar("comboPointLocation", "1")
+        end
+    end)
+
     local instantComboPoints = CreateCheckbox("instantComboPoints", "Instant Combo Points", guiMisc, nil, BBF.InstantComboPoints)
-    instantComboPoints:SetPoint("TOPLEFT", raiseTargetFrameLevel, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltipTwo(instantComboPoints, "Instant Combo Points", "Remove the combo point animations for instant feedback. Currently works for Rogues, Druids, Monks and Mages.")
+    instantComboPoints:SetPoint("TOPLEFT", enableLegacyComboPoints, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(instantComboPoints, "Instant Combo Points",
+    "Remove the combo point animations for instant feedback.\n\nCurrently works for:\n|cFFFFF569Rogue|r\n|cFFFF7D0ADruid|r\n|cFF00FF96Monk|r\n|cFF3FC7EBMage|r\n|cFFF58CBAPaladin|r\n|cFFAAAAAALegacy Combos (Rogue & Druid)|r")
     instantComboPoints:HookScript("OnClick", function(self)
         if not self:GetChecked() then
             StaticPopup_Show("BBF_CONFIRM_RELOAD")
@@ -7306,15 +7573,6 @@ function BBF.InitializeOptions()
     end
 end
 
-local function MoveableSettingsPanel()
-    local frame = SettingsPanel
-    if frame and not frame:GetScript("OnDragStart") and not C_AddOns.IsAddOnLoaded("BlizzMove") then
-        frame:RegisterForDrag("LeftButton")
-        frame:SetScript("OnDragStart", frame.StartMoving)
-        frame:SetScript("OnDragStop", frame.StopMovingOrSizing)
-    end
-end
-
 function BBF.LoadGUI()
     if BetterBlizzFrames.guiLoaded then return end
     if BetterBlizzFramesDB.hasNotOpenedSettings then
@@ -7323,7 +7581,6 @@ function BBF.LoadGUI()
         return
     end
     if CombatOnGUICreation() then return end
-    MoveableSettingsPanel()
 
     guiGeneralTab()
     guiPositionAndScale()

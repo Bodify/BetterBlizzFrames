@@ -1,12 +1,23 @@
 # BetterBlizzFrames 1.6.4
 ## Retail
 ## New:
-- ClassicFrames setting, finally.
+- ClassicFrames setting. A super lightweight ClassicFrames option. Turn UnitFrames (Player, Target, Focus, ToT, Party) into the old Classic look. (General)
+- New setting: Hide Mana Feedback, setting that hides the animation when you lose/gain mana/energy for instant feedback (General)
+- New setting: Hide Full Mana FX, setting that hides the glowing animation on the right side of your manabar when you are full mana/energy (General)
+- Font Color settings in Font & Textures section.
+- Reduce Edit Mode Glow: Change the transparancy of the blue select alpha in Edit Mode so you can actually see where you move stuff (Misc)
+- New "Legacy Combo Points" setting that enables the old combo points with a CVar (and fixes their positioning)
 ## Tweaks:
-- Aura Filtering now also shows duration on Power Word: Barrier, Earthen Wall and Grounding Totem in addition to Smoke Bomb.
+- Paladins Holy Power and Legacy Combo Points now also supported for "Instant Combo Points" setting.
+- Aura Filtering now also shows duration on auras Power Word: Barrier, Earthen Wall and Grounding Totem in addition to Smoke Bomb.
+- Dark Mode: Tooltip option now also colors the background black and not just the borders.
+- New font used in GUI and tiny makeover to fit some more settings and have it look a tiny bit less messy.
+- Texture changing now also effects default party frames
 - HealthBar texture change now also changes the textures of Heal Prediction/Absorb textures on the bar.
 - Tweaks to interrupt list for interrupt color, only counting pure kicks again.
 - Aeghis profile update
+## Bugfix:
+- Fix Classic Castbar Non-Interruptible Border positioning getting messed up without icon scale at 1
 
 
 # BetterBlizzFrames 1.6.3e

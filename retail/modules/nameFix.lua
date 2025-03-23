@@ -96,7 +96,7 @@ function BBF.UpdateUserTargetSettings()
     hideFocusName = BetterBlizzFramesDB.hideFocusName
     hideTargetToTName = BetterBlizzFramesDB.hideTargetToTName
     hideFocusToTName = BetterBlizzFramesDB.hideFocusToTName
-    classColorLevelText = BetterBlizzFramesDB.classColorLevelText
+    classColorLevelText = BetterBlizzFramesDB.classColorTargetNames and BetterBlizzFramesDB.classColorLevelText
     centerNames = BetterBlizzFramesDB.centerNames or BetterBlizzFramesDB.classicFrames
     classicFramesMode = BetterBlizzFramesDB.classicFrames
     playerFrameOCD = BetterBlizzFramesDB.playerFrameOCD and not BetterBlizzFramesDB.playerFrameOCDTextureBypass
@@ -116,7 +116,7 @@ local function CenterPlayerName()
     if playerFrameOCD and not classicFramesMode then
         name:SetPoint("TOP", healthBar, "TOP", 0, 14.5)
     else
-        local xPos = classicFramesMode and 0 or true and -2 or 0
+        local xPos = classicFramesMode and 1.5 or true and -2 or 0
         local yPos = BetterBlizzFramesDB.symmetricPlayerFrame and 15 or classicFramesMode and 7.5 or 14.5
         name:SetPoint("TOP", healthBar, "TOP", xPos, yPos)
     end
@@ -127,7 +127,7 @@ local function CenterXName(fontObject, healthBar, ToT, pet)
     if not (classicFramesMode and ToT) then
         fontObject:SetJustifyH("CENTER")
     end
-    local xPos = ToT and (classicFramesMode and 8 or -2) or (classicFramesMode and 1) or 2
+    local xPos = ToT and (classicFramesMode and 8 or -2) or (classicFramesMode and 0) or 2
     local yPos = ((pet and classicFramesMode) and 2) or ToT and (classicFramesMode and -18 or 12) or (classicFramesMode and 6.3 or 14)
     fontObject:SetPoint(pet and "BOTTOM" or "TOP", healthBar, "TOP", xPos, yPos)
 end
@@ -1377,6 +1377,118 @@ function BBF.AllNameChanges()
                         end)
                         frame.bbfhbcHook = true
                     end
+                end
+            end
+        end
+    end
+end
+
+function BBF.FontColors()
+    local db = BetterBlizzFramesDB
+    if db.unitFrameFontColor then
+        local color = db.unitFrameFontColorRGB
+        local unitFrameFonts = {
+            PlayerFrame,
+            TargetFrame,
+            TargetFrameToT,
+            FocusFrame,
+            FocusFrameToT,
+        }
+        for _, frame in ipairs(unitFrameFonts) do
+            if frame.bbfName then
+                frame.bbfName:SetVertexColor(unpack(color))
+            end
+        end
+        -- PlayerLevelText:SetVertexColor(unpack(color))
+        -- TargetFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetVertexColor(unpack(BetterBlizzFramesDB.unitFrameFontColorRGB))
+        -- FocusFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetVertexColor(unpack(color))
+        -- if not BBF.UnitFrameFontColorHook then
+        --     hooksecurefunc(TargetFrame, "CheckLevel", function()
+        --         TargetFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetVertexColor(unpack(BetterBlizzFramesDB.unitFrameFontColorRGB))
+        --     end)
+        --     hooksecurefunc(FocusFrame, "CheckLevel", function()
+        --         FocusFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetVertexColor(unpack(BetterBlizzFramesDB.unitFrameFontColorRGB))
+        --     end)
+        --     BBF.UnitFrameFontColorHook = true
+        -- end
+    end
+
+    if db.partyFrameFontColor then
+        local color = db.partyFrameFontColorRGB
+        local partyFrameFonts = {
+            PartyFrame.MemberFrame1,
+            PartyFrame.MemberFrame2,
+            PartyFrame.MemberFrame3,
+            PartyFrame.MemberFrame4,
+            CompactPartyFrameMember1,
+            CompactPartyFrameMember2,
+            CompactPartyFrameMember3,
+            CompactPartyFrameMember4,
+            CompactPartyFrameMember5
+        }
+        for _, frame in ipairs(partyFrameFonts) do
+            if frame.bbfName then
+                frame.bbfName:SetVertexColor(unpack(color))
+            elseif frame.name then
+                frame.name:SetVertexColor(unpack(color))
+            end
+        end
+    end
+
+    if db.unitFrameValueFontColor then
+        local color = db.unitFrameValueFontColorRGB
+        local unitFrameValueFonts = {
+            PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer.HealthBar,
+            PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar,
+            TargetFrame.TargetFrameContent.TargetFrameContentMain.HealthBarsContainer.HealthBar,
+            TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar,
+            FocusFrame.TargetFrameContent.TargetFrameContentMain.HealthBarsContainer.HealthBar,
+            FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar,
+            PartyFrame.MemberFrame1.HealthBarContainer.HealthBar,
+            PartyFrame.MemberFrame2.HealthBarContainer.HealthBar,
+            PartyFrame.MemberFrame3.HealthBarContainer.HealthBar,
+            PartyFrame.MemberFrame4.HealthBarContainer.HealthBar,
+            PartyFrame.MemberFrame1.ManaBar,
+            PartyFrame.MemberFrame2.ManaBar,
+            PartyFrame.MemberFrame3.ManaBar,
+            PartyFrame.MemberFrame4.ManaBar,
+        }
+        for _, frame in ipairs(unitFrameValueFonts) do
+            if frame.LeftText then frame.LeftText:SetVertexColor(unpack(color)) end
+            if frame.RightText then frame.RightText:SetVertexColor(unpack(color)) end
+            if frame.TextString then frame.TextString:SetVertexColor(unpack(color)) end
+            if frame.CenterText then frame.CenterText:SetVertexColor(unpack(color)) end
+            if frame.ManaBarText then frame.ManaBarText:SetVertexColor(unpack(color)) end
+        end
+    end
+
+    if db.actionBarFontColor then
+        local color = db.actionBarFontColorRGB
+        local function setColor(name)
+            local frame = _G[name]
+            if frame and frame.SetVertexColor then
+                frame:SetVertexColor(unpack(color))
+            end
+        end
+
+        local prefixes = {
+            "ActionButton",
+            "MultiBarBottomLeftButton",
+            "MultiBarBottomRightButton",
+            "MultiBarRightButton",
+            "MultiBarLeftButton",
+            "MultiBar5Button",
+            "MultiBar6Button",
+            "MultiBar7Button",
+            "PetActionButton"
+        }
+
+        local suffixes = { "HotKey", "Name", "Count" }
+
+        for i = 1, 12 do
+            for _, prefix in ipairs(prefixes) do
+                for _, suffix in ipairs(suffixes) do
+                    setColor(prefix .. i .. suffix)
                 end
             end
         end

@@ -85,6 +85,7 @@ local function AdjustBorderShieldSize(castBar)
         castBar.BorderShield:SetTexture(311862)
         castBar.BorderShield:SetSize(baseBorderWidth * widthScale, baseBorderHeight * heightScale)
         castBar.BorderShield:SetDrawLayer("OVERLAY")
+        castBar.BorderShield:SetScale(1)
         castBar.BorderShield:ClearAllPoints()
 
         castBar.uninterruptibleIconSize = baseIconSize * ((widthScale + heightScale) / 2)
@@ -102,7 +103,7 @@ local function AdjustBorderShieldSize(castBar)
     --end
 end
 
-local function AdjustFlash(castBar)
+local function AdjustFlash(castBar, isPlayer)
     -- Set the base dimensions for reference (208x11 in your case)
     local baseWidth, baseHeight = 208, 11
     local baseOffsetX = 33
@@ -119,7 +120,7 @@ local function AdjustFlash(castBar)
     local offsetYBottom = baseOffsetYBottom * heightScale
 
     -- Set the flash texture
-    castBar.Flash:SetTexture(130875)
+    castBar.Flash:SetTexture(isPlayer and 130876 or 130875)
 
     -- Clear any existing points and set new dynamic offsets
     castBar.Flash:ClearAllPoints()
@@ -134,7 +135,7 @@ end
 
 
 
-function BBF.ClassicCastbar(castBar, isParty)
+function BBF.ClassicCastbar(castBar, isParty, isPlayer)
     castBar.Text:ClearAllPoints()
     castBar.Text:SetPoint("CENTER", castBar, "CENTER", 0, 0.5)
 
@@ -196,7 +197,7 @@ function BBF.ClassicCastbar(castBar, isParty)
             if castBar == PlayerCastingBarFrame then
                 castBar.Text:ClearAllPoints()
                 castBar.Text:SetPoint("CENTER", castBar, "CENTER", 0, 0.5)
-                AdjustFlash(castBar)
+                AdjustFlash(castBar, isPlayer)
             else
                 castBar.Flash:SetAlpha(0)
             end
@@ -242,7 +243,7 @@ function BBF.ClassicCastbar(castBar, isParty)
             self:SetStatusBarTexture(137012)
             self:SetStatusBarColor(0, 1, 0, 1)
             if castBar == PlayerCastingBarFrame then
-                AdjustFlash(castBar)
+                AdjustFlash(castBar, isPlayer)
             else
                 castBar.Flash:SetAlpha(0)
             end
@@ -1288,12 +1289,9 @@ function BBF.ChangeCastbarSizes()
         BBF.ClassicCastbar(FocusFrameSpellBar)
     end
     if BetterBlizzFramesDB.classicCastbarsPlayer then
-        BBF.ClassicCastbar(PlayerCastingBarFrame)
-        if BetterBlizzFramesDB.classicCastbarsPlayerBorder then
-            PlayerCastingBarFrame.Border:SetTexture(130874)
-        else
-            PlayerCastingBarFrame.Border:SetTexture(130873)
-        end
+        local playerClassicBorder = BetterBlizzFramesDB.classicCastbarsPlayerBorder
+        BBF.ClassicCastbar(PlayerCastingBarFrame, nil, playerClassicBorder)
+        PlayerCastingBarFrame.Border:SetTexture(playerClassicBorder and 130874 or 130873)
     end
 end
 

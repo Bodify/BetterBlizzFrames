@@ -242,6 +242,16 @@ function BBF.DarkmodeFrames(bypass)
             applySettings(region, tooltipSat, tooltipColor)
         end
     end
+    if BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeGameTooltip and not BBF.hookedTip then
+        GameTooltip:HookScript("OnShow", function()
+            for key, region in pairs(GameTooltip.NineSlice) do
+                if key == "Center" then
+                    applySettings(region, tooltipSat, 0)
+                end
+            end
+        end)
+        BBF.hookedTip = true
+    end
 
     local aceTooltip = AceConfigDialogTooltip
     if aceTooltip then

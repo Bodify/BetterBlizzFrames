@@ -192,6 +192,28 @@ function BBF.HideFrames()
             changes.hidePlayerCornerIcon = nil
         end
 
+        if BetterBlizzFramesDB.hideManaFeedback and not changes.hideManaFeedback then
+            changes.hideManaFeedback = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar.FeedbackFrame:GetParent()
+            PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar.FeedbackFrame:SetParent(hiddenFrame)
+            if ClassNameplateManaBarFrame and ClassNameplateManaBarFrame.FeedbackFrame then
+                ClassNameplateManaBarFrame.FeedbackFrame:Hide()
+            end
+        elseif changes.hideManaFeedback then
+            PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar.FeedbackFrame:SetParent(changes.hideManaFeedback)
+            changes.hideManaFeedback = nil
+        end
+
+        if BetterBlizzFramesDB.hideFullPower and not changes.hideFullPower then
+            changes.hideFullPower = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar.FullPowerFrame:GetParent()
+            PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar.FullPowerFrame:SetParent(hiddenFrame)
+            if ClassNameplateManaBarFrame and ClassNameplateManaBarFrame.FullPowerFrame then
+                ClassNameplateManaBarFrame.FullPowerFrame:Hide()
+            end
+        elseif changes.hideFullPower then
+            PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar.FullPowerFrame:SetParent(changes.hideFullPower)
+            changes.hideFullPower = nil
+        end
+
         -- Hide totem frame
         if BetterBlizzFramesDB.hideTotemFrame then
             local totemFrame = TotemFrame
