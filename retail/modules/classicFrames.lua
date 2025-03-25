@@ -116,7 +116,7 @@ local function MakeClassicFrame(frame)
         contentMain.ReputationColor:SetSize(119, 18)
         contentMain.ReputationColor:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-LevelBackground")
         contentMain.ReputationColor:ClearAllPoints()
-        contentMain.ReputationColor:SetPoint("TOPRIGHT", -86, -31)
+        contentMain.ReputationColor:SetPoint("TOPRIGHT", -87, -31)
 
         -- if true then
         --     contentMain.ReputationColor:SetSize(121, 18)
@@ -138,9 +138,9 @@ local function MakeClassicFrame(frame)
 
         frameContainer.Flash:SetDrawLayer("BACKGROUND")
         frameContainer.Flash:SetParent(db.hidePlayerRestGlow and BBF.hiddenFrame or TargetFrame)
-        frameContainer.Portrait:SetSize(60,60)
+        frameContainer.Portrait:SetSize(62,62)
         frameContainer.Portrait:ClearAllPoints()
-        frameContainer.Portrait:SetPoint("TOPRIGHT", -24, -24)
+        frameContainer.Portrait:SetPoint("TOPRIGHT", -23, -22)
         frameContainer.PortraitMask:SetSize(61,61)
         frameContainer.PortraitMask:ClearAllPoints()
         frameContainer.PortraitMask:SetPoint("CENTER", frameContainer.Portrait, "CENTER", 0, 0)
@@ -351,7 +351,8 @@ local function MakeClassicFrame(frame)
         contentContext.RoleIcon:SetPoint("TOPLEFT", 192, -34)
         AdjustFramePoint(contentContext.GroupIndicator, nil, -3)
 
-        frameContainer.PlayerPortrait:SetSize(61, 61)
+        frameContainer.PlayerPortrait:SetSize(62, 62)
+        frameContainer.PlayerPortraitMask:SetSize(62, 62)
         frameContainer.PlayerPortraitMask:SetTexture("Interface/CHARACTERFRAME/TempPortraitAlphaMask", "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
         frameContainer.PlayerPortraitMask:ClearAllPoints()
         frameContainer.PlayerPortraitMask:SetPoint("CENTER", frameContainer.PlayerPortrait, "CENTER", 0, 0)
@@ -620,10 +621,10 @@ local function MakeClassicFrame(frame)
             AdjustStatusBarText()
 
             frameContainer.PlayerPortrait:ClearAllPoints()
-            frameContainer.PlayerPortrait:SetPoint("TOPLEFT", 25, -24)
+            frameContainer.PlayerPortrait:SetPoint("TOPLEFT", 26, -23)
             frame.ClassicFrame.Texture:Show()
 
-            frame.ClassicFrame.Background:SetPoint("BOTTOMRIGHT", contentMain.HealthBarsContainer, "BOTTOMRIGHT", -3, -11)
+            frame.ClassicFrame.Background:SetPoint("BOTTOMRIGHT", contentMain.HealthBarsContainer, "BOTTOMRIGHT", -2, -11)
         end
 
         hooksecurefunc("PlayerFrame_ToPlayerArt", function()

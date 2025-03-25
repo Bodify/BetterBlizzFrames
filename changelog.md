@@ -1,3 +1,6 @@
+# BetterBlizzFrames 1.6.5b
+- Minor tweaks and fixes
+
 # BetterBlizzFrames 1.6.5
 ## Retail
 ### New:
