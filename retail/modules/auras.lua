@@ -116,7 +116,7 @@ function BBF.CheckActiveAuras(auraID)
 
     for auraIndex, auraInfo in ipairs(frameType.auraInfo) do
         local auraFrame = frameType.auraFrames[auraIndex]
-        if auraFrame and not auraFrame.isAuraAnchor then
+        if auraFrame and not auraFrame.isAuraAnchor and auraInfo.auraType ~= "TempEnchant" then
             local aura = C_UnitAuras.GetAuraDataByIndex("player", auraInfo.index, trackedAuras[auraID] and "HELPFUL" or "HARMFUL")
             if aura and aura.spellId == auraID then
                 activeAuras[aura.spellId] = true

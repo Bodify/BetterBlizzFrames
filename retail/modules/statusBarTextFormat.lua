@@ -31,64 +31,93 @@ function BBF.HookStatusBarText()
     local statusTextSetting = C_CVar.GetCVar("statusTextDisplay")
     local singleDisplay = BetterBlizzFramesDB.singleValueStatusBarText
 
-    local bars = {
-        {PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer.HealthBar,
-         PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer.HealthBarText,
-         PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer.RightText},
+    local pMain = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain
+    local tMain = TargetFrame.TargetFrameContent.TargetFrameContentMain
+    local fMain = FocusFrame.TargetFrameContent.TargetFrameContentMain
 
-        {PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar,
-         PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar.ManaBarText,
-         PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar.RightText},
+    local bars = {}
 
-        {AlternatePowerBar,
-         AlternatePowerBar.ManaBarText,
-         AlternatePowerBar.RightText},
+    local function AddBar(bar, centerText, rightText)
+        table.insert(bars, {
+            bar = bar,
+            centerText = centerText,
+            rightText = rightText
+        })
+    end
 
-        {PetFrame.healthbar,
-         PetFrame.healthbar.TextString,
-         PetFrame.healthbar.RightText},
+    -- Player and pet frames
+    AddBar(pMain.HealthBarsContainer.HealthBar,
+           pMain.HealthBarsContainer.HealthBarText,
+           pMain.HealthBarsContainer.RightText)
 
-        {PetFrame.manabar,
-         PetFrame.manabar.TextString,
-         PetFrame.manabar.RightText},
+    AddBar(pMain.ManaBarArea.ManaBar,
+           pMain.ManaBarArea.ManaBar.ManaBarText,
+           pMain.ManaBarArea.ManaBar.RightText)
 
-        {TargetFrame.TargetFrameContent.TargetFrameContentMain.HealthBarsContainer.HealthBar,
-         TargetFrame.TargetFrameContent.TargetFrameContentMain.HealthBarsContainer.HealthBarText,
-         TargetFrame.TargetFrameContent.TargetFrameContentMain.HealthBarsContainer.RightText},
+    AddBar(AlternatePowerBar,
+           AlternatePowerBar.ManaBarText,
+           AlternatePowerBar.RightText)
 
-        {TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar,
-         TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.ManaBarText,
-         TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.RightText},
+    AddBar(PetFrame.healthbar,
+           PetFrame.healthbar.TextString,
+           PetFrame.healthbar.RightText)
 
-        {FocusFrame.TargetFrameContent.TargetFrameContentMain.HealthBarsContainer.HealthBar,
-         FocusFrame.TargetFrameContent.TargetFrameContentMain.HealthBarsContainer.HealthBarText,
-         FocusFrame.TargetFrameContent.TargetFrameContentMain.HealthBarsContainer.RightText},
+    AddBar(PetFrame.manabar,
+           PetFrame.manabar.TextString,
+           PetFrame.manabar.RightText)
 
-        {FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar,
-         FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.ManaBarText,
-         FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.RightText}
-    }
+    -- Target and focus frames
+    AddBar(tMain.HealthBarsContainer.HealthBar,
+           tMain.HealthBarsContainer.HealthBarText,
+           tMain.HealthBarsContainer.RightText)
 
-    for _, bar in ipairs(bars) do
-        local hpBar, centerText, rightText = bar[1], bar[2], bar[3]
+    AddBar(tMain.ManaBar,
+           tMain.ManaBar.ManaBarText,
+           tMain.ManaBar.RightText)
+
+    AddBar(fMain.HealthBarsContainer.HealthBar,
+           fMain.HealthBarsContainer.HealthBarText,
+           fMain.HealthBarsContainer.RightText)
+
+    AddBar(fMain.ManaBar,
+           fMain.ManaBar.ManaBarText,
+           fMain.ManaBar.RightText)
+
+    -- Default party frames (non-raid-style)
+    if not EditModeManagerFrame:UseRaidStylePartyFrames() then
+        for i = 1, 4 do
+            local member = PartyFrame["MemberFrame"..i]
+            if member then
+                local hpBar = member.HealthBarContainer and member.HealthBarContainer.HealthBar
+                local manaBar = member.ManaBar
+                if hpBar and hpBar.TextString and hpBar.RightText then
+                    AddBar(hpBar, hpBar.TextString, hpBar.RightText)
+                end
+                if manaBar and manaBar.TextString and manaBar.RightText then
+                    AddBar(manaBar, manaBar.TextString, manaBar.RightText)
+                end
+            end
+        end
+    end
+
+    -- Hook logic
+    for _, info in ipairs(bars) do
+        local bar, centerText, rightText = info.bar, info.centerText, info.rightText
 
         if singleDisplay and statusTextSetting == "NUMERIC" then
-            -- Apply single value display to center text
-            hooksecurefunc(hpBar, "UpdateTextStringWithValues", function()
-                UpdateSingleText(hpBar, centerText)
+            hooksecurefunc(bar, "UpdateTextStringWithValues", function()
+                UpdateSingleText(bar, centerText)
             end)
         elseif statusTextSetting == "BOTH" then
-            -- Apply to right text only
-            hooksecurefunc(hpBar, "UpdateTextStringWithValues", function()
-                UpdateSingleText(hpBar, rightText)
+            hooksecurefunc(bar, "UpdateTextStringWithValues", function()
+                UpdateSingleText(bar, rightText)
             end)
-
         elseif statusTextSetting == "NUMERIC" then
-            -- Display both current and max values on the center text
-            hooksecurefunc(hpBar, "UpdateTextStringWithValues", function()
-                UpdateNumericText(hpBar, centerText)
+            hooksecurefunc(bar, "UpdateTextStringWithValues", function()
+                UpdateNumericText(bar, centerText)
             end)
         end
     end
+
     BBF.statusBarTextHookBBF = true
 end

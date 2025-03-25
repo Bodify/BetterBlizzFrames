@@ -477,7 +477,6 @@ StaticPopupDialogs["BBF_CONFIRM_RELOAD"] = {
     end,
     timeout = 0,
     whileDead = true,
-    hideOnEscape = true,
 }
 
 StaticPopupDialogs["BBF_TOT_MESSAGE"] = {
@@ -497,7 +496,6 @@ StaticPopupDialogs["BBF_TOT_MESSAGE"] = {
     end,
     timeout = 0,
     whileDead = true,
-    hideOnEscape = true,
 }
 
 StaticPopupDialogs["BBF_CONFIRM_PROFILE"] = {
@@ -511,7 +509,6 @@ StaticPopupDialogs["BBF_CONFIRM_PROFILE"] = {
     end,
     timeout = 0,
     whileDead = true,
-    hideOnEscape = true,
 }
 
 StaticPopupDialogs["BBF_CONFIRM_PVP_WHITELIST"] = {
@@ -531,7 +528,6 @@ StaticPopupDialogs["BBF_CONFIRM_PVP_WHITELIST"] = {
     end,
     timeout = 0,
     whileDead = true,
-    hideOnEscape = true,
 }
 
 StaticPopupDialogs["BBF_CONFIRM_PVP_BLACKLIST"] = {
@@ -551,7 +547,6 @@ StaticPopupDialogs["BBF_CONFIRM_PVP_BLACKLIST"] = {
     end,
     timeout = 0,
     whileDead = true,
-    hideOnEscape = true,
 }
 
 ------------------------------------------------------------
@@ -1697,7 +1692,6 @@ for _, listName in ipairs(lists) do
         end,
         timeout = 0,
         whileDead = true,
-        hideOnEscape = true,
     }
 
     -- Create static popup dialogs for delete confirmations
@@ -1710,7 +1704,6 @@ for _, listName in ipairs(lists) do
         end,
         timeout = 0,
         whileDead = true,
-        hideOnEscape = true,
     }
 end
 
@@ -1726,7 +1719,6 @@ StaticPopupDialogs["BBF_DUPLICATE_UPDATE_OR_DELETE"] = {
     end,
     timeout = 0,
     whileDead = true,
-    hideOnEscape = true,
 }
 
 
@@ -3048,6 +3040,10 @@ local function guiGeneralTab()
     hidePlayerCornerIcon:SetPoint("TOPLEFT", hidePlayerRestAnimation, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(hidePlayerCornerIcon, "Hide corner icon on PlayerFrame.|A:UI-HUD-UnitFrame-Player-PortraitOn-CornerEmbellishment:22:22|a\n")
 
+    local hidePlayerHealthLossAnim = CreateCheckbox("hidePlayerHealthLossAnim", "Hide Health Loss FX", BetterBlizzFrames, nil, BBF.HideFrames)
+    hidePlayerHealthLossAnim:SetPoint("LEFT", hidePlayerCornerIcon.text, "RIGHT", 0, 0)
+    CreateTooltipTwo(hidePlayerHealthLossAnim, "Hide Health Loss Animations", "Hide the red health loss animation on PlayerFrame and always see current HP properly.")
+
     local hidePlayerRestGlow = CreateCheckbox("hidePlayerRestGlow", "Hide Rest Glow", BetterBlizzFrames, nil, BBF.HideFrames)
     hidePlayerRestGlow:SetPoint("TOPLEFT", hidePlayerCornerIcon, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(hidePlayerRestGlow, "Hide the flashing yellow rest glow animation around PlayerFrame while rested.|A:UI-HUD-UnitFrame-Player-PortraitOn-Status:30:80|a")
@@ -3122,6 +3118,10 @@ local function guiGeneralTab()
     local hidePetText = CreateCheckbox("hidePetText", "Hide Pet Statusbar Text", BetterBlizzFrames, nil, BBF.HideFrames)
     hidePetText:SetPoint("TOPLEFT", colorPetAfterOwner, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(hidePetText, "Hide Pet Statusbar Text", "Hide the health and mana text on PetFrame.")
+
+    local hidePetHitIndicator = CreateCheckbox("hidePetHitIndicator", "Hide Hit Indicator", BetterBlizzFrames, nil, BBF.HideFrames)
+    hidePetHitIndicator:SetPoint("TOPLEFT", hidePetText, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(hidePetHitIndicator, "Hide Pet Hit Indicator", "Hide the health loss/gain numbers on PetFrame Portrait.")
 
     local partyFrameText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     partyFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 0, -427)
@@ -3624,100 +3624,142 @@ local function guiGeneralTab()
         if self:GetChecked() and C_AddOns.IsAddOnLoaded("ClassicFrames") then
             C_AddOns.DisableAddOn("ClassicFrames")
         end
-        if not BBF.ClassicReloadWindow then
-            local statusText = classicFrames:GetChecked() and "|cff00ff00ON|r" or "|cffff0000OFF|r"
-            StaticPopupDialogs["BBF_CLASSIC_RELOAD"] = {
-                text = titleText.."Classic Frames will turn "..statusText.." after reload.\n\nSelect which optional settings you want.\n|cFFAAAAAA(These can be changed individually later)|r\n\n\n\n\n ",
-                button1 = "Reload UI",
-                button2 = "Cancel",
-                OnAccept = function()
-                    BetterBlizzFramesDB.reopenOptions = true
-                    if BBF.ChangesOnReload then
-                        for key, value in pairs(BBF.ChangesOnReload) do
-                            BetterBlizzFramesDB[key] = value
-                            if key == "comboPointLocation" and not InCombatLockdown() then
-                                C_CVar.SetCVar("comboPointLocation", value)
+        if self:GetChecked() then
+            if not BBF.ClassicReloadWindow then
+                local statusText = classicFrames:GetChecked() and "|cff00ff00ON|r" or "|cffff0000OFF|r"
+                StaticPopupDialogs["BBF_CLASSIC_RELOAD"] = {
+                    text = titleText.."Classic Frames will turn "..statusText.." after reload.\n\nSelect which optional settings you want.\n|cFFAAAAAA(These can be changed individually later)|r\n\n\n\n\n ",
+                    button1 = "Reload UI",
+                    button2 = "Cancel",
+                    OnAccept = function()
+                        BetterBlizzFramesDB.reopenOptions = true
+                        if BBF.ChangesOnReload then
+                            for key, value in pairs(BBF.ChangesOnReload) do
+                                BetterBlizzFramesDB[key] = value
+                                if key == "comboPointLocation" and value ~= nil and not InCombatLockdown() then
+                                    C_CVar.SetCVar("comboPointLocation", value)
+                                end
                             end
                         end
-                    end
-                    ReloadUI()
-                end,
-                OnShow = function(self)
-                    local statusText = classicFrames:GetChecked() and "|cff00ff00ON|r" or "|cffff0000OFF|r"
-                    self.text:SetText(titleText.."Classic Frames will turn "..statusText.." after reload.\n\nSelect which optional settings you want.\n|cFFAAAAAA(These can be changed individually later)|r\n\n\n\n\n ")
-                    if not self.classicSettings then
-                        BBF.ChangesOnReload = {}
-                        self.cfTextures = CreateFrame("CheckButton", nil, self, "UICheckButtonTemplate")
-                        self.cfTextures:SetSize(26, 26)
-                        CreateTooltipTwo(self.cfTextures, "Use Classic Textures for Bars", "Use the old Classic Textures for Health & Manabars.\n\nUnchecked will keep the default retail textures and use a little less CPU.")
-                        self.cfTextures.Text:SetText("Classic Health & Mana Textures")
+                        ReloadUI()
+                    end,
+                    OnShow = function(self)
+                        local statusText = classicFrames:GetChecked() and "|cff00ff00ON|r" or "|cffff0000OFF|r"
+                        self.text:SetText(titleText.."Classic Frames will turn "..statusText.." after reload.\n\nSelect which optional settings you want.\n|cFFAAAAAA(These can be changed individually later)|r\n\n\n\n\n ")
+                        if not self.classicSettings then
+                            BBF.ChangesOnReload = {}
+                            self.cfTextures = CreateFrame("CheckButton", nil, self, "UICheckButtonTemplate")
+                            self.cfTextures:SetSize(26, 26)
+                            CreateTooltipTwo(self.cfTextures, "Use Classic Textures for Bars", "Use the old Classic Textures for Health & Manabars.\n\nUnchecked will keep the default retail textures and use a little less CPU.")
+                            self.cfTextures.Text:SetText("Classic Health & Mana Textures")
 
-                        self.cfCastbars = CreateFrame("CheckButton", nil, self, "UICheckButtonTemplate")
-                        self.cfCastbars:SetSize(26, 26)
-                        CreateTooltipTwo(self.cfCastbars, "Use Classic Castbars", "Use the old Classic Castbar look for Player, Target, Focus & Party.")
-                        self.cfCastbars.Text:SetText("Classic Castbars")
+                            self.cfCastbars = CreateFrame("CheckButton", nil, self, "UICheckButtonTemplate")
+                            self.cfCastbars:SetSize(26, 26)
+                            CreateTooltipTwo(self.cfCastbars, "Use Classic Castbars", "Use the old Classic Castbar look for Player, Target, Focus & Party.")
+                            self.cfCastbars.Text:SetText("Classic Castbars")
 
-                        self.cfComboPoints = CreateFrame("CheckButton", nil, self, "UICheckButtonTemplate")
-                        self.cfComboPoints:SetSize(26, 26)
-                        CreateTooltipTwo(self.cfComboPoints, "Use Classic Combo Points", "Use the old Classic Combo Points look on TargetFrame.\n\nNote: If you would rather move the new Combo Points to TargetFrame you can do so in the Misc section.")
-                        self.cfComboPoints.Text:SetText("Classic Combo Points")
+                            self.cfComboPoints = CreateFrame("CheckButton", nil, self, "UICheckButtonTemplate")
+                            self.cfComboPoints:SetSize(26, 26)
+                            CreateTooltipTwo(self.cfComboPoints, "Use Classic Combo Points", "Use the old Classic Combo Points look on TargetFrame.\n\nNote: If you would rather move the new Combo Points to TargetFrame you can do so in the Misc section.")
+                            self.cfComboPoints.Text:SetText("Classic Combo Points")
 
-                        local firstClick = BetterBlizzFramesDB.classicFramesClicked == nil
-                        BetterBlizzFramesDB.classicFramesClicked = true
+                            local firstClick = BetterBlizzFramesDB.classicFramesClicked == nil
+                            BetterBlizzFramesDB.classicFramesClicked = true
 
-                        self.cfCastbars:SetChecked((firstClick and true) or BetterBlizzFramesDB.classicCastbars or false)
-                        self.cfComboPoints:SetChecked(C_CVar.GetCVar("comboPointLocation") == "1" and true or false)
-                        self.cfTextures:SetChecked(BetterBlizzFramesDB.changeUnitFrameHealthbarTexture or false)
+                            self.cfCastbars:SetChecked((firstClick and true) or BetterBlizzFramesDB.classicCastbars or false)
+                            self.cfComboPoints:SetChecked(C_CVar.GetCVar("comboPointLocation") == "1" and true or false)
+                            self.cfTextures:SetChecked(BetterBlizzFramesDB.changeUnitFrameHealthbarTexture or false)
 
-                        self.classicSettings = true
-                    end
+                            self.classicSettings = true
+                        end
 
-                    local function CheckBoxes()
-                        local castbarsEnabled = self.cfCastbars:GetChecked()
-                        BBF.ChangesOnReload["classicCastbarsParty"] = castbarsEnabled or false
-                        BBF.ChangesOnReload["classicCastbarsPlayer"] = castbarsEnabled or false
-                        BBF.ChangesOnReload["classicCastbarsPlayerBorder"] = castbarsEnabled or false
-                        BBF.ChangesOnReload["classicCastbars"] = castbarsEnabled or false
-                        BBF.ChangesOnReload["classicCastbarsParty"] = castbarsEnabled or false
+                        local function CheckBoxes()
+                            local castbarsEnabled = self.cfCastbars:GetChecked()
+                            if castbarsEnabled then
+                                BBF.ChangesOnReload["classicCastbarsParty"] = castbarsEnabled
+                                BBF.ChangesOnReload["classicCastbarsPlayer"] = castbarsEnabled
+                                BBF.ChangesOnReload["classicCastbarsPlayerBorder"] = castbarsEnabled
+                                BBF.ChangesOnReload["classicCastbars"] = castbarsEnabled
+                                BBF.ChangesOnReload["classicCastbarsParty"] = castbarsEnabled
+                                BBF.ChangesOnReload["targetToTXPos"] = -1
+                                BBF.ChangesOnReload["targetToTYPos"] = 17
+                                BBF.ChangesOnReload["focusToTXPos"] = -1
+                                BBF.ChangesOnReload["focusToTYPos"] = 17
+                                BBF.ChangesOnReload["targetToTScale"] = 0.97
+                                BBF.ChangesOnReload["focusToTScale"] = 0.97
+                                BBF.ChangesOnReload["targetCastBarXPos"] = 5
+                                BBF.ChangesOnReload["focusCastBarXPos"] = 5
+                                BBF.ChangesOnReload["targetCastBarWidth"] = 143
+                                BBF.ChangesOnReload["focusCastBarWidth"] = 143
+                                BBF.ChangesOnReload["playerCastBarWidth"] = 205
+                                BBF.ChangesOnReload["playerCastBarHeight"] = 12.5
+                            end
 
+                            local comboPointsEnabled = self.cfComboPoints:GetChecked()
+                            BBF.ChangesOnReload["comboPointLocation"] = comboPointsEnabled and "1" or nil
 
-                        local comboPointsEnabled = self.cfComboPoints:GetChecked()
-                        BBF.ChangesOnReload["comboPointLocation"] = comboPointsEnabled and "1" or "2"
-
-                        local statusBarsEnabled = self.cfTextures:GetChecked()
-                        BBF.ChangesOnReload["changeUnitFrameHealthbarTexture"] = statusBarsEnabled or false
-                        BBF.ChangesOnReload["changeUnitFrameManabarTexture"] = statusBarsEnabled or false
-                        BBF.ChangesOnReload["unitFrameHealthbarTexture"] = statusBarsEnabled and "Blizzard DF" or nil
-                        BBF.ChangesOnReload["unitFrameManabarTexture"] = statusBarsEnabled and "Blizzard DF" or nil
-                    end
-                    CheckBoxes()
-
-                    self.cfCastbars:SetScript("OnClick", function()
+                            local statusBarsEnabled = self.cfTextures:GetChecked()
+                            BBF.ChangesOnReload["changeUnitFrameHealthbarTexture"] = statusBarsEnabled or false
+                            BBF.ChangesOnReload["changeUnitFrameManabarTexture"] = statusBarsEnabled or false
+                            BBF.ChangesOnReload["unitFrameHealthbarTexture"] = statusBarsEnabled and "Blizzard DF" or nil
+                            BBF.ChangesOnReload["unitFrameManabarTexture"] = statusBarsEnabled and "Blizzard DF" or nil
+                            BBF.ChangesOnReload["hidePlayerHealthLossAnim"] = statusBarsEnabled and true or nil
+                        end
                         CheckBoxes()
-                    end)
-                    self.cfComboPoints:SetScript("OnClick", function()
-                        CheckBoxes()
-                    end)
-                    self.cfTextures:SetScript("OnClick", function()
-                        CheckBoxes()
-                    end)
-                    self.cfCastbars:SetPoint("BOTTOMLEFT", self.button1, "TOPLEFT", 15, 43)
-                    self.cfComboPoints:SetPoint("TOPLEFT", self.cfCastbars, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-                    self.cfTextures:SetPoint("TOPLEFT", self.cfComboPoints, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-                    self.cfTextures:Show()
-                end,
-                OnHide = function(self)
-                    if self.cfTextures then
-                        self.cfTextures:Hide()
-                    end
-                end,
-                timeout = 0,
-                whileDead = true,
-                hideOnEscape = true,
-            }
-            BBF.ClassicReloadWindow = true
+
+                        self.cfCastbars:SetScript("OnClick", function()
+                            CheckBoxes()
+                        end)
+                        self.cfComboPoints:SetScript("OnClick", function()
+                            CheckBoxes()
+                        end)
+                        self.cfTextures:SetScript("OnClick", function()
+                            CheckBoxes()
+                        end)
+                        self.cfCastbars:SetPoint("BOTTOMLEFT", self.button1, "TOPLEFT", 15, 43)
+                        self.cfComboPoints:SetPoint("TOPLEFT", self.cfCastbars, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+                        self.cfTextures:SetPoint("TOPLEFT", self.cfComboPoints, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+                        self.cfTextures:Show()
+                    end,
+                    OnHide = function(self)
+                        if self.cfTextures then
+                            self.cfTextures:Hide()
+                        end
+                    end,
+                    timeout = 0,
+                    whileDead = true,
+                }
+                BBF.ClassicReloadWindow = true
+            end
+            StaticPopup_Show("BBF_CLASSIC_RELOAD")
+        else
+            local db = BetterBlizzFramesDB
+            db.classicCastbarsParty = false
+            db.classicCastbarsPlayer = false
+            db.classicCastbarsPlayerBorder = false
+            db.classicCastbars = false
+            db.classicCastbarsParty = false
+            db.changeUnitFrameHealthbarTexture = false
+            db.changeUnitFrameManabarTexture = false
+            db.comboPointLocation = nil
+            db.targetToTXPos = -1
+            db.targetToTYPos = 17
+            db.focusToTXPos = -1
+            db.focusToTYPos = 17
+            db.targetToTScale = 0.97
+            db.focusToTScale = 0.97
+            db.targetCastBarXPos = 5
+            db.focusCastBarXPos = 5
+            db.targetCastBarWidth = 143
+            db.focusCastBarWidth = 143
+            db.playerCastBarWidth = 205
+            db.playerCastBarHeight = 12.5
+            db.hidePlayerHealthLossAnim = nil
+            if not InCombatLockdown() then
+                C_CVar.SetCVar("comboPointLocation", "2")
+            end
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
         end
-        StaticPopup_Show("BBF_CLASSIC_RELOAD")
     end)
 
     local classColorFrames = CreateCheckbox("classColorFrames", "Class Color Frames", BetterBlizzFrames)
@@ -3830,10 +3872,20 @@ local function guiGeneralTab()
     local hideLevelText = CreateCheckbox("hideLevelText", "Hide Level 80 Text", BetterBlizzFrames, nil, BBF.HideFrames)
     hideLevelText:SetPoint("TOPLEFT", hideCombatGlow, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(hideLevelText, "Hide the level text for Player, Target & Focus frames if they are level 80")
+    hideLevelText:HookScript("OnClick", function()
+        if BetterBlizzFramesDB.classicFrames then
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        end
+    end)
 
     local hideLevelTextAlways = CreateCheckbox("hideLevelTextAlways", "Always", BetterBlizzFrames, nil, BBF.HideFrames)
     hideLevelTextAlways:SetPoint("LEFT", hideLevelText.Text, "RIGHT", 0, 0)
     CreateTooltip(hideLevelTextAlways, "Always hide the level text.")
+    hideLevelTextAlways:HookScript("OnClick", function()
+        if BetterBlizzFramesDB.classicFrames then
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        end
+    end)
 
     hideLevelText:HookScript("OnClick", function(self)
         if self:GetChecked() then
@@ -3961,7 +4013,7 @@ local function guiGeneralTab()
 
     local queueTimer = CreateCheckbox("queueTimer", "Queue Timer", BetterBlizzFrames)
     queueTimer:SetPoint("TOPLEFT", overShields, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltipTwo(queueTimer, "Queue Timer", "Displays the remaining time to accept when a queue pops.", nil, "ANCHOR_LEFT")
+    CreateTooltipTwo(queueTimer, "Queue Timer", "Show the remaining time to accept a queue when it pops. Works for both PvP and PvE. Optionally plays a queue pop sound and warns when the queue timer is about to expire.", nil, "ANCHOR_LEFT")
 
     local queueTimerAudio = CreateCheckbox("queueTimerAudio", "SFX", queueTimer)
     queueTimerAudio:SetPoint("LEFT", queueTimer.text, "RIGHT", 0, 0)
@@ -5369,6 +5421,13 @@ local function guiFrameLook()
         if button == "RightButton" then
             OpenColorOptions(BetterBlizzFramesDB.unitFrameFontColorRGB,  BBF.FontColors)
         end
+    end)
+
+    local unitFrameFontColorLvl = CreateCheckbox("unitFrameFontColorLvl", "Lvl", guiFrameLook)
+    unitFrameFontColorLvl:SetPoint("LEFT", unitFrameFontColor.Text, "RIGHT", 0, 0)
+    CreateTooltipTwo(unitFrameFontColorLvl, "Color Level Font", "Also color the level font")
+    unitFrameFontColorLvl:HookScript("OnClick", function()
+        BBF.FontColors()
     end)
 
     local unitFrameFont = CreateFontDropdown(
@@ -6853,9 +6912,25 @@ local function guiMisc()
     local druidOverstacks = CreateCheckbox("druidOverstacks", "Druid: Color Berserk Overstack Combo Points Blue", guiMisc)
     druidOverstacks:SetPoint("TOPLEFT", surrenderArena, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(druidOverstacks, "Druid: Color Berserk Overstack Combo Points Blue", "Color the Druid Berserk Overstack Combo Points blue similar to Rogue's Echoing Reprimand.")
+    druidOverstacks:HookScript("OnClick", function(self)
+        BBF.DruidBlueComboPoints()
+        if not self:GetChecked() then
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        end
+    end)
+
+    local druidAlwaysShowCombos = CreateCheckbox("druidAlwaysShowCombos", "Druid: Show Combo Points in Normal Form", guiMisc)
+    druidAlwaysShowCombos:SetPoint("TOPLEFT", druidOverstacks, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(druidAlwaysShowCombos, "Druid: Show Combo Points in Normal Form", "Show combo points in normal form whenever you have available combo points.")
+    druidAlwaysShowCombos:HookScript("OnClick", function(self)
+        BBF.DruidAlwaysShowCombos()
+        if not self:GetChecked() then
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        end
+    end)
 
     local hideTalkingHeads = CreateCheckbox("hideTalkingHeads", "Hide Talking Heads Frame", guiMisc, nil, BBF.HideTalkingHeads)
-    hideTalkingHeads:SetPoint("TOPLEFT", druidOverstacks, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    hideTalkingHeads:SetPoint("TOPLEFT", druidAlwaysShowCombos, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(hideTalkingHeads, "Hide Talking Heads Frame", "Hide the frame showing npcs talking during quests etc.")
     hideTalkingHeads:HookScript("OnClick", function(self)
         if not self:GetChecked() then
@@ -6916,9 +6991,16 @@ local function guiMisc()
     enableLegacyComboPoints:HookScript("OnClick", function()
         StaticPopup_Show("BBF_CONFIRM_RELOAD")
         if not InCombatLockdown() then
-            C_CVar.SetCVar("comboPointLocation", "1")
+            BBF.FixLegacyComboPointsLocation()
         end
     end)
+
+    local alwaysShowLegacyComboPoints = CreateCheckbox("alwaysShowLegacyComboPoints", "Show Always", enableLegacyComboPoints)
+    alwaysShowLegacyComboPoints:SetPoint("LEFT", enableLegacyComboPoints.text, "RIGHT", 0, 0)
+    alwaysShowLegacyComboPoints:HookScript("OnClick", function()
+        BBF.AlwaysShowLegacyComboPoints()
+    end)
+
 
     local instantComboPoints = CreateCheckbox("instantComboPoints", "Instant Combo Points", guiMisc, nil, BBF.InstantComboPoints)
     instantComboPoints:SetPoint("TOPLEFT", enableLegacyComboPoints, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
@@ -7392,7 +7474,6 @@ local function guiCustomCode()
         end,
         timeout = 0,
         whileDead = true,
-        hideOnEscape = true,
     }
 
     local reloadUiButton = CreateFrame("Button", nil, guiCustomCode, "UIPanelButtonTemplate")

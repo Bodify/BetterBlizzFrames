@@ -1,5 +1,6 @@
 function BBF.DruidBlueComboPoints()
     if not BetterBlizzFramesDB.druidOverstacks then return end
+    if BBF.druidBlueCombos then return end
     if select(2, UnitClass("player")) ~= "DRUID" then return end
     local druid = _G.DruidComboPointBarFrame
 
@@ -127,4 +128,49 @@ function BBF.DruidBlueComboPoints()
         UpdateComboPoints(druid)
     end)
     druid.auraWatch:RegisterUnitEvent("UNIT_AURA", "player")
+    BBF.druidBlueCombos = true
+end
+
+function BBF.DruidAlwaysShowCombos()
+    if not BetterBlizzFramesDB.druidAlwaysShowCombos then return end
+    if select(2, UnitClass("player")) ~= "DRUID" then return end
+    if BBF.DruidAlwaysShowCombos then return end
+    local frame = DruidComboPointBarFrame
+
+    local function UpdateDruidComboPoints(self)
+        local form = GetShapeshiftFormID()
+        if form == 1 then return end
+
+        local comboPoints = UnitPower("player", self.powerType)
+
+        if comboPoints > 0 then
+            self:Show()
+        else
+            self:Hide()
+        end
+
+        for i, point in ipairs(self.classResourceButtonTable) do
+            local isFull = i <= comboPoints
+
+            point.Point_Icon:SetAlpha(isFull and 1 or 0)
+            point.BG_Active:SetAlpha(isFull and 1 or 0)
+            point.BG_Inactive:SetAlpha(isFull and 0 or 1)
+            point.Point_Deplete:SetAlpha(0)
+        end
+    end
+
+    frame:HookScript("OnHide", function(self)
+        if UnitPower("player", self.powerType) > 0 then
+            self:Show()
+        end
+    end)
+
+    local listener = CreateFrame("Frame")
+    listener:RegisterUnitEvent("UNIT_POWER_UPDATE", "player")
+    listener:SetScript("OnEvent", function(_, _, _, powerType)
+        if powerType == "COMBO_POINTS" then
+            UpdateDruidComboPoints(frame)
+        end
+    end)
+    BBF.DruidAlwaysShowCombos = true
 end

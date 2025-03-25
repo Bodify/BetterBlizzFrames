@@ -1420,22 +1420,51 @@ function BBF.CompactPartyFrameScale()
     end
 end
 
-local function FixLegacyComboPointsLocation()
+function BBF.FixLegacyComboPointsLocation()
     if BetterBlizzFramesDB.enableLegacyComboPoints then
-        C_CVar.SetCVar("comboPointLocation", BetterBlizzFramesDB.comboPointLocation)
+        C_CVar.SetCVar("comboPointLocation", "1")
     elseif BetterBlizzFramesDB.comboPointLocation then
         C_CVar.SetCVar("comboPointLocation", BetterBlizzFramesDB.comboPointLocation)
     end
     if C_CVar.GetCVar("comboPointLocation") == "1" and ComboFrame then
-        ComboFrame:ClearAllPoints()
         ComboFrame:SetParent(TargetFrame)
         ComboFrame:SetFrameStrata("HIGH")
-        ComboFrame:SetPoint("TOPRIGHT", TargetFrame, "TOPRIGHT", -29.5, -14.5)
+        ComboFrame:ClearAllPoints()
+        ComboFrame:SetPoint("TOPRIGHT", TargetFrame, "TOPRIGHT", -28, -25)
+        ComboFrame:SetScale(0.85)
     end
 end
 
-
-
+function BBF.AlwaysShowLegacyComboPoints()
+    if not BetterBlizzFramesDB.alwaysShowLegacyComboPoints then return end
+    if BetterBlizzFramesDB.instantComboPoints then return end
+    if BBF.AlwaysShowLegacyComboPoints then return end
+    local _, class = UnitClass("player")
+    if class ~= "ROGUE" and class ~= "DRUID" then return end
+    local function UpdateLegacyComboFrame()
+        local frame = ComboFrame
+        local comboPoints = GetComboPoints("player", "target")
+        local maxComboPoints = UnitPowerMax("player", Enum.PowerType.ComboPoints)
+        frame:Show()
+        frame:SetAlpha(1)
+        local comboIndex = frame.startComboPointIndex or 2
+        for i = 1, maxComboPoints do
+            local point = frame.ComboPoints[comboIndex]
+            if point then
+                point:Show()
+                point:SetAlpha(1)
+                point.Highlight:SetAlpha(i <= comboPoints and 1 or 0)
+                point.Shine:SetAlpha(0)
+                comboIndex = comboIndex + 1
+            end
+        end
+    end
+    if C_CVar.GetCVar("comboPointLocation") == "1" and ComboFrame then
+        hooksecurefunc("ComboFrame_Update", UpdateLegacyComboFrame)
+        UpdateLegacyComboFrame()
+    end
+    BBF.AlwaysShowLegacyComboPoints = true
+end
 
 function BBF.InstantComboPoints()
     if not BetterBlizzFramesDB.instantComboPoints then return end
@@ -1487,7 +1516,7 @@ function BBF.InstantComboPoints()
 
         local comboPoints = GetComboPoints("player", "target")
         local maxComboPoints = UnitPowerMax("player", Enum.PowerType.ComboPoints)
-        local showAlways = BetterBlizzFramesDB.alwaysShowComboPoints or false
+        local showAlways = BetterBlizzFramesDB.alwaysShowLegacyComboPoints or false
 
         frame:SetAlpha(1)
         frame:Show()
@@ -1642,6 +1671,7 @@ function BBF.InstantComboPoints()
     elseif class == "DRUID" then
         hooksecurefunc(DruidComboPointBarFrame, "UpdatePower", UpdateDruidComboPoints)
         if not BBP then hooksecurefunc(ClassNameplateBarFeralDruidFrame, "UpdatePower", UpdateDruidComboPoints) end
+        if C_CVar.GetCVar("comboPointLocation") == "1" and ComboFrame then hooksecurefunc("ComboFrame_Update", UpdateLegacyComboFrame) end
     elseif class == "MAGE" then
         hooksecurefunc(MageArcaneChargesFrame, "UpdatePower", UpdateArcaneCharges)
         if not BBP then hooksecurefunc(ClassNameplateBarMageFrame, "UpdatePower", UpdateArcaneCharges) end
@@ -1877,6 +1907,8 @@ function BBF.ReduceEditModeAlpha(disable)
         MainMenuBar.VehicleLeaveButton,
         MicroMenuContainer,
         MinimapCluster,
+        ObjectiveTrackerFrame,
+        EncounterBar,
         MirrorTimerContainer,
         MultiBarBottomLeft,
         MultiBarBottomRight,
@@ -1902,6 +1934,51 @@ function BBF.ReduceEditModeAlpha(disable)
         end
     end
 end
+
+local function RoundToStep(value, step)
+    return math.floor((value / step) + 0.5) * step
+end
+
+local function CreateSmoothSlider(parent, variableToAdjust, title, defaultValue, onChangedCallback)
+    local stepSize = 0.05
+    local minValue, maxValue = 0, 1
+
+    local initialValue = BetterBlizzFramesDB[variableToAdjust] or defaultValue or maxValue
+
+    -- Create slider options and hide all labels except top
+    local options = Settings.CreateSliderOptions(minValue, maxValue, stepSize)
+    --options:SetLabelFormatter(MinimalSliderWithSteppersMixin.Label.Top, function() return title end)
+    -- Leave all others blank (default behavior is hidden if no formatter is set)
+
+    -- Create the slider
+    local slider = CreateFrame("Frame", nil, parent, "MinimalSliderWithSteppersTemplate")
+    slider:SetSize(250, 20)
+    slider:SetPoint("TOP", parent, "BOTTOM", 0, -12)
+
+    -- Label
+    local label = slider:CreateFontString(nil, "OVERLAY", "GameFontNormalMed1")
+    label:SetPoint("BOTTOM", slider, "TOP", 0, 2)
+    label:SetText(title)
+    label:SetTextColor(1,1,1,1)
+
+    -- Initialize with value and options
+    slider:Init(initialValue, options.minValue, options.maxValue, options.steps, options.formatters)
+
+    -- Register OnValueChanged callback
+    slider:RegisterCallback("OnValueChanged", function(_, value)
+        local rounded = RoundToStep(value, stepSize)
+        BetterBlizzFramesDB.reduceEditModeSelectionAlpha = true
+        BetterBlizzFramesDB[variableToAdjust] = rounded
+        if onChangedCallback then
+            onChangedCallback()
+        end
+    end, slider)
+
+    return slider
+end
+C_Timer.After(1, function()
+    CreateSmoothSlider(EditModeManagerFrame, "editModeSelectionAlpha", "Edit Mode Transparency", 0.85, BBF.ReduceEditModeAlpha)
+end)
 
 
 local LSM = LibStub("LibSharedMedia-3.0")
@@ -1955,6 +2032,8 @@ local function ApplyTextureChange(type, statusBar, parent, classic)
     if playerHp then
         local tex = classicTexture and 798064 or texture
         PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer.PlayerFrameHealthBarAnimatedLoss:SetStatusBarTexture(tex)
+        local lossTex = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer.PlayerFrameHealthBarAnimatedLoss:GetStatusBarTexture()
+        lossTex:SetDrawLayer(originalLayer, 0)
         statusBar.MyHealPredictionBar.Fill:SetTexture(tex)
         statusBar.OtherHealPredictionBar.Fill:SetTexture(tex)
         statusBar.HealAbsorbBar.Fill:SetTexture(tex)
@@ -1967,13 +2046,9 @@ local function ApplyTextureChange(type, statusBar, parent, classic)
         statusBar.TotalAbsorbBar.Fill:SetTexture(tex)
     end
 
-    -- Restore the original draw layer
-    originalTexture:SetDrawLayer(originalLayer, subLayer)
     if playerHp then
-        local hpTex = statusBar:GetStatusBarTexture()
-        local originalLayer, subLayer = hpTex:GetDrawLayer()
-        PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer.HealthBar.TotalAbsorbBar.TiledFillOverlay:SetDrawLayer(originalLayer, subLayer + 3)
-        PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer.HealthBar.OverAbsorbGlow:SetDrawLayer(originalLayer, subLayer + 3)
+        PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer.HealthBar.TotalAbsorbBar.TiledFillOverlay:SetDrawLayer(originalLayer, (subLayer + 1))
+        PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer.HealthBar.OverAbsorbGlow:SetDrawLayer(originalLayer, (subLayer + 1))
     end
 
     -- Hook SetStatusBarTexture to ensure the texture remains consistent
@@ -2114,7 +2189,7 @@ function HookUnitFrameTextures()
             end
         end
 
-        -- Apply class color override if enabled
+        -- Apply green color on white texture if class color is not enabled
         if not db.classColorFrames then
             local healthbars = {
                 PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer.HealthBar,
@@ -2129,25 +2204,14 @@ function HookUnitFrameTextures()
                 healthbar:SetStatusBarColor(0,1,0)
             end
 
-            local validUnits = {
-                player = true,
-                target = true,
-                targettarget = true,
-                focus = true,
-                focustarget = true,
-                pet = true,
-                party1 = true,
-                party2 = true,
-                party3 = true,
-                party4 = true,
-            }
-
-            hooksecurefunc("UnitFrameHealthBar_Update", function(self, unit)
-                if not validUnits[unit] then return end
-                self:SetStatusBarColor(0,1,0)
-                TargetFrameToT.HealthBar:SetStatusBarColor(0,1,0)
-                FocusFrameToT.HealthBar:SetStatusBarColor(0,1,0)
-            end)
+            if not BetterBlizzFramesDB.classicFrames then
+                hooksecurefunc(TargetFrame, "CheckClassification", function(self)
+                    self.TargetFrameContent.TargetFrameContentMain.HealthBarsContainer.HealthBarMask:SetHeight(31)
+                end)
+                hooksecurefunc(FocusFrame, "CheckClassification", function(self)
+                    self.TargetFrameContent.TargetFrameContentMain.HealthBarsContainer.HealthBarMask:SetHeight(31)
+                end)
+            end
 
             if not EditModeManagerFrame:UseRaidStylePartyFrames() then
                 for i = 1, 4 do
@@ -3109,9 +3173,11 @@ First:SetScript("OnEvent", function(_, event, addonName)
         InitializeSavedVariables()
         FetchAndSaveValuesOnFirstLogin()
         TurnTestModesOff()
-        FixLegacyComboPointsLocation()
+        BBF.FixLegacyComboPointsLocation()
+        BBF.AlwaysShowLegacyComboPoints()
         BBF.RaiseTargetFrameLevel()
         BBF.RaiseTargetCastbarStratas()
+        BBF.UpdateCustomTextures()
         BBF.ClassicFrames()
         BBF.ReduceEditModeAlpha()
         BBF.SymmetricPlayerFrame()
@@ -3120,6 +3186,7 @@ First:SetScript("OnEvent", function(_, event, addonName)
         ScaleClassResource()
         BBF.SurrenderNotLeaveArena()
         BBF.DruidBlueComboPoints()
+        BBF.DruidAlwaysShowCombos()
         BBF.RemoveAddonCategories()
         --BBF.AbsorbCaller()
         BBF.HookStatusBarText()
@@ -3137,7 +3204,6 @@ First:SetScript("OnEvent", function(_, event, addonName)
             BBF.AbsorbCaller()
             BBF.SetCustomFonts()
             BBF.PlayerReputationColor()
-            BBF.UpdateCustomTextures()
             BBF.FontColors()
         end)
         --TurnOnEnabledFeaturesOnLogin()

@@ -132,7 +132,13 @@ local function AdjustFlash(castBar, isPlayer)
 end
 
 
-
+function BBF.CastbarShakeAnimationCancel()
+    if BBF.castbarShakeAnimationCancel then return end
+    hooksecurefunc(PlayerCastingBarFrame.InterruptShakeAnim, "Play", function(self)
+        self:Stop()
+    end)
+    BBF.castbarShakeAnimationCancel = true
+end
 
 
 function BBF.ClassicCastbar(castBar, isParty, isPlayer)
@@ -163,6 +169,10 @@ function BBF.ClassicCastbar(castBar, isParty, isPlayer)
         for i = 1,2 do
             castBar["Sparkles0"..i]:SetAtlas(nil)
         end
+    end
+
+    if isPlayer then
+        BBF.CastbarShakeAnimationCancel()
     end
 
 

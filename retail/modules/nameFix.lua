@@ -128,7 +128,7 @@ local function CenterXName(fontObject, healthBar, ToT, pet)
         fontObject:SetJustifyH("CENTER")
     end
     local xPos = ToT and (classicFramesMode and 8 or -2) or (classicFramesMode and 0) or 2
-    local yPos = ((pet and classicFramesMode) and 2) or ToT and (classicFramesMode and -18 or 12) or (classicFramesMode and 6.3 or 14)
+    local yPos = ((pet and classicFramesMode) and 2 or pet and 2) or ToT and (classicFramesMode and -18 or 12) or (classicFramesMode and 6.3 or 14)
     fontObject:SetPoint(pet and "BOTTOM" or "TOP", healthBar, "TOP", xPos, yPos)
 end
 
@@ -1399,18 +1399,20 @@ function BBF.FontColors()
                 frame.bbfName:SetVertexColor(unpack(color))
             end
         end
-        -- PlayerLevelText:SetVertexColor(unpack(color))
-        -- TargetFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetVertexColor(unpack(BetterBlizzFramesDB.unitFrameFontColorRGB))
-        -- FocusFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetVertexColor(unpack(color))
-        -- if not BBF.UnitFrameFontColorHook then
-        --     hooksecurefunc(TargetFrame, "CheckLevel", function()
-        --         TargetFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetVertexColor(unpack(BetterBlizzFramesDB.unitFrameFontColorRGB))
-        --     end)
-        --     hooksecurefunc(FocusFrame, "CheckLevel", function()
-        --         FocusFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetVertexColor(unpack(BetterBlizzFramesDB.unitFrameFontColorRGB))
-        --     end)
-        --     BBF.UnitFrameFontColorHook = true
-        -- end
+        if db.unitFrameFontColorLvl then
+            PlayerLevelText:SetVertexColor(unpack(color))
+            TargetFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetVertexColor(unpack(BetterBlizzFramesDB.unitFrameFontColorRGB))
+            FocusFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetVertexColor(unpack(color))
+            if not BBF.UnitFrameFontColorHook then
+                hooksecurefunc(TargetFrame, "CheckLevel", function()
+                    TargetFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetVertexColor(unpack(BetterBlizzFramesDB.unitFrameFontColorRGB))
+                end)
+                hooksecurefunc(FocusFrame, "CheckLevel", function()
+                    FocusFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetVertexColor(unpack(BetterBlizzFramesDB.unitFrameFontColorRGB))
+                end)
+                BBF.UnitFrameFontColorHook = true
+            end
+        end
     end
 
     if db.partyFrameFontColor then
@@ -1464,10 +1466,24 @@ function BBF.FontColors()
 
     if db.actionBarFontColor then
         local color = db.actionBarFontColorRGB
+        local function isBlizzardWhite(r)
+            return math.abs(r - 0.8) < 0.01
+        end
         local function setColor(name)
             local frame = _G[name]
             if frame and frame.SetVertexColor then
                 frame:SetVertexColor(unpack(color))
+                if not frame.colorHook then
+                    hooksecurefunc(frame, "SetVertexColor", function(self, r, g, b, a)
+                        if frame.changing then return end
+                        frame.changing = true
+                        if isBlizzardWhite(r) then
+                            frame:SetVertexColor(unpack(color))
+                        end
+                        frame.changing = false
+                    end)
+                    frame.colorHook = true
+                end
             end
         end
 

@@ -58,6 +58,10 @@ function BBF.HideFrames()
             PlayerPVPTimerText:SetParent(PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual)
         end
 
+        if db.hidePetHitIndicator then
+            PetHitIndicator:SetParent(hiddenFrame)
+        end
+
         if BetterBlizzFramesDB.hideBossFrames then
             if not originalBossFrameParent then
                 originalBossFrameParent = BossTargetFrameContainer:GetParent()
@@ -683,6 +687,10 @@ function BBF.HideFrames()
             end
         end
 
+        if BetterBlizzFramesDB.hidePlayerHealthLossAnim then
+            PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer.PlayerFrameHealthBarAnimatedLoss:SetParent(hiddenFrame)
+        end
+
         local LossOfControlFrameAlphaBg = BetterBlizzFramesDB.hideLossOfControlFrameBg and 0 or 0.6
         local LossOfControlFrameAlphaLines = BetterBlizzFramesDB.hideLossOfControlFrameLines and 0 or 1
         LossOfControlFrame.blackBg:SetAlpha(LossOfControlFrameAlphaBg)
@@ -900,7 +908,7 @@ function BBF.HideFrames()
 end
 
 local function UpdateLevelTextVisibility(unitFrame, unit)
-    if BetterBlizzFramesDB.hideLevelText then
+    if BetterBlizzFramesDB.hideLevelText and not BetterBlizzFramesDB.classicFrames then
         if BetterBlizzFramesDB.hideLevelTextAlways then
             unitFrame.LevelText:SetAlpha(0)
             return

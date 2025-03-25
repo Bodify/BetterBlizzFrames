@@ -1,13 +1,17 @@
-# BetterBlizzFrames 1.6.4
+# BetterBlizzFrames 1.6.5
 ## Retail
-## New:
+### New:
 - ClassicFrames setting. A super lightweight ClassicFrames option. Turn UnitFrames (Player, Target, Focus, ToT, Party) into the old Classic look. (General)
 - New setting: Hide Mana Feedback, setting that hides the animation when you lose/gain mana/energy for instant feedback (General)
 - New setting: Hide Full Mana FX, setting that hides the glowing animation on the right side of your manabar when you are full mana/energy (General)
+- New setting: Player: Hide Health Loss Animation.
+- New setting: Show Druid combo points in normal form when you have active combo points.
 - Font Color settings in Font & Textures section.
 - Reduce Edit Mode Glow: Change the transparancy of the blue select alpha in Edit Mode so you can actually see where you move stuff (Misc)
 - New "Legacy Combo Points" setting that enables the old combo points with a CVar (and fixes their positioning)
-## Tweaks:
+- Legacy Combo Points: Show Always setting.
+- Hide Pet Hit Indicator
+### Tweaks:
 - Paladins Holy Power and Legacy Combo Points now also supported for "Instant Combo Points" setting.
 - Aura Filtering now also shows duration on auras Power Word: Barrier, Earthen Wall and Grounding Totem in addition to Smoke Bomb.
 - Dark Mode: Tooltip option now also colors the background black and not just the borders.
@@ -15,9 +19,19 @@
 - Texture changing now also effects default party frames
 - HealthBar texture change now also changes the textures of Heal Prediction/Absorb textures on the bar.
 - Tweaks to interrupt list for interrupt color, only counting pure kicks again.
+- Add default Party Frames to Format Numbers setting.
 - Aeghis profile update
-## Bugfix:
+### Bugfix:
 - Fix Classic Castbar Non-Interruptible Border positioning getting messed up without icon scale at 1
+### Note:
+- Accidentally released the alpha version of 1.6.4 as main release version on CurseForge. There were some minor bugs that was not intended to be released but nothing that would cause issues. I've bumped the version number to 1.6.5 now just to avoid confusion.
+
+
+
+# BetterBlizzFrames 1.6.4a
+## Retail
+- Alpha version of 1.6.5, skipped
+
 
 
 # BetterBlizzFrames 1.6.3e
