@@ -1538,9 +1538,11 @@ local function AdjustAuras(self, frameType)
                     elseif aura.ImportantDispell then
                         aura.ImportantDispell:Hide()
                     end
-                elseif aura.isImportant then
+                else--if aura.isImportant then
                     aura.isImportant = false
-                    aura.ImportantGlow:Hide()
+                    if aura.ImportantGlow then
+                        aura.ImportantGlow:Hide()
+                    end
                     if aura.Stealable and auraData.isStealable then
                         aura.Stealable:SetAlpha(1)
                     end
@@ -1604,7 +1606,7 @@ local function AdjustAuras(self, frameType)
                     aura.isPandemic = true
                     trackedBuffs[aura.auraInstanceID] = aura
                     StartCheckBuffsTimer()
-                elseif aura.isPandemic then
+                else--if aura.isPandemic then
                     aura.isPandemic = false
                     if aura.PandemicGlow then
                         aura.PandemicGlow:Hide()
@@ -2241,9 +2243,11 @@ local function PersonalBuffFrameFilterAndGrid(self)
                         end
                         auraFrame.Duration:SetParent(auraFrame.GlowFrame)
                         auraFrame.ImportantGlow:Show()
-                    elseif auraFrame.isImportant then
+                    else--if auraFrame.isImportant then
                         auraFrame.isImportant = false
-                        auraFrame.ImportantGlow:Hide()
+                        if auraFrame.ImportantGlow then
+                            auraFrame.ImportantGlow:Hide()
+                        end
                     end
                     if isPurgeable and db.showPurgeTextureOnSelf and not isImportant then
                         local borderFrame = BBF.auraBorders[auraFrame]
@@ -2278,9 +2282,11 @@ local function PersonalBuffFrameFilterAndGrid(self)
                         end
                         auraFrame.Duration:SetParent(auraFrame.GlowFrame)
                         auraFrame.PurgeGlow:Show()
-                    elseif auraFrame.isPurgeGlow then
+                    else--if auraFrame.isPurgeGlow then
                         auraFrame.isPurgeGlow = false
-                        auraFrame.PurgeGlow:Hide()
+                        if auraFrame.PurgeGlow then
+                            auraFrame.PurgeGlow:Hide()
+                        end
                     end
                     auraFrame.Duration:SetDrawLayer("OVERLAY")
                 else

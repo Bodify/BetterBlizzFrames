@@ -1,5 +1,5 @@
 function BBF.DruidBlueComboPoints()
-    if not BetterBlizzFramesDB.druidOverstacks then return end
+    if not BetterBlizzFramesDB.druidOverstacks and not BetterBlizzFramesDB.legacyBlueComboPoints then return end
     if BBF.druidBlueCombos then return end
     if select(2, UnitClass("player")) ~= "DRUID" then return end
     local druid = _G.DruidComboPointBarFrame
@@ -54,9 +54,7 @@ function BBF.DruidBlueComboPoints()
     CreateChargedPoints(druid)
 
     -- Function to handle updating combo points based on aura
-    local function UpdateComboPoints(self)
-        local aura = C_UnitAuras.GetPlayerAuraBySpellID(405189)
-
+    local function UpdateComboPoints(self, aura)
         if not aura then
             if self.overcharged then
                 for i = 1, 3 do
@@ -109,6 +107,35 @@ function BBF.DruidBlueComboPoints()
         end
     end
 
+    local function BlueLegacyDruidPoints(aura)
+        local frame = ComboFrame
+        if not frame or not frame.ComboPoints then return end
+        local comboIndex = frame.startComboPointIndex or 2
+
+        for i = 1, 3 do
+            local point = frame.ComboPoints[comboIndex]
+            if point then
+                local isCharged = aura and i <= aura.applications
+
+                if isCharged then
+                    point.Highlight:SetAtlas("AncientMana")
+                    point.Highlight:SetTexCoord(0, 1, 0, 1)
+                    point.Highlight:SetSize(14, 14)
+                    point.Highlight:SetPoint("TOPLEFT", point, "TOPLEFT", -1, 1.5)
+                    point.charged = true
+                elseif point.charged then
+                    point.Highlight:SetTexture(130973)
+                    point.Highlight:SetTexCoord(0.375, 0.5625, 0, 1)
+                    point.Highlight:SetSize(8, 16)
+                    point.Highlight:SetPoint("TOPLEFT", point, "TOPLEFT", 2, 0)
+                    point.charged = false
+                end
+
+                comboIndex = comboIndex + 1
+            end
+        end
+    end
+
     -- Create a frame to listen to form changes
     local currentForm = GetShapeshiftFormID()
     if currentForm ~= 1 then
@@ -124,9 +151,17 @@ function BBF.DruidBlueComboPoints()
     end
 
     druid.auraWatch = CreateFrame("Frame")
-    druid.auraWatch:SetScript("OnEvent", function()
-        UpdateComboPoints(druid)
-    end)
+    if BetterBlizzFramesDB.legacyBlueComboPoints and C_CVar.GetCVar("comboPointLocation") == "1" and ComboFrame then
+        druid.auraWatch:SetScript("OnEvent", function()
+            local aura = C_UnitAuras.GetPlayerAuraBySpellID(405189)
+            UpdateComboPoints(druid, aura)
+            BlueLegacyDruidPoints(aura)
+        end)
+    else
+        druid.auraWatch:SetScript("OnEvent", function()
+            UpdateComboPoints(druid)
+        end)
+    end
     druid.auraWatch:RegisterUnitEvent("UNIT_AURA", "player")
     BBF.druidBlueCombos = true
 end

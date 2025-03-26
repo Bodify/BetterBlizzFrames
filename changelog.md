@@ -1,3 +1,12 @@
+# BetterBlizzFrames 1.6.5c
+### New:
+- Blue Legacy Combo Points (Overcharged & Berserk)
+### Tweak:
+- Add missing spell to Interrupt Indicator: Axe Toss (Demo Warlock)
+### Bugfix:
+- Fix Aura Sorting becoming wonky on Target/FocusFrame from a change a few patches ago.
+- Fix "Move Resource" not working if class subsetting of "Move Resource to TargetFrame" was enabled even though "Move Resource to TargetFrame" was unchecked.
+
 # BetterBlizzFrames 1.6.5b
 - Minor tweaks and fixes
 

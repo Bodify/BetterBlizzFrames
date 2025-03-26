@@ -6548,7 +6548,7 @@ local function guiFrameAuras()
 
     local clickthroughAuras = CreateCheckbox("clickthroughAuras", "Clickthrough Auras", playerAuraFiltering)
     clickthroughAuras:SetPoint("TOPLEFT", increaseAuraStrata, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltipTwo(clickthroughAuras, "Clickthrough Auras", "Makes auras on target and focus frame clickthrough. This setting will make it so clicking auras to add to whitelist & blacklist is no longer possible.")
+    CreateTooltipTwo(clickthroughAuras, "Clickthrough Auras", "Makes auras on target and focus frame clickthrough.\n\nNote: This setting will make it so can no longer click auras to whitelist & blacklist them.")
     clickthroughAuras:HookScript("OnClick", function(self)
         if self:GetChecked() then
             StaticPopup_Show("BBF_CONFIRM_RELOAD")
@@ -6995,11 +6995,19 @@ local function guiMisc()
         end
     end)
 
+    local legacyBlueComboPoints = CreateCheckbox("legacyBlueComboPoints", "Blue Combos", enableLegacyComboPoints)
+    legacyBlueComboPoints:SetPoint("LEFT", enableLegacyComboPoints.text, "RIGHT", 0, 0)
+    legacyBlueComboPoints:HookScript("OnClick", function()
+        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+    end)
+    CreateTooltipTwo(legacyBlueComboPoints, "Blue Legacy Combo Points", "Show blue combo point on Supercharged/Berserk combo points.")
+
     local alwaysShowLegacyComboPoints = CreateCheckbox("alwaysShowLegacyComboPoints", "Show Always", enableLegacyComboPoints)
-    alwaysShowLegacyComboPoints:SetPoint("LEFT", enableLegacyComboPoints.text, "RIGHT", 0, 0)
+    alwaysShowLegacyComboPoints:SetPoint("LEFT", legacyBlueComboPoints.text, "RIGHT", 0, 0)
     alwaysShowLegacyComboPoints:HookScript("OnClick", function()
         BBF.AlwaysShowLegacyComboPoints()
     end)
+    CreateTooltipTwo(alwaysShowLegacyComboPoints, "Show Always", "Alway show legacy combo points background regardless if you have active combos or not.")
 
 
     local instantComboPoints = CreateCheckbox("instantComboPoints", "Instant Combo Points", guiMisc, nil, BBF.InstantComboPoints)

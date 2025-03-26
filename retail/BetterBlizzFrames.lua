@@ -54,6 +54,7 @@ local defaultSettings = {
     --partyFrameScale = 1,
     opBarriersOn = true,
     classicCastbarsPlayerBorder = true,
+    legacyBlueComboPoints = true,
 
     --Target castbar
     playerCastbarIconXPos = 0,
@@ -693,8 +694,8 @@ local function CheckForResourceConflicts()
     }
 
     local _, class = UnitClass("player")
-    if conflicts[class] then
-        --print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: Disable \"Move Resource to TargetFrame\" for this class in order to move Resource normally.")
+    if db.moveResourceToTarget and conflicts[class] then
+        print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: Disable \"Move Resource to TargetFrame\" for this class in order to move Resource normally.")
         return true
     end
     return false
@@ -1465,6 +1466,49 @@ function BBF.AlwaysShowLegacyComboPoints()
     end
     BBF.AlwaysShowLegacyComboPoints = true
 end
+
+function BBF.LegacyBlueCombos()
+    if not BetterBlizzFramesDB.legacyBlueComboPoints then return end
+    if C_CVar.GetCVar("comboPointLocation") ~= "1" then return end
+    local _, class = UnitClass("player")
+    if class == "ROGUE" then
+        local function BlueLegacyComboRogue()
+            local frame = ComboFrame
+            if not frame or not frame.ComboPoints then return end
+
+            local chargedPowerPoints = GetUnitChargedPowerPoints("player") or {}
+
+            local comboIndex = frame.startComboPointIndex or 2
+
+            for i = 1, 2 do
+                local point = frame.ComboPoints[comboIndex]
+                if point then
+                    local isCharged = tContains(chargedPowerPoints, i)
+
+                    if isCharged then
+                        point.Highlight:SetAtlas("AncientMana")
+                        point.Highlight:SetTexCoord(0, 1, 0, 1)
+                        point.Highlight:SetSize(14, 14)
+                        point.Highlight:SetPoint("TOPLEFT", point, "TOPLEFT", -1, 1.5)
+                        point.charged = true
+                    elseif point.charged then
+                        point.Highlight:SetTexture(130973)
+                        point.Highlight:SetTexCoord(0.375, 0.5625, 0, 1)
+                        point.Highlight:SetSize(8, 16)
+                        point.Highlight:SetPoint("TOPLEFT", point, "TOPLEFT", 2, 0)
+                        point.charged = false
+                    end
+
+                    comboIndex = comboIndex + 1
+                end
+            end
+        end
+        if ComboFrame then hooksecurefunc("ComboFrame_Update", BlueLegacyComboRogue) end
+    elseif class == "DRUID" then
+        BBF.DruidBlueComboPoints()
+    end
+end
+
 
 function BBF.InstantComboPoints()
     if not BetterBlizzFramesDB.instantComboPoints then return end
@@ -2975,6 +3019,7 @@ Frame:SetScript("OnEvent", function(...)
     BBF.MoveToTFrames()
     BBF.HookHealthbarColors()
     BBF.ResizeUIWidgetPowerBarFrame()
+    BBF.LegacyBlueCombos()
 
     local function LoginVariablesLoaded()
         if BBF.variablesLoaded then
