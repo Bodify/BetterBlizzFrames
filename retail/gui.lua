@@ -1177,6 +1177,11 @@ local function CreateSlider(parent, label, minValue, maxValue, stepValue, elemen
                     BetterBlizzFramesDB[playerClassResourceScale] = value
                     BBF.UpdateClassComboPoints()
                     --end
+                elseif element == "legacyComboScale" or element == "legacyComboXPos" or element == "legacyComboYPos" then
+                    BetterBlizzFramesDB[element] = value
+                    if BBF.UpdateLegacyComboPosition then
+                        BBF.UpdateLegacyComboPosition()
+                    end
                 end
             end
         end)
@@ -3956,7 +3961,7 @@ local function guiGeneralTab()
 
     local overShields = CreateCheckbox("overShields", "Overshields", BetterBlizzFrames)
     overShields:SetPoint("TOPLEFT", racialIndicator, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltipTwo(overShields, "Overshields", "Expand on Blizzards unit frame absorb texture and\nshow shield amount on frames regardless if HP is full or not", nil, "ANCHOR_LEFT", nil, 2)
+    CreateTooltipTwo(overShields, "Overshields", "Make the healthbar absorb texture grow backwards onto the healthbars for however much over-absorb there is you can can always accurate see their total health status.", nil, "ANCHOR_LEFT", nil, 2)
 
     local overShieldsUnitFrames = CreateCheckbox("overShieldsUnitFrames", "A", BetterBlizzFrames)
     overShieldsUnitFrames:SetPoint("LEFT", overShields.text, "RIGHT", 0, 0)
@@ -4013,7 +4018,7 @@ local function guiGeneralTab()
 
     local queueTimer = CreateCheckbox("queueTimer", "Queue Timer", BetterBlizzFrames)
     queueTimer:SetPoint("TOPLEFT", overShields, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltipTwo(queueTimer, "Queue Timer", "Show the remaining time to accept a queue when it pops. Works for both PvP and PvE. Optionally plays a queue pop sound and warns when the queue timer is about to expire.", nil, "ANCHOR_LEFT")
+    CreateTooltipTwo(queueTimer, "Queue Timer", "Show the remaining time to accept a queue when it pops.\n\nWorks for both PvP and PvE.\n\nOptionally plays a queue pop sound and warns when the queue timer is about to expire.", nil, "ANCHOR_LEFT")
 
     local queueTimerAudio = CreateCheckbox("queueTimerAudio", "SFX", queueTimer)
     queueTimerAudio:SetPoint("LEFT", queueTimer.text, "RIGHT", 0, 0)
@@ -6729,7 +6734,19 @@ local function guiMisc()
     reduceEditModeSelectionAlpha:SetPoint("TOPLEFT", moveQueueStatusEye, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(reduceEditModeSelectionAlpha, "Reduce Edit Mode Selection Glow", "Reduces the alpha of the edit mode selection so you can actually see the changes you are making.")
     reduceEditModeSelectionAlpha:HookScript("OnClick", function(self)
-        BBF.ReduceEditModeAlpha(not self:GetChecked() and true)
+        if self:GetChecked() then
+            BetterBlizzFramesDB.editModeSelectionAlpha = 0.15
+            BBF.ReduceEditModeAlpha()
+            if BBF.EditModeAlphaSlider then
+                BBF.EditModeAlphaSlider:SetValue(0.15)
+            end
+        else
+            BetterBlizzFramesDB.editModeSelectionAlpha = 1
+            BBF.ReduceEditModeAlpha(true)
+            if BBF.EditModeAlphaSlider then
+                BBF.EditModeAlphaSlider:SetValue(1)
+            end
+        end
     end)
 
     local hideBagsBar = CreateCheckbox("hideBagsBar", "Hide Bags Bar", guiMisc, nil, BBF.HideFrames)
@@ -6987,11 +7004,81 @@ local function guiMisc()
 
     local enableLegacyComboPoints = CreateCheckbox("enableLegacyComboPoints", "Legacy Combo Points", guiMisc)
     enableLegacyComboPoints:SetPoint("TOPLEFT", raiseTargetCastbarStrata, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltipTwo(enableLegacyComboPoints, "Legacy Combo Points", "Enable the old Classic Combo Points and fix their position to work with the new UnitFrames")
-    enableLegacyComboPoints:HookScript("OnClick", function()
+    CreateTooltipTwo(enableLegacyComboPoints, "Legacy Combo Points", "Enable the old Classic Combo Points and fix their position to work with the new UnitFrames.\n\n|cff32f795Right-Click to adjust position and size.|r")
+    enableLegacyComboPoints:HookScript("OnClick", function(self)
         StaticPopup_Show("BBF_CONFIRM_RELOAD")
         if not InCombatLockdown() then
             BBF.FixLegacyComboPointsLocation()
+        end
+        CheckAndToggleCheckboxes(self)
+    end)
+
+    function BBF.OpenLegacyComboSliderWindow(launch)
+        if not BBF.ComboSliderWindow then
+            local f = CreateFrame("Frame", "BBFComboSliderWindow", UIParent, "BasicFrameTemplateWithInset")
+            f:SetSize(210, 165)
+            f:SetPoint("RIGHT", enableLegacyComboPoints, "LEFT", -10, 0)
+            f:SetMovable(true)
+            f:EnableMouse(true)
+            f:RegisterForDrag("LeftButton")
+            f:SetScript("OnDragStart", f.StartMoving)
+            f:SetScript("OnDragStop", f.StopMovingOrSizing)
+            f:SetFrameStrata("DIALOG")
+            f:SetClampedToScreen(true)
+            f:SetToplevel(true)
+
+            f.title = f:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+            f.title:SetPoint("TOP", f, "TOP", 0, -6)
+            f.title:SetText("Legacy Combo Position")
+
+            BBF.ComboSliderWindow = f
+
+            local sizeSlider = CreateSlider(f, "Size", 0.6, 1.3, 0.01, "legacyComboScale", nil, 140)
+            sizeSlider:SetPoint("TOP", f, "TOP", 0, -45)
+            CreateTooltipTwo(sizeSlider, "Legacy Combo Points Size")
+
+            local xOffsetSlider = CreateSlider(f, "x offset", -60, 10, 0.5, "legacyComboXPos", true, 140)
+            xOffsetSlider:SetPoint("TOP", sizeSlider, "TOP", 0, -30)
+            CreateTooltipTwo(sizeSlider, "Legacy Combo Points X Offset")
+
+            local yOffsetSlider = CreateSlider(f, "y offset", -60, 10, 0.5, "legacyComboYPos", true, 140)
+            yOffsetSlider:SetPoint("TOP", xOffsetSlider, "TOP", 0, -30)
+            CreateTooltipTwo(sizeSlider, "Legacy Combo Points Y Offset")
+
+            local defaultButton = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+            defaultButton:SetSize(80, 22)
+            defaultButton:SetText("Default")
+            defaultButton:SetPoint("BOTTOM", f, "BOTTOM", 0, 10)
+
+            defaultButton:SetScript("OnClick", function()
+                BetterBlizzFramesDB.legacyComboXPos = -28
+                BetterBlizzFramesDB.legacyComboYPos = -25
+                BetterBlizzFramesDB.legacyComboScale = 0.85
+                BBF.UpdateLegacyComboPosition()
+                sizeSlider:SetValue(0.85)
+                xOffsetSlider:SetValue(-28)
+                yOffsetSlider:SetValue(-25)
+            end)
+
+            f:Hide()
+        end
+
+        if launch then
+            BBF.ComboSliderWindow:Hide()
+            return
+        end
+
+        if BBF.ComboSliderWindow:IsShown() then
+            BBF.ComboSliderWindow:Hide()
+        else
+            BBF.ComboSliderWindow:Show()
+        end
+    end
+    BBF.OpenLegacyComboSliderWindow(true)
+
+    enableLegacyComboPoints:HookScript("OnMouseDown", function(self, button)
+        if button == "RightButton" then
+            BBF.OpenLegacyComboSliderWindow()
         end
     end)
 
@@ -7009,9 +7096,24 @@ local function guiMisc()
     end)
     CreateTooltipTwo(alwaysShowLegacyComboPoints, "Show Always", "Alway show legacy combo points background regardless if you have active combos or not.")
 
+    local enableLegacyComboPointsMulticlass = CreateCheckbox("enableLegacyComboPointsMulticlass", "Legacy Combo Points: More Classes", enableLegacyComboPoints)
+    enableLegacyComboPointsMulticlass:SetPoint("TOPLEFT", enableLegacyComboPoints, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(enableLegacyComboPointsMulticlass, "Legacy Combo Points: More Classes","Enable the old Classic Combo Points for more Classes.\n\n" .."|cFF00FF96Monk|r\n" .."|cFF3FC7EBMage|r\n" .."|cFFF58CBAPaladin|r\n" .."|cFF8788EEWarlock|r\n" .."|cFFC41F3BDeath Knight|r")
+    enableLegacyComboPointsMulticlass:HookScript("OnClick", function()
+        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.GenericLegacyComboSupport()
+    end)
+
+    local legacyMulticlassComboClassColor = CreateCheckbox("legacyMulticlassComboClassColor", "Class Color", enableLegacyComboPointsMulticlass)
+    legacyMulticlassComboClassColor:SetPoint("LEFT", enableLegacyComboPointsMulticlass.text, "RIGHT", 0, 0)
+    legacyMulticlassComboClassColor:HookScript("OnClick", function()
+        BBF.ClassColorLegacyCombos()
+    end)
+    CreateTooltipTwo(legacyMulticlassComboClassColor, "Class Color Legacy Combos", "Class color the legacy combo points.")
+
 
     local instantComboPoints = CreateCheckbox("instantComboPoints", "Instant Combo Points", guiMisc, nil, BBF.InstantComboPoints)
-    instantComboPoints:SetPoint("TOPLEFT", enableLegacyComboPoints, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    instantComboPoints:SetPoint("TOPLEFT", enableLegacyComboPointsMulticlass, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(instantComboPoints, "Instant Combo Points",
     "Remove the combo point animations for instant feedback.\n\nCurrently works for:\n|cFFFFF569Rogue|r\n|cFFFF7D0ADruid|r\n|cFF00FF96Monk|r\n|cFF3FC7EBMage|r\n|cFFF58CBAPaladin|r\n|cFFAAAAAALegacy Combos (Rogue & Druid)|r")
     instantComboPoints:HookScript("OnClick", function(self)
@@ -7056,7 +7158,7 @@ local function guiMisc()
             BBF.UpdateClassComboPoints()
         end
     end)
-    CreateTooltipTwo(moveResourceToTargetCustom, "Free-Move Resource", "Drag and drop resource/combo points to where you want them.\nWhile moving you can do half pixel adjustments with arrow keys.\n\nToggle off/on to unlock them and reload to save.\n\n" .. "|cff32f795Right-click to reset positions and scale for " .. playerClass .. ".|r", "This will unchain them from TargetFrame so they will no longer move with the TargetFrame if you move the TargetFrame.")
+    CreateTooltipTwo(moveResourceToTargetCustom, "Free-Move Resource", "Drag and drop each individual resource/combo points to where you want them.\nWhile moving you can do half pixel adjustments with arrow keys.\n\nToggle off/on to unlock them and reload to save.\n\n" .. "|cff32f795Right-click to reset positions and scale for " .. playerClass .. ".|r", "This will unchain them from TargetFrame so they will no longer move with the TargetFrame if you move the TargetFrame.")
 
     local moveResourceToTargetRogue = CreateCheckbox("moveResourceToTargetRogue", "Rogue: Combo Points", moveResourceToTarget)
     moveResourceToTargetRogue:SetPoint("TOPLEFT", moveResourceToTarget, "BOTTOMLEFT", 12, pixelsBetweenBoxes)

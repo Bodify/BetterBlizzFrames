@@ -538,61 +538,63 @@ function BBF.HideFrames()
         end
 
         if BetterBlizzFramesDB.hideUnitFrameShadow then
-            if not BBF.hideUnitFrameShadow then
-                -- Player
-                if not BetterBlizzFramesDB.symmetricPlayerFrame then
-                    local playerTex = PlayerFrame.PlayerFrameContainer.FrameTexture
-                    playerTex:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOn-NoShadow")
-                    hooksecurefunc(playerTex, "SetAtlas", function(self)
-                        self:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOn-NoShadow")
+            if not BetterBlizzFramesDB.classicFrames then
+                if not BBF.hideUnitFrameShadow then
+                    -- Player
+                    if not BetterBlizzFramesDB.symmetricPlayerFrame then
+                        local playerTex = PlayerFrame.PlayerFrameContainer.FrameTexture
+                        playerTex:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOn-NoShadow")
+                        hooksecurefunc(playerTex, "SetAtlas", function(self)
+                            self:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOn-NoShadow")
+                        end)
+
+                        local playerAltTex = PlayerFrame.PlayerFrameContainer.AlternatePowerFrameTexture
+                        playerAltTex:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOn-ClassResource-NoShadow")
+                        hooksecurefunc(playerAltTex, "SetAtlas", function(self)
+                            self:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOn-ClassResource-NoShadow")
+                        end)
+                    end
+
+                    -- Target & Focus
+                    local targetTex = TargetFrame.TargetFrameContainer.FrameTexture
+                    targetTex:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Target-PortraitOn-NoShadow")
+                    hooksecurefunc(targetTex, "SetAtlas", function(self, atlas)
+                        if atlas == "UI-HUD-UnitFrame-Target-PortraitOn" then
+                            self:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Target-PortraitOn-NoShadow")
+                        elseif atlas == "UI-HUD-UnitFrame-Target-MinusMob-PortraitOn" then
+                            self:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Target-MinusMob-PortraitOn-NoShadow")
+                        end
+                    end)
+                    local focusTex = FocusFrame.TargetFrameContainer.FrameTexture
+                    focusTex:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Target-PortraitOn-NoShadow")
+                    hooksecurefunc(focusTex, "SetAtlas", function(self, atlas)
+                        if atlas == "UI-HUD-UnitFrame-Target-PortraitOn" then
+                            self:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Target-PortraitOn-NoShadow")
+                        elseif atlas == "UI-HUD-UnitFrame-Target-MinusMob-PortraitOn" then
+                            self:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Target-MinusMob-PortraitOn-NoShadow")
+                        end
                     end)
 
-                    local playerAltTex = PlayerFrame.PlayerFrameContainer.AlternatePowerFrameTexture
-                    playerAltTex:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOn-ClassResource-NoShadow")
-                    hooksecurefunc(playerAltTex, "SetAtlas", function(self)
-                        self:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOn-ClassResource-NoShadow")
+                    -- ToT's
+                    local totTex = TargetFrame.totFrame.FrameTexture
+                    totTex:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-TargetofTarget-PortraitOn-NoShadow")
+                    hooksecurefunc(totTex, "SetAtlas", function(self)
+                        self:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-TargetofTarget-PortraitOn-NoShadow")
                     end)
+                    local totFocusTex = FocusFrame.totFrame.FrameTexture
+                    totFocusTex:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-TargetofTarget-PortraitOn-NoShadow")
+                    hooksecurefunc(totFocusTex, "SetAtlas", function(self)
+                        self:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-TargetofTarget-PortraitOn-NoShadow")
+                    end)
+                    --Pet
+                    local petTex = PetFrameTexture
+                    petTex:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-TargetofTarget-PortraitOn-NoShadow")
+                    hooksecurefunc(petTex, "SetAtlas", function(self)
+                        self:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-TargetofTarget-PortraitOn-NoShadow")
+                    end)
+
+                    BBF.hideUnitFrameShadow = true
                 end
-
-                -- Target & Focus
-                local targetTex = TargetFrame.TargetFrameContainer.FrameTexture
-                targetTex:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Target-PortraitOn-NoShadow")
-                hooksecurefunc(targetTex, "SetAtlas", function(self, atlas)
-                    if atlas == "UI-HUD-UnitFrame-Target-PortraitOn" then
-                        self:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Target-PortraitOn-NoShadow")
-                    elseif atlas == "UI-HUD-UnitFrame-Target-MinusMob-PortraitOn" then
-                        self:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Target-MinusMob-PortraitOn-NoShadow")
-                    end
-                end)
-                local focusTex = FocusFrame.TargetFrameContainer.FrameTexture
-                focusTex:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Target-PortraitOn-NoShadow")
-                hooksecurefunc(focusTex, "SetAtlas", function(self, atlas)
-                    if atlas == "UI-HUD-UnitFrame-Target-PortraitOn" then
-                        self:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Target-PortraitOn-NoShadow")
-                    elseif atlas == "UI-HUD-UnitFrame-Target-MinusMob-PortraitOn" then
-                        self:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Target-MinusMob-PortraitOn-NoShadow")
-                    end
-                end)
-
-                -- ToT's
-                local totTex = TargetFrame.totFrame.FrameTexture
-                totTex:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-TargetofTarget-PortraitOn-NoShadow")
-                hooksecurefunc(totTex, "SetAtlas", function(self)
-                    self:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-TargetofTarget-PortraitOn-NoShadow")
-                end)
-                local totFocusTex = FocusFrame.totFrame.FrameTexture
-                totFocusTex:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-TargetofTarget-PortraitOn-NoShadow")
-                hooksecurefunc(totFocusTex, "SetAtlas", function(self)
-                    self:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-TargetofTarget-PortraitOn-NoShadow")
-                end)
-                --Pet
-                local petTex = PetFrameTexture
-                petTex:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-TargetofTarget-PortraitOn-NoShadow")
-                hooksecurefunc(petTex, "SetAtlas", function(self)
-                    self:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-TargetofTarget-PortraitOn-NoShadow")
-                end)
-
-                BBF.hideUnitFrameShadow = true
             end
         end
 

@@ -1,3 +1,17 @@
+# BetterBlizzFrames 1.6.5d
+## Retail
+### New:
+- Added support for more classes with resources to work with legacy combo points.
+- Added sliders to adjust legacy combo point frame position and scale.
+- Added optional Legacy Combo Points Class Color setting for the non-standard classes.
+### Tweaks:
+- Minor tweaks to Classic Frames setting for position/scale of some class resources.
+### Bugfix:
+- Fix Druid Blue Combos not working due to a mistake after introducing the legacy combo points as well.
+- Fix ToT frame texture being being jank when both "Classic Frames" and "Hide Shadow" settings were enabled. Not intended to be run together, now "Hide Shadow" does not get run with Classic Frames enabled.
+
+
+
 # BetterBlizzFrames 1.6.5c
 ### New:
 - Blue Legacy Combo Points (Overcharged & Berserk)

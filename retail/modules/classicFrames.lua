@@ -419,9 +419,7 @@ local function MakeClassicFrame(frame)
         if C_CVar.GetCVar("comboPointLocation") == "1" and ComboFrame then
             ComboFrame:SetParent(TargetFrame)
             ComboFrame:SetFrameStrata("HIGH")
-            ComboFrame:ClearAllPoints()
-            ComboFrame:SetPoint("TOPRIGHT", TargetFrame, "TOPRIGHT", -28, -25)
-            ComboFrame:SetScale(0.85)
+            BBF.UpdateLegacyComboPosition()
         end
 
         local function UpdateLevelDetails()
@@ -476,6 +474,7 @@ local function MakeClassicFrame(frame)
             PALADIN = { scale = 0.91 },
             DEATHKNIGHT = { x = 35, y = 34, scale = 0.90 },
             DRUID = { x = 30, y = 30},
+            MONK = { x = 29.5, y = 31, scale = 0.96 },
         }
 
         local function GetPlayerClassAndSpecPosition()
@@ -523,7 +522,7 @@ local function MakeClassicFrame(frame)
                     local isRogueWith5Combos = UnitPowerMax("player", Enum.PowerType.ComboPoints) == 5
                     local isRogueWith6Combos = UnitPowerMax("player", Enum.PowerType.ComboPoints) == 6
                     if isRogueWith5Combos then
-                        PlayerFrameBottomManagedFramesContainer:SetPoint(a2, b2, c2, 31.5, 37)
+                        PlayerFrameBottomManagedFramesContainer:SetPoint(a2, b2, c2, 31.5, 35)
                         PlayerFrameBottomManagedFramesContainer:SetScale(0.95)
                     elseif isRogueWith6Combos then
                         PlayerFrameBottomManagedFramesContainer:SetPoint(a2, b2, c2, 46, 37)
@@ -702,6 +701,7 @@ local function MakeClassicFrame(frame)
             end
         end)
 
+        TotemFrame:SetScale(0.85)
         hooksecurefunc(TotemFrame, "SetPoint", function(self)
             if self.changing then return end
             if classFrame and classFrame:IsShown() then return end

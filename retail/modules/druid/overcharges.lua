@@ -159,7 +159,8 @@ function BBF.DruidBlueComboPoints()
         end)
     else
         druid.auraWatch:SetScript("OnEvent", function()
-            UpdateComboPoints(druid)
+            local aura = C_UnitAuras.GetPlayerAuraBySpellID(405189)
+            UpdateComboPoints(druid, aura)
         end)
     end
     druid.auraWatch:RegisterUnitEvent("UNIT_AURA", "player")
