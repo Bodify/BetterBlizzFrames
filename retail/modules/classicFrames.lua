@@ -473,7 +473,7 @@ local function MakeClassicFrame(frame)
             MAGE = { x = 32, y = 32, scale = 0.95 },
             PALADIN = { scale = 0.91 },
             DEATHKNIGHT = { x = 35, y = 34, scale = 0.90 },
-            DRUID = { x = 30, y = 30},
+            DRUID = { x = 31, y = 30},
             MONK = { x = 29.5, y = 31, scale = 0.96 },
         }
 
@@ -848,6 +848,13 @@ local function AdjustAlternateBars()
             self:SetStatusBarColor(0, 0, 1)
         end)
     end
+
+    -- if class == "DRUID" then
+    --     C_Timer.After(1, function()
+    --         BBF.CreateAltManaBar() --allow time for specID not to be nil cuz yea
+    --     end)
+    -- end
+
 
     if class == "EVOKER" then
         EvokerEbonMightBar:SetSize(104, 12)

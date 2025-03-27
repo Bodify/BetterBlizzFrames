@@ -475,6 +475,16 @@ function BBF.DarkmodeFrames(bypass)
         applySettings(v, false, vertexColor)  -- Only applying vertex color, desaturation is kept false
     end
 
+    if PlayerFrame.AltManaBarBBF then
+        for _, v in pairs({
+            PlayerFrame.AltManaBarBBF.Border,
+            PlayerFrame.AltManaBarBBF.LeftBorder,
+            PlayerFrame.AltManaBarBBF.RightBorder
+        }) do
+            applySettings(v, desaturationValue, darkerVertexColor)
+        end
+    end
+
     for _, v in pairs({
         AlternatePowerBar.Border,
         AlternatePowerBar.LeftBorder,

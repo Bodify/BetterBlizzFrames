@@ -6936,9 +6936,9 @@ local function guiMisc()
         end
     end)
 
-    local druidAlwaysShowCombos = CreateCheckbox("druidAlwaysShowCombos", "Druid: Show Combo Points in Normal Form", guiMisc)
+    local druidAlwaysShowCombos = CreateCheckbox("druidAlwaysShowCombos", "Druid: Always show active Combo Points", guiMisc)
     druidAlwaysShowCombos:SetPoint("TOPLEFT", druidOverstacks, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltipTwo(druidAlwaysShowCombos, "Druid: Show Combo Points in Normal Form", "Show combo points in normal form whenever you have available combo points.")
+    CreateTooltipTwo(druidAlwaysShowCombos, "Druid: Always show active Combo Points", "Always show active combo points regardless of which form you are in.")
     druidAlwaysShowCombos:HookScript("OnClick", function(self)
         BBF.DruidAlwaysShowCombos()
         if not self:GetChecked() then
@@ -6946,8 +6946,18 @@ local function guiMisc()
         end
     end)
 
+    local createAltManaBarDruid = CreateCheckbox("createAltManaBarDruid", "Druid: Show Manabar while in Cat/Bear (as resto)", guiMisc)
+    createAltManaBarDruid:SetPoint("TOPLEFT", druidAlwaysShowCombos, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(createAltManaBarDruid, "Druid: Show Manabar while in Cat/Bear (as resto)", "Show Manabar as secondary AlternativePowerBar while in Cat/Bear as Resto. Energy/Rage will still also be shown.")
+        createAltManaBarDruid:HookScript("OnClick", function(self)
+        BBF.CreateAltManaBar()
+        if not self:GetChecked() then
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        end
+    end)
+
     local hideTalkingHeads = CreateCheckbox("hideTalkingHeads", "Hide Talking Heads Frame", guiMisc, nil, BBF.HideTalkingHeads)
-    hideTalkingHeads:SetPoint("TOPLEFT", druidAlwaysShowCombos, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    hideTalkingHeads:SetPoint("TOPLEFT", createAltManaBarDruid, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(hideTalkingHeads, "Hide Talking Heads Frame", "Hide the frame showing npcs talking during quests etc.")
     hideTalkingHeads:HookScript("OnClick", function(self)
         if not self:GetChecked() then
@@ -7007,6 +7017,11 @@ local function guiMisc()
     CreateTooltipTwo(enableLegacyComboPoints, "Legacy Combo Points", "Enable the old Classic Combo Points and fix their position to work with the new UnitFrames.\n\n|cff32f795Right-Click to adjust position and size.|r")
     enableLegacyComboPoints:HookScript("OnClick", function(self)
         StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        if not self:GetChecked() then
+            BetterBlizzFramesDB.legacyCombosTurnedOff = true
+        else
+            BetterBlizzFramesDB.legacyCombosTurnedOff = nil
+        end
         if not InCombatLockdown() then
             BBF.FixLegacyComboPointsLocation()
         end

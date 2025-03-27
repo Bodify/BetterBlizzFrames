@@ -1,3 +1,15 @@
+# BetterBlizzFrames 1.6.5e
+## Retail
+### New:
+- Druid: Show Mana while in Cat/Bear (as resto) (Misc)
+### Tweak:
+- I've decided to make both Druid: Show mana while in Cat/Bear (as resto) and Druid: Show combo points in normal form on by default. I believe they are so close to core features and something that should already exist that I want them on by default. They can of course still be turned off in Misc.
+### Bugfix:
+- Fix Legacy Combo Points not turning off after disabling the setting. (Will require a re-toggle for affected users)
+- Fix "Always show druid combo points" not working due to a last second typo.
+
+
+
 # BetterBlizzFrames 1.6.5d
 ## Retail
 ### New:

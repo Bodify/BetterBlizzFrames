@@ -2,7 +2,7 @@
 
 local addonVersion = "1.00" --too afraid to to touch for now
 local addonUpdates = C_AddOns.GetAddOnMetadata("BetterBlizzFrames", "Version")
-local sendUpdate = false
+local sendUpdate = true
 BBF.VersionNumber = addonUpdates
 BBF.variablesLoaded = false
 local isAddonLoaded = C_AddOns.IsAddOnLoaded
@@ -51,6 +51,8 @@ local defaultSettings = {
     surrenderArena = true,
     uiWidgetPowerBarScale = 1,
     druidOverstacks = true,
+    druidAlwaysShowCombos = true,
+    createAltManaBarDruid = true,
     --partyFrameScale = 1,
     opBarriersOn = true,
     classicCastbarsPlayerBorder = true,
@@ -393,10 +395,11 @@ local function SendUpdateMessage()
         if not BetterBlizzFramesDB.scStart then
             C_Timer.After(7, function()
                 --StaticPopup_Show("BBF_NEW_VERSION")
-                if BetterBlizzFramesDB.playerAuraFiltering then
+                local class = select(2, UnitClass("player"))
+                if class == "DRUID" then
                     DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames "..addonUpdates..":")
                     --DEFAULT_CHAT_FRAME:AddMessage("|A:QuestNormal:16:16|a New stuff:")
-                    DEFAULT_CHAT_FRAME:AddMessage("|A:QuestNormal:16:16|a Important Note: Some of the Buffs & Debuffs sorting settings are now enabled by default. Because of this they may have turned on for you, please double check your aura settings in the Buffs & Debuffs section.")
+                    DEFAULT_CHAT_FRAME:AddMessage("|A:QuestNormal:16:16|a Important Note: \"Druid: Always show active Combo Points\" and \"Druid: Show mana in Cat/Bear (as resto)\" is now on by default. If you do not want this turn them off in the Misc section.")
                 end
                 -- DEFAULT_CHAT_FRAME:AddMessage("|A:Professions-Crafting-Orders-Icon:16:16|a Tweak:")
                 -- DEFAULT_CHAT_FRAME:AddMessage("   - Reset castbar interrupt icon y offset to 0 due to default positional changes You may have to readjust to your liking.")
@@ -1623,6 +1626,10 @@ function BBF.UpdateLegacyComboPosition()
 end
 
 function BBF.FixLegacyComboPointsLocation()
+    if BetterBlizzFramesDB.legacyCombosTurnedOff then
+        C_CVar.SetCVar("comboPointLocation", "2")
+        return
+    end
     if BetterBlizzFramesDB.enableLegacyComboPoints then
         C_CVar.SetCVar("comboPointLocation", "1")
     elseif BetterBlizzFramesDB.comboPointLocation then
@@ -3289,6 +3296,7 @@ Frame:SetScript("OnEvent", function(...)
             if BetterBlizzFramesDB.recolorTempHpLoss then
                 BBF.RecolorHpTempLoss()
             end
+            BBF.CreateAltManaBar()
             C_Timer.After(1, function()
                 if BetterBlizzFramesDB.playerFrameOCD then
                     BBF.FixStupidBlizzPTRShit()
