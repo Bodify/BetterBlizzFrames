@@ -6774,9 +6774,9 @@ local function guiMisc()
         end
     end)
 
-    local removeAddonListCategories = CreateCheckbox("removeAddonListCategories", "Remove AddonList Categories", guiMisc, nil, BBF.RemoveAddonCategories)
+    local removeAddonListCategories = CreateCheckbox("removeAddonListCategories", "Improved AddonList", guiMisc, nil, BBF.RemoveAddonCategories)
     removeAddonListCategories:SetPoint("TOPLEFT", moveableFPSCounter, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltipTwo(removeAddonListCategories, "Remove AddonList Categories", "Remove the categories from AddonList. (Escape -> AddOns)")
+    CreateTooltipTwo(removeAddonListCategories, "Improved AddonList", "Enabling removes all categories from the AddonList and also sorts enabled addons at the top and disabled addons at the bottom for better organization.")
 
     local hideMinimap = CreateCheckbox("hideMinimap", "Hide Minimap", guiMisc, nil, BBF.MinimapHider)
     hideMinimap:SetPoint("TOPLEFT", removeAddonListCategories, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
@@ -6974,8 +6974,16 @@ local function guiMisc()
         end
     end)
 
+    local disableAddonProfiling = CreateCheckbox("disableAddonProfiling", "Disable AddOn Profiler", guiMisc, nil, BBF.HideFrames)
+    disableAddonProfiling:SetPoint("TOPLEFT", hideExpAndHonorBar, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(disableAddonProfiling, "Disable AddOn Profiler", "Turn off AddOn Profiler for a slight bump in performance.\n\nYou will no longer see CPU stats on AddonList and other benchmark AddOns might not work properly until setting is turned back off.")
+    disableAddonProfiling:HookScript("OnClick", function(self)
+        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+    end)
+
+
     local uiWidgetPowerBarScale = CreateSlider(guiMisc, "UIWidgetPowerBarFrame Scale", 0.4, 1.8, 0.01, "uiWidgetPowerBarScale")
-    uiWidgetPowerBarScale:SetPoint("TOPLEFT", hideExpAndHonorBar, "BOTTOMLEFT", 5, -15)
+    uiWidgetPowerBarScale:SetPoint("TOPLEFT", disableAddonProfiling, "BOTTOMLEFT", 5, -15)
     CreateTooltipTwo(uiWidgetPowerBarScale, "UIWidgetPowerBarFrame Scale", "Changes the scale of UIWidgetPowerBarFrame, the frame with Dragonflying charges on it. Also has things like achievements etc I believe idk.")
 
     local hideActionBarBigProcGlow = CreateCheckbox("hideActionBarBigProcGlow", "Hide ActionBar Big Proc Glow", guiMisc, nil, BBF.ActionBarMods)

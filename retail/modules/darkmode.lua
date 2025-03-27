@@ -235,8 +235,6 @@ function BBF.DarkmodeFrames(bypass)
 
     UpdateUnitFrameDarkModeBorderColors(vertexColor)
 
-
-
     for key, region in pairs(GameTooltip.NineSlice) do
         if key ~= "Center" and type(region) == "table" and (region.SetDesaturated or region.SetVertexColor) then
             applySettings(region, tooltipSat, tooltipColor)
@@ -534,13 +532,35 @@ function BBF.DarkmodeFrames(bypass)
         end
     end
 
-    local druidComboPoints = _G.DruidComboPointBarFrame
-    if druidComboPoints then
-        for _, v in pairs({druidComboPoints:GetChildren()}) do
-            applySettings(v.BG_Inactive, desaturationValue, druidComboPoint, true)
-            applySettings(v.BG_Active, desaturationValue, druidComboPointActive, true)
-            if BetterBlizzFramesDB.druidOverstacks then
-                applySettings(v.ChargedFrameActive, desaturationValue, druidComboPointActive, true)
+    if select(2, UnitClass("player")) == "DRUID" then
+        local function updateComboPointTextures()
+            local druidComboPoints = _G.DruidComboPointBarFrame
+            if druidComboPoints then
+                for _, v in pairs({druidComboPoints:GetChildren()}) do
+                    applySettings(v.BG_Inactive, desaturationValue, druidComboPoint, true)
+                    applySettings(v.BG_Active, desaturationValue, druidComboPointActive, true)
+                    if BetterBlizzFramesDB.druidOverstacks then
+                        applySettings(v.ChargedFrameActive, desaturationValue, druidComboPointActive, true)
+                    end
+                end
+            end
+        end
+        if GetShapeshiftFormID() == 1 then
+            -- Already in cat form, run immediately
+            updateComboPointTextures()
+        else
+            -- Not in cat form, wait for it
+            if not BBF.CatFormWatcher then
+                local f = CreateFrame("Frame")
+                f:RegisterEvent("UPDATE_SHAPESHIFT_FORM")
+                f:SetScript("OnEvent", function(self)
+                    if GetShapeshiftFormID() == 1 then
+                        updateComboPointTextures()
+                        self:UnregisterAllEvents()
+                        self:SetScript("OnEvent", nil)
+                    end
+                end)
+                BBF.CatFormWatcher = f
             end
         end
     end

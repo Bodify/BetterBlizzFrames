@@ -1,3 +1,13 @@
+# BetterBlizzFrames 1.6.5f
+## Retail
+### Tweak:
+- "Remove AddonList Categories" is now "Improved AddonList". It now in addition to removing categories sorts enabled addons at the top and disabled addons at the bottom for better overview.
+- "Hide PvP Timer" is now a default enabled setting. Eyesore (5m timer text on PlayerFrame for no reason)
+- Minor pixel position tweaks to some Classic stuff that was off
+### Bugfix:
+- Fix Dark Mode not coloring Druid Combo Points on login when not in cat form (due to them not existing yet). Added a listener that colors them as soon as they exist.
+
+
 # BetterBlizzFrames 1.6.5e
 ## Retail
 ### New:

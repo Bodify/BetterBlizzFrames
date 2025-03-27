@@ -304,9 +304,9 @@ function BBF.PlayerReputationColor()
             frame.ReputationColor = frame:CreateTexture(nil, "OVERLAY")
             if BetterBlizzFramesDB.classicFrames then
                 frame.ReputationColor:SetTexture(137017)
-                frame.ReputationColor:SetSize(117, 19)
+                frame.ReputationColor:SetSize(117, 18)
                 frame.ReputationColor:SetTexCoord(1, 0, 0, 1)
-                frame.ReputationColor:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -26, -27)
+                frame.ReputationColor:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -26, -30)
             elseif C_AddOns.IsAddOnLoaded("ClassicFrames") then
                 frame.ReputationColor:SetTexture(137017)
                 frame.ReputationColor:SetSize(117, 19)

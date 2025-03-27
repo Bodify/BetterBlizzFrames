@@ -57,6 +57,7 @@ local defaultSettings = {
     opBarriersOn = true,
     classicCastbarsPlayerBorder = true,
     legacyBlueComboPoints = true,
+    hidePvpTimerText = true,
 
     --Target castbar
     playerCastbarIconXPos = 0,
@@ -802,61 +803,83 @@ end
 function BBF.RemoveAddonCategories()
     if not BetterBlizzFramesDB.removeAddonListCategories then return end
     if BBF.RemovedAddonCategories then return end
+
+    local function RemoveColorCodes(str)
+        return (str:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", ""));
+    end
+
+    local function SortByTitle(a, b)
+        local aTitle = RemoveColorCodes(select(2, C_AddOns.GetAddOnInfo(a.addonIndex)) or ""):lower();
+        local bTitle = RemoveColorCodes(select(2, C_AddOns.GetAddOnInfo(b.addonIndex)) or ""):lower();
+        return aTitle < bTitle;
+    end
+
     local function RemoveAddonCategories()
         local dataProvider = CreateTreeDataProvider();
-        local addonGroupToTreeNode = {};
-        local addonGroupPendingChildren = {};
-
         local filterText = AddonList.SearchBox:GetText():lower();
+        local character = UnitName("player");
 
-        local function RemoveColorCodes(str)
-            return (str:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", ""));
-        end
+        local enabledGroups = {};
+        local disabledGroups = {};
+        local groupChildren = {};
 
         for i = 1, C_AddOns.GetNumAddOns() do
             local name, title = C_AddOns.GetAddOnInfo(i);
             local group = C_AddOns.GetAddOnMetadata(i, "Group") or name;
-
-            local titleClean = RemoveColorCodes(title or name):lower();
             local groupClean = RemoveColorCodes(group):lower();
+            local titleClean = RemoveColorCodes(title or name):lower();
 
             local match = #filterText == 0 or titleClean:find(filterText, 1, true) or groupClean:find(filterText, 1, true);
-
             if match then
-                local nodeData = { addonIndex = i };
+                local enabledState = C_AddOns.GetAddOnEnableState(i, character);
+                local loadable, reason = C_AddOns.IsAddOnLoadable(i, character);
+                local isEnabled = enabledState > Enum.AddOnEnableState.None;
+                local treatAsDisabled = not isEnabled or reason == "DEP_DISABLED";
 
-                if addonGroupToTreeNode[group] then
-                    addonGroupToTreeNode[group]:Insert(nodeData);
-                elseif name == group then
-                    local groupNode = dataProvider:Insert(nodeData);
-                    addonGroupToTreeNode[group] = groupNode;
+                local entry = { addonIndex = i };
+                local targetGroup = treatAsDisabled and disabledGroups or enabledGroups;
 
-                    if addonGroupPendingChildren[group] then
-                        for _, child in ipairs(addonGroupPendingChildren[group]) do
-                            groupNode:Insert(child);
-                        end
-                        addonGroupPendingChildren[group] = nil;
-                    end
+                if name == group then
+                    targetGroup[group] = entry; -- this is the parent
                 else
-                    addonGroupPendingChildren[group] = addonGroupPendingChildren[group] or {};
-                    table.insert(addonGroupPendingChildren[group], nodeData);
+                    groupChildren[group] = groupChildren[group] or {};
+                    table.insert(groupChildren[group], entry);
                 end
             end
         end
 
-        dataProvider:SetSortComparator(function(aNode, bNode)
-            local aName = RemoveColorCodes(select(2, C_AddOns.GetAddOnInfo(aNode:GetData().addonIndex))):lower();
-            local bName = RemoveColorCodes(select(2, C_AddOns.GetAddOnInfo(bNode:GetData().addonIndex))):lower();
-            return aName < bName;
-        end);
+        local function InsertSortedGroups(groupTable)
+            local sortedGroups = {};
+            for groupName in pairs(groupTable) do
+                table.insert(sortedGroups, groupName);
+            end
+            table.sort(sortedGroups, function(a, b)
+                return RemoveColorCodes(a):lower() < RemoveColorCodes(b):lower();
+            end);
+
+            for _, groupName in ipairs(sortedGroups) do
+                local parent = groupTable[groupName];
+                local parentNode = dataProvider:Insert(parent);
+                local children = groupChildren[groupName];
+                if children then
+                    table.sort(children, SortByTitle);
+                    for _, child in ipairs(children) do
+                        parentNode:Insert(child);
+                    end
+                end
+            end
+        end
+
+        InsertSortedGroups(enabledGroups);
+        InsertSortedGroups(disabledGroups);
 
         AddonList.ScrollBox:SetDataProvider(dataProvider, ScrollBoxConstants.RetainScrollPosition);
-        AddonList.ScrollBox:Show()
+        AddonList.ScrollBox:Show();
     end
 
-    AddonList.SearchBox:HookScript("OnTextChanged", RemoveAddonCategories);
+    -- Hooks
+    AddonList.SearchBox:HookScript("OnTextChanged", RemoveAddonCategories)
     hooksecurefunc("AddonList_Update", RemoveAddonCategories)
-
     AddonList:HookScript("OnShow", function()
         AddonList.ScrollBox:Hide()
         C_Timer.After(0, RemoveAddonCategories)
@@ -866,6 +889,16 @@ function BBF.RemoveAddonCategories()
 end
 
 
+function BBF.DisableAddOnProfiling()
+    if BetterBlizzFramesDB.disableAddonProfiling then
+        C_CVar.RegisterCVar('addonProfilerEnabled', "1")
+        C_CVar.SetCVar('addonProfilerEnabled', "0")
+        BetterBlizzFramesDB.disableAddonProfilingActive = true
+    elseif BetterBlizzFramesDB.disableAddonProfilingActive then
+        C_CVar.RegisterCVar('addonProfilerEnabled', "1")
+        C_CVar.SetCVar('addonProfilerEnabled', "1")
+    end
+end
 
 
 
@@ -2356,7 +2389,11 @@ local function ApplyTextureChange(type, statusBar, parent, classic)
                 manabar:SetStatusBarColor(color.r, color.g, color.b)
             end
         end
-        SetUnitPowerColor(statusBar, statusBar.unit)
+        if statusBar.unit then
+            SetUnitPowerColor(statusBar, statusBar.unit)
+        else
+            statusBar:SetStatusBarColor(0, 0, 1)
+        end
 
         if classic and not statusBar.bbfTextureHook then
             statusBar:SetStatusBarTexture(manaTexture)
@@ -2447,6 +2484,7 @@ function HookUnitFrameTextures()
             manaTextureUnits["pet"] = true
 
             ApplyTextureChange("mana", PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar)
+            ApplyTextureChange("mana", AlternatePowerBar)
             ApplyTextureChange("mana", PetFrame.manabar)
             ApplyTextureChange("mana", TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar)
             ApplyTextureChange("mana", FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar)
@@ -3296,8 +3334,8 @@ Frame:SetScript("OnEvent", function(...)
             if BetterBlizzFramesDB.recolorTempHpLoss then
                 BBF.RecolorHpTempLoss()
             end
-            BBF.CreateAltManaBar()
             C_Timer.After(1, function()
+                BBF.CreateAltManaBar()
                 if BetterBlizzFramesDB.playerFrameOCD then
                     BBF.FixStupidBlizzPTRShit()
                 end
@@ -3458,6 +3496,7 @@ First:SetScript("OnEvent", function(_, event, addonName)
         BBF.GenericLegacyComboSupport()
         BBF.RaiseTargetFrameLevel()
         BBF.RaiseTargetCastbarStratas()
+        BBF.DisableAddOnProfiling()
         C_Timer.After(0.5, function()
             BBF.ClassColorLegacyCombos()
             BBF.UpdateCustomTextures()

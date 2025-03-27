@@ -269,7 +269,7 @@ local function UpdateAltManaBar(updateCombos, cf)
         elseif display == "BOTH" and bar.LeftText and bar.RightText then
             bar.TextString:SetText("")
             bar.LeftText:SetText(percent .. "%")
-            bar.RightText:SetText(FormatStatusBarNumber(maxMana))
+            bar.RightText:SetText(FormatStatusBarNumber(mana))
         end
 
         bar:Show()
@@ -341,9 +341,9 @@ function BBF.CreateAltManaBar()
         bar:SetSize(124, 10)
         bar:SetPoint("BOTTOMLEFT", PlayerFrame, "BOTTOMLEFT", 85, 17.5)
     end
-    if BetterBlizzFramesDB.changeUnitFrameManabarTexture then
+    if db.changeUnitFrameManabarTexture then
         bar:SetStatusBarTexture(BBF.manaTexture)
-        bar:SetStatusBarColor(0, 0.4, 1)
+        bar:SetStatusBarColor(0, 0, 1)
     else
         bar:SetStatusBarTexture("UI-HUD-UnitFrame-Player-PortraitOn-Bar-Mana")
         bar:SetStatusBarColor(1, 1, 1)
