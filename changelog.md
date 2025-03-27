@@ -1,5 +1,7 @@
 # BetterBlizzFrames 1.6.5f
 ## Retail
+### New:
+- "Disable Addon Profiling" setting. Should improve performance a tiny bit. (Misc)
 ### Tweak:
 - "Remove AddonList Categories" is now "Improved AddonList". It now in addition to removing categories sorts enabled addons at the top and disabled addons at the bottom for better overview.
 - "Hide PvP Timer" is now a default enabled setting. Eyesore (5m timer text on PlayerFrame for no reason)
