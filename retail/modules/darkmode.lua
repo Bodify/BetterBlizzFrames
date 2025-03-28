@@ -213,6 +213,7 @@ function BBF.DarkmodeFrames(bypass)
     local rogueComboActive = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.30) or 1
     local monkChi = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.10) or 1
     local castbarBorder = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.1) or 1
+    local color25 = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.25) or 1
 
     local minimapColor = (BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeMinimap) and BetterBlizzFramesDB.darkModeColor or 1
     local minimapSat = (BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeMinimap) and true or false
@@ -562,6 +563,14 @@ function BBF.DarkmodeFrames(bypass)
                 end)
                 BBF.CatFormWatcher = f
             end
+        end
+    end
+
+    if PlayerFrame.PlayerFrameContainer.PlayerElite then
+        if BetterBlizzFramesDB.playerEliteFrameDarkmode then
+            PlayerFrame.PlayerFrameContainer.PlayerElite:SetVertexColor(color25,color25,color25)
+        else
+            PlayerFrame.PlayerFrameContainer.PlayerElite:SetVertexColor(1,1,1)
         end
     end
 

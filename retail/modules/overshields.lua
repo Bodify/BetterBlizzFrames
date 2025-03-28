@@ -167,7 +167,7 @@ function BBF.HookOverShieldUnitFrames()
     local classicFramesEnabled = C_AddOns.IsAddOnLoaded("ClassicFrames")
 
     if not classicFramesEnabled then
-        local classicOffset = BetterBlizzFramesDB.classicFrames and -3 or 0
+        local classicOffset = BetterBlizzFramesDB.classicFrames and -4 or 0
         hooksecurefunc("UnitFrameHealPredictionBars_Update", function(frame)
             BBF_UnitFrameHealPredictionBars_Update(frame, classicOffset)
         end)

@@ -58,6 +58,7 @@ local defaultSettings = {
     classicCastbarsPlayerBorder = true,
     legacyBlueComboPoints = true,
     hidePvpTimerText = true,
+    playerEliteFrameMode = 1,
 
     --Target castbar
     playerCastbarIconXPos = 0,
@@ -1314,6 +1315,106 @@ function BBF.UpdateClassComboPoints()
     ScaleClassResource()
 end
 
+
+
+
+
+
+
+
+
+
+function BBF.PlayerElite(mode)
+    local db = BetterBlizzFramesDB
+    if not db.classicFrames then
+        if not PlayerFrame.PlayerFrameContainer.PlayerElite then
+            PlayerFrame.PlayerFrameContainer.PlayerElite = PlayerFrame.PlayerFrameContainer:CreateTexture(nil, "OVERLAY")
+            PlayerFrame.PlayerFrameContainer.PlayerElite:SetTexCoord(1, 0, 0, 1)
+            PetPortrait:GetParent():SetFrameLevel(4)
+            RuneFrame:SetFrameLevel(4)
+        end
+        local playerElite = PlayerFrame.PlayerFrameContainer.PlayerElite
+        local alpha = db.playerEliteFrame and 1 or 0
+        playerElite:SetDesaturated(false)
+        -- Set Elite style according to value
+        if mode == 1 then -- Rare (Silver)
+            playerElite:SetAtlas("UI-HUD-UnitFrame-Target-PortraitOn-Boss-Rare-Silver")
+            playerElite:SetSize(80, 78)
+            playerElite:ClearAllPoints()
+            playerElite:SetPoint("TOPLEFT", 10.5, -10)
+            playerElite:SetVertexColor(1, 1, 1, alpha)
+        elseif mode == 2 then -- Boss (Silver Winged)
+            playerElite:SetAtlas("UI-HUD-UnitFrame-Target-PortraitOn-Boss-Gold-Winged")
+            playerElite:SetSize(99, 80)
+            playerElite:ClearAllPoints()
+            playerElite:SetPoint("TOPLEFT", -9, -9)
+            playerElite:SetVertexColor(1, 1, 1, alpha)
+            playerElite:SetDesaturated(true)
+        elseif mode == 3 then -- Boss (Gold Winged)
+            playerElite:SetAtlas("UI-HUD-UnitFrame-Target-PortraitOn-Boss-Gold-Winged")
+            playerElite:SetSize(99, 80)
+            playerElite:ClearAllPoints()
+            playerElite:SetPoint("TOPLEFT", -9, -9)
+            playerElite:SetVertexColor(1, 1, 1, alpha)
+        elseif mode == 4 then -- Elite (Gold)
+            playerElite:SetAtlas("UI-HUD-UnitFrame-Target-PortraitOn-Boss-Gold")
+            playerElite:SetSize(80, 78)
+            playerElite:ClearAllPoints()
+            playerElite:SetPoint("TOPLEFT", 10.5, -10)
+            playerElite:SetAlpha(1, 1, 1, alpha)
+        end
+        if BetterBlizzFramesDB.playerEliteFrameDarkmode then
+            local v = (BetterBlizzFramesDB.darkModeColor + 0.25)
+            playerElite:SetVertexColor(v,v,v)
+        end
+    else
+        if db.playerEliteFrame then
+            local playerElite = PlayerFrame.ClassicFrame.Texture
+            -- Set Elite style according to value
+            if mode == 1 then -- Rare (Silver)
+                playerElite:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Rare")
+                playerElite:SetDesaturated(true)
+            elseif mode == 2 then -- Boss (Silver Winged)
+                playerElite:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Rare-Elite")
+                playerElite:SetDesaturated(true)
+            elseif mode == 3 then -- Boss (Gold Winged)
+                playerElite:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Elite")
+                playerElite:SetDesaturated(false)
+            elseif mode == 4 then -- Only 3 available for classic
+                db.playerEliteFrameMode = 3
+                playerElite:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Elite")
+                playerElite:SetDesaturated(false)
+            end
+            BBF.eliteToggled = true
+        elseif BBF.eliteToggled then
+            local playerElite = PlayerFrame.ClassicFrame.Texture
+            local hideLvl = db.hideLevelText
+            local alwaysHideLvl = hideLvl and db.hideLevelTextAlways
+
+            playerElite:SetDesaturated(false)
+            if alwaysHideLvl then
+                playerElite:SetTexture("Interface\\TargetingFrame\\UI-FocusFrame-Large")
+            elseif hideLvl and UnitLevel("player") == 80 then
+                playerElite:SetTexture("Interface\\TargetingFrame\\UI-FocusFrame-Large")
+            else
+                playerElite:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame")
+            end
+            BBF.eliteToggled = nil
+        end
+    end
+end
+
+
+
+
+
+
+
+
+
+
+
+
 --########################################################
 function BBF.MiniFrame(frame)
     local db = BetterBlizzFramesDB
@@ -1333,6 +1434,11 @@ function BBF.MiniFrame(frame)
     -- Set up common variables for target/focus frames
     local healthBar, manaBar, compactRing, frameTexture, flash, reputationColor, levelText, name
 
+    if frame.ClassicFrame then
+        frame.ClassicFrame:Hide()
+        frame.ClassicFrame.Background:Hide()
+    end
+
     if frame ~= PlayerFrame then
         -- Variables for Target and Focus Frames
         healthBar = frame.TargetFrameContent.TargetFrameContentMain.HealthBarsContainer
@@ -1349,12 +1455,26 @@ function BBF.MiniFrame(frame)
         manaBar:SetAlpha(0)
 
         if not compactRing then
-            compactRing = frame.TargetFrameContainer:CreateTexture(nil, "ARTWORK")
-            compactRing:SetAtlas("Map_Faction_Ring")
-            compactRing:SetSize(71, 70)
-            compactRing:SetPoint("CENTER", frame.TargetFrameContainer.Portrait, "CENTER", 1, -2)
-            frame.TargetFrameContainer.compactRing = compactRing
+            if frame.ClassicFrame then
+                compactRing = frame.TargetFrameContainer:CreateTexture(nil, "ARTWORK")
+                compactRing:SetTexture("Interface\\TargetingFrame\\playerframe")
+                compactRing:SetSize(99,99)
+                compactRing:SetPoint("CENTER", frame.TargetFrameContainer.Portrait, "CENTER", 13, -14)
+                frame.TargetFrameContainer.compactRing = compactRing
 
+                local mask = frame.TargetFrameContainer:CreateMaskTexture(nil, "ARTWORK")
+                mask:SetTexture("Interface\\CharacterFrame\\TempPortraitAlphaMask", "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
+                mask:SetSize(70, 70)
+                mask:SetPoint("CENTER", frame.TargetFrameContainer.Portrait, "CENTER", 0, 0)
+                compactRing:AddMaskTexture(mask)
+                name:SetParent(frame)
+            else
+                compactRing = frame.TargetFrameContainer:CreateTexture(nil, "ARTWORK")
+                compactRing:SetAtlas("Map_Faction_Ring")
+                compactRing:SetSize(71, 70)
+                compactRing:SetPoint("CENTER", frame.TargetFrameContainer.Portrait, "CENTER", 1, -2)
+                frame.TargetFrameContainer.compactRing = compactRing
+            end
             if db.darkModeUi then
                 compactRing:SetDesaturated(true)
                 local color = db.darkModeColor
@@ -1404,12 +1524,33 @@ function BBF.MiniFrame(frame)
         PlayerFrame.PlayerFrameContainer.PlayerPortraitMask:SetPoint(a,b,c,d,e-2)
 
         if not compactRing then
-            compactRing = frame.PlayerFrameContainer:CreateTexture(nil, "ARTWORK")
-            compactRing:SetAtlas("Map_Faction_Ring")
-            compactRing:SetSize(71, 70)
-            compactRing:SetPoint("CENTER", frame.PlayerFrameContainer.PlayerPortrait, "CENTER", 0, -2)
-            frame.PlayerFrameContainer.compactRing = compactRing
+            if frame.ClassicFrame then
+                compactRing = frame.PlayerFrameContainer:CreateTexture(nil, "ARTWORK")
+                compactRing:SetTexture("Interface\\TargetingFrame\\playerframe")
+                compactRing:SetSize(99,99)
+                compactRing:SetPoint("CENTER", frame.PlayerFrameContainer.PlayerPortrait, "CENTER", 13, -14)
+                frame.PlayerFrameContainer.compactRing = compactRing
 
+                local mask = frame.PlayerFrameContainer:CreateMaskTexture(nil, "ARTWORK")
+                mask:SetTexture("Interface\\CharacterFrame\\TempPortraitAlphaMask", "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
+                mask:SetSize(70, 70)
+                mask:SetPoint("CENTER", frame.PlayerFrameContainer.PlayerPortrait, "CENTER", 0, 0)
+                compactRing:AddMaskTexture(mask)
+
+                name:SetParent(frame)
+
+                frame.PlayerFrameContent:SetParent(hiddenFrame)
+                if frame.AltManaBarBBF then
+                    frame.AltManaBarBBF:SetParent(hiddenFrame)
+                end
+
+            else
+                compactRing = frame.PlayerFrameContainer:CreateTexture(nil, "ARTWORK")
+                compactRing:SetAtlas("Map_Faction_Ring")
+                compactRing:SetSize(71, 70)
+                compactRing:SetPoint("CENTER", frame.PlayerFrameContainer.PlayerPortrait, "CENTER", 0, -2)
+                frame.PlayerFrameContainer.compactRing = compactRing
+            end
             if db.darkModeUi then
                 compactRing:SetDesaturated(true)
                 local color = db.darkModeColor
@@ -1649,8 +1790,8 @@ end
 function BBF.UpdateLegacyComboPosition()
     if not ComboFrame then return end
     local db = BetterBlizzFramesDB
-    local x = db.legacyComboXPos or -28
-    local y = db.legacyComboYPos or -25
+    local x = db.legacyComboXPos or (db.classicFrames and -28) or -33
+    local y = db.legacyComboYPos or (db.classicFrames and -25) or -21
     local scale = db.legacyComboScale or 0.85
 
     ComboFrame:ClearAllPoints()
@@ -2225,6 +2366,9 @@ function BBF.ReduceEditModeAlpha(disable)
         MultiBarBottomRight,
         MultiBarLeft,
         MultiBarRight,
+        MultiBar5,
+        MultiBar6,
+        MultiBar7,
         PartyFrame,
         PetActionBar,
         PetFrame,
@@ -2358,8 +2502,8 @@ local function ApplyTextureChange(type, statusBar, parent, classic)
     end
 
     if playerHp then
-        PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer.HealthBar.TotalAbsorbBar.TiledFillOverlay:SetDrawLayer(originalLayer, (subLayer + 1))
-        PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer.HealthBar.OverAbsorbGlow:SetDrawLayer(originalLayer, (subLayer + 1))
+        PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer.HealthBar.TotalAbsorbBar.TiledFillOverlay:SetDrawLayer("OVERLAY", (subLayer + 3))
+        PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer.HealthBar.OverAbsorbGlow:SetDrawLayer("OVERLAY", (subLayer + 3))
     end
 
     -- Hook SetStatusBarTexture to ensure the texture remains consistent
@@ -2962,7 +3106,11 @@ function BBF.AddBackgroundTextureToUnitFrames(frame)
     local topAnchor = frame.healthbar or frame
     local bottomAnchor = frame.manabar or frame
 
-    bgTex:SetPoint("TOPLEFT", topAnchor, "TOPLEFT", 0, 0)
+    local classic = BetterBlizzFramesDB.classicFrames
+    local yOffset = classic and -10 or 0
+    local xOffset = classic and 2 or 0
+
+    bgTex:SetPoint("TOPLEFT", topAnchor, "TOPLEFT", xOffset, yOffset)
     bgTex:SetPoint("BOTTOMRIGHT", bottomAnchor, "BOTTOMRIGHT", 0, 0)
 
     frame.bbfBgTexture = bgTex
@@ -3502,6 +3650,7 @@ First:SetScript("OnEvent", function(_, event, addonName)
             BBF.UpdateCustomTextures()
         end)
         BBF.ClassicFrames()
+        BBF.PlayerElite(BetterBlizzFramesDB.playerEliteFrameMode)
         BBF.ReduceEditModeAlpha()
         BBF.SymmetricPlayerFrame()
         BBF.HookCastbars()

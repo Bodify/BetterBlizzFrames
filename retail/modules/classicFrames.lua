@@ -16,13 +16,15 @@ local function SetXYPoint(frame, xOffset, yOffset)
 end
 
 local class = select(2, UnitClass("player"))
+local defaultTex = "Interface\\TargetingFrame\\UI-TargetingFrame"
+local noLvlTex = "Interface\\TargetingFrame\\UI-FocusFrame-Large"
+local flashTex = "Interface\\TargetingFrame\\UI-TargetingFrame-Flash"
+local flashNoLvl = "Interface\\TargetingFrame\\UI-FocusFrame-Large-Flash"
 
 local function MakeClassicFrame(frame)
     local db = BetterBlizzFramesDB
     local hideLvl = db.hideLevelText
     local alwaysHideLvl = hideLvl and db.hideLevelTextAlways
-    local defaultTex = "Interface\\TargetingFrame\\UI-TargetingFrame"
-    local hiddenLvlTex = "Interface\\TargetingFrame\\UI-TargetingFrame-NoLevel"
 
     local ClassResourceFrames = {
         ROGUE      = RogueComboPointBarFrame,
@@ -82,7 +84,7 @@ local function MakeClassicFrame(frame)
         hpContainer.DeadText:SetParent(frame.ClassicFrame)
         hpContainer.DeadText:ClearAllPoints()
         hpContainer.DeadText:SetPoint("CENTER", frame.ClassicFrame.Texture, "LEFT", 66, 3)
-        AdjustFramePoint(hpContainer.HealthBar.OverAbsorbGlow, -6)
+        AdjustFramePoint(hpContainer.HealthBar.OverAbsorbGlow, -7)
 
         manaBar.LeftText:SetParent(frame.ClassicFrame)
         manaBar.LeftText:ClearAllPoints()
@@ -137,7 +139,7 @@ local function MakeClassicFrame(frame)
         -- end
 
         frameContainer.Flash:SetDrawLayer("BACKGROUND")
-        frameContainer.Flash:SetParent(db.hidePlayerRestGlow and BBF.hiddenFrame or TargetFrame)
+        frameContainer.Flash:SetParent(db.hideCombatGlow and BBF.hiddenFrame or frame)
         frameContainer.Portrait:SetSize(62,62)
         frameContainer.Portrait:ClearAllPoints()
         frameContainer.Portrait:SetPoint("TOPRIGHT", -23, -22)
@@ -215,7 +217,7 @@ local function MakeClassicFrame(frame)
             end
         end
 
-        local function FrameAdjustments(frame, minus)
+        local function FrameAdjustments(frame, minus, normal)
             if minus then
                 frame.FrameTexture:ClearAllPoints()
                 frame.FrameTexture:SetPoint("TOPLEFT", 20, -4)
@@ -224,14 +226,36 @@ local function MakeClassicFrame(frame)
                 frame.Flash:SetTexCoord(0, 1, 0, 1)
                 frame.Flash:ClearAllPoints()
                 frame.Flash:SetPoint("TOPLEFT", -4, -4)
+                contentMain.ReputationColor:Hide()
+                contentMain.LevelText:SetAlpha(1)
             else
                 frame.FrameTexture:ClearAllPoints()
                 frame.FrameTexture:SetPoint("TOPLEFT", 20.5, -18)
                 frame.Flash:SetSize(242, 93)
-                frame.Flash:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Flash")
+                frame.Flash:SetTexture(flashTex)
                 frame.Flash:SetTexCoord(0, 0.9453125, 0, 0.181640625)
                 frame.Flash:ClearAllPoints()
                 frame.Flash:SetPoint("TOPLEFT", -4, -8)
+                contentMain.LevelText:SetAlpha(1)
+                if frame.unit == "target" then
+                    contentMain.ReputationColor:SetShown(not BetterBlizzFramesDB.hideTargetReputationColor)
+                elseif frame.unit == "focus" then
+                    contentMain.ReputationColor:SetShown(not BetterBlizzFramesDB.hideFocusReputationColor)
+                end
+            end
+        end
+
+        local function ToggleNoLevelFrame(noLvl)
+            if noLvl then
+                frame.ClassicFrame.Texture:SetTexture(noLvlTex)
+                frameContainer.Flash:SetTexture(flashNoLvl)
+                frameContainer.Flash:SetTexCoord(0, 0.9553125, -0.01,0.733)
+                contentMain.LevelText:SetAlpha(0)
+            else
+                frame.ClassicFrame.Texture:SetTexture(defaultTex)
+                frameContainer.Flash:SetTexture(flashTex)
+                frameContainer.Flash:SetTexCoord(0, 0.9453125, 0, 0.181640625)
+                contentMain.LevelText:SetAlpha(1)
             end
         end
 
@@ -246,9 +270,6 @@ local function MakeClassicFrame(frame)
             local hpContainer = contentMain.HealthBarsContainer
             local manaBar = contentMain.ManaBar
 
-            if false then -- bodify
-                contentMain.ReputationColor:Show()
-            end
             frame.ClassicFrame.Background:SetPoint("TOPLEFT", hpContainer.HealthBar, "TOPLEFT", 3, 9)
             frameContainer.FrameTexture:SetAlpha(0)
 
@@ -274,23 +295,23 @@ local function MakeClassicFrame(frame)
                 FrameAdjustments(frameContainer, true)
                 frame.ClassicFrame.Texture:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Minus")
                 frame.ClassicFrame.Background:SetPoint("TOPLEFT", self.TargetFrameContent.TargetFrameContentMain.HealthBarsContainer.HealthBar, "TOPLEFT", 3, -10)
-                contentMain.ReputationColor:Hide()
             else
                 FrameAdjustments(frameContainer)
+                if frame.unit == "target" then
+                    contentMain.ReputationColor:SetShown(not BetterBlizzFramesDB.hideTargetReputationColor)
+                elseif frame.unit == "focus" then
+                    contentMain.ReputationColor:SetShown(not BetterBlizzFramesDB.hideFocusReputationColor)
+                end
                 if alwaysHideLvl then
-                    frame.ClassicFrame.Texture:SetTexture(hiddenLvlTex)
-                    contentMain.LevelText:SetAlpha(0)
+                    ToggleNoLevelFrame(true)
                 elseif hideLvl then
                     if UnitLevel(frame.unit) == 80 then
-                        frame.ClassicFrame.Texture:SetTexture(hiddenLvlTex)
-                        contentMain.LevelText:SetAlpha(0)
+                        ToggleNoLevelFrame(true)
                     else
-                        contentMain.LevelText:SetAlpha(1)
-                        frame.ClassicFrame.Texture:SetTexture(defaultTex)
+                        ToggleNoLevelFrame(false)
                     end
                 else
-                    contentMain.LevelText:SetAlpha(1)
-                    frame.ClassicFrame.Texture:SetTexture(defaultTex)
+                    ToggleNoLevelFrame(true)
                 end
             end
         end)
@@ -458,6 +479,13 @@ local function MakeClassicFrame(frame)
             PlayerLevelText:SetShown(not UnitHasVehiclePlayerFrameUI("player"))
         end)
 
+        if not db.hidePvpTimerText then
+            hooksecurefunc("PlayerFrame_UpdatePvPStatus", function()
+                contentContext.PvpTimerText:ClearAllPoints()
+                contentContext.PvpTimerText:SetPoint("BOTTOMLEFT", 8, 8)
+            end)
+        end
+
         local function GetFrameColor()
             local r,g,b = frameContainer.FrameTexture:GetVertexColor()
             frame.ClassicFrame.Texture:SetVertexColor(r,g,b)
@@ -565,6 +593,40 @@ local function MakeClassicFrame(frame)
             end)
         end
 
+        local function PlayerEliteFrame()
+            local playerElite = frame.ClassicFrame.Texture
+            local mode = BetterBlizzFramesDB.playerEliteFrameMode
+            -- Set Elite style according to value
+            if mode == 1 then -- Rare (Silver)
+                playerElite:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Rare")
+                playerElite:SetDesaturated(true)
+            elseif mode == 2 then -- Boss (Silver Winged)
+                playerElite:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Rare-Elite")
+                playerElite:SetDesaturated(true)
+            elseif mode == 3 then -- Boss (Gold Winged)
+                playerElite:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Elite")
+                playerElite:SetDesaturated(false)
+            elseif mode == 4 then -- Only 3 available for classic
+                db.playerEliteFrameMode = 3
+                playerElite:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Elite")
+                playerElite:SetDesaturated(false)
+            end
+        end
+
+        local function ToggleNoLevelFrame(noLvl)
+            if noLvl then
+                frame.ClassicFrame.Texture:SetTexture(noLvlTex)
+                frameContainer.FrameFlash:SetTexture(flashNoLvl)
+                frameContainer.FrameFlash:SetTexCoord(0.9553125,0, -0.01,0.733)
+                contentMain.StatusTexture:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\classic-statustexture-nolevel")
+            else
+                frame.ClassicFrame.Texture:SetTexture(defaultTex)
+                frameContainer.FrameFlash:SetTexture(flashTex)
+                frameContainer.FrameFlash:SetTexCoord(0.9453125, 0, 0, 0.181640625)
+                contentMain.StatusTexture:SetTexture("Interface\\CharacterFrame\\UI-Player-Status")
+            end
+        end
+
         local function ToPlayerArt()
             UpdateResourcePosition(isRogue)
 
@@ -582,16 +644,23 @@ local function MakeClassicFrame(frame)
             contentContext.RoleIcon:SetPoint("TOPLEFT", 192, -34)
 
             frame.ClassicFrame.Texture:SetSize(232, 100)
-            if alwaysHideLvl then
-                frame.ClassicFrame.Texture:SetTexture(hiddenLvlTex)
-            elseif hideLvl then
-                if UnitLevel(frame.unit) == 80 then
-                    frame.ClassicFrame.Texture:SetTexture(hiddenLvlTex)
-                else
-                    frame.ClassicFrame.Texture:SetTexture(defaultTex)
-                end
+            if db.playerEliteFrame then
+                PlayerEliteFrame()
+                frameContainer.FrameFlash:SetTexture(flashTex)
+                frameContainer.FrameFlash:SetTexCoord(0.9453125, 0, 0, 0.181640625)
+                contentMain.StatusTexture:SetTexture("Interface\\CharacterFrame\\UI-Player-Status")
             else
-                frame.ClassicFrame.Texture:SetTexture(defaultTex)
+                if alwaysHideLvl then
+                    ToggleNoLevelFrame(true)
+                elseif hideLvl then
+                    if UnitLevel("player") == 80 then
+                        ToggleNoLevelFrame(true)
+                    else
+                        ToggleNoLevelFrame(false)
+                    end
+                else
+                    ToggleNoLevelFrame(false)
+                end
             end
             frame.ClassicFrame.Texture:SetTexCoord(1, 0.09375, 0, 0.78125)
             frame.ClassicFrame.Texture:ClearAllPoints()
@@ -604,17 +673,16 @@ local function MakeClassicFrame(frame)
 
             frameContainer.FrameFlash:SetParent(db.hideCombatGlow and BBF.hiddenFrame or frame)
             frameContainer.FrameFlash:SetSize(242, 93)
-            frameContainer.FrameFlash:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Flash")
-            frameContainer.FrameFlash:SetTexCoord(0.9453125, 0, 0, 0.181640625)
+            --frameContainer.FrameFlash:SetTexture(flashTex)
+            --frameContainer.FrameFlash:SetTexCoord(0.9453125, 0, 0, 0.181640625)
             frameContainer.FrameFlash:ClearAllPoints()
             frameContainer.FrameFlash:SetPoint("TOPLEFT", -6, -8)
             frameContainer.FrameFlash:SetDrawLayer("BACKGROUND")
 
             contentMain.StatusTexture:SetSize(191, 77)
-            contentMain.StatusTexture:SetTexture("Interface\\CharacterFrame\\UI-Player-Status")
-            contentMain.StatusTexture:SetTexCoord(0, 0.74609375, 0, 0.53125)
+            contentMain.StatusTexture:SetTexCoord(0, 0.74609375, 0, 0.58125)
             contentMain.StatusTexture:ClearAllPoints()
-            contentMain.StatusTexture:SetPoint("TOPLEFT", 17, -12)
+            contentMain.StatusTexture:SetPoint("TOPLEFT", 17, -15)
             contentMain.StatusTexture:SetBlendMode("ADD")
 
             AdjustStatusBarText()
@@ -941,13 +1009,13 @@ local function MakeClassicPartyFrame()
         frame.Texture:SetParent(hpContainer)
 
         frame.Flash:SetSize(143, 56)
-        frame.Flash:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Flash")
+        frame.Flash:SetTexture(flashTex)
         frame.Flash:SetTexCoord(0.9453125, 0, 0, 0.181640625)
         frame.Flash:ClearAllPoints()
         frame.Flash:SetPoint("TOPLEFT", -10.5, 2.5)
 
         overlay.Status:SetSize(143, 56)
-        overlay.Status:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Flash")
+        overlay.Status:SetTexture(flashTex)
         overlay.Status:SetTexCoord(0.9453125, 0, 0, 0.181640625)
         overlay.Status:ClearAllPoints()
         overlay.Status:SetPoint("TOPLEFT", -10.5, 2.5)
@@ -1010,13 +1078,13 @@ local function MakeClassicPartyFrame()
             manaBar.RightText:SetPoint("RIGHT", manaBar, "RIGHT", 0, 1)
 
             frame.Flash:SetSize(143, 56)
-            frame.Flash:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Flash")
+            frame.Flash:SetTexture(flashTex)
             frame.Flash:SetTexCoord(0.9453125, 0, 0, 0.181640625)
             frame.Flash:ClearAllPoints()
             frame.Flash:SetPoint("TOPLEFT", -10.5, 2.5)
 
             overlay.Status:SetSize(143, 56)
-            overlay.Status:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Flash")
+            overlay.Status:SetTexture(flashTex)
             overlay.Status:SetTexCoord(0.9453125, 0, 0, 0.181640625)
             overlay.Status:ClearAllPoints()
             overlay.Status:SetPoint("TOPLEFT", -10.5, 2.5)

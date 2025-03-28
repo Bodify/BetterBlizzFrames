@@ -216,7 +216,7 @@ local function CreateFontDropdown(name, parentFrame, defaultText, settingKey, to
     local label = container:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall2")
     label:SetPoint("LEFT", container, "LEFT", -50, -12)
     label:SetText("Font")
-    label:SetFont("Fonts\\ARIALN.TTF", 13)
+    label:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\arialn.TTF", 13)
 
     -- Create the dropdown button with the new dropdown template
     local dropdown = CreateFrame("DropdownButton", nil, parentFrame, "WowStyle1DropdownTemplate")
@@ -412,7 +412,7 @@ local function CreateSimpleDropdown(name, parentFrame, labelText, settingKey, op
     local label = container:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall2")
     label:SetPoint("LEFT", container, "LEFT", -50, -12)
     label:SetText(labelText)
-    label:SetFont("Fonts\\ARIALN.TTF", 13)
+    label:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\arialn.TTF", 13)
     dropdown.LabelText = label
 
     -- Define the generator function for the dropdown menu
@@ -756,7 +756,7 @@ local function CreateSlider(parent, label, minValue, maxValue, stepValue, elemen
 
     slider.Text:SetFontObject(GameFontHighlightSmall)
     slider.Text:SetTextColor(1, 0.81, 0, 1)
-    slider.Text:SetFont("Fonts\\ARIALN.TTF", 11)
+    slider.Text:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\arialn.TTF", 11)
 
     slider.Low:SetText(" ")
     slider.High:SetText(" ")
@@ -1567,7 +1567,7 @@ local function CreateCheckbox(option, label, parent, cvarName, extraFunc)
     local checkBox = CreateFrame("CheckButton", nil, parent, "InterfaceOptionsCheckButtonTemplate")
     checkBox.Text:SetText(label)
     checkBox:SetSize(23,23)
-    checkBox.Text:SetFont("Fonts\\ARIALN.TTF", 12)
+    checkBox.Text:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\arialn.TTF", 12)
 
     local category
     if parent.name then
@@ -1938,7 +1938,7 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
             local text = button:CreateFontString(nil, "OVERLAY", "GameFontNormal")
             text:SetPoint("LEFT", button, "LEFT", 25, 0)
             button.text = text
-            text:SetFont("Fonts\\ARIALN.TTF", 13)
+            text:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\arialn.TTF", 13)
 
             -- Delete Button
             local deleteButton = CreateFrame("Button", nil, button, "UIPanelButtonTemplate")
@@ -2470,7 +2470,7 @@ local function CreateSearchFrame()
                 if not resultCheckBox then
                     resultCheckBox = CreateFrame("CheckButton", nil, resultsList, "InterfaceOptionsCheckButtonTemplate")
                     resultCheckBox:SetSize(23, 23)
-                    resultCheckBox.Text:SetFont("Fonts\\ARIALN.TTF", 12)
+                    resultCheckBox.Text:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\arialn.TTF", 12)
                     checkboxPool[checkboxCount] = resultCheckBox
                 end
 
@@ -2530,7 +2530,7 @@ local function CreateSearchFrame()
                     resultSlider:SetObeyStepOnDrag(true)
                     resultSlider.Text = resultSlider:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
                     resultSlider.Text:SetTextColor(1, 0.81, 0, 1)
-                    resultSlider.Text:SetFont("Fonts\\ARIALN.TTF", 11)
+                    resultSlider.Text:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\arialn.TTF", 11)
                     resultSlider.Text:SetPoint("TOP", resultSlider, "BOTTOM", 0, -1)
                     resultSlider.Low:SetText(" ")
                     resultSlider.High:SetText(" ")
@@ -2886,6 +2886,28 @@ local function guiGeneralTab()
         end
     end)
 
+    local textures = BetterBlizzFramesDB.classicFrames and 3 or 4
+    local extraText = BetterBlizzFramesDB.classicFrames and "" or "\n\n|cffc084f7Shift + Right-click to allow Dark Mode to color Elite Texture.|r"
+    local playerEliteFrame = CreateCheckbox("playerEliteFrame", "Elite Texture", BetterBlizzFrames)
+    playerEliteFrame:SetPoint("LEFT", playerFrameClickthrough.text, "RIGHT", 5, 0)
+    playerEliteFrame:HookScript("OnClick", function(self)
+        BBF.PlayerElite(BetterBlizzFramesDB.playerEliteFrameMode)
+    end)
+    playerEliteFrame:HookScript("OnMouseDown", function(self, button)
+        if button == "RightButton" and IsShiftKeyDown() then
+            if not BetterBlizzFramesDB.playerEliteFrameDarkmode then
+                BetterBlizzFramesDB.playerEliteFrameDarkmode = true
+            else
+                BetterBlizzFramesDB.playerEliteFrameDarkmode = nil
+            end
+            BBF.PlayerElite(BetterBlizzFramesDB["playerEliteFrameMode"])
+        elseif button == "RightButton" then
+            BetterBlizzFramesDB["playerEliteFrameMode"] = BetterBlizzFramesDB["playerEliteFrameMode"] % textures + 1
+            BBF.PlayerElite(BetterBlizzFramesDB["playerEliteFrameMode"])
+        end
+    end)
+    CreateTooltipTwo(playerEliteFrame, "Show Elite Texture", "Show elite dragon around PlayerFrame.\n\n|cff32f795Right-click to swap between the "..textures.." different textures available.|r"..extraText)
+
     local playerReputationColor = CreateCheckbox("playerReputationColor", "Add Reputation Color", BetterBlizzFrames, nil, BBF.PlayerReputationColor)
     playerReputationColor:SetPoint("TOPLEFT", playerFrameClickthrough, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(playerReputationColor, "Add reputation color behind name like on Target & Focus.|A:UI-HUD-UnitFrame-Target-PortraitOn-Type:18:98|a\nCan be class colored as well.")
@@ -3087,7 +3109,7 @@ local function guiGeneralTab()
 
     local hidePvpTimerText = CreateCheckbox("hidePvpTimerText", "Hide PvP Timer", BetterBlizzFrames, nil, BBF.HideFrames)
     hidePvpTimerText:SetPoint("LEFT", hidePlayerRoleIcon.text, "RIGHT", 0, 0)
-    CreateTooltip(hidePvpTimerText, "Hide the PvP timer text under the Prestige Badge.\nI don't even know what it is a timer for.\nMy best guess is for when you're no longer PvP tagged.")
+    CreateTooltipTwo(hidePvpTimerText, "Hide PvP Timer", "Hide the PvP timer bottom left on PlayerFrame. This indicates the 5min timer when you will drop PvP tag. Maybe useful in back in 2004.")
 
 
 
@@ -3702,6 +3724,8 @@ local function guiGeneralTab()
 
                             local comboPointsEnabled = self.cfComboPoints:GetChecked()
                             BBF.ChangesOnReload["comboPointLocation"] = comboPointsEnabled and "1" or nil
+                            BBF.ChangesOnReload["enableLegacyComboPoints"] = comboPointsEnabled and true or nil
+                            BBF.ChangesOnReload["legacyCombosTurnedOff"] = comboPointsEnabled and nil or true
 
                             local statusBarsEnabled = self.cfTextures:GetChecked()
                             BBF.ChangesOnReload["changeUnitFrameHealthbarTexture"] = statusBarsEnabled or false
@@ -6776,7 +6800,7 @@ local function guiMisc()
 
     local removeAddonListCategories = CreateCheckbox("removeAddonListCategories", "Improved AddonList", guiMisc, nil, BBF.RemoveAddonCategories)
     removeAddonListCategories:SetPoint("TOPLEFT", moveableFPSCounter, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltipTwo(removeAddonListCategories, "Improved AddonList", "Enabling removes all categories from the AddonList and also sorts enabled addons at the top and disabled addons at the bottom for better organization.")
+    CreateTooltipTwo(removeAddonListCategories, "Improved AddonList", "Remove all categories from the AddonList and sort enabled addons at the top and disabled addons at the bottom for better organization.")
 
     local hideMinimap = CreateCheckbox("hideMinimap", "Hide Minimap", guiMisc, nil, BBF.MinimapHider)
     hideMinimap:SetPoint("TOPLEFT", removeAddonListCategories, "BOTTOMLEFT", 0, pixelsBetweenBoxes)

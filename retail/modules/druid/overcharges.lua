@@ -311,6 +311,7 @@ function BBF.CreateAltManaBar()
     if PlayerFrame.AltManaBarBBF then return end -- already created
     if not BetterBlizzFramesDB.createAltManaBarDruid then return end
     local db = BetterBlizzFramesDB
+    if db.useMiniPlayerFrame then return end
     local cf = db.classicFrames
 
     local specID = GetSpecialization() and GetSpecializationInfo(GetSpecialization())
@@ -333,7 +334,7 @@ function BBF.CreateAltManaBar()
         return
     end
 
-    local bar = CreateFrame("StatusBar", "BBF", PlayerFrame)
+    local bar = CreateFrame("StatusBar", "AltManaBarBBF", PlayerFrame)
     if cf then
         bar:SetSize(104, 12)
         bar:SetPoint("BOTTOMLEFT", PlayerFrame, "BOTTOMLEFT", 95, 17)

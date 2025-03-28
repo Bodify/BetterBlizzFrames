@@ -1,3 +1,18 @@
+# BetterBlizzFrames 1.6.5g
+## Retail
+### New:
+- Player Elite Frame setting.
+### Tweaks:
+- A few minor pixel tweaks to Classic Frames.
+- Classic Frames: If Hide LvL is selected it now also fixes the Glow texture and uses a better texture.
+- Legacy Combo Points default position updated for Retail UnitFrames.
+- "Mini-Frame" settings now work with Classic Frames setting as well.
+- "UnitFrame Background Color" setting position tweaked to work with Classic Frames
+### Bugfix:
+- Fix absorb texture not showing properly with texture swap enabled.
+- Classic Frames: Fix Reputation Color (color behind Name) on Target/FocusFrame staying hidden after targeting a minus mob.
+
+
 # BetterBlizzFrames 1.6.5f
 ## Retail
 ### New:
