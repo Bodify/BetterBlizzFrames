@@ -234,6 +234,24 @@ function BBF.DarkmodeFrames(bypass)
         rogueComboActive = 0.15
     end
 
+    if ComboFrame then
+        for i = 1, 9 do
+            local point = _G["ComboPoint"..i]
+            if point and point:GetNumRegions() then
+                for j = 1, point:GetNumRegions() do
+                    local region = select(j, point:GetRegions())
+                    if region and region:IsObjectType("Texture") then
+                        local textureID = region:GetTexture()
+                        if textureID == 130973 then
+                            region:SetDesaturated(true)
+                            region:SetVertexColor(druidComboPointActive,druidComboPointActive,druidComboPointActive)
+                        end
+                    end
+                end
+            end
+        end
+    end
+
     UpdateUnitFrameDarkModeBorderColors(vertexColor)
 
     for key, region in pairs(GameTooltip.NineSlice) do

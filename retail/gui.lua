@@ -3668,6 +3668,7 @@ local function guiGeneralTab()
                                 end
                             end
                         end
+                        C_AddOns.DisableAddOn("ClassicFrames")
                         ReloadUI()
                     end,
                     OnShow = function(self)
@@ -3753,6 +3754,12 @@ local function guiGeneralTab()
                     OnHide = function(self)
                         if self.cfTextures then
                             self.cfTextures:Hide()
+                        end
+                        if self.cfComboPoints then
+                            self.cfComboPoints:Hide()
+                        end
+                        if self.cfCastbars then
+                            self.cfCastbars:Hide()
                         end
                     end,
                     timeout = 0,

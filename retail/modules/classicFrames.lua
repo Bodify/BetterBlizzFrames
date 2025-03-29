@@ -74,27 +74,27 @@ local function MakeClassicFrame(frame)
 
         hpContainer.LeftText:SetParent(frame.ClassicFrame)
         hpContainer.LeftText:ClearAllPoints()
-        hpContainer.LeftText:SetPoint("LEFT", frame.ClassicFrame.Texture, "LEFT", 7, 3)
+        hpContainer.LeftText:SetPoint("LEFT", frame.ClassicFrame.Texture, "LEFT", 7, 2.8)
         hpContainer.RightText:SetParent(frame.ClassicFrame)
         hpContainer.RightText:ClearAllPoints()
-        hpContainer.RightText:SetPoint("RIGHT", frame.ClassicFrame.Texture, "RIGHT", -108, 3)
+        hpContainer.RightText:SetPoint("RIGHT", frame.ClassicFrame.Texture, "RIGHT", -108, 2.8)
         hpContainer.HealthBarText:SetParent(frame.ClassicFrame)
         hpContainer.HealthBarText:ClearAllPoints()
-        hpContainer.HealthBarText:SetPoint("CENTER", frame.ClassicFrame.Texture, "LEFT", 66, 3)
+        hpContainer.HealthBarText:SetPoint("CENTER", frame.ClassicFrame.Texture, "LEFT", 66, 2.8)
         hpContainer.DeadText:SetParent(frame.ClassicFrame)
         hpContainer.DeadText:ClearAllPoints()
-        hpContainer.DeadText:SetPoint("CENTER", frame.ClassicFrame.Texture, "LEFT", 66, 3)
+        hpContainer.DeadText:SetPoint("CENTER", frame.ClassicFrame.Texture, "LEFT", 66, 2.8)
         AdjustFramePoint(hpContainer.HealthBar.OverAbsorbGlow, -7)
 
         manaBar.LeftText:SetParent(frame.ClassicFrame)
         manaBar.LeftText:ClearAllPoints()
-        manaBar.LeftText:SetPoint("LEFT", frame.ClassicFrame.Texture, "LEFT", 7, -8)
+        manaBar.LeftText:SetPoint("LEFT", frame.ClassicFrame.Texture, "LEFT", 7, -8.5)
         manaBar.RightText:SetParent(frame.ClassicFrame)
         manaBar.RightText:ClearAllPoints()
-        manaBar.RightText:SetPoint("RIGHT", frame.ClassicFrame.Texture, "RIGHT", -108, -8)
+        manaBar.RightText:SetPoint("RIGHT", frame.ClassicFrame.Texture, "RIGHT", -108, -8.5)
         manaBar.ManaBarText:SetParent(frame.ClassicFrame)
         manaBar.ManaBarText:ClearAllPoints()
-        manaBar.ManaBarText:SetPoint("CENTER", frame.ClassicFrame.Texture, "LEFT", 66, -8)
+        manaBar.ManaBarText:SetPoint("CENTER", frame.ClassicFrame.Texture, "LEFT", 66, -8.5)
 
         contentContext:SetParent(frame.ClassicFrame)
         contentContext.HighLevelTexture:ClearAllPoints()
@@ -311,7 +311,7 @@ local function MakeClassicFrame(frame)
                         ToggleNoLevelFrame(false)
                     end
                 else
-                    ToggleNoLevelFrame(true)
+                    ToggleNoLevelFrame(false)
                 end
             end
         end)
@@ -416,13 +416,13 @@ local function MakeClassicFrame(frame)
         local function AdjustStatusBarText()
             hpContainer.LeftText:SetParent(frame.ClassicFrame)
             hpContainer.LeftText:ClearAllPoints()
-            hpContainer.LeftText:SetPoint("LEFT", frame.ClassicFrame.Texture, "LEFT", 108, 2.5)
+            hpContainer.LeftText:SetPoint("LEFT", frame.ClassicFrame.Texture, "LEFT", 108, 2.8)
             hpContainer.RightText:SetParent(frame.ClassicFrame)
             hpContainer.RightText:ClearAllPoints()
-            hpContainer.RightText:SetPoint("RIGHT", frame.ClassicFrame.Texture, "RIGHT", -7, 2.5)
+            hpContainer.RightText:SetPoint("RIGHT", frame.ClassicFrame.Texture, "RIGHT", -7, 2.8)
             hpContainer.HealthBarText:SetParent(frame.ClassicFrame)
             hpContainer.HealthBarText:ClearAllPoints()
-            hpContainer.HealthBarText:SetPoint("CENTER", frame.ClassicFrame.Texture, "CENTER", 52, 2.5)
+            hpContainer.HealthBarText:SetPoint("CENTER", frame.ClassicFrame.Texture, "CENTER", 52, 2.8)
 
             manaBar.LeftText:SetParent(frame.ClassicFrame)
             manaBar.LeftText:ClearAllPoints()
@@ -452,15 +452,19 @@ local function MakeClassicFrame(frame)
         end
 
         local function UpdateLevel()
-            if alwaysHideLvl then
-                PlayerLevelText:SetParent(BBF.hiddenFrame)
-                PlayerLevelText:ClearAllPoints()
-                PlayerLevelText:SetPoint("CENTER", -81, -24.5)
-            elseif hideLvl then
-                if UnitLevel(frame.unit) == 80 then
+            if not db.playerEliteFrame then
+                if alwaysHideLvl then
                     PlayerLevelText:SetParent(BBF.hiddenFrame)
                     PlayerLevelText:ClearAllPoints()
                     PlayerLevelText:SetPoint("CENTER", -81, -24.5)
+                elseif hideLvl then
+                    if UnitLevel(frame.unit) == 80 then
+                        PlayerLevelText:SetParent(BBF.hiddenFrame)
+                        PlayerLevelText:ClearAllPoints()
+                        PlayerLevelText:SetPoint("CENTER", -81, -24.5)
+                    else
+                        UpdateLevelDetails()
+                    end
                 else
                     UpdateLevelDetails()
                 end
@@ -1025,6 +1029,7 @@ local function MakeClassicPartyFrame()
         AdjustFramePoint(overlay.LeaderIcon, nil, -6)
         overlay.RoleIcon:ClearAllPoints()
         overlay.RoleIcon:SetPoint("BOTTOMLEFT", 8, 10)
+        overlay.PVPIcon:SetParent(BBF.hiddenFrame)
 
         AdjustFramePoint(hpContainer.HealthBarMask, nil, -3)
 

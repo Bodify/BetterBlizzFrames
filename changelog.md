@@ -1,3 +1,17 @@
+# BetterBlizzFrames 1.6.5h
+## Retail
+### Tweak:
+- Added Legacy Combo Points to Dark Mode.
+
+# BetterBlizzFrames 1.6.5h
+## Retail
+### Tweak:
+- Edit Mode Alpha slider is now top right inside the Edit Mode Window for better visibility.
+- More schizo pixel tweaks to Classic Frames setting.
+### Bugfix:
+- Fix wrong boolean in hide/show level frame on ClassicFrames setting causing it to hide lvl without the setting enabled.
+
+
 # BetterBlizzFrames 1.6.5g
 ## Retail
 ### New:

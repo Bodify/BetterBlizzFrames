@@ -2407,12 +2407,12 @@ local function CreateSmoothSlider(parent, variableToAdjust, title, defaultValue,
 
     -- Create the slider
     local slider = CreateFrame("Frame", nil, parent, "MinimalSliderWithSteppersTemplate")
-    slider:SetSize(250, 20)
-    slider:SetPoint("TOP", parent, "BOTTOM", 0, -12)
+    slider:SetSize(235, 20)
+    slider:SetPoint("LEFT", parent, "RIGHT", 10, -2)
 
     -- Label
     local label = slider:CreateFontString(nil, "OVERLAY", "GameFontNormalMed1")
-    label:SetPoint("BOTTOM", slider, "TOP", 0, 2)
+    label:SetPoint("BOTTOM", slider, "TOP", 0, 1)
     label:SetText(title)
     label:SetTextColor(1,1,1,1)
 
@@ -2432,7 +2432,7 @@ local function CreateSmoothSlider(parent, variableToAdjust, title, defaultValue,
     return slider
 end
 C_Timer.After(1, function()
-    BBF.EditModeAlphaSlider = CreateSmoothSlider(EditModeManagerFrame, "editModeSelectionAlpha", "Edit Mode Transparency", 0.85, BBF.ReduceEditModeAlpha)
+    BBF.EditModeAlphaSlider = CreateSmoothSlider(EditModeManagerFrame.LayoutDropdown, "editModeSelectionAlpha", "Edit Mode Transparency", 0.85, BBF.ReduceEditModeAlpha)
 end)
 
 
@@ -3670,6 +3670,11 @@ First:SetScript("OnEvent", function(_, event, addonName)
         BBF.MoveableFPSCounter(false, BetterBlizzFramesDB.fpsCounterFontOutline)
 
         C_Timer.After(1, function()
+            if C_AddOns.IsAddOnLoaded("ClassicFrames") then
+                C_Timer.After(4, function()
+                    print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: A super lightweight |cffff8000Classic Frames|r setting is now live! I would highly recommend swapping to BBF's setting over |cff9d9d9dClassicFrames|r the addon due to the high CPU usage of that addon.")
+                end)
+            end
             MoveableSettingsPanel()
             BBF.ShowCooldownDuringCC()
             BBF.InstantComboPoints()
