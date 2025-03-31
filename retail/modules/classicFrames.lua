@@ -370,7 +370,8 @@ local function MakeClassicFrame(frame)
         contentContext.LeaderIcon:SetPoint("TOPLEFT", 86, -14)
         contentContext.RoleIcon:ClearAllPoints()
         contentContext.RoleIcon:SetPoint("TOPLEFT", 192, -34)
-        AdjustFramePoint(contentContext.GroupIndicator, nil, -3)
+
+        --AdjustFramePoint(contentContext.GroupIndicator, nil, -3)
 
         frameContainer.PlayerPortrait:SetSize(62, 62)
         frameContainer.PlayerPortraitMask:SetSize(62, 62)
@@ -491,9 +492,23 @@ local function MakeClassicFrame(frame)
         end
 
         local function GetFrameColor()
-            local r,g,b = frameContainer.FrameTexture:GetVertexColor()
-            frame.ClassicFrame.Texture:SetVertexColor(r,g,b)
+            local r, g, b = frameContainer.FrameTexture:GetVertexColor()
+            frame.ClassicFrame.Texture:SetVertexColor(r, g, b)
+
+            if not db.darkModeUi then
+                local soulShards = _G.WarlockPowerFrame
+                if soulShards then
+                    for _, v in pairs({soulShards:GetChildren()}) do
+                        v.Background:SetVertexColor(
+                            math.max(r - 0.35, 0),
+                            math.max(g - 0.35, 0),
+                            math.max(b - 0.35, 0)
+                        )
+                    end
+                end
+            end
         end
+
         GetFrameColor()
         hooksecurefunc(frameContainer.FrameTexture, "SetVertexColor", GetFrameColor)
 
@@ -646,6 +661,11 @@ local function MakeClassicFrame(frame)
 
             contentContext.RoleIcon:ClearAllPoints()
             contentContext.RoleIcon:SetPoint("TOPLEFT", 192, -34)
+
+            contentContext.GroupIndicator:ClearAllPoints()
+            contentContext.GroupIndicator:SetPoint("BOTTOMRIGHT", frame, "TOPRIGHT", -21, -33.5)
+            PlayerFrameGroupIndicatorText:ClearAllPoints()
+            PlayerFrameGroupIndicatorText:SetPoint("LEFT", contentContext.GroupIndicator.GroupIndicatorLeft, "LEFT", 20, 2.5)
 
             frame.ClassicFrame.Texture:SetSize(232, 100)
             if db.playerEliteFrame then

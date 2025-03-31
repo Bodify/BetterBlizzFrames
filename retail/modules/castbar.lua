@@ -143,7 +143,7 @@ end
 
 function BBF.ClassicCastbar(castBar, isParty, isPlayer)
     castBar.Text:ClearAllPoints()
-    castBar.Text:SetPoint("CENTER", castBar, "CENTER", 0, 0.5)
+    castBar.Text:SetPoint("CENTER", castBar, "CENTER", 0, isPlayer and 0 or 0.5)
 
 
     castBar.Spark:SetBlendMode("ADD")
@@ -206,7 +206,7 @@ function BBF.ClassicCastbar(castBar, isParty, isPlayer)
             castBar.TextBorder:SetAlpha(0)
             if castBar == PlayerCastingBarFrame then
                 castBar.Text:ClearAllPoints()
-                castBar.Text:SetPoint("CENTER", castBar, "CENTER", 0, 0.5)
+                castBar.Text:SetPoint("CENTER", castBar, "CENTER", 0, isPlayer and 0 or 0.5)
                 AdjustFlash(castBar, isPlayer)
             else
                 castBar.Flash:SetAlpha(0)
@@ -242,6 +242,13 @@ function BBF.ClassicCastbar(castBar, isParty, isPlayer)
                 self:SetStatusBarColor(0, 1, 0, 1)
             elseif self.barType == "interrupted" then
                 self:SetStatusBarColor(1, 0, 0, 1)
+            end
+
+            if isPlayer and self.barType == "uninterruptable" then
+                self:SetStatusBarColor(0.7, 0.7, 0.7, 1)
+                -- self.BorderShield:Show()
+                -- self.Border:SetAlpha(0)
+                -- AdjustBorderShieldSize(self)
             end
         end)
 

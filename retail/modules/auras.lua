@@ -78,6 +78,9 @@ local castToAuraMap = {
     [198838] = 201633, -- Earthen Wall Totem
     [62618]  = 81782,  -- Power Word: Barrier
     [204336] = 8178,   -- Grounding Totem
+    [443028] = 456499, -- Celestial Conduit (Absolute Serenity)
+    [289655] = 289655, -- Sanctified Ground
+    --[34861] = 289655, -- Sanctified Ground
 }
 
 local trackedAuras = {
@@ -85,6 +88,8 @@ local trackedAuras = {
     [201633] = {duration = 18, helpful = true, texture = 136098},  -- Earthen Wall
     [81782]  = {duration = 10, helpful = true, texture = 253400},  -- Barrier
     [8178]   = {duration = 3,  helpful = true, texture = 136039},  -- Grounding
+    [456499] = {duration = 4, helpful = true, texture = 988197}, -- Absolute Serenity
+    [289655] = {duration = 5, helpful = true, texture = 237544}, -- Sanctified Ground
 }
 
 local function UpdateAuraDuration(self, elapsed)

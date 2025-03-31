@@ -1,7 +1,16 @@
-# BetterBlizzFrames 1.6.5h
+# BetterBlizzFrames 1.6.5i
 ## Retail
 ### Tweak:
+- Classic Frames: Pixel position tweaks to group indicator. Made Warlock Shards' Border slightly darker to match the UnitFrame texture (only if Dark Mode is not already selected)
 - Added Legacy Combo Points to Dark Mode.
+- Added duration to show on Sanctified Ground and Absolute Serenity auras with aura settings enabled.
+- Added ToT & PetFrame to "UnitFrame Background Color" setting.
+### Bugfix:
+- Fix Class Color "Skip Self" option showing health as white and not green when texture replacement setting is on.
+- Fix default party frames not getting retextured with retexture setting
+- Fix oversight on Player Classic Castbar setting not coloring the castbar gray during uninterruptible state.
+
+
 
 # BetterBlizzFrames 1.6.5h
 ## Retail

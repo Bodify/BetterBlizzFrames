@@ -2469,7 +2469,7 @@ end
 BBF.LocalPowerBarColor = LocalPowerBarColor
 
 -- Helper function to change the texture and retain the original draw layer
-local function ApplyTextureChange(type, statusBar, parent, classic)
+local function ApplyTextureChange(type, statusBar, parent, classic, party)
     if not statusBar.GetStatusBarTexture then
         statusBar:SetTexture(texture)
         return
@@ -2477,7 +2477,10 @@ local function ApplyTextureChange(type, statusBar, parent, classic)
     -- Get the original texture and draw layer
     local originalTexture = statusBar:GetStatusBarTexture()
     local originalLayer, subLayer = originalTexture:GetDrawLayer()
-    local classicTexture = (BetterBlizzFramesDB.classicFrames and (parent == TargetFrame or parent == FocusFrame or statusBar == PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer.HealthBar) and texture == "Interface\\TargetingFrame\\UI-TargetingFrame-BarFill") and "Interface\\AddOns\\BetterBlizzFrames\\media\\ui-targetingframe-barfill"
+    local classicTexture = (BetterBlizzFramesDB.classicFrames and (parent == TargetFrame or parent == FocusFrame or statusBar == PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer.HealthBar) and
+    (texture == "Interface\\TargetingFrame\\UI-TargetingFrame-BarFill") and "Interface\\AddOns\\BetterBlizzFrames\\media\\ui-targetingframe-barfill") or
+    (texture == "Interface\\TargetingFrame\\UI-StatusBar" and "Interface\\AddOns\\BetterBlizzFrames\\media\\ui-statusbar")
+
     local playerHp = statusBar == PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer.HealthBar
 
     -- Change the texture
@@ -2509,13 +2512,14 @@ local function ApplyTextureChange(type, statusBar, parent, classic)
     -- Hook SetStatusBarTexture to ensure the texture remains consistent
     if parent and type == "health" then
         if not parent.hookedHealthBarsTexture then
+            local updateFunc = party and "ToPlayerArt" or "Update"
             if classicTexture then
-                hooksecurefunc(parent, "Update", function()
+                hooksecurefunc(parent, updateFunc, function()
                     statusBar:SetStatusBarTexture(classicTexture)
                     originalTexture:SetDrawLayer(originalLayer)
                 end)
             else
-                hooksecurefunc(parent, "Update", function()
+                hooksecurefunc(parent, updateFunc, function()
                     statusBar:SetStatusBarTexture(texture)
                     originalTexture:SetDrawLayer(originalLayer)
                 end)
@@ -2616,7 +2620,7 @@ function HookUnitFrameTextures()
             if not EditModeManagerFrame:UseRaidStylePartyFrames() then
                 for i = 1, 4 do
                     local frame = PartyFrame["MemberFrame"..i]
-                    ApplyTextureChange("health", frame.HealthBarContainer.HealthBar)
+                    ApplyTextureChange("health", frame.HealthBarContainer.HealthBar, frame, nil, true)
                 end
             end
         end
@@ -3086,7 +3090,7 @@ function BBF.SymmetricPlayerFrame()
     end
 end
 
-function BBF.AddBackgroundTextureToUnitFrames(frame)
+function BBF.AddBackgroundTextureToUnitFrames(frame, tot)
     if not BetterBlizzFramesDB.addUnitFrameBgTexture then
         if frame.bbfBgTexture then
             frame.bbfBgTexture:Hide()
@@ -3100,18 +3104,23 @@ function BBF.AddBackgroundTextureToUnitFrames(frame)
         frame.bbfBgTexture:SetColorTexture(unpack(color))
         return
     end
-    local bgTex = frame:CreateTexture(nil, "BACKGROUND", nil, -1)
-    bgTex:SetColorTexture(unpack(color))
-
-    local topAnchor = frame.healthbar or frame
+    local topAnchor = frame.healthbar or frame.HealthBar or frame
     local bottomAnchor = frame.manabar or frame
+
+    local bgTex = topAnchor:CreateTexture(nil, "BACKGROUND", nil, -1)
+    bgTex:SetColorTexture(unpack(color))
 
     local classic = BetterBlizzFramesDB.classicFrames
     local yOffset = classic and -10 or 0
     local xOffset = classic and 2 or 0
 
-    bgTex:SetPoint("TOPLEFT", topAnchor, "TOPLEFT", xOffset, yOffset)
-    bgTex:SetPoint("BOTTOMRIGHT", bottomAnchor, "BOTTOMRIGHT", 0, 0)
+    if tot then
+        bgTex:SetPoint("TOPLEFT", topAnchor, "TOPLEFT", -3, 0)
+        bgTex:SetPoint("BOTTOMRIGHT", bottomAnchor, "BOTTOMRIGHT", 0, 0)
+    else
+        bgTex:SetPoint("TOPLEFT", topAnchor, "TOPLEFT", xOffset, yOffset)
+        bgTex:SetPoint("BOTTOMRIGHT", bottomAnchor, "BOTTOMRIGHT", 0, 0)
+    end
 
     frame.bbfBgTexture = bgTex
 end
@@ -3120,6 +3129,10 @@ function BBF.UnitFrameBackgroundTexture()
     BBF.AddBackgroundTextureToUnitFrames(PlayerFrame)
     BBF.AddBackgroundTextureToUnitFrames(TargetFrame)
     BBF.AddBackgroundTextureToUnitFrames(FocusFrame)
+
+    BBF.AddBackgroundTextureToUnitFrames(TargetFrameToT, true)
+    BBF.AddBackgroundTextureToUnitFrames(FocusFrameToT, true)
+    BBF.AddBackgroundTextureToUnitFrames(PetFrame, true)
 end
 
 

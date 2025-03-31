@@ -5767,6 +5767,15 @@ local function guiFrameLook()
     changeUnitFrameHealthbarTexture:SetPoint("TOPLEFT", settingsText, "BOTTOMLEFT", 260, pixelsOnFirstBox)
     CreateTooltipTwo(changeUnitFrameHealthbarTexture, "Change UnitFrame Healthbar Texture","Changes the healthbar texture on Player, Target & Focus etc.")
 
+    if BetterBlizzFramesDB.classicFrames then
+        local text = guiFrameLook:CreateFontString(nil, "OVERLAY")
+        text:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\arialn.TTF", 12)
+        text:SetText("*Classic Frames!")
+        text:SetTextColor(1,0,0)
+        CreateTooltipTwo(text, "Classic Frames Healthbar", "Due to the original healthbar only showing 50% of its texture with Classic Frames enabled not all textures are suitable.\n\nI have made exceptions for \"Blizzard\" and \"Blizzard DF\" but they require a reload between swapping textures for full effect.", nil, "ANCHOR_BOTTOMRIGHT")
+        text:SetPoint("LEFT", changeUnitFrameHealthbarTexture.Text, "RIGHT", 5, 0)
+    end
+
     local unitFrameHealthbarTexture = CreateTextureDropdown(
         "unitFrameHealthbarTexture",
         guiFrameLook,

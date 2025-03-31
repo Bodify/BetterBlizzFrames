@@ -2,7 +2,7 @@
 
 local addonVersion = "1.00" --too afraid to to touch for now
 local addonUpdates = C_AddOns.GetAddOnMetadata("BetterBlizzFrames", "Version")
-local sendUpdate = true
+local sendUpdate = false
 BBF.VersionNumber = addonUpdates
 BBF.variablesLoaded = false
 local isAddonLoaded = C_AddOns.IsAddOnLoaded
@@ -1232,7 +1232,7 @@ local function executeCustomCode()
     end
 end
 
-function BBF.AddBackgroundTextureToUnitFrames(frame)
+function BBF.AddBackgroundTextureToUnitFrames(frame, tot)
     if not BetterBlizzFramesDB.addUnitFrameBgTexture then
         if frame.bbfBgTexture then
             frame.bbfBgTexture:Hide()
@@ -1249,11 +1249,16 @@ function BBF.AddBackgroundTextureToUnitFrames(frame)
     local bgTex = frame:CreateTexture(nil, "BACKGROUND", nil, -1)
     bgTex:SetColorTexture(unpack(color))
 
-    local topAnchor = frame.healthbar or frame
+    local topAnchor = frame.healthbar or frame.HealthBar or frame
     local bottomAnchor = frame.manabar or frame
 
-    bgTex:SetPoint("TOPLEFT", topAnchor, "TOPLEFT", 0, 0)
-    bgTex:SetPoint("BOTTOMRIGHT", bottomAnchor, "BOTTOMRIGHT", 0, 0)
+    if tot then
+        bgTex:SetPoint("TOPLEFT", topAnchor, "TOPLEFT", -3, 0)
+        bgTex:SetPoint("BOTTOMRIGHT", bottomAnchor, "BOTTOMRIGHT", 0, 0)
+    else
+        bgTex:SetPoint("TOPLEFT", topAnchor, "TOPLEFT", 0, 0)
+        bgTex:SetPoint("BOTTOMRIGHT", bottomAnchor, "BOTTOMRIGHT", 0, 0)
+    end
     if frame.Background then
         frame.Background:Hide()
     end
@@ -1265,6 +1270,10 @@ function BBF.UnitFrameBackgroundTexture()
     BBF.AddBackgroundTextureToUnitFrames(PlayerFrame)
     BBF.AddBackgroundTextureToUnitFrames(TargetFrame)
     BBF.AddBackgroundTextureToUnitFrames(FocusFrame)
+
+    BBF.AddBackgroundTextureToUnitFrames(TargetFrameToT, true)
+    BBF.AddBackgroundTextureToUnitFrames(FocusFrameToT, true)
+    BBF.AddBackgroundTextureToUnitFrames(PetFrame, true)
 end
 
 -- Event registration for PLAYER_LOGIN

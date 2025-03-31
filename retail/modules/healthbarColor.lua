@@ -8,6 +8,7 @@ local healthbarsHooked = nil
 local classColorsOn
 local colorPetAfterOwner
 local skipPlayer
+local retexturedBars
 
 local OnSetVertexColorHookScript = function(r, g, b, a)
     return function(frame, red, green, blue, alpha, flag)
@@ -73,7 +74,12 @@ end
 local function updateFrameColorToggleVer(frame, unit)
     if not frame then return end
     if not frame.SetStatusBarDesaturated then return end
-    if unit == "player" and skipPlayer then return end
+    if unit == "player" and skipPlayer then
+        if retexturedBars then
+            frame:SetStatusBarColor(0, 1, 0)
+        end
+        return
+    end
     if classColorsOn then
         local color, isFriendly = getUnitColor(unit)
         if color then
@@ -110,7 +116,12 @@ local validUnits = {
 
 local function UpdateHealthColor(frame, unit)
     if not validUnits[unit] then return end
-    if unit == "player" and skipPlayer then return end
+    if unit == "player" and skipPlayer then
+        if retexturedBars then
+            frame:SetStatusBarColor(0, 1, 0)
+        end
+        return
+    end
     local color, isFriendly = getUnitColor(unit)
     if color then
         if isFriendly and not frame.bbfChangedTexture then
@@ -138,6 +149,7 @@ end
 
 function BBF.UpdateFrames()
     classColorsOn = BetterBlizzFramesDB.classColorFrames
+    retexturedBars = BetterBlizzFramesDB.changeUnitFrameHealthbarTexture
     colorPetAfterOwner = BetterBlizzFramesDB.colorPetAfterOwner
     skipPlayer = BetterBlizzFramesDB.classColorFramesSkipPlayer
     if classColorsOn then
