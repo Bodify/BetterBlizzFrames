@@ -2757,11 +2757,6 @@ local function guiGeneralTab()
         end
     end)
 
-    -- local hidePlayerPower = CreateCheckbox("hidePlayerPower", "Hide Resource/Power", BetterBlizzFrames, nil, BBF.HideFrames)
-    -- hidePlayerPower:SetPoint("TOPLEFT", hidePlayerName, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    -- CreateTooltip(hidePlayerPower, "Hide Resource/Power under PlayerFrame. Rogue combopoints, Warlock shards etc.")
-    -- notWorking(hidePlayerPower, true)
-
     local hidePlayerRestAnimation = CreateCheckbox("hidePlayerRestAnimation", "Hide \"Zzz\" Rest Icon", BetterBlizzFrames, nil, BBF.HideFrames)
     hidePlayerRestAnimation:SetPoint("TOPLEFT", hidePlayerName, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(hidePlayerRestAnimation, "Hide the \"Zzz\" animation on PlayerFrame while rested.")
@@ -2801,6 +2796,83 @@ local function guiGeneralTab()
     local hidePvpTimerText = CreateCheckbox("hidePvpTimerText", "Hide PvP Timer", BetterBlizzFrames, nil, BBF.HideFrames)
     hidePvpTimerText:SetPoint("TOPLEFT", hidePlayerRoleIcon, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(hidePvpTimerText, "Hide the PvP timer text under the Prestige Badge.\nI don't even know what it is a timer for.\nMy best guess is for when you're no longer PvP tagged.")
+
+    local hidePlayerPower = CreateCheckbox("hidePlayerPower", "Hide Resource/Power", BetterBlizzFrames, nil, BBF.HideFrames)
+    hidePlayerPower:SetPoint("TOPLEFT", hidePvpTimerText, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(hidePlayerPower, "Hide Resource/Power", "Hide Resource/Power under PlayerFrame. Rogue combopoints, Warlock shards etc.\n\n|cff32f795Right-click for class specific options.|r")
+
+    local classOptionsFrame
+    local function OpenClassSpecificWindow()
+        if not classOptionsFrame then
+            classOptionsFrame = CreateFrame("Frame", "ClassOptionsFrame", UIParent, "BasicFrameTemplateWithInset")
+            classOptionsFrame:SetSize(185, 210)
+            classOptionsFrame:SetPoint("CENTER")
+            classOptionsFrame:SetFrameStrata("DIALOG")
+            classOptionsFrame:SetMovable(true)
+            classOptionsFrame:EnableMouse(true)
+            classOptionsFrame:RegisterForDrag("LeftButton")
+            classOptionsFrame:SetScript("OnDragStart", classOptionsFrame.StartMoving)
+            classOptionsFrame:SetScript("OnDragStop", classOptionsFrame.StopMovingOrSizing)
+            classOptionsFrame.title = classOptionsFrame:CreateFontString(nil, "OVERLAY")
+            classOptionsFrame.title:SetFontObject("GameFontHighlight")
+            classOptionsFrame.title:SetPoint("LEFT", classOptionsFrame.TitleBg, "LEFT", 5, 0)
+            classOptionsFrame.title:SetText("Class Specific Options")
+
+            local classes = {
+                { class = "Druid", var = "hidePlayerPowerNoDruid", color = RAID_CLASS_COLORS["DRUID"] },
+                { class = "Rogue", var = "hidePlayerPowerNoRogue", color = RAID_CLASS_COLORS["ROGUE"] },
+                { class = "Warlock", var = "hidePlayerPowerNoWarlock", color = RAID_CLASS_COLORS["WARLOCK"] },
+                { class = "Paladin", var = "hidePlayerPowerNoPaladin", color = RAID_CLASS_COLORS["PALADIN"] },
+                { class = "Death Knight", var = "hidePlayerPowerNoDeathKnight", color = RAID_CLASS_COLORS["DEATHKNIGHT"] },
+                { class = "Evoker", var = "hidePlayerPowerNoEvoker", color = RAID_CLASS_COLORS["EVOKER"] },
+                { class = "Monk", var = "hidePlayerPowerNoMonk", color = RAID_CLASS_COLORS["MONK"] },
+                { class = "Mage", var = "hidePlayerPowerNoMage", color = RAID_CLASS_COLORS["MAGE"] },
+            }
+
+            local previousCheckbox
+            for i, classData in ipairs(classes) do
+                local classCheckbox = CreateFrame("CheckButton", nil, classOptionsFrame, "UICheckButtonTemplate")
+                classCheckbox:SetSize(24, 24)
+                classCheckbox.Text:SetText("Ignore " .. classData.class)
+
+                -- Set the color of the checkbox label to the class color
+                local r, g, b = classData.color.r, classData.color.g, classData.color.b
+                classCheckbox.Text:SetTextColor(r, g, b)
+
+                -- Position the checkboxes
+                if i == 1 then
+                    classCheckbox:SetPoint("TOPLEFT", classOptionsFrame, "TOPLEFT", 10, -30)
+                else
+                    classCheckbox:SetPoint("TOPLEFT", previousCheckbox, "BOTTOMLEFT", 0, 3)
+                end
+
+                -- Set the state from the DB
+                classCheckbox:SetChecked(BetterBlizzFramesDB[classData.var])
+
+                -- Save the state back to the DB when toggled
+                classCheckbox:SetScript("OnClick", function(self)
+                    BetterBlizzFramesDB[classData.var] = self:GetChecked() or nil
+                    BBF.HideFrames()
+                end)
+
+                previousCheckbox = classCheckbox
+            end
+            classOptionsFrame:Show()
+        else
+            -- Toggle visibility of the frame when the function is called
+            if classOptionsFrame:IsShown() then
+                classOptionsFrame:Hide()
+            else
+                classOptionsFrame:Show()
+            end
+        end
+    end
+
+    hidePlayerPower:SetScript("OnMouseDown", function(self, button)
+        if button == "RightButton" then
+            OpenClassSpecificWindow()
+        end
+    end)
 
 
 

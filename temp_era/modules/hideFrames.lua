@@ -17,6 +17,7 @@ local bagButtonsHooked = false
 local keybindAlphaChanged = false
 local PlayerStatusTextureParent
 
+local changes = {}
 local originalParents = {}
 
 local function applyAlpha(frame, alpha)
@@ -134,7 +135,7 @@ end
 
 function BBF.HideFrames()
     -- if BetterBlizzFramesDB.hasCheckedUi then
-        -- local playerClass, englishClass = UnitClass("player")
+        local playerClass, englishClass = UnitClass("player")
         -- --Hide group indicator on player unitframe
         local groupIndicatorAlpha = BetterBlizzFramesDB.hideGroupIndicator and 0 or 1
         -- PlayerFrameGroupIndicatorMiddle:SetAlpha(groupIndicatorAlpha)
@@ -424,66 +425,81 @@ function BBF.HideFrames()
             end
         end
 
-    --     if BetterBlizzFramesDB.hidePlayerPower then
-    --         if WarlockPowerFrame and englishClass == "WARLOCK" then
-    --             originalResourceParent = WarlockPowerFrame:GetParent()
-    --             WarlockPowerFrame:SetParent(hiddenFrame)
-    --         end
-    --         if RogueComboPointBarFrame and englishClass == "ROGUE" then
-    --             originalResourceParent = RogueComboPointBarFrame:GetParent()
-    --             RogueComboPointBarFrame:SetParent(hiddenFrame)
-    --         end
-    --         if DruidComboPointBarFrame and englishClass == "DRUID" then
-    --             DruidComboPointBarFrame:SetAlpha(0)
-    --         end
-    --         if PaladinPowerBarFrame and englishClass == "PALADIN" then
-    --             originalResourceParent = PaladinPowerBarFrame:GetParent()
-    --             PaladinPowerBarFrame:SetParent(hiddenFrame)
-    --         end
-    --         if RuneFrame and englishClass == "DEATHKNIGHT" then
-    --             originalResourceParent = RuneFrame:GetParent()
-    --             RuneFrame:SetParent(hiddenFrame)
-    --         end
-    --         if EssencePlayerFrame and englishClass == "EVOKER" then
-    --             originalResourceParent = EssencePlayerFrame:GetParent()
-    --             EssencePlayerFrame:SetParent(hiddenFrame)
-    --         end
-    --         if MonkHarmonyBarFrame and englishClass == "MONK" then
-    --             originalResourceParent = MonkHarmonyBarFrame:GetParent()
-    --             MonkHarmonyBarFrame:SetParent(hiddenFrame)
-    --         end
-    --         if MageArcaneChargesFrame and englishClass == "MAGE" then
-    --             MageArcaneChargesFrame:SetAlpha(0)
-    --         end
-    --         changedResource = true
-    --     else
-    --         if changedResource then
-    --             if WarlockPowerFrame and originalResourceParent and englishClass == "WARLOCK" then
-    --                 WarlockPowerFrame:SetParent(originalResourceParent)
-    --             end
-    --             if RogueComboPointBarFrame and originalResourceParent and englishClass == "ROGUE" then
-    --                 RogueComboPointBarFrame:SetParent(originalResourceParent)
-    --             end
-    --             if DruidComboPointBarFrame and englishClass == "DRUID" then
-    --                 DruidComboPointBarFrame:SetAlpha(1)
-    --             end
-    --             if PaladinPowerBarFrame and originalResourceParent and englishClass == "PALADIN" then
-    --                 PaladinPowerBarFrame:SetParent(originalResourceParent)
-    --             end
-    --             if RuneFrame and originalResourceParent and englishClass == "DEATHKNIGHT" then
-    --                 RuneFrame:SetParent(originalResourceParent)
-    --             end
-    --             if EssencePlayerFrame and originalResourceParent and englishClass == "EVOKER" then
-    --                 EssencePlayerFrame:SetParent(originalResourceParent)
-    --             end
-    --             if MonkHarmonyBarFrame and originalResourceParent and englishClass == "MONK" then
-    --                 MonkHarmonyBarFrame:SetParent(originalResourceParent)
-    --             end
-    --             if MageArcaneChargesFrame and englishClass == "MAGE" then
-    --                 MageArcaneChargesFrame:SetAlpha(1)
-    --             end
-    --         end
-    --     end
+        if BetterBlizzFramesDB.hidePlayerPower then
+            if WarlockPowerFrame and englishClass == "WARLOCK" then
+                if BetterBlizzFramesDB.hidePlayerPowerNoWarlock then
+                    if originalResourceParent then WarlockPowerFrame:SetParent(originalResourceParent) end
+                else
+                    if not originalResourceParent then originalResourceParent = WarlockPowerFrame:GetParent() end
+                    WarlockPowerFrame:SetParent(hiddenFrame)
+                end
+            end
+            if RogueComboPointBarFrame and englishClass == "ROGUE" then
+                if BetterBlizzFramesDB.hidePlayerPowerNoRogue then
+                    if originalResourceParent then RogueComboPointBarFrame:SetParent(originalResourceParent) end
+                else
+                    if not originalResourceParent then originalResourceParent = RogueComboPointBarFrame:GetParent() end
+                    RogueComboPointBarFrame:SetParent(hiddenFrame)
+                end
+            end
+            if DruidComboPointBarFrame and englishClass == "DRUID" then
+                if BetterBlizzFramesDB.hidePlayerPowerNoDruid then
+                    DruidComboPointBarFrame:SetAlpha(1)
+                else
+                    DruidComboPointBarFrame:SetAlpha(0)
+                end
+            end
+            if PaladinPowerBarFrame and englishClass == "PALADIN" then
+                if BetterBlizzFramesDB.hidePlayerPowerNoPaladin then
+                    if originalResourceParent then PaladinPowerBarFrame:SetParent(originalResourceParent) end
+                else
+                    if not originalResourceParent then originalResourceParent = PaladinPowerBarFrame:GetParent() end
+                    PaladinPowerBarFrame:SetParent(hiddenFrame)
+                end
+            end
+            if RuneFrame and englishClass == "DEATHKNIGHT" then
+                if BetterBlizzFramesDB.hidePlayerPowerNoDeathKnight then
+                    if originalResourceParent then RuneFrame:SetParent(originalResourceParent) end
+                else
+                    if not originalResourceParent then originalResourceParent = RuneFrame:GetParent() end
+                    RuneFrame:SetParent(hiddenFrame)
+                end
+            end
+            if EssencePlayerFrame and englishClass == "EVOKER" then
+                if BetterBlizzFramesDB.hidePlayerPowerNoEvoker then
+                    if originalResourceParent then EssencePlayerFrame:SetParent(originalResourceParent) end
+                else
+                    if not originalResourceParent then originalResourceParent = EssencePlayerFrame:GetParent() end
+                    EssencePlayerFrame:SetParent(hiddenFrame)
+                end
+            end
+            if MonkHarmonyBarFrame and englishClass == "MONK" then
+                if BetterBlizzFramesDB.hidePlayerPowerNoMonk then
+                    if originalResourceParent then MonkHarmonyBarFrame:SetParent(originalResourceParent) end
+                else
+                    if not originalResourceParent then originalResourceParent = MonkHarmonyBarFrame:GetParent() end
+                    MonkHarmonyBarFrame:SetParent(hiddenFrame)
+                end
+            end
+            if MageArcaneChargesFrame and englishClass == "MAGE" then
+                if BetterBlizzFramesDB.hidePlayerPowerNoMage then
+                    MageArcaneChargesFrame:SetAlpha(1)
+                else
+                    MageArcaneChargesFrame:SetAlpha(0)
+                end
+            end
+            changes.hidePlayerPower = true
+        elseif originalResourceParent then
+            if WarlockPowerFrame and englishClass == "WARLOCK" then WarlockPowerFrame:SetParent(originalResourceParent) end
+            if RogueComboPointBarFrame and englishClass == "ROGUE" then RogueComboPointBarFrame:SetParent(originalResourceParent) end
+            if DruidComboPointBarFrame and englishClass == "DRUID" then DruidComboPointBarFrame:SetAlpha(1) end
+            if PaladinPowerBarFrame and englishClass == "PALADIN" then PaladinPowerBarFrame:SetParent(originalResourceParent) end
+            if RuneFrame and englishClass == "DEATHKNIGHT" then RuneFrame:SetParent(originalResourceParent) end
+            if EssencePlayerFrame and englishClass == "EVOKER" then EssencePlayerFrame:SetParent(originalResourceParent) end
+            if MonkHarmonyBarFrame and englishClass == "MONK" then MonkHarmonyBarFrame:SetParent(originalResourceParent) end
+            if MageArcaneChargesFrame and englishClass == "MAGE" then MageArcaneChargesFrame:SetAlpha(1) end
+            changes.hidePlayerPower = nil
+        end
 
         local function SetChatButtonAlpha(alpha)
             FriendsMicroButton:SetAlpha(alpha)

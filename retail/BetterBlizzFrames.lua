@@ -59,6 +59,7 @@ local defaultSettings = {
     legacyBlueComboPoints = true,
     hidePvpTimerText = true,
     playerEliteFrameMode = 1,
+    hideObjectiveTracker = true,
 
     --Target castbar
     playerCastbarIconXPos = 0,
@@ -2437,6 +2438,7 @@ end)
 
 
 local LSM = LibStub("LibSharedMedia-3.0")
+BBF.LSM = LSM
 LSM:Register("statusbar", "Blizzard DF", [[Interface\TargetingFrame\UI-TargetingFrame-BarFill]])
 
 local texture = "Interface\\Addons\\BetterBlizzPlates\\media\\DragonflightTextureHD"
@@ -2477,9 +2479,7 @@ local function ApplyTextureChange(type, statusBar, parent, classic, party)
     -- Get the original texture and draw layer
     local originalTexture = statusBar:GetStatusBarTexture()
     local originalLayer, subLayer = originalTexture:GetDrawLayer()
-    local classicTexture = (BetterBlizzFramesDB.classicFrames and (parent == TargetFrame or parent == FocusFrame or statusBar == PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer.HealthBar) and
-    (texture == "Interface\\TargetingFrame\\UI-TargetingFrame-BarFill") and "Interface\\AddOns\\BetterBlizzFrames\\media\\ui-targetingframe-barfill") or
-    (texture == "Interface\\TargetingFrame\\UI-StatusBar" and "Interface\\AddOns\\BetterBlizzFrames\\media\\ui-statusbar")
+    local classicTexture = (BetterBlizzFramesDB.classicFrames and (parent == TargetFrame or parent == FocusFrame or statusBar == PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer.HealthBar) and texture == "Interface\\TargetingFrame\\UI-TargetingFrame-BarFill") and "Interface\\AddOns\\BetterBlizzFrames\\media\\ui-targetingframe-barfill"
 
     local playerHp = statusBar == PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer.HealthBar
 

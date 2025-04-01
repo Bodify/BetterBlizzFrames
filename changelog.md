@@ -1,3 +1,16 @@
+# BetterBlizzFrames 1.6.5j
+## Retail
+### Tweak:
+- "Hide Objective Tracker during Arena" is now checked by default.
+### Bugfix:
+- Fix ToT HealthBar Texture being too small when Classic Frames + Re-texture setting with "Blizzard" texture. I reverted this change to "Blizzard" texture, if you are looking for the default texture please use "Blizzard DF".
+
+
+## Classic & Cata
+### New:
+- Added "Hide Resource/Power" setting for PlayerFrame (ComboPoints, Runes, etc)
+
+
 # BetterBlizzFrames 1.6.5i
 ## Retail
 ### Tweak:
