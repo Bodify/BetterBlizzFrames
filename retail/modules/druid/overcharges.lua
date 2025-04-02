@@ -424,11 +424,11 @@ function BBF.CreateAltManaBar()
         bar:SetScript("OnEnter", function(self)
             local mana = UnitPower("player", Enum.PowerType.Mana)
             local maxMana = UnitPowerMax("player", Enum.PowerType.Mana)
-            self.ManaBarText:SetText(BreakUpLargeNumbers(mana) .. " / " .. BreakUpLargeNumbers(maxMana))
+            self.TextString:SetText(BreakUpLargeNumbers(mana) .. " / " .. BreakUpLargeNumbers(maxMana))
         end)
 
         bar:SetScript("OnLeave", function(self)
-            self.ManaBarText:SetText("")
+            self.TextString:SetText("")
         end)
     end
     PlayerFrame.AltManaBarBBF = bar

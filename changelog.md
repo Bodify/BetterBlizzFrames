@@ -1,3 +1,10 @@
+# BetterBLizzFrames 1.6.5l
+## Retail
+### Bugfix:
+- Fix the "UnitFrame Background Color" setting causing the background made to overlap Portrait texture on Target/Focus.
+- Fix naming typo in some of the druid manabar stuff causing a lua error.
+
+
 # BetterBlizzFrames 1.6.5k
 ## Retail
 ### Tweak:

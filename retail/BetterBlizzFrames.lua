@@ -3107,7 +3107,9 @@ function BBF.AddBackgroundTextureToUnitFrames(frame, tot)
     local topAnchor = frame.healthbar or frame.HealthBar or frame
     local bottomAnchor = frame.manabar or frame
 
-    local bgTex = topAnchor:CreateTexture(nil, "BACKGROUND", nil, -1)
+    local texParent = tot and topAnchor or frame
+
+    local bgTex = texParent:CreateTexture(nil, "BACKGROUND", nil, -1)
     bgTex:SetColorTexture(unpack(color))
 
     local classic = BetterBlizzFramesDB.classicFrames
