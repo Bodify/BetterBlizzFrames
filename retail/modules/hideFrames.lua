@@ -323,8 +323,8 @@ function BBF.HideFrames()
             CompactPartyFrameTitle:Show()
         end
 
-        -- Hide PvP Icon
-        if BetterBlizzFramesDB.hidePvpIcon then
+        -- Hide PvP Icon BetterBlizzFramesDB.hidePvpIcon
+        if BetterBlizzFramesDB.hidePrestigeBadge then
             changes.hidePvpIcon = true
             TargetFrame.TargetFrameContent.TargetFrameContentContextual.PvpIcon:SetParent(hiddenFrame)
             PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.PVPIcon:SetParent(hiddenFrame)

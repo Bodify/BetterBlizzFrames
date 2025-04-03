@@ -162,7 +162,8 @@ local function MakeClassicFrame(frame)
         local totFrame = frame.totFrame
         local totHpBar = totFrame.HealthBar
         local totManaBar = totFrame.ManaBar
-        totFrame:SetFrameStrata("DIALOG")
+        totFrame:SetFrameStrata("HIGH")
+        totFrame:SetFrameLevel(9999)
         totHpBar:SetStatusBarColor(0, 1, 0)
         totHpBar:SetSize(47, 7)
         totHpBar:ClearAllPoints()
@@ -446,7 +447,7 @@ local function MakeClassicFrame(frame)
 
         local function UpdateLevelDetails()
             PlayerLevelText:SetParent(frame.ClassicFrame)
-            PlayerLevelText:SetDrawLayer("ARTWORK")
+            PlayerLevelText:SetDrawLayer("OVERLAY", 7)
             PlayerLevelText:Show()
             PlayerLevelText:ClearAllPoints()
             PlayerLevelText:SetPoint("CENTER", -81, -24.5)
@@ -625,10 +626,10 @@ local function MakeClassicFrame(frame)
             elseif mode == 3 then -- Boss (Gold Winged)
                 playerElite:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Elite")
                 playerElite:SetDesaturated(false)
-            elseif mode == 4 then -- Only 3 available for classic
-                db.playerEliteFrameMode = 3
-                playerElite:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Elite")
-                playerElite:SetDesaturated(false)
+            -- elseif mode == 4 then -- Only 3 available for classic
+            --     db.playerEliteFrameMode = 3
+            --     playerElite:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Elite")
+            --     playerElite:SetDesaturated(false)
             end
         end
 

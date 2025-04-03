@@ -1439,7 +1439,7 @@ local function AdjustAuras(self, frameType)
 
             if shouldShowAura then
                 if db2.increaseAuraStrata then
-                    aura:SetFrameStrata("HIGH")
+                    aura:SetFrameStrata("DIALOG")
                 end
                 aura:Show()
 

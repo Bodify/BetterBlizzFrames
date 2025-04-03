@@ -59,6 +59,13 @@ local function ExportProfile(profileTable, dataType)
     -- Include a dataType in the table being serialized
     local wowVersion = GetBuildInfo()
     BetterBlizzFramesDB.exportVersion = "BBF: "..BBF.VersionNumber.." WoW: "..wowVersion
+
+    local arenaOptiSaved = BetterBlizzFramesDB.arenaOptimizerSavedCVars
+    local arenaOptiNoPrint = BetterBlizzFramesDB.arenaOptimizerDisablePrint
+
+    BetterBlizzFramesDB.arenaOptimizerSavedCVars = nil
+    BetterBlizzFramesDB.arenaOptimizerDisablePrint = nil
+
     local exportTable = {
         dataType = dataType,
         data = profileTable
@@ -66,6 +73,10 @@ local function ExportProfile(profileTable, dataType)
     local serialized = LibSerialize:Serialize(exportTable)
     local compressed = LibDeflate:CompressDeflate(serialized)
     local encoded = LibDeflate:EncodeForPrint(compressed)
+
+    BetterBlizzFramesDB.arenaOptimizerSavedCVars = arenaOptiSaved
+    BetterBlizzFramesDB.arenaOptimizerDisablePrint = arenaOptiNoPrint
+
     return "!BBF" .. encoded .. "!BBF"
 end
 
@@ -1483,7 +1494,7 @@ local function CreateImportExportUI(parent, title, dataTable, posX, posY, tableN
                     dataTable[k] = v -- Populate with new data
                 end
             end
-            print("|A:gmchat-icon-blizz:16:16|aBetter|cff00c0ffBlizz|rFrames: " .. title .. " imported successfully. While still BETA this requires a reload to load in new lists.")
+            print("|A:gmchat-icon-blizz:16:16|aBetter|cff00c0ffBlizz|rFrames: " .. title .. " imported successfully.")
             StaticPopup_Show("BBF_CONFIRM_RELOAD")
         end
     end)
@@ -2886,8 +2897,8 @@ local function guiGeneralTab()
         end
     end)
 
-    local textures = BetterBlizzFramesDB.classicFrames and 3 or 4
-    local extraText = BetterBlizzFramesDB.classicFrames and "" or "\n\n|cffc084f7Shift + Right-click to allow Dark Mode to color Elite Texture.|r"
+    local textures = BetterBlizzFramesDB.classicFrames and 7 or 4
+    local extraText = "\n\n|cffc084f7Shift + Right-click to allow Dark Mode to color Elite Texture.|r"
     local playerEliteFrame = CreateCheckbox("playerEliteFrame", "Elite Texture", BetterBlizzFrames)
     playerEliteFrame:SetPoint("LEFT", playerFrameClickthrough.text, "RIGHT", 5, 0)
     playerEliteFrame:HookScript("OnClick", function(self)
@@ -3731,8 +3742,8 @@ local function guiGeneralTab()
                             local statusBarsEnabled = self.cfTextures:GetChecked()
                             BBF.ChangesOnReload["changeUnitFrameHealthbarTexture"] = statusBarsEnabled or false
                             BBF.ChangesOnReload["changeUnitFrameManabarTexture"] = statusBarsEnabled or false
-                            BBF.ChangesOnReload["unitFrameHealthbarTexture"] = statusBarsEnabled and "Blizzard DF" or nil
-                            BBF.ChangesOnReload["unitFrameManabarTexture"] = statusBarsEnabled and "Blizzard DF" or nil
+                            BBF.ChangesOnReload["unitFrameHealthbarTexture"] = statusBarsEnabled and "Blizzard CF" or nil
+                            BBF.ChangesOnReload["unitFrameManabarTexture"] = statusBarsEnabled and "Blizzard CF" or nil
                             BBF.ChangesOnReload["hidePlayerHealthLossAnim"] = statusBarsEnabled and true or nil
                         end
                         CheckBoxes()
@@ -3897,9 +3908,9 @@ local function guiGeneralTab()
         CheckAndToggleCheckboxes(self)
     end)
 
-    local hidePrestigeBadge = CreateCheckbox("hidePrestigeBadge", "Hide Prestige Badge", BetterBlizzFrames, nil, BBF.HideFrames)
+    local hidePrestigeBadge = CreateCheckbox("hidePrestigeBadge", "Hide Prestige & PvP Icon", BetterBlizzFrames, nil, BBF.HideFrames)
     hidePrestigeBadge:SetPoint("TOPLEFT", formatStatusBarText, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltip(hidePrestigeBadge, "Hide the Prestige/Honor level icon from Player, Target & Focus frames. |A:honorsystem-portrait-alliance:40:42|a |A:honorsystem-portrait-horde:40:42|a |A:honorsystem-portrait-neutral:40:42|a")
+    CreateTooltipTwo(hidePrestigeBadge, "Hide Prestige/Honor Badge & PvP Icon |A:honorsystem-portrait-alliance:40:42|a |A:honorsystem-portrait-horde:40:42|a |A:honorsystem-portrait-neutral:40:42|a|A:UI-HUD-UnitFrame-Player-PVP-FFAIcon:44:28|a", "Hide Prestige/Honor Badge & PvP Icon from Player, Target & Focus frames.")
 
     local hideCombatGlow = CreateCheckbox("hideCombatGlow", "Hide Combat Glow", BetterBlizzFrames, nil, BBF.HideFrames)
     hideCombatGlow:SetPoint("TOPLEFT", hidePrestigeBadge, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
@@ -3938,12 +3949,12 @@ local function guiGeneralTab()
         hideLevelTextAlways:Disable()
     end
 
-    local hidePvpIcon = CreateCheckbox("hidePvpIcon", "Hide PvP Icon", BetterBlizzFrames, nil, BBF.HideFrames)
-    hidePvpIcon:SetPoint("TOPLEFT", hideLevelText, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltip(hidePvpIcon, "Hide PvP Icon on Player, Target & Focus|A:UI-HUD-UnitFrame-Player-PVP-FFAIcon:44:28|a")
+    -- local hidePvpIcon = CreateCheckbox("hidePvpIcon", "Hide PvP Icon", BetterBlizzFrames, nil, BBF.HideFrames)
+    -- hidePvpIcon:SetPoint("TOPLEFT", hideLevelText, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    -- CreateTooltip(hidePvpIcon, "Hide PvP Icon on Player, Target & Focus|A:UI-HUD-UnitFrame-Player-PVP-FFAIcon:44:28|a")
 
     local hideUnitFrameShadow = CreateCheckbox("hideUnitFrameShadow", "Hide Shadow", BetterBlizzFrames, nil, BBF.HideFrames)
-    hideUnitFrameShadow:SetPoint("LEFT", hidePvpIcon.Text, "RIGHT", 0, 0)
+    hideUnitFrameShadow:SetPoint("TOPLEFT", hideLevelText, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(hideUnitFrameShadow, "Hide Shadow", "Hide shadow texture behind name on Player, Target & Focus frames.\n\n(Target/Focus Reputation Color shows in front of this as well, maybe disable those as well)")
     hideUnitFrameShadow:HookScript("OnClick", function(self)
         if not self:GetChecked() then
@@ -3952,7 +3963,7 @@ local function guiGeneralTab()
     end)
 
     local hideRareDragonTexture = CreateCheckbox("hideRareDragonTexture", "Hide Dragon", BetterBlizzFrames, nil, BBF.HideFrames)
-    hideRareDragonTexture:SetPoint("TOPLEFT", hidePvpIcon, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    hideRareDragonTexture:SetPoint("TOPLEFT", hideUnitFrameShadow, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(hideRareDragonTexture, "Hide Elite Dragon texture on Target & Focus|A:UI-HUD-UnitFrame-Target-PortraitOn-Boss-Gold:38:28|a")
 
     local hideThreatOnFrame = CreateCheckbox("hideThreatOnFrame", "Hide Threat", BetterBlizzFrames, nil, BBF.HideFrames)
@@ -5825,7 +5836,7 @@ local function guiFrameLook()
         text:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\arialn.TTF", 12)
         text:SetText("*Classic Frames!")
         text:SetTextColor(1,0,0)
-        CreateTooltipTwo(text, "Classic Frames Healthbar", "Due to the original healthbar only showing 50% of its texture with Classic Frames enabled not all textures are suitable.\n\nI have made an exception for \"Blizzard DF\" but it does require a reload between swapping to and from this texture for full effect.\n\nPlease use \"Blizzard DF\" over \"Blizzard\" if you are looking for the classic texture.\n\nIf you have a custom texture in your Interface folder then please add this via the method mentioned below as well and select it here if needed.", nil, "ANCHOR_BOTTOMRIGHT")
+        CreateTooltipTwo(text, "Classic Frames Healthbar", "Due to the original healthbar only showing 50% of its texture with Classic Frames enabled not all textures are suitable.\n\nI have made an exception for \"Blizzard CF\" and \"Blizzard DF\" but it does require a reload between swapping to and from these textures for full effect.\n\nPlease use \"Blizzard CF\" or \"Blizzard DF\" over \"Blizzard\" if you are looking for the classic texture.\n\nIf you have a custom texture in your Interface folder then please add this via the method mentioned below as well and select it here if needed.", nil, "ANCHOR_BOTTOMRIGHT")
         text:SetPoint("LEFT", changeUnitFrameHealthbarTexture.Text, "RIGHT", 5, 0)
     end
 
@@ -6643,6 +6654,11 @@ local function guiFrameAuras()
     local increaseAuraStrata = CreateCheckbox("increaseAuraStrata", "Increase Aura Frame Strata", playerAuraFiltering)
     increaseAuraStrata:SetPoint("TOPLEFT", onlyPandemicAuraMine, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(increaseAuraStrata, "Increase Aura Frame Strata", "Increase the strata of auras in order to make them appear above the Target & ToT Frames so they are not covered.")
+    increaseAuraStrata:HookScript("OnClick", function(self)
+        if not self:GetChecked() then
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        end
+    end)
 
     local clickthroughAuras = CreateCheckbox("clickthroughAuras", "Clickthrough Auras", playerAuraFiltering)
     clickthroughAuras:SetPoint("TOPLEFT", increaseAuraStrata, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
@@ -7067,16 +7083,23 @@ local function guiMisc()
         end
     end)
 
-    local disableAddonProfiling = CreateCheckbox("disableAddonProfiling", "Disable AddOn Profiler", guiMisc, nil, BBF.HideFrames)
+    local disableAddonProfiling = CreateCheckbox("disableAddonProfiling", "Disable AddOn Profiler", guiMisc)
     disableAddonProfiling:SetPoint("TOPLEFT", hideExpAndHonorBar, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(disableAddonProfiling, "Disable AddOn Profiler", "Turn off AddOn Profiler for a slight bump in performance.\n\nYou will no longer see CPU stats on AddonList and other benchmark AddOns might not work properly until setting is turned back off.")
     disableAddonProfiling:HookScript("OnClick", function(self)
         StaticPopup_Show("BBF_CONFIRM_RELOAD")
     end)
 
+    local arenaOptimizer = CreateCheckbox("arenaOptimizer", "Arena Optimizer", guiMisc)
+    arenaOptimizer:SetPoint("TOPLEFT", disableAddonProfiling, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(arenaOptimizer, "Arena Optimizer", "Increase performance slightly by lowering non-essential graphics CVars during Arena matches and restoring your original values when leaving.\n\n(Re-check to update saved CVars)\n\nCVars:\nView distance\nShadows\nWater effects\nSSAO\nWeather")
+    arenaOptimizer:HookScript("OnClick", function(self)
+        BBF.ArenaOptimizer(not self:GetChecked(), true)
+        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+    end)
 
     local uiWidgetPowerBarScale = CreateSlider(guiMisc, "UIWidgetPowerBarFrame Scale", 0.4, 1.8, 0.01, "uiWidgetPowerBarScale")
-    uiWidgetPowerBarScale:SetPoint("TOPLEFT", disableAddonProfiling, "BOTTOMLEFT", 5, -15)
+    uiWidgetPowerBarScale:SetPoint("TOPLEFT", arenaOptimizer, "BOTTOMLEFT", 5, -15)
     CreateTooltipTwo(uiWidgetPowerBarScale, "UIWidgetPowerBarFrame Scale", "Changes the scale of UIWidgetPowerBarFrame, the frame with Dragonflying charges on it. Also has things like achievements etc I believe idk.")
 
     local hideActionBarBigProcGlow = CreateCheckbox("hideActionBarBigProcGlow", "Hide ActionBar Big Proc Glow", guiMisc, nil, BBF.ActionBarMods)

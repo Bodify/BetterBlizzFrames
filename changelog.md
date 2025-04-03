@@ -1,4 +1,19 @@
-# BetterBLizzFrames 1.6.5l
+# BetterBlizzFrames 1.6.6
+## Retail
+### New:
+- Arena Optimizer (Misc): Tune some CVars when entering Arena, and back again when you leave, to boost FPS slightly during Arena.
+### Tweak:
+- Made the retail elite textures available for PlayerFrame's "Elite Texture" setting while Classic Frames setting is enabled. Now 7 different options total for Classic Frames.
+- "Hide Prestige Badge" and "Hide PvP Icon" is now 1 combined setting.
+- Buffs & Debuffs: "Increase Aura Frame Strata" setting is now enabled by default.
+- Legacy Combo Points "Show Always" now also affects the more classes setting.
+- Added "Blizzard CF" texture which is the old default texture. Use this in combination with Classic Frames if you want as similar as old Classic Frames as possible.
+### Bugfix:
+- Fix Buffs & Debuffs setting "Increase Aura Frame Strata" not showing auras above ToT frames when Classic Frames was enabled.
+
+
+
+# BetterBlizzFrames 1.6.5l
 ## Retail
 ### Bugfix:
 - Fix the "UnitFrame Background Color" setting causing the background made to overlap Portrait texture on Target/Focus.

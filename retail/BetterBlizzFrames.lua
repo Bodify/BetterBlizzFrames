@@ -209,6 +209,7 @@ local defaultSettings = {
     targetAndFocusSmallAuraScale = 1,
     purgeTextureColorRGB = {0, 0.92, 1, 0.85},
     hiddenIconDirection = "BOTTOM",
+    increaseAuraStrata = true,
 
     frameAurasXPos = 0,
     frameAurasYPos = 0,
@@ -450,6 +451,12 @@ local function LoadingScreenDetector(_, event)
     --#######TEMPORARY BUGFIX FOR BLIZZARD#########
     if event == "PLAYER_ENTERING_WORLD" or event == "LOADING_SCREEN_ENABLED" then
         BetterBlizzFramesDB.wasOnLoadingScreen = true
+
+        if event == "PLAYER_ENTERING_WORLD" then
+            if BetterBlizzFramesDB.arenaOptimizerSavedCVars then
+                BBF.ArenaOptimizer()
+            end
+        end
 
         BBF.MinimapHider()
         BBF.FadeMicroMenu()
@@ -1327,9 +1334,10 @@ end
 
 function BBF.PlayerElite(mode)
     local db = BetterBlizzFramesDB
+
     if not db.classicFrames then
         if not PlayerFrame.PlayerFrameContainer.PlayerElite then
-            PlayerFrame.PlayerFrameContainer.PlayerElite = PlayerFrame.PlayerFrameContainer:CreateTexture(nil, "OVERLAY")
+            PlayerFrame.PlayerFrameContainer.PlayerElite = PlayerFrame.PlayerFrameContainer:CreateTexture(nil, "OVERLAY", nil, 6)
             PlayerFrame.PlayerFrameContainer.PlayerElite:SetTexCoord(1, 0, 0, 1)
             PetPortrait:GetParent():SetFrameLevel(4)
             RuneFrame:SetFrameLevel(4)
@@ -1337,6 +1345,7 @@ function BBF.PlayerElite(mode)
         local playerElite = PlayerFrame.PlayerFrameContainer.PlayerElite
         local alpha = db.playerEliteFrame and 1 or 0
         playerElite:SetDesaturated(false)
+        playerElite:SetParent(PlayerFrame.PlayerFrameContainer)
         -- Set Elite style according to value
         if mode == 1 then -- Rare (Silver)
             playerElite:SetAtlas("UI-HUD-UnitFrame-Target-PortraitOn-Boss-Rare-Silver")
@@ -1362,43 +1371,104 @@ function BBF.PlayerElite(mode)
             playerElite:SetSize(80, 78)
             playerElite:ClearAllPoints()
             playerElite:SetPoint("TOPLEFT", 10.5, -10)
-            playerElite:SetAlpha(1, 1, 1, alpha)
+            playerElite:SetVertexColor(1, 1, 1, alpha)
+        elseif mode > 4 then -- Only 4 available for Retail
+            db.playerEliteFrameMode = 1
+            BBF.PlayerElite(1)
         end
-        if BetterBlizzFramesDB.playerEliteFrameDarkmode then
+        if BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.playerEliteFrameDarkmode then
             local v = (BetterBlizzFramesDB.darkModeColor + 0.25)
             playerElite:SetVertexColor(v,v,v)
         end
     else
         if db.playerEliteFrame then
-            local playerElite = PlayerFrame.ClassicFrame.Texture
+            local frameTexture = PlayerFrame.ClassicFrame.Texture
+            local alpha = mode > 3 and 1 or 0
+            local playerElite = PlayerFrame.PlayerFrameContainer.PlayerElite
+            if mode > 3 then
+                if not PlayerFrame.PlayerFrameContainer.PlayerElite then
+                    PlayerFrame.PlayerFrameContainer.PlayerElite = PlayerFrame.PlayerFrameContainer:CreateTexture(nil, "OVERLAY", nil, 6)
+                    PlayerFrame.PlayerFrameContainer.PlayerElite:SetTexCoord(1, 0, 0, 1)
+                    PetPortrait:GetParent():SetFrameLevel(4)
+                    RuneFrame:SetFrameLevel(4)
+                end
+                playerElite = PlayerFrame.PlayerFrameContainer.PlayerElite
+                playerElite:SetParent(PlayerFrame.ClassicFrame)
+                local hideLvl = db.hideLevelText
+                local alwaysHideLvl = hideLvl and db.hideLevelTextAlways
+                if alwaysHideLvl then
+                    frameTexture:SetTexture("Interface\\TargetingFrame\\UI-FocusFrame-Large")
+                elseif hideLvl and UnitLevel("player") == 80 then
+                    frameTexture:SetTexture("Interface\\TargetingFrame\\UI-FocusFrame-Large")
+                else
+                    frameTexture:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame")
+                end
+            else
+                if playerElite then
+                    playerElite:SetAlpha(0)
+                end
+            end
+
             -- Set Elite style according to value
+            if playerElite then
+                playerElite:SetDesaturated(false)
+            end
             if mode == 1 then -- Rare (Silver)
-                playerElite:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Rare")
-                playerElite:SetDesaturated(true)
+                frameTexture:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Rare")
+                frameTexture:SetDesaturated(true)
             elseif mode == 2 then -- Boss (Silver Winged)
-                playerElite:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Rare-Elite")
-                playerElite:SetDesaturated(true)
+                frameTexture:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Rare-Elite")
+                frameTexture:SetDesaturated(true)
             elseif mode == 3 then -- Boss (Gold Winged)
-                playerElite:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Elite")
-                playerElite:SetDesaturated(false)
-            elseif mode == 4 then -- Only 3 available for classic
-                db.playerEliteFrameMode = 3
-                playerElite:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Elite")
-                playerElite:SetDesaturated(false)
+                frameTexture:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Elite")
+                frameTexture:SetDesaturated(false)
+            elseif mode == 4 then -- Rare (Silver)
+                playerElite:SetAtlas("UI-HUD-UnitFrame-Target-PortraitOn-Boss-Rare-Silver")
+                playerElite:SetSize(80, 78)
+                playerElite:ClearAllPoints()
+                playerElite:SetPoint("TOPLEFT", 12, -13)
+                playerElite:SetVertexColor(1, 1, 1, alpha)
+            elseif mode == 5 then -- Boss (Silver Winged)
+                playerElite:SetAtlas("UI-HUD-UnitFrame-Target-PortraitOn-Boss-Gold-Winged")
+                playerElite:SetSize(99, 80)
+                playerElite:ClearAllPoints()
+                playerElite:SetPoint("TOPLEFT", -7, -12)
+                playerElite:SetVertexColor(1, 1, 1, alpha)
+                playerElite:SetDesaturated(true)
+            elseif mode == 6 then -- Boss (Gold Winged)
+                playerElite:SetAtlas("UI-HUD-UnitFrame-Target-PortraitOn-Boss-Gold-Winged")
+                playerElite:SetSize(99, 80)
+                playerElite:ClearAllPoints()
+                playerElite:SetPoint("TOPLEFT", -7, -12)
+                playerElite:SetVertexColor(1, 1, 1, alpha)
+            elseif mode == 7 then -- Elite (Gold)
+                playerElite:SetAtlas("UI-HUD-UnitFrame-Target-PortraitOn-Boss-Gold")
+                playerElite:SetSize(80, 78)
+                playerElite:ClearAllPoints()
+                playerElite:SetPoint("TOPLEFT", 12, -13)
+                playerElite:SetVertexColor(1, 1, 1, alpha)
+            end
+            if BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.playerEliteFrameDarkmode and playerElite then
+                local v = (BetterBlizzFramesDB.darkModeColor + 0.25)
+                playerElite:SetVertexColor(v,v,v)
             end
             BBF.eliteToggled = true
         elseif BBF.eliteToggled then
-            local playerElite = PlayerFrame.ClassicFrame.Texture
+            local frameTexture = PlayerFrame.ClassicFrame.Texture
+            local playerElite = PlayerFrame.PlayerFrameContainer.PlayerElite
             local hideLvl = db.hideLevelText
             local alwaysHideLvl = hideLvl and db.hideLevelTextAlways
 
-            playerElite:SetDesaturated(false)
+            frameTexture:SetDesaturated(false)
             if alwaysHideLvl then
-                playerElite:SetTexture("Interface\\TargetingFrame\\UI-FocusFrame-Large")
+                frameTexture:SetTexture("Interface\\TargetingFrame\\UI-FocusFrame-Large")
             elseif hideLvl and UnitLevel("player") == 80 then
-                playerElite:SetTexture("Interface\\TargetingFrame\\UI-FocusFrame-Large")
+                frameTexture:SetTexture("Interface\\TargetingFrame\\UI-FocusFrame-Large")
             else
-                playerElite:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame")
+                frameTexture:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame")
+            end
+            if playerElite then
+                playerElite:SetAlpha(0)
             end
             BBF.eliteToggled = nil
         end
@@ -1408,6 +1478,98 @@ end
 
 
 
+local combatCheck = CreateFrame("Frame")
+function BBF.RunAfterCombat(func)
+    if InCombatLockdown() then
+        --DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: You cannot change CVar's in combat. Waiting for combat to end...")
+        combatCheck:RegisterEvent("PLAYER_REGEN_ENABLED")
+        combatCheck:SetScript("OnEvent", function(self, event)
+            if event == "PLAYER_REGEN_ENABLED" then
+                func()
+                self:UnregisterEvent(event)
+                self:SetScript("OnEvent", nil)
+            end
+        end)
+    else
+        func()
+    end
+end
+
+function BBF.ArenaOptimizer(disable, noPrint)
+    local db = BetterBlizzFramesDB
+    if not db.arenaOptimizer and not disable then return end
+
+    local cvars = {
+        ["graphicsViewDistance"] = 1,
+        ["farclip"] = 1000,
+        ["horizonClip"] = 1000,
+        ["horizonStart"] = 400,
+        ["graphicsShadowQuality"] = 0,
+        ["shadowTextureSize"] = 512,
+        ["shadowSoft"] = 0,
+        ["shadowNumCascades"] = 1,
+        ["shadowMode"] = 0,
+        ["shadowBlendCascades"] = 1,
+        ["entityShadowFadeScale"] = 10,
+        ["Sound_DialogVolume"] = 0,
+        ["graphicsLiquidDetail"] = 0,
+        ["waterDetail"] = 0,
+        ["rippleDetail"] = 0,
+        ["graphicsGroundClutter"] = 1,
+        ["graphicsSSAO"] = 0,
+        ["SSAO"] = 0,
+        ["weatherDensity"] = 1,
+    }
+
+    if not db.arenaOptimizerSavedCVars then
+        db.arenaOptimizerSavedCVars = {}
+        local saved = db.arenaOptimizerSavedCVars
+        for cvarName in pairs(cvars) do
+            saved[cvarName] = GetCVar(cvarName)
+        end
+    end
+
+    if disable then
+        BBF.RunAfterCombat(function()
+            for cvarName, savedValue in pairs(db.arenaOptimizerSavedCVars) do
+                SetCVar(cvarName, savedValue)
+            end
+            db.arenaOptimizerSavedCVars = nil
+        end)
+        return
+    end
+
+    local inInstance, instanceType = IsInInstance()
+    local isInArena = instanceType == "arena"
+
+    if isInArena then
+        BBF.RunAfterCombat(function()
+            local changedCVars
+            for cvarName, value in pairs(cvars) do
+                if GetCVar(cvarName) ~= value then
+                    SetCVar(cvarName, value)
+                    changedCVars = true
+                end
+            end
+            if changedCVars and not db.arenaOptimizerDisablePrint and not noPrint then
+                print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: Arena Optimizer (Misc) adjusted CVars down. To disable chat message type |cff00c0ff/bbf noprint|r")
+            end
+        end)
+    else
+        BBF.RunAfterCombat(function()
+            local changedCVars
+            for cvarName, savedValue in pairs(db.arenaOptimizerSavedCVars) do
+                if GetCVar(cvarName) ~= savedValue then
+                    SetCVar(cvarName, savedValue)
+                    changedCVars = true
+                end
+            end
+            if changedCVars and not db.arenaOptimizerDisablePrint and not noPrint then
+                print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: Arena Optimizer (Misc) adjusted CVars back up. To disable chat message type |cff00c0ff/bbf noprint|r")
+            end
+        end)
+    end
+end
 
 
 
@@ -1733,11 +1895,13 @@ function BBF.GenericLegacyComboSupport()
         }
         UIFrameFade(frame, fadeInfo)
     end
-    
+
     local function ComboPointShineFadeOut(frame)
         UIFrameFadeOut(frame, COMBOFRAME_SHINE_FADE_OUT)
     end
-    
+
+    local showAlways = BetterBlizzFramesDB.alwaysShowLegacyComboPoints
+
     local function UpdateGenericLegacyCombo()
         local powerType = legacyComboPowerTypes[class]
         if not powerType then return end
@@ -1746,47 +1910,56 @@ function BBF.GenericLegacyComboSupport()
         local frame = ComboFrame
         local comboIndex = GetLegacyComboStartIndex()
         if not comboIndex then return end
-    
+
         for i = 1, maxComboPoints do
             local point = frame.ComboPoints[comboIndex]
             if point then
+                -- Always show the background
+                point:Show()
                 point:SetAlpha(1)
-                point:SetShown(i <= comboPoints)
-                point.Highlight:SetAlpha(1)
-    
-                -- Animate if newly gained
-                if i > lastComboPoints and i <= comboPoints then
+
+                -- Only show highlight when active or animating
+                local isActive = i <= comboPoints
+                point:SetShown(showAlways or isActive)
+
+                if point.Highlight then
+                    point.Highlight:SetAlpha(isActive and 1 or 0)
+                end
+
+                if isActive and i > lastComboPoints then
                     local highlight = point.Highlight
                     local shine = point.Shine
-    
-                    local fadeInfo = {
-                        mode = "IN",
-                        timeToFade = COMBOFRAME_HIGHLIGHT_FADE_IN,
-                        finishedFunc = ComboPointShineFadeIn,
-                        finishedArg1 = shine,
-                    }
-                    UIFrameFade(highlight, fadeInfo)
+
+                    if highlight and shine then
+                        local fadeInfo = {
+                            mode = "IN",
+                            timeToFade = COMBOFRAME_HIGHLIGHT_FADE_IN,
+                            finishedFunc = ComboPointShineFadeIn,
+                            finishedArg1 = shine,
+                        }
+                        UIFrameFade(highlight, fadeInfo)
+                    end
                 end
-    
+
                 comboIndex = comboIndex + 1
             end
         end
-    
-        if comboPoints == 0 then
+
+        if comboPoints == 0 and not showAlways then
             frame:Hide()
         else
             frame:SetAlpha(1)
             frame:Show()
         end
-    
+
         UIFrameFadeRemoveFrame(frame)
-    
+
         lastComboPoints = comboPoints
     end
-    
 
     hooksecurefunc("ComboFrame_Update", UpdateGenericLegacyCombo)
 end
+
 
 function BBF.UpdateLegacyComboPosition()
     if not ComboFrame then return end
@@ -2440,6 +2613,8 @@ end)
 local LSM = LibStub("LibSharedMedia-3.0")
 BBF.LSM = LSM
 LSM:Register("statusbar", "Blizzard DF", [[Interface\TargetingFrame\UI-TargetingFrame-BarFill]])
+LSM:Register("statusbar", "Blizzard CF", [[Interface\AddOns\BetterBlizzFrames\media\ui-statusbar-cf]])
+
 
 local texture = "Interface\\Addons\\BetterBlizzPlates\\media\\DragonflightTextureHD"
 local manaTexture = "Interface\\Addons\\BetterBlizzPlates\\media\\DragonflightTextureHD"
@@ -2479,7 +2654,9 @@ local function ApplyTextureChange(type, statusBar, parent, classic, party)
     -- Get the original texture and draw layer
     local originalTexture = statusBar:GetStatusBarTexture()
     local originalLayer, subLayer = originalTexture:GetDrawLayer()
-    local classicTexture = (BetterBlizzFramesDB.classicFrames and (parent == TargetFrame or parent == FocusFrame or statusBar == PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer.HealthBar) and texture == "Interface\\TargetingFrame\\UI-TargetingFrame-BarFill") and "Interface\\AddOns\\BetterBlizzFrames\\media\\ui-targetingframe-barfill"
+    local classicTexture = (BetterBlizzFramesDB.classicFrames and (parent == TargetFrame or parent == FocusFrame or statusBar == PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer.HealthBar) and
+    (texture == "Interface\\TargetingFrame\\UI-TargetingFrame-BarFill") and "Interface\\AddOns\\BetterBlizzFrames\\media\\ui-targetingframe-barfill") or
+    (texture == "Interface\\AddOns\\BetterBlizzFrames\\media\\ui-statusbar-cf" and "Interface\\AddOns\\BetterBlizzFrames\\media\\ui-statusbar")
 
     local playerHp = statusBar == PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer.HealthBar
 
@@ -3458,6 +3635,8 @@ Frame:SetScript("OnEvent", function(...)
 
     local function LoginVariablesLoaded()
         if BBF.variablesLoaded then
+
+            BBF.ArenaOptimizer(nil, true)
             -- add setings updates
             BBF.AllNameChanges()
             BBF.UpdateUserDarkModeSettings()
@@ -3608,6 +3787,9 @@ SlashCmdList["BBF"] = function(msg)
         DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: "..exportVersion)
     elseif command == "profiles" then
         BBF.CreateIntroMessageWindow()
+    elseif command == "noprint" then
+        BetterBlizzFramesDB.arenaOptimizerDisablePrint = true
+        print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: Arena Optimizer will no longer print messages.|r")
     else
         -- InterfaceOptionsFrame_OpenToCategory(BetterBlizzFrames)
         if not BBF.category then
