@@ -1,3 +1,21 @@
+# BetterBlizzFrames 1.6.7
+## Retail
+### New:
+- Hide Resource Tooltip - Hide resource frame mouseover tooltip. (General, PlayerFrame)
+- Support for TRP3 Names (Misc)
+### Tweak:
+- Improved AddonList setting now also adds a "Hide unloaded dependency AddOns" checkbox on the AddonList that sorts unloaded dependency addons down with the other disabled addons.
+- Tweaked "Legacy Combo Points" position when using Retail Frames. If you have these settings then you will have to tweak your settings slightly due to this.
+### Bugfix:
+- Fix issue with Classic Frames setting showing TargetFrame Elite Texture (and some other things) above ToT Frame.
+- Fix Party Castbar setting hiding during Test Mode when adjusting settings.
+
+## Classic & Cata
+### Tweak:
+- Added tweak to "OCD Tweaks" setting so it does not warp the bag menu textures when used together with Dominos due to Dominos changing this.
+
+
+
 # BetterBlizzFrames 1.6.6
 ## Retail
 ### New:

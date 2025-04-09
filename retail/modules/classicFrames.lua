@@ -162,8 +162,7 @@ local function MakeClassicFrame(frame)
         local totFrame = frame.totFrame
         local totHpBar = totFrame.HealthBar
         local totManaBar = totFrame.ManaBar
-        totFrame:SetFrameStrata("HIGH")
-        totFrame:SetFrameLevel(9999)
+        totFrame:SetFrameStrata("DIALOG")
         totHpBar:SetStatusBarColor(0, 1, 0)
         totHpBar:SetSize(47, 7)
         totHpBar:ClearAllPoints()

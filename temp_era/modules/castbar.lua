@@ -159,7 +159,7 @@ function BBF.UpdateCastbars()
 
                         spellbar:SetFrameStrata("MEDIUM")
 
-                        if unitId == "player" and not BetterBlizzFramesDB.partyCastbarSelf then
+                        if UnitIsUnit(unitId, "player") and (not BetterBlizzFramesDB.partyCastbarSelf and not BetterBlizzFramesDB.partyCastBarTestMode) then
                             CastingBarFrame_SetUnit(spellbar, nil)
                         end
 

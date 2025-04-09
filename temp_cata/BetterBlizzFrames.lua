@@ -1111,7 +1111,21 @@ function BBF.FixStupidBlizzPTRShit()
             backupSettings()
         end
 
+        BBF.ActionBarIconZoom()
+        ChangeHotkeyWidth(32)
+
+        if not BBF.hookedActionBarTextWidth then
+            hooksecurefunc("ActionButton_UpdateHotkeys", function(self)
+                if BBF.hotkeyCancel then return end
+                self.HotKey:SetWidth(32)
+            end)
+            BBF.hookedActionBarTextWidth = true
+        end
+        BBF.hotkeyCancel = nil
+
         if C_AddOns.IsAddOnLoaded("Bartender4") then return end
+        if C_AddOns.IsAddOnLoaded("Dominos") then return end
+
         MainMenuBarTextureExtender:Hide()
         MainMenuBarTexture3:SetPoint("BOTTOM", MainMenuBarArtFrame, "BOTTOM", 371, 0)
         MainMenuBarTexture3:SetWidth(260)
@@ -1175,18 +1189,6 @@ function BBF.FixStupidBlizzPTRShit()
         ReputationWatchBar.StatusBar.XPBarTexture2:SetWidth(255)
         ReputationWatchBar.StatusBar.XPBarTexture3:SetPoint("BOTTOM", MainMenuExpBar, "BOTTOM", 381, 3)
         ReputationWatchBar.StatusBar.XPBarTexture3:SetWidth(255)
-
-        BBF.ActionBarIconZoom()
-        ChangeHotkeyWidth(32)
-
-        if not BBF.hookedActionBarTextWidth then
-            hooksecurefunc("ActionButton_UpdateHotkeys", function(self)
-                if BBF.hotkeyCancel then return end
-                self.HotKey:SetWidth(32)
-            end)
-            BBF.hookedActionBarTextWidth = true
-        end
-        BBF.hotkeyCancel = nil
     else
         BBF.hotkeyCancel = true
         MainMenuBarTextureExtender:Show()

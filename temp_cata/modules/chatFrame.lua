@@ -15,6 +15,7 @@ local filterMiscInfoHooked = false
 local gladiusSpam = {
     ["LOW HEALTH:"] = true, ["WENIG LEBEN:"] = true, ["NIEDRIGE GESUNDHEIT:"] = true, ["VIDA BAJA:"] = true,
     ["Entidad desconocida -"] = true,
+    ["BIJOU UTILISE"] = true,
     ["Enemy spec:"] = true, ["Enemy Spec:"] = true, ["Especialización de enemigo:"] = true,
     ["- Mage"] = true, ["Magier"] = true,
     ["- Monk"] = true, ["- Mönch"] = true,

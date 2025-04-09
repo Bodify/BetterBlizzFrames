@@ -1439,7 +1439,7 @@ local function AdjustAuras(self, frameType)
 
             if shouldShowAura then
                 if db2.increaseAuraStrata then
-                    aura:SetFrameStrata("DIALOG")
+                    aura:SetFrameStrata("FULLSCREEN")
                 end
                 aura:Show()
 

@@ -80,6 +80,19 @@ local isAddonLoaded = C_AddOns.IsAddOnLoaded
 local changeUnitFrameFont
 local targetAndFocusArenaNamePartyOverride
 local classicFramesMode
+local rpNames
+
+local function GetRPNameColor(unit)
+    if not UnitExists(unit) then return end
+    local player = AddOn_TotalRP3 and AddOn_TotalRP3.Player and AddOn_TotalRP3.Player.CreateFromUnit(unit)
+    if player then
+        local color = player:GetCustomColorForDisplay()
+        if color then
+            local r, g, b = color:GetRGB()
+            return r, g, b
+        end
+    end
+end
 
 function BBF.UpdateUserTargetSettings()
     hidePartyNames = BetterBlizzFramesDB.hidePartyNames
@@ -105,6 +118,7 @@ function BBF.UpdateUserTargetSettings()
     hidePetName = BetterBlizzFramesDB.hidePetName
     changeUnitFrameFont = BetterBlizzFramesDB.changeUnitFrameFont
     targetAndFocusArenaNamePartyOverride = BetterBlizzFramesDB.targetAndFocusArenaNamePartyOverride
+    rpNames = BetterBlizzFramesDB.rpNames
 end
 
 local function CenterPlayerName()
@@ -308,7 +322,18 @@ local function CompactPartyFrameNameChanges(frame)
         frame.name:SetText("")
         return
     end
-    if removeRealmNames then
+    if TRP3_API and rpNames then
+        frame.name:SetText(TRP3_API.r.name(frame.unit))
+        local r,g,b = GetRPNameColor(frame.unit)
+        if r then
+            frame.name:SetTextColor(r, g, b)
+            frame.name.recolored = true
+            return
+        elseif frame.name.recolored then
+            frame.name:SetTextColor(1, 0.82, 0)
+            frame.name.recolored = nil
+        end
+    elseif removeRealmNames then
         frame.name:SetText(GetNameWithoutRealm(frame))
     end
 end
@@ -341,7 +366,18 @@ local function PartyFrameNameChange(frame)
         SetArenaName(frame, frame.unit, frame.bbfName)
         return
     end
-    if removeRealmNames then
+    if TRP3_API and rpNames then
+        frame.bbfName:SetText(TRP3_API.r.name(frame.unit))
+        local r,g,b = GetRPNameColor(frame.unit)
+        if r then
+            frame.bbfName:SetTextColor(r, g, b)
+            frame.bbfName.recolored = true
+            return
+        elseif frame.bbfName.recolored then
+            frame.bbfName:SetTextColor(1, 0.82, 0)
+            frame.bbfName.recolored = nil
+        end
+    elseif removeRealmNames then
         frame.bbfName:SetText(GetNameWithoutRealm(frame))
     else
         frame.bbfName:SetText(frame.Name:GetText())
@@ -1107,6 +1143,19 @@ local function PlayerFrameNameChanges(frame)
         frame.bbfName:SetFont(frame.name:GetFont())
     end
 
+    if TRP3_API and rpNames then
+        frame.bbfName:SetText(TRP3_API.r.name(unit))
+        local r,g,b = GetRPNameColor(unit)
+        if r then
+            frame.bbfName:SetTextColor(r, g, b)
+            frame.bbfName.recolored = true
+            return
+        elseif frame.bbfName.recolored then
+            frame.bbfName:SetTextColor(1, 0.82, 0)
+            frame.bbfName.recolored = nil
+        end
+    end
+
     if classColorTargetNames then
         ClassColorName(frame.bbfName, unit)
     end
@@ -1137,7 +1186,18 @@ local function TargetFrameNameChanges(frame)
             frame.bbfName:SetText("")
             return
         end
-        if removeRealmNames then
+        if TRP3_API and rpNames then
+            frame.bbfName:SetText(TRP3_API.r.name(unit))
+            local r,g,b = GetRPNameColor(unit)
+            if r then
+                frame.bbfName:SetTextColor(r, g, b)
+                frame.bbfName.recolored = true
+                return
+            elseif frame.bbfName.recolored then
+                frame.bbfName:SetTextColor(1, 0.82, 0)
+                frame.bbfName.recolored = nil
+            end
+        elseif removeRealmNames then
             frame.bbfName:SetText(GetNameWithoutRealm(frame))
         else
             frame.bbfName:SetText(frame.name:GetText())
@@ -1216,7 +1276,18 @@ local function FocusFrameNameChanges(frame)
             frame.bbfName:SetText("")
             return
         end
-        if removeRealmNames then
+        if TRP3_API and rpNames then
+            frame.bbfName:SetText(TRP3_API.r.name(unit))
+            local r,g,b = GetRPNameColor(unit)
+            if r then
+                frame.bbfName:SetTextColor(r, g, b)
+                frame.bbfName.recolored = true
+                return
+            elseif frame.bbfName.recolored then
+                frame.bbfName:SetTextColor(1, 0.82, 0)
+                frame.bbfName.recolored = nil
+            end
+        elseif removeRealmNames then
             frame.bbfName:SetText(GetNameWithoutRealm(frame))
         else
             frame.bbfName:SetText(frame.name:GetText())
@@ -1252,7 +1323,18 @@ local function TargetFrameToTNameChanges(frame)
             frame.bbfName:SetText("")
             return
         end
-        if removeRealmNames then
+        if TRP3_API and rpNames then
+            frame.bbfName:SetText(TRP3_API.r.name(unit))
+            local r,g,b = GetRPNameColor(unit)
+            if r then
+                frame.bbfName:SetTextColor(r, g, b)
+                frame.bbfName.recolored = true
+                return
+            elseif frame.bbfName.recolored then
+                frame.bbfName:SetTextColor(1, 0.82, 0)
+                frame.bbfName.recolored = nil
+            end
+        elseif removeRealmNames then
             frame.bbfName:SetText(GetNameWithoutRealm(frame))
         else
             frame.bbfName:SetText(frame.name:GetText())
@@ -1281,7 +1363,18 @@ local function FocusFrameToTNameChanges(frame)
             frame.bbfName:SetText("")
             return
         end
-        if removeRealmNames then
+        if TRP3_API and rpNames then
+            frame.bbfName:SetText(TRP3_API.r.name(unit))
+            local r,g,b = GetRPNameColor(unit)
+            if r then
+                frame.bbfName:SetTextColor(r, g, b)
+                frame.bbfName.recolored = true
+                return
+            elseif frame.bbfName.recolored then
+                frame.bbfName:SetTextColor(1, 0.82, 0)
+                frame.bbfName.recolored = nil
+            end
+        elseif removeRealmNames then
             frame.bbfName:SetText(GetNameWithoutRealm(frame))
         else
             frame.bbfName:SetText(frame.name:GetText())

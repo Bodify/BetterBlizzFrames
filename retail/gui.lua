@@ -3066,8 +3066,12 @@ local function guiGeneralTab()
         end
     end)
 
+    local hideResourceTooltip = CreateCheckbox("hideResourceTooltip", "Hide Resource Tooltip", BetterBlizzFrames, nil, BBF.HideClassResourceTooltip)
+    hideResourceTooltip:SetPoint("TOPLEFT", hidePlayerPower, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(hideResourceTooltip, "Hide Resource Tooltip", "Hide Resource Mouseover Tooltip.")
+
     local hideManaFeedback = CreateCheckbox("hideManaFeedback", "Hide Mana Feedback", BetterBlizzFrames, nil, BBF.HideFrames)
-    hideManaFeedback:SetPoint("TOPLEFT", hidePlayerPower, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    hideManaFeedback:SetPoint("TOPLEFT", hideResourceTooltip, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(hideManaFeedback, "Hide Mana Feedback", "Remove the manabar feedback animations for instant feedback on your mana/energy/rage etc.")
 
     local hidePlayerRestAnimation = CreateCheckbox("hidePlayerRestAnimation", "Hide \"Zzz\" Rest Animation", BetterBlizzFrames, nil, BBF.HideFrames)
@@ -7401,6 +7405,14 @@ local function guiMisc()
         StaticPopup_Show("BBF_CONFIRM_RELOAD")
         CheckAndToggleCheckboxes(moveResourceToTarget)
     end)
+
+
+
+    local rpNames = CreateCheckbox("rpNames", "Roleplay Names (TRP3)", guiMisc)
+    rpNames:SetPoint("BOTTOMRIGHT", guiMisc, "BOTTOMRIGHT", -180, 10)
+    CreateTooltipTwo(rpNames, "Roleplay Names", "Enable for support for Total RP3 Roleplay Names and color.\n\nI will expand on this a little bit in a future patch with more settings and options.")
+
+
 end
 
 local function guiChatFrame()

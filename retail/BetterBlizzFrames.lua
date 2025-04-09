@@ -399,11 +399,10 @@ local function SendUpdateMessage()
         if not BetterBlizzFramesDB.scStart then
             C_Timer.After(7, function()
                 --StaticPopup_Show("BBF_NEW_VERSION")
-                local class = select(2, UnitClass("player"))
-                if class == "DRUID" then
+                if BetterBlizzFramesDB.enableLegacyComboPoints and not BetterBlizzFramesDB.classicFrames then
                     DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames "..addonUpdates..":")
                     --DEFAULT_CHAT_FRAME:AddMessage("|A:QuestNormal:16:16|a New stuff:")
-                    DEFAULT_CHAT_FRAME:AddMessage("|A:QuestNormal:16:16|a Important Note: \"Druid: Always show active Combo Points\" and \"Druid: Show mana in Cat/Bear (as resto)\" is now on by default. If you do not want this turn them off in the Misc section.")
+                    DEFAULT_CHAT_FRAME:AddMessage("|A:QuestNormal:16:16|a Legacy Combo Points default position adjusted. You will have to re-adjust your points. Sorry :x")
                 end
                 -- DEFAULT_CHAT_FRAME:AddMessage("|A:Professions-Crafting-Orders-Icon:16:16|a Tweak:")
                 -- DEFAULT_CHAT_FRAME:AddMessage("   - Reset castbar interrupt icon y offset to 0 due to default positional changes You may have to readjust to your liking.")
@@ -851,8 +850,13 @@ function BBF.RemoveAddonCategories()
                 if name == group then
                     targetGroup[group] = entry; -- this is the parent
                 else
-                    groupChildren[group] = groupChildren[group] or {};
-                    table.insert(groupChildren[group], entry);
+                    if BetterBlizzFramesDB.removeAddonListCategoriesHideDependancies and treatAsDisabled then
+                        -- Ungroup this dependency addon and put it directly in the disabled list.
+                        disabledGroups[name] = entry;
+                    else
+                        groupChildren[group] = groupChildren[group] or {};
+                        table.insert(groupChildren[group], entry);
+                    end
                 end
             end
         end
@@ -892,6 +896,44 @@ function BBF.RemoveAddonCategories()
     AddonList:HookScript("OnShow", function()
         AddonList.ScrollBox:Hide()
         C_Timer.After(0, RemoveAddonCategories)
+    end)
+
+    AddonList.ForceLoad:SetSize(19,19)
+    AddonList.ForceLoad:SetPoint("TOP", AddonList, "TOP", -95, -24)
+
+    for i, region in ipairs({AddonList.ForceLoad:GetRegions()}) do
+        if region:GetObjectType() == "FontString" and region:GetText() == ADDON_FORCE_LOAD then
+            region:ClearAllPoints()
+            region:SetPoint("LEFT", AddonList.ForceLoad, "RIGHT", 5, 0)
+            break
+        end
+    end
+
+    local custom = CreateFrame("CheckButton", nil, AddonList, "MinimalCheckboxTemplate")
+    custom:SetPoint("TOPLEFT", AddonList.ForceLoad, "BOTTOMLEFT", 0, 2)
+    custom.Text = custom:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    custom.Text:SetPoint("LEFT", custom, "RIGHT", 5, 0)
+    custom.Text:SetText("Hide unloaded dependency AddOns")
+    custom:SetSize(19,19)
+
+    custom:SetScript("OnEnter", function(self)
+        GameTooltip:ClearLines()
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+        GameTooltip:SetText("Hide unloaded dependency AddOns", 1, 1, 1, 1, true)
+        GameTooltip:AddLine("When enabled, dependency addons that are unloaded will be shown at the bottom with the disabled addons.", nil, nil, nil, true)
+        GameTooltip:Show()
+    end)
+    custom:SetScript("OnLeave", function(self)
+        GameTooltip:ClearLines()
+        GameTooltip:Hide()
+    end)
+
+    custom:SetChecked(BetterBlizzFramesDB.removeAddonListCategoriesHideDependancies or false)
+
+    custom:SetScript("OnClick", function(self)
+        local checked = self:GetChecked()
+        BetterBlizzFramesDB.removeAddonListCategoriesHideDependancies = checked or nil
+        RemoveAddonCategories()
     end)
 
     BBF.RemovedAddonCategories = true
@@ -1326,6 +1368,32 @@ end
 
 
 
+local classPowerFrames = {
+    ROGUE = RogueComboPointBarFrame,
+    DRUID = DruidComboPointBarFrame,
+    WARLOCK = WarlockPowerFrame,
+    MAGE = MageArcaneChargesFrame,
+    MONK = MonkHarmonyBarFrame,
+    EVOKER = EssencePlayerFrame,
+    PALADIN = PaladinPowerBarFrame,
+    DEATHKNIGHT = RuneFrame,
+}
+
+function BBF.HideClassResourceTooltip()
+    if not BetterBlizzFramesDB.hideResourceTooltip then return end
+    if BBF.HidingClassResourceTooltip then return end
+    local _, class = UnitClass("player")
+    local resourceFrame = classPowerFrames[class]
+    if not resourceFrame then return end
+    if resourceFrame and resourceFrame:HasScript("OnEnter") then
+        resourceFrame:HookScript("OnEnter", function()
+            if GameTooltip:IsShown() then
+                GameTooltip:Hide()
+            end
+        end)
+    end
+    BBF.HidingClassResourceTooltip = true
+end
 
 
 
@@ -1336,49 +1404,57 @@ function BBF.PlayerElite(mode)
     local db = BetterBlizzFramesDB
 
     if not db.classicFrames then
-        if not PlayerFrame.PlayerFrameContainer.PlayerElite then
-            PlayerFrame.PlayerFrameContainer.PlayerElite = PlayerFrame.PlayerFrameContainer:CreateTexture(nil, "OVERLAY", nil, 6)
-            PlayerFrame.PlayerFrameContainer.PlayerElite:SetTexCoord(1, 0, 0, 1)
-            PetPortrait:GetParent():SetFrameLevel(4)
-            RuneFrame:SetFrameLevel(4)
-        end
-        local playerElite = PlayerFrame.PlayerFrameContainer.PlayerElite
-        local alpha = db.playerEliteFrame and 1 or 0
-        playerElite:SetDesaturated(false)
-        playerElite:SetParent(PlayerFrame.PlayerFrameContainer)
-        -- Set Elite style according to value
-        if mode == 1 then -- Rare (Silver)
-            playerElite:SetAtlas("UI-HUD-UnitFrame-Target-PortraitOn-Boss-Rare-Silver")
-            playerElite:SetSize(80, 78)
-            playerElite:ClearAllPoints()
-            playerElite:SetPoint("TOPLEFT", 10.5, -10)
-            playerElite:SetVertexColor(1, 1, 1, alpha)
-        elseif mode == 2 then -- Boss (Silver Winged)
-            playerElite:SetAtlas("UI-HUD-UnitFrame-Target-PortraitOn-Boss-Gold-Winged")
-            playerElite:SetSize(99, 80)
-            playerElite:ClearAllPoints()
-            playerElite:SetPoint("TOPLEFT", -9, -9)
-            playerElite:SetVertexColor(1, 1, 1, alpha)
-            playerElite:SetDesaturated(true)
-        elseif mode == 3 then -- Boss (Gold Winged)
-            playerElite:SetAtlas("UI-HUD-UnitFrame-Target-PortraitOn-Boss-Gold-Winged")
-            playerElite:SetSize(99, 80)
-            playerElite:ClearAllPoints()
-            playerElite:SetPoint("TOPLEFT", -9, -9)
-            playerElite:SetVertexColor(1, 1, 1, alpha)
-        elseif mode == 4 then -- Elite (Gold)
-            playerElite:SetAtlas("UI-HUD-UnitFrame-Target-PortraitOn-Boss-Gold")
-            playerElite:SetSize(80, 78)
-            playerElite:ClearAllPoints()
-            playerElite:SetPoint("TOPLEFT", 10.5, -10)
-            playerElite:SetVertexColor(1, 1, 1, alpha)
-        elseif mode > 4 then -- Only 4 available for Retail
-            db.playerEliteFrameMode = 1
-            BBF.PlayerElite(1)
-        end
-        if BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.playerEliteFrameDarkmode then
-            local v = (BetterBlizzFramesDB.darkModeColor + 0.25)
-            playerElite:SetVertexColor(v,v,v)
+        if db.playerEliteFrame then
+            if not PlayerFrame.PlayerFrameContainer.PlayerElite then
+                PlayerFrame.PlayerFrameContainer.PlayerElite = PlayerFrame.PlayerFrameContainer:CreateTexture(nil, "OVERLAY", nil, 6)
+                PlayerFrame.PlayerFrameContainer.PlayerElite:SetTexCoord(1, 0, 0, 1)
+                PetPortrait:GetParent():SetFrameLevel(4)
+                RuneFrame:SetFrameLevel(4)
+            end
+            local playerElite = PlayerFrame.PlayerFrameContainer.PlayerElite
+            local alpha = db.playerEliteFrame and 1 or 0
+            playerElite:SetDesaturated(false)
+            playerElite:SetParent(PlayerFrame.PlayerFrameContainer)
+            -- Set Elite style according to value
+            if mode == 1 then -- Rare (Silver)
+                playerElite:SetAtlas("UI-HUD-UnitFrame-Target-PortraitOn-Boss-Rare-Silver")
+                playerElite:SetSize(80, 78)
+                playerElite:ClearAllPoints()
+                playerElite:SetPoint("TOPLEFT", 10.5, -10)
+                playerElite:SetVertexColor(1, 1, 1, alpha)
+            elseif mode == 2 then -- Boss (Silver Winged)
+                playerElite:SetAtlas("UI-HUD-UnitFrame-Target-PortraitOn-Boss-Gold-Winged")
+                playerElite:SetSize(99, 80)
+                playerElite:ClearAllPoints()
+                playerElite:SetPoint("TOPLEFT", -9, -9)
+                playerElite:SetVertexColor(1, 1, 1, alpha)
+                playerElite:SetDesaturated(true)
+            elseif mode == 3 then -- Boss (Gold Winged)
+                playerElite:SetAtlas("UI-HUD-UnitFrame-Target-PortraitOn-Boss-Gold-Winged")
+                playerElite:SetSize(99, 80)
+                playerElite:ClearAllPoints()
+                playerElite:SetPoint("TOPLEFT", -9, -9)
+                playerElite:SetVertexColor(1, 1, 1, alpha)
+            elseif mode == 4 then -- Elite (Gold)
+                playerElite:SetAtlas("UI-HUD-UnitFrame-Target-PortraitOn-Boss-Gold")
+                playerElite:SetSize(80, 78)
+                playerElite:ClearAllPoints()
+                playerElite:SetPoint("TOPLEFT", 10.5, -10)
+                playerElite:SetVertexColor(1, 1, 1, alpha)
+            elseif mode > 4 then -- Only 4 available for Retail
+                db.playerEliteFrameMode = 1
+                BBF.PlayerElite(1)
+            end
+            if BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.playerEliteFrameDarkmode then
+                local v = (BetterBlizzFramesDB.darkModeColor + 0.25)
+                playerElite:SetVertexColor(v,v,v)
+            end
+            BBF.eliteToggled = true
+        elseif BBF.eliteToggled then
+            local playerElite = PlayerFrame.PlayerFrameContainer.PlayerElite
+            if playerElite then
+                playerElite:SetAlpha(0)
+            end
         end
     else
         if db.playerEliteFrame then
@@ -1964,12 +2040,15 @@ end
 function BBF.UpdateLegacyComboPosition()
     if not ComboFrame then return end
     local db = BetterBlizzFramesDB
-    local x = db.legacyComboXPos or (db.classicFrames and -28) or -33
-    local y = db.legacyComboYPos or (db.classicFrames and -25) or -21
+    local x = db.legacyComboXPos
+    local y = db.legacyComboYPos
     local scale = db.legacyComboScale or 0.85
 
+    local extraOffsetY = not db.classicFrames and 2.5 or 0
+    local extraOffsetX = not db.classicFrames and -5 or 0
+
     ComboFrame:ClearAllPoints()
-    ComboFrame:SetPoint("TOPRIGHT", TargetFrame, "TOPRIGHT", x, y)
+    ComboFrame:SetPoint("TOPRIGHT", TargetFrame, "TOPRIGHT", x+extraOffsetX, y+extraOffsetY)
     ComboFrame:SetScale(scale)
 end
 
@@ -3632,6 +3711,7 @@ Frame:SetScript("OnEvent", function(...)
     BBF.HookHealthbarColors()
     BBF.ResizeUIWidgetPowerBarFrame()
     BBF.LegacyBlueCombos()
+    BBF.HideClassResourceTooltip()
 
     local function LoginVariablesLoaded()
         if BBF.variablesLoaded then
@@ -3998,3 +4078,45 @@ PlayerEnteringWorld:SetScript("OnEvent", function()
     BBF.CheckForAuraBorders()
 end)
 PlayerEnteringWorld:RegisterEvent("PLAYER_ENTERING_WORLD")
+
+
+
+
+
+
+-- local f = CreateFrame("Frame", "KeySpamTrackerFrame", UIParent)
+-- f:SetPropagateKeyboardInput(true)
+-- f:EnableKeyboard(true)
+-- f:SetAllPoints(UIParent)
+-- f:SetFrameStrata("TOOLTIP")
+-- f:Show()
+
+-- -- Tracking state
+-- local currentCount = 0
+-- local maxCount = 0
+-- local lastPressTime = 0
+-- local gcdWindow = 1
+-- local isCounting = false
+
+-- -- Start GCD-like window manually
+-- local function StartWindow()
+--     isCounting = true
+--     currentCount = 1
+--     C_Timer.After(gcdWindow, function()
+--         if currentCount > maxCount then
+--             maxCount = currentCount
+--             print("New max key spam during fake GCD window:", currentCount)
+--         end
+--         currentCount = 0
+--         isCounting = false
+--     end)
+-- end
+
+-- -- Capture key presses
+-- f:SetScript("OnKeyDown", function(_, key)
+--     if not isCounting then
+--         StartWindow()
+--     else
+--         currentCount = currentCount + 1
+--     end
+-- end)
