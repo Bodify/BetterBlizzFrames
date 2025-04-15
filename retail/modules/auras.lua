@@ -1466,7 +1466,7 @@ local function AdjustAuras(self, frameType)
                 end
 
                 -- Print Logic
-                if db2.printSpellId and not aura.bbfHookAdded then
+                if db2.printAuraSpellIds and not aura.bbfHookAdded then
                     aura:HookScript("OnEnter", function()
                         local currentAuraID = aura.auraInstanceID
                         if not aura.bbfPrinted or aura.bbfLastPrintedAuraID ~= currentAuraID then

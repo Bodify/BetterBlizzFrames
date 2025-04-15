@@ -1570,15 +1570,6 @@ PlayerEnteringWorld:SetScript("OnEvent", function()
 end)
 PlayerEnteringWorld:RegisterEvent("PLAYER_ENTERING_WORLD")
 
-local targetHpBar = TargetFrame.HealthBar
-if targetHpBar then
-    if targetHpBar.OtherHealPredictionBar and targetHpBar.OtherHealPredictionBar.Fill then
-        targetHpBar.OtherHealPredictionBar.Fill:SetVertexColor(0,1,0)
-    end
-    if targetHpBar.MyHealPredictionBar and targetHpBar.MyHealPredictionBar.Fill then
-        targetHpBar.MyHealPredictionBar.Fill:SetVertexColor(0,1,0)
-    end
-end
 
 -- TargetFrame.HealthBar.BBPFill = TargetFrame.HealthBar.OtherHealPredictionBar:CreateTexture(nil, "OVERLAY");
 -- TargetFrame.HealthBar.BBPFill:SetTexture(137012)

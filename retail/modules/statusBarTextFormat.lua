@@ -116,6 +116,10 @@ function BBF.HookStatusBarText()
             hooksecurefunc(bar, "UpdateTextStringWithValues", function()
                 UpdateNumericText(bar, centerText)
             end)
+        elseif statusTextSetting == "NONE" then
+            hooksecurefunc(bar, "UpdateTextStringWithValues", function()
+                UpdateNumericText(bar, centerText)
+            end)
         end
     end
 

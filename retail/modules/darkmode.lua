@@ -241,10 +241,10 @@ function BBF.DarkmodeFrames(bypass)
                 for j = 1, point:GetNumRegions() do
                     local region = select(j, point:GetRegions())
                     if region and region:IsObjectType("Texture") then
-                        local textureID = region:GetTexture()
-                        if textureID == 130973 then
+                        local layer = region:GetDrawLayer()
+                        if layer == "BACKGROUND" then
                             region:SetDesaturated(true)
-                            region:SetVertexColor(druidComboPointActive,druidComboPointActive,druidComboPointActive)
+                            region:SetVertexColor(druidComboPointActive, druidComboPointActive, druidComboPointActive)
                         end
                     end
                 end
@@ -813,7 +813,9 @@ function BBF.DarkmodeFrames(bypass)
         {name = "MultiBarRightActionButton", count = 12},
         {name = "MultiBarLeftActionButton", count = 12},
         {name = "MultiBarBottomRightActionButton", count = 12},
-        {name = "MultiBarBottomLeftActionButton", count = 12}
+        {name = "MultiBarBottomLeftActionButton", count = 12},
+        {name = "DominosPetActionButton", count = 12},
+        {name = "DominosStanceButton", count = 12},
     }
 
     -- Loop through each bar and apply settings to its buttons

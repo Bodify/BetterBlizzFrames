@@ -137,11 +137,17 @@ local function OnEvent(self, event, unit)
                     local castEndTime = select(5, UnitCastingInfo(unit)) or select(5, UnitChannelInfo(unit))
                     if castEndTime and start + duration <= (castEndTime / 1000) then
                         local delay = (start + duration) - GetTime()
-                        C_Timer.After(delay, function()
+                        if delay > 0 then
+                            C_Timer.After(delay, function()
+                                if UnitCastingInfo(unit) or UnitChannelInfo(unit) then
+                                    UpdateInterruptIcon(self)
+                                end
+                            end)
+                        else
                             if UnitCastingInfo(unit) or UnitChannelInfo(unit) then
                                 UpdateInterruptIcon(self)
                             end
-                        end)
+                        end
                     end
                 end
             end

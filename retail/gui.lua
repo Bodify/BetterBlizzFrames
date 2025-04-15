@@ -3902,7 +3902,7 @@ local function guiGeneralTab()
 
     local singleValueStatusBarText = CreateCheckbox("singleValueStatusBarText", "No Max", formatStatusBarText)
     singleValueStatusBarText:SetPoint("LEFT", formatStatusBarText.text, "RIGHT", 0, 0)
-    CreateTooltipTwo(singleValueStatusBarText, "No Max Value", "If Numeric Value is selected as Status Text this setting will make it only display current HP instead of max HP as well.\n\n6800 K / 6800 K |A:glueannouncementpopup-arrow:20:20|a 6.8 M", "Requires reload.")
+    CreateTooltipTwo(singleValueStatusBarText, "No Max Value", "If Numeric Value is selected as Status Text this setting will make it only display current HP instead of max HP as well.\n\n6.8 M / 6.8 M |A:glueannouncementpopup-arrow:20:20|a 6.8 M", "Requires reload.")
     singleValueStatusBarText:HookScript("OnClick", function()
         StaticPopup_Show("BBF_CONFIRM_RELOAD")
     end)
@@ -5473,11 +5473,11 @@ local function guiFrameLook()
     fontEditBox:SetSize(330, 20)
     fontEditBox:SetPoint("TOPLEFT", howStepOne, "BOTTOMLEFT", 5, -5)
     fontEditBox:SetAutoFocus(false)
-    fontEditBox:SetText("BBF.LSM:Register(\"font\", \"My Font Name\", [[Interface\\AddOns\\CustomMedia\\MyFontFile]])")
+    fontEditBox:SetText("BBF.LSM:Register(\"font\", \"My Font Name\", [[Interface\\AddOns\\CustomMedia\\MyFontFile]], BBF.allLocales)")
     fontEditBox:HighlightText()
     fontEditBox:SetCursorPosition(0)
     fontEditBox:SetScript("OnTextChanged", function(self)
-        fontEditBox:SetText("BBF.LSM:Register(\"font\", \"My Font Name\", [[Interface\\AddOns\\CustomMedia\\MyFontFile]])")
+        fontEditBox:SetText("BBF.LSM:Register(\"font\", \"My Font Name\", [[Interface\\AddOns\\CustomMedia\\MyFontFile]], BBF.allLocales)")
     end)
     fontEditBox:SetScript("OnMouseUp", function(self)
         self:SetFocus()
@@ -7138,7 +7138,7 @@ local function guiMisc()
 
     local raiseTargetCastbarStrata = CreateCheckbox("raiseTargetCastbarStrata", "Raise Castbar Stratas", guiMisc, nil, BBF.RaiseTargetCastbarStratas)
     raiseTargetCastbarStrata:SetPoint("TOPLEFT", raiseTargetFrameLevel, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltipTwo(raiseTargetCastbarStrata, "Raise Castbar Stratas", "Raise the Strata of Target & Focus frame so it does not appear behind the frames.")
+    CreateTooltipTwo(raiseTargetCastbarStrata, "Raise Castbar Stratas", "Raise the Strata of Target & Focus frame so it does not appear behind the frames.\n\nNote that this will NOT make the TargetFrame castbar appear above the FocusFrame, the setting above is required for that behaviour.")
 
     local enableLegacyComboPoints = CreateCheckbox("enableLegacyComboPoints", "Legacy Combo Points", guiMisc)
     enableLegacyComboPoints:SetPoint("TOPLEFT", raiseTargetCastbarStrata, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
@@ -7182,11 +7182,11 @@ local function guiMisc()
 
             local xOffsetSlider = CreateSlider(f, "x offset", -60, 10, 0.5, "legacyComboXPos", true, 140)
             xOffsetSlider:SetPoint("TOP", sizeSlider, "TOP", 0, -30)
-            CreateTooltipTwo(sizeSlider, "Legacy Combo Points X Offset")
+            CreateTooltipTwo(xOffsetSlider, "Legacy Combo Points X Offset")
 
             local yOffsetSlider = CreateSlider(f, "y offset", -60, 10, 0.5, "legacyComboYPos", true, 140)
             yOffsetSlider:SetPoint("TOP", xOffsetSlider, "TOP", 0, -30)
-            CreateTooltipTwo(sizeSlider, "Legacy Combo Points Y Offset")
+            CreateTooltipTwo(yOffsetSlider, "Legacy Combo Points Y Offset")
 
             local defaultButton = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
             defaultButton:SetSize(80, 22)
@@ -7219,7 +7219,7 @@ local function guiMisc()
     end
     BBF.OpenLegacyComboSliderWindow(true)
 
-    enableLegacyComboPoints:HookScript("OnMouseDown", function(self, button)
+    enableLegacyComboPoints:SetScript("OnMouseDown", function(self, button)
         if button == "RightButton" then
             BBF.OpenLegacyComboSliderWindow()
         end
@@ -7409,9 +7409,48 @@ local function guiMisc()
 
 
     local rpNames = CreateCheckbox("rpNames", "Roleplay Names (TRP3)", guiMisc)
-    rpNames:SetPoint("BOTTOMRIGHT", guiMisc, "BOTTOMRIGHT", -180, 10)
-    CreateTooltipTwo(rpNames, "Roleplay Names", "Enable for support for Total RP3 Roleplay Names and color.\n\nI will expand on this a little bit in a future patch with more settings and options.")
+    rpNames:SetPoint("BOTTOMRIGHT", guiMisc, "BOTTOMRIGHT", -220, 60)
+    CreateTooltipTwo(rpNames, "Roleplay Names", "Enable for support for Total RP3 Roleplay Names and color.")
 
+    local rpNamesFirst = CreateCheckbox("rpNamesFirst", "First", rpNames)
+    rpNamesFirst:SetPoint("LEFT", rpNames.text, "RIGHT", 0, 0)
+    CreateTooltipTwo(rpNamesFirst, "First Name (TRP3)", "Show RP First Name")
+
+    local rpNamesLast = CreateCheckbox("rpNamesLast", "Last", rpNames)
+    rpNamesLast:SetPoint("LEFT", rpNamesFirst.text, "RIGHT", 0, 0)
+    CreateTooltipTwo(rpNamesLast, "Last Name (TRP3)", "Show RP Last Name")
+
+    local rpNamesColor = CreateCheckbox("rpNamesColor", "RP Name Text Color (TRP3)", guiMisc)
+    rpNamesColor:SetPoint("TOPLEFT", rpNames, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(rpNamesColor, "Roleplay Name Text Color", "Color names in their Total RP3 Roleplay Color.")
+
+    rpNames:HookScript("OnClick", function(self)
+        CheckAndToggleCheckboxes(self)
+        BBF.AllNameChanges()
+    end)
+
+    rpNamesFirst:HookScript("OnClick", function(self)
+        BBF.AllNameChanges()
+    end)
+
+    rpNamesLast:HookScript("OnClick", function(self)
+        BBF.AllNameChanges()
+    end)
+
+    rpNamesColor:HookScript("OnClick", function(self)
+        BBF.AllNameChanges()
+    end)
+
+    local rpNamesHealthbarColor = CreateCheckbox("rpNamesHealthbarColor", "RP Healthbar Color (TRP3)", guiMisc)
+    rpNamesHealthbarColor:SetPoint("TOPLEFT", rpNamesColor, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(rpNamesHealthbarColor, "Roleplay Healthbar Color", "Color healthbars in their Total RP3 Roleplay Color.")
+
+    rpNamesHealthbarColor:HookScript("OnClick", function(self)
+        BBF.HookHealthbarColors()
+        if not self:GetChecked() then
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        end
+    end)
 
 end
 

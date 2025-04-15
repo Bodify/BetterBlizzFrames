@@ -9,6 +9,7 @@ local classColorsOn
 local colorPetAfterOwner
 local skipPlayer
 local retexturedBars
+local rpNames
 
 local OnSetVertexColorHookScript = function(r, g, b, a)
     return function(frame, red, green, blue, alpha, flag)
@@ -37,11 +38,34 @@ local function getUnitReaction(unit)
     end
 end
 
+local function GetRPNameColor(unit)
+    local player = AddOn_TotalRP3 and AddOn_TotalRP3.Player and AddOn_TotalRP3.Player.CreateFromUnit(unit)
+    if player then
+        local color = player:GetCustomColorForDisplay()
+        if color then
+            local r, g, b = color:GetRGB()
+            return r, g, b
+        end
+    end
+end
+
 local function getUnitColor(unit)
     if UnitIsPlayer(unit) then
-        local color = RAID_CLASS_COLORS[select(2, UnitClass(unit))]
-        if color then
-            return {r = color.r, g = color.g, b = color.b}, false
+        if TRP3_API and rpNames then
+            local r,g,b = GetRPNameColor(unit)
+            if r then
+                return {r = r, g = g, b = b}, false
+            else
+                local color = RAID_CLASS_COLORS[select(2, UnitClass(unit))]
+                if color then
+                    return {r = color.r, g = color.g, b = color.b}, false
+                end
+            end
+        else
+            local color = RAID_CLASS_COLORS[select(2, UnitClass(unit))]
+            if color then
+                return {r = color.r, g = color.g, b = color.b}, false
+            end
         end
     elseif colorPetAfterOwner and UnitIsUnit(unit, "pet") then
         -- Check if the unit is the player's pet and the setting is enabled
@@ -152,6 +176,7 @@ function BBF.UpdateFrames()
     retexturedBars = BetterBlizzFramesDB.changeUnitFrameHealthbarTexture
     colorPetAfterOwner = BetterBlizzFramesDB.colorPetAfterOwner
     skipPlayer = BetterBlizzFramesDB.classColorFramesSkipPlayer
+    rpNames = BetterBlizzFramesDB.rpNamesHealthbarColor
     if classColorsOn then
         BBF.HookHealthbarColors()
         if UnitExists("player") then updateFrameColorToggleVer(PlayerFrame.healthbar, "player") end
@@ -291,6 +316,38 @@ function BBF.HookHealthbarColors()
             end)
         end
 
+        if BetterBlizzFramesDB.rpNamesHealthbarColor and TRP3_API then
+            local function UpdateHealthColorWithRPName(frame)
+                if not frame or not frame.unit or frame.unit:find("nameplate") or frame:IsForbidden() then return end
+
+                local r, g, b = GetRPNameColor(frame.unit)
+                if r then
+                    frame.healthBar:SetStatusBarColor(r, g, b)
+                    frame.recolored = true
+                elseif frame.recolored then
+                    local color = RAID_CLASS_COLORS[select(2, UnitClass(frame.unit))]
+                    if color then
+                        frame.healthBar:SetStatusBarColor(color.r, color.g, color.b)
+                    end
+                    frame.recolored = nil
+                end
+            end
+
+            hooksecurefunc("CompactUnitFrame_UpdateHealthColor", UpdateHealthColorWithRPName)
+
+            -- Run once on existing party/raid frames
+            local function ApplyRPColorsToPartyFrames()
+                for i = 1, 4 do
+                    local frame = _G["CompactPartyFrameMember" .. i]
+                    if frame and frame:IsShown() then
+                        UpdateHealthColorWithRPName(frame)
+                    end
+                end
+            end
+
+            ApplyRPColorsToPartyFrames()
+        end
+
 --[[
         hooksecurefunc("HealthBar_OnValueChanged", function(self)
             if self.unit then
@@ -304,10 +361,88 @@ function BBF.HookHealthbarColors()
 
 ]]
 
+        healthbarsHooked = true
+    elseif not healthbarsHooked and BetterBlizzFramesDB.rpNamesHealthbarColor and TRP3_API then
+        retexturedBars = BetterBlizzFramesDB.changeUnitFrameHealthbarTexture
+        local function UpdateHealthColorWithRPName(frame)
+            if not frame or not frame.unit or frame.unit:find("nameplate") or frame:IsForbidden() then return end
+
+            local r, g, b = GetRPNameColor(frame.unit)
+            if r then
+                frame.healthBar:SetStatusBarColor(r, g, b)
+                frame.recolored = true
+            elseif frame.recolored then
+                local color = RAID_CLASS_COLORS[select(2, UnitClass(frame.unit))]
+                if color then
+                    frame.healthBar:SetStatusBarColor(color.r, color.g, color.b)
+                end
+                frame.recolored = nil
+            end
+        end
+
+        hooksecurefunc("CompactUnitFrame_UpdateHealthColor", UpdateHealthColorWithRPName)
+
+        -- Run once on existing party/raid frames
+        local function ApplyRPColorsToPartyFrames()
+            for i = 1, 4 do
+                local frame = _G["CompactPartyFrameMember" .. i]
+                if frame and frame:IsShown() then
+                    UpdateHealthColorWithRPName(frame)
+                end
+            end
+        end
+
+        ApplyRPColorsToPartyFrames()
+
+        local function getRPUnitColor(unit)
+            local r,g,b = GetRPNameColor(unit)
+            if r then
+                return {r = r, g = g, b = b}
+            end
+        end
+
+        local function UpdateRPHealthColor(frame, unit)
+            if not validUnits[unit] then return end
+            if UnitIsPlayer(unit) then
+                local color = getRPUnitColor(unit)
+                if color then
+                    frame:SetStatusBarDesaturated(true)
+                    frame:SetStatusBarColor(color.r, color.g, color.b)
+                    frame.colored = true
+                else
+                    if frame.colored then
+                        frame:SetStatusBarDesaturated(false)
+                        frame:SetStatusBarColor(1, 1, 1)
+                    end
+                end
+            else
+                if frame.colored then
+                    frame:SetStatusBarDesaturated(false)
+                    frame:SetStatusBarColor(1, 1, 1)
+                end
+            end
+        end
+
+        hooksecurefunc("UnitFrameHealthBar_Update", function(self, unit)
+            if unit then
+                UpdateRPHealthColor(self, unit)
+                UpdateRPHealthColor(TargetFrameToT.HealthBar, "targettarget")
+                UpdateRPHealthColor(FocusFrameToT.HealthBar, "focustarget")
+            end
+        end)
+
+        UpdateRPHealthColor(PlayerFrame.healthbar, "player")
+        if UnitExists("target") then
+            UpdateRPHealthColor(TargetFrame.healthbar, "target")
+        end
+        if UnitExists("focus") then
+            UpdateRPHealthColor(FocusFrame.healthbar, "focus")
+        end
 
         healthbarsHooked = true
     end
 end
+
 
 function BBF.PlayerReputationColor()
     local frame = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain

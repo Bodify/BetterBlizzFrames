@@ -643,14 +643,31 @@ function BBF.DarkmodeFrames(bypass)
         --end
     end
 
+    -- Dominos actionbars
     local NUM_ACTIONBAR_BUTTONS = NUM_ACTIONBAR_BUTTONS
     local DOMINOS_NUM_MAX_BUTTONS = 14 * NUM_ACTIONBAR_BUTTONS
-    for i = 1, DOMINOS_NUM_MAX_BUTTONS do
-        local button = _G["DominosActionButton" .. i]
-        if button then
-            local normalTexture = button:GetNormalTexture()
-            if normalTexture then
-                applySettings(normalTexture, desaturationValue, actionBarColor)
+    local actionBars = {
+        {name = "DominosActionButton", count = DOMINOS_NUM_MAX_BUTTONS},
+        {name = "MultiBar5ActionButton", count = 12},
+        {name = "MultiBar6ActionButton", count = 12},
+        {name = "MultiBar7ActionButton", count = 12},
+        {name = "MultiBarRightActionButton", count = 12},
+        {name = "MultiBarLeftActionButton", count = 12},
+        {name = "MultiBarBottomRightActionButton", count = 12},
+        {name = "MultiBarBottomLeftActionButton", count = 12},
+        {name = "DominosPetActionButton", count = 12},
+        {name = "DominosStanceButton", count = 12},
+    }
+
+    -- Loop through each bar and apply settings to its buttons
+    for _, bar in ipairs(actionBars) do
+        for i = 1, bar.count do
+            local button = _G[bar.name .. i]
+            if button then
+                local normalTexture = button:GetNormalTexture()
+                if normalTexture then
+                    applySettings(normalTexture, desaturationValue, actionBarColor)
+                end
             end
         end
     end

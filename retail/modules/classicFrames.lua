@@ -625,6 +625,11 @@ local function MakeClassicFrame(frame)
             elseif mode == 3 then -- Boss (Gold Winged)
                 playerElite:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Elite")
                 playerElite:SetDesaturated(false)
+            else
+                frame.ClassicFrame.Texture:SetTexture(defaultTex)
+                frameContainer.FrameFlash:SetTexture(flashTex)
+                frameContainer.FrameFlash:SetTexCoord(0.9453125, 0, 0, 0.181640625)
+                contentMain.StatusTexture:SetTexture("Interface\\CharacterFrame\\UI-Player-Status")
             -- elseif mode == 4 then -- Only 3 available for classic
             --     db.playerEliteFrameMode = 3
             --     playerElite:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Elite")

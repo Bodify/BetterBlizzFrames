@@ -1,3 +1,19 @@
+# BetterBlizzFrames 1.6.7b
+## Retail
+### New:
+- More TRP3 Stuff: TRP3 Healthbar Color, First & Last Name options, Name color option.
+### Tweak:
+- Added missing Dominos StanceButtons and PetActionButtons to Dark Mode.
+- Made Classic Castbar options color uninterruptible castbars on Target/Focus/Party gray as well.
+- StatusBar Text Format setting now also works with "NONE" as StatusText (for mouseover)
+### Bugfix:
+- Fix Dark Mode darkening all of the textures in Legacy Combo Points and not just the background like intended.
+- Fix names not being moved properly in combination with EasyFrames
+## Cata
+### Tweak:
+- Removed old coloring of heal prediction on TargetFrame since Blizzard have now fixed it and it is not needed.
+
+
 # BetterBlizzFrames 1.6.7
 ## Retail
 ### New:

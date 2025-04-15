@@ -328,8 +328,25 @@ local function UpdateFontStringPosition(frame)
     if not name or not name:GetParent() then return end
     local point, relativeTo, relativePoint, xOffset, yOffset = name:GetPoint()
     if point then
-        frame.bbfName:ClearAllPoints()
-        frame.bbfName:SetPoint(point, relativeTo, relativePoint, xOffset, yOffset)
+        if not name.bbfSetPointHook then
+            hooksecurefunc(name, "SetPoint", function()
+                frame.bbfName:ClearAllPoints()
+                frame.bbfName:SetPoint("CENTER", name, "CENTER", 0, 0)
+            end)
+            hooksecurefunc(frame.bbfName, "SetPoint", function(self)
+                if self.changing then return end
+                self.changing = true
+                self:ClearAllPoints()
+                self:SetPoint("CENTER", name, "CENTER", 0, 0)
+                self:SetJustifyH(name:GetJustifyH())
+                self.changing = false
+            end)
+            frame.bbfName:ClearAllPoints()
+            frame.bbfName:SetPoint("CENTER", name, "CENTER", 0, 0)
+            frame.bbfName:SetJustifyH(name:GetJustifyH())
+
+            name.bbfSetPointHook = true
+        end
     end
 end
 

@@ -103,8 +103,7 @@ local function AdjustBorderShieldSize(castBar)
     --end
 end
 
-local function AdjustFlash(castBar, isPlayer)
-    -- Set the base dimensions for reference (208x11 in your case)
+local function AdjustFlash(castBar)
     local baseWidth, baseHeight = 208, 11
     local baseOffsetX = 33
     local baseOffsetYTop = 23
@@ -119,15 +118,11 @@ local function AdjustFlash(castBar, isPlayer)
     local offsetYTop = baseOffsetYTop * heightScale
     local offsetYBottom = baseOffsetYBottom * heightScale
 
-    -- Set the flash texture
-    castBar.Flash:SetTexture(isPlayer and 130876 or 130875)
-
-    -- Clear any existing points and set new dynamic offsets
+    castBar.Flash:SetTexture(BetterBlizzFramesDB.classicCastbarsPlayerBorder and 130876 or 130875)
     castBar.Flash:ClearAllPoints()
     castBar.Flash:SetPoint("TOPLEFT", castBar, "TOPLEFT", -offsetX, offsetYTop)
     castBar.Flash:SetPoint("BOTTOMRIGHT", castBar, "BOTTOMRIGHT", offsetX, offsetYBottom)
 
-    -- Apply vertex color
     castBar.Flash:SetVertexColor(1, 0.702, 0, 1)
 end
 
@@ -141,9 +136,20 @@ function BBF.CastbarShakeAnimationCancel()
 end
 
 
-function BBF.ClassicCastbar(castBar, isParty, isPlayer)
+function BBF.ClassicCastbar(castBar, unitType)
+    local isParty = unitType == "party"
+    local isPlayer = unitType == "player"
+    local isTargets = unitType == "target" or unitType == "focus"
+
+    local textOffset
+    if isPlayer then
+        textOffset = BetterBlizzFramesDB.classicCastbarsPlayerBorder and 0 or 0.5
+    else
+        textOffset = 0.5
+    end
+
     castBar.Text:ClearAllPoints()
-    castBar.Text:SetPoint("CENTER", castBar, "CENTER", 0, isPlayer and 0 or 0.5)
+    castBar.Text:SetPoint("CENTER", castBar, "CENTER", 0, textOffset)
 
 
     castBar.Spark:SetBlendMode("ADD")
@@ -206,8 +212,8 @@ function BBF.ClassicCastbar(castBar, isParty, isPlayer)
             castBar.TextBorder:SetAlpha(0)
             if castBar == PlayerCastingBarFrame then
                 castBar.Text:ClearAllPoints()
-                castBar.Text:SetPoint("CENTER", castBar, "CENTER", 0, isPlayer and 0 or 0.5)
-                AdjustFlash(castBar, isPlayer)
+                castBar.Text:SetPoint("CENTER", castBar, "CENTER", 0, textOffset)
+                AdjustFlash(castBar)
             else
                 castBar.Flash:SetAlpha(0)
             end
@@ -244,8 +250,12 @@ function BBF.ClassicCastbar(castBar, isParty, isPlayer)
                 self:SetStatusBarColor(1, 0, 0, 1)
             end
 
-            if isPlayer and self.barType == "uninterruptable" then
+            if self.barType == "uninterruptable" then
                 self:SetStatusBarColor(0.7, 0.7, 0.7, 1)
+                if isTargets then
+                    castBar.Text:ClearAllPoints()
+                    castBar.Text:SetPoint("CENTER", castBar, "CENTER", 0, 1)
+                end
                 -- self.BorderShield:Show()
                 -- self.Border:SetAlpha(0)
                 -- AdjustBorderShieldSize(self)
@@ -260,7 +270,7 @@ function BBF.ClassicCastbar(castBar, isParty, isPlayer)
             self:SetStatusBarTexture(137012)
             self:SetStatusBarColor(0, 1, 0, 1)
             if castBar == PlayerCastingBarFrame then
-                AdjustFlash(castBar, isPlayer)
+                AdjustFlash(castBar)
             else
                 castBar.Flash:SetAlpha(0)
             end
@@ -329,7 +339,7 @@ function BBF.UpdateCastbars()
                     end
 
                     if BetterBlizzFramesDB.classicCastbarsParty then
-                        BBF.ClassicCastbar(spellbar, true)
+                        BBF.ClassicCastbar(spellbar, "party")
                         if BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeCastbars then
                             local vertexColor = BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeColor or 1
                             local castbarBorder = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.1) or 1
@@ -1302,13 +1312,12 @@ function BBF.ChangeCastbarSizes()
 
 
     if BetterBlizzFramesDB.classicCastbars then
-        BBF.ClassicCastbar(TargetFrameSpellBar)
-        BBF.ClassicCastbar(FocusFrameSpellBar)
+        BBF.ClassicCastbar(TargetFrameSpellBar, "target")
+        BBF.ClassicCastbar(FocusFrameSpellBar, "focus")
     end
     if BetterBlizzFramesDB.classicCastbarsPlayer then
-        local playerClassicBorder = BetterBlizzFramesDB.classicCastbarsPlayerBorder
-        BBF.ClassicCastbar(PlayerCastingBarFrame, nil, playerClassicBorder)
-        PlayerCastingBarFrame.Border:SetTexture(playerClassicBorder and 130874 or 130873)
+        BBF.ClassicCastbar(PlayerCastingBarFrame, "player")
+        PlayerCastingBarFrame.Border:SetTexture(BetterBlizzFramesDB.classicCastbarsPlayerBorder and 130874 or 130873)
     end
 end
 
