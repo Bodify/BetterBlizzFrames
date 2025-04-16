@@ -3813,7 +3813,7 @@ local function guiGeneralTab()
         end
     end)
 
-    local classColorFrames = CreateCheckbox("classColorFrames", "Class Color Frames", BetterBlizzFrames)
+    local classColorFrames = CreateCheckbox("classColorFrames", "Class Color Health", BetterBlizzFrames)
     classColorFrames:SetPoint("TOPLEFT", classicFrames, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     classColorFrames:HookScript("OnClick", function(self)
         if not self:GetChecked() then
@@ -3865,7 +3865,7 @@ local function guiGeneralTab()
 
     local classColorTargetNames = CreateCheckbox("classColorTargetNames", "Class Color Names", BetterBlizzFrames)
     classColorTargetNames:SetPoint("TOPLEFT", classColorFrames, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltipTwo(classColorTargetNames, "Class Color Names","Class color Player, Target & Focus Names.", nil)
+    CreateTooltipTwo(classColorTargetNames, "Class Color Names","Class color Player, Target & Focus Names.")
 
     local classColorLevelText = CreateCheckbox("classColorLevelText", "Level", classColorTargetNames)
     classColorLevelText:SetPoint("LEFT", classColorTargetNames.text, "RIGHT", 0, 0)
@@ -3885,16 +3885,28 @@ local function guiGeneralTab()
         classColorLevelText:SetAlpha(0)
     end
 
+    local classColorFrameTexture = CreateCheckbox("classColorFrameTexture", "Class Color FrameTexture", BetterBlizzFrames)
+    classColorFrameTexture:SetPoint("TOPLEFT", classColorTargetNames, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    classColorFrameTexture:HookScript("OnClick", function(self)
+        if not self:GetChecked() then
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        else
+            BBF.HookFrameTextureColor()
+        end
+    end)
+    CreateTooltipTwo(classColorFrameTexture, "Class Color FrameTexture","Class color the FrameTexture (Border) for Player, Target & Focus.")
+
+
     local centerNames = CreateCheckbox("centerNames", "Center Name", BetterBlizzFrames, nil, BBF.SetCenteredNamesCaller)
-    centerNames:SetPoint("TOPLEFT", classColorTargetNames, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltipTwo(centerNames, "Center Names", "Center the name on Player, Target & Focus frames.", nil)
+    centerNames:SetPoint("TOPLEFT", classColorFrameTexture, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(centerNames, "Center Names", "Center the name on Player, Target & Focus frames.")
     centerNames:HookScript("OnClick", function()
         StaticPopup_Show("BBF_CONFIRM_RELOAD")
     end)
 
     local removeRealmNames = CreateCheckbox("removeRealmNames", "Hide Realm", BetterBlizzFrames)
     removeRealmNames:SetPoint("LEFT", centerNames.text, "RIGHT", 0, 0)
-    CreateTooltipTwo(removeRealmNames, "Hide Realm Indicator", "Hide realm name and different realm indicator \"(*)\" from Target, Focus & Party frames.", nil)
+    CreateTooltipTwo(removeRealmNames, "Hide Realm Indicator", "Hide realm name and different realm indicator \"(*)\" from Target, Focus & Party frames.")
 
     local formatStatusBarText = CreateCheckbox("formatStatusBarText", "Format Numbers", BetterBlizzFrames, nil, BBF.HookStatusBarText)
     formatStatusBarText:SetPoint("TOPLEFT", centerNames, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
@@ -3919,6 +3931,15 @@ local function guiGeneralTab()
     local hideCombatGlow = CreateCheckbox("hideCombatGlow", "Hide Combat Glow", BetterBlizzFrames, nil, BBF.HideFrames)
     hideCombatGlow:SetPoint("TOPLEFT", hidePrestigeBadge, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(hideCombatGlow, "Hide the red combat around Player, Target & Focus.|A:UI-HUD-UnitFrame-Player-PortraitOn-InCombat:30:80|a")
+
+    local hideUnitFrameShadow = CreateCheckbox("hideUnitFrameShadow", "Hide Shadow", BetterBlizzFrames, nil, BBF.HideFrames)
+    hideUnitFrameShadow:SetPoint("LEFT", hideCombatGlow.text, "RIGHT", 0, 0)
+    CreateTooltipTwo(hideUnitFrameShadow, "Hide Shadow", "Hide shadow texture behind name on Player, Target & Focus frames.\n\n(Target/Focus Reputation Color shows in front of this as well, maybe disable those as well)")
+    hideUnitFrameShadow:HookScript("OnClick", function(self)
+        if not self:GetChecked() then
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        end
+    end)
 
     local hideLevelText = CreateCheckbox("hideLevelText", "Hide Level 80 Text", BetterBlizzFrames, nil, BBF.HideFrames)
     hideLevelText:SetPoint("TOPLEFT", hideCombatGlow, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
@@ -3957,17 +3978,8 @@ local function guiGeneralTab()
     -- hidePvpIcon:SetPoint("TOPLEFT", hideLevelText, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     -- CreateTooltip(hidePvpIcon, "Hide PvP Icon on Player, Target & Focus|A:UI-HUD-UnitFrame-Player-PVP-FFAIcon:44:28|a")
 
-    local hideUnitFrameShadow = CreateCheckbox("hideUnitFrameShadow", "Hide Shadow", BetterBlizzFrames, nil, BBF.HideFrames)
-    hideUnitFrameShadow:SetPoint("TOPLEFT", hideLevelText, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltipTwo(hideUnitFrameShadow, "Hide Shadow", "Hide shadow texture behind name on Player, Target & Focus frames.\n\n(Target/Focus Reputation Color shows in front of this as well, maybe disable those as well)")
-    hideUnitFrameShadow:HookScript("OnClick", function(self)
-        if not self:GetChecked() then
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
-        end
-    end)
-
     local hideRareDragonTexture = CreateCheckbox("hideRareDragonTexture", "Hide Dragon", BetterBlizzFrames, nil, BBF.HideFrames)
-    hideRareDragonTexture:SetPoint("TOPLEFT", hideUnitFrameShadow, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    hideRareDragonTexture:SetPoint("TOPLEFT", hideLevelText, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(hideRareDragonTexture, "Hide Elite Dragon texture on Target & Focus|A:UI-HUD-UnitFrame-Target-PortraitOn-Boss-Gold:38:28|a")
 
     local hideThreatOnFrame = CreateCheckbox("hideThreatOnFrame", "Hide Threat", BetterBlizzFrames, nil, BBF.HideFrames)
@@ -7447,6 +7459,17 @@ local function guiMisc()
 
     rpNamesHealthbarColor:HookScript("OnClick", function(self)
         BBF.HookHealthbarColors()
+        if not self:GetChecked() then
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        end
+    end)
+
+    local rpNamesFrameTextureColor = CreateCheckbox("rpNamesFrameTextureColor", "RP FrameTexture Color (TRP3)", guiMisc)
+    rpNamesFrameTextureColor:SetPoint("TOPLEFT", rpNamesHealthbarColor, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(rpNamesFrameTextureColor, "Roleplay FrameTexture Color", "Color the FrameTexture of Player/Target/Focus in their Total RP3 Roleplay Color.")
+
+    rpNamesFrameTextureColor:HookScript("OnClick", function(self)
+        BBF.HookFrameTextureColor()
         if not self:GetChecked() then
             StaticPopup_Show("BBF_CONFIRM_RELOAD")
         end

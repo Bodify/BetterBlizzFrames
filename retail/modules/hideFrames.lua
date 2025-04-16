@@ -495,10 +495,12 @@ function BBF.HideFrames()
             end
             if MonkHarmonyBarFrame and englishClass == "MONK" then
                 if BetterBlizzFramesDB.hidePlayerPowerNoMonk then
-                    if originalResourceParent then MonkHarmonyBarFrame:SetParent(originalResourceParent) end
+                    if originalResourceParent then MonkHarmonyBarFrame:SetAlpha(originalResourceParent); MonkHarmonyBarFrame:EnableMouse(true) end
                 else
-                    if not originalResourceParent then originalResourceParent = MonkHarmonyBarFrame:GetParent() end
-                    MonkHarmonyBarFrame:SetParent(hiddenFrame)
+                    if not originalResourceParent then originalResourceParent = MonkHarmonyBarFrame:GetAlpha() end
+                    --MonkHarmonyBarFrame:SetParent(hiddenFrame)
+                    MonkHarmonyBarFrame:SetAlpha(0)
+                    MonkHarmonyBarFrame:EnableMouse(false)
                 end
             end
             if MageArcaneChargesFrame and englishClass == "MAGE" then

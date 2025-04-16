@@ -484,3 +484,92 @@ function BBF.PlayerReputationColor()
         end
     end
 end
+
+
+
+
+function BBF.HookFrameTextureColor()
+    if BBF.FrameTextureColor then return end
+    local classColorFrameTexture = BetterBlizzFramesDB.classColorFrameTexture
+    local rpColor = BetterBlizzFramesDB.rpNamesFrameTextureColor
+    if not classColorFrameTexture and not rpColor then return end
+
+
+    local function DesaturateAndColorTexture(texture, unit)
+        if not UnitExists(unit) then return end
+
+        local r, g, b = 1, 1, 1
+        local desaturate = false
+        local colored = false
+
+        if UnitIsPlayer(unit) then
+            if TRP3_API and rpColor then
+                local rpR, rpG, rpB = GetRPNameColor(unit)
+                if rpR then
+                    r, g, b = rpR, rpG, rpB
+                    desaturate = true
+                    colored = true
+                end
+            end
+
+            if not colored and classColorFrameTexture then
+                local _, class = UnitClass(unit)
+                local color = RAID_CLASS_COLORS[class]
+                if color then
+                    r, g, b = color.r, color.g, color.b
+                    desaturate = true
+                    colored = true
+                end
+            end
+        end
+
+        texture:SetDesaturated(desaturate)
+        texture.changing = true
+        texture:SetVertexColor(r, g, b)
+        texture.changing = false
+    end
+
+
+    local function SetupFrame(frame, unit)
+        if not frame then return end
+
+        -- Assign unit and get texture
+        local texture = frame.TargetFrameContainer and frame.TargetFrameContainer.FrameTexture
+        or frame.PlayerFrameContainer and frame.PlayerFrameContainer.FrameTexture
+        or frame.FrameTexture
+
+        -- Hook SetVertexColor
+        if not texture.bbfColorHook then
+            hooksecurefunc(texture, "SetVertexColor", function(self)
+                if self.changing then return end
+                DesaturateAndColorTexture(self, unit)
+            end)
+            texture.bbfColorHook = true
+        end
+
+        DesaturateAndColorTexture(texture, unit)
+    end
+
+    -- Setup all frames
+    SetupFrame(PlayerFrame, "player")
+    SetupFrame(TargetFrame, "target")
+    SetupFrame(FocusFrame, "focus")
+    SetupFrame(TargetFrameToT, "targettarget")
+    SetupFrame(FocusFrameToT, "focustarget")
+
+    -- Event frame to watch for target/focus changes
+    local f = CreateFrame("Frame")
+    f:RegisterEvent("PLAYER_TARGET_CHANGED")
+    f:RegisterEvent("PLAYER_FOCUS_CHANGED")
+    f:SetScript("OnEvent", function(self, event)
+        if event == "PLAYER_TARGET_CHANGED" then
+            DesaturateAndColorTexture(TargetFrame.TargetFrameContainer.FrameTexture, "target")
+            DesaturateAndColorTexture(TargetFrameToT.FrameTexture, "targettarget")
+        else
+            DesaturateAndColorTexture(FocusFrame.TargetFrameContainer.FrameTexture, "focus")
+            DesaturateAndColorTexture(FocusFrameToT.FrameTexture, "focustarget")
+        end
+    end)
+
+    BBF.FrameTextureColor = true
+end

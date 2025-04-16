@@ -1,3 +1,13 @@
+# BetterBlizzFrames 1.6.7c
+## Retail
+### New:
+- Class Color FrameTexture (General, All Frames) - Class colors the border texture on Player/Target/FocusFrame.
+- TRP3 Color FrameTexture (Misc)
+### Bugfix:
+- Fix hiding Monk Resource causing lua error on zone change loading screens.
+
+
+
 # BetterBlizzFrames 1.6.7b
 ## Retail
 ### New:
