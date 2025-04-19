@@ -1,7 +1,13 @@
 # BetterBlizzFrames 1.6.7e
+## All versions:
+### Bugfix:
+- Fix Pet Castbar not being created unless Party Castbars were enabled.
 ## Retail:
 ### Bugfix:
 - Fix issue with healthbar colors when combining class color, TRP3 color and retexturing healthbars.
+## Classic Era & Cata:
+### Bugfix:
+- Fix text position on pet castbar
 
 # BetterBlizzFrames 1.6.7d
 ## All versions:

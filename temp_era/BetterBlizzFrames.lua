@@ -1427,7 +1427,7 @@ Frame:SetScript("OnEvent", function(...)
                 BBF.HideFrames()
                 --BBF.HookUnitFrameName()
             end)
-            if BetterBlizzFramesDB.partyCastbars then
+            if BetterBlizzFramesDB.partyCastbars or BetterBlizzFramesDB.petCastbar then
                 BBF.CreateCastbars()
             end
 

@@ -3792,7 +3792,7 @@ Frame:SetScript("OnEvent", function(...)
                 BBF.ChangeCastbarSizes()
             end)
             BBF.HideFrames()
-            if BetterBlizzFramesDB.partyCastbars then
+            if BetterBlizzFramesDB.partyCastbars or BetterBlizzFramesDB.petCastbar then
                 BBF.CreateCastbars()
             end
 
