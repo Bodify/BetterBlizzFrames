@@ -189,16 +189,20 @@ function BBF.UpdateFrames()
         if UnitExists("party2") then updateFrameColorToggleVer(PartyFrame.MemberFrame2.HealthBarContainer.HealthBar, "party2") end
         if UnitExists("party3") then updateFrameColorToggleVer(PartyFrame.MemberFrame3.HealthBarContainer.HealthBar, "party3") end
         if UnitExists("party4") then updateFrameColorToggleVer(PartyFrame.MemberFrame4.HealthBarContainer.HealthBar, "party4") end
+        BBF.HealthColorOn = true
     else
-        if UnitExists("player") then resetFrameColor(PlayerFrame.healthbar, "player") end
-        if UnitExists("target") then resetFrameColor(TargetFrame.healthbar, "target") end
-        if UnitExists("focus") then resetFrameColor(FocusFrame.healthbar, "focus") end
-        if UnitExists("targettarget") then resetFrameColor(TargetFrameToT.HealthBar, "targettarget") end
-        if UnitExists("focustarget") then resetFrameColor(FocusFrameToT.HealthBar, "focustarget") end
-        if UnitExists("party1") then resetFrameColor(PartyFrame.MemberFrame1.HealthBarContainer.HealthBar, "party1") end
-        if UnitExists("party2") then resetFrameColor(PartyFrame.MemberFrame2.HealthBarContainer.HealthBar, "party2") end
-        if UnitExists("party3") then resetFrameColor(PartyFrame.MemberFrame3.HealthBarContainer.HealthBar, "party3") end
-        if UnitExists("party4") then resetFrameColor(PartyFrame.MemberFrame4.HealthBarContainer.HealthBar, "party4") end
+        if BBF.HealthColorOn then
+            if UnitExists("player") then resetFrameColor(PlayerFrame.healthbar, "player") end
+            if UnitExists("target") then resetFrameColor(TargetFrame.healthbar, "target") end
+            if UnitExists("focus") then resetFrameColor(FocusFrame.healthbar, "focus") end
+            if UnitExists("targettarget") then resetFrameColor(TargetFrameToT.HealthBar, "targettarget") end
+            if UnitExists("focustarget") then resetFrameColor(FocusFrameToT.HealthBar, "focustarget") end
+            if UnitExists("party1") then resetFrameColor(PartyFrame.MemberFrame1.HealthBarContainer.HealthBar, "party1") end
+            if UnitExists("party2") then resetFrameColor(PartyFrame.MemberFrame2.HealthBarContainer.HealthBar, "party2") end
+            if UnitExists("party3") then resetFrameColor(PartyFrame.MemberFrame3.HealthBarContainer.HealthBar, "party3") end
+            if UnitExists("party4") then resetFrameColor(PartyFrame.MemberFrame4.HealthBarContainer.HealthBar, "party4") end
+            BBF.HealthColorOn = nil
+        end
     end
     if colorPetAfterOwner then
         if UnitExists("pet") then updateFrameColorToggleVer(PetFrame.healthbar, "pet") end

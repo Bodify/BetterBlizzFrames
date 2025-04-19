@@ -1,3 +1,9 @@
+# BetterBlizzFrames 1.6.7f
+## Retail
+### Tweak:
+- Fix a healthbar color function running on login unintentionally potentially causing issues in combination with other color addons.
+
+
 # BetterBlizzFrames 1.6.7e
 ## All versions:
 ### Bugfix:
@@ -8,6 +14,7 @@
 ## Classic Era & Cata:
 ### Bugfix:
 - Fix text position on pet castbar
+
 
 # BetterBlizzFrames 1.6.7d
 ## All versions:

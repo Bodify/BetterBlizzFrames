@@ -7464,9 +7464,7 @@ local function guiMisc()
 
     rpNamesHealthbarColor:HookScript("OnClick", function(self)
         BBF.HookHealthbarColors()
-        if not self:GetChecked() then
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
-        end
+        StaticPopup_Show("BBF_CONFIRM_RELOAD")
     end)
 
     local rpNamesFrameTextureColor = CreateCheckbox("rpNamesFrameTextureColor", "RP FrameTexture Color (TRP3)", guiMisc)
