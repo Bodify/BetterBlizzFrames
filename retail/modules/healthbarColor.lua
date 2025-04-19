@@ -39,6 +39,7 @@ local function getUnitReaction(unit)
 end
 
 local function GetRPNameColor(unit)
+    if not TRP3_API.globals.player_realm_id then return end
     local player = AddOn_TotalRP3 and AddOn_TotalRP3.Player and AddOn_TotalRP3.Player.CreateFromUnit(unit)
     if player then
         local color = player:GetCustomColorForDisplay()
@@ -494,12 +495,16 @@ function BBF.HookFrameTextureColor()
     local rpColor = BetterBlizzFramesDB.rpNamesFrameTextureColor
     if not classColorFrameTexture and not rpColor then return end
 
+    local darkmode = BetterBlizzFramesDB.darkModeUi
+    local darkmodeColor = BetterBlizzFramesDB.darkModeColor
+
 
     local function DesaturateAndColorTexture(texture, unit)
         if not UnitExists(unit) then return end
 
-        local r, g, b = 1, 1, 1
-        local desaturate = false
+        local color = darkmode and darkmodeColor or 1
+        local r, g, b = color, color, color
+        local desaturate = darkmode and true or false
         local colored = false
 
         if UnitIsPlayer(unit) then
@@ -556,6 +561,10 @@ function BBF.HookFrameTextureColor()
     SetupFrame(FocusFrame, "focus")
     SetupFrame(TargetFrameToT, "targettarget")
     SetupFrame(FocusFrameToT, "focustarget")
+
+    C_Timer.After(1, function()
+        SetupFrame(PlayerFrame, "player")
+    end)
 
     -- Event frame to watch for target/focus changes
     local f = CreateFrame("Frame")

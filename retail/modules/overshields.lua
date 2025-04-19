@@ -77,7 +77,11 @@ local function BBF_UnitFrameHealPredictionBars_Update(frame, classicOffset)
 end
 
 local function BBF_CompactUnitFrame_UpdateHealPrediction(frame)
-    if frame.unit and frame.unit:find("nameplate") then return end
+    if not frame.unit then return end
+    if frame.unit:find("nameplate") then return end
+    -- if not frame:GetName():find("CompactPartyFrameMember") then
+    --     return
+    -- end
     local absorbBar = frame.totalAbsorb
     if not absorbBar or absorbBar:IsForbidden() then
         return

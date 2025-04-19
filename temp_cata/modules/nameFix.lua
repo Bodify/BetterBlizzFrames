@@ -76,6 +76,7 @@ local hidePetName
 local isAddonLoaded = C_AddOns.IsAddOnLoaded
 local changeUnitFrameFont
 local targetAndFocusArenaNamePartyOverride
+local showLastNameNpc
 
 function BBF.UpdateUserTargetSettings()
     hidePartyNames = BetterBlizzFramesDB.hidePartyNames
@@ -96,6 +97,7 @@ function BBF.UpdateUserTargetSettings()
     hidePetName = BetterBlizzFramesDB.hidePetName
     changeUnitFrameFont = BetterBlizzFramesDB.changeUnitFrameFont
     targetAndFocusArenaNamePartyOverride = BetterBlizzFramesDB.targetAndFocusArenaNamePartyOverride
+    showLastNameNpc = BetterBlizzFramesDB.showLastNameNpc
 end
 
 local validPartyUnits = {
@@ -117,11 +119,29 @@ local function GetSpecName(unitGUID)
     return nil
 end
 
+local function ShowLastNameOnlyNpc(frame, name)
+    local creatureType = frame.unit and UnitCreatureType(frame.unit)
+    if creatureType == "Totem" then
+        -- Use first word (e.g., "Stoneclaw" from "Stoneclaw Totem")
+        local firstWord = name:match("^[^%s%-]+")
+        return firstWord
+    else
+        -- Use last word (e.g., "Guardian" from "Frostwolf Guardian")
+        local lastWord = name:match("([^%s%-]+)$")
+        return lastWord
+    end
+end
+
 local function GetNameWithoutRealm(frame)
     local name = GetUnitName(frame.unit)
     if name then
-        name = string.gsub(name, " %(%*%)$", "")
-        return name
+        if showLastNameNpc and not UnitIsPlayer(frame.unit) then
+            local lastName = ShowLastNameOnlyNpc(frame, name)
+            return lastName
+        else
+            name = string.gsub(name, " %(%*%)$", "")
+            return name
+        end
     end
     return nil
 end
@@ -327,6 +347,7 @@ local function UpdateFontStringPosition(frame)
             hooksecurefunc(name, "SetPoint", function()
                 frame.bbfName:ClearAllPoints()
                 frame.bbfName:SetPoint("CENTER", name, "CENTER", 0, 0)
+                frame.bbfName:SetJustifyH(name:GetJustifyH())
             end)
             hooksecurefunc(frame.bbfName, "SetPoint", function(self)
                 if self.changing then return end
@@ -932,6 +953,8 @@ local function TargetFrameNameChanges(frame)
         end
         if removeRealmNames then
             frame.bbfName:SetText(GetNameWithoutRealm(frame))
+        elseif showLastNameNpc and not UnitIsPlayer(frame.unit) then
+            frame.bbfName:SetText(ShowLastNameOnlyNpc(frame, frame.name:GetText()))
         else
             frame.bbfName:SetText(frame.name:GetText())
         end
@@ -1020,6 +1043,8 @@ local function FocusFrameNameChanges(frame)
         end
         if removeRealmNames then
             frame.bbfName:SetText(GetNameWithoutRealm(frame))
+        elseif showLastNameNpc and not UnitIsPlayer(frame.unit) then
+            frame.bbfName:SetText(ShowLastNameOnlyNpc(frame, frame.name:GetText()))
         else
             frame.bbfName:SetText(frame.name:GetText())
         end
@@ -1051,6 +1076,8 @@ local function TargetFrameToTNameChanges(frame)
         end
         if removeRealmNames then
             frame.bbfName:SetText(GetNameWithoutRealm(frame))
+        elseif showLastNameNpc and not UnitIsPlayer(frame.unit) then
+            frame.bbfName:SetText(ShowLastNameOnlyNpc(frame, frame.name:GetText()))
         else
             frame.bbfName:SetText(frame.name:GetText())
         end
@@ -1082,6 +1109,8 @@ local function FocusFrameToTNameChanges(frame)
         end
         if removeRealmNames then
             frame.bbfName:SetText(GetNameWithoutRealm(frame))
+        elseif showLastNameNpc and not UnitIsPlayer(frame.unit) then
+            frame.bbfName:SetText(ShowLastNameOnlyNpc(frame, frame.name:GetText()))
         else
             frame.bbfName:SetText(frame.name:GetText())
         end

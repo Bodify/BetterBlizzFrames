@@ -851,6 +851,15 @@ function BBF.ShowPlayerCastBarIcon()
     end
 end
 
+local function UpdateSparkPosition(castBar)
+    local val = castBar:GetValue()
+    local minVal, maxVal = castBar:GetMinMaxValues()
+    --local progressPercent = castBar.value / castBar.maxValue
+    local progressPercent = val / maxVal
+    local newX = castBar:GetWidth() * progressPercent
+    castBar.Spark:ClearAllPoints()
+    castBar.Spark:SetPoint("CENTER", castBar, "LEFT", newX, -0.5)
+end
 
 local function CastingBarFrameMiscAdjustments()
     -- InterruptGlow
@@ -865,7 +874,19 @@ local function CastingBarFrameMiscAdjustments()
     end
     --CastingBarFrame.InterruptGlow:SetSize(newInterruptGlowWidth, newInterruptGlowHeight)
 
-    CastingBarFrame.Spark:SetSize(8, BetterBlizzFramesDB.playerCastBarHeight + 9)
+    CastingBarFrame.Spark:SetSize(32, BetterBlizzFramesDB.playerCastBarHeight + 15)
+
+
+    if not CastingBarFrame.sparkHooked then
+        CastingBarFrame:HookScript("OnUpdate", function(self)
+            --self.Spark:SetTexture(130877)
+            self.Spark:SetSize(32,BetterBlizzFramesDB.playerCastBarHeight + 15)
+            UpdateSparkPosition(self)
+        end)
+        CastingBarFrame.sparkHooked = true
+    end
+
+
     --CastingBarFrame.StandardGlow:SetSize(37, BetterBlizzFramesDB.playerCastBarHeight + 1)
 end
 

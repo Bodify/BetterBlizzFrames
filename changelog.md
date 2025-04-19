@@ -1,3 +1,18 @@
+# BetterBlizzFrames 1.6.7d
+## All versions:
+### New:
+- "Only show last name of NPCs" setting (Misc).
+## Retail:
+### Tweak:
+- Format numbers setting now also formats billions. 12766 M -> 12.8 B
+- Made Class Color FrameTexture setting compatible with dark mode setting (if enabled), so that when no class color is available it darkens the frame instead of its original color.
+## Classic Era/SoD
+### Bugfix:
+- Fix Player Castbar Spark being smaller and out of position due to it being different than the Cataclysm one and requiring tweaks.
+
+
+
+
 # BetterBlizzFrames 1.6.7c
 ## Retail
 ### New:
