@@ -409,15 +409,20 @@ function BBF.HookHealthbarColors()
                 if color then
                     frame:SetStatusBarDesaturated(true)
                     frame:SetStatusBarColor(color.r, color.g, color.b)
-                    frame.colored = true
                 else
-                    if frame.colored then
+                    if retexturedBars then
+                        frame:SetStatusBarDesaturated(true)
+                        frame:SetStatusBarColor(0, 1, 0)
+                    else
                         frame:SetStatusBarDesaturated(false)
                         frame:SetStatusBarColor(1, 1, 1)
                     end
                 end
             else
-                if frame.colored then
+                if retexturedBars then
+                    frame:SetStatusBarDesaturated(true)
+                    frame:SetStatusBarColor(0, 1, 0)
+                else
                     frame:SetStatusBarDesaturated(false)
                     frame:SetStatusBarColor(1, 1, 1)
                 end
@@ -439,6 +444,9 @@ function BBF.HookHealthbarColors()
         if UnitExists("focus") then
             UpdateRPHealthColor(FocusFrame.healthbar, "focus")
         end
+        C_Timer.After(1, function()
+            UpdateRPHealthColor(PlayerFrame.healthbar, "player")
+        end)
 
         healthbarsHooked = true
     end

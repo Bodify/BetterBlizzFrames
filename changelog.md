@@ -1,3 +1,8 @@
+# BetterBlizzFrames 1.6.7e
+## Retail:
+### Bugfix:
+- Fix issue with healthbar colors when combining class color, TRP3 color and retexturing healthbars.
+
 # BetterBlizzFrames 1.6.7d
 ## All versions:
 ### New:
