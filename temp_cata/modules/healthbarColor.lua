@@ -10,9 +10,9 @@ local classColorsOn
 local colorPetAfterOwner
 
 local function getUnitReaction(unit)
-    if UnitIsFriend("player", unit) then
+    if UnitIsFriend(unit, "player") then
         return "FRIENDLY"
-    elseif UnitIsEnemy("player", unit) then
+    elseif UnitIsEnemy(unit, "player") then
         return "HOSTILE"
     else
         return "NEUTRAL"
