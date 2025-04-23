@@ -1974,7 +1974,7 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
         button.npcData = npc
         local displayText
         if npc.id then
-            displayText = string.format("%s (%d)", (npc.name or "Name Missing"), npc.id)  -- Display as "Name (id)"
+            displayText = string.format("%s (%d)", (npc.name or C_Spell.GetSpellName(npc.id) or "Name Missing"), npc.id)  -- Display as "Name (id)"
         else
             displayText = npc.name  -- Display just the name if there's no id
         end
@@ -2347,6 +2347,250 @@ SettingsPanel:HookScript("OnShow", function()
         BBF.auraBlacklistDelayedUpdate = nil
     end
 end)
+
+local function CreateCDManagerList(parent)
+    local scrollFrame = CreateFrame("ScrollFrame", nil, parent, "UIPanelScrollFrameTemplate")
+    local width, height = 450, 510
+    scrollFrame:SetSize(width, height)
+    scrollFrame:SetPoint("TOPLEFT", 185, -14)
+
+    local content = CreateFrame("Frame", nil, scrollFrame)
+    content:SetSize(width, height)
+    scrollFrame:SetScrollChild(content)
+
+    local spellText = parent:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+    spellText:SetPoint("BOTTOMLEFT", scrollFrame, "TOPLEFT", 10, 3)
+    spellText:SetText("Spell")
+
+    local priorityText = parent:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+    priorityText:SetPoint("BOTTOMLEFT", scrollFrame, "TOP", 108, 3)
+    priorityText:SetText("Priority")
+
+    local blacklistIcon = parent:CreateTexture(nil, "OVERLAY")
+    blacklistIcon:SetAtlas("lootroll-toast-icon-pass-up")
+    blacklistIcon:SetPoint("BOTTOM", scrollFrame, "TOPRIGHT", -29, 1)
+    blacklistIcon:SetSize(22, 22)
+    CreateTooltip(blacklistIcon, "Hide Spell Icon |A:lootroll-toast-icon-pass-up:22:22|a")
+
+    local framePool = {}
+
+    local function refreshList()
+        if not BBF.cooldownManagerSpells or BBF.cdManagerNeedsUpdate then
+            BBF.UpdateCooldownManagerSpellList(true)
+        end
+        local baseSpells = {}
+        local blacklist = BetterBlizzFramesDB.cdManagerBlacklist or {}
+        local priorityList = BetterBlizzFramesDB.cdManagerPriorityList or {}
+
+        for _, id in ipairs(BBF.cooldownManagerSpells or {}) do
+            baseSpells[id] = true
+        end
+
+        local fullList = {}
+        for _, id in ipairs(BBF.cooldownManagerSpells or {}) do table.insert(fullList, id) end
+        for idStr, _ in pairs(blacklist) do
+            local id = tonumber(idStr)
+            if id and not baseSpells[id] then
+                table.insert(fullList, id)
+            end
+        end
+        for idStr, _ in pairs(priorityList) do
+            local id = tonumber(idStr)
+            if id and not baseSpells[id] then
+                table.insert(fullList, id)
+            end
+        end
+
+        for i, button in ipairs(framePool) do button:Hide() end
+
+        for i, spellID in ipairs(fullList) do
+            local info = C_Spell.GetSpellInfo(spellID)
+            if info then
+                local name = info.name
+                local icon = info.iconID or info.originalIconID
+                local isCustom = not baseSpells[spellID]
+
+                local button = framePool[i]
+                if not button then
+                    button = CreateFrame("Frame", nil, content)
+                    button:SetSize(width - 12, 20)
+                    button:SetPoint("TOPLEFT", 10, -(i - 1) * 20)
+
+                    local bg = button:CreateTexture(nil, "BACKGROUND")
+                    bg:SetAllPoints()
+                    button.bg = bg
+
+                    local iconTex = button:CreateTexture(nil, "ARTWORK")
+                    iconTex:SetSize(20, 20)
+                    iconTex:SetPoint("LEFT")
+                    button.iconTex = iconTex
+
+                    local label = button:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+                    label:SetPoint("LEFT", iconTex, "RIGHT", 5, 0)
+                    button.label = label
+
+                    local checkbox = CreateFrame("CheckButton", nil, button, "UICheckButtonTemplate")
+                    checkbox:SetSize(24, 24)
+                    checkbox:SetPoint("RIGHT", button, "RIGHT", -15, 0)
+                    CreateTooltipTwo(checkbox, "Hide Spell Icon |A:lootroll-toast-icon-pass-up:22:22|a", "Hide the spell icon from Cooldown Manager.", nil, "ANCHOR_TOPRIGHT")
+                    button.checkbox = checkbox
+
+                    local slider = CreateFrame("Slider", nil, button, "OptionsSliderTemplate")
+                    slider:SetSize(80, 16)
+                    slider:SetPoint("RIGHT", checkbox, "LEFT", -20, 0)
+                    slider:SetMinMaxValues(0, 20)
+                    slider:SetValueStep(1)
+                    slider:SetObeyStepOnDrag(true)
+                    slider.Low:SetText("")
+                    slider.High:SetText("")
+                    CreateTooltipTwo(slider, "Priority value", "Highest value starts from the left.\n\n0 is disabled and default position.", nil, "ANCHOR_TOPRIGHT")
+                    button.slider = slider
+
+                    local text = slider:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+                    text:SetPoint("RIGHT", slider, "LEFT", -5, 0)
+                    button.sliderText = text
+
+                    local del = CreateFrame("Button", nil, button, "UIPanelButtonTemplate")
+                    del:SetSize(18, 18)
+                    del:SetText("X")
+                    del:SetPoint("RIGHT", button, "RIGHT", 0, 0)
+                    button.del = del
+                    CreateTooltipTwo(del, "Delete", "Remove custom Spell from list")
+
+                    framePool[i] = button
+                end
+
+                button.iconTex:SetTexture(icon)
+                button.label:SetText(name .. " (" .. spellID .. ")")
+
+                local isBlacklisted = BetterBlizzFramesDB.cdManagerBlacklist[spellID]
+                local priority = BetterBlizzFramesDB.cdManagerPriorityList[spellID]
+
+                button.checkbox:SetChecked(isBlacklisted or false)
+                if isBlacklisted then
+                    button.slider:Disable()
+                    button.slider:SetAlpha(0.3)
+                else
+                    button.slider:Enable()
+                    button.slider:SetAlpha(1)
+                end
+
+                local value = priority or 0
+                button.slider:SetValue(value)
+                button.sliderText:SetText(value)
+                if value == 0 then
+                    button.slider:SetAlpha(0.3)
+                else
+                    button.slider:SetAlpha(1)
+                end
+
+                button.checkbox:SetScript("OnClick", function(self)
+                    if self:GetChecked() then
+                        BetterBlizzFramesDB.cdManagerBlacklist[spellID] = true
+                        BetterBlizzFramesDB.cdManagerPriorityList[spellID] = nil
+                    else
+                        BetterBlizzFramesDB.cdManagerBlacklist[spellID] = false
+                    end
+                    refreshList()
+                    BBF.RefreshCooldownManagerIcons()
+                end)
+
+                button.slider:SetScript("OnValueChanged", function(self, value)
+                    local v = math.floor(value + 0.5)
+                    self:SetValue(v)
+                    button.sliderText:SetText(v)
+
+                    if v == 0 then
+                        BetterBlizzFramesDB.cdManagerPriorityList[spellID] = nil
+                        self:SetAlpha(0.3)
+                    else
+                        BetterBlizzFramesDB.cdManagerPriorityList[spellID] = v
+                        self:SetAlpha(1)
+                    end
+
+                    BBF.RefreshCooldownManagerIcons()
+                end)
+
+                if isCustom then
+                    button.del:SetScript("OnClick", function()
+                        BetterBlizzFramesDB.cdManagerBlacklist[spellID] = nil
+                        BetterBlizzFramesDB.cdManagerPriorityList[spellID] = nil
+                        refreshList()
+                        BBF.RefreshCooldownManagerIcons()
+                    end)
+                    button.del:Show()
+                else
+                    button.del:Hide()
+                end
+
+                button.bg:SetColorTexture(0.2, 0.2, 0.2, i % 2 == 0 and 0.1 or 0.3)
+                button:Show()
+            end
+        end
+
+        local input = CreateFrame("EditBox", nil, parent, "InputBoxTemplate")
+        input:SetSize(width-50, 20)
+        input:SetPoint("TOPLEFT", scrollFrame, "BOTTOMLEFT", 15, -8)
+        input:SetAutoFocus(false)
+        CreateTooltipTwo(input, "Enter Spell ID", "Enter spell ID for Buffs you want to adjust.", "(Buffs cannot be fetched automatically)", "ANCHOR_TOP")
+
+        function BBF.AddCDManagerSpellEntry(inputText, refreshList)
+            if not inputText or inputText == "" then return end
+
+            local id = tonumber(inputText)
+            local info = C_Spell.GetSpellInfo(id or inputText)
+
+            if info and info.spellID then
+                local spellID = info.spellID
+                if not BetterBlizzFramesDB.cdManagerPriorityList[spellID] and not BetterBlizzFramesDB.cdManagerBlacklist[spellID] then
+                    BetterBlizzFramesDB.cdManagerBlacklist[spellID] = false
+                    refreshList()
+                    BBF.RefreshCooldownManagerIcons()
+                end
+            elseif not id then -- if it's not a number and didn't resolve to a spell, treat it as a raw name
+                if not BetterBlizzFramesDB.cdManagerPriorityList[inputText] and not BetterBlizzFramesDB.cdManagerBlacklist[inputText] then
+                    BetterBlizzFramesDB.cdManagerBlacklist[inputText] = false
+                    refreshList()
+                    BBF.RefreshCooldownManagerIcons()
+                end
+            else
+                print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: Invalid Spell ID: " .. inputText)
+            end
+        end
+
+        input:SetScript("OnEnterPressed", function(self)
+            BBF.AddCDManagerSpellEntry(self:GetText(), refreshList)
+            self:SetText("")
+        end)
+
+        local add = CreateFrame("Button", nil, parent, "UIPanelButtonTemplate")
+        add:SetSize(50, 22)
+        add:SetText("Add")
+        add:SetPoint("LEFT", input, "RIGHT", 6, 0)
+
+        add:SetScript("OnClick", function()
+            BBF.AddCDManagerSpellEntry(input:GetText(), refreshList)
+            input:SetText("")
+        end)
+
+        content:SetHeight(#fullList * 22)
+    end
+
+    scrollFrame:HookScript("OnShow", function()
+        if BBF.cdManagerNeedsUpdate then
+            refreshList()
+        end
+    end)
+
+    scrollFrame.Refresh = refreshList
+    BBF.RefreshCdManagerList = refreshList
+    BBF.cdManagerScrollFrame = scrollFrame
+
+    refreshList()
+    return scrollFrame
+end
+
+
 
 local function CreateTitle(parent)
     local mainGuiAnchor = parent:CreateFontString(nil, "OVERLAY", "GameFontNormal")
@@ -7478,6 +7722,11 @@ local function guiMisc()
         end
     end)
 
+    local tempOmniCCFix = CreateCheckbox("tempOmniCCFix", "Temp OmniCC Fix", guiMisc, nil, BBF.TempOmniCCFix)
+    tempOmniCCFix:SetPoint("BOTTOMRIGHT", guiMisc, "BOTTOMRIGHT", -170, 100)
+    CreateTooltipTwo(tempOmniCCFix, "Temp OmniCC Fix", "Fixes OmniCC showing two duration texts due to new Blizzard change(?) no longer requiring the actionbar CD CVar enabled to show CD text. Temporary setting, I'm sure OmniCC author is on it.")
+    tempOmniCCFix:SetScale(1.5)
+
 end
 
 local function guiChatFrame()
@@ -7496,6 +7745,72 @@ local function guiChatFrame()
 
     local playerAuraGlows = CreateCheckbox("playerAuraGlows", "Extra Aura Glow", guiChatFrame)
     playerAuraGlows:SetPoint("TOPLEFT", debuffDotChecker, "BOTTOMLEFT", -15, -22)
+end
+
+local function guiCooldownManager()
+    local guiCdManager = CreateFrame("Frame")
+    guiCdManager.name = "CD Manager"--"|A:GarrMission_CurrencyIcon-Material:19:19|a Misc"
+    guiCdManager.parent = BetterBlizzFrames.name
+    --InterfaceOptions_AddCategory(guiCdManager)
+    local guiCdManagerSubcategory = Settings.RegisterCanvasLayoutSubcategory(BBF.category, guiCdManager, guiCdManager.name, guiCdManager.name)
+    guiCdManagerSubcategory.ID = guiCdManager.name;
+    CreateTitle(guiCdManager)
+
+    local bgImg = guiCdManager:CreateTexture(nil, "BACKGROUND")
+    bgImg:SetAtlas("professions-recipe-background")
+    bgImg:SetPoint("CENTER", guiCdManager, "CENTER", -8, 4)
+    bgImg:SetSize(680, 610)
+    bgImg:SetAlpha(0.4)
+    bgImg:SetVertexColor(0,0,0)
+
+    local settingsText = guiCdManager:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    settingsText:SetPoint("TOPLEFT", guiCdManager, "TOPLEFT", 20, 0)
+    settingsText:SetText("Cooldown Manager")
+    local cdIcon = guiCdManager:CreateTexture(nil, "ARTWORK")
+    cdIcon:SetAtlas("questlog-questtypeicon-clockorange")
+    cdIcon:SetSize(22, 22)
+    cdIcon:SetPoint("RIGHT", settingsText, "LEFT", -3, -1)
+
+    local cdNote = guiCdManager:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    cdNote:SetPoint("BOTTOMLEFT", bgImg, "BOTTOMLEFT", 10, 5)
+    cdNote:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\arialn.TTF", 11)
+    cdNote:SetText("WIP: Early version. Reloads between changes might be needed. Expect this to get many tweaks in the next few weeks. Please report any bugs.")
+
+    local list = CreateCDManagerList(guiCdManager)
+
+    local cooldownViewerEnabled = CreateCheckbox("cooldownViewerEnabled", "Enable Cooldown Manager", guiCdManager, "cooldownViewerEnabled")
+    cooldownViewerEnabled:SetPoint("TOPLEFT", settingsText, "BOTTOMLEFT", -4, pixelsOnFirstBox)
+    cooldownViewerEnabled:HookScript("OnClick", function(self)
+        local enabled = self:GetChecked()
+        if not InCombatLockdown() then
+            C_CVar.SetCVar("cooldownViewerEnabled", enabled and "1" or "0")
+        end
+    end)
+    CreateTooltipTwo(cooldownViewerEnabled, "Enable Cooldown Manager", "Enable Blizzard's new Cooldown Manager introduced in 11.1.5")
+    cooldownViewerEnabled:SetChecked(C_CVar.GetCVarBool("cooldownViewerEnabled"))
+
+    local cdManagerSorting = CreateCheckbox("cdManagerSorting", "Filter & Sort Icons", guiCdManager, nil, BBF.HookCooldownManagerTweaks)
+    cdManagerSorting:SetPoint("TOPLEFT", cooldownViewerEnabled, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(cdManagerSorting, "Filter & Sort Icons", "Filter and sort icons on the Cooldown Manager.")
+    list:SetAlpha(BetterBlizzFramesDB.cdManagerSorting and 1 or 0.3)
+
+
+    local cdManagerCenterIcons = CreateCheckbox("cdManagerCenterIcons", "Center Icons", guiCdManager, nil, BBF.HookCooldownManagerTweaks)
+    cdManagerCenterIcons:SetPoint("TOPLEFT", cdManagerSorting, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(cdManagerCenterIcons, "Center Icons", "Center icons on the Cooldown Manager")
+    cdManagerCenterIcons:HookScript("OnClick", function(self)
+        if not self:GetChecked() and not cdManagerCenterIcons:GetChecked() then
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        end
+    end)
+
+    cdManagerSorting:HookScript("OnClick", function(self)
+        local enabled = self:GetChecked()
+        if not enabled and not cdManagerCenterIcons:GetChecked() then
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        end
+        list:SetAlpha(enabled and 1 or 0.3)
+    end)
 end
 
 local function guiImportAndExport()
@@ -7992,6 +8307,7 @@ function BBF.LoadGUI()
     guiGeneralTab()
     guiPositionAndScale()
     guiFrameAuras()
+    guiCooldownManager()
     guiFrameLook()
     guiCastbars()
     guiImportAndExport()

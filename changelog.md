@@ -1,3 +1,15 @@
+# BetterBlizzFrames 1.6.8
+## Retail
+### New:
+- Cooldown Manager Tweaks: New section with settings for Blizzards new "Cooldown Manager" feature. These settings will let you hide, change the priority/position, and center the icons. Early version.
+- Temporary OmniCC Fix setting in Misc (Duplicate CD Timer, from a Blizzard change).
+### Tweak:
+- Changed color on Legacy Combo Points with dark mode enabled a little.
+### Bugfix:
+- Fix Class Color Health setting causing some npcs that were hostile to show as neutral.
+
+
+
 # BetterBlizzFrames 1.6.7f
 ## Retail
 ### Tweak:

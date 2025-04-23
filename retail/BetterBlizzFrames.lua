@@ -60,6 +60,8 @@ local defaultSettings = {
     hidePvpTimerText = true,
     playerEliteFrameMode = 1,
     hideObjectiveTracker = true,
+    cdManagerBlacklist = {},
+    cdManagerPriorityList = {},
 
     rpNames = true,
     rpNamesFirst = true,
@@ -2642,6 +2644,10 @@ function BBF.ReduceEditModeAlpha(disable)
         TargetFrame,
         TalkingHeadFrame,
         VehicleSeatIndicator,
+        EssentialCooldownViewer,
+        UtilityCooldownViewer,
+        BuffIconCooldownViewer,
+        BuffBarCooldownViewer,
     }
 
     for _, frame in ipairs(frames) do
@@ -3917,6 +3923,16 @@ local function MoveableSettingsPanel(talents)
     end
 end
 
+function BBF.TempOmniCCFix()
+    if not BetterBlizzFramesDB.tempOmniCCFix then return end
+    if BBF.OmniCCFix then return end
+    if not C_AddOns.IsAddOnLoaded("OmniCC") then return end
+    hooksecurefunc(getmetatable(ActionButton1Cooldown).__index, 'SetCooldown', function(self)
+        self:SetHideCountdownNumbers(true)
+    end)
+    BBF.OmniCCFix = true
+end
+
 -- Event registration for PLAYER_LOGIN
 local First = CreateFrame("Frame")
 First:RegisterEvent("ADDON_LOADED")
@@ -3942,6 +3958,7 @@ First:SetScript("OnEvent", function(_, event, addonName)
         BBF.ReduceEditModeAlpha()
         BBF.SymmetricPlayerFrame()
         BBF.HookCastbars()
+        BBF.HookCooldownManagerTweaks()
         BBF.EnableQueueTimer()
         ScaleClassResource()
         BBF.SurrenderNotLeaveArena()
@@ -3958,6 +3975,7 @@ First:SetScript("OnEvent", function(_, event, addonName)
         BBF.MoveableFPSCounter(false, BetterBlizzFramesDB.fpsCounterFontOutline)
 
         C_Timer.After(1, function()
+            BBF.TempOmniCCFix()
             if C_AddOns.IsAddOnLoaded("ClassicFrames") then
                 C_Timer.After(4, function()
                     print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: A super lightweight |cffff8000Classic Frames|r setting is now live! I would highly recommend swapping to BBF's setting over |cff9d9d9dClassicFrames|r the addon due to the high CPU usage of that addon.")

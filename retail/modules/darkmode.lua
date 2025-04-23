@@ -235,6 +235,10 @@ function BBF.DarkmodeFrames(bypass)
     end
 
     if ComboFrame then
+        local legacyComboColor = color25
+        if BetterBlizzFramesDB.legacyComboColor then
+            legacyComboColor = legacyComboColor + BetterBlizzFramesDB.legacyComboColor
+        end
         for i = 1, 9 do
             local point = _G["ComboPoint"..i]
             if point and point:GetNumRegions() then
@@ -243,8 +247,8 @@ function BBF.DarkmodeFrames(bypass)
                     if region and region:IsObjectType("Texture") then
                         local layer = region:GetDrawLayer()
                         if layer == "BACKGROUND" then
-                            region:SetDesaturated(true)
-                            region:SetVertexColor(druidComboPointActive, druidComboPointActive, druidComboPointActive)
+                            --region:SetDesaturated(true)
+                            region:SetVertexColor(color25, color25, color25)
                         end
                     end
                 end
