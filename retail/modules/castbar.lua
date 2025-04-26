@@ -825,6 +825,32 @@ end
 recheckInterruptListener:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED", "player")
 recheckInterruptListener:SetScript("OnEvent", OnEvent)
 
+local function HideChargeTiers(castBar)
+    if not castBar.ChargeTier1 then return end
+    castBar.ChargeTier1:Hide()
+    castBar.ChargeTier2:Hide()
+    castBar.ChargeTier3:Hide()
+    if castBar.ChargeTier4 then
+        castBar.ChargeTier4:Hide()
+    end
+end
+
+local function ColorOldCastbar(castBar)
+    castBar:SetStatusBarColor(1, 0.7, 0, 1)
+    if castBar.barType == "channeled" then
+        castBar:SetStatusBarColor(0, 1, 0, 1)
+    elseif castBar.barType == "interrupted" then
+        castBar:SetStatusBarColor(1, 0, 0, 1)
+    elseif castBar.barType == "uninterruptable" then
+        castBar:SetStatusBarColor(0.7, 0.7, 0.7, 1)
+        HideChargeTiers(castBar)
+    elseif castBar.barType == "empowered" then
+        castBar:SetStatusBarColor(1, 0.7, 0, 1)
+        HideChargeTiers(castBar)
+    end
+end
+
+local val = 0
 function BBF.CastbarRecolorWidgets()
     local classicFrames = C_AddOns.IsAddOnLoaded("ClassicFrames")
     if BetterBlizzFramesDB.castBarInterruptHighlighter or BetterBlizzFramesDB.castBarDelayedInterruptColor then
@@ -840,312 +866,276 @@ function BBF.CastbarRecolorWidgets()
         targetCastbarEdgeHighlight = BetterBlizzFramesDB.targetCastbarEdgeHighlight and castBarInterruptHighlighter
         focusCastbarEdgeHighlight = BetterBlizzFramesDB.focusCastbarEdgeHighlight and castBarInterruptHighlighter
 
-        if (targetCastbarEdgeHighlight or castBarRecolorInterrupt) and not targetCastbarEdgeHooked then
-            BBF.InitializeInterruptSpellID()
-
-            TargetFrameSpellBar:HookScript("OnUpdate", function(self, elapsed)
-                -- targetLastUpdate = targetLastUpdate + elapsed
-                -- if targetLastUpdate < updateInterval then
-                --     return
-                -- end
-                -- targetLastUpdate = 0
-
-                if UnitCanAttack(TargetFrame.unit, "player") then
-                    local name, _, _, startTime, endTime, _, _, notInterruptible, spellId = UnitCastingInfo("target")
-                    local channeling
-                    if not name then
-                        name, _, _, startTime, endTime, _, notInterruptible, spellId = UnitChannelInfo("target")
-                        channeling = true
-                    end
-
-                    if name and not notInterruptible then
-                        if castBarRecolorInterrupt then
-                            for _, interruptSpellID in ipairs(interruptSpellIDs) do
-                                local start, duration = BBF.TWWGetSpellCooldown(interruptSpellID)
-                                local cooldownRemaining = start + duration - GetTime()
-                                local castRemaining = (endTime/1000) - GetTime()
-                                local totalCastTime = (endTime / 1000) - (startTime / 1000)
-
-                                if cooldownRemaining > 0 and cooldownRemaining > castRemaining then
-                                    targetSpellBarTexture:SetDesaturated(true)
-                                    self:SetStatusBarColor(unpack(castBarNoInterruptColor))
-                                    self.Spark:SetVertexColor(unpack(castBarNoInterruptColor))
-                                elseif cooldownRemaining > 0 and cooldownRemaining <= castRemaining then
-                                    targetSpellBarTexture:SetDesaturated(true)
-                                    self:SetStatusBarColor(unpack(castBarDelayedInterruptColor))
-                                    self.Spark:SetVertexColor(unpack(castBarDelayedInterruptColor))
-                                    if not self.interruptSark then
-                                        self.interruptSark = self:CreateTexture(nil, "OVERLAY")
-                                        self.interruptSark:SetColorTexture(0, 1, 0, 1) -- Solid green color with full opacity
-                                        self.interruptSark:SetSize(2, self:GetHeight())
-                                        --castBar.spark:SetBlendMode("ADD")
-                                        --castBar.spark:SetVertexColor(0, 1, 0)
-                                    end
-
-                                    -- Calculate the interrupt percentage
-                                    local interruptPercent = (totalCastTime - castRemaining + cooldownRemaining) / totalCastTime
-
-                                    -- Adjust the spark position based on the percentage, reverse if channeling
-                                    local sparkPosition
-                                    if channeling then
-                                        -- Channeling: reverse the direction, starting from the right
-                                        sparkPosition = (1 - interruptPercent) * self:GetWidth()
-                                    else
-                                        -- Casting: normal direction, from left to right
-                                        sparkPosition = interruptPercent * self:GetWidth()
-                                    end
-
-                                    self.interruptSark:SetPoint("CENTER", self, "LEFT", sparkPosition, 0)
-                                    self.interruptSark:Show()
-
-                                    -- Schedule the color update for when the interrupt will be ready
-                                    if not self.timerReset then
-                                        self.timerReset = true
-                                        C_Timer.After(cooldownRemaining, function()
-                                            if self then
-                                                if not classicFrames then
-                                                    self:SetStatusBarColor(1, 1, 1)
-                                                end
-                                                if self.interruptSark then
-                                                    self.interruptSark:Hide()
-                                                end
-                                                self.timerReset = nil
-                                            end
-                                        end)
-                                    end
-                                else
-                                    if targetCastbarEdgeHighlight then
-                                        local currentTime = GetTime()  -- Current time in seconds
-                                        local startTimeSeconds = startTime / 1000  -- Convert start time to seconds
-                                        local endTimeSeconds = endTime / 1000
-                                        local elapsed = currentTime - startTimeSeconds  -- Time elapsed since the start of the cast in seconds
-                                        local timeRemaining = endTimeSeconds - currentTime  -- Time remaining until the cast ends in seconds
-
-                                        if (elapsed <= highlightStartTime) or (timeRemaining <= highlightEndTime) then
-                                            targetSpellBarTexture:SetDesaturated(true)
-                                            self:SetStatusBarColor(unpack(edgeColor))
-                                            self.Spark:SetVertexColor(unpack(edgeColor))
-                                        else
-                                            if colorMiddle then
-                                                targetSpellBarTexture:SetDesaturated(true)
-                                                self:SetStatusBarColor(unpack(middleColor))
-                                            else
-                                                targetSpellBarTexture:SetDesaturated(false)
-                                                if not classicFrames and not self.isClassicStyle then
-                                                    self:SetStatusBarColor(1,1,1)
-                                                end
-                                            end
-                                            self.Spark:SetVertexColor(1,1,1)
-                                        end
-                                    else
-                                        targetSpellBarTexture:SetDesaturated(false)
-                                        if not classicFrames and not self.isClassicStyle then
-                                            self:SetStatusBarColor(1,1,1)
-                                        end
-                                        self.Spark:SetVertexColor(1,1,1)
-                                    end
-                                end
-                            end
-                        elseif targetCastbarEdgeHighlight then
-                            local currentTime = GetTime()  -- Current time in seconds
-                            local startTimeSeconds = startTime / 1000  -- Convert start time to seconds
-                            local endTimeSeconds = endTime / 1000
-                            local elapsed = currentTime - startTimeSeconds  -- Time elapsed since the start of the cast in seconds
-                            local timeRemaining = endTimeSeconds - currentTime  -- Time remaining until the cast ends in seconds
-
-                            if (elapsed <= highlightStartTime) or (timeRemaining <= highlightEndTime) then
-                                targetSpellBarTexture:SetDesaturated(true)
-                                self:SetStatusBarColor(unpack(edgeColor))
-                                self.Spark:SetVertexColor(unpack(edgeColor))
-                            else
-                                if colorMiddle then
-                                    targetSpellBarTexture:SetDesaturated(true)
-                                    self:SetStatusBarColor(unpack(middleColor))
-                                else
-                                    targetSpellBarTexture:SetDesaturated(false)
-                                    if not classicFrames and not self.isClassicStyle then
-                                        self:SetStatusBarColor(1,1,1)
-                                    end
-                                end
-                                self.Spark:SetVertexColor(1,1,1)
-                            end
-                        else
-                            targetSpellBarTexture:SetDesaturated(false)
-                            if not classicFrames and not self.isClassicStyle then
-                                self:SetStatusBarColor(1,1,1)
-                            end
-                            self.Spark:SetVertexColor(1,1,1)
-                        end
-                    else
-                        targetSpellBarTexture:SetDesaturated(false)
-                        if not classicFrames and not self.isClassicStyle then
-                            self:SetStatusBarColor(1,1,1)
-                        end
-                        self.Spark:SetVertexColor(1,1,1)
-                    end
-                else
-                    targetSpellBarTexture:SetDesaturated(false)
-                    if not classicFrames and not self.isClassicStyle then
-                        self:SetStatusBarColor(1,1,1)
-                    end
-                    self.Spark:SetVertexColor(1,1,1)
+        local function NormalOnUpdate(self, unit, texture, shouldHighlightEdges)
+            if not UnitCanAttack(unit, "player") then
+                texture:SetDesaturated(false)
+                if not classicFrames and not self.isClassicStyle then
+                    self:SetStatusBarColor(1, 1, 1)
                 end
-            end)
-            targetCastbarEdgeHooked = true
+                self.Spark:SetVertexColor(1, 1, 1)
+                return
+            end
+
+            local name, _, _, startTime, endTime, _, _, notInterruptible, spellId = UnitCastingInfo(unit)
+            local channeling
+            if not name then
+                name, _, _, startTime, endTime, _, notInterruptible, spellId = UnitChannelInfo(unit)
+                channeling = true
+            end
+
+            if not name then
+                texture:SetDesaturated(false)
+                if not classicFrames and not self.isClassicStyle then
+                    self:SetStatusBarColor(1, 1, 1)
+                end
+                self.Spark:SetVertexColor(1, 1, 1)
+                return
+            end
+
+            if castBarRecolorInterrupt then
+                local colored
+                for _, interruptSpellID in ipairs(interruptSpellIDs) do
+                    local start, duration = BBF.TWWGetSpellCooldown(interruptSpellID)
+                    local cooldownRemaining = start + duration - GetTime()
+                    local castRemaining = (endTime / 1000) - GetTime()
+                    local totalCastTime = (endTime / 1000) - (startTime / 1000)
+
+                    if cooldownRemaining > 0 and cooldownRemaining > castRemaining then
+                        texture:SetDesaturated(true)
+                        self:SetStatusBarColor(unpack(castBarNoInterruptColor))
+                        self.Spark:SetVertexColor(unpack(castBarNoInterruptColor))
+                        colored = true
+
+                    elseif cooldownRemaining > 0 and cooldownRemaining <= castRemaining then
+                        texture:SetDesaturated(true)
+                        self:SetStatusBarColor(unpack(castBarDelayedInterruptColor))
+                        self.Spark:SetVertexColor(unpack(castBarDelayedInterruptColor))
+                        colored = true
+
+                        if not self.interruptSark then
+                            self.interruptSark = self:CreateTexture(nil, "OVERLAY")
+                            self.interruptSark:SetColorTexture(0, 1, 0, 1)
+                            self.interruptSark:SetSize(2, self:GetHeight())
+                        end
+
+                        local interruptPercent = (totalCastTime - castRemaining + cooldownRemaining) / totalCastTime
+                        local sparkPosition = (channeling and (1 - interruptPercent) or interruptPercent) * self:GetWidth()
+                        self.interruptSark:SetPoint("CENTER", self, "LEFT", sparkPosition, 0)
+                        self.interruptSark:Show()
+
+                        if not self.timerReset then
+                            self.timerReset = true
+                            C_Timer.After(cooldownRemaining, function()
+                                if self then
+                                    if not classicFrames and not self.isClassicStyle then
+                                        self:SetStatusBarColor(1, 1, 1)
+                                    end
+                                    if self.interruptSark then
+                                        self.interruptSark:Hide()
+                                    end
+                                    self.timerReset = nil
+                                end
+                            end)
+                        end
+
+                        return -- Don't apply edge logic on top of this state
+                    end
+                end
+                if colored then return end
+            end
+
+            if shouldHighlightEdges then
+                local currentTime = GetTime()
+                local startTimeSeconds = startTime / 1000
+                local endTimeSeconds = endTime / 1000
+                local elapsed = currentTime - startTimeSeconds
+                local timeRemaining = endTimeSeconds - currentTime
+
+                if (elapsed <= highlightStartTime) or (timeRemaining <= highlightEndTime) then
+                    texture:SetDesaturated(true)
+                    self:SetStatusBarColor(unpack(edgeColor))
+                    self.Spark:SetVertexColor(unpack(edgeColor))
+                else
+                    if colorMiddle then
+                        texture:SetDesaturated(true)
+                        self:SetStatusBarColor(unpack(middleColor))
+                    else
+                        texture:SetDesaturated(false)
+                        if not classicFrames and not self.isClassicStyle then
+                            self:SetStatusBarColor(1, 1, 1)
+                        end
+                    end
+                    self.Spark:SetVertexColor(1, 1, 1)
+                end
+            else
+                texture:SetDesaturated(false)
+                if not classicFrames and not self.isClassicStyle then
+                    self:SetStatusBarColor(1, 1, 1)
+                end
+                self.Spark:SetVertexColor(1, 1, 1)
+            end
         end
 
-        if (focusCastbarEdgeHighlight or castBarRecolorInterrupt) and not focusCastbarEdgeHooked then
-            FocusFrameSpellBar:HookScript("OnUpdate", function(self, elapsed)
-                -- focusLastUpdate = focusLastUpdate + elapsed
-                -- if focusLastUpdate < updateInterval then
-                --     return
-                -- end
-                -- focusLastUpdate = 0
-                if UnitCanAttack(FocusFrame.unit, "player") then
-                    local name, _, _, startTime, endTime, _, _, notInterruptible, spellId = UnitCastingInfo("focus")
-                    local channeling
-                    if not name then
-                        name, _, _, startTime, endTime, _, notInterruptible, spellId = UnitChannelInfo("focus")
-                        channeling = true
-                    end
+        local function GladiusOnUpdate(self, unit)
+            local name, _, _, startTime, endTime = UnitCastingInfo(unit)
+            local channeling
+            if not name then
+                name, _, _, startTime, endTime = UnitChannelInfo(unit)
+                channeling = true
+            end
 
-                    if name then--and not notInterruptible then
-                        if castBarRecolorInterrupt then
-                            for _, interruptSpellID in ipairs(interruptSpellIDs) do
-                                local start, duration = BBF.TWWGetSpellCooldown(interruptSpellID)
-                                local cooldownRemaining = start + duration - GetTime()
-                                local castRemaining = (endTime/1000) - GetTime()
-                                local totalCastTime = (endTime / 1000) - (startTime / 1000)
+            if not name then
+                return
+            end
 
-                                if cooldownRemaining > 0 and cooldownRemaining > castRemaining then
-                                    focusSpellBarTexture:SetDesaturated(true)
-                                    self:SetStatusBarColor(unpack(castBarNoInterruptColor))
-                                    self.Spark:SetVertexColor(unpack(castBarNoInterruptColor))
-                                elseif cooldownRemaining > 0 and cooldownRemaining <= castRemaining then
-                                    focusSpellBarTexture:SetDesaturated(true)
-                                    self:SetStatusBarColor(unpack(castBarDelayedInterruptColor))
-                                    self.Spark:SetVertexColor(unpack(castBarDelayedInterruptColor))
-                                    if not self.interruptSark then
-                                        self.interruptSark = self:CreateTexture(nil, "OVERLAY")
-                                        self.interruptSark:SetColorTexture(0, 1, 0, 1) -- Solid green color with full opacity
-                                        self.interruptSark:SetSize(2, self:GetHeight())
-                                        --castBar.spark:SetBlendMode("ADD")
-                                        --castBar.spark:SetVertexColor(0, 1, 0)
-                                    end
+            if castBarRecolorInterrupt then
+                local colored
+                for _, interruptSpellID in ipairs(interruptSpellIDs) do
+                    local start, duration = BBF.TWWGetSpellCooldown(interruptSpellID)
+                    local cooldownRemaining = start + duration - GetTime()
+                    local castRemaining = (endTime / 1000) - GetTime()
+                    local totalCastTime = (endTime / 1000) - (startTime / 1000)
 
-                                    -- Calculate the interrupt percentage
-                                    local interruptPercent = (totalCastTime - castRemaining + cooldownRemaining) / totalCastTime
+                    if cooldownRemaining > 0 and cooldownRemaining > castRemaining then
+                        self:SetStatusBarColor(unpack(castBarNoInterruptColor))
+                        colored = true
 
-                                    -- Adjust the spark position based on the percentage, reverse if channeling
-                                    local sparkPosition
-                                    if channeling then
-                                        -- Channeling: reverse the direction, starting from the right
-                                        sparkPosition = (1 - interruptPercent) * self:GetWidth()
-                                    else
-                                        -- Casting: normal direction, from left to right
-                                        sparkPosition = interruptPercent * self:GetWidth()
-                                    end
+                    elseif cooldownRemaining > 0 and cooldownRemaining <= castRemaining then
+                        self:SetStatusBarColor(unpack(castBarDelayedInterruptColor))
+                        colored = true
 
-                                    self.interruptSark:SetPoint("CENTER", self, "LEFT", sparkPosition, 0)
-                                    self.interruptSark:Show()
-
-                                    -- Schedule the color update for when the interrupt will be ready
-                                    if not self.timerReset then
-                                        self.timerReset = true
-                                        C_Timer.After(cooldownRemaining, function()
-                                            if self then
-                                                if not classicFrames then
-                                                    self:SetStatusBarColor(1, 1, 1)
-                                                end
-                                                if self.interruptSark then
-                                                    self.interruptSark:Hide()
-                                                end
-                                                self.timerReset = nil
-                                            end
-                                        end)
-                                    end
-                                else
-                                    if focusCastbarEdgeHighlight then
-                                        local currentTime = GetTime()  -- Current time in seconds
-                                        local startTimeSeconds = startTime / 1000  -- Convert start time to seconds
-                                        local endTimeSeconds = endTime / 1000
-                                        local elapsed = currentTime - startTimeSeconds  -- Time elapsed since the start of the cast in seconds
-                                        local timeRemaining = endTimeSeconds - currentTime  -- Time remaining until the cast ends in seconds
-
-                                        if (elapsed <= highlightStartTime) or (timeRemaining <= highlightEndTime) then
-                                            focusSpellBarTexture:SetDesaturated(true)
-                                            self:SetStatusBarColor(unpack(edgeColor))
-                                            self.Spark:SetVertexColor(unpack(edgeColor))
-                                        else
-                                            if colorMiddle then
-                                                focusSpellBarTexture:SetDesaturated(true)
-                                                self:SetStatusBarColor(unpack(middleColor))
-                                            else
-                                                focusSpellBarTexture:SetDesaturated(false)
-                                                if not classicFrames and not self.isClassicStyle then
-                                                    self:SetStatusBarColor(1,1,1)
-                                                end
-                                            end
-                                            self.Spark:SetVertexColor(1,1,1)
-                                        end
-                                    else
-                                        focusSpellBarTexture:SetDesaturated(false)
-                                        if not classicFrames and not self.isClassicStyle then
-                                            self:SetStatusBarColor(1,1,1)
-                                        end
-                                        self.Spark:SetVertexColor(1,1,1)
-                                    end
-                                end
-                            end
-                        elseif focusCastbarEdgeHighlight then
-                            local currentTime = GetTime()  -- Current time in seconds
-                            local startTimeSeconds = startTime / 1000  -- Convert start time to seconds
-                            local endTimeSeconds = endTime / 1000
-                            local elapsed = currentTime - startTimeSeconds  -- Time elapsed since the start of the cast in seconds
-                            local timeRemaining = endTimeSeconds - currentTime  -- Time remaining until the cast ends in seconds
-
-                            if (elapsed <= highlightStartTime) or (timeRemaining <= highlightEndTime) then
-                                focusSpellBarTexture:SetDesaturated(true)
-                                self:SetStatusBarColor(unpack(edgeColor))
-                                self.Spark:SetVertexColor(unpack(edgeColor))
-                            else
-                                if colorMiddle then
-                                    focusSpellBarTexture:SetDesaturated(true)
-                                    self:SetStatusBarColor(unpack(middleColor))
-                                else
-                                    focusSpellBarTexture:SetDesaturated(false)
-                                    if not classicFrames and not self.isClassicStyle then
-                                        self:SetStatusBarColor(1,1,1)
-                                    end
-                                end
-                                if not classicFrames and not self.isClassicStyle then
-                                    self:SetStatusBarColor(1,1,1)
-                                end
-                            end
-                        else
-                            focusSpellBarTexture:SetDesaturated(false)
-                            if not classicFrames and not self.isClassicStyle then
-                                self:SetStatusBarColor(1,1,1)
-                            end
-                            self.Spark:SetVertexColor(1,1,1)
+                        if not self.interruptSark then
+                            self.interruptSark = self:CreateTexture(nil, "OVERLAY")
+                            self.interruptSark:SetColorTexture(0, 1, 0, 1)
+                            self.interruptSark:SetSize(2, self:GetHeight())
                         end
-                    else
-                        focusSpellBarTexture:SetDesaturated(false)
-                        if not classicFrames and not self.isClassicStyle then
-                            self:SetStatusBarColor(1,1,1)
+
+                        local interruptPercent = (totalCastTime - castRemaining + cooldownRemaining) / totalCastTime
+                        local sparkPosition = (channeling and (1 - interruptPercent) or interruptPercent) * self:GetWidth()
+                        self.interruptSark:SetPoint("CENTER", self, "LEFT", sparkPosition, 0)
+                        self.interruptSark:Show()
+
+                        if not self.timerReset then
+                            self.timerReset = true
+                            C_Timer.After(cooldownRemaining, function()
+                                if self then
+                                    if self.interruptSark then
+                                        self.interruptSark:Hide()
+                                    end
+                                    self.timerReset = nil
+                                end
+                            end)
                         end
-                        self.Spark:SetVertexColor(1,1,1)
+
+                        return
                     end
-                else
-                    focusSpellBarTexture:SetDesaturated(false)
-                    if not classicFrames and not self.isClassicStyle then
-                        self:SetStatusBarColor(1,1,1)
-                    end
-                    self.Spark:SetVertexColor(1,1,1)
                 end
-            end)
-            focusCastbarEdgeHooked = true
+                if colored then return end
+            end
         end
+
+        function BBF.HookCastbarInterruptHighlight(castbar, unit, texture, shouldHighlightEdges, coloredCastbar, gladiusBar)
+            if coloredCastbar then
+                castbar.isClassicStyle = true
+            end
+
+            if gladiusBar then
+                castbar:HookScript("OnUpdate", function(self)
+                    GladiusOnUpdate(self, unit)
+                end)
+            else
+                if castbar._bbfHooked then return end
+                castbar._bbfHooked = true
+                castbar:HookScript("OnUpdate", function(self)
+                    NormalOnUpdate(self, unit, texture, shouldHighlightEdges)
+                end)
+            end
+        end
+
+
+        BBF.InitializeInterruptSpellID()
+        if targetCastbarEdgeHighlight or castBarRecolorInterrupt then
+            BBF.HookCastbarInterruptHighlight(TargetFrameSpellBar, "target", targetSpellBarTexture, targetCastbarEdgeHighlight)
+        end
+
+        if focusCastbarEdgeHighlight or castBarRecolorInterrupt then
+            BBF.HookCastbarInterruptHighlight(FocusFrameSpellBar, "focus", focusSpellBarTexture, focusCastbarEdgeHighlight)
+        end
+
+        if BetterBlizzFramesDB.castBarRecolorInterrupt and BetterBlizzFramesDB.castBarRecolorInterruptArenaFrames then
+            C_Timer.After(3, function()
+                local enableOnDefault = not BetterBlizzFramesDB.hideArenaFrames and not Gladius and not C_AddOns.IsAddOnLoaded("GladiusEx") and not sArena
+                local units = {
+                    ["arena1"] = true,
+                    ["arena2"] = true,
+                    ["arena3"] = true,
+                }
+                for i = 1, 3 do
+                    if GladiusEx then
+                        local spellBar = _G["GladiusExCastBararena"..i.."Parent"]
+                        if spellBar then
+                            local unit = "arena"..i
+                            BBF.HookCastbarInterruptHighlight(spellBar.bar, unit, spellBar.bar:GetStatusBarTexture(), nil, true, true)
+                        end
+
+                        if not BBF.HookedGladiusExCastbars then
+                            BBF.HookedGladiusExCastbars = true
+                            hooksecurefunc(GladiusEx, "UpdateUnit", function(self, unit)
+                                if not units[unit] then return end
+                                local spellBar = _G["GladiusExCastBararena"..i.."Parent"]
+                                if spellBar then
+                                    BBF.HookCastbarInterruptHighlight(spellBar.bar, unit, spellBar.bar:GetStatusBarTexture(), nil, true, true)
+                                end
+                            end)
+                        end
+                    end
+
+                    if Gladius then
+                        local spellBar = _G["GladiusCastBararena"..i]
+                        if spellBar then
+                            local unit = "arena"..i
+                            BBF.HookCastbarInterruptHighlight(spellBar, unit, spellBar:GetStatusBarTexture(), nil, true, true)
+                        end
+
+                        if not BBF.HookedGladiusCastbars then
+                            BBF.HookedGladiusCastbars = true
+                            hooksecurefunc(Gladius, "UpdateUnit", function(self, unit)
+                                if not units[unit] then return end
+                                local spellBar = _G["GladiusCastBar"..unit]
+                                if spellBar then
+                                    BBF.HookCastbarInterruptHighlight(spellBar, unit, spellBar:GetStatusBarTexture(), nil, true, true)
+                                end
+                            end)
+                        end
+                    end
+
+                    local bArenaFrame = _G["bArenaEnemyFrame"..i]
+                    if bArenaFrame then
+                        local spellBar = bArenaFrame.CastBar
+                        local unit = "arena"..i
+                        BBF.HookCastbarInterruptHighlight(spellBar, unit, spellBar:GetStatusBarTexture(), nil, true)
+                    end
+
+                    local sArenaFrame = _G["sArenaEnemyFrame"..i]
+                    if sArenaFrame then
+                        local spellBar = sArenaFrame.CastBar
+                        local unit = "arena"..i
+                        BBF.HookCastbarInterruptHighlight(spellBar, unit, spellBar:GetStatusBarTexture(), nil, true)
+                    end
+
+                    if enableOnDefault then
+                        local frame = _G["CompactArenaFrameMember"..i]
+                        if frame then
+                            local spellBar = frame.CastingBarFrame
+                            local unit = "arena"..i
+                            BBF.HookCastbarInterruptHighlight(spellBar, unit, spellBar:GetStatusBarTexture())
+                        end
+                    end
+                end
+                BBF.GexCastbarHooked = true
+            end)
+        end
+        
 
         -- if castBarRecolorInterrupt then
         --     local function HookGexCastbars(spellBar, i)

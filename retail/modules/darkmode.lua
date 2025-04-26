@@ -248,7 +248,7 @@ function BBF.DarkmodeFrames(bypass)
                         local layer = region:GetDrawLayer()
                         if layer == "BACKGROUND" then
                             --region:SetDesaturated(true)
-                            region:SetVertexColor(color25, color25, color25)
+                            region:SetVertexColor(legacyComboColor, legacyComboColor, legacyComboColor)
                         end
                     end
                 end

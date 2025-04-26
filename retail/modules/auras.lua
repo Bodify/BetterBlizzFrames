@@ -1956,9 +1956,9 @@ local function CreateToggleIcon()
 
 
     toggleIcon:SetScript("OnEnter", function(self)
-        GameTooltip:SetOwner(self, "ANCHOR_BOTTOMLEFT", 0, -10)
+        GameTooltip:SetOwner(self, "ANCHOR_BOTTOM", 0, -10)
         GameTooltip:AddLine("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames")
-        GameTooltip:AddLine("Filtered buffs. Click to show/hide.\nShift+Alt+RightClick to blacklist buffs.\n\nCtrl+LeftClick to move.\nShift+LeftClick to reset position.\nAlt+LeftClick to change direction.\n\n(You can hide this icon in settings)", 1, 1, 1, true)
+        GameTooltip:AddLine("Filtered buffs. Click to show/hide currently hidden buffs.\n\n|cff00ff00To Whitelist an Aura:|r\nShift+Alt + LeftClick\n\n|cffff0000To Blacklist an Aura:|r\nShift+Alt + RightClick |cffffff00OR|r\nCtrl+Alt RightClick with \"Show Mine\" tag\n\nCtrl+LeftClick to move.\nShift+LeftClick to reset position.\nAlt+LeftClick to change direction.\n\n(You can hide this icon in settings)", 1, 1, 1, true)
         GameTooltip:Show()
         if not self.isAurasShown then
             ShowHiddenAuras()

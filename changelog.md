@@ -1,3 +1,15 @@
+# BetterBlizzFrames 1.6.8b
+## Retail
+### New:
+- Interrupt CD Color (Castbars) now has a subsetting that also enables it on Arena Frames (Blizzard, Gladius, GladiusEx, sArena)
+### Tweaks:
+- Removed temp OmniCC fix since it has been fixed.
+- Removed "Disable AddOn Profiler" since it has been restricted by Blizzard.
+### Bugfix:
+- Fix Target & Focus Castbar x & y position settings getting reset to 0 when opening the GUI with "Detach Castbar" setting enabled.
+
+
+
 # BetterBlizzFrames 1.6.8
 ## Retail
 ### New:

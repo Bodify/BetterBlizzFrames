@@ -945,16 +945,16 @@ function BBF.RemoveAddonCategories()
 end
 
 
-function BBF.DisableAddOnProfiling()
-    if BetterBlizzFramesDB.disableAddonProfiling then
-        C_CVar.RegisterCVar('addonProfilerEnabled', "1")
-        C_CVar.SetCVar('addonProfilerEnabled', "0")
-        BetterBlizzFramesDB.disableAddonProfilingActive = true
-    elseif BetterBlizzFramesDB.disableAddonProfilingActive then
-        C_CVar.RegisterCVar('addonProfilerEnabled', "1")
-        C_CVar.SetCVar('addonProfilerEnabled', "1")
-    end
-end
+-- function BBF.DisableAddOnProfiling()
+--     if BetterBlizzFramesDB.disableAddonProfiling then
+--         C_CVar.RegisterCVar('addonProfilerEnabled', "1")
+--         C_CVar.SetCVar('addonProfilerEnabled', "0")
+--         BetterBlizzFramesDB.disableAddonProfilingActive = true
+--     elseif BetterBlizzFramesDB.disableAddonProfilingActive then
+--         C_CVar.RegisterCVar('addonProfilerEnabled', "1")
+--         C_CVar.SetCVar('addonProfilerEnabled', "1")
+--     end
+-- end
 
 
 
@@ -3923,16 +3923,6 @@ local function MoveableSettingsPanel(talents)
     end
 end
 
-function BBF.TempOmniCCFix()
-    if not BetterBlizzFramesDB.tempOmniCCFix then return end
-    if BBF.OmniCCFix then return end
-    if not C_AddOns.IsAddOnLoaded("OmniCC") then return end
-    hooksecurefunc(getmetatable(ActionButton1Cooldown).__index, 'SetCooldown', function(self)
-        self:SetHideCountdownNumbers(true)
-    end)
-    BBF.OmniCCFix = true
-end
-
 -- Event registration for PLAYER_LOGIN
 local First = CreateFrame("Frame")
 First:RegisterEvent("ADDON_LOADED")
@@ -3948,7 +3938,7 @@ First:SetScript("OnEvent", function(_, event, addonName)
         BBF.GenericLegacyComboSupport()
         BBF.RaiseTargetFrameLevel()
         BBF.RaiseTargetCastbarStratas()
-        BBF.DisableAddOnProfiling()
+        --BBF.DisableAddOnProfiling()
         C_Timer.After(0.5, function()
             BBF.ClassColorLegacyCombos()
             BBF.UpdateCustomTextures()
@@ -3975,7 +3965,9 @@ First:SetScript("OnEvent", function(_, event, addonName)
         BBF.MoveableFPSCounter(false, BetterBlizzFramesDB.fpsCounterFontOutline)
 
         C_Timer.After(1, function()
-            BBF.TempOmniCCFix()
+            if BetterBlizzFramesDB.tempOmniCCFix then
+                BetterBlizzFramesDB.tempOmniCCFix = nil
+            end
             if C_AddOns.IsAddOnLoaded("ClassicFrames") then
                 C_Timer.After(4, function()
                     print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: A super lightweight |cffff8000Classic Frames|r setting is now live! I would highly recommend swapping to BBF's setting over |cff9d9d9dClassicFrames|r the addon due to the high CPU usage of that addon.")
