@@ -2041,7 +2041,7 @@ local function PersonalBuffFrameFilterAndGrid(self)
     end
 
     if isExpanded then
-    for auraIndex, auraInfo in ipairs(BuffFrame.auraInfo) do
+    for auraIndex, auraInfo in ipairs(BuffFrame.auraInfo or {}) do
         --if isExpanded or not auraInfo.hideUnlessExpanded then
             local auraFrame = BuffFrame.auraFrames[auraIndex]
             if auraFrame and not auraFrame.isAuraAnchor then
@@ -2393,7 +2393,7 @@ local function PersonalDebuffFrameFilterAndGrid(self)
 ]=]
 
 
-    for auraIndex, auraInfo in ipairs(DebuffFrame.auraInfo) do
+    for auraIndex, auraInfo in ipairs(DebuffFrame.auraInfo or {}) do
         --if isExpanded or not auraInfo.hideUnlessExpanded then
             local auraFrame = DebuffFrame.auraFrames[auraIndex]
             if auraFrame and not auraFrame.isAuraAnchor then

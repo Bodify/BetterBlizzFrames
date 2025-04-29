@@ -12,7 +12,8 @@ local cdManagerFrames = {
 
 function BBF.RefreshCooldownManagerIcons()
     for _, frame in ipairs(cdManagerFrames) do
-        BBF.SortCooldownManagerIcons(frame)
+        local center = frame == EssentialCooldownViewer or frame == UtilityCooldownViewer
+        BBF.SortCooldownManagerIcons(frame, center)
     end
 end
 

@@ -1,3 +1,10 @@
+# BetterBlizzFrames 1.6.8c
+## Retail
+### Tweak
+- Added a safe check for Buffs & Debuffs filtering so it wont error if Blizzards BuffFrame.auraInfo is missing. This missing is highly unexpected and I have no idea why/how it can even be missing. Temporary workaround so addon loads normally with Buff Filtering enabled until I can figure out why this is. For the extremely few affected (1?) Buff Filtering on Player Auras won't work, but it wont error now and addon functions normally.
+
+
+
 # BetterBlizzFrames 1.6.8b
 ## Retail
 ### New:
