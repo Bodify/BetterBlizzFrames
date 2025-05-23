@@ -17,12 +17,20 @@ local function UpdateNumericText(bar, centerText)
     local _, maxValue = bar:GetMinMaxValues()
     local formattedValue = FormatText(value)
     local formattedMaxValue = FormatText(maxValue)
+    if formattedValue == 0 then
+        local parent = bar:GetParent()
+        if parent.DeadText and parent.DeadText:IsShown() then return end
+    end
     centerText:SetText(string.format("%s / %s", formattedValue, formattedMaxValue))
 end
 
 local function UpdateSingleText(bar, fontObj)
     if not fontObj then return end
     local value = bar:GetValue()
+    if value == 0 then
+        local parent = bar:GetParent()
+        if parent.DeadText and parent.DeadText:IsShown() then return end
+    end
     fontObj:SetText(FormatText(value))
 end
 

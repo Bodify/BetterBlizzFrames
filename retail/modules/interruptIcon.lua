@@ -5,7 +5,7 @@ local interruptSpells = {
     19647, -- Spell Lock (Warlock)
     47528, -- Mind Freeze (Death Knight)
     57994, -- Wind Shear (Shaman)
-    91802, -- Shambling Rush (Death Knight)
+    --91802, -- Shambling Rush (Death Knight)
     96231, -- Rebuke (Paladin)
     106839,-- Skull Bash (Feral)
     115781,-- Optical Blast (Warlock)
@@ -15,13 +15,13 @@ local interruptSpells = {
     89766, -- Axe Toss (Warlock Pet)
     171138,-- Shadow Lock (Warlock)
     147362,-- Countershot (Hunter)
-    183752,-- Consume Magic (Demon Hunter)
+    183752,-- Disrupt (Demon Hunter)
     187707,-- Muzzle (Hunter)
     212619,-- Call Felhunter (Warlock)
-    231665,-- Avengers Shield (Paladin)
+    --231665,-- Avengers Shield (Paladin)
     351338,-- Quell (Evoker)
-    97547, -- Solar Beam
-    47482, -- Leap (DK Transform)
+    --97547, -- Solar Beam
+    --47482, -- Leap (DK Transform)
 }
 
 -- Local variable to store the known interrupt spell ID
@@ -35,9 +35,29 @@ local function GetInterruptSpell()
             return spellID
         end
     end
-    knownInterruptSpellID = nil
-    return nil
 end
+
+-- Recheck interrupt spells when lock resummons/sacrifices pet
+local petSummonSpells = {
+    [30146] = true,  -- Summon Demonic Tyrant (Demonology)
+    [691]    = true,  -- Summon Felhunter (for Spell Lock)
+    [108503] = true,  -- Grimoire of Sacrifice
+}
+
+local function OnEvent(self, event, unit, _, spellID)
+    if event == "UNIT_SPELLCAST_SUCCEEDED" then
+        if not petSummonSpells[spellID] then return end
+    end
+    C_Timer.After(0.1, GetInterruptSpell)
+end
+
+local interruptSpellUpdate = CreateFrame("Frame")
+if select(2, UnitClass("player")) == "WARLOCK" then
+    interruptSpellUpdate:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED", "player")
+end
+interruptSpellUpdate:RegisterEvent("TRAIT_CONFIG_UPDATED")
+interruptSpellUpdate:RegisterEvent("PLAYER_TALENT_UPDATE")
+interruptSpellUpdate:SetScript("OnEvent", OnEvent)
 
 -- Function to create an interrupt icon frame
 local function CreateInterruptIconFrame(parentFrame)
@@ -69,7 +89,7 @@ end
 local function UpdateInterruptIcon(frame)
     if not frame then return end
     if not knownInterruptSpellID then
-        knownInterruptSpellID = GetInterruptSpell()
+        GetInterruptSpell()
     end
 
     if knownInterruptSpellID then

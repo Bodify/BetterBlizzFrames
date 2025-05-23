@@ -182,6 +182,24 @@ function BBF.HookOverShieldUnitFrames()
             BBF_UnitFrameHealPredictionBars_Update(FocusFrame, classicOffset)
         end)
 
+
+
+        -- local frames = {
+        --     PlayerFrame,
+        --     TargetFrame,
+        --     FocusFrame
+        -- }
+        -- for _, frame in ipairs(frames) do
+        --     if frame.totalAbsorbOverlay then
+        --         frame.totalAbsorbOverlay:SetDrawLayer("OVERLAY")
+        --     end
+        --     if frame.overAbsorbGlow then
+        --         frame.overAbsorbGlow:SetDrawLayer("OVERLAY")
+        --     end
+        -- end
+        -- PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer.HealthBar.TotalAbsorbBar.TiledFillOverlay:SetDrawLayer("OVERLAY")
+
+
     else
         local classicFrames = {
             [PlayerFrame] = CfPlayerFrame,

@@ -6816,6 +6816,7 @@ function BBF.LoadGUI()
     guiSupport()
     BetterBlizzFrames.guiLoaded = true
 
+    Settings.OpenToCategory(BBF.category.ID)
     Settings.OpenToCategory(BBF.guiSupport)
     Settings.OpenToCategory(BBF.category.ID)
 end

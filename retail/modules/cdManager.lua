@@ -12,8 +12,24 @@ local cdManagerFrames = {
 
 function BBF.RefreshCooldownManagerIcons()
     for _, frame in ipairs(cdManagerFrames) do
-        local center = frame == EssentialCooldownViewer or frame == UtilityCooldownViewer
+        local center = frame ~= BuffBarCooldownViewer
         BBF.SortCooldownManagerIcons(frame, center)
+    end
+end
+
+function BBF.ResetCooldownManagerIcons()
+    for _, frame in ipairs(cdManagerFrames) do
+        if frame and frame.GetItemContainerFrame then
+            local container = frame:GetItemContainerFrame()
+            if container and container:GetNumChildren() > 0 then
+                for i = 1, container:GetNumChildren() do
+                    local child = select(i, container:GetChildren())
+                    if child and child.Show then
+                        child:Show()
+                    end
+                end
+            end
+        end
     end
 end
 
@@ -23,7 +39,6 @@ function BBF.SortCooldownManagerIcons(frame, center)
     local sorting = BetterBlizzFramesDB.cdManagerSorting
     local centering = BetterBlizzFramesDB.cdManagerCenterIcons
 
-    -- If neither setting is enabled, do nothing
     if not sorting and not centering then return end
 
     local icons = frame:GetItemFrames()
@@ -34,8 +49,25 @@ function BBF.SortCooldownManagerIcons(frame, center)
     local iconHeight = icons[1] and icons[1]:GetHeight() or 32
     local rowLimit = (frame == BuffIconCooldownViewer and frame.stride) or frame.iconLimit or 8
 
+    -- Local helper to place icon at specific index (row/col based)
+    local function PlaceIcon(icon, index)
+        local row = math.floor((index - 1) / rowLimit)
+        local col = (index - 1) % rowLimit
+
+        local x = col * (iconWidth + iconPadding)
+        local y = -row * (iconHeight + iconPadding)
+
+        -- Save original X so it can be used to prevent stacking shiftX later
+        icon._bbfOriginalX = x
+        icon._bbfOriginalY = y
+
+        icon:ClearAllPoints()
+        icon:SetPoint("TOPLEFT", frame:GetItemContainerFrame(), "TOPLEFT", x, y)
+    end
+
     if sorting then
         local sortedIcons = {}
+        local visibleIcons = 0
 
         for i, icon in ipairs(icons) do
             local spellID = icon.GetSpellID and icon:GetSpellID()
@@ -46,12 +78,16 @@ function BBF.SortCooldownManagerIcons(frame, center)
                     priority = BetterBlizzFramesDB.cdManagerPriorityList[spellID] or 0,
                     originalIndex = i,
                 })
+                visibleIcons = visibleIcons + 1
             else
-                icon:Hide()
+                if frame == UtilityCooldownViewer then
+                    icon:SetAlpha(0)
+                else
+                    icon:Hide()
+                end
             end
         end
 
-        -- Sort by priority, fallback to original order
         table.sort(sortedIcons, function(a, b)
             if a.priority ~= b.priority then
                 return a.priority > b.priority
@@ -61,53 +97,127 @@ function BBF.SortCooldownManagerIcons(frame, center)
 
         for i, data in ipairs(sortedIcons) do
             local icon = data.frame
-            icon:ClearAllPoints()
-            icon:Show()
-
-            local row = math.floor((i - 1) / rowLimit)
-            local col = (i - 1) % rowLimit
-
-            local x = col * (iconWidth + iconPadding)
-            local y = -row * (iconHeight + iconPadding)
-
-            icon:SetPoint("TOPLEFT", frame:GetItemContainerFrame(), "TOPLEFT", x, y)
+            if frame == UtilityCooldownViewer then
+                icon:SetAlpha(1)
+            else
+                icon:Show()
+            end
+            PlaceIcon(icon, i)
         end
 
-        if center and centering and #sortedIcons > rowLimit then
-            local totalIcons = #sortedIcons
-            local lastRowCount = totalIcons % rowLimit
-            if lastRowCount > 0 then
-                local rowWidth = (iconWidth * lastRowCount) + (iconPadding * (lastRowCount - 1))
-                local fullRowWidth = (iconWidth * rowLimit) + (iconPadding * (rowLimit - 1))
-                local shiftX = (fullRowWidth - rowWidth) / 2
+        if center and centering then
+            local originalCount = #icons
+            local shownCount = #sortedIcons
+            local lastRowCount = shownCount % rowLimit
 
-                for i = totalIcons - lastRowCount + 1, totalIcons do
-                    local icon = sortedIcons[i].frame
-                    if icon and icon:IsShown() then
-                        local point, relativeTo, relativePoint, x, y = icon:GetPoint()
-                        icon:SetPoint(point, relativeTo, relativePoint, x + shiftX, y)
+            if shownCount <= rowLimit then
+                lastRowCount = shownCount
+            end
+
+            if frame == BuffIconCooldownViewer then
+                local activeIcons = {}
+                for _, data in ipairs(sortedIcons) do
+                    local icon = data.frame
+                    if icon:GetAlpha() == 1 then
+                        tinsert(activeIcons, icon)
+                    end
+                end
+
+
+                local activeCount = #activeIcons
+                if activeCount > 0 then
+                    local rowWidth = (iconWidth * activeCount) + (iconPadding * (activeCount - 1))
+                    local containerWidth = (iconWidth * rowLimit) + (iconPadding * (rowLimit - 1))
+                    local startX = (containerWidth - rowWidth) / 2
+
+                    for i, icon in ipairs(activeIcons) do
+                        local x = (i - 1) * (iconWidth + iconPadding)
+                        local y = 0 -- Single row
+                        icon:ClearAllPoints()
+                        icon:SetPoint("TOPLEFT", frame:GetItemContainerFrame(), "TOPLEFT", startX + x, y)
+                    end
+                end
+            else
+                if lastRowCount > 0 then
+                    local rowWidth = (iconWidth * lastRowCount) + (iconPadding * (lastRowCount - 1))
+                    local isOneRow = originalCount <= rowLimit
+                    local fullRowCount = isOneRow and originalCount or rowLimit
+                    local fullRowWidth = (iconWidth * fullRowCount) + (iconPadding * (fullRowCount - 1))
+                    local shiftX = (fullRowWidth - rowWidth) / 2
+
+                    for i = shownCount - lastRowCount + 1, shownCount do
+                        local icon = sortedIcons[i].frame
+                        if icon and icon:IsShown() and icon:GetAlpha() == 1 then
+                            local x = icon._bbfOriginalX or 0
+                            local y = icon._bbfOriginalY or 0
+                            icon:ClearAllPoints()
+                            icon:SetPoint("TOPLEFT", frame:GetItemContainerFrame(), "TOPLEFT", x + shiftX, y)
+                        end
                     end
                 end
             end
         end
+
     elseif center and centering then
-        -- No sorting, only centering
-        local totalIcons = #icons
-        local iconsPerRow = rowLimit
-        if totalIcons <= iconsPerRow then return end
+        if frame == BuffIconCooldownViewer then
+            local activeIcons = {}
+            for _, icon in ipairs(icons) do
+                if icon:IsShown() and icon:GetAlpha() == 1 then
+                    tinsert(activeIcons, icon)
+                end
+            end
 
-        local lastRowCount = totalIcons % iconsPerRow
-        if lastRowCount == 0 then return end
 
-        local rowWidth = (iconWidth * lastRowCount) + (iconPadding * (lastRowCount - 1))
-        local fullRowWidth = (iconWidth * iconsPerRow) + (iconPadding * (iconsPerRow - 1))
-        local shiftX = (fullRowWidth - rowWidth) / 2
+            local activeCount = #activeIcons
+            if activeCount > 0 then
+                local rowWidth = (iconWidth * activeCount) + (iconPadding * (activeCount - 1))
+                local containerWidth = (iconWidth * rowLimit) + (iconPadding * (rowLimit - 1))
+                local startX = (containerWidth - rowWidth) / 2
 
-        for i = totalIcons - lastRowCount + 1, totalIcons do
-            local icon = icons[i]
-            if icon and icon:IsShown() then
-                local point, relativeTo, relativePoint, x, y = icon:GetPoint()
-                icon:SetPoint(point, relativeTo, relativePoint, x + shiftX, y)
+                for i, icon in ipairs(activeIcons) do
+                    local x = (i - 1) * (iconWidth + iconPadding)
+                    local y = 0 -- Single row
+                    icon:ClearAllPoints()
+                    icon:SetPoint("TOPLEFT", frame:GetItemContainerFrame(), "TOPLEFT", startX + x, y)
+                end
+            end
+        else
+            local totalIcons = #icons
+            local iconsPerRow = rowLimit
+
+
+            if totalIcons <= iconsPerRow then return end
+
+            local lastRowCount = totalIcons % iconsPerRow
+            if lastRowCount == 0 then return end
+
+            local rowWidth = (iconWidth * lastRowCount) + (iconPadding * (lastRowCount - 1))
+            local fullRowWidth = (iconWidth * iconsPerRow) + (iconPadding * (iconsPerRow - 1))
+            local shiftX = (fullRowWidth - rowWidth) / 2
+
+            for i, icon in ipairs(icons) do
+                local row = math.floor((i - 1) / rowLimit)
+                local col = (i - 1) % rowLimit
+
+                local x = col * (iconWidth + iconPadding)
+                local y = -row * (iconHeight + iconPadding)
+
+                -- Save original position
+                icon._bbfOriginalX = x
+                icon._bbfOriginalY = y
+
+                icon:ClearAllPoints()
+                icon:SetPoint("TOPLEFT", frame:GetItemContainerFrame(), "TOPLEFT", x, y)
+            end
+
+            for i = totalIcons - lastRowCount + 1, totalIcons do
+                local icon = icons[i]
+                if icon and icon:IsShown() then
+                    local x = icon._bbfOriginalX or 0
+                    local y = icon._bbfOriginalY or 0
+                    icon:ClearAllPoints()
+                    icon:SetPoint("TOPLEFT", frame:GetItemContainerFrame(), "TOPLEFT", x + shiftX, y)
+                end
             end
         end
     end
@@ -158,7 +268,7 @@ function BBF.HookCooldownManagerTweaks()
             -- Override Cooldown Sorting
             if cdTweaksEnabled and not frame.bbfSortingHooked then
                 local container = frame:GetItemContainerFrame()
-                local center = frame == EssentialCooldownViewer or frame == UtilityCooldownViewer
+                local center = frame ~= BuffBarCooldownViewer
                 hooksecurefunc(container, "Layout", function()
                     BBF.SortCooldownManagerIcons(frame, center)
                 end)
@@ -174,7 +284,7 @@ function BBF.HookCooldownManagerTweaks()
         BBF.CDManagerTweaks = CreateFrame("Frame")
         BBF.CDManagerTweaks:RegisterEvent("SPELLS_CHANGED")
         BBF.CDManagerTweaks:SetScript("OnEvent", function()
-            if InCombatLockdown() then return end
+            --if InCombatLockdown() then return end
             BBF.RefreshCooldownManagerIcons()
             BBF.UpdateCooldownManagerSpellList()
         end)

@@ -1,3 +1,46 @@
+# BetterBlizzFrames 1.6.9
+## Retail
+### New:
+- Healer Indicator setting: Adds a cross icon on Target/Focus if they are a healer and also changes portrait to healer icon. Settings for both in Advanced Settings.
+### Tweak:
+- Cooldown Manager: Now supports centering and re-arranging on the "Tracked Buffs" bar as well.
+- Added a missing Solar Beam Spell ID to the "Interrupt CD Color" castbar setting and also added Priests Silence back to it.
+### Bugfix:
+- Fixed a couple of issues with the Cooldown Manager settings. Please Bugreport if you run into more issues.
+- Fix "Format Numbers" setting still showing numbers when the "Dead" text is showing on a dead unit.
+
+
+
+# BetterBlizzFrames 1.6.8e
+## Retail
+### Tweak:
+- Skip "OCD Tweaks" setting if EasyFrames is enabled (not needed)
+- "Hide Level: Always" now also hides the Skull texture for bosses etc.
+### Bugfix:
+- Fix Castbar Interrupt Color's "Soon Highlight Spark" Position on Evoker Empowered Casts.
+## Classic & Cata
+### Tweak:
+- Slight tweak to "Bigger Healthbar" setting because with some size combinations the healthbar showed a few pixels outside of the frame border.
+
+
+# BetterBlizzFrames 1.6.8d
+## All versions
+### Tweak:
+- If "Class Color Health" is enabled in BBF and BetterBlizzPlates' "NPC Color" is enabled the Target/Focus healthbars will now be colored their BBP Nameplate Color as well.
+- UnitFrame Background Color (Misc) now supports EasyFrames.
+### Bugfix:
+- Fix Arcane Mage Charges not being moveable with "Move Resource" setting due to it being missing after some code cleanup.
+- Fix DarkMode setting affecting ActionBars without that part enabled when the dark value was set to 0.
+
+## Retail
+### Tweak:
+- Quick Hide Castbar setting now also works on sArena castbars.
+- Aeghis profile update.
+- Tweaks to Interrupt spell list for Castbar Interrupt Color.
+### Bugfix:
+- Fix inconsistencies for Castbar Interrupt Color.
+
+
 # BetterBlizzFrames 1.6.8c
 ## Retail
 ### Tweak

@@ -103,6 +103,13 @@ local defaultSettings = {
     combatIndicatorScale = 1,
     combatIndicatorXPos = 0,
     combatIndicatorYPos = 0,
+    -- Healer Indicator
+    healerIndicatorScale = 1,
+    healerIndicatorXPos = 0,
+    healerIndicatorYPos = 0,
+    healerIndicatorAnchor = "CENTER",
+    healerIndicatorIcon = true,
+    healerIndicatorPortrait = true,
     --Race Indicator
     racialIndicator = false,
     targetRacialIndicator = true,
@@ -684,6 +691,7 @@ local resourceFrames = {
     PALADIN = PaladinPowerBarFrame,
     DEATHKNIGHT = RuneFrame,
     EVOKER = EssencePlayerFrame,
+    MAGE = MageArcaneChargesFrame,
 }
 
 local function DisableClickForResourceFrame(frame)
@@ -2183,7 +2191,7 @@ function BBF.InstantComboPoints()
     local _, class = UnitClass("player")
 
     local function UpdateRogueComboPoints(self)
-        if self:IsForbidden() then return end
+        if not self or self:IsForbidden() then return end
         local comboPoints = UnitPower("player", self.powerType)
         local chargedPowerPoints = GetUnitChargedPowerPoints("player") or {}
 
@@ -2262,7 +2270,7 @@ function BBF.InstantComboPoints()
     end
 
     local function UpdateDruidComboPoints(self)
-        if self:IsForbidden() then return end
+        if not self or self:IsForbidden() then return end
         local comboPoints = UnitPower("player", self.powerType)
 
         for i, point in ipairs(self.classResourceButtonTable) do
@@ -2282,7 +2290,7 @@ function BBF.InstantComboPoints()
     end
 
     local function UpdateMonkChi(self)
-        if self:IsForbidden() then return end
+        if not self or self:IsForbidden() then return end
         local numChi = UnitPower("player", self.powerType)
 
         for i, point in ipairs(self.classResourceButtonTable) do
@@ -2304,7 +2312,7 @@ function BBF.InstantComboPoints()
     end
 
     local function UpdateArcaneCharges(self)
-        if self:IsForbidden() then return end
+        if not self or self:IsForbidden() then return end
         local numCharges = UnitPower("player", self.powerType, true)
 
         for i, point in ipairs(self.classResourceButtonTable) do
@@ -2331,7 +2339,7 @@ function BBF.InstantComboPoints()
     end
 
     local function UpdatePaladinHolyPower(self)
-        if self:IsForbidden() then return end
+        if not self or self:IsForbidden() then return end
         local numHolyPower = UnitPower("player", Enum.PowerType.HolyPower)
         local maxHolyPower = UnitPowerMax("player", Enum.PowerType.HolyPower)
 
@@ -3375,16 +3383,25 @@ function BBF.AddBackgroundTextureToUnitFrames(frame, tot)
         frame.bbfBgTexture:SetColorTexture(unpack(color))
         return
     end
+    local EF = C_AddOns.IsAddOnLoaded("EasyFrames")
+    local parent
+    if EF then
+        parent = CreateFrame("Frame")
+        parent:SetParent(frame)
+        parent:SetFrameStrata("BACKGROUND")
+        parent:SetFrameLevel(0)
+    end
+
     local topAnchor = frame.healthbar or frame.HealthBar or frame
     local bottomAnchor = frame.manabar or frame
 
-    local texParent = tot and topAnchor or frame
+    local texParent = parent or tot and topAnchor or frame
 
     local bgTex = texParent:CreateTexture(nil, "BACKGROUND", nil, -1)
     bgTex:SetColorTexture(unpack(color))
 
     local classic = BetterBlizzFramesDB.classicFrames
-    local yOffset = classic and -10 or 0
+    local yOffset = (EF and frame == TargetFrame or frame == FocusFrame) and 9 or classic and -10 or 0
     local xOffset = classic and 2 or 0
 
     if tot then
@@ -3422,8 +3439,7 @@ end
 
 function BBF.FixStupidBlizzPTRShit()
     if InCombatLockdown() then return end
-    if isAddonLoaded("ClassicFrames") then return end
-    if BetterBlizzFramesDB.classicFrames then return end
+    if isAddonLoaded("ClassicFrames") or isAddonLoaded("EasyFrames") or BetterBlizzFramesDB.classicFrames then return end
     -- For god knows what reason PTR has a gap between Portrait and PlayerFrame. This fixes it + other gaps.
     --PlayerFrame.PlayerFrameContainer.PlayerPortrait:SetScale(1.02)
     PlayerFrame.PlayerFrameContainer.PlayerPortrait:SetSize(61,61)
@@ -3955,10 +3971,13 @@ First:SetScript("OnEvent", function(_, event, addonName)
         BBF.DruidBlueComboPoints()
         BBF.DruidAlwaysShowCombos()
         BBF.RemoveAddonCategories()
+        BBF.HealerIndicatorCaller()
         --BBF.AbsorbCaller()
         BBF.HookStatusBarText()
         BBF.ActionBarMods()
-        BBF.UnitFrameBackgroundTexture()
+        C_Timer.After(0.5, function()
+            BBF.UnitFrameBackgroundTexture()
+        end)
 
         BBF.ClassColorReputationCaller()
 
@@ -4099,3 +4118,136 @@ PlayerEnteringWorld:SetScript("OnEvent", function()
     BBF.CheckForAuraBorders()
 end)
 PlayerEnteringWorld:RegisterEvent("PLAYER_ENTERING_WORLD")
+
+
+
+
+local SPELL_FAILED_LINE_OF_SIGHT = SPELL_FAILED_LINE_OF_SIGHT or "Target not in line of sight"
+local SPELL_FAILED_OUT_OF_RANGE = SPELL_FAILED_OUT_OF_RANGE or "Out of range"
+
+-- Create alert frame
+local alertFrame = CreateFrame("Frame", nil, UIParent)
+alertFrame:SetSize(43, 43)
+alertFrame:Hide()
+
+local tex = alertFrame:CreateTexture(nil, "OVERLAY")
+tex:SetAllPoints()
+tex:SetAtlas("UI-LFG-DeclineMark-Raid")
+
+-- Animation group
+local ag = alertFrame:CreateAnimationGroup()
+
+local fadeIn = ag:CreateAnimation("Alpha")
+fadeIn:SetFromAlpha(0)
+fadeIn:SetToAlpha(1)
+fadeIn:SetDuration(0.05)
+fadeIn:SetOrder(1)
+
+local scale = ag:CreateAnimation("Scale")
+scale:SetScale(1.3, 1.3)
+scale:SetOrigin("CENTER", 0, 0)
+scale:SetDuration(0.2)
+scale:SetOrder(2)
+
+local fadeOut = ag:CreateAnimation("Alpha")
+fadeOut:SetFromAlpha(1)
+fadeOut:SetToAlpha(0)
+fadeOut:SetDuration(0.1)
+fadeOut:SetStartDelay(0)
+fadeOut:SetOrder(3)
+
+ag:SetScript("OnFinished", function()
+    alertFrame:Hide()
+end)
+
+-- AoE and retry tracking
+local isRecentAoE = false
+local aoeResetTimer
+
+local function SetAoEMode()
+    isRecentAoE = true
+    if aoeResetTimer then
+        aoeResetTimer:Cancel()
+    end
+    aoeResetTimer = C_Timer.NewTimer(1, function()
+        isRecentAoE = false
+    end)
+end
+
+-- Range error retry tracking
+local rangeRetryCount = 0
+local rangeResetTimer
+local showSuccessRetry = false
+
+local function AddRangeRetry()
+    rangeRetryCount = rangeRetryCount + 1
+    if rangeResetTimer then
+        rangeResetTimer:Cancel()
+    end
+    rangeResetTimer = C_Timer.NewTimer(1, function()
+        rangeRetryCount = 0
+    end)
+    if rangeRetryCount >= 2 then
+        showSuccessRetry = true
+    end
+end
+
+-- Show the animation with a specific texture
+local function ShowLoSAnimation(type)
+    alertFrame:SetParent(UIParent)
+    alertFrame:ClearAllPoints()
+
+    if type == "los" then
+        tex:SetAtlas("UI-LFG-DeclineMark-Raid")
+        tex:SetTexCoord(0, 1, 0, 1)
+    elseif type == "range" then
+        tex:SetAtlas("UI-HUD-MicroMenu-StreamDLRed-Up")
+        tex:SetTexCoord(0, 1, 1, 0)
+    elseif type == "success" then
+        tex:SetAtlas("VAS-icon-checkmark") -- Use a green check or your own success icon
+        tex:SetTexCoord(0, 1, 0, 1)
+    end
+
+    local x, y = GetCursorPosition()
+    local scale = UIParent:GetEffectiveScale()
+
+    if SpellIsTargeting() and not CursorHasItem() then
+        alertFrame:SetPoint("CENTER", UIParent, "BOTTOMLEFT", x / scale, y / scale)
+        SetAoEMode()
+    elseif isRecentAoE and type ~= "range" then
+        alertFrame:SetPoint("CENTER", UIParent, "BOTTOMLEFT", x / scale, y / scale)
+    else
+        local nameplate = C_NamePlate.GetNamePlateForUnit("target", false)
+        if nameplate and nameplate:IsShown() then
+            alertFrame:SetParent(nameplate)
+            alertFrame:SetPoint("CENTER", nameplate, "CENTER", 0, -15)
+        else
+            alertFrame:SetPoint("CENTER", UIParent, "CENTER")
+        end
+    end
+
+    alertFrame:Show()
+    ag:Stop()
+    ag:Play()
+end
+
+-- Error listener
+local f = CreateFrame("Frame")
+f:RegisterEvent("UI_ERROR_MESSAGE")
+f:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED")
+f:SetScript("OnEvent", function(_, event, arg1, arg2, arg3)
+    if event == "UI_ERROR_MESSAGE" then
+        local message = arg2
+        if message == SPELL_FAILED_LINE_OF_SIGHT then
+            ShowLoSAnimation("los")
+        elseif message == SPELL_FAILED_OUT_OF_RANGE or message == SPELL_FAILED_OUT_OF_RANGE.."." then
+            ShowLoSAnimation("range")
+            AddRangeRetry()
+        end
+    elseif event == "UNIT_SPELLCAST_SUCCEEDED" and arg1 == "player" then
+        if showSuccessRetry then
+            showSuccessRetry = false
+            ShowLoSAnimation("success")
+        end
+    end
+end)

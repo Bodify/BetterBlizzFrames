@@ -527,7 +527,7 @@ StaticPopupDialogs["BBF_CONFIRM_PVP_WHITELIST"] = {
     button1 = "Yes",
     button2 = "No",
     OnAccept = function()
-        local importString = "!BBFnQvFWrrzAEMzYmmRuRlecq7zW01wClWvSL7XzOSqnHzYNObivMWeHTUsENzENm9LE6ES)yYnrWfz3)qQckOyTUsS2vICuYAvAjIxHB2vGBtXHIwOZM7diwlFLY7oVtpyR4PR)HRzFEE7(TNEs6PZ(pIP7NN333NN3Fp)E(ONaFV4zigKN9FxiYdD7KXvi5PNU3CeDQyICszn2hvrMOninZU(UszqroIu(cQAgefJD1xAvzvThnqOaHm2qYYbpnObvoJ4aez5Y1HkySHYH3v5ipAOUB9)S5M30cwWc6U1B3sl7c(Fcje5p83akvyjXsPRkBAaBivJQizuYsx89wAJBGq9V0NJsV0TvKQvqDyq0mIXjAAsunqEBPa5rnbzfcTLfzT6fPkdkPmOyBAM6KmCP96ezRnOPq43(0G2t3RMuEvTmsezWOksTpyWlDmRBU4flc6chWGXkbQCKnRyq1G9Klm84kwr07Tr8qTS4YuDD8qPMvmbjTMuwP0057Gbkh9jVDN2lf(GN82Snub2qIbQVqD7(lGny82LkkPaoudknJ95aEd)CekKWcFOMr7lMsAjQIbEm6rvJohhjiw7XyUD3N4o1GLvnpx6q2s3ESO355rHRpHPwrPIGtBZk6gskPn0NxB7opVqGd)IO233Mvst0uigsQkBuSltc6)vW9D7A6QPDwjhpV9zfuxi0buHLiv)5u1u0TnC4z(acdF1vIi32YPPQOcob1c8l5RUsxOVaFYxcInv)QMPZHhLhJOLNylj8oF2Gah(qOv1uvwvm4(IOHlum9CK8eh0ciThqRaNDFWAC8y6PPkzikPDK(S7BUsh9zhf3WfVvQroQMUHQwEXoLjdo7lxqoHqP(1GSL)oCxvQFTlmsOfLGDFKOGgLKbV77phvCaiEyJI9QPAqtJgdx1fLWhNqWp7im(b8WmeLwGffYIo(SJ4H9gj(xYmHykgsF)Tqguknqgr5Kk4RDD1e(z(kgcTnvmsf8WaXqmDDIPSb)Q8z(kp2KqTCt2MGgvCkr3qCajJCsogul30sPUB9)7p(nOoG2x6Oh98ZmZmHIU7dGWbhULb0ig5QfYeewiWKdGXLBtlfEP3lYFXVdNCa((8zF9FuK53oFtn16mZ8nHWB(FmEbjuBu)z)XcbVNtIwYYzU31j2brZi36ejkze7usZHh6EoPhyLYFcJKSpvl0OBUi8Kx(t85snuQZwn45SUapbE)xhVXDH65277)6(SM1DJR3jJT6gxNdwHJx3uWKWZNbcaLKronHWVwVif22kaWtlQj0k4x5VwVUHixBxy8t7QQ5b1vYWPgGN7v02r7Gbm2UceTXwxkKGQ48YpJkke4ghduEI2LYM1eYHYaVCl)ghZpIOj)lTW8PuZlz5Xe7rkFQAEZdka(8Zv9vW5CDfeSUwySXBLyyQrxTUyIHHe6kGZIdjQRfxoPi3(dX1QjEq2T)qpzI(jC8Of67N4vK16pf6d2jvrSt10M6I9t5CLWRCTLHAgVcND6qiFbq6ZRcaKP2ETONZkHZMtttPAIaEO0ejdZmCa85EE)aWI3I5Y7faquGvf3(TaWJA6YbfeQ)FapZhpUSQAgGC1H5gEUxUIuNNFbv2DUs8fcr(9OhVWk6bSEQMyTy7(9FOlxwDVYoWfSb7xc)PpENDGvBSpOkPH0hItSbp0hxsKOIO11rka9TfPbZXPqHN7H1v3K)piRwmtncG01HcFkvE2LqaYie(m9G0L9bvfnmEnhxMmItXuNPh)UIwKaAUFBoyyrc2chO7w)LccBYk0zS7NfERrguvb(pol9y3Vxq4jzEqrNB5RSIvyr7oQLmoHZtUJO)GFzsSeR0LetsL4Luap1RR6f)tXBZL2hCa4CvjKDNSdKWd9I8oyo4XBNcPqeBlhwSn3P)oUthx3goK7yD4pDt3(2xe38g6csvdxdqHxfL0LsjjxPCAqe)U4h9FKfl0oCGZb5oHYLlPBqKD8sJxF9wEPP002RlVeOievxpc0AhaAUOxGN6hF3pD9mSJwAcwPQzfZgEJhUPW75zzUjWaX6zSXMvJ1azec(VTvuUe5izuhwSD7QL8oEgKviWLxULHlrftvY6wByOscUx7YlV2gXh)WyYQp(HrjcoolVROvpq10nptKnW8AZeHr2Jv0PJu9RPnnjJ1AJS)NAObrB4)FbJFB7Ygs5jylsvNGgfWn5WgoC1qKdxbIe9VTaZotuaOwGuAzLDx)g8wxRt4roigqLiV6qqTrQojHQqFbsie6(2mgCWycLn1nQnT59T5OVXtBfibRNSA6HS3134PRSRrBAAqKP7sdjYzvBcLyM3wWMM2psIilaHF4Id8)5R95iYcec(GxljRXhhU2DwHdhEPFi2FXLavNOFGcZPTeoK9xCjFjXWodNI1ngYm0f01CP5MryrLGIo7gK80q5KqPOyF0dXVNBPB3r7xDe0iyj7YwIXOQrhMJyV6i(DwADtGQXJlB6Wk16M8r(GHNcHn3lqOGGHTkzocrDDSWeGfp9qIB7VV88vxeSgr)xFx03zLKakfPnNreaVXLLf83MKrIApjbWzLekXMwvuCn3MFBsHWzwn6a7LssthMcTS7uqyMv7cQn2TyjmK0bYz9kbbJDl)yiv2s1XI9IdRGwPBmqa)qp)Um4DwCydPAdbu0jYPAAhZ4vlg8aTFhCdTmCyehh62aQcUBIwE(n3YoDT3WOp0zyX7jj5liPb48oYNsJm)UrqpHiTCzq3uXn10u5Wk4z(zD)H)feIJzaeDi1QzGiiTqO1ogQX2vYPkxYvdB1i0DTJjewFN4DlMHcX7wDCXwo9D6rcJGx5nyqPyWLCANUh6GmOSt4(vEdp0lqFylxfUh3tEGpNKhdI14P3a58loB)xbwfn7HovB7A)xriYApbUHlXEOnZP1A49(blJeb0ECSdFGy3DNwWBMR5fTHFoEU6OiPQBOAbgA4NdLbHfVXQxIz2t2dpqQQ8Al0oV2cXyKktQqCnDJX8RLNAjYLWMRk3i)mEPoCL3jWHUiJixtvjfGK474H8RWL6FH9J4OkXv2Db6FyfOLqOPwys3npn1cDref(cxhVuAibg8ymmWeZ4TIrhuYP7XlCDxN9W3sL15k8V4tdwUTADIdm5JxTd9XTwMUB9wlzj2h3l8Cp3Owvh(b4qyG2naueBwoCh3hKWJl3sSrHS42KvjdXAMIvf08p9TsFLq4))NaJUIdzFXK0eEoA8f(LFyM3hpFwdBA4kjSGN7Y5eAQOv7QJ6YvhzeSnOJKGKLoigZXTWr(q)IVAdN03rIRMPexj)Zoakie69ENK8r0kRwyUZ7eeqiC7Sb2vFxGlxIaUC4Ah4oL51IGc4ZbRUHgMfnZ6Jfkvds5BvsJT2W7D7yAUyYkZRTtsrvN0YnxSICrF3UWKh9kbr4AwJGvT2fCbsleECSK8XHwBtRoiKNQcTa8g3HCV8Dq5IPBOrKTg5phx(Y3P2Mz0vZ6OJnilOzJSMUYIU6E8Gvn80hNDjROoCgnRnXBgrqqHWVYIz(WoYtHtvgX2uZN3uXLj8kl2pOXvXXHvEfCh5v9yWxcHI)3HNNUXKpdub0bp2Dm91X7YY7IVTxFyVwPPURQX23LBSDIXtAxAABQYoq7eJ7xiv63ddP6gAcH6AYTyJb)SgBCtU7Fj97je4K7fnewM3EjPDU9o5E9ZfnYejztPY6Zey1YI95FKj8tXdwhYs0hPeIc72kgIP2bRR2QTQ1GEOrMVy0vTgJHqWyF00dHteQsVKgd5HJpyPRIgXwOgK8QAfYPQ7qndVYl2XVjjBu)qPdITxP(b45(a03nItMogCxOGALfYRn)FdjqROFobn6ET3JpN4cve4WSr03yvFtG2adGYQ2OdztxFqGr9kA6G48NNEBP0LyLOKinbCyCy6bpGp3GbAfzCkSuRqxRP5x57OX2Ywl6J(r(Sx1nCh(Zkg2h3kU0l3948MD1mFCR(HUAeBbSGqvZde7xDySumLb5yTg9RBWWh4UHfjvF4OM4GA4z(PHeokcTUKLYxq3zkesR3ntWxGlA59wBARV4Ufc))(xZo(junLtzQb3PTtZRQa1E3MKwANYobXCZqmZk3G1sENJDS)zRLKv1QZKbSNS2AzU7zwPqGxcZIPzxXd)s7LEhpq8pJvpa9sGwwtyApPChI6N5m(DpptJ2v01isf7UIUKWo7uqxW0yVctetwwI92kewD3679cVayraV1N(up1O4QwH46YaJri0L(uoeiH8Jt8khfTKgQUy((n1mCvn)r9BbU2BI72E4cFT30d31fWpaz59B7EUWl6fB)iSIgZ6WwUqptj8TQoLW3Y1fE4h8)cP3JjJZPRFP8ZBhzOgcrwiB0oRNh2TWd7X(g5ctIlT1OeDLmaEUFmcV7tI8I9iLftsLwTYNQ5DFsFigp3G4b6q2oRZnOF7Wh9JqmI9m5SQLTMrsGWr7b5OMiouXl7tVRvHRUNIECVDU2sA3trz3LZbpp6BJDhmnZJGLVNPyLpFk8o3CY7(TsI5EiYYLS(5c4m40D)w(rEmDFS4e4FX4wCMcYqB25X0fXPK0G3KxQ1V5RyDia)7ST8GhpHzkapK1KnfuHW7H1s4IXXKmRV7vnOF2ZjecCc8hHrkRVTm)SFInmx)1QAcDxpHLiRQj)IAkVowyxhSXQNrSp6GufOMmJ)m6Devwi0d)FG7v7LN9aeHxie55Fax)AgW)K1gmX(tXyz0mo8OD3g66G)bpSv1ThoUFVB1tiW1Ezey3ojFbiXQRbNaVWhG9o2iAZlRtnQYisZ1OXZXo2Op638zyN1MzSRqPdzGfIiJfA1NPEUzJDhd)wzA9rkGFKo7LFSt5hG7apUBYf4pDHIdTIVMbCC(fy0pWciL2zK8R4R9lmT5Sj9ON3UShBeZZ1Cw)oA6yI0jqsnX2LQAyeWR8XLnwzCJxAh5z)YEa)e4SgGsku7zibQiu3GuqT91VMjvpNATBPaKti0sFPK8z0dGHk)eLW34NjDbCuHL)R4MXfUvzxvfCr2eWz2BcJk)0rU4MRsi8JpxyjB1esrAnT2e5GocDQn5I7YL0bV52Dhta)jo5ymPhR)m7p7HqKxelGV8pKtW)It4r6GWF0ODw7quq9nX2)pAuH6UlKsOWkCGn2HFDkzyqD1OzTc1b9JEkCc)tXQUgTr3fyFQN2pp8zW5Qw(b4UJZ4ZuuFomyPChwI(CNYdBoYVbXWNElq9WfvLP(91FarJE(dXIvppRJ(GhPhP05sPQPutkLG)34yhoo0qAktDd)MXjiPqWVe)Ib7lPQuMS(9Hja5I(RWYQN2zOJwXG2(VF1R6J)RUp9hXsab)laW7pNQjGrGkgjYCmvOhbNEWPTMrtvD7(iDvb6Tp8Nby)LkqNGyQrgiNKbvws34p9d!BBF"
+        local importString = "!BBFnQ1FSXr1DE2D8UElrxVetGmusWZDIEHiLtqPNJQao7S76FLw7elVoBiOwD5T7(2Dh8SZSm)y9TMC0MuQevkrjkfvrqhKFueuKOQb6PqnqsOrPbsqu26R6sc6sGyXDLRLlbzku(dk(((9nZB2NJND89x278((99EF)1NV)yMi)DPkqSjp65KJFpxjBkDsf6loszIfvjtz1I27KQRrmlrlST)w1cij7tTsvdtBIU92gnVHMH53mIuej71LTr0xe4GQvqzlenTgTHmyVUgX2wJ4FtPb75)QRUw)1DDx3G9CLU7EBW)ijh)p)1bMQUSK5Sm0CSHdKAs1vTR7YlUUl34bi3XH(yK6Byt1OMvnMaiTGskIPPk1eO3JkGEKtGwzPHxI7UxJQxsvVKsAthlsbo1bDJ84g4uo2R(Ia3ZoIPAfdZcQenqOQr9UyWI(I17T0LQa8cxWOjRdSSVnOBtnHZKtm84MsrIBzL4L6gtPrTSWlLrrLmK8MQfvZtxSlgWCIh8k97Tv4dEWRWoqD4aj2i)YTT9pboGt2RAnvDqHAtPf8UhWk87HKKC73txO8LupVkv3gVgdzysxGIeiR3Km1U4nUFtyBnQWPwYJ6EtM4QposChzCmRPwduABq3YwvpVT1IkBx9XLJS3Nc5(w3GEEIPoXw1q)UvgWHG6FD8C3SPLrE)DYxZ7Dxb2LL2LbSf5gRSHPULNGdpleNW27CmGJd3RHrfLTOQxWQL7pqPCSZVk0ppDztdDdqLzuL7sC(vj4Rg5d(uGSzgZWjFz8I)TiMviEucRfY1jYE3dQd6CE6GKG1LyIBusRYKkeFFlG6aCeJCSDIIusR8u9ce98(uFSDUqQt8OhepWLUrQDzQPLTHzfL(1iLUwxbGozPCVcqBJ)AUIn3Ri4rjTKmmRxMQMusb0tzSYuLTarp3TYiMg208OWWzDjzcrje9d3hdnbVmJtPvzXSSyPpCFbiVXt9PmriPUT6F)WKsQ5bOlkhccxwW0eBhFgZFoTbgxdAyagjPLfXrZMBk3XNfWHi197XoeuOsrjw2G3IDzvFbQ73ZLPb75)9V8fipa3Nz)7)eZn3Csj2(Uq3bFKOTysSl3k)mGy5ixylyu8MmZHg9rq0oUn8cBHFoF4N)xuy6Tt0zN9m3CFHeA5)(Ob6MBDmYX((YX(xEugebyMqtTAPY2liUhOro6n)SOeFtmZWAv6JyAxETke9ck9RA6JUDZpBa(un(ag07OgUETIiCOe24dclc4DpaW809QwSOdKeIzp5c)7EGqyuk3XMV35Xe8oJ(PNbwCNznulueeNwQGa6KB7DVu)meZ39sCTcimdsbfakn2OBTQgIRkh7NnccJUPQGtVl8ikZChPF2iIoExCB417g5lEXTfKx2TUbmhskndJcAow2T8Ecekh93JGDhoTrLCaPUbxTqQ(9gYXUWx1nkjNrfvxKfLHuRKRLmbmihtPt(LUfeP0PC026MH6VrITJjD1wkzMakCqhuiCNK26wqre)kVnUNk8WZR82bIH9iCpzx)2hjiTvUtWT4neteHlih)xvebrgMOrRzOr1fYVETcbq6JDeCNwJ7X9yhjOdt5Ym93iGLg3n0vyyiHrRnrkxwUJFm6FCyM9eWw9bUHNhWre7OdJ4eJcfpmb6lLsJmPFnhhD4q89J)rOoT6kgcu6utLwHe(rVTGDOTNBROmVCVfHF26diXwX6w2juV14wJZb9GhgchVWdJEYBauuG0NFCpwEHhw4giDxOwF67NQR0VrEhlLXO8SKWsIXohDi8QEN(6IHcdhyjYiX)v8DAjYEehzWE(LYYRNruS35G93InaPo6jzWDkUf0YoZ35Ga4ltJ934BYp3kwHle8bDTH(WSxyRjUZFPR8xxjlvLxmc80GCTw6pcTE3WOKsuoctgnXeFafbWx8x)vyi5uiDIs6Yyz6Cl9RlMAUT1ThrKr4Nclg5vpnE4lFaiFau5kuYwnvl1CQAnlehijmFVd(tybg9cx4YqEuOq76w2enFT0j7OdxT0mMMFpbTeWiyN7aDS6fCSeamGNgYb226278fN9kios)JdGH9ULZafTBYR)fwqWJkYfFgKSEjvQcEFdsyPeyY6fFMqo6iV1n5kRQuLC1Dnuty4FgWYHPOEQPzNjONusHA7YCR1tnDqw35IVo2QZfNHBJLZzHO23EAtv7145r)VT8LR452)vyOWBwZwTcb7MA(zDrceuarFVnl0jb(ta5jtvOkntOU9mEvfK47uLjVWcAAkJslQjwghSQyq6K7gX6YuXyCiM3WpZstyzGc5yNgtdwDzB0rttTyDeMldunTdxfcRlIqSeSNQzy9XGrgda9BwFHW9lPUSupRhOmvknh)yMEwFyOeXVo0XdXN6pScca6GW57Jh37gDFFUB8G9C5LTmVA9o1J9yhKz2ARef34XmDOwLnADgCGo5y)5FnkEO3VIV9TLCaud1zoi6dbvqcvFInApoxA7EqXOG1mfUXBwVSHwDH6BBHmUMPsmfcfBokPkMd3Z8o1rcrbgn2mOH8wa8c0GVrvNjjgRLfsa5TYpUYM(NBSyDAd7HS0k(CxxmEpJJraxS8(qbR4Zd7s8BZYqo9g8a4HKfQXMs0x8UPrELJvy1O6CekjpDck0HVFTBfwDt3WetHP(pCVQwaISvt3)PUCixTy76(erPGFkyFI(72iICNPmPGXek9scR6eGwzPBehhXHHoiGAqfqRGNh2vW6(XRqp8RG19hemt3VfquUuoMMgtWbK6(TcBB)r3fE5tAMNGZyWPzAhyLabYA3diRDeGQzFPk3(GqJu01WJ2J)4)dIysWprKcM2PzH3SkUKJEUxGz4tAHqw8v7JusZVZKZ9cbCxImk2Hu1BwCSc8HG8TaWiUBhqxR1ajgmn2Ga8hKMOZKc8kOMJd5BWm4ncUjq54R5PziFEZMzb9edRhwYJ4XrLo2Aoafte5lE8fkOjw(tIXZ9vJmpiLwn9LL)KaQ2qZhKBiU)QiQ59(FGe17cG2HfKJFM(Wfxf)EDM(eqYJSNtZWBnn0ZbWD8tzpHvzrhpXpm78vVUnx1cnS3vb4swAM2fd(GFke8fxhlZwit5i4uhPnhucqqyU)x2G1Ei8xM5Vr6wrPuxy1)x70(0ZBdoF8ARaAc5SI804CvZ5oaiUo7Pxxa276SXAS00AgKXzNddAzXN7w9pdA2)PD5La54NFdUbJibmihDU3erKCRZAIM5HGNly1LMjX8TdjeSdr(vFgtrc)9AphOmcNCq1OfDyylYrBSw8kU8(0nb))cqLiLGMKmj2))W5gzwoY2Fjm8zuqeR7omy)IB3(lfsK()(BaSn9WimLj0zBA)jBdRiiksDvlBZXU2pPMHFviDvtqFe7p9pH5Bsz4GyAPi8(IWfc5wC808aRgIJPbEUCStIfqFsOR08gLa34M4cWkIN8LMa3JVdFXlnraorRgHaMHnVjOpGIoc56w9qbGMgB2ddmSVm6gtuaQ1S1vyaeklDECEsnK5kMZh0KJoEj0RYTJMrGcb8o9JxkKGePupaElgel1rSG)upGi(ZB8GOMFi1IuL0g5n8vtWcHT3ZC9Z3b(6fbsYCYSE1qM2qJFUWtdzdJM)SOeoi00avyqRyP8)RRCLRxmVF(Zkh5z)EOOXkqSP6aFCihr8tDb8oZhnn8ZWiUDSzQd3xoOXIH9Q6NXv77nadU0KylmtZF9cSQU4QMjNU1hJ94SOpA(XrOWMD6zpEqhYmFP5RZ)sc68y7gNL6SBkNLkl)DM8eyl5E17ExHefTD0nz2KGIhs23lTiufYI)2GaUs8Xe8(8aE(IFmrmWFsmrZHHkElqzdp3xB0Easw0l(lyWjuBsfdZQLnSu9Nr2f)fbfGTRVmWqUrX5b53H0U(YTwiF)EqCYBsmJZ1wOX73ty(7RCwCdKNxklS5VjW6L0lXfVvoBy(uF4ZlAaHFkAavXQhnhqtTsvl)chvVlrSQpbL6QRCEVeK0G2IYQxRpnh9wxUmWSCS)WxJjfzmC0Y5ycC3lTIHUAEL0QM59lreiR5flXooAw289iQGxLJ3eD9X)2XrdrGJCOxhLjVcv4bPh61dY5E3sio0OK6OOmOrv)2Z3TuyQ05wPxn0ReRHuSg6SWP6xcD08y18tNeAUMTAteMb75SpXt8AWDyWE(Jp0dDqCxBI08wjof(U3A8iEs7PEQG8Ep3(rn0YNFn3J5yAlu09(dviw16Cx7Qh4aVMRrJvdV)KnCt0wFnUI6QKJ0dMxT6n4MsY9Lj18L(Y0Y9ulmdZEX3UvJDWjEVhmGCo1)ISS3PhK0rP3MJLbEEi7CSVX)ng4NudNz2yQvw8(nbosmekotNcGkyVszZMh2q1csJx)841F7CTB9ZVqIUTBhjzIf74VTBh8WAdj9h47W1wyAU357IxvVouDX3AzmhqSCSNBPOPAz9vbQld6fpTrLko6cLJ8ClnSJ7zUkMHiPL74Nk7wmbBVFMRgcM(RIDimlZQbLNLSqTMVVtynbyN4tItiFFzifPLCAwKa84WmY9YEBSDmai(QeaEhoJ(QKtJYH5bccH92gFcMkHvZVArvOW1bmHs)8FL8JpHaQN0zrqe3VFanxCHgIv7HeilLgFNp7lLrH6CXiCVoGHBJ9oC(2Uh6T1zyY7SJYqzG)IrD4ap0i5PvWeMPOK8GXK3Q(VbFBVnEiUA83KjOSxNM92SWOdLm2nFx5NEdIG9N6smuLmvvnvTXojyvANKwYp3iqstgs8g4aENDevOlyt3VgbJw)IYaQtS17gpGBSFtQ(KQlS5bKQTE3H4J11rzD73fldauarbyJiAybqJ6yvEba8)WZH5c8(AtAzidqMCK38NJipcP54(8V5ppK7Z94MOklPcQYYJEKMKfFGxaFYr6Qyqk7b84ND2Dvmmpelm790mtAVQZBoeWsHCPNQbdiVVkSVDhqZbQVTqjvB98obwE)7f18V)9Yu8n6QvxkPB4qz5VYgOeHMF(r4kHjmNcNRxJ167MDzb)YiNFs0pRFdtBV5uNYKYhqgSyi7B0VXfZY(4A8FlC3FZx9hSyiQPoXYVM1fLG9nua1U5b2aRfMS8tpdZWafk6)nZWLRF6zcJX)Zc4r2CilzkB44fpfYuwa2KB76rKLQRWF0TELe0VQTnviMSvyta)joc(AcNHL8fLxX8Vh5HddB9c)pSegoMefVQgwaGjqJCSPUJSyhLMKsgSHhWvktDhbGyfpHc6ruJdRLqzHeL4e7HHhCcg0F09nKA(Y5mm1B1G)sCC3pkkOnXCOzvH5sz7uGNN64pEiYPuUJNvSzOChVHFsTeV8ZZ8w4ZY0nQ2BxF5NpmT3F87Ya6H)ckXXalo05hOejA(U)7VpgkZM1PUEIJsTm0QTOOmiJ7e)GchREv60eW8SLYQ2unvl7)Vd!BBF"
         local profileData, errorMessage = BBF.ImportProfile(importString, "auraWhitelist")
         if errorMessage then
             print("|A:gmchat-icon-blizz:16:16|aBetter|cff00c0ffBlizz|rFrames: Error importing whitelist:", errorMessage)
@@ -1004,6 +1004,15 @@ local function CreateSlider(parent, label, minValue, maxValue, stepValue, elemen
                 elseif element == "combatIndicatorYPos" then
                     BetterBlizzFramesDB.combatIndicatorYPos = value
                     BBF.CombatIndicatorCaller()
+                elseif element == "healerIndicatorScale" then
+                    BetterBlizzFramesDB.healerIndicatorScale = value
+                    BBF.HealerIndicatorCaller()
+                elseif element == "healerIndicatorXPos" then
+                    BetterBlizzFramesDB.healerIndicatorXPos = value
+                    BBF.HealerIndicatorCaller()
+                elseif element == "healerIndicatorYPos" then
+                    BetterBlizzFramesDB.healerIndicatorYPos = value
+                    BBF.HealerIndicatorCaller()
                 elseif element == "absorbIndicatorScale" then
                     BetterBlizzFramesDB.absorbIndicatorScale = value
                     BBF.AbsorbCaller()
@@ -2492,6 +2501,7 @@ local function CreateCDManagerList(parent)
                         BetterBlizzFramesDB.cdManagerBlacklist[spellID] = false
                     end
                     refreshList()
+                    BBF.ResetCooldownManagerIcons()
                     BBF.RefreshCooldownManagerIcons()
                 end)
 
@@ -3688,7 +3698,7 @@ local function guiGeneralTab()
     CreateTooltip(filterMiscInfo, "Filter out \"Your equipped items suffer a durability loss\" message.")
 
     local arenaNamesText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    arenaNamesText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 460, -91)
+    arenaNamesText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 460, -98)
     arenaNamesText:SetText("Arena Names")
     arenaNamesText:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\Expressway_Free.ttf", 16)
     arenaNamesText:SetTextColor(1,1,1)
@@ -4247,8 +4257,18 @@ local function guiGeneralTab()
     end)
     CreateTooltipTwo(combatIndicator, "Combat Indicator", "Show combat status on Player, Target and Focus Frame.\nSword icon for combat, Sap icon for no combat.\nMore settings in \"Advanced Settings\"", nil, nil, nil, 1)
 
+    local healerIndicator = CreateCheckbox("healerIndicator", "Healer Indicator", BetterBlizzFrames)
+    healerIndicator:SetPoint("TOPLEFT", combatIndicator, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    healerIndicator:HookScript("OnClick", function(self)
+        BBF.HealerIndicatorCaller()
+        if not self:GetChecked() then
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        end
+    end)
+    CreateTooltipTwo(healerIndicator, "Healer Indicator", "Show Healer Icon on Target and FocusFrame and/or change portrait to Healer Icon\nMore settings in \"Advanced Settings\"")
+
     local absorbIndicator = CreateCheckbox("absorbIndicator", "Absorb Indicator", BetterBlizzFrames, nil, BBF.AbsorbCaller)
-    absorbIndicator:SetPoint("TOPLEFT", combatIndicator, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    absorbIndicator:SetPoint("TOPLEFT", healerIndicator, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     absorbIndicator:HookScript("OnClick", function()
         BBF.AbsorbCaller()
     end)
@@ -5355,7 +5375,7 @@ local function guiPositionAndScale()
     -- Absorb Indicator
     ----------------------
     local anchorSubAbsorb = contentFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    anchorSubAbsorb:SetPoint("CENTER", mainGuiAnchor2, "CENTER", fourthLineX - 120, firstLineY)
+    anchorSubAbsorb:SetPoint("CENTER", mainGuiAnchor2, "CENTER", fourthLineX - 30, firstLineY)
     anchorSubAbsorb:SetText("Absorb Indicator")
 
     --CreateBorderBox(anchorSubAbsorb)
@@ -5444,7 +5464,7 @@ local function guiPositionAndScale()
     -- Combat indicator
     ----------------------
     local anchorSubOutOfCombat = contentFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    anchorSubOutOfCombat:SetPoint("CENTER", mainGuiAnchor2, "CENTER", secondLineX-70, firstLineY)
+    anchorSubOutOfCombat:SetPoint("CENTER", mainGuiAnchor2, "CENTER", secondLineX-145, firstLineY)
     anchorSubOutOfCombat:SetText("Combat Indicator")
 
     --CreateBorderBox(anchorSubOutOfCombat)
@@ -5524,10 +5544,74 @@ local function guiPositionAndScale()
 
 
     --------------------------
+    -- Healer Indicator
+    ----------------------
+    local anchorSubHealerIndicator = contentFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    anchorSubHealerIndicator:SetPoint("CENTER", mainGuiAnchor2, "CENTER", secondLineX+81, firstLineY)
+    anchorSubHealerIndicator:SetText("Healer Indicator")
+
+    --CreateBorderBox(anchorSubHealerIndicator)
+    CreateBorderedFrame(anchorSubHealerIndicator, 200, 293, 0, -98, BetterBlizzFramesSubPanel)
+
+    local healerIconSub = contentFrame:CreateTexture(nil, "ARTWORK")
+    healerIconSub:SetAtlas("bags-icon-addslots")
+    healerIconSub:SetSize(34, 34)
+    healerIconSub:SetPoint("BOTTOM", anchorSubHealerIndicator, "TOP", 0, 1)
+    CreateTooltip(healerIconSub, "Show Healer Icon on Target/FocusFrame. Enable on the General page.")
+
+    local healerIndicatorScale = CreateSlider(contentFrame, "Size", 0.8, 2.5, 0.01, "healerIndicatorScale")
+    healerIndicatorScale:SetPoint("TOP", anchorSubHealerIndicator, "BOTTOM", 0, -15)
+
+    local healerIndicatorXPos = CreateSlider(contentFrame, "x offset", -50, 50, 1, "healerIndicatorXPos", "X")
+    healerIndicatorXPos:SetPoint("TOP", healerIndicatorScale, "BOTTOM", 0, -15)
+
+    local healerIndicatorYPos = CreateSlider(contentFrame, "y offset", -50, 50, 1, "healerIndicatorYPos", "Y")
+    healerIndicatorYPos:SetPoint("TOP", healerIndicatorXPos, "BOTTOM", 0, -15)
+
+    local healerIndicatorDropdown = CreateAnchorDropdown(
+        "healerIndicatorDropdown",
+        contentFrame,
+        "Select Anchor Point",
+        "healerIndicatorAnchor",
+        function(arg1) 
+            BBF.HealerIndicatorCaller()
+        end,
+        { anchorFrame = healerIndicatorYPos, x = -16, y = -35, label = "Anchor" }
+    )
+
+    local healerIndicatorIcon = CreateCheckbox("healerIndicatorIcon", "Icon", contentFrame)
+    healerIndicatorIcon:SetPoint("TOPLEFT", healerIndicatorDropdown, "BOTTOMLEFT", 24, pixelsBetweenBoxes)
+    healerIndicatorIcon:HookScript("OnClick", function(self)
+        if self:GetChecked() and not BetterBlizzFramesDB.healerIndicator then
+            BetterBlizzFramesDB.healerIndicator = true
+        end
+        BBF.HealerIndicatorCaller()
+        if not self:GetChecked() then
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        end
+    end)
+    CreateTooltip(healerIndicatorIcon, "Show an Icon on Target & Focus Frame for Healers.")
+
+    local healerIndicatorPortrait = CreateCheckbox("healerIndicatorPortrait", "Portrait", contentFrame)
+    healerIndicatorPortrait:SetPoint("LEFT", healerIndicatorIcon.Text, "RIGHT", 5, 0)
+    healerIndicatorPortrait:HookScript("OnClick", function(self)
+        if self:GetChecked() and not BetterBlizzFramesDB.healerIndicator then
+            BetterBlizzFramesDB.healerIndicator = true
+        end
+        BBF.HealerIndicatorCaller()
+        if not self:GetChecked() then
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        end
+    end)
+    CreateTooltip(healerIndicatorPortrait, "Change Portraits for Healers on Target & FocusFrame to a Healer Icon.")
+
+
+
+    --------------------------
     -- Racial indicator
     ----------------------
     local anchorSubracialIndicator = contentFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    anchorSubracialIndicator:SetPoint("CENTER", mainGuiAnchor2, "CENTER", secondLineX-70, secondLineY - 15)
+    anchorSubracialIndicator:SetPoint("CENTER", mainGuiAnchor2, "CENTER", secondLineX-145, secondLineY - 15)
     anchorSubracialIndicator:SetText("PvP Racial Indicator")
 
     --CreateBorderBox(anchorSubracialIndicator)
@@ -5615,7 +5699,7 @@ local function guiPositionAndScale()
     -- Castbar Interrupt Icon
     ----------------------
     local anchorSubInterruptIcon = contentFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    anchorSubInterruptIcon:SetPoint("CENTER", mainGuiAnchor2, "CENTER", fourthLineX - 120, secondLineY-15)
+    anchorSubInterruptIcon:SetPoint("CENTER", mainGuiAnchor2, "CENTER", secondLineX+81, secondLineY-15)
     anchorSubInterruptIcon:SetText("Interrupt Icon")
 
     --CreateBorderBox(anchorSubInterruptIcon)
@@ -5681,6 +5765,9 @@ local function guiPositionAndScale()
     end)
     CreateTooltip(resetBBFButton, "Reset ALL BetterBlizzFrames settings.")
 
+    BetterBlizzFramesSubPanel.rightClickTip = BetterBlizzFramesSubPanel:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+    BetterBlizzFramesSubPanel.rightClickTip:SetPoint("RIGHT", reloadUiButton2, "LEFT", -80, -2)
+    BetterBlizzFramesSubPanel.rightClickTip:SetText("|A:smallquestbang:20:20|aTip:  Right-click sliders to enter a specific value")
 end
 
 local function guiFrameLook()
@@ -8312,6 +8399,7 @@ function BBF.LoadGUI()
     guiSupport()
     BetterBlizzFrames.guiLoaded = true
 
+    Settings.OpenToCategory(BBF.category.ID)
     Settings.OpenToCategory(BBF.guiCustomCode)
     Settings.OpenToCategory(BBF.category.ID)
 end

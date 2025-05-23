@@ -115,35 +115,109 @@ end
 
 
 
+local npcColorCache = {}
+local function GetBBPNameplateColor(unit)
+    local guid = UnitGUID(unit)
+    if not guid then return end
+
+    local npcID = select(6, strsplit("-", guid))
+    local npcName = UnitName(unit)
+    local lowerCaseNpcName = npcName and strlower(npcName)
+
+    -- First check cache by npcID
+    if npcID and npcColorCache[npcID] ~= nil then
+        return npcColorCache[npcID]
+    end
+
+    -- Fallback to cache by name
+    if lowerCaseNpcName and npcColorCache[lowerCaseNpcName] ~= nil then
+        return npcColorCache[lowerCaseNpcName]
+    end
+
+    local colorNpcList = BetterBlizzPlatesDB.colorNpcList
+    local npcHealthbarColor = nil
+
+    for _, npc in ipairs(colorNpcList) do
+        if npc.id == tonumber(npcID) or (npc.name and strlower(npc.name) == lowerCaseNpcName) then
+            if npc.entryColors then
+                npcHealthbarColor = npc.entryColors.text
+            else
+                npc.entryColors = {}
+            end
+            break
+        end
+    end
+
+    -- Cache both ID and name for future use
+    if npcID then
+        npcColorCache[npcID] = npcHealthbarColor
+    end
+    if lowerCaseNpcName then
+        npcColorCache[lowerCaseNpcName] = npcHealthbarColor
+    end
+
+    return npcHealthbarColor
+end
+
 local function getUnitColor(unit)
+    if not UnitExists(unit) then return end
     if UnitIsPlayer(unit) then
         local color = RAID_CLASS_COLORS[select(2, UnitClass(unit))]
         if color then
-            return {r = color.r, g = color.g, b = color.b}
+            return {r = color.r, g = color.g, b = color.b}, false
         end
     elseif colorPetAfterOwner and UnitIsUnit(unit, "pet") then
         -- Check if the unit is the player's pet and the setting is enabled
         local _, playerClass = UnitClass("player")
         local color = RAID_CLASS_COLORS[playerClass]
         if color then
-            return {r = color.r, g = color.g, b = color.b}
+            return {r = color.r, g = color.g, b = color.b}, false
         end
     else
-        if ( not UnitPlayerControlled(unit) and UnitIsTapDenied(unit) ) then
-            return {r = 0.5, g = 0.5, b = 0.5}
-        end
+        if BetterBlizzPlatesDB and BetterBlizzPlatesDB.colorNPC then
+            local npcHealthbarColor = GetBBPNameplateColor(unit)
+            if npcHealthbarColor then
+                return {r = npcHealthbarColor.r, g = npcHealthbarColor.g, b = npcHealthbarColor.b}, false
+            else
+                local reaction = getUnitReaction(unit)
+                if reaction == "HOSTILE" then
+                    if UnitIsTapDenied(unit) then
+                        return {r = 0.9, g = 0.9, b = 0.9}, false
+                    else
+                        return {r = 1, g = 0, b = 0}, false
+                    end
+                elseif reaction == "NEUTRAL" then
+                    if UnitIsTapDenied(unit) then
+                        return {r = 0.9, g = 0.9, b = 0.9}, false
+                    else
+                        return {r = 1, g = 1, b = 0}, false
+                    end
+                elseif reaction == "FRIENDLY" then
+                    return {r = 0, g = 1, b = 0}, true
+                end
+            end
+        else
+            local reaction = getUnitReaction(unit)
 
-        local reaction = getUnitReaction(unit)
-
-        if reaction == "HOSTILE" then
-            return {r = 1, g = 0, b = 0}
-        elseif reaction == "NEUTRAL" then
-            return {r = 1, g = 1, b = 0}
-        else -- if reaction is "FRIENDLY"
-            return {r = 0, g = 1, b = 0}
+            if reaction == "HOSTILE" then
+                if UnitIsTapDenied(unit) then
+                    return {r = 0.9, g = 0.9, b = 0.9}, false
+                else
+                    return {r = 1, g = 0, b = 0}, false
+                end
+            elseif reaction == "NEUTRAL" then
+                if UnitIsTapDenied(unit) then
+                    return {r = 0.9, g = 0.9, b = 0.9}, false
+                else
+                    return {r = 1, g = 1, b = 0}, false
+                end
+            elseif reaction == "FRIENDLY" then
+                return {r = 0, g = 1, b = 0}, true
+            end
         end
     end
 end
+BBF.getUnitColor = getUnitColor
 
 local function updateFrameColorToggleVer(frame, unit)
     if classColorsOn then
@@ -364,9 +438,9 @@ function BBF.BiggerHealthbars(frame, name)
 
     -- Healthbar
     local point, relativeTo, relativePoint, xOfs, yOfs = healthbar:GetPoint()
-    local newYOffset = yOfs + 19
+    local newYOffset = yOfs + 18
     BBF.MoveRegion(healthbar, point, relativeTo, relativePoint, xOfs, newYOffset)
-    healthbar:SetHeight(28)
+    healthbar:SetHeight(27)
     if not BetterBlizzFramesDB.changeUnitFrameHealthbarTexture then
         healthbar:SetStatusBarTexture(LSM:Fetch(LSM.MediaType.STATUSBAR, "Smooth"))
     end

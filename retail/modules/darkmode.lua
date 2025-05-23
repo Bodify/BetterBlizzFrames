@@ -228,8 +228,10 @@ function BBF.DarkmodeFrames(bypass)
     local darkModeNpSatVal = darkModeNp and desaturationValue or false
 
     if BetterBlizzFramesDB.darkModeColor == 0 then
-        actionBarColor = 0
-        birdColor = 0.07
+        if BetterBlizzFramesDB.darkModeActionBars then
+            actionBarColor = 0
+            birdColor = 0.07
+        end
         rogueCombo = 0.25
         rogueComboActive = 0.15
     end

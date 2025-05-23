@@ -216,7 +216,8 @@ end
 local ALL_SPECS = GetLocalizedSpecs()
 
 -- Caching Tables
-local SpecCache = {}  -- Stores GUID -> specID
+BBA.SpecCache = {}
+local SpecCache = BBA.SpecCache  -- Stores GUID -> specID
 local GetUnitTooltip = C_TooltipInfo.GetUnit
 
 -- Function to retrieve the specialization ID of a unit
@@ -254,10 +255,50 @@ local function GetSpecID(unit)
 
     return nil -- Return nil if no spec ID was found
 end
+BBF.GetSpecID = GetSpecID
+
+local HEALER_SPEC_IDS = {
+    [105] = true,  -- Restoration Druid
+    [264] = true,  -- Restoration Shaman
+    [270] = true,  -- Mistweaver Monk
+    [257] = true,  -- Holy Priest
+    [65] = true,   -- Holy Paladin
+    [256] = true,  -- Discipline Priest
+    [1468] = true, -- Preservation Evoker
+}
+
+local function IsSpecHealer(unit)
+    -- Check if the unit is a player first (avoid processing NPCs)
+    if not UnitIsPlayer(unit) then
+        return false
+    end
+
+    -- Use cached spec ID if available
+    local specID = GetSpecID(unit)
+
+    -- If no valid spec ID found, return false
+    if not specID then
+        return false
+    end
+
+    -- Check if spec is a healer (direct lookup)
+    return HEALER_SPEC_IDS[specID] or false
+end
+BBF.IsSpecHealer = IsSpecHealer
 
 local function GetSpecName(unit)
     local specID = GetSpecID(unit)
     return specID and (shortArenaSpecName and specIDToNameShort[specID] or specIDToName[specID]) or nil
+end
+
+function BBF.HealerPortrait()
+    hooksecurefunc("UnitFramePortrait_Update", function(self)
+        if self.unit ~= "player" then
+            if IsSpecHealer(self.unit) then
+                SetPortraitTexture(self.portrait, "player")
+            end
+        end
+    end)
 end
 
 local function ShowLastNameOnlyNpc(frame, name)
@@ -268,7 +309,7 @@ local function ShowLastNameOnlyNpc(frame, name)
         return firstWord
     else
         -- Use last word (e.g., "Guardian" from "Frostwolf Guardian")
-        local lastWord = name:match("([^%s%-]+)$")
+        local lastWord = name:match("([^%s]+)$")
         return lastWord
     end
 end
@@ -1102,47 +1143,11 @@ end
 C_Timer.After(1, UpdateNamePositionForClassic)
 
 local function ClassColorName(textObject, unit)
-    if UnitIsPlayer(unit) then
-        local _, class = UnitClass(unit)
-        local classColor = RAID_CLASS_COLORS[class]
-
-        if classColor then
-            textObject:SetTextColor(classColor.r, classColor.g, classColor.b)
-        else
-            textObject:SetTextColor(1, 0.8196, 0)
-        end
+    local color = BBF.getUnitColor(unit)
+    if color then
+        textObject:SetTextColor(color.r, color.g, color.b)
     else
-        local reaction = UnitReaction(unit, "player")
-        local r, g, b
-
-        if reaction then
-            if reaction <= 3 then
-                -- Hostile
-                r, g, b = 1, 0, 0
-            elseif reaction == 4 then
-                -- Neutral
-                r, g, b = 1, 1, 0
-            else
-                -- Friendly
-                if UnitIsUnit(unit, "pet") then
-                    -- Color pet name with player class color
-                    local _, playerClass = UnitClass("player")
-                    local playerClassColor = RAID_CLASS_COLORS[playerClass]
-
-                    if playerClassColor then
-                        r, g, b = playerClassColor.r, playerClassColor.g, playerClassColor.b
-                    else
-                        r, g, b = 0, 1, 0
-                    end
-                else
-                    r, g, b = 0, 1, 0
-                end
-            end
-        else
-            r, g, b = 1, 0.8196, 0
-        end
-
-        textObject:SetTextColor(r, g, b)
+        textObject:SetTextColor( 1, 0.8196, 0)
     end
 end
 

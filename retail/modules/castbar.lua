@@ -31,6 +31,7 @@ local function UpdateSparkPosition(castBar)
     local val = castBar:GetValue()
     local minVal, maxVal = castBar:GetMinMaxValues()
     --local progressPercent = castBar.value / castBar.maxValue
+    if maxVal == 0 then return end
     local progressPercent = val / maxVal
     local newX = castBar:GetWidth() * progressPercent
     castBar.Spark:ClearAllPoints()
@@ -778,52 +779,69 @@ local castBarInterruptHighlighter = BetterBlizzFramesDB.castBarInterruptHighligh
 local targetCastbarEdgeHighlight = BetterBlizzFramesDB.targetCastbarEdgeHighlight
 local focusCastbarEdgeHighlight = BetterBlizzFramesDB.focusCastbarEdgeHighlight
 
-local interruptList = {
-    [1766] = true,  -- Kick (Rogue)
-    [2139] = true,  -- Counterspell (Mage)
-    [6552] = true,  -- Pummel (Warrior)
-    [57994] = true, -- Wind Shear (Shaman)
-    [47528] = true, -- Mind Freeze (Death Knight)
-    --[91802] = true, -- Shambling Rush (Death Knight)
-    --[91807] = true,  -- Shambling Rush (Death Knight)
-    [106839] = true,-- Skull Bash (Feral)
-    --[97547]  = true,-- Solar Beam (Druid)
-    [93985] = true,  -- Skull Bash (Druid)
-    [116705] = true,-- Spear Hand Strike (Monk)
-    [19647] = true, -- Spell Lock (Warlock)
-    --[115781] = true,-- Optical Blast (Warlock)
-    [132409] = true,-- Spell Lock (Warlock)
-    [119910] = true,-- Spell Lock (Warlock Pet)
-    [171138] = true,-- Shadow Lock (Warlock)
-    [212619] = true,-- Call Felhunter (Warlock)
-    [147362] = true,-- Countershot (Hunter)
-    [187707] = true,-- Muzzle (Hunter)
-    [183752] = true,-- Disrupt (Demon Hunter)
-    [351338] = true,-- Quell (Evoker)
-    [96231] = true, -- Rebuke (Paladin)
-    --[231665] = true,-- Avengers Shield (Paladin)
-    --[31935] = true, -- Avenger's Shield (Paladin)
-    --[217824] = true,-- Shield of Virtue (Protection PvP Talent)
+local interruptSpells = {
+    1766,  -- Kick (Rogue)
+    2139,  -- Counterspell (Mage)
+    6552,  -- Pummel (Warrior)
+    19647, -- Spell Lock (Warlock)
+    47528, -- Mind Freeze (Death Knight)
+    57994, -- Wind Shear (Shaman)
+    --91802, -- Shambling Rush (Death Knight)
+    96231, -- Rebuke (Paladin)
+    106839,-- Skull Bash (Feral)
+    115781,-- Optical Blast (Warlock)
+    116705,-- Spear Hand Strike (Monk)
+    132409,-- Spell Lock (Warlock)
+    119910,-- Spell Lock (Warlock Pet)
+    89766, -- Axe Toss (Warlock Pet)
+    171138,-- Shadow Lock (Warlock)
+    147362,-- Countershot (Hunter)
+    183752,-- Disrupt (Demon Hunter)
+    187707,-- Muzzle (Hunter)
+    212619,-- Call Felhunter (Warlock)
+    --231665,-- Avengers Shield (Paladin)
+    351338,-- Quell (Evoker)
+    97547, -- Solar Beam
+    78675, -- Solar Beam
+    15487, -- Silence
+    --47482, -- Leap (DK Transform)
 }
 
-local interruptSpellIDs = {}
-function BBF.InitializeInterruptSpellID()
-    interruptSpellIDs = {}
-    for spellID in pairs(interruptList) do
-        if IsSpellKnownOrOverridesKnown(spellID) then
-            table.insert(interruptSpellIDs, spellID)
+-- Local variable to store the known interrupt spell ID
+local knownInterruptSpellID = nil
+
+-- Function to find and return the interrupt spell the player knows
+local function GetInterruptSpell()
+    for _, spellID in ipairs(interruptSpells) do
+        if IsSpellKnownOrOverridesKnown(spellID) or (UnitExists("pet") and IsSpellKnownOrOverridesKnown(spellID, true)) then
+            knownInterruptSpellID = spellID
+            return spellID
         end
     end
+    knownInterruptSpellID = nil
+end
+-- Recheck interrupt spells when lock resummons/sacrifices pet
+local petSummonSpells = {
+    [30146] = true,  -- Summon Demonic Tyrant (Demonology)
+    [691]    = true,  -- Summon Felhunter (for Spell Lock)
+    [108503] = true,  -- Grimoire of Sacrifice
+}
+
+local function OnEvent(self, event, unit, _, spellID)
+    if event == "UNIT_SPELLCAST_SUCCEEDED" then
+        if not petSummonSpells[spellID] then return end
+    end
+    C_Timer.After(0.1, GetInterruptSpell)
 end
 
-local recheckInterruptListener = CreateFrame("Frame")
-local function OnEvent(self, event, unit, _, spellID)
-    if spellID == 691 or spellID == 108503 then
-        BBF.InitializeInterruptSpellID()
-    end
+local interruptSpellUpdate = CreateFrame("Frame")
+if select(2, UnitClass("player")) == "WARLOCK" then
+    interruptSpellUpdate:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED", "player")
 end
-recheckInterruptListener:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED", "player")
-recheckInterruptListener:SetScript("OnEvent", OnEvent)
+interruptSpellUpdate:RegisterEvent("TRAIT_CONFIG_UPDATED")
+interruptSpellUpdate:RegisterEvent("PLAYER_TALENT_UPDATE")
+interruptSpellUpdate:SetScript("OnEvent", OnEvent)
+
 
 local function HideChargeTiers(castBar)
     if not castBar.ChargeTier1 then return end
@@ -877,10 +895,12 @@ function BBF.CastbarRecolorWidgets()
             end
 
             local name, _, _, startTime, endTime, _, _, notInterruptible, spellId = UnitCastingInfo(unit)
-            local channeling
+            local channeling, empoweredCast
             if not name then
-                name, _, _, startTime, endTime, _, notInterruptible, spellId = UnitChannelInfo(unit)
-                channeling = true
+                name, _, _, startTime, endTime, _, notInterruptible, spellId, empoweredCast = UnitChannelInfo(unit)
+                if not empoweredCast then
+                    channeling = true
+                end
             end
 
             if not name then
@@ -894,11 +914,19 @@ function BBF.CastbarRecolorWidgets()
 
             if castBarRecolorInterrupt then
                 local colored
-                for _, interruptSpellID in ipairs(interruptSpellIDs) do
-                    local start, duration = BBF.TWWGetSpellCooldown(interruptSpellID)
+                --for _, interruptSpellID in ipairs(interruptSpellIDs) do
+                if not knownInterruptSpellID then
+                    GetInterruptSpell()
+                end
+                if knownInterruptSpellID then
+                    local start, duration = BBF.TWWGetSpellCooldown(knownInterruptSpellID)
                     local cooldownRemaining = start + duration - GetTime()
                     local castRemaining = (endTime / 1000) - GetTime()
                     local totalCastTime = (endTime / 1000) - (startTime / 1000)
+
+                    if self.interruptSark and self.interruptSark:IsShown() then
+                        self.interruptSark:Hide()
+                    end
 
                     if cooldownRemaining > 0 and cooldownRemaining > castRemaining then
                         texture:SetDesaturated(true)
@@ -920,6 +948,9 @@ function BBF.CastbarRecolorWidgets()
 
                         local interruptPercent = (totalCastTime - castRemaining + cooldownRemaining) / totalCastTime
                         local sparkPosition = (channeling and (1 - interruptPercent) or interruptPercent) * self:GetWidth()
+                        if empoweredCast then
+                            sparkPosition = sparkPosition * 0.7 -- ? idk why but on empowered casts it needs to be roughly 30% to the left compared to cast/channel
+                        end
                         self.interruptSark:SetPoint("CENTER", self, "LEFT", sparkPosition, 0)
                         self.interruptSark:Show()
 
@@ -978,10 +1009,12 @@ function BBF.CastbarRecolorWidgets()
 
         local function GladiusOnUpdate(self, unit)
             local name, _, _, startTime, endTime = UnitCastingInfo(unit)
-            local channeling
+            local channeling, empoweredCast
             if not name then
-                name, _, _, startTime, endTime = UnitChannelInfo(unit)
-                channeling = true
+                name, _, _, startTime, endTime, _, _, _, empoweredCast = UnitChannelInfo(unit)
+                if not empoweredCast then
+                    channeling = true
+                end
             end
 
             if not name then
@@ -990,11 +1023,19 @@ function BBF.CastbarRecolorWidgets()
 
             if castBarRecolorInterrupt then
                 local colored
-                for _, interruptSpellID in ipairs(interruptSpellIDs) do
-                    local start, duration = BBF.TWWGetSpellCooldown(interruptSpellID)
+                --for _, interruptSpellID in ipairs(interruptSpellIDs) do
+                if not knownInterruptSpellID then
+                    GetInterruptSpell()
+                end
+                if knownInterruptSpellID then
+                    local start, duration = BBF.TWWGetSpellCooldown(knownInterruptSpellID)
                     local cooldownRemaining = start + duration - GetTime()
                     local castRemaining = (endTime / 1000) - GetTime()
                     local totalCastTime = (endTime / 1000) - (startTime / 1000)
+
+                    if self.interruptSark and self.interruptSark:IsShown() then
+                        self.interruptSark:Hide()
+                    end
 
                     if cooldownRemaining > 0 and cooldownRemaining > castRemaining then
                         self:SetStatusBarColor(unpack(castBarNoInterruptColor))
@@ -1012,6 +1053,9 @@ function BBF.CastbarRecolorWidgets()
 
                         local interruptPercent = (totalCastTime - castRemaining + cooldownRemaining) / totalCastTime
                         local sparkPosition = (channeling and (1 - interruptPercent) or interruptPercent) * self:GetWidth()
+                        if empoweredCast then
+                            sparkPosition = sparkPosition * 0.7 -- ? idk why but on empowered casts it needs to be roughly 30% to the left compared to cast/channel
+                        end
                         self.interruptSark:SetPoint("CENTER", self, "LEFT", sparkPosition, 0)
                         self.interruptSark:Show()
 
@@ -1053,7 +1097,7 @@ function BBF.CastbarRecolorWidgets()
         end
 
 
-        BBF.InitializeInterruptSpellID()
+        GetInterruptSpell()
         if targetCastbarEdgeHighlight or castBarRecolorInterrupt then
             BBF.HookCastbarInterruptHighlight(TargetFrameSpellBar, "target", targetSpellBarTexture, targetCastbarEdgeHighlight)
         end
@@ -1433,6 +1477,28 @@ function BBF.HookCastbars()
                 self:Hide()
             end
         end)
+
+        for i = 1, 3 do
+            local sArenaFrame = _G["sArenaEnemyFrame"..i]
+            if sArenaFrame then
+                local spellBar = sArenaFrame.CastBar
+                spellBar:HookScript("OnEvent", function(self, event, ...)
+                    if hideEvents[event] then
+                        self:Hide()
+                    end
+                end)
+            end
+
+            local bArenaFrame = _G["bArenaEnemyFrame"..i]
+            if bArenaFrame then
+                local spellBar = bArenaFrame.CastBar
+                spellBar:HookScript("OnEvent", function(self, event, ...)
+                    if hideEvents[event] then
+                        self:Hide()
+                    end
+                end)
+            end
+        end
     end
 
     if BetterBlizzFramesDB.petCastbar then

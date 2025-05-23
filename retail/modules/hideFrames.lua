@@ -287,6 +287,8 @@ function BBF.HideFrames()
                 PlayerLevelText:SetParent(hiddenFrame)
                 TargetFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetAlpha(0)
                 FocusFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetAlpha(0)
+                TargetFrame.TargetFrameContent.TargetFrameContentContextual.HighLevelTexture:SetAlpha(0)
+                FocusFrame.TargetFrameContent.TargetFrameContentContextual.HighLevelTexture:SetAlpha(0)
             else
                 if UnitLevel("player") == 80 then
                     PlayerLevelText:SetParent(hiddenFrame)

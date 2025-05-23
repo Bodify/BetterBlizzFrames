@@ -55,6 +55,7 @@ function BBF.DruidBlueComboPoints()
 
     -- Function to handle updating combo points based on aura
     local function UpdateComboPoints(self, aura)
+        if not self then return end
         if not aura then
             if self.overcharged then
                 for i = 1, 3 do
@@ -174,6 +175,7 @@ function BBF.DruidAlwaysShowCombos()
     local frame = DruidComboPointBarFrame
 
     local function UpdateDruidComboPoints(self)
+        if not self then return end
         local form = GetShapeshiftFormID()
         if form == 1 then return end
 
