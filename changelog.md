@@ -1,4 +1,6 @@
 # BetterBlizzFrames 1.6.9
+## Mop Beta
+- MoP Classic now loads Cata files. This is not fully updated to MoP and will more than likely require tweaks. Please bugreport so I can fix.
 ## Retail
 ### New:
 - Healer Indicator setting: Adds a cross icon on Target/Focus if they are a healer and also changes portrait to healer icon. Settings for both in Advanced Settings.
