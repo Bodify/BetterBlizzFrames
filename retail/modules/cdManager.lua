@@ -19,14 +19,11 @@ end
 
 function BBF.ResetCooldownManagerIcons()
     for _, frame in ipairs(cdManagerFrames) do
-        if frame and frame.GetItemContainerFrame then
-            local container = frame:GetItemContainerFrame()
-            if container and container:GetNumChildren() > 0 then
-                for i = 1, container:GetNumChildren() do
-                    local child = select(i, container:GetChildren())
-                    if child and child.Show then
-                        child:Show()
-                    end
+        if frame:GetNumChildren() > 0 then
+            for i = 1, frame:GetNumChildren() do
+                local child = select(i, frame:GetChildren())
+                if child and child.Show then
+                    child:Show()
                 end
             end
         end
@@ -48,21 +45,28 @@ function BBF.SortCooldownManagerIcons(frame, center)
     local iconWidth = icons[1] and icons[1]:GetWidth() or 32
     local iconHeight = icons[1] and icons[1]:GetHeight() or 32
     local rowLimit = (frame == BuffIconCooldownViewer and frame.stride) or frame.iconLimit or 8
+    local isVertical = frame.layoutFramesGoingUp
 
     -- Local helper to place icon at specific index (row/col based)
     local function PlaceIcon(icon, index)
-        local row = math.floor((index - 1) / rowLimit)
-        local col = (index - 1) % rowLimit
+        local row, col
+
+        if isVertical then
+            row = (index - 1) % rowLimit
+            col = math.floor((index - 1) / rowLimit)
+        else
+            row = math.floor((index - 1) / rowLimit)
+            col = (index - 1) % rowLimit
+        end
 
         local x = col * (iconWidth + iconPadding)
         local y = -row * (iconHeight + iconPadding)
 
-        -- Save original X so it can be used to prevent stacking shiftX later
         icon._bbfOriginalX = x
         icon._bbfOriginalY = y
 
         icon:ClearAllPoints()
-        icon:SetPoint("TOPLEFT", frame:GetItemContainerFrame(), "TOPLEFT", x, y)
+        icon:SetPoint("TOPLEFT", frame, "TOPLEFT", x, y)
     end
 
     if sorting then
@@ -105,7 +109,7 @@ function BBF.SortCooldownManagerIcons(frame, center)
             PlaceIcon(icon, i)
         end
 
-        if center and centering then
+        if center and centering and not isVertical then
             local originalCount = #icons
             local shownCount = #sortedIcons
             local lastRowCount = shownCount % rowLimit
@@ -134,7 +138,7 @@ function BBF.SortCooldownManagerIcons(frame, center)
                         local x = (i - 1) * (iconWidth + iconPadding)
                         local y = 0 -- Single row
                         icon:ClearAllPoints()
-                        icon:SetPoint("TOPLEFT", frame:GetItemContainerFrame(), "TOPLEFT", startX + x, y)
+                        icon:SetPoint("TOPLEFT", frame, "TOPLEFT", startX + x, y)
                     end
                 end
             else
@@ -151,14 +155,14 @@ function BBF.SortCooldownManagerIcons(frame, center)
                             local x = icon._bbfOriginalX or 0
                             local y = icon._bbfOriginalY or 0
                             icon:ClearAllPoints()
-                            icon:SetPoint("TOPLEFT", frame:GetItemContainerFrame(), "TOPLEFT", x + shiftX, y)
+                            icon:SetPoint("TOPLEFT", frame, "TOPLEFT", x + shiftX, y)
                         end
                     end
                 end
             end
         end
 
-    elseif center and centering then
+    elseif center and centering and not isVertical then
         if frame == BuffIconCooldownViewer then
             local activeIcons = {}
             for _, icon in ipairs(icons) do
@@ -184,8 +188,6 @@ function BBF.SortCooldownManagerIcons(frame, center)
         else
             local totalIcons = #icons
             local iconsPerRow = rowLimit
-
-
             if totalIcons <= iconsPerRow then return end
 
             local lastRowCount = totalIcons % iconsPerRow
@@ -202,12 +204,11 @@ function BBF.SortCooldownManagerIcons(frame, center)
                 local x = col * (iconWidth + iconPadding)
                 local y = -row * (iconHeight + iconPadding)
 
-                -- Save original position
                 icon._bbfOriginalX = x
                 icon._bbfOriginalY = y
 
                 icon:ClearAllPoints()
-                icon:SetPoint("TOPLEFT", frame:GetItemContainerFrame(), "TOPLEFT", x, y)
+                icon:SetPoint("TOPLEFT", frame, "TOPLEFT", x, y)
             end
 
             for i = totalIcons - lastRowCount + 1, totalIcons do
@@ -216,7 +217,7 @@ function BBF.SortCooldownManagerIcons(frame, center)
                     local x = icon._bbfOriginalX or 0
                     local y = icon._bbfOriginalY or 0
                     icon:ClearAllPoints()
-                    icon:SetPoint("TOPLEFT", frame:GetItemContainerFrame(), "TOPLEFT", x + shiftX, y)
+                    icon:SetPoint("TOPLEFT", frame, "TOPLEFT", x + shiftX, y)
                 end
             end
         end
@@ -267,10 +268,9 @@ function BBF.HookCooldownManagerTweaks()
 
             -- Override Cooldown Sorting
             if cdTweaksEnabled and not frame.bbfSortingHooked then
-                local container = frame:GetItemContainerFrame()
                 local center = frame ~= BuffBarCooldownViewer
-                hooksecurefunc(container, "Layout", function()
-                    BBF.SortCooldownManagerIcons(frame, center)
+                hooksecurefunc(frame, "Layout", function(self)
+                    BBF.SortCooldownManagerIcons(self, center)
                 end)
                 frame.bbfSortingHooked = true
             end

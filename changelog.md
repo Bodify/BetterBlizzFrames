@@ -1,4 +1,7 @@
 # BetterBlizzFrames 1.6.9b
+## Retail
+### Tweak:
+- Cooldown Manager settings now properly supports Vertical layout.
 ## All versions
 ### Bugfix:
 - Fix an issue causing the Important Aura Glow appear to flicker on auras when Important, Pandemic and Dark Mode: Auras were all enabled.
