@@ -287,7 +287,8 @@ local defaultSettings = {
 }
 
 local version = GetBuildInfo()
-if version and version == "5.5.0" then
+if version and version:match("^5") then
+    BBF.isMoP = true
     C_Timer.After(5, function()
         DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|aBetter|cff00c0ffBlizz|rFrames has not been fully updated for MoP Classic yet. |cff32f795Please report bugs with BugSack & BugGrabber so I can fix.|r")
     end)

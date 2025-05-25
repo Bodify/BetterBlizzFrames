@@ -1,3 +1,10 @@
+# BetterBlizzFrames 1.6.9b
+## All versions
+### Bugfix:
+- Fix an issue causing the Important Aura Glow appear to flicker on auras when Important, Pandemic and Dark Mode: Auras were all enabled.
+
+
+
 # BetterBlizzFrames 1.6.9
 ## Mop Beta
 - MoP Classic now loads Cata files. This is not fully updated to MoP and will more than likely require tweaks. Please bugreport so I can fix.

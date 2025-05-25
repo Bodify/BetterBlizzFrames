@@ -982,7 +982,7 @@ local function CheckBuffs()
                     if aura.Border and not aura.isImportant and not aura.isPurgeGlow then
                         aura.Border:SetAlpha(1)
                     end
-                    if aura.border then
+                    if aura.border and not aura.isImportant and not aura.isPurgeGlow then
                         aura.border:SetAlpha(1)
                     end
                 end
