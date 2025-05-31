@@ -45,6 +45,7 @@ local defaultSettings = {
     playerFrameOCDZoom = true,
     repositionBuffFrame = true,
     customCode = "-- Enter custom code below here. Feel free to contact me @bodify",
+    enableLoCFrame = true,
 
     --Target castbar
     playerCastbarIconXPos = 0,
@@ -153,6 +154,10 @@ local defaultSettings = {
     focusToTAdjustmentOffsetY = 0,
     focusCastBarShowText = true,
     focusCastBarShowBorder = true,
+
+    legacyComboXPos = -44,
+    legacyComboYPos = -9,
+    legacyComboScale = 1,
 
     --Player castbar
     playerCastBarXPos = 0,
@@ -494,6 +499,56 @@ function BBF.ClickthroughFrames()
 	end
 end
 
+local function HookClassComboPoints()
+    -- local db = BetterBlizzFramesDB
+    -- local hideLvl = db.hideLevelText
+    -- local alwaysHideLvl = hideLvl and db.hideLevelTextAlways
+    -- if db.moveResourceToTarget then
+    --     if db.moveResourceToTargetRogue then SetupClassComboPoints(RogueComboPointBarFrame, (alwaysHideLvl and db.classicFrames and roguePositionsHiddenLvlClassic) or (db.classicFrames and roguePositionsClassic) or roguePositions, "ROGUE", 0.5, -44, -2, true) end
+    --     if db.moveResourceToTargetDruid then SetupClassComboPoints(DruidComboPointBarFrame, druidPositions, "DRUID", 0.55, -53, -2, true) end
+    --     if db.moveResourceToTargetWarlock then SetupClassComboPoints(WarlockPowerFrame, warlockPositions, "WARLOCK", 0.6, -56, 1) end
+    --     if db.moveResourceToTargetMage then SetupClassComboPoints(MageArcaneChargesFrame, magePositions, "MAGE", 0.7, -61, -4) end
+    --     if db.moveResourceToTargetMonk then SetupClassComboPoints(MonkHarmonyBarFrame, monkPositions, "MONK", 0.5, -44, -2, true) end
+    --     if db.moveResourceToTargetEvoker then SetupClassComboPoints(EssencePlayerFrame, evokerPositions, "EVOKER", 0.65, -50, 0.5, true) end
+    --     if db.moveResourceToTargetPaladin then SetupClassComboPoints(PaladinPowerBarFrame, paladinPositions, "PALADIN", 0.75, -61, -8, true) end
+    --     if db.moveResourceToTargetDK then SetupClassComboPoints(RuneFrame, dkPositions, "DEATHKNIGHT", 0.7, -50.5, 0.5, true) end
+
+    --     hookedResourceFrames = true
+    -- end
+end
+
+local function ScaleClassResource()
+    local _, playerClass = UnitClass("player")
+    local key = "classResource" .. playerClass .. "Scale"
+    local scale = BetterBlizzFramesDB[key] or 1.0
+
+    local resourceFrames = {
+        WARLOCK = ShardBarFrame,
+        ROGUE = RogueComboPointBarFrame,
+        DRUID = EclipseBarFrame,
+        PALADIN = PaladinPowerBar,
+        DEATHKNIGHT = RuneFrame,
+        MONK = MonkHarmonyBar,
+        --EVOKER = EssencePlayerFrame,
+        --MAGE = MageArcaneChargesFrame,
+    }
+
+    for _, frame in pairs(resourceFrames) do
+        if frame then
+            frame:SetScale(scale)
+        end
+    end
+
+end
+
+
+function BBF.UpdateClassComboPoints()
+    HookClassComboPoints()
+    ScaleClassResource()
+end
+
+
+
 function BBF.ScaleUnitFrames()
     local db = BetterBlizzFramesDB
     PlayerFrame:SetScale(db.playerFrameScale)
@@ -517,7 +572,7 @@ function BBF.ToggleLossOfControlTestMode()
 
         -- Background Texture
         local blackBg = frame:CreateTexture(nil, "BACKGROUND")
-        blackBg:SetTexture(LossOfControlFrame.blackBg:GetTexture())
+        blackBg:SetTexture("Interface\\Cooldown\\loc-shadowbg")
         blackBg:SetPoint("BOTTOM", frame, "BOTTOM", 0, 0)
         blackBg:SetSize(256, 58)
         frame.blackBg = blackBg  -- Correctly scoped
@@ -579,6 +634,10 @@ function BBF.ToggleLossOfControlTestMode()
     FakeBBFLossOfControlFrame.RedLineTop:SetAlpha(LossOfControlFrameAlphaLines)
     FakeBBFLossOfControlFrame.RedLineBottom:SetAlpha(LossOfControlFrameAlphaLines)
     FakeBBFLossOfControlFrame:Show()
+end
+
+function BBF.ChangeLossOfControlScale()
+    LossOfControlFrame:SetScale(BetterBlizzFramesDB.lossOfControlScale)
 end
 
 
@@ -650,6 +709,131 @@ ClickthroughFrames:RegisterEvent("MODIFIER_STATE_CHANGED")
 
 
 
+local resourceFrames = {
+    WARLOCK = ShardBarFrame,
+    ROGUE = RogueComboPointBarFrame,
+    DRUID = EclipseBarFrame,
+    PALADIN = PaladinPowerBar,
+    DEATHKNIGHT = RuneFrame,
+    MONK = MonkHarmonyBar,
+    --EVOKER = EssencePlayerFrame,
+    --MAGE = MageArcaneChargesFrame,
+}
+
+local function DisableClickForResourceFrame(frame)
+    if BBF.MovingResource then return end
+    frame:SetMouseClickEnabled(false)
+end
+
+
+local function CheckForResourceConflicts()
+    -- local db = BetterBlizzFramesDB
+    -- local conflicts = {
+    --     ROGUE = db.moveResourceToTargetRogue,
+    --     DRUID = db.moveResourceToTargetDruid,
+    --     WARLOCK = db.moveResourceToTargetWarlock,
+    --     MAGE = db.moveResourceToTargetMage,
+    --     MONK = db.moveResourceToTargetMonk,
+    --     EVOKER = db.moveResourceToTargetEvoker,
+    --     PALADIN = db.moveResourceToTargetPaladin,
+    --     DEATHKNIGHT = db.moveResourceToTargetDK,
+    -- }
+
+    -- local _, class = UnitClass("player")
+    -- if db.moveResourceToTarget and conflicts[class] then
+    --     print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: Disable \"Move Resource to TargetFrame\" for this class in order to move Resource normally.")
+    --     return true
+    -- end
+    return false
+end
+function BBF.SetResourcePosition()
+    if not BetterBlizzFramesDB.moveResource then return end
+    if CheckForResourceConflicts() then return end
+
+    local _, class = UnitClass("player")
+    local frame = resourceFrames[class]
+    if not frame then return end
+
+    if not BetterBlizzFramesDB.moveResourceStackPos then
+        BetterBlizzFramesDB.moveResourceStackPos = {}
+    end
+
+    local pos = BetterBlizzFramesDB.moveResourceStackPos[class]
+    if pos then
+        if not frame.ogPoint then
+            local point, relativeTo, relativePoint, xOfs, yOfs = frame:GetPoint()
+            frame.ogPoint = { point = point, relativeTo = relativeTo, relativePoint = relativePoint, xOfs = xOfs, yOfs = yOfs }
+        end
+
+        frame:ClearAllPoints()
+        frame:SetPoint(pos.point, UIParent, pos.relativePoint, pos.xOfs, pos.yOfs)
+
+        hooksecurefunc(frame, "SetPoint", function(self)
+            if self.changing then return end
+            self.changing = true
+            local pos = BetterBlizzFramesDB.moveResourceStackPos[class]
+            if pos then
+                self:ClearAllPoints()
+                self:SetPoint(pos.point, UIParent, pos.relativePoint, pos.xOfs, pos.yOfs)
+            else
+                self:ClearAllPoints()
+                self:SetPoint(frame.ogPoint.point, frame.ogPoint.relativeTo, frame.ogPoint.relativePoint, frame.ogPoint.xOfs, frame.ogPoint.yOfs)
+            end
+            self.changing = false
+        end)
+    end
+end
+function BBF.ResetResourcePosition()
+    local _, class = UnitClass("player")
+    local frame = resourceFrames[class]
+    if not frame or not frame.ogPoint then return end
+
+    -- Reset frame to its original position
+    frame:ClearAllPoints()
+    frame:SetPoint(frame.ogPoint.point, frame.ogPoint.relativeTo, frame.ogPoint.relativePoint, frame.ogPoint.xOfs, frame.ogPoint.yOfs)
+end
+function BBF.EnableResourceMovement()
+    if CheckForResourceConflicts() then return end
+
+    local _, class = UnitClass("player")
+    local frame = resourceFrames[class]
+    if not frame then return end
+
+    if BBF.MovingResource then return end
+
+    -- Make the frame draggable
+    frame:SetMovable(true)
+    frame:EnableMouse(true)
+    frame:SetClampedToScreen(true)
+    frame:SetMouseClickEnabled(true)
+
+    frame:SetScript("OnMouseDown", function(self, button)
+        if button == "LeftButton" and IsControlKeyDown() then
+            self:StartMoving()
+        end
+    end)
+
+    frame:SetScript("OnMouseUp", function(self)
+        self:StopMovingOrSizing()
+
+        -- Ensure the database exists
+        if not BetterBlizzFramesDB.moveResourceStackPos then
+            BetterBlizzFramesDB.moveResourceStackPos = {}
+        end
+
+        -- Save class-specific position
+        local point, _, relativePoint, xOfs, yOfs = self:GetPoint()
+        BetterBlizzFramesDB.moveResourceStackPos[class] = {
+            point = point,
+            relativePoint = relativePoint,
+            xOfs = xOfs,
+            yOfs = yOfs
+        }
+    end)
+    BBF.MovingResource = true
+end
+
+
 function BBF.ActionBarIconZoom()
     --local texCoords = BetterBlizzFramesDB.playerFrameOCDZoom and {0.06, 0.94, 0.06, 0.94} or {0, 1, 0, 1}
     local texCoords = (BetterBlizzFramesDB.playerFrameOCD and BetterBlizzFramesDB.playerFrameOCDZoom) and {0.04, 0.98, 0.04, 0.95} or {0, 1, 0, 1}
@@ -709,9 +893,748 @@ function BBF.MoveToTFrames()
 end
 
 
+local legacyComboPowerTypes = {
+    MONK = Enum.PowerType.Chi,
+    PALADIN = Enum.PowerType.HolyPower,
+    MAGE = Enum.PowerType.ArcaneCharges,
+    WARLOCK = Enum.PowerType.SoulShards,
+    DEATHKNIGHT = Enum.PowerType.Runes,
+    EVOKER = Enum.PowerType.Essence,
+}
+
+local function GetLegacyComboStartIndex()
+    local _, class = UnitClass("player") -- class will be "PALADIN", "MONK", etc.
+    local classKey = class:sub(1, 1):upper() .. class:sub(2):lower() -- "Paladin"
+
+    if BetterBlizzFramesDB["ignore" .. classKey .. "LegacyCombos"] then return nil end
+
+    if class == "MONK" or class == "DEATHKNIGHT" or class == "EVOKER" then
+        return 1
+    end
+    if class == "MAGE" then return 2 end
+    return 2
+end
+
+function BBF.ClassColorLegacyCombos()
+    if not BBP.isMoP then return end
+    if not (BetterBlizzFramesDB.enableLegacyComboPointsMulticlass and BetterBlizzFramesDB.legacyMulticlassComboClassColor) then return end
+    if not ComboFrame or not ComboFrame.ComboPoints then return end
+
+    local startIndex = GetLegacyComboStartIndex()
+    if not startIndex then return end
+
+    local _, class = UnitClass("player")
+    local powerType = legacyComboPowerTypes[class]
+    if not powerType then return end
+
+    local frame = ComboFrame
+    local comboIndex = startIndex
+    local maxPoints = UnitPowerMax("player", powerType)
+
+    -- Shared baseline config (Monk-style)
+    local baseConfig = {
+        texture = "AncientMana",
+        texCoord = {0, 1, 0, 1},
+        size = {14, 14},
+        pointOffset = {-1, 1.5},
+        color = {1, 1, 1}, -- Monk green
+    }
+
+    -- Optional class-specific color overrides
+    local classOverrides = {
+        WARLOCK  = { color = {1, 0.388, 0.898} },
+        PALADIN  = { color = {1, 0.961, 0} },
+        MONK = { color = {0.341, 1, 0.612}},
+        DEATHKNIGHT = {
+            specs = {
+                [251] = { color = {0.2, 0.8, 1} },   -- Frost
+                [250] = { -- Blood
+                color = {1, 0, 0.11},
+                desaturated = true
+                },
+                [252] = { -- Unholy
+                    color = {0.22, 1, 0.27},
+                },
+            }
+        }
+    }
+
+    local specID = C_SpecializationInfo.GetSpecialization() and C_SpecializationInfo.GetSpecializationInfo(C_SpecializationInfo.GetSpecialization())
+    local config = {}
+
+    -- Use class spec override if available
+    local classConfig = classOverrides[class]
+    if classConfig then
+        if classConfig.specs and specID and classConfig.specs[specID] then
+            config = classConfig.specs[specID]
+        else
+            config = classConfig
+        end
+    end
+
+    -- Merge with baseline
+    setmetatable(config, { __index = baseConfig })
+
+    if class == "DEATHKNIGHT" then
+        local f = CreateFrame("Frame")
+        f:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
+        f:SetScript("OnEvent", function(_, _, unit)
+            if unit == "player" then
+                BBF.ClassColorLegacyCombos()
+            end
+        end)
+    end
+
+    for i = 1, maxPoints do
+        local point = frame.ComboPoints[comboIndex]
+        if point then
+            point.Highlight:SetAtlas(config.texture)
+            point.Highlight:SetTexCoord(unpack(config.texCoord))
+            point.Highlight:SetSize(unpack(config.size))
+            point.Highlight:SetPoint("TOPLEFT", point, "TOPLEFT", unpack(config.pointOffset))
+            point.Highlight:SetVertexColor(unpack(config.color))
+        end
+        comboIndex = comboIndex + 1
+    end
+end
 
 
 
+function BBF.GenericLegacyComboSupport()
+    if not BetterBlizzFramesDB.enableLegacyComboPointsMulticlass then return end
+    if C_CVar.GetCVar("comboPointLocation") ~= "1" then return end
+    if not ComboFrame or not ComboFrame.ComboPoints then return end
+    local _, class = UnitClass("player")
+    local supported = {
+        MONK = true, DEATHKNIGHT = true, EVOKER = true,
+        WARLOCK = true, PALADIN = true, MAGE = true,
+    }
+    if not supported[class] then return end
+
+    local enabled = GetLegacyComboStartIndex()
+    if not enabled then return end
+
+    local lastComboPoints = 0
+
+    local function ComboPointShineFadeIn(frame)
+        local fadeInfo = {
+            mode = "IN",
+            timeToFade = COMBOFRAME_SHINE_FADE_IN,
+            finishedFunc = ComboPointShineFadeOut,
+            finishedArg1 = frame,
+        }
+        UIFrameFade(frame, fadeInfo)
+    end
+
+    local function ComboPointShineFadeOut(frame)
+        UIFrameFadeOut(frame, COMBOFRAME_SHINE_FADE_OUT)
+    end
+
+    local showAlways = BetterBlizzFramesDB.alwaysShowLegacyComboPoints
+
+    local arcaneChargeInstanceID
+    local cachedArcaneCharges = 0
+    local ARCANE_BLAST_SPELL_ID = 36032
+
+    if class == "MAGE" then
+        local frame = CreateFrame("Frame")
+        frame:RegisterUnitEvent("UNIT_AURA", "player")
+
+        local function ScanInitialAuras()
+            for i = 1, 40 do
+                local aura = C_UnitAuras.GetAuraDataByIndex("player", i, "HARMFUL")
+                if not aura then break end
+                if aura.spellId == ARCANE_BLAST_SPELL_ID then
+                    arcaneChargeInstanceID = aura.auraInstanceID
+                    cachedArcaneCharges = aura.applications or 0
+                    break
+                end
+            end
+        end
+
+        ScanInitialAuras()
+
+        frame:SetScript("OnEvent", function(self, event, unit, updateInfo)
+            if not updateInfo then return end
+
+            if updateInfo.addedAuras then
+                for _, aura in ipairs(updateInfo.addedAuras) do 
+                    if aura.spellId == ARCANE_BLAST_SPELL_ID then
+                        arcaneChargeInstanceID = aura.auraInstanceID
+                        cachedArcaneCharges = aura.applications or 0
+                    end
+                end
+            end
+
+            if updateInfo.updatedAuraInstanceIDs then
+                for _, auraInstanceID in ipairs(updateInfo.updatedAuraInstanceIDs) do
+                    local aura = C_UnitAuras.GetAuraDataByAuraInstanceID("player", auraInstanceID)
+                    if aura then
+                        if aura.spellId == ARCANE_BLAST_SPELL_ID then
+                            arcaneChargeInstanceID = auraInstanceID
+                            cachedArcaneCharges = aura.applications or 0
+                        end
+                    end
+                end
+            end
+
+            if updateInfo.removedAuraInstanceIDs then
+                for _, auraInstanceID in ipairs(updateInfo.removedAuraInstanceIDs) do
+                    if arcaneChargeInstanceID == auraInstanceID then
+                        cachedArcaneCharges = 0
+                        arcaneChargeInstanceID = nil
+                    end
+                end
+            end
+        end)
+    end
+
+
+    local function UpdateGenericLegacyCombo()
+        local powerType = legacyComboPowerTypes[class]
+        if not powerType then return end
+        local comboPoints
+        if class == "MAGE" then
+            comboPoints = cachedArcaneCharges
+        else
+            comboPoints = UnitPower("player", powerType)
+        end
+
+        local maxComboPoints = (class == "MAGE") and 4 or UnitPowerMax("player", powerType)
+
+        local frame = ComboFrame
+        ComboFrame:Show()
+        ComboFrame:SetAlpha(1)
+        local comboIndex = GetLegacyComboStartIndex()
+        if not comboIndex then return end
+
+        for i = 1, maxComboPoints do
+            local point = frame.ComboPoints[comboIndex]
+            if point then
+                -- Always show the background
+                point:Show()
+                point:SetAlpha(1)
+
+                -- Only show highlight when active or animating
+                local isActive = i <= comboPoints
+                point:SetShown(showAlways or isActive)
+
+                if point.Highlight then
+                    point.Highlight:SetAlpha(isActive and 1 or 0)
+                end
+
+                if isActive and i > lastComboPoints then
+                    local highlight = point.Highlight
+                    local shine = point.Shine
+
+                    if highlight and shine then
+                        local fadeInfo = {
+                            mode = "IN",
+                            timeToFade = COMBOFRAME_HIGHLIGHT_FADE_IN,
+                            finishedFunc = ComboPointShineFadeIn,
+                            finishedArg1 = shine,
+                        }
+                        UIFrameFade(highlight, fadeInfo)
+                    end
+                end
+
+                comboIndex = comboIndex + 1
+            end
+        end
+
+        if comboPoints == 0 and not showAlways then
+            frame:Hide()
+        else
+            frame:SetAlpha(1)
+            frame:Show()
+        end
+
+        UIFrameFadeRemoveFrame(frame)
+
+        lastComboPoints = comboPoints
+    end
+
+    hooksecurefunc("ComboFrame_Update", UpdateGenericLegacyCombo)
+end
+
+
+function BBF.UpdateLegacyComboPosition()
+    if not ComboFrame then return end
+    local db = BetterBlizzFramesDB
+    local x = db.legacyComboXPos
+    local y = db.legacyComboYPos
+    local scale = db.legacyComboScale
+
+    local extraOffsetY = 0--not db.classicFrames and 2.5 or 0
+    local extraOffsetX = 0--not db.classicFrames and -5 or 0
+
+    ComboFrame:ClearAllPoints()
+    ComboFrame:SetPoint("TOPRIGHT", TargetFrame, "TOPRIGHT", x+extraOffsetX, y+extraOffsetY)
+    ComboFrame:SetScale(scale)
+end
+
+function BBF.FixLegacyComboPointsLocation()
+    if BetterBlizzFramesDB.legacyCombosTurnedOff then
+        C_CVar.SetCVar("comboPointLocation", "2")
+        return
+    end
+    if BetterBlizzFramesDB.enableLegacyComboPoints then
+        C_CVar.SetCVar("comboPointLocation", "1")
+    elseif BetterBlizzFramesDB.comboPointLocation then
+        C_CVar.SetCVar("comboPointLocation", BetterBlizzFramesDB.comboPointLocation)
+    end
+    if C_CVar.GetCVar("comboPointLocation") == "1" and ComboFrame and BetterBlizzFramesDB.enableLegacyComboPoints then
+        ComboFrame:SetParent(TargetFrame)
+        ComboFrame:SetFrameStrata("HIGH")
+        BBF.UpdateLegacyComboPosition()
+    end
+end
+
+function BBF.AlwaysShowLegacyComboPoints()
+    if not BetterBlizzFramesDB.alwaysShowLegacyComboPoints then return end
+    if BetterBlizzFramesDB.instantComboPoints then return end
+    if BBF.AlwaysShowLegacyComboPoints then return end
+    local _, class = UnitClass("player")
+    if class ~= "ROGUE" and class ~= "DRUID" then return end
+    local function UpdateLegacyComboFrame()
+        local frame = ComboFrame
+        local comboPoints = GetComboPoints("player", "target")
+        local maxComboPoints = UnitPowerMax("player", Enum.PowerType.ComboPoints)
+        frame:Show()
+        frame:SetAlpha(1)
+        local comboIndex = frame.startComboPointIndex or 2
+        for i = 1, maxComboPoints do
+            local point = frame.ComboPoints[comboIndex]
+            if point then
+                point:Show()
+                point:SetAlpha(1)
+                point.Highlight:SetAlpha(i <= comboPoints and 1 or 0)
+                point.Shine:SetAlpha(0)
+                comboIndex = comboIndex + 1
+            end
+        end
+    end
+    if C_CVar.GetCVar("comboPointLocation") == "1" and ComboFrame then
+        hooksecurefunc("ComboFrame_Update", UpdateLegacyComboFrame)
+        UpdateLegacyComboFrame()
+    end
+    BBF.AlwaysShowLegacyComboPoints = true
+end
+
+function BBF.ApplyLegacyBlueCombos(isEnabled)
+    if not ComboFrame or not ComboFrame.ComboPoints then return end
+
+    local frame = ComboFrame
+    local comboIndex = 1--frame.startComboPointIndex or 2
+    local maxPoints = UnitPowerMax("player", Enum.PowerType.Chi)
+
+    for i = 1, maxPoints do
+        local point = frame.ComboPoints[comboIndex]
+        if point then
+            if isEnabled then
+                point.Highlight:SetAtlas("AncientMana")
+                point.Highlight:SetTexCoord(0, 1, 0, 1)
+                point.Highlight:SetSize(14, 14)
+                point.Highlight:SetPoint("TOPLEFT", point, "TOPLEFT", -1, 1.5)
+                point.charged = true
+            else
+                point.Highlight:SetTexture(130973) -- original texture
+                point.Highlight:SetTexCoord(0.375, 0.5625, 0, 1)
+                point.Highlight:SetSize(8, 16)
+                point.Highlight:SetPoint("TOPLEFT", point, "TOPLEFT", 2, 0)
+                point.charged = false
+            end
+        end
+        comboIndex = comboIndex + 1
+    end
+end
+
+function BBF.LegacyBlueCombos()
+    if not BetterBlizzFramesDB.legacyBlueComboPoints then return end
+    if C_CVar.GetCVar("comboPointLocation") ~= "1" then return end
+    local _, class = UnitClass("player")
+    if class == "ROGUE" then
+        local function BlueLegacyComboRogue()
+            local frame = ComboFrame
+            if not frame or not frame.ComboPoints then return end
+
+            local chargedPowerPoints = GetUnitChargedPowerPoints("player") or {}
+
+            local comboIndex = frame.startComboPointIndex or 2
+
+            for i = 1, 2 do
+                local point = frame.ComboPoints[comboIndex]
+                if point then
+                    local isCharged = tContains(chargedPowerPoints, i)
+
+                    if isCharged then
+                        point.Highlight:SetAtlas("AncientMana")
+                        point.Highlight:SetTexCoord(0, 1, 0, 1)
+                        point.Highlight:SetSize(14, 14)
+                        point.Highlight:SetPoint("TOPLEFT", point, "TOPLEFT", -1, 1.5)
+                        point.charged = true
+                    elseif point.charged then
+                        point.Highlight:SetTexture(130973)
+                        point.Highlight:SetTexCoord(0.375, 0.5625, 0, 1)
+                        point.Highlight:SetSize(8, 16)
+                        point.Highlight:SetPoint("TOPLEFT", point, "TOPLEFT", 2, 0)
+                        point.charged = false
+                    end
+
+                    comboIndex = comboIndex + 1
+                end
+            end
+        end
+        if ComboFrame then hooksecurefunc("ComboFrame_Update", BlueLegacyComboRogue) end
+    elseif class == "DRUID" then
+        BBF.DruidBlueComboPoints()
+    end
+end
+
+
+function BBF.InstantComboPoints()
+    if not BetterBlizzFramesDB.instantComboPoints then return end
+    if BBF.InstantComboPointsActive then return end
+    -- Call the function for each frame
+    local _, class = UnitClass("player")
+
+    local function UpdateRogueComboPoints(self)
+        if not self or self:IsForbidden() then return end
+        local comboPoints = UnitPower("player", self.powerType)
+        local chargedPowerPoints = GetUnitChargedPowerPoints("player") or {}
+
+        for i, point in ipairs(self.classResourceButtonTable) do
+            local isFull = i <= comboPoints
+            local isCharged = tContains(chargedPowerPoints, i)
+
+            -- Stop all animations to enforce instant update
+            for _, transitionAnim in ipairs(point.transitionAnims) do
+                transitionAnim:Stop()
+            end
+
+            -- Directly set textures and visibility
+            point.IconUncharged:SetAlpha(isFull and not isCharged and 1 or 0)
+            point.IconCharged:SetAlpha(isFull and isCharged and 1 or 0)
+            point.BGActive:SetAlpha(isFull and 1 or 0)
+            point.BGInactive:SetAlpha(isFull and 0 or 1)
+            point.FXUncharged:SetAlpha(isFull and not isCharged and 1 or 0)
+            point.FXCharged:SetAlpha(isFull and isCharged and 1 or 0)
+
+            -- ChargedFrame logic:
+            if isCharged then
+                if isFull then
+                    point.ChargedFrameActive:SetAlpha(1)  -- Show Active only if both charged and filled
+                    point.ChargedFrameInactive:SetAlpha(0) -- Hide Inactive since it's full
+                else
+                    point.ChargedFrameActive:SetAlpha(0)  -- Hide Active since no combo point is in it
+                    point.ChargedFrameInactive:SetAlpha(1) -- Show Inactive since it's charged but empty
+                end
+            else
+                -- If not charged, hide both charged frames
+                point.ChargedFrameActive:SetAlpha(0)
+                point.ChargedFrameInactive:SetAlpha(0)
+            end
+        end
+    end
+
+    local function UpdateLegacyComboFrame()
+        local frame = ComboFrame
+        if not frame or not frame.ComboPoints then return end
+
+        local comboPoints = GetComboPoints("player", "target")
+        local maxComboPoints = UnitPowerMax("player", Enum.PowerType.ComboPoints)
+        local showAlways = BetterBlizzFramesDB.alwaysShowLegacyComboPoints or false
+
+        frame:SetAlpha(1)
+        frame:Show()
+
+        local comboIndex = frame.startComboPointIndex or 2
+
+        for i = 1, maxComboPoints do
+            local point = frame.ComboPoints[comboIndex]
+            if point then
+                UIFrameFadeRemoveFrame(point.Highlight)
+                UIFrameFadeRemoveFrame(point.Shine)
+
+                point:SetAlpha(1)
+                point.Highlight:SetAlpha(i <= comboPoints and 1 or 0)
+                point.Shine:SetAlpha(0)
+
+                if showAlways then
+                    point:Show()
+                else
+                    point:SetShown(i <= comboPoints)
+                end
+
+                comboIndex = comboIndex + 1
+            end
+        end
+
+        if comboPoints == 0 and not showAlways then
+            frame:Hide()
+        end
+
+        UIFrameFadeRemoveFrame(frame)
+    end
+
+    local function UpdateDruidComboPoints(self)
+        if not self or self:IsForbidden() then return end
+        local comboPoints = UnitPower("player", self.powerType)
+
+        for i, point in ipairs(self.classResourceButtonTable) do
+            local isFull = i <= comboPoints
+
+            -- Stop animations for instant update
+            if point.activateAnim then point.activateAnim:Stop() end
+            if point.deactivateAnim then point.deactivateAnim:Stop() end
+
+            -- Directly set textures and visibility
+            point.Point_Icon:SetAlpha(isFull and 1 or 0)
+            point.BG_Active:SetAlpha(isFull and 1 or 0)
+            point.BG_Inactive:SetAlpha(isFull and 0 or 1)
+
+            point.Point_Deplete:SetAlpha(0)
+        end
+    end
+
+    local function UpdateMonkChi(self)
+        if not self or self:IsForbidden() then return end
+        local numChi = UnitPower("player", self.powerType)
+
+        for i, point in ipairs(self.classResourceButtonTable) do
+            local isFull = i <= numChi
+
+            -- Stop animations for instant updates
+            if point.activate then point.activate:Stop() end
+            if point.deactivate then point.deactivate:Stop() end
+
+            -- Directly update textures and visibility
+            point.Chi_Icon:SetAlpha(isFull and 1 or 0)
+            point.Chi_BG_Active:SetAlpha(isFull and 1 or 0)
+            point.Chi_BG:SetAlpha(isFull and 0 or 1)
+
+            point.Chi_Deplete:SetAlpha(0)
+            point.FX_OuterGlow:SetAlpha(0)
+            point.FB_Wind_FX:SetAlpha(0)
+        end
+    end
+
+    local function UpdateArcaneCharges(self)
+        if not self or self:IsForbidden() then return end
+        local numCharges = UnitPower("player", self.powerType, true)
+
+        for i, point in ipairs(self.classResourceButtonTable) do
+            local isFull = i <= numCharges
+
+            -- Stop animations for instant updates
+            if point.activateAnim then point.activateAnim:Stop() end
+            if point.deactivateAnim then point.deactivateAnim:Stop() end
+
+            -- Directly update textures and visibility
+            point.ArcaneIcon:SetAlpha(isFull and 1 or 0)
+            point.ArcaneBG:SetAlpha(isFull and 1 or 0)
+            point.Orb:SetAlpha(isFull and 0 or 1)
+
+            point.ArcaneFlare:SetAlpha(0)
+            point.ArcaneOuterFX:SetAlpha(0)
+            point.ArcaneCircle:SetAlpha(0)
+            point.ArcaneTriangle:SetAlpha(0)
+            point.ArcaneSquare:SetAlpha(0)
+            point.ArcaneDiamond:SetAlpha(0)
+            point.FrameGlow:SetAlpha(0)
+            point.FBArcaneFX:SetAlpha(0)
+        end
+    end
+
+    local function UpdatePaladinHolyPower(self)
+        if not self or self:IsForbidden() then return end
+        local numHolyPower = UnitPower("player", Enum.PowerType.HolyPower)
+        local maxHolyPower = UnitPowerMax("player", Enum.PowerType.HolyPower)
+
+        for i = 1, maxHolyPower do
+            local rune = self["rune"..i]
+            if rune then
+                -- Stop all animations
+                if rune.activateAnim then rune.activateAnim:Stop() end
+                if rune.readyAnim then rune.readyAnim:Stop() end
+                if rune.readyLoopAnim then rune.readyLoopAnim:Stop() end
+                if rune.depleteAnim then rune.depleteAnim:Stop() end
+
+                -- Hide all FX
+                if rune.FX then rune.FX:SetAlpha(0) end
+                if rune.Blur then rune.Blur:SetAlpha(0) end
+                if rune.Glow then rune.Glow:SetAlpha(0) end
+                if rune.DepleteFlipbook then rune.DepleteFlipbook:SetAlpha(0) end
+
+                -- Set active state
+                if i <= numHolyPower then
+                    if rune.ActiveTexture then rune.ActiveTexture:SetAlpha(1) end
+                else
+                    if rune.ActiveTexture then rune.ActiveTexture:SetAlpha(0) end
+                end
+            end
+        end
+
+        -- Stop main bar animations
+        self.activateAnim:Stop()
+        self.readyAnim:Stop()
+        self.readyLoopAnim:Stop()
+        self.depleteAnim:Stop()
+
+        -- Update bar visuals
+        self.ActiveTexture:SetAlpha(numHolyPower > 0 and 1 or 0)
+        self.ThinGlow:SetAlpha(numHolyPower > 2 and 1 or 0)
+        self.Glow:SetAlpha(numHolyPower == 5 and 1 or 0)
+    end
+
+    if BetterBlizzPlatesDB then
+        BetterBlizzPlatesDB.instantComboPoints = true
+    end
+    local BBP = BetterBlizzPlatesDB
+
+    if class == "MONK" then
+        hooksecurefunc(MonkHarmonyBarFrame, "UpdatePower", UpdateMonkChi)
+        if not BBP then hooksecurefunc(ClassNameplateBarWindwalkerMonkFrame, "UpdatePower", UpdateMonkChi) end
+    elseif class == "ROGUE" then
+        hooksecurefunc(RogueComboPointBarFrame, "UpdatePower", UpdateRogueComboPoints)
+        if not BBP then hooksecurefunc(ClassNameplateBarRogueFrame, "UpdatePower", UpdateRogueComboPoints) end
+        if C_CVar.GetCVar("comboPointLocation") == "1" and ComboFrame then hooksecurefunc("ComboFrame_Update", UpdateLegacyComboFrame) end
+    elseif class == "DRUID" then
+        hooksecurefunc(DruidComboPointBarFrame, "UpdatePower", UpdateDruidComboPoints)
+        if not BBP then hooksecurefunc(ClassNameplateBarFeralDruidFrame, "UpdatePower", UpdateDruidComboPoints) end
+        if C_CVar.GetCVar("comboPointLocation") == "1" and ComboFrame then hooksecurefunc("ComboFrame_Update", UpdateLegacyComboFrame) end
+    -- elseif class == "MAGE" then
+    --     hooksecurefunc(MageArcaneChargesFrame, "UpdatePower", UpdateArcaneCharges)
+    --     if not BBP then hooksecurefunc(ClassNameplateBarMageFrame, "UpdatePower", UpdateArcaneCharges) end
+    elseif class == "PALADIN" then
+        hooksecurefunc(PaladinPowerBarFrame, "UpdatePower", UpdatePaladinHolyPower)
+        if not BBP then hooksecurefunc(ClassNameplateBarPaladinFrame, "UpdatePower", UpdatePaladinHolyPower) end
+    end
+    BBF.InstantComboPointsActive = true
+end
+
+
+
+function BBF.ShowCooldownDuringCC()
+    -- if not BetterBlizzFramesDB.fixActionBarCDs then return end
+    -- if BBF.ShowCooldownDuringCCActive then return end
+    -- local usingOmniCC = C_AddOns.IsAddOnLoaded("OmniCC")
+    -- local alwaysHideCCDuration = BetterBlizzFramesDB.fixActionBarCDsAlwaysHideCD
+
+    -- local OmniCCTextUpdater = CreateFrame("Frame")
+    -- local trackedButtons = {}
+
+    -- print("shits active")
+
+    -- local function StopTracking(button)
+    --     if trackedButtons[button] then
+    --         trackedButtons[button] = nil
+    --     end
+    --     if not next(trackedButtons) then
+    --         OmniCCTextUpdater:SetScript("OnUpdate", nil)
+    --     end
+    -- end
+
+    -- local function TrackButton(button)
+    --     if not trackedButtons[button] then
+    --         trackedButtons[button] = true
+    --         OmniCCTextUpdater:SetScript("OnUpdate", function()
+    --             for button in pairs(trackedButtons) do
+    --                 if button.chargeCooldown and button.chargeCooldown._occ_display then
+    --                     local occText = button.chargeCooldown._occ_display.text
+    --                     if occText and not occText:IsShown() then
+    --                         occText:Show()
+    --                     end
+    --                 end
+    --             end
+    --         end)
+    --     end
+    -- end
+
+    -- local function UpdateCooldown(self)
+    --     if self.cooldown.currentCooldownType ~= 1 then return end
+    --     if not self:IsVisible() or not self.action then return end
+
+    --     local start, duration, enable, modRate = 0, 0
+    --     local actionType, actionID = GetActionInfo(self.action)
+    --     local locStart, locDuration = 0, 0
+    --     local chargeInfo
+
+    --     if (actionType == "spell" or actionType == "macro") and actionID then
+    --         local currentCharges, maxCharges, cooldownStart, cooldownDuration, chargeModRate = GetSpellCharges(spell)
+    --         if currentCharges then
+    --             chargeInfo = {}
+    --             chargeInfo.currentCharges = currentCharges
+    --             chargeInfo.maxCharges = maxCharges
+    --             chargeInfo.cooldownStart = cooldownStart
+    --             chargeInfo.cooldownDuration = cooldownDuration
+    --             chargeInfo.chargeModRate = chargeModRate or 1
+    --         end
+    --         if chargeInfo and chargeInfo.currentCharges ~= chargeInfo.maxCharges then
+    --             start, duration, modRate = chargeInfo.cooldownStartTime, chargeInfo.cooldownDuration, chargeInfo.chargeModRate
+    --         else
+    --             locStart, locDuration = GetActionLossOfControlCooldown(actionID);
+    --             start, duration, enable, modRate = GetSpellCooldown(actionID)
+    --             if not start then
+    --                 start, duration, enable, modRate = GetActionCooldown(self.action)
+    --             end
+    --         end
+    --         if not modRate then
+    --             modRate = 1
+    --         end
+    --     else
+    --         local charges, maxCharges, chargeStart, chargeDuration, chargeModRate = GetActionCharges(self.action)
+    --         if charges then
+    --             start, duration, modRate = chargeStart, chargeDuration, chargeModRate
+    --         else
+    --             start, duration, enable, modRate = GetActionCooldown(self.action)
+    --         end
+
+    --         locStart, locDuration = GetActionLossOfControlCooldown(self.action);
+    --     end
+
+    --     if duration == 0 then
+    --         if alwaysHideCCDuration then
+    --             self.cooldown:SetHideCountdownNumbers(true)
+    --             self.cooldown:SetCooldown(0, 0)
+    --         end
+    --         return
+    --     end
+
+    --     if not chargeInfo then
+    --         local now = GetTime()
+    --         local cdRemaining = (start and duration and duration > 0) and ((start + duration) - now) or 0
+    --         local locRemaining = (locStart and locDuration and locDuration > 0) and ((locStart + locDuration) - now) or 0
+    --         if locRemaining <= cdRemaining then
+    --             return
+    --         end
+    --     end
+
+    --     self.cooldown:SetHideCountdownNumbers(false)
+    --     self.cooldown:SetCooldown(start, duration, modRate)
+
+    --     -- Ensure OmniCC properly shows the cooldown text
+    --     if usingOmniCC then
+    --         if self.cooldown._occ_display then
+    --             local occText = self.cooldown._occ_display.text
+    --             C_Timer.After(0, function()
+    --                 occText:Show()
+    --             end)
+    --         end
+
+    --         if self.chargeCooldown then
+    --             self.chargeCooldown:SetHideCountdownNumbers(false)
+    --             self.chargeCooldown:SetCooldown(start, duration, modRate)
+    --             TrackButton(self)
+    --             C_Timer.After(0.15, function()
+    --                 StopTracking(self)
+    --             end)
+    --         end
+    --     end
+    -- end
+
+    -- hooksecurefunc("ActionButton_UpdateCooldown", UpdateCooldown)
+end
 
 
 
@@ -1131,8 +2054,35 @@ function BBF.FixStupidBlizzPTRShit()
         end
         BBF.hotkeyCancel = nil
 
+        local a,b,c,d,e = TargetFrameToTPortrait:GetPoint()
+        TargetFrameToTPortrait:SetPoint(a,b,c,5,-5)
+        TargetFrameToTPortrait:SetSize(36,36)
+
+        local a,b,c,d,e = FocusFrameToTPortrait:GetPoint()
+        FocusFrameToTPortrait:SetPoint(a,b,c,5,-5)
+        FocusFrameToTPortrait:SetSize(36,36)
+
+        if not BetterBlizzFramesDB.biggerHealthbars then
+            local a,b,c,d,e = TargetFrameNameBackground:GetPoint()
+            TargetFrameNameBackground:SetPoint(a,b,c,-107,-23)
+            TargetFrameNameBackground:SetHeight(18)
+            local a,b,c,d,e = TargetFrameHealthBar:GetPoint()
+            TargetFrameHealthBar:SetPoint(a,b,c,-107,e)
+            local a,b,c,d,e = TargetFrameManaBar:GetPoint()
+            TargetFrameManaBar:SetPoint(a,b,c,-107,e)
+
+            local a,b,c,d,e = FocusFrameNameBackground:GetPoint()
+            FocusFrameNameBackground:SetPoint(a,b,c,-107,-23)
+            FocusFrameNameBackground:SetHeight(18)
+            local a,b,c,d,e = FocusFrameHealthBar:GetPoint()
+            FocusFrameHealthBar:SetPoint(a,b,c,-107,e)
+            local a,b,c,d,e = FocusFrameManaBar:GetPoint()
+            FocusFrameManaBar:SetPoint(a,b,c,-107,e)
+        end
+
         if C_AddOns.IsAddOnLoaded("Bartender4") then return end
         if C_AddOns.IsAddOnLoaded("Dominos") then return end
+        if BBF.isMoP then return end
 
         MainMenuBarTextureExtender:Hide()
         MainMenuBarTexture3:SetPoint("BOTTOM", MainMenuBarArtFrame, "BOTTOM", 371, 0)
@@ -1301,11 +2251,18 @@ Frame:SetScript("OnEvent", function(...)
         BBF.ClassPortraits()
     end
     BBF.ClassColorReputationCaller()
+    BBF.SetupLoCFrame()
+    BBF.EnableQueueTimer()
 
     C_Timer.After(0, function()
         BBF.PlayerReputationColor()
         BBF.SetCustomFonts()
         BBF.UpdateCustomTextures()
+    end)
+
+    C_Timer.After(0.5, function()
+        BBF.SetResourcePosition()
+        ScaleClassResource()
     end)
 
     local function LoginVariablesLoaded()
@@ -1371,6 +2328,7 @@ Frame:SetScript("OnEvent", function(...)
                 BBF.UpdateCastbars()
                 BBF.ChangeCastbarSizes()
                 BBF.HideFrames()
+                BBF.ShowCooldownDuringCC()
                 --BBF.HookUnitFrameName()
             end)
             if BetterBlizzFramesDB.partyCastbars or BetterBlizzFramesDB.petCastbar then
@@ -1469,6 +2427,26 @@ SlashCmdList["BBF"] = function(msg)
     end
 end
 
+local function MoveableSettingsPanel(talents)
+    if C_AddOns.IsAddOnLoaded("BlizzMove") then return end
+    if not talents then
+        local frame = SettingsPanel
+        if frame and not frame:GetScript("OnDragStart") then
+            frame:RegisterForDrag("LeftButton")
+            frame:SetScript("OnDragStart", frame.StartMoving)
+            frame:SetScript("OnDragStop", frame.StopMovingOrSizing)
+        end
+    else
+        local talentFrame = PlayerSpellsFrame
+        if talentFrame and not talentFrame:GetScript("OnDragStart") then
+            talentFrame:SetMovable(true)
+            talentFrame:RegisterForDrag("LeftButton")
+            talentFrame:SetScript("OnDragStart", talentFrame.StartMoving)
+            talentFrame:SetScript("OnDragStop", talentFrame.StopMovingOrSizing)
+        end
+    end
+end
+
 -- Event registration for PLAYER_LOGIN
 local First = CreateFrame("Frame")
 First:RegisterEvent("ADDON_LOADED")
@@ -1477,10 +2455,32 @@ First:SetScript("OnEvent", function(_, event, addonName)
         if addonName == "BetterBlizzFrames" then
             BetterBlizzFramesDB.wasOnLoadingScreen = true
 
+            if BetterBlizzFramesDB.hasSaved and not BetterBlizzFramesDB.mopUpdates then
+                BetterBlizzFramesDB.legacyComboXPos = -44
+                BetterBlizzFramesDB.legacyComboYPos = -9
+                BetterBlizzFramesDB.legacyComboScale = 1
+                BetterBlizzFramesDB.mopUpdates = true
+                StaticPopupDialogs["BBF_MOP_UPDATE"] = {
+                    text = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: \n\n|A:services-icon-warning:16:16|a CHANGES |A:services-icon-warning:16:16|a\n\nLots of Retail features from BBP have been brought over to MoP and Cata.\n\nDue to the large amount of changes things might have changed slightly.\nThere might also be some missed bugs.\n\nRead changelog for more info.",
+                    button1 = "OK",
+                    timeout = 0,
+                    whileDead = true,
+                }
+                StaticPopup_Show("BBF_MOP_UPDATE")
+            end
+
             InitializeSavedVariables()
             FetchAndSaveValuesOnFirstLogin()
             TurnTestModesOff()
+            BBF.FixLegacyComboPointsLocation()
+            BBF.AlwaysShowLegacyComboPoints()
+            BBF.GenericLegacyComboSupport()
             --TurnOnEnabledFeaturesOnLogin()
+            BBF.DampeningOnDebuff()
+
+            C_Timer.After(1, function()
+                MoveableSettingsPanel()
+            end)
 
             if BetterBlizzFramesDB.partyCastbarHideBorder then
                 BetterBlizzFramesDB.partyCastbarShowBorder = false
@@ -1562,35 +2562,12 @@ PlayerEnteringWorld:SetScript("OnEvent", function()
     if BetterBlizzFramesDB.playerFrameOCD then
         ChangeHotkeyWidth(32)
     end
-    -- if not isAddonLoaded("ClassicFrames") then
-    --     --BBF.HookNameChangeStuff()
-    --     TargetFrame:SetFrameStrata("MEDIUM")
-    --     TargetFrameSpellBar:SetFrameStrata("HIGH")
-    --     FocusFrameSpellBar:SetFrameStrata("HIGH")
-    -- end
-    -- if BetterBlizzFramesDB.fixHealthbarText then
-    --     --temp fix blizz bodify
-    --     SetTextStatusBarText(PlayerFrameManaBar, PlayerFrameManaBarText)
-    --     SetTextStatusBarText(PlayerFrameHealthBar, PlayerFrameHealthBarText)
-    --     TextStatusBar_UpdateTextString(PlayerFrameHealthBar)
-    --     TextStatusBar_UpdateTextString(PlayerFrameManaBar)
-    -- end
 end)
 PlayerEnteringWorld:RegisterEvent("PLAYER_ENTERING_WORLD")
 
 
--- TargetFrame.HealthBar.BBPFill = TargetFrame.HealthBar.OtherHealPredictionBar:CreateTexture(nil, "OVERLAY");
--- TargetFrame.HealthBar.BBPFill:SetTexture(137012)
--- TargetFrame.HealthBar.BBPFill:SetPoint("CENTER", TargetFrame.HealthBar.MyHealPredictionBar.FillMask, "CENTER", 0, 0)
--- -- TargetFrame.HealthBar.MyHealPredictionBar.FillMask:HookScript("OnUpdate", function()
--- --     TargetFrame.HealthBar.BBPFill:SetWidth(TargetFrame.HealthBar.MyHealPredictionBar.FillMask:GetWidth())
--- -- end)
-
--- BBF.HookAndDo(TargetFrame.HealthBar.MyHealPredictionBar.FillMask, "SetSize", function(frame, width, height, flag)
---     TargetFrame.HealthBar.BBPFill:SetSize(120, 42, flag)
--- end)
-
--- BBF.HookAndDo(TargetFrame.HealthBar.MyHealPredictionBar.FillMask, "SetWidth", function(frame, width, flag)
---     TargetFrame.HealthBar.BBPFill:SetWidth(TargetFrame.HealthBar.MyHealPredictionBar.FillMask:GetWidth(), flag)
--- end)
---TargetFrame.HealthBar.OtherHealPredictionBar.Fill:SetBlendMode("MOD")
+if EclipseBarFramePowertext then
+    hooksecurefunc(EclipseBarFramePowertext, "Hide", function(self)
+        self:Show()
+    end)
+end

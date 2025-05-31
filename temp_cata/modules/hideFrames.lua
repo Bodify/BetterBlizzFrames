@@ -105,9 +105,13 @@ local function UpdateLevelTextVisibility(unitFrame, unit)
     if BetterBlizzFramesDB.hideLevelText then
         if BetterBlizzFramesDB.hideLevelTextAlways then
             unitFrame:SetAlpha(0)
+            if unit == "player" then
+                unitFrame:SetParent(BBF.hiddenFrame)
+            end
             return
         end
-        if UnitLevel(unit) == 85 then
+        local lvl = BBF.isMoP and 90 or 85
+        if UnitLevel(unit) == lvl then
             unitFrame:SetAlpha(0)
         else
             unitFrame:SetAlpha(1)
@@ -791,6 +795,14 @@ function BBF.HideFrames()
         PetFrameManaBarTextLeft:Hide()
         PetFrameManaBarTextRight:SetAlpha(0)
         PetFrameManaBarTextRight:Hide()
+    end
+
+    if LossOfControlFrame then
+        local LossOfControlFrameAlphaBg = BetterBlizzFramesDB.hideLossOfControlFrameBg and 0 or 0.6
+        local LossOfControlFrameAlphaLines = BetterBlizzFramesDB.hideLossOfControlFrameLines and 0 or 1
+        LossOfControlFrame.blackBg:SetAlpha(LossOfControlFrameAlphaBg)
+        LossOfControlFrame.RedLineTop:SetAlpha(LossOfControlFrameAlphaLines)
+        LossOfControlFrame.RedLineBottom:SetAlpha(LossOfControlFrameAlphaLines)
     end
 end
 

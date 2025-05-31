@@ -6,10 +6,15 @@ CataAbsorb.spells = {
     [96263] = true, -- Paladin: Sacred Shield
     [62606] = true, -- Druid: Savage Defense
     [77535] = true, -- DK: Blood Shield
-    [1463] = true, -- Mage: Mana Shield
+    [1463] = true, -- Mage: Mana Shield / Incanters Ward
     [11426] = true, -- Mage: Ice Barrier
     [98864] = true, -- Mage: Ice Barrier
     [55277] = true, -- Shaman: Totem Shield
+    [116849] = true, -- Monk: Life Cocoon
+    [115295] = true, -- Monk: Guard
+    [114893] = true, -- Shaman: Stone Bulwark
+    [123258] = true, -- Priest: Power Word: Shield
+    [114214] = true, -- Angelic Bulwark
 }
 CataAbsorb.playerName = UnitName("player")
 CataAbsorb.unitFrames = {}
@@ -625,6 +630,13 @@ local function UpdateRelevantUnits()
     end
 end
 
+local auraEvents = {
+    ["SPELL_AURA_APPLIED"] = true,
+    ["SPELL_AURA_REFRESH"] = true,
+    ["SPELL_AURA_REMOVED"] = true,
+    ["SPELL_ABSORBED"] = true,
+}
+
 local function OnEvent(self, event, ...)
     if event == "PLAYER_ENTERING_WORLD" then
         ResetAll(CataAbsorb.allstates)
@@ -640,6 +652,7 @@ local function OnEvent(self, event, ...)
         end
     elseif event == "COMBAT_LOG_EVENT_UNFILTERED" then
         local _, subEvent, _, _, _, _, _, destGUID, destName = CombatLogGetCurrentEventInfo()
+        if not auraEvents[subEvent] then return end
         if destName then
             destName = Ambiguate(destName, "short")
             local units = relevantUnits[destName]  -- This is now a table containing multiple units
@@ -654,10 +667,7 @@ local function OnEvent(self, event, ...)
                         if not CataAbsorb.spells[spellId] then return end
                         RefreshUnit(CataAbsorb.allstates, unit, computedAbsorbs[unit])
                     elseif subEvent == "SPELL_ABSORBED" then
-                        local unit = relevantUnits[destName]
-                        if unit then
-                            RefreshUnit(CataAbsorb.allstates, unit, computedAbsorbs[unit])
-                        end
+                        RefreshUnit(CataAbsorb.allstates, unit)
                     end
                 end
             end

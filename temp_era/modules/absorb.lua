@@ -820,6 +820,13 @@ local function RefreshUnit(allstates, unit, absorbValue)
     end
 end
 
+local auraEvents = {
+    ["SPELL_AURA_APPLIED"] = true,
+    ["SPELL_AURA_REFRESH"] = true,
+    ["SPELL_AURA_REMOVED"] = true,
+    ["SPELL_ABSORBED"] = true,
+}
+
 local function OnEvent(self, event, ...)
     if event == "PLAYER_ENTERING_WORLD" then
         ResetAll(CataAbsorb.allstates)
@@ -835,6 +842,7 @@ local function OnEvent(self, event, ...)
         end
     elseif event == "COMBAT_LOG_EVENT_UNFILTERED" then
         local _, subEvent, _, _, _, _, _, destGUID, destName = CombatLogGetCurrentEventInfo()
+        if not auraEvents[subEvent] then return end
         if destName then
             destName = Ambiguate(destName, "short")
         end

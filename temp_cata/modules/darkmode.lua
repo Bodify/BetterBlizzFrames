@@ -193,6 +193,7 @@ function BBF.DarkmodeFrames(bypass)
     local rogueComboActive = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.30) or 1
     local monkChi = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.10) or 1
     local castbarBorder = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.1) or 1
+    local color25 = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.25) or 1
 
     local minimapColor = (BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeMinimap) and BetterBlizzFramesDB.darkModeColor or 1
     local minimapSat = (BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeMinimap) and true or false
@@ -202,10 +203,34 @@ function BBF.DarkmodeFrames(bypass)
     local darkModeNpSatVal = darkModeNp and desaturationValue or false
 
     if BetterBlizzFramesDB.darkModeColor == 0 then
-        actionBarColor = 0
-        birdColor = 0.07
+        if BetterBlizzFramesDB.darkModeActionBars then
+            actionBarColor = 0
+            birdColor = 0.07
+        end
         rogueCombo = 0.25
         rogueComboActive = 0.15
+    end
+
+    if ComboFrame then
+        local legacyComboColor = color25
+        if BetterBlizzFramesDB.legacyComboColor then
+            legacyComboColor = legacyComboColor + BetterBlizzFramesDB.legacyComboColor
+        end
+        for i = 1, 9 do
+            local point = _G["ComboPoint"..i]
+            if point and point:GetNumRegions() then
+                for j = 1, point:GetNumRegions() do
+                    local region = select(j, point:GetRegions())
+                    if region and region:IsObjectType("Texture") then
+                        local layer = region:GetDrawLayer()
+                        if layer == "BACKGROUND" then
+                            --region:SetDesaturated(true)
+                            region:SetVertexColor(legacyComboColor, legacyComboColor, legacyComboColor)
+                        end
+                    end
+                end
+            end
+        end
     end
 
 

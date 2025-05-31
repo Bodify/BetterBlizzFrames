@@ -440,7 +440,7 @@ function BBF.BiggerHealthbars(frame, name)
     local point, relativeTo, relativePoint, xOfs, yOfs = healthbar:GetPoint()
     local newYOffset = yOfs + 18
     BBF.MoveRegion(healthbar, point, relativeTo, relativePoint, xOfs, newYOffset)
-    healthbar:SetHeight(27)
+    healthbar:SetHeight(29)
     if not BetterBlizzFramesDB.changeUnitFrameHealthbarTexture then
         healthbar:SetStatusBarTexture(LSM:Fetch(LSM.MediaType.STATUSBAR, "Smooth"))
     end
@@ -529,7 +529,7 @@ function BBF.BiggerHealthbars(frame, name)
             BBF.MoveRegion(leftTextMana, point, relativeTo, relativePoint, newXOffset, yOfs)
         end
         local point, relativeTo, relativePoint, xOfs, yOfs = leftText:GetPoint()
-        local newYOffset = yOfs + 9.5
+        local newYOffset = yOfs + 9
         local newXOffset = xOfs + 1
         if not leftTextMana then
             BBF.MoveRegion(leftText, point, relativeTo, relativePoint, xOfs, newYOffset)
@@ -538,11 +538,11 @@ function BBF.BiggerHealthbars(frame, name)
         end
 
         local point, relativeTo, relativePoint, xOfs, yOfs = rightText:GetPoint()
-        local newYOffset = yOfs + 9.5
+        local newYOffset = yOfs + 9
         BBF.MoveRegion(rightText, point, relativeTo, relativePoint, xOfs, newYOffset)
 
         local point, relativeTo, relativePoint, xOfs, yOfs = centerText:GetPoint()
-        local newYOffset = yOfs + 9.5
+        local newYOffset = yOfs + 9
         BBF.MoveRegion(centerText, point, relativeTo, relativePoint, xOfs, newYOffset)
     end
 

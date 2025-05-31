@@ -1,3 +1,22 @@
+# BetterBlizzFrames 1.7.0
+## Mists of Pandaria & Cata
+- Lots of Retail features brought to MoP and Cata and fixed some things.
+### New:
+- Loss of Control feature (on by default) which is very similar to retail but with a few improvements like showing what you are interrupted on and a 2nd icon to keep viewing your lockout duration during a different CC.
+- BBF adds Dampening stack count on Debuff in Arena.
+- Hide Arena Frames fixed for Cata/MoP
+- Queue Timer added for Cata/MoP
+- Legacy Combo Points settings (position & size etc) added for Cata/MoP
+- Move and scale resource added for Cata/MoP
+- BBF fixes missing Purge texture on TargetFrame for Druids with Symbiosis on Shaman (With aura settings enabled)
+- BBF makes Astral Power always show on Druid's Eclipse bar.
+### Bugfix:
+- Fix "Always show purge texture" causing enrage dispel effects to not glow.
+- Fix Print Spell IDs setting in Buffs & Debuffs section.
+### Note:
+- Very many changes behind the scenes so possible I've missed a bug or two and forgot to mention smth in notes. Please report if you encounter bugs.
+
+
 # BetterBlizzFrames 1.6.9b
 ## Retail
 ### Tweak:

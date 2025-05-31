@@ -512,7 +512,7 @@ function BBF.ToggleLossOfControlTestMode()
 
         -- Background Texture
         local blackBg = frame:CreateTexture(nil, "BACKGROUND")
-        blackBg:SetTexture(LossOfControlFrame.blackBg:GetTexture())
+        blackBg:SetTexture("Interface\\Cooldown\\loc-shadowbg")
         blackBg:SetPoint("BOTTOM", frame, "BOTTOM", 0, 0)
         blackBg:SetSize(256, 58)
         frame.blackBg = blackBg  -- Correctly scoped

@@ -9,6 +9,8 @@ local sliderUnderBoxX = 12
 local sliderUnderBoxY = -10
 local sliderUnderBox = "12, -10"
 local titleText = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: \n\n"
+local playerClass = select(2, UnitClass("player"))
+local playerClassResourceScale = "classResource" .. playerClass .. "Scale"
 
 local LibDeflate = LibStub("LibDeflate")
 local LibSerialize = LibStub("LibSerialize")
@@ -472,7 +474,7 @@ local function CreateSlider(parent, label, minValue, maxValue, stepValue, elemen
 
     local function SetSliderValue()
         if BBF.variablesLoaded then
-            local initialValue = tonumber(BetterBlizzFramesDB[element]) -- Convert to number
+            local initialValue = tonumber(BetterBlizzFramesDB[element]) or 1 -- Convert to number
 
             if initialValue then
                 local currentMin, currentMax = slider:GetMinMaxValues() -- Fetch the latest min and max values
@@ -545,7 +547,7 @@ local function CreateSlider(parent, label, minValue, maxValue, stepValue, elemen
         end
     end)
 
-    local initialValue = tonumber(BetterBlizzFramesDB[element])
+    local initialValue = tonumber(BetterBlizzFramesDB[element]) or 1
     local textValue = initialValue % 1 == 0 and tostring(math.floor(initialValue)) or string.format("%.2f", initialValue)
     slider.Text:SetText(label .. ": " .. textValue)
     slider:SetValue(initialValue)
@@ -623,8 +625,8 @@ local function CreateSlider(parent, label, minValue, maxValue, stepValue, elemen
                     end
                 elseif element == "lossOfControlScale" then
                     BetterBlizzFramesDB.lossOfControlScale = value
-                    --BBF.ToggleLossOfControlTestMode()
-                    --BBF.ChangeLossOfControlScale()
+                    BBF.ToggleLossOfControlTestMode()
+                    BBF.ChangeLossOfControlScale()
                 elseif element == "targetAndFocusAuraOffsetX" then
                     BetterBlizzFramesDB.targetAndFocusAuraOffsetX = value
                     BBF.RefreshAllAuraFrames()
@@ -863,6 +865,14 @@ local function CreateSlider(parent, label, minValue, maxValue, stepValue, elemen
                 elseif element == "castBarInterruptIconYPos" then
                     BetterBlizzFramesDB.castBarInterruptIconYPos = value
                     BBF.UpdateInterruptIconSettings()
+                elseif element == playerClassResourceScale then
+                    BetterBlizzFramesDB[playerClassResourceScale] = value
+                    BBF.UpdateClassComboPoints()
+                elseif element == "legacyComboScale" or element == "legacyComboXPos" or element == "legacyComboYPos" then
+                    BetterBlizzFramesDB[element] = value
+                    if BBF.UpdateLegacyComboPosition then
+                        BBF.UpdateLegacyComboPosition()
+                    end
 
                     --end
                 end
@@ -943,7 +953,7 @@ local function notWorking(element, re)
     if element.Text then
         element.Text:SetTextColor(1,0,0)
     end
-    CreateTooltipTwo(element, "Not Working", "Currently not working and disabled for cata. May or may not be removed TBD.", "A lot of other features might also not work 100% in this Beta version. Keep an eye out for errors.")
+    CreateTooltipTwo(element, "Not Working", "Currently not working and disabled for "..(BBF.isMoP and "MoP" or "Cata")..". May or may not be removed TBD.", "A lot of other features might also not work 100% in this Beta version. Keep an eye out for errors.")
 
     if re then
         C_Timer.After(4, function()
@@ -951,6 +961,96 @@ local function notWorking(element, re)
         end)
     end
 end
+
+
+
+local CLASS_COLORS = {
+    ROGUE = "|cfffff569",
+    WARRIOR = "|cffc79c6e",
+    MAGE = "|cff40c7eb",
+    DRUID = "|cffff7d0a",
+    HUNTER = "|cffabd473",
+    PRIEST = "|cffffffff",
+    WARLOCK = "|cff8787ed",
+    SHAMAN = "|cff0070de",
+    PALADIN = "|cfff58cba",
+    DEATHKNIGHT = "|ffc41f3b",
+    MONK = "|cff00ff96",
+    DEMONHUNTER = "|cffa330c9",
+    EVOKER = "|cff33937f",
+    STARTER = "|cff32cd32",
+    BLITZ = "|cffff8000",
+    MYTHIC = "|cff7dd1c2",
+}
+
+local CLASS_ICONS = {
+    ROGUE = "groupfinder-icon-class-rogue",
+    WARRIOR = "groupfinder-icon-class-warrior",
+    MAGE = "groupfinder-icon-class-mage",
+    DRUID = "groupfinder-icon-class-druid",
+    HUNTER = "groupfinder-icon-class-hunter",
+    PRIEST = "groupfinder-icon-class-priest",
+    WARLOCK = "groupfinder-icon-class-warlock",
+    SHAMAN = "groupfinder-icon-class-shaman",
+    PALADIN = "groupfinder-icon-class-paladin",
+    DEATHKNIGHT = "groupfinder-icon-class-deathknight",
+    MONK = "groupfinder-icon-class-monk",
+    DEMONHUNTER = "groupfinder-icon-class-demonhunter",
+    EVOKER = "groupfinder-icon-class-evoker",
+    STARTER = "newplayerchat-chaticon-newcomer",
+    BLITZ = "questlog-questtypeicon-pvp",
+    MYTHIC = "worldquest-icon-dungeon",
+}
+
+local function ShowProfileConfirmation(profileName, class, profileFunction, additionalNote)
+    local noteText = additionalNote or ""
+    local color = CLASS_COLORS[class] or "|cffffffff"
+    local icon = CLASS_ICONS[class] or "groupfinder-icon-role-leader"
+    local profileText = string.format("|A:%s:16:16|a %s%s|r", icon, color, profileName.." Profile")
+    local confirmationText = titleText .. "This action will delete all settings and apply\nthe " .. profileText .. " and reload the UI.\n\n" .. noteText .. "Are you sure you want to continue?"
+
+    StaticPopupDialogs["BBF_CONFIRM_PROFILE"].text = confirmationText
+    StaticPopup_Show("BBF_CONFIRM_PROFILE", nil, nil, { func = profileFunction })
+end
+
+local function CreateClassButton(parent, class, name, twitchName, onClickFunc)
+    local bbfParent = parent == BetterBlizzFrames
+    local btnWidth, btnHeight = bbfParent and 96 or 150, bbfParent and 22 or  30
+    local button = CreateFrame("Button", nil, parent, "GameMenuButtonTemplate")
+    button:SetSize(btnWidth, btnHeight)
+
+    local dontIncludeProfileText = bbfParent and "" or " Profile"
+    local color = CLASS_COLORS[class] or "|cffffffff"
+    local icon = CLASS_ICONS[class] or "groupfinder-icon-role-leader"
+
+    button:SetText(string.format("|A:%s:16:16|a %s%s|r", icon, color, (name..dontIncludeProfileText)))
+    button:SetNormalFontObject("GameFontNormal")
+    button:SetHighlightFontObject("GameFontHighlight")
+    local a,b,c = button.Text:GetFont()
+    button.Text:SetFont(a,b,"OUTLINE")
+    local a,b,c,d,e = button.Text:GetPoint()
+    button.Text:SetPoint(a,b,c,d,e-0.5)
+
+    button:SetScript("OnClick", function()
+        if onClickFunc then
+            onClickFunc()
+        end
+    end)
+
+    if class == "STARTER" then
+        CreateTooltipTwo(button, string.format("|A:%s:16:16|a %s%s|r", icon, color, name.." Profile"), "A basic starter profile that only enables the few things you need.\n\nIntended to work as a very minimal quick start that can be built upon.", nil, "ANCHOR_TOP")
+    elseif class == "BLITZ" then
+        CreateTooltipTwo(button, string.format("|A:%s:16:16|a %s%s|r", icon, color, name.." Profile"), "A more advanced profile enabling a few more settings and customizing things a bit more.\n\nGreat for Battlegrounds (and Arenas) with Class Icons showing Healers, Tanks and Battleground Objectives.", nil, "ANCHOR_TOP")
+    elseif class == "MYTHIC" then
+        CreateTooltipTwo(button, string.format("|A:%s:16:16|a %s%s|r", icon, color, name.." Profile"), "A great well rounded profile made by |cffc79c6eJovelo|r that enhances the default Blizzard nameplates.\n\nGreat for all types of content with Mythic+ Season 2 NPC nameplate colors included.", nil, "ANCHOR_TOP")
+    else
+        CreateTooltipTwo(button, string.format("|A:%s:16:16|a %s%s|r", icon, color, name.." Profile"), string.format("Enable all of %s's profile settings.", name), string.format("www.twitch.tv/%s", twitchName), "ANCHOR_TOP")
+    end
+
+    return button
+end
+
+
 
 local function CreateImportExportUI(parent, title, dataTable, posX, posY, tableName)
     -- Frame to hold all import/export elements
@@ -1160,10 +1260,10 @@ local function CreateCheckbox(option, label, parent, cvarName, extraFunc)
     table.insert(checkBoxList, {checkbox = checkBox, label = label})
     checkBox.text = checkBox.Text
     --checkBox:SetHitRectInsets(0, 0, 0, 0)
-    checkBox.Text:SetFont("Fonts\\FRIZQT__.TTF", 11)
+    checkBox.Text:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\arialn.TTF", 12)
     --local a,b,c,d,e = checkBox.Text:GetPoint()
     --checkBox.Text:SetPoint(a,b,c,d-4,e-1)
-    checkBox:SetSize(24,24)
+    checkBox:SetSize(23,23)
 
     local category
     if parent.name then
@@ -1500,6 +1600,7 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
             local text = button:CreateFontString(nil, "OVERLAY", "GameFontNormal")
             text:SetPoint("LEFT", button, "LEFT", 25, 0)
             button.text = text
+            text:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\arialn.TTF", 13)
 
             -- Delete Button
             local deleteButton = CreateFrame("Button", nil, button, "UIPanelButtonTemplate")
@@ -1910,6 +2011,7 @@ local function CreateFontDropdown(name, parentFrame, defaultText, settingKey, to
     local label = container:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall2")
     label:SetPoint("LEFT", container, "LEFT", -50, -12)
     label:SetText("Font")
+    label:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\arialn.TTF", 13)
 
     -- Create the dropdown button with the new dropdown template
     local dropdown = CreateFrame("DropdownButton", nil, parentFrame, "WowStyle1DropdownTemplate")
@@ -2106,6 +2208,7 @@ local function CreateSimpleDropdown(name, parentFrame, labelText, settingKey, op
     label:SetPoint("LEFT", container, "LEFT", -50, -12)
     label:SetText(labelText)
     dropdown.LabelText = label
+    label:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\arialn.TTF", 13)
 
     -- Define the generator function for the dropdown menu
     local function GeneratorFunction(owner, rootDescription)
@@ -2275,6 +2378,7 @@ local function CreateSearchFrame()
                 if not resultCheckBox then
                     resultCheckBox = CreateFrame("CheckButton", nil, resultsList, "InterfaceOptionsCheckButtonTemplate")
                     resultCheckBox:SetSize(24, 24)
+                    resultCheckBox.Text:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\arialn.TTF", 12)
                     checkboxPool[checkboxCount] = resultCheckBox
                 end
 
@@ -2352,6 +2456,7 @@ local function CreateSearchFrame()
                 resultSlider:SetMinMaxValues(data.slider:GetMinMaxValues())
                 resultSlider:SetValue(data.slider:GetValue())
                 resultSlider.Text:SetText(data.label .. ": " .. formatSliderValue(data.slider:GetValue()))
+                resultSlider.Text:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\arialn.TTF", 11)
 
                 resultSlider:SetScript("OnValueChanged", function(self, value)
                     data.slider:SetValue(value) -- Trigger the original slider's script
@@ -2462,7 +2567,7 @@ local function guiGeneralTab()
 
     local alpha2 = BetterBlizzFrames:CreateFontString(nil, "BACKGROUND", "GameFontNormal")
     alpha2:SetPoint("BOTTOM", SettingsPanel, "TOP", 0, 0)
-    alpha2:SetText("BetterBlizzFrames Cata is still in Beta. Please report bugs.")
+    alpha2:SetText("BetterBlizzFrames "..(BBF.isMoP and "MoP" or "Cata").." is still in Beta. Please report bugs.")
     alpha2:SetFont("Fonts\\FRIZQT__.TTF", 20, "THINOUTLINE")
     alpha2:Hide()
     BetterBlizzFrames:HookScript("OnShow",function()
@@ -2508,6 +2613,8 @@ local function guiGeneralTab()
     local settingsText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     settingsText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 0, 30)
     settingsText:SetText("General settings")
+    settingsText:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\Expressway_Free.ttf", 16)
+    settingsText:SetTextColor(1,1,1)
     local generalSettingsIcon = BetterBlizzFrames:CreateTexture(nil, "ARTWORK")
     generalSettingsIcon:SetAtlas("optionsicon-brown")
     generalSettingsIcon:SetSize(22, 22)
@@ -2519,60 +2626,59 @@ local function guiGeneralTab()
 
 
     local hideArenaFrames = CreateCheckbox("hideArenaFrames", "Hide Arena Frames", BetterBlizzFrames, nil, BBF.HideArenaFrames)
-    hideArenaFrames:SetPoint("TOPLEFT", settingsText, "BOTTOMLEFT", -4, pixelsOnFirstBox)
+    hideArenaFrames:SetPoint("TOPLEFT", settingsText, "BOTTOMLEFT", -24, pixelsOnFirstBox)
     hideArenaFrames:HookScript("OnClick", function(self)
         if not self:GetChecked() then
             StaticPopup_Show("BBF_CONFIRM_RELOAD")
         end
     end)
     CreateTooltip(hideArenaFrames, "Hide the standard Blizzard Arena Frames.\nThis uses the same code as the addon\n\"Arena Anti-Malware\", also made by me.")
-    notWorking(hideArenaFrames, true)
 
-    local hideBossFrames = CreateCheckbox("hideBossFrames", "Hide Boss Frames", BetterBlizzFrames, nil, BBF.HideArenaFrames)
-    hideBossFrames:SetPoint("TOPLEFT", hideArenaFrames, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltip(hideBossFrames, "Hide the Blizzard Boss Frames that are underneath the minimap.")
-    notWorking(hideBossFrames, true)
+    -- local hideBossFrames = CreateCheckbox("hideBossFrames", "Hide Boss Frames", BetterBlizzFrames, nil, BBF.HideArenaFrames)
+    -- hideBossFrames:SetPoint("TOPLEFT", hideArenaFrames, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    -- CreateTooltip(hideBossFrames, "Hide the Blizzard Boss Frames that are underneath the minimap.")
+    -- notWorking(hideBossFrames, true)
 
-    local hideBossFramesParty = CreateCheckbox("hideBossFramesParty", "Party", BetterBlizzFrames, nil, BBF.HideArenaFrames)
-    hideBossFramesParty:SetPoint("LEFT", hideBossFrames.text, "RIGHT", 0, 0)
-    CreateTooltip(hideBossFramesParty, "Hide Boss Frames in Party", "ANCHOR_LEFT")
+    -- local hideBossFramesParty = CreateCheckbox("hideBossFramesParty", "Party", BetterBlizzFrames, nil, BBF.HideArenaFrames)
+    -- hideBossFramesParty:SetPoint("LEFT", hideBossFrames.text, "RIGHT", 0, 0)
+    -- CreateTooltip(hideBossFramesParty, "Hide Boss Frames in Party", "ANCHOR_LEFT")
 
-    local hideBossFramesRaid = CreateCheckbox("hideBossFramesRaid", "Raid", BetterBlizzFrames, nil, BBF.HideArenaFrames)
-    hideBossFramesRaid:SetPoint("LEFT", hideBossFramesParty.text, "RIGHT", 0, 0)
-    CreateTooltip(hideBossFramesRaid, "Hide Boss Frames in Raid", "ANCHOR_LEFT")
+    -- local hideBossFramesRaid = CreateCheckbox("hideBossFramesRaid", "Raid", BetterBlizzFrames, nil, BBF.HideArenaFrames)
+    -- hideBossFramesRaid:SetPoint("LEFT", hideBossFramesParty.text, "RIGHT", 0, 0)
+    -- CreateTooltip(hideBossFramesRaid, "Hide Boss Frames in Raid", "ANCHOR_LEFT")
 
-    hideBossFrames:HookScript("OnClick", function(self)
-        if self:GetChecked() then
-            BetterBlizzFramesDB.overShieldsCompact = true
-            BetterBlizzFramesDB.hideBossFramesParty = true
-            hideBossFramesParty:SetAlpha(1)
-            hideBossFramesParty:Enable()
-            hideBossFramesParty:SetChecked(true)
-            hideBossFramesRaid:SetAlpha(1)
-            hideBossFramesRaid:Enable()
-            hideBossFramesRaid:SetChecked(true)
-        else
-            BetterBlizzFramesDB.overShieldsCompact = false
-            BetterBlizzFramesDB.hideBossFramesParty = false
-            hideBossFramesParty:SetAlpha(0)
-            hideBossFramesParty:Disable()
-            hideBossFramesParty:SetChecked(false)
-            hideBossFramesRaid:SetAlpha(0)
-            hideBossFramesRaid:Disable()
-            hideBossFramesRaid:SetChecked(false)
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
-        end
-    end)
+    -- hideBossFrames:HookScript("OnClick", function(self)
+    --     if self:GetChecked() then
+    --         BetterBlizzFramesDB.overShieldsCompact = true
+    --         BetterBlizzFramesDB.hideBossFramesParty = true
+    --         hideBossFramesParty:SetAlpha(1)
+    --         hideBossFramesParty:Enable()
+    --         hideBossFramesParty:SetChecked(true)
+    --         hideBossFramesRaid:SetAlpha(1)
+    --         hideBossFramesRaid:Enable()
+    --         hideBossFramesRaid:SetChecked(true)
+    --     else
+    --         BetterBlizzFramesDB.overShieldsCompact = false
+    --         BetterBlizzFramesDB.hideBossFramesParty = false
+    --         hideBossFramesParty:SetAlpha(0)
+    --         hideBossFramesParty:Disable()
+    --         hideBossFramesParty:SetChecked(false)
+    --         hideBossFramesRaid:SetAlpha(0)
+    --         hideBossFramesRaid:Disable()
+    --         hideBossFramesRaid:SetChecked(false)
+    --         StaticPopup_Show("BBF_CONFIRM_RELOAD")
+    --     end
+    -- end)
 
-    if not BetterBlizzFramesDB.hideBossFrames then
-        hideBossFramesParty:SetAlpha(0)
-        hideBossFramesParty:Disable()
-        hideBossFramesRaid:SetAlpha(0)
-        hideBossFramesRaid:Disable()
-    end
+    -- if not BetterBlizzFramesDB.hideBossFrames then
+    --     hideBossFramesParty:SetAlpha(0)
+    --     hideBossFramesParty:Disable()
+    --     hideBossFramesRaid:SetAlpha(0)
+    --     hideBossFramesRaid:Disable()
+    -- end
 
     local playerFrameOCD = CreateCheckbox("playerFrameOCD", "OCD Tweaks", BetterBlizzFrames, nil, BBF.FixStupidBlizzPTRShit)
-    playerFrameOCD:SetPoint("TOPLEFT", hideBossFrames, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    playerFrameOCD:SetPoint("TOPLEFT", hideArenaFrames, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(playerFrameOCD, "OCD Tweaks", "Fixes some of Blizzards laziness with the UI.\n\nFixes Actionbar layout & centers it properly.\nFixes hotkey text being shortened for no reason.\nAdds minor zoom on actionbar icons so the double border effect gets removed.\n\n|cff32f795Right-click to toggle icon zoom on/off.|r")
     playerFrameOCD:SetScript("OnMouseDown", function(self, button)
         if button == "RightButton" and BetterBlizzFramesDB.playerFrameOCD then
@@ -2581,35 +2687,43 @@ local function guiGeneralTab()
         end
     end)
 
-    local playerFrameOCDTextureBypass = CreateCheckbox("playerFrameOCDTextureBypass", "OCD: Skip Bars", BetterBlizzFrames, nil, BBF.HideFrames)
-    playerFrameOCDTextureBypass:SetPoint("LEFT", playerFrameOCD.text, "RIGHT", 0, 0)
-    CreateTooltip(playerFrameOCDTextureBypass, "If healthbars & manabars look weird enable this to skip\nadjusting them and only fix portraits + Name Background")
-    notWorking(playerFrameOCDTextureBypass, true)
+    -- local playerFrameOCDTextureBypass = CreateCheckbox("playerFrameOCDTextureBypass", "OCD: Skip Bars", BetterBlizzFrames, nil, BBF.HideFrames)
+    -- playerFrameOCDTextureBypass:SetPoint("LEFT", playerFrameOCD.text, "RIGHT", 0, 0)
+    -- CreateTooltip(playerFrameOCDTextureBypass, "If healthbars & manabars look weird enable this to skip\nadjusting them and only fix portraits + Name Background")
+    -- notWorking(playerFrameOCDTextureBypass, true)
 
-    playerFrameOCD:HookScript("OnClick", function(self)
-        if self:GetChecked() then
-            playerFrameOCDTextureBypass:Enable()
-            playerFrameOCDTextureBypass:SetAlpha(1)
-        else
-            BetterBlizzFramesDB.playerFrameOCDTextureBypass = false
-            playerFrameOCDTextureBypass:SetChecked(false)
-            playerFrameOCDTextureBypass:Disable()
-            playerFrameOCDTextureBypass:SetAlpha(0)
+    -- playerFrameOCD:HookScript("OnClick", function(self)
+    --     if self:GetChecked() then
+    --         playerFrameOCDTextureBypass:Enable()
+    --         playerFrameOCDTextureBypass:SetAlpha(1)
+    --     else
+    --         BetterBlizzFramesDB.playerFrameOCDTextureBypass = false
+    --         playerFrameOCDTextureBypass:SetChecked(false)
+    --         playerFrameOCDTextureBypass:Disable()
+    --         playerFrameOCDTextureBypass:SetAlpha(0)
+    --     end
+    -- end)
+
+    -- if not BetterBlizzFramesDB.playerFrameOCD then
+    --     playerFrameOCDTextureBypass:Disable()
+    --     playerFrameOCDTextureBypass:SetAlpha(0)
+    -- end
+
+    local enableLoCFrame = CreateCheckbox("enableLoCFrame", "Enable LossOfControl", BetterBlizzFrames)
+    enableLoCFrame:SetPoint("TOPLEFT", playerFrameOCD, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(enableLoCFrame, "Enable Loss of Control Frame", "Enable similar Loss of Control frame like on Retail with a few improvements.")
+    enableLoCFrame:HookScript("OnClick", function(self)
+        if not self:GetChecked() then
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
         end
     end)
 
-    if not BetterBlizzFramesDB.playerFrameOCD then
-        playerFrameOCDTextureBypass:Disable()
-        playerFrameOCDTextureBypass:SetAlpha(0)
-    end
-
     local hideLossOfControlFrameBg = CreateCheckbox("hideLossOfControlFrameBg", "Hide CC Background", BetterBlizzFrames, nil, BBF.HideFrames)
-    hideLossOfControlFrameBg:SetPoint("TOPLEFT", playerFrameOCD, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    hideLossOfControlFrameBg:SetPoint("TOPLEFT", enableLoCFrame, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(hideLossOfControlFrameBg, "Hide the dark background on the LossOfControl frame (displaying CC on you)")
     hideLossOfControlFrameBg:HookScript("OnClick", function()
         BBF.ToggleLossOfControlTestMode()
     end)
-    notWorking(hideLossOfControlFrameBg, true)
 
     local hideLossOfControlFrameLines = CreateCheckbox("hideLossOfControlFrameLines", "Hide CC Red-lines", BetterBlizzFrames, nil, BBF.HideFrames)
     hideLossOfControlFrameLines:SetPoint("TOPLEFT", hideLossOfControlFrameBg, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
@@ -2617,12 +2731,10 @@ local function guiGeneralTab()
     hideLossOfControlFrameLines:HookScript("OnClick", function()
         BBF.ToggleLossOfControlTestMode()
     end)
-    notWorking(hideLossOfControlFrameLines, true)
 
     local lossOfControlScale = CreateSlider(BetterBlizzFrames, "CC Scale", 0.4, 1.4, 0.01, "lossOfControlScale", nil, 90)
     lossOfControlScale:SetPoint("LEFT", hideLossOfControlFrameBg.text, "RIGHT", 3, -16)
     CreateTooltipTwo(lossOfControlScale, "Loss of Control Scale", "Adjust the scale of the LossOfControlFrame\n(displaying cc on you center screen)")
-    notWorking(lossOfControlScale, true)
 
     local darkModeUi = CreateCheckbox("darkModeUi", "Dark Mode", BetterBlizzFrames)
     darkModeUi:SetPoint("TOPLEFT", hideLossOfControlFrameLines, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
@@ -2692,17 +2804,19 @@ local function guiGeneralTab()
     local playerFrameText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     playerFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 0, -155)
     playerFrameText:SetText("Player Frame")
+    playerFrameText:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\Expressway_Free.ttf", 16)
+    playerFrameText:SetTextColor(1,1,1)
     local playerFrameIcon = BetterBlizzFrames:CreateTexture(nil, "ARTWORK")
     playerFrameIcon:SetAtlas("groupfinder-icon-friend")
     playerFrameIcon:SetSize(28, 28)
-    playerFrameIcon:SetPoint("RIGHT", playerFrameText, "LEFT", -3, 0)
+    playerFrameIcon:SetPoint("RIGHT", playerFrameText, "LEFT", -0.5, 0)
 
     local playerFrameScale = CreateSlider(BetterBlizzFrames, "Size", 0.7, 1.4, 0.01, "playerFrameScale", nil, 120)
-    playerFrameScale:SetPoint("TOP", playerFrameText, "BOTTOM", 23, -13)
+    playerFrameScale:SetPoint("TOP", playerFrameText, "BOTTOM", -4, -13)
     CreateTooltipTwo(playerFrameScale, "PlayerFrame Size", "Change the size of the PlayerFrame", "Right-click to input specific value")
 
     local playerFrameClickthrough = CreateCheckbox("playerFrameClickthrough", "Clickthrough", BetterBlizzFrames, nil, BBF.ClickthroughFrames)
-    playerFrameClickthrough:SetPoint("TOPLEFT", playerFrameText, "BOTTOMLEFT", -4, -26)
+    playerFrameClickthrough:SetPoint("TOPLEFT", playerFrameText, "BOTTOMLEFT", -24, -26)
     CreateTooltip(playerFrameClickthrough, "Makes the PlayerFrame clickthrough.\nYou can still hold shift to left/right click it\nwhile out of combat for trade/inspect etc.\n\nNOTE: You will NOT be able to click the frame\nat all during combat with this setting on.")
 
     local playerReputationColor = CreateCheckbox("playerReputationColor", "Add Name Bg", BetterBlizzFrames, nil, BBF.PlayerReputationColor)
@@ -2807,9 +2921,9 @@ local function guiGeneralTab()
                 { class = "Warlock", var = "hidePlayerPowerNoWarlock", color = RAID_CLASS_COLORS["WARLOCK"] },
                 { class = "Paladin", var = "hidePlayerPowerNoPaladin", color = RAID_CLASS_COLORS["PALADIN"] },
                 { class = "Death Knight", var = "hidePlayerPowerNoDeathKnight", color = RAID_CLASS_COLORS["DEATHKNIGHT"] },
-                { class = "Evoker", var = "hidePlayerPowerNoEvoker", color = RAID_CLASS_COLORS["EVOKER"] },
-                { class = "Monk", var = "hidePlayerPowerNoMonk", color = RAID_CLASS_COLORS["MONK"] },
+                --{ class = "Evoker", var = "hidePlayerPowerNoEvoker", color = RAID_CLASS_COLORS["EVOKER"] },
                 { class = "Mage", var = "hidePlayerPowerNoMage", color = RAID_CLASS_COLORS["MAGE"] },
+                { class = "Monk", var = "hidePlayerPowerNoMonk", color = RAID_CLASS_COLORS["MONK"] },
             }
 
             local previousCheckbox
@@ -2863,13 +2977,15 @@ local function guiGeneralTab()
     local petFrameText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     petFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 460, -455)
     petFrameText:SetText("Pet Frame")
+    petFrameText:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\Expressway_Free.ttf", 16)
+    petFrameText:SetTextColor(1,1,1)
     local petFrameIcon = BetterBlizzFrames:CreateTexture(nil, "ARTWORK")
     petFrameIcon:SetAtlas("newplayerchat-chaticon-newcomer")
     petFrameIcon:SetSize(21, 21)
     petFrameIcon:SetPoint("RIGHT", petFrameText, "LEFT", -2, 0)
 
     local petCastbar = CreateCheckbox("petCastbar", "Pet Castbar", BetterBlizzFrames, nil, BBF.UpdatePetCastbar)
-    petCastbar:SetPoint("TOPLEFT", petFrameText, "BOTTOMLEFT", -4, pixelsOnFirstBox)
+    petCastbar:SetPoint("TOPLEFT", petFrameText, "BOTTOMLEFT", -24, pixelsOnFirstBox)
     CreateTooltip(petCastbar, "Show pet castbar.\n\nMore settings in the \"Castbars\" tab")
 
     local hidePetName = CreateCheckbox("hidePetName", "Hide Name", BetterBlizzFrames)
@@ -2892,6 +3008,8 @@ local function guiGeneralTab()
     local partyFrameText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     partyFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 0, -430)
     partyFrameText:SetText("Party Frame")
+    partyFrameText:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\Expressway_Free.ttf", 16)
+    partyFrameText:SetTextColor(1,1,1)
     local partyFrameIcon = BetterBlizzFrames:CreateTexture(nil, "ARTWORK")
     partyFrameIcon:SetAtlas("groupfinder-icon-friend")
     partyFrameIcon:SetSize(25, 25)
@@ -2902,7 +3020,7 @@ local function guiGeneralTab()
     partyFrameIcon2:SetPoint("RIGHT", partyFrameText, "LEFT", 0, 4)
 
     local showPartyCastbar = CreateCheckbox("showPartyCastbar", "Party Castbars", BetterBlizzFrames, nil, BBF.UpdateCastbars)
-    showPartyCastbar:SetPoint("TOPLEFT", partyFrameText, "BOTTOMLEFT", -4, pixelsOnFirstBox)
+    showPartyCastbar:SetPoint("TOPLEFT", partyFrameText, "BOTTOMLEFT", -24, pixelsOnFirstBox)
     showPartyCastbar:HookScript("OnClick", function(self)
         --BBF.AbsorbCaller()
     end)
@@ -3020,19 +3138,21 @@ local function guiGeneralTab()
     local targetFrameText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     targetFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 250, -155)
     targetFrameText:SetText("Target Frame")
+    targetFrameText:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\Expressway_Free.ttf", 16)
+    targetFrameText:SetTextColor(1,1,1)
     local targetFrameIcon = BetterBlizzFrames:CreateTexture(nil, "ARTWORK")
     targetFrameIcon:SetAtlas("groupfinder-icon-friend")
     targetFrameIcon:SetSize(28, 28)
-    targetFrameIcon:SetPoint("RIGHT", targetFrameText, "LEFT", -3, 0)
+    targetFrameIcon:SetPoint("RIGHT", targetFrameText, "LEFT", -0.5, 0)
     targetFrameIcon:SetDesaturated(1)
     targetFrameIcon:SetVertexColor(1, 0, 0)
 
     local targetFrameScale = CreateSlider(BetterBlizzFrames, "Size", 0.7, 1.4, 0.01, "targetFrameScale", nil, 120)
-    targetFrameScale:SetPoint("TOP", targetFrameText, "BOTTOM", 23, -13)
+    targetFrameScale:SetPoint("TOP", targetFrameText, "BOTTOM", -4, -13)
     CreateTooltipTwo(targetFrameScale, "TargetFrame Size", "Change the size of the TargetFrame", "Right-click to input specific value")
 
     local targetFrameClickthrough = CreateCheckbox("targetFrameClickthrough", "Clickthrough", BetterBlizzFrames, nil, BBF.ClickthroughFrames)
-    targetFrameClickthrough:SetPoint("TOPLEFT", targetFrameText, "BOTTOMLEFT", -4, -26)
+    targetFrameClickthrough:SetPoint("TOPLEFT", targetFrameText, "BOTTOMLEFT", -24, -26)
     CreateTooltip(targetFrameClickthrough, "Makes the TargetFrame clickthrough.\nYou can still hold shift to left/right click it\nwhile out of combat for trade/inspect etc.\n\nNOTE: You will NOT be able to click the frame\nat all during combat with this setting on.")
 
     local hideTargetName = CreateCheckbox("hideTargetName", "Hide Name", BetterBlizzFrames, nil, BBF.UpdateNameSettings)
@@ -3078,19 +3198,21 @@ local function guiGeneralTab()
     local targetToTFrameText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     targetToTFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 250, -295)
     targetToTFrameText:SetText("Target of Target")
+    targetToTFrameText:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\Expressway_Free.ttf", 16)
+    targetToTFrameText:SetTextColor(1,1,1)
     local targetToTFrameIcon = BetterBlizzFrames:CreateTexture(nil, "BORDER")
     targetToTFrameIcon:SetAtlas("groupfinder-icon-friend")
     targetToTFrameIcon:SetSize(28, 28)
-    targetToTFrameIcon:SetPoint("RIGHT", targetToTFrameText, "LEFT", -3, 0)
+    targetToTFrameIcon:SetPoint("RIGHT", targetToTFrameText, "LEFT", -0.5, 0)
     targetToTFrameIcon:SetDesaturated(1)
     targetToTFrameIcon:SetVertexColor(1, 0, 0)
     local targetToTFrameIcon2 = BetterBlizzFrames:CreateTexture(nil, "ARTWORK")
     targetToTFrameIcon2:SetAtlas("TargetCrosshairs")
     targetToTFrameIcon2:SetSize(28, 28)
-    targetToTFrameIcon2:SetPoint("TOPLEFT", targetToTFrameIcon, "TOPLEFT", 11, -13)
+    targetToTFrameIcon2:SetPoint("TOPLEFT", targetToTFrameIcon, "TOPLEFT", 13.5, -13)
 
     local hideTargetToT = CreateCheckbox("hideTargetToT", "Hide Frame", BetterBlizzFrames, nil, BBF.HideFrames)
-    hideTargetToT:SetPoint("TOPLEFT", targetToTFrameText, "BOTTOMLEFT", -4, pixelsOnFirstBox)
+    hideTargetToT:SetPoint("TOPLEFT", targetToTFrameText, "BOTTOMLEFT", -24, pixelsOnFirstBox)
 
     local hideTargetToTName = CreateCheckbox("hideTargetToTName", "Hide Name", BetterBlizzFrames)
     hideTargetToTName:SetPoint("LEFT", hideTargetToT.Text, "RIGHT", 0, 0)
@@ -3108,7 +3230,7 @@ local function guiGeneralTab()
     CreateTooltip(hideTargetToTDebuffs, "Hide the 4 small debuff icons to the right of ToT frame.")
 
     local targetToTScale = CreateSlider(BetterBlizzFrames, "Size", 0.6, 2.5, 0.01, "targetToTScale", nil, 120)
-    targetToTScale:SetPoint("TOPLEFT", targetToTFrameText, "BOTTOMLEFT", 0, -55)
+    targetToTScale:SetPoint("TOPLEFT", targetToTFrameText, "BOTTOMLEFT", -20, -55)
     CreateTooltip(targetToTScale, "Target of target size.\n\nYou can right-click sliders to enter a specific value.")
 
     BBF.targetToTXPos = CreateSlider(BetterBlizzFrames, "x offset", -100, 100, 1, "targetToTXPos", "X", 120)
@@ -3125,18 +3247,22 @@ local function guiGeneralTab()
     local chatFrameText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     chatFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 250, -455)
     chatFrameText:SetText("Chat Frame")
+    chatFrameText:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\Expressway_Free.ttf", 16)
+    chatFrameText:SetTextColor(1,1,1)
     local chatFrameIcon = BetterBlizzFrames:CreateTexture(nil, "BORDER")
     chatFrameIcon:SetAtlas("transmog-icon-chat")
     chatFrameIcon:SetSize(18, 16)
-    chatFrameIcon:SetPoint("RIGHT", chatFrameText, "LEFT", -3, 0)
+    chatFrameIcon:SetPoint("RIGHT", chatFrameText, "LEFT", -4, 0)
 
     local hideChatButtons = CreateCheckbox("hideChatButtons", "Hide Chat Buttons", BetterBlizzFrames, nil, BBF.HideFrames)
-    hideChatButtons:SetPoint("TOPLEFT", chatFrameText, "BOTTOMLEFT", -4, pixelsOnFirstBox)
+    hideChatButtons:SetPoint("TOPLEFT", chatFrameText, "BOTTOMLEFT", -24, pixelsOnFirstBox)
     CreateTooltip(hideChatButtons, "Hide the chat buttons. Can still be shown with mouseover.")
 
     local chatFrameFilters = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-    chatFrameFilters:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 250, -495)
+    chatFrameFilters:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 232, -495)
     chatFrameFilters:SetText("Filters")
+    chatFrameFilters:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\Expressway_Free.ttf", 12)
+    chatFrameFilters:SetTextColor(1,1,1)
 
     local filterGladiusSpam = CreateCheckbox("filterGladiusSpam", "Gladius Spam", BetterBlizzFrames, nil, BBF.ChatFilterCaller)
     filterGladiusSpam:SetPoint("TOPLEFT", hideChatButtons, "BOTTOMLEFT", 0, -10)
@@ -3163,8 +3289,10 @@ local function guiGeneralTab()
     CreateTooltip(filterMiscInfo, "Filter out \"Your equipped items suffer a durability loss\" message.")
 
     local arenaNamesText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    arenaNamesText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 460, -70)
+    arenaNamesText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 460, -80)
     arenaNamesText:SetText("Arena Names")
+    arenaNamesText:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\Expressway_Free.ttf", 16)
+    arenaNamesText:SetTextColor(1,1,1)
     CreateTooltip(arenaNamesText, "Change player names into spec/arena id instead during arena", "ANCHOR_LEFT")
     local arenaNamesIcon = BetterBlizzFrames:CreateTexture(nil, "ARTWORK")
     arenaNamesIcon:SetAtlas("questbonusobjective")
@@ -3172,7 +3300,7 @@ local function guiGeneralTab()
     arenaNamesIcon:SetPoint("RIGHT", arenaNamesText, "LEFT", -3, 0)
 
     local targetAndFocusArenaNames = CreateCheckbox("targetAndFocusArenaNames", "Target & Focus", BetterBlizzFrames)
-    targetAndFocusArenaNames:SetPoint("TOPLEFT", arenaNamesText, "BOTTOMLEFT", -4, pixelsOnFirstBox)
+    targetAndFocusArenaNames:SetPoint("TOPLEFT", arenaNamesText, "BOTTOMLEFT", -24, pixelsOnFirstBox)
     CreateTooltipTwo(targetAndFocusArenaNames, "Arena Names","Change Target & Focus name to arena ID and/or spec name during arena\n\n|cff32f795Right-click to change if Party units should override Spec.|r", nil, "ANCHOR_LEFT")
 
     local partyArenaNames = CreateCheckbox("partyArenaNames", "Party", BetterBlizzFrames)
@@ -3232,6 +3360,8 @@ local function guiGeneralTab()
     local focusFrameText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     focusFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 460, -155)
     focusFrameText:SetText("Focus Frame")
+    focusFrameText:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\Expressway_Free.ttf", 16)
+    focusFrameText:SetTextColor(1,1,1)
     local focusFrameIcon = BetterBlizzFrames:CreateTexture(nil, "ARTWORK")
     focusFrameIcon:SetAtlas("groupfinder-icon-friend")
     focusFrameIcon:SetSize(28, 28)
@@ -3240,11 +3370,11 @@ local function guiGeneralTab()
     focusFrameIcon:SetVertexColor(0, 1, 0)
 
     local focusFrameScale = CreateSlider(BetterBlizzFrames, "Size", 0.7, 1.4, 0.01, "focusFrameScale", nil, 120)
-    focusFrameScale:SetPoint("TOP", focusFrameText, "BOTTOM", 23, -13)
+    focusFrameScale:SetPoint("TOP", focusFrameText, "BOTTOM", -4, -13)
     CreateTooltipTwo(focusFrameScale, "FocusFrame Size", "Change the size of the FocusFrame", "Right-click to input specific value")
 
     local focusFrameClickthrough = CreateCheckbox("focusFrameClickthrough", "Clickthrough", BetterBlizzFrames, nil, BBF.ClickthroughFrames)
-    focusFrameClickthrough:SetPoint("TOPLEFT", focusFrameText, "BOTTOMLEFT", -4, -26)
+    focusFrameClickthrough:SetPoint("TOPLEFT", focusFrameText, "BOTTOMLEFT", -24, -26)
     CreateTooltip(focusFrameClickthrough, "Makes the FocusFrame clickthrough.\nYou can still hold shift to left/right click it\nwhile out of combat for trade/inspect etc.\n\nNOTE: You will NOT be able to click the frame\nat all during combat with this setting on.")
 
     local hideFocusName = CreateCheckbox("hideFocusName", "Hide Name", BetterBlizzFrames, nil, BBF.UpdateNameSettings)
@@ -3290,19 +3420,21 @@ local function guiGeneralTab()
     local focusToTFrameText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     focusToTFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 460, -300)
     focusToTFrameText:SetText("Focus ToT")
+    focusToTFrameText:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\Expressway_Free.ttf", 16)
+    focusToTFrameText:SetTextColor(1,1,1)
     local focusToTFrameIcon = BetterBlizzFrames:CreateTexture(nil, "BORDER")
     focusToTFrameIcon:SetAtlas("groupfinder-icon-friend")
     focusToTFrameIcon:SetSize(28, 28)
-    focusToTFrameIcon:SetPoint("RIGHT", focusToTFrameText, "LEFT", -3, 0)
+    focusToTFrameIcon:SetPoint("RIGHT", focusToTFrameText, "LEFT", -0.5, 0)
     focusToTFrameIcon:SetDesaturated(1)
     focusToTFrameIcon:SetVertexColor(0, 1, 0)
     local focusToTFrameIcon2 = BetterBlizzFrames:CreateTexture(nil, "ARTWORK")
     focusToTFrameIcon2:SetAtlas("TargetCrosshairs")
     focusToTFrameIcon2:SetSize(28, 28)
-    focusToTFrameIcon2:SetPoint("TOPLEFT", focusToTFrameIcon, "TOPLEFT", 11, -13)
+    focusToTFrameIcon2:SetPoint("TOPLEFT", focusToTFrameIcon, "TOPLEFT", 13.5, -13)
 
     local hideFocusToT = CreateCheckbox("hideFocusToT", "Hide Frame", BetterBlizzFrames, nil, BBF.HideFrames)
-    hideFocusToT:SetPoint("TOPLEFT", focusToTFrameText, "BOTTOMLEFT", -4, pixelsOnFirstBox)
+    hideFocusToT:SetPoint("TOPLEFT", focusToTFrameText, "BOTTOMLEFT", -24, pixelsOnFirstBox)
 
     local hideFocusToTName = CreateCheckbox("hideFocusToTName", "Hide Name", BetterBlizzFrames)
     hideFocusToTName:SetPoint("LEFT", hideFocusToT.Text, "RIGHT", 0, 0)
@@ -3320,7 +3452,7 @@ local function guiGeneralTab()
     CreateTooltip(hideFocusToTDebuffs, "Hide the 4 small debuff icons to the right of ToT frame.")
 
     local focusToTScale = CreateSlider(BetterBlizzFrames, "Size", 0.6, 2.5, 0.01, "focusToTScale", nil, 120)
-    focusToTScale:SetPoint("TOPLEFT", focusToTFrameText, "BOTTOMLEFT", 0, -55)
+    focusToTScale:SetPoint("TOPLEFT", focusToTFrameText, "BOTTOMLEFT", -20, -55)
     CreateTooltip(focusToTScale, "Focus target of target size.\n\nYou can right-click sliders to enter a specific value.")
 
     BBF.focusToTXPos = CreateSlider(BetterBlizzFrames, "x offset", -100, 100, 1, "focusToTXPos", "X", 120)
@@ -3338,6 +3470,8 @@ local function guiGeneralTab()
     local allFrameText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     allFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 250, 30)
     allFrameText:SetText("All Frames")
+    allFrameText:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\Expressway_Free.ttf", 16)
+    allFrameText:SetTextColor(1,1,1)
     local allFrameIcon = BetterBlizzFrames:CreateTexture(nil, "ARTWORK")
     allFrameIcon:SetAtlas("groupfinder-icon-friend")
     allFrameIcon:SetSize(25, 25)
@@ -3356,7 +3490,7 @@ local function guiGeneralTab()
     allFrameIcon3:SetVertexColor(1, 0, 0)
 
     local classColorFrames = CreateCheckbox("classColorFrames", "Class Color Frames", BetterBlizzFrames)
-    classColorFrames:SetPoint("TOPLEFT", allFrameText, "BOTTOMLEFT", -4, pixelsOnFirstBox)
+    classColorFrames:SetPoint("TOPLEFT", allFrameText, "BOTTOMLEFT", -24, pixelsOnFirstBox)
 
     local classColorFramesSkipPlayer = CreateCheckbox("classColorFramesSkipPlayer", "Skip Self", BetterBlizzFrames)
     classColorFramesSkipPlayer:SetPoint("LEFT", classColorFrames.Text, "RIGHT", 0, 0)
@@ -3471,9 +3605,10 @@ local function guiGeneralTab()
     hideCombatGlow:SetPoint("TOPLEFT", hidePrestigeBadge, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(hideCombatGlow, "Hide the red combat around Player, Target & Focus.|A:UI-HUD-UnitFrame-Player-PortraitOn-InCombat:30:80|a")
 
-    local hideLevelText = CreateCheckbox("hideLevelText", "Hide Level 85 Text", BetterBlizzFrames, nil, BBF.HideFrames)
+    local maxLvl = BBF.isMoP and "90" or "85"
+    local hideLevelText = CreateCheckbox("hideLevelText", "Hide Level "..maxLvl.." Text", BetterBlizzFrames, nil, BBF.HideFrames)
     hideLevelText:SetPoint("TOPLEFT", hideCombatGlow, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltip(hideLevelText, "Hide the level text for Player, Target & Focus frames if they are level 85")
+    CreateTooltip(hideLevelText, "Hide the level text for Player, Target & Focus frames if they are level "..maxLvl)
 
     local hideLevelTextAlways = CreateCheckbox("hideLevelTextAlways", "Always", BetterBlizzFrames, nil, BBF.HideFrames)
     hideLevelTextAlways:SetPoint("LEFT", hideLevelText.Text, "RIGHT", 0, 0)
@@ -3519,13 +3654,15 @@ local function guiGeneralTab()
     local extraFeaturesText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     extraFeaturesText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 460, 30)
     extraFeaturesText:SetText("Extra Features")
+    extraFeaturesText:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\Expressway_Free.ttf", 16)
+    extraFeaturesText:SetTextColor(1,1,1)
     local extraFeaturesIcon = BetterBlizzFrames:CreateTexture(nil, "ARTWORK")
-    extraFeaturesIcon:SetAtlas("Campaign-QuestLog-LoreBook")
-    extraFeaturesIcon:SetSize(24, 24)
-    extraFeaturesIcon:SetPoint("RIGHT", extraFeaturesText, "LEFT", -3, 0)
+    extraFeaturesIcon:SetAtlas("adventureguide-icon-whatsnew")--("Campaign-QuestLog-LoreBook")
+    extraFeaturesIcon:SetSize(23, 23)
+    extraFeaturesIcon:SetPoint("RIGHT", extraFeaturesText, "LEFT", -3, -2)
 
     local combatIndicator = CreateCheckbox("combatIndicator", "Combat Indicator", BetterBlizzFrames)
-    combatIndicator:SetPoint("TOPLEFT", extraFeaturesText, "BOTTOMLEFT", -4, pixelsOnFirstBox)
+    combatIndicator:SetPoint("TOPLEFT", extraFeaturesText, "BOTTOMLEFT", -24, pixelsOnFirstBox)
     combatIndicator:HookScript("OnClick", function()
         BBF.CombatIndicatorCaller()
     end)
@@ -3603,60 +3740,93 @@ local function guiGeneralTab()
         overShieldsCompactUnitFrames:Disable()
     end
 
+    local queueTimer = CreateCheckbox("queueTimer", "Queue Timer", BetterBlizzFrames)
+    queueTimer:SetPoint("TOPLEFT", overShields, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(queueTimer, "Queue Timer", "Show the remaining time to accept a queue when it pops.\n\nWorks for both PvP and PvE.\n\nOptionally plays a queue pop sound and warns when the queue timer is about to expire.", nil, "ANCHOR_LEFT")
+
+    local queueTimerAudio = CreateCheckbox("queueTimerAudio", "SFX", queueTimer)
+    queueTimerAudio:SetPoint("LEFT", queueTimer.text, "RIGHT", 0, 0)
+    CreateTooltipTwo(queueTimerAudio, "Sound Effect", "Play an alarm sound when queue pops.", "(Plays with game sounds muted)\n\nNote that \"Enable Sound\" needs to be on in the audio settings but you can disable the subcategories: Sound Effects, Ambience, Dialog and Music.", "ANCHOR_LEFT")
+
+    local queueTimerWarning = CreateCheckbox("queueTimerWarning", "!", queueTimer)
+    queueTimerWarning:SetPoint("LEFT", queueTimerAudio.text, "RIGHT", 0, 0)
+    CreateTooltipTwo(queueTimerWarning, "Sound Alert!", "Warning sound if there is less than 6 seconds left to accept the queue.", "(Plays with game sounds muted.)\n\nNote that \"Enable Sound\" needs to be on in the audio settings but you can disable the subcategories: Sound Effects, Ambience, Dialog and Music.", "ANCHOR_LEFT")
+
+    queueTimerAudio:HookScript("OnClick", function(self)
+        if self:GetChecked() then
+            EnableElement(queueTimerWarning)
+        else
+            DisableElement(queueTimerWarning)
+        end
+    end)
+
+    if not BetterBlizzFramesDB.queueTimerAudio then
+        DisableElement(queueTimerWarning)
+    end
+
+    queueTimer:HookScript("OnClick", function(self)
+        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        CheckAndToggleCheckboxes(queueTimer)
+        if not BetterBlizzFramesDB.queueTimerAudio then
+            DisableElement(queueTimerWarning)
+        end
+        if self:GetChecked() then
+            BBF.SBUncheck()
+            if C_AddOns.IsAddOnLoaded("SafeQueue") then
+                C_AddOns.DisableAddOn("SafeQueue")
+            end
+        end
+    end)
+
+
+
+
+    local btnGap = 5
+    local starterButton = CreateClassButton(BetterBlizzFrames, "STARTER", "Starter", nil, function()
+        ShowProfileConfirmation("Starter", "STARTER", BBF.StarterProfile, "|cff808080(If you want to completely reset BBF there\nis a button in Advanced Settings)|r\n\n")
+    end)
+    starterButton:SetPoint("TOPLEFT", SettingsPanel, "BOTTOMLEFT", 258, 38)
+
+    -- local aeghisButton = CreateClassButton(BetterBlizzFrames, "MAGE", "Aeghis", "aeghis", function()
+    --     ShowProfileConfirmation("Aeghis", "MAGE", BBF.AeghisProfile)
+    -- end)
+    -- aeghisButton:SetPoint("LEFT", starterButton, "RIGHT", btnGap, 0)
+
+    -- local kalvishButton = CreateClassButton(BetterBlizzFrames, "ROGUE", "Kalvish", "kalvish", function()
+    --     ShowProfileConfirmation("Kalvish", "ROGUE", BBF.KalvishProfile)
+    -- end)
+    -- kalvishButton:SetPoint("LEFT", aeghisButton, "RIGHT", btnGap, 0)
+
+    -- local magnuszButton = CreateClassButton(BetterBlizzFrames, "WARRIOR", "Magnusz", "magnusz", function()
+    --     ShowProfileConfirmation("Magnusz", "WARRIOR", BBF.MagnuszProfile)
+    -- end)
+    -- magnuszButton:SetPoint("LEFT", kalvishButton, "RIGHT", btnGap, 0)
+
+    local nahjButton = CreateClassButton(BetterBlizzFrames, "ROGUE", "Nahj", "nahj", function()
+        ShowProfileConfirmation("Nahj", "ROGUE", BBF.NahjProfile)
+    end)
+    nahjButton:SetPoint("LEFT", starterButton, "RIGHT", btnGap, 0)
+
+    local snupyButton = CreateClassButton(BetterBlizzFrames, "DRUID", "Snupy", "snupy", function()
+        ShowProfileConfirmation("Snupy", "DRUID", BBF.SnupyProfile)
+    end)
+    snupyButton:SetPoint("LEFT", nahjButton, "RIGHT", btnGap, 0)
+
+
+
+
     ----------------------
     -- Reload etc
     ----------------------
     local reloadUiButton = CreateFrame("Button", nil, BetterBlizzFrames, "UIPanelButtonTemplate")
     reloadUiButton:SetText("Reload UI")
-    reloadUiButton:SetWidth(85)
-    reloadUiButton:SetPoint("TOP", BetterBlizzFrames, "BOTTOMRIGHT", -140, -9)
+    reloadUiButton:SetWidth(96)
+    reloadUiButton:SetPoint("RIGHT", SettingsPanel.CloseButton, "LEFT", -3, 0)
     reloadUiButton:SetScript("OnClick", function()
         BetterBlizzFramesDB.reopenOptions = true
         ReloadUI()
     end)
 
-    -- Function to show the confirmation popup with dynamic profile information
-    local function ShowProfileConfirmation(profileName, profileFunction, additionalNote)
-        local noteText = additionalNote or ""
-        local confirmationText = titleText .. "This action will delete all settings and apply " .. profileName .. "'s profile and reload the UI.\n\n" .. noteText .. "Are you sure you want to continue?"
-        StaticPopupDialogs["BBP_CONFIRM_PROFILE"].text = confirmationText
-        StaticPopup_Show("BBP_CONFIRM_PROFILE", nil, nil, { func = profileFunction })
-    end
-
-    -- Create the buttons and hook them to show the confirmation popup
-    local snupyProfileButton = CreateFrame("Button", nil, BetterBlizzFrames, "UIPanelButtonTemplate")
-    snupyProfileButton:SetText("Snupy")
-    snupyProfileButton:SetWidth(80)
-    snupyProfileButton:SetPoint("RIGHT", reloadUiButton, "LEFT", -160, 0)
-    snupyProfileButton:SetScript("OnClick", function()
-        ShowProfileConfirmation("Snupy", BBF.SnupyProfile)
-    end)
-    CreateTooltipTwo(snupyProfileButton, "|A:groupfinder-icon-class-druid:16:16|a |cffff7d0aSnupy Profile|r", "Enable all of Snupy's profile settings.", "www.twitch.tv/snupy", "ANCHOR_TOP")
-
-    -- Create the buttons and hook them to show the confirmation popup
-    local nahjProfileButton = CreateFrame("Button", nil, BetterBlizzFrames, "UIPanelButtonTemplate")
-    nahjProfileButton:SetText("Nahj")
-    nahjProfileButton:SetWidth(80)
-    nahjProfileButton:SetPoint("RIGHT", snupyProfileButton, "LEFT", -10, 0)
-    nahjProfileButton:SetScript("OnClick", function()
-        ShowProfileConfirmation("Nahj", BBF.NahjProfile)
-    end)
-    CreateTooltipTwo(nahjProfileButton, "|A:groupfinder-icon-class-rogue:16:16|a |cfffff569Nahj Profile|r", "Enable all of Nahj's profile settings.", "www.twitch.tv/nahj", "ANCHOR_TOP")
-
-
-
-    local profileText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
-    profileText:SetPoint("RIGHT", nahjProfileButton, "LEFT", -5, 0)
-    profileText:SetText("Profiles:")
-
-    local resetBBFButton = CreateFrame("Button", nil, BetterBlizzFrames, "UIPanelButtonTemplate")
-    resetBBFButton:SetText("Reset BetterBlizzFrames")
-    resetBBFButton:SetWidth(165)
-    resetBBFButton:SetPoint("RIGHT", reloadUiButton, -615, 0)
-    resetBBFButton:SetScript("OnClick", function()
-        StaticPopup_Show("CONFIRM_RESET_BETTERBLIZZFRAMESDB")
-    end)
-    CreateTooltip(resetBBFButton, "Reset ALL BetterBlizzFrames settings.")
 end
 
 local function guiCastbars()
@@ -4912,6 +5082,19 @@ local function guiPositionAndScale()
         ReloadUI()
     end)
 
+    local resetBBFButton = CreateFrame("Button", nil, BetterBlizzFramesSubPanel, "UIPanelButtonTemplate")
+    resetBBFButton:SetText("Reset BetterBlizzFrames")
+    resetBBFButton:SetWidth(165)
+    resetBBFButton:SetPoint("RIGHT", reloadUiButton2, "LEFT", -533, 0)
+    resetBBFButton:SetScript("OnClick", function()
+        StaticPopup_Show("CONFIRM_RESET_BETTERBLIZZFRAMESDB")
+    end)
+    CreateTooltip(resetBBFButton, "Reset ALL BetterBlizzFrames settings.")
+
+    BetterBlizzFramesSubPanel.rightClickTip = BetterBlizzFramesSubPanel:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+    BetterBlizzFramesSubPanel.rightClickTip:SetPoint("RIGHT", reloadUiButton2, "LEFT", -80, -2)
+    BetterBlizzFramesSubPanel.rightClickTip:SetText("|A:smallquestbang:20:20|aTip:  Right-click sliders to enter a specific value")
+
 
 
 end
@@ -5463,7 +5646,6 @@ local function guiFrameAuras()
     local printAuraSpellIds = CreateCheckbox("printAuraSpellIds", "Print Spell ID", playerAuraFiltering)
     printAuraSpellIds:SetPoint("LEFT", enableMasque.Text, "RIGHT", 5, 0)
     CreateTooltip(printAuraSpellIds, "Show aura spell id in chat when mousing over the aura.\n\nUsecase: Find spell ID to filter by ID, some spells have identical names.")
-    notWorking(printAuraSpellIds, true)
 
     -- local tipText = playerAuraFiltering:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     -- tipText:SetPoint("LEFT", printAuraSpellIds.Text, "RIGHT", 5, 0)
@@ -6275,49 +6457,263 @@ local function guiMisc()
     CreateTooltip(useMiniFocusFrame, "Removes healthbar and manabar from the FocusFrame\nand just leaves Portrait and name.\n\nMove castbar and/or disable auras to your liking.")
     notWorking(useMiniFocusFrame, true)
 
-    local moveResourceToTarget = CreateCheckbox("moveResourceToTarget", "Move Resource to TargetFrame", guiMisc)
-    moveResourceToTarget:SetPoint("TOPLEFT", useMiniFocusFrame, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltip(moveResourceToTarget, "Move resource (Combo points, Warlock shards etc) to the TargetFrame.")
-    notWorking(moveResourceToTarget, true)
-
-    local moveResourceToTargetDruid = CreateCheckbox("moveResourceToTargetDruid", "Druid: Combo Points", moveResourceToTarget)
-    moveResourceToTargetDruid:SetPoint("TOPLEFT", moveResourceToTargetRogue, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltip(moveResourceToTargetDruid, "Move Druid Combo Points to TargetFrame.")
-    moveResourceToTargetDruid:HookScript("OnClick", function()
+    local enableLegacyComboPoints = CreateCheckbox("enableLegacyComboPoints", "Legacy Combo Points", guiMisc)
+    enableLegacyComboPoints:SetPoint("TOPLEFT", settingsText, "BOTTOMLEFT", 310, pixelsOnFirstBox)
+    CreateTooltipTwo(enableLegacyComboPoints, "Legacy Combo Points", "Enable the old Classic Combo Points and fix their position to work with the new UnitFrames.\n\n|cff32f795Right-Click to adjust position and size.|r")
+    enableLegacyComboPoints:HookScript("OnClick", function(self)
         StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        if not self:GetChecked() then
+            BetterBlizzFramesDB.legacyCombosTurnedOff = true
+        else
+            BetterBlizzFramesDB.legacyCombosTurnedOff = nil
+        end
+        if not InCombatLockdown() then
+            BBF.FixLegacyComboPointsLocation()
+        end
+        CheckAndToggleCheckboxes(self)
     end)
 
-    local moveResourceToTargetMonk = CreateCheckbox("moveResourceToTargetMonk", "Monk: Chi Points", moveResourceToTarget)
-    moveResourceToTargetMonk:SetPoint("TOPLEFT", moveResourceToTargetDruid, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltip(moveResourceToTargetMonk, "Move Monk Chi Points to TargetFrame.")
-    moveResourceToTargetMonk:HookScript("OnClick", function()
+
+   function BBF.OpenLegacyComboSliderWindow(launch)
+        if not BBF.ComboSliderWindow then
+            local f = CreateFrame("Frame", "BBFComboSliderWindow", UIParent, "BasicFrameTemplateWithInset")
+            f:SetSize(210, 165)
+            f:SetPoint("RIGHT", enableLegacyComboPoints, "LEFT", -10, 0)
+            f:SetMovable(true)
+            f:EnableMouse(true)
+            f:RegisterForDrag("LeftButton")
+            f:SetScript("OnDragStart", f.StartMoving)
+            f:SetScript("OnDragStop", f.StopMovingOrSizing)
+            f:SetFrameStrata("DIALOG")
+            f:SetClampedToScreen(true)
+            f:SetToplevel(true)
+
+            f.title = f:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+            f.title:SetPoint("TOP", f, "TOP", 0, -6)
+            f.title:SetText("Legacy Combo Position")
+
+            BBF.ComboSliderWindow = f
+
+            local sizeSlider = CreateSlider(f, "Size", 0.6, 1.3, 0.01, "legacyComboScale", nil, 140)
+            sizeSlider:SetPoint("TOP", f, "TOP", 0, -45)
+            CreateTooltipTwo(sizeSlider, "Legacy Combo Points Size")
+
+            local xOffsetSlider = CreateSlider(f, "x offset", -60, 10, 0.5, "legacyComboXPos", true, 140)
+            xOffsetSlider:SetPoint("TOP", sizeSlider, "TOP", 0, -30)
+            CreateTooltipTwo(xOffsetSlider, "Legacy Combo Points X Offset")
+
+            local yOffsetSlider = CreateSlider(f, "y offset", -60, 10, 0.5, "legacyComboYPos", true, 140)
+            yOffsetSlider:SetPoint("TOP", xOffsetSlider, "TOP", 0, -30)
+            CreateTooltipTwo(yOffsetSlider, "Legacy Combo Points Y Offset")
+
+            local defaultButton = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+            defaultButton:SetSize(80, 22)
+            defaultButton:SetText("Default")
+            defaultButton:SetPoint("BOTTOM", f, "BOTTOM", 0, 10)
+
+            defaultButton:SetScript("OnClick", function()
+                BetterBlizzFramesDB.legacyComboXPos = -44
+                BetterBlizzFramesDB.legacyComboYPos = -9
+                BetterBlizzFramesDB.legacyComboScale = 1
+                BBF.UpdateLegacyComboPosition()
+                sizeSlider:SetValue(1)
+                xOffsetSlider:SetValue(-44)
+                yOffsetSlider:SetValue(-9)
+            end)
+
+            f:Hide()
+        end
+
+        if launch then
+            BBF.ComboSliderWindow:Hide()
+            return
+        end
+
+        if BBF.ComboSliderWindow:IsShown() then
+            BBF.ComboSliderWindow:Hide()
+        else
+            BBF.ComboSliderWindow:Show()
+        end
+    end
+    BBF.OpenLegacyComboSliderWindow(true)
+
+    enableLegacyComboPoints:SetScript("OnMouseDown", function(self, button)
+        if button == "RightButton" then
+            BBF.OpenLegacyComboSliderWindow()
+        end
+    end)
+    local alwaysShowLegacyComboPoints = CreateCheckbox("alwaysShowLegacyComboPoints", "Show Always", enableLegacyComboPoints)
+    alwaysShowLegacyComboPoints:SetPoint("LEFT", enableLegacyComboPoints.text, "RIGHT", 0, 0)
+    alwaysShowLegacyComboPoints:HookScript("OnClick", function()
+        BBF.AlwaysShowLegacyComboPoints()
+    end)
+    CreateTooltipTwo(alwaysShowLegacyComboPoints, "Show Always", "Alway show legacy combo points background regardless if you have active combos or not.")
+    local enableLegacyComboPointsMulticlass = CreateCheckbox("enableLegacyComboPointsMulticlass", "Legacy Combo Points: More Classes", enableLegacyComboPoints)
+    enableLegacyComboPointsMulticlass:SetPoint("TOPLEFT", enableLegacyComboPoints, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(enableLegacyComboPointsMulticlass, "Legacy Combo Points: More Classes","Enable the old Classic Combo Points for more Classes.\n\n" .."|cFF00FF96Monk|r\n" .."|cFF3FC7EBMage|r\n" .."|cFFF58CBAPaladin|r\n" .."|cFF8788EEWarlock|r\n" .."|cFFC41F3BDeath Knight|r")
+    enableLegacyComboPointsMulticlass:HookScript("OnClick", function()
         StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.GenericLegacyComboSupport()
+    end)
+    local legacyMulticlassComboClassColor = CreateCheckbox("legacyMulticlassComboClassColor", "Class Color", enableLegacyComboPointsMulticlass)
+    legacyMulticlassComboClassColor:SetPoint("LEFT", enableLegacyComboPointsMulticlass.text, "RIGHT", 0, 0)
+    legacyMulticlassComboClassColor:HookScript("OnClick", function()
+        BBF.ClassColorLegacyCombos()
+    end)
+    CreateTooltipTwo(legacyMulticlassComboClassColor, "Class Color Legacy Combos", "Class color the legacy combo points.")
+    local instantComboPoints = CreateCheckbox("instantComboPoints", "Instant Combo Points", guiMisc, nil, BBF.InstantComboPoints)
+    instantComboPoints:SetPoint("TOPLEFT", enableLegacyComboPointsMulticlass, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(instantComboPoints, "Instant Combo Points",
+    "Remove the combo point animations for instant feedback.\n\nCurrently works for:\n|cFFFFF569Rogue|r\n|cFFFF7D0ADruid|r\n|cFF00FF96Monk|r\n|cFF3FC7EBMage|r\n|cFFF58CBAPaladin|r\n|cFFAAAAAALegacy Combos (Rogue & Druid)|r")
+    instantComboPoints:HookScript("OnClick", function(self)
+        if not self:GetChecked() then
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            if BetterBlizzPlatesDB then
+                BetterBlizzPlatesDB.instantComboPoints = false
+            end
+        end
     end)
 
-    local moveResourceToTargetWarlock = CreateCheckbox("moveResourceToTargetWarlock", "Warlock: Shards", moveResourceToTarget)
-    moveResourceToTargetWarlock:SetPoint("TOPLEFT", moveResourceToTargetMonk, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltip(moveResourceToTargetWarlock, "Move Warlock Shards to TargetFrame.")
-    moveResourceToTargetWarlock:HookScript("OnClick", function()
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+
+    local moveResource = CreateCheckbox("moveResource", "Move Resource", guiMisc)
+    moveResource:SetPoint("TOPLEFT", instantComboPoints, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(moveResource, "Move Resource", "Move resource (Combo points etc) freely by holding |cff32f795Ctrl + Left Click|r to drag.\n\nToggle off/on to unlock them and reload to save.\n\n|cff32f795Right-click to reset positions and scale for " .. playerClass .. ".|r", "This setting is class specific to the class you are on.")
+    moveResource:HookScript("OnClick", function(self)
+        if self:GetChecked() then
+            BBF.EnableResourceMovement()
+        end
+    end)
+    if BetterBlizzFramesDB.moveResourceStackPos and not BetterBlizzFramesDB.moveResourceStackPos[playerClass] then
+        moveResource:SetChecked(false)
+    elseif not BetterBlizzFramesDB.moveResourceStackPos then
+        moveResource:SetChecked(false)
+    end
+
+    -- local moveResourceToTarget = CreateCheckbox("moveResourceToTarget", "Move Resource to TargetFrame", guiMisc)
+    -- moveResourceToTarget:SetPoint("TOPLEFT", moveResource, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    -- CreateTooltip(moveResourceToTarget, "Move resource (Combo points, Warlock shards etc) to the TargetFrame.")
+    -- local moveResourceToTargetCustom = CreateCheckbox("moveResourceToTargetCustom", "Free-Move", moveResourceToTarget)
+    -- moveResourceToTargetCustom:SetPoint("LEFT", moveResourceToTarget.text, "RIGHT", 0, 0)
+    -- moveResourceToTargetCustom:HookScript("OnClick", function(self)
+    --     if self:GetChecked() then
+    --         if BBF.ToggleEditMode then
+    --             BBF.ToggleEditMode(true)
+    --         end
+    --         BBF.UpdateClassComboPoints()
+    --     else
+    --         if BBF.ToggleEditMode then
+    --             BBF.ToggleEditMode(false)
+    --         end
+    --         BBF.UpdateClassComboPoints()
+    --     end
+    -- end)
+    -- CreateTooltipTwo(moveResourceToTargetCustom, "Free-Move Resource", "Drag and drop each individual resource/combo points to where you want them.\nWhile moving you can do half pixel adjustments with arrow keys.\n\nToggle off/on to unlock them and reload to save.\n\n" .. "|cff32f795Right-click to reset positions and scale for " .. playerClass .. ".|r", "This will unchain them from TargetFrame so they will no longer move with the TargetFrame if you move the TargetFrame.")
+
+    -- local moveResourceToTargetRogue = CreateCheckbox("moveResourceToTargetRogue", "Rogue: Combo Points", moveResourceToTarget)
+    -- moveResourceToTargetRogue:SetPoint("TOPLEFT", moveResourceToTarget, "BOTTOMLEFT", 12, pixelsBetweenBoxes)
+    -- CreateTooltip(moveResourceToTargetRogue, "Move Rogue Combo Points to TargetFrame.")
+    -- moveResourceToTargetRogue:HookScript("OnClick", function()
+    --     StaticPopup_Show("BBF_CONFIRM_RELOAD")
+    -- end)
+
+    -- local moveResourceToTargetDruid = CreateCheckbox("moveResourceToTargetDruid", "Druid: Combo Points", moveResourceToTarget)
+    -- moveResourceToTargetDruid:SetPoint("TOPLEFT", moveResourceToTargetRogue, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    -- CreateTooltip(moveResourceToTargetDruid, "Move Druid Combo Points to TargetFrame.")
+    -- moveResourceToTargetDruid:HookScript("OnClick", function()
+    --     StaticPopup_Show("BBF_CONFIRM_RELOAD")
+    -- end)
+
+    -- local moveResourceToTargetMonk = CreateCheckbox("moveResourceToTargetMonk", "Monk: Chi Points", moveResourceToTarget)
+    -- moveResourceToTargetMonk:SetPoint("TOPLEFT", moveResourceToTargetDruid, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    -- CreateTooltip(moveResourceToTargetMonk, "Move Monk Chi Points to TargetFrame.")
+    -- moveResourceToTargetMonk:HookScript("OnClick", function()
+    --     StaticPopup_Show("BBF_CONFIRM_RELOAD")
+    -- end)
+
+    -- local moveResourceToTargetWarlock = CreateCheckbox("moveResourceToTargetWarlock", "Warlock: Shards", moveResourceToTarget)
+    -- moveResourceToTargetWarlock:SetPoint("TOPLEFT", moveResourceToTargetMonk, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    -- CreateTooltip(moveResourceToTargetWarlock, "Move Warlock Shards to TargetFrame.")
+    -- moveResourceToTargetWarlock:HookScript("OnClick", function()
+    --     StaticPopup_Show("BBF_CONFIRM_RELOAD")
+    -- end)
+
+    -- local moveResourceToTargetEvoker = CreateCheckbox("moveResourceToTargetEvoker", "Evoker: Essence", moveResourceToTarget)
+    -- moveResourceToTargetEvoker:SetPoint("TOPLEFT", moveResourceToTargetWarlock, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    -- CreateTooltip(moveResourceToTargetEvoker, "Move Evoker Essence to TargetFrame.")
+    -- moveResourceToTargetEvoker:HookScript("OnClick", function()
+    --     StaticPopup_Show("BBF_CONFIRM_RELOAD")
+    -- end)
+
+    -- local moveResourceToTargetMage = CreateCheckbox("moveResourceToTargetMage", "Mage: Arcane Charges", moveResourceToTarget)
+    -- moveResourceToTargetMage:SetPoint("TOPLEFT", moveResourceToTargetEvoker, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    -- CreateTooltip(moveResourceToTargetMage, "Move Mage Arcane Charges to TargetFrame.")
+    -- moveResourceToTargetMage:HookScript("OnClick", function()
+    --     StaticPopup_Show("BBF_CONFIRM_RELOAD")
+    -- end)
+
+    -- local moveResourceToTargetDK = CreateCheckbox("moveResourceToTargetDK", "Death Knight: Runes", moveResourceToTarget)
+    -- moveResourceToTargetDK:SetPoint("TOPLEFT", moveResourceToTargetMage, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    -- CreateTooltip(moveResourceToTargetDK, "Move Death Knight Runes to TargetFrame.")
+    -- moveResourceToTargetDK:HookScript("OnClick", function()
+    --     StaticPopup_Show("BBF_CONFIRM_RELOAD")
+    -- end)
+
+    -- local moveResourceToTargetPaladin = CreateCheckbox("moveResourceToTargetPaladin", "Paladin: Holy Charges", moveResourceToTarget)
+    -- moveResourceToTargetPaladin:SetPoint("TOPLEFT", moveResourceToTargetDK, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    -- CreateTooltip(moveResourceToTargetPaladin, "Move Paladin Holy Charges to TargetFrame.")
+    -- moveResourceToTargetPaladin:HookScript("OnClick", function()
+    --     StaticPopup_Show("BBF_CONFIRM_RELOAD")
+    -- end)
+
+    -- local moveResourceToTargetPaladinBG = CreateCheckbox("moveResourceToTargetPaladinBG", "BG", moveResourceToTargetPaladin)
+    -- moveResourceToTargetPaladinBG:SetPoint("LEFT", moveResourceToTargetPaladin.text, "RIGHT", 0, 0)
+    -- CreateTooltipTwo(moveResourceToTargetPaladinBG, "Background", "Show background for unfilled charges.")
+
+    -- moveResourceToTargetPaladinBG:HookScript("OnClick", function(self)
+    --     StaticPopup_Show("BBF_CONFIRM_RELOAD")
+    -- end)
+
+    -- moveResourceToTargetPaladin:HookScript("OnClick", function(self)
+    --     CheckAndToggleCheckboxes(self)
+    -- end)
+
+    local key = "classResource" .. playerClass .. "Scale"
+    local classResourceScale = CreateSlider(guiMisc, "Class Resource Scale", 0.4, 2, 0.01, key)
+    classResourceScale:SetPoint("TOPLEFT", moveResource, "BOTTOMLEFT", 5, -15)
+    CreateTooltipTwo(classResourceScale, "Class Resource Scale", "Changes the scale of Resource/ComboPoints.", "This setting is class specific to the class you are logged in on.")
+
+    moveResource:HookScript("OnMouseDown", function(self, button)
+        if button == "RightButton" then
+            if BetterBlizzFramesDB.moveResourceStackPos then
+                BetterBlizzFramesDB.moveResourceStackPos[playerClass] = nil
+            end
+            classResourceScale:SetValue(1)
+            print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: Combo point positions for " .. playerClass .. " have been reset.")
+            BBF.ResetResourcePosition()
+        end
     end)
 
-    local moveResourceToTargetEvoker = CreateCheckbox("moveResourceToTargetEvoker", "Evoker: Essence", moveResourceToTarget)
-    moveResourceToTargetEvoker:SetPoint("TOPLEFT", moveResourceToTargetWarlock, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltip(moveResourceToTargetEvoker, "Move Evoker Essence to TargetFrame.")
-    moveResourceToTargetEvoker:HookScript("OnClick", function()
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
-    end)
+    -- moveResourceToTargetCustom:HookScript("OnMouseDown", function(self, button)
+    --     if button == "RightButton" then
+    --         if BetterBlizzFramesDB.customComboPositions then
+    --             BetterBlizzFramesDB.customComboPositions[playerClass] = nil
+    --         end
+    --         classResourceScale:SetValue(1)
+    --         print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: Combo point positions for " .. playerClass .. " have been reset.")
+    --         BBF.UpdateClassComboPoints()
+    --     end
+    -- end)
 
-    local moveResourceToTargetMage = CreateCheckbox("moveResourceToTargetMage", "Mage: Arcane Charges", moveResourceToTarget)
-    moveResourceToTargetMage:SetPoint("TOPLEFT", moveResourceToTargetEvoker, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltip(moveResourceToTargetMage, "Move Mage Arcane Charges to TargetFrame.")
-    moveResourceToTargetMage:HookScript("OnClick", function()
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
-    end)
+    -- moveResourceToTarget:HookScript("OnClick", function(self)
+    --     if self:GetChecked() then
+    --         classResourceScale:SetValue(1)
+    --     end
+    --     StaticPopup_Show("BBF_CONFIRM_RELOAD")
+    --     CheckAndToggleCheckboxes(moveResourceToTarget)
+    -- end)
 
-    moveResourceToTarget:HookScript("OnClick", function()
-        CheckAndToggleCheckboxes(moveResourceToTarget)
-    end)
+
+
 end
 
 local function guiChatFrame()
@@ -6358,6 +6754,22 @@ local function guiImportAndExport()
 
     local auraWhitelist = CreateImportExportUI(fullProfile, "Aura Whitelist", BetterBlizzFramesDB.auraWhitelist, 0, -100, "auraWhitelist")
     local auraBlacklist = CreateImportExportUI(auraWhitelist, "Aura Blacklist", BetterBlizzFramesDB.auraBlacklist, 210, 0, "auraBlacklist")
+
+    local text = guiImportAndExport:CreateFontString(nil, "OVERLAY", "GameFontNormalHuge")
+    text:SetText("")
+    text:SetPoint("TOP", guiImportAndExport, "TOPRIGHT", -220, 0)
+
+    local profilesBtn = CreateFrame("Button", nil, guiImportAndExport, "GameMenuButtonTemplate")
+    profilesBtn:SetSize(150, 25)
+    profilesBtn:SetText("PROFILES SELECTION")
+    profilesBtn:SetPoint("TOP", text, "BOTTOM", 0, -25)
+    profilesBtn:SetScale(1.3)
+    profilesBtn:SetNormalFontObject("GameFontNormal")
+    profilesBtn:SetHighlightFontObject("GameFontHighlight")
+    profilesBtn:SetScript("OnClick", function()
+        BBF.CreateIntroMessageWindow()
+    end)
+    CreateTooltipTwo(profilesBtn, "Profiles", "Check out the included profiles. Selecting one will delete all your current settings and apply the profile.", nil, "ANCHOR_TOP")
 end
 
 local function guiCustomCode()
@@ -6876,67 +7288,66 @@ function BBF.CreateIntroMessageWindow()
 
     local description1 = BBF.IntroMessageWindow:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     description1:SetPoint("TOP", welcomeText, "BOTTOM", 0, -10)
-    description1:SetText("Thank you for trying out my addon!\n\nBelow you can pick a profile to start with or you can exit and customize everything by yourself.\n\nIf you just want a quick start with only the essentials I highly recommend the Starter Profile.")
+    description1:SetText("Thank you for trying out my addon!\n\nBelow you can pick a profile to start with or you can exit and customize everything by yourself.\n\nI highly recommend the minimal |A:newplayerchat-chaticon-newcomer:16:16|a|cff32cd32Starter Profile|r if you just\nwant a quick start with only the essentials!")
     description1:SetJustifyH("CENTER")
     description1:SetWidth(410)
 
     local btnWidth, btnHeight, btnGap = 150, 30, -3
 
-    local function ShowProfileConfirmation(profileName, profileFunction, additionalNote)
+    local function ShowProfileConfirmation(profileName, class, profileFunction, additionalNote)
         local noteText = additionalNote or ""
-        local confirmationText = titleText .. "Are you sure you want to go with the " .. profileName .. "?\n\n" .. noteText .. "Click yes to apply and Reload UI."
+        local color = CLASS_COLORS[class] or "|cffffffff"
+        local icon = CLASS_ICONS[class] or "groupfinder-icon-role-leader"
+        local profileText = string.format("|A:%s:16:16|a %s%s|r", icon, color, profileName.." Profile")
+        local confirmationText = titleText .. "Are you sure you want to go\nwith the " .. profileText .. "?\n\n" .. noteText .. "Click yes to apply and Reload UI."
         StaticPopupDialogs["BBF_CONFIRM_PROFILE"].text = confirmationText
         StaticPopup_Show("BBF_CONFIRM_PROFILE", nil, nil, { func = profileFunction })
     end
 
-    -- Create button for your profile
-    local myProfileButton = CreateFrame("Button", nil, BBF.IntroMessageWindow, "GameMenuButtonTemplate")
-    myProfileButton:SetPoint("TOP", description1, "BOTTOM", 0, -20)
-    myProfileButton:SetSize(btnWidth, btnHeight)
-    myProfileButton:SetText("Starter Profile")
-    myProfileButton:SetNormalFontObject("GameFontNormal")
-    myProfileButton:SetHighlightFontObject("GameFontHighlight")
-    myProfileButton:SetScript("OnClick", function()
-        ShowProfileConfirmation("Starter Profile", BBF.StarterProfile)
+    local starterButton = CreateClassButton(BBF.IntroMessageWindow, "STARTER", "Starter", nil, function()
+        ShowProfileConfirmation("Starter", "STARTER", BBF.StarterProfile)
     end)
-    CreateTooltipTwo(myProfileButton, "Starter Profile", "A basic starter profile that only enables the few things you need. Intended to work as a very minimal quick start that can be built upon.")
+    starterButton:SetPoint("TOP", description1, "BOTTOM", 0, -20)
 
     local orText = BBF.IntroMessageWindow:CreateFontString(nil, "OVERLAY", "GameFontNormalMed2")
-    orText:SetPoint("CENTER", myProfileButton, "BOTTOM", 0, -20)
+    orText:SetPoint("CENTER", starterButton, "BOTTOM", 0, -20)
     orText:SetText("OR")
     orText:SetJustifyH("CENTER")
 
-    local button1 = CreateFrame("Button", nil, BBF.IntroMessageWindow, "GameMenuButtonTemplate")
-    button1:SetSize(btnWidth, btnHeight)
-    button1:SetText("|A:groupfinder-icon-class-rogue:16:16|a |cfffff569Nahj Profile|r")
-    button1:SetPoint("TOP", myProfileButton, "BOTTOM", 0, -40)
-    button1:SetNormalFontObject("GameFontNormal")
-    button1:SetHighlightFontObject("GameFontHighlight")
-    button1:SetScript("OnClick", function()
-        ShowProfileConfirmation("Nahj Profile", BBF.NahjProfile)
-    end)
-    CreateTooltipTwo(button1, "|A:groupfinder-icon-class-rogue:16:16|a |cfffff569Nahj Profile|r", "www.twitch.tv/nahj")
+    -- local aeghisButton = CreateClassButton(BBF.IntroMessageWindow, "MAGE", "Aeghis", "aeghis", function()
+    --     ShowProfileConfirmation("Aeghis", "MAGE", BBF.AeghisProfile)
+    -- end)
+    -- aeghisButton:SetPoint("TOP", starterButton, "BOTTOM", 0, -40)
 
-    local button2 = CreateFrame("Button", nil, BBF.IntroMessageWindow, "GameMenuButtonTemplate")
-    button2:SetSize(btnWidth, btnHeight)
-    button2:SetText("|A:groupfinder-icon-class-druid:16:16|a |cffff7d0aSnupy Profile|r")
-    button2:SetPoint("TOP", button1, "BOTTOM", 0, btnGap)
-    button2:SetNormalFontObject("GameFontNormal")
-    button2:SetHighlightFontObject("GameFontHighlight")
-    button2:SetScript("OnClick", function()
-        ShowProfileConfirmation("Snupy Profile", BBF.SnupyProfile)
+    -- local kalvishButton = CreateClassButton(BBF.IntroMessageWindow, "ROGUE", "Kalvish", "kalvish", function()
+    --     ShowProfileConfirmation("Kalvish", "ROGUE", BBF.KalvishProfile)
+    -- end)
+    -- kalvishButton:SetPoint("TOP", aeghisButton, "BOTTOM", 0, btnGap)
+
+    -- local magnuszButton = CreateClassButton(BBF.IntroMessageWindow, "WARRIOR", "Magnusz", "magnusz", function()
+    --     ShowProfileConfirmation("Magnusz", "WARRIOR", BBF.MagnuszProfile)
+    -- end)
+    -- magnuszButton:SetPoint("TOP", kalvishButton, "BOTTOM", 0, btnGap)
+
+    local nahjButton = CreateClassButton(BBF.IntroMessageWindow, "ROGUE", "Nahj", "nahj", function()
+        ShowProfileConfirmation("Nahj", "ROGUE", BBF.NahjProfile)
     end)
-    CreateTooltipTwo(button2, "|A:groupfinder-icon-class-druid:16:16|a |cffff7d0aSnupy Profile|r", "www.twitch.tv/snupy")
+    nahjButton:SetPoint("TOP", starterButton, "BOTTOM", 0, -40)
+
+    local snupyButton = CreateClassButton(BBF.IntroMessageWindow, "DRUID", "Snupy", "snupy", function()
+        ShowProfileConfirmation("Snupy", "DRUID", BBF.SnupyProfile)
+    end)
+    snupyButton:SetPoint("TOP", nahjButton, "BOTTOM", 0, btnGap)
 
     local orText2 = BBF.IntroMessageWindow:CreateFontString(nil, "OVERLAY", "GameFontNormalMed2")
-    orText2:SetPoint("CENTER", button2, "BOTTOM", 0, -20)
+    orText2:SetPoint("CENTER", snupyButton, "BOTTOM", 0, -20)
     orText2:SetText("OR")
     orText2:SetJustifyH("CENTER")
 
     local buttonLast = CreateFrame("Button", nil, BBF.IntroMessageWindow, "GameMenuButtonTemplate")
     buttonLast:SetSize(btnWidth, btnHeight)
     buttonLast:SetText("Exit, No Profile.")
-    buttonLast:SetPoint("TOP", button2, "BOTTOM", 0, -40)
+    buttonLast:SetPoint("TOP", snupyButton, "BOTTOM", 0, -40)
     buttonLast:SetNormalFontObject("GameFontNormal")
     buttonLast:SetHighlightFontObject("GameFontHighlight")
     buttonLast:SetScript("OnClick", function()
@@ -6947,7 +7358,9 @@ function BBF.CreateIntroMessageWindow()
             Settings.OpenToCategory(BBF.category.ID)
         end
     end)
-    CreateTooltipTwo(buttonLast, "Exit, No Profile", "Exit and customize everything yourself.")
+    CreateTooltipTwo(buttonLast, "Exit, No Profile", "Exit and customize everything yourself.", nil, "ANCHOR_TOP")
+    local f,s,o = buttonLast.Text:GetFont()
+    buttonLast.Text:SetFont(f,s,"OUTLINE")
 
     BBF.IntroMessageWindow.CloseButton:HookScript("OnClick", function()
         if not BetterBlizzFrames.guiLoaded then
@@ -6957,22 +7370,6 @@ function BBF.CreateIntroMessageWindow()
         end
     end)
 
-    local function SetFontWithOutline(fontString)
-        local font, size = fontString:GetFont()
-        fontString:SetFont(font, size, "OUTLINE")
-    end
-
-    local textElements = {
-        welcomeText, description1, orText, orText2,
-        myProfileButton.Text, button1.Text, button2.Text, buttonLast.Text
-    }
-
-    -- Apply outline to all text elements
-    for _, element in ipairs(textElements) do
-        if element then
-            SetFontWithOutline(element)
-        end
-    end
     local function AdjustWindowHeight()
         local baseHeight = 334
         local perButtonHeight = 29
