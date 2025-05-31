@@ -302,6 +302,33 @@ local spellList = {
     [54466] = "Incapacitated", -- Saronite Grenade (Item)
 }
 
+local hardCCSet = {
+    ["Stunned"] = true,
+    ["Feared"] = true,
+    ["Horrified"] = true,
+    ["Cycloned"] = true,
+    ["Incapacitated"] = true,
+    ["Mind Controlled"] = true,
+    ["Disoriented"] = true,
+    ["Polymorphed"] = true,
+    ["Hexed"] = true,
+    ["Frozen"] = true,
+}
+
+local softCCSet = {
+    ["Rooted"] = true,
+    ["Silenced"] = true,
+    ["Disarmed"] = true,
+}
+
+local function isHardCC(type)
+    return hardCCSet[type]
+end
+
+local function isSoftCC(type)
+    return softCCSet[type]
+end
+
 function BBF.SetupLoCFrame()
     if not BetterBlizzFramesDB.enableLoCFrame then return end
     if LossOfControlFrame then
@@ -401,6 +428,11 @@ function BBF.SetupLoCFrame()
     frame.Icon:SetSize(48, 48)
     frame.Icon:SetPoint("LEFT", frame, "LEFT", 42, 0)
 
+    if BetterBlizzFramesDB.showCooldownOnLoC then
+        frame.Icon.Cooldown = CreateFrame("Cooldown", nil, frame, "CooldownFrameTemplate")
+        frame.Icon.Cooldown:SetAllPoints(frame.Icon)
+    end
+
     -- === Secondary Icon (e.g. root/silence/disarm) ===
     -- Create the cooldown frame
     frame.SecondaryIcon = CreateFrame("Frame", nil, frame)
@@ -410,7 +442,6 @@ function BBF.SetupLoCFrame()
     frame.SecondaryIcon.Cooldown = CreateFrame("Cooldown", nil, frame.SecondaryIcon, "CooldownFrameTemplate")
     frame.SecondaryIcon.Cooldown:SetAllPoints(frame.SecondaryIcon)
 
-    -- Prevent weird stretching by anchoring the swipe texture
     local cooldownSwipe = frame.SecondaryIcon:GetRegions()
     if cooldownSwipe then
         cooldownSwipe:SetAllPoints(frame.SecondaryIcon)
@@ -514,14 +545,6 @@ function BBF.SetupLoCFrame()
         local interrupt = frame.interruptData
         local now = GetTime()
 
-        local function isHardCC(type)
-            return type == "Stunned" or type == "Feared" or type == "Horrified" or type == "Cycloned" or type == "Incapacitated" or type == "Mind Controlled" or type == "Disoriented"
-        end
-
-        local function isSoftCC(type)
-            return type == "Rooted" or type == "Silenced" or type == "Disarmed"
-        end
-
         local function getAuraData()
             for i = 1, 40 do
                 local aura = C_UnitAuras.GetAuraDataByIndex("player", i, "HARMFUL")
@@ -607,6 +630,9 @@ function BBF.SetupLoCFrame()
         -- === Main Display ===
         if main then
             frame.Icon:SetTexture(main.icon)
+            if frame.Icon.Cooldown then
+                frame.Icon.Cooldown:SetCooldown(main.expiration - main.duration, main.duration)
+            end
             local r,g,b, _ = 1, 0.819, 0
             -- Set AbilityName
             if main.type == "Silenced" and interrupt then

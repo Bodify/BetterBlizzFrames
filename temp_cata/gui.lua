@@ -2718,6 +2718,13 @@ local function guiGeneralTab()
         end
     end)
 
+    local showCooldownOnLoC = CreateCheckbox("showCooldownOnLoC", "Show CD", BetterBlizzFrames)
+    showCooldownOnLoC:SetPoint("LEFT", enableLoCFrame.text, "RIGHT", 0, 0)
+    CreateTooltipTwo(showCooldownOnLoC, "Show CD", "Also show CD spiral on the Loss of Control Frame.")
+    showCooldownOnLoC:HookScript("OnClick", function(self)
+        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+    end)
+
     local hideLossOfControlFrameBg = CreateCheckbox("hideLossOfControlFrameBg", "Hide CC Background", BetterBlizzFrames, nil, BBF.HideFrames)
     hideLossOfControlFrameBg:SetPoint("TOPLEFT", enableLoCFrame, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(hideLossOfControlFrameBg, "Hide the dark background on the LossOfControl frame (displaying CC on you)")
