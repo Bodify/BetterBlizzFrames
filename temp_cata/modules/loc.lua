@@ -33,9 +33,9 @@ local interruptEvents = {
 
 local spellList = {
     -- *** Incapacitate Effects ***
-    [2637]   = "Incapacitated", -- Hibernate
-    [3355]   = "Incapacitated", -- Freezing Trap Effect
-    [19386]  = "Incapacitated", -- Wyvern Sting
+    [2637]   = "Asleep", -- Hibernate
+    [3355]   = "Frozen", -- Freezing Trap Effect
+    [19386]  = "Asleep", -- Wyvern Sting
     [118]    = "Polymorphed", -- Polymorph
     [28271]  = "Polymorphed", -- Polymorph: Turtle
     [28272]  = "Polymorphed", -- Polymorph: Pig
@@ -46,16 +46,16 @@ local spellList = {
     [82691]  = "Frozen", -- Ring of Frost
     [115078] = "Incapacitated", -- Paralysis
     [20066]  = "Incapacitated", -- Repentance
-    [9484]   = "Incapacitated", -- Shackle Undead
-    [1776]   = "Incapacitated", -- Gouge
-    [6770]   = "Incapacitated", -- Sap
+    [9484]   = "Shackled", -- Shackle Undead
+    [1776]   = "Gouged", -- Gouge
+    [6770]   = "Sapped", -- Sap
     [76780]  = "Incapacitated", -- Bind Elemental
     [51514]  = "Hexed", -- Hex
     [710]    = "Incapacitated", -- Banish
     [107079] = "Incapacitated", -- Quaking Palm (Racial)
 
     -- *** Disorient Effects ***
-    [99]     = "Disoriented", -- Disorienting Roar
+    --[99]     = "Disoriented", -- Disorienting Roar (MoP only, 30sec debuff in cata)
     [19503]  = "Disoriented", -- Scatter Shot
     [31661]  = "Disoriented", -- Dragon's Breath
     [123393] = "Disoriented", -- Glyph of Breath of Fire
@@ -112,10 +112,14 @@ local spellList = {
     [6572]   = "Stunned", -- Ravage
     [39796]  = "Stunned", -- Stoneclaw Stun
     [34510]  = "Stunned", -- Stun (proc)
-    [20170]  = "Stunned", -- Seal of Justice (proc)
     [12355]  = "Stunned", -- Impact
     [23454]  = "Stunned", -- Stun (generic)
     [132169] = "Stunned", -- Storm Bolt
+    [96201] = "Stunned", -- Web Wrap
+    [122057] = "Stunned", -- Clash
+    [15618] = "Stunned", -- Snap Kick
+    [127361] = "Stunned", -- Bear Hug
+    --[19577]  = "Stunned", -- Intimidation (?)
 
     -- *** Non-controlled Stun Effects ***
     [113953] = "Stunned", -- Paralysis
@@ -133,15 +137,16 @@ local spellList = {
     [1450679] ="Feared", -- Turn Evil
     [8122]   = "Feared", -- Psychic Scream
     [113792] = "Feared", -- Psychic Terror (Psyfiend)
-    [2094]   = "Feared", -- Blind
+    [2094]   = "Blinded", -- Blind (Fear DR)
     [5782]   = "Feared", -- Fear
+    [130616] = "Feared", -- Fear
     [118699] = "Feared", -- Fear 2
     [5484]   = "Feared", -- Howl of Terror
-    [115268] = "Feared", -- Mesmerize (Shivarra)
-    [6358]   = "Feared", -- Seduction (Succubus)
+    [115268] = "Seduced", -- Mesmerize (Shivarra)
+    [6358]   = "Seduced", -- Seduction (Succubus)
     [104045] = "Feared", -- Sleep (Metamorphosis) -- TODO: verify this is the correct category
     [5246]   = "Feared", -- Intimidating Shout
-    [20511]  = "Feared", -- Intimidating Shout (secondary targets)
+    [20511]  = "Feared", -- Intimidating Shout (secondary targets)wwwwww
 
     -- *** Controlled Root Effects ***
     [96294]  = "Rooted", -- Chains of Ice (Chilblains Root)
@@ -166,6 +171,11 @@ local spellList = {
     [107566] = "Rooted", -- Staggering Shout
     [113770] = "Rooted", -- Entangling Roots
     [105771] = "Rooted", -- Warbringer
+    [53148] = "Rooted", -- Charge
+    [136634] = "Rooted", -- Narrow Escape
+    --[127797] = "Rooted", -- Ursol's Vortex
+    [81210] = "Rooted", -- Net
+    [91807] = "Rooted",   -- Shambling Rush
 
     -- *** Non-controlled Root Effects ***
     [64803]  = "Rooted", -- Entrapment
@@ -191,13 +201,15 @@ local spellList = {
     [676]    = "Disarmed", -- Disarm
     [15752]  = "Disarmed", -- Disarm (Warrior talent)
     [14251]  = "Disarmed", -- Riposte
+    [142896] = "Disarmed", -- Disarmed
+    [116844] = "Silence/Disarm", -- Ring of Peace (Silence / Disarm)
 
     -- *** Silence Effects ***
     -- [108194] = "Silenced", -- Asphyxiate (TODO: check silence id)
     [47476]  = "Silenced", -- Strangulate
     [114238] = "Silenced", -- Glyph of Fae Silence
     [34490]  = "Silenced", -- Silencing Shot
-    [102051] = "Silenced", -- Frostjaw
+    [102051] = "Silenced+", -- Frostjaw
     [55021]  = "Silenced", -- Counterspell
     [137460] = "Silenced", -- Ring of Peace (Silence effect)
     [116709] = "Silenced", -- Spear Hand Strike
@@ -227,6 +239,8 @@ local spellList = {
     [78675] =  "Silenced", -- Solar Beam
     [113286] = "Silenced", -- Solar Beam
     [81261] =  "Silenced", -- Solar Beam
+    [142895] = "Silenced", -- Ring of Peace(?) Silence
+    [31117]  = "Silenced", -- Unstable Affliction
 
     -- *** Horror Effects ***
     [64044]  = "Horrified", -- Psychic Horror
@@ -253,7 +267,7 @@ local spellList = {
     [93433] = "Stunned", -- Burrow Attack (Worm)
     [83046] = "Stunned", -- Improved Polymorph (Rank 1)
     [83047] = "Stunned", -- Improved Polymorph (Rank 2)
-    [2812]  = "Stunned", -- Holy Wrath
+    --[2812]  = "Stunned", -- Holy Wrath
     --[88625] = "Stunned", -- Holy Word: Chastise
     [93986] = "Stunned", -- Aura of Foreboding
     [54786] = "Stunned", -- Demon Leap
@@ -313,24 +327,26 @@ local hardCCSet = {
     ["Polymorphed"] = true,
     ["Hexed"] = true,
     ["Frozen"] = true,
-}
-
-local softCCSet = {
-    ["Rooted"] = true,
-    ["Silenced"] = true,
-    ["Disarmed"] = true,
+    ["Blinded"] = true,
+    ["Seduced"] = true,
+    ["Asleep"] = true,
+    ["Shackled"] = true,
+    ["Gouged"] = true,
+    ["Sapped"] = true,
 }
 
 local function isHardCC(type)
     return hardCCSet[type]
 end
 
-local function isSoftCC(type)
-    return softCCSet[type]
-end
-
 function BBF.SetupLoCFrame()
     if not BetterBlizzFramesDB.enableLoCFrame then return end
+    if not BBF.isMoP then
+        spellList[2812]  = "Stunned" -- Holy Wrath
+        --spellList[20170]  = "Stunned", -- Seal of Justice (proc)
+    else
+        spellList[99] = "Disoriented" -- Disorienting Roar (MoP only, 30sec debuff in cata)
+    end
     if LossOfControlFrame then
         print("BBF: LossOfControlFrame found. Returning Early. Report to @bodify")
         return
@@ -540,9 +556,7 @@ function BBF.SetupLoCFrame()
 
     -- === Aura Scan Logic ===
     local function checkAuras()
-        local primary = nil
-        local soft = nil
-        local interrupt = frame.interruptData
+        local fullCC, silence, interrupt, disarm, root = nil, nil, frame.interruptData, nil, nil
         local now = GetTime()
 
         local function getAuraData()
@@ -566,35 +580,21 @@ function BBF.SetupLoCFrame()
 
                     if ccType then
                         if isHardCC(ccType) then
-                            if not primary or remaining > primary.remaining then
-                                primary = auraData
+                            if not fullCC or remaining > fullCC.remaining then
+                                fullCC = auraData
                             end
-                        elseif isSoftCC(ccType) then
-                            if not soft or remaining > soft.remaining then
-                                soft = auraData
+                        elseif ccType == "Silenced" then
+                            if not silence or remaining > silence.remaining then
+                                silence = auraData
                             end
-                        end
-                    elseif spellID == 130 then -- test hard cc
-                        if not primary or remaining > (primary.remaining or 0) then
-                            primary = {
-                                icon = aura.icon,
-                                type = "Stunned",
-                                duration = aura.duration,
-                                expiration = aura.expirationTime,
-                                remaining = remaining,
-                                spellID = spellID
-                            }
-                        end
-                    elseif spellID == 1459 then -- test soft cc
-                        if not soft or remaining > (soft.remaining or 0) then
-                            soft = {
-                                icon = aura.icon,
-                                type = "Disarmed",
-                                duration = aura.duration,
-                                expiration = aura.expirationTime,
-                                remaining = remaining,
-                                spellID = spellID
-                            }
+                        elseif ccType == "Disarmed" then
+                            if not disarm or remaining > disarm.remaining then
+                                disarm = auraData
+                            end
+                        elseif ccType == "Rooted" then
+                            if not root or remaining > root.remaining then
+                                root = auraData
+                            end
                         end
                     end
                 end
@@ -611,30 +611,40 @@ function BBF.SetupLoCFrame()
 
         -- === Priority Logic ===
         local main, secondary
-        if primary then
-            main = primary
-            secondary = soft or interrupt
-        elseif soft then
-            if interrupt and soft.type == "Silenced" then
-                main = soft
-                secondary = interrupt
-            else
-                main = soft
-                secondary = interrupt
-            end
+
+        if fullCC then
+            main = fullCC
+            secondary = silence or interrupt or disarm or root
+        elseif silence then
+            main = silence
+            secondary = interrupt or disarm or root
         elseif interrupt then
             main = interrupt
+            secondary = disarm or root
+        elseif disarm then
+            main = disarm
+            secondary = root
+        elseif root then
+            main = root
             secondary = nil
         end
 
+        -- Assign to frame
+        frame.mainCC = main
+        frame.secondaryCC = secondary
+
         -- === Main Display ===
         if main then
+            if frame.fadeOutShrink:IsPlaying() then
+                frame.fadeOutShrink:Stop()
+            end
+
             frame.Icon:SetTexture(main.icon)
             if frame.Icon.Cooldown then
                 frame.Icon.Cooldown:SetCooldown(main.expiration - main.duration, main.duration)
             end
-            local r,g,b, _ = 1, 0.819, 0
-            -- Set AbilityName
+
+            local r, g, b = 1, 0.819, 0
             if main.type == "Silenced" and interrupt then
                 frame.AbilityName:SetText("Silenced+")
                 _, r, g, b = GetSchoolInfo(interrupt.school)
@@ -642,11 +652,14 @@ function BBF.SetupLoCFrame()
                 frame.AbilityName:SetText("Interrupted")
                 _, r, g, b = GetSchoolInfo(interrupt.school)
             else
-                frame.AbilityName:SetText((main.type or "unknown"))
+                frame.AbilityName:SetText(main.type or "unknown")
             end
-            frame.AbilityName:SetTextColor(r,g,b)
+            frame.AbilityName:SetTextColor(r, g, b)
+
             frame.duration = main.duration
             frame.expiration = main.expiration
+            frame.lockedBy = main.spellID
+
             if not frame:IsShown() then
                 frame:SetAlpha(0)
                 frame:SetScale(0.85)
@@ -655,22 +668,22 @@ function BBF.SetupLoCFrame()
                 frame.fadeInScale:Play()
             end
 
-
-            if main == interrupt then
-                local name, r, g, b = GetSchoolInfo(interrupt and interrupt.school)
-                frame.Icon.SchoolText:SetText(name)
-                frame.Icon.SchoolText:SetTextColor(r, g, b)
-            elseif main.type == "Silenced" and interrupt then
-                local name, r, g, b = GetSchoolInfo(interrupt and interrupt.school)
+            if main == interrupt or (main.type == "Silenced" and interrupt) then
+                local name, r, g, b = GetSchoolInfo(interrupt.school)
                 frame.Icon.SchoolText:SetText(name)
                 frame.Icon.SchoolText:SetTextColor(r, g, b)
             else
                 frame.Icon.SchoolText:SetText("")
             end
         else
-            if not frame.fadeOutShrink:IsPlaying() then
-                frame.fadeOutShrink:Stop()
-                frame.fadeOutShrink:Play()
+            -- Leeway check: don't hide too early if interrupt about to become main
+            if interrupt and (interrupt.expiration - now) > 0.2 then
+                -- wait
+            else
+                if not frame.fadeOutShrink:IsPlaying() then
+                    frame.fadeOutShrink:Stop()
+                    frame.fadeOutShrink:Play()
+                end
             end
             frame.Icon.SchoolText:SetText("")
         end
@@ -681,8 +694,8 @@ function BBF.SetupLoCFrame()
             frame.SecondaryIcon.Cooldown:SetCooldown(secondary.expiration - secondary.duration, secondary.duration)
             frame.SecondaryIcon:Show()
 
-            if main and interrupt then
-                local name, r, g, b = GetSchoolInfo(interrupt and interrupt.school)
+            if interrupt and secondary == interrupt then
+                local name, r, g, b = GetSchoolInfo(interrupt.school)
                 frame.SecondaryIcon.SchoolText:SetText(name)
                 frame.SecondaryIcon.SchoolText:SetTextColor(r, g, b)
             else
@@ -704,11 +717,10 @@ function BBF.SetupLoCFrame()
     frame:SetScript("OnUpdate", function(self)
         if self.expiration then
             local timeLeft = self.expiration - GetTime()
+
             if timeLeft <= 0 then
-                if not self.fadeOutShrink:IsPlaying() then
-                    self.fadeOutShrink:Stop()
-                    self.fadeOutShrink:Play()
-                end
+                -- Instead of fading out, re-evaluate auras and let checkAuras() handle the transition
+                checkAuras()
             else
                 self.TimeLeft.NumberText:SetText(string.format("%.1f seconds", timeLeft))
             end

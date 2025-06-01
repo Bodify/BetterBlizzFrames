@@ -1956,8 +1956,8 @@ local function PersonalBuffFrameFilterAndGrid(self)
                                 auraFrame.ImportantGlow:SetPoint("TOPLEFT", auraFrame, "TOPLEFT", -15, 16)
                                 auraFrame.ImportantGlow:SetPoint("BOTTOMRIGHT", auraFrame, "BOTTOMRIGHT", 15, -6)
                             else
-                                auraFrame.ImportantGlow:SetPoint("TOPLEFT", auraFrame, "TOPLEFT", -32, 33)
-                                auraFrame.ImportantGlow:SetPoint("BOTTOMRIGHT", auraFrame, "BOTTOMRIGHT", 32, -32)
+                                auraFrame.ImportantGlow:SetPoint("TOPLEFT", auraFrame, "TOPLEFT", -34, 35)
+                                auraFrame.ImportantGlow:SetPoint("BOTTOMRIGHT", auraFrame, "BOTTOMRIGHT", 34, -36)
                             end
                             --auraFrame.ImportantGlow:SetDrawLayer("OVERLAY", 7)
                             auraFrame.ImportantGlow:SetTexture(BBF.squareGreenGlow)
@@ -2164,8 +2164,8 @@ local function PersonalBuffFrameFilterAndGrid(self)
                                 auraFrame.ImportantGlow:SetPoint("TOPLEFT", auraFrame, "TOPLEFT", -15, 16)
                                 auraFrame.ImportantGlow:SetPoint("BOTTOMRIGHT", auraFrame, "BOTTOMRIGHT", 15, -6)
                             else
-                                auraFrame.ImportantGlow:SetPoint("TOPLEFT", auraFrame, "TOPLEFT", -32, 33)
-                                auraFrame.ImportantGlow:SetPoint("BOTTOMRIGHT", auraFrame, "BOTTOMRIGHT", 32, -32)
+                                auraFrame.ImportantGlow:SetPoint("TOPLEFT", auraFrame, "TOPLEFT", -34, 35)
+                                auraFrame.ImportantGlow:SetPoint("BOTTOMRIGHT", auraFrame, "BOTTOMRIGHT", 34, -36)
                             end
                             --auraFrame.ImportantGlow:SetDrawLayer("OVERLAY", 7)
                             auraFrame.ImportantGlow:SetTexture(BBF.squareGreenGlow)

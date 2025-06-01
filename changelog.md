@@ -1,3 +1,25 @@
+# BetterBlizzFrames 1.7.0f
+# MoP & Cata
+- More tweaks to Loss of Control frame.
+- Added missing CC to Loss of Control frame.
+- Added setting to hide background on Monk Chi Resource.
+- Added "Raise Castbar Strata" setting to misc.
+- Added Shadow Priest Orbs to Resource Scale/Position settings.
+- Fixed Monk Resource being almost impossible to move.
+- Fix Legacy Combo Point support for Arcane Mage staying active when not specced Arcane.
+
+# BetterBlizzFrames 1.7.0e
+# MoP & Cata
+- Fix oopsie in LoC.
+
+# BetterBlizzFrames 1.7.0d
+# MoP & Cata
+- More tweaks and spells to Loss of Control frame.
+
+# BetterBlizzFrames 1.7.0b & 1.7.0c
+## MoP & Cata
+- Fix some issues with Loss of Control frame.
+
 # BetterBlizzFrames 1.7.0
 ## Mists of Pandaria & Cata
 - Lots of Retail features brought to MoP and Cata and fixed some things.

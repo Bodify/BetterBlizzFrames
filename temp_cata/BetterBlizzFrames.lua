@@ -528,6 +528,7 @@ local function ScaleClassResource()
         DRUID = EclipseBarFrame,
         PALADIN = PaladinPowerBar,
         DEATHKNIGHT = RuneFrame,
+        PRIEST = PriestBarFrame,
         MONK = MonkHarmonyBar,
         --EVOKER = EssencePlayerFrame,
         --MAGE = MageArcaneChargesFrame,
@@ -715,6 +716,7 @@ local resourceFrames = {
     DRUID = EclipseBarFrame,
     PALADIN = PaladinPowerBar,
     DEATHKNIGHT = RuneFrame,
+    PRIEST = PriestBarFrame,
     MONK = MonkHarmonyBar,
     --EVOKER = EssencePlayerFrame,
     --MAGE = MageArcaneChargesFrame,
@@ -806,6 +808,37 @@ function BBF.EnableResourceMovement()
     frame:EnableMouse(true)
     frame:SetClampedToScreen(true)
     frame:SetMouseClickEnabled(true)
+
+    if class == "MONK" then
+        for i = 1, 5 do
+            local orb = frame["lightEnergy"..i]
+            if orb then
+                orb:SetScript("OnMouseDown", function(self, button)
+                    if button == "LeftButton" and IsControlKeyDown() then
+                        frame:StartMoving()
+                    end
+                end)
+
+                orb:SetScript("OnMouseUp", function(self)
+                    frame:StopMovingOrSizing()
+
+                    -- Ensure the database exists
+                    if not BetterBlizzFramesDB.moveResourceStackPos then
+                        BetterBlizzFramesDB.moveResourceStackPos = {}
+                    end
+
+                    -- Save class-specific position
+                    local point, _, relativePoint, xOfs, yOfs = frame:GetPoint()
+                    BetterBlizzFramesDB.moveResourceStackPos[class] = {
+                        point = point,
+                        relativePoint = relativePoint,
+                        xOfs = xOfs,
+                        yOfs = yOfs
+                    }
+                end)
+            end
+        end
+    end
 
     frame:SetScript("OnMouseDown", function(self, button)
         if button == "LeftButton" and IsControlKeyDown() then
@@ -1036,10 +1069,7 @@ function BBF.GenericLegacyComboSupport()
     local cachedArcaneCharges = 0
     local ARCANE_BLAST_SPELL_ID = 36032
 
-    if class == "MAGE" then
-        local frame = CreateFrame("Frame")
-        frame:RegisterUnitEvent("UNIT_AURA", "player")
-
+    if class == "MAGE" and BBF.isMoP then
         local function ScanInitialAuras()
             for i = 1, 40 do
                 local aura = C_UnitAuras.GetAuraDataByIndex("player", i, "HARMFUL")
@@ -1054,38 +1084,67 @@ function BBF.GenericLegacyComboSupport()
 
         ScanInitialAuras()
 
-        frame:SetScript("OnEvent", function(self, event, unit, updateInfo)
-            if not updateInfo then return end
 
-            if updateInfo.addedAuras then
-                for _, aura in ipairs(updateInfo.addedAuras) do 
-                    if aura.spellId == ARCANE_BLAST_SPELL_ID then
-                        arcaneChargeInstanceID = aura.auraInstanceID
-                        cachedArcaneCharges = aura.applications or 0
+        local frame = CreateFrame("Frame")
+        local ARCANE_SPEC_ID = 62
+        local function IsArcaneSpec()
+            local specID = C_SpecializationInfo.GetSpecialization()
+            return specID and C_SpecializationInfo.GetSpecializationInfo(specID) == ARCANE_SPEC_ID
+        end
+
+        local function UpdateMageComboTracking()
+            local isArcane = IsArcaneSpec()
+            if isArcane then
+                frame:RegisterUnitEvent("UNIT_AURA", "player")
+                ScanInitialAuras()
+            else
+                frame:UnregisterEvent("UNIT_AURA")
+                ComboFrame:Hide()
+                arcaneChargeInstanceID = nil
+                cachedArcaneCharges = 0
+            end
+        end
+
+        frame:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
+        frame:SetScript("OnEvent", function(self, event, arg1, arg2)
+            if event == "UNIT_AURA" then
+                local updateInfo = arg2
+                if not updateInfo then return end
+
+                if updateInfo.addedAuras then
+                    for _, aura in ipairs(updateInfo.addedAuras) do 
+                        if aura.spellId == ARCANE_BLAST_SPELL_ID then
+                            arcaneChargeInstanceID = aura.auraInstanceID
+                            cachedArcaneCharges = aura.applications or 0
+                        end
                     end
                 end
-            end
 
-            if updateInfo.updatedAuraInstanceIDs then
-                for _, auraInstanceID in ipairs(updateInfo.updatedAuraInstanceIDs) do
-                    local aura = C_UnitAuras.GetAuraDataByAuraInstanceID("player", auraInstanceID)
-                    if aura then
-                        if aura.spellId == ARCANE_BLAST_SPELL_ID then
+                if updateInfo.updatedAuraInstanceIDs then
+                    for _, auraInstanceID in ipairs(updateInfo.updatedAuraInstanceIDs) do
+                        local aura = C_UnitAuras.GetAuraDataByAuraInstanceID("player", auraInstanceID)
+                        if aura and aura.spellId == ARCANE_BLAST_SPELL_ID then
                             arcaneChargeInstanceID = auraInstanceID
                             cachedArcaneCharges = aura.applications or 0
                         end
                     end
                 end
-            end
 
-            if updateInfo.removedAuraInstanceIDs then
-                for _, auraInstanceID in ipairs(updateInfo.removedAuraInstanceIDs) do
-                    if arcaneChargeInstanceID == auraInstanceID then
-                        cachedArcaneCharges = 0
-                        arcaneChargeInstanceID = nil
+                if updateInfo.removedAuraInstanceIDs then
+                    for _, auraInstanceID in ipairs(updateInfo.removedAuraInstanceIDs) do
+                        if arcaneChargeInstanceID == auraInstanceID then
+                            cachedArcaneCharges = 0
+                            arcaneChargeInstanceID = nil
+                        end
                     end
                 end
+            elseif event == "PLAYER_SPECIALIZATION_CHANGED" and arg1 == "player" then
+                UpdateMageComboTracking()
             end
+        end)
+
+        C_Timer.After(1, function()
+            UpdateMageComboTracking()
         end)
     end
 
@@ -1637,6 +1696,14 @@ function BBF.ShowCooldownDuringCC()
 end
 
 
+
+function BBF.RaiseTargetCastbarStratas()
+    if not BetterBlizzFramesDB.raiseTargetCastbarStrata then return end
+    TargetFrameSpellBar:SetFrameStrata("HIGH")
+    TargetFrameSpellBar:SetFrameLevel(2000)
+    FocusFrameSpellBar:SetFrameStrata("HIGH")
+    FocusFrameSpellBar:SetFrameLevel(2000)
+end
 
 
 local LSM = LibStub("LibSharedMedia-3.0")
@@ -2461,7 +2528,7 @@ First:SetScript("OnEvent", function(_, event, addonName)
                 BetterBlizzFramesDB.legacyComboScale = 1
                 BetterBlizzFramesDB.mopUpdates = true
                 StaticPopupDialogs["BBF_MOP_UPDATE"] = {
-                    text = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: \n\n|A:services-icon-warning:16:16|a CHANGES |A:services-icon-warning:16:16|a\n\nLots of Retail features from BBP have been brought over to MoP and Cata.\n\nDue to the large amount of changes things might have changed slightly.\nThere might also be some missed bugs.\n\nRead changelog for more info.",
+                    text = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: \n\n|A:services-icon-warning:16:16|a CHANGES |A:services-icon-warning:16:16|a\n\nLots of Retail features from BBF have been brought over to MoP and Cata.\n\nDue to the large amount of changes things might have changed slightly.\nThere might also be some missed bugs.\n\nRead changelog for more info.",
                     button1 = "OK",
                     timeout = 0,
                     whileDead = true,
@@ -2477,6 +2544,7 @@ First:SetScript("OnEvent", function(_, event, addonName)
             BBF.GenericLegacyComboSupport()
             --TurnOnEnabledFeaturesOnLogin()
             BBF.DampeningOnDebuff()
+            BBF.RaiseTargetCastbarStratas()
 
             C_Timer.After(1, function()
                 MoveableSettingsPanel()

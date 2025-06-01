@@ -1,5 +1,6 @@
 local hiddenFrame = CreateFrame("Frame")
 hiddenFrame:Hide()
+BBF.hiddenFrame = hiddenFrame
 
 --------------------------------------
 -- Hide UI Frame Elements

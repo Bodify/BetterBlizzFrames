@@ -1075,6 +1075,12 @@ function BBF.FadeMicroMenu()
         for _, child in ipairs({MicroMenu:GetChildren()}) do
             child:SetAlpha(alpha)
         end
+        if not BetterBlizzFramesDB.hideBagsBar then
+            BagsBar:SetAlpha(0)
+            for _, child in ipairs({BagsBar:GetChildren()}) do
+                child:SetAlpha(alpha)
+            end
+        end
     end
 
     SetAlphaForMicroMenu(0) -- Start with hidden
@@ -1082,6 +1088,12 @@ function BBF.FadeMicroMenu()
     local function IsAnyMouseOver()
         if MicroMenu:IsMouseOver() then return true end
         for _, child in ipairs({MicroMenu:GetChildren()}) do
+            if child:IsMouseOver() then
+                return true
+            end
+        end
+        if BagsBar:IsMouseOver() then return true end
+        for _, child in ipairs({BagsBar:GetChildren()}) do
             if child:IsMouseOver() then
                 return true
             end
@@ -1127,6 +1139,33 @@ function BBF.FadeMicroMenu()
                     end
                 end)
             end)
+        end
+
+        if not BetterBlizzFramesDB.hideBagsBar then
+            BagsBar:HookScript("OnEnter", function()
+                SetAlphaForMicroMenu(1)
+            end)
+
+            BagsBar:HookScript("OnLeave", function()
+                C_Timer.After(0.5, function()
+                    if not IsAnyMouseOver() then
+                        SetAlphaForMicroMenu(0)
+                    end
+                end)
+            end)
+            for _, child in ipairs({MicroMenu:GetChildren()}) do
+                child:HookScript("OnEnter", function()
+                    SetAlphaForMicroMenu(1)
+                end)
+
+                child:HookScript("OnLeave", function()
+                    C_Timer.After(0.5, function()
+                    if not IsAnyMouseOver() then
+                            SetAlphaForMicroMenu(0)
+                        end
+                    end)
+                end)
+            end
         end
 
         -- Special case for QueueStatusButton if required

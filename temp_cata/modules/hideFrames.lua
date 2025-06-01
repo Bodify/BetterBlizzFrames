@@ -1,5 +1,6 @@
 local hiddenFrame = CreateFrame("Frame")
 hiddenFrame:Hide()
+BBF.hiddenFrame = hiddenFrame
 
 --------------------------------------
 -- Hide UI Frame Elements
@@ -428,6 +429,28 @@ function BBF.HideFrames()
             end
         end
 
+        if BetterBlizzFramesDB.hideMonkComboBg then
+            if MonkHarmonyBar then
+                for i = 1, MonkHarmonyBar:GetNumRegions() do
+                    local region = select(i, MonkHarmonyBar:GetRegions())
+                    if not region:IsObjectType("Frame") then
+                        region:Hide()
+                    end
+                end
+            end
+            changes.hideMonkComboBg = true
+        elseif changes.hideMonkComboBg then
+            if MonkHarmonyBar then
+                for i = 1, MonkHarmonyBar:GetNumRegions() do
+                    local region = select(i, MonkHarmonyBar:GetRegions())
+                    if not region:IsObjectType("Frame") then
+                        region:Show()
+                    end
+                end
+            end
+            changes.hideMonkComboBg = nil
+        end
+
         if BetterBlizzFramesDB.hidePlayerPower then
             if WarlockPowerFrame and englishClass == "WARLOCK" then
                 if BetterBlizzFramesDB.hidePlayerPowerNoWarlock then
@@ -476,12 +499,12 @@ function BBF.HideFrames()
                     EssencePlayerFrame:SetParent(hiddenFrame)
                 end
             end
-            if MonkHarmonyBarFrame and englishClass == "MONK" then
+            if MonkHarmonyBar and englishClass == "MONK" then
                 if BetterBlizzFramesDB.hidePlayerPowerNoMonk then
-                    if originalResourceParent then MonkHarmonyBarFrame:SetParent(originalResourceParent) end
+                    if originalResourceParent then MonkHarmonyBar:SetParent(originalResourceParent) end
                 else
-                    if not originalResourceParent then originalResourceParent = MonkHarmonyBarFrame:GetParent() end
-                    MonkHarmonyBarFrame:SetParent(hiddenFrame)
+                    if not originalResourceParent then originalResourceParent = MonkHarmonyBar:GetParent() end
+                    MonkHarmonyBar:SetParent(hiddenFrame)
                 end
             end
             if MageArcaneChargesFrame and englishClass == "MAGE" then
@@ -499,7 +522,7 @@ function BBF.HideFrames()
             if PaladinPowerBarFrame and englishClass == "PALADIN" then PaladinPowerBarFrame:SetParent(originalResourceParent) end
             if RuneFrame and englishClass == "DEATHKNIGHT" then RuneFrame:SetParent(originalResourceParent) end
             if EssencePlayerFrame and englishClass == "EVOKER" then EssencePlayerFrame:SetParent(originalResourceParent) end
-            if MonkHarmonyBarFrame and englishClass == "MONK" then MonkHarmonyBarFrame:SetParent(originalResourceParent) end
+            if MonkHarmonyBar and englishClass == "MONK" then MonkHarmonyBar:SetParent(originalResourceParent) end
             if MageArcaneChargesFrame and englishClass == "MAGE" then MageArcaneChargesFrame:SetAlpha(1) end
             changes.hidePlayerPower = nil
         end

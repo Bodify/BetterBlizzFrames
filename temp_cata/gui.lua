@@ -3568,23 +3568,7 @@ local function guiGeneralTab()
     end)
 
     classColorTargetNames:HookScript("OnClick", function(self)
-        if self:GetChecked() then
-            classColorLevelText:Enable()
-            classColorLevelText:SetAlpha(1)
-            if TargetFrame and TargetFrame.bbfName then BBF.updateTextForUnit(TargetFrame.bbfName, TargetFrame) end
-            if PlayerFrame and PlayerFrame.bbfName then BBF.updateTextForUnit(PlayerFrame.bbfName, PlayerFrame) end
-            if FocusFrame and FocusFrame.bbfName then BBF.updateTextForUnit(FocusFrame.bbfName, FocusFrame) end
-            if TargetFrame.totFrame and TargetFrame.totFrame.Name then BBF.updateTextForUnit(TargetFrame.totFrame.Name, TargetFrameToT) end
-            if FocusFrame.totFrame and FocusFrame.totFrame.Name then BBF.updateTextForUnit(FocusFrame.totFrame.Name, FocusFrameToT) end
-        else
-            classColorLevelText:Disable()
-            classColorLevelText:SetAlpha(0)
-            if TargetFrame and TargetFrame.bbfName then TargetFrame.bbfName:SetTextColor(1, 0.81960791349411, 0) end
-            if PlayerFrame and PlayerFrame.bbfName then PlayerFrame.bbfName:SetTextColor(1, 0.81960791349411, 0) end
-            if FocusFrame and FocusFrame.bbfName then FocusFrame.bbfName:SetTextColor(1, 0.81960791349411, 0) end
-            if TargetFrame.totFrame and TargetFrame.totFrame.Name then TargetFrame.totFrame.Name:SetTextColor(1, 0.81960791349411, 0) end
-            if FocusFrame.totFrame and FocusFrame.totFrame.Name then FocusFrame.totFrame.Name:SetTextColor(1, 0.81960791349411, 0) end
-        end
+        BBF.AllNameChanges()
     end)
     if not BetterBlizzFramesDB.classColorTargetNames then
         classColorLevelText:SetAlpha(0)
@@ -6459,13 +6443,24 @@ local function guiMisc()
         end
     end)
 
+    if BBF.isMoP then
+        local hideMonkComboBg = CreateCheckbox("hideMonkComboBg", "Hide Monk Chi Background", guiMisc, nil, BBF.HideFrames)
+        hideMonkComboBg:SetPoint("TOPLEFT", addUnitFrameBgTexture, "BOTTOMLEFT", 0, -50)
+        CreateTooltipTwo(hideMonkComboBg, "Hide Monk Chi Background", "Hide the background texture on Monk Chi.")
+    end
+
+
     local useMiniFocusFrame = CreateCheckbox("useMiniFocusFrame", "Enable Mini-FocusFrame", guiMisc, nil, BBF.MiniFocusFrame)
     useMiniFocusFrame:SetPoint("TOPLEFT", addUnitFrameBgTexture, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(useMiniFocusFrame, "Removes healthbar and manabar from the FocusFrame\nand just leaves Portrait and name.\n\nMove castbar and/or disable auras to your liking.")
     notWorking(useMiniFocusFrame, true)
 
+    local raiseTargetCastbarStrata = CreateCheckbox("raiseTargetCastbarStrata", "Raise Castbar Stratas", guiMisc, nil, BBF.RaiseTargetCastbarStratas)
+    raiseTargetCastbarStrata:SetPoint("TOPLEFT", settingsText, "BOTTOMLEFT", 310, pixelsOnFirstBox)
+    CreateTooltipTwo(raiseTargetCastbarStrata, "Raise Castbar Stratas", "Raise the Strata of Target & Focus frame so it does not appear behind the frames.\n\nNote that this will NOT make the TargetFrame castbar appear above the FocusFrame, the setting above is required for that behaviour.")
+
     local enableLegacyComboPoints = CreateCheckbox("enableLegacyComboPoints", "Legacy Combo Points", guiMisc)
-    enableLegacyComboPoints:SetPoint("TOPLEFT", settingsText, "BOTTOMLEFT", 310, pixelsOnFirstBox)
+    enableLegacyComboPoints:SetPoint("TOPLEFT", raiseTargetCastbarStrata, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(enableLegacyComboPoints, "Legacy Combo Points", "Enable the old Classic Combo Points and fix their position to work with the new UnitFrames.\n\n|cff32f795Right-Click to adjust position and size.|r")
     enableLegacyComboPoints:HookScript("OnClick", function(self)
         StaticPopup_Show("BBF_CONFIRM_RELOAD")
