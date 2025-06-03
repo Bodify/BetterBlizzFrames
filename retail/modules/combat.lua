@@ -196,7 +196,7 @@ function BBF.RacialIndicator(unitFrame, unit)
     local vertexColor = darkModeOn and BetterBlizzFramesDB.darkModeColor or 1
     local raceOverSpells = BetterBlizzFramesDB.racialIndicatorRaceIcons
 
-    local unitRace = UnitRace(unit)
+    local _, unitRace = UnitRace(unit)
     local unitSex = UnitSex(unit)
     local isOrc = unitRace == "Orc"
     local isNelf = unitRace == "Night Elf"

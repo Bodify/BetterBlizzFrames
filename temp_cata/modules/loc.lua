@@ -1,7 +1,7 @@
 local interruptSpells = {
-    [1766] = 4,  -- Kick (Rogue)
+    [1766] = 5,  -- Kick (Rogue)
     [2139] = 6,  -- Counterspell (Mage)
-    [6552] = 4,  -- Pummel (Warrior)
+    [6552] = 5,  -- Pummel (Warrior)
     [132409] = 6, -- Spell Lock (Warlock)
     [19647] = 6, -- Spell Lock (Warlock, pet)
     [47528] = 4,  -- Mind Freeze (Death Knight)
@@ -119,6 +119,7 @@ local spellList = {
     [122057] = "Stunned", -- Clash
     [15618] = "Stunned", -- Snap Kick
     [127361] = "Stunned", -- Bear Hug
+    [102546]  = "Stunned", -- Pounce
     --[19577]  = "Stunned", -- Intimidation (?)
 
     -- *** Non-controlled Stun Effects ***
@@ -146,7 +147,8 @@ local spellList = {
     [6358]   = "Seduced", -- Seduction (Succubus)
     [104045] = "Feared", -- Sleep (Metamorphosis) -- TODO: verify this is the correct category
     [5246]   = "Feared", -- Intimidating Shout
-    [20511]  = "Feared", -- Intimidating Shout (secondary targets)wwwwww
+    [20511]  = "Feared", -- Intimidating Shout (secondary targets
+    [87204] = "Feared",  -- Sin and Punishment
 
     -- *** Controlled Root Effects ***
     [96294]  = "Rooted", -- Chains of Ice (Chilblains Root)
@@ -188,6 +190,8 @@ local spellList = {
     [35963]  = "Rooted", -- Improved Wing Clip
     [19185]  = "Rooted", -- Entrapment (Hunter talent version)
     [23694]  = "Rooted", -- Improved Hamstring
+    [135373] = "Rooted", -- Entrapment
+    [45334]  = "Rooted", -- Immobilized
 
     -- *** Disarm Weapon Effects ***
     [50541]  = "Disarmed", -- Clench (Scorpid)
@@ -202,7 +206,6 @@ local spellList = {
     [15752]  = "Disarmed", -- Disarm (Warrior talent)
     [14251]  = "Disarmed", -- Riposte
     [142896] = "Disarmed", -- Disarmed
-    [116844] = "Silence/Disarm", -- Ring of Peace (Silence / Disarm)
 
     -- *** Silence Effects ***
     -- [108194] = "Silenced", -- Asphyxiate (TODO: check silence id)
@@ -353,8 +356,11 @@ function BBF.SetupLoCFrame()
     end
     local f = CreateFrame("Frame")
 
+    local parentFrame = CreateFrame("Frame", "LossOfControlParentFrame", UIParent)
+    parentFrame:SetScale(BetterBlizzFramesDB.lossOfControlScale or 1)
+
     -- === Frame Creation ===
-    local frame = CreateFrame("Frame", "LossOfControlFrame", UIParent, "BackdropTemplate")
+    local frame = CreateFrame("Frame", "LossOfControlFrame", parentFrame, "BackdropTemplate")
     frame:SetSize(256, 58)
     frame:SetPoint("CENTER", UIParent, "CENTER")
     frame:SetFrameStrata("MEDIUM")
@@ -500,7 +506,7 @@ function BBF.SetupLoCFrame()
 
     local LossOfControlFrameAlphaBg = BetterBlizzFramesDB.hideLossOfControlFrameBg and 0 or 0.6
     local LossOfControlFrameAlphaLines = BetterBlizzFramesDB.hideLossOfControlFrameLines and 0 or 1
-    frame:SetScale(BetterBlizzFramesDB.lossOfControlScale or 1)
+    --frame:SetScale(BetterBlizzFramesDB.lossOfControlScale or 1)
     frame.blackBg:SetAlpha(LossOfControlFrameAlphaBg)
     frame.RedLineTop:SetAlpha(LossOfControlFrameAlphaLines)
     frame.RedLineBottom:SetAlpha(LossOfControlFrameAlphaLines)
@@ -583,7 +589,7 @@ function BBF.SetupLoCFrame()
                             if not fullCC or remaining > fullCC.remaining then
                                 fullCC = auraData
                             end
-                        elseif ccType == "Silenced" then
+                        elseif ccType == "Silenced" or ccType == "Silenced+" then
                             if not silence or remaining > silence.remaining then
                                 silence = auraData
                             end

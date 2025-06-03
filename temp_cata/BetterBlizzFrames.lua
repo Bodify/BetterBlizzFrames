@@ -638,7 +638,9 @@ function BBF.ToggleLossOfControlTestMode()
 end
 
 function BBF.ChangeLossOfControlScale()
-    LossOfControlFrame:SetScale(BetterBlizzFramesDB.lossOfControlScale)
+    if LossOfControlParentFrame then
+        LossOfControlParentFrame:SetScale(BetterBlizzFramesDB.lossOfControlScale)
+    end
 end
 
 
