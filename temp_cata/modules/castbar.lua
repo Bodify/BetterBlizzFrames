@@ -111,6 +111,9 @@ function BBF.UpdateCastbars()
             for i = 1, 5 do
                 local spellbar = spellBars[i]
                 if spellbar then
+                    if not BetterBlizzFramesDB.partyCastBarTestMode then
+                        CastingBarFrame_SetUnit(spellbar, nil)
+                    end
                     --spellbar:SetParent(UIParent)
                     spellbar:SetIgnoreParentAlpha(true)
                     spellbar:SetScale(BetterBlizzFramesDB.partyCastBarScale)
@@ -146,7 +149,7 @@ function BBF.UpdateCastbars()
                         partyFrame = _G["CompactRaidFrame"..i]
                     end
 
-                    if partyFrame and partyFrame:IsShown() then
+                    if partyFrame and partyFrame:IsShown() and partyFrame:IsVisible() then
                         local xPos = BetterBlizzFramesDB.partyCastBarXPos + 10
                         local yPos = BetterBlizzFramesDB.partyCastBarYPos
                         if defaultPartyFrame then
@@ -155,12 +158,12 @@ function BBF.UpdateCastbars()
                         end
 
                         local unitId = partyFrame.displayedUnit or partyFrame.unit
-                        CastingBarFrame_SetUnit(spellbar, unitId, true, true)
-
-                        spellbar:SetFrameStrata("MEDIUM")
 
                         if UnitIsUnit(unitId, "player") and (not BetterBlizzFramesDB.partyCastbarSelf and not BetterBlizzFramesDB.partyCastBarTestMode) then
                             CastingBarFrame_SetUnit(spellbar, nil)
+                        else
+                            CastingBarFrame_SetUnit(spellbar, unitId, true, true)
+                            spellbar:SetFrameStrata("MEDIUM")
                         end
 
                         spellbar:ClearAllPoints()
@@ -234,8 +237,9 @@ function BBF.UpdatePetCastbar()
                 petSpellBar:SetPoint("CENTER", petFrame, "CENTER", xPos + 4, yPos - 27)
             end
             petSpellBar:SetFrameStrata("MEDIUM")
+            CastingBarFrame_SetUnit(petSpellBar, "pet", true, true)
         else
-            petSpellBar:SetParent(hiddenFrame)
+            CastingBarFrame_SetUnit(petSpellBar, nil)
         end
     else
         BBF.CreateCastbars()
@@ -316,6 +320,8 @@ function BBF.CreateCastbars()
                 UpdateCastTimer(self, elapsed)
             end)
         end
+
+        petSpellBar:Hide()
 
         spellBars["pet"] = petSpellBar
         petCastbarCreated = true
@@ -856,15 +862,15 @@ end
 
 local function CastingBarFrameMiscAdjustments()
     -- InterruptGlow
-    local baseWidthRatio = 444 / 208
-    local baseHeightRatio = 50 / 11
-    local newInterruptGlowWidth = baseWidthRatio * BetterBlizzFramesDB.playerCastBarWidth
-    local newInterruptGlowHeight
-    if BetterBlizzFramesDB.playerCastBarHeight > 14 and BetterBlizzFramesDB.playerCastBarHeight < 30 then
-        newInterruptGlowHeight = baseHeightRatio * BetterBlizzFramesDB.playerCastBarHeight * 0.78
-    else
-        newInterruptGlowHeight = baseHeightRatio * BetterBlizzFramesDB.playerCastBarHeight
-    end
+    -- local baseWidthRatio = 444 / 208
+    -- local baseHeightRatio = 50 / 11
+    -- local newInterruptGlowWidth = baseWidthRatio * BetterBlizzFramesDB.playerCastBarWidth
+    -- local newInterruptGlowHeight
+    -- if BetterBlizzFramesDB.playerCastBarHeight > 14 and BetterBlizzFramesDB.playerCastBarHeight < 30 then
+    --     newInterruptGlowHeight = baseHeightRatio * BetterBlizzFramesDB.playerCastBarHeight * 0.78
+    -- else
+    --     newInterruptGlowHeight = baseHeightRatio * BetterBlizzFramesDB.playerCastBarHeight
+    -- end
     --CastingBarFrame.InterruptGlow:SetSize(newInterruptGlowWidth, newInterruptGlowHeight)
 
         if not CastingBarFrame.sparkHooked then

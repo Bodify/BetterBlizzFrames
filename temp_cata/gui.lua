@@ -627,6 +627,9 @@ local function CreateSlider(parent, label, minValue, maxValue, stepValue, elemen
                     BetterBlizzFramesDB.lossOfControlScale = value
                     BBF.ToggleLossOfControlTestMode()
                     BBF.ChangeLossOfControlScale()
+                elseif element == "totemFrameScale" then
+                    BetterBlizzFramesDB.totemFrameScale = value
+                    BBF.ChangeTotemFrameScale()
                 elseif element == "targetAndFocusAuraOffsetX" then
                     BetterBlizzFramesDB.targetAndFocusAuraOffsetX = value
                     BBF.RefreshAllAuraFrames()
@@ -2711,10 +2714,20 @@ local function guiGeneralTab()
 
     local enableLoCFrame = CreateCheckbox("enableLoCFrame", "Enable LossOfControl", BetterBlizzFrames)
     enableLoCFrame:SetPoint("TOPLEFT", playerFrameOCD, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltipTwo(enableLoCFrame, "Enable Loss of Control Frame", "Enable similar Loss of Control frame like on Retail with a few improvements.")
+    CreateTooltipTwo(enableLoCFrame, "Enable Loss of Control Frame", "Enable similar Loss of Control frame like on Retail with a few improvements.\n\n|cff32f795Right-click to show Icon only.|r")
     enableLoCFrame:HookScript("OnClick", function(self)
         if not self:GetChecked() then
             StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        end
+    end)
+    enableLoCFrame:SetScript("OnMouseDown", function(self, button)
+        if button == "RightButton" then
+            if not BetterBlizzFramesDB.lossOfControlIconOnly then
+                BetterBlizzFramesDB.lossOfControlIconOnly = true
+            else
+                BetterBlizzFramesDB.lossOfControlIconOnly = nil
+            end
+            BBF.ToggleLossOfControlTestMode()
         end
     end)
 
@@ -2723,6 +2736,7 @@ local function guiGeneralTab()
     CreateTooltipTwo(showCooldownOnLoC, "Show CD", "Also show CD spiral on the Loss of Control Frame.")
     showCooldownOnLoC:HookScript("OnClick", function(self)
         StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.ToggleLossOfControlTestMode()
     end)
 
     local hideLossOfControlFrameBg = CreateCheckbox("hideLossOfControlFrameBg", "Hide CC Background", BetterBlizzFrames, nil, BBF.HideFrames)
@@ -6391,7 +6405,6 @@ local function guiMisc()
         end
     end)
     CreateTooltip(stealthIndicatorPlayer, "Add a blue border texture around the\nplayer frame during stealth abilities")
-    notWorking(stealthIndicatorPlayer, true)
 
     local addUnitFrameBgTexture = CreateCheckbox("addUnitFrameBgTexture", "UnitFrame Background Color", guiMisc)
     addUnitFrameBgTexture:SetPoint("TOPLEFT", stealthIndicatorPlayer, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
@@ -6447,6 +6460,13 @@ local function guiMisc()
         local hideMonkComboBg = CreateCheckbox("hideMonkComboBg", "Hide Monk Chi Background", guiMisc, nil, BBF.HideFrames)
         hideMonkComboBg:SetPoint("TOPLEFT", addUnitFrameBgTexture, "BOTTOMLEFT", 0, -50)
         CreateTooltipTwo(hideMonkComboBg, "Hide Monk Chi Background", "Hide the background texture on Monk Chi.")
+
+        local hideTotemFrameTimer = CreateCheckbox("hideTotemFrameTimer", "Hide Totem Timer Text", guiMisc, nil, BBF.HideFrames)
+        hideTotemFrameTimer:SetPoint("TOPLEFT", hideMonkComboBg, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+        CreateTooltipTwo(hideTotemFrameTimer, "Hide Totem Timer Text", "Hide the totem timer text that shows underneath the totem icon.")
+
+        local totemFrameScale = CreateSlider(guiMisc, "TotemFrame Size", 0.7, 1.4, 0.01, "totemFrameScale")
+        totemFrameScale:SetPoint("TOPLEFT", hideTotemFrameTimer, "BOTTOM", 0, -15)
     end
 
 

@@ -139,39 +139,39 @@ end
 
 
 local raceIcons = {
-    ["Orc"] = {
+    [2] = { -- Orc
         [2] = "raceicon-orc-male",
         [3] = "raceicon-orc-female",
     },
-    ["Night Elf"] = {
+    [4] = { -- Night Elf
         [2] = "raceicon-nightelf-male",
         [3] = "raceicon-nightelf-female",
     },
-    ["Undead"] = {
+    [5] = { -- Undead (Scourge)
         [2] = "raceicon-undead-male",
         [3] = "raceicon-undead-female",
     },
-    ["Human"] = {
+    [1] = { -- Human
         [2] = "raceicon-human-male",
         [3] = "raceicon-human-female",
     },
-    ["Dwarf"] = {
+    [3] = { -- Dwarf
         [2] = "raceicon-dwarf-male",
         [3] = "raceicon-dwarf-female",
     },
-    ["DarkIronDwarf"] = {
+    [34] = { -- Dark Iron Dwarf
         [2] = "raceicon-darkirondwarf-male",
         [3] = "raceicon-darkirondwarf-female",
     },
 }
 
 local raceSpellIcons = {
-    ["Orc"] = "Interface\\Icons\\inv_helmet_23",
-    ["Night Elf"] = "Interface\\Icons\\ability_ambush",
-    ["Undead"] = "Interface\\Icons\\spell_shadow_raisedead",
-    ["Human"] = "Interface\\Icons\\spell_shadow_charm",
-    ["Dwarf"] = 136225,
-    ["DarkIronDawrf"] = 1786406,
+    [2] = "Interface\\Icons\\inv_helmet_23",              -- Orc
+    [4] = "Interface\\Icons\\ability_ambush",             -- Night Elf
+    [5] = "Interface\\Icons\\spell_shadow_raisedead",     -- Undead
+    [1] = "Interface\\Icons\\spell_shadow_charm",         -- Human
+    [3] = 136225,                                         -- Dwarf
+    [34] = 1786406,                                       -- Dark Iron Dwarf
 }
 
 function BBF.RacialIndicator(unitFrame, unit)
@@ -196,16 +196,25 @@ function BBF.RacialIndicator(unitFrame, unit)
     local vertexColor = darkModeOn and BetterBlizzFramesDB.darkModeColor or 1
     local raceOverSpells = BetterBlizzFramesDB.racialIndicatorRaceIcons
 
-    local _, unitRace = UnitRace(unit)
+    local _, _, raceID = UnitRace(unit)
     local unitSex = UnitSex(unit)
-    local isOrc = unitRace == "Orc"
-    local isNelf = unitRace == "Night Elf"
-    local isUndead = unitRace == "Undead"
-    local isHuman = unitRace == "Human"
-    local isDwarf = unitRace == "Dwarf"
-    local isDarkIronDwarf = unitRace == "DarkIronDwarf"
-    local raceIcon = (raceOverSpells and raceIcons[unitRace] and raceIcons[unitRace][unitSex or 2]) or raceSpellIcons[unitRace]
-    local shouldShow = (isOrc and showOrc) or (isNelf and showNelf) or (isUndead and showUndead) or (isHuman and showHuman) or (isDwarf and showDwarf) or (isDarkIronDwarf and showDarkIronDwarf)
+
+    -- Optional: simple booleans if needed for logic elsewhere
+    local isOrc = raceID == 2
+    local isNelf = raceID == 4
+    local isUndead = raceID == 5
+    local isHuman = raceID == 1
+    local isDwarf = raceID == 3
+    local isDarkIronDwarf = raceID == 34
+
+    local raceIcon = (raceOverSpells and raceIcons[raceID] and raceIcons[raceID][unitSex or 2]) or raceSpellIcons[raceID]
+    local shouldShow =
+        (isOrc and showOrc) or
+        (isNelf and showNelf) or
+        (isUndead and showUndead) or
+        (isHuman and showHuman) or
+        (isDwarf and showDwarf) or
+        (isDarkIronDwarf and showDarkIronDwarf)
 
     if not unitFrame.racialIndicator then
         unitFrame.racialIndicator = CreateFrame("Frame", nil, unitFrame, "BackdropTemplate")

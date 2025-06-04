@@ -703,7 +703,8 @@ function BBF.SetCustomFonts()
             SystemFont_Outline_WTF2,
             GameTooltipHeader,
             System_IME,
-            Number12Font_o1
+            Number12Font_o1,
+            MovieSubtitleFont
         }
 
         -- Backup function for the chat font

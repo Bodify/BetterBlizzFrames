@@ -1,3 +1,23 @@
+# BetterBlizzFrames 1.7.1
+## MoP & Cata
+### New:
+- "Icon Only" mode for Loss of Control. Right click "Enable Loss of Control" to toggle on/off.
+- Hide Totem Timer Text (Misc. MoP specific.)
+- TotemFrame scale setting (Misc. MoP specific)
+### Tweaks:
+- Updated "Stealth Indicator" in Misc to work for Cata/MoP.
+- Loss of Control tester is now working for Cata/MoP.
+- Few more missing auras for Loss of Control added.
+- Add TotemFrame borders to dark mode.
+- Fix some party/pet castbar issues on Cata/MoP
+## All versions
+### Bugfix
+- Changed Race Indicator to use Race ID's instead so its both easier and works properly on non-english clients.
+
+# BetterBlizzFrames 1.7.0g
+# MoP & Cata
+- Minor tweaks & bugfixes
+
 # BetterBlizzFrames 1.7.0f
 # MoP & Cata
 - More tweaks to Loss of Control frame.

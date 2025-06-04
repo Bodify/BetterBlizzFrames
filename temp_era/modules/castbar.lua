@@ -146,7 +146,7 @@ function BBF.UpdateCastbars()
                         partyFrame = _G["CompactRaidFrame"..i]
                     end
 
-                    if partyFrame and partyFrame:IsShown() then
+                    if partyFrame and partyFrame:IsShown() and partyFrame:IsVisible() then
                         local xPos = BetterBlizzFramesDB.partyCastBarXPos + 10
                         local yPos = BetterBlizzFramesDB.partyCastBarYPos
                         if defaultPartyFrame then
@@ -155,12 +155,12 @@ function BBF.UpdateCastbars()
                         end
 
                         local unitId = partyFrame.displayedUnit or partyFrame.unit
-                        CastingBarFrame_SetUnit(spellbar, unitId, true, true)
-
-                        spellbar:SetFrameStrata("MEDIUM")
 
                         if UnitIsUnit(unitId, "player") and (not BetterBlizzFramesDB.partyCastbarSelf and not BetterBlizzFramesDB.partyCastBarTestMode) then
                             CastingBarFrame_SetUnit(spellbar, nil)
+                        else
+                            CastingBarFrame_SetUnit(spellbar, unitId, true, true)
+                            spellbar:SetFrameStrata("MEDIUM")
                         end
 
                         spellbar:ClearAllPoints()
@@ -234,8 +234,9 @@ function BBF.UpdatePetCastbar()
                 petSpellBar:SetPoint("CENTER", petFrame, "CENTER", xPos + 4, yPos - 27)
             end
             petSpellBar:SetFrameStrata("MEDIUM")
+            CastingBarFrame_SetUnit(petSpellBar, "pet", true, true)
         else
-            petSpellBar:SetParent(hiddenFrame)
+            CastingBarFrame_SetUnit(petSpellBar, nil)
         end
     else
         BBF.CreateCastbars()
@@ -289,7 +290,7 @@ function BBF.CreateCastbars()
         local petSpellBar = CreateFrame("StatusBar", "PetSpellBar", UIParent, "SmallCastingBarFrameTemplate")
         petSpellBar:SetScale(1)
 
-        CastingBarFrame_SetUnit(petSpellBar, "player", true, true)
+        CastingBarFrame_SetUnit(petSpellBar, "pet", true, true)
         petSpellBar.Text:SetFontObject("SystemFont_Shadow_Med1_Outline")
         petSpellBar.Icon:ClearAllPoints()
         petSpellBar.Icon:SetPoint("RIGHT", petSpellBar, "LEFT", -4, -1)

@@ -46,6 +46,7 @@ local defaultSettings = {
     repositionBuffFrame = true,
     customCode = "-- Enter custom code below here. Feel free to contact me @bodify",
     enableLoCFrame = true,
+    raiseTargetCastbarStrata = true,
 
     --Target castbar
     playerCastbarIconXPos = 0,
@@ -559,7 +560,6 @@ end
 
 -- Function to toggle test mode on and off
 function BBF.ToggleLossOfControlTestMode()
-    if not cataReady then return end
     local LossOfControlFrameAlphaBg = BetterBlizzFramesDB.hideLossOfControlFrameBg and 0 or 0.6
     local LossOfControlFrameAlphaLines = BetterBlizzFramesDB.hideLossOfControlFrameLines and 0 or 1
     if not _G.FakeBBFLossOfControlFrame then  -- Changed to a global reference for wider access
@@ -571,46 +571,49 @@ function BBF.ToggleLossOfControlTestMode()
         frame:SetToplevel(true)
         frame:Hide()
 
-        -- Background Texture
-        local blackBg = frame:CreateTexture(nil, "BACKGROUND")
-        blackBg:SetTexture("Interface\\Cooldown\\loc-shadowbg")
-        blackBg:SetPoint("BOTTOM", frame, "BOTTOM", 0, 0)
-        blackBg:SetSize(256, 58)
-        frame.blackBg = blackBg  -- Correctly scoped
+        local iconOnlyMode = BetterBlizzFramesDB.lossOfControlIconOnly
 
         -- Red Lines Textures
         local redLineTop = frame:CreateTexture(nil, "BACKGROUND")
         redLineTop:SetTexture("Interface\\Cooldown\\Loc-RedLine")
-        redLineTop:SetSize(236, 27)
+        redLineTop:SetSize(iconOnlyMode and 70 or 236, 27)
         redLineTop:SetPoint("BOTTOM", frame, "TOP", 0, 0)
-        frame.RedLineTop = redLineTop  -- Correctly scoped
+        frame.RedLineTop = redLineTop
 
         local redLineBottom = frame:CreateTexture(nil, "BACKGROUND")
         redLineBottom:SetTexture("Interface\\Cooldown\\Loc-RedLine")
-        redLineBottom:SetSize(236, 27)
+        redLineBottom:SetSize(iconOnlyMode and 70 or 236, 27)
         redLineBottom:SetPoint("TOP", frame, "BOTTOM", 0, 0)
         redLineBottom:SetTexCoord(0, 1, 1, 0)
-        frame.RedLineBottom = redLineBottom  -- Correctly scoped
+        frame.RedLineBottom = redLineBottom
+
+        frame.blackBg = frame:CreateTexture(nil, "BACKGROUND")
+        frame.blackBg:SetTexture("Interface\\Cooldown\\loc-shadowbg")
+        frame.blackBg:SetPoint("TOPLEFT", frame.RedLineTop, "BOTTOMLEFT")
+        frame.blackBg:SetPoint("BOTTOMRIGHT", frame.RedLineBottom, "TOPRIGHT")
 
         -- Icon Texture
         local icon = frame:CreateTexture(nil, "ARTWORK")
         icon:SetSize(48, 48)
-        icon:SetPoint("LEFT", frame, "LEFT", 42, 0)
+        icon:SetPoint("CENTER", frame, "CENTER", iconOnlyMode and 0 or -70, 0)
         icon:SetTexture(132298)
-        frame.Icon = icon  -- Correctly scoped
+        frame.Icon = icon
+
+        frame.Icon.Cooldown = CreateFrame("Cooldown", nil, frame, "CooldownFrameTemplate")
+        frame.Icon.Cooldown:SetAllPoints(frame.Icon)
 
         -- Ability Name FontString
         local abilityName = frame:CreateFontString(nil, "ARTWORK", "MovieSubtitleFont")
         abilityName:SetPoint("TOPLEFT", icon, "TOPRIGHT", 5, -4)
         abilityName:SetSize(0, 20)
         abilityName:SetText("Stunned")
-        frame.AbilityName = abilityName  -- Correctly scoped
+        frame.AbilityName = abilityName
 
         -- Time Left Frame
         local timeLeft = CreateFrame("Frame", nil, frame)
         timeLeft:SetSize(200, 20)
         timeLeft:SetPoint("TOPLEFT", abilityName, "BOTTOMLEFT", 0, 0)
-        frame.TimeLeft = timeLeft  -- Correctly scoped
+        frame.TimeLeft = timeLeft
 
         -- Number and Seconds Text
         local numberText = timeLeft:CreateFontString(nil, "ARTWORK", "GameFontNormalHuge")
@@ -618,7 +621,10 @@ function BBF.ToggleLossOfControlTestMode()
         numberText:SetPoint("LEFT", timeLeft, "LEFT", 0, -3)
         numberText:SetShadowOffset(2, -2)
         numberText:SetTextColor(1,1,1)
-        timeLeft.NumberText = numberText  -- Correctly scoped
+        timeLeft.NumberText = numberText
+
+        frame.AbilityName:SetShown(not iconOnlyMode)
+        frame.TimeLeft:SetShown(not iconOnlyMode)
 
         -- Stop Testing Button
         local stopButton = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
@@ -626,23 +632,42 @@ function BBF.ToggleLossOfControlTestMode()
         stopButton:SetPoint("BOTTOM", redLineBottom, "BOTTOM", 0, -35)
         stopButton:SetText("Stop Testing")
         stopButton:SetScript("OnClick", function() frame:Hide() end)
-        frame.StopButton = stopButton  -- Correctly scoped
+        frame.StopButton = stopButton
 
         _G.FakeBBFLossOfControlFrame = frame  -- Store the frame globally
     end
-    FakeBBFLossOfControlFrame:SetScale(BetterBlizzFramesDB.lossOfControlScale)
+    local iconOnlyMode = BetterBlizzFramesDB.lossOfControlIconOnly
+    FakeBBFLossOfControlFrame:SetScale((BetterBlizzFramesDB.lossOfControlScale or 1) * 0.9)
     FakeBBFLossOfControlFrame.blackBg:SetAlpha(LossOfControlFrameAlphaBg)
     FakeBBFLossOfControlFrame.RedLineTop:SetAlpha(LossOfControlFrameAlphaLines)
     FakeBBFLossOfControlFrame.RedLineBottom:SetAlpha(LossOfControlFrameAlphaLines)
+    FakeBBFLossOfControlFrame.AbilityName:SetShown(not iconOnlyMode)
+    FakeBBFLossOfControlFrame.TimeLeft:SetShown(not iconOnlyMode)
+    FakeBBFLossOfControlFrame.RedLineTop:SetWidth(iconOnlyMode and 70 or 236)
+    FakeBBFLossOfControlFrame.RedLineBottom:SetWidth(iconOnlyMode and 70 or 236)
+    FakeBBFLossOfControlFrame.Icon:SetPoint("CENTER", FakeBBFLossOfControlFrame, "CENTER", iconOnlyMode and 0 or -70, 0)
+    if BetterBlizzFramesDB.showCooldownOnLoC or iconOnlyMode then
+        FakeBBFLossOfControlFrame.Icon.Cooldown:SetCooldown(GetTime(), 20)
+    else
+        FakeBBFLossOfControlFrame.Icon.Cooldown:Clear()
+    end
     FakeBBFLossOfControlFrame:Show()
 end
 
 function BBF.ChangeLossOfControlScale()
     if LossOfControlParentFrame then
         LossOfControlParentFrame:SetScale(BetterBlizzFramesDB.lossOfControlScale)
+        if _G.FakeBBFLossOfControlFrame then
+            FakeBBFLossOfControlFrame:SetScale((BetterBlizzFramesDB.lossOfControlScale or 1) * 0.9)
+        end
     end
 end
 
+function BBF.ChangeTotemFrameScale()
+    if BetterBlizzFramesDB.totemFrameScale and TotemFrame then
+        TotemFrame:SetScale(BetterBlizzFramesDB.totemFrameScale)
+    end
+end
 
 -- Warlock Alternate Power Clickthrough
 local function DisableClickForWarlockPowerFrame()
@@ -1071,7 +1096,8 @@ function BBF.GenericLegacyComboSupport()
     local cachedArcaneCharges = 0
     local ARCANE_BLAST_SPELL_ID = 36032
 
-    if class == "MAGE" and BBF.isMoP then
+    local returnEarly
+    if class == "MAGE" then
         local function ScanInitialAuras()
             for i = 1, 40 do
                 local aura = C_UnitAuras.GetAuraDataByIndex("player", i, "HARMFUL")
@@ -1090,8 +1116,18 @@ function BBF.GenericLegacyComboSupport()
         local frame = CreateFrame("Frame")
         local ARCANE_SPEC_ID = 62
         local function IsArcaneSpec()
-            local specID = C_SpecializationInfo.GetSpecialization()
-            return specID and C_SpecializationInfo.GetSpecializationInfo(specID) == ARCANE_SPEC_ID
+            if BBF.isMoP then
+                local specID = C_SpecializationInfo.GetSpecialization()
+                return specID and C_SpecializationInfo.GetSpecializationInfo(specID) == ARCANE_SPEC_ID
+            else
+                if class == "MAGE" then
+                    local spec1, _, _, _, pointsSpent1 = GetTalentTabInfo(1)
+                    local spec2, _, _, _, pointsSpent2 = GetTalentTabInfo(2)
+                    local spec3, _, _, _, pointsSpent3 = GetTalentTabInfo(3)
+                    return pointsSpent1 > pointsSpent2 and pointsSpent1 > pointsSpent3
+                end
+                return false
+            end
         end
 
         local function UpdateMageComboTracking()
@@ -1099,11 +1135,13 @@ function BBF.GenericLegacyComboSupport()
             if isArcane then
                 frame:RegisterUnitEvent("UNIT_AURA", "player")
                 ScanInitialAuras()
+                returnEarly = false
             else
                 frame:UnregisterEvent("UNIT_AURA")
                 ComboFrame:Hide()
                 arcaneChargeInstanceID = nil
                 cachedArcaneCharges = 0
+                returnEarly = true
             end
         end
 
@@ -1154,6 +1192,10 @@ function BBF.GenericLegacyComboSupport()
     local function UpdateGenericLegacyCombo()
         local powerType = legacyComboPowerTypes[class]
         if not powerType then return end
+        if returnEarly then
+            ComboFrame:Hide()
+            return
+        end
         local comboPoints
         if class == "MAGE" then
             comboPoints = cachedArcaneCharges
@@ -2124,12 +2166,17 @@ function BBF.FixStupidBlizzPTRShit()
         BBF.hotkeyCancel = nil
 
         local a,b,c,d,e = TargetFrameToTPortrait:GetPoint()
-        TargetFrameToTPortrait:SetPoint(a,b,c,5,-5)
-        TargetFrameToTPortrait:SetSize(36,36)
+        TargetFrameToTPortrait:SetPoint(a,b,c,3,-3)
+        TargetFrameToTPortrait:SetSize(40,40)
 
         local a,b,c,d,e = FocusFrameToTPortrait:GetPoint()
         FocusFrameToTPortrait:SetPoint(a,b,c,5,-5)
         FocusFrameToTPortrait:SetSize(36,36)
+
+        local a,b,c,d,e = PetFrameHealthBar:GetPoint()
+        PetFrameHealthBar:SetPoint(a,b,c,46,e)
+        local a,b,c,d,e = PetFrameManaBar:GetPoint()
+        PetFrameManaBar:SetPoint(a,b,c,46,e)
 
         if not BetterBlizzFramesDB.biggerHealthbars then
             local a,b,c,d,e = TargetFrameNameBackground:GetPoint()
@@ -2544,6 +2591,7 @@ First:SetScript("OnEvent", function(_, event, addonName)
             BBF.FixLegacyComboPointsLocation()
             BBF.AlwaysShowLegacyComboPoints()
             BBF.GenericLegacyComboSupport()
+            BBF.ChangeTotemFrameScale()
             --TurnOnEnabledFeaturesOnLogin()
             BBF.DampeningOnDebuff()
             BBF.RaiseTargetCastbarStratas()

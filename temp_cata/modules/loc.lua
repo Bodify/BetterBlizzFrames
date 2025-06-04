@@ -10,9 +10,9 @@ local interruptSpells = {
     [96231] = 4,  -- Rebuke (Paladin)
     [93985] = 4,  -- Skull Bash (Druid)
     [116705] = 4, -- Spear Hand Strike (Monk)
-    [147362] = 4, -- Counter Shot (Hunter)
+    [147362] = 3, -- Counter Shot (Hunter)
     [183752] = 4, -- Disrupt (Demon Hunter)
-    [187707] = 4, -- Muzzle (Hunter)
+    [187707] = 3, -- Muzzle (Hunter)
     [212619] = 6, -- Call Felhunter (Warlock)
     [31935] = 4,  -- Avenger's Shield (Paladin)
     [217824] = 5, -- Shield of Virtue (Protection PvP Talent)
@@ -359,6 +359,8 @@ function BBF.SetupLoCFrame()
     local parentFrame = CreateFrame("Frame", "LossOfControlParentFrame", UIParent)
     parentFrame:SetScale(BetterBlizzFramesDB.lossOfControlScale or 1)
 
+    local iconOnlyMode = BetterBlizzFramesDB.lossOfControlIconOnly
+
     -- === Frame Creation ===
     local frame = CreateFrame("Frame", "LossOfControlFrame", parentFrame, "BackdropTemplate")
     frame:SetSize(256, 58)
@@ -430,12 +432,12 @@ function BBF.SetupLoCFrame()
     -- === Red Lines ===
     frame.RedLineTop = frame:CreateTexture(nil, "BACKGROUND")
     frame.RedLineTop:SetTexture("Interface\\Cooldown\\Loc-RedLine")
-    frame.RedLineTop:SetSize(236, 27)
+    frame.RedLineTop:SetSize(iconOnlyMode and 70 or 236, 27)
     frame.RedLineTop:SetPoint("BOTTOM", frame, "TOP")
 
     frame.RedLineBottom = frame:CreateTexture(nil, "BACKGROUND")
     frame.RedLineBottom:SetTexture("Interface\\Cooldown\\Loc-RedLine")
-    frame.RedLineBottom:SetSize(236, 27)
+    frame.RedLineBottom:SetSize(iconOnlyMode and 70 or 236, 27)
     frame.RedLineBottom:SetPoint("TOP", frame, "BOTTOM")
     frame.RedLineBottom:SetTexCoord(0, 1, 1, 0)
 
@@ -448,9 +450,9 @@ function BBF.SetupLoCFrame()
     -- === Icon ===
     frame.Icon = frame:CreateTexture(nil, "ARTWORK")
     frame.Icon:SetSize(48, 48)
-    frame.Icon:SetPoint("LEFT", frame, "LEFT", 42, 0)
+    frame.Icon:SetPoint("CENTER", frame, "CENTER", iconOnlyMode and 0 or -70, 0)
 
-    if BetterBlizzFramesDB.showCooldownOnLoC then
+    if BetterBlizzFramesDB.showCooldownOnLoC or iconOnlyMode then
         frame.Icon.Cooldown = CreateFrame("Cooldown", nil, frame, "CooldownFrameTemplate")
         frame.Icon.Cooldown:SetAllPoints(frame.Icon)
     end
@@ -503,6 +505,9 @@ function BBF.SetupLoCFrame()
     frame.TimeLeft.NumberText:SetPoint("LEFT", frame.TimeLeft, "LEFT", 0, -3)
     frame.TimeLeft.NumberText:SetShadowOffset(2, -2)
     frame.TimeLeft.NumberText:SetTextColor(1, 1, 1)
+
+    frame.AbilityName:SetShown(not iconOnlyMode)
+    frame.TimeLeft:SetShown(not iconOnlyMode)
 
     local LossOfControlFrameAlphaBg = BetterBlizzFramesDB.hideLossOfControlFrameBg and 0 or 0.6
     local LossOfControlFrameAlphaLines = BetterBlizzFramesDB.hideLossOfControlFrameLines and 0 or 1

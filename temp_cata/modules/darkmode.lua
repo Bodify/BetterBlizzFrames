@@ -176,6 +176,23 @@ function BBF.updateTotemBorders()
     end
 end
 
+local function DesaturateRegionsExcludingIcon(frame, iconTexture, color)
+    if not frame then return end
+
+    -- Desaturate all texture regions except the icon texture
+    for _, region in ipairs({ frame:GetRegions() }) do
+        if region:IsObjectType("Texture") and region ~= iconTexture then
+        region:SetDesaturated(true)
+        region:SetVertexColor(color, color, color)
+        end
+    end
+
+    -- Recurse into children
+    for _, child in ipairs({ frame:GetChildren() }) do
+        DesaturateRegionsExcludingIcon(child, iconTexture, color)
+    end
+end
+
 function BBF.DarkmodeFrames(bypass)
     if not bypass and not BetterBlizzFramesDB.darkModeUi then return end
 
@@ -230,6 +247,13 @@ function BBF.DarkmodeFrames(bypass)
                     end
                 end
             end
+        end
+    end
+
+    for i = 1, 4 do
+        local totem = _G["TotemFrameTotem" .. i]
+        if totem and totem.icon and totem.icon.texture then
+            DesaturateRegionsExcludingIcon(totem, totem.icon.texture, vertexColor)
         end
     end
 

@@ -429,6 +429,24 @@ function BBF.HideFrames()
             end
         end
 
+        if BetterBlizzFramesDB.hideTotemFrameTimer then
+            for i = 1, 4 do
+                local totem = _G["TotemFrameTotem" .. i]
+                if totem then
+                    totem.duration:SetAlpha(0)
+                    changes.hideTotemFrameTimer = true
+                end
+            end
+        elseif changes.hideTotemFrameTimer then
+            for i = 1, 4 do
+                local totem = _G["TotemFrameTotem" .. i]
+                if totem then
+                    totem.duration:SetAlpha(1)
+                    changes.hideTotemFrameTimer = nil
+                end
+            end
+        end
+
         if BetterBlizzFramesDB.hideMonkComboBg then
             if MonkHarmonyBar then
                 for i = 1, MonkHarmonyBar:GetNumRegions() do

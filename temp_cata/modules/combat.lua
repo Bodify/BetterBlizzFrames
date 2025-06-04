@@ -150,10 +150,10 @@ end
 
 
 local raceIcons = {
-    ["Orc"] = "Interface\\Icons\\inv_helmet_23",
-    ["Night Elf"] = "Interface\\Icons\\ability_ambush",
-    ["Undead"] = "Interface\\Icons\\spell_shadow_raisedead",
-    ["Human"] = "Interface\\Icons\\spell_shadow_charm"
+    [2] = "Interface\\Icons\\inv_helmet_23",         -- Orc
+    [4] = "Interface\\Icons\\ability_ambush",        -- Night Elf
+    [5] = "Interface\\Icons\\spell_shadow_raisedead",-- Undead
+    [1] = "Interface\\Icons\\spell_shadow_charm",    -- Human
 }
 
 function BBF.RacialIndicator(unitFrame, unit)
@@ -175,13 +175,20 @@ function BBF.RacialIndicator(unitFrame, unit)
     local darkModeOn = BetterBlizzFramesDB.darkModeUi
     local vertexColor = darkModeOn and BetterBlizzFramesDB.darkModeColor or 1
 
-    local unitRace = UnitRace(unit)
-    local isOrc = unitRace == "Orc"
-    local isNelf = unitRace == "Night Elf"
-    local isUndead = unitRace == "Undead"
-    local isHuman = unitRace == "Human"
-    local raceIcon = raceIcons[unitRace]
-    local shouldShow = (isOrc and showOrc) or (isNelf and showNelf) or (isUndead and showUndead) or (isHuman and showHuman)
+    local _, _, raceID = UnitRace(unit)
+
+    local isOrc = raceID == 2
+    local isNelf = raceID == 4
+    local isUndead = raceID == 5
+    local isHuman = raceID == 1
+
+    local raceIcon = raceIcons[raceID]
+
+    local shouldShow =
+        (isOrc and showOrc) or
+        (isNelf and showNelf) or
+        (isUndead and showUndead) or
+        (isHuman and showHuman)
 
 
     if not unitFrame.racialIndicator then
