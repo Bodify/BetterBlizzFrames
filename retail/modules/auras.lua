@@ -2589,6 +2589,7 @@ local function PersonalDebuffFrameFilterAndGrid(self)
                         auraFrame.DebuffBorder:Show()
                         auraFrame.Duration:SetParent(auraFrame)
                     end
+                    auraFrame:SetMouseClickEnabled(false)
                 else
                     auraFrame:Hide();
                 end

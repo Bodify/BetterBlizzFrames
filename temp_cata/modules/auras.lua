@@ -2463,6 +2463,7 @@ local function PersonalDebuffFrameFilterAndGrid(self)
                             auraFrame.ImportantGlow:Hide()
                         end
                     end
+                    auraFrame:SetMouseClickEnabled(false)
                 else
                     auraFrame:Hide();
                 end
