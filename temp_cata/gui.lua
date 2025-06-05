@@ -206,6 +206,25 @@ StaticPopupDialogs["BBF_CONFIRM_PROFILE"] = {
     hideOnEscape = true,
 }
 
+StaticPopupDialogs["BBF_CONFIRM_PVP_WHITELIST"] = {
+    text = titleText.."This will import a color coded PvP whitelist tailored by me.\nIt will only add auras you don't already have in your whitelist.\n\nAre you sure you want to continue?",
+    button1 = "Yes",
+    button2 = "No",
+    OnAccept = function()
+        local importString = "!BBFvM1ASrX1vygBk9MqufP8qJviIjfcGuObxPyAfkfZ6Nly7ixVogvlHexVZD39INDMH7mZA2excXHeQQscrOuPsKijevbsrPcJbbLiJ5rmeOriTcPO0evsATajesasM)08dA65CNDxVWYSZg(LXZ35Epp)oNZ1klVjDQl9p(NiV8o7RjtAAM9J)cuxpbBfoAT7rf6CQ5imtdQijtFl9e3YWsSXAJ241BOH1pRznROnE71TUTa)qT7LN22s4snD3YVGRdhNQspFCF5QXUUchJMvcTiMX5mtxTo4MjDYn7TK7NGh2)EEZtdodLAZnhuyusvLrnaPVsl8mCtMwSuCMHErbk72li4OgURbeBmF8ABIAyeMqURHyCuurxqmBUG7IQzpmDwABxULzysdYQQCM)fi)5YlESuSWVuugYF44GyIOmHf3jDqodaf5ITdaNUBUbegq1RnHLJBGcCX2vRjswqI9UbtxMidZK5JvP2IEyaa5vXR3EEDt5MAX8STfmhNQXIF1Jt22T9pEt44PUSqfzB3gm4l3MVHF5cQsnxjMRfeCBYZyiQyq4uiF9BlJeTAkOq(gehscAVGwvrIV(Tvv2xRsB6fnzM6qkgCaowgzqfuE37RvaBaNIQYHq3S9J3cOl)OUzuYwIGHOOutD)aeJPBL2)ABjI)LQuBT1sUZFbVJFEmprgEgQH2gmDC5MXDD8XcFVsA4QRhVfPcgJN2ZGgx4LUSGlatv57(a)YNej8CyADrtYJhUD8DFGQYHVJud3qC2awEG50guvZD90dnkJIcLUVfiEUFA4G75TuvEN9G31s2GzCQWu6RxRKAa9HUPyAB0ZmPblyEI3zpQkFlvAOS0qIOGtn4VuXW93sl45vaN3b)EPHbuqmhxb47B3JRtH)x466b)EYWVji9urGQPKOcUji1ivGLGd)MGU9H41T47Z2AoLLdtse2QHNzLmSpuv5uVgCaFueN4qU89PMLH(uVMAn1Di86weurjsVkTwPc3uRsdthBJlcwuqmsUBit77XYNCjgKuXtWd3TacQQm(KZuZeZYZyTADXDyISbRSJpPQYvrc3CZVqC6Qhn4KEYenllPJy6Y)LY04szyNjRhWPwZSxNmexSdwSH4jCnbETYjaN96a)2Uq1yjfuJtTRkv7n(5LutLyPDyAnKbtpzfImJFEW6ogEl)SYltV6Xi)(fdFBKMGZ0zqEOenaCvLJGmnNtQgGCjPHlgkdP()UKYoEwT(yCZa79c4uvgdtDhbyaGgOc9Yv8XGSZT(iaMX6of1r2DoHB5W26JaoGli9ATlyy5jq3LH7WhGBWDZgUAp(fiN)jrgVsc(9BzgEM55FsvLlVizEtlCM2azLSjXgYsufZqC5fPwZSMdgZwzW1nZAoKH7YN4jJfwCRfXtqllPC4Uuvg(eyaRhyuKSiZrZIQWYh(eq6XbrpCl002aLruQiD4ID1dsM89bPenXeqv4GbgLN89vvMy5(U2KmdWVott4qUJjwUQYK1lRZA3iRDkKZatvAYWk(GfkLMS(zyEj371Bl)pIx99EDWBenBAjnyulBmAso5)b56AH7ydkEv0YfeaO3tGuY9A5fxQeDaUiArQ)evQwEujR18A2WIoOKZlfv3AiNWUvuqY)qbdN(sO1sLiMbOK1Flz(FmMrcm53ZahQO6Y)bzjR(rXllIiofMtQBRHyIaVSv)OewoFvdOhRYjMbriNOt033Kbvh6lAjYp1c8Rl6blEvKDVlPJRxOAQjg1XvBtC3uLWa9Gk1U3LQYo(kzlI8Jh3j3CqTETCzvr68o(kO17DKEa)o2Lq0uX213HK9)IfW)6WWc4uvUfIDA5CojKLOnjydfMKOyQk34zXuWI9B6JNKBeC3GB8SKgxU0z0QblnSheysDbEXk0VeeGCPBIenDaJ)Jkxmyq9Gt5U0njRaJNtjtwGuoy8VsRNEq8ROZfGm0t)Jm3CbxG04ZJwY8NzCQhOzBfC6n(8KoZG2utGOWiBfNMc)yNzkpVR3jWu0EO28kpptVtaZIVtzkAHXyWJVBA8QiR5q7KS7)Cj12X4jtvwxnaI7Gs(Cw8bnaJ9(m4hqDChKm8ai48BX2gnJLimfbeHCx5mT(PgqAvZ(RXIF8UfhPTwGh7OpnE6aZRLoqLkefo9s7cF0N(AnkzRlSCs3cO6lE1SyZ1Aey8s1NCUHzi4dJImfj316BMjEQGLM7AKJSdeA3Hc9i7qvPJ5k9LmMnU20mrNhwPwhZLSqcaFS2y8KMATWkDC9GUKfsiB22p7Xg5q7HLWOONcbSz7CfBR9CFzFpSX6EUVeCb1HPRTWGONGvvlymADQ108DXdS3qbdavvU(2rWRjx(2DxF75cEc6TN03Msrttn5qfxCTEOjdvRa5uvo5wX7jw5PvNCRlBL4NiHDmlBLWK14B5yVqiHgMj)H6Arm5kzzT)gUUvU5g2HJavvoa(qtt1fMrGj4VOWXQkw29aFSQY38kyHw(cE)wGbNt9nVc5Kdd4hiQNUUr4(Vtomzb7hWlAndTQgQzb7hCdJ0x(Dscqlo1iWI2yhHClT8OYHVPQYzX95MQFyOXUy6CxAPo5ZEJsCY1ux)yfYlWtpGbRKMELUMuD9VSL0NCdpFkSQN8yzlrv5VIpg3arYqDPbo4cIsvzZ4ZgmM8fL0AZkUx5BSbqa9FJ(kdZHfh6zW01AxGVsr5Op7gj1pBK6sYooqL2wV(zdjdFo6r)vbRKh4ZbxFA8aJrtWs6rRMvjovAshnwvv1aosuCt3PYp6o4hYxKIFnAZ(XTOnER79)qfdoPlTV9D6F4h(HAjnGpK30r0bUgQbgK6XZjyRTHJtw9CLecDla3iqpH1mDXn1duKvpxvLV4W(bOIVMrWUQV4WQk)Zxcn71hMzJavvAahKVW7Voe1yqzxV2f04fFkNgQ488nIttypF)zE2eSL3AXDJfCwODBrzjVb(2j5(TbA)VXHipXILjEf6Hw9psYtaRSp(5qHxujpDa(SFp4OwL)4bNJCgSaA6yEPtdBy2oSUVv2GFpmaTQYf3ggN6KNGP1SvCRWRtrruR53Cv0fSQqbdajlzAP54x5HJKkhNxR1ejyY5SqvzjtxP41OVmEBne6Tbavv(S3d9b9YW)(c0swSrc4ZEVsi0uEMNcG(rXsBniWNzLEG8xa8Vch4Z8uKrXroMQ5uWibOYxDJgmkm)X()D9HRUAzKvt(oGbVmgI9DhTi7JHxWpx)7okyLsYN(dtjqGKtJpz6E7Khp1awcZc8dNEpvGFyc8nNZvxyhpGtv5m4JvngMKcTOP2vYepZXiF6NGHMI)bE8lGd9E(0prvP)LI6Kv5bO(xQQY2Fm8yLbgGhiIEM8BzlbS9hlxXjGhb)Jx1BwB2vOEc6MsXDzgWao))!BBF"
+        local profileData, errorMessage = BBF.ImportProfile(importString, "auraWhitelist")
+        if errorMessage then
+            print("|A:gmchat-icon-blizz:16:16|aBetter|cff00c0ffBlizz|rFrames: Error importing whitelist:", errorMessage)
+            return
+        end
+        deepMergeTables(BetterBlizzFramesDB.auraWhitelist, profileData)
+        BBF.auraWhitelistRefresh()
+        Settings.OpenToCategory(BBF.aurasSubCategory)
+    end,
+    timeout = 0,
+    whileDead = true,
+}
+
 ------------------------------------------------------------
 -- GUI Creation Functions
 ------------------------------------------------------------
@@ -2555,18 +2574,18 @@ local function guiGeneralTab()
     mainGuiAnchor:SetText(" ")
 
     local bgImg = BetterBlizzFrames:CreateTexture(nil, "BACKGROUND")
-    bgImg:SetAtlas("professions-recipe-background")
+    bgImg:SetColorTexture(0,0,0,0.4)
     bgImg:SetPoint("CENTER", BetterBlizzFrames, "CENTER", -8, 4)
     bgImg:SetSize(680, 610)
-    bgImg:SetAlpha(0.4)
-    bgImg:SetVertexColor(0,0,0)
+    --bgImg:SetAlpha(0.4)
+    --bgImg:SetVertexColor(0,0,0)
 
     local alpha = BetterBlizzFrames:CreateFontString(nil, "BACKGROUND", "GameFontNormal")
     alpha:SetPoint("CENTER", 0, 0)
     alpha:SetText("BETA")
     alpha:SetFont("Fonts\\FRIZQT__.TTF", 156)
     alpha:SetScale(1.4)
-    alpha:SetAlpha(0.1)
+    alpha:SetAlpha(0.03)
 
     local alpha2 = BetterBlizzFrames:CreateFontString(nil, "BACKGROUND", "GameFontNormal")
     alpha2:SetPoint("BOTTOM", SettingsPanel, "TOP", 0, 0)
@@ -3856,11 +3875,11 @@ local function guiCastbars()
     CreateTitle(BetterBlizzFramesCastbars)
 
     local bgImg = BetterBlizzFramesCastbars:CreateTexture(nil, "BACKGROUND")
-    bgImg:SetAtlas("professions-recipe-background")
+    bgImg:SetColorTexture(0,0,0,0.4)
     bgImg:SetPoint("CENTER", BetterBlizzFramesCastbars, "CENTER", -8, 4)
     bgImg:SetSize(680, 610)
-    bgImg:SetAlpha(0.4)
-    bgImg:SetVertexColor(0,0,0)
+    -- bgImg:SetAlpha(0.4)
+    -- bgImg:SetVertexColor(0,0,0)
 
 
 
@@ -4673,11 +4692,11 @@ local function guiPositionAndScale()
     CreateTitle(BetterBlizzFramesSubPanel)
 
     local bgImg = BetterBlizzFramesSubPanel:CreateTexture(nil, "BACKGROUND")
-    bgImg:SetAtlas("professions-recipe-background")
+    bgImg:SetColorTexture(0,0,0,0.4)
     bgImg:SetPoint("CENTER", BetterBlizzFramesSubPanel, "CENTER", -8, 4)
     bgImg:SetSize(680, 610)
-    bgImg:SetAlpha(0.4)
-    bgImg:SetVertexColor(0,0,0)
+    -- bgImg:SetAlpha(0.4)
+    -- bgImg:SetVertexColor(0,0,0)
 
 
 
@@ -5117,11 +5136,11 @@ local function guiFrameLook()
     CreateTitle(guiFrameLook)
 
     local bgImg = guiFrameLook:CreateTexture(nil, "BACKGROUND")
-    bgImg:SetAtlas("professions-recipe-background")
+    bgImg:SetColorTexture(0,0,0,0.4)
     bgImg:SetPoint("CENTER", guiFrameLook, "CENTER", -8, 4)
     bgImg:SetSize(680, 610)
-    bgImg:SetAlpha(0.4)
-    bgImg:SetVertexColor(0,0,0)
+    -- bgImg:SetAlpha(0.4)
+    -- bgImg:SetVertexColor(0,0,0)
 
     local mainGuiAnchor = guiFrameLook:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     mainGuiAnchor:SetPoint("TOPLEFT", 15, -15)
@@ -5520,11 +5539,11 @@ local function guiFrameAuras()
     CreateTitle(guiFrameAuras)
 
     local bgImg = guiFrameAuras:CreateTexture(nil, "BACKGROUND")
-    bgImg:SetAtlas("professions-recipe-background")
+    bgImg:SetColorTexture(0,0,0,0.4)
     bgImg:SetPoint("CENTER", guiFrameAuras, "CENTER", -8, 4)
     bgImg:SetSize(680, 610)
-    bgImg:SetAlpha(0.4)
-    bgImg:SetVertexColor(0,0,0)
+    -- bgImg:SetAlpha(0.4)
+    -- bgImg:SetVertexColor(0,0,0)
 
     local scrollFrame = CreateFrame("ScrollFrame", nil, guiFrameAuras, "UIPanelScrollFrameTemplate")
     scrollFrame:SetSize(700, 612)
@@ -5601,7 +5620,7 @@ local function guiFrameAuras()
 
     local playerAuraFiltering = CreateCheckbox("playerAuraFiltering", "Enable Aura Settings", contentFrame)
     playerAuraFiltering.name = guiFrameAuras.name
-    CreateTooltip(playerAuraFiltering, "This feature is still a bit beta.\nIf you are noticing anything weird or having performance issues please let me know.")
+    CreateTooltipTwo(playerAuraFiltering, "Enable Aura Settings", "Enable all aura settings for Player, Target and Focus allowing you to filter, highlightm, sort, resize and reposition Auras.")
     playerAuraFiltering:SetPoint("TOPLEFT", contentFrame, "BOTTOMLEFT", 50, 190)
     playerAuraFiltering:HookScript("OnClick", function (self)
         if self:GetChecked() then
@@ -5651,6 +5670,24 @@ local function guiFrameAuras()
     local printAuraSpellIds = CreateCheckbox("printAuraSpellIds", "Print Spell ID", playerAuraFiltering)
     printAuraSpellIds:SetPoint("LEFT", enableMasque.Text, "RIGHT", 5, 0)
     CreateTooltip(printAuraSpellIds, "Show aura spell id in chat when mousing over the aura.\n\nUsecase: Find spell ID to filter by ID, some spells have identical names.")
+
+    local importPVPWhitelist = CreateFrame("Button", nil, playerAuraFiltering, "UIPanelButtonTemplate")
+    importPVPWhitelist:SetSize(138, 22)
+    importPVPWhitelist:SetPoint("LEFT", printAuraSpellIds.text, "RIGHT", 3, 1)
+    importPVPWhitelist:SetText("Import PvP Whitelist")
+    importPVPWhitelist:SetScript("OnClick", function()
+        StaticPopup_Show("BBF_CONFIRM_PVP_WHITELIST")
+    end)
+    local coloredText = "|cff00FF00Important/Immunity|r\n" ..
+                    "|cffFF8000Offensive Buff|r\n" ..
+                    "|cffFFA9F1Defensive Buffs|r\n" ..
+                    "|cff00FFFFFreedom/Speed|r\n" ..
+                    "|cffEFFF33Fear Immunity|r"
+
+    CreateTooltipTwo(importPVPWhitelist, "Import PvP Whitelist", "Import a color coded Whitelist with most important Offensives, Defensives & Freedoms for MoP added.\n\n"..coloredText.."\n\nThis will only add NEW entries and not mess with existing ones in your current whitelist.\n\nWill tweak this as time goes on probably.")
+    importPVPWhitelist.Middle:SetDesaturated(true)
+    importPVPWhitelist.Left:SetDesaturated(true)
+    importPVPWhitelist.Right:SetDesaturated(true)
 
     -- local tipText = playerAuraFiltering:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     -- tipText:SetPoint("LEFT", printAuraSpellIds.Text, "RIGHT", 5, 0)
@@ -6331,11 +6368,11 @@ local function guiMisc()
     CreateTitle(guiMisc)
 
     local bgImg = guiMisc:CreateTexture(nil, "BACKGROUND")
-    bgImg:SetAtlas("professions-recipe-background")
+    bgImg:SetColorTexture(0,0,0,0.4)
     bgImg:SetPoint("CENTER", guiMisc, "CENTER", -8, 4)
     bgImg:SetSize(680, 610)
-    bgImg:SetAlpha(0.4)
-    bgImg:SetVertexColor(0,0,0)
+    -- bgImg:SetAlpha(0.4)
+    -- bgImg:SetVertexColor(0,0,0)
 
     local settingsText = guiMisc:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     settingsText:SetPoint("TOPLEFT", guiMisc, "TOPLEFT", 20, -10)
@@ -6766,11 +6803,11 @@ local function guiImportAndExport()
     CreateTitle(guiImportAndExport)
 
     local bgImg = guiImportAndExport:CreateTexture(nil, "BACKGROUND")
-    bgImg:SetAtlas("professions-recipe-background")
+    bgImg:SetColorTexture(0,0,0,0.4)
     bgImg:SetPoint("CENTER", guiImportAndExport, "CENTER", -8, 4)
     bgImg:SetSize(680, 610)
-    bgImg:SetAlpha(0.4)
-    bgImg:SetVertexColor(0,0,0)
+    -- bgImg:SetAlpha(0.4)
+    -- bgImg:SetVertexColor(0,0,0)
 
     local fullProfile = CreateImportExportUI(guiImportAndExport, "Full Profile", BetterBlizzFramesDB, 20, -20, "fullProfile")
 
@@ -6805,11 +6842,11 @@ local function guiCustomCode()
     CreateTitle(guiCustomCode)
 
     local bgImg = guiCustomCode:CreateTexture(nil, "BACKGROUND")
-    bgImg:SetAtlas("professions-recipe-background")
+    bgImg:SetColorTexture(0,0,0,0.4)
     bgImg:SetPoint("CENTER", guiCustomCode, "CENTER", -8, 4)
     bgImg:SetSize(680, 610)
-    bgImg:SetAlpha(0.4)
-    bgImg:SetVertexColor(0,0,0)
+    -- bgImg:SetAlpha(0.4)
+    -- bgImg:SetVertexColor(0,0,0)
 
     local discordLinkEditBox = CreateFrame("EditBox", nil, guiCustomCode, "InputBoxTemplate")
     discordLinkEditBox:SetPoint("TOPLEFT", guiCustomCode, "TOPLEFT", 25, -45)
@@ -7079,11 +7116,11 @@ local function guiSupport()
     CreateTitle(guiSupport)
 
     local bgImg = guiSupport:CreateTexture(nil, "BACKGROUND")
-    bgImg:SetAtlas("professions-recipe-background")
+    bgImg:SetColorTexture(0,0,0,0.4)
     bgImg:SetPoint("CENTER", guiSupport, "CENTER", -8, 4)
     bgImg:SetSize(680, 610)
-    bgImg:SetAlpha(0.4)
-    bgImg:SetVertexColor(0,0,0)
+    -- bgImg:SetAlpha(0.4)
+    -- bgImg:SetVertexColor(0,0,0)
 
     local discordLinkEditBox = CreateFrame("EditBox", nil, guiSupport, "InputBoxTemplate")
     discordLinkEditBox:SetPoint("TOP", guiSupport, "TOP", 0, -170)

@@ -261,7 +261,7 @@ local spellList = {
 
 
     -- ##########################
-    -- Cata Bonus Ones, mop above
+    -- Cata Bonus Ones, mop above, needs verifying
     -- ##########################
     -- *** Incapacitate Effects ***
     [49203] = "Incapacitated", -- Hungering Cold
@@ -317,6 +317,22 @@ local spellList = {
     [67769] = "Incapacitated", -- Cobalt Frag Bomb (Item)
     [67890] = "Incapacitated", -- Cobalt Frag Bomb (Item, Frag Belt)
     [54466] = "Incapacitated", -- Saronite Grenade (Item)
+
+    [13099] = "Rooted", -- Net-o-Matic
+    [13119] = "Rooted", -- Net-o-Matic
+    [13120] = "Rooted", -- Net-o-Matic
+    [13138] = "Rooted", -- Net-o-Matic
+    [13139] = "Rooted", -- Net-o-Matic
+    [16566] = "Rooted", -- Net-o-Matic
+    [52825] = "Rooted", -- Swoop
+    [1090] = "Asleep", -- Magic Dust
+    [835] = "Stunned", -- Tidal Charm
+    [15753] = "Stunned", -- Linken's Boomerang Stun
+    [13237] = "Stunned", -- Goblin Mortar trinket
+    [18798] = "Stunned", -- Freezing Band
+    [32752] = "Stunned", -- Summoning Disorientation
+    [50318] = "Silenced", -- Serenity Dust (moth pet silence)
+
 }
 
 local hardCCSet = {
@@ -346,7 +362,9 @@ function BBF.SetupLoCFrame()
     if not BetterBlizzFramesDB.enableLoCFrame then return end
     if not BBF.isMoP then
         spellList[2812]  = "Stunned" -- Holy Wrath
-        --spellList[20170]  = "Stunned", -- Seal of Justice (proc)
+        spellList[64346] = "Disarmed" -- Fiery Payback (Fire Mage Disarm)
+        spellList[19482] = "Stunned" -- War Stomp Doom Guard Stun
+        --spellList[20170]  = "Stunned" -- Seal of Justice (proc)
     else
         spellList[99] = "Disoriented" -- Disorienting Roar (MoP only, 30sec debuff in cata)
     end
@@ -578,12 +596,32 @@ function BBF.SetupLoCFrame()
                 local spellID = aura.spellId
                 local ccType = spellList[spellID]
                 local remaining = aura.expirationTime and (aura.expirationTime - now) or 0
+                local duration = aura.duration or 0
+
+                if ccType == "Silenced" and duration == 0 then
+                    frame.silenceFallbacks = frame.silenceFallbacks or {}
+
+                    local fallback = frame.silenceFallbacks[spellID]
+                    if not fallback or fallback.expirationTime <= now then
+                        fallback = {
+                            startTime = now,
+                            duration = 8,
+                            expirationTime = now + 8,
+                        }
+                        frame.silenceFallbacks[spellID] = fallback
+                    end
+
+                    duration = fallback.duration
+                    aura.expirationTime = fallback.expirationTime
+                    remaining = fallback.expirationTime - now
+                end
+
 
                 if remaining > 0 then
                     local auraData = {
                         icon = aura.icon,
                         type = ccType,
-                        duration = aura.duration,
+                        duration = duration,
                         expiration = aura.expirationTime,
                         remaining = remaining,
                         spellID = spellID
@@ -625,12 +663,24 @@ function BBF.SetupLoCFrame()
 
         if fullCC then
             main = fullCC
-            secondary = silence or interrupt or disarm or root
-        elseif silence then
-            main = silence
-            secondary = interrupt or disarm or root
+            if interrupt and silence then
+                secondary = (silence.remaining > interrupt.remaining) and silence or interrupt
+            else
+                secondary = interrupt or silence or disarm or root
+            end
+        elseif interrupt and silence then
+            if silence.remaining > interrupt.remaining then
+                main = silence
+                secondary = interrupt
+            else
+                main = interrupt
+                secondary = silence
+            end
         elseif interrupt then
             main = interrupt
+            secondary = silence or disarm or root
+        elseif silence then
+            main = silence
             secondary = disarm or root
         elseif disarm then
             main = disarm
@@ -639,6 +689,7 @@ function BBF.SetupLoCFrame()
             main = root
             secondary = nil
         end
+
 
         -- Assign to frame
         frame.mainCC = main
@@ -705,7 +756,7 @@ function BBF.SetupLoCFrame()
             frame.SecondaryIcon.Cooldown:SetCooldown(secondary.expiration - secondary.duration, secondary.duration)
             frame.SecondaryIcon:Show()
 
-            if interrupt and secondary == interrupt then
+            if interrupt and (secondary == interrupt or secondary == silence) then
                 local name, r, g, b = GetSchoolInfo(interrupt.school)
                 frame.SecondaryIcon.SchoolText:SetText(name)
                 frame.SecondaryIcon.SchoolText:SetTextColor(r, g, b)
@@ -715,6 +766,14 @@ function BBF.SetupLoCFrame()
         else
             frame.SecondaryIcon:Hide()
             frame.SecondaryIcon.SchoolText:SetText("")
+        end
+
+        if frame.silenceFallbacks then
+            for spellID, fallback in pairs(frame.silenceFallbacks) do
+                if fallback.expirationTime <= now then
+                    frame.silenceFallbacks[spellID] = nil
+                end
+            end
         end
     end
 
@@ -726,17 +785,24 @@ function BBF.SetupLoCFrame()
 
     -- === Timer Update ===
     frame:SetScript("OnUpdate", function(self)
+        local now = GetTime()
         if self.expiration then
-            local timeLeft = self.expiration - GetTime()
+            local timeLeft = self.expiration - now
 
             if timeLeft <= 0 then
-                -- Instead of fading out, re-evaluate auras and let checkAuras() handle the transition
                 checkAuras()
             else
                 self.TimeLeft.NumberText:SetText(string.format("%.1f seconds", timeLeft))
+
+                -- ⛏ Check if secondary interrupt has expired
+                if self.interruptData and self.secondaryCC == self.interruptData and self.interruptData.expiration <= now then
+                    self.interruptData = nil
+                    checkAuras()
+                end
             end
         end
     end)
+
 
 
     -- === Interrupt Tracking ===

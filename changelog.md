@@ -1,7 +1,13 @@
+# BetterBlizzFrames 1.7.1b
+## MoP & Cata
+### Bugfix:
+- Fix Solar Beam not showing on Loss of Control due to having no duration. That is now accounted for and shows proper duration.
+
 # BetterBlizzFrames 1.7.1
 ## MoP & Cata
 ### New:
 - "Icon Only" mode for Loss of Control. Right click "Enable Loss of Control" to toggle on/off.
+- MoP PvP Whitelist import button in Buffs & Debuffs aura section!
 - Hide Totem Timer Text (Misc. MoP specific.)
 - TotemFrame scale setting (Misc. MoP specific)
 ### Tweaks:

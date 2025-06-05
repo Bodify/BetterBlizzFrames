@@ -5392,7 +5392,7 @@ local function guiFrameAuras()
 
     local playerAuraFiltering = CreateCheckbox("playerAuraFiltering", "Enable Aura Settings", contentFrame)
     playerAuraFiltering.name = guiFrameAuras.name
-    CreateTooltip(playerAuraFiltering, "This feature is still a bit beta.\nIf you are noticing anything weird or having performance issues please let me know.")
+    CreateTooltipTwo(playerAuraFiltering, "Enable Aura Settings", "Enable all aura settings for Player, Target and Focus allowing you to filter, highlightm, sort, resize and reposition Auras.")
     playerAuraFiltering:SetPoint("TOPLEFT", contentFrame, "BOTTOMLEFT", 50, 190)
     playerAuraFiltering:HookScript("OnClick", function (self)
         if self:GetChecked() then
