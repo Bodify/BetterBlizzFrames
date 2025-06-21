@@ -45,6 +45,10 @@ local defaultSettings = {
     playerFrameOCDZoom = true,
     repositionBuffFrame = true,
     customCode = "-- Enter custom code below here. Feel free to contact me @bodify",
+    queueTimerID = 567458,
+    queueTimerWarning = false,
+    queueTimerAudio = true,
+    queueTimerWarningTime = 6,
     enableLoCFrame = true,
     raiseTargetCastbarStrata = true,
 

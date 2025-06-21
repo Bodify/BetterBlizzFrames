@@ -310,6 +310,9 @@ local function InitializeFontString(frame)
 
     -- Set initial text from the original FontString
     frame.bbfName:SetText(name:GetText())
+    hooksecurefunc(name, "SetText", function()
+        frame.bbfName:SetSize(name:GetSize())
+    end)
 
     -- Hide original
     name:SetAlpha(0)
@@ -467,7 +470,7 @@ local focusHealthBar = FocusFrameHealthBar
 local statusTexts = {
     playerManaBar.LeftText,
     playerManaBar.RightText,
-    playerManaBar.ManaBarText,
+    playerManaBar.TextString,
     --
     playerHealthBar.LeftText,
     playerHealthBar.RightText,
@@ -483,7 +486,7 @@ local statusTexts = {
     --
     targetManaBar.LeftText,
     targetManaBar.RightText,
-    targetManaBar.ManaBarText,
+    targetManaBar.TextString,
     --
     targetHealthBar.LeftText,
     targetHealthBar.RightText,

@@ -1,3 +1,54 @@
+# BetterBlizzFrames 1.7.1g
+## Mists of Pandaria / Cata
+### Bugfix
+- Fix UnitFrame Number Font setting not working properly on all numbers.
+## All versions
+### Bugfix
+- Fix Queue Timer's audio warnings when below 5 sec not playing for PvE queues.
+
+# BetterBlizzFrames 1.7.1f
+## Retail
+### Bugfix
+- Fix Hiding Arena Frames causing addon action blocked error. This may cause them to pop back up during combat, need more testing.
+
+# BetterBlizzFrames 1.7.1e
+## Retail
+### Tweak
+- Aeghis profile update
+
+# BetterBlizzFrames 1.7.1d
+## All versions
+### New:
+- Hide CompactRaidFrame Border setting. Tldr: lets you keep Blizzards "Border" setting on for a thin border around each party member but remove the thick border surrounding all of them.
+### Tweak
+- Dark Mode now also darkens RaidFrame Border.
+- Names on frames should now have identical width as default names.
+- Party Castbars no longer shows pet castbars
+## Mists of Pandaria & Cataclysm
+### New
+- Mmarkers profile added.
+### Tweak
+- More tweaks to Loss of Control. Now always prioritizes stuns/horrifies over other CC regardless of duration and if other hard CC is active it puts that on the smaller side icon.
+## The War Within
+### Tweak
+- "Hide Dragon" setting now also hides Dragon while using Classic Frames setting.
+### Bugfix
+- Fix Arena Names group member update not working properly in starting room on group member updates
+## All classic versions
+### Bugfix:
+- Fix Debuff Aura Filtering not positioning debuffs correctly.
+
+
+# BetterBlizzFrames 1.7.1c
+## MoP & Cata
+### Tweak:
+- Added few more absorb spells to absorb trackers while Blizzards searches for their lost Absorb API
+- Tweaked "Purgeable" buff filter to show all Magic regardless if you had "Always show purgeable texture" enabled or not.
+### Bugfix:
+- Fix missing Solar Beam ID and some interractions between Solar Beam Interrupt and Silence duration.
+- Fix Loss of Control showing up when getting "Interrupted" on things like First Aid Bandages etc.
+- Fix missing queue timer settings on MoP/Cata.
+
 # BetterBlizzFrames 1.7.1b
 ## MoP & Cata
 ### Bugfix:

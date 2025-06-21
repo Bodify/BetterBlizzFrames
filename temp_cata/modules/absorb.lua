@@ -16,6 +16,9 @@ CataAbsorb.spells = {
     [123258] = true, -- Priest: Power Word: Shield
     [114214] = true, -- Angelic Bulwark
     [131623] = true, -- Twilight Ward (Magic)
+    [48707] = true, -- Anti-Magic Shell
+    [110570] = true, -- Anti-Magic Shell (Symbiosis)
+    [114908] = true, -- Spirit Shell
 }
 CataAbsorb.playerName = UnitName("player")
 CataAbsorb.unitFrames = {}

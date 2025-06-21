@@ -298,7 +298,7 @@ end
 
 local function isInBlacklist(spellName, spellId)
     local db = BetterBlizzFramesDB
-    local entry = db["auraBlacklist"][spellId] or spellName and db["auraBlacklist"][string.lower(spellName)]
+    local entry = db["auraBlacklist"][spellId] or (spellName and db["auraBlacklist"][string.lower(spellName)])
     if entry then
         local showMine = entry.showMine
         return true, showMine
@@ -327,7 +327,7 @@ local function ShouldShowBuff(unit, auraData, frameType)
     local duration = auraData.duration
     local expirationTime = auraData.expirationTime
     local caster = auraData.sourceUnit
-    local isPurgeable = auraData.isStealable or (displayDispelGlowAlways and auraData.dispelName == "Magic")
+    local isPurgeable = auraData.isStealable or auraData.dispelName == "Magic"
     local castByPlayer = (caster == "player" or caster == "pet")
     local db = BetterBlizzFramesDB
     local filterOverride = BBF.filterOverride
@@ -2238,7 +2238,8 @@ local function PersonalDebuffFrameFilterAndGrid(self)
     local currentRow = 1;
     local currentCol = 1;
     local xOffset = 0;
-    local yOffset = 110;
+    local extraYOffset = 110
+    local yOffset = extraYOffset;
 
     -- Create a texture next to the DebuffFrame
 --[=[
@@ -2432,7 +2433,7 @@ local function PersonalDebuffFrameFilterAndGrid(self)
 
                     -- Calculate the new offsets
                     xOffset = (currentCol - 1) * (auraSize + auraSpacingX);
-                    yOffset = (currentRow - 1) * (auraSize + auraSpacingY);
+                    yOffset = ((currentRow - 1) * (auraSize + auraSpacingY)) + extraYOffset
 
                     -- Important logic
                     if isImportant then

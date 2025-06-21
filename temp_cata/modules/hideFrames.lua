@@ -469,6 +469,18 @@ function BBF.HideFrames()
             changes.hideMonkComboBg = nil
         end
 
+        if BetterBlizzFramesDB.hideRaidFrameContainerBorder then
+            local compactPartyBorder = CompactPartyFrameBorderFrame or CompactRaidFrameContainerBorderFrame
+            if compactPartyBorder then
+                changes.hideRaidFrameContainerBorder = compactPartyBorder:GetParent()
+                compactPartyBorder:SetParent(BBF.hiddenFrame)
+            end
+        elseif changes.hideRaidFrameContainerBorder then
+            local compactPartyBorder = CompactPartyFrameBorderFrame or CompactRaidFrameContainerBorderFrame
+            compactPartyBorder:SetParent(changes.hideRaidFrameContainerBorder)
+            changes.hideRaidFrameContainerBorder = nil
+        end
+
         if BetterBlizzFramesDB.hidePlayerPower then
             if WarlockPowerFrame and englishClass == "WARLOCK" then
                 if BetterBlizzFramesDB.hidePlayerPowerNoWarlock then

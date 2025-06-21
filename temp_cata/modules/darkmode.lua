@@ -6,6 +6,7 @@ local minimapChanged =false
 
 local hookedTotemBar
 local hookedAuras
+local raidUpdates
 
 local function applySettings(frame, desaturate, colorValue)
     if frame then
@@ -374,6 +375,47 @@ function BBF.DarkmodeFrames(bypass)
         end
     end
 
+    local compactPartyBorder = CompactPartyFrameBorderFrame or CompactRaidFrameContainerBorderFrame
+    if compactPartyBorder then
+        local function ColorCompactUnitFrameBorders(frame, bypass)
+            if not frame then return end
+            if not bypass and frame.bbfDarkmode then return end
+            applySettings(frame.horizDivider, desaturationValue, vertexColor)
+            applySettings(frame.horizTopBorder, desaturationValue, vertexColor)
+            applySettings(frame.horizBottomBorder, desaturationValue, vertexColor)
+            applySettings(frame.vertLeftBorder, desaturationValue, vertexColor)
+            applySettings(frame.vertRightBorder, desaturationValue, vertexColor)
+            frame.bbfDarkmode = true
+        end
+
+        for i = 1, compactPartyBorder:GetNumRegions() do
+            local region = select(i, compactPartyBorder:GetRegions())
+            if region:IsObjectType("Texture") then
+                applySettings(region, desaturationValue, vertexColor)
+            end
+        end
+
+        for i = 1, 40 do
+            local frame = _G["CompactRaidFrame"..i]
+            if frame then
+                ColorCompactUnitFrameBorders(frame, true)
+            end
+        end
+
+        if not raidUpdates then
+            if C_CVar.GetCVar("raidOptionDisplayPets") == "1" or C_CVar.GetCVar("raidOptionDisplayMainTankAndAssist") == "1" then
+                hooksecurefunc("DefaultCompactMiniFrameSetup", function(frame)
+                    ColorCompactUnitFrameBorders(frame)
+                end)
+            end
+            hooksecurefunc("CompactUnitFrame_SetUnit", function(frame)
+                ColorCompactUnitFrameBorders(frame)
+            end)
+            raidUpdates = true
+        end
+    end
+
+
     -- if BetterBlizzFramesDB.darkModeUiAura then
     --     local BuffFrameButton = BuffFrame.CollapseAndExpandButton
     --     for i = 1, BuffFrameButton:GetNumRegions() do
@@ -607,14 +649,14 @@ function BBF.DarkmodeFrames(bypass)
             _G["PetActionButton" .. i .. "NormalTexture"],
             _G["StanceButton" .. i .. "NormalTexture"]
         }
-        
+
         for _, button in ipairs(buttons) do
             applySettings(button, desaturationValue, actionBarColor)
             BBF.HookVertexColor(button, actionBarColor, actionBarColor, actionBarColor, 1)
         end
     end
 
-    
+
 
     for i = 0, 3 do
         local buttons = {
@@ -623,7 +665,8 @@ function BBF.DarkmodeFrames(bypass)
             _G["MainMenuBarTextureExtender"],
             _G["MainMenuMaxLevelBar"..i],
             _G["ReputationWatchBar"].StatusBar["XPBarTexture"..i],
-            _G["MainMenuXPBarTexture"..i]
+            _G["MainMenuXPBarTexture"..i],
+            _G["SlidingActionBarTexture"..i]
         }
         for _, button in ipairs(buttons) do
             applySettings(button, desaturationValue, actionBarColor)

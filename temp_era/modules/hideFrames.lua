@@ -666,6 +666,18 @@ function BBF.HideFrames()
             end
         end
 
+        if BetterBlizzFramesDB.hideRaidFrameContainerBorder then
+            local compactPartyBorder = CompactPartyFrameBorderFrame or CompactRaidFrameContainerBorderFrame
+            if compactPartyBorder then
+                changes.hideRaidFrameContainerBorder = compactPartyBorder:GetParent()
+                compactPartyBorder:SetParent(BBF.hiddenFrame)
+            end
+        elseif changes.hideRaidFrameContainerBorder then
+            local compactPartyBorder = CompactPartyFrameBorderFrame or CompactRaidFrameContainerBorderFrame
+            compactPartyBorder:SetParent(changes.hideRaidFrameContainerBorder)
+            changes.hideRaidFrameContainerBorder = nil
+        end
+
 
         local function ToggleLibDBIconButtons(show)
             for i = 1, Minimap:GetNumChildren() do

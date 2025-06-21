@@ -525,6 +525,36 @@ function BBF.HideFrames()
             changes.hidePlayerPower = nil
         end
 
+        if BetterBlizzFramesDB.hideRaidFrameContainerBorder then
+            local compactPartyBorder = CompactPartyFrameBorderFrame or CompactRaidFrameContainerBorderFrame
+            if compactPartyBorder then
+                changes.hideRaidFrameContainerBorder = compactPartyBorder:GetParent()
+                compactPartyBorder:SetParent(BBF.hiddenFrame)
+            end
+            for i = 1, 8 do
+                local frame = _G["CompactRaidGroup"..i.."BorderFrame"]
+                if frame then
+                    if not frame.ogParent then
+                        frame.ogParent = frame:GetParent()
+                    end
+                    frame:SetParent(BBF.hiddenFrame)
+                end
+            end
+        elseif changes.hideRaidFrameContainerBorder then
+            local compactPartyBorder = CompactPartyFrameBorderFrame or CompactRaidFrameContainerBorderFrame
+            compactPartyBorder:SetParent(changes.hideRaidFrameContainerBorder)
+            changes.hideRaidFrameContainerBorder = nil
+            for i = 1, 8 do
+                local frame = _G["CompactRaidGroup"..i.."BorderFrame"]
+                if frame then
+                    if frame.ogParent then
+                        frame:SetParent(frame.ogParent)
+                        frame.ogParent = nil
+                    end
+                end
+            end
+        end
+
         if db.hideExpAndHonorBar then
             MainStatusTrackingBarContainer:SetParent(hiddenFrame)
             SecondaryStatusTrackingBarContainer:SetParent(hiddenFrame)

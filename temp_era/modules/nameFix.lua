@@ -315,6 +315,9 @@ local function InitializeFontString(frame)
 
     -- Set initial text from the original FontString
     frame.bbfName:SetText(name:GetText())
+    hooksecurefunc(name, "SetText", function()
+        frame.bbfName:SetSize(name:GetSize())
+    end)
 
     -- Hide original
     name:SetAlpha(0)
@@ -477,7 +480,6 @@ local statusTexts = {
     playerHealthBar.LeftText,
     playerHealthBar.RightText,
     playerHealthBar.TextString,
-    
     --
     petHealthBar.LeftText,
     petHealthBar.RightText,

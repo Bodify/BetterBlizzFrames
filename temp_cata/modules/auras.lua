@@ -295,7 +295,7 @@ end
 
 local function isInBlacklist(spellName, spellId)
     local db = BetterBlizzFramesDB
-    local entry = db["auraBlacklist"][spellId] or spellName and db["auraBlacklist"][string.lower(spellName)]
+    local entry = db["auraBlacklist"][spellId] or (spellName and db["auraBlacklist"][string.lower(spellName)])
     if entry then
         local showMine = entry.showMine
         return true, showMine
@@ -324,7 +324,7 @@ local function ShouldShowBuff(unit, auraData, frameType)
     local duration = auraData.duration
     local expirationTime = auraData.expirationTime
     local caster = auraData.sourceUnit
-    local isPurgeable = auraData.isStealable or (displayDispelGlowAlways and auraData.dispelName == "Magic")
+    local isPurgeable = auraData.isStealable or auraData.dispelName == "Magic"
     local castByPlayer = (caster == "player" or caster == "pet")
     local db = BetterBlizzFramesDB
     local filterOverride = BBF.filterOverride
@@ -1950,7 +1950,7 @@ local function PersonalBuffFrameFilterAndGrid(self)
                         local borderFrame = BBF.auraBorders[auraFrame]
                         auraFrame.isImportant = true
                         if not auraFrame.ImportantGlow then
-                            auraFrame.ImportantGlow = auraFrame:CreateTexture(nil, "BACKGROUND")
+                            auraFrame.ImportantGlow = auraFrame:CreateTexture(nil, "ARTWORK", nil, 1)
                             if borderFrame then
                                 auraFrame.ImportantGlow:SetParent(borderFrame)
                                 auraFrame.ImportantGlow:SetPoint("TOPLEFT", auraFrame, "TOPLEFT", -15, 16)
@@ -2234,7 +2234,8 @@ local function PersonalDebuffFrameFilterAndGrid(self)
     local currentRow = 1;
     local currentCol = 1;
     local xOffset = 0;
-    local yOffset = 110;
+    local extraYOffset = 110
+    local yOffset = extraYOffset;
 
     -- Create a texture next to the DebuffFrame
 --[=[
@@ -2273,8 +2274,10 @@ local function PersonalDebuffFrameFilterAndGrid(self)
         for i = 1, DEBUFF_ACTUAL_DISPLAY do
             local debuffName = "DebuffButton"..i
             local icon = debuffName.."Icon"
+            local border = _G[debuffName.."Border"]
             local auraFrame = _G[debuffName]
             auraFrame.Icon = icon
+            auraFrame.border = border
             if auraFrame and auraFrame:IsShown() then
 --[[
                 if auraInfo then
@@ -2428,21 +2431,21 @@ local function PersonalDebuffFrameFilterAndGrid(self)
 
                     -- Calculate the new offsets
                     xOffset = (currentCol - 1) * (auraSize + auraSpacingX);
-                    yOffset = (currentRow - 1) * (auraSize + auraSpacingY);
+                    yOffset = ((currentRow - 1) * (auraSize + auraSpacingY)) + extraYOffset
 
                     -- Important logic
                     if isImportant then
                         local borderFrame = BBF.auraBorders[auraFrame]
                         auraFrame.isImportant = true
                         if not auraFrame.ImportantGlow then
-                            auraFrame.ImportantGlow = auraFrame:CreateTexture(nil, "OVERLAY")
+                            auraFrame.ImportantGlow = auraFrame:CreateTexture(nil, "OVERLAY", nil, 1)
                             if borderFrame then
                                 auraFrame.ImportantGlow:SetParent(borderFrame)
                                 auraFrame.ImportantGlow:SetPoint("TOPLEFT", auraFrame, "TOPLEFT", -15, 16)
                                 auraFrame.ImportantGlow:SetPoint("BOTTOMRIGHT", auraFrame, "BOTTOMRIGHT", 15, -6)
                             else
-                                auraFrame.ImportantGlow:SetPoint("TOPLEFT", auraFrame, "TOPLEFT", -14, 13)
-                                auraFrame.ImportantGlow:SetPoint("BOTTOMRIGHT", auraFrame, "BOTTOMRIGHT", 13, -3)
+                                auraFrame.ImportantGlow:SetPoint("TOPLEFT", auraFrame, "TOPLEFT", -34, 35)
+                                auraFrame.ImportantGlow:SetPoint("BOTTOMRIGHT", auraFrame, "BOTTOMRIGHT", 34, -36)
                             end
                             --auraFrame.ImportantGlow:SetDrawLayer("OVERLAY", 7)
                             auraFrame.ImportantGlow:SetTexture(BBF.squareGreenGlow)

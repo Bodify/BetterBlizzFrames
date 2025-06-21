@@ -325,6 +325,26 @@ function BBF.DarkmodeFrames(bypass)
         end
     end
 
+    local compactPartyBorder = CompactPartyFrameBorderFrame or CompactRaidFrameContainerBorderFrame
+    if compactPartyBorder then
+        for i = 1, compactPartyBorder:GetNumRegions() do
+            local region = select(i, compactPartyBorder:GetRegions())
+            if region:IsObjectType("Texture") then
+                applySettings(region, desaturationValue, vertexColor)
+            end
+        end
+        for i = 1, 5 do
+            local frame = _G["CompactRaidFrame"..i]
+            if frame then
+                applySettings(frame.horizDivider, desaturationValue, vertexColor)
+                applySettings(frame.horizTopBorder, desaturationValue, vertexColor)
+                applySettings(frame.horizBottomBorder, desaturationValue, vertexColor)
+                applySettings(frame.vertLeftBorder, desaturationValue, vertexColor)
+                applySettings(frame.vertRightBorder, desaturationValue, vertexColor)
+            end
+        end
+    end
+
     -- if BetterBlizzFramesDB.darkModeUiAura then
     --     local BuffFrameButton = BuffFrame.CollapseAndExpandButton
     --     for i = 1, BuffFrameButton:GetNumRegions() do
@@ -559,14 +579,14 @@ function BBF.DarkmodeFrames(bypass)
             _G["PetActionButton" .. i .. "NormalTexture"],
             _G["StanceButton" .. i .. "NormalTexture"]
         }
-        
+
         for _, button in ipairs(buttons) do
             applySettings(button, desaturationValue, actionBarColor)
             BBF.HookVertexColor(button, actionBarColor, actionBarColor, actionBarColor, 1)
         end
     end
 
-    
+
 
     for i = 0, 3 do
         local buttons = {
@@ -575,7 +595,8 @@ function BBF.DarkmodeFrames(bypass)
             _G["MainMenuBarTextureExtender"],
             _G["MainMenuMaxLevelBar"..i],
             _G["ReputationWatchBar"].StatusBar["XPBarTexture"..i],
-            _G["MainMenuXPBarTexture"..i]
+            _G["MainMenuXPBarTexture"..i],
+            _G["SlidingActionBarTexture"..i]
         }
         for _, button in ipairs(buttons) do
             applySettings(button, desaturationValue, actionBarColor)
@@ -585,7 +606,7 @@ function BBF.DarkmodeFrames(bypass)
 
     applySettings(MainMenuBarBackpackButtonNormalTexture, desaturationValue, actionBarColor)
     BBF.HookVertexColor(MainMenuBarBackpackButtonNormalTexture, actionBarColor, actionBarColor, actionBarColor, 1)
-    
+
 
     -- for _, v in pairs({
     --     MainMenuBar.BorderArt,

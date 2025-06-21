@@ -156,7 +156,9 @@ function BBF.UpdateCastbars()
 
                         local unitId = partyFrame.displayedUnit or partyFrame.unit
 
-                        if UnitIsUnit(unitId, "player") and (not BetterBlizzFramesDB.partyCastbarSelf and not BetterBlizzFramesDB.partyCastBarTestMode) then
+                        if (unitId and unitId:match("^partypet%d$")) then
+                            CastingBarFrame_SetUnit(spellbar, nil)
+                        elseif UnitIsUnit(unitId, "player") and (not BetterBlizzFramesDB.partyCastbarSelf and not BetterBlizzFramesDB.partyCastBarTestMode) then
                             CastingBarFrame_SetUnit(spellbar, nil)
                         else
                             CastingBarFrame_SetUnit(spellbar, unitId, true, true)

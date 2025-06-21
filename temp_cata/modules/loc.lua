@@ -17,6 +17,15 @@ local interruptSpells = {
     [31935] = 4,  -- Avenger's Shield (Paladin)
     [217824] = 5, -- Shield of Virtue (Protection PvP Talent)
     [351338] = 5, -- Quell (Evoker)
+	[33871] = 6, 	-- Shield Bash (Warrior)
+	[24259] = 6, 	-- Spell Lock (Warlock)
+	[43523] = 5,	-- Unstable Affliction (Warlock)
+	--[16979] = 4, 	-- Feral Charge (Druid)
+	[26679] = 5, 	-- Deadly Throw (Rogue)
+
+    [78675] = 5, -- Solar Beam
+    [113286] = 5, -- Solar Beam (Symbiosis)
+    [97547] = 5, -- Solar Beam
 }
 
 -- Buffs that reduce interrupt duration
@@ -585,7 +594,8 @@ function BBF.SetupLoCFrame()
 
     -- === Aura Scan Logic ===
     local function checkAuras()
-        local fullCC, silence, interrupt, disarm, root = nil, nil, frame.interruptData, nil, nil
+        local mainHardCC, secondHardCC, silence, disarm, root
+        local interrupt = frame.interruptData
         local now = GetTime()
 
         local function getAuraData()
@@ -603,10 +613,11 @@ function BBF.SetupLoCFrame()
 
                     local fallback = frame.silenceFallbacks[spellID]
                     if not fallback or fallback.expirationTime <= now then
+                        local solarBeamDuration = 8.1  -- Only Solar Beam afaik. Leeway of 0.1
                         fallback = {
                             startTime = now,
-                            duration = 8,
-                            expirationTime = now + 8,
+                            duration = solarBeamDuration,
+                            expirationTime = now + solarBeamDuration,
                         }
                         frame.silenceFallbacks[spellID] = fallback
                     end
@@ -627,23 +638,34 @@ function BBF.SetupLoCFrame()
                         spellID = spellID
                     }
 
-                    if ccType then
-                        if isHardCC(ccType) then
-                            if not fullCC or remaining > fullCC.remaining then
-                                fullCC = auraData
+                    if isHardCC(ccType) then
+                        if ccType == "Stunned" or ccType == "Horrified" then
+                            -- Always prefer stuns and horrify as primary
+                            local isSameType = (mainHardCC and mainHardCC.type == ccType)
+                            if not mainHardCC or not isSameType or remaining > mainHardCC.remaining then
+                                if mainHardCC and not (mainHardCC.type == "Stunned" or mainHardCC.type == "Horrified") then
+                                    secondHardCC = mainHardCC
+                                end
+                                mainHardCC = auraData
                             end
-                        elseif ccType == "Silenced" or ccType == "Silenced+" then
-                            if not silence or remaining > silence.remaining then
-                                silence = auraData
+                        elseif not mainHardCC then
+                            mainHardCC = auraData
+                        elseif auraData.spellID ~= mainHardCC.spellID then
+                            if not secondHardCC or auraData.remaining > secondHardCC.remaining then
+                                secondHardCC = auraData
                             end
-                        elseif ccType == "Disarmed" then
-                            if not disarm or remaining > disarm.remaining then
-                                disarm = auraData
-                            end
-                        elseif ccType == "Rooted" then
-                            if not root or remaining > root.remaining then
-                                root = auraData
-                            end
+                        end
+                    elseif ccType == "Silenced" or ccType == "Silenced+" then
+                        if not silence or remaining > silence.remaining then
+                            silence = auraData
+                        end
+                    elseif ccType == "Disarmed" then
+                        if not disarm or remaining > disarm.remaining then
+                            disarm = auraData
+                        end
+                    elseif ccType == "Rooted" then
+                        if not root or remaining > root.remaining then
+                            root = auraData
                         end
                     end
                 end
@@ -660,11 +682,16 @@ function BBF.SetupLoCFrame()
 
         -- === Priority Logic ===
         local main, secondary
+        local fullCC = mainHardCC
 
         if fullCC then
             main = fullCC
             if interrupt and silence then
                 secondary = (silence.remaining > interrupt.remaining) and silence or interrupt
+            elseif interrupt then
+                secondary = interrupt
+            elseif secondHardCC then
+                secondary = secondHardCC
             else
                 secondary = interrupt or silence or disarm or root
             end
@@ -814,20 +841,21 @@ function BBF.SetupLoCFrame()
         if not interruptEvents[event] then return end
         if destGUID ~= UnitGUID("player") then return end
 
-        --print(spellID, event)
-
         local duration = interruptSpells[spellID]
         if not duration then return end
 
         if event == "SPELL_CAST_SUCCESS" then
             -- Check if the unit was casting or channeling AND if it was interruptible
             local _, _, _, _, _, _, notInterruptibleChannel = UnitChannelInfo("player")
+
+            local schoolName = GetSchoolInfo(school) or ""
+            if schoolName == "Interrupted" then return end -- avoid showing on casts like first aid etc
             if notInterruptibleChannel ~= false then -- nil when not channeling
                 return
             end
         end
 
-        -- Reduce duration based on active buffs (e.g., Precognition)
+        -- Reduce duration based on active buffs
         for i = 1, 40 do
             local name, _, _, _, _, _, _, _, _, auraSpellID = UnitBuff("player", i)
             if not name then break end
@@ -840,11 +868,17 @@ function BBF.SetupLoCFrame()
         -- Store interrupt data for aura scan logic
         local schoolName = GetSchoolInfo(school)
 
+        local now = GetTime()
+        local expirationTime = now + duration
+        local remaining = expirationTime - now
+
         frame.interruptData = {
             icon = C_Spell.GetSpellTexture(spellID),
             type = schoolName or "Interrupted",
             duration = duration,
-            expiration = GetTime() + duration,
+            expiration = expirationTime,
+            expirationTime = expirationTime,
+            remaining = remaining,
             spellID = spellID,
             school = school
         }

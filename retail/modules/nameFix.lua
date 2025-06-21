@@ -369,13 +369,18 @@ function BBF.PartyNameChange()
     end
 end
 
+local function IsInArena()
+    local inInstance, instanceType = IsInInstance()
+    return inInstance and instanceType == "arena"
+end
+
 local UpdatePartyNames = CreateFrame("Frame")
 UpdatePartyNames:RegisterEvent("PLAYER_ENTERING_WORLD")
 UpdatePartyNames:RegisterEvent("PLAYER_ENTERING_BATTLEGROUND")
 UpdatePartyNames:SetScript("OnEvent", function(self, event, ...)
     if event == "PLAYER_ENTERING_WORLD" or event == "PLAYER_ENTERING_BATTLEGROUND" then
         SpecCache = {}
-        if IsActiveBattlefieldArena() then
+        if IsInArena() then
             if not self:IsEventRegistered("GROUP_ROSTER_UPDATE") then
                 self:RegisterEvent("GROUP_ROSTER_UPDATE")
             end
@@ -383,7 +388,7 @@ UpdatePartyNames:SetScript("OnEvent", function(self, event, ...)
             self:UnregisterEvent("GROUP_ROSTER_UPDATE")
         end
     elseif event == "GROUP_ROSTER_UPDATE" then
-        if partyArenaNames and IsActiveBattlefieldArena() then
+        if partyArenaNames and IsInArena() then
             for delay = 0, 8 do
                 C_Timer.After(delay, BBF.PartyNameChange)
             end
@@ -577,6 +582,9 @@ local function InitializeFontString(frame)
 
     -- Set initial text from the original FontString
     frame.bbfName:SetText(name:GetText())
+    hooksecurefunc(name, "SetText", function()
+        frame.bbfName:SetSize(name:GetSize())
+    end)
 
     -- Hide original
     name:SetAlpha(0)

@@ -3566,11 +3566,11 @@ function BBF.FixStupidBlizzPTRShit()
         local texture = PlayerFrame:CreateTexture(nil, "BACKGROUND")
         texture:SetColorTexture(v, v, v, 1)
         texture:SetPoint("TOPLEFT", PlayerFrame.manabar, "BOTTOMLEFT", 0, 0)
-        texture:SetPoint("BOTTOMRIGHT", PlayerFrame.manabar, "BOTTOMRIGHT", 0, -1)
+        texture:SetPoint("BOTTOMRIGHT", PlayerFrame.manabar, "BOTTOMRIGHT", -2.5, -1)
         local texture = PlayerFrame:CreateTexture(nil, "BACKGROUND")
         texture:SetColorTexture(v, v, v, 1)
         texture:SetPoint("BOTTOMLEFT", PlayerFrame.healthbar, "TOPLEFT", 0, 0)
-        texture:SetPoint("BOTTOMRIGHT", PlayerFrame.manabar, "TOPRIGHT", -2, 1)
+        texture:SetPoint("BOTTOMRIGHT", PlayerFrame.manabar, "TOPRIGHT", -2.5, 1)
 
 
 

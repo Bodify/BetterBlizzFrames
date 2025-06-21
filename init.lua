@@ -9,8 +9,14 @@ local function CreateOverlayFrame(frame)
     frame.bbfOverlayFrame:SetFrameStrata("DIALOG")
     frame.bbfOverlayFrame:SetSize(frame:GetSize())
     frame.bbfOverlayFrame:SetAllPoints(frame)
+
+    hooksecurefunc(frame, "SetFrameStrata", function()
+        frame.bbfOverlayFrame:SetFrameStrata("DIALOG")
+    end)
 end
 
-CreateOverlayFrame(TargetFrame)
-CreateOverlayFrame(FocusFrame)
 CreateOverlayFrame(PlayerFrame)
+CreateOverlayFrame(TargetFrame)
+if FocusFrame then
+    CreateOverlayFrame(FocusFrame)
+end

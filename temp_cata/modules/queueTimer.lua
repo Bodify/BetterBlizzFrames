@@ -102,7 +102,7 @@ local function OnUpdate(elapsed)
         -- Play the sound when the timer reaches 5 seconds
         local db = BetterBlizzFramesDB
         if db.queueTimerAudio and db.queueTimerWarning then
-            if proposalTimeLeft == db.queueTimerWarningTime and not soundPlayed then
+            if proposalTimeLeft <= db.queueTimerWarningTime and not soundPlayed then
                 PlaySoundFile(567458, "master")
                 C_Timer.After(0.1, function()
                     PlaySoundFile(567458, "master")

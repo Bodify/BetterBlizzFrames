@@ -17,6 +17,7 @@ function BBF.HideArenaFrames()
 
     -- Change parent and hide
     local function MalwareProtector()
+        if InCombatLockdown() then return end
         local instanceType = select(2, IsInInstance())
         if instanceType == "arena" then
             CompactArenaFrame:SetParent(ArenaAntiMalware)
@@ -36,10 +37,10 @@ function BBF.HideArenaFrames()
     end
 
     -- Shouldn't be needed, but you know what, fuck it
-    CompactArenaFrame:SetScript("OnLoad", MalwareProtector)
-    CompactArenaFrame:SetScript("OnShow", MalwareProtector)
-    CompactArenaFrameTitle:SetScript("OnLoad", MalwareProtector)
-    CompactArenaFrameTitle:SetScript("OnShow", MalwareProtector)
+    CompactArenaFrame:HookScript("OnLoad", MalwareProtector)
+    CompactArenaFrame:HookScript("OnShow", MalwareProtector)
+    CompactArenaFrameTitle:HookScript("OnLoad", MalwareProtector)
+    CompactArenaFrameTitle:HookScript("OnShow", MalwareProtector)
 
     CompactArenaFrame.isHidden = true
 

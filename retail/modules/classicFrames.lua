@@ -25,6 +25,7 @@ local function MakeClassicFrame(frame)
     local db = BetterBlizzFramesDB
     local hideLvl = db.hideLevelText
     local alwaysHideLvl = hideLvl and db.hideLevelTextAlways
+    local hideDragon = db.hideRareDragonTexture
 
     local ClassResourceFrames = {
         ROGUE      = RogueComboPointBarFrame,
@@ -284,13 +285,31 @@ local function MakeClassicFrame(frame)
 
             if ( classification == "rareelite" ) then
                 FrameAdjustments(frameContainer)
-                frame.ClassicFrame.Texture:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Rare-Elite")
+                if hideDragon and alwaysHideLvl then
+                    frame.ClassicFrame.Texture:SetTexture(noLvlTex)
+                elseif hideDragon then
+                    frame.ClassicFrame.Texture:SetTexture(defaultTex)
+                else
+                    frame.ClassicFrame.Texture:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Rare-Elite")
+                end
             elseif ( classification == "worldboss" or classification == "elite" ) then
                 FrameAdjustments(frameContainer)
-                frame.ClassicFrame.Texture:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Elite")
+                if hideDragon and alwaysHideLvl then
+                    frame.ClassicFrame.Texture:SetTexture(noLvlTex)
+                elseif hideDragon then
+                    frame.ClassicFrame.Texture:SetTexture(defaultTex)
+                else
+                    frame.ClassicFrame.Texture:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Elite")
+                end
             elseif ( classification == "rare" ) then
                 FrameAdjustments(frameContainer)
-                frame.ClassicFrame.Texture:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Rare")
+                if hideDragon and alwaysHideLvl then
+                    frame.ClassicFrame.Texture:SetTexture(noLvlTex)
+                elseif hideDragon then
+                    frame.ClassicFrame.Texture:SetTexture(defaultTex)
+                else
+                    frame.ClassicFrame.Texture:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Rare")
+                end
             elseif ( classification == "minus" ) then
                 FrameAdjustments(frameContainer, true)
                 frame.ClassicFrame.Texture:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Minus")

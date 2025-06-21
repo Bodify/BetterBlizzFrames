@@ -398,7 +398,7 @@ end
 
 local function isInBlacklist(spellName, spellId)
     local db = BetterBlizzFramesDB
-    local entry = db["auraBlacklist"][spellId] or db["auraBlacklist"][string.lower(spellName)]
+    local entry = db["auraBlacklist"][spellId] or (spellName and db["auraBlacklist"][string.lower(spellName)])
     if entry then
         local showMine = entry.showMine
         return true, showMine

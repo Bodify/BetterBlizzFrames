@@ -316,6 +316,9 @@ function BBF.DarkmodeFrames(bypass)
                 C_Timer.After(0, function()
                     RecolorVigor()
                 end)
+                C_Timer.After(0.05, function()
+                    RecolorVigor()
+                end)
             end)
         end
     end
@@ -404,6 +407,73 @@ function BBF.DarkmodeFrames(bypass)
         local region = select(i, zoomOutButton:GetRegions())
         if region:IsObjectType("Texture") then
             applySettings(region, minimapSat, minimapColor)
+        end
+    end
+
+    for i = 1, 8 do
+        local frame = _G["CompactRaidGroup"..i.."BorderFrame"]
+        if frame then
+            for j = 1, frame:GetNumRegions() do
+                local region = select(j, frame:GetRegions())
+                if region:IsObjectType("Texture") then
+                    applySettings(region, desaturationValue, vertexColor)
+                end
+            end
+        end
+
+        for j = 1,5 do
+            local memberFrame = _G["CompactRaidGroup"..i.."Member"..j]
+            if memberFrame then
+                applySettings(memberFrame.horizDivider, desaturationValue, vertexColor)
+                applySettings(memberFrame.horizTopBorder, desaturationValue, vertexColor)
+                applySettings(memberFrame.horizBottomBorder, desaturationValue, vertexColor)
+                applySettings(memberFrame.vertLeftBorder, desaturationValue, vertexColor)
+                applySettings(memberFrame.vertRightBorder, desaturationValue, vertexColor)
+            end
+        end
+    end
+
+    local fixBackground = false
+    if fixBackground then -- check for resets
+        for i = 1, 8 do
+            for j = 1,5 do
+                local f = _G["CompactRaidGroup"..i.."Member"..j.."Background"]
+                if f then
+                    local _,_,top,bottom = f:GetTexCoord()
+                    f:SetTexCoord(0.05, 0.95, top, bottom)
+                end
+            end
+        end
+    end
+
+    local compactPartyBorder = CompactPartyFrameBorderFrame or CompactRaidFrameContainerBorderFrame
+    if compactPartyBorder then
+        for i = 1, compactPartyBorder:GetNumRegions() do
+            local region = select(i, compactPartyBorder:GetRegions())
+            if region:IsObjectType("Texture") then
+                applySettings(region, desaturationValue, vertexColor)
+            end
+        end
+        for i = 1, 40 do
+            local frame = _G["CompactRaidFrame"..i]
+            if frame then
+                applySettings(frame.horizDivider, desaturationValue, vertexColor)
+                applySettings(frame.horizTopBorder, desaturationValue, vertexColor)
+                applySettings(frame.horizBottomBorder, desaturationValue, vertexColor)
+                applySettings(frame.vertLeftBorder, desaturationValue, vertexColor)
+                applySettings(frame.vertRightBorder, desaturationValue, vertexColor)
+            end
+            
+        end
+        for i = 1, 5 do
+            local frame = _G["CompactPartyFrameMember"..i]
+            if frame then
+                applySettings(frame.horizDivider, desaturationValue, vertexColor)
+                applySettings(frame.horizTopBorder, desaturationValue, vertexColor)
+                applySettings(frame.horizBottomBorder, desaturationValue, vertexColor)
+                applySettings(frame.vertLeftBorder, desaturationValue, vertexColor)
+                applySettings(frame.vertRightBorder, desaturationValue, vertexColor)
+            end
         end
     end
 
