@@ -1,3 +1,9 @@
+# BetterBlizzFrames 1.7.1h
+## Retail
+### Bugfix
+- Fix typo in Aeghis profile import, making it impossible to enable the profile.
+- Fix MicroMenu size (edit mode box) getting wild because of Move Queue Eye setting after changes from Blizzard in 11.1.7. Your MicroMenu might move slightly due to this new change.
+
 # BetterBlizzFrames 1.7.1g
 ## Mists of Pandaria / Cata
 ### Bugfix

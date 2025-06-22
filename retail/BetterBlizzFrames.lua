@@ -3755,11 +3755,10 @@ Frame:SetScript("OnEvent", function(...)
             BBF.ChatFilterCaller()
             HookClassComboPoints()
             BBF.FadeMicroMenu()
-            BBF.MoveQueueStatusEye()
             BBF.HideTalkingHeads()
-
-
-
+            
+            
+            
             BBF.HookOverShields()
             BBF.HookCastbarsForEvoker()
             BBF.StealthIndicator()
@@ -3781,15 +3780,16 @@ Frame:SetScript("OnEvent", function(...)
             BBF.DarkmodeFrames()
             BBF.HookPlayerAndTargetAuras()
             BBF.HookFrameTextureColor()
-
+            
             if BetterBlizzFramesDB.playerFrameOCD then
                 BBF.FixStupidBlizzPTRShit()
             end
-
+            
             if BetterBlizzFramesDB.recolorTempHpLoss then
                 BBF.RecolorHpTempLoss()
             end
             C_Timer.After(1, function()
+                BBF.MoveQueueStatusEye()
                 BBF.CreateAltManaBar()
                 if BetterBlizzFramesDB.playerFrameOCD then
                     BBF.FixStupidBlizzPTRShit()

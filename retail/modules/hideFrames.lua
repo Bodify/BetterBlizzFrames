@@ -27,6 +27,10 @@ end
 function BBF.HideFrames()
     local db = BetterBlizzFramesDB
     if db.hasCheckedUi then
+        if InCombatLockdown() then
+            print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: Combat detected while adjusting Hide settings. Reload might be required to see updates. Please leave combat.")
+            return
+        end
         local playerClass, englishClass = UnitClass("player")
         local classicFrames = C_AddOns.IsAddOnLoaded("ClassicFrames")
         --Hide group indicator on player unitframe
@@ -72,6 +76,7 @@ function BBF.HideFrames()
                 hiddenFrame:RegisterEvent("ENCOUNTER_END")
                 hiddenFrame:RegisterEvent("GROUP_ROSTER_UPDATE")
                 hiddenFrame:SetScript("OnEvent", function()
+                    if InCombatLockdown then return end
                     local inInstance, instanceType = IsInInstance()
 
                     if BetterBlizzFramesDB.hideBossFramesParty and inInstance and instanceType == "party" then
@@ -1219,6 +1224,40 @@ function BBF.MoveQueueStatusEye()
     if button.bbfHooked then return end
     QueueStatusButton:SetParent(UIParent)
     QueueStatusButton:SetFrameLevel(10)
+
+    local function CalculateMicroMenuWidthWithoutQueue()
+        if not MicroMenu then return 1 end
+        if MicroMenu:GetParent() ~= MicroMenuContainer then return 1 end
+
+        local isHorizontal = not MicroMenu or MicroMenu.isHorizontal;
+        local width, height = 0, 0;
+
+        local function AddFrameSize(frame, includeOffset)
+            local scale = frame:GetScale()
+            if isHorizontal then
+                width = width + frame:GetWidth() * scale;
+                if includeOffset then
+                    local point, _, _, offsetX = frame:GetPoint(1)
+                    width = width + math.abs(offsetX * scale);
+                end
+                height = math.max(height, frame:GetHeight() * scale);
+            else
+                width = math.max(width, frame:GetWidth() * scale);
+                height = height + frame:GetHeight() * scale;
+                if includeOffset then
+                    local _, _, _, _, offsetY = frame:GetPoint(1)
+                    height = height + math.abs(offsetY * scale);
+                end
+            end
+        end
+        AddFrameSize(MicroMenu);
+        return math.max(width, 1)
+    end
+
+    hooksecurefunc(MicroMenuContainer, "SetSize", function(self)
+        local width = CalculateMicroMenuWidthWithoutQueue();
+	    self:SetWidth(width);
+    end)
 
     -- Hook the SetPoint function to prevent automatic resets
     hooksecurefunc(button, "SetPoint", function(self, _, _, _, _, _)
