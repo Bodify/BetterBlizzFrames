@@ -1,3 +1,8 @@
+# BetterBlizzFrames 1.7.1i
+## Mists of Pandaria
+### Tweak
+- Added missing Eclipse Bar and Shadow Orbs to "Hide Player Resource" setting.
+
 # BetterBlizzFrames 1.7.1h
 ## Retail
 ### Bugfix

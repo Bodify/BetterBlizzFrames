@@ -2424,6 +2424,9 @@ Frame:SetScript("OnEvent", function(...)
                 BBF.FixStupidBlizzPTRShit()
             end
             BBF.AllNameChanges()
+            C_Timer.After(0.2, function()
+                BBF.HideFrames()
+            end)
             C_Timer.After(1, function()
                 -- if BetterBlizzFramesDB.classColorTargetNames and BetterBlizzFramesDB.classColorLevelText then
                 --     BBF.HookLevelText()

@@ -2963,6 +2963,7 @@ local function guiGeneralTab()
                 { class = "Death Knight", var = "hidePlayerPowerNoDeathKnight", color = RAID_CLASS_COLORS["DEATHKNIGHT"] },
                 --{ class = "Evoker", var = "hidePlayerPowerNoEvoker", color = RAID_CLASS_COLORS["EVOKER"] },
                 { class = "Mage", var = "hidePlayerPowerNoMage", color = RAID_CLASS_COLORS["MAGE"] },
+                { class = "Priest", var = "hidePlayerPowerNoPriest", color = RAID_CLASS_COLORS["PRIEST"] },
                 { class = "Monk", var = "hidePlayerPowerNoMonk", color = RAID_CLASS_COLORS["MONK"] },
             }
 
