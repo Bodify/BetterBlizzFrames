@@ -2590,6 +2590,8 @@ First:SetScript("OnEvent", function(_, event, addonName)
                     whileDead = true,
                 }
                 StaticPopup_Show("BBF_MOP_UPDATE")
+            elseif not BetterBlizzFramesDB.hasSaved then
+                BetterBlizzFramesDB.mopUpdates = true
             end
 
             InitializeSavedVariables()

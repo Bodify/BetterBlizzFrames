@@ -349,6 +349,12 @@ function BBF.DarkmodeFrames(bypass)
     BBF.DarkModeUnitframeBorders()
 
 
+    if BetterBlizzFramesDB.darkModeEliteTexture then
+        local v = BetterBlizzFramesDB.darkModeColor + 0.25
+        local d = BetterBlizzFramesDB.darkModeEliteTextureDesaturated or false
+        applySettings(TargetFrame.TargetFrameContainer.BossPortraitFrameTexture, d, v)
+        applySettings(FocusFrame.TargetFrameContainer.BossPortraitFrameTexture, d, v)
+    end
 
 
     -- Applying settings based on BetterBlizzFramesDB.darkModeUi value

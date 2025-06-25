@@ -1,4 +1,8 @@
 # BetterBlizzFrames 1.7.1i
+## Retail
+### New
+- Hide ActionBar Crafting Quality Icon setting.
+- Dark Mode: Elite Texture, for Target/Focus Elite Texture. 
 ## Mists of Pandaria
 ### Tweak
 - Added missing Eclipse Bar and Shadow Orbs to "Hide Player Resource" setting.

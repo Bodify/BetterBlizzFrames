@@ -3098,6 +3098,23 @@ local function guiGeneralTab()
     end)
     CreateTooltipTwo(darkModeGameTooltip, "Dark Mode: Tooltip", "Dark mode for the Game Tooltip.")
 
+    local darkModeEliteTexture = CreateCheckbox("darkModeEliteTexture", "Elite Texture", darkModeUi)
+    darkModeEliteTexture:SetPoint("TOPLEFT", darkModeGameTooltip, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    darkModeEliteTexture:HookScript("OnClick", function()
+        BBF.DarkmodeFrames(true)
+    end)
+    CreateTooltipTwo(darkModeEliteTexture, "Dark Mode: Elite Texture", "Dark mode for the Elite Texture on Target/FocusFrame.\n\n|cff32f795Right-click to toggle desaturation on/off.|r")
+    darkModeEliteTexture:HookScript("OnMouseDown", function(self, button)
+        if button == "RightButton" then
+            if not BetterBlizzFramesDB.darkModeEliteTextureDesaturated then
+                BetterBlizzFramesDB.darkModeEliteTextureDesaturated = true
+            else
+                BetterBlizzFramesDB.darkModeEliteTextureDesaturated = nil
+            end
+            BBF.DarkmodeFrames(true)
+        end
+    end)
+
     local darkModeObjectiveFrame = CreateCheckbox("darkModeObjectiveFrame", "Objectives", darkModeUi)
     darkModeObjectiveFrame:SetPoint("LEFT", darkModeGameTooltip.Text, "RIGHT", 5, 0)
     darkModeObjectiveFrame:HookScript("OnClick", function()
@@ -7296,8 +7313,12 @@ local function guiMisc()
     hideActionBarMacroName:SetPoint("TOPLEFT", hideActionBarHotKey, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(hideActionBarMacroName, "Hides the macro name on default actionbars")
 
+    local hideActionBarQualityIcon = CreateCheckbox("hideActionBarQualityIcon", "Hide ActionBar Quality Icon", guiMisc, nil, BBF.HideFrames)
+    hideActionBarQualityIcon:SetPoint("TOPLEFT", hideActionBarMacroName, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltip(hideActionBarQualityIcon, "Hides the crafting quality icon for items on default actionbars")
+
     local hideStanceBar = CreateCheckbox("hideStanceBar", "Hide StanceBar (ActionBar)", guiMisc, nil, BBF.HideFrames)
-    hideStanceBar:SetPoint("TOPLEFT", hideActionBarMacroName, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    hideStanceBar:SetPoint("TOPLEFT", hideActionBarQualityIcon, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
 
     local hideDragonFlying = CreateCheckbox("hideDragonFlying", "Auto-hide Dragonriding (Temporary)", guiMisc)
     hideDragonFlying:SetPoint("TOPLEFT", hideStanceBar, "BOTTOMLEFT", 0, pixelsBetweenBoxes)

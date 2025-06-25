@@ -24,6 +24,27 @@ local function applyAlpha(frame, alpha)
     end
 end
 
+local function HideQualityIconFromBars(alpha)
+    for i = 1, 12 do
+        local buttons = {
+            _G["ActionButton" .. i],
+            _G["MultiBarBottomLeftButton" .. i],
+            _G["MultiBarBottomRightButton" .. i],
+            _G["MultiBarRightButton" .. i],
+            _G["MultiBarLeftButton" .. i],
+            _G["MultiBar5Button" .. i],
+            _G["MultiBar6Button" .. i],
+            _G["MultiBar7Button" .. i]
+        }
+
+        for _, button in ipairs(buttons) do
+            if button and button.ProfessionQualityOverlayFrame then
+                button.ProfessionQualityOverlayFrame:SetAlpha(alpha)
+            end
+        end
+    end
+end
+
 function BBF.HideFrames()
     local db = BetterBlizzFramesDB
     if db.hasCheckedUi then
@@ -40,6 +61,13 @@ function BBF.HideFrames()
         -- PlayerFrameGroupIndicatorText:SetAlpha(groupIndicatorAlpha)
         -- PlayerFrameGroupIndicatorLeft:SetAlpha(groupIndicatorAlpha)
         -- PlayerFrameGroupIndicatorRight:SetAlpha(groupIndicatorAlpha)
+
+        if db.hideActionBarQualityIcon then
+            HideQualityIconFromBars(0)
+            changes.hideActionBarQualityIcon = true
+        elseif changes.hideActionBarQualityIcon then
+            HideQualityIconFromBars(1)
+        end
 
         -- Hide target leader icon
         local targetLeaderIconAlpha = BetterBlizzFramesDB.hideTargetLeaderIcon and 0 or 1
