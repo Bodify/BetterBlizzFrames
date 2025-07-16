@@ -501,7 +501,7 @@ function BBF.ToggleLossOfControlTestMode()
     if not cataReady then return end
     local LossOfControlFrameAlphaBg = BetterBlizzFramesDB.hideLossOfControlFrameBg and 0 or 0.6
     local LossOfControlFrameAlphaLines = BetterBlizzFramesDB.hideLossOfControlFrameLines and 0 or 1
-    if not _G.FakeBBFLossOfControlFrame then  -- Changed to a global reference for wider access
+    if not _G.FakeBBFLossOfControlFrame then
         -- Main Frame Creation
         local frame = CreateFrame("Frame", "FakeBBFLossOfControlFrame", UIParent, "BackdropTemplate")
         frame:SetSize(256, 58)
@@ -567,7 +567,7 @@ function BBF.ToggleLossOfControlTestMode()
         stopButton:SetScript("OnClick", function() frame:Hide() end)
         frame.StopButton = stopButton  -- Correctly scoped
 
-        _G.FakeBBFLossOfControlFrame = frame  -- Store the frame globally
+        _G.FakeBBFLossOfControlFrame = frame
     end
     FakeBBFLossOfControlFrame:SetScale(BetterBlizzFramesDB.lossOfControlScale)
     FakeBBFLossOfControlFrame.blackBg:SetAlpha(LossOfControlFrameAlphaBg)
@@ -707,7 +707,8 @@ end
 
 
 local LSM = LibStub("LibSharedMedia-3.0")
-
+BBF.LSM = LSM
+BBF.allLocales = LSM.LOCALE_BIT_western+LSM.LOCALE_BIT_ruRU+LSM.LOCALE_BIT_zhCN+LSM.LOCALE_BIT_zhTW+LSM.LOCALE_BIT_koKR
 local texture = "Interface\\Addons\\BetterBlizzPlates\\media\\DragonflightTextureHD"
 local manaTexture = "Interface\\Addons\\BetterBlizzPlates\\media\\DragonflightTextureHD"
 local raidHpTexture = "Interface\\Addons\\BetterBlizzPlates\\media\\DragonflightTextureHD"

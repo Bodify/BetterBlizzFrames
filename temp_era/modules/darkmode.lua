@@ -7,13 +7,28 @@ local minimapChanged =false
 local hookedTotemBar
 local hookedAuras
 
-local function applySettings(frame, desaturate, colorValue)
+local function applySettings(frame, desaturate, colorValue, hook)
     if frame then
-        if desaturate ~= nil and frame.SetDesaturated then -- Check if SetDesaturated is available
+        if desaturate ~= nil and frame.SetDesaturated then
             frame:SetDesaturated(desaturate)
         end
+
         if frame.SetVertexColor then
-            frame:SetVertexColor(colorValue, colorValue, colorValue) -- Alpha set to 1
+            frame:SetVertexColor(colorValue, colorValue, colorValue)
+            if hook then
+                if not frame.bbfHooked then
+                    frame.bbfHooked = true
+                    frame:SetVertexColor(colorValue, colorValue, colorValue, 1)
+
+                    hooksecurefunc(frame, "SetVertexColor", function(self)
+                        if self.changing or self:IsProtected() then return end
+                        self.changing = true
+                        self:SetDesaturated(desaturate)
+                        self:SetVertexColor(colorValue, colorValue, colorValue, 1)
+                        self.changing = false
+                    end)
+                end
+            end
         end
     end
 end
@@ -254,7 +269,7 @@ function BBF.DarkmodeFrames(bypass)
         end
     end
 
-    function checkAndApplySettings(object, minimapSat, minimapColor)
+    local function checkAndApplySettings(object, minimapSat, minimapColor)
         if object:IsObjectType("Texture") then
             local texturePath = object:GetTexture()
             if texturePath and string.find(texturePath, "136430") then
@@ -643,6 +658,15 @@ function BBF.DarkmodeFrames(bypass)
         end
     end
 
+    if BlizzardArtTex0 then
+        for i = 0, 3 do
+            local texture = _G["BlizzardArtTex"..i]
+            if texture then
+                applySettings(texture, desaturationValue, actionBarColor)
+            end
+        end
+    end
+
     local BARTENDER4_PET_BUTTONS = 10
     for i = 1, BARTENDER4_PET_BUTTONS do
         local button = _G["BT4PetButton" .. i]
@@ -679,6 +703,7 @@ function BBF.DarkmodeFrames(bypass)
         {name = "MultiBarBottomLeftActionButton", count = 12},
         {name = "DominosPetActionButton", count = 12},
         {name = "DominosStanceButton", count = 12},
+        {name = "StanceButton", count = 6},
     }
 
     -- Loop through each bar and apply settings to its buttons
@@ -688,7 +713,7 @@ function BBF.DarkmodeFrames(bypass)
             if button then
                 local normalTexture = button:GetNormalTexture()
                 if normalTexture then
-                    applySettings(normalTexture, desaturationValue, actionBarColor)
+                    applySettings(normalTexture, desaturationValue, actionBarColor, true)
                 end
             end
         end

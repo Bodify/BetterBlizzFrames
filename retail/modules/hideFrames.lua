@@ -769,29 +769,45 @@ function BBF.HideFrames()
         -- action bar macro name hotkey hide
         local hotKeyAlpha = BetterBlizzFramesDB.hideActionBarHotKey and 0 or 1
         local macroNameAlpha = BetterBlizzFramesDB.hideActionBarMacroName and 0 or 1
+
         if BetterBlizzFramesDB.hideActionBarHotKey or BetterBlizzFramesDB.hideActionBarMacroName or keybindAlphaChanged then
-            for i = 1, 12 do
-                applyAlpha(_G["ActionButton" .. i .. "HotKey"], hotKeyAlpha)
-                applyAlpha(_G["MultiBarBottomLeftButton" .. i .. "HotKey"], hotKeyAlpha)
-                applyAlpha(_G["MultiBarBottomRightButton" ..i.. "HotKey"], hotKeyAlpha)
-                applyAlpha(_G["MultiBarRightButton" ..i.. "HotKey"], hotKeyAlpha)
-                applyAlpha(_G["MultiBarLeftButton" ..i.. "HotKey"], hotKeyAlpha)
-                applyAlpha(_G["MultiBar5Button" ..i.. "HotKey"], hotKeyAlpha)
-                applyAlpha(_G["MultiBar6Button" ..i.. "HotKey"], hotKeyAlpha)
-                applyAlpha(_G["MultiBar7Button" ..i.. "HotKey"], hotKeyAlpha)
-                applyAlpha(_G["PetActionButton" ..i.. "HotKey"], hotKeyAlpha)
+            -- Blizzard buttons
+            local blizzPrefixes = {
+                "ActionButton", "MultiBarBottomLeftButton", "MultiBarBottomRightButton",
+                "MultiBarRightButton", "MultiBarLeftButton", "MultiBar5Button",
+                "MultiBar6Button", "MultiBar7Button", "PetActionButton"
+            }
 
-                applyAlpha(_G["ActionButton" .. i .. "Name"], macroNameAlpha)
-                applyAlpha(_G["MultiBarBottomLeftButton" .. i .. "Name"], macroNameAlpha)
-                applyAlpha(_G["MultiBarBottomRightButton" ..i.. "Name"], macroNameAlpha)
-                applyAlpha(_G["MultiBarRightButton" ..i.. "Name"], macroNameAlpha)
-                applyAlpha(_G["MultiBarLeftButton" ..i.. "Name"], macroNameAlpha)
-                applyAlpha(_G["MultiBar5Button" ..i.. "Name"], macroNameAlpha)
-                applyAlpha(_G["MultiBar6Button" ..i.. "Name"], macroNameAlpha)
-                applyAlpha(_G["MultiBar7Button" ..i.. "Name"], macroNameAlpha)
-                applyAlpha(_G["PetActionButton" ..i.. "Name"], macroNameAlpha)
-
+            for _, prefix in ipairs(blizzPrefixes) do
+                for i = 1, 12 do
+                    applyAlpha(_G[prefix .. i .. "HotKey"], hotKeyAlpha)
+                    applyAlpha(_G[prefix .. i .. "Name"], macroNameAlpha)
+                end
             end
+
+            -- Dominos buttons
+            local NUM_ACTIONBAR_BUTTONS = NUM_ACTIONBAR_BUTTONS or 12
+            local DOMINOS_NUM_MAX_BUTTONS = 14 * NUM_ACTIONBAR_BUTTONS
+            local dominosBars = {
+                {name = "DominosActionButton", count = DOMINOS_NUM_MAX_BUTTONS},
+                {name = "MultiBar5ActionButton", count = 12},
+                {name = "MultiBar6ActionButton", count = 12},
+                {name = "MultiBar7ActionButton", count = 12},
+                {name = "MultiBarRightActionButton", count = 12},
+                {name = "MultiBarLeftActionButton", count = 12},
+                {name = "MultiBarBottomRightActionButton", count = 12},
+                {name = "MultiBarBottomLeftActionButton", count = 12},
+                {name = "DominosPetActionButton", count = 12},
+                {name = "DominosStanceButton", count = 12},
+            }
+
+            for _, bar in ipairs(dominosBars) do
+                for i = 1, bar.count do
+                    applyAlpha(_G[bar.name .. i .. "HotKey"], hotKeyAlpha)
+                    applyAlpha(_G[bar.name .. i .. "Name"], macroNameAlpha)
+                end
+            end
+
             keybindAlphaChanged = true
         end
 
@@ -1129,107 +1145,144 @@ function BBF.MinimapHider()
 end
 
 
--- temp inc settings
 function BBF.FadeMicroMenu()
     if not BetterBlizzFramesDB.fadeMicroMenu then return end
-    local function SetAlphaForMicroMenu(alpha)
-        MicroMenu:SetAlpha(alpha)
-        MicroMenuContainer:SetAlpha(alpha)
-        for _, child in ipairs({MicroMenu:GetChildren()}) do
-            child:SetAlpha(alpha)
-        end
-        if not BetterBlizzFramesDB.hideBagsBar then
-            BagsBar:SetAlpha(0)
-            for _, child in ipairs({BagsBar:GetChildren()}) do
-                child:SetAlpha(alpha)
-            end
-        end
-    end
-
-    SetAlphaForMicroMenu(0) -- Start with hidden
-
-    local function IsAnyMouseOver()
-        if MicroMenu:IsMouseOver() then return true end
-        for _, child in ipairs({MicroMenu:GetChildren()}) do
-            if child:IsMouseOver() then
-                return true
-            end
-        end
-        if BagsBar:IsMouseOver() then return true end
-        for _, child in ipairs({BagsBar:GetChildren()}) do
-            if child:IsMouseOver() then
-                return true
-            end
-        end
-        return false
-    end
-
     if not MicroMenu.bffHooked then
-        MicroMenu:HookScript("OnEnter", function()
-            SetAlphaForMicroMenu(1)
-        end)
-
-        MicroMenu:HookScript("OnLeave", function()
-            C_Timer.After(0.5, function()
-                if not IsAnyMouseOver() then
-                    SetAlphaForMicroMenu(0)
-                end
-            end)
-        end)
-
-        MicroMenuContainer:HookScript("OnEnter", function()
-            SetAlphaForMicroMenu(1)
-        end)
-
-        MicroMenuContainer:HookScript("OnLeave", function()
-            C_Timer.After(0.5, function()
-                if not IsAnyMouseOver() then
-                    SetAlphaForMicroMenu(0)
-                end
-            end)
-        end)
-
-        -- Apply hooks to all children
-        for _, child in ipairs({MicroMenu:GetChildren()}) do
-            child:HookScript("OnEnter", function()
-                SetAlphaForMicroMenu(1)
-            end)
-
-            child:HookScript("OnLeave", function()
-                C_Timer.After(0.5, function()
-                if not IsAnyMouseOver() then
-                        SetAlphaForMicroMenu(0)
-                    end
-                end)
-            end)
+        local function FadeOutFrame(frame, duration)
+            UIFrameFadeOut(frame, duration, 1, 0)
         end
 
-        if not BetterBlizzFramesDB.hideBagsBar then
-            BagsBar:HookScript("OnEnter", function()
-                SetAlphaForMicroMenu(1)
-            end)
+        local function FadeInFrame(frame, duration)
+            UIFrameFadeIn(frame, duration, 0, 1)
+        end
 
-            BagsBar:HookScript("OnLeave", function()
-                C_Timer.After(0.5, function()
-                    if not IsAnyMouseOver() then
-                        SetAlphaForMicroMenu(0)
-                    end
-                end)
-            end)
+        local fadeTimer = nil -- Holds the current fade-out timer
+        local gracePeriod = 0.5 -- Grace period before fading out
+        local isFadedIn = false -- Tracks whether elements are already faded in
+
+        -- Fade helper for multiple frames
+        local function FadeElements(fadeType, duration)
+            local frames = {BagsBar, MicroMenu, MicroMenuContainer}
             for _, child in ipairs({MicroMenu:GetChildren()}) do
-                child:HookScript("OnEnter", function()
-                    SetAlphaForMicroMenu(1)
-                end)
+                table.insert(frames, child)
+            end
 
-                child:HookScript("OnLeave", function()
-                    C_Timer.After(0.5, function()
-                    if not IsAnyMouseOver() then
-                            SetAlphaForMicroMenu(0)
-                        end
-                    end)
-                end)
+            for _, frame in ipairs(frames) do
+                local adjustedDuration = duration
+
+                -- Make BagsBar fade out 0.2 seconds faster
+                if frame == BagsBar and fadeType == "out" then
+                    adjustedDuration = math.max(duration - 0.6, 0) -- Ensure non-negative duration
+                end
+
+                if EditModeManagerFrame:IsEditModeActive() then
+                    FadeInFrame(frame, 0) -- Force full alpha if Edit Mode is active
+                else
+                    if fadeType == "in" then
+                        FadeInFrame(frame, adjustedDuration)
+                    elseif fadeType == "out" then
+                        FadeOutFrame(frame, adjustedDuration)
+                    end
+                end
             end
         end
+
+        -- Mouseover detection
+        local function IsAnyMouseOver()
+            if BagsBar:IsMouseOver() or MicroMenu:IsMouseOver() or MicroMenuContainer:IsMouseOver() then
+                return true
+            end
+            for _, child in ipairs({BagsBar:GetChildren(), MicroMenu:GetChildren()}) do
+                if child:IsMouseOver() then
+                    return true
+                end
+            end
+            return false
+        end
+
+        -- Show elements (fade in)
+        local function ShowElements()
+            if not isFadedIn and not EditModeManagerFrame:IsEditModeActive() then -- Only fade in if not already visible and Edit Mode inactive
+                if fadeTimer then
+                    fadeTimer:Cancel() -- Cancel any pending fade-out
+                    fadeTimer = nil
+                end
+                FadeElements("in", 0.1) -- Smooth fade-in
+                isFadedIn = true
+            end
+        end
+
+        -- Hide elements (fade out with grace period)
+        local function HideElements()
+            if fadeTimer then
+                fadeTimer:Cancel() -- Reset any existing timer
+            end
+
+            fadeTimer = C_Timer.NewTimer(gracePeriod, function()
+                if not IsAnyMouseOver() and not EditModeManagerFrame:IsEditModeActive() then
+                    FadeElements("out", 1.1) -- Smooth fade-out
+                    isFadedIn = false -- Mark as faded out
+                end
+            end)
+        end
+
+        -- Reset alpha on Edit Mode toggle
+        local function ResetAlphaOnEditMode()
+            if EditModeManagerFrame:IsEditModeActive() then
+                -- Force all frames to full alpha
+                FadeElements("in", 0)
+            else
+                -- Fade out frames instantly if Edit Mode is closed
+                FadeElements("out", 0)
+                isFadedIn = false
+            end
+        end
+
+        -- Initial state: start hidden if not in Edit Mode
+        if not EditModeManagerFrame:IsEditModeActive() then
+            FadeElements("out", 0) -- Instantly fade out all elements
+            isFadedIn = false
+        else
+            FadeElements("in", 0) -- Full alpha when Edit Mode is active
+        end
+
+        -- Apply hooks only once
+        if not BagsBar.scHooked then
+            -- Hooks for BagsBar and its children
+            BagsBar:HookScript("OnEnter", ShowElements)
+            BagsBar:HookScript("OnLeave", HideElements)
+
+            for _, child in ipairs({BagsBar:GetChildren()}) do
+                child:HookScript("OnEnter", ShowElements)
+                child:HookScript("OnLeave", HideElements)
+            end
+
+            BagsBar.scHooked = true
+        end
+
+        if not MicroMenu.scHooked then
+            -- Hooks for MicroMenu, MicroMenuContainer, and its children
+            MicroMenu:HookScript("OnEnter", ShowElements)
+            MicroMenu:HookScript("OnLeave", HideElements)
+
+            MicroMenuContainer:HookScript("OnEnter", ShowElements)
+            MicroMenuContainer:HookScript("OnLeave", HideElements)
+
+            for _, child in ipairs({MicroMenu:GetChildren()}) do
+                child:HookScript("OnEnter", ShowElements)
+                child:HookScript("OnLeave", HideElements)
+            end
+
+            -- Special case for QueueStatusButton if required
+            QueueStatusButton:SetParent(UIParent)
+            QueueStatusButton:SetFrameLevel(10)
+
+            MicroMenu.scHooked = true
+        end
+
+        -- Hook into Edit Mode events to reset alpha
+        hooksecurefunc(EditModeManagerFrame, "EnterEditMode", ResetAlphaOnEditMode)
+        hooksecurefunc(EditModeManagerFrame, "ExitEditMode", ResetAlphaOnEditMode)
 
         -- Special case for QueueStatusButton if required
         if BetterBlizzFramesDB.fadeMicroMenuExceptQueue then

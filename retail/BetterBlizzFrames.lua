@@ -692,6 +692,7 @@ local resourceFrames = {
     DEATHKNIGHT = RuneFrame,
     EVOKER = EssencePlayerFrame,
     MAGE = MageArcaneChargesFrame,
+    MONK = MonkHarmonyBarFrame,
 }
 
 local function DisableClickForResourceFrame(frame)
@@ -2902,6 +2903,16 @@ function HookUnitFrameTextures()
                     ApplyTextureChange("health", frame.HealthBarContainer.HealthBar, frame, nil, true)
                 end
             end
+
+            if db.classicFrames and db.changeUnitFrameHealthbarTextureRepColor then
+                local function retexture(tex)
+                    if not tex then return end
+                    tex:SetTexture((db.changeUnitFrameHealthbarTextureRepColor and LSM:Fetch(LSM.MediaType.STATUSBAR, db.unitFrameHealthbarTexture) or "Interface\\TargetingFrame\\UI-TargetingFrame-LevelBackground"))
+                end
+                retexture(PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ReputationColor)
+                retexture(TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor)
+                retexture(FocusFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor)
+            end
         end
 
         if db.changeUnitFrameManabarTexture then
@@ -3401,7 +3412,7 @@ function BBF.AddBackgroundTextureToUnitFrames(frame, tot)
     bgTex:SetColorTexture(unpack(color))
 
     local classic = BetterBlizzFramesDB.classicFrames
-    local yOffset = (EF and frame == TargetFrame or frame == FocusFrame) and 9 or classic and -10 or 0
+    local yOffset = (EF and (frame == TargetFrame or frame == FocusFrame)) and 9 or classic and -10 or 0
     local xOffset = classic and 2 or 0
 
     if tot then

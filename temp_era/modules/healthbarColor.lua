@@ -393,6 +393,7 @@ function BBF.HookHealthbarColors()
 end
 
 function BBF.PlayerReputationColor()
+    if BetterBlizzFramesDB.biggerHealthbars then return end
     BBF.HookAndDo(PlayerFrameBackground, "SetSize", function(frame, width, height, flag)
         frame:SetSize(120, 41, flag)
     end)
@@ -481,6 +482,13 @@ function BBF.BiggerHealthbars(frame, name)
         -- BBF.SetRegionWidth(background, 120)
         BBF.HookAndDo(background, "SetSize", function(frame, width, height, flag)
             frame:SetSize(120, 42, flag)
+        end)
+        hooksecurefunc(background, "SetPoint", function(self, point, relativeTo, relativePoint, xOffset, yOffset)
+            if yOffset and yOffset ~= 47 then return end
+            if self.changing then return end
+            self.changing = true
+            self:SetPoint(point, relativeTo, relativePoint, xOffset, (yOffset or 0) - 12)
+            self.changing = false
         end)
         -- BBF.HookAndDo(background, "SetWidth", function(frame, width, height, flag)
         --     frame:SetWidth(119, 42, flag)

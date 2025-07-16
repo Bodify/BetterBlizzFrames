@@ -872,6 +872,7 @@ local function CreateSlider(parent, label, minValue, maxValue, stepValue, elemen
 end
 
 local function CreateTooltip(widget, tooltipText, anchor)
+    widget.tooltipTitle = tooltipText
     widget:SetScript("OnEnter", function(self)
         if GameTooltip:IsShown() then
             GameTooltip:Hide()
@@ -893,6 +894,10 @@ local function CreateTooltip(widget, tooltipText, anchor)
 end
 
 local function CreateTooltipTwo(widget, title, mainText, subText, anchor, cvarName, category)
+    widget.tooltipTitle = title
+    widget.tooltipMainText = mainText
+    widget.tooltipSubText = subText
+    widget.tooltipCVarName = cvarName
     widget:SetScript("OnEnter", function(self)
         -- Clear the tooltip before showing new information
         GameTooltip:ClearLines()
@@ -4930,6 +4935,59 @@ local function guiFrameLook()
     generalSettingsIcon:SetSize(22, 22)
     generalSettingsIcon:SetPoint("RIGHT", settingsText, "LEFT", -3, -1)
 
+    local howToImport = guiFrameLook:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    howToImport:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\Expressway_Free.ttf", 16)
+    howToImport:SetPoint("CENTER", mainGuiAnchor, "BOTTOMLEFT", 420, -260)
+    howToImport:SetText("How to import a custom font/texture:")
+
+    local howStepOne = guiFrameLook:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    howStepOne:SetJustifyH("LEFT")
+    howStepOne:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\arialn.TTF", 12)
+    howStepOne:SetPoint("TOPLEFT", howToImport, "BOTTOMLEFT", -20, -10)
+    howStepOne:SetText("1) Create a new folder in your AddOns folder called CustomMedia\n2) Put your fonts and textures in this folder\n3) Add these lines to the Custom Code section in BBF:\n\nFor each FONT write:")
+
+    local fontEditBox = CreateFrame("EditBox", nil, guiFrameLook, "InputBoxTemplate")
+    fontEditBox:SetSize(330, 20)
+    fontEditBox:SetPoint("TOPLEFT", howStepOne, "BOTTOMLEFT", 5, -5)
+    fontEditBox:SetAutoFocus(false)
+    fontEditBox:SetText("BBF.LSM:Register(\"font\", \"My Font Name\", [[Interface\\AddOns\\CustomMedia\\MyFontFile]], BBF.allLocales)")
+    fontEditBox:HighlightText()
+    fontEditBox:SetCursorPosition(0)
+    fontEditBox:SetScript("OnTextChanged", function(self)
+        fontEditBox:SetText("BBF.LSM:Register(\"font\", \"My Font Name\", [[Interface\\AddOns\\CustomMedia\\MyFontFile]], BBF.allLocales)")
+    end)
+    fontEditBox:SetScript("OnMouseUp", function(self)
+        self:SetFocus()
+        self:HighlightText()
+    end)
+
+    local howStepTwo = guiFrameLook:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    howStepTwo:SetJustifyH("LEFT")
+    howStepTwo:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\arialn.TTF", 12)
+    howStepTwo:SetPoint("TOPLEFT", fontEditBox, "BOTTOMLEFT", -5, -13)
+    howStepTwo:SetText("For each TEXTURE write:")
+
+    local textureEditBox = CreateFrame("EditBox", nil, guiFrameLook, "InputBoxTemplate")
+    textureEditBox:SetSize(330, 20)
+    textureEditBox:SetPoint("TOPLEFT", howStepTwo, "BOTTOMLEFT", 5, -5)
+    textureEditBox:SetAutoFocus(false)
+    textureEditBox:SetText("BBF.LSM:Register(\"statusbar\", \"My Texture Name\", [[Interface\\AddOns\\CustomMedia\\MyTextureFile]])")
+    textureEditBox:HighlightText()
+    textureEditBox:SetCursorPosition(0)
+    textureEditBox:SetScript("OnTextChanged", function(self)
+        textureEditBox:SetText("BBF.LSM:Register(\"statusbar\", \"My Texture Name\", [[Interface\\AddOns\\CustomMedia\\MyTextureFile]])")
+    end)
+    textureEditBox:SetScript("OnMouseUp", function(self)
+        self:SetFocus()
+        self:HighlightText()
+    end)
+
+    local howStepThree = guiFrameLook:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    howStepThree:SetJustifyH("LEFT")
+    howStepThree:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\arialn.TTF", 12)
+    howStepThree:SetPoint("TOPLEFT", textureEditBox, "BOTTOMLEFT", -5, -13)
+    howStepThree:SetText("Remember to rename \"My Texture Name\" to whatever name you want\nand \"MyTextureFile\" to exactly what your texture file is named in the folder.")
+
     local changeUnitFrameFont = CreateCheckbox("changeUnitFrameFont", "Change UnitFrame Font", guiFrameLook)
     changeUnitFrameFont:SetPoint("TOPLEFT", settingsText, "BOTTOMLEFT", -4, pixelsOnFirstBox)
     CreateTooltipTwo(changeUnitFrameFont, "Change UnitFrame Font","Changes the font on Player, Target & Focus etc.")
@@ -6200,7 +6258,6 @@ local function guiMisc()
         end
     end)
     CreateTooltip(stealthIndicatorPlayer, "Add a blue border texture around the\nplayer frame during stealth abilities")
-    notWorking(stealthIndicatorPlayer, true)
 
     local addUnitFrameBgTexture = CreateCheckbox("addUnitFrameBgTexture", "UnitFrame Background Color", guiMisc)
     addUnitFrameBgTexture:SetPoint("TOPLEFT", stealthIndicatorPlayer, "BOTTOMLEFT", 0, pixelsBetweenBoxes)

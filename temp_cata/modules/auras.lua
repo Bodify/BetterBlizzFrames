@@ -180,7 +180,7 @@ local maxPlayerAurasPerRow
 local customPurgeSize
 local enlargedTextureAdjustmentSmall = 1
 local compactedTextureAdjustmentSmall = 1
-local purgeableTextureAdjustment = 1
+local purgeableTextureAdjustmentSmall = 1
 local purgeableAuraSize = 1
 local targetEnlargeAuraEnemy
 local targetEnlargeAuraFriendly
@@ -207,10 +207,11 @@ local function UpdateMore()
     onlyPandemicMine = BetterBlizzFramesDB.onlyPandemicAuraMine
     buffsOnTopReverseCastbarMovement = BetterBlizzFramesDB.buffsOnTopReverseCastbarMovement
     customPurgeSize = BetterBlizzFramesDB.customPurgeSize
-    enlargedTextureAdjustmentSmall = 18 * userEnlargedAuraSize
-    compactedTextureAdjustmentSmall = 18 * userCompactedAuraSize
+    enlargedTextureAdjustmentSmall = 20 * userEnlargedAuraSize
+    compactedTextureAdjustmentSmall = 20 * userCompactedAuraSize
     purgeableAuraSize = BetterBlizzFramesDB.purgeableAuraSize
     purgeableTextureAdjustment = 20 * purgeableAuraSize
+    purgeableTextureAdjustmentSmall = 20 * purgeableAuraSize
     targetEnlargeAuraEnemy = BetterBlizzFramesDB.targetEnlargeAuraEnemy
     targetEnlargeAuraFriendly = BetterBlizzFramesDB.targetEnlargeAuraFriendly
     focusEnlargeAuraEnemy = BetterBlizzFramesDB.focusEnlargeAuraEnemy
@@ -1021,16 +1022,15 @@ local function AdjustAuras(self, frameType)
                     if aura.Stealable then
                         aura.Stealable:SetScale(scale)
                     end
-                end
-                if aura.PurgeGlow then
-                    -- --aura.PurgeGlow:SetScale(userPurgeableAuraSize)
-                    -- if aura.isLarge then
-                    --     aura.PurgeGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -enlargedTextureAdjustment, enlargedTextureAdjustment)
-                    --     aura.PurgeGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", enlargedTextureAdjustment, -enlargedTextureAdjustment)
-                    -- else
-                        aura.PurgeGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -purgeableTextureAdjustment, purgeableTextureAdjustment)
-                        aura.PurgeGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", purgeableTextureAdjustment, -purgeableTextureAdjustment)
-                    --end
+                    if aura.PurgeGlow then
+                        if aura.isLarge then
+                            aura.PurgeGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -texAdjust, texAdjust)
+                            aura.PurgeGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", texAdjust, -texAdjust)
+                        else
+                            aura.PurgeGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -texAdjustSmall, texAdjustSmall)
+                            aura.PurgeGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", texAdjustSmall, -texAdjustSmall)
+                        end
+                    end
                 end
                 auraSize = importantSize
             elseif aura.isPurgeable and customPurgeSize then
@@ -1040,23 +1040,22 @@ local function AdjustAuras(self, frameType)
                 aura:SetSize(purgeableSize, purgeableSize)
                 if aura.isImportant then
                     if aura.isLarge then
-                        aura.ImportantGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -enlargedTextureAdjustment, enlargedTextureAdjustment)
-                        aura.ImportantGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", enlargedTextureAdjustment, -enlargedTextureAdjustment)
+                        aura.ImportantGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -purgeableTextureAdjustment, purgeableTextureAdjustment)
+                        aura.ImportantGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", purgeableTextureAdjustment, -purgeableTextureAdjustment)
                     else
-                        aura.ImportantGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -enlargedTextureAdjustmentSmall, enlargedTextureAdjustmentSmall)
-                        aura.ImportantGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", enlargedTextureAdjustmentSmall, -enlargedTextureAdjustmentSmall)
+                        aura.ImportantGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -purgeableTextureAdjustmentSmall, purgeableTextureAdjustmentSmall)
+                        aura.ImportantGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", purgeableTextureAdjustmentSmall, -purgeableTextureAdjustmentSmall)
                     end
                 end
                 auraSize = purgeableSize
                 if aura.PurgeGlow then
-                    --aura.PurgeGlow:SetScale(userPurgeableAuraSize)
-                    -- if aura.isLarge then
-                    --     aura.PurgeGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -purgeableTextureAdjustment, purgeableTextureAdjustment)
-                    --     aura.PurgeGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", purgeableTextureAdjustment, -purgeableTextureAdjustment)
-                    -- else
+                    if aura.isLarge then
                         aura.PurgeGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -purgeableTextureAdjustment, purgeableTextureAdjustment)
                         aura.PurgeGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", purgeableTextureAdjustment, -purgeableTextureAdjustment)
-                    --end
+                    else
+                        aura.PurgeGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -purgeableTextureAdjustmentSmall, purgeableTextureAdjustmentSmall)
+                        aura.PurgeGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", purgeableTextureAdjustmentSmall, -purgeableTextureAdjustmentSmall)
+                    end
                 else
                     if aura.Stealable then
                         aura.Stealable:SetScale(purgeableAuraSize)
@@ -1074,10 +1073,18 @@ local function AdjustAuras(self, frameType)
                         aura.ImportantGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -22.5, 22)
                         aura.ImportantGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", 22.5, -22.5)
                     end
+                    if aura.PurgeGlow then
+                        aura.PurgeGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -22.5, 22)
+                        aura.PurgeGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", 22.5, -22.5)
+                    end
                 else
                     if aura.isImportant then
-                        aura.ImportantGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -18, 18)
-                        aura.ImportantGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", 18, -18)
+                        aura.ImportantGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -20, 20)
+                        aura.ImportantGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", 20, -20)
+                    end
+                    if aura.PurgeGlow then
+                        aura.PurgeGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -20, 20)
+                        aura.PurgeGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", 20, -20)
                     end
                 end
                 auraSize = adjustedSize
@@ -1085,6 +1092,10 @@ local function AdjustAuras(self, frameType)
                 if aura.isImportant then
                     aura.ImportantGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -24, 24)
                     aura.ImportantGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", 24, -24)
+                end
+                if aura.PurgeGlow then
+                    aura.PurgeGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -24, 24)
+                    aura.PurgeGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", 24, -24)
                 end
             end
 
@@ -2867,98 +2878,3 @@ purgeListener:RegisterEvent("SPELLS_CHANGED")
 purgeListener:SetScript("OnEvent", function()
     BBF.hasExtraPurge = IsSpellKnownOrOverridesKnown(110802)
 end)
-
-
-function BBF.DampeningOnDebuff()
-    local dampeningInstanceID
-    local dampeningStacks
-    local dampeningAura = 110310
-    local frame = CreateFrame("Frame")
-    frame:RegisterEvent("PLAYER_ENTERING_WORLD")
-
-    local function CheckForDampening()
-        for i = 1, DEBUFF_ACTUAL_DISPLAY do
-            local debuffName = "DebuffButton"..i
-            local auraFrame = _G[debuffName]
-            if auraFrame and auraFrame:IsShown() then
-                local spellName, icon, count, dispelName, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, castByPlayer, nameplateShowAll, timeMod = UnitDebuff("player", i)
-                if spellId == dampeningAura then
-                    auraFrame.count:Show()
-                    auraFrame.count:SetText(dampeningStacks)
-                end
-            end
-        end
-    end
-
-    local function ScanInitialAuras()
-        for i = 1, 40 do
-            local aura = C_UnitAuras.GetAuraDataByIndex("player", i, "HARMFUL")
-            if not aura then break end
-            if aura.spellId == dampeningAura then
-                dampeningInstanceID = aura.auraInstanceID
-                if aura.points then
-                    dampeningStacks =  aura.points[1]
-                    CheckForDampening()
-                end
-                break
-            end
-        end
-    end
-
-    frame:SetScript("OnEvent", function(self, event, unit, updateInfo)
-        if event == "UNIT_AURA" then
-            if not updateInfo then return end
-
-            if updateInfo.addedAuras then
-                for _, aura in ipairs(updateInfo.addedAuras) do
-
-                    if aura.spellId == dampeningAura then
-                        dampeningInstanceID = aura.auraInstanceID
-                        if aura.points then
-                            dampeningStacks =  aura.points[1]
-                        end
-                    end
-                end
-            end
-
-            if updateInfo.updatedAuraInstanceIDs then
-                for _, auraInstanceID in ipairs(updateInfo.updatedAuraInstanceIDs) do
-                    local aura = C_UnitAuras.GetAuraDataByAuraInstanceID("player", auraInstanceID)
-                    if aura then
-                        dampeningInstanceID = auraInstanceID
-
-                        if aura.spellId == dampeningAura then
-                            dampeningInstanceID = aura.auraInstanceID
-                            if aura.points then
-                                dampeningStacks =  aura.points[1]
-                            end
-                        end
-                    end
-                end
-            end
-
-            if updateInfo.removedAuraInstanceIDs then
-                for _, auraInstanceID in ipairs(updateInfo.removedAuraInstanceIDs) do
-                    if auraInstanceID == dampeningInstanceID then
-                        dampeningStacks = nil
-                        dampeningInstanceID = nil
-                    end
-                end
-            end
-
-            if dampeningInstanceID then
-                CheckForDampening()
-            end
-        elseif event == "PLAYER_ENTERING_WORLD" then
-            local inInstance, instanceType = IsInInstance()
-            if inInstance and instanceType == "arena" then
-                frame:RegisterUnitEvent("UNIT_AURA", "player")
-                C_Timer.After(1, ScanInitialAuras)
-            else
-                frame:UnregisterEvent("UNIT_AURA")
-                dampeningStacks = nil
-                dampeningInstanceID = nil
-            end
-        end
-    end)
-end

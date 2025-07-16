@@ -1265,7 +1265,17 @@ local function PlayerCastingBarFrameMiscAdjustments()
     PlayerCastingBarFrame:SetWidth(BetterBlizzFramesDB.playerCastBarWidth)
     PlayerCastingBarFrame:SetHeight(BetterBlizzFramesDB.playerCastBarHeight)
     PlayerCastingBarFrame.Text:ClearAllPoints()
-    PlayerCastingBarFrame.Text:SetPoint("BOTTOM", PlayerCastingBarFrame, "BOTTOM", 0, -14)
+    if BetterBlizzFramesDB.playerCastBarNoTextBorder then
+        PlayerCastingBarFrame.TextBorder:SetAlpha(0)
+        PlayerCastingBarFrame.TextBorderHidden = true
+        PlayerCastingBarFrame.Text:SetPoint("BOTTOM", PlayerCastingBarFrame, "BOTTOM", 0, -2.5)
+    else
+        if PlayerCastingBarFrame.TextBorderHidden then
+            PlayerCastingBarFrame.TextBorder:SetAlpha(1)
+            PlayerCastingBarFrame.TextBorderHidden = nil
+        end
+        PlayerCastingBarFrame.Text:SetPoint("BOTTOM", PlayerCastingBarFrame, "BOTTOM", 0, -14)
+    end
     PlayerCastingBarFrame.Text:SetWidth(BetterBlizzFramesDB.playerCastBarWidth)
     PlayerCastingBarFrame.Icon:SetSize(22,22)
     PlayerCastingBarFrame.Icon:ClearAllPoints()

@@ -565,28 +565,43 @@ function BBF.HideFrames()
         local hotKeyAlpha = BetterBlizzFramesDB.hideActionBarHotKey and 0 or 1
         local macroNameAlpha = BetterBlizzFramesDB.hideActionBarMacroName and 0 or 1
         if BetterBlizzFramesDB.hideActionBarHotKey or BetterBlizzFramesDB.hideActionBarMacroName or keybindAlphaChanged then
-            for i = 1, 12 do
-                applyAlpha(_G["ActionButton" .. i .. "HotKey"], hotKeyAlpha)
-                applyAlpha(_G["MultiBarBottomLeftButton" .. i .. "HotKey"], hotKeyAlpha)
-                applyAlpha(_G["MultiBarBottomRightButton" ..i.. "HotKey"], hotKeyAlpha)
-                applyAlpha(_G["MultiBarRightButton" ..i.. "HotKey"], hotKeyAlpha)
-                applyAlpha(_G["MultiBarLeftButton" ..i.. "HotKey"], hotKeyAlpha)
-                applyAlpha(_G["MultiBar5Button" ..i.. "HotKey"], hotKeyAlpha)
-                applyAlpha(_G["MultiBar6Button" ..i.. "HotKey"], hotKeyAlpha)
-                applyAlpha(_G["MultiBar7Button" ..i.. "HotKey"], hotKeyAlpha)
-                applyAlpha(_G["PetActionButton" ..i.. "HotKey"], hotKeyAlpha)
+            -- Blizzard buttons
+            local blizzPrefixes = {
+                "ActionButton", "MultiBarBottomLeftButton", "MultiBarBottomRightButton",
+                "MultiBarRightButton", "MultiBarLeftButton", "MultiBar5Button",
+                "MultiBar6Button", "MultiBar7Button", "PetActionButton"
+            }
 
-                applyAlpha(_G["ActionButton" .. i .. "Name"], macroNameAlpha)
-                applyAlpha(_G["MultiBarBottomLeftButton" .. i .. "Name"], macroNameAlpha)
-                applyAlpha(_G["MultiBarBottomRightButton" ..i.. "Name"], macroNameAlpha)
-                applyAlpha(_G["MultiBarRightButton" ..i.. "Name"], macroNameAlpha)
-                applyAlpha(_G["MultiBarLeftButton" ..i.. "Name"], macroNameAlpha)
-                applyAlpha(_G["MultiBar5Button" ..i.. "Name"], macroNameAlpha)
-                applyAlpha(_G["MultiBar6Button" ..i.. "Name"], macroNameAlpha)
-                applyAlpha(_G["MultiBar7Button" ..i.. "Name"], macroNameAlpha)
-                applyAlpha(_G["PetActionButton" ..i.. "Name"], macroNameAlpha)
-
+            for _, prefix in ipairs(blizzPrefixes) do
+                for i = 1, 12 do
+                    applyAlpha(_G[prefix .. i .. "HotKey"], hotKeyAlpha)
+                    applyAlpha(_G[prefix .. i .. "Name"], macroNameAlpha)
+                end
             end
+
+            -- Dominos buttons
+            local NUM_ACTIONBAR_BUTTONS = NUM_ACTIONBAR_BUTTONS or 12
+            local DOMINOS_NUM_MAX_BUTTONS = 14 * NUM_ACTIONBAR_BUTTONS
+            local dominosBars = {
+                {name = "DominosActionButton", count = DOMINOS_NUM_MAX_BUTTONS},
+                {name = "MultiBar5ActionButton", count = 12},
+                {name = "MultiBar6ActionButton", count = 12},
+                {name = "MultiBar7ActionButton", count = 12},
+                {name = "MultiBarRightActionButton", count = 12},
+                {name = "MultiBarLeftActionButton", count = 12},
+                {name = "MultiBarBottomRightActionButton", count = 12},
+                {name = "MultiBarBottomLeftActionButton", count = 12},
+                {name = "DominosPetActionButton", count = 12},
+                {name = "DominosStanceButton", count = 12},
+            }
+
+            for _, bar in ipairs(dominosBars) do
+                for i = 1, bar.count do
+                    applyAlpha(_G[bar.name .. i .. "HotKey"], hotKeyAlpha)
+                    applyAlpha(_G[bar.name .. i .. "Name"], macroNameAlpha)
+                end
+            end
+
             keybindAlphaChanged = true
         end
 

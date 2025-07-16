@@ -862,6 +862,15 @@ function BBF.DarkmodeFrames(bypass)
         end
     end
 
+    if BlizzardArtTex0 then
+        for i = 0, 3 do
+            local texture = _G["BlizzardArtTex"..i]
+            if texture then
+                applySettings(texture, desaturationValue, actionBarColor)
+            end
+        end
+    end
+
     local BARTENDER4_PET_BUTTONS = 10
     for i = 1, BARTENDER4_PET_BUTTONS do
         local button = _G["BT4PetButton" .. i]

@@ -602,10 +602,6 @@ local function CreateSlider(parent, label, minValue, maxValue, stepValue, elemen
                     BetterBlizzFramesDB[element .. "Scale"] = value
                 end
 
-                local xPos = BetterBlizzFramesDB[element .. "XPos"] or 0
-                local yPos = BetterBlizzFramesDB[element .. "YPos"] or 0
-                local anchorPoint = BetterBlizzFramesDB[element .. "Anchor"] or "CENTER"
-
                 --If no frames are present still adjust values
                 if element == "targetToTXPos" then
                     BetterBlizzFramesDB.targetToTXPos = value
@@ -667,7 +663,6 @@ local function CreateSlider(parent, label, minValue, maxValue, stepValue, elemen
                 elseif element == "targetAndFocusAurasPerRow" then
                     BetterBlizzFramesDB.targetAndFocusAurasPerRow = value
                     BBF.RefreshAllAuraFrames()
-                    --
                 elseif element == "castBarInterruptHighlighterStartTime" then
                     BetterBlizzFramesDB.castBarInterruptHighlighterStartTime = value
                     BBF.CastbarRecolorWidgets()
@@ -904,6 +899,7 @@ local function CreateSlider(parent, label, minValue, maxValue, stepValue, elemen
 end
 
 local function CreateTooltip(widget, tooltipText, anchor)
+    widget.tooltipTitle = tooltipText
     widget:SetScript("OnEnter", function(self)
         if GameTooltip:IsShown() then
             GameTooltip:Hide()
@@ -925,6 +921,10 @@ local function CreateTooltip(widget, tooltipText, anchor)
 end
 
 local function CreateTooltipTwo(widget, title, mainText, subText, anchor, cvarName, category)
+    widget.tooltipTitle = title
+    widget.tooltipMainText = mainText
+    widget.tooltipSubText = subText
+    widget.tooltipCVarName = cvarName
     widget:SetScript("OnEnter", function(self)
         -- Clear the tooltip before showing new information
         GameTooltip:ClearLines()
@@ -2733,7 +2733,7 @@ local function guiGeneralTab()
 
     local enableLoCFrame = CreateCheckbox("enableLoCFrame", "Enable LossOfControl", BetterBlizzFrames)
     enableLoCFrame:SetPoint("TOPLEFT", playerFrameOCD, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltipTwo(enableLoCFrame, "Enable Loss of Control Frame", "Enable similar Loss of Control frame like on Retail with a few improvements.\n\n|cff32f795Right-click to show Icon only.|r")
+    CreateTooltipTwo(enableLoCFrame, "Enable Loss of Control Frame", "Enable similar Loss of Control frame like on Retail with a few improvements.\nIn instanced PvE content it will show default Loss of Control frame instead.\n\n|cff32f795Right-click to show Icon only.|r")
     enableLoCFrame:HookScript("OnClick", function(self)
         if not self:GetChecked() then
             StaticPopup_Show("BBF_CONFIRM_RELOAD")
@@ -4451,7 +4451,7 @@ local function guiCastbars()
     local playerCastBarIconScale = CreateSlider(contentFrame, "Icon Size", 0.4, 2, 0.01, "playerCastBarIconScale")
     playerCastBarIconScale:SetPoint("TOP", playerCastBarYPos, "BOTTOM", 0, -15)
 
-    local playerCastBarWidth = CreateSlider(contentFrame, "Width", 60, 230, 1, "playerCastBarWidth")
+    local playerCastBarWidth = CreateSlider(contentFrame, "Width", 90, 300, 1, "playerCastBarWidth")
     --playerCastBarWidth:SetPoint("TOP", playerCastBarYPos, "BOTTOM", 0, -15)
     playerCastBarWidth:SetPoint("TOP", playerCastBarIconScale, "BOTTOM", 0, -15)
 
@@ -5162,6 +5162,59 @@ local function guiFrameLook()
     generalSettingsIcon:SetAtlas("optionsicon-brown")
     generalSettingsIcon:SetSize(22, 22)
     generalSettingsIcon:SetPoint("RIGHT", settingsText, "LEFT", -3, -1)
+
+    local howToImport = guiFrameLook:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    howToImport:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\Expressway_Free.ttf", 16)
+    howToImport:SetPoint("CENTER", mainGuiAnchor, "BOTTOMLEFT", 420, -260)
+    howToImport:SetText("How to import a custom font/texture:")
+
+    local howStepOne = guiFrameLook:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    howStepOne:SetJustifyH("LEFT")
+    howStepOne:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\arialn.TTF", 12)
+    howStepOne:SetPoint("TOPLEFT", howToImport, "BOTTOMLEFT", -20, -10)
+    howStepOne:SetText("1) Create a new folder in your AddOns folder called CustomMedia\n2) Put your fonts and textures in this folder\n3) Add these lines to the Custom Code section in BBF:\n\nFor each FONT write:")
+
+    local fontEditBox = CreateFrame("EditBox", nil, guiFrameLook, "InputBoxTemplate")
+    fontEditBox:SetSize(330, 20)
+    fontEditBox:SetPoint("TOPLEFT", howStepOne, "BOTTOMLEFT", 5, -5)
+    fontEditBox:SetAutoFocus(false)
+    fontEditBox:SetText("BBF.LSM:Register(\"font\", \"My Font Name\", [[Interface\\AddOns\\CustomMedia\\MyFontFile]], BBF.allLocales)")
+    fontEditBox:HighlightText()
+    fontEditBox:SetCursorPosition(0)
+    fontEditBox:SetScript("OnTextChanged", function(self)
+        fontEditBox:SetText("BBF.LSM:Register(\"font\", \"My Font Name\", [[Interface\\AddOns\\CustomMedia\\MyFontFile]], BBF.allLocales)")
+    end)
+    fontEditBox:SetScript("OnMouseUp", function(self)
+        self:SetFocus()
+        self:HighlightText()
+    end)
+
+    local howStepTwo = guiFrameLook:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    howStepTwo:SetJustifyH("LEFT")
+    howStepTwo:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\arialn.TTF", 12)
+    howStepTwo:SetPoint("TOPLEFT", fontEditBox, "BOTTOMLEFT", -5, -13)
+    howStepTwo:SetText("For each TEXTURE write:")
+
+    local textureEditBox = CreateFrame("EditBox", nil, guiFrameLook, "InputBoxTemplate")
+    textureEditBox:SetSize(330, 20)
+    textureEditBox:SetPoint("TOPLEFT", howStepTwo, "BOTTOMLEFT", 5, -5)
+    textureEditBox:SetAutoFocus(false)
+    textureEditBox:SetText("BBF.LSM:Register(\"statusbar\", \"My Texture Name\", [[Interface\\AddOns\\CustomMedia\\MyTextureFile]])")
+    textureEditBox:HighlightText()
+    textureEditBox:SetCursorPosition(0)
+    textureEditBox:SetScript("OnTextChanged", function(self)
+        textureEditBox:SetText("BBF.LSM:Register(\"statusbar\", \"My Texture Name\", [[Interface\\AddOns\\CustomMedia\\MyTextureFile]])")
+    end)
+    textureEditBox:SetScript("OnMouseUp", function(self)
+        self:SetFocus()
+        self:HighlightText()
+    end)
+
+    local howStepThree = guiFrameLook:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    howStepThree:SetJustifyH("LEFT")
+    howStepThree:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\arialn.TTF", 12)
+    howStepThree:SetPoint("TOPLEFT", textureEditBox, "BOTTOMLEFT", -5, -13)
+    howStepThree:SetText("Remember to rename \"My Texture Name\" to whatever name you want\nand \"MyTextureFile\" to exactly what your texture file is named in the folder.")
 
     local changeUnitFrameFont = CreateCheckbox("changeUnitFrameFont", "Change UnitFrame Font", guiFrameLook)
     changeUnitFrameFont:SetPoint("TOPLEFT", settingsText, "BOTTOMLEFT", -4, pixelsOnFirstBox)
@@ -6511,8 +6564,12 @@ local function guiMisc()
         hideTotemFrameTimer:SetPoint("TOPLEFT", hideMonkComboBg, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
         CreateTooltipTwo(hideTotemFrameTimer, "Hide Totem Timer Text", "Hide the totem timer text that shows underneath the totem icon.")
 
+        local hideTotemFrameCd = CreateCheckbox("hideTotemFrameCd", "Hide TotemFrame Cooldown", guiMisc, nil, BBF.HideFrames)
+        hideTotemFrameCd:SetPoint("TOPLEFT", hideTotemFrameTimer, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+        CreateTooltipTwo(hideTotemFrameCd, "Hide TotemFrame Cooldown", "Hide the TotemFrame cooldown spiral on totem icons below your PlayerFrame.")
+
         local totemFrameScale = CreateSlider(guiMisc, "TotemFrame Size", 0.7, 1.4, 0.01, "totemFrameScale")
-        totemFrameScale:SetPoint("TOPLEFT", hideTotemFrameTimer, "BOTTOM", 0, -15)
+        totemFrameScale:SetPoint("TOPLEFT", hideTotemFrameCd, "BOTTOM", 0, -15)
     end
 
 

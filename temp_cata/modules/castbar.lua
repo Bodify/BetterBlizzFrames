@@ -5,14 +5,14 @@ local petCastbarCreated = false
 local UnitCastingInfo = UnitCastingInfo
 local UnitChannelInfo = UnitChannelInfo
 
-local function adjustCastBarBorder(castBar, border, adjust, shield, player, party)
+local function adjustCastBarBorder(castBar, border, adjust, shield, player, party, playerCb)
     -- Default values for width
     local defaultCastBarWidth = player or 150
     local defaultBorderWidth = 200
     local widthAdjustmentFactor = adjust / 50  -- Adjustment per unit width change
 
     -- Default values for height
-    local defaultCastBarHeight = 10
+    local defaultCastBarHeight = playerCb or 10
     local defaultBorderHeight = party and 55 or 56
     local heightAdjustmentFactor = 5.00  -- Average adjustment per unit height change
 
@@ -859,7 +859,7 @@ local function UpdateSparkPosition(castBar)
     local progressPercent = val / maxVal
     local newX = castBar:GetWidth() * progressPercent
     castBar.Spark:ClearAllPoints()
-    castBar.Spark:SetPoint("CENTER", castBar, "LEFT", newX, -1)
+    castBar.Spark:SetPoint("CENTER", castBar, "LEFT", newX, -1.5)
 end
 
 local function CastingBarFrameMiscAdjustments()
@@ -878,7 +878,7 @@ local function CastingBarFrameMiscAdjustments()
         if not CastingBarFrame.sparkHooked then
         CastingBarFrame:HookScript("OnUpdate", function(self)
             --self.Spark:SetTexture(130877)
-            self.Spark:SetSize(33,BetterBlizzFramesDB.playerCastBarHeight + 17)
+            self.Spark:SetSize(33,BetterBlizzFramesDB.playerCastBarHeight + 20)
             UpdateSparkPosition(self)
         end)
         CastingBarFrame.sparkHooked = true
@@ -912,13 +912,13 @@ function BBF.ChangeCastbarSizes()
     CastingBarFrame.Text:SetAlpha(BetterBlizzFramesDB.playerCastBarShowText and 1 or 0)
     CastingBarFrame.Border:SetAlpha(BetterBlizzFramesDB.playerCastBarShowBorder and 1 or 0)
 
-    adjustCastBarBorder(CastingBarFrame, CastingBarFrame.Border, 15)
+    adjustCastBarBorder(CastingBarFrame, CastingBarFrame.Border, 15, nil, nil, nil, 11)
     adjustCastBarBorder(CastingBarFrame, CastingBarFrame.BorderShield, 12, true)
 
     -- CastingBarFrame:ClearAllPoints()
     -- CastingBarFrame:SetPoint("CENTER", UIParent, "BOTTOM", BetterBlizzFramesDB.playerCastBarXPos, BetterBlizzFramesDB.playerCastBarYPos + 157)
 
-    BBF.MoveRegion(CastingBarFrame, "CENTER", UIParent, "BOTTOM", BetterBlizzFramesDB.playerCastBarXPos, BetterBlizzFramesDB.playerCastBarYPos + 157)
+    BBF.MoveRegion(CastingBarFrame, "CENTER", UIParent, "BOTTOM", BetterBlizzFramesDB.playerCastBarXPos, BetterBlizzFramesDB.playerCastBarYPos + 166)
 
     --
     CastingBarFrameMiscAdjustments()

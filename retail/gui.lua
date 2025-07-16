@@ -5025,16 +5025,21 @@ local function guiCastbars()
     CreateTooltip(playerCastBarShowIcon, "Show spell icon to the left of the castbar\nlike on every other castbar in the game")
 
     local playerCastBarTimer = CreateCheckbox("playerCastBarTimer", "Timer", contentFrame, nil, BBF.CastBarTimerCaller)
-    playerCastBarTimer:SetPoint("LEFT", playerCastBarShowIcon.Text, "RIGHT", 10, 0)
+    playerCastBarTimer:SetPoint("LEFT", playerCastBarShowIcon.Text, "RIGHT", 7, 0)
     CreateTooltip(playerCastBarTimer, "Show cast timer next to the castbar.")
 
-    local playerCastBarTimerCentered = CreateCheckbox("playerCastBarTimerCentered", "Centered Timer", contentFrame, nil, BBF.CastBarTimerCaller)
+    local playerCastBarTimerCentered = CreateCheckbox("playerCastBarTimerCentered", "Center", contentFrame, nil, BBF.CastBarTimerCaller)
     --playerStaticCastbar:SetPoint("TOPLEFT", playerCastBarIconScale, "BOTTOMLEFT", 10, -4)
-    playerCastBarTimerCentered:SetPoint("TOPLEFT", playerCastBarShowIcon, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    playerCastBarTimerCentered:SetPoint("LEFT", playerCastBarTimer.Text, "RIGHT", 2, 0)
     CreateTooltip(playerCastBarTimerCentered, "Center the timer in the middle of the castbar")
 
+    local playerCastBarNoTextBorder = CreateCheckbox("playerCastBarNoTextBorder", "Simple Castbar", contentFrame, nil, BBF.ChangeCastbarSizes)
+    --playerStaticCastbar:SetPoint("TOPLEFT", playerCastBarIconScale, "BOTTOMLEFT", 10, -4)
+    playerCastBarNoTextBorder:SetPoint("TOPLEFT", playerCastBarShowIcon, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(playerCastBarNoTextBorder, "Simple Castbar", "Hide the text background and move the text up inside the castbar.")
+
     local classicCastbarsPlayer = CreateCheckbox("classicCastbarsPlayer", "Classic Castbar", contentFrame, nil, BBF.ChangeCastbarSizes)
-    classicCastbarsPlayer:SetPoint("TOPLEFT", playerCastBarTimerCentered, "BOTTOMLEFT", -15, pixelsBetweenBoxes)
+    classicCastbarsPlayer:SetPoint("TOPLEFT", playerCastBarNoTextBorder, "BOTTOMLEFT", -15, pixelsBetweenBoxes)
     CreateTooltipTwo(classicCastbarsPlayer, "Classic Castbar", "Use Classic layout for Player Castbar")
 
     local classicCastbarsPlayerBorder = CreateCheckbox("classicCastbarsPlayerBorder", "Border", classicCastbarsPlayer, nil, BBF.ChangeCastbarSizes)
@@ -6202,7 +6207,27 @@ local function guiFrameLook()
 
     local changeUnitFrameHealthbarTexture = CreateCheckbox("changeUnitFrameHealthbarTexture", "Change UnitFrame Healthbar Texture", guiFrameLook)
     changeUnitFrameHealthbarTexture:SetPoint("TOPLEFT", settingsText, "BOTTOMLEFT", 260, pixelsOnFirstBox)
-    CreateTooltipTwo(changeUnitFrameHealthbarTexture, "Change UnitFrame Healthbar Texture","Changes the healthbar texture on Player, Target & Focus etc.")
+    if not BetterBlizzFramesDB.classicFrames then
+        CreateTooltipTwo(changeUnitFrameHealthbarTexture, "Change UnitFrame Healthbar Texture","Changes the healthbar texture on Player, Target & Focus etc.")
+    else
+        CreateTooltipTwo(changeUnitFrameHealthbarTexture, "Change UnitFrame Healthbar Texture","Changes the healthbar texture on Player, Target & Focus etc.\n\n|cff32f795Right-click to also change the texture behind name.|r")
+            changeUnitFrameHealthbarTexture:HookScript("OnMouseDown", function(self, button)
+            if button == "RightButton" then
+                if not BetterBlizzFramesDB.changeUnitFrameHealthbarTextureRepColor then
+                    BetterBlizzFramesDB.changeUnitFrameHealthbarTextureRepColor = true
+                else
+                    BetterBlizzFramesDB.changeUnitFrameHealthbarTextureRepColor = nil
+                end
+                local function retexture(tex)
+                    if not tex then return end
+                    tex:SetTexture((BetterBlizzFramesDB.changeUnitFrameHealthbarTextureRepColor and LSM:Fetch(LSM.MediaType.STATUSBAR, BetterBlizzFramesDB.unitFrameHealthbarTexture) or "Interface\\TargetingFrame\\UI-TargetingFrame-LevelBackground"))
+                end
+                retexture(PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ReputationColor)
+                retexture(TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor)
+                retexture(FocusFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor)
+            end
+        end)
+    end
 
     if BetterBlizzFramesDB.classicFrames then
         local text = guiFrameLook:CreateFontString(nil, "OVERLAY")

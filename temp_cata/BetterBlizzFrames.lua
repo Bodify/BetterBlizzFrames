@@ -2,7 +2,7 @@
 
 local addonVersion = "1.00" --too afraid to to touch for now
 local addonUpdates = C_AddOns.GetAddOnMetadata("BetterBlizzFrames", "Version")
-local sendUpdate = false
+local sendUpdate = true
 BBF.VersionNumber = addonUpdates
 BBF.variablesLoaded = false
 local isAddonLoaded = C_AddOns.IsAddOnLoaded
@@ -49,7 +49,7 @@ local defaultSettings = {
     queueTimerWarning = false,
     queueTimerAudio = true,
     queueTimerWarningTime = 6,
-    enableLoCFrame = true,
+    --enableLoCFrame = true,
     raiseTargetCastbarStrata = true,
 
     --Target castbar
@@ -299,9 +299,9 @@ local defaultSettings = {
 local version = GetBuildInfo()
 if version and version:match("^5") then
     BBF.isMoP = true
-    C_Timer.After(5, function()
-        DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|aBetter|cff00c0ffBlizz|rFrames has not been fully updated for MoP Classic yet. |cff32f795Please report bugs with BugSack & BugGrabber so I can fix.|r")
-    end)
+    -- C_Timer.After(5, function()
+    --     DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|aBetter|cff00c0ffBlizz|rFrames has not been fully updated for MoP Classic yet. |cff32f795Please report bugs with BugSack & BugGrabber so I can fix.|r")
+    -- end)
 end
 
 local function InitializeSavedVariables()
@@ -381,11 +381,11 @@ local function SendUpdateMessage()
             C_Timer.After(7, function()
                 --StaticPopup_Show("BBF_NEW_VERSION")
 
-                if BetterBlizzFramesDB.playerAuraFiltering then
+                --if BetterBlizzFramesDB.playerAuraFiltering then
                     DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames "..addonUpdates..":")
                     --DEFAULT_CHAT_FRAME:AddMessage("|A:QuestNormal:16:16|a New stuff:")
-                    DEFAULT_CHAT_FRAME:AddMessage("|A:QuestNormal:16:16|a Important Note: Moving BuffFrame/DebuffFrame is now optional but on by default. Depending on your addons BetterBlizzFrames might've taken control over other things moving it. Please double check your aura settings in the Buffs & Debuffs section.")
-                end
+                    DEFAULT_CHAT_FRAME:AddMessage("|A:QuestNormal:16:16|a Important Note: Player CastingBar has had it's position moved up 9 pixels to match Blizzard's location for it. You might have to move it back down 9 pixels to fit your UI. Apologies for the inconvenience.")
+                --end
                 -- DEFAULT_CHAT_FRAME:AddMessage("   - Absorb Indicator + Overshields now working (Potentially).")
                 -- -- DEFAULT_CHAT_FRAME:AddMessage("   - Sort Purgeable Auras setting (Buffs & Debuffs).")
 
@@ -566,7 +566,7 @@ end
 function BBF.ToggleLossOfControlTestMode()
     local LossOfControlFrameAlphaBg = BetterBlizzFramesDB.hideLossOfControlFrameBg and 0 or 0.6
     local LossOfControlFrameAlphaLines = BetterBlizzFramesDB.hideLossOfControlFrameLines and 0 or 1
-    if not _G.FakeBBFLossOfControlFrame then  -- Changed to a global reference for wider access
+    if not _G.FakeBBFLossOfControlFrame then
         -- Main Frame Creation
         local frame = CreateFrame("Frame", "FakeBBFLossOfControlFrame", UIParent, "BackdropTemplate")
         frame:SetSize(256, 58)
@@ -638,7 +638,7 @@ function BBF.ToggleLossOfControlTestMode()
         stopButton:SetScript("OnClick", function() frame:Hide() end)
         frame.StopButton = stopButton
 
-        _G.FakeBBFLossOfControlFrame = frame  -- Store the frame globally
+        _G.FakeBBFLossOfControlFrame = frame
     end
     local iconOnlyMode = BetterBlizzFramesDB.lossOfControlIconOnly
     FakeBBFLossOfControlFrame:SetScale((BetterBlizzFramesDB.lossOfControlScale or 1) * 0.9)
@@ -659,11 +659,14 @@ function BBF.ToggleLossOfControlTestMode()
 end
 
 function BBF.ChangeLossOfControlScale()
-    if LossOfControlParentFrame then
-        LossOfControlParentFrame:SetScale(BetterBlizzFramesDB.lossOfControlScale)
-        if _G.FakeBBFLossOfControlFrame then
+    if BBFLossOfControlParentFrame then
+        BBFLossOfControlParentFrame:SetScale(BetterBlizzFramesDB.lossOfControlScale or 1)
+        if FakeBBFLossOfControlFrame then
             FakeBBFLossOfControlFrame:SetScale((BetterBlizzFramesDB.lossOfControlScale or 1) * 0.9)
         end
+    end
+    if LossOfControlFrame then
+        LossOfControlFrame:SetScale(BetterBlizzFramesDB.lossOfControlScale or 1)
     end
 end
 
@@ -1755,7 +1758,8 @@ end
 
 
 local LSM = LibStub("LibSharedMedia-3.0")
-
+BBF.LSM = LSM
+BBF.allLocales = LSM.LOCALE_BIT_western+LSM.LOCALE_BIT_ruRU+LSM.LOCALE_BIT_zhCN+LSM.LOCALE_BIT_zhTW+LSM.LOCALE_BIT_koKR
 local texture = "Interface\\Addons\\BetterBlizzPlates\\media\\DragonflightTextureHD"
 local manaTexture = "Interface\\Addons\\BetterBlizzPlates\\media\\DragonflightTextureHD"
 local raidHpTexture = "Interface\\Addons\\BetterBlizzPlates\\media\\DragonflightTextureHD"
@@ -1839,6 +1843,9 @@ function HookUnitFrameTextures()
                 ApplyTextureChange("health", PlayerReputationFrame.texture, PlayerFrame)
             end
             ApplyTextureChange("health", TargetFrameNameBackground, TargetFrame)
+            if FocusFrameNameBackground then
+                ApplyTextureChange("health", FocusFrameNameBackground, FocusFrame)
+            end
         end
 
         -- Hook Target of targets Healthbars
@@ -2602,7 +2609,6 @@ First:SetScript("OnEvent", function(_, event, addonName)
             BBF.GenericLegacyComboSupport()
             BBF.ChangeTotemFrameScale()
             --TurnOnEnabledFeaturesOnLogin()
-            BBF.DampeningOnDebuff()
             BBF.RaiseTargetCastbarStratas()
 
             C_Timer.After(1, function()

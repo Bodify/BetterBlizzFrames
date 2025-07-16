@@ -1,3 +1,56 @@
+# BetterBlizzFrames 1.7.2
+## Retail
+### New
+- New Player Castbar setting: "Simple Castbar". Hides the text background on the player castbar and moves the text up inside of the castbar.
+### Bugfix
+- Fix "Fade MicroMenu" setting fully hiding BagsBar. Also tweaked how it fades things a bit.
+## Mists of Pandaria
+### Tweak
+- Dark Mode: Added Priest's Shadow Orbs background texture to dark mode.
+- LossOfControl: Add missing some missing interrupts and fixed some durations. Thank you to Moonfirebeam & Jumpsuitpally for reporting <3
+- Player CastingBar has had it's position moved up 9 pixels to match Blizzard's location for it. You might have to move it back down 9 pixels to fit your UI. Apologies for the inconvenience. It has also recieved a very minor tweak to its border size.
+### Bugfix
+- Buffs & Debuffs: Important Glow & Purge Glow had their positioned tweaked and fixed a bit.
+- Fix "Hide Arena Frames" setting to not cause lua errors due to Blizzard changes in 11.1.7 (thats also active on classics)
+- Fix background color on unitframes not being positioned correctly while using Bigger Healthbars and targeting a "minus" mob.
+
+
+
+# BetterBlizzFrames 1.7.1l
+## Retail
+### Bugfix
+- Fix some bugs with Cooldown Manager settings. Properly centers the "Tracked Buffs" bar and no longer shows some icons that should be hidden (like non-active buffs). Vertical layout however is still not properly supported.
+- Fix "UnitFrame Background Color" setting not being positioned correctly on the FocusFrame.
+## Cata/MoP
+### Tweak
+- Remove custom Dampening Display since Blizzard added it by default.
+## All versions
+### Tweak
+- Dark Mode: Now colors Bartender4 oldschool ActionBar art as well.
+### Bugfix
+- Fix Queue Timer playing the alert sound for 5sec left when already accepted into the Dungeon.
+- Classics: Fix an issue with font replacement causing it to not properly change font on everything it should.
+
+
+# BetterBlizzFrames 1.7.1k
+## Cata/MoP
+### Bugfix
+- Fix nil error due to a copypaste error between BetterBlizzCC & BetterBlizzFrames
+
+# BetterBlizzFrames 1.7.1j
+## All versions
+### Tweak
+- Dominos support for ActionBar Font Change & Hiding Macro/Hotkey Text.
+- Classics: Added instructions on how to import custom fonts and textures to that section.
+## Cata/MoP
+### Tweak
+- Blizzard added LossOfControl by default for MoP. The BBF version still has a few improvements but also limited to PvP only spells for the most part. So if the setting is enabled it will show the BBF version everywhere except for instanced PvE content.
+### Bugfix
+- Fix healthbar texture change not changing the name background texture of FocusFrame.
+## Retail
+### New
+- Added Clasic Frames specific right-click subsetting for "Change UnitFrame HealthBar Texture" that also changes the name background texture.
+
 # BetterBlizzFrames 1.7.1i
 ## Retail
 ### New

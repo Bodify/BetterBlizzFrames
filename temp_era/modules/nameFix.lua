@@ -491,7 +491,7 @@ local statusTexts = {
     --
     targetManaBar.LeftText,
     targetManaBar.RightText,
-    targetManaBar.ManaBarText,
+    targetManaBar.TextString,
     --
     targetHealthBar.LeftText,
     targetHealthBar.RightText,
@@ -499,7 +499,7 @@ local statusTexts = {
     --
     -- focusManaBar.LeftText,
     -- focusManaBar.RightText,
-    -- focusManaBar.ManaBarText,
+    -- focusManaBar.TextString,
     -- --
     -- focusHealthBar.LeftText,
     -- focusHealthBar.RightText,
@@ -556,35 +556,61 @@ end
 
 
 local function SetActionBarFonts(font, size, kbSize, outline, kbOutline)
-    -- Define lists of button prefixes for hotkeys and macro names
-    local buttons = {
+    -- Blizzard action bars
+    local blizzButtons = {
         "ActionButton", "MultiBarBottomLeftButton", "MultiBarBottomRightButton",
         "MultiBarRightButton", "MultiBarLeftButton", "MultiBar5Button",
         "MultiBar6Button", "MultiBar7Button", "PetActionButton"
     }
 
-    for _, buttonPrefix in ipairs(buttons) do
+    for _, buttonPrefix in ipairs(blizzButtons) do
         for i = 1, 12 do
-            -- Set font for hotkey text
             local hotKeyText = _G[buttonPrefix .. i .. "HotKey"]
             if hotKeyText then
                 local ogFont, ogSize, ogOutline = hotKeyText:GetFont()
-                local outline = outline or ogOutline
-                if outline == "NONE" then
-                    outline = nil
-                end
-                hotKeyText:SetFont(font or ogFont, kbSize or ogSize, kbOutline)
+                local finalOutline = kbOutline or (ogOutline ~= "NONE" and ogOutline) or nil
+                hotKeyText:SetFont(font or ogFont, kbSize or ogSize, finalOutline)
             end
 
-            -- Set font for macro name text
             local macroText = _G[buttonPrefix .. i .. "Name"]
             if macroText then
                 local ogFont, ogSize, ogOutline = macroText:GetFont()
-                local outline = outline or ogOutline
-                if outline == "NONE" then
-                    outline = nil
-                end
-                macroText:SetFont(font or ogFont, size or ogSize, outline)
+                local finalOutline = outline or (ogOutline ~= "NONE" and ogOutline) or nil
+                macroText:SetFont(font or ogFont, size or ogSize, finalOutline)
+            end
+        end
+    end
+
+    -- Dominos action bars
+    local NUM_ACTIONBAR_BUTTONS = NUM_ACTIONBAR_BUTTONS or 12
+    local DOMINOS_NUM_MAX_BUTTONS = 14 * NUM_ACTIONBAR_BUTTONS
+    local dominosBars = {
+        {name = "DominosActionButton", count = DOMINOS_NUM_MAX_BUTTONS},
+        {name = "MultiBar5ActionButton", count = 12},
+        {name = "MultiBar6ActionButton", count = 12},
+        {name = "MultiBar7ActionButton", count = 12},
+        {name = "MultiBarRightActionButton", count = 12},
+        {name = "MultiBarLeftActionButton", count = 12},
+        {name = "MultiBarBottomRightActionButton", count = 12},
+        {name = "MultiBarBottomLeftActionButton", count = 12},
+        {name = "DominosPetActionButton", count = 12},
+        {name = "DominosStanceButton", count = 12},
+    }
+
+    for _, bar in ipairs(dominosBars) do
+        for i = 1, bar.count do
+            local hotKeyText = _G[bar.name .. i .. "HotKey"]
+            if hotKeyText then
+                local ogFont, ogSize, ogOutline = hotKeyText:GetFont()
+                local finalOutline = kbOutline or (ogOutline ~= "NONE" and ogOutline) or nil
+                hotKeyText:SetFont(font or ogFont, kbSize or ogSize, finalOutline)
+            end
+
+            local macroText = _G[bar.name .. i .. "Name"]
+            if macroText then
+                local ogFont, ogSize, ogOutline = macroText:GetFont()
+                local finalOutline = outline or (ogOutline ~= "NONE" and ogOutline) or nil
+                macroText:SetFont(font or ogFont, size or ogSize, finalOutline)
             end
         end
     end
