@@ -774,6 +774,12 @@ local function CreateSlider(parent, label, minValue, maxValue, stepValue, elemen
                 elseif element == "playerCastBarXPos" then
                     BetterBlizzFramesDB.playerCastBarXPos = value
                     BBF.ChangeCastbarSizes()
+                elseif element == "playerCastbarIconXPos" then
+                    BetterBlizzFramesDB.playerCastbarIconXPos = value
+                    BBF.ChangeCastbarSizes()
+                elseif element == "playerCastbarIconYPos" then
+                    BetterBlizzFramesDB.playerCastbarIconYPos = value
+                    BBF.ChangeCastbarSizes()
                 elseif element == "playerCastBarYPos" then
                     BetterBlizzFramesDB.playerCastBarYPos = value
                     BBF.ChangeCastbarSizes()
@@ -3592,9 +3598,6 @@ local function guiGeneralTab()
     local classColorTargetNames = CreateCheckbox("classColorTargetNames", "Class Color Names", BetterBlizzFrames)
     classColorTargetNames:SetPoint("TOPLEFT", biggerHealthbars, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(classColorTargetNames, "Class Color Names","Class color Player, Target & Focus Names.", "Will enable a fake name. Because of this other addons like HealthBarColor's name stuff will not work properly.")
-    classColorTargetNames:HookScript("OnClick", function()
-        BBF.AllNameChanges()
-    end)
 
     local classColorLevelText = CreateCheckbox("classColorLevelText", "Level", classColorTargetNames)
     classColorLevelText:SetPoint("LEFT", classColorTargetNames.text, "RIGHT", 0, 0)
@@ -3604,8 +3607,15 @@ local function guiGeneralTab()
         BBF.AllNameChanges()
     end)
 
-    classColorTargetNames:HookScript("OnClick", function(self)
+    classColorTargetNames:HookScript("OnClick", function()
         BBF.AllNameChanges()
+        if self:GetChecked() then
+            classColorLevelText:Enable()
+            classColorLevelText:SetAlpha(1)
+        else
+            classColorLevelText:Disable()
+            classColorLevelText:SetAlpha(0)
+        end
     end)
     if not BetterBlizzFramesDB.classColorTargetNames then
         classColorLevelText:SetAlpha(0)
@@ -4448,18 +4458,24 @@ local function guiCastbars()
     local playerCastBarYPos = CreateSlider(contentFrame, "y offset", -200, 200, 1, "playerCastBarYPos", "Y")
     playerCastBarYPos:SetPoint("TOP", playerCastBarXPos, "BOTTOM", 0, -15)
 
-    local playerCastBarIconScale = CreateSlider(contentFrame, "Icon Size", 0.4, 2, 0.01, "playerCastBarIconScale")
-    playerCastBarIconScale:SetPoint("TOP", playerCastBarYPos, "BOTTOM", 0, -15)
-
     local playerCastBarWidth = CreateSlider(contentFrame, "Width", 90, 300, 1, "playerCastBarWidth")
     --playerCastBarWidth:SetPoint("TOP", playerCastBarYPos, "BOTTOM", 0, -15)
-    playerCastBarWidth:SetPoint("TOP", playerCastBarIconScale, "BOTTOM", 0, -15)
+    playerCastBarWidth:SetPoint("TOP", playerCastBarYPos, "BOTTOM", 0, -15)
 
     local playerCastBarHeight = CreateSlider(contentFrame, "Height", 5, 30, 1, "playerCastBarHeight")
     playerCastBarHeight:SetPoint("TOP", playerCastBarWidth, "BOTTOM", 0, -15)
 
+    local playerCastBarIconScale = CreateSlider(contentFrame, "Icon Size", 0.4, 2, 0.01, "playerCastBarIconScale")
+    playerCastBarIconScale:SetPoint("TOP", playerCastBarHeight, "BOTTOM", 0, -15)
+
+    local playerCastbarIconXPos = CreateSlider(contentFrame, "Icon x offset", -50, 50, 1, "playerCastbarIconXPos")
+    playerCastbarIconXPos:SetPoint("TOP", playerCastBarIconScale, "BOTTOM", 0, -15)
+
+    local playerCastbarIconYPos = CreateSlider(contentFrame, "Icon y offset", -50, 50, 1, "playerCastbarIconYPos")
+    playerCastbarIconYPos:SetPoint("TOP", playerCastbarIconXPos, "BOTTOM", 0, -15)
+
     local playerCastBarShowIcon = CreateCheckbox("playerCastBarShowIcon", "Icon", contentFrame, nil, BBF.ShowPlayerCastBarIcon)
-    playerCastBarShowIcon:SetPoint("TOPLEFT", playerCastBarHeight, "BOTTOMLEFT", 10, -4)
+    playerCastBarShowIcon:SetPoint("TOPLEFT", playerCastbarIconYPos, "BOTTOMLEFT", 10, -4)
     CreateTooltip(playerCastBarShowIcon, "Show spell icon to the left of the castbar\nlike on every other castbar in the game")
 
     local playerCastBarTimer = CreateCheckbox("playerCastBarTimer", "Timer", contentFrame, nil, BBF.CastBarTimerCaller)

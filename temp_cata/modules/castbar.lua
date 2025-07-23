@@ -887,6 +887,7 @@ local function CastingBarFrameMiscAdjustments()
 end
 
 local hookedPlayerCastbar = false
+local bugNotify
 function BBF.ChangeCastbarSizes()
     BBF.UpdateUserAuraSettings()
     --Player
@@ -901,7 +902,7 @@ function BBF.ChangeCastbarSizes()
     CastingBarFrame.Text:SetWidth(BetterBlizzFramesDB.playerCastBarWidth)
     CastingBarFrame.Icon:SetSize(22,22)
     CastingBarFrame.Icon:ClearAllPoints()
-    CastingBarFrame.Icon:SetPoint("RIGHT", CastingBarFrame, "LEFT", -5 + BetterBlizzFramesDB.playerCastbarIconXPos, 2 + BetterBlizzFramesDB.playerCastbarIconYPos)
+    CastingBarFrame.Icon:SetPoint("RIGHT", CastingBarFrame, "LEFT", -5 + BetterBlizzFramesDB.playerCastbarIconXPos, BetterBlizzFramesDB.playerCastbarIconYPos)
     CastingBarFrame.Icon:SetScale(BetterBlizzFramesDB.playerCastBarIconScale)
     -- CastingBarFrame.BorderShield:SetSize(30,36)
     -- CastingBarFrame.BorderShield:ClearAllPoints()
@@ -919,6 +920,13 @@ function BBF.ChangeCastbarSizes()
     -- CastingBarFrame:SetPoint("CENTER", UIParent, "BOTTOM", BetterBlizzFramesDB.playerCastBarXPos, BetterBlizzFramesDB.playerCastBarYPos + 157)
 
     BBF.MoveRegion(CastingBarFrame, "CENTER", UIParent, "BOTTOM", BetterBlizzFramesDB.playerCastBarXPos, BetterBlizzFramesDB.playerCastBarYPos + 166)
+
+    if CastingBarFrame.ignoreFramePositionManager and not bugNotify then
+        bugNotify = true
+        C_Timer.After(3, function() 
+            print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames:\n\"Cast Bar Underneath\" setting can cause errors. Please disable by right-clicking PlayerFrame -> Move Frame -> Unselect Cast Bar Underneath and reload UI.")
+        end)
+    end
 
     --
     CastingBarFrameMiscAdjustments()

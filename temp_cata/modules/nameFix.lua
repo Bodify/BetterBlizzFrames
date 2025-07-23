@@ -92,7 +92,7 @@ function BBF.UpdateUserTargetSettings()
     hideFocusName = BetterBlizzFramesDB.hideFocusName
     hideTargetToTName = BetterBlizzFramesDB.hideTargetToTName
     hideFocusToTName = BetterBlizzFramesDB.hideFocusToTName
-    classColorLevelText = BetterBlizzFramesDB.classColorLevelText
+    classColorLevelText = BetterBlizzFramesDB.classColorLevelText and BetterBlizzFramesDB.classColorTargetNames
     hidePlayerName = BetterBlizzFramesDB.hidePlayerName
     hidePetName = BetterBlizzFramesDB.hidePetName
     changeUnitFrameFont = BetterBlizzFramesDB.changeUnitFrameFont

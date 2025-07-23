@@ -458,6 +458,14 @@ function BBF.BiggerHealthbars(frame, name)
     -- Texture
     texture:SetTexture(targetTexture)
     playerGlowTexture:SetTexture("Interface\\Addons\\BetterBlizzFrames\\media\\UI-Player-Status")
+    hooksecurefunc(playerGlowTexture, "SetTexture", 
+        function(self, texture)
+            if texture ~= "Interface\\Addons\\BetterBlizzFrames\\media\\UI-Player-Status" then
+                self:SetTexture("Interface\\Addons\\BetterBlizzFrames\\media\\UI-Player-Status")
+                playerGlowTexture:SetHeight(69)
+            end
+        end
+    )
     playerGlowTexture:SetHeight(69)
 
     -- Healthbar

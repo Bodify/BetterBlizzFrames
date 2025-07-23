@@ -624,6 +624,9 @@ function BBF.HookFrameTextureColor()
         local texture = frame.TargetFrameContainer and frame.TargetFrameContainer.FrameTexture
         or frame.PlayerFrameContainer and frame.PlayerFrameContainer.FrameTexture
         or frame.FrameTexture
+        local altTexture = frame.TargetFrameContainer and frame.TargetFrameContainer.AlternatePowerFrameTexture
+        or frame.PlayerFrameContainer and frame.PlayerFrameContainer.AlternatePowerFrameTexture
+        or frame.AlternatePowerFrameTexture
 
         -- Hook SetVertexColor
         if not texture.bbfColorHook then
@@ -632,6 +635,14 @@ function BBF.HookFrameTextureColor()
                 DesaturateAndColorTexture(self, unit)
             end)
             texture.bbfColorHook = true
+        end
+
+        if altTexture and not altTexture.bbfColorHook then
+            hooksecurefunc(altTexture, "SetVertexColor", function(self)
+                if self.changing then return end
+                DesaturateAndColorTexture(self, unit)
+            end)
+            altTexture.bbfColorHook = true
         end
 
         DesaturateAndColorTexture(texture, unit)

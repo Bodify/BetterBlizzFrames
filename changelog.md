@@ -1,3 +1,20 @@
+# BetterBlizzFrames 1.7.2b
+## Retail
+### Tweak
+- Add missing AlternateFrameTexture (Shadow Priest etc) to "Color Frame Texture" setting.
+### Bugfix
+- Fix "Simple Castbar" setting for Player Castbar sometimes displaying text shadow texture again.
+- Fix Format Numbers displaying numbers when unit was dead.
+## Mists of Pandaria
+### New
+- Added Icon XY sliders for Player Castbar Icon
+### Tweak
+- Player Castbar Icon moved down 2 pixels to align properly with the castbar.
+### Bugfix
+- Bigger Healthbars: Fix TargetFrame/FocusFrame threat glow texture sometimes resetting to the smaller healthbar size texture.
+- Fix "Color Level Text" not being displayed and toggled properly.
+
+
 # BetterBlizzFrames 1.7.2
 ## Retail
 ### New

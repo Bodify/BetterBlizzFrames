@@ -526,12 +526,12 @@ function BBF.HideFrames()
                     EclipseBarFrame:SetParent(hiddenFrame)
                 end
             end
-            if PaladinPowerBarFrame and englishClass == "PALADIN" then
+            if PaladinPowerBar and englishClass == "PALADIN" then
                 if BetterBlizzFramesDB.hidePlayerPowerNoPaladin then
-                    if originalResourceParent then PaladinPowerBarFrame:SetParent(originalResourceParent) end
+                    if originalResourceParent then PaladinPowerBar:SetParent(originalResourceParent) end
                 else
-                    if not originalResourceParent then originalResourceParent = PaladinPowerBarFrame:GetParent() end
-                    PaladinPowerBarFrame:SetParent(hiddenFrame)
+                    if not originalResourceParent then originalResourceParent = PaladinPowerBar:GetParent() end
+                    PaladinPowerBar:SetParent(hiddenFrame)
                 end
             end
             if RuneFrame and englishClass == "DEATHKNIGHT" then
@@ -578,7 +578,7 @@ function BBF.HideFrames()
             if WarlockPowerFrame and englishClass == "WARLOCK" then WarlockPowerFrame:SetParent(originalResourceParent) end
             if RogueComboPointBarFrame and englishClass == "ROGUE" then RogueComboPointBarFrame:SetParent(originalResourceParent) end
             if EclipseBarFrame and englishClass == "DRUID" then EclipseBarFrame:SetParent(originalResourceParent) end
-            if PaladinPowerBarFrame and englishClass == "PALADIN" then PaladinPowerBarFrame:SetParent(originalResourceParent) end
+            if PaladinPowerBar and englishClass == "PALADIN" then PaladinPowerBar:SetParent(originalResourceParent) end
             if RuneFrame and englishClass == "DEATHKNIGHT" then RuneFrame:SetParent(originalResourceParent) end
             if EssencePlayerFrame and englishClass == "EVOKER" then EssencePlayerFrame:SetParent(originalResourceParent) end
             if MonkHarmonyBar and englishClass == "MONK" then MonkHarmonyBar:SetParent(originalResourceParent) end
