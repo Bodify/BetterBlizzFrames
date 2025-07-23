@@ -1,4 +1,4 @@
-# BetterBlizzFrames 1.7.2b
+# BetterBlizzFrames 1.7.2b-c
 ## Retail
 ### Tweak
 - Add missing AlternateFrameTexture (Shadow Priest etc) to "Color Frame Texture" setting.
