@@ -1,3 +1,8 @@
+# BetterBlizzFrames 1.7.2d
+## Retail
+### Bugfix
+- Fix errror in Format Numbers due to nil unit on dead check.
+
 # BetterBlizzFrames 1.7.2b-c
 ## Retail
 ### Tweak

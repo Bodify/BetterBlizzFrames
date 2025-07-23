@@ -17,7 +17,7 @@ local function UpdateNumericText(bar, centerText)
     local _, maxValue = bar:GetMinMaxValues()
     local formattedValue = FormatText(value)
     local formattedMaxValue = FormatText(maxValue)
-    if formattedValue == "0" and UnitIsDead(bar.unit) then
+    if formattedValue == "0" then
         centerText:SetText("")
         return
     end
@@ -27,7 +27,7 @@ end
 local function UpdateSingleText(bar, fontObj)
     if not fontObj then return end
     local value = bar:GetValue()
-    if value == 0 and UnitIsDead(bar.unit) then
+    if value == 0 then
         fontObj:SetText("")
         return
     end
