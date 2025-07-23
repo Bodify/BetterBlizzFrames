@@ -239,11 +239,11 @@ end
 local moveComboInForm = {
     [1] = true,
     [5] = true,
-    [31] = true,
-    [32] = true,
-    [33] = true,
-    [34] = true,
-    [35] = true,
+    -- [31] = true,
+    -- [32] = true,
+    -- [33] = true,
+    -- [34] = true,
+    -- [35] = true,
 }
 
 local function UpdateAltManaBar(updateCombos, cf)

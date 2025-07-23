@@ -65,7 +65,7 @@ function BBF.HookStatusBarText()
            pMain.ManaBarArea.ManaBar.RightText)
 
     AddBar(AlternatePowerBar,
-           AlternatePowerBar.ManaBarText,
+           AlternatePowerBar.TextString,
            AlternatePowerBar.RightText)
 
     AddBar(PetFrame.healthbar,
@@ -118,18 +118,22 @@ function BBF.HookStatusBarText()
             hooksecurefunc(bar, "UpdateTextStringWithValues", function()
                 UpdateSingleText(bar, centerText)
             end)
+            UpdateSingleText(bar, centerText)
         elseif statusTextSetting == "BOTH" then
             hooksecurefunc(bar, "UpdateTextStringWithValues", function()
                 UpdateSingleText(bar, rightText)
             end)
+            UpdateSingleText(bar, rightText)
         elseif statusTextSetting == "NUMERIC" then
             hooksecurefunc(bar, "UpdateTextStringWithValues", function()
                 UpdateNumericText(bar, centerText)
             end)
+            UpdateNumericText(bar, centerText)
         elseif statusTextSetting == "NONE" then
             hooksecurefunc(bar, "UpdateTextStringWithValues", function()
                 UpdateNumericText(bar, centerText)
             end)
+            UpdateNumericText(bar, centerText)
         end
     end
 

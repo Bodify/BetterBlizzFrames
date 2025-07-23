@@ -5,6 +5,7 @@
 ### Bugfix
 - Fix "Simple Castbar" setting for Player Castbar sometimes displaying text shadow texture again.
 - Fix Format Numbers displaying numbers when unit was dead.
+- Fix overlapping alternate manabar text with always show manabar for rdruid setting.
 ## Mists of Pandaria
 ### New
 - Added Icon XY sliders for Player Castbar Icon

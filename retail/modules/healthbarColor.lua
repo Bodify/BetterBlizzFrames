@@ -646,6 +646,9 @@ function BBF.HookFrameTextureColor()
         end
 
         DesaturateAndColorTexture(texture, unit)
+        if altTexture then
+            DesaturateAndColorTexture(altTexture, unit)
+        end
     end
 
     -- Setup all frames
