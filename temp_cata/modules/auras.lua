@@ -150,7 +150,7 @@ local targetToTCastbarAdjustment
 local targetAndFocusAuraScale = 1
 local targetAndFocusVerticalGap = 4
 local targetDetachCastbar
-local focusToTCastbarAdjustment = 0
+local focusToTCastbarAdjustment
 local targetStaticCastbar
 local showHiddenAurasIcon
 local playerAuraSpacingX = 0
@@ -505,11 +505,7 @@ local function adjustCastbar(self, frame)
                 local minOffset = -40
                 -- Choose the more negative value
                 yOffset = min(minOffset, yOffset)
-                if frame == TargetFrameSpellBar then
-                    yOffset = yOffset + targetToTAdjustmentOffsetY
-                elseif frame == FocusFrameSpellBar then
-                    yOffset = yOffset + focusToTAdjustmentOffsetY
-                end
+                yOffset = yOffset + targetToTAdjustmentOffsetY
             end
 
             meta.SetPoint(self, "TOPLEFT", parent, "BOTTOMLEFT", xOffset + targetCastBarXPos, yOffset + targetCastBarYPos);
@@ -540,6 +536,7 @@ local function adjustCastbar(self, frame)
                 local minOffset = -40
                 -- Choose the more negative value
                 yOffset = min(minOffset, yOffset)
+                yOffset = yOffset + focusToTAdjustmentOffsetY
             end
 
             meta.SetPoint(self, "TOPLEFT", parent, "BOTTOMLEFT", xOffset + focusCastBarXPos, yOffset + focusCastBarYPos);
@@ -563,7 +560,7 @@ local function DefaultCastbarAdjustment(self, frame)
 
     -- Adjustments for ToT and specific frame adjustments
     if (not useSpellbarAnchor) and parentFrame.haveToT and not (buffsOnTopReverseCastbarMovement and parentFrame.buffsOnTop) then
-        local totAdjustment = ((TargetFrameSpellBar and targetToTCastbarAdjustment) or (FocusFrameSpellBar and focusToTCastbarAdjustment))
+        local totAdjustment = ((frame == TargetFrameSpellBar and targetToTCastbarAdjustment) or (frame == FocusFrameSpellBar and focusToTCastbarAdjustment))
         if totAdjustment then
             pointY = parentFrame.smallSize and -48 or -23
             if frame == TargetFrameSpellBar then
@@ -1009,7 +1006,7 @@ local function AdjustAuras(self, frameType)
                 local importantSize = defaultLargeAuraSize * sizeMultiplier
                 aura:SetSize(importantSize, importantSize)
                 if aura.isImportant then
-                    if aura.isLarge then
+                    if aura.isLarge or sameSizeAuras then
                         aura.ImportantGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -texAdjust, texAdjust)
                         aura.ImportantGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", texAdjust, -texAdjust)
                     else
@@ -1023,7 +1020,7 @@ local function AdjustAuras(self, frameType)
                         aura.Stealable:SetScale(scale)
                     end
                     if aura.PurgeGlow then
-                        if aura.isLarge then
+                        if aura.isLarge or sameSizeAuras then
                             aura.PurgeGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -texAdjust, texAdjust)
                             aura.PurgeGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", texAdjust, -texAdjust)
                         else
@@ -1039,7 +1036,7 @@ local function AdjustAuras(self, frameType)
                 local purgeableSize = defaultLargeAuraSize * sizeMultiplier
                 aura:SetSize(purgeableSize, purgeableSize)
                 if aura.isImportant then
-                    if aura.isLarge then
+                    if aura.isLarge or sameSizeAuras then
                         aura.ImportantGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -purgeableTextureAdjustment, purgeableTextureAdjustment)
                         aura.ImportantGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", purgeableTextureAdjustment, -purgeableTextureAdjustment)
                     else
@@ -1049,7 +1046,7 @@ local function AdjustAuras(self, frameType)
                 end
                 auraSize = purgeableSize
                 if aura.PurgeGlow then
-                    if aura.isLarge then
+                    if aura.isLarge or sameSizeAuras then
                         aura.PurgeGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -purgeableTextureAdjustment, purgeableTextureAdjustment)
                         aura.PurgeGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", purgeableTextureAdjustment, -purgeableTextureAdjustment)
                     else
@@ -1068,30 +1065,41 @@ local function AdjustAuras(self, frameType)
                         aura.Stealable:SetScale(targetAndFocusSmallAuraScale)
                     end
                 end
-                if aura.isHarmful then
+                if sameSizeAuras then
                     if aura.isImportant then
-                        aura.ImportantGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -22.5, 22)
-                        aura.ImportantGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", 22.5, -22.5)
+                        aura.ImportantGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -25.5, 25.5)
+                        aura.ImportantGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", 25.5, -26)
                     end
                     if aura.PurgeGlow then
-                        aura.PurgeGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -22.5, 22)
-                        aura.PurgeGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", 22.5, -22.5)
+                        aura.PurgeGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -24, 24)
+                        aura.PurgeGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", 24, -24)
                     end
                 else
-                    if aura.isImportant then
-                        aura.ImportantGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -20, 20)
-                        aura.ImportantGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", 20, -20)
-                    end
-                    if aura.PurgeGlow then
-                        aura.PurgeGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -20, 20)
-                        aura.PurgeGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", 20, -20)
+                    if aura.isHarmful then
+                        if aura.isImportant then
+                            aura.ImportantGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -22.5, 22)
+                            aura.ImportantGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", 22.5, -22.5)
+                        end
+                        if aura.PurgeGlow then
+                            aura.PurgeGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -22.5, 22)
+                            aura.PurgeGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", 22.5, -22.5)
+                        end
+                    else
+                        if aura.isImportant then
+                            aura.ImportantGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -20, 20)
+                            aura.ImportantGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", 20, -20)
+                        end
+                        if aura.PurgeGlow then
+                            aura.PurgeGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -20, 20)
+                            aura.PurgeGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", 20, -20)
+                        end
                     end
                 end
                 auraSize = adjustedSize
             else
                 if aura.isImportant then
-                    aura.ImportantGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -24, 24)
-                    aura.ImportantGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", 24, -24)
+                    aura.ImportantGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -25.5, 25.5)
+                    aura.ImportantGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", 25.5, -26)
                 end
                 if aura.PurgeGlow then
                     aura.PurgeGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -24, 24)

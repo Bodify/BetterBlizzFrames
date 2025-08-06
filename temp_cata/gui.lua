@@ -3186,7 +3186,7 @@ local function guiGeneralTab()
 
 
     local targetFrameText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    targetFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 250, -155)
+    targetFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 250, -160)
     targetFrameText:SetText("Target Frame")
     targetFrameText:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\Expressway_Free.ttf", 16)
     targetFrameText:SetTextColor(1,1,1)
@@ -3408,7 +3408,7 @@ local function guiGeneralTab()
     partyArenaNames:HookScript("OnClick", ToggleDependentCheckboxes)
 
     local focusFrameText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    focusFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 460, -155)
+    focusFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 460, -160)
     focusFrameText:SetText("Focus Frame")
     focusFrameText:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\Expressway_Free.ttf", 16)
     focusFrameText:SetTextColor(1,1,1)
@@ -3468,8 +3468,7 @@ local function guiGeneralTab()
 
 
     local focusToTFrameText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    focusToTFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 460, -300)
-    focusToTFrameText:SetText("Focus ToT")
+    focusToTFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 460, -295)
     focusToTFrameText:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\Expressway_Free.ttf", 16)
     focusToTFrameText:SetTextColor(1,1,1)
     local focusToTFrameIcon = BetterBlizzFrames:CreateTexture(nil, "BORDER")
@@ -3594,9 +3593,24 @@ local function guiGeneralTab()
         CheckAndToggleCheckboxes(biggerHealthbars)
     end)
 
+    local formatStatusBarText = CreateCheckbox("formatStatusBarText", "Format Numbers", BetterBlizzFrames, nil, BBF.HookStatusBarText)
+    formatStatusBarText:SetPoint("TOPLEFT", biggerHealthbars, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(formatStatusBarText, "Format Numbers", "Format the health & mana numbers on Player, Target & Focus frames to be millions instead of thousands.\n\n6800 K |A:glueannouncementpopup-arrow:20:20|a 6.8 M", "Requires reload.")
+
+    local singleValueStatusBarText = CreateCheckbox("singleValueStatusBarText", "No Max", formatStatusBarText)
+    singleValueStatusBarText:SetPoint("LEFT", formatStatusBarText.text, "RIGHT", 0, 0)
+    CreateTooltipTwo(singleValueStatusBarText, "No Max Value", "If Numeric Value is selected as Status Text this setting will make it only display current HP instead of max HP as well.\n\n6.8 M / 6.8 M |A:glueannouncementpopup-arrow:20:20|a 6.8 M", "Requires reload.")
+    singleValueStatusBarText:HookScript("OnClick", function()
+        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+    end)
+
+    formatStatusBarText:HookScript("OnClick", function(self)
+        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        CheckAndToggleCheckboxes(self)
+    end)
 
     local classColorTargetNames = CreateCheckbox("classColorTargetNames", "Class Color Names", BetterBlizzFrames)
-    classColorTargetNames:SetPoint("TOPLEFT", biggerHealthbars, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    classColorTargetNames:SetPoint("TOPLEFT", formatStatusBarText, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(classColorTargetNames, "Class Color Names","Class color Player, Target & Focus Names.", "Will enable a fake name. Because of this other addons like HealthBarColor's name stuff will not work properly.")
 
     local classColorLevelText = CreateCheckbox("classColorLevelText", "Level", classColorTargetNames)
@@ -6327,6 +6341,10 @@ local function guiFrameAuras()
     increaseAuraStrata:SetPoint("TOPLEFT", changePurgeTextureColor, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(increaseAuraStrata, "Increase Aura Frame Strata", "Inrease the strata of auras in order to make them appear above the Target & ToT Frames so they are not covered.")
 
+    local clickthroughAuras = CreateCheckbox("clickthroughAuras", "Clickthrough Auras", playerAuraFiltering)
+    clickthroughAuras:SetPoint("TOPLEFT", increaseAuraStrata, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(clickthroughAuras, "Clickthrough Auras", "Make auras clickthrough.\n\nNote: This will make it so you cannot click auras to whitelist/blacklist them anymore.")
+
     local function OpenColorPicker(entryColors)
         local colorData = entryColors or {0, 1, 0, 1}
         local r, g, b = colorData[1] or 1, colorData[2] or 1, colorData[3] or 1
@@ -6376,11 +6394,11 @@ local function guiFrameAuras()
     CreateTooltip(dispelGlowButton, "Dispel/Purge Glow Color.")
 
     local sortingSettings = contentFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    sortingSettings:SetPoint("TOPLEFT", increaseAuraStrata, "BOTTOMLEFT", 10, -4)
+    sortingSettings:SetPoint("TOPLEFT", clickthroughAuras, "BOTTOMLEFT", 10, -4)
     sortingSettings:SetText("Sorting:")
 
     local customImportantAuraSorting = CreateCheckbox("customImportantAuraSorting", "Sort Important Auras", playerAuraFiltering)
-    customImportantAuraSorting:SetPoint("TOPLEFT", increaseAuraStrata, "BOTTOMLEFT", 0, -20)
+    customImportantAuraSorting:SetPoint("TOPLEFT", clickthroughAuras, "BOTTOMLEFT", 0, -20)
     CreateTooltip(customImportantAuraSorting, "Show Important Auras first in the list\n\n(Remember to enable Important Auras on\nTarget/Focus Frame and check checkbox in whitelist)")
 
     local customLargeSmallAuraSorting = CreateCheckbox("customLargeSmallAuraSorting", "Sort Enlarged & Compact Auras", playerAuraFiltering)
@@ -6614,6 +6632,13 @@ local function guiMisc()
         CheckAndToggleCheckboxes(self)
     end)
 
+    local legacyBlueComboPoints = CreateCheckbox("legacyBlueComboPoints", "Blue Combos", enableLegacyComboPoints)
+    legacyBlueComboPoints:SetPoint("LEFT", enableLegacyComboPoints.text, "RIGHT", 0, 0)
+    legacyBlueComboPoints:HookScript("OnClick", function()
+        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+    end)
+    CreateTooltipTwo(legacyBlueComboPoints, "Blue Legacy Combo Points", "Show blue combo point on Supercharged/Berserk combo points.")
+
 
    function BBF.OpenLegacyComboSliderWindow(launch)
         if not BBF.ComboSliderWindow then
@@ -6684,7 +6709,7 @@ local function guiMisc()
         end
     end)
     local alwaysShowLegacyComboPoints = CreateCheckbox("alwaysShowLegacyComboPoints", "Show Always", enableLegacyComboPoints)
-    alwaysShowLegacyComboPoints:SetPoint("LEFT", enableLegacyComboPoints.text, "RIGHT", 0, 0)
+    alwaysShowLegacyComboPoints:SetPoint("LEFT", legacyBlueComboPoints.text, "RIGHT", 0, 0)
     alwaysShowLegacyComboPoints:HookScript("OnClick", function()
         BBF.AlwaysShowLegacyComboPoints()
     end)

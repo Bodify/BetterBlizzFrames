@@ -192,8 +192,13 @@ end
 BBF.updateFrameColorToggleVer = updateFrameColorToggleVer
 
 local function resetFrameColor(frame, unit)
-    frame:SetStatusBarDesaturated(false)
-    frame:SetStatusBarColor(1,1,1)
+    if frame.bbfChangedTexture then
+        frame:SetStatusBarDesaturated(false)
+        frame:SetStatusBarColor(1,1,1)
+    else
+        frame:SetStatusBarDesaturated(true)
+        frame:SetStatusBarColor(0,1,0)
+    end
 end
 
 local validUnits = {
@@ -280,9 +285,9 @@ function BBF.UpdateFrames()
 end
 
 function BBF.UpdateFrameColor(frame, unit)
-    local color = getUnitColor(unit)
+    local color, isFriendly = getUnitColor(unit)
     if color then
-        if color == "FRIENDLY" and not frame.bbfChangedTexture then
+        if isFriendly and not frame.bbfChangedTexture then
             frame:SetStatusBarDesaturated(false)
             frame:SetStatusBarColor(1, 1, 1)
         else

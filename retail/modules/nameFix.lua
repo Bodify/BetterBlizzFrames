@@ -714,6 +714,26 @@ local function SetPartyFont(font, size, outline, size2)
         if partyFrameMember then
             partyFrameMember.bbfName:SetFont(font, size, outline)
         end
+        local hbc = partyFrameMember.HealthBarContainer
+        local mb = partyFrameMember.ManaBar
+        if hbc.LeftText then
+            hbc.LeftText:SetFont(font, size2, outline)
+        end
+        if hbc.RightText then
+            hbc.RightText:SetFont(font, size2, outline)
+        end
+        if hbc.TextString then
+            hbc.TextString:SetFont(font, size2, outline)
+        end
+        if mb.LeftText then
+            mb.LeftText:SetFont(font, size2, outline)
+        end 
+        if mb.RightText then
+            mb.RightText:SetFont(font, size2, outline)
+        end
+        if mb.TextString then
+            mb.TextString:SetFont(font, size2, outline)
+        end
     end
 end
 

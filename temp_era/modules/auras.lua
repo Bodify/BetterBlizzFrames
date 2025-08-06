@@ -151,7 +151,7 @@ local targetToTCastbarAdjustment
 local targetAndFocusAuraScale = 1
 local targetAndFocusVerticalGap = 4
 local targetDetachCastbar
-local focusToTCastbarAdjustment = 0
+local focusToTCastbarAdjustment
 local targetStaticCastbar
 local showHiddenAurasIcon
 local playerAuraSpacingX = 0
@@ -507,11 +507,7 @@ local function adjustCastbar(self, frame)
                 local minOffset = -40
                 -- Choose the more negative value
                 yOffset = min(minOffset, yOffset)
-                if frame == TargetFrameSpellBar then
-                    yOffset = yOffset + targetToTAdjustmentOffsetY
-                elseif frame == FocusFrameSpellBar then
-                    yOffset = yOffset + focusToTAdjustmentOffsetY
-                end
+                yOffset = yOffset + targetToTAdjustmentOffsetY
             end
 
             meta.SetPoint(self, "TOPLEFT", parent, "BOTTOMLEFT", xOffset + targetCastBarXPos, yOffset + targetCastBarYPos);
@@ -542,6 +538,7 @@ local function adjustCastbar(self, frame)
                 local minOffset = -40
                 -- Choose the more negative value
                 yOffset = min(minOffset, yOffset)
+                yOffset = yOffset + focusToTAdjustmentOffsetY
             end
 
             meta.SetPoint(self, "TOPLEFT", parent, "BOTTOMLEFT", xOffset + focusCastBarXPos, yOffset + focusCastBarYPos);
@@ -565,7 +562,7 @@ local function DefaultCastbarAdjustment(self, frame)
 
     -- Adjustments for ToT and specific frame adjustments
     if (not useSpellbarAnchor) and parentFrame.haveToT and not (buffsOnTopReverseCastbarMovement and parentFrame.buffsOnTop) then
-        local totAdjustment = ((TargetFrameSpellBar and targetToTCastbarAdjustment) or (FocusFrameSpellBar and focusToTCastbarAdjustment))
+        local totAdjustment = ((frame == TargetFrameSpellBar and targetToTCastbarAdjustment) or (frame == FocusFrameSpellBar and focusToTCastbarAdjustment))
         if totAdjustment then
             pointY = parentFrame.smallSize and -48 or -23
             if frame == TargetFrameSpellBar then

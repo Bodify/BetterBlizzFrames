@@ -7509,8 +7509,12 @@ local function guiMisc()
     uiWidgetPowerBarScale:SetPoint("TOPLEFT", arenaOptimizer, "BOTTOMLEFT", 5, -15)
     CreateTooltipTwo(uiWidgetPowerBarScale, "UIWidgetPowerBarFrame Scale", "Changes the scale of UIWidgetPowerBarFrame, the frame with Dragonflying charges on it. Also has things like achievements etc I believe idk.")
 
+    local hideActionBar1 = CreateCheckbox("hideActionBar1", "Hide ActionBar1", guiMisc, nil, BBF.HideFrames)
+    hideActionBar1:SetPoint("TOPLEFT", settingsText, "BOTTOMLEFT", 310, pixelsOnFirstBox)
+    CreateTooltipTwo(hideActionBar1, "Hide ActionBar1", "Hide ActionBar1. Default UI does not allow this so heres a setting for it.")
+
     local hideActionBarBigProcGlow = CreateCheckbox("hideActionBarBigProcGlow", "Hide ActionBar Big Proc Glow", guiMisc, nil, BBF.ActionBarMods)
-    hideActionBarBigProcGlow:SetPoint("TOPLEFT", settingsText, "BOTTOMLEFT", 310, pixelsOnFirstBox)
+    hideActionBarBigProcGlow:SetPoint("TOPLEFT", hideActionBar1, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(hideActionBarBigProcGlow, "Hide Actionbar Big Proc Glow", "Hide the big proc glow on default actionbars.\n\nIt will still glow on procs etc but the giant animation when you get the proc will not appear.")
 
     local hideActionBarCastAnimation = CreateCheckbox("hideActionBarCastAnimation", "Hide ActionBar Cast Animation", guiMisc, nil, BBF.ActionBarMods)

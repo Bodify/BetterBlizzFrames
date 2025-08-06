@@ -15,6 +15,7 @@ local iconMouseOver = false -- flag to indicate if any LibDBIcon is currently mo
 local minimapButtonsHooked = false
 local bagButtonsHooked = false
 local keybindAlphaChanged = false
+local hiddenBar1 = true
 
 local changes = {}
 
@@ -174,6 +175,34 @@ function BBF.HideFrames()
         if BetterBlizzFramesDB.hideThreatOnFrame then
             TargetFrame.TargetFrameContent.TargetFrameContentContextual.NumericalThreat:SetAlpha(0)
             FocusFrame.TargetFrameContent.TargetFrameContentContextual.NumericalThreat:SetAlpha(0)
+        end
+
+        if BetterBlizzFramesDB.hideActionBar1 then
+            if not MainMenuBar.bbfHidden then
+                hooksecurefunc(EditModeManagerFrame, "EnterEditMode", function()
+                    if InCombatLockdown() then
+                        if hiddenBar1 then
+                            print("Could not show ActionBar1 due to combat. Please leave combat and re-open Edit Mode to show it.")
+                        end
+                        return
+                    end
+                    MainMenuBar:SetParent(UIParent)
+                    hiddenBar1 = false
+                end)
+                hooksecurefunc(EditModeManagerFrame, "ExitEditMode", function()
+                    if InCombatLockdown() then
+                        if not hiddenBar1 then
+                            print("Could not hide ActionBar1 due to combat. Please leave combat and re-open Edit Mode to hide it.")
+                        end
+                        return
+                    end
+                    MainMenuBar:SetParent(BBF.hiddenFrame)
+                    hiddenBar1 = true
+                end)
+                MainMenuBar:SetParent(BBF.hiddenFrame)
+                MainMenuBar.bbfHidden = true
+                hiddenBar1 = true
+            end
         end
 
         -- Hide rest loop animation

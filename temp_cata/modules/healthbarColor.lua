@@ -589,6 +589,22 @@ function BBF.BiggerHealthbars(frame, name)
             end
         end)
         frameTextureHooked = true
+
+        -- Hide LTP Name background
+        for i = 1, PlayerFrame:GetNumChildren() do
+            local child = select(i, PlayerFrame:GetChildren())
+            if child and child:IsObjectType("Frame") and not child:GetName() then
+                for j = 1, child:GetNumRegions() do
+                    local region = select(j, child:GetRegions())
+                    if region and region:IsObjectType("Texture") then
+                        local texture = region:GetTexture()
+                        if texture == 137017 then
+                        region:SetTexture(nil)
+                        end
+                    end
+                end
+            end
+        end
     end
 end
 

@@ -1359,6 +1359,11 @@ function BBF.ApplyLegacyBlueCombos(isEnabled)
     end
 end
 
+local function GetRogueAnticipationStacks()
+    local aura = C_UnitAuras.GetPlayerAuraBySpellID(114015)
+    return aura and aura.applications or 0
+end
+
 function BBF.LegacyBlueCombos()
     if not BetterBlizzFramesDB.legacyBlueComboPoints then return end
     if C_CVar.GetCVar("comboPointLocation") ~= "1" then return end
@@ -1368,14 +1373,14 @@ function BBF.LegacyBlueCombos()
             local frame = ComboFrame
             if not frame or not frame.ComboPoints then return end
 
-            local chargedPowerPoints = GetUnitChargedPowerPoints("player") or {}
+            local anticipationStacks = GetRogueAnticipationStacks()
 
             local comboIndex = frame.startComboPointIndex or 2
 
-            for i = 1, 2 do
+            for i = 1, 5 do
                 local point = frame.ComboPoints[comboIndex]
                 if point then
-                    local isCharged = tContains(chargedPowerPoints, i)
+                    local isCharged = i <= anticipationStacks
 
                     if isCharged then
                         point.Highlight:SetAtlas("AncientMana")
@@ -1396,8 +1401,8 @@ function BBF.LegacyBlueCombos()
             end
         end
         if ComboFrame then hooksecurefunc("ComboFrame_Update", BlueLegacyComboRogue) end
-    elseif class == "DRUID" then
-        BBF.DruidBlueComboPoints()
+    -- elseif class == "DRUID" then
+    --     BBF.DruidBlueComboPoints()
     end
 end
 
@@ -2380,6 +2385,7 @@ Frame:SetScript("OnEvent", function(...)
     BBF.ClassColorReputationCaller()
     BBF.SetupLoCFrame()
     BBF.EnableQueueTimer()
+    BBF.LegacyBlueCombos()
 
     C_Timer.After(0, function()
         BBF.PlayerReputationColor()
@@ -2610,6 +2616,7 @@ First:SetScript("OnEvent", function(_, event, addonName)
             BBF.ChangeTotemFrameScale()
             --TurnOnEnabledFeaturesOnLogin()
             BBF.RaiseTargetCastbarStratas()
+            BBF.HookStatusBarText()
 
             C_Timer.After(1, function()
                 MoveableSettingsPanel()

@@ -1,3 +1,20 @@
+# BetterBlizzFrames 1.7.3
+## Retail
+### New
+- Hide ActionBar1 (Misc) (Edit Mode wont let you)
+### Bugfix
+- Fix font settings for default PartyFrames' health & mana text not working.
+- Fix issue with healthbar color + changed texture
+## Mists of Pandaria
+### New
+- Format Numbers setting (under "All Frames" in /bbf). 
+### Tweak
+- Minor tweaks to Important Glow texture positions and some minor bugfixes with its size depending on settings.
+## All versions
+### Bugfix
+- Fix some minor issues with castbar "ToT Offset" settings impacting both default castbar movement and with Aura Filtering enabled.
+
+
 # BetterBlizzFrames 1.7.2d
 ## Retail
 ### Bugfix

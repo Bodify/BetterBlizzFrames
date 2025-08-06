@@ -269,7 +269,7 @@ local targetToTCastbarAdjustment
 local targetAndFocusAuraScale = 1
 local targetAndFocusVerticalGap = 4
 local targetDetachCastbar
-local focusToTCastbarAdjustment = 0
+local focusToTCastbarAdjustment
 local targetStaticCastbar
 local showHiddenAurasIcon
 local playerAuraSpacingX = 0
@@ -747,7 +747,7 @@ local function DefaultCastbarAdjustment(self, frame)
 
     -- Adjustments for ToT and specific frame adjustments
     if (not useSpellbarAnchor) and parentFrame.haveToT then
-        local totAdjustment = (TargetFrameSpellBar and targetToTCastbarAdjustment) or (FocusFrameSpellBar and focusToTCastbarAdjustment)
+        local totAdjustment = ((frame == TargetFrameSpellBar and targetToTCastbarAdjustment) or (frame == FocusFrameSpellBar and focusToTCastbarAdjustment))
         if totAdjustment then
             pointY = parentFrame.smallSize and -48 or -46
             if frame == TargetFrameSpellBar then
