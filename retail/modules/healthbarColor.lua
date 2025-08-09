@@ -671,14 +671,15 @@ function BBF.HookFrameTextureColor()
     local f = CreateFrame("Frame")
     f:RegisterEvent("PLAYER_TARGET_CHANGED")
     f:RegisterEvent("PLAYER_FOCUS_CHANGED")
+    f:RegisterUnitEvent("UNIT_TARGET", "target", "focus")
     f:SetScript("OnEvent", function(self, event)
         if event == "PLAYER_TARGET_CHANGED" then
             DesaturateAndColorTexture(TargetFrame.TargetFrameContainer.FrameTexture, "target")
-            DesaturateAndColorTexture(TargetFrameToT.FrameTexture, "targettarget")
-        else
+        elseif event == "PLAYER_FOCUS_CHANGED" then
             DesaturateAndColorTexture(FocusFrame.TargetFrameContainer.FrameTexture, "focus")
-            DesaturateAndColorTexture(FocusFrameToT.FrameTexture, "focustarget")
         end
+        DesaturateAndColorTexture(TargetFrameToT.FrameTexture, "targettarget")
+        DesaturateAndColorTexture(FocusFrameToT.FrameTexture, "focustarget")
     end)
 
     BBF.FrameTextureColor = true

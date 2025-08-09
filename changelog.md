@@ -1,3 +1,11 @@
+# BetterBlizzFrames 1.7.3b
+## Retail
+### Bugfix
+- Fix "Color FrameTexture" setting not working properly for Target ToT and Focus ToT
+## Cata/Wrath
+### Bugfix
+- Fix new Format Numbers lua file missing reference in the toc file on Wrath/Cata causing lua errors
+
 # BetterBlizzFrames 1.7.3
 ## Retail
 ### New
