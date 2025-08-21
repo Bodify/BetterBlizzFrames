@@ -256,6 +256,12 @@ end
 function BBF.UpdateFrames()
     classColorsOn = BetterBlizzFramesDB.classColorFrames
     colorPetAfterOwner = BetterBlizzFramesDB.colorPetAfterOwner
+    if C_AddOns.IsAddOnLoaded("DragonflightUI") then
+        if not BBF.dfuiHbWarning then
+            BBF.dfuiHbWarning = true
+            print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: DragonflightUI is loaded. BBF's \"Class Color Frames\" can potentially be in conflict with Dragonflight UI's settings.")
+        end
+    end
     if classColorsOn then
         BBF.HookHealthbarColors()
         if UnitExists("player") then updateFrameColorToggleVer(PlayerFrameHealthBar, "player") end
@@ -267,16 +273,20 @@ function BBF.UpdateFrames()
         if UnitExists("party2") then updateFrameColorToggleVer(PartyMemberFrame2HealthBar, "party2") end
         if UnitExists("party3") then updateFrameColorToggleVer(PartyMemberFrame3HealthBar, "party3") end
         if UnitExists("party4") then updateFrameColorToggleVer(PartyMemberFrame4HealthBar, "party4") end
+        BBF.HealthColorOn = true
     else
-        if UnitExists("player") then resetFrameColor(PlayerFrameHealthBar, "player") end
-        if UnitExists("target") then resetFrameColor(TargetFrameHealthBar, "target") end
-        if UnitExists("focus") then resetFrameColor(FocusFrameHealthBar, "focus") end
-        if UnitExists("targettarget") then resetFrameColor(TargetFrameToTHealthBar, "targettarget") end
-        if UnitExists("focustarget") then resetFrameColor(FocusFrameToTHealthBar, "focustarget") end
-        if UnitExists("party1") then resetFrameColor(PartyMemberFrame1HealthBar, "party1") end
-        if UnitExists("party2") then resetFrameColor(PartyMemberFrame2HealthBar, "party2") end
-        if UnitExists("party3") then resetFrameColor(PartyMemberFrame3HealthBar, "party3") end
-        if UnitExists("party4") then resetFrameColor(PartyMemberFrame4HealthBar, "party4") end
+        if BBF.HealthColorOn then
+            if UnitExists("player") then resetFrameColor(PlayerFrameHealthBar, "player") end
+            if UnitExists("target") then resetFrameColor(TargetFrameHealthBar, "target") end
+            if UnitExists("focus") then resetFrameColor(FocusFrameHealthBar, "focus") end
+            if UnitExists("targettarget") then resetFrameColor(TargetFrameToTHealthBar, "targettarget") end
+            if UnitExists("focustarget") then resetFrameColor(FocusFrameToTHealthBar, "focustarget") end
+            if UnitExists("party1") then resetFrameColor(PartyMemberFrame1HealthBar, "party1") end
+            if UnitExists("party2") then resetFrameColor(PartyMemberFrame2HealthBar, "party2") end
+            if UnitExists("party3") then resetFrameColor(PartyMemberFrame3HealthBar, "party3") end
+            if UnitExists("party4") then resetFrameColor(PartyMemberFrame4HealthBar, "party4") end
+            BBF.HealthColorOn = nil
+        end
     end
     if colorPetAfterOwner then
         if UnitExists("pet") then updateFrameColorToggleVer(PetFrameHealthBar, "pet") end

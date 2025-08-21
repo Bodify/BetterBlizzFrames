@@ -2165,6 +2165,13 @@ end
 
 function BBF.FixStupidBlizzPTRShit()
     if BetterBlizzFramesDB.playerFrameOCD then
+        if C_AddOns.IsAddOnLoaded("DragonflightUI") then
+            if not BBF.dfuiOcdWarning then
+                BBF.dfuiOcdWarning = true
+                print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: DragonflightUI is loaded, skipping \"OCD Tweaks\" to avoid conflict.")
+            end
+            return
+        end
         if not originalSettings.backedUp then
             backupSettings()
         end
@@ -2565,15 +2572,19 @@ end
 
 local function MoveableSettingsPanel(talents)
     if C_AddOns.IsAddOnLoaded("BlizzMove") then return end
+    if BetterBlizzFramesDB.dontMoveSettingsPanel then return end
     if not talents then
         local frame = SettingsPanel
         if frame and not frame:GetScript("OnDragStart") then
             frame:RegisterForDrag("LeftButton")
             frame:SetScript("OnDragStart", frame.StartMoving)
             frame:SetScript("OnDragStop", frame.StopMovingOrSizing)
+            frame:SetUserPlaced(false)
+            frame:ClearAllPoints()
+            frame:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
         end
     else
-        local talentFrame = PlayerSpellsFrame
+        local talentFrame = PlayerTalentFrame
         if talentFrame and not talentFrame:GetScript("OnDragStart") then
             talentFrame:SetMovable(true)
             talentFrame:RegisterForDrag("LeftButton")
@@ -2678,6 +2689,8 @@ First:SetScript("OnEvent", function(_, event, addonName)
             end
 
             BBF.InitializeOptions()
+        elseif addonName == "Blizzard_TalentUI" and _G.PlayerTalentFrame then
+            MoveableSettingsPanel(true)
         end
     end
 end)

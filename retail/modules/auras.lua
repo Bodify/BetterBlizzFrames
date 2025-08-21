@@ -1281,13 +1281,14 @@ local function AdjustAuras(self, frameType)
         --local previousAuraWasImportant = false
 
         for i, aura in ipairs(auras) do
+            local enlargedOrCompact = aura.isEnlarged or aura.isCompacted
             aura:SetScale(auraScale)
             --aura:SetMouseClickEnabled(false)
             local auraSize = aura:GetHeight()
             if not aura.isLarge then
                 -- Apply the adjusted size to smaller auras
                 aura:SetSize(adjustedSize, adjustedSize)
-                if not MasqueOn then
+                if not MasqueOn and not enlargedOrCompact then
                     if aura.PurgeGlow then
                         aura.PurgeGlow:SetScale(targetAndFocusSmallAuraScale)
                     end
@@ -1311,13 +1312,22 @@ local function AdjustAuras(self, frameType)
                 aura.Count:SetScale(auraStackSize)
             end
 
-            if aura.isEnlarged or aura.isCompacted then
+            if enlargedOrCompact then
                 local sizeMultiplier = aura.isEnlarged and userEnlargedAuraSize or userCompactedAuraSize
                 local defaultLargeAuraSize = aura.isLarge and 21 or 17
                 local importantSize = defaultLargeAuraSize * sizeMultiplier
                 aura:SetSize(importantSize, importantSize)
                 if aura.Stealable then
                     aura.Stealable:SetScale(sizeMultiplier)
+                end
+                if aura.PurgeGlow then
+                    aura.PurgeGlow:SetScale(1)
+                end
+                if aura.ImportantGlow then
+                    aura.ImportantGlow:SetScale(1)
+                end
+                if aura.PandemicGlow then
+                    aura.PandemicGlow:SetScale(1)
                 end
                 aura.wasEnlarged = true
                 auraSize = importantSize
@@ -1999,7 +2009,24 @@ local function CreateToggleIcon()
     return toggleIcon
 end
 
-
+function BBF.UpdateHiddenAuraButtonPos()
+    if not toggleIconGlobal then return end
+    toggleIconGlobal:ClearAllPoints()
+    if BetterBlizzFramesDB.toggleIconPosition then
+        local pos = BetterBlizzFramesDB.toggleIconPosition
+        toggleIconGlobal:SetPoint(pos[1], UIParent, pos[3], pos[4], pos[5])
+    else
+        if BuffFrame.CollapseAndExpandButton then
+            if BuffFrame.AuraContainer.addIconsToRight then
+                toggleIconGlobal:SetPoint("RIGHT", BuffFrame.CollapseAndExpandButton, "LEFT", 0, 0)
+            else
+                toggleIconGlobal:SetPoint("LEFT", BuffFrame.CollapseAndExpandButton, "RIGHT", 0, 0)
+            end
+        else
+            toggleIconGlobal:SetPoint("TOPLEFT", BuffFrame, "TOPRIGHT", 0, -6)
+        end
+    end
+end
 
 local BuffFrame = BuffFrame
 local printedMsg

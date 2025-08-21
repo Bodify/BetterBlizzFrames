@@ -1762,6 +1762,12 @@ function BBF.MiniFrame(frame)
         levelText:SetParent(hiddenFrame)
         name:SetWidth(180)
 
+        if frame.ocdLine1 then
+            frame.ocdLine1:SetParent(hiddenFrame)
+            frame.ocdLine2:SetParent(hiddenFrame)
+            frame.ocdLine3:SetParent(hiddenFrame)
+        end
+
         -- Customize Player Frame differently if needed
         healthBar:SetAlpha(0)
         manaBar:SetAlpha(0)
@@ -1770,6 +1776,7 @@ function BBF.MiniFrame(frame)
         if AlternatePowerBar then
             AlternatePowerBar:SetParent(hiddenFrame)
         end
+        PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.StatusTexture:SetParent(hiddenFrame)
         flash:SetAlpha(0)
         PlayerFrame.PlayerFrameContainer.PlayerPortraitMask:SetAtlas("CircleMask")
         PlayerFrame.PlayerFrameContainer.PlayerPortraitMask:SetSize(57,57)
@@ -3451,6 +3458,7 @@ end
 function BBF.FixStupidBlizzPTRShit()
     if InCombatLockdown() then return end
     if isAddonLoaded("ClassicFrames") or isAddonLoaded("EasyFrames") or BetterBlizzFramesDB.classicFrames then return end
+    if BBF.ocdFixActive then return end
     -- For god knows what reason PTR has a gap between Portrait and PlayerFrame. This fixes it + other gaps.
     --PlayerFrame.PlayerFrameContainer.PlayerPortrait:SetScale(1.02)
     PlayerFrame.PlayerFrameContainer.PlayerPortrait:SetSize(61,61)
@@ -3570,18 +3578,22 @@ function BBF.FixStupidBlizzPTRShit()
 
         -- Textures to fill some gaps
         local v = (BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeColor == 0 and 0.2) or 0.35
-        local texture = PlayerFrame:CreateTexture(nil, "BACKGROUND")
-        texture:SetColorTexture(v, v, v, 1)
-        texture:SetPoint("TOPLEFT", PlayerFrame.healthbar, "BOTTOMLEFT", 0, 0)
-        texture:SetPoint("BOTTOMRIGHT", PlayerFrame.manabar, "TOPRIGHT", 0, -1)
-        local texture = PlayerFrame:CreateTexture(nil, "BACKGROUND")
-        texture:SetColorTexture(v, v, v, 1)
-        texture:SetPoint("TOPLEFT", PlayerFrame.manabar, "BOTTOMLEFT", 0, 0)
-        texture:SetPoint("BOTTOMRIGHT", PlayerFrame.manabar, "BOTTOMRIGHT", -2.5, -1)
-        local texture = PlayerFrame:CreateTexture(nil, "BACKGROUND")
-        texture:SetColorTexture(v, v, v, 1)
-        texture:SetPoint("BOTTOMLEFT", PlayerFrame.healthbar, "TOPLEFT", 0, 0)
-        texture:SetPoint("BOTTOMRIGHT", PlayerFrame.manabar, "TOPRIGHT", -2.5, 1)
+        PlayerFrame.ocdLine1 = PlayerFrame:CreateTexture(nil, "BACKGROUND")
+        PlayerFrame.ocdLine1:SetColorTexture(v, v, v, 1)
+        PlayerFrame.ocdLine1:SetPoint("TOPLEFT", PlayerFrame.healthbar, "BOTTOMLEFT", 0, 0)
+        PlayerFrame.ocdLine1:SetPoint("BOTTOMRIGHT", PlayerFrame.manabar, "TOPRIGHT", 0, -1)
+
+        PlayerFrame.ocdLine2 = PlayerFrame:CreateTexture(nil, "BACKGROUND")
+        PlayerFrame.ocdLine2:SetColorTexture(v, v, v, 1)
+        PlayerFrame.ocdLine2:SetPoint("TOPLEFT", PlayerFrame.manabar, "BOTTOMLEFT", 0, 0)
+        PlayerFrame.ocdLine2:SetPoint("BOTTOMRIGHT", PlayerFrame.manabar, "BOTTOMRIGHT", -2.5, -1)
+
+        PlayerFrame.ocdLine3 = PlayerFrame:CreateTexture(nil, "BACKGROUND")
+        PlayerFrame.ocdLine3:SetColorTexture(v, v, v, 1)
+        PlayerFrame.ocdLine3:SetPoint("BOTTOMLEFT", PlayerFrame.healthbar, "TOPLEFT", 0, 0)
+        PlayerFrame.ocdLine3:SetPoint("BOTTOMRIGHT", PlayerFrame.manabar, "TOPRIGHT", -2.5, 1)
+
+        BBF.ocdFixActive = true
 
 
 
@@ -3932,6 +3944,7 @@ end
 
 local function MoveableSettingsPanel(talents)
     if C_AddOns.IsAddOnLoaded("BlizzMove") then return end
+    if BetterBlizzFramesDB.dontMoveSettingsPanel then return end
     if not talents then
         local frame = SettingsPanel
         if frame and not frame:GetScript("OnDragStart") then

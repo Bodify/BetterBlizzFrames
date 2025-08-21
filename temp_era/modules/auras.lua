@@ -1824,6 +1824,21 @@ local function CreateToggleIcon()
     return toggleIcon
 end
 
+function BBF.UpdateHiddenAuraButtonPos()
+    if not toggleIconGlobal then return end
+    toggleIconGlobal:ClearAllPoints()
+    if BetterBlizzFramesDB.toggleIconPosition then
+        local pos = BetterBlizzFramesDB.toggleIconPosition
+        toggleIconGlobal:SetPoint(pos[1], UIParent, pos[3], pos[4], pos[5])
+    else
+        if BuffFrame.CollapseAndExpandButton then
+            toggleIconGlobal:SetPoint("LEFT", BuffFrame.CollapseAndExpandButton, "RIGHT", 0, 0)
+        else
+            toggleIconGlobal:SetPoint("TOPLEFT", BuffFrame, "TOPRIGHT", 2 + BetterBlizzFramesDB.playerAuraSpacingX, 0)
+        end
+    end
+end
+
 local BuffFrame = BuffFrame
 local function PersonalBuffFrameFilterAndGrid(self)
     ResetHiddenAurasCount()

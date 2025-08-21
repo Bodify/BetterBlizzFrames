@@ -5827,6 +5827,8 @@ local function guiFrameAuras()
         else
             changeIconButton:SetAlpha(0)
             changeIconButton:Disable()
+            BetterBlizzFramesDB.toggleIconPosition = nil
+            BBF.UpdateHiddenAuraButtonPos()
         end
     end)
 

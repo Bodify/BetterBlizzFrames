@@ -207,11 +207,11 @@ local function UpdateMore()
     onlyPandemicMine = BetterBlizzFramesDB.onlyPandemicAuraMine
     buffsOnTopReverseCastbarMovement = BetterBlizzFramesDB.buffsOnTopReverseCastbarMovement
     customPurgeSize = BetterBlizzFramesDB.customPurgeSize
-    enlargedTextureAdjustmentSmall = 20 * userEnlargedAuraSize
-    compactedTextureAdjustmentSmall = 20 * userCompactedAuraSize
+    enlargedTextureAdjustmentSmall = 21 * userEnlargedAuraSize
+    compactedTextureAdjustmentSmall = 21 * userCompactedAuraSize
     purgeableAuraSize = BetterBlizzFramesDB.purgeableAuraSize
-    purgeableTextureAdjustment = 20 * purgeableAuraSize
-    purgeableTextureAdjustmentSmall = 20 * purgeableAuraSize
+    purgeableTextureAdjustment = 21 * purgeableAuraSize
+    purgeableTextureAdjustmentSmall = 21 * purgeableAuraSize
     targetEnlargeAuraEnemy = BetterBlizzFramesDB.targetEnlargeAuraEnemy
     targetEnlargeAuraFriendly = BetterBlizzFramesDB.targetEnlargeAuraFriendly
     focusEnlargeAuraEnemy = BetterBlizzFramesDB.focusEnlargeAuraEnemy
@@ -617,83 +617,126 @@ local function StopCheckBuffsTimer()
     end
 end
 
+local nonPandemic = 5
+local defaultPandemic = 0.3
+local uaPandemic = 8
+local agonyPandemic = 10
+
+local pandemicSpells = {
+    -- Mage
+    [44457] = 3,  -- Living Bomb (explode duration)
+}
+
+local function GetPandemicThresholds(buff)
+    local minBaseDuration = pandemicSpells[buff.spellID] or buff.duration
+    local baseDuration = math.max(buff.duration, minBaseDuration)  -- Ensure the duration doesn't go below the min base duration
+
+    -- Specific pandemic logic for Agony with talent
+    --if pandemicSpells[buff.spellID] then
+    if buff.spellID == 44457 then
+        -- Use 30% of the greater value (dynamic or minimum) for Pandemic spells
+        return nil, 3
+        --return nil, baseDuration * defaultPandemic
+    else
+        -- Default non-pandemic (5 seconds)
+        return nil, nonPandemic
+    end
+end
+
 local function CheckBuffs()
     local currentGameTime = GetTime()
+
     for auraInstanceID, aura in pairs(trackedBuffs) do
         if aura.isPandemic and aura.expirationTime then
             local remainingDuration = aura.expirationTime - currentGameTime
+            local specialPandemicThreshold, defaultPandemicThreshold = GetPandemicThresholds(aura)
+
             if remainingDuration <= 0 then
                 aura.isPandemic = false
                 trackedBuffs[auraInstanceID] = nil
                 if aura.PandemicGlow then
                     aura.PandemicGlow:Hide()
                 end
-                if aura.ImportantGlow then
-                    aura.ImportantGlow:SetAlpha(1)
-                end
                 aura.isPandemicActive = false
-            elseif remainingDuration <= 5.1 then
+            else
                 if not aura.PandemicGlow then
                     aura.PandemicGlow = aura.GlowFrame:CreateTexture(nil, "OVERLAY");
                     aura.PandemicGlow:SetTexture(BBF.squareGreenGlow);
                     aura.PandemicGlow:SetDesaturated(true)
                     aura.PandemicGlow:SetVertexColor(1, 0, 0)
                 end
-                local texAdjust = aura.isEnlarged and enlargedTextureAdjustment or compactedTextureAdjustment
-                local texAdjustSmall = aura.isEnlarged and enlargedTextureAdjustmentSmall or compactedTextureAdjustmentSmall
-                if aura.isEnlarged or aura.isCompacted then
-                    if aura.isLarge then
-                        aura.PandemicGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -texAdjust, texAdjust)
-                        aura.PandemicGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", texAdjust, -texAdjust)
+
+                if remainingDuration <= defaultPandemicThreshold then
+                    -- Set the glow to red
+                    aura.PandemicGlow:SetVertexColor(1, 0, 0) -- Red color
+                    aura.PandemicGlow:Show()
+                    if aura.isEnlarged then
+                        aura.PandemicGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -enlargedTextureAdjustment, enlargedTextureAdjustment)
+                        aura.PandemicGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", enlargedTextureAdjustment, -enlargedTextureAdjustment)
+                    elseif aura.isCompacted then
+                        aura.PandemicGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -compactedTextureAdjustment, compactedTextureAdjustment)
+                        aura.PandemicGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", compactedTextureAdjustment, -compactedTextureAdjustment)
                     else
-                        aura.PandemicGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -texAdjustSmall, texAdjustSmall)
-                        aura.PandemicGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", texAdjustSmall, -texAdjustSmall)
+                        aura.PandemicGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -25, 24.5)
+                        aura.PandemicGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", 25, -25)
                     end
+                    aura.isPandemicActive = true
+                elseif specialPandemicThreshold and remainingDuration <= specialPandemicThreshold and remainingDuration > defaultPandemicThreshold then
+                    -- Set the glow to reddish-orange
+                    aura.PandemicGlow:SetVertexColor(1, 0.25, 0) -- Reddish-orange color
+                    aura.PandemicGlow:Show()
+                    if aura.isEnlarged then
+                        aura.PandemicGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -enlargedTextureAdjustment, enlargedTextureAdjustment)
+                        aura.PandemicGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", enlargedTextureAdjustment, -enlargedTextureAdjustment)
+                    elseif aura.isCompacted then
+                        aura.PandemicGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -compactedTextureAdjustment, compactedTextureAdjustment)
+                        aura.PandemicGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", compactedTextureAdjustment, -compactedTextureAdjustment)
+                    else
+                        aura.PandemicGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -25, 24.5)
+                        aura.PandemicGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", 25, -25)
+                    end
+                    aura.isPandemicActive = true
                 else
-                    if aura.isLarge then
-                        aura.PandemicGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -24, 25)
-                        aura.PandemicGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", 24, -24)
-                    else
-                        aura.PandemicGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -18, 18)
-                        aura.PandemicGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", 18, -18)
+                    -- Outside the pandemic window, hide the glow
+                    if aura.PandemicGlow then
+                        aura.PandemicGlow:Hide()
                     end
+                    aura.isPandemicActive = false
                 end
 
-                aura.isPandemicActive = true
-                aura.PandemicGlow:Show();
-                if aura.ImportantGlow then
-                    aura.ImportantGlow:SetAlpha(0)
+                -- Handle borders
+                if aura.isPandemicActive then
+                    if aura.border then
+                        aura.border:SetAlpha(0)
+                    end
+                    if aura.Border then
+                        aura.Border:SetAlpha(0)
+                    end
+                else
+                    if aura.Border and not aura.isImportant and not aura.isPurgeGlow then
+                        aura.Border:SetAlpha(1)
+                    end
+                    if aura.border and not aura.isImportant and not aura.isPurgeGlow then
+                        aura.border:SetAlpha(1)
+                    end
                 end
-                if aura.Border then
-                    aura.Border:SetAlpha(0)
-                end
-            else
-                if aura.PandemicGlow then
-                    aura.PandemicGlow:Hide();
-                end
-                if aura.ImportantGlow then
-                    aura.ImportantGlow:SetAlpha(1)
-                end
-                aura.isPandemicActive = false
             end
         else
             aura.isPandemicActive = false
+
             if aura.Border and not aura.isImportant and not aura.isPurgeGlow then
                 aura.Border:SetAlpha(1)
             end
-            if aura.border and not aura.isImportant and not aura.isPurgeGlow then
+            if aura.border then
                 aura.border:SetAlpha(1)
             end
-            if aura.ImportantGlow then
-                aura.ImportantGlow:SetAlpha(1)
-            end
-            for auraInstanceID, _ in pairs(trackedBuffs) do
-                trackedBuffs[auraInstanceID] = nil
-            end
+
+            trackedBuffs[auraInstanceID] = nil
         end
     end
+
     if next(trackedBuffs) == nil then
-        StopCheckBuffsTimer();
+        StopCheckBuffsTimer()
     end
 end
 
@@ -1218,6 +1261,8 @@ local function AdjustAuras(self, frameType)
                 auraFrame.canApply = canApply
                 auraFrame.isHelpful = isBuff
                 auraFrame.isHarmful = not isBuff
+                auraFrame.duration = duration
+                auraFrame.spellID = spellId
                 --auraFrame.isStealable = stealable
 
                 local shouldShowAura, isImportant, isPandemic, isEnlarged, isCompacted, auraColor
@@ -1843,6 +1888,21 @@ local function CreateToggleIcon()
 
     toggleIconGlobal = toggleIcon
     return toggleIcon
+end
+
+function BBF.UpdateHiddenAuraButtonPos()
+    if not toggleIconGlobal then return end
+    toggleIconGlobal:ClearAllPoints()
+    if BetterBlizzFramesDB.toggleIconPosition then
+        local pos = BetterBlizzFramesDB.toggleIconPosition
+        toggleIconGlobal:SetPoint(pos[1], UIParent, pos[3], pos[4], pos[5])
+    else
+        if BuffFrame.CollapseAndExpandButton then
+            toggleIconGlobal:SetPoint("LEFT", BuffFrame.CollapseAndExpandButton, "RIGHT", 0, 0)
+        else
+            toggleIconGlobal:SetPoint("TOPLEFT", BuffFrame, "TOPRIGHT", 2 + BetterBlizzFramesDB.playerAuraSpacingX, 0)
+        end
+    end
 end
 
 local BuffFrame = BuffFrame

@@ -1,3 +1,30 @@
+# BetterBlizzFrames 1.7.3e
+## Retail
+### Bugfix
+- Fix some scaling issues with aura glows (Important, Pandemic, etc).
+## Mists of Pandaria
+### Tweak
+- Living Bomb now shows Pandemic Glow when its below 3 seconds left instead of the default 5 (explode refresh window)
+## All versions
+### Tweak
+- Buffs & Debuffs: Unselecting Filtered Buffs Icon now also deletes its saved position. Use that should the icon ever accidentally get saved in some hidden location.
+
+
+
+# BetterBlizzFrames 1.7.3d
+## Retail
+### Tweak
+- Fix some lines from OCD Tweaks setting meant to fill gaps on PlayerFrame gaps still showing when using MiniFrame setting for PlayerFrame.
+## MoP/Cata/Wrath
+### Tweak
+- Settings with checks for Dragonflight UI now only sends a chat message it might conflict with DFUI but does not turn the setting off unless specificaly mentioned.
+
+# BetterBlizzFrames 1.7.3c
+## MoP/Cata/Wrath
+### Tweak
+- Added check for Dragonflight UI before enabling OCD Tweaks and Class Color Frames to avoid conflicts. Will be turned off if DF UI is enabled (Use the settings in DF UI instead for those).
+- SettingsPanel now resets to its default location between reloads as intended. If you really dont want to be able to drag-and-move this at all then type /run BetterBlizzFramesDB.dontMoveSettingsPanel = true
+
 # BetterBlizzFrames 1.7.3b
 ## Retail
 ### Bugfix

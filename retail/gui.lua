@@ -3023,6 +3023,7 @@ local function guiGeneralTab()
 
     playerFrameOCD:HookScript("OnClick", function(self)
         BBF.AllNameChanges()
+        StaticPopup_Show("BBF_CONFIRM_RELOAD")
     end)
 
     -- if not BetterBlizzFramesDB.playerFrameOCD then
@@ -3963,7 +3964,7 @@ local function guiGeneralTab()
                     end,
                     OnShow = function(self)
                         local statusText = classicFrames:GetChecked() and "|cff00ff00ON|r" or "|cffff0000OFF|r"
-                        self.text:SetText(titleText.."Classic Frames will turn "..statusText.." after reload.\n\nSelect which optional settings you want.\n|cFFAAAAAA(These can be changed individually later)|r\n\n\n\n\n ")
+                        self.Text:SetText(titleText.."Classic Frames will turn "..statusText.." after reload.\n\nSelect which optional settings you want.\n|cFFAAAAAA(These can be changed individually later)|r\n\n\n\n\n ")
                         if not self.classicSettings then
                             BBF.ChangesOnReload = {}
                             self.cfTextures = CreateFrame("CheckButton", nil, self, "UICheckButtonTemplate")
@@ -4036,7 +4037,7 @@ local function guiGeneralTab()
                         self.cfTextures:SetScript("OnClick", function()
                             CheckBoxes()
                         end)
-                        self.cfCastbars:SetPoint("BOTTOMLEFT", self.button1, "TOPLEFT", 15, 43)
+                        self.cfCastbars:SetPoint("BOTTOMLEFT", self.ButtonContainer.Button1, "TOPLEFT", 15, 43)
                         self.cfComboPoints:SetPoint("TOPLEFT", self.cfCastbars, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
                         self.cfTextures:SetPoint("TOPLEFT", self.cfComboPoints, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
                         self.cfTextures:Show()
@@ -6840,6 +6841,8 @@ local function guiFrameAuras()
         else
             changeIconButton:SetAlpha(0)
             changeIconButton:Disable()
+            BetterBlizzFramesDB.toggleIconPosition = nil
+            BBF.UpdateHiddenAuraButtonPos()
         end
     end)
 
