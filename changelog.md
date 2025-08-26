@@ -2,6 +2,7 @@
 ## Retail
 ### Tweak
 - Castbar glows on Player Castbar looked wonky when reducing the castbar width. Should be fixed.
+- Added some custom code for Buff & Debuff filtering that allows you to for example anchor a WeakAura to a specific aura on TargetFrame/FocusFrame. I don't intend to do much with this, if you want to know how it works just ask me about it on the Discord.
 ## Mists of Pandaria
 ### New
 - Aeghis profile for MoP
