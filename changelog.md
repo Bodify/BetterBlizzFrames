@@ -1,3 +1,16 @@
+# BetterBlizzFrames 1.7.4
+## Retail
+### Tweak
+- Castbar glows on Player Castbar looked wonky when reducing the castbar width. Should be fixed.
+## Mists of Pandaria
+### New
+- Aeghis profile for MoP
+- Added color options to Font settings in Fonts & Textures section like on Retail.
+- New setting to hide Druids Eclipse Bar Text in Misc section.
+### Bugfix
+- Fix some issues with background color on minus frames (small unitframes)
+
+
 # BetterBlizzFrames 1.7.3e
 ## Retail
 ### Bugfix

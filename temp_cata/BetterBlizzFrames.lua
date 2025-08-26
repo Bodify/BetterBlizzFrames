@@ -289,6 +289,10 @@ local defaultSettings = {
     castBarInterruptIconDisplayCD = true,
     interruptIconBorder = true,
     unitFrameBgTextureColor = {0,0,0,0.5},
+    unitFrameFontColorRGB = {1,1,1,1},
+    partyFrameFontColorRGB = {1,1,1,1},
+    unitFrameValueFontColorRGB = {1,1,1,1},
+    actionBarFontColorRGB = {1,1,1,1},
 
     auraWhitelist = {
         ["example aura :3 (delete me)"] = {name = "Example Aura :3 (delete me)"}
@@ -2363,6 +2367,22 @@ function BBF.AddBackgroundTextureToUnitFrames(frame, tot)
     end
 
     frame.bbfBgTexture = bgTex
+
+    if not BBF.bgTextureHook then
+        hooksecurefunc("TargetFrame_CheckClassification", function(self)
+            local classification = UnitClassification(self.unit)
+            if classification == "minus" then
+                self.bbfBgTexture:SetPoint("TOPLEFT", self.healthbar, "TOPLEFT", 0, 0)
+                self.bbfBgTexture:SetPoint("BOTTOMRIGHT", self.healthbar, "BOTTOMRIGHT", 0, 0)
+                self.bgTextureMinusChange = true
+            elseif frame.bgTextureMinusChange then
+                self.bbfBgTexture:SetPoint("TOPLEFT", self.healthbar, "TOPLEFT", 0, 0)
+                self.bbfBgTexture:SetPoint("BOTTOMRIGHT", self.manabar, "BOTTOMRIGHT", 0, 0)
+                self.bgTextureMinusChange = nil
+            end
+        end)
+        BBF.bgTextureHook = true
+    end
 end
 
 function BBF.UnitFrameBackgroundTexture()
@@ -2630,6 +2650,7 @@ First:SetScript("OnEvent", function(_, event, addonName)
             BBF.HookStatusBarText()
 
             C_Timer.After(1, function()
+                BBF.FontColors()
                 MoveableSettingsPanel()
             end)
 

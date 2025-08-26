@@ -223,8 +223,12 @@ function BBF.HideFrames()
             --     frame:SetHeight(42)
             -- end)
             BBF.HookAndDo(TargetFrameBackground, "SetSize", function(frame, width, height, flag)
-                -- Custom behavior: Resize the frame
-                frame:SetSize(119, 42, flag)
+                local classification = UnitClassification("target")
+                if classification == "minus" then
+                    frame:SetSize(119, 10, flag)
+                else
+                    frame:SetSize(119, 42, flag)
+                end
             end)
             TargetFrameBackground:SetSize(119, 42)
         else
@@ -240,8 +244,12 @@ function BBF.HideFrames()
             --FocusFrameBackground:SetHeight(42)
             --BBF.SetRegionHeight(FocusFrameBackground, 42)
             BBF.HookAndDo(FocusFrameBackground, "SetSize", function(frame, width, height, flag)
-                -- Custom behavior: Resize the frame
-                frame:SetSize(119, 42, flag)
+                local classification = UnitClassification("focus")
+                if classification == "minus" then
+                    frame:SetSize(119, 10, flag)
+                else
+                    frame:SetSize(119, 42, flag)
+                end
             end)
             FocusFrameBackground:SetSize(119, 42)
         else
@@ -412,6 +420,12 @@ function BBF.HideFrames()
     --     else
     --         PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.GuideIcon:SetAlpha(1)
     --     end
+
+        if BetterBlizzFramesDB.hideEclipseBarText then
+            if EclipseBarFramePowertext then
+                EclipseBarFramePowertext:SetAlpha(0)
+            end
+        end
 
         if BetterBlizzFramesDB.hideRaidFrameManager then
             CompactRaidFrameManager.container:SetIgnoreParentAlpha(true)

@@ -1262,7 +1262,11 @@ end
 
 local function PlayerCastingBarFrameMiscAdjustments()
     PlayerCastingBarFrame:SetScale(BetterBlizzFramesDB.playerCastBarScale or 1)
-    PlayerCastingBarFrame:SetWidth(BetterBlizzFramesDB.playerCastBarWidth)
+    local w = BetterBlizzFramesDB.playerCastBarWidth
+    PlayerCastingBarFrame:SetWidth(w)
+    local maskRatio = 256 / 208
+    PlayerCastingBarFrame.BorderMask:SetWidth(w * maskRatio)
+
     PlayerCastingBarFrame:SetHeight(BetterBlizzFramesDB.playerCastBarHeight)
     PlayerCastingBarFrame.Text:ClearAllPoints()
     if BetterBlizzFramesDB.playerCastBarNoTextBorder then

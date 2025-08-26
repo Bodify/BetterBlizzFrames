@@ -159,6 +159,51 @@ local function deepMergeTables(destination, source)
     end
 end
 
+
+
+local function OpenColorOptions(entryColors, func)
+    local colorData = entryColors or {0, 1, 0, 1}
+    local r, g, b = colorData[1] or 1, colorData[2] or 1, colorData[3] or 1
+    local a = colorData[4] or 1
+
+    local function updateColors(newR, newG, newB, newA)
+        entryColors[1] = newR
+        entryColors[2] = newG
+        entryColors[3] = newB
+        entryColors[4] = newA or 1
+
+        if func then
+            func()
+        end
+    end
+
+    local function swatchFunc()
+        r, g, b = ColorPickerFrame:GetColorRGB()
+        updateColors(r, g, b, a)
+    end
+
+    local function opacityFunc()
+        a = ColorPickerFrame:GetColorAlpha()
+        updateColors(r, g, b, a)
+    end
+
+    local function cancelFunc(previousValues)
+        if previousValues then
+            r, g, b, a = previousValues.r, previousValues.g, previousValues.b, previousValues.a
+            updateColors(r, g, b, a)
+        end
+    end
+
+    ColorPickerFrame.previousValues = { r = r, g = g, b = b, a = a }
+
+    ColorPickerFrame:SetupColorPickerAndShow({
+        r = r, g = g, b = b, opacity = a, hasOpacity = true,
+        swatchFunc = swatchFunc, opacityFunc = opacityFunc, cancelFunc = cancelFunc
+    })
+end
+
+
+
 StaticPopupDialogs["BBF_CONFIRM_RELOAD"] = {
     text = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: \n\nThis requires a reload. Reload now?",
     button1 = "Yes",
@@ -2255,9 +2300,9 @@ local function CreateSimpleDropdown(name, parentFrame, labelText, settingKey, op
             end)
 
             -- Add the text initializer for the button
-            button:AddInitializer(function(button)
-                button.Text:SetText(option)
-            end)
+            -- button:AddInitializer(function(button)
+            --     button.Text:SetText(option)
+            -- end)
         end
     end
 
@@ -3837,7 +3882,7 @@ local function guiGeneralTab()
     local starterButton = CreateClassButton(BetterBlizzFrames, "STARTER", "Starter", nil, function()
         ShowProfileConfirmation("Starter", "STARTER", BBF.StarterProfile, "|cff808080(If you want to completely reset BBF there\nis a button in Advanced Settings)|r\n\n")
     end)
-    starterButton:SetPoint("TOPLEFT", SettingsPanel, "BOTTOMLEFT", 258, 38)
+    starterButton:SetPoint("TOPLEFT", SettingsPanel, "BOTTOMLEFT", 16, 38)
 
     -- local aeghisButton = CreateClassButton(BetterBlizzFrames, "MAGE", "Aeghis", "aeghis", function()
     --     ShowProfileConfirmation("Aeghis", "MAGE", BBF.AeghisProfile)
@@ -3854,10 +3899,15 @@ local function guiGeneralTab()
     -- end)
     -- magnuszButton:SetPoint("LEFT", kalvishButton, "RIGHT", btnGap, 0)
 
+    local aeghisButton = CreateClassButton(BetterBlizzFrames, "MAGE", "Aeghis", "aeghis", function()
+        ShowProfileConfirmation("Aeghis", "MAGE", BBF.AeghisProfile)
+    end)
+    aeghisButton:SetPoint("LEFT", starterButton, "RIGHT", btnGap, 0)
+
     local mmarkersButton = CreateClassButton(BetterBlizzFrames, "DRUID", "Mmarkers", "mmarkers", function()
         ShowProfileConfirmation("Mmarkers", "DRUID", BBF.MmarkersProfile)
     end)
-    mmarkersButton:SetPoint("LEFT", starterButton, "RIGHT", btnGap, 0)
+    mmarkersButton:SetPoint("LEFT", aeghisButton, "RIGHT", btnGap, 0)
 
     local nahjButton = CreateClassButton(BetterBlizzFrames, "ROGUE", "Nahj", "nahj", function()
         ShowProfileConfirmation("Nahj", "ROGUE", BBF.NahjProfile)
@@ -5250,6 +5300,26 @@ local function guiFrameLook()
     changeUnitFrameFont:SetPoint("TOPLEFT", settingsText, "BOTTOMLEFT", -4, pixelsOnFirstBox)
     CreateTooltipTwo(changeUnitFrameFont, "Change UnitFrame Font","Changes the font on Player, Target & Focus etc.")
 
+    local unitFrameFontColor = CreateCheckbox("unitFrameFontColor", "Color", guiFrameLook)
+    unitFrameFontColor:SetPoint("LEFT", changeUnitFrameFont.Text, "RIGHT", 0, 0)
+    CreateTooltipTwo(unitFrameFontColor, "UnitFrame Font Color","Change the font color on UnitFrames.\n\nRight-click to change color.")
+    unitFrameFontColor:HookScript("OnClick", function()
+        BBF.FontColors()
+    end)
+    unitFrameFontColor:SetScript("OnMouseDown", function(self, button)
+        if button == "RightButton" then
+            OpenColorOptions(BetterBlizzFramesDB.unitFrameFontColorRGB,  BBF.FontColors)
+        end
+    end)
+
+    local unitFrameFontColorLvl = CreateCheckbox("unitFrameFontColorLvl", "Lvl", guiFrameLook)
+    unitFrameFontColorLvl:SetPoint("LEFT", unitFrameFontColor.Text, "RIGHT", 0, 0)
+    CreateTooltipTwo(unitFrameFontColorLvl, "Color Level Font", "Also color the level font")
+    unitFrameFontColorLvl:HookScript("OnClick", function()
+        BBF.FontColors()
+    end)
+
+
     local unitFrameFont = CreateFontDropdown(
         "unitFrameFont",
         guiFrameLook,
@@ -5305,7 +5375,19 @@ local function guiFrameLook()
     local changeUnitFrameValueFont = CreateCheckbox("changeUnitFrameValueFont", "Change UnitFrame Number Font", guiFrameLook)
     changeUnitFrameValueFont:SetPoint("TOPLEFT", changeUnitFrameFont, "BOTTOMLEFT", 0, -85)
     CreateTooltipTwo(changeUnitFrameValueFont, "Change UnitFrame Number Font","Changes the font on numbers on Player, Target & Focus etc.")
-    
+
+    local unitFrameValueFontColor = CreateCheckbox("unitFrameValueFontColor", "Color", guiFrameLook)
+    unitFrameValueFontColor:SetPoint("LEFT", changeUnitFrameValueFont.Text, "RIGHT", 0, 0)
+    CreateTooltipTwo(unitFrameValueFontColor, "UnitFrame Numbers Font Color","Change the font color on UnitFrames numbers.\n\nRight-click to change color.")
+    unitFrameValueFontColor:HookScript("OnClick", function()
+        BBF.FontColors()
+    end)
+    unitFrameValueFontColor:SetScript("OnMouseDown", function(self, button)
+        if button == "RightButton" then
+            OpenColorOptions(BetterBlizzFramesDB.unitFrameValueFontColorRGB,  BBF.FontColors)
+        end
+    end)
+
     local unitFrameValueFont = CreateFontDropdown(
         "unitFrameValueFont",
         guiFrameLook,
@@ -5316,19 +5398,18 @@ local function guiFrameLook()
         end,
         { anchorFrame = changeUnitFrameValueFont, x = 55, y = 1, label = "Font" }
     )
-    
+
     -- For font outline
     local unitFrameValueFontOutline = CreateSimpleDropdown("FontOutlineDropdown", guiFrameLook, "Outline", "unitFrameValueFontOutline", {
         "THICKOUTLINE", "THINOUTLINE", "NONE"
     }, function(selectedSize)
         BBF.SetCustomFonts()
     end, { anchorFrame = unitFrameValueFont, x = 0, y = -5 }, 155)
-    
-    
+
     local unitFrameValueFontSize = CreateSimpleDropdown("FontSizeDropdown", guiFrameLook, "Size", "unitFrameValueFontSize", fontSizeOptions, function(selectedSize)
         BBF.SetCustomFonts()
     end, { anchorFrame = unitFrameValueFontOutline, x = 0, y = -5 }, 155)
-    
+
     changeUnitFrameValueFont:HookScript("OnClick", function(self)
         BBF.SetCustomFonts()
         if not self:GetChecked() then
@@ -5342,7 +5423,7 @@ local function guiFrameLook()
             unitFrameValueFontSize:Enable()
         end
     end)
-    
+
     if not changeUnitFrameValueFont:GetChecked() then
         unitFrameValueFont:Disable()
         unitFrameValueFontOutline:Disable()
@@ -5356,7 +5437,19 @@ local function guiFrameLook()
     local changePartyFrameFont = CreateCheckbox("changePartyFrameFont", "Change Party Font", guiFrameLook)
     changePartyFrameFont:SetPoint("TOPLEFT", changeUnitFrameValueFont, "BOTTOMLEFT", 0, -85)
     CreateTooltipTwo(changePartyFrameFont, "Change Party Font","Changes the font on PartyFrames")
-    
+
+    local partyFrameFontColor = CreateCheckbox("partyFrameFontColor", "Color", guiFrameLook)
+    partyFrameFontColor:SetPoint("LEFT", changePartyFrameFont.Text, "RIGHT", 0, 0)
+    CreateTooltipTwo(partyFrameFontColor, "Party Frame Font Color","Change the font color on Party Frames.\n\nRight-click to change color.")
+    partyFrameFontColor:HookScript("OnClick", function()
+        BBF.FontColors()
+    end)
+    partyFrameFontColor:SetScript("OnMouseDown", function(self, button)
+        if button == "RightButton" then
+            OpenColorOptions(BetterBlizzFramesDB.partyFrameFontColorRGB,  BBF.FontColors)
+        end
+    end)
+
     local partyFrameFont = CreateFontDropdown(
         "partyFrameFont",
         guiFrameLook,
@@ -5367,7 +5460,7 @@ local function guiFrameLook()
         end,
         { anchorFrame = changePartyFrameFont, x = 55, y = 1, label = "Font" }
     )
-    
+
     -- For font outline
     local partyFrameFontOutline = CreateSimpleDropdown("FontOutlineDropdown", guiFrameLook, "Outline", "partyFrameFontOutline", {
         "THICKOUTLINE", "THINOUTLINE", "NONE"
@@ -5375,7 +5468,7 @@ local function guiFrameLook()
         BBF.SetCustomFonts()
     end, { anchorFrame = partyFrameFont, x = 0, y = -5 }, 155)
 
-    
+
     local partyFrameFontSize = CreateSimpleDropdown("FontSizeDropdown", guiFrameLook, "Size", "partyFrameFontSize", fontSizeOptions, function(selectedSize)
         BBF.SetCustomFonts()
     end, { anchorFrame = partyFrameFontOutline, x = 0, y = -5 }, 77.5)
@@ -5385,7 +5478,7 @@ local function guiFrameLook()
         BBF.SetCustomFonts()
     end, { anchorFrame = partyFrameFontSize, x = 77.5, y = 25 }, 77.5)
     CreateTooltipTwo(partyFrameStatusFontSize, "Status Text Size")
-    
+
     changePartyFrameFont:HookScript("OnClick", function(self)
         BBF.SetCustomFonts()
         if not self:GetChecked() then
@@ -5401,7 +5494,7 @@ local function guiFrameLook()
             partyFrameStatusFontSize:Enable()
         end
     end)
-    
+
     if not changePartyFrameFont:GetChecked() then
         partyFrameFont:Disable()
         partyFrameFontOutline:Disable()
@@ -5417,6 +5510,18 @@ local function guiFrameLook()
     local changeActionBarFont = CreateCheckbox("changeActionBarFont", "Change ActionBar Font", guiFrameLook)
     changeActionBarFont:SetPoint("TOPLEFT", changePartyFrameFont, "BOTTOMLEFT", 0, -85)
     CreateTooltipTwo(changeActionBarFont, "Change ActionBar Font","Changes the font on Player, Target & Focus etc.")
+
+    local actionBarFontColor = CreateCheckbox("actionBarFontColor", "Color", guiFrameLook)
+    actionBarFontColor:SetPoint("LEFT", changeActionBarFont.Text, "RIGHT", 0, 0)
+    CreateTooltipTwo(actionBarFontColor, "Action Bar Font Color","Change the font color on ActionBars.\n\nRight-click to change color.")
+    actionBarFontColor:HookScript("OnClick", function()
+        BBF.FontColors()
+    end)
+    actionBarFontColor:SetScript("OnMouseDown", function(self, button)
+        if button == "RightButton" then
+            OpenColorOptions(BetterBlizzFramesDB.actionBarFontColorRGB,  BBF.FontColors)
+        end
+    end)
 
     local actionBarFont = CreateFontDropdown(
         "actionBarFont",
@@ -6523,11 +6628,11 @@ local function guiMisc()
 
     local hideActionBarHotKey = CreateCheckbox("hideActionBarHotKey", "Hide ActionBar Keybinds", guiMisc, nil, BBF.HideFrames)
     hideActionBarHotKey:SetPoint("TOPLEFT", hideObjectiveTracker, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltip(hideActionBarHotKey, "Hides the keybind on default actionbars (I highly recommend getting Bartender though, doesnt bug like default does)")
+    CreateTooltip(hideActionBarHotKey, "Hides the keybind on default actionbars")
 
     local hideActionBarMacroName = CreateCheckbox("hideActionBarMacroName", "Hide ActionBar Macro Name", guiMisc, nil, BBF.HideFrames)
     hideActionBarMacroName:SetPoint("TOPLEFT", hideActionBarHotKey, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltip(hideActionBarMacroName, "Hides the macro name on default actionbars (I highly recommend getting Bartender though, doesnt bug like default does)")
+    CreateTooltip(hideActionBarMacroName, "Hides the macro name on default actionbars")
 
     local hideStanceBar = CreateCheckbox("hideStanceBar", "Hide StanceBar (ActionBar)", guiMisc, nil, BBF.HideFrames)
     hideStanceBar:SetPoint("TOPLEFT", hideActionBarMacroName, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
@@ -6596,8 +6701,12 @@ local function guiMisc()
         hideMonkComboBg:SetPoint("TOPLEFT", addUnitFrameBgTexture, "BOTTOMLEFT", 0, -50)
         CreateTooltipTwo(hideMonkComboBg, "Hide Monk Chi Background", "Hide the background texture on Monk Chi.")
 
+        local hideEclipseBarText = CreateCheckbox("hideEclipseBarText", "Hide Druid Eclipse Bar Text", guiMisc, nil, BBF.HideFrames)
+        hideEclipseBarText:SetPoint("TOPLEFT", hideMonkComboBg, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+        CreateTooltipTwo(hideEclipseBarText, "Hide Druid Eclipse Bar Text", "Hide the text on druids Eclipse Bar.")
+
         local hideTotemFrameTimer = CreateCheckbox("hideTotemFrameTimer", "Hide Totem Timer Text", guiMisc, nil, BBF.HideFrames)
-        hideTotemFrameTimer:SetPoint("TOPLEFT", hideMonkComboBg, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+        hideTotemFrameTimer:SetPoint("TOPLEFT", hideEclipseBarText, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
         CreateTooltipTwo(hideTotemFrameTimer, "Hide Totem Timer Text", "Hide the totem timer text that shows underneath the totem icon.")
 
         local hideTotemFrameCd = CreateCheckbox("hideTotemFrameCd", "Hide TotemFrame Cooldown", guiMisc, nil, BBF.HideFrames)
@@ -7497,10 +7606,15 @@ function BBF.CreateIntroMessageWindow()
     -- end)
     -- magnuszButton:SetPoint("TOP", kalvishButton, "BOTTOM", 0, btnGap)
 
-    local mmarkersButton = CreateClassButton(BBF.IntroMessageWindow, "DRUID", "Mmarkers", "mmarkers", function()
-        ShowProfileConfirmation("Mmarkers", "DRUID", BBF.NahjProfile)
+    local aeghisButton = CreateClassButton(BBF.IntroMessageWindow, "MAGE", "Aeghis", "aeghis", function()
+        ShowProfileConfirmation("Aeghis", "MAGE", BBF.AeghisProfile)
     end)
-    mmarkersButton:SetPoint("TOP", starterButton, "BOTTOM", 0, -40)
+    aeghisButton:SetPoint("TOP", starterButton, "BOTTOM", 0, -40)
+
+    local mmarkersButton = CreateClassButton(BBF.IntroMessageWindow, "DRUID", "Mmarkers", "mmarkers", function()
+        ShowProfileConfirmation("Mmarkers", "DRUID", BBF.MmarkersProfile)
+    end)
+    mmarkersButton:SetPoint("TOP", aeghisButton, "BOTTOM", 0, btnGap)
 
     local nahjButton = CreateClassButton(BBF.IntroMessageWindow, "ROGUE", "Nahj", "nahj", function()
         ShowProfileConfirmation("Nahj", "ROGUE", BBF.NahjProfile)

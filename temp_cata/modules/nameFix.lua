@@ -1180,3 +1180,137 @@ function BBF.AllNameChanges()
         BBF.colorLvl = nil
     end
 end
+
+
+-- FIX FOR CLASSIC
+
+function BBF.FontColors()
+    local db = BetterBlizzFramesDB
+    if db.unitFrameFontColor then
+        local color = db.unitFrameFontColorRGB
+        local unitFrameFonts = {
+            PlayerFrame,
+            TargetFrame,
+            TargetFrameToT,
+            FocusFrame,
+            FocusFrameToT,
+        }
+        for _, frame in ipairs(unitFrameFonts) do
+            if frame.bbfName then
+                frame.bbfName:SetVertexColor(unpack(color))
+            end
+        end
+        if db.unitFrameFontColorLvl then
+            PlayerLevelText:SetVertexColor(unpack(color))
+            TargetFrame.levelText:SetVertexColor(unpack(color))
+            FocusFrame.levelText:SetVertexColor(unpack(color))
+            if not BBF.UnitFrameFontColorHook then
+                hooksecurefunc(PlayerLevelText, "SetVertexColor", function(self, r, g, b, a)
+                    if self.changing then return end
+                    self.changing = true
+                    PlayerLevelText:SetVertexColor(unpack(BetterBlizzFramesDB.unitFrameFontColorRGB))
+                    self.changing = false
+                end)
+                hooksecurefunc("TargetFrame_CheckLevel", function(self)
+                    self.levelText:SetVertexColor(unpack(BetterBlizzFramesDB.unitFrameFontColorRGB))
+                end)
+                BBF.UnitFrameFontColorHook = true
+            end
+        end
+    end
+
+    if db.partyFrameFontColor then
+        local color = db.partyFrameFontColorRGB
+        local partyFrameFonts = {
+            PartyMemberFrame1,
+            PartyMemberFrame2,
+            PartyMemberFrame3,
+            PartyMemberFrame4,
+            CompactRaidFrame1,
+            CompactRaidFrame2,
+            CompactRaidFrame3,
+            CompactRaidFrame4,
+            CompactRaidFrame5
+        }
+        for _, frame in ipairs(partyFrameFonts) do
+            if frame.bbfName then
+                frame.bbfName:SetVertexColor(unpack(color))
+            elseif frame.name then
+                frame.name:SetVertexColor(unpack(color))
+            end
+        end
+    end
+
+    if db.unitFrameValueFontColor then
+        local color = db.unitFrameValueFontColorRGB
+        local unitFrameValueFonts = {
+            PlayerFrame.HealthBar,
+            PlayerFrame.manabar,
+            TargetFrame.healthbar,
+            TargetFrame.PowerBar,
+            FocusFrame.healthbar,
+            FocusFrame.manabar,
+            PartyMemberFrame1.healthbar,
+            PartyMemberFrame2.healthbar,
+            PartyMemberFrame3.healthbar,
+            PartyMemberFrame4.healthbar,
+            PartyMemberFrame1.ManaBar,
+            PartyMemberFrame2.ManaBar,
+            PartyMemberFrame3.ManaBar,
+            PartyMemberFrame4.ManaBar,
+        }
+        for _, frame in ipairs(unitFrameValueFonts) do
+            if frame.LeftText then frame.LeftText:SetVertexColor(unpack(color)) end
+            if frame.RightText then frame.RightText:SetVertexColor(unpack(color)) end
+            if frame.TextString then frame.TextString:SetVertexColor(unpack(color)) end
+            if frame.CenterText then frame.CenterText:SetVertexColor(unpack(color)) end
+            if frame.ManaBarText then frame.ManaBarText:SetVertexColor(unpack(color)) end
+        end
+    end
+
+    if db.actionBarFontColor then
+        local color = db.actionBarFontColorRGB
+        local function isBlizzardWhite(r)
+            return math.abs(r - 0.6) < 0.01
+        end
+        local function setColor(name)
+            local frame = _G[name]
+            if frame and frame.SetVertexColor then
+                frame:SetVertexColor(unpack(color))
+                if not frame.colorHook then
+                    hooksecurefunc(frame, "SetVertexColor", function(self, r, g, b, a)
+                        if frame.changing then return end
+                        frame.changing = true
+                        if isBlizzardWhite(r) then
+                            frame:SetVertexColor(unpack(BetterBlizzFramesDB.actionBarFontColorRGB))
+                        end
+                        frame.changing = false
+                    end)
+                    frame.colorHook = true
+                end
+            end
+        end
+
+        local prefixes = {
+            "ActionButton",
+            "MultiBarBottomLeftButton",
+            "MultiBarBottomRightButton",
+            "MultiBarRightButton",
+            "MultiBarLeftButton",
+            "MultiBar5Button",
+            "MultiBar6Button",
+            "MultiBar7Button",
+            "PetActionButton"
+        }
+
+        local suffixes = { "HotKey", "Name", "Count" }
+
+        for i = 1, 12 do
+            for _, prefix in ipairs(prefixes) do
+                for _, suffix in ipairs(suffixes) do
+                    setColor(prefix .. i .. suffix)
+                end
+            end
+        end
+    end
+end

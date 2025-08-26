@@ -1456,6 +1456,25 @@ local function AdjustAuras(self, frameType)
                 aura.spellId = auraData.spellId
                 aura.duration = auraData.duration
 
+                -- Attach weakauras to certain named auraframes
+                if BBF.globalAuraFrames and BBF.globalAuraFrames[auraData.spellId] then
+                    if frameType == "target" then
+                        if not _G["BBFTargetAura"..auraData.name] then
+                            _G["BBFTargetAura"..auraData.name] = CreateFrame("Frame", "BBFTargetAura"..auraData.name, UIParent)
+                            _G["BBFTargetAura"..auraData.name]:SetAllPoints(aura)
+                        else
+                            _G["BBFTargetAura"..auraData.name]:SetAllPoints(aura)
+                        end
+                    else
+                        if not _G["BBFFocusAura"..auraData.name] then
+                            _G["BBFFocusAura"..auraData.name] = CreateFrame("Frame", "BBFFocusAura"..auraData.name, UIParent)
+                            _G["BBFFocusAura"..auraData.name]:SetAllPoints(aura)
+                        else
+                            _G["BBFFocusAura"..auraData.name]:SetAllPoints(aura)
+                        end
+                    end
+                end
+
                 if trackedAuras[auraData.spellId] then
                     aura.Cooldown:SetCooldown(activeNonDurationAuras[auraData.spellId] or 0, trackedAuras[auraData.spellId].duration or 0)
                     C_Timer.After(0.1, function()
