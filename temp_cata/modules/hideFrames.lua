@@ -542,10 +542,9 @@ function BBF.HideFrames()
             end
             if PaladinPowerBar and englishClass == "PALADIN" then
                 if BetterBlizzFramesDB.hidePlayerPowerNoPaladin then
-                    if originalResourceParent then PaladinPowerBar:SetParent(originalResourceParent) end
+                    PaladinPowerBar:SetAlpha(1)
                 else
-                    if not originalResourceParent then originalResourceParent = PaladinPowerBar:GetParent() end
-                    PaladinPowerBar:SetParent(hiddenFrame)
+                    PaladinPowerBar:SetAlpha(0)
                 end
             end
             if RuneFrame and englishClass == "DEATHKNIGHT" then

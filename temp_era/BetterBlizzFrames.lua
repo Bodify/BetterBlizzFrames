@@ -59,6 +59,7 @@ local defaultSettings = {
     focusEnlargeAuraFriendly = true,
 
     hunterFeignRaidFrameFix = true,
+    playerEliteFrameMode = 1,
 
     -- Absorb Indicator
     absorbIndicatorScale = 1,
@@ -488,6 +489,62 @@ function BBF.ClickthroughFrames()
         -- end
 	end
 end
+
+
+function BBF.PlayerElite(mode)
+    local playerElite = PlayerFrameTexture
+    local bigHealthbars = BetterBlizzFramesDB["biggerHealthbars"]
+
+    -- Set Elite style according to value
+    playerElite:SetDesaturated(false)
+    if not BetterBlizzFramesDB.playerEliteFrame then
+        if BBF.eliteToggled then
+            if bigHealthbars then
+                playerElite:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\UI-TargetingFrame")
+                playerElite:SetTexCoord(1, .09375, 0, .78125)
+            else
+                playerElite:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame")
+                playerElite:SetTexCoord(1, .09375, 0, .78125)
+            end
+            BBF.eliteToggled = nil
+            return
+        else
+            return
+        end
+    end
+    if mode == 1 then -- Rare (Silver)
+        if bigHealthbars then
+            playerElite:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\UI-TargetingFrame-Rare")
+            playerElite:SetTexCoord(1, .09375, 0, .78125)
+            playerElite:SetDesaturated(true)
+        else
+            playerElite:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Rare")
+            playerElite:SetTexCoord(1, .09375, 0, .78125)
+            playerElite:SetDesaturated(true)
+        end
+    elseif mode == 2 then -- Boss (Gold Winged)
+        if bigHealthbars then
+            playerElite:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\UI-TargetingFrame-Elite")
+            playerElite:SetTexCoord(1, .09375, 0, .78125)
+        else
+            playerElite:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Elite")
+            playerElite:SetTexCoord(1, .09375, 0, .78125)
+        end
+    elseif mode == 3 then -- Boss (Silver Winged)
+        if bigHealthbars then
+            playerElite:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\UI-TargetingFrame-Rare-Elite")
+            playerElite:SetTexCoord(1, .09375, 0, .78125)
+            playerElite:SetDesaturated(true)
+        else
+            playerElite:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Elite")
+            playerElite:SetTexCoord(1, .09375, 0, .78125)
+            playerElite:SetDesaturated(true)
+        end
+    end
+    BBF.eliteToggled = true
+end
+
+
 
 function BBF.ScaleUnitFrames()
     local db = BetterBlizzFramesDB

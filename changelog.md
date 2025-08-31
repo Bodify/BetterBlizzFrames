@@ -1,3 +1,10 @@
+# BetterBlizzFrames 1.7.4b
+## Classics
+### New
+- Added "Elite Texture" setting for PlayerFrame. Right click setting to change between 3 options.
+### Bugfix
+- Fix Hide Player Resource setting causing lua errors on Paladin.
+
 # BetterBlizzFrames 1.7.4
 ## Retail
 ### Tweak
