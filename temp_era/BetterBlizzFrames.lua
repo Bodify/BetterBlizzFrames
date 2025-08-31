@@ -1477,6 +1477,7 @@ Frame:SetScript("OnEvent", function(...)
                 -- end
                 if BetterBlizzFramesDB.biggerHealthbars then
                     BBF.HookBiggerHealthbars()
+                    BBF.PlayerElite(BetterBlizzFramesDB.playerEliteFrameMode)
                 end
                 BBF.ToggleCastbarInterruptIcon()
                 BBF.UpdateUserTargetSettings()
