@@ -409,13 +409,23 @@ function BBF.PlayerReputationColor()
             local color = getUnitColor("player")
             if color then
                 reputationFrame:SetSize(119, 19)
-                reputationTexture:SetTexture(137017)
+                if not BetterBlizzFramesDB.changeUnitFrameHealthbarTexture then
+                    reputationTexture:SetTexture(137017)
+                else
+                    local texture = BBF.LSM:Fetch(BBF.LSM.MediaType.STATUSBAR, BetterBlizzFramesDB.unitFrameHealthbarTexture)
+                    reputationTexture:SetTexture(texture)
+                end
                 reputationTexture:SetDesaturated(true)
                 reputationTexture:SetVertexColor(color.r, color.g, color.b)
                 reputationTexture:SetTexCoord(0, 1, 0, 1)
             end
         else
-            reputationTexture:SetTexture(137017)
+            if not BetterBlizzFramesDB.changeUnitFrameHealthbarTexture then
+                reputationTexture:SetTexture(137017)
+            else
+                local texture = BBF.LSM:Fetch(BBF.LSM.MediaType.STATUSBAR, BetterBlizzFramesDB.unitFrameHealthbarTexture)
+                reputationTexture:SetTexture(texture)
+            end
             reputationTexture:SetDesaturated(false)
             local r, g, b = UnitSelectionColor("player")
             reputationTexture:SetVertexColor(r, g, b)

@@ -1,3 +1,8 @@
+# BetterBlizzFrames 1.7.4c
+## ALl versions
+### Bugfix
+- Fix healthbar texture change not applying to PlayerFrame name background on login/reload for Classic Frames.
+
 # BetterBlizzFrames 1.7.4b
 ## Classics
 ### New
