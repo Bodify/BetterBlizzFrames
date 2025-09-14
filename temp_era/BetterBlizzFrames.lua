@@ -835,7 +835,7 @@ local function ApplyTextureChange(type, statusBar, parent)
 end
 
 -- Main function to apply texture changes to raid frames and additional frames
-function HookUnitFrameTextures()
+function BBF.HookUnitFrameTextures()
     local db = BetterBlizzFramesDB
     -- Hook Player, Target & Focus Healthbars
     if db.changeUnitFrameHealthbarTexture then
@@ -953,7 +953,7 @@ function BBF.HookTextures()
     -- Hook UnitFrames
     -- BetterBlizzFramesDB.textureSwapUnitFrames
     if db.changeUnitFrameHealthbarTexture or db.changeUnitFrameManabarTexture then
-        HookUnitFrameTextures()
+        BBF.HookUnitFrameTextures()
     end
 
     -- Hook Raidframes

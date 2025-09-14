@@ -2855,7 +2855,7 @@ end
 BBF.ApplyTextureChange = ApplyTextureChange
 
 -- Main function to apply texture changes to unit frames
-function HookUnitFrameTextures()
+function BBF.HookUnitFrameTextures()
     local db = BetterBlizzFramesDB
     local classicFramesLoaded = C_AddOns.IsAddOnLoaded("ClassicFrames")
 
@@ -3040,7 +3040,7 @@ function BBF.HookTextures()
     -- Hook UnitFrames
     -- BetterBlizzFramesDB.textureSwapUnitFrames
     if db.changeUnitFrameHealthbarTexture or db.changeUnitFrameManabarTexture then
-        HookUnitFrameTextures()
+        BBF.HookUnitFrameTextures()
     end
 
     -- Hook Raidframes
