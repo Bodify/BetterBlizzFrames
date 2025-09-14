@@ -1155,20 +1155,21 @@ function BBF.MinimapHider()
     -- Handle ObjectiveTracker visibility
     if hideObjectives then
         if not ObjectiveTracker.bbpHook then
+            BBF.ogObjectiveParent = ObjectiveTrackerFrame:GetParent()
             ObjectiveTrackerFrame:HookScript("OnShow", function()
                 local _, instanceType = GetInstanceInfo()
                 local inArena = instanceType == "arena"
 
                 if inArena then
-                    ObjectiveTrackerFrame:Hide()
+                    ObjectiveTrackerFrame:SetParent(BBF.hiddenFrame)
                 end
             end)
             ObjectiveTracker.bbpHook = true
         end
         if inArena then
-            ObjectiveTracker:Hide()
+            ObjectiveTrackerFrame:SetParent(BBF.hiddenFrame)
         else
-            ObjectiveTracker:Show()
+            ObjectiveTrackerFrame:SetParent(BBF.ogObjectiveParent)
         end
     end
 end
