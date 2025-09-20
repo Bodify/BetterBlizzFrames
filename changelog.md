@@ -1,5 +1,10 @@
+# BetterBlizzFrames 1.7.4d
+## Mists of Pandaria
+### Tweak
+- Raise DK's RuneFrame FrameStrata so runes don't appear behind FrameTexture.
+
 # BetterBlizzFrames 1.7.4c
-## ALl versions
+## All versions
 ### Bugfix
 - Fix healthbar texture change not applying to PlayerFrame name background on login/reload for Classic Frames.
 
