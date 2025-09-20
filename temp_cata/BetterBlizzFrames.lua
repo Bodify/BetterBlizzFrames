@@ -2801,3 +2801,7 @@ if EclipseBarFramePowertext then
         self:Show()
     end)
 end
+
+if RuneFrame then
+    RuneFrame:SetFrameStrata("MEDIUM")
+end
