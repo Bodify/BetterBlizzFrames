@@ -1475,6 +1475,9 @@ function BBF.PlayerElite(mode)
             local frameTexture = PlayerFrame.ClassicFrame.Texture
             local alpha = mode > 3 and 1 or 0
             local playerElite = PlayerFrame.PlayerFrameContainer.PlayerElite
+            local hideLvl = db.hideLevelText
+            local alwaysHideLvl = hideLvl and db.hideLevelTextAlways
+
             if mode > 3 then
                 if not PlayerFrame.PlayerFrameContainer.PlayerElite then
                     PlayerFrame.PlayerFrameContainer.PlayerElite = PlayerFrame.PlayerFrameContainer:CreateTexture(nil, "OVERLAY", nil, 6)
@@ -1484,8 +1487,16 @@ function BBF.PlayerElite(mode)
                 end
                 playerElite = PlayerFrame.PlayerFrameContainer.PlayerElite
                 playerElite:SetParent(PlayerFrame.ClassicFrame)
-                local hideLvl = db.hideLevelText
-                local alwaysHideLvl = hideLvl and db.hideLevelTextAlways
+
+                -- Always use UI-FocusFrame-Large for mode > 3 when elite frame is enabled
+                frameTexture:SetTexture("Interface\\TargetingFrame\\UI-FocusFrame-Large")
+
+                -- Force hide player level text for mode > 3
+                if PlayerLevelText and BBF.hiddenFrame then
+                    PlayerLevelText:SetParent(BBF.hiddenFrame)
+                end
+            else
+                -- For mode <= 3, check hideLvl conditions for texture choice
                 if alwaysHideLvl then
                     frameTexture:SetTexture("Interface\\TargetingFrame\\UI-FocusFrame-Large")
                 elseif hideLvl and UnitLevel("player") == 80 then
@@ -1493,7 +1504,6 @@ function BBF.PlayerElite(mode)
                 else
                     frameTexture:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame")
                 end
-            else
                 if playerElite then
                     playerElite:SetAlpha(0)
                 end
@@ -1560,6 +1570,17 @@ function BBF.PlayerElite(mode)
             if playerElite then
                 playerElite:SetAlpha(0)
             end
+
+            if alwaysHideLvl or (hideLvl and UnitLevel("player") == 80) then
+                PlayerLevelText:SetParent(BBF.hiddenFrame)
+            else
+                PlayerLevelText:SetParent(PlayerFrame.ClassicFrame)
+                PlayerLevelText:SetDrawLayer("OVERLAY", 7)
+                PlayerLevelText:Show()
+                PlayerLevelText:ClearAllPoints()
+                PlayerLevelText:SetPoint("CENTER", -81, -24.5)
+            end
+
             BBF.eliteToggled = nil
         end
     end

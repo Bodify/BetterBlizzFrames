@@ -1,4 +1,7 @@
 # BetterBlizzFrames 1.7.4d
+## Retail
+### Bugfix
+- Fix some Elite Frame Texture modes not hiding PlayerLevel with Classic Frames enabled where it makes sense.
 ## Mists of Pandaria
 ### Tweak
 - Raise DK's RuneFrame FrameStrata so runes don't appear behind FrameTexture.

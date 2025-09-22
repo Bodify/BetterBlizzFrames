@@ -489,7 +489,18 @@ local function MakeClassicFrame(frame)
                     UpdateLevelDetails()
                 end
             else
-                UpdateLevelDetails()
+                -- When playerEliteFrame is enabled, handle level text based on mode
+                local mode = BetterBlizzFramesDB.playerEliteFrameMode
+                if mode > 3 then
+                    -- Always hide level text for mode > 3 (using UI-FocusFrame-Large texture)
+                    PlayerLevelText:SetParent(BBF.hiddenFrame)
+                elseif alwaysHideLvl or (hideLvl and UnitLevel(frame.unit) == 80) then
+                    -- Hide level text based on hideLvl settings for mode <= 3
+                    PlayerLevelText:SetParent(BBF.hiddenFrame)
+                else
+                    -- Show level text for other cases
+                    UpdateLevelDetails()
+                end
             end
         end
         hooksecurefunc("PlayerFrame_UpdateLevel", function()
@@ -634,6 +645,9 @@ local function MakeClassicFrame(frame)
         local function PlayerEliteFrame()
             local playerElite = frame.ClassicFrame.Texture
             local mode = BetterBlizzFramesDB.playerEliteFrameMode
+            local hideLvl = BetterBlizzFramesDB.hideLevelText
+            local alwaysHideLvl = hideLvl and BetterBlizzFramesDB.hideLevelTextAlways
+
             -- Set Elite style according to value
             if mode == 1 then -- Rare (Silver)
                 playerElite:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Rare")
@@ -643,6 +657,9 @@ local function MakeClassicFrame(frame)
                 playerElite:SetDesaturated(true)
             elseif mode == 3 then -- Boss (Gold Winged)
                 playerElite:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Elite")
+                playerElite:SetDesaturated(false)
+            elseif mode > 3 then -- For modes > 3, always use UI-FocusFrame-Large regardless of hideLvl
+                playerElite:SetTexture("Interface\\TargetingFrame\\UI-FocusFrame-Large")
                 playerElite:SetDesaturated(false)
             else
                 frame.ClassicFrame.Texture:SetTexture(defaultTex)
@@ -697,6 +714,12 @@ local function MakeClassicFrame(frame)
                 frameContainer.FrameFlash:SetTexture(flashTex)
                 frameContainer.FrameFlash:SetTexCoord(0.9453125, 0, 0, 0.181640625)
                 contentMain.StatusTexture:SetTexture("Interface\\CharacterFrame\\UI-Player-Status")
+                -- Handle level text for playerEliteFrame
+                local mode = BetterBlizzFramesDB.playerEliteFrameMode
+                if mode > 3 and (alwaysHideLvl or (hideLvl and UnitLevel("player") == 80)) then
+                    -- Ensure level text is hidden when using UI-FocusFrame-Large
+                    PlayerLevelText:SetParent(BBF.hiddenFrame)
+                end
             else
                 if alwaysHideLvl then
                     ToggleNoLevelFrame(true)
