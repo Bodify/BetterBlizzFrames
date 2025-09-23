@@ -1,5 +1,7 @@
 # BetterBlizzFrames 1.7.4d
 ## Retail
+### New
+- Gladiator/Legend/Strategist win progress tracker on Honor panel. Enabled by default. Only shows if you have 1 win or more.
 ### Tweak
 - Aeghis profile update
 ### Bugfix

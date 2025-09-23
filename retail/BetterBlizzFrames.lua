@@ -53,6 +53,7 @@ local defaultSettings = {
     druidOverstacks = true,
     druidAlwaysShowCombos = true,
     createAltManaBarDruid = true,
+    gladWinTracker = true,
     --partyFrameScale = 1,
     opBarriersOn = true,
     classicCastbarsPlayerBorder = true,
@@ -3475,6 +3476,68 @@ function BBF.HideTalkingHeads()
     end)
     BBF.hidingTalkingHeads = true
 end
+
+function BBF.GladTracker()
+    if not BetterBlizzFramesDB.gladWinTracker then return end
+    if BBF.GladTrackerOn then return end
+    BBF.GladTrackerOn = true
+
+    local function SetupGladTracker()
+        local function GetAchievementProgress(achievementID)
+            local num = GetAchievementNumCriteria(achievementID)
+            for i = 1, num do
+                local _, _, _, qty, req = GetAchievementCriteriaInfo(achievementID, i)
+                if req and req > 0 then
+                    return qty or 0, req
+                end
+            end
+            return 0, 0
+        end
+
+        -- map rows -> achievementIDs
+        local trackedAchievements = {
+            [ConquestFrame.Arena3v3]         = 41049, -- Glad
+            [ConquestFrame.RatedSoloShuffle] = 42023, -- Legend
+            [ConquestFrame.RatedBGBlitz]     = 42024, -- Strategist
+        }
+
+        local function UpdateTrackedProgress()
+            for frame, achID in pairs(trackedAchievements) do
+                if frame then
+                    if not frame.bbfGladWinTracker then
+                        frame.bbfGladWinTracker = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+                        frame.bbfGladWinTracker:SetPoint("LEFT", frame.CurrentRating, "RIGHT", 8, 0)
+                    end
+                    local qty, req = GetAchievementProgress(achID)
+                    if qty > 0 then
+                        frame.bbfGladWinTracker:SetText(qty.."/"..req)
+                        frame.bbfGladWinTracker:Show()
+                    else
+                        frame.bbfGladWinTracker:SetText("")
+                        frame.bbfGladWinTracker:Hide()
+                    end
+                end
+            end
+        end
+
+        ConquestFrame:HookScript("OnShow", UpdateTrackedProgress)
+        UpdateTrackedProgress()
+    end
+
+    if isAddonLoaded("Blizzard_PVPUI") then
+        SetupGladTracker()
+    else
+        local loader = CreateFrame("Frame")
+        loader:RegisterEvent("ADDON_LOADED")
+        loader:SetScript("OnEvent", function(self, _, addon)
+            if addon == "Blizzard_PVPUI" then
+                self:UnregisterEvent("ADDON_LOADED")
+                SetupGladTracker()
+            end
+        end)
+    end
+end
+
 
 function BBF.FixStupidBlizzPTRShit()
     if InCombatLockdown() then return end

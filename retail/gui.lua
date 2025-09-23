@@ -7508,8 +7508,15 @@ local function guiMisc()
         StaticPopup_Show("BBF_CONFIRM_RELOAD")
     end)
 
+    local gladWinTracker = CreateCheckbox("gladWinTracker", "Glad Win Tracker", guiMisc)
+    gladWinTracker:SetPoint("TOPLEFT", arenaOptimizer, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(gladWinTracker, "Glad Win Tracker", "Track your win progress towards Glad/Legend/Strategist on the Honor Panel.")
+    gladWinTracker:HookScript("OnClick", function(self)
+        BBF.GladWinTracker()
+    end)
+
     local uiWidgetPowerBarScale = CreateSlider(guiMisc, "UIWidgetPowerBarFrame Scale", 0.4, 1.8, 0.01, "uiWidgetPowerBarScale")
-    uiWidgetPowerBarScale:SetPoint("TOPLEFT", arenaOptimizer, "BOTTOMLEFT", 5, -15)
+    uiWidgetPowerBarScale:SetPoint("TOPLEFT", gladWinTracker, "BOTTOMLEFT", 5, -15)
     CreateTooltipTwo(uiWidgetPowerBarScale, "UIWidgetPowerBarFrame Scale", "Changes the scale of UIWidgetPowerBarFrame, the frame with Dragonflying charges on it. Also has things like achievements etc I believe idk.")
 
     local hideActionBar1 = CreateCheckbox("hideActionBar1", "Hide ActionBar1", guiMisc, nil, BBF.HideFrames)
