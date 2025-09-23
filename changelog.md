@@ -1,5 +1,7 @@
 # BetterBlizzFrames 1.7.4d
 ## Retail
+### Tweak
+- Aeghis profile update
 ### Bugfix
 - Fix some Elite Frame Texture modes not hiding PlayerLevel with Classic Frames enabled where it makes sense.
 ## Mists of Pandaria
