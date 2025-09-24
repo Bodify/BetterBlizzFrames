@@ -1,3 +1,9 @@
+# BetterBlizzFrames 1.7.4e
+## Retail
+### Tweak
+- Kalvish profile update
+
+
 # BetterBlizzFrames 1.7.4d
 ## Retail
 ### New
