@@ -7513,6 +7513,9 @@ local function guiMisc()
     CreateTooltipTwo(gladWinTracker, "Glad Win Tracker", "Track your win progress towards Glad/Legend/Strategist on the Honor Panel.")
     gladWinTracker:HookScript("OnClick", function(self)
         BBF.GladWinTracker()
+        if not self:GetChecked() then
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        end
     end)
 
     local uiWidgetPowerBarScale = CreateSlider(guiMisc, "UIWidgetPowerBarFrame Scale", 0.4, 1.8, 0.01, "uiWidgetPowerBarScale")

@@ -4,6 +4,7 @@
 - Kalvish profile update
 ### Bugfix
 - Fix interrupt cast color coloring un-interruptible casts unintentionally.
+- Fix the new glad tracker not being enabled on login.
 
 
 # BetterBlizzFrames 1.7.4d
