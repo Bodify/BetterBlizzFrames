@@ -920,7 +920,7 @@ function BBF.CastbarRecolorWidgets()
                 if not knownInterruptSpellID then
                     GetInterruptSpell()
                 end
-                if knownInterruptSpellID then
+                if knownInterruptSpellID  and not notInterruptible then
                     local start, duration = BBF.TWWGetSpellCooldown(knownInterruptSpellID)
                     local cooldownRemaining = start + duration - GetTime()
                     local castRemaining = (endTime / 1000) - GetTime()

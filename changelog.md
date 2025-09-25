@@ -2,6 +2,8 @@
 ## Retail
 ### Tweak
 - Kalvish profile update
+### Bugfix
+- Fix interrupt cast color coloring un-interruptible casts unintentionally.
 
 
 # BetterBlizzFrames 1.7.4d
