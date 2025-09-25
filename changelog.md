@@ -2,6 +2,7 @@
 ## Retail
 ### Tweak
 - Kalvish profile update
+- Made some tweaks for ppl who have "Attach castbar to PlayerFrame" setting enabled. You may have to re-adjust your settings due to this.
 ### Bugfix
 - Fix interrupt cast color coloring un-interruptible casts unintentionally.
 - Fix the new glad tracker not being enabled on login.

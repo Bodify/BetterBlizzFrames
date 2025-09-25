@@ -1263,16 +1263,18 @@ end
 local function PlayerCastingBarFrameMiscAdjustments()
     PlayerCastingBarFrame:SetScale(BetterBlizzFramesDB.playerCastBarScale or 1)
     local w = BetterBlizzFramesDB.playerCastBarWidth
-    PlayerCastingBarFrame:SetWidth(w)
     local maskRatio = 256 / 208
-    PlayerCastingBarFrame.BorderMask:SetWidth(w * maskRatio)
 
     PlayerCastingBarFrame:SetHeight(BetterBlizzFramesDB.playerCastBarHeight)
     PlayerCastingBarFrame.Text:ClearAllPoints()
-    if BetterBlizzFramesDB.playerCastBarNoTextBorder then
+    if BetterBlizzFramesDB.playerCastBarNoTextBorder or PlayerCastingBarFrame.attachedToPlayerFrame then
         PlayerCastingBarFrame.TextBorderHidden = PlayerCastingBarFrame.TextBorder:GetParent()
         PlayerCastingBarFrame.TextBorder:SetParent(BBF.hiddenFrame)
         PlayerCastingBarFrame.Text:SetPoint("BOTTOM", PlayerCastingBarFrame, "BOTTOM", 0, -2.5)
+        if PlayerCastingBarFrame.attachedToPlayerFrame then
+            maskRatio = 256 / 150
+            w = BetterBlizzFramesDB.playerCastBarWidth - 58
+        end
     else
         if PlayerCastingBarFrame.TextBorderHidden then
             PlayerCastingBarFrame.TextBorder:SetParent(PlayerCastingBarFrame.TextBorderHidden)
@@ -1280,6 +1282,8 @@ local function PlayerCastingBarFrameMiscAdjustments()
         end
         PlayerCastingBarFrame.Text:SetPoint("BOTTOM", PlayerCastingBarFrame, "BOTTOM", 0, -14)
     end
+    PlayerCastingBarFrame:SetWidth(w)
+    PlayerCastingBarFrame.BorderMask:SetWidth(w * maskRatio)
     PlayerCastingBarFrame.Text:SetWidth(BetterBlizzFramesDB.playerCastBarWidth)
     PlayerCastingBarFrame.Icon:SetSize(22,22)
     PlayerCastingBarFrame.Icon:ClearAllPoints()
