@@ -1,3 +1,9 @@
+# BetterBlizzFrames 1.7.4f
+## All classics
+### Bugfix
+- Fix Elite Frame texture setting not working unless Bigger Healthbars was enabled.
+
+
 # BetterBlizzFrames 1.7.4e
 ## Retail
 ### Tweak

@@ -1457,7 +1457,7 @@ Frame:SetScript("OnEvent", function(...)
             if BetterBlizzFramesDB.playerFrameOCD then
                 BBF.FixStupidBlizzPTRShit()
             end
-            C_Timer.After(0, function()
+            C_Timer.After(0.1, function()
                 -- if BetterBlizzFramesDB.classColorTargetNames and BetterBlizzFramesDB.classColorLevelText then
                 --     BBF.HookLevelText()
                 -- end
@@ -1477,8 +1477,8 @@ Frame:SetScript("OnEvent", function(...)
                 -- end
                 if BetterBlizzFramesDB.biggerHealthbars then
                     BBF.HookBiggerHealthbars()
-                    BBF.PlayerElite(BetterBlizzFramesDB.playerEliteFrameMode)
                 end
+                BBF.PlayerElite(BetterBlizzFramesDB.playerEliteFrameMode)
                 BBF.ToggleCastbarInterruptIcon()
                 BBF.UpdateUserTargetSettings()
                 BBF.UpdateCastbars()

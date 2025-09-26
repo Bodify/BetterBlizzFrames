@@ -2522,7 +2522,7 @@ Frame:SetScript("OnEvent", function(...)
             C_Timer.After(0.2, function()
                 BBF.HideFrames()
             end)
-            C_Timer.After(1, function()
+            C_Timer.After(0.3, function()
                 -- if BetterBlizzFramesDB.classColorTargetNames and BetterBlizzFramesDB.classColorLevelText then
                 --     BBF.HookLevelText()
                 -- end
@@ -2541,8 +2541,8 @@ Frame:SetScript("OnEvent", function(...)
                 -- end
                 if BetterBlizzFramesDB.biggerHealthbars then
                     BBF.HookBiggerHealthbars()
-                    BBF.PlayerElite(BetterBlizzFramesDB.playerEliteFrameMode)
                 end
+                BBF.PlayerElite(BetterBlizzFramesDB.playerEliteFrameMode)
                 BBF.ToggleCastbarInterruptIcon()
                 BBF.UpdateCastbars()
                 BBF.ChangeCastbarSizes()
