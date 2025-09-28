@@ -2786,12 +2786,15 @@ local function ApplyTextureChange(type, statusBar, parent, classic, party)
     -- Get the original texture and draw layer
     local originalTexture = statusBar:GetStatusBarTexture()
     local originalLayer, subLayer = originalTexture:GetDrawLayer()
-    local classicTexture = (BetterBlizzFramesDB.classicFrames and (parent == TargetFrame or parent == FocusFrame or statusBar == PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer.HealthBar) and
+    local classicFrames = BetterBlizzFramesDB.classicFrames
+    local classicTexture = (classicFrames and (parent == TargetFrame or parent == FocusFrame or statusBar == PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer.HealthBar) and
     (texture == "Interface\\TargetingFrame\\UI-TargetingFrame-BarFill") and "Interface\\AddOns\\BetterBlizzFrames\\media\\ui-targetingframe-barfill") or
     (texture == "Interface\\AddOns\\BetterBlizzFrames\\media\\ui-statusbar-cf" and "Interface\\AddOns\\BetterBlizzFrames\\media\\ui-statusbar")
 
-    if texture == "Interface\\AddOns\\BetterBlizzFrames\\media\\ui-statusbar-cf" and (parent and parent:GetName() == "PetFrame") then
-        classicTexture = "Interface\\AddOns\\BetterBlizzFrames\\media\\ui-statusbar-cf"
+    if classicFrames and texture == "Interface\\AddOns\\BetterBlizzFrames\\media\\ui-statusbar-cf" then
+        if (parent and parent:GetName() == "PetFrame") or statusBar == TargetFrame.totFrame.HealthBar or statusBar == FocusFrame.totFrame.HealthBar then
+            classicTexture = "Interface\\AddOns\\BetterBlizzFrames\\media\\ui-statusbar-cf"
+        end
     end
 
     local playerHp = statusBar == PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer.HealthBar
