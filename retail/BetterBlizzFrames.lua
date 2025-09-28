@@ -2790,6 +2790,10 @@ local function ApplyTextureChange(type, statusBar, parent, classic, party)
     (texture == "Interface\\TargetingFrame\\UI-TargetingFrame-BarFill") and "Interface\\AddOns\\BetterBlizzFrames\\media\\ui-targetingframe-barfill") or
     (texture == "Interface\\AddOns\\BetterBlizzFrames\\media\\ui-statusbar-cf" and "Interface\\AddOns\\BetterBlizzFrames\\media\\ui-statusbar")
 
+    if texture == "Interface\\AddOns\\BetterBlizzFrames\\media\\ui-statusbar-cf" and (parent and parent:GetName() == "PetFrame") then
+        classicTexture = "Interface\\AddOns\\BetterBlizzFrames\\media\\ui-statusbar-cf"
+    end
+
     local playerHp = statusBar == PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer.HealthBar
 
     -- Change the texture

@@ -1,3 +1,8 @@
+# BetterBlizzFrames 1.7.4g
+## Retail
+### Bugfix
+- Fix classic frames healthbar texture on Player Pet being halved in some specific cases.
+
 # BetterBlizzFrames 1.7.4f
 ## All classics
 ### Bugfix
