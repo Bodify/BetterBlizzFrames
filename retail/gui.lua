@@ -1301,7 +1301,7 @@ local CLASS_COLORS = {
     WARLOCK = "|cff8787ed",
     SHAMAN = "|cff0070de",
     PALADIN = "|cfff58cba",
-    DEATHKNIGHT = "|ffc41f3b",
+    DEATHKNIGHT = "|cffc41f3b",
     MONK = "|cff00ff96",
     DEMONHUNTER = "|cffa330c9",
     EVOKER = "|cff33937f",
@@ -3553,7 +3553,7 @@ local function guiGeneralTab()
 
 
     local targetFrameText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    targetFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 250, -173)
+    targetFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 250, -180)
     targetFrameText:SetText("Target Frame")
     targetFrameText:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\Expressway_Free.ttf", 16)
     targetFrameText:SetTextColor(1,1,1)
@@ -3639,6 +3639,7 @@ local function guiGeneralTab()
 
     local hideTargetToT = CreateCheckbox("hideTargetToT", "Hide Frame", BetterBlizzFrames, nil, BBF.HideFrames)
     hideTargetToT:SetPoint("TOPLEFT", targetToTFrameText, "BOTTOMLEFT", -24, pixelsOnFirstBox)
+    CreateTooltipTwo(hideTargetToT, "Hide Target of Target Frame")
 
     local hideTargetToTName = CreateCheckbox("hideTargetToTName", "Hide Name", BetterBlizzFrames)
     hideTargetToTName:SetPoint("LEFT", hideTargetToT.Text, "RIGHT", 0, 0)
@@ -3655,6 +3656,7 @@ local function guiGeneralTab()
             end
         end
     end)
+    CreateTooltipTwo(hideTargetToTName, "Hide Target of Target Name")
 
     local hideTargetToTDebuffs = CreateCheckbox("hideTargetToTDebuffs", "Hide ToT Debuffs", BetterBlizzFrames, nil, BBF.HideFrames)
     hideTargetToTDebuffs:SetPoint("TOPLEFT", hideTargetToT, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
@@ -3789,7 +3791,7 @@ local function guiGeneralTab()
     partyArenaNames:HookScript("OnClick", ToggleDependentCheckboxes)
 
     local focusFrameText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    focusFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 460, -173)
+    focusFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 460, -183)
     focusFrameText:SetText("Focus Frame")
     focusFrameText:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\Expressway_Free.ttf", 16)
     focusFrameText:SetTextColor(1,1,1)
@@ -3876,6 +3878,7 @@ local function guiGeneralTab()
 
     local hideFocusToT = CreateCheckbox("hideFocusToT", "Hide Frame", BetterBlizzFrames, nil, BBF.HideFrames)
     hideFocusToT:SetPoint("TOPLEFT", focusToTFrameText, "BOTTOMLEFT", -24, pixelsOnFirstBox)
+    CreateTooltipTwo(hideFocusToT, "Hide Target of Focus Frame")
 
     local hideFocusToTName = CreateCheckbox("hideFocusToTName", "Hide Name", BetterBlizzFrames)
     hideFocusToTName:SetPoint("LEFT", hideFocusToT.Text, "RIGHT", 0, 0)
@@ -3892,6 +3895,7 @@ local function guiGeneralTab()
             end
         end
     end)
+    CreateTooltipTwo(hideFocusToTName, "Hide Target of Focus Frame Name")
 
     local hideFocusToTDebuffs = CreateCheckbox("hideFocusToTDebuffs", "Hide FocusToT Debuffs", BetterBlizzFrames, nil, BBF.HideFrames)
     hideFocusToTDebuffs:SetPoint("TOPLEFT", hideFocusToT, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
@@ -4267,6 +4271,15 @@ local function guiGeneralTab()
     hideThreatOnFrame:SetPoint("LEFT", hideRareDragonTexture.Text, "RIGHT", 0, 0)
     CreateTooltipTwo(hideThreatOnFrame, "Hide Threat Meter", "Hide the threat meter displaying on Target & Focus frames.")
 
+    local classPortraitsUseSpecIcons = CreateCheckbox("classPortraitsUseSpecIcons", "Use Spec Icons", BetterBlizzFrames, nil, BBF.SpecPortraits)
+    classPortraitsUseSpecIcons:SetPoint("TOPLEFT", hideRareDragonTexture, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltip(classPortraitsUseSpecIcons, "Use spec icons for Portrait on Target & Focus")
+    classPortraitsUseSpecIcons:HookScript("OnClick", function(self)
+        if not self:GetChecked() then
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        end
+    end)
+
     local extraFeaturesText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     extraFeaturesText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 460, 30)
     extraFeaturesText:SetText("Extra Features")
@@ -4405,11 +4418,11 @@ local function guiGeneralTab()
 
 
 
-    local btnGap = 5
+    local btnGap = 3
     local starterButton = CreateClassButton(BetterBlizzFrames, "STARTER", "Starter", nil, function()
         ShowProfileConfirmation("Starter", "STARTER", BBF.StarterProfile, "|cff808080(If you want to completely reset BBF there\nis a button in Advanced Settings)|r\n\n")
     end)
-    starterButton:SetPoint("TOPLEFT", SettingsPanel, "BOTTOMLEFT", 258, 38)
+    starterButton:SetPoint("TOPLEFT", SettingsPanel, "BOTTOMLEFT", 214, 38)
 
     local aeghisButton = CreateClassButton(BetterBlizzFrames, "MAGE", "Aeghis", "aeghis", function()
         ShowProfileConfirmation("Aeghis", "MAGE", BBF.AeghisProfile)
@@ -4426,10 +4439,15 @@ local function guiGeneralTab()
     end)
     magnuszButton:SetPoint("LEFT", kalvishButton, "RIGHT", btnGap, 0)
 
+    local mesButton = CreateClassButton(BetterBlizzFrames, "DEATHKNIGHT", "Mes", "notmes", function()
+        ShowProfileConfirmation("Mes", "DEATHKNIGHT", BBF.MesProfile)
+    end)
+    mesButton:SetPoint("LEFT", magnuszButton, "RIGHT", btnGap, 0)
+
     local nahjButton = CreateClassButton(BetterBlizzFrames, "ROGUE", "Nahj", "nahj", function()
         ShowProfileConfirmation("Nahj", "ROGUE", BBF.NahjProfile)
     end)
-    nahjButton:SetPoint("LEFT", magnuszButton, "RIGHT", btnGap, 0)
+    nahjButton:SetPoint("LEFT", mesButton, "RIGHT", btnGap, 0)
 
     local snupyButton = CreateClassButton(BetterBlizzFrames, "DRUID", "Snupy", "snupy", function()
         ShowProfileConfirmation("Snupy", "DRUID", BBF.SnupyProfile)
@@ -5835,7 +5853,7 @@ local function guiFrameLook()
 
     local howToImport = guiFrameLook:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     howToImport:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\Expressway_Free.ttf", 16)
-    howToImport:SetPoint("CENTER", mainGuiAnchor, "BOTTOMLEFT", 420, -260)
+    howToImport:SetPoint("CENTER", mainGuiAnchor, "BOTTOMLEFT", 420, -290)
     howToImport:SetText("How to import a custom font/texture:")
 
     local howStepOne = guiFrameLook:CreateFontString(nil, "OVERLAY", "GameFontNormal")
@@ -6276,9 +6294,53 @@ local function guiFrameLook()
     end)
     unitFrameManabarTexture:SetEnabled(changeUnitFrameManabarTexture:GetChecked())
 
+    if BetterBlizzFramesDB.classicFrames then
+
+        local changeUnitFrameNameBgTexture = CreateCheckbox("changeUnitFrameNameBgTexture", "Change Name Bg Texture", guiFrameLook)
+        changeUnitFrameNameBgTexture:SetPoint("TOPLEFT", settingsText, "BOTTOMLEFT", 465, -23)
+        CreateTooltipTwo(changeUnitFrameNameBgTexture, "Change UnitFrame Name Background Texture","Changes the name background texture on Player, Target & Focus etc. This is more cpu heavy than it should be.")
+
+        local unitFrameNameBgTexture = CreateTextureDropdown(
+            "unitFrameNameBgTexture",
+            guiFrameLook,
+            "Select Texture",
+            "unitFrameNameBgTexture",
+            function(arg1)
+                BBF.UpdateCustomTextures()
+            end,
+            { anchorFrame = changeUnitFrameNameBgTexture, x = 5, y = 1, label = "Texture" }
+        )
+        changeUnitFrameNameBgTexture:HookScript("OnClick", function(self)
+            unitFrameNameBgTexture:SetEnabled(self:GetChecked())
+            BBF.UpdateCustomTextures()
+        end)
+        unitFrameNameBgTexture:SetEnabled(changeUnitFrameNameBgTexture:GetChecked())
+
+
+        
+        local changeUnitFrameCastbarTexture = CreateCheckbox("changeUnitFrameCastbarTexture", "Change UnitFrame Castbar Texture", guiFrameLook)
+        changeUnitFrameCastbarTexture:SetPoint("TOPLEFT", changeUnitFrameManabarTexture, "BOTTOMLEFT", 0, -25)
+        CreateTooltipTwo(changeUnitFrameCastbarTexture, "Change UnitFrame Castbar Texture","Changes the castbar texture on Player, Target & Focus etc. This is more cpu heavy than it should be.")
+
+        local unitFrameCastbarTexture = CreateTextureDropdown(
+            "unitFrameCastbarTexture",
+            guiFrameLook,
+            "Select Texture",
+            "unitFrameCastbarTexture",
+            function(arg1)
+                BBF.UpdateCustomTextures()
+            end,
+            { anchorFrame = changeUnitFrameCastbarTexture, x = 5, y = 1, label = "Texture" }
+        )
+        changeUnitFrameCastbarTexture:HookScript("OnClick", function(self)
+            unitFrameCastbarTexture:SetEnabled(self:GetChecked())
+            BBF.UpdateCustomTextures()
+        end)
+        unitFrameCastbarTexture:SetEnabled(changeUnitFrameCastbarTexture:GetChecked())
+    end
 
     local changeRaidFrameHealthbarTexture = CreateCheckbox("changeRaidFrameHealthbarTexture", "Change RaidFrame Healthbar Texture", guiFrameLook)
-    changeRaidFrameHealthbarTexture:SetPoint("TOPLEFT", changeUnitFrameManabarTexture, "BOTTOMLEFT", 0, -40)
+    changeRaidFrameHealthbarTexture:SetPoint("TOPLEFT", changeUnitFrameManabarTexture, "BOTTOMLEFT", 0, BetterBlizzFramesDB.classicFrames and -90 or -40)
     CreateTooltipTwo(changeRaidFrameHealthbarTexture, "Change RaidFrame Healthbar Texture","Changes the healthbar texture on the RaidFrames")
 
     local raidFrameHealthbarTexture = CreateTextureDropdown(
@@ -8572,10 +8634,15 @@ function BBF.CreateIntroMessageWindow()
     end)
     magnuszButton:SetPoint("TOP", kalvishButton, "BOTTOM", 0, btnGap)
 
+    local mesButton = CreateClassButton(BBF.IntroMessageWindow, "DEATHKNIGHT", "Mes", "notmes", function()
+        ShowProfileConfirmation("Mes", "DEATHKNIGHT", BBF.MesProfile)
+    end)
+    mesButton:SetPoint("TOP", magnuszButton, "BOTTOM", 0, btnGap)
+
     local nahjButton = CreateClassButton(BBF.IntroMessageWindow, "ROGUE", "Nahj", "nahj", function()
         ShowProfileConfirmation("Nahj", "ROGUE", BBF.NahjProfile)
     end)
-    nahjButton:SetPoint("TOP", magnuszButton, "BOTTOM", 0, btnGap)
+    nahjButton:SetPoint("TOP", mesButton, "BOTTOM", 0, btnGap)
 
     local snupyButton = CreateClassButton(BBF.IntroMessageWindow, "DRUID", "Snupy", "snupy", function()
         ShowProfileConfirmation("Snupy", "DRUID", BBF.SnupyProfile)

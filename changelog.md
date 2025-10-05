@@ -1,7 +1,29 @@
-# BetterBlizzFrames 1.7.4g
-## Retail
+# BetterBlizzFrames 1.7.5
+## All versions
+### New
+- Add new right-click option on Class Portraits to use spec icons instead. On Classic and MoP this requires Details and will not always have spec info available.
+- Change castbar texture (Font & Texture) (on Retail it's only while Classic Frames is enabled for now. If you want this for modern castbars too let your voice be heard)
+- Change name background texture (Font & Texture) (on Retail only while Classic Frames is enabled) This was possible before but only if also changing healthbar texture.
+### Tweak
+- Added some custom code for Buff & Debuff filtering that allows you to for example anchor a WeakAura to a specific aura on TargetFrame/FocusFrame. I don't intend to do much with this but now it is for Classics too. If this sounds interesting to you and you want to know how it works just ask me about it on the Discord.
+- Classics: Fixed party castbar finished cast flash not being properly sized
 ### Bugfix
-- Fix classic frames healthbar texture on Player Pet being halved in some specific cases.
+- Fix LossOfControl frame moving when scaling it anything other than 1. If this fix issues for you please let me know.
+## Retail
+### New
+- Added Mes Profile (www.twitch.tv/notmes). Thank you <3
+### Tweak
+- Tweak darkmode colors a little bit for when Classic Frames is enabled, especially for windwalker chi.
+- Tweak darkmode player auras buff border size a little for smaller icon sizes, thicker border on smaller sizes for a more visually appealing border.
+- If hide actionbar hotkey and actionbar hotkey color is both set the color portion will cancel.
+- Tweak GladTracker a bit.
+- Format Numbers now show three decimals for billions and two decimals for millions.
+### Bugfix
+- Fix Classic Frames healthbar texture on Player Pet being halved in some specific cases.
+- Fix Classic Frames setting reskinning Pet healthbar unintentionally (should only be on if user picks healthbar texture change in Font & Texture section)
+
+
+
 
 # BetterBlizzFrames 1.7.4f
 ## All classics

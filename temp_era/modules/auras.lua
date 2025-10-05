@@ -1256,6 +1256,25 @@ local function AdjustAuras(self, frameType)
                 if shouldShowAura then
                     auraFrame:Show()
 
+                    -- Attach weakauras to certain named auraframes
+                    if BBF.globalAuraFrames and BBF.globalAuraFrames[auraData.spellId] then
+                        if frameType == "target" then
+                            if not _G["BBFTargetAura"..auraData.name] then
+                                _G["BBFTargetAura"..auraData.name] = CreateFrame("Frame", "BBFTargetAura"..auraData.name, UIParent)
+                                _G["BBFTargetAura"..auraData.name]:SetAllPoints(auraFrame)
+                            else
+                                _G["BBFTargetAura"..auraData.name]:SetAllPoints(auraFrame)
+                            end
+                        else
+                            if not _G["BBFFocusAura"..auraData.name] then
+                                _G["BBFFocusAura"..auraData.name] = CreateFrame("Frame", "BBFFocusAura"..auraData.name, UIParent)
+                                _G["BBFFocusAura"..auraData.name]:SetAllPoints(auraFrame)
+                            else
+                                _G["BBFFocusAura"..auraData.name]:SetAllPoints(auraFrame)
+                            end
+                        end
+                    end
+
                     if (auraData.isStealable or (auraData.dispelName == "Magic" and ((not isFriend and auraData.isHelpful) or (isFriend and auraData.isHarmful)))) then
                         auraFrame.isPurgeable = true
                     else

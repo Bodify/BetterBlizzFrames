@@ -4,6 +4,10 @@ local petCastbarCreated = false
 
 local UnitCastingInfo = UnitCastingInfo
 local UnitChannelInfo = UnitChannelInfo
+local classicCastbarTexture = 137012
+function BBF.UpdateClassicCastbarTexture(texture)
+    classicCastbarTexture = BetterBlizzFramesDB.changeUnitFrameCastbarTexture and texture or 137012
+end
 
 local function adjustCastBarBorder(castBar, border, adjust, shield, player, party, playerCb)
     -- Default values for width
@@ -100,6 +104,7 @@ function BBF.UpdateCastbars()
             local spellbar = spellBars[i]
             if spellbar then
                 CastingBarFrame_SetUnit(spellbar, nil)
+                spellbar:SetStatusBarTexture(classicCastbarTexture)
             end
         end
         if compactFrame and compactFrame:IsShown() and numGroupMembers <= 5 then
@@ -114,6 +119,7 @@ function BBF.UpdateCastbars()
                     if not BetterBlizzFramesDB.partyCastBarTestMode then
                         CastingBarFrame_SetUnit(spellbar, nil)
                     end
+                    spellbar:SetStatusBarTexture(classicCastbarTexture)
                     --spellbar:SetParent(UIParent)
                     spellbar:SetIgnoreParentAlpha(true)
                     spellbar:SetScale(BetterBlizzFramesDB.partyCastBarScale)
@@ -123,7 +129,11 @@ function BBF.UpdateCastbars()
                     spellbar.Text:ClearAllPoints()
                     spellbar.Text:SetPoint("CENTER", spellbar, "CENTER", 0, 0)
                     adjustCastBarBorder(spellbar, spellbar.Border, 15, nil, nil, true)
+                    adjustCastBarBorder(spellbar, spellbar.Flash, 15, nil, nil, true)
                     adjustCastBarBorder(spellbar, spellbar.BorderShield, 12, true, nil, true)
+
+                    spellbar.Border:SetDrawLayer("OVERLAY", 6)
+                    spellbar.BorderShield:SetDrawLayer("OVERLAY", 7)
 
                     spellbar.Text:SetAlpha(BetterBlizzFramesDB.partyCastbarShowText and 1 or 0)
                     spellbar.Border:SetAlpha(BetterBlizzFramesDB.partyCastbarShowBorder and 1 or 0)
@@ -208,6 +218,7 @@ function BBF.UpdatePetCastbar()
 
         --petSpellBar:SetParent(UIParent)
         petSpellBar:SetIgnoreParentAlpha(true)
+        petSpellBar:SetStatusBarTexture(classicCastbarTexture)
         if not BetterBlizzFramesDB.showPetCastBarIcon then
             petSpellBar.Icon:SetAlpha(0)
             petSpellBar.BorderShield:SetAlpha(0)
@@ -228,6 +239,13 @@ function BBF.UpdatePetCastbar()
         petSpellBar.Border:SetAlpha(BetterBlizzFramesDB.petCastbarShowBorder and 1 or 0)
         petSpellBar.BorderShield:SetAlpha(BetterBlizzFramesDB.petCastbarShowBorder and 1 or 0)
         petSpellBar.Flash:SetParent(BetterBlizzFramesDB.petCastbarShowBorder and petSpellBar or hiddenFrame)
+
+        adjustCastBarBorder(petSpellBar, petSpellBar.Border, 15, nil, nil, true)
+        adjustCastBarBorder(petSpellBar, petSpellBar.Flash, 15, nil, nil, true)
+        adjustCastBarBorder(petSpellBar, petSpellBar.BorderShield, 12, true, nil, true)
+
+        petSpellBar.Border:SetDrawLayer("OVERLAY", 6)
+        petSpellBar.BorderShield:SetDrawLayer("OVERLAY", 7)
 
         local petFrame = PetFrame -- Assuming PetFrame is the frame you want to attach to
         if petFrame then
@@ -256,6 +274,7 @@ function BBF.CreateCastbars()
             spellbar:SetScale(1)
 
             CastingBarFrame_SetUnit(spellbar, "party"..i, true, true)
+            spellbar:SetStatusBarTexture(classicCastbarTexture)
             spellbar.Text:SetFontObject("SystemFont_Shadow_Med1_Outline")
             spellbar.Icon:ClearAllPoints()
             spellbar.Icon:SetPoint("RIGHT", spellbar, "LEFT", -4, -1)
@@ -296,6 +315,7 @@ function BBF.CreateCastbars()
         petSpellBar:SetScale(1)
 
         CastingBarFrame_SetUnit(petSpellBar, "pet", true, true)
+        petSpellBar:SetStatusBarTexture(classicCastbarTexture)
         petSpellBar.Text:SetFontObject("SystemFont_Shadow_Med1_Outline")
         petSpellBar.Icon:ClearAllPoints()
         petSpellBar.Icon:SetPoint("RIGHT", petSpellBar, "LEFT", -4, -1)
@@ -322,6 +342,10 @@ function BBF.CreateCastbars()
                 UpdateCastTimer(self, elapsed)
             end)
         end
+
+                    petSpellBar:HookScript("OnEvent", function()
+                petSpellBar:SetStatusBarTexture(classicCastbarTexture)
+            end)
 
         petSpellBar:Hide()
 
@@ -538,12 +562,14 @@ end
 function BBF.CastBarTimerCaller()
     CastBarTimer(CastingBarFrame)
     CastBarTimer(TargetFrameSpellBar)
-    CastBarTimer(FocusFrameSpellBar)
+    if FocusFrameSpellBar then
+        CastBarTimer(FocusFrameSpellBar)
+    end
 end
 
 
 local targetSpellBarTexture = TargetFrameSpellBar:GetStatusBarTexture()
-local focusSpellBarTexture = FocusFrameSpellBar:GetStatusBarTexture()
+local focusSpellBarTexture = FocusFrameSpellBar and FocusFrameSpellBar:GetStatusBarTexture()
 local targetCastbarEdgeHooked
 local focusCastbarEdgeHooked
 
@@ -731,7 +757,7 @@ function BBF.CastbarRecolorWidgets()
             targetCastbarEdgeHooked = true
         end
 
-        if (focusCastbarEdgeHighlight or castBarRecolorInterrupt) and not focusCastbarEdgeHooked then
+        if (focusCastbarEdgeHighlight or castBarRecolorInterrupt) and not focusCastbarEdgeHooked and FocusFrameSpellBar then
             FocusFrameSpellBar:HookScript("OnUpdate", function(self, elapsed)
                 -- focusLastUpdate = focusLastUpdate + elapsed
                 -- if focusLastUpdate < updateInterval then
@@ -883,6 +909,7 @@ local function CastingBarFrameMiscAdjustments()
         end)
         CastingBarFrame.sparkHooked = true
     end
+    CastingBarFrame:SetStatusBarTexture(classicCastbarTexture)
     --CastingBarFrame.StandardGlow:SetSize(37, BetterBlizzFramesDB.playerCastBarHeight + 1)
 end
 
@@ -965,26 +992,47 @@ function BBF.ChangeCastbarSizes()
     -- TargetFrameSpellBar.Text:SetPoint("BOTTOM", TargetFrameSpellBar, "BOTTOM", 0, -14)
 
     --Focus
-    FocusFrameSpellBar:SetScale(BetterBlizzFramesDB.focusCastBarScale)
-    FocusFrameSpellBar:SetWidth(BetterBlizzFramesDB.focusCastBarWidth)
-    FocusFrameSpellBar:SetHeight(BetterBlizzFramesDB.focusCastBarHeight)
-    adjustCastBarBorder(FocusFrameSpellBar, FocusFrameSpellBar.Border, 15)
-    adjustCastBarBorder(FocusFrameSpellBar, FocusFrameSpellBar.BorderShield, 12, true)
-    FocusFrameSpellBar.Icon:SetDrawLayer("OVERLAY", 7)
-    FocusFrameSpellBar.Text:SetAlpha(BetterBlizzFramesDB.focusCastBarShowText and 1 or 0)
-    FocusFrameSpellBar.Border:SetAlpha(BetterBlizzFramesDB.focusCastBarShowBorder and 1 or 0)
-    FocusFrameSpellBar.Flash:SetParent(BetterBlizzFramesDB.focusCastBarShowBorder and FocusFrameSpellBar or hiddenFrame)
+    if FocusFrameSpellBar then
+        FocusFrameSpellBar:SetScale(BetterBlizzFramesDB.focusCastBarScale)
+        FocusFrameSpellBar:SetWidth(BetterBlizzFramesDB.focusCastBarWidth)
+        FocusFrameSpellBar:SetHeight(BetterBlizzFramesDB.focusCastBarHeight)
+        adjustCastBarBorder(FocusFrameSpellBar, FocusFrameSpellBar.Border, 15)
+        adjustCastBarBorder(FocusFrameSpellBar, FocusFrameSpellBar.BorderShield, 12, true)
+        FocusFrameSpellBar.Icon:SetDrawLayer("OVERLAY", 7)
+        FocusFrameSpellBar.Text:SetAlpha(BetterBlizzFramesDB.focusCastBarShowText and 1 or 0)
+        FocusFrameSpellBar.Border:SetAlpha(BetterBlizzFramesDB.focusCastBarShowBorder and 1 or 0)
+        FocusFrameSpellBar.Flash:SetParent(BetterBlizzFramesDB.focusCastBarShowBorder and FocusFrameSpellBar or hiddenFrame)
 
-    -- 227, 56
+        -- 227, 56
 
-    FocusFrameSpellBar.Icon:SetScale(BetterBlizzFramesDB.focusCastBarIconScale)
-    local a,b,c,d,e = FocusFrameSpellBar.Icon:GetPoint()
-    FocusFrameSpellBar.Icon:ClearAllPoints()
-    FocusFrameSpellBar.Icon:SetPoint(a, b, c, -5 + BetterBlizzFramesDB.focusCastbarIconXPos, 1 + BetterBlizzFramesDB.focusCastbarIconYPos)
-    FocusFrameSpellBar.Text:ClearAllPoints()
-    FocusFrameSpellBar.Text:SetPoint("CENTER", FocusFrameSpellBar, "CENTER", 0, 0)
-    FocusFrameSpellBar.Text:SetWidth(BetterBlizzFramesDB.focusCastBarWidth)
+        FocusFrameSpellBar.Icon:SetScale(BetterBlizzFramesDB.focusCastBarIconScale)
+        local a,b,c,d,e = FocusFrameSpellBar.Icon:GetPoint()
+        FocusFrameSpellBar.Icon:ClearAllPoints()
+        FocusFrameSpellBar.Icon:SetPoint(a, b, c, -5 + BetterBlizzFramesDB.focusCastbarIconXPos, 1 + BetterBlizzFramesDB.focusCastbarIconYPos)
+        FocusFrameSpellBar.Text:ClearAllPoints()
+        FocusFrameSpellBar.Text:SetPoint("CENTER", FocusFrameSpellBar, "CENTER", 0, 0)
+        FocusFrameSpellBar.Text:SetWidth(BetterBlizzFramesDB.focusCastBarWidth)
+    end
 
+    if not CastingBarFrame.textureHooked then
+        CastingBarFrame.textureHooked = true
+        CastingBarFrame:HookScript("OnEvent", function()
+            CastingBarFrame:SetStatusBarTexture(classicCastbarTexture)
+        end)
+        TargetFrameSpellBar:HookScript("OnEvent", function()
+            TargetFrameSpellBar:SetStatusBarTexture(classicCastbarTexture)
+        end)
+        TargetFrameSpellBar.Border:SetDrawLayer("OVERLAY", 6)
+        TargetFrameSpellBar.BorderShield:SetDrawLayer("OVERLAY", 7)
+
+        if FocusFrameSpellBar then
+            FocusFrameSpellBar:HookScript("OnEvent", function()
+                FocusFrameSpellBar:SetStatusBarTexture(classicCastbarTexture)
+            end)
+            FocusFrameSpellBar.Border:SetDrawLayer("OVERLAY", 6)
+            FocusFrameSpellBar.BorderShield:SetDrawLayer("OVERLAY", 7)
+        end
+    end
 end
 
 CastingBarFrame:HookScript("OnShow", function()

@@ -992,6 +992,9 @@ local function CreateTooltipTwo(widget, title, mainText, subText, anchor, cvarNa
         --GameTooltip:AddLine(" ") -- Adding an empty line as a separator
         -- Set the main text
         GameTooltip:AddLine(mainText, 1, 1, 1, true) -- true for wrap text
+
+        -- Add specific tooltip conditions
+
         -- Set the subtext
         if subText then
             GameTooltip:AddLine("____________________________", 0.8, 0.8, 0.8, true)
@@ -3748,19 +3751,38 @@ local function guiGeneralTab()
     classPortraits:SetPoint("TOPLEFT", hidePvpIcon, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(classPortraits, "Show class portraits instead of player portraits. |A:groupfinder-icon-class-paladin:18:18|a")
 
-    local classPortraitsIgnoreSelf = CreateCheckbox("classPortraitsIgnoreSelf", "Ignore Self", classPortraits)
-    classPortraitsIgnoreSelf:SetPoint("LEFT", classPortraits.text, "RIGHT", 0, 0)
-    CreateTooltipTwo(classPortraitsIgnoreSelf, "Class Portraits: Ignore Self","Ignore player portrait.")
+    local classPortraitsUseSpecIcons = CreateCheckbox("classPortraitsUseSpecIcons", "Spec", classPortraits)
+    classPortraitsUseSpecIcons:SetPoint("LEFT", classPortraits.text, "RIGHT", 0, 0)
+    CreateTooltipTwo(classPortraitsUseSpecIcons, "Use Spec Icons", "Use spec icons instead of class icons when available (requires Details addon).", "There is no proper spec API on Classic. Details will try its best to get a spec. More accurate in bgs and arenas than in open world.")
+    classPortraitsUseSpecIcons:HookScript("OnClick", function()
+        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+    end)
+
+    local classPortraitsIgnoreSelf = CreateCheckbox("classPortraitsIgnoreSelf", "Ignore Self", classPortraitsUseSpecIcons)
+    classPortraitsIgnoreSelf:SetPoint("LEFT", classPortraitsUseSpecIcons.text, "RIGHT", 0, 0)
+    CreateTooltip(classPortraitsIgnoreSelf, "Ignore player portrait.")
     classPortraitsIgnoreSelf:HookScript("OnClick", function()
         StaticPopup_Show("BBF_CONFIRM_RELOAD")
     end)
 
     classPortraits:HookScript("OnClick", function(self)
         if self:GetChecked() then
+            classPortraitsUseSpecIcons:Show()
+            classPortraitsIgnoreSelf:Show()
+            EnableElement(classPortraitsUseSpecIcons)
             EnableElement(classPortraitsIgnoreSelf)
+        else
+            classPortraitsUseSpecIcons:Hide()
+            classPortraitsIgnoreSelf:Hide()
         end
         StaticPopup_Show("BBF_CONFIRM_RELOAD")
     end)
+
+    -- Set initial visibility based on current setting
+    if not BetterBlizzFramesDB.classPortraits then
+        classPortraitsUseSpecIcons:Hide()
+        classPortraitsIgnoreSelf:Hide()
+    end
 
     local extraFeaturesText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     extraFeaturesText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 460, 30)
@@ -5259,7 +5281,7 @@ local function guiFrameLook()
 
     local howToImport = guiFrameLook:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     howToImport:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\Expressway_Free.ttf", 16)
-    howToImport:SetPoint("CENTER", mainGuiAnchor, "BOTTOMLEFT", 420, -260)
+    howToImport:SetPoint("CENTER", mainGuiAnchor, "BOTTOMLEFT", 420, -290)
     howToImport:SetText("How to import a custom font/texture:")
 
     local howStepOne = guiFrameLook:CreateFontString(nil, "OVERLAY", "GameFontNormal")
@@ -5678,11 +5700,31 @@ local function guiFrameLook()
     end)
     unitFrameManabarTexture:SetEnabled(changeUnitFrameManabarTexture:GetChecked())
 
+    local changeUnitFrameCastbarTexture = CreateCheckbox("changeUnitFrameCastbarTexture", "Change UnitFrame Castbar Texture", guiFrameLook)
+    changeUnitFrameCastbarTexture:SetPoint("TOPLEFT", changeUnitFrameManabarTexture, "BOTTOMLEFT", 0, -25)
+    CreateTooltipTwo(changeUnitFrameCastbarTexture, "Change UnitFrame Castbar Texture","Changes the castbar texture on Player, Target & Focus etc. This is more cpu heavy than it should be.")
+
+    local unitFrameCastbarTexture = CreateTextureDropdown(
+        "unitFrameCastbarTexture",
+        guiFrameLook,
+        "Select Texture",
+        "unitFrameCastbarTexture",
+        function(arg1)
+            BBF.UpdateCustomTextures()
+        end,
+        { anchorFrame = changeUnitFrameCastbarTexture, x = 5, y = 1, label = "Texture" }
+    )
+    changeUnitFrameCastbarTexture:HookScript("OnClick", function(self)
+        unitFrameCastbarTexture:SetEnabled(self:GetChecked())
+        BBF.UpdateCustomTextures()
+    end)
+    unitFrameCastbarTexture:SetEnabled(changeUnitFrameCastbarTexture:GetChecked())
+
 
     local changeRaidFrameHealthbarTexture = CreateCheckbox("changeRaidFrameHealthbarTexture", "Change RaidFrame Healthbar Texture", guiFrameLook)
-    changeRaidFrameHealthbarTexture:SetPoint("TOPLEFT", changeUnitFrameManabarTexture, "BOTTOMLEFT", 0, -25)
+    changeRaidFrameHealthbarTexture:SetPoint("TOPLEFT", changeUnitFrameManabarTexture, "BOTTOMLEFT", 0, -90)
     CreateTooltipTwo(changeRaidFrameHealthbarTexture, "Change RaidFrame Healthbar Texture","Changes the healthbar texture on the RaidFrames")
-    
+
     local raidFrameHealthbarTexture = CreateTextureDropdown(
         "raidFrameHealthbarTexture",
         guiFrameLook,
@@ -5699,11 +5741,11 @@ local function guiFrameLook()
         BBF.UpdateCustomTextures()
     end)
     raidFrameHealthbarTexture:SetEnabled(changeRaidFrameHealthbarTexture:GetChecked())
-    
+
     local changeRaidFrameManabarTexture = CreateCheckbox("changeRaidFrameManabarTexture", "Change RaidFrame Manabar Texture", guiFrameLook)
     changeRaidFrameManabarTexture:SetPoint("TOPLEFT", changeRaidFrameHealthbarTexture, "BOTTOMLEFT", 0, -25)
     CreateTooltipTwo(changeRaidFrameManabarTexture, "Change RaidFrame Manabar Texture","Changes the manabar texture on the RaidFrames. This is more cpu heavy than it should be.")
-    
+
     local raidFrameManabarTexture = CreateTextureDropdown(
         "raidFrameManabarTexture",
         guiFrameLook,

@@ -116,19 +116,24 @@ local function UpdateUnitFrameDarkModeBorderColors(color)
     end
 end
 
+local buffIconScale = BuffFrame.AuraContainer.iconScale
+local borderSize = buffIconScale < 1 and 10 or buffIconScale < 1.1 and 9 or 8
+
 BBF.auraBorders = {}  -- BuffFrame aura borders for darkmode
 local function createOrUpdateBorders(frame, colorValue, textureName, bypass)
     --if not twwrdy then return end
     if BetterBlizzFramesDB.enableMasque and C_AddOns.IsAddOnLoaded("Masque") then return end
     if (BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeUiAura) or bypass then
         if not BBF.auraBorders[frame] then
+            buffIconScale = BuffFrame.AuraContainer.iconScale
+            borderSize = buffIconScale < 1 and 10 or buffIconScale < 1.1 and 9 or 8
             -- Create borders
             local border = CreateFrame("Frame", nil, frame, "BackdropTemplate")
             if not bypass then
                 border:SetBackdrop({
                     edgeFile = "Interface/Tooltips/UI-Tooltip-Border",
                     tileEdge = true,
-                    edgeSize = 8,
+                    edgeSize = borderSize,
                 })
             else
                 border:SetBackdrop({
@@ -199,6 +204,7 @@ function BBF.DarkmodeFrames(bypass)
 
     BBF.AbsorbCaller()
     BBF.CombatIndicatorCaller()
+    local cf = BetterBlizzFramesDB.classicFrames
 
     local desaturationValue = BetterBlizzFramesDB.darkModeUi and true or false
     local vertexColor = BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeColor or 1
@@ -211,7 +217,8 @@ function BBF.DarkmodeFrames(bypass)
     local birdColor = BetterBlizzFramesDB.darkModeActionBars and (vertexColor + 0.25) or 1
     local rogueCombo = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.45) or 1
     local rogueComboActive = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.30) or 1
-    local monkChi = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.10) or 1
+    local monkChi = BetterBlizzFramesDB.darkModeUi and (vertexColor + (cf and -0.10 or 0.10)) or 1
+    local monkChiActive = BetterBlizzFramesDB.darkModeUi and (vertexColor + (cf and -0.21 or 0)) or 1
     local castbarBorder = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.1) or 1
     local color25 = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.25) or 1
 
@@ -705,16 +712,17 @@ function BBF.DarkmodeFrames(bypass)
     if monkChiPoints then
         for _, v in pairs({monkChiPoints:GetChildren()}) do
             applySettings(v.Chi_BG, desaturationValue, monkChi)
-            applySettings(v.Chi_BG_Active, desaturationValue, monkChi)
+            applySettings(v.Chi_BG_Active, desaturationValue, monkChiActive)
         end
     end
 
     local monkChiPointsNameplate = _G.ClassNameplateBarWindwalkerMonkFrame
     if monkChiPointsNameplate and not monkChiPointsNameplate:IsForbidden() and not darkModeNpBBP then
         local monkChiNp = darkModeNp and monkChi or 1
+        local monkChiNpActive = darkModeNp and monkChiActive or 1
         for _, v in pairs({monkChiPointsNameplate:GetChildren()}) do
             applySettings(v.Chi_BG, darkModeNpSatVal, monkChiNp)
-            applySettings(v.Chi_BG_Active, darkModeNpSatVal, monkChiNp)
+            applySettings(v.Chi_BG_Active, darkModeNpSatVal, monkChiNpActive)
         end
     end
 
@@ -978,12 +986,14 @@ specChangeListener:SetScript("OnEvent", function(self, event, ...)
                         end
                     end
                 elseif playerClass == "MONK" then
-                    local monkChi = vertexColor + 0.10
+                    local cf = BetterBlizzFramesDB.classicFrames
+                    local monkChi = BetterBlizzFramesDB.darkModeUi and (vertexColor + (cf and -0.10 or 0.10)) or 1
+                    local monkChiActive = BetterBlizzFramesDB.darkModeUi and (vertexColor + (cf and -0.20 or 0)) or 1
                     local monkChiPoints = _G.MonkHarmonyBarFrame
                     if monkChiPoints then
                         for _, v in pairs({monkChiPoints:GetChildren()}) do
                             applySettings(v.Chi_BG, desaturationValue, monkChi)
-                            applySettings(v.Chi_BG_Active, desaturationValue, monkChi)
+                            applySettings(v.Chi_BG_Active, desaturationValue, monkChiActive)
                         end
                     end
                 end

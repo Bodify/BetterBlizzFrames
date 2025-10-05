@@ -670,7 +670,12 @@ function BBF.ToggleLossOfControlTestMode()
 end
 
 function BBF.ChangeLossOfControlScale()
-    LossOfControlFrame:SetScale(BetterBlizzFramesDB.lossOfControlScale)
+    local scale = BetterBlizzFramesDB.lossOfControlScale
+    LossOfControlFrame:SetScale(scale)
+    if scale ~= 1 then
+        LossOfControlFrame:ClearAllPoints()
+        LossOfControlFrame:SetPoint("CENTER", UIParent, "CENTER", 0,0)
+    end
 end
 
 --TODO Bodify, already in aura function, this is better perf tho so figure out how (debuffs only)
@@ -2753,6 +2758,8 @@ local manaTexture = "Interface\\Addons\\BetterBlizzPlates\\media\\DragonflightTe
 BBF.manaTexture = manaTexture
 local raidHpTexture = "Interface\\Addons\\BetterBlizzPlates\\media\\DragonflightTextureHD"
 local raidManaTexture = "Interface\\Addons\\BetterBlizzPlates\\media\\DragonflightTextureHD"
+local castbarTexture = 137012
+local nameBgTexture = 137017
 
 local manaTextureUnits = {}
 
@@ -2763,6 +2770,8 @@ function BBF.UpdateCustomTextures()
     BBF.manaTexture = manaTexture
     raidHpTexture = LSM:Fetch(LSM.MediaType.STATUSBAR, db.raidFrameHealthbarTexture)
     raidManaTexture = LSM:Fetch(LSM.MediaType.STATUSBAR, db.raidFrameManabarTexture)
+    castbarTexture = LSM:Fetch(LSM.MediaType.STATUSBAR, db.unitFrameCastbarTexture)
+    nameBgTexture = LSM:Fetch(LSM.MediaType.STATUSBAR, db.unitFrameNameBgTexture)
 
     BBF.HookTextures()
 end
@@ -2979,6 +2988,8 @@ function BBF.HookUnitFrameTextures()
             end
         end
 
+        BBF.UpdateClassicCastbarTexture(castbarTexture)
+
         -- Apply green color on white texture if class color is not enabled
         if not db.classColorFrames then
             local healthbars = {
@@ -3068,8 +3079,16 @@ function BBF.HookTextures()
     local db = BetterBlizzFramesDB
     -- Hook UnitFrames
     -- BetterBlizzFramesDB.textureSwapUnitFrames
-    if db.changeUnitFrameHealthbarTexture or db.changeUnitFrameManabarTexture then
+    if db.changeUnitFrameHealthbarTexture or db.changeUnitFrameManabarTexture or db.changeUnitFrameCastbarTexture then
         BBF.HookUnitFrameTextures()
+    end
+    if db.classicFrames and db.changeUnitFrameNameBgTexture then
+        if PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ReputationColor then
+            PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ReputationColor:SetTexture(nameBgTexture)
+            PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ReputationColor:SetTexCoord(0, 1, 0, 1)
+        end
+        TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:SetTexture(nameBgTexture)
+        FocusFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:SetTexture(nameBgTexture)
     end
 
     -- Hook Raidframes
@@ -3501,27 +3520,66 @@ function BBF.GladTracker()
             return 0, 0
         end
 
-        -- map rows -> achievementIDs
-        local trackedAchievements = {
-            [ConquestFrame.Arena3v3]         = 41049, -- Glad
-            [ConquestFrame.RatedSoloShuffle] = 42023, -- Legend
-            [ConquestFrame.RatedBGBlitz]     = 42024, -- Strategist
+        -- map rows -> {id, name}
+        local tracked = {
+            [ConquestFrame.Arena3v3]         = { id = 41049, name = "Gladiator" },
+            [ConquestFrame.RatedSoloShuffle] = { id = 42023, name = "Legend" },
+            [ConquestFrame.RatedBGBlitz]     = { id = 42024, name = "Strategist" },
         }
 
+        local function BuildTooltip(holder)
+            GameTooltip:SetOwner(holder, "ANCHOR_RIGHT")
+            GameTooltip:ClearLines()
+
+            local qty = holder._qty or 0
+            local req = holder._req or 0
+
+            if req > 0 and qty >= req then
+                local playerName = UnitName("player")
+                GameTooltip:AddLine(("%s %s!"):format(holder._name or "?", playerName), 1, 0.82, 0, true)
+                GameTooltip:AddLine("Has a nice ring to it, doesn't it?", 1, 1, 1, true)
+            else
+                GameTooltip:AddLine(("%d/%d %s Wins"):format(qty, req, holder._name or "?"), 1, 0.82, 0, true)
+            end
+
+            GameTooltip:AddLine("|cff777777By BetterBlizzFrames|r", 1, 1, 1, true)
+            GameTooltip:Show()
+        end
+
+        local function EnsureHolder(frame)
+            if frame.bbfGladWinTracker then return frame.bbfGladWinTracker end
+            local holder = CreateFrame("Button", nil, frame)
+            holder:SetPoint("LEFT", frame.CurrentRating, "RIGHT", 8, 0)
+            holder:SetAlpha(0.7)
+            holder:EnableMouse(true)
+            holder.text = holder:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+            holder.text:SetPoint("LEFT")
+            holder:SetScript("OnEnter", function(self) BuildTooltip(self) end)
+            holder:SetScript("OnLeave", function() GameTooltip:Hide() end)
+            frame.bbfGladWinTracker = holder
+            return holder
+        end
+
         local function UpdateTrackedProgress()
-            for frame, achID in pairs(trackedAchievements) do
+            for frame, data in pairs(tracked) do
                 if frame then
-                    if not frame.bbfGladWinTracker then
-                        frame.bbfGladWinTracker = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-                        frame.bbfGladWinTracker:SetPoint("LEFT", frame.CurrentRating, "RIGHT", 8, 0)
-                    end
-                    local qty, req = GetAchievementProgress(achID)
-                    if qty > 0 then
-                        frame.bbfGladWinTracker:SetText(qty.."/"..req)
-                        frame.bbfGladWinTracker:Show()
+                    local holder = EnsureHolder(frame)
+                    local qty, req = GetAchievementProgress(data.id)
+
+                    if req > 0 and qty > 0 then
+                        holder._qty, holder._req, holder._name = qty, req, data.name
+                        holder.text:SetText(qty .. "/" .. req)
+                        holder:SetSize(holder.text:GetStringWidth(), holder.text:GetStringHeight())
+                        holder:Show()
+                        if holder:IsMouseOver() then
+                            BuildTooltip(holder)
+                        end
                     else
-                        frame.bbfGladWinTracker:SetText("")
-                        frame.bbfGladWinTracker:Hide()
+                        holder.text:SetText("")
+                        holder._qty, holder._req, holder._name = 0, req or 0, data.name
+                        holder:SetSize(1, 1)
+                        if holder:IsMouseOver() then GameTooltip:Hide() end
+                        holder:Hide()
                     end
                 end
             end
@@ -3824,6 +3882,31 @@ function BBF.ActionBarMods()
     end
 end
 
+function BBF.SpecPortraits()
+    if BBF.SpecPortraitsHooked then return end
+    hooksecurefunc("UnitFramePortrait_Update", function(self)
+        if (self.unit == "target" or self.unit == "focus") and UnitIsPlayer(self.unit) then
+            -- Check if spec icons are enabled
+            if BetterBlizzFramesDB.classPortraitsUseSpecIcons then
+                local specID = BBF.GetSpecID(self.unit)
+
+                -- If we have a specID, try to get spec icon
+                if specID then
+                    local _, _, _, icon = GetSpecializationInfoByID(specID)
+                    if icon then
+                        self.portrait:SetTexture(icon)
+                        self.portrait:SetTexCoord(0, 1, 0, 1)
+                        return
+                    end
+                end
+            end
+        else
+            self.portrait:SetTexCoord(0, 1, 0, 1)
+        end
+    end)
+    BBF.SpecPortraitsHooked = true
+end
+
 local function TurnTestModesOff()
     BetterBlizzFramesDB.absorbIndicatorTestMode = false
     BetterBlizzFramesDB.partyCastBarTestMode = false
@@ -3841,12 +3924,22 @@ local function executeCustomCode()
     end
 end
 
+local function CleanupFunc()
+    local db = BetterBlizzFramesDB
+    local defaults = defaultSettings
+
+    if type(db.unitFrameBgTextureColor) == "table" and next(db.unitFrameBgTextureColor) == nil then
+        db.unitFrameBgTextureColor = { unpack(defaults.unitFrameBgTextureColor) }
+    end
+end
+
+
 -- Event registration for PLAYER_LOGIN
 local Frame = CreateFrame("Frame")
 Frame:RegisterEvent("PLAYER_LOGIN")
 --Frame:RegisterEvent("PLAYER_ENTERING_WORLD")
 Frame:SetScript("OnEvent", function(...)
-
+    CleanupFunc()
     CheckForUpdate()
     BBF.CompactPartyFrameScale()
     --BBF.HideFrames()
@@ -4086,7 +4179,12 @@ First:SetScript("OnEvent", function(_, event, addonName)
         BBF.DruidBlueComboPoints()
         BBF.DruidAlwaysShowCombos()
         BBF.RemoveAddonCategories()
-        BBF.HealerIndicatorCaller()
+        if BetterBlizzFramesDB.healerIndicator and BetterBlizzFramesDB.healerIndicatorPortrait and BetterBlizzFramesDB.classPortraitsUseSpecIcons then
+            BBF.HealerIndicatorCaller()
+        else
+            BBF.HealerIndicatorCaller()
+            BBF.SpecPortraits()
+        end
         --BBF.AbsorbCaller()
         BBF.HookStatusBarText()
         BBF.ActionBarMods()

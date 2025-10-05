@@ -725,7 +725,12 @@ function BBF.ChangeLossOfControlScale()
         end
     end
     if LossOfControlFrame then
-        LossOfControlFrame:SetScale(BetterBlizzFramesDB.lossOfControlScale or 1)
+        local scale = BetterBlizzFramesDB.lossOfControlScale or 1
+        LossOfControlFrame:SetScale(scale)
+        if scale ~= 1 then
+            LossOfControlFrame:ClearAllPoints()
+            LossOfControlFrame:SetPoint("CENTER", UIParent, "CENTER", 0,0)
+        end
     end
 end
 
@@ -1828,6 +1833,7 @@ local texture = "Interface\\Addons\\BetterBlizzPlates\\media\\DragonflightTextur
 local manaTexture = "Interface\\Addons\\BetterBlizzPlates\\media\\DragonflightTextureHD"
 local raidHpTexture = "Interface\\Addons\\BetterBlizzPlates\\media\\DragonflightTextureHD"
 local raidManaTexture = "Interface\\Addons\\BetterBlizzPlates\\media\\DragonflightTextureHD"
+local castbarTexture = 137012
 
 local manaTextureUnits = {}
 
@@ -1837,6 +1843,7 @@ function BBF.UpdateCustomTextures()
     manaTexture = LSM:Fetch(LSM.MediaType.STATUSBAR, db.unitFrameManabarTexture)
     raidHpTexture = LSM:Fetch(LSM.MediaType.STATUSBAR, db.raidFrameHealthbarTexture)
     raidManaTexture = LSM:Fetch(LSM.MediaType.STATUSBAR, db.raidFrameManabarTexture)
+    castbarTexture = LSM:Fetch(LSM.MediaType.STATUSBAR, db.unitFrameCastbarTexture)
 
     BBF.HookTextures()
 end
@@ -1957,6 +1964,8 @@ function BBF.HookUnitFrameTextures()
             ApplyTextureChange("mana", FocusFrameToTManaBar)
         end
     end
+
+    BBF.UpdateClassicCastbarTexture(castbarTexture)
 end
 
 
@@ -2013,7 +2022,7 @@ function BBF.HookTextures()
     local db = BetterBlizzFramesDB
     -- Hook UnitFrames
     -- BetterBlizzFramesDB.textureSwapUnitFrames
-    if db.changeUnitFrameHealthbarTexture or db.changeUnitFrameManabarTexture then
+    if db.changeUnitFrameHealthbarTexture or db.changeUnitFrameManabarTexture or db.changeUnitFrameCastbarTexture then
         BBF.HookUnitFrameTextures()
     end
     -- Hook Raidframes
@@ -2358,16 +2367,54 @@ function BBF.ClassPortraits()
     hooksecurefunc("SetPortraitTexture", function(portrait, unit)
         if UnitIsPlayer(unit) then
             if BetterBlizzFramesDB.classPortraitsIgnoreSelf and portrait:GetParent():GetName() == "PlayerFrame" then return end
-            local _, class = UnitClass(unit)
 
+            -- Check if spec icons are enabled
+            if BetterBlizzFramesDB.classPortraitsUseSpecIcons and Details then
+                local unitGUID = UnitGUID(unit)
+                local specID = nil
+
+                -- Try to get spec from Details addon
+                if unitGUID then
+                    specID = Details:GetSpecByGUID(unitGUID)
+                end
+
+                -- If we have a specID, try to get spec icon
+                if specID then
+                    local _, _, _, icon = GetSpecializationInfoByID(specID)
+                    if icon then
+                        portrait:SetTexture(icon)
+                        portrait:SetTexCoord(0, 1, 0, 1)
+
+                        -- Apply circular mask to spec icons
+                        if not portrait.circleMask then
+                            portrait.circleMask = portrait:GetParent():CreateMaskTexture()
+                            portrait.circleMask:SetTexture("Interface\\CharacterFrame\\TempPortraitAlphaMask", "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
+                            portrait.circleMask:SetAllPoints(portrait)
+                            portrait:AddMaskTexture(portrait.circleMask)
+                        end
+                        return
+                    end
+                end
+            end
+
+            -- Fallback to class icons
+            local _, class = UnitClass(unit)
             local texture = "Interface\\TargetingFrame\\UI-Classes-Circles"
             local coords = CLASS_ICON_TCOORDS[class]
 
             if coords then
+                -- Remove circular mask for class icons (they're already circular)
+                -- if portrait.circleMask then
+                --     portrait:RemoveMaskTexture(portrait.circleMask)
+                -- end
                 portrait:SetTexture(texture)
                 portrait:SetTexCoord(unpack(coords))
             end
         else
+            -- Remove circular mask for class icons (they're already circular)
+            -- if portrait.circleMask then
+            --     portrait:RemoveMaskTexture(portrait.circleMask)
+            -- end
             portrait:SetTexCoord(0, 1, 0, 1)
         end
     end)

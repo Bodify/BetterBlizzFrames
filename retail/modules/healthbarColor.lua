@@ -256,6 +256,7 @@ function BBF.UpdateFrames()
     if classColorsOn then
         BBF.HookHealthbarColors()
         if UnitExists("player") then updateFrameColorToggleVer(PlayerFrame.healthbar, "player") end
+        if UnitExists("pet") then updateFrameColorToggleVer(PetFrame.healthbar, "pet") end
         if UnitExists("target") then updateFrameColorToggleVer(TargetFrame.healthbar, "target") end
         if UnitExists("focus") then updateFrameColorToggleVer(FocusFrame.healthbar, "focus") end
         if UnitExists("targettarget") then updateFrameColorToggleVer(TargetFrameToT.HealthBar, "targettarget") end
@@ -268,6 +269,7 @@ function BBF.UpdateFrames()
     else
         if BBF.HealthColorOn then
             if UnitExists("player") then resetFrameColor(PlayerFrame.healthbar, "player") end
+            if UnitExists("pet") then resetFrameColor(PetFrame.healthbar, "pet") end
             if UnitExists("target") then resetFrameColor(TargetFrame.healthbar, "target") end
             if UnitExists("focus") then resetFrameColor(FocusFrame.healthbar, "focus") end
             if UnitExists("targettarget") then resetFrameColor(TargetFrameToT.HealthBar, "targettarget") end
@@ -576,6 +578,7 @@ function BBF.PlayerReputationColor()
             frame.ReputationColor:Hide()
         end
     end
+    BBF.HookTextures()
 end
 
 

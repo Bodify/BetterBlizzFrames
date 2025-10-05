@@ -1718,7 +1718,7 @@ function BBF.FontColors()
         end
     end
 
-    if db.actionBarFontColor then
+    if db.actionBarFontColor and not db.hideActionBarHotKey then
         local color = db.actionBarFontColorRGB
         local function isBlizzardWhite(r)
             return math.abs(r - 0.8) < 0.01

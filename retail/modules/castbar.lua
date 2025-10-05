@@ -4,6 +4,10 @@ local petCastbarCreated = false
 
 local UnitCastingInfo = UnitCastingInfo
 local UnitChannelInfo = UnitChannelInfo
+local classicCastbarTexture = 137012
+function BBF.UpdateClassicCastbarTexture(texture)
+    classicCastbarTexture = BetterBlizzFramesDB.changeUnitFrameCastbarTexture and texture or 137012
+end
 
 local function UpdateCastTimer(self)
     local remainingTime
@@ -204,7 +208,7 @@ function BBF.ClassicCastbar(castBar, unitType)
 
     if not castBar.isClassicStyle then
         castBar:HookScript("OnEvent", function(self)
-            self:SetStatusBarTexture(137012)
+            self:SetStatusBarTexture(classicCastbarTexture)
             if self.barType ~= "interrupted" and not self.casting then
                 self:SetStatusBarColor(0, 1, 0, 1)
             else
@@ -268,7 +272,7 @@ function BBF.ClassicCastbar(castBar, unitType)
         end)
 
         hooksecurefunc(castBar, "PlayFinishAnim", function(self)
-            self:SetStatusBarTexture(137012)
+            self:SetStatusBarTexture(classicCastbarTexture)
             self:SetStatusBarColor(0, 1, 0, 1)
             if castBar == PlayerCastingBarFrame then
                 AdjustFlash(castBar)

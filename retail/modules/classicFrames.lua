@@ -350,6 +350,11 @@ local function MakeClassicFrame(frame)
             end
         end)
 
+        if db.classicFramesDesaturated then
+            frame.ClassicFrame.Texture:SetDesaturated(true)
+            totFrame.FrameTexture:SetDesaturated(true)
+        end
+
     elseif frame == PlayerFrame then
         -- PlayerFrame
         -- Frame
@@ -851,6 +856,10 @@ local function MakeClassicFrame(frame)
             self.changing = false
         end)
 
+        if db.classicFramesDesaturated then
+            frame.ClassicFrame.Texture:SetDesaturated(true)
+        end
+
     elseif frame == PetFrame then
         PetFrame:SetSize(128, 53)
         PetPortrait:ClearAllPoints()
@@ -868,7 +877,7 @@ local function MakeClassicFrame(frame)
         PetFrameFlash:SetDrawLayer("BACKGROUND")
 
         PetFrameHealthBar:SetSize(69, 8)
-        PetFrameHealthBar:SetStatusBarTexture("Interface\\TargetingFrame\\UI-StatusBar")
+        --PetFrameHealthBar:SetStatusBarTexture("Interface\\TargetingFrame\\UI-StatusBar")
         PetFrameHealthBar:SetStatusBarColor(0, 1, 0)
         PetFrameHealthBar:ClearAllPoints()
         PetFrameHealthBar:SetPoint("TOPLEFT", 47, -22)
@@ -912,6 +921,10 @@ local function MakeClassicFrame(frame)
 
         PetHitIndicator:ClearAllPoints()
         PetHitIndicator:SetPoint("CENTER", PetFrame, "TOPLEFT", 28, -27)
+
+        if db.classicFramesDesaturated then
+            PetFrameTexture:SetDesaturated(true)
+        end
     end
 end
 
@@ -1174,6 +1187,7 @@ function BBF.ClassicFrames()
     MakeClassicPartyFrame()
 
     AdjustAlternateBars()
+    BBF.HookTextures()
     C_Timer.After(1, function()
         if C_AddOns.IsAddOnLoaded("ClassicFrames") then
             C_AddOns.DisableAddOn("ClassicFrames")
