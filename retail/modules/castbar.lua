@@ -281,11 +281,21 @@ function BBF.ClassicCastbar(castBar, unitType)
             end
         end)
 
-        castBar:HookScript("OnUpdate", function(self)
-            self.Spark:SetTexture(130877)
-            self.Spark:SetSize(36,36)
-            UpdateSparkPosition(castBar)
-        end)
+        if BetterBlizzFramesDB.classicCastbarsModernSpark then
+            castBar:HookScript("OnUpdate", function(self)
+                self.Spark:SetAtlas("UI-CastingBar-Pip")
+                self.Spark:SetSize(6, 16)
+                UpdateSparkPosition(castBar)
+            end)
+        else
+            castBar:HookScript("OnUpdate", function(self)
+                self.Spark:SetTexture(130877)
+                self.Spark:SetSize(36,36)
+                UpdateSparkPosition(castBar)
+            end)
+        end
+
+
 
 
         castBar.isClassicStyle = true

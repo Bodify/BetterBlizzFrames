@@ -12,6 +12,7 @@
 ## Retail
 ### New
 - Added Mes Profile (www.twitch.tv/notmes). Thank you <3
+- Classic Castbars: Modern Spark setting.
 ### Tweak
 - Tweak darkmode colors a little bit for when Classic Frames is enabled, especially for windwalker chi.
 - Tweak darkmode player auras buff border size a little for smaller icon sizes, thicker border on smaller sizes for a more visually appealing border.

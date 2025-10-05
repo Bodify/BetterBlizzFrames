@@ -5303,11 +5303,26 @@ local function guiCastbars()
     local classicCastbars = CreateCheckbox("classicCastbars", "Classic Castbars", contentFrame, nil, BBF.ChangeCastbarSizes)
     classicCastbars:SetPoint("TOPLEFT", quickHideCastbars, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(classicCastbars, "Classic Castbars", "Use Classic layout for Target & Focus castbars")
+
+    local classicCastbarsModernSpark = CreateCheckbox("classicCastbarsModernSpark", "Modern Spark", contentFrame, nil, BBF.ChangeCastbarSizes)
+    classicCastbarsModernSpark:SetPoint("LEFT", classicCastbars.text, "RIGHT", 0, 0)
+    CreateTooltipTwo(classicCastbarsModernSpark, "Classic Castbars: Modern Spark", "Use modern spark texture on classic castbars")
+    classicCastbarsModernSpark:HookScript("OnClick", function(self)
+        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+    end)
+
     classicCastbars:HookScript("OnClick", function(self)
         if not self:GetChecked() then
             StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            DisableElement(classicCastbarsModernSpark)
+        else
+            EnableElement(classicCastbarsModernSpark)
         end
     end)
+
+    if not BetterBlizzFramesDB.classicCastbars then
+        DisableElement(classicCastbarsModernSpark)
+    end
 end
 
 local function guiPositionAndScale()
