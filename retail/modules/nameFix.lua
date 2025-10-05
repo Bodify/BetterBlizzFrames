@@ -291,16 +291,6 @@ local function GetSpecName(unit)
     return specID and (shortArenaSpecName and specIDToNameShort[specID] or specIDToName[specID]) or nil
 end
 
-function BBF.HealerPortrait()
-    hooksecurefunc("UnitFramePortrait_Update", function(self)
-        if self.unit ~= "player" then
-            if IsSpecHealer(self.unit) then
-                SetPortraitTexture(self.portrait, "player")
-            end
-        end
-    end)
-end
-
 local function ShowLastNameOnlyNpc(frame, name)
     if not name then return end
     local creatureType = frame.unit and UnitCreatureType(frame.unit)

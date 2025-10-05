@@ -4280,6 +4280,25 @@ local function guiGeneralTab()
         end
     end)
 
+    local classPortraitsUseSpecIconsSkipSelf = CreateCheckbox("classPortraitsUseSpecIconsSkipSelf", "Skip Self", BetterBlizzFrames, nil, BBF.SpecPortraits)
+    classPortraitsUseSpecIconsSkipSelf:SetPoint("LEFT", classPortraitsUseSpecIcons.Text, "RIGHT", 0, 0)
+    CreateTooltipTwo(classPortraitsUseSpecIconsSkipSelf, "Use spec icons: Skip Self", "Don't show spec icon on PlayerFrame")
+
+    classPortraitsUseSpecIcons:HookScript("OnClick", function(self)
+        if self:GetChecked() then
+            classPortraitsUseSpecIconsSkipSelf:Enable()
+            classPortraitsUseSpecIconsSkipSelf:Show()
+        else
+            classPortraitsUseSpecIconsSkipSelf:Disable()
+            classPortraitsUseSpecIconsSkipSelf:Hide()
+        end
+    end)
+
+    if not BetterBlizzFramesDB.classPortraitsUseSpecIcons then
+        classPortraitsUseSpecIconsSkipSelf:Hide()
+        classPortraitsUseSpecIconsSkipSelf:Disable()
+    end
+
     local extraFeaturesText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     extraFeaturesText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 460, 30)
     extraFeaturesText:SetText("Extra Features")

@@ -1,7 +1,7 @@
 # BetterBlizzFrames 1.7.5
 ## All versions
 ### New
-- Add new right-click option on Class Portraits to use spec icons instead. On Classic and MoP this requires Details and will not always have spec info available.
+- Add new Spec Icon portrait settings under All Frames. On Retail it is its own setting. On Classics this is a right-click option on Class Portraits to use spec icons instead. On Classic and MoP this requires Details and will not always have spec info available.
 - Change castbar texture (Font & Texture) (on Retail it's only while Classic Frames is enabled for now. If you want this for modern castbars too let your voice be heard)
 - Change name background texture (Font & Texture) (on Retail only while Classic Frames is enabled) This was possible before but only if also changing healthbar texture.
 ### Tweak

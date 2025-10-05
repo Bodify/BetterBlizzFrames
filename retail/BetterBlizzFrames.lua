@@ -3884,24 +3884,20 @@ end
 
 function BBF.SpecPortraits()
     if BBF.SpecPortraitsHooked then return end
+    if not BetterBlizzFramesDB.classPortraitsUseSpecIcons then return end
     hooksecurefunc("UnitFramePortrait_Update", function(self)
-        if (self.unit == "target" or self.unit == "focus") and UnitIsPlayer(self.unit) then
-            -- Check if spec icons are enabled
-            if BetterBlizzFramesDB.classPortraitsUseSpecIcons then
-                local specID = BBF.GetSpecID(self.unit)
-
-                -- If we have a specID, try to get spec icon
-                if specID then
-                    local _, _, _, icon = GetSpecializationInfoByID(specID)
-                    if icon then
-                        self.portrait:SetTexture(icon)
-                        self.portrait:SetTexCoord(0, 1, 0, 1)
-                        return
-                    end
+        if (self.unit == "target" or self.unit == "focus" or self.unit == "player") and UnitIsPlayer(self.unit) then
+            if self.unit == "player" and BetterBlizzFramesDB.classPortraitsUseSpecIconsSkipSelf then
+                return
+            end
+            local specID = BBF.GetSpecID(self.unit)
+            if specID then
+                local _, _, _, icon = GetSpecializationInfoByID(specID)
+                if icon then
+                    self.portrait:SetTexture(icon)
+                    return
                 end
             end
-        else
-            self.portrait:SetTexCoord(0, 1, 0, 1)
         end
     end)
     BBF.SpecPortraitsHooked = true
