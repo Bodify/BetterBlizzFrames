@@ -11,6 +11,29 @@ local function FormatText(value)
     end
 end
 
+local function UpdateFormatFunction()
+    local fmtB, fmtM
+    if BetterBlizzFramesDB.formatStatusBarTextExtraDecimals then
+        fmtB = "%.3f B"
+        fmtM = "%.2f M"
+    else
+        fmtB = "%.2f B"
+        fmtM = "%.1f M"
+    end
+
+    FormatText = function(value)
+        if value >= 1e9 then
+            return string.format(fmtB, value / 1e9)
+        elseif value >= 1e6 then
+            return string.format(fmtM, value / 1e6)
+        elseif value >= 1e5 then
+            return string.format("%d K", value / 1e3)
+        else
+            return tostring(value)
+        end
+    end
+end
+
 local function UpdateNumericText(bar, centerText)
     if not centerText then return end
     local value = bar:GetValue()
@@ -35,6 +58,7 @@ local function UpdateSingleText(bar, fontObj)
 end
 
 function BBF.HookStatusBarText()
+    UpdateFormatFunction()
     if BBF.statusBarTextHookBBF then return end
     if not BetterBlizzFramesDB.formatStatusBarText then return end
 

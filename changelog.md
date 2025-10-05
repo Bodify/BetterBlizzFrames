@@ -1,3 +1,8 @@
+# BetterBlizzFrames 1.7.5b
+## Retail
+### Tweak
+- Revert decision for Format Numbers to show extra decimal. It is now instead an optional setting that is off by default. Right click Format Numbers to enable extra decimal.
+
 # BetterBlizzFrames 1.7.5
 ## All versions
 ### New

@@ -1252,6 +1252,14 @@ local function CreateTooltipTwo(widget, title, mainText, subText, anchor, cvarNa
         --GameTooltip:AddLine(" ") -- Adding an empty line as a separator
         -- Set the main text
         GameTooltip:AddLine(mainText, 1, 1, 1, true) -- true for wrap text
+
+        if title == "Format Numbers" then
+            local tooltipText = "\n\n18800 K |A:glueannouncementpopup-arrow:20:20|a 18.8 M\n|cff32f795Right-click to show one extra decimal.|r"
+            if BetterBlizzFramesDB.formatStatusBarTextExtraDecimals then
+                tooltipText = "\n\n18800 K |A:glueannouncementpopup-arrow:20:20|a 18.80 M\n|cff32f795Right-click to show one extra decimal.|r|A:ParagonReputation_Checkmark:15:15|a"
+            end
+            GameTooltip:AddLine(tooltipText, 1, 1, 1, true)
+        end
         -- Set the subtext
         if subText then
             GameTooltip:AddLine("____________________________", 0.8, 0.8, 0.8, true)
@@ -4190,7 +4198,23 @@ local function guiGeneralTab()
 
     local formatStatusBarText = CreateCheckbox("formatStatusBarText", "Format Numbers", BetterBlizzFrames, nil, BBF.HookStatusBarText)
     formatStatusBarText:SetPoint("TOPLEFT", centerNames, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltipTwo(formatStatusBarText, "Format Numbers", "Format the health & mana numbers on Player, Target & Focus frames to be millions instead of thousands.\n\n6800 K |A:glueannouncementpopup-arrow:20:20|a 6.8 M", "Requires reload.")
+    CreateTooltipTwo(formatStatusBarText, "Format Numbers", "Format the health & mana numbers on Player, Target & Focus frames to be millions instead of thousands.", "Requires reload.")
+    formatStatusBarText:HookScript("OnMouseDown", function(self, button)
+        if button == "RightButton" then
+            if not BetterBlizzFramesDB.formatStatusBarTextExtraDecimals then
+                BetterBlizzFramesDB.formatStatusBarTextExtraDecimals = true
+            else
+                BetterBlizzFramesDB.formatStatusBarTextExtraDecimals = nil
+            end
+            if GameTooltip:IsShown() and GameTooltip:GetOwner() == self then
+                self:GetScript("OnEnter")(self)
+            end
+            if formatStatusBarText:GetChecked() then
+                BBF.HookStatusBarText()
+            end
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        end
+    end)
 
     local singleValueStatusBarText = CreateCheckbox("singleValueStatusBarText", "No Max", formatStatusBarText)
     singleValueStatusBarText:SetPoint("LEFT", formatStatusBarText.text, "RIGHT", 0, 0)
