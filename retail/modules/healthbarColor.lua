@@ -540,14 +540,21 @@ function BBF.PlayerReputationColor()
         if not frame.ReputationColor then
             frame.ReputationColor = frame:CreateTexture(nil, "OVERLAY")
             if BetterBlizzFramesDB.classicFrames then
-                if not BetterBlizzFramesDB.changeUnitFrameHealthbarTexture then
-                    frame.ReputationColor:SetTexture(137017)
+                if BetterBlizzFramesDB.changeUnitFrameNameBgTexture then
+                    local nameBgTexture = BBF.LSM:Fetch(BBF.LSM.MediaType.STATUSBAR, BetterBlizzFramesDB.unitFrameNameBgTexture)
+                    frame.ReputationColor:SetTexture(nameBgTexture)
+                    frame.ReputationColor:SetTexCoord(0, 1, 0, 1)
                 else
-                    local texture = BBF.LSM:Fetch(BBF.LSM.MediaType.STATUSBAR, BetterBlizzFramesDB.unitFrameHealthbarTexture)
-                    frame.ReputationColor:SetTexture(texture)
+                    if not BetterBlizzFramesDB.changeUnitFrameHealthbarTexture then
+                        frame.ReputationColor:SetTexture(137017)
+                        frame.ReputationColor:SetTexCoord(1, 0, 0, 1)
+                    else
+                        local texture = BBF.LSM:Fetch(BBF.LSM.MediaType.STATUSBAR, BetterBlizzFramesDB.unitFrameHealthbarTexture)
+                        frame.ReputationColor:SetTexture(texture)
+                        frame.ReputationColor:SetTexCoord(0, 1, 0, 1)
+                    end
                 end
                 frame.ReputationColor:SetSize(117, 18)
-                frame.ReputationColor:SetTexCoord(1, 0, 0, 1)
                 frame.ReputationColor:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -26, -30)
             elseif C_AddOns.IsAddOnLoaded("ClassicFrames") then
                 frame.ReputationColor:SetTexture(137017)
@@ -578,7 +585,6 @@ function BBF.PlayerReputationColor()
             frame.ReputationColor:Hide()
         end
     end
-    BBF.HookTextures()
 end
 
 
