@@ -1187,7 +1187,6 @@ function BBF.ClassicFrames()
     MakeClassicPartyFrame()
 
     AdjustAlternateBars()
-    BBF.HookTextures()
     C_Timer.After(1, function()
         if C_AddOns.IsAddOnLoaded("ClassicFrames") then
             C_AddOns.DisableAddOn("ClassicFrames")
