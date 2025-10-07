@@ -1,5 +1,10 @@
 # BetterBlizzFrames 1.7.5d
 ## Retail
+### Tweak
+- Add missing spanish spec names to spec detection. Thanks to Dardo7 @ Discord
+
+# BetterBlizzFrames 1.7.5d
+## Retail
 ### Bugfix
 - Christmas lights on classic frames healthbar has been cancelled. Second attempt. (I forgot how much Blizzard hates touching this and it needs to only be done once to avoid it going crazy.)
 
