@@ -1,6 +1,7 @@
 # BetterBlizzFrames 1.7.5d
 ## Retail
 ### Tweak
+- Minor Dark Mode Color tweaks, most for while Classic Frames is enabled.
 - Add missing spanish spec names to spec detection. Thanks to Dardo7 @ Discord
 
 # BetterBlizzFrames 1.7.5d
