@@ -1,4 +1,4 @@
-# BetterBlizzFrames 1.7.5d
+# BetterBlizzFrames 1.7.5e
 ## Retail
 ### Tweak
 - Minor Dark Mode Color tweaks, most for while Classic Frames is enabled.
