@@ -3,6 +3,11 @@
 ### Tweak
 - Minor Dark Mode Color tweaks, most for while Classic Frames is enabled.
 - Add missing spanish spec names to spec detection. Thanks to Dardo7 @ Discord
+- Minor tweaks to OCD setting and its gray lines behind PlayerFrame. They were sticking out slightly. (meant to hide gaps between frametexture and healthbar etc)
+## Classics
+### Bugfix
+- Fix issue with castbar texture layering after introducing texture settings.
+
 
 # BetterBlizzFrames 1.7.5d
 ## Retail

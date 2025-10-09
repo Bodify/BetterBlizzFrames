@@ -3730,17 +3730,17 @@ function BBF.FixStupidBlizzPTRShit()
         PlayerFrame.ocdLine1 = PlayerFrame:CreateTexture(nil, "BACKGROUND")
         PlayerFrame.ocdLine1:SetColorTexture(v, v, v, 1)
         PlayerFrame.ocdLine1:SetPoint("TOPLEFT", PlayerFrame.healthbar, "BOTTOMLEFT", 0, 0)
-        PlayerFrame.ocdLine1:SetPoint("BOTTOMRIGHT", PlayerFrame.manabar, "TOPRIGHT", 0, -1)
+        PlayerFrame.ocdLine1:SetPoint("BOTTOMRIGHT", PlayerFrame.manabar, "TOPRIGHT", -2, -1)
 
         PlayerFrame.ocdLine2 = PlayerFrame:CreateTexture(nil, "BACKGROUND")
         PlayerFrame.ocdLine2:SetColorTexture(v, v, v, 1)
         PlayerFrame.ocdLine2:SetPoint("TOPLEFT", PlayerFrame.manabar, "BOTTOMLEFT", 0, 0)
-        PlayerFrame.ocdLine2:SetPoint("BOTTOMRIGHT", PlayerFrame.manabar, "BOTTOMRIGHT", -2.5, -1)
+        PlayerFrame.ocdLine2:SetPoint("BOTTOMRIGHT", PlayerFrame.manabar, "BOTTOMRIGHT", -3.5, -1)
 
         PlayerFrame.ocdLine3 = PlayerFrame:CreateTexture(nil, "BACKGROUND")
         PlayerFrame.ocdLine3:SetColorTexture(v, v, v, 1)
         PlayerFrame.ocdLine3:SetPoint("BOTTOMLEFT", PlayerFrame.healthbar, "TOPLEFT", 0, 0)
-        PlayerFrame.ocdLine3:SetPoint("BOTTOMRIGHT", PlayerFrame.manabar, "TOPRIGHT", -2.5, 1)
+        PlayerFrame.ocdLine3:SetPoint("BOTTOMRIGHT", PlayerFrame.manabar, "TOPRIGHT", -4, 0.5)
 
         BBF.ocdFixActive = true
 
