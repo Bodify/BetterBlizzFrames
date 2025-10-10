@@ -117,6 +117,7 @@ function BBF.HideFrames()
             if not bossFrameHooked then
                 hiddenFrame:RegisterEvent("ENCOUNTER_START")
                 hiddenFrame:RegisterEvent("ENCOUNTER_END")
+                hiddenFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
                 hiddenFrame:RegisterEvent("GROUP_ROSTER_UPDATE")
                 hiddenFrame:SetScript("OnEvent", function()
                     if InCombatLockdown then return end
@@ -124,12 +125,53 @@ function BBF.HideFrames()
 
                     if BetterBlizzFramesDB.hideBossFramesParty and inInstance and instanceType == "party" then
                         BossTargetFrameContainer:SetParent(hiddenFrame)
+                        BossTargetFrameContainer:SetAlpha(0)
+                        for i = 1, 5 do
+                            local bossFrame = _G["Boss" .. i .. "TargetFrame"]
+                            if bossFrame then
+                                bossFrame:SetParent(hiddenFrame)
+                                bossFrame:SetAlpha(0)
+                            end
+                        end
                     elseif BetterBlizzFramesDB.hideBossFramesRaid and inInstance and instanceType == "raid" then
                         BossTargetFrameContainer:SetParent(hiddenFrame)
+                        BossTargetFrameContainer:SetAlpha(0)
+                        for i = 1, 5 do
+                            local bossFrame = _G["Boss" .. i .. "TargetFrame"]
+                            if bossFrame then
+                                bossFrame:SetParent(hiddenFrame)
+                                bossFrame:SetAlpha(0)
+                            end
+                        end
                     else
                         BossTargetFrameContainer:SetParent(originalBossFrameParent)
                     end
                 end)
+
+                local inInstance, instanceType = IsInInstance()
+                if BetterBlizzFramesDB.hideBossFramesParty and inInstance and instanceType == "party" then
+                    BossTargetFrameContainer:SetParent(hiddenFrame)
+                    BossTargetFrameContainer:SetAlpha(0)
+                    for i = 1, 5 do
+                        local bossFrame = _G["Boss" .. i .. "TargetFrame"]
+                        if bossFrame then
+                            bossFrame:SetParent(hiddenFrame)
+                            bossFrame:SetAlpha(0)
+                        end
+                    end
+                elseif BetterBlizzFramesDB.hideBossFramesRaid and inInstance and instanceType == "raid" then
+                    BossTargetFrameContainer:SetParent(hiddenFrame)
+                    BossTargetFrameContainer:SetAlpha(0)
+                    for i = 1, 5 do
+                        local bossFrame = _G["Boss" .. i .. "TargetFrame"]
+                        if bossFrame then
+                            bossFrame:SetParent(hiddenFrame)
+                            bossFrame:SetAlpha(0)
+                        end
+                    end
+                else
+                    BossTargetFrameContainer:SetParent(originalBossFrameParent)
+                end
 
                 bossFrameHooked = true
             end
