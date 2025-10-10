@@ -1,6 +1,7 @@
 # BetterBlizzFrames 1.7.5e
 ## Retail
 ### Tweak
+- Potential fix for Hiding Boss Frames. (This still got kinda messed up in 11.1.7 cuz Blizzard changes and im not sure if this will work, report pls)
 - Minor Dark Mode Color tweaks, most for while Classic Frames is enabled.
 - Add missing spanish spec names to spec detection. Thanks to Dardo7 @ Discord
 - Minor tweaks to OCD setting and its gray lines behind PlayerFrame. They were sticking out slightly. (meant to hide gaps between frametexture and healthbar etc)
