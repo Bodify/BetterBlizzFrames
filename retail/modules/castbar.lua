@@ -1282,9 +1282,11 @@ local function PlayerCastingBarFrameMiscAdjustments()
     PlayerCastingBarFrame:SetHeight(BetterBlizzFramesDB.playerCastBarHeight)
     PlayerCastingBarFrame.Text:ClearAllPoints()
     if BetterBlizzFramesDB.playerCastBarNoTextBorder or PlayerCastingBarFrame.attachedToPlayerFrame then
-        PlayerCastingBarFrame.TextBorderHidden = PlayerCastingBarFrame.TextBorder:GetParent()
+        if not PlayerCastingBarFrame.TextBorderHidden then
+            PlayerCastingBarFrame.TextBorderHidden = PlayerCastingBarFrame.TextBorder:GetParent()
+        end
         PlayerCastingBarFrame.TextBorder:SetParent(BBF.hiddenFrame)
-        PlayerCastingBarFrame.Text:SetPoint("BOTTOM", PlayerCastingBarFrame, "BOTTOM", 0, -2.5)
+        PlayerCastingBarFrame.Text:SetPoint("CENTER", PlayerCastingBarFrame, "CENTER", 0, 0)
         if not PlayerCastingBarFrame.ogText then
             local font, size, flags = PlayerCastingBarFrame.Text:GetFont()
             PlayerCastingBarFrame.ogText = {font, size, flags}

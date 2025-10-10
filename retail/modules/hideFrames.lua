@@ -25,6 +25,20 @@ local function applyAlpha(frame, alpha)
     end
 end
 
+local function hideElementByParent(element)
+    if element and not element.bbfOriginalParent then
+        element.bbfOriginalParent = element:GetParent()
+        element:SetParent(BBF.hiddenFrame)
+    end
+end
+
+local function restoreElementParent(element)
+    if element and element.bbfOriginalParent then
+        element:SetParent(element.bbfOriginalParent)
+        element.bbfOriginalParent = nil
+    end
+end
+
 local function HideQualityIconFromBars(alpha)
     for i = 1, 12 do
         local buttons = {
@@ -796,9 +810,6 @@ function BBF.HideFrames()
         LossOfControlFrame.RedLineBottom:SetAlpha(LossOfControlFrameAlphaLines)
 
         -- action bar macro name hotkey hide
-        local hotKeyAlpha = BetterBlizzFramesDB.hideActionBarHotKey and 0 or 1
-        local macroNameAlpha = BetterBlizzFramesDB.hideActionBarMacroName and 0 or 1
-
         if BetterBlizzFramesDB.hideActionBarHotKey or BetterBlizzFramesDB.hideActionBarMacroName or keybindAlphaChanged then
             -- Blizzard buttons
             local blizzPrefixes = {
@@ -809,8 +820,20 @@ function BBF.HideFrames()
 
             for _, prefix in ipairs(blizzPrefixes) do
                 for i = 1, 12 do
-                    applyAlpha(_G[prefix .. i .. "HotKey"], hotKeyAlpha)
-                    applyAlpha(_G[prefix .. i .. "Name"], macroNameAlpha)
+                    local hotKey = _G[prefix .. i .. "HotKey"]
+                    local macroName = _G[prefix .. i .. "Name"]
+
+                    if BetterBlizzFramesDB.hideActionBarHotKey then
+                        hideElementByParent(hotKey)
+                    else
+                        restoreElementParent(hotKey)
+                    end
+
+                    if BetterBlizzFramesDB.hideActionBarMacroName then
+                        hideElementByParent(macroName)
+                    else
+                        restoreElementParent(macroName)
+                    end
                 end
             end
 
@@ -832,8 +855,20 @@ function BBF.HideFrames()
 
             for _, bar in ipairs(dominosBars) do
                 for i = 1, bar.count do
-                    applyAlpha(_G[bar.name .. i .. "HotKey"], hotKeyAlpha)
-                    applyAlpha(_G[bar.name .. i .. "Name"], macroNameAlpha)
+                    local hotKey = _G[bar.name .. i .. "HotKey"]
+                    local macroName = _G[bar.name .. i .. "Name"]
+
+                    if BetterBlizzFramesDB.hideActionBarHotKey then
+                        hideElementByParent(hotKey)
+                    else
+                        restoreElementParent(hotKey)
+                    end
+
+                    if BetterBlizzFramesDB.hideActionBarMacroName then
+                        hideElementByParent(macroName)
+                    else
+                        restoreElementParent(macroName)
+                    end
                 end
             end
 

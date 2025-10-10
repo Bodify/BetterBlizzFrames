@@ -4,6 +4,8 @@
 - Minor Dark Mode Color tweaks, most for while Classic Frames is enabled.
 - Add missing spanish spec names to spec detection. Thanks to Dardo7 @ Discord
 - Minor tweaks to OCD setting and its gray lines behind PlayerFrame. They were sticking out slightly. (meant to hide gaps between frametexture and healthbar etc)
+- Changed method of hiding action bar hotkeys and macro names. Hopefully text wont pop back up now, if it does please report it.
+- Player Castbar setting "Simple Castbar" now puts an outline on castbar text to make it easier to read.
 ## Classics
 ### Bugfix
 - Fix issue with castbar texture layering after introducing texture settings.
