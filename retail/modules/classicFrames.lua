@@ -350,7 +350,7 @@ local function MakeClassicFrame(frame)
             end
         end)
 
-        if db.classicFramesDesaturated then
+        if db.classicFramesDesaturated or db.classColorFrameTexture then
             frame.ClassicFrame.Texture:SetDesaturated(true)
             totFrame.FrameTexture:SetDesaturated(true)
         end
@@ -856,7 +856,7 @@ local function MakeClassicFrame(frame)
             self.changing = false
         end)
 
-        if db.classicFramesDesaturated then
+        if db.classicFramesDesaturated or db.classColorFrameTexture then
             frame.ClassicFrame.Texture:SetDesaturated(true)
         end
 
