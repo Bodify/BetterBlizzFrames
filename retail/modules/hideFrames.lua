@@ -39,7 +39,7 @@ local function restoreElementParent(element)
     end
 end
 
-local function HideQualityIconFromBars(alpha)
+local function HideQualityIconFromBars(hide)
     for i = 1, 12 do
         local buttons = {
             _G["ActionButton" .. i],
@@ -54,7 +54,11 @@ local function HideQualityIconFromBars(alpha)
 
         for _, button in ipairs(buttons) do
             if button and button.ProfessionQualityOverlayFrame then
-                button.ProfessionQualityOverlayFrame:SetAlpha(alpha)
+                if hide then
+                    hideElementByParent(button.ProfessionQualityOverlayFrame)
+                else
+                    restoreElementParent(button.ProfessionQualityOverlayFrame)
+                end
             end
         end
     end
@@ -78,10 +82,10 @@ function BBF.HideFrames()
         -- PlayerFrameGroupIndicatorRight:SetAlpha(groupIndicatorAlpha)
 
         if db.hideActionBarQualityIcon then
-            HideQualityIconFromBars(0)
+            HideQualityIconFromBars(true)
             changes.hideActionBarQualityIcon = true
         elseif changes.hideActionBarQualityIcon then
-            HideQualityIconFromBars(1)
+            HideQualityIconFromBars(false)
         end
 
         -- Hide target leader icon

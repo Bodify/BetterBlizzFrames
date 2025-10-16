@@ -12,6 +12,7 @@ local interruptSpells = {
     116705,-- Spear Hand Strike (Monk)
     132409,-- Spell Lock (Warlock)
     119910,-- Spell Lock (Warlock Pet)
+    34490, -- Silencing Shot (Hunter)
     147362,-- Countershot (Hunter)
     171138,-- Shadow Lock (Warlock)
     183752,-- Consume Magic (Demon Hunter)

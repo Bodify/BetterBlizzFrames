@@ -1,7 +1,7 @@
 
 local function FormatText(value)
     if value >= 1000000000 then
-        return string.format("%.1f B", value / 1000000000)
+        return string.format("%.2f B", value / 1000000000)
     elseif value >= 1000000 then
         return string.format("%.1f M", value / 1000000)
     elseif value >= 100000 then

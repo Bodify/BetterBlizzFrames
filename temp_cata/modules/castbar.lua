@@ -604,6 +604,7 @@ local interruptList = {
     [132409] = true,-- Spell Lock (Warlock)
     [119910] = true,-- Spell Lock (Warlock Pet)
     [147362] = true,-- Countershot (Hunter)
+    [34490] = true,-- Silencing Shot (Hunter)
     [171138] = true,-- Shadow Lock (Warlock)
     [183752] = true,-- Consume Magic (Demon Hunter)
     [187707] = true,-- Muzzle (Hunter)

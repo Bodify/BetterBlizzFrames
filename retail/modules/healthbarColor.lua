@@ -636,37 +636,37 @@ function BBF.HookFrameTextureColor()
     end
 
 
-    local function SetupFrame(frame, unit)
+    local function SetupFrame(frame, unit, colorUnit)
         if not frame then return end
+        colorUnit = colorUnit or unit
 
-        -- Assign unit and get texture
-        local texture = frame.TargetFrameContainer and frame.TargetFrameContainer.FrameTexture
-        or frame.PlayerFrameContainer and frame.PlayerFrameContainer.FrameTexture
-        or frame.FrameTexture
-        local altTexture = frame.TargetFrameContainer and frame.TargetFrameContainer.AlternatePowerFrameTexture
-        or frame.PlayerFrameContainer and frame.PlayerFrameContainer.AlternatePowerFrameTexture
-        or frame.AlternatePowerFrameTexture
+        local texture = (frame.TargetFrameContainer and frame.TargetFrameContainer.FrameTexture)
+            or (frame.PlayerFrameContainer and frame.PlayerFrameContainer.FrameTexture)
+            or frame.FrameTexture or (unit == "pet" and PetFrameTexture)
+        local altTexture = (frame.TargetFrameContainer and frame.TargetFrameContainer.AlternatePowerFrameTexture)
+            or (frame.PlayerFrameContainer and frame.PlayerFrameContainer.AlternatePowerFrameTexture)
+            or frame.AlternatePowerFrameTexture
+        if not texture then return end
 
         -- Hook SetVertexColor
         if not texture.bbfColorHook then
             hooksecurefunc(texture, "SetVertexColor", function(self)
                 if self.changing then return end
-                DesaturateAndColorTexture(self, unit)
+                DesaturateAndColorTexture(self, colorUnit)
             end)
             texture.bbfColorHook = true
         end
-
         if altTexture and not altTexture.bbfColorHook then
             hooksecurefunc(altTexture, "SetVertexColor", function(self)
                 if self.changing then return end
-                DesaturateAndColorTexture(self, unit)
+                DesaturateAndColorTexture(self, colorUnit)
             end)
             altTexture.bbfColorHook = true
         end
 
-        DesaturateAndColorTexture(texture, unit)
+        DesaturateAndColorTexture(texture, colorUnit)
         if altTexture then
-            DesaturateAndColorTexture(altTexture, unit)
+            DesaturateAndColorTexture(altTexture, colorUnit)
         end
     end
 
@@ -676,9 +676,11 @@ function BBF.HookFrameTextureColor()
     SetupFrame(FocusFrame, "focus")
     SetupFrame(TargetFrameToT, "targettarget")
     SetupFrame(FocusFrameToT, "focustarget")
+    SetupFrame(PetFrame, "pet", "player")
 
     C_Timer.After(1, function()
         SetupFrame(PlayerFrame, "player")
+        SetupFrame(PetFrame, "pet", "player")
     end)
 
     -- Event frame to watch for target/focus changes

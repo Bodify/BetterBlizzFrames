@@ -1,3 +1,16 @@
+# BetterBlizzFrames 1.7.6
+## All versions
+### New
+- Buffs & Debuffs: Add new Ctrl+Alt+Rightclick option for important color that colors ALL whitelist auras at once. This is irreversible so only do this if you are planning and wanting to easily change the color on every single aura at once.
+## Retail
+### Tweak
+- Desaturate Classic Frames textures when using Class Color FrameTexture.
+- Class Color FrameTexture: Also color PetFrame after Player class.
+- Change method of hiding Action Bar Quality Icon to avoid resets where it pops back up.
+## Mists of Pandaria
+- Add Hunter Silence Shot for Interrupt Icon and Castbar Interrupt Color. Thanks to Snackqt @ CurseForge.
+
+
 # BetterBlizzFrames 1.7.5e
 ## Retail
 ### Tweak

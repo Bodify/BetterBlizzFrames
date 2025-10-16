@@ -1,7 +1,7 @@
 
 local function FormatText(value)
     if value >= 1000000000 then
-        return string.format("%.3f B", value / 1000000000)
+        return string.format("%.2f B", value / 1000000000)
     elseif value >= 1000000 then
         return string.format("%.2f M", value / 1000000)
     elseif value >= 100000 then
@@ -14,7 +14,7 @@ end
 local function UpdateFormatFunction()
     local fmtB, fmtM
     if BetterBlizzFramesDB.formatStatusBarTextExtraDecimals then
-        fmtB = "%.3f B"
+        fmtB = "%.2f B"
         fmtM = "%.2f M"
     else
         fmtB = "%.2f B"
