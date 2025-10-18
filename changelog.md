@@ -1,3 +1,8 @@
+# BetterBlizzFrames 1.7.6b
+## All versions
+### New
+- Class Color Health: New "Keep friendly units green" setting. Shift+RightClick "Class Color Health" setting to enable.
+
 # BetterBlizzFrames 1.7.6
 ## All versions
 ### New

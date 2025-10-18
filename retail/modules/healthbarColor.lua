@@ -8,6 +8,7 @@ local healthbarsHooked = nil
 local classColorsOn
 local colorPetAfterOwner
 local skipPlayer
+local skipFriendly
 local retexturedBars
 local rpNames
 
@@ -110,7 +111,12 @@ local function getUnitColor(unit)
         else
             local color = RAID_CLASS_COLORS[select(2, UnitClass(unit))]
             if color then
-                return {r = color.r, g = color.g, b = color.b}, false
+                if skipFriendly then
+                    local reaction = getUnitReaction(unit)
+                    return {r = color.r, g = color.g, b = color.b}, ((unit == "player" and skipPlayer) or (skipFriendly and reaction == "FRIENDLY" and unit ~= "player"))
+                else
+                    return {r = color.r, g = color.g, b = color.b}, false
+                end
             end
         end
     elseif colorPetAfterOwner and UnitIsUnit(unit, "pet") then
@@ -178,7 +184,7 @@ local function updateFrameColorToggleVer(frame, unit)
     if classColorsOn then
         local color, isFriendly = getUnitColor(unit)
         if color then
-            if isFriendly and not frame.bbfChangedTexture then
+            if isFriendly and (not frame.bbfChangedTexture or skipFriendly) then
                 frame:SetStatusBarDesaturated(false)
                 frame:SetStatusBarColor(1, 1, 1)
             else
@@ -224,7 +230,7 @@ local function UpdateHealthColor(frame, unit)
     end
     local color, isFriendly = getUnitColor(unit)
     if color then
-        if isFriendly and not frame.bbfChangedTexture then
+        if isFriendly and (not frame.bbfChangedTexture or skipFriendly) then
             frame:SetStatusBarDesaturated(false)
             frame:SetStatusBarColor(1, 1, 1)
         else
@@ -252,6 +258,7 @@ function BBF.UpdateFrames()
     retexturedBars = BetterBlizzFramesDB.changeUnitFrameHealthbarTexture
     colorPetAfterOwner = BetterBlizzFramesDB.colorPetAfterOwner
     skipPlayer = BetterBlizzFramesDB.classColorFramesSkipPlayer
+    skipFriendly = BetterBlizzFramesDB.classColorFramesSkipFriendly
     rpNames = BetterBlizzFramesDB.rpNamesHealthbarColor
     if classColorsOn then
         BBF.HookHealthbarColors()

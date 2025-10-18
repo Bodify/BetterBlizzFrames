@@ -941,9 +941,28 @@ local function CreateTooltipTwo(widget, title, mainText, subText, anchor, cvarNa
         --GameTooltip:AddLine(" ") -- Adding an empty line as a separator
         -- Set the main text
         GameTooltip:AddLine(mainText, 1, 1, 1, true) -- true for wrap text
-        
+
         -- Add specific tooltip conditions
-        
+        if title == "Class Color Healthbars" then
+            local green = "|cff32f795"
+            local babyBlue = "|cff7fc6ff"
+            local reset = "|r"
+            local check = " |A:ParagonReputation_Checkmark:15:15|a"
+
+            local tooltipText = "\n"
+            tooltipText = tooltipText .. green .. "Right-Click to keep PlayerFrame green." .. reset
+            if BetterBlizzFramesDB.classColorFramesSkipPlayer then
+                tooltipText = tooltipText .. check
+            end
+
+            tooltipText = tooltipText .. "\n\n" .. babyBlue .. "Shift+Right-Click to keep Friendly units green." .. reset
+            if BetterBlizzFramesDB.classColorFramesSkipFriendly then
+                tooltipText = tooltipText .. check
+            end
+
+            GameTooltip:AddLine(tooltipText, 1, 1, 1, true)
+        end
+
         -- Set the subtext
         if subText then
             GameTooltip:AddLine("____________________________", 0.8, 0.8, 0.8, true)
@@ -3445,17 +3464,38 @@ local function guiGeneralTab()
     allFrameIcon3:SetDesaturated(1)
     allFrameIcon3:SetVertexColor(1, 0, 0)
 
-    local classColorFrames = CreateCheckbox("classColorFrames", "Class Color Frames", BetterBlizzFrames)
+    local classColorFrames = CreateCheckbox("classColorFrames", "Class Color Health", BetterBlizzFrames)
     classColorFrames:SetPoint("TOPLEFT", allFrameText, "BOTTOMLEFT", -4, pixelsOnFirstBox)
 
-    local classColorFramesSkipPlayer = CreateCheckbox("classColorFramesSkipPlayer", "Skip Self", BetterBlizzFrames)
-    classColorFramesSkipPlayer:SetPoint("LEFT", classColorFrames.Text, "RIGHT", 0, 0)
-    CreateTooltipTwo(classColorFramesSkipPlayer, "Skip Self", "Skip PlayerFrame healthbar coloring and leave it default green.")
-    classColorFramesSkipPlayer:HookScript("OnClick", function(self)
-        if self:GetChecked() then
-            PlayerFrameHealthBar:SetStatusBarColor(0,1,0)
-        else
-            BBF.updateFrameColorToggleVer(PlayerFrameHealthBar, "player")
+    classColorFrames:HookScript("OnMouseDown", function(self, button)
+        if button == "RightButton" then
+            if IsShiftKeyDown() then
+                if not BetterBlizzFramesDB.classColorFramesSkipFriendly then
+                    BetterBlizzFramesDB.classColorFramesSkipFriendly = true
+                else
+                    BetterBlizzFramesDB.classColorFramesSkipFriendly = nil
+                end
+            else
+                if not BetterBlizzFramesDB.classColorFramesSkipPlayer then
+                    BetterBlizzFramesDB.classColorFramesSkipPlayer = true
+                else
+                    BetterBlizzFramesDB.classColorFramesSkipPlayer = nil
+                end
+            end
+            if BetterBlizzFramesDB.classColorFramesSkipPlayer then
+                if PlayerFrame and PlayerFrame.healthbar then
+                    PlayerFrame.healthbar:SetStatusBarDesaturated(true)
+                    PlayerFrame.healthbar:SetStatusBarColor(0, 1, 0)
+                end
+            else
+                if PlayerFrame and PlayerFrame.healthbar then
+                    BBF.updateFrameColorToggleVer(PlayerFrame.healthbar, "player")
+                end
+            end
+            if GameTooltip:IsShown() and GameTooltip:GetOwner() == self then
+                self:GetScript("OnEnter")(self)
+            end
+            BBF.UpdateFrames()
         end
     end)
 
@@ -3473,17 +3513,8 @@ local function guiGeneralTab()
         end
         UpdateCVar()
         BBF.UpdateFrames()
-        if self:GetChecked() then
-            classColorFramesSkipPlayer:Show()
-        else
-            classColorFramesSkipPlayer:Hide()
-        end
     end)
     CreateTooltipTwo(classColorFrames, "Class Color Healthbars", "Class color Player, Target, Focus & Party frames.", "If you want a more I recommend the addon HealthBarColor instead of this setting.")
-
-    if not BetterBlizzFramesDB.classColorFrames then
-        classColorFramesSkipPlayer:Hide()
-    end
 
     local biggerHealthbars = CreateCheckbox("biggerHealthbars", "Bigger Healthbars", BetterBlizzFrames, nil, BBF.HookBiggerHealthbars)
     biggerHealthbars:SetPoint("TOPLEFT", classColorFrames, "BOTTOMLEFT", 0, pixelsBetweenBoxes)

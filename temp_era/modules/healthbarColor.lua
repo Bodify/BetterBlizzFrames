@@ -9,6 +9,8 @@ local healthbarsHooked = nil
 local classColorsOn
 local colorPetAfterOwner
 local raidClassColorsHooked
+local skipPlayer
+local skipFriendly
 
 local function getUnitReaction(unit)
     if UnitIsFriend(unit, "player") then
@@ -168,12 +170,22 @@ local function getUnitColor(unit)
             return {r = 0.00, g = 0.44, b = 0.87}
         end
         if color then
-            return {r = color.r, g = color.g, b = color.b}
+            if skipFriendly then
+                local reaction = getUnitReaction(unit)
+                return { r = color.r, g = color.g, b = color.b },
+                    ((unit == "player" and skipPlayer) or (skipFriendly and reaction == "FRIENDLY" and unit ~= "player"))
+            else
+                return { r = color.r, g = color.g, b = color.b }, false
+            end
         end
     elseif colorPetAfterOwner and UnitIsUnit(unit, "pet") then
         -- Check if the unit is the player's pet and the setting is enabled
         local _, playerClass = UnitClass("player")
         local color = RAID_CLASS_COLORS[playerClass]
+        if playerClass == "SHAMAN" then
+            -- Specific color override for Shaman
+            return {r = 0.00, g = 0.44, b = 0.87}
+        end
         if color then
             return {r = color.r, g = color.g, b = color.b}, false
         end
@@ -224,13 +236,20 @@ end
 BBF.getUnitColor = getUnitColor
 
 local function updateFrameColorToggleVer(frame, unit)
+    if unit == "player" and skipPlayer then
+        frame:SetStatusBarColor(0, 1, 0)
+        return
+    end
     if classColorsOn then
-        if unit == "player" and BetterBlizzFramesDB.classColorFramesSkipPlayer then return end
-        --local color = UnitIsPlayer(unit) and RAID_CLASS_COLORS[select(2, UnitClass(unit))] or getUnitColor(unit) --bad
-        local color = getUnitColor(unit)
+        local color, isFriendly = getUnitColor(unit)
         if color then
-            frame:SetStatusBarDesaturated(true)
-            frame:SetStatusBarColor(color.r, color.g, color.b)
+            if isFriendly and (not frame.bbfChangedTexture or skipFriendly) then
+                frame:SetStatusBarDesaturated(false)
+                frame:SetStatusBarColor(0, 1, 0)
+            else
+                frame:SetStatusBarDesaturated(true)
+                frame:SetStatusBarColor(color.r, color.g, color.b)
+            end
         end
     end
 end
@@ -242,14 +261,34 @@ local function resetFrameColor(frame, unit)
     frame:SetStatusBarColor(0,1,0)
 end
 
+local validUnits = {
+    player = true,
+    target = true,
+    targettarget = true,
+    focus = true,
+    focustarget = true,
+    pet = true,
+    party1 = true,
+    party2 = true,
+    party3 = true,
+    party4 = true,
+}
+
 local function UpdateHealthColor(frame, unit)
-    --local color = UnitIsPlayer(unit) and RAID_CLASS_COLORS[select(2, UnitClass(unit))] or getUnitColor(unit)
-    if not frame then return end
-    if unit == "player" and BetterBlizzFramesDB.classColorFramesSkipPlayer then return end
-    local color = getUnitColor(unit)
+    if not validUnits[unit] then return end
+    if unit == "player" and skipPlayer then
+        frame:SetStatusBarColor(0, 1, 0)
+        return
+    end
+    local color, isFriendly = getUnitColor(unit)
     if color then
-        frame:SetStatusBarDesaturated(true)
-        frame:SetStatusBarColor(color.r, color.g, color.b)
+        if isFriendly and skipFriendly then
+            frame:SetStatusBarDesaturated(true)
+            frame:SetStatusBarColor(0, 1, 0)
+        else
+            frame:SetStatusBarDesaturated(true)
+            frame:SetStatusBarColor(color.r, color.g, color.b)
+        end
     end
 end
 
@@ -260,6 +299,8 @@ end
 function BBF.UpdateFrames()
     classColorsOn = BetterBlizzFramesDB.classColorFrames
     colorPetAfterOwner = BetterBlizzFramesDB.colorPetAfterOwner
+    skipPlayer = BetterBlizzFramesDB.classColorFramesSkipPlayer
+    skipFriendly = BetterBlizzFramesDB.classColorFramesSkipFriendly
     if classColorsOn then
         BBF.HookHealthbarColors()
         if UnitExists("player") then updateFrameColorToggleVer(PlayerFrameHealthBar, "player") end
