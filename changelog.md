@@ -1,3 +1,8 @@
+# BetterBlizzFrames 1.7.6c
+## All versions
+### Bugfix
+- Fix Dark Mode changing action bar colors regardless if actionbar setting was enabled or not. This change only matters for when other addons were trying to do things with actionbar colors and clashing with the BBF setting that shouldnt have been active.
+
 # BetterBlizzFrames 1.7.6b
 ## All versions
 ### New

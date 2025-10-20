@@ -581,148 +581,151 @@ function BBF.DarkmodeFrames(bypass)
     -- end
 
     -- Actionbars
-    for i = 1, 12 do
-        local buttons = {
-            _G["ActionButton" .. i .. "NormalTexture"],
-            _G["MultiBarBottomLeftButton" .. i .. "NormalTexture"],
-            _G["MultiBarBottomRightButton" .. i .. "NormalTexture"],
-            _G["MultiBarRightButton" .. i .. "NormalTexture"],
-            _G["MultiBarLeftButton" .. i .. "NormalTexture"],
-            _G["MultiBar5Button" .. i .. "NormalTexture"],
-            _G["MultiBar6Button" .. i .. "NormalTexture"],
-            _G["MultiBar7Button" .. i .. "NormalTexture"],
-            _G["PetActionButton" .. i .. "NormalTexture"],
-            _G["StanceButton" .. i .. "NormalTexture"]
-        }
+    if BetterBlizzFramesDB.darkModeActionBars or BBF.actionBarColorEnabled then
+        for i = 1, 12 do
+            local buttons = {
+                _G["ActionButton" .. i .. "NormalTexture"],
+                _G["MultiBarBottomLeftButton" .. i .. "NormalTexture"],
+                _G["MultiBarBottomRightButton" .. i .. "NormalTexture"],
+                _G["MultiBarRightButton" .. i .. "NormalTexture"],
+                _G["MultiBarLeftButton" .. i .. "NormalTexture"],
+                _G["MultiBar5Button" .. i .. "NormalTexture"],
+                _G["MultiBar6Button" .. i .. "NormalTexture"],
+                _G["MultiBar7Button" .. i .. "NormalTexture"],
+                _G["PetActionButton" .. i .. "NormalTexture"],
+                _G["StanceButton" .. i .. "NormalTexture"]
+            }
 
-        for _, button in ipairs(buttons) do
-            applySettings(button, desaturationValue, actionBarColor)
-            BBF.HookVertexColor(button, actionBarColor, actionBarColor, actionBarColor, 1)
-        end
-    end
-
-
-
-    for i = 0, 3 do
-        local buttons = {
-            _G["CharacterBag"..i.."SlotNormalTexture"],
-            _G["MainMenuBarTexture"..i],
-            _G["MainMenuBarTextureExtender"],
-            _G["MainMenuMaxLevelBar"..i],
-            _G["ReputationWatchBar"].StatusBar["XPBarTexture"..i],
-            _G["MainMenuXPBarTexture"..i],
-            _G["SlidingActionBarTexture"..i]
-        }
-        for _, button in ipairs(buttons) do
-            applySettings(button, desaturationValue, actionBarColor)
-            BBF.HookVertexColor(button, actionBarColor, actionBarColor, actionBarColor, 1)
-        end
-    end
-
-    applySettings(MainMenuBarBackpackButtonNormalTexture, desaturationValue, actionBarColor)
-    BBF.HookVertexColor(MainMenuBarBackpackButtonNormalTexture, actionBarColor, actionBarColor, actionBarColor, 1)
-
-
-    -- for _, v in pairs({
-    --     MainMenuBar.BorderArt,
-    --     ActionButton1.RightDivider,
-    --     ActionButton2.RightDivider,
-    --     ActionButton3.RightDivider,
-    --     ActionButton4.RightDivider,
-    --     ActionButton5.RightDivider,
-    --     ActionButton6.RightDivider,
-    --     ActionButton7.RightDivider,
-    --     ActionButton8.RightDivider,
-    --     ActionButton9.RightDivider,
-    --     ActionButton10.RightDivider,
-    --     ActionButton11.RightDivider,
-    -- }) do
-    --     applySettings(v, desaturationValue, actionBarColor)
-    -- end
-
-    for _, v in pairs({
-        MainMenuBarLeftEndCap,
-        MainMenuBarRightEndCap,
-    }) do
-        applySettings(v, desaturationValue, birdColor)
-    end
-
-    local BARTENDER4_NUM_MAX_BUTTONS = 180
-    for i = 1, BARTENDER4_NUM_MAX_BUTTONS do
-        local button = _G["BT4Button" .. i]
-        if button then
-            local normalTexture = button:GetNormalTexture()
-            if normalTexture then
-                applySettings(normalTexture, desaturationValue, actionBarColor)
+            for _, button in ipairs(buttons) do
+                applySettings(button, desaturationValue, actionBarColor)
+                BBF.HookVertexColor(button, actionBarColor, actionBarColor, actionBarColor, 1)
             end
         end
-    end
 
-    if BlizzardArtTex0 then
+
+
         for i = 0, 3 do
-            local texture = _G["BlizzardArtTex"..i]
-            if texture then
-                applySettings(texture, desaturationValue, actionBarColor)
+            local buttons = {
+                _G["CharacterBag"..i.."SlotNormalTexture"],
+                _G["MainMenuBarTexture"..i],
+                _G["MainMenuBarTextureExtender"],
+                _G["MainMenuMaxLevelBar"..i],
+                _G["ReputationWatchBar"].StatusBar["XPBarTexture"..i],
+                _G["MainMenuXPBarTexture"..i],
+                _G["SlidingActionBarTexture"..i]
+            }
+            for _, button in ipairs(buttons) do
+                applySettings(button, desaturationValue, actionBarColor)
+                BBF.HookVertexColor(button, actionBarColor, actionBarColor, actionBarColor, 1)
             end
         end
-    end
 
-    local BARTENDER4_PET_BUTTONS = 10
-    for i = 1, BARTENDER4_PET_BUTTONS do
-        local button = _G["BT4PetButton" .. i]
-        if button then
-            local normalTexture = button:GetNormalTexture()
-            if normalTexture then
-                applySettings(normalTexture, desaturationValue, actionBarColor)
-            end
+        applySettings(MainMenuBarBackpackButtonNormalTexture, desaturationValue, actionBarColor)
+        BBF.HookVertexColor(MainMenuBarBackpackButtonNormalTexture, actionBarColor, actionBarColor, actionBarColor, 1)
+
+
+        -- for _, v in pairs({
+        --     MainMenuBar.BorderArt,
+        --     ActionButton1.RightDivider,
+        --     ActionButton2.RightDivider,
+        --     ActionButton3.RightDivider,
+        --     ActionButton4.RightDivider,
+        --     ActionButton5.RightDivider,
+        --     ActionButton6.RightDivider,
+        --     ActionButton7.RightDivider,
+        --     ActionButton8.RightDivider,
+        --     ActionButton9.RightDivider,
+        --     ActionButton10.RightDivider,
+        --     ActionButton11.RightDivider,
+        -- }) do
+        --     applySettings(v, desaturationValue, actionBarColor)
+        -- end
+
+        for _, v in pairs({
+            MainMenuBarLeftEndCap,
+            MainMenuBarRightEndCap,
+        }) do
+            applySettings(v, desaturationValue, birdColor)
         end
-    end
 
-    if BT4BarBlizzardArt and BT4BarBlizzardArt.nineSliceParent then
-        for _, child in ipairs({BT4BarBlizzardArt.nineSliceParent:GetChildren()}) do
-            applySettings(child, desaturationValue, actionBarColor)
-            local DividerArt = child:GetChildren()
-            applySettings(DividerArt, desaturationValue, actionBarColor)
-        end
-        --for _, child in ipairs({BT4BarBlizzardArt:GetChildren()}) do
-            --applySettings(child, desaturationValue, lighterVertexColor)
-        --end
-    end
-
-    -- Dominos actionbars
-    local NUM_ACTIONBAR_BUTTONS = NUM_ACTIONBAR_BUTTONS
-    local DOMINOS_NUM_MAX_BUTTONS = 14 * NUM_ACTIONBAR_BUTTONS
-    local actionBars = {
-        {name = "DominosActionButton", count = DOMINOS_NUM_MAX_BUTTONS},
-        {name = "MultiBar5ActionButton", count = 12},
-        {name = "MultiBar6ActionButton", count = 12},
-        {name = "MultiBar7ActionButton", count = 12},
-        {name = "MultiBarRightActionButton", count = 12},
-        {name = "MultiBarLeftActionButton", count = 12},
-        {name = "MultiBarBottomRightActionButton", count = 12},
-        {name = "MultiBarBottomLeftActionButton", count = 12},
-        {name = "DominosPetActionButton", count = 12},
-        {name = "DominosStanceButton", count = 12},
-        {name = "StanceButton", count = 6},
-    }
-
-    -- Loop through each bar and apply settings to its buttons
-    for _, bar in ipairs(actionBars) do
-        for i = 1, bar.count do
-            local button = _G[bar.name .. i]
+        local BARTENDER4_NUM_MAX_BUTTONS = 180
+        for i = 1, BARTENDER4_NUM_MAX_BUTTONS do
+            local button = _G["BT4Button" .. i]
             if button then
                 local normalTexture = button:GetNormalTexture()
                 if normalTexture then
-                    applySettings(normalTexture, desaturationValue, actionBarColor, true)
+                    applySettings(normalTexture, desaturationValue, actionBarColor)
                 end
             end
         end
-    end
 
-    for _, v in pairs({BlizzardArtLeftCap, BlizzardArtRightCap}) do
-        if v then
-            applySettings(v, desaturationValue, birdColor)
+        if BlizzardArtTex0 then
+            for i = 0, 3 do
+                local texture = _G["BlizzardArtTex"..i]
+                if texture then
+                    applySettings(texture, desaturationValue, actionBarColor)
+                end
+            end
         end
+
+        local BARTENDER4_PET_BUTTONS = 10
+        for i = 1, BARTENDER4_PET_BUTTONS do
+            local button = _G["BT4PetButton" .. i]
+            if button then
+                local normalTexture = button:GetNormalTexture()
+                if normalTexture then
+                    applySettings(normalTexture, desaturationValue, actionBarColor)
+                end
+            end
+        end
+
+        if BT4BarBlizzardArt and BT4BarBlizzardArt.nineSliceParent then
+            for _, child in ipairs({BT4BarBlizzardArt.nineSliceParent:GetChildren()}) do
+                applySettings(child, desaturationValue, actionBarColor)
+                local DividerArt = child:GetChildren()
+                applySettings(DividerArt, desaturationValue, actionBarColor)
+            end
+            --for _, child in ipairs({BT4BarBlizzardArt:GetChildren()}) do
+                --applySettings(child, desaturationValue, lighterVertexColor)
+            --end
+        end
+
+        -- Dominos actionbars
+        local NUM_ACTIONBAR_BUTTONS = NUM_ACTIONBAR_BUTTONS
+        local DOMINOS_NUM_MAX_BUTTONS = 14 * NUM_ACTIONBAR_BUTTONS
+        local actionBars = {
+            {name = "DominosActionButton", count = DOMINOS_NUM_MAX_BUTTONS},
+            {name = "MultiBar5ActionButton", count = 12},
+            {name = "MultiBar6ActionButton", count = 12},
+            {name = "MultiBar7ActionButton", count = 12},
+            {name = "MultiBarRightActionButton", count = 12},
+            {name = "MultiBarLeftActionButton", count = 12},
+            {name = "MultiBarBottomRightActionButton", count = 12},
+            {name = "MultiBarBottomLeftActionButton", count = 12},
+            {name = "DominosPetActionButton", count = 12},
+            {name = "DominosStanceButton", count = 12},
+            {name = "StanceButton", count = 6},
+        }
+
+        -- Loop through each bar and apply settings to its buttons
+        for _, bar in ipairs(actionBars) do
+            for i = 1, bar.count do
+                local button = _G[bar.name .. i]
+                if button then
+                    local normalTexture = button:GetNormalTexture()
+                    if normalTexture then
+                        applySettings(normalTexture, desaturationValue, actionBarColor, true)
+                    end
+                end
+            end
+        end
+
+        for _, v in pairs({BlizzardArtLeftCap, BlizzardArtRightCap}) do
+            if v then
+                applySettings(v, desaturationValue, birdColor)
+            end
+        end
+        BBF.actionBarColorEnabled = true
     end
 
     -- if not hookedTotemBar and darkModeUi then

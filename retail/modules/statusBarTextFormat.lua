@@ -1,11 +1,11 @@
 
 local function FormatText(value)
-    if value >= 1000000000 then
-        return string.format("%.2f B", value / 1000000000)
-    elseif value >= 1000000 then
-        return string.format("%.2f M", value / 1000000)
-    elseif value >= 100000 then
-        return string.format("%d K", value / 1000)
+    if value >= 1e9 then
+        return string.format("%.2f B", value / 1e9)
+    elseif value >= 1e6 then
+        return string.format("%.1f M", value / 1e6)
+    elseif value >= 1e3 then
+        return string.format("%d K", value / 1e3)
     else
         return tostring(value)
     end
@@ -26,7 +26,7 @@ local function UpdateFormatFunction()
             return string.format(fmtB, value / 1e9)
         elseif value >= 1e6 then
             return string.format(fmtM, value / 1e6)
-        elseif value >= 1e5 then
+        elseif value >= 1e3 then
             return string.format("%d K", value / 1e3)
         else
             return tostring(value)
