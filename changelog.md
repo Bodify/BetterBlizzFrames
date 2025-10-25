@@ -1,3 +1,10 @@
+# BetterBlizzFrames 1.7.6d
+## Retail
+### New
+- Simple Castbar setting for Target, Focus & Party castbars. Removes text background and moves the text up into the castbar.
+### Bugfix
+- Fix Legacy Combo Points for Other Classes not working for DeathKnight due to it checking Runic Power and not Runes because Blizzards API here is unique for DK only.
+
 # BetterBlizzFrames 1.7.6c
 ## All versions
 ### Bugfix

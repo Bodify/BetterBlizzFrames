@@ -2029,8 +2029,25 @@ function BBF.GenericLegacyComboSupport()
     local function UpdateGenericLegacyCombo()
         local powerType = legacyComboPowerTypes[class]
         if not powerType then return end
-        local comboPoints = UnitPower("player", powerType)
-        local maxComboPoints = UnitPowerMax("player", powerType)
+
+        local comboPoints, maxComboPoints
+
+        -- Special handling for Death Knight runes
+        if class == "DEATHKNIGHT" then
+            comboPoints = 0
+            maxComboPoints = 6
+            -- Count available runes
+            for i = 1, maxComboPoints do
+                local start, duration, runeReady = GetRuneCooldown(i)
+                if runeReady or (start == 0 and duration == 0) then
+                    comboPoints = comboPoints + 1
+                end
+            end
+        else
+            comboPoints = UnitPower("player", powerType)
+            maxComboPoints = UnitPowerMax("player", powerType)
+        end
+
         local frame = ComboFrame
         local comboIndex = GetLegacyComboStartIndex()
         if not comboIndex then return end
@@ -2082,6 +2099,16 @@ function BBF.GenericLegacyComboSupport()
     end
 
     hooksecurefunc("ComboFrame_Update", UpdateGenericLegacyCombo)
+
+    -- Special handling for Death Knight rune updates
+    if class == "DEATHKNIGHT" then
+        local runeUpdateFrame = CreateFrame("Frame")
+        runeUpdateFrame:RegisterEvent("RUNE_POWER_UPDATE")
+        runeUpdateFrame:RegisterEvent("RUNE_TYPE_UPDATE")
+        runeUpdateFrame:SetScript("OnEvent", function(self, event, runeIndex)
+            UpdateGenericLegacyCombo()
+        end)
+    end
 end
 
 
@@ -2101,7 +2128,7 @@ function BBF.UpdateLegacyComboPosition()
 end
 
 function BBF.FixLegacyComboPointsLocation()
-    if BetterBlizzFramesDB.legacyCombosTurnedOff then
+    if BetterBlizzFramesDB.legacyCombosTurnedOff and not BetterBlizzFramesDB.enableLegacyComboPoints then
         C_CVar.SetCVar("comboPointLocation", "2")
         return
     end
@@ -3626,6 +3653,12 @@ function BBF.FixStupidBlizzPTRShit()
     TargetFrame.totFrame.Portrait:SetSize(36,36)
     FocusFrame.totFrame.Portrait:SetSize(36,36)
     PlayerFrame.PlayerFrameContainer.PlayerPortraitMask:SetSize(61,60)
+    TargetFrame.TargetFrameContainer.PortraitMask:ClearAllPoints()
+    TargetFrame.TargetFrameContainer.PortraitMask:SetPoint("CENTER", TargetFrame.TargetFrameContainer.Portrait, "CENTER", 0, 0)
+    TargetFrame.TargetFrameContainer.PortraitMask:SetSize(56,56)
+    FocusFrame.TargetFrameContainer.PortraitMask:ClearAllPoints()
+    FocusFrame.TargetFrameContainer.PortraitMask:SetPoint("CENTER", FocusFrame.TargetFrameContainer.Portrait, "CENTER", 0, 0)
+    FocusFrame.TargetFrameContainer.PortraitMask:SetSize(56,56)
 
     for i = 1, 4 do
         local memberFrame = PartyFrame["MemberFrame" .. i]

@@ -5409,7 +5409,7 @@ local function guiCastbars()
 
 
     local buffsOnTopReverseCastbarMovement = CreateCheckbox("buffsOnTopReverseCastbarMovement", "Buffs on Top: Reverse Castbar Movement", contentFrame, nil, BBF.CastbarAdjustCaller)
-    buffsOnTopReverseCastbarMovement:SetPoint("LEFT", contentFrame, "TOPRIGHT", -470, -540)
+    buffsOnTopReverseCastbarMovement:SetPoint("LEFT", contentFrame, "TOPRIGHT", -470, -536)
     CreateTooltipTwo(buffsOnTopReverseCastbarMovement, "Buffs on Top: Reverse Castbar Movement", "Changes the castbar movement to follow the top row of auras on Target/Focus Frame similar to how it works by default without \"Buffs on Top\" enabled except in reverse.\n\nBy default with Buffs on Top enabled your castbar will just sit beneath the target frame and not move.")
 
     local normalCastbarForEmpoweredCasts = CreateCheckbox("normalCastbarForEmpoweredCasts", "Normal Evoker Empowered Castbar", contentFrame, nil, BBF.HookCastbarsForEvoker)
@@ -5443,12 +5443,32 @@ local function guiCastbars()
         StaticPopup_Show("BBF_CONFIRM_RELOAD")
     end)
 
+    local unitframeCastBarNoTextBorder = CreateCheckbox("unitframeCastBarNoTextBorder", "Simple Castbar: Target, Focus & Party", contentFrame, nil, BBF.ChangeCastbarSizes)
+    unitframeCastBarNoTextBorder:SetPoint("TOPLEFT", classicCastbars, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(unitframeCastBarNoTextBorder, "Simple Castbar: Target, Focus & Party", "Hide the text background and move the text up inside the castbar.")
+    unitframeCastBarNoTextBorder:HookScript("OnClick", function()
+        if classicCastbars:GetChecked() then
+            BetterBlizzFrames.classicCastbars = nil
+            classicCastbars:SetChecked(false)
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        end
+        if anchorSubPartyCastbar.classicCastbarsParty:GetChecked() then
+            anchorSubPartyCastbar.classicCastbarsParty:SetChecked(false)
+            BetterBlizzFrames.classicCastbarsParty = nil
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        end
+    end)
+
     classicCastbars:HookScript("OnClick", function(self)
         if not self:GetChecked() then
             StaticPopup_Show("BBF_CONFIRM_RELOAD")
             DisableElement(classicCastbarsModernSpark)
         else
             EnableElement(classicCastbarsModernSpark)
+        end
+        if unitframeCastBarNoTextBorder:GetChecked() then
+            BetterBlizzFrames.unitframeCastBarNoTextBorder = nil
+            unitframeCastBarNoTextBorder:SetChecked(false)
         end
     end)
 

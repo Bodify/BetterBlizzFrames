@@ -1348,7 +1348,7 @@ function BBF.UpdateLegacyComboPosition()
 end
 
 function BBF.FixLegacyComboPointsLocation()
-    if BetterBlizzFramesDB.legacyCombosTurnedOff then
+    if BetterBlizzFramesDB.legacyCombosTurnedOff and not BetterBlizzFramesDB.enableLegacyComboPoints then
         C_CVar.SetCVar("comboPointLocation", "2")
         return
     end

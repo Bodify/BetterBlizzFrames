@@ -370,6 +370,30 @@ function BBF.UpdateCastbars()
                             spellbar.Background:SetTexture("Interface\\RaidFrame\\Raid-Bar-Hp-Fill")
                             spellbar.Background:SetVertexColor(0, 0, 0, 0.6)
                         end
+                    else
+                        spellbar.Text:ClearAllPoints()
+                        if BetterBlizzFramesDB.unitframeCastBarNoTextBorder then
+                            if not spellbar.TextBorderHidden then
+                                spellbar.TextBorderHidden = spellbar.TextBorder:GetParent()
+                            end
+                            spellbar.TextBorder:SetParent(BBF.hiddenFrame)
+                            spellbar.Text:SetPoint("CENTER", spellbar, "CENTER", 0, 0)
+                            if not spellbar.ogText then
+                                local font, size, flags = spellbar.Text:GetFont()
+                                spellbar.ogText = {font, size, flags}
+                                spellbar.Text:SetFont(font, size, "OUTLINE")
+                            end
+                        else
+                            if spellbar.TextBorderHidden then
+                                spellbar.TextBorder:SetParent(spellbar.TextBorderHidden)
+                                spellbar.TextBorderHidden = nil
+                            end
+                            if spellbar.ogText then
+                                spellbar.Text:SetFont(unpack(spellbar.ogText))
+                                spellbar.ogText = nil
+                            end
+                            spellbar.Text:SetPoint("CENTER", spellbar, "BOTTOM", 0, -5.5)
+                        end
                     end
 
                     local partyFrame = nil
@@ -456,6 +480,29 @@ function BBF.UpdatePetCastbar()
         petSpellBar:SetScale(castbarScale)
         petSpellBar:SetWidth(width)
         petSpellBar:SetHeight(height)
+        petSpellBar.Text:ClearAllPoints()
+        if BetterBlizzFramesDB.unitframeCastBarNoTextBorder then
+            if not petSpellBar.TextBorderHidden then
+                petSpellBar.TextBorderHidden = petSpellBar.TextBorder:GetParent()
+            end
+            petSpellBar.TextBorder:SetParent(BBF.hiddenFrame)
+            petSpellBar.Text:SetPoint("CENTER", petSpellBar, "CENTER", 0, 0)
+            if not petSpellBar.ogText then
+                local font, size, flags = petSpellBar.Text:GetFont()
+                petSpellBar.ogText = {font, size, flags}
+                petSpellBar.Text:SetFont(font, size, "OUTLINE")
+            end
+        else
+            if petSpellBar.TextBorderHidden then
+                petSpellBar.TextBorder:SetParent(petSpellBar.TextBorderHidden)
+                petSpellBar.TextBorderHidden = nil
+            end
+            if petSpellBar.ogText then
+                petSpellBar.Text:SetFont(unpack(petSpellBar.ogText))
+                petSpellBar.ogText = nil
+            end
+            petSpellBar.Text:SetPoint("CENTER", petSpellBar, "BOTTOM", 0, -5.5)
+        end
 
         local petFrame = PetFrame
         if petFrame then
@@ -497,6 +544,13 @@ function BBF.CreateCastbars()
                 spellbar.BorderShield:SetPoint("RIGHT", spellbar, "LEFT", -1, -7)
                 spellbar.BorderShield:SetSize(29,33)
                 spellbar.BorderShield:SetScale(BetterBlizzFramesDB.partyCastBarIconScale)
+                if BetterBlizzFramesDB.unitframeCastBarNoTextBorder then
+                    spellbar.Text:ClearAllPoints()
+                    spellbar.Text:SetPoint("CENTER", spellbar, "CENTER", 0, 0)
+                    spellbar.TextBorder:SetParent(BBF.hiddenFrame)
+                    local font, size, flags = spellbar.Text:GetFont()
+                    spellbar.Text:SetFont(font, size, "OUTLINE")
+                end
             else
                 spellbar.TextBorder:SetAlpha(0)
             end
@@ -549,6 +603,16 @@ function BBF.CreateCastbars()
         petSpellBar:SetScale(BetterBlizzFramesDB.petCastBarScale)
         petSpellBar:SetWidth(BetterBlizzFramesDB.petCastBarWidth)
         petSpellBar:SetHeight(BetterBlizzFramesDB.petCastBarHeight)
+        
+        -- Handle unitframeCastBarNoTextBorder setting for pet castbar
+        if BetterBlizzFramesDB.unitframeCastBarNoTextBorder then
+            petSpellBar.Text:ClearAllPoints()
+            petSpellBar.Text:SetPoint("CENTER", petSpellBar, "CENTER", 0, 0)
+            petSpellBar.TextBorder:SetParent(BBF.hiddenFrame)
+            local font, size, flags = petSpellBar.Text:GetFont()
+            petSpellBar.Text:SetFont(font, size, "OUTLINE")
+        end
+        
         Mixin(petSpellBar, SmoothStatusBarMixin)
         petSpellBar:SetMinMaxSmoothedValue(0, 100)
 
@@ -1368,7 +1432,28 @@ function BBF.ChangeCastbarSizes()
         TargetFrameSpellBar.BorderShield:SetPoint("CENTER", TargetFrameSpellBar.Icon, "CENTER", 0, 0)
         TargetFrameSpellBar.BorderShield:SetScale(BetterBlizzFramesDB.targetCastBarIconScale)
         TargetFrameSpellBar.Text:ClearAllPoints()
-        TargetFrameSpellBar.Text:SetPoint("BOTTOM", TargetFrameSpellBar, "BOTTOM", 0, -14)
+        if BetterBlizzFramesDB.unitframeCastBarNoTextBorder then
+            if not TargetFrameSpellBar.TextBorderHidden then
+                TargetFrameSpellBar.TextBorderHidden = TargetFrameSpellBar.TextBorder:GetParent()
+            end
+            TargetFrameSpellBar.TextBorder:SetParent(BBF.hiddenFrame)
+            TargetFrameSpellBar.Text:SetPoint("CENTER", TargetFrameSpellBar, "CENTER", 0, 0)
+            if not TargetFrameSpellBar.ogText then
+                local font, size, flags = TargetFrameSpellBar.Text:GetFont()
+                TargetFrameSpellBar.ogText = {font, size, flags}
+                TargetFrameSpellBar.Text:SetFont(font, size, "OUTLINE")
+            end
+        else
+            if TargetFrameSpellBar.TextBorderHidden then
+                TargetFrameSpellBar.TextBorder:SetParent(TargetFrameSpellBar.TextBorderHidden)
+                TargetFrameSpellBar.TextBorderHidden = nil
+            end
+            if TargetFrameSpellBar.ogText then
+                TargetFrameSpellBar.Text:SetFont(unpack(TargetFrameSpellBar.ogText))
+                TargetFrameSpellBar.ogText = nil
+            end
+            TargetFrameSpellBar.Text:SetPoint("BOTTOM", TargetFrameSpellBar, "BOTTOM", 0, -14)
+        end
     end
     TargetFrameSpellBar.Text:SetWidth(BetterBlizzFramesDB.targetCastBarWidth)
 
@@ -1386,7 +1471,28 @@ function BBF.ChangeCastbarSizes()
         FocusFrameSpellBar.BorderShield:SetPoint("CENTER", FocusFrameSpellBar.Icon, "CENTER", 0, 0)
         FocusFrameSpellBar.BorderShield:SetScale(BetterBlizzFramesDB.focusCastBarIconScale)
         FocusFrameSpellBar.Text:ClearAllPoints()
-        FocusFrameSpellBar.Text:SetPoint("BOTTOM", FocusFrameSpellBar, "BOTTOM", 0, -14)
+        if BetterBlizzFramesDB.unitframeCastBarNoTextBorder then
+            if not FocusFrameSpellBar.TextBorderHidden then
+                FocusFrameSpellBar.TextBorderHidden = FocusFrameSpellBar.TextBorder:GetParent()
+            end
+            FocusFrameSpellBar.TextBorder:SetParent(BBF.hiddenFrame)
+            FocusFrameSpellBar.Text:SetPoint("CENTER", FocusFrameSpellBar, "CENTER", 0, 0)
+            if not FocusFrameSpellBar.ogText then
+                local font, size, flags = FocusFrameSpellBar.Text:GetFont()
+                FocusFrameSpellBar.ogText = {font, size, flags}
+                FocusFrameSpellBar.Text:SetFont(font, size, "OUTLINE")
+            end
+        else
+            if FocusFrameSpellBar.TextBorderHidden then
+                FocusFrameSpellBar.TextBorder:SetParent(FocusFrameSpellBar.TextBorderHidden)
+                FocusFrameSpellBar.TextBorderHidden = nil
+            end
+            if FocusFrameSpellBar.ogText then
+                FocusFrameSpellBar.Text:SetFont(unpack(FocusFrameSpellBar.ogText))
+                FocusFrameSpellBar.ogText = nil
+            end
+            FocusFrameSpellBar.Text:SetPoint("BOTTOM", FocusFrameSpellBar, "BOTTOM", 0, -14)
+        end
     end
     FocusFrameSpellBar.Text:SetWidth(BetterBlizzFramesDB.focusCastBarWidth)
 
