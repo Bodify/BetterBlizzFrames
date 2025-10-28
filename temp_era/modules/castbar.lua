@@ -432,7 +432,7 @@ function BBF.petCastBarTestMode()
         end
     else
         -- Stop the timer when exiting test mode
-        if spellBars["pet"] then
+        if spellBars and spellBars["pet"] then
             if spellBars["pet"].tickTimer then
                 spellBars["pet"].tickTimer:Cancel()
                 spellBars["pet"].tickTimer = nil

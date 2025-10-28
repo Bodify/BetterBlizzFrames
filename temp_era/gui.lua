@@ -1281,6 +1281,47 @@ local function CreateCheckbox(option, label, parent, cvarName, extraFunc)
     return checkBox
 end
 
+local function OpenColorOptions(entryColors, func)
+    local colorData = entryColors or {0, 1, 0, 1}
+    local r, g, b = colorData[1] or 1, colorData[2] or 1, colorData[3] or 1
+    local a = colorData[4] or 1
+
+    local function updateColors(newR, newG, newB, newA)
+        entryColors[1] = newR
+        entryColors[2] = newG
+        entryColors[3] = newB
+        entryColors[4] = newA or 1
+
+        if func then
+            func()
+        end
+    end
+
+    local function swatchFunc()
+        r, g, b = ColorPickerFrame:GetColorRGB()
+        updateColors(r, g, b, a)
+    end
+
+    local function opacityFunc()
+        a = ColorPickerFrame:GetColorAlpha()
+        updateColors(r, g, b, a)
+    end
+
+    local function cancelFunc(previousValues)
+        if previousValues then
+            r, g, b, a = previousValues.r, previousValues.g, previousValues.b, previousValues.a
+            updateColors(r, g, b, a)
+        end
+    end
+
+    ColorPickerFrame.previousValues = { r = r, g = g, b = b, a = a }
+
+    ColorPickerFrame:SetupColorPickerAndShow({
+        r = r, g = g, b = b, opacity = a, hasOpacity = true,
+        swatchFunc = swatchFunc, opacityFunc = opacityFunc, cancelFunc = cancelFunc
+    })
+end
+
 local LSM = LibStub("LibSharedMedia-3.0")
 
 
@@ -2233,7 +2274,9 @@ local function CreateSimpleDropdown(name, parentFrame, labelText, settingKey, op
 
             -- Add the text initializer for the button
             button:AddInitializer(function(button)
-                button.Text:SetText(option)
+                if button.Text then
+                    button.Text:SetText(option)
+                end
             end)
         end
     end
@@ -5047,11 +5090,11 @@ local function guiFrameLook()
     CreateTitle(guiFrameLook)
 
     local bgImg = guiFrameLook:CreateTexture(nil, "BACKGROUND")
-    bgImg:SetAtlas("professions-recipe-background")
+    bgImg:SetColorTexture(0,0,0,0.4)
     bgImg:SetPoint("CENTER", guiFrameLook, "CENTER", -8, 4)
     bgImg:SetSize(680, 610)
-    bgImg:SetAlpha(0.4)
-    bgImg:SetVertexColor(0,0,0)
+    -- bgImg:SetAlpha(0.4)
+    -- bgImg:SetVertexColor(0,0,0)
 
     local mainGuiAnchor = guiFrameLook:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     mainGuiAnchor:SetPoint("TOPLEFT", 15, -15)
@@ -5067,7 +5110,7 @@ local function guiFrameLook()
 
     local howToImport = guiFrameLook:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     howToImport:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\Expressway_Free.ttf", 16)
-    howToImport:SetPoint("CENTER", mainGuiAnchor, "BOTTOMLEFT", 420, -260)
+    howToImport:SetPoint("CENTER", mainGuiAnchor, "BOTTOMLEFT", 420, -290)
     howToImport:SetText("How to import a custom font/texture:")
 
     local howStepOne = guiFrameLook:CreateFontString(nil, "OVERLAY", "GameFontNormal")
@@ -5121,6 +5164,26 @@ local function guiFrameLook()
     local changeUnitFrameFont = CreateCheckbox("changeUnitFrameFont", "Change UnitFrame Font", guiFrameLook)
     changeUnitFrameFont:SetPoint("TOPLEFT", settingsText, "BOTTOMLEFT", -4, pixelsOnFirstBox)
     CreateTooltipTwo(changeUnitFrameFont, "Change UnitFrame Font","Changes the font on Player, Target & Focus etc.")
+
+    local unitFrameFontColor = CreateCheckbox("unitFrameFontColor", "Color", guiFrameLook)
+    unitFrameFontColor:SetPoint("LEFT", changeUnitFrameFont.Text, "RIGHT", 0, 0)
+    CreateTooltipTwo(unitFrameFontColor, "UnitFrame Font Color","Change the font color on UnitFrames.\n\nRight-click to change color.")
+    unitFrameFontColor:HookScript("OnClick", function()
+        BBF.FontColors()
+    end)
+    unitFrameFontColor:SetScript("OnMouseDown", function(self, button)
+        if button == "RightButton" then
+            OpenColorOptions(BetterBlizzFramesDB.unitFrameFontColorRGB,  BBF.FontColors)
+        end
+    end)
+
+    local unitFrameFontColorLvl = CreateCheckbox("unitFrameFontColorLvl", "Lvl", guiFrameLook)
+    unitFrameFontColorLvl:SetPoint("LEFT", unitFrameFontColor.Text, "RIGHT", 0, 0)
+    CreateTooltipTwo(unitFrameFontColorLvl, "Color Level Font", "Also color the level font")
+    unitFrameFontColorLvl:HookScript("OnClick", function()
+        BBF.FontColors()
+    end)
+
 
     local unitFrameFont = CreateFontDropdown(
         "unitFrameFont",
@@ -5177,7 +5240,19 @@ local function guiFrameLook()
     local changeUnitFrameValueFont = CreateCheckbox("changeUnitFrameValueFont", "Change UnitFrame Number Font", guiFrameLook)
     changeUnitFrameValueFont:SetPoint("TOPLEFT", changeUnitFrameFont, "BOTTOMLEFT", 0, -85)
     CreateTooltipTwo(changeUnitFrameValueFont, "Change UnitFrame Number Font","Changes the font on numbers on Player, Target & Focus etc.")
-    
+
+    local unitFrameValueFontColor = CreateCheckbox("unitFrameValueFontColor", "Color", guiFrameLook)
+    unitFrameValueFontColor:SetPoint("LEFT", changeUnitFrameValueFont.Text, "RIGHT", 0, 0)
+    CreateTooltipTwo(unitFrameValueFontColor, "UnitFrame Numbers Font Color","Change the font color on UnitFrames numbers.\n\nRight-click to change color.")
+    unitFrameValueFontColor:HookScript("OnClick", function()
+        BBF.FontColors()
+    end)
+    unitFrameValueFontColor:SetScript("OnMouseDown", function(self, button)
+        if button == "RightButton" then
+            OpenColorOptions(BetterBlizzFramesDB.unitFrameValueFontColorRGB,  BBF.FontColors)
+        end
+    end)
+
     local unitFrameValueFont = CreateFontDropdown(
         "unitFrameValueFont",
         guiFrameLook,
@@ -5188,19 +5263,18 @@ local function guiFrameLook()
         end,
         { anchorFrame = changeUnitFrameValueFont, x = 55, y = 1, label = "Font" }
     )
-    
+
     -- For font outline
     local unitFrameValueFontOutline = CreateSimpleDropdown("FontOutlineDropdown", guiFrameLook, "Outline", "unitFrameValueFontOutline", {
         "THICKOUTLINE", "THINOUTLINE", "NONE"
     }, function(selectedSize)
         BBF.SetCustomFonts()
     end, { anchorFrame = unitFrameValueFont, x = 0, y = -5 }, 155)
-    
-    
+
     local unitFrameValueFontSize = CreateSimpleDropdown("FontSizeDropdown", guiFrameLook, "Size", "unitFrameValueFontSize", fontSizeOptions, function(selectedSize)
         BBF.SetCustomFonts()
     end, { anchorFrame = unitFrameValueFontOutline, x = 0, y = -5 }, 155)
-    
+
     changeUnitFrameValueFont:HookScript("OnClick", function(self)
         BBF.SetCustomFonts()
         if not self:GetChecked() then
@@ -5214,7 +5288,7 @@ local function guiFrameLook()
             unitFrameValueFontSize:Enable()
         end
     end)
-    
+
     if not changeUnitFrameValueFont:GetChecked() then
         unitFrameValueFont:Disable()
         unitFrameValueFontOutline:Disable()
@@ -5228,7 +5302,19 @@ local function guiFrameLook()
     local changePartyFrameFont = CreateCheckbox("changePartyFrameFont", "Change Party Font", guiFrameLook)
     changePartyFrameFont:SetPoint("TOPLEFT", changeUnitFrameValueFont, "BOTTOMLEFT", 0, -85)
     CreateTooltipTwo(changePartyFrameFont, "Change Party Font","Changes the font on PartyFrames")
-    
+
+    local partyFrameFontColor = CreateCheckbox("partyFrameFontColor", "Color", guiFrameLook)
+    partyFrameFontColor:SetPoint("LEFT", changePartyFrameFont.Text, "RIGHT", 0, 0)
+    CreateTooltipTwo(partyFrameFontColor, "Party Frame Font Color","Change the font color on Party Frames.\n\nRight-click to change color.")
+    partyFrameFontColor:HookScript("OnClick", function()
+        BBF.FontColors()
+    end)
+    partyFrameFontColor:SetScript("OnMouseDown", function(self, button)
+        if button == "RightButton" then
+            OpenColorOptions(BetterBlizzFramesDB.partyFrameFontColorRGB,  BBF.FontColors)
+        end
+    end)
+
     local partyFrameFont = CreateFontDropdown(
         "partyFrameFont",
         guiFrameLook,
@@ -5239,15 +5325,15 @@ local function guiFrameLook()
         end,
         { anchorFrame = changePartyFrameFont, x = 55, y = 1, label = "Font" }
     )
-    
+
     -- For font outline
     local partyFrameFontOutline = CreateSimpleDropdown("FontOutlineDropdown", guiFrameLook, "Outline", "partyFrameFontOutline", {
         "THICKOUTLINE", "THINOUTLINE", "NONE"
     }, function(selectedSize)
         BBF.SetCustomFonts()
     end, { anchorFrame = partyFrameFont, x = 0, y = -5 }, 155)
-    
-    
+
+
     local partyFrameFontSize = CreateSimpleDropdown("FontSizeDropdown", guiFrameLook, "Size", "partyFrameFontSize", fontSizeOptions, function(selectedSize)
         BBF.SetCustomFonts()
     end, { anchorFrame = partyFrameFontOutline, x = 0, y = -5 }, 77.5)
@@ -5257,7 +5343,7 @@ local function guiFrameLook()
         BBF.SetCustomFonts()
     end, { anchorFrame = partyFrameFontSize, x = 77.5, y = 25 }, 77.5)
     CreateTooltipTwo(partyFrameStatusFontSize, "Status Text Size")
-    
+
     changePartyFrameFont:HookScript("OnClick", function(self)
         BBF.SetCustomFonts()
         if not self:GetChecked() then
@@ -5273,7 +5359,7 @@ local function guiFrameLook()
             partyFrameStatusFontSize:Enable()
         end
     end)
-    
+
     if not changePartyFrameFont:GetChecked() then
         partyFrameFont:Disable()
         partyFrameFontOutline:Disable()
@@ -5289,6 +5375,22 @@ local function guiFrameLook()
     local changeActionBarFont = CreateCheckbox("changeActionBarFont", "Change ActionBar Font", guiFrameLook)
     changeActionBarFont:SetPoint("TOPLEFT", changePartyFrameFont, "BOTTOMLEFT", 0, -85)
     CreateTooltipTwo(changeActionBarFont, "Change ActionBar Font","Changes the font on Player, Target & Focus etc.")
+
+    local actionBarFontColor = CreateCheckbox("actionBarFontColor", "Color", guiFrameLook)
+    actionBarFontColor:SetPoint("LEFT", changeActionBarFont.Text, "RIGHT", 0, 0)
+    CreateTooltipTwo(actionBarFontColor, "Action Bar Font Color","Change the font color on ActionBars.\n\nRight-click to change color.")
+    actionBarFontColor:HookScript("OnClick", function()
+        BBF.FontColors()
+    end)
+    actionBarFontColor:SetScript("OnMouseDown", function(self, button)
+        if button == "RightButton" then
+            OpenColorOptions(BetterBlizzFramesDB.actionBarFontColorRGB,  BBF.FontColors)
+        end
+    end)
+
+    local actionBarChangeCharge = CreateCheckbox("actionBarChangeCharge", "Charges", guiFrameLook)
+    actionBarChangeCharge:SetPoint("LEFT", actionBarFontColor.Text, "RIGHT", 0, 0)
+    CreateTooltipTwo(actionBarChangeCharge, "Action Bar Charges","Also change font for charges.")
 
     local actionBarFont = CreateFontDropdown(
         "actionBarFont",
@@ -5316,6 +5418,7 @@ local function guiFrameLook()
     end, { anchorFrame = actionBarFontOutline, x = 77.5, y = 25 }, 77.5)
     CreateTooltipTwo(actionBarKeyFontOutline, "Keybinding Text Outline")
 
+
     local actionBarFontSize = CreateSimpleDropdown("FontSizeDropdown", guiFrameLook, "Size", "actionBarFontSize", fontSizeOptions, function(selectedSize)
         BBF.SetCustomFonts()
     end, { anchorFrame = actionBarFontOutline, x = 0, y = -5 }, 77.5)
@@ -5326,7 +5429,10 @@ local function guiFrameLook()
     end, { anchorFrame = actionBarFontSize, x = 77.5, y = 25 }, 77.5)
     CreateTooltipTwo(actionBarKeyFontSize, "Keybinding Text Size")
 
-
+    local actionBarChargeFontSize = CreateSimpleDropdown("FontSizeDropdown", guiFrameLook, "", "actionBarChargeFontSize", fontSizeOptions, function(selectedSize)
+        BBF.SetCustomFonts()
+    end, { anchorFrame = actionBarFontSize, x = 77.5, y = 0 }, 77.5)
+    CreateTooltipTwo(actionBarChargeFontSize, "Charge Text Size")
 
     local function ToggleDropdowns(enable)
         for _, dd in ipairs({
@@ -5338,6 +5444,7 @@ local function guiFrameLook()
         }) do
             dd:SetEnabled(enable)
         end
+        actionBarChargeFontSize:SetEnabled(enable and actionBarChangeCharge:GetChecked())
     end
 
     changeActionBarFont:HookScript("OnClick", function(self)
@@ -5346,6 +5453,11 @@ local function guiFrameLook()
             StaticPopup_Show("BBF_CONFIRM_RELOAD")
         end
         ToggleDropdowns(self:GetChecked())
+    end)
+
+    actionBarChangeCharge:HookScript("OnClick", function(self)
+        BBF.FontColors()
+        actionBarChargeFontSize:SetEnabled(changeActionBarFont:GetChecked() and self:GetChecked())
     end)
 
     ToggleDropdowns(changeActionBarFont:GetChecked())
@@ -5430,7 +5542,6 @@ local function guiFrameLook()
     end)
     unitFrameManabarTexture:SetEnabled(changeUnitFrameManabarTexture:GetChecked())
 
-
     local changeUnitFrameCastbarTexture = CreateCheckbox("changeUnitFrameCastbarTexture", "Change UnitFrame Castbar Texture", guiFrameLook)
     changeUnitFrameCastbarTexture:SetPoint("TOPLEFT", changeUnitFrameManabarTexture, "BOTTOMLEFT", 0, -25)
     CreateTooltipTwo(changeUnitFrameCastbarTexture, "Change UnitFrame Castbar Texture","Changes the castbar texture on Player, Target & Focus etc. This is more cpu heavy than it should be.")
@@ -5472,11 +5583,11 @@ local function guiFrameLook()
         BBF.UpdateCustomTextures()
     end)
     raidFrameHealthbarTexture:SetEnabled(changeRaidFrameHealthbarTexture:GetChecked())
-    
+
     local changeRaidFrameManabarTexture = CreateCheckbox("changeRaidFrameManabarTexture", "Change RaidFrame Manabar Texture", guiFrameLook)
     changeRaidFrameManabarTexture:SetPoint("TOPLEFT", changeRaidFrameHealthbarTexture, "BOTTOMLEFT", 0, -25)
     CreateTooltipTwo(changeRaidFrameManabarTexture, "Change RaidFrame Manabar Texture","Changes the manabar texture on the RaidFrames. This is more cpu heavy than it should be.")
-    
+
     local raidFrameManabarTexture = CreateTextureDropdown(
         "raidFrameManabarTexture",
         guiFrameLook,

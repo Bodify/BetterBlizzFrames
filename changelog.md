@@ -1,3 +1,14 @@
+# BetterBlizzFrames 1.7.7
+## All versions
+- ActionBar charges can now also be changed font for in Font & Textures section
+- Classic versions have had some more settings added to the Font & Textures that were missing. Color etc.
+## Retail
+### New
+- Added Pmake profile (www.twitch.tv/pmakewow)
+- Added my own personal profile (i havent played since march or so)
+- Castbar Texture change now also available for modern (non-classic) castbars in the Font & Texture section.
+
+
 # BetterBlizzFrames 1.7.6d
 ## Retail
 ### New

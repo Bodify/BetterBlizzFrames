@@ -283,6 +283,10 @@ local defaultSettings = {
     castBarInterruptIconShowActiveOnly = false,
     castBarInterruptIconDisplayCD = true,
     interruptIconBorder = true,
+    unitFrameFontColorRGB = {1,1,1,1},
+    partyFrameFontColorRGB = {1,1,1,1},
+    unitFrameValueFontColorRGB = {1,1,1,1},
+    actionBarFontColorRGB = {1,1,1,1},
 
     auraWhitelist = {
         ["example aura :3 (delete me)"] = {name = "Example Aura :3 (delete me)"}
@@ -1624,6 +1628,30 @@ SlashCmdList["BBF"] = function(msg)
     end
 end
 
+local function MoveableSettingsPanel(talents)
+    if C_AddOns.IsAddOnLoaded("BlizzMove") then return end
+    if BetterBlizzFramesDB.dontMoveSettingsPanel then return end
+    if not talents then
+        local frame = SettingsPanel
+        if frame and not frame:GetScript("OnDragStart") then
+            frame:RegisterForDrag("LeftButton")
+            frame:SetScript("OnDragStart", frame.StartMoving)
+            frame:SetScript("OnDragStop", frame.StopMovingOrSizing)
+            frame:SetUserPlaced(false)
+            frame:ClearAllPoints()
+            frame:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
+        end
+    else
+        local talentFrame = PlayerTalentFrame
+        if talentFrame and not talentFrame:GetScript("OnDragStart") then
+            talentFrame:SetMovable(true)
+            talentFrame:RegisterForDrag("LeftButton")
+            talentFrame:SetScript("OnDragStart", talentFrame.StartMoving)
+            talentFrame:SetScript("OnDragStop", talentFrame.StopMovingOrSizing)
+        end
+    end
+end
+
 -- Event registration for PLAYER_LOGIN
 local First = CreateFrame("Frame")
 First:RegisterEvent("ADDON_LOADED")
@@ -1636,6 +1664,11 @@ First:SetScript("OnEvent", function(_, event, addonName)
             FetchAndSaveValuesOnFirstLogin()
             TurnTestModesOff()
             --TurnOnEnabledFeaturesOnLogin()
+
+            C_Timer.After(1, function()
+                BBF.FontColors()
+                MoveableSettingsPanel()
+            end)
 
             if BetterBlizzFramesDB.partyCastbarHideBorder then
                 BetterBlizzFramesDB.partyCastbarShowBorder = false
@@ -1693,6 +1726,8 @@ First:SetScript("OnEvent", function(_, event, addonName)
             end
 
             BBF.InitializeOptions()
+        elseif addonName == "Blizzard_TalentUI" and _G.PlayerTalentFrame then
+            MoveableSettingsPanel(true)
         end
     end
 end)

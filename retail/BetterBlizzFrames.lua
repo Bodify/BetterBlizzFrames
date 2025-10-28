@@ -3017,6 +3017,67 @@ function BBF.HookUnitFrameTextures()
 
         BBF.UpdateClassicCastbarTexture(castbarTexture)
 
+        if db.changeUnitFrameCastbarTexture and not BBF.castbarTexturesHooked then
+            local function ApplyCastbarTexture(statusBar)
+                local originalTexture = statusBar:GetStatusBarTexture()
+                local originalLayer = originalTexture:GetDrawLayer()
+                statusBar:SetStatusBarTexture(castbarTexture)
+                originalTexture:SetDrawLayer(originalLayer)
+
+                local castTexture = statusBar:GetStatusBarTexture()
+                statusBar.MaskTexture = statusBar:CreateMaskTexture()
+                statusBar.MaskTexture:SetTexture("Interface\\AddOns\\sArena_Reloaded\\Textures\\RetailCastMask.tga",
+                    "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
+                statusBar.MaskTexture:SetPoint("TOPLEFT", statusBar, "TOPLEFT", -1, 0)
+                statusBar.MaskTexture:SetPoint("BOTTOMRIGHT", statusBar, "BOTTOMRIGHT", 1, 0)
+                statusBar.MaskTexture:Show()
+                castTexture:AddMaskTexture(statusBar.MaskTexture)
+
+                local bg = statusBar.Background
+                bg:ClearAllPoints()
+                bg:SetPoint("TOPLEFT", bg:GetParent(), "TOPLEFT", -1, 1)
+                bg:SetPoint("BOTTOMRIGHT", bg:GetParent(), "BOTTOMRIGHT", 1, -1)
+
+                statusBar:HookScript("OnEvent", function(self)
+                    self:SetStatusBarTexture(castbarTexture)
+                    if self.barType == "uninterruptable" then
+                        self:SetStatusBarColor(0.7, 0.7, 0.7)
+                    elseif self.barType == "channel" then
+                        self:SetStatusBarColor(0, 1, 0)
+                    elseif self.barType == "interrupted" then
+                        self:SetStatusBarColor(1, 0, 0)
+                    else
+                        self:SetStatusBarColor(1, 0.7, 0)
+                    end
+                end)
+
+                hooksecurefunc(statusBar, "PlayFinishAnim", function(self)
+                    self:SetStatusBarTexture(castbarTexture)
+                end)
+
+                statusBar.isClassicStyle = true
+            end
+
+            if not db.classicCastbarsPlayer then
+                ApplyCastbarTexture(PlayerCastingBarFrame)
+            end
+            if not db.classicCastbars then
+                ApplyCastbarTexture(TargetFrameSpellBar)
+                ApplyCastbarTexture(FocusFrameSpellBar)
+            end
+
+            if db.showPartyCastbar and not db.classicCastbarsParty then
+                for i = 1, 5 do
+                    local partyCastbar = _G["Party"..i.."SpellBar"]
+                    if partyCastbar then
+                        ApplyCastbarTexture(partyCastbar)
+                    end
+                end
+            end
+
+            BBF.castbarTexturesHooked = true
+        end
+
         -- Apply green color on white texture if class color is not enabled
         if not db.classColorFrames then
             local healthbars = {
@@ -3659,6 +3720,16 @@ function BBF.FixStupidBlizzPTRShit()
     FocusFrame.TargetFrameContainer.PortraitMask:ClearAllPoints()
     FocusFrame.TargetFrameContainer.PortraitMask:SetPoint("CENTER", FocusFrame.TargetFrameContainer.Portrait, "CENTER", 0, 0)
     FocusFrame.TargetFrameContainer.PortraitMask:SetSize(56,56)
+
+    local function FixCastbarBackground(bg)
+        bg:ClearAllPoints()
+        bg:SetPoint("TOPLEFT", bg:GetParent(), "TOPLEFT", -1, 1)
+        bg:SetPoint("BOTTOMRIGHT", bg:GetParent(), "BOTTOMRIGHT", 1, -1)
+    end
+
+    FixCastbarBackground(TargetFrameSpellBar.Background)
+    FixCastbarBackground(FocusFrameSpellBar.Background)
+    FixCastbarBackground(PlayerCastingBarFrame.Background)
 
     for i = 1, 4 do
         local memberFrame = PartyFrame["MemberFrame" .. i]

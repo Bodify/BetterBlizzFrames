@@ -584,7 +584,7 @@ function BBF.CreateCastbars()
         BBF.UpdateCastbars()
         castBarsCreated = true
     end
-    if not petCastbarCreated and (BetterBlizzFramesDB.petCastbar or BetterBlizzFramesDB.petCastbarTestmode) then
+    if not petCastbarCreated and (BetterBlizzFramesDB.petCastbar or BetterBlizzFramesDB.petCastBarTestMode) then
         local petSpellBar = CreateFrame("StatusBar", "PetSpellBar", UIParent, "SmallCastingBarFrameTemplate")
         petSpellBar:SetScale(1)
 
@@ -603,7 +603,7 @@ function BBF.CreateCastbars()
         petSpellBar:SetScale(BetterBlizzFramesDB.petCastBarScale)
         petSpellBar:SetWidth(BetterBlizzFramesDB.petCastBarWidth)
         petSpellBar:SetHeight(BetterBlizzFramesDB.petCastBarHeight)
-        
+
         -- Handle unitframeCastBarNoTextBorder setting for pet castbar
         if BetterBlizzFramesDB.unitframeCastBarNoTextBorder then
             petSpellBar.Text:ClearAllPoints()
@@ -612,7 +612,7 @@ function BBF.CreateCastbars()
             local font, size, flags = petSpellBar.Text:GetFont()
             petSpellBar.Text:SetFont(font, size, "OUTLINE")
         end
-        
+
         Mixin(petSpellBar, SmoothStatusBarMixin)
         petSpellBar:SetMinMaxSmoothedValue(0, 100)
 
@@ -740,7 +740,7 @@ function BBF.petCastBarTestMode()
         end
     else
         -- Stop the timer when exiting test mode
-        if spellBars["pet"] then
+        if spellBars and spellBars["pet"] then
             if spellBars["pet"].tickTimer then
                 spellBars["pet"].tickTimer:Cancel()
                 spellBars["pet"].tickTimer = nil

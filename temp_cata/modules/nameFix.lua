@@ -554,7 +554,7 @@ end
 
 
 
-local function SetActionBarFonts(font, size, kbSize, outline, kbOutline)
+local function SetActionBarFonts(font, size, kbSize, outline, kbOutline, chargeSize)
     -- Blizzard action bars
     local blizzButtons = {
         "ActionButton", "MultiBarBottomLeftButton", "MultiBarBottomRightButton",
@@ -576,6 +576,13 @@ local function SetActionBarFonts(font, size, kbSize, outline, kbOutline)
                 local ogFont, ogSize, ogOutline = macroText:GetFont()
                 local finalOutline = outline or (ogOutline ~= "NONE" and ogOutline) or nil
                 macroText:SetFont(font or ogFont, size or ogSize, finalOutline)
+            end
+
+            local chargeText = _G[buttonPrefix .. i .. "Count"]
+            if chargeText and BetterBlizzFramesDB.actionBarChangeCharge then
+                local ogFont, ogSize, ogOutline = chargeText:GetFont()
+                local finalOutline = kbOutline or (ogOutline ~= "NONE" and ogOutline) or nil
+                chargeText:SetFont(font or ogFont, chargeSize or ogSize, finalOutline)
             end
         end
     end
@@ -610,6 +617,13 @@ local function SetActionBarFonts(font, size, kbSize, outline, kbOutline)
                 local ogFont, ogSize, ogOutline = macroText:GetFont()
                 local finalOutline = outline or (ogOutline ~= "NONE" and ogOutline) or nil
                 macroText:SetFont(font or ogFont, size or ogSize, finalOutline)
+            end
+
+            local chargeText = _G[bar.name .. i .. "Count"]
+            if chargeText and BetterBlizzFramesDB.actionBarChangeCharge then
+                local ogFont, ogSize, ogOutline = chargeText:GetFont()
+                local finalOutline = kbOutline or (ogOutline ~= "NONE" and ogOutline) or nil
+                chargeText:SetFont(font or ogFont, chargeSize or ogSize, finalOutline)
             end
         end
     end
@@ -829,8 +843,9 @@ function BBF.SetCustomFonts()
         local kbSize = db.actionBarKeyFontSize or 10
         local outline = db.actionBarFontOutline or "THINOUTLINE"
         local kbOutline = db.actionBarKeyFontOutline or "THINOUTLINE"
+        local chargeSize = db.actionBarChargeFontSize or 10
 
-        SetActionBarFonts(fontPath, fontSize, kbSize, outline, kbOutline)
+        SetActionBarFonts(fontPath, fontSize, kbSize, outline, kbOutline, chargeSize)
     end
 
     if db.changeUnitFrameValueFont then

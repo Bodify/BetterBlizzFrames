@@ -1413,6 +1413,10 @@ local function CreateClassButton(parent, class, name, twitchName, onClickFunc)
     local color = CLASS_COLORS[class] or "|cffffffff"
     local icon = CLASS_ICONS[class] or "groupfinder-icon-role-leader"
 
+    if name == "Bodify" then
+        icon = "gmchat-icon-blizz"
+    end
+
     button:SetText(string.format("|A:%s:16:16|a %s%s|r", icon, color, (name..dontIncludeProfileText)))
     button:SetNormalFontObject("GameFontNormal")
     button:SetHighlightFontObject("GameFontHighlight")
@@ -1433,6 +1437,8 @@ local function CreateClassButton(parent, class, name, twitchName, onClickFunc)
         CreateTooltipTwo(button, string.format("|A:%s:16:16|a %s%s|r", icon, color, name.." Profile"), "A more advanced profile enabling a few more settings and customizing things a bit more.\n\nGreat for Battlegrounds (and Arenas) with Class Icons showing Healers, Tanks and Battleground Objectives.", nil, "ANCHOR_TOP")
     elseif class == "MYTHIC" then
         CreateTooltipTwo(button, string.format("|A:%s:16:16|a %s%s|r", icon, color, name.." Profile"), "A great well rounded profile made by |cffc79c6eJovelo|r that enhances the default Blizzard nameplates.\n\nGreat for all types of content with Mythic+ Season 2 NPC nameplate colors included.", nil, "ANCHOR_TOP")
+    elseif name == "Bodify" then
+        CreateTooltipTwo(button, string.format("|A:%s:16:16|a %s%s|r", icon, color, name.." Profile"), "My personal profile from a while ago. Meant for Arenas only. Possible I'd make some tweaks if I was actively playing still.", nil, "ANCHOR_TOP")
     else
         CreateTooltipTwo(button, string.format("|A:%s:16:16|a %s%s|r", icon, color, name.." Profile"), string.format("Enable all of %s's profile settings.", name), string.format("www.twitch.tv/%s", twitchName), "ANCHOR_TOP")
     end
@@ -4573,12 +4579,17 @@ local function guiGeneralTab()
     local starterButton = CreateClassButton(BetterBlizzFrames, "STARTER", "Starter", nil, function()
         ShowProfileConfirmation("Starter", "STARTER", BBF.StarterProfile, "|cff808080(If you want to completely reset BBF there\nis a button in Advanced Settings)|r\n\n")
     end)
-    starterButton:SetPoint("TOPLEFT", SettingsPanel, "BOTTOMLEFT", 214, 38)
+    starterButton:SetPoint("TOPLEFT", SettingsPanel, "BOTTOMLEFT", 16, 38)
+
+    local bodifyButton = CreateClassButton(BetterBlizzFrames, "MAGE", "Bodify", "bodify", function()
+        ShowProfileConfirmation("Bodify", "MAGE", BBF.BodifyProfile)
+    end)
+    bodifyButton:SetPoint("LEFT", starterButton, "RIGHT", btnGap, 0)
 
     local aeghisButton = CreateClassButton(BetterBlizzFrames, "MAGE", "Aeghis", "aeghis", function()
         ShowProfileConfirmation("Aeghis", "MAGE", BBF.AeghisProfile)
     end)
-    aeghisButton:SetPoint("LEFT", starterButton, "RIGHT", btnGap, 0)
+    aeghisButton:SetPoint("LEFT", bodifyButton, "RIGHT", btnGap, 0)
 
     local kalvishButton = CreateClassButton(BetterBlizzFrames, "ROGUE", "Kalvish", "kalvish", function()
         ShowProfileConfirmation("Kalvish", "ROGUE", BBF.KalvishProfile)
@@ -4600,10 +4611,15 @@ local function guiGeneralTab()
     end)
     nahjButton:SetPoint("LEFT", mesButton, "RIGHT", btnGap, 0)
 
+    local pmakeButton = CreateClassButton(BetterBlizzFrames, "MAGE", "Pmake", "pmakewow", function()
+        ShowProfileConfirmation("Pmake", "MAGE", BBF.PmakeProfile)
+    end)
+    pmakeButton:SetPoint("LEFT", nahjButton, "RIGHT", btnGap, 0)
+
     local snupyButton = CreateClassButton(BetterBlizzFrames, "DRUID", "Snupy", "snupy", function()
         ShowProfileConfirmation("Snupy", "DRUID", BBF.SnupyProfile)
     end)
-    snupyButton:SetPoint("LEFT", nahjButton, "RIGHT", btnGap, 0)
+    snupyButton:SetPoint("LEFT", pmakeButton, "RIGHT", btnGap, 0)
 
 
 
@@ -6311,6 +6327,10 @@ local function guiFrameLook()
         end
     end)
 
+    local actionBarChangeCharge = CreateCheckbox("actionBarChangeCharge", "Charges", guiFrameLook)
+    actionBarChangeCharge:SetPoint("LEFT", actionBarFontColor.Text, "RIGHT", 0, 0)
+    CreateTooltipTwo(actionBarChangeCharge, "Action Bar Charges","Also change font for charges.")
+
     local actionBarFont = CreateFontDropdown(
         "actionBarFont",
         guiFrameLook,
@@ -6347,7 +6367,10 @@ local function guiFrameLook()
     end, { anchorFrame = actionBarFontSize, x = 77.5, y = 25 }, 77.5)
     CreateTooltipTwo(actionBarKeyFontSize, "Keybinding Text Size")
 
-
+    local actionBarChargeFontSize = CreateSimpleDropdown("FontSizeDropdown", guiFrameLook, "", "actionBarChargeFontSize", fontSizeOptions, function(selectedSize)
+        BBF.SetCustomFonts()
+    end, { anchorFrame = actionBarFontSize, x = 77.5, y = 0 }, 77.5)
+    CreateTooltipTwo(actionBarChargeFontSize, "Charge Text Size")
 
     local function ToggleDropdowns(enable)
         for _, dd in ipairs({
@@ -6359,6 +6382,7 @@ local function guiFrameLook()
         }) do
             dd:SetEnabled(enable)
         end
+        actionBarChargeFontSize:SetEnabled(enable and actionBarChangeCharge:GetChecked())
     end
 
     changeActionBarFont:HookScript("OnClick", function(self)
@@ -6367,6 +6391,11 @@ local function guiFrameLook()
             StaticPopup_Show("BBF_CONFIRM_RELOAD")
         end
         ToggleDropdowns(self:GetChecked())
+    end)
+
+    actionBarChangeCharge:HookScript("OnClick", function(self)
+        BBF.FontColors()
+        actionBarChargeFontSize:SetEnabled(changeActionBarFont:GetChecked() and self:GetChecked())
     end)
 
     ToggleDropdowns(changeActionBarFont:GetChecked())
@@ -6504,32 +6533,30 @@ local function guiFrameLook()
             BBF.UpdateCustomTextures()
         end)
         unitFrameNameBgTexture:SetEnabled(changeUnitFrameNameBgTexture:GetChecked())
-
-
-        
-        local changeUnitFrameCastbarTexture = CreateCheckbox("changeUnitFrameCastbarTexture", "Change UnitFrame Castbar Texture", guiFrameLook)
-        changeUnitFrameCastbarTexture:SetPoint("TOPLEFT", changeUnitFrameManabarTexture, "BOTTOMLEFT", 0, -25)
-        CreateTooltipTwo(changeUnitFrameCastbarTexture, "Change UnitFrame Castbar Texture","Changes the castbar texture on Player, Target & Focus etc. This is more cpu heavy than it should be.")
-
-        local unitFrameCastbarTexture = CreateTextureDropdown(
-            "unitFrameCastbarTexture",
-            guiFrameLook,
-            "Select Texture",
-            "unitFrameCastbarTexture",
-            function(arg1)
-                BBF.UpdateCustomTextures()
-            end,
-            { anchorFrame = changeUnitFrameCastbarTexture, x = 5, y = 1, label = "Texture" }
-        )
-        changeUnitFrameCastbarTexture:HookScript("OnClick", function(self)
-            unitFrameCastbarTexture:SetEnabled(self:GetChecked())
-            BBF.UpdateCustomTextures()
-        end)
-        unitFrameCastbarTexture:SetEnabled(changeUnitFrameCastbarTexture:GetChecked())
     end
 
+    local changeUnitFrameCastbarTexture = CreateCheckbox("changeUnitFrameCastbarTexture", "Change UnitFrame Castbar Texture", guiFrameLook)
+    changeUnitFrameCastbarTexture:SetPoint("TOPLEFT", changeUnitFrameManabarTexture, "BOTTOMLEFT", 0, -25)
+    CreateTooltipTwo(changeUnitFrameCastbarTexture, "Change UnitFrame Castbar Texture","Changes the castbar texture on Player, Target & Focus etc. This is more cpu heavy than it should be.")
+
+    local unitFrameCastbarTexture = CreateTextureDropdown(
+        "unitFrameCastbarTexture",
+        guiFrameLook,
+        "Select Texture",
+        "unitFrameCastbarTexture",
+        function(arg1)
+            BBF.UpdateCustomTextures()
+        end,
+        { anchorFrame = changeUnitFrameCastbarTexture, x = 5, y = 1, label = "Texture" }
+    )
+    changeUnitFrameCastbarTexture:HookScript("OnClick", function(self)
+        unitFrameCastbarTexture:SetEnabled(self:GetChecked())
+        BBF.UpdateCustomTextures()
+    end)
+    unitFrameCastbarTexture:SetEnabled(changeUnitFrameCastbarTexture:GetChecked())
+
     local changeRaidFrameHealthbarTexture = CreateCheckbox("changeRaidFrameHealthbarTexture", "Change RaidFrame Healthbar Texture", guiFrameLook)
-    changeRaidFrameHealthbarTexture:SetPoint("TOPLEFT", changeUnitFrameManabarTexture, "BOTTOMLEFT", 0, BetterBlizzFramesDB.classicFrames and -90 or -40)
+    changeRaidFrameHealthbarTexture:SetPoint("TOPLEFT", changeUnitFrameManabarTexture, "BOTTOMLEFT", 0, -90)
     CreateTooltipTwo(changeRaidFrameHealthbarTexture, "Change RaidFrame Healthbar Texture","Changes the healthbar texture on the RaidFrames")
 
     local raidFrameHealthbarTexture = CreateTextureDropdown(
@@ -8994,15 +9021,20 @@ function BBF.CreateIntroMessageWindow()
     end)
     starterButton:SetPoint("TOP", description1, "BOTTOM", 0, -20)
 
+    local bodifyButton = CreateClassButton(BBF.IntroMessageWindow, "MAGE", "Bodify", "bodify", function()
+        ShowProfileConfirmation("Bodify", "MAGE", BBF.BodifyProfile)
+    end)
+    bodifyButton:SetPoint("TOP", starterButton, "BOTTOM", 0, btnGap)
+
     local orText = BBF.IntroMessageWindow:CreateFontString(nil, "OVERLAY", "GameFontNormalMed2")
-    orText:SetPoint("CENTER", starterButton, "BOTTOM", 0, -20)
+    orText:SetPoint("CENTER", bodifyButton, "BOTTOM", 0, -20)
     orText:SetText("OR")
     orText:SetJustifyH("CENTER")
 
     local aeghisButton = CreateClassButton(BBF.IntroMessageWindow, "MAGE", "Aeghis", "aeghis", function()
         ShowProfileConfirmation("Aeghis", "MAGE", BBF.AeghisProfile)
     end)
-    aeghisButton:SetPoint("TOP", starterButton, "BOTTOM", 0, -40)
+    aeghisButton:SetPoint("TOP", bodifyButton, "BOTTOM", 0, -40)
 
     local kalvishButton = CreateClassButton(BBF.IntroMessageWindow, "ROGUE", "Kalvish", "kalvish", function()
         ShowProfileConfirmation("Kalvish", "ROGUE", BBF.KalvishProfile)
@@ -9024,10 +9056,15 @@ function BBF.CreateIntroMessageWindow()
     end)
     nahjButton:SetPoint("TOP", mesButton, "BOTTOM", 0, btnGap)
 
+    local pmakeButton = CreateClassButton(BBF.IntroMessageWindow, "MAGE", "Pmake", "pmakewow", function()
+        ShowProfileConfirmation("Pmake", "MAGE", BBF.PmakeProfile)
+    end)
+    pmakeButton:SetPoint("TOP", nahjButton, "BOTTOM", 0, btnGap)
+
     local snupyButton = CreateClassButton(BBF.IntroMessageWindow, "DRUID", "Snupy", "snupy", function()
         ShowProfileConfirmation("Snupy", "DRUID", BBF.SnupyProfile)
     end)
-    snupyButton:SetPoint("TOP", nahjButton, "BOTTOM", 0, btnGap)
+    snupyButton:SetPoint("TOP", pmakeButton, "BOTTOM", 0, btnGap)
 
     local orText2 = BBF.IntroMessageWindow:CreateFontString(nil, "OVERLAY", "GameFontNormalMed2")
     orText2:SetPoint("CENTER", snupyButton, "BOTTOM", 0, -20)

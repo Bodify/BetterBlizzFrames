@@ -5654,6 +5654,10 @@ local function guiFrameLook()
         end
     end)
 
+    local actionBarChangeCharge = CreateCheckbox("actionBarChangeCharge", "Charges", guiFrameLook)
+    actionBarChangeCharge:SetPoint("LEFT", actionBarFontColor.Text, "RIGHT", 0, 0)
+    CreateTooltipTwo(actionBarChangeCharge, "Action Bar Charges","Also change font for charges.")
+
     local actionBarFont = CreateFontDropdown(
         "actionBarFont",
         guiFrameLook,
@@ -5691,7 +5695,10 @@ local function guiFrameLook()
     end, { anchorFrame = actionBarFontSize, x = 77.5, y = 25 }, 77.5)
     CreateTooltipTwo(actionBarKeyFontSize, "Keybinding Text Size")
 
-
+    local actionBarChargeFontSize = CreateSimpleDropdown("FontSizeDropdown", guiFrameLook, "", "actionBarChargeFontSize", fontSizeOptions, function(selectedSize)
+        BBF.SetCustomFonts()
+    end, { anchorFrame = actionBarFontSize, x = 77.5, y = 0 }, 77.5)
+    CreateTooltipTwo(actionBarChargeFontSize, "Charge Text Size")
 
     local function ToggleDropdowns(enable)
         for _, dd in ipairs({
@@ -5703,6 +5710,7 @@ local function guiFrameLook()
         }) do
             dd:SetEnabled(enable)
         end
+        actionBarChargeFontSize:SetEnabled(enable and actionBarChangeCharge:GetChecked())
     end
 
     changeActionBarFont:HookScript("OnClick", function(self)
@@ -5711,6 +5719,11 @@ local function guiFrameLook()
             StaticPopup_Show("BBF_CONFIRM_RELOAD")
         end
         ToggleDropdowns(self:GetChecked())
+    end)
+
+    actionBarChangeCharge:HookScript("OnClick", function(self)
+        BBF.FontColors()
+        actionBarChargeFontSize:SetEnabled(changeActionBarFont:GetChecked() and self:GetChecked())
     end)
 
     ToggleDropdowns(changeActionBarFont:GetChecked())
