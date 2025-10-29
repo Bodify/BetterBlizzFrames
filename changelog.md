@@ -1,3 +1,11 @@
+# BetterBlizzFrames 1.7.7b
+## All versions
+### Tweak
+- Fix DarkMode: Castbars not applying to Party & Pet Castbars.
+## Retail
+### Bugfix
+- Fix castbar texture change from Font & Texture section not working on Party & Pet castbars for modern castbars.
+
 # BetterBlizzFrames 1.7.7
 ## All versions
 - ActionBar charges can now also be changed font for in Font & Textures section

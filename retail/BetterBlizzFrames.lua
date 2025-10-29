@@ -3067,12 +3067,23 @@ function BBF.HookUnitFrameTextures()
             end
 
             if db.showPartyCastbar and not db.classicCastbarsParty then
-                for i = 1, 5 do
-                    local partyCastbar = _G["Party"..i.."SpellBar"]
-                    if partyCastbar then
-                        ApplyCastbarTexture(partyCastbar)
+                C_Timer.After(1, function()
+                    for i = 1, 5 do
+                        local partyCastbar = _G["Party"..i.."SpellBar"]
+                        if partyCastbar then
+                            ApplyCastbarTexture(partyCastbar)
+                        end
                     end
-                end
+                end)
+            end
+
+            if db.petCastbar then
+                C_Timer.After(1, function()
+                    local petCastBar = _G["PetSpellBar"]
+                    if petCastBar then
+                        ApplyCastbarTexture(petCastBar)
+                    end
+                end)
             end
 
             BBF.castbarTexturesHooked = true

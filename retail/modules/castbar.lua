@@ -582,6 +582,7 @@ function BBF.CreateCastbars()
             spellBars[i] = spellbar
         end
         BBF.UpdateCastbars()
+        BBF.DarkModeCastbars()
         castBarsCreated = true
     end
     if not petCastbarCreated and (BetterBlizzFramesDB.petCastbar or BetterBlizzFramesDB.petCastBarTestMode) then
@@ -637,6 +638,7 @@ function BBF.CreateCastbars()
         spellBars["pet"] = petSpellBar
         petCastbarCreated = true
         BBF.UpdatePetCastbar()
+        BBF.DarkModeCastbars()
     end
 end
 

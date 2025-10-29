@@ -380,31 +380,7 @@ function BBF.DarkmodeFrames(bypass)
     -- end
 
     --castbars
-    if BetterBlizzFramesDB.darkModeCastbars then
-        applySettings(TargetFrame.spellbar.Border, desaturationValue, castbarBorder)
-        --applySettings(TargetFrame.spellbar.BorderShield, desaturationValue, vertexColor)
-        applySettings(TargetFrame.spellbar.Background, desaturationValue, lighterVertexColor)
-
-        --applySettings(FocusFrame.spellbar.Border, desaturationValue, castbarBorder)
-        --applySettings(FocusFrame.spellbar.BorderShield, desaturationValue, vertexColor)
-        --applySettings(FocusFrame.spellbar.Background, desaturationValue, lighterVertexColor)
-
-        applySettings(CastingBarFrame.Border, desaturationValue, castbarBorder)
-        --applySettings(CastingBarFrame.BorderShield, desaturationValue, vertexColor)
-        applySettings(CastingBarFrame.Background, desaturationValue, lighterVertexColor)
-    else
-        applySettings(TargetFrame.spellbar.Border, false, 1)
-        --applySettings(TargetFrame.spellbar.BorderShield, desaturationValue, vertexColor)
-        applySettings(TargetFrame.spellbar.Background, false, 1)
-
-        --applySettings(FocusFrame.spellbar.Border, false, 1)
-        --applySettings(FocusFrame.spellbar.BorderShield, desaturationValue, vertexColor)
-        --applySettings(FocusFrame.spellbar.Background, false, 1)
-
-        applySettings(CastingBarFrame.Border, false, 1)
-        --applySettings(CastingBarFrame.BorderShield, desaturationValue, vertexColor)
-        applySettings(CastingBarFrame.Background, false, 1)
-    end
+    BBF.DarkModeCastbars()
 
 
 
@@ -834,5 +810,74 @@ function BBF.CheckForAuraBorders()
                 end
             end
         end
+    end
+end
+
+function BBF.DarkModeCastbars()
+    if BetterBlizzFramesDB.darkModeCastbars then
+        local desaturationValue = BetterBlizzFramesDB.darkModeUi and true or false
+        local vertexColor = BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeColor or 1
+        local castbarBorder = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.1) or 1
+        local lighterVertexColor = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.3) or 1
+        BBF.darkModeCastbars = true
+
+        applySettings(TargetFrame.spellbar.Border, desaturationValue, castbarBorder)
+        --applySettings(TargetFrame.spellbar.BorderShield, desaturationValue, vertexColor)
+        applySettings(TargetFrame.spellbar.Background, desaturationValue, lighterVertexColor)
+
+        --applySettings(FocusFrame.spellbar.Border, desaturationValue, castbarBorder)
+        --applySettings(FocusFrame.spellbar.BorderShield, desaturationValue, vertexColor)
+        --applySettings(FocusFrame.spellbar.Background, desaturationValue, lighterVertexColor)
+
+        applySettings(CastingBarFrame.Border, desaturationValue, castbarBorder)
+        --applySettings(CastingBarFrame.BorderShield, desaturationValue, vertexColor)
+        applySettings(CastingBarFrame.Background, desaturationValue, lighterVertexColor)
+
+        if BetterBlizzFramesDB.showPartyCastbar then
+            for i = 1, 5 do
+                local partyCastbar = _G["Party"..i.."SpellBar"]
+                if partyCastbar then
+                    applySettings(partyCastbar.Border, desaturationValue, castbarBorder)
+                    --applySettings(partyCastbar.BorderShield, desaturationValue, vertexColor)
+                    applySettings(partyCastbar.Background, desaturationValue, lighterVertexColor)
+                end
+            end
+        end
+        local petCastbar = _G["PetSpellBar"]
+        if petCastbar then
+            applySettings(petCastbar.Border, desaturationValue, castbarBorder)
+            --applySettings(petCastbar.BorderShield, desaturationValue, vertexColor)
+            applySettings(petCastbar.Background, desaturationValue, lighterVertexColor)
+        end
+    elseif BBF.darkModeCastbars then
+        applySettings(TargetFrame.spellbar.Border, false, 1)
+        --applySettings(TargetFrame.spellbar.BorderShield, desaturationValue, vertexColor)
+        applySettings(TargetFrame.spellbar.Background, false, 1)
+
+        --applySettings(FocusFrame.spellbar.Border, false, 1)
+        --applySettings(FocusFrame.spellbar.BorderShield, desaturationValue, vertexColor)
+        --applySettings(FocusFrame.spellbar.Background, false, 1)
+
+        applySettings(CastingBarFrame.Border, false, 1)
+        --applySettings(CastingBarFrame.BorderShield, desaturationValue, vertexColor)
+        applySettings(CastingBarFrame.Background, false, 1)
+
+        if BetterBlizzFramesDB.showPartyCastbar then
+            for i = 1, 5 do
+                local partyCastbar = _G["Party"..i.."SpellBar"]
+                if partyCastbar then
+                    applySettings(partyCastbar.Border, false, 1)
+                    --applySettings(partyCastbar.BorderShield, desaturationValue, vertexColor)
+                    applySettings(partyCastbar.Background, false, 1)
+                end
+            end
+        end
+        local petCastbar = _G["PetSpellBar"]
+        if petCastbar then
+            applySettings(petCastbar.Border, false, 1)
+            --applySettings(petCastbar.BorderShield, desaturationValue, vertexColor)
+            applySettings(petCastbar.Background, false, 1)
+        end
+        BBF.darkModeCastbars = nil
     end
 end
