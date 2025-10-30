@@ -3026,7 +3026,7 @@ function BBF.HookUnitFrameTextures()
 
                 local castTexture = statusBar:GetStatusBarTexture()
                 statusBar.MaskTexture = statusBar:CreateMaskTexture()
-                statusBar.MaskTexture:SetTexture("Interface\\AddOns\\sArena_Reloaded\\Textures\\RetailCastMask.tga",
+                statusBar.MaskTexture:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\RetailCastMask.tga",
                     "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
                 statusBar.MaskTexture:SetPoint("TOPLEFT", statusBar, "TOPLEFT", -1, 0)
                 statusBar.MaskTexture:SetPoint("BOTTOMRIGHT", statusBar, "BOTTOMRIGHT", 1, 0)

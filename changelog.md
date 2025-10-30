@@ -1,3 +1,10 @@
+# BetterBlizzFrames 1.7.7c
+## Retail
+### Note
+- Midnight support is moving along well. Aura filtering is gone as expected. Will launch an early version that works on Alpha probably in a weeks time. Any help testing that and reporting issues will help a ton.
+### Bugfix
+- Fix Castbar Texture Change for modern castbars hiding the entire new texture due to the mask texture accidentally pathing towards my other addon sArena Reloaded after forgetting to change path in the copypaste towards BetterBlizzFrames.
+
 # BetterBlizzFrames 1.7.7b
 ## All versions
 ### Tweak
