@@ -4,6 +4,12 @@ BetterBlizzFramesDB = BetterBlizzFramesDB or {}
 BBF = BBF or {}
 BBA = BBA or {}
 
+local gameVersion = select(1, GetBuildInfo())
+BBF.isMidnight = gameVersion:match("^12")
+BBF.isRetail = gameVersion:match("^11")
+BBF.isMoP = gameVersion:match("^5%.")
+BBF.isEra = gameVersion:match("^1%.")
+
 local function CreateOverlayFrame(frame)
     frame.bbfOverlayFrame = CreateFrame("Frame", nil, frame)
     frame.bbfOverlayFrame:SetFrameStrata("DIALOG")

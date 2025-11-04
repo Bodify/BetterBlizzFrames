@@ -190,8 +190,11 @@ local function deepMergeTables(destination, source)
     end
 end
 
-
-
+local function UpdateColorSquare(icon, r, g, b, a)
+    if r and g and b then
+        icon:SetColorTexture(r, g, b, a)
+    end
+end
 
 local function OpenColorOptions(entryColors, func)
     local colorData = entryColors or {0, 1, 0, 1}
@@ -487,10 +490,93 @@ local function CreateSimpleDropdown(name, parentFrame, labelText, settingKey, op
     return dropdown, container
 end
 
+local function CreateColorBox(parent, colorVar, labelText)
+    local function OpenColorPicker(colorType, icon)
+        -- Initialize color with default RGBA if not present
+        BetterBlizzFramesDB[colorType] = BetterBlizzFramesDB[colorType] or {1, 1, 1, 1}
+        local r, g, b, a = unpack(BetterBlizzFramesDB[colorType])
+        if not a then a = 1 end
 
+        local function updateColors()
+            BetterBlizzFramesDB[colorType] = {r, g, b, a}
+            if icon then
+                UpdateColorSquare(icon, r, g, b, a)
+                BBF.CastbarRecolorWidgets() --temp
+            end
+            ColorPickerFrame.Content.ColorSwatchCurrent:SetAlpha(a)
+        end
 
+        local function swatchFunc()
+            r, g, b = ColorPickerFrame:GetColorRGB()
+            a = ColorPickerFrame:GetColorAlpha()
+            updateColors()
+        end
 
+        local function opacityFunc()
+            a = ColorPickerFrame:GetColorAlpha()
+            updateColors()
+        end
 
+        local function cancelFunc(previousValues)
+            if previousValues then
+                r, g, b, a = previousValues.r, previousValues.g, previousValues.b, previousValues.a
+                updateColors()
+            end
+        end
+
+        -- Setup and show the color picker
+        ColorPickerFrame.previousValues = {r, g, b, a}
+        ColorPickerFrame:SetupColorPickerAndShow({
+            r = r, g = g, b = b, opacity = a,
+            hasOpacity = true,
+            swatchFunc = swatchFunc,
+            opacityFunc = opacityFunc,
+            cancelFunc = cancelFunc,
+            previousValues = {r, g, b, a},
+        })
+    end
+
+    local frame = CreateFrame("Frame", nil, parent)
+    frame:SetSize(55, 20)
+
+    -- Border Frame (slightly larger to act as a border)
+    local borderFrame = CreateFrame("Frame", nil, frame)
+    borderFrame:SetSize(15, 15)
+    borderFrame:SetPoint("LEFT", frame, "LEFT", 4, 0)
+
+    local border = borderFrame:CreateTexture(nil, "OVERLAY", nil, 5)
+    border:SetAtlas("talents-node-square-gray")
+    border:SetAllPoints()
+
+    -- Create the color texture within the border frame
+    local colorTexture = borderFrame:CreateTexture(nil, "OVERLAY")
+    colorTexture:SetSize(12, 12)
+    colorTexture:SetPoint("CENTER", borderFrame, "CENTER", 0, 0)
+    colorTexture:SetColorTexture(unpack(BetterBlizzFramesDB[colorVar] or {1, 1, 1}))
+
+    -- Label text for the color box
+    local text = frame:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    text:SetText(labelText)
+    text:SetPoint("LEFT", borderFrame, "RIGHT", 3, 0)
+    frame.text = text
+
+    -- Make the frame clickable and open a color picker on click
+    frame:SetScript("OnMouseDown", function()
+        if frame:GetAlpha() == 1 then
+            OpenColorPicker(colorVar, colorTexture)
+        end
+    end)
+
+    local grandparent = parent:GetParent()
+
+    if parent:GetObjectType() == "CheckButton" and (parent:GetChecked() == false or (grandparent:GetObjectType() == "CheckButton" and grandparent:GetChecked() == false)) then
+        frame:SetAlpha(0.5)
+    else
+        frame:SetAlpha(1)
+    end
+
+    return frame
+end
 
 
 
@@ -5384,7 +5470,7 @@ local function guiCastbars()
 
 
     local castBarRecolorInterrupt = CreateCheckbox("castBarRecolorInterrupt", "Interrupt CD Color", contentFrame, nil, BBF.CastbarRecolorWidgets)
-    castBarRecolorInterrupt:SetPoint("LEFT", contentFrame, "TOPRIGHT", -428, -460)
+    castBarRecolorInterrupt:SetPoint("LEFT", contentFrame, "TOPRIGHT", -455, -449)
     CreateTooltipTwo(castBarRecolorInterrupt, "Interrupt CD Color", "Checks if you have interrupt ready and colors Target & Focus Castbar thereafter. By default Red when you don't have interrupt ready and purple when you will get interrupt back during the cast.")
 
     local castBarRecolorInterruptArenaFrames = CreateCheckbox("castBarRecolorInterruptArenaFrames", "Arena", contentFrame, nil, BBF.CastbarRecolorWidgets)
@@ -5425,7 +5511,7 @@ local function guiCastbars()
 
 
     local buffsOnTopReverseCastbarMovement = CreateCheckbox("buffsOnTopReverseCastbarMovement", "Buffs on Top: Reverse Castbar Movement", contentFrame, nil, BBF.CastbarAdjustCaller)
-    buffsOnTopReverseCastbarMovement:SetPoint("LEFT", contentFrame, "TOPRIGHT", -470, -536)
+    buffsOnTopReverseCastbarMovement:SetPoint("LEFT", contentFrame, "TOPRIGHT", -470, -517)
     CreateTooltipTwo(buffsOnTopReverseCastbarMovement, "Buffs on Top: Reverse Castbar Movement", "Changes the castbar movement to follow the top row of auras on Target/Focus Frame similar to how it works by default without \"Buffs on Top\" enabled except in reverse.\n\nBy default with Buffs on Top enabled your castbar will just sit beneath the target frame and not move.")
 
     local normalCastbarForEmpoweredCasts = CreateCheckbox("normalCastbarForEmpoweredCasts", "Normal Evoker Empowered Castbar", contentFrame, nil, BBF.HookCastbarsForEvoker)
@@ -5491,6 +5577,28 @@ local function guiCastbars()
     if not BetterBlizzFramesDB.classicCastbars then
         DisableElement(classicCastbarsModernSpark)
     end
+
+    local recolorCastbars = CreateCheckbox("recolorCastbars", "Recolor Castbars:", contentFrame)
+    recolorCastbars:SetPoint("TOPLEFT", unitframeCastBarNoTextBorder, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(recolorCastbars, "Recolor Castbars","Changes the castbar color on Player, Target & Focus etc.")
+
+    local castbarCastColor = CreateColorBox(recolorCastbars, "castbarCastColor", "Cast")
+    castbarCastColor:SetPoint("LEFT", recolorCastbars.text, "RIGHT", 0, 0)
+
+    local castbarChannelColor = CreateColorBox(recolorCastbars, "castbarChannelColor", "Channel")
+    castbarChannelColor:SetPoint("LEFT", castbarCastColor.text, "RIGHT", 0, 0)
+
+    local castbarUninterruptableColor = CreateColorBox(recolorCastbars, "castbarUninterruptableColor", "Uninterruptable")
+    castbarUninterruptableColor:SetPoint("LEFT", castbarChannelColor.text, "RIGHT", 0, 0)
+
+    recolorCastbars:HookScript("OnClick", function(self)
+        local enable = self:GetChecked() and 1 or 0.5
+        castbarCastColor:SetAlpha(enable)
+        castbarChannelColor:SetAlpha(enable)
+        castbarUninterruptableColor:SetAlpha(enable)
+        BBF.CastbarRecolorWidgets()
+        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+    end)
 end
 
 local function guiPositionAndScale()
@@ -6509,6 +6617,9 @@ local function guiFrameLook()
     changeUnitFrameManabarTexture:HookScript("OnClick", function(self)
         unitFrameManabarTexture:SetEnabled(self:GetChecked())
         BBF.UpdateCustomTextures()
+        if not self:GetChecked() then
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        end
     end)
     unitFrameManabarTexture:SetEnabled(changeUnitFrameManabarTexture:GetChecked())
 
@@ -6531,6 +6642,9 @@ local function guiFrameLook()
         changeUnitFrameNameBgTexture:HookScript("OnClick", function(self)
             unitFrameNameBgTexture:SetEnabled(self:GetChecked())
             BBF.UpdateCustomTextures()
+            if not self:GetChecked() then
+                StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            end
         end)
         unitFrameNameBgTexture:SetEnabled(changeUnitFrameNameBgTexture:GetChecked())
     end
@@ -6552,6 +6666,9 @@ local function guiFrameLook()
     changeUnitFrameCastbarTexture:HookScript("OnClick", function(self)
         unitFrameCastbarTexture:SetEnabled(self:GetChecked())
         BBF.UpdateCustomTextures()
+        if not self:GetChecked() then
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        end
     end)
     unitFrameCastbarTexture:SetEnabled(changeUnitFrameCastbarTexture:GetChecked())
 
@@ -6573,6 +6690,9 @@ local function guiFrameLook()
     changeRaidFrameHealthbarTexture:HookScript("OnClick", function(self)
         raidFrameHealthbarTexture:SetEnabled(self:GetChecked())
         BBF.UpdateCustomTextures()
+        if not self:GetChecked() then
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        end
     end)
     raidFrameHealthbarTexture:SetEnabled(changeRaidFrameHealthbarTexture:GetChecked())
 

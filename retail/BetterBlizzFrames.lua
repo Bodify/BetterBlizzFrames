@@ -223,6 +223,9 @@ local defaultSettings = {
     purgeTextureColorRGB = {0, 0.92, 1, 0.85},
     hiddenIconDirection = "BOTTOM",
     increaseAuraStrata = true,
+    castbarCastColor  = {1, 0.7, 0},
+    castbarChannelColor = {0, 1, 0},
+    castbarUninterruptableColor = {0.7, 0.7, 0.7},
 
     frameAurasXPos = 0,
     frameAurasYPos = 0,
@@ -3038,18 +3041,24 @@ function BBF.HookUnitFrameTextures()
                 bg:SetPoint("TOPLEFT", bg:GetParent(), "TOPLEFT", -1, 1)
                 bg:SetPoint("BOTTOMRIGHT", bg:GetParent(), "BOTTOMRIGHT", 1, -1)
 
-                statusBar:HookScript("OnEvent", function(self)
-                    self:SetStatusBarTexture(castbarTexture)
-                    if self.barType == "uninterruptable" then
-                        self:SetStatusBarColor(0.7, 0.7, 0.7)
-                    elseif self.barType == "channel" then
-                        self:SetStatusBarColor(0, 1, 0)
-                    elseif self.barType == "interrupted" then
-                        self:SetStatusBarColor(1, 0, 0)
-                    else
-                        self:SetStatusBarColor(1, 0.7, 0)
-                    end
-                end)
+                if not BBF.RecolorCastbarHooked then
+                    statusBar:HookScript("OnEvent", function(self)
+                        self:SetStatusBarTexture(castbarTexture)
+                        if self.barType == "uninterruptable" then
+                            self:SetStatusBarColor(0.7, 0.7, 0.7)
+                        elseif self.barType == "channel" then
+                            self:SetStatusBarColor(0, 1, 0)
+                        elseif self.barType == "interrupted" then
+                            self:SetStatusBarColor(1, 0, 0)
+                        else
+                            self:SetStatusBarColor(1, 0.7, 0)
+                        end
+                    end)
+                else
+                    statusBar:HookScript("OnEvent", function(self)
+                        self:SetStatusBarTexture(castbarTexture)
+                    end)
+                end
 
                 hooksecurefunc(statusBar, "PlayFinishAnim", function(self)
                     self:SetStatusBarTexture(castbarTexture)
