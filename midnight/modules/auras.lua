@@ -1,11 +1,4 @@
-if BBF.isMidnight then return end
-local function sum(t)
-    local sum = 0
-    for k,v in pairs(t) do
-        sum = sum + v
-    end
-    return sum
-end
+if not BBF.isMidnight then return end
 
 local TargetFrame = TargetFrame
 local TargetFrameSpellBar = TargetFrameSpellBar
@@ -21,10 +14,7 @@ local targetCastbarsHooked
 
 local ipairs = ipairs
 local math_ceil = math.ceil
-local table_insert = table.insert
-local table_sort = table.sort
 local math_max = math.max
-local print = print
 
 local Masque
 local MasquePlayerBuffs
@@ -293,10 +283,6 @@ local targetCastBarScale
 local focusCastBarScale
 local purgeableBuffSorting
 local purgeableBuffSortingFirst
-local targetEnlargeAuraEnemy
-local targetEnlargeAuraFriendly
-local focusEnlargeAuraEnemy
-local focusEnlargeAuraFriendly
 local increaseAuraStrata
 local sameSizeAuras
 local auraStackSize
@@ -305,21 +291,28 @@ local addCooldownFramePlayerBuffs
 local hideDefaultPlayerAuraDuration
 local hideDefaultPlayerAuraCdText
 local clickthroughAuras
-local importantDispel
-local targetAuraGlows
-local focusAuraGlows
 local opBarriersOn
 local db2
+local cachedSmallAuraSize = 0
+local cachedInitialOffsetX = 0
+local cachedInitialOffsetY = 0
+local cachedAdjustmentForBuffsOnTop = 0
+local cachedTargetStaticCastBarYOffset = 0
+local cachedFocusStaticCastBarYOffset = 0
+local cachedTargetCastBarXOffset = 0
+local cachedFocusCastBarXOffset = 0
+local cachedTargetCastBarScaleAdjustment = 0
+local cachedFocusCastBarScaleAdjustment = 0
+local cachedDynamicTargetCastBarYPos = 0
+
+local hideTargetAuras
+local hideFocusAuras
 
 local function UpdateMore()
     onlyPandemicMine = BetterBlizzFramesDB.onlyPandemicAuraMine
     purgeableBuffSorting = BetterBlizzFramesDB.purgeableBuffSorting
     purgeableBuffSortingFirst = BetterBlizzFramesDB.purgeableBuffSortingFirst
     increaseAuraStrata = BetterBlizzFramesDB.increaseAuraStrata
-    targetEnlargeAuraEnemy = BetterBlizzFramesDB.targetEnlargeAuraEnemy
-    targetEnlargeAuraFriendly = BetterBlizzFramesDB.targetEnlargeAuraFriendly
-    focusEnlargeAuraEnemy = BetterBlizzFramesDB.focusEnlargeAuraEnemy
-    focusEnlargeAuraFriendly = BetterBlizzFramesDB.focusEnlargeAuraFriendly
     sameSizeAuras = BetterBlizzFramesDB.sameSizeAuras
     auraStackSize = BetterBlizzFramesDB.auraStackSize
     addCooldownFramePlayerBuffs = BetterBlizzFramesDB.addCooldownFramePlayerBuffs
@@ -329,10 +322,27 @@ local function UpdateMore()
     clickthroughAuras = BetterBlizzFramesDB.clickthroughAuras
     TargetFrame.staticCastbar = (BetterBlizzFramesDB.targetStaticCastbar or BetterBlizzFramesDB.targetDetachCastbar) and true or false
     FocusFrame.staticCastbar = (BetterBlizzFramesDB.focusStaticCastbar or BetterBlizzFramesDB.focusDetachCastbar) and true or false
-    importantDispel = BetterBlizzFramesDB.auraImportantDispelIcon
-    targetAuraGlows = BetterBlizzFramesDB.targetAuraGlows
-    focusAuraGlows = BetterBlizzFramesDB.focusAuraGlows
     opBarriersOn = BetterBlizzFramesDB.opBarriersOn
+    hideTargetAuras = BetterBlizzFramesDB.hideTargetAuras
+    hideFocusAuras = BetterBlizzFramesDB.hideFocusAuras
+
+        -- Aura size calculations
+    cachedSmallAuraSize = sameSizeAuras and 21 or 17 * targetAndFocusSmallAuraScale
+    cachedInitialOffsetX = baseOffsetX / auraScale
+    cachedInitialOffsetY = baseOffsetY / auraScale
+    cachedAdjustmentForBuffsOnTop = -102 - targetAndFocusAuraOffsetY
+
+    -- Castbar offset calculations
+    cachedTargetStaticCastBarYOffset = -14 + targetCastBarYPos
+    cachedFocusStaticCastBarYOffset = -14 + focusCastBarYPos
+    cachedTargetCastBarXOffset = 43 + targetCastBarXPos
+    cachedFocusCastBarXOffset = 43 + focusCastBarXPos
+
+    -- Castbar scale adjustments
+    cachedTargetCastBarScaleAdjustment = 100 / targetCastBarScale
+    cachedFocusCastBarScaleAdjustment = 100 / focusCastBarScale
+    cachedDynamicTargetCastBarYPos = targetCastBarYPos + (targetAndFocusAuraOffsetY * 2)
+
     db2 = BetterBlizzFramesDB
 end
 
@@ -347,7 +357,7 @@ function BBF.UpdateUserAuraSettings()
     aurasPerRow = BetterBlizzFramesDB.targetAndFocusAurasPerRow
     targetAndFocusAuraOffsetY = BetterBlizzFramesDB.targetAndFocusAuraOffsetY
     baseOffsetX = 25 + BetterBlizzFramesDB.targetAndFocusAuraOffsetX + (BetterBlizzFramesDB.classicFrames and 1.5 or 0)
-    baseOffsetY = 12.5 + BetterBlizzFramesDB.targetAndFocusAuraOffsetY + (BetterBlizzFramesDB.classicFrames and -0.5 or 0)
+    baseOffsetY = 25.5 + BetterBlizzFramesDB.targetAndFocusAuraOffsetY + (BetterBlizzFramesDB.classicFrames and -0.5 or 0)
     auraScale = BetterBlizzFramesDB.targetAndFocusAuraScale
     targetImportantAuraGlow = BetterBlizzFramesDB.targetImportantAuraGlow
     targetdeBuffPandemicGlow = BetterBlizzFramesDB.targetdeBuffPandemicGlow
@@ -687,53 +697,49 @@ local function adjustCastbar(self, frame)
     meta.ClearAllPoints(self)
     if frame == TargetFrameSpellBar then
         local buffsOnTop = parent.buffsOnTop
-        local yOffset = 14
+        local yOffset = 14 + 5
         if targetStaticCastbar then
-            --meta.SetPoint(self, "TOPLEFT", meta.GetParent(self), "BOTTOMLEFT", 43, 110);
-            meta.SetPoint(self, "TOPLEFT", parent, "BOTTOMLEFT", 43 + targetCastBarXPos, -14 + targetCastBarYPos);
+            meta.SetPoint(self, "TOPLEFT", parent, "BOTTOMLEFT", cachedTargetCastBarXOffset, cachedTargetStaticCastBarYOffset);
         elseif targetDetachCastbar then
             meta.SetPoint(self, "CENTER", UIParent, "CENTER", targetCastBarXPos, targetCastBarYPos);
         elseif buffsOnTopReverseCastbarMovement and buffsOnTop then
-            yOffset = yOffset + CalculateAuraRowsYOffset(parent, rowHeights, targetCastBarScale) + 100/targetCastBarScale
-            meta.SetPoint(self, "TOPLEFT", parent, "BOTTOMLEFT", 43 + targetCastBarXPos, yOffset + targetCastBarYPos);
+            yOffset = yOffset + CalculateAuraRowsYOffset(parent, rowHeights, targetCastBarScale) + cachedTargetCastBarScaleAdjustment
+            meta.SetPoint(self, "TOPLEFT", parent, "BOTTOMLEFT", cachedTargetCastBarXOffset, targetCastBarYPos + yOffset);
         else
             if not buffsOnTop then
                 yOffset = yOffset - CalculateAuraRowsYOffset(parent, rowHeights, targetCastBarScale)
             end
-            -- Check if totAdjustment is true and the ToT frame is shown
             if targetToTCastbarAdjustment and parent.haveToT then
                 local minOffset = -40
-                -- Choose the more negative value
                 yOffset = min(minOffset, yOffset)
                 yOffset = yOffset + targetToTAdjustmentOffsetY
             end
-
-            meta.SetPoint(self, "TOPLEFT", parent, "BOTTOMLEFT", 43 + targetCastBarXPos, yOffset + targetCastBarYPos);
+            if buffsOnTop then
+                meta.SetPoint(self, "TOPLEFT", parent, "BOTTOMLEFT", cachedTargetCastBarXOffset, targetCastBarYPos + yOffset);
+            else
+                meta.SetPoint(self, "TOPLEFT", parent, "BOTTOMLEFT", cachedTargetCastBarXOffset, cachedDynamicTargetCastBarYPos + yOffset);
+            end
         end
     elseif frame == FocusFrameSpellBar then
         local buffsOnTop = parent.buffsOnTop
         local yOffset = 14
         if focusStaticCastbar then
-            --meta.SetPoint(self, "TOPLEFT", meta.GetParent(self), "BOTTOMLEFT", 43, 110);
-            meta.SetPoint(self, "TOPLEFT", parent, "BOTTOMLEFT", 43 + focusCastBarXPos, -14 + focusCastBarYPos);
+            meta.SetPoint(self, "TOPLEFT", parent, "BOTTOMLEFT", cachedFocusCastBarXOffset, cachedFocusStaticCastBarYOffset);
         elseif focusDetachCastbar then
             meta.SetPoint(self, "CENTER", UIParent, "CENTER", focusCastBarXPos, focusCastBarYPos);
         elseif buffsOnTopReverseCastbarMovement and buffsOnTop then
-            yOffset = yOffset + CalculateAuraRowsYOffset(parent, rowHeights, focusCastBarScale) + 100/focusCastBarScale
-            meta.SetPoint(self, "TOPLEFT", parent, "BOTTOMLEFT", 43 + focusCastBarXPos, yOffset + focusCastBarYPos);
+            yOffset = yOffset + CalculateAuraRowsYOffset(parent, rowHeights, focusCastBarScale) + cachedFocusCastBarScaleAdjustment
+            meta.SetPoint(self, "TOPLEFT", parent, "BOTTOMLEFT", cachedFocusCastBarXOffset, focusCastBarYPos + yOffset);
         else
             if not buffsOnTop then
                 yOffset = yOffset - CalculateAuraRowsYOffset(parent, rowHeights, focusCastBarScale)
             end
-            -- Check if totAdjustment is true and the ToT frame is shown
             if focusToTCastbarAdjustment and parent.haveToT then
                 local minOffset = -40
-                -- Choose the more negative value
                 yOffset = min(minOffset, yOffset)
                 yOffset = yOffset + focusToTAdjustmentOffsetY
             end
-
-            meta.SetPoint(self, "TOPLEFT", parent, "BOTTOMLEFT", 43 + focusCastBarXPos, yOffset + focusCastBarYPos);
+            meta.SetPoint(self, "TOPLEFT", parent, "BOTTOMLEFT", cachedFocusCastBarXOffset, focusCastBarYPos + yOffset);
         end
     end
 end
@@ -756,7 +762,6 @@ local function DefaultCastbarAdjustment(self, frame)
     local relativeKey = useSpellbarAnchor and parentFrame.spellbarAnchor or parentFrame
     local pointX = useSpellbarAnchor and 18 or (parentFrame.smallSize and 38 or 43)
     local pointY = useSpellbarAnchor and -10 or (parentFrame.smallSize and 3 or 5)
-    local hidden = hideFocusCastbar
 
     -- Adjustments for ToT and specific frame adjustments
     if (not useSpellbarAnchor) and parentFrame.haveToT then
@@ -1279,546 +1284,179 @@ local function getCustomAuraComparator()
     return getCustomAuraComparatorWithoutPurgeable()
 end
 
-local function AdjustAuras(self, frameType)
-    local adjustedSize = sameSizeAuras and 21 or 17 * targetAndFocusSmallAuraScale
-    --local buffsOnTop = self.buffsOnTop
-    self.previousAuraRows = self.previousAuraRows or 0
+local function MapFramesByInstanceID(self)
+    local byId = {}
+    for f in self.auraPools:EnumerateActive() do
+        if f.auraInstanceID then
+            byId[f.auraInstanceID] = f
+        end
+    end
+    return byId
+end
 
-    local initialOffsetX = (baseOffsetX / auraScale)
-    local initialOffsetY = (baseOffsetY / auraScale)
-
-    local function adjustAuraPosition(auras, yOffset, buffsOnTop)
-        local adjustmentForBuffsOnTop = -80
-        local currentYOffset = yOffset + (buffsOnTop and -(initialOffsetY + adjustmentForBuffsOnTop) or initialOffsetY)
-        local rowWidths, rowHeights = {}, {}
-        --local previousAuraWasImportant = false
-
-        for i, aura in ipairs(auras) do
-            local enlargedOrCompact = aura.isEnlarged or aura.isCompacted
-            aura:SetScale(auraScale)
-            --aura:SetMouseClickEnabled(false)
-            local auraSize = aura:GetHeight()
-            if not aura.isLarge then
-                -- Apply the adjusted size to smaller auras
-                aura:SetSize(adjustedSize, adjustedSize)
-                if not MasqueOn and not enlargedOrCompact then
-                    if aura.PurgeGlow then
-                        aura.PurgeGlow:SetScale(targetAndFocusSmallAuraScale)
-                    end
-                    if aura.ImportantGlow then
-                        aura.ImportantGlow:SetScale(targetAndFocusSmallAuraScale)
-                    end
-                    if aura.PandemicGlow then
-                        aura.PandemicGlow:SetScale(targetAndFocusSmallAuraScale)
-                    end
-                    if aura.Stealable then
-                        aura.Stealable:SetScale(targetAndFocusSmallAuraScale)
-                    end
-                    if aura.Border then
-                        aura.Border:SetScale(targetAndFocusSmallAuraScale)
-                    end
-                end
-                auraSize = adjustedSize
-            end
-
-            if aura.Count then
-                aura.Count:SetScale(auraStackSize)
-            end
-
-            if enlargedOrCompact then
-                local sizeMultiplier = aura.isEnlarged and userEnlargedAuraSize or userCompactedAuraSize
-                local defaultLargeAuraSize = aura.isLarge and 21 or 17
-                local importantSize = defaultLargeAuraSize * sizeMultiplier
-                aura:SetSize(importantSize, importantSize)
-                if aura.Stealable then
-                    aura.Stealable:SetScale(sizeMultiplier)
-                end
-                if aura.PurgeGlow then
-                    aura.PurgeGlow:SetScale(1)
-                end
-                if aura.ImportantGlow then
-                    aura.ImportantGlow:SetScale(1)
-                end
-                if aura.PandemicGlow then
-                    aura.PandemicGlow:SetScale(1)
-                end
-                aura.wasEnlarged = true
-                auraSize = importantSize
-            -- elseif aura.wasEnlarged then
-            --     if aura.Stealable then
-            --         aura.Stealable:SetScale(1)
-            --         aura.wasEnlarged = nil
-            --     end
-            end
-
-            local columnIndex, rowIndex
-            columnIndex = (i - 1) % aurasPerRow
-            rowIndex = math_ceil(i / aurasPerRow)
-
-            rowWidths[rowIndex] = rowWidths[rowIndex] or initialOffsetX
-
-            if columnIndex == 0 and i ~= 1 then
-                if buffsOnTop then
-                    -- Adjust the Y-offset for stacking upwards when buffs are on top
-                    currentYOffset = currentYOffset + (rowHeights[rowIndex - 1] or 0) + auraSpacingY
-                else
-                    -- Existing logic for stacking downwards
-                    currentYOffset = currentYOffset - (rowHeights[rowIndex - 1] or 0) - auraSpacingY
-                end
-            elseif columnIndex ~= 0 then
-                rowWidths[rowIndex] = rowWidths[rowIndex] + auraSpacingX
-            end
+local function CollectOrderedFrames(self, auraList)
+    if not auraList or not auraList.Iterate then return {} end
+    local frames, byId = {}, MapFramesByInstanceID(self)
+    auraList:Iterate(function(auraInstanceID, aura)
+        local f = byId[auraInstanceID]
+        if f and f:IsShown() then
+            frames[#frames+1] = f
+        end
+        return false
+    end)
+    return frames
+end
 
 
-            local offsetX = rowWidths[rowIndex]
-            rowHeights[rowIndex] = math_max(auraSize, (rowHeights[rowIndex] or 0))
-            rowWidths[rowIndex] = offsetX + auraSize
+local function PlaceAuraGroup(self, list, forceNewRowAtStart, rowWidths, rowHeights, currentYOffset, auraScale, cachedSmallAuraSize, aurasPerRow, cachedInitialOffsetX, auraSpacingX, auraSpacingY, auraTypeGap)
+    local placed = 0
 
-            aura:ClearAllPoints()
-            if buffsOnTop then
-                aura:SetPoint("BOTTOMLEFT", self, "BOTTOMLEFT", offsetX, currentYOffset + initialOffsetY)
-            else
-                aura:SetPoint("TOPLEFT", self, "BOTTOMLEFT", offsetX, currentYOffset + initialOffsetY)
-            end
+    if forceNewRowAtStart and #rowHeights > 0 then
+        if self.buffsOnTop then
+            currentYOffset = currentYOffset + (rowHeights[#rowHeights] or 0) + auraSpacingY
+        else
+            currentYOffset = currentYOffset - (rowHeights[#rowHeights] or 0) - auraSpacingY
+        end
+    end
+
+    local baseRow = #rowHeights
+    local i = 0
+    for _, aura in ipairs(list) do
+        i = i + 1
+        placed = placed + 1
+
+        aura:SetScale(auraScale)
+        local size = aura:GetWidth() > 20 and 21 or cachedSmallAuraSize
+        aura:SetSize(size, size)
+        aura:SetMouseClickEnabled(false)
+        if increaseAuraStrata then
+            aura:SetFrameStrata("FULLSCREEN")
         end
 
-        return rowHeights
+        local columnIndex = (i - 1) % aurasPerRow
+        local rowIndexGroup = math_ceil(i / aurasPerRow)
+        local rowNum = baseRow + rowIndexGroup
+
+        rowWidths[rowNum] = rowWidths[rowNum] or cachedInitialOffsetX
+
+        if columnIndex == 0 and i ~= 1 then
+            if self.buffsOnTop then
+                currentYOffset = currentYOffset + (rowHeights[rowNum - 1] or 0) + auraSpacingY
+            else
+                currentYOffset = currentYOffset - (rowHeights[rowNum - 1] or 0) - auraSpacingY
+            end
+        elseif columnIndex ~= 0 then
+            rowWidths[rowNum] = rowWidths[rowNum] + auraSpacingX
+        end
+
+        local offsetX = rowWidths[rowNum]
+        rowHeights[rowNum] = math_max(size, (rowHeights[rowNum] or 0))
+        rowWidths[rowNum] = offsetX + size
+
+        aura:ClearAllPoints()
+        if self.buffsOnTop then
+            aura:SetPoint("BOTTOMLEFT", self, "BOTTOMLEFT", offsetX, currentYOffset)
+        else
+            aura:SetPoint("TOPLEFT", self, "BOTTOMLEFT", offsetX, currentYOffset)
+        end
     end
+
+    return placed, currentYOffset
+end
+
+local function AdjustAuras(self, frameType)
+    self.previousAuraRows = self.previousAuraRows or 0
+
+    local buffs   = CollectOrderedFrames(self, self.activeBuffs)
+    local debuffs = CollectOrderedFrames(self, self.activeDebuffs)
 
     local unit = self.unit
     local isFriend = unit and not UnitCanAttack("player", unit)
 
-    local buffs, debuffs = {}, {}
-    local customAuraComparator = getCustomAuraComparator()
-
-    local auraGlowsEnabled = (frameType == "target" and targetAuraGlows) or (frameType == "focus" and focusAuraGlows)
-
-
-    for aura in self.auraPools:EnumerateActive() do
-        local auraData = C_UnitAuras.GetAuraDataByAuraInstanceID(self.unit, aura.auraInstanceID)
-        if auraData then
-            local isLarge = auraData.sourceUnit == "player" or auraData.sourceUnit == "pet"
-            local canApply = auraData.canApplyAura or false
-
-            -- Store the properties with the aura for later sorting
-            aura.isLarge = isLarge
-            aura.canApply = canApply
-            local shouldShowAura, isImportant, isPandemic, isEnlarged, isCompacted, auraColor
-
-            if frameType == "target" then
-                shouldShowAura, isImportant, isPandemic, isEnlarged, isCompacted, auraColor = ShouldShowBuff(unit, auraData, "target")
-                if auraGlowsEnabled then
-                    isImportant = isImportant and targetImportantAuraGlow
-                    isPandemic = isPandemic and targetdeBuffPandemicGlow
-                    isEnlarged = isEnlarged and targetEnlargeAura
-                    isCompacted = isCompacted and targetCompactAura
-                else
-                    isImportant = nil
-                    isPandemic = nil
-                    isEnlarged = nil
-                    isCompacted = nil
-                end
-            elseif frameType == "focus" then
-                shouldShowAura, isImportant, isPandemic, isEnlarged, isCompacted, auraColor = ShouldShowBuff(unit, auraData, "focus")
-                if auraGlowsEnabled then
-                    isImportant = isImportant and focusImportantAuraGlow
-                    isPandemic = isPandemic and focusdeBuffPandemicGlow
-                    isEnlarged = isEnlarged and focusEnlargeAura
-                    isCompacted = isCompacted and focusCompactAura
-                else
-                    isImportant = nil
-                    isPandemic = nil
-                    isEnlarged = nil
-                    isCompacted = nil
-                end
-            end
-
-            if opBarriersOn and opBarriers[auraData.spellId] and auraData.duration ~= 5 then
-                isImportant = nil
-                isEnlarged = nil
-            end
-
-            if onlyPandemicMine and not isLarge then
-                isPandemic = false
-            end
-
-            if isEnlarged then
-                if frameType == "target" then
-                    if not targetEnlargeAuraFriendly and isFriend then
-                        isEnlarged = false
-                    end
-                    if not targetEnlargeAuraEnemy and not isFriend then
-                        isEnlarged = false
-                    end
-                elseif frameType == "focus" then
-                    if not focusEnlargeAuraFriendly and isFriend then
-                        isEnlarged = false
-                    end
-                    if not focusEnlargeAuraEnemy and not isFriend then
-                        isEnlarged = false
-                    end
-                end
-            end
-
-            if shouldShowAura then
-                if db2.increaseAuraStrata then
-                    aura:SetFrameStrata("FULLSCREEN")
-                end
-                aura:Show()
-
-                aura.spellId = auraData.spellId
-                aura.duration = auraData.duration
-
-                -- Attach weakauras to certain named auraframes
-                if BBF.globalAuraFrames and BBF.globalAuraFrames[auraData.spellId] then
-                    if frameType == "target" then
-                        if not _G["BBFTargetAura"..auraData.name] then
-                            _G["BBFTargetAura"..auraData.name] = CreateFrame("Frame", "BBFTargetAura"..auraData.name, UIParent)
-                            _G["BBFTargetAura"..auraData.name]:SetAllPoints(aura)
-                        else
-                            _G["BBFTargetAura"..auraData.name]:SetAllPoints(aura)
-                        end
-                    else
-                        if not _G["BBFFocusAura"..auraData.name] then
-                            _G["BBFFocusAura"..auraData.name] = CreateFrame("Frame", "BBFFocusAura"..auraData.name, UIParent)
-                            _G["BBFFocusAura"..auraData.name]:SetAllPoints(aura)
-                        else
-                            _G["BBFFocusAura"..auraData.name]:SetAllPoints(aura)
-                        end
-                    end
-                end
-
-                if trackedAuras[auraData.spellId] then
-                    aura.Cooldown:SetCooldown(activeNonDurationAuras[auraData.spellId] or 0, trackedAuras[auraData.spellId].duration or 0)
-                    C_Timer.After(0.1, function()
-                        aura.Cooldown:SetCooldown(activeNonDurationAuras[auraData.spellId] or 0, trackedAuras[auraData.spellId].duration or 0)
-                    end)
-                end
-
-                if (auraData.isStealable or (auraData.dispelName == "Magic" and ((not isFriend and auraData.isHelpful) or (isFriend and auraData.isHarmful)))) then
-                    aura.isPurgeable = true
-                else
-                    aura.isPurgeable = false
-                end
-
-                if db2.clickthroughAuras then
-                    aura:SetMouseClickEnabled(false)
-                else
-                    SetupAuraFilterClicks(aura)
-                end
-
-                -- Print Logic
-                if db2.printAuraSpellIds and not aura.bbfHookAdded then
-                    aura:HookScript("OnEnter", function()
-                        local currentAuraID = aura.auraInstanceID
-                        if not aura.bbfPrinted or aura.bbfLastPrintedAuraID ~= currentAuraID then
-                            local thisAuraData = C_UnitAuras.GetAuraDataByAuraInstanceID(self.unit, currentAuraID)
-                            if thisAuraData then
-                                local iconTexture = thisAuraData.icon and "|T" .. thisAuraData.icon .. ":16:16|t" or ""
-                                print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconTexture .. " " .. (thisAuraData.name or "Unknown") .. "  |A:worldquest-icon-engineering:14:14|a ID: " .. (thisAuraData.spellId or "Unknown"))
-                                aura.bbfPrinted = true
-                                aura.bbfLastPrintedAuraID = currentAuraID
-
-                                -- Cancel existing timer if any
-                                if aura.bbfTimer then
-                                    aura.bbfTimer:Cancel()
-                                end
-
-                                -- Schedule the reset of bbfPrinted flag
-                                aura.bbfTimer = C_Timer.NewTimer(6, function()
-                                    aura.bbfPrinted = false
-                                end)
-                            end
-                        end
-                    end)
-                    aura.bbfHookAdded = true
-                end
-
-                -- Enlarged logic
-                if isEnlarged then
-                    aura.isEnlarged = true
-                else
-                    aura.isEnlarged = false
-                end
-
-                -- Smaller logic
-                if isCompacted then
-                    aura.isCompacted = true
-                else
-                    aura.isCompacted = false
-                end
-
-                -- Important logic
-                if isImportant then
-                    aura.isImportant = true
-                    if not aura.ImportantGlow then
-                        aura.ImportantGlow = aura:CreateTexture(nil, "OVERLAY")
-                        aura.ImportantGlow:SetAtlas("newplayertutorial-drag-slotgreen")
-                        aura.ImportantGlow:SetDesaturated(true)
-                    end
-                    if aura.isEnlarged then
-                        aura.ImportantGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -enlargedTextureAdjustment, enlargedTextureAdjustment)
-                        aura.ImportantGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", enlargedTextureAdjustment, -enlargedTextureAdjustment)
-                    elseif aura.isCompacted then
-                        aura.ImportantGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -compactedTextureAdjustment, compactedTextureAdjustment)
-                        aura.ImportantGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", compactedTextureAdjustment, -compactedTextureAdjustment)
-                    else
-                        aura.ImportantGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -10, 10)
-                        aura.ImportantGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", 10, -10)
-                    end
-                    if auraColor then
-                        aura.ImportantGlow:SetVertexColor(auraColor[1], auraColor[2], auraColor[3], auraColor[4])
-                    else
-                        aura.ImportantGlow:SetVertexColor(0, 1, 0)
-                    end
-                    aura.ImportantGlow:Show()
-                    if importantDispel and aura.isPurgeable then
-                        if not aura.ImportantDispell then
-                            aura.ImportantDispell = aura:CreateTexture(nil, "OVERLAY")
-                            aura.ImportantDispell:SetAtlas("AdventureMapIcon-DailyQuest")
-                            aura.ImportantDispell:SetDrawLayer("OVERLAY", 7)
-                            aura.ImportantDispell:SetSize(11,13)
-                            aura.ImportantDispell:SetPoint("BOTTOMLEFT", aura, "BOTTOMLEFT", -2.5, -2)
-                        else
-                            aura.ImportantDispell:Show()
-                        end
-                    elseif aura.ImportantDispell then
-                        aura.ImportantDispell:Hide()
-                    end
-                else--if aura.isImportant then
-                    aura.isImportant = false
-                    if aura.ImportantGlow then
-                        aura.ImportantGlow:Hide()
-                    end
-                    if aura.Stealable and auraData.isStealable then
-                        aura.Stealable:SetAlpha(1)
-                    end
-                    if aura.ImportantDispell then
-                        aura.ImportantDispell:Hide()
-                    end
-                end
-
-                -- Better Purge Glow
-                if ((frameType == "target" and (auraData.isStealable or (displayDispelGlowAlways and aura.isPurgeable)) and betterTargetPurgeGlow) or
-                (frameType == "focus" and (auraData.isStealable or (displayDispelGlowAlways and aura.isPurgeable)) and betterFocusPurgeGlow)) then
-                    if not aura.isImportant then
-                        if not aura.PurgeGlow then
-                            aura.PurgeGlow = aura:CreateTexture(nil, "OVERLAY")
-                            aura.PurgeGlow:SetAtlas("newplayertutorial-drag-slotblue")
-                        end
-                        if aura.isEnlarged then
-                            aura.PurgeGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -enlargedTextureAdjustment, enlargedTextureAdjustment)
-                            aura.PurgeGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", enlargedTextureAdjustment, -enlargedTextureAdjustment)
-                        elseif aura.isCompacted then
-                            aura.PurgeGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -compactedTextureAdjustment, compactedTextureAdjustment)
-                            aura.PurgeGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", compactedTextureAdjustment, -compactedTextureAdjustment)
-                        else
-                            aura.PurgeGlow:SetPoint("TOPLEFT", aura, "TOPLEFT", -10, 10)
-                            aura.PurgeGlow:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", 10, -10)
-                        end
-                        aura.isPurgeGlow = true
-                        if changePurgeTextureColor then
-                            aura.PurgeGlow:SetDesaturated(true)
-                            aura.PurgeGlow:SetVertexColor(unpack(purgeTextureColorRGB))
-                        end
-                        aura.PurgeGlow:Show()
-                    end
-                else
-                    if aura.PurgeGlow then
-                        if aura.Stealable and auraData.isStealable then
-                            aura.Stealable:SetAlpha(1)
-                        end
-                        aura.PurgeGlow:Hide()
-                    end
-                    aura.isPurgeGlow = false
-                    if displayDispelGlowAlways then
-                        if auraData.dispelName == "Magic" and ((not isFriend and auraData.isHelpful) or (isFriend and auraData.isHarmful)) then
-                            if aura.Stealable then
-                                aura.Stealable:Show()
-                                if changePurgeTextureColor then
-                                    aura.Stealable:SetVertexColor(unpack(purgeTextureColorRGB))
-                                end
-                            end
-                        else
-                            if aura.Stealable then
-                                aura.Stealable:Hide()
-                            end
-                        end
-                    end
-                end
-
-                -- Pandemic Logic
-                if isPandemic then
-                    aura.expirationTime = auraData.expirationTime
-                    aura.isPandemic = true
-                    trackedBuffs[aura.auraInstanceID] = aura
-                    StartCheckBuffsTimer()
-                else--if aura.isPandemic then
-                    aura.isPandemic = false
-                    if aura.PandemicGlow then
-                        aura.PandemicGlow:Hide()
-                    end
-                end
-
-                if aura.isImportant or aura.isPurgeGlow or (aura.isPandemicActive and isPandemic) then
-                    if aura.border then
-                        aura.border:SetAlpha(0)
-                    end
-                    if aura.Border then
-                        aura.Border:SetAlpha(0)
-                    end
-                    if aura.Stealable then
-                        aura.Stealable:SetAlpha(0)
-                    end
-                else
-                    if aura.border then
-                        if not aura.Border then
-                            aura.border:SetAlpha(1)
-                        end
-                    end
-                    if aura.Border then
-                        aura.Border:SetAlpha(1)
-                    end
-                    if aura.Stealable then
-                        aura.Stealable:SetAlpha(1)
-                    end
-                end
-
-                --print(aura.Stealable, aura.Stealable:IsShown())
-
-                -- if aura.Stealable and aura.Stealable:IsShown() then
-                --     if aura.border then
-                --         aura.border:Hide()
-                --         aura.Icon:SetTexCoord(0, 1, 0, 1)
-                --     end
-                -- else
-                --     if aura.border then
-                --         aura.border:Show()
-                --         aura.Icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
-                --     end
-                -- end
-
-                -- if BBF.purge then
-                --     if auraData.dispelName == "Magic" and auraData.isHelpful then
-                --         if aura.Stealable then
-                --             aura.Stealable:Show()
-                --         end
-                --     else
-                --         if aura.Stealable then
-                --             aura.Stealable:Hide()
-                --         end
-                --     end
-                -- end
-
-                if aura.Border ~= nil then
-                    debuffs[#debuffs + 1] = aura
-                else
-                    buffs[#buffs + 1] = aura
-                end
-            else
-                aura:Hide()
-                if aura.PandemicGlow then
-                    aura.PandemicGlow:Hide()
-                end
-            end
-        end
-    end
-
-    table.sort(buffs, customAuraComparator)
-    table.sort(debuffs, customAuraComparator)
+    local rowWidths, rowHeights = {}, {}
+    local currentYOffset = targetAndFocusAuraOffsetY + (self.buffsOnTop and -(cachedInitialOffsetY + cachedAdjustmentForBuffsOnTop) or cachedInitialOffsetY)
 
     if not isFriend then
         if self.buffsOnTop then
-            self.rowHeights = adjustAuraPosition(debuffs, targetAndFocusAuraOffsetY, self.buffsOnTop)
-            local totalDebuffHeight = sum(self.rowHeights)
-
-            local yOffsetForBuffs = totalDebuffHeight + (auraSpacingY * #self.rowHeights) + targetAndFocusAuraOffsetY
-            if #debuffs > 0 then
-                yOffsetForBuffs = yOffsetForBuffs + 5 + auraTypeGap
+            self.rowHeights = {}
+            local _, newYOffset = PlaceAuraGroup(self, debuffs, false, rowWidths, rowHeights, currentYOffset, auraScale, cachedSmallAuraSize, aurasPerRow, cachedInitialOffsetX, auraSpacingX, auraSpacingY, auraTypeGap)
+            currentYOffset = newYOffset
+            local debuffRows = #rowHeights
+            if #debuffs > 0 and #buffs > 0 then
+                currentYOffset = currentYOffset + auraTypeGap
             end
-
-            local buffRowHeights = adjustAuraPosition(buffs, yOffsetForBuffs, self.buffsOnTop)
-            if #buffs > 0 and #debuffs > 0 then
-                self.rowHeights[#self.rowHeights] = self.rowHeights[#self.rowHeights] + auraTypeGap
-            end
-            for _, height in ipairs(buffRowHeights) do
-                table_insert(self.rowHeights, height)
+            PlaceAuraGroup(self, buffs, #debuffs > 0, rowWidths, rowHeights, currentYOffset, auraScale, cachedSmallAuraSize, aurasPerRow, cachedInitialOffsetX, auraSpacingX, auraSpacingY, auraTypeGap)
+            if #debuffs > 0 and #buffs > 0 and debuffRows > 0 then
+                rowHeights[debuffRows] = rowHeights[debuffRows] + auraTypeGap
             end
         else
-            self.rowHeights = adjustAuraPosition(debuffs, 0)
-            local totalDebuffHeight = sum(self.rowHeights)
-            local buffRowHeights
-            if #debuffs == 0 then
-                buffRowHeights = adjustAuraPosition(buffs, -totalDebuffHeight - (auraSpacingY * #self.rowHeights))
-            else
-                buffRowHeights = adjustAuraPosition(buffs, -totalDebuffHeight - (auraSpacingY * #self.rowHeights) - auraTypeGap)
+            self.rowHeights = {}
+            local _, newYOffset = PlaceAuraGroup(self, debuffs, false, rowWidths, rowHeights, currentYOffset, auraScale, cachedSmallAuraSize, aurasPerRow, cachedInitialOffsetX, auraSpacingX, auraSpacingY, auraTypeGap)
+            currentYOffset = newYOffset
+            local debuffRows = #rowHeights
+            if #debuffs > 0 and #buffs > 0 then
+                currentYOffset = currentYOffset - auraTypeGap
             end
-            if #buffs > 0 and #debuffs > 0 then
-                self.rowHeights[#self.rowHeights] = self.rowHeights[#self.rowHeights] + auraTypeGap
-            end
-            for _, height in ipairs(buffRowHeights) do
-                table_insert(self.rowHeights, height)
+            PlaceAuraGroup(self, buffs, #debuffs > 0, rowWidths, rowHeights, currentYOffset, auraScale, cachedSmallAuraSize, aurasPerRow, cachedInitialOffsetX, auraSpacingX, auraSpacingY, auraTypeGap)
+            if #debuffs > 0 and #buffs > 0 and debuffRows > 0 then
+                rowHeights[debuffRows] = rowHeights[debuffRows] + auraTypeGap
             end
         end
     else
         if self.buffsOnTop then
-            self.rowHeights = adjustAuraPosition(buffs, targetAndFocusAuraOffsetY, self.buffsOnTop)
-            local totalBuffHeight = sum(self.rowHeights)
-
-            local yOffsetForDebuffs = totalBuffHeight + (auraSpacingY * #self.rowHeights) + targetAndFocusAuraOffsetY
-            if #buffs > 0 then
-                yOffsetForDebuffs = yOffsetForDebuffs + 5 + auraTypeGap
-            end
-
-            local debuffRowHeights = adjustAuraPosition(debuffs, yOffsetForDebuffs, self.buffsOnTop)
+            self.rowHeights = {}
+            local _, newYOffset = PlaceAuraGroup(self, buffs, false, rowWidths, rowHeights, currentYOffset, auraScale, cachedSmallAuraSize, aurasPerRow, cachedInitialOffsetX, auraSpacingX, auraSpacingY, auraTypeGap)
+            currentYOffset = newYOffset
+            local buffRows = #rowHeights
             if #buffs > 0 and #debuffs > 0 then
-                self.rowHeights[#self.rowHeights] = self.rowHeights[#self.rowHeights] + auraTypeGap
+                currentYOffset = currentYOffset + auraTypeGap
             end
-            for _, height in ipairs(debuffRowHeights) do
-                table_insert(self.rowHeights, height)
+            PlaceAuraGroup(self, debuffs, #buffs > 0, rowWidths, rowHeights, currentYOffset, auraScale, cachedSmallAuraSize, aurasPerRow, cachedInitialOffsetX, auraSpacingX, auraSpacingY, auraTypeGap)
+            if #buffs > 0 and #debuffs > 0 and buffRows > 0 then
+                rowHeights[buffRows] = rowHeights[buffRows] + auraTypeGap
             end
         else
-            self.rowHeights = adjustAuraPosition(buffs, 0)
-            local totalBuffHeight = sum(self.rowHeights)
-            local debuffRowHeights
-            if #buffs == 0 then
-                debuffRowHeights = adjustAuraPosition(debuffs, -totalBuffHeight - (auraSpacingY * #self.rowHeights))
-            else
-                debuffRowHeights = adjustAuraPosition(debuffs, -totalBuffHeight - (auraSpacingY * #self.rowHeights) - auraTypeGap)
-            end
+            self.rowHeights = {}
+            local _, newYOffset = PlaceAuraGroup(self, buffs, false, rowWidths, rowHeights, currentYOffset, auraScale, cachedSmallAuraSize, aurasPerRow, cachedInitialOffsetX, auraSpacingX, auraSpacingY, auraTypeGap)
+            currentYOffset = newYOffset
+            local buffRows = #rowHeights
             if #buffs > 0 and #debuffs > 0 then
-                self.rowHeights[#self.rowHeights] = self.rowHeights[#self.rowHeights] + auraTypeGap
+                currentYOffset = currentYOffset - auraTypeGap
             end
-            for _, height in ipairs(debuffRowHeights) do
-                table_insert(self.rowHeights, height)
-            end
-        end
-    end
-
-    -- if not targetStaticCastbar or not targetDetachCastbar then
-    --     if frameType == "target" then
-    --         adjustCastbar(TargetFrame.spellbar, TargetFrameSpellBar)
-    --     elseif frameType == "focus" then
-    --         adjustCastbar(FocusFrame.spellbar, FocusFrameSpellBar)
-    --     end
-    -- end
-
-    -- Check if the number of aura rows has changed
-    if #self.rowHeights ~= self.previousAuraRows then
-        -- The number of aura rows has changed, adjust the castbar
-        if not self.staticCastbar and self.spellbar:IsShown() then
-            if frameType == "target" then
-                adjustCastbar(self.spellbar, TargetFrameSpellBar)
-            elseif frameType == "focus" then
-                adjustCastbar(self.spellbar, FocusFrameSpellBar)
+            PlaceAuraGroup(self, debuffs, #buffs > 0, rowWidths, rowHeights, currentYOffset, auraScale, cachedSmallAuraSize, aurasPerRow, cachedInitialOffsetX, auraSpacingX, auraSpacingY, auraTypeGap)
+            if #buffs > 0 and #debuffs > 0 and buffRows > 0 then
+                rowHeights[buffRows] = rowHeights[buffRows] + auraTypeGap
             end
         end
     end
 
-    -- Store the current number of rows for the next check
+    self.rowHeights = rowHeights
+
+    if not self.staticCastbar then
+        if frameType == "target" then
+            adjustCastbar(self.spellbar, TargetFrameSpellBar)
+        elseif frameType == "focus" then
+            adjustCastbar(self.spellbar, FocusFrameSpellBar)
+        end
+    end
+
     self.previousAuraRows = #self.rowHeights
+end
 
-    addMasque(frameType)
+local function HideAuras(self, frameType)
+    self.previousAuraRows = 0
+
+    for aura in self.auraPools:EnumerateActive() do
+        aura:Hide()
+    end
+
+    if not self.staticCastbar then
+        if frameType == "target" then
+            adjustCastbar(self.spellbar, TargetFrameSpellBar)
+        elseif frameType == "focus" then
+            adjustCastbar(self.spellbar, FocusFrameSpellBar)
+        end
+    end
 end
 
 -- Function to create the toggle icon
@@ -2666,36 +2304,40 @@ local function PersonalDebuffFrameFilterAndGrid(self)
 ]=]
 end
 
+
 local auraMsgSent = false
 function BBF.RefreshAllAuraFrames()
     BBF.UpdateUserAuraSettings()
-    if BetterBlizzFramesDB.playerAuraFiltering then
-        if playerBuffFilterOn then
-            PersonalBuffFrameFilterAndGrid(BuffFrame)
-        end
-        if playerDebuffFilterOn then
-            PersonalDebuffFrameFilterAndGrid(DebuffFrame)
-        end
-        AdjustAuras(TargetFrame, "target")
-        AdjustAuras(FocusFrame, "focus")
-    else
-        if not auraMsgSent then
-            auraMsgSent = true
-            DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: You need to enable aura settings for blacklist and whitelist etc to work.")
-            C_Timer.After(9, function()
-                auraMsgSent = false
-            end)
-        end
-    end
+    AdjustAuras(TargetFrame, "target")
+    AdjustAuras(FocusFrame, "focus")
+    if BBF.isMidnight then return end
+    -- if BetterBlizzFramesDB.playerAuraFiltering then
+    --     if playerBuffFilterOn then
+    --         PersonalBuffFrameFilterAndGrid(BuffFrame)
+    --     end
+    --     if playerDebuffFilterOn then
+    --         PersonalDebuffFrameFilterAndGrid(DebuffFrame)
+    --     end
+    -- else
+    --     if not auraMsgSent then
+    --         auraMsgSent = true
+    --         DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: You need to enable aura settings for blacklist and whitelist etc to work.")
+    --         C_Timer.After(9, function()
+    --             auraMsgSent = false
+    --         end)
+    --     end
+    -- end
 end
 
 BBF.filterOverride = false
 function BBF.ToggleFilterOverride()
-    BBF.filterOverride = not BBF.filterOverride
-    BBF.RefreshAllAuraFrames()
+    -- if not BBFMIDNIGHT then return end
+    -- BBF.filterOverride = not BBF.filterOverride
+    -- BBF.RefreshAllAuraFrames()
 end
 
 function BBF.SetupMasqueSupport()
+    if not BBFMIDNIGHT then return end
     Masque = LibStub("Masque", true)
     if Masque then
         MasqueOn = true
@@ -2867,97 +2509,112 @@ function BBF.SetupMasqueSupport()
 end
 
 function BBF.HookPlayerAndTargetAuras()
-    --Hook Player BuffFrame
-    if playerBuffFilterOn and not playerBuffsHooked then
-        if BetterBlizzFramesDB.PlayerAuraFrameBuffEnable then
-            hooksecurefunc(BuffFrame, "UpdateAuraButtons", PersonalBuffFrameFilterAndGrid)
-            playerBuffsHooked = true
-            if BBF.BuffFrameHidden then
-                BuffFrame:Show()
-                BBF.BuffFrameHidden = nil
-            end
-        else
-            BuffFrame:Hide()
-            BBF.BuffFrameHidden = true
-        end
-    end
-
-    --Hook Player DebuffFrame
-    if playerDebuffFilterOn and not playerDebuffsHooked then
-        if BetterBlizzFramesDB.PlayerAuraFramedeBuffEnable then
-            hooksecurefunc(DebuffFrame, "UpdateAuraButtons", PersonalDebuffFrameFilterAndGrid)
-            playerDebuffsHooked = true
-            if BBF.DebuffFrameHidden then
-                DebuffFrame:Show()
-                BBF.DebuffFrameHidden = nil
-            end
-        else
-            DebuffFrame:Hide()
-            BBF.DebuffFrameHidden = true
-        end
-    end
-
-    --Hook Target & Focus Frame
-    if auraFilteringOn and not targetAurasHooked then
-
-        if not BetterBlizzFramesDB.targetBuffEnable and not BetterBlizzFramesDB.targetdeBuffEnable then
-            hooksecurefunc(TargetFrame, "UpdateAuras", function(self)
-                for aura in self.auraPools:EnumerateActive() do
-                    aura:Hide()
+    if BBF.isMidnight then
+        if not targetCastbarsHooked then
+            hooksecurefunc(TargetFrame.spellbar, "SetPoint", function()
+                if shouldAdjustCastbar then
+                    adjustCastbar(TargetFrame.spellbar, TargetFrameSpellBar)
+                else
+                    DefaultCastbarAdjustment(TargetFrame.spellbar, TargetFrameSpellBar)
                 end
-            end)
-            BBF.HidingAllTargetAuras = true
-        else
-            hooksecurefunc(TargetFrame, "UpdateAuras", function(self) AdjustAuras(self, "target") end)
-        end
-
-        if not BetterBlizzFramesDB.focusBuffEnable and not BetterBlizzFramesDB.focusdeBuffEnable then
-            hooksecurefunc(FocusFrame, "UpdateAuras", function(self)
-                for aura in self.auraPools:EnumerateActive() do
-                    aura:Hide()
+            end);
+            hooksecurefunc(FocusFrame.spellbar, "SetPoint", function()
+                if shouldAdjustCastbarFocus then
+                    adjustCastbar(FocusFrame.spellbar, FocusFrameSpellBar)
+                else
+                    DefaultCastbarAdjustment(FocusFrame.spellbar, FocusFrameSpellBar)
                 end
-            end)
-            BBF.HidingAllFocusAuras = true
-        else
-            hooksecurefunc(FocusFrame, "UpdateAuras", function(self) AdjustAuras(self, "focus") end)
+            end);
+            targetCastbarsHooked = true
         end
-
-        targetAurasHooked = true
-    end
-
-    --Hook Target & Focus Castbars
-    if not targetCastbarsHooked then
-        hooksecurefunc(TargetFrame.spellbar, "SetPoint", function()
-            if shouldAdjustCastbar then
-                adjustCastbar(TargetFrame.spellbar, TargetFrameSpellBar)
+        if auraFilteringOn and not targetAurasHooked then
+            if hideTargetAuras then
+                hooksecurefunc(TargetFrame, "UpdateAuras", function(self) HideAuras(self, "target") end)
             else
-                DefaultCastbarAdjustment(TargetFrame.spellbar, TargetFrameSpellBar)
+                hooksecurefunc(TargetFrame, "UpdateAuras", function(self) AdjustAuras(self, "target") end)
             end
-        end);
-        hooksecurefunc(FocusFrame.spellbar, "SetPoint", function()
-            if shouldAdjustCastbarFocus then
-                adjustCastbar(FocusFrame.spellbar, FocusFrameSpellBar)
+            if hideFocusAuras then
+                hooksecurefunc(FocusFrame, "UpdateAuras", function(self) HideAuras(self, "focus") end)
             else
-                DefaultCastbarAdjustment(FocusFrame.spellbar, FocusFrameSpellBar)
+                hooksecurefunc(FocusFrame, "UpdateAuras", function(self) AdjustAuras(self, "focus") end)
             end
-        end);
+            targetAurasHooked = true
+        end
+        return
     end
-
-    -- --Hook Target & Focus Castbars
-    -- if not targetCastbarsHooked then
-    --     if not shouldAdjustCastbar then
-    --         hooksecurefunc(TargetFrame.spellbar, "SetPoint", function()
-    --             DefaultCastbarAdjustment(TargetFrame.spellbar, TargetFrameSpellBar)
-    --         end);
-    --         hooksecurefunc(FocusFrame.spellbar, "SetPoint", function()
-    --             DefaultCastbarAdjustment(FocusFrame.spellbar, FocusFrameSpellBar)
-    --         end);
+    -- --Hook Player BuffFrame
+    -- if playerBuffFilterOn and not playerBuffsHooked then
+    --     if BetterBlizzFramesDB.PlayerAuraFrameBuffEnable then
+    --         hooksecurefunc(BuffFrame, "UpdateAuraButtons", PersonalBuffFrameFilterAndGrid)
+    --         playerBuffsHooked = true
+    --         if BBF.BuffFrameHidden then
+    --             BuffFrame:Show()
+    --             BBF.BuffFrameHidden = nil
+    --         end
+    --     else
+    --         BuffFrame:Hide()
+    --         BBF.BuffFrameHidden = true
     --     end
     -- end
 
-    if not BBF.buffDetector then
-        BBF.buffDetector = CreateFrame("Frame")
-        BBF.buffDetector:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
-        BBF.buffDetector:SetScript("OnEvent", BuffCastCheck)
-    end
+    -- --Hook Player DebuffFrame
+    -- if playerDebuffFilterOn and not playerDebuffsHooked then
+    --     if BetterBlizzFramesDB.PlayerAuraFramedeBuffEnable then
+    --         hooksecurefunc(DebuffFrame, "UpdateAuraButtons", PersonalDebuffFrameFilterAndGrid)
+    --         playerDebuffsHooked = true
+    --         if BBF.DebuffFrameHidden then
+    --             DebuffFrame:Show()
+    --             BBF.DebuffFrameHidden = nil
+    --         end
+    --     else
+    --         DebuffFrame:Hide()
+    --         BBF.DebuffFrameHidden = true
+    --     end
+    -- end
+
+    -- --Hook Target & Focus Frame
+    -- if auraFilteringOn and not targetAurasHooked then
+
+    --     if not BetterBlizzFramesDB.targetBuffEnable and not BetterBlizzFramesDB.targetdeBuffEnable then
+    --         hooksecurefunc(TargetFrame, "UpdateAuras", function(self)
+    --             for aura in self.auraPools:EnumerateActive() do
+    --                 aura:Hide()
+    --             end
+    --         end)
+    --         BBF.HidingAllTargetAuras = true
+    --     else
+    --         hooksecurefunc(TargetFrame, "UpdateAuras", function(self) AdjustAuras(self, "target") end)
+    --     end
+
+    --     if not BetterBlizzFramesDB.focusBuffEnable and not BetterBlizzFramesDB.focusdeBuffEnable then
+    --         hooksecurefunc(FocusFrame, "UpdateAuras", function(self)
+    --             for aura in self.auraPools:EnumerateActive() do
+    --                 aura:Hide()
+    --             end
+    --         end)
+    --         BBF.HidingAllFocusAuras = true
+    --     else
+    --         hooksecurefunc(FocusFrame, "UpdateAuras", function(self) AdjustAuras(self, "focus") end)
+    --     end
+
+    --     targetAurasHooked = true
+    -- end
+
+    -- --Hook Target & Focus Castbars
+    -- if not targetCastbarsHooked then
+    --     hooksecurefunc(TargetFrame.spellbar, "SetPoint", function()
+    --         if shouldAdjustCastbar then
+    --             adjustCastbar(TargetFrame.spellbar, TargetFrameSpellBar)
+    --         else
+    --             DefaultCastbarAdjustment(TargetFrame.spellbar, TargetFrameSpellBar)
+    --         end
+    --     end);
+    --     hooksecurefunc(FocusFrame.spellbar, "SetPoint", function()
+    --         if shouldAdjustCastbarFocus then
+    --             adjustCastbar(FocusFrame.spellbar, FocusFrameSpellBar)
+    --         else
+    --             DefaultCastbarAdjustment(FocusFrame.spellbar, FocusFrameSpellBar)
+    --         end
+    --     end);
+    -- end
 end

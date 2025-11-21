@@ -27,6 +27,20 @@ local function applyAlpha(frame, alpha)
     end
 end
 
+local function hideElementByParent(element)
+    if element and not element.bbfOriginalParent then
+        element.bbfOriginalParent = element:GetParent()
+        element:SetParent(BBF.hiddenFrame)
+    end
+end
+
+local function restoreElementParent(element)
+    if element and element.bbfOriginalParent then
+        element:SetParent(element.bbfOriginalParent)
+        element.bbfOriginalParent = nil
+    end
+end
+
 local OnSetVertexColorHookScript = function(r, g, b, a)
     return function(texture, red, green, blue, alpha, flag)
         if flag ~= "BBFHookSetVertexColor" then
@@ -208,6 +222,13 @@ function BBF.HideFrames()
     --     TargetFrame.TargetFrameContent.TargetFrameContentContextual.PrestigePortrait:SetAlpha(prestigeBadgeAlpha)
     --     FocusFrame.TargetFrameContent.TargetFrameContentContextual.PrestigeBadge:SetAlpha(prestigeBadgeAlpha)
     --     FocusFrame.TargetFrameContent.TargetFrameContentContextual.PrestigePortrait:SetAlpha(prestigeBadgeAlpha)
+
+        -- Hide Pet Frame
+        if BetterBlizzFramesDB.hidePetFrame then
+            hideElementByParent(PetFrame)
+        else
+            restoreElementParent(PetFrame)
+        end
 
         -- Hide reputation color on target frame (color tint behind name)
         if BetterBlizzFramesDB.hideTargetReputationColor then

@@ -1,3 +1,4 @@
+if BBF.isMidnight then return end
 local cdManagerFrames = {
     EssentialCooldownViewer,
     UtilityCooldownViewer,

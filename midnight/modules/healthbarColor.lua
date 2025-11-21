@@ -1,4 +1,4 @@
-if BBF.isMidnight then return end
+if not BBF.isMidnight then return end
 local UnitIsFriend = UnitIsFriend
 local UnitIsEnemy = UnitIsEnemy
 local UnitIsPlayer = UnitIsPlayer
@@ -54,6 +54,7 @@ end
 
 local npcColorCache = {}
 local function GetBBPNameplateColor(unit)
+    if BBF.isMidnight then return end
     local guid = UnitGUID(unit)
     if not guid then return end
 
@@ -120,7 +121,7 @@ local function getUnitColor(unit)
                 end
             end
         end
-    elseif colorPetAfterOwner and UnitIsUnit(unit, "pet") then
+    elseif colorPetAfterOwner and unit == "pet" then
         -- Check if the unit is the player's pet and the setting is enabled
         local _, playerClass = UnitClass("player")
         local color = RAID_CLASS_COLORS[playerClass]
@@ -544,7 +545,7 @@ end
 
 function BBF.PlayerReputationColor()
     local frame = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain
-    if BetterBlizzFramesDB.playerReputationColor then
+    if BetterBlizzFramesDB.playerReputationColor and not BetterBlizzFramesDB.noPortraitModes then
         if not frame.ReputationColor then
             frame.ReputationColor = frame:CreateTexture(nil, "OVERLAY")
             if BetterBlizzFramesDB.classicFrames then

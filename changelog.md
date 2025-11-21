@@ -1,3 +1,115 @@
+# BetterBlizzFrames 1.8.2
+## Midnight & Retail
+### New
+- Midnight: New "Hide Dispel Overlay" setting for Party/RaidFrames
+- New Venruki Profile (www.twitch.tv/venruki)
+- New Player Castbar Icon X/Y Offset sliders in Castbar section
+- New Player/Target/Focus Castbar and Castbar Icon Hide options.
+- New Class Color Names setting for Party/RaidFrames.
+- New "Hide ActionBar Active Overlay" (Misc) that hides the green overlay on placement spells, for example Ice Wall when that is being placed.
+### Tweak
+- Update Mes Profile
+- Midnight: Removed Cooldown Manager section (since most of this is in the default Cooldown Manger now)
+- Midnight: "Center Icons" for Cooldown Manager has been moved to Misc and the rest has been removed since not needed due to upgrades from Blizzard.
+- Midnight: Disable blue legacy blue combo points temporarily while waiting for Blizzard to re-open it to avoid errors.
+- Some No Portrait Pixel Mode tweaks. Still not perfect. Timesink of the century, can't prio it atm.
+### Bugfix
+- Fix issue with No Portrait setting healthbar getting weird on Evoker (Aug?) class.
+- Fix ToT Name position on Classic Frames setting.
+- Fix new Demon Hunter specs Soul Fragment bar for Classic Frames setting.
+- Fix some issues with UnitFrame Background Color combined with No Portrait settings.
+## All versions
+### Tweak
+- Improve Clickthrough setting for Player/Target/Focus making it force frames clickthrough as combat starts so you don't end up with clickable frames if you were holding down shift as combat started.
+
+# BetterBlizzFrames 1.8.1c
+## Midnight
+### Bugfix
+- Minor bugfix due to comparing a now secret value in the new Beta.
+
+# BetterBlizzFrames 1.8.1b
+## Midnight & Retail
+- Fix default party frames causing lua error in combat. This is a temporary workaround.
+Unfortunately this means party frames can't be updated during combat causing them to look off if they need to be updated in combat.
+I'm not 100% sure how I will deal with this atm. Annoying Blizzard shit...
+- Reverted the "click area fix for unitframes" since it was causing a few issues, like no Clique support and no tooltip.
+I'll fix this up at a later time again, Beta is down as of writing this and I want to get this minor patch with a fix out to avoid errors.
+
+# BetterBlizzFrames 1.8.1
+## All versions
+### New
+- Hide PetFrame setting.
+## Midnight & Retail
+### New
+- New "Keep Fancy Mana" setting for the "Change UnitFrame Manabar Texture" setting. Keeps the default texture and color for the bars that have fancy textures. Things like Insanity, Lunar Power, Fury etc.
+- Added new "Blizzard Retail Bar Crop" textures. Cropping off a bit of the dark edges. This will be enabled by default when enabling the No Portrait Pixel Border setting from now on (if texture change was not already enabled). Texture swap needs to be enabled for the Pixel Border settings due to the original texture not actually filling the entire texture space.
+### Tweak
+- Improve coloring on the 2nd resource bar.
+- Force hide the Leatrix Plus class color reputation thing on PlayerFrame if "No Portrait" is enabled.
+- "Hide Player Mana" now also hides Pet Mana.
+### Bugfixes
+- Fix Demon Hunter's new spec not being accounted for in some settings. "Hide PlayerFrame 2nd Resource" for example.
+- Fix click area for all the UnitFrames when No Portrait is enabled.
+- Fix some Midnight errors here and there on Retail code that is now restricted and needs workarounds.
+## Some notes
+- Many settings planned, lots of my plate.
+- Currently the "No Portrait Pixel Border" setting is difficult to get pixel perfect on every possible resolution and ui scale. Tweaking your settings might solve it. I will experiment more with it but it will take some time to get perfect. Any feedback in regards to it is greatly appreciated and please note your resolution, ui scale, and the scale of your frames in edit mode.
+- Currently on Beta some things are intentionally disabled while working on a fix or will be scrapped if completely restricted. 
+
+
+# BetterBlizzFrames 1.8.0
+## Midnight & Retail
+### New
+- New Pixel Border setting for No Portrait.
+- New Pixel Border Auras setting
+- New settings to hide manabar for target/focus (Misc)
+- New settings to hide player manabar (Misc)
+- New setting to hide alt resource (alt mana, stagger, evoker thing) (Misc)
+- Midnight: Hide Target/Focus Auras re-added.
+### Bugfixes
+- A lot of tweaks and fixes for the No Portrait setting. Probably new issues added too. Please report issues and if things look off and should be adjusted!
+- 1.8.0b: Minor tweaks with some missed stuff.
+- 1.8.0c: Fix backwards setting enforcing meaning you got stuck in No Portrait Pixel Border mode. Oops. Chat Im cooked after entire day of working on addon. Need bed.
+
+
+# BetterBlizzFrames 1.7.9b
+## Midnight & Retail
+### Tweak
+- Many tweaks to No Portrait setting to make it better.
+- Dark Mode now also darkens the buff bar borders from Cooldown Manager.
+
+# BetterBlizzFrames 1.7.9
+## Midnight & Retail
+### New
+- New "No Portrait" setting. Not well tested, please report any issues :x
+- Midnight: BigDebuffs for enemy units while in arena works again.
+### Tweak
+- Hide Shadow setting that hides the background behind names on UnitFrame now also toggles on "Hide Reputation Color" for both Target & Focus since this is the look most people are going for enabling this. Avoiding some confusion (potentially adding some too but als).
+### Bugfixes
+- Misc midnight related bugfixes/temporarily disabling stuff to avoid errors.
+
+# BetterBlizzFrames 1.7.8d
+## Midnight
+- Few more fixes for Midnight
+
+# BetterBlizzFrames 1.7.8c
+## Midnight
+- Many fixes for Midnight. Damn you Blizzurd.
+- Aura settings for Target/Focus should now work again too (minus the filtering etc ofc, just size and position)
+
+# BetterBlizzFrames 1.7.8b
+## Midnight & Retail
+### Bugfix
+- Fix dark mode castbar settings not working due to a capitalization mistake.
+
+# BetterBlizzFrames 1.7.8
+## MIDNIGHT
+- Midnight support is live. Keep in mind this is an early version. Lots of work is still required. Please report bugs. Settings might be unresponsive either because they need new methods to work or because they are getting removed.
+- 1.7.8b: Enable new BigDebuffs setting by default. Rip to a real one you will be missed. 
+## All versions
+### Bugfix
+- Fix font changes causing the range dot hotkey text on action buttons with no keybind to appear as a square (due to new font missing that sign). Keep default font for dot.
+
 # BetterBlizzFrames 1.7.7c
 ## Retail
 ### Note

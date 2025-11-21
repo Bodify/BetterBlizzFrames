@@ -1,16 +1,4 @@
-if BBF.isMidnight then return end
-local function AdjustFramePoint(frame, xOffset, yOffset)
-    if not frame._storedPoint then
-        local point, relativeTo, relativePoint, xOfs, yOfs = frame:GetPoint()
-        frame._storedPoint = point
-        frame._storedRelativeTo = relativeTo
-        frame._storedRelativePoint = relativePoint
-        frame._storedXOfs = xOfs
-        frame._storedYOfs = yOfs
-    end
-    frame:SetPoint(frame._storedPoint, frame._storedRelativeTo, frame._storedRelativePoint, frame._storedXOfs + (xOffset or 0), frame._storedYOfs + (yOffset or 0))
-end
-
+if not BBF.isMidnight then return end
 local function SetXYPoint(frame, xOffset, yOffset)
     local point, relativeTo, relativePoint, xOfs, yOfs = frame:GetPoint()
     frame:SetPoint(point, relativeTo, relativePoint, xOffset or xOfs, yOffset or yOfs)
@@ -86,7 +74,8 @@ local function MakeClassicFrame(frame)
         hpContainer.DeadText:SetParent(frame.ClassicFrame)
         hpContainer.DeadText:ClearAllPoints()
         hpContainer.DeadText:SetPoint("CENTER", frame.ClassicFrame.Texture, "LEFT", 66, 2.8)
-        AdjustFramePoint(hpContainer.HealthBar.OverAbsorbGlow, -7)
+        --AdjustFramePoint(hpContainer.HealthBar.OverAbsorbGlow, -7)
+        hpContainer.HealthBar.OverAbsorbGlow:SetPoint("TOPLEFT", hpContainer.HealthBar, "TOPRIGHT", -7, 0)
 
         manaBar.LeftText:SetParent(frame.ClassicFrame)
         manaBar.LeftText:ClearAllPoints()
@@ -112,7 +101,8 @@ local function MakeClassicFrame(frame)
         contentContext.RaidTargetIcon:ClearAllPoints()
         contentContext.RaidTargetIcon:SetPoint("CENTER", frameContainer.Portrait, "TOP", 1.5, 1)
 
-        AdjustFramePoint(frameContainer.Portrait, nil, -4)
+        --AdjustFramePoint(frameContainer.Portrait, nil, -4)
+        frameContainer.Portrait:SetPoint("TOPRIGHT", frameContainer, "TOPRIGHT", -26, -19)
 
         contentMain.LevelText:SetParent(frame.ClassicFrame)
         contentMain.LevelText:ClearAllPoints()
@@ -195,14 +185,14 @@ local function MakeClassicFrame(frame)
 
         local hideToTDebuffs = (frame.unit == "target" and db.hideTargetToTDebuffs) or (frame.unit == "focus" and db.hideFocusToTDebuffs)
         if not hideToTDebuffs then
-            totFrame.lastUpdate = 0
-            totFrame:HookScript("OnUpdate", function(self, elapsed)
-                self.lastUpdate = self.lastUpdate + elapsed
-                if self.lastUpdate >= 0.2 then
-                    self.lastUpdate = 0
-                    RefreshDebuffs(self, self.unit, nil, nil, true)
-                end
-            end)
+            -- totFrame.lastUpdate = 0
+            -- totFrame:HookScript("OnUpdate", function(self, elapsed) --RefreshDebuffs gone
+            --     self.lastUpdate = self.lastUpdate + elapsed
+            --     if self.lastUpdate >= 0.2 then
+            --         self.lastUpdate = 0
+            --         RefreshDebuffs(self, self.unit, nil, nil, true)
+            --     end
+            -- end)
             local debuffFrameName = totFrame:GetName().."Debuff"
             for i = 1, 4 do
                 local debuffFrame = _G[debuffFrameName..i]
@@ -325,7 +315,7 @@ local function MakeClassicFrame(frame)
                 if alwaysHideLvl then
                     ToggleNoLevelFrame(true)
                 elseif hideLvl then
-                    if UnitLevel(frame.unit) == 80 then
+                    if UnitLevel(frame.unit) == 90 then
                         ToggleNoLevelFrame(true)
                     else
                         ToggleNoLevelFrame(false)
@@ -404,7 +394,13 @@ local function MakeClassicFrame(frame)
         frameContainer.PlayerPortraitMask:ClearAllPoints()
         frameContainer.PlayerPortraitMask:SetPoint("CENTER", frameContainer.PlayerPortrait, "CENTER", 0, 0)
 
-        local a2,b2,c2,d2,e2 = PlayerFrameBottomManagedFramesContainer:GetPoint()
+        -- Resource frame positioning table
+        local resourceFrameAnchorPositions = {
+            default = {point = "TOP", relativePoint = "BOTTOM", xOffset = 30, yOffset = 25},
+            [102] = {point = "TOP", relativePoint = "BOTTOM", xOffset = 30, yOffset = 15}, -- Balance Druid
+            [268] = {point = "TOP", relativePoint = "BOTTOM", xOffset = 30, yOffset = 15}, -- Brewmaster Monk
+            [1473] = {point = "TOP", relativePoint = "BOTTOM", xOffset = 30, yOffset = 25}, -- Augmentation Evoker
+        }
 
         frame.ClassicFrame.Background = frame:CreateTexture(nil, "BACKGROUND")
         frame.ClassicFrame.Background:SetColorTexture(0,0,0,0.45)
@@ -461,7 +457,8 @@ local function MakeClassicFrame(frame)
             manaBar.ManaBarText:SetPoint("CENTER", frame.ClassicFrame.Texture, "CENTER", 52, -8.5)
         end
 
-        AdjustFramePoint(hpContainer.HealthBar.OverAbsorbGlow,-3)
+        --AdjustFramePoint(hpContainer.HealthBar.OverAbsorbGlow,-3)
+        hpContainer.HealthBar.OverAbsorbGlow:SetPoint("TOPLEFT", hpContainer.HealthBar, "TOPRIGHT", -7, 0)
 
         if C_CVar.GetCVar("comboPointLocation") == "1" and ComboFrame then
             ComboFrame:SetParent(TargetFrame)
@@ -484,7 +481,7 @@ local function MakeClassicFrame(frame)
                     PlayerLevelText:ClearAllPoints()
                     PlayerLevelText:SetPoint("CENTER", -81, -24.5)
                 elseif hideLvl then
-                    if UnitLevel(frame.unit) == 80 then
+                    if UnitLevel(frame.unit) == 90 then
                         PlayerLevelText:SetParent(BBF.hiddenFrame)
                         PlayerLevelText:ClearAllPoints()
                         PlayerLevelText:SetPoint("CENTER", -81, -24.5)
@@ -500,7 +497,7 @@ local function MakeClassicFrame(frame)
                 if mode > 3 then
                     -- Always hide level text for mode > 3 (using UI-FocusFrame-Large texture)
                     PlayerLevelText:SetParent(BBF.hiddenFrame)
-                elseif alwaysHideLvl or (hideLvl and UnitLevel(frame.unit) == 80) then
+                elseif alwaysHideLvl or (hideLvl and UnitLevel(frame.unit) == 90) then
                     -- Hide level text based on hideLvl settings for mode <= 3
                     PlayerLevelText:SetParent(BBF.hiddenFrame)
                 else
@@ -550,7 +547,7 @@ local function MakeClassicFrame(frame)
 
         local DEFAULT_X, DEFAULT_Y = 29, 28.5
         local resourceFramePositions = {
-            EVOKER = {x = 28, y = 31, scale = 1.05, specs = {[1473] = { x = 30, y = 24 }}},
+            EVOKER = {x = 28, y = 31, scale = 1.05, specs = {[1473] = { x = 29, y = 23, scale = 1 }}},
             WARRIOR = { x = 28, y = 30 },
             ROGUE   = { x = 48, y = 38, scale = 0.85},
             MAGE = { x = 32, y = 32, scale = 0.95 },
@@ -600,22 +597,33 @@ local function MakeClassicFrame(frame)
 
             if not InCombatLockdown() then
                 PlayerFrameBottomManagedFramesContainer:ClearAllPoints()
-                local xOffset, yOffset, scale = GetPlayerClassAndSpecPosition()
+                
+                -- Get positioning from the table based on specID
+                local specID = GetSpecialization() and GetSpecializationInfo(GetSpecialization())
+                local posData = resourceFrameAnchorPositions[specID] or resourceFrameAnchorPositions.default
+                local point = posData.point or "TOP"
+                local relativeFrame = PlayerFrame
+                local relativePoint = posData.relativePoint or "BOTTOM"
+                local xOffset = posData.xOffset or 30
+                local yOffset = posData.yOffset or 25
+                
+                local _, _, scale = GetPlayerClassAndSpecPosition()
+                
                 if rogueCheck then
                     local isRogueWith5Combos = UnitPowerMax("player", Enum.PowerType.ComboPoints) == 5
                     local isRogueWith6Combos = UnitPowerMax("player", Enum.PowerType.ComboPoints) == 6
                     if isRogueWith5Combos then
-                        PlayerFrameBottomManagedFramesContainer:SetPoint(a2, b2, c2, 31.5, 35)
+                        PlayerFrameBottomManagedFramesContainer:SetPoint(point, relativeFrame, relativePoint, 31.5, 35)
                         PlayerFrameBottomManagedFramesContainer:SetScale(0.95)
                     elseif isRogueWith6Combos then
-                        PlayerFrameBottomManagedFramesContainer:SetPoint(a2, b2, c2, 46, 37)
+                        PlayerFrameBottomManagedFramesContainer:SetPoint(point, relativeFrame, relativePoint, 46, 37)
                         PlayerFrameBottomManagedFramesContainer:SetScale(scale)
                     else
-                        PlayerFrameBottomManagedFramesContainer:SetPoint(a2, b2, c2, xOffset, yOffset)
+                        PlayerFrameBottomManagedFramesContainer:SetPoint(point, relativeFrame, relativePoint, xOffset, yOffset)
                         PlayerFrameBottomManagedFramesContainer:SetScale(scale)
                     end
                 else
-                    PlayerFrameBottomManagedFramesContainer:SetPoint(a2, b2, c2, xOffset, yOffset)
+                    PlayerFrameBottomManagedFramesContainer:SetPoint(point, relativeFrame, relativePoint, xOffset, yOffset)
                     PlayerFrameBottomManagedFramesContainer:SetScale(scale)
                 end
                 PlayerFrameBottomManagedFramesContainer:SetFrameStrata("HIGH")
@@ -696,11 +704,13 @@ local function MakeClassicFrame(frame)
         local function ToPlayerArt()
             UpdateResourcePosition(isRogue)
 
-            AdjustFramePoint(hpContainer.HealthBarMask, 0, -11)
+            --AdjustFramePoint(hpContainer.HealthBarMask, 0, -11)
+            hpContainer.HealthBarMask:SetPoint("TOPLEFT", hpContainer.HealthBar, "TOPLEFT", -2, -6)
             hpContainer.HealthBarMask:SetSize(126, 17)
 
             manaBar.ManaBarMask:SetSize(126, 19)
-            AdjustFramePoint(manaBar.ManaBarMask, 0, 2)
+            --AdjustFramePoint(manaBar.ManaBarMask, 0, 2)
+            manaBar.ManaBarMask:SetPoint("TOPLEFT", manaBar, "TOPLEFT", -2, 2)
 
             frameContainer.FrameTexture:ClearAllPoints()
             frameContainer.FrameTexture:SetPoint("TOPLEFT", -19, 7)
@@ -722,7 +732,7 @@ local function MakeClassicFrame(frame)
                 contentMain.StatusTexture:SetTexture("Interface\\CharacterFrame\\UI-Player-Status")
                 -- Handle level text for playerEliteFrame
                 local mode = BetterBlizzFramesDB.playerEliteFrameMode
-                if mode > 3 and (alwaysHideLvl or (hideLvl and UnitLevel("player") == 80)) then
+                if mode > 3 and (alwaysHideLvl or (hideLvl and UnitLevel("player") == 90)) then
                     -- Ensure level text is hidden when using UI-FocusFrame-Large
                     PlayerLevelText:SetParent(BBF.hiddenFrame)
                 end
@@ -730,7 +740,7 @@ local function MakeClassicFrame(frame)
                 if alwaysHideLvl then
                     ToggleNoLevelFrame(true)
                 elseif hideLvl then
-                    if UnitLevel("player") == 80 then
+                    if UnitLevel("player") == 90 then
                         ToggleNoLevelFrame(true)
                     else
                         ToggleNoLevelFrame(false)
@@ -745,7 +755,7 @@ local function MakeClassicFrame(frame)
             frame.ClassicFrame.Texture:SetDrawLayer("BORDER")
 
             frameContainer.AlternatePowerFrameTexture:ClearAllPoints()
-            frameContainer.AlternatePowerFrameTexture:SetPoint("TOPLEFT", -19, -8)
+            frameContainer.AlternatePowerFrameTexture:SetPoint("TOPLEFT", -9, -8)
             frameContainer.AlternatePowerFrameTexture:SetAlpha(0)
 
             frameContainer.FrameFlash:SetParent(db.hideCombatGlow and BBF.hiddenFrame or frame)
@@ -929,6 +939,14 @@ local function MakeClassicFrame(frame)
     end
 end
 
+local fancyManas = {
+    ["INSANITY"] = true,
+    ["MAELSTROM"] = true,
+    ["FURY"] = true,
+    ["LUNAR_POWER"] = true,
+    ["SOUL_FRAGMENTS"] = true,                 -- alt mana, powerName (as opposed to powerType)
+}
+
 local function AdjustAlternateBars()
     AlternatePowerBar:SetSize(104, 12)
     AlternatePowerBar:ClearAllPoints()
@@ -970,7 +988,8 @@ local function AdjustAlternateBars()
             end
         end)
     else
-        AdjustFramePoint(AlternatePowerBar.PowerBarMask, nil, -1)
+        --AdjustFramePoint(AlternatePowerBar.PowerBarMask, nil, -1)
+        AlternatePowerBar.PowerBarMask:SetPoint("TOPLEFT", AlternatePowerBar, "TOPLEFT", -2, 3)
     end
 
     if class == "MONK" then
@@ -1051,6 +1070,68 @@ local function AdjustAlternateBars()
         end)
     end
 
+    if class == "DEMONHUNTER" and DemonHunterSoulFragmentsBar then
+        DemonHunterSoulFragmentsBar:SetSize(104, 12)
+        DemonHunterSoulFragmentsBar:ClearAllPoints()
+        DemonHunterSoulFragmentsBar:SetPoint("BOTTOMLEFT", 95, 17)
+
+        if DemonHunterSoulFragmentsBar.TextString then
+            DemonHunterSoulFragmentsBar.TextString:SetPoint("CENTER", 1, -1)
+        end
+        if DemonHunterSoulFragmentsBar.LeftText then
+            DemonHunterSoulFragmentsBar.LeftText:SetPoint("LEFT", 0, -1)
+        end
+        if DemonHunterSoulFragmentsBar.RightText then
+            DemonHunterSoulFragmentsBar.RightText:SetPoint("RIGHT", 0, -1)
+        end
+
+        DemonHunterSoulFragmentsBar.Background = DemonHunterSoulFragmentsBar:CreateTexture(nil, "BACKGROUND")
+        DemonHunterSoulFragmentsBar.Background:SetAllPoints()
+        DemonHunterSoulFragmentsBar.Background:SetColorTexture(0, 0, 0, 0.5)
+
+        DemonHunterSoulFragmentsBar.Border = DemonHunterSoulFragmentsBar:CreateTexture(nil, "OVERLAY")
+        DemonHunterSoulFragmentsBar.Border:SetSize(0, 16)
+        DemonHunterSoulFragmentsBar.Border:SetTexture("Interface\\CharacterFrame\\UI-CharacterFrame-GroupIndicator")
+        DemonHunterSoulFragmentsBar.Border:SetTexCoord(0.125, 0.250, 1, 0)
+        DemonHunterSoulFragmentsBar.Border:SetPoint("TOPLEFT", 4, 0)
+        DemonHunterSoulFragmentsBar.Border:SetPoint("TOPRIGHT", -4, 0)
+
+        DemonHunterSoulFragmentsBar.LeftBorder = DemonHunterSoulFragmentsBar:CreateTexture(nil, "OVERLAY")
+        DemonHunterSoulFragmentsBar.LeftBorder:SetSize(16, 16)
+        DemonHunterSoulFragmentsBar.LeftBorder:SetTexture("Interface\\CharacterFrame\\UI-CharacterFrame-GroupIndicator")
+        DemonHunterSoulFragmentsBar.LeftBorder:SetTexCoord(0, 0.125, 1, 0)
+        DemonHunterSoulFragmentsBar.LeftBorder:SetPoint("RIGHT", DemonHunterSoulFragmentsBar.Border, "LEFT")
+
+        DemonHunterSoulFragmentsBar.RightBorder = DemonHunterSoulFragmentsBar:CreateTexture(nil, "OVERLAY")
+        DemonHunterSoulFragmentsBar.RightBorder:SetSize(16, 16)
+        DemonHunterSoulFragmentsBar.RightBorder:SetTexture("Interface\\CharacterFrame\\UI-CharacterFrame-GroupIndicator")
+        DemonHunterSoulFragmentsBar.RightBorder:SetTexCoord(0.125, 0, 1, 0)
+        DemonHunterSoulFragmentsBar.RightBorder:SetPoint("LEFT", DemonHunterSoulFragmentsBar.Border, "RIGHT")
+
+        local color = { r = 0.11, g = 0.34, b = 0.71 }
+        DemonHunterSoulFragmentsBar.keepFancyManas = BetterBlizzFramesDB.changeUnitFrameManaBarTextureKeepFancy
+        DemonHunterSoulFragmentsBar.bbfPowerToken = DemonHunterSoulFragmentsBar.powerToken or DemonHunterSoulFragmentsBar.powerName
+
+        DemonHunterSoulFragmentsBar.CollapsingStarBackground:SetSize(104, 12)
+        DemonHunterSoulFragmentsBar.Glow:SetSize(104, 12)
+        DemonHunterSoulFragmentsBar.Ready:SetSize(104, 12)
+        DemonHunterSoulFragmentsBar.Deplete:SetSize(104, 12)
+        DemonHunterSoulFragmentsBar.CollapsingStarDepleteFin:SetSize(104, 12)
+
+        local r, g, b = color.r, color.g, color.b
+
+        hooksecurefunc(DemonHunterSoulFragmentsBar, "EvaluateUnit", function(self)
+            if self.keepFancyManas and fancyManas[self.bbfPowerToken] then return end
+            if self.inVoidMetamorphosis then
+                r, g, b = 0.35, 0.25, 0.73
+            else
+                r, g, b = 0.11, 0.34, 0.71
+            end
+            self:SetStatusBarTexture(BBF.manaTexture)
+            self:SetStatusBarColor(r, g, b)
+        end)
+    end
+
     local classicFrameColorTargets = {
         AlternatePowerBar.Border,
         AlternatePowerBar.LeftBorder,
@@ -1107,12 +1188,14 @@ local function MakeClassicPartyFrame()
 
 
         overlay.LeaderIcon:SetSize(14,14)
-        AdjustFramePoint(overlay.LeaderIcon, nil, -6)
+        --AdjustFramePoint(overlay.LeaderIcon, nil, -6)
+        overlay.LeaderIcon:SetPoint("BOTTOM", overlay, "TOP", -10, -6)
         overlay.RoleIcon:ClearAllPoints()
         overlay.RoleIcon:SetPoint("BOTTOMLEFT", 8, 10)
         overlay.PVPIcon:SetParent(BBF.hiddenFrame)
 
-        AdjustFramePoint(hpContainer.HealthBarMask, nil, -3)
+        --AdjustFramePoint(hpContainer.HealthBarMask, nil, -3)
+        hpContainer.HealthBarMask:SetPoint("TOPLEFT", hpContainer.HealthBar, "TOPLEFT", -29, 0)
 
         frame.Background = frame:CreateTexture(nil, "BACKGROUND")
         frame.Background:SetColorTexture(0,0,0,0.45)
@@ -1148,7 +1231,8 @@ local function MakeClassicPartyFrame()
         hooksecurefunc(frame, "ToPlayerArt", function(self)
             self.Texture:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame")
 
-            AdjustFramePoint(frame.HealthBarContainer.HealthBarMask, nil, -3)
+            --AdjustFramePoint(frame.HealthBarContainer.HealthBarMask, nil, -3)
+            hpContainer.HealthBarMask:SetPoint("TOPLEFT", frame.HealthBarContainer.HealthBar, "TOPLEFT", -29, 0)
 
             hpContainer.CenterText:ClearAllPoints()
             hpContainer.CenterText:SetPoint("CENTER", hpContainer, "CENTER", 2, -2)

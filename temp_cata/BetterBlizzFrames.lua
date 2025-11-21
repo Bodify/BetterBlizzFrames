@@ -383,6 +383,10 @@ StaticPopupDialogs["CONFIRM_RESET_BETTERBLIZZFRAMESDB"] = {
 local function SendUpdateMessage()
     if sendUpdate then
         if not BetterBlizzFramesDB.scStart then
+            if BetterBlizzFramesDB.skipUpdateMsg then
+                BetterBlizzFramesDB.skipUpdateMsg = nil
+                return
+            end
             C_Timer.After(7, function()
                 --StaticPopup_Show("BBF_NEW_VERSION")
 
@@ -491,23 +495,51 @@ end
 -- CLICKTHROUGH
 --------------------------------------
 function BBF.ClickthroughFrames()
-	if not InCombatLockdown() then
+    if not InCombatLockdown() then
         local shift = IsShiftKeyDown()
-        if BetterBlizzFramesDB.playerFrameClickthrough then
+        local db = BetterBlizzFramesDB
+
+        if db.playerFrameClickthrough then
             PlayerFrame:SetMouseClickEnabled(shift)
         end
 
-        if BetterBlizzFramesDB.targetFrameClickthrough then
+        if db.targetFrameClickthrough then
             TargetFrame:SetMouseClickEnabled(shift)
+            TargetFrameToT:SetMouseClickEnabled(shift)
+        end
+
+        if db.focusFrameClickthrough then
+            FocusFrame:SetMouseClickEnabled(shift)
+            FocusFrameToT:SetMouseClickEnabled(shift)
+        end
+    end
+end
+
+local ClickthroughFrames = CreateFrame("Frame")
+ClickthroughFrames:SetScript("OnEvent", function(_, event)
+    if event == "PLAYER_REGEN_DISABLED" then
+        local db = BetterBlizzFramesDB
+
+        if db.playerFrameClickthrough then
+            PlayerFrame:SetMouseClickEnabled(false)
+        end
+
+        if db.targetFrameClickthrough then
+            TargetFrame:SetMouseClickEnabled(false)
             TargetFrameToT:SetMouseClickEnabled(false)
         end
 
-        if BetterBlizzFramesDB.focusFrameClickthrough then
-            FocusFrame:SetMouseClickEnabled(shift)
+        if db.focusFrameClickthrough then
+            FocusFrame:SetMouseClickEnabled(false)
             FocusFrameToT:SetMouseClickEnabled(false)
         end
-	end
-end
+
+        return
+    end
+    BBF.ClickthroughFrames()
+end)
+ClickthroughFrames:RegisterEvent("MODIFIER_STATE_CHANGED")
+ClickthroughFrames:RegisterEvent("PLAYER_REGEN_DISABLED")
 
 local function HookClassComboPoints()
     -- local db = BetterBlizzFramesDB
@@ -799,14 +831,6 @@ local function DisableClickForClassSpecificFrame()
         hooksecurefunc(EssencePlayerFrame, "UpdatePower", DisableClickForEssencePlayerFrame)
     end
 end
-
-local ClickthroughFrames = CreateFrame("frame")
-ClickthroughFrames:SetScript("OnEvent", function()
-    BBF.ClickthroughFrames()
-end)
-ClickthroughFrames:RegisterEvent("MODIFIER_STATE_CHANGED")
-
-
 
 local resourceFrames = {
     WARLOCK = ShardBarFrame,
@@ -1829,8 +1853,14 @@ end
 local LSM = LibStub("LibSharedMedia-3.0")
 BBF.LSM = LSM
 BBF.allLocales = LSM.LOCALE_BIT_western+LSM.LOCALE_BIT_ruRU+LSM.LOCALE_BIT_zhCN+LSM.LOCALE_BIT_zhTW+LSM.LOCALE_BIT_koKR
+LSM:Register("statusbar", "Blizzard DF", [[Interface\TargetingFrame\UI-TargetingFrame-BarFill]])
+LSM:Register("statusbar", "Blizzard CF", [[Interface\AddOns\BetterBlizzFrames\media\ui-statusbar-cf]])
+LSM:Register("statusbar", "Blizzard Retail Bar", [[Interface\AddOns\BetterBlizzFrames\media\blizzTex\BlizzardRetailBar]])
+LSM:Register("statusbar", "Blizzard Retail Bar Crop", [[Interface\AddOns\BetterBlizzFrames\media\blizzTex\BlizzardRetailBarCrop]])
+LSM:Register("statusbar", "Blizzard Retail Bar Crop 2", [[Interface\AddOns\BetterBlizzFrames\media\blizzTex\BlizzardRetailBarCrop2]])
+LSM:Register("statusbar", "Smooth", [[Interface\Addons\BetterBlizzFrames\media\smooth]])
 local texture = "Interface\\Addons\\BetterBlizzPlates\\media\\DragonflightTextureHD"
-local manaTexture = "Interface\\Addons\\BetterBlizzPlates\\media\\DragonflightTextureHD"
+local manaTexture = "Interface\\Addons\\BetterBlizzPlates\\media\\blizzTex\\BlizzardRetailBarCrop2"
 local raidHpTexture = "Interface\\Addons\\BetterBlizzPlates\\media\\DragonflightTextureHD"
 local raidManaTexture = "Interface\\Addons\\BetterBlizzPlates\\media\\DragonflightTextureHD"
 local castbarTexture = 137012

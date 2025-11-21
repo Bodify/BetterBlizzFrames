@@ -1,4 +1,4 @@
-if BBF.isMidnight then return end
+if not BBF.isMidnight then return end
 local hiddenFrame = CreateFrame("Frame")
 hiddenFrame:Hide()
 BBF.hiddenFrame = hiddenFrame
@@ -76,7 +76,7 @@ function BBF.HideFrames()
         local classicFrames = C_AddOns.IsAddOnLoaded("ClassicFrames")
         --Hide group indicator on player unitframe
         local groupIndicatorAlpha = BetterBlizzFramesDB.hideGroupIndicator and 0 or 1
-        PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.GroupIndicator:SetAlpha(groupIndicatorAlpha)
+        PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.GroupIndicator:SetAlpha(BetterBlizzFramesDB.noPortraitModes and 0 or groupIndicatorAlpha)
         -- PlayerFrameGroupIndicatorMiddle:SetAlpha(groupIndicatorAlpha)
         -- PlayerFrameGroupIndicatorText:SetAlpha(groupIndicatorAlpha)
         -- PlayerFrameGroupIndicatorLeft:SetAlpha(groupIndicatorAlpha)
@@ -253,7 +253,7 @@ function BBF.HideFrames()
         end
 
         if BetterBlizzFramesDB.hideActionBar1 then
-            if not MainMenuBar.bbfHidden then
+            if not MainActionBar.bbfHidden then
                 hooksecurefunc(EditModeManagerFrame, "EnterEditMode", function()
                     if InCombatLockdown() then
                         if hiddenBar1 then
@@ -261,7 +261,7 @@ function BBF.HideFrames()
                         end
                         return
                     end
-                    MainMenuBar:SetParent(UIParent)
+                    MainActionBar:SetParent(UIParent)
                     hiddenBar1 = false
                 end)
                 hooksecurefunc(EditModeManagerFrame, "ExitEditMode", function()
@@ -271,11 +271,11 @@ function BBF.HideFrames()
                         end
                         return
                     end
-                    MainMenuBar:SetParent(BBF.hiddenFrame)
+                    MainActionBar:SetParent(BBF.hiddenFrame)
                     hiddenBar1 = true
                 end)
-                MainMenuBar:SetParent(BBF.hiddenFrame)
-                MainMenuBar.bbfHidden = true
+                MainActionBar:SetParent(BBF.hiddenFrame)
+                MainActionBar.bbfHidden = true
                 hiddenBar1 = true
             end
         end
@@ -367,6 +367,26 @@ function BBF.HideFrames()
             end
         end
 
+        -- /dump CompactPartyFrameMember1CenterStatusIcon.texture:GetAtlas()
+
+        -- Hide DispelOverlay
+        if BetterBlizzFramesDB.hidePartyDispelOverlay then
+            for i = 1, 8 do
+                for j = 1, 5 do
+                    local frame = _G["CompactRaidGroup"..j.."Member"..i]
+                    if frame and frame.DispelOverlay then
+                        frame.DispelOverlay:SetAlpha(0)
+                    end
+                end
+            end
+            for i = 1, 5 do
+                local frame = _G["CompactPartyFrameMember"..i]
+                if frame and frame.DispelOverlay then
+                    frame.DispelOverlay:SetAlpha(0)
+                end
+            end
+        end
+
         -- Hide combat glow on player frame
         if BetterBlizzFramesDB.hideCombatGlow then
             PlayerFrame.PlayerFrameContainer.FrameFlash:SetParent(hiddenFrame)
@@ -427,7 +447,7 @@ function BBF.HideFrames()
                 TargetFrame.TargetFrameContent.TargetFrameContentContextual.HighLevelTexture:SetAlpha(0)
                 FocusFrame.TargetFrameContent.TargetFrameContentContextual.HighLevelTexture:SetAlpha(0)
             else
-                if UnitLevel("player") == 80 then
+                if UnitLevel("player") == 90 then
                     PlayerLevelText:SetParent(hiddenFrame)
                     if classicFrames then
                         C_Timer.After(1, function()
@@ -435,11 +455,11 @@ function BBF.HideFrames()
                         end)
                     end
                 end
-                if UnitLevel("target") == 80 then
+                if UnitLevel("target") == 90 then
                     --TargetFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetParent(hiddenFrame)
                     TargetFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetAlpha(0)
                 end
-                if UnitLevel("focus") == 80 then
+                if UnitLevel("focus") == 90 then
                     --FocusFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetParent(hiddenFrame)
                     FocusFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetAlpha(0)
                 end
@@ -1018,10 +1038,10 @@ function BBF.HideFrames()
                 if string.find(childName, "LibDBIcon") or childName == "ExpansionLandingPageMinimapButton" then
                     if show then
                         child:Show()
-                        ExpansionLandingPageMinimapButton:Show()
+                        ExpansionLandingPageMinimapButton:SetAlpha(1)
                     else
                         child:Hide()
-                        ExpansionLandingPageMinimapButton:Hide()
+                        ExpansionLandingPageMinimapButton:SetAlpha(0)
                     end
                 end
             end
@@ -1120,7 +1140,7 @@ local function UpdateLevelTextVisibility(unitFrame, unit)
             unitFrame.LevelText:SetAlpha(0)
             return
         end
-        if UnitLevel(unit) == 80 then
+        if UnitLevel(unit) == 90 then
             unitFrame.LevelText:SetAlpha(0)
         else
             unitFrame.LevelText:SetAlpha(1)

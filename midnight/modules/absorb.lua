@@ -1,4 +1,4 @@
-if BBF.isMidnight then return end
+if not BBF.isMidnight then return end
 local LSM = LibStub("LibSharedMedia-3.0")
 
 local function GetMaxAbsorbAuraIcon(unit)
@@ -276,6 +276,7 @@ end
 
 local absorbEventFrame
 function BBF.AbsorbCaller()
+    if not BBFMIDNIGHT then return end
     if BetterBlizzFramesDB.absorbIndicator and not absorbEventFrame then
         absorbEventFrame = CreateFrame("Frame")
         absorbEventFrame:RegisterUnitEvent("UNIT_ABSORB_AMOUNT_CHANGED", "player", "target", "focus")

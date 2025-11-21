@@ -568,7 +568,7 @@ local function SetActionBarFonts(font, size, kbSize, outline, kbOutline, chargeS
             if hotKeyText then
                 local ogFont, ogSize, ogOutline = hotKeyText:GetFont()
                 local finalOutline = kbOutline or (ogOutline ~= "NONE" and ogOutline) or nil
-                hotKeyText:SetFont(font or ogFont, kbSize or ogSize, finalOutline)
+                hotKeyText:SetFont((hotKeyText:GetText() == "●" and ogFont) or font or ogFont, kbSize or ogSize, finalOutline)
             end
 
             local macroText = _G[buttonPrefix .. i .. "Name"]
@@ -609,7 +609,7 @@ local function SetActionBarFonts(font, size, kbSize, outline, kbOutline, chargeS
             if hotKeyText then
                 local ogFont, ogSize, ogOutline = hotKeyText:GetFont()
                 local finalOutline = kbOutline or (ogOutline ~= "NONE" and ogOutline) or nil
-                hotKeyText:SetFont(font or ogFont, kbSize or ogSize, finalOutline)
+                hotKeyText:SetFont((hotKeyText:GetText() == "●" and ogFont) or font or ogFont, kbSize or ogSize, finalOutline)
             end
 
             local macroText = _G[bar.name .. i .. "Name"]
@@ -782,6 +782,45 @@ function BBF.SetCustomFonts()
             for _, frame in ipairs(frames) do
                 local _, size, style = frame.bbfName:GetFont()
                 frame.bbfName:SetFont(fontPath, size, style)
+            end
+
+            -- Override action bar hotkey font for "●" symbol
+            local blizzButtons = {
+                "ActionButton", "MultiBarBottomLeftButton", "MultiBarBottomRightButton",
+                "MultiBarRightButton", "MultiBarLeftButton", "MultiBar5Button",
+                "MultiBar6Button", "MultiBar7Button", "PetActionButton"
+            }
+
+            for _, buttonPrefix in ipairs(blizzButtons) do
+                for i = 1, 12 do
+                    local hotKeyText = _G[buttonPrefix .. i .. "HotKey"]
+                    if hotKeyText and hotKeyText:GetText() == "●" then
+                        hotKeyText:SetFont("Fonts\\ARIALN.TTF", 12, "OUTLINE")
+                    end
+                end
+            end
+            local NUM_ACTIONBAR_BUTTONS = NUM_ACTIONBAR_BUTTONS or 12
+            local DOMINOS_NUM_MAX_BUTTONS = 14 * NUM_ACTIONBAR_BUTTONS
+            local dominosBars = {
+                {name = "DominosActionButton", count = DOMINOS_NUM_MAX_BUTTONS},
+                {name = "MultiBar5ActionButton", count = 12},
+                {name = "MultiBar6ActionButton", count = 12},
+                {name = "MultiBar7ActionButton", count = 12},
+                {name = "MultiBarRightActionButton", count = 12},
+                {name = "MultiBarLeftActionButton", count = 12},
+                {name = "MultiBarBottomRightActionButton", count = 12},
+                {name = "MultiBarBottomLeftActionButton", count = 12},
+                {name = "DominosPetActionButton", count = 12},
+                {name = "DominosStanceButton", count = 12},
+            }
+
+            for _, bar in ipairs(dominosBars) do
+                for i = 1, bar.count do
+                    local hotKeyText = _G[bar.name .. i .. "HotKey"]
+                    if hotKeyText and hotKeyText:GetText() == "●" then
+                        hotKeyText:SetFont("Fonts\\ARIALN.TTF", 12, "OUTLINE")
+                    end
+                end
             end
         end
 

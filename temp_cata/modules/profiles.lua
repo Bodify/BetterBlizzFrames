@@ -9,6 +9,7 @@ function BBF.StarterProfile()
         for k, v in pairs(profileData) do
             BetterBlizzFramesDB[k] = v
         end
+        BetterBlizzFramesDB.skipUpdateMsg = true
         ReloadUI()
     end
 end
@@ -24,6 +25,7 @@ function BBF.AeghisProfile()
         for k, v in pairs(profileData) do
             BetterBlizzFramesDB[k] = v
         end
+        BetterBlizzFramesDB.skipUpdateMsg = true
         ReloadUI()
     end
 end
@@ -39,7 +41,7 @@ function BBF.MmarkersProfile()
         for k, v in pairs(profileData) do
             BetterBlizzFramesDB[k] = v
         end
-        BetterBlizzFramesDB.scStart = true
+        BetterBlizzFramesDB.skipUpdateMsg = true
         ReloadUI()
     end
 end
@@ -55,7 +57,7 @@ function BBF.NahjProfile()
         for k, v in pairs(profileData) do
             BetterBlizzFramesDB[k] = v
         end
-        BetterBlizzFramesDB.scStart = true
+        BetterBlizzFramesDB.skipUpdateMsg = true
         ReloadUI()
     end
 end
@@ -71,6 +73,7 @@ function BBF.SnupyProfile()
         for k, v in pairs(profileData) do
             BetterBlizzFramesDB[k] = v
         end
+        BetterBlizzFramesDB.skipUpdateMsg = true
         ReloadUI()
     end
 end

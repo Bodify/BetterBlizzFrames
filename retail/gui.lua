@@ -1,3 +1,4 @@
+if BBF.isMidnight then return end
 BetterBlizzFrames = nil
 local LibDD = LibStub:GetLibrary("LibUIDropDownMenu-4.0")
 --local anchorPoints = {"CENTER", "TOPLEFT", "TOP", "TOPRIGHT", "LEFT", "RIGHT", "BOTTOMLEFT", "BOTTOM", "BOTTOMRIGHT"}
@@ -1491,7 +1492,7 @@ end
 
 local function CreateClassButton(parent, class, name, twitchName, onClickFunc)
     local bbfParent = parent == BetterBlizzFrames
-    local btnWidth, btnHeight = bbfParent and 96 or 150, bbfParent and 22 or  30
+    local btnWidth, btnHeight = bbfParent and 100 or 150, bbfParent and 22 or  30
     local button = CreateFrame("Button", nil, parent, "GameMenuButtonTemplate")
     button:SetSize(btnWidth, btnHeight)
 
@@ -1508,8 +1509,9 @@ local function CreateClassButton(parent, class, name, twitchName, onClickFunc)
     button:SetHighlightFontObject("GameFontHighlight")
     local a,b,c = button.Text:GetFont()
     button.Text:SetFont(a,b,"OUTLINE")
-    local a,b,c,d,e = button.Text:GetPoint()
-    button.Text:SetPoint(a,b,c,d,e-0.5)
+    -- local a,b,c,d,e = button.Text:GetPoint()
+    -- button.Text:SetPoint(a,b,c,d,e-0.5)
+    local ttAnchor = "ANCHOR_TOP"
 
     button:SetScript("OnClick", function()
         if onClickFunc then
@@ -1518,15 +1520,15 @@ local function CreateClassButton(parent, class, name, twitchName, onClickFunc)
     end)
 
     if class == "STARTER" then
-        CreateTooltipTwo(button, string.format("|A:%s:16:16|a %s%s|r", icon, color, name.." Profile"), "A basic starter profile that only enables the few things you need.\n\nIntended to work as a very minimal quick start that can be built upon.", nil, "ANCHOR_TOP")
+        CreateTooltipTwo(button, string.format("|A:%s:16:16|a %s%s|r", icon, color, name.." Profile"), "A basic starter profile that only enables the few things you need.\n\nIntended to work as a very minimal quick start that can be built upon.", nil, ttAnchor)
     elseif class == "BLITZ" then
-        CreateTooltipTwo(button, string.format("|A:%s:16:16|a %s%s|r", icon, color, name.." Profile"), "A more advanced profile enabling a few more settings and customizing things a bit more.\n\nGreat for Battlegrounds (and Arenas) with Class Icons showing Healers, Tanks and Battleground Objectives.", nil, "ANCHOR_TOP")
+        CreateTooltipTwo(button, string.format("|A:%s:16:16|a %s%s|r", icon, color, name.." Profile"), "A more advanced profile enabling a few more settings and customizing things a bit more.\n\nGreat for Battlegrounds (and Arenas) with Class Icons showing Healers, Tanks and Battleground Objectives.", nil, ttAnchor)
     elseif class == "MYTHIC" then
-        CreateTooltipTwo(button, string.format("|A:%s:16:16|a %s%s|r", icon, color, name.." Profile"), "A great well rounded profile made by |cffc79c6eJovelo|r that enhances the default Blizzard nameplates.\n\nGreat for all types of content with Mythic+ Season 2 NPC nameplate colors included.", nil, "ANCHOR_TOP")
+        CreateTooltipTwo(button, string.format("|A:%s:16:16|a %s%s|r", icon, color, name.." Profile"), "A great well rounded profile made by |cffc79c6eJovelo|r that enhances the default Blizzard nameplates.\n\nGreat for all types of content with Mythic+ Season 2 NPC nameplate colors included.", nil, ttAnchor)
     elseif name == "Bodify" then
-        CreateTooltipTwo(button, string.format("|A:%s:16:16|a %s%s|r", icon, color, name.." Profile"), "My personal profile from a while ago. Meant for Arenas only. Possible I'd make some tweaks if I was actively playing still.", nil, "ANCHOR_TOP")
+        CreateTooltipTwo(button, string.format("|A:%s:16:16|a %s%s|r", icon, color, name.." Profile"), "My personal profile from a while ago. Meant for Arenas only. Possible I'd make some tweaks if I was actively playing still.", nil, ttAnchor)
     else
-        CreateTooltipTwo(button, string.format("|A:%s:16:16|a %s%s|r", icon, color, name.." Profile"), string.format("Enable all of %s's profile settings.", name), string.format("www.twitch.tv/%s", twitchName), "ANCHOR_TOP")
+        CreateTooltipTwo(button, string.format("|A:%s:16:16|a %s%s|r", icon, color, name.." Profile"), string.format("Enable all of %s's profile settings.", name), string.format("www.twitch.tv/%s", twitchName), ttAnchor)
     end
 
     return button
@@ -3092,6 +3094,38 @@ end
 ------------------------------------------------------------
 -- GUI Panels
 ------------------------------------------------------------
+local function guiProfiles()
+    local parent = SettingsPanel
+    local frame = CreateFrame("Frame", nil, BetterBlizzFrames, "SettingsFrameTemplate")
+    frame.titleText = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    frame.titleText:SetPoint("TOP", frame, "TOP", 1, -4)
+    frame.titleText:SetText("|A:gmchat-icon-blizz:16:16|a BBF")
+
+    frame.descriptionText = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    frame.descriptionText:SetPoint("TOP", frame, "TOP", 2, -26)
+    frame.descriptionText:SetText("Pre-configured profiles for BetterBlizzFrames:")
+    frame.descriptionText:SetWidth(100)
+
+    frame.coreText = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    frame.coreText:SetPoint("TOP", frame.descriptionText, "BOTTOM", 0, -10)
+    frame.coreText:SetText("Core")
+
+    frame.streamerText = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    frame.streamerText:SetPoint("TOP", frame.coreText, "BOTTOM", 0, -60)
+    frame.streamerText:SetText("Streamers")
+
+    frame.infoText = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    frame.infoText:SetPoint("BOTTOM", frame, "BOTTOM", 2, 200)
+    frame.infoText:SetText("If you are missing and want to be here let me know :)")
+    frame.infoText:SetWidth(100)
+
+    frame:SetSize(130, parent:GetHeight())
+    frame:SetPoint("TOPRIGHT", parent, "TOPLEFT", 7, 0)
+    frame:SetFrameStrata("BACKGROUND")
+    frame.ClosePanelButton:Hide()
+    return frame
+end
+
 local function guiGeneralTab()
     ----------------------
     -- Main panel:
@@ -3101,6 +3135,20 @@ local function guiGeneralTab()
     mainGuiAnchor:SetText(" ")
 
     BetterBlizzFrames.searchName = "General"
+
+    local profilesFrame = guiProfiles()
+
+    local midnightBeta = BetterBlizzFrames:CreateFontString(nil, "BACKGROUND", "GameFontNormal")
+    midnightBeta:SetPoint("BOTTOM", SettingsPanel, "TOP", 0, 0)
+    midnightBeta:SetText("|T136221:12:12|t |cffcc66ffBetterBlizzFrames is now available on Midnight Beta.")
+    midnightBeta:SetFont("Fonts\\FRIZQT__.TTF", 24, "THINOUTLINE")
+    midnightBeta:Hide()
+    BetterBlizzFrames:HookScript("OnShow",function()
+        midnightBeta:Show()
+    end)
+    BetterBlizzFrames:HookScript("OnHide",function()
+        midnightBeta:Hide()
+    end)
 
     local bgImg = BetterBlizzFrames:CreateTexture(nil, "BACKGROUND")
     bgImg:SetAtlas("professions-recipe-background")
@@ -3606,8 +3654,12 @@ local function guiGeneralTab()
     petFrameIcon:SetSize(21, 21)
     petFrameIcon:SetPoint("RIGHT", petFrameText, "LEFT", -2, 0)
 
+    local hidePetFrame = CreateCheckbox("hidePetFrame", "Hide Pet Frame", BetterBlizzFrames, nil, BBF.HideFrames)
+    hidePetFrame:SetPoint("TOPLEFT", petFrameText, "BOTTOMLEFT", -24, pixelsOnFirstBox)
+    CreateTooltipTwo(hidePetFrame, "Hide Pet Frame", "Hide the Pet Frame.")
+
     local petCastbar = CreateCheckbox("petCastbar", "Pet Castbar", BetterBlizzFrames, nil, BBF.UpdatePetCastbar)
-    petCastbar:SetPoint("TOPLEFT", petFrameText, "BOTTOMLEFT", -24, pixelsOnFirstBox)
+    petCastbar:SetPoint("TOPLEFT", hidePetFrame, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(petCastbar, "Show pet castbar.\n\nMore settings in the \"Castbars\" tab")
 
     local hidePetName = CreateCheckbox("hidePetName", "Hide Name", BetterBlizzFrames)
@@ -3709,11 +3761,8 @@ local function guiGeneralTab()
     hidePartyFramesInArena:SetPoint("TOPLEFT", showPartyCastbar, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(hidePartyFramesInArena, "Hide Party Frames in Arena. Made with GladiusEx Party Frames in mind.")
 
-    local hidePartyNames = CreateCheckbox("hidePartyNames", "Hide Names", BetterBlizzFrames)
+    local hidePartyNames = CreateCheckbox("hidePartyNames", "Hide Names", BetterBlizzFrames, nil, BBF.AllNameChanges)
     hidePartyNames:SetPoint("TOPLEFT", hidePartyFramesInArena, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    hidePartyNames:HookScript("OnClick", function(self)
-        BBF.AllNameChanges()
-    end)
 
     local hidePartyAggroHighlight = CreateCheckbox("hidePartyAggroHighlight", "Hide Aggro Highlight", BetterBlizzFrames, nil, BBF.HideFrames)
     hidePartyAggroHighlight:SetPoint("LEFT", hidePartyNames.text, "RIGHT", 0, 0)
@@ -3730,6 +3779,10 @@ local function guiGeneralTab()
     local hideRaidFrameManager = CreateCheckbox("hideRaidFrameManager", "Hide RaidFrameManager", BetterBlizzFrames, nil, BBF.HideFrames)
     hideRaidFrameManager:SetPoint("TOPLEFT", hidePartyFrameTitle, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(hideRaidFrameManager, "Hide the CompactRaidFrameManager. Can still be shown with mouseover.")
+
+    local classColorPartyNames = CreateCheckbox("classColorPartyNames", "Color Names", BetterBlizzFrames, nil, BBF.AllNameChanges)
+    classColorPartyNames:SetPoint("LEFT", hideRaidFrameManager.Text, "RIGHT", 0, 0)
+    CreateTooltipTwo(classColorPartyNames, "Class Color Names", "Class color names on Party/RaidFrames.")
 
     local hideRaidFrameContainerBorder = CreateCheckbox("hideRaidFrameContainerBorder", "Hide Container Border", BetterBlizzFrames, nil, BBF.HideFrames)
     hideRaidFrameContainerBorder:SetPoint("TOPLEFT", hideRaidFrameManager, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
@@ -4137,6 +4190,7 @@ local function guiGeneralTab()
     classicFrames:SetPoint("TOPLEFT", allFrameText, "BOTTOMLEFT", -24, pixelsOnFirstBox)
     CreateTooltipTwo(classicFrames, "Classic Frames", "Enable for the old style UnitFrames from before Dragonflight.")
     classicFrames:HookScript("OnClick", function(self)
+        BetterBlizzFramesDB.noPortraitModes = false
         if self:GetChecked() and C_AddOns.IsAddOnLoaded("ClassicFrames") then
             C_AddOns.DisableAddOn("ClassicFrames")
         end
@@ -4285,6 +4339,33 @@ local function guiGeneralTab()
             end
             StaticPopup_Show("BBF_CONFIRM_RELOAD")
         end
+    end)
+
+    local noPortraitModes = CreateCheckbox("noPortraitModes", "No Portrait", BetterBlizzFrames)
+    noPortraitModes:SetPoint("LEFT", classicFrames.text, "RIGHT", 0, 0)
+    CreateTooltipTwo(noPortraitModes, "No Portrait", "Disable Portrait for all unitframes.\n\n|cff32f795Options to hide Mana/Resource is in Misc section top right.|r\n\nVery new (and rushed kek) setting. Please report any issues if things are not positioned correctly. More settings to this will come later as well.")
+    noPortraitModes:HookScript("OnClick", function(self)
+        BetterBlizzFramesDB.classicFrames = false
+        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+    end)
+
+    local noPortraitPixelBorder = CreateCheckbox("noPortraitPixelBorder", "NP: PixelBorder", BetterBlizzFrames)
+    noPortraitPixelBorder:SetPoint("BOTTOMLEFT", noPortraitModes, "TOPRIGHT", -14, -5)
+    CreateTooltipTwo(noPortraitPixelBorder, "No Portrait: PixelBorder", "Disable Portrait and have Pixel Border around UnitFrames.\n\n|cff32f795Options to hide Mana/Resource is in Misc section top right.|r\n\nVery new (and rushed kek) setting. Please report any issues if things are not positioned correctly. More settings to this will come later as well.")
+    noPortraitPixelBorder:HookScript("OnClick", function(self)
+        if self:GetChecked() then
+            BetterBlizzFramesDB.classicFrames = false
+            BetterBlizzFramesDB.noPortraitModes = true
+            if not BetterBlizzFramesDB.changeUnitFrameHealthbarTexture then
+                BetterBlizzFramesDB.changeUnitFrameHealthbarTexture = true
+                BetterBlizzFramesDB.unitFrameHealthbarTexture = "Smooth"
+            end
+            if not BetterBlizzFramesDB.changeUnitFrameManabarTexture then
+                BetterBlizzFramesDB.changeUnitFrameManabarTexture = true
+                BetterBlizzFramesDB.unitFrameManabarTexture = BetterBlizzFramesDB.unitFrameHealthbarTexture or "Smooth"
+            end
+        end
+        StaticPopup_Show("BBF_CONFIRM_RELOAD")
     end)
 
     local classColorFrames = CreateCheckbox("classColorFrames", "Class Color Health", BetterBlizzFrames)
@@ -4442,6 +4523,12 @@ local function guiGeneralTab()
     hideUnitFrameShadow:HookScript("OnClick", function(self)
         if not self:GetChecked() then
             StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        else
+            BetterBlizzFramesDB.hideTargetReputationColor = true
+            BetterBlizzFramesDB.hideFocusReputationColor = true
+            hideTargetReputationColor:SetChecked(true)
+            hideFocusReputationColor:SetChecked(true)
+            BBF.HideFrames()
         end
     end)
 
@@ -4661,51 +4748,70 @@ local function guiGeneralTab()
 
 
 
-    local btnGap = 3
+    local btnGap = -2
     local starterButton = CreateClassButton(BetterBlizzFrames, "STARTER", "Starter", nil, function()
         ShowProfileConfirmation("Starter", "STARTER", BBF.StarterProfile, "|cff808080(If you want to completely reset BBF there\nis a button in Advanced Settings)|r\n\n")
     end)
-    starterButton:SetPoint("TOPLEFT", SettingsPanel, "BOTTOMLEFT", 16, 38)
+    starterButton:SetPoint("TOP", profilesFrame.coreText, "BOTTOM", 0, -3)
 
     local bodifyButton = CreateClassButton(BetterBlizzFrames, "MAGE", "Bodify", "bodify", function()
         ShowProfileConfirmation("Bodify", "MAGE", BBF.BodifyProfile)
     end)
-    bodifyButton:SetPoint("LEFT", starterButton, "RIGHT", btnGap, 0)
+    bodifyButton:SetPoint("TOP", starterButton, "BOTTOM", 0, btnGap)
 
     local aeghisButton = CreateClassButton(BetterBlizzFrames, "MAGE", "Aeghis", "aeghis", function()
         ShowProfileConfirmation("Aeghis", "MAGE", BBF.AeghisProfile)
     end)
-    aeghisButton:SetPoint("LEFT", bodifyButton, "RIGHT", btnGap, 0)
+    aeghisButton:SetPoint("TOP", profilesFrame.streamerText, "BOTTOM", 0, -3)
 
     local kalvishButton = CreateClassButton(BetterBlizzFrames, "ROGUE", "Kalvish", "kalvish", function()
         ShowProfileConfirmation("Kalvish", "ROGUE", BBF.KalvishProfile)
     end)
-    kalvishButton:SetPoint("LEFT", aeghisButton, "RIGHT", btnGap, 0)
+    kalvishButton:SetPoint("TOP", aeghisButton, "BOTTOM", 0, btnGap)
 
     local magnuszButton = CreateClassButton(BetterBlizzFrames, "WARRIOR", "Magnusz", "magnusz", function()
         ShowProfileConfirmation("Magnusz", "WARRIOR", BBF.MagnuszProfile)
     end)
-    magnuszButton:SetPoint("LEFT", kalvishButton, "RIGHT", btnGap, 0)
+    magnuszButton:SetPoint("TOP", kalvishButton, "BOTTOM", 0, btnGap)
 
     local mesButton = CreateClassButton(BetterBlizzFrames, "DEATHKNIGHT", "Mes", "notmes", function()
         ShowProfileConfirmation("Mes", "DEATHKNIGHT", BBF.MesProfile)
     end)
-    mesButton:SetPoint("LEFT", magnuszButton, "RIGHT", btnGap, 0)
+    mesButton:SetPoint("TOP", magnuszButton, "BOTTOM", 0, btnGap)
+
+    local mmarkersButton = CreateClassButton(BetterBlizzFrames, "DRUID", "Mmarkers", "mmarkers", function()
+        ShowProfileConfirmation("Mmarkers", "DRUID", BBF.MmarkersProfile)
+    end)
+    mmarkersButton:SetPoint("TOP", mesButton, "BOTTOM", 0, btnGap)
 
     local nahjButton = CreateClassButton(BetterBlizzFrames, "ROGUE", "Nahj", "nahj", function()
         ShowProfileConfirmation("Nahj", "ROGUE", BBF.NahjProfile)
     end)
-    nahjButton:SetPoint("LEFT", mesButton, "RIGHT", btnGap, 0)
+    nahjButton:SetPoint("TOP", mmarkersButton, "BOTTOM", 0, btnGap)
 
     local pmakeButton = CreateClassButton(BetterBlizzFrames, "MAGE", "Pmake", "pmakewow", function()
         ShowProfileConfirmation("Pmake", "MAGE", BBF.PmakeProfile)
     end)
-    pmakeButton:SetPoint("LEFT", nahjButton, "RIGHT", btnGap, 0)
+    pmakeButton:SetPoint("TOP", nahjButton, "BOTTOM", 0, btnGap)
 
     local snupyButton = CreateClassButton(BetterBlizzFrames, "DRUID", "Snupy", "snupy", function()
         ShowProfileConfirmation("Snupy", "DRUID", BBF.SnupyProfile)
     end)
-    snupyButton:SetPoint("LEFT", pmakeButton, "RIGHT", btnGap, 0)
+    snupyButton:SetPoint("TOP", pmakeButton, "BOTTOM", 0, btnGap)
+
+    local venrukiButton = CreateClassButton(BetterBlizzFrames, "MAGE", "Venruki", "venruki", function()
+        ShowProfileConfirmation("Venruki", "MAGE", BBF.VenrukiProfile)
+    end)
+    venrukiButton:SetPoint("TOP", snupyButton, "BOTTOM", 0, btnGap)
+
+    local resetBBFButton = CreateFrame("Button", nil, BetterBlizzFrames, "UIPanelButtonTemplate")
+    resetBBFButton:SetText("Full Reset")
+    resetBBFButton:SetWidth(100)
+    resetBBFButton:SetPoint("BOTTOM", profilesFrame, "BOTTOM", 2, 15)
+    resetBBFButton:SetScript("OnClick", function()
+        StaticPopup_Show("CONFIRM_RESET_BETTERBLIZZFRAMESDB")
+    end)
+    CreateTooltip(resetBBFButton, "Reset ALL BetterBlizzFrames settings.", "ANCHOR_TOP")
 
 
 
@@ -4722,20 +4828,20 @@ local function guiGeneralTab()
         ReloadUI()
     end)
 
-    if not SettingsPanel.CloseButton.origPoint then
-        SettingsPanel.CloseButton.origPoint, SettingsPanel.CloseButton.origRel, SettingsPanel.CloseButton.origAnchor, SettingsPanel.CloseButton.origX, SettingsPanel.CloseButton.origY = SettingsPanel.CloseButton:GetPoint()
-    end
-    SettingsPanel.CloseButton:ClearAllPoints()
-    SettingsPanel.CloseButton:SetPoint("TOPRIGHT", BetterBlizzFrames, "BOTTOMRIGHT", 6, -41)
-    BetterBlizzFrames:HookScript("OnShow", function()
-        SettingsPanel.CloseButton:ClearAllPoints()
-        SettingsPanel.CloseButton:SetPoint("TOPRIGHT", BetterBlizzFrames, "BOTTOMRIGHT", 6, -41)
-    end)
-    BetterBlizzFrames:HookScript("OnHide", function()
-        if BetterBlizzPlates and BetterBlizzPlates:IsShown() then return end
-        SettingsPanel.CloseButton:ClearAllPoints()
-        SettingsPanel.CloseButton:SetPoint(SettingsPanel.CloseButton.origPoint, SettingsPanel.CloseButton.origRel, SettingsPanel.CloseButton.origAnchor, SettingsPanel.CloseButton.origX, SettingsPanel.CloseButton.origY)
-    end)
+    -- if not SettingsPanel.CloseButton.origPoint then
+    --     SettingsPanel.CloseButton.origPoint, SettingsPanel.CloseButton.origRel, SettingsPanel.CloseButton.origAnchor, SettingsPanel.CloseButton.origX, SettingsPanel.CloseButton.origY = SettingsPanel.CloseButton:GetPoint()
+    -- end
+    -- SettingsPanel.CloseButton:ClearAllPoints()
+    -- SettingsPanel.CloseButton:SetPoint("TOPRIGHT", BetterBlizzFrames, "BOTTOMRIGHT", 6, -41)
+    -- BetterBlizzFrames:HookScript("OnShow", function()
+    --     SettingsPanel.CloseButton:ClearAllPoints()
+    --     SettingsPanel.CloseButton:SetPoint("TOPRIGHT", BetterBlizzFrames, "BOTTOMRIGHT", 6, -41)
+    -- end)
+    -- BetterBlizzFrames:HookScript("OnHide", function()
+    --     if BetterBlizzPlates and BetterBlizzPlates:IsShown() then return end
+    --     SettingsPanel.CloseButton:ClearAllPoints()
+    --     SettingsPanel.CloseButton:SetPoint(SettingsPanel.CloseButton.origPoint, SettingsPanel.CloseButton.origRel, SettingsPanel.CloseButton.origAnchor, SettingsPanel.CloseButton.origX, SettingsPanel.CloseButton.origY)
+    -- end)
 end
 
 local function guiCastbars()
@@ -4985,6 +5091,14 @@ local function guiCastbars()
         BetterBlizzFramesDB.targetDetachCastbar = false
     end
 
+    local hideTargetCastbar = CreateCheckbox("hideTargetCastbar", "Hide Bar", contentFrame, nil, BBF.ChangeCastbarSizes)
+    hideTargetCastbar:SetPoint("TOPLEFT", targetDetachCastbar, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(hideTargetCastbar, "Hide Bar", "Hide the Target Castbar.")
+
+    local hideTargetCastbarIcon = CreateCheckbox("hideTargetCastbarIcon", "Hide Icon", contentFrame, nil, BBF.ChangeCastbarSizes)
+    hideTargetCastbarIcon:SetPoint("LEFT", hideTargetCastbar.text, "RIGHT", 0, 0)
+    CreateTooltipTwo(hideTargetCastbarIcon, "Hide Icon", "Hide the Target Castbar icon.")
+
     local resetTargetCastbar = CreateFrame("Button", nil, contentFrame, "UIPanelButtonTemplate")
     resetTargetCastbar:SetText("Reset")
     resetTargetCastbar:SetWidth(70)
@@ -5019,7 +5133,7 @@ local function guiCastbars()
     -- Pet Castbars
     ----------------------
     local anchorSubPetCastbar = contentFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    anchorSubPetCastbar:SetPoint("CENTER", mainGuiAnchor2, "CENTER", firstLineX, secondLineY + 5)
+    anchorSubPetCastbar:SetPoint("CENTER", mainGuiAnchor2, "CENTER", firstLineX, secondLineY - 75)
     anchorSubPetCastbar:SetText("Pet Castbar")
 
     local petCastbarBorder = CreateBorderedFrame(anchorSubPetCastbar, 157, 320, 0, -112, contentFrame)
@@ -5226,6 +5340,14 @@ local function guiCastbars()
         BetterBlizzFramesDB.focusDetachCastbar = false
     end
 
+    local hideFocusCastbar = CreateCheckbox("hideFocusCastbar", "Hide Bar", contentFrame, nil, BBF.ChangeCastbarSizes)
+    hideFocusCastbar:SetPoint("TOPLEFT", focusDetachCastbar, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(hideFocusCastbar, "Hide Bar", "Hide the Focus Castbar.")
+
+    local hideFocusCastbarIcon = CreateCheckbox("hideFocusCastbarIcon", "Hide Icon", contentFrame, nil, BBF.ChangeCastbarSizes)
+    hideFocusCastbarIcon:SetPoint("LEFT", hideFocusCastbar.text, "RIGHT", 0, 0)
+    CreateTooltipTwo(hideFocusCastbarIcon, "Hide Icon", "Hide the Focus Castbar icon.")
+
     local resetFocusCastbar = CreateFrame("Button", nil, contentFrame, "UIPanelButtonTemplate")
     resetFocusCastbar:SetText("Reset")
     resetFocusCastbar:SetWidth(70)
@@ -5263,7 +5385,7 @@ local function guiCastbars()
     anchorSubPlayerCastbar:SetPoint("CENTER", mainGuiAnchor2, "CENTER", firstLineX, firstLineY)
     anchorSubPlayerCastbar:SetText("Player Castbar")
 
-    local playerCastbarBorder = CreateBorderedFrame(anchorSubPlayerCastbar, 157, 250, 0, -77, contentFrame)
+    local playerCastbarBorder = CreateBorderedFrame(anchorSubPlayerCastbar, 157, 450, 0, -77, contentFrame)
 
     local playerCastBar = contentFrame:CreateTexture(nil, "ARTWORK")
     playerCastBar:SetAtlas("ui-castingbar-filling-standard")
@@ -5273,17 +5395,15 @@ local function guiCastbars()
 
     local playerCastBarScale = CreateSlider(contentFrame, "Size", 0.1, 1.9, 0.01, "playerCastBarScale")
     playerCastBarScale:SetPoint("TOP", anchorSubPlayerCastbar, "BOTTOM", 0, -15)
---[[
+
     local playerCastBarXPos = CreateSlider(contentFrame, "x offset", -200, 200, 1, "playerCastBarXPos")
     playerCastBarXPos:SetPoint("TOP", playerCastBarScale, "BOTTOM", 0, -15)
 
     local playerCastBarYPos = CreateSlider(contentFrame, "y offset", -200, 200, 1, "playerCastBarYPos")
     playerCastBarYPos:SetPoint("TOP", playerCastBarXPos, "BOTTOM", 0, -15)
 
-]]
-
     local playerCastBarIconScale = CreateSlider(contentFrame, "Icon Size", 0.4, 2, 0.01, "playerCastBarIconScale")
-    playerCastBarIconScale:SetPoint("TOP", playerCastBarScale, "BOTTOM", 0, -15)
+    playerCastBarIconScale:SetPoint("TOP", playerCastBarYPos, "BOTTOM", 0, -15)
 
     local playerCastBarWidth = CreateSlider(contentFrame, "Width", 60, 230, 1, "playerCastBarWidth")
     --playerCastBarWidth:SetPoint("TOP", playerCastBarYPos, "BOTTOM", 0, -15)
@@ -5313,6 +5433,19 @@ local function guiCastbars()
     local classicCastbarsPlayer = CreateCheckbox("classicCastbarsPlayer", "Classic Castbar", contentFrame, nil, BBF.ChangeCastbarSizes)
     classicCastbarsPlayer:SetPoint("TOPLEFT", playerCastBarNoTextBorder, "BOTTOMLEFT", -15, pixelsBetweenBoxes)
     CreateTooltipTwo(classicCastbarsPlayer, "Classic Castbar", "Use Classic layout for Player Castbar")
+
+    local hidePlayerCastbar = CreateCheckbox("hidePlayerCastbar", "Hide Bar", contentFrame, nil, BBF.ChangeCastbarSizes)
+    hidePlayerCastbar:SetPoint("TOPLEFT", classicCastbarsPlayer, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(hidePlayerCastbar, "Hide Bar", "Hide the Player Castbar.")
+
+    local hidePlayerCastbarIcon = CreateCheckbox("hidePlayerCastbarIcon", "Hide Icon", contentFrame, nil, BBF.ChangeCastbarSizes)
+    hidePlayerCastbarIcon:SetPoint("LEFT", hidePlayerCastbar.text, "RIGHT", 0, 0)
+    CreateTooltipTwo(hidePlayerCastbarIcon, "Hide Icon", "Hide the Player Castbar icon.")
+    hidePlayerCastbar:HookScript("OnClick", function(self)
+        if not self:GetChecked() then
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        end
+    end)
 
     local classicCastbarsPlayerBorder = CreateCheckbox("classicCastbarsPlayerBorder", "Border", classicCastbarsPlayer, nil, BBF.ChangeCastbarSizes)
     classicCastbarsPlayerBorder:SetPoint("LEFT", classicCastbarsPlayer.text, "RIGHT", 0, 0)
@@ -5599,6 +5732,10 @@ local function guiCastbars()
         BBF.CastbarRecolorWidgets()
         StaticPopup_Show("BBF_CONFIRM_RELOAD")
     end)
+
+    BetterBlizzFramesCastbars.rightClickTip = BetterBlizzFramesCastbars:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+    BetterBlizzFramesCastbars.rightClickTip:SetPoint("BOTTOMLEFT", SettingsPanel, "BOTTOM", -110, 11)
+    BetterBlizzFramesCastbars.rightClickTip:SetText("|A:smallquestbang:20:20|aTip:  Right-click sliders to enter a specific value")
 end
 
 local function guiPositionAndScale()
@@ -6176,11 +6313,11 @@ local function guiFrameLook()
     fontEditBox:SetSize(330, 20)
     fontEditBox:SetPoint("TOPLEFT", howStepOne, "BOTTOMLEFT", 5, -5)
     fontEditBox:SetAutoFocus(false)
-    fontEditBox:SetText("BBF.LSM:Register(\"font\", \"My Font Name\", [[Interface\\AddOns\\CustomMedia\\MyFontFile]], BBF.allLocales)")
+    fontEditBox:SetText("BBF.LSM:Register(\"font\", \"My Font Name\", [[Interface\\AddOns\\CustomMedia\\MyFontFile.ttf]], BBF.allLocales)")
     fontEditBox:HighlightText()
     fontEditBox:SetCursorPosition(0)
     fontEditBox:SetScript("OnTextChanged", function(self)
-        fontEditBox:SetText("BBF.LSM:Register(\"font\", \"My Font Name\", [[Interface\\AddOns\\CustomMedia\\MyFontFile]], BBF.allLocales)")
+        fontEditBox:SetText("BBF.LSM:Register(\"font\", \"My Font Name\", [[Interface\\AddOns\\CustomMedia\\MyFontFile.ttf]], BBF.allLocales)")
     end)
     fontEditBox:SetScript("OnMouseUp", function(self)
         self:SetFocus()
@@ -6197,11 +6334,11 @@ local function guiFrameLook()
     textureEditBox:SetSize(330, 20)
     textureEditBox:SetPoint("TOPLEFT", howStepTwo, "BOTTOMLEFT", 5, -5)
     textureEditBox:SetAutoFocus(false)
-    textureEditBox:SetText("BBF.LSM:Register(\"statusbar\", \"My Texture Name\", [[Interface\\AddOns\\CustomMedia\\MyTextureFile]])")
+    textureEditBox:SetText("BBF.LSM:Register(\"statusbar\", \"My Texture Name\", [[Interface\\AddOns\\CustomMedia\\MyTextureFile.tga]])")
     textureEditBox:HighlightText()
     textureEditBox:SetCursorPosition(0)
     textureEditBox:SetScript("OnTextChanged", function(self)
-        textureEditBox:SetText("BBF.LSM:Register(\"statusbar\", \"My Texture Name\", [[Interface\\AddOns\\CustomMedia\\MyTextureFile]])")
+        textureEditBox:SetText("BBF.LSM:Register(\"statusbar\", \"My Texture Name\", [[Interface\\AddOns\\CustomMedia\\MyTextureFile.tga]])")
     end)
     textureEditBox:SetScript("OnMouseUp", function(self)
         self:SetFocus()
@@ -6212,7 +6349,7 @@ local function guiFrameLook()
     howStepThree:SetJustifyH("LEFT")
     howStepThree:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\arialn.TTF", 12)
     howStepThree:SetPoint("TOPLEFT", textureEditBox, "BOTTOMLEFT", -5, -13)
-    howStepThree:SetText("Remember to rename \"My Texture Name\" to whatever name you want\nand \"MyTextureFile\" to exactly what your texture file is named in the folder.")
+    howStepThree:SetText("Remember to rename \"My Texture Name\" to whatever name you want\nand \"MyTextureFile.tga\" to exactly what your texture file is named in the folder.")
 
     local changeUnitFrameFont = CreateCheckbox("changeUnitFrameFont", "Change UnitFrame Font", guiFrameLook)
     changeUnitFrameFont:SetPoint("TOPLEFT", settingsText, "BOTTOMLEFT", -4, pixelsOnFirstBox)
@@ -6604,6 +6741,13 @@ local function guiFrameLook()
     changeUnitFrameManabarTexture:SetPoint("TOPLEFT", changeUnitFrameHealthbarTexture, "BOTTOMLEFT", 0, -25)
     CreateTooltipTwo(changeUnitFrameManabarTexture, "Change UnitFrame Manabar Texture","Changes the manabar texture on Player, Target & Focus etc. This is more cpu heavy than it should be.")
 
+    local changeUnitFrameManaBarTextureKeepFancy = CreateCheckbox("changeUnitFrameManaBarTextureKeepFancy", "Keep Fancy Manabars", changeUnitFrameManabarTexture)
+    changeUnitFrameManaBarTextureKeepFancy:SetPoint("LEFT", changeUnitFrameManabarTexture.Text, "RIGHT", 0, 0)
+    CreateTooltipTwo(changeUnitFrameManaBarTextureKeepFancy, "Keep Fancy Manabars","Ignore texture changes for fancy manabars and keep the default one (Insanity, Lunar Power, Mealstrom, Fury etc.)")
+    changeUnitFrameManaBarTextureKeepFancy:HookScript("OnClick", function()
+        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+    end)
+
     local unitFrameManabarTexture = CreateTextureDropdown(
         "unitFrameManabarTexture",
         guiFrameLook,
@@ -6620,6 +6764,7 @@ local function guiFrameLook()
         if not self:GetChecked() then
             StaticPopup_Show("BBF_CONFIRM_RELOAD")
         end
+        CheckAndToggleCheckboxes(self)
     end)
     unitFrameManabarTexture:SetEnabled(changeUnitFrameManabarTexture:GetChecked())
 
@@ -7884,7 +8029,7 @@ local function guiMisc()
 
     local hideExpAndHonorBar = CreateCheckbox("hideExpAndHonorBar", "Hide XP & Honor Bar", guiMisc, nil, BBF.HideFrames)
     hideExpAndHonorBar:SetPoint("TOPLEFT", hideTalkingHeads, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltipTwo(hideExpAndHonorBar, "Hide XP & Honor Bar", "Hide XP & Honor Bar. Still shows when opening Character Panel.")
+    CreateTooltipTwo(hideExpAndHonorBar, "Hide XP & Honor Bar", "Hide the Experience & Honor Bar. Still shows when opening Character Panel.")
     hideExpAndHonorBar:HookScript("OnClick", function(self)
         if not self:GetChecked() then
             StaticPopup_Show("BBF_CONFIRM_RELOAD")
@@ -7920,8 +8065,24 @@ local function guiMisc()
     uiWidgetPowerBarScale:SetPoint("TOPLEFT", gladWinTracker, "BOTTOMLEFT", 5, -15)
     CreateTooltipTwo(uiWidgetPowerBarScale, "UIWidgetPowerBarFrame Scale", "Changes the scale of UIWidgetPowerBarFrame, the frame with Dragonflying charges on it. Also has things like achievements etc I believe idk.")
 
+    local hideUnitFramePlayerMana = CreateCheckbox("hideUnitFramePlayerMana", "Hide PlayerFrame Mana", guiMisc, nil, BBF.UpdateNoPortraitManaVisibility)
+    hideUnitFramePlayerMana:SetPoint("TOPLEFT", settingsText, "BOTTOMLEFT", 320, pixelsOnFirstBox)
+    CreateTooltipTwo(hideUnitFramePlayerMana, "Hide PlayerFrame Mana", "Hide PlayerFrame Mana. Only works with No Portrait settings atm.")
+
+    local hideUnitFramePlayerSecondResource = CreateCheckbox("hideUnitFramePlayerSecondResource", "Hide PlayerFrame 2nd Bar Resource", guiMisc, nil, BBF.UpdateNoPortraitManaVisibility)
+    hideUnitFramePlayerSecondResource:SetPoint("TOPLEFT", hideUnitFramePlayerMana, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(hideUnitFramePlayerSecondResource, "Hide PlayerFrame 2nd Bar Resource", "Hide PlayerFrame 2nd Bar Resource.\n\nNOTE: This is the bottom bar on your PlayerFrame NOT ComboPoints etc.\nFor hiding ComboPoints etc use Hide Resource/Power underneath PlayerFrame in the general section. This 2nd bar is usually containing mana when on classes that have Insanity/Maelstrom/Fury etc.\n\nOnly works with No Portrait settings atm.")
+
+    local hideUnitFrameTargetMana = CreateCheckbox("hideUnitFrameTargetMana", "Hide TargetFrame Mana", guiMisc, nil, BBF.UpdateNoPortraitManaVisibility)
+    hideUnitFrameTargetMana:SetPoint("TOPLEFT", hideUnitFramePlayerSecondResource, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(hideUnitFrameTargetMana, "Hide TargetFrame Mana", "Hide TargetFrame Mana. Only works with No Portrait settings atm.")
+
+    local hideUnitFrameFocusMana = CreateCheckbox("hideUnitFrameFocusMana", "Hide FocusFrame Mana", guiMisc, nil, BBF.UpdateNoPortraitManaVisibility)
+    hideUnitFrameFocusMana:SetPoint("TOPLEFT", hideUnitFrameTargetMana, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(hideUnitFrameFocusMana, "Hide FocusFrame Mana", "Hide FocusFrame Mana. Only works with No Portrait settings atm.")
+
     local hideActionBar1 = CreateCheckbox("hideActionBar1", "Hide ActionBar1", guiMisc, nil, BBF.HideFrames)
-    hideActionBar1:SetPoint("TOPLEFT", settingsText, "BOTTOMLEFT", 310, pixelsOnFirstBox)
+    hideActionBar1:SetPoint("TOPLEFT", hideUnitFrameFocusMana, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(hideActionBar1, "Hide ActionBar1", "Hide ActionBar1. Default UI does not allow this so heres a setting for it.")
 
     local hideActionBarBigProcGlow = CreateCheckbox("hideActionBarBigProcGlow", "Hide ActionBar Big Proc Glow", guiMisc, nil, BBF.ActionBarMods)
@@ -7932,8 +8093,12 @@ local function guiMisc()
     hideActionBarCastAnimation:SetPoint("TOPLEFT", hideActionBarBigProcGlow, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(hideActionBarCastAnimation, "Hide ActionBar Cast Animation", "Hide the cast animation on default ActionBar buttons.")
 
+    local hideActionBarActiveOverlay = CreateCheckbox("hideActionBarActiveOverlay", "Hide ActionBar Active Overlay", guiMisc, nil, BBF.HideFrames)
+    hideActionBarActiveOverlay:SetPoint("TOPLEFT", hideActionBarCastAnimation, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(hideActionBarActiveOverlay, "Hide ActionBar Active Overlay", "Hide the green active overlay on default ActionBar buttons when a placement spell is active.")
+
     local fixActionBarCDs = CreateCheckbox("fixActionBarCDs", "Fix ActionBar Cooldowns During CC", guiMisc, nil, BBF.ShowCooldownDuringCC)
-    fixActionBarCDs:SetPoint("TOPLEFT", hideActionBarCastAnimation, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    fixActionBarCDs:SetPoint("TOPLEFT", hideActionBarActiveOverlay, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(fixActionBarCDs, "Fix ActionBar Cooldowns During CC", "Always show ability cooldowns when you're CC'ed.\n\nBy default if the CC is longer than the ability cooldown it gets hidden. You've probably been in situations where you Trinket to interrupt someone only for interrupt to still be on a few seconds CD. No more!")
 
     local fixActionBarCDsAlwaysHideCD = CreateCheckbox("fixActionBarCDsAlwaysHideCD", "Hide CC Duration", fixActionBarCDs, nil, BBF.ShowCooldownDuringCC)
@@ -8822,7 +8987,7 @@ local function guiMidnight()
 
     local midnightInfo = guiMidnight:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     midnightInfo:SetPoint("TOPLEFT", titleIcon, "BOTTOMLEFT", 2, -5)
-    midnightInfo:SetText("|cffffffffI'm planning to continue developing all my addons for Midnight as well.\n\nSome features will need to be adjusted or removed but the addons should stick around.\nMidnight is still in early Alpha and I haven't started preparing yet (14th Oct), but I will soon.\n\nPlans might change, but I'm confident |A:gmchat-icon-blizz:16:16|aBetter|cff00c0ffBlizz|rFrames and my other addons\n|A:gmchat-icon-blizz:16:16|aBetter|cff00c0ffBlizz|rPlates & |cffffffffsArena |cffff8000Reloaded|r |T135884:13:13|t will stick around for Midnight (with changes/removals).\n\nI have a lot of work ahead of me and any support is greatly appreciated |A:GarrisonTroops-Health:10:10|a (|cff00c0ff@bodify|r)\nI'll update this section with more detailed information as I know more in some weeks/months.\n\n|cff00c0ffUpdate:|r\nBBF & sArena Reloaded ready soon.\nNot finished but usable.\nBBP will take a lot more work.")
+    midnightInfo:SetText("|cff00ff00UPDATE: All now available on Midnight.|r |cffffffffEarly versions and work in progress.\n\nI'm planning to continue developing all my addons for Midnight as well.\n\nSome features will need to be adjusted or removed but the addons should stick around.\nMidnight is still in early Alpha and I haven't started preparing yet (14th Oct), but I will soon.\n\nPlans might change, but I'm confident |A:gmchat-icon-blizz:16:16|aBetter|cff00c0ffBlizz|rFrames and my other addons\n|A:gmchat-icon-blizz:16:16|aBetter|cff00c0ffBlizz|rPlates & |cffffffffsArena |cffff8000Reloaded|r |T135884:13:13|t will stick around for Midnight (with changes/removals).\n\nI have a lot of work ahead of me and any support is greatly appreciated |A:GarrisonTroops-Health:10:10|a (|cff00c0ff@bodify|r)\nI'll update this section with more detailed information as I know more in some weeks/months.")
     midnightInfo:SetTextColor(1,1,1,1)
     midnightInfo:SetJustifyH("LEFT")
 
@@ -9171,10 +9336,15 @@ function BBF.CreateIntroMessageWindow()
     end)
     mesButton:SetPoint("TOP", magnuszButton, "BOTTOM", 0, btnGap)
 
+    local mmarkersButton = CreateClassButton(BBF.IntroMessageWindow, "DRUID", "Mmarkers", "mmarkers", function()
+        ShowProfileConfirmation("Mmarkers", "DRUID", BBF.MmarkersProfile)
+    end)
+    mmarkersButton:SetPoint("TOP", mesButton, "BOTTOM", 0, btnGap)
+
     local nahjButton = CreateClassButton(BBF.IntroMessageWindow, "ROGUE", "Nahj", "nahj", function()
         ShowProfileConfirmation("Nahj", "ROGUE", BBF.NahjProfile)
     end)
-    nahjButton:SetPoint("TOP", mesButton, "BOTTOM", 0, btnGap)
+    nahjButton:SetPoint("TOP", mmarkersButton, "BOTTOM", 0, btnGap)
 
     local pmakeButton = CreateClassButton(BBF.IntroMessageWindow, "MAGE", "Pmake", "pmakewow", function()
         ShowProfileConfirmation("Pmake", "MAGE", BBF.PmakeProfile)
@@ -9186,15 +9356,20 @@ function BBF.CreateIntroMessageWindow()
     end)
     snupyButton:SetPoint("TOP", pmakeButton, "BOTTOM", 0, btnGap)
 
+    local venrukiButton = CreateClassButton(BBF.IntroMessageWindow, "MAGE", "Venruki", "venruki", function()
+        ShowProfileConfirmation("Venruki", "MAGE", BBF.VenrukiProfile)
+    end)
+    venrukiButton:SetPoint("TOP", snupyButton, "BOTTOM", 0, btnGap)
+
     local orText2 = BBF.IntroMessageWindow:CreateFontString(nil, "OVERLAY", "GameFontNormalMed2")
-    orText2:SetPoint("CENTER", snupyButton, "BOTTOM", 0, -20)
+    orText2:SetPoint("CENTER", venrukiButton, "BOTTOM", 0, -20)
     orText2:SetText("OR")
     orText2:SetJustifyH("CENTER")
 
     local buttonLast = CreateFrame("Button", nil, BBF.IntroMessageWindow, "GameMenuButtonTemplate")
     buttonLast:SetSize(btnWidth, btnHeight)
     buttonLast:SetText("Exit, No Profile.")
-    buttonLast:SetPoint("TOP", snupyButton, "BOTTOM", 0, -40)
+    buttonLast:SetPoint("TOP", venrukiButton, "BOTTOM", 0, -40)
     buttonLast:SetNormalFontObject("GameFontNormal")
     buttonLast:SetHighlightFontObject("GameFontHighlight")
     buttonLast:SetScript("OnClick", function()

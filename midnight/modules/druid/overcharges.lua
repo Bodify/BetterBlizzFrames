@@ -1,13 +1,14 @@
-if BBF.isMidnight then return end
-function BBF.DruidBlueComboPoints()
-    if not BetterBlizzFramesDB.druidOverstacks and not BetterBlizzFramesDB.legacyBlueComboPoints then return end
-    if BBF.druidBlueCombos then return end
-    if select(2, UnitClass("player")) ~= "DRUID" then return end
-    local druid = _G.DruidComboPointBarFrame
+if not BBF.isMidnight then return end
 
-    local function CreateChargedPoints(comboPointFrame)
+function BBF.DruidAlwaysShowCombos()
+    if not BetterBlizzFramesDB.druidAlwaysShowCombos then return end
+    if select(2, UnitClass("player")) ~= "DRUID" then return end
+    if BBF.DruidAlwaysShowCombosActive then return end
+    local frame = DruidComboPointBarFrame
+
+    local function TagCombos(comboPointFrame)
         if not comboPointFrame then return end
-        if comboPointFrame.blueOverchargePoints then return end
+        if comboPointFrame.taggedCombos then return end
 
         local comboPoints = {}
         local visibleComboPoints = 0
@@ -29,158 +30,29 @@ function BBF.DruidBlueComboPoints()
         end)
 
         -- Apply textures to the first three combo points
-        for i = 1, 3 do
+        for i = 1, 5 do
             if comboPoints[i] then
                 local comboPoint = comboPoints[i]
-                comboPointFrame["ComboPoint"..i] = comboPoint
-
-                -- Create the overlayActive texture and reference it as ChargedFrameActive
-                local overlayActive = comboPoint:CreateTexture(nil, "OVERLAY")
-                overlayActive:SetAtlas("UF-RogueCP-BG-Anima")
-                overlayActive:SetSize(20, 20)
-                overlayActive:SetPoint("CENTER", comboPoint, "CENTER")
-                comboPoint.ChargedFrameActive = overlayActive
-
-                -- Initially hide the active overlay
-                overlayActive:Hide()
+                comboPointFrame["ComboPoint" .. i] = comboPoint
             end
         end
 
         -- Mark as overcharge points if all points are visible
         if visibleComboPoints == 5 then
-            comboPointFrame.blueOverchargePoints = true
+            comboPointFrame.taggedCombos = true
         end
     end
 
-    CreateChargedPoints(druid)
-
-    -- Function to handle updating combo points based on aura
-    local function UpdateComboPoints(self, aura)
-        if not self then return end
-        if not aura then
-            if self.overcharged then
-                for i = 1, 3 do
-                    local comboPoint = self["ComboPoint"..i]
-                    if comboPoint then
-                        -- Revert to default combo point and hide the overlay
-                        comboPoint.Point_Icon:SetAtlas("UF-DruidCP-Icon")  -- Default Druid combo point
-                        comboPoint.Point_Deplete:SetDesaturated(false)
-                        comboPoint.Point_Deplete:SetVertexColor(1, 1, 1)
-                        comboPoint.Smoke:SetDesaturated(false)
-                        comboPoint.Smoke:SetVertexColor(1, 1, 1)
-                        comboPoint.FB_Slash:SetDesaturated(false)
-                        comboPoint.FB_Slash:SetVertexColor(1, 1, 1)
-
-                        if comboPoint.ChargedFrameActive then
-                            comboPoint.ChargedFrameActive:Hide()  -- Hide active overlay
-                        end
-                    end
-                end
-                self.overcharged = nil
-            end
-            return
-        end
-
-        for i = 1, 3 do
-            local comboPoint = self["ComboPoint"..i]
-
-            if comboPoint then
-                if i <= aura.applications then  -- Show blue combo point and active overlay for stacks <= i
-                    self.overcharged = true
-                    comboPoint.Point_Icon:SetAtlas("UF-RogueCP-Icon-Blue") -- Blue combo point
-                    comboPoint.Point_Deplete:SetDesaturated(true)
-                    comboPoint.Point_Deplete:SetVertexColor(0, 0, 1)
-                    comboPoint.Smoke:SetDesaturated(true)
-                    comboPoint.Smoke:SetVertexColor(0, 0, 1)
-                    comboPoint.FB_Slash:SetDesaturated(true)
-                    comboPoint.FB_Slash:SetVertexColor(0, 0, 1)
-                    comboPoint.ChargedFrameActive:Show()  -- Show active overlay
-                else  -- Revert to default combo point and hide the overlay for stacks > i
-                    comboPoint.Point_Icon:SetAtlas("UF-DruidCP-Icon")  -- Default Druid combo point
-                    comboPoint.Point_Deplete:SetDesaturated(false)
-                    comboPoint.Point_Deplete:SetVertexColor(1, 1, 1)
-                    comboPoint.Smoke:SetDesaturated(false)
-                    comboPoint.Smoke:SetVertexColor(1, 1, 1)
-                    comboPoint.FB_Slash:SetDesaturated(false)
-                    comboPoint.FB_Slash:SetVertexColor(1, 1, 1)
-                    comboPoint.ChargedFrameActive:Hide()  -- Hide active overlay
-                end
-            end
-        end
-    end
-
-    local function BlueLegacyDruidPoints(aura)
-        local frame = ComboFrame
-        if not frame or not frame.ComboPoints then return end
-        local comboIndex = frame.startComboPointIndex or 2
-
-        for i = 1, 3 do
-            local point = frame.ComboPoints[comboIndex]
-            if point then
-                local isCharged = aura and i <= aura.applications
-
-                if isCharged then
-                    point.Highlight:SetAtlas("AncientMana")
-                    point.Highlight:SetTexCoord(0, 1, 0, 1)
-                    point.Highlight:SetSize(14, 14)
-                    point.Highlight:SetPoint("TOPLEFT", point, "TOPLEFT", -1, 1.5)
-                    point.charged = true
-                elseif point.charged then
-                    point.Highlight:SetTexture(130973)
-                    point.Highlight:SetTexCoord(0.375, 0.5625, 0, 1)
-                    point.Highlight:SetSize(8, 16)
-                    point.Highlight:SetPoint("TOPLEFT", point, "TOPLEFT", 2, 0)
-                    point.charged = false
-                end
-
-                comboIndex = comboIndex + 1
-            end
-        end
-    end
-
-    -- Create a frame to listen to form changes
-    local currentForm = GetShapeshiftFormID()
-    if currentForm ~= 1 then
-        local formWatch = CreateFrame("Frame")
-        local function OnFormChanged()
-            CreateChargedPoints(druid)
-            if druid.blueOverchargePoints then
-                formWatch:UnregisterAllEvents()
-            end
-        end
-        formWatch:RegisterEvent("UPDATE_SHAPESHIFT_FORM")
-        formWatch:SetScript("OnEvent", OnFormChanged)
-    end
-
-    druid.auraWatch = CreateFrame("Frame")
-    if BetterBlizzFramesDB.legacyBlueComboPoints and C_CVar.GetCVar("comboPointLocation") == "1" and ComboFrame then
-        druid.auraWatch:SetScript("OnEvent", function()
-            local aura = C_UnitAuras.GetPlayerAuraBySpellID(405189)
-            UpdateComboPoints(druid, aura)
-            BlueLegacyDruidPoints(aura)
-        end)
-    else
-        druid.auraWatch:SetScript("OnEvent", function()
-            local aura = C_UnitAuras.GetPlayerAuraBySpellID(405189)
-            UpdateComboPoints(druid, aura)
-        end)
-    end
-    druid.auraWatch:RegisterUnitEvent("UNIT_AURA", "player")
-    BBF.druidBlueCombos = true
-end
-
-function BBF.DruidAlwaysShowCombos()
-    if not BetterBlizzFramesDB.druidAlwaysShowCombos then return end
-    if select(2, UnitClass("player")) ~= "DRUID" then return end
-    if BBF.DruidAlwaysShowCombosActive then return end
-    local frame = DruidComboPointBarFrame
+    TagCombos(frame)
 
     local function UpdateDruidComboPoints(self)
         if not self then return end
+        TagCombos(frame)
+        if not self.ComboPoint1 then return end
         local form = GetShapeshiftFormID()
         if form == 1 then return end
 
-        local comboPoints = UnitPower("player", self.powerType)
+        local comboPoints = 0--UnitPower("player", self.powerType)
 
         if comboPoints > 0 then
             self:Show()
@@ -199,7 +71,10 @@ function BBF.DruidAlwaysShowCombos()
     end
 
     frame:HookScript("OnHide", function(self)
-        if UnitPower("player", self.powerType) > 0 then
+        TagCombos(frame)
+        if not self.ComboPoint1 then return end
+        local comboPoints = 0--UnitPower("player", DruidComboPointBarFrame.powerType)
+        if comboPoints > 0 then
             self:Show()
         end
     end)
@@ -212,29 +87,6 @@ function BBF.DruidAlwaysShowCombos()
         end
     end)
     BBF.DruidAlwaysShowCombosActive = true
-end
-
-
-
-
-local function FormatStatusBarNumber(value)
-    local useSmart = BetterBlizzFramesDB.formatStatusBarText
-    if useSmart then
-        -- Blizzard smart formatting: 4.2 M
-        if value >= 1000000 then
-            return string.format("%.1f M", value / 1000000)
-        elseif value >= 100000 then
-            return string.format("%d K", math.floor(value / 1000))
-        elseif value >= 10000 then
-            return string.format("%.1f K", value / 1000)
-        end
-    else
-        if value >= 1000 then
-            return string.format("%d K", math.floor(value / 1000))
-        else
-            return tostring(value)
-        end
-    end
 end
 
 local moveComboInForm = {
@@ -254,31 +106,32 @@ local function UpdateAltManaBar(updateCombos, cf)
     local form = GetShapeshiftFormID()
     local inNoManaForm = moveComboInForm[form]
     if inNoManaForm then
-        local mana = UnitPower("player", Enum.PowerType.Mana)
-        local maxMana = UnitPowerMax("player", Enum.PowerType.Mana)
-        local percent = math.floor((mana / maxMana) * 100 + 0.5)
+        local percent = 100--math.floor((mana / maxMana) * 100 + 0.5)
 
-        bar:SetMinMaxValues(0, maxMana)
-        bar:SetValue(mana)
+        bar:SetMinMaxValues(0, UnitPowerMax("player", Enum.PowerType.Mana))
+        bar:SetValue(UnitPower("player", Enum.PowerType.Mana))
 
         local display = GetCVar("statusTextDisplay")
 
         if display == "NONE" then
             bar.TextString:SetText("")
         elseif display == "NUMERIC" then
-            bar.TextString:SetText(FormatStatusBarNumber(mana))
+            bar.TextString:SetText(AbbreviateNumbers(UnitPower("player", Enum.PowerType.Mana)))
         elseif display == "PERCENT" then
             bar.TextString:SetText(percent .. "%")
         elseif display == "BOTH" and bar.LeftText and bar.RightText then
             bar.TextString:SetText("")
             bar.LeftText:SetText(percent .. "%")
-            bar.RightText:SetText(FormatStatusBarNumber(mana))
+            bar.RightText:SetText(AbbreviateNumbers(UnitPower("player", Enum.PowerType.Mana)))
         end
 
         bar:Show()
         if not cf then
             PlayerFrame.PlayerFrameContainer.FrameTexture:Hide()
             PlayerFrame.PlayerFrameContainer.AlternatePowerFrameTexture:Show()
+        end
+        if BetterBlizzFramesDB.noPortraitModes then
+            PlayerFrame.noPortraitMode.Texture:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Large-Alt.tga")
         end
         if updateCombos then
             if not bar.originalComboPos then
@@ -303,6 +156,13 @@ local function UpdateAltManaBar(updateCombos, cf)
                 PlayerFrame.PlayerFrameContainer.FrameTexture:Show()
                 PlayerFrame.PlayerFrameContainer.AlternatePowerFrameTexture:Hide()
             end
+            if BetterBlizzFramesDB.noPortraitModes then
+                if PlayerFrame.PlayerFrameContainer.AlternatePowerFrameTexture:IsShown() then
+                    PlayerFrame.noPortraitMode.Texture:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Large-Alt.tga")
+                else
+                    PlayerFrame.noPortraitMode.Texture:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Large.tga")
+                end
+            end
             bar:Hide()
         end)
     end
@@ -316,6 +176,7 @@ function BBF.CreateAltManaBar()
     local db = BetterBlizzFramesDB
     if db.useMiniPlayerFrame then return end
     local cf = db.classicFrames
+    local noPortrait = db.noPortraitModes
 
     local specID = GetSpecialization() and GetSpecializationInfo(GetSpecialization())
     if specID ~= 105 then
@@ -341,9 +202,12 @@ function BBF.CreateAltManaBar()
     if cf then
         bar:SetSize(104, 12)
         bar:SetPoint("BOTTOMLEFT", PlayerFrame, "BOTTOMLEFT", 95, 17)
-    else
+    elseif db.noPortrait then
         bar:SetSize(124, 10)
         bar:SetPoint("BOTTOMLEFT", PlayerFrame, "BOTTOMLEFT", 85, 17.5)
+    else
+        bar:SetSize(124, 10)
+        bar:SetPoint("BOTTOMLEFT", PlayerFrame, "BOTTOMLEFT", 85, 18.5)
     end
     if db.changeUnitFrameManabarTexture then
         bar:SetStatusBarTexture(BBF.manaTexture)
@@ -381,31 +245,46 @@ function BBF.CreateAltManaBar()
         bar.RightBorder:SetTexture("Interface\\CharacterFrame\\UI-CharacterFrame-GroupIndicator")
         bar.RightBorder:SetTexCoord(0.125, 0, 1, 0)
         bar.RightBorder:SetPoint("LEFT", bar.Border, "RIGHT")
+    elseif noPortrait then
+        bar.Background = bar:CreateTexture(nil, "BACKGROUND")
+        bar.Background:SetAllPoints()
+        bar.Background:SetColorTexture(0, 0, 0, 0.5)
     end
 
     local display = GetCVar("statusTextDisplay")
 
     -- Center text like ManaBarText
-    local xtraOffset = cf and 0 or 0.5
+    local xtraOffset = noPortrait and 0 or cf and -1 or -0.5
+    local extraXOffset = noPortrait and 0.5 or 0
     bar.TextString = bar.overlay:CreateFontString(nil, "OVERLAY", "TextStatusBarText")
     local f,s,o = AlternatePowerBar.TextString:GetFont()
-    local a,b,c,d,e = AlternatePowerBar.TextString:GetPoint()
     bar.TextString:SetFont(f,s,o)
-    bar.TextString:SetPoint(a,bar,c,d,e-xtraOffset)
+    bar.TextString:ClearAllPoints()
+    bar.TextString:SetPoint("CENTER",bar,"CENTER",2+extraXOffset,xtraOffset)
+
+    C_Timer.After(0.5, function()
+        local f,s,o = AlternatePowerBar.TextString:GetFont()
+        bar.TextString:SetFont(f,s,o)
+    end)
 
     -- Left and Right (only created if BOTH is set)
     if display == "BOTH" then
         bar.LeftText = bar.overlay:CreateFontString(nil, "OVERLAY", "TextStatusBarText")
         local f,s,o = AlternatePowerBar.LeftText:GetFont()
-        local a,b,c,d,e = AlternatePowerBar.LeftText:GetPoint()
         bar.LeftText:SetFont(f,s,o)
-        bar.LeftText:SetPoint(a,bar,c,d,e-xtraOffset)
+        bar.LeftText:SetPoint("LEFT",bar,"LEFT",noPortrait and 2 or 0,xtraOffset)
 
         bar.RightText = bar.overlay:CreateFontString(nil, "OVERLAY", "TextStatusBarText")
         local f,s,o = AlternatePowerBar.RightText:GetFont()
-        local a,b,c,d,e = AlternatePowerBar.RightText:GetPoint()
         bar.RightText:SetFont(f,s,o)
-        bar.RightText:SetPoint(a,bar,c,d,e-xtraOffset)
+        bar.RightText:SetPoint("RIGHT",bar,"RIGHT",0,xtraOffset)
+
+        C_Timer.After(0.5, function()
+            local f, s, o = AlternatePowerBar.LeftText:GetFont()
+            bar.LeftText:SetFont(f, s, o)
+            local f, s, o = AlternatePowerBar.RightText:GetFont()
+            bar.RightText:SetFont(f, s, o)
+        end)
     end
 
     local updateCombos = not (
