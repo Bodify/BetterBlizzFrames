@@ -8,7 +8,7 @@
 ### Bugfix
 - Midnight: Fix Interrupt Icon being enabled when target/focus setting was even though the main setting was off.
 - Fix the slider tip text being anchored wrong causing it to be stuck on screen after opening settings.
-- Fix "Hide PlayerFrame Mana" (which also hides PetFrame Mana) not changing the frame texture with the Pixel Border setting off.
+- Fix "Hide PlayerFrame Mana" (which also hides PetFrame Mana) not changing the frame textur on PetFrame with the Pixel Border setting off.
 
 # BetterBlizzFrames 1.8.2
 ## Midnight & Retail
