@@ -99,7 +99,7 @@ end
 
 local function getUnitColor(unit)
     if not UnitExists(unit) then return end
-    if UnitIsPlayer(unit) then
+    if UnitIsPlayer(unit) or (C_LFGInfo.IsInLFGFollowerDungeon() and UnitInParty(unit)) then
         if TRP3_API and rpNames then
             local r,g,b = GetRPNameColor(unit)
             if r then
@@ -494,7 +494,7 @@ function BBF.HookHealthbarColors()
 
         local function UpdateRPHealthColor(frame, unit)
             if not validUnits[unit] then return end
-            if UnitIsPlayer(unit) then
+            if UnitIsPlayer(unit) or (C_LFGInfo.IsInLFGFollowerDungeon() and UnitInParty(unit)) then
                 local color = getRPUnitColor(unit)
                 if color then
                     frame:SetStatusBarDesaturated(true)
@@ -617,7 +617,7 @@ function BBF.HookFrameTextureColor()
         local desaturate = darkmode and true or false
         local colored = false
 
-        if UnitIsPlayer(unit) or C_LFGInfo.IsInLFGFollowerDungeon() then
+        if UnitIsPlayer(unit) or (C_LFGInfo.IsInLFGFollowerDungeon() and UnitInParty(unit)) then
             if TRP3_API and rpColor then
                 local rpR, rpG, rpB = GetRPNameColor(unit)
                 if rpR then

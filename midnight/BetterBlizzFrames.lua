@@ -3601,80 +3601,84 @@ function BBF.SymmetricPlayerFrame()
     end
 end
 
-function BBF.AddBackgroundTextureToUnitFrames(frame, tot)
-    if not BetterBlizzFramesDB.addUnitFrameBgTexture then
-        if frame.bbfBgTexture then
-            frame.bbfBgTexture:Hide()
-        end
+function BBF.AddBackgroundTextureToUnitFrames(frame)
+    if not frame then
         return
     end
-
-    local color = BetterBlizzFramesDB.unitFrameBgTextureColor
-    local noPortrait = BetterBlizzFramesDB.noPortraitModes
-    local noPortraitBg = noPortrait and frame.noPortraitMode and frame.noPortraitMode.Background
 
     if frame.bbfBgTexture then
-        frame.bbfBgTexture:Show()
-        frame.bbfBgTexture:SetColorTexture(unpack(color))
+        frame.bbfBgTexture:Hide()
+    end
+
+    local enabled = BetterBlizzFramesDB.addUnitFrameBgTexture
+    local color = BetterBlizzFramesDB.unitFrameBgTextureColor or { 0, 0, 0, 0.7 }
+
+    local hpBar = frame.healthbar or frame.HealthBar or frame.healthBar
+    local manaBar = frame.manabar or frame.ManaBar or frame.manaBar
+
+    if not hpBar and not manaBar then
         return
     end
 
-    if noPortraitBg then
-        noPortraitBg:SetAlpha(0)
-        noPortraitBg:Hide()
-        noPortraitBg:SetParent(BBF.hiddenFrame)
+    if not enabled then
+        if hpBar and hpBar.BBFBackground then
+            hpBar.BBFBackground:Hide()
+        end
+        if manaBar and manaBar.BBFBackground then
+            manaBar.BBFBackground:Hide()
+        end
+        return
+    end
 
-        if BetterBlizzFramesDB.noPortraitPixelBorder then
-            local hpBar = frame.healthbar or frame.HealthBar or frame.healthBar
-            local manaBar = frame.manabar or frame.ManaBar or frame.manaBar
-            if hpBar.BBFBackground then
-                hpBar.BBFBackground:SetColorTexture(unpack(color))
+    if hpBar then
+        local bg = hpBar.BBFBackground
+        if not bg then
+            bg = hpBar:CreateTexture(nil, "BACKGROUND", nil, -1)
+            bg:SetAllPoints(hpBar)
+            hpBar.BBFBackground = bg
+
+            if hpBar.GetStatusBarTexture then
+                local sbTex = hpBar:GetStatusBarTexture()
+                if sbTex and sbTex.GetNumMaskTextures then
+                    local numMasks = sbTex:GetNumMaskTextures()
+                    for i = 1, numMasks do
+                        local mask = sbTex:GetMaskTexture(i)
+                        if mask then
+                            bg:AddMaskTexture(mask)
+                        end
+                    end
+                end
             end
-            if manaBar and manaBar.BBFBackground then
-                manaBar.BBFBackground:SetColorTexture(unpack(color))
-            end
-            return
         end
 
-        local bgTex = frame:CreateTexture(nil, "BACKGROUND", nil, -1)
-        bgTex:SetColorTexture(unpack(color))
-        bgTex:SetPoint("TOPLEFT", noPortraitBg, "TOPLEFT", -1, 1)
-        bgTex:SetPoint("BOTTOMRIGHT", noPortraitBg, "BOTTOMRIGHT", 1, -1)
-
-        frame.bbfBgTexture = bgTex
-        return
+        bg:SetColorTexture(unpack(color))
+        bg:Show()
     end
 
-    local EF = C_AddOns.IsAddOnLoaded("EasyFrames")
-    local parent
-    if EF then
-        parent = CreateFrame("Frame")
-        parent:SetParent(frame)
-        parent:SetFrameStrata("BACKGROUND")
-        parent:SetFrameLevel(0)
+    if manaBar then
+        local bg = manaBar.BBFBackground
+        if not bg then
+            bg = manaBar:CreateTexture(nil, "BACKGROUND", nil, -1)
+            bg:SetAllPoints(manaBar)
+            manaBar.BBFBackground = bg
+
+            if manaBar.GetStatusBarTexture then
+                local sbTex = manaBar:GetStatusBarTexture()
+                if sbTex and sbTex.GetNumMaskTextures then
+                    local numMasks = sbTex:GetNumMaskTextures()
+                    for i = 1, numMasks do
+                        local mask = sbTex:GetMaskTexture(i)
+                        if mask then
+                            bg:AddMaskTexture(mask)
+                        end
+                    end
+                end
+            end
+        end
+
+        bg:SetColorTexture(unpack(color))
+        bg:Show()
     end
-
-    local topAnchor = frame.healthbar or frame.HealthBar or frame
-    local bottomAnchor = frame.manabar or frame
-
-    local texParent = parent or tot and topAnchor or frame
-
-    local bgTex = texParent:CreateTexture(nil, "BACKGROUND", nil, -1)
-    bgTex:SetColorTexture(unpack(color))
-
-    local classic = BetterBlizzFramesDB.classicFrames
-    local yOffset = (EF and (frame == TargetFrame or frame == FocusFrame)) and 9 or classic and -10 or 0
-    local xOffset = classic and 2 or 0
-
-    if tot then
-        bgTex:SetPoint("TOPLEFT", topAnchor, "TOPLEFT", -3, 0)
-        bgTex:SetPoint("BOTTOMRIGHT", bottomAnchor, "BOTTOMRIGHT", 0, 0)
-    else
-        bgTex:SetPoint("TOPLEFT", topAnchor, "TOPLEFT", xOffset, yOffset)
-        bgTex:SetPoint("BOTTOMRIGHT", bottomAnchor, "BOTTOMRIGHT", 0, 0)
-    end
-
-    frame.bbfBgTexture = bgTex
 end
 
 function BBF.UnitFrameBackgroundTexture()

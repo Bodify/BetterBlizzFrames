@@ -534,7 +534,7 @@ local function CompactPartyFrameNameChanges(frame)
         frame.name:SetText(GetNameWithoutRealm(frame))
     end
     if classColorPartyNames then
-        if frame.unit and UnitIsPlayer(frame.unit) then
+        if frame.unit and (UnitIsPlayer(frame.unit) or C_LFGInfo.IsInLFGFollowerDungeon()) then
             local _, class = UnitClass(frame.unit)
             if class then
                 local color = RAID_CLASS_COLORS[class]
@@ -571,7 +571,7 @@ local function PartyFrameNameChange(frame)
         frame.bbfName:SetFont(frame.Name:GetFont())
     end
     if classColorPartyNames then
-        if frame.unit and UnitIsPlayer(frame.unit) then
+        if frame.unit and (UnitIsPlayer(frame.unit) or C_LFGInfo.IsInLFGFollowerDungeon()) then
             local _, class = UnitClass(frame.unit)
             if class then
                 local color = RAID_CLASS_COLORS[class]

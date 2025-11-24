@@ -27,13 +27,13 @@ local recolorCastbars = BetterBlizzFramesDB.recolorCastbars
 local castbarColors = {
     standard        = BetterBlizzFramesDB.castbarCastColor,
     interrupted     = { 1, 0, 0 },
-    channeled       = BetterBlizzFramesDB.castbarChannelColor,
+    channel       = BetterBlizzFramesDB.castbarChannelColor,
     uninterruptable = BetterBlizzFramesDB.castbarUninterruptableColor,
 }
 local defaultCastbarColors = {
     standard        = { 1, 0.7, 0 },
     interrupted     = { 1, 0, 0 },
-    channeled       = { 0, 1, 0 },
+    channel       = { 0, 1, 0 },
     uninterruptable = { 0.7, 0.7, 0.7 },
 }
 
@@ -805,41 +805,6 @@ CastBarFrame:SetScript("OnEvent", function(self, event, ...)
     end
 end)
 
-
-
-
-
-
-
---[[
-CompactPartyFrame:HookScript("OnShow", function()
-    --Small delay to make EditMode happy going from party > compactparty
-    C_Timer.After(0, function()
-        BBF.UpdateCastbars()
-    end)
-    print("CompactPartyFrame:OnShow ran")
-end)
-
-
-]]
-
-
-
-
---[[
-hooksecurefunc(CompactPartyFrame, "RefreshMembers", function()
-    local showPartyCastbars = BetterBlizzFramesDB.showPartyCastbar
-    if showPartyCastbars then
-        BBF.CreateCastbars()
-        BBF.UpdateCastbars()
-    end
-    --BBF.OnUpdateName()
-end)
-
-]]
-
-
-
 -- Hook into the OnUpdate, OnShow, and OnHide scripts for the spell bar
 local function CastBarTimer(bar)
     local castBarSetting = nil
@@ -960,7 +925,7 @@ end
 
 local function ColorOldCastbar(castBar)
     castBar:SetStatusBarColor(1, 0.7, 0, 1)
-    if castBar.barType == "channeled" then
+    if castBar.barType == "channel" then
         castBar:SetStatusBarColor(0, 1, 0, 1)
     elseif castBar.barType == "interrupted" then
         castBar:SetStatusBarColor(1, 0, 0, 1)
@@ -992,7 +957,7 @@ function BBF.CastbarRecolorWidgets()
         castbarColors = {
             standard        = BetterBlizzFramesDB.castbarCastColor,
             interrupted     = { 1, 0, 0 },
-            channeled       = BetterBlizzFramesDB.castbarChannelColor,
+            channel       = BetterBlizzFramesDB.castbarChannelColor,
             uninterruptable = BetterBlizzFramesDB.castbarUninterruptableColor,
         }
 
@@ -1745,7 +1710,7 @@ function BBF.CastbarColorHooks()
         castbarColors = {
             standard        = BetterBlizzFramesDB.castbarCastColor,
             interrupted     = { 1, 0, 0 },
-            channeled       = BetterBlizzFramesDB.castbarChannelColor,
+            channel       = BetterBlizzFramesDB.castbarChannelColor,
             uninterruptable = BetterBlizzFramesDB.castbarUninterruptableColor,
         }
             local playerCastBarTexture = PlayerCastingBarFrame:GetStatusBarTexture()

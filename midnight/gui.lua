@@ -4432,6 +4432,14 @@ local function guiGeneralTab()
     end)
     CreateTooltipTwo(classColorFrames, "Class Color Healthbars", "Class color Player, Target, Focus & Party frames.")
 
+    -- local customColorHealthbars = CreateCheckbox("customColorHealthbars", "Custom Color Health", BetterBlizzFrames)
+    -- customColorHealthbars:SetPoint("LEFT", classColorFrames.Text, "RIGHT", 0, 0)
+    -- customColorHealthbars:HookScript("OnClick", function(self)
+    --     if not self:GetChecked() then
+    --         StaticPopup_Show("BBF_CONFIRM_RELOAD")
+    --     end
+    -- end)
+    -- CreateTooltipTwo(customColorHealthbars, "Custom Color Healthbars","Custom color Player, Target & Focus Healthbars.")
 
     local classColorTargetNames = CreateCheckbox("classColorTargetNames", "Class Color Names", BetterBlizzFrames)
     classColorTargetNames:SetPoint("TOPLEFT", classColorFrames, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
@@ -5657,7 +5665,7 @@ local function guiCastbars()
     end)
 
     BetterBlizzFramesCastbars.rightClickTip = BetterBlizzFramesCastbars:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
-    BetterBlizzFramesCastbars.rightClickTip:SetPoint("BOTTOMLEFT", bgImg, "BOTTOM", -160, -31)
+    BetterBlizzFramesCastbars.rightClickTip:SetPoint("BOTTOMLEFT", bgImg, "BOTTOM", -190, -31)
     BetterBlizzFramesCastbars.rightClickTip:SetText("|A:smallquestbang:20:20|aTip:  Right-click sliders to enter a specific value")
 end
 

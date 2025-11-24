@@ -21,7 +21,6 @@ local interruptSpells = {
     351338, -- Quell (Evoker)
 }
 
--- Function to find and return the interrupt spell the player knows
 local function GetInterruptSpell()
     for _, spellID in ipairs(interruptSpells) do
         if IsSpellKnownOrOverridesKnown(spellID) or (UnitExists("pet") and IsSpellKnownOrOverridesKnown(spellID, true)) then
@@ -40,7 +39,6 @@ local petSummonSpells = {
     [108503] = true, -- Grimoire of Sacrifice
 }
 
--- Function to update the interrupt icon
 local function UpdateInterruptIcon(frame)
     if not frame then return end
 
@@ -48,17 +46,23 @@ local function UpdateInterruptIcon(frame)
         playerKick = GetInterruptSpell()
     end
 
-    if playerKick then
-        -- Update icon
+    local shouldShow = false
+    if BetterBlizzFramesDB.castBarInterruptIconEnabled then
+        if frame == TargetFrameSpellBar.interruptIconFrame then
+            shouldShow = BetterBlizzFramesDB.castBarInterruptIconTarget
+        elseif frame == FocusFrameSpellBar.interruptIconFrame then
+            shouldShow = BetterBlizzFramesDB.castBarInterruptIconFocus
+        end
+    end
+
+    if playerKick and shouldShow then
         frame:Show()
         frame.icon:SetTexture(C_Spell.GetSpellTexture(playerKick))
 
-        -- Update cooldown
         local cooldownInfo = C_Spell.GetSpellCooldown(playerKick)
         if cooldownInfo then
             frame.cooldown:SetCooldown(cooldownInfo.startTime, cooldownInfo.duration)
 
-            -- Update border color based on cooldown
             if frame.border then
                 local isOnCooldown = frame.cooldown:IsShown()
                 if isOnCooldown then
@@ -68,7 +72,6 @@ local function UpdateInterruptIcon(frame)
                 end
             end
 
-            -- Update castbar color if recolor is enabled
             if BetterBlizzFramesDB.castBarRecolorInterrupt then
                 local isOnCooldown = frame.cooldown:IsShown()
                 if isOnCooldown then
@@ -98,18 +101,16 @@ local function OnPetEvent(self, event, unit, _, spellID)
     end)
 end
 
--- Event frames (only created when needed)
 local interruptSpellUpdate
 local cooldownFrame
 
--- Helper function to check if any feature is enabled
 local function IsAnyFeatureEnabled()
-    return BetterBlizzFramesDB.castBarRecolorInterrupt or 
-           BetterBlizzFramesDB.castBarInterruptIconTarget or 
-           BetterBlizzFramesDB.castBarInterruptIconFocus
+    return BetterBlizzFramesDB.castBarRecolorInterrupt or
+           (BetterBlizzFramesDB.castBarInterruptIconEnabled and
+            (BetterBlizzFramesDB.castBarInterruptIconTarget or
+             BetterBlizzFramesDB.castBarInterruptIconFocus))
 end
 
--- Initialize event frames if they don't exist and features are enabled
 local function InitializeEventFrames()
     if not IsAnyFeatureEnabled() then
         if interruptSpellUpdate then
@@ -121,7 +122,6 @@ local function InitializeEventFrames()
         return
     end
 
-    -- Create and register interrupt spell update frame
     if not interruptSpellUpdate then
         interruptSpellUpdate = CreateFrame("Frame")
         if select(2, UnitClass("player")) == "WARLOCK" then
@@ -132,7 +132,6 @@ local function InitializeEventFrames()
         interruptSpellUpdate:SetScript("OnEvent", OnPetEvent)
     end
 
-    -- Create and register cooldown update frame
     if not cooldownFrame then
         cooldownFrame = CreateFrame("Frame")
         cooldownFrame:RegisterEvent("SPELL_UPDATE_COOLDOWN")
@@ -149,7 +148,6 @@ local function InitializeEventFrames()
     end
 end
 
--- Function to create an interrupt icon frame
 local function CreateInterruptIconFrame(parentFrame)
     local button = CreateFrame("Frame", nil, parentFrame)
     button:SetSize(30, 30)
@@ -158,12 +156,10 @@ local function CreateInterruptIconFrame(parentFrame)
                     BetterBlizzFramesDB.castBarInterruptIconYPos - 7)
     button:SetScale(BetterBlizzFramesDB.castBarInterruptIconScale)
 
-    -- Create icon texture
     button.icon = button:CreateTexture(nil, "BACKGROUND")
     button.icon:SetAllPoints()
     button.icon:SetTexCoord(0.04, 0.96, 0.04, 0.96)
 
-    -- Create border
     if BetterBlizzFramesDB.interruptIconBorder then
         button.border = button:CreateTexture(nil, "OVERLAY")
         button.border:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-ActionBar-IconFrame-AddRow-Light")
@@ -173,7 +169,6 @@ local function CreateInterruptIconFrame(parentFrame)
         button.border:SetVertexColor(0, 1, 0)
     end
 
-    -- Create cooldown frame
     button.cooldown = CreateFrame("Cooldown", nil, button, "CooldownFrameTemplate")
     button.cooldown:SetAllPoints()
     button.cooldown:HookScript("OnCooldownDone", function()
@@ -188,9 +183,7 @@ local function CreateInterruptIconFrame(parentFrame)
     return button
 end
 
--- Function to initialize the interrupt icon frames
 function BBF.ToggleCastbarInterruptIcon()
-    -- Destroy existing frames if they exist
     if TargetFrameSpellBar.interruptIconFrame then
         TargetFrameSpellBar.interruptIconFrame:Hide()
         TargetFrameSpellBar.interruptIconFrame = nil
@@ -200,26 +193,22 @@ function BBF.ToggleCastbarInterruptIcon()
         FocusFrameSpellBar.interruptIconFrame = nil
     end
 
-    -- Initialize or clean up event frames based on settings
     InitializeEventFrames()
 
-    -- If no features are enabled, exit early
     if not IsAnyFeatureEnabled() then
         return
     end
 
-    -- Always create target frame icon if any feature is enabled
     TargetFrameSpellBar.interruptIconFrame = CreateInterruptIconFrame(TargetFrameSpellBar)
-    if BetterBlizzFramesDB.castBarInterruptIconTarget then
+    if BetterBlizzFramesDB.castBarInterruptIconEnabled and BetterBlizzFramesDB.castBarInterruptIconTarget then
         TargetFrameSpellBar.interruptIconFrame:Show()
         UpdateInterruptIcon(TargetFrameSpellBar.interruptIconFrame)
     else
         TargetFrameSpellBar.interruptIconFrame:Hide()
     end
 
-    -- Always create focus frame icon if any feature is enabled
     FocusFrameSpellBar.interruptIconFrame = CreateInterruptIconFrame(FocusFrameSpellBar)
-    if BetterBlizzFramesDB.castBarInterruptIconFocus then
+    if BetterBlizzFramesDB.castBarInterruptIconEnabled and BetterBlizzFramesDB.castBarInterruptIconFocus then
         FocusFrameSpellBar.interruptIconFrame:Show()
         UpdateInterruptIcon(FocusFrameSpellBar.interruptIconFrame)
     else
@@ -227,9 +216,7 @@ function BBF.ToggleCastbarInterruptIcon()
     end
 end
 
--- Function to update settings
 local function UpdateSettings()
-    -- If no features are enabled, hide everything
     if not IsAnyFeatureEnabled() then
         if TargetFrameSpellBar.interruptIconFrame then
             TargetFrameSpellBar.interruptIconFrame:Hide()
@@ -240,7 +227,6 @@ local function UpdateSettings()
         return
     end
 
-    -- Update target frame icon
     if TargetFrameSpellBar.interruptIconFrame then
         local frame = TargetFrameSpellBar.interruptIconFrame
         frame:ClearAllPoints()
@@ -248,15 +234,13 @@ local function UpdateSettings()
                        BetterBlizzFramesDB.castBarInterruptIconXPos + 45, 
                        BetterBlizzFramesDB.castBarInterruptIconYPos - 7)
         frame:SetScale(BetterBlizzFramesDB.castBarInterruptIconScale)
-        
-        if BetterBlizzFramesDB.castBarInterruptIconTarget then
+        if BetterBlizzFramesDB.castBarInterruptIconEnabled and BetterBlizzFramesDB.castBarInterruptIconTarget then
             frame:Show()
         else
             frame:Hide()
         end
     end
 
-    -- Update focus frame icon
     if FocusFrameSpellBar.interruptIconFrame then
         local frame = FocusFrameSpellBar.interruptIconFrame
         frame:ClearAllPoints()
@@ -264,8 +248,8 @@ local function UpdateSettings()
                        BetterBlizzFramesDB.castBarInterruptIconXPos + 45, 
                        BetterBlizzFramesDB.castBarInterruptIconYPos - 7)
         frame:SetScale(BetterBlizzFramesDB.castBarInterruptIconScale)
-        
-        if BetterBlizzFramesDB.castBarInterruptIconFocus then
+
+        if BetterBlizzFramesDB.castBarInterruptIconEnabled and BetterBlizzFramesDB.castBarInterruptIconFocus then
             frame:Show()
         else
             frame:Hide()
@@ -273,13 +257,14 @@ local function UpdateSettings()
     end
 end
 
--- Function to call when user changes settings
 function BBF.UpdateInterruptIconSettings()
     UpdateSettings()
-    if BetterBlizzFramesDB.castBarInterruptIconTarget and TargetFrameSpellBar.interruptIconFrame then
-        UpdateInterruptIcon(TargetFrameSpellBar.interruptIconFrame)
-    end
-    if BetterBlizzFramesDB.castBarInterruptIconFocus and FocusFrameSpellBar.interruptIconFrame then
-        UpdateInterruptIcon(FocusFrameSpellBar.interruptIconFrame)
+    if BetterBlizzFramesDB.castBarInterruptIconEnabled then
+        if BetterBlizzFramesDB.castBarInterruptIconTarget and TargetFrameSpellBar.interruptIconFrame then
+            UpdateInterruptIcon(TargetFrameSpellBar.interruptIconFrame)
+        end
+        if BetterBlizzFramesDB.castBarInterruptIconFocus and FocusFrameSpellBar.interruptIconFrame then
+            UpdateInterruptIcon(FocusFrameSpellBar.interruptIconFrame)
+        end
     end
 end

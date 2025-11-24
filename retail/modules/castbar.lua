@@ -27,13 +27,13 @@ local recolorCastbars = BetterBlizzFramesDB.recolorCastbars
 local castbarColors = {
     standard        = BetterBlizzFramesDB.castbarCastColor,
     interrupted     = { 1, 0, 0 },
-    channeled       = BetterBlizzFramesDB.castbarChannelColor,
+    channel       = BetterBlizzFramesDB.castbarChannelColor,
     uninterruptable = BetterBlizzFramesDB.castbarUninterruptableColor,
 }
 local defaultCastbarColors = {
     standard        = { 1, 0.7, 0 },
     interrupted     = { 1, 0, 0 },
-    channeled       = { 0, 1, 0 },
+    channel       = { 0, 1, 0 },
     uninterruptable = { 0.7, 0.7, 0.7 },
 }
 
@@ -801,40 +801,6 @@ CastBarFrame:SetScript("OnEvent", function(self, event, ...)
 end)
 
 
-
-
-
-
-
---[[
-CompactPartyFrame:HookScript("OnShow", function()
-    --Small delay to make EditMode happy going from party > compactparty
-    C_Timer.After(0, function()
-        BBF.UpdateCastbars()
-    end)
-    print("CompactPartyFrame:OnShow ran")
-end)
-
-
-]]
-
-
-
-
---[[
-hooksecurefunc(CompactPartyFrame, "RefreshMembers", function()
-    local showPartyCastbars = BetterBlizzFramesDB.showPartyCastbar
-    if showPartyCastbars then
-        BBF.CreateCastbars()
-        BBF.UpdateCastbars()
-    end
-    --BBF.OnUpdateName()
-end)
-
-]]
-
-
-
 -- Hook into the OnUpdate, OnShow, and OnHide scripts for the spell bar
 local function CastBarTimer(bar)
     local castBarSetting = nil
@@ -955,7 +921,7 @@ end
 
 local function ColorOldCastbar(castBar)
     castBar:SetStatusBarColor(1, 0.7, 0, 1)
-    if castBar.barType == "channeled" then
+    if castBar.barType == "channel" then
         castBar:SetStatusBarColor(0, 1, 0, 1)
     elseif castBar.barType == "interrupted" then
         castBar:SetStatusBarColor(1, 0, 0, 1)
@@ -986,7 +952,7 @@ function BBF.CastbarRecolorWidgets()
         castbarColors = {
             standard        = BetterBlizzFramesDB.castbarCastColor,
             interrupted     = { 1, 0, 0 },
-            channeled       = BetterBlizzFramesDB.castbarChannelColor,
+            channel       = BetterBlizzFramesDB.castbarChannelColor,
             uninterruptable = BetterBlizzFramesDB.castbarUninterruptableColor,
         }
 
@@ -1369,67 +1335,6 @@ function BBF.CastbarRecolorWidgets()
                 BBF.GexCastbarHooked = true
             end)
         end
-        
-
-        -- if castBarRecolorInterrupt then
-        --     local function HookGexCastbars(spellBar, i)
-        --         local spellBarTexture = spellBar:GetStatusBarTexture()
-        --         local unit = "arena"..i
-        --         spellBar:HookScript("OnUpdate", function(self, elapsed)
-        --             if self.isCasting or self.isChanneling then
-        --                 print("x")
-        --                 local name, _, _, startTime, endTime, _, _, notInterruptible, spellId = UnitCastingInfo(unit)
-        --                 if not name then
-        --                     name, _, _, startTime, endTime, _, notInterruptible, spellId = UnitChannelInfo(unit)
-        --                 end
-                
-        --                 if name and not notInterruptible then
-        --                     for _, interruptSpellID in ipairs(interruptSpellIDs) do
-        --                         local start, duration = BBF.TWWGetSpellCooldown(interruptSpellID)
-        --                         local cooldownRemaining = start + duration - GetTime()
-        --                         local castRemaining = (endTime/1000) - GetTime()
-                
-        --                         if cooldownRemaining > 0 and cooldownRemaining > castRemaining then
-        --                             spellBarTexture:SetDesaturated(true)
-        --                             self:SetStatusBarColor(unpack(castBarNoInterruptColor))
-        --                             --self.Spark:SetVertexColor(unpack(castBarNoInterruptColor))
-        --                         elseif cooldownRemaining > 0 and cooldownRemaining <= castRemaining then
-        --                             spellBarTexture:SetDesaturated(true)
-        --                             self:SetStatusBarColor(unpack(castBarDelayedInterruptColor))
-        --                             --self.Spark:SetVertexColor(unpack(castBarDelayedInterruptColor))
-        --                         else
-        --                             spellBarTexture:SetDesaturated(false)
-        --                             --self:SetStatusBarColor(1,1,1)
-        --                             --self.Spark:SetVertexColor(1,1,1)
-        --                         end
-        --                     end
-        --                 else
-        --                     spellBarTexture:SetDesaturated(false)
-        --                     --self:SetStatusBarColor(1,1,1)
-        --                     --self.Spark:SetVertexColor(1,1,1)
-        --                 end
-        --             end
-        --         end)
-        --     end
-            
-            
-        --     if C_AddOns.IsAddOnLoaded("GladiusEx") then
-        --         print("huh")
-        --         if BBF.GexCastbarHooked then return end
-        --         C_Timer.After(5, function()
-        --             for i = 1, 3 do
-        --                 local spellBar = _G["GladiusExCastBararena"..i.."Bar"]
-        --                 if spellBar then
-        --                     HookGexCastbars(spellBar, i)
-        --                     print("hooking bar")
-        --                 end
-        --             end
-        --             BBF.GexCastbarHooked = true
-        --         end)
-
-        --     end
-        -- end
-
     end
 end
 

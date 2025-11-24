@@ -177,7 +177,13 @@ local function CenterXName(fontObject, healthBar, ToT, pet)
     end
     if pet and BetterBlizzFramesDB.noPortraitModes then
         fontObject:SetJustifyH("CENTER")
-        fontObject:SetPoint("CENTER", PetFrameTexture, "CENTER", 1.5, 22)
+        local xPos = 1.5
+        local yPos = 22
+        if BetterBlizzFramesDB.noPortraitPixelBorder then
+            xPos = 0
+            yPos = 23
+        end
+        fontObject:SetPoint("CENTER", PetFrameTexture, "CENTER", xPos, yPos)
     else
         fontObject:SetPoint(pet and "BOTTOM" or "TOP", healthBar, "TOP", xPos, yPos)
     end
@@ -545,7 +551,7 @@ local function CompactPartyFrameNameChanges(frame)
         frame.name:SetText(GetNameWithoutRealm(frame))
     end
     if classColorPartyNames then
-        if frame.unit and UnitIsPlayer(frame.unit) then
+        if frame.unit and (UnitIsPlayer(frame.unit) or C_LFGInfo.IsInLFGFollowerDungeon()) then
             local _, class = UnitClass(frame.unit)
             if class then
                 local color = RAID_CLASS_COLORS[class]
@@ -582,7 +588,7 @@ local function PartyFrameNameChange(frame)
         frame.bbfName:SetFont(frame.Name:GetFont())
     end
     if classColorPartyNames then
-        if frame.unit and UnitIsPlayer(frame.unit) then
+        if frame.unit and (UnitIsPlayer(frame.unit) or C_LFGInfo.IsInLFGFollowerDungeon()) then
             local _, class = UnitClass(frame.unit)
             if class then
                 local color = RAID_CLASS_COLORS[class]

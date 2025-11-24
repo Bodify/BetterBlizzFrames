@@ -11,6 +11,7 @@ local playerAltTex = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-
 local targetDefaultTex = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Large.tga"
 local focusDefaultTex = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Large.tga"
 local partyDefaultTex = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Large.tga"
+local petDefaultTex = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Large.tga"
 
 local flashTex = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Large.tga"
 local flashNoLvl = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Large.tga"
@@ -26,6 +27,7 @@ local function UpdateTextureVariables()
         targetDefaultTex = nil
         focusDefaultTex = nil
         partyDefaultTex = nil
+        petDefaultTex = nil
         flashTex = nil
         flashNoLvl = nil
         minusTex = nil
@@ -62,6 +64,12 @@ local function UpdateTextureVariables()
     else
         focusDefaultTex = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Large.tga"
     end
+
+    if db.hideUnitFramePlayerMana then
+        petDefaultTex = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Minus.tga"
+    else
+        petDefaultTex = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Large.tga"
+    end
 end
 
 local function GetPlayerBackgroundYOffset()
@@ -83,7 +91,7 @@ local function GetPlayerBackgroundYOffset()
     end
 end
 
-local function BlackBorder(bar, width, height, startX, startY)
+local function BlackBorder(bar, width, height, startX, startY, tot)
     if not bar then return end
 
     width = width or 0
@@ -93,7 +101,11 @@ local function BlackBorder(bar, width, height, startX, startY)
 
     if not bar.BBFPositionFrame then
         local posFrame = CreateFrame("Frame", nil, bar)
-        posFrame:SetFrameStrata("MEDIUM")
+        if tot then
+            posFrame:SetFrameStrata("FULLSCREEN")
+        else
+            posFrame:SetFrameStrata("MEDIUM")
+        end
         posFrame:SetFrameLevel(bar:GetFrameLevel() + 1)
         bar.BBFPositionFrame = posFrame
     end
@@ -106,7 +118,11 @@ local function BlackBorder(bar, width, height, startX, startY)
     if not posFrame.BBFPixelBorder then
         local borderFrame = CreateFrame("Frame", nil, posFrame)
         borderFrame:SetAllPoints(posFrame)
-        borderFrame:SetFrameStrata("MEDIUM")
+        if tot then
+            borderFrame:SetFrameStrata("FULLSCREEN")
+        else
+            borderFrame:SetFrameStrata("MEDIUM")
+        end
         borderFrame:SetFrameLevel(posFrame:GetFrameLevel() + 1)
 
         local edges = {}
@@ -175,7 +191,7 @@ local function BlackBorder(bar, width, height, startX, startY)
     end
 end
 
-local function SetBarMask(bar, maskTexture, pixelBorderMode)
+local function SetBarMask(bar, maskTexture, pixelBorderMode, tot)
     if not bar or not maskTexture then return end
 
     if pixelBorderMode then
@@ -185,7 +201,7 @@ local function SetBarMask(bar, maskTexture, pixelBorderMode)
 
         if bar.BBFPositionFrame then
             local posFrame = bar.BBFPositionFrame
-            maskTexture:SetPoint("TOPLEFT", bar.BBFBackground, "TOPLEFT", -0.5, -0.5)
+            maskTexture:SetPoint("TOPLEFT", bar.BBFBackground, "TOPLEFT", ((tot and 1) or -0.5), -0.5)
             maskTexture:SetPoint("BOTTOMRIGHT", bar.BBFBackground, "BOTTOMRIGHT", -0.75, 0)
             if class == "EVOKER" and not maskTexture.bbfTexHook then
                 hooksecurefunc(maskTexture, "SetAtlas", function(self)
@@ -544,11 +560,11 @@ local function MakeNoPortraitMode(frame)
 
             if frame == TargetFrame then
                 local cfg = BorderPositions.target.totHealth
-                BlackBorder(totHpBar, cfg.width, cfg.height, cfg.startX, cfg.startY)
+                BlackBorder(totHpBar, cfg.width, cfg.height, cfg.startX, cfg.startY, true)
                 cfg = BorderPositions.target.totMana
-                BlackBorder(totManaBar, cfg.width, cfg.height, cfg.startX, cfg.startY)
+                BlackBorder(totManaBar, cfg.width, cfg.height, cfg.startX, cfg.startY, true)
                 SetBarMask(totHpBar, totHpBar.HealthBarMask, true)
-                SetBarMask(totManaBar, totManaBar.ManaBarMask, true)
+                SetBarMask(totManaBar, totManaBar.ManaBarMask, true, true)
 
                 if totHpBar.BBFBackground then
                     totHpBar.BBFBackground:SetAlpha(1)
@@ -558,11 +574,11 @@ local function MakeNoPortraitMode(frame)
                 end
             elseif frame == FocusFrame then
                 local cfg = BorderPositions.focus.totHealth
-                BlackBorder(totHpBar, cfg.width, cfg.height, cfg.startX, cfg.startY)
+                BlackBorder(totHpBar, cfg.width, cfg.height, cfg.startX, cfg.startY, true)
                 cfg = BorderPositions.focus.totMana
-                BlackBorder(totManaBar, cfg.width, cfg.height, cfg.startX, cfg.startY)
+                BlackBorder(totManaBar, cfg.width, cfg.height, cfg.startX, cfg.startY, true)
                 SetBarMask(totHpBar, totHpBar.HealthBarMask, true)
-                SetBarMask(totManaBar, totManaBar.ManaBarMask, true)
+                SetBarMask(totManaBar, totManaBar.ManaBarMask, true, true)
 
                 if totHpBar.BBFBackground then
                     totHpBar.BBFBackground:SetAlpha(1)
@@ -1696,18 +1712,18 @@ local function MakeNoPortraitMode(frame)
         PetPortrait:SetAlpha(0)
 
         PetFrameTexture:SetSize(130, 33)
-        PetFrameTexture:SetTexture(playerDefaultTex)
+        PetFrameTexture:SetTexture(petDefaultTex)
         hooksecurefunc(PetFrameTexture, "SetTexture", function(self)
             if self.changing then return end
             self.changing = true
-            self:SetTexture(playerDefaultTex)
+            self:SetTexture(petDefaultTex)
             self.changing = false
         end)
         PetFrameTexture:ClearAllPoints()
         PetFrameTexture:SetPoint("TOPLEFT", 3, -9)
 
         PetFrameFlash:SetSize(130, 33)
-        PetFrameFlash:SetTexture(playerDefaultTex)
+        PetFrameFlash:SetTexture(petDefaultTex)
         PetFrameFlash:SetPoint("TOPLEFT", 3, -9)
         PetFrameFlash:SetTexCoord(0, 1, 0, 1)
         PetFrameFlash:SetParent(frame.noPortraitMode)
@@ -1724,7 +1740,11 @@ local function MakeNoPortraitMode(frame)
         PetFrame.Background = PetFrameHealthBar:CreateTexture(nil, "BACKGROUND")
         PetFrame.Background:SetColorTexture(0,0,0,0.45)
         PetFrame.Background:SetPoint("TOPLEFT", PetFrameHealthBar, "TOPLEFT", 1, -1)
-        PetFrame.Background:SetPoint("BOTTOMRIGHT", PetFrameManaBar, "BOTTOMRIGHT", -1, 1)
+        if db.hideUnitFramePlayerMana then
+            PetFrame.Background:SetPoint("BOTTOMRIGHT", PetFrameHealthBar, "BOTTOMRIGHT", -1, 1)
+        else
+            PetFrame.Background:SetPoint("BOTTOMRIGHT", PetFrameManaBar, "BOTTOMRIGHT", -1, 1)
+        end
 
         if db.noPortraitPixelBorder then
             PetFrameManaBar:SetSize(65, 5)
@@ -2245,6 +2265,15 @@ function BBF.UpdateNoPortraitManaVisibility()
             petMana.LeftText:SetAlpha(0)
             petMana.RightText:SetAlpha(0)
         end
+        if not db.noPortraitPixelBorder and PetFrameTexture then
+            PetFrameTexture:SetTexture(petDefaultTex)
+            PetFrameFlash:SetTexture(petDefaultTex)
+        end
+        if PetFrame.Background then
+            PetFrame.Background:ClearAllPoints()
+            PetFrame.Background:SetPoint("TOPLEFT", PetFrameHealthBar, "TOPLEFT", 1, -1)
+            PetFrame.Background:SetPoint("BOTTOMRIGHT", PetFrameHealthBar, "BOTTOMRIGHT", -1, 1)
+        end
     else
         local manaBarArea = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea
         local petMana = PetFrameManaBar
@@ -2258,6 +2287,15 @@ function BBF.UpdateNoPortraitManaVisibility()
                 petMana.LeftText:SetAlpha(1)
                 petMana.RightText:SetAlpha(1)
             end
+        end
+        if not db.noPortraitPixelBorder and PetFrameTexture then
+            PetFrameTexture:SetTexture(petDefaultTex)
+            PetFrameFlash:SetTexture(petDefaultTex)
+        end
+        if PetFrame.Background then
+            PetFrame.Background:ClearAllPoints()
+            PetFrame.Background:SetPoint("TOPLEFT", PetFrameHealthBar, "TOPLEFT", 1, -1)
+            PetFrame.Background:SetPoint("BOTTOMRIGHT", PetFrameManaBar, "BOTTOMRIGHT", -1, 1)
         end
     end
 

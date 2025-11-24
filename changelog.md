@@ -1,3 +1,14 @@
+# BetterBlizzFrames 1.8.2b
+## All versions
+### Tweak
+- Class color stuff now supports party npcs in follower dungeons.
+- Improve "UnitFrame Backgound Texture Color" setting to properly fit with all settings.
+## Retail
+### Bugfix
+- Midnight: Fix Interrupt Icon being enabled when target/focus setting was even though the main setting was off.
+- Fix the slider tip text being anchored wrong causing it to be stuck on screen after opening settings.
+- Fix "Hide PlayerFrame Mana" (which also hides PetFrame Mana) not changing the frame texture with the Pixel Border setting off.
+
 # BetterBlizzFrames 1.8.2
 ## Midnight & Retail
 ### New
