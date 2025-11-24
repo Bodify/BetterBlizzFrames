@@ -3,6 +3,7 @@
 ### Tweak
 - Class color stuff now supports party npcs in follower dungeons.
 - Improve "UnitFrame Backgound Texture Color" setting to properly fit with all settings.
+- Fix channel cast coloring for Classic Castbars / Cast color settings. typo, channel ~= channeled
 ## Retail
 ### Bugfix
 - Midnight: Fix Interrupt Icon being enabled when target/focus setting was even though the main setting was off.
