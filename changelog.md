@@ -4,10 +4,11 @@
 - Class color stuff now supports party npcs in follower dungeons.
 - Improve "UnitFrame Backgound Texture Color" setting to properly fit with all settings.
 - Fix channel cast coloring for Classic Castbars / Cast color settings. typo, channel ~= channeled
+### Bugfix
+- Midnight & Retail: Fix "Hide PlayerFrame Mana" (which also hides PetFrame Mana) not changing the frame textur on PetFrame with the Pixel Border setting off.
 ## Retail
 ### Bugfix
 - Fix the slider tip text being anchored wrong causing it to be stuck on screen after opening settings.
-- Fix "Hide PlayerFrame Mana" (which also hides PetFrame Mana) not changing the frame textur on PetFrame with the Pixel Border setting off.
 ## Midnight
 ### New
 - New "Hide Range Icon" setting for Party/RaidFrames hiding the new Midnight range eye icon.
