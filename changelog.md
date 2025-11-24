@@ -6,9 +6,13 @@
 - Fix channel cast coloring for Classic Castbars / Cast color settings. typo, channel ~= channeled
 ## Retail
 ### Bugfix
-- Midnight: Fix Interrupt Icon being enabled when target/focus setting was even though the main setting was off.
 - Fix the slider tip text being anchored wrong causing it to be stuck on screen after opening settings.
 - Fix "Hide PlayerFrame Mana" (which also hides PetFrame Mana) not changing the frame textur on PetFrame with the Pixel Border setting off.
+## Midnight
+### New
+- New "Hide Range Icon" setting for Party/RaidFrames hiding the new Midnight range eye icon.
+### Bugfix
+- Fix Interrupt Icon being enabled if target/focus setting for it was enabled was even though the main setting was off.
 
 # BetterBlizzFrames 1.8.2
 ## Midnight & Retail

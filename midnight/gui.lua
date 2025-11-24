@@ -3789,8 +3789,12 @@ local function guiGeneralTab()
     hidePartyDispelOverlay:SetPoint("LEFT", hideRaidFrameContainerBorder.Text, "RIGHT", 0, 0)
     CreateTooltipTwo(hidePartyDispelOverlay, "Hide Dispel Overlay", "Hide the Dispel Overlay glow on Party/RaidFrames. Icon still shows.")
 
+    local hidePartyRangeIcon = CreateCheckbox("hidePartyRangeIcon", "Hide Range Icon", BetterBlizzFrames, nil, BBF.HideFrames)
+    hidePartyRangeIcon:SetPoint("TOPLEFT", hidePartyDispelOverlay, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(hidePartyRangeIcon, "Hide Range Icon", "Hide the big new Midnight range eye icon on Party/RaidFrames.")
+
     local partyFrameScale = CreateSlider(BetterBlizzFrames, "Party Frame Scale", 0.7, 1.7, 0.01, "partyFrameScale", nil, 120)
-    partyFrameScale:SetPoint("TOPLEFT", hideRaidFrameContainerBorder, "BOTTOMLEFT", 15, -9)
+    partyFrameScale:SetPoint("TOPLEFT", hideRaidFrameContainerBorder, "BOTTOMLEFT", 6, -9)
 
 
 

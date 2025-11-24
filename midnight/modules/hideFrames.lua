@@ -387,6 +387,33 @@ function BBF.HideFrames()
             end
         end
 
+        -- Hide Range Icon
+        if BetterBlizzFramesDB.hidePartyRangeIcon then
+            if not BBF.hookedRangeIcon then
+                for i = 1, 8 do
+                    for j = 1, 5 do
+                        local frame = _G["CompactRaidGroup"..j.."Member"..i]
+                        if frame and frame.centerStatusIcon then
+                            hooksecurefunc(frame.centerStatusIcon.texture, "SetAtlas", function(self, atlas)
+                                if atlas == "RaidFrame-Icon-outofsight" then
+                                    self:SetTexture(nil)
+                                end
+                            end)
+                        end
+                    end
+                end
+                for i = 1, 5 do
+                    local frame = _G["CompactPartyFrameMember"..i]
+                    hooksecurefunc(frame.centerStatusIcon.texture, "SetAtlas", function(self, atlas)
+                        if atlas == "RaidFrame-Icon-outofsight" then
+                            self:SetTexture(nil)
+                        end
+                    end)
+                end
+                BBF.hookedRangeIcon = true
+            end
+        end
+
         -- Hide combat glow on player frame
         if BetterBlizzFramesDB.hideCombatGlow then
             PlayerFrame.PlayerFrameContainer.FrameFlash:SetParent(hiddenFrame)
