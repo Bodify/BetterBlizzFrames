@@ -2270,6 +2270,15 @@ function BBF.FixStupidBlizzPTRShit()
             end
             return
         end
+        if not EJMicroButton then
+            if not BBF.missingEJWarning then
+                BBF.missingEJWarning = true
+                print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: Encounter Journal Micro Button is missing, skipping \"OCD Tweaks\" to avoid errors. Needs testing but I don't have access to Titan Reforged realms.")
+            end
+            return
+        end
+
+         -- Backup original settings if not already backed up
         if not originalSettings.backedUp then
             backupSettings()
         end
