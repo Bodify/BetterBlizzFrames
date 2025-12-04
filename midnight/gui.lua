@@ -493,7 +493,7 @@ local function CreateSimpleDropdown(name, parentFrame, labelText, settingKey, op
     return dropdown, container
 end
 
-local function CreateColorBox(parent, colorVar, labelText)
+local function CreateColorBox(parent, colorVar, labelText, callback)
     local function OpenColorPicker(colorType, icon)
         -- Initialize color with default RGBA if not present
         BetterBlizzFramesDB[colorType] = BetterBlizzFramesDB[colorType] or {1, 1, 1, 1}
@@ -507,6 +507,9 @@ local function CreateColorBox(parent, colorVar, labelText)
                 BBF.CastbarRecolorWidgets() --temp
             end
             ColorPickerFrame.Content.ColorSwatchCurrent:SetAlpha(a)
+            if callback then
+                callback()
+            end
         end
 
         local function swatchFunc()
@@ -564,9 +567,21 @@ local function CreateColorBox(parent, colorVar, labelText)
     frame.text = text
 
     -- Make the frame clickable and open a color picker on click
-    frame:SetScript("OnMouseDown", function()
+    frame:EnableMouse(true)
+    frame:SetScript("OnMouseDown", function(self, button)
         if frame:GetAlpha() == 1 then
-            OpenColorPicker(colorVar, colorTexture)
+            if button == "LeftButton" then
+                OpenColorPicker(colorVar, colorTexture)
+            elseif button == "RightButton" and IsShiftKeyDown() then
+                local defaultColor = BBF.defaultSettings[colorVar]
+                if defaultColor then
+                    BetterBlizzFramesDB[colorVar] = {unpack(defaultColor)}
+                    colorTexture:SetColorTexture(unpack(defaultColor))
+                    if callback then
+                        callback()
+                    end
+                end
+            end
         end
     end)
 
@@ -651,7 +666,7 @@ StaticPopupDialogs["BBF_CONFIRM_PVP_WHITELIST"] = {
         end
         deepMergeTables(BetterBlizzFramesDB.auraWhitelist, profileData)
         BBF.auraWhitelistRefresh()
-        Settings.OpenToCategory(BBF.aurasSubCategory)
+        Settings.OpenToCategory(BBF.category:GetID(), BBF.aurasSubCategory)
     end,
     timeout = 0,
     whileDead = true,
@@ -670,7 +685,7 @@ StaticPopupDialogs["BBF_CONFIRM_PVP_BLACKLIST"] = {
         end
         deepMergeTables(BetterBlizzFramesDB.auraBlacklist, profileData)
         BBF.auraBlacklistRefresh()
-        Settings.OpenToCategory(BBF.aurasSubCategory)
+        Settings.OpenToCategory(BBF.category:GetID(), BBF.aurasSubCategory)
     end,
     timeout = 0,
     whileDead = true,
@@ -727,6 +742,16 @@ local function CreateBorderBox(anchor)
     texture:SetSize(295, 163)
     texture:SetPoint("CENTER", anchor, "CENTER", 0, -95)
     return texture
+end
+
+local function FormatClassName(classTag)
+    if classTag == "DEATHKNIGHT" then
+        return "Death Knight"
+    elseif classTag == "DEMONHUNTER" then
+        return "Demon Hunter"
+    end
+    
+    return classTag:sub(1, 1):upper() .. classTag:sub(2):lower()
 end
 
 --[[
@@ -1216,6 +1241,12 @@ local function CreateSlider(parent, label, minValue, maxValue, stepValue, elemen
                 elseif element == "playerCastBarIconScale" then
                     BetterBlizzFramesDB.playerCastBarIconScale = value
                     BBF.ChangeCastbarSizes()
+                elseif element == "playerCastbarIconXPos" then
+                    BetterBlizzFramesDB.playerCastbarIconXPos = value
+                    BBF.ChangeCastbarSizes()
+                elseif element == "playerCastbarIconYPos" then
+                    BetterBlizzFramesDB.playerCastbarIconYPos = value
+                    BBF.ChangeCastbarSizes()
                 elseif element == "playerCastBarWidth" then
                     BetterBlizzFramesDB.playerCastBarWidth = value
                     BBF.ChangeCastbarSizes()
@@ -1378,13 +1409,54 @@ local function CreateTooltipTwo(widget, title, mainText, subText, anchor, cvarNa
             local check = " |A:ParagonReputation_Checkmark:15:15|a"
 
             local tooltipText = "\n"
-            tooltipText = tooltipText .. green .. "Right-Click to keep PlayerFrame green." .. reset
+            tooltipText = tooltipText .. green .. "Ctrl+Right-Click to keep PlayerFrame green." .. reset
             if BetterBlizzFramesDB.classColorFramesSkipPlayer then
                 tooltipText = tooltipText .. check
             end
 
             tooltipText = tooltipText .. "\n\n" .. babyBlue .. "Shift+Right-Click to keep Friendly units green." .. reset
             if BetterBlizzFramesDB.classColorFramesSkipFriendly then
+                tooltipText = tooltipText .. check
+            end
+
+            GameTooltip:AddLine(tooltipText, 1, 1, 1, true)
+        end
+
+        if title == "Custom Colors" then
+            local yellow = "|cffffff00"
+            local green = "|cff32f795"
+            local babyBlue = "|cff7fc6ff"
+            local reset = "|r"
+            local check = " |A:ParagonReputation_Checkmark:15:15|a"
+
+            local tooltipText = "\n" .. yellow .. "Right-click to open options." .. reset
+            tooltipText = tooltipText .. "\n\n" .. green .. "Ctrl+Right-Click to keep PlayerFrame green." .. reset
+            if BetterBlizzFramesDB.classColorFramesSkipPlayer then
+                tooltipText = tooltipText .. check
+            end
+
+            tooltipText = tooltipText .. "\n\n" .. babyBlue .. "Shift+Right-Click to keep Friendly units green." .. reset
+            if BetterBlizzFramesDB.classColorFramesSkipFriendly then
+                tooltipText = tooltipText .. check
+            end
+
+            GameTooltip:AddLine(tooltipText, 1, 1, 1, true)
+        end
+
+        if title == "Hide Dispel Overlay" then
+            local green = "|cff32f795"
+            local babyBlue = "|cff7fc6ff"
+            local reset = "|r"
+            local check = " |A:ParagonReputation_Checkmark:15:15|a"
+
+            local tooltipText = "\n"
+            tooltipText = tooltipText .. green .. "Right-Click to Keep Dispel Border. |A:RaidFrame-DispelHighlight:15:30|a" .. reset
+            if BetterBlizzFramesDB.hidePartyDispelOverlayKeepBorder then
+                tooltipText = tooltipText .. check
+            end
+
+            tooltipText = tooltipText .. "\n\n" .. babyBlue .. "Shift+Right-Click to Keep Dispel Gradient. |A:_RaidFrame-Dispel-Highlight-Horizontal:15:30|a" .. reset
+            if BetterBlizzFramesDB.hidePartyDispelOverlayKeepGradient then
                 tooltipText = tooltipText .. check
             end
 
@@ -3773,6 +3845,10 @@ local function guiGeneralTab()
     hidePartyFrameTitle:SetPoint("TOPLEFT", hidePartyNames, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(hidePartyFrameTitle, "Hide the \"Party\" text above \"Raid-Style\" Party Frames.")
 
+    local hideCompactUnitFrameBackground = CreateCheckbox("hideCompactUnitFrameBackground", "Hide Bg", BetterBlizzFrames, nil, BBF.HideCompactUnitFrameBackgrounds)
+    hideCompactUnitFrameBackground:SetPoint("LEFT", hidePartyFrameTitle.Text, "RIGHT", 0, 0)
+    CreateTooltipTwo(hideCompactUnitFrameBackground, "Hide Compact Frame Backgrounds", "Hide the background textures on Party and Raid frames.")
+
     local hideRaidFrameManager = CreateCheckbox("hideRaidFrameManager", "Hide RaidFrameManager", BetterBlizzFrames, nil, BBF.HideFrames)
     hideRaidFrameManager:SetPoint("TOPLEFT", hidePartyFrameTitle, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(hideRaidFrameManager, "Hide the CompactRaidFrameManager. Can still be shown with mouseover.")
@@ -3787,6 +3863,27 @@ local function guiGeneralTab()
 
     local hidePartyDispelOverlay = CreateCheckbox("hidePartyDispelOverlay", "Hide Dispel Overlay", BetterBlizzFrames, nil, BBF.HideFrames)
     hidePartyDispelOverlay:SetPoint("LEFT", hideRaidFrameContainerBorder.Text, "RIGHT", 0, 0)
+    hidePartyDispelOverlay:HookScript("OnMouseDown", function(self, button)
+        if button == "RightButton" then
+            if IsShiftKeyDown() then
+                if not BetterBlizzFramesDB.hidePartyDispelOverlayKeepGradient then
+                    BetterBlizzFramesDB.hidePartyDispelOverlayKeepGradient = true
+                else
+                    BetterBlizzFramesDB.hidePartyDispelOverlayKeepGradient = nil
+                end
+            else
+                if not BetterBlizzFramesDB.hidePartyDispelOverlayKeepBorder then
+                    BetterBlizzFramesDB.hidePartyDispelOverlayKeepBorder = true
+                else
+                    BetterBlizzFramesDB.hidePartyDispelOverlayKeepBorder = nil
+                end
+            end
+            if GameTooltip:IsShown() and GameTooltip:GetOwner() == self then
+                self:GetScript("OnEnter")(self)
+            end
+            BBF.HideFrames()
+        end
+    end)
     CreateTooltipTwo(hidePartyDispelOverlay, "Hide Dispel Overlay", "Hide the Dispel Overlay glow on Party/RaidFrames. Icon still shows.")
 
     local hidePartyRangeIcon = CreateCheckbox("hidePartyRangeIcon", "Hide Range Icon", BetterBlizzFrames, nil, BBF.HideFrames)
@@ -3805,7 +3902,7 @@ local function guiGeneralTab()
 
 
     local targetFrameText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    targetFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 250, -180)
+    targetFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 250, -197)
     targetFrameText:SetText("Target Frame")
     targetFrameText:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\Expressway_Free.ttf", 16)
     targetFrameText:SetTextColor(1,1,1)
@@ -3874,7 +3971,7 @@ local function guiGeneralTab()
 
 
     local targetToTFrameText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    targetToTFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 250, -298)
+    targetToTFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 250, -308)
     targetToTFrameText:SetText("Target of Target")
     targetToTFrameText:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\Expressway_Free.ttf", 16)
     targetToTFrameText:SetTextColor(1,1,1)
@@ -3930,7 +4027,7 @@ local function guiGeneralTab()
 
 
     local chatFrameText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    chatFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 250, -455)
+    chatFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 250, -467)
     chatFrameText:SetText("Chat Frame")
     chatFrameText:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\Expressway_Free.ttf", 16)
     chatFrameText:SetTextColor(1,1,1)
@@ -3944,7 +4041,7 @@ local function guiGeneralTab()
     CreateTooltip(hideChatButtons, "Hide the chat buttons. Can still be shown with mouseover.")
 
     local chatFrameFilters = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-    chatFrameFilters:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 232, -495)
+    chatFrameFilters:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 232, -507)
     chatFrameFilters:SetText("Filters:")
     chatFrameFilters:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\Expressway_Free.ttf", 12)
     chatFrameFilters:SetTextColor(1,1,1)
@@ -4383,13 +4480,13 @@ local function guiGeneralTab()
 
     classColorFrames:HookScript("OnMouseDown", function(self, button)
         if button == "RightButton" then
-            if IsShiftKeyDown() then
+            if IsShiftKeyDown() and not IsControlKeyDown() then
                 if not BetterBlizzFramesDB.classColorFramesSkipFriendly then
                     BetterBlizzFramesDB.classColorFramesSkipFriendly = true
                 else
                     BetterBlizzFramesDB.classColorFramesSkipFriendly = nil
                 end
-            else
+            elseif IsControlKeyDown() and not IsShiftKeyDown() then
                 if not BetterBlizzFramesDB.classColorFramesSkipPlayer then
                     BetterBlizzFramesDB.classColorFramesSkipPlayer = true
                 else
@@ -4436,17 +4533,522 @@ local function guiGeneralTab()
     end)
     CreateTooltipTwo(classColorFrames, "Class Color Healthbars", "Class color Player, Target, Focus & Party frames.")
 
-    -- local customColorHealthbars = CreateCheckbox("customColorHealthbars", "Custom Color Health", BetterBlizzFrames)
-    -- customColorHealthbars:SetPoint("LEFT", classColorFrames.Text, "RIGHT", 0, 0)
-    -- customColorHealthbars:HookScript("OnClick", function(self)
-    --     if not self:GetChecked() then
-    --         StaticPopup_Show("BBF_CONFIRM_RELOAD")
-    --     end
-    -- end)
-    -- CreateTooltipTwo(customColorHealthbars, "Custom Color Healthbars","Custom color Player, Target & Focus Healthbars.")
+    local customHealthbarColors = CreateCheckbox("customHealthbarColors", "Custom Color Health/Mana", BetterBlizzFrames)
+    customHealthbarColors:SetPoint("TOPLEFT", classColorFrames, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(customHealthbarColors, "Custom Colors", "Enable custom colors for Health and Mana bars.")
+    customHealthbarColors:HookScript("OnClick", function(self)
+        BBF.UpdateFrames()
+        if not self:GetChecked() then
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        end
+    end)
+
+    customHealthbarColors.extendedSettings = CreateFrame("Frame", nil, BetterBlizzFrames, "DefaultPanelFlatTemplate")
+    customHealthbarColors.extendedSettings:SetSize(345, 510)
+    customHealthbarColors.extendedSettings:SetPoint("TOPLEFT", classColorFrames, "BOTTOMLEFT", 0, -10)
+    customHealthbarColors.extendedSettings:SetFrameStrata("DIALOG")
+    customHealthbarColors.extendedSettings:SetIgnoreParentAlpha(true)
+    customHealthbarColors.extendedSettings:Hide()
+    customHealthbarColors.extendedSettings:SetTitle("Custom Health Colors")
+    customHealthbarColors.extendedSettings:EnableMouse(true)
+    customHealthbarColors.extendedSettings:SetMovable(true)
+    customHealthbarColors.extendedSettings:SetClampedToScreen(true)
+    customHealthbarColors.extendedSettings:RegisterForDrag("LeftButton")
+    customHealthbarColors.extendedSettings:SetScript("OnDragStart", function(self) self:StartMoving() end)
+    customHealthbarColors.extendedSettings:SetScript("OnDragStop", function(self) self:StopMovingOrSizing() end)
+
+    customHealthbarColors.closeButton = CreateFrame("Button", nil, customHealthbarColors.extendedSettings, "UIPanelCloseButton")
+    customHealthbarColors.closeButton:SetPoint("TOPRIGHT", customHealthbarColors.extendedSettings, "TOPRIGHT", 0, 0)
+    customHealthbarColors.closeButton:SetScript("OnClick", function()
+        customHealthbarColors.extendedSettings:Hide()
+        BetterBlizzFrames:SetAlpha(1)
+    end)
+
+    customHealthbarColors.bg = customHealthbarColors.extendedSettings:CreateTexture(nil, "BACKGROUND")
+    customHealthbarColors.bg:SetPoint("TOPLEFT", customHealthbarColors.extendedSettings, "TOPLEFT", 7, -3)
+    customHealthbarColors.bg:SetPoint("BOTTOMRIGHT", customHealthbarColors.extendedSettings, "BOTTOMRIGHT", -3, 3)
+    customHealthbarColors.bg:SetColorTexture(0.08, 0.08, 0.08, 1)
+
+    customHealthbarColors:HookScript("OnMouseDown", function(self, button)
+        if button == "RightButton" then
+            if IsShiftKeyDown() and not IsControlKeyDown() then
+                if not BetterBlizzFramesDB.classColorFramesSkipFriendly then
+                    BetterBlizzFramesDB.classColorFramesSkipFriendly = true
+                else
+                    BetterBlizzFramesDB.classColorFramesSkipFriendly = nil
+                end
+                BBF.UpdateFrames()
+            elseif IsControlKeyDown() and not IsShiftKeyDown() then
+                if not BetterBlizzFramesDB.classColorFramesSkipPlayer then
+                    BetterBlizzFramesDB.classColorFramesSkipPlayer = true
+                else
+                    BetterBlizzFramesDB.classColorFramesSkipPlayer = nil
+                end
+                if BetterBlizzFramesDB.classColorFramesSkipPlayer then
+                    if PlayerFrame and PlayerFrame.healthbar then
+                        PlayerFrame.healthbar:SetStatusBarDesaturated(false)
+                        PlayerFrame.healthbar:SetStatusBarColor(1, 1, 1)
+                    end
+                    if CfPlayerFrameHealthBar then
+                        BBF.updateFrameColorToggleVer(CfPlayerFrameHealthBar, "player")
+                    end
+                else
+                    if PlayerFrame and PlayerFrame.healthbar then
+                        BBF.updateFrameColorToggleVer(PlayerFrame.healthbar, "player")
+                    end
+                    if CfPlayerFrameHealthBar then
+                        BBF.updateFrameColorToggleVer(CfPlayerFrameHealthBar, "player")
+                    end
+                end
+            elseif not IsShiftKeyDown() and not IsControlKeyDown() then
+                customHealthbarColors.extendedSettings:SetShown(not customHealthbarColors.extendedSettings:IsShown())
+                BetterBlizzFrames:SetAlpha(customHealthbarColors.extendedSettings:IsShown() and 0.5 or 1)
+            end
+        end
+    end)
+
+    local clrFx = customHealthbarColors.extendedSettings
+    clrFx.customColorsHeader = clrFx:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    clrFx.customColorsHeader:SetPoint("TOPLEFT", clrFx, "TOPLEFT", 11, -28)
+    clrFx.customColorsHeader:SetText("Custom Colors")
+    clrFx.customColorsHeader:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\Expressway_Free.ttf", 13)
+    clrFx.customColorsHeader:SetTextColor(1, 1, 1)
+
+    clrFx.customColorsUnitFrames = CreateCheckbox("customColorsUnitFrames", "Enable on UnitFrames", clrFx)
+    clrFx.customColorsUnitFrames:SetPoint("TOPLEFT", clrFx.customColorsHeader, "BOTTOMLEFT", 0, -1)
+    CreateTooltipTwo(clrFx.customColorsUnitFrames, "Enable on UnitFrames", "Enable custom colors on Player, Target, Focus, and Pet frames.")
+    clrFx.customColorsUnitFrames:HookScript("OnClick", function(self)
+        BBF.UpdateFrames()
+    end)
+
+    clrFx.customColorsRaidFrames = CreateCheckbox("customColorsRaidFrames", "Enable on Raid/Party Frames", clrFx)
+    clrFx.customColorsRaidFrames:SetPoint("TOPLEFT", clrFx.customColorsUnitFrames, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(clrFx.customColorsRaidFrames, "Enable on Raid/Party Frames", "Enable custom colors on Party and Raid frames.")
+    clrFx.customColorsRaidFrames:HookScript("OnClick", function(self)
+        BBF.UpdateFrames()
+    end)
+
+    clrFx.reactionColorsSeparator = clrFx:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    clrFx.reactionColorsSeparator:SetPoint("TOPLEFT", clrFx.customColorsRaidFrames, "BOTTOMLEFT", 0, -2)
+    clrFx.reactionColorsSeparator:SetText("Reaction Colors")
+    clrFx.reactionColorsSeparator:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\Expressway_Free.ttf", 14)
+    clrFx.reactionColorsSeparator:SetTextColor(1, 1, 1)
+
+    clrFx.enemyHealthColor = CreateColorBox(clrFx, "enemyHealthColor", "Enemy", function() BBF.UpdateFrames() end)
+    clrFx.enemyHealthColor:SetPoint("TOPLEFT", clrFx.reactionColorsSeparator, "BOTTOMLEFT", 0, -1)
+    CreateTooltipTwo(clrFx.enemyHealthColor, "Enemy Health Color", "Left-click to change.\n\n|cff32f795Shift+Right-click to reset to default.|r")
+
+    clrFx.friendlyHealthColor = CreateColorBox(clrFx, "friendlyHealthColor", "Friendly", function() BBF.UpdateFrames() end)
+    clrFx.friendlyHealthColor:SetPoint("LEFT", clrFx.enemyHealthColor.text, "RIGHT", 0, 0)
+    CreateTooltipTwo(clrFx.friendlyHealthColor, "Friendly Health Color", "Left-click to change.\n\n|cff32f795Shift+Right-click to reset to default.|r")
+
+    clrFx.neutralHealthColor = CreateColorBox(clrFx, "neutralHealthColor", "Neutral", function() BBF.UpdateFrames() end)
+    clrFx.neutralHealthColor:SetPoint("LEFT", clrFx.friendlyHealthColor.text, "RIGHT", 0, 0)
+    CreateTooltipTwo(clrFx.neutralHealthColor, "Neutral Health Color", "Left-click to change.\n\n|cff32f795Shift+Right-click to reset to default.|r")
+
+    clrFx.classColorsSeparator = clrFx:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    clrFx.classColorsSeparator:SetPoint("TOPLEFT", clrFx.enemyHealthColor, "BOTTOMLEFT", 0, -3)
+    clrFx.classColorsSeparator:SetText("Class Colors")
+    clrFx.classColorsSeparator:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\Expressway_Free.ttf", 14)
+    clrFx.classColorsSeparator:SetTextColor(1, 1, 1)
+
+    clrFx.overrideClassColors = CreateCheckbox("overrideClassColors", "Override Class Colors", clrFx)
+    clrFx.overrideClassColors:SetPoint("TOPLEFT", clrFx.classColorsSeparator, "BOTTOMLEFT", 0, -1)
+    CreateTooltipTwo(clrFx.overrideClassColors, "Override Class Colors", "Enable custom class colors below instead of default class colors.")
+
+    clrFx.useOneClassColor = CreateCheckbox("useOneClassColor", "Use One Color", clrFx)
+    clrFx.useOneClassColor:SetPoint("TOPLEFT", clrFx.overrideClassColors, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(clrFx.useOneClassColor, "Use one color for all classes", "Use a single color for all classes instead of individual class colors.")
+    clrFx.useOneClassColor:HookScript("OnClick", function(self)
+        local enabled = not self:GetChecked()
+        if self:GetChecked() then
+            clrFx.singleClassColor:SetAlpha(1)
+        else
+            clrFx.singleClassColor:SetAlpha(0.5)
+        end
+        for _, classData in ipairs(customHealthbarColors.classColorBoxes) do
+            if enabled then
+                classData.colorBox:SetAlpha(1)
+            else
+                classData.colorBox:SetAlpha(0.5)
+            end
+        end
+        BBF.UpdateFrames()
+    end)
+
+    clrFx.singleClassColor = CreateColorBox(clrFx, "singleClassColor", "All Classes", function() BBF.UpdateFrames() end)
+    clrFx.singleClassColor:SetPoint("LEFT", clrFx.useOneClassColor.Text, "RIGHT", 4, 0)
+    CreateTooltipTwo(clrFx.singleClassColor, "Single Class Color", "Left-click to change.\n\n|cff32f795Shift+Right-click to reset to default.|r")
+
+    if not BetterBlizzFramesDB.useOneClassColor then
+        clrFx.singleClassColor:SetAlpha(0.5)
+    end
+
+    customHealthbarColors.classColorBoxes = {}
+    
+    local classes = {}
+    for classID = 1, GetNumClasses() do
+        local _, classTag, classID = GetClassInfo(classID)
+        if classTag then
+            table.insert(classes, {key = classTag, name = FormatClassName(classTag)})
+        end
+    end
+    
+    table.sort(classes, function(a, b) return a.name < b.name end)
+
+    local lastClassColorRow1
+    local lastClassColorRow2
+    local lastClassColorRow3
+    local thirdCount = math.ceil(#classes / 3)
+    
+    for i, classData in ipairs(classes) do
+        local classColor = CreateColorBox(clrFx, "classColor"..classData.key, classData.name, function() BBF.UpdateFrames() end)
+        
+        if i <= thirdCount then
+            if i == 1 then
+                classColor:SetPoint("TOPLEFT", clrFx.useOneClassColor, "BOTTOMLEFT", 0, 1)
+            else
+                classColor:SetPoint("TOPLEFT", lastClassColorRow1, "BOTTOMLEFT", 0, 1)
+            end
+            lastClassColorRow1 = classColor
+        elseif i <= thirdCount * 2 then
+            if i == thirdCount + 1 then
+                classColor:SetPoint("TOPLEFT", clrFx.useOneClassColor, "BOTTOMLEFT", 105, 1)
+            else
+                classColor:SetPoint("TOPLEFT", lastClassColorRow2, "BOTTOMLEFT", 0, 1)
+            end
+            lastClassColorRow2 = classColor
+        else
+            if i == thirdCount * 2 + 1 then
+                classColor:SetPoint("TOPLEFT", clrFx.useOneClassColor, "BOTTOMLEFT", 210, 1)
+            else
+                classColor:SetPoint("TOPLEFT", lastClassColorRow3, "BOTTOMLEFT", 0, 1)
+            end
+            lastClassColorRow3 = classColor
+        end
+        
+        CreateTooltipTwo(classColor, classData.name.." Class Color", "Left-click to change.\n\n|cff32f795Shift+Right-click to reset to default.|r")
+        table.insert(customHealthbarColors.classColorBoxes, {colorBox = classColor, class = classData.key})
+    end
+
+    if not BetterBlizzFramesDB.overrideClassColors then
+        clrFx.useOneClassColor:Disable()
+        clrFx.useOneClassColor:SetAlpha(0.5)
+        clrFx.singleClassColor:SetAlpha(0.5)
+        for _, classData in ipairs(customHealthbarColors.classColorBoxes) do
+            classData.colorBox:SetAlpha(0.5)
+        end
+    else
+        if BetterBlizzFramesDB.useOneClassColor then
+            clrFx.singleClassColor:SetAlpha(1)
+            for _, classData in ipairs(customHealthbarColors.classColorBoxes) do
+                classData.colorBox:SetAlpha(0.5)
+            end
+        else
+            clrFx.singleClassColor:SetAlpha(0.5)
+            for _, classData in ipairs(customHealthbarColors.classColorBoxes) do
+                classData.colorBox:SetAlpha(1)
+            end
+        end
+    end
+
+    clrFx.useOneClassColor:HookScript("OnShow", function(self)
+        local enabled = not BetterBlizzFramesDB.useOneClassColor
+        local classColorsEnabled = BetterBlizzFramesDB.overrideClassColors
+        for _, classData in ipairs(customHealthbarColors.classColorBoxes) do
+            if classColorsEnabled and enabled then
+                classData.colorBox:SetAlpha(1)
+            else
+                classData.colorBox:SetAlpha(0.5)
+            end
+        end
+    end)
+    
+    clrFx.powerColorsSeparator = clrFx:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    clrFx.powerColorsSeparator:SetPoint("TOPLEFT", lastClassColorRow1 or clrFx.useOneClassColor, "BOTTOMLEFT", 0, -3)
+    clrFx.powerColorsSeparator:SetText("Power Colors")
+    clrFx.powerColorsSeparator:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\Expressway_Free.ttf", 14)
+    clrFx.powerColorsSeparator:SetTextColor(1, 1, 1)
+
+    clrFx.customPowerColors = CreateCheckbox("customPowerColors", "Enable Power Colors", clrFx)
+    clrFx.customPowerColors:SetPoint("TOPLEFT", clrFx.powerColorsSeparator, "BOTTOMLEFT", 0, -1)
+    CreateTooltipTwo(clrFx.customPowerColors, "Enable Power Colors", "Enable custom power (mana/rage/energy/etc) colors instead of defaults.")
+
+    clrFx.useOnePowerColor = CreateCheckbox("useOnePowerColor", "Use One Color", clrFx)
+    clrFx.useOnePowerColor:SetPoint("TOPLEFT", clrFx.customPowerColors, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(clrFx.useOnePowerColor, "Use One Color for All Powers", "Use a single color for all power types instead of individual colors.")
+    clrFx.useOnePowerColor:HookScript("OnClick", function(self)
+        local enabled = not self:GetChecked()
+        if self:GetChecked() then
+            clrFx.singlePowerColor:SetAlpha(1)
+        else
+            clrFx.singlePowerColor:SetAlpha(0.5)
+        end
+        for _, powerData in ipairs(customHealthbarColors.powerColorBoxes) do
+            if enabled then
+                powerData.colorBox:SetAlpha(1)
+            else
+                powerData.colorBox:SetAlpha(0.5)
+            end
+        end
+        if BetterBlizzFramesDB.useOnePowerColor and not BetterBlizzFramesDB.changeUnitFrameManabarTexture and BetterBlizzFramesDB.useOnePowerColor and BetterBlizzFramesDB.customPowerColors then
+            clrFx.singlePowerColorNote:Show()
+        else
+            clrFx.singlePowerColorNote:Hide()
+        end
+        BBF.UpdateFrames()
+    end)
+
+    clrFx.singlePowerColor = CreateColorBox(clrFx, "singlePowerColor", "All Powers", function() BBF.UpdateFrames() end)
+    clrFx.singlePowerColor:SetPoint("LEFT", clrFx.useOnePowerColor.Text, "RIGHT", 4, 0)
+    CreateTooltipTwo(clrFx.singlePowerColor, "Single Power Color", "Left-click to change.\n\n|cff32f795Shift+Right-click to reset to default.|r")
+
+    clrFx.singlePowerColorNote = clrFx:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    clrFx.singlePowerColorNote:SetPoint("LEFT", clrFx.singlePowerColor.text, "RIGHT", 2, 1)
+    clrFx.singlePowerColorNote:SetText("|cffff0000Note!|r")
+    clrFx.singlePowerColorNote:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+        GameTooltip:SetText("Texture Change Recommended", 1, 1, 1, 1, true)
+        GameTooltip:AddLine("In order to have consistent coloring on all manabars you will need to also change its texture in the Font & Textures section. Otherwise due to different default textures with different contrasts things will look all over the place even with the same color.", nil, nil, nil, true)
+        GameTooltip:Show()
+    end)
+    clrFx.singlePowerColorNote:SetScript("OnLeave", function(self)
+        GameTooltip:Hide()
+    end)
+    if BetterBlizzFramesDB.useOnePowerColor and not BetterBlizzFramesDB.changeUnitFrameManabarTexture and BetterBlizzFramesDB.useOnePowerColor and BetterBlizzFramesDB.customPowerColors then
+        clrFx.singlePowerColorNote:Show()
+    else
+        clrFx.singlePowerColorNote:Hide()
+    end
+
+    if not BetterBlizzFramesDB.useOnePowerColor then
+        clrFx.singlePowerColor:SetAlpha(0.5)
+    end
+
+
+    local powerColors = {
+        {key = "MANA", name = "Mana"},
+        {key = "RAGE", name = "Rage"},
+        {key = "FOCUS", name = "Focus"},
+        {key = "ENERGY", name = "Energy"},
+        {key = "RUNIC_POWER", name = "Runic Power"},
+        {key = "LUNAR_POWER", name = "Lunar Power"},
+        {key = "MAELSTROM", name = "Maelstrom"},
+        {key = "INSANITY", name = "Insanity"},
+        {key = "CHI", name = "Chi"},
+        {key = "FURY", name = "Fury"},
+        {key = "EBON_MIGHT", name = "Ebon Might"},
+        {key = "STAGGER", name = "Stagger"},
+        {key = "SOUL_FRAGMENTS", name = "Soul Fragments"},
+    }
+
+    customHealthbarColors.powerColorBoxes = {}
+    local lastPowerColorRow1
+    local lastPowerColorRow2
+    local lastPowerColorRow3
+    local thirdCount = 4
+    
+    for i, powerData in ipairs(powerColors) do
+        local powerColor = CreateColorBox(clrFx, "powerColor"..powerData.key, powerData.name, function() BBF.UpdateFrames() end)
+
+        if i <= thirdCount then
+            if i == 1 then
+                powerColor:SetPoint("TOPLEFT", clrFx.useOnePowerColor, "BOTTOMLEFT", 0, 1)
+            else
+                powerColor:SetPoint("TOPLEFT", lastPowerColorRow1, "BOTTOMLEFT", 0, 1)
+            end
+            lastPowerColorRow1 = powerColor
+        elseif i <= thirdCount * 2 then
+            if i == thirdCount + 1 then
+                powerColor:SetPoint("TOPLEFT", clrFx.useOnePowerColor, "BOTTOMLEFT", 105, 1)
+            else
+                powerColor:SetPoint("TOPLEFT", lastPowerColorRow2, "BOTTOMLEFT", 0, 1)
+            end
+            lastPowerColorRow2 = powerColor
+        else
+            if i == thirdCount * 2 + 1 then
+                powerColor:SetPoint("TOPLEFT", clrFx.useOnePowerColor, "BOTTOMLEFT", 210, 1)
+            else
+                powerColor:SetPoint("TOPLEFT", lastPowerColorRow3, "BOTTOMLEFT", 0, 1)
+            end
+            lastPowerColorRow3 = powerColor
+        end
+        
+        CreateTooltipTwo(powerColor, powerData.name.." Color", "Left-click to change.\n\n|cff32f795Shift+Right-click to reset to default.|r")
+        table.insert(customHealthbarColors.powerColorBoxes, {colorBox = powerColor, power = powerData.key})
+    end
+    
+    if not BetterBlizzFramesDB.customPowerColors then
+        clrFx.useOnePowerColor:Disable()
+        clrFx.useOnePowerColor:SetAlpha(0.5)
+        clrFx.singlePowerColor:SetAlpha(0.5)
+        for _, powerData in ipairs(customHealthbarColors.powerColorBoxes) do
+            powerData.colorBox:SetAlpha(0.5)
+        end
+    else
+        if BetterBlizzFramesDB.useOnePowerColor then
+            clrFx.singlePowerColor:SetAlpha(1)
+            for _, powerData in ipairs(customHealthbarColors.powerColorBoxes) do
+                powerData.colorBox:SetAlpha(0.5)
+            end
+        else
+            clrFx.singlePowerColor:SetAlpha(0.5)
+            for _, powerData in ipairs(customHealthbarColors.powerColorBoxes) do
+                powerData.colorBox:SetAlpha(1)
+            end
+        end
+    end
+
+    clrFx.useOnePowerColor:HookScript("OnShow", function(self)
+        local enabled = not BetterBlizzFramesDB.useOnePowerColor
+        local powerColorsEnabled = BetterBlizzFramesDB.customPowerColors
+        for _, powerData in ipairs(customHealthbarColors.powerColorBoxes) do
+            if powerColorsEnabled and enabled then
+                powerData.colorBox:SetAlpha(1)
+            else
+                powerData.colorBox:SetAlpha(0.5)
+            end
+        end
+    end)
+    
+    clrFx.customPowerColors:HookScript("OnShow", function(self)
+        local enabled = BetterBlizzFramesDB.customPowerColors
+        if enabled then
+            clrFx.useOnePowerColor:Enable()
+            clrFx.useOnePowerColor:SetAlpha(1)
+            clrFx.singlePowerColor:SetAlpha(BetterBlizzFramesDB.useOnePowerColor and 1 or 0.5)
+            for _, powerData in ipairs(customHealthbarColors.powerColorBoxes) do
+                powerData.colorBox:SetAlpha(BetterBlizzFramesDB.useOnePowerColor and 0.5 or 1)
+            end
+        else
+            clrFx.useOnePowerColor:Disable()
+            clrFx.useOnePowerColor:SetAlpha(0.5)
+            clrFx.singlePowerColor:SetAlpha(0.5)
+            for _, powerData in ipairs(customHealthbarColors.powerColorBoxes) do
+                powerData.colorBox:SetAlpha(0.5)
+            end
+        end
+    end)
+    
+    clrFx.customPowerColors:HookScript("OnClick", function(self)
+        local enabled = self:GetChecked()
+        if enabled then
+            clrFx.useOnePowerColor:Enable()
+            clrFx.useOnePowerColor:SetAlpha(1)
+            clrFx.singlePowerColor:SetAlpha(BetterBlizzFramesDB.useOnePowerColor and 1 or 0.5)
+            for _, powerData in ipairs(customHealthbarColors.powerColorBoxes) do
+                powerData.colorBox:SetAlpha(BetterBlizzFramesDB.useOnePowerColor and 0.5 or 1)
+            end
+        else
+            clrFx.useOnePowerColor:Disable()
+            clrFx.useOnePowerColor:SetAlpha(0.5)
+            clrFx.singlePowerColor:SetAlpha(0.5)
+            for _, powerData in ipairs(customHealthbarColors.powerColorBoxes) do
+                powerData.colorBox:SetAlpha(0.5)
+            end
+        end
+        if BetterBlizzFramesDB.useOnePowerColor and not BetterBlizzFramesDB.changeUnitFrameManabarTexture and BetterBlizzFramesDB.useOnePowerColor and BetterBlizzFramesDB.customPowerColors then
+            clrFx.singlePowerColorNote:Show()
+        else
+            clrFx.singlePowerColorNote:Hide()
+        end
+        BBF.UpdateFrames()
+    end)
+
+    clrFx.backgroundColorsSeparator = clrFx:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    clrFx.backgroundColorsSeparator:SetPoint("TOPLEFT", lastPowerColorRow1 or clrFx.useOnePowerColor, "BOTTOMLEFT", 0, -3)
+    clrFx.backgroundColorsSeparator:SetText("Background Colors")
+    clrFx.backgroundColorsSeparator:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\Expressway_Free.ttf", 14)
+    clrFx.backgroundColorsSeparator:SetTextColor(1, 1, 1)
+
+    clrFx.addUnitFrameBgTexture = CreateCheckbox("addUnitFrameBgTexture", "Change UnitFrame Background Color", clrFx)
+    clrFx.addUnitFrameBgTexture:SetPoint("TOPLEFT", clrFx.backgroundColorsSeparator, "BOTTOMLEFT", 0, -1)
+    CreateTooltipTwo(clrFx.addUnitFrameBgTexture, "Change UnitFrame Background Color", "Enable custom background color for Player, Target, Focus, and Pet frames.")
+
+    clrFx.unitFrameBgTextureColor = CreateColorBox(clrFx, "unitFrameBgTextureColor", "Health BG", function() BBF.UnitFrameBackgroundTexture() end)
+    clrFx.unitFrameBgTextureColor:SetPoint("TOPLEFT", clrFx.addUnitFrameBgTexture, "BOTTOMLEFT", 16, 5)
+    CreateTooltipTwo(clrFx.unitFrameBgTextureColor, "Health Bar Background Color", "Left-click to change.\n\n|cff32f795Shift+Right-click to reset to default.|r")
+
+    clrFx.unitFrameBgTextureManaColor = CreateColorBox(clrFx, "unitFrameBgTextureManaColor", "Mana BG", function() BBF.UnitFrameBackgroundTexture() end)
+    clrFx.unitFrameBgTextureManaColor:SetPoint("LEFT", clrFx.unitFrameBgTextureColor.text, "RIGHT", 4, 0)
+    CreateTooltipTwo(clrFx.unitFrameBgTextureManaColor, "Mana Bar Background Color", "Left-click to change.\n\n|cff32f795Shift+Right-click to reset to default.|r")
+
+    clrFx.changePartyRaidFrameBackgroundColor = CreateCheckbox("changePartyRaidFrameBackgroundColor", "Change Party/RaidFrame Background Color", clrFx)
+    clrFx.changePartyRaidFrameBackgroundColor:SetPoint("TOPLEFT", clrFx.unitFrameBgTextureColor, "BOTTOMLEFT", -16, pixelsBetweenBoxes-5)
+    CreateTooltipTwo(clrFx.changePartyRaidFrameBackgroundColor, "Change Party/RaidFrame Background Color", "Enable custom background color for Party and Raid frames.")
+
+    clrFx.partyRaidFrameBackgroundHealthColor = CreateColorBox(clrFx, "partyRaidFrameBackgroundHealthColor", "Health BG", function() BBF.SetCompactUnitFramesBackground() end)
+    clrFx.partyRaidFrameBackgroundHealthColor:SetPoint("TOPLEFT", clrFx.changePartyRaidFrameBackgroundColor, "BOTTOMLEFT", 16, 5)
+    CreateTooltipTwo(clrFx.partyRaidFrameBackgroundHealthColor, "Party/Raid Health Bar Background Color", "Left-click to change.\n\n|cff32f795Shift+Right-click to reset to default.|r")
+
+    clrFx.partyRaidFrameBackgroundManaColor = CreateColorBox(clrFx, "partyRaidFrameBackgroundManaColor", "Mana BG", function() BBF.SetCompactUnitFramesBackground() end)
+    clrFx.partyRaidFrameBackgroundManaColor:SetPoint("LEFT", clrFx.partyRaidFrameBackgroundHealthColor.text, "RIGHT", 4, 0)
+    CreateTooltipTwo(clrFx.partyRaidFrameBackgroundManaColor, "Party/Raid Mana Bar Background Color", "Left-click to change.\n\n|cff32f795Shift+Right-click to reset to default.|r")
+
+    clrFx.addUnitFrameBgTexture:HookScript("OnClick", function(self)
+        if self:GetChecked() then
+            clrFx.unitFrameBgTextureColor:SetAlpha(1)
+            clrFx.unitFrameBgTextureManaColor:SetAlpha(1)
+        else
+            clrFx.unitFrameBgTextureColor:SetAlpha(0.5)
+            clrFx.unitFrameBgTextureManaColor:SetAlpha(0.5)
+        end
+        BBF.UnitFrameBackgroundTexture()
+    end)
+
+    clrFx.changePartyRaidFrameBackgroundColor:HookScript("OnClick", function(self)
+        if self:GetChecked() then
+            clrFx.partyRaidFrameBackgroundHealthColor:SetAlpha(1)
+            clrFx.partyRaidFrameBackgroundManaColor:SetAlpha(1)
+        else
+            clrFx.partyRaidFrameBackgroundHealthColor:SetAlpha(0.5)
+            clrFx.partyRaidFrameBackgroundManaColor:SetAlpha(0.5)
+        end
+        BBF.SetCompactUnitFramesBackground()
+        BBF.UpdateFrames()
+    end)
+
+    clrFx.overrideClassColors:HookScript("OnClick", function(self)
+        local enabled = self:GetChecked()
+        if enabled then
+            clrFx.useOneClassColor:Enable()
+            clrFx.useOneClassColor:SetAlpha(1)
+            clrFx.singleClassColor:SetAlpha(BetterBlizzFramesDB.useOneClassColor and 1 or 0.5)
+            for _, classData in ipairs(customHealthbarColors.classColorBoxes) do
+                classData.colorBox:SetAlpha(BetterBlizzFramesDB.useOneClassColor and 0.5 or 1)
+            end
+        else
+            clrFx.useOneClassColor:Disable()
+            clrFx.useOneClassColor:SetAlpha(0.5)
+            clrFx.singleClassColor:SetAlpha(0.5)
+            for _, classData in ipairs(customHealthbarColors.classColorBoxes) do
+                classData.colorBox:SetAlpha(0.5)
+            end
+        end
+        BBF.UpdateFrames()
+    end)
+    
+    clrFx.overrideClassColors:HookScript("OnShow", function(self)
+        local enabled = BetterBlizzFramesDB.overrideClassColors
+        if enabled then
+            clrFx.useOneClassColor:Enable()
+            clrFx.useOneClassColor:SetAlpha(1)
+            clrFx.singleClassColor:SetAlpha(BetterBlizzFramesDB.useOneClassColor and 1 or 0.5)
+            for _, classData in ipairs(customHealthbarColors.classColorBoxes) do
+                classData.colorBox:SetAlpha(BetterBlizzFramesDB.useOneClassColor and 0.5 or 1)
+            end
+        else
+            clrFx.useOneClassColor:Disable()
+            clrFx.useOneClassColor:SetAlpha(0.5)
+            clrFx.singleClassColor:SetAlpha(0.5)
+            for _, classData in ipairs(customHealthbarColors.classColorBoxes) do
+                classData.colorBox:SetAlpha(0.5)
+            end
+        end
+    end)
 
     local classColorTargetNames = CreateCheckbox("classColorTargetNames", "Class Color Names", BetterBlizzFrames)
-    classColorTargetNames:SetPoint("TOPLEFT", classColorFrames, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    classColorTargetNames:SetPoint("TOPLEFT", customHealthbarColors, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(classColorTargetNames, "Class Color Names","Class color Player, Target & Focus Names.")
 
     local classColorLevelText = CreateCheckbox("classColorLevelText", "Level", classColorTargetNames)
@@ -5409,14 +6011,14 @@ local function guiCastbars()
     local playerCastBarScale = CreateSlider(contentFrame, "Size", 0.1, 1.9, 0.01, "playerCastBarScale")
     playerCastBarScale:SetPoint("TOP", anchorSubPlayerCastbar, "BOTTOM", 0, -15)
 
-    local playerCastBarXPos = CreateSlider(contentFrame, "x offset", -200, 200, 1, "playerCastBarXPos")
-    playerCastBarXPos:SetPoint("TOP", playerCastBarScale, "BOTTOM", 0, -15)
+    local playerCastbarIconXPos = CreateSlider(contentFrame, "x offset", -200, 200, 1, "playerCastbarIconXPos", "X")
+    playerCastbarIconXPos:SetPoint("TOP", playerCastBarScale, "BOTTOM", 0, -15)
 
-    local playerCastBarYPos = CreateSlider(contentFrame, "y offset", -200, 200, 1, "playerCastBarYPos")
-    playerCastBarYPos:SetPoint("TOP", playerCastBarXPos, "BOTTOM", 0, -15)
+    local playerCastbarIconYPos = CreateSlider(contentFrame, "y offset", -200, 200, 1, "playerCastbarIconYPos", "Y")
+    playerCastbarIconYPos:SetPoint("TOP", playerCastbarIconXPos, "BOTTOM", 0, -15)
 
     local playerCastBarIconScale = CreateSlider(contentFrame, "Icon Size", 0.4, 2, 0.01, "playerCastBarIconScale")
-    playerCastBarIconScale:SetPoint("TOP", playerCastBarYPos, "BOTTOM", 0, -15)
+    playerCastBarIconScale:SetPoint("TOP", playerCastbarIconYPos, "BOTTOM", 0, -15)
 
     local playerCastBarWidth = CreateSlider(contentFrame, "Width", 60, 230, 1, "playerCastBarWidth")
     --playerCastBarWidth:SetPoint("TOP", playerCastBarYPos, "BOTTOM", 0, -15)
@@ -5473,6 +6075,8 @@ local function guiCastbars()
     resetPlayerCastbar:SetWidth(70)
     resetPlayerCastbar:SetPoint("TOP", playerCastbarBorder, "BOTTOM", 0, -2)
     resetPlayerCastbar:SetScript("OnClick", function()
+        playerCastbarIconXPos:SetValue(0)
+        playerCastbarIconYPos:SetValue(0)
         playerCastBarScale:SetValue(1)
         playerCastBarIconScale:SetValue(1)
         playerCastBarWidth:SetValue(208)
@@ -5669,7 +6273,7 @@ local function guiCastbars()
     end)
 
     BetterBlizzFramesCastbars.rightClickTip = BetterBlizzFramesCastbars:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
-    BetterBlizzFramesCastbars.rightClickTip:SetPoint("BOTTOMLEFT", bgImg, "BOTTOM", -190, -31)
+    BetterBlizzFramesCastbars.rightClickTip:SetPoint("BOTTOMLEFT", bgImg, "BOTTOM", -231, -36)
     BetterBlizzFramesCastbars.rightClickTip:SetText("|A:smallquestbang:20:20|aTip:  Right-click sliders to enter a specific value")
 end
 
@@ -6821,8 +7425,7 @@ local function guiFrameAuras()
     guiFrameAuras.parent = BetterBlizzFrames.name
     --InterfaceOptions_AddCategory(guiFrameAuras)
     local aurasSubCategory = Settings.RegisterCanvasLayoutSubcategory(BBF.category, guiFrameAuras, guiFrameAuras.name, guiFrameAuras.name)
-    aurasSubCategory.ID = guiFrameAuras.name;
-    BBF.aurasSubCategory = aurasSubCategory.ID
+    BBF.aurasSubCategory = guiFrameAuras.name
     CreateTitle(guiFrameAuras)
 
     local bgImg = guiFrameAuras:CreateTexture(nil, "BACKGROUND")
@@ -7242,58 +7845,8 @@ local function guiMisc()
     end)
     CreateTooltip(stealthIndicatorPlayer, "Add a blue border texture around the\nplayer frame during stealth abilities")
 
-    local addUnitFrameBgTexture = CreateCheckbox("addUnitFrameBgTexture", "UnitFrame Background Color", guiMisc)
-    addUnitFrameBgTexture:SetPoint("TOPLEFT", stealthIndicatorPlayer, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltipTwo(addUnitFrameBgTexture, "UnitFrame Background Color", "Enables background color behind health and mana on UnitFrames.\n\n|cff32f795Right-click to change color.|r")
-    addUnitFrameBgTexture:HookScript("OnClick", function(self)
-        BBF.UnitFrameBackgroundTexture()
-    end)
-    addUnitFrameBgTexture:SetScript("OnMouseDown", function(self, button)
-        if button == "RightButton" then
-            local function OpenColorPicker(entryColors)
-                local colorData = entryColors or {0, 1, 0, 1}
-                local r, g, b = colorData[1] or 1, colorData[2] or 1, colorData[3] or 1
-                local a = colorData[4] or 1
-
-                local function updateColors(newR, newG, newB, newA)
-                    entryColors[1] = newR
-                    entryColors[2] = newG
-                    entryColors[3] = newB
-                    entryColors[4] = newA or 1
-
-                    BBF.UnitFrameBackgroundTexture()
-                end
-
-                local function swatchFunc()
-                    r, g, b = ColorPickerFrame:GetColorRGB()
-                    updateColors(r, g, b, a)
-                end
-
-                local function opacityFunc()
-                    a = ColorPickerFrame:GetColorAlpha()
-                    updateColors(r, g, b, a)
-                end
-
-                local function cancelFunc(previousValues)
-                    if previousValues then
-                        r, g, b, a = previousValues.r, previousValues.g, previousValues.b, previousValues.a
-                        updateColors(r, g, b, a)
-                    end
-                end
-
-                ColorPickerFrame.previousValues = { r = r, g = g, b = b, a = a }
-
-                ColorPickerFrame:SetupColorPickerAndShow({
-                    r = r, g = g, b = b, opacity = a, hasOpacity = true,
-                    swatchFunc = swatchFunc, opacityFunc = opacityFunc, cancelFunc = cancelFunc
-                })
-            end
-            OpenColorPicker(BetterBlizzFramesDB.unitFrameBgTextureColor)
-        end
-    end)
-
     local useMiniPlayerFrame = CreateCheckbox("useMiniPlayerFrame", "Mini-PlayerFrame", guiMisc)
-    useMiniPlayerFrame:SetPoint("TOPLEFT", addUnitFrameBgTexture, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    useMiniPlayerFrame:SetPoint("TOPLEFT", stealthIndicatorPlayer, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(useMiniPlayerFrame, "Removes healthbar and manabar from the PlayerFrame\nand just leaves Portrait and name.\n\nMove castbar and/or disable auras to your liking.")
     useMiniPlayerFrame:HookScript("OnClick", function(self)
         BBF.MiniFrame(PlayerFrame)
@@ -7844,7 +8397,6 @@ local function guiCustomCode()
     guiCustomCode.parent = BetterBlizzFrames.name
     --InterfaceOptions_AddCategory(guiCustomCode)
     local guiCustomCodeSubCategory = Settings.RegisterCanvasLayoutSubcategory(BBF.category, guiCustomCode, guiCustomCode.name, guiCustomCode.name)
-    guiCustomCodeSubCategory.ID = guiCustomCode.name;
     BBF.guiCustomCode = guiCustomCode.name
     CreateTitle(guiCustomCode)
 
@@ -8441,7 +8993,6 @@ function BBF.InitializeOptions()
         BetterBlizzFrames.name = "Better|cff00c0ffBlizz|rFrames |A:gmchat-icon-blizz:16:16|a"
         --InterfaceOptions_AddCategory(BetterBlizzFrames)
         BBF.category = Settings.RegisterCanvasLayoutCategory(BetterBlizzFrames, BetterBlizzFrames.name, BetterBlizzFrames.name)
-        BBF.category.ID = BetterBlizzFrames.name
         Settings.RegisterAddOnCategory(BBF.category)
 
         local titleText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFont_Gigantic")
@@ -8485,9 +9036,9 @@ function BBF.LoadGUI()
     guiMidnight()
     BetterBlizzFrames.guiLoaded = true
 
-    Settings.OpenToCategory(BBF.category.ID)
-    Settings.OpenToCategory(BBF.guiCustomCode)
-    Settings.OpenToCategory(BBF.category.ID)
+    Settings.OpenToCategory(BBF.category:GetID())
+    Settings.OpenToCategory(BBF.category:GetID(), BBF.guiCustomCode)
+    Settings.OpenToCategory(BBF.category:GetID())
 end
 
 
@@ -8637,7 +9188,7 @@ function BBF.CreateIntroMessageWindow()
         if not BetterBlizzFrames.guiLoaded then
             BBF.LoadGUI()
         else
-            Settings.OpenToCategory(BBF.category.ID)
+            Settings.OpenToCategory(BBF.category:GetID())
         end
     end)
     CreateTooltipTwo(buttonLast, "Exit, No Profile", "Exit and customize everything yourself.", nil, "ANCHOR_TOP")
@@ -8648,7 +9199,7 @@ function BBF.CreateIntroMessageWindow()
         if not BetterBlizzFrames.guiLoaded then
             BBF.LoadGUI()
         else
-            Settings.OpenToCategory(BBF.category.ID)
+            Settings.OpenToCategory(BBF.category:GetID())
         end
     end)
 

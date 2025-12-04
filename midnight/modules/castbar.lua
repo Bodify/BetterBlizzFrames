@@ -331,7 +331,7 @@ function BBF.ClassicCastbar(castBar, unitType)
 
 
 
-
+        castBar.textureChangedNeedsColor = true
         castBar.isClassicStyle = true
     end
 end
@@ -941,398 +941,9 @@ end
 
 function BBF.CastbarRecolorWidgets()
     local classicFrames = C_AddOns.IsAddOnLoaded("ClassicFrames")
-    if BetterBlizzFramesDB.castBarInterruptHighlighter or BetterBlizzFramesDB.castBarDelayedInterruptColor or BetterBlizzFramesDB.recolorCastbars then
-        highlightStartTime = BetterBlizzFramesDB.castBarInterruptHighlighterStartTime
-        highlightEndTime = BetterBlizzFramesDB.castBarInterruptHighlighterEndTime
-        edgeColor = BetterBlizzFramesDB.castBarInterruptHighlighterInterruptRGB
-        middleColor = BetterBlizzFramesDB.castBarInterruptHighlighterDontInterruptRGB
-        colorMiddle = BetterBlizzFramesDB.castBarInterruptHighlighterColorDontInterrupt
-        castBarNoInterruptColor = BetterBlizzFramesDB.castBarNoInterruptColor
-        castBarDelayedInterruptColor = BetterBlizzFramesDB.castBarDelayedInterruptColor
-        castBarRecolorInterrupt = BetterBlizzFramesDB.castBarRecolorInterrupt
-        castBarInterruptHighlighter = BetterBlizzFramesDB.castBarInterruptHighlighter
-        targetCastbarEdgeHighlight = BetterBlizzFramesDB.targetCastbarEdgeHighlight and castBarInterruptHighlighter
-        focusCastbarEdgeHighlight = BetterBlizzFramesDB.focusCastbarEdgeHighlight and castBarInterruptHighlighter
-        recolorCastbars = BetterBlizzFramesDB.recolorCastbars
-        castbarColors = {
-            standard        = BetterBlizzFramesDB.castbarCastColor,
-            interrupted     = { 1, 0, 0 },
-            channel       = BetterBlizzFramesDB.castbarChannelColor,
-            uninterruptable = BetterBlizzFramesDB.castbarUninterruptableColor,
-        }
-
-        local function NormalOnUpdate(self, unit, texture, shouldHighlightEdges)
-            if not UnitCanAttack(unit, "player") then
-                if recolorCastbars then
-                    texture:SetDesaturated(true)
-
-                    local c = castbarColors[self.barType] or castbarColors.standard
-                    local r, g, b = c[1], c[2], c[3]
-
-                    self:SetStatusBarColor(r, g, b)
-                    self.Spark:SetVertexColor(r, g, b)
-                else
-                    texture:SetDesaturated(false)
-                    if not classicFrames and not self.isClassicStyle then
-                        self:SetStatusBarColor(1, 1, 1)
-                    end
-                    self.Spark:SetVertexColor(1, 1, 1)
-                end
-            end
-
-            local name, _, _, startTime, endTime, _, _, notInterruptible, spellId = UnitCastingInfo(unit)
-            local channeling, empoweredCast
-            if not name then
-                name, _, _, startTime, endTime, _, notInterruptible, spellId, empoweredCast = UnitChannelInfo(unit)
-                if not empoweredCast then
-                    channeling = true
-                end
-            end
-
-            if not name then
-                texture:SetDesaturated(false)
-                if not classicFrames and not self.isClassicStyle then
-                    if recolorCastbars then
-                        if self.barType == "interrupted" then
-                            texture:SetDesaturated(false)
-                            self:SetStatusBarColor(1, 1, 1)
-                        else
-                            local c = castbarColors[self.barType] or castbarColors.standard
-                            local r, g, b = c[1], c[2], c[3]
-
-                            self:SetStatusBarColor(r, g, b)
-                            --self.Spark:SetVertexColor(r, g, b)
-                        end
-                    else
-                        local c = defaultCastbarColors[self.barType] or defaultCastbarColors.standard
-                        local r, g, b = c[1], c[2], c[3]
-
-                        self:SetStatusBarColor(r, g, b)
-                    end
-                end
-                self.Spark:SetVertexColor(1, 1, 1)
-                return
-            end
-
-            if castBarRecolorInterrupt and not notInterruptible then
-                local colored
-                --for _, interruptSpellID in ipairs(interruptSpellIDs) do
-                if not knownInterruptSpellID then
-                    GetInterruptSpell()
-                end
-                if knownInterruptSpellID then
-                    local start, duration = BBF.TWWGetSpellCooldown(knownInterruptSpellID)
-                    local cooldownRemaining = start + duration - GetTime()
-                    local castRemaining = (endTime / 1000) - GetTime()
-                    local totalCastTime = (endTime / 1000) - (startTime / 1000)
-
-                    if self.interruptSark and self.interruptSark:IsShown() then
-                        self.interruptSark:Hide()
-                    end
-
-                    if cooldownRemaining > 0 and cooldownRemaining > castRemaining then
-                        texture:SetDesaturated(true)
-                        self:SetStatusBarColor(unpack(castBarNoInterruptColor))
-                        self.Spark:SetVertexColor(unpack(castBarNoInterruptColor))
-                        colored = true
-
-                    elseif cooldownRemaining > 0 and cooldownRemaining <= castRemaining then
-                        texture:SetDesaturated(true)
-                        self:SetStatusBarColor(unpack(castBarDelayedInterruptColor))
-                        self.Spark:SetVertexColor(unpack(castBarDelayedInterruptColor))
-                        colored = true
-
-                        if not self.interruptSark then
-                            self.interruptSark = self:CreateTexture(nil, "OVERLAY")
-                            self.interruptSark:SetColorTexture(0, 1, 0, 1)
-                            self.interruptSark:SetSize(2, self:GetHeight())
-                        end
-
-                        local interruptPercent = (totalCastTime - castRemaining + cooldownRemaining) / totalCastTime
-                        local sparkPosition = (channeling and (1 - interruptPercent) or interruptPercent) * self:GetWidth()
-                        if empoweredCast then
-                            sparkPosition = sparkPosition * 0.7 -- ? idk why but on empowered casts it needs to be roughly 30% to the left compared to cast/channel
-                        end
-                        self.interruptSark:SetPoint("CENTER", self, "LEFT", sparkPosition, 0)
-                        self.interruptSark:Show()
-
-                        if not self.timerReset then
-                            self.timerReset = true
-                            C_Timer.After(cooldownRemaining, function()
-                                if self then
-                                    if not classicFrames and not self.isClassicStyle then
-                                        if recolorCastbars then
-                                            if self.barType == "interrupted" then
-                                                texture:SetDesaturated(false)
-                                                self:SetStatusBarColor(1, 1, 1)
-                                            else
-                                                local c = castbarColors[self.barType] or castbarColors.standard
-                                                local r, g, b = c[1], c[2], c[3]
-
-                                                self:SetStatusBarColor(r, g, b)
-                                                --self.Spark:SetVertexColor(r, g, b)
-                                            end
-                                        else
-                                            texture:SetDesaturated(false)
-                                            self:SetStatusBarColor(1, 1, 1)
-                                        end
-                                    end
-                                    if self.interruptSark then
-                                        self.interruptSark:Hide()
-                                    end
-                                    self.timerReset = nil
-                                end
-                            end)
-                        end
-
-                        return -- Don't apply edge logic on top of this state
-                    end
-                end
-                if colored then return end
-            end
-
-            if shouldHighlightEdges and not notInterruptible then
-                local currentTime = GetTime()
-                local startTimeSeconds = startTime / 1000
-                local endTimeSeconds = endTime / 1000
-                local elapsed = currentTime - startTimeSeconds
-                local timeRemaining = endTimeSeconds - currentTime
-
-                if (elapsed <= highlightStartTime) or (timeRemaining <= highlightEndTime) then
-                    texture:SetDesaturated(true)
-                    self:SetStatusBarColor(unpack(edgeColor))
-                    self.Spark:SetVertexColor(unpack(edgeColor))
-                else
-                    if colorMiddle then
-                        texture:SetDesaturated(true)
-                        self:SetStatusBarColor(unpack(middleColor))
-                    else
-                        texture:SetDesaturated(false)
-                        if not classicFrames and not self.isClassicStyle then
-                            if recolorCastbars then
-                                texture:SetDesaturated(true)
-
-                                local c = castbarColors[self.barType] or castbarColors.standard
-                                local r, g, b = c[1], c[2], c[3]
-
-                                self:SetStatusBarColor(r, g, b)
-                                self.Spark:SetVertexColor(r, g, b)
-                            else
-                                texture:SetDesaturated(false)
-                                if not classicFrames and not self.isClassicStyle then
-                                    self:SetStatusBarColor(1, 1, 1)
-                                end
-                                self.Spark:SetVertexColor(1, 1, 1)
-                            end
-                        end
-                    end
-                    self.Spark:SetVertexColor(1, 1, 1)
-                end
-            else
-                if recolorCastbars then
-                    texture:SetDesaturated(true)
-
-                    local c = castbarColors[self.barType] or castbarColors.standard
-                    local r, g, b = c[1], c[2], c[3]
-
-                    self:SetStatusBarColor(r, g, b)
-                    self.Spark:SetVertexColor(r, g, b)
-                else
-                    texture:SetDesaturated(false)
-                    if not classicFrames and not self.isClassicStyle then
-                        self:SetStatusBarColor(1, 1, 1)
-                    end
-                    self.Spark:SetVertexColor(1, 1, 1)
-                end
-            end
-        end
-
-        local function GladiusOnUpdate(self, unit)
-            local name, _, _, startTime, endTime = UnitCastingInfo(unit)
-            local channeling, empoweredCast
-            if not name then
-                name, _, _, startTime, endTime, _, _, _, empoweredCast = UnitChannelInfo(unit)
-                if not empoweredCast then
-                    channeling = true
-                end
-            end
-
-            if not name then
-                return
-            end
-
-            if castBarRecolorInterrupt then
-                local colored
-                --for _, interruptSpellID in ipairs(interruptSpellIDs) do
-                if not knownInterruptSpellID then
-                    GetInterruptSpell()
-                end
-                if knownInterruptSpellID then
-                    local start, duration = BBF.TWWGetSpellCooldown(knownInterruptSpellID)
-                    local cooldownRemaining = start + duration - GetTime()
-                    local castRemaining = (endTime / 1000) - GetTime()
-                    local totalCastTime = (endTime / 1000) - (startTime / 1000)
-
-                    if self.interruptSark and self.interruptSark:IsShown() then
-                        self.interruptSark:Hide()
-                    end
-
-                    if cooldownRemaining > 0 and cooldownRemaining > castRemaining then
-                        self:SetStatusBarColor(unpack(castBarNoInterruptColor))
-                        colored = true
-
-                    elseif cooldownRemaining > 0 and cooldownRemaining <= castRemaining then
-                        self:SetStatusBarColor(unpack(castBarDelayedInterruptColor))
-                        colored = true
-
-                        if not self.interruptSark then
-                            self.interruptSark = self:CreateTexture(nil, "OVERLAY")
-                            self.interruptSark:SetColorTexture(0, 1, 0, 1)
-                            self.interruptSark:SetSize(2, self:GetHeight())
-                        end
-
-                        local interruptPercent = (totalCastTime - castRemaining + cooldownRemaining) / totalCastTime
-                        local sparkPosition = (channeling and (1 - interruptPercent) or interruptPercent) * self:GetWidth()
-                        if empoweredCast then
-                            sparkPosition = sparkPosition * 0.7 -- ? idk why but on empowered casts it needs to be roughly 30% to the left compared to cast/channel
-                        end
-                        self.interruptSark:SetPoint("CENTER", self, "LEFT", sparkPosition, 0)
-                        self.interruptSark:Show()
-
-                        if not self.timerReset then
-                            self.timerReset = true
-                            C_Timer.After(cooldownRemaining, function()
-                                if self then
-                                    if self.interruptSark then
-                                        self.interruptSark:Hide()
-                                    end
-                                    self.timerReset = nil
-                                end
-                            end)
-                        end
-
-                        return
-                    end
-                end
-                if colored then return end
-            end
-        end
-
-        function BBF.HookCastbarInterruptHighlight(castbar, unit, texture, shouldHighlightEdges, coloredCastbar, gladiusBar)
-            if coloredCastbar then
-                castbar.isClassicStyle = true
-            end
-
-            if gladiusBar then
-                castbar:HookScript("OnUpdate", function(self)
-                    GladiusOnUpdate(self, unit)
-                end)
-            else
-                if castbar.interruptColorsEnabled then return end
-                castbar.interruptColorsEnabled = true
-                castbar:HookScript("OnUpdate", function(self)
-                    NormalOnUpdate(self, unit, texture, shouldHighlightEdges)
-                end)
-            end
-        end
-
-
-        GetInterruptSpell()
-
-        if recolorCastbars and not BetterBlizzFramesDB.classicCastbarsPlayer and not BBF.RecolorCastbarHooked then
-            BBF.RecolorCastbarHooked = true
-            local playerCastBarTexture = PlayerCastingBarFrame:GetStatusBarTexture()
-            PlayerCastingBarFrame:HookScript("OnEvent", function(self)
-                if recolorCastbars then
-                    if self.barType == "interrupted" and not self.isClassicStyle then
-                        playerCastBarTexture:SetDesaturated(false)
-                        self:SetStatusBarColor(1, 1, 1)
-                    else
-                        local c = castbarColors[self.barType] or castbarColors.standard
-                        local r, g, b = c[1], c[2], c[3]
-                        playerCastBarTexture:SetDesaturated(true)
-                        self:SetStatusBarColor(r, g, b)
-                    end
-                else
-                    playerCastBarTexture:SetDesaturated(false)
-                    self:SetStatusBarColor(1, 1, 1)
-                end
-            end)
-        end
-
-        if BetterBlizzFramesDB.castBarRecolorInterrupt and BetterBlizzFramesDB.castBarRecolorInterruptArenaFrames then
-            C_Timer.After(3, function()
-                local enableOnDefault = not BetterBlizzFramesDB.hideArenaFrames and not Gladius and not C_AddOns.IsAddOnLoaded("GladiusEx") and not sArena
-                local units = {
-                    ["arena1"] = true,
-                    ["arena2"] = true,
-                    ["arena3"] = true,
-                }
-                for i = 1, 3 do
-                    if GladiusEx then
-                        local spellBar = _G["GladiusExCastBararena"..i.."Parent"]
-                        if spellBar then
-                            local unit = "arena"..i
-                            BBF.HookCastbarInterruptHighlight(spellBar.bar, unit, spellBar.bar:GetStatusBarTexture(), nil, true, true)
-                        end
-
-                        if not BBF.HookedGladiusExCastbars then
-                            BBF.HookedGladiusExCastbars = true
-                            hooksecurefunc(GladiusEx, "UpdateUnit", function(self, unit)
-                                if not units[unit] then return end
-                                local spellBar = _G["GladiusExCastBararena"..i.."Parent"]
-                                if spellBar then
-                                    BBF.HookCastbarInterruptHighlight(spellBar.bar, unit, spellBar.bar:GetStatusBarTexture(), nil, true, true)
-                                end
-                            end)
-                        end
-                    end
-
-                    if Gladius then
-                        local spellBar = _G["GladiusCastBararena"..i]
-                        if spellBar then
-                            local unit = "arena"..i
-                            BBF.HookCastbarInterruptHighlight(spellBar, unit, spellBar:GetStatusBarTexture(), nil, true, true)
-                        end
-
-                        if not BBF.HookedGladiusCastbars then
-                            BBF.HookedGladiusCastbars = true
-                            hooksecurefunc(Gladius, "UpdateUnit", function(self, unit)
-                                if not units[unit] then return end
-                                local spellBar = _G["GladiusCastBar"..unit]
-                                if spellBar then
-                                    BBF.HookCastbarInterruptHighlight(spellBar, unit, spellBar:GetStatusBarTexture(), nil, true, true)
-                                end
-                            end)
-                        end
-                    end
-
-                    local bArenaFrame = _G["bArenaEnemyFrame"..i]
-                    if bArenaFrame then
-                        local spellBar = bArenaFrame.CastBar
-                        local unit = "arena"..i
-                        BBF.HookCastbarInterruptHighlight(spellBar, unit, spellBar:GetStatusBarTexture(), nil, true)
-                    end
-
-                    local sArenaFrame = _G["sArenaEnemyFrame"..i]
-                    if sArenaFrame then
-                        local spellBar = sArenaFrame.CastBar
-                        local unit = "arena"..i
-                        BBF.HookCastbarInterruptHighlight(spellBar, unit, spellBar:GetStatusBarTexture(), nil, true)
-                    end
-
-                    if enableOnDefault then
-                        local frame = _G["CompactArenaFrameMember"..i]
-                        if frame then
-                            local spellBar = frame.CastingBarFrame
-                            local unit = "arena"..i
-                            BBF.HookCastbarInterruptHighlight(spellBar, unit, spellBar:GetStatusBarTexture())
-                        end
-                    end
-                end
-                BBF.GexCastbarHooked = true
-            end)
-        end
+    if (BetterBlizzFramesDB.castBarRecolorInterrupt or BetterBlizzFramesDB.recolorCastbars) and not BBF.RecolorCastbarHooked then
+        BBF.CastbarColorHooks()
+        BBF.RecolorCastbarHooked = true
     end
 end
 
@@ -1390,7 +1001,7 @@ local function PlayerCastingBarFrameMiscAdjustments()
     PlayerCastingBarFrame.Text:SetWidth(BetterBlizzFramesDB.playerCastBarWidth)
     PlayerCastingBarFrame.Icon:SetSize(22,22)
     PlayerCastingBarFrame.Icon:ClearAllPoints()
-    local playerIconYOffset = BetterBlizzFramesDB.hidePlayerCastbarIcon and -6969 or (-5 + BetterBlizzFramesDB.playerCastbarIconYPos)
+    local playerIconYOffset = BetterBlizzFramesDB.hidePlayerCastbarIcon and -6969 or ((BetterBlizzFramesDB.playerCastBarNoTextBorder and 0 or -5) + BetterBlizzFramesDB.playerCastbarIconYPos)
     PlayerCastingBarFrame.Icon:SetPoint("RIGHT", PlayerCastingBarFrame, "LEFT", -5 + BetterBlizzFramesDB.playerCastbarIconXPos, playerIconYOffset)
     PlayerCastingBarFrame.Icon:SetScale(BetterBlizzFramesDB.playerCastBarIconScale)
     PlayerCastingBarFrame.BorderShield:SetSize(30,36)
@@ -1449,7 +1060,7 @@ function BBF.ChangeCastbarSizes()
 
     if not classicFrames then
         TargetFrameSpellBar.BorderShield:ClearAllPoints()
-        TargetFrameSpellBar.BorderShield:SetPoint("CENTER", TargetFrameSpellBar.Icon, "CENTER", 0, 0)
+        TargetFrameSpellBar.BorderShield:SetPoint("CENTER", TargetFrameSpellBar.Icon, "CENTER", 0, -1.5)
         TargetFrameSpellBar.BorderShield:SetScale(BetterBlizzFramesDB.targetCastBarIconScale)
         TargetFrameSpellBar.Text:ClearAllPoints()
         if BetterBlizzFramesDB.unitframeCastBarNoTextBorder then
@@ -1488,7 +1099,7 @@ function BBF.ChangeCastbarSizes()
 
     if not classicFrames then
         FocusFrameSpellBar.BorderShield:ClearAllPoints()
-        FocusFrameSpellBar.BorderShield:SetPoint("CENTER", FocusFrameSpellBar.Icon, "CENTER", 0, 0)
+        FocusFrameSpellBar.BorderShield:SetPoint("CENTER", FocusFrameSpellBar.Icon, "CENTER", 0, -1.5)
         FocusFrameSpellBar.BorderShield:SetScale(BetterBlizzFramesDB.focusCastBarIconScale)
         FocusFrameSpellBar.Text:ClearAllPoints()
         if BetterBlizzFramesDB.unitframeCastBarNoTextBorder then
@@ -1527,7 +1138,7 @@ function BBF.ChangeCastbarSizes()
     end
 end
 
-PlayerCastingBarFrame:HookScript("OnShow", function()
+PlayerCastingBarFrame:HookScript("OnEvent", function()
     local showIcon = BetterBlizzFramesDB.playerCastBarShowIcon
     if showIcon then
         local playerCastBarIconScale = BetterBlizzFramesDB.playerCastBarIconScale
@@ -1535,23 +1146,24 @@ PlayerCastingBarFrame:HookScript("OnShow", function()
         --PlayerCastingBarFrame.showShield = true --taint concern TODO: add non-taint method
         PlayerCastingBarFrame.BorderShield:SetSize(30,36)
         PlayerCastingBarFrame.BorderShield:ClearAllPoints()
-        PlayerCastingBarFrame.BorderShield:SetPoint("CENTER", PlayerCastingBarFrame.Icon, "CENTER", 0, 0)
+        PlayerCastingBarFrame.BorderShield:SetPoint("CENTER", PlayerCastingBarFrame.Icon, "CENTER", 0, -1.5)
         PlayerCastingBarFrame.BorderShield:SetScale(playerCastBarIconScale)
         PlayerCastingBarFrame.BorderShield:SetDrawLayer("BORDER")
     end
 end)
 
-hooksecurefunc(PlayerCastingBarFrame, "SetScale", function()
-    if EditModeManagerFrame.editModeActive then
-        BetterBlizzFramesDB.playerCastBarScale = PlayerCastingBarFrame:GetScale()
-    end
-
-    if not PlayerCastingBarFrame.isUpdating then
+local function PlayerCastingBarUpdateNextFrame()
+    if PlayerCastingBarFrame.isUpdating then return end
+    C_Timer.After(0, function()
+        if EditModeManagerFrame and EditModeManagerFrame.editModeActive then
+            BetterBlizzFramesDB.playerCastBarScale = PlayerCastingBarFrame:GetScale()
+        end
         PlayerCastingBarFrame.isUpdating = true
         PlayerCastingBarFrameMiscAdjustments()
         PlayerCastingBarFrame.isUpdating = false
-    end
-end)
+    end)
+end
+hooksecurefunc(PlayerCastingBarFrame, "SetScale", PlayerCastingBarUpdateNextFrame)
 
 local evokerCastbarsHooked
 function BBF.HookCastbarsForEvoker()
@@ -1701,43 +1313,11 @@ function BBF.HookCastbars()
     end
 end
 
-
-function BBF.CastbarColorHooks()
-        castBarNoInterruptColor = BetterBlizzFramesDB.castBarNoInterruptColor
-        castBarDelayedInterruptColor = BetterBlizzFramesDB.castBarDelayedInterruptColor
-        castBarRecolorInterrupt = BetterBlizzFramesDB.castBarRecolorInterrupt
-        recolorCastbars = BetterBlizzFramesDB.recolorCastbars
-        castbarColors = {
-            standard        = BetterBlizzFramesDB.castbarCastColor,
-            interrupted     = { 1, 0, 0 },
-            channel       = BetterBlizzFramesDB.castbarChannelColor,
-            uninterruptable = BetterBlizzFramesDB.castbarUninterruptableColor,
-        }
-            local playerCastBarTexture = PlayerCastingBarFrame:GetStatusBarTexture()
-            PlayerCastingBarFrame:HookScript("OnEvent", function(self)
-                if recolorCastbars then
-                    if self.barType == "interrupted" and not self.isClassicStyle then
-                        playerCastBarTexture:SetDesaturated(false)
-                        self:SetStatusBarColor(1, 1, 1)
-                    else
-                        local c = castbarColors[self.barType] or castbarColors.standard
-                        local r, g, b = c[1], c[2], c[3]
-                        playerCastBarTexture:SetDesaturated(true)
-                        self:SetStatusBarColor(r, g, b)
-                    end
-                else
-                    playerCastBarTexture:SetDesaturated(false)
-                    self:SetStatusBarColor(1, 1, 1)
-                end
-            end)
-end
-
-
 local function CastbarOnEvent(self)
-    local colors = sArenaMixin.castbarColors
-    if sArenaMixin.modernCastbars then
-        if not sArenaMixin.keepDefaultModernTextures then
-            local textureToUse = sArenaMixin.castTexture
+    local colors = castbarColors
+    if not self.textureChangedNeedsColor then
+        if false then     -- custom texture
+            local textureToUse = classicCastbarTexture
             if self.barType == "uninterruptable" and sArenaMixin.castUninterruptibleTexture then
                 textureToUse = sArenaMixin.castUninterruptibleTexture
             end
@@ -1747,7 +1327,7 @@ local function CastbarOnEvent(self)
             if colors.enabled then
                 if self.barType == "uninterruptable" then
                     self:SetStatusBarColor(unpack(colors.uninterruptable or { 0.7, 0.7, 0.7, 1 }))
-                elseif sArenaMixin.interruptStatusColorOn and not sArenaMixin.interruptReady then
+                elseif castBarRecolorInterrupt and not BBF.playerKickReady then
                     self:SetStatusBarColor(unpack(colors.interruptNotReady or { 0.7, 0.7, 0.7, 1 }))
                 elseif self.barType == "channel" then
                     self:SetStatusBarColor(unpack(colors.channel or { 0.0, 1.0, 0.0, 1 }))
@@ -1759,7 +1339,7 @@ local function CastbarOnEvent(self)
             else
                 if self.barType == "uninterruptable" then
                     self:SetStatusBarColor(0.7, 0.7, 0.7)
-                elseif sArenaMixin.interruptStatusColorOn and not sArenaMixin.interruptReady then
+                elseif castBarRecolorInterrupt and not BBF.playerKickReady then
                     self:SetStatusBarColor(unpack(colors.interruptNotReady or { 0.7, 0.7, 0.7, 1 }))
                 elseif self.barType == "channel" then
                     self:SetStatusBarColor(0, 1, 0)
@@ -1777,17 +1357,19 @@ local function CastbarOnEvent(self)
             end
             if self.barType == "uninterruptable" then
                 self:SetStatusBarColor(unpack(colors.uninterruptable or { 0.7, 0.7, 0.7, 1 }))
-            elseif sArenaMixin.interruptStatusColorOn and not sArenaMixin.interruptReady then
+            elseif castBarRecolorInterrupt and not BBF.playerKickReady then
                 self:SetStatusBarColor(unpack(colors.interruptNotReady or { 0.7, 0.7, 0.7, 1 }))
             elseif self.barType == "channel" then
                 self:SetStatusBarColor(unpack(colors.channel or { 0.0, 1.0, 0.0, 1 }))
             elseif self.barType == "interrupted" then
-                self:SetStatusBarColor(1, 0, 0)
+                self:SetStatusBarDesaturated(false)
+                self:SetStatusBarColor(1, 1, 1)
+                --self:SetStatusBarColor(1, 0, 0)
             else
                 self:SetStatusBarColor(unpack(colors.standard or { 1.0, 0.7, 0.0, 1 }))
             end
             self.changedBarColor = true
-        elseif sArenaMixin.interruptStatusColorOn and not sArenaMixin.interruptReady and not self.barType == "uninterruptable" then
+        elseif castBarRecolorInterrupt and not BBF.playerKickReady and self.barType ~= "uninterruptable" then
             local castTexture = self:GetStatusBarTexture()
             if castTexture then
                 castTexture:SetDesaturated(true)
@@ -1803,11 +1385,11 @@ local function CastbarOnEvent(self)
             self.changedBarColor = nil
         end
     else
-        self:SetStatusBarTexture(sArenaMixin.castTexture or "Interface\\RaidFrame\\Raid-Bar-Hp-Fill")
+        self:SetStatusBarTexture(classicCastbarTexture)
         if colors.enabled then
             if self.barType == "uninterruptable" then
                 self:SetStatusBarColor(unpack(colors.uninterruptable or { 0.7, 0.7, 0.7, 1 }))
-            elseif sArenaMixin.interruptStatusColorOn and not sArenaMixin.interruptReady then
+            elseif castBarRecolorInterrupt and not BBF.playerKickReady then
                 self:SetStatusBarColor(unpack(colors.interruptNotReady or { 0.7, 0.7, 0.7, 1 }))
             elseif self.barType == "channel" then
                 self:SetStatusBarColor(unpack(colors.channel or { 0.0, 1.0, 0.0, 1 }))
@@ -1819,7 +1401,7 @@ local function CastbarOnEvent(self)
         else
             if self.barType == "uninterruptable" then
                 self:SetStatusBarColor(0.7, 0.7, 0.7)
-            elseif sArenaMixin.interruptStatusColorOn and not sArenaMixin.interruptReady then
+            elseif castBarRecolorInterrupt and not BBF.playerKickReady then
                 self:SetStatusBarColor(unpack(colors.interruptNotReady or { 0.7, 0.7, 0.7, 1 }))
             elseif self.barType == "channel" then
                 self:SetStatusBarColor(0, 1, 0)
@@ -1832,10 +1414,55 @@ local function CastbarOnEvent(self)
     end
 end
 
-
 function BBF.ColorCastbar(castBar)
     if castBar.castbarLookTweaks then return end
-    CastbarOnEvent(self)
+    CastbarOnEvent(castBar)
 end
+
+function BBF.CastbarColorHooks()
+    castBarNoInterruptColor = BetterBlizzFramesDB.castBarNoInterruptColor
+    castBarDelayedInterruptColor = BetterBlizzFramesDB.castBarDelayedInterruptColor
+    castBarRecolorInterrupt = BetterBlizzFramesDB.castBarRecolorInterrupt
+    recolorCastbars = BetterBlizzFramesDB.recolorCastbars
+    if recolorCastbars then
+        castbarColors = {
+            enabled         = true,
+            standard        = BetterBlizzFramesDB.castbarCastColor,
+            interruptNotReady = castBarNoInterruptColor,
+            interrupted     = { 1, 0, 0 },
+            channel         = BetterBlizzFramesDB.castbarChannelColor,
+            uninterruptable = BetterBlizzFramesDB.castbarUninterruptableColor,
+        }
+    else
+        castbarColors = {
+            enabled         = false,
+            full            = { 0.0, 1.0, 0.0, 1 },
+            standard        = { 1.0, 0.7, 0.0, 1 },
+            channel         = { 0.0, 1.0, 0.0, 1 },
+            uninterruptable = { 0.7, 0.7, 0.7, 1 },
+            interrupted     = { 1.0, 0.0, 0.0, 1 },
+            interruptNotReady = castBarNoInterruptColor,
+        }
+    end
+
+    local playerCastBarTexture = PlayerCastingBarFrame:GetStatusBarTexture()
+    PlayerCastingBarFrame:HookScript("OnEvent", function(self)
+        if recolorCastbars or self.textureChangedNeedsColor then
+            if self.barType == "interrupted" and not self.textureChangedNeedsColor then
+                playerCastBarTexture:SetDesaturated(false)
+                self:SetStatusBarColor(1, 1, 1)
+            else
+                local c = castbarColors[self.barType] or castbarColors.standard
+                local r, g, b = c[1], c[2], c[3]
+                playerCastBarTexture:SetDesaturated(true)
+                self:SetStatusBarColor(r, g, b)
+            end
+        end
+    end)
+    TargetFrameSpellBar:HookScript("OnEvent", CastbarOnEvent)
+    FocusFrameSpellBar:HookScript("OnEvent", CastbarOnEvent)
+end
+
+
 
 

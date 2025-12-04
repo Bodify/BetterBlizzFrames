@@ -328,7 +328,7 @@ function BBF.ClassicCastbar(castBar, unitType)
 
 
 
-
+        castBar.textureChangedNeedsColor = true
         castBar.isClassicStyle = true
     end
 end
@@ -936,7 +936,8 @@ end
 
 
 function BBF.CastbarRecolorWidgets()
-    local classicFrames = C_AddOns.IsAddOnLoaded("ClassicFrames")    if BetterBlizzFramesDB.castBarInterruptHighlighter or BetterBlizzFramesDB.castBarDelayedInterruptColor or BetterBlizzFramesDB.recolorCastbars then
+    local classicFrames = C_AddOns.IsAddOnLoaded("ClassicFrames")
+    if BetterBlizzFramesDB.castBarInterruptHighlighter or BetterBlizzFramesDB.castBarDelayedInterruptColor or BetterBlizzFramesDB.recolorCastbars then
         highlightStartTime = BetterBlizzFramesDB.castBarInterruptHighlighterStartTime
         highlightEndTime = BetterBlizzFramesDB.castBarInterruptHighlighterEndTime
         edgeColor = BetterBlizzFramesDB.castBarInterruptHighlighterInterruptRGB
@@ -968,7 +969,7 @@ function BBF.CastbarRecolorWidgets()
                     self.Spark:SetVertexColor(r, g, b)
                 else
                     texture:SetDesaturated(false)
-                    if not classicFrames and not self.isClassicStyle then
+                    if not classicFrames and not self.textureChangedNeedsColor then
                         self:SetStatusBarColor(1, 1, 1)
                     end
                     self.Spark:SetVertexColor(1, 1, 1)
@@ -986,7 +987,7 @@ function BBF.CastbarRecolorWidgets()
 
             if not name then
                 texture:SetDesaturated(false)
-                if not classicFrames and not self.isClassicStyle then
+                if not classicFrames and not self.textureChangedNeedsColor then
                     if recolorCastbars then
                         if self.barType == "interrupted" then
                             texture:SetDesaturated(false)
@@ -1055,7 +1056,7 @@ function BBF.CastbarRecolorWidgets()
                             self.timerReset = true
                             C_Timer.After(cooldownRemaining, function()
                                 if self then
-                                    if not classicFrames and not self.isClassicStyle then
+                                    if not classicFrames and not self.textureChangedNeedsColor then
                                         if recolorCastbars then
                                             if self.barType == "interrupted" then
                                                 texture:SetDesaturated(false)
@@ -1103,7 +1104,7 @@ function BBF.CastbarRecolorWidgets()
                         self:SetStatusBarColor(unpack(middleColor))
                     else
                         texture:SetDesaturated(false)
-                        if not classicFrames and not self.isClassicStyle then
+                        if not classicFrames and not self.textureChangedNeedsColor then
                             if recolorCastbars then
                                 texture:SetDesaturated(true)
 
@@ -1114,7 +1115,7 @@ function BBF.CastbarRecolorWidgets()
                                 self.Spark:SetVertexColor(r, g, b)
                             else
                                 texture:SetDesaturated(false)
-                                if not classicFrames and not self.isClassicStyle then
+                                if not classicFrames and not self.textureChangedNeedsColor then
                                     self:SetStatusBarColor(1, 1, 1)
                                 end
                                 self.Spark:SetVertexColor(1, 1, 1)
@@ -1134,7 +1135,7 @@ function BBF.CastbarRecolorWidgets()
                     self.Spark:SetVertexColor(r, g, b)
                 else
                     texture:SetDesaturated(false)
-                    if not classicFrames and not self.isClassicStyle then
+                    if not classicFrames and not self.textureChangedNeedsColor then
                         self:SetStatusBarColor(1, 1, 1)
                     end
                     self.Spark:SetVertexColor(1, 1, 1)
@@ -1215,7 +1216,7 @@ function BBF.CastbarRecolorWidgets()
 
         function BBF.HookCastbarInterruptHighlight(castbar, unit, texture, shouldHighlightEdges, coloredCastbar, gladiusBar)
             if coloredCastbar then
-                castbar.isClassicStyle = true
+                castbar.textureChangedNeedsColor = true
             end
 
             if gladiusBar then
@@ -1246,7 +1247,7 @@ function BBF.CastbarRecolorWidgets()
             local playerCastBarTexture = PlayerCastingBarFrame:GetStatusBarTexture()
             PlayerCastingBarFrame:HookScript("OnEvent", function(self)
                 if recolorCastbars then
-                    if self.barType == "interrupted" and not self.isClassicStyle then
+                    if self.barType == "interrupted" and not self.textureChangedNeedsColor then
                         playerCastBarTexture:SetDesaturated(false)
                         self:SetStatusBarColor(1, 1, 1)
                     else
@@ -1392,7 +1393,7 @@ local function PlayerCastingBarFrameMiscAdjustments()
     PlayerCastingBarFrame.Text:SetWidth(BetterBlizzFramesDB.playerCastBarWidth)
     PlayerCastingBarFrame.Icon:SetSize(22,22)
     PlayerCastingBarFrame.Icon:ClearAllPoints()
-    local playerIconYOffset = BetterBlizzFramesDB.hidePlayerCastbarIcon and -6969 or (-5 + BetterBlizzFramesDB.playerCastbarIconYPos)
+    local playerIconYOffset = BetterBlizzFramesDB.hidePlayerCastbarIcon and -6969 or ((BetterBlizzFramesDB.playerCastBarNoTextBorder and 0 or -5) + BetterBlizzFramesDB.playerCastbarIconYPos)
     PlayerCastingBarFrame.Icon:SetPoint("RIGHT", PlayerCastingBarFrame, "LEFT", -5 + BetterBlizzFramesDB.playerCastbarIconXPos, playerIconYOffset)
     PlayerCastingBarFrame.Icon:SetScale(BetterBlizzFramesDB.playerCastBarIconScale)
     PlayerCastingBarFrame.BorderShield:SetSize(30,36)
@@ -1544,17 +1545,19 @@ PlayerCastingBarFrame:HookScript("OnShow", function()
     end
 end)
 
-hooksecurefunc(PlayerCastingBarFrame, "SetScale", function()
-    if EditModeManagerFrame.editModeActive then
-        BetterBlizzFramesDB.playerCastBarScale = PlayerCastingBarFrame:GetScale()
-    end
-
-    if not PlayerCastingBarFrame.isUpdating then
+local function PlayerCastingBarUpdateNextFrame()
+    if PlayerCastingBarFrame.isUpdating then return end
+    C_Timer.After(0, function()
+        if EditModeManagerFrame and EditModeManagerFrame.editModeActive then
+            BetterBlizzFramesDB.playerCastBarScale = PlayerCastingBarFrame:GetScale()
+        end
         PlayerCastingBarFrame.isUpdating = true
         PlayerCastingBarFrameMiscAdjustments()
         PlayerCastingBarFrame.isUpdating = false
-    end
-end)
+    end)
+end
+hooksecurefunc(PlayerCastingBarFrame, "SetScale", PlayerCastingBarUpdateNextFrame)
+
 
 local evokerCastbarsHooked
 function BBF.HookCastbarsForEvoker()

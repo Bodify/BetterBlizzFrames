@@ -96,6 +96,8 @@ function BBF.HideFrames()
             HideElementFromActionBars(false, "TargetReticleAnimFrame")
         end
 
+        BBF.HideCompactUnitFrameBackgrounds()
+
         -- Hide target leader icon
         local targetLeaderIconAlpha = BetterBlizzFramesDB.hideTargetLeaderIcon and 0 or 1
         TargetFrame.TargetFrameContent.TargetFrameContentContextual.LeaderIcon:SetAlpha(targetLeaderIconAlpha)
@@ -371,18 +373,75 @@ function BBF.HideFrames()
 
         -- Hide DispelOverlay
         if BetterBlizzFramesDB.hidePartyDispelOverlay then
+            changes.hidePartyDispelOverlay = true
             for i = 1, 8 do
                 for j = 1, 5 do
                     local frame = _G["CompactRaidGroup"..j.."Member"..i]
                     if frame and frame.DispelOverlay then
-                        frame.DispelOverlay:SetAlpha(0)
+                        if not BetterBlizzFramesDB.hidePartyDispelOverlayKeepBorder and not BetterBlizzFramesDB.hidePartyDispelOverlayKeepGradient then
+                            frame.DispelOverlay:SetAlpha(0)
+                        else
+                            frame.DispelOverlay:SetAlpha(1)
+                            if not BetterBlizzFramesDB.hidePartyDispelOverlayKeepBorder then
+                                frame.DispelOverlay.Border:Hide()
+                            else
+                                frame.DispelOverlay.Border:Show()
+                            end
+                            if not BetterBlizzFramesDB.hidePartyDispelOverlayKeepGradient and frame.DispelOverlay.Gradient then
+                                frame.DispelOverlay.Gradient:Hide()
+                            else
+                                frame.DispelOverlay.Gradient:Show()
+                            end
+                            frame.DispelOverlay.Background:Hide()
+                        end
                     end
                 end
             end
             for i = 1, 5 do
                 local frame = _G["CompactPartyFrameMember"..i]
                 if frame and frame.DispelOverlay then
-                    frame.DispelOverlay:SetAlpha(0)
+                    if not BetterBlizzFramesDB.hidePartyDispelOverlayKeepBorder and not BetterBlizzFramesDB.hidePartyDispelOverlayKeepGradient then
+                        frame.DispelOverlay:SetAlpha(0)
+                    else
+                        frame.DispelOverlay:SetAlpha(1)
+                        if not BetterBlizzFramesDB.hidePartyDispelOverlayKeepGradient then
+                            frame.DispelOverlay.Gradient:Hide()
+                        else
+                            frame.DispelOverlay.Gradient:Show()
+                        end
+                        if not BetterBlizzFramesDB.hidePartyDispelOverlayKeepBorder then
+                            frame.DispelOverlay.Border:Hide()
+                        else
+                            frame.DispelOverlay.Border:Show()
+                        end
+                        frame.DispelOverlay.Background:Hide()
+                    end
+                end
+            end
+        elseif changes.hidePartyDispelOverlay then
+            changes.hidePartyDispelOverlay = nil
+            for i = 1, 8 do
+                for j = 1, 5 do
+                    local frame = _G["CompactRaidGroup"..j.."Member"..i]
+                    if frame and frame.DispelOverlay then
+                        frame.DispelOverlay:SetAlpha(1)
+                        if frame.DispelOverlay.Border then
+                            frame.DispelOverlay.Border:Show()
+                        end
+                        if frame.DispelOverlay.Gradient then
+                            frame.DispelOverlay.Gradient:Show()
+                        end
+                        frame.DispelOverlay.Background:Show()
+                    end
+                end
+            end
+            for i = 1, 5 do
+                local frame = _G["CompactPartyFrameMember"..i]
+                if frame and frame.DispelOverlay then
+                    frame.DispelOverlay:SetAlpha(1)
+                    frame.DispelOverlay.Gradient:Show()
+                    frame.DispelOverlay.Border:Show()
+                    frame.DispelOverlay.Background:Show()
                 end
             end
         end
@@ -1061,14 +1120,16 @@ function BBF.HideFrames()
         local function ToggleLibDBIconButtons(show)
             for i = 1, Minimap:GetNumChildren() do
                 local child = select(i, Minimap:GetChildren())
-                local childName = child:GetName() or ""
-                if string.find(childName, "LibDBIcon") or childName == "ExpansionLandingPageMinimapButton" then
-                    if show then
-                        child:Show()
-                        ExpansionLandingPageMinimapButton:SetAlpha(1)
-                    else
-                        child:Hide()
-                        ExpansionLandingPageMinimapButton:SetAlpha(0)
+                if child then
+                    local childName = child:GetName() or ""
+                    if string.find(childName, "LibDBIcon") or childName == "ExpansionLandingPageMinimapButton" then
+                        if show then
+                            child:Show()
+                            ExpansionLandingPageMinimapButton:Show()
+                        else
+                            child:Hide()
+                            ExpansionLandingPageMinimapButton:Hide()
+                        end
                     end
                 end
             end
@@ -1634,3 +1695,63 @@ end
 -- CompactPartyFrameMember1SelectionHighlight:SetParent(hiddenFrame)
 -- CompactPartyFrameMember2SelectionHighlight:SetParent(hiddenFrame)
 -- CompactPartyFrameMember3SelectionHighlight:SetParent(hiddenFrame)
+
+function BBF.HideCompactUnitFrameBackgrounds()
+    if BetterBlizzFramesDB.hideCompactUnitFrameBackground then
+        changes.hideCompactUnitFrameBackground = true
+        
+        -- Hide backgrounds on party frames
+        for i = 1, 5 do
+            local frame = _G["CompactPartyFrameMember"..i]
+            if frame then
+                if frame.background then
+                    frame.background:Hide()
+                end
+                if frame.powerBar and frame.powerBar.background then
+                    frame.powerBar.background:Hide()
+                end
+            end
+        end
+        
+        -- Hide backgrounds on raid frames
+        for i = 1, 40 do
+            local frame = _G["CompactRaidFrame"..i]
+            if frame then
+                if frame.background then
+                    frame.background:Hide()
+                end
+                if frame.powerBar and frame.powerBar.background then
+                    frame.powerBar.background:Hide()
+                end
+            end
+        end
+    elseif changes.hideCompactUnitFrameBackground then
+        changes.hideCompactUnitFrameBackground = nil
+        
+        -- Show backgrounds on party frames
+        for i = 1, 5 do
+            local frame = _G["CompactPartyFrameMember"..i]
+            if frame then
+                if frame.background then
+                    frame.background:Show()
+                end
+                if frame.powerBar and frame.powerBar.background then
+                    frame.powerBar.background:Show()
+                end
+            end
+        end
+        
+        -- Show backgrounds on raid frames
+        for i = 1, 40 do
+            local frame = _G["CompactRaidFrame"..i]
+            if frame then
+                if frame.background then
+                    frame.background:Show()
+                end
+                if frame.powerBar and frame.powerBar.background then
+                    frame.powerBar.background:Show()
+                end
+            end
+        end
+    end
+end

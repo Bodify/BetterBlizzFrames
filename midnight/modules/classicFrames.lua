@@ -980,13 +980,10 @@ local function AdjustAlternateBars()
     AlternatePowerBar.RightBorder:SetPoint("LEFT", AlternatePowerBar.Border, "RIGHT")
 
     if BetterBlizzFramesDB.changeUnitFrameManabarTexture then
-        hooksecurefunc(AlternatePowerBar, "EvaluateUnit", function(self)
-            self:SetStatusBarTexture(BBF.manaTexture)
-            self:SetStatusBarColor(0, 0, 1)
-            if self.PowerBarMask then
-                self.PowerBarMask:Hide()
-            end
-        end)
+        BBF.ApplyTextureChange("mana", AlternatePowerBar, nil, true, false, true)
+        if AlternatePowerBar.PowerBarMask then
+            AlternatePowerBar.PowerBarMask:Hide()
+        end
     else
         --AdjustFramePoint(AlternatePowerBar.PowerBarMask, nil, -1)
         AlternatePowerBar.PowerBarMask:SetPoint("TOPLEFT", AlternatePowerBar, "TOPLEFT", -2, 3)
@@ -1015,10 +1012,7 @@ local function AdjustAlternateBars()
         MonkStaggerBar.Border:SetTexCoord(0, 1, 0, 0.5)
         MonkStaggerBar.Border:SetPoint("TOPLEFT", -17, 0)
 
-        hooksecurefunc(MonkStaggerBar, "EvaluateUnit", function(self)
-            self:SetStatusBarTexture("Interface\\TargetingFrame\\UI-StatusBar")
-            self:SetStatusBarColor(0, 0, 1)
-        end)
+        BBF.ApplyTextureChange("mana", MonkStaggerBar, nil, true, false, true)
     end
 
     -- if class == "DRUID" then
@@ -1060,14 +1054,10 @@ local function AdjustAlternateBars()
         EvokerEbonMightBar.RightBorder:SetTexCoord(0.125, 0, 1, 0)
         EvokerEbonMightBar.RightBorder:SetPoint("LEFT", EvokerEbonMightBar.Border, "RIGHT")
 
-        hooksecurefunc(EvokerEbonMightBar, "EvaluateUnit", function(self)
-            self:SetStatusBarTexture("Interface\\TargetingFrame\\UI-StatusBar")
-            self:SetStatusBarColor(1, 0.5, 0.25)
-
-            if self.PowerBarMask then
-                self.PowerBarMask:Hide()
-            end
-        end)
+        BBF.ApplyTextureChange("mana", EvokerEbonMightBar, nil, true, false, true)
+        if EvokerEbonMightBar.PowerBarMask then
+            EvokerEbonMightBar.PowerBarMask:Hide()
+        end
     end
 
     if class == "DEMONHUNTER" and DemonHunterSoulFragmentsBar then
@@ -1108,28 +1098,13 @@ local function AdjustAlternateBars()
         DemonHunterSoulFragmentsBar.RightBorder:SetTexCoord(0.125, 0, 1, 0)
         DemonHunterSoulFragmentsBar.RightBorder:SetPoint("LEFT", DemonHunterSoulFragmentsBar.Border, "RIGHT")
 
-        local color = { r = 0.11, g = 0.34, b = 0.71 }
-        DemonHunterSoulFragmentsBar.keepFancyManas = BetterBlizzFramesDB.changeUnitFrameManaBarTextureKeepFancy
-        DemonHunterSoulFragmentsBar.bbfPowerToken = DemonHunterSoulFragmentsBar.powerToken or DemonHunterSoulFragmentsBar.powerName
-
         DemonHunterSoulFragmentsBar.CollapsingStarBackground:SetSize(104, 12)
         DemonHunterSoulFragmentsBar.Glow:SetSize(104, 12)
         DemonHunterSoulFragmentsBar.Ready:SetSize(104, 12)
         DemonHunterSoulFragmentsBar.Deplete:SetSize(104, 12)
         DemonHunterSoulFragmentsBar.CollapsingStarDepleteFin:SetSize(104, 12)
 
-        local r, g, b = color.r, color.g, color.b
-
-        hooksecurefunc(DemonHunterSoulFragmentsBar, "EvaluateUnit", function(self)
-            if self.keepFancyManas and fancyManas[self.bbfPowerToken] then return end
-            if self.inVoidMetamorphosis then
-                r, g, b = 0.35, 0.25, 0.73
-            else
-                r, g, b = 0.11, 0.34, 0.71
-            end
-            self:SetStatusBarTexture(BBF.manaTexture)
-            self:SetStatusBarColor(r, g, b)
-        end)
+        BBF.ApplyTextureChange("mana", DemonHunterSoulFragmentsBar, nil, true, false, true)
     end
 
     local classicFrameColorTargets = {

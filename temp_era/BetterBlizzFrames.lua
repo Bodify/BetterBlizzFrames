@@ -1566,7 +1566,7 @@ Frame:SetScript("OnEvent", function(...)
 
     if BetterBlizzFramesDB.reopenOptions then
         --InterfaceOptionsFrame_OpenToCategory(BetterBlizzFrames)
-        Settings.OpenToCategory(BBF.category.ID)
+        Settings.OpenToCategory(BBF.category:GetID())
         BetterBlizzFramesDB.reopenOptions = false
     end
 
@@ -1637,12 +1637,12 @@ SlashCmdList["BBF"] = function(msg)
         if not BBF.category then
             print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: Settings disabled. Likely due to error. Please update your addon.")
             --BBF.InitializeOptions()
-            --Settings.OpenToCategory(BBF.category.ID)
+            --Settings.OpenToCategory(BBF.category:GetID())
         else
             if not BetterBlizzFrames.guiLoaded then
                 BBF.LoadGUI()
             else
-                Settings.OpenToCategory(BBF.category.ID)
+                Settings.OpenToCategory(BBF.category:GetID())
             end
         end
     end

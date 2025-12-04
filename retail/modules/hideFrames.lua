@@ -253,7 +253,7 @@ function BBF.HideFrames()
         end
 
         if BetterBlizzFramesDB.hideActionBar1 then
-            if not MainMenuBar.bbfHidden then
+            if not MainActionBar.bbfHidden then
                 hooksecurefunc(EditModeManagerFrame, "EnterEditMode", function()
                     if InCombatLockdown() then
                         if hiddenBar1 then
@@ -261,7 +261,7 @@ function BBF.HideFrames()
                         end
                         return
                     end
-                    MainMenuBar:SetParent(UIParent)
+                    MainActionBar:SetParent(UIParent)
                     hiddenBar1 = false
                 end)
                 hooksecurefunc(EditModeManagerFrame, "ExitEditMode", function()
@@ -271,11 +271,11 @@ function BBF.HideFrames()
                         end
                         return
                     end
-                    MainMenuBar:SetParent(BBF.hiddenFrame)
+                    MainActionBar:SetParent(BBF.hiddenFrame)
                     hiddenBar1 = true
                 end)
-                MainMenuBar:SetParent(BBF.hiddenFrame)
-                MainMenuBar.bbfHidden = true
+                MainActionBar:SetParent(BBF.hiddenFrame)
+                MainActionBar.bbfHidden = true
                 hiddenBar1 = true
             end
         end
@@ -1014,14 +1014,16 @@ function BBF.HideFrames()
         local function ToggleLibDBIconButtons(show)
             for i = 1, Minimap:GetNumChildren() do
                 local child = select(i, Minimap:GetChildren())
-                local childName = child:GetName() or ""
-                if string.find(childName, "LibDBIcon") or childName == "ExpansionLandingPageMinimapButton" then
-                    if show then
-                        child:Show()
-                        ExpansionLandingPageMinimapButton:Show()
-                    else
-                        child:Hide()
-                        ExpansionLandingPageMinimapButton:Hide()
+                if child then
+                    local childName = child:GetName() or ""
+                    if string.find(childName, "LibDBIcon") or childName == "ExpansionLandingPageMinimapButton" then
+                        if show then
+                            child:Show()
+                            ExpansionLandingPageMinimapButton:Show()
+                        else
+                            child:Hide()
+                            ExpansionLandingPageMinimapButton:Hide()
+                        end
                     end
                 end
             end

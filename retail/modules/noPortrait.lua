@@ -497,7 +497,12 @@ local function MakeNoPortraitMode(frame)
         frameContainer.PortraitMask:SetSize(61,61)
         frameContainer.PortraitMask:ClearAllPoints()
         frameContainer.PortraitMask:SetPoint("CENTER", frameContainer.Portrait, "CENTER", 0, 0)
-        frameContainer.BossPortraitFrameTexture:SetAlpha(0)
+        frameContainer.BossPortraitFrameTexture:SetParent(db.hideRareDragonTexture and BBF.hiddenFrame or frame.noPortraitMode)
+        frameContainer.BossPortraitFrameTexture:SetAtlas("nameplates-icon-elite-gold")
+        frameContainer.BossPortraitFrameTexture:SetSize(15, 15)
+        frameContainer.BossPortraitFrameTexture:ClearAllPoints()
+        frameContainer.BossPortraitFrameTexture:SetPoint("CENTER", hpContainer, "TOPRIGHT", -3.5, -1)
+        frameContainer.BossPortraitFrameTexture:SetDrawLayer("OVERLAY", 7)
 
 
         -- frameContainer.PlayerPortrait:SetSize(62, 62)
@@ -738,6 +743,12 @@ local function MakeNoPortraitMode(frame)
             else
                 FrameAdjustments(frameContainer)
             end
+
+            frameContainer.BossPortraitFrameTexture:SetAtlas("nameplates-icon-elite-gold")
+            frameContainer.BossPortraitFrameTexture:SetSize(15, 15)
+            frameContainer.BossPortraitFrameTexture:ClearAllPoints()
+            frameContainer.BossPortraitFrameTexture:SetPoint("CENTER", hpContainer, "TOPRIGHT", -3.5, -1)
+            frameContainer.BossPortraitFrameTexture:SetDrawLayer("OVERLAY", 7)
 
             local textureToUse
             local bgYOffset
@@ -990,10 +1001,14 @@ local function MakeNoPortraitMode(frame)
         frame.bbfName:SetParent(frame.noPortraitMode)
 
         contentContext.AttackIcon:ClearAllPoints()
-        contentContext.AttackIcon:SetPoint("CENTER", -39, -1)
-        contentContext.AttackIcon:SetSize(15, 15)
+        contentContext.AttackIcon:SetPoint("CENTER", -40, 0)
+        contentContext.AttackIcon:SetSize(14, 15)
         contentContext.AttackIcon:SetDrawLayer("OVERLAY", 7)
-        contentContext.AttackIcon:SetParent(BBF.hiddenFrame)
+        contentContext.AttackIcon:SetAtlas("questlog-questtypeicon-pvp")
+        contentContext.PVPIcon:ClearAllPoints()
+        contentContext.PVPIcon:SetPoint("TOPLEFT", 139, -81)
+        contentContext.PVPIcon:SetScale(0.5)
+        --contentContext.AttackIcon:SetParent(BBF.hiddenFrame)
         contentContext.PlayerPortraitCornerIcon:SetAtlas(nil)
         contentContext.PrestigePortrait:ClearAllPoints()
         contentContext.PrestigePortrait:SetPoint("TOPLEFT", 50, -41)
@@ -1899,24 +1914,35 @@ local function AdjustAlternateBars()
         if not bar.s then
             bar.s = CreateFrame("Frame", nil, bar)
             bar.s:SetFrameStrata("HIGH")
+            bar.s:SetAllPoints(bar)
+        end
+        
+        -- Set frame level above pixel borders if they exist
+        if db.noPortraitPixelBorder and bar.BBFPixelBorder then
+            bar.s:SetFrameLevel(bar.BBFPixelBorder:GetFrameLevel() + 1)
+        else
+            bar.s:SetFrameLevel(bar:GetFrameLevel() + 10)
         end
 
         if centerText then
+            centerText:SetParent(bar.s)
             centerText:ClearAllPoints()
             centerText:SetPoint("CENTER", bar.s, "CENTER", 0, -0.5)
-            centerText:SetParent(bar.s)
+            centerText:Show()
         end
 
         if leftText then
+            leftText:SetParent(bar.s)
             leftText:ClearAllPoints()
             leftText:SetPoint("LEFT", bar.s, "LEFT", 0, -0.5)
-            leftText:SetParent(bar.s)
+            leftText:Show()
         end
 
         if rightText then
+            rightText:SetParent(bar.s)
             rightText:ClearAllPoints()
             rightText:SetPoint("RIGHT", bar.s, "RIGHT", -4, -0.5)
-            rightText:SetParent(bar.s)
+            rightText:Show()
         end
 
         if BetterBlizzFramesDB.changeUnitFrameManabarTexture then
@@ -1941,12 +1967,36 @@ local function AdjustAlternateBars()
                         else
                             r, g, b = 0.11, 0.34, 0.71
                         end
+                        
+                        -- Check for custom power colors if enabled
+                        if BetterBlizzFramesDB.customHealthbarColors and BetterBlizzFramesDB.customPowerColors and BetterBlizzFramesDB.customColorsUnitFrames then
+                            local powerToken = self.powerToken or self.powerName
+                            if powerToken and BBF.GetCustomPowerColor then
+                                local customR, customG, customB = BBF.GetCustomPowerColor(powerToken)
+                                if customR then
+                                    r, g, b = customR, customG, customB
+                                end
+                            end
+                        end
+                        
                         self:SetStatusBarTexture(BBF.manaTexture)
                         self:SetStatusBarColor(r, g, b)
                     end)
                 else
                     hooksecurefunc(bar, "EvaluateUnit", function(self)
                         if bar.keepFancyManas and fancyManas[bar.bbfPowerToken] then return end
+                        
+                        -- Check for custom power colors if enabled
+                        if BetterBlizzFramesDB.customHealthbarColors and BetterBlizzFramesDB.customPowerColors and BetterBlizzFramesDB.customColorsUnitFrames then
+                            local powerToken = self.powerToken or self.powerName
+                            if powerToken and BBF.GetCustomPowerColor then
+                                local customR, customG, customB = BBF.GetCustomPowerColor(powerToken)
+                                if customR then
+                                    r, g, b = customR, customG, customB
+                                end
+                            end
+                        end
+                        
                         self:SetStatusBarTexture(BBF.manaTexture)
                         self:SetStatusBarColor(r, g, b)
                     end)
@@ -2170,8 +2220,18 @@ local function MakeClassicPartyFrame()
             end
         end
 
+        if not frame.bbfPartyCombatUpdate then
+            frame.bbfPartyCombatUpdate = CreateFrame("Frame")
+            frame.bbfPartyCombatUpdate:SetScript("OnEvent", function(self)
+                self:UnregisterEvent("PLAYER_REGEN_ENABLED")
+                hbAdjust()
+            end)
+        end
+
         local function hbAdjust()
             frame.bbfName:SetWidth(76)
+            local needsCombatUpdate = false
+            
             if db.noPortraitPixelBorder then
                 SetBarMask(hpContainer.HealthBar, hpContainer.HealthBarMask, true)
                 SetBarMask(manaBar, manaBar.ManaBarMask, true)
@@ -2183,6 +2243,8 @@ local function MakeClassicPartyFrame()
                     hpContainer.HealthBar:SetSize(76, 18)
                     manaBar:SetPoint("TOPLEFT", hpContainer, "TOPLEFT", -2, -13)
                     manaBar:SetSize(76, 5)
+                else
+                    needsCombatUpdate = true
                 end
 
                 auras:ClearAllPoints()
@@ -2197,6 +2259,8 @@ local function MakeClassicPartyFrame()
                     manaBar:ClearAllPoints()
                     manaBar:SetPoint("TOPLEFT", frame, "TOPLEFT", 40, -27)
                     manaBar:SetSize(78, 8)
+                else
+                    needsCombatUpdate = true
                 end
 
                 hpContainer.HealthBarMask:SetSize(134, 24)
@@ -2217,6 +2281,12 @@ local function MakeClassicPartyFrame()
             overlay.RoleIcon:SetPoint("BOTTOMLEFT", 38.5, 35.5)
 
             BBF.UpdateNoPortraitText(nil, "party")
+            
+            if needsCombatUpdate then
+                if not frame.bbfPartyCombatUpdate:IsEventRegistered("PLAYER_REGEN_ENABLED") then
+                    frame.bbfPartyCombatUpdate:RegisterEvent("PLAYER_REGEN_ENABLED")
+                end
+            end
         end
 
         hbAdjust()

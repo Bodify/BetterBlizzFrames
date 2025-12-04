@@ -804,7 +804,7 @@ function BBF.DarkmodeFrames(bypass)
 
     -- Actionbars
     if BetterBlizzFramesDB.darkModeActionBars or BBF.actionBarColorEnabled then
-        local actionbarsplits = _G.MainMenuBar
+        local actionbarsplits = _G.MainActionBar
         if actionbarsplits then
             for _, v in pairs({actionbarsplits:GetChildren()}) do
                 applySettings(v.TopEdge, desaturationValue, actionBarColor)
@@ -829,7 +829,7 @@ function BBF.DarkmodeFrames(bypass)
         applySettings(StatusTrackingBarManager.SecondaryStatusTrackingBarContainer.BarFrameTexture, desaturationValue, actionBarColor)
 
         for _, v in pairs({
-            MainMenuBar.BorderArt,
+            MainActionBar.BorderArt,
             ActionButton1.RightDivider,
             ActionButton2.RightDivider,
             ActionButton3.RightDivider,
@@ -846,8 +846,8 @@ function BBF.DarkmodeFrames(bypass)
         end
 
         for _, v in pairs({
-            MainMenuBar.EndCaps.LeftEndCap,
-            MainMenuBar.EndCaps.RightEndCap,
+            MainActionBar.EndCaps.LeftEndCap,
+            MainActionBar.EndCaps.RightEndCap,
         }) do
             applySettings(v, desaturationValue, birdColor, true)
         end

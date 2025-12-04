@@ -718,20 +718,22 @@ function BBF.HideFrames()
         local function ToggleLibDBIconButtons(show)
             for i = 1, Minimap:GetNumChildren() do
                 local child = select(i, Minimap:GetChildren())
-                local childName = child:GetName() or ""
-                if string.find(childName, "LibDBIcon") or childName == "ExpansionLandingPageMinimapButton" then
-                    if show then
-                        child:Show()
-                        --ExpansionLandingPageMinimapButton:Show()
-                        --MiniMapTrackingButton:Show()
-                        MiniMapTracking:Show()
-                        --MiniMapWorldMapButton:Show()
-                    else
-                        child:Hide()
-                        --ExpansionLandingPageMinimapButton:Hide()
-                        --MiniMapTrackingButton:Hide()
-                        MiniMapTracking:Hide()
-                        --MiniMapWorldMapButton:Hide()
+                if child then
+                    local childName = child:GetName() or ""
+                    if string.find(childName, "LibDBIcon") or childName == "ExpansionLandingPageMinimapButton" then
+                        if show then
+                            child:Show()
+                            --ExpansionLandingPageMinimapButton:Show()
+                            --MiniMapTrackingButton:Show()
+                            MiniMapTracking:Show()
+                            --MiniMapWorldMapButton:Show()
+                        else
+                            child:Hide()
+                            --ExpansionLandingPageMinimapButton:Hide()
+                            --MiniMapTrackingButton:Hide()
+                            MiniMapTracking:Hide()
+                            --MiniMapWorldMapButton:Hide()
+                        end
                     end
                 end
             end

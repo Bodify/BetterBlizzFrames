@@ -1,3 +1,29 @@
+# BetterBlizzFrames 1.8.3 & 1.8.3b
+## Note
+- Very busy, lots of work. If you want these Custom Color settings for Era/MoP please be vocal and let me know and I'll try get them done soon but for now only Retail & Midnight.
+## Retail & Midnight
+### New
+- Custom Colors setting under "All Frames". Lets you recolor health, mana and background color for everything.
+- Hide RaidFrame background setting.
+- Midnight: Right-click options for "Hide Dispel Overlay" setting to keep border and/or gradient.
+### Tweak
+- Adjust Simple Castbar setting for Player Castbar to move icon up slightly to properly align left side with the slimmer castbar.
+- Misc setting "UnitFrame Background Color" has been moved to inside of "Custom Color Health/Mana" on the general page and also been split up into health & mana.
+- Elite Icon now present on No Portrait settings. (Hide option still available if you want it gone)
+- Delete unused Library included.
+- Fix opening settings causing errors on Midnight Beta due to new changes from Blizzard.
+### Bugfix
+- 11.2.7: Fix for Blizzard renaming the main action bar causing havoc.
+- Wrath/TitanForge: Fix toc file not loading all files.
+- Classic Frames: Fixed errors (by removal) caused by ToT Debuff refresh updates since Blizzard removed it.
+- Fix No Portrait settings causing text on alt manabar to not be visible.
+- Fix Player Castbar Icon X/Y Sliders not being setup correctly and adjusting wrong and irrelevant values. Should now be working properly.
+- Fix a protected call issue caused by a hook into Player Castbars' SetScale function when "Cast Bar Underneath" was selected in Edit Mode on PlayerFrame. This would cause a lua error in Edit Mode when opening CDM settings and possibly other things. Recommend turning that off if you have it on regardless since you can adjust it with BBF anyway.
+- Midnight: Fix up cast colors for Midnight
+- Midnight: Fix up interrupt color/icon stuff for Midnight
+- Fix elite dragon texture on No Portrait settings.
+
+
 # BetterBlizzFrames 1.8.2b
 ## All versions
 ### Tweak

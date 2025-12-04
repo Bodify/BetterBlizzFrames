@@ -291,7 +291,7 @@ StaticPopupDialogs["BBF_CONFIRM_PVP_WHITELIST"] = {
         end
         deepMergeTables(BetterBlizzFramesDB.auraWhitelist, profileData)
         BBF.auraWhitelistRefresh()
-        Settings.OpenToCategory(BBF.aurasSubCategory)
+        Settings.OpenToCategory(BBF.category:GetID(), BBF.aurasSubCategory)
     end,
     timeout = 0,
     whileDead = true,
@@ -5899,8 +5899,7 @@ local function guiFrameAuras()
     guiFrameAuras.parent = BetterBlizzFrames.name
     --InterfaceOptions_AddCategory(guiFrameAuras)
     local aurasSubCategory = Settings.RegisterCanvasLayoutSubcategory(BBF.category, guiFrameAuras, guiFrameAuras.name, guiFrameAuras.name)
-    aurasSubCategory.ID = guiFrameAuras.name;
-    BBF.aurasSubCategory = aurasSubCategory.ID
+    BBF.aurasSubCategory = guiFrameAuras.name
     CreateTitle(guiFrameAuras)
 
     local bgImg = guiFrameAuras:CreateTexture(nil, "BACKGROUND")
@@ -7223,7 +7222,6 @@ local function guiCustomCode()
     guiCustomCode.parent = BetterBlizzFrames.name
     --InterfaceOptions_AddCategory(guiCustomCode)
     local guiCustomCodeSubCategory = Settings.RegisterCanvasLayoutSubcategory(BBF.category, guiCustomCode, guiCustomCode.name, guiCustomCode.name)
-    guiCustomCodeSubCategory.ID = guiCustomCode.name;
     BBF.guiCustomCode = guiCustomCode.name
     CreateTitle(guiCustomCode)
 
@@ -7824,7 +7822,6 @@ function BBF.InitializeOptions()
         BetterBlizzFrames.name = "Better|cff00c0ffBlizz|rFrames |A:gmchat-icon-blizz:16:16|a"
         --InterfaceOptions_AddCategory(BetterBlizzFrames)
         BBF.category = Settings.RegisterCanvasLayoutCategory(BetterBlizzFrames, BetterBlizzFrames.name, BetterBlizzFrames.name)
-        BBF.category.ID = BetterBlizzFrames.name
         Settings.RegisterAddOnCategory(BBF.category)
 
         local titleText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFont_Gigantic")
@@ -7867,9 +7864,9 @@ function BBF.LoadGUI()
     guiMidnight()
     BetterBlizzFrames.guiLoaded = true
 
-    Settings.OpenToCategory(BBF.category.ID)
-    Settings.OpenToCategory(BBF.guiSupport)
-    Settings.OpenToCategory(BBF.category.ID)
+    Settings.OpenToCategory(BBF.category:GetID())
+    Settings.OpenToCategory(BBF.category:GetID(), BBF.guiSupport)
+    Settings.OpenToCategory(BBF.category:GetID())
 end
 
 
@@ -8004,7 +8001,7 @@ function BBF.CreateIntroMessageWindow()
         if not BetterBlizzFrames.guiLoaded then
             BBF.LoadGUI()
         else
-            Settings.OpenToCategory(BBF.category.ID)
+            Settings.OpenToCategory(BBF.category:GetID())
         end
     end)
     CreateTooltipTwo(buttonLast, "Exit, No Profile", "Exit and customize everything yourself.", nil, "ANCHOR_TOP")
@@ -8015,7 +8012,7 @@ function BBF.CreateIntroMessageWindow()
         if not BetterBlizzFrames.guiLoaded then
             BBF.LoadGUI()
         else
-            Settings.OpenToCategory(BBF.category.ID)
+            Settings.OpenToCategory(BBF.category:GetID())
         end
     end)
 
