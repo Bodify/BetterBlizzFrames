@@ -1,4 +1,4 @@
-## Interface: 40402
+## Interface: 30405, 38000
 ## Title: Better|cff00c0ffBlizz|rFrames
 ## Notes: More options for Blizzard frames. Aura filtering, Party castbars, Combat indicator, Dark Mode etc.
 ## Version: 1.8.3b

@@ -1,0 +1,14 @@
+package-as: BetterBlizzFrames
+
+ignore:
+  - .github
+  - .gitignore
+  - "*.md"
+  - libs/LibSerialize/tests.lua
+  - libs/LibSerialize/archive
+  - libs/LibStub/tests
+  - libs/LibGetFrame/LibStub/tests
+
+manual-changelog:
+  filename: changelog.md
+  markup-type: markdown
