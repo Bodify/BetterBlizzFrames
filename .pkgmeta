@@ -3,6 +3,7 @@ package-as: BetterBlizzFrames
 ignore:
   - .github
   - .gitignore
+  - .vscode
   - "*.md"
 
 manual-changelog:
