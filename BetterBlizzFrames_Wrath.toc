@@ -1,10 +1,12 @@
 ## Interface: 30405, 38000
 ## Title: Better|cff00c0ffBlizz|rFrames
 ## Notes: More options for Blizzard frames. Aura filtering, Party castbars, Combat indicator, Dark Mode etc.
+## Author: Bodify
 ## Version: 1.8.3b
 ## SavedVariables: BetterBlizzFramesDB
 ## IconAtlas: gmchat-icon-blizz
-## Author: Bodify
+## X-Curse-Project-ID: 940950
+## X-Wago-ID: qGZR02Gd
 
 init.lua
 
