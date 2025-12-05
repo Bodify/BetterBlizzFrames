@@ -4,9 +4,6 @@ ignore:
   - .github
   - .gitignore
   - "*.md"
-  - libs/LibSerialize/tests.lua
-  - libs/LibSerialize/archive
-  - libs/LibStub/tests
 
 manual-changelog:
   filename: changelog.md

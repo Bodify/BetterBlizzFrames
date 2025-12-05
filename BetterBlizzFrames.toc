@@ -10,7 +10,7 @@
 
 init.lua
 
-retail\embeds.xml
+embeds.xml
 
 retail\temp_tww.lua
 

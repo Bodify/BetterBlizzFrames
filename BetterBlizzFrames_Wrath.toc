@@ -10,7 +10,7 @@
 
 init.lua
 
-temp_cata\embeds.xml
+embeds.xml
 
 temp_cata\modules\darkmode.lua
 temp_cata\modules\nameFix.lua
