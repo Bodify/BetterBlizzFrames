@@ -1810,6 +1810,38 @@ function BBF.AllNameChanges()
     TargetFrameToTNameChanges(TargetFrameToT)
     FocusFrameToTNameChanges(FocusFrameToT)
 
+
+    -- local function ApplyClassColor(frame)
+    --     if frame.unit and (UnitIsPlayer(frame.unit) or C_LFGInfo.IsInLFGFollowerDungeon()) then
+    --         local _, class = UnitClass(frame.unit)
+    --         if class then
+    --             local color = RAID_CLASS_COLORS[class]
+    --             if color then
+    --                 frame.name:SetTextColor(color.r, color.g, color.b)
+    --             end
+    --         end
+    --     end
+    -- end
+
+    -- if classColorPartyNames and not BBF.hookedPartyNamesColors then
+    --     for i = 1, 5 do
+    --         local frame = _G["CompactPartyFrameMember" .. i]
+    --         ApplyClassColor(frame)
+    --         hooksecurefunc(frame.name, "SetVertexColor", function(self)
+    --             ApplyClassColor(frame)
+    --         end)
+    --     end
+
+    --     for i = 1, 4 do
+    --         local frame = PartyFrame["MemberFrame"..i]
+    --         ApplyClassColor(frame)
+    --         hooksecurefunc(frame.name, "SetVertexColor", function(self)
+    --             ApplyClassColor(frame)
+    --         end)
+    --     end
+    --     BBF.hookedPartyNamesColors = true
+    -- end
+
     if not EditModeManagerFrame:UseRaidStylePartyFrames() then
         local frames = {
             PartyFrame.MemberFrame1,

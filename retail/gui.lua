@@ -1474,6 +1474,14 @@ local function CreateTooltipTwo(widget, title, mainText, subText, anchor, cvarNa
             end
             GameTooltip:AddLine(tooltipText, 1, 1, 1, true)
         end
+
+        if title == "Pixel Border on RaidFrames" then
+            local green = "|cff32f795"
+            local reset = "|r"
+            local activeSize = BetterBlizzFramesDB.raidFramePixelBorderSize and "1.5px" or "1px"
+            local tooltipText = "\n" .. green .. "Right-click to toggle between 1px and 1.5px. Active: " .. activeSize .. reset
+            GameTooltip:AddLine(tooltipText, 1, 1, 1, true)
+        end
         -- Set the subtext
         if subText then
             GameTooltip:AddLine("____________________________", 0.8, 0.8, 0.8, true)
@@ -3787,7 +3795,7 @@ local function guiGeneralTab()
     CreateTooltipTwo(hidePetHitIndicator, "Hide Pet Hit Indicator", "Hide the health loss/gain numbers on PetFrame Portrait.")
 
     local partyFrameText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    partyFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 0, -427)
+    partyFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 0, -423)
     partyFrameText:SetText("Party Frame")
     partyFrameText:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\Expressway_Free.ttf", 16)
     partyFrameText:SetTextColor(1,1,1)
@@ -3860,9 +3868,29 @@ local function guiGeneralTab()
 ]=]
 
 
-    local hidePartyFramesInArena = CreateCheckbox("hidePartyFramesInArena", "Hide Party in Arena (GEX)", BetterBlizzFrames, nil, BBF.HidePartyInArena)
+    local hidePartyFramesInArena = CreateCheckbox("hidePartyFramesInArena", "Hide Party in Arena", BetterBlizzFrames, nil, BBF.HidePartyInArena)
     hidePartyFramesInArena:SetPoint("TOPLEFT", showPartyCastbar, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(hidePartyFramesInArena, "Hide Party Frames in Arena. Made with GladiusEx Party Frames in mind.")
+
+    local raidFramePixelBorder = CreateCheckbox("raidFramePixelBorder", "Pixel Border", BetterBlizzFrames)
+    raidFramePixelBorder:SetPoint("LEFT", hidePartyFramesInArena.text, "RIGHT", 0, 0)
+    raidFramePixelBorder:HookScript("OnClick", function(self)
+        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+    end)
+    raidFramePixelBorder:HookScript("OnMouseDown", function(self, button)
+        if button == "RightButton" then
+            if not BetterBlizzFramesDB.raidFramePixelBorderSize then
+                BetterBlizzFramesDB.raidFramePixelBorderSize = 1.5
+            else
+                BetterBlizzFramesDB.raidFramePixelBorderSize = nil
+            end
+            if GameTooltip:IsShown() and GameTooltip:GetOwner() == self then
+                self:GetScript("OnEnter")(self)
+            end
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        end
+    end)
+    CreateTooltipTwo(raidFramePixelBorder, "Pixel Border on RaidFrames", "Enables pixel border on Party and RaidFrames and also removes original background texture and replaces it with the selected one in Font & Textures.")
 
     local hidePartyNames = CreateCheckbox("hidePartyNames", "Hide Names", BetterBlizzFrames, nil, BBF.AllNameChanges)
     hidePartyNames:SetPoint("TOPLEFT", hidePartyFramesInArena, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
@@ -3890,6 +3918,13 @@ local function guiGeneralTab()
     local hideRaidFrameContainerBorder = CreateCheckbox("hideRaidFrameContainerBorder", "Hide Container Border", BetterBlizzFrames, nil, BBF.HideFrames)
     hideRaidFrameContainerBorder:SetPoint("TOPLEFT", hideRaidFrameManager, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(hideRaidFrameContainerBorder, "Hide CompactRaidFrame Container Border", "Hide the thick Border around all the raid frame members.\n\nNote: This needs to have \"Border\" enabled in Blizzard settings for RaidFrames otherwise it does nothing.\n\nThis lets you keep \"Border\" enabled in Blizzard settings for a thin border around each party member but removes the thick one surrounding all of them.")
+
+    local newRaidFrameRoleIcons = CreateCheckbox("newRaidFrameRoleIcons", "New Role Icons", BetterBlizzFrames)
+    newRaidFrameRoleIcons:SetPoint("LEFT", hideRaidFrameContainerBorder.Text, "RIGHT", 0, 0)
+    CreateTooltipTwo(newRaidFrameRoleIcons, "New Role Icons", "Replace the party role icons with the more modern ones.")
+    newRaidFrameRoleIcons:HookScript("OnClick", function(self)
+        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+    end)
 
     local partyFrameScale = CreateSlider(BetterBlizzFrames, "Party Frame Scale", 0.7, 1.7, 0.01, "partyFrameScale", nil, 120)
     partyFrameScale:SetPoint("TOPLEFT", hideRaidFrameContainerBorder, "BOTTOMLEFT", 15, -9)
@@ -4545,7 +4580,7 @@ local function guiGeneralTab()
     end)
 
     customHealthbarColors.extendedSettings = CreateFrame("Frame", nil, BetterBlizzFrames, "DefaultPanelFlatTemplate")
-    customHealthbarColors.extendedSettings:SetSize(345, 510)
+    customHealthbarColors.extendedSettings:SetSize(345, 560)
     customHealthbarColors.extendedSettings:SetPoint("TOPLEFT", classColorFrames, "BOTTOMLEFT", 0, -10)
     customHealthbarColors.extendedSettings:SetFrameStrata("DIALOG")
     customHealthbarColors.extendedSettings:SetIgnoreParentAlpha(true)
@@ -4612,7 +4647,7 @@ local function guiGeneralTab()
     clrFx.customColorsHeader = clrFx:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     clrFx.customColorsHeader:SetPoint("TOPLEFT", clrFx, "TOPLEFT", 11, -28)
     clrFx.customColorsHeader:SetText("Custom Colors")
-    clrFx.customColorsHeader:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\Expressway_Free.ttf", 13)
+    clrFx.customColorsHeader:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\Expressway_Free.ttf", 14)
     clrFx.customColorsHeader:SetTextColor(1, 1, 1)
 
     clrFx.customColorsUnitFrames = CreateCheckbox("customColorsUnitFrames", "Enable on UnitFrames", clrFx)
@@ -4974,8 +5009,20 @@ local function guiGeneralTab()
     clrFx.unitFrameBgTextureManaColor:SetPoint("LEFT", clrFx.unitFrameBgTextureColor.text, "RIGHT", 4, 0)
     CreateTooltipTwo(clrFx.unitFrameBgTextureManaColor, "Mana Bar Background Color", "Left-click to change.\n\n|cff32f795Shift+Right-click to reset to default.|r")
 
+    clrFx.unitFrameBgTexture = CreateTextureDropdown(
+        "unitFrameBgTexture",
+        clrFx,
+        "Select Texture",
+        "unitFrameBgTexture",
+        function(arg1)
+            BBF.UpdateCustomTextures()
+            BBF.UnitFrameBackgroundTexture()
+        end,
+        { anchorFrame = clrFx.unitFrameBgTextureColor, x = 2, y = 4, label = "Texture" }
+    )
+
     clrFx.changePartyRaidFrameBackgroundColor = CreateCheckbox("changePartyRaidFrameBackgroundColor", "Change Party/RaidFrame Background Color", clrFx)
-    clrFx.changePartyRaidFrameBackgroundColor:SetPoint("TOPLEFT", clrFx.unitFrameBgTextureColor, "BOTTOMLEFT", -16, pixelsBetweenBoxes-5)
+    clrFx.changePartyRaidFrameBackgroundColor:SetPoint("TOPLEFT", clrFx.unitFrameBgTextureColor, "BOTTOMLEFT", -16, pixelsBetweenBoxes-31)
     CreateTooltipTwo(clrFx.changePartyRaidFrameBackgroundColor, "Change Party/RaidFrame Background Color", "Enable custom background color for Party and Raid frames.")
 
     clrFx.partyRaidFrameBackgroundHealthColor = CreateColorBox(clrFx, "partyRaidFrameBackgroundHealthColor", "Health BG", function() BBF.SetCompactUnitFramesBackground() end)
@@ -4986,28 +5033,62 @@ local function guiGeneralTab()
     clrFx.partyRaidFrameBackgroundManaColor:SetPoint("LEFT", clrFx.partyRaidFrameBackgroundHealthColor.text, "RIGHT", 4, 0)
     CreateTooltipTwo(clrFx.partyRaidFrameBackgroundManaColor, "Party/Raid Mana Bar Background Color", "Left-click to change.\n\n|cff32f795Shift+Right-click to reset to default.|r")
 
+    clrFx.raidFrameBgTexture = CreateTextureDropdown(
+        "raidFrameBgTexture",
+        clrFx,
+        "Select Texture",
+        "raidFrameBgTexture",
+        function(arg1)
+            BBF.UpdateCustomTextures()
+            BBF.SetCompactUnitFramesBackground()
+        end,
+        { anchorFrame = clrFx.partyRaidFrameBackgroundHealthColor, x = 2, y = 4, label = "Texture" }
+    )
+
     clrFx.addUnitFrameBgTexture:HookScript("OnClick", function(self)
         if self:GetChecked() then
             clrFx.unitFrameBgTextureColor:SetAlpha(1)
             clrFx.unitFrameBgTextureManaColor:SetAlpha(1)
+            clrFx.unitFrameBgTexture:SetEnabled(true)
         else
             clrFx.unitFrameBgTextureColor:SetAlpha(0.5)
             clrFx.unitFrameBgTextureManaColor:SetAlpha(0.5)
+            clrFx.unitFrameBgTexture:SetEnabled(false)
         end
         BBF.UnitFrameBackgroundTexture()
+        BBF.UpdateCustomTextures()
+
+        if BBF.changeUnitFrameBackgroundColorTexture then
+            BBF.changeUnitFrameBackgroundColorTexture:SetChecked(self:GetChecked())
+            if BBF.unitFrameBgTextureDropdown then
+                BBF.unitFrameBgTextureDropdown:SetEnabled(self:GetChecked())
+            end
+        end
     end)
+    BBF.addUnitFrameBgTexture = clrFx.addUnitFrameBgTexture
 
     clrFx.changePartyRaidFrameBackgroundColor:HookScript("OnClick", function(self)
         if self:GetChecked() then
             clrFx.partyRaidFrameBackgroundHealthColor:SetAlpha(1)
             clrFx.partyRaidFrameBackgroundManaColor:SetAlpha(1)
+            clrFx.raidFrameBgTexture:SetEnabled(true)
         else
             clrFx.partyRaidFrameBackgroundHealthColor:SetAlpha(0.5)
             clrFx.partyRaidFrameBackgroundManaColor:SetAlpha(0.5)
+            clrFx.raidFrameBgTexture:SetEnabled(false)
         end
         BBF.SetCompactUnitFramesBackground()
         BBF.UpdateFrames()
+        BBF.UpdateCustomTextures()
+
+        if BBF.changePartyRaidFrameBackgroundColorTexture then
+            BBF.changePartyRaidFrameBackgroundColorTexture:SetChecked(self:GetChecked())
+            if BBF.raidFrameBgTextureDropdown then
+                BBF.raidFrameBgTextureDropdown:SetEnabled(self:GetChecked())
+            end
+        end
     end)
+    BBF.changePartyRaidFrameBackgroundColor = clrFx.changePartyRaidFrameBackgroundColor
 
     clrFx.overrideClassColors:HookScript("OnClick", function(self)
         local enabled = self:GetChecked()
@@ -6918,7 +6999,7 @@ local function guiFrameLook()
 
     local howToImport = guiFrameLook:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     howToImport:SetFont("Interface\\AddOns\\BetterBlizzFrames\\media\\Expressway_Free.ttf", 16)
-    howToImport:SetPoint("CENTER", mainGuiAnchor, "BOTTOMLEFT", 420, -290)
+    howToImport:SetPoint("CENTER", mainGuiAnchor, "BOTTOMLEFT", 415, -365)
     howToImport:SetText("How to import a custom font/texture:")
 
     local howStepOne = guiFrameLook:CreateFontString(nil, "OVERLAY", "GameFontNormal")
@@ -7343,7 +7424,7 @@ local function guiFrameLook()
         function(arg1)
             BBF.UpdateCustomTextures()
         end,
-        { anchorFrame = changeUnitFrameHealthbarTexture, x = 5, y = 1, label = "Texture" }
+        { anchorFrame = changeUnitFrameHealthbarTexture, x = 5, y = 3, label = "Texture" }
     )
 
     changeUnitFrameHealthbarTexture:HookScript("OnClick", function(self)
@@ -7374,7 +7455,7 @@ local function guiFrameLook()
         function(arg1)
             BBF.UpdateCustomTextures()
         end,
-        { anchorFrame = changeUnitFrameManabarTexture, x = 5, y = 1, label = "Texture" }
+        { anchorFrame = changeUnitFrameManabarTexture, x = 5, y = 3, label = "Texture" }
     )
     changeUnitFrameManabarTexture:HookScript("OnClick", function(self)
         unitFrameManabarTexture:SetEnabled(self:GetChecked())
@@ -7400,7 +7481,7 @@ local function guiFrameLook()
             function(arg1)
                 BBF.UpdateCustomTextures()
             end,
-            { anchorFrame = changeUnitFrameNameBgTexture, x = 5, y = 1, label = "Texture" }
+            { anchorFrame = changeUnitFrameNameBgTexture, x = 5, y = 3, label = "Texture" }
         )
         changeUnitFrameNameBgTexture:HookScript("OnClick", function(self)
             unitFrameNameBgTexture:SetEnabled(self:GetChecked())
@@ -7424,7 +7505,7 @@ local function guiFrameLook()
         function(arg1)
             BBF.UpdateCustomTextures()
         end,
-        { anchorFrame = changeUnitFrameCastbarTexture, x = 5, y = 1, label = "Texture" }
+        { anchorFrame = changeUnitFrameCastbarTexture, x = 5, y = 3, label = "Texture" }
     )
     changeUnitFrameCastbarTexture:HookScript("OnClick", function(self)
         unitFrameCastbarTexture:SetEnabled(self:GetChecked())
@@ -7435,8 +7516,68 @@ local function guiFrameLook()
     end)
     unitFrameCastbarTexture:SetEnabled(changeUnitFrameCastbarTexture:GetChecked())
 
+    local changeUnitFrameBackgroundTexture = CreateCheckbox("addUnitFrameBgTexture", "Change UnitFrame Background Texture", guiFrameLook)
+    changeUnitFrameBackgroundTexture:SetPoint("TOPLEFT", changeUnitFrameCastbarTexture, "BOTTOMLEFT", 0, -25)
+    CreateTooltipTwo(changeUnitFrameBackgroundTexture, "Change UnitFrame Background Texture","Changes the background texture and background color on Player, Target, Focus, and Pet frames.")
+
+    local unitFrameBgTexture = CreateTextureDropdown(
+        "unitFrameBgTexture",
+        guiFrameLook,
+        "Select Texture",
+        "unitFrameBgTexture",
+        function(arg1)
+            BBF.UpdateCustomTextures()
+            BBF.UnitFrameBackgroundTexture()
+        end,
+        { anchorFrame = changeUnitFrameBackgroundTexture, x = 5, y = 3, label = "Texture" }
+    )
+
+    local unitFrameBgTextureColorFL = CreateColorBox(guiFrameLook, "unitFrameBgTextureColor", "Health BG", function() BBF.UnitFrameBackgroundTexture() end)
+    unitFrameBgTextureColorFL:SetPoint("LEFT", unitFrameBgTexture, "RIGHT", 10, 0)
+    CreateTooltipTwo(unitFrameBgTextureColorFL, "Health Bar Background Color", "Left-click to change.\n\n|cff32f795Shift+Right-click to reset to default.|r")
+
+    local unitFrameBgTextureManaColorFL = CreateColorBox(guiFrameLook, "unitFrameBgTextureManaColor", "Mana BG", function() BBF.UnitFrameBackgroundTexture() end)
+    unitFrameBgTextureManaColorFL:SetPoint("LEFT", unitFrameBgTextureColorFL.text, "RIGHT", 4, 0)
+    CreateTooltipTwo(unitFrameBgTextureManaColorFL, "Mana Bar Background Color", "Left-click to change.\n\n|cff32f795Shift+Right-click to reset to default.|r")
+
+    changeUnitFrameBackgroundTexture:HookScript("OnClick", function(self)
+        local alpha = self:GetChecked() and 1 or 0.5
+        unitFrameBgTextureColorFL:SetAlpha(alpha)
+        unitFrameBgTextureManaColorFL:SetAlpha(alpha)
+        unitFrameBgTexture:SetEnabled(self:GetChecked())
+        BBF.UpdateCustomTextures()
+        BBF.UnitFrameBackgroundTexture()
+        BBF.UpdateFrames()
+        
+        if BBF.addUnitFrameBgTexture then
+            BBF.addUnitFrameBgTexture:SetChecked(self:GetChecked())
+            if BBF.addUnitFrameBgTexture.parent then
+                local clrFx = BBF.addUnitFrameBgTexture.parent
+                if clrFx.unitFrameBgTextureColor then
+                    clrFx.unitFrameBgTextureColor:SetAlpha(alpha)
+                end
+                if clrFx.unitFrameBgTextureManaColor then
+                    clrFx.unitFrameBgTextureManaColor:SetAlpha(alpha)
+                end
+                if clrFx.unitFrameBgTexture then
+                    clrFx.unitFrameBgTexture:SetEnabled(self:GetChecked())
+                end
+            end
+        end
+        
+        if not self:GetChecked() then
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        end
+    end)
+    BBF.changeUnitFrameBackgroundColorTexture = changeUnitFrameBackgroundTexture
+    BBF.unitFrameBgTextureDropdown = unitFrameBgTexture
+    unitFrameBgTexture:SetEnabled(changeUnitFrameBackgroundTexture:GetChecked())
+    local unitFrameBgAlpha = changeUnitFrameBackgroundTexture:GetChecked() and 1 or 0.5
+    unitFrameBgTextureColorFL:SetAlpha(unitFrameBgAlpha)
+    unitFrameBgTextureManaColorFL:SetAlpha(unitFrameBgAlpha)
+
     local changeRaidFrameHealthbarTexture = CreateCheckbox("changeRaidFrameHealthbarTexture", "Change RaidFrame Healthbar Texture", guiFrameLook)
-    changeRaidFrameHealthbarTexture:SetPoint("TOPLEFT", changeUnitFrameManabarTexture, "BOTTOMLEFT", 0, -90)
+    changeRaidFrameHealthbarTexture:SetPoint("TOPLEFT", changeUnitFrameBackgroundTexture, "BOTTOMLEFT", 0, -40)
     CreateTooltipTwo(changeRaidFrameHealthbarTexture, "Change RaidFrame Healthbar Texture","Changes the healthbar texture on the RaidFrames")
 
     local raidFrameHealthbarTexture = CreateTextureDropdown(
@@ -7447,7 +7588,7 @@ local function guiFrameLook()
         function(arg1)
             BBF.UpdateCustomTextures()
         end,
-        { anchorFrame = changeRaidFrameHealthbarTexture, x = 5, y = 1, label = "Texture" }
+        { anchorFrame = changeRaidFrameHealthbarTexture, x = 5, y = 3, label = "Texture" }
     )
 
     changeRaidFrameHealthbarTexture:HookScript("OnClick", function(self)
@@ -7471,7 +7612,7 @@ local function guiFrameLook()
         function(arg1)
             BBF.UpdateCustomTextures()
         end,
-        { anchorFrame = changeRaidFrameManabarTexture, x = 5, y = 1, label = "Texture" }
+        { anchorFrame = changeRaidFrameManabarTexture, x = 5, y = 3, label = "Texture" }
     )
 
     changeRaidFrameManabarTexture:HookScript("OnClick", function(self)
@@ -7481,17 +7622,65 @@ local function guiFrameLook()
     raidFrameManabarTexture:SetEnabled(changeRaidFrameManabarTexture:GetChecked())
 
 
+    local changePartyRaidFrameBackgroundColor = CreateCheckbox("changePartyRaidFrameBackgroundColor", "Change RaidFrame Background Texture", guiFrameLook)
+    changePartyRaidFrameBackgroundColor:SetPoint("TOPLEFT", changeRaidFrameManabarTexture, "BOTTOMLEFT", 0, -25)
+    CreateTooltipTwo(changePartyRaidFrameBackgroundColor, "Change RaidFrame Background Texture","Changes the background texture and background color on the RaidFrames")
 
+    local raidFrameBgTexture = CreateTextureDropdown(
+        "raidFrameBgTexture",
+        guiFrameLook,
+        "Select Texture",
+        "raidFrameBgTexture",
+        function(arg1)
+            BBF.UpdateCustomTextures()
+            BBF.SetCompactUnitFramesBackground()
+        end,
+        { anchorFrame = changePartyRaidFrameBackgroundColor, x = 5, y = 3, label = "Texture" }
+    )
 
+    local partyRaidFrameBackgroundHealthColorFL = CreateColorBox(guiFrameLook, "partyRaidFrameBackgroundHealthColor", "Health BG", function() BBF.SetCompactUnitFramesBackground() end)
+    partyRaidFrameBackgroundHealthColorFL:SetPoint("LEFT", raidFrameBgTexture, "RIGHT", 10, 0)
+    CreateTooltipTwo(partyRaidFrameBackgroundHealthColorFL, "Party/Raid Health Bar Background Color", "Left-click to change.\n\n|cff32f795Shift+Right-click to reset to default.|r")
 
+    local partyRaidFrameBackgroundManaColorFL = CreateColorBox(guiFrameLook, "partyRaidFrameBackgroundManaColor", "Mana BG", function() BBF.SetCompactUnitFramesBackground() end)
+    partyRaidFrameBackgroundManaColorFL:SetPoint("LEFT", partyRaidFrameBackgroundHealthColorFL.text, "RIGHT", 4, 0)
+    CreateTooltipTwo(partyRaidFrameBackgroundManaColorFL, "Party/Raid Mana Bar Background Color", "Left-click to change.\n\n|cff32f795Shift+Right-click to reset to default.|r")
 
-
-
-
-
-
-
-
+    changePartyRaidFrameBackgroundColor:HookScript("OnClick", function(self)
+        local alpha = self:GetChecked() and 1 or 0.5
+        partyRaidFrameBackgroundHealthColorFL:SetAlpha(alpha)
+        partyRaidFrameBackgroundManaColorFL:SetAlpha(alpha)
+        raidFrameBgTexture:SetEnabled(self:GetChecked())
+        BBF.UpdateCustomTextures()
+        BBF.SetCompactUnitFramesBackground()
+        BBF.UpdateFrames()
+        
+        if BBF.changePartyRaidFrameBackgroundColor then
+            BBF.changePartyRaidFrameBackgroundColor:SetChecked(self:GetChecked())
+            if BBF.changePartyRaidFrameBackgroundColor.parent then
+                local clrFx = BBF.changePartyRaidFrameBackgroundColor.parent
+                if clrFx.partyRaidFrameBackgroundHealthColor then
+                    clrFx.partyRaidFrameBackgroundHealthColor:SetAlpha(alpha)
+                end
+                if clrFx.partyRaidFrameBackgroundManaColor then
+                    clrFx.partyRaidFrameBackgroundManaColor:SetAlpha(alpha)
+                end
+                if clrFx.raidFrameBgTexture then
+                    clrFx.raidFrameBgTexture:SetEnabled(self:GetChecked())
+                end
+            end
+        end
+        
+        if not self:GetChecked() then
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        end
+    end)
+    BBF.changePartyRaidFrameBackgroundColorTexture = changePartyRaidFrameBackgroundColor
+    BBF.raidFrameBgTextureDropdown = raidFrameBgTexture
+    raidFrameBgTexture:SetEnabled(changePartyRaidFrameBackgroundColor:GetChecked())
+    local raidFrameBgAlpha = changePartyRaidFrameBackgroundColor:GetChecked() and 1 or 0.5
+    partyRaidFrameBackgroundHealthColorFL:SetAlpha(raidFrameBgAlpha)
+    partyRaidFrameBackgroundManaColorFL:SetAlpha(raidFrameBgAlpha)
 
 end
 
@@ -8367,8 +8556,15 @@ local function guiMisc()
         end
     end)
 
+    local classColorFriendlist = CreateCheckbox("classColorFriendlist", "Class Color Friendlist", guiMisc)
+    classColorFriendlist:SetPoint("TOPLEFT", normalizeGameMenu, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(classColorFriendlist, "Class Color Friendlist", "Colors the character names in your friendlist according to their class.")
+    classColorFriendlist:HookScript("OnClick", function(self)
+        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+    end)
+
     local minimizeObjectiveTracker = CreateCheckbox("minimizeObjectiveTracker", "Minimize Objective Frame Better", guiMisc, nil, BBF.MinimizeObjectiveTracker)
-    minimizeObjectiveTracker:SetPoint("TOPLEFT", normalizeGameMenu, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    minimizeObjectiveTracker:SetPoint("TOPLEFT", classColorFriendlist, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(minimizeObjectiveTracker, "Minimize Objective Frame Better", "Also minimize the objectives header when clicking the -+ button |A:UI-QuestTrackerButton-Collapse-All:19:19|a")
 
     local hideUiErrorFrame = CreateCheckbox("hideUiErrorFrame", "Hide UI Error Frame", guiMisc, nil, BBF.HideFrames)
@@ -8493,8 +8689,22 @@ local function guiMisc()
         BBF.RecolorHpTempLoss()
     end)
 
+    local hideAllAbsorbGlow = CreateCheckbox("hideAllAbsorbGlow", "Hide All Absorb Glow", guiMisc)
+    hideAllAbsorbGlow:SetPoint("TOPLEFT", recolorTempHpLoss, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(hideAllAbsorbGlow, "Hide All Absorb Glow", "Hide all absorb glow on all frames. Glowing right side of healthbars when absorbs are more than healthbars allow.")
+    hideAllAbsorbGlow:HookScript("OnClick", function()
+        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+    end)
+
+    local zoomActionBarIcons = CreateCheckbox("zoomActionBarIcons", "Zoom ActionBar Icons", guiMisc)
+    zoomActionBarIcons:SetPoint("TOPLEFT", hideAllAbsorbGlow, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(zoomActionBarIcons, "Zoom ActionBar Icons", "Zoom in on the icons on the action bar icons a little.")
+    zoomActionBarIcons:HookScript("OnClick", function()
+        BBF.ZoomDefaultActionbarIcons(zoomActionBarIcons:GetChecked())
+    end)
+
     local hideActionBarHotKey = CreateCheckbox("hideActionBarHotKey", "Hide ActionBar Keybinds", guiMisc, nil, BBF.HideFrames)
-    hideActionBarHotKey:SetPoint("TOPLEFT", recolorTempHpLoss, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    hideActionBarHotKey:SetPoint("TOPLEFT", zoomActionBarIcons, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(hideActionBarHotKey, "Hides the keybind on default actionbars")
 
     local hideActionBarMacroName = CreateCheckbox("hideActionBarMacroName", "Hide ActionBar Macro Name", guiMisc, nil, BBF.HideFrames)
@@ -8603,6 +8813,13 @@ local function guiMisc()
         end
     end)
 
+    local disableCastbarMovement = CreateCheckbox("disableCastbarMovement", "Disable Castbar Movement", guiMisc, nil, BBF.HideFrames)
+    disableCastbarMovement:SetPoint("TOPLEFT", hideExpAndHonorBar, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(disableCastbarMovement, "Disable Castbar Movement", "Disables all moving of the castbar from BBF.\n\nNot recommended but useful for those who might have conflicting addons without options to turn it off there. This WILL make the castbar act weird if you have aura settings enabled (and no other addon to deal with it)")
+    disableCastbarMovement:HookScript("OnClick", function(self)
+        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+    end)
+
     -- local disableAddonProfiling = CreateCheckbox("disableAddonProfiling", "Disable AddOn Profiler", guiMisc)
     -- disableAddonProfiling:SetPoint("TOPLEFT", hideExpAndHonorBar, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     -- CreateTooltipTwo(disableAddonProfiling, "Disable AddOn Profiler", "Turn off AddOn Profiler for a slight bump in performance.\n\nYou will no longer see CPU stats on AddonList and other benchmark AddOns might not work properly until setting is turned back off.")
@@ -8611,7 +8828,7 @@ local function guiMisc()
     -- end)
 
     local arenaOptimizer = CreateCheckbox("arenaOptimizer", "Arena Optimizer", guiMisc)
-    arenaOptimizer:SetPoint("TOPLEFT", hideExpAndHonorBar, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    arenaOptimizer:SetPoint("TOPLEFT", disableCastbarMovement, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(arenaOptimizer, "Arena Optimizer", "Increase performance slightly by lowering non-essential graphics CVars during Arena matches and restoring your original values when leaving.\n\n(Re-check to update saved CVars)\n\nCVars:\nView distance\nShadows\nWater effects\nSSAO\nWeather")
     arenaOptimizer:HookScript("OnClick", function(self)
         BBF.ArenaOptimizer(not self:GetChecked(), true)
@@ -8629,7 +8846,7 @@ local function guiMisc()
     end)
 
     local uiWidgetPowerBarScale = CreateSlider(guiMisc, "UIWidgetPowerBarFrame Scale", 0.4, 1.8, 0.01, "uiWidgetPowerBarScale")
-    uiWidgetPowerBarScale:SetPoint("TOPLEFT", gladWinTracker, "BOTTOMLEFT", 5, -15)
+    uiWidgetPowerBarScale:SetPoint("LEFT", gladWinTracker.text, "RIGHT", 55, 0)
     CreateTooltipTwo(uiWidgetPowerBarScale, "UIWidgetPowerBarFrame Scale", "Changes the scale of UIWidgetPowerBarFrame, the frame with Dragonflying charges on it. Also has things like achievements etc I believe idk.")
 
     local hideUnitFramePlayerMana = CreateCheckbox("hideUnitFramePlayerMana", "Hide PlayerFrame Mana", guiMisc, nil, BBF.UpdateNoPortraitManaVisibility)
@@ -8648,8 +8865,16 @@ local function guiMisc()
     hideUnitFrameFocusMana:SetPoint("TOPLEFT", hideUnitFrameTargetMana, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(hideUnitFrameFocusMana, "Hide FocusFrame Mana", "Hide FocusFrame Mana. Only works with No Portrait settings atm.")
 
+    local hideDefaultPartyFramesMana = CreateCheckbox("hideDefaultPartyFramesMana", "Hide Default PartyFrames Mana", guiMisc, nil, BBF.UpdateNoPortraitManaVisibility)
+    hideDefaultPartyFramesMana:SetPoint("TOPLEFT", hideUnitFrameFocusMana, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(hideDefaultPartyFramesMana, "Hide Default PartyFrames Mana", "Hide Default PartyFrames Mana. Only works with No Portrait settings atm.")
+
+    local hideOgRaidFrameBg = CreateCheckbox("hideOgRaidFrameBg", "Hide Party/RaidFrame Background", guiMisc, nil, BBF.HideFrames)
+    hideOgRaidFrameBg:SetPoint("TOPLEFT", hideDefaultPartyFramesMana, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(hideOgRaidFrameBg, "Hide Party/RaidFrame Background", "Hide the background on the default party/raidframes. Combo with Pixel Border.")
+
     local hideActionBar1 = CreateCheckbox("hideActionBar1", "Hide ActionBar1", guiMisc, nil, BBF.HideFrames)
-    hideActionBar1:SetPoint("TOPLEFT", hideUnitFrameFocusMana, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    hideActionBar1:SetPoint("TOPLEFT", hideOgRaidFrameBg, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(hideActionBar1, "Hide ActionBar1", "Hide ActionBar1. Default UI does not allow this so heres a setting for it.")
 
     local hideActionBarBigProcGlow = CreateCheckbox("hideActionBarBigProcGlow", "Hide ActionBar Big Proc Glow", guiMisc, nil, BBF.ActionBarMods)

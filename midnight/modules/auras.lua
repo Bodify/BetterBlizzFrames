@@ -378,8 +378,8 @@ function BBF.UpdateUserAuraSettings()
     focusDetachCastbar = BetterBlizzFramesDB.focusDetachCastbar
     targetStaticCastbar = BetterBlizzFramesDB.targetStaticCastbar
     targetDetachCastbar = BetterBlizzFramesDB.targetDetachCastbar
-    shouldAdjustCastbar = targetStaticCastbar or targetDetachCastbar or BetterBlizzFramesDB.playerAuraFiltering
-    shouldAdjustCastbarFocus = focusStaticCastbar or focusDetachCastbar or BetterBlizzFramesDB.playerAuraFiltering
+    shouldAdjustCastbar = (targetStaticCastbar or targetDetachCastbar or BetterBlizzFramesDB.playerAuraFiltering) and not BetterBlizzFramesDB.disableCastbarMovement
+    shouldAdjustCastbarFocus = (focusStaticCastbar or focusDetachCastbar or BetterBlizzFramesDB.playerAuraFiltering) and not BetterBlizzFramesDB.disableCastbarMovement
     targetCastBarXPos = BetterBlizzFramesDB.targetCastBarXPos
     targetCastBarYPos = BetterBlizzFramesDB.targetCastBarYPos
     focusCastBarXPos = BetterBlizzFramesDB.focusCastBarXPos
@@ -2510,7 +2510,7 @@ end
 
 function BBF.HookPlayerAndTargetAuras()
     if BBF.isMidnight then
-        if not targetCastbarsHooked then
+        if not targetCastbarsHooked and not BetterBlizzFramesDB.disableCastbarMovement then
             hooksecurefunc(TargetFrame.spellbar, "SetPoint", function()
                 if shouldAdjustCastbar then
                     adjustCastbar(TargetFrame.spellbar, TargetFrameSpellBar)
@@ -2526,6 +2526,10 @@ function BBF.HookPlayerAndTargetAuras()
                 end
             end);
             targetCastbarsHooked = true
+        end
+        if BetterBlizzFramesDB.disableCastbarMovement then
+            TargetFrame.staticCastbar = true
+            FocusFrame.staticCastbar = true
         end
         if auraFilteringOn and not targetAurasHooked then
             if hideTargetAuras then

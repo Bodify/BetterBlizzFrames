@@ -122,73 +122,18 @@ function BBF.HideFrames()
         end
 
         if BetterBlizzFramesDB.hideBossFrames then
-            if not originalBossFrameParent then
-                originalBossFrameParent = BossTargetFrameContainer:GetParent()
-            end
-            BossTargetFrameContainer:SetParent(hiddenFrame)
             if not bossFrameHooked then
-                hiddenFrame:RegisterEvent("ENCOUNTER_START")
-                hiddenFrame:RegisterEvent("ENCOUNTER_END")
-                hiddenFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
-                hiddenFrame:RegisterEvent("GROUP_ROSTER_UPDATE")
-                hiddenFrame:SetScript("OnEvent", function()
-                    if InCombatLockdown then return end
-                    local inInstance, instanceType = IsInInstance()
-
-                    if BetterBlizzFramesDB.hideBossFramesParty and inInstance and instanceType == "party" then
-                        BossTargetFrameContainer:SetParent(hiddenFrame)
-                        BossTargetFrameContainer:SetAlpha(0)
-                        for i = 1, 5 do
-                            local bossFrame = _G["Boss" .. i .. "TargetFrame"]
-                            if bossFrame then
-                                bossFrame:SetParent(hiddenFrame)
-                                bossFrame:SetAlpha(0)
-                            end
-                        end
-                    elseif BetterBlizzFramesDB.hideBossFramesRaid and inInstance and instanceType == "raid" then
-                        BossTargetFrameContainer:SetParent(hiddenFrame)
-                        BossTargetFrameContainer:SetAlpha(0)
-                        for i = 1, 5 do
-                            local bossFrame = _G["Boss" .. i .. "TargetFrame"]
-                            if bossFrame then
-                                bossFrame:SetParent(hiddenFrame)
-                                bossFrame:SetAlpha(0)
-                            end
-                        end
-                    else
-                        BossTargetFrameContainer:SetParent(originalBossFrameParent)
-                    end
+                hooksecurefunc(BossTargetFrameContainer, "UpdateShownState", function(self)
+                    self:SetAlpha(0)
+                    if InCombatLockdown() then return end
+                    self:SetScale(0.001)
                 end)
-
-                local inInstance, instanceType = IsInInstance()
-                if BetterBlizzFramesDB.hideBossFramesParty and inInstance and instanceType == "party" then
-                    BossTargetFrameContainer:SetParent(hiddenFrame)
-                    BossTargetFrameContainer:SetAlpha(0)
-                    for i = 1, 5 do
-                        local bossFrame = _G["Boss" .. i .. "TargetFrame"]
-                        if bossFrame then
-                            bossFrame:SetParent(hiddenFrame)
-                            bossFrame:SetAlpha(0)
-                        end
-                    end
-                elseif BetterBlizzFramesDB.hideBossFramesRaid and inInstance and instanceType == "raid" then
-                    BossTargetFrameContainer:SetParent(hiddenFrame)
-                    BossTargetFrameContainer:SetAlpha(0)
-                    for i = 1, 5 do
-                        local bossFrame = _G["Boss" .. i .. "TargetFrame"]
-                        if bossFrame then
-                            bossFrame:SetParent(hiddenFrame)
-                            bossFrame:SetAlpha(0)
-                        end
-                    end
-                else
-                    BossTargetFrameContainer:SetParent(originalBossFrameParent)
-                end
-
+                BossTargetFrameContainer:SetAlpha(0)
+                BossTargetFrameContainer:SetMouseClickEnabled(false)
+                BossTargetFrameContainer:EnableMouse(false)
+                BossTargetFrameContainer:SetScale(0.001)
                 bossFrameHooked = true
             end
-        elseif bossFrameHooked then
-            BossTargetFrameContainer:SetParent(originalBossFrameParent)
         end
 
         -- Player Combat Icon
@@ -1027,6 +972,49 @@ function BBF.HideFrames()
                     end
                 end
             end
+        end
+
+        if BetterBlizzFramesDB.hideOgRaidFrameBg then
+            for i = 1, 5 do
+                local frame = _G["CompactPartyFrameMember"..i]
+                if frame and frame.background and frame.powerBar.background then
+                    frame.background:Hide()
+                    frame.powerBar.background:Hide()
+                end
+            end
+            for i = 1, 40 do
+                local frame = _G["CompactRaidFrame"..i]
+                if frame and frame.background and frame.powerBar.background then
+                    frame.background:Hide()
+                    frame.powerBar.background:Hide()
+                end
+            end
+            if not BBF.hookedHideBgPetFrames then
+                hooksecurefunc("DefaultCompactMiniFrameSetup", function(frame)
+                    if not frame then return end
+                    if frame.background then
+                        frame.background:Hide()
+                    end
+                end)
+                BBF.hookedHideBgPetFrames = true
+            end
+            changes.hideOgRaidFrameBg = true
+        elseif changes.hideOgRaidFrameBg then
+            for i = 1, 5 do
+                local frame = _G["CompactPartyFrameMember"..i]
+                if frame and frame.background and frame.powerBar.background then
+                    frame.background:Show()
+                    frame.powerBar.background:Show()
+                end
+            end
+            for i = 1, 40 do
+                local frame = _G["CompactRaidFrame"..i]
+                if frame and frame.background and frame.powerBar.background then
+                    frame.background:Show()
+                    frame.powerBar.background:Show()
+                end
+            end
+            changes.hideOgRaidFrameBg = nil
         end
 
         -- Hide all LibDBIcon buttons by default

@@ -70,6 +70,12 @@ local function UpdateTextureVariables()
     else
         petDefaultTex = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Large.tga"
     end
+
+    if db.hideDefaultPartyFramesMana then
+        partyDefaultTex = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Minus.tga"
+    else
+        partyDefaultTex = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Large.tga"
+    end
 end
 
 local function GetPlayerBackgroundYOffset()
@@ -235,25 +241,25 @@ end
 
 local BorderPositions = {
     target = {
-        health   = { width = 124, height = 19, startX = 0, startY = -1 },
-        mana     = { width = 124, height = 8, startX = 0, startY = -2 },
+        health   = { width = 123, height = 19, startX = 0, startY = -1 },
+        mana     = { width = 123, height = 8, startX = 0, startY = -2 },
         totHealth= { width = 63, height = 12, startX = 0, startY = 0 },
         totMana  = { width = 63, height = 4, startX = 3, startY = 0 },
     },
     focus = {
-        health   = { width = 124, height = 19, startX = 0, startY = -1 },
-        mana     = { width = 124, height = 8, startX = 0, startY = -2 },
+        health   = { width = 123, height = 19, startX = 0, startY = -1 },
+        mana     = { width = 123, height = 8, startX = 0, startY = -2 },
         totHealth= { width = 63, height = 12, startX = 0, startY = 0 },
         totMana  = { width = 63, height = 4, startX = 3, startY = 0 },
     },
     player = {
-        health = { width = 124, height = 19, startX = 0, startY = 0 },
-        mana   = { width = 124, height = 8, startX = 0, startY = -2 },
-        alt    = { width = 124, height = 8, startX = 0, startY = 0 },
+        health = { width = 123, height = 19, startX = 0, startY = 0 },
+        mana   = { width = 123, height = 8, startX = 0, startY = -2 },
+        alt    = { width = 123, height = 8, startX = 0, startY = 0 },
     },
     pet = {
-        health = { width = 65, height = 14, startX = 0, startY = 0 },
-        mana   = { width = 65, height = 5, startX = 0, startY = 0 },
+        health = { width = 64, height = 14, startX = 1, startY = 0 },
+        mana   = { width = 64, height = 5, startX = 1, startY = 0 },
     },
     party = {
         health = { width = 76, height = 15, startX = 0, startY = 0 },
@@ -373,7 +379,7 @@ function BBF.UpdateNoPortraitText(frame, frameType)
             local hpContainer = partyFrame.HealthBarContainer
             local manaBar = partyFrame.ManaBar
 
-            local manaYOffset = db.noPortraitPixelBorder and -9 or (db.changeUnitFrameValueFont and db.unitFrameValueFontOutline and -7.5) or -6.5
+            local manaYOffset = db.noPortraitPixelBorder and -9 or (db.changeUnitFrameValueFont and db.unitFrameValueFontOutline and -5.5) or -4.5
 
             hpContainer.CenterText:ClearAllPoints()
             hpContainer.CenterText:SetPoint("CENTER", partyFrame.Texture, "CENTER", 2, 10)
@@ -465,9 +471,9 @@ local function MakeNoPortraitMode(frame)
         contentContext.PrestigePortrait:ClearAllPoints()
         contentContext.PrestigePortrait:SetPoint("TOPRIGHT", 5, -17)
         contentContext.LeaderIcon:ClearAllPoints()
-        contentContext.LeaderIcon:SetPoint("TOPRIGHT", -84, -24.5)
+        contentContext.LeaderIcon:SetPoint("TOPRIGHT", -86, -24.5)
         contentContext.GuideIcon:ClearAllPoints()
-        contentContext.GuideIcon:SetPoint("TOPRIGHT", -84, -24.5)
+        contentContext.GuideIcon:SetPoint("TOPRIGHT", -86, -24.5)
         contentContext.QuestIcon:ClearAllPoints()
         contentContext.QuestIcon:SetPoint("TOPRIGHT", -65, pixelBorderMode and -40 or -45)
         contentContext.BossIcon:ClearAllPoints()
@@ -486,7 +492,7 @@ local function MakeNoPortraitMode(frame)
 
         contentMain.LevelText:SetParent(frame.noPortraitMode)
         contentMain.LevelText:ClearAllPoints()
-        contentMain.LevelText:SetPoint("RIGHT", frame, "RIGHT", -194, 17)
+        contentMain.LevelText:SetPoint("RIGHT", frame, "RIGHT", -196, 17)
         contentMain.ReputationColor:SetParent(BBF.hiddenFrame)
 
         frameContainer.Flash:SetDrawLayer("BACKGROUND")
@@ -1079,7 +1085,7 @@ local function MakeNoPortraitMode(frame)
             PlayerLevelText:SetDrawLayer("OVERLAY", 7)
             PlayerLevelText:Show()
             PlayerLevelText:ClearAllPoints()
-            PlayerLevelText:SetPoint("LEFT", 195, 17)
+            PlayerLevelText:SetPoint("LEFT", 194, 17)
         end
 
         local function UpdateLevel()
@@ -1087,12 +1093,12 @@ local function MakeNoPortraitMode(frame)
                 if alwaysHideLvl then
                     PlayerLevelText:SetParent(BBF.hiddenFrame)
                     PlayerLevelText:ClearAllPoints()
-                    PlayerLevelText:SetPoint("LEFT", 195, 17)
+                    PlayerLevelText:SetPoint("LEFT", 194, 17)
                 elseif hideLvl then
                     if UnitLevel("player") == (BBF.isMidnight and 90 or 80) then
                         PlayerLevelText:SetParent(BBF.hiddenFrame)
                         PlayerLevelText:ClearAllPoints()
-                        PlayerLevelText:SetPoint("LEFT", 195, 17)
+                        PlayerLevelText:SetPoint("LEFT", 194, 17)
                     else
                         UpdateLevelDetails()
                     end
@@ -2220,14 +2226,6 @@ local function MakeClassicPartyFrame()
             end
         end
 
-        if not frame.bbfPartyCombatUpdate then
-            frame.bbfPartyCombatUpdate = CreateFrame("Frame")
-            frame.bbfPartyCombatUpdate:SetScript("OnEvent", function(self)
-                self:UnregisterEvent("PLAYER_REGEN_ENABLED")
-                hbAdjust()
-            end)
-        end
-
         local function hbAdjust()
             frame.bbfName:SetWidth(76)
             local needsCombatUpdate = false
@@ -2257,8 +2255,8 @@ local function MakeClassicPartyFrame()
                     hpContainer.HealthBar:SetPoint("TOPLEFT", hpContainer, "TOPLEFT", -2, 8)
                     hpContainer.HealthBar:SetSize(76, 18)
                     manaBar:ClearAllPoints()
-                    manaBar:SetPoint("TOPLEFT", frame, "TOPLEFT", 40, -27)
-                    manaBar:SetSize(78, 8)
+                    manaBar:SetPoint("TOPLEFT", hpContainer, "TOPLEFT", -5, -8)
+                    manaBar:SetSize(78, 9)
                 else
                     needsCombatUpdate = true
                 end
@@ -2289,11 +2287,19 @@ local function MakeClassicPartyFrame()
             end
         end
 
+        if not frame.bbfPartyCombatUpdate then
+            frame.bbfPartyCombatUpdate = CreateFrame("Frame")
+            frame.bbfPartyCombatUpdate:SetScript("OnEvent", function(self)
+                self:UnregisterEvent("PLAYER_REGEN_ENABLED")
+                --hbAdjust()
+            end)
+        end
+
         hbAdjust()
 
 
         hooksecurefunc(frame, "ToPlayerArt", function(self)
-            self.Texture:SetTexture(playerDefaultTex)
+            self.Texture:SetTexture(partyDefaultTex)
 
             hbAdjust()
 
@@ -2303,16 +2309,42 @@ local function MakeClassicPartyFrame()
 
             BBF.UpdateNoPortraitText(nil, "party")
 
-            frame.Flash:SetTexture(playerDefaultTex)
+            frame.Flash:SetTexture(partyDefaultTex)
             frame.Flash:SetTexCoord(0, 1, 0, 1)
             frame.Flash:ClearAllPoints()
             frame.Flash:SetAllPoints(frame.Texture)
 
-            overlay.Status:SetTexture(playerDefaultTex)
+            overlay.Status:SetTexture(partyDefaultTex)
             overlay.Status:SetTexCoord(0, 1, 0, 1)
             overlay.Status:ClearAllPoints()
             overlay.Status:SetAllPoints(frame.Texture)
         end)
+    end
+
+    -- Ty Verz for this bit
+    for frame in PartyFrame.PartyMemberFramePool:EnumerateActive() do
+        -- store frame references for the restricted environment to retrieve later on
+        SecureHandlerSetFrameRef(frame, "HealthBarContainer", frame.HealthBarContainer)
+        SecureHandlerSetFrameRef(frame, "HealthBar", frame.HealthBarContainer.HealthBar)
+        SecureHandlerSetFrameRef(frame, "ManaBar", frame.ManaBar)
+
+        -- we are extremely lucky in that ToPlayerArt() calls UnitFrame_SetUnit() which calls :SetAttribute()
+        -- so we can hook OnAttributeChanged in the restricted environment and make our changes there
+        -- this allows us to run code during combat
+        SecureHandlerWrapScript(frame, "OnAttributeChanged", frame, [[
+            local hpContainer = self:GetFrameRef("HealthBarContainer")
+            local healthBar = self:GetFrameRef("HealthBar") 
+            local manaBar = self:GetFrameRef("ManaBar") 
+
+            healthBar:ClearAllPoints()
+            healthBar:SetPoint("TOPLEFT", hpContainer, "TOPLEFT", -2, 8)
+            healthBar:SetPoint("BOTTOMRIGHT", hpContainer, "TOPLEFT", 74, -10)
+
+            manaBar:ClearAllPoints()
+            manaBar:SetPoint("TOPLEFT", hpContainer, "TOPLEFT", -5, -8)
+            manaBar:SetWidth(78)
+            manaBar:SetHeight(9)
+        ]])
     end
 end
 
@@ -2541,6 +2573,71 @@ function BBF.UpdateNoPortraitManaVisibility()
     end
     if FocusFrame.totFrame and FocusFrame.totFrame.FrameTexture then
         FocusFrame.totFrame.FrameTexture:SetTexture(focusDefaultTex)
+    end
+
+    -- PartyFrames
+    if PartyFrame and PartyFrame.PartyMemberFramePool then
+        for frame in PartyFrame.PartyMemberFramePool:EnumerateActive() do
+            local manaBar = frame.ManaBar
+            if manaBar then
+                if db.hideDefaultPartyFramesMana then
+                    manaBar:SetAlpha(0)
+                    if manaBar.TextString then
+                        manaBar.TextString:SetAlpha(0)
+                    end
+                    if manaBar.LeftText then
+                        manaBar.LeftText:SetAlpha(0)
+                    end
+                    if manaBar.RightText then
+                        manaBar.RightText:SetAlpha(0)
+                    end
+                    if manaBar.BBFPixelBorder then
+                        manaBar.BBFPixelBorder:Hide()
+                    end
+                    if manaBar.BBFBackground then
+                        manaBar.BBFBackground:SetAlpha(0)
+                    end
+                    if frame.Background then
+                        frame.Background:ClearAllPoints()
+                        frame.Background:SetPoint("TOPLEFT", frame.HealthBarContainer.HealthBar, "TOPLEFT", 0, -1)
+                        frame.Background:SetPoint("BOTTOMRIGHT", frame.HealthBarContainer.HealthBar, "BOTTOMRIGHT", -2, 1)
+                    end
+                else
+                    manaBar:SetAlpha(1)
+                    if manaBar.TextString then
+                        manaBar.TextString:SetAlpha(1)
+                    end
+                    if manaBar.LeftText then
+                        manaBar.LeftText:SetAlpha(1)
+                    end
+                    if manaBar.RightText then
+                        manaBar.RightText:SetAlpha(1)
+                    end
+                    if db.noPortraitPixelBorder and manaBar.BBFPixelBorder then
+                        manaBar.BBFPixelBorder:Show()
+                    end
+                    if db.noPortraitPixelBorder and manaBar.BBFBackground then
+                        manaBar.BBFBackground:SetAlpha(1)
+                    end
+                    if frame.Background then
+                        frame.Background:ClearAllPoints()
+                        frame.Background:SetPoint("TOPLEFT", frame.HealthBarContainer.HealthBar, "TOPLEFT", 0, -1)
+                        frame.Background:SetPoint("BOTTOMRIGHT", manaBar, "BOTTOMRIGHT", -2, 1)
+                    end
+                end
+                if not db.noPortraitPixelBorder then
+                    if frame.Texture then
+                        frame.Texture:SetTexture(partyDefaultTex)
+                    end
+                    if frame.Flash then
+                        frame.Flash:SetTexture(partyDefaultTex)
+                    end
+                    if frame.PartyMemberOverlay and frame.PartyMemberOverlay.Status then
+                        frame.PartyMemberOverlay.Status:SetTexture(partyDefaultTex)
+                    end
+                end
+            end
+        end
     end
 
     AdjustAlternateBars()

@@ -1304,6 +1304,8 @@ function BBF.SetCompactUnitFramesBackground()
     
     local manaColor = BetterBlizzFramesDB.partyRaidFrameBackgroundManaColor or {0, 0, 0, 1}
     local manaR, manaG, manaB, manaA = manaColor[1], manaColor[2], manaColor[3], manaColor[4]
+    
+    local bgTexture = BBF.LSM:Fetch(BBF.LSM.MediaType.STATUSBAR, BetterBlizzFramesDB.raidFrameBgTexture)
 
     for i = 1, 5 do
         local frame = _G["CompactPartyFrameMember"..i]
@@ -1316,7 +1318,8 @@ function BBF.SetCompactUnitFramesBackground()
                 tex:SetPoint("TOPLEFT", frame.healthBar, "TOPLEFT", 0, 0)
                 tex:SetPoint("BOTTOMRIGHT", frame.healthBar, "BOTTOMRIGHT", 0, 0)
             end
-            frame.bbfHealthBackground:SetColorTexture(healthR, healthG, healthB, healthA)
+            frame.bbfHealthBackground:SetTexture(bgTexture)
+            frame.bbfHealthBackground:SetVertexColor(healthR, healthG, healthB, healthA)
             
             if frame.powerBar then
                 if not frame.bbfManaBackground then
@@ -1325,7 +1328,8 @@ function BBF.SetCompactUnitFramesBackground()
                     tex:SetPoint("TOPLEFT", frame.powerBar, "TOPLEFT", 0, 0)
                     tex:SetPoint("BOTTOMRIGHT", frame.powerBar, "BOTTOMRIGHT", 0, 0)
                 end
-                frame.bbfManaBackground:SetColorTexture(manaR, manaG, manaB, manaA)
+                frame.bbfManaBackground:SetTexture(bgTexture)
+                frame.bbfManaBackground:SetVertexColor(manaR, manaG, manaB, manaA)
             end
         end
     end
@@ -1341,7 +1345,8 @@ function BBF.SetCompactUnitFramesBackground()
                 tex:SetPoint("TOPLEFT", frame.healthBar, "TOPLEFT", 0, 0)
                 tex:SetPoint("BOTTOMRIGHT", frame.healthBar, "BOTTOMRIGHT", 0, 0)
             end
-            frame.bbfHealthBackground:SetColorTexture(healthR, healthG, healthB, healthA)
+            frame.bbfHealthBackground:SetTexture(bgTexture)
+            frame.bbfHealthBackground:SetVertexColor(healthR, healthG, healthB, healthA)
             
             if frame.powerBar then
                 if not frame.bbfManaBackground then
@@ -1350,8 +1355,26 @@ function BBF.SetCompactUnitFramesBackground()
                     tex:SetPoint("TOPLEFT", frame.powerBar, "TOPLEFT", 0, 0)
                     tex:SetPoint("BOTTOMRIGHT", frame.powerBar, "BOTTOMRIGHT", 0, 0)
                 end
-                frame.bbfManaBackground:SetColorTexture(manaR, manaG, manaB, manaA)
+                frame.bbfManaBackground:SetTexture(bgTexture)
+                frame.bbfManaBackground:SetVertexColor(manaR, manaG, manaB, manaA)
             end
         end
     end
+
+    if not BBF.PetFrameBgHook then
+        hooksecurefunc("DefaultCompactMiniFrameSetup", function(frame)
+            if not frame or frame.bbfHealthBackground then return end
+            local healthColor = BetterBlizzFramesDB.partyRaidFrameBackgroundHealthColor or {0, 0, 0, 1}
+            local healthR, healthG, healthB, healthA = healthColor[1], healthColor[2], healthColor[3], healthColor[4]
+            local bgTexture = BBF.LSM:Fetch(BBF.LSM.MediaType.STATUSBAR, BetterBlizzFramesDB.raidFrameBgTexture)
+            local tex = frame:CreateTexture(nil, "BACKGROUND", nil, 0)
+            frame.bbfHealthBackground = tex
+            tex:SetPoint("TOPLEFT", frame.healthBar, "TOPLEFT", 0, 0)
+            tex:SetPoint("BOTTOMRIGHT", frame.healthBar, "BOTTOMRIGHT", 0, 0)
+            frame.bbfHealthBackground:SetTexture(bgTexture)
+            frame.bbfHealthBackground:SetVertexColor(healthR, healthG, healthB, healthA)
+        end)
+        BBF.PetFrameBgHook = true
+    end
+
 end

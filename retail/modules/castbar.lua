@@ -1438,7 +1438,6 @@ function BBF.ChangeCastbarSizes()
         PlayerCastingBarFrame:UnregisterAllEvents()
     end
 
-
     --Target & Focus XY in auras.lua
     --Target
     TargetFrameSpellBar:SetScale(BetterBlizzFramesDB.targetCastBarScale)
@@ -1520,6 +1519,16 @@ function BBF.ChangeCastbarSizes()
     end
     FocusFrameSpellBar.Text:SetWidth(BetterBlizzFramesDB.focusCastBarWidth)
 
+    if BetterBlizzFramesDB.changeUnitFrameFont then
+        local fontName = BetterBlizzFramesDB.unitFrameFont
+        local fontPath = BBF.LSM:Fetch(BBF.LSM.MediaType.FONT, fontName)
+        local outline = BetterBlizzFramesDB.unitFrameFontOutline or "THINOUTLINE"
+        local _, size, _ = TargetFrameSpellBar.Text:GetFont()
+        TargetFrameSpellBar.Text:SetFont(fontPath, size, outline)
+        FocusFrameSpellBar.Text:SetFont(fontPath, size, outline)
+        local _, size, _ = PlayerCastingBarFrame.Text:GetFont()
+        PlayerCastingBarFrame.Text:SetFont(fontPath, size, outline)
+    end
 
     if BetterBlizzFramesDB.classicCastbars then
         BBF.ClassicCastbar(TargetFrameSpellBar, "target")

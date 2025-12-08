@@ -304,8 +304,8 @@ local defaultSettings = {
     moveResourceToTargetPaladinBG = true,
     unitFrameBgTextureColor = {0,0,0,0.5},
     unitFrameBgTextureManaColor = {0,0,0,0.5},
-    partyRaidFrameBackgroundHealthColor = {0,0,0,0.5},
-    partyRaidFrameBackgroundManaColor = {0,0,0,0.5},
+    partyRaidFrameBackgroundHealthColor = {0,0,0,0.75},
+    partyRaidFrameBackgroundManaColor = {0,0,0,0.75},
     unitFrameFontColorRGB = {1,1,1,1},
     partyFrameFontColorRGB = {1,1,1,1},
     unitFrameValueFontColorRGB = {1,1,1,1},
@@ -338,6 +338,8 @@ local defaultSettings = {
     customPowerColors = false,
     useOnePowerColor = false,
     singlePowerColor = {1, 1, 1, 1},
+    raidFrameBgTexture = "Solid",
+    unitFrameBgTexture = "Solid",
 
     auraWhitelist = {
         ["example aura :3 (delete me)"] = {name = "Example Aura :3 (delete me)"}
@@ -1094,6 +1096,318 @@ function BBF.SurrenderNotLeaveArena()
     end
 end
 
+function BBF.ModernRoleIcons()
+    if not BetterBlizzFramesDB.newRaidFrameRoleIcons then return end
+    hooksecurefunc("CompactUnitFrame_UpdateRoleIcon", function(frame)
+        if not frame.roleIcon then return end
+        local role = UnitGroupRolesAssigned(frame.unit);
+        if ( frame.optionTable.displayRoleIcon and (role == "TANK" or role == "HEALER" or role == "DAMAGER") ) then
+            local atlas
+            if ( role == "TANK" ) then
+                atlas = "UI-LFG-RoleIcon-Tank-Micro-Raid"
+            elseif ( role == "HEALER" ) then
+                atlas = "UI-LFG-RoleIcon-Healer-Micro-Raid"
+            else
+                atlas = "UI-LFG-RoleIcon-DPS-Micro-Raid"
+            end
+            frame.roleIcon:SetAtlas(atlas)
+            frame.roleIcon:SetTexCoord(0,1,0,1)
+            frame.roleIcon:SetSize(11,11)
+            frame.roleIcon:ClearAllPoints()
+            frame.roleIcon:SetPoint("TOPLEFT", frame.healthBar, "TOPLEFT", 3, -2)
+        end
+    end)
+end
+
+function BBF.ClassColorFriendlist()
+    if not BetterBlizzFramesDB.classColorFriendlist then return end
+    local CLASS_COLORS = RAID_CLASS_COLORS
+    if not CLASS_COLORS then return end
+
+    local CLASS_COLOR_BY_ID = {}
+
+    if C_CreatureInfo and C_CreatureInfo.GetClassInfo then
+        local i = 1
+        while true do
+            local info = C_CreatureInfo.GetClassInfo(i)
+            if not info then break end
+            local color = CLASS_COLORS[info.classFile]
+            if color then
+                CLASS_COLOR_BY_ID[info.classID] = color
+            end
+            i = i + 1
+        end
+    end
+
+    local function GetWoWFriendClassColor(index)
+        local info = C_FriendList.GetFriendInfoByIndex and C_FriendList.GetFriendInfoByIndex(index)
+        if info and info.connected and info.classID then
+            return CLASS_COLOR_BY_ID[info.classID]
+        end
+    end
+
+    local function GetBNFriendGameInfo(index)
+        local numGames = C_BattleNet.GetFriendNumGameAccounts and C_BattleNet.GetFriendNumGameAccounts(index) or 0
+        for i = 1, numGames do
+            local gameInfo = C_BattleNet.GetFriendGameAccountInfo(index, i)
+            if gameInfo and gameInfo.isOnline and gameInfo.clientProgram == BNET_CLIENT_WOW and gameInfo.classID then
+                return gameInfo
+            end
+        end
+    end
+
+    local isSettingText = false
+
+    local function SetTextHook(fontString, text)
+        if isSettingText then return end
+
+        local button = fontString:GetParent()
+        if not button or not button.buttonType or not button.id then return end
+
+        text = text or fontString:GetText()
+        if not text or text == "" then return end
+
+        if button.buttonType == FRIENDS_BUTTON_TYPE_WOW then
+            local color = GetWoWFriendClassColor(button.id)
+            if not color then return end
+            fontString:SetTextColor(color.r, color.g, color.b)
+
+        elseif button.buttonType == FRIENDS_BUTTON_TYPE_BNET then
+            local gameInfo = GetBNFriendGameInfo(button.id)
+            if not gameInfo then return end
+
+            local color = CLASS_COLOR_BY_ID[gameInfo.classID]
+            if not color then return end
+
+            local hex = string.format("%02X%02X%02X", color.r * 255, color.g * 255, color.b * 255)
+
+            text = text:gsub("|cff%x%x%x%x%x%x%((.-)%)|r", "(%1)")
+            text = text:gsub("%((.-)%)", function(char)
+                return "|cff" .. hex .. "(" .. char .. ")|r"
+            end, 1)
+
+            isSettingText = true
+            fontString:SetText(text)
+            isSettingText = false
+        end
+    end
+
+    local hookedButtons = {}
+
+    local function HookButton(button)
+        if not button or not button.name or hookedButtons[button] then return end
+        hookedButtons[button] = true
+        hooksecurefunc(button.name, "SetText", SetTextHook)
+        local current = button.name:GetText()
+        if current and current ~= "" then
+            SetTextHook(button.name, current)
+        end
+    end
+
+    local scrollFrame = FriendsListFrameScrollFrame or FriendsFrameFriendsScrollFrame or FriendsListFrame
+
+    if scrollFrame and scrollFrame.ScrollBox and scrollFrame.ScrollBox.GetView then
+        scrollFrame.ScrollBox:GetView():RegisterCallback(
+        ScrollBoxListMixin.Event.OnAcquiredFrame, function(_, button)
+            HookButton(button)
+        end)
+    end
+
+    if scrollFrame and scrollFrame.buttons then
+        for _, button in ipairs(scrollFrame.buttons) do
+            HookButton(button)
+        end
+    end
+end
+
+function BBF.RaidFramePixelBorder()
+    if not BetterBlizzFramesDB.raidFramePixelBorder then return end
+    if BBF.RaidFramePixelBorderApplied then return end
+    local function CreatePixelTextureBorder(holder, size, offset)
+        if not holder.edges then
+            local edges = {}
+            for i = 1, 4 do
+                local tex = holder:CreateTexture(nil, "ARTWORK", nil, 1)
+                tex:SetColorTexture(0,0,0,1)
+                tex:SetIgnoreParentScale(true)
+                edges[i] = tex
+            end
+            holder.edges = edges
+            
+            function holder:SetVertexColor(r, g, b, a)
+                for _, tex in ipairs(self.edges) do
+                    tex:SetColorTexture(r, g, b, a or 1)
+                end
+            end
+        end
+        
+        local edges = holder.edges
+        local spacing = offset
+        
+        -- Top
+        edges[1]:ClearAllPoints()
+        edges[1]:SetPoint("TOPLEFT", holder, "TOPLEFT")
+        edges[1]:SetPoint("TOPRIGHT", holder, "TOPRIGHT")
+        edges[1]:SetHeight(size)
+        
+        -- Right
+        edges[2]:ClearAllPoints()
+        edges[2]:SetPoint("TOPRIGHT", holder, "TOPRIGHT")
+        edges[2]:SetPoint("BOTTOMRIGHT", holder, "BOTTOMRIGHT")
+        edges[2]:SetWidth(size)
+        
+        -- Bottom
+        edges[3]:ClearAllPoints()
+        edges[3]:SetPoint("BOTTOMLEFT", holder, "BOTTOMLEFT")
+        edges[3]:SetPoint("BOTTOMRIGHT", holder, "BOTTOMRIGHT")
+        edges[3]:SetHeight(size)
+        
+        -- Left
+        edges[4]:ClearAllPoints()
+        edges[4]:SetPoint("TOPLEFT", holder, "TOPLEFT")
+        edges[4]:SetPoint("BOTTOMLEFT", holder, "BOTTOMLEFT")
+        edges[4]:SetWidth(size)
+        
+        holder:Show()
+    end
+
+    local borderSize = BetterBlizzFramesDB.raidFramePixelBorderSize or 1
+    local halfPixel = BetterBlizzFramesDB.raidFramePixelBorderSize and 0.5 or 0
+
+    for i = 1, 5 do
+        local frame = _G["CompactPartyFrameMember"..i]
+        if frame then
+            if not frame.pixelBorder then
+                frame.pixelBorder = CreateFrame("Frame", nil, frame)
+                frame.pixelBorder:SetFrameLevel(3)
+            end
+            
+            frame.pixelBorder:ClearAllPoints()
+            frame.pixelBorder:SetPoint("TOPLEFT", frame.healthBar, "TOPLEFT", -0.5, 1)
+            frame.pixelBorder:SetPoint("BOTTOMRIGHT", frame.powerBar, "BOTTOMRIGHT", 0.5, 0)
+
+            CreatePixelTextureBorder(frame.pixelBorder, borderSize, 0)
+
+            if not frame.pixelBorder.diagonal then
+                local line = frame.pixelBorder:CreateTexture(nil, "OVERLAY", nil, -1)
+                line:SetColorTexture(0, 0, 0, 1)
+                line:SetIgnoreParentScale(true)
+                frame.pixelBorder.diagonal = line
+            end
+
+            local line = frame.pixelBorder.diagonal
+            line:ClearAllPoints()
+            line:SetPoint("BOTTOMLEFT", frame.healthBar, "BOTTOMLEFT", 0, 0.5+halfPixel)
+            line:SetPoint("TOPRIGHT", frame.powerBar, "TOPRIGHT", 0, -0.5)
+        end
+    end
+
+    for i = 1, 40 do
+        local frame = _G["CompactRaidFrame"..i]
+        if frame then
+            if not frame.pixelBorder then
+                frame.pixelBorder = CreateFrame("Frame", nil, frame)
+            end
+            
+            frame.pixelBorder:ClearAllPoints()
+            frame.pixelBorder:SetPoint("TOPLEFT", frame.healthBar, "TOPLEFT", -0.5, 1)
+            frame.pixelBorder:SetPoint("BOTTOMRIGHT", frame.powerBar, "BOTTOMRIGHT", 0.5, 0)
+
+
+            CreatePixelTextureBorder(frame.pixelBorder, borderSize, 0)
+
+            if not frame.pixelBorder.diagonal then
+                local line = frame.pixelBorder:CreateTexture(nil, "BORDER", nil, -1)
+                line:SetColorTexture(0, 0, 0, 1)
+                line:SetIgnoreParentScale(true)
+                frame.pixelBorder.diagonal = line
+            end
+
+            local line = frame.pixelBorder.diagonal
+            line:ClearAllPoints()
+            line:SetPoint("BOTTOMLEFT", frame.healthBar, "BOTTOMLEFT", 0, 0.5+halfPixel)
+            line:SetPoint("TOPRIGHT", frame.powerBar, "TOPRIGHT", 0, -0.5)
+        end
+    end
+    hooksecurefunc("DefaultCompactMiniFrameSetup", function(frame)
+        if not frame then return end
+        if not frame.pixelBorder then
+            frame.pixelBorder = CreateFrame("Frame", nil, frame)
+            frame.pixelBorder:SetFrameLevel(3)
+        end
+        frame.pixelBorder:ClearAllPoints()
+        frame.pixelBorder:SetPoint("TOPLEFT", frame.healthBar, "TOPLEFT", -0.5, 1)
+        frame.pixelBorder:SetPoint("BOTTOMRIGHT", frame.healthBar, "BOTTOMRIGHT", 0.5, 0)
+
+        if frame.horizTopBorder then
+            frame.horizTopBorder:Hide()
+            frame.horizBottomBorder:Hide()
+            frame.vertLeftBorder:Hide()
+            frame.vertRightBorder:Hide()
+        end
+        CreatePixelTextureBorder(frame.pixelBorder, borderSize, 0)
+    end)
+    BBF.RaidFramePixelBorderApplied = true
+end
+
+function BBF.HideAbsorbGlow()
+    if not BetterBlizzFramesDB.hideAllAbsorbGlow then return end
+    hooksecurefunc("CompactUnitFrame_UpdateHealPrediction", function(frame)
+        if frame.overAbsorbGlow then
+            frame.overAbsorbGlow:SetAlpha(0)
+        end
+    end)
+    hooksecurefunc("UnitFrameHealPredictionBars_Update", function(frame)
+        if frame.overAbsorbGlow then
+            frame.overAbsorbGlow:SetAlpha(0)
+        end
+    end)
+end
+
+function BBF.ZoomDefaultActionbarIcons(enableZoom)
+    if not BetterBlizzFramesDB.zoomActionBarIcons and enableZoom ~= false then return end
+    if BetterBlizzFramesDB.zoomActionBarIcons then
+        enableZoom = true
+    end
+    local function zoom(icon)
+        if icon and icon.SetTexCoord then
+            if enableZoom then
+                icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+            else
+                icon:SetTexCoord(0, 1, 0, 1)
+            end
+        end
+    end
+    
+    local function zoomButtons(prefix, count)
+        for i = 1, count do
+            local btn = _G[prefix .. i]
+            if btn then
+                zoom(btn.Icon or btn.icon or _G[prefix .. i .. "Icon"])
+            end
+        end
+    end
+    
+    zoomButtons("ActionButton", 12)
+    zoomButtons("MultiBarBottomLeftButton", 12)
+    zoomButtons("MultiBarBottomRightButton", 12)
+    zoomButtons("MultiBarRightButton", 12)
+    zoomButtons("MultiBarLeftButton", 12)
+    zoomButtons("MultiBar5Button", 12)
+    zoomButtons("MultiBar6Button", 12)
+    zoomButtons("MultiBar7Button", 12)
+    zoomButtons("PetActionButton", 10)
+    zoomButtons("StanceButton", 12)
+    zoomButtons("PossessButton", 2)
+    
+    if ExtraActionButton1 and ExtraActionButton1.icon then
+        zoom(ExtraActionButton1.icon)
+    end
+    if ZoneAbilityFrame and ZoneAbilityFrame.SpellButton and ZoneAbilityFrame.SpellButton.Icon then
+        zoom(ZoneAbilityFrame.SpellButton.Icon)
+    end
+end
+    
 
 --######################################################################
 -- Move Resource Frames to TargetFrame
@@ -2971,13 +3285,13 @@ local function ApplyTextureChange(type, statusBar, parent, classic, party, altBa
         if not parent.hookedHealthBarsTexture then
             local updateFunc = party and "ToPlayerArt" or "Update"
             if classicTexture then
-                -- procs secret error on beta BBF.isMidnight
-                -- hooksecurefunc(parent, updateFunc, function()
-                --     statusBar:SetStatusBarTexture(classicTexture)
-                --     originalTexture:SetDrawLayer(originalLayer)
-                -- end)
+                -- procs secret error on beta BBF.isMidnight (no more?)
+                hooksecurefunc(parent, updateFunc, function()
+                    statusBar:SetStatusBarTexture(classicTexture)
+                    originalTexture:SetDrawLayer(originalLayer)
+                end)
             else
-                -- procs secret error on beta BBF.isMidnight
+                -- procs secret error on beta BBF.isMidnight (no more?)
                 hooksecurefunc(parent, updateFunc, function()
                     if parent.unit == "pet" then return end
                     statusBar:SetStatusBarTexture(texture)
@@ -3941,8 +4255,9 @@ function BBF.AddBackgroundTextureToUnitFrames(frame)
     end
 
     local enabled = BetterBlizzFramesDB.addUnitFrameBgTexture
-    local healthColor = BetterBlizzFramesDB.unitFrameBgTextureHealthColor or { 0, 0, 0, 0.7 }
+    local healthColor = BetterBlizzFramesDB.unitFrameBgTextureColor or { 0, 0, 0, 0.7 }
     local manaColor = BetterBlizzFramesDB.unitFrameBgTextureManaColor or { 0, 0, 0, 0.7 }
+    local bgTexture = BBF.LSM:Fetch(BBF.LSM.MediaType.STATUSBAR, BetterBlizzFramesDB.unitFrameBgTexture)
 
     local hpBar = frame.healthbar or frame.HealthBar or frame.healthBar
     local manaBar = frame.manabar or frame.ManaBar or frame.manaBar
@@ -3988,7 +4303,8 @@ function BBF.AddBackgroundTextureToUnitFrames(frame)
             end
         end
 
-        bg:SetColorTexture(unpack(healthColor))
+        bg:SetTexture(bgTexture)
+        bg:SetVertexColor(unpack(healthColor))
         bg:Show()
     end
 
@@ -4013,7 +4329,8 @@ function BBF.AddBackgroundTextureToUnitFrames(frame)
             end
         end
 
-        bg:SetColorTexture(unpack(manaColor))
+        bg:SetTexture(bgTexture)
+        bg:SetVertexColor(unpack(manaColor))
         bg:Show()
     end
     
@@ -4039,7 +4356,8 @@ function BBF.AddBackgroundTextureToUnitFrames(frame)
             end
         end
 
-        bg:SetColorTexture(unpack(manaColor))
+        bg:SetTexture(bgTexture)
+        bg:SetVertexColor(unpack(manaColor))
         bg:Show()
     end
 end
@@ -4751,6 +5069,11 @@ First:SetScript("OnEvent", function(_, event, addonName)
         BBF.GenericLegacyComboSupport()
         BBF.RaiseTargetFrameLevel()
         BBF.RaiseTargetCastbarStratas()
+        BBF.RaidFramePixelBorder()
+        BBF.ModernRoleIcons()
+        BBF.HideAbsorbGlow()
+        BBF.ZoomDefaultActionbarIcons()
+        BBF.ClassColorFriendlist()
         --BBF.DisableAddOnProfiling()
         C_Timer.After(0.5, function()
             BBF.ClassColorLegacyCombos()

@@ -984,6 +984,16 @@ function BBF.ChangeCastbarSizes()
     -- FocusFrameSpellBar.Text:SetPoint("CENTER", FocusFrameSpellBar, "CENTER", 0, 0)
     -- FocusFrameSpellBar.Text:SetWidth(BetterBlizzFramesDB.focusCastBarWidth)
 
+    if BetterBlizzFramesDB.changeUnitFrameFont then
+        local fontName = BetterBlizzFramesDB.unitFrameFont
+        local fontPath = BBF.LSM:Fetch(BBF.LSM.MediaType.FONT, fontName)
+        local outline = BetterBlizzFramesDB.unitFrameFontOutline or "THINOUTLINE"
+        local _, size, _ = TargetFrameSpellBar.Text:GetFont()
+        TargetFrameSpellBar.Text:SetFont(fontPath, size, outline)
+        local _, size, _ = CastingBarFrame.Text:GetFont()
+        CastingBarFrame.Text:SetFont(fontPath, size, outline)
+    end
+
 end
 
 CastingBarFrame:HookScript("OnShow", function()

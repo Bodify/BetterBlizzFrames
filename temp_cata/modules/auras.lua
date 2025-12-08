@@ -2934,7 +2934,7 @@ function BBF.HookPlayerAndTargetAuras()
     end
 
     --Hook Target & Focus Castbars
-    if not targetCastbarsHooked then
+    if not targetCastbarsHooked and not BetterBlizzFramesDB.disableCastbarMovement then
         hooksecurefunc(TargetFrame.spellbar, "SetPoint", function()
             if shouldAdjustCastbar then
                 adjustCastbar(TargetFrame.spellbar, TargetFrameSpellBar)
@@ -2949,6 +2949,12 @@ function BBF.HookPlayerAndTargetAuras()
                 DefaultCastbarAdjustment(FocusFrame.spellbar, FocusFrameSpellBar)
             end
         end);
+        targetCastbarsHooked = true
+    end
+
+    if BetterBlizzFramesDB.disableCastbarMovement then
+        TargetFrame.staticCastbar = true
+        FocusFrame.staticCastbar = true
     end
 
     if not smokeBombDetector then
