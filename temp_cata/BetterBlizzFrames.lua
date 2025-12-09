@@ -2830,7 +2830,7 @@ First:SetScript("OnEvent", function(_, event, addonName)
             BBF.AlwaysShowLegacyComboPoints()
             BBF.GenericLegacyComboSupport()
             BBF.ChangeTotemFrameScale()
-            BBF.ZoomDefaultActionbarIcons
+            BBF.ZoomDefaultActionbarIcons()
             --TurnOnEnabledFeaturesOnLogin()
             BBF.RaiseTargetCastbarStratas()
             BBF.HookStatusBarText()
