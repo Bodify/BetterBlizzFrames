@@ -1,7 +1,7 @@
 # BetterBlizzFrames 1.8.4b
 ## Mists of Pandaria
 ### Bugfix
-- Fix missing paratheses on function call causing addon to not load properly.
+- Fix missing parentheses on function call causing addon to not load properly.
 
 # BetterBlizzFrames 1.8.4
 ## GitHub
