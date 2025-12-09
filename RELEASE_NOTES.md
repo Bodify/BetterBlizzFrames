@@ -1,3 +1,8 @@
+# BetterBlizzFrames 1.8.4b
+## Mists of Pandaria
+### Bugfix
+- Fix missing paratheses on function call causing addon to not load properly.
+
 # BetterBlizzFrames 1.8.4
 ## GitHub
 - With this version and forward my addons will also have GitHub releases. Huge thanks to zerbiniandrea for the pull request with everything set up for me to get quicky started with this.
