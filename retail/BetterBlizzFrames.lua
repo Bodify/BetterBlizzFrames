@@ -5024,11 +5024,7 @@ SlashCmdList["BBF"] = function(msg)
             --BBF.InitializeOptions()
             --Settings.OpenToCategory(BBF.category:GetID())
         else
-            if not BetterBlizzFrames.guiLoaded then
-                BBF.LoadGUI()
-            else
-                Settings.OpenToCategory(BBF.category:GetID())
-            end
+            BBF.LoadGUI()
         end
     end
 end

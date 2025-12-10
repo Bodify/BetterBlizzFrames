@@ -2687,10 +2687,14 @@ function BBF.noPortraitModes()
         flashNoLvl = nil
         minusTex = nil
     end
-    MakeNoPortraitMode(TargetFrame)
-    MakeNoPortraitMode(FocusFrame)
-    MakeNoPortraitMode(PlayerFrame)
-    MakeNoPortraitMode(PetFrame)
+    if not BetterBlizzFramesDB.noPortraitSkipTarget then
+        MakeNoPortraitMode(TargetFrame)
+        MakeNoPortraitMode(FocusFrame)
+    end
+    if not BetterBlizzFramesDB.noPortraitSkipPlayer then
+        MakeNoPortraitMode(PlayerFrame)
+        MakeNoPortraitMode(PetFrame)
+    end
 
     MakeClassicPartyFrame()
 
