@@ -1,4 +1,5 @@
 if BBF.isMidnight then return end
+local L = BBF.L
 local spellBars = {}
 local castBarsCreated = false
 local petCastbarCreated = false
@@ -698,7 +699,7 @@ function BBF.partyCastBarTestMode()
 
             spellbar:SetMinMaxValues(minValue, maxValue)
             spellbar:SetValue(currentValue)
-            spellbar.Text:SetText("Frostbolt")
+            spellbar.Text:SetText(L["Label_Frostbolt"])
 
             -- Cancel any existing timer before creating a new one
             if spellbar.tickTimer then
@@ -769,7 +770,7 @@ function BBF.petCastBarTestMode()
             spellBars["pet"].Icon:Show()
             spellBars["pet"].Icon:SetTexture(C_Spell.GetSpellTexture(6358))
         end
-        spellBars["pet"].Text:SetText("Seduction")
+        spellBars["pet"].Text:SetText(L["Label_Seduction"])
         if BetterBlizzFramesDB.petCastBarTimer then
             spellBars["pet"].FakeTimer:Show()
         else

@@ -4,6 +4,9 @@ BetterBlizzFramesDB = BetterBlizzFramesDB or {}
 BBF = BBF or {}
 BBA = BBA or {}
 
+-- Initialize locale table (will be populated by locale files)
+BBF.L = BBF.L or {}
+
 local gameVersion = select(1, GetBuildInfo())
 BBF.isMidnight = gameVersion:match("^12")
 BBF.isRetail = gameVersion:match("^11")

@@ -1,3 +1,4 @@
+local L = BBF.L
 local function sum(t)
     local sum = 0
     for k,v in pairs(t) do
@@ -1300,7 +1301,7 @@ local function AdjustAuras(self, frameType)
                                 }
                                 if thisAuraData then
                                     local iconTexture = thisAuraData.icon and "|T" .. thisAuraData.icon .. ":16:16|t" or ""
-                                    print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconTexture .. " " .. (thisAuraData.name or "Unknown") .. "  |A:worldquest-icon-engineering:14:14|a ID: " .. (thisAuraData.spellId or "Unknown"))
+                                    print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconTexture .. " " .. (thisAuraData.name or L["Label_Unknown"]) .. "  |A:worldquest-icon-engineering:14:14|a ID: " .. (thisAuraData.spellId or L["Label_Unknown"]))
                                     auraFrame.bbfPrinted = true
                                     auraFrame.bbfLastPrintedAuraID = currentAuraID
     
@@ -1770,7 +1771,7 @@ local function CreateToggleIcon()
 
             BBF.RefreshAllAuraFrames()
 
-            print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: Hidden Icon Direction set to: " .. BetterBlizzFramesDB.hiddenIconDirection)
+            print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. L["Print_Hidden_Icon_Direction_Set"] .. BetterBlizzFramesDB.hiddenIconDirection)
 
         elseif IsShiftKeyDown() then
             -- Reset position to default
@@ -1802,7 +1803,7 @@ local function CreateToggleIcon()
     toggleIcon:SetScript("OnEnter", function(self)
         GameTooltip:SetOwner(self, "ANCHOR_BOTTOMLEFT", 0, -10)
         GameTooltip:AddLine("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames")
-        GameTooltip:AddLine("Filtered buffs. Click to show/hide.\nShift+Alt+RightClick to blacklist buffs.\n\nCtrl+LeftClick to move.\nShift+LeftClick to reset position.\nAlt+LeftClick to change direction.\n\n(You can hide this icon in settings)", 1, 1, 1, true)
+        GameTooltip:AddLine(L["Tooltip_Filtered_Buffs_Icon_Classic"], 1, 1, 1, true)
         GameTooltip:Show()
         if not self.isAurasShown then
             ShowHiddenAuras()
@@ -2289,7 +2290,7 @@ local function PersonalDebuffFrameFilterAndGrid(self)
         warningTexture:EnableMouse(true)
         warningTexture:SetScript("OnEnter", function(self)
             GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-            GameTooltip:SetText("BetterBlizzFrames\nDoT Detected", 1, 1, 1)
+            GameTooltip:SetText(L["DoT_Detected_Tooltip"], 1, 1, 1)
             GameTooltip:Show()
         end)
 
@@ -2569,7 +2570,7 @@ function BBF.RefreshAllAuraFrames()
     else
         if not auraMsgSent then
             auraMsgSent = true
-            DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: You need to enable aura settings for blacklist and whitelist etc to work.")
+            DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. L["Print_Need_Enable_Aura_Settings"])
             C_Timer.After(9, function()
                 auraMsgSent = false
             end)

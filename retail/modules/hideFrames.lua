@@ -1,4 +1,5 @@
 if BBF.isMidnight then return end
+local L = BBF.L
 local hiddenFrame = CreateFrame("Frame")
 hiddenFrame:Hide()
 BBF.hiddenFrame = hiddenFrame
@@ -69,7 +70,7 @@ function BBF.HideFrames()
     local db = BetterBlizzFramesDB
     if db.hasCheckedUi then
         if InCombatLockdown() then
-            print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: Combat detected while adjusting Hide settings. Reload might be required to see updates. Please leave combat.")
+            print(L["Print_Combat_Hide_Settings"])
             return
         end
         local playerClass, englishClass = UnitClass("player")
@@ -202,7 +203,7 @@ function BBF.HideFrames()
                 hooksecurefunc(EditModeManagerFrame, "EnterEditMode", function()
                     if InCombatLockdown() then
                         if hiddenBar1 then
-                            print("Could not show ActionBar1 due to combat. Please leave combat and re-open Edit Mode to show it.")
+                            print(L["Print_ActionBar1_Show_Combat"])
                         end
                         return
                     end
@@ -212,7 +213,7 @@ function BBF.HideFrames()
                 hooksecurefunc(EditModeManagerFrame, "ExitEditMode", function()
                     if InCombatLockdown() then
                         if not hiddenBar1 then
-                            print("Could not hide ActionBar1 due to combat. Please leave combat and re-open Edit Mode to hide it.")
+                            print(L["Print_ActionBar1_Hide_Combat"])
                         end
                         return
                     end

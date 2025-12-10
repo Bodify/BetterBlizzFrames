@@ -1,4 +1,5 @@
 if not BBF.isMidnight then return end
+local L = BBF.L
 
 local TargetFrame = TargetFrame
 local TargetFrameSpellBar = TargetFrameSpellBar
@@ -109,6 +110,10 @@ end
 function BBF.CheckActiveAuras(auraID)
     local frameType = trackedAuras[auraID] and BuffFrame or DebuffFrame
     local activeAuras = {}
+
+    if not frameType or not frameType.auraInfo then
+        return
+    end
 
     for auraIndex, auraInfo in ipairs(frameType.auraInfo) do
         local auraFrame = frameType.auraFrames[auraIndex]
@@ -1606,7 +1611,7 @@ local function CreateToggleIcon()
 
             BBF.RefreshAllAuraFrames()
 
-            print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: Hidden Icon Direction set to: " .. BetterBlizzFramesDB.hiddenIconDirection)
+            print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. L["Print_Hidden_Icon_Direction_Set"] .. BetterBlizzFramesDB.hiddenIconDirection)
 
         elseif IsShiftKeyDown() then
             -- Reset position to default
@@ -1638,7 +1643,7 @@ local function CreateToggleIcon()
     toggleIcon:SetScript("OnEnter", function(self)
         GameTooltip:SetOwner(self, "ANCHOR_BOTTOM", 0, -10)
         GameTooltip:AddLine("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames")
-        GameTooltip:AddLine("Filtered buffs. Click to show/hide currently hidden buffs.\n\n|cff00ff00To Whitelist an Aura:|r\nShift+Alt + LeftClick\n\n|cffff0000To Blacklist an Aura:|r\nShift+Alt + RightClick |cffffff00OR|r\nCtrl+Alt RightClick with \"Show Mine\" tag\n\nCtrl+LeftClick to move.\nShift+LeftClick to reset position.\nAlt+LeftClick to change direction.\n\n(You can hide this icon in settings)", 1, 1, 1, true)
+        GameTooltip:AddLine(L["Tooltip_Filtered_Buffs_Icon_Retail"], 1, 1, 1, true)
         GameTooltip:Show()
         if not self.isAurasShown then
             ShowHiddenAuras()
@@ -1824,7 +1829,7 @@ local function PersonalBuffFrameFilterAndGrid(self)
 
                         if auraData and (not auraFrame.bbfPrinted or auraFrame.bbfLastPrintedAuraIndex ~= currentAuraIndex) then
                             local iconTexture = auraData.icon and "|T" .. auraData.icon .. ":16:16|t" or ""
-                            print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconTexture .. " " .. (auraData.name or "Unknown") .. "  |A:worldquest-icon-engineering:14:14|a ID: " .. (auraData.spellId or "Unknown"))
+                            print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconTexture .. " " .. (auraData.name or L["Label_Unknown"]) .. "  |A:worldquest-icon-engineering:14:14|a ID: " .. (auraData.spellId or L["Label_Unknown"]))
                             auraFrame.bbfPrinted = true
                             auraFrame.bbfLastPrintedAuraIndex = currentAuraIndex  -- Store the index of the aura that was just printed
                             -- Cancel existing timer if any
@@ -2028,7 +2033,7 @@ local function PersonalBuffFrameFilterAndGrid(self)
     else
         if not printedMsg then
             printedMsg = true
-            print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: Buff Filtering with auras collapsed is currently not supported. Expand them (Pointy arrow next to Buffs) and reload or turn Player Buff filtering off. It is being worked on.")
+            print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. L["Print_Buff_Filtering_Collapsed_Not_Supported"])
             C_Timer.After(30, function()
                 printedMsg = false
             end)
@@ -2073,7 +2078,7 @@ local function PersonalDebuffFrameFilterAndGrid(self)
         warningTexture:EnableMouse(true)
         warningTexture:SetScript("OnEnter", function(self)
             GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-            GameTooltip:SetText("BetterBlizzFrames\nDoT Detected", 1, 1, 1)
+            GameTooltip:SetText(L["DoT_Detected_Tooltip"], 1, 1, 1)
             GameTooltip:Show()
         end)
 
@@ -2151,7 +2156,7 @@ local function PersonalDebuffFrameFilterAndGrid(self)
 
                             if auraData and (not auraFrame.bbfPrinted or auraFrame.bbfLastPrintedAuraIndex ~= currentAuraIndex) then
                                 local iconTexture = auraData.icon and "|T" .. auraData.icon .. ":16:16|t" or ""
-                                print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconTexture .. " " .. (auraData.name or "Unknown") .. "  |A:worldquest-icon-engineering:14:14|a ID: " .. (auraData.spellId or "Unknown"))
+                                print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconTexture .. " " .. (auraData.name or L["Label_Unknown"]) .. "  |A:worldquest-icon-engineering:14:14|a ID: " .. (auraData.spellId or L["Label_Unknown"]))
                                 auraFrame.bbfPrinted = true
                                 auraFrame.bbfLastPrintedAuraIndex = currentAuraIndex
                                 -- Cancel existing timer if any

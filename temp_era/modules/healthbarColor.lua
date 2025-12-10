@@ -1,3 +1,4 @@
+local L = BBF.L
 local UnitIsFriend = UnitIsFriend
 local UnitIsEnemy = UnitIsEnemy
 local UnitIsPlayer = UnitIsPlayer
@@ -674,7 +675,7 @@ end
 function BBF.HookBiggerHealthbars()
     if C_AddOns.IsAddOnLoaded("DragonflightUI") then
         if not BBF.DFUIUnsupported then
-            print("|A:gmchat-icon-blizz:16:16|aBetter|cff00c0ffBlizz|rFrames: Bigger Healthbars is not supported with DragonflightUI")
+            print("|A:gmchat-icon-blizz:16:16|aBetter|cff00c0ffBlizz|rFrames: " .. L["Print_Bigger_Healthbars_Not_Supported_DragonflightUI"])
             BBF.DFUIUnsupported = true
         end
         return
