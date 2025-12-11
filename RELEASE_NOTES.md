@@ -1,3 +1,14 @@
+# BetterBlizzFrames 1.8.4c
+## Retail & Midnight
+### Tweaks
+- Custom Health/Mana Colors now works for transparancy as well like intended.
+- Some settings extended to BossFrames, with more to come later. In this go: Darkmode, Hide reputation color (will trigger if either Target/Focus is selected), "Hide Threat" and "Hide Combat Glow".
+- Opening settings in combat no longer possible, even when already loaded (due to restrictions/bug on Beta). Now avoids error by waiting and settings will instead wait for combat drop to open.
+- Add a variable that lets you skip "No Portrait" setting on Target and/or Player. To enable do "/run BetterBlizzFramesDB.noPortraitSkipTarget" (or SkipPlayer)
+### Bugfix
+- Midnight: Fix lua error caused by "Hide Minimap Buttons" (when mousing over to show).
+- Fix Classic Frames setting in combination with hide level still showing level and wrong glow texture on some types of npcs.
+
 # BetterBlizzFrames 1.8.4b
 ## Mists of Pandaria
 ### Bugfix

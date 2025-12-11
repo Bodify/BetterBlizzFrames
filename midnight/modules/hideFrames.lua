@@ -178,6 +178,15 @@ function BBF.HideFrames()
             TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:Show()
         end
 
+        if BetterBlizzFramesDB.hideFocusReputationColor or BetterBlizzFramesDB.hideTargetReputationColor or BetterBlizzFramesDB.noPortraitModes then
+            for i = 1, 5 do
+                local frame = _G["Boss"..i.."TargetFrame"]
+                if frame then
+                    frame.TargetFrameContent.TargetFrameContentMain.ReputationColor:Hide()
+                end
+            end
+        end
+
         if BetterBlizzFramesDB.hideFocusReputationColor or BetterBlizzFramesDB.noPortraitModes then
             changes.hideFocusReputationColor = true
             FocusFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:Hide()
@@ -198,6 +207,12 @@ function BBF.HideFrames()
         if BetterBlizzFramesDB.hideThreatOnFrame then
             TargetFrame.TargetFrameContent.TargetFrameContentContextual.NumericalThreat:SetAlpha(0)
             FocusFrame.TargetFrameContent.TargetFrameContentContextual.NumericalThreat:SetAlpha(0)
+            for i = 1, 5 do
+                local frame = _G["Boss"..i.."TargetFrame"]
+                if frame and frame.TargetFrameContent.TargetFrameContentContextual.NumericalThreat then
+                    frame.TargetFrameContent.TargetFrameContentContextual.NumericalThreat:SetAlpha(0)
+                end
+            end
         end
 
         if BetterBlizzFramesDB.hideActionBar1 then
@@ -426,6 +441,12 @@ function BBF.HideFrames()
             FocusFrame.TargetFrameContainer.Flash:SetParent(hiddenFrame)
             PetFrameFlash:SetParent(hiddenFrame)
             PetAttackModeTexture:SetParent(hiddenFrame)
+            for i = 1, 5 do
+                local frame = _G["Boss"..i.."TargetFrame"]
+                if frame then
+                    frame.TargetFrameContainer.Flash:SetParent(hiddenFrame)
+                end
+            end
             changes.hideCombatGlow = true
         elseif changes.hideCombatGlow then
             PlayerFrame.PlayerFrameContainer.FrameFlash:SetParent(PlayerFrame.PlayerFrameContainer)
@@ -433,6 +454,12 @@ function BBF.HideFrames()
             FocusFrame.TargetFrameContainer.Flash:SetParent(FocusFrame.TargetFrameContainer)
             PetFrameFlash:SetParent(PetFrame)
             PetAttackModeTexture:SetParent(PetFrame)
+            for i = 1, 5 do
+                local frame = _G["Boss"..i.."TargetFrame"]
+                if frame then
+                    frame.TargetFrameContainer.Flash:SetParent(frame.TargetFrameContainer)
+                end
+            end
             changes.hideCombatGlow = nil
         end
 
@@ -1068,13 +1095,13 @@ function BBF.HideFrames()
                 local child = select(i, Minimap:GetChildren())
                 if child then
                     local childName = child:GetName() or ""
-                    if string.find(childName, "LibDBIcon") or childName == "ExpansionLandingPageMinimapButton" then
+                    if string.find(childName, "LibDBIcon") or childName == "ExpansionLandingPageMinimapButton" or childName == "ArenaAnalyticsMinimapButton" then
                         if show then
                             child:Show()
-                            ExpansionLandingPageMinimapButton:Show()
+                            ExpansionLandingPageMinimapButton:SetAlpha(1)
                         else
                             child:Hide()
-                            ExpansionLandingPageMinimapButton:Hide()
+                            ExpansionLandingPageMinimapButton:SetAlpha(0)
                         end
                     end
                 end

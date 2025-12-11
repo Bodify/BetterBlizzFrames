@@ -9349,13 +9349,19 @@ function BBF.InitializeOptions()
 end
 
 function BBF.LoadGUI()
-    if BetterBlizzFrames.guiLoaded then return end
+    -- First time opening settings
     if BetterBlizzFramesDB.hasNotOpenedSettings then
         BBF.CreateIntroMessageWindow()
         BetterBlizzFramesDB.hasNotOpenedSettings = nil
         return
     end
+
     if CombatOnGUICreation() then return end
+
+    if BetterBlizzFrames.guiLoaded then
+        Settings.OpenToCategory(BBF.category:GetID())
+        return
+    end
 
     guiGeneralTab()
     guiPositionAndScale()

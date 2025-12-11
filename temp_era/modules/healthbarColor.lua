@@ -238,7 +238,7 @@ BBF.getUnitColor = getUnitColor
 
 local function updateFrameColorToggleVer(frame, unit)
     if unit == "player" and skipPlayer then
-        frame:SetStatusBarColor(0, 1, 0)
+        frame:SetStatusBarColor(0, 1, 0, 1)
         return
     end
     if classColorsOn then
@@ -246,10 +246,10 @@ local function updateFrameColorToggleVer(frame, unit)
         if color then
             if isFriendly and (not frame.bbfChangedTexture or skipFriendly) then
                 frame:SetStatusBarDesaturated(false)
-                frame:SetStatusBarColor(0, 1, 0)
+                frame:SetStatusBarColor(0, 1, 0, 1)
             else
                 frame:SetStatusBarDesaturated(true)
-                frame:SetStatusBarColor(color.r, color.g, color.b)
+                frame:SetStatusBarColor(color.r, color.g, color.b, 1)
             end
         end
     end
@@ -259,7 +259,7 @@ BBF.updateFrameColorToggleVer = updateFrameColorToggleVer
 
 local function resetFrameColor(frame, unit)
     frame:SetStatusBarDesaturated(false)
-    frame:SetStatusBarColor(0,1,0)
+    frame:SetStatusBarColor(0, 1, 0, 1)
 end
 
 local validUnits = {
@@ -278,17 +278,17 @@ local validUnits = {
 local function UpdateHealthColor(frame, unit)
     if not validUnits[unit] then return end
     if unit == "player" and skipPlayer then
-        frame:SetStatusBarColor(0, 1, 0)
+        frame:SetStatusBarColor(0, 1, 0, 1)
         return
     end
     local color, isFriendly = getUnitColor(unit)
     if color then
         if isFriendly and skipFriendly then
             frame:SetStatusBarDesaturated(true)
-            frame:SetStatusBarColor(0, 1, 0)
+            frame:SetStatusBarColor(0, 1, 0, 1)
         else
             frame:SetStatusBarDesaturated(true)
-            frame:SetStatusBarColor(color.r, color.g, color.b)
+            frame:SetStatusBarColor(color.r, color.g, color.b, 1)
         end
     end
 end
@@ -333,7 +333,7 @@ function BBF.UpdateFrameColor(frame, unit)
     local color = getUnitColor(unit)
     if color then
         frame:SetStatusBarDesaturated(true)
-        frame:SetStatusBarColor(color.r, color.g, color.b)
+        frame:SetStatusBarColor(color.r, color.g, color.b, 1)
     end
 end
 
@@ -417,7 +417,7 @@ function BBF.HookHealthbarColors()
 
             local _, class = UnitClass(frame.unit)
             if class == "SHAMAN" then
-                frame.healthBar:SetStatusBarColor(0.00, 0.44, 0.87)
+                frame.healthBar:SetStatusBarColor(0.00, 0.44, 0.87, 1)
             end
         end)
 
@@ -426,7 +426,7 @@ function BBF.HookHealthbarColors()
             if frame and frame.unit then
                 local _, class = UnitClass(frame.unit)
                 if class == "SHAMAN" then
-                    frame.healthBar:SetStatusBarColor(0.00, 0.44, 0.87)
+                    frame.healthBar:SetStatusBarColor(0.00, 0.44, 0.87, 1)
                 end
             end
         end

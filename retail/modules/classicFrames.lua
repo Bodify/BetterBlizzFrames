@@ -247,14 +247,18 @@ local function MakeClassicFrame(frame)
             end
         end
 
-        local function ToggleNoLevelFrame(noLvl)
+        local function ToggleNoLevelFrame(noLvl, skipTexture)
             if noLvl then
-                frame.ClassicFrame.Texture:SetTexture(noLvlTex)
+                if not skipTexture then
+                    frame.ClassicFrame.Texture:SetTexture(noLvlTex)
+                end
                 frameContainer.Flash:SetTexture(flashNoLvl)
                 frameContainer.Flash:SetTexCoord(0, 0.9553125, -0.01,0.733)
                 contentMain.LevelText:SetAlpha(0)
             else
-                frame.ClassicFrame.Texture:SetTexture(defaultTex)
+                if not skipTexture then
+                    frame.ClassicFrame.Texture:SetTexture(defaultTex)
+                end
                 frameContainer.Flash:SetTexture(flashTex)
                 frameContainer.Flash:SetTexCoord(0, 0.9453125, 0, 0.181640625)
                 contentMain.LevelText:SetAlpha(1)
@@ -287,29 +291,35 @@ local function MakeClassicFrame(frame)
             if ( classification == "rareelite" ) then
                 FrameAdjustments(frameContainer)
                 if hideDragon and alwaysHideLvl then
-                    frame.ClassicFrame.Texture:SetTexture(noLvlTex)
+                    ToggleNoLevelFrame(true)
                 elseif hideDragon then
                     frame.ClassicFrame.Texture:SetTexture(defaultTex)
+                    ToggleNoLevelFrame(false, true)
                 else
                     frame.ClassicFrame.Texture:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Rare-Elite")
+                    ToggleNoLevelFrame(false, true)
                 end
             elseif ( classification == "worldboss" or classification == "elite" ) then
                 FrameAdjustments(frameContainer)
                 if hideDragon and alwaysHideLvl then
-                    frame.ClassicFrame.Texture:SetTexture(noLvlTex)
+                    ToggleNoLevelFrame(true)
                 elseif hideDragon then
                     frame.ClassicFrame.Texture:SetTexture(defaultTex)
+                    ToggleNoLevelFrame(false, true)
                 else
                     frame.ClassicFrame.Texture:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Elite")
+                    ToggleNoLevelFrame(false, true)
                 end
             elseif ( classification == "rare" ) then
                 FrameAdjustments(frameContainer)
                 if hideDragon and alwaysHideLvl then
-                    frame.ClassicFrame.Texture:SetTexture(noLvlTex)
+                    ToggleNoLevelFrame(true)
                 elseif hideDragon then
                     frame.ClassicFrame.Texture:SetTexture(defaultTex)
+                    ToggleNoLevelFrame(false, true)
                 else
                     frame.ClassicFrame.Texture:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Rare")
+                    ToggleNoLevelFrame(false, true)
                 end
             elseif ( classification == "minus" ) then
                 FrameAdjustments(frameContainer, true)
