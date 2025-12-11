@@ -1310,7 +1310,7 @@ L["Dungeon_Queue_Popped_After"] = "%s 대기 후 던전 대기열이 시작되�
 L["Dungeon_Queue_Popped_Time_Unknown"] = "던전 대기열이 시작되었지만, 시간을 확인할 수 없습니다."
 
 ---------------------------------------
--- Custom Color Section (New Keys)
+-- Custom Color Section
 ---------------------------------------
 
 L["Hide_Bg"] = "배경 숨기기"
@@ -1393,7 +1393,7 @@ L["Power_Stagger"] = "시간차"
 L["Power_Soul_Fragments"] = "영혼의 조각"
 
 ---------------------------------------
--- Right-Click Options (New Keys)
+-- Right-Click Options
 ---------------------------------------
 
 L["Right_Click_Show_Extra_Decimal"] = "우클릭하여 소수점 한 자리 더 표시."
@@ -1419,8 +1419,6 @@ L["Popup_Combat_Warning_Midnight"] = "이 설정을 조정하려면 전투를 �
 L["Popup_New_Version_Text_Midnight"] = "중요한 변경 사항\n\n초상화 없음 모드를 위한 많은 새로운 조정 및 설정. 픽셀 테두리 설정과 마나/기력/추가 자원 숨기기 등이 포함됩니다.\n\nBBF는 빠르게 개발 중이므로 더 많은 조정과 약간의 변경 사항(특히 이러한 새로운 기능들)이 예상됩니다.\n\n문제가 있으면 보고해 주세요!"
 L["Popup_Cata_Update_Text"] = "|A:services-icon-warning:16:16|a 변경 사항 |A:services-icon-warning:16:16|a\n\nBBF의 많은 정식 버전 기능이 판다리아와 대격변으로 이식되었습니다.\n\n많은 변경으로 인해 일부 사항이 약간 변경되었을 수 있습니다.\n놓친 버그도 있을 수 있습니다.\n\n자세한 내용은 변경 로그를 참조하세요."
 L["Popup_Cata_Beta_Version_Text"] = "두 가지 중요한 변경 사항:\n\n1) 대상의 대상 및 주시 대상의 대상 위치를 재설정했습니다.\n원하는 위치로 다시 변경해야 합니다.\n\n2) 플레이어, 대상 및 주시 대상 프레임의 크기 조정 설정도 추가했습니다.\n\n이를 조정하는 스크립트/다른 애드온이 있는 경우 BBF에서 동일한 값을 설정하거나 다른 기능을 끄십시오.\n\n불편을 끼쳐 죄송합니다.\n이 변경은 베타 제작 시 잘못된 초기 값 때문에 필요했습니다.\n다시는 일어나지 않을 것입니다."
-
--- CreateTooltipTwo - midnight/gui.lua
 L["Tooltip_LossOfControlScale_Desc"] = "제어 불가 프레임의 크기를 조정합니다\n(화면 중앙에 표시되는 군중 제어)"
 L["Tooltip_Dark_Mode_GameTooltip_Desc"] = "게임 툴팁의 어두운 모드."
 L["Tooltip_Dark_Mode_Elite_Texture_Desc"] = "대상/주시 대상 프레임의 정예 텍스처 어두운 모드.\n\n|cff32f795우클릭으로 채도 조정 켜기/끄기|r"
@@ -1454,8 +1452,6 @@ L["Tooltip_Change_ActionBar_Font_Color_Desc"] = "행동 단축바의 글꼴 색�
 L["Tooltip_Charges_Font_Desc"] = "충전 글꼴도 변경합니다."
 L["Tooltip_One_Font_All_Text_Extra"] = "*게임 세계의 일부 텍스트(예: 피해 숫자)는 애드온으로 변경할 수 없습니다. 게임 파일을 편집하면 가능합니다."
 L["Tooltip_Change_UnitFrame_Healthbar_Texture_RightClick_Desc"] = "플레이어, 대상 및 주시 대상 등의 생명력 바 텍스처를 변경합니다.\n\n|cff32f795우클릭으로 이름 뒤의 텍스처도 변경.|r"
-
--- CreateTooltipTwo - temp_era/gui.lua
 L["Tooltip_Mount_Filter_Desc"] = "모든 탈것을 표시합니다.\n(테스트 필요, 이 필터로 표시되지 않는 탈것을 발견하면 보고해 주세요)"
 L["Tooltip_Whitelist_Filter_Desc"] = "허용 목록에 있는 오라만 표시합니다.\n(다른 필터 포함)"
 L["Tooltip_Whitelist_Filter_Extra"] = "허용 목록 필터를 활성화하지 않고도 \"내 것만\" 및 \"중요\" 등의 설정을 추가하기 위해 주문을 허용 목록에 추가할 수 있습니다.\n\n여기에서 허용 목록에 있는 오라만 원하거나 추가로 원하는 경우에만 선택하세요.\n(다른 필터 포함)"
@@ -1464,20 +1460,14 @@ L["Tooltip_Sort_Purgeable_First_Desc"] = "확대 및 중요 오라보다 정화 
 L["Tooltip_Hide_UI_Error_Frame_Desc"] = "UI 오류 프레임을 숨깁니다(\"마나가 부족합니다\" 등을 표시하는 빨간 텍스트)"
 L["Tooltip_Show_Last_Name_NPC_Desc"] = "NPC 이름의 첫 번째 이름/단어를 숨기고 마지막 부분만 표시합니다."
 L["Tooltip_Hunter_Feign_Fix_Desc"] = "죽은 척하기 사용 시 사냥꾼을 죽은 것으로 표시하지 않아 심장마비를 방지합니다."
-
--- Additional CreateTooltipTwo - midnight/gui.lua
 L["Tooltip_Hide_Threat_Meter_Desc"] = "대상 및 주시 대상 프레임에 표시되는 위협 수준 측정기를 숨깁니다."
 L["Tooltip_Recolor_Castbars_Desc"] = "플레이어, 대상 및 주시 대상 등의 시전바 색상을 변경합니다."
 L["Tooltip_Change_UnitFrame_Font_Etc_Desc"] = "플레이어, 대상 및 주시 대상 등의 글꼴을 변경합니다."
 L["Tooltip_Change_UnitFrame_Number_Font_Etc_Desc"] = "플레이어, 대상 및 주시 대상 등의 숫자 글꼴을 변경합니다."
 L["Tooltip_Change_PartyFrames_Font_Desc"] = "파티 프레임의 글꼴을 변경합니다"
 L["Tooltip_Change_ActionBar_Font_Etc_Desc"] = "플레이어, 대상 및 주시 대상 등의 글꼴을 변경합니다."
-
--- CreateSlider - temp_era/gui.lua, temp_cata/gui.lua
 L["Icon_X_Offset"] = "아이콘 X 위치"
 L["Icon_Y_Offset"] = "아이콘 Y 위치"
-
--- Additional CreateTooltipTwo - midnight/gui.lua (more)
 L["Tooltip_Keep_Fancy_Manabars_Desc"] = "화려한 마나바(광기, 천공의 힘, 소용돌이, 격노 등)의 텍스처 변경을 무시하고 기본값을 유지합니다."
 L["Tooltip_Change_Name_Bg_Texture_Desc"] = "플레이어, 대상 및 주시 대상 등의 이름 배경 텍스처를 변경합니다. 필요한 것보다 CPU를 많이 사용합니다."
 L["Tooltip_Change_Castbar_Texture_Desc"] = "플레이어, 대상 및 주시 대상 등의 시전바 텍스처를 변경합니다. 필요한 것보다 CPU를 많이 사용합니다."
@@ -1486,8 +1476,6 @@ L["Tooltip_Change_RaidFrame_Manabar_Texture_Etc_Desc"] = "공격대 프레임의
 L["Tooltip_Enable_Aura_Settings_TargetFocus_Desc"] = "대상 프레임 및 주시 대상 프레임의 모든 오라 설정을 활성화합니다."
 L["Tooltip_Pixel_Border_Auras_Desc"] = "오라 주위에 픽셀 테두리를 추가합니다.\n\n참고: 인스턴스 밖에서만 디버프에 작동합니다."
 L["Tooltip_Hide_Target_Auras_Desc"] = "대상 프레임의 모든 오라를 숨깁니다."
-
--- Final Additional CreateTooltipTwo - midnight/gui.lua
 L["Tooltip_Hide_Focus_Auras_Desc"] = "주시 대상 프레임의 모든 오라를 숨깁니다."
 L["Tooltip_Normal_Size_Game_Menu_Desc"] = "게임 메뉴(ESC)를 다시 일반 크기로 만듭니다.\n우리는 늙은 세대지만 그렇게까지 늙지는 않았습니다."
 L["Tooltip_Minimize_Objective_Better_Desc"] = "-+ 버튼 |A:UI-QuestTrackerButton-Collapse-All:19:19|a을 클릭할 때 목표 헤더도 최소화합니다"
@@ -1501,8 +1489,6 @@ L["Tooltip_Show_Always_Legacy_Desc"] = "활성 연계가 있는지 여부에 관
 L["Tooltip_Paladin_Background_Desc"] = "채워지지 않은 충전에 대한 배경을 표시합니다."
 L["Tooltip_Roleplay_Name_Text_Color_Desc"] = "Total RP3 역할극 색상으로 이름에 색상을 지정합니다."
 L["Tooltip_Roleplay_Healthbar_Color_Desc"] = "Total RP3 역할극 색상으로 생명력 바에 색상을 지정합니다."
-
--- Additional midnight/gui.lua hardcoded texts
 L["Tooltip_Arena_Names_Target_Focus_Desc"] = "투기장에서 대상 및 주시 대상 이름을 투기장 번호 및 전문화 이름으로 변경합니다."
 L["Tooltip_Class_Color_Frames_Desc"] = "플레이어, 대상, 주시 대상 및 파티 프레임을 직업 색상으로 표시합니다."
 L["Tooltip_Class_Color_FrameTexture_Desc"] = "플레이어, 대상 및 주시 대상의 프레임 텍스처(테두리)를 직업 색상으로 표시합니다."
@@ -1520,18 +1506,12 @@ L["Tooltip_Druid_Manabar_Desc"] = "회복 드루이드로 야성/곰 형상일 �
 L["Tooltip_Hide_XP_Honor_Desc"] = "경험치 및 명예 바를 숨깁니다. 캐릭터 창을 열면 여전히 표시됩니다."
 L["Tooltip_Raise_Castbar_Strata_Desc"] = "대상 및 주시 대상 프레임의 층위를 높여 프레임 뒤에 나타나지 않도록 합니다.\n\n이것은 대상 프레임 시전바가 주시 대상 프레임 위에 나타나도록 하지 않으며, 위의 설정이 해당 동작에 필요합니다."
 L["Tooltip_Import_Blacklist_Desc"] = "많은(750개 이상) 쓰레기 버프가 차단된 차단 목록을 가져옵니다.\n\n현재 차단 목록에 없는 새 항목만 추가하고 기존 항목을 건드리지 않습니다."
-
--- temp_era/gui.lua title strings
 L["Tooltip_Starter_Profile_Desc"] = "필요한 몇 가지만 활성화하는 기본 시작 프로필입니다. 구축할 수 있는 매우 최소한의 빠른 시작으로 작동하도록 만들어졌습니다."
-
--- temp_cata/gui.lua profile descriptions
 L["Tooltip_Profile_Basic_Desc"] = "필요한 몇 가지만 활성화하는 기본 시작 프로필입니다.\n\n구축할 수 있는 매우 최소한의 빠른 시작으로 작동하도록 만들어졌습니다."
 L["Tooltip_Profile_Advanced_Desc"] = "더 많은 설정을 활성화하고 좀 더 맞춤 설정하는 고급 프로필입니다.\n\n치유사, 탱커 및 전장 목표를 표시하는 직업 아이콘이 있는 전장(및 투기장)에 적합합니다."
 L["Tooltip_Profile_Jovelo_Desc"] = "|cffc79c6eJovelo|r가 만든 기본 블리자드 이름표를 향상시키는 훌륭한 올라운드 프로필입니다.\n\n신화+ 시즌 2 NPC 이름표 색상이 포함된 모든 유형의 콘텐츠에 적합합니다."
 L["Tooltip_Profile_Streamer_Desc"] = "%s의 모든 프로필 설정을 활성화합니다."
 L["Tooltip_Profile_Streamer_Extra"] = "www.twitch.tv/%s"
-
--- Missing Keys  
 L["Hide_Party_in_Arena_GEX"] = "투기장에서 파티 숨기기 (GEX)"
 L["Normal_Evoker_Empowered_Castbar"] = "강화 시전바 기본 시전바"
 L["Print_Imported_Beta_Note"] = "가져온 베타 노트"

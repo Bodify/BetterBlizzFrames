@@ -1306,7 +1306,7 @@ L["Dungeon_Queue_Popped_After"] = "Dungeon queue popped after %s"
 L["Dungeon_Queue_Popped_Time_Unknown"] = "Dungeon queue popped, but time could not be determined."
 
 ---------------------------------------
--- Custom Color Section (New Keys)
+-- Custom Color Section
 ---------------------------------------
 
 L["Hide_Bg"] = "Hide Bg"
@@ -1389,7 +1389,7 @@ L["Power_Stagger"] = "Stagger"
 L["Power_Soul_Fragments"] = "Soul Fragments"
 
 ---------------------------------------
--- Right-Click Options (New Keys)
+-- Right-Click Options
 ---------------------------------------
 
 L["Right_Click_Show_Extra_Decimal"] = "Right-click to show one extra decimal."
@@ -1416,7 +1416,6 @@ L["Popup_New_Version_Text_Midnight"] = "IMPORTANT CHANGE\n\nLots of new tweaks a
 L["Popup_Cata_Update_Text"] = "|A:services-icon-warning:16:16|a CHANGES |A:services-icon-warning:16:16|a\n\nLots of Retail features from BBF have been brought over to MoP and Cata.\n\nDue to the large amount of changes things might have changed slightly.\nThere might also be some missed bugs.\n\nRead changelog for more info."
 L["Popup_Cata_Beta_Version_Text"] = "TWO IMPORTANT CHANGES:\n\n1) I've reset TargetToT & FocusToT positions.\nYou will have to change them to your preferred locations again.\n\n2) I've also added scale settings for Player, Target and FocusFrame.\n\nIf you have scripts/other addons adjusting this make sure you set the same value in BBF or turn off the other things.\n\nSorry for the inconvenience.\nThis change was needed due to wrong initial values when making the Beta.\nIt wont happen again."
 
--- CreateTooltipTwo - midnight/gui.lua
 L["Tooltip_LossOfControlScale_Desc"] = "Adjust the scale of the LossOfControlFrame\n(displaying cc on you center screen)"
 L["Tooltip_Dark_Mode_GameTooltip_Desc"] = "Dark mode for the Game Tooltip."
 L["Tooltip_Dark_Mode_Elite_Texture_Desc"] = "Dark mode for the Elite Texture on Target/FocusFrame.\n\n|cff32f795Right-click to toggle desaturation on/off.|r"
@@ -1450,8 +1449,6 @@ L["Tooltip_Change_ActionBar_Font_Color_Desc"] = "Change the font color on Action
 L["Tooltip_Charges_Font_Desc"] = "Also change font for charges."
 L["Tooltip_One_Font_All_Text_Extra"] = "*Some text in the game world, like damage numbers, can not be changed with an addon. It's possible by editing the game files though."
 L["Tooltip_Change_UnitFrame_Healthbar_Texture_RightClick_Desc"] = "Changes the healthbar texture on Player, Target & Focus etc.\n\n|cff32f795Right-click to also change the texture behind name.|r"
-
--- CreateTooltipTwo - temp_era/gui.lua
 L["Tooltip_Mount_Filter_Desc"] = "Show all mounts.\n(Needs testing, please report if you see a mount that is not displayed by this filter)"
 L["Tooltip_Whitelist_Filter_Desc"] = "Only show whitelisted auras.\n(Plus other filters)"
 L["Tooltip_Whitelist_Filter_Extra"] = "You can have spells whitelisted to add settings such as \"Only Mine\" and \"Important\" etc without needing to enable the whitelist filter here.\n\nOnly check this if you only want whitelisted auras here or the addition of them.\n(Plus other filters)"
@@ -1460,20 +1457,14 @@ L["Tooltip_Sort_Purgeable_First_Desc"] = "Sort Purgeable before Enlarged and Imp
 L["Tooltip_Hide_UI_Error_Frame_Desc"] = "Hides the UI Error Frame (The red text displaying \"Not enough mana\" etc)"
 L["Tooltip_Show_Last_Name_NPC_Desc"] = "Hides the first names/words of npc names and only shows the last part."
 L["Tooltip_Hunter_Feign_Fix_Desc"] = "Don't show Hunters as Dead when using Feign Death to avoid Hardcore heartattacks."
-
--- Additional CreateTooltipTwo - midnight/gui.lua
 L["Tooltip_Hide_Threat_Meter_Desc"] = "Hide the threat meter displaying on Target & Focus frames."
 L["Tooltip_Recolor_Castbars_Desc"] = "Changes the castbar color on Player, Target & Focus etc."
 L["Tooltip_Change_UnitFrame_Font_Etc_Desc"] = "Changes the font on Player, Target & Focus etc."
 L["Tooltip_Change_UnitFrame_Number_Font_Etc_Desc"] = "Changes the font on numbers on Player, Target & Focus etc."
 L["Tooltip_Change_PartyFrames_Font_Desc"] = "Changes the font on PartyFrames"
 L["Tooltip_Change_ActionBar_Font_Etc_Desc"] = "Changes the font on Player, Target & Focus etc."
-
--- CreateSlider - temp_era/gui.lua, temp_cata/gui.lua
 L["Icon_X_Offset"] = "Icon x offset"
 L["Icon_Y_Offset"] = "Icon y offset"
-
--- Additional CreateTooltipTwo - midnight/gui.lua (more)
 L["Tooltip_Keep_Fancy_Manabars_Desc"] = "Ignore texture changes for fancy manabars and keep the default one (Insanity, Lunar Power, Mealstrom, Fury etc.)"
 L["Tooltip_Change_Name_Bg_Texture_Desc"] = "Changes the name background texture on Player, Target & Focus etc. This is more cpu heavy than it should be."
 L["Tooltip_Change_Castbar_Texture_Desc"] = "Changes the castbar texture on Player, Target & Focus etc. This is more cpu heavy than it should be."
@@ -1482,8 +1473,6 @@ L["Tooltip_Change_RaidFrame_Manabar_Texture_Etc_Desc"] = "Changes the manabar te
 L["Tooltip_Enable_Aura_Settings_TargetFocus_Desc"] = "Enables all the aura settings for TargetFrame and FocusFrame."
 L["Tooltip_Pixel_Border_Auras_Desc"] = "Add a pixel border around auras.\n\nNOTE: Only works outside of instances for debuffs."
 L["Tooltip_Hide_Target_Auras_Desc"] = "Hide all auras on the target frame."
-
--- Final Additional CreateTooltipTwo - midnight/gui.lua
 L["Tooltip_Hide_Focus_Auras_Desc"] = "Hide all auras on the focus frame."
 L["Tooltip_Normal_Size_Game_Menu_Desc"] = "Enable to make the Game Menu (Escape) normal size again.\nWe're old boomers but we're not that old jesus."
 L["Tooltip_Minimize_Objective_Better_Desc"] = "Also minimize the objectives header when clicking the -+ button |A:UI-QuestTrackerButton-Collapse-All:19:19|a"
@@ -1497,8 +1486,6 @@ L["Tooltip_Show_Always_Legacy_Desc"] = "Alway show legacy combo points backgroun
 L["Tooltip_Paladin_Background_Desc"] = "Show background for unfilled charges."
 L["Tooltip_Roleplay_Name_Text_Color_Desc"] = "Color names in their Total RP3 Roleplay Color."
 L["Tooltip_Roleplay_Healthbar_Color_Desc"] = "Color healthbars in their Total RP3 Roleplay Color."
-
--- Additional midnight/gui.lua hardcoded texts
 L["Tooltip_Arena_Names_Target_Focus_Desc"] = "Change Target & Focus name to arena ID and/or spec name during arena."
 L["Tooltip_Class_Color_Frames_Desc"] = "Class color Player, Target, Focus & Party frames."
 L["Tooltip_Class_Color_FrameTexture_Desc"] = "Class color the FrameTexture (Border) for Player, Target & Focus."
@@ -1516,18 +1503,12 @@ L["Tooltip_Druid_Manabar_Desc"] = "Show Manabar as secondary AlternativePowerBar
 L["Tooltip_Hide_XP_Honor_Desc"] = "Hide the Experience & Honor Bar. Still shows when opening Character Panel."
 L["Tooltip_Raise_Castbar_Strata_Desc"] = "Raise the Strata of Target & Focus frame so it does not appear behind the frames.\n\nNote that this will NOT make the TargetFrame castbar appear above the FocusFrame, the setting above is required for that behaviour."
 L["Tooltip_Import_Blacklist_Desc"] = "Import a Blacklist with A LOT (750+) of trash buffs blacklisted.\n\nThis will only add NEW entries and not mess with existing ones already in your blacklist."
-
--- temp_era/gui.lua title strings
 L["Tooltip_Starter_Profile_Desc"] = "A basic starter profile that only enables the few things you need. Intended to work as a very minimal quick start that can be built upon."
-
--- temp_cata/gui.lua profile descriptions
 L["Tooltip_Profile_Basic_Desc"] = "A basic starter profile that only enables the few things you need.\n\nIntended to work as a very minimal quick start that can be built upon."
 L["Tooltip_Profile_Advanced_Desc"] = "A more advanced profile enabling a few more settings and customizing things a bit more.\n\nGreat for Battlegrounds (and Arenas) with Class Icons showing Healers, Tanks and Battleground Objectives."
 L["Tooltip_Profile_Jovelo_Desc"] = "A great well rounded profile made by |cffc79c6eJovelo|r that enhances the default Blizzard nameplates.\n\nGreat for all types of content with Mythic+ Season 2 NPC nameplate colors included."
 L["Tooltip_Profile_Streamer_Desc"] = "Enable all of %s's profile settings."
 L["Tooltip_Profile_Streamer_Extra"] = "www.twitch.tv/%s"
-
--- Missing Keys  
 L["Hide_Party_in_Arena_GEX"] = "Hide Party in Arena (GEX)"
 L["Normal_Evoker_Empowered_Castbar"] = "Normal Castbar for Empowered Casts"
 L["Print_Imported_Beta_Note"] = "Imported Beta Note"
