@@ -611,7 +611,6 @@ local function MakeClassicFrame(frame)
             if not InCombatLockdown() then
                 PlayerFrameBottomManagedFramesContainer:ClearAllPoints()
                 local xOffset, yOffset, scale = GetPlayerClassAndSpecPosition()
-                print(scale)
                 if rogueCheck then
                     local isRogueWith5Combos = UnitPowerMax("player", Enum.PowerType.ComboPoints) == 5
                     local isRogueWith6Combos = UnitPowerMax("player", Enum.PowerType.ComboPoints) == 6
