@@ -577,7 +577,7 @@ local function MakeClassicFrame(frame)
                     local specData = position.specs[specID]
                     local x = specData.x or DEFAULT_X
                     local y = specData.y or DEFAULT_Y
-                    local scale = specData.scale
+                    local scale = specData.scale or 1
                     return x, y, scale
                 end
                 local x = position.x or DEFAULT_X

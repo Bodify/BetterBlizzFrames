@@ -1,3 +1,10 @@
+# BetterBlizzFrames 1.8.4d
+## Retail & Midnight
+### Tweak
+- Fixup OCD Tweaks a little due to new secret values.
+### Bugfix
+- Classic Frames: Fix error on aug evoker due to a missing value.
+
 # BetterBlizzFrames 1.8.4c
 ## Retail & Midnight
 ### Tweaks
