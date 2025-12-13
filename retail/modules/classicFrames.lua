@@ -560,7 +560,7 @@ local function MakeClassicFrame(frame)
 
         local DEFAULT_X, DEFAULT_Y = 29, 28.5
         local resourceFramePositions = {
-            EVOKER = {x = 28, y = 31, scale = 1.05, specs = {[1473] = { x = 30, y = 24 }}},
+            EVOKER = {x = 28, y = 31, scale = 1.05, specs = {[1473] = { x = 30, y = 24, scale = 1.05 }}},
             WARRIOR = { x = 28, y = 30 },
             ROGUE   = { x = 48, y = 38, scale = 0.85},
             MAGE = { x = 32, y = 32, scale = 0.95 },
@@ -580,7 +580,7 @@ local function MakeClassicFrame(frame)
                     local specData = position.specs[specID]
                     local x = specData.x or DEFAULT_X
                     local y = specData.y or DEFAULT_Y
-                    local scale = specData.scale
+                    local scale = specData.scale or 1
                     return x, y, scale
                 end
                 local x = position.x or DEFAULT_X
