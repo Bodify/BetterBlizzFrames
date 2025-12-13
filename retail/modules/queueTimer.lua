@@ -128,7 +128,7 @@ local function StartUpdateFrame()
 end
 
 local function Print(message)
-    DEFAULT_CHAT_FRAME:AddMessage(L["Chat_QueueTimer_Prefix"] .. message)
+    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a " .. L["Chat_QueueTimer_Prefix"] .. message)
     if BetterBlizzFramesDB.queueTimerAudio then
         PlaySoundFile(BetterBlizzFramesDB.queueTimerID, "master")
     end

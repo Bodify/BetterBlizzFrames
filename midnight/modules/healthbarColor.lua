@@ -959,7 +959,7 @@ function BBF.HookHealthbarColors()
                 HookCfSetStatusBarColor(CfTargetFrameHealthBar, "target")
                 HookCfSetStatusBarColor(CfFocusFrameHealthBar, "focus")
             else
-                print(L["Print_ClassicFrames_Not_Detected"])
+                BBF.Print(L["Print_ClassicFrames_Not_Detected"])
             end
         else
             hooksecurefunc("UnitFrameHealthBar_Update", function(self, unit)

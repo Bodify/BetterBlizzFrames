@@ -313,7 +313,7 @@ StaticPopupDialogs["BBF_CONFIRM_PVP_WHITELIST"] = {
         local importString = "!BBFvM1ASrX1vygBk9MqufP8qJviIjfcGuObxPyAfkfZ6Nly7ixVogvlHexVZD39INDMH7mZA2excXHeQQscrOuPsKijevbsrPcJbbLiJ5rmeOriTcPO0evsATajesasM)08dA65CNDxVWYSZg(LXZ35Epp)oNZ1klVjDQl9p(NiV8o7RjtAAM9J)cuxpbBfoAT7rf6CQ5imtdQijtFl9e3YWsSXAJ241BOH1pRznROnE71TUTa)qT7LN22s4snD3YVGRdhNQspFCF5QXUUchJMvcTiMX5mtxTo4MjDYn7TK7NGh2)EEZtdodLAZnhuyusvLrnaPVsl8mCtMwSuCMHErbk72li4OgURbeBmF8ABIAyeMqURHyCuurxqmBUG7IQzpmDwABxULzysdYQQCM)fi)5YlESuSWVuugYF44GyIOmHf3jDqodaf5ITdaNUBUbegq1RnHLJBGcCX2vRjswqI9UbtxMidZK5JvP2IEyaa5vXR3EEDt5MAX8STfmhNQXIF1Jt22T9pEt44PUSqfzB3gm4l3MVHF5cQsnxjMRfeCBYZyiQyq4uiF9BlJeTAkOq(gehscAVGwvrIV(Tvv2xRsB6fnzM6qkgCaowgzqfuE37RvaBaNIQYHq3S9J3cOl)OUzuYwIGHOOutD)aeJPBL2)ABjI)LQuBT1sUZFbVJFEmprgEgQH2gmDC5MXDD8XcFVsA4QRhVfPcgJN2ZGgx4LUSGlatv57(a)YNej8CyADrtYJhUD8DFGQYHVJud3qC2awEG50guvZD90dnkJIcLUVfiEUFA4G75TuvEN9G31s2GzCQWu6RxRKAa9HUPyAB0ZmPblyEI3zpQkFlvAOS0qIOGtn4VuXW93sl45vaN3b)EPHbuqmhxb47B3JRtH)x466b)EYWVji9urGQPKOcUji1ivGLGd)MGU9H41T47Z2AoLLdtse2QHNzLmSpuv5uVgCaFueN4qU89PMLH(uVMAn1Di86weurjsVkTwPc3uRsdthBJlcwuqmsUBit77XYNCjgKuXtWd3TacQQm(KZuZeZYZyTADXDyISbRSJpPQYvrc3CZVqC6Qhn4KEYenllPJy6Y)LY04szyNjRhWPwZSxNmexSdwSH4jCnbETYjaN96a)2Uq1yjfuJtTRkv7n(5LutLyPDyAnKbtpzfImJFEW6ogEl)SYltV6Xi)(fdFBKMGZ0zqEOenaCvLJGmnNtQgGCjPHlgkdP()UKYoEwT(yCZa79c4uvgdtDhbyaGgOc9Yv8XGSZT(iaMX6of1r2DoHB5W26JaoGli9ATlyy5jq3LH7WhGBWDZgUAp(fiN)jrgVsc(9BzgEM55FsvLlVizEtlCM2azLSjXgYsufZqC5fPwZSMdgZwzW1nZAoKH7YN4jJfwCRfXtqllPC4Uuvg(eyaRhyuKSiZrZIQWYh(eq6XbrpCl002aLruQiD4ID1dsM89bPenXeqv4GbgLN89vvMy5(U2KmdWVott4qUJjwUQYK1lRZA3iRDkKZatvAYWk(GfkLMS(zyEj371Bl)pIx99EDWBenBAjnyulBmAso5)b56AH7ydkEv0YfeaO3tGuY9A5fxQeDaUiArQ)evQwEujR18A2WIoOKZlfv3AiNWUvuqY)qbdN(sO1sLiMbOK1Flz(FmMrcm53ZahQO6Y)bzjR(rXllIiofMtQBRHyIaVSv)OewoFvdOhRYjMbriNOt033Kbvh6lAjYp1c8Rl6blEvKDVlPJRxOAQjg1XvBtC3uLWa9Gk1U3LQYo(kzlI8Jh3j3CqTETCzvr68o(kO17DKEa)o2Lq0uX213HK9)IfW)6WWc4uvUfIDA5CojKLOnjydfMKOyQk34zXuWI9B6JNKBeC3GB8SKgxU0z0QblnSheysDbEXk0VeeGCPBIenDaJ)Jkxmyq9Gt5U0njRaJNtjtwGuoy8VsRNEq8ROZfGm0t)Jm3CbxG04ZJwY8NzCQhOzBfC6n(8KoZG2utGOWiBfNMc)yNzkpVR3jWu0EO28kpptVtaZIVtzkAHXyWJVBA8QiR5q7KS7)Cj12X4jtvwxnaI7Gs(Cw8bnaJ9(m4hqDChKm8ai48BX2gnJLimfbeHCx5mT(PgqAvZ(RXIF8UfhPTwGh7OpnE6aZRLoqLkefo9s7cF0N(AnkzRlSCs3cO6lE1SyZ1Aey8s1NCUHzi4dJImfj316BMjEQGLM7AKJSdeA3Hc9i7qvPJ5k9LmMnU20mrNhwPwhZLSqcaFS2y8KMATWkDC9GUKfsiB22p7Xg5q7HLWOONcbSz7CfBR9CFzFpSX6EUVeCb1HPRTWGONGvvlymADQ108DXdS3qbdavvU(2rWRjx(2DxF75cEc6TN03Msrttn5qfxCTEOjdvRa5uvo5wX7jw5PvNCRlBL4NiHDmlBLWK14B5yVqiHgMj)H6Arm5kzzT)gUUvU5g2HJavvoa(qtt1fMrGj4VOWXQkw29aFSQY38kyHw(cE)wGbNt9nVc5Kdd4hiQNUUr4(Vtomzb7hWlAndTQgQzb7hCdJ0x(Dscqlo1iWI2yhHClT8OYHVPQYzX95MQFyOXUy6CxAPo5ZEJsCY1ux)yfYlWtpGbRKMELUMuD9VSL0NCdpFkSQN8yzlrv5VIpg3arYqDPbo4cIsvzZ4ZgmM8fL0AZkUx5BSbqa9FJ(kdZHfh6zW01AxGVsr5Op7gj1pBK6sYooqL2wV(zdjdFo6r)vbRKh4ZbxFA8aJrtWs6rRMvjovAshnwvv1aosuCt3PYp6o4hYxKIFnAZ(XTOnER79)qfdoPlTV9D6F4h(HAjnGpK30r0bUgQbgK6XZjyRTHJtw9CLecDla3iqpH1mDXn1duKvpxvLV4W(bOIVMrWUQV4WQk)Zxcn71hMzJavvAahKVW7Voe1yqzxV2f04fFkNgQ488nIttypF)zE2eSL3AXDJfCwODBrzjVb(2j5(TbA)VXHipXILjEf6Hw9psYtaRSp(5qHxujpDa(SFp4OwL)4bNJCgSaA6yEPtdBy2oSUVv2GFpmaTQYf3ggN6KNGP1SvCRWRtrruR53Cv0fSQqbdajlzAP54x5HJKkhNxR1ejyY5SqvzjtxP41OVmEBne6Tbavv(S3d9b9YW)(c0swSrc4ZEVsi0uEMNcG(rXsBniWNzLEG8xa8Vch4Z8uKrXroMQ5uWibOYxDJgmkm)X()D9HRUAzKvt(oGbVmgI9DhTi7JHxWpx)7okyLsYN(dtjqGKtJpz6E7Khp1awcZc8dNEpvGFyc8nNZvxyhpGtv5m4JvngMKcTOP2vYepZXiF6NGHMI)bE8lGd9E(0prvP)LI6Kv5bO(xQQY2Fm8yLbgGhiIEM8BzlbS9hlxXjGhb)Jx1BwB2vOEc6MsXDzgWao))!BBF"
         local profileData, errorMessage = BBF.ImportProfile(importString, "auraWhitelist")
         if errorMessage then
-            print(L["Print_Error_Importing_Whitelist"], errorMessage)
+            BBF.Print(L["Print_Error_Importing_Whitelist"] .. " " .. tostring(errorMessage))
             return
         end
         deepMergeTables(BetterBlizzFramesDB.auraWhitelist, profileData)
@@ -1081,7 +1081,7 @@ local function CreateTooltipTwo(widget, title, mainText, subText, anchor, cvarNa
         end
         if category then
             GameTooltip:AddLine("")
-            GameTooltip:AddLine(L["Tooltip_Setting_Located_In"]..category..L["Tooltip_Section"], 0.4, 0.8, 1, true)
+            GameTooltip:AddLine("|A:shop-games-magnifyingglass:17:17|a " .. L["Tooltip_Setting_Located_In"]..category..L["Tooltip_Section"], 0.4, 0.8, 1, true)
         end
         GameTooltip:Show()
     end)
@@ -1311,7 +1311,7 @@ local function CreateImportExportUI(parent, title, dataTable, posX, posY, tableN
         local importString = importBox:GetText()
         local profileData, errorMessage = BBF.ImportProfile(importString, tableName)
         if errorMessage then
-            print(L["Print_Error_Importing"] .. title .. ":", errorMessage)
+            BBF.Print(L["Print_Error_Importing"] .. title .. ": " .. tostring(errorMessage))
         else
             if keepOldCheckbox and keepOldCheckbox:GetChecked() then
                 -- Perform a deep merge if "Keep Old" is checked
@@ -1323,7 +1323,7 @@ local function CreateImportExportUI(parent, title, dataTable, posX, posY, tableN
                     dataTable[k] = v -- Populate with new data
                 end
             end
-            print(string.format(L["Print_Imported_Successfully"], title) .. L["Print_Imported_Beta_Note"])
+            BBF.Print(string.format(L["Print_Imported_Successfully"], title) .. L["Print_Imported_Beta_Note"])
             StaticPopup_Show("BBF_CONFIRM_RELOAD")
         end
     end)
@@ -1576,7 +1576,7 @@ local function addOrUpdateEntry(inputText, listName, addShowMineTag, skipRefresh
         name = spellName or ""
 
         if not spellName then
-            print(L["Print_No_Spell_Found"] .. id)
+            BBF.Print(L["Print_No_Spell_Found"] .. id)
             return
         end
 
@@ -1588,9 +1588,9 @@ local function addOrUpdateEntry(inputText, listName, addShowMineTag, skipRefresh
 
         -- Check if the spell is being added to blacklist or whitelist
         if listName == "auraBlacklist" then
-            printMsg = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. id .. ")" .. L["Print_Added_To_Blacklist_With_Icon"]
+            printMsg = BBF.PRINT_PREFIX .. iconString .. " " .. spellName .. " (" .. id .. ")" .. L["Print_Added_To_Blacklist_With_Icon"]
         elseif listName == "auraWhitelist" then
-            printMsg = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. id .. ")" .. L["Print_Added_To_Whitelist_With_Icon"]
+            printMsg = BBF.PRINT_PREFIX .. iconString .. " " .. spellName .. " (" .. id .. ")" .. L["Print_Added_To_Whitelist_With_Icon"]
         end
     end
 
@@ -1637,7 +1637,7 @@ local function addOrUpdateEntry(inputText, listName, addShowMineTag, skipRefresh
             if addShowMineTag and listName == "auraBlacklist" then
                 newEntry.showMine = true
                 if id then
-                    printMsg = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. id .. ") added to |cffff0000blacklist|r with tag."
+                    printMsg = BBF.PRINT_PREFIX .. iconString .. " " .. spellName .. " (" .. id .. ")" .. L["Print_Added_To_Blacklist_With_Tag"]
                 end
             end
 
@@ -1824,8 +1824,8 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
                 checkBoxP.texture:SetPoint("CENTER", checkBoxP, "CENTER", -0.5, 0.5)
                 button.checkBoxP = checkBoxP
                 local isWarlock = select(2, UnitClass("player")) == "WARLOCK"
-                local extraText = isWarlock and "\n\nIf Agony or Unstable Affliction refresh talents are specced it will first glow orange when entering this window then switch to red once it enters the pandemic window as well." or ""
-                CreateTooltipTwo(checkBoxP, L["Tooltip_Pandemic_Glow_Title"], L["Tooltip_Pandemic_Glow_Desc"]..extraText, L["Tooltip_Pandemic_Glow_Extra"], "ANCHOR_TOPRIGHT")
+                local extraText = isWarlock and L["Tooltip_Pandemic_Glow_Warlock_Extra"] or ""
+                CreateTooltipTwo(checkBoxP, L["Tooltip_Pandemic_Glow_Title"] .. " |A:elementalstorm-boss-air:22:22|a", L["Tooltip_Pandemic_Glow_Desc"]..extraText, L["Tooltip_Pandemic_Glow_Extra"], "ANCHOR_TOPRIGHT")
             end
             button.checkBoxP:SetChecked(button.npcData.pandemic)
     
@@ -1846,7 +1846,7 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
                 checkBoxI.texture:SetDesaturated(true)
                 checkBoxI.texture:SetPoint("CENTER", checkBoxI, "CENTER", -0.5, 0.5)
                 button.checkBoxI = checkBoxI
-                CreateTooltipTwo(checkBoxI, L["Tooltip_Important_Glow_Title"], L["Tooltip_Important_Glow_Desc"], L["Tooltip_Important_Glow_Extra"], "ANCHOR_TOPRIGHT")
+                CreateTooltipTwo(checkBoxI, L["Tooltip_Important_Glow_Title"] .. " |A:importantavailablequesticon:22:22|a", L["Tooltip_Important_Glow_Desc"], L["Tooltip_Important_Glow_Extra"], "ANCHOR_TOPRIGHT")
             end
             button.checkBoxI:SetChecked(button.npcData.important)
     
@@ -1969,7 +1969,7 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
                     button.npcData.enlarged = false
                     BBF.RefreshAllAuraFrames()
                 end)
-                CreateTooltipTwo(checkBoxE, L["Tooltip_Enlarged_Aura_Title"], L["Enlarged_Aura_Checkboxes"], L["Tooltip_Enlarged_Aura_Extra"], "ANCHOR_TOPRIGHT")
+                CreateTooltipTwo(checkBoxE, L["Tooltip_Enlarged_Aura_Title"] .. " |A:ui-hud-minimap-zoom-in:22:22|a", L["Enlarged_Aura_Checkboxes"], L["Tooltip_Enlarged_Aura_Extra"], "ANCHOR_TOPRIGHT")
                 button.checkBoxE = checkBoxE
             end
             button.checkBoxE:SetChecked(button.npcData.enlarged)
@@ -2495,7 +2495,7 @@ local function CreateSearchFrame()
     searchBox:SetScript("OnEnterPressed", function(self)
         self:ClearFocus()
     end)
-    CreateTooltipTwo(searchBox, L["Tooltip_Search_New"], L["Tooltip_Search_Desc"], nil, "TOP")
+    CreateTooltipTwo(searchBox, L["Tooltip_Search_New"] .. " |A:shop-games-magnifyingglass:17:17|a", L["Tooltip_Search_Desc"], nil, "TOP")
 
     local resultsList = CreateFrame("Frame", nil, searchFrame)
     resultsList:SetSize(640, 500)
@@ -2771,7 +2771,7 @@ local function guiGeneralTab()
     local newSearch = BetterBlizzFrames:CreateTexture(nil, "BACKGROUND")
     newSearch:SetAtlas("NewCharacter-Horde", true)
     newSearch:SetPoint("BOTTOM", BetterBlizzFrames, "TOP", -70, 2)
-    CreateTooltipTwo(newSearch, L["Tooltip_Search_New"], L["Tooltip_Search_Desc"])
+    CreateTooltipTwo(newSearch, L["Tooltip_Search_New"] .. " |A:shop-games-magnifyingglass:17:17|a", L["Tooltip_Search_Desc"])
 
     local newSearchPoint = BetterBlizzFrames:CreateTexture(nil, "BACKGROUND")
     newSearchPoint:SetAtlas("auctionhouse-icon-buyallarrow", true)
@@ -3039,7 +3039,7 @@ local function guiGeneralTab()
 
     local playerReputationColor = CreateCheckbox("playerReputationColor", L["Add_Reputation_Color"], BetterBlizzFrames, nil, BBF.PlayerReputationColor)
     playerReputationColor:SetPoint("TOPLEFT", playerEliteFrame, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltip(playerReputationColor, L["Tooltip_Add_Reputation_Color"])
+    CreateTooltip(playerReputationColor, L["Tooltip_Add_Reputation_Color"] .. " |A:UI-HUD-UnitFrame-Target-PortraitOn-Type:18:98|a")
 
     local playerReputationClassColor = CreateCheckbox("playerReputationClassColor", L["Class_Color_Combo"], BetterBlizzFrames, nil, BBF.PlayerReputationColor)
     playerReputationClassColor:SetPoint("LEFT", playerReputationColor.text, "RIGHT", 5, 0)
@@ -3078,7 +3078,7 @@ local function guiGeneralTab()
 
     local hidePlayerRestGlow = CreateCheckbox("hidePlayerRestGlow", L["Hide_Rest_Glow"], BetterBlizzFrames, nil, BBF.HideFrames)
     hidePlayerRestGlow:SetPoint("TOPLEFT", hidePlayerRestAnimation, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltip(hidePlayerRestGlow, L["Tooltip_Hide_Rest_Glow"])
+    CreateTooltip(hidePlayerRestGlow, L["Tooltip_Hide_Rest_Glow"] .. " |A:UI-HUD-UnitFrame-Player-PortraitOn-Status:30:80|a")
 
     local hideMultiGroupFrame = CreateCheckbox("hideMultiGroupFrame", L["Hide_MultiGroup_Icon"], BetterBlizzFrames, nil, BBF.HideFrames)
     hideMultiGroupFrame:SetPoint("TOPLEFT", hidePlayerRestGlow, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
@@ -3105,7 +3105,7 @@ local function guiGeneralTab()
 
     local hidePlayerRoleIcon = CreateCheckbox("hidePlayerRoleIcon", L["Hide_Role_Icon"], BetterBlizzFrames, nil, BBF.HideFrames)
     hidePlayerRoleIcon:SetPoint("TOPLEFT", hidePlayerLeaderIcon, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltip(hidePlayerRoleIcon, L["Tooltip_Hide_Role_Icon"])
+    CreateTooltip(hidePlayerRoleIcon, L["Tooltip_Hide_Role_Icon"] .. " |A:roleicon-tiny-dps:22:22|a")
     notWorking(hidePlayerRoleIcon, true)
 
     local hidePvpTimerText = CreateCheckbox("hidePvpTimerText", L["Hide_PvP_Timer"], BetterBlizzFrames, nil, BBF.HideFrames)
@@ -3114,7 +3114,7 @@ local function guiGeneralTab()
 
     local hidePlayerPower = CreateCheckbox("hidePlayerPower", L["Hide_Resource_Power"], BetterBlizzFrames, nil, BBF.HideFrames)
     hidePlayerPower:SetPoint("TOPLEFT", hidePvpTimerText, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltipTwo(hidePlayerPower, L["Hide_Resource_Power"], L["Tooltip_Hide_Player_Power_Desc"])
+    CreateTooltipTwo(hidePlayerPower, L["Hide_Resource_Power"], L["Tooltip_Hide_Player_Power_Desc"] .. " |A:UI-HUD-UnitFrame-Player-PVP-FFAIcon:44:28|a")
 
     local classOptionsFrame
     local function OpenClassSpecificWindow()
@@ -3400,11 +3400,11 @@ local function guiGeneralTab()
 
     local hideTargetLeaderIcon = CreateCheckbox("hideTargetLeaderIcon", L["Hide_Leader_Icon"], BetterBlizzFrames, nil, BBF.HideFrames)
     hideTargetLeaderIcon:SetPoint("TOPLEFT", hideTargetName, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltip(hideTargetLeaderIcon, L["Tooltip_Hide_Target_Leader_Icon"])
+    CreateTooltip(hideTargetLeaderIcon, L["Tooltip_Hide_Target_Leader_Icon"] .. " |A:UI-HUD-UnitFrame-Player-Group-LeaderIcon:22:22|a")
 
     local classColorTargetReputationTexture = CreateCheckbox("classColorTargetReputationTexture", L["Reputation_Class_Color"], BetterBlizzFrames)
     classColorTargetReputationTexture:SetPoint("TOPLEFT", hideTargetLeaderIcon, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltipTwo(classColorTargetReputationTexture, L["Tooltip_Target_Reputation_Class_Color"], L["Tooltip_Class_Color_Target_Name_Bg_Desc"])
+    CreateTooltipTwo(classColorTargetReputationTexture, L["Tooltip_Target_Reputation_Class_Color"] .. " |A:UI-HUD-UnitFrame-Target-PortraitOn-Type:18:98|a", L["Tooltip_Class_Color_Target_Name_Bg_Desc"])
     classColorTargetReputationTexture:HookScript("OnClick", function(self)
         if self:GetChecked() then
             BBF.ClassColorReputation(TargetFrameNameBackground, "target")
@@ -3415,7 +3415,7 @@ local function guiGeneralTab()
 
     local hideTargetReputationColor = CreateCheckbox("hideTargetReputationColor", L["Hide_Reputation_Color"], BetterBlizzFrames, nil, BBF.HideFrames)
     hideTargetReputationColor:SetPoint("TOPLEFT", classColorTargetReputationTexture, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltip(hideTargetReputationColor, L["Tooltip_Hide_Target_Reputation_Color"])
+    CreateTooltip(hideTargetReputationColor, L["Tooltip_Hide_Target_Reputation_Color"] .. " |A:UI-HUD-UnitFrame-Target-PortraitOn-Type:18:98|a")
 
 
 
@@ -3621,11 +3621,11 @@ local function guiGeneralTab()
 
     local hideFocusLeaderIcon = CreateCheckbox("hideFocusLeaderIcon", L["Hide_Leader_Icon"], BetterBlizzFrames, nil, BBF.HideFrames)
     hideFocusLeaderIcon:SetPoint("TOPLEFT", hideFocusName, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltip(hideFocusLeaderIcon, L["Tooltip_Hide_Focus_Leader_Icon"])
+    CreateTooltip(hideFocusLeaderIcon, L["Tooltip_Hide_Focus_Leader_Icon"] .. " |A:UI-HUD-UnitFrame-Player-Group-LeaderIcon:22:22|a")
 
     local classColorFocusReputationTexture = CreateCheckbox("classColorFocusReputationTexture", L["Reputation_Class_Color"], BetterBlizzFrames)
     classColorFocusReputationTexture:SetPoint("TOPLEFT", hideFocusLeaderIcon, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltipTwo(classColorFocusReputationTexture, L["Tooltip_Focus_Reputation_Class_Color"], L["Tooltip_Class_Color_Focus_Name_Bg_Desc"])
+    CreateTooltipTwo(classColorFocusReputationTexture, L["Tooltip_Focus_Reputation_Class_Color"] .. " |A:UI-HUD-UnitFrame-Target-PortraitOn-Type:18:98|a", L["Tooltip_Class_Color_Focus_Name_Bg_Desc"])
     classColorFocusReputationTexture:HookScript("OnClick", function(self)
         if self:GetChecked() then
             BBF.ClassColorReputation(TargetFrameNameBackground, "target")
@@ -3636,7 +3636,7 @@ local function guiGeneralTab()
 
     local hideFocusReputationColor = CreateCheckbox("hideFocusReputationColor", L["Hide_Reputation_Color"], BetterBlizzFrames, nil, BBF.HideFrames)
     hideFocusReputationColor:SetPoint("TOPLEFT", classColorFocusReputationTexture, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltip(hideFocusReputationColor, L["Tooltip_Hide_Focus_Reputation_Color"])
+    CreateTooltip(hideFocusReputationColor, L["Tooltip_Hide_Focus_Reputation_Color"] .. " |A:UI-HUD-UnitFrame-Target-PortraitOn-Type:18:98|a")
 
 
 
@@ -3788,7 +3788,7 @@ local function guiGeneralTab()
 
     local singleValueStatusBarText = CreateCheckbox("singleValueStatusBarText", L["No_Max"], formatStatusBarText)
     singleValueStatusBarText:SetPoint("LEFT", formatStatusBarText.text, "RIGHT", 0, 0)
-    CreateTooltipTwo(singleValueStatusBarText, L["No_Max_Value"], L["Tooltip_No_Max_Desc"], L["Tooltip_Requires_Reload"])
+    CreateTooltipTwo(singleValueStatusBarText, L["No_Max_Value"], "|A:glueannouncementpopup-arrow:20:20|a " .. L["Tooltip_No_Max_Desc"], L["Tooltip_Requires_Reload"])
     singleValueStatusBarText:HookScript("OnClick", function()
         StaticPopup_Show("BBF_CONFIRM_RELOAD")
     end)
@@ -3844,7 +3844,7 @@ local function guiGeneralTab()
 
     local hideCombatGlow = CreateCheckbox("hideCombatGlow", L["Hide_Combat_Glow"], BetterBlizzFrames, nil, BBF.HideFrames)
     hideCombatGlow:SetPoint("TOPLEFT", hidePrestigeBadge, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltip(hideCombatGlow, L["Tooltip_Hide_Combat_Glow"])
+    CreateTooltip(hideCombatGlow, L["Tooltip_Hide_Combat_Glow"] .. " |A:UI-HUD-UnitFrame-Player-PortraitOn-InCombat:30:80|a")
 
     local maxLvl = BBF.isMoP and "90" or "85"
     local hideLevelText = CreateCheckbox("hideLevelText", L["Hide_Level_80_Text"] .." "..maxLvl.." "..L["Text"], BetterBlizzFrames, nil, BBF.HideFrames)
@@ -3876,7 +3876,7 @@ local function guiGeneralTab()
 
     local classPortraits = CreateCheckbox("classPortraits", L["Class_Portraits"], BetterBlizzFrames)
     classPortraits:SetPoint("TOPLEFT", hidePvpIcon, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltip(classPortraits, L["Tooltip_Class_Portraits"])
+    CreateTooltip(classPortraits, L["Tooltip_Class_Portraits"] .. " |A:groupfinder-icon-class-paladin:18:18|a")
 
     local classPortraitsUseSpecIcons = CreateCheckbox("classPortraitsUseSpecIcons", L["Use_Spec_Icons"], classPortraits)
     classPortraitsUseSpecIcons:SetPoint("LEFT", classPortraits.text, "RIGHT", 0, 0)
@@ -5369,7 +5369,7 @@ local function guiPositionAndScale()
 
     BetterBlizzFramesSubPanel.rightClickTip = BetterBlizzFramesSubPanel:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
     BetterBlizzFramesSubPanel.rightClickTip:SetPoint("RIGHT", reloadUiButton2, "LEFT", -80, -2)
-    BetterBlizzFramesSubPanel.rightClickTip:SetText(L["Right_Click_Slider_Tip"])
+    BetterBlizzFramesSubPanel.rightClickTip:SetText("|A:smallquestbang:20:20|a" .. L["Right_Click_Slider_Tip"])
 
 
 
@@ -6035,7 +6035,7 @@ local function guiFrameAuras()
             auraBlacklistFrame:SetAlpha(1)
         else
             if BetterBlizzFramesDB.targetToTXPos == 42 then
-                DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: Aura Settings Off. Target of Target Frame changed back to its default position.")
+                BBF.Print(L["Chat_Aura_Settings_Off"])
                 BetterBlizzFramesDB.targetToTXPos = 0
                 BBF.targetToTXPos:SetValue(0)
                 BetterBlizzFramesDB.targetToTYPos = 0
@@ -6857,7 +6857,7 @@ local function guiMisc()
 
     local addUnitFrameBgTexture = CreateCheckbox("addUnitFrameBgTexture", L["UnitFrame_Background_Color"], guiMisc)
     addUnitFrameBgTexture:SetPoint("TOPLEFT", disableCastbarMovement, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltipTwo(addUnitFrameBgTexture, L["UnitFrame_Background_Color"], L["Tooltip_UnitFrame_Bg_Color_Desc"])
+    CreateTooltipTwo(addUnitFrameBgTexture, L["UnitFrame_Background_Color"], L["Tooltip_UnitFrame_Bg_Color_Desc"] .. " |A:UI-HUD-UnitFrame-Target-PortraitOn-Type:18:98|a")
     addUnitFrameBgTexture:HookScript("OnClick", function(self)
         BBF.UnitFrameBackgroundTexture()
     end)
@@ -7173,7 +7173,7 @@ local function guiMisc()
                 BetterBlizzFramesDB.moveResourceStackPos[playerClass] = nil
             end
             classResourceScale:SetValue(1)
-            print(L["Print_Combo_Points_Reset"] .. playerClass)
+            BBF.Print(L["Print_Combo_Points_Reset"] .. playerClass)
             BBF.ResetResourcePosition()
         end
     end)
@@ -7184,7 +7184,7 @@ local function guiMisc()
     --             BetterBlizzFramesDB.customComboPositions[playerClass] = nil
     --         end
     --         classResourceScale:SetValue(1)
-    --         print(L["Print_Combo_Points_Reset"] .. playerClass)
+    --         BBF.Print(L["Print_Combo_Points_Reset"] .. playerClass)
     --         BBF.UpdateClassComboPoints()
     --     end
     -- end)
@@ -7456,7 +7456,7 @@ local function guiCustomCode()
     -- Enable syntax highlighting and indentation with FAIAP
     FAIAP.enable(codeEditBox, colorTable, 4)  -- Assuming a tab width of 4
 
-    local customCodeSaved = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: Custom code has been saved."
+    local customCodeSaved = BBF.PRINT_PREFIX .. L["Print_Custom_Code_Saved"]
 
     -- Create Save Button
     local saveButton = CreateFrame("Button", nil, guiCustomCode, "UIPanelButtonTemplate")
@@ -7583,7 +7583,7 @@ local function guiSupport()
 
     local supportText = guiSupport:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
     supportText:SetPoint("TOP", guiSupport, "TOP", 0, -230)
-    supportText:SetText(L["Label_If_You_Wish_Support_Me"])
+    supportText:SetText("|A:GarrisonTroops-Health:10:10|a " .. L["Label_If_You_Wish_Support_Me"])
 
     local boxOne = CreateFrame("EditBox", nil, guiSupport, "InputBoxTemplate")
     boxOne:SetPoint("TOP", guiSupport, "TOP", -110, -360)
@@ -7843,7 +7843,7 @@ end
 ------------------------------------------------------------
 local function CombatOnGUICreation()
     if InCombatLockdown() then
-        print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. L["Print_Waiting_For_Combat"])
+        BBF.Print(L["Print_Waiting_For_Combat"])
         if not BBF.waitingCombat then
             local f = CreateFrame("Frame")
             f:RegisterEvent("PLAYER_REGEN_ENABLED")
@@ -7971,7 +7971,7 @@ function BBF.CreateIntroMessageWindow()
 
     local description1 = BBF.IntroMessageWindow:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     description1:SetPoint("TOP", welcomeText, "BOTTOM", 0, -10)
-    description1:SetText(L["Label_Thank_You_Trying_Out_My"])
+    description1:SetText("|A:newplayerchat-chaticon-newcomer:16:16|a " .. L["Label_Thank_You_Trying_Out_My"])
     description1:SetJustifyH("CENTER")
     description1:SetWidth(410)
 

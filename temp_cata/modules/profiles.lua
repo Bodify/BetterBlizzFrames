@@ -5,7 +5,7 @@ function BBF.StarterProfile()
 
     local profileData, errorMessage = BBF.ImportProfile(starterProfile, "fullProfile")
     if errorMessage then
-        print(L["Print_Error_Importing_Profile"], errorMessage)
+        BBF.Print(L["Print_Error_Importing_Profile"] .. " " .. tostring(errorMessage))
     else
         for k in pairs(BetterBlizzFramesDB) do BetterBlizzFramesDB[k] = nil end
         for k, v in pairs(profileData) do
@@ -21,7 +21,7 @@ function BBF.AeghisProfile()
 
     local profileData, errorMessage = BBF.ImportProfile(aeghisProfile, "fullProfile")
     if errorMessage then
-        print(L["Print_Error_Importing_Profile"], errorMessage)
+        BBF.Print(L["Print_Error_Importing_Profile"] .. " " .. tostring(errorMessage))
     else
         for k in pairs(BetterBlizzFramesDB) do BetterBlizzFramesDB[k] = nil end
         for k, v in pairs(profileData) do
@@ -37,7 +37,7 @@ function BBF.MmarkersProfile()
 
     local profileData, errorMessage = BBF.ImportProfile(mmarkersProfile, "fullProfile")
     if errorMessage then
-        print(L["Print_Error_Importing_Profile"], errorMessage)
+        BBF.Print(L["Print_Error_Importing_Profile"] .. " " .. tostring(errorMessage))
     else
         for k in pairs(BetterBlizzFramesDB) do BetterBlizzFramesDB[k] = nil end
         for k, v in pairs(profileData) do
@@ -53,7 +53,7 @@ function BBF.NahjProfile()
 
     local profileData, errorMessage = BBF.ImportProfile(nahjProfile, "fullProfile")
     if errorMessage then
-        print(L["Print_Error_Importing_Profile"], errorMessage)
+        BBF.Print(L["Print_Error_Importing_Profile"] .. " " .. tostring(errorMessage))
     else
         for k in pairs(BetterBlizzFramesDB) do BetterBlizzFramesDB[k] = nil end
         for k, v in pairs(profileData) do
@@ -69,7 +69,7 @@ function BBF.SnupyProfile()
 
     local profileData, errorMessage = BBF.ImportProfile(snupyProfile, "fullProfile")
     if errorMessage then
-        print(L["Print_Error_Importing_Profile"], errorMessage)
+        BBF.Print(L["Print_Error_Importing_Profile"] .. " " .. tostring(errorMessage))
     else
         for k in pairs(BetterBlizzFramesDB) do BetterBlizzFramesDB[k] = nil end
         for k, v in pairs(profileData) do

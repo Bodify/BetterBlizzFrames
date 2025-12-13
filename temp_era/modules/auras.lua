@@ -1301,7 +1301,7 @@ local function AdjustAuras(self, frameType)
                                 }
                                 if thisAuraData then
                                     local iconTexture = thisAuraData.icon and "|T" .. thisAuraData.icon .. ":16:16|t" or ""
-                                    print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconTexture .. " " .. (thisAuraData.name or L["Label_Unknown"]) .. "  |A:worldquest-icon-engineering:14:14|a ID: " .. (thisAuraData.spellId or L["Label_Unknown"]))
+                                    BBF.Print(iconTexture .. " " .. (thisAuraData.name or L["Label_Unknown"]) .. "  |A:worldquest-icon-engineering:14:14|a ID: " .. (thisAuraData.spellId or L["Label_Unknown"]))
                                     auraFrame.bbfPrinted = true
                                     auraFrame.bbfLastPrintedAuraID = currentAuraID
     
@@ -1771,7 +1771,7 @@ local function CreateToggleIcon()
 
             BBF.RefreshAllAuraFrames()
 
-            print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. L["Print_Hidden_Icon_Direction_Set"] .. BetterBlizzFramesDB.hiddenIconDirection)
+            BBF.Print(L["Print_Hidden_Icon_Direction_Set"] .. BetterBlizzFramesDB.hiddenIconDirection)
 
         elseif IsShiftKeyDown() then
             -- Reset position to default
@@ -2108,7 +2108,7 @@ local function PersonalBuffFrameFilterAndGrid(self)
 
                 --                 if auraData and (not auraFrame.bbfPrinted or auraFrame.bbfLastPrintedAuraIndex ~= currentAuraIndex) then
                 --                     local iconTexture = auraData.icon and "|T" .. auraData.icon .. ":16:16|t" or ""
-                --                     print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconTexture .. " " .. (auraData.name or "Unknown") .. "  |A:worldquest-icon-engineering:14:14|a ID: " .. (auraData.spellId or "Unknown"))
+                --                     BBF.Print(iconTexture .. " " .. (auraData.name or "Unknown") .. "  |A:worldquest-icon-engineering:14:14|a ID: " .. (auraData.spellId or "Unknown"))
                 --                     auraFrame.bbfPrinted = true
                 --                     auraFrame.bbfLastPrintedAuraIndex = currentAuraIndex  -- Store the index of the aura that was just printed
                 --                     -- Cancel existing timer if any
@@ -2375,7 +2375,7 @@ local function PersonalDebuffFrameFilterAndGrid(self)
 
                 --             if auraData and (not auraFrame.bbfPrinted or auraFrame.bbfLastPrintedAuraIndex ~= currentAuraIndex) then
                 --                 local iconTexture = auraData.icon and "|T" .. auraData.icon .. ":16:16|t" or ""
-                --                 print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconTexture .. " " .. (auraData.name or "Unknown") .. "  |A:worldquest-icon-engineering:14:14|a ID: " .. (auraData.spellId or "Unknown"))
+                --                 BBF.Print(iconTexture .. " " .. (auraData.name or "Unknown") .. "  |A:worldquest-icon-engineering:14:14|a ID: " .. (auraData.spellId or "Unknown"))
                 --                 auraFrame.bbfPrinted = true
                 --                 auraFrame.bbfLastPrintedAuraIndex = currentAuraIndex
                 --                 -- Cancel existing timer if any
@@ -2570,7 +2570,7 @@ function BBF.RefreshAllAuraFrames()
     else
         if not auraMsgSent then
             auraMsgSent = true
-            DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. L["Print_Need_Enable_Aura_Settings"])
+            BBF.Print(L["Print_Need_Enable_Aura_Settings"])
             C_Timer.After(9, function()
                 auraMsgSent = false
             end)

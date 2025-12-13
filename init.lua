@@ -4,6 +4,27 @@ BetterBlizzFramesDB = BetterBlizzFramesDB or {}
 BBF = BBF or {}
 BBA = BBA or {}
 
+---------------------------------------
+-- Standard BBF Print Function
+---------------------------------------
+
+-- BBF prefix for print messages (icon + colored addon name)
+BBF.PRINT_PREFIX = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: "
+
+-- Standard print function that adds BBF prefix automatically
+function BBF.Print(msg)
+	if msg then
+		print(BBF.PRINT_PREFIX .. msg)
+	end
+end
+
+-- Print without the colon (for special cases like "BBF first run")
+function BBF.PrintNoColon(msg)
+	if msg then
+		print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames " .. msg)
+	end
+end
+
 -- Initialize locale table (will be populated by locale files)
 BBF.L = BBF.L or {}
 

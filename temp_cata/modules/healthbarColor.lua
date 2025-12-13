@@ -297,7 +297,7 @@ function BBF.UpdateFrames()
     if C_AddOns.IsAddOnLoaded("DragonflightUI") then
         if not BBF.dfuiHbWarning then
             BBF.dfuiHbWarning = true
-            print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. L["Print_DragonflightUI_Class_Color_Conflict"])
+            BBF.Print(L["Print_DragonflightUI_Class_Color_Conflict"])
         end
     end
     if classColorsOn then
@@ -669,7 +669,7 @@ end
 function BBF.HookBiggerHealthbars()
     if C_AddOns.IsAddOnLoaded("DragonflightUI") then
         if not BBF.DFUIUnsupported then
-            print("|A:gmchat-icon-blizz:16:16|aBetter|cff00c0ffBlizz|rFrames: " .. L["Print_Bigger_Healthbars_Not_Supported_DragonflightUI"])
+            BBF.Print(L["Print_Bigger_Healthbars_Not_Supported_DragonflightUI"])
             BBF.DFUIUnsupported = true
         end
         return

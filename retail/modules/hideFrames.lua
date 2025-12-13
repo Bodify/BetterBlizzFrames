@@ -70,7 +70,7 @@ function BBF.HideFrames()
     local db = BetterBlizzFramesDB
     if db.hasCheckedUi then
         if InCombatLockdown() then
-            print(L["Print_Combat_Hide_Settings"])
+            BBF.Print(L["Print_Combat_Hide_Settings"])
             return
         end
         local playerClass, englishClass = UnitClass("player")
@@ -218,7 +218,7 @@ function BBF.HideFrames()
                 hooksecurefunc(EditModeManagerFrame, "EnterEditMode", function()
                     if InCombatLockdown() then
                         if hiddenBar1 then
-                            print(L["Print_ActionBar1_Show_Combat"])
+                            BBF.Print(L["Print_ActionBar1_Show_Combat"])
                         end
                         return
                     end
@@ -228,7 +228,7 @@ function BBF.HideFrames()
                 hooksecurefunc(EditModeManagerFrame, "ExitEditMode", function()
                     if InCombatLockdown() then
                         if not hiddenBar1 then
-                            print(L["Print_ActionBar1_Hide_Combat"])
+                            BBF.Print(L["Print_ActionBar1_Hide_Combat"])
                         end
                         return
                     end
@@ -1438,7 +1438,7 @@ end
 function BBF.MoveQueueStatusEye()
     if not BetterBlizzFramesDB.moveQueueStatusEye then return end
     if C_AddOns.IsAddOnLoaded("Bartender4") then
-        DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|aBetter|cff00c0ffBlizz|rFrames: This setting is disabled with Bartender4. You can already move it with Bartender4.")
+        BBF.Print(L["Print_Bartender4_Disabled"])
         return
     end
 

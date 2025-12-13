@@ -955,7 +955,7 @@ function BBF.ChangeCastbarSizes()
     if CastingBarFrame.ignoreFramePositionManager and not bugNotify then
         bugNotify = true
         C_Timer.After(3, function() 
-            print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames:\n" .. L["Print_Cast_Bar_Underneath_Warning"])
+            BBF.Print("\n" .. L["Print_Cast_Bar_Underneath_Warning"])
         end)
     end
 

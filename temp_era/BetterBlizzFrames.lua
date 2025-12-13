@@ -323,7 +323,7 @@ local function FetchAndSaveValuesOnFirstLogin()
 
     C_Timer.After(5, function()
         if not C_AddOns.IsAddOnLoaded("SkillCapped") then
-        DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|aBetter|cff00c0ffBlizz|rFrames " .. L["Print_First_Run"])
+            BBF.PrintNoColon(L["Print_First_Run"])
         end
         BetterBlizzFramesDB.hasSaved = true
     end)
@@ -377,8 +377,8 @@ local function SendUpdateMessage()
                 --StaticPopup_Show("BBF_NEW_VERSION")
 
                 if BetterBlizzFramesDB.playerAuraFiltering then
-                    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames "..addonUpdates..":")
-                    --DEFAULT_CHAT_FRAME:AddMessage("|A:QuestNormal:16:16|a New stuff:")
+                    BBF.PrintNoColon(addonUpdates..":")
+                    --BBF.Print("|A:QuestNormal:16:16|a New stuff:")
                     DEFAULT_CHAT_FRAME:AddMessage("|A:QuestNormal:16:16|a " .. L["Print_BuffFrame_Move_Important_Note"])
                 end
                 -- DEFAULT_CHAT_FRAME:AddMessage("   - Absorb Indicator + Overshields now working (Potentially).")
@@ -397,7 +397,7 @@ local function SendUpdateMessage()
 end
 
 local function NewsUpdateMessage()
-    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames news:")
+    BBF.PrintNoColon("news:")
     DEFAULT_CHAT_FRAME:AddMessage("|A:QuestNormal:16:16|a New Settings:")
     DEFAULT_CHAT_FRAME:AddMessage("   - Castbar Edge Highlighter now uses seconds instead of percentages.")
     DEFAULT_CHAT_FRAME:AddMessage("   - Added \"Hide Player Guide Flag\" setting.")
@@ -1458,7 +1458,7 @@ local function executeCustomCode()
         if func then
             func() -- Execute the custom code
         else
-            print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. string.format(L["Print_Error_In_Custom_Code"], errorMsg))
+            BBF.Print(string.format(L["Print_Error_In_Custom_Code"], errorMsg))
         end
     end
 end
@@ -1635,18 +1635,18 @@ SlashCmdList["BBF"] = function(msg)
                 if spellName then
                     local iconString = "|T" .. icon .. ":16:16:0:0|t" -- Format the icon for display
                     BBF.auraWhitelist(spellId)
-                    print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ")" .. L["Print_Added_To_Whitelist_With_Icon"])
+                    BBF.Print(iconString .. " " .. spellName .. " (" .. spellId .. ")" .. L["Print_Added_To_Whitelist_With_Icon"])
                 else
-                    print(L["Print_Error_Invalid_Spell_ID"])
+                    BBF.Print(L["Print_Error_Invalid_Spell_ID"])
                 end
             else
                 -- The argument is not a number, treat it as a spell name
                 local spellName = arg
                 BBF.auraWhitelist(spellName)
-                print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. spellName .. L["Print_Added_To_Whitelist_Name"])
+                BBF.Print(spellName .. L["Print_Added_To_Whitelist_Name"])
             end
         else
-            print(L["Print_Usage_Whitelist"])
+            BBF.Print(L["Print_Usage_Whitelist"])
         end
     elseif command == "blacklist" or command == "bl" then
         if arg and arg ~= "" then
@@ -1657,30 +1657,30 @@ SlashCmdList["BBF"] = function(msg)
                 if spellName then
                     local iconString = "|T" .. icon .. ":16:16:0:0|t" -- Format the icon for display
                     BBF.auraBlacklist(spellId)
-                    print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ")" .. L["Print_Added_To_Blacklist_With_Icon"])
+                    BBF.Print(iconString .. " " .. spellName .. " (" .. spellId .. ")" .. L["Print_Added_To_Blacklist_With_Icon"])
                 else
-                    print(L["Print_Error_Invalid_Spell_ID"])
+                    BBF.Print(L["Print_Error_Invalid_Spell_ID"])
                 end
             else
                 -- The argument is not a number, treat it as a spell name
                 local spellName = arg
                 BBF.auraBlacklist(spellName)
-                print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. spellName .. L["Print_Added_To_Blacklist_Name"])
+                BBF.Print(spellName .. L["Print_Added_To_Blacklist_Name"])
             end
         else
-            print(L["Print_Usage_Blacklist"])
+            BBF.Print(L["Print_Usage_Blacklist"])
         end
     elseif command == "ver" or command == "version" then
-        DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames Version "..addonUpdates)
+        BBF.PrintNoColon("Version "..addonUpdates)
     elseif command == "dump" then
-        local exportVersion = BetterBlizzFramesDB.exportVersion or "No export version registered"
-        DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: "..exportVersion)
+        local exportVersion = BetterBlizzFramesDB.exportVersion or L["Chat_No_Export_Version"]
+        BBF.Print("\n\n"..exportVersion)
     elseif command == "profiles" then
         BBF.CreateIntroMessageWindow()
     else
         -- InterfaceOptionsFrame_OpenToCategory(BetterBlizzFrames)
         if not BBF.category then
-            print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. L["Print_Settings_Disabled"])
+            BBF.Print(L["Print_Settings_Disabled"])
             --BBF.InitializeOptions()
             --Settings.OpenToCategory(BBF.category:GetID())
         else

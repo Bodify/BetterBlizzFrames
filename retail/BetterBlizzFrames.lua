@@ -430,7 +430,7 @@ local function FetchAndSaveValuesOnFirstLogin()
 
     C_Timer.After(5, function()
         if not C_AddOns.IsAddOnLoaded("SkillCapped") then
-        DEFAULT_CHAT_FRAME:AddMessage(L["Chat_First_Run"])
+            BBF.PrintNoColon(L["Chat_First_Run"])
         end
         BetterBlizzFramesDB.hasSaved = true
     end)
@@ -483,9 +483,9 @@ local function SendUpdateMessage()
             C_Timer.After(7, function()
                 --StaticPopup_Show("BBF_NEW_VERSION")
                 if BetterBlizzFramesDB.enableLegacyComboPoints and not BetterBlizzFramesDB.classicFrames then
-                    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames "..addonUpdates..":")
-                    --DEFAULT_CHAT_FRAME:AddMessage("|A:QuestNormal:16:16|a New stuff:")
-                    DEFAULT_CHAT_FRAME:AddMessage(L["Chat_Legacy_Combo_Update"])
+                    BBF.PrintNoColon(addonUpdates..":")
+                    --BBF.Print("|A:QuestNormal:16:16|a New stuff:")
+                    DEFAULT_CHAT_FRAME:AddMessage("|A:QuestNormal:16:16|a " .. L["Chat_Legacy_Combo_Update"])
                 end
                 -- DEFAULT_CHAT_FRAME:AddMessage("|A:Professions-Crafting-Orders-Icon:16:16|a Tweak:")
                 -- DEFAULT_CHAT_FRAME:AddMessage("   - Reset castbar interrupt icon y offset to 0 due to default positional changes You may have to readjust to your liking.")
@@ -501,8 +501,8 @@ local function SendUpdateMessage()
 end
 
 local function NewsUpdateMessage()
-    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames news:")
-    DEFAULT_CHAT_FRAME:AddMessage(L["Chat_New_Settings"])
+    BBF.PrintNoColon("news:")
+    DEFAULT_CHAT_FRAME:AddMessage("|A:QuestNormal:16:16|a " .. L["Chat_New_Settings"])
     DEFAULT_CHAT_FRAME:AddMessage(L["Chat_Castbar_Highlighter"])
     DEFAULT_CHAT_FRAME:AddMessage(L["Chat_Hide_Guide_Flag"])
 
@@ -828,7 +828,7 @@ local function CheckForResourceConflicts()
 
     local _, class = UnitClass("player")
     if db.moveResourceToTarget and conflicts[class] then
-        print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. L["Print_Disable_Move_Resource_To_Target"])
+        BBF.Print(L["Print_Disable_Move_Resource_To_Target"])
         return true
     end
     return false
@@ -1073,7 +1073,7 @@ end
 function BBF.SurrenderNotLeaveArena()
     if not BetterBlizzFramesDB.surrenderArena then return end
     local function bbfPrint(msg)
-        print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: "..msg)
+        BBF.Print(msg)
     end
 
     local surrenderFailed
@@ -2071,7 +2071,7 @@ function BBF.ArenaOptimizer(disable, noPrint)
                 end
             end
             if changedCVars and not db.arenaOptimizerDisablePrint and not noPrint then
-                print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. L["Print_Arena_Optimizer_Adjusted_Down"])
+                BBF.Print(L["Print_Arena_Optimizer_Adjusted_Down"])
             end
         end)
     else
@@ -2084,7 +2084,7 @@ function BBF.ArenaOptimizer(disable, noPrint)
                 end
             end
             if changedCVars and not db.arenaOptimizerDisablePrint and not noPrint then
-                print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. L["Print_Arena_Optimizer_Adjusted_Up"])
+                BBF.Print(L["Print_Arena_Optimizer_Adjusted_Up"])
             end
         end)
     end
@@ -2921,7 +2921,7 @@ function BBF.RaiseTargetFrameLevel()
     if not BetterBlizzFramesDB.raiseTargetFrameLevel then return end
     if BBF.raisingTargetFrameLevel then return end
     if C_AddOns.IsAddOnLoaded("ClassicFrames") then
-        print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. L["Print_Raise_TargetFrame_Not_Supported_ClassicFrames"])
+        BBF.Print(L["Print_Raise_TargetFrame_Not_Supported_ClassicFrames"])
         return
     end
     TargetFrame:SetFrameStrata("MEDIUM")
@@ -3942,11 +3942,11 @@ function BBF.SymmetricPlayerFrame()
     if not BetterBlizzFramesDB.symmetricPlayerFrame then return end
     if BetterBlizzFramesDB.noPortraitModes or BetterBlizzFramesDB.noPortraitPixelBorder then return end
     if BetterBlizzFramesDB.classicFrames then
-        print("BBF: " .. L["Print_Symmetric_Not_Available_Classic"])
+        BBF.Print(L["Print_Symmetric_Not_Available_Classic"])
         return
     end
     if InCombatLockdown() then
-        print("BBF: " .. L["Print_Leave_Combat"])
+        BBF.Print(L["Print_Leave_Combat"])
         return
     end
     -- Update Player Portrait Mask
@@ -4825,7 +4825,7 @@ local function executeCustomCode()
         if func then
             func() -- Execute the custom code
         else
-            print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. string.format(L["Print_Error_In_Custom_Code"], errorMsg))
+            BBF.Print(string.format(L["Print_Error_In_Custom_Code"], errorMsg))
         end
     end
 end
@@ -4942,7 +4942,7 @@ Frame:SetScript("OnEvent", function(...)
     if BetterBlizzFramesDB.reopenOptions then
         --InterfaceOptionsFrame_OpenToCategory(BetterBlizzFrames)
         if not BBF.category then
-            print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. L["Print_Settings_Disabled"])
+            BBF.Print(L["Print_Settings_Disabled"])
             --BBF.InitializeOptions()
             --Settings.OpenToCategory(BBF.category:GetID())
         else
@@ -4973,18 +4973,18 @@ SlashCmdList["BBF"] = function(msg)
                 if spellName then
                     local iconString = "|T" .. icon .. ":16:16:0:0|t" -- Format the icon for display
                     BBF.auraWhitelist(spellId)
-                    print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ")" .. L["Print_Added_To_Whitelist_With_Icon"])
+                    BBF.Print(iconString .. " " .. spellName .. " (" .. spellId .. ")" .. L["Print_Added_To_Whitelist_With_Icon"])
                 else
-                    print(L["Print_Error_Invalid_Spell_ID"])
+                    BBF.Print(L["Print_Error_Invalid_Spell_ID"])
                 end
             else
                 -- The argument is not a number, treat it as a spell name
                 local spellName = arg
                 BBF.auraWhitelist(spellName)
-                print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. spellName .. L["Print_Added_To_Whitelist_Name"])
+                BBF.Print(spellName .. L["Print_Added_To_Whitelist_Name"])
             end
         else
-            print(L["Print_Usage_Whitelist"])
+            BBF.Print(L["Print_Usage_Whitelist"])
         end
     elseif command == "blacklist" or command == "bl" then
         if arg and arg ~= "" then
@@ -4995,33 +4995,33 @@ SlashCmdList["BBF"] = function(msg)
                 if spellName then
                     local iconString = "|T" .. icon .. ":16:16:0:0|t" -- Format the icon for display
                     BBF.auraBlacklist(spellId)
-                    print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ")" .. L["Print_Added_To_Blacklist_With_Icon"])
+                    BBF.Print(iconString .. " " .. spellName .. " (" .. spellId .. ")" .. L["Print_Added_To_Blacklist_With_Icon"])
                 else
-                    print(L["Print_Error_Invalid_Spell_ID"])
+                    BBF.Print(L["Print_Error_Invalid_Spell_ID"])
                 end
             else
                 -- The argument is not a number, treat it as a spell name
                 local spellName = arg
                 BBF.auraBlacklist(spellName)
-                print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. spellName .. L["Print_Added_To_Blacklist_Name"])
+                BBF.Print(spellName .. L["Print_Added_To_Blacklist_Name"])
             end
         else
-            print(L["Print_Usage_Blacklist"])
+            BBF.Print(L["Print_Usage_Blacklist"])
         end
     elseif command == "ver" or command == "version" then
-        DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames Version "..addonUpdates)
+        BBF.PrintNoColon("Version "..addonUpdates)
     elseif command == "dump" then
         local exportVersion = BetterBlizzFramesDB.exportVersion or L["Chat_No_Export_Version"]
-        DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: \n\n"..exportVersion)
+        BBF.Print("\n\n"..exportVersion)
     elseif command == "profiles" then
         BBF.CreateIntroMessageWindow()
     elseif command == "noprint" then
         BetterBlizzFramesDB.arenaOptimizerDisablePrint = true
-        print(L["Chat_Arena_Optimizer_Noprint"])
+        BBF.Print(L["Chat_Arena_Optimizer_Noprint"])
     else
         -- InterfaceOptionsFrame_OpenToCategory(BetterBlizzFrames)
         if not BBF.category then
-            print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. L["Print_Settings_Disabled"])
+            BBF.Print(L["Print_Settings_Disabled"])
             --BBF.InitializeOptions()
             --Settings.OpenToCategory(BBF.category:GetID())
         else
@@ -5115,7 +5115,7 @@ First:SetScript("OnEvent", function(_, event, addonName)
             end
             if C_AddOns.IsAddOnLoaded("ClassicFrames") then
                 C_Timer.After(4, function()
-                    print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. L["Print_Classic_Frames_Recommend_BBF"])
+                    BBF.Print(L["Print_Classic_Frames_Recommend_BBF"])
                 end)
             end
             MoveableSettingsPanel()
@@ -5207,7 +5207,7 @@ First:SetScript("OnEvent", function(_, event, addonName)
             local removedAura = false
             for _, faultyId in ipairs(auraBlacklistFaulty) do
                 if BetterBlizzFramesDB.auraBlacklist[faultyId] then
-                    print("BBF: " .. string.format(L["Print_Removed_Dispellable_Aura"], (BetterBlizzFramesDB.auraBlacklist[faultyId].name or L["Unknown"]), faultyId))
+                    BBF.Print(string.format(L["Print_Removed_Dispellable_Aura"], (BetterBlizzFramesDB.auraBlacklist[faultyId].name or L["Unknown"]), faultyId))
                     BetterBlizzFramesDB.auraBlacklist[faultyId] = nil
                     removedAura = true
                 end

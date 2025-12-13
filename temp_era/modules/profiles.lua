@@ -5,7 +5,7 @@ function BBF.StarterProfile()
 
     local profileData, errorMessage = BBF.ImportProfile(starterProfile, "fullProfile")
     if errorMessage then
-        print(L["Print_Error_Importing_Profile"], errorMessage)
+        BBF.Print(L["Print_Error_Importing_Profile"] .. " " .. tostring(errorMessage))
     else
         for k in pairs(BetterBlizzFramesDB) do BetterBlizzFramesDB[k] = nil end
         for k, v in pairs(profileData) do
@@ -21,7 +21,7 @@ function BBF.SnupyProfile()
 
     local profileData, errorMessage = BBF.ImportProfile(snupyProfile, "fullProfile")
     if errorMessage then
-        print(L["Print_Error_Importing_Profile"], errorMessage)
+        BBF.Print(L["Print_Error_Importing_Profile"] .. " " .. tostring(errorMessage))
     else
         for k in pairs(BetterBlizzFramesDB) do BetterBlizzFramesDB[k] = nil end
         for k, v in pairs(profileData) do
