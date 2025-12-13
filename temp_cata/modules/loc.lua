@@ -1,3 +1,4 @@
+local L = BBF.L
 local interruptSpells = {
     [1766] = 5,  -- Kick (Rogue)
     [2139] = 6,  -- Counterspell (Mage)
@@ -746,13 +747,13 @@ function BBF.SetupLoCFrame()
 
             local r, g, b = 1, 0.819, 0
             if main.type == "Silenced" and interrupt then
-                frame.AbilityName:SetText("Silenced+")
+                frame.AbilityName:SetText(L["Label_Silenced"])
                 _, r, g, b = GetSchoolInfo(interrupt.school)
             elseif main == interrupt then
-                frame.AbilityName:SetText("Interrupted")
+                frame.AbilityName:SetText(L["Label_Interrupted"])
                 _, r, g, b = GetSchoolInfo(interrupt.school)
             else
-                frame.AbilityName:SetText(main.type or "unknown")
+                frame.AbilityName:SetText(main.type or L["Unknown"])
             end
             frame.AbilityName:SetTextColor(r, g, b)
 

@@ -1,4 +1,5 @@
 if BBF.isMidnight then return end
+local L = BBF.L
 local UnitIsFriend = UnitIsFriend
 local UnitIsEnemy = UnitIsEnemy
 local UnitIsPlayer = UnitIsPlayer
@@ -952,7 +953,7 @@ function BBF.HookHealthbarColors()
                 HookCfSetStatusBarColor(CfTargetFrameHealthBar, "target")
                 HookCfSetStatusBarColor(CfFocusFrameHealthBar, "focus")
             else
-                print("ClassicFrames healthbars not detected. Please report to dev @bodify")
+                BBF.Print(L["Print_ClassicFrames_Not_Detected"])
             end
         else
             hooksecurefunc("UnitFrameHealthBar_Update", function(self, unit)

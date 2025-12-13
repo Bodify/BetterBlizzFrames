@@ -1,9 +1,11 @@
+local L = BBF.L
+
 function BBF.StarterProfile()
     local starterProfile = "!BBF9LvZUTrYryX1BswNadqrjsrBT7IjogBsqWkyVjo7gJe4Lu)rTqYKrK(hLttZzAYPxp)0PNHwIgbia(jyFac2dcib5SoKCnWxccqaYcDj5uoOhGCGpbPQU7zMEMH2hmm18t3vx1x9vFvn1(OUUKeYxv7xEUZS4KOGTJCP8p)J)yRDdtOcl1fTCGRAnM6hDQLhvq3YApk13AIGsTsIG7gMqCsScOwF(4ix2K58M)2z0z0rSaQ4PerilCk(7BWVzcrmLMSBOp()DMji7jy0qx)5286EmxApwYbHUmhssKWMFl8sDCsyrHDjITjXjDczbe8V9wWPj4vGB8uMBI3)IVQAX3okGdMdU42815erYC85gted9IoDe9SeB(A4cVxeC8oKsCPIdGZaybCFYCQypbjGo0H4tV2LQLCu0OtgefxJV(e8D0lh(spdVSHPOETfQfcnH9bNwS5gcM3yscEzp(QHrIaIp7L09HT8iA4mBEB5wSup0Qv8Q28BIl8iPvEmLplr6C2oYhCFIzCi4sJhFVT(0TUNpVzMX3vz8kJL3WbF8b0KotGyE)tdPGRVT6iOFA5EUnfXeE8gvVfCu4cwO0PpKt99pWn27c006sMgdpL9RZT9d2P979Nppfl0D2Kj7X8HvURpX55(Syi(CtAizSpDGCJYFc5jEt12dl9YEZvLhs1n3vUiWBO2PoHUYiqVib7LiM1FFc)7WB5iJizWoeLmKWTpp3IbKOJ2THUaWXMG(pLBhSw5EcGKoUFjKWea(P(tMettoPgFTsRUeWWF)Iw0qae4l9D6isbpSeE)U34cc8aJMZbSc)68BLHmxYMUEa5SbzqW4buXXrN28sbnItd7ZrisS3R8iXdjVG6A)A4xB7rDEo19XmBEZS8itd3ol)szvQeI6t0y68uU65zd9OSPEjn5RliomIFUlwDmxJz6n7gbXuCB4ZGTbJCspcKCCTlXJ(t9yjumi3IVj9msa3NAHx36b)uRFKl1NMqbkOFCRUHqUeFZD1psNQpcVbImvoOJPXYKriffIbrNEywAhta4PfKXXrIXzwU3ICurNzUSiWDbo7DOJrWisCO(z83NVEmaKgKs)Ot5agPsRO2x0EcWdDeZreH0a7EMdLN8RXTYM3WpkoU)KTbiRiYx)8RBGZvjbD8994n5L2Wuev0lOaYMr9DtJwWcpbny8WcWJobrZctaO5Yq6iQf)3VBfEdfkOyg2QMBRIryH0an4s5nnSHhhYsK3d4g1O9os)IYmStzARGbn5W0RBDZn)eZ8lt3ZH044JyW2srgmJ3qbsVj)wv8OMes8surg3RUozwA)Q9hyQzopVhGY01kGJzRcMoGn0a(RYIcXQxwN)DCXCgaGwMWeI4LQWLvsIx3XNehlleK6Nl47u8AlKfyfaBB(djx699jUmGyItcGd4y20PuWrr8t8uhMmkp9gNtcLzNL4a(Gai8dzBrZeou4fLpZacUpHD33ScjCtDsKn)2LrJ9GvZhxrQy3qx8um4A3DRFU27EqapsKqufIuP1RwGlv5HVfxN7NvWmZzzRltAuaE3qAau99MlRoXPqmm(nuEOtOJxK44Jpy)EJUkNuufFAMBwfIBkh7sHTlkzaE86UeXZpkYaLDLHeM(BVJ9cF6uIZCmpkcp7)HvUe9ZhsFb1hLc5LAiLep4X)HVfpF21oE)UpO21QLwn6nKTLbWvybO(vnjJEwo0FP978F(bF038GRgYMgAfnXQljjXNEBMlEJRMoJ57A54be6G91cEU9LxzB9v4RfRFVepQvStewabEm(AdnU(q115Tk8WpNjcyXGQw85Bv45ZUfVbOcweCklSGvWBmm7YPMYRtxCMq(mVoDfpa(72F7v)tWPK38PaQbViXc(vI3ClitEoEAHh49(9)B8zwvMvAnqqH8BzCbUpCV21cdW73axWjrWbkBVXfaUliKoc0v6dralvybT169YUOk17v0q01tDH7(QD1)M3SegtHH)Ma(hSme(oSye9a4SuXbgPn2vv49usIJ3HWo5X)qL0xnWDViXUqQ7PqZfU4LqfZ5zmg1XUzrHt4(KQ6XGhvtbcfMvN1SAYnkjePVWbyqZvdy2nqJc0ysryUx)kf94rSyNda3V95PzGOWPnQACPkDGTWLgQ8zcQSJMXD7pAu)JopiI)yLqDBbah57)4dmz1rUAqJcUhElPgLHlDTshovVjPgiMngaYAtpx6YTY47NmQ)GuPCMKuBK3htgZQIvTvbw18auEdtQvODaUTGgU(J)s8y)c6iWkFoQZBZkNftsJMZyGlhlrGOI8I9R6OuVqDtvhI8)Fk)N8wOR2buovGY6A1QLP6q2Xc44cNccNxfGmDtvYH)iUZcveF3GOeQUCivbYnSG7T1plt2CoJUUCUu3E00P(uztdaR7mbT97CJpSsZbYx4QSUjKXMluWezvKIXiTudtKsQ4qJgsZfAOa6QmctGEPCQNqfjG5GnhDDzlCqNHQUMxnldtMnG84vZXhKQE3t3k7sXQTFtQmbfMRvOcvh)tjZJb0TuoD25s325A5rXSwe1spn1NwrgHeXclyhjMSFO)CSoLCfEe3rY9kd2xLNFl50Us1y6HrBlHiqFYcclw7u1H(HjaHnq)1QSRb3MJa)ImoCmH5kxJJiHKPy4znGRpkMjN2rkg0(YSs8yz5Ep8V)D)v2RScKA6Q4ErkyQpMuM6OAwIg4XHUqWgI(o(usOc1AOETvbAoZwgkCdDFW1n0tON1HXvWa4)8DQe3n2TgfooYvi)mvCht7AOsALMDxqvkkj(bpsPDTzvv)YMIAvP2Kss3RtZ00SDAqYJIYGjsReOl69WVQEDRvwzfT6WQX0InXOQA(hpNNz4EftuLjq)dOlh5ImCou8n4iG(dqcXi7pMePzkK2aWA9f1g8U3DRFXNCn8)(S7dAoLdNRGK3HWpXHKCHJCwnA)sJtjX9dpmcLApDOJGsdvdNzWl4skGltDeP8h5efMIX3mFMcsWzXEa3GywMqHl1T8ww5SQurku4jSPYw7KwKaQ1XMs7saUFBJPCuTpJlmAN0Ej6Pv0JTRIjsdzf6hsxFhAuMNilyjZtqYkyX3OsPk9ACvM9P9CTkpVXuU3nkoYHS5ycrNIeB6rrAwKwfJq37WeitsosKsLX1Dn)gLh9mSGxHIckk90U93HIMMBzGFVh(F)6V(Vb4(Ep8)P(r6W0wEFYciKeJ8x3BR7E3RINjaIu44l5tTlglgqG7eWCu6jQBM(OkdYlnQjdQE89lmhKk9kRITLCoLGVMGx5WNFmBxHq3VSDf5upI6pXMFNLMduP(26LB2x6UVktrQsBrPrQPOHU9smZYR)cyHKkD7hkFMAl0b(z5tCUGcnvNxBW30CWQ6PwLv3KVXS0XY0DQj7ZxuRwnuM19HMGxwHuvOyJI03gG)BTmmd7LVKiC9435TOCdW7IK0M8)mGIP4SZYfgV5YSlvW1nNCO80KkxOYq7sDn)OSUNk4njnLs5HxucF4PvNvOfOYGijuovv1JK4S6QAaJaFyyIs0bE)8Vtq2mmWL8zQ85AfN6L(ZqGxXyIBlYyN0fK(Rlmsl0D5ycutNvtZcyNC2IgfNUWVjkcKdVuPC458BXRxyeOaJOD1VGYjgJ9yPaKlPNH1uEIIzH3QB39EGL6tAaTp)0hyD)TU)w3DzuF6bFFJLJALpM9Y4ZmYJBucHih5wbYQc81MJ7uNoSKrsvT1JN994TZM)v5VJtUOPSpfgwWlFaFkkfDXEaoDw2K6sdB5Y4YYyKZaFFr0mUrcXDk5erEBCDLXW(a5UaEjiigbL)sjWXJb01gTKFrcjZuyDIQxuXmMlUmXyDSy7LpSz8zv4NMvyuuhizY5ocYuik6px(vHk)jg6nlGaXL3V6CVnh9SrI1j6eR8XiiJJ1aQfPol5hgi)d1OfAvA8IkgCzRk9KD8lHHAvqLhu7jM9yVewtzFqdYYPhXsKYSmYukvdnVFJSYAMIeugxXVTKX8j0ff2hcrYgvTFf(PHXp40ftM57pqebev0))d!BBF"
 
     local profileData, errorMessage = BBF.ImportProfile(starterProfile, "fullProfile")
     if errorMessage then
-        print("|A:gmchat-icon-blizz:16:16|aBetter|cff00c0ffBlizz|rPlates: Error importing profile:", errorMessage)
+        BBF.Print(L["Print_Error_Importing_Profile"] .. " " .. tostring(errorMessage))
     else
         for k in pairs(BetterBlizzFramesDB) do BetterBlizzFramesDB[k] = nil end
         for k, v in pairs(profileData) do
@@ -19,7 +21,7 @@ function BBF.AeghisProfile()
 
     local profileData, errorMessage = BBF.ImportProfile(aeghisProfile, "fullProfile")
     if errorMessage then
-        print("|A:gmchat-icon-blizz:16:16|aBetter|cff00c0ffBlizz|rFrames: Error importing profile:", errorMessage)
+        BBF.Print(L["Print_Error_Importing_Profile"] .. " " .. tostring(errorMessage))
     else
         for k in pairs(BetterBlizzFramesDB) do BetterBlizzFramesDB[k] = nil end
         for k, v in pairs(profileData) do
@@ -35,7 +37,7 @@ function BBF.MmarkersProfile()
 
     local profileData, errorMessage = BBF.ImportProfile(mmarkersProfile, "fullProfile")
     if errorMessage then
-        print("|A:gmchat-icon-blizz:16:16|aBetter|cff00c0ffBlizz|rFrames: Error importing profile:", errorMessage)
+        BBF.Print(L["Print_Error_Importing_Profile"] .. " " .. tostring(errorMessage))
     else
         for k in pairs(BetterBlizzFramesDB) do BetterBlizzFramesDB[k] = nil end
         for k, v in pairs(profileData) do
@@ -51,7 +53,7 @@ function BBF.NahjProfile()
 
     local profileData, errorMessage = BBF.ImportProfile(nahjProfile, "fullProfile")
     if errorMessage then
-        print("|A:gmchat-icon-blizz:16:16|aBetter|cff00c0ffBlizz|rFrames: Error importing profile:", errorMessage)
+        BBF.Print(L["Print_Error_Importing_Profile"] .. " " .. tostring(errorMessage))
     else
         for k in pairs(BetterBlizzFramesDB) do BetterBlizzFramesDB[k] = nil end
         for k, v in pairs(profileData) do
@@ -67,7 +69,7 @@ function BBF.SnupyProfile()
 
     local profileData, errorMessage = BBF.ImportProfile(snupyProfile, "fullProfile")
     if errorMessage then
-        print("|A:gmchat-icon-blizz:16:16|aBetter|cff00c0ffBlizz|rPlates: Error importing profile:", errorMessage)
+        BBF.Print(L["Print_Error_Importing_Profile"] .. " " .. tostring(errorMessage))
     else
         for k in pairs(BetterBlizzFramesDB) do BetterBlizzFramesDB[k] = nil end
         for k, v in pairs(profileData) do
