@@ -268,7 +268,7 @@ local function updateFrameColorToggleVer(frame, unit)
                     frame:SetStatusBarColor(1, 1, 1, 1)
                 else
                     frame:SetStatusBarDesaturated(true)
-                    frame:SetStatusBarColor(color.r, color.g, color.b, color.a)
+                    frame:SetStatusBarColor(color.r, color.g, color.b, color.a or 1)
                 end
             end
         else
@@ -279,7 +279,7 @@ local function updateFrameColorToggleVer(frame, unit)
                     frame:SetStatusBarColor(1, 1, 1, 1)
                 else
                     frame:SetStatusBarDesaturated(true)
-                    frame:SetStatusBarColor(color.r, color.g, color.b, color.a)
+                    frame:SetStatusBarColor(color.r, color.g, color.b, color.a or 1)
                 end
             end
         end
@@ -328,7 +328,7 @@ local function UpdateHealthColor(frame, unit)
             frame:SetStatusBarColor(1, 1, 1, 1)
         else
             frame:SetStatusBarDesaturated(true)
-            frame:SetStatusBarColor(color.r, color.g, color.b, color.a)
+            frame:SetStatusBarColor(color.r, color.g, color.b, color.a or 1)
         end
     end
 end
@@ -340,7 +340,7 @@ local function UpdateHealthColorCF(frame, unit)
     local color, isFriendly = getUnitColor(unit, useCustomColors)
     if color then
         --frame:SetStatusBarDesaturated(true)
-        frame:SetStatusBarColor(color.r, color.g, color.b, color.a)
+        frame:SetStatusBarColor(color.r, color.g, color.b, color.a or 1)
     end
 end
 
@@ -735,7 +735,7 @@ function BBF.UpdateFrames()
             if frame and frame:IsShown() and frame.unit and frame.healthBar then
                 local color, isFriendly = getUnitColor(frame.unit, true)
                 if color then
-                    frame.healthBar:SetStatusBarColor(color.r, color.g, color.b, color.a)
+                    frame.healthBar:SetStatusBarColor(color.r, color.g, color.b, color.a or 1)
                 end
 
                 if customPowerColors and frame.powerBar then
@@ -759,7 +759,7 @@ function BBF.UpdateFrames()
                 if frame and frame:IsShown() and frame.unit and frame.healthBar then
                     local color, isFriendly = getUnitColor(frame.unit, true)
                     if color then
-                        frame.healthBar:SetStatusBarColor(color.r, color.g, color.b, color.a)
+                        frame.healthBar:SetStatusBarColor(color.r, color.g, color.b, color.a or 1)
                     end
 
                     if customPowerColors and frame.powerBar then
@@ -863,7 +863,7 @@ function BBF.UpdateFrameColor(frame, unit)
             frame:SetStatusBarColor(1, 1, 1, 1)
         else
             frame:SetStatusBarDesaturated(true)
-            frame:SetStatusBarColor(color.r, color.g, color.b, color.a)
+            frame:SetStatusBarColor(color.r, color.g, color.b, color.a or 1)
         end
     end
 end
@@ -924,7 +924,7 @@ function BBF.HookHealthbarColors()
                         local useCustomColors = customHealthbarColors and customColorsUnitFrames
                         local color = getUnitColor(unit, useCustomColors)
                         if color then
-                            frame:SetStatusBarColor(color.r, color.g, color.b, color.a)
+                            frame:SetStatusBarColor(color.r, color.g, color.b, color.a or 1)
                         end
                         frame.recoloring = false
                     end
@@ -933,7 +933,7 @@ function BBF.HookHealthbarColors()
                 local useCustomColors = customHealthbarColors and customColorsUnitFrames
                 local color = getUnitColor(unit, useCustomColors)
                 if color then
-                    frame:SetStatusBarColor(color.r, color.g, color.b, color.a)
+                    frame:SetStatusBarColor(color.r, color.g, color.b, color.a or 1)
                 end
                 frame.SetStatusBarColorHooked = true
             end
@@ -981,7 +981,7 @@ function BBF.HookHealthbarColors()
                 if customHealthbarColors and customColorsRaidFrames then
                     local color, isFriendly = getUnitColor(frame.unit, true)
                     if color then
-                        frame.healthBar:SetStatusBarColor(color.r, color.g, color.b, color.a)
+                        frame.healthBar:SetStatusBarColor(color.r, color.g, color.b, color.a or 1)
                         frame.recolored = true
                         return
                     end
@@ -1031,7 +1031,7 @@ function BBF.HookHealthbarColors()
             if customHealthbarColors and customColorsRaidFrames then
                 local color, isFriendly = getUnitColor(frame.unit, true)
                 if color then
-                    frame.healthBar:SetStatusBarColor(color.r, color.g, color.b, color.a)
+                    frame.healthBar:SetStatusBarColor(color.r, color.g, color.b, color.a or 1)
                     frame.recolored = true
                     return
                 end
@@ -1074,7 +1074,7 @@ function BBF.HookHealthbarColors()
                 local color = getRPUnitColor(unit)
                 if color then
                     frame:SetStatusBarDesaturated(true)
-                    frame:SetStatusBarColor(color.r, color.g, color.b, color.a)
+                    frame:SetStatusBarColor(color.r, color.g, color.b, color.a or 1)
                 else
                     if retexturedBars then
                         frame:SetStatusBarDesaturated(true)
