@@ -4268,7 +4268,6 @@ function BBF.AddBackgroundTextureToUnitFrames(frame)
     local hpBar = frame.healthbar or frame.HealthBar or frame.healthBar
     local manaBar = frame.manabar or frame.ManaBar or frame.manaBar
 
-    -- Check if this is an alternate power bar (no health/mana bars)
     local isAltBar = frame == AlternatePowerBar or frame == MonkStaggerBar or frame == EvokerEbonMightBar or frame == DemonHunterSoulFragmentsBar
 
     if not hpBar and not manaBar and not isAltBar then
@@ -4285,7 +4284,6 @@ function BBF.AddBackgroundTextureToUnitFrames(frame)
         if isAltBar and frame.BBFBackground then
             frame.BBFBackground:Hide()
         end
-        -- Re-show pixel border backgrounds when this feature is disabled
         if hpBar and hpBar.pixelBorderBackground then
             hpBar.pixelBorderBackground:Show()
         end
@@ -4295,10 +4293,12 @@ function BBF.AddBackgroundTextureToUnitFrames(frame)
         if isAltBar and frame.pixelBorderBackground then
             frame.pixelBorderBackground:Show()
         end
+        if frame.noPortraitMode and frame.noPortraitMode.Background then
+            frame.noPortraitMode.Background:Show()
+        end
         return
     end
 
-    -- Hide pixel border backgrounds when this feature is enabled
     if hpBar and hpBar.pixelBorderBackground then
         hpBar.pixelBorderBackground:Hide()
     end
@@ -4307,6 +4307,9 @@ function BBF.AddBackgroundTextureToUnitFrames(frame)
     end
     if isAltBar and frame.pixelBorderBackground then
         frame.pixelBorderBackground:Hide()
+    end
+    if frame.noPortraitMode and frame.noPortraitMode.Background then
+        frame.noPortraitMode.Background:Hide()
     end
 
     if hpBar then
