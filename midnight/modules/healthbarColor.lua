@@ -131,12 +131,10 @@ local function getUnitColor(unit, useCustomColors)
                             color = {r = customColor[1], g = customColor[2], b = customColor[3], a = customColor[4] or 1}
                         else
                             color = RAID_CLASS_COLORS[className]
-                            color.a = 1
                         end
                     end
                 else
                     color = RAID_CLASS_COLORS[className]
-                    color.a = 1
                 end
 
                 if color then
@@ -157,12 +155,10 @@ local function getUnitColor(unit, useCustomColors)
                         color = {r = customColor[1], g = customColor[2], b = customColor[3], a = customColor[4] or 1}
                     else
                         color = RAID_CLASS_COLORS[className]
-                        color.a = 1
                     end
                 end
             else
                 color = RAID_CLASS_COLORS[className]
-                color.a = 1
             end
 
             if color then
