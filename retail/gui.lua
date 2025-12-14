@@ -3320,10 +3320,10 @@ local function guiGeneralTab()
     midnightBeta:SetText(L["Msg_Midnight_Available"])
     -- Use locale-aware font system instead of hardcoded font
     if useCustomFonts then
-        midnightBeta:SetFont("Fonts\\FRIZQT__.TTF", 24, L["THINOUTLINE"])
+        midnightBeta:SetFont("Fonts\\FRIZQT__.TTF", 24, "THINOUTLINE")
     else
         local gameFont = GameFontNormal:GetFont()
-        midnightBeta:SetFont(gameFont, 24, L["THINOUTLINE"])
+        midnightBeta:SetFont(gameFont, 24, "THINOUTLINE")
     end
     midnightBeta:Hide()
     BetterBlizzFrames:HookScript("OnShow",function()
@@ -7159,7 +7159,7 @@ local function guiFrameLook()
 
     -- For font outline
     local unitFrameFontOutline = CreateSimpleDropdown("FontOutlineDropdown", guiFrameLook, L["Outline_Label"], "unitFrameFontOutline", {
-        L["THICKOUTLINE"], L["THINOUTLINE"], L["NONE"]
+        "THICKOUTLINE", "THINOUTLINE", "NONE"
     }, function(selectedSize)
         BBF.SetCustomFonts()
     end, { anchorFrame = unitFrameFont, x = 0, y = -5 }, 155)
@@ -7227,7 +7227,7 @@ local function guiFrameLook()
 
     -- For font outline
     local unitFrameValueFontOutline = CreateSimpleDropdown("FontOutlineDropdown", guiFrameLook, L["Outline_Label"], "unitFrameValueFontOutline", {
-        L["THICKOUTLINE"], L["THINOUTLINE"], L["NONE"]
+        "THICKOUTLINE", "THINOUTLINE", "NONE"
     }, function(selectedSize)
         BBF.SetCustomFonts()
     end, { anchorFrame = unitFrameValueFont, x = 0, y = -5 }, 155)
@@ -7289,7 +7289,7 @@ local function guiFrameLook()
 
     -- For font outline
     local partyFrameFontOutline = CreateSimpleDropdown("FontOutlineDropdown", guiFrameLook, L["Outline_Label"], "partyFrameFontOutline", {
-        L["THICKOUTLINE"], L["THINOUTLINE"], L["NONE"]
+        "THICKOUTLINE", "THINOUTLINE", "NONE"
     }, function(selectedSize)
         BBF.SetCustomFonts()
     end, { anchorFrame = partyFrameFont, x = 0, y = -5 }, 155)
@@ -7361,14 +7361,14 @@ local function guiFrameLook()
 
     -- For font outline
     local actionBarFontOutline = CreateSimpleDropdown("FontOutlineDropdown", guiFrameLook, L["Outline_Label"], "actionBarFontOutline", {
-        L["THICKOUTLINE"], L["THINOUTLINE"], L["NONE"]
+        "THICKOUTLINE", "THINOUTLINE", "NONE"
     }, function(selectedSize)
         BBF.SetCustomFonts()
     end, { anchorFrame = actionBarFont, x = 0, y = -5 }, 77.5)
     CreateTooltipTwo(actionBarFontOutline, L["Tooltip_Macro_Text_Outline"])
 
     local actionBarKeyFontOutline = CreateSimpleDropdown("FontOutlineDropdown", guiFrameLook, "", "actionBarKeyFontOutline", {
-        L["THICKOUTLINE"], L["THINOUTLINE"], L["NONE"]
+        "THICKOUTLINE", "THINOUTLINE", "NONE"
     }, function(selectedSize)
         BBF.SetCustomFonts()
     end, { anchorFrame = actionBarFontOutline, x = 77.5, y = 25 }, 77.5)
@@ -9454,7 +9454,7 @@ local function guiCustomCode()
     discordLinkEditBox:SetSize(180, 20)
     discordLinkEditBox:SetAutoFocus(false)
     discordLinkEditBox:SetFontObject("ChatFontSmall")
-    discordLinkEditBox:SetText(L["Label_Https_Discord_Gg_Cjqvaemm25"])
+    discordLinkEditBox:SetText("https://discord.gg/cjqVaEMm25")
     discordLinkEditBox:SetCursorPosition(0) -- Places cursor at start of the text
     discordLinkEditBox:ClearFocus() -- Removes focus from the EditBox
     discordLinkEditBox:SetScript("OnEscapePressed", function(self)
@@ -9463,7 +9463,7 @@ local function guiCustomCode()
 
     -- Make the EditBox text selectable and readonly
     discordLinkEditBox:SetScript("OnTextChanged", function(self)
-        self:SetText(L["Label_Https_Discord_Gg_Cjqvaemm25"])
+        self:SetText("https://discord.gg/cjqVaEMm25")
     end)
     --discordLinkEditBox:HighlightText() -- Highlights the text for easy copying
     discordLinkEditBox:SetScript("OnCursorChanged", function() end) -- Prevents cursor changes
@@ -9488,7 +9488,7 @@ local function guiCustomCode()
     boxOne:SetSize(180, 20)
     boxOne:SetAutoFocus(false)
     boxOne:SetFontObject("ChatFontSmall")
-    boxOne:SetText(L["Label_Https_Patreon_Com_Bodifydev"])
+    boxOne:SetText("https://patreon.com/bodifydev")
     boxOne:SetCursorPosition(0) -- Places cursor at start of the text
     boxOne:ClearFocus() -- Removes focus from the EditBox
     boxOne:SetScript("OnEscapePressed", function(self)
@@ -9497,7 +9497,7 @@ local function guiCustomCode()
 
     -- Make the EditBox text selectable and readonly
     boxOne:SetScript("OnTextChanged", function(self)
-        self:SetText(L["Label_Https_Patreon_Com_Bodifydev"])
+        self:SetText("https://patreon.com/bodifydev")
     end)
     --boxOne:HighlightText() -- Highlights the text for easy copying
     boxOne:SetScript("OnCursorChanged", function() end) -- Prevents cursor changes
@@ -9522,7 +9522,7 @@ local function guiCustomCode()
     boxTwo:SetSize(180, 20)
     boxTwo:SetAutoFocus(false)
     boxTwo:SetFontObject("ChatFontSmall")
-    boxTwo:SetText(L["Label_Https_Paypal_Me_Bodifydev"])
+    boxTwo:SetText("https://paypal.me/bodifydev")
     boxTwo:SetCursorPosition(0) -- Places cursor at start of the text
     boxTwo:ClearFocus() -- Removes focus from the EditBox
     boxTwo:SetScript("OnEscapePressed", function(self)
@@ -9531,7 +9531,7 @@ local function guiCustomCode()
 
     -- Make the EditBox text selectable and readonly
     boxTwo:SetScript("OnTextChanged", function(self)
-        self:SetText(L["Label_Https_Paypal_Me_Bodifydev"])
+        self:SetText("https://paypal.me/bodifydev")
     end)
     --boxTwo:HighlightText() -- Highlights the text for easy copying
     boxTwo:SetScript("OnCursorChanged", function() end) -- Prevents cursor changes
@@ -9727,7 +9727,7 @@ local function guiSupport()
     discordLinkEditBox:SetSize(180, 20)
     discordLinkEditBox:SetAutoFocus(false)
     discordLinkEditBox:SetFontObject("ChatFontNormal")
-    discordLinkEditBox:SetText(L["Label_Https_Discord_Gg_Cjqvaemm25"])
+    discordLinkEditBox:SetText("https://discord.gg/cjqVaEMm25")
     discordLinkEditBox:SetCursorPosition(0) -- Places cursor at start of the text
     discordLinkEditBox:ClearFocus() -- Removes focus from the EditBox
     discordLinkEditBox:SetScript("OnEscapePressed", function(self)
@@ -9736,7 +9736,7 @@ local function guiSupport()
 
     -- Make the EditBox text selectable and readonly
     discordLinkEditBox:SetScript("OnTextChanged", function(self)
-        self:SetText(L["Label_Https_Discord_Gg_Cjqvaemm25"])
+        self:SetText("https://discord.gg/cjqVaEMm25")
     end)
     --discordLinkEditBox:HighlightText() -- Highlights the text for easy copying
     discordLinkEditBox:SetScript("OnCursorChanged", function() end) -- Prevents cursor changes
@@ -9765,7 +9765,7 @@ local function guiSupport()
     boxOne:SetSize(180, 20)
     boxOne:SetAutoFocus(false)
     boxOne:SetFontObject("ChatFontNormal")
-    boxOne:SetText(L["Label_Https_Patreon_Com_Bodifydev"])
+    boxOne:SetText("https://patreon.com/bodifydev")
     boxOne:SetCursorPosition(0) -- Places cursor at start of the text
     boxOne:ClearFocus() -- Removes focus from the EditBox
     boxOne:SetScript("OnEscapePressed", function(self)
@@ -9774,7 +9774,7 @@ local function guiSupport()
 
     -- Make the EditBox text selectable and readonly
     boxOne:SetScript("OnTextChanged", function(self)
-        self:SetText(L["Label_Https_Patreon_Com_Bodifydev"])
+        self:SetText("https://patreon.com/bodifydev")
     end)
     --boxOne:HighlightText() -- Highlights the text for easy copying
     boxOne:SetScript("OnCursorChanged", function() end) -- Prevents cursor changes
@@ -9795,7 +9795,7 @@ local function guiSupport()
     boxTwo:SetSize(180, 20)
     boxTwo:SetAutoFocus(false)
     boxTwo:SetFontObject("ChatFontNormal")
-    boxTwo:SetText(L["Label_Https_Paypal_Me_Bodifydev"])
+    boxTwo:SetText("https://paypal.me/bodifydev")
     boxTwo:SetCursorPosition(0) -- Places cursor at start of the text
     boxTwo:ClearFocus() -- Removes focus from the EditBox
     boxTwo:SetScript("OnEscapePressed", function(self)
@@ -9804,7 +9804,7 @@ local function guiSupport()
 
     -- Make the EditBox text selectable and readonly
     boxTwo:SetScript("OnTextChanged", function(self)
-        self:SetText(L["Label_Https_Paypal_Me_Bodifydev"])
+        self:SetText("https://paypal.me/bodifydev")
     end)
     --boxTwo:HighlightText() -- Highlights the text for easy copying
     boxTwo:SetScript("OnCursorChanged", function() end) -- Prevents cursor changes
@@ -10145,7 +10145,8 @@ function BBF.CreateIntroMessageWindow()
 
     local description1 = BBF.IntroMessageWindow:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     description1:SetPoint("TOP", welcomeText, "BOTTOM", 0, -10)
-    description1:SetText("|A:newplayerchat-chaticon-newcomer:16:16|a " .. L["Welcome_Description"])
+    local starterProfileText = "|A:newplayerchat-chaticon-newcomer:16:16|a |cff32cd32" .. L["Label_Starter_Profile"] .. "|r"
+    description1:SetText(string.format(L["Welcome_Description"], starterProfileText))
     description1:SetJustifyH("CENTER")
     description1:SetWidth(410)
 

@@ -1074,9 +1074,6 @@ end
 
 function BBF.SurrenderNotLeaveArena()
     if not BetterBlizzFramesDB.surrenderArena then return end
-    local function bbfPrint(msg)
-        BBF.Print(msg)
-    end
 
     local surrenderFailed
 
@@ -1087,7 +1084,7 @@ function BBF.SurrenderNotLeaveArena()
             else
                 if not surrenderFailed then
                     surrenderFailed = true
-                    bbfPrint("Can't surrender. Type /afk again to leave.")
+                    BBF.Print(L["Print_Surrender_Failed"])
                 else
                     LeaveBattlefield()
                     surrenderFailed = nil

@@ -1535,7 +1535,7 @@ end
 function BBF.MoveQueueStatusEye()
     if not BetterBlizzFramesDB.moveQueueStatusEye then return end
     if C_AddOns.IsAddOnLoaded("Bartender4") then
-        BBF.Print(L["Print_Bartender4_Disabled"])
+        BBF.Print(L["Print_Bartender4_Conflict"])
         return
     end
 
