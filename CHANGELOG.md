@@ -2,6 +2,8 @@
 ## Retail & Midnight
 ### Tweak
 - Fixup OCD Tweaks a little due to new secret values.
+- Fix default background color for no portrait not being active accidentally turning it off due to the custom background color setting.
+- Tweak background color mask to it doesnt bleed on edges.
 ### Bugfix
 - Classic Frames: Fix error on aug evoker due to a missing value.
 
