@@ -2,6 +2,7 @@
 ## Retail & Midnight
 ### Tweak
 - Adjust threat glow on Classic Frames setting to fit the frame better, especially on Minus mobs.
+- Tweak castbar positioning to not be affected by hidden auras when "Show Buffs/Debuffs" is disabled.
 ### Bugfix
 - Retail: Fix Target/Focus castbar flashing wrong texture and color at the end of a cast when interrupt color was enabled.
 
