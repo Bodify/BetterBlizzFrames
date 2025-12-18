@@ -762,22 +762,12 @@ local function MakeNoPortraitMode(frame)
 
             local textureToUse
             local bgYOffset
-            if frame == TargetFrame then
-                if hideMana or classification == "minus" then
-                    textureToUse = minusTex
-                    bgYOffset = 11
-                else
-                    textureToUse = targetDefaultTex
-                    bgYOffset = 0
-                end
+            if hideMana or classification == "minus" then
+                textureToUse = minusTex
+                bgYOffset = classification == "minus" and 0 or 11
             else
-                if hideMana or classification == "minus" then
-                    textureToUse = minusTex
-                    bgYOffset = 11
-                else
-                    textureToUse = targetDefaultTex
-                    bgYOffset = 0
-                end
+                textureToUse = (frame == TargetFrame) and targetDefaultTex or focusDefaultTex
+                bgYOffset = 0
             end
 
             frame.noPortraitMode.Texture:SetTexture(textureToUse)
