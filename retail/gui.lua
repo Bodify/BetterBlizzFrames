@@ -1104,7 +1104,7 @@ local function CreateSlider(parent, label, minValue, maxValue, stepValue, elemen
 
                 local xPos = BetterBlizzFramesDB[element .. "XPos"] or 0
                 local yPos = BetterBlizzFramesDB[element .. "YPos"] or 0
-                local anchorPoint = BetterBlizzFramesDB[element .. L["Anchor"]] or "CENTER"
+                local anchorPoint = BetterBlizzFramesDB[element .. "Anchor"] or "CENTER"
 
                 --If no frames are present still adjust values
                 if element == "targetToTXPos" then
@@ -1783,7 +1783,7 @@ local function CreateImportExportUI(parent, title, dataTable, posX, posY, tableN
                     dataTable[k] = v -- Populate with new data
                 end
             end
-            print(string.format(L["Print_Imported_Successfully"], title))
+            BBF.Print(string.format(L["Print_Imported_Successfully"], title))
             StaticPopup_Show("BBF_CONFIRM_RELOAD")
         end
     end)
@@ -1980,14 +1980,14 @@ local function deleteEntry(listName, key)
             local spellName, _, icon = BBF.TWWGetSpellInfo(entry.id)
             if spellName and icon then
                 local iconString = "|T" .. icon .. ":16:16:0:0|t"
-                print(string.format(L["Print_Removed_From_List"], iconString .. " " .. spellName .. " (" .. entry.id .. ")"))
+                BBF.Print(string.format(L["Print_Removed_From_List"], iconString .. " " .. spellName .. " (" .. entry.id .. ")"))
             elseif entry.name then
-                print(string.format(L["Print_Removed_From_List"], entry.name .. " (" .. entry.id .. ")"))
+                BBF.Print(string.format(L["Print_Removed_From_List"], entry.name .. " (" .. entry.id .. ")"))
             else
-                print(string.format(L["Print_Removed_ID_Not_Found"], entry.id))
+                BBF.Print(string.format(L["Print_Removed_ID_Not_Found"], entry.id))
             end
         else
-            print(string.format(L["Print_Removed_From_List"], entry.name))
+            BBF.Print(string.format(L["Print_Removed_From_List"], entry.name))
         end
 
         BetterBlizzFramesDB[listName][key] = nil
@@ -2068,7 +2068,7 @@ local function addOrUpdateEntry(inputText, listName, addShowMineTag, skipRefresh
         name = spellName or ""
 
         if not spellName then
-            BBF.Print(L["Print_No_Spell_Found"] .. id)
+            BBF.Print(string.format(L["Print_No_Spell_Found"], id))
             return
         end
 
@@ -2080,9 +2080,9 @@ local function addOrUpdateEntry(inputText, listName, addShowMineTag, skipRefresh
 
         -- Check if the spell is being added to blacklist or whitelist
         if listName == "auraBlacklist" then
-            printMsg = BBF.PRINT_PREFIX .. iconString .. " " .. spellName .. " (" .. id .. ")" .. L["Print_Added_To_Blacklist_With_Icon"]
+            printMsg = iconString .. " " .. spellName .. " (" .. id .. ")" .. L["Print_Added_To_Blacklist_With_Icon"]
         elseif listName == "auraWhitelist" then
-            printMsg = BBF.PRINT_PREFIX .. iconString .. " " .. spellName .. " (" .. id .. ")" .. L["Print_Added_To_Whitelist_With_Icon"]
+            printMsg = iconString .. " " .. spellName .. " (" .. id .. ")" .. L["Print_Added_To_Whitelist_With_Icon"]
         end
     end
 
@@ -2149,7 +2149,7 @@ local function addOrUpdateEntry(inputText, listName, addShowMineTag, skipRefresh
             if addShowMineTag and listName == "auraBlacklist" then
                 newEntry.showMine = true
                 if id then
-                    printMsg = BBF.PRINT_PREFIX .. iconString .. " " .. spellName .. " (" .. id .. ")" .. L["Print_Added_To_Blacklist_With_Tag"]
+                    printMsg = iconString .. " " .. spellName .. " (" .. id .. ")" .. L["Print_Added_To_Blacklist_With_Tag"]
                 end
             end
 
@@ -2179,7 +2179,7 @@ local function addOrUpdateEntry(inputText, listName, addShowMineTag, skipRefresh
             end
 
             if printMsg then
-                print(printMsg)
+                BBF.Print(printMsg)
             end
 
         end
@@ -2267,7 +2267,7 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
             local deleteButton = CreateFrame("Button", nil, button, "UIPanelButtonTemplate")
             deleteButton:SetSize(20, 20)
             deleteButton:SetPoint("RIGHT", button, "RIGHT", 4, 0)
-            deleteButton:SetText(L["X"])
+            deleteButton:SetText("X")
             deleteButton:SetScript("OnClick", function()
                 if IsShiftKeyDown() then
                     deleteEntry(listName, button.npcData.id or button.npcData.name:lower())
@@ -2904,7 +2904,7 @@ local function CreateCDManagerList(parent)
                     BBF.RefreshCooldownManagerIcons()
                 end
             else
-                print(string.format(L["Print_Invalid_Spell_ID"], inputText))
+                BBF.Print(string.format(L["Print_Invalid_Spell_ID"], inputText))
             end
         end
 
@@ -3228,7 +3228,7 @@ local function CreateSearchFrame()
                 SettingsPanel.currentLayout.frame:Show()
             end
         else
-            if SettingsPanel.SearchBox.Instructions:GetText() == "Search in BetterBlizzFrames" then
+            if SettingsPanel.SearchBox.Instructions:GetText() == L["Search_In_BBF"] then
                 SettingsPanel.SearchBox.Instructions:SetText(L["Search"])
             end
             searchBox:Hide()
@@ -5918,10 +5918,10 @@ local function guiCastbars()
     local petCastBarScale = CreateSlider(contentFrame, L["Size"], 0.5, 1.9, 0.01, "petCastBarScale")
     petCastBarScale:SetPoint("TOP", anchorSubPetCastbar, "BOTTOM", 0, -15)
 
-    local petCastBarXPos = CreateSlider(contentFrame, L["X_Offset"], -200, 200, 1, "petCastBarXPos", L["X"])
+    local petCastBarXPos = CreateSlider(contentFrame, L["X_Offset"], -200, 200, 1, "petCastBarXPos", "X")
     petCastBarXPos:SetPoint("TOP", petCastBarScale, "BOTTOM", 0, -15)
 
-    local petCastBarYPos = CreateSlider(contentFrame, L["Y_Offset"], -200, 200, 1, "petCastBarYPos", L["Y"])
+    local petCastBarYPos = CreateSlider(contentFrame, L["Y_Offset"], -200, 200, 1, "petCastBarYPos", "Y")
     petCastBarYPos:SetPoint("TOP", petCastBarXPos, "BOTTOM", 0, -15)
 
     local petCastBarWidth = CreateSlider(contentFrame, L["Width"], 20, 200, 1, "petCastBarWidth")
@@ -6166,10 +6166,10 @@ local function guiCastbars()
     local playerCastBarScale = CreateSlider(contentFrame, L["Size"], 0.1, 1.9, 0.01, "playerCastBarScale")
     playerCastBarScale:SetPoint("TOP", anchorSubPlayerCastbar, "BOTTOM", 0, -15)
 
-    local playerCastbarIconXPos = CreateSlider(contentFrame, L["X_Offset"], -200, 200, 1, "playerCastbarIconXPos", L["X"])
+    local playerCastbarIconXPos = CreateSlider(contentFrame, L["X_Offset"], -200, 200, 1, "playerCastbarIconXPos", "X")
     playerCastbarIconXPos:SetPoint("TOP", playerCastBarScale, "BOTTOM", 0, -15)
 
-    local playerCastbarIconYPos = CreateSlider(contentFrame, L["Y_Offset"], -200, 200, 1, "playerCastbarIconYPos", L["Y"])
+    local playerCastbarIconYPos = CreateSlider(contentFrame, L["Y_Offset"], -200, 200, 1, "playerCastbarIconYPos", "Y")
     playerCastbarIconYPos:SetPoint("TOP", playerCastbarIconXPos, "BOTTOM", 0, -15)
 
     local playerCastBarIconScale = CreateSlider(contentFrame, L["Icon_Size"], 0.4, 2, 0.01, "playerCastBarIconScale")
@@ -7100,7 +7100,7 @@ local function guiFrameLook()
     howStepTwo:SetJustifyH("LEFT")
     howStepTwo:SetFont(fontMedium, 12)
     howStepTwo:SetPoint("TOPLEFT", fontEditBox, "BOTTOMLEFT", -5, -13)
-    howStepTwo:SetText(L["How_Step_Two"])
+    howStepTwo:SetText(L["How_Custom_Media_2"])
 
     local textureEditBox = CreateFrame("EditBox", nil, guiFrameLook, "InputBoxTemplate")
     textureEditBox:SetSize(330, 20)
@@ -7121,7 +7121,7 @@ local function guiFrameLook()
     howStepThree:SetJustifyH("LEFT")
     howStepThree:SetFont(fontMedium, 12)
     howStepThree:SetPoint("TOPLEFT", textureEditBox, "BOTTOMLEFT", -5, -13)
-    howStepThree:SetText(L["How_Step_Three"])
+    howStepThree:SetText(L["How_Custom_Media_3"])
 
     local changeUnitFrameFont = CreateCheckbox("changeUnitFrameFont", L["Tooltip_Change_UnitFrame_Font_Desc"], guiFrameLook)
     changeUnitFrameFont:SetPoint("TOPLEFT", settingsText, "BOTTOMLEFT", -4, pixelsOnFirstBox)
@@ -7139,9 +7139,9 @@ local function guiFrameLook()
         end
     end)
 
-    local unitFrameFontColorLvl = CreateCheckbox("unitFrameFontColorLvl", L["Lvl"], guiFrameLook)
+    local unitFrameFontColorLvl = CreateCheckbox("unitFrameFontColorLvl", L["FontTexture_Color_Level"], guiFrameLook)
     unitFrameFontColorLvl:SetPoint("LEFT", unitFrameFontColor.Text, "RIGHT", 0, 0)
-    CreateTooltipTwo(unitFrameFontColorLvl, L["Lvl"], L["Tooltip_Color_Level_Font_Desc"])
+    CreateTooltipTwo(unitFrameFontColorLvl, L["FontTexture_Color_Level"], L["Tooltip_Color_Level_Font_Desc"])
     unitFrameFontColorLvl:HookScript("OnClick", function()
         BBF.FontColors()
     end)
@@ -9225,7 +9225,7 @@ local function guiMisc()
                 BetterBlizzFramesDB.moveResourceStackPos[playerClass] = nil
             end
             classResourceScale:SetValue(1)
-            BBF.Print(L["Print_Combo_Points_Reset"] .. playerClass)
+            BBF.Print(string.format(L["Print_Combo_Points_Reset"], playerClass))
             BBF.ResetResourcePosition()
         end
     end)
@@ -9236,7 +9236,7 @@ local function guiMisc()
                 BetterBlizzFramesDB.customComboPositions[playerClass] = nil
             end
             classResourceScale:SetValue(1)
-            BBF.Print(L["Print_Combo_Points_Reset"] .. playerClass)
+            BBF.Print(string.format(L["Print_Combo_Points_Reset"], playerClass))
             BBF.UpdateClassComboPoints()
         end
     end)
@@ -9515,7 +9515,7 @@ local function guiCustomCode()
 
     local patText = guiCustomCode:CreateFontString(nil, "OVERLAY", "GameFontNormalHuge")
     patText:SetPoint("LEFT", boxOneTex, "RIGHT", 14, -1)
-    patText:SetText(L["Patreon"])
+    patText:SetText("Patreon")
 
     local boxTwo = CreateFrame("EditBox", nil, guiCustomCode, "InputBoxTemplate")
     boxTwo:SetPoint("LEFT", boxOne, "RIGHT", 35, 0)
@@ -9549,7 +9549,7 @@ local function guiCustomCode()
 
     local palText = guiCustomCode:CreateFontString(nil, "OVERLAY", "GameFontNormalHuge")
     palText:SetPoint("LEFT", boxTwoTex, "RIGHT", 14, -1)
-    palText:SetText(L["Paypal"])
+    palText:SetText("Paypal")
 
 
 
@@ -9632,7 +9632,7 @@ local function guiCustomCode()
     -- Enable syntax highlighting and indentation with FAIAP
     FAIAP.enable(codeEditBox, colorTable, 4)  -- Assuming a tab width of 4
 
-    local customCodeSaved = BBF.PRINT_PREFIX .. L["Print_Custom_Code_Saved"]
+    local customCodeSaved = L["Print_Custom_Code_Saved"]
 
     -- Create Save Button
     local saveButton = CreateFrame("Button", nil, guiCustomCode, "UIPanelButtonTemplate")
@@ -9642,7 +9642,7 @@ local function guiCustomCode()
     saveButton:SetScript("OnClick", function()
         BetterBlizzFramesDB.customCode = codeEditBox:GetText()
         unsavedChanges = false
-        print(customCodeSaved)
+        BBF.Print(customCodeSaved)
     end)
 
     -- Flag to prevent double triggering of the prompt
@@ -9673,7 +9673,7 @@ local function guiCustomCode()
             BetterBlizzFramesDB.customCode = codeEditBox:GetText()
             unsavedChanges = false
             codeEditBox:ClearFocus()
-            print(customCodeSaved)
+            BBF.Print(customCodeSaved)
             if BetterBlizzFramesDB.reopenOptions then
                 ReloadUI()
             end

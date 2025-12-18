@@ -1371,14 +1371,14 @@ local function deleteEntry(listName, key)
             local spellName, _, icon = GetSpellInfo(entry.id)
             if spellName and icon then
                 local iconString = "|T" .. icon .. ":16:16:0:0|t"
-                print(string.format(L["Print_Removed_From_List"], iconString .. " " .. spellName .. " (" .. entry.id .. ")"))
+                BBF.Print(string.format(L["Print_Removed_From_List"], iconString .. " " .. spellName .. " (" .. entry.id .. ")"))
             elseif entry.name then
-                print(string.format(L["Print_Removed_From_List"], entry.name .. " (" .. entry.id .. ")"))
+                BBF.Print(string.format(L["Print_Removed_From_List"], entry.name .. " (" .. entry.id .. ")"))
             else
-                print(string.format(L["Print_Removed_ID_Not_Found"], entry.id))
+                BBF.Print(string.format(L["Print_Removed_ID_Not_Found"], entry.id))
             end
         else
-            print(string.format(L["Print_Removed_From_List"], entry.name))
+            BBF.Print(string.format(L["Print_Removed_From_List"], entry.name))
         end
 
         BetterBlizzFramesDB[listName][key] = nil
@@ -1447,7 +1447,7 @@ local function addOrUpdateEntry(inputText, listName, addShowMineTag, skipRefresh
         name = spellName or ""
 
         if not spellName then
-            BBF.Print(L["Print_No_Spell_Found"] .. id)
+            BBF.Print(string.format(L["Print_No_Spell_Found"], id))
             return
         end
 
@@ -1459,9 +1459,9 @@ local function addOrUpdateEntry(inputText, listName, addShowMineTag, skipRefresh
 
         -- Check if the spell is being added to blacklist or whitelist
         if listName == "auraBlacklist" then
-            printMsg = BBF.PRINT_PREFIX .. iconString .. " " .. spellName .. " (" .. id .. ")" .. L["Print_Added_To_Blacklist_With_Icon"]
+            printMsg = iconString .. " " .. spellName .. " (" .. id .. ")" .. L["Print_Added_To_Blacklist_With_Icon"]
         elseif listName == "auraWhitelist" then
-            printMsg = BBF.PRINT_PREFIX .. iconString .. " " .. spellName .. " (" .. id .. ")" .. L["Print_Added_To_Whitelist_With_Icon"]
+            printMsg = iconString .. " " .. spellName .. " (" .. id .. ")" .. L["Print_Added_To_Whitelist_With_Icon"]
         end
     end
 
@@ -1508,7 +1508,7 @@ local function addOrUpdateEntry(inputText, listName, addShowMineTag, skipRefresh
             if addShowMineTag and listName == "auraBlacklist" then
                 newEntry.showMine = true
                 if id then
-                    printMsg = BBF.PRINT_PREFIX .. iconString .. " " .. spellName .. " (" .. id .. ")" .. L["Print_Added_To_Blacklist_With_Tag"]
+                    printMsg = iconString .. " " .. spellName .. " (" .. id .. ")" .. L["Print_Added_To_Blacklist_With_Tag"]
                 end
             end
 
@@ -1538,7 +1538,7 @@ local function addOrUpdateEntry(inputText, listName, addShowMineTag, skipRefresh
             end
 
             if printMsg then
-                print(printMsg)
+                BBF.Print(printMsg)
             end
 
         end
@@ -1625,7 +1625,7 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
             local deleteButton = CreateFrame("Button", nil, button, "UIPanelButtonTemplate")
             deleteButton:SetSize(20, 20)
             deleteButton:SetPoint("RIGHT", button, "RIGHT", 4, 0)
-            deleteButton:SetText(L["X"])
+            deleteButton:SetText("X")
             deleteButton:SetScript("OnClick", function()
                 if IsShiftKeyDown() then
                     deleteEntry(listName, button.npcData.id or button.npcData.name:lower())
@@ -2604,7 +2604,7 @@ local function CreateSearchFrame()
                 SettingsPanel.currentLayout.frame:Show()
             end
         else
-            if SettingsPanel.SearchBox.Instructions:GetText() == "Search in BetterBlizzFrames" then
+            if SettingsPanel.SearchBox.Instructions:GetText() == L["Search_In_BBF"] then
                 SettingsPanel.SearchBox.Instructions:SetText(L["Search"])
             end
             searchBox:Hide()
@@ -3866,7 +3866,7 @@ local function guiCastbars()
     local fourthLineX = 560
 
     local BetterBlizzFramesCastbars = CreateFrame("Frame")
-    BetterBlizzFramesCastbars.name = "Castbars"
+    BetterBlizzFramesCastbars.name = L["Castbars"]
     BetterBlizzFramesCastbars.parent = BetterBlizzFrames.name
     --InterfaceOptions_AddCategory(BetterBlizzFramesCastbars)
     local castbarsSubCategory = Settings.RegisterCanvasLayoutSubcategory(BBF.category, BetterBlizzFramesCastbars, BetterBlizzFramesCastbars.name, BetterBlizzFramesCastbars.name)
@@ -4166,10 +4166,10 @@ local function guiCastbars()
     local petCastBarScale = CreateSlider(contentFrame, "Size", 0.5, 1.9, 0.01, "petCastBarScale")
     petCastBarScale:SetPoint("TOP", anchorSubPetCastbar, "BOTTOM", 0, -15)
 
-    local petCastBarXPos = CreateSlider(contentFrame, "x offset", -200, 200, 1, "petCastBarXPos", L["X"])
+    local petCastBarXPos = CreateSlider(contentFrame, "x offset", -200, 200, 1, "petCastBarXPos", "X")
     petCastBarXPos:SetPoint("TOP", petCastBarScale, "BOTTOM", 0, -15)
 
-    local petCastBarYPos = CreateSlider(contentFrame, "y offset", -200, 200, 1, "petCastBarYPos", L["Y"])
+    local petCastBarYPos = CreateSlider(contentFrame, "y offset", -200, 200, 1, "petCastBarYPos", "Y")
     petCastBarYPos:SetPoint("TOP", petCastBarXPos, "BOTTOM", 0, -15)
 
     local petCastBarWidth = CreateSlider(contentFrame, "Width", 20, 200, 1, "petCastBarWidth")
@@ -4683,7 +4683,7 @@ local function guiPositionAndScale()
     local fourthLineX = 560
 
     local BetterBlizzFramesSubPanel = CreateFrame("Frame")
-    BetterBlizzFramesSubPanel.name = "Advanced Settings"
+    BetterBlizzFramesSubPanel.name = L["Module_Name_Advanced"]
     BetterBlizzFramesSubPanel.parent = BetterBlizzFrames.name
     --InterfaceOptions_AddCategory(BetterBlizzFramesSubPanel)
     local advancedSubCategory = Settings.RegisterCanvasLayoutSubcategory(BBF.category, BetterBlizzFramesSubPanel, BetterBlizzFramesSubPanel.name, BetterBlizzFramesSubPanel.name)
@@ -5114,7 +5114,7 @@ local function guiFrameLook()
     -- Frame Auras
     ----------------------
     local guiFrameLook = CreateFrame("Frame")
-    guiFrameLook.name = "Font & Texture"
+    guiFrameLook.name = L["Module_Name_Font_Texture"]
     guiFrameLook.parent = BetterBlizzFrames.name
     --InterfaceOptions_AddCategory(guiFrameAuras)
     local aurasSubCategory = Settings.RegisterCanvasLayoutSubcategory(BBF.category, guiFrameLook, guiFrameLook.name, guiFrameLook.name)
@@ -5170,7 +5170,7 @@ local function guiFrameLook()
     howStepTwo:SetJustifyH("LEFT")
     howStepTwo:SetFont(fontMedium, 12)
     howStepTwo:SetPoint("TOPLEFT", fontEditBox, "BOTTOMLEFT", -5, -13)
-    howStepTwo:SetText(L["How_Step_Two"])
+    howStepTwo:SetText(L["How_Custom_Media_2"])
 
     local textureEditBox = CreateFrame("EditBox", nil, guiFrameLook, "InputBoxTemplate")
     textureEditBox:SetSize(330, 20)
@@ -5191,7 +5191,7 @@ local function guiFrameLook()
     howStepThree:SetJustifyH("LEFT")
     howStepThree:SetFont(fontMedium, 12)
     howStepThree:SetPoint("TOPLEFT", textureEditBox, "BOTTOMLEFT", -5, -13)
-    howStepThree:SetText(L["How_Step_Three"])
+    howStepThree:SetText(L["How_Custom_Media_3"])
 
     local changeUnitFrameFont = CreateCheckbox("changeUnitFrameFont", L["Tooltip_Change_UnitFrame_Font_Desc"], guiFrameLook)
     changeUnitFrameFont:SetPoint("TOPLEFT", settingsText, "BOTTOMLEFT", -4, pixelsOnFirstBox)
@@ -5209,9 +5209,9 @@ local function guiFrameLook()
         end
     end)
 
-    local unitFrameFontColorLvl = CreateCheckbox("unitFrameFontColorLvl", L["Lvl"], guiFrameLook)
+    local unitFrameFontColorLvl = CreateCheckbox("unitFrameFontColorLvl", L["FontTexture_Color_Level"], guiFrameLook)
     unitFrameFontColorLvl:SetPoint("LEFT", unitFrameFontColor.Text, "RIGHT", 0, 0)
-    CreateTooltipTwo(unitFrameFontColorLvl, L["Lvl"], L["Tooltip_Color_Level_Font_Desc"])
+    CreateTooltipTwo(unitFrameFontColorLvl, L["FontTexture_Color_Level"], L["Tooltip_Color_Level_Font_Desc"])
     unitFrameFontColorLvl:HookScript("OnClick", function()
         BBF.FontColors()
     end)
@@ -5657,7 +5657,7 @@ local function guiFrameAuras()
     -- Frame Auras
     ----------------------
     local guiFrameAuras = CreateFrame("Frame")
-    guiFrameAuras.name = "Buffs & Debuffs"
+    guiFrameAuras.name = L["Module_Name_Auras"]
     guiFrameAuras.parent = BetterBlizzFrames.name
     --InterfaceOptions_AddCategory(guiFrameAuras)
     local aurasSubCategory = Settings.RegisterCanvasLayoutSubcategory(BBF.category, guiFrameAuras, guiFrameAuras.name, guiFrameAuras.name)
@@ -6471,7 +6471,7 @@ end
 
 local function guiMisc()
     local guiMisc = CreateFrame("Frame")
-    guiMisc.name = "Misc"--"|A:GarrMission_CurrencyIcon-Material:19:19|a Misc"
+    guiMisc.name = L["Module_Name_Misc"]
     guiMisc.parent = BetterBlizzFrames.name
     --InterfaceOptions_AddCategory(guiMisc)
     local guiMiscSubcategory = Settings.RegisterCanvasLayoutSubcategory(BBF.category, guiMisc, guiMisc.name, guiMisc.name)
@@ -6675,7 +6675,7 @@ end
 local function guiChatFrame()
 
     local guiChatFrame = CreateFrame("Frame")
-    guiChatFrame.name = "ChatFrame"
+    guiChatFrame.name = L["Module_Name_ChatFrame"]
     guiChatFrame.parent = BetterBlizzFrames.name
     InterfaceOptions_AddCategory(guiChatFrame)
 
@@ -6692,7 +6692,7 @@ end
 
 local function guiImportAndExport()
     local guiImportAndExport = CreateFrame("Frame")
-    guiImportAndExport.name = "Import & Export"--"|A:GarrMission_CurrencyIcon-Material:19:19|a Misc"
+    guiImportAndExport.name = L["Module_Name_Import_Export"]
     guiImportAndExport.parent = BetterBlizzFrames.name
     --InterfaceOptions_AddCategory(guiImportAndExport)
     local guiImportSubcategory = Settings.RegisterCanvasLayoutSubcategory(BBF.category, guiImportAndExport, guiImportAndExport.name, guiImportAndExport.name)
@@ -6714,7 +6714,7 @@ end
 
 local function guiCustomCode()
     local guiCustomCode = CreateFrame("Frame")
-    guiCustomCode.name = "Custom Code"
+    guiCustomCode.name = L["Module_Name_Custom_Code"]
     guiCustomCode.parent = BetterBlizzFrames.name
     --InterfaceOptions_AddCategory(guiCustomCode)
     local guiCustomCodeSubCategory = Settings.RegisterCanvasLayoutSubcategory(BBF.category, guiCustomCode, guiCustomCode.name, guiCustomCode.name)
@@ -6794,7 +6794,7 @@ local function guiCustomCode()
 
     local patText = guiCustomCode:CreateFontString(nil, "OVERLAY", "GameFontNormalHuge")
     patText:SetPoint("LEFT", boxOneTex, "RIGHT", 14, -1)
-    patText:SetText(L["Patreon"])
+    patText:SetText("Patreon")
 
     local boxTwo = CreateFrame("EditBox", nil, guiCustomCode, "InputBoxTemplate")
     boxTwo:SetPoint("LEFT", boxOne, "RIGHT", 35, 0)
@@ -6828,7 +6828,7 @@ local function guiCustomCode()
 
     local palText = guiCustomCode:CreateFontString(nil, "OVERLAY", "GameFontNormalHuge")
     palText:SetPoint("LEFT", boxTwoTex, "RIGHT", 14, -1)
-    palText:SetText(L["Paypal"])
+    palText:SetText("Paypal")
 
 
 
@@ -6911,7 +6911,7 @@ local function guiCustomCode()
     -- Enable syntax highlighting and indentation with FAIAP
     FAIAP.enable(codeEditBox, colorTable, 4)  -- Assuming a tab width of 4
 
-    local customCodeSaved = BBF.PRINT_PREFIX .. L["Print_Custom_Code_Saved"]
+    local customCodeSaved = L["Print_Custom_Code_Saved"]
 
     -- Create Save Button
     local saveButton = CreateFrame("Button", nil, guiCustomCode, "UIPanelButtonTemplate")
@@ -6921,7 +6921,7 @@ local function guiCustomCode()
     saveButton:SetScript("OnClick", function()
         BetterBlizzFramesDB.customCode = codeEditBox:GetText()
         unsavedChanges = false
-        print(customCodeSaved)
+        BBF.Print(customCodeSaved)
     end)
 
     -- Flag to prevent double triggering of the prompt
@@ -6952,7 +6952,7 @@ local function guiCustomCode()
             BetterBlizzFramesDB.customCode = codeEditBox:GetText()
             unsavedChanges = false
             codeEditBox:ClearFocus()
-            print(customCodeSaved)
+            BBF.Print(customCodeSaved)
             if BetterBlizzFramesDB.reopenOptions then
                 ReloadUI()
             end

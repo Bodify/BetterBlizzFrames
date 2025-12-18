@@ -1837,7 +1837,7 @@ local function CreateToggleIcon()
 
             BBF.RefreshAllAuraFrames()
 
-            BBF.Print(L["Print_Hidden_Icon_Direction_Set"] .. BetterBlizzFramesDB.hiddenIconDirection)
+            BBF.Print(string.format(L["Print_Hidden_Icon_Direction_Set"], BetterBlizzFramesDB.hiddenIconDirection))
 
         elseif IsShiftKeyDown() then
             -- Reset position to default

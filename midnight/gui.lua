@@ -1106,7 +1106,7 @@ local function CreateSlider(parent, label, minValue, maxValue, stepValue, elemen
 
                 local xPos = BetterBlizzFramesDB[element .. "XPos"] or 0
                 local yPos = BetterBlizzFramesDB[element .. "YPos"] or 0
-                local anchorPoint = BetterBlizzFramesDB[element .. L["Anchor"]] or "CENTER"
+                local anchorPoint = BetterBlizzFramesDB[element .. "Anchor"] or "CENTER"
 
                 --If no frames are present still adjust values
                 if element == "targetToTXPos" then
@@ -1780,7 +1780,7 @@ local function CreateImportExportUI(parent, title, dataTable, posX, posY, tableN
                     dataTable[k] = v -- Populate with new data
                 end
             end
-            print(string.format(L["Print_Imported_Successfully"], title))
+            BBF.Print(string.format(L["Print_Imported_Successfully"], title))
             StaticPopup_Show("BBF_CONFIRM_RELOAD")
         end
     end)
@@ -1977,14 +1977,14 @@ local function deleteEntry(listName, key)
             local spellName, _, icon = BBF.TWWGetSpellInfo(entry.id)
             if spellName and icon then
                 local iconString = "|T" .. icon .. ":16:16:0:0|t"
-                print(string.format(L["Print_Removed_From_List"], iconString .. " " .. spellName .. " (" .. entry.id .. ")"))
+                BBF.Print(string.format(L["Print_Removed_From_List"], iconString .. " " .. spellName .. " (" .. entry.id .. ")"))
             elseif entry.name then
-                print(string.format(L["Print_Removed_From_List"], entry.name .. " (" .. entry.id .. ")"))
+                BBF.Print(string.format(L["Print_Removed_From_List"], entry.name .. " (" .. entry.id .. ")"))
             else
-                print(string.format(L["Print_Removed_ID_Not_Found"], entry.id))
+                BBF.Print(string.format(L["Print_Removed_ID_Not_Found"], entry.id))
             end
         else
-            print(string.format(L["Print_Removed_From_List"], entry.name))
+            BBF.Print(string.format(L["Print_Removed_From_List"], entry.name))
         end
 
         BetterBlizzFramesDB[listName][key] = nil
@@ -2065,7 +2065,7 @@ local function addOrUpdateEntry(inputText, listName, addShowMineTag, skipRefresh
         name = spellName or ""
 
         if not spellName then
-            BBF.Print(L["Print_No_Spell_Found"] .. id)
+            BBF.Print(string.format(L["Print_No_Spell_Found"], id))
             return
         end
 
@@ -2077,9 +2077,9 @@ local function addOrUpdateEntry(inputText, listName, addShowMineTag, skipRefresh
 
         -- Check if the spell is being added to blacklist or whitelist
         if listName == "auraBlacklist" then
-            printMsg = BBF.PRINT_PREFIX .. iconString .. " " .. spellName .. " (" .. id .. ")" .. L["Print_Added_To_Blacklist_With_Icon"]
+            printMsg = iconString .. " " .. spellName .. " (" .. id .. ")" .. L["Print_Added_To_Blacklist_With_Icon"]
         elseif listName == "auraWhitelist" then
-            printMsg = BBF.PRINT_PREFIX .. iconString .. " " .. spellName .. " (" .. id .. ")" .. L["Print_Added_To_Whitelist_With_Icon"]
+            printMsg = iconString .. " " .. spellName .. " (" .. id .. ")" .. L["Print_Added_To_Whitelist_With_Icon"]
         end
     end
 
@@ -2146,7 +2146,7 @@ local function addOrUpdateEntry(inputText, listName, addShowMineTag, skipRefresh
             if addShowMineTag and listName == "auraBlacklist" then
                 newEntry.showMine = true
                 if id then
-                    printMsg = BBF.PRINT_PREFIX .. iconString .. " " .. spellName .. " (" .. id .. ")" .. L["Print_Added_To_Blacklist_With_Tag"]
+                    printMsg = iconString .. " " .. spellName .. " (" .. id .. ")" .. L["Print_Added_To_Blacklist_With_Tag"]
                 end
             end
 
@@ -2176,7 +2176,7 @@ local function addOrUpdateEntry(inputText, listName, addShowMineTag, skipRefresh
             end
 
             if printMsg then
-                print(printMsg)
+                BBF.Print(printMsg)
             end
 
         end
@@ -2264,7 +2264,7 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
             local deleteButton = CreateFrame("Button", nil, button, "UIPanelButtonTemplate")
             deleteButton:SetSize(20, 20)
             deleteButton:SetPoint("RIGHT", button, "RIGHT", 4, 0)
-            deleteButton:SetText(L["X"])
+            deleteButton:SetText("X")
             deleteButton:SetScript("OnClick", function()
                 if IsShiftKeyDown() then
                     deleteEntry(listName, button.npcData.id or button.npcData.name:lower())
@@ -2796,7 +2796,7 @@ local function CreateCDManagerList(parent)
 
                     local del = CreateFrame("Button", nil, button, "UIPanelButtonTemplate")
                     del:SetSize(18, 18)
-                    del:SetText(L["X"])
+                    del:SetText("X")
                     del:SetPoint("RIGHT", button, "RIGHT", 0, 0)
                     button.del = del
                     CreateTooltipTwo(del, L["Delete"], L["Tooltip_Delete"])
@@ -2899,7 +2899,7 @@ local function CreateCDManagerList(parent)
                     BBF.RefreshCooldownManagerIcons()
                 end
             else
-                print(string.format(L["Print_Invalid_Spell_ID"], inputText))
+                BBF.Print(string.format(L["Print_Invalid_Spell_ID"], inputText))
             end
         end
 
@@ -3223,7 +3223,7 @@ local function CreateSearchFrame()
                 SettingsPanel.currentLayout.frame:Show()
             end
         else
-            if SettingsPanel.SearchBox.Instructions:GetText() == "Search in BetterBlizzFrames" then
+            if SettingsPanel.SearchBox.Instructions:GetText() == L["Search_In_BBF"] then
                 SettingsPanel.SearchBox.Instructions:SetText(L["Search"])
             end
             searchBox:Hide()
@@ -5653,7 +5653,7 @@ local function guiCastbars()
     local fourthLineX = 560
 
     local BetterBlizzFramesCastbars = CreateFrame("Frame")
-    BetterBlizzFramesCastbars.name = "Castbars"
+    BetterBlizzFramesCastbars.name = L["Castbars"]
     BetterBlizzFramesCastbars.parent = BetterBlizzFrames.name
     --InterfaceOptions_AddCategory(BetterBlizzFramesCastbars)
     local castbarsSubCategory = Settings.RegisterCanvasLayoutSubcategory(BBF.category, BetterBlizzFramesCastbars, BetterBlizzFramesCastbars.name, BetterBlizzFramesCastbars.name)
@@ -5697,10 +5697,10 @@ local function guiCastbars()
     local partyCastBarScale = CreateSlider(contentFrame, L["Size"], 0.5, 1.9, 0.01, "partyCastBarScale")
     partyCastBarScale:SetPoint("TOP", anchorSubPartyCastbar, "BOTTOM", 0, -15)
 
-    local partyCastBarXPos = CreateSlider(contentFrame, L["X_Offset"], -200, 200, 1, "partyCastBarXPos", L["X"])
+    local partyCastBarXPos = CreateSlider(contentFrame, L["X_Offset"], -200, 200, 1, "partyCastBarXPos", "X")
     partyCastBarXPos:SetPoint("TOP", partyCastBarScale, "BOTTOM", 0, -15)
 
-    local partyCastBarYPos = CreateSlider(contentFrame, L["Y_Offset"], -200, 200, 1, "partyCastBarYPos", L["Y"])
+    local partyCastBarYPos = CreateSlider(contentFrame, L["Y_Offset"], -200, 200, 1, "partyCastBarYPos", "Y")
     partyCastBarYPos:SetPoint("TOP", partyCastBarXPos, "BOTTOM", 0, -15)
 
     local partyCastBarWidth = CreateSlider(contentFrame, L["Width"], 20, 200, 1, "partyCastBarWidth")
@@ -5779,10 +5779,10 @@ local function guiCastbars()
     local targetCastBarScale = CreateSlider(contentFrame, L["Size"], 0.1, 1.9, 0.01, "targetCastBarScale")
     targetCastBarScale:SetPoint("TOP", anchorSubTargetCastbar, "BOTTOM", 0, -15)
 
-    local targetCastBarXPos = CreateSlider(contentFrame, L["X_Offset"], -130, 130, 1, "targetCastBarXPos", L["X"])
+    local targetCastBarXPos = CreateSlider(contentFrame, L["X_Offset"], -130, 130, 1, "targetCastBarXPos", "X")
     targetCastBarXPos:SetPoint("TOP", targetCastBarScale, "BOTTOM", 0, -15)
 
-    local targetCastBarYPos = CreateSlider(contentFrame, L["Y_Offset"], -130, 130, 1, "targetCastBarYPos", L["Y"])
+    local targetCastBarYPos = CreateSlider(contentFrame, L["Y_Offset"], -130, 130, 1, "targetCastBarYPos", "Y")
     targetCastBarYPos:SetPoint("TOP", targetCastBarXPos, "BOTTOM", 0, -15)
 
     local targetCastBarWidth = CreateSlider(contentFrame, L["Width"], 60, 220, 1, "targetCastBarWidth")
@@ -5794,10 +5794,10 @@ local function guiCastbars()
     local targetCastBarIconScale = CreateSlider(contentFrame, L["Icon_Size"], 0.4, 2, 0.01, "targetCastBarIconScale")
     targetCastBarIconScale:SetPoint("TOP", targetCastBarHeight, "BOTTOM", 0, -15)
 
-    local targetCastbarIconXPos = CreateSlider(contentFrame, L["Icon_x_offset"], -160, 160, 1, "targetCastbarIconXPos", L["X"])
+    local targetCastbarIconXPos = CreateSlider(contentFrame, L["Icon_x_offset"], -160, 160, 1, "targetCastbarIconXPos", "X")
     targetCastbarIconXPos:SetPoint("TOP", targetCastBarIconScale, "BOTTOM", 0, -15)
 
-    local targetCastbarIconYPos = CreateSlider(contentFrame, L["Icon_y_offset"], -160, 160, 1, "targetCastbarIconYPos", L["Y"])
+    local targetCastbarIconYPos = CreateSlider(contentFrame, L["Icon_y_offset"], -160, 160, 1, "targetCastbarIconYPos", "Y")
     targetCastbarIconYPos:SetPoint("TOP", targetCastbarIconXPos, "BOTTOM", 0, -15)
 
     local targetStaticCastbar = CreateCheckbox("targetStaticCastbar", L["Static"], contentFrame)
@@ -5943,10 +5943,10 @@ local function guiCastbars()
     local petCastBarScale = CreateSlider(contentFrame, L["Size"], 0.5, 1.9, 0.01, "petCastBarScale")
     petCastBarScale:SetPoint("TOP", anchorSubPetCastbar, "BOTTOM", 0, -15)
 
-    local petCastBarXPos = CreateSlider(contentFrame, L["X_Offset"], -200, 200, 1, "petCastBarXPos", L["X"])
+    local petCastBarXPos = CreateSlider(contentFrame, L["X_Offset"], -200, 200, 1, "petCastBarXPos", "X")
     petCastBarXPos:SetPoint("TOP", petCastBarScale, "BOTTOM", 0, -15)
 
-    local petCastBarYPos = CreateSlider(contentFrame, L["Y_Offset"], -200, 200, 1, "petCastBarYPos", L["Y"])
+    local petCastBarYPos = CreateSlider(contentFrame, L["Y_Offset"], -200, 200, 1, "petCastBarYPos", "Y")
     petCastBarYPos:SetPoint("TOP", petCastBarXPos, "BOTTOM", 0, -15)
 
     local petCastBarWidth = CreateSlider(contentFrame, L["Width"], 20, 200, 1, "petCastBarWidth")
@@ -6029,10 +6029,10 @@ local function guiCastbars()
     local focusCastBarScale = CreateSlider(contentFrame, L["Size"], 0.1, 1.9, 0.01, "focusCastBarScale")
     focusCastBarScale:SetPoint("TOP", anchorSubFocusCastbar, "BOTTOM", 0, -15)
 
-    local focusCastBarXPos = CreateSlider(contentFrame, L["X_Offset"], -130, 130, 1, "focusCastBarXPos", L["X"])
+    local focusCastBarXPos = CreateSlider(contentFrame, L["X_Offset"], -130, 130, 1, "focusCastBarXPos", "X")
     focusCastBarXPos:SetPoint("TOP", focusCastBarScale, "BOTTOM", 0, -15)
 
-    local focusCastBarYPos = CreateSlider(contentFrame, L["Y_Offset"], -130, 130, 1, "focusCastBarYPos", L["Y"])
+    local focusCastBarYPos = CreateSlider(contentFrame, L["Y_Offset"], -130, 130, 1, "focusCastBarYPos", "Y")
     focusCastBarYPos:SetPoint("TOP", focusCastBarXPos, "BOTTOM", 0, -15)
 
     local focusCastBarWidth = CreateSlider(contentFrame, L["Width"], 60, 220, 1, "focusCastBarWidth")
@@ -6044,10 +6044,10 @@ local function guiCastbars()
     local focusCastBarIconScale = CreateSlider(contentFrame, L["Icon_Size"], 0.4, 2, 0.01, "focusCastBarIconScale")
     focusCastBarIconScale:SetPoint("TOP", focusCastBarHeight, "BOTTOM", 0, -15)
 
-    local focusCastbarIconXPos = CreateSlider(contentFrame, L["Icon_x_offset"], -160, 160, 1, "focusCastbarIconXPos", L["X"])
+    local focusCastbarIconXPos = CreateSlider(contentFrame, L["Icon_x_offset"], -160, 160, 1, "focusCastbarIconXPos", "X")
     focusCastbarIconXPos:SetPoint("TOP", focusCastBarIconScale, "BOTTOM", 0, -15)
 
-    local focusCastbarIconYPos = CreateSlider(contentFrame, L["Icon_y_offset"], -160, 160, 1, "focusCastbarIconYPos", L["Y"])
+    local focusCastbarIconYPos = CreateSlider(contentFrame, L["Icon_y_offset"], -160, 160, 1, "focusCastbarIconYPos", "Y")
     focusCastbarIconYPos:SetPoint("TOP", focusCastbarIconXPos, "BOTTOM", 0, -15)
 
     local focusStaticCastbar = CreateCheckbox("focusStaticCastbar", L["Static"], contentFrame)
@@ -6191,10 +6191,10 @@ local function guiCastbars()
     local playerCastBarScale = CreateSlider(contentFrame, L["Size"], 0.1, 1.9, 0.01, "playerCastBarScale")
     playerCastBarScale:SetPoint("TOP", anchorSubPlayerCastbar, "BOTTOM", 0, -15)
 
-    local playerCastbarIconXPos = CreateSlider(contentFrame, L["X_Offset"], -200, 200, 1, "playerCastbarIconXPos", L["X"])
+    local playerCastbarIconXPos = CreateSlider(contentFrame, L["X_Offset"], -200, 200, 1, "playerCastbarIconXPos", "X")
     playerCastbarIconXPos:SetPoint("TOP", playerCastBarScale, "BOTTOM", 0, -15)
 
-    local playerCastbarIconYPos = CreateSlider(contentFrame, L["Y_Offset"], -200, 200, 1, "playerCastbarIconYPos", L["Y"])
+    local playerCastbarIconYPos = CreateSlider(contentFrame, L["Y_Offset"], -200, 200, 1, "playerCastbarIconYPos", "Y")
     playerCastbarIconYPos:SetPoint("TOP", playerCastbarIconXPos, "BOTTOM", 0, -15)
 
     local playerCastBarIconScale = CreateSlider(contentFrame, L["Icon_Size"], 0.4, 2, 0.01, "playerCastBarIconScale")
@@ -6471,7 +6471,7 @@ local function guiPositionAndScale()
     local fourthLineX = 560
 
     local BetterBlizzFramesSubPanel = CreateFrame("Frame")
-    BetterBlizzFramesSubPanel.name = "Advanced Settings"
+    BetterBlizzFramesSubPanel.name = L["Module_Name_Advanced"]
     BetterBlizzFramesSubPanel.parent = BetterBlizzFrames.name
     --InterfaceOptions_AddCategory(BetterBlizzFramesSubPanel)
     local advancedSubCategory = Settings.RegisterCanvasLayoutSubcategory(BBF.category, BetterBlizzFramesSubPanel, BetterBlizzFramesSubPanel.name, BetterBlizzFramesSubPanel.name)
@@ -6522,10 +6522,10 @@ local function guiPositionAndScale()
     local focusToTScale = CreateSlider(contentFrame, L["Size"], 0.1, 1.9, 0.1, "focusToTScale")
     focusToTScale:SetPoint("TOP", anchorFocusTarget, "BOTTOM", 0, -15)
 
-    local focusToTXPos = CreateSlider(contentFrame, L["X_Offset"], -100, 100, 1, "focusToTXPos", L["X"])
+    local focusToTXPos = CreateSlider(contentFrame, L["X_Offset"], -100, 100, 1, "focusToTXPos", "X")
     focusToTXPos:SetPoint("TOP", focusToTScale, "BOTTOM", 0, -15)
 
-    local focusToTYPos = CreateSlider(contentFrame, L["Y_Offset"], -100, 100, 1, "focusToTYPos", L["Y"])
+    local focusToTYPos = CreateSlider(contentFrame, L["Y_Offset"], -100, 100, 1, "focusToTYPos", "Y")
     focusToTYPos:SetPoint("TOP", focusToTXPos, "BOTTOM", 0, -15)
 
     local focusToTDropdown = CreateAnchorDropdown(
@@ -6565,10 +6565,10 @@ local function guiPositionAndScale()
     local petFrameScale = CreateSlider(contentFrame, L["Size"], 0.1, 1.9, 0.1, "petFrameScale")
     petFrameScale:SetPoint("TOP", anchorPetFrame, "BOTTOM", 0, -15)
 
-    local petFrameXPos = CreateSlider(contentFrame, L["X_Offset"], -100, 100, 1, "petFrameXPos", L["X"])
+    local petFrameXPos = CreateSlider(contentFrame, L["X_Offset"], -100, 100, 1, "petFrameXPos", "X")
     petFrameXPos:SetPoint("TOP", petFrameScale, "BOTTOM", 0, -15)
 
-    local petFrameYPos = CreateSlider(contentFrame, L["Y_Offset"], -100, 100, 1, "petFrameYPos", L["Y"])
+    local petFrameYPos = CreateSlider(contentFrame, L["Y_Offset"], -100, 100, 1, "petFrameYPos", "Y")
     petFrameYPos:SetPoint("TOP", petFrameXPos, "BOTTOM", 0, -15)
 
     local petFrameDropdown = CreateAnchorDropdown(
@@ -6606,10 +6606,10 @@ local function guiPositionAndScale()
     local absorbIndicatorScale = CreateSlider(contentFrame, L["Size"], 0.1, 1.9, 0.01, "absorbIndicatorScale")
     absorbIndicatorScale:SetPoint("TOP", anchorSubAbsorb, "BOTTOM", 0, -15)
 
-    local absorbIndicatorXPos = CreateSlider(contentFrame, L["X_Offset"], -100, 100, 1, "playerAbsorbXPos", L["X"])
+    local absorbIndicatorXPos = CreateSlider(contentFrame, L["X_Offset"], -100, 100, 1, "playerAbsorbXPos", "X")
     absorbIndicatorXPos:SetPoint("TOP", absorbIndicatorScale, "BOTTOM", 0, -15)
 
-    local absorbIndicatorYPos = CreateSlider(contentFrame, L["Y_Offset"], -100, 100, 1, "playerAbsorbYPos", L["Y"])
+    local absorbIndicatorYPos = CreateSlider(contentFrame, L["Y_Offset"], -100, 100, 1, "playerAbsorbYPos", "Y")
     absorbIndicatorYPos:SetPoint("TOP", absorbIndicatorXPos, "BOTTOM", 0, -15)
 
     local playerAbsorbAnchorDropdown = CreateAnchorDropdown(
@@ -6695,10 +6695,10 @@ local function guiPositionAndScale()
     local combatIndicatorScale = CreateSlider(contentFrame, L["Size"], 0.1, 1.9, 0.01, "combatIndicatorScale")
     combatIndicatorScale:SetPoint("TOP", anchorSubOutOfCombat, "BOTTOM", 0, -15)
 
-    local combatIndicatorXPos = CreateSlider(contentFrame, L["X_Offset"], -50, 50, 1, "combatIndicatorXPos", L["X"])
+    local combatIndicatorXPos = CreateSlider(contentFrame, L["X_Offset"], -50, 50, 1, "combatIndicatorXPos", "X")
     combatIndicatorXPos:SetPoint("TOP", combatIndicatorScale, "BOTTOM", 0, -15)
 
-    local combatIndicatorYPos = CreateSlider(contentFrame, L["Y_Offset"], -50, 50, 1, "combatIndicatorYPos", L["Y"])
+    local combatIndicatorYPos = CreateSlider(contentFrame, L["Y_Offset"], -50, 50, 1, "combatIndicatorYPos", "Y")
     combatIndicatorYPos:SetPoint("TOP", combatIndicatorXPos, "BOTTOM", 0, -15)
 
     local combatIndicatorDropdown = CreateAnchorDropdown(
@@ -6778,10 +6778,10 @@ local function guiPositionAndScale()
     local healerIndicatorScale = CreateSlider(contentFrame, L["Size"], 0.8, 2.5, 0.01, "healerIndicatorScale")
     healerIndicatorScale:SetPoint("TOP", anchorSubHealerIndicator, "BOTTOM", 0, -15)
 
-    local healerIndicatorXPos = CreateSlider(contentFrame, L["X_Offset"], -50, 50, 1, "healerIndicatorXPos", L["X"])
+    local healerIndicatorXPos = CreateSlider(contentFrame, L["X_Offset"], -50, 50, 1, "healerIndicatorXPos", "X")
     healerIndicatorXPos:SetPoint("TOP", healerIndicatorScale, "BOTTOM", 0, -15)
 
-    local healerIndicatorYPos = CreateSlider(contentFrame, L["Y_Offset"], -50, 50, 1, "healerIndicatorYPos", L["Y"])
+    local healerIndicatorYPos = CreateSlider(contentFrame, L["Y_Offset"], -50, 50, 1, "healerIndicatorYPos", "Y")
     healerIndicatorYPos:SetPoint("TOP", healerIndicatorXPos, "BOTTOM", 0, -15)
 
     local healerIndicatorDropdown = CreateAnchorDropdown(
@@ -6842,10 +6842,10 @@ local function guiPositionAndScale()
     local racialIndicatorScale = CreateSlider(contentFrame, L["Size"], 0.1, 1.9, 0.01, "racialIndicatorScale")
     racialIndicatorScale:SetPoint("TOP", anchorSubracialIndicator, "BOTTOM", 0, -15)
 
-    local racialIndicatorXPos = CreateSlider(contentFrame, L["X_Offset"], -50, 50, 1, "racialIndicatorXPos", L["X"])
+    local racialIndicatorXPos = CreateSlider(contentFrame, L["X_Offset"], -50, 50, 1, "racialIndicatorXPos", "X")
     racialIndicatorXPos:SetPoint("TOP", racialIndicatorScale, "BOTTOM", 0, -15)
 
-    local racialIndicatorYPos = CreateSlider(contentFrame, L["Y_Offset"], -50, 50, 1, "racialIndicatorYPos", L["Y"])
+    local racialIndicatorYPos = CreateSlider(contentFrame, L["Y_Offset"], -50, 50, 1, "racialIndicatorYPos", "Y")
     racialIndicatorYPos:SetPoint("TOP", racialIndicatorXPos, "BOTTOM", 0, -15)
 
     local racialIndicatorOrc = CreateCheckbox("racialIndicatorOrc", L["Orc"], contentFrame)
@@ -6930,10 +6930,10 @@ local function guiPositionAndScale()
     local castBarInterruptIconScale = CreateSlider(contentFrame, L["Size"], 0.1, 1.9, 0.01, "castBarInterruptIconScale")
     castBarInterruptIconScale:SetPoint("TOP", anchorSubInterruptIcon, "BOTTOM", 0, -15)
 
-    local castBarInterruptIconXPos = CreateSlider(contentFrame, L["X_Offset"], -100, 100, 1, "castBarInterruptIconXPos", L["X"])
+    local castBarInterruptIconXPos = CreateSlider(contentFrame, L["X_Offset"], -100, 100, 1, "castBarInterruptIconXPos", "X")
     castBarInterruptIconXPos:SetPoint("TOP", castBarInterruptIconScale, "BOTTOM", 0, -15)
 
-    local castBarInterruptIconYPos = CreateSlider(contentFrame, L["Y_Offset"], -100, 100, 1, "castBarInterruptIconYPos", L["Y"])
+    local castBarInterruptIconYPos = CreateSlider(contentFrame, L["Y_Offset"], -100, 100, 1, "castBarInterruptIconYPos", "Y")
     castBarInterruptIconYPos:SetPoint("TOP", castBarInterruptIconXPos, "BOTTOM", 0, -15)
 
     local castBarInterruptIconAnchorDropdown = CreateAnchorDropdown(
@@ -6991,7 +6991,7 @@ local function guiFrameLook()
     -- Frame Auras
     ----------------------
     local guiFrameLook = CreateFrame("Frame")
-    guiFrameLook.name = "Font & Texture"
+    guiFrameLook.name = L["Module_Name_Font_Texture"]
     guiFrameLook.parent = BetterBlizzFrames.name
     --InterfaceOptions_AddCategory(guiFrameAuras)
     local aurasSubCategory = Settings.RegisterCanvasLayoutSubcategory(BBF.category, guiFrameLook, guiFrameLook.name, guiFrameLook.name)
@@ -7047,7 +7047,7 @@ local function guiFrameLook()
     howStepTwo:SetJustifyH("LEFT")
     howStepTwo:SetFont(fontSmall, 12)
     howStepTwo:SetPoint("TOPLEFT", fontEditBox, "BOTTOMLEFT", -5, -13)
-    howStepTwo:SetText(L["How_Step_Two"])
+    howStepTwo:SetText(L["How_Custom_Media_2"])
 
     local textureEditBox = CreateFrame("EditBox", nil, guiFrameLook, "InputBoxTemplate")
     textureEditBox:SetSize(330, 20)
@@ -7068,7 +7068,7 @@ local function guiFrameLook()
     howStepThree:SetJustifyH("LEFT")
     howStepThree:SetFont(fontSmall, 12)
     howStepThree:SetPoint("TOPLEFT", textureEditBox, "BOTTOMLEFT", -5, -13)
-    howStepThree:SetText(L["How_Step_Three"])
+    howStepThree:SetText(L["How_Custom_Media_3"])
 
     local changeUnitFrameFont = CreateCheckbox("changeUnitFrameFont", L["Tooltip_Change_UnitFrame_Font_Desc"], guiFrameLook)
     changeUnitFrameFont:SetPoint("TOPLEFT", settingsText, "BOTTOMLEFT", -4, pixelsOnFirstBox)
@@ -7086,9 +7086,9 @@ local function guiFrameLook()
         end
     end)
 
-    local unitFrameFontColorLvl = CreateCheckbox("unitFrameFontColorLvl", L["Lvl"], guiFrameLook)
+    local unitFrameFontColorLvl = CreateCheckbox("unitFrameFontColorLvl", L["FontTexture_Color_Level"], guiFrameLook)
     unitFrameFontColorLvl:SetPoint("LEFT", unitFrameFontColor.Text, "RIGHT", 0, 0)
-    CreateTooltipTwo(unitFrameFontColorLvl, L["Lvl"], L["Tooltip_Lvl_Font_Desc"])
+    CreateTooltipTwo(unitFrameFontColorLvl, L["FontTexture_Color_Level"], L["Tooltip_Color_Level_Font_Desc"])
     unitFrameFontColorLvl:HookScript("OnClick", function()
         BBF.FontColors()
     end)
@@ -7719,7 +7719,7 @@ local function guiFrameAuras()
     -- Frame Auras
     ----------------------
     local guiFrameAuras = CreateFrame("Frame")
-    guiFrameAuras.name = "Buffs & Debuffs"
+    guiFrameAuras.name = L["Module_Name_Auras"]
     guiFrameAuras.parent = BetterBlizzFrames.name
     --InterfaceOptions_AddCategory(guiFrameAuras)
     local aurasSubCategory = Settings.RegisterCanvasLayoutSubcategory(BBF.category, guiFrameAuras, guiFrameAuras.name, guiFrameAuras.name)
@@ -7814,19 +7814,19 @@ local function guiFrameAuras()
     local targetAndFocusAurasPerRow = CreateSlider(playerAuraFiltering, L["Max_Auras_Per_Row"], 1, 12, 1, "targetAndFocusAurasPerRow")
     targetAndFocusAurasPerRow:SetPoint("TOPLEFT", targetAndFocusSmallAuraScale, "BOTTOMLEFT", 0, -17)
 
-    local targetAndFocusAuraOffsetX = CreateSlider(playerAuraFiltering, L["X_Offset"], -50, 50, 1, "targetAndFocusAuraOffsetX", L["X"])
+    local targetAndFocusAuraOffsetX = CreateSlider(playerAuraFiltering, L["X_Offset"], -50, 50, 1, "targetAndFocusAuraOffsetX", "X")
     targetAndFocusAuraOffsetX:SetPoint("TOPLEFT", targetAndFocusAurasPerRow, "BOTTOMLEFT", 0, -17)
 
-    local targetAndFocusAuraOffsetY = CreateSlider(playerAuraFiltering, L["Y_Offset"], -50, 50, 1, "targetAndFocusAuraOffsetY", L["Y"])
+    local targetAndFocusAuraOffsetY = CreateSlider(playerAuraFiltering, L["Y_Offset"], -50, 50, 1, "targetAndFocusAuraOffsetY", "Y")
     targetAndFocusAuraOffsetY:SetPoint("TOPLEFT", targetAndFocusAuraOffsetX, "BOTTOMLEFT", 0, -17)
 
-    local targetAndFocusHorizontalGap = CreateSlider(playerAuraFiltering, L["Horizontal_Gap"], 0, 18, 0.5, "targetAndFocusHorizontalGap", L["X"])
+    local targetAndFocusHorizontalGap = CreateSlider(playerAuraFiltering, L["Horizontal_Gap"], 0, 18, 0.5, "targetAndFocusHorizontalGap", "X")
     targetAndFocusHorizontalGap:SetPoint("TOPLEFT", targetAndFocusAuraOffsetY, "BOTTOMLEFT", 0, -17)
 
-    local targetAndFocusVerticalGap = CreateSlider(playerAuraFiltering, L["Vertical_Gap"], 0, 18, 0.5, "targetAndFocusVerticalGap", L["Y"])
+    local targetAndFocusVerticalGap = CreateSlider(playerAuraFiltering, L["Vertical_Gap"], 0, 18, 0.5, "targetAndFocusVerticalGap", "Y")
     targetAndFocusVerticalGap:SetPoint("TOPLEFT", targetAndFocusHorizontalGap, "BOTTOMLEFT", 0, -17)
 
-    local auraTypeGap = CreateSlider(playerAuraFiltering, L["Aura_Type_Gap"], 0, 30, 1, "auraTypeGap", L["Y"])
+    local auraTypeGap = CreateSlider(playerAuraFiltering, L["Aura_Type_Gap"], 0, 30, 1, "auraTypeGap", "Y")
     auraTypeGap:SetPoint("TOPLEFT", targetAndFocusVerticalGap, "BOTTOMLEFT", 0, -17)
     CreateTooltip(auraTypeGap, L["Tooltip_Aura_Type_Gap"])
 
@@ -7952,7 +7952,7 @@ end
 
 local function guiMisc()
     local guiMisc = CreateFrame("Frame")
-    guiMisc.name = "Misc"--"|A:GarrMission_CurrencyIcon-Material:19:19|a Misc"
+    guiMisc.name = L["Module_Name_Misc"]
     guiMisc.parent = BetterBlizzFrames.name
     --InterfaceOptions_AddCategory(guiMisc)
     local guiMiscSubcategory = Settings.RegisterCanvasLayoutSubcategory(BBF.category, guiMisc, guiMisc.name, guiMisc.name)
@@ -8597,7 +8597,7 @@ local function guiMisc()
                 BetterBlizzFramesDB.moveResourceStackPos[playerClass] = nil
             end
             classResourceScale:SetValue(1)
-            BBF.Print(L["Print_Combo_Points_Reset"] .. playerClass)
+            BBF.Print(string.format(L["Print_Combo_Points_Reset"], playerClass))
             BBF.ResetResourcePosition()
         end
     end)
@@ -8608,7 +8608,7 @@ local function guiMisc()
                 BetterBlizzFramesDB.customComboPositions[playerClass] = nil
             end
             classResourceScale:SetValue(1)
-            BBF.Print(L["Print_Combo_Points_Reset"] .. playerClass)
+            BBF.Print(string.format(L["Print_Combo_Points_Reset"], playerClass))
             BBF.UpdateClassComboPoints()
         end
     end)
@@ -8680,7 +8680,7 @@ end
 
 local function guiImportAndExport()
     local guiImportAndExport = CreateFrame("Frame")
-    guiImportAndExport.name = "Import & Export"--"|A:GarrMission_CurrencyIcon-Material:19:19|a Misc"
+    guiImportAndExport.name = L["Module_Name_Import_Export"]
     guiImportAndExport.parent = BetterBlizzFrames.name
     --InterfaceOptions_AddCategory(guiImportAndExport)
     local guiImportSubcategory = Settings.RegisterCanvasLayoutSubcategory(BBF.category, guiImportAndExport, guiImportAndExport.name, guiImportAndExport.name)
@@ -8706,11 +8706,7 @@ local function guiImportAndExport()
     importPVPWhitelist:SetScript("OnClick", function()
         StaticPopup_Show("BBF_CONFIRM_PVP_WHITELIST")
     end)
-    local coloredText = "|cff00FF00Important/Immunity|r\n" ..
-                    "|cffFF8000Offensive Buff|r\n" ..
-                    "|cffFFA9F1Defensive Buffs|r\n" ..
-                    "|cff00FFFFFreedom/Speed|r\n" ..
-                    "|cffEFFF33Fear Immunity|r"
+    local coloredText = L["Whitelist_Colors"]
 
     CreateTooltipTwo(importPVPWhitelist, L["Import_PvP_Whitelist"], string.format(L["Tooltip_Import_PvP_Whitelist_Desc"], coloredText))
 
@@ -8727,7 +8723,7 @@ end
 
 local function guiCustomCode()
     local guiCustomCode = CreateFrame("Frame")
-    guiCustomCode.name = "Custom Code"
+    guiCustomCode.name = L["Module_Name_Custom_Code"]
     guiCustomCode.parent = BetterBlizzFrames.name
     --InterfaceOptions_AddCategory(guiCustomCode)
     local guiCustomCodeSubCategory = Settings.RegisterCanvasLayoutSubcategory(BBF.category, guiCustomCode, guiCustomCode.name, guiCustomCode.name)
@@ -8807,7 +8803,7 @@ local function guiCustomCode()
 
     local patText = guiCustomCode:CreateFontString(nil, "OVERLAY", "GameFontNormalHuge")
     patText:SetPoint("LEFT", boxOneTex, "RIGHT", 14, -1)
-    patText:SetText(L["Patreon"])
+    patText:SetText("Patreon")
 
     local boxTwo = CreateFrame("EditBox", nil, guiCustomCode, "InputBoxTemplate")
     boxTwo:SetPoint("LEFT", boxOne, "RIGHT", 35, 0)
@@ -8841,7 +8837,7 @@ local function guiCustomCode()
 
     local palText = guiCustomCode:CreateFontString(nil, "OVERLAY", "GameFontNormalHuge")
     palText:SetPoint("LEFT", boxTwoTex, "RIGHT", 14, -1)
-    palText:SetText(L["Paypal"])
+    palText:SetText("Paypal")
 
 
 
@@ -8924,7 +8920,7 @@ local function guiCustomCode()
     -- Enable syntax highlighting and indentation with FAIAP
     FAIAP.enable(codeEditBox, colorTable, 4)  -- Assuming a tab width of 4
 
-    local customCodeSaved = BBF.PRINT_PREFIX .. L["Print_Custom_Code_Saved"]
+    local customCodeSaved = L["Print_Custom_Code_Saved"]
 
     -- Create Save Button
     local saveButton = CreateFrame("Button", nil, guiCustomCode, "UIPanelButtonTemplate")
@@ -8934,7 +8930,7 @@ local function guiCustomCode()
     saveButton:SetScript("OnClick", function()
         BetterBlizzFramesDB.customCode = codeEditBox:GetText()
         unsavedChanges = false
-        print(customCodeSaved)
+        BBF.Print(customCodeSaved)
     end)
 
     -- Flag to prevent double triggering of the prompt
@@ -8965,7 +8961,7 @@ local function guiCustomCode()
             BetterBlizzFramesDB.customCode = codeEditBox:GetText()
             unsavedChanges = false
             codeEditBox:ClearFocus()
-            print(customCodeSaved)
+            BBF.Print(customCodeSaved)
             if BetterBlizzFramesDB.reopenOptions then
                 ReloadUI()
             end
