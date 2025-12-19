@@ -4,6 +4,7 @@ if BBF.isMidnight then return end
 local addonVersion = "1.00" --too afraid to to touch for now
 local addonUpdates = C_AddOns.GetAddOnMetadata("BetterBlizzFrames", "Version")
 local sendUpdate = false
+local L = LibStub("AceLocale-3.0"):GetLocale("BetterBlizzFrames")
 BBF.VersionNumber = addonUpdates
 BBF.variablesLoaded = false
 local isAddonLoaded = C_AddOns.IsAddOnLoaded
@@ -342,20 +343,20 @@ local defaultSettings = {
     unitFrameBgTexture = "Solid",
 
     auraWhitelist = {
-        ["example aura :3 (delete me)"] = {name = "Example Aura :3 (delete me)"}
+        ["example aura :3 (delete me)"] = {name = L["Example Aura :3 (delete me)"]}
     },
     auraBlacklist = {
-        ["sign of the skirmisher"] = {name = "Sign of the Skirmisher"},
-        ["sign of the scourge"] = {name = "Sign of the Scourge"},
-        ["stormwind champion"] = {name = "Stormwind Champion"},
-        ["honorless target"] = {name = "Honorless Target"},
-        ["guild champion"] = {name = "Guild Champion"},
-        ["sign of iron"] = {name = "Sign of Iron"},
-        ["enlisted"] = {name = "Enlisted"},
-        [397734] = {name = "Word of a Worthy Ally", id = 397734},
-        [186403] = {name = "Sign of Battle", id = 186403},
-        [32727] = {name = "Arena Preparation", id = 32727},
-        [93805] = {name = "Ironforge Champion", id = 93805},
+        ["sign of the skirmisher"] = {name = L["Sign of the Skirmisher"]},
+        ["sign of the scourge"] = {name = L["Sign of the Scourge"]},
+        ["stormwind champion"] = {name = L["Stormwind Champion"]},
+        ["honorless target"] = {name = L["Honorless Target"]},
+        ["guild champion"] = {name = L["Guild Champion"]},
+        ["sign of iron"] = {name = L["Sign of Iron"]},
+        ["enlisted"] = {name = L["Enlisted"]},
+        [397734] = {name = L["Word of a Worthy Ally"], id = 397734},
+        [186403] = {name = L["Sign of Battle"], id = 186403},
+        [32727] = {name = L["Arena Preparation"], id = 32727},
+        [93805] = {name = L["Ironforge Champion"], id = 93805},
     },
 }
 BBF.defaultSettings = defaultSettings
@@ -429,7 +430,7 @@ local function FetchAndSaveValuesOnFirstLogin()
 
     C_Timer.After(5, function()
         if not C_AddOns.IsAddOnLoaded("SkillCapped") then
-        DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|aBetter|cff00c0ffBlizz|rFrames first run. Thank you for trying out my AddOn. Access settings with /bbf")
+        DEFAULT_CHAT_FRAME:AddMessage(L["|A:gmchat-icon-blizz:16:16|aBetter|cff00c0ffBlizz|rFrames first run. Thank you for trying out my AddOn. Access settings with /bbf"])
         end
         BetterBlizzFramesDB.hasSaved = true
     end)
@@ -437,8 +438,8 @@ end
 
 -- Define the popup window
 StaticPopupDialogs["BetterBlizzFrames_COMBAT_WARNING"] = {
-    text = "Leave combat to adjust this setting.",
-    button1 = "Okay",
+    text = L["Leave combat to adjust this setting."],
+    button1 = L["Okay"],
     timeout = 0,
     whileDead = true,
     hideOnEscape = true,
@@ -446,8 +447,8 @@ StaticPopupDialogs["BetterBlizzFrames_COMBAT_WARNING"] = {
 }
 
 StaticPopupDialogs["BBF_NEW_VERSION"] = {
-    text = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames " .. addonUpdates .. ":\n\nIMPORTANT CHANGE\n\nPlease verify your aura white & blacklists are still intact.\n\nIf they are not go to your SavedVariables and backup both BetterBlizzFrames.lua and .lua.bak files before logging out or reloading.",
-    button1 = "OK",
+    text = L["|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames "] .. addonUpdates .. L[":\n\nIMPORTANT CHANGE\n\nPlease verify your aura white & blacklists are still intact.\n\nIf they are not go to your SavedVariables and backup both BetterBlizzFrames.lua and .lua.bak files before logging out or reloading."],
+    button1 = L["OK"],
     timeout = 0,
     whileDead = true,
     hideOnEscape = true,
@@ -459,9 +460,9 @@ local function ResetBBF()
 end
 
 StaticPopupDialogs["CONFIRM_RESET_BETTERBLIZZFRAMESDB"] = {
-    text = "Are you sure you want to reset all BetterBlizzFrames settings?\nThis action cannot be undone.",
-    button1 = "Confirm",
-    button2 = "Cancel",
+    text = L["Are you sure you want to reset all BetterBlizzFrames settings?\nThis action cannot be undone."],
+    button1 = L["Confirm"],
+    button2 = L["Cancel"],
     OnAccept = function()
         ResetBBF()
     end,
@@ -484,7 +485,7 @@ local function SendUpdateMessage()
                 if BetterBlizzFramesDB.enableLegacyComboPoints and not BetterBlizzFramesDB.classicFrames then
                     DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames "..addonUpdates..":")
                     --DEFAULT_CHAT_FRAME:AddMessage("|A:QuestNormal:16:16|a New stuff:")
-                    DEFAULT_CHAT_FRAME:AddMessage("|A:QuestNormal:16:16|a Legacy Combo Points default position adjusted. You will have to re-adjust your points. Sorry :x")
+                    DEFAULT_CHAT_FRAME:AddMessage(L["|A:QuestNormal:16:16|a Legacy Combo Points default position adjusted. You will have to re-adjust your points. Sorry :x"])
                 end
                 -- DEFAULT_CHAT_FRAME:AddMessage("|A:Professions-Crafting-Orders-Icon:16:16|a Tweak:")
                 -- DEFAULT_CHAT_FRAME:AddMessage("   - Reset castbar interrupt icon y offset to 0 due to default positional changes You may have to readjust to your liking.")
@@ -500,14 +501,14 @@ local function SendUpdateMessage()
 end
 
 local function NewsUpdateMessage()
-    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames news:")
-    DEFAULT_CHAT_FRAME:AddMessage("|A:QuestNormal:16:16|a New Settings:")
-    DEFAULT_CHAT_FRAME:AddMessage("   - Castbar Edge Highlighter now uses seconds instead of percentages.")
-    DEFAULT_CHAT_FRAME:AddMessage("   - Added \"Hide Player Guide Flag\" setting.")
+    DEFAULT_CHAT_FRAME:AddMessage(L["|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames news:"])
+    DEFAULT_CHAT_FRAME:AddMessage(L["|A:QuestNormal:16:16|a New Settings:"])
+    DEFAULT_CHAT_FRAME:AddMessage(L["   - Castbar Edge Highlighter now uses seconds instead of percentages."])
+    DEFAULT_CHAT_FRAME:AddMessage(L["   - Added \"Hide Player Guide Flag\" setting."])
 
-    DEFAULT_CHAT_FRAME:AddMessage("|A:Professions-Crafting-Orders-Icon:16:16|a Bugfixes:")
-    DEFAULT_CHAT_FRAME:AddMessage("   Fixed Overshields for PlayerFrame/TargetFrame etc after Blizzard change.")
-    DEFAULT_CHAT_FRAME:AddMessage("   A lot of behind the scenes Name logic changed. Should now work better and be happier with other addons.")
+    DEFAULT_CHAT_FRAME:AddMessage(L["|A:Professions-Crafting-Orders-Icon:16:16|a Bugfixes:"])
+    DEFAULT_CHAT_FRAME:AddMessage(L["   Fixed Overshields for PlayerFrame/TargetFrame etc after Blizzard change."])
+    DEFAULT_CHAT_FRAME:AddMessage(L["   A lot of behind the scenes Name logic changed. Should now work better and be happier with other addons."])
 
     DEFAULT_CHAT_FRAME:AddMessage("|A:GarrisonTroops-Health:16:16|a Patreon link: www.patreon.com/bodydev")
 end
@@ -731,7 +732,7 @@ function BBF.ToggleLossOfControlTestMode()
         local abilityName = frame:CreateFontString(nil, "ARTWORK", "MovieSubtitleFont")
         abilityName:SetPoint("TOPLEFT", icon, "TOPRIGHT", 5, -4)
         abilityName:SetSize(0, 20)
-        abilityName:SetText("Stunned")
+        abilityName:SetText(L["Stunned"])
         frame.AbilityName = abilityName
 
         -- Time Left Frame
@@ -742,7 +743,7 @@ function BBF.ToggleLossOfControlTestMode()
 
         -- Number and Seconds Text
         local numberText = timeLeft:CreateFontString(nil, "ARTWORK", "GameFontNormalHuge")
-        numberText:SetText("5.5 seconds")
+        numberText:SetText(L["5.5 seconds"])
         numberText:SetPoint("LEFT", timeLeft, "LEFT", 0, -3)
         numberText:SetShadowOffset(2, -2)
         numberText:SetTextColor(1,1,1)
@@ -752,7 +753,7 @@ function BBF.ToggleLossOfControlTestMode()
         local stopButton = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
         stopButton:SetSize(120, 30)
         stopButton:SetPoint("BOTTOM", redLineBottom, "BOTTOM", 0, -35)
-        stopButton:SetText("Stop Testing")
+        stopButton:SetText(L["Stop Testing"])
         stopButton:SetScript("OnClick", function() frame:Hide() end)
         frame.StopButton = stopButton
 
@@ -827,7 +828,7 @@ local function CheckForResourceConflicts()
 
     local _, class = UnitClass("player")
     if db.moveResourceToTarget and conflicts[class] then
-        print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: Disable \"Move Resource to TargetFrame\" for this class in order to move Resource normally.")
+        print(L["|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: Disable \"Move Resource to TargetFrame\" for this class in order to move Resource normally."])
         return true
     end
     return false
@@ -1029,14 +1030,14 @@ function BBF.RemoveAddonCategories()
     custom:SetPoint("TOPLEFT", AddonList.ForceLoad, "BOTTOMLEFT", 0, 2)
     custom.Text = custom:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
     custom.Text:SetPoint("LEFT", custom, "RIGHT", 5, 0)
-    custom.Text:SetText("Hide unloaded dependency AddOns")
+    custom.Text:SetText(L["Hide unloaded dependency AddOns"])
     custom:SetSize(19,19)
 
     custom:SetScript("OnEnter", function(self)
         GameTooltip:ClearLines()
         GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-        GameTooltip:SetText("Hide unloaded dependency AddOns", 1, 1, 1, 1, true)
-        GameTooltip:AddLine("When enabled, dependency addons that are unloaded will be shown at the bottom with the disabled addons.", nil, nil, nil, true)
+        GameTooltip:SetText(L["Hide unloaded dependency AddOns"], 1, 1, 1, 1, true)
+        GameTooltip:AddLine(L["When enabled, dependency addons that are unloaded will be shown at the bottom with the disabled addons."], nil, nil, nil, true)
         GameTooltip:Show()
     end)
     custom:SetScript("OnLeave", function(self)
@@ -1084,7 +1085,7 @@ function BBF.SurrenderNotLeaveArena()
             else
                 if not surrenderFailed then
                     surrenderFailed = true
-                    bbfPrint("Can't surrender. Type /afk again to leave.")
+                    bbfPrint(L["Can't surrender. Type /afk again to leave."])
                 else
                     LeaveBattlefield()
                     surrenderFailed = nil
@@ -2070,7 +2071,7 @@ function BBF.ArenaOptimizer(disable, noPrint)
                 end
             end
             if changedCVars and not db.arenaOptimizerDisablePrint and not noPrint then
-                print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: Arena Optimizer (Misc) adjusted CVars down. To disable chat message type |cff00c0ff/bbf noprint|r")
+                print(L["|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: Arena Optimizer (Misc) adjusted CVars down. To disable chat message type |cff00c0ff/bbf noprint|r"])
             end
         end)
     else
@@ -2083,7 +2084,7 @@ function BBF.ArenaOptimizer(disable, noPrint)
                 end
             end
             if changedCVars and not db.arenaOptimizerDisablePrint and not noPrint then
-                print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: Arena Optimizer (Misc) adjusted CVars back up. To disable chat message type |cff00c0ff/bbf noprint|r")
+                print(L["|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: Arena Optimizer (Misc) adjusted CVars back up. To disable chat message type |cff00c0ff/bbf noprint|r"])
             end
         end)
     end
@@ -2920,7 +2921,7 @@ function BBF.RaiseTargetFrameLevel()
     if not BetterBlizzFramesDB.raiseTargetFrameLevel then return end
     if BBF.raisingTargetFrameLevel then return end
     if C_AddOns.IsAddOnLoaded("ClassicFrames") then
-        print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: Raise TargetFrame Level not supported with ClassicFrames. Use ClassicFrames setting in BetterBlizzFrames instead.")
+        print(L["|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: Raise TargetFrame Level not supported with ClassicFrames. Use ClassicFrames setting in BetterBlizzFrames instead."])
         return
     end
     TargetFrame:SetFrameStrata("MEDIUM")
@@ -3170,7 +3171,7 @@ local function CreateSmoothSlider(parent, variableToAdjust, title, defaultValue,
     return slider
 end
 C_Timer.After(1, function()
-    BBF.EditModeAlphaSlider = CreateSmoothSlider(EditModeManagerFrame.LayoutDropdown, "editModeSelectionAlpha", "Edit Mode Transparency", 0.85, BBF.ReduceEditModeAlpha)
+    BBF.EditModeAlphaSlider = CreateSmoothSlider(EditModeManagerFrame.LayoutDropdown, "editModeSelectionAlpha", L["Edit Mode Transparency"], 0.85, BBF.ReduceEditModeAlpha)
 end)
 
 
@@ -3941,11 +3942,11 @@ function BBF.SymmetricPlayerFrame()
     if not BetterBlizzFramesDB.symmetricPlayerFrame then return end
     if BetterBlizzFramesDB.noPortraitModes or BetterBlizzFramesDB.noPortraitPixelBorder then return end
     if BetterBlizzFramesDB.classicFrames then
-        print("BBF: Symmetric Player Frame not available with Classic Frames setting.")
+        print(L["BBF: Symmetric Player Frame not available with Classic Frames setting."])
         return
     end
     if InCombatLockdown() then
-        print("BBF: Leave combat to enable this setting")
+        print(L["BBF: Leave combat to enable this setting"])
         return
     end
     -- Update Player Portrait Mask
@@ -4947,7 +4948,7 @@ Frame:SetScript("OnEvent", function(...)
     if BetterBlizzFramesDB.reopenOptions then
         --InterfaceOptionsFrame_OpenToCategory(BetterBlizzFrames)
         if not BBF.category then
-            print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: Settings disabled. Likely due to error. Please update your addon.")
+            print(L["|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: Settings disabled. Likely due to error. Please update your addon."])
             --BBF.InitializeOptions()
             --Settings.OpenToCategory(BBF.category:GetID())
         else
@@ -4978,18 +4979,18 @@ SlashCmdList["BBF"] = function(msg)
                 if spellName then
                     local iconString = "|T" .. icon .. ":16:16:0:0|t" -- Format the icon for display
                     BBF.auraWhitelist(spellId)
-                    print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") added to |cff00ff00whitelist|r.")
+                    print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. L[") added to |cff00ff00whitelist|r."])
                 else
-                    print("Error: Invalid spell ID.")
+                    print(L["Error: Invalid spell ID."])
                 end
             else
                 -- The argument is not a number, treat it as a spell name
                 local spellName = arg
                 BBF.auraWhitelist(spellName)
-                print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. spellName .. " was added to |cff00ff00whitelist|r.")
+                print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. spellName .. L[" was added to |cff00ff00whitelist|r."])
             end
         else
-            print("Usage: /bbf whitelist <spellID or auraName>")
+            print(L["Usage: /bbf whitelist <spellID or auraName>"])
         end
     elseif command == "blacklist" or command == "bl" then
         if arg and arg ~= "" then
@@ -5000,18 +5001,18 @@ SlashCmdList["BBF"] = function(msg)
                 if spellName then
                     local iconString = "|T" .. icon .. ":16:16:0:0|t" -- Format the icon for display
                     BBF.auraBlacklist(spellId)
-                    print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. ") added to |cffff0000blacklist|r.")
+                    print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. iconString .. " " .. spellName .. " (" .. spellId .. L[") added to |cffff0000blacklist|r."])
                 else
-                    print("Error: Invalid spell ID.")
+                    print(L["Error: Invalid spell ID."])
                 end
             else
                 -- The argument is not a number, treat it as a spell name
                 local spellName = arg
                 BBF.auraBlacklist(spellName)
-                print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. spellName .. " was added to |cffff0000blacklist|r.")
+                print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: " .. spellName .. L[" was added to |cffff0000blacklist|r."])
             end
         else
-            print("Usage: /bbf blacklist <spellID or auraName>")
+            print(L["Usage: /bbf blacklist <spellID or auraName>"])
         end
     elseif command == "ver" or command == "version" then
         DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames Version "..addonUpdates)
@@ -5022,11 +5023,11 @@ SlashCmdList["BBF"] = function(msg)
         BBF.CreateIntroMessageWindow()
     elseif command == "noprint" then
         BetterBlizzFramesDB.arenaOptimizerDisablePrint = true
-        print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: Arena Optimizer will no longer print messages.|r")
+        print(L["|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: Arena Optimizer will no longer print messages.|r"])
     else
         -- InterfaceOptionsFrame_OpenToCategory(BetterBlizzFrames)
         if not BBF.category then
-            print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: Settings disabled. Likely due to error. Please update your addon.")
+            print(L["|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: Settings disabled. Likely due to error. Please update your addon."])
             --BBF.InitializeOptions()
             --Settings.OpenToCategory(BBF.category:GetID())
         else
@@ -5120,7 +5121,7 @@ First:SetScript("OnEvent", function(_, event, addonName)
             end
             if C_AddOns.IsAddOnLoaded("ClassicFrames") then
                 C_Timer.After(4, function()
-                    print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: A super lightweight |cffff8000Classic Frames|r setting is now live! I would highly recommend swapping to BBF's setting over |cff9d9d9dClassicFrames|r the addon due to the high CPU usage of that addon.")
+                    print(L["|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: A super lightweight |cffff8000Classic Frames|r setting is now live! I would highly recommend swapping to BBF's setting over |cff9d9d9dClassicFrames|r the addon due to the high CPU usage of that addon."])
                 end)
             end
             MoveableSettingsPanel()
@@ -5212,7 +5213,7 @@ First:SetScript("OnEvent", function(_, event, addonName)
             local removedAura = false
             for _, faultyId in ipairs(auraBlacklistFaulty) do
                 if BetterBlizzFramesDB.auraBlacklist[faultyId] then
-                    print("BBF: Removed dispellable aura in blacklist: " .. (BetterBlizzFramesDB.auraBlacklist[faultyId].name or "Unknown") .. " (" .. faultyId .. ")")
+                    print(L["BBF: Removed dispellable aura in blacklist: "] .. (BetterBlizzFramesDB.auraBlacklist[faultyId].name or "Unknown") .. " (" .. faultyId .. ")")
                     BetterBlizzFramesDB.auraBlacklist[faultyId] = nil
                     removedAura = true
                 end
@@ -5220,7 +5221,7 @@ First:SetScript("OnEvent", function(_, event, addonName)
             BetterBlizzFramesDB.cleanedAuraBlacklist = true
             if removedAura then
                 C_Timer.After(3, function()
-                    DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|aBetter|cff00c0ffBlizz|rFrames: Removed roughly 20 auras from from the PvP blacklist preset (and your imported blacklist) due to them accidentally being added. They are purgeable and can be useful info and should not be blacklisted due to that.")
+                    DEFAULT_CHAT_FRAME:AddMessage(L["|A:gmchat-icon-blizz:16:16|aBetter|cff00c0ffBlizz|rFrames: Removed roughly 20 auras from from the PvP blacklist preset (and your imported blacklist) due to them accidentally being added. They are purgeable and can be useful info and should not be blacklisted due to that."])
                 end)
             end
         end

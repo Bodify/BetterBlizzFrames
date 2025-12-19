@@ -682,7 +682,7 @@ local function adjustCastbar(self, frame)
         return
     end
 
-    local rowHeights = (parent.hidingAllAuras and {}) or parent.rowHeights or {}
+    local rowHeights = parent.rowHeights or {}
 
     meta.ClearAllPoints(self)
     if frame == TargetFrameSpellBar then
@@ -748,15 +748,15 @@ local function DefaultCastbarAdjustment(self, frame)
     end
 
     -- Determine whether to use the adjusted logic based on BetterBlizzFramesDB setting
-    -- If hiding all auras, treat as if there are no auras (don't use spellbarAnchor)
-    local useSpellbarAnchor = not parentFrame.hidingAllAuras and (buffsOnTopReverseCastbarMovement and
+    local useSpellbarAnchor = buffsOnTopReverseCastbarMovement and
                               ((parentFrame.haveToT and parentFrame.auraRows > 2) or (not parentFrame.haveToT and parentFrame.auraRows > 0)) or
                               (not buffsOnTopReverseCastbarMovement and not parentFrame.buffsOnTop and 
-                               ((parentFrame.haveToT and parentFrame.auraRows > 2) or (not parentFrame.haveToT and parentFrame.auraRows > 0))))
+                               ((parentFrame.haveToT and parentFrame.auraRows > 2) or (not parentFrame.haveToT and parentFrame.auraRows > 0)))
 
     local relativeKey = useSpellbarAnchor and parentFrame.spellbarAnchor or parentFrame
     local pointX = useSpellbarAnchor and 18 or (parentFrame.smallSize and 38 or 43)
     local pointY = useSpellbarAnchor and -10 or (parentFrame.smallSize and 3 or 5)
+    local hidden = hideFocusCastbar
 
     -- Adjustments for ToT and specific frame adjustments
     if (not useSpellbarAnchor) and parentFrame.haveToT then
@@ -2906,7 +2906,6 @@ function BBF.HookPlayerAndTargetAuras()
                     aura:Hide()
                 end
             end)
-            TargetFrame.hidingAllAuras = true
             BBF.HidingAllTargetAuras = true
         else
             hooksecurefunc(TargetFrame, "UpdateAuras", function(self) AdjustAuras(self, "target") end)
@@ -2918,7 +2917,6 @@ function BBF.HookPlayerAndTargetAuras()
                     aura:Hide()
                 end
             end)
-            FocusFrame.hidingAllAuras = true
             BBF.HidingAllFocusAuras = true
         else
             hooksecurefunc(FocusFrame, "UpdateAuras", function(self) AdjustAuras(self, "focus") end)

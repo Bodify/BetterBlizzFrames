@@ -974,7 +974,6 @@ function BBF.CastbarRecolorWidgets()
                     end
                     self.Spark:SetVertexColor(1, 1, 1)
                 end
-                return
             end
 
             local name, _, _, startTime, endTime, _, _, notInterruptible, spellId = UnitCastingInfo(unit)
@@ -990,14 +989,21 @@ function BBF.CastbarRecolorWidgets()
                 texture:SetDesaturated(false)
                 if not classicFrames and not self.textureChangedNeedsColor then
                     if recolorCastbars then
-                        local c = castbarColors[self.barType] or castbarColors.standard
+                        if self.barType == "interrupted" then
+                            texture:SetDesaturated(false)
+                            self:SetStatusBarColor(1, 1, 1)
+                        else
+                            local c = castbarColors[self.barType] or castbarColors.standard
+                            local r, g, b = c[1], c[2], c[3]
+
+                            self:SetStatusBarColor(r, g, b)
+                            --self.Spark:SetVertexColor(r, g, b)
+                        end
+                    else
+                        local c = defaultCastbarColors[self.barType] or defaultCastbarColors.standard
                         local r, g, b = c[1], c[2], c[3]
 
-                        texture:SetDesaturated(true)
                         self:SetStatusBarColor(r, g, b)
-                    else
-                        texture:SetDesaturated(false)
-                        self:SetStatusBarColor(1, 1, 1)
                     end
                 end
                 self.Spark:SetVertexColor(1, 1, 1)
