@@ -1,4 +1,7 @@
-# BetterBlizzFrames 1.8.4e
+# BetterBlizzFrames 1.8.5
+## All versions
+### New
+- Localization support! Thank you so much to 007bb who has added localization support with English and Korean included. And some cleanup in some of the code.
 ## Retail & Midnight
 ### Tweak
 - Fix No Portrait settings click area and edit mode selection highlight.
