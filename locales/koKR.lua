@@ -1,5 +1,6 @@
 -- Korean localization for BetterBlizzFrames
 -- BetterBlizzFrames 한국어 현지화
+-- Korean translation by: 007bb from Korea Mate Guild
 
 local locale = GetLocale()
 if locale ~= "koKR" then return end
