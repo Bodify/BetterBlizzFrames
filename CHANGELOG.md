@@ -1,3 +1,8 @@
+# BetterBlizzFrames 1.8.5b
+## Retail & Midnight
+### Tweak
+- Fix PetFrame's clickable area. (By default from Blizzard only clickable on Portrait instead of entire frame like everything else in the game)
+
 # BetterBlizzFrames 1.8.5
 ## All versions
 ### New
