@@ -589,10 +589,11 @@ function BBF.HideFrames()
                 end
             end
             if DruidComboPointBarFrame and englishClass == "DRUID" then
-                if BetterBlizzFramesDB.hidePlayerPowerNoDruid then
+                if BetterBlizzFramesDB.hidePlayerPowerNoDruid and originalResourceParent then
                     setResourceFrameVisibility(DruidComboPointBarFrame, true)
                 else
                     setResourceFrameVisibility(DruidComboPointBarFrame, false)
+                    if not originalResourceParent then originalResourceParent = true end
                 end
             end
             if PaladinPowerBarFrame and englishClass == "PALADIN" then
@@ -620,17 +621,19 @@ function BBF.HideFrames()
                 end
             end
             if MonkHarmonyBarFrame and englishClass == "MONK" then
-                if BetterBlizzFramesDB.hidePlayerPowerNoMonk then
+                if BetterBlizzFramesDB.hidePlayerPowerNoMonk and originalResourceParent then
                     setResourceFrameVisibility(MonkHarmonyBarFrame, true)
                 else
                     setResourceFrameVisibility(MonkHarmonyBarFrame, false)
+                    if not originalResourceParent then originalResourceParent = true end
                 end
             end
             if MageArcaneChargesFrame and englishClass == "MAGE" then
-                if BetterBlizzFramesDB.hidePlayerPowerNoMage then
+                if BetterBlizzFramesDB.hidePlayerPowerNoMage and originalResourceParent then
                     setResourceFrameVisibility(MageArcaneChargesFrame, true)
                 else
                     setResourceFrameVisibility(MageArcaneChargesFrame, false)
+                    if not originalResourceParent then originalResourceParent = true end
                 end
             end
             changes.hidePlayerPower = true
