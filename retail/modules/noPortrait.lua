@@ -2661,10 +2661,14 @@ function BBF.noPortraitModes()
     end
     if not BetterBlizzFramesDB.noPortraitSkipTarget then
         MakeNoPortraitMode(TargetFrame)
+    end
+    if not BetterBlizzFramesDB.noPortraitSkipFocus then
         MakeNoPortraitMode(FocusFrame)
     end
     if not BetterBlizzFramesDB.noPortraitSkipPlayer then
         MakeNoPortraitMode(PlayerFrame)
+    end
+    if not BetterBlizzFramesDB.noPortraitSkipPet then
         MakeNoPortraitMode(PetFrame)
     end
 
