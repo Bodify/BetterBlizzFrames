@@ -10085,6 +10085,9 @@ function BBF.LoadGUI()
     guiMidnight()
     BetterBlizzFrames.guiLoaded = true
 
+    if SettingsPanel:IsShown() then
+        HideUIPanel(SettingsPanel)
+    end
     Settings.OpenToCategory(BBF.category:GetID())
     Settings.OpenToCategory(BBF.category:GetID(), BBF.guiCustomCode)
     Settings.OpenToCategory(BBF.category:GetID())

@@ -1,3 +1,17 @@
+# BetterBlizzFrames 1.8.4e
+## Retail & Midnight
+### Tweak
+- Fix No Portrait settings click area and edit mode selection highlight.
+- Adjust threat glow on Classic Frames setting to fit the frame better, especially on Minus mobs.
+- Tweak castbar positioning to not be affected by hidden auras when "Show Buffs/Debuffs" is disabled.
+### Bugfix
+- Fix health background for No Portrait setting being positioned wrong when targeting Minus mobs.
+- Retail: Fix Target/Focus castbar flashing wrong texture and color at the end of a cast when interrupt color was enabled.
+- Fix PlayerFrame's "Hide Resource/Power" setting sometimes causing lua errors for Brewmaster monk due to some old code that needed change due to Blizzard changes.
+## Classic Era
+### Bugfix
+- Fix some castbar logic trying to adjust for FocusFrame (which doesnt exist on Era) causing a lua error.
+
 # BetterBlizzFrames 1.8.4d
 ## Retail & Midnight
 ### Tweak

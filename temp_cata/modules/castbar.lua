@@ -1048,7 +1048,9 @@ function BBF.ChangeCastbarSizes()
         local outline = BetterBlizzFramesDB.unitFrameFontOutline or "THINOUTLINE"
         local _, size, _ = TargetFrameSpellBar.Text:GetFont()
         TargetFrameSpellBar.Text:SetFont(fontPath, size, outline)
-        FocusFrameSpellBar.Text:SetFont(fontPath, size, outline)
+        if FocusFrameSpellBar then
+            FocusFrameSpellBar.Text:SetFont(fontPath, size, outline)
+        end
         local _, size, _ = PlayerCastingBarFrame.Text:GetFont()
         PlayerCastingBarFrame.Text:SetFont(fontPath, size, outline)
     end

@@ -27,6 +27,21 @@ local function applyAlpha(frame, alpha)
     end
 end
 
+local function setResourceFrameVisibility(frame, visible)
+    if not frame then return end
+    if visible then
+        frame:SetAlpha(1)
+        if frame.EnableMouse then
+            frame:EnableMouse(true)
+        end
+    else
+        frame:SetAlpha(0)
+        if frame.EnableMouse then
+            frame:EnableMouse(false)
+        end
+    end
+end
+
 local function hideElementByParent(element)
     if element and not element.bbfOriginalParent then
         element.bbfOriginalParent = element:GetParent()
@@ -681,10 +696,11 @@ function BBF.HideFrames()
                 end
             end
             if DruidComboPointBarFrame and englishClass == "DRUID" then
-                if BetterBlizzFramesDB.hidePlayerPowerNoDruid then
-                    DruidComboPointBarFrame:SetAlpha(1)
+                if BetterBlizzFramesDB.hidePlayerPowerNoDruid and originalResourceParent then
+                    setResourceFrameVisibility(DruidComboPointBarFrame, true)
                 else
-                    DruidComboPointBarFrame:SetAlpha(0)
+                    setResourceFrameVisibility(DruidComboPointBarFrame, false)
+                    if not originalResourceParent then originalResourceParent = true end
                 end
             end
             if PaladinPowerBarFrame and englishClass == "PALADIN" then
@@ -712,32 +728,31 @@ function BBF.HideFrames()
                 end
             end
             if MonkHarmonyBarFrame and englishClass == "MONK" then
-                if BetterBlizzFramesDB.hidePlayerPowerNoMonk then
-                    if originalResourceParent then MonkHarmonyBarFrame:SetAlpha(originalResourceParent); MonkHarmonyBarFrame:EnableMouse(true) end
+                if BetterBlizzFramesDB.hidePlayerPowerNoMonk and originalResourceParent then
+                    setResourceFrameVisibility(MonkHarmonyBarFrame, true)
                 else
-                    if not originalResourceParent then originalResourceParent = MonkHarmonyBarFrame:GetAlpha() end
-                    --MonkHarmonyBarFrame:SetParent(hiddenFrame)
-                    MonkHarmonyBarFrame:SetAlpha(0)
-                    MonkHarmonyBarFrame:EnableMouse(false)
+                    setResourceFrameVisibility(MonkHarmonyBarFrame, false)
+                    if not originalResourceParent then originalResourceParent = true end
                 end
             end
             if MageArcaneChargesFrame and englishClass == "MAGE" then
-                if BetterBlizzFramesDB.hidePlayerPowerNoMage then
-                    MageArcaneChargesFrame:SetAlpha(1)
+                if BetterBlizzFramesDB.hidePlayerPowerNoMage and originalResourceParent then
+                    setResourceFrameVisibility(MageArcaneChargesFrame, true)
                 else
-                    MageArcaneChargesFrame:SetAlpha(0)
+                    setResourceFrameVisibility(MageArcaneChargesFrame, false)
+                    if not originalResourceParent then originalResourceParent = true end
                 end
             end
             changes.hidePlayerPower = true
         elseif originalResourceParent then
             if WarlockPowerFrame and englishClass == "WARLOCK" then WarlockPowerFrame:SetParent(originalResourceParent) end
             if RogueComboPointBarFrame and englishClass == "ROGUE" then RogueComboPointBarFrame:SetParent(originalResourceParent) end
-            if DruidComboPointBarFrame and englishClass == "DRUID" then DruidComboPointBarFrame:SetAlpha(1) end
+            if DruidComboPointBarFrame and englishClass == "DRUID" then setResourceFrameVisibility(DruidComboPointBarFrame, true) end
             if PaladinPowerBarFrame and englishClass == "PALADIN" then PaladinPowerBarFrame:SetParent(originalResourceParent) end
             if RuneFrame and englishClass == "DEATHKNIGHT" then RuneFrame:SetParent(originalResourceParent) end
             if EssencePlayerFrame and englishClass == "EVOKER" then EssencePlayerFrame:SetParent(originalResourceParent) end
-            if MonkHarmonyBarFrame and englishClass == "MONK" then MonkHarmonyBarFrame:SetParent(originalResourceParent) end
-            if MageArcaneChargesFrame and englishClass == "MAGE" then MageArcaneChargesFrame:SetAlpha(1) end
+            if MonkHarmonyBarFrame and englishClass == "MONK" then setResourceFrameVisibility(MonkHarmonyBarFrame, true) end
+            if MageArcaneChargesFrame and englishClass == "MAGE" then setResourceFrameVisibility(MageArcaneChargesFrame, true) end
             changes.hidePlayerPower = nil
         end
 
