@@ -4879,6 +4879,10 @@ local function CleanupFunc()
     end
 end
 
+local function FixPetFrameClickArea()
+    PetFrame:SetHitRectInsets(0, 0, 1, 5)
+end
+
 
 -- Event registration for PLAYER_LOGIN
 local Frame = CreateFrame("Frame")
@@ -4994,6 +4998,7 @@ Frame:SetScript("OnEvent", function(...)
         BetterBlizzFramesDB.reopenOptions = false
     end
 
+    FixPetFrameClickArea()
     executeCustomCode()
 end)
 
