@@ -2646,36 +2646,6 @@ function BBF.UpdateNoPortraitManaVisibility()
     BBF.UpdateResourcePositionNoPortrait()
 end
 
-
-local function CreateUnitFrame(name, unit, ogFrame)
-    local f = CreateFrame("Button", name, ogFrame, "SecureUnitButtonTemplate")
-    f:SetFrameStrata(ogFrame:GetFrameStrata())
-    f:SetFrameLevel(ogFrame:GetFrameLevel() + 100)
-
-    local healthBar =
-        ogFrame.PlayerFrameContent and ogFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer or
-        ogFrame.TargetFrameContent and ogFrame.TargetFrameContent.TargetFrameContentMain.HealthBarsContainer or
-        ogFrame.HealthBar
-
-    f:SetPoint("TOPLEFT", healthBar, "TOPLEFT", -5, 5)
-    f:SetPoint("BOTTOMRIGHT", healthBar, "BOTTOMRIGHT", 5, -10)
-
-    --ogFrame:SetMouseClickEnabled(false)
-    ogFrame:EnableMouse(false)
-    ogFrame.BBF_ClickFrame = f
-    f["original" .. ogFrame:GetName()] = ogFrame
-
-    f:SetAttribute("unit", unit)
-    f:RegisterForClicks("AnyUp")
-    f:SetAttribute("*type1", "target")
-    f:SetAttribute("*type2", "togglemenu")
-    f.unit = unit
-
-    -- Tooltip support
-    f:SetScript("OnEnter", UnitFrame_OnEnter)
-    f:SetScript("OnLeave", UnitFrame_OnLeave)
-end
-
 function BBF.noPortraitModes()
     if not BetterBlizzFramesDB.noPortraitModes and not BetterBlizzFramesDB.noPortraitPixelBorder then return end
     if BetterBlizzFramesDB.noPortraitPixelBorder then
@@ -2702,13 +2672,6 @@ function BBF.noPortraitModes()
 
     AdjustAlternateBars()
 
-    -- CreateUnitFrame("BBF_PlayerFrame",  "player", PlayerFrame)
-    -- CreateUnitFrame("BBF_TargetFrame",  "target", TargetFrame)
-    -- CreateUnitFrame("BBF_FocusFrame",   "focus", FocusFrame)
-    -- CreateUnitFrame("BBF_TargetFrameToT", "targettarget", TargetFrameToT)
-    -- CreateUnitFrame("BBF_FocusFrameToT", "focustarget", FocusFrameToT)
-
-
     C_Timer.After(0.5,function()
         for _, child in ipairs({ PlayerFrame.PlayerFrameContent.PlayerFrameContentMain:GetRegions() }) do
             if child:IsObjectType("Texture") then
@@ -2720,85 +2683,94 @@ function BBF.noPortraitModes()
         end
     end)
 
+    PlayerFrame:SetHitRectInsets(66, 12, 21, 18)
+    TargetFrame:SetHitRectInsets(5, 70, 21, 18)
+    PetFrame:SetHitRectInsets(25, 12, -6, 8)
+    TargetFrameToT:SetHitRectInsets(25, 12, -6, 8)
+    FocusFrameToT:SetHitRectInsets(25, 12, -6, 8)
+    for i = 1, 4 do
+        local partyMemberFrame = PartyFrame["MemberFrame"..i]
+        partyMemberFrame:SetHitRectInsets(29, -8, -6, 8)
+    end
 
-    -- local fixed
-    -- local function SetMouseStateOnFrames(enabled)
-    --     local frames = {PlayerFrame, TargetFrame, FocusFrame, TargetFrameToT, FocusFrameToT}
+    local function FixSelectionHighlight()
+        local frames = {PlayerFrame, PetFrame, TargetFrame, FocusFrame, TargetFrameToT, FocusFrameToT, PartyFrame}
 
-    --     for _, frame in pairs(frames) do
-    --         frame:EnableMouse(enabled)
+        for _, frame in pairs(frames) do
+            if frame.Selection and frame.Selection.TopLeftCorner and not frame.Selection.bbfRepositioned then
+                local xOffsetLeft = (frame == PartyFrame) and 43 or 0
+                local xOffsetRight = (frame == PartyFrame) and -3 or 0
+                local yOffsetBottom = (frame == PartyFrame) and 20 or 0
+                local yOffsetTop = (frame ~= PartyFrame and frame ~= PetFrame) and 6 or 0
+                frame.Selection.TopLeftCorner:ClearAllPoints()
+                frame.Selection.TopLeftCorner:SetPoint("TOPLEFT", (frame.healthBar or frame.HealthBar or frame.healthbar or PartyFrame), "TOPLEFT", -16 + xOffsetLeft, 15 + yOffsetTop)
+                frame.Selection.TopRightCorner:ClearAllPoints()
+                frame.Selection.TopRightCorner:SetPoint("TOPRIGHT", (frame.healthBar or frame.HealthBar or frame.healthbar or PartyFrame), "TOPRIGHT", 15 + xOffsetRight, 15 + yOffsetTop)
+                frame.Selection.BottomLeftCorner:ClearAllPoints()
+                frame.Selection.BottomLeftCorner:SetPoint("BOTTOMLEFT", (frame.healthBar or frame.HealthBar or frame.healthbar or PartyFrame), "BOTTOMLEFT", -16 + xOffsetLeft, -25 + yOffsetBottom)
+                frame.Selection.BottomRightCorner:ClearAllPoints()
+                frame.Selection.BottomRightCorner:SetPoint("BOTTOMRIGHT", (frame.healthBar or frame.HealthBar or frame.healthbar or PartyFrame), "BOTTOMRIGHT", 15 + xOffsetRight, -25 + yOffsetBottom)
+                frame.Selection.MouseOverHighlight:ClearAllPoints()
+                frame.Selection.MouseOverHighlight:SetPoint("TOPLEFT", frame.Selection.TopLeftCorner, "TOPLEFT", 8, -8)
+                frame.Selection.MouseOverHighlight:SetPoint("BOTTOMRIGHT", frame.Selection.BottomRightCorner, "BOTTOMRIGHT", -8, 8)
+                frame.Selection.HorizontalLabel:ClearAllPoints()
+                frame.Selection.HorizontalLabel:SetPoint("CENTER", frame.Selection.MouseOverHighlight, "CENTER", 0, 0)
+                frame.Selection.bbfRepositioned = true
 
-    --         if not fixed then
-    --             if frame.Selection and frame.Selection.TopLeftCorner and not frame.Selection.bbfRepositioned then
-    --                 frame.Selection.TopLeftCorner:ClearAllPoints()
-    --                 frame.Selection.TopLeftCorner:SetPoint("TOPLEFT", frame.BBF_ClickFrame, "TOPLEFT", -15, 15)
-    --                 frame.Selection.TopRightCorner:ClearAllPoints()
-    --                 frame.Selection.TopRightCorner:SetPoint("TOPRIGHT", frame.BBF_ClickFrame, "TOPRIGHT", 15, 15)
-    --                 frame.Selection.BottomLeftCorner:ClearAllPoints()
-    --                 frame.Selection.BottomLeftCorner:SetPoint("BOTTOMLEFT", frame.BBF_ClickFrame, "BOTTOMLEFT", -15, -20)
-    --                 frame.Selection.BottomRightCorner:ClearAllPoints()
-    --                 frame.Selection.BottomRightCorner:SetPoint("BOTTOMRIGHT", frame.BBF_ClickFrame, "BOTTOMRIGHT", 15, -20)
-    --                 frame.Selection.MouseOverHighlight:ClearAllPoints()
-    --                 frame.Selection.MouseOverHighlight:SetPoint("TOPLEFT", frame.Selection.TopLeftCorner, "TOPLEFT", 8, -8)
-    --                 frame.Selection.MouseOverHighlight:SetPoint("BOTTOMRIGHT", frame.Selection.BottomRightCorner, "BOTTOMRIGHT", -8, 8)
-    --                 frame.Selection.HorizontalLabel:ClearAllPoints()
-    --                 frame.Selection.HorizontalLabel:SetPoint("CENTER", frame.Selection.MouseOverHighlight, "CENTER", 0, 0)
-    --                 frame.Selection.bbfRepositioned = true
+                hooksecurefunc(frame.Selection.TopLeftCorner, "SetPoint", function(self)
+                    if self.changing then return end
+                    self.changing = true
+                    self:ClearAllPoints()
+                    self:SetPoint("TOPLEFT", (frame.healthBar or frame.HealthBar or frame.healthbar or PartyFrame), "TOPLEFT", -16 + xOffsetLeft, 15 + yOffsetTop)
+                    self.changing = false
+                end)
 
-    --                 hooksecurefunc(frame.Selection.TopLeftCorner, "SetPoint", function(self)
-    --                     if self.changing then return end
-    --                     self.changing = true
-    --                     self:ClearAllPoints()
-    --                     self:SetPoint("TOPLEFT", frame.BBF_ClickFrame, "TOPLEFT", -15, 15)
-    --                     self.changing = false
-    --                 end)
+                hooksecurefunc(frame.Selection.TopRightCorner, "SetPoint", function(self)
+                    if self.changing then return end
+                    self.changing = true
+                    self:ClearAllPoints()
+                    self:SetPoint("TOPRIGHT", (frame.healthBar or frame.HealthBar or frame.healthbar or PartyFrame), "TOPRIGHT", 15 + xOffsetRight, 15 + yOffsetTop)
+                    self.changing = false
+                end)
 
-    --                 hooksecurefunc(frame.Selection.TopRightCorner, "SetPoint", function(self)
-    --                     if self.changing then return end
-    --                     self.changing = true
-    --                     self:ClearAllPoints()
-    --                     self:SetPoint("TOPRIGHT", frame.BBF_ClickFrame, "TOPRIGHT", 15, 15)
-    --                     self.changing = false
-    --                 end)
+                hooksecurefunc(frame.Selection.BottomLeftCorner, "SetPoint", function(self)
+                    if self.changing then return end
+                    self.changing = true
+                    self:ClearAllPoints()
+                    self:SetPoint("BOTTOMLEFT", (frame.healthBar or frame.HealthBar or frame.healthbar or PartyFrame), "BOTTOMLEFT", -16 + xOffsetLeft, -25 + yOffsetBottom)
+                    self.changing = false
+                end)
 
-    --                 hooksecurefunc(frame.Selection.BottomLeftCorner, "SetPoint", function(self)
-    --                     if self.changing then return end
-    --                     self.changing = true
-    --                     self:ClearAllPoints()
-    --                     self:SetPoint("BOTTOMLEFT", frame.BBF_ClickFrame, "BOTTOMLEFT", -15, -20)
-    --                     self.changing = false
-    --                 end)
+                hooksecurefunc(frame.Selection.BottomRightCorner, "SetPoint", function(self)
+                    if self.changing then return end
+                    self.changing = true
+                    self:ClearAllPoints()
+                    self:SetPoint("BOTTOMRIGHT", (frame.healthBar or frame.HealthBar or frame.healthbar or PartyFrame), "BOTTOMRIGHT", 15 + xOffsetRight, -25 + yOffsetBottom)
+                    self.changing = false
+                end)
 
-    --                 hooksecurefunc(frame.Selection.BottomRightCorner, "SetPoint", function(self)
-    --                     if self.changing then return end
-    --                     self.changing = true
-    --                     self:ClearAllPoints()
-    --                     self:SetPoint("BOTTOMRIGHT", frame.BBF_ClickFrame, "BOTTOMRIGHT", 15, -20)
-    --                     self.changing = false
-    --                 end)
+                hooksecurefunc(frame.Selection.MouseOverHighlight, "SetPoint", function(self)
+                    if self.changing then return end
+                    self.changing = true
+                    self:ClearAllPoints()
+                    self:SetPoint("TOPLEFT", frame.Selection.TopLeftCorner, "TOPLEFT", 8, -8)
+                    self:SetPoint("BOTTOMRIGHT", frame.Selection.BottomRightCorner, "BOTTOMRIGHT", -8, 8)
+                    self.changing = false
+                end)
+            end
 
-    --                 hooksecurefunc(frame.Selection.MouseOverHighlight, "SetPoint", function(self)
-    --                     if self.changing then return end
-    --                     self.changing = true
-    --                     self:ClearAllPoints()
-    --                     self:SetPoint("TOPLEFT", frame.Selection.TopLeftCorner, "TOPLEFT", 8, -8)
-    --                     self:SetPoint("BOTTOMRIGHT", frame.Selection.BottomRightCorner, "BOTTOMRIGHT", -8, 8)
-    --                     self.changing = false
-    --                 end)
-    --             end
-    --         end
-    --     end
-    -- end
+        end
+    end
 
-    -- hooksecurefunc(EditModeManagerFrame, "EnterEditMode", function()
-    --     if InCombatLockdown() then return end
-    --     SetMouseStateOnFrames(true)
-    -- end)
+    hooksecurefunc(EditModeManagerFrame, "EnterEditMode", function()
+        if InCombatLockdown() then return end
+        FixSelectionHighlight()
+    end)
 
-    -- hooksecurefunc(EditModeManagerFrame, "ExitEditMode", function()
-    --     if InCombatLockdown() then return end
-    --     SetMouseStateOnFrames(false)
-    -- end)
+    hooksecurefunc(EditModeManagerFrame, "ExitEditMode", function()
+        if InCombatLockdown() then return end
+        FixSelectionHighlight()
+    end)
 
     BBF.UpdateNoPortraitManaVisibility()
 end
