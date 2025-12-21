@@ -208,7 +208,7 @@ local function SetBarMask(bar, maskTexture, pixelBorderMode, tot)
         if bar.BBFPositionFrame then
             local posFrame = bar.BBFPositionFrame
             maskTexture:SetPoint("TOPLEFT", bar.pixelBorderBackground, "TOPLEFT", ((tot and 1) or -0.5), -0.5)
-            maskTexture:SetPoint("BOTTOMRIGHT", bar.pixelBorderBackground, "BOTTOMRIGHT", -0.75, 0)
+            maskTexture:SetPoint("BOTTOMRIGHT", bar.pixelBorderBackground, "BOTTOMRIGHT", -0.75, tot and 0.5 or 0)
             if class == "EVOKER" and not maskTexture.bbfTexHook then
                 hooksecurefunc(maskTexture, "SetAtlas", function(self)
                     if self.changing then return end

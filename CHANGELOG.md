@@ -6,6 +6,7 @@
 ### Tweak
 - Fix PetFrame's clickable area. (By default from Blizzard only clickable on Portrait instead of entire frame like everything else in the game)
 - Tweak target of target debuffs positions for No Portrait settings.
+- Midnight: Tweak darkmode aura border position and fix pixel border being set on debuffs without that setting being enabled.
 ## Classics
 ### Bugfix
 - Fix issue with one localization key causing string.format to error and causing it not to load the gui.

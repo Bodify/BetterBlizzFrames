@@ -68,8 +68,8 @@ local function ApplyBorder(auraFrame, r, g, b)
             border:SetPoint("BOTTOMRIGHT", auraFrame.Icon, "BOTTOMRIGHT", 0.5, -0.5)
         else
             border:SetAtlas("Adventures-Spell-Border")
-            border:SetPoint("TOPLEFT", auraFrame.Icon, "TOPLEFT", -2.5, 2.5)
-            border:SetPoint("BOTTOMRIGHT", auraFrame.Icon, "BOTTOMRIGHT", 2.5, -2.5)
+            border:SetPoint("TOPLEFT", auraFrame.Icon, "TOPLEFT", -2, 2)
+            border:SetPoint("BOTTOMRIGHT", auraFrame.Icon, "BOTTOMRIGHT", 2, -2)
         end
         border:SetVertexColor(r, g, b)
         auraFrame.bbfBorder = border
@@ -94,12 +94,14 @@ function BBF.DarkModeUnitframeBorders()
                 ApplyBorder(auraFrame, color, color, color)
 
                 if auraFrame.Border then
-                    auraFrame.Border:SetAtlas("communities-create-avatar-border-hover")
-                    auraFrame.Border:SetDesaturated(true)
-                    auraFrame.Border:ClearAllPoints()
-                    auraFrame.Border:SetPoint("TOPLEFT", auraFrame.Icon, "TOPLEFT", -1, 1)
-                    auraFrame.Border:SetPoint("BOTTOMRIGHT", auraFrame.Icon, "BOTTOMRIGHT", 1, -1)
-                    auraFrame.Border:SetTexCoord(0, 1, 0, 1)
+                    if pixelBorderAuras then
+                        auraFrame.Border:SetAtlas("communities-create-avatar-border-hover")
+                        auraFrame.Border:SetDesaturated(true)
+                        auraFrame.Border:ClearAllPoints()
+                        auraFrame.Border:SetPoint("TOPLEFT", auraFrame.Icon, "TOPLEFT", -1, 1)
+                        auraFrame.Border:SetPoint("BOTTOMRIGHT", auraFrame.Icon, "BOTTOMRIGHT", 1, -1)
+                        auraFrame.Border:SetTexCoord(0, 1, 0, 1)
+                    end
                     auraFrame.bbfBorder:Hide()
                 else
                     auraFrame.bbfBorder:Show()
