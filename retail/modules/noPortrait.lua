@@ -676,13 +676,13 @@ local function MakeNoPortraitMode(frame)
                 local debuffFrame = _G[debuffFrameName..i]
                 debuffFrame:ClearAllPoints()
                 if i == 1 then
-                    debuffFrame:SetPoint("TOPLEFT", totFrame, "TOPRIGHT", -23, -8)
+                    debuffFrame:SetPoint("TOPLEFT", totFrame, "TOPRIGHT", -18, -9)
                 elseif i == 2 then
-                    debuffFrame:SetPoint("TOPLEFT", totFrame, "TOPRIGHT", -10, -8)
+                    debuffFrame:SetPoint("TOPLEFT", totFrame, "TOPRIGHT", -5, -9)
                 elseif i== 3 then
-                    debuffFrame:SetPoint("TOPLEFT", totFrame, "TOPRIGHT", -23, -21)
+                    debuffFrame:SetPoint("TOPLEFT", totFrame, "TOPRIGHT", -18, -22)
                 elseif  i==4  then
-                    debuffFrame:SetPoint("TOPLEFT", totFrame, "TOPRIGHT", -10, -21)
+                    debuffFrame:SetPoint("TOPLEFT", totFrame, "TOPRIGHT", -5, -22)
                 end
             end
         end

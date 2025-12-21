@@ -5,6 +5,7 @@
 ## Retail & Midnight
 ### Tweak
 - Fix PetFrame's clickable area. (By default from Blizzard only clickable on Portrait instead of entire frame like everything else in the game)
+- Tweak target of target debuffs positions for No Portrait settings.
 ## Classics
 ### Bugfix
 - Fix issue with one localization key causing string.format to error and causing it not to load the gui.
