@@ -1,4 +1,7 @@
 # BetterBlizzFrames 1.8.5b
+## All versions
+### Tweak
+- Update the "One font for all text ingame" setting to use proper API to get all fonts instead of a hardcoded list of fonts. Still certain fonts that are not possible to change via this method (like floating dmg numbers) but should cover more.
 ## Retail & Midnight
 ### Tweak
 - Fix PetFrame's clickable area. (By default from Blizzard only clickable on Portrait instead of entire frame like everything else in the game)
