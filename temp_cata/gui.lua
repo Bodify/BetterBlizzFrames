@@ -1296,7 +1296,7 @@ local function CreateImportExportUI(parent, title, dataTable, posX, posY, tableN
         wipeButton:Show()
         C_Timer.After(4, HideWipeButton)
     end)
-    CreateTooltipTwo(wipeButton, L["Tooltip_Delete_Data_Title"]..title, L["Tooltip_Delete_Data_Desc"]..title..L["Tooltip_Delete_Data_Extra"])
+    CreateTooltipTwo(wipeButton, L["Tooltip_Delete_Data_Title"]..title, L["Tooltip_Delete_Data_Desc"].." "..title..L["Tooltip_Delete_Hold_Shift"])
 
     wipeButton:HookScript("OnEnter", function()
         wipeButton:Show()
@@ -1846,7 +1846,7 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
                 checkBoxI.texture:SetDesaturated(true)
                 checkBoxI.texture:SetPoint("CENTER", checkBoxI, "CENTER", -0.5, 0.5)
                 button.checkBoxI = checkBoxI
-                CreateTooltipTwo(checkBoxI, L["Tooltip_Important_Glow_Title"] .. " |A:importantavailablequesticon:22:22|a", L["Tooltip_Important_Glow_Desc"], L["Tooltip_Important_Glow_Extra"], "ANCHOR_TOPRIGHT")
+                CreateTooltipTwo(checkBoxI, L["Tooltip_Important_Glow_Title"] .. " |A:importantavailablequesticon:22:22|a", L["Tooltip_Important_Glow_Desc"], L["Tooltip_Important_Extra"], "ANCHOR_TOPRIGHT")
             end
             button.checkBoxI:SetChecked(button.npcData.important)
     
@@ -2753,7 +2753,7 @@ local function guiGeneralTab()
 
     local alpha2 = BetterBlizzFrames:CreateFontString(nil, "BACKGROUND", "GameFontNormal")
     alpha2:SetPoint("BOTTOM", SettingsPanel, "TOP", 0, 0)
-    alpha2:SetText(string.format(L["Beta_Warning_Text"], (BBF.isMoP and "MoP" or "Cata")))
+    alpha2:SetText(string.format(L["Beta_Warning_Text"], (BBF.isMoP and "MoP" or BBF.isTBC and "TBC" or "Cata")))
     alpha2:SetFont("Fonts\\FRIZQT__.TTF", 20, "THINOUTLINE")
     alpha2:Hide()
     BetterBlizzFrames:HookScript("OnShow",function()
@@ -2865,7 +2865,7 @@ local function guiGeneralTab()
 
     local playerFrameOCD = CreateCheckbox("playerFrameOCD", L["OCD_Tweaks"], BetterBlizzFrames, nil, BBF.FixStupidBlizzPTRShit)
     playerFrameOCD:SetPoint("TOPLEFT", hideArenaFrames, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltipTwo(playerFrameOCD, L["Tooltip_OCD_Tweaks"], L["Tooltip_OCD_Tweaks"])
+    CreateTooltipTwo(playerFrameOCD, L["OCD_Tweaks"], L["Tooltip_OCD_Tweaks_Classic"])
     playerFrameOCD:SetScript("OnMouseDown", function(self, button)
         if button == "RightButton" and BetterBlizzFramesDB.playerFrameOCD then
             BetterBlizzFramesDB.playerFrameOCDZoom = not BetterBlizzFramesDB.playerFrameOCDZoom
@@ -3035,11 +3035,11 @@ local function guiGeneralTab()
             BBF.PlayerElite(BetterBlizzFramesDB["playerEliteFrameMode"])
         end
     end)
-    CreateTooltipTwo(playerEliteFrame, L["Show_Elite_Texture"], L["Always_Show_Purge_Texture"]..textures..L["Tooltip_Show_Elite_Texture_Extra"])
+    CreateTooltipTwo(playerEliteFrame, L["Show_Elite_Texture"], string.format(L["Tooltip_Elite_Texture_Classic_Desc"], textures))
 
-    local playerReputationColor = CreateCheckbox("playerReputationColor", L["Add_Reputation_Color"], BetterBlizzFrames, nil, BBF.PlayerReputationColor)
+    local playerReputationColor = CreateCheckbox("playerReputationColor", L["Add_Name_Bg_Classic"], BetterBlizzFrames, nil, BBF.PlayerReputationColor)
     playerReputationColor:SetPoint("TOPLEFT", playerEliteFrame, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltip(playerReputationColor, L["Tooltip_Add_Reputation_Color"] .. " |A:UI-HUD-UnitFrame-Target-PortraitOn-Type:18:98|a")
+    CreateTooltip(playerReputationColor, L["Tooltip_Add_Name_Bg_Classic"] .. " |A:UI-HUD-UnitFrame-Target-PortraitOn-Type:18:98|a")
 
     local playerReputationClassColor = CreateCheckbox("playerReputationClassColor", L["Class_Color_Combo"], BetterBlizzFrames, nil, BBF.PlayerReputationColor)
     playerReputationClassColor:SetPoint("LEFT", playerReputationColor.text, "RIGHT", 5, 0)
