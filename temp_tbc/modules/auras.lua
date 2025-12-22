@@ -1506,11 +1506,14 @@ local function AdjustAuras(self, frameType)
 
                 local isLarge = auraData.sourceUnit == "player" or auraData.sourceUnit == "pet"
                 local canApply = auraData.canApplyAura or false
-
                 auraFrame.isLarge = isLarge
                 auraFrame.canApply = canApply
                 auraFrame.isHelpful = isBuff
                 auraFrame.isHarmful = not isBuff
+                auraFrame.duration = duration
+                auraFrame.spellID = spellId
+                auraFrame.name = spellName
+                auraFrame.icon = icon
                 --auraFrame.isStealable = stealable
 
                 local shouldShowAura, isImportant, isPandemic, isEnlarged, isCompacted, auraColor
@@ -1605,25 +1608,18 @@ local function AdjustAuras(self, frameType)
                         auraFrame:HookScript("OnEnter", function()
                             local currentAuraID = auraFrame.auraInstanceID
                             if not auraFrame.bbfPrinted or auraFrame.bbfLastPrintedAuraID ~= currentAuraID then
-                                local thisAuraData = { -- Manually create the aura data structure as needed
-                                    icon = auraFrame.icon,
-                                    name = auraFrame.name,
-                                    spellId = auraFrame.spellId,
-                                }
-                                if thisAuraData then
-                                    local iconTexture = thisAuraData.icon and "|T" .. thisAuraData.icon .. ":16:16|t" or ""
-                                    BBF.Print(iconTexture .. " " .. (thisAuraData.name or L["Label_Unknown"]) .. "  |A:worldquest-icon-engineering:14:14|a ID: " .. (thisAuraData.spellId or L["Label_Unknown"]))
-                                    auraFrame.bbfPrinted = true
-                                    auraFrame.bbfLastPrintedAuraID = currentAuraID
-    
-                                    if auraFrame.bbfTimer then
-                                        auraFrame.bbfTimer:Cancel()
-                                    end
-    
-                                    auraFrame.bbfTimer = C_Timer.NewTimer(6, function()
-                                        auraFrame.bbfPrinted = false
-                                    end)
+                                local iconTexture = auraFrame.icon and "|T" .. auraFrame.icon .. ":16:16|t" or ""
+                                BBF.Print(iconTexture .. " " .. (auraFrame.name or L["Label_Unknown"]) .. "  |A:worldquest-icon-engineering:14:14|a ID: " .. (auraFrame.spellId or L["Label_Unknown"]))
+                                auraFrame.bbfPrinted = true
+                                auraFrame.bbfLastPrintedAuraID = currentAuraID
+
+                                if auraFrame.bbfTimer then
+                                    auraFrame.bbfTimer:Cancel()
                                 end
+
+                                auraFrame.bbfTimer = C_Timer.NewTimer(6, function()
+                                    auraFrame.bbfPrinted = false
+                                end)
                             end
                         end)
                         auraFrame.bbfHookAdded = true

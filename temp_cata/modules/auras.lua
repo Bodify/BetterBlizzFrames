@@ -1264,6 +1264,8 @@ local function AdjustAuras(self, frameType)
                 auraFrame.isHarmful = not isBuff
                 auraFrame.duration = duration
                 auraFrame.spellID = spellId
+                auraFrame.name = spellName
+                auraFrame.icon = icon
                 --auraFrame.isStealable = stealable
 
                 local shouldShowAura, isImportant, isPandemic, isEnlarged, isCompacted, auraColor
@@ -1360,17 +1362,17 @@ local function AdjustAuras(self, frameType)
                     if printSpellId and not auraFrame.bbfHookAdded then
                         auraFrame.bbfHookAdded = true
                         auraFrame:HookScript("OnEnter", function()
-                            local currentAuraIndex = auraFrame.auraInstanceID
+                            local currentAuraID = auraFrame.auraInstanceID
                             local name, icon, count, dispelType, duration, expirationTime, source,
                                 isStealable, nameplateShowPersonal, spellId, canApplyAura,
                                 isBossDebuff, castByPlayer, nameplateShowAll, timeMod
-                                = UnitAura("player", currentAuraIndex, auraFrame.isHelpful and "HELPFUL" or "HARMFUL");
+                                = UnitAura("player", currentAuraID, auraFrame.isHelpful and "HELPFUL" or "HARMFUL");
 
-                            if name and (not auraFrame.bbfPrinted or auraFrame.bbfLastPrintedAuraIndex ~= currentAuraIndex) then
+                            if name and (not auraFrame.bbfPrinted or auraFrame.bbfLastPrintedAuraID ~= currentAuraID) then
                                 local iconTexture = icon and "|T" .. icon .. ":16:16|t" or ""
                                 BBF.Print(iconTexture .. " " .. (name or L["Label_Unknown"]) .. "  |A:worldquest-icon-engineering:14:14|a ID: " .. (spellId or L["Label_Unknown"]))
                                 auraFrame.bbfPrinted = true
-                                auraFrame.bbfLastPrintedAuraIndex = currentAuraIndex  -- Store the index of the aura that was just printed
+                                auraFrame.bbfLastPrintedAuraID = currentAuraID
                                 -- Cancel existing timer if any
                                 if auraFrame.bbfTimer then
                                     auraFrame.bbfTimer:Cancel()
