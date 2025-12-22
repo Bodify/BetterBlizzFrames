@@ -1,4 +1,6 @@
-# BetterBlizzFrames 1.8.5b
+# BetterBlizzFrames 1.8.6
+## The Burning Crusade
+- Early and scuffed TBC support. Aka made the addon launch and fixed the obvious things that presented itself while standing still after login. Anything else is experimental so use at own risk.
 ## All versions
 ### Tweak
 - Update the "One font for all text ingame" setting to use proper API to get all fonts instead of a hardcoded list of fonts. Still certain fonts that are not possible to change via this method (like floating dmg numbers) but should cover more.
@@ -10,6 +12,7 @@
 ## Classics
 ### Bugfix
 - Fix issue with one localization key causing string.format to error and causing it not to load the gui.
+- Fix missing "Focus ToT" text in gui on MoP
 
 # BetterBlizzFrames 1.8.5
 ## All versions
