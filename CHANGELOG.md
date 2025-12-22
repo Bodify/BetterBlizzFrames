@@ -4,15 +4,22 @@
 ## All versions
 ### Tweak
 - Update the "One font for all text ingame" setting to use proper API to get all fonts instead of a hardcoded list of fonts. Still certain fonts that are not possible to change via this method (like floating dmg numbers) but should cover more.
+- Fix some localization issues.
 ## Retail & Midnight
 ### Tweak
-- Fix PetFrame's clickable area. (By default from Blizzard only clickable on Portrait instead of entire frame like everything else in the game)
 - Tweak target of target debuffs positions for No Portrait settings.
 - Midnight: Tweak darkmode aura border position and fix pixel border being set on debuffs without that setting being enabled.
 ## Classics
 ### Bugfix
-- Fix issue with one localization key causing string.format to error and causing it not to load the gui.
 - Fix missing "Focus ToT" text in gui on MoP
+
+# BetterBlizzFrames 1.8.5b
+## Retail & Midnight
+### Tweak
+- Fix PetFrame's clickable area. (By default from Blizzard only clickable on Portrait instead of entire frame like everything else in the game)
+## Classics
+### Bugfix
+- Fix issue with one localization key causing string.format to error and causing it not to load the gui.
 
 # BetterBlizzFrames 1.8.5
 ## All versions
