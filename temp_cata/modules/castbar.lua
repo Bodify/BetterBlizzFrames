@@ -484,23 +484,6 @@ end)
 
 
 
-
-
-
-
---[[
-CompactRaidFrame1:HookScript("OnShow", function()
-    --Small delay to make EditMode happy going from party > compactparty
-    C_Timer.After(0, function()
-        BBF.UpdateCastbars()
-    end)
-    print("CompactRaidFrame1:OnShow ran")
-end)
-
-
-]]
-
-
 local petUpdate = CreateFrame("Frame")
 petUpdate:RegisterEvent("UNIT_PET")
 petUpdate:SetScript("OnEvent", function(self, event, ...)
@@ -508,21 +491,6 @@ petUpdate:SetScript("OnEvent", function(self, event, ...)
         BBF.UpdatePetCastbar()
     end
 end)
-
-
-
---[[
-hooksecurefunc(CompactRaidFrame, "RefreshMembers", function()
-    local showPartyCastbars = BetterBlizzFramesDB.showPartyCastbar
-    if showPartyCastbars then
-        BBF.CreateCastbars()
-        BBF.UpdateCastbars()
-    end
-    --BBF.OnUpdateName()
-end)
-
-]]
-
 
 
 -- Hook into the OnUpdate, OnShow, and OnHide scripts for the spell bar

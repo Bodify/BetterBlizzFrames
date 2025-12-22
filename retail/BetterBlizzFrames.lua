@@ -430,7 +430,7 @@ local function FetchAndSaveValuesOnFirstLogin()
 
     C_Timer.After(5, function()
         if not C_AddOns.IsAddOnLoaded("SkillCapped") then
-            BBF.PrintNoColon(L["Chat_First_Run"])
+            BBF.Print(L["Chat_First_Run"], true)
         end
         BetterBlizzFramesDB.hasSaved = true
     end)
@@ -483,7 +483,7 @@ local function SendUpdateMessage()
             C_Timer.After(7, function()
                 --StaticPopup_Show("BBF_NEW_VERSION")
                 if BetterBlizzFramesDB.enableLegacyComboPoints and not BetterBlizzFramesDB.classicFrames then
-                    BBF.PrintNoColon(addonUpdates..":")
+                    BBF.Print(addonUpdates..":", true)
                     --BBF.Print("|A:QuestNormal:16:16|a New stuff:")
                     DEFAULT_CHAT_FRAME:AddMessage("|A:QuestNormal:16:16|a " .. L["Chat_Legacy_Combo_Update"])
                 end
@@ -501,7 +501,7 @@ local function SendUpdateMessage()
 end
 
 local function NewsUpdateMessage()
-    BBF.PrintNoColon("news:")
+    BBF.Print("news:", true)
     DEFAULT_CHAT_FRAME:AddMessage("|A:QuestNormal:16:16|a " .. L["Chat_New_Settings"])
     DEFAULT_CHAT_FRAME:AddMessage(L["Chat_Castbar_Highlighter"])
     DEFAULT_CHAT_FRAME:AddMessage(L["Chat_Hide_Guide_Flag"])
@@ -5017,7 +5017,7 @@ SlashCmdList["BBF"] = function(msg)
             BBF.Print(L["Print_Usage_Blacklist"])
         end
     elseif command == "ver" or command == "version" then
-        BBF.PrintNoColon("Version "..addonUpdates)
+        BBF.Print("Version "..addonUpdates, true)
     elseif command == "dump" then
         local exportVersion = BetterBlizzFramesDB.exportVersion or L["Chat_No_Export_Version"]
         BBF.Print("\n\n"..exportVersion)

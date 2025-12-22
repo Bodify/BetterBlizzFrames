@@ -338,7 +338,7 @@ local function FetchAndSaveValuesOnFirstLogin()
 
     C_Timer.After(5, function()
         if not C_AddOns.IsAddOnLoaded("SkillCapped") then
-            BBF.PrintNoColon(L["Print_First_Run"])
+            BBF.Print(L["Print_First_Run"], true)
         end
         BetterBlizzFramesDB.hasSaved = true
     end)
@@ -392,7 +392,7 @@ local function SendUpdateMessage()
                 --StaticPopup_Show("BBF_NEW_VERSION")
 
                 --if BetterBlizzFramesDB.playerAuraFiltering then
-                    BBF.PrintNoColon(addonUpdates..":")
+                    BBF.Print(addonUpdates..":", true)
                     --BBF.Print("|A:QuestNormal:16:16|a New stuff:")
                     DEFAULT_CHAT_FRAME:AddMessage("|A:QuestNormal:16:16|a " .. L["Print_Player_Castbar_Position_Changed_Cata"])
                 --end
@@ -412,7 +412,7 @@ local function SendUpdateMessage()
 end
 
 local function NewsUpdateMessage()
-    BBF.PrintNoColon("news:")
+    BBF.Print("news:", true)
     DEFAULT_CHAT_FRAME:AddMessage("|A:QuestNormal:16:16|a New Settings:")
     DEFAULT_CHAT_FRAME:AddMessage("   - Castbar Edge Highlighter now uses seconds instead of percentages.")
     DEFAULT_CHAT_FRAME:AddMessage("   - Added \"Hide Player Guide Flag\" setting.")
@@ -1771,8 +1771,6 @@ function BBF.ShowCooldownDuringCC()
     -- local OmniCCTextUpdater = CreateFrame("Frame")
     -- local trackedButtons = {}
 
-    -- print("shits active")
-
     -- local function StopTracking(button)
     --     if trackedButtons[button] then
     --         trackedButtons[button] = nil
@@ -2754,7 +2752,7 @@ SlashCmdList["BBF"] = function(msg)
             BBF.Print(L["Print_Usage_Blacklist"])
         end
     elseif command == "ver" or command == "version" then
-        BBF.PrintNoColon("Version "..addonUpdates)
+        BBF.Print("Version "..addonUpdates, true)
     elseif command == "dump" then
         local exportVersion = BetterBlizzFramesDB.exportVersion or L["Chat_No_Export_Version"]
         BBF.Print("\n\n"..exportVersion)

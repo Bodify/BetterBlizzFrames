@@ -29,19 +29,6 @@ local function applySettings(frame, desaturate, colorValue, hook, hookShow)
                     end)
                 end
             end
-            -- if hookShow then
-            --     if not frame.bbfHookedShow then
-            --         frame.bbfHookedShow = true
-            --         --hooksecurefunc(UIWidgetPowerBarContainerFrame, "Show", function()
-            --             UIWidgetPowerBarContainerFrame:HookScript("OnShow", function()
-            --                 frame:SetDesaturated(desaturate)
-            --                 frame:SetVertexColor(colorValue, colorValue, colorValue)
-            --             end)
-
-            --         --     print("showh")
-            --         -- end)
-            --     end
-            -- end
         end
     end
 end

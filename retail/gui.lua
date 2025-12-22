@@ -1948,7 +1948,7 @@ local function CreateCheckbox(option, label, parent, cvarName, extraFunc)
         if not BetterBlizzFramesDB.wasOnLoadingScreen and BetterBlizzFramesDB.playerAuraFiltering then
             BBF.RefreshAllAuraFrames()
         end
-        --print("Checkbox option '" .. option .. "' changed to:", value)
+        --BBF.Print("Checkbox option '" .. option .. "' changed to:", value)
     end
 
     UpdateOption(BetterBlizzFramesDB[option])
@@ -2000,7 +2000,6 @@ local function deleteEntry(listName, key)
             BBF[listName.."Refresh"]()
         end
     else
-        --print("prepping delayed update")
         BBF[listName.."DelayedUpdate"] = BBF[listName.."Refresh"]
     end
 
@@ -2173,7 +2172,6 @@ local function addOrUpdateEntry(inputText, listName, addShowMineTag, skipRefresh
                         BBF[listName.."Refresh"]()
                     end
                 else
-                    --print("prepping delayed update")
                     BBF[listName.."DelayedUpdate"] = BBF[listName.."Refresh"]
                 end
             end
@@ -2672,12 +2670,10 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
     scrollFrame:HookScript("OnShow", function()
         if BBF.auraWhitelistDelayedUpdate then
             BBF.auraWhitelistDelayedUpdate()
-            --print("Ran delayed update WHITELIST, then set it to not run next time")
             BBF.auraWhitelistDelayedUpdate = nil
         end
         if BBF.auraBlacklistDelayedUpdate then
             BBF.auraBlacklistDelayedUpdate()
-            --print("Ran delayed update BLACKLIST, then set it to not run next time")
             BBF.auraBlacklistDelayedUpdate = nil
         end
     end)
@@ -2687,12 +2683,10 @@ end
 SettingsPanel:HookScript("OnShow", function()
     if BBF.auraWhitelistDelayedUpdate then
         BBF.auraWhitelistDelayedUpdate()
-        --print("Ran delayed update WHITELIST, then set it to not run next time")
         BBF.auraWhitelistDelayedUpdate = nil
     end
     if BBF.auraBlacklistDelayedUpdate then
         BBF.auraBlacklistDelayedUpdate()
-        --print("Ran delayed update BLACKLIST, then set it to not run next time")
         BBF.auraBlacklistDelayedUpdate = nil
     end
 end)

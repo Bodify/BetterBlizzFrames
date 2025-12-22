@@ -381,19 +381,6 @@ end
 
 function BBF.HookHealthbarColors()
     if not healthbarsHooked and classColorsOn then
---[[
-        hooksecurefunc("UnitFrameHealthBar_RefreshUpdateEvent", function(self) --pet frames only?
-            if self.unit then
-                print(self:GetName())
-                print(self.unit)
-                --UpdateHealthColor(self, self.unit)
-                --UpdateHealthColor(TargetFrameToTHealthBar, "targettarget")
-                --UpdateHealthColor(FocusFrameToT.HealthBar, "focustarget")
-            end
-        end)
-]]
-
-
         hooksecurefunc("UnitFrameHealthBar_Update", function(self, unit)
             if unit then
                 UpdateHealthColor(self, unit)

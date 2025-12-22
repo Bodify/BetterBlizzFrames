@@ -42,7 +42,6 @@ local function addToMasque(frameName, masqueGroup)
     if frame and not frame.bbfMsq then
         masqueGroup:AddButton(frame)
         frame.bbfMsq = true
-        --print(frame:GetName())
     end
 end
 
@@ -1330,12 +1329,6 @@ local function AdjustAuras(self, frameType)
                         auraFrame.isCompacted = false
                     end
     
-                    -- if auraFrame.Stealable and auraFrame.Stealable:IsShown() then
-                    --     auraFrame.Stealable:SetScale(userPurgeableAuraSize)
-                    --     print("setting size")
-                    -- end
-    
-                    --stealableTexture:SetScale(3)
     
                     if not auraFrame.GlowFrame then
                         auraFrame.GlowFrame = CreateFrame("Frame", nil, auraFrame)
@@ -2313,23 +2306,6 @@ local function PersonalDebuffFrameFilterAndGrid(self)
             local auraFrame = _G[debuffName]
             auraFrame.Icon = icon
             if auraFrame and auraFrame:IsShown() then
---[[
-                if auraInfo then
-                    print("Aura Data:")
-                    for k, v in pairs(auraInfo) do
-                        print(k, v)
-                    end
-                else
-                    print("No aura data available.")
-                end
-]]
-                --local spellID = select(10, UnitAura("player", auraInfo.index));
-                --if ShouldHideSpell(spellID) then
-                -- if MasquePlayerAuras and not auraFrame.added then
-                --     MasquePlayerAuras:AddButton(auraFrame)
-                --     auraFrame.added = true
-                -- end
-                --buffFrame.Icon = _G[icon]
 
                 local spellName, icon, count, dispelName, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, castByPlayer, nameplateShowAll, timeMod = UnitDebuff("player", i)
                 auraFrame.spellId = spellId
@@ -2454,7 +2430,6 @@ local function PersonalDebuffFrameFilterAndGrid(self)
                     auraFrame:Show();
                     auraFrame:ClearAllPoints();
                     auraFrame:SetPoint("TOPRIGHT", BuffFrame, "TOPRIGHT", -xOffset, -yOffset);
-                    --print(auraFrame:GetSize())
 
                     -- Update column and row counters
                     currentCol = currentCol + 1;

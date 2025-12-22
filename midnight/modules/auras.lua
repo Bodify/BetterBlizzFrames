@@ -31,7 +31,6 @@ local function addToMasque(frame, masqueGroup)
     if frame and not frame.bbfMsq then
         masqueGroup:AddButton(frame)
         frame.bbfMsq = true
-        --print(frame:GetName())
     end
 end
 
@@ -462,39 +461,6 @@ local function ShouldShowBuff(unit, auraData, frameType)
             if filterOverride then return true, isImportant, isPandemic, isEnlarged, isCompacted, auraColor end
             if shouldBlacklist then
                 local isInBlacklist, allowMine = isInBlacklist(spellName, spellId)
-                -- if isInBlacklist and (auraData.isStealable or auraData.dispelName == "Magic") then
-                --     -- Initialize the blacklist table if it doesn't exist
-                --     if not BetterBlizzFramesDB.auraBlacklistFaulty then
-                --         BetterBlizzFramesDB.auraBlacklistFaulty = {}
-                --     end
-
-                --     -- Check if the spell name already exists in the blacklist
-                --     if BetterBlizzFramesDB.auraBlacklistFaulty[spellName] then
-                --         -- If the spell ID is not already in the list, add it
-                --         local alreadyExists = false
-                --         for _, id in ipairs(BetterBlizzFramesDB.auraBlacklistFaulty[spellName]) do
-                --             if id == spellId then
-                --                 alreadyExists = true
-                --                 break
-                --             end
-                --         end
-                --         if not alreadyExists then
-                --             table.insert(BetterBlizzFramesDB.auraBlacklistFaulty[spellName], spellId)
-                --             print("Oopsie in BL: ", spellName, spellId)
-                --         end
-                --     else
-                --         -- If the spell name is not in the blacklist, add it with the spell ID
-                --         BetterBlizzFramesDB.auraBlacklistFaulty[spellName] = { spellId }
-                --         print("Oopsie in BL: ", spellName, spellId)
-                --     end
-
-                --     if db["auraBlacklist"][spellId] then
-                --         db["auraBlacklist"][spellId] = nil
-                --     end
-                --     if db["auraBlacklist"][string.lower(spellName)] then
-                --         db["auraBlacklist"][string.lower(spellName)] = nil
-                --     end
-                -- end
                 if isInBlacklist and not (allowMine and castByPlayer) then return end
             end
             if filterMount then
@@ -540,39 +506,6 @@ local function ShouldShowBuff(unit, auraData, frameType)
             if filterOverride then return true, isImportant, isPandemic, isEnlarged, isCompacted, auraColor end
             if shouldBlacklist then
                 local isInBlacklist, allowMine = isInBlacklist(spellName, spellId)
-                -- if isInBlacklist and (auraData.isStealable or auraData.dispelName == "Magic") then
-                --     -- Initialize the blacklist table if it doesn't exist
-                --     if not BetterBlizzFramesDB.auraBlacklistFaulty then
-                --         BetterBlizzFramesDB.auraBlacklistFaulty = {}
-                --     end
-
-                --     -- Check if the spell name already exists in the blacklist
-                --     if BetterBlizzFramesDB.auraBlacklistFaulty[spellName] then
-                --         -- If the spell ID is not already in the list, add it
-                --         local alreadyExists = false
-                --         for _, id in ipairs(BetterBlizzFramesDB.auraBlacklistFaulty[spellName]) do
-                --             if id == spellId then
-                --                 alreadyExists = true
-                --                 break
-                --             end
-                --         end
-                --         if not alreadyExists then
-                --             table.insert(BetterBlizzFramesDB.auraBlacklistFaulty[spellName], spellId)
-                --             print("Oopsie in BL: ", spellName, spellId)
-                --         end
-                --     else
-                --         -- If the spell name is not in the blacklist, add it with the spell ID
-                --         BetterBlizzFramesDB.auraBlacklistFaulty[spellName] = { spellId }
-                --         print("Oopsie in BL: ", spellName, spellId)
-                --     end
-
-                --     if db["auraBlacklist"][spellId] then
-                --         db["auraBlacklist"][spellId] = nil
-                --     end
-                --     if db["auraBlacklist"][string.lower(spellName)] then
-                --         db["auraBlacklist"][string.lower(spellName)] = nil
-                --     end
-                -- end
                 if isInBlacklist and not (allowMine and castByPlayer) then return end
             end
             if filterMount then
@@ -616,39 +549,6 @@ local function ShouldShowBuff(unit, auraData, frameType)
                 if filterOverride then return true, isImportant, isPandemic, isEnlarged, isCompacted, auraColor end
                 if shouldBlacklist then
                     local isInBlacklist, allowMine = isInBlacklist(spellName, spellId)
-                    -- if isInBlacklist and (auraData.isStealable or auraData.dispelName == "Magic") then
-                    --     -- Initialize the blacklist table if it doesn't exist
-                    --     if not BetterBlizzFramesDB.auraBlacklistFaulty then
-                    --         BetterBlizzFramesDB.auraBlacklistFaulty = {}
-                    --     end
-
-                    --     -- Check if the spell name already exists in the blacklist
-                    --     if BetterBlizzFramesDB.auraBlacklistFaulty[spellName] then
-                    --         -- If the spell ID is not already in the list, add it
-                    --         local alreadyExists = false
-                    --         for _, id in ipairs(BetterBlizzFramesDB.auraBlacklistFaulty[spellName]) do
-                    --             if id == spellId then
-                    --                 alreadyExists = true
-                    --                 break
-                    --             end
-                    --         end
-                    --         if not alreadyExists then
-                    --             table.insert(BetterBlizzFramesDB.auraBlacklistFaulty[spellName], spellId)
-                    --             print("Oopsie in BL: ", spellName, spellId)
-                    --         end
-                    --     else
-                    --         -- If the spell name is not in the blacklist, add it with the spell ID
-                    --         BetterBlizzFramesDB.auraBlacklistFaulty[spellName] = { spellId }
-                    --         print("Oopsie in BL: ", spellName, spellId)
-                    --     end
-
-                    --     if db["auraBlacklist"][spellId] then
-                    --         db["auraBlacklist"][spellId] = nil
-                    --     end
-                    --     if db["auraBlacklist"][string.lower(spellName)] then
-                    --         db["auraBlacklist"][string.lower(spellName)] = nil
-                    --     end
-                    -- end
                     if isInBlacklist and not (allowMine and castByPlayer) then return end
                 end
                 if filterMount then
@@ -2101,18 +2001,6 @@ local function PersonalDebuffFrameFilterAndGrid(self)
         --if isExpanded or not auraInfo.hideUnlessExpanded then
             local auraFrame = DebuffFrame.auraFrames[auraIndex]
             if auraFrame and not auraFrame.isAuraAnchor then
---[[
-                if auraInfo then
-                    print("Aura Data:")
-                    for k, v in pairs(auraInfo) do
-                        print(k, v)
-                    end
-                else
-                    print("No aura data available.")
-                end
-]]
-                --local spellID = select(10, UnitAura("player", auraInfo.index));
-                --if ShouldHideSpell(spellID) then
                     local name, icon, count, dispelType, duration, expirationTime, source, 
                     isStealable, nameplateShowPersonal, spellId, canApplyAura, 
                     isBossDebuff, castByPlayer, nameplateShowAll, timeMod 

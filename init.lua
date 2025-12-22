@@ -10,18 +10,14 @@ BBA = BBA or {}
 
 -- BBF prefix for print messages (icon + colored addon name)
 BBF.PRINT_PREFIX = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: "
+BBF.PRINT_PREFIX_NO_COLON = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames "
 
 -- Standard print function that adds BBF prefix automatically
-function BBF.Print(msg)
+-- Set noColon to true to omit the colon after the addon name
+function BBF.Print(msg, noColon)
 	if msg then
-		print(BBF.PRINT_PREFIX .. msg)
-	end
-end
-
--- Print without the colon (for special cases like "BBF first run")
-function BBF.PrintNoColon(msg)
-	if msg then
-		print("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames " .. msg)
+		local prefix = noColon and BBF.PRINT_PREFIX_NO_COLON or BBF.PRINT_PREFIX
+		print(prefix .. msg)
 	end
 end
 
