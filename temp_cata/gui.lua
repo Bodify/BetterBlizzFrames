@@ -4007,11 +4007,11 @@ local function guiGeneralTab()
 
     local queueTimerAudio = CreateCheckbox("queueTimerAudio", L["SFX"], queueTimer)
     queueTimerAudio:SetPoint("LEFT", queueTimer.text, "RIGHT", 0, 0)
-    CreateTooltipTwo(queueTimerAudio, L["Sound_Effect"], L["Tooltip_Queue_Timer_Audio_Desc"], L["Tooltip_Queue_Timer_Audio_Extra"], "ANCHOR_LEFT")
+    CreateTooltipTwo(queueTimerAudio, L["Sound_Effect"], L["Tooltip_Queue_Timer_Audio_Desc"], L["Tooltip_Queue_Timer_SFX_Note"], "ANCHOR_LEFT")
 
     local queueTimerWarning = CreateCheckbox("queueTimerWarning", "!", queueTimer)
     queueTimerWarning:SetPoint("LEFT", queueTimerAudio.text, "RIGHT", 0, 0)
-    CreateTooltipTwo(queueTimerWarning, L["Sound_Alert"], L["Tooltip_Queue_Timer_Warning_Desc"], L["Tooltip_Queue_Timer_Warning_Extra"], "ANCHOR_LEFT")
+    CreateTooltipTwo(queueTimerWarning, L["Sound_Alert"], L["Tooltip_Queue_Timer_Warning_Desc"], L["Tooltip_Queue_Timer_SFX_Note"], "ANCHOR_LEFT")
 
     queueTimerAudio:HookScript("OnClick", function(self)
         if self:GetChecked() then

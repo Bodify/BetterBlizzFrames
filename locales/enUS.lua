@@ -565,12 +565,10 @@ L["Queue_Timer_Warning"] = "!"
 L["Tooltip_Except_Queue"] = "Do not fade Queue Status Eye together with the Micro Menu."
 L["Tooltip_Move_Queue"] = "Makes the Queue Status Eye movable. Default position on Minimap but can also be dragged with Ctrl + Leftclick."
 L["Tooltip_Queue_Timer_Audio_Desc"] = "Play an alarm sound when queue is about to pop."
-L["Tooltip_Queue_Timer_Audio_Extra"] = "(Plays with game sounds muted)"
 L["Tooltip_Queue_Timer_Desc"] = "Show the remaining time to accept a queue when it pops.\n\nWorks for both PvP and PvE.\n\nOptionally plays a queue pop sound and warns when the queue timer is about to expire."
 L["Tooltip_Queue_Timer_SFX_Desc"] = "Play an alarm sound when queue pops."
 L["Tooltip_Queue_Timer_SFX_Note"] = "(Plays with game sounds muted)\n\nNote that \"Enable Sound\" needs to be on in the audio settings but you can disable the subcategories: Sound Effects, Ambience, Dialog and Music."
 L["Tooltip_Queue_Timer_Warning_Desc"] = "Warning sound if there is less than 6 seconds left to accept the queue."
-L["Tooltip_Queue_Timer_Warning_Note"] = "(Plays with game sounds muted.)\n\nNote that \"Enable Sound\" needs to be on in the audio settings but you can disable the subcategories: Sound Effects, Ambience, Dialog and Music."
 
 ---------------------------------------
 -- Minimap
@@ -1221,9 +1219,8 @@ L["Tooltip_Pandemic_Glow_Extra"] = "Also check which frame(s) you want this on d
 L["Tooltip_Pandemic_Glow_Warlock_Extra"] = "\n\nIf Agony or Unstable Affliction refresh talents are specced it will first glow orange when entering this window then switch to red once it enters the pandemic window as well."
 L["Tooltip_Pandemic_Glow_Title"] = "Pandemic Glow"
 L["Tooltip_PlayerFrame_Size_Extra"] = "Right-click to input specific value"
-L["Tooltip_Queue_Timer_Warning_Extra"] = "(Plays with game sounds muted.)\\n\\nNote that \"Enable Sound\" needs to be on in the audio settings but you can disable the subcategories: Sound Effects, Ambience, Dialog and Music."
 L["Tooltip_Right_Click_For_Value"] = "Right Click For Value"
-L["Tooltip_Show_Elite_Texture_Desc"] = "Show elite dragon around PlayerFrame.\\n\\n|cff32f795Right-click to swap between the "
+L["Tooltip_Show_Elite_Texture_Desc"] = "Show elite dragon around PlayerFrame.\n\n|cff32f795Right-click to swap between the "
 L["Tooltip_Show_For_Human"] = "Show For Human"
 L["Tooltip_Show_For_Night_Elf"] = "Show For Night Elf"
 L["Tooltip_Show_For_Undead"] = "Show For Undead"
