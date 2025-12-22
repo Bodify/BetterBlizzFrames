@@ -32,6 +32,7 @@ local gameVersion = select(1, GetBuildInfo())
 BBF.isMidnight = gameVersion:match("^12")
 BBF.isRetail = gameVersion:match("^11")
 BBF.isMoP = gameVersion:match("^5%.")
+BBF.isTBC = gameVersion:match("^2%.")
 BBF.isEra = gameVersion:match("^1%.")
 
 local function CreateOverlayFrame(frame)

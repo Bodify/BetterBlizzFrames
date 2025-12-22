@@ -812,13 +812,17 @@ function BBF.HideFrames()
                             --ExpansionLandingPageMinimapButton:Show()
                             MiniMapTrackingButton:Show()
                             MiniMapTracking:Show()
-                            MiniMapWorldMapButton:Show()
+                            if MiniMapWorldMapButton then
+                                MiniMapWorldMapButton:Show()
+                            end
                         else
                             child:Hide()
                             --ExpansionLandingPageMinimapButton:Hide()
                             MiniMapTrackingButton:Hide()
                             MiniMapTracking:Hide()
-                            MiniMapWorldMapButton:Hide()
+                            if MiniMapWorldMapButton then
+                                MiniMapWorldMapButton:Hide()
+                            end
                         end
                     end
                 end
@@ -1026,7 +1030,7 @@ local minimapStatusChanged
 function BBF.MinimapHider()
     local MinimapGroup = Minimap and MinimapCluster
     local QueueStatusEye = QueueStatusButtonIcon
-    local ObjectiveTracker = WatchFrame
+    local ObjectiveTracker = WatchFrame or QuestWatchFrame
 
     local _, instanceType = GetInstanceInfo()
     local inArena = instanceType == "arena"
