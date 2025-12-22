@@ -4,25 +4,17 @@ BetterBlizzFramesDB = BetterBlizzFramesDB or {}
 BBF = BBF or {}
 BBA = BBA or {}
 
----------------------------------------
--- Standard BBF Print Function
----------------------------------------
-
--- BBF prefix for print messages (icon + colored addon name)
-BBF.PRINT_PREFIX = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: "
-BBF.PRINT_PREFIX_NO_COLON = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames "
-
--- Standard print function that adds BBF prefix automatically
--- Set noColon to true to omit the colon after the addon name
-function BBF.Print(msg, noColon)
-	if msg then
-		local prefix = noColon and BBF.PRINT_PREFIX_NO_COLON or BBF.PRINT_PREFIX
-		print(prefix .. msg)
-	end
-end
+BBF.ICON_NAME = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames"
 
 -- Initialize locale table (will be populated by locale files)
 BBF.L = BBF.L or {}
+
+function BBF.Print(msg, noColon)
+	if msg then
+		local suffix = noColon and " " or ": "
+		print(BBF.ICON_NAME .. suffix .. msg)
+	end
+end
 
 local gameVersion = select(1, GetBuildInfo())
 BBF.isMidnight = gameVersion:match("^12")
