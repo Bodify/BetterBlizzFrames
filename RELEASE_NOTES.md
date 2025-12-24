@@ -1,3 +1,8 @@
+# BetterBlizzFrames 1.8.6b
+## The Burning Crusade
+### Tweak
+- Hide default PlayerFrame Background when BBF Background Texture is enabled and tweak its position slighly.
+
 # BetterBlizzFrames 1.8.6
 ## The Burning Crusade
 - Early and scuffed TBC support. Aka made the addon launch and fixed the obvious things that presented itself while standing still after login. Anything else is experimental so use at own risk.
