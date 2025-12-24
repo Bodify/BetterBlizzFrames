@@ -2545,11 +2545,14 @@ function BBF.AddBackgroundTextureToUnitFrames(frame, tot)
         bgTex:SetPoint("TOPLEFT", topAnchor, "TOPLEFT", -3, 0)
         bgTex:SetPoint("BOTTOMRIGHT", bottomAnchor, "BOTTOMRIGHT", 0, 0)
     else
-        bgTex:SetPoint("TOPLEFT", topAnchor, "TOPLEFT", 0, 0)
+        bgTex:SetPoint("TOPLEFT", topAnchor, "TOPLEFT", 0, 1)
         bgTex:SetPoint("BOTTOMRIGHT", bottomAnchor, "BOTTOMRIGHT", 0, 0)
     end
     if frame.Background then
         frame.Background:Hide()
+    end
+    if PlayerFrameBackground then
+        PlayerFrameBackground:Hide()
     end
 
     frame.bbfBgTexture = bgTex
