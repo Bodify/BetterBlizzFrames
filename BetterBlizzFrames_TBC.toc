@@ -30,6 +30,6 @@ temp_cata\modules\overShields.lua
 temp_cata\modules\stealthIndicator.lua
 temp_cata\modules\interruptIcon.lua
 temp_cata\modules\queueTimer.lua
-temp_cata\modules\loc.lua
+temp_tbc\modules\loc.lua
 temp_cata\gui.lua
 temp_tbc\BetterBlizzFrames.lua
