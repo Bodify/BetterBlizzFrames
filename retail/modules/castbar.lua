@@ -1552,7 +1552,7 @@ end)
 local function PlayerCastingBarUpdateNextFrame()
     if PlayerCastingBarFrame.isUpdating then return end
     C_Timer.After(0, function()
-        if EditModeManagerFrame and EditModeManagerFrame.editModeActive then
+        if EditModeSystemSettingsDialog and EditModeSystemSettingsDialog.attachedToSystem and EditModeSystemSettingsDialog.attachedToSystem:GetName() == "PlayerCastingBarFrame" then
             BetterBlizzFramesDB.playerCastBarScale = PlayerCastingBarFrame:GetScale()
         end
         PlayerCastingBarFrame.isUpdating = true
