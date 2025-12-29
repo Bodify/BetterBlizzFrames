@@ -6,6 +6,9 @@
 ## Mists of Pandaria
 ### Bugfix
 - Fix darkmode for default party frames causing lua error due to PartyFrame being different in MoP and TBC.
+## All versions
+### Tweak
+- Add back code to force certain nameplate font sizes for "Change all fonts" setting to hopefully avoid some users having massive nameplate names.
 
 # BetterBlizzFrames 1.8.6b
 ## The Burning Crusade
