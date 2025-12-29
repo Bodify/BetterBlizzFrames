@@ -6067,7 +6067,7 @@ local function guiFrameAuras()
     end)
     local coloredText = L["Whitelist_Colors"]
 
-    CreateTooltipTwo(importPVPWhitelist, L["Import_PvP_Whitelist"], string.format(L["Tooltip_Import_PvP_Whitelist_Desc"], ""))
+    CreateTooltipTwo(importPVPWhitelist, L["Import_PvP_Whitelist"], string.format(L["Tooltip_Import_PvP_Whitelist_Desc"], coloredText))
     importPVPWhitelist.Middle:SetDesaturated(true)
     importPVPWhitelist.Left:SetDesaturated(true)
     importPVPWhitelist.Right:SetDesaturated(true)
