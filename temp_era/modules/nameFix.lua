@@ -665,11 +665,27 @@ function BBF.SetCustomFonts()
         local function SetAllFonts()
             SetChatFont()
 
+            local forcedFontSizes = {
+                ["SystemFont_NamePlateCastBar"] = 9,
+                ["SystemFont_NamePlateFixed"] = 9,
+                ["SystemFont_LargeNamePlateFixed"] = 14,
+                ["SystemFont_LargeNamePlate"] = 14,
+                ["SystemFont_NamePlate"] = 12,
+            }
+
             local fontObjectNames = GetFonts()
             for index, fontObjectName in ipairs(fontObjectNames) do
                 local FontObject = _G[fontObjectName]
                 if FontObject then
+                    if string.find(fontObjectName:lower(), "name") then
+                        print(fontObjectName)
+                    end
                     local _, size, style = FontObject:GetFont()
+
+                    if forcedFontSizes[fontObjectName] then
+                        size = forcedFontSizes[fontObjectName]
+                    end
+
                     if size > 0 then
                         FontObject:SetFont(fontPath, size, style)
                     end
