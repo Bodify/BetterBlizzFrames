@@ -1199,7 +1199,7 @@ function BBF.HookCastbarsForEvoker()
                 if self.barType == "uninterruptable" then
                     if self.ChargeTier1 then
                         if self.isSArena then
-                            self.SetStatusBarTexture((sArenaMixin and sArenaMixin.castTexture) or "Interface\\RaidFrame\\Raid-Bar-Hp-Fill")
+                            self.SetStatusBarTexture((sArenaMixin and (sArenaMixin.castTexture or "Interface\\RaidFrame\\Raid-Bar-Hp-Fill")) or "Interface\\RaidFrame\\Raid-Bar-Hp-Fill")
                             if recolorCastbars then
                                 local c = castbarColors[self.barType] or castbarColors.standard
                                 local r, g, b = c[1], c[2], c[3]
@@ -1218,7 +1218,7 @@ function BBF.HookCastbarsForEvoker()
                     end
                 elseif self.barType == "empowered" then
                     if self.isSArena then
-                        self.SetStatusBarTexture((sArenaMixin and sArenaMixin.castTexture) or "Interface\\RaidFrame\\Raid-Bar-Hp-Fill")
+                        self.SetStatusBarTexture((sArenaMixin and (sArenaMixin.castTexture or "Interface\\RaidFrame\\Raid-Bar-Hp-Fill")) or "Interface\\RaidFrame\\Raid-Bar-Hp-Fill")
                         if recolorCastbars then
                             local c = castbarColors[self.barType] or castbarColors.standard
                             local r, g, b = c[1], c[2], c[3]
