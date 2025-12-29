@@ -258,6 +258,14 @@ function BBF.EnableQueueTimer()
             PVPReadyDialog.enterButton:SetSize(105,25)
             PVPReadyDialog.hideButton:Hide()
             PVPReadyDialog:SetSize(280, 107)
+            if BBF.isTBC then
+                hooksecurefunc(PVPReadyDialog, "SetSize", function(self)
+                    if self.bbfChanging then return end
+                    self.bbfChanging = true
+                    self:SetSize(280, 107)
+                    self.bbfChanging = nil
+                end)
+            end
             PVPReadyDialog.bgTex = PVPReadyDialog:CreateTexture(nil, "BACKGROUND", nil, 2)
             PVPReadyDialog.bgTex:SetAtlas("groupfinder-background-arenas")
             PVPReadyDialog.bgTex:SetPoint("TOPLEFT", PVPReadyDialog, "TOPLEFT", 6, -6)
