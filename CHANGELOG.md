@@ -1,3 +1,8 @@
+# BetterBlizzFrames 1.8.6d
+## The Burning Crusade
+### Tweak
+- Fix Queue Timer window size.
+
 # BetterBlizzFrames 1.8.6c
 ## The Burning Crusade
 ### Tweak

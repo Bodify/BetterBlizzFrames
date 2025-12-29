@@ -1,3 +1,8 @@
+# BetterBlizzFrames 1.8.6d
+## The Burning Crusade
+### Tweak
+- Fix Queue Timer window size.
+
 # BetterBlizzFrames 1.8.6c
 ## The Burning Crusade
 ### Tweak
@@ -9,6 +14,7 @@
 ## All versions
 ### Tweak
 - Add back code to force certain nameplate font sizes for "Change all fonts" setting to hopefully avoid some users having massive nameplate names.
+- Retail & Midnight: "Hide PlayerFrame 2nd Resource" (Misc) now works with Classic Frames setting enabled as well.
 
 # BetterBlizzFrames 1.8.6b
 ## The Burning Crusade
