@@ -1132,9 +1132,6 @@ function BBF.SetCustomFonts()
             for index, fontObjectName in ipairs(fontObjectNames) do
                 local FontObject = _G[fontObjectName]
                 if FontObject then
-                    if string.find(fontObjectName:lower(), "name") then
-                        print(fontObjectName)
-                    end
                     local _, size, style = FontObject:GetFont()
 
                     if forcedFontSizes[fontObjectName] then
