@@ -1,3 +1,12 @@
+# BetterBlizzFrames 1.8.6c
+## Mists of Pandaria
+### Bugfix
+- Fix darkmode for default party frames causing lua error due to PartyFrame being different in MoP and TBC.
+## The Burning Crusade
+### Tweak
+- Loss of Control feature now adjusted for TBC. Might still need more tweaks please let me know.
+- Some more spell ids adjusted around in the addon.
+
 # BetterBlizzFrames 1.8.6b
 ## The Burning Crusade
 ### Tweak
