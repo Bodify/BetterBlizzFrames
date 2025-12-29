@@ -7,6 +7,7 @@ if locale ~= "koKR" then return end
 
 -- Use the global L table (L = BBF.L is set in locale.lua)
 -- Falls back to English (enUS) if translation is not provided
+-- Any key needing update in translation will either be commented out completely or tagged --needsUpdate
 -- 번역이 제공되지 않으면 영어(enUS)로 대체됩니다
 
 ---------------------------------------
