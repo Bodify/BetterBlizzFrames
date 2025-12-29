@@ -2787,7 +2787,16 @@ local function MoveableSettingsPanel(talents)
             frame:SetScript("OnDragStop", frame.StopMovingOrSizing)
             frame:SetUserPlaced(false)
             frame:ClearAllPoints()
-            frame:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
+            frame:SetPoint("CENTER", UIParent, "CENTER", 0, 20)
+
+            hooksecurefunc(frame, "SetPoint", function(self, point, relativeTo, relativePoint, xOffset, yOffset)
+                if not self.isMoving and not self.bbfMoving then
+                    self.bbfMoving = true
+                    self:ClearAllPoints()
+                    self:SetPoint("CENTER", UIParent, "CENTER", 0, 20)
+                    self.bbfMoving = nil
+                end
+            end)
         end
     else
         local talentFrame = PlayerTalentFrame
@@ -2838,6 +2847,8 @@ First:SetScript("OnEvent", function(_, event, addonName)
 
             C_Timer.After(1, function()
                 BBF.FontColors()
+            end)
+            C_Timer.After(0.1, function()
                 MoveableSettingsPanel()
             end)
 
