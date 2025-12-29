@@ -470,10 +470,15 @@ function BBF.DarkmodeFrames(bypass)
         applySettings(v, desaturationValue, vertexColor)
     end
 
-    if PartyFrame.MemberFrame1 then
+    if PartyFrame and PartyFrame.MemberFrame1 then
         for i = 1, 4 do
             local partyMemberFrame = PartyFrame["MemberFrame"..i]
             applySettings(partyMemberFrame.PartyMemberOverlay.Texture, desaturationValue, vertexColor)
+        end
+    elseif PartyMemberFrame1 then
+        for i = 1, 4 do
+            local partyMemberFrame = _G["PartyMemberFrame"..i]
+            applySettings(partyMemberFrame.Texture, desaturationValue, vertexColor)
         end
     end
     -- for _, v in pairs({
