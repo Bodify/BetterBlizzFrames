@@ -1143,6 +1143,22 @@ local function AdjustAlternateBars()
     end
     GetFrameColor()
     hooksecurefunc(PlayerFrame.PlayerFrameContainer.FrameTexture, "SetVertexColor", GetFrameColor)
+
+    if BetterBlizzFramesDB.hideUnitFramePlayerSecondResource then
+        if AlternatePowerBar then
+            AlternatePowerBar:SetAlpha(0)
+        end
+        if MonkStaggerBar then
+            MonkStaggerBar:SetAlpha(0)
+        end
+        if EvokerEbonMightBar then
+            EvokerEbonMightBar:SetAlpha(0)
+        end
+        if DemonHunterSoulFragmentsBar then
+            DemonHunterSoulFragmentsBar:SetAlpha(0)
+        end
+        BBF.changedSecondResourceAlpha = true
+    end
 end
 
 local function MakeClassicPartyFrame()

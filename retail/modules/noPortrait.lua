@@ -2353,6 +2353,40 @@ end
 
 function BBF.UpdateNoPortraitManaVisibility()
     local db = BetterBlizzFramesDB
+    if db.classicFrames then
+        if db.hideUnitFramePlayerSecondResource then
+            if AlternatePowerBar then
+                AlternatePowerBar:SetAlpha(0)
+            end
+            if MonkStaggerBar then
+                MonkStaggerBar:SetAlpha(0)
+            end
+            if EvokerEbonMightBar then
+                EvokerEbonMightBar:SetAlpha(0)
+            end
+            if DemonHunterSoulFragmentsBar then
+                DemonHunterSoulFragmentsBar:SetAlpha(0)
+            end
+            BBF.changedSecondResourceAlpha = true
+        else
+            if BBF.changedSecondResourceAlpha then
+                if AlternatePowerBar then
+                    AlternatePowerBar:SetAlpha(1)
+                end
+                if MonkStaggerBar then
+                    MonkStaggerBar:SetAlpha(1)
+                end
+                if EvokerEbonMightBar then
+                    EvokerEbonMightBar:SetAlpha(1)
+                end
+                if DemonHunterSoulFragmentsBar then
+                    DemonHunterSoulFragmentsBar:SetAlpha(1)
+                end
+            end
+            BBF.changedSecondResourceAlpha = nil
+        end
+        return
+    end
     if not db.noPortraitModes then return end
     UpdateTextureVariables()
 
