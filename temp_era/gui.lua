@@ -1918,7 +1918,7 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
     editBox:SetPoint("TOP", scrollFrame, "BOTTOM", -15, -5)
     editBox:SetAutoFocus(false)
     BBF[listName.."EditBox"] = editBox
-    CreateTooltipTwo(editBox, L["Tooltip_Filter_Auras_Desc"], L["Tooltip_Filter_Auras_Desc"], nil, "ANCHOR_TOP")
+    CreateTooltipTwo(editBox, L["Filter_Auras"], L["Tooltip_Filter_Auras"], nil, "ANCHOR_TOP")
 
     local function cleanUpEntry(entry)
         -- Iterate through each field in the entry
