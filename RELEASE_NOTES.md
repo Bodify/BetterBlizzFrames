@@ -1,3 +1,8 @@
+# BetterBlizzFrames 1.8.6e
+## The Burning Crusade
+### Tweak
+- Remove Thorns from PvP Buffs whitelist import.
+
 # BetterBlizzFrames 1.8.6d
 ## The Burning Crusade
 ### Tweak
