@@ -1,3 +1,8 @@
+# BetterBlizzFrames 1.8.6f
+## Retail & Midnight
+### Tweak
+- No Portrait: Tweak Group Indicator to not show background.
+
 # BetterBlizzFrames 1.8.6e
 ## The Burning Crusade
 ### Tweak
