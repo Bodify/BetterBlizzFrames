@@ -2552,7 +2552,7 @@ function BBF.AddBackgroundTextureToUnitFrames(frame, tot)
         frame.Background:Hide()
     end
     if PlayerFrameBackground then
-        PlayerFrameBackground:Hide()
+        PlayerFrameBackground:SetHeight(17.5)
     end
 
     frame.bbfBgTexture = bgTex
@@ -2949,3 +2949,15 @@ end
 if RuneFrame then
     RuneFrame:SetFrameStrata("MEDIUM")
 end
+
+-- if TargetFrameBackground then
+--     hooksecurefunc(TargetFrameBackground, "SetSize", function(self, height)
+--         self:SetHeight(40)
+--     end)
+-- end
+
+-- if FocusFrameBackground then
+--     hooksecurefunc(FocusFrameBackground, "SetSize", function(self, height)
+--         self:SetHeight(40)
+--     end)
+-- end
