@@ -2726,6 +2726,16 @@ function BBF.noPortraitModes()
     PetFrame:SetHitRectInsets(25, 12, -6, 8)
     TargetFrameToT:SetHitRectInsets(25, 12, -6, 8)
     FocusFrameToT:SetHitRectInsets(25, 12, -6, 8)
+
+    local txt = PlayerFrameGroupIndicatorText
+    local wt_p = PlayerFrameGroupIndicatorText:GetParent()
+    local regions = {wt_p:GetRegions()}
+    for _, region in ipairs(regions) do
+        if region ~= txt then
+            region:Hide()
+        end
+    end
+
     for i = 1, 4 do
         local partyMemberFrame = PartyFrame["MemberFrame"..i]
         partyMemberFrame:SetHitRectInsets(29, -8, -6, 8)
