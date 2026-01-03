@@ -1523,7 +1523,7 @@ Frame:SetScript("OnEvent", function(...)
         BBF.ClassPortraits()
     end
 
-    C_Timer.After(0.2, function()
+    C_Timer.After(0.5, function()
         BBF.SetCustomFonts()
         BBF.UpdateCustomTextures()
     end)
