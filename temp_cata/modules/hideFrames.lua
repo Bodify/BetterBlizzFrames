@@ -389,14 +389,33 @@ function BBF.HideFrames()
         PlayerFrameTexture:SetTexture(targetTexture)
 
         if not BetterBlizzFramesDB.biggerHealthbars then
-            hooksecurefunc("TargetFrame_CheckClassification" , function(self)
-                if self.changing then return end
-                if self.borderTexture:GetTexture() == 137026 then
-                    self.changing = true
-                    self.borderTexture:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-NoLevel")
-                    self.changing = false
-                end
-            end)
+            if TargetFrame_CheckClassification then
+                hooksecurefunc("TargetFrame_CheckClassification" , function(self)
+                    if self.changing then return end
+                    if self.borderTexture:GetTexture() == 137026 then
+                        self.changing = true
+                        self.borderTexture:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-NoLevel")
+                        self.changing = false
+                    end
+                end)
+            else
+                hooksecurefunc(TargetFrame, "CheckClassification", function(self)
+                    if self.textureFrame.changing then return end
+                    if self.textureFrame.texture:GetTexture() == 137026 then
+                        self.textureFrame.changing = true
+                        self.textureFrame.texture:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-NoLevel")
+                        self.textureFrame.changing = false
+                    end
+                end)
+                hooksecurefunc(FocusFrame, "CheckClassification", function(self)
+                    if self.textureFrame.changing then return end
+                    if self.textureFrame.texture:GetTexture() == 137026 then
+                        self.textureFrame.changing = true
+                        self.textureFrame.texture:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-NoLevel")
+                        self.textureFrame.changing = false
+                    end
+                end)
+            end
         end
 
         BBF.classicFramesLevelHide = true
