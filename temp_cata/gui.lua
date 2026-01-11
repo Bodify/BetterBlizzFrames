@@ -6830,8 +6830,15 @@ local function guiMisc()
     local hideStanceBar = CreateCheckbox("hideStanceBar", L["Hide_StanceBar"], guiMisc, nil, BBF.HideFrames)
     hideStanceBar:SetPoint("TOPLEFT", hideActionBarMacroName, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
 
+    local enableKeyDoublePress = CreateCheckbox("enableKeyDoublePress", L["Key_Double_Press"], guiMisc)
+    enableKeyDoublePress:SetPoint("TOPLEFT", hideStanceBar, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    enableKeyDoublePress:HookScript("OnClick", function(self)
+        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+    end)
+    CreateTooltipTwo(enableKeyDoublePress, L["Key_Double_Press"], L["Tooltip_Key_Double_Press"])
+
     local stealthIndicatorPlayer = CreateCheckbox("stealthIndicatorPlayer", L["Tooltip_Stealth_Indicator"], guiMisc, nil, BBF.StealthIndicator)
-    stealthIndicatorPlayer:SetPoint("TOPLEFT", hideStanceBar, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    stealthIndicatorPlayer:SetPoint("TOPLEFT", enableKeyDoublePress, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     stealthIndicatorPlayer:HookScript("OnClick", function(self)
         if not self:GetChecked() then
             StaticPopup_Show("BBF_CONFIRM_RELOAD")

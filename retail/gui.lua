@@ -8936,8 +8936,15 @@ local function guiMisc()
     hideOgRaidFrameBg:SetPoint("TOPLEFT", hideDefaultPartyFramesMana, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(hideOgRaidFrameBg, "Hide Party/RaidFrame Background", "Hide the background on the default party/raidframes. Combo with Pixel Border.")
 
+    local enableKeyDoublePress = CreateCheckbox("enableKeyDoublePress", L["Key_Double_Press"], guiMisc)
+    enableKeyDoublePress:SetPoint("TOPLEFT", hideOgRaidFrameBg, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    enableKeyDoublePress:HookScript("OnClick", function(self)
+        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+    end)
+    CreateTooltipTwo(enableKeyDoublePress, L["Key_Double_Press"], L["Tooltip_Key_Double_Press"])
+
     local hideActionBar1 = CreateCheckbox("hideActionBar1", L["Hide_ActionBar1"], guiMisc, nil, BBF.HideFrames)
-    hideActionBar1:SetPoint("TOPLEFT", hideOgRaidFrameBg, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    hideActionBar1:SetPoint("TOPLEFT", enableKeyDoublePress, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(hideActionBar1, L["Hide_ActionBar1"], L["Tooltip_Hide_ActionBar1"])
 
     local hideActionBarBigProcGlow = CreateCheckbox("hideActionBarBigProcGlow", L["Hide_ActionBar_Big_Proc_Glow"], guiMisc, nil, BBF.ActionBarMods)
@@ -9246,7 +9253,7 @@ local function guiMisc()
 
 
     local rpNames = CreateCheckbox("rpNames", L["Roleplay_Names_TRP3"], guiMisc)
-    rpNames:SetPoint("BOTTOMRIGHT", guiMisc, "BOTTOMRIGHT", -220, 60)
+    rpNames:SetPoint("BOTTOMRIGHT", guiMisc, "BOTTOMRIGHT", -220, 50)
     CreateTooltipTwo(rpNames, L["Roleplay_Names_Tooltip"], L["Tooltip_Roleplay_Names_Desc"])
 
     local rpNamesFirst = CreateCheckbox("rpNamesFirst", L["First"], rpNames)

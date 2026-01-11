@@ -2933,6 +2933,7 @@ PlayerEnteringWorld:SetScript("OnEvent", function()
     if BetterBlizzFramesDB.playerFrameOCD then
         ChangeHotkeyWidth(32)
     end
+    BBF.KeyDoublePress()
 end)
 PlayerEnteringWorld:RegisterEvent("PLAYER_ENTERING_WORLD")
 

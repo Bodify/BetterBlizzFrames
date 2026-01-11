@@ -1,4 +1,7 @@
 # BetterBlizzFrames 1.8.6f
+## All versions
+### New
+- Misc: Keybind Double Press. Activate keybind presses both on key down and key up.
 ## Retail & Midnight
 ### Tweak
 - No Portrait: Tweak Group Indicator to not show background.
