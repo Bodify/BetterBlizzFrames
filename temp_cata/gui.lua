@@ -3841,10 +3841,9 @@ local function guiGeneralTab()
     hideCombatGlow:SetPoint("TOPLEFT", hidePrestigeBadge, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(hideCombatGlow, L["Tooltip_Hide_Combat_Glow"] .. " |A:UI-HUD-UnitFrame-Player-PortraitOn-InCombat:30:80|a")
 
-    local maxLvl = BBF.isMoP and "90" or "85"
-    local hideLevelText = CreateCheckbox("hideLevelText", L["Hide_Level_80_Text"] .." "..maxLvl.." "..L["Text"], BetterBlizzFrames, nil, BBF.HideFrames)
+    local hideLevelText = CreateCheckbox("hideLevelText", L["Hide_Max_Level_Text"], BetterBlizzFrames, nil, BBF.HideFrames)
     hideLevelText:SetPoint("TOPLEFT", hideCombatGlow, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltip(hideLevelText, L["Tooltip_Hide_Level_80_Text"].." "..maxLvl)
+    CreateTooltip(hideLevelText, L["Tooltip_Hide_Max_Level_Text"])
 
     local hideLevelTextAlways = CreateCheckbox("hideLevelTextAlways", L["Always"], BetterBlizzFrames, nil, BBF.HideFrames)
     hideLevelTextAlways:SetPoint("LEFT", hideLevelText.Text, "RIGHT", 0, 0)

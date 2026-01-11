@@ -5296,9 +5296,9 @@ local function guiGeneralTab()
         end
     end)
 
-    local hideLevelText = CreateCheckbox("hideLevelText", L["Hide_Level_80_Text"], BetterBlizzFrames, nil, BBF.HideFrames)
+    local hideLevelText = CreateCheckbox("hideLevelText", L["Hide_Max_Level_Text"], BetterBlizzFrames, nil, BBF.HideFrames)
     hideLevelText:SetPoint("TOPLEFT", hideCombatGlow, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltip(hideLevelText, L["Tooltip_Hide_Level_80_Text"])
+    CreateTooltip(hideLevelText, L["Tooltip_Hide_Max_Level_Text"])
     hideLevelText:HookScript("OnClick", function()
         if BetterBlizzFramesDB.classicFrames then
             StaticPopup_Show("BBF_CONFIRM_RELOAD")
