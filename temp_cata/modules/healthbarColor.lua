@@ -463,6 +463,8 @@ end
 
 local biggerHealthbarHooked
 local frameTextureHooked
+local maxLvl = BBF.isMoP and 90 or BBF.isTBC and 70 or 85
+
 function BBF.BiggerHealthbars(frame, name)
     local texture = _G[frame.."Texture"] or _G[frame.."TextureFrameTexture"]
     local playerGlowTexture = _G["PlayerStatusTexture"]
@@ -476,7 +478,17 @@ function BBF.BiggerHealthbars(frame, name)
     local background = _G[frame.."Background"]
     local deadText = _G[frame.."TextureFrameDeadText"]
 
-    local targetTexture = BetterBlizzFramesDB.hideLevelTextAlways and "Interface\\Addons\\BetterBlizzFrames\\media\\UI-TargetingFrame-NoLevel" or "Interface\\Addons\\BetterBlizzFrames\\media\\UI-TargetingFrame"
+    local noLevelTexture = "Interface\\Addons\\BetterBlizzFrames\\media\\UI-TargetingFrame-NoLevel"
+    local normalTexture = "Interface\\Addons\\BetterBlizzFrames\\media\\UI-TargetingFrame"
+
+    local targetTexture = normalTexture
+    if BetterBlizzFramesDB.hideLevelText then
+        if BetterBlizzFramesDB.hideLevelTextAlways then
+            targetTexture = noLevelTexture
+        elseif frame == "PlayerFrame" and UnitLevel("player") == maxLvl then
+            targetTexture = noLevelTexture
+        end
+    end
     -- Texture
     texture:SetTexture(targetTexture)
     playerGlowTexture:SetTexture("Interface\\Addons\\BetterBlizzFrames\\media\\UI-Player-Status")
@@ -629,7 +641,13 @@ function BBF.BiggerHealthbars(frame, name)
                 elseif (classification == "rare") then
                     frame.borderTexture:SetTexture("Interface\\Addons\\BetterBlizzFrames\\media\\UI-TargetingFrame-Rare")
                 else
-                    frame.borderTexture:SetTexture(targetTexture)
+                    local textureToUse = normalTexture
+                    if BetterBlizzFramesDB.hideLevelText then
+                        if BetterBlizzFramesDB.hideLevelTextAlways or UnitLevel(frame.unit) == maxLvl then
+                            textureToUse = noLevelTexture
+                        end
+                    end
+                    frame.borderTexture:SetTexture(textureToUse)
                 end
             end
         end)

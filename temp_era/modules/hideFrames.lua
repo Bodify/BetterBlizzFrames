@@ -17,6 +17,7 @@ local minimapButtonsHooked = false
 local bagButtonsHooked = false
 local keybindAlphaChanged = false
 local PlayerStatusTextureParent
+local maxLvl = 60
 
 local changes = {}
 local originalParents = {}
@@ -120,9 +121,12 @@ local function UpdateLevelTextVisibility(unitFrame, unit)
     if BetterBlizzFramesDB.hideLevelText then
         if BetterBlizzFramesDB.hideLevelTextAlways then
             unitFrame:SetAlpha(0)
+            if unit == "player" then
+                unitFrame:SetParent(BBF.hiddenFrame)
+            end
             return
         end
-        if UnitLevel(unit) == 85 then
+        if UnitLevel(unit) == maxLvl then
             unitFrame:SetAlpha(0)
         else
             unitFrame:SetAlpha(1)
@@ -371,16 +375,23 @@ function BBF.HideFrames()
     UpdateLevelTextVisibility(PlayerLevelText, "player")
 
 
-    if BetterBlizzFramesDB.hideLevelText and BetterBlizzFramesDB.hideLevelTextAlways and not BBF.classicFramesLevelHide then
-        local targetTexture = BetterBlizzFramesDB.biggerHealthbars and "Interface\\Addons\\BetterBlizzFrames\\media\\UI-TargetingFrame-NoLevel" or "Interface\\TargetingFrame\\UI-TargetingFrame-NoLevel"
-        PlayerFrameTexture:SetTexture(targetTexture)
+    if BetterBlizzFramesDB.hideLevelText and not BBF.classicFramesLevelHide then
+        local noLevelTexture = BetterBlizzFramesDB.biggerHealthbars and "Interface\\Addons\\BetterBlizzFrames\\media\\UI-TargetingFrame-NoLevel" or "Interface\\TargetingFrame\\UI-TargetingFrame-NoLevel"
+
+        if BetterBlizzFramesDB.hideLevelTextAlways or UnitLevel("player") == maxLvl then
+            PlayerFrameTexture:SetTexture(noLevelTexture)
+        end
 
         if not BetterBlizzFramesDB.biggerHealthbars then
             hooksecurefunc("TargetFrame_CheckClassification" , function(self)
                 if self.changing then return end
-                if self.borderTexture:GetTexture() == 137026 then
+                if not BetterBlizzFramesDB.hideLevelText then return end
+                if self.borderTexture:GetTexture() ~= 137026 then return end
+
+                local shouldHide = BetterBlizzFramesDB.hideLevelTextAlways or UnitLevel("target") == maxLvl
+                if shouldHide then
                     self.changing = true
-                    self.borderTexture:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-NoLevel")
+                    self.borderTexture:SetTexture(noLevelTexture)
                     self.changing = false
                 end
             end)

@@ -17,6 +17,7 @@ local minimapButtonsHooked = false
 local bagButtonsHooked = false
 local keybindAlphaChanged = false
 local PlayerStatusTextureParent
+local maxLvl = BBF.isMoP and 90 or BBF.isTBC and 70 or 85
 
 local changes = {}
 local originalParents = {}
@@ -125,8 +126,7 @@ local function UpdateLevelTextVisibility(unitFrame, unit)
             end
             return
         end
-        local lvl = BBF.isMoP and 90 or 85
-        if UnitLevel(unit) == lvl then
+        if UnitLevel(unit) == maxLvl then
             unitFrame:SetAlpha(0)
         else
             unitFrame:SetAlpha(1)
@@ -384,34 +384,49 @@ function BBF.HideFrames()
     UpdateLevelTextVisibility(FocusFrameTextureFrameLevelText, "focus")
     UpdateLevelTextVisibility(PlayerLevelText, "player")
 
-    if BetterBlizzFramesDB.hideLevelText and BetterBlizzFramesDB.hideLevelTextAlways and not BBF.classicFramesLevelHide then
-        local targetTexture = BetterBlizzFramesDB.biggerHealthbars and "Interface\\Addons\\BetterBlizzFrames\\media\\UI-TargetingFrame-NoLevel" or "Interface\\TargetingFrame\\UI-TargetingFrame-NoLevel"
-        PlayerFrameTexture:SetTexture(targetTexture)
+    if BetterBlizzFramesDB.hideLevelText and not BBF.classicFramesLevelHide then
+        local noLevelTexture = BetterBlizzFramesDB.biggerHealthbars and "Interface\\Addons\\BetterBlizzFrames\\media\\UI-TargetingFrame-NoLevel" or "Interface\\TargetingFrame\\UI-TargetingFrame-NoLevel"
+
+        if BetterBlizzFramesDB.hideLevelTextAlways or UnitLevel("player") == maxLvl then
+            PlayerFrameTexture:SetTexture(noLevelTexture)
+        end
 
         if not BetterBlizzFramesDB.biggerHealthbars then
             if TargetFrame_CheckClassification then
                 hooksecurefunc("TargetFrame_CheckClassification" , function(self)
                     if self.changing then return end
-                    if self.borderTexture:GetTexture() == 137026 then
+                    if not BetterBlizzFramesDB.hideLevelText then return end
+                    if self.borderTexture:GetTexture() ~= 137026 then return end
+
+                    local shouldHide = BetterBlizzFramesDB.hideLevelTextAlways or UnitLevel("target") == maxLvl
+                    if shouldHide then
                         self.changing = true
-                        self.borderTexture:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-NoLevel")
+                        self.borderTexture:SetTexture(noLevelTexture)
                         self.changing = false
                     end
                 end)
             else
                 hooksecurefunc(TargetFrame, "CheckClassification", function(self)
                     if self.textureFrame.changing then return end
-                    if self.textureFrame.texture:GetTexture() == 137026 then
+                    if not BetterBlizzFramesDB.hideLevelText then return end
+                    if self.textureFrame.texture:GetTexture() ~= 137026 then return end
+
+                    local shouldHide = BetterBlizzFramesDB.hideLevelTextAlways or UnitLevel("target") == maxLvl
+                    if shouldHide then
                         self.textureFrame.changing = true
-                        self.textureFrame.texture:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-NoLevel")
+                        self.textureFrame.texture:SetTexture(noLevelTexture)
                         self.textureFrame.changing = false
                     end
                 end)
                 hooksecurefunc(FocusFrame, "CheckClassification", function(self)
                     if self.textureFrame.changing then return end
-                    if self.textureFrame.texture:GetTexture() == 137026 then
+                    if not BetterBlizzFramesDB.hideLevelText then return end
+                    if self.textureFrame.texture:GetTexture() ~= 137026 then return end
+
+                    local shouldHide = BetterBlizzFramesDB.hideLevelTextAlways or UnitLevel("focus") == maxLvl
+                    if shouldHide then
                         self.textureFrame.changing = true
-                        self.textureFrame.texture:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-NoLevel")
+                        self.textureFrame.texture:SetTexture(noLevelTexture)
                         self.textureFrame.changing = false
                     end
                 end)
