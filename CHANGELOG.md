@@ -2,6 +2,8 @@
 ## All versions
 ### New
 - Misc: Keybind Double Press. Activate keybind presses both on key down and key up. (Default ActionBars only)
+## Bugfix
+- Classics: Fix some issues with Hide Level settings and Bigger Healthbars
 ## Retail & Midnight
 ### Tweak
 - No Portrait: Tweak Group Indicator to not show background.
