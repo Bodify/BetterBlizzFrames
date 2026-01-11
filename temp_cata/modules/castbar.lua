@@ -1019,8 +1019,8 @@ function BBF.ChangeCastbarSizes()
         if FocusFrameSpellBar then
             FocusFrameSpellBar.Text:SetFont(fontPath, size, outline)
         end
-        local _, size, _ = PlayerCastingBarFrame.Text:GetFont()
-        PlayerCastingBarFrame.Text:SetFont(fontPath, size, outline)
+        local _, size, _ = CastingBarFrame.Text:GetFont()
+        CastingBarFrame.Text:SetFont(fontPath, size, outline)
     end
 end
 
