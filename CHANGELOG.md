@@ -5,6 +5,9 @@
 ## Retail & Midnight
 ### Tweak
 - No Portrait: Tweak Group Indicator to not show background.
+## The Burning Crusade
+### Bugfix
+- Fix a lua error due to old API call on TBC client regards to hiding level.
 
 # BetterBlizzFrames 1.8.6e
 ## The Burning Crusade
