@@ -384,7 +384,7 @@ function BBF.HideFrames()
     UpdateLevelTextVisibility(FocusFrameTextureFrameLevelText, "focus")
     UpdateLevelTextVisibility(PlayerLevelText, "player")
 
-    if BetterBlizzFramesDB.hideLevelTextAlways and not BBF.classicFramesLevelHide then
+    if BetterBlizzFramesDB.hideLevelText and BetterBlizzFramesDB.hideLevelTextAlways and not BBF.classicFramesLevelHide then
         local targetTexture = BetterBlizzFramesDB.biggerHealthbars and "Interface\\Addons\\BetterBlizzFrames\\media\\UI-TargetingFrame-NoLevel" or "Interface\\TargetingFrame\\UI-TargetingFrame-NoLevel"
         PlayerFrameTexture:SetTexture(targetTexture)
 
