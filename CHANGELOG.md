@@ -13,6 +13,9 @@
 ## Mists of Pandaria
 ### Bugfix
 - Fix a lua error due to wrong player castbar name on MoP.
+## Classic Era
+### Tweak
+- Rare elites now get the rare silver dragon frametexture instead of the normal gold elite dragon, as in newer expansions.
 
 # BetterBlizzFrames 1.8.6e
 ## The Burning Crusade

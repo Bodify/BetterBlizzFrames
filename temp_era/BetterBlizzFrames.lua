@@ -1850,3 +1850,16 @@ PlayerEnteringWorld:RegisterEvent("PLAYER_ENTERING_WORLD")
 --     TargetFrame.HealthBar.BBPFill:SetWidth(TargetFrame.HealthBar.MyHealPredictionBar.FillMask:GetWidth(), flag)
 -- end)
 --TargetFrame.HealthBar.OtherHealPredictionBar.Fill:SetBlendMode("MOD")
+if TargetFrame_CheckClassification then
+    hooksecurefunc("TargetFrame_CheckClassification" , function(self)
+        if self.changing then return end
+        if self.borderTexture:GetTexture() ~= 137015 then return end
+        local classification = UnitClassification(self.unit)
+        if classification ~= "rareelite" then
+            return
+        end
+        self.changing = true
+        self.borderTexture:SetTexture("Interface\\TargetingFrame\\ui-targetingframe-rare-elite")
+        self.changing = false
+    end)
+end
