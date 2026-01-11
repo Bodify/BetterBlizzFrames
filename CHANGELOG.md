@@ -1,4 +1,4 @@
-# BetterBlizzFrames 1.8.6f
+# BetterBlizzFrames 1.8.7
 ## All versions
 ### New
 - Misc: Keybind Double Press. Activate keybind presses both on key down and key up. (Default ActionBars only)
