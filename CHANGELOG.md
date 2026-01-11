@@ -8,6 +8,9 @@
 ## The Burning Crusade
 ### Bugfix
 - Fix a lua error due to old API call on TBC client regards to hiding level.
+## Mists of Pandaria
+### Bugfix
+- Fix a lua error due to wrong player castbar name on MoP.
 
 # BetterBlizzFrames 1.8.6e
 ## The Burning Crusade
