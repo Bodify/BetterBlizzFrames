@@ -1305,11 +1305,11 @@ function BBF.FadeMicroMenu()
     if not BetterBlizzFramesDB.fadeMicroMenu then return end
     if not MicroMenu.bffHooked then
         local function FadeOutFrame(frame, duration)
-            UIFrameFadeOut(frame, duration, 1, 0)
+            BBF.UIFrameFadeOut(frame, duration, 1, 0)
         end
 
         local function FadeInFrame(frame, duration)
-            UIFrameFadeIn(frame, duration, 0, 1)
+            BBF.UIFrameFadeIn(frame, duration, 0, 1)
         end
 
         local fadeTimer = nil -- Holds the current fade-out timer

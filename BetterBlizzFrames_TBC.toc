@@ -9,6 +9,7 @@
 ## X-Wago-ID: qGZR02Gd
 
 init.lua
+temp_shared\functions.lua
 
 locales\locales.xml
 
@@ -31,6 +32,6 @@ temp_cata\modules\stealthIndicator.lua
 temp_cata\modules\interruptIcon.lua
 temp_cata\modules\queueTimer.lua
 temp_tbc\modules\loc.lua
-temp_shared\functions.lua
+
 temp_cata\gui.lua
 temp_tbc\BetterBlizzFrames.lua

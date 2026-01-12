@@ -9,6 +9,7 @@
 ## X-Wago-ID: qGZR02Gd
 
 init.lua
+temp_shared\functions.lua
 
 locales\locales.xml
 
@@ -50,7 +51,6 @@ retail\modules\cdManager.lua
 midnight\modules\cdManager.lua
 retail\modules\healer.lua
 retail\modules\noPortrait.lua
-temp_shared\functions.lua
 
 retail\gui.lua
 midnight\gui.lua

@@ -2412,11 +2412,11 @@ function BBF.GenericLegacyComboSupport()
             finishedFunc = ComboPointShineFadeOut,
             finishedArg1 = frame,
         }
-        UIFrameFade(frame, fadeInfo)
+        BBF.UIFrameFade(frame, fadeInfo)
     end
 
     local function ComboPointShineFadeOut(frame)
-        UIFrameFadeOut(frame, COMBOFRAME_SHINE_FADE_OUT)
+        BBF.UIFrameFadeOut(frame, COMBOFRAME_SHINE_FADE_OUT)
     end
 
     local showAlways = BetterBlizzFramesDB.alwaysShowLegacyComboPoints
@@ -2473,7 +2473,7 @@ function BBF.GenericLegacyComboSupport()
                             finishedFunc = ComboPointShineFadeIn,
                             finishedArg1 = shine,
                         }
-                        UIFrameFade(highlight, fadeInfo)
+                        BBF.UIFrameFade(highlight, fadeInfo)
                     end
                 end
 
@@ -2488,7 +2488,7 @@ function BBF.GenericLegacyComboSupport()
             frame:Show()
         end
 
-        UIFrameFadeRemoveFrame(frame)
+        BBF.UIFrameFadeRemoveFrame(frame)
 
         lastComboPoints = comboPoints
     end
@@ -2702,8 +2702,8 @@ function BBF.InstantComboPoints()
         for i = 1, maxComboPoints do
             local point = frame.ComboPoints[comboIndex]
             if point then
-                UIFrameFadeRemoveFrame(point.Highlight)
-                UIFrameFadeRemoveFrame(point.Shine)
+                BBF.UIFrameFadeRemoveFrame(point.Highlight)
+                BBF.UIFrameFadeRemoveFrame(point.Shine)
 
                 point:SetAlpha(1)
                 point.Highlight:SetAlpha(i <= comboPoints and 1 or 0)
@@ -2723,7 +2723,7 @@ function BBF.InstantComboPoints()
             frame:Hide()
         end
 
-        UIFrameFadeRemoveFrame(frame)
+        BBF.UIFrameFadeRemoveFrame(frame)
     end
 
     local function UpdateDruidComboPoints(self)
