@@ -473,30 +473,51 @@ local targetHealthBar = TargetFrameHealthBar
 -- local altBar = AlternatePowerBar
 -- local staggerBar = MonkStaggerBar
 
-local statusTexts = {
-    playerManaBar.LeftText,
-    playerManaBar.RightText,
-    playerManaBar.TextString,
-    --
-    playerHealthBar.LeftText,
-    playerHealthBar.RightText,
-    playerHealthBar.TextString,
-    --
-    petHealthBar.LeftText,
-    petHealthBar.RightText,
-    petHealthBar.TextString,
-    --
-    petManaBar.LeftText,
-    petManaBar.RightText,
-    petManaBar.TextString,
-    --
-    targetManaBar.LeftText,
-    targetManaBar.RightText,
-    targetManaBar.TextString,
-    --
-    targetHealthBar.LeftText,
-    targetHealthBar.RightText,
-    targetHealthBar.TextString,
+-- Variables for Target frame text elements (will be set after addon check)
+local targetHealthLeftText, targetHealthRightText, targetHealthCenterText
+local targetManaLeftText, targetManaRightText, targetManaCenterText
+
+-- Function to check and set Target frame text elements
+local function InitializeTargetTextElements()
+    -- Check for addon-added text elements (HealthPlusOverlay) for Target frame, fallback to default
+    targetHealthLeftText = _G.TargetHealthPercentText or targetHealthBar.LeftText
+    targetHealthRightText = _G.TargetHealthValueText or targetHealthBar.RightText
+    targetHealthCenterText = _G.TargetHealthCenterText or targetHealthBar.TextString
+    targetManaLeftText = _G.TargetManaPercentText or targetManaBar.LeftText
+    targetManaRightText = _G.TargetManaValueText or targetManaBar.RightText
+    targetManaCenterText = _G.TargetManaCenterText or targetManaBar.TextString
+end
+
+local function GetStatusTexts()
+    InitializeTargetTextElements()
+    return {
+        playerManaBar.LeftText,
+        playerManaBar.RightText,
+        playerManaBar.TextString,
+        --
+        playerHealthBar.LeftText,
+        playerHealthBar.RightText,
+        playerHealthBar.TextString,
+        --
+        petHealthBar.LeftText,
+        petHealthBar.RightText,
+        petHealthBar.TextString,
+        --
+        petManaBar.LeftText,
+        petManaBar.RightText,
+        petManaBar.TextString,
+        --
+        targetManaLeftText,
+        targetManaRightText,
+        targetManaCenterText,
+        --
+        targetHealthLeftText,
+        targetHealthRightText,
+        targetHealthCenterText,
+    }
+end
+
+local statusTexts = GetStatusTexts()
     --
     -- focusManaBar.LeftText,
     -- focusManaBar.RightText,
@@ -512,7 +533,6 @@ local statusTexts = {
     -- staggerBar.LeftText,
     -- staggerBar.RightText,
     -- staggerBar.TextString,
-}
 
 local petFrames = {
     [petHealthBar.LeftText] = true,
@@ -524,30 +544,35 @@ local petFrames = {
 }
 
 local function SetUnitFramesValuesFont(font, size, outline)
+    -- Refresh statusTexts in case addon elements loaded
+    statusTexts = GetStatusTexts()
+
     for _, textObject in pairs(statusTexts) do
-        local ogFont, ogSize, ogOutline = textObject:GetFont()
+        if textObject then
+            local ogFont, ogSize, ogOutline = textObject:GetFont()
 
-        local newFont = font or ogFont
-        local newSize = size or ogSize
-        local newOutline = outline or ogOutline
+            local newFont = font or ogFont
+            local newSize = size or ogSize
+            local newOutline = outline or ogOutline
 
-        if petFrames[textObject] then
-            if tonumber(newSize) >= 12 then
-                if tonumber(newSize) > 13 then
-                    newSize = newSize - 3
+            if petFrames[textObject] then
+                if tonumber(newSize) >= 12 then
+                    if tonumber(newSize) > 13 then
+                        newSize = newSize - 3
+                    else
+                        newSize = newSize - 2
+                    end
                 else
-                    newSize = newSize - 2
+                    newSize = newSize - 1
                 end
-            else
-                newSize = newSize - 1
             end
-        end
 
-        if newOutline == "NONE" then
-            newOutline = nil
-        end
+            if newOutline == "NONE" then
+                newOutline = nil
+            end
 
-        textObject:SetFont(newFont, newSize, newOutline)
+            textObject:SetFont(newFont, newSize, newOutline)
+        end
     end
 end
 
