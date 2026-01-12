@@ -1,3 +1,12 @@
+# BetterBlizzFrames 1.8.7b
+## Classic Era
+### Tweak
+- Add font settings support for TargetHealthPlus addon.
+## All versions
+### Tweak
+- Swapped out Blizzards fade functions with own copy to avoid potential taint/combat issues.
+- Removed Double Press setting.
+
 # BetterBlizzFrames 1.8.7
 ## All versions
 ### New
