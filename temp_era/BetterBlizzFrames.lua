@@ -1827,7 +1827,6 @@ PlayerEnteringWorld:SetScript("OnEvent", function()
     --     TextStatusBar_UpdateTextString(PlayerFrameHealthBar)
     --     TextStatusBar_UpdateTextString(PlayerFrameManaBar)
     -- end
-    BBF.KeyDoublePress()
 end)
 PlayerEnteringWorld:RegisterEvent("PLAYER_ENTERING_WORLD")
 
