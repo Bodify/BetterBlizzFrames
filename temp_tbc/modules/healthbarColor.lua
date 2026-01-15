@@ -506,7 +506,7 @@ function BBF.BiggerHealthbars(frame, name)
     local point, relativeTo, relativePoint, xOfs, yOfs = healthbar:GetPoint()
     local newYOffset = yOfs + 18
     BBF.MoveRegion(healthbar, point, relativeTo, relativePoint, xOfs, newYOffset)
-    healthbar:SetHeight(29)
+    healthbar:SetHeight(27)
     if not BetterBlizzFramesDB.changeUnitFrameHealthbarTexture then
         healthbar:SetStatusBarTexture(LSM:Fetch(LSM.MediaType.STATUSBAR, "Smooth"))
     end
