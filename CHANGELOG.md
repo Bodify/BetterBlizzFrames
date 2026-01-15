@@ -1,3 +1,8 @@
+# BetterBlizzFrames 1.8.7c
+## The Burning Crusade
+### Tweak
+- Fix healthbar height for large healthbar setting.
+
 # BetterBlizzFrames 1.8.7b
 ## Classic Era
 ### Tweak
