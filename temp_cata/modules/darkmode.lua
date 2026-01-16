@@ -7,6 +7,7 @@ local minimapChanged =false
 local hookedTotemBar
 local hookedAuras
 local raidUpdates
+local BuffFrame = BuffFrame
 
 local function applySettings(frame, desaturate, colorValue, hook)
     if frame then
@@ -62,58 +63,77 @@ end
 
 local hooked = {}
 
-local function UpdateFrameAuras(pool)
-    for frame, _ in pairs(pool.activeObjects) do
-        if not hooked[frame] then
-            local icon = frame.Icon
-            hooked[frame] = true
+local function UpdateFrameAuras(self)
+    if not (darkModeUi and darkModeUiAura) then return end
 
-            if not frame.border then
-                local border = CreateFrame("Frame", nil, frame, "BackdropTemplate")
-                border:SetBackdrop({
-                    edgeFile = "Interface/Tooltips/UI-Tooltip-Border",
-                    tileEdge = true,
-                    edgeSize = 8.5,
-                })
+    local maxAuras = MAX_TARGET_BUFFS or 60
+    local auraType = self:GetName().."Buff"
 
-                icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
-                border:SetPoint("TOPLEFT", icon, "TOPLEFT", -1.5, 1.5)
-                border:SetPoint("BOTTOMRIGHT", icon, "BOTTOMRIGHT", 1.5, -2)
-                frame.border = border
+    for i = 1, maxAuras do
+        local auraName = auraType..i
+        local auraFrame = _G[auraName]
 
-                -- Set the initial border color
-                border:SetBackdropBorderColor(darkModeColor, darkModeColor, darkModeColor)
-            end
-            if frame.Border then
-                frame.border:Hide()
+        if auraFrame and auraFrame:IsShown() then
+            if not hooked[auraFrame] then
+                local icon = _G[auraName.."Icon"]
+                if icon then
+                    auraFrame.Icon = icon
+                    hooked[auraFrame] = true
+
+                    if not auraFrame.border then
+                        local border = CreateFrame("Frame", nil, auraFrame, "BackdropTemplate")
+                        border:SetBackdrop({
+                            edgeFile = "Interface/Tooltips/UI-Tooltip-Border",
+                            tileEdge = true,
+                            edgeSize = 8.5,
+                        })
+
+                        icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+                        border:SetPoint("TOPLEFT", icon, "TOPLEFT", -1.5, 1.5)
+                        border:SetPoint("BOTTOMRIGHT", icon, "BOTTOMRIGHT", 1.5, -2)
+                        auraFrame.border = border
+
+                        -- Set the initial border color
+                        border:SetBackdropBorderColor(darkModeColor, darkModeColor, darkModeColor)
+                    end
+
+                    if auraFrame.Border then
+                        auraFrame.border:Hide()
+                    else
+                        auraFrame.border:Show()
+                    end
+                end
             else
-                frame.border:Show()
+                if auraFrame.Border then
+                    auraFrame.border:Hide()
+                else
+                    auraFrame.border:Show()
+                end
             end
         else
-            if frame.Border then
-                frame.border:Hide()
-            else
-                frame.border:Show()
-            end
+            break
         end
     end
 end
 
 function BBF.DarkModeUnitframeBorders()
-    -- if (BetterBlizzFramesDB.darkModeUiAura and BetterBlizzFramesDB.darkModeUi) then --and not BetterBlizzFramesDB.playerAuraFiltering) then
-    --     if not hookedAuras then
-    --         for poolKey, pool in pairs(TargetFrame.auraPools.pools) do
-    --             hooksecurefunc(pool, "Acquire", UpdateFrameAuras)
-    --             UpdateFrameAuras(pool)
-    --         end
-
-    --         for poolKey, pool in pairs(FocusFrame.auraPools.pools) do
-    --             hooksecurefunc(pool, "Acquire", UpdateFrameAuras)
-    --             UpdateFrameAuras(pool)
-    --         end
-    --         hookedAuras = true
-    --     end
-    -- end
+    if (BetterBlizzFramesDB.darkModeUiAura and BetterBlizzFramesDB.darkModeUi) and not hookedAuras then
+        if TargetFrame_UpdateAuras then
+            hooksecurefunc("TargetFrame_UpdateAuras", function(self)
+                UpdateFrameAuras(self)
+            end)
+        else
+            hooksecurefunc(TargetFrame, "UpdateAuras", function(self)
+                UpdateFrameAuras(self)
+            end)
+            hooksecurefunc(FocusFrame, "UpdateAuras", function(self)
+                UpdateFrameAuras(self)
+            end)
+        end
+        UpdateFrameAuras(TargetFrame)
+        UpdateFrameAuras(FocusFrame)
+        hookedAuras = true
+    end
 end
 
 BBF.auraBorders = {}  -- BuffFrame aura borders for darkmode
@@ -176,6 +196,28 @@ local function createOrUpdateBorders(frame, colorValue, textureName, bypass)
                 icon = frame[textureName]
             end
             icon:SetTexCoord(0, 1, 0, 1) -- Revert the icon to the original state
+        end
+    end
+end
+
+local BUFF_MAX_DISPLAY = BUFF_MAX_DISPLAY or 32
+local function ProcessBuffButtons()
+    if BuffFrame.allAurasDarkMode then return end
+    for i = 1, BUFF_MAX_DISPLAY do
+        local buffButton = _G["BuffButton"..i]
+        if buffButton then
+            if not BBF.auraBorders[buffButton] then
+                local icon = _G["BuffButton"..i.."Icon"]
+                if icon then
+                    if not buffButton.Icon then
+                        buffButton.Icon = icon
+                    end
+                    createOrUpdateBorders(buffButton, BetterBlizzFramesDB.darkModeColor)
+                end
+                if i == BUFF_MAX_DISPLAY then
+                    BuffFrame.allAurasDarkMode = true
+                end
+            end
         end
     end
 end
@@ -284,17 +326,32 @@ function BBF.DarkmodeFrames(bypass)
     end
 
     -- Applying borders to BuffFrame
-    -- if BuffFrame then
-    --     for _, frame in pairs({_G.BuffFrame.AuraContainer:GetChildren()}) do
-    --         createOrUpdateBorders(frame, vertexColor)
-    --     end
-    -- end
+    if BuffFrame and _G.BuffFrame.AuraContainer then
+        for _, frame in pairs({_G.BuffFrame.AuraContainer:GetChildren()}) do
+            createOrUpdateBorders(frame, vertexColor)
+        end
+    elseif BuffFrame then
+        if not BuffFrame.bbfHooked then
+            if darkModeUi and darkModeUiAura then
+                hooksecurefunc("BuffFrame_Update", ProcessBuffButtons)
+                BuffFrame.bbfHooked = true
+            end
+        end
+        for i = 1, BUFF_MAX_DISPLAY do
+            local buffButton = _G["BuffButton"..i]
+            if buffButton then
+                local icon = _G["BuffButton"..i.."Icon"]
+                if icon then
+                    buffButton.Icon = icon
+                end
+                createOrUpdateBorders(buffButton, vertexColor)
+            end
+        end
+    end
 
-
-
-    -- if ToggleHiddenAurasButton then
-    --     createOrUpdateBorders(ToggleHiddenAurasButton, vertexColor)
-    -- end
+    if ToggleHiddenAurasButton then
+        createOrUpdateBorders(ToggleHiddenAurasButton, vertexColor)
+    end
 
     BBF.DarkModeUnitframeBorders()
 

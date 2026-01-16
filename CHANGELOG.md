@@ -5,8 +5,10 @@
 ## All versions
 ### Tweak
 - Classics: Fix ToT Portrait for Class Portrait setting. Also fix it messing up Character Panel icon.
+- Class Color Names setting now also supports the custom colors and also forces reaction colors on npcs instead of gray color if tapped unit.
 ### Bugfix
 - Classics: Fix missing gui element causing "Class Color Names" to not show/hide the Level option on click.
+- Fix DarkMode for Auras for MoP and TBC.
 
 # BetterBlizzFrames 1.8.7b
 ## Classic Era

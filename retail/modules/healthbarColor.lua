@@ -110,7 +110,7 @@ local function GetBBPNameplateColor(unit)
     return npcHealthbarColor
 end
 
-local function getUnitColor(unit, useCustomColors)
+local function getUnitColor(unit, useCustomColors, txt)
     if not UnitExists(unit) then return end
 
     if UnitIsPlayer(unit) or (C_LFGInfo.IsInLFGFollowerDungeon() and UnitInParty(unit)) then
@@ -186,7 +186,7 @@ local function getUnitColor(unit, useCustomColors)
             else
                 local reaction = getUnitReaction(unit)
                 if reaction == "HOSTILE" then
-                    if UnitIsTapDenied(unit) then
+                    if UnitIsTapDenied(unit) and not txt then
                         return {r = 0.9, g = 0.9, b = 0.9, a = 1}, false
                     elseif useCustomColors and customHealthbarColors then
                         local enemyColor = BetterBlizzFramesDB.enemyHealthColor
@@ -195,7 +195,7 @@ local function getUnitColor(unit, useCustomColors)
                         return {r = 1, g = 0, b = 0, a = 1}, false
                     end
                 elseif reaction == "NEUTRAL" then
-                    if UnitIsTapDenied(unit) then
+                    if UnitIsTapDenied(unit) and not txt then
                         return {r = 0.9, g = 0.9, b = 0.9, a = 1}, false
                     elseif useCustomColors and customHealthbarColors then
                         local neutralColor = BetterBlizzFramesDB.neutralHealthColor
@@ -216,7 +216,7 @@ local function getUnitColor(unit, useCustomColors)
             local reaction = getUnitReaction(unit)
 
             if reaction == "HOSTILE" then
-                if UnitIsTapDenied(unit) then
+                if UnitIsTapDenied(unit) and not txt then
                     return {r = 0.9, g = 0.9, b = 0.9, a = 1}, false
                 elseif useCustomColors and customHealthbarColors then
                     local enemyColor = BetterBlizzFramesDB.enemyHealthColor
@@ -225,7 +225,7 @@ local function getUnitColor(unit, useCustomColors)
                     return {r = 1, g = 0, b = 0, a = 1}, false
                 end
             elseif reaction == "NEUTRAL" then
-                if UnitIsTapDenied(unit) then
+                if UnitIsTapDenied(unit) and not txt then
                     return {r = 0.9, g = 0.9, b = 0.9, a = 1}, false
                 elseif useCustomColors and customHealthbarColors then
                     local neutralColor = BetterBlizzFramesDB.neutralHealthColor

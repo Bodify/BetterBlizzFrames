@@ -162,7 +162,7 @@ local function GetBBPNameplateColor(unit)
     return npcHealthbarColor
 end
 
-local function getUnitColor(unit)
+local function getUnitColor(unit, useCustomColors, txt)
     if not UnitExists(unit) then return end
     if UnitIsPlayer(unit) then
         local color = RAID_CLASS_COLORS[select(2, UnitClass(unit))]
@@ -190,13 +190,13 @@ local function getUnitColor(unit)
             else
                 local reaction = getUnitReaction(unit)
                 if reaction == "HOSTILE" then
-                    if UnitIsTapDenied(unit) then
+                    if UnitIsTapDenied(unit) and not txt then
                         return {r = 0.9, g = 0.9, b = 0.9}, false
                     else
                         return {r = 1, g = 0, b = 0}, false
                     end
                 elseif reaction == "NEUTRAL" then
-                    if UnitIsTapDenied(unit) then
+                    if UnitIsTapDenied(unit) and not txt then
                         return {r = 0.9, g = 0.9, b = 0.9}, false
                     else
                         return {r = 1, g = 1, b = 0}, false
@@ -209,13 +209,13 @@ local function getUnitColor(unit)
             local reaction = getUnitReaction(unit)
 
             if reaction == "HOSTILE" then
-                if UnitIsTapDenied(unit) then
+                if UnitIsTapDenied(unit) and not txt then
                     return {r = 0.9, g = 0.9, b = 0.9}, false
                 else
                     return {r = 1, g = 0, b = 0}, false
                 end
             elseif reaction == "NEUTRAL" then
-                if UnitIsTapDenied(unit) then
+                if UnitIsTapDenied(unit) and not txt then
                     return {r = 0.9, g = 0.9, b = 0.9}, false
                 else
                     return {r = 1, g = 1, b = 0}, false
@@ -492,7 +492,7 @@ function BBF.BiggerHealthbars(frame, name)
     -- Texture
     texture:SetTexture(targetTexture)
     playerGlowTexture:SetTexture("Interface\\Addons\\BetterBlizzFrames\\media\\UI-Player-Status")
-    hooksecurefunc(playerGlowTexture, "SetTexture", 
+    hooksecurefunc(playerGlowTexture, "SetTexture",
         function(self, texture)
             if texture ~= "Interface\\Addons\\BetterBlizzFrames\\media\\UI-Player-Status" then
                 self:SetTexture("Interface\\Addons\\BetterBlizzFrames\\media\\UI-Player-Status")

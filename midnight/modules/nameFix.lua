@@ -1327,7 +1327,7 @@ end
 C_Timer.After(1, UpdateNamePositionForClassic)
 
 local function ClassColorName(textObject, unit)
-    local color = BBF.getUnitColor(unit)
+    local color = BBF.getUnitColor(unit, (BetterBlizzFramesDB.customHealthbarColors and BetterBlizzFramesDB.customColorsUnitFrames) or nil, true)
     if color then
         textObject:SetTextColor(color.r, color.g, color.b)
     else
