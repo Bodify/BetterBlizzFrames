@@ -570,6 +570,15 @@ local function PartyFrameNameChange(frame)
     if not changeUnitFrameFont then
         frame.bbfName:SetFont(frame.Name:GetFont())
     end
+
+    local _, fontSize = frame.bbfName:GetFont()
+    local baseWidth = frame.Name:GetWidth()
+    local extraWidth = 0
+    if fontSize and fontSize > 10 then
+        extraWidth = math.floor((fontSize - 10) / 2) * 15
+    end
+    frame.bbfName:SetWidth(baseWidth + extraWidth)
+
     if classColorPartyNames then
         if frame.unit and (UnitIsPlayer(frame.unit) or C_LFGInfo.IsInLFGFollowerDungeon()) then
             local _, class = UnitClass(frame.unit)
