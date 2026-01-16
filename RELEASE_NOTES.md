@@ -1,27 +1,13 @@
-# BetterBlizzFrames 1.8.7b
-## Classic Era
-### Tweak
-- Add font settings support for TargetHealthPlus addon.
-## All versions
-### Tweak
-- Swapped out Blizzards fade functions with own copy to avoid potential taint/combat issues.
-- Removed Double Press setting.
-
-# BetterBlizzFrames 1.8.7
-## All versions
-### New
-- Misc: Keybind Double Press. Activate keybind presses both on key down and key up. (Default ActionBars only)
-## Bugfix
-- Classics: Fix some issues with Hide Level settings and Bigger Healthbars
-## Retail & Midnight
-### Tweak
-- No Portrait: Tweak Group Indicator to not show background.
+# BetterBlizzFrames 1.8.7c
 ## The Burning Crusade
-### Bugfix
-- Fix a lua error due to old API call on TBC client regards to hiding level.
-## Mists of Pandaria
-### Bugfix
-- Fix a lua error due to wrong player castbar name on MoP.
-## Classic Era
 ### Tweak
-- Rare elites now get the rare silver dragon frametexture instead of the normal gold elite dragon, as in newer expansions.
+- Fix healthbar height for large healthbar setting.
+## All versions
+### Tweak
+- Classics: Fix ToT Portrait for Class Portrait setting. Also fix it messing up Character Panel icon.
+- Class Color Names setting now also supports the custom colors and also forces reaction colors on npcs instead of gray color if tapped unit.
+- Fix font settings for default party frame names and increase width for larger font sizes.
+### Bugfix
+- Classics: Fix missing gui element causing "Class Color Names" to not show/hide the Level option on click.
+- Classics: Fix DarkMode for Auras.
+- Fix Format Numbers not working properly on first login on game launch.
