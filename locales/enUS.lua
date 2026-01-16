@@ -1291,7 +1291,6 @@ L["Print_Bigger_Healthbars_Not_Supported_DragonflightUI"] = "Bigger Healthbars i
 L["Print_Classic_Frames_Recommend_BBF"] = "A super lightweight |cffff8000Classic Frames|r setting is now live! I would highly recommend swapping to BBF's setting over |cff9d9d9dClassicFrames|r the addon due to the high CPU usage of that addon."
 L["Print_Removed_Dispellable_Aura"] = "Removed dispellable aura in blacklist: %s (%s)"
 L["Print_Removed_PvP_Blacklist_Auras"] = "Removed roughly 20 auras from from the PvP blacklist preset (and your imported blacklist) due to them accidentally being added. They are purgeable and can be useful info and should not be blacklisted due to that."
-L["Print_Missing_EJ_Micro_Button"] = "Encounter Journal Micro Button is missing, skipping \"OCD Tweaks\" to avoid errors. Needs testing but I don't have access to Titan Reforged realms."
 L["Queue_Popped_Instantly"] = "Queue popped instantly!"
 L["Queue_Popped_After"] = "Queue popped after %s"
 L["Dungeon_Queue_Popped_Instantly"] = "Dungeon queue popped instantly!"

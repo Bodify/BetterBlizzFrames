@@ -3604,7 +3604,7 @@ local function guiGeneralTab()
     local classColorTargetNames = CreateCheckbox("classColorTargetNames", L["Class_Color_Names"], BetterBlizzFrames)
     classColorTargetNames:SetPoint("TOPLEFT", biggerHealthbars, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(classColorTargetNames, L["Class_Color_Names"], L["Tooltip_Class_Color_Names_Desc"], L["Tooltip_Class_Color_Names_Extra"])
-    classColorTargetNames:HookScript("OnClick", function()
+    classColorTargetNames:HookScript("OnClick", function(self)
         BBF.AllNameChanges()
     end)
 

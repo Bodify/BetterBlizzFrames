@@ -10,6 +10,7 @@
 
 init.lua
 temp_shared\functions.lua
+temp_shared\functions_classics.lua
 
 locales\locales.xml
 

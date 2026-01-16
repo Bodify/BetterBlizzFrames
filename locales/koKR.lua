@@ -1298,7 +1298,6 @@ L["Print_Bigger_Healthbars_Not_Supported_DragonflightUI"] = "더 큰 생명력 �
 L["Print_Classic_Frames_Recommend_BBF"] = "초경량 |cffff8000클래식 프레임|r 설정이 출시되었습니다! ClassicFrames 애드온은 높은 CPU 사용량 때문에 BBF의 설정으로 전환하는 것을 강력히 추천합니다."
 L["Print_Removed_Dispellable_Aura"] = "차단 목록에서 해제 가능 오라 제거됨: %s (%s)"
 L["Print_Removed_PvP_Blacklist_Auras"] = "실수로 추가된 약 20개의 오라가 PvP 차단 목록 프리셋(및 가져온 차단 목록)에서 제거되었습니다. 이들은 제거 가능하며 유용한 정보일 수 있으므로 차단하지 않아야 합니다."
-L["Print_Missing_EJ_Micro_Button"] = "우연 일지 마이크로 버튼이 누락되어 오류를 방지하기 위해 \"강박 조정\"을 건너뜁니다. 테스트가 필요하지만 Titan Reforged 서버에 액세스할 수 없습니다."
 L["Queue_Popped_Instantly"] = "대기열이 즉시 시작되었습니다!"
 L["Queue_Popped_After"] = "%s 대기 후 대기열이 시작되었습니다"
 L["Dungeon_Queue_Popped_Instantly"] = "던전 대기열이 즉시 시작되었습니다!"

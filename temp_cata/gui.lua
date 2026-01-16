@@ -3805,7 +3805,7 @@ local function guiGeneralTab()
         BBF.AllNameChanges()
     end)
 
-    classColorTargetNames:HookScript("OnClick", function()
+    classColorTargetNames:HookScript("OnClick", function(self)
         BBF.AllNameChanges()
         if self:GetChecked() then
             classColorLevelText:Enable()
