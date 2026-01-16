@@ -2,6 +2,11 @@
 ## The Burning Crusade
 ### Tweak
 - Fix healthbar height for large healthbar setting.
+## All versions
+### Tweak
+- Classics: Fix ToT Portrait for Class Portrait setting. Also fix it messing up Character Panel icon.
+### Bugfix
+- Classics: Fix missing gui element causing "Class Color Names" to not show/hide the Level option on click.
 
 # BetterBlizzFrames 1.8.7b
 ## Classic Era
