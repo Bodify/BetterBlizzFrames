@@ -1,3 +1,8 @@
+# BetterBlizzFrames 1.8.7d
+## The Burning Crusade
+### Bugfix
+- Fix issue with OCD Tweaks setting causing healthbars and stuff to be in wrong positions.
+
 # BetterBlizzFrames 1.8.7c
 ## The Burning Crusade
 ### Tweak
