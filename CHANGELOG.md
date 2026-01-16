@@ -10,6 +10,7 @@
 ### Bugfix
 - Classics: Fix missing gui element causing "Class Color Names" to not show/hide the Level option on click.
 - Classics: Fix DarkMode for Auras.
+- Fix Format Numbers not working properly on first login on game launch.
 
 # BetterBlizzFrames 1.8.7b
 ## Classic Era
