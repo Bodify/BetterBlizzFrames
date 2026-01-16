@@ -2191,50 +2191,22 @@ function BBF.FixStupidBlizzPTRShit()
         end
 
         BBF.ActionBarIconZoom()
-        --ChangeHotkeyWidth(32)
-
-        -- if not BBF.hookedActionBarTextWidth then
-        --     hooksecurefunc(ActionBarActionButtonMixin, "UpdateHotkeys", function(self)
-        --         if BBF.hotkeyCancel then return end
-        --         self.HotKey:SetWidth(32)
-        --     end)
-        --     BBF.hookedActionBarTextWidth = true
-        -- end
         BBF.hotkeyCancel = nil
 
         local a,b,c,d,e = TargetFrameToTPortrait:GetPoint()
-        TargetFrameToTPortrait:SetPoint(a,b,c,3,-3)
-        TargetFrameToTPortrait:SetSize(40,40)
+        TargetFrameToTPortrait:SetPoint(a,b,c,5,-5)
+        TargetFrameToTPortrait:SetSize(36,36)
 
         local a,b,c,d,e = FocusFrameToTPortrait:GetPoint()
         FocusFrameToTPortrait:SetPoint(a,b,c,5,-5)
         FocusFrameToTPortrait:SetSize(36,36)
 
-        local a,b,c,d,e = PetFrameHealthBar:GetPoint()
-        PetFrameHealthBar:SetPoint(a,b,c,46,e)
-        local a,b,c,d,e = PetFrameManaBar:GetPoint()
-        PetFrameManaBar:SetPoint(a,b,c,46,e)
-
-        if not BetterBlizzFramesDB.biggerHealthbars then
-            local a,b,c,d,e = TargetFrameNameBackground:GetPoint()
-            TargetFrameNameBackground:SetPoint(a,b,c,-107,-23)
-            TargetFrameNameBackground:SetHeight(18)
-            local a,b,c,d,e = TargetFrameHealthBar:GetPoint()
-            TargetFrameHealthBar:SetPoint(a,b,c,-107,e)
-            local a,b,c,d,e = TargetFrameManaBar:GetPoint()
-            TargetFrameManaBar:SetPoint(a,b,c,-107,e)
-
-            local a,b,c,d,e = FocusFrameNameBackground:GetPoint()
-            FocusFrameNameBackground:SetPoint(a,b,c,-107,-23)
-            FocusFrameNameBackground:SetHeight(18)
-            local a,b,c,d,e = FocusFrameHealthBar:GetPoint()
-            FocusFrameHealthBar:SetPoint(a,b,c,-107,e)
-            local a,b,c,d,e = FocusFrameManaBar:GetPoint()
-            FocusFrameManaBar:SetPoint(a,b,c,-107,e)
+        if not BBF.tfbFix then
+            hooksecurefunc(TargetFrameBackground, "SetSize", function()
+                TargetFrameBackground:SetHeight(40)
+            end)
+            BBF.tfbFix = true
         end
-
-        if C_AddOns.IsAddOnLoaded("Bartender4") then return end
-        if C_AddOns.IsAddOnLoaded("Dominos") then return end
     else
         -- BBF.hotkeyCancel = true
         -- ChangeHotkeyWidth(28)
