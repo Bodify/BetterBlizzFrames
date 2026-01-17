@@ -2761,8 +2761,10 @@ function BBF.noPortraitModes()
                 frame.Selection.MouseOverHighlight:ClearAllPoints()
                 frame.Selection.MouseOverHighlight:SetPoint("TOPLEFT", frame.Selection.TopLeftCorner, "TOPLEFT", 8, -8)
                 frame.Selection.MouseOverHighlight:SetPoint("BOTTOMRIGHT", frame.Selection.BottomRightCorner, "BOTTOMRIGHT", -8, 8)
-                frame.Selection.HorizontalLabel:ClearAllPoints()
-                frame.Selection.HorizontalLabel:SetPoint("CENTER", frame.Selection.MouseOverHighlight, "CENTER", 0, 0)
+                if frame.Selection.HorizontalLabel then
+                    frame.Selection.HorizontalLabel:ClearAllPoints()
+                    frame.Selection.HorizontalLabel:SetPoint("CENTER", frame.Selection.MouseOverHighlight, "CENTER", 0, 0)
+                end
                 frame.Selection.bbfRepositioned = true
 
                 hooksecurefunc(frame.Selection.TopLeftCorner, "SetPoint", function(self)
