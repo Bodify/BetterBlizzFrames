@@ -973,14 +973,13 @@ function BBF.CheckForAuraBorders()
 end
 
 function BBF.DarkModeCastbars()
+    local CastingBarFrame = CastingBarFrame or PlayerCastingBarFrame
     if BetterBlizzFramesDB.darkModeCastbars then
         local desaturationValue = BetterBlizzFramesDB.darkModeUi and true or false
         local vertexColor = BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeColor or 1
         local castbarBorder = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.1) or 1
         local lighterVertexColor = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.3) or 1
         BBF.darkModeCastbars = true
-
-        local CastingBarFrame = CastingBarFrame or PlayerCastingBarFrame
 
         applySettings(TargetFrame.spellbar.Border, desaturationValue, castbarBorder)
         --applySettings(TargetFrame.spellbar.BorderShield, desaturationValue, vertexColor)
