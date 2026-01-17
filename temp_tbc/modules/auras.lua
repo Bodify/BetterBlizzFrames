@@ -2790,24 +2790,40 @@ function BBF.SetupMasqueSupport()
 
         local function hookUnitFrameAuras(frame, buffGroup, debuffGroup)
             local function updateUnitFrameAuras()
-                for aura in frame.auraPools:EnumerateActive() do
-                    if not skinned[aura] then
-                        skinned[aura] = true
-                        -- Check if the aura is a debuff
-                        if aura.Border then
-                            debuffGroup:AddButton(aura, {
-                                Icon = aura.Icon,
-                                DebuffBorder = aura.Border,
-                                Cooldown = aura.Cooldown,
-                            })
-                        else
+                for i = 1, MAX_TARGET_BUFFS do
+                    local auraName = frame:GetName().."Buff"..i
+                    local aura = _G[auraName]
+                    if aura and aura:IsShown() then
+                        if not skinned[aura] then
+                            skinned[aura] = true
+                            local icon = _G[auraName.."Icon"]
+                            local cooldown = _G[auraName.."Cooldown"]
                             buffGroup:AddButton(aura, {
-                                Icon = aura.Icon,
-                                Cooldown = aura.Cooldown,
+                                Icon = icon,
+                                Cooldown = cooldown,
                             })
                         end
                     end
                 end
+
+                for i = 1, 120 do
+                    local auraName = frame:GetName().."Debuff"..i
+                    local aura = _G[auraName]
+                    if aura and aura:IsShown() then
+                        if not skinned[aura] then
+                            skinned[aura] = true
+                            local icon = _G[auraName.."Icon"]
+                            local cooldown = _G[auraName.."Cooldown"]
+                            local border = _G[auraName.."Border"]
+                            debuffGroup:AddButton(aura, {
+                                Icon = icon,
+                                DebuffBorder = border,
+                                Cooldown = cooldown,
+                            })
+                        end
+                    end
+                end
+
                 if not auraFilteringOn then
                     buffGroup:ReSkin(true)
                     debuffGroup:ReSkin(true)
@@ -2860,8 +2876,17 @@ function BBF.HookPlayerAndTargetAuras()
 
         if not BetterBlizzFramesDB.targetBuffEnable and not BetterBlizzFramesDB.targetdeBuffEnable then
             hooksecurefunc(TargetFrame, "UpdateAuras", function(self)
-                for aura in self.auraPools:EnumerateActive() do
-                    aura:Hide()
+                for i = 1, MAX_TARGET_BUFFS do
+                    local aura = _G[self:GetName().."Buff"..i]
+                    if aura then
+                        aura:Hide()
+                    end
+                end
+                for i = 1, 120 do
+                    local aura = _G[self:GetName().."Debuff"..i]
+                    if aura then
+                        aura:Hide()
+                    end
                 end
             end)
             TargetFrame.hidingAllAuras = true
@@ -2872,8 +2897,17 @@ function BBF.HookPlayerAndTargetAuras()
 
         if not BetterBlizzFramesDB.focusBuffEnable and not BetterBlizzFramesDB.focusdeBuffEnable then
             hooksecurefunc(FocusFrame, "UpdateAuras", function(self)
-                for aura in self.auraPools:EnumerateActive() do
-                    aura:Hide()
+                for i = 1, MAX_TARGET_BUFFS do
+                    local aura = _G[self:GetName().."Buff"..i]
+                    if aura then
+                        aura:Hide()
+                    end
+                end
+                for i = 1, 120 do
+                    local aura = _G[self:GetName().."Debuff"..i]
+                    if aura then
+                        aura:Hide()
+                    end
                 end
             end)
             FocusFrame.hidingAllAuras = true
