@@ -823,7 +823,6 @@ L["Tooltip_RP_Healthbar_Color_Desc"] = "Color healthbars in their Total RP3 Role
 L["Tooltip_RP_Last_Name_Desc"] = "Show RP Last Name"
 L["Tooltip_RP_Name_Color_Desc"] = "Color names in their Total RP3 Roleplay Color."
 L["Tooltip_Same_Size"] = "Enable same sized auras.\n\nBy default your own auras are a little bigger than others. This makes them same size."
-L["Tooltip_Same_Size_Desc"] = "Scale up manabar & resources to same size as healthbar."
 L["Tooltip_Search_Desc"] = "You can now search for settings in BetterBlizzFrames. (WIP)"
 L["Tooltip_Search_New"] = "Search"
 L["Tooltip_Section"] = " section."

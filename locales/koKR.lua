@@ -830,7 +830,6 @@ L["Tooltip_RP_Healthbar_Color_Desc"] = "Total RP3 역할 색상으로 체력바�
 L["Tooltip_RP_Last_Name_Desc"] = "RP 성 표시"
 L["Tooltip_RP_Name_Color_Desc"] = "Total RP3 역할 색상으로 이름을 표시합니다."
 L["Tooltip_Same_Size"] = "동일한 크기의 오라를 활성화합니다.\n\n기본적으로 자신의 오라가 다른 것보다 조금 더 큽니다. 이것은 같은 크기로 만듭니다."
-L["Tooltip_Same_Size_Desc"] = "마나바와 자원을 체력바와 동일한 크기로 확대"
 L["Tooltip_Search_Desc"] = "이제 BetterBlizzFrames에서 설정을 검색할 수 있습니다. (작업 중)"
 L["Tooltip_Search_New"] = "검색"
 L["Tooltip_Section"] = " 섹션"

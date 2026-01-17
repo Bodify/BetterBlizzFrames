@@ -6520,7 +6520,7 @@ local function guiFrameAuras()
 
     local sameSizeAuras = CreateCheckbox("sameSizeAuras", L["Same_Size"], playerAuraFiltering)
     sameSizeAuras:SetPoint("LEFT", targetAndFocusSmallAuraScale, "RIGHT", 3, 0)
-    CreateTooltipTwo(sameSizeAuras, L["Same_Size"], L["Tooltip_Same_Size_Desc"])
+    CreateTooltipTwo(sameSizeAuras, L["Same_Size"], L["Tooltip_Same_Size"])
     sameSizeAuras:HookScript("OnClick", function(self)
         if self:GetChecked() then
             DisableElement(targetAndFocusSmallAuraScale)
