@@ -918,14 +918,14 @@ function BBF.ChangeCastbarSizes()
     -- CastingBarFrame:ClearAllPoints()
     -- CastingBarFrame:SetPoint("CENTER", UIParent, "BOTTOM", BetterBlizzFramesDB.playerCastBarXPos, BetterBlizzFramesDB.playerCastBarYPos + 157)
 
-    BBF.MoveRegion(CastingBarFrame, "CENTER", UIParent, "BOTTOM", BetterBlizzFramesDB.playerCastBarXPos, BetterBlizzFramesDB.playerCastBarYPos + 166)
+    -- BBF.MoveRegion(CastingBarFrame, "CENTER", UIParent, "BOTTOM", BetterBlizzFramesDB.playerCastBarXPos, BetterBlizzFramesDB.playerCastBarYPos + 166)
 
-    if CastingBarFrame.ignoreFramePositionManager and not bugNotify then
-        bugNotify = true
-        C_Timer.After(3, function() 
-            BBF.Print("\n" .. L["Print_Cast_Bar_Underneath_Warning"])
-        end)
-    end
+    -- if CastingBarFrame.ignoreFramePositionManager and not bugNotify then
+    --     bugNotify = true
+    --     C_Timer.After(3, function() 
+    --         BBF.Print("\n" .. L["Print_Cast_Bar_Underneath_Warning"])
+    --     end)
+    -- end
 
     --
     CastingBarFrameMiscAdjustments()

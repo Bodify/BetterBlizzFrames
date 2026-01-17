@@ -4673,15 +4673,18 @@ local function guiCastbars()
     local playerCastBarScale = CreateSlider(contentFrame, "Size", 0.1, 1.9, 0.01, "playerCastBarScale")
     playerCastBarScale:SetPoint("TOP", anchorSubPlayerCastbar, "BOTTOM", 0, -15)
 
-    local playerCastBarXPos = CreateSlider(contentFrame, "x offset", -200, 200, 1, "playerCastBarXPos", "X")
-    playerCastBarXPos:SetPoint("TOP", playerCastBarScale, "BOTTOM", 0, -15)
+    local playerCastBarXPos, playerCastBarYPos
 
-    local playerCastBarYPos = CreateSlider(contentFrame, "y offset", -200, 200, 1, "playerCastBarYPos", "Y")
-    playerCastBarYPos:SetPoint("TOP", playerCastBarXPos, "BOTTOM", 0, -15)
+    if not BBF.isTBC then --handled by edit mode in tbc
+        playerCastBarXPos = CreateSlider(contentFrame, "x offset", -200, 200, 1, "playerCastBarXPos", "X")
+        playerCastBarXPos:SetPoint("TOP", playerCastBarScale, "BOTTOM", 0, -15)
+
+        playerCastBarYPos = CreateSlider(contentFrame, "y offset", -200, 200, 1, "playerCastBarYPos", "Y")
+        playerCastBarYPos:SetPoint("TOP", playerCastBarXPos, "BOTTOM", 0, -15)
+    end
 
     local playerCastBarWidth = CreateSlider(contentFrame, "Width", 90, 300, 1, "playerCastBarWidth")
-    --playerCastBarWidth:SetPoint("TOP", playerCastBarYPos, "BOTTOM", 0, -15)
-    playerCastBarWidth:SetPoint("TOP", playerCastBarYPos, "BOTTOM", 0, -15)
+    playerCastBarWidth:SetPoint("TOP", playerCastBarYPos or playerCastBarScale, "BOTTOM", 0, -15)
 
     local playerCastBarHeight = CreateSlider(contentFrame, "Height", 5, 30, 1, "playerCastBarHeight")
     playerCastBarHeight:SetPoint("TOP", playerCastBarWidth, "BOTTOM", 0, -15)
