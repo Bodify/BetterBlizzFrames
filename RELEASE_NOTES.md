@@ -1,3 +1,11 @@
+# BetterBlizzFrames 1.8.7e
+## The Burning Crusade
+### Tweak
+- Remove Player Castbar handling by BBF in TBC since this is now handled by Edit Mode instead. Your player castbar mightve moved due to this so make sure to re-adjust it in edit mode.
+#### Bugfix
+- Fix a nil error due to darkmode castbar logic looking for old castbar name
+- Fix some old aura settings needing update for TBC. Causing Masque support to break and a few other things.
+
 # BetterBlizzFrames 1.8.7d
 ## The Burning Crusade
 ### Bugfix
