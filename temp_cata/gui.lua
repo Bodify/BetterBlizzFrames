@@ -1102,7 +1102,7 @@ local function notWorking(element, re)
     if element.Text then
         element.Text:SetTextColor(1,0,0)
     end
-    CreateTooltipTwo(element, L["Tooltip_Not_Working_Title"], string.format(L["Tooltip_Not_Working_Desc"], (BBF.isMoP and "MoP" or "Cata")), string.format(L["Tooltip_Not_Working_Extra"], (BBF.isMoP and "Beta" or "Alpha")))
+    CreateTooltipTwo(element, L["Tooltip_Not_Working_Title"], string.format(L["Tooltip_Not_Working_Desc"], (BBF.isMoP and "MoP" or BBF.isTBC and "TBC" or "Cata")), string.format(L["Tooltip_Not_Working_Extra"], (BBF.isMoP and "Beta" or "Alpha")))
 
     if re then
         C_Timer.After(4, function()
