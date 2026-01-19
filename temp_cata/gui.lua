@@ -3108,7 +3108,7 @@ local function guiGeneralTab()
 
     local hidePlayerPower = CreateCheckbox("hidePlayerPower", L["Hide_Resource_Power"], BetterBlizzFrames, nil, BBF.HideFrames)
     hidePlayerPower:SetPoint("TOPLEFT", hidePvpTimerText, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltipTwo(hidePlayerPower, L["Hide_Resource_Power"], L["Tooltip_Hide_Player_Power_Desc"] .. " |A:UI-HUD-UnitFrame-Player-PVP-FFAIcon:44:28|a")
+    CreateTooltipTwo(hidePlayerPower, L["Hide_Resource_Power"], L["Tooltip_Hide_Resource_Power_Desc"])
 
     local classOptionsFrame
     local function OpenClassSpecificWindow()
