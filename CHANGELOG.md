@@ -1,3 +1,10 @@
+# BetterBlizzFrames 1.8.7f
+## The Burning Crusade
+### Tweak
+- Update aura stuff with late changes made to mop version. Hopefully things like the glows etc are positioned correctly now with all sorts of settings. If you notice anything weird please let me know.
+### Bugfix
+- Fix some bugs caused by leftover retail code in tbc version.
+
 # BetterBlizzFrames 1.8.7e
 ## The Burning Crusade
 ### Tweak
