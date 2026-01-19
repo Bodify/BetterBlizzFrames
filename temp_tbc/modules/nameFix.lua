@@ -957,7 +957,11 @@ if TargetFrame_CheckLevel then
 else
     local function ClassColorLevelText(frame)
         if not classColorLevelText then return end
-        ClassColorName(frame.TargetFrameContent.TargetFrameContentMain.LevelText, frame.unit)
+        if frame == TargetFrame then
+            ClassColorName(TargetFrameTextureFrameLevelText, frame.unit)
+        elseif frame == FocusFrame then
+            ClassColorName(FocusFrameTextureFrameLevelText, frame.unit)
+        end
     end
     hooksecurefunc(TargetFrame, "CheckLevel", ClassColorLevelText)
     hooksecurefunc(FocusFrame, "CheckLevel", ClassColorLevelText)
