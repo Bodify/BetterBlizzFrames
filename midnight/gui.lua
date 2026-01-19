@@ -7938,6 +7938,27 @@ local function guiFrameAuras()
         CheckAndToggleCheckboxes(playerAuraFiltering)
     end)
 
+    local playerAuraSettings = contentFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    playerAuraSettings:SetPoint("TOP", playerAuraFiltering, "BOTTOMRIGHT", 350, -5)
+    playerAuraSettings:SetText(L["Player_Aura_Settings"])
+
+    local enablePlayerBuffFiltering = CreateCheckbox("enablePlayerBuffFiltering", L["Enable_Player_Aura_Adjustments"], playerAuraFiltering)
+    enablePlayerBuffFiltering:SetPoint("TOPLEFT", playerAuraSettings, "BOTTOMLEFT", -10, 0)
+
+    local playerAuraSpacingX = CreateSlider(enablePlayerBuffFiltering, L["Horizontal_Padding"], 0, 10, 1, "playerAuraSpacingX", "X")
+    playerAuraSpacingX:SetPoint("TOP", playerAuraSettings, "BOTTOM", 0, -40)
+    CreateTooltip(playerAuraSpacingX, L["Tooltip_Horizontal_Aura_Padding"], "ANCHOR_LEFT")
+
+    local playerAuraSpacingY = CreateSlider(enablePlayerBuffFiltering, L["Vertical_Padding"], -10, 10, 1, "playerAuraSpacingY", "Y")
+    playerAuraSpacingY:SetPoint("TOP", playerAuraSpacingX, "BOTTOM", 0, -15)
+
+    enablePlayerBuffFiltering:HookScript("OnClick", function (self)
+        CheckAndToggleCheckboxes(enablePlayerBuffFiltering)
+        if not self:GetChecked() then
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        end
+    end)
+
     local betaHighlightIcon = playerAuraFiltering:CreateTexture(nil, "BACKGROUND")
     betaHighlightIcon:SetAtlas("CharacterCreate-NewLabel")
     betaHighlightIcon:SetSize(42, 34)

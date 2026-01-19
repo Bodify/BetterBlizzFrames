@@ -1607,596 +1607,100 @@ end
 
 local BuffFrame = BuffFrame
 local printedMsg
-local function PersonalBuffFrameFilterAndGrid(self)
-    ResetHiddenAurasCount()
-    local isExpanded = BuffFrame:IsExpanded();
-    local currentAuraSize = BuffFrame.AuraContainer.iconScale
+local function PersonalBuffFrameFilterAndGrid()
+    local isExpanded = BuffFrame.IsExpanded
     local addIconsToRight = BuffFrame.AuraContainer.addIconsToRight
     local addIconsToTop = BuffFrame.AuraContainer.addIconsToTop
-    if ToggleHiddenAurasButton then
-        ToggleHiddenAurasButton:SetScale(currentAuraSize)
-    end
-    local db = BetterBlizzFramesDB
-
-    -- Define the parameters for your grid system
     local maxAurasPerRow = BuffFrame.AuraContainer.iconStride
     local auraSpacingX = BuffFrame.AuraContainer.iconPadding - 7 + playerAuraSpacingX
     local auraSpacingY = BuffFrame.AuraContainer.iconPadding + 8 + playerAuraSpacingY
-    local auraSize = 32;      -- Set the size of each aura frame
-    --local auraScale = BuffFrame.AuraContainer.iconScale
+    local auraSize = 32
 
-    local currentRow = 1;
-    local currentCol = 1;
-    local xOffset = 0;
-    local yOffset = 0;
-    local hiddenYOffset = 0-- -auraSpacingY - auraSize + playerAuraSpacingY;
-    local hiddenXOffset = 0
-    local toggleIcon = showHiddenAurasIcon and CreateToggleIcon() or nil
-
-    -- Initialize offsets based on the direction setting
-    if db.hiddenIconDirection == "DOWN" then
-        hiddenYOffset = -auraSpacingY - auraSize + playerAuraSpacingY
-    elseif db.hiddenIconDirection == "UP" then
-        hiddenYOffset = auraSpacingY + auraSize - playerAuraSpacingY
-    elseif db.hiddenIconDirection == "LEFT" then
-        hiddenXOffset = -auraSpacingX - auraSize
-    elseif db.hiddenIconDirection == "RIGHT" then
-        hiddenXOffset = auraSpacingX + auraSize
-    end
+    local currentRow, currentCol = 1, 1
+    local xOffset, yOffset = 0, 0
 
     if isExpanded then
-    for auraIndex, auraInfo in ipairs(BuffFrame.auraInfo or {}) do
-        --if isExpanded or not auraInfo.hideUnlessExpanded then
+        for auraIndex, auraInfo in ipairs(BuffFrame.auraInfo or {}) do
             local auraFrame = BuffFrame.auraFrames[auraIndex]
             if auraFrame and not auraFrame.isAuraAnchor then
+                auraFrame:ClearAllPoints()
 
-                local name, icon, count, dispelType, duration, expirationTime, source,
-                    isStealable, nameplateShowPersonal, spellId, canApplyAura,
-                    isBossDebuff, castByPlayer, nameplateShowAll, timeMod
-
-                local hasMainHandEnchant, mainHandExpiration, mainHandCharges, mainHandEnchantID, hasOffHandEnchant, offHandExpiration, offHandCharges, offHandEnchantID
-
-                if auraInfo.auraType == "TempEnchant" then
-                    hasMainHandEnchant, mainHandExpiration, mainHandCharges, mainHandEnchantID, hasOffHandEnchant, offHandExpiration, offHandCharges, offHandEnchantID = GetWeaponEnchantInfo()
-                    if mainHandEnchantID then
-                        spellId = mainHandEnchantID
-                        duration = 120
-                        expirationTime = mainHandExpiration
-                        name = "Temp Enchant"
-                    elseif offHandEnchantID then
-                        spellId = offHandEnchantID
-                        duration = 120
-                        expirationTime = offHandExpiration
-                        name = "Temp Enchant"
-                    end
-                else
-                    name, icon, count, dispelType, duration, expirationTime, source,
-                    isStealable, nameplateShowPersonal, spellId, canApplyAura,
-                    isBossDebuff, castByPlayer, nameplateShowAll, timeMod
-                    = BBF.TWWUnitAura("player", auraInfo.index, 'HELPFUL');
-                end
-
-              local auraData = {
-                  name = name,
-                  icon = icon,
-                  count = count,
-                  dispelType = dispelType,
-                  duration = duration,
-                  expirationTime = expirationTime,
-                  sourceUnit = source,
-                  isStealable = isStealable,
-                  nameplateShowPersonal = nameplateShowPersonal,
-                  spellId = spellId,
-                  auraType = "Buff",
-              };
-                --local unit = self.unit
-                -- Print spell ID logic
-                if printAuraSpellIds and not auraFrame.bbfHookAdded then
-                    auraFrame.bbfHookAdded = true
-                    auraFrame:HookScript("OnEnter", function()
-                        local currentAuraIndex = auraInfo.index
-                        local name, icon, count, dispelType, duration, expirationTime, source,
-                            isStealable, nameplateShowPersonal, spellId, canApplyAura,
-                            isBossDebuff, castByPlayer, nameplateShowAll, timeMod, hasMainHandEnchant,
-                            mainHandExpiration, mainHandCharges, mainHandEnchantID, hasOffHandEnchant, offHandExpiration, offHandCharges, offHandEnchantID
-                        if auraInfo.auraType == "TempEnchant" then
-                            hasMainHandEnchant, mainHandExpiration, mainHandCharges, mainHandEnchantID, hasOffHandEnchant, offHandExpiration, offHandCharges, offHandEnchantID = GetWeaponEnchantInfo()
-                            if mainHandEnchantID then
-                                spellId = mainHandEnchantID
-                                name = "Temp Enchant Mainhand"
-                            elseif offHandEnchantID then
-                                spellId = offHandEnchantID
-                                name = "Temp Enchant Offhand"
-                            end
-                        else
-                            name, icon, count, dispelType, duration, expirationTime, source,
-                            isStealable, nameplateShowPersonal, spellId, canApplyAura,
-                            isBossDebuff, castByPlayer, nameplateShowAll, timeMod
-                            = BBF.TWWUnitAura("player", currentAuraIndex, 'HELPFUL');
-                        end
-
-                        local auraData = {
-                            name = name,
-                            icon = icon,
-                            count = count,
-                            dispelType = dispelType,
-                            duration = duration,
-                            expirationTime = expirationTime,
-                            sourceUnit = source,
-                            isStealable = isStealable,
-                            nameplateShowPersonal = nameplateShowPersonal,
-                            spellId = spellId,
-                            auraType = auraInfo.auraType,
-                        };
-
-                        if auraData and (not auraFrame.bbfPrinted or auraFrame.bbfLastPrintedAuraIndex ~= currentAuraIndex) then
-                            local iconTexture = auraData.icon and "|T" .. auraData.icon .. ":16:16|t" or ""
-                            BBF.Print(iconTexture .. " " .. (auraData.name or L["Label_Unknown"]) .. "  |A:worldquest-icon-engineering:14:14|a ID: " .. (auraData.spellId or L["Label_Unknown"]))
-                            auraFrame.bbfPrinted = true
-                            auraFrame.bbfLastPrintedAuraIndex = currentAuraIndex  -- Store the index of the aura that was just printed
-                            -- Cancel existing timer if any
-                            if auraFrame.bbfTimer then
-                                auraFrame.bbfTimer:Cancel()
-                            end
-                            -- Schedule the reset of bbfPrinted flag
-                            auraFrame.bbfTimer = C_Timer.NewTimer(6, function()
-                                auraFrame.bbfPrinted = false
-                            end)
-                        end
-                    end)
-                end
-
-                local shouldShowAura, isImportant, isPandemic, isEnlarged, isCompacted, auraColor
-                shouldShowAura, isImportant, isPandemic, isEnlarged, isCompacted, auraColor = ShouldShowBuff("player", auraData, "playerBuffFrame")
-                isImportant = isImportant and playerAuraImportantGlow
-
-                -- Nonprint logic
-                if shouldShowAura then
-
-                    local isPurgeable = dispelType == "Magic"
-
-                    if opBarriersOn and opBarriers[auraData.spellId] and auraData.duration ~= 5 then
-                        isImportant = nil
-                    end
-
-                    if not auraFrame.GlowFrame then
-                        auraFrame.GlowFrame = CreateFrame("Frame", nil, auraFrame)
-                        auraFrame.GlowFrame:SetAllPoints(auraFrame)
-                        auraFrame.GlowFrame:SetFrameLevel(auraFrame:GetFrameLevel() + 1)
-                        auraFrame.GlowFrame:SetFrameStrata("MEDIUM")
-                    end
-
-                    if addCooldownFramePlayerBuffs then
-                        if not auraFrame.Cooldown then
-                            local cooldownFrame = CreateFrame("Cooldown", nil, auraFrame, "CooldownFrameTemplate")
-                            cooldownFrame:SetAllPoints(auraFrame.Icon)
-                            cooldownFrame:SetDrawEdge(false)
-                            cooldownFrame:SetDrawSwipe(true)
-                            cooldownFrame:SetReverse(true)
-                            auraFrame.Count:SetParent(auraFrame.GlowFrame)
-                            if hideDefaultPlayerAuraCdText then
-                                cooldownFrame:SetHideCountdownNumbers(true)
-                            else
-                                local cdText = cooldownFrame:GetRegions()
-                                if cdText then
-                                    cdText:SetScale(0.85)
-                                end
-                            end
-                            auraFrame.Cooldown = cooldownFrame
-                        end
-
-                        if duration and duration > 0 and expirationTime then
-                            local startTime = expirationTime - duration
-                            auraFrame.Cooldown:SetCooldown(startTime, duration)
-                        else
-                            auraFrame.Cooldown:Hide()
-                        end
-
-                        if hideDefaultPlayerAuraDuration then
-                            auraFrame.Duration:SetAlpha(0)
-                        end
-                    end
-
-                    auraFrame:Show();
-                    auraFrame:ClearAllPoints();
-                    if addIconsToRight then
-                        if addIconsToTop then
-                            auraFrame:SetPoint("BOTTOMLEFT", BuffFrame, "BOTTOMLEFT", xOffset + 15, yOffset);
-                        else
-                            auraFrame:SetPoint("TOPLEFT", BuffFrame, "TOPLEFT", xOffset + 15, -yOffset);
-                        end
+                if addIconsToRight then
+                    if addIconsToTop then
+                        auraFrame:SetPoint("BOTTOMLEFT", BuffFrame, "BOTTOMLEFT", xOffset + 15, yOffset)
                     else
-                        if addIconsToTop then
-                            auraFrame:SetPoint("BOTTOMRIGHT", BuffFrame, "BOTTOMRIGHT", -xOffset - 15, yOffset);
-                        else
-                            auraFrame:SetPoint("TOPRIGHT", BuffFrame, "TOPRIGHT", -xOffset - 15, -yOffset);
-                        end
+                        auraFrame:SetPoint("TOPLEFT", BuffFrame, "TOPLEFT", xOffset + 15, -yOffset)
                     end
-
-                    auraFrame.spellId = auraData.spellId
-
-                    SetupAuraFilterClicks(auraFrame)
-
-                    -- Update column and row counters
-                    currentCol = currentCol + 1;
-                    if currentCol > maxAurasPerRow then
-                        currentRow = currentRow + 1;
-                        currentCol = 1;
-                    end
-                    -- Calculate the new offsets
-                    xOffset = (currentCol - 1) * (auraSize + auraSpacingX);
-                    yOffset = (currentRow - 1) * (auraSize + auraSpacingY);
-                    auraFrame.isAuraHidden = false
-
-                    -- Important logic
-                    if isImportant then
-                        local borderFrame = BBF.auraBorders[auraFrame]
-                        auraFrame.isImportant = true
-                        if not auraFrame.ImportantGlow then
-                            auraFrame.ImportantGlow = auraFrame.GlowFrame:CreateTexture(nil, "OVERLAY", nil, 2)
-                            if borderFrame then
-                                auraFrame.ImportantGlow:SetPoint("TOPLEFT", auraFrame.Icon, "TOPLEFT", -15, 17)
-                                auraFrame.ImportantGlow:SetPoint("BOTTOMRIGHT", auraFrame.Icon, "BOTTOMRIGHT", 15, -16)
-                            else
-                                auraFrame.ImportantGlow:SetPoint("TOPLEFT", auraFrame.Icon, "TOPLEFT", -15, 14.5)
-                                auraFrame.ImportantGlow:SetPoint("BOTTOMRIGHT", auraFrame.Icon, "BOTTOMRIGHT", 15, -15)
-                            end
-                            auraFrame.ImportantGlow:SetDrawLayer("OVERLAY", 7)
-                            auraFrame.ImportantGlow:SetAtlas("newplayertutorial-drag-slotgreen")
-                            auraFrame.ImportantGlow:SetDesaturated(true)
-                        end
-                        if auraColor then
-                            auraFrame.ImportantGlow:SetVertexColor(auraColor[1], auraColor[2], auraColor[3], auraColor[4])
-                        else
-                            auraFrame.ImportantGlow:SetVertexColor(0, 1, 0)
-                        end
-                        auraFrame.Duration:SetParent(auraFrame.GlowFrame)
-                        auraFrame.ImportantGlow:Show()
-                    else--if auraFrame.isImportant then
-                        auraFrame.isImportant = false
-                        if auraFrame.ImportantGlow then
-                            auraFrame.ImportantGlow:Hide()
-                        end
-                    end
-                    if isPurgeable and db.showPurgeTextureOnSelf and not isImportant then
-                        local borderFrame = BBF.auraBorders[auraFrame]
-                        auraFrame.isPurgeGlow = true
-                        if not auraFrame.PurgeGlow then
-                            auraFrame.PurgeGlow = auraFrame.GlowFrame:CreateTexture(nil, "OVERLAY", nil, 1)
-                            if (betterTargetPurgeGlow or betterFocusPurgeGlow) then
-                                if borderFrame then
-                                    auraFrame.PurgeGlow:SetPoint("TOPLEFT", auraFrame.Icon, "TOPLEFT", -15, 17)
-                                    auraFrame.PurgeGlow:SetPoint("BOTTOMRIGHT", auraFrame.Icon, "BOTTOMRIGHT", 15, -16)
-                                else
-                                    auraFrame.PurgeGlow:SetPoint("TOPLEFT", auraFrame.Icon, "TOPLEFT", -15, 14.5)
-                                    auraFrame.PurgeGlow:SetPoint("BOTTOMRIGHT", auraFrame.Icon, "BOTTOMRIGHT", 15, -15)
-                                end
-                                auraFrame.PurgeGlow:SetAtlas("newplayertutorial-drag-slotblue")
-                            else
-                                if borderFrame then
-                                    auraFrame.PurgeGlow:SetPoint("TOPLEFT", auraFrame.Icon, "TOPLEFT", -5, 5.5)
-                                    auraFrame.PurgeGlow:SetPoint("BOTTOMRIGHT", auraFrame.Icon, "BOTTOMRIGHT", 3, -3.5)
-                                else
-                                    auraFrame.PurgeGlow:SetPoint("TOPLEFT", auraFrame.Icon, "TOPLEFT", -5, 4.5)
-                                    auraFrame.PurgeGlow:SetPoint("BOTTOMRIGHT", auraFrame.Icon, "BOTTOMRIGHT", 3, -2.5)
-                                end
-                                auraFrame.PurgeGlow:SetTexture(237671)
-                                auraFrame.PurgeGlow:SetBlendMode("ADD")
-                            end
-                            auraFrame.PurgeGlow:SetDrawLayer("OVERLAY", 7)
-                        end
-                        if changePurgeTextureColor then
-                            auraFrame.PurgeGlow:SetDesaturated(true)
-                            auraFrame.PurgeGlow:SetVertexColor(unpack(purgeTextureColorRGB))
-                        end
-                        auraFrame.Duration:SetParent(auraFrame.GlowFrame)
-                        auraFrame.PurgeGlow:Show()
-                    else--if auraFrame.isPurgeGlow then
-                        auraFrame.isPurgeGlow = false
-                        if auraFrame.PurgeGlow then
-                            auraFrame.PurgeGlow:Hide()
-                        end
-                    end
-                    auraFrame.Duration:SetDrawLayer("OVERLAY")
                 else
-                    hiddenAuras = hiddenAuras + 1
-                    if not shouldKeepAurasVisible then
-                        auraFrame:Hide()
-                        auraFrame.isAuraHidden = true
-                    end
-                    if auraFrame.isImportant then
-                        auraFrame.ImportantGlow:Hide()
-                        auraFrame.isImportant = false
-                    end
-                    if auraFrame.isPurgeGlow then
-                        auraFrame.PurgeGlow:Hide()
-                        auraFrame.isPurgeGlow = false
-                    end
-                    auraFrame:ClearAllPoints()
-                    if toggleIcon then
-                        local direction = BetterBlizzFramesDB.hiddenIconDirection
-                        if direction == "BOTTOM" then
-                            auraFrame:SetPoint("TOP", ToggleHiddenAurasButton, "TOP", 0, hiddenYOffset - 35 + (addIconsToTop and 10 or 0))
-                            hiddenYOffset = hiddenYOffset - auraSize - auraSpacingY + 10
-                        elseif direction == "TOP" then
-                            auraFrame:SetPoint("BOTTOM", ToggleHiddenAurasButton, "BOTTOM", 0, hiddenYOffset + 25 + (addIconsToTop and 10 or 0))
-                            hiddenYOffset = hiddenYOffset + auraSize + auraSpacingY - 10
-                        elseif direction == "LEFT" then
-                            auraFrame:SetPoint("RIGHT", ToggleHiddenAurasButton, "LEFT", hiddenXOffset + 30, addIconsToTop and 5 or -5)
-                            hiddenXOffset = hiddenXOffset - auraSize - auraSpacingX
-                        elseif direction == "RIGHT" then
-                            auraFrame:SetPoint("LEFT", ToggleHiddenAurasButton, "RIGHT", hiddenXOffset - 30, addIconsToTop and 5 or -5)
-                            hiddenXOffset = hiddenXOffset + auraSize + auraSpacingX
-                        end
+                    if addIconsToTop then
+                        auraFrame:SetPoint("BOTTOMRIGHT", BuffFrame, "BOTTOMRIGHT", -xOffset - 15, yOffset)
+                    else
+                        auraFrame:SetPoint("TOPRIGHT", BuffFrame, "TOPRIGHT", -xOffset - 15, -yOffset)
                     end
                 end
+
+                currentCol = currentCol + 1
+                if currentCol > maxAurasPerRow then
+                    currentRow = currentRow + 1
+                    currentCol = 1
+                end
+
+                xOffset = (currentCol - 1) * (auraSize + auraSpacingX)
+                yOffset = (currentRow - 1) * (auraSize + auraSpacingY)
+
             end
         end
-    else
-        if not printedMsg then
-            printedMsg = true
-            BBF.Print(L["Print_Buff_Filtering_Collapsed_Not_Supported"])
-            C_Timer.After(30, function()
-                printedMsg = false
-            end)
-        end
     end
-    UpdateHiddenAurasCount()
 end
+
 
 --local tooltip = CreateFrame("GameTooltip", "AuraTooltip", nil, "GameTooltipTemplate")
 --tooltip:SetOwner(WorldFrame, "ANCHOR_NONE")
 local DebuffFrame = DebuffFrame
-local function PersonalDebuffFrameFilterAndGrid(self)
+local function PersonalDebuffFrameFilterAndGrid()
     local maxAurasPerRow = DebuffFrame.AuraContainer.iconStride
     local auraSpacingX = DebuffFrame.AuraContainer.iconPadding - 7 + playerAuraSpacingX
     local auraSpacingY = DebuffFrame.AuraContainer.iconPadding + 8 + playerAuraSpacingY
-    local auraSize = 32;      -- Set the size of each aura frame
+    local auraSize = 32;
     local addIconsToRight = DebuffFrame.AuraContainer.addIconsToRight
     local addIconsToTop = DebuffFrame.AuraContainer.addIconsToTop
-
-    --local dotChecker = BetterBlizzFramesDB.debuffDotChecker
-    local printAuraIds = printAuraSpellIds
 
     local currentRow = 1;
     local currentCol = 1;
     local xOffset = 0;
     local yOffset = 0;
 
-    -- Create a texture next to the DebuffFrame
---[=[
-    local warningTexture
-    if dotChecker then
-        if not DebuffFrame.warningTexture then
-            warningTexture = DebuffFrame:CreateTexture(nil, "OVERLAY")
-            warningTexture:SetPoint("TOPLEFT", DebuffFrame, "TOPRIGHT", 4, -2)
-            warningTexture:SetSize(32, 32)
-            warningTexture:SetAtlas("poisons")
-            warningTexture:Hide()
-            DebuffFrame.warningTexture = warningTexture
-        else
-            warningTexture = DebuffFrame.warningTexture
-        end
-        warningTexture:EnableMouse(true)
-        warningTexture:SetScript("OnEnter", function(self)
-            GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-            GameTooltip:SetText(L["DoT_Detected_Tooltip"], 1, 1, 1)
-            GameTooltip:Show()
-        end)
-
-        warningTexture:SetScript("OnLeave", function(self)
-            GameTooltip:Hide()
-        end)
-
-        warningTexture:SetMouseClickEnabled(false)
-    end
-
-    local keywordFound = false
-    local keywords = {"over", "every",}
-
-]=]
-
-
     for auraIndex, auraInfo in ipairs(DebuffFrame.auraInfo or {}) do
-        --if isExpanded or not auraInfo.hideUnlessExpanded then
-            local auraFrame = DebuffFrame.auraFrames[auraIndex]
-            if auraFrame and not auraFrame.isAuraAnchor then
-                    local name, icon, count, dispelType, duration, expirationTime, source, 
-                    isStealable, nameplateShowPersonal, spellId, canApplyAura, 
-                    isBossDebuff, castByPlayer, nameplateShowAll, timeMod 
-                  = BBF.TWWUnitAura("player", auraInfo.index, 'HARMFUL');
-
-              local auraData = {
-                  name = name,
-                  icon = icon,
-                  count = count,
-                  dispelType = dispelType,
-                  duration = duration,
-                  expirationTime = expirationTime,
-                  sourceUnit = source,
-                  isStealable = isStealable,
-                  nameplateShowPersonal = nameplateShowPersonal,
-                  spellId = spellId,
-                  auraType = auraInfo.auraType,
-              };
-                --local unit = self.unit
-                if printAuraIds and not auraFrame.bbfHookAdded then
-                    auraFrame.bbfHookAdded = true
-                    auraFrame:HookScript("OnEnter", function()
-                        if printAuraIds then
-                            local currentAuraIndex = auraInfo.index
-                            local name, icon, count, dispelType, duration, expirationTime, source, 
-                            isStealable, nameplateShowPersonal, spellId, canApplyAura, 
-                            isBossDebuff, castByPlayer, nameplateShowAll, timeMod 
-                            = BBF.TWWUnitAura("player", currentAuraIndex, 'HARMFUL');
-
-                            local auraData = {
-                                name = name,
-                                icon = icon,
-                                count = count,
-                                dispelType = dispelType,
-                                duration = duration,
-                                expirationTime = expirationTime,
-                                sourceUnit = source,
-                                isStealable = isStealable,
-                                nameplateShowPersonal = nameplateShowPersonal,
-                                spellId = spellId,
-                                auraType = auraInfo.auraType,
-                            };
-
-                            if auraData and (not auraFrame.bbfPrinted or auraFrame.bbfLastPrintedAuraIndex ~= currentAuraIndex) then
-                                local iconTexture = auraData.icon and "|T" .. auraData.icon .. ":16:16|t" or ""
-                                BBF.Print(iconTexture .. " " .. (auraData.name or L["Label_Unknown"]) .. "  |A:worldquest-icon-engineering:14:14|a ID: " .. (auraData.spellId or L["Label_Unknown"]))
-                                auraFrame.bbfPrinted = true
-                                auraFrame.bbfLastPrintedAuraIndex = currentAuraIndex
-                                -- Cancel existing timer if any
-                                if auraFrame.bbfTimer then
-                                    auraFrame.bbfTimer:Cancel()
-                                end
-                                -- Schedule the reset of bbfPrinted flag
-                                auraFrame.bbfTimer = C_Timer.NewTimer(6, function()
-                                    auraFrame.bbfPrinted = false
-                                end)
-                            end
-                        end
-                    end)
-                end
-                local shouldShowAura, isImportant, isPandemic, isEnlarged, isCompacted, auraColor = ShouldShowBuff("player", auraData, "playerDebuffFrame")
-                if shouldShowAura then
-                    -- Check the tooltip for specified keywords
---[=[
-                    tooltip:ClearLines()
-                    tooltip:SetHyperlink("spell:" .. auraData.spellId)
-
-                    local tooltipText = ""
-                    for i = 1, tooltip:NumLines() do
-                        local line = _G["AuraTooltipTextLeft" .. i]
-                        tooltipText = tooltipText .. line:GetText()
-                    end
-
-                    for _, keyword in ipairs(keywords) do
-                        if string.find(tooltipText:lower(), keyword) then
-                            keywordFound = true
-                            break
-                        end
-                    end
-
-]=]
-
-                    if addCooldownFramePlayerDebuffs then
-                        if not auraFrame.Cooldown then
-                            local cooldownFrame = CreateFrame("Cooldown", nil, auraFrame, "CooldownFrameTemplate")
-                            cooldownFrame:SetAllPoints(auraFrame.Icon)
-                            cooldownFrame:SetDrawEdge(false)
-                            cooldownFrame:SetDrawSwipe(true)
-                            cooldownFrame:SetReverse(true)
-                            if hideDefaultPlayerAuraCdText then
-                                cooldownFrame:SetHideCountdownNumbers(true)
-                            end
-                            auraFrame.Cooldown = cooldownFrame
-                        end
-
-                        if duration and duration > 0 and expirationTime then
-                            local startTime = expirationTime - duration
-                            auraFrame.Cooldown:SetCooldown(startTime, duration)
-                        else
-                            auraFrame.Cooldown:Hide()
-                        end
-
-                        if hideDefaultPlayerAuraDuration then
-                            auraFrame.Duration:SetAlpha(0)
-                        end
-                    end
-
-                    auraFrame.spellId = auraData.spellId
-
-                    -- if auraData.spellId == 212183 then
-                    --     --moved
-                    -- end
-
-                    SetupAuraFilterClicks(auraFrame)
-
-                    auraFrame:Show();
-                    auraFrame:ClearAllPoints();
-                    if addIconsToRight then
-                        if addIconsToTop then
-                            auraFrame:SetPoint("BOTTOMLEFT", DebuffFrame, "BOTTOMLEFT", xOffset, yOffset);
-                        else
-                            auraFrame:SetPoint("TOPLEFT", DebuffFrame, "TOPLEFT", xOffset, -yOffset);
-                        end
-                    else
-                        if addIconsToTop then
-                            auraFrame:SetPoint("BOTTOMRIGHT", DebuffFrame, "BOTTOMRIGHT", -xOffset, yOffset);
-                        else
-                            auraFrame:SetPoint("TOPRIGHT", DebuffFrame, "TOPRIGHT", -xOffset, -yOffset);
-                        end
-                    end
-
-                    -- Update column and row counters
-                    currentCol = currentCol + 1;
-                    if currentCol > maxAurasPerRow then
-                        currentRow = currentRow + 1;
-                        currentCol = 1;
-                    end
-
-                    -- Calculate the new offsets
-                    xOffset = (currentCol - 1) * (auraSize + auraSpacingX);
-                    yOffset = (currentRow - 1) * (auraSize + auraSpacingY);
-
-
-                    -- Important logic
-                    if isImportant then
-                        local borderFrame = BBF.auraBorders[auraFrame]
-                        auraFrame.isImportant = true
-                        if not auraFrame.ImportantGlow then
-                            auraFrame.GlowFrame = CreateFrame("Frame", nil, auraFrame)
-                            auraFrame.GlowFrame:SetAllPoints(auraFrame)
-                            auraFrame.GlowFrame:SetFrameLevel(auraFrame:GetFrameLevel() + 1)
-                            auraFrame.ImportantGlow = auraFrame.GlowFrame:CreateTexture(nil, "OVERLAY")
-                            if borderFrame then
-                                auraFrame.ImportantGlow:SetPoint("TOPLEFT", auraFrame.Icon, "TOPLEFT", -15, 17)
-                                auraFrame.ImportantGlow:SetPoint("BOTTOMRIGHT", auraFrame.Icon, "BOTTOMRIGHT", 15, -16)
-                            else
-                                auraFrame.ImportantGlow:SetPoint("TOPLEFT", auraFrame.Icon, "TOPLEFT", -15, 14.5)
-                                auraFrame.ImportantGlow:SetPoint("BOTTOMRIGHT", auraFrame.Icon, "BOTTOMRIGHT", 15, -15)
-                            end
-                            --auraFrame.ImportantGlow:SetDrawLayer("OVERLAY", 7)
-                            auraFrame.ImportantGlow:SetAtlas("newplayertutorial-drag-slotgreen")
-                            auraFrame.ImportantGlow:SetDesaturated(true)
-                        end
-                        if auraColor then
-                            auraFrame.ImportantGlow:SetVertexColor(auraColor[1], auraColor[2], auraColor[3], auraColor[4])
-                        else
-                            auraFrame.ImportantGlow:SetVertexColor(0, 1, 0)
-                        end
-                        auraFrame.DebuffBorder:Hide()
-                        auraFrame.Duration:SetParent(auraFrame.GlowFrame)
-                        auraFrame.Duration:SetDrawLayer("OVERLAY")
-                        auraFrame.ImportantGlow:Show()
-                    else
-                        auraFrame.isImportant = false
-                        if auraFrame.ImportantGlow then
-                            auraFrame.ImportantGlow:Hide()
-                        end
-                        auraFrame.DebuffBorder:Show()
-                        auraFrame.Duration:SetParent(auraFrame)
-                    end
-                    auraFrame:SetMouseClickEnabled(false)
+        local auraFrame = DebuffFrame.auraFrames[auraIndex]
+        if auraFrame and not auraFrame.isAuraAnchor then
+            auraFrame:ClearAllPoints();
+            if addIconsToRight then
+                if addIconsToTop then
+                    auraFrame:SetPoint("BOTTOMLEFT", DebuffFrame, "BOTTOMLEFT", xOffset, yOffset);
                 else
-                    auraFrame:Hide();
+                    auraFrame:SetPoint("TOPLEFT", DebuffFrame, "TOPLEFT", xOffset, -yOffset);
+                end
+            else
+                if addIconsToTop then
+                    auraFrame:SetPoint("BOTTOMRIGHT", DebuffFrame, "BOTTOMRIGHT", -xOffset, yOffset);
+                else
+                    auraFrame:SetPoint("TOPRIGHT", DebuffFrame, "TOPRIGHT", -xOffset, -yOffset);
                 end
             end
-        --end
-    end
---[=[
-    if dotChecker then
-        if keywordFound then
-            warningTexture:Show()
-        else
-            warningTexture:Hide()
+
+            currentCol = currentCol + 1;
+            if currentCol > maxAurasPerRow then
+                currentRow = currentRow + 1;
+                currentCol = 1;
+            end
+
+            xOffset = (currentCol - 1) * (auraSize + auraSpacingX);
+            yOffset = (currentRow - 1) * (auraSize + auraSpacingY);
+
+            auraFrame.Duration:SetParent(auraFrame)
+            auraFrame:SetMouseClickEnabled(false)
         end
     end
-]=]
 end
 
 
@@ -2205,14 +1709,12 @@ function BBF.RefreshAllAuraFrames()
     BBF.UpdateUserAuraSettings()
     AdjustAuras(TargetFrame, "target")
     AdjustAuras(FocusFrame, "focus")
-    if BBF.isMidnight then return end
-    -- if BetterBlizzFramesDB.playerAuraFiltering then
-    --     if playerBuffFilterOn then
-    --         PersonalBuffFrameFilterAndGrid(BuffFrame)
-    --     end
-    --     if playerDebuffFilterOn then
-    --         PersonalDebuffFrameFilterAndGrid(DebuffFrame)
-    --     end
+    if BetterBlizzFramesDB.playerAuraFiltering then
+        if playerBuffFilterOn then
+            PersonalBuffFrameFilterAndGrid()
+            PersonalDebuffFrameFilterAndGrid()
+        end
+    end
     -- else
     --     if not auraMsgSent then
     --         auraMsgSent = true
@@ -2441,22 +1943,27 @@ function BBF.HookPlayerAndTargetAuras()
             end
             targetAurasHooked = true
         end
-        return
+        --return
     end
     -- --Hook Player BuffFrame
-    -- if playerBuffFilterOn and not playerBuffsHooked then
-    --     if BetterBlizzFramesDB.PlayerAuraFrameBuffEnable then
-    --         hooksecurefunc(BuffFrame, "UpdateAuraButtons", PersonalBuffFrameFilterAndGrid)
-    --         playerBuffsHooked = true
-    --         if BBF.BuffFrameHidden then
-    --             BuffFrame:Show()
-    --             BBF.BuffFrameHidden = nil
-    --         end
-    --     else
-    --         BuffFrame:Hide()
-    --         BBF.BuffFrameHidden = true
-    --     end
-    -- end
+    if playerBuffFilterOn and not playerBuffsHooked then
+        if BetterBlizzFramesDB.PlayerAuraFrameBuffEnable then
+            hooksecurefunc(BuffFrame, "UpdateAuraButtons", PersonalBuffFrameFilterAndGrid)
+            playerBuffsHooked = true
+            if BBF.BuffFrameHidden then
+                BuffFrame:Show()
+                BBF.BuffFrameHidden = nil
+            end
+            hooksecurefunc(DebuffFrame, "UpdateAuraButtons", PersonalDebuffFrameFilterAndGrid)
+            if BBF.DebuffFrameHidden then
+                DebuffFrame:Show()
+                BBF.DebuffFrameHidden = nil
+            end
+        else
+            BuffFrame:Hide()
+            BBF.BuffFrameHidden = true
+        end
+    end
 
     -- --Hook Player DebuffFrame
     -- if playerDebuffFilterOn and not playerDebuffsHooked then

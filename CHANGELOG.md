@@ -1,3 +1,8 @@
+# BetterBlizzFrames 1.8.7g
+## Midnight
+### Tweak
+- Added back Player Auras gap settings in the buffs & debuffs section.
+
 # BetterBlizzFrames 1.8.7f
 ## The Burning Crusade
 ### Tweak
