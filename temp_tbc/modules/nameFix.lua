@@ -195,7 +195,7 @@ function BBF.PartyNameChange()
         end
     else
         for i = 1, 4 do
-            local memberFrame = _G["PartyMemberFrame" .. i]
+            local memberFrame = _G["PartyFrame"]["MemberFrame" .. i]
             if memberFrame and memberFrame.unit then
                 PartyArenaName(memberFrame)
             end
@@ -274,14 +274,8 @@ local function PartyFrameNameChange(frame)
 end
 
 if not GetCVarBool("useCompactPartyFrames") then
-    local frames = {
-        PartyMemberFrame1,
-        PartyMemberFrame2,
-        PartyMemberFrame3,
-        PartyMemberFrame4,
-    }
-
-    for _, frame in ipairs(frames) do
+    for i = 1, 4 do
+        local frame = _G["PartyFrame"]["MemberFrame"..i]
         hooksecurefunc(frame.name, "SetText", function(self)
             PartyFrameNameChange(frame)
         end)
@@ -338,14 +332,8 @@ local frames = {
     PetFrame,
 }
 
-if PartyMemberFrame1 then
-    for i = 1, 4 do
-        table.insert(frames, _G["PartyMemberFrame"..i])
-    end
-else
-    for i = 1, 4 do
-        table.insert(frames, _G["PartyFrame"]["MemberFrame"..i])
-    end
+for i = 1, 4 do
+    table.insert(frames, _G["PartyFrame"]["MemberFrame"..i])
 end
 
 local function InitializeFontStringsForFrames()
@@ -434,7 +422,7 @@ local function SetPartyFont(font, size, outline, size2)
         end
     end
     for i = 1, 4 do
-        local partyFrameMember = _G["PartyMemberFrame"..i]
+        local partyFrameMember = _G["PartyFrame"]["MemberFrame"..i]
         if partyFrameMember then
             partyFrameMember.bbfName:SetFont(font, size, outline)
         end
@@ -1146,14 +1134,8 @@ function BBF.AllNameChanges()
     FocusFrameToTNameChanges(FocusFrameToT)
 
     if not GetCVarBool("useCompactPartyFrames") then
-        local frames = {
-            PartyMemberFrame1,
-            PartyMemberFrame2,
-            PartyMemberFrame2,
-            PartyMemberFrame2,
-        }
-
-        for _, frame in ipairs(frames) do
+        for i = 1, 4 do
+            local frame = _G["PartyFrame"]["MemberFrame"..i]
             PartyFrameNameChange(frame)
         end
     end
@@ -1221,10 +1203,10 @@ function BBF.FontColors()
     if db.partyFrameFontColor then
         local color = db.partyFrameFontColorRGB
         local partyFrameFonts = {
-            PartyMemberFrame1,
-            PartyMemberFrame2,
-            PartyMemberFrame3,
-            PartyMemberFrame4,
+            _G["PartyFrame"]["MemberFrame1"],
+            _G["PartyFrame"]["MemberFrame2"],
+            _G["PartyFrame"]["MemberFrame3"],
+            _G["PartyFrame"]["MemberFrame4"],
             CompactRaidFrame1,
             CompactRaidFrame2,
             CompactRaidFrame3,
@@ -1249,14 +1231,14 @@ function BBF.FontColors()
             TargetFrame.PowerBar,
             FocusFrame.healthbar,
             FocusFrame.manabar,
-            PartyMemberFrame1.healthbar,
-            PartyMemberFrame2.healthbar,
-            PartyMemberFrame3.healthbar,
-            PartyMemberFrame4.healthbar,
-            PartyMemberFrame1.ManaBar,
-            PartyMemberFrame2.ManaBar,
-            PartyMemberFrame3.ManaBar,
-            PartyMemberFrame4.ManaBar,
+            _G["PartyFrame"]["MemberFrame1"].healthbar,
+            _G["PartyFrame"]["MemberFrame2"].healthbar,
+            _G["PartyFrame"]["MemberFrame3"].healthbar,
+            _G["PartyFrame"]["MemberFrame4"].healthbar,
+            _G["PartyFrame"]["MemberFrame1"].ManaBar,
+            _G["PartyFrame"]["MemberFrame2"].ManaBar,
+            _G["PartyFrame"]["MemberFrame3"].ManaBar,
+            _G["PartyFrame"]["MemberFrame4"].ManaBar,
         }
         for _, frame in ipairs(unitFrameValueFonts) do
             if frame.LeftText then frame.LeftText:SetVertexColor(unpack(color)) end
