@@ -2657,14 +2657,14 @@ if RuneFrame then
     RuneFrame:SetFrameStrata("MEDIUM")
 end
 
--- if TargetFrameBackground then
---     hooksecurefunc(TargetFrameBackground, "SetSize", function(self, height)
---         self:SetHeight(40)
---     end)
--- end
+if TargetFrameBackground then
+    hooksecurefunc(TargetFrameBackground, "SetSize", function(self, height)
+        self:SetHeight(40)
+    end)
+end
 
--- if FocusFrameBackground then
---     hooksecurefunc(FocusFrameBackground, "SetSize", function(self, height)
---         self:SetHeight(40)
---     end)
--- end
+if FocusFrameBackground then
+    hooksecurefunc(FocusFrameBackground, "SetSize", function(self, height)
+        self:SetHeight(40)
+    end)
+end
