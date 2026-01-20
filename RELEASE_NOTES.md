@@ -1,3 +1,17 @@
+# BetterBlizzFrames 1.8.7g
+## Midnight
+### Tweak
+- Added back Player Auras gap settings in the buffs & debuffs section.
+## The Burning Crusade
+### Bugfix
+- Fix names on default party frames.
+- Fix default background color for TargetFrame for Blizzard.
+- Fix talent tree icons being scrambled due to class portrait setting.
+- Fix tooltip for Hide Player Power in gui.
+## Era
+### Tweak
+- Add font settings support for Verz's MiniHealthNumbers addon.
+
 # BetterBlizzFrames 1.8.7f
 ## The Burning Crusade
 ### Tweak
