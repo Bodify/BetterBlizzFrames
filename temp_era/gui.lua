@@ -37,9 +37,6 @@ end
 
 local titleText = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: \n\n"
 
-local LibDeflate = LibStub("LibDeflate")
-local LibSerialize = LibStub("LibSerialize")
-
 BBF.partyPointerTargetIconReplacement = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-QuestPoiImportant-QuestBang.tga"
 BBF.squareGreenGlow = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\newplayertutorial-drag-slotgreen.tga"
 BBF.squareBlueGlow = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\newplayertutorial-drag-slotblue.tga"
@@ -51,125 +48,6 @@ BBF.CompactIcon = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD
 
 local checkBoxList = {}
 local sliderList = {}
-
-
-local function ConvertOldWhitelist(oldWhitelist)
-    local optimizedWhitelist = {}
-    for _, aura in ipairs(oldWhitelist) do
-        local key = aura["id"] or string.lower(aura["name"])
-        local flags = aura["flags"] or {}
-        local entryColors = aura["entryColors"] or {}
-        local textColors = entryColors["text"] or {}
-
-        optimizedWhitelist[key] = {
-            name = aura["name"] or nil,
-            id = aura["id"] or nil,
-            important = flags["important"] or nil,
-            pandemic = flags["pandemic"] or nil,
-            enlarged = flags["enlarged"] or nil,
-            compacted = flags["compacted"] or nil,
-            color = {textColors["r"] or 0, textColors["g"] or 1, textColors["b"] or 0, textColors["a"] or 1}
-        }
-    end
-    return optimizedWhitelist
-end
-
-local function ConvertOldBlacklist(oldBlacklist)
-    local optimizedBlacklist = {}
-    for _, aura in ipairs(oldBlacklist) do
-        local key = aura["id"] or string.lower(aura["name"])
-
-        optimizedBlacklist[key] = {
-            name = aura["name"] or nil,
-            id = aura["id"] or nil,
-            showMine = aura["showMine"] or nil,
-        }
-    end
-    return optimizedBlacklist
-end
-
-local function ExportProfile(profileTable, dataType)
-    -- Include a dataType in the table being serialized
-    local wowVersion = GetBuildInfo()
-    BetterBlizzFramesDB.exportVersion = "BBF: "..BBF.VersionNumber.." WoW: "..wowVersion
-    local exportTable = {
-        dataType = dataType,
-        data = profileTable
-    }
-    local serialized = LibSerialize:Serialize(exportTable)
-    local compressed = LibDeflate:CompressDeflate(serialized)
-    local encoded = LibDeflate:EncodeForPrint(compressed)
-    return "!BBF" .. encoded .. "!BBF"
-end
-
-function BBF.ImportProfile(encodedString, expectedDataType)
-    -- Check if the string starts and ends with !BBF
-    if encodedString:sub(1, 4) == "!BBF" and encodedString:sub(-4) == "!BBF" then
-        encodedString = encodedString:sub(5, -5) -- Remove both prefix and suffix
-    elseif encodedString:sub(1, 4) == "!BBP" and encodedString:sub(-4) == "!BBP" then
-        return nil, "This is a BetterBlizz|cffff4040Plates|r profile string, not a BetterBlizz|cff40ff40Frames|r one. Two different addons."
-    else
-        return nil, "Invalid format: Prefix or suffix not found."
-    end
-
-    -- Decode and decompress the data
-    local compressed = LibDeflate:DecodeForPrint(encodedString)
-    local serialized, decompressMsg = LibDeflate:DecompressDeflate(compressed)
-    if not serialized then
-        return nil, "Error decompressing: " .. tostring(decompressMsg)
-    end
-
-    -- Deserialize the data
-    local success, importTable = LibSerialize:Deserialize(serialized)
-    if not success then
-        return nil, "Error deserializing the data."
-    end
-
-    -- Function to check if the data is in the new format
-    local function IsNewFormat(auraList)
-        local consecutiveIndex = 1  -- Start with the first numeric index
-        -- Loop through the table to inspect its structure
-        for key, _ in pairs(auraList) do
-            if type(key) == "number" then
-                if key ~= consecutiveIndex then
-                    return true
-                end
-                consecutiveIndex = consecutiveIndex + 1
-            elseif type(key) == "string" then
-                return true
-            end
-        end
-        return false
-    end
-
-    -- Convert old format to the new format if necessary
-    local function ConvertIfNeeded(subTable, expectedType)
-        if expectedType == "auraBlacklist" and not IsNewFormat(subTable) then
-            return ConvertOldBlacklist(subTable)
-        elseif expectedType == "auraWhitelist" and not IsNewFormat(subTable) then
-            return ConvertOldWhitelist(subTable)
-        end
-        return subTable -- Return as-is if no conversion is needed
-    end
-
-    -- Handling full profile import by checking and converting the relevant portion if needed
-    if importTable.dataType == "fullProfile" then
-        if importTable.data[expectedDataType] then
-            -- Check the subtable and convert if necessary
-            importTable.data[expectedDataType] = ConvertIfNeeded(importTable.data[expectedDataType], expectedDataType)
-            return importTable.data[expectedDataType], nil
-        else
-            return importTable.data, nil
-        end
-    elseif importTable.dataType ~= expectedDataType then
-        return nil, "Data type mismatch"
-    end
-
-    -- For normal imports, check if conversion is needed for auraWhitelist and auraBlacklist
-    importTable.data = ConvertIfNeeded(importTable.data, expectedDataType)
-
-    return importTable.data, nil
-end
 
 local function RecolorEntireAuraWhitelist(r, g, b, a)
     if type(BetterBlizzFramesDB) ~= "table" then return false end
@@ -197,19 +75,6 @@ local function RecolorEntireAuraWhitelist(r, g, b, a)
     end
 
     return true
-end
-
-local function deepMergeTables(destination, source)
-    for k, v in pairs(source) do
-        if destination[k] == nil then
-            if type(v) == "table" then
-                destination[k] = {}
-                deepMergeTables(destination[k], v)
-            else
-                destination[k] = v
-            end
-        end
-    end
 end
 
 StaticPopupDialogs["BBF_CONFIRM_RELOAD"] = {
@@ -1095,7 +960,7 @@ local function CreateImportExportUI(parent, title, dataTable, posX, posY, tableN
 
     -- Button scripts
     exportBtn:SetScript("OnClick", function()
-        local exportString = ExportProfile(dataTable, tableName)
+        local exportString = BBF.ExportProfile(dataTable, tableName)
         exportBox:SetText(exportString)
         exportBox:SetFocus()
         exportBox:HighlightText()
@@ -1140,13 +1005,13 @@ local function CreateImportExportUI(parent, title, dataTable, posX, posY, tableN
 
     importBtn:SetScript("OnClick", function()
         local importString = importBox:GetText()
-        local profileData, errorMessage = BBF.ImportProfile(importString, tableName)
+        local profileData, errorMessage = BBF.OldImportProfile(importString, tableName)
         if errorMessage then
             BBF.Print(L["Print_Error_Importing"] .. title .. ": " .. tostring(errorMessage))
         else
             if keepOldCheckbox and keepOldCheckbox:GetChecked() then
                 -- Perform a deep merge if "Keep Old" is checked
-                deepMergeTables(dataTable, profileData)
+                BBF.DeepMergeTables(dataTable, profileData)
             else
                 -- Replace existing data with imported data
                 --for k in pairs(dataTable) do dataTable[k] = nil end -- Clear current table

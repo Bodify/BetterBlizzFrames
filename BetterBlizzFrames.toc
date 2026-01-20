@@ -9,11 +9,12 @@
 ## X-Wago-ID: qGZR02Gd
 
 init.lua
-temp_shared\functions.lua
-
 locales\locales.xml
-
 embeds.xml
+
+temp_shared\ImportExport.lua
+temp_shared\functions.lua
+temp_shared\functions_classics.lua
 
 retail\temp_tww.lua
 

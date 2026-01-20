@@ -39,9 +39,6 @@ local titleText = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: \
 local playerClass = select(2, UnitClass("player"))
 local playerClassResourceScale = "classResource" .. playerClass .. "Scale"
 
-local LibDeflate = LibStub("LibDeflate")
-local LibSerialize = LibStub("LibSerialize")
-
 BBF.partyPointerTargetIconReplacement = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-QuestPoiImportant-QuestBang.tga"
 BBF.squareGreenGlow = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\newplayertutorial-drag-slotgreen.tga"
 BBF.squareBlueGlow = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\newplayertutorial-drag-slotblue.tga"
@@ -53,124 +50,6 @@ BBF.CompactIcon = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD
 
 local checkBoxList = {}
 local sliderList = {}
-
-local function ConvertOldWhitelist(oldWhitelist)
-    local optimizedWhitelist = {}
-    for _, aura in ipairs(oldWhitelist) do
-        local key = aura["id"] or string.lower(aura["name"])
-        local flags = aura["flags"] or {}
-        local entryColors = aura["entryColors"] or {}
-        local textColors = entryColors["text"] or {}
-
-        optimizedWhitelist[key] = {
-            name = aura["name"] or nil,
-            id = aura["id"] or nil,
-            important = flags["important"] or nil,
-            pandemic = flags["pandemic"] or nil,
-            enlarged = flags["enlarged"] or nil,
-            compacted = flags["compacted"] or nil,
-            color = {textColors["r"] or 0, textColors["g"] or 1, textColors["b"] or 0, textColors["a"] or 1}
-        }
-    end
-    return optimizedWhitelist
-end
-
-local function ConvertOldBlacklist(oldBlacklist)
-    local optimizedBlacklist = {}
-    for _, aura in ipairs(oldBlacklist) do
-        local key = aura["id"] or string.lower(aura["name"])
-
-        optimizedBlacklist[key] = {
-            name = aura["name"] or nil,
-            id = aura["id"] or nil,
-            showMine = aura["showMine"] or nil,
-        }
-    end
-    return optimizedBlacklist
-end
-
-local function ExportProfile(profileTable, dataType)
-    -- Include a dataType in the table being serialized
-    local wowVersion = GetBuildInfo()
-    BetterBlizzFramesDB.exportVersion = "BBF: "..BBF.VersionNumber.." WoW: "..wowVersion
-    local exportTable = {
-        dataType = dataType,
-        data = profileTable
-    }
-    local serialized = LibSerialize:Serialize(exportTable)
-    local compressed = LibDeflate:CompressDeflate(serialized)
-    local encoded = LibDeflate:EncodeForPrint(compressed)
-    return "!BBF" .. encoded .. "!BBF"
-end
-
-function BBF.ImportProfile(encodedString, expectedDataType)
-    -- Check if the string starts and ends with !BBF
-    if encodedString:sub(1, 4) == "!BBF" and encodedString:sub(-4) == "!BBF" then
-        encodedString = encodedString:sub(5, -5) -- Remove both prefix and suffix
-    elseif encodedString:sub(1, 4) == "!BBP" and encodedString:sub(-4) == "!BBP" then
-        return nil, "This is a BetterBlizz|cffff4040Plates|r profile string, not a BetterBlizz|cff40ff40Frames|r one. Two different addons."
-    else
-        return nil, "Invalid format: Prefix or suffix not found."
-    end
-
-    -- Decode and decompress the data
-    local compressed = LibDeflate:DecodeForPrint(encodedString)
-    local serialized, decompressMsg = LibDeflate:DecompressDeflate(compressed)
-    if not serialized then
-        return nil, "Error decompressing: " .. tostring(decompressMsg)
-    end
-
-    -- Deserialize the data
-    local success, importTable = LibSerialize:Deserialize(serialized)
-    if not success then
-        return nil, "Error deserializing the data."
-    end
-
-    -- Function to check if the data is in the new format
-    local function IsNewFormat(auraList)
-        local consecutiveIndex = 1  -- Start with the first numeric index
-        -- Loop through the table to inspect its structure
-        for key, _ in pairs(auraList) do
-            if type(key) == "number" then
-                if key ~= consecutiveIndex then
-                    return true
-                end
-                consecutiveIndex = consecutiveIndex + 1
-            elseif type(key) == "string" then
-                return true
-            end
-        end
-        return false
-    end
-
-    -- Convert old format to the new format if necessary
-    local function ConvertIfNeeded(subTable, expectedType)
-        if expectedType == "auraBlacklist" and not IsNewFormat(subTable) then
-            return ConvertOldBlacklist(subTable)
-        elseif expectedType == "auraWhitelist" and not IsNewFormat(subTable) then
-            return ConvertOldWhitelist(subTable)
-        end
-        return subTable -- Return as-is if no conversion is needed
-    end
-
-    -- Handling full profile import by checking and converting the relevant portion if needed
-    if importTable.dataType == "fullProfile" then
-        if importTable.data[expectedDataType] then
-            -- Check the subtable and convert if necessary
-            importTable.data[expectedDataType] = ConvertIfNeeded(importTable.data[expectedDataType], expectedDataType)
-            return importTable.data[expectedDataType], nil
-        else
-            return importTable.data, nil
-        end
-    elseif importTable.dataType ~= expectedDataType then
-        return nil, "Data type mismatch"
-    end
-
-    -- For normal imports, check if conversion is needed for auraWhitelist and auraBlacklist
-    importTable.data = ConvertIfNeeded(importTable.data, expectedDataType)
-
-    return importTable.data, nil
-end
 
 local function RecolorEntireAuraWhitelist(r, g, b, a)
     if type(BetterBlizzFramesDB) ~= "table" then return false end
@@ -199,20 +78,6 @@ local function RecolorEntireAuraWhitelist(r, g, b, a)
 
     return true
 end
-
-local function deepMergeTables(destination, source)
-    for k, v in pairs(source) do
-        if destination[k] == nil then
-            if type(v) == "table" then
-                destination[k] = {}
-                deepMergeTables(destination[k], v)
-            else
-                destination[k] = v
-            end
-        end
-    end
-end
-
 
 
 local function OpenColorOptions(entryColors, func)
@@ -311,12 +176,12 @@ StaticPopupDialogs["BBF_CONFIRM_PVP_WHITELIST"] = {
     button2 = L["No"],
     OnAccept = function()
         local importString = BBF.isTBC and "!BBFvEvqOnvwuu7uNYfRWOttLbuSFLsTdmslIv3iM202yYm1AiP0Ile6RjVK)R5L))77)sA70QmkI1foBk6IQ4g3426mqhXfoGicZSki4obhgCwQl6QQWmo37)NwRMM(JRsiVZ9(E3Z9EU3BAOJizyA21ID0NpAelwb(cXT0CvjUf)YCljtLJNz8KPTL2QVVHgBOXfefCSvAMLE8dkYC0NdFZFoA5VyHOCMYymMkt5TpE5V0dz5Mie45qVVgH4ekfxM1iUvPIslUInHqk0Z4dVXyH)NE6P3TTTTfl8Bo5jhh)YAM37RHLUiA(F3VjNPfw5mga)0mq7w6Iq4tqx7xpmtxuXpKRrQPez1wCx3QEJHpbCGvrWtKYrjS0vD(bw9jHXJF2aIsclUrktbxMjONWtcdYF1pWDekH2WoRrsEgEbhTW2kiRrBHHkrxAeURwWKgJP8JB6WHkHO8T)V21UmqZAOry2f9Glz)irtPC481ZgnUMxNDry(BIWECktwg7PmsjYzwD8o)nHq3brPgSeZTEESHUdKyA0G7MGRsZ3qaUbNMyA4Q3J4JDnIj3icN5QngtOnfFW9Rhlvm5Q3dooJCB)2YmgrK22zQj2JZGwFj5(9erI5yIcqcpHYwZtxxeERVeoNJ37dPoPeZvzLRBkb4Co(Koft6JHi)f)cbSUxkdY96J9kQeQCRbb8vHHF7NPc(4fCu2L4uClSYhKzOrW1OuWLJWsNxYCnRjtDTPHU3oXQEkjmhSfy7E7HEkcDLptzBONcDTdQmRpvAgQysypfxvZlPRDaD1ShZNqXD5wP5uQ70cRANT7Qziw)elfHRC5Q8CLrswoELmvS(9ZuXc)6)9)i7qp8hlU4V)(3)(gHFiSFSJD5u0DfuSGgatB6xyyYkWSeOEm9Ax3wB60MT3jL13zqiBVt4sl7tbmHLrQIookQkUoQBV0YWKESxRBSWpflTsKvuhH3KndD1c1dFWs2Pz1LuPRwg5rejMK5iYyevO41krnYJGo7OUQ7rC6hsiB(t7COFiCFAeWcXXcdSjq6Gfd3)IT3grj7Ush76Vnq7TDJLO7YRzJSORUwr2nwcM9N8UJ1hWCQI4aqblW7anempmfR7oqOMhg(UVDtPf83H5UoPb6dNwNJY7RnIyZ1mZDDO7o9RJNIZD8gsOvI8C3kYMU7S8Mmv5w0T)vLRAsYTGHPzMpUcfhLvYwv1BC4vbE5r9M3q9uRVjNOjWzAIAWMKRzsr9vuEMMG4Hi6ikxAmGDbHfBtNdfpeCekfF3HOjqPWvzc(bDKLGlqYtvmUYw4wOMC8fwgo0q0JWRJhUTt2IFKi(tXFOHgOpkL0Yg1Urv4OB7c(zLb6RCtRr9qp0JyL(YGnUqEbz9Kf3IM39Sm02kK33ZPu2fTYqUFeuiuWyWSzr5qL0EBRSEAVQ4hc3Hxn(GsEbUfMmmonYAC1m18sd3bm)vOsMwQjK5Vc09d8f0Zymkxy5wtOD)a4S7BuVPAQ8U5fbxgC29b7LSO8bde6E3hC(349oSWrBLy6GBwE(3ajEB959eVfM921q7CBy6C0rgb6LPZbrEbbDhvvih5fW(7LYoHgtGAlSWrJlwf1w5YYZRquB2eWkMV)EH5MWR2RIcoUuw8JvnBX7AUjGj3z9retUtOvGuZr5ICw15(7Tc68uFJKCCBguA8H92RUkrNFcxVf3J(bcQshtO078yOHX9C)S)VhLEhmZQEnm7xAZY7nw1BTz3anDMvVm93Qgzgh(ZyfvSXmfAUe3C4)d!BBF" or "!BBFvM1ASrX1vygBk9MqufP8qJviIjfcGuObxPyAfkfZ6Nly7ixVogvlHexVZD39INDMH7mZA2excXHeQQscrOuPsKijevbsrPcJbbLiJ5rmeOriTcPO0evsATajesasM)08dA65CNDxVWYSZg(LXZ35Epp)oNZ1klVjDQl9p(NiV8o7RjtAAM9J)cuxpbBfoAT7rf6CQ5imtdQijtFl9e3YWsSXAJ241BOH1pRznROnE71TUTa)qT7LN22s4snD3YVGRdhNQspFCF5QXUUchJMvcTiMX5mtxTo4MjDYn7TK7NGh2)EEZtdodLAZnhuyusvLrnaPVsl8mCtMwSuCMHErbk72li4OgURbeBmF8ABIAyeMqURHyCuurxqmBUG7IQzpmDwABxULzysdYQQCM)fi)5YlESuSWVuugYF44GyIOmHf3jDqodaf5ITdaNUBUbegq1RnHLJBGcCX2vRjswqI9UbtxMidZK5JvP2IEyaa5vXR3EEDt5MAX8STfmhNQXIF1Jt22T9pEt44PUSqfzB3gm4l3MVHF5cQsnxjMRfeCBYZyiQyq4uiF9BlJeTAkOq(gehscAVGwvrIV(Tvv2xRsB6fnzM6qkgCaowgzqfuE37RvaBaNIQYHq3S9J3cOl)OUzuYwIGHOOutD)aeJPBL2)ABjI)LQuBT1sUZFbVJFEmprgEgQH2gmDC5MXDD8XcFVsA4QRhVfPcgJN2ZGgx4LUSGlatv57(a)YNej8CyADrtYJhUD8DFGQYHVJud3qC2awEG50guvZD90dnkJIcLUVfiEUFA4G75TuvEN9G31s2GzCQWu6RxRKAa9HUPyAB0ZmPblyEI3zpQkFlvAOS0qIOGtn4VuXW93sl45vaN3b)EPHbuqmhxb47B3JRtH)x466b)EYWVji9urGQPKOcUji1ivGLGd)MGU9H41T47Z2AoLLdtse2QHNzLmSpuv5uVgCaFueN4qU89PMLH(uVMAn1Di86weurjsVkTwPc3uRsdthBJlcwuqmsUBit77XYNCjgKuXtWd3TacQQm(KZuZeZYZyTADXDyISbRSJpPQYvrc3CZVqC6Qhn4KEYenllPJy6Y)LY04szyNjRhWPwZSxNmexSdwSH4jCnbETYjaN96a)2Uq1yjfuJtTRkv7n(5LutLyPDyAnKbtpzfImJFEW6ogEl)SYltV6Xi)(fdFBKMGZ0zqEOenaCvLJGmnNtQgGCjPHlgkdP()UKYoEwT(yCZa79c4uvgdtDhbyaGgOc9Yv8XGSZT(iaMX6of1r2DoHB5W26JaoGli9ATlyy5jq3LH7WhGBWDZgUAp(fiN)jrgVsc(9BzgEM55FsvLlVizEtlCM2azLSjXgYsufZqC5fPwZSMdgZwzW1nZAoKH7YN4jJfwCRfXtqllPC4Uuvg(eyaRhyuKSiZrZIQWYh(eq6XbrpCl002aLruQiD4ID1dsM89bPenXeqv4GbgLN89vvMy5(U2KmdWVott4qUJjwUQYK1lRZA3iRDkKZatvAYWk(GfkLMS(zyEj371Bl)pIx99EDWBenBAjnyulBmAso5)b56AH7ydkEv0YfeaO3tGuY9A5fxQeDaUiArQ)evQwEujR18A2WIoOKZlfv3AiNWUvuqY)qbdN(sO1sLiMbOK1Flz(FmMrcm53ZahQO6Y)bzjR(rXllIiofMtQBRHyIaVSv)OewoFvdOhRYjMbriNOt033Kbvh6lAjYp1c8Rl6blEvKDVlPJRxOAQjg1XvBtC3uLWa9Gk1U3LQYo(kzlI8Jh3j3CqTETCzvr68o(kO17DKEa)o2Lq0uX213HK9)IfW)6WWc4uvUfIDA5CojKLOnjydfMKOyQk34zXuWI9B6JNKBeC3GB8SKgxU0z0QblnSheysDbEXk0VeeGCPBIenDaJ)Jkxmyq9Gt5U0njRaJNtjtwGuoy8VsRNEq8ROZfGm0t)Jm3CbxG04ZJwY8NzCQhOzBfC6n(8KoZG2utGOWiBfNMc)yNzkpVR3jWu0EO28kpptVtaZIVtzkAHXyWJVBA8QiR5q7KS7)Cj12X4jtvwxnaI7Gs(Cw8bnaJ9(m4hqDChKm8ai48BX2gnJLimfbeHCx5mT(PgqAvZ(RXIF8UfhPTwGh7OpnE6aZRLoqLkefo9s7cF0N(AnkzRlSCs3cO6lE1SyZ1Aey8s1NCUHzi4dJImfj316BMjEQGLM7AKJSdeA3Hc9i7qvPJ5k9LmMnU20mrNhwPwhZLSqcaFS2y8KMATWkDC9GUKfsiB22p7Xg5q7HLWOONcbSz7CfBR9CFzFpSX6EUVeCb1HPRTWGONGvvlymADQ108DXdS3qbdavvU(2rWRjx(2DxF75cEc6TN03Msrttn5qfxCTEOjdvRa5uvo5wX7jw5PvNCRlBL4NiHDmlBLWK14B5yVqiHgMj)H6Arm5kzzT)gUUvU5g2HJavvoa(qtt1fMrGj4VOWXQkw29aFSQY38kyHw(cE)wGbNt9nVc5Kdd4hiQNUUr4(Vtomzb7hWlAndTQgQzb7hCdJ0x(Dscqlo1iWI2yhHClT8OYHVPQYzX95MQFyOXUy6CxAPo5ZEJsCY1ux)yfYlWtpGbRKMELUMuD9VSL0NCdpFkSQN8yzlrv5VIpg3arYqDPbo4cIsvzZ4ZgmM8fL0AZkUx5BSbqa9FJ(kdZHfh6zW01AxGVsr5Op7gj1pBK6sYooqL2wV(zdjdFo6r)vbRKh4ZbxFA8aJrtWs6rRMvjovAshnwvv1aosuCt3PYp6o4hYxKIFnAZ(XTOnER79)qfdoPlTV9D6F4h(HAjnGpK30r0bUgQbgK6XZjyRTHJtw9CLecDla3iqpH1mDXn1duKvpxvLV4W(bOIVMrWUQV4WQk)Zxcn71hMzJavvAahKVW7Voe1yqzxV2f04fFkNgQ488nIttypF)zE2eSL3AXDJfCwODBrzjVb(2j5(TbA)VXHipXILjEf6Hw9psYtaRSp(5qHxujpDa(SFp4OwL)4bNJCgSaA6yEPtdBy2oSUVv2GFpmaTQYf3ggN6KNGP1SvCRWRtrruR53Cv0fSQqbdajlzAP54x5HJKkhNxR1ejyY5SqvzjtxP41OVmEBne6Tbavv(S3d9b9YW)(c0swSrc4ZEVsi0uEMNcG(rXsBniWNzLEG8xa8Vch4Z8uKrXroMQ5uWibOYxDJgmkm)X()D9HRUAzKvt(oGbVmgI9DhTi7JHxWpx)7okyLsYN(dtjqGKtJpz6E7Khp1awcZc8dNEpvGFyc8nNZvxyhpGtv5m4JvngMKcTOP2vYepZXiF6NGHMI)bE8lGd9E(0prvP)LI6Kv5bO(xQQY2Fm8yLbgGhiIEM8BzlbS9hlxXjGhb)Jx1BwB2vOEc6MsXDzgWao))!BBF"
-        local profileData, errorMessage = BBF.ImportProfile(importString, "auraWhitelist")
+        local profileData, errorMessage = BBF.OldImportProfile(importString, "auraWhitelist")
         if errorMessage then
             BBF.Print(L["Print_Error_Importing_Whitelist"] .. " " .. tostring(errorMessage))
             return
         end
-        deepMergeTables(BetterBlizzFramesDB.auraWhitelist, profileData)
+        BBF.DeepMergeTables(BetterBlizzFramesDB.auraWhitelist, profileData)
         BBF.auraWhitelistRefresh()
         Settings.OpenToCategory(BBF.category:GetID(), BBF.aurasSubCategory)
     end,
@@ -1263,7 +1128,7 @@ local function CreateImportExportUI(parent, title, dataTable, posX, posY, tableN
 
     -- Button scripts
     exportBtn:SetScript("OnClick", function()
-        local exportString = ExportProfile(dataTable, tableName)
+        local exportString = BBF.ExportProfile(dataTable, tableName)
         exportBox:SetText(exportString)
         exportBox:SetFocus()
         exportBox:HighlightText()
@@ -1309,13 +1174,13 @@ local function CreateImportExportUI(parent, title, dataTable, posX, posY, tableN
 
     importBtn:SetScript("OnClick", function()
         local importString = importBox:GetText()
-        local profileData, errorMessage = BBF.ImportProfile(importString, tableName)
+        local profileData, errorMessage = BBF.OldImportProfile(importString, tableName)
         if errorMessage then
             BBF.Print(L["Print_Error_Importing"] .. title .. ": " .. tostring(errorMessage))
         else
             if keepOldCheckbox and keepOldCheckbox:GetChecked() then
                 -- Perform a deep merge if "Keep Old" is checked
-                deepMergeTables(dataTable, profileData)
+                BBF.DeepMergeTables(dataTable, profileData)
             else
                 -- Replace existing data with imported data
                 --for k in pairs(dataTable) do dataTable[k] = nil end -- Clear current table

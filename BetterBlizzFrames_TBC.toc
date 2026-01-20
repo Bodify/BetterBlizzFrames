@@ -9,12 +9,12 @@
 ## X-Wago-ID: qGZR02Gd
 
 init.lua
+locales\locales.xml
+embeds.xml
+
+temp_shared\ImportExport.lua
 temp_shared\functions.lua
 temp_shared\functions_classics.lua
-
-locales\locales.xml
-
-embeds.xml
 
 temp_cata\modules\darkmode.lua
 temp_tbc\modules\nameFix.lua
