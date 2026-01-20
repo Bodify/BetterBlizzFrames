@@ -530,9 +530,9 @@ local petFrames = {
 
 local function SetUnitFramesValuesFont(font, size, outline)
     for _, textObject in ipairs(statusTexts) do
-                if not textObject then
+        if not textObject then
             BBF.Print("Nil statusText at index:", _)
-                end
+        end
         local ogFont, ogSize, ogOutline = textObject:GetFont()
 
         local newFont = font or ogFont

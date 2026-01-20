@@ -490,12 +490,12 @@ local targetManaLeftText, targetManaRightText, targetManaCenterText
 -- Function to check and set Target frame text elements
 local function InitializeTargetTextElements()
     -- Check for addon-added text elements (HealthPlusOverlay) for Target frame, fallback to default
-    targetHealthLeftText = _G.TargetHealthPercentText or targetHealthBar.LeftText
-    targetHealthRightText = _G.TargetHealthValueText or targetHealthBar.RightText
-    targetHealthCenterText = _G.TargetHealthCenterText or targetHealthBar.TextString
-    targetManaLeftText = _G.TargetManaPercentText or targetManaBar.LeftText
-    targetManaRightText = _G.TargetManaValueText or targetManaBar.RightText
-    targetManaCenterText = _G.TargetManaCenterText or targetManaBar.TextString
+    targetHealthLeftText = _G.TargetHealthPercentText or targetHealthBar.LeftText or targetHealthBar.MhnLeftText
+    targetHealthRightText = _G.TargetHealthValueText or targetHealthBar.RightText or targetHealthBar.MhnRightText
+    targetHealthCenterText = _G.TargetHealthCenterText or targetHealthBar.TextString or targetHealthBar.MhnTextString
+    targetManaLeftText = _G.TargetManaPercentText or targetManaBar.LeftText or targetManaBar.MhnLeftText
+    targetManaRightText = _G.TargetManaValueText or targetManaBar.RightText or targetManaBar.MhnRightText
+    targetManaCenterText = _G.TargetManaCenterText or targetManaBar.TextString or targetManaBar.MhnTextString
 end
 
 local function GetStatusTexts()
