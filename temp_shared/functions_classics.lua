@@ -1,6 +1,10 @@
-local ignoredPortraits = {
-    ["CharacterMicroButton"] = true,
-    ["PetStableFrame"] = true,
+local allowedPortraits = {
+    ["PlayerFrame"] = true,
+    ["PetFrame"] = true,
+    ["TargetFrame"] = true,
+    ["TargetFrameToT"] = true,
+    ["FocusFrame"] = true,
+    ["FocusFrameToT"] = true,
 }
 
 function BBF.ClassPortraits()
@@ -16,7 +20,7 @@ function BBF.ClassPortraits()
 
     hooksecurefunc("SetPortraitTexture", function(portrait, unit)
         local parentName = portrait:GetParent():GetName()
-        if ignoredPortraits[parentName] then return end
+        if not allowedPortraits[parentName] then return end
         if UnitIsPlayer(unit) then
             if BetterBlizzFramesDB.classPortraitsIgnoreSelf and portrait:GetParent():GetName() == "PlayerFrame" then return end
 
