@@ -1070,7 +1070,7 @@ function BBF.MoveToTFrames()
         TargetFrameToT:ClearAllPoints()
         if BetterBlizzFramesDB.targetToTAnchor == "BOTTOMRIGHT" then
             --TargetFrameToT:SetPoint(BBF.GetOppositeAnchor(BetterBlizzFramesDB.targetToTAnchor),TargetFrame,BetterBlizzFramesDB.targetToTAnchor,BetterBlizzFramesDB.targetToTXPos - 108,BetterBlizzFramesDB.targetToTYPos + 10)
-            TargetFrameToT:SetPoint(BetterBlizzFramesDB.targetToTAnchor,TargetFrame,BetterBlizzFramesDB.targetToTAnchor,BetterBlizzFramesDB.targetToTXPos - 35,BetterBlizzFramesDB.targetToTYPos - 10)
+            TargetFrameToT:SetPoint(BetterBlizzFramesDB.targetToTAnchor,TargetFrame,BetterBlizzFramesDB.targetToTAnchor,BetterBlizzFramesDB.targetToTXPos - 17,BetterBlizzFramesDB.targetToTYPos - 15)
         else
             TargetFrameToT:SetPoint(BBF.GetOppositeAnchor(BetterBlizzFramesDB.targetToTAnchor),TargetFrame,BetterBlizzFramesDB.targetToTAnchor,BetterBlizzFramesDB.targetToTXPos,BetterBlizzFramesDB.targetToTYPos)
         end
@@ -1081,7 +1081,7 @@ function BBF.MoveToTFrames()
         FocusFrameToT:ClearAllPoints()
         if BetterBlizzFramesDB.focusToTAnchor == "BOTTOMRIGHT" then
             --FocusFrameToT:SetPoint(BBF.GetOppositeAnchor(BetterBlizzFramesDB.focusToTAnchor),FocusFrame,BetterBlizzFramesDB.focusToTAnchor,BetterBlizzFramesDB.focusToTXPos - 108,BetterBlizzFramesDB.focusToTYPos + 10)
-            FocusFrameToT:SetPoint(BetterBlizzFramesDB.focusToTAnchor,FocusFrame,BetterBlizzFramesDB.focusToTAnchor,BetterBlizzFramesDB.focusToTXPos - 35,BetterBlizzFramesDB.focusToTYPos - 10)
+            FocusFrameToT:SetPoint(BetterBlizzFramesDB.focusToTAnchor,FocusFrame,BetterBlizzFramesDB.focusToTAnchor,BetterBlizzFramesDB.focusToTXPos - 17,BetterBlizzFramesDB.focusToTYPos - 15)
         else
             FocusFrameToT:SetPoint(BBF.GetOppositeAnchor(BetterBlizzFramesDB.focusToTAnchor),FocusFrame,BetterBlizzFramesDB.focusToTAnchor,BetterBlizzFramesDB.focusToTXPos,BetterBlizzFramesDB.focusToTYPos)
         end
