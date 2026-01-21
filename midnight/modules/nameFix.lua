@@ -343,7 +343,6 @@ local GetUnitTooltip = C_TooltipInfo and C_TooltipInfo.GetUnit or function() ret
 -- Function to retrieve the specialization ID of a unit
 local function GetSpecID(unit)
     -- Check if the unit is a player
-    if BBF.isMidnight then return nil end
     if not UnitIsPlayer(unit) then
         return nil
     end
