@@ -1353,11 +1353,13 @@ end
 function BBF.HideAbsorbGlow()
     if not BetterBlizzFramesDB.hideAllAbsorbGlow then return end
     hooksecurefunc("CompactUnitFrame_UpdateHealPrediction", function(frame)
+        if not frame or frame:IsForbidden() then return end
         if frame.overAbsorbGlow then
             frame.overAbsorbGlow:SetAlpha(0)
         end
     end)
     hooksecurefunc("UnitFrameHealPredictionBars_Update", function(frame)
+        if not frame or frame:IsForbidden() then return end
         if frame.overAbsorbGlow then
             frame.overAbsorbGlow:SetAlpha(0)
         end
