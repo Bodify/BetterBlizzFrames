@@ -1,3 +1,8 @@
+# BetterBlizzFrames 1.8.7i
+## Midnight
+### Bugfix
+- Ignore "Show last name only" setting as this now contains secret and causes errors. Dont think theres a workaround but not looking into it right now. Assuming its gone.
+
 # BetterBlizzFrames 1.8.7h
 ## The Burning Crusade
 ### New
