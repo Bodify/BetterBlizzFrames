@@ -1,4 +1,4 @@
-## Interface: 120000, 110207
+## Interface: 120001, 120000, 110207
 ## Title: Better|cff00c0ffBlizz|rFrames
 ## Notes: More options for Blizzard frames. Aura filtering, Party castbars, Combat indicator, Dark Mode etc.
 ## Author: Bodify
