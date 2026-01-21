@@ -1,3 +1,10 @@
+# BetterBlizzFrames 1.8.7h
+## The Burning Crusade
+### New
+- Add Edit Mode Transparency slider in the Edit Mode settings (top right).
+### Tweak
+- Fix default TargetFrameToT and FocusFrameToT position on TBC. You will have to tweak your ToT positions. 0,0 is default. It was changed +18 x-axis and -5 y-axis.
+
 # BetterBlizzFrames 1.8.7g
 ## Midnight
 ### Tweak
