@@ -413,17 +413,18 @@ local function GetSpecName(unit)
 end
 
 local function ShowLastNameOnlyNpc(frame, name)
-    if not name then return end
-    local creatureType = frame.unit and UnitCreatureType(frame.unit)
-    if creatureType == "Totem" then
-        -- Use first word (e.g., "Stoneclaw" from "Stoneclaw Totem")
-        local firstWord = name:match("^[^%s%-]+")
-        return firstWord
-    else
-        -- Use last word (e.g., "Guardian" from "Frostwolf Guardian")
-        local lastWord = name:match("([^%s]+)$")
-        return lastWord
-    end
+    --if not name then return end
+    return name
+    -- local creatureType = frame.unit and UnitCreatureType(frame.unit)
+    -- if creatureType == "Totem" then
+    --     -- Use first word (e.g., "Stoneclaw" from "Stoneclaw Totem")
+    --     local firstWord = name:match("^[^%s%-]+")
+    --     return firstWord
+    -- else
+    --     -- Use last word (e.g., "Guardian" from "Frostwolf Guardian")
+    --     local lastWord = name:match("([^%s]+)$")
+    --     return lastWord
+    -- end
 end
 
 local function GetNameWithoutRealm(frame)
