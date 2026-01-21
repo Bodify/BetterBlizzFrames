@@ -1,3 +1,8 @@
+# BetterBlizzFrames 1.8.7j
+## Midnight/Prepatch
+### Tweak
+- Update Aeghis profile
+
 # BetterBlizzFrames 1.8.7i
 ## Midnight
 ### Bugfix
