@@ -993,7 +993,7 @@ local function CreateImportExportUI(parent, title, dataTable, posX, posY, tableN
         wipeButton:Show()
         C_Timer.After(4, HideWipeButton)
     end)
-    CreateTooltipTwo(wipeButton, L["Tooltip_Delete_Data_Title"]..title, L["Tooltip_Delete_Data_Desc"].." "..title..L["Tooltip_Delete_Hold_Shift"])
+    CreateTooltipTwo(wipeButton, L["Tooltip_Delete_Data_Title"]..title, L["Tooltip_Delete_Data_Desc"].." "..title)
 
     wipeButton:HookScript("OnEnter", function()
         wipeButton:Show()
