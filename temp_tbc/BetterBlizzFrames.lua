@@ -53,6 +53,7 @@ local defaultSettings = {
     --enableLoCFrame = true,
     raiseTargetCastbarStrata = true,
     playerEliteFrameMode = 1,
+    reduceEditModeSelectionAlpha = true,
 
     --Target castbar
     playerCastbarIconXPos = 0,
@@ -2550,6 +2551,7 @@ First:SetScript("OnEvent", function(_, event, addonName)
             BBF.ZoomDefaultActionbarIcons()
             --TurnOnEnabledFeaturesOnLogin()
             BBF.RaiseTargetCastbarStratas()
+            BBF.ReduceEditModeAlpha()
 
             C_Timer.After(1, function()
                 BBF.HookStatusBarText()
@@ -2668,3 +2670,105 @@ if FocusFrameBackground then
         self:SetHeight(40)
     end)
 end
+
+function BBF.ReduceEditModeAlpha(disable)
+    if not BetterBlizzFramesDB.reduceEditModeSelectionAlpha and not disable then return end
+    local alpha = (disable and 1) or BetterBlizzFramesDB.editModeSelectionAlpha or 0.15
+
+    local frames = {
+        ArcheologyDigsiteProgressBar,
+        BagsBar,
+        BossTargetFrameContainer,
+        BuffFrame,
+        ChatFrame1,
+        CompactArenaFrame,
+        CompactRaidFrameContainer,
+        DebuffFrame,
+        DurabilityFrame,
+        ExtraAbilityContainer,
+        FocusFrame,
+        GameTooltipDefaultContainer,
+        LootFrame,
+        MainActionBar,
+        MainActionBar and MainActionBar.VehicleLeaveButton,
+        MicroMenuContainer,
+        MinimapCluster,
+        ObjectiveTrackerFrame,
+        EncounterBar,
+        MirrorTimerContainer,
+        MultiBarBottomLeft,
+        MultiBarBottomRight,
+        MultiBarLeft,
+        MultiBarRight,
+        MultiBar5,
+        MultiBar6,
+        MultiBar7,
+        PartyFrame,
+        PetActionBar,
+        PetFrame,
+        PlayerCastingBarFrame,
+        PlayerFrame,
+        PossessActionBar,
+        StanceBar,
+        StatusTrackingBarManager and StatusTrackingBarManager.MainStatusTrackingBarContainer,
+        StatusTrackingBarManager and StatusTrackingBarManager.SecondaryStatusTrackingBarContainer,
+        TargetFrame,
+        TalkingHeadFrame,
+        VehicleSeatIndicator,
+        EssentialCooldownViewer,
+        UtilityCooldownViewer,
+        BuffIconCooldownViewer,
+        BuffBarCooldownViewer,
+    }
+
+    for _, frame in pairs(frames) do
+        if frame and frame.Selection then
+            frame.Selection:SetAlpha(alpha)
+        end
+    end
+end
+
+local function CreateSmoothSlider(parent, variableToAdjust, title, defaultValue, onChangedCallback)
+    local stepSize = 0.05
+    local minValue, maxValue = 0, 1
+
+    local initialValue = BetterBlizzFramesDB[variableToAdjust] or defaultValue or maxValue
+
+    -- Create slider options and hide all labels except top
+    local options = Settings.CreateSliderOptions(minValue, maxValue, stepSize)
+    --options:SetLabelFormatter(MinimalSliderWithSteppersMixin.Label.Top, function() return title end)
+    -- Leave all others blank (default behavior is hidden if no formatter is set)
+
+    -- Create the slider
+    local slider = CreateFrame("Frame", nil, parent, "MinimalSliderWithSteppersTemplate")
+    slider:SetSize(235, 20)
+    slider:SetPoint("LEFT", parent, "RIGHT", 10, -2)
+
+    -- Label
+    local label = slider:CreateFontString(nil, "OVERLAY", "GameFontNormalMed1")
+    label:SetPoint("BOTTOM", slider, "TOP", 0, 1)
+    label:SetText(title)
+    label:SetTextColor(1,1,1,1)
+
+    -- Initialize with value and options
+    slider:Init(initialValue, options.minValue, options.maxValue, options.steps, options.formatters)
+
+    local function RoundToStep(value, step)
+        return math.floor((value / step) + 0.5) * step
+    end
+
+    -- Register OnValueChanged callback
+    slider:RegisterCallback("OnValueChanged", function(_, value)
+        local rounded = RoundToStep(value, stepSize)
+        BetterBlizzFramesDB.reduceEditModeSelectionAlpha = true
+        BetterBlizzFramesDB[variableToAdjust] = rounded
+        if onChangedCallback then
+            onChangedCallback()
+        end
+    end, slider)
+
+    return slider
+end
+C_Timer.After(1, function()
+    BBF.EditModeAlphaSlider = CreateSmoothSlider(EditModeManagerFrame.LayoutDropdown, "editModeSelectionAlpha", "Edit Mode Transparency", 0.85, BBF.ReduceEditModeAlpha)
+end)

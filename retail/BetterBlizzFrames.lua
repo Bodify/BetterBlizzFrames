@@ -3070,7 +3070,6 @@ end
 
 function BBF.ReduceEditModeAlpha(disable)
     if not BetterBlizzFramesDB.reduceEditModeSelectionAlpha and not disable then return end
-
     local alpha = (disable and 1) or BetterBlizzFramesDB.editModeSelectionAlpha or 0.15
 
     local frames = {
@@ -3088,7 +3087,7 @@ function BBF.ReduceEditModeAlpha(disable)
         GameTooltipDefaultContainer,
         LootFrame,
         MainActionBar,
-        MainActionBar.VehicleLeaveButton,
+        MainActionBar and MainActionBar.VehicleLeaveButton,
         MicroMenuContainer,
         MinimapCluster,
         ObjectiveTrackerFrame,
@@ -3119,7 +3118,7 @@ function BBF.ReduceEditModeAlpha(disable)
         BuffBarCooldownViewer,
     }
 
-    for _, frame in ipairs(frames) do
+    for _, frame in pairs(frames) do
         if frame and frame.Selection then
             frame.Selection:SetAlpha(alpha)
         end
