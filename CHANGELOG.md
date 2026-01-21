@@ -1,3 +1,10 @@
+# BetterBlizzFrames 1.8.8
+## Midnight/Prepatch
+### New
+- Add Mysticall profile! (www.twitch.tv/mysticallx). Thank you for sharing! <3
+### Bugfix
+- Fix "No Portrait" Target of Target background being sized wrong with hide mana setting.
+
 # BetterBlizzFrames 1.8.7j
 ## Midnight/Prepatch
 ### Tweak
