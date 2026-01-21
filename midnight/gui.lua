@@ -9328,22 +9328,22 @@ function BBF.CreateIntroMessageWindow()
     local starterButton = CreateClassButton(BBF.IntroMessageWindow, "STARTER", "Starter", nil, function()
         ShowProfileConfirmation("Starter", "STARTER", BBF.StarterProfile)
     end)
-    starterButton:SetPoint("TOP", description1, "BOTTOM", 0, -20)
+    starterButton:SetPoint("TOP", description1, "BOTTOM", -75, -20)
 
     local bodifyButton = CreateClassButton(BBF.IntroMessageWindow, "MAGE", "Bodify", "bodify", function()
         ShowProfileConfirmation("Bodify", "MAGE", BBF.BodifyProfile)
     end)
-    bodifyButton:SetPoint("TOP", starterButton, "BOTTOM", 0, btnGap)
+    bodifyButton:SetPoint("TOP", description1, "BOTTOM", 75, -20)
 
     local orText = BBF.IntroMessageWindow:CreateFontString(nil, "OVERLAY", "GameFontNormalMed2")
-    orText:SetPoint("CENTER", bodifyButton, "BOTTOM", 0, -20)
+    orText:SetPoint("CENTER", bodifyButton, "BOTTOM", -75, -20)
     orText:SetText(L["OR"])
     orText:SetJustifyH("CENTER")
 
     local aeghisButton = CreateClassButton(BBF.IntroMessageWindow, "MAGE", "Aeghis", "aeghis", function()
         ShowProfileConfirmation("Aeghis", "MAGE", BBF.AeghisProfile)
     end)
-    aeghisButton:SetPoint("TOP", bodifyButton, "BOTTOM", 0, -40)
+    aeghisButton:SetPoint("TOP", bodifyButton, "BOTTOM", -150, -40)
 
     local kalvishButton = CreateClassButton(BBF.IntroMessageWindow, "ROGUE", "Kalvish", "kalvish", function()
         ShowProfileConfirmation("Kalvish", "ROGUE", BBF.KalvishProfile)
@@ -9368,7 +9368,7 @@ function BBF.CreateIntroMessageWindow()
     local mysticallButton = CreateClassButton(BBF.IntroMessageWindow, "MONK", "Mysticall", "mysticallx", function()
         ShowProfileConfirmation("Mysticall", "MONK", BBF.MysticallProfile)
     end)
-    mysticallButton:SetPoint("TOP", mmarkersButton, "BOTTOM", 0, btnGap)
+    mysticallButton:SetPoint("TOP", bodifyButton, "BOTTOM", 0, -40)
 
     local nahjButton = CreateClassButton(BBF.IntroMessageWindow, "ROGUE", "Nahj", "nahj", function()
         ShowProfileConfirmation("Nahj", "ROGUE", BBF.NahjProfile)
@@ -9391,14 +9391,14 @@ function BBF.CreateIntroMessageWindow()
     venrukiButton:SetPoint("TOP", snupyButton, "BOTTOM", 0, btnGap)
 
     local orText2 = BBF.IntroMessageWindow:CreateFontString(nil, "OVERLAY", "GameFontNormalMed2")
-    orText2:SetPoint("CENTER", venrukiButton, "BOTTOM", 0, -20)
+    orText2:SetPoint("CENTER", mmarkersButton, "BOTTOM", 75, -20)
     orText2:SetText(L["OR"])
     orText2:SetJustifyH("CENTER")
 
     local buttonLast = CreateFrame("Button", nil, BBF.IntroMessageWindow, "GameMenuButtonTemplate")
     buttonLast:SetSize(btnWidth, btnHeight)
     buttonLast:SetText(L["Exit_No_Profile"])
-    buttonLast:SetPoint("TOP", venrukiButton, "BOTTOM", 0, -40)
+    buttonLast:SetPoint("TOP", mmarkersButton, "BOTTOM", 75, -40)
     buttonLast:SetNormalFontObject("GameFontNormal")
     buttonLast:SetHighlightFontObject("GameFontHighlight")
     buttonLast:SetScript("OnClick", function()
@@ -9423,14 +9423,17 @@ function BBF.CreateIntroMessageWindow()
 
     local function AdjustWindowHeight()
         local baseHeight = 334
-        local perButtonHeight = 29
-        local buttonCount = -1
+        local perRowHeight = 29
+        local buttonCount = 0
         for _, child in ipairs({BBF.IntroMessageWindow:GetChildren()}) do
             if child and child:IsObjectType("Button") then
                 buttonCount = buttonCount + 1
             end
         end
-        local newHeight = baseHeight + (buttonCount * perButtonHeight)
+
+        local rowCount = math.ceil(buttonCount / 2)
+        local newHeight = baseHeight + (rowCount * perRowHeight)
+
         BBF.IntroMessageWindow:SetSize(470, newHeight)
     end
     AdjustWindowHeight()
