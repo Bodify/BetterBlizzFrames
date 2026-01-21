@@ -5426,10 +5426,15 @@ local function guiGeneralTab()
     end)
     mmarkersButton:SetPoint("TOP", mesButton, "BOTTOM", 0, btnGap)
 
+    local mysticallButton = CreateClassButton(BetterBlizzFrames, "MONK", "Mysticall", "mysticallx", function()
+        ShowProfileConfirmation("Mysticall", "MONK", BBF.MysticallProfile)
+    end)
+    mysticallButton:SetPoint("TOP", mmarkersButton, "BOTTOM", 0, btnGap)
+
     local nahjButton = CreateClassButton(BetterBlizzFrames, "ROGUE", "Nahj", "nahj", function()
         ShowProfileConfirmation("Nahj", "ROGUE", BBF.NahjProfile)
     end)
-    nahjButton:SetPoint("TOP", mmarkersButton, "BOTTOM", 0, btnGap)
+    nahjButton:SetPoint("TOP", mysticallButton, "BOTTOM", 0, btnGap)
 
     local pmakeButton = CreateClassButton(BetterBlizzFrames, "MAGE", "Pmake", "pmakewow", function()
         ShowProfileConfirmation("Pmake", "MAGE", BBF.PmakeProfile)
@@ -9360,10 +9365,15 @@ function BBF.CreateIntroMessageWindow()
     end)
     mmarkersButton:SetPoint("TOP", mesButton, "BOTTOM", 0, btnGap)
 
+    local mysticallButton = CreateClassButton(BBF.IntroMessageWindow, "MONK", "Mysticall", "mysticallx", function()
+        ShowProfileConfirmation("Mysticall", "MONK", BBF.MysticallProfile)
+    end)
+    mysticallButton:SetPoint("TOP", mmarkersButton, "BOTTOM", 0, btnGap)
+
     local nahjButton = CreateClassButton(BBF.IntroMessageWindow, "ROGUE", "Nahj", "nahj", function()
         ShowProfileConfirmation("Nahj", "ROGUE", BBF.NahjProfile)
     end)
-    nahjButton:SetPoint("TOP", mmarkersButton, "BOTTOM", 0, btnGap)
+    nahjButton:SetPoint("TOP", mysticallButton, "BOTTOM", 0, btnGap)
 
     local pmakeButton = CreateClassButton(BBF.IntroMessageWindow, "MAGE", "Pmake", "pmakewow", function()
         ShowProfileConfirmation("Pmake", "MAGE", BBF.PmakeProfile)
