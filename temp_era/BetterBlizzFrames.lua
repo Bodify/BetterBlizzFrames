@@ -1633,7 +1633,7 @@ SlashCmdList["BBF"] = function(msg)
 end
 
 local function MoveableSettingsPanel(talents)
-    if C_AddOns.IsAddOnLoaded("BlizzMove") then return end
+    if C_AddOns.IsAddOnLoaded("BlizzMove") or C_AddOns.IsAddOnLoaded("MoveAny") then return end
     if BetterBlizzFramesDB.dontMoveSettingsPanel then return end
     if not talents then
         local frame = SettingsPanel

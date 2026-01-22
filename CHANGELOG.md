@@ -1,3 +1,9 @@
+# BetterBlizzFrames 1.8.8b
+## Midnight/Prepatch
+### Tweak
+- Remove some dead code which could potentially cause game crash for some people since we are playing the Alpha (Prepatch).
+- Don't attempt to make SettingsPanel moveable if MoveAny is loaded.
+
 # BetterBlizzFrames 1.8.8
 ## Midnight/Prepatch
 ### New
