@@ -9,6 +9,11 @@ BBF.ICON_NAME = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames"
 -- Initialize locale table (will be populated by locale files)
 BBF.L = BBF.L or {}
 
+SLASH_BBFRL1 = "/RL"
+SlashCmdList["BBFRL"] = function()
+    ReloadUI()
+end
+
 function BBF.Print(msg, noColon)
 	if msg then
 		local suffix = noColon and " " or ": "
