@@ -2837,5 +2837,7 @@ function BBF.noPortraitModes()
         FixSelectionHighlight()
     end)
 
-    BBF.UpdateNoPortraitManaVisibility()
+    C_Timer.After(0.5, function()
+        BBF.UpdateNoPortraitManaVisibility()
+    end)
 end
