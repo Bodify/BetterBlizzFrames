@@ -2085,12 +2085,23 @@ function BBF.ArenaOptimizer(disable, noPrint)
     end
 end
 
-
-
-
-
-
-
+function BBF.HookAndUpdatePartyFrameRangeAlpha(toggle)
+    if not BetterBlizzFramesDB.changePartyFrameRangeAlpha then return end
+    local function UpdateRangeAlpha(frame)
+        if not frame or not frame.displayedUnit then return end
+        local inRange = UnitInRange(frame.displayedUnit)
+        frame:SetAlphaFromBoolean(inRange, 1, BetterBlizzFramesDB.partyFrameRangeAlpha or 0.55)
+    end
+    if toggle then
+        for i = 1, 5 do
+            local frame = _G["CompactPartyFrameMember" .. i]
+            UpdateRangeAlpha(frame)
+        end
+    end
+    if BBF.partyFrameRangeAlphaHooked then return end
+    BBF.partyFrameRangeAlphaHooked = true
+    hooksecurefunc("CompactUnitFrame_UpdateCenterStatusIcon", UpdateRangeAlpha)
+end
 
 --########################################################
 function BBF.MiniFrame(frame)
@@ -5119,6 +5130,7 @@ First:SetScript("OnEvent", function(_, event, addonName)
         BBF.HideAbsorbGlow()
         BBF.ZoomDefaultActionbarIcons()
         BBF.ClassColorFriendlist()
+        BBF.HookAndUpdatePartyFrameRangeAlpha()
         --BBF.DisableAddOnProfiling()
         C_Timer.After(0.5, function()
             BBF.ClassColorLegacyCombos()

@@ -1,5 +1,7 @@
 # BetterBlizzFrames 1.8.8b
 ## Midnight/Prepatch
+### New
+- Add CompactPartyFrame out-of-range alpha setting.
 ### Tweak
 - Remove some dead code which could potentially cause game crash for some people since we are playing the Alpha (Prepatch).
 ## All versions

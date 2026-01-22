@@ -995,6 +995,9 @@ local function CreateSlider(parent, label, minValue, maxValue, stepValue, elemen
                 elseif element == "partyFrameScale" then
                     BetterBlizzFramesDB.partyFrameScale = value
                     BBF.CompactPartyFrameScale()
+                elseif element == "partyFrameRangeAlpha" then
+                    BetterBlizzFramesDB.partyFrameRangeAlpha = value
+                    BBF.HookAndUpdatePartyFrameRangeAlpha(true)
                 elseif element == "darkModeColor" then
                     BetterBlizzFramesDB.darkModeColor = value
                     if not BBF.checkCombatAndWarn() then
@@ -3874,12 +3877,23 @@ local function guiGeneralTab()
     local partyFrameScale = CreateSlider(BetterBlizzFrames, L["Party_Frame_Scale"], 0.7, 1.7, 0.01, "partyFrameScale", nil, 120)
     partyFrameScale:SetPoint("TOPLEFT", hideRaidFrameContainerBorder, "BOTTOMLEFT", 6, -9)
 
+    local changePartyFrameRangeAlpha = CreateCheckbox("changePartyFrameRangeAlpha", "", BetterBlizzFrames)
 
+    local partyFrameRangeAlpha = CreateSlider(changePartyFrameRangeAlpha, L["Party_Frame_Range_Alpha"], 0, 1, 0.01, "partyFrameRangeAlpha", nil, 120)
+    partyFrameRangeAlpha:SetPoint("TOP", partyFrameScale, "BOTTOM", 0, -19)
+    CreateTooltipTwo(changePartyFrameRangeAlpha, L["Party_Frame_Range_Alpha"], L["Tooltip_Party_Frame_Range_Alpha"])
 
-
-
-
-
+    changePartyFrameRangeAlpha:SetPoint("RIGHT", partyFrameRangeAlpha, "LEFT", 0, 0)
+    CreateTooltipTwo(changePartyFrameRangeAlpha, L["Change_Party_Frame_Alpha"], L["Tooltip_Change_Party_Frame_Alpha"])
+    changePartyFrameRangeAlpha:HookScript("OnClick", function(self)
+        if self:GetChecked() then
+            BBF.HookAndUpdatePartyFrameRangeAlpha(true)
+            EnableElement(partyFrameRangeAlpha)
+        else
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            DisableElement(partyFrameRangeAlpha)
+        end
+    end)
 
 
     local targetFrameText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
