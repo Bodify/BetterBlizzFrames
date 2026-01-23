@@ -1,3 +1,8 @@
+# BetterBlizzFrames 1.8.8c
+## Midnight/Prepatch
+### Tweak
+- Update mes profile
+
 # BetterBlizzFrames 1.8.8b
 ## Midnight/Prepatch
 ### New
