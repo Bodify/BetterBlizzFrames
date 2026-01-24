@@ -5316,23 +5316,19 @@ PlayerEnteringWorld:RegisterEvent("PLAYER_ENTERING_WORLD")
 
 
 function BBF.CreateBigDebuffs()
-    -- Create simple icon+cooldown frame template
     local function CreateDebuffFrame(unitFrame, portraitMask)
         local frame = CreateFrame("Frame", nil, unitFrame)
         frame:SetSize(36, 36)
         frame:Hide()
 
-        -- Icon texture
         frame.icon = frame:CreateTexture(nil, "BACKGROUND", nil, 1)
         frame.icon:SetAllPoints()
         frame.icon:SetTexCoord(0.1, 0.9, 0.1, 0.9)
 
-        -- Apply portrait mask to icon
         if portraitMask then
             frame.icon:AddMaskTexture(portraitMask)
         end
 
-        -- Cooldown frame
         frame.cooldown = CreateFrame("Cooldown", nil, frame, "CooldownFrameTemplate")
         frame.cooldown:SetAllPoints()
         frame.cooldown:SetReverse(true)
@@ -5344,30 +5340,25 @@ function BBF.CreateBigDebuffs()
         return frame
     end
 
-    -- Attach frame to portrait
     local function AttachToPortrait(frame, portrait)
         if not portrait then return end
-        
+
         local portraitParent = portrait:GetParent()
         frame:SetParent(portraitParent)
         frame:SetFrameLevel(portraitParent:GetFrameLevel())
-        
-        -- Set portrait to background so debuff shows on top
+
         portrait:SetDrawLayer("BACKGROUND", 0)
-        
-        -- Match portrait position and size
+
         frame:ClearAllPoints()
         frame:SetPoint(portrait:GetPoint())
         frame:SetSize(portrait:GetSize())
     end
 
-    -- Create player frame for loss of control
     if PlayerFrame then
         local playerDebuffFrame = CreateDebuffFrame(PlayerFrame, PlayerFrame.PlayerFrameContainer.PlayerPortraitMask)
         AttachToPortrait(playerDebuffFrame, PlayerFrame.PlayerFrameContainer.PlayerPortrait)
         PlayerFrame.bbfBigDebuff = playerDebuffFrame
-        
-        -- Hook LossOfControlFrame icon texture
+
         if LossOfControlFrame and LossOfControlFrame.Icon then
             hooksecurefunc(LossOfControlFrame.Icon, "SetTexture", function(_, tex)
                 if tex and tex ~= "" then
@@ -5378,13 +5369,11 @@ function BBF.CreateBigDebuffs()
                     playerDebuffFrame:Hide()
                 end
             end)
-            
-            -- Hook cooldown
+
             hooksecurefunc(LossOfControlFrame.Cooldown, "SetCooldown", function(_, start, duration)
                 playerDebuffFrame.cooldown:SetCooldown(start, duration)
             end)
-            
-            -- Hook Hide to clean up
+
             hooksecurefunc(LossOfControlFrame, "Hide", function()
                 playerDebuffFrame.icon:SetTexture(nil)
                 playerDebuffFrame:Hide()
@@ -5392,18 +5381,15 @@ function BBF.CreateBigDebuffs()
         end
     end
 
-    -- Create 3 frames for each Target/Focus (one per arena opponent)
     TargetFrame.bbfArenaDebuffs = {}
     FocusFrame.bbfArenaDebuffs = {}
-    
+
     for i = 1, 3 do
-        -- Target frames
         local targetFrame = CreateDebuffFrame(TargetFrame, TargetFrame.TargetFrameContainer.PortraitMask)
         AttachToPortrait(targetFrame, TargetFrame.TargetFrameContainer.Portrait)
         targetFrame.arenaIndex = i
         TargetFrame.bbfArenaDebuffs[i] = targetFrame
-        
-        -- Focus frames
+
         local focusFrame = CreateDebuffFrame(FocusFrame, FocusFrame.TargetFrameContainer.PortraitMask)
         AttachToPortrait(focusFrame, FocusFrame.TargetFrameContainer.Portrait)
         focusFrame.arenaIndex = i
@@ -5414,14 +5400,11 @@ function BBF.CreateBigDebuffs()
     for i = 1, 3 do
         local blizzArenaFrame = _G["CompactArenaFrameMember" .. i]
         if not blizzArenaFrame then break end
-        
-        local unit = "arena" .. i
         local debuffFrame = blizzArenaFrame.DebuffFrame
-        
+
         if debuffFrame and debuffFrame.Icon and debuffFrame.Cooldown then
             -- Hook texture changes
             hooksecurefunc(debuffFrame.Icon, "SetTexture", function(_, tex)
-                -- Update the corresponding target frame for this arena unit
                 local targetDebuffFrame = TargetFrame.bbfArenaDebuffs[i]
                 if targetDebuffFrame then
                     if tex == "INTERFACE\\ICONS\\INV_MISC_QUESTIONMARK.BLP" then
@@ -5430,8 +5413,6 @@ function BBF.CreateBigDebuffs()
                         targetDebuffFrame.icon:SetTexture(tex)
                     end
                 end
-                
-                -- Update the corresponding focus frame for this arena unit
                 local focusDebuffFrame = FocusFrame.bbfArenaDebuffs[i]
                 if focusDebuffFrame then
                     if tex == "INTERFACE\\ICONS\\INV_MISC_QUESTIONMARK.BLP" then
@@ -5441,15 +5422,12 @@ function BBF.CreateBigDebuffs()
                     end
                 end
             end)
-            
+
             -- Hook cooldown changes
             hooksecurefunc(debuffFrame.Cooldown, "SetCooldown", function(_, start, duration)
-                -- Update target frame cooldown
                 if TargetFrame.bbfArenaDebuffs[i] then
                     TargetFrame.bbfArenaDebuffs[i].cooldown:SetCooldown(start, duration)
                 end
-                
-                -- Update focus frame cooldown
                 if FocusFrame.bbfArenaDebuffs[i] then
                     FocusFrame.bbfArenaDebuffs[i].cooldown:SetCooldown(start, duration)
                 end
@@ -5457,31 +5435,12 @@ function BBF.CreateBigDebuffs()
         end
     end
 
-
-    local function GetSafeNameplate(unit)
-        local nameplate = C_NamePlate.GetNamePlateForUnit(unit, issecure())
-        -- If there's no nameplate or the nameplate doesn't have a UnitFrame, return nils.
-        if not nameplate or not nameplate.UnitFrame then return nil, nil end
-
-        local frame = nameplate.UnitFrame
-        -- If none of the above conditions are met, return both the nameplate and the frame.
-        return nameplate, frame
-    end
-
-    -- Returns the arena index (1–3) if this unit is one of the arena enemies, otherwise nil.
     local function GetArenaIndexByUnit(unit)
-        local _, unitNP = GetSafeNameplate(unit)
-        if not unitNP then
-            return nil
-        end
-
         for i = 1, 3 do
-            local _, arenaNP = GetSafeNameplate("arena" .. i)
-            if arenaNP and arenaNP == unitNP then
+            if UnitIsUnit(unit, "arena" .. i) then
                 return i
             end
         end
-
         return nil
     end
 
@@ -5522,6 +5481,4 @@ function BBF.CreateBigDebuffs()
 
         UpdateDebuffVisibility()
     end)
-
-
 end
