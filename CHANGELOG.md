@@ -1,3 +1,10 @@
+# BetterBlizzFrames 1.8.8d
+## Midnight/Prepatch
+### Bugfix
+- Fix "CDM: Center Icons" (Misc) setting having some gap issues. Ty to Kaja@CurseForge for sending fix.
+- Fix PartyFrame Range Alpha setting unintentionally affecting nameplates.
+- Fix two midnight secret errors.
+
 # BetterBlizzFrames 1.8.8c
 ## Midnight/Prepatch
 ### Tweak
