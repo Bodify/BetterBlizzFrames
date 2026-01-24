@@ -104,6 +104,10 @@ end
 local function SetRPName(name, unit)
     if not TRP3_API.globals.player_realm_id then return end
     local fullName = TRP3_API.r.name(unit) or ""
+    if issecretvalue(fullName) then
+        name:SetText(fullName)
+        return
+    end
     local firstRpName, lastRpName = fullName:match("^(%S+)%s*(.*)$")
 
     if rpNamesFirst and rpNamesLast then
