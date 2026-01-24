@@ -5287,10 +5287,6 @@ First:SetScript("OnEvent", function(_, event, addonName)
         BBF.InitializeOptions()
     elseif addonName == "Blizzard_PlayerSpells" and _G.HeroTalentsSelectionDialog and _G.PlayerSpellsFrame then
         MoveableSettingsPanel(true)
-    elseif addonName == "Clique" then
-        if BetterBlizzFramesDB.noPortraitModes or BetterBlizzFramesDB.noPortraitPixelBorder then
-
-        end
     end
 end)
 
