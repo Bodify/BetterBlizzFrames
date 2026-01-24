@@ -2089,6 +2089,7 @@ function BBF.HookAndUpdatePartyFrameRangeAlpha(toggle)
     if not BetterBlizzFramesDB.changePartyFrameRangeAlpha then return end
     local function UpdateRangeAlpha(frame)
         if not frame or not frame.displayedUnit then return end
+        if frame:IsForbidden() or string.match(frame.displayedUnit, "nameplate") then return end
         local inRange = UnitInRange(frame.displayedUnit)
         frame:SetAlphaFromBoolean(inRange, 1, BetterBlizzFramesDB.partyFrameRangeAlpha or 0.55)
     end
