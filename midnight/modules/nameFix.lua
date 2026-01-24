@@ -598,7 +598,12 @@ local function PartyFrameNameChange(frame)
     if fontSize and fontSize > 10 then
         extraWidth = math.floor((fontSize - 10) / 2) * 15
     end
-    frame.bbfName:SetWidth(baseWidth + extraWidth)
+
+    if issecretvalue(baseWidth) then -- TODO: figure out a better way to handle this, all of it
+        frame.bbfName:SetWidth(baseWidth)
+    else
+        frame.bbfName:SetWidth(baseWidth + extraWidth)
+    end
 
     if classColorPartyNames then
         if frame.unit and (UnitIsPlayer(frame.unit) or C_LFGInfo.IsInLFGFollowerDungeon()) then
