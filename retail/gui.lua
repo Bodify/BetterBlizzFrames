@@ -9221,9 +9221,9 @@ local function guiCooldownManager()
     list:SetAlpha(BetterBlizzFramesDB.cdManagerSorting and 1 or 0.3)
 
 
-    local cdManagerCenterIcons = CreateCheckbox("cdManagerCenterIcons", L["Center_Icons"], guiCdManager, nil, BBF.HookCooldownManagerTweaks)
+    local cdManagerCenterIcons = CreateCheckbox("cdManagerCenterIcons", L["CDM_Center_Icons"], guiCdManager, nil, BBF.HookCooldownManagerTweaks)
     cdManagerCenterIcons:SetPoint("TOPLEFT", cdManagerSorting, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltipTwo(cdManagerCenterIcons, L["Center_Icons"], L["Center_CDM_Icons"])
+    CreateTooltipTwo(cdManagerCenterIcons, L["CDM_Center_Icons"], L["CDM_Center_Icons_Tooltip"])
     cdManagerCenterIcons:HookScript("OnClick", function(self)
         if not self:GetChecked() and not cdManagerCenterIcons:GetChecked() then
             StaticPopup_Show("BBF_CONFIRM_RELOAD")

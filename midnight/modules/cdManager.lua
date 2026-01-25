@@ -60,14 +60,16 @@ function BBF.SortCooldownManagerIcons(frame, center)
     else
         local totalIcons  = #icons
         local iconsPerRow = rowLimit
-        if totalIcons <= iconsPerRow then return end
 
+        local isSingleRow = (totalIcons <= iconsPerRow)
         local lastRowCount = totalIcons % iconsPerRow
-        if lastRowCount == 0 then return end
 
-        local fullRowWidth = (iconWidth * iconsPerRow) + (iconPadding * (iconsPerRow - 1))
-        local rowWidth     = (iconWidth * lastRowCount) + (iconPadding * (lastRowCount - 1))
-        local shiftX       = (fullRowWidth - rowWidth) / 2
+        local shiftX = 0
+        if not isSingleRow and lastRowCount > 0 then
+            local fullRowWidth = (iconWidth * iconsPerRow) + (iconPadding * (iconsPerRow - 1))
+            local rowWidth     = (iconWidth * lastRowCount) + (iconPadding * (lastRowCount - 1))
+            shiftX = (fullRowWidth - rowWidth) / 2
+        end
 
         for i, icon in ipairs(icons) do
             local row = math.floor((i - 1) / rowLimit)
@@ -76,21 +78,15 @@ function BBF.SortCooldownManagerIcons(frame, center)
             local x = col * (iconWidth + iconPadding)
             local y = -row * (iconHeight + iconPadding)
 
-            icon._bbfOriginalX = x
-            icon._bbfOriginalY = y
+            if not isSingleRow then
+                local isLastRow = (row == math.floor((totalIcons - 1) / rowLimit))
+                if isLastRow and lastRowCount > 0 then
+                    x = x + shiftX
+                end
+            end
 
             icon:ClearAllPoints()
             icon:SetPoint("TOPLEFT", frame, "TOPLEFT", x, y)
-        end
-
-        for i = totalIcons - lastRowCount + 1, totalIcons do
-            local icon = icons[i]
-            if icon and icon:IsShown() then
-                local x = icon._bbfOriginalX or 0
-                local y = icon._bbfOriginalY or 0
-                icon:ClearAllPoints()
-                icon:SetPoint("TOPLEFT", frame, "TOPLEFT", x + shiftX, y)
-            end
         end
     end
 end

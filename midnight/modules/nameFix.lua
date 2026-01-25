@@ -104,6 +104,10 @@ end
 local function SetRPName(name, unit)
     if not TRP3_API.globals.player_realm_id then return end
     local fullName = TRP3_API.r.name(unit) or ""
+    if issecretvalue(fullName) then
+        name:SetText(fullName)
+        return
+    end
     local firstRpName, lastRpName = fullName:match("^(%S+)%s*(.*)$")
 
     if rpNamesFirst and rpNamesLast then
@@ -594,7 +598,12 @@ local function PartyFrameNameChange(frame)
     if fontSize and fontSize > 10 then
         extraWidth = math.floor((fontSize - 10) / 2) * 15
     end
-    frame.bbfName:SetWidth(baseWidth + extraWidth)
+
+    if issecretvalue(baseWidth) then -- TODO: figure out a better way to handle this, all of it
+        frame.bbfName:SetWidth(57 + extraWidth)
+    else
+        frame.bbfName:SetWidth(baseWidth + extraWidth)
+    end
 
     if classColorPartyNames then
         if frame.unit and (UnitIsPlayer(frame.unit) or C_LFGInfo.IsInLFGFollowerDungeon()) then
