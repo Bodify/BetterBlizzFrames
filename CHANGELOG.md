@@ -1,3 +1,8 @@
+# BetterBlizzFrames 1.8.8e
+## Midnight/Prepatch
+### Bugfix
+- Fix party name width error
+
 # BetterBlizzFrames 1.8.8d
 ## Midnight/Prepatch
 ### Tweak
