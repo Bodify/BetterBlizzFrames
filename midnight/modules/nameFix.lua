@@ -600,7 +600,7 @@ local function PartyFrameNameChange(frame)
     end
 
     if issecretvalue(baseWidth) then -- TODO: figure out a better way to handle this, all of it
-        frame.bbfName:SetWidth(baseWidth)
+        frame.bbfName:SetWidth(57 + extraWidth)
     else
         frame.bbfName:SetWidth(baseWidth + extraWidth)
     end
