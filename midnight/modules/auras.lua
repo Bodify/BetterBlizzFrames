@@ -165,7 +165,8 @@ local function adjustCastbar(self, frame)
     local parent = meta.GetParent(self)
 
     if self.bbfHiddenCastbar then
-        meta.SetPoint(self, "TOPLEFT", parent, "BOTTOMLEFT", -6969, 0)
+        meta.SetClampedToScreen(self, false)
+        meta.SetPoint(self, "TOPLEFT", parent, "BOTTOMLEFT", 0, 9000)
         return
     end
 
@@ -227,7 +228,8 @@ local function DefaultCastbarAdjustment(self, frame)
     local parentFrame = meta.GetParent(self)
 
     if self.bbfHiddenCastbar then
-        meta.SetPoint(self, "TOPLEFT", parentFrame, "BOTTOMLEFT", -6969, 0)
+        meta.SetClampedToScreen(self, false)
+        meta.SetPoint(self, "TOPLEFT", parent, "BOTTOMLEFT", 0, 9000)
         return
     end
 
