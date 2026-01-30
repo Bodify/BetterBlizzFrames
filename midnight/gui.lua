@@ -1197,6 +1197,9 @@ local function CreateSlider(parent, label, minValue, maxValue, stepValue, elemen
                 elseif element == "auraStackSize" then
                     BetterBlizzFramesDB.auraStackSize = value
                     BBF.RefreshAllAuraFrames()
+                elseif element == "auraCdTextSize" then
+                    BetterBlizzFramesDB.auraCdTextSize = value
+                    BBF.RefreshAllAuraFrames()
                 elseif element == "targetAndFocusSmallAuraScale" then
                     BetterBlizzFramesDB.targetAndFocusSmallAuraScale = value
                     BBF.RefreshAllAuraFrames()
@@ -7664,7 +7667,7 @@ local function guiFrameAuras()
     CreateTooltip(targetAndFocusSmallAuraScale, L["Tooltip_Small_Aura_Size"])
 
     local sameSizeAuras = CreateCheckbox("sameSizeAuras", L["Same_Size"], playerAuraFiltering)
-    sameSizeAuras:SetPoint("LEFT", targetAndFocusSmallAuraScale, "RIGHT", 3, 0)
+    sameSizeAuras:SetPoint("LEFT", targetAndFocusSmallAuraScale, "RIGHT", 3, 2)
     CreateTooltipTwo(sameSizeAuras, L["Same_Size"], L["Tooltip_Same_Size"])
     sameSizeAuras:HookScript("OnClick", function(self)
         if self:GetChecked() then
@@ -7700,6 +7703,22 @@ local function guiFrameAuras()
     auraStackSize:SetPoint("TOPLEFT", auraTypeGap, "BOTTOMLEFT", 0, -17)
     CreateTooltipTwo(auraStackSize, L["Aura_Stack_Size"], L["Tooltip_Aura_Stack_Size"])
 
+    local showAuraCdText = CreateCheckbox("showAuraCdText", L["Show_Aura_CD_Text"], playerAuraFiltering)
+    CreateTooltipTwo(showAuraCdText, L["Show_Aura_CD_Text"], L["Tooltip_Show_Aura_CD_Text"])
+
+    local auraCdTextSize = CreateSlider(showAuraCdText, L["Aura_CD_Text_Size"], 0.25, 1.5, 0.01, "auraCdTextSize")
+    auraCdTextSize:SetPoint("TOPLEFT", auraStackSize, "BOTTOMLEFT", 0, -17)
+    CreateTooltip(auraCdTextSize, L["Tooltip_Aura_CD_Text_Size"])
+
+    showAuraCdText:SetPoint("LEFT", auraCdTextSize, "RIGHT", 3, 2)
+    showAuraCdText:HookScript("OnClick", function(self)
+        if self:GetChecked() then
+            EnableElement(auraCdTextSize)
+        else
+            DisableElement(auraCdTextSize)
+        end
+    end)
+
 --[=[
     local maxTargetBuffs = CreateSlider(playerAuraFiltering, L["Max_Buffs"], 1, 32, 1, "maxTargetBuffs")
     maxTargetBuffs:SetPoint("TOPLEFT", targetAndFocusVerticalGap, "BOTTOMLEFT", 0, -17)
@@ -7716,7 +7735,7 @@ local function guiFrameAuras()
 
 
     local changePurgeTextureColor = CreateCheckbox("changePurgeTextureColor", L["Change_Purge_Texture_Color"], playerAuraFiltering)
-    changePurgeTextureColor:SetPoint("TOPLEFT", auraStackSize, "BOTTOMLEFT", 0, -2)
+    changePurgeTextureColor:SetPoint("TOPLEFT", auraCdTextSize, "BOTTOMLEFT", 0, -2)
     CreateTooltip(changePurgeTextureColor, L["Change_Purge_Texture_Color"])
 
     local increaseAuraStrata = CreateCheckbox("increaseAuraStrata", L["Increase_Aura_Frame_Strata"], playerAuraFiltering)

@@ -343,22 +343,10 @@ local defaultSettings = {
     raidFrameBgTexture = "Solid",
     unitFrameBgTexture = "Solid",
 
-    auraWhitelist = {
-        ["example aura :3 (delete me)"] = {name = "Example Aura :3 (delete me)"}
-    },
-    auraBlacklist = {
-        ["sign of the skirmisher"] = {name = "Sign of the Skirmisher"},
-        ["sign of the scourge"] = {name = "Sign of the Scourge"},
-        ["stormwind champion"] = {name = "Stormwind Champion"},
-        ["honorless target"] = {name = "Honorless Target"},
-        ["guild champion"] = {name = "Guild Champion"},
-        ["sign of iron"] = {name = "Sign of Iron"},
-        ["enlisted"] = {name = "Enlisted"},
-        [397734] = {name = "Word of a Worthy Ally", id = 397734},
-        [186403] = {name = "Sign of Battle", id = 186403},
-        [32727] = {name = "Arena Preparation", id = 32727},
-        [93805] = {name = "Ironforge Champion", id = 93805},
-    },
+    auraWhitelist = {},
+    auraBlacklist = {},
+
+    auraCdTextSize = 0.55,
 }
 BBF.defaultSettings = defaultSettings
 

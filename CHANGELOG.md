@@ -1,3 +1,10 @@
+# BetterBlizzFrames 1.8.9
+## Midnight/Prepatch
+### New
+- Show CD Timer on Auras (Buffs & Debuffs) and size setting for it.
+### Bugfix
+- Fix aura stack scale setting not being properly implemented, size slider works now.
+
 # BetterBlizzFrames 1.8.8e
 ## Midnight/Prepatch
 ### Bugfix

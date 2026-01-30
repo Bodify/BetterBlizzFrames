@@ -80,6 +80,9 @@ local cachedFocusCastBarXOffset = 0
 local cachedTargetCastBarScaleAdjustment = 0
 local cachedFocusCastBarScaleAdjustment = 0
 local cachedDynamicTargetCastBarYPos = 0
+local auraCdTextSize = 0.55
+local showAuraCdText
+local auraStackSize = 1
 
 local hideTargetAuras
 local hideFocusAuras
@@ -91,6 +94,9 @@ local function UpdateMore()
     FocusFrame.staticCastbar = (BetterBlizzFramesDB.focusStaticCastbar or BetterBlizzFramesDB.focusDetachCastbar) and true or false
     hideTargetAuras = BetterBlizzFramesDB.hideTargetAuras
     hideFocusAuras = BetterBlizzFramesDB.hideFocusAuras
+    auraCdTextSize = BetterBlizzFramesDB.auraCdTextSize
+    showAuraCdText= BetterBlizzFramesDB.showAuraCdText
+    auraStackSize = BetterBlizzFramesDB.auraStackSize
 
     -- Aura size calculations
     cachedSmallAuraSize = sameSizeAuras and 21 or 17 * targetAndFocusSmallAuraScale
@@ -334,9 +340,18 @@ local function PlaceAuraGroup(self, list, forceNewRowAtStart, rowWidths, rowHeig
         placed = placed + 1
 
         aura:SetScale(auraScale)
+
+        if showAuraCdText then
+            aura.Cooldown:SetHideCountdownNumbers(false)
+            local cdText = aura.Cooldown and aura.Cooldown:GetRegions()
+            if cdText then
+                cdText:SetScale(auraCdTextSize)
+            end
+        end
         local size = aura:GetWidth() > 20 and 21 or cachedSmallAuraSize
         aura:SetSize(size, size)
         aura:SetMouseClickEnabled(false)
+        aura.Count:SetScale(auraStackSize)
         if increaseAuraStrata then
             aura:SetFrameStrata("FULLSCREEN")
         end
