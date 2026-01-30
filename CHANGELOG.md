@@ -2,6 +2,8 @@
 ## Midnight/Prepatch
 ### New
 - Show CD Timer on Auras (Buffs & Debuffs) and size setting for it.
+### Tweak
+- Force show No Portrait pixel border on targets without mana as well for consistency.
 ### Bugfix
 - Fix aura stack scale setting not being properly implemented, size slider works now.
 
