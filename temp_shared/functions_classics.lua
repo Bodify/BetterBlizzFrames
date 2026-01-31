@@ -5,6 +5,10 @@ local allowedPortraits = {
     ["TargetFrameToT"] = true,
     ["FocusFrame"] = true,
     ["FocusFrameToT"] = true,
+    ["PartyMemberFrame1"] = true,
+    ["PartyMemberFrame2"] = true,
+    ["PartyMemberFrame3"] = true,
+    ["PartyMemberFrame4"] = true,
 }
 
 function BBF.ClassPortraits()
@@ -20,7 +24,18 @@ function BBF.ClassPortraits()
 
     hooksecurefunc("SetPortraitTexture", function(portrait, unit)
         local parentName = portrait:GetParent():GetName()
-        if not allowedPortraits[parentName] then return end
+        if BBF.isTBC and not parentName then
+            local parent = portrait:GetParent()
+            if parent == PartyFrame.MemberFrame1 or
+               parent == PartyFrame.MemberFrame2 or
+               parent == PartyFrame.MemberFrame3 or
+               parent == PartyFrame.MemberFrame4 then
+            else
+                return
+            end
+        elseif not allowedPortraits[parentName] then 
+            return
+        end
         if UnitIsPlayer(unit) then
             if BetterBlizzFramesDB.classPortraitsIgnoreSelf and portrait:GetParent():GetName() == "PlayerFrame" then return end
 
