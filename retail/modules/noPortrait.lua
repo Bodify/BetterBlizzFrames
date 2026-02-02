@@ -13,8 +13,16 @@ local focusDefaultTex = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\
 local partyDefaultTex = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Large.tga"
 local petDefaultTex = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Large.tga"
 
-local flashTex = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Large.tga"
-local flashNoLvl = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Large.tga"
+local playerFlashTex = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Large.tga"
+local targetFlashTex = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Large.tga"
+local focusFlashTex = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Large.tga"
+local petFlashTex = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Large.tga"
+
+local playerFlashNoLvl = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Large.tga"
+local targetFlashNoLvl = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Large.tga"
+local focusFlashNoLvl = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Large.tga"
+local petFlashNoLvl = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Large.tga"
+
 local minusTex = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Minus.tga"
 
 
@@ -28,8 +36,14 @@ local function UpdateTextureVariables()
         focusDefaultTex = nil
         partyDefaultTex = nil
         petDefaultTex = nil
-        flashTex = nil
-        flashNoLvl = nil
+        playerFlashTex = nil
+        targetFlashTex = nil
+        focusFlashTex = nil
+        petFlashTex = nil
+        playerFlashNoLvl = nil
+        targetFlashNoLvl = nil
+        focusFlashNoLvl = nil
+        petFlashNoLvl = nil
         minusTex = nil
         return
     end
@@ -76,6 +90,16 @@ local function UpdateTextureVariables()
     else
         partyDefaultTex = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Large.tga"
     end
+
+    -- Set flash textures to match the corresponding default textures
+    playerFlashTex = playerDefaultTex
+    playerFlashNoLvl = playerDefaultTex
+    targetFlashTex = targetDefaultTex
+    targetFlashNoLvl = targetDefaultTex
+    focusFlashTex = focusDefaultTex
+    focusFlashNoLvl = focusDefaultTex
+    petFlashTex = petDefaultTex
+    petFlashNoLvl = petDefaultTex
 end
 
 local function GetPlayerBackgroundYOffset()
@@ -705,7 +729,7 @@ local function MakeNoPortraitMode(frame)
             else
                 container.FrameTexture:ClearAllPoints()
                 container.FrameTexture:SetPoint("TOPLEFT", 20.5, -18)
-                container.Flash:SetTexture((frame == TargetFrame) and targetDefaultTex or focusDefaultTex)
+                container.Flash:SetTexture((frame == TargetFrame) and targetFlashTex or focusFlashTex)
                 container.Flash:SetTexCoord(1, 0, 0, 1)
                 container.Flash:ClearAllPoints()
                 container.Flash:SetAllPoints(frame.noPortraitMode.Texture)
@@ -1516,9 +1540,9 @@ local function MakeNoPortraitMode(frame)
                 playerElite:SetDesaturated(false)
             else
                 frame.noPortraitMode.Texture:SetTexture(playerDefaultTex)
-                frameContainer.FrameFlash:SetTexture(flashTex)
+                frameContainer.FrameFlash:SetTexture(playerFlashTex)
                 frameContainer.FrameFlash:SetTexCoord(0, 1, 0, 1)
-                contentMain.StatusTexture:SetTexture(playerDefaultTex)
+                contentMain.StatusTexture:SetTexture(playerFlashTex)
             -- elseif mode == 4 then -- Only 3 available for classic
             --     db.playerEliteFrameMode = 3
             --     playerElite:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Elite")
@@ -1529,14 +1553,14 @@ local function MakeNoPortraitMode(frame)
         local function ToggleNoLevelFrame(noLvl)
             if noLvl then
                 frame.noPortraitMode.Texture:SetTexture(playerDefaultTex)
-                frameContainer.FrameFlash:SetTexture(flashNoLvl)
+                frameContainer.FrameFlash:SetTexture(playerFlashNoLvl)
                 frameContainer.FrameFlash:SetTexCoord(0, 1, 0, 1)
-                contentMain.StatusTexture:SetTexture(playerDefaultTex)
+                contentMain.StatusTexture:SetTexture(playerFlashTex)
             else
                 frame.noPortraitMode.Texture:SetTexture(playerDefaultTex)
-                frameContainer.FrameFlash:SetTexture(flashTex)
+                frameContainer.FrameFlash:SetTexture(playerFlashTex)
                 frameContainer.FrameFlash:SetTexCoord(0, 1, 0, 1)
-                contentMain.StatusTexture:SetTexture(playerDefaultTex)
+                contentMain.StatusTexture:SetTexture(playerFlashTex)
             end
         end
 
@@ -1594,9 +1618,9 @@ local function MakeNoPortraitMode(frame)
             frame.noPortraitMode.Texture:SetSize(254, 46)
             if db.playerEliteFrame then
                 PlayerEliteFrame()
-                frameContainer.FrameFlash:SetTexture(flashTex)
+                frameContainer.FrameFlash:SetTexture(playerFlashTex)
                 frameContainer.FrameFlash:SetTexCoord(0, 1, 0, 1)
-                contentMain.StatusTexture:SetTexture(playerDefaultTex)
+                contentMain.StatusTexture:SetTexture(playerFlashTex)
                 -- Handle level text for playerEliteFrame
                 local mode = BetterBlizzFramesDB.playerEliteFrameMode
                 if mode > 3 and (alwaysHideLvl or (hideLvl and UnitLevel("player") == (BBF.isMidnight and 90 or 80))) then
@@ -1690,7 +1714,7 @@ local function MakeNoPortraitMode(frame)
 
             frameContainer.FrameFlash:SetParent(frame)
             frameContainer.FrameFlash:SetSize(255, 45)
-            frameContainer.FrameFlash:SetTexture(playerDefaultTex)
+            frameContainer.FrameFlash:SetTexture(playerFlashTex)
             frameContainer.FrameFlash:SetTexCoord(0, 1, 0, 1)
             frameContainer.FrameFlash:ClearAllPoints()
             frameContainer.FrameFlash:SetAllPoints(frame.noPortraitMode.Texture)
@@ -1699,7 +1723,7 @@ local function MakeNoPortraitMode(frame)
             contentContext.RoleIcon:ClearAllPoints()
             contentContext.RoleIcon:SetPoint("TOPLEFT", 81, -36)
 
-            contentMain.StatusTexture:SetTexture(playerDefaultTex)
+            contentMain.StatusTexture:SetTexture(playerFlashTex)
             contentMain.StatusTexture:SetTexCoord(0, 1, 0, 1)
             contentMain.StatusTexture:ClearAllPoints()
             contentMain.StatusTexture:SetAllPoints(frame.noPortraitMode.Texture)
@@ -2720,17 +2744,7 @@ end
 
 function BBF.noPortraitModes()
     if not BetterBlizzFramesDB.noPortraitModes and not BetterBlizzFramesDB.noPortraitPixelBorder then return end
-    if BetterBlizzFramesDB.noPortraitPixelBorder then
-        BetterBlizzFramesDB.noPortraitModes = true
-        playerDefaultTex = nil
-        playerAltTex = nil
-        targetDefaultTex = nil
-        focusDefaultTex = nil
-        partyDefaultTex = nil
-        flashTex = nil
-        flashNoLvl = nil
-        minusTex = nil
-    end
+    UpdateTextureVariables()
     if not BetterBlizzFramesDB.noPortraitSkipTarget then
         MakeNoPortraitMode(TargetFrame)
     end
