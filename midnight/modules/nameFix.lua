@@ -351,7 +351,21 @@ local function GetSpecID(unit)
         return nil
     end
 
-    local guid = UnitGUID(unit)
+    local guid = UnitGUID(frame.unit)
+    if issecretvalue(guid) then
+        if C_PvP.IsArena() then
+            for i = 1, 3 do
+                local arenaUnit = "arena" .. i
+                if UnitIsUnit(unit, arenaUnit) then
+                    local specID = GetArenaOpponentSpec(i)
+                    if specID then
+                        return specID
+                    end
+                end
+            end
+        end
+        return
+    end
 
     -- Return cached specID if already found
     if SpecCache[guid] then
