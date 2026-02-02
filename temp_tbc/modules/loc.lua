@@ -6,15 +6,15 @@ local interruptSpells = {
     [72] = 6,         -- Shield Bash (Warrior)
     [8042] = 2,       -- Earth Shock (Shaman)
     [19244] = 5,      -- Spell Lock (Warlock)
-    [19675] = 4,      -- Feral Charge Effect (Druid)
+    [19675] = "Rooted",      -- Feral Charge Effect (Druid)
     [32747] = 3,      -- Deadly Throw Interrupt
     [132409] = 6,     -- Spell Lock (Warlock)
     [19647] = 6,      -- Spell Lock (Warlock, pet)
-    [47528] = 4,      -- Mind Freeze (Death Knight)
+    [47528] = "Rooted",      -- Mind Freeze (Death Knight)
     [57994] = 3,      -- Wind Shear (Shaman)
     [91807] = 2,      -- Shambling Rush (Death Knight)
-    [96231] = 4,      -- Rebuke (Paladin)
-    [93985] = 4,      -- Skull Bash (Druid)
+    [96231] = "Rooted",      -- Rebuke (Paladin)
+    [93985] = "Rooted",      -- Skull Bash (Druid)
     [116705] = 4,     -- Spear Hand Strike (Monk)
     [147362] = 3,     -- Counter Shot (Hunter)
     [31935] = 3,      -- Avenger's Shield (Paladin)
@@ -208,6 +208,34 @@ local spellList = {
     [23694]  = "Rooted", -- Improved Hamstring
     [135373] = "Rooted", -- Entrapment
     [45334]  = "Rooted", -- Immobilized
+    [44041]   = "Rooted",      -- Chastise (Root)
+    [44043]   = "Rooted",      -- Chastise (Root)
+    [44044]   = "Rooted",      -- Chastise (Root)
+    [44045]   = "Rooted",      -- Chastise (Root)
+    [44046]   = "Rooted",      -- Chastise (Root)
+    [44047]   = "Rooted",      -- Chastise (Root)
+    [1062]    = "Rooted",      -- Entangling Roots
+    [5195]    = "Rooted",      -- Entangling Roots
+    [5196]    = "Rooted",      -- Entangling Roots
+    [9852]    = "Rooted",      -- Entangling Roots
+    [9853]    = "Rooted",      -- Entangling Roots
+    [26989]   = "Rooted",      -- Entangling Roots
+    [19970]   = "Rooted",      -- Entangling Roots (Nature's Grasp)
+    [19971]   = "Rooted",      -- Entangling Roots (Nature's Grasp)
+    [19972]   = "Rooted",      -- Entangling Roots (Nature's Grasp)
+    [19973]   = "Rooted",      -- Entangling Roots (Nature's Grasp)
+    [19974]   = "Rooted",      -- Entangling Roots (Nature's Grasp)
+    [27010]   = "Rooted",      -- Nature's Grasp
+    [865]     = "Rooted",      -- Frost Nova
+    [6131]    = "Rooted",      -- Frost Nova
+    [10230]   = "Rooted",      -- Frost Nova
+    [27088]   = "Rooted",      -- Frost Nova
+    [16979]   = "Rooted",      -- Feral Charge
+    [20909]   = "Rooted",      -- Counterattack (Rank 2)
+    [20910]   = "Rooted",      -- Counterattack (Rank 3)
+    [27067]   = "Rooted",      -- Counterattack (Rank 4)
+    [19229]   = "Rooted",      -- Improved Wing Clip
+    [12494]   = "Rooted",      -- Frostbite
 
     -- *** Disarm Weapon Effects ***
     [50541]  = "Disarmed", -- Clench (Scorpid)
@@ -424,8 +452,7 @@ local spellList = {
     [27068]   = "Asleep",    -- Wyvern Sting
     [27069]   = "Asleep",    -- Wyvern Sting
     [18647]   = "Incapacitated",    -- Banish
-
-
+    [34097]   = "Disarmed",    -- Riposte 2 (TODO: not sure which ID is correct)
 }
 
 local hardCCSet = {
