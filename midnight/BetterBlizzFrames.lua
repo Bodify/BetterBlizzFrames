@@ -347,6 +347,7 @@ local defaultSettings = {
     auraBlacklist = {},
 
     auraCdTextSize = 0.55,
+    partyFrameRangeAlpha = 0.55,
 }
 BBF.defaultSettings = defaultSettings
 
@@ -3251,7 +3252,13 @@ local function ApplyTextureChange(type, statusBar, parent, classic, party, altBa
 
     -- Change the texture
     if not keepFancyManas then
-        statusBar:SetStatusBarTexture((type == "health" and (classicTexture or texture)) or manaTexture)
+        if (parent and parent:GetName() == "PetFrame") then -- causes weird issues if not delayed
+            C_Timer.After(0.1, function()
+                statusBar:SetStatusBarTexture((type == "health" and (classicTexture or texture)) or manaTexture)
+            end)
+        else
+            statusBar:SetStatusBarTexture((type == "health" and (classicTexture or texture)) or manaTexture)
+        end
     else
         statusBar.keepFancyManas = BetterBlizzFramesDB.changeUnitFrameManaBarTextureKeepFancy
     end
@@ -5128,9 +5135,6 @@ First:SetScript("OnEvent", function(_, event, addonName)
         end)
         BBF.ClassicFrames()
         BBF.noPortraitModes()
-        if BetterBlizzFramesDB.enableBigDebuffs then
-            BBF.CreateBigDebuffs()
-        end
         BBF.PlayerElite(BetterBlizzFramesDB.playerEliteFrameMode)
         BBF.ReduceEditModeAlpha()
         BBF.SymmetricPlayerFrame()
@@ -5162,6 +5166,9 @@ First:SetScript("OnEvent", function(_, event, addonName)
         BBF.MoveableFPSCounter(false, BetterBlizzFramesDB.fpsCounterFontOutline)
 
         C_Timer.After(1, function()
+            if BetterBlizzFramesDB.enableBigDebuffs then
+                BBF.CreateBigDebuffs()
+            end
             if BetterBlizzFramesDB.tempOmniCCFix then
                 BetterBlizzFramesDB.tempOmniCCFix = nil
             end
@@ -5300,6 +5307,7 @@ PlayerEnteringWorld:RegisterEvent("PLAYER_ENTERING_WORLD")
 
 
 function BBF.CreateBigDebuffs()
+    if C_AddOns.IsAddOnLoaded("MiniCC") or BetterBlizzFramesDB.noPortraitModes then return end
     local function CreateDebuffFrame(unitFrame, portraitMask)
         local frame = CreateFrame("Frame", nil, unitFrame)
         frame:SetSize(36, 36)
