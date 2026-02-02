@@ -428,6 +428,12 @@ function BBF.DarkmodeFrames(bypass)
         end
     end
 
+    for i = 1, 3 do
+        local frame = _G["DamageMeterSessionWindow"..i]
+        if frame then
+            applySettings(frame.Header, desaturationValue, vertexColor)
+        end
+    end
 
     applySettings(ObjectiveTrackerFrame.Header.Background, objectiveSat, objectiveColor)
     applySettings(CampaignQuestObjectiveTracker.Header.Background, objectiveSat, objectiveColor)
