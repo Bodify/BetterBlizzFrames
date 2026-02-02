@@ -2,10 +2,16 @@
 ## Midnight/Prepatch
 ### New
 - Show CD Timer on Auras (Buffs & Debuffs) and size setting for it.
+- Add Trimaz profile (www.twitch.tv/trimaz_wow)
 ### Tweak
 - Force show No Portrait pixel border on targets without mana as well for consistency.
+- Add new damage meter header to dark mode.
 ### Bugfix
 - Fix aura stack scale setting not being properly implemented, size slider works now.
+## All classics
+### Tweak
+- TBC: Add missing roots to Loss of Control setting.
+- Fix Class Icons setting to work on default party frames.
 
 # BetterBlizzFrames 1.8.8e
 ## Midnight/Prepatch
