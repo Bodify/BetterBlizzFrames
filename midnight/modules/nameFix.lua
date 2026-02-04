@@ -351,7 +351,7 @@ local function GetSpecID(unit)
         return nil
     end
 
-    local guid = UnitGUID(frame.unit)
+    local guid = UnitGUID(unit)
     if issecretvalue(guid) then
         if C_PvP.IsArena() then
             for i = 1, 3 do
