@@ -4922,9 +4922,11 @@ Frame:SetScript("OnEvent", function(...)
     BBF.LegacyBlueCombos()
     BBF.HideClassResourceTooltip()
 
-    C_Timer.After(3.5, function()
-        BBF.Print(L["Print_Bugs_Expected"])
-    end)
+    if not BetterBlizzFramesDB.skipBugWarning then
+        C_Timer.After(3.5, function()
+            BBF.Print(L["Print_Bugs_Expected"])
+        end)
+    end
 
     local function LoginVariablesLoaded()
         if BBF.variablesLoaded then
