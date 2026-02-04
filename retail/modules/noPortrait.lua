@@ -1479,20 +1479,9 @@ local function MakeNoPortraitMode(frame)
                 PlayerFrameBottomManagedFramesContainer:SetScale(scale)
                 PlayerFrameBottomManagedFramesContainer:SetFrameStrata("HIGH")
             else
-                PlayerFrameBottomManagedFramesContainer.positionNeedsUpdate = true
-                if not BBF.CombatWaiter then
-                    BBF.CombatWaiter = CreateFrame("Frame")
-                    BBF.CombatWaiter:SetScript("OnEvent", function(self)
-                        if PlayerFrameBottomManagedFramesContainer.positionNeedsUpdate then
-                            PlayerFrameBottomManagedFramesContainer.positionNeedsUpdate = false
-                            UpdateResourcePosition()
-                        end
-                        self:UnregisterEvent("PLAYER_REGEN_ENABLED")
-                    end)
-                end
-                if not BBF.CombatWaiter:IsEventRegistered("PLAYER_REGEN_ENABLED") then
-                    BBF.CombatWaiter:RegisterEvent("PLAYER_REGEN_ENABLED")
-                end
+                BBF.RunAfterCombat(function()
+                    UpdateResourcePosition()
+                end)
             end
         end
 
@@ -1951,9 +1940,11 @@ local function AdjustAlternateBars()
         local yOffset = shouldMoveUp and 11 or 0
 
         if db.noPortraitPixelBorder then
-            bar:SetSize(124, 10)
-            bar:ClearAllPoints()
-            bar:SetPoint("BOTTOMLEFT", 85, 16 + yOffset)
+            BBF.RunAfterCombat(function()
+                bar:SetSize(124, 10)
+                bar:ClearAllPoints()
+                bar:SetPoint("BOTTOMLEFT", 85, 16 + yOffset)
+            end)
 
             local cfg = BorderPositions.player.alt
             BlackBorder(bar, cfg.width, cfg.height, cfg.startX, cfg.startY)
@@ -1967,9 +1958,11 @@ local function AdjustAlternateBars()
                 end
             end
         else
-            bar:SetSize(126, 9)
-            bar:ClearAllPoints()
-            bar:SetPoint("BOTTOMLEFT", 86, 19.2 + yOffset)
+            BBF.RunAfterCombat(function()
+                bar:SetSize(126, 9)
+                bar:ClearAllPoints()
+                bar:SetPoint("BOTTOMLEFT", 86, 19.2 + yOffset)
+            end)
 
             if bar.PowerBarMask then
                 bar.PowerBarMask:ClearAllPoints()
@@ -1982,7 +1975,7 @@ local function AdjustAlternateBars()
             bar.s:SetFrameStrata("HIGH")
             bar.s:SetAllPoints(bar)
         end
-        
+
         -- Set frame level above pixel borders if they exist
         if db.noPortraitPixelBorder and bar.BBFPixelBorder then
             bar.s:SetFrameLevel(bar.BBFPixelBorder:GetFrameLevel() + 1)
@@ -2033,7 +2026,7 @@ local function AdjustAlternateBars()
                         else
                             r, g, b = 0.11, 0.34, 0.71
                         end
-                        
+
                         -- Check for custom power colors if enabled
                         if BetterBlizzFramesDB.customHealthbarColors and BetterBlizzFramesDB.customPowerColors and BetterBlizzFramesDB.customColorsUnitFrames then
                             local powerToken = self.powerToken or self.powerName
@@ -2044,14 +2037,14 @@ local function AdjustAlternateBars()
                                 end
                             end
                         end
-                        
+
                         self:SetStatusBarTexture(BBF.manaTexture)
                         self:SetStatusBarColor(r, g, b)
                     end)
                 else
                     hooksecurefunc(bar, "EvaluateUnit", function(self)
                         if bar.keepFancyManas and fancyManas[bar.bbfPowerToken] then return end
-                        
+
                         -- Check for custom power colors if enabled
                         if BetterBlizzFramesDB.customHealthbarColors and BetterBlizzFramesDB.customPowerColors and BetterBlizzFramesDB.customColorsUnitFrames then
                             local powerToken = self.powerToken or self.powerName
@@ -2062,7 +2055,7 @@ local function AdjustAlternateBars()
                                 end
                             end
                         end
-                        
+
                         self:SetStatusBarTexture(BBF.manaTexture)
                         self:SetStatusBarColor(r, g, b)
                     end)
@@ -2293,16 +2286,16 @@ local function MakeClassicPartyFrame()
         local function hbAdjust()
             frame.bbfName:SetWidth(76)
             local needsCombatUpdate = false
-            
+
             if db.noPortraitPixelBorder then
                 SetBarMask(hpContainer.HealthBar, hpContainer.HealthBarMask, true)
                 SetBarMask(manaBar, manaBar.ManaBarMask, true)
 
                 if not InCombatLockdown() then
                     hpContainer.HealthBar:ClearAllPoints()
-                    manaBar:ClearAllPoints()
                     hpContainer.HealthBar:SetPoint("TOPLEFT", hpContainer, "TOPLEFT", -2, 6)
                     hpContainer.HealthBar:SetSize(76, 18)
+                    manaBar:ClearAllPoints()
                     manaBar:SetPoint("TOPLEFT", hpContainer, "TOPLEFT", -2, -13)
                     manaBar:SetSize(76, 5)
                 else
@@ -2343,7 +2336,7 @@ local function MakeClassicPartyFrame()
             overlay.RoleIcon:SetPoint("BOTTOMLEFT", 38.5, 35.5)
 
             BBF.UpdateNoPortraitText(nil, "party")
-            
+
             if needsCombatUpdate then
                 if not frame.bbfPartyCombatUpdate:IsEventRegistered("PLAYER_REGEN_ENABLED") then
                     frame.bbfPartyCombatUpdate:RegisterEvent("PLAYER_REGEN_ENABLED")
@@ -2395,20 +2388,42 @@ local function MakeClassicPartyFrame()
         -- we are extremely lucky in that ToPlayerArt() calls UnitFrame_SetUnit() which calls :SetAttribute()
         -- so we can hook OnAttributeChanged in the restricted environment and make our changes there
         -- this allows us to run code during combat
-        SecureHandlerWrapScript(frame, "OnAttributeChanged", frame, [[
-            local hpContainer = self:GetFrameRef("HealthBarContainer")
-            local healthBar = self:GetFrameRef("HealthBar") 
-            local manaBar = self:GetFrameRef("ManaBar") 
 
-            healthBar:ClearAllPoints()
-            healthBar:SetPoint("TOPLEFT", hpContainer, "TOPLEFT", -2, 8)
-            healthBar:SetPoint("BOTTOMRIGHT", hpContainer, "TOPLEFT", 74, -10)
+        if BetterBlizzFramesDB.noPortraitPixelBorder then
+            SecureHandlerWrapScript(frame, "OnAttributeChanged", frame, [[
+                local hpContainer = self:GetFrameRef("HealthBarContainer")
+                local healthBar = self:GetFrameRef("HealthBar") 
+                local manaBar = self:GetFrameRef("ManaBar") 
 
-            manaBar:ClearAllPoints()
-            manaBar:SetPoint("TOPLEFT", hpContainer, "TOPLEFT", -5, -8)
-            manaBar:SetWidth(78)
-            manaBar:SetHeight(9)
-        ]])
+                healthBar:ClearAllPoints()
+                healthBar:SetPoint("TOPLEFT", hpContainer, "TOPLEFT", -2, 6)
+                healthBar:SetPoint("BOTTOMRIGHT", hpContainer, "TOPLEFT", 74, -10)
+                healthBar:SetWidth(76)
+                healthBar:SetHeight(18)
+
+                manaBar:ClearAllPoints()
+                manaBar:SetPoint("TOPLEFT", hpContainer, "TOPLEFT", -2, -13)
+                manaBar:SetWidth(76)
+                manaBar:SetHeight(5)
+            ]])
+        else
+            SecureHandlerWrapScript(frame, "OnAttributeChanged", frame, [[
+                local hpContainer = self:GetFrameRef("HealthBarContainer")
+                local healthBar = self:GetFrameRef("HealthBar") 
+                local manaBar = self:GetFrameRef("ManaBar") 
+
+                healthBar:ClearAllPoints()
+                healthBar:SetPoint("TOPLEFT", hpContainer, "TOPLEFT", -2, 8)
+                healthBar:SetPoint("BOTTOMRIGHT", hpContainer, "TOPLEFT", 74, -10)
+                healthBar:SetWidth(76)
+                healthBar:SetHeight(18)
+
+                manaBar:ClearAllPoints()
+                manaBar:SetPoint("TOPLEFT", hpContainer, "TOPLEFT", -5, -8)
+                manaBar:SetWidth(78)
+                manaBar:SetHeight(9)
+            ]])
+        end
     end
 end
 

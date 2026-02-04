@@ -84,16 +84,20 @@ local auraCdTextSize = 0.55
 local showAuraCdText
 local auraStackSize = 1
 
-local hideTargetAuras
-local hideFocusAuras
+local hideTargetBuffs
+local hideTargetDebuffs
+local hideFocusBuffs
+local hideFocusDebuffs
 
 local function UpdateMore()
     increaseAuraStrata = BetterBlizzFramesDB.increaseAuraStrata
     sameSizeAuras = BetterBlizzFramesDB.sameSizeAuras
     TargetFrame.staticCastbar = (BetterBlizzFramesDB.targetStaticCastbar or BetterBlizzFramesDB.targetDetachCastbar) and true or false
     FocusFrame.staticCastbar = (BetterBlizzFramesDB.focusStaticCastbar or BetterBlizzFramesDB.focusDetachCastbar) and true or false
-    hideTargetAuras = BetterBlizzFramesDB.hideTargetAuras
-    hideFocusAuras = BetterBlizzFramesDB.hideFocusAuras
+    hideTargetBuffs = BetterBlizzFramesDB.hideTargetBuffs
+    hideTargetDebuffs = BetterBlizzFramesDB.hideTargetDebuffs
+    hideFocusBuffs = BetterBlizzFramesDB.hideFocusBuffs
+    hideFocusDebuffs = BetterBlizzFramesDB.hideFocusDebuffs
     auraCdTextSize = BetterBlizzFramesDB.auraCdTextSize
     showAuraCdText= BetterBlizzFramesDB.showAuraCdText
     auraStackSize = BetterBlizzFramesDB.auraStackSize
@@ -342,6 +346,8 @@ local function PlaceAuraGroup(self, list, forceNewRowAtStart, rowWidths, rowHeig
         placed = placed + 1
 
         aura:SetScale(auraScale)
+        aura:SetAlpha(1)
+        aura:EnableMouse(true)
 
         if showAuraCdText then
             aura.Cooldown:SetHideCountdownNumbers(false)
@@ -392,8 +398,35 @@ end
 local function AdjustAuras(self, frameType)
     self.previousAuraRows = self.previousAuraRows or 0
 
+    local hideBuffs = false
+    local hideDebuffs = false
+
+    if frameType == "target" then
+        hideBuffs = hideTargetBuffs
+        hideDebuffs = hideTargetDebuffs
+    elseif frameType == "focus" then
+        hideBuffs = hideFocusBuffs
+        hideDebuffs = hideFocusDebuffs
+    end
+
     local buffs   = CollectOrderedFrames(self, self.activeBuffs)
     local debuffs = CollectOrderedFrames(self, self.activeDebuffs)
+
+    if hideBuffs then
+        for _, buff in ipairs(buffs) do
+            buff:SetAlpha(0)
+            buff:EnableMouse(false)
+        end
+        buffs = {}
+    end
+
+    if hideDebuffs then
+        for _, debuff in ipairs(debuffs) do
+            debuff:SetAlpha(0)
+            debuff:EnableMouse(false)
+        end
+        debuffs = {}
+    end
 
     local unit = self.unit
     local isFriend = unit and not UnitCanAttack("player", unit)
@@ -792,13 +825,13 @@ function BBF.HookPlayerAndTargetAuras()
             FocusFrame.staticCastbar = true
         end
         if auraFilteringOn and not targetAurasHooked then
-            if hideTargetAuras then
+            if hideTargetBuffs and hideTargetDebuffs then
                 hooksecurefunc(TargetFrame, "UpdateAuras", function(self) HideAuras(self, "target") end)
                 TargetFrame.hidingAllAuras = true
             else
                 hooksecurefunc(TargetFrame, "UpdateAuras", function(self) AdjustAuras(self, "target") end)
             end
-            if hideFocusAuras then
+            if hideFocusBuffs and hideFocusDebuffs then
                 hooksecurefunc(FocusFrame, "UpdateAuras", function(self) HideAuras(self, "focus") end)
                 FocusFrame.hidingAllAuras = true
             else

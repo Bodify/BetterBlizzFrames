@@ -1981,20 +1981,29 @@ end
 
 
 
+if not BBF.combatQueue then
+    BBF.combatQueue = {}
+end
 local combatCheck = CreateFrame("Frame")
 function BBF.RunAfterCombat(func)
-    if InCombatLockdown() then
-        --DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: You cannot change CVar's in combat. Waiting for combat to end...")
+    if not InCombatLockdown() then
+        func()
+        return
+    end
+
+    table.insert(BBF.combatQueue, func)
+
+    if not combatCheck:IsEventRegistered("PLAYER_REGEN_ENABLED") then
         combatCheck:RegisterEvent("PLAYER_REGEN_ENABLED")
         combatCheck:SetScript("OnEvent", function(self, event)
             if event == "PLAYER_REGEN_ENABLED" then
-                func()
+                for _, queuedFunc in ipairs(BBF.combatQueue) do
+                    pcall(queuedFunc)
+                end
+                BBF.combatQueue = {}
                 self:UnregisterEvent(event)
-                self:SetScript("OnEvent", nil)
             end
         end)
-    else
-        func()
     end
 end
 
@@ -3734,13 +3743,15 @@ function BBF.HookUnitFrameTextures()
                 originalTexture:SetDrawLayer(originalLayer)
 
                 local castTexture = statusBar:GetStatusBarTexture()
-                statusBar.MaskTexture = statusBar:CreateMaskTexture()
-                statusBar.MaskTexture:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\RetailCastMask.tga",
-                    "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
-                statusBar.MaskTexture:SetPoint("TOPLEFT", statusBar, "TOPLEFT", -1, 0)
-                statusBar.MaskTexture:SetPoint("BOTTOMRIGHT", statusBar, "BOTTOMRIGHT", 1, 0)
-                statusBar.MaskTexture:Show()
-                castTexture:AddMaskTexture(statusBar.MaskTexture)
+                if not db.casbarPixelBorder then
+                    statusBar.MaskTexture = statusBar:CreateMaskTexture()
+                    statusBar.MaskTexture:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\RetailCastMask.tga",
+                        "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
+                    statusBar.MaskTexture:SetPoint("TOPLEFT", statusBar, "TOPLEFT", -1, 0)
+                    statusBar.MaskTexture:SetPoint("BOTTOMRIGHT", statusBar, "BOTTOMRIGHT", 1, 0)
+                    statusBar.MaskTexture:Show()
+                    castTexture:AddMaskTexture(statusBar.MaskTexture)
+                end
 
                 local bg = statusBar.Background
                 bg:ClearAllPoints()
@@ -5114,6 +5125,18 @@ First:SetScript("OnEvent", function(_, event, addonName)
         BetterBlizzFramesDB.wasOnLoadingScreen = true
 
         InitializeSavedVariables()
+
+        if BetterBlizzFramesDB.hideTargetAuras then
+            BetterBlizzFramesDB.hideTargetBuffs = true
+            BetterBlizzFramesDB.hideTargetDebuffs = true
+            BetterBlizzFramesDB.hideTargetAuras = nil
+        end
+
+        if BetterBlizzFramesDB.hideFocusAuras then
+            BetterBlizzFramesDB.hideFocusBuffs = true
+            BetterBlizzFramesDB.hideFocusDebuffs = true
+            BetterBlizzFramesDB.hideFocusAuras = nil
+        end
         FetchAndSaveValuesOnFirstLogin()
         TurnTestModesOff()
         BBF.FixLegacyComboPointsLocation()
@@ -5184,6 +5207,12 @@ First:SetScript("OnEvent", function(_, event, addonName)
             BBF.SetCustomFonts()
             BBF.PlayerReputationColor()
             BBF.FontColors()
+
+            if BetterBlizzFramesDB.castbarPixelBorder then
+                BBF.SetupBorderOnFrame(PlayerCastingBarFrame)
+                BBF.SetupBorderOnFrame(TargetFrameSpellBar)
+                BBF.SetupBorderOnFrame(FocusFrameSpellBar)
+            end
         end)
         --TurnOnEnabledFeaturesOnLogin()
 

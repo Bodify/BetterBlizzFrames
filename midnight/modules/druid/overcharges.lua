@@ -140,7 +140,7 @@ local function UpdateAltManaBar(updateCombos, cf)
                 pts.a, pts.b, pts.c, pts.d, pts.e = PlayerFrameBottomManagedFramesContainer:GetPoint()
             end
             local pts = bar.originalComboPos
-            PlayerFrameBottomManagedFramesContainer:ClearAllPoints()
+            --PlayerFrameBottomManagedFramesContainer:ClearAllPoints()
             PlayerFrameBottomManagedFramesContainer:SetPoint(pts.a, pts.b, pts.c, pts.d, pts.e-9)
         end
     elseif bar:IsShown() then
@@ -148,7 +148,7 @@ local function UpdateAltManaBar(updateCombos, cf)
             if updateCombos then
                 local pts = bar.originalComboPos
                 if pts then
-                    PlayerFrameBottomManagedFramesContainer:ClearAllPoints()
+                    --PlayerFrameBottomManagedFramesContainer:ClearAllPoints()
                     PlayerFrameBottomManagedFramesContainer:SetPoint(pts.a, pts.b, pts.c, pts.d, pts.e)
                 end
             end

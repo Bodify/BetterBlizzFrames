@@ -38,6 +38,190 @@ local defaultCastbarColors = {
     uninterruptable = { 0.7, 0.7, 0.7 },
 }
 
+local function CreateBorder(frame, r, g, b, a)
+    local border
+    if frame.CreateTexture then
+        border = frame:CreateTexture(nil, "OVERLAY", nil, -1)
+    else
+        border = frame:GetParent():CreateTexture(nil, "OVERLAY", nil, -1)
+    end
+    border:SetColorTexture(r, g, b, a)
+    border:SetIgnoreParentScale(true)
+    return border
+end
+
+function BBF.SetupBorderOnFrame(frame)
+    if frame.newBorder then return end
+
+    --frame:EnableMouse(true)
+
+    if frame.TextBorder then
+        frame.TextBorder:SetParent(BBF.hiddenFrame)
+    end
+
+    if frame.Flash then
+        frame.Flash:SetParent(BBF.hiddenFrame)
+    end
+
+    if frame.ChargeFlash then
+        frame.ChargeFlash:SetParent(BBF.hiddenFrame)
+    end
+
+    if frame.StandardGlow then
+        frame.StandardGlow:SetParent(BBF.hiddenFrame)
+    end
+
+    if frame.CraftGlow then
+        frame.CraftGlow:SetParent(BBF.hiddenFrame)
+    end
+
+    if frame.MaskTexture then
+        frame.MaskTexture:Hide()
+        frame.MaskTexture:SetParent(BBF.hiddenFrame)
+        frame.MaskTexture:SetTexture(nil)
+    end
+
+    if frame.BorderMask then
+        frame.BorderMask:Hide()
+        frame.BorderMask:SetParent(BBF.hiddenFrame)
+        frame.BorderMask:SetTexture(nil)
+    end
+
+    if frame.Text then
+        if BetterBlizzFramesDB.castbarPixelBorderTextInside then
+            frame.Text:ClearAllPoints()
+            frame.Text:SetPoint("CENTER", frame, "CENTER", 0, 0)
+        end
+        if not frame.ogText then
+            local font, size, flags = frame.Text:GetFont()
+            frame.ogText = {font, size, flags}
+            frame.Text:SetFont(font, size, "OUTLINE")
+        end
+    end
+
+    if frame.Border then
+        frame.Border:SetParent(BBF.hiddenFrame)
+    end
+
+    if frame.Background then
+        frame.Background:SetColorTexture(0, 0, 0, 0.7)
+    end
+
+    -- Create borders
+    local borderTop = CreateBorder(frame, 0, 0, 0, 1)
+    local borderBottom = CreateBorder(frame, 0, 0, 0, 1)
+    local borderLeft = CreateBorder(frame, 0, 0, 0, 1)
+    local borderRight = CreateBorder(frame, 0, 0, 0, 1)
+
+    frame["borders"] = {borderTop, borderBottom, borderLeft, borderRight}
+
+    local borderThickness = 1
+    local minPixels = 1
+
+
+    local function SizeBorders(borderThickness)
+        PixelUtil.SetHeight(borderTop, borderThickness, minPixels)
+        PixelUtil.SetHeight(borderBottom, borderThickness, minPixels)
+        PixelUtil.SetWidth(borderLeft, borderThickness, minPixels)
+        PixelUtil.SetWidth(borderRight, borderThickness, minPixels)
+
+        borderTop:ClearAllPoints()
+        PixelUtil.SetPoint(borderTop, "BOTTOMLEFT", frame, "TOPLEFT", 0, 0)
+        PixelUtil.SetPoint(borderTop, "BOTTOMRIGHT", frame, "TOPRIGHT", 0, 0)
+
+        borderBottom:ClearAllPoints()
+        PixelUtil.SetPoint(borderBottom, "TOPLEFT", frame, "BOTTOMLEFT", 0, 0)
+        PixelUtil.SetPoint(borderBottom, "TOPRIGHT", frame, "BOTTOMRIGHT", 0, 0)
+
+        borderLeft:ClearAllPoints()
+        PixelUtil.SetPoint(borderLeft, "TOPLEFT", frame, "TOPLEFT", -borderThickness, borderThickness)
+        PixelUtil.SetPoint(borderLeft, "BOTTOMLEFT", frame, "BOTTOMLEFT", -borderThickness, -borderThickness)
+
+        borderRight:ClearAllPoints()
+        PixelUtil.SetPoint(borderRight, "TOPRIGHT", frame, "TOPRIGHT", borderThickness, borderThickness)
+        PixelUtil.SetPoint(borderRight, "BOTTOMRIGHT", frame, "BOTTOMRIGHT", borderThickness, -borderThickness)
+    end
+
+    SizeBorders(borderThickness)
+
+    function frame:SetBorderColor(r, g, b, a)
+        for _, border in ipairs(self.borders) do
+            border:SetColorTexture(r, g, b, a)
+        end
+    end
+
+    function frame:SetBorderSize(size)
+        SizeBorders(size)
+    end
+
+    if frame.Icon then
+        local iconBorderTop = CreateBorder(frame.Icon, 0, 0, 0, 1)
+        local iconBorderBottom = CreateBorder(frame.Icon, 0, 0, 0, 1)
+        local iconBorderLeft = CreateBorder(frame.Icon, 0, 0, 0, 1)
+        local iconBorderRight = CreateBorder(frame.Icon, 0, 0, 0, 1)
+
+        frame.Icon["borders"] = {iconBorderTop, iconBorderBottom, iconBorderLeft, iconBorderRight}
+
+        local iconBorderThickness = 1
+        local minPixels = 1
+
+        local function SizeIconBorders(borderThickness)
+            PixelUtil.SetHeight(iconBorderTop, borderThickness, minPixels)
+            PixelUtil.SetHeight(iconBorderBottom, borderThickness, minPixels)
+            PixelUtil.SetWidth(iconBorderLeft, borderThickness, minPixels)
+            PixelUtil.SetWidth(iconBorderRight, borderThickness, minPixels)
+
+            iconBorderTop:ClearAllPoints()
+            PixelUtil.SetPoint(iconBorderTop, "BOTTOMLEFT", frame.Icon, "TOPLEFT", 0, 0)
+            PixelUtil.SetPoint(iconBorderTop, "BOTTOMRIGHT", frame.Icon, "TOPRIGHT", 0, 0)
+
+            iconBorderBottom:ClearAllPoints()
+            PixelUtil.SetPoint(iconBorderBottom, "TOPLEFT", frame.Icon, "BOTTOMLEFT", 0, 0)
+            PixelUtil.SetPoint(iconBorderBottom, "TOPRIGHT", frame.Icon, "BOTTOMRIGHT", 0, 0)
+
+            iconBorderLeft:ClearAllPoints()
+            PixelUtil.SetPoint(iconBorderLeft, "TOPLEFT", frame.Icon, "TOPLEFT", -borderThickness, borderThickness)
+            PixelUtil.SetPoint(iconBorderLeft, "BOTTOMLEFT", frame.Icon, "BOTTOMLEFT", -borderThickness, -borderThickness)
+
+            iconBorderRight:ClearAllPoints()
+            PixelUtil.SetPoint(iconBorderRight, "TOPRIGHT", frame.Icon, "TOPRIGHT", borderThickness, borderThickness)
+            PixelUtil.SetPoint(iconBorderRight, "BOTTOMRIGHT", frame.Icon, "BOTTOMRIGHT", borderThickness, -borderThickness)
+        end
+
+        SizeIconBorders(iconBorderThickness)
+
+        function frame.Icon:SetBorderColor(r, g, b, a)
+            for _, border in ipairs(self.borders) do
+                border:SetColorTexture(r, g, b, a)
+            end
+        end
+
+        function frame.Icon:SetBorderSize(size)
+            SizeIconBorders(size)
+        end
+
+        hooksecurefunc(frame.Icon, "Show", function(self)
+            self:SetBorderColor(0, 0, 0, 1)
+        end)
+
+        hooksecurefunc(frame.Icon, "Hide", function(self)
+            self:SetBorderColor(0, 0, 0, 0)
+        end)
+
+        hooksecurefunc(frame.Icon, "SetShown", function(self, shown)
+            if shown then
+                self:SetBorderColor(0, 0, 0, 1)
+            else
+                self:SetBorderColor(0, 0, 0, 0)
+            end
+        end)
+
+        frame.Icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+    end
+
+    frame.newBorder = true
+end
+
 local function UpdateCastTimer(self)
     if not BBFMIDNIGHT then return end
     local remainingTime
@@ -412,7 +596,7 @@ function BBF.UpdateCastbars()
                         end
                     else
                         spellbar.Text:ClearAllPoints()
-                        if BetterBlizzFramesDB.unitframeCastBarNoTextBorder then
+                        if BetterBlizzFramesDB.unitframeCastBarNoTextBorder or (BetterBlizzFramesDB.castbarPixelBorder and BetterBlizzFramesDB.castbarPixelBorderTextInside) then
                             if not spellbar.TextBorderHidden then
                                 spellbar.TextBorderHidden = spellbar.TextBorder:GetParent()
                             end
@@ -521,7 +705,7 @@ function BBF.UpdatePetCastbar()
         petSpellBar:SetWidth(width)
         petSpellBar:SetHeight(height)
         petSpellBar.Text:ClearAllPoints()
-        if BetterBlizzFramesDB.unitframeCastBarNoTextBorder then
+        if BetterBlizzFramesDB.unitframeCastBarNoTextBorder or (BetterBlizzFramesDB.castbarPixelBorder and BetterBlizzFramesDB.castbarPixelBorderTextInside) then
             if not petSpellBar.TextBorderHidden then
                 petSpellBar.TextBorderHidden = petSpellBar.TextBorder:GetParent()
             end
@@ -585,7 +769,7 @@ function BBF.CreateCastbars()
                 spellbar.BorderShield:SetPoint("RIGHT", spellbar, "LEFT", -1, -7)
                 spellbar.BorderShield:SetSize(29,33)
                 spellbar.BorderShield:SetScale(BetterBlizzFramesDB.partyCastBarIconScale)
-                if BetterBlizzFramesDB.unitframeCastBarNoTextBorder then
+                if BetterBlizzFramesDB.unitframeCastBarNoTextBorder or (BetterBlizzFramesDB.castbarPixelBorder and BetterBlizzFramesDB.castbarPixelBorderTextInside) then
                     spellbar.Text:ClearAllPoints()
                     spellbar.Text:SetPoint("CENTER", spellbar, "CENTER", 0, 0)
                     spellbar.TextBorder:SetParent(BBF.hiddenFrame)
@@ -647,7 +831,7 @@ function BBF.CreateCastbars()
         petSpellBar:SetHeight(BetterBlizzFramesDB.petCastBarHeight)
 
         -- Handle unitframeCastBarNoTextBorder setting for pet castbar
-        if BetterBlizzFramesDB.unitframeCastBarNoTextBorder then
+        if BetterBlizzFramesDB.unitframeCastBarNoTextBorder or (BetterBlizzFramesDB.castbarPixelBorder and BetterBlizzFramesDB.castbarPixelBorderTextInside) then
             petSpellBar.Text:ClearAllPoints()
             petSpellBar.Text:SetPoint("CENTER", petSpellBar, "CENTER", 0, 0)
             petSpellBar.TextBorder:SetParent(BBF.hiddenFrame)
@@ -970,7 +1154,7 @@ local function PlayerCastingBarFrameMiscAdjustments()
 
     PlayerCastingBarFrame:SetHeight(BetterBlizzFramesDB.playerCastBarHeight)
     PlayerCastingBarFrame.Text:ClearAllPoints()
-    if BetterBlizzFramesDB.playerCastBarNoTextBorder or PlayerCastingBarFrame.attachedToPlayerFrame then
+    if BetterBlizzFramesDB.playerCastBarNoTextBorder or PlayerCastingBarFrame.attachedToPlayerFrame or (BetterBlizzFramesDB.castbarPixelBorder and BetterBlizzFramesDB.castbarPixelBorderTextInside) then
         if not PlayerCastingBarFrame.TextBorderHidden then
             PlayerCastingBarFrame.TextBorderHidden = PlayerCastingBarFrame.TextBorder:GetParent()
         end
@@ -1064,7 +1248,7 @@ function BBF.ChangeCastbarSizes()
         TargetFrameSpellBar.BorderShield:SetPoint("CENTER", TargetFrameSpellBar.Icon, "CENTER", 0, -1.5)
         TargetFrameSpellBar.BorderShield:SetScale(BetterBlizzFramesDB.targetCastBarIconScale)
         TargetFrameSpellBar.Text:ClearAllPoints()
-        if BetterBlizzFramesDB.unitframeCastBarNoTextBorder then
+        if BetterBlizzFramesDB.unitframeCastBarNoTextBorder or (BetterBlizzFramesDB.castbarPixelBorder and BetterBlizzFramesDB.castbarPixelBorderTextInside) then
             if not TargetFrameSpellBar.TextBorderHidden then
                 TargetFrameSpellBar.TextBorderHidden = TargetFrameSpellBar.TextBorder:GetParent()
             end
@@ -1103,7 +1287,7 @@ function BBF.ChangeCastbarSizes()
         FocusFrameSpellBar.BorderShield:SetPoint("CENTER", FocusFrameSpellBar.Icon, "CENTER", 0, -1.5)
         FocusFrameSpellBar.BorderShield:SetScale(BetterBlizzFramesDB.focusCastBarIconScale)
         FocusFrameSpellBar.Text:ClearAllPoints()
-        if BetterBlizzFramesDB.unitframeCastBarNoTextBorder then
+        if BetterBlizzFramesDB.unitframeCastBarNoTextBorder or (BetterBlizzFramesDB.castbarPixelBorder and BetterBlizzFramesDB.castbarPixelBorderTextInside) then
             if not FocusFrameSpellBar.TextBorderHidden then
                 FocusFrameSpellBar.TextBorderHidden = FocusFrameSpellBar.TextBorder:GetParent()
             end
