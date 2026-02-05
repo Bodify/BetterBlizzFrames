@@ -1,4 +1,4 @@
-# BetterBlizzFrames 1.8.9b
+# BetterBlizzFrames 1.8.9c
 ## Midnight/Prepatch
 ### Bugfix
 - Fix forcing manabars borders to show with Pixel No Portrait setting even though "Hide Target/Focus Manabar" was enabled.
