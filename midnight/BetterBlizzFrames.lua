@@ -348,6 +348,7 @@ local defaultSettings = {
 
     auraCdTextSize = 0.55,
     partyFrameRangeAlpha = 0.55,
+    partyFrameRangeAlphaSolidBackground = true,
 }
 BBF.defaultSettings = defaultSettings
 
@@ -2090,6 +2091,10 @@ function BBF.HookAndUpdatePartyFrameRangeAlpha(toggle)
         if frame:IsForbidden() or string.match(frame.displayedUnit, "nameplate") then return end
         local inRange = UnitInRange(frame.displayedUnit)
         frame:SetAlphaFromBoolean(inRange, 1, BetterBlizzFramesDB.partyFrameRangeAlpha or 0.55)
+        if BetterBlizzFramesDB.partyFrameRangeAlphaSolidBackground then
+            frame.background:SetIgnoreParentAlpha(true)
+            frame.background:SetAlpha(1)
+        end
     end
     if toggle then
         for i = 1, 5 do
