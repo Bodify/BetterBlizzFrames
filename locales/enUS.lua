@@ -889,6 +889,7 @@ L["Tooltip_Hide_Party_RaidFrame_Background_Desc"] = "Hide the background on the 
 L["Tooltip_New_Role_Icons_Desc"] = "Replace the party role icons with the more modern ones."
 L["Tooltip_Pixel_Border_RaidFrames_Desc"] = "Enables pixel border on Party and RaidFrames and also removes original background texture and replaces it with the selected one in Font & Textures."
 L["Tooltip_Pixel_Border_RaidFrames_Title"] = "Pixel Border on RaidFrames"
+L["Tooltip_Party_Frame_Range_Alpha_Solid_Bg"] = "Right-click to toggle solid background (will never get faded like it used to)"
 L["Tooltip_Zoom_ActionBar_Icons_Desc"] = "Zoom in on the icons on the action bar icons a little."
 
 ---------------------------------------

@@ -835,7 +835,7 @@ local function CreateTooltipTwo(widget, title, mainText, subText, anchor, cvarNa
         GameTooltip:AddLine(mainText, 1, 1, 1, true) -- true for wrap text
 
         -- Add specific tooltip conditions
-        if title == "Class Color Healthbars" then
+        if title == L["Tooltip_Class_Color_Healthbars_Title"] then
             local green = "|cff32f795"
             local babyBlue = "|cff7fc6ff"
             local reset = "|r"

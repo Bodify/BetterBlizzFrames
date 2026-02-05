@@ -896,6 +896,7 @@ L["Tooltip_Hide_Party_RaidFrame_Background_Desc"] = "기본 파티/공격대 프
 L["Tooltip_New_Role_Icons_Desc"] = "파티 역할 아이콘을 더 현대적인 아이콘으로 교체합니다."
 L["Tooltip_Pixel_Border_RaidFrames_Desc"] = "파티 및 공격대 프레임에 픽셀 테두리를 활성화하고 원본 배경 텍스처를 제거한 후 글꼴 및 텍스처에서 선택한 텍스처로 교체합니다."
 L["Tooltip_Pixel_Border_RaidFrames_Title"] = "공격대 프레임 픽셀 테두리"
+--L["Tooltip_Party_Frame_Range_Alpha_Solid_Bg"] = "Right-click to toggle solid background (will never get faded like it used to)"
 L["Tooltip_Zoom_ActionBar_Icons_Desc"] = "행동 단축바의 아이콘을 약간 확대합니다."
 
 ---------------------------------------

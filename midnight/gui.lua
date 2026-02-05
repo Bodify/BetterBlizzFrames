@@ -1296,7 +1296,7 @@ local function CreateTooltipTwo(widget, title, mainText, subText, anchor, cvarNa
         -- Set the main text
         GameTooltip:AddLine(mainText, 1, 1, 1, true) -- true for wrap text
 
-        if title == "Format Numbers" then
+        if title == L["Format_Numbers"] then
             local tooltipText = "\n\n18800 K |A:glueannouncementpopup-arrow:20:20|a 18.8 M\n|cff32f795" .. L["Right_Click_Show_Extra_Decimal"] .. "|r"
             if BetterBlizzFramesDB.formatStatusBarTextExtraDecimals then
                 tooltipText = "\n\n18800 K |A:glueannouncementpopup-arrow:20:20|a 18.80 M\n|cff32f795" .. L["Right_Click_Show_Extra_Decimal"] .. "|r|A:ParagonReputation_Checkmark:15:15|a"
@@ -1304,7 +1304,7 @@ local function CreateTooltipTwo(widget, title, mainText, subText, anchor, cvarNa
             GameTooltip:AddLine(tooltipText, 1, 1, 1, true)
         end
 
-        if title == "Class Color Healthbars" then
+        if title == L["Tooltip_Class_Color_Healthbars_Title"] then
             local green = "|cff32f795"
             local babyBlue = "|cff7fc6ff"
             local reset = "|r"
@@ -1324,7 +1324,7 @@ local function CreateTooltipTwo(widget, title, mainText, subText, anchor, cvarNa
             GameTooltip:AddLine(tooltipText, 1, 1, 1, true)
         end
 
-        if title == "Custom Colors" then
+        if title == L["Custom_Colors"] then
             local yellow = "|cffffff00"
             local green = "|cff32f795"
             local babyBlue = "|cff7fc6ff"
@@ -1345,7 +1345,7 @@ local function CreateTooltipTwo(widget, title, mainText, subText, anchor, cvarNa
             GameTooltip:AddLine(tooltipText, 1, 1, 1, true)
         end
 
-        if title == "Hide Dispel Overlay" then
+        if title == L["Hide_Dispel_Overlay"] then
             local green = "|cff32f795"
             local babyBlue = "|cff7fc6ff"
             local reset = "|r"
@@ -1365,7 +1365,7 @@ local function CreateTooltipTwo(widget, title, mainText, subText, anchor, cvarNa
             GameTooltip:AddLine(tooltipText, 1, 1, 1, true)
         end
 
-        if title == "Show Elite Texture" then
+        if title == L["Show_Elite_Texture"] then
             local tooltipText = L["Tooltip_Elite_Texture_Dark_Mode"]
             if BetterBlizzFramesDB.playerEliteFrameDarkmode then
                 tooltipText = L["Tooltip_Elite_Texture_Dark_Mode_Check"] .. "|A:ParagonReputation_Checkmark:15:15|a"
@@ -1378,6 +1378,17 @@ local function CreateTooltipTwo(widget, title, mainText, subText, anchor, cvarNa
             local reset = "|r"
             local activeSize = BetterBlizzFramesDB.raidFramePixelBorderSize and "1.5px" or "1px"
             local tooltipText = "\n" .. green .. "Right-click to toggle between 1px and 1.5px. Active: " .. activeSize .. reset
+            GameTooltip:AddLine(tooltipText, 1, 1, 1, true)
+        end
+
+        if title == L["Tooltip_Party_Frame_Range_Alpha"] then
+            local green = "|cff32f795"
+            local reset = "|r"
+            local check = ""
+            if BetterBlizzFramesDB.partyFrameRangeAlphaSolidBackground then
+                check = " |A:ParagonReputation_Checkmark:15:15|a"
+            end
+            local tooltipText = "\n" .. green .. L["Tooltip_Party_Frame_Range_Alpha_Solid_Bg"] .. reset .. check
             GameTooltip:AddLine(tooltipText, 1, 1, 1, true)
         end
 
