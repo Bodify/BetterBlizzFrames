@@ -1381,7 +1381,7 @@ local function CreateTooltipTwo(widget, title, mainText, subText, anchor, cvarNa
             GameTooltip:AddLine(tooltipText, 1, 1, 1, true)
         end
 
-        if title == L["Tooltip_Party_Frame_Range_Alpha"] then
+        if title == L["Change_Party_Frame_Alpha"] then
             local green = "|cff32f795"
             local reset = "|r"
             local check = ""
@@ -3906,6 +3906,15 @@ local function guiGeneralTab()
         else
             StaticPopup_Show("BBF_CONFIRM_RELOAD")
             DisableElement(partyFrameRangeAlpha)
+        end
+    end)
+    changePartyFrameRangeAlpha:HookScript("OnMouseDown", function(self, button)
+        if button == "RightButton" then
+            BetterBlizzFramesDB.partyFrameRangeAlphaSolidBackground = not BetterBlizzFramesDB.partyFrameRangeAlphaSolidBackground
+            if GameTooltip:IsShown() and GameTooltip:GetOwner() == self then
+                self:GetScript("OnEnter")(self)
+            end
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
         end
     end)
 
