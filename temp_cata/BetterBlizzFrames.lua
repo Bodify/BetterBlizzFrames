@@ -2725,7 +2725,7 @@ SlashCmdList["BBF"] = function(msg)
             BBF.Print(L["Print_Usage_Blacklist"])
         end
     elseif command == "ver" or command == "version" then
-        BBF.Print("Version "..addonUpdates, true)
+        BBF.Print(addonUpdates, true)
     elseif command == "dump" then
         local exportVersion = BetterBlizzFramesDB.exportVersion or L["Chat_No_Export_Version"]
         BBF.Print("\n\n"..exportVersion)

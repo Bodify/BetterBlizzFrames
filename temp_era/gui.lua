@@ -2192,7 +2192,7 @@ local function CreateTitle(parent)
     addonNameIcon:SetPoint("LEFT", addonNameText, "RIGHT", -2, -1)
     local verNumber = parent:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     verNumber:SetPoint("LEFT", addonNameText, "RIGHT", 25, 0)
-    verNumber:SetText("v" .. BBF.VersionNumber)
+    verNumber:SetText(BBF.VersionNumber)
 end
 
 local function CreateSearchFrame()
@@ -2535,7 +2535,7 @@ local function guiGeneralTab()
     -- addonNameIcon:SetPoint("LEFT", addonNameText, "RIGHT", -2, -1)
     -- local verNumber = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     -- verNumber:SetPoint("LEFT", addonNameText, "RIGHT", 25, 0)
-    -- verNumber:SetText("v" .. BBF.VersionNumber)
+    -- verNumber:SetText(BBF.VersionNumber)
     CreateTitle(BetterBlizzFrames)
 
     ----------------------
