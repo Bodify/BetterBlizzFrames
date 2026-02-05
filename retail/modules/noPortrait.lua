@@ -757,19 +757,23 @@ local function MakeNoPortraitMode(frame)
                 SetBarMask(hpContainer.HealthBar, hpContainer.HealthBarMask, true)
                 SetBarMask(manaBar, manaBar.ManaBarMask, true)
 
+                local hideMana = (frame == TargetFrame and db.hideUnitFrameTargetMana) or (frame == FocusFrame and db.hideUnitFrameFocusMana)
+
                 if not manaBar:IsShown() then
-                    if manaBar.BBFPositionFrame then
-                        manaBar.BBFPositionFrame:Show()
-                        manaBar.BBFPositionFrame:SetParent(frame.noPortraitMode)
-                        manaBar.BBFPositionFrame:SetAlpha(1)
-                    end
-                    if manaBar.BBFPixelBorder then
-                        manaBar.BBFPixelBorder:Show()
-                    end
-                    if manaBar.pixelBorderBackground then
-                        manaBar.pixelBorderBackground:Show()
-                        manaBar.pixelBorderBackground:SetParent(frame.noPortraitMode)
-                        manaBar.pixelBorderBackground:SetAlpha(1)
+                    if not hideMana then
+                        if manaBar.BBFPositionFrame then
+                            manaBar.BBFPositionFrame:Show()
+                            manaBar.BBFPositionFrame:SetParent(frame.noPortraitMode)
+                            manaBar.BBFPositionFrame:SetAlpha(1)
+                        end
+                        if manaBar.BBFPixelBorder then
+                            manaBar.BBFPixelBorder:Show()
+                        end
+                        if manaBar.pixelBorderBackground then
+                            manaBar.pixelBorderBackground:Show()
+                            manaBar.pixelBorderBackground:SetParent(frame.noPortraitMode)
+                            manaBar.pixelBorderBackground:SetAlpha(1)
+                        end
                     end
                 else
                     if manaBar.BBFPositionFrame then

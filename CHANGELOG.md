@@ -1,5 +1,10 @@
 # BetterBlizzFrames 1.8.9b
 ## Midnight/Prepatch
+### Bugfix
+- Fix forcing manabars borders to show with Pixel No Portrait setting even though "Hide Target/Focus Manabar" was enabled.
+
+# BetterBlizzFrames 1.8.9b
+## Midnight/Prepatch
 ### New
 - Add sub-setting to the party range alpha setting that keeps the background always solid non-transparent. This is enabled by default now (as it was before).
 - Add variable to skip bug warning on login (will remove this ofc when I feel like it), type: /run BetterBlizzFramesDB.skipBugWarning = true
