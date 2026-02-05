@@ -1,3 +1,12 @@
+# BetterBlizzFrames 1.8.9b
+## Midnight/Prepatch
+### New
+- Add sub-setting to the party range alpha setting that keeps the background always solid non-transparent. This is enabled by default now (as it was before).
+- Add variable to skip bug warning on login (will remove this ofc when I feel like it), type: /run BetterBlizzFramesDB.skipBugWarning = true
+### Bugfix
+- Fix nil frame error
+- Fix some locale issues for gui tooltips
+
 # BetterBlizzFrames 1.8.9
 ## Midnight/Prepatch
 ### New
