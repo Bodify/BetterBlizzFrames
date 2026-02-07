@@ -1482,7 +1482,7 @@ end
 
 local function CreateClassButton(parent, class, name, twitchName, onClickFunc)
     local bbfParent = parent == BetterBlizzFrames
-    local btnWidth, btnHeight = bbfParent and 100 or 150, bbfParent and 22 or  30
+    local btnWidth, btnHeight = bbfParent and 104 or 150, bbfParent and 22 or  30
     local button = CreateFrame("Button", nil, parent, "GameMenuButtonTemplate")
     button:SetSize(btnWidth, btnHeight)
 
@@ -5500,7 +5500,7 @@ local function guiGeneralTab()
 
     local resetBBFButton = CreateFrame("Button", nil, BetterBlizzFrames, "UIPanelButtonTemplate")
     resetBBFButton:SetText(L["Full_Reset"])
-    resetBBFButton:SetWidth(100)
+    resetBBFButton:SetWidth(104)
     resetBBFButton:SetPoint("BOTTOM", profilesFrame, "BOTTOM", 2, 15)
     resetBBFButton:SetScript("OnClick", function()
         StaticPopup_Show("CONFIRM_RESET_BETTERBLIZZFRAMESDB")
