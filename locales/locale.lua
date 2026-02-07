@@ -22,6 +22,3 @@ local L_mt = {
 }
 
 setmetatable(BBF.L, L_mt)
-
--- Create global L alias for convenience
-L = BBF.L
