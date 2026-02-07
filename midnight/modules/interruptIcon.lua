@@ -78,7 +78,7 @@ local function UpdateInterruptIcon(frame)
         end
     end
 
-    if castBar.barType == "uninterruptible" or (castBar.unit and not UnitCanAttack("player", castBar.unit)) then
+    if (castBar.unit and not UnitCanAttack("player", castBar.unit)) then
         frame:Hide()
         return
     end

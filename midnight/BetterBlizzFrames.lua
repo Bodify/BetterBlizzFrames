@@ -3766,15 +3766,20 @@ function BBF.HookUnitFrameTextures()
                 if not BBF.RecolorCastbarHooked then
                     statusBar:HookScript("OnEvent", function(self)
                         self:SetStatusBarTexture(castbarTexture)
-                        if self.barType == "uninterruptable" then
-                            self:SetStatusBarColor(0.7, 0.7, 0.7)
-                        elseif self.barType == "channel" then
+                        if self.channeling then
                             self:SetStatusBarColor(0, 1, 0)
-                        elseif self.barType == "interrupted" then
-                            self:SetStatusBarColor(1, 0, 0)
                         else
                             self:SetStatusBarColor(1, 0.7, 0)
                         end
+                        -- if self.barType == "uninterruptable" then
+                        --     self:SetStatusBarColor(0.7, 0.7, 0.7)
+                        -- elseif self.barType == "channel" then
+                        --     self:SetStatusBarColor(0, 1, 0)
+                        -- elseif self.barType == "interrupted" then
+                        --     self:SetStatusBarColor(1, 0, 0)
+                        -- else
+                        --     self:SetStatusBarColor(1, 0.7, 0)
+                        -- end
                     end)
                 else
                     statusBar:HookScript("OnEvent", function(self)

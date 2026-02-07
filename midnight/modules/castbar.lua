@@ -446,39 +446,44 @@ function BBF.ClassicCastbar(castBar, unitType)
             self.Icon:SetPoint("RIGHT", self, "LEFT", -5 + castBar.iconXPos, -0.5 + castBar.iconYPos)
             self.Icon:SetSize(18,18)
 
-            if self.BorderShield:IsShown() then
-                AdjustBorderShieldSize(self)
-                --self.Icon:SetPoint("RIGHT", castBar, "LEFT", -3.5, castBar.adjustedIconYOffset)
-                self.Icon:SetPoint("RIGHT", self, "LEFT", -3.5 + castBar.iconXPos, castBar.adjustedIconYOffset + castBar.iconYPos)
-                self.Icon:SetSize(castBar.uninterruptibleIconSize, castBar.uninterruptibleIconSize)
-                self.Border:SetAlpha(0)
+            -- if self.BorderShield:IsShown() then
+            --     AdjustBorderShieldSize(self)
+            --     --self.Icon:SetPoint("RIGHT", castBar, "LEFT", -3.5, castBar.adjustedIconYOffset)
+            --     self.Icon:SetPoint("RIGHT", self, "LEFT", -3.5 + castBar.iconXPos, castBar.adjustedIconYOffset + castBar.iconYPos)
+            --     self.Icon:SetSize(castBar.uninterruptibleIconSize, castBar.uninterruptibleIconSize)
+            --     self.Border:SetAlpha(0)
 
-                if self.ChargeTier1 and castBar ~= PlayerCastingBarFrame then
-                    HideChargeTiers(self)
-                end
-            elseif self.barType == "empowered" then
-                if castBar ~= PlayerCastingBarFrame then
-                    HideChargeTiers(self)
-                end
-            end
+            --     if self.ChargeTier1 and castBar ~= PlayerCastingBarFrame then
+            --         HideChargeTiers(self)
+            --     end
+            -- elseif self.barType == "empowered" then
+            --     if castBar ~= PlayerCastingBarFrame then
+            --         HideChargeTiers(self)
+            --     end
+            -- end
 
-            if self.barType == "uninterruptable" then
-                if isTargets then
-                    castBar.Text:ClearAllPoints()
-                    castBar.Text:SetPoint("CENTER", castBar, "CENTER", 0, 1)
-                end
-                -- self.BorderShield:Show()
-                -- self.Border:SetAlpha(0)
-                -- AdjustBorderShieldSize(self)
-            end
+            AdjustBorderShieldSize(self)
+            self.Border:SetAlphaFromBoolean(self.BorderShield:IsShown(), 0, 1)
+
+            -- if self.barType == "uninterruptable" then
+            --     if isTargets then
+            --         castBar.Text:ClearAllPoints()
+            --         castBar.Text:SetPoint("CENTER", castBar, "CENTER", 0, 1)
+            --     end
+            --     -- self.BorderShield:Show()
+            --     -- self.Border:SetAlpha(0)
+            --     -- AdjustBorderShieldSize(self)
+            -- end
             if recolorCastbars then
-                local c = castbarColors[self.barType] or castbarColors.standard
+                local type = self.channeling and "channel"
+                local c = castbarColors[type] or castbarColors.standard
                 local r, g, b = c[1], c[2], c[3]
 
                 self:SetStatusBarColor(r, g, b)
                 --self.Spark:SetVertexColor(r, g, b)
             else
-                local c = defaultCastbarColors[self.barType] or defaultCastbarColors.standard
+                local type = self.channeling and "channel"
+                local c = defaultCastbarColors[type] or defaultCastbarColors.standard
                 local r, g, b = c[1], c[2], c[3]
 
                 self:SetStatusBarColor(r, g, b)
@@ -1550,21 +1555,21 @@ local function CastbarOnEvent(self)
             if castTexture then
                 castTexture:SetDesaturated(true)
             end
-            if self.barType == "uninterruptable" then
-                self:SetStatusBarColor(unpack(colors.uninterruptable or { 0.7, 0.7, 0.7, 1 }))
-            elseif castBarRecolorInterrupt and not BBF.playerKickReady then
+            -- if self.barType == "uninterruptable" then
+            --     self:SetStatusBarColor(unpack(colors.uninterruptable or { 0.7, 0.7, 0.7, 1 }))
+            if castBarRecolorInterrupt and not BBF.playerKickReady then
                 self:SetStatusBarColor(unpack(colors.interruptNotReady or { 0.7, 0.7, 0.7, 1 }))
-            elseif self.barType == "channel" then
+            elseif self.channeling then--elseif self.barType == "channel" then
                 self:SetStatusBarColor(unpack(colors.channel or { 0.0, 1.0, 0.0, 1 }))
-            elseif self.barType == "interrupted" then
-                self:SetStatusBarDesaturated(false)
-                self:SetStatusBarColor(1, 1, 1)
-                --self:SetStatusBarColor(1, 0, 0)
+            -- elseif self.barType == "interrupted" then
+            --     self:SetStatusBarDesaturated(false)
+            --     self:SetStatusBarColor(1, 1, 1)
+            --     --self:SetStatusBarColor(1, 0, 0)
             else
                 self:SetStatusBarColor(unpack(colors.standard or { 1.0, 0.7, 0.0, 1 }))
             end
             self.changedBarColor = true
-        elseif castBarRecolorInterrupt and not BBF.playerKickReady and self.barType ~= "uninterruptable" then
+        elseif castBarRecolorInterrupt and not BBF.playerKickReady then
             local castTexture = self:GetStatusBarTexture()
             if castTexture then
                 castTexture:SetDesaturated(true)
@@ -1582,26 +1587,26 @@ local function CastbarOnEvent(self)
     else
         self:SetStatusBarTexture(classicCastbarTexture)
         if colors.enabled then
-            if self.barType == "uninterruptable" then
-                self:SetStatusBarColor(unpack(colors.uninterruptable or { 0.7, 0.7, 0.7, 1 }))
-            elseif castBarRecolorInterrupt and not BBF.playerKickReady then
+            -- if self.barType == "uninterruptable" then
+            --     self:SetStatusBarColor(unpack(colors.uninterruptable or { 0.7, 0.7, 0.7, 1 }))
+            if castBarRecolorInterrupt and not BBF.playerKickReady then
                 self:SetStatusBarColor(unpack(colors.interruptNotReady or { 0.7, 0.7, 0.7, 1 }))
-            elseif self.barType == "channel" then
+            elseif self.channeling then --elseif self.barType == "channel" then
                 self:SetStatusBarColor(unpack(colors.channel or { 0.0, 1.0, 0.0, 1 }))
-            elseif self.barType == "interrupted" then
-                self:SetStatusBarColor(1, 0, 0)
+            -- elseif self.barType == "interrupted" then
+            --     self:SetStatusBarColor(1, 0, 0)
             else
                 self:SetStatusBarColor(unpack(colors.standard or { 1.0, 0.7, 0.0, 1 }))
             end
         else
-            if self.barType == "uninterruptable" then
-                self:SetStatusBarColor(0.7, 0.7, 0.7)
-            elseif castBarRecolorInterrupt and not BBF.playerKickReady then
+            -- if self.barType == "uninterruptable" then
+            --     self:SetStatusBarColor(0.7, 0.7, 0.7)
+            if castBarRecolorInterrupt and not BBF.playerKickReady then
                 self:SetStatusBarColor(unpack(colors.interruptNotReady or { 0.7, 0.7, 0.7, 1 }))
-            elseif self.barType == "channel" then
+            elseif self.channeling then
                 self:SetStatusBarColor(0, 1, 0)
-            elseif self.barType == "interrupted" then
-                self:SetStatusBarColor(1, 0, 0)
+            -- elseif self.barType == "interrupted" then
+            --     self:SetStatusBarColor(1, 0, 0)
             else
                 self:SetStatusBarColor(1, 0.7, 0)
             end
@@ -1643,15 +1648,16 @@ function BBF.CastbarColorHooks()
     local playerCastBarTexture = PlayerCastingBarFrame:GetStatusBarTexture()
     PlayerCastingBarFrame:HookScript("OnEvent", function(self)
         if recolorCastbars or self.textureChangedNeedsColor then
-            if self.barType == "interrupted" and not self.textureChangedNeedsColor then
-                playerCastBarTexture:SetDesaturated(false)
-                self:SetStatusBarColor(1, 1, 1)
-            else
-                local c = castbarColors[self.barType] or castbarColors.standard
+            -- if self.barType == "interrupted" and not self.textureChangedNeedsColor then
+            --     playerCastBarTexture:SetDesaturated(false)
+            --     self:SetStatusBarColor(1, 1, 1)
+            -- else
+                local type = self.channeling and "channel"
+                local c = castbarColors[type] or castbarColors.standard
                 local r, g, b = c[1], c[2], c[3]
                 playerCastBarTexture:SetDesaturated(true)
                 self:SetStatusBarColor(r, g, b)
-            end
+            --end
         end
     end)
     TargetFrameSpellBar:HookScript("OnEvent", CastbarOnEvent)
