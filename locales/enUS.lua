@@ -1,9 +1,10 @@
 -- English (Default) localization for BetterBlizzFrames
 -- Localization support by: 007bb from Korea Mate Guild
 
--- Use the global L table (L = BBF.L is set in locale.lua)
 -- Only load if client is English or as fallback
 -- English is always loaded as it's the default/fallback language
+
+local L = BBF.L
 
 ---------------------------------------
 -- Common/Basic Words

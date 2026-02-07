@@ -1,7 +1,4 @@
 -- Locale system for BetterBlizzFrames
--- Initializes the localization table and fallback system
-
-local addonName = "BetterBlizzFrames"
 
 -- Initialize locale table
 BBF.L = BBF.L or {}
