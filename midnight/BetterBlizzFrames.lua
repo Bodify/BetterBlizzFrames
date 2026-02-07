@@ -3743,9 +3743,9 @@ function BBF.HookUnitFrameTextures()
         if db.changeUnitFrameCastbarTexture and not BBF.castbarTexturesHooked then
             local function ApplyCastbarTexture(statusBar)
                 local originalTexture = statusBar:GetStatusBarTexture()
-                local originalLayer = originalTexture:GetDrawLayer()
+                --local originalLayer = originalTexture:GetDrawLayer()
                 statusBar:SetStatusBarTexture(castbarTexture)
-                originalTexture:SetDrawLayer(originalLayer)
+                originalTexture:SetDrawLayer("ARTWORK", 0)
 
                 local castTexture = statusBar:GetStatusBarTexture()
                 if not db.casbarPixelBorder then
