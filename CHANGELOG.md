@@ -1,3 +1,8 @@
+# BetterBlizzFrames 1.8.9f
+## Midnight/Prepatch
+### Bugfix
+- Fix a lua error related to new castbar color stuff.
+
 # BetterBlizzFrames 1.8.9e
 ## Midnight/Prepatch
 ### New
