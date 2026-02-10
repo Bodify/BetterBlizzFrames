@@ -38,6 +38,11 @@ local defaultCastbarColors = {
     uninterruptable = { 0.7, 0.7, 0.7 },
 }
 
+
+castbarColors.defaultStandard = CreateColor(1.0, 0.7, 0.0, 1)
+castbarColors.defaultChannel = CreateColor(0.0, 1.0, 0.0, 1)
+castbarColors.defaultUninterruptable = CreateColor(0.7, 0.7, 0.7, 1)
+
 local function CreateBorder(frame, r, g, b, a)
     local border
     if frame.CreateTexture then
@@ -474,19 +479,62 @@ function BBF.ClassicCastbar(castBar, unitType)
             --     -- self.Border:SetAlpha(0)
             --     -- AdjustBorderShieldSize(self)
             -- end
-            if recolorCastbars then
-                local type = self.channeling and "channel"
-                local c = castbarColors[type] or castbarColors.standard
-                local r, g, b = c[1], c[2], c[3]
 
-                self:SetStatusBarColor(r, g, b)
+            -- Check if cast is interruptible
+            local notInterruptible
+            local unitToken = self.unit
+            if unitToken then
+                if self.casting then
+                    _, _, _, _, _, _, _, notInterruptible = UnitCastingInfo(unitToken)
+                elseif self.channeling then
+                    _, _, _, _, _, _, notInterruptible = UnitChannelInfo(unitToken)
+                end
+            end
+
+            if event == "UNIT_SPELLCAST_INTERRUPTED" then
+                self.lastEvent = event
+                self:SetStatusBarColor(1, 0, 0, 1)
+                return
+            elseif (event == "UNIT_SPELLCAST_STOP" or event == "UNIT_SPELLCAST_CHANNEL_STOP" or event == "UNIT_SPELLCAST_EMPOWER_STOP") and self.lastEvent == "UNIT_SPELLCAST_INTERRUPTED" then
+                self:SetStatusBarColor(1, 0, 0, 1)
+                return
+            end
+
+            if recolorCastbars then
+                local castTexture = self:GetStatusBarTexture()
+                if self.casting then
+                    castTexture:SetVertexColorFromBoolean(
+                        notInterruptible,
+                        castbarColors.colorUninterruptable,
+                        castbarColors.colorStandard
+                    )
+                elseif self.channeling then
+                    castTexture:SetVertexColorFromBoolean(
+                        notInterruptible,
+                        castbarColors.colorUninterruptable,
+                        castbarColors.colorChannel
+                    )
+                else
+                    self:SetStatusBarColor(unpack(castbarColors.standard))
+                end
                 --self.Spark:SetVertexColor(r, g, b)
             else
-                local type = self.channeling and "channel"
-                local c = defaultCastbarColors[type] or defaultCastbarColors.standard
-                local r, g, b = c[1], c[2], c[3]
-
-                self:SetStatusBarColor(r, g, b)
+                local castTexture = self:GetStatusBarTexture()
+                if self.casting then
+                    castTexture:SetVertexColorFromBoolean(
+                        notInterruptible,
+                        castbarColors.defaultUninterruptable,
+                        castbarColors.defaultStandard
+                    )
+                elseif self.channeling then
+                    castTexture:SetVertexColorFromBoolean(
+                        notInterruptible,
+                        castbarColors.defaultUninterruptable,
+                        castbarColors.defaultChannel
+                    )
+                else
+                    self:SetStatusBarColor(1.0, 0.7, 0.0, 1)
+                end
                 --self.Spark:SetVertexColor(r, g, b)
             end
         end)
@@ -1131,9 +1179,8 @@ end
 
 function BBF.CastbarRecolorWidgets()
     local classicFrames = C_AddOns.IsAddOnLoaded("ClassicFrames")
-    if (BetterBlizzFramesDB.castBarRecolorInterrupt or BetterBlizzFramesDB.recolorCastbars) and not BBF.RecolorCastbarHooked then
+    if (BetterBlizzFramesDB.castBarRecolorInterrupt or BetterBlizzFramesDB.recolorCastbars) then
         BBF.CastbarColorHooks()
-        BBF.RecolorCastbarHooked = true
     end
 end
 
@@ -1513,73 +1560,83 @@ function BBF.HookCastbars()
     end
 end
 
-local function CastbarOnEvent(self)
+local function CastbarOnEvent(self, event)
     local colors = castbarColors
+    local unitToken = self.unit
+    local castBarTexture = self:GetStatusBarTexture()
+    local notInterruptible
+
+    if event == "UNIT_SPELLCAST_INTERRUPTED" then
+        self.lastEvent = event
+        castBarTexture:SetDesaturated(false)
+        self:SetStatusBarColor(1, 1, 1, 1)
+        return
+    elseif (event == "UNIT_SPELLCAST_STOP" or event == "UNIT_SPELLCAST_CHANNEL_STOP" or event == "UNIT_SPELLCAST_EMPOWER_STOP") and self.lastEvent == "UNIT_SPELLCAST_INTERRUPTED" then
+        castBarTexture:SetDesaturated(false)
+        self:SetStatusBarColor(1, 1, 1, 1)
+        return
+    end
+
+    if unitToken then
+        if self.casting then
+            _, _, _, _, _, _, _, notInterruptible = UnitCastingInfo(unitToken)
+        elseif self.channeling then
+            _, _, _, _, _, _, notInterruptible = UnitChannelInfo(unitToken)
+        end
+    end
+
     if not self.textureChangedNeedsColor then
-        if false then     -- custom texture
-            local textureToUse = classicCastbarTexture
-            if self.barType == "uninterruptable" and sArenaMixin.castUninterruptibleTexture then
-                textureToUse = sArenaMixin.castUninterruptibleTexture
+        if colors.enabled then
+            if castBarTexture then
+                castBarTexture:SetDesaturated(true)
             end
-            if textureToUse then
-                self:SetStatusBarTexture(textureToUse)
-            end
-            if colors.enabled then
-                if self.barType == "uninterruptable" then
-                    self:SetStatusBarColor(unpack(colors.uninterruptable or { 0.7, 0.7, 0.7, 1 }))
-                elseif castBarRecolorInterrupt and not BBF.playerKickReady then
-                    self:SetStatusBarColor(unpack(colors.interruptNotReady or { 0.7, 0.7, 0.7, 1 }))
-                elseif self.barType == "channel" then
-                    self:SetStatusBarColor(unpack(colors.channel or { 0.0, 1.0, 0.0, 1 }))
-                elseif self.barType == "interrupted" then
-                    self:SetStatusBarColor(1, 0, 0)
-                else
-                    self:SetStatusBarColor(unpack(colors.standard or { 1.0, 0.7, 0.0, 1 }))
-                end
-            else
-                if self.barType == "uninterruptable" then
-                    self:SetStatusBarColor(0.7, 0.7, 0.7)
-                elseif castBarRecolorInterrupt and not BBF.playerKickReady then
-                    self:SetStatusBarColor(unpack(colors.interruptNotReady or { 0.7, 0.7, 0.7, 1 }))
-                elseif self.barType == "channel" then
-                    self:SetStatusBarColor(0, 1, 0)
-                elseif self.barType == "interrupted" then
-                    self:SetStatusBarColor(1, 0, 0)
-                else
-                    self:SetStatusBarColor(1, 0.7, 0)
-                end
-            end
-            self.changedBarColor = true
-        elseif colors.enabled then
-            local castTexture = self:GetStatusBarTexture()
-            if castTexture then
-                castTexture:SetDesaturated(true)
-            end
-            -- if self.barType == "uninterruptable" then
-            --     self:SetStatusBarColor(unpack(colors.uninterruptable or { 0.7, 0.7, 0.7, 1 }))
             if castBarRecolorInterrupt and not BBF.playerKickReady then
-                self:SetStatusBarColor(unpack(colors.interruptNotReady or { 0.7, 0.7, 0.7, 1 }))
-            elseif self.channeling then--elseif self.barType == "channel" then
-                self:SetStatusBarColor(unpack(colors.channel or { 0.0, 1.0, 0.0, 1 }))
-            -- elseif self.barType == "interrupted" then
-            --     self:SetStatusBarDesaturated(false)
-            --     self:SetStatusBarColor(1, 1, 1)
-            --     --self:SetStatusBarColor(1, 0, 0)
+                if colors.colorInterruptNotReady then
+                    castBarTexture:SetVertexColorFromBoolean(
+                        notInterruptible,
+                        colors.colorUninterruptable,
+                        colors.colorInterruptNotReady
+                    )
+                else
+                    self:SetStatusBarColor(unpack(colors.interruptNotReady or {0.7, 0.7, 0.7, 1}))
+                end
+            elseif self.casting then
+                if colors.colorStandard then
+                    castBarTexture:SetVertexColorFromBoolean(
+                        notInterruptible,
+                        colors.colorUninterruptable,
+                        colors.colorStandard
+                    )
+                else
+                    self:SetStatusBarColor(unpack(colors.standard or {1.0, 0.7, 0.0, 1}))
+                end
+            elseif self.channeling then
+                if colors.colorChannel then
+                    castBarTexture:SetVertexColorFromBoolean(
+                        notInterruptible,
+                        colors.colorUninterruptable,
+                        colors.colorChannel
+                    )
+                else
+                    self:SetStatusBarColor(unpack(colors.channel or {0.0, 1.0, 0.0, 1}))
+                end
             else
-                self:SetStatusBarColor(unpack(colors.standard or { 1.0, 0.7, 0.0, 1 }))
+                self:SetStatusBarColor(unpack(colors.standard or {1.0, 0.7, 0.0, 1}))
             end
             self.changedBarColor = true
         elseif castBarRecolorInterrupt and not BBF.playerKickReady then
-            local castTexture = self:GetStatusBarTexture()
-            if castTexture then
-                castTexture:SetDesaturated(true)
+            if castBarTexture then
+                castBarTexture:SetDesaturated(true)
             end
-            self:SetStatusBarColor(unpack(colors.interruptNotReady or { 0.7, 0.7, 0.7, 1 }))
+            castBarTexture:SetVertexColorFromBoolean(
+                notInterruptible,
+                colors.defaultUninterruptable,
+                colors.colorInterruptNotReady
+            )
             self.changedBarColor = true
         elseif self.changedBarColor then
-            local castTexture = self:GetStatusBarTexture()
-            if castTexture then
-                castTexture:SetDesaturated(false)
+            if castBarTexture then
+                castBarTexture:SetDesaturated(false)
             end
             self:SetStatusBarColor(1, 1, 1)
             self.changedBarColor = nil
@@ -1587,26 +1644,36 @@ local function CastbarOnEvent(self)
     else
         self:SetStatusBarTexture(classicCastbarTexture)
         if colors.enabled then
-            -- if self.barType == "uninterruptable" then
-            --     self:SetStatusBarColor(unpack(colors.uninterruptable or { 0.7, 0.7, 0.7, 1 }))
             if castBarRecolorInterrupt and not BBF.playerKickReady then
-                self:SetStatusBarColor(unpack(colors.interruptNotReady or { 0.7, 0.7, 0.7, 1 }))
-            elseif self.channeling then --elseif self.barType == "channel" then
-                self:SetStatusBarColor(unpack(colors.channel or { 0.0, 1.0, 0.0, 1 }))
-            -- elseif self.barType == "interrupted" then
-            --     self:SetStatusBarColor(1, 0, 0)
+                castBarTexture:SetVertexColorFromBoolean(
+                    notInterruptible,
+                    colors.colorUninterruptable,
+                    colors.colorInterruptNotReady
+                )
+            elseif self.casting then
+                castBarTexture:SetVertexColorFromBoolean(
+                    notInterruptible,
+                    colors.colorUninterruptable,
+                    colors.colorStandard
+                )
+            elseif self.channeling then
+                castBarTexture:SetVertexColorFromBoolean(
+                    notInterruptible,
+                    colors.colorUninterruptable,
+                    colors.colorChannel
+                )
             else
-                self:SetStatusBarColor(unpack(colors.standard or { 1.0, 0.7, 0.0, 1 }))
+                self:SetStatusBarColor(unpack(colors.standard or {1.0, 0.7, 0.0, 1}))
             end
         else
-            -- if self.barType == "uninterruptable" then
-            --     self:SetStatusBarColor(0.7, 0.7, 0.7)
             if castBarRecolorInterrupt and not BBF.playerKickReady then
-                self:SetStatusBarColor(unpack(colors.interruptNotReady or { 0.7, 0.7, 0.7, 1 }))
+                castBarTexture:SetVertexColorFromBoolean(
+                    notInterruptible,
+                    colors.defaultUninterruptable,
+                    colors.colorInterruptNotReady
+                )
             elseif self.channeling then
                 self:SetStatusBarColor(0, 1, 0)
-            -- elseif self.barType == "interrupted" then
-            --     self:SetStatusBarColor(1, 0, 0)
             else
                 self:SetStatusBarColor(1, 0.7, 0)
             end
@@ -1645,23 +1712,75 @@ function BBF.CastbarColorHooks()
         }
     end
 
+    local standardColor = recolorCastbars and BetterBlizzFramesDB.castbarCastColor or { 1.0, 0.7, 0.0, 1 }
+    local channelColor = recolorCastbars and BetterBlizzFramesDB.castbarChannelColor or { 0.0, 1.0, 0.0, 1 }
+    local uninterruptableColor = recolorCastbars and BetterBlizzFramesDB.castbarUninterruptableColor or { 0.7, 0.7, 0.7, 1 }
+    local interruptNotReadyColor = castBarNoInterruptColor or { 0.7, 0.7, 0.7, 1 }
+
+    castbarColors.colorStandard = CreateColor(unpack(standardColor))
+    castbarColors.colorChannel = CreateColor(unpack(channelColor))
+    castbarColors.colorUninterruptable = CreateColor(unpack(uninterruptableColor))
+    castbarColors.colorInterruptNotReady = CreateColor(unpack(interruptNotReadyColor))
+    castbarColors.defaultStandard = CreateColor(1.0, 0.7, 0.0, 1)
+    castbarColors.defaultChannel = CreateColor(0.0, 1.0, 0.0, 1)
+    castbarColors.defaultUninterruptable = CreateColor(0.7, 0.7, 0.7, 1)
+
     local playerCastBarTexture = PlayerCastingBarFrame:GetStatusBarTexture()
-    PlayerCastingBarFrame:HookScript("OnEvent", function(self)
-        if recolorCastbars or self.textureChangedNeedsColor then
-            -- if self.barType == "interrupted" and not self.textureChangedNeedsColor then
-            --     playerCastBarTexture:SetDesaturated(false)
-            --     self:SetStatusBarColor(1, 1, 1)
-            -- else
-                local type = self.channeling and "channel"
-                local c = castbarColors[type] or castbarColors.standard
-                local r, g, b = c[1], c[2], c[3]
+    if not BBF.RecolorCastbarHooked then
+        BBF.RecolorCastbarHooked = true
+        PlayerCastingBarFrame:HookScript("OnEvent", function(self, event)
+            if recolorCastbars or self.textureChangedNeedsColor then
+
+                if event == "UNIT_SPELLCAST_INTERRUPTED" then
+                    self.lastEvent = event
+                    playerCastBarTexture:SetDesaturated(false)
+                    self:SetStatusBarColor(1, 1, 1, 1)
+                    return
+                elseif (event == "UNIT_SPELLCAST_STOP" or event == "UNIT_SPELLCAST_CHANNEL_STOP" or event == "UNIT_SPELLCAST_EMPOWER_STOP") and self.lastEvent == "UNIT_SPELLCAST_INTERRUPTED" then
+                    playerCastBarTexture:SetDesaturated(false)
+                    self:SetStatusBarColor(1, 1, 1, 1)
+                    return
+                end
+
+                local notInterruptible
+                local unitToken = self.unit
+                if unitToken then
+                    if self.casting then
+                        _, _, _, _, _, _, _, notInterruptible = UnitCastingInfo(unitToken)
+                    elseif self.channeling then
+                        _, _, _, _, _, _, notInterruptible = UnitChannelInfo(unitToken)
+                    end
+                end
                 playerCastBarTexture:SetDesaturated(true)
-                self:SetStatusBarColor(r, g, b)
-            --end
-        end
-    end)
-    TargetFrameSpellBar:HookScript("OnEvent", CastbarOnEvent)
-    FocusFrameSpellBar:HookScript("OnEvent", CastbarOnEvent)
+
+                if self.casting then
+                    if castbarColors.colorStandard then
+                        playerCastBarTexture:SetVertexColorFromBoolean(
+                            notInterruptible,
+                            castbarColors.colorUninterruptable,
+                            castbarColors.colorStandard
+                        )
+                    else
+                        self:SetStatusBarColor(unpack(castbarColors.standard))
+                    end
+                elseif self.channeling then
+                    if castbarColors.colorChannel then
+                        playerCastBarTexture:SetVertexColorFromBoolean(
+                            notInterruptible,
+                            castbarColors.colorUninterruptable,
+                            castbarColors.colorChannel
+                        )
+                    else
+                        self:SetStatusBarColor(unpack(castbarColors.channel))
+                    end
+                else
+                    self:SetStatusBarColor(unpack(castbarColors.standard))
+                end
+            end
+        end)
+        TargetFrameSpellBar:HookScript("OnEvent", CastbarOnEvent)
+        FocusFrameSpellBar:HookScript("OnEvent", CastbarOnEvent)
+    end
 end
 
 

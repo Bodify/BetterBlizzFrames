@@ -6361,13 +6361,13 @@ local function guiCastbars()
     recolorCastbars:SetPoint("TOPLEFT", unitframeCastBarNoTextBorder, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(recolorCastbars, L["Recolor_Castbars"], L["Tooltip_Recolor_Castbars_Desc"])
 
-    local castbarCastColor = CreateColorBox(recolorCastbars, "castbarCastColor", L["Cast"])
+    local castbarCastColor = CreateColorBox(recolorCastbars, "castbarCastColor", L["Cast"], function() BBF.CastbarColorHooks() end)
     castbarCastColor:SetPoint("LEFT", recolorCastbars.text, "RIGHT", 0, 0)
 
-    local castbarChannelColor = CreateColorBox(recolorCastbars, "castbarChannelColor", L["Channel"])
+    local castbarChannelColor = CreateColorBox(recolorCastbars, "castbarChannelColor", L["Channel"], function() BBF.CastbarColorHooks() end)
     castbarChannelColor:SetPoint("LEFT", castbarCastColor.text, "RIGHT", 0, 0)
 
-    local castbarUninterruptableColor = CreateColorBox(recolorCastbars, "castbarUninterruptableColor", L["Uninterruptable"])
+    local castbarUninterruptableColor = CreateColorBox(recolorCastbars, "castbarUninterruptableColor", L["Uninterruptable"], function() BBF.CastbarColorHooks() end)
     castbarUninterruptableColor:SetPoint("LEFT", castbarChannelColor.text, "RIGHT", 0, 0)
 
     recolorCastbars:HookScript("OnClick", function(self)
