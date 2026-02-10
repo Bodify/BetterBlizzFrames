@@ -1,7 +1,7 @@
-# BetterBlizzFrames 1.8.9d
+# BetterBlizzFrames 1.8.9e
 ## Midnight/Prepatch
+### New
+- New Bualock profile (www.twitch.tv/bualock). Thanks for sharing!
 ### Bugfix
-- Fix lua errors from now new restrictions from Blizzard related to castbar types (uninterruptible status).
-    This means currently not possible to color/texture an uninterruptible cast without some sort of wonky workaround maybe.
-    Disabled for now and will just color depending on cast/channel, this may be confusing on uninterruptible casts.
-    Consider disabling castbar color/texture and for now until maybe a solution arrives.
+- Fix castbar color issues due to Midnight restrictions. Uninteruptible should work fine now. Please report any issues.
+- Fix a nil error with party range alpha setting
