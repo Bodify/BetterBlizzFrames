@@ -5443,10 +5443,15 @@ local function guiGeneralTab()
     end)
     aeghisButton:SetPoint("TOP", profilesFrame.streamerText, "BOTTOM", 0, -3)
 
+    local bualockButton = CreateClassButton(BetterBlizzFrames, "WARLOCK", "Bualock", "bualock", function()
+        ShowProfileConfirmation("Bualock", "WARLOCK", BBF.BualockProfile)
+    end)
+    bualockButton:SetPoint("TOP", aeghisButton, "BOTTOM", 0, btnGap)
+
     local kalvishButton = CreateClassButton(BetterBlizzFrames, "ROGUE", "Kalvish", "kalvish", function()
         ShowProfileConfirmation("Kalvish", "ROGUE", BBF.KalvishProfile)
     end)
-    kalvishButton:SetPoint("TOP", aeghisButton, "BOTTOM", 0, btnGap)
+    kalvishButton:SetPoint("TOP", bualockButton, "BOTTOM", 0, btnGap)
 
     local magnuszButton = CreateClassButton(BetterBlizzFrames, "WARRIOR", "Magnusz", "magnusz", function()
         ShowProfileConfirmation("Magnusz", "WARRIOR", BBF.MagnuszProfile)
@@ -9449,10 +9454,15 @@ function BBF.CreateIntroMessageWindow()
     end)
     aeghisButton:SetPoint("TOP", bodifyButton, "BOTTOM", -150, -40)
 
+    local bualockButton = CreateClassButton(BBF.IntroMessageWindow, "WARLOCK", "Bualock", "bualock", function()
+        ShowProfileConfirmation("Bualock", "WARLOCK", BBF.BualockProfile)
+    end)
+    bualockButton:SetPoint("TOP", aeghisButton, "BOTTOM", 0, btnGap)
+
     local kalvishButton = CreateClassButton(BBF.IntroMessageWindow, "ROGUE", "Kalvish", "kalvish", function()
         ShowProfileConfirmation("Kalvish", "ROGUE", BBF.KalvishProfile)
     end)
-    kalvishButton:SetPoint("TOP", aeghisButton, "BOTTOM", 0, btnGap)
+    kalvishButton:SetPoint("TOP", bualockButton, "BOTTOM", 0, btnGap)
 
     local magnuszButton = CreateClassButton(BBF.IntroMessageWindow, "WARRIOR", "Magnusz", "magnusz", function()
         ShowProfileConfirmation("Magnusz", "WARRIOR", BBF.MagnuszProfile)
