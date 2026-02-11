@@ -1,3 +1,8 @@
+# BetterBlizzFrames 1.8.9h
+## All
+### Bugfix
+- Fix missing locale causing import/export to break
+
 # BetterBlizzFrames 1.8.9g
 ## Midnight/Prepatch
 ### New
