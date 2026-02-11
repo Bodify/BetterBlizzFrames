@@ -6593,19 +6593,17 @@ local function guiCustomCode()
     discordLinkEditBox:SetAutoFocus(false)
     discordLinkEditBox:SetFontObject("ChatFontSmall")
     discordLinkEditBox:SetText("https://discord.gg/cjqVaEMm25")
-    discordLinkEditBox:SetCursorPosition(0) -- Places cursor at start of the text
-    discordLinkEditBox:ClearFocus() -- Removes focus from the EditBox
+    discordLinkEditBox:SetCursorPosition(0)
+    discordLinkEditBox:ClearFocus()
     discordLinkEditBox:SetScript("OnEscapePressed", function(self)
-        self:ClearFocus() -- Allows user to press escape to unfocus the EditBox
+        self:ClearFocus()
     end)
 
-    -- Make the EditBox text selectable and readonly
     discordLinkEditBox:SetScript("OnTextChanged", function(self)
         self:SetText("https://discord.gg/cjqVaEMm25")
     end)
-    --discordLinkEditBox:HighlightText() -- Highlights the text for easy copying
-    discordLinkEditBox:SetScript("OnCursorChanged", function() end) -- Prevents cursor changes
-    discordLinkEditBox:SetScript("OnEditFocusGained", function(self) self:HighlightText() end) -- Re-highlights text when focused
+    discordLinkEditBox:SetScript("OnCursorChanged", function() end)
+    discordLinkEditBox:SetScript("OnEditFocusGained", function(self) self:HighlightText() end)
     discordLinkEditBox:SetScript("OnMouseUp", function(self)
         if not self:IsMouseOver() then
             self:ClearFocus()
@@ -6627,19 +6625,17 @@ local function guiCustomCode()
     boxOne:SetAutoFocus(false)
     boxOne:SetFontObject("ChatFontSmall")
     boxOne:SetText("https://patreon.com/bodifydev")
-    boxOne:SetCursorPosition(0) -- Places cursor at start of the text
-    boxOne:ClearFocus() -- Removes focus from the EditBox
+    boxOne:SetCursorPosition(0)
+    boxOne:ClearFocus()
     boxOne:SetScript("OnEscapePressed", function(self)
-        self:ClearFocus() -- Allows user to press escape to unfocus the EditBox
+        self:ClearFocus()
     end)
 
-    -- Make the EditBox text selectable and readonly
     boxOne:SetScript("OnTextChanged", function(self)
         self:SetText("https://patreon.com/bodifydev")
     end)
-    --boxOne:HighlightText() -- Highlights the text for easy copying
-    boxOne:SetScript("OnCursorChanged", function() end) -- Prevents cursor changes
-    boxOne:SetScript("OnEditFocusGained", function(self) self:HighlightText() end) -- Re-highlights text when focused
+    boxOne:SetScript("OnCursorChanged", function() end)
+    boxOne:SetScript("OnEditFocusGained", function(self) self:HighlightText() end)
     boxOne:SetScript("OnMouseUp", function(self)
         if not self:IsMouseOver() then
             self:ClearFocus()
@@ -6661,19 +6657,16 @@ local function guiCustomCode()
     boxTwo:SetAutoFocus(false)
     boxTwo:SetFontObject("ChatFontSmall")
     boxTwo:SetText("https://paypal.me/bodifydev")
-    boxTwo:SetCursorPosition(0) -- Places cursor at start of the text
-    boxTwo:ClearFocus() -- Removes focus from the EditBox
+    boxTwo:SetCursorPosition(0)
+    boxTwo:ClearFocus()
     boxTwo:SetScript("OnEscapePressed", function(self)
-        self:ClearFocus() -- Allows user to press escape to unfocus the EditBox
+        self:ClearFocus()
     end)
-
-    -- Make the EditBox text selectable and readonly
     boxTwo:SetScript("OnTextChanged", function(self)
         self:SetText("https://paypal.me/bodifydev")
     end)
-    --boxTwo:HighlightText() -- Highlights the text for easy copying
-    boxTwo:SetScript("OnCursorChanged", function() end) -- Prevents cursor changes
-    boxTwo:SetScript("OnEditFocusGained", function(self) self:HighlightText() end) -- Re-highlights text when focused
+    boxTwo:SetScript("OnCursorChanged", function() end)
+    boxTwo:SetScript("OnEditFocusGained", function(self) self:HighlightText() end)
     boxTwo:SetScript("OnMouseUp", function(self)
         if not self:IsMouseOver() then
             self:ClearFocus()
@@ -6689,16 +6682,9 @@ local function guiCustomCode()
     palText:SetPoint("LEFT", boxTwoTex, "RIGHT", 14, -1)
     palText:SetText("Paypal")
 
-
-
-
-
-
-
-    -- Implementing the code editor inside the guiCustomCode frame
     local FAIAP = BBF.indent
 
-    -- Define your color table for syntax highlighting
+    -- Syntax highlighting
     local colorTable = {
         [FAIAP.tokens.TOKEN_SPECIAL] = "|c00F1D710",
         [FAIAP.tokens.TOKEN_KEYWORD] = "|c00BD6CCC",
@@ -6712,33 +6698,28 @@ local function guiCustomCode()
         [0] = "|r",  -- Reset color
     }
 
-    -- Add a scroll frame for the code editor
     local scrollFrame = CreateFrame("ScrollFrame", nil, guiCustomCode, "UIPanelScrollFrameTemplate")
     scrollFrame:SetPoint("TOP", guiCustomCode, "TOP", -10, -110)
-    scrollFrame:SetSize(620, 440)  -- Fixed size for the entire editor box
+    scrollFrame:SetSize(620, 440)
 
-    -- Label for the custom code box
     local customCodeText = guiCustomCode:CreateFontString(nil, "OVERLAY", "GameFontNormalHuge")
     customCodeText:SetPoint("BOTTOM", scrollFrame, "TOP", 0, 5)
     customCodeText:SetText(L["Custom_Code_Text"])
 
-    -- Create the code editor
     local codeEditBox = CreateFrame("EditBox", nil, scrollFrame)
     codeEditBox:SetMultiLine(true)
     codeEditBox:SetFontObject("ChatFontSmall")
-    codeEditBox:SetSize(600, 370)  -- Smaller than the scroll frame to allow scrolling
+    codeEditBox:SetSize(600, 370)
     codeEditBox:SetAutoFocus(false)
     codeEditBox:SetCursorPosition(0)
     codeEditBox:SetText(BetterBlizzFramesDB.customCode or "")
     codeEditBox:ClearFocus()
-
-    -- Attach the EditBox to the scroll frame
     scrollFrame:SetScrollChild(codeEditBox)
 
-    -- Add a static custom background to the scroll frame
+
     local bg = scrollFrame:CreateTexture(nil, "BACKGROUND")
-    bg:SetColorTexture(0, 0, 0, 0.6)  -- Semi-transparent black background
-    bg:SetAllPoints(scrollFrame)  -- Apply the background to the entire scroll frame
+    bg:SetColorTexture(0, 0, 0, 0.6)
+    bg:SetAllPoints(scrollFrame)
 
     -- Add a static custom border around the scroll frame
     local border = CreateFrame("Frame", nil, scrollFrame, BackdropTemplateMixin and "BackdropTemplate")
@@ -6748,16 +6729,18 @@ local function guiCustomCode()
         edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
         edgeSize = 14,
     })
-    border:SetBackdropBorderColor(0.8, 0.8, 0.8, 1)  -- Light gray border
-
-    -- Optional: Set padding or insets if needed
+    border:SetBackdropBorderColor(0.8, 0.8, 0.8, 1)
     codeEditBox:SetTextInsets(6, 10, 4, 10)
+
+    scrollFrame:EnableMouse(true)
+    scrollFrame:SetScript("OnMouseDown", function()
+        codeEditBox:SetFocus()
+    end)
 
     -- Track changes to detect unsaved edits
     local unsavedChanges = false
     codeEditBox:SetScript("OnTextChanged", function(self, userInput)
         if userInput then
-            -- Compare current text with saved code
             local currentText = self:GetText()
             if currentText ~= BetterBlizzFramesDB.customCode then
                 unsavedChanges = true
@@ -6767,12 +6750,10 @@ local function guiCustomCode()
         end
     end)
 
-    -- Enable syntax highlighting and indentation with FAIAP
-    FAIAP.enable(codeEditBox, colorTable, 4)  -- Assuming a tab width of 4
+    FAIAP.enable(codeEditBox, colorTable, 4)
 
     local customCodeSaved = L["Print_Custom_Code_Saved"]
 
-    -- Create Save Button
     local saveButton = CreateFrame("Button", nil, guiCustomCode, "UIPanelButtonTemplate")
     saveButton:SetSize(120, 30)
     saveButton:SetPoint("TOP", scrollFrame, "BOTTOM", 0, -10)
@@ -6783,10 +6764,8 @@ local function guiCustomCode()
         BBF.Print(customCodeSaved)
     end)
 
-    -- Flag to prevent double triggering of the prompt
     local promptShown = false
 
-    -- Function to show the save prompt if needed
     local function showSavePrompt()
         if unsavedChanges and not promptShown then
             promptShown = true
