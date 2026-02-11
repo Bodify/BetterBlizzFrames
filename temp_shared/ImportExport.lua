@@ -1,3 +1,4 @@
+local L = BBF.L
 local LibDeflate = LibStub("LibDeflate")
 local LibSerialize = LibStub("LibSerialize")
 
