@@ -349,6 +349,7 @@ local defaultSettings = {
     auraCdTextSize = 0.55,
     partyFrameRangeAlpha = 0.55,
     partyFrameRangeAlphaSolidBackground = true,
+    changePartyFrameRangeAlpha = true,
 }
 BBF.defaultSettings = defaultSettings
 
