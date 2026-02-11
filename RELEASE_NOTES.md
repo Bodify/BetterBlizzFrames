@@ -1,3 +1,11 @@
+# BetterBlizzFrames 1.8.9g
+## Midnight/Prepatch
+### New
+- New setting: Hide aura tooltips for Target/Focus/Player
+- New setting: Clickthrough Player Auras (you wont be able to click off auras anymore)
+### Bugfix
+- Misc small bugfixes, secret this, bad argument that.
+
 # BetterBlizzFrames 1.8.9f
 ## Midnight/Prepatch
 ### Bugfix
