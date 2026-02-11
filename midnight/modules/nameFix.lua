@@ -445,20 +445,7 @@ local function ShowLastNameOnlyNpc(frame, name)
 end
 
 local function GetNameWithoutRealm(frame)
-    if BBF.isMidnight then
-        return frame.name:GetText()
-    end
-    local name = GetUnitName(frame.unit)
-    if name then
-        if showLastNameNpc and not UnitIsPlayer(frame.unit) then
-            local lastName = ShowLastNameOnlyNpc(frame, name)
-            return lastName
-        else
-            name = string.gsub(name, " %(%*%)$", "")
-            return name
-        end
-    end
-    return nil
+    return UnitFullName(frame.unit)
 end
 
 local function SetArenaName(frame, unit, textObject)
