@@ -228,38 +228,30 @@ function BBF.SetupBorderOnFrame(frame)
 end
 
 local function UpdateCastTimer(self)
-    if not BBFMIDNIGHT then return end
-    local remainingTime
-    if self.casting or self.reverseChanneling then
-        -- For a cast, we calculate how much time is left until the cast completes
-        remainingTime = self.maxValue - self.value
-    elseif self.channeling then
-        -- For a channel, the remaining time is directly related to the current value
-        remainingTime = self.value
+    if not self.unit then return end
+
+    local duration = UnitCastingDuration(self.unit)
+    if not duration then
+        duration = UnitChannelDuration(self.unit)
     end
 
-    -- If the remaining time is zero or somehow negative, clear the timer
-    if remainingTime then
-        if remainingTime <= 0 then
-            self.Timer:SetText("")
-            return
-        end
-        self.Timer:SetFormattedText("%.1f", remainingTime)
+    if duration then
+        self.Timer:SetFormattedText("%.1f", duration:GetRemainingDuration())
     else
         self.Timer:SetText("")
     end
 end
 
 local function UpdateSparkPosition(castBar)
-    if not BBFMIDNIGHT then return end
-    local val = castBar:GetValue()
-    local minVal, maxVal = castBar:GetMinMaxValues()
-    --local progressPercent = castBar.value / castBar.maxValue
-    if maxVal == 0 then return end
-    local progressPercent = val / maxVal
-    local newX = castBar:GetWidth() * progressPercent
-    castBar.Spark:ClearAllPoints()
-    castBar.Spark:SetPoint("CENTER", castBar, "LEFT", newX, 0)
+    -- if not BBFMIDNIGHT then return end
+    -- local val = castBar:GetValue()
+    -- local minVal, maxVal = castBar:GetMinMaxValues()
+    -- --local progressPercent = castBar.value / castBar.maxValue
+    -- if maxVal == 0 then return end
+    -- local progressPercent = val / maxVal
+    -- local newX = castBar:GetWidth() * progressPercent
+    -- castBar.Spark:ClearAllPoints()
+    -- castBar.Spark:SetPoint("CENTER", castBar, "LEFT", newX, 0)
 end
 
 local function HideChargeTiers(castBar)
