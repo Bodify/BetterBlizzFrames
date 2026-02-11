@@ -1591,7 +1591,7 @@ local function CastbarOnEvent(self, event)
                 castBarTexture:SetDesaturated(true)
             end
             if castBarRecolorInterrupt and not BBF.playerKickReady then
-                if colors.colorInterruptNotReady then
+                if colors.colorInterruptNotReady and (self.casting or self.channeling) then
                     castBarTexture:SetVertexColorFromBoolean(
                         notInterruptible,
                         colors.colorUninterruptable,
@@ -1635,7 +1635,7 @@ local function CastbarOnEvent(self, event)
                     colors.colorInterruptNotReady
                 )
             else
-                self:SetStatusBarColor(unpack(colors.colorInterruptNotReady or {0.7, 0.7, 0.7, 1}))
+                self:SetStatusBarColor(unpack(colors.interruptNotReady or {0.7, 0.7, 0.7, 1}))
             end
             self.changedBarColor = true
         elseif self.changedBarColor then
@@ -1678,7 +1678,7 @@ local function CastbarOnEvent(self, event)
                         colors.colorInterruptNotReady
                     )
                 else
-                    self:SetStatusBarColor(unpack(colors.colorInterruptNotReady or {0.7, 0.7, 0.7, 1}))
+                    self:SetStatusBarColor(unpack(colors.interruptNotReady or {0.7, 0.7, 0.7, 1}))
                 end
             elseif self.channeling then
                 self:SetStatusBarColor(0, 1, 0)

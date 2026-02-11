@@ -88,6 +88,9 @@ local hideTargetBuffs
 local hideTargetDebuffs
 local hideFocusBuffs
 local hideFocusDebuffs
+local hideUnitframeAuraTooltips
+local clickthroughPlayerAuras
+local hidePlayerAuraTooltips
 
 local function UpdateMore()
     increaseAuraStrata = BetterBlizzFramesDB.increaseAuraStrata
@@ -99,8 +102,11 @@ local function UpdateMore()
     hideFocusBuffs = BetterBlizzFramesDB.hideFocusBuffs
     hideFocusDebuffs = BetterBlizzFramesDB.hideFocusDebuffs
     auraCdTextSize = BetterBlizzFramesDB.auraCdTextSize
-    showAuraCdText= BetterBlizzFramesDB.showAuraCdText
+    showAuraCdText = BetterBlizzFramesDB.showAuraCdText
     auraStackSize = BetterBlizzFramesDB.auraStackSize
+    hideUnitframeAuraTooltips = BetterBlizzFramesDB.hideUnitframeAuraTooltips
+    hidePlayerAuraTooltips = BetterBlizzFramesDB.hidePlayerAuraTooltips
+    clickthroughPlayerAuras = BetterBlizzFramesDB.clickthroughPlayerAuras
 
     -- Aura size calculations
     cachedSmallAuraSize = sameSizeAuras and 21 or 17 * targetAndFocusSmallAuraScale
@@ -347,7 +353,6 @@ local function PlaceAuraGroup(self, list, forceNewRowAtStart, rowWidths, rowHeig
 
         aura:SetScale(auraScale)
         aura:SetAlpha(1)
-        aura:EnableMouse(true)
 
         if showAuraCdText then
             aura.Cooldown:SetHideCountdownNumbers(false)
@@ -358,7 +363,12 @@ local function PlaceAuraGroup(self, list, forceNewRowAtStart, rowWidths, rowHeig
         end
         local size = aura:GetWidth() > 20 and 21 or cachedSmallAuraSize
         aura:SetSize(size, size)
-        aura:SetMouseClickEnabled(false)
+        if hideUnitframeAuraTooltips then
+            aura:EnableMouse(false)
+        else
+            aura:EnableMouse(true)
+            aura:SetMouseClickEnabled(false)
+        end
         aura.Count:SetScale(auraStackSize)
         if increaseAuraStrata then
             aura:SetFrameStrata("FULLSCREEN")
@@ -537,6 +547,20 @@ local function PersonalBuffFrameFilterAndGrid()
             if auraFrame and not auraFrame.isAuraAnchor then
                 auraFrame:ClearAllPoints()
 
+                if hidePlayerAuraTooltips and clickthroughPlayerAuras then
+                    auraFrame:EnableMouse(false)
+                elseif clickthroughPlayerAuras and not hidePlayerAuraTooltips then
+                    auraFrame:EnableMouse(true)
+                    auraFrame:SetMouseClickEnabled(false)
+                elseif hidePlayerAuraTooltips then
+                    if not auraFrame.noAuraTooltip then
+                        auraFrame:HookScript("OnEnter", function(self)
+                            GameTooltip:Hide()
+                        end)
+                        auraFrame.noAuraTooltip = true
+                    end
+                end
+
                 if addIconsToRight then
                     if addIconsToTop then
                         auraFrame:SetPoint("BOTTOMLEFT", BuffFrame, "BOTTOMLEFT", xOffset + 15, yOffset)
@@ -559,7 +583,6 @@ local function PersonalBuffFrameFilterAndGrid()
 
                 xOffset = (currentCol - 1) * (auraSize + auraSpacingX)
                 yOffset = (currentRow - 1) * (auraSize + auraSpacingY)
-
             end
         end
     end
@@ -583,6 +606,14 @@ local function PersonalDebuffFrameFilterAndGrid()
         local auraFrame = DebuffFrame.auraFrames[auraIndex]
         if auraFrame and not auraFrame.isAuraAnchor then
             auraFrame:ClearAllPoints();
+
+            if hidePlayerAuraTooltips then
+                auraFrame:EnableMouse(false)
+            elseif clickthroughPlayerAuras then
+                auraFrame:EnableMouse(true)
+                auraFrame:SetMouseClickEnabled(false)
+            end
+
             if addIconsToRight then
                 if addIconsToTop then
                     auraFrame:SetPoint("BOTTOMLEFT", DebuffFrame, "BOTTOMLEFT", xOffset, yOffset);
@@ -607,7 +638,6 @@ local function PersonalDebuffFrameFilterAndGrid()
             yOffset = (currentRow - 1) * (auraSize + auraSpacingY);
 
             auraFrame.Duration:SetParent(auraFrame)
-            auraFrame:SetMouseClickEnabled(false)
         end
     end
 end
