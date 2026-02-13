@@ -1208,6 +1208,7 @@ end
 
 
 local function PlayerCastingBarFrameMiscAdjustments()
+    if BetterBlizzFramesDB.disableCastbarTweaks then return end
     PlayerCastingBarFrame:SetScale(BetterBlizzFramesDB.playerCastBarScale or 1)
     local w = BetterBlizzFramesDB.playerCastBarWidth
     local maskRatio = 256 / 208
@@ -1273,6 +1274,7 @@ local function PlayerCastingBarFrameMiscAdjustments()
 end
 
 function BBF.ChangeCastbarSizes()
+    if BetterBlizzFramesDB.disableCastbarTweaks then return end
     BBF.UpdateUserAuraSettings()
     local classicFrames = C_AddOns.IsAddOnLoaded("ClassicFrames")
     local xClassicAdjustment = classicFrames and -1 or 0
@@ -1394,7 +1396,7 @@ function BBF.ChangeCastbarSizes()
 end
 
 PlayerCastingBarFrame:HookScript("OnEvent", function()
-    local showIcon = BetterBlizzFramesDB.playerCastBarShowIcon
+    local showIcon = BetterBlizzFramesDB.playerCastBarShowIcon and not BetterBlizzFramesDB.disableCastbarTweaks
     if showIcon then
         local playerCastBarIconScale = BetterBlizzFramesDB.playerCastBarIconScale
         PlayerCastingBarFrame.Icon:Show()
@@ -1762,7 +1764,7 @@ function BBF.CastbarColorHooks()
     castbarColors.defaultUninterruptable = CreateColor(0.7, 0.7, 0.7, 1)
 
     local playerCastBarTexture = PlayerCastingBarFrame:GetStatusBarTexture()
-    if not BBF.RecolorCastbarHooked then
+    if not BBF.RecolorCastbarHooked and not BetterBlizzFramesDB.disableCastbarTweaks then
         BBF.RecolorCastbarHooked = true
         PlayerCastingBarFrame:HookScript("OnEvent", function(self, event)
             if recolorCastbars or self.textureChangedNeedsColor then

@@ -8245,10 +8245,17 @@ local function guiMisc()
         end
     end)
 
-    local disableCastbarMovement = CreateCheckbox("disableCastbarMovement", L["Disable_Castbar_Movement"], guiMisc, nil, BBF.HideFrames)
+    local disableCastbarMovement = CreateCheckbox("disableCastbarMovement", L["Disable_Castbar_Movement"], guiMisc)
     disableCastbarMovement:SetPoint("TOPLEFT", hideExpAndHonorBar, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(disableCastbarMovement, L["Disable_Castbar_Movement"], L["Tooltip_Disable_Castbar_Movement_Desc"])
     disableCastbarMovement:HookScript("OnClick", function(self)
+        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+    end)
+
+    local disableCastbarTweaks = CreateCheckbox("disableCastbarTweaks", L["Disable_Castbar_Tweaks"], guiMisc)
+    disableCastbarTweaks:SetPoint("LEFT", disableCastbarMovement.Text, "RIGHT", 0, 0)
+    CreateTooltipTwo(disableCastbarTweaks, L["Disable_Castbar_Tweaks"], L["Tooltip_Disable_Castbar_Tweaks_Desc"])
+    disableCastbarTweaks:HookScript("OnClick", function(self)
         StaticPopup_Show("BBF_CONFIRM_RELOAD")
     end)
 
