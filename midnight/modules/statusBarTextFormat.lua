@@ -5,7 +5,7 @@ end
 
 local function UpdateFormatFunction()
     FormatText = function(value)
-        return tostring(AbbreviateNumbers(value))
+        return (AbbreviateNumbers(value))
     end
 end
 
@@ -16,12 +16,14 @@ local function UpdateNumericText(bar, centerText)
     local formattedValue = FormatText(value)
     local formattedMaxValue = FormatText(maxValue)
     centerText:SetText(string.format("%s / %s", formattedValue, formattedMaxValue))
+    centerText:SetAlpha(value)
 end
 
 local function UpdateSingleText(bar, fontObj)
     if not fontObj then return end
     local value = bar:GetValue()
     fontObj:SetText(FormatText(value))
+    fontObj:SetAlpha(value)
 end
 
 function BBF.HookStatusBarText()
