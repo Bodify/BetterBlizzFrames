@@ -1482,11 +1482,12 @@ end
 
 local function CreateClassButton(parent, class, name, twitchName, onClickFunc)
     local bbfParent = parent == BetterBlizzFrames
-    local btnWidth, btnHeight = bbfParent and 104 or 150, bbfParent and 22 or  30
+    local coreProfile = class == "STARTER" or name == "Bodify"
+    local btnWidth, btnHeight = bbfParent and 104 or (coreProfile and 150 or 114), bbfParent and 22 or 30
     local button = CreateFrame("Button", nil, parent, "GameMenuButtonTemplate")
     button:SetSize(btnWidth, btnHeight)
 
-    local dontIncludeProfileText = bbfParent and "" or L["Profile_Label"]
+    local dontIncludeProfileText = (bbfParent or not coreProfile) and "" or L["Profile_Label"]
     local color = CLASS_COLORS[class] or "|cffffffff"
     local icon = CLASS_ICONS[class] or "groupfinder-icon-role-leader"
 
@@ -1499,8 +1500,10 @@ local function CreateClassButton(parent, class, name, twitchName, onClickFunc)
     button:SetHighlightFontObject("GameFontHighlight")
     local a,b,c = button.Text:GetFont()
     button.Text:SetFont(a,b,"OUTLINE")
-    -- local a,b,c,d,e = button.Text:GetPoint()
-    -- button.Text:SetPoint(a,b,c,d,e-0.5)
+    local a,b,c,d,e = button.Text:GetPoint()
+    if not bbfParent then
+        button.Text:SetPoint("LEFT",b,"LEFT",10,e-0.6)
+    end
     local ttAnchor = "ANCHOR_TOP"
 
     button:SetScript("OnClick", function()
@@ -5483,10 +5486,15 @@ local function guiGeneralTab()
     end)
     nahjButton:SetPoint("TOP", mysticallButton, "BOTTOM", 0, btnGap)
 
+    local pinkteddypButton = CreateClassButton(BetterBlizzFrames, "PALADIN", "Pinkteddyp", "pinkteddyp", function()
+        ShowProfileConfirmation("Pinkteddyp", "PALADIN", BBF.PinkteddypProfile)
+    end)
+    pinkteddypButton:SetPoint("TOP", nahjButton, "BOTTOM", 0, btnGap)
+
     local pmakeButton = CreateClassButton(BetterBlizzFrames, "MAGE", "Pmake", "pmakewow", function()
         ShowProfileConfirmation("Pmake", "MAGE", BBF.PmakeProfile)
     end)
-    pmakeButton:SetPoint("TOP", nahjButton, "BOTTOM", 0, btnGap)
+    pmakeButton:SetPoint("TOP", pinkteddypButton, "BOTTOM", 0, btnGap)
 
     local snupyButton = CreateClassButton(BetterBlizzFrames, "DRUID", "Snupy", "snupy", function()
         ShowProfileConfirmation("Snupy", "DRUID", BBF.SnupyProfile)
@@ -9398,7 +9406,7 @@ function BBF.CreateIntroMessageWindow()
     BBF.IntroMessageWindow:RegisterForDrag("LeftButton")
     BBF.IntroMessageWindow:SetScript("OnDragStart", BBF.IntroMessageWindow.StartMoving)
     BBF.IntroMessageWindow:SetScript("OnDragStop", BBF.IntroMessageWindow.StopMovingOrSizing)
-    BBF.IntroMessageWindow:SetTitle("Better|cff00c0ffBlizz|rFrames v"..BBF.VersionNumber)
+    BBF.IntroMessageWindow:SetTitle("Better|cff00c0ffBlizz|rFrames "..BBF.VersionNumber)
     BBF.IntroMessageWindow:SetFrameStrata("HIGH")
 
     -- Add background texture
@@ -9455,10 +9463,11 @@ function BBF.CreateIntroMessageWindow()
     orText:SetText(L["OR"])
     orText:SetJustifyH("CENTER")
 
+    -- Column 1
     local aeghisButton = CreateClassButton(BBF.IntroMessageWindow, "MAGE", "Aeghis", "aeghis", function()
         ShowProfileConfirmation("Aeghis", "MAGE", BBF.AeghisProfile)
     end)
-    aeghisButton:SetPoint("TOP", bodifyButton, "BOTTOM", -150, -40)
+    aeghisButton:SetPoint("TOP", orText, "BOTTOM", -114, -10)
 
     local aswogButton = CreateClassButton(BBF.IntroMessageWindow, "PALADIN", "Aswog", "aswog", function()
         ShowProfileConfirmation("Aswog", "PALADIN", BBF.AswogProfile)
@@ -9480,10 +9489,11 @@ function BBF.CreateIntroMessageWindow()
     end)
     magnuszButton:SetPoint("TOP", kalvishButton, "BOTTOM", 0, btnGap)
 
+    -- Column 2
     local mesButton = CreateClassButton(BBF.IntroMessageWindow, "DEATHKNIGHT", "Mes", "notmes", function()
         ShowProfileConfirmation("Mes", "DEATHKNIGHT", BBF.MesProfile)
     end)
-    mesButton:SetPoint("TOP", magnuszButton, "BOTTOM", 0, btnGap)
+    mesButton:SetPoint("TOP", orText, "BOTTOM", 0, -10)
 
     local mmarkersButton = CreateClassButton(BBF.IntroMessageWindow, "DRUID", "Mmarkers", "mmarkers", function()
         ShowProfileConfirmation("Mmarkers", "DRUID", BBF.MmarkersProfile)
@@ -9493,17 +9503,23 @@ function BBF.CreateIntroMessageWindow()
     local mysticallButton = CreateClassButton(BBF.IntroMessageWindow, "MONK", "Mysticall", "mysticallx", function()
         ShowProfileConfirmation("Mysticall", "MONK", BBF.MysticallProfile)
     end)
-    mysticallButton:SetPoint("TOP", bodifyButton, "BOTTOM", 0, -40)
+    mysticallButton:SetPoint("TOP", mmarkersButton, "BOTTOM", 0, btnGap)
 
     local nahjButton = CreateClassButton(BBF.IntroMessageWindow, "ROGUE", "Nahj", "nahj", function()
         ShowProfileConfirmation("Nahj", "ROGUE", BBF.NahjProfile)
     end)
     nahjButton:SetPoint("TOP", mysticallButton, "BOTTOM", 0, btnGap)
 
+    local pinkteddypButton = CreateClassButton(BBF.IntroMessageWindow, "PALADIN", "Pinkteddyp", "pinkteddyp", function()
+        ShowProfileConfirmation("Pinkteddyp", "PALADIN", BBF.PinkteddypProfile)
+    end)
+    pinkteddypButton:SetPoint("TOP", nahjButton, "BOTTOM", 0, btnGap)
+
+    -- Column 3
     local pmakeButton = CreateClassButton(BBF.IntroMessageWindow, "MAGE", "Pmake", "pmakewow", function()
         ShowProfileConfirmation("Pmake", "MAGE", BBF.PmakeProfile)
     end)
-    pmakeButton:SetPoint("TOP", nahjButton, "BOTTOM", 0, btnGap)
+    pmakeButton:SetPoint("TOP", orText, "BOTTOM", 114, -10)
 
     local snupyButton = CreateClassButton(BBF.IntroMessageWindow, "DRUID", "Snupy", "snupy", function()
         ShowProfileConfirmation("Snupy", "DRUID", BBF.SnupyProfile)
@@ -9526,14 +9542,14 @@ function BBF.CreateIntroMessageWindow()
     wolfButton:SetPoint("TOP", venrukiButton, "BOTTOM", 0, btnGap)
 
     local orText2 = BBF.IntroMessageWindow:CreateFontString(nil, "OVERLAY", "GameFontNormalMed2")
-    orText2:SetPoint("CENTER", mmarkersButton, "BOTTOM", 75, -20)
+    orText2:SetPoint("CENTER", pinkteddypButton, "BOTTOM", 0, -20)
     orText2:SetText(L["OR"])
     orText2:SetJustifyH("CENTER")
 
     local buttonLast = CreateFrame("Button", nil, BBF.IntroMessageWindow, "GameMenuButtonTemplate")
     buttonLast:SetSize(btnWidth, btnHeight)
     buttonLast:SetText(L["Exit_No_Profile"])
-    buttonLast:SetPoint("TOP", mmarkersButton, "BOTTOM", 75, -40)
+    buttonLast:SetPoint("TOP", pinkteddypButton, "BOTTOM", 0, -40)
     buttonLast:SetNormalFontObject("GameFontNormal")
     buttonLast:SetHighlightFontObject("GameFontHighlight")
     buttonLast:SetScript("OnClick", function()
@@ -9566,7 +9582,7 @@ function BBF.CreateIntroMessageWindow()
             end
         end
 
-        local rowCount = math.ceil(buttonCount / 2)
+        local rowCount = math.ceil(buttonCount / 3)
         local newHeight = baseHeight + (rowCount * perRowHeight)
 
         BBF.IntroMessageWindow:SetSize(470, newHeight)
