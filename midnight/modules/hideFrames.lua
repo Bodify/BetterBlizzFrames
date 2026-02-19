@@ -171,8 +171,12 @@ function BBF.HideFrames()
         -- Hide Pet Frame
         if BetterBlizzFramesDB.hidePetFrame then
             hideElementByParent(PetFrame)
+            PetFrame:SetAlpha(0)
+            PetFrame:EnableMouse(false)
         else
             restoreElementParent(PetFrame)
+            PetFrame:SetAlpha(1)
+            PetFrame:EnableMouse(true)
         end
 
         -- Hide reputation color on target frame (color tint behind name)
