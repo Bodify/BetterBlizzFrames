@@ -173,10 +173,12 @@ function BBF.HideFrames()
             hideElementByParent(PetFrame)
             PetFrame:SetAlpha(0)
             PetFrame:EnableMouse(false)
-        else
+            changes.hidePetFrame = true
+        elseif changes.hidePetFrame then
             restoreElementParent(PetFrame)
             PetFrame:SetAlpha(1)
             PetFrame:EnableMouse(true)
+            changes.hidePetFrame = nil
         end
 
         -- Hide reputation color on target frame (color tint behind name)
