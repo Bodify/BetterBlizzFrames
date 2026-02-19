@@ -1792,7 +1792,7 @@ function BBF.CastbarColorHooks()
                 playerCastBarTexture:SetDesaturated(true)
 
                 if self.casting then
-                    if castbarColors.colorStandard then
+                    if castbarColors.colorStandard and notInterruptible ~= nil then
                         playerCastBarTexture:SetVertexColorFromBoolean(
                             notInterruptible,
                             castbarColors.colorUninterruptable,
@@ -1802,7 +1802,7 @@ function BBF.CastbarColorHooks()
                         self:SetStatusBarColor(unpack(castbarColors.standard))
                     end
                 elseif self.channeling then
-                    if castbarColors.colorChannel then
+                    if castbarColors.colorChannel and notInterruptible ~= nil then
                         playerCastBarTexture:SetVertexColorFromBoolean(
                             notInterruptible,
                             castbarColors.colorUninterruptable,
