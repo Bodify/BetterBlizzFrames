@@ -1,3 +1,13 @@
+# BetterBlizzFrames 1.9.0b
+## Prepatch/Midnight
+### New
+- Add Misc setting to disable castbar tweaks (for use with other castbar addons)
+- Add Pinkteddyp profile (www.twitch.tv/pinkteddyp). Thank you for sharing.
+### Bugfix
+- Fix hiding format numbers on dead targets
+- Fix some secret and nil errors.
+- Potential fix for PetFrame popping back up when meant to be hidden.
+
 # BetterBlizzFrames 1.9.0
 ## Prepatch/Midnight
 ### New
@@ -10,29 +20,3 @@
 - Fix vehicle leave button being hidden when actionbar 1 was hidden
 - Fix custom code section not being clickable in its entire window without text being there
 - Fix misc things
-
-# BetterBlizzFrames 1.8.9h
-## All
-### Bugfix
-- Fix missing locale causing import/export to break
-
-# BetterBlizzFrames 1.8.9g
-## Midnight/Prepatch
-### New
-- New setting: Hide aura tooltips for Target/Focus/Player
-- New setting: Clickthrough Player Auras (you wont be able to click off auras anymore)
-### Bugfix
-- Misc small bugfixes, secret this, bad argument that.
-
-# BetterBlizzFrames 1.8.9f
-## Midnight/Prepatch
-### Bugfix
-- Fix a lua error related to new castbar color stuff.
-
-# BetterBlizzFrames 1.8.9e
-## Midnight/Prepatch
-### New
-- New Bualock profile (www.twitch.tv/bualock). Thanks for sharing!
-### Bugfix
-- Fix castbar color issues due to Midnight restrictions. Uninteruptible should work fine now. Please report any issues.
-- Fix a nil error with party range alpha setting

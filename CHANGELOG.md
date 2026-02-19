@@ -1,3 +1,13 @@
+# BetterBlizzFrames 1.9.0b
+## Prepatch/Midnight
+### New
+- Add Misc setting to disable castbar tweaks (for use with other castbar addons)
+- Add Pinkteddyp profile (www.twitch.tv/pinkteddyp). Thank you for sharing.
+### Bugfix
+- Fix hiding format numbers on dead targets
+- Fix some secret and nil errors.
+- Potential fix for PetFrame popping back up when meant to be hidden.
+
 # BetterBlizzFrames 1.9.0
 ## Prepatch/Midnight
 ### New
