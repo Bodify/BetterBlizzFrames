@@ -1,3 +1,9 @@
+# BetterBlizzFrames 1.9.0c
+## Prepatch/Midnight
+### Tweak
+- No Portrait setting no longer force hides Group Indicator (This still has a separate setting to hide it). Instead it moves it on top of the name.
+- Update Mmarkers profile (www.twitch.tv/mmarkers). Thank you for sharing.
+
 # BetterBlizzFrames 1.9.0b
 ## Prepatch/Midnight
 ### New
