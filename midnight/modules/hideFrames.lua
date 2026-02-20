@@ -90,13 +90,14 @@ function BBF.HideFrames()
         end
         local playerClass, englishClass = UnitClass("player")
         local classicFrames = C_AddOns.IsAddOnLoaded("ClassicFrames")
+
         --Hide group indicator on player unitframe
-        local groupIndicatorAlpha = BetterBlizzFramesDB.hideGroupIndicator and 0 or 1
-        PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.GroupIndicator:SetAlpha(BetterBlizzFramesDB.noPortraitModes and 0 or groupIndicatorAlpha)
-        -- PlayerFrameGroupIndicatorMiddle:SetAlpha(groupIndicatorAlpha)
-        -- PlayerFrameGroupIndicatorText:SetAlpha(groupIndicatorAlpha)
-        -- PlayerFrameGroupIndicatorLeft:SetAlpha(groupIndicatorAlpha)
-        -- PlayerFrameGroupIndicatorRight:SetAlpha(groupIndicatorAlpha)
+        if db.hideGroupIndicator then
+            PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.GroupIndicator:SetAlpha(0)
+            changes.hideGroupIndicator = true
+        elseif changes.hideGroupIndicator then
+            PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.GroupIndicator:SetAlpha(1)
+        end
 
         if db.hideActionBarQualityIcon then
             HideElementFromActionBars(true, "ProfessionQualityOverlayFrame")
