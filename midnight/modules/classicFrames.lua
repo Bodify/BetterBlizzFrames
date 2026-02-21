@@ -185,14 +185,14 @@ local function MakeClassicFrame(frame)
 
         local hideToTDebuffs = (frame.unit == "target" and db.hideTargetToTDebuffs) or (frame.unit == "focus" and db.hideFocusToTDebuffs)
         if not hideToTDebuffs then
-            totFrame.lastUpdate = 0
-            totFrame:HookScript("OnUpdate", function(self, elapsed)
-                self.lastUpdate = self.lastUpdate + elapsed
-                if self.lastUpdate >= 0.2 then
-                    self.lastUpdate = 0
-                    AuraUtil.RefreshAuras(self, self.unit, nil, nil, true)
-                end
-            end)
+            -- totFrame.lastUpdate = 0
+            -- totFrame:HookScript("OnUpdate", function(self, elapsed)
+            --     self.lastUpdate = self.lastUpdate + elapsed
+            --     if self.lastUpdate >= 0.2 then
+            --         self.lastUpdate = 0
+            --         AuraUtil.RefreshAuras(self, self.unit, nil, nil, true) -- procs secret errors now
+            --     end
+            -- end)
             local debuffFrameName = totFrame:GetName().."Debuff"
             for i = 1, 4 do
                 local debuffFrame = _G[debuffFrameName..i]
