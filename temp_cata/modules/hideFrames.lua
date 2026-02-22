@@ -903,7 +903,7 @@ function BBF.HideFrames()
                 for i = 1, Minimap:GetNumChildren() do
                     local child = select(i, Minimap:GetChildren())
                     local childName = child:GetName() or ""
-                    if string.find(childName, "LibDBIcon") or childName == "ExpansionLandingPageMinimapButton" then
+                    if string.find(childName, "LibDBIcon") or childName == "ExpansionLandingPageMinimapButton" or childName == "ArenaAnalyticsMinimapButton" then
                         child:HookScript("OnEnter", function()
                             iconMouseOver = true
                             ToggleLibDBIconButtons(true)
