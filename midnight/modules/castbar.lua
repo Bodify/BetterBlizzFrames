@@ -460,7 +460,7 @@ function BBF.ClassicCastbar(castBar, unitType)
             -- end
 
             AdjustBorderShieldSize(self)
-            self.Border:SetAlphaFromBoolean(self.BorderShield:IsShown(), 0, 1)
+            
 
             -- if self.barType == "uninterruptable" then
             --     if isTargets then
@@ -481,6 +481,12 @@ function BBF.ClassicCastbar(castBar, unitType)
                 elseif self.channeling then
                     _, _, _, _, _, _, notInterruptible = UnitChannelInfo(unitToken)
                 end
+            end
+
+            if notInterruptible ~= nil then
+                self.Border:SetAlphaFromBoolean(notInterruptible, 0, 1)
+            else
+                self.Border:SetAlpha(1)
             end
 
             if event == "UNIT_SPELLCAST_INTERRUPTED" then
