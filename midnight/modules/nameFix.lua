@@ -539,7 +539,7 @@ local function CompactPartyFrameNameChanges(frame)
 
         SetRPName(frame.name, frame.unit)
 
-        if rpNamesColor then
+        if rpNamesColor and not issecretvalue(UnitGUID(frame.unit)) then
             local r,g,b = GetRPNameColor(frame.unit)
             if r then
                 frame.name:SetTextColor(r, g, b)
