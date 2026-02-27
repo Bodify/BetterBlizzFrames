@@ -167,10 +167,17 @@ function BBF.HideFrames()
         FocusFrame.TargetFrameContent.TargetFrameContentContextual.PrestigePortrait:SetAlpha(prestigeBadgeAlpha)
 
         -- Hide Pet Frame
+        -- Avoid hideElementByParent (SetParent) on PetFrame as it taints the
+        -- protected frame, causing ADDON_ACTION_BLOCKED on ClearAllPointsBase
+        -- when Blizzard's managed-frame system repositions PetFrame during combat.
         if BetterBlizzFramesDB.hidePetFrame then
-            hideElementByParent(PetFrame)
-        else
-            restoreElementParent(PetFrame)
+            PetFrame:SetAlpha(0)
+            PetFrame:EnableMouse(false)
+            changes.hidePetFrame = true
+        elseif changes.hidePetFrame then
+            PetFrame:SetAlpha(1)
+            PetFrame:EnableMouse(true)
+            changes.hidePetFrame = nil
         end
 
         -- Hide reputation color on target frame (color tint behind name)
