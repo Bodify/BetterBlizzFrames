@@ -1310,7 +1310,6 @@ L["Print_Symmetric_Disabled_Midnight"] = "Symmetric Player Frame temporarily dis
 L["Print_Symmetric_Not_Available_Classic"] = "Symmetric Player Frame not available with Classic Frames setting."
 L["Print_Leave_Combat"] = "Leave combat to enable this setting"
 L["Print_Error_In_Custom_Code"] = "Error in custom code: %s"
-L["Print_Bugs_Expected"] = "Bugs are expected in this early release. Please report bugs."
 L["Print_Settings_Disabled"] = "Settings disabled. Likely due to error. Please update your addon. Get BugSack and BugGrabber to report the actual error if it continues."
 L["Print_BuffFrame_Move_Important_Note"] = "Important Note: Moving BuffFrame/DebuffFrame is now optional but on by default. Depending on your addons BetterBlizzFrames might've taken control over other things moving it. Please double check your aura settings in the Buffs & Debuffs section."
 L["Print_Player_Castbar_Position_Changed_Cata"] = "Important Note: Player CastingBar has had it's position moved up 9 pixels to match Blizzard's location for it. You might have to move it back down 9 pixels to fit your UI. Apologies for the inconvenience."
