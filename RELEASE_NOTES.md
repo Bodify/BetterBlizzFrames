@@ -1,3 +1,8 @@
+# BetterBlizzFrames 1.9.0f
+## Midnight
+### Tweak
+- Update profiles: Aswog, Pinkteddyp, Pmake, Snupy, Venruki & Wolf. Thank you all for sharing.
+
 # BetterBlizzFrames 1.9.0e
 ## Prepatch/Midnight
 ### Tweak
