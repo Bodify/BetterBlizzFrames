@@ -4655,7 +4655,7 @@ local function guiGeneralTab()
     clrFx.reactionColorsSeparator:SetFont(fontLarge, 14)
     clrFx.reactionColorsSeparator:SetTextColor(1, 1, 1)
 
-    clrFx.enemyHealthColor = CreateColorBox(clrFx, "enemyHealthColor", L["Enemies_Only"], function() BBF.UpdateFrames() end)
+    clrFx.enemyHealthColor = CreateColorBox(clrFx, "enemyHealthColor", L["Enemy"], function() BBF.UpdateFrames() end)
     clrFx.enemyHealthColor:SetPoint("TOPLEFT", clrFx.reactionColorsSeparator, "BOTTOMLEFT", 0, -1)
     CreateTooltipTwo(clrFx.enemyHealthColor, L["Enemy_Health_Color"], L["Tooltip_Color_Picker_Desc"])
 
