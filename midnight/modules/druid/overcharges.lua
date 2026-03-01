@@ -141,7 +141,9 @@ local function UpdateAltManaBar(updateCombos, cf)
             end
             local pts = bar.originalComboPos
             --PlayerFrameBottomManagedFramesContainer:ClearAllPoints()
-            PlayerFrameBottomManagedFramesContainer:SetPoint(pts.a, pts.b, pts.c, pts.d, pts.e-9)
+            if not InCombatLockdown() then -- temporary "fix" for combat, need to not move PlayerFrameBottomManagedFramesContainer anymore
+                PlayerFrameBottomManagedFramesContainer:SetPoint(pts.a, pts.b, pts.c, pts.d, pts.e-9)
+            end
         end
     elseif bar:IsShown() then
         C_Timer.After(0.2, function()
@@ -149,7 +151,9 @@ local function UpdateAltManaBar(updateCombos, cf)
                 local pts = bar.originalComboPos
                 if pts then
                     --PlayerFrameBottomManagedFramesContainer:ClearAllPoints()
-                    PlayerFrameBottomManagedFramesContainer:SetPoint(pts.a, pts.b, pts.c, pts.d, pts.e)
+                    if not InCombatLockdown() then -- temporary "fix" for combat, need to not move PlayerFrameBottomManagedFramesContainer anymore
+                        PlayerFrameBottomManagedFramesContainer:SetPoint(pts.a, pts.b, pts.c, pts.d, pts.e)
+                    end
                 end
             end
             if not cf and not AlternatePowerBar:IsShown() then
