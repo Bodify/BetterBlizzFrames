@@ -2,6 +2,9 @@
 ## Midnight
 ### Tweak
 - Update profiles: Aeghis, Aswog, Pinkteddyp, Pmake, Snupy, Venruki & Wolf. Thank you all for sharing.
+### Bugfix
+- Fix Hide PetFrame setting causing a lua error in combat sometimes on PetFrame updates. Fix by ptarjan @GitHub. If PetFrame pops back up now please report it.
+- Add temporary workaround for a resto druid specific combat error when shifting form. Avoids error but combo points might be slightly out of position on this update until fix.
 
 # BetterBlizzFrames 1.9.0e
 ## Prepatch/Midnight
