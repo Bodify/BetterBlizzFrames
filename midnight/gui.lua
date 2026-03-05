@@ -1955,12 +1955,6 @@ local function addOrUpdateEntry(inputText, listName, addShowMineTag, skipRefresh
         end
     end
 
-    -- Remove unwanted characters from name and comment individually
-    name = gsub(name, "[%/%(%)%[%]]", "")
-    if comment then
-        comment = gsub(comment, "[%/%(%)%[%]]", "")
-    end
-
     if (name ~= "" or id) then
         local key = id or string.lower(name)  -- Use id if available, otherwise use name
         local isDuplicate = false
@@ -2445,10 +2439,11 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
         local sortableNpcList = {}
 
         -- Iterate over the structure using pairs to access all entries
+        local safeFilter = BBF.currentSearchFilter:gsub("([%(%)%.%%%+%-%*%?%[%]%^%$])", "%%%1")
         for key, entry in pairs(listData) do
             cleanUpEntry(entry)
             -- Apply the search filter
-            if BBF.currentSearchFilter == "" or (entry.name and entry.name:lower():match(BBF.currentSearchFilter)) or (entry.id and tostring(entry.id):match(BBF.currentSearchFilter)) then
+            if BBF.currentSearchFilter == "" or (entry.name and entry.name:lower():match(safeFilter)) or (entry.id and tostring(entry.id):match(safeFilter)) then
                 table.insert(sortableNpcList, entry)
             end
         end
