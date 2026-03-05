@@ -1,3 +1,8 @@
+# BetterBlizzFrames 1.9.0g
+## Midnight
+### Bugfix
+- Fix Classic setting for Player Castbar not showing Border.
+
 # BetterBlizzFrames 1.9.0f
 ## Midnight
 ### Tweak
