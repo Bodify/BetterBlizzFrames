@@ -1,3 +1,10 @@
+# BetterBlizzFrames 1.9.0h
+## Midnight
+### New
+- Add Saul profile (www.twitch.tv/saul). Thank you for sharing.
+### Tweak
+- Remove Trimaz profile upon request after a change of hearts.
+
 # BetterBlizzFrames 1.9.0g
 ## Midnight
 ### Bugfix
