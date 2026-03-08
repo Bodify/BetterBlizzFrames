@@ -855,6 +855,17 @@ local function CreateTooltipTwo(widget, title, mainText, subText, anchor, cvarNa
             GameTooltip:AddLine(tooltipText, 1, 1, 1, true)
         end
 
+        if title == L["Tooltip_Dark_Mode_Auras"] then
+            local green = "|cff32f795"
+            local reset = "|r"
+            local check = ""
+            if BetterBlizzFramesDB.removeDebuffColorBorder then
+                check = " |A:ParagonReputation_Checkmark:15:15|a"
+            end
+            local tooltipText = "\n" .. green .. L["Tooltip_Remove_Debuff_Color_Border_Toggle"] .. reset .. check
+            GameTooltip:AddLine(tooltipText, 1, 1, 1, true)
+        end
+
         -- Set the subtext
         if subText then
             GameTooltip:AddLine("____________________________", 0.8, 0.8, 0.8, true)
@@ -2692,7 +2703,20 @@ local function guiGeneralTab()
         end
         BBF.DarkmodeFrames(true)
     end)
-    CreateTooltip(darkModeUiAura, L["Dark_Borders_Aura_Icons"])
+    CreateTooltipTwo(darkModeUiAura, L["Tooltip_Dark_Mode_Auras"], L["Tooltip_Dark_Mode_Auras_Desc"])
+    darkModeUiAura:HookScript("OnMouseDown", function(self, button)
+        if button == "RightButton" then
+            if not BetterBlizzFramesDB.removeDebuffColorBorder then
+                BetterBlizzFramesDB.removeDebuffColorBorder = true
+            else
+                BetterBlizzFramesDB.removeDebuffColorBorder = nil
+            end
+            if GameTooltip:IsShown() and GameTooltip:GetOwner() == self then
+                self:GetScript("OnEnter")(self)
+            end
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        end
+    end)
 
     -- local darkModeNameplateResource = CreateCheckbox("darkModeNameplateResource", "Nameplate Resource", darkModeUi)
     -- darkModeNameplateResource:SetPoint("TOPLEFT", darkModeUiAura, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
@@ -6214,6 +6238,13 @@ local function guiFrameAuras()
     increaseAuraStrata:SetPoint("TOPLEFT", changePurgeTextureColor, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(increaseAuraStrata, L["Increase_Aura_Frame_Strata"], L["Tooltip_Increase_Aura_Frame_Strata"])
 
+    local removeDebuffColorBorder = CreateCheckbox("removeDebuffColorBorder", L["Remove_Debuff_Color_Border"], playerAuraFiltering)
+    removeDebuffColorBorder:SetPoint("TOPLEFT", increaseAuraStrata, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(removeDebuffColorBorder, L["Remove_Debuff_Color_Border"], L["Tooltip_Remove_Debuff_Color_Border"])
+    removeDebuffColorBorder:HookScript("OnClick", function(self)
+        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+    end)
+
     local function OpenColorPicker(entryColors)
         local colorData = entryColors or {0, 1, 0, 1}
         local r, g, b = colorData[1] or 1, colorData[2] or 1, colorData[3] or 1
@@ -6263,11 +6294,11 @@ local function guiFrameAuras()
     CreateTooltip(dispelGlowButton, L["Change_Purge_Texture_Color"])
 
     local sortingSettings = contentFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    sortingSettings:SetPoint("TOPLEFT", increaseAuraStrata, "BOTTOMLEFT", 10, -4)
+    sortingSettings:SetPoint("TOPLEFT", removeDebuffColorBorder, "BOTTOMLEFT", 10, -4)
     sortingSettings:SetText(L["Label_Sorting"])
 
     local customImportantAuraSorting = CreateCheckbox("customImportantAuraSorting", L["Sort_Important_Auras"], playerAuraFiltering)
-    customImportantAuraSorting:SetPoint("TOPLEFT", increaseAuraStrata, "BOTTOMLEFT", 0, -20)
+    customImportantAuraSorting:SetPoint("TOPLEFT", removeDebuffColorBorder, "BOTTOMLEFT", 0, -20)
     CreateTooltip(customImportantAuraSorting, L["Tooltip_Sort_Important_Auras"])
 
     local customLargeSmallAuraSorting = CreateCheckbox("customLargeSmallAuraSorting", L["Sort_Enlarged_Compact"], playerAuraFiltering)
@@ -6403,8 +6434,12 @@ local function guiMisc()
     hideActionBarMacroName:SetPoint("TOPLEFT", hideActionBarHotKey, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(hideActionBarMacroName, L["Tooltip_Hide_Macro"])
 
+    local hideActionBarEquippedOverlay = CreateCheckbox("hideActionBarEquippedOverlay", L["Hide_ActionBar_Equipped_Overlay"], guiMisc, nil, BBF.HideFrames)
+    hideActionBarEquippedOverlay:SetPoint("TOPLEFT", hideActionBarMacroName, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(hideActionBarEquippedOverlay, L["Hide_ActionBar_Equipped_Overlay"], L["Tooltip_Hide_ActionBar_Equipped_Overlay_Desc"])
+
     local hideStanceBar = CreateCheckbox("hideStanceBar", L["Hide_StanceBar"], guiMisc, nil, BBF.HideFrames)
-    hideStanceBar:SetPoint("TOPLEFT", hideActionBarMacroName, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    hideStanceBar:SetPoint("TOPLEFT", hideActionBarEquippedOverlay, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
 
     local stealthIndicatorPlayer = CreateCheckbox("stealthIndicatorPlayer", L["Tooltip_Stealth_Indicator"], guiMisc, nil, BBF.StealthIndicator)
     stealthIndicatorPlayer:SetPoint("TOPLEFT", hideStanceBar, "BOTTOMLEFT", 0, pixelsBetweenBoxes)

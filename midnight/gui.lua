@@ -1392,6 +1392,17 @@ local function CreateTooltipTwo(widget, title, mainText, subText, anchor, cvarNa
             GameTooltip:AddLine(tooltipText, 1, 1, 1, true)
         end
 
+        if title == L["Tooltip_Dark_Mode_Auras"] then
+            local green = "|cff32f795"
+            local reset = "|r"
+            local check = ""
+            if BetterBlizzFramesDB.removeDebuffColorBorder then
+                check = " |A:ParagonReputation_Checkmark:15:15|a"
+            end
+            local tooltipText = "\n" .. green .. L["Tooltip_Remove_Debuff_Color_Border_Toggle"] .. reset .. check
+            GameTooltip:AddLine(tooltipText, 1, 1, 1, true)
+        end
+
         -- Set the subtext
         if subText then
             GameTooltip:AddLine("____________________________", 0.8, 0.8, 0.8, true)
@@ -3357,7 +3368,20 @@ local function guiGeneralTab()
         StaticPopup_Show("BBF_CONFIRM_RELOAD")
         BBF.DarkmodeFrames(true)
     end)
-    CreateTooltip(darkModeUiAura, L["Tooltip_Dark_Mode_Auras"])
+    CreateTooltipTwo(darkModeUiAura, L["Tooltip_Dark_Mode_Auras"], L["Tooltip_Dark_Mode_Auras_Desc"])
+    darkModeUiAura:HookScript("OnMouseDown", function(self, button)
+        if button == "RightButton" then
+            if not BetterBlizzFramesDB.removeDebuffColorBorder then
+                BetterBlizzFramesDB.removeDebuffColorBorder = true
+            else
+                BetterBlizzFramesDB.removeDebuffColorBorder = nil
+            end
+            if GameTooltip:IsShown() and GameTooltip:GetOwner() == self then
+                self:GetScript("OnEnter")(self)
+            end
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        end
+    end)
 
     local darkModeNameplateResource = CreateCheckbox("darkModeNameplateResource", L["Nameplate_Resource"], darkModeUi)
     darkModeNameplateResource:SetPoint("TOPLEFT", darkModeUiAura, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
@@ -4637,11 +4661,27 @@ local function guiGeneralTab()
         BBF.UpdateFrames()
     end)
 
+    clrFx.customColorsUnitFramesNames = CreateCheckbox("customColorsUnitFramesNames", L["Enable_On_UnitFrames_Names"], clrFx)
+    clrFx.customColorsUnitFramesNames:SetPoint("LEFT", clrFx.customColorsUnitFrames.text, "RIGHT", 2, 0)
+    CreateTooltipTwo(clrFx.customColorsUnitFramesNames, L["Enable_On_UnitFrames_Names"], L["Tooltip_Enable_On_UnitFrames_Names_Desc"])
+    clrFx.customColorsUnitFramesNames:HookScript("OnClick", function(self)
+        BBF.UpdateFrames()
+        BBF.AllNameChanges()
+    end)
+
     clrFx.customColorsRaidFrames = CreateCheckbox("customColorsRaidFrames", L["Enable_On_Raid_Party_Frames"], clrFx)
     clrFx.customColorsRaidFrames:SetPoint("TOPLEFT", clrFx.customColorsUnitFrames, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(clrFx.customColorsRaidFrames, L["Enable_On_Raid_Party_Frames"], L["Tooltip_Enable_On_Raid_Party_Frames_Desc"])
     clrFx.customColorsRaidFrames:HookScript("OnClick", function(self)
         BBF.UpdateFrames()
+    end)
+
+    clrFx.customColorsRaidFramesNames = CreateCheckbox("customColorsRaidFramesNames", L["Enable_On_Raid_Party_Names"], clrFx)
+    clrFx.customColorsRaidFramesNames:SetPoint("LEFT", clrFx.customColorsRaidFrames.text, "RIGHT", 2, 0)
+    CreateTooltipTwo(clrFx.customColorsRaidFramesNames, L["Enable_On_Raid_Party_Names"], L["Tooltip_Enable_On_Raid_Party_Names_Desc"])
+    clrFx.customColorsRaidFramesNames:HookScript("OnClick", function(self)
+        BBF.UpdateFrames()
+        BBF.AllNameChanges()
     end)
 
     clrFx.reactionColorsSeparator = clrFx:CreateFontString(nil, "OVERLAY", "GameFontNormal")
@@ -7761,8 +7801,15 @@ local function guiFrameAuras()
         StaticPopup_Show("BBF_CONFIRM_RELOAD")
     end)
 
+    local removeDebuffColorBorder = CreateCheckbox("removeDebuffColorBorder", L["Remove_Debuff_Color_Border"], playerAuraFiltering)
+    removeDebuffColorBorder:SetPoint("TOPLEFT", pixelBorderAuras, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(removeDebuffColorBorder, L["Remove_Debuff_Color_Border"], L["Tooltip_Remove_Debuff_Color_Border"])
+    removeDebuffColorBorder:HookScript("OnClick", function(self)
+        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+    end)
+
     local hideTargetBuffs = CreateCheckbox("hideTargetBuffs", L["Hide_Target_Buffs"], playerAuraFiltering)
-    hideTargetBuffs:SetPoint("TOPLEFT", pixelBorderAuras, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    hideTargetBuffs:SetPoint("TOPLEFT", removeDebuffColorBorder, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(hideTargetBuffs, L["Hide_Target_Buffs"], L["Tooltip_Hide_Target_Buffs_Desc"])
     hideTargetBuffs:HookScript("OnClick", function(self)
         StaticPopup_Show("BBF_CONFIRM_RELOAD")
@@ -8270,8 +8317,12 @@ local function guiMisc()
     hideActionBarActiveOverlay:SetPoint("TOPLEFT", hideActionBarCastAnimation, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(hideActionBarActiveOverlay, L["Hide_ActionBar_Active_Overlay"], L["Tooltip_Hide_ActionBar_Active_Overlay"])
 
+    local hideActionBarEquippedOverlay = CreateCheckbox("hideActionBarEquippedOverlay", L["Hide_ActionBar_Equipped_Overlay"], guiMisc, nil, BBF.HideFrames)
+    hideActionBarEquippedOverlay:SetPoint("TOPLEFT", hideActionBarActiveOverlay, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(hideActionBarEquippedOverlay, L["Hide_ActionBar_Equipped_Overlay"], L["Tooltip_Hide_ActionBar_Equipped_Overlay_Desc"])
+
     local fixActionBarCDs = CreateCheckbox("fixActionBarCDs", L["Fix_ActionBar_Cooldowns_CC"], guiMisc, nil, BBF.ShowCooldownDuringCC)
-    fixActionBarCDs:SetPoint("TOPLEFT", hideActionBarActiveOverlay, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    fixActionBarCDs:SetPoint("TOPLEFT", hideActionBarEquippedOverlay, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(fixActionBarCDs, L["Fix_ActionBar_Cooldowns_CC"], L["Tooltip_Fix_ActionBar_CDs_Desc"])
 
     local fixActionBarCDsAlwaysHideCD = CreateCheckbox("fixActionBarCDsAlwaysHideCD", L["Hide_CC_Duration"], fixActionBarCDs, nil, BBF.ShowCooldownDuringCC)

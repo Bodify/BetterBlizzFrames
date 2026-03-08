@@ -913,6 +913,7 @@ function BBF.ChangeCastbarSizes()
     CastingBarFrame.Border:SetAlpha(BetterBlizzFramesDB.playerCastBarShowBorder and 1 or 0)
 
     adjustCastBarBorder(CastingBarFrame, CastingBarFrame.Border, 15, nil, nil, nil, 11)
+    adjustCastBarBorder(CastingBarFrame, CastingBarFrame.Flash, 15, nil, nil, nil, 11)
     adjustCastBarBorder(CastingBarFrame, CastingBarFrame.BorderShield, 12, true)
 
     -- CastingBarFrame:ClearAllPoints()

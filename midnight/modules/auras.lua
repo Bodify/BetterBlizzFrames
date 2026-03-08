@@ -68,6 +68,7 @@ local buffsOnTopReverseCastbarMovement
 local targetCastBarScale
 local focusCastBarScale
 local increaseAuraStrata
+local removeDebuffColorBorder
 local sameSizeAuras
 local cachedSmallAuraSize = 0
 local cachedInitialOffsetX = 0
@@ -94,6 +95,7 @@ local hidePlayerAuraTooltips
 
 local function UpdateMore()
     increaseAuraStrata = BetterBlizzFramesDB.increaseAuraStrata
+    removeDebuffColorBorder = BetterBlizzFramesDB.removeDebuffColorBorder
     sameSizeAuras = BetterBlizzFramesDB.sameSizeAuras
     TargetFrame.staticCastbar = (BetterBlizzFramesDB.targetStaticCastbar or BetterBlizzFramesDB.targetDetachCastbar) and true or false
     FocusFrame.staticCastbar = (BetterBlizzFramesDB.focusStaticCastbar or BetterBlizzFramesDB.focusDetachCastbar) and true or false
@@ -372,6 +374,10 @@ local function PlaceAuraGroup(self, list, forceNewRowAtStart, rowWidths, rowHeig
         aura.Count:SetScale(auraStackSize)
         if increaseAuraStrata then
             aura:SetFrameStrata("FULLSCREEN")
+        end
+
+        if removeDebuffColorBorder and aura.Border then
+            aura.Border:SetAlpha(0)
         end
 
         local columnIndex = (i - 1) % aurasPerRow

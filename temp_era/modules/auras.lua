@@ -188,6 +188,7 @@ local targetEnlargeAuraFriendly
 local focusEnlargeAuraEnemy
 local focusEnlargeAuraFriendly
 local increaseAuraStrata
+local removeDebuffColorBorder
 local sameSizeAuras
 local auraStackSize
 local addCooldownFramePlayerDebuffs
@@ -218,6 +219,7 @@ local function UpdateMore()
     focusEnlargeAuraEnemy = BetterBlizzFramesDB.focusEnlargeAuraEnemy
     focusEnlargeAuraFriendly = BetterBlizzFramesDB.focusEnlargeAuraFriendly
     increaseAuraStrata = BetterBlizzFramesDB.increaseAuraStrata
+    removeDebuffColorBorder = BetterBlizzFramesDB.removeDebuffColorBorder
     sameSizeAuras = BetterBlizzFramesDB.sameSizeAuras
     auraStackSize = BetterBlizzFramesDB.auraStackSize
     addCooldownFramePlayerBuffs = BetterBlizzFramesDB.addCooldownFramePlayerBuffs
@@ -1255,6 +1257,10 @@ local function AdjustAuras(self, frameType)
 
                 if shouldShowAura then
                     auraFrame:Show()
+
+                    if removeDebuffColorBorder and auraFrame.Border then
+                        auraFrame.Border:Hide()
+                    end
 
                     -- Attach weakauras to certain named auraframes
                     if BBF.globalAuraFrames and BBF.globalAuraFrames[auraData.spellId] then

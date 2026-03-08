@@ -187,6 +187,7 @@ local targetEnlargeAuraFriendly
 local focusEnlargeAuraEnemy
 local focusEnlargeAuraFriendly
 local increaseAuraStrata
+local removeDebuffColorBorder
 local sameSizeAuras
 local auraStackSize
 local addCooldownFramePlayerDebuffs
@@ -217,6 +218,7 @@ local function UpdateMore()
     focusEnlargeAuraEnemy = BetterBlizzFramesDB.focusEnlargeAuraEnemy
     focusEnlargeAuraFriendly = BetterBlizzFramesDB.focusEnlargeAuraFriendly
     increaseAuraStrata = BetterBlizzFramesDB.increaseAuraStrata
+    removeDebuffColorBorder = BetterBlizzFramesDB.removeDebuffColorBorder
     sameSizeAuras = BetterBlizzFramesDB.sameSizeAuras
     auraStackSize = BetterBlizzFramesDB.auraStackSize
     addCooldownFramePlayerBuffs = BetterBlizzFramesDB.addCooldownFramePlayerBuffs
@@ -1203,6 +1205,7 @@ local function AdjustAuras(self, frameType)
             local cooldown = _G[auraName.."Cooldown"]
             local count = _G[auraName.."Count"]
             local icon = _G[auraName.."Icon"]
+            local border = _G[auraName.."Border"]
 
             local auraFrame = _G[auraName]
             if auraFrame and auraFrame:IsShown() then
@@ -1218,6 +1221,7 @@ local function AdjustAuras(self, frameType)
                 auraFrame.Stealable = stealable
                 auraFrame.Cooldown = cooldown
                 auraFrame.Count = count
+                auraFrame.Border = border
 
                 if auraFrame.Cooldown:IsShown() then
                     auraFrame.Count:SetParent(auraFrame.Cooldown)
@@ -1321,6 +1325,10 @@ local function AdjustAuras(self, frameType)
 
                 if shouldShowAura then
                     auraFrame:Show()
+
+                    if removeDebuffColorBorder and auraFrame.Border then
+                        auraFrame.Border:Hide()
+                    end
 
                     -- Attach weakauras to certain named auraframes
                     if BBF.globalAuraFrames and BBF.globalAuraFrames[auraData.spellId] then

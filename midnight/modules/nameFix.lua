@@ -87,6 +87,8 @@ local rpNamesLast
 local rpNamesColor
 local showLastNameNpc
 local classColorPartyNames
+local customColorTargetNames
+local customColorPartyNames
 
 local function GetRPNameColor(unit)
     if not UnitExists(unit) then return end
@@ -128,6 +130,8 @@ function BBF.UpdateUserTargetSettings()
     classColorPartyNames = BetterBlizzFramesDB.classColorPartyNames
     classColorFrames = BetterBlizzFramesDB.classColorFrames
     classColorTargetNames = BetterBlizzFramesDB.classColorTargetNames
+    customColorTargetNames = BetterBlizzFramesDB.customHealthbarColors and BetterBlizzFramesDB.customColorsUnitFramesNames and BetterBlizzFramesDB.customColorsUnitFrames
+    customColorPartyNames = BetterBlizzFramesDB.customHealthbarColors and BetterBlizzFramesDB.customColorsRaidFramesNames and BetterBlizzFramesDB.customColorsUnitFrames
     showSpecName = BetterBlizzFramesDB.showSpecName
     shortArenaSpecName = BetterBlizzFramesDB.shortArenaSpecName
     showArenaID = BetterBlizzFramesDB.showArenaID
@@ -449,10 +453,6 @@ local function GetNameWithoutRealm(frame)
 end
 
 local function SetArenaName(frame, unit, textObject)
-    if BBF.isMidnight then
-        textObject:SetText(UnitName(unit))
-        return
-    end
     if UnitIsUnit(unit, "player") then return end
     local specName = GetSpecName(unit)
     local nameText
@@ -527,7 +527,7 @@ end)
 local function CompactPartyFrameNameChanges(frame)
     if not frame or not frame.unit then return end
     if frame.unit:find("nameplate") then return end
-    if partyArenaNames and IsActiveBattlefieldArena() then
+    if partyArenaNames and IsActiveBattlefieldArena() and UnitIsFriend(frame.unit, "player") then
         SetArenaName(frame, frame.unit, frame.name)
         return
     end
@@ -555,14 +555,11 @@ local function CompactPartyFrameNameChanges(frame)
     if removeRealmNames then
         frame.name:SetText(GetNameWithoutRealm(frame))
     end
-    if classColorPartyNames then
+    if classColorPartyNames or customColorPartyNames then
         if frame.unit and (UnitIsPlayer(frame.unit) or C_LFGInfo.IsInLFGFollowerDungeon()) then
-            local _, class = UnitClass(frame.unit)
-            if class then
-                local color = RAID_CLASS_COLORS[class]
-                if color then
-                    frame.name:SetVertexColor(color.r, color.g, color.b)
-                end
+            local color = BBF.getUnitColor(frame.unit, customColorPartyNames or nil, true)
+            if color then
+                frame.name:SetVertexColor(color.r, color.g, color.b)
             end
         end
     end
@@ -606,14 +603,11 @@ local function PartyFrameNameChange(frame)
         frame.bbfName:SetWidth(baseWidth + extraWidth)
     end
 
-    if classColorPartyNames then
+    if classColorPartyNames or customColorPartyNames then
         if frame.unit and (UnitIsPlayer(frame.unit) or C_LFGInfo.IsInLFGFollowerDungeon()) then
-            local _, class = UnitClass(frame.unit)
-            if class then
-                local color = RAID_CLASS_COLORS[class]
-                if color then
-                    frame.bbfName:SetVertexColor(color.r, color.g, color.b)
-                end
+            local color = BBF.getUnitColor(frame.unit, customColorPartyNames or nil, true)
+            if color then
+                frame.bbfName:SetVertexColor(color.r, color.g, color.b)
             end
         end
     end
@@ -1346,7 +1340,7 @@ end
 C_Timer.After(1, UpdateNamePositionForClassic)
 
 local function ClassColorName(textObject, unit)
-    local color = BBF.getUnitColor(unit, (BetterBlizzFramesDB.customHealthbarColors and BetterBlizzFramesDB.customColorsUnitFrames) or nil, true)
+    local color = BBF.getUnitColor(unit, customColorTargetNames or nil, true)
     if color then
         textObject:SetTextColor(color.r, color.g, color.b)
     else
@@ -1372,10 +1366,6 @@ local function GetArenaUnitName(unit)
 end
 
 local function SetArenaNameUnitFrame(frame, unit, textObject)
-    if BBF.isMidnight then
-        textObject:SetText(UnitName(unit))
-        return
-    end
     local unitID = GetArenaUnitName(unit)
     local specName = GetSpecName(unit)
     local nameText
@@ -1404,7 +1394,7 @@ local function SetArenaNameUnitFrame(frame, unit, textObject)
     -- Update the text object with the nameText if available
     if nameText then
         textObject:SetText(nameText)
-        if classColorTargetNames then
+        if classColorTargetNames or customColorTargetNames then
             ClassColorName(frame.bbfName, unit)
         end
     end
@@ -1442,7 +1432,7 @@ local function PlayerFrameNameChanges(frame)
         frame.bbfName:SetText(frame.name:GetText())
     end
 
-    if classColorTargetNames then
+    if classColorTargetNames or customColorTargetNames then
         ClassColorName(frame.bbfName, unit)
     end
     if classColorLevelText then
@@ -1497,7 +1487,7 @@ local function TargetFrameNameChanges(frame)
         else
             frame.bbfName:SetText(frame.name:GetText())
         end
-        if classColorTargetNames then
+        if classColorTargetNames or customColorTargetNames then
             ClassColorName(frame.bbfName, unit)
         end
     end
@@ -1534,7 +1524,7 @@ local function PetFrameNameChanges(frame)
         frame.bbfName:SetFont(frame.name:GetFont())
     end
     frame.bbfName:SetText(frame.name:GetText())
-    if classColorTargetNames then
+    if classColorTargetNames or customColorTargetNames then
         ClassColorName(frame.bbfName, unit)
     end
 end
@@ -1596,7 +1586,7 @@ local function FocusFrameNameChanges(frame)
         else
             frame.bbfName:SetText(frame.name:GetText())
         end
-        if classColorTargetNames then
+        if classColorTargetNames or customColorTargetNames then
             ClassColorName(frame.bbfName, unit)
         end
     end
@@ -1620,9 +1610,9 @@ local function TargetFrameToTNameChanges(frame)
     if not changeUnitFrameFont then
         frame.bbfName:SetFont(frame.name:GetFont())
     end
-    if targetAndFocusArenaNames and IsActiveBattlefieldArena() then
-        SetArenaNameUnitFrame(frame, unit, frame.bbfName)
-    else
+    -- if targetAndFocusArenaNames and IsActiveBattlefieldArena() then
+    --     SetArenaNameUnitFrame(frame, unit, frame.bbfName)
+    -- else
         if hideTargetToTName then
             frame.bbfName:SetText("")
             return
@@ -1649,10 +1639,10 @@ local function TargetFrameToTNameChanges(frame)
         else
             frame.bbfName:SetText(frame.name:GetText())
         end
-        if classColorTargetNames then
+        if classColorTargetNames or customColorTargetNames then
             ClassColorName(frame.bbfName, unit)
         end
-    end
+    --end
 end
 
 hooksecurefunc(TargetFrame.totFrame.Name, "SetText", function()
@@ -1666,9 +1656,9 @@ local function FocusFrameToTNameChanges(frame)
     if not changeUnitFrameFont then
         frame.bbfName:SetFont(frame.name:GetFont())
     end
-    if targetAndFocusArenaNames and IsActiveBattlefieldArena() then
-        SetArenaNameUnitFrame(frame, unit, frame.bbfName)
-    else
+    -- if targetAndFocusArenaNames and IsActiveBattlefieldArena() then
+    --     SetArenaNameUnitFrame(frame, unit, frame.bbfName)
+    -- else
         if hideFocusToTName then
             frame.bbfName:SetText("")
             return
@@ -1695,10 +1685,10 @@ local function FocusFrameToTNameChanges(frame)
         else
             frame.bbfName:SetText(frame.name:GetText())
         end
-        if classColorTargetNames then
+        if classColorTargetNames or customColorTargetNames then
             ClassColorName(frame.bbfName, unit)
         end
-    end
+    --end
 end
 
 hooksecurefunc(FocusFrame.totFrame.Name, "SetText", function()

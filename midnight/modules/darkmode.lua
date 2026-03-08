@@ -33,6 +33,7 @@ local function applySettings(frame, desaturate, colorValue, hook, hookShow)
     end
 end
 local pixelBorderAuras
+local removeDebuffColorBorder
 function BBF.UpdateUserDarkModeSettings()
     darkModeUi = BetterBlizzFramesDB.darkModeUi
     darkModeUiAura = BetterBlizzFramesDB.darkModeUiAura
@@ -41,6 +42,7 @@ function BBF.UpdateUserDarkModeSettings()
     pixelBorderAuras = (BetterBlizzFramesDB.noPortraitModes and BetterBlizzFramesDB.noPortraitPixelBorder) or BetterBlizzFramesDB.pixelBorderAuras
 
     auraFilteringOn = BetterBlizzFramesDB.playerAuraFiltering
+    removeDebuffColorBorder = BetterBlizzFramesDB.removeDebuffColorBorder
 end
 
 local hooked = {}
@@ -88,8 +90,14 @@ function BBF.DarkModeUnitframeBorders()
                         auraFrame.Border:SetPoint("TOPLEFT", auraFrame.Icon, "TOPLEFT", -1, 1)
                         auraFrame.Border:SetPoint("BOTTOMRIGHT", auraFrame.Icon, "BOTTOMRIGHT", 1, -1)
                         auraFrame.Border:SetTexCoord(0, 1, 0, 1)
+                        if removeDebuffColorBorder then
+                            auraFrame.Border:SetVertexColor(color, color, color)
+                        end
+                    elseif removeDebuffColorBorder then
+                        auraFrame.Border:SetAlpha(0)
+                    else
+                        auraFrame.bbfBorder:Hide()
                     end
-                    auraFrame.bbfBorder:Hide()
                 else
                     auraFrame.bbfBorder:Show()
                 end

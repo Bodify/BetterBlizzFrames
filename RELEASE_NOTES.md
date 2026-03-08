@@ -1,60 +1,14 @@
-# BetterBlizzFrames 1.9.0h
+# BetterBlizzFrames 1.9.1
+## All versions
+### New
+- New setting "Remove Debuff Color Border". This hides the different colors on debuffs for Target/Focus Frame. This is both a setting in the Buffs & Debuffs section and a sub-setting for DarkMode: Auras (right-click the auras checkbox).
+- New "Hide ActionBar Equipped Overlay" setting in Misc. Hides the green overlay on equipped items from default action bars.
 ## Midnight
 ### New
-- Add Saul profile (www.twitch.tv/saul). Thank you for sharing.
+- The "Custom Color Health/Mana" setting now has an extra setting to also color names on UnitFrames/RaidFrames. Before it used to do this by default if Class Color Names was enabled but now names will be kept class color unless this is checked and do the custom color instead.
+### Bugfix
+- Fix Arena Names. ToT frames are no longer possible to rename due to restrictions.
+- Fix "Hide ActionBar1" setting also hiding the Vehicle Exit Button unintentionally.
+## Classics
 ### Tweak
-- Remove Trimaz profile upon request after a change of hearts.
-
-# BetterBlizzFrames 1.9.0g
-## Midnight
-### Bugfix
-- Fix Classic setting for Player Castbar not showing Border.
-
-# BetterBlizzFrames 1.9.0f
-## Midnight
-### Tweak
-- Update profiles: Aeghis, Aswog, Pinkteddyp, Pmake, Snupy, Venruki & Wolf. Thank you all for sharing.
-### Bugfix
-- Fix Hide PetFrame setting causing a lua error in combat sometimes on PetFrame updates. Fix by ptarjan @GitHub. If PetFrame pops back up now please report it.
-- Add temporary workaround for a resto druid specific combat error when shifting form. Avoids error but combo points might be slightly out of position on this update until fix.
-
-# BetterBlizzFrames 1.9.0e
-## Prepatch/Midnight
-### Tweak
-- Update Venruki profile (www.twitch.tv/venruki). Ty for sharing.
-### Bugfix
-- Another round of minor misc bugfixes.
-
-# BetterBlizzFrames 1.9.0d
-## Prepatch/Midnight
-### Bugfix
-- Minor bugfixes (and fix typo in mmarkers profile string import)
-
-# BetterBlizzFrames 1.9.0c
-## Prepatch/Midnight
-### Tweak
-- No Portrait setting no longer force hides Group Indicator (This still has a separate setting to hide it). Instead it moves it on top of the name.
-- Update Mmarkers profile (www.twitch.tv/mmarkers). Thank you for sharing.
-
-# BetterBlizzFrames 1.9.0b
-## Prepatch/Midnight
-### New
-- Add Misc setting to disable castbar tweaks (for use with other castbar addons)
-- Add Pinkteddyp profile (www.twitch.tv/pinkteddyp). Thank you for sharing.
-### Bugfix
-- Fix hiding format numbers on dead targets
-- Fix some secret and nil errors.
-- Potential fix for PetFrame popping back up when meant to be hidden.
-
-# BetterBlizzFrames 1.9.0
-## Prepatch/Midnight
-### New
-- Add Aswog profile (www.twitch.tv/aswog). Thank you for sharing!
-### Tweak
-- Party Range Frame Alpha adjustment setting is now enabled by default in the addon. You'll have to turn it off if you dont want it.
-### Bugfix
-- Fix cast timers
-- fix hide realm name
-- Fix vehicle leave button being hidden when actionbar 1 was hidden
-- Fix custom code section not being clickable in its entire window without text being there
-- Fix misc things
+- Fix Player Castbar border flash size not being properly sized.

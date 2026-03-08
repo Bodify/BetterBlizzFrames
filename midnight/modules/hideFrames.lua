@@ -113,6 +113,12 @@ function BBF.HideFrames()
             HideElementFromActionBars(false, "TargetReticleAnimFrame")
         end
 
+        if db.hideActionBarEquippedOverlay then
+            HideElementFromActionBars(true, "Border")
+            changes.hideActionBarEquippedOverlay = true
+        elseif changes.hideActionBarEquippedOverlay then
+            HideElementFromActionBars(false, "Border")
+        end
         BBF.HideCompactUnitFrameBackgrounds()
 
         -- Hide target leader icon
@@ -240,6 +246,19 @@ function BBF.HideFrames()
 
         if BetterBlizzFramesDB.hideActionBar1 then
             if not MainActionBar.bbfHidden then
+                local function setActionBar1Visibility(visible)
+                    local mouse = visible
+                    local alpha = visible and 1 or 0
+                    MainActionBar:EnableMouse(mouse)
+                    MainActionBar:SetAlpha(alpha)
+                    for i = 1, 12 do
+                        local btn = _G["ActionButton"..i]
+                        if btn then
+                            btn:EnableMouse(mouse)
+                        end
+                    end
+                    hiddenBar1 = not visible
+                end
                 hooksecurefunc(EditModeManagerFrame, "EnterEditMode", function()
                     if InCombatLockdown() then
                         if hiddenBar1 then
@@ -247,8 +266,7 @@ function BBF.HideFrames()
                         end
                         return
                     end
-                    MainActionBar:SetParent(UIParent)
-                    hiddenBar1 = false
+                    setActionBar1Visibility(true)
                 end)
                 hooksecurefunc(EditModeManagerFrame, "ExitEditMode", function()
                     if InCombatLockdown() then
@@ -257,12 +275,10 @@ function BBF.HideFrames()
                         end
                         return
                     end
-                    MainActionBar:SetParent(BBF.hiddenFrame)
-                    hiddenBar1 = true
+                    setActionBar1Visibility(false)
                 end)
-                MainActionBar:SetParent(BBF.hiddenFrame)
+                setActionBar1Visibility(false)
                 MainActionBar.bbfHidden = true
-                hiddenBar1 = true
                 MainMenuBarVehicleLeaveButton:SetParent(UIParent)
             end
         end

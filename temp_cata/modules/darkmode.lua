@@ -3,6 +3,7 @@ local darkModeUiAura
 local darkModeColor = 1
 local auraFilteringOn
 local minimapChanged =false
+local removeDebuffColorBorder
 
 local hookedTotemBar
 local hookedAuras
@@ -59,6 +60,7 @@ function BBF.UpdateUserDarkModeSettings()
     hookedTotemBar = BetterBlizzFramesDB.hookedTotemBar
     darkModeColor = BetterBlizzFramesDB.darkModeColor
     auraFilteringOn = BetterBlizzFramesDB.playerAuraFiltering
+    removeDebuffColorBorder = BetterBlizzFramesDB.removeDebuffColorBorder
 end
 
 local hooked = {}
@@ -112,6 +114,51 @@ local function UpdateFrameAuras(self)
             end
         else
             break
+        end
+    end
+
+    if removeDebuffColorBorder then
+        local auraType = self:GetName().."Debuff"
+        for i = 1, maxAuras do
+            local auraName = auraType..i
+            local auraFrame = _G[auraName]
+
+            if auraFrame and auraFrame:IsShown() then
+                if not hooked[auraFrame] then
+                    local icon = _G[auraName.."Icon"]
+                    local border = _G[auraName.."Border"]
+                    if icon then
+                        auraFrame.Icon = icon
+                        auraFrame.Border = border
+                        hooked[auraFrame] = true
+
+                        if not auraFrame.border then
+                            local border = CreateFrame("Frame", nil, auraFrame, "BackdropTemplate")
+                            border:SetBackdrop({
+                                edgeFile = "Interface/Tooltips/UI-Tooltip-Border",
+                                tileEdge = true,
+                                edgeSize = 8.5,
+                            })
+
+                            icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+                            border:SetPoint("TOPLEFT", icon, "TOPLEFT", -1.5, 2)
+                            border:SetPoint("BOTTOMRIGHT", icon, "BOTTOMRIGHT", 1.5, -2)
+                            auraFrame.border = border
+
+                            -- Set the initial border color
+                            border:SetBackdropBorderColor(darkModeColor, darkModeColor, darkModeColor)
+                        end
+
+                        auraFrame.Border:Hide()
+                        auraFrame.border:Show()
+                    end
+                else
+                    auraFrame.Border:Hide()
+                    auraFrame.border:Show()
+                end
+            else
+                break
+            end
         end
     end
 end

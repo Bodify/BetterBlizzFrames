@@ -42,6 +42,31 @@ local function restoreElementParent(element)
     end
 end
 
+local function HideElementFromActionBars(hide, element)
+    for i = 1, 12 do
+        local buttons = {
+            _G["ActionButton" .. i],
+            _G["MultiBarBottomLeftButton" .. i],
+            _G["MultiBarBottomRightButton" .. i],
+            _G["MultiBarRightButton" .. i],
+            _G["MultiBarLeftButton" .. i],
+            _G["MultiBar5Button" .. i],
+            _G["MultiBar6Button" .. i],
+            _G["MultiBar7Button" .. i]
+        }
+
+        for _, button in ipairs(buttons) do
+            if button and button[element] then
+                if hide then
+                    hideElementByParent(button[element])
+                else
+                    restoreElementParent(button[element])
+                end
+            end
+        end
+    end
+end
+
 local OnSetVertexColorHookScript = function(r, g, b, a)
     return function(texture, red, green, blue, alpha, flag)
         if flag ~= "BBFHookSetVertexColor" then
@@ -712,6 +737,13 @@ function BBF.HideFrames()
                     focusToTDebuff:SetParent(hiddenFrame)
                 end
             end
+        end
+
+        if BetterBlizzFramesDB.hideActionBarEquippedOverlay then
+            HideElementFromActionBars(true, "Border")
+            changes.hideActionBarEquippedOverlay = true
+        elseif changes.hideActionBarEquippedOverlay then
+            HideElementFromActionBars(false, "Border")
         end
 
         -- action bar macro name hotkey hide

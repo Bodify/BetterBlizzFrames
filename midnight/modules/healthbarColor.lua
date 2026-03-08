@@ -126,7 +126,7 @@ local function getUnitColor(unit, useCustomColors, txt)
                     if useOneClassColor then
                         local customColor = singleClassColor or {1, 1, 1, 1}
                         color = {r = customColor[1], g = customColor[2], b = customColor[3], a = customColor[4] or 1}
-                    else
+                    elseif className then
                         local customColor = BetterBlizzFramesDB["classColor"..className]
                         if customColor then
                             color = {r = customColor[1], g = customColor[2], b = customColor[3], a = customColor[4] or 1}
@@ -150,7 +150,7 @@ local function getUnitColor(unit, useCustomColors, txt)
                 if useOneClassColor then
                     local customColor = singleClassColor or {1, 1, 1, 1}
                     color = {r = customColor[1], g = customColor[2], b = customColor[3], a = customColor[4] or 1}
-                else
+                elseif className then
                     local customColor = BetterBlizzFramesDB["classColor"..className]
                     if customColor then
                         color = {r = customColor[1], g = customColor[2], b = customColor[3], a = customColor[4] or 1}
