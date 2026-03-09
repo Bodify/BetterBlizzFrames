@@ -2222,7 +2222,8 @@ function BBF.MiniFrame(frame)
         frameTexture:SetParent(hiddenFrame)
         altTexture:SetParent(hiddenFrame)
         if AlternatePowerBar then
-            AlternatePowerBar:SetParent(hiddenFrame)
+            AlternatePowerBar:SetAlpha(0)
+            AlternatePowerBar:EnableMouse(false)
         end
         PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.StatusTexture:SetParent(hiddenFrame)
         flash:SetAlpha(0)
