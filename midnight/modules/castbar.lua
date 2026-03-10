@@ -39,9 +39,12 @@ local defaultCastbarColors = {
 }
 
 
-castbarColors.defaultStandard = CreateColor(1.0, 0.7, 0.0, 1)
-castbarColors.defaultChannel = CreateColor(0.0, 1.0, 0.0, 1)
-castbarColors.defaultUninterruptable = CreateColor(0.7, 0.7, 0.7, 1)
+castbarColors.defaultStandard = { 1.0, 0.7, 0.0 }
+castbarColors.defaultChannel = { 0.0, 1.0, 0.0 }
+castbarColors.defaultUninterruptable = { 0.7, 0.7, 0.7 }
+castbarColors.colorDefaultStandard = CreateColor(1.0, 0.7, 0.0, 1)
+castbarColors.colorDefaultChannel = CreateColor(0.0, 1.0, 0.0, 1)
+castbarColors.colorDefaultUninterruptable = CreateColor(0.7, 0.7, 0.7, 1)
 
 local function CreateBorder(frame, r, g, b, a)
     local border
@@ -532,8 +535,8 @@ function BBF.ClassicCastbar(castBar, unitType)
                     if notInterruptible ~= nil then
                         castTexture:SetVertexColorFromBoolean(
                             notInterruptible,
-                            castbarColors.defaultUninterruptable,
-                            castbarColors.defaultStandard
+                            castbarColors.colorDefaultUninterruptable,
+                            castbarColors.colorDefaultStandard
                         )
                     else
                         self:SetStatusBarColor(unpack(castbarColors.defaultStandard))
@@ -542,8 +545,8 @@ function BBF.ClassicCastbar(castBar, unitType)
                     if notInterruptible ~= nil then
                         castTexture:SetVertexColorFromBoolean(
                             notInterruptible,
-                            castbarColors.defaultUninterruptable,
-                            castbarColors.defaultChannel
+                            castbarColors.colorDefaultUninterruptable,
+                            castbarColors.colorDefaultChannel
                         )
                     else
                         self:SetStatusBarColor(unpack(castbarColors.defaultChannel))
@@ -1657,7 +1660,7 @@ local function CastbarOnEvent(self, event)
             if (self.casting or self.channeling) and notInterruptible ~= nil then
                 castBarTexture:SetVertexColorFromBoolean(
                     notInterruptible,
-                    colors.defaultUninterruptable,
+                    colors.colorDefaultUninterruptable,
                     colors.colorInterruptNotReady
                 )
             else
@@ -1712,7 +1715,7 @@ local function CastbarOnEvent(self, event)
                 if (self.casting or self.channeling) and notInterruptible ~= nil then
                     castBarTexture:SetVertexColorFromBoolean(
                         notInterruptible,
-                        colors.defaultUninterruptable,
+                        colors.colorDefaultUninterruptable,
                         colors.colorInterruptNotReady
                     )
                 else
@@ -1767,9 +1770,9 @@ function BBF.CastbarColorHooks()
     castbarColors.colorChannel = CreateColor(unpack(channelColor))
     castbarColors.colorUninterruptable = CreateColor(unpack(uninterruptableColor))
     castbarColors.colorInterruptNotReady = CreateColor(unpack(interruptNotReadyColor))
-    castbarColors.defaultStandard = CreateColor(1.0, 0.7, 0.0, 1)
-    castbarColors.defaultChannel = CreateColor(0.0, 1.0, 0.0, 1)
-    castbarColors.defaultUninterruptable = CreateColor(0.7, 0.7, 0.7, 1)
+    castbarColors.colorDefaultStandard = CreateColor(1.0, 0.7, 0.0, 1)
+    castbarColors.colorDefaultChannel = CreateColor(0.0, 1.0, 0.0, 1)
+    castbarColors.colorDefaultUninterruptable = CreateColor(0.7, 0.7, 0.7, 1)
 
     local playerCastBarTexture = PlayerCastingBarFrame:GetStatusBarTexture()
     if not BBF.RecolorCastbarHooked and not BetterBlizzFramesDB.disableCastbarTweaks then
