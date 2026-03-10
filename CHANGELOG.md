@@ -1,3 +1,11 @@
+# BetterBlizzFrames 1.9.1b
+## Midnight
+### Bugfix
+- Fix some castbar coloring issues with Classic Frames enabled. Interrupt color being one of them.
+- Fix castbar colors not updating immediately as interrupt becomes available again.
+- Fix Dispel Overlay settings to properly work on lazy loaded raidframes.
+- Fix PetFrame StatusBar Text showing despite setting to hide it being enabled if Format Numbers was enabled.
+
 # BetterBlizzFrames 1.9.1
 ## All versions
 ### New
