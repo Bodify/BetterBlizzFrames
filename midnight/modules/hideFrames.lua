@@ -419,6 +419,38 @@ function BBF.HideFrames()
                     end
                 end
             end
+            if not BBF.hidePartyDispelOverlayHooked then
+                local function ApplyDispelOverlaySettings(frame)
+                    if not frame.DispelOverlay then
+                        return
+                    end
+
+                    if not BetterBlizzFramesDB.hidePartyDispelOverlayKeepBorder and not BetterBlizzFramesDB.hidePartyDispelOverlayKeepGradient then
+                        frame.DispelOverlay:SetAlpha(0)
+                    else
+                        frame.DispelOverlay:SetAlpha(1)
+
+                        if not BetterBlizzFramesDB.hidePartyDispelOverlayKeepBorder then
+                            frame.DispelOverlay.Border:Hide()
+                        else
+                            frame.DispelOverlay.Border:Show()
+                        end
+
+                        if not BetterBlizzFramesDB.hidePartyDispelOverlayKeepGradient and frame.DispelOverlay.Gradient then
+                            frame.DispelOverlay.Gradient:Hide()
+                        else
+                            frame.DispelOverlay.Gradient:Show()
+                        end
+
+                        frame.DispelOverlay.Background:Hide()
+                    end
+                end
+
+                hooksecurefunc("CompactUnitFrame_SetUpFrame", function(frame, setupFunc)
+                    ApplyDispelOverlaySettings(frame)
+                end)
+                BBF.hidePartyDispelOverlayHooked = true
+            end
         elseif changes.hidePartyDispelOverlay then
             changes.hidePartyDispelOverlay = nil
             for i = 1, 8 do
