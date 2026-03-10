@@ -43,6 +43,12 @@ BBF.interruptTrackingIcon = CreateFrame("Frame")
 BBF.interruptTrackingIcon.cooldown = CreateFrame("Cooldown", nil, BBF.interruptTrackingIcon, "CooldownFrameTemplate")
 BBF.interruptTrackingIcon.cooldown:HookScript("OnCooldownDone", function()
     BBF.playerKickReady = true
+    if UnitExists("target") then
+        BBF.ColorCastbar(TargetFrameSpellBar)
+    end
+    if UnitExists("focus") then
+        BBF.ColorCastbar(FocusFrameSpellBar)
+    end
 end)
 BBF.playerKickReady = true
 
