@@ -61,13 +61,15 @@ function BBF.HookStatusBarText()
            AlternatePowerBar.TextString,
            AlternatePowerBar.RightText)
 
-    AddBar(PetFrame.healthbar,
-           PetFrame.healthbar.TextString,
-           PetFrame.healthbar.RightText)
+    if not BetterBlizzFramesDB.hidePetText then
+        AddBar(PetFrame.healthbar,
+            PetFrame.healthbar.TextString,
+            PetFrame.healthbar.RightText)
 
-    AddBar(PetFrame.manabar,
-           PetFrame.manabar.TextString,
-           PetFrame.manabar.RightText)
+        AddBar(PetFrame.manabar,
+            PetFrame.manabar.TextString,
+            PetFrame.manabar.RightText)
+    end
 
     -- Target and focus frames
     AddBar(tMain.HealthBarsContainer.HealthBar,
