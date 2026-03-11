@@ -134,7 +134,7 @@ function BBF.HideFrames()
         end
 
         if db.hidePetHitIndicator then
-            PetHitIndicator:SetAlpha(0)
+            PetHitIndicator:SetParent(hiddenFrame)
         end
 
         if BetterBlizzFramesDB.hideBossFrames then
@@ -355,8 +355,8 @@ function BBF.HideFrames()
             PlayerFrame.PlayerFrameContainer.FrameFlash:SetParent(hiddenFrame)
             TargetFrame.TargetFrameContainer.Flash:SetParent(hiddenFrame)
             FocusFrame.TargetFrameContainer.Flash:SetParent(hiddenFrame)
-            PetFrameFlash:SetAlpha(0)
-            PetAttackModeTexture:SetAlpha(0)
+            PetFrameFlash:SetParent(hiddenFrame)
+            PetAttackModeTexture:SetParent(hiddenFrame)
             for i = 1, 5 do
                 local frame = _G["Boss"..i.."TargetFrame"]
                 if frame then
@@ -368,8 +368,8 @@ function BBF.HideFrames()
             PlayerFrame.PlayerFrameContainer.FrameFlash:SetParent(PlayerFrame.PlayerFrameContainer)
             TargetFrame.TargetFrameContainer.Flash:SetParent(TargetFrame.TargetFrameContainer)
             FocusFrame.TargetFrameContainer.Flash:SetParent(FocusFrame.TargetFrameContainer)
-            PetFrameFlash:SetAlpha(1)
-            PetAttackModeTexture:SetAlpha(1)
+            PetFrameFlash:SetParent(PetFrame)
+            PetAttackModeTexture:SetParent(PetFrame)
             for i = 1, 5 do
                 local frame = _G["Boss"..i.."TargetFrame"]
                 if frame then
@@ -576,29 +576,25 @@ function BBF.HideFrames()
 
         if BetterBlizzFramesDB.hideHitIndicator then
             PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HitIndicator:SetAlpha(0)
-            PetHitIndicator:SetAlpha(0)
+            PetHitIndicator:SetParent(hiddenFrame)
         end
 
         if BetterBlizzFramesDB.hidePlayerPower then
             if WarlockPowerFrame and englishClass == "WARLOCK" then
                 if BetterBlizzFramesDB.hidePlayerPowerNoWarlock then
-                    WarlockPowerFrame:SetAlpha(1)
-                    WarlockPowerFrame:EnableMouse(true)
+                    if originalResourceParent then WarlockPowerFrame:SetParent(originalResourceParent) end
                 else
-                    WarlockPowerFrame:SetAlpha(0)
-                    WarlockPowerFrame:EnableMouse(false)
+                    if not originalResourceParent then originalResourceParent = WarlockPowerFrame:GetParent() end
+                    WarlockPowerFrame:SetParent(hiddenFrame)
                 end
-                originalResourceParent = true
             end
             if RogueComboPointBarFrame and englishClass == "ROGUE" then
                 if BetterBlizzFramesDB.hidePlayerPowerNoRogue then
-                    RogueComboPointBarFrame:SetAlpha(1)
-                    RogueComboPointBarFrame:EnableMouse(true)
+                    if originalResourceParent then RogueComboPointBarFrame:SetParent(originalResourceParent) end
                 else
-                    RogueComboPointBarFrame:SetAlpha(0)
-                    RogueComboPointBarFrame:EnableMouse(false)
+                    if not originalResourceParent then originalResourceParent = RogueComboPointBarFrame:GetParent() end
+                    RogueComboPointBarFrame:SetParent(hiddenFrame)
                 end
-                originalResourceParent = true
             end
             if DruidComboPointBarFrame and englishClass == "DRUID" then
                 if BetterBlizzFramesDB.hidePlayerPowerNoDruid and originalResourceParent then
@@ -610,33 +606,27 @@ function BBF.HideFrames()
             end
             if PaladinPowerBarFrame and englishClass == "PALADIN" then
                 if BetterBlizzFramesDB.hidePlayerPowerNoPaladin then
-                    PaladinPowerBarFrame:SetAlpha(1)
-                    PaladinPowerBarFrame:EnableMouse(true)
+                    if originalResourceParent then PaladinPowerBarFrame:SetParent(originalResourceParent) end
                 else
-                    PaladinPowerBarFrame:SetAlpha(0)
-                    PaladinPowerBarFrame:EnableMouse(false)
+                    if not originalResourceParent then originalResourceParent = PaladinPowerBarFrame:GetParent() end
+                    PaladinPowerBarFrame:SetParent(hiddenFrame)
                 end
-                originalResourceParent = true
             end
             if RuneFrame and englishClass == "DEATHKNIGHT" then
                 if BetterBlizzFramesDB.hidePlayerPowerNoDeathKnight then
-                    RuneFrame:SetAlpha(1)
-                    RuneFrame:EnableMouse(true)
+                    if originalResourceParent then RuneFrame:SetParent(originalResourceParent) end
                 else
-                    RuneFrame:SetAlpha(0)
-                    RuneFrame:EnableMouse(false)
+                    if not originalResourceParent then originalResourceParent = RuneFrame:GetParent() end
+                    RuneFrame:SetParent(hiddenFrame)
                 end
-                originalResourceParent = true
             end
             if EssencePlayerFrame and englishClass == "EVOKER" then
                 if BetterBlizzFramesDB.hidePlayerPowerNoEvoker then
-                    EssencePlayerFrame:SetAlpha(1)
-                    EssencePlayerFrame:EnableMouse(true)
+                    if originalResourceParent then EssencePlayerFrame:SetParent(originalResourceParent) end
                 else
-                    EssencePlayerFrame:SetAlpha(0)
-                    EssencePlayerFrame:EnableMouse(false)
+                    if not originalResourceParent then originalResourceParent = EssencePlayerFrame:GetParent() end
+                    EssencePlayerFrame:SetParent(hiddenFrame)
                 end
-                originalResourceParent = true
             end
             if MonkHarmonyBarFrame and englishClass == "MONK" then
                 if BetterBlizzFramesDB.hidePlayerPowerNoMonk and originalResourceParent then
@@ -656,12 +646,12 @@ function BBF.HideFrames()
             end
             changes.hidePlayerPower = true
         elseif originalResourceParent then
-            if WarlockPowerFrame and englishClass == "WARLOCK" then WarlockPowerFrame:SetAlpha(1); WarlockPowerFrame:EnableMouse(true) end
-            if RogueComboPointBarFrame and englishClass == "ROGUE" then RogueComboPointBarFrame:SetAlpha(1); RogueComboPointBarFrame:EnableMouse(true) end
+            if WarlockPowerFrame and englishClass == "WARLOCK" then WarlockPowerFrame:SetParent(originalResourceParent) end
+            if RogueComboPointBarFrame and englishClass == "ROGUE" then RogueComboPointBarFrame:SetParent(originalResourceParent) end
             if DruidComboPointBarFrame and englishClass == "DRUID" then setResourceFrameVisibility(DruidComboPointBarFrame, true) end
-            if PaladinPowerBarFrame and englishClass == "PALADIN" then PaladinPowerBarFrame:SetAlpha(1); PaladinPowerBarFrame:EnableMouse(true) end
-            if RuneFrame and englishClass == "DEATHKNIGHT" then RuneFrame:SetAlpha(1); RuneFrame:EnableMouse(true) end
-            if EssencePlayerFrame and englishClass == "EVOKER" then EssencePlayerFrame:SetAlpha(1); EssencePlayerFrame:EnableMouse(true) end
+            if PaladinPowerBarFrame and englishClass == "PALADIN" then PaladinPowerBarFrame:SetParent(originalResourceParent) end
+            if RuneFrame and englishClass == "DEATHKNIGHT" then RuneFrame:SetParent(originalResourceParent) end
+            if EssencePlayerFrame and englishClass == "EVOKER" then EssencePlayerFrame:SetParent(originalResourceParent) end
             if MonkHarmonyBarFrame and englishClass == "MONK" then setResourceFrameVisibility(MonkHarmonyBarFrame, true) end
             if MageArcaneChargesFrame and englishClass == "MAGE" then setResourceFrameVisibility(MageArcaneChargesFrame, true) end
             changes.hidePlayerPower = nil
