@@ -453,6 +453,24 @@ local spellList = {
     [27069]   = "Asleep",    -- Wyvern Sting
     [18647]   = "Incapacitated",    -- Banish
     [34097]   = "Disarmed",    -- Riposte 2 (TODO: not sure which ID is correct)
+
+    -- late additions needs verifying
+    [18499]   = "Stunned",       -- Bash
+    [20252]   = "Stunned",       -- Intercept Stun (Rank 1)
+    [25275]   = "Stunned",       -- Intercept Stun (Rank 5)
+    [11578]   = "Stunned",       -- Charge Stun
+    [42365]   = "Stunned",       -- Maim
+    [12540]   = "Gouged",        -- Gouge
+    [14310]   = "Frozen",        -- Freezing Trap Effect
+    [14311]   = "Frozen",        -- Freezing Trap Effect
+    [27025]   = "Frozen",        -- Freezing Trap Effect
+    [9485]    = "Shackled",      -- Shackle Undead
+    [10955]   = "Shackled",      -- Shackle Undead
+    [19675]   = "Rooted",        -- Feral Charge Effect
+    [24399]   = "Feared",        -- Panic
+    [16508]   = "Feared",        -- Intimidating Roar
+    [745]     = "Rooted",        -- Web
+    [15970]   = "Asleep",        -- Sleep
 }
 
 local hardCCSet = {
