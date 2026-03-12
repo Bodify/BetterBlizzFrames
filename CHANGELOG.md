@@ -1,3 +1,13 @@
+# BetterBlizzFrames 1.9.1c
+## Midnight
+### Tweak
+- "Normal Evoker Castbar" setting is now fixed again after changes from Blizzard allows it again.
+### Bugfix
+- Fix castbar color issue for Classic Frames setting when no color settings were enabled due to a mistake in last patch.
+## TBC
+### Tweak
+- Add few more auras to Loss of Control list.
+
 # BetterBlizzFrames 1.9.1b
 ## Midnight
 ### Bugfix
