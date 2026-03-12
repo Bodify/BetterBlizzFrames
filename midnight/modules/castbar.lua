@@ -257,16 +257,6 @@ local function UpdateSparkPosition(castBar)
     -- castBar.Spark:SetPoint("CENTER", castBar, "LEFT", newX, 0)
 end
 
-local function HideChargeTiers(castBar)
-    if not BBFMIDNIGHT then return end
-    castBar.ChargeTier1:Hide()
-    castBar.ChargeTier2:Hide()
-    castBar.ChargeTier3:Hide()
-    if castBar.ChargeTier4 then
-        castBar.ChargeTier4:Hide()
-    end
-end
-
 local function AdjustBorderSize(castBar)
     -- Only calculate scaling factors once based on initial castBar dimensions
     --if not castBar.borderAdjusted then
@@ -1108,12 +1098,11 @@ interruptSpellUpdate:SetScript("OnEvent", OnEvent)
 
 
 local function HideChargeTiers(castBar)
-    if not castBar.ChargeTier1 then return end
-    castBar.ChargeTier1:Hide()
-    castBar.ChargeTier2:Hide()
-    castBar.ChargeTier3:Hide()
-    if castBar.ChargeTier4 then
-        castBar.ChargeTier4:Hide()
+    for _, child in ipairs({castBar:GetChildren()}) do
+        if child.BasePip or (child.Normal and child.Disabled) then
+            child:SetAlpha(0)
+            castBar.empowerHidden = true
+        end
     end
 end
 
@@ -1134,8 +1123,7 @@ end
 
 
 function BBF.CastbarRecolorWidgets()
-    local classicFrames = C_AddOns.IsAddOnLoaded("ClassicFrames")
-    if (BetterBlizzFramesDB.castBarRecolorInterrupt or BetterBlizzFramesDB.recolorCastbars) then
+    if (BetterBlizzFramesDB.castBarRecolorInterrupt or BetterBlizzFramesDB.recolorCastbars or BetterBlizzFramesDB.classicFrames) then
         BBF.CastbarColorHooks()
     end
 end
@@ -1372,7 +1360,6 @@ hooksecurefunc(PlayerCastingBarFrame, "SetScale", PlayerCastingBarUpdateNextFram
 
 local evokerCastbarsHooked
 function BBF.HookCastbarsForEvoker()
-    if not BBFMIDNIGHT then return end
     if (not evokerCastbarsHooked and BetterBlizzFramesDB.normalCastbarForEmpoweredCasts) then
         local castBars = {}
 
@@ -1385,63 +1372,39 @@ function BBF.HookCastbarsForEvoker()
             table.insert(castBars, FocusFrameSpellBar)
         end
 
+        local empowerEvents = {
+            ["UNIT_SPELLCAST_EMPOWER_START"] = true,
+            ["UNIT_SPELLCAST_EMPOWER_UPDATE"] = true,
+            ["UNIT_SPELLCAST_EMPOWER_STOP"] = true,
+        }
+
         local function NormalEvokerCastbar(castBar)
             if castBar.empoweredFix then return end
 
-            castBar:HookScript("OnEvent", function(self)
-                if self:IsForbidden() then return end
-                if self.barType == "uninterruptable" then
-                    if self.ChargeTier1 then
-                        if self.isSArena then
-                            self.SetStatusBarTexture((sArenaMixin and (sArenaMixin.castTexture or "Interface\\RaidFrame\\Raid-Bar-Hp-Fill")) or "Interface\\RaidFrame\\Raid-Bar-Hp-Fill")
-                            if recolorCastbars then
-                                local c = castbarColors[self.barType] or castbarColors.standard
-                                local r, g, b = c[1], c[2], c[3]
+            if not castBar.empowerSpark then
+                castBar.empowerSpark = castBar:CreateTexture(nil, "OVERLAY")
+                castBar.empowerSpark:SetAtlas("UI-CastingBar-Pip")
+                castBar.empowerSpark:SetSize(6, 16)
+                castBar.empowerSpark:SetPoint("CENTER", castBar.Spark, "CENTER", 0, -4.5)
+            end
 
-                                self:SetStatusBarColor(r, g, b)
-                            else
-                                local c = defaultCastbarColors[self.barType] or defaultCastbarColors.standard
-                                local r, g, b = c[1], c[2], c[3]
-
-                                self:SetStatusBarColor(r, g, b)
-                            end
-                        else
-                            self:SetStatusBarTexture("UI-CastingBar-Uninterruptable")
-                        end
-                        HideChargeTiers(self)
+            castBar:HookScript("OnEvent", function(self, event)
+                if empowerEvents[event] then
+                    if not self.empowerHidden then
+                        HideChargeTiers(castBar)
                     end
-                elseif self.barType == "empowered" then
-                    if self.isSArena then
-                        self.SetStatusBarTexture((sArenaMixin and (sArenaMixin.castTexture or "Interface\\RaidFrame\\Raid-Bar-Hp-Fill")) or "Interface\\RaidFrame\\Raid-Bar-Hp-Fill")
-                        if recolorCastbars then
-                            local c = castbarColors[self.barType] or castbarColors.standard
-                            local r, g, b = c[1], c[2], c[3]
-                            self:SetStatusBarColor(r, g, b)
-                        else
-                            local c = defaultCastbarColors[self.barType] or defaultCastbarColors.standard
-                            local r, g, b = c[1], c[2], c[3]
-                            self:SetStatusBarColor(r, g, b)
-                        end
-                    else
-                        self:SetStatusBarTexture("ui-castingbar-filling-standard")
+                    if not self.textureChangedNeedsColor then
+                        self:SetStatusBarTexture("UI-CastingBar-Filling-Standard")
                     end
-                    HideChargeTiers(self)
-                end
-            end)
-
-            local sparkWidth = castBar.isSArena and 2 or 6
-            castBar:HookScript("OnUpdate", function(self)
-                if self:IsForbidden() then return end
-                if self.barType == "uninterruptable" then
-                    if self.ChargeTier1 then
-                        self.Spark:SetAtlas("UI-CastingBar-Pip")
-                        self.Spark:SetSize(sparkWidth,16)
-                        UpdateSparkPosition(castBar)
+                    self.Spark:Hide()
+                    self.empowerSparkShown = true
+                    self.empowerSpark:Show()
+                else
+                    if self.empowerSparkShown then
+                        self.empowerSpark:Hide()
+                        self.Spark:Show()
+                        self.empowerSparkShown = false
                     end
-                elseif self.barType == "empowered" then
-                    self.Spark:SetAtlas("UI-CastingBar-Pip")
-                    self.Spark:SetSize(sparkWidth,16)
-                    UpdateSparkPosition(castBar)
                 end
             end)
 
@@ -1526,12 +1489,20 @@ local function CastbarOnEvent(self, event)
 
     if event == "UNIT_SPELLCAST_INTERRUPTED" then
         self.lastEvent = event
-        castBarTexture:SetDesaturated(false)
-        self:SetStatusBarColor(1, 1, 1, 1)
+        if self.textureChangedNeedsColor then
+            self:SetStatusBarColor(1, 0, 0, 1)
+        else
+            castBarTexture:SetDesaturated(false)
+            self:SetStatusBarColor(1, 1, 1, 1)
+        end
         return
     elseif (event == "UNIT_SPELLCAST_STOP" or event == "UNIT_SPELLCAST_CHANNEL_STOP" or event == "UNIT_SPELLCAST_EMPOWER_STOP") and self.lastEvent == "UNIT_SPELLCAST_INTERRUPTED" then
-        castBarTexture:SetDesaturated(false)
-        self:SetStatusBarColor(1, 1, 1, 1)
+        if self.textureChangedNeedsColor then
+            self:SetStatusBarColor(1, 0, 0, 1)
+        else
+            castBarTexture:SetDesaturated(false)
+            self:SetStatusBarColor(1, 1, 1, 1)
+        end
         return
     end
 
@@ -1719,12 +1690,20 @@ function BBF.CastbarColorHooks()
 
                 if event == "UNIT_SPELLCAST_INTERRUPTED" then
                     self.lastEvent = event
-                    playerCastBarTexture:SetDesaturated(false)
-                    self:SetStatusBarColor(1, 1, 1, 1)
+                    if self.textureChangedNeedsColor then
+                        self:SetStatusBarColor(1, 0, 0, 1)
+                    else
+                        playerCastBarTexture:SetDesaturated(false)
+                        self:SetStatusBarColor(1, 1, 1, 1)
+                    end
                     return
                 elseif (event == "UNIT_SPELLCAST_STOP" or event == "UNIT_SPELLCAST_CHANNEL_STOP" or event == "UNIT_SPELLCAST_EMPOWER_STOP") and self.lastEvent == "UNIT_SPELLCAST_INTERRUPTED" then
-                    playerCastBarTexture:SetDesaturated(false)
-                    self:SetStatusBarColor(1, 1, 1, 1)
+                    if self.textureChangedNeedsColor then
+                        self:SetStatusBarColor(1, 0, 0, 1)
+                    else
+                        playerCastBarTexture:SetDesaturated(false)
+                        self:SetStatusBarColor(1, 1, 1, 1)
+                    end
                     return
                 end
 
