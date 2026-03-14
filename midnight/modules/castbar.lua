@@ -1386,6 +1386,7 @@ function BBF.HookCastbarsForEvoker()
                 castBar.empowerSpark:SetAtlas("UI-CastingBar-Pip")
                 castBar.empowerSpark:SetSize(6, 16)
                 castBar.empowerSpark:SetPoint("CENTER", castBar.Spark, "CENTER", 0, -4.5)
+                castBar.empowerSpark:Hide()
             end
 
             castBar:HookScript("OnEvent", function(self, event)
@@ -1630,9 +1631,25 @@ local function CastbarOnEvent(self, event)
                     self:SetStatusBarColor(unpack(colors.interruptNotReady or {0.7, 0.7, 0.7, 1}))
                 end
             elseif self.channeling then
-                self:SetStatusBarColor(0, 1, 0)
+                if notInterruptible ~= nil then
+                    castBarTexture:SetVertexColorFromBoolean(
+                        notInterruptible,
+                        colors.colorDefaultUninterruptable,
+                        colors.colorDefaultChannel
+                    )
+                else
+                    self:SetStatusBarColor(0, 1, 0)
+                end
             else
-                self:SetStatusBarColor(1, 0.7, 0)
+                if notInterruptible ~= nil then
+                    castBarTexture:SetVertexColorFromBoolean(
+                        notInterruptible,
+                        colors.colorDefaultUninterruptable,
+                        colors.colorDefaultStandard
+                    )
+                else
+                    self:SetStatusBarColor(1, 0.7, 0)
+                end
             end
         end
     end

@@ -3129,7 +3129,7 @@ local function guiProfiles()
     frame.streamerText:SetText(L["Profile_Streamers"])
 
     frame.infoText = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-    frame.infoText:SetPoint("BOTTOM", frame, "BOTTOM", 2, 160)
+    frame.infoText:SetPoint("BOTTOM", frame, "BOTTOM", 2, 140)
     frame.infoText:SetText(L["Profile_Info_Message"])
     frame.infoText:SetWidth(100)
 

@@ -5352,6 +5352,7 @@ PlayerEnteringWorld:RegisterEvent("PLAYER_ENTERING_WORLD")
 
 function BBF.CreateBigDebuffs()
     if C_AddOns.IsAddOnLoaded("MiniCC") or BetterBlizzFramesDB.noPortraitModes then return end
+
     local function CreateDebuffFrame(unitFrame, portraitMask)
         local frame = CreateFrame("Frame", nil, unitFrame)
         frame:SetSize(36, 36)
@@ -5390,131 +5391,145 @@ function BBF.CreateBigDebuffs()
         frame:SetSize(portrait:GetSize())
     end
 
-    if PlayerFrame then
-        local playerDebuffFrame = CreateDebuffFrame(PlayerFrame, PlayerFrame.PlayerFrameContainer.PlayerPortraitMask)
-        AttachToPortrait(playerDebuffFrame, PlayerFrame.PlayerFrameContainer.PlayerPortrait)
-        PlayerFrame.bbfBigDebuff = playerDebuffFrame
+    -- Huge thanks to Verz for helping with this with his work on MiniCC
+    -- Portions of the code below are adapted and/or copied from his work in MiniCC with his permission.
 
-        if LossOfControlFrame and LossOfControlFrame.Icon then
-            hooksecurefunc(LossOfControlFrame.Icon, "SetTexture", function(_, tex)
-                if tex and tex ~= "" then
-                    playerDebuffFrame.icon:SetTexture(tex)
-                    playerDebuffFrame:Show()
-                else
-                    playerDebuffFrame.icon:SetTexture(nil)
-                    playerDebuffFrame:Hide()
-                end
-            end)
-
-            hooksecurefunc(LossOfControlFrame.Cooldown, "SetCooldown", function(_, start, duration)
-                playerDebuffFrame.cooldown:SetCooldown(start, duration)
-            end)
-
-            hooksecurefunc(LossOfControlFrame, "Hide", function()
-                playerDebuffFrame.icon:SetTexture(nil)
-                playerDebuffFrame:Hide()
-            end)
+    local function AurasChanged(updateInfo)
+        if not updateInfo then return true end
+        if updateInfo.isFullUpdate then return true end
+        if (updateInfo.addedAuras and #updateInfo.addedAuras > 0)
+            or (updateInfo.updatedAuras and #updateInfo.updatedAuras > 0)
+            or (updateInfo.removedAuraInstanceIDs and #updateInfo.removedAuraInstanceIDs > 0)
+        then
+            return true
         end
+        return false
     end
 
-    TargetFrame.bbfArenaDebuffs = {}
-    FocusFrame.bbfArenaDebuffs = {}
+    local function IterateAuras(filter, validateDefensive, unit)
+        local spellID, start, duration, icon, applications
 
-    for i = 1, 3 do
-        local targetFrame = CreateDebuffFrame(TargetFrame, TargetFrame.TargetFrameContainer.PortraitMask)
-        AttachToPortrait(targetFrame, TargetFrame.TargetFrameContainer.Portrait)
-        targetFrame.arenaIndex = i
-        TargetFrame.bbfArenaDebuffs[i] = targetFrame
+        for i = 1, 40 do
+            local auraData = C_UnitAuras.GetAuraDataByIndex(unit, i, filter)
+            if not auraData then break end
 
-        local focusFrame = CreateDebuffFrame(FocusFrame, FocusFrame.TargetFrameContainer.PortraitMask)
-        AttachToPortrait(focusFrame, FocusFrame.TargetFrameContainer.Portrait)
-        focusFrame.arenaIndex = i
-        FocusFrame.bbfArenaDebuffs[i] = focusFrame
-    end
+            local durationInfo = C_UnitAuras.GetAuraDuration(unit, auraData.auraInstanceID)
+            local auraStart = durationInfo and durationInfo:GetStartTime()
+            local auraDuration = durationInfo and durationInfo:GetTotalDuration()
 
-    -- Hook arena debuffs to update corresponding frames
-    for i = 1, 3 do
-        local blizzArenaFrame = _G["CompactArenaFrameMember" .. i]
-        if not blizzArenaFrame then break end
-        local debuffFrame = blizzArenaFrame.DebuffFrame
+            if auraStart and auraDuration then
+                local garbageAuraData = false
 
-        if debuffFrame and debuffFrame.Icon and debuffFrame.Cooldown then
-            -- Hook texture changes
-            hooksecurefunc(debuffFrame.Icon, "SetTexture", function(_, tex)
-                local targetDebuffFrame = TargetFrame.bbfArenaDebuffs[i]
-                if targetDebuffFrame then
-                    if tex == "INTERFACE\\ICONS\\INV_MISC_QUESTIONMARK.BLP" then
-                        targetDebuffFrame.icon:SetTexture(nil)
-                    else
-                        targetDebuffFrame.icon:SetTexture(tex)
+                if validateDefensive then -- units out of range produce garbage data, so double check
+                    local isDefensive = C_UnitAuras.AuraIsBigDefensive(auraData.spellId)
+                    if not (issecretvalue(isDefensive) or isDefensive) then
+                        garbageAuraData = true
                     end
                 end
-                local focusDebuffFrame = FocusFrame.bbfArenaDebuffs[i]
-                if focusDebuffFrame then
-                    if tex == "INTERFACE\\ICONS\\INV_MISC_QUESTIONMARK.BLP" then
-                        focusDebuffFrame.icon:SetTexture(nil)
-                    else
-                        focusDebuffFrame.icon:SetTexture(tex)
-                    end
-                end
-            end)
 
-            -- Hook cooldown changes
-            hooksecurefunc(debuffFrame.Cooldown, "SetCooldown", function(_, start, duration)
-                if TargetFrame.bbfArenaDebuffs[i] then
-                    TargetFrame.bbfArenaDebuffs[i].cooldown:SetCooldown(start, duration)
-                end
-                if FocusFrame.bbfArenaDebuffs[i] then
-                    FocusFrame.bbfArenaDebuffs[i].cooldown:SetCooldown(start, duration)
-                end
-            end)
-        end
-    end
-
-    local function GetArenaIndexByUnit(unit)
-        for i = 1, 3 do
-            if UnitIsUnit(unit, "arena" .. i) then
-                return i
-            end
-        end
-        return nil
-    end
-
-    local targetArenaIndex
-    local focusArenaIndex
-
-    local function UpdateDebuffVisibility()
-        for i = 1, 3 do
-            local targetFrame = TargetFrame.bbfArenaDebuffs[i]
-            if targetFrame then
-                if targetArenaIndex == i then
-                    targetFrame:Show()
-                else
-                    targetFrame:Hide()
-                end
-            end
-
-            local focusFrame = FocusFrame.bbfArenaDebuffs[i]
-            if focusFrame then
-                if focusArenaIndex == i then
-                    focusFrame:Show()
-                else
-                    focusFrame:Hide()
+                if not garbageAuraData then
+                    spellID = auraData.spellId
+                    start = auraStart
+                    duration = auraDuration
+                    icon = auraData.icon
+                    applications = auraData.applications
                 end
             end
         end
+
+        return spellID, start, duration, icon, applications
     end
+
+    local function FindAura(unit, debuffFrame, updateInfo)
+        if updateInfo and not AurasChanged(updateInfo) then return end
+
+        local spellID, startTime, duration, texture, applications
+
+        -- Crowd Control
+        spellID, startTime, duration, texture, applications = IterateAuras("HARMFUL|CROWD_CONTROL", false, unit)
+
+        -- Big Defensives
+        if not spellID then
+            spellID, startTime, duration, texture, applications = IterateAuras("HELPFUL|BIG_DEFENSIVE", true, unit)
+        end
+
+        -- External Defensives
+        if not spellID then
+            spellID, startTime, duration, texture, applications = IterateAuras("HELPFUL|EXTERNAL_DEFENSIVE", false, unit)
+        end
+
+        -- Important buffs
+        if not spellID then
+            spellID, startTime, duration, texture, applications = IterateAuras("HELPFUL|IMPORTANT", false, unit)
+        end
+
+        if spellID then
+            debuffFrame.icon:SetTexture(texture)
+            debuffFrame.cooldown:SetCooldown(startTime, duration)
+            debuffFrame:Show()
+        else
+            debuffFrame.icon:SetTexture(nil)
+            debuffFrame.cooldown:Clear()
+            debuffFrame:Hide()
+        end
+    end
+
+    -- Player
+    local playerDebuffFrame = CreateDebuffFrame(PlayerFrame, PlayerFrame.PlayerFrameContainer.PlayerPortraitMask)
+    AttachToPortrait(playerDebuffFrame, PlayerFrame.PlayerFrameContainer.PlayerPortrait)
+    PlayerFrame.bbfBigDebuff = playerDebuffFrame
+
+    -- Target
+    local targetDebuffFrame = CreateDebuffFrame(TargetFrame, TargetFrame.TargetFrameContainer.PortraitMask)
+    AttachToPortrait(targetDebuffFrame, TargetFrame.TargetFrameContainer.Portrait)
+    TargetFrame.bbfBigDebuff = targetDebuffFrame
+
+    -- Focus
+    local focusDebuffFrame = CreateDebuffFrame(FocusFrame, FocusFrame.TargetFrameContainer.PortraitMask)
+    AttachToPortrait(focusDebuffFrame, FocusFrame.TargetFrameContainer.Portrait)
+    FocusFrame.bbfBigDebuff = focusDebuffFrame
+
+    -- Pet
+    local petDebuffFrame = CreateDebuffFrame(PetFrame, PetFrame.PortraitMask)
+    AttachToPortrait(petDebuffFrame, PetPortrait)
+    PetFrame.bbfBigDebuff = petDebuffFrame
+
+    local unitToFrame = {
+        player = PlayerFrame,
+        target = TargetFrame,
+        focus = FocusFrame,
+        pet = PetFrame,
+    }
 
     local updateFrame = CreateFrame("Frame")
+    updateFrame:RegisterUnitEvent("UNIT_AURA", "player", "target", "focus", "pet")
     updateFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
     updateFrame:RegisterEvent("PLAYER_FOCUS_CHANGED")
-    updateFrame:SetScript("OnEvent", function(_, event)
-        if event == "PLAYER_TARGET_CHANGED" then
-            targetArenaIndex = GetArenaIndexByUnit("target")
+    updateFrame:RegisterEvent("UNIT_PET")
+    updateFrame:SetScript("OnEvent", function(_, event, unit, updateInfo)
+        if event == "UNIT_AURA" then
+            local frame = unitToFrame[unit]
+            if frame and frame.bbfBigDebuff then
+                FindAura(unit, frame.bbfBigDebuff, updateInfo)
+            end
+        elseif event == "PLAYER_TARGET_CHANGED" then
+            if UnitExists("target") then
+                FindAura("target", TargetFrame.bbfBigDebuff)
+            else
+                TargetFrame.bbfBigDebuff:Hide()
+            end
         elseif event == "PLAYER_FOCUS_CHANGED" then
-            focusArenaIndex = GetArenaIndexByUnit("focus")
+            if UnitExists("focus") then
+                FindAura("focus", FocusFrame.bbfBigDebuff)
+            else
+                FocusFrame.bbfBigDebuff:Hide()
+            end
+        elseif event == "UNIT_PET" then
+            if UnitExists("pet") then
+                FindAura("pet", PetFrame.bbfBigDebuff)
+            else
+                PetFrame.bbfBigDebuff:Hide()
+            end
         end
-
-        UpdateDebuffVisibility()
     end)
 end

@@ -65,49 +65,58 @@ local function GetRPNameColor(unit)
     end
 end
 
-local npcColorCache = {}
 local function GetBBPNameplateColor(unit)
-    if BBF.isMidnight then return end
-    local guid = UnitGUID(unit)
-    if not guid then return end
+    if not BetterBlizzPlatesDB then return end
+    if not UnitIsEnemy(unit, "player") then return end
 
-    local npcID = select(6, strsplit("-", guid))
-    local npcName = UnitName(unit)
-    local lowerCaseNpcName = npcName and strlower(npcName)
-
-    -- First check cache by npcID
-    if npcID and npcColorCache[npcID] ~= nil then
-        return npcColorCache[npcID]
+    local db = BetterBlizzPlatesDB
+    if not db.colorNPCEverywhere and not BBP.isInPvE then
+        return
     end
 
-    -- Fallback to cache by name
-    if lowerCaseNpcName and npcColorCache[lowerCaseNpcName] ~= nil then
-        return npcColorCache[lowerCaseNpcName]
-    end
+    local lvl = UnitEffectiveLevel(unit)
+    local playerLvl = UnitLevel("player")
+    local classification = UnitClassification(unit)
+    local npcColor
 
-    local colorNpcList = BetterBlizzPlatesDB.colorNpcList
-    local npcHealthbarColor = nil
-
-    for _, npc in ipairs(colorNpcList) do
-        if npc.id == tonumber(npcID) or (npc.name and strlower(npc.name) == lowerCaseNpcName) then
-            if npc.entryColors then
-                npcHealthbarColor = npc.entryColors.text
+    if classification == "elite" then
+        if lvl == playerLvl then
+            local class = UnitClassBase(unit)
+            if class == "PALADIN" then
+                npcColor = db.npcColorCaster
             else
-                npc.entryColors = {}
+                npcColor = db.npcColorMelee
             end
-            break
+        elseif lvl == (playerLvl + 1) then
+            npcColor = db.npcColorMiniboss
+        elseif lvl >= (playerLvl + 2) or lvl == -1 then
+            npcColor = db.npcColorBoss
+        else
+            if (UnitIsBossMob and UnitIsBossMob(unit)) or (UnitIsQuestBoss and UnitIsQuestBoss(unit)) then
+                npcColor = db.npcColorBoss
+            else
+                local class = UnitClassBase(unit)
+                if class == "PALADIN" then
+                    npcColor = db.npcColorCaster
+                else
+                    return
+                end
+            end
         end
+    elseif classification == "trivial" then
+        npcColor = db.npcColorTrivial
+    elseif classification == "minus" then
+        npcColor = db.npcColorMinus
+    elseif classification == "rareelite" or classification == "rare" then
+        npcColor = db.npcColorRareElite
+    elseif classification == "worldboss" then
+        npcColor = db.npcColorBoss
+    else
+        return
     end
 
-    -- Cache both ID and name for future use
-    if npcID then
-        npcColorCache[npcID] = npcHealthbarColor
-    end
-    if lowerCaseNpcName then
-        npcColorCache[lowerCaseNpcName] = npcHealthbarColor
-    end
-
-    return npcHealthbarColor
+    if not npcColor then return end
+    return {r = npcColor[1], g = npcColor[2], b = npcColor[3]}
 end
 
 local function getUnitColor(unit, useCustomColors, txt)
