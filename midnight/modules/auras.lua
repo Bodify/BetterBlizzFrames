@@ -81,6 +81,7 @@ local cachedFocusCastBarXOffset = 0
 local cachedTargetCastBarScaleAdjustment = 0
 local cachedFocusCastBarScaleAdjustment = 0
 local cachedDynamicTargetCastBarYPos = 0
+local cachedDynamicFocusCastBarYPos = 0
 local auraCdTextSize = 0.55
 local showAuraCdText
 local auraStackSize = 1
@@ -126,6 +127,7 @@ local function UpdateMore()
     cachedTargetCastBarScaleAdjustment = 100 / targetCastBarScale
     cachedFocusCastBarScaleAdjustment = 100 / focusCastBarScale
     cachedDynamicTargetCastBarYPos = targetCastBarYPos + (targetAndFocusAuraOffsetY * 2)
+    cachedDynamicFocusCastBarYPos = focusCastBarYPos + (targetAndFocusAuraOffsetY * 2)
 end
 
 function BBF.UpdateUserAuraSettings()
@@ -188,7 +190,7 @@ local function adjustCastbar(self, frame)
     meta.ClearAllPoints(self)
     if frame == TargetFrameSpellBar then
         local buffsOnTop = parent.buffsOnTop
-        local yOffset = 14 + 5
+        local yOffset = 19
         if targetStaticCastbar then
             meta.SetPoint(self, "TOPLEFT", parent, "BOTTOMLEFT", cachedTargetCastBarXOffset, cachedTargetStaticCastBarYOffset);
         elseif targetDetachCastbar then
@@ -213,7 +215,7 @@ local function adjustCastbar(self, frame)
         end
     elseif frame == FocusFrameSpellBar then
         local buffsOnTop = parent.buffsOnTop
-        local yOffset = 14
+        local yOffset = 19
         if focusStaticCastbar then
             meta.SetPoint(self, "TOPLEFT", parent, "BOTTOMLEFT", cachedFocusCastBarXOffset, cachedFocusStaticCastBarYOffset);
         elseif focusDetachCastbar then
@@ -230,7 +232,11 @@ local function adjustCastbar(self, frame)
                 yOffset = min(minOffset, yOffset)
                 yOffset = yOffset + focusToTAdjustmentOffsetY
             end
-            meta.SetPoint(self, "TOPLEFT", parent, "BOTTOMLEFT", cachedFocusCastBarXOffset, focusCastBarYPos + yOffset);
+            if buffsOnTop then
+                meta.SetPoint(self, "TOPLEFT", parent, "BOTTOMLEFT", cachedFocusCastBarXOffset, focusCastBarYPos + yOffset);
+            else
+                meta.SetPoint(self, "TOPLEFT", parent, "BOTTOMLEFT", cachedFocusCastBarXOffset, cachedDynamicFocusCastBarYPos + yOffset);
+            end
         end
     end
 end
