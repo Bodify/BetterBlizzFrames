@@ -2222,9 +2222,9 @@ function BBF.MiniFrame(frame)
         manaBar:SetAlpha(0)
         frameTexture:SetParent(hiddenFrame)
         altTexture:SetParent(hiddenFrame)
-        if AlternatePowerBar then
-            AlternatePowerBar:SetParent(hiddenFrame)
-        end
+        -- if AlternatePowerBar then
+        --     AlternatePowerBar:SetParent(hiddenFrame) -- avoid doing on delay in this func due to SetParent call potentially being done while in combat
+        -- end
         PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.StatusTexture:SetParent(hiddenFrame)
         flash:SetAlpha(0)
         PlayerFrame.PlayerFrameContainer.PlayerPortraitMask:SetAtlas("CircleMask")
@@ -5203,6 +5203,12 @@ First:SetScript("OnEvent", function(_, event, addonName)
         BBF.ClassColorReputationCaller()
 
         BBF.MoveableFPSCounter(false, BetterBlizzFramesDB.fpsCounterFontOutline)
+
+        if BetterBlizzFramesDB.useMiniPlayerFrame then
+            if AlternatePowerBar then
+                AlternatePowerBar:SetParent(hiddenFrame)
+            end
+        end
 
         C_Timer.After(1, function()
             BBF.CreateBigDebuffs()
