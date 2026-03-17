@@ -49,16 +49,17 @@ local hooked = {}
 
 local function ApplyBorder(auraFrame, r, g, b)
     if not auraFrame.bbfBorder then
-        local border = auraFrame:CreateTexture(nil, "OVERLAY")
+        local border = auraFrame:CreateTexture(nil, "OVERLAY", nil, 7)
+        local icon = auraFrame.Icon or auraFrame.icon
         if pixelBorderAuras then
             border:SetAtlas("communities-create-avatar-border-hover")
             border:SetDesaturated(true)
-            border:SetPoint("TOPLEFT", auraFrame.Icon, "TOPLEFT", -0.5, 0.5)
-            border:SetPoint("BOTTOMRIGHT", auraFrame.Icon, "BOTTOMRIGHT", 0.5, -0.5)
+            border:SetPoint("TOPLEFT", icon, "TOPLEFT", -0.5, 0.5)
+            border:SetPoint("BOTTOMRIGHT", icon, "BOTTOMRIGHT", 0.5, -0.5)
         else
             border:SetAtlas("Adventures-Spell-Border")
-            border:SetPoint("TOPLEFT", auraFrame.Icon, "TOPLEFT", -2, 2)
-            border:SetPoint("BOTTOMRIGHT", auraFrame.Icon, "BOTTOMRIGHT", 2, -2)
+            border:SetPoint("TOPLEFT", icon, "TOPLEFT", -2, 2)
+            border:SetPoint("BOTTOMRIGHT", icon, "BOTTOMRIGHT", 2, -2)
         end
         border:SetVertexColor(r, g, b)
         auraFrame.bbfBorder = border
@@ -67,12 +68,64 @@ local function ApplyBorder(auraFrame, r, g, b)
     end
 end
 
+local function StylePartyBuffs(frame, colorValue)
+    if BetterBlizzFramesDB.enableMasque and C_AddOns.IsAddOnLoaded("Masque") then return end
+    if (BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeUiAura) then
+        if not BBF.auraBorders[frame] then
+            local border = CreateFrame("Frame", nil, frame, "BackdropTemplate")
+            border:SetBackdrop({
+                edgeFile = "Interface/Tooltips/UI-Tooltip-Border",
+                tileEdge = true,
+                edgeSize = 9,
+            })
+
+            local icon = frame.icon or frame.Icon
+            if not icon then return end
+            icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+
+            border:SetPoint("TOPLEFT", icon, "TOPLEFT", -1.5, 1.5)
+            border:SetPoint("BOTTOMRIGHT", icon, "BOTTOMRIGHT", 1.5, -1.5)
+            border:SetBackdropBorderColor(colorValue, colorValue, colorValue)
+            -- border:SetIgnoreParentAlpha(true)
+            -- border:SetAlpha(1)
+
+            BBF.auraBorders[frame] = border
+        else
+            local border = BBF.auraBorders[frame]
+            if border then
+                border:SetBackdropBorderColor(colorValue, colorValue, colorValue)
+            end
+        end
+    else
+        if BBF.auraBorders[frame] then
+            BBF.auraBorders[frame]:Hide()
+            BBF.auraBorders[frame]:SetParent(nil)
+            BBF.auraBorders[frame] = nil
+
+            local icon = frame.icon
+            if icon then
+                icon:SetTexCoord(0, 1, 0, 1)
+            end
+        end
+    end
+end
+
 
 function BBF.DarkModeUnitframeBorders()
     if not (BetterBlizzFramesDB.darkModeUiAura and BetterBlizzFramesDB.darkModeUi) and not (BetterBlizzFramesDB.noPortraitModes and BetterBlizzFramesDB.noPortraitPixelBorder) and not BetterBlizzFramesDB.pixelBorderAuras then return end
-    if hookedAuras then return end
 
     local color = (BetterBlizzFramesDB.noPortraitModes and BetterBlizzFramesDB.noPortraitPixelBorder and 0) or darkModeColor
+
+    for i = 1, 5 do
+        for j = 1, 6 do
+            local auraFrame = _G["CompactPartyFrameMember" .. i .. "Buff" .. j]
+            if auraFrame then
+                StylePartyBuffs(auraFrame, color)
+            end
+        end
+    end
+
+    if hookedAuras then return end
 
     local function styleAuras(self)
         for auraFrame in self.auraPools:EnumerateActive() do

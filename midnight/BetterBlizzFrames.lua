@@ -350,6 +350,7 @@ local defaultSettings = {
     partyFrameRangeAlpha = 0.55,
     partyFrameRangeAlphaSolidBackground = true,
     changePartyFrameRangeAlpha = true,
+    auraCdTextOnlyMine = true,
 }
 BBF.defaultSettings = defaultSettings
 

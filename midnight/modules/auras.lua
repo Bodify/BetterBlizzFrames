@@ -84,6 +84,7 @@ local cachedDynamicTargetCastBarYPos = 0
 local cachedDynamicFocusCastBarYPos = 0
 local auraCdTextSize = 0.55
 local showAuraCdText
+local auraCdTextOnlyMine
 local auraStackSize = 1
 
 local hideTargetBuffs
@@ -106,6 +107,7 @@ local function UpdateMore()
     hideFocusDebuffs = BetterBlizzFramesDB.hideFocusDebuffs
     auraCdTextSize = BetterBlizzFramesDB.auraCdTextSize
     showAuraCdText = BetterBlizzFramesDB.showAuraCdText
+    auraCdTextOnlyMine = BetterBlizzFramesDB.auraCdTextOnlyMine
     auraStackSize = BetterBlizzFramesDB.auraStackSize
     hideUnitframeAuraTooltips = BetterBlizzFramesDB.hideUnitframeAuraTooltips
     hidePlayerAuraTooltips = BetterBlizzFramesDB.hidePlayerAuraTooltips
@@ -361,15 +363,33 @@ local function PlaceAuraGroup(self, list, forceNewRowAtStart, rowWidths, rowHeig
 
         aura:SetScale(auraScale)
         aura:SetAlpha(1)
-
-        if showAuraCdText then
-            aura.Cooldown:SetHideCountdownNumbers(false)
+        local isLargeAura
+        if showAuraCdText and auraCdTextOnlyMine then
+            if aura.bbfAuraInstanceID ~= aura.auraInstanceID then
+                aura.bbfIsLargeAura = aura:GetWidth() > 20
+                aura.bbfAuraInstanceID = aura.auraInstanceID
+            end
+            isLargeAura = aura.bbfIsLargeAura
+            if isLargeAura then
+                aura.Cooldown:SetHideCountdownNumbers(false)
+            else
+                aura.Cooldown:SetHideCountdownNumbers(true)
+            end
             local cdText = aura.Cooldown and aura.Cooldown:GetRegions()
             if cdText then
                 cdText:SetScale(auraCdTextSize)
             end
+        else
+            isLargeAura = aura:GetWidth() > 20
+            if showAuraCdText then
+                aura.Cooldown:SetHideCountdownNumbers(false)
+                local cdText = aura.Cooldown and aura.Cooldown:GetRegions()
+                if cdText then
+                    cdText:SetScale(auraCdTextSize)
+                end
+            end
         end
-        local size = aura:GetWidth() > 20 and 21 or cachedSmallAuraSize
+        local size = isLargeAura and 21 or cachedSmallAuraSize
         aura:SetSize(size, size)
         if hideUnitframeAuraTooltips then
             aura:EnableMouse(false)

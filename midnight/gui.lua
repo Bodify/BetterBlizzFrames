@@ -4111,7 +4111,7 @@ local function guiGeneralTab()
     CreateTooltip(filterMiscInfo, L["Tooltip_Filter_Misc_Info"])
 
     local arenaNamesText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    arenaNamesText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 460, -98)
+    arenaNamesText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 460, -108)
     arenaNamesText:SetText(L["Arena_Names"])
     arenaNamesText:SetFont(fontLarge, 16)
     arenaNamesText:SetTextColor(1,1,1)
@@ -5463,7 +5463,9 @@ local function guiGeneralTab()
         end
     end)
 
-
+    local enableBigDebuffs = CreateCheckbox("enableBigDebuffs", L["Enable_Big_Debuffs"], BetterBlizzFrames, nil, BBF.EnableBigDebuffs)
+    enableBigDebuffs:SetPoint("TOPLEFT", queueTimer, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(enableBigDebuffs, L["Enable_Big_Debuffs"], L["Tooltip_Big_Debuffs_Desc"], nil, "ANCHOR_LEFT")
 
     local btnGap = -2
     local lastCoreButton = profilesFrame.coreText
@@ -7792,11 +7794,18 @@ local function guiFrameAuras()
     CreateTooltip(auraCdTextSize, L["Tooltip_Aura_CD_Text_Size"])
 
     showAuraCdText:SetPoint("LEFT", auraCdTextSize, "RIGHT", 3, 2)
+
+    local auraCdTextOnlyMine = CreateCheckbox("auraCdTextOnlyMine", L["Only_Mine"], showAuraCdText)
+    auraCdTextOnlyMine:SetPoint("LEFT", showAuraCdText.text, "RIGHT", 3, 0)
+    CreateTooltipTwo(auraCdTextOnlyMine, L["Aura_CD_Text_Only_Mine"], L["Tooltip_Aura_CD_Text_Only_Mine"])
+
     showAuraCdText:HookScript("OnClick", function(self)
         if self:GetChecked() then
             EnableElement(auraCdTextSize)
+            EnableElement(auraCdTextOnlyMine)
         else
             DisableElement(auraCdTextSize)
+            DisableElement(auraCdTextOnlyMine)
         end
     end)
 
@@ -7993,12 +8002,8 @@ local function guiMisc()
     miscSettingsIcon:SetSize(22, 22)
     miscSettingsIcon:SetPoint("RIGHT", settingsText, "LEFT", -3, -1)
 
-    local enableBigDebuffs = CreateCheckbox("enableBigDebuffs", L["Enable_Big_Debuffs"], guiMisc, nil, BBF.EnableBigDebuffs)
-    enableBigDebuffs:SetPoint("TOPLEFT", settingsText, "BOTTOMLEFT", -4, pixelsOnFirstBox)
-    CreateTooltipTwo(enableBigDebuffs, L["Enable_Big_Debuffs"], L["Tooltip_Big_Debuffs_Desc"])
-
     local normalizeGameMenu = CreateCheckbox("normalizeGameMenu", L["Normal_Size_Game_Menu"], guiMisc)
-    normalizeGameMenu:SetPoint("TOPLEFT", enableBigDebuffs, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    normalizeGameMenu:SetPoint("TOPLEFT", settingsText, "BOTTOMLEFT", -4, pixelsOnFirstBox)
     CreateTooltipTwo(normalizeGameMenu, L["Normal_Size_Game_Menu"], L["Tooltip_Normal_Size_Game_Menu_Desc"])
     normalizeGameMenu:HookScript("OnClick", function(self)
         if self:GetChecked() then
