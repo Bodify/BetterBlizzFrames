@@ -7,6 +7,9 @@
 - Fix FocusFrame Castbar position (with aura settings enabled and normal castbar behaviour) being 5 pixels too low compared to TargetFrame castbar. They're now identical as they should be.
 - Move the Big Debuffs setting from Misc to Extra Features topright in /bbf.
 - Fix position of "Unconscious" text on healthbar for Classic Frames and No Portait settings.
+- Fix a potential error Mini-PlayerFrame ran in combat during login.
+### Localization
+- Add Simplified Chinese localization by LDZhou @ GitHub. Thank you!
 
 # BetterBlizzFrames 1.9.2
 ## Midnight

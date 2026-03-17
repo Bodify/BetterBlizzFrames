@@ -1,3 +1,16 @@
+# BetterBlizzFrames 1.9.2b
+## Midnight
+### New
+- Buffs & Debuffs: New "Only mine" setting for Show cooldown text on auras. Will only show cd text on your own auras to reduce some clutter. This is now enabled by default.
+### Tweak
+- DarkMode: Auras now also skins PartyFrame Buffs (Raid-Style). Does not do raid atm.
+- Fix FocusFrame Castbar position (with aura settings enabled and normal castbar behaviour) being 5 pixels too low compared to TargetFrame castbar. They're now identical as they should be.
+- Move the Big Debuffs setting from Misc to Extra Features topright in /bbf.
+- Fix position of "Unconscious" text on healthbar for Classic Frames and No Portait settings.
+- Fix a potential error Mini-PlayerFrame ran in combat during login.
+### Localization
+- Add Simplified Chinese localization by LDZhou @ GitHub. Thank you!
+
 # BetterBlizzFrames 1.9.2
 ## Midnight
 ### New
