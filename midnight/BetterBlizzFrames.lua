@@ -2225,6 +2225,7 @@ function BBF.MiniFrame(frame)
         -- if AlternatePowerBar then
         --     AlternatePowerBar:SetParent(hiddenFrame) -- avoid doing on delay in this func due to SetParent call potentially being done while in combat
         -- end
+        PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.PlayerPortraitCornerIcon:SetAlpha(0)
         PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.StatusTexture:SetParent(hiddenFrame)
         flash:SetAlpha(0)
         PlayerFrame.PlayerFrameContainer.PlayerPortraitMask:SetAtlas("CircleMask")
