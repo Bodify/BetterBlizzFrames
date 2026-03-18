@@ -348,6 +348,12 @@ BBA.SpecCache = {}
 local SpecCache = BBA.SpecCache  -- Stores GUID -> specID
 local GetUnitTooltip = C_TooltipInfo and C_TooltipInfo.GetUnit or function() return nil end
 
+local safeUnits = {
+    ["player"] = true,
+    ["target"] = true,
+    ["focus"] = true,
+}
+
 -- Function to retrieve the specialization ID of a unit
 local function GetSpecID(unit)
     -- Check if the unit is a player
@@ -357,7 +363,7 @@ local function GetSpecID(unit)
 
     local guid = UnitGUID(unit)
     if issecretvalue(guid) then
-        if C_PvP.IsArena() then
+        if safeUnits[unit] and C_PvP.IsArena() then
             for i = 1, 3 do
                 local arenaUnit = "arena" .. i
                 if UnitIsUnit(unit, arenaUnit) then
