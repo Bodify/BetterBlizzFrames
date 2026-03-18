@@ -4484,9 +4484,9 @@ function BBF.GladTracker()
 
         -- map rows -> {id, name}
         local tracked = {
-            [ConquestFrame.Arena3v3]         = { id = 41049, name = "Gladiator" },
-            [ConquestFrame.RatedSoloShuffle] = { id = 42023, name = "Legend" },
-            [ConquestFrame.RatedBGBlitz]     = { id = 42024, name = "Strategist" },
+            [ConquestFrame.Arena3v3]         = { id = 61188, name = "Gladiator" },
+            [ConquestFrame.RatedSoloShuffle] = { id = 61190, name = "Legend" },
+            [ConquestFrame.RatedBGBlitz]     = { id = 61194, name = "Strategist" },
         }
 
         local function BuildTooltip(holder)
