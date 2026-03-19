@@ -924,6 +924,7 @@ end
 function BBF.RemoveAddonCategories()
     if not BetterBlizzFramesDB.removeAddonListCategories then return end
     if BBF.RemovedAddonCategories then return end
+    if AddonList.BetterBlizzHook then return end
 
     local function RemoveColorCodes(str)
         return (str:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", ""));
@@ -1049,6 +1050,7 @@ function BBF.RemoveAddonCategories()
         RemoveAddonCategories()
     end)
 
+    AddonList.BetterBlizzHook = true
     BBF.RemovedAddonCategories = true
 end
 
