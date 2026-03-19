@@ -1,3 +1,9 @@
+# BetterBlizzFrames 1.9.2c
+## Midnight
+### Tweak
+- Update Gladiator/Strategist/Legend achievements for Glad Tracker.
+- Potential fix for a secret error.
+
 # BetterBlizzFrames 1.9.2b
 ## Midnight
 ### New
