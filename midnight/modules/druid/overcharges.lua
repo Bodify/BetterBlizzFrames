@@ -106,7 +106,8 @@ local function UpdateAltManaBar(updateCombos, cf)
     local form = GetShapeshiftFormID()
     local inNoManaForm = moveComboInForm[form]
     if inNoManaForm then
-        local percent = 100--math.floor((mana / maxMana) * 100 + 0.5)
+        local percent = UnitPowerPercent("player", Enum.PowerType.Mana, false, CurveConstants.ScaleTo100) or 0
+        local percentMana = string.format("%.0f%%", percent)
 
         bar:SetMinMaxValues(0, UnitPowerMax("player", Enum.PowerType.Mana))
         bar:SetValue(UnitPower("player", Enum.PowerType.Mana))
@@ -118,10 +119,10 @@ local function UpdateAltManaBar(updateCombos, cf)
         elseif display == "NUMERIC" then
             bar.TextString:SetText(AbbreviateNumbers(UnitPower("player", Enum.PowerType.Mana)))
         elseif display == "PERCENT" then
-            bar.TextString:SetText(percent .. "%")
+            bar.TextString:SetText(percentMana)
         elseif display == "BOTH" and bar.LeftText and bar.RightText then
             bar.TextString:SetText("")
-            bar.LeftText:SetText(percent .. "%")
+            bar.LeftText:SetText(percentMana)
             bar.RightText:SetText(AbbreviateNumbers(UnitPower("player", Enum.PowerType.Mana)))
         end
 
