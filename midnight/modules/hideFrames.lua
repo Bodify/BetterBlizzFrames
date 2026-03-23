@@ -933,6 +933,8 @@ function BBF.HideFrames()
                     hooksecurefunc(targetTex, "SetAtlas", function(self, atlas)
                         if atlas == "UI-HUD-UnitFrame-Target-PortraitOn" then
                             self:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Target-PortraitOn-NoShadow")
+                        elseif atlas == "UI-HUD-UnitFrame-Target-Rare-PortraitOn" then
+                            self:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Target-PortraitOn-NoShadow")
                         elseif atlas == "UI-HUD-UnitFrame-Target-MinusMob-PortraitOn" then
                             self:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Target-MinusMob-PortraitOn-NoShadow")
                         end
@@ -941,6 +943,8 @@ function BBF.HideFrames()
                     focusTex:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Target-PortraitOn-NoShadow")
                     hooksecurefunc(focusTex, "SetAtlas", function(self, atlas)
                         if atlas == "UI-HUD-UnitFrame-Target-PortraitOn" then
+                            self:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Target-PortraitOn-NoShadow")
+                        elseif atlas == "UI-HUD-UnitFrame-Target-Rare-PortraitOn" then
                             self:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Target-PortraitOn-NoShadow")
                         elseif atlas == "UI-HUD-UnitFrame-Target-MinusMob-PortraitOn" then
                             self:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Target-MinusMob-PortraitOn-NoShadow")
