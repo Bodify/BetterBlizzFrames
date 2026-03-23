@@ -50,6 +50,7 @@ retail\modules\druid\overcharges.lua
 midnight\modules\druid\overcharges.lua
 retail\modules\cdManager.lua
 midnight\modules\cdManager.lua
+midnight\modules\partyHighlight.lua
 retail\modules\healer.lua
 retail\modules\noPortrait.lua
 

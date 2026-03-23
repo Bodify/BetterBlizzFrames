@@ -351,6 +351,12 @@ local defaultSettings = {
     partyFrameRangeAlphaSolidBackground = true,
     changePartyFrameRangeAlpha = true,
     auraCdTextOnlyMine = true,
+
+    -- Better Target Highlight
+    betterTargetHighlight = false,
+    betterTargetHighlightAtlas = "RaidFrame-TargetFrame",
+    betterTargetHighlightColor = {0, 1, 0, 1},
+    betterTargetHighlightDesaturate = true,
 }
 BBF.defaultSettings = defaultSettings
 
@@ -3145,6 +3151,13 @@ function BBF.ReduceEditModeAlpha(disable)
         UtilityCooldownViewer,
         BuffIconCooldownViewer,
         BuffBarCooldownViewer,
+        EncounterTimeline,
+        ExternalDefensivesFrame,
+        CriticalEncounterWarnings,
+        MediumEncounterWarnings,
+        MinorEncounterWarnings,
+        PlayerCastingBarFrame,
+        PersonalResourceDisplayFrame,
     }
 
     for _, frame in pairs(frames) do
@@ -5165,6 +5178,7 @@ First:SetScript("OnEvent", function(_, event, addonName)
         BBF.RaiseTargetCastbarStratas()
         BBF.RaidFramePixelBorder()
         BBF.ModernRoleIcons()
+        BBF.BetterTargetHighlight()
         BBF.HideAbsorbGlow()
         BBF.ZoomDefaultActionbarIcons()
         BBF.ClassColorFriendlist()
@@ -5214,6 +5228,7 @@ First:SetScript("OnEvent", function(_, event, addonName)
         end
 
         C_Timer.After(1, function()
+            BBF.ActionBarCDNumberSize()
             BBF.CreateBigDebuffs()
             if BetterBlizzFramesDB.tempOmniCCFix then
                 BetterBlizzFramesDB.tempOmniCCFix = nil

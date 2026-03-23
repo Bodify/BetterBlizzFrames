@@ -479,6 +479,56 @@ function BBF.HideFrames()
             end
         end
 
+        if BetterBlizzFramesDB.hidePetAuraTooltip and not changes.hidePetAuraTooltip then
+            changes.hidePetAuraTooltip = true
+            PetFrame:HookScript("OnEnter", function()
+                PartyMemberBuffTooltip:Hide()
+            end)
+        end
+
+        -- Hide Dispel Icons (DispelDebuff1-3)
+        if BetterBlizzFramesDB.hidePartyDispelOverlay and BetterBlizzFramesDB.hidePartyDispelOverlayHideIcons then
+            changes.hidePartyDispelOverlayHideIcons = true
+            for i = 1, 5 do
+                for j = 1, 3 do
+                    local frame = _G["CompactPartyFrameMember"..i.."DispelDebuff"..j]
+                    if frame then
+                        frame:SetAlpha(0)
+                    end
+                end
+            end
+            for i = 1, 8 do
+                for k = 1, 5 do
+                    for j = 1, 3 do
+                        local frame = _G["CompactRaidGroup"..k.."Member"..i.."DispelDebuff"..j]
+                        if frame then
+                            frame:SetAlpha(0)
+                        end
+                    end
+                end
+            end
+        elseif changes.hidePartyDispelOverlayHideIcons then
+            changes.hidePartyDispelOverlayHideIcons = nil
+            for i = 1, 5 do
+                for j = 1, 3 do
+                    local frame = _G["CompactPartyFrameMember"..i.."DispelDebuff"..j]
+                    if frame then
+                        frame:SetAlpha(1)
+                    end
+                end
+            end
+            for i = 1, 8 do
+                for k = 1, 5 do
+                    for j = 1, 3 do
+                        local frame = _G["CompactRaidGroup"..k.."Member"..i.."DispelDebuff"..j]
+                        if frame then
+                            frame:SetAlpha(1)
+                        end
+                    end
+                end
+            end
+        end
+
         -- Hide Range Icon
         if BetterBlizzFramesDB.hidePartyRangeIcon then
             if not BBF.hookedRangeIcon then
@@ -1305,6 +1355,97 @@ function BBF.HideFrames()
                 BBF.PetTextHook = true
             end
         end
+
+        BBF.HideAllManabarText()
+    end
+end
+
+function BBF.HideAllManabarText()
+    local db = BetterBlizzFramesDB
+    local pMain = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain
+    local tMain = TargetFrame.TargetFrameContent.TargetFrameContentMain
+    local fMain = FocusFrame.TargetFrameContent.TargetFrameContentMain
+
+    local manaTexts = {
+        -- Player mana bar
+        pMain.ManaBarArea.ManaBar.ManaBarText,
+        pMain.ManaBarArea.ManaBar.RightText,
+        pMain.ManaBarArea.ManaBar.LeftText,
+        pMain.ManaBarArea.ManaBar.TextString,
+        -- Target mana bar
+        tMain.ManaBar.ManaBarText,
+        tMain.ManaBar.RightText,
+        tMain.ManaBar.LeftText,
+        tMain.ManaBar.TextString,
+        -- Focus mana bar
+        fMain.ManaBar.ManaBarText,
+        fMain.ManaBar.RightText,
+        fMain.ManaBar.LeftText,
+        fMain.ManaBar.TextString,
+        -- Pet mana bar
+        PetFrameManaBarText,
+        PetFrameManaBarTextLeft,
+        PetFrameManaBarTextRight,
+    }
+
+    -- Alternate power bar
+    if AlternatePowerBar then
+        table.insert(manaTexts, AlternatePowerBar.TextString)
+        table.insert(manaTexts, AlternatePowerBar.RightText)
+        table.insert(manaTexts, AlternatePowerBar.LeftText)
+    end
+
+    -- Class-specific power bars
+    local classBars = { MonkStaggerBar, EvokerEbonMightBar, DemonHunterSoulFragmentsBar }
+    for _, bar in ipairs(classBars) do
+        if bar then
+            if bar.TextString then table.insert(manaTexts, bar.TextString) end
+            if bar.RightText then table.insert(manaTexts, bar.RightText) end
+            if bar.LeftText then table.insert(manaTexts, bar.LeftText) end
+            if bar.ManaBarText then table.insert(manaTexts, bar.ManaBarText) end
+        end
+    end
+
+    -- Party member mana bars
+    if PartyFrame then
+        for i = 1, 4 do
+            local member = PartyFrame["MemberFrame"..i]
+            if member and member.ManaBar then
+                if member.ManaBar.TextString then table.insert(manaTexts, member.ManaBar.TextString) end
+                if member.ManaBar.RightText then table.insert(manaTexts, member.ManaBar.RightText) end
+                if member.ManaBar.LeftText then table.insert(manaTexts, member.ManaBar.LeftText) end
+            end
+        end
+    end
+
+    -- Boss frame mana bars
+    for i = 1, 5 do
+        local frame = _G["Boss"..i.."TargetFrame"]
+        if frame then
+            local bMain = frame.TargetFrameContent and frame.TargetFrameContent.TargetFrameContentMain
+            if bMain and bMain.ManaBar then
+                if bMain.ManaBar.ManaBarText then table.insert(manaTexts, bMain.ManaBar.ManaBarText) end
+                if bMain.ManaBar.RightText then table.insert(manaTexts, bMain.ManaBar.RightText) end
+                if bMain.ManaBar.LeftText then table.insert(manaTexts, bMain.ManaBar.LeftText) end
+                if bMain.ManaBar.TextString then table.insert(manaTexts, bMain.ManaBar.TextString) end
+            end
+        end
+    end
+
+    if db.hideAllManabarText then
+        changes.hideAllManabarText = true
+        for _, textObj in ipairs(manaTexts) do
+            if textObj then
+                hideElementByParent(textObj)
+            end
+        end
+    elseif changes.hideAllManabarText then
+        changes.hideAllManabarText = nil
+        for _, textObj in ipairs(manaTexts) do
+            if textObj then
+                restoreElementParent(textObj)
+            end
+        end
     end
 end
 
@@ -1441,22 +1582,21 @@ function BBF.MinimapHider()
 
     -- Handle ObjectiveTracker visibility
     if hideObjectives then
-        if not ObjectiveTracker.bbpHook then
-            BBF.ogObjectiveParent = ObjectiveTrackerFrame:GetParent()
-            ObjectiveTrackerFrame:HookScript("OnShow", function()
+        if not ObjectiveTracker.ogParent then
+            ObjectiveTracker.ogParent = ObjectiveTracker:GetParent()
+            ObjectiveTracker:HookScript("OnShow", function()
                 local _, instanceType = GetInstanceInfo()
                 local inArena = instanceType == "arena"
 
                 if inArena then
-                    ObjectiveTrackerFrame:SetParent(BBF.hiddenFrame)
+                    ObjectiveTracker:SetParent(BBF.hiddenFrame)
                 end
             end)
-            ObjectiveTracker.bbpHook = true
         end
         if inArena then
-            ObjectiveTrackerFrame:SetParent(BBF.hiddenFrame)
+            ObjectiveTracker:SetParent(BBF.hiddenFrame)
         else
-            ObjectiveTrackerFrame:SetParent(BBF.ogObjectiveParent)
+            ObjectiveTracker:SetParent(ObjectiveTracker.ogParent)
         end
     end
 end

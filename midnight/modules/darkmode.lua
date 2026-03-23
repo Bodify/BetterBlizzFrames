@@ -72,37 +72,36 @@ local function StylePartyBuffs(frame, colorValue)
     if BetterBlizzFramesDB.enableMasque and C_AddOns.IsAddOnLoaded("Masque") then return end
     if (BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeUiAura) then
         if not BBF.auraBorders[frame] then
-            local border = CreateFrame("Frame", nil, frame, "BackdropTemplate")
-            border:SetBackdrop({
-                edgeFile = "Interface/Tooltips/UI-Tooltip-Border",
-                tileEdge = true,
-                edgeSize = 9,
-            })
-
             local icon = frame.icon or frame.Icon
             if not icon then return end
             icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
 
-            border:SetPoint("TOPLEFT", icon, "TOPLEFT", -1.5, 1.5)
-            border:SetPoint("BOTTOMRIGHT", icon, "BOTTOMRIGHT", 1.5, -1.5)
-            border:SetBackdropBorderColor(colorValue, colorValue, colorValue)
-            -- border:SetIgnoreParentAlpha(true)
-            -- border:SetAlpha(1)
+            local border = frame:CreateTexture(nil, "OVERLAY", nil, 7)
+            if pixelBorderAuras then
+                border:SetAtlas("communities-create-avatar-border-hover")
+                border:SetDesaturated(true)
+                border:SetPoint("TOPLEFT", icon, "TOPLEFT", -0.5, 0.5)
+                border:SetPoint("BOTTOMRIGHT", icon, "BOTTOMRIGHT", 0.5, -0.5)
+            else
+                border:SetAtlas("Adventures-Spell-Border")
+                border:SetPoint("TOPLEFT", icon, "TOPLEFT", -1.5, 1.5)
+                border:SetPoint("BOTTOMRIGHT", icon, "BOTTOMRIGHT", 1.5, -1.5)
+            end
+            border:SetVertexColor(colorValue, colorValue, colorValue)
 
             BBF.auraBorders[frame] = border
         else
             local border = BBF.auraBorders[frame]
             if border then
-                border:SetBackdropBorderColor(colorValue, colorValue, colorValue)
+                border:SetVertexColor(colorValue, colorValue, colorValue)
             end
         end
     else
         if BBF.auraBorders[frame] then
             BBF.auraBorders[frame]:Hide()
-            BBF.auraBorders[frame]:SetParent(nil)
             BBF.auraBorders[frame] = nil
 
-            local icon = frame.icon
+            local icon = frame.icon or frame.Icon
             if icon then
                 icon:SetTexCoord(0, 1, 0, 1)
             end
@@ -176,52 +175,40 @@ local function UpdateUnitFrameDarkModeBorderColors(color)
     end
 end
 
-local buffIconScale = BuffFrame.AuraContainer.iconScale
-local borderSize = buffIconScale < 1 and 10 or buffIconScale < 1.1 and 9 or 8
-
 BBF.auraBorders = {}  -- BuffFrame aura borders for darkmode
 local function createOrUpdateBorders(frame, colorValue, textureName, bypass)
     --if not twwrdy then return end
     if BetterBlizzFramesDB.enableMasque and C_AddOns.IsAddOnLoaded("Masque") then return end
     if (BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeUiAura) or bypass then
         if not BBF.auraBorders[frame] then
-            buffIconScale = BuffFrame.AuraContainer.iconScale
-            borderSize = buffIconScale < 1 and 10 or buffIconScale < 1.1 and 9 or 8
-            -- Create borders
-            local border = CreateFrame("Frame", nil, frame, "BackdropTemplate")
-            if not bypass then
-                border:SetBackdrop({
-                    edgeFile = "Interface/Tooltips/UI-Tooltip-Border",
-                    tileEdge = true,
-                    edgeSize = borderSize,
-                })
-            else
-                border:SetBackdrop({
-                    edgeFile = "Interface/Tooltips/UI-Tooltip-Border",
-                    tileEdge = true,
-                    edgeSize = 10,
-                })
-            end
-
             local icon = frame.Icon or frame.icon
             if textureName then
                 icon = frame[textureName]
             end
             if not icon then return end
-            icon:SetTexCoord(0.08, 0.92, 0.08, 0.92) -- Adjust the icon
+            icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
 
-            if not bypass then
-                border:SetPoint("TOPLEFT", icon, "TOPLEFT", -1.5, 2)
-                border:SetPoint("BOTTOMRIGHT", icon, "BOTTOMRIGHT", 1.5, -1.5)
+            local border = frame:CreateTexture(nil, "OVERLAY", nil, 7)
+            if pixelBorderAuras then
+                border:SetAtlas("communities-create-avatar-border-hover")
+                border:SetDesaturated(true)
+                border:SetPoint("TOPLEFT", icon, "TOPLEFT", -0.5, 0.5)
+                border:SetPoint("BOTTOMRIGHT", icon, "BOTTOMRIGHT", 0.5, -0.5)
             else
-                border:SetPoint("TOPLEFT", icon, "TOPLEFT", -2, 2)
-                border:SetPoint("BOTTOMRIGHT", icon, "BOTTOMRIGHT", 2, -2)
+                border:SetAtlas("Adventures-Spell-Border")
+                if bypass then
+                    border:SetPoint("TOPLEFT", icon, "TOPLEFT", -2, 2)
+                    border:SetPoint("BOTTOMRIGHT", icon, "BOTTOMRIGHT", 2, -2)
+                else
+                    border:SetPoint("TOPLEFT", icon, "TOPLEFT", -1.5, 2)
+                    border:SetPoint("BOTTOMRIGHT", icon, "BOTTOMRIGHT", 1.5, -1.5)
+                end
             end
-            border:SetBackdropBorderColor(colorValue, colorValue, colorValue)
+            border:SetVertexColor(colorValue, colorValue, colorValue)
 
             BBF.auraBorders[frame] = border -- Store the border
             if frame.ImportantGlow then
-                frame.ImportantGlow:SetParent(border)
+                frame.ImportantGlow:SetParent(frame)
                 frame.ImportantGlow:SetPoint("TOPLEFT", frame, "TOPLEFT", -15, 16)
                 frame.ImportantGlow:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", 15, -6)
             end
@@ -229,21 +216,22 @@ local function createOrUpdateBorders(frame, colorValue, textureName, bypass)
             -- Update border colors
             local border = BBF.auraBorders[frame]
             if border then
-                border:SetBackdropBorderColor(colorValue, colorValue, colorValue)
+                border:SetVertexColor(colorValue, colorValue, colorValue)
             end
         end
     else
         -- Remove custom borders if they exist and revert the icon
         if BBF.auraBorders[frame] then
             BBF.auraBorders[frame]:Hide()
-            BBF.auraBorders[frame]:SetParent(nil) -- Unparent the border
             BBF.auraBorders[frame] = nil -- Remove the reference
 
             local icon = frame.Icon
             if textureName then
                 icon = frame[textureName]
             end
-            icon:SetTexCoord(0, 1, 0, 1) -- Revert the icon to the original state
+            if icon then
+                icon:SetTexCoord(0, 1, 0, 1)
+            end
         end
     end
 end
