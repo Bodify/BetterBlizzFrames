@@ -1,3 +1,11 @@
+# BetterBlizzFrames 1.9.3c
+## Midnight
+### Bugfix
+- Fix cooldown stuff that needed updating for new api changes that slipped through the cracks of my sleep deprived ass.
+- Fix the new party highlight seting to work properly on raidframes too.
+### Tweak
+- Fix offsets for darkmode border on Player Auras (topright next to minimap)
+
 # BetterBlizzFrames 1.9.3b
 ## Midnight
 ### Tweak
