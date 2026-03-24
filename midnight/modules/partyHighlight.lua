@@ -22,6 +22,13 @@ local function ApplyHighlight(frame)
     frame.selectionHighlight:SetAtlas(currentAtlas)
     frame.selectionHighlight:SetDesaturated(BetterBlizzFramesDB.betterTargetHighlightDesaturate ~= false)
     frame.selectionHighlight:SetVertexColor(unpack(currentColor))
+    if not frame.bbfBetterTargetHighlight then
+        frame.selectionHighlight:SetAtlas(currentAtlas)
+        if frame.powerBar then
+            frame.powerBar:SetFrameLevel(3)
+        end
+        frame.bbfBetterTargetHighlight = true
+    end
 end
 
 function BBF.UpdateTargetHighlightSettings()
@@ -31,9 +38,7 @@ function BBF.UpdateTargetHighlightSettings()
 
     for i = 1, 5 do
         local frame = _G["CompactPartyFrameMember"..i]
-        if frame then
-            ApplyHighlight(frame)
-        end
+        ApplyHighlight(frame)
     end
 end
 
@@ -42,9 +47,7 @@ function BBF.PreviewTargetHighlightAtlas(atlas)
     currentAtlas = atlas
     for i = 1, 5 do
         local frame = _G["CompactPartyFrameMember"..i]
-        if frame then
-            ApplyHighlight(frame)
-        end
+        ApplyHighlight(frame)
     end
     currentAtlas = saved
 end
@@ -52,9 +55,7 @@ end
 function BBF.RevertTargetHighlightPreview()
     for i = 1, 5 do
         local frame = _G["CompactPartyFrameMember"..i]
-        if frame then
-            ApplyHighlight(frame)
-        end
+        ApplyHighlight(frame)
     end
 end
 
@@ -67,19 +68,15 @@ function BBF.BetterTargetHighlight()
 
     for i = 1, 5 do
         local frame = _G["CompactPartyFrameMember"..i]
-        if frame and frame.selectionHighlight then
-            if frame.powerBar then
-                frame.powerBar:SetFrameLevel(3)
-            end
+        if frame then
             ApplyHighlight(frame)
         end
     end
 
     if not BBF.BetterTargetHighlightHooked then
         hooksecurefunc("CompactUnitFrame_UpdateSelectionHighlight", function(frame)
-            if frame:IsForbidden() then return end
             if not db.betterTargetHighlight then return end
-            frame.selectionHighlight:SetVertexColor(unpack(currentColor))
+            ApplyHighlight(frame)
         end)
         BBF.BetterTargetHighlightHooked = true
     end
