@@ -200,8 +200,8 @@ local function createOrUpdateBorders(frame, colorValue, textureName, bypass)
                     border:SetPoint("TOPLEFT", icon, "TOPLEFT", -2, 2)
                     border:SetPoint("BOTTOMRIGHT", icon, "BOTTOMRIGHT", 2, -2)
                 else
-                    border:SetPoint("TOPLEFT", icon, "TOPLEFT", -1.5, 2)
-                    border:SetPoint("BOTTOMRIGHT", icon, "BOTTOMRIGHT", 1.5, -1.5)
+                    border:SetPoint("TOPLEFT", icon, "TOPLEFT", -3.5, 3.5)
+                    border:SetPoint("BOTTOMRIGHT", icon, "BOTTOMRIGHT", 3.5, -3.5)
                 end
             end
             border:SetVertexColor(colorValue, colorValue, colorValue)
