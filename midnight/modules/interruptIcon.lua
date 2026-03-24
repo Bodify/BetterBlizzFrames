@@ -57,9 +57,9 @@ local function UpdateInterruptTracking()
         playerKick = GetInterruptSpell()
     end
     if playerKick then
-        local cooldownInfo = C_Spell.GetSpellCooldown(playerKick)
+        local cooldownInfo = C_Spell.GetSpellCooldownDuration(playerKick)
         if cooldownInfo then
-            BBF.interruptTrackingIcon.cooldown:SetCooldown(cooldownInfo.startTime, cooldownInfo.duration)
+            BBF.interruptTrackingIcon.cooldown:SetCooldownFromDurationObject(cooldownInfo)
             local isOnCooldown = BBF.interruptTrackingIcon.cooldown:IsShown()
             BBF.playerKickReady = not isOnCooldown
         end

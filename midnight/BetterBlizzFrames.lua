@@ -5388,7 +5388,7 @@ function BBF.CreateBigDebuffs()
         end
         return
     end
-    if C_AddOns.IsAddOnLoaded("MiniCC") or BetterBlizzFramesDB.noPortraitModes then return end
+    if C_AddOns.IsAddOnLoaded("MiniCC") or C_AddOns.IsAddOnLoaded("MvqUI") or BetterBlizzFramesDB.noPortraitModes then return end
 
     local function CreateDebuffFrame(unitFrame, portraitMask)
         local frame = CreateFrame("Frame", nil, unitFrame)
@@ -5435,7 +5435,7 @@ function BBF.CreateBigDebuffs()
         if not updateInfo then return true end
         if updateInfo.isFullUpdate then return true end
         if (updateInfo.addedAuras and #updateInfo.addedAuras > 0)
-            or (updateInfo.updatedAuras and #updateInfo.updatedAuras > 0)
+            or (updateInfo.updatedAuraInstanceIDs and #updateInfo.updatedAuraInstanceIDs > 0)
             or (updateInfo.removedAuraInstanceIDs and #updateInfo.removedAuraInstanceIDs > 0)
         then
             return true
@@ -5444,17 +5444,15 @@ function BBF.CreateBigDebuffs()
     end
 
     local function IterateAuras(filter, validateDefensive, unit)
-        local spellID, start, duration, icon, applications
+        local spellID, durationObj, icon, applications
 
         for i = 1, 40 do
             local auraData = C_UnitAuras.GetAuraDataByIndex(unit, i, filter)
             if not auraData then break end
 
             local durationInfo = C_UnitAuras.GetAuraDuration(unit, auraData.auraInstanceID)
-            local auraStart = durationInfo and durationInfo:GetStartTime()
-            local auraDuration = durationInfo and durationInfo:GetTotalDuration()
 
-            if auraStart and auraDuration then
+            if durationInfo then
                 local garbageAuraData = false
 
                 if validateDefensive then -- units out of range produce garbage data, so double check
@@ -5466,43 +5464,42 @@ function BBF.CreateBigDebuffs()
 
                 if not garbageAuraData then
                     spellID = auraData.spellId
-                    start = auraStart
-                    duration = auraDuration
+                    durationObj = durationInfo
                     icon = auraData.icon
                     applications = auraData.applications
                 end
             end
         end
 
-        return spellID, start, duration, icon, applications
+        return spellID, durationObj, icon, applications
     end
 
     local function FindAura(unit, debuffFrame, updateInfo)
         if updateInfo and not AurasChanged(updateInfo) then return end
 
-        local spellID, startTime, duration, texture, applications
+        local spellID, durationObj, texture, applications
 
         -- Crowd Control
-        spellID, startTime, duration, texture, applications = IterateAuras("HARMFUL|CROWD_CONTROL", false, unit)
+        spellID, durationObj, texture, applications = IterateAuras("HARMFUL|CROWD_CONTROL", false, unit)
 
         -- Big Defensives
         if not spellID then
-            spellID, startTime, duration, texture, applications = IterateAuras("HELPFUL|BIG_DEFENSIVE", true, unit)
+            spellID, durationObj, texture, applications = IterateAuras("HELPFUL|BIG_DEFENSIVE", true, unit)
         end
 
         -- External Defensives
         if not spellID then
-            spellID, startTime, duration, texture, applications = IterateAuras("HELPFUL|EXTERNAL_DEFENSIVE", false, unit)
+            spellID, durationObj, texture, applications = IterateAuras("HELPFUL|EXTERNAL_DEFENSIVE", false, unit)
         end
 
         -- Important buffs
         if not spellID then
-            spellID, startTime, duration, texture, applications = IterateAuras("HELPFUL|IMPORTANT", false, unit)
+            spellID, durationObj, texture, applications = IterateAuras("HELPFUL|IMPORTANT", false, unit)
         end
 
         if spellID then
             debuffFrame.icon:SetTexture(texture)
-            debuffFrame.cooldown:SetCooldown(startTime, duration)
+            debuffFrame.cooldown:SetCooldownFromDurationObject(durationObj)
             debuffFrame:Show()
         else
             debuffFrame.icon:SetTexture(nil)
