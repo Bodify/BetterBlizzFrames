@@ -1,3 +1,10 @@
+# BetterBlizzFrames 1.9.3b
+## Midnight
+### Tweak
+- Fix cooldown stuff for upcoming Midnight changes.
+### Bugfix
+- Fix the "Hide Shadow" setting for All Frames not working on rares.
+
 # BetterBlizzFrames 1.9.3
 ## Midnight
 ### New
