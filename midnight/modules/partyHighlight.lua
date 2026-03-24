@@ -18,6 +18,7 @@ local currentColor = {0, 1, 0, 1}
 local function ApplyHighlight(frame)
     if not frame or frame:IsForbidden() then return end
     if not frame.selectionHighlight then return end
+    if frame.unit:find("nameplate") then return end
 
     frame.selectionHighlight:SetAtlas(currentAtlas)
     frame.selectionHighlight:SetDesaturated(BetterBlizzFramesDB.betterTargetHighlightDesaturate ~= false)
