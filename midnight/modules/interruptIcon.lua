@@ -106,9 +106,9 @@ local function UpdateInterruptIcon(frame)
     end
 
     if playerKick then
-        local cooldownInfo = C_Spell.GetSpellCooldown(playerKick)
+        local cooldownInfo = C_Spell.GetSpellCooldownDuration(playerKick)
         if cooldownInfo then
-            frame.cooldown:SetCooldown(cooldownInfo.startTime, cooldownInfo.duration)
+            frame.cooldown:SetCooldownFromDurationObject(cooldownInfo)
             local isOnCooldown = frame.cooldown:IsShown()
 
             if BetterBlizzFramesDB.castBarInterruptIconShowActiveOnly and isOnCooldown then
