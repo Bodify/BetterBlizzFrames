@@ -27,8 +27,7 @@ function BBF.SortCooldownManagerIcons(frame, center)
 
     local icons = frame:GetItemFrames()
     if not icons or #icons == 0 then return end
-
-    local iconPadding = frame.iconPadding or 5
+    local iconPadding = (frame.iconPadding or 5) - 4
     local iconWidth   = icons[1] and icons[1]:GetWidth()  or 32
     local iconHeight  = icons[1] and icons[1]:GetHeight() or 32
     local rowLimit    = (frame == BuffIconCooldownViewer and frame.stride) or frame.iconLimit or 8
