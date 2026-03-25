@@ -26,7 +26,7 @@ local function ApplyHighlight(frame)
     if not frame.bbfBetterTargetHighlight then
         frame.selectionHighlight:SetAtlas(currentAtlas)
         if frame.powerBar then
-            frame.powerBar:SetFrameLevel(3)
+            frame.powerBar:SetFrameLevel(EditModeManagerFrame:ShouldRaidFrameShowSeparateGroups() and 3 or 2)
         end
         frame.bbfBetterTargetHighlight = true
     end
