@@ -4,6 +4,7 @@
 - Fix "Better Target Highlight" showing on nameplates. Oops.
 - Fix CDM: Center Icons affecting the gap setting unintentionally. Due to this you may have to adjust ur gap setting in edit mode for it.
 - Fix CDM: Center Icons setting not centering the buff icons properly.
+- Fix big debuffs aura logic not filtering out trash auras
 
 # BetterBlizzFrames 1.9.3c
 ## Midnight
