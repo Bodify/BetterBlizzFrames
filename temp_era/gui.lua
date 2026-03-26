@@ -7007,38 +7007,6 @@ local function guiSupport()
     boxTwoTex:SetPoint("BOTTOM", boxTwo, "TOP", 0, 1)
 end
 
-local function guiMidnight()
-    local guiMidnight = CreateFrame("Frame")
-    guiMidnight.name = "|T136221:12:12|t |cffcc66ffWoW: Midnight|r"
-    guiMidnight.parent = BetterBlizzFrames.name
-    --InterfaceOptions_AddCategory(guiMidnight)
-    local guiMidnightCategory = Settings.RegisterCanvasLayoutSubcategory(BBF.category, guiMidnight, guiMidnight.name, guiMidnight.name)
-    guiMidnightCategory.ID = guiMidnight.name;
-    BBF.guiMidnight = guiMidnight.name
-    BBF.category.guiMidnightCategory = guiMidnightCategory.ID
-    CreateTitle(guiMidnight)
-
-    local titleText = guiMidnight:CreateFontString(nil, "OVERLAY", "GameFontNormalHuge")
-    titleText:SetPoint("TOPLEFT", guiMidnight, "TOPLEFT", 20, -10)
-    titleText:SetText(L["Midnight_Title"])
-    local titleIcon = guiMidnight:CreateTexture(nil, "ARTWORK")
-    titleIcon:SetTexture(136221)
-    titleIcon:SetSize(23, 23)
-    titleIcon:SetPoint("RIGHT", titleText, "LEFT", -3, 0.5)
-
-    local midnightInfo = guiMidnight:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    midnightInfo:SetPoint("TOPLEFT", titleIcon, "BOTTOMLEFT", 2, -5)
-    midnightInfo:SetText(L["Midnight_Info"])
-    midnightInfo:SetTextColor(1,1,1,1)
-    midnightInfo:SetJustifyH("LEFT")
-
-    local bgImg = guiMidnight:CreateTexture(nil, "BACKGROUND")
-    bgImg:SetAtlas("professions-recipe-background")
-    bgImg:SetPoint("CENTER", guiMidnight, "CENTER", -8, 4)
-    bgImg:SetSize(680, 610)
-    bgImg:SetAlpha(0.4)
-    bgImg:SetVertexColor(0,0,0)
-end
 ------------------------------------------------------------
 -- GUI Setup
 ------------------------------------------------------------
@@ -7109,7 +7077,6 @@ function BBF.LoadGUI()
     --guiChatFrame()
     guiCustomCode()
     guiSupport()
-    guiMidnight()
     BetterBlizzFrames.guiLoaded = true
 
     if SettingsPanel:IsShown() then
