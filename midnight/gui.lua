@@ -8509,6 +8509,11 @@ local function guiMisc()
     local hideActionBar1 = CreateCheckbox("hideActionBar1", L["Hide_ActionBar1"], guiMisc, nil, BBF.HideFrames)
     hideActionBar1:SetPoint("TOPLEFT", actionBarCDNumberSizeChange, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(hideActionBar1, L["Hide_ActionBar1"], L["Tooltip_Hide_ActionBar1"])
+    hideActionBar1:HookScript("OnClick", function(self)
+        if not self:GetChecked() then
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        end
+    end)
 
     local hideActionBarBigProcGlow = CreateCheckbox("hideActionBarBigProcGlow", L["Hide_ActionBar_Big_Proc_Glow"], guiMisc, nil, BBF.ActionBarMods)
     hideActionBarBigProcGlow:SetPoint("TOPLEFT", hideActionBar1, "BOTTOMLEFT", 0, pixelsBetweenBoxes)

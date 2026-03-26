@@ -280,6 +280,7 @@ function BBF.HideFrames()
                 setActionBar1Visibility(false)
                 MainActionBar.bbfHidden = true
                 MainMenuBarVehicleLeaveButton:SetParent(UIParent)
+                MainActionBar.ActionBarPageNumber:SetParent(BBF.hiddenFrame)
             end
         end
 
