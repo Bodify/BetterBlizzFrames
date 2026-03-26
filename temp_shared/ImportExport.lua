@@ -80,6 +80,9 @@ function BBF.OldImportProfile(encodedString, expectedDataType)
     -- Check if the string starts and ends with !BBF
     if encodedString:sub(1, 4) == "!BBF" and encodedString:sub(-4) == "!BBF" then
         encodedString = encodedString:sub(5, -5)
+        if encodedString:find("!") then
+            return nil, "Import code probably double copypasted. Make sure to copy the entire code only once."
+        end
     elseif encodedString:sub(1, 4) == "!BBP" and encodedString:sub(-4) == "!BBP" then
         return nil, L["Error_Wrong_Addon"]
     else
