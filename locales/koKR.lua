@@ -49,7 +49,7 @@ L["Yes"] = "예"
 ---------------------------------------
 
 L["Profile_Core"] = "기본"
-L["Profile_Description"] = "\n\n구성된 프로필"
+L["Profile_Description"] = "\n구성된 프로필"
 L["Profile_Info_Message"] = "여기 없는데 여기에 있고 싶다면 알려주세요 :)"
 L["Profile_Streamers"] = "스트리머"
 

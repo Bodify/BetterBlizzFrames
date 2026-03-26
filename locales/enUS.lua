@@ -44,7 +44,7 @@ L["Yes"] = "Yes"
 ---------------------------------------
 
 L["Profile_Core"] = "Core"
-L["Profile_Description"] = "Pre-configured profiles for BetterBlizzFrames:"
+L["Profile_Description"] = "Profiles for BetterBlizzFrames:"
 L["Profile_Info_Message"] = "If you are missing and want to be here let me know :)"
 L["Profile_Streamers"] = "Streamers"
 

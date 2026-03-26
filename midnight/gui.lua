@@ -3125,16 +3125,16 @@ local function guiProfiles()
     frame.titleText:SetText("|A:gmchat-icon-blizz:16:16|a BBF")
 
     frame.descriptionText = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-    frame.descriptionText:SetPoint("TOP", frame, "TOP", 2, -26)
+    frame.descriptionText:SetPoint("TOP", frame, "TOP", 2, -25)
     frame.descriptionText:SetText(L["Profile_Description"])
     frame.descriptionText:SetWidth(100)
 
     frame.coreText = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    frame.coreText:SetPoint("TOP", frame.descriptionText, "BOTTOM", 0, -5)
+    frame.coreText:SetPoint("TOP", frame.descriptionText, "BOTTOM", 0, -3)
     frame.coreText:SetText(L["Profile_Core"])
 
     frame.streamerText = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    frame.streamerText:SetPoint("TOP", frame.coreText, "BOTTOM", 0, -60)
+    frame.streamerText:SetPoint("TOP", frame.coreText, "BOTTOM", 0, -55)
     frame.streamerText:SetText(L["Profile_Streamers"])
 
     frame.infoText = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
