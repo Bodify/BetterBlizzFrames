@@ -1,3 +1,15 @@
+# BetterBlizzFrames 1.9.3e
+## Midnight
+### New
+- Add Dissonance profile (www.twitch.tv/dissonancewow). Ty for sharing.
+### Tweak
+- CDM: Center Icons now also centers vertical ones. For Vertical ones the Icon Direction setting in Edit Mode will decide which side any icons going over the row limit gets centered on. Up for on the right side and down for the left side. This may change your setup a bit.
+- Fix frame level for manabar for non-grouped raidframes with the Better Target Highlight setting.
+- Move Player Auras (topright) duration text on buffs down a little (after blizzard moved them up) when Darkmode: Auras is enabled to give the border some space and not overlap the duration.
+- Update Venruki and Wolf profile. Ty for sharing.
+### Bugfix
+- Fix issues with the kick tracking/coloring. Should be better now hopefully.
+
 # BetterBlizzFrames 1.9.3d
 ## Midnight
 ### Bugfix
