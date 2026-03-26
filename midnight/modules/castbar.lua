@@ -1032,71 +1032,6 @@ function BBF.CastBarTimerCaller()
     CastBarTimer(FocusFrameSpellBar)
 end
 
-
-local interruptSpells = {
-    1766,  -- Kick (Rogue)
-    2139,  -- Counterspell (Mage)
-    6552,  -- Pummel (Warrior)
-    19647, -- Spell Lock (Warlock)
-    47528, -- Mind Freeze (Death Knight)
-    57994, -- Wind Shear (Shaman)
-    --91802, -- Shambling Rush (Death Knight)
-    96231, -- Rebuke (Paladin)
-    106839,-- Skull Bash (Feral)
-    115781,-- Optical Blast (Warlock)
-    116705,-- Spear Hand Strike (Monk)
-    132409,-- Spell Lock (Warlock)
-    119910,-- Spell Lock (Warlock Pet)
-    89766, -- Axe Toss (Warlock Pet)
-    171138,-- Shadow Lock (Warlock)
-    147362,-- Countershot (Hunter)
-    183752,-- Disrupt (Demon Hunter)
-    187707,-- Muzzle (Hunter)
-    212619,-- Call Felhunter (Warlock)
-    --231665,-- Avengers Shield (Paladin)
-    351338,-- Quell (Evoker)
-    97547, -- Solar Beam
-    78675, -- Solar Beam
-    15487, -- Silence
-    --47482, -- Leap (DK Transform)
-}
-
--- Local variable to store the known interrupt spell ID
-local knownInterruptSpellID = nil
-
--- Function to find and return the interrupt spell the player knows
-local function GetInterruptSpell()
-    for _, spellID in ipairs(interruptSpells) do
-        if IsSpellKnownOrOverridesKnown(spellID) or (UnitExists("pet") and IsSpellKnownOrOverridesKnown(spellID, true)) then
-            knownInterruptSpellID = spellID
-            return spellID
-        end
-    end
-    knownInterruptSpellID = nil
-end
--- Recheck interrupt spells when lock resummons/sacrifices pet
-local petSummonSpells = {
-    [30146] = true,  -- Summon Demonic Tyrant (Demonology)
-    [691]    = true,  -- Summon Felhunter (for Spell Lock)
-    [108503] = true,  -- Grimoire of Sacrifice
-}
-
-local function OnEvent(self, event, unit, _, spellID)
-    if event == "UNIT_SPELLCAST_SUCCEEDED" then -- BBFMIDNIGHT i think this should be freed up from secrets soonTM, currently errors.
-        if not petSummonSpells[spellID] then return end
-    end
-    C_Timer.After(0.1, GetInterruptSpell)
-end
-
-local interruptSpellUpdate = CreateFrame("Frame")
-if select(2, UnitClass("player")) == "WARLOCK" then
-    --interruptSpellUpdate:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED", "player")
-end
-interruptSpellUpdate:RegisterEvent("TRAIT_CONFIG_UPDATED")
-interruptSpellUpdate:RegisterEvent("PLAYER_TALENT_UPDATE")
-interruptSpellUpdate:SetScript("OnEvent", OnEvent)
-
-
 local function HideChargeTiers(castBar)
     for _, child in ipairs({castBar:GetChildren()}) do
         if child.BasePip or (child.Normal and child.Disabled) then
@@ -1105,22 +1040,6 @@ local function HideChargeTiers(castBar)
         end
     end
 end
-
-local function ColorOldCastbar(castBar)
-    castBar:SetStatusBarColor(1, 0.7, 0, 1)
-    if castBar.barType == "channel" then
-        castBar:SetStatusBarColor(0, 1, 0, 1)
-    elseif castBar.barType == "interrupted" then
-        castBar:SetStatusBarColor(1, 0, 0, 1)
-    elseif castBar.barType == "uninterruptable" then
-        castBar:SetStatusBarColor(0.7, 0.7, 0.7, 1)
-        HideChargeTiers(castBar)
-    elseif castBar.barType == "empowered" then
-        castBar:SetStatusBarColor(1, 0.7, 0, 1)
-        HideChargeTiers(castBar)
-    end
-end
-
 
 function BBF.CastbarRecolorWidgets()
     if (BetterBlizzFramesDB.castBarRecolorInterrupt or BetterBlizzFramesDB.recolorCastbars or BetterBlizzFramesDB.classicFrames) then

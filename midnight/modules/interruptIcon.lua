@@ -1,28 +1,33 @@
-if not BBF.isMidnight then return end
 local interruptSpells = {
-    1766,   -- Kick (Rogue)
-    2139,   -- Counterspell (Mage)
-    6552,   -- Pummel (Warrior)
-    19647,  -- Spell Lock (Warlock)
-    47528,  -- Mind Freeze (Death Knight)
-    57994,  -- Wind Shear (Shaman)
-    96231,  -- Rebuke (Paladin)
-    106839, -- Skull Bash (Feral)
-    115781, -- Optical Blast (Warlock)
-    116705, -- Spear Hand Strike (Monk)
-    132409, -- Spell Lock (Warlock)
-    119910, -- Spell Lock (Warlock Pet)
-    89766,  -- Axe Toss (Warlock Pet)
-    171138, -- Shadow Lock (Warlock)
-    147362, -- Countershot (Hunter)
-    183752, -- Disrupt (Demon Hunter)
-    187707, -- Muzzle (Hunter)
-    212619, -- Call Felhunter (Warlock)
-    351338, -- Quell (Evoker)
+    [1766]   = true, -- Kick (Rogue)
+    [2139]   = true, -- Counterspell (Mage)
+    [6552]   = true, -- Pummel (Warrior)
+    [19647]  = true, -- Spell Lock (Warlock)
+    [47528]  = true, -- Mind Freeze (Death Knight)
+    [57994]  = true, -- Wind Shear (Shaman)
+    --[91802]  = true, -- Shambling Rush (Death Knight)
+    [96231]  = true, -- Rebuke (Paladin)
+    [106839] = true, -- Skull Bash (Feral)
+    [115781] = true, -- Optical Blast (Warlock)
+    [116705] = true, -- Spear Hand Strike (Monk)
+    [132409] = true, -- Spell Lock (Warlock)
+    [119910] = true, -- Spell Lock (Warlock Pet)
+    [89766]  = true, -- Axe Toss (Warlock Pet)
+    [171138] = true, -- Shadow Lock (Warlock)
+    [147362] = true, -- Countershot (Hunter)
+    [183752] = true, -- Disrupt (Demon Hunter)
+    [187707] = true, -- Muzzle (Hunter)
+    [212619] = true, -- Call Felhunter (Warlock)
+    --[231665] = true, -- Avengers Shield (Paladin)
+    [351338] = true, -- Quell (Evoker)
+    [97547]  = true, -- Solar Beam
+    [78675]  = true, -- Solar Beam
+    [15487]  = true, -- Silence
+    --[47482]  = true, -- Leap (DK Transform)
 }
 
 local function GetInterruptSpell()
-    for _, spellID in ipairs(interruptSpells) do
+    for spellID, _ in pairs(interruptSpells) do
         if IsSpellKnownOrOverridesKnown(spellID) or (UnitExists("pet") and IsSpellKnownOrOverridesKnown(spellID, true)) then
             return spellID
         end
@@ -34,7 +39,7 @@ local playerKick = GetInterruptSpell()
 
 -- Recheck interrupt spells when lock resummons/sacrifices pet
 local petSummonSpells = {
-    [30146]  = true, -- Summon Demonic Tyrant (Demonology)
+    [30146]  = true, -- Summon Felguard (Demonology)
     [691]    = true, -- Summon Felhunter (for Spell Lock)
     [108503] = true, -- Grimoire of Sacrifice
 }
@@ -53,15 +58,11 @@ end)
 BBF.playerKickReady = true
 
 local function UpdateInterruptTracking()
-    if not playerKick then
-        playerKick = GetInterruptSpell()
-    end
+    playerKick = GetInterruptSpell()
     if playerKick then
         local cooldownInfo = C_Spell.GetSpellCooldownDuration(playerKick)
         if cooldownInfo then
             BBF.interruptTrackingIcon.cooldown:SetCooldownFromDurationObject(cooldownInfo)
-            local isOnCooldown = BBF.interruptTrackingIcon.cooldown:IsShown()
-            BBF.playerKickReady = not isOnCooldown
         end
     end
 end
