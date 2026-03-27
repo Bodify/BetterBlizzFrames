@@ -1427,6 +1427,8 @@ local function CastbarOnEvent(self, event)
         return
     end
 
+    self.lastEvent = event
+
     if unitToken then
         if self.casting then
             _, _, _, _, _, _, _, notInterruptible = UnitCastingInfo(unitToken)
@@ -1644,6 +1646,8 @@ function BBF.CastbarColorHooks()
                     end
                     return
                 end
+
+                self.lastEvent = event
 
                 local notInterruptible
                 local unitToken = self.unit
