@@ -543,6 +543,7 @@ end)
 
 
 local function CompactPartyFrameNameChanges(frame)
+    if issecretvalue(frame) then return end --???
     if not frame or not frame.unit then return end
     if frame.unit:find("nameplate") then return end
     if partyArenaNames and IsActiveBattlefieldArena() and UnitIsFriend(frame.unit, "player") then
