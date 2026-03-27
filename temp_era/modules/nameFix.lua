@@ -444,6 +444,7 @@ local function SetUnitFramesFont(font, size, outline)
     if outline == "NONE" then
         outline = nil
     end
+    local anyFailed = false
     for _, frame in ipairs(frames) do
         local newSize = size
         if frame == PetFrame or frame == TargetFrameToT then
@@ -455,7 +456,9 @@ local function SetUnitFramesFont(font, size, outline)
                 newSize = size -2
             end
         end
-        frame.bbfName:SetFont(font, newSize, outline)
+        if not frame.bbfName:SetFont(font, newSize, outline) then
+            anyFailed = true
+        end
         --if frame.TargetFrameContent and frame.TargetFrameContent.TargetFrameContentMain.LevelText then
             --frame.TargetFrameContent.TargetFrameContentMain.LevelText:SetFont(font, size, outline)
             local a,b = PlayerLevelText:GetFont()
@@ -465,6 +468,7 @@ local function SetUnitFramesFont(font, size, outline)
         --end
         frame.bbfForcedFont = true
     end
+    return not anyFailed
 end
 
 
@@ -584,6 +588,9 @@ local function SetUnitFramesValuesFont(font, size, outline)
             textObject:SetFont(newFont, newSize, newOutline)
         end
     end
+    -- Verify at least one representative text applied correctly
+    local verifyFont = playerHealthBar.TextString:GetFont()
+    return verifyFont == font
 end
 
 
@@ -811,13 +818,17 @@ function BBF.SetCustomFonts()
         end
     end
 
+    local needsRetry = false
+
     if db.changeUnitFrameFont then
         local fontName = db.unitFrameFont
         local fontPath = LSM:Fetch(LSM.MediaType.FONT, fontName)
         local fontSize = db.unitFrameFontSize or 10
         local outline = db.unitFrameFontOutline or "THINOUTLINE"
 
-        SetUnitFramesFont(fontPath, fontSize, outline)
+        if not SetUnitFramesFont(fontPath, fontSize, outline) then
+            needsRetry = true
+        end
     end
 
     if db.changeActionBarFont then
@@ -838,7 +849,24 @@ function BBF.SetCustomFonts()
         local fontSize = db.unitFrameValueFontSize or 10
         local outline = db.unitFrameValueFontOutline or "THINOUTLINE"
 
-        SetUnitFramesValuesFont(fontPath, fontSize, outline)
+        if not SetUnitFramesValuesFont(fontPath, fontSize, outline) then
+            needsRetry = true
+        end
+    end
+
+    -- Font files from SharedMedia may not be loaded into the VFS yet on first login.
+    -- SetFont() silently fails in that case. Retry with increasing delays until it works.
+    if needsRetry then
+        local retryCount = BBF.fontRetryCount or 0
+        if retryCount < 10 then
+            BBF.fontRetryCount = retryCount + 1
+            local delay = min(retryCount + 1, 5)
+            C_Timer.After(delay, function()
+                BBF.SetCustomFonts()
+            end)
+        end
+    else
+        BBF.fontRetryCount = 0
     end
 end
 
