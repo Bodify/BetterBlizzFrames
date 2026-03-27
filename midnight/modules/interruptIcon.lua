@@ -44,29 +44,6 @@ local petSummonSpells = {
     [108503] = true, -- Grimoire of Sacrifice
 }
 
-BBF.interruptTrackingIcon = CreateFrame("Frame")
-BBF.interruptTrackingIcon.cooldown = CreateFrame("Cooldown", nil, BBF.interruptTrackingIcon, "CooldownFrameTemplate")
-BBF.interruptTrackingIcon.cooldown:HookScript("OnCooldownDone", function()
-    BBF.playerKickReady = true
-    if UnitExists("target") then
-        BBF.ColorCastbar(TargetFrameSpellBar)
-    end
-    if UnitExists("focus") then
-        BBF.ColorCastbar(FocusFrameSpellBar)
-    end
-end)
-BBF.playerKickReady = true
-
-local function UpdateInterruptTracking()
-    playerKick = GetInterruptSpell()
-    if playerKick then
-        local cooldownInfo = C_Spell.GetSpellCooldownDuration(playerKick)
-        if cooldownInfo then
-            BBF.interruptTrackingIcon.cooldown:SetCooldownFromDurationObject(cooldownInfo)
-        end
-    end
-end
-
 local function UpdateInterruptIcon(frame)
     if not frame then return end
 
@@ -137,6 +114,43 @@ local function UpdateInterruptIcon(frame)
     end
 end
 
+local function UpdateIconsAndColor()
+    if UnitExists("target") then
+        BBF.ColorCastbar(TargetFrameSpellBar)
+        if TargetFrameSpellBar.interruptIconFrame then
+            UpdateInterruptIcon(TargetFrameSpellBar.interruptIconFrame)
+        end
+    end
+    if UnitExists("focus") then
+        BBF.ColorCastbar(FocusFrameSpellBar)
+        if FocusFrameSpellBar.interruptIconFrame then
+            UpdateInterruptIcon(FocusFrameSpellBar.interruptIconFrame)
+        end
+    end
+end
+
+BBF.interruptTrackingIcon = CreateFrame("Frame")
+BBF.interruptTrackingIcon.cooldown = CreateFrame("Cooldown", nil, BBF.interruptTrackingIcon, "CooldownFrameTemplate")
+BBF.interruptTrackingIcon.cooldown:HookScript("OnCooldownDone", function()
+    BBF.interruptReady = true
+    UpdateIconsAndColor()
+end)
+
+local function UpdateInterruptTracking()
+    if not playerKick then
+        playerKick = GetInterruptSpell()
+    end
+    if playerKick then
+        local cooldownInfo = C_Spell.GetSpellCooldownDuration(playerKick)
+        if cooldownInfo then
+            BBF.interruptTrackingIcon.cooldown:SetCooldownFromDurationObject(cooldownInfo)
+            BBF.interruptReady = not BBF.interruptTrackingIcon.cooldown:IsShown()
+        end
+    else
+        BBF.interruptReady = nil
+    end
+end
+
 local function OnPetEvent(self, event, unit, _, spellID)
     if event == "UNIT_SPELLCAST_SUCCEEDED" then
         if not petSummonSpells[spellID] then return end
@@ -144,25 +158,24 @@ local function OnPetEvent(self, event, unit, _, spellID)
     C_Timer.After(0.1, function()
         playerKick = GetInterruptSpell()
         UpdateInterruptTracking()
-        if TargetFrameSpellBar.interruptIconFrame then
-            UpdateInterruptIcon(TargetFrameSpellBar.interruptIconFrame)
-        end
-        if FocusFrameSpellBar.interruptIconFrame then
-            UpdateInterruptIcon(FocusFrameSpellBar.interruptIconFrame)
-        end
+        UpdateIconsAndColor()
     end)
 end
 
 local cooldownFrame = CreateFrame("Frame")
 cooldownFrame:RegisterEvent("SPELL_UPDATE_COOLDOWN")
+cooldownFrame:RegisterEvent("SPELL_UPDATE_USABLE")
 cooldownFrame:SetScript("OnEvent", function(self, event, spellID)
-    if spellID ~= playerKick then return end
-    UpdateInterruptTracking()
-    if TargetFrameSpellBar.interruptIconFrame then
-        UpdateInterruptIcon(TargetFrameSpellBar.interruptIconFrame)
-    end
-    if FocusFrameSpellBar.interruptIconFrame then
-        UpdateInterruptIcon(FocusFrameSpellBar.interruptIconFrame)
+    if event == "SPELL_UPDATE_COOLDOWN" then
+        if spellID ~= playerKick then return end
+        UpdateInterruptTracking()
+        UpdateIconsAndColor()
+    else
+        local oldInterruptStatus = BBF.interruptReady
+        UpdateInterruptTracking()
+        if oldInterruptStatus ~= BBF.interruptReady then
+            UpdateIconsAndColor()
+        end
     end
 end)
 
