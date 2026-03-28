@@ -416,7 +416,11 @@ function BBF.DarkmodeFrames(bypass)
         for _, frame in pairs({_G.BuffFrame.AuraContainer:GetChildren()}) do
             createOrUpdateBorders(frame, vertexColor)
             if frame.Duration and frame.Icon then
-                frame.Duration:SetPoint("TOP", frame.Icon, "BOTTOM", 0, -3)
+                if BuffFrame.AuraContainer.addIconsToTop then
+                    frame.Duration:SetPoint("BOTTOM", frame.Icon, "TOP", 0, 3)
+                else
+                    frame.Duration:SetPoint("TOP", frame.Icon, "BOTTOM", 0, -3)
+                end
             end
         end
     end
