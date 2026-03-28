@@ -1,3 +1,8 @@
+# BetterBlizzFrames 1.9.3g
+## Midnight
+### Bugfix
+- Fix aura durations on Player Auras not showing if moving auras upwards + dark mode.
+
 # BetterBlizzFrames 1.9.3f
 ## All
 ### Bugfix
