@@ -1480,6 +1480,12 @@ local function PlayerFrameNameChanges(frame)
         PlayerLevelText:SetTextColor(classColor.r, classColor.g, classColor.b)
     end
 end
+C_Timer.After(1, function()
+    PlayerFrameNameChanges(PlayerFrame)
+end)
+C_Timer.After(2, function() --lol idk deal with it later (rp name/text/iforget)
+    PlayerFrameNameChanges(PlayerFrame)
+end)
 
 
 local function TargetFrameNameChanges(frame)
