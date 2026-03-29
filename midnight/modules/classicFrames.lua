@@ -315,6 +315,7 @@ local function MakeClassicFrame(frame)
                     ToggleNoLevelFrame(false, true)
                 end
             elseif ( classification == "minus" ) then
+                SetXYPoint(hpContainer.HealthBarMask, 1, -9)
                 FrameAdjustments(frameContainer, true)
                 frame.ClassicFrame.Texture:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Minus")
                 frame.ClassicFrame.Background:SetPoint("TOPLEFT", self.TargetFrameContent.TargetFrameContentMain.HealthBarsContainer.HealthBar, "TOPLEFT", 3, -10)
