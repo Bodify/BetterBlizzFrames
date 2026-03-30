@@ -348,6 +348,7 @@ function BBF.DarkmodeFrames(bypass)
             for key, region in pairs(GameTooltip.NineSlice) do
                 if key == "Center" then
                     applySettings(region, tooltipSat, 0)
+                    region:SetDrawLayer("BACKGROUND", -8)
                 end
             end
         end)
