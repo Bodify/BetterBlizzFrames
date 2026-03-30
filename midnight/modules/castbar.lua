@@ -513,6 +513,7 @@ function BBF.ClassicCastbar(castBar, unitType)
             end)
         end
 
+        BBF.CastbarColorHooks()
 
 
         castBar.textureChangedNeedsColor = true

@@ -3827,6 +3827,9 @@ function BBF.HookUnitFrameTextures()
                 ApplyCastbarTexture(TargetFrameSpellBar)
                 ApplyCastbarTexture(FocusFrameSpellBar)
             end
+            if db.classicCastbars or db.classicCastbarsPlayer then
+                BBF.CastbarColorHooks()
+            end
 
             if db.showPartyCastbar and not db.classicCastbarsParty then
                 C_Timer.After(1, function()
