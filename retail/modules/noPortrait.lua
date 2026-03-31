@@ -768,6 +768,14 @@ local function MakeNoPortraitMode(frame)
                             manaBar.BBFPositionFrame:Show()
                             manaBar.BBFPositionFrame:SetParent(frame.noPortraitMode)
                             manaBar.BBFPositionFrame:SetAlpha(1)
+                            if classification == "minus" then
+                                manaBar.BBFPositionFrame:ClearAllPoints()
+                                manaBar.BBFPositionFrame:SetPoint("TOPLEFT", manaBar, "TOPLEFT", 1, -9)
+                            else
+                                local cfg = (frame == TargetFrame) and BorderPositions.target.mana or BorderPositions.focus.mana
+                                manaBar.BBFPositionFrame:ClearAllPoints()
+                                manaBar.BBFPositionFrame:SetPoint("TOPLEFT", manaBar, "TOPLEFT", cfg.startX, cfg.startY)
+                            end
                         end
                         if manaBar.BBFPixelBorder then
                             manaBar.BBFPixelBorder:Show()
@@ -781,6 +789,9 @@ local function MakeNoPortraitMode(frame)
                 else
                     if manaBar.BBFPositionFrame then
                         manaBar.BBFPositionFrame:SetParent(manaBar)
+                        local cfg = (frame == TargetFrame) and BorderPositions.target.mana or BorderPositions.focus.mana
+                        manaBar.BBFPositionFrame:ClearAllPoints()
+                        manaBar.BBFPositionFrame:SetPoint("TOPLEFT", manaBar, "TOPLEFT", cfg.startX, cfg.startY)
                     end
                     if manaBar.pixelBorderBackground then
                         manaBar.pixelBorderBackground:SetParent(manaBar)
