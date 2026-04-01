@@ -5052,7 +5052,9 @@ Frame:SetScript("OnEvent", function(...)
             --Settings.OpenToCategory(BBF.category:GetID())
         else
             C_Timer.After(1, function()
-                Settings.OpenToCategory(BBF.category:GetID())
+                if not InCombatLockdown() then
+                    Settings.OpenToCategory(BBF.category:GetID())
+                end
             end)
         end
         BetterBlizzFramesDB.reopenOptions = false
