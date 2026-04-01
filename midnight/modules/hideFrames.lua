@@ -448,6 +448,7 @@ function BBF.HideFrames()
                 end
 
                 hooksecurefunc("CompactUnitFrame_SetUpFrame", function(frame, setupFunc)
+                    if issecretvalue(frame) then return end
                     ApplyDispelOverlaySettings(frame)
                 end)
                 BBF.hidePartyDispelOverlayHooked = true

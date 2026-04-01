@@ -1099,6 +1099,7 @@ end
 function BBF.ModernRoleIcons()
     if not BetterBlizzFramesDB.newRaidFrameRoleIcons then return end
     hooksecurefunc("CompactUnitFrame_UpdateRoleIcon", function(frame)
+        if issecretvalue(frame) then return end
         if not frame.roleIcon then return end
         local role = UnitGroupRolesAssigned(frame.unit);
         if ( frame.optionTable.displayRoleIcon and (role == "TANK" or role == "HEALER" or role == "DAMAGER") ) then
@@ -1353,12 +1354,14 @@ end
 function BBF.HideAbsorbGlow()
     if not BetterBlizzFramesDB.hideAllAbsorbGlow then return end
     hooksecurefunc("CompactUnitFrame_UpdateHealPrediction", function(frame)
+        if issecretvalue(frame) then return end
         if not frame or frame:IsForbidden() then return end
         if frame.overAbsorbGlow then
             frame.overAbsorbGlow:SetAlpha(0)
         end
     end)
     hooksecurefunc("UnitFrameHealPredictionBars_Update", function(frame)
+        if issecretvalue(frame) then return end
         if not frame or frame:IsForbidden() then return end
         if frame.overAbsorbGlow then
             frame.overAbsorbGlow:SetAlpha(0)
@@ -2097,6 +2100,7 @@ end
 function BBF.HookAndUpdatePartyFrameRangeAlpha(toggle)
     if not BetterBlizzFramesDB.changePartyFrameRangeAlpha then return end
     local function UpdateRangeAlpha(frame)
+        if issecretvalue(frame) then return end
         if not frame or not frame.displayedUnit then return end
         if frame:IsForbidden() or string.match(frame.displayedUnit, "nameplate") then return end
         if BBF.SoloPartyFrame then
@@ -3934,6 +3938,7 @@ local function HookRaidFrameTextures()
     if C_CVar.GetCVar("raidOptionDisplayPets") == "1" or C_CVar.GetCVar("raidOptionDisplayMainTankAndAssist") == "1" then
         hooksecurefunc("DefaultCompactMiniFrameSetup", SetRaidFramePetTextures)
         hooksecurefunc("CompactUnitFrame_SetUnit", function(frame)
+            if issecretvalue(frame) then return end
             if frame.unit and (frame.unit:match("raidpet") or frame.unit:match("target")) then
                 SetRaidFramePetTextures(frame)
             end
