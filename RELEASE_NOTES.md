@@ -1,3 +1,8 @@
+# BetterBlizzFrames 1.9.3i
+## Midnight
+### Bugfix
+- Add some secret checks to avoid potential errors.
+
 # BetterBlizzFrames 1.9.3h
 ## Midnight
 ### Bugfix
