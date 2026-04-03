@@ -49,6 +49,7 @@ local defaultSettings = {
     queueTimerWarning = false,
     queueTimerAudio = true,
     queueTimerWarningTime = 6,
+    kickPopupSoundName = "Lossa Countered",
     minimizeObjectiveTracker = true,
     fadeMicroMenuExceptQueue = true,
     surrenderArena = true,
@@ -3226,6 +3227,7 @@ LSM:Register("statusbar", "Blizzard Retail Bar", [[Interface\AddOns\BetterBlizzF
 LSM:Register("statusbar", "Blizzard Retail Bar Crop", [[Interface\AddOns\BetterBlizzFrames\media\blizzTex\BlizzardRetailBarCrop]])
 LSM:Register("statusbar", "Blizzard Retail Bar Crop 2", [[Interface\AddOns\BetterBlizzFrames\media\blizzTex\BlizzardRetailBarCrop2]])
 LSM:Register("statusbar", "Smooth", [[Interface\Addons\BetterBlizzFrames\media\smooth]])
+LSM:Register("sound", "Lossa Countered", [[Interface\AddOns\BetterBlizzFrames\media\LossaCountered.ogg]])
 
 
 local texture = "Interface\\Addons\\BetterBlizzPlates\\media\\DragonflightTextureHD"
@@ -4918,9 +4920,10 @@ function BBF.SpecPortraits()
 end
 
 local function TurnTestModesOff()
-    BetterBlizzFramesDB.absorbIndicatorTestMode = false
-    BetterBlizzFramesDB.partyCastBarTestMode = false
-    BetterBlizzFramesDB.petCastBarTestMode = false
+    BetterBlizzFramesDB.absorbIndicatorTestMode = nil
+    BetterBlizzFramesDB.partyCastBarTestMode = nil
+    BetterBlizzFramesDB.petCastBarTestMode = nil
+    BetterBlizzFramesDB.kickPopupTestMode = nil
 end
 
 local function executeCustomCode()
@@ -5020,6 +5023,7 @@ Frame:SetScript("OnEvent", function(...)
                 end
                 BBF.SetCenteredNamesCaller()
                 BBF.ToggleCastbarInterruptIcon()
+                BBF.ToggleKickPopup()
                 BBF.DarkmodeFrames()
                 --BBF.PlayerReputationColor()
                 --BBF.ClassColorPlayerName()--bodify

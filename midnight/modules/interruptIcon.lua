@@ -327,3 +327,202 @@ function BBF.UpdateInterruptIconSettings()
         end
     end
 end
+
+local LSM = LibStub("LibSharedMedia-3.0")
+
+local function CreateKickPopupFrame()
+    local xPos = BetterBlizzFramesDB.kickPopupXPos or 0
+    local yPos = (BetterBlizzFramesDB.kickPopupYPos or 0) - 225
+    local scale = BetterBlizzFramesDB.kickPopupScale or 1.2
+
+    local anchor = CreateFrame("Frame", nil, UIParent)
+    anchor:SetSize(1, 1)
+    anchor:SetPoint("TOP", UIParent, "TOP", xPos, yPos)
+    anchor:SetFrameStrata("HIGH")
+
+    local popup = CreateFrame("Frame", nil, anchor)
+    popup:SetSize(300, 32)
+    popup:SetPoint("CENTER", anchor, "CENTER", 0, 0)
+    popup:SetScale(scale)
+    popup:Hide()
+
+    popup.anchor = anchor
+
+    popup.label = popup:CreateFontString(nil, "OVERLAY", "GameFontNormalHuge")
+    popup.label:SetPoint("CENTER", popup, "CENTER", 16, 0)
+
+    popup.icon = popup:CreateTexture(nil, "ARTWORK")
+    local iconScale = BetterBlizzFramesDB.kickPopupIconScale or 1
+    popup.icon:SetSize(26 * iconScale, 26 * iconScale)
+    popup.icon:SetPoint("RIGHT", popup.label, "LEFT", -4, 0)
+
+    local fontName = BetterBlizzFramesDB.kickPopupFont
+    if fontName then
+        local fontPath = LSM:Fetch(LSM.MediaType.FONT, fontName)
+        if fontPath then
+            popup.label:SetFont(fontPath, 18)
+        end
+    end
+
+    local color = BetterBlizzFramesDB.kickPopupTextColor or {0.992, 0.992, 0.569}
+    popup.label:SetTextColor(color[1], color[2], color[3])
+
+    popup.fadeOut = popup:CreateAnimationGroup()
+    local aOut = popup.fadeOut:CreateAnimation("Alpha")
+    aOut:SetFromAlpha(1)
+    aOut:SetToAlpha(0)
+    aOut:SetDuration(0.5)
+    popup.fadeOut:SetToFinalAlpha(true)
+    popup.fadeOut:SetScript("OnFinished", function() popup:Hide() end)
+
+    return popup
+end
+
+local function PlayKickSound()
+    if not BetterBlizzFramesDB.kickPopupPlaySound then return end
+    local channel = BetterBlizzFramesDB.kickPopupSoundChannel or "Master"
+    local fileID = BetterBlizzFramesDB.kickPopupSoundFileID
+    if fileID and fileID ~= 0 then
+        PlaySound(fileID, channel)
+    else
+        local soundName = BetterBlizzFramesDB.kickPopupSoundName
+        if soundName then
+            local path = LSM:Fetch(LSM.MediaType.SOUND, soundName)
+            if path then PlaySoundFile(path, channel) end
+        end
+    end
+end
+
+local function ShowKickPopup(interruptedSpellID)
+    local popup = BBF.kickPopupFrame
+    if not popup then return end
+
+    local spellName = C_Spell.GetSpellName(interruptedSpellID)
+    local spellIcon = C_Spell.GetSpellTexture(interruptedSpellID)
+
+    if spellIcon then
+        popup.icon:SetTexture(spellIcon)
+        popup.icon:Show()
+    else
+        popup.icon:Hide()
+    end
+
+    if BetterBlizzFramesDB.kickPopupSauce then
+        popup.label:SetText(spellName and ("good kick fam [" .. spellName .. "]") or "good kick fam")
+    else
+        popup.label:SetText(spellName and ("Interrupted " .. spellName) or "Interrupted")
+    end
+
+    popup.fadeOut:Stop()
+    popup:SetAlpha(1)
+    popup:Show()
+    PlayKickSound()
+    C_Timer.After(2, function()
+        if popup:IsShown() then popup.fadeOut:Play() end
+    end)
+end
+
+local kickPlayerKicked = false
+local kickLastShownTime = 0
+
+function BBF.ToggleKickPopup()
+    if BBF.kickPopupFrame then
+        BBF.kickPopupFrame.anchor:Hide()
+        BBF.kickPopupFrame:Hide()
+        BBF.kickPopupFrame = nil
+    end
+    if BBF.kickPopupEventFrame then
+        BBF.kickPopupEventFrame:UnregisterAllEvents()
+        BBF.kickPopupEventFrame = nil
+    end
+
+    if not BetterBlizzFramesDB.kickPopupEnabled then return end
+
+    BBF.kickPopupFrame = CreateKickPopupFrame()
+
+    BBF.kickPopupEventFrame = CreateFrame("Frame")
+    BBF.kickPopupEventFrame:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED", "player")
+    BBF.kickPopupEventFrame:RegisterEvent("UNIT_SPELLCAST_INTERRUPTED")
+
+    BBF.kickPopupEventFrame:SetScript("OnEvent", function(self, event, unit, castGUID, spellID, interruptedByOrCastBarID)
+        if event == "UNIT_SPELLCAST_SUCCEEDED" then
+            if interruptSpells[spellID] then
+                kickPlayerKicked = true
+                C_Timer.After(0.1, function() kickPlayerKicked = false end)
+            end
+            return
+        end
+
+        local isRealInterrupt = issecretvalue(interruptedByOrCastBarID) or (interruptedByOrCastBarID ~= nil)
+        if not isRealInterrupt then return end
+
+        local now = GetTime()
+        if now - kickLastShownTime < 0.5 then return end
+
+        if kickPlayerKicked then
+            kickLastShownTime = now
+            ShowKickPopup(spellID)
+        end
+    end)
+end
+
+function BBF.UpdateKickPopupSettings()
+    local popup = BBF.kickPopupFrame
+    if not popup then return end
+    local xPos = BetterBlizzFramesDB.kickPopupXPos or 0
+    local yPos = (BetterBlizzFramesDB.kickPopupYPos or 0) - 225
+    local scale = BetterBlizzFramesDB.kickPopupScale or 1.2
+    popup.anchor:ClearAllPoints()
+    popup.anchor:SetPoint("TOP", UIParent, "TOP", xPos, yPos)
+    popup:SetScale(scale)
+    local iconScale = BetterBlizzFramesDB.kickPopupIconScale or 1
+    popup.icon:SetSize(26 * iconScale, 26 * iconScale)
+end
+
+function BBF.UpdateKickPopupFont()
+    local popup = BBF.kickPopupFrame
+    if not popup then return end
+    local fontName = BetterBlizzFramesDB.kickPopupFont
+    if fontName then
+        local fontPath = LSM:Fetch(LSM.MediaType.FONT, fontName)
+        if fontPath then
+            popup.label:SetFont(fontPath, 18)
+        end
+    end
+    local color = BetterBlizzFramesDB.kickPopupTextColor or {0.992, 0.992, 0.569}
+    popup.label:SetTextColor(color[1], color[2], color[3])
+end
+
+function BBF.TestKickPopup(enable)
+    if not enable then
+        if BBF.kickPopupFrame then
+            BBF.kickPopupFrame.fadeOut:Stop()
+            BBF.kickPopupFrame:Hide()
+        end
+        if not BetterBlizzFramesDB.kickPopupEnabled and BBF.kickPopupFrame then
+            BBF.kickPopupFrame.anchor:Hide()
+            BBF.kickPopupFrame = nil
+        end
+        return
+    end
+    if not BBF.kickPopupFrame then
+        BBF.kickPopupFrame = CreateKickPopupFrame()
+    end
+    local popup = BBF.kickPopupFrame
+    local spellName = C_Spell.GetSpellName(118)
+    local spellIcon = C_Spell.GetSpellTexture(118)
+    if spellIcon then
+        popup.icon:SetTexture(spellIcon)
+        popup.icon:Show()
+    else
+        popup.icon:Hide()
+    end
+    if BetterBlizzFramesDB.kickPopupSauce then
+        popup.label:SetText(spellName and ("good kick fam [" .. spellName .. "]") or "good kick fam")
+    else
+        popup.label:SetText(spellName and ("Interrupted " .. spellName) or "Interrupted")
+    end
+    popup.fadeOut:Stop()
+    popup:SetAlpha(1)
+    popup:Show()
+end

@@ -129,7 +129,7 @@ end
 local LSM = LibStub("LibSharedMedia-3.0")
 
 
-local function CreateFontDropdown(name, parentFrame, defaultText, settingKey, toggleFunc, point, dropdownWidth, maxVisibleItems)
+local function CreateFontDropdown(name, parentFrame, defaultText, settingKey, toggleFunc, point, dropdownWidth, maxVisibleItems, labelPos)
     maxVisibleItems = maxVisibleItems or 25  -- Default to 25 visible items if not provided
 
     -- Create container for label and dropdown
@@ -137,10 +137,7 @@ local function CreateFontDropdown(name, parentFrame, defaultText, settingKey, to
     container:SetSize(dropdownWidth or 155, 50)
 
     -- Create and position label
-    local label = container:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall2")
-    label:SetPoint("LEFT", container, "LEFT", -50, -12)
-    label:SetText(L["Font"])
-    label:SetFont(fontSmall, 13)
+    local label
 
     -- Create the dropdown button with the new dropdown template
     local dropdown = CreateFrame("DropdownButton", nil, parentFrame, "WowStyle1DropdownTemplate")
@@ -149,6 +146,17 @@ local function CreateFontDropdown(name, parentFrame, defaultText, settingKey, to
     dropdown:SetDefaultText(BetterBlizzFramesDB[settingKey] or defaultText)
     dropdown.Background:SetVertexColor(0.9,0.9,0.9)
     dropdown.Arrow:SetVertexColor(0.9,0.9,0.9)
+
+    if labelPos == "TOP" then
+        label = container:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+        label:SetPoint("BOTTOM", dropdown, "TOP", 0, 3)
+        label:SetText(L["Font"])
+    else
+        label = container:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall2")
+        label:SetPoint("LEFT", container, "LEFT", -50, -12)
+        label:SetText(L["Font"])
+        label:SetFont(fontSmall, 13)
+    end
 
     -- Custom font display for the selected font
     -- dropdown.customFontText = dropdown:CreateFontString(nil, "OVERLAY", "GameFontNormal")
@@ -494,6 +502,51 @@ end
 
 
 
+
+StaticPopupDialogs["BBF_KICK_POPUP_SOUND_ID"] = {
+    text = "Enter a custom Sound ID (leave empty or 0 to use dropdown):",
+    button1 = "OK",
+    button2 = "Cancel",
+    hasEditBox = true,
+    OnShow = function(self)
+        local fileID = BetterBlizzFramesDB.kickPopupSoundFileID
+        if fileID and fileID ~= 0 then
+            self.editBox:SetText(tostring(fileID))
+        else
+            self.editBox:SetText("")
+        end
+        self.editBox:HighlightText()
+    end,
+    OnAccept = function(self)
+        local text = self.editBox:GetText():trim()
+        local id = tonumber(text)
+        if not id or id == 0 then
+            BetterBlizzFramesDB.kickPopupSoundFileID = nil
+            if BBF.kickPopupSoundNameDropdown then
+                LibDD:UIDropDownMenu_SetText(BBF.kickPopupSoundNameDropdown, BetterBlizzFramesDB.kickPopupSoundName or "Lossa Countered")
+            end
+        else
+            BetterBlizzFramesDB.kickPopupSoundFileID = id
+            if BBF.kickPopupSoundNameDropdown then
+                LibDD:UIDropDownMenu_SetText(BBF.kickPopupSoundNameDropdown, "ID: " .. id)
+            end
+            local channel = BetterBlizzFramesDB.kickPopupSoundChannel or "Master"
+            PlaySound(id, channel)
+        end
+    end,
+    EditBoxOnEnterPressed = function(self)
+        local parent = self:GetParent()
+        StaticPopupDialogs["BBF_KICK_POPUP_SOUND_ID"].OnAccept(parent)
+        parent:Hide()
+    end,
+    EditBoxOnEscapePressed = function(self)
+        self:GetParent():Hide()
+    end,
+    timeout = 0,
+    whileDead = true,
+    hideOnEscape = true,
+    preferredIndex = 3,
+}
 
 StaticPopupDialogs["BBF_CONFIRM_RELOAD"] = {
     text = titleText..L["Popup_Reload_Required"],
@@ -1233,6 +1286,18 @@ local function CreateSlider(parent, label, minValue, maxValue, stepValue, elemen
                 elseif element == "castBarInterruptIconYPos" then
                     BetterBlizzFramesDB.castBarInterruptIconYPos = value
                     BBF.UpdateInterruptIconSettings()
+                elseif element == "kickPopupScale" then
+                    BetterBlizzFramesDB.kickPopupScale = value
+                    BBF.UpdateKickPopupSettings()
+                elseif element == "kickPopupIconScale" then
+                    BetterBlizzFramesDB.kickPopupIconScale = value
+                    BBF.UpdateKickPopupSettings()
+                elseif element == "kickPopupXPos" then
+                    BetterBlizzFramesDB.kickPopupXPos = value
+                    BBF.UpdateKickPopupSettings()
+                elseif element == "kickPopupYPos" then
+                    BetterBlizzFramesDB.kickPopupYPos = value
+                    BBF.UpdateKickPopupSettings()
                 elseif element == "uiWidgetPowerBarScale" then
                     BetterBlizzFramesDB.uiWidgetPowerBarScale = value
                     BBF.ResizeUIWidgetPowerBarFrame()
@@ -4251,7 +4316,7 @@ local function guiGeneralTab()
     CreateTooltip(filterMiscInfo, L["Tooltip_Filter_Misc_Info"])
 
     local arenaNamesText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    arenaNamesText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 460, -108)
+    arenaNamesText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 460, -127)
     arenaNamesText:SetText(L["Arena_Names"])
     arenaNamesText:SetFont(fontLarge, 16)
     arenaNamesText:SetTextColor(1,1,1)
@@ -4320,7 +4385,7 @@ local function guiGeneralTab()
     partyArenaNames:HookScript("OnClick", ToggleDependentCheckboxes)
 
     local focusFrameText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    focusFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 460, -183)
+    focusFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 460, -199)
     focusFrameText:SetText(L["Focus_Frame"])
     focusFrameText:SetFont(fontLarge, 16)
     focusFrameText:SetTextColor(1,1,1)
@@ -4390,7 +4455,7 @@ local function guiGeneralTab()
 
 
     local focusToTFrameText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    focusToTFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 460, -298)
+    focusToTFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 460, -307)
     focusToTFrameText:SetText(L["Focus_ToT"])
     focusToTFrameText:SetFont(fontLarge, 16)
     focusToTFrameText:SetTextColor(1,1,1)
@@ -5606,6 +5671,20 @@ local function guiGeneralTab()
     local enableBigDebuffs = CreateCheckbox("enableBigDebuffs", L["Enable_Big_Debuffs"], BetterBlizzFrames, nil, BBF.EnableBigDebuffs)
     enableBigDebuffs:SetPoint("TOPLEFT", queueTimer, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(enableBigDebuffs, L["Enable_Big_Debuffs"], L["Tooltip_Big_Debuffs_Desc"], nil, "ANCHOR_LEFT")
+
+    BetterBlizzFrames.kickPopupEnabled = CreateCheckbox("kickPopupEnabled", L["Kick_Popup"], BetterBlizzFrames, nil, function()
+        BBF.ToggleKickPopup()
+        if BetterBlizzFramesDB.kickPopupEnabled then
+            BBF.TestKickPopup(true)
+            C_Timer.After(2.5, function()
+                if not BetterBlizzFramesDB.kickPopupTestMode and BBF.kickPopupFrame and BBF.kickPopupFrame:IsShown() then
+                    BBF.kickPopupFrame.fadeOut:Play()
+                end
+            end)
+        end
+    end)
+    BetterBlizzFrames.kickPopupEnabled:SetPoint("TOPLEFT", enableBigDebuffs, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(BetterBlizzFrames.kickPopupEnabled, L["Kick_Popup"], L["Tooltip_Kick_Popup_Desc"], nil, "ANCHOR_LEFT")
 
     local btnGap = -2
     local lastCoreButton = profilesFrame.coreText
@@ -7054,6 +7133,173 @@ local function guiPositionAndScale()
     local interruptIconBorder = CreateCheckbox("interruptIconBorder", L["Border_Status_Color"], contentFrame, nil, BBF.UpdateInterruptIconSettings)
     interruptIconBorder:SetPoint("TOPLEFT", castBarInterruptIconShowActiveOnly, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(interruptIconBorder, L["Border_Status_Color"], L["Tooltip_Border_Status_Color_Desc"])
+
+    ----------------------
+    -- Kick Popup
+    ----------------------
+    local anchorSubKickPopup = contentFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    anchorSubKickPopup:SetPoint("CENTER", mainGuiAnchor2, "CENTER", fourthLineX - 30, secondLineY - 15)
+    anchorSubKickPopup:SetText(L["Kick_Popup"])
+
+    CreateBorderedFrame(anchorSubKickPopup, 200, 293, 0, -98, BetterBlizzFramesSubPanel)
+
+    local kickPopupIcon = contentFrame:CreateTexture(nil, "ARTWORK")
+    kickPopupIcon:SetTexture("Interface\\Icons\\ability_kick")
+    kickPopupIcon:SetSize(34, 34)
+    kickPopupIcon:SetPoint("BOTTOM", anchorSubKickPopup, "TOP", 0, 0)
+    CreateTooltip(kickPopupIcon, L["Tooltip_Kick_Popup_Desc"])
+
+    local kickPopupScale = CreateSlider(contentFrame, L["Size"], 0.5, 2, 0.01, "kickPopupScale", nil, 72)
+    kickPopupScale:SetPoint("TOP", anchorSubKickPopup, "BOTTOM", -35, -15)
+
+    local kickPopupIconScale = CreateSlider(contentFrame, L["Icon"], 0.5, 2.5, 0.01, "kickPopupIconScale", nil, 72)
+    kickPopupIconScale:SetPoint("LEFT", kickPopupScale, "RIGHT", 0, 0)
+
+    local kickPopupXPos = CreateSlider(contentFrame, L["X_Offset"], -500, 500, 1, "kickPopupXPos", "X")
+    kickPopupXPos:SetPoint("TOP", kickPopupScale, "BOTTOM", 35, -15)
+
+    local kickPopupYPos = CreateSlider(contentFrame, L["Y_Offset"], -500, 500, 1, "kickPopupYPos", "Y")
+    kickPopupYPos:SetPoint("TOP", kickPopupXPos, "BOTTOM", 0, -15)
+
+    local kickPopupFontDropdown = CreateFontDropdown(
+        "kickPopupFont",
+        contentFrame,
+        L["Select_Font"],
+        "kickPopupFont",
+        function(fontPath)
+            BBF.UpdateKickPopupFont()
+        end,
+        { anchorFrame = kickPopupYPos, x = 8, y = -13, label = L["Font"] },
+        125,
+        nil,
+        "TOP"
+    )
+
+    local kickPopupTestMode = CreateCheckbox("kickPopupTestMode", L["Test"], contentFrame, nil, function()
+        BBF.TestKickPopup(BetterBlizzFramesDB.kickPopupTestMode)
+    end)
+    kickPopupTestMode:SetPoint("TOPLEFT", kickPopupFontDropdown, "BOTTOMLEFT", 6, -2)
+
+    local kickPopupTextColor = CreateColorBox(contentFrame, "kickPopupTextColor", L["Kick_Popup_Text_Color"], function()
+        BBF.UpdateKickPopupFont()
+    end)
+    kickPopupTextColor:SetPoint("LEFT", kickPopupTestMode.text, "RIGHT", 2, 0)
+
+    local kickPopupPlaySound = CreateCheckbox("kickPopupPlaySound", L["Kick_Popup_Play_Sound"], contentFrame)
+    kickPopupPlaySound:SetPoint("TOPLEFT", kickPopupTestMode, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltip(kickPopupPlaySound, L["Tooltip_Kick_Popup_Play_Sound_Desc"])
+    kickPopupPlaySound:HookScript("OnClick", function(self)
+        if self:GetChecked() then
+            local channel = BetterBlizzFramesDB.kickPopupSoundChannel or "Master"
+            local soundName = BetterBlizzFramesDB.kickPopupSoundName
+            if soundName then
+                local path = LSM:Fetch(LSM.MediaType.SOUND, soundName)
+                if path then PlaySoundFile(path, channel) end
+            end
+        end
+    end)
+
+    local kickPopupSauce = CreateCheckbox("kickPopupSauce", L["Kick_Popup_Sauce"], contentFrame)
+    kickPopupSauce:SetPoint("LEFT", kickPopupPlaySound.text, "RIGHT", 2, 0)
+    CreateTooltipTwo(kickPopupSauce, L["Kick_Popup_Add_Sauce"], L["Tooltip_Kick_Popup_Sauce_Desc"])
+    kickPopupSauce:HookScript("OnClick", function()
+        if BetterBlizzFramesDB.kickPopupTestMode then
+            BBF.TestKickPopup(true)
+        end
+    end)
+
+    local kickPopupSoundNameDropdown = LibDD:Create_UIDropDownMenu("kickPopupSoundNameDropdown", contentFrame)
+    BBF.kickPopupSoundNameDropdown = kickPopupSoundNameDropdown
+    LibDD:UIDropDownMenu_SetWidth(kickPopupSoundNameDropdown, 65)
+    local fileID = BetterBlizzFramesDB.kickPopupSoundFileID
+    if fileID and fileID ~= 0 then
+        LibDD:UIDropDownMenu_SetText(kickPopupSoundNameDropdown, "ID: " .. fileID)
+    else
+        LibDD:UIDropDownMenu_SetText(kickPopupSoundNameDropdown, BetterBlizzFramesDB.kickPopupSoundName or "Lossa Countered")
+    end
+    LibDD:UIDropDownMenu_Initialize(kickPopupSoundNameDropdown, function(self, level, menuList)
+        local sounds = LSM:HashTable(LSM.MediaType.SOUND)
+        local sorted = {}
+        for name in pairs(sounds) do
+            table.insert(sorted, name)
+        end
+        table.sort(sorted)
+        for _, soundName in ipairs(sorted) do
+            local info = LibDD:UIDropDownMenu_CreateInfo()
+            info.text = soundName
+            info.arg1 = soundName
+            info.func = function(self, arg1)
+                BetterBlizzFramesDB.kickPopupSoundName = arg1
+                BetterBlizzFramesDB.kickPopupSoundFileID = nil
+                LibDD:UIDropDownMenu_SetText(kickPopupSoundNameDropdown, arg1)
+                local channel = BetterBlizzFramesDB.kickPopupSoundChannel or "Master"
+                local path = LSM:Fetch(LSM.MediaType.SOUND, arg1)
+                if path then PlaySoundFile(path, channel) end
+            end
+            info.checked = (BetterBlizzFramesDB.kickPopupSoundName == soundName)
+            LibDD:UIDropDownMenu_AddButton(info)
+        end
+    end)
+    kickPopupSoundNameDropdown:SetPoint("TOPLEFT", kickPopupPlaySound, "BOTTOMLEFT", -42, -14)
+
+    local kickPopupSoundNameLabel = contentFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    kickPopupSoundNameLabel:SetPoint("BOTTOM", kickPopupSoundNameDropdown, "TOP", 0, 3)
+    kickPopupSoundNameLabel:SetText(L["Kick_Popup_Sound"])
+
+    local kickPopupSoundRightClick = CreateFrame("Button", nil, kickPopupSoundNameDropdown)
+    kickPopupSoundRightClick:SetAllPoints()
+    kickPopupSoundRightClick:RegisterForClicks("RightButtonUp")
+    kickPopupSoundRightClick:SetScript("OnClick", function()
+        StaticPopup_Show("BBF_KICK_POPUP_SOUND_ID")
+    end)
+    CreateTooltip(kickPopupSoundRightClick, "Right-click to enter a custom Sound ID.")
+
+    local kickPopupSoundChannelDropdown = LibDD:Create_UIDropDownMenu("kickPopupSoundChannelDropdown", contentFrame)
+    LibDD:UIDropDownMenu_SetWidth(kickPopupSoundChannelDropdown, 65)
+    LibDD:UIDropDownMenu_SetText(kickPopupSoundChannelDropdown, BetterBlizzFramesDB.kickPopupSoundChannel or "Master")
+    LibDD:UIDropDownMenu_Initialize(kickPopupSoundChannelDropdown, function(self, level, menuList)
+        local channels = {"Master", "SFX", "Music", "Ambience", "Dialog"}
+        for _, ch in ipairs(channels) do
+            local info = LibDD:UIDropDownMenu_CreateInfo()
+            info.text = ch
+            info.arg1 = ch
+            info.func = function(self, arg1)
+                BetterBlizzFramesDB.kickPopupSoundChannel = arg1
+                LibDD:UIDropDownMenu_SetText(kickPopupSoundChannelDropdown, arg1)
+            end
+            info.checked = (BetterBlizzFramesDB.kickPopupSoundChannel == ch)
+            LibDD:UIDropDownMenu_AddButton(info)
+        end
+    end)
+    kickPopupSoundChannelDropdown:SetPoint("LEFT", kickPopupSoundNameDropdown, "RIGHT", -35, 0)
+
+    local kickPopupSoundChannelLabel = contentFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    kickPopupSoundChannelLabel:SetPoint("BOTTOM", kickPopupSoundChannelDropdown, "TOP", 0, 3)
+    kickPopupSoundChannelLabel:SetText(L["Kick_Popup_Output"])
+
+    local function UpdateKickSoundDropdownState()
+        if BetterBlizzFramesDB.kickPopupPlaySound then
+            LibDD:UIDropDownMenu_EnableDropDown(kickPopupSoundNameDropdown)
+            LibDD:UIDropDownMenu_EnableDropDown(kickPopupSoundChannelDropdown)
+            kickPopupSoundNameDropdown:SetAlpha(1)
+            kickPopupSoundChannelDropdown:SetAlpha(1)
+            kickPopupSoundNameLabel:SetAlpha(1)
+            kickPopupSoundChannelLabel:SetAlpha(1)
+        else
+            LibDD:UIDropDownMenu_DisableDropDown(kickPopupSoundNameDropdown)
+            LibDD:UIDropDownMenu_DisableDropDown(kickPopupSoundChannelDropdown)
+            kickPopupSoundNameDropdown:SetAlpha(0.5)
+            kickPopupSoundChannelDropdown:SetAlpha(0.5)
+            kickPopupSoundNameLabel:SetAlpha(0.5)
+            kickPopupSoundChannelLabel:SetAlpha(0.5)
+        end
+    end
+
+    kickPopupPlaySound:HookScript("OnClick", function()
+        UpdateKickSoundDropdownState()
+    end)
+
+    UpdateKickSoundDropdownState()
 
     local reloadUiButton2 = CreateFrame("Button", nil, BetterBlizzFramesSubPanel, "UIPanelButtonTemplate")
     reloadUiButton2:SetText(L["Label_Reload_Ui"])

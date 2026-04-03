@@ -24,6 +24,7 @@ L["Export"] = "Export"
 L["False"] = "OFF"
 L["Font"] = "Font"
 L["Height"] = "Height"
+L["Icon"] = "Icon"
 L["Import"] = "Import"
 L["Name"] = "Name"
 L["No"] = "No"
@@ -373,6 +374,21 @@ L["Tooltip_Simple_Castbar"] = "Hide the text background and move the text up ins
 L["Tooltip_Use_Classic_Castbars"] = "Use the old Classic Castbar look for Player, Target, Focus & Party."
 L["Uninterruptable"] = "Uninterruptable"
 L["Use_Classic_Castbars"] = "Use Classic Castbars"
+
+---------------------------------------
+-- Kick Popup
+---------------------------------------
+
+L["Kick_Popup"] = "Kick Popup"
+L["Kick_Popup_Add_Sauce"] = "Add Sauce"
+L["Kick_Popup_Sauce"] = "Sauce"
+L["Kick_Popup_Text_Color"] = "Text Color"
+L["Kick_Popup_Play_Sound"] = "Play Sound"
+L["Kick_Popup_Sound"] = "Sound"
+L["Kick_Popup_Output"] = "Output"
+L["Tooltip_Kick_Popup_Desc"] = "Shows a popup notification when you successfully interrupt a spell."
+L["Tooltip_Kick_Popup_Sauce_Desc"] = "Replace \"Interrupted Polymorph\" with \"good kick fam [Polymorph]\" Bicmex style."
+L["Tooltip_Kick_Popup_Play_Sound_Desc"] = "Play a sound when you successfully interrupt a spell."
 
 ---------------------------------------
 -- Auras (Buffs & Debuffs)
