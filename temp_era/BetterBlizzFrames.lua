@@ -1251,6 +1251,18 @@ function BBF.FixStupidBlizzPTRShit()
         local a,b,c,d,e = TargetFrameToTPortrait:GetPoint()
         TargetFrameToTPortrait:SetPoint(a,b,c,4.5,-5.5)
 
+        -- Center the pet action button "selected" highlight on the button
+        for i = 1, NUM_PET_ACTION_SLOTS do
+            local btn = _G["PetActionButton"..i]
+            if btn then
+                local checked = btn:GetCheckedTexture()
+                local icon = btn.icon
+                checked:ClearAllPoints()
+                checked:SetPoint("CENTER", btn, "CENTER", -0.5, -0.5)
+                checked:SetSize(icon:GetSize())
+            end
+        end
+
         --if C_AddOns.IsAddOnLoaded("Bartender4") then return end
         --if C_AddOns.IsAddOnLoaded("Dominos") then return end
         -- MainMenuBarTextureExtender:Hide()
