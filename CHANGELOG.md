@@ -1,3 +1,11 @@
+# BetterBlizzFrames 1.9.4
+## Midnight
+### New
+- Kick Popup: Show icon + spellname of the spell you interrupted. (/bbf -> Extra Features right side)
+### Tweak
+- Castbar Quick Hide fixed again to not immediately hide if the castbar was interrupted (so you can see it got interrupted and by who).
+- Sort some castbar color issues
+
 # BetterBlizzFrames 1.9.3i
 ## Midnight
 ### Bugfix
