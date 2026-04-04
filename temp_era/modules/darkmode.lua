@@ -279,28 +279,15 @@ function BBF.DarkmodeFrames(bypass)
 
     local desaturationValue = BetterBlizzFramesDB.darkModeUi and true or false
     local vertexColor = BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeColor or 1
-    local lighterVertexColor = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.3) or 1
-    local druidComboPoint = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.2) or 1
-    local druidComboPointActive = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.1) or 1
     local actionBarColor = BetterBlizzFramesDB.darkModeActionBars and (vertexColor + 0.25) or 1
     local birdColor = BetterBlizzFramesDB.darkModeActionBars and (vertexColor + 0.25) or 1
-    local rogueCombo = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.45) or 1
-    local rogueComboActive = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.30) or 1
-    local monkChi = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.10) or 1
-    local castbarBorder = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.1) or 1
 
     local minimapColor = (BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeMinimap) and BetterBlizzFramesDB.darkModeColor or 1
     local minimapSat = (BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeMinimap) and true or false
 
-    local darkModeNpBBP = BetterBlizzPlatesDB and BetterBlizzPlatesDB.darkModeNameplateResource
-    local darkModeNp = BetterBlizzFramesDB.darkModeNameplateResource and not darkModeNpBBP
-    local darkModeNpSatVal = darkModeNp and desaturationValue or false
-
     if BetterBlizzFramesDB.darkModeColor == 0 then
         actionBarColor = 0
         birdColor = 0.07
-        rogueCombo = 0.25
-        rogueComboActive = 0.15
     end
 
 
@@ -315,11 +302,7 @@ function BBF.DarkmodeFrames(bypass)
     end
 
     -- Applying borders to BuffFrame
-    if BuffFrame and _G.BuffFrame.AuraContainer then
-        for _, frame in pairs({_G.BuffFrame.AuraContainer:GetChildren()}) do
-            createOrUpdateBorders(frame, vertexColor)
-        end
-    elseif BuffFrame then
+    if BuffFrame then
         if not BuffFrame.bbfHooked then
             if darkModeUi and darkModeUiAura then
                 hooksecurefunc("BuffFrame_Update", ProcessBuffButtons)
