@@ -551,31 +551,38 @@ function BBF.CheckForAuraBorders()
     end
 end
 
-local function updateCastbarIconBorder(castbar, colorValue)
+local function updateCastbarIconBorder(castbar, enabled, colorValue)
     if not castbar or not castbar.Icon then return end
-    if not castbar.bbfIconBorder then
-        castbar.bbfIconBorder = createIconBorder(castbar, castbar.Icon, 8.5, {-1.5, 1.5, 1.5, -2})
+    if enabled then
+        if not castbar.bbfIconBorder then
+            castbar.bbfIconBorder = createIconBorder(castbar, castbar.Icon, 8.5, {-1.5, 1.5, 1.5, -2})
+        end
+        castbar.bbfIconBorder:SetBackdropBorderColor(colorValue, colorValue, colorValue)
+    elseif castbar.bbfIconBorder then
+        castbar.bbfIconBorder:Hide()
+        castbar.bbfIconBorder:SetParent(nil)
+        castbar.bbfIconBorder = nil
+        castbar.Icon:SetTexCoord(0, 1, 0, 1)
     end
-    castbar.bbfIconBorder:SetBackdropBorderColor(colorValue, colorValue, colorValue)
 end
 
 function BBF.DarkModeCastbars()
-    local enabled = BetterBlizzFramesDB.darkModeCastbars
+    local enabled = BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeCastbars
     if not enabled and not BBF.darkModeCastbars then return end
 
-    local desat = enabled and (BetterBlizzFramesDB.darkModeUi and true or false) or false
-    local vertexColor = enabled and (BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeColor or 1) or 1
-    local borderColor = enabled and (BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.1) or 1) or 1
-    local bgColor = enabled and (BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.3) or 1) or 1
+    local desat = enabled and true or false
+    local vertexColor = enabled and BetterBlizzFramesDB.darkModeColor or 1
+    local borderColor = enabled and (vertexColor + 0.1) or 1
+    local bgColor = enabled and (vertexColor + 0.3) or 1
 
     applySettings(TargetFrame.spellbar.Border, desat, borderColor)
     applySettings(TargetFrame.spellbar.Background, desat, bgColor)
 
-    updateCastbarIconBorder(TargetFrame.spellbar, borderColor)
+    updateCastbarIconBorder(TargetFrame.spellbar, enabled, borderColor)
 
     applySettings(CastingBarFrame.Border, desat, borderColor)
     applySettings(CastingBarFrame.Background, desat, bgColor)
-    updateCastbarIconBorder(CastingBarFrame, borderColor)
+    updateCastbarIconBorder(CastingBarFrame, enabled, borderColor)
 
     if BetterBlizzFramesDB.showPartyCastbar then
         for i = 1, 5 do
@@ -583,7 +590,7 @@ function BBF.DarkModeCastbars()
             if partyCastbar then
                 applySettings(partyCastbar.Border, desat, borderColor)
                 applySettings(partyCastbar.Background, desat, bgColor)
-                updateCastbarIconBorder(partyCastbar, borderColor)
+                updateCastbarIconBorder(partyCastbar, enabled, borderColor)
             end
         end
     end
@@ -591,7 +598,7 @@ function BBF.DarkModeCastbars()
     if petCastbar then
         applySettings(petCastbar.Border, desat, borderColor)
         applySettings(petCastbar.Background, desat, bgColor)
-        updateCastbarIconBorder(petCastbar, borderColor)
+        updateCastbarIconBorder(petCastbar, enabled, borderColor)
     end
 
     BBF.darkModeCastbars = enabled or nil
