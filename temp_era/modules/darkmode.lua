@@ -308,6 +308,7 @@ function BBF.DarkModeMinimap()
     end
 
     applySettings(MinimapBorder, minimapSat, minimapColor)
+    applySettings(MinimapBorderTop, minimapSat, minimapColor)
 end
 
 function BBF.DarkmodeFrames(bypass)
