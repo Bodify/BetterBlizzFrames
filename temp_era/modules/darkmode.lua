@@ -557,32 +557,6 @@ function BBF.UpdateFilteredBuffsIcon()
 end
 
 
-local specChangeListener = CreateFrame("Frame")
-specChangeListener:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
-specChangeListener:SetScript("OnEvent", function(self, event, ...)
-    if event == "PLAYER_SPECIALIZATION_CHANGED" then
-        if BetterBlizzFramesDB.darkModeUi then
-            local unitID = ...
-            if unitID == "player" then
-                local vertexColor = BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeColor or 1
-                local rogueCombo = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.45) or 1
-                local rogueComboActive = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.30) or 1
-                local rogueComboPoints = _G.RogueComboPointBarFrame
-                if BetterBlizzFramesDB.darkModeColor == 0 then
-                    rogueCombo = 0.25
-                    rogueComboActive = 0.15
-                end
-                if rogueComboPoints then
-                    for _, v in pairs({rogueComboPoints:GetChildren()}) do
-                        applySettings(v.BGInactive, desaturationValue, rogueCombo)
-                        applySettings(v.BGActive, desaturationValue, rogueComboActive)
-                    end
-                end
-            end
-        end
-    end
-end)
-
 function BBF.CheckForAuraBorders()
     if not (BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeUiAura) then
         local function searchAuraFrames(prefix, count)
