@@ -275,7 +275,6 @@ end
 function BBF.DarkmodeFrames(bypass)
     if not bypass and not BetterBlizzFramesDB.darkModeUi then return end
 
-    --BBF.AbsorbCaller()
     BBF.CombatIndicatorCaller()
 
     local desaturationValue = BetterBlizzFramesDB.darkModeUi and true or false
@@ -350,10 +349,8 @@ function BBF.DarkmodeFrames(bypass)
 
     -- Applying settings based on BetterBlizzFramesDB.darkModeUi value
     applySettings(TargetFrameTextureFrameTexture, desaturationValue, vertexColor)
-    --applySettings(FocusFrameTextureFrameTexture, desaturationValue, vertexColor)
     applySettings(TargetFrameToTTextureFrameTexture, desaturationValue, vertexColor)
     applySettings(PetFrameTexture, desaturationValue, vertexColor)
-    --applySettings(FocusFrameToTTextureFrameTexture, desaturationValue, vertexColor)
 
     if TimeManagerClockButton then
         -- Desaturate all textures in ZoomOut button
@@ -456,201 +453,11 @@ function BBF.DarkmodeFrames(bypass)
         end
     end
 
-    -- if BetterBlizzFramesDB.darkModeUiAura then
-    --     local BuffFrameButton = BuffFrame.CollapseAndExpandButton
-    --     for i = 1, BuffFrameButton:GetNumRegions() do
-    --         local region = select(i, BuffFrameButton:GetRegions())
-    --         if region:IsObjectType("Texture") then
-    --             applySettings(region, desaturationValue, 0.2)
-    --         end
-    --     end
-    -- end
-
     applySettings(MinimapBorder, minimapSat, minimapColor)
 
-    -- for i = 1, ExpansionLandingPageMinimapButton:GetNumRegions() do
-    --     local region = select(i, ExpansionLandingPageMinimapButton:GetRegions())
-    --     if region:IsObjectType("Texture") then
-    --         applySettings(region, minimapSat, minimapColor)
-    --     end
-    -- end
-
-    --castbars
     BBF.DarkModeCastbars()
 
-
-
-
-    --applySettings(PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.PlayerPortraitCornerIcon, desaturationValue, vertexColor)
-
-    for _, v in pairs({
-        PlayerFrameTexture,
-        --PlayerFrame.PlayerFrameContainer.AlternatePowerFrameTexture,
-        --PlayerFrame.PlayerFrameContainer.VehicleFrameTexture,
-        -- PartyFrame.MemberFrame1.Texture,
-        -- PartyFrame.MemberFrame2.Texture,
-        -- PartyFrame.MemberFrame3.Texture,
-        -- PartyFrame.MemberFrame4.Texture,
-        --PaladinPowerBarFrame.Background,
-        --PaladinPowerBarFrame.ActiveTexture,
-    }) do
-        applySettings(v, desaturationValue, vertexColor)
-    end
-    -- for _, v in pairs({
-    --     PlayerFrameAlternateManaBarLeftBorder,
-    --     PlayerFrameAlternateManaBarRightBorder,
-    --     PlayerFrameAlternateManaBarBorder,
-    -- }) do
-    --     applySettings(v, false, vertexColor)  -- Only applying vertex color, desaturation is kept false
-    -- end
-
-    -- local runes = _G.RuneFrame
-    -- if runes then
-    --     for i = 1, 6 do
-    --         applySettings(runes["Rune" .. i].BG_Active, desaturationValue, vertexColor)
-    --         applySettings(runes["Rune" .. i].BG_Inactive, desaturationValue, vertexColor)
-    --     end
-    -- end
-
-    -- local nameplateRunes = _G.DeathKnightResourceOverlayFrame
-    -- if nameplateRunes and not nameplateRunes:IsForbidden() and not darkModeNpBBP then
-    --     local dkNpRunes = darkModeNp and vertexColor or 1
-    --     for i = 1, 6 do
-    --         applySettings(nameplateRunes["Rune" .. i].BG_Active, darkModeNpSatVal, dkNpRunes)
-    --         applySettings(nameplateRunes["Rune" .. i].BG_Inactive, darkModeNpSatVal, dkNpRunes)
-    --     end
-    -- end
-
-    -- local soulShards = _G.WarlockPowerFrame
-    -- if soulShards then
-    --     for _, v in pairs({soulShards:GetChildren()}) do
-    --         applySettings(v.Background, desaturationValue, vertexColor)
-    --     end
-    -- end
-
-    -- local soulShardsNameplate = _G.ClassNameplateBarWarlockFrame
-    -- if soulShardsNameplate and not soulShardsNameplate:IsForbidden() and not darkModeNpBBP then
-    --     local soulShardNp = darkModeNp and vertexColor or 1
-    --     for _, v in pairs({soulShardsNameplate:GetChildren()}) do
-    --         applySettings(v.Background, darkModeNpSatVal, soulShardNp)
-    --     end
-    -- end
-
-    -- local druidComboPoints = _G.DruidComboPointBarFrame
-    -- if druidComboPoints then
-    --     for _, v in pairs({druidComboPoints:GetChildren()}) do
-    --         applySettings(v.BG_Inactive, desaturationValue, druidComboPoint)
-    --         applySettings(v.BG_Active, desaturationValue, druidComboPointActive)
-    --     end
-    -- end
-
-    -- local druidComboPointsNameplate = _G.ClassNameplateBarFeralDruidFrame
-    -- if druidComboPointsNameplate and not druidComboPointsNameplate:IsForbidden() and not darkModeNpBBP then
-    --     local druidComboPointNp = darkModeNp and druidComboPoint or 1
-    --     local druidComboPointActiveNp = darkModeNp and druidComboPointActive or 1
-    --     for _, v in pairs({druidComboPointsNameplate:GetChildren()}) do
-    --         applySettings(v.BG_Inactive, darkModeNpSatVal, druidComboPointNp)
-    --         applySettings(v.BG_Active, darkModeNpSatVal, druidComboPointActiveNp)
-    --     end
-    -- end
-
-    -- local mageArcaneCharges = _G.MageArcaneChargesFrame
-    -- if mageArcaneCharges then
-    --     for _, v in pairs({mageArcaneCharges:GetChildren()}) do
-    --         applySettings(v.ArcaneBG, desaturationValue, actionBarColor)
-    --         --applySettings(v.BG_Active, desaturationValue, druidComboPointActive)
-    --     end
-    -- end
-
-    -- local mageArcaneChargesNameplate = _G.ClassNameplateBarMageFrame
-    -- if mageArcaneChargesNameplate and not mageArcaneChargesNameplate:IsForbidden() and not darkModeNpBBP then
-    --     local mageChargeNp = darkModeNp and actionBarColor or 1
-    --     for _, v in pairs({mageArcaneChargesNameplate:GetChildren()}) do
-    --         applySettings(v.ArcaneBG, darkModeNpSatVal, mageChargeNp)
-    --         --applySettings(v.BG_Active, desaturationValue, druidComboPointActive)
-    --     end
-    -- end
-
-    -- local monkChiPoints = _G.MonkHarmonyBarFrame
-    -- if monkChiPoints then
-    --     for _, v in pairs({monkChiPoints:GetChildren()}) do
-    --         applySettings(v.Chi_BG, desaturationValue, monkChi)
-    --         applySettings(v.Chi_BG_Active, desaturationValue, monkChi)
-    --     end
-    -- end
-
-    -- local monkChiPointsNameplate = _G.ClassNameplateBarWindwalkerMonkFrame
-    -- if monkChiPointsNameplate and not monkChiPointsNameplate:IsForbidden() and not darkModeNpBBP then
-    --     local monkChiNp = darkModeNp and monkChi or 1
-    --     for _, v in pairs({monkChiPointsNameplate:GetChildren()}) do
-    --         applySettings(v.Chi_BG, darkModeNpSatVal, monkChiNp)
-    --         applySettings(v.Chi_BG_Active, darkModeNpSatVal, monkChiNp)
-    --     end
-    -- end
-
-    -- local rogueComboPoints = _G.RogueComboPointBarFrame
-    -- if rogueComboPoints then
-    --     for _, v in pairs({rogueComboPoints:GetChildren()}) do
-    --         applySettings(v.BGInactive, desaturationValue, rogueCombo)
-    --         applySettings(v.BGActive, desaturationValue, rogueComboActive)
-    --     end
-    -- end
-
-    -- local rogueComboPointsNameplate = _G.ClassNameplateBarRogueFrame
-    -- if rogueComboPointsNameplate and not rogueComboPointsNameplate:IsForbidden() and not darkModeNpBBP then
-    --     local rogueComboNp = darkModeNp and rogueCombo or 1
-    --     local rogueComboActiveNp = darkModeNp and rogueComboActive or 1
-    --     for _, v in pairs({rogueComboPointsNameplate:GetChildren()}) do
-    --         applySettings(v.BGInactive, darkModeNpSatVal, rogueComboNp)
-    --         applySettings(v.BGActive, darkModeNpSatVal, rogueComboActiveNp)
-    --     end
-    -- end
-
-
-    -- -- PaladinPowerBarFrame.Background,
-    -- -- PaladinPowerBarFrame.ActiveTexture,
-
-
-    -- local paladinHolyPowerNameplate = _G.ClassNameplateBarPaladinFrame
-    -- if paladinHolyPowerNameplate and not paladinHolyPowerNameplate:IsForbidden() and not darkModeNpBBP then
-    --     local palaPowerNp = darkModeNp and vertexColor or 1
-    --     applySettings(ClassNameplateBarPaladinFrame.Background, darkModeNpSatVal, palaPowerNp)
-    --     applySettings(ClassNameplateBarPaladinFrame.ActiveTexture, darkModeNpSatVal, palaPowerNp)
-    -- end
-
-    -- local evokerEssencePoints = _G.EssencePlayerFrame
-    -- if evokerEssencePoints then
-    --     for _, v in pairs({evokerEssencePoints:GetChildren()}) do
-    --         applySettings(v.EssenceFillDone.CircBG, desaturationValue, monkChi)
-    --         applySettings(v.EssenceFilling.EssenceBG, desaturationValue, vertexColor)
-    --         applySettings(v.EssenceEmpty.EssenceBG, desaturationValue, vertexColor)
-    --         applySettings(v.EssenceFillDone.CircBGActive, desaturationValue, vertexColor)
-
-    --         applySettings(v.EssenceDepleting.EssenceBG, desaturationValue, vertexColor)
-    --         applySettings(v.EssenceDepleting.CircBGActive, desaturationValue, vertexColor)
-
-    --         applySettings(v.EssenceFillDone.RimGlow, desaturationValue, monkChi)
-    --         applySettings(v.EssenceDepleting.RimGlow, desaturationValue, monkChi)
-    --     end
-    -- end
-
-    -- local evokerEssencePointsNameplate = _G.ClassNameplateBarDracthyrFrame
-    -- if evokerEssencePointsNameplate and not evokerEssencePointsNameplate:IsForbidden() and not darkModeNpBBP then
-    --     local evokerColorOne = darkModeNp and monkChi or 1
-    --     local evokerColorTwo = darkModeNp and vertexColor or 1
-    --     for _, v in pairs({evokerEssencePointsNameplate:GetChildren()}) do
-    --         applySettings(v.EssenceFillDone.CircBG, darkModeNpSatVal, evokerColorOne)
-    --         applySettings(v.EssenceFilling.EssenceBG, darkModeNpSatVal, evokerColorTwo)
-    --         applySettings(v.EssenceEmpty.EssenceBG, darkModeNpSatVal, evokerColorTwo)
-    --         applySettings(v.EssenceFillDone.CircBGActive, darkModeNpSatVal, evokerColorTwo)
-
-    --         applySettings(v.EssenceDepleting.EssenceBG, darkModeNpSatVal, evokerColorTwo)
-    --         applySettings(v.EssenceDepleting.CircBGActive, darkModeNpSatVal, evokerColorTwo)
-
-    --         applySettings(v.EssenceFillDone.RimGlow, darkModeNpSatVal, evokerColorOne)
-    --         applySettings(v.EssenceDepleting.RimGlow, darkModeNpSatVal, evokerColorOne)
-    --     end
-    -- end
+    applySettings(PlayerFrameTexture, desaturationValue, vertexColor)
 
     -- Actionbars
     if BetterBlizzFramesDB.darkModeActionBars or BBF.actionBarColorEnabled then
@@ -696,23 +503,6 @@ function BBF.DarkmodeFrames(bypass)
         BBF.HookVertexColor(MainMenuBarBackpackButtonNormalTexture, actionBarColor, actionBarColor, actionBarColor, 1)
 
 
-        -- for _, v in pairs({
-        --     MainMenuBar.BorderArt,
-        --     ActionButton1.RightDivider,
-        --     ActionButton2.RightDivider,
-        --     ActionButton3.RightDivider,
-        --     ActionButton4.RightDivider,
-        --     ActionButton5.RightDivider,
-        --     ActionButton6.RightDivider,
-        --     ActionButton7.RightDivider,
-        --     ActionButton8.RightDivider,
-        --     ActionButton9.RightDivider,
-        --     ActionButton10.RightDivider,
-        --     ActionButton11.RightDivider,
-        -- }) do
-        --     applySettings(v, desaturationValue, actionBarColor)
-        -- end
-
         for _, v in pairs({
             MainMenuBarLeftEndCap,
             MainMenuBarRightEndCap,
@@ -757,9 +547,6 @@ function BBF.DarkmodeFrames(bypass)
                 local DividerArt = child:GetChildren()
                 applySettings(DividerArt, desaturationValue, actionBarColor)
             end
-            --for _, child in ipairs({BT4BarBlizzardArt:GetChildren()}) do
-                --applySettings(child, desaturationValue, lighterVertexColor)
-            --end
         end
 
         -- Dominos actionbars
@@ -800,12 +587,6 @@ function BBF.DarkmodeFrames(bypass)
         BBF.actionBarColorEnabled = true
     end
 
-    -- if not hookedTotemBar and darkModeUi then
-    --     hooksecurefunc(TotemFrame, "Update", function()
-    --         BBF.updateTotemBorders()
-    --     end)
-    --     hookedTotemBar = true
-    -- end
 end
 
 
@@ -918,15 +699,9 @@ function BBF.DarkModeCastbars()
         BBF.darkModeCastbars = true
 
         applySettings(TargetFrame.spellbar.Border, desaturationValue, castbarBorder)
-        --applySettings(TargetFrame.spellbar.BorderShield, desaturationValue, vertexColor)
         applySettings(TargetFrame.spellbar.Background, desaturationValue, lighterVertexColor)
 
-        --applySettings(FocusFrame.spellbar.Border, desaturationValue, castbarBorder)
-        --applySettings(FocusFrame.spellbar.BorderShield, desaturationValue, vertexColor)
-        --applySettings(FocusFrame.spellbar.Background, desaturationValue, lighterVertexColor)
-
         applySettings(CastingBarFrame.Border, desaturationValue, castbarBorder)
-        --applySettings(CastingBarFrame.BorderShield, desaturationValue, vertexColor)
         applySettings(CastingBarFrame.Background, desaturationValue, lighterVertexColor)
 
         if BetterBlizzFramesDB.showPartyCastbar then
@@ -934,7 +709,6 @@ function BBF.DarkModeCastbars()
                 local partyCastbar = _G["Party"..i.."SpellBar"]
                 if partyCastbar then
                     applySettings(partyCastbar.Border, desaturationValue, castbarBorder)
-                    --applySettings(partyCastbar.BorderShield, desaturationValue, vertexColor)
                     applySettings(partyCastbar.Background, desaturationValue, lighterVertexColor)
                 end
             end
@@ -942,20 +716,13 @@ function BBF.DarkModeCastbars()
         local petCastbar = _G["PetSpellBar"]
         if petCastbar then
             applySettings(petCastbar.Border, desaturationValue, castbarBorder)
-            --applySettings(petCastbar.BorderShield, desaturationValue, vertexColor)
             applySettings(petCastbar.Background, desaturationValue, lighterVertexColor)
         end
     elseif BBF.darkModeCastbars then
         applySettings(TargetFrame.spellbar.Border, false, 1)
-        --applySettings(TargetFrame.spellbar.BorderShield, desaturationValue, vertexColor)
         applySettings(TargetFrame.spellbar.Background, false, 1)
 
-        --applySettings(FocusFrame.spellbar.Border, false, 1)
-        --applySettings(FocusFrame.spellbar.BorderShield, desaturationValue, vertexColor)
-        --applySettings(FocusFrame.spellbar.Background, false, 1)
-
         applySettings(CastingBarFrame.Border, false, 1)
-        --applySettings(CastingBarFrame.BorderShield, desaturationValue, vertexColor)
         applySettings(CastingBarFrame.Background, false, 1)
 
         if BetterBlizzFramesDB.showPartyCastbar then
@@ -963,7 +730,6 @@ function BBF.DarkModeCastbars()
                 local partyCastbar = _G["Party"..i.."SpellBar"]
                 if partyCastbar then
                     applySettings(partyCastbar.Border, false, 1)
-                    --applySettings(partyCastbar.BorderShield, desaturationValue, vertexColor)
                     applySettings(partyCastbar.Background, false, 1)
                 end
             end
@@ -971,7 +737,6 @@ function BBF.DarkModeCastbars()
         local petCastbar = _G["PetSpellBar"]
         if petCastbar then
             applySettings(petCastbar.Border, false, 1)
-            --applySettings(petCastbar.BorderShield, desaturationValue, vertexColor)
             applySettings(petCastbar.Background, false, 1)
         end
         BBF.darkModeCastbars = nil
