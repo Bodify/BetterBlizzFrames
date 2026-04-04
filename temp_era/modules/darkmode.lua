@@ -336,7 +336,6 @@ function BBF.DarkmodeFrames(bypass)
     applySettings(PetFrameTexture, desaturationValue, vertexColor)
 
     if TimeManagerClockButton then
-        -- Desaturate all textures in ZoomOut button
         for i = 1, TimeManagerClockButton:GetNumRegions() do
             local region = select(i, TimeManagerClockButton:GetRegions())
             if region:IsObjectType("Texture") and region:GetName() ~= "" then
@@ -369,30 +368,10 @@ function BBF.DarkmodeFrames(bypass)
         end
     end
 
-    for i = 1, MinimapBackdrop:GetNumChildren() do
-        local child = select(i, MinimapBackdrop:GetChildren())
-        if not child then return end
-        checkAndApplySettings(child, minimapSat, minimapColor)
-    end
-
     for i = 1, Minimap:GetNumChildren() do
         local child = select(i, Minimap:GetChildren())
         if not child then return end
         checkAndApplySettings(child, minimapSat, minimapColor)
-    end
-
-    for i = 1, TimeManagerClockButton:GetNumChildren() do
-        local child = select(i, Minimap:GetChildren())
-        for j = 1, child:GetNumRegions() do
-            local region = select(j, child:GetRegions())
-            if region:IsObjectType("Texture") then
-                local texturePath = region:GetTexture()
-                if texturePath and string.find(texturePath, "136430") then
-                    applySettings(region, minimapSat, minimapColor)
-                end
-                applySettings(region, minimapSat, minimapColor)
-            end
-        end
     end
 
 
@@ -400,19 +379,12 @@ function BBF.DarkmodeFrames(bypass)
     local zoomOutButton = MinimapZoomOut
     local zoomInButton = MinimapZoomIn
 
-    -- Desaturate all textures in ZoomOut button
-    for i = 1, zoomOutButton:GetNumRegions() do
-        local region = select(i, zoomOutButton:GetRegions())
-        if region:IsObjectType("Texture") then
-            applySettings(region, minimapSat, minimapColor)
-        end
-    end
-
-    -- Desaturate all textures in ZoomIn button
-    for i = 1, zoomInButton:GetNumRegions() do
-        local region = select(i, zoomInButton:GetRegions())
-        if region:IsObjectType("Texture") then
-            applySettings(region, minimapSat, minimapColor)
+    for _, button in ipairs({zoomOutButton, zoomInButton}) do
+        for i = 1, button:GetNumRegions() do
+            local region = select(i, button:GetRegions())
+            if region:IsObjectType("Texture") then
+                applySettings(region, minimapSat, minimapColor)
+            end
         end
     end
 
