@@ -4,6 +4,19 @@ local darkModeColor = 1
 local removeDebuffColorBorder
 local hookedAuras
 
+local function createIconBorder(parent, icon, edgeSize, offsets)
+    local border = CreateFrame("Frame", nil, parent, "BackdropTemplate")
+    border:SetBackdrop({
+        edgeFile = "Interface/Tooltips/UI-Tooltip-Border",
+        tileEdge = true,
+        edgeSize = edgeSize,
+    })
+    icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+    border:SetPoint("TOPLEFT", icon, "TOPLEFT", offsets[1], offsets[2])
+    border:SetPoint("BOTTOMRIGHT", icon, "BOTTOMRIGHT", offsets[3], offsets[4])
+    return border
+end
+
 local function applySettings(frame, desaturate, colorValue, hook)
     if frame then
         if desaturate ~= nil and frame.SetDesaturated then
@@ -75,20 +88,8 @@ local function UpdateFrameAuras(self)
                     hooked[auraFrame] = true
 
                     if not auraFrame.border then
-                        local border = CreateFrame("Frame", nil, auraFrame, "BackdropTemplate")
-                        border:SetBackdrop({
-                            edgeFile = "Interface/Tooltips/UI-Tooltip-Border",
-                            tileEdge = true,
-                            edgeSize = 8.5,
-                        })
-
-                        icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
-                        border:SetPoint("TOPLEFT", icon, "TOPLEFT", -1.5, 1.5)
-                        border:SetPoint("BOTTOMRIGHT", icon, "BOTTOMRIGHT", 1.5, -2)
-                        auraFrame.border = border
-
-                        -- Set the initial border color
-                        border:SetBackdropBorderColor(darkModeColor, darkModeColor, darkModeColor)
+                        auraFrame.border = createIconBorder(auraFrame, icon, 8.5, {-1.5, 1.5, 1.5, -2})
+                        auraFrame.border:SetBackdropBorderColor(darkModeColor, darkModeColor, darkModeColor)
                     end
 
                     if auraFrame.Border then
@@ -125,19 +126,8 @@ local function UpdateFrameAuras(self)
                         hooked[auraFrame] = true
 
                         if not auraFrame.border then
-                            local border = CreateFrame("Frame", nil, auraFrame, "BackdropTemplate")
-                            border:SetBackdrop({
-                                edgeFile = "Interface/Tooltips/UI-Tooltip-Border",
-                                tileEdge = true,
-                                edgeSize = 8.5,
-                            })
-
-                            icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
-                            border:SetPoint("TOPLEFT", icon, "TOPLEFT", -1.5, 2)
-                            border:SetPoint("BOTTOMRIGHT", icon, "BOTTOMRIGHT", 1.5, -2)
-                            auraFrame.border = border
-
-                            border:SetBackdropBorderColor(darkModeColor, darkModeColor, darkModeColor)
+                            auraFrame.border = createIconBorder(auraFrame, icon, 8.5, {-1.5, 2, 1.5, -2})
+                            auraFrame.border:SetBackdropBorderColor(darkModeColor, darkModeColor, darkModeColor)
                         end
 
                         auraFrame.Border:Hide()
@@ -173,34 +163,16 @@ BBF.auraBorders = {}  -- BuffFrame aura borders for darkmode
 local function createOrUpdateBorders(frame, colorValue, textureName, bypass)
     if (darkModeUi and darkModeUiAura) or bypass then
         if not BBF.auraBorders[frame] then
-            -- Create borders
-            local border = CreateFrame("Frame", nil, frame, "BackdropTemplate")
-            if not bypass then
-                border:SetBackdrop({
-                    edgeFile = "Interface/Tooltips/UI-Tooltip-Border",
-                    tileEdge = true,
-                    edgeSize = 8,
-                })
-            else
-                border:SetBackdrop({
-                    edgeFile = "Interface/Tooltips/UI-Tooltip-Border",
-                    tileEdge = true,
-                    edgeSize = 10,
-                })
-            end
-
             local icon = frame.Icon
             if textureName then
                 icon = frame[textureName]
             end
-            icon:SetTexCoord(0.08, 0.92, 0.08, 0.92) -- Adjust the icon
 
+            local border
             if not bypass then
-                border:SetPoint("TOPLEFT", icon, "TOPLEFT", -1.5, 2)
-                border:SetPoint("BOTTOMRIGHT", icon, "BOTTOMRIGHT", 1.5, -1.5)
+                border = createIconBorder(frame, icon, 8, {-1.5, 2, 1.5, -1.5})
             else
-                border:SetPoint("TOPLEFT", icon, "TOPLEFT", -2, 2)
-                border:SetPoint("BOTTOMRIGHT", icon, "BOTTOMRIGHT", 2, -2)
+                border = createIconBorder(frame, icon, 10, {-2, 2, 2, -2})
             end
             border:SetBackdropBorderColor(colorValue, colorValue, colorValue)
 
@@ -579,6 +551,14 @@ function BBF.CheckForAuraBorders()
     end
 end
 
+local function updateCastbarIconBorder(castbar, colorValue)
+    if not castbar or not castbar.Icon then return end
+    if not castbar.bbfIconBorder then
+        castbar.bbfIconBorder = createIconBorder(castbar, castbar.Icon, 8.5, {-1.5, 1.5, 1.5, -2})
+    end
+    castbar.bbfIconBorder:SetBackdropBorderColor(colorValue, colorValue, colorValue)
+end
+
 function BBF.DarkModeCastbars()
     local enabled = BetterBlizzFramesDB.darkModeCastbars
     if not enabled and not BBF.darkModeCastbars then return end
@@ -591,8 +571,11 @@ function BBF.DarkModeCastbars()
     applySettings(TargetFrame.spellbar.Border, desat, borderColor)
     applySettings(TargetFrame.spellbar.Background, desat, bgColor)
 
+    updateCastbarIconBorder(TargetFrame.spellbar, borderColor)
+
     applySettings(CastingBarFrame.Border, desat, borderColor)
     applySettings(CastingBarFrame.Background, desat, bgColor)
+    updateCastbarIconBorder(CastingBarFrame, borderColor)
 
     if BetterBlizzFramesDB.showPartyCastbar then
         for i = 1, 5 do
@@ -600,6 +583,7 @@ function BBF.DarkModeCastbars()
             if partyCastbar then
                 applySettings(partyCastbar.Border, desat, borderColor)
                 applySettings(partyCastbar.Background, desat, bgColor)
+                updateCastbarIconBorder(partyCastbar, borderColor)
             end
         end
     end
@@ -607,6 +591,7 @@ function BBF.DarkModeCastbars()
     if petCastbar then
         applySettings(petCastbar.Border, desat, borderColor)
         applySettings(petCastbar.Background, desat, bgColor)
+        updateCastbarIconBorder(petCastbar, borderColor)
     end
 
     BBF.darkModeCastbars = enabled or nil
