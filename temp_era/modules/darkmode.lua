@@ -227,6 +227,17 @@ local function ProcessBuffButtons()
     end
 end
 
+local function processPetBuffBorders(colorValue)
+    for i = 1, 16 do
+        local petBuff = _G["PetFrameBuff"..i]
+        if petBuff then
+            local icon = _G["PetFrameBuff"..i.."Icon"]
+            if icon then petBuff.Icon = icon end
+            createOrUpdateBorders(petBuff, colorValue)
+        end
+    end
+end
+
 function BBF.DarkModeMinimap()
     local minimapColor = (BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeMinimap) and BetterBlizzFramesDB.darkModeColor or 1
     local minimapSat = (BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeMinimap) and true or false
@@ -316,6 +327,22 @@ function BBF.DarkmodeFrames(bypass)
     end
 
     BBF.DarkModeUnitframeBorders()
+
+    -- Applying borders to PetFrame buffs
+    if PetFrame then
+        processPetBuffBorders(vertexColor)
+
+        if not PetFrame.bbfAuraHooked then
+            if darkModeUi and darkModeUiAura then
+                local petAuraFrame = CreateFrame("Frame")
+                petAuraFrame:RegisterUnitEvent("UNIT_AURA", "pet")
+                petAuraFrame:SetScript("OnEvent", function()
+                    processPetBuffBorders(BetterBlizzFramesDB.darkModeColor)
+                end)
+                PetFrame.bbfAuraHooked = true
+            end
+        end
+    end
 
     -- Applying settings based on BetterBlizzFramesDB.darkModeUi value
     applySettings(TargetFrameTextureFrameTexture, desaturationValue, vertexColor)
