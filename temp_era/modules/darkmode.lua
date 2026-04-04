@@ -2,10 +2,6 @@ local darkModeUi
 local darkModeUiAura
 local darkModeColor = 1
 local removeDebuffColorBorder
-local auraFilteringOn
-local minimapChanged =false
-
-local hookedTotemBar
 local hookedAuras
 
 local function applySettings(frame, desaturate, colorValue, hook)
@@ -56,10 +52,8 @@ end
 function BBF.UpdateUserDarkModeSettings()
     darkModeUi = BetterBlizzFramesDB.darkModeUi
     darkModeUiAura = BetterBlizzFramesDB.darkModeUiAura
-    hookedTotemBar = BetterBlizzFramesDB.hookedTotemBar
     darkModeColor = BetterBlizzFramesDB.darkModeColor
     removeDebuffColorBorder = BetterBlizzFramesDB.removeDebuffColorBorder
-    auraFilteringOn = BetterBlizzFramesDB.playerAuraFiltering
 end
 
 local hooked = {}
@@ -261,17 +255,6 @@ local function ProcessBuffButtons()
     end
 end
 
-function BBF.updateTotemBorders()
-    local vertexColor = darkModeUi and BetterBlizzFramesDB.darkModeColor or 1
-    for i = 1, TotemFrame:GetNumChildren() do
-        local totemButton = select(i, TotemFrame:GetChildren())
-        if totemButton and totemButton.Border then
-            totemButton.Border:SetDesaturated(true)
-            totemButton.Border:SetVertexColor(vertexColor, vertexColor, vertexColor) -- Set to dark color
-        end
-    end
-end
-
 function BBF.DarkmodeFrames(bypass)
     if not bypass and not BetterBlizzFramesDB.darkModeUi then return end
 
@@ -288,16 +271,6 @@ function BBF.DarkmodeFrames(bypass)
     if BetterBlizzFramesDB.darkModeColor == 0 then
         actionBarColor = 0
         birdColor = 0.07
-    end
-
-    local function UpdateBorder(frame, colorValue)
-        if BBF.auraBorders[frame] then
-            if BetterBlizzFramesDB.darkModeUi then
-                BBF.auraBorders[frame]:Show()
-            else
-                BBF.auraBorders[frame]:Hide()
-            end
-        end
     end
 
     -- Applying borders to BuffFrame
