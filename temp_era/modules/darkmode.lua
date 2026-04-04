@@ -290,7 +290,6 @@ function BBF.DarkmodeFrames(bypass)
         birdColor = 0.07
     end
 
-
     local function UpdateBorder(frame, colorValue)
         if BBF.auraBorders[frame] then
             if BetterBlizzFramesDB.darkModeUi then
@@ -326,9 +325,6 @@ function BBF.DarkmodeFrames(bypass)
     end
 
     BBF.DarkModeUnitframeBorders()
-
-
-
 
     -- Applying settings based on BetterBlizzFramesDB.darkModeUi value
     applySettings(TargetFrameTextureFrameTexture, desaturationValue, vertexColor)
@@ -373,7 +369,6 @@ function BBF.DarkmodeFrames(bypass)
         if not child then return end
         checkAndApplySettings(child, minimapSat, minimapColor)
     end
-
 
     --Minimap + and - zoom buttons
     local zoomOutButton = MinimapZoomOut
@@ -436,8 +431,6 @@ function BBF.DarkmodeFrames(bypass)
             end
         end
 
-
-
         for i = 0, 3 do
             local buttons = {
                 _G["CharacterBag"..i.."SlotNormalTexture"],
@@ -456,7 +449,6 @@ function BBF.DarkmodeFrames(bypass)
 
         applySettings(MainMenuBarBackpackButtonNormalTexture, desaturationValue, actionBarColor)
         BBF.HookVertexColor(MainMenuBarBackpackButtonNormalTexture, actionBarColor, actionBarColor, actionBarColor, 1)
-
 
         for _, v in pairs({
             MainMenuBarLeftEndCap,
@@ -544,9 +536,6 @@ function BBF.DarkmodeFrames(bypass)
 
 end
 
-
-
-
 function BBF.UpdateFilteredBuffsIcon()
     if BetterBlizzFramesDB.darkModeUi then
         local vertexColor = BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeColor or 1
@@ -555,7 +544,6 @@ function BBF.UpdateFilteredBuffsIcon()
         end
     end
 end
-
 
 function BBF.CheckForAuraBorders()
     if not (BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeUiAura) then
