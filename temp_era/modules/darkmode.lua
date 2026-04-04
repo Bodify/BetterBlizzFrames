@@ -255,54 +255,9 @@ local function ProcessBuffButtons()
     end
 end
 
-function BBF.DarkmodeFrames(bypass)
-    if not bypass and not BetterBlizzFramesDB.darkModeUi then return end
-
-    BBF.CombatIndicatorCaller()
-
-    local desaturationValue = BetterBlizzFramesDB.darkModeUi and true or false
-    local vertexColor = BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeColor or 1
-    local actionBarColor = BetterBlizzFramesDB.darkModeActionBars and (vertexColor + 0.25) or 1
-    local birdColor = BetterBlizzFramesDB.darkModeActionBars and (vertexColor + 0.25) or 1
-
+function BBF.DarkModeMinimap()
     local minimapColor = (BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeMinimap) and BetterBlizzFramesDB.darkModeColor or 1
     local minimapSat = (BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeMinimap) and true or false
-
-    if BetterBlizzFramesDB.darkModeColor == 0 then
-        actionBarColor = 0
-        birdColor = 0.07
-    end
-
-    -- Applying borders to BuffFrame
-    if BuffFrame then
-        if not BuffFrame.bbfHooked then
-            if darkModeUi and darkModeUiAura then
-                hooksecurefunc("BuffFrame_Update", ProcessBuffButtons)
-                BuffFrame.bbfHooked = true
-            end
-        end
-        for i = 1, BUFF_MAX_DISPLAY do
-            local buffButton = _G["BuffButton"..i]
-            if buffButton then
-                local icon = _G["BuffButton"..i.."Icon"]
-                if icon then
-                    buffButton.Icon = icon
-                end
-                createOrUpdateBorders(buffButton, vertexColor)
-            end
-        end
-    end
-
-    if ToggleHiddenAurasButton then
-        createOrUpdateBorders(ToggleHiddenAurasButton, vertexColor)
-    end
-
-    BBF.DarkModeUnitframeBorders()
-
-    -- Applying settings based on BetterBlizzFramesDB.darkModeUi value
-    applySettings(TargetFrameTextureFrameTexture, desaturationValue, vertexColor)
-    applySettings(TargetFrameToTTextureFrameTexture, desaturationValue, vertexColor)
-    applySettings(PetFrameTexture, desaturationValue, vertexColor)
 
     if TimeManagerClockButton then
         for i = 1, TimeManagerClockButton:GetNumRegions() do
@@ -343,11 +298,7 @@ function BBF.DarkmodeFrames(bypass)
         checkAndApplySettings(child, minimapSat, minimapColor)
     end
 
-    --Minimap + and - zoom buttons
-    local zoomOutButton = MinimapZoomOut
-    local zoomInButton = MinimapZoomIn
-
-    for _, button in ipairs({zoomOutButton, zoomInButton}) do
+    for _, button in ipairs({MinimapZoomOut, MinimapZoomIn}) do
         for i = 1, button:GetNumRegions() do
             local region = select(i, button:GetRegions())
             if region:IsObjectType("Texture") then
@@ -355,6 +306,50 @@ function BBF.DarkmodeFrames(bypass)
             end
         end
     end
+
+    applySettings(MinimapBorder, minimapSat, minimapColor)
+end
+
+function BBF.DarkmodeFrames(bypass)
+    if not bypass and not BetterBlizzFramesDB.darkModeUi then return end
+
+    BBF.CombatIndicatorCaller()
+
+    local desaturationValue = BetterBlizzFramesDB.darkModeUi and true or false
+    local vertexColor = BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeColor or 1
+
+    -- Applying borders to BuffFrame
+    if BuffFrame then
+        if not BuffFrame.bbfHooked then
+            if darkModeUi and darkModeUiAura then
+                hooksecurefunc("BuffFrame_Update", ProcessBuffButtons)
+                BuffFrame.bbfHooked = true
+            end
+        end
+        for i = 1, BUFF_MAX_DISPLAY do
+            local buffButton = _G["BuffButton"..i]
+            if buffButton then
+                local icon = _G["BuffButton"..i.."Icon"]
+                if icon then
+                    buffButton.Icon = icon
+                end
+                createOrUpdateBorders(buffButton, vertexColor)
+            end
+        end
+    end
+
+    if ToggleHiddenAurasButton then
+        createOrUpdateBorders(ToggleHiddenAurasButton, vertexColor)
+    end
+
+    BBF.DarkModeUnitframeBorders()
+
+    -- Applying settings based on BetterBlizzFramesDB.darkModeUi value
+    applySettings(TargetFrameTextureFrameTexture, desaturationValue, vertexColor)
+    applySettings(TargetFrameToTTextureFrameTexture, desaturationValue, vertexColor)
+    applySettings(PetFrameTexture, desaturationValue, vertexColor)
+
+    BBF.DarkModeMinimap()
 
     local compactPartyBorder = CompactPartyFrameBorderFrame or CompactRaidFrameContainerBorderFrame
     if compactPartyBorder then
@@ -376,137 +371,167 @@ function BBF.DarkmodeFrames(bypass)
         end
     end
 
-    applySettings(MinimapBorder, minimapSat, minimapColor)
-
     BBF.DarkModeCastbars()
 
     applySettings(PlayerFrameTexture, desaturationValue, vertexColor)
 
-    -- Actionbars
-    if BetterBlizzFramesDB.darkModeActionBars or BBF.actionBarColorEnabled then
-        for i = 1, 12 do
-            local buttons = {
-                _G["ActionButton" .. i .. "NormalTexture"],
-                _G["MultiBarBottomLeftButton" .. i .. "NormalTexture"],
-                _G["MultiBarBottomRightButton" .. i .. "NormalTexture"],
-                _G["MultiBarRightButton" .. i .. "NormalTexture"],
-                _G["MultiBarLeftButton" .. i .. "NormalTexture"],
-                _G["MultiBar5Button" .. i .. "NormalTexture"],
-                _G["MultiBar6Button" .. i .. "NormalTexture"],
-                _G["MultiBar7Button" .. i .. "NormalTexture"],
-                _G["PetActionButton" .. i .. "NormalTexture"],
-                _G["StanceButton" .. i .. "NormalTexture"]
-            }
+    BBF.DarkModeActionBars()
 
-            for _, button in ipairs(buttons) do
-                applySettings(button, desaturationValue, actionBarColor)
-                BBF.HookVertexColor(button, actionBarColor, actionBarColor, actionBarColor, 1)
-            end
-        end
+end
 
-        for i = 0, 3 do
-            local buttons = {
-                _G["CharacterBag"..i.."SlotNormalTexture"],
-                _G["MainMenuBarTexture"..i],
-                _G["MainMenuBarTextureExtender"],
-                _G["MainMenuMaxLevelBar"..i],
-                _G["ReputationWatchBar"].StatusBar["XPBarTexture"..i],
-                _G["MainMenuXPBarTexture"..i],
-                _G["SlidingActionBarTexture"..i]
-            }
-            for _, button in ipairs(buttons) do
-                applySettings(button, desaturationValue, actionBarColor)
-                BBF.HookVertexColor(button, actionBarColor, actionBarColor, actionBarColor, 1)
-            end
-        end
-
-        applySettings(MainMenuBarBackpackButtonNormalTexture, desaturationValue, actionBarColor)
-        BBF.HookVertexColor(MainMenuBarBackpackButtonNormalTexture, actionBarColor, actionBarColor, actionBarColor, 1)
-
-        for _, v in pairs({
-            MainMenuBarLeftEndCap,
-            MainMenuBarRightEndCap,
-        }) do
-            applySettings(v, desaturationValue, birdColor)
-        end
-
-        local BARTENDER4_NUM_MAX_BUTTONS = 180
-        for i = 1, BARTENDER4_NUM_MAX_BUTTONS do
-            local button = _G["BT4Button" .. i]
-            if button then
-                local normalTexture = button:GetNormalTexture()
-                if normalTexture then
-                    applySettings(normalTexture, desaturationValue, actionBarColor)
-                end
-            end
-        end
-
-        if BlizzardArtTex0 then
-            for i = 0, 3 do
-                local texture = _G["BlizzardArtTex"..i]
-                if texture then
-                    applySettings(texture, desaturationValue, actionBarColor)
-                end
-            end
-        end
-
-        local BARTENDER4_PET_BUTTONS = 10
-        for i = 1, BARTENDER4_PET_BUTTONS do
-            local button = _G["BT4PetButton" .. i]
-            if button then
-                local normalTexture = button:GetNormalTexture()
-                if normalTexture then
-                    applySettings(normalTexture, desaturationValue, actionBarColor)
-                end
-            end
-        end
-
-        if BT4BarBlizzardArt and BT4BarBlizzardArt.nineSliceParent then
-            for _, child in ipairs({BT4BarBlizzardArt.nineSliceParent:GetChildren()}) do
-                applySettings(child, desaturationValue, actionBarColor)
-                local DividerArt = child:GetChildren()
-                applySettings(DividerArt, desaturationValue, actionBarColor)
-            end
-        end
-
-        -- Dominos actionbars
-        local NUM_ACTIONBAR_BUTTONS = NUM_ACTIONBAR_BUTTONS
-        local DOMINOS_NUM_MAX_BUTTONS = 14 * NUM_ACTIONBAR_BUTTONS
-        local actionBars = {
-            {name = "DominosActionButton", count = DOMINOS_NUM_MAX_BUTTONS},
-            {name = "MultiBar5ActionButton", count = 12},
-            {name = "MultiBar6ActionButton", count = 12},
-            {name = "MultiBar7ActionButton", count = 12},
-            {name = "MultiBarRightActionButton", count = 12},
-            {name = "MultiBarLeftActionButton", count = 12},
-            {name = "MultiBarBottomRightActionButton", count = 12},
-            {name = "MultiBarBottomLeftActionButton", count = 12},
-            {name = "DominosPetActionButton", count = 12},
-            {name = "DominosStanceButton", count = 12},
-            {name = "StanceButton", count = 6},
+local function darkModeBlizzardActionBars(desaturationValue, actionBarColor, birdColor)
+    for i = 1, NUM_ACTIONBAR_BUTTONS do
+        local buttons = {
+            _G["ActionButton" .. i .. "NormalTexture"],
+            _G["MultiBarBottomLeftButton" .. i .. "NormalTexture"],
+            _G["MultiBarBottomRightButton" .. i .. "NormalTexture"],
+            _G["MultiBarRightButton" .. i .. "NormalTexture"],
+            _G["MultiBarLeftButton" .. i .. "NormalTexture"],
+            _G["MultiBar5Button" .. i .. "NormalTexture"],
+            _G["MultiBar6Button" .. i .. "NormalTexture"],
+            _G["MultiBar7Button" .. i .. "NormalTexture"],
         }
 
-        -- Loop through each bar and apply settings to its buttons
-        for _, bar in ipairs(actionBars) do
-            for i = 1, bar.count do
-                local button = _G[bar.name .. i]
-                if button then
-                    local normalTexture = button:GetNormalTexture()
-                    if normalTexture then
-                        applySettings(normalTexture, desaturationValue, actionBarColor, true)
-                    end
+        for _, button in ipairs(buttons) do
+            applySettings(button, desaturationValue, actionBarColor)
+            BBF.HookVertexColor(button, actionBarColor, actionBarColor, actionBarColor, 1)
+        end
+    end
+
+    for i = 1, NUM_PET_ACTION_SLOTS do
+        local button = _G["PetActionButton" .. i .. "NormalTexture"]
+        applySettings(button, desaturationValue, actionBarColor)
+        BBF.HookVertexColor(button, actionBarColor, actionBarColor, actionBarColor, 1)
+    end
+
+    for i = 1, NUM_STANCE_SLOTS do
+        local button = _G["StanceButton" .. i .. "NormalTexture"]
+        applySettings(button, desaturationValue, actionBarColor)
+        BBF.HookVertexColor(button, actionBarColor, actionBarColor, actionBarColor, 1)
+    end
+
+    for i = 0, 3 do
+        local buttons = {
+            _G["CharacterBag"..i.."SlotNormalTexture"],
+            _G["MainMenuBarTexture"..i],
+            _G["MainMenuBarTextureExtender"],
+            _G["MainMenuMaxLevelBar"..i],
+            _G["ReputationWatchBar"].StatusBar["XPBarTexture"..i],
+            _G["MainMenuXPBarTexture"..i],
+            _G["SlidingActionBarTexture"..i]
+        }
+        for _, button in ipairs(buttons) do
+            applySettings(button, desaturationValue, actionBarColor)
+            BBF.HookVertexColor(button, actionBarColor, actionBarColor, actionBarColor, 1)
+        end
+    end
+
+    applySettings(MainMenuBarBackpackButtonNormalTexture, desaturationValue, actionBarColor)
+    BBF.HookVertexColor(MainMenuBarBackpackButtonNormalTexture, actionBarColor, actionBarColor, actionBarColor, 1)
+
+    for _, v in pairs({
+        MainMenuBarLeftEndCap,
+        MainMenuBarRightEndCap,
+    }) do
+        applySettings(v, desaturationValue, birdColor)
+    end
+end
+
+local function darkModeBartender4(desaturationValue, actionBarColor)
+    local BARTENDER4_NUM_MAX_BUTTONS = 180
+    for i = 1, BARTENDER4_NUM_MAX_BUTTONS do
+        local button = _G["BT4Button" .. i]
+        if button then
+            local normalTexture = button:GetNormalTexture()
+            if normalTexture then
+                applySettings(normalTexture, desaturationValue, actionBarColor)
+            end
+        end
+    end
+
+    if BlizzardArtTex0 then
+        for i = 0, 3 do
+            local texture = _G["BlizzardArtTex"..i]
+            if texture then
+                applySettings(texture, desaturationValue, actionBarColor)
+            end
+        end
+    end
+
+    local BARTENDER4_PET_BUTTONS = 10
+    for i = 1, BARTENDER4_PET_BUTTONS do
+        local button = _G["BT4PetButton" .. i]
+        if button then
+            local normalTexture = button:GetNormalTexture()
+            if normalTexture then
+                applySettings(normalTexture, desaturationValue, actionBarColor)
+            end
+        end
+    end
+
+    if BT4BarBlizzardArt and BT4BarBlizzardArt.nineSliceParent then
+        for _, child in ipairs({BT4BarBlizzardArt.nineSliceParent:GetChildren()}) do
+            applySettings(child, desaturationValue, actionBarColor)
+            local DividerArt = child:GetChildren()
+            applySettings(DividerArt, desaturationValue, actionBarColor)
+        end
+    end
+end
+
+local function darkModeDominos(desaturationValue, actionBarColor, birdColor)
+    local NUM_ACTIONBAR_BUTTONS = NUM_ACTIONBAR_BUTTONS
+    local DOMINOS_NUM_MAX_BUTTONS = 14 * NUM_ACTIONBAR_BUTTONS
+    local actionBars = {
+        {name = "DominosActionButton", count = DOMINOS_NUM_MAX_BUTTONS},
+        {name = "MultiBar5ActionButton", count = 12},
+        {name = "MultiBar6ActionButton", count = 12},
+        {name = "MultiBar7ActionButton", count = 12},
+        {name = "MultiBarRightActionButton", count = 12},
+        {name = "MultiBarLeftActionButton", count = 12},
+        {name = "MultiBarBottomRightActionButton", count = 12},
+        {name = "MultiBarBottomLeftActionButton", count = 12},
+        {name = "DominosPetActionButton", count = 12},
+        {name = "DominosStanceButton", count = 12},
+        {name = "StanceButton", count = 6},
+    }
+
+    for _, bar in ipairs(actionBars) do
+        for i = 1, bar.count do
+            local button = _G[bar.name .. i]
+            if button then
+                local normalTexture = button:GetNormalTexture()
+                if normalTexture then
+                    applySettings(normalTexture, desaturationValue, actionBarColor, true)
                 end
             end
         end
-
-        for _, v in pairs({BlizzardArtLeftCap, BlizzardArtRightCap}) do
-            if v then
-                applySettings(v, desaturationValue, birdColor)
-            end
-        end
-        BBF.actionBarColorEnabled = true
     end
 
+    for _, v in pairs({BlizzardArtLeftCap, BlizzardArtRightCap}) do
+        if v then
+            applySettings(v, desaturationValue, birdColor)
+        end
+    end
+end
+
+function BBF.DarkModeActionBars()
+    if not (BetterBlizzFramesDB.darkModeActionBars or BBF.actionBarColorEnabled) then return end
+
+    local desaturationValue = BetterBlizzFramesDB.darkModeUi and true or false
+    local vertexColor = BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeColor or 1
+    local actionBarColor = BetterBlizzFramesDB.darkModeActionBars and (vertexColor + 0.25) or 1
+    local birdColor = BetterBlizzFramesDB.darkModeActionBars and (vertexColor + 0.25) or 1
+
+    if BetterBlizzFramesDB.darkModeColor == 0 then
+        actionBarColor = 0
+        birdColor = 0.07
+    end
+
+    darkModeBlizzardActionBars(desaturationValue, actionBarColor, birdColor)
+    darkModeBartender4(desaturationValue, actionBarColor)
+    darkModeDominos(desaturationValue, actionBarColor, birdColor)
+
+    BBF.actionBarColorEnabled = true
 end
 
 function BBF.UpdateFilteredBuffsIcon()
