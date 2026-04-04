@@ -786,7 +786,7 @@ function BBF.ActionBarIconZoom()
             _G["PetActionButton" .. i .. "Icon"],
             _G["StanceButton" .. i .. "Icon"]
         }
-        for _, icon in ipairs(icons) do
+        for _, icon in pairs(icons) do
             applyTexCoord(icon)
         end
     end
