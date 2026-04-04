@@ -585,115 +585,68 @@ end)
 
 function BBF.CheckForAuraBorders()
     if not (BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeUiAura) then
-        -- Define the maximum number of buffs and debuffs (change these numbers as needed)
-        local maxBuffs = 32
-        local maxDebuffs = 16
-
-        -- Loop through buffs
-        for i = 1, maxBuffs do
-            local buffFrame = _G["BuffButton" .. i]
-            if buffFrame then
-                local iconTexture = _G[buffFrame:GetName() .. "Icon"]
-                if iconTexture then
-                    local borderColorValue
-                    for j = 1, buffFrame:GetNumChildren() do
-                        local child = select(j, buffFrame:GetChildren())
-                        local bottomEdgeTexture = child.BottomEdge
-                        if bottomEdgeTexture and bottomEdgeTexture:IsObjectType("Texture") then
-                            local r, g, b, a = bottomEdgeTexture:GetVertexColor()
-                            borderColorValue = r
-                            break
+        local function searchAuraFrames(prefix, count)
+            for i = 1, count do
+                local frame = _G[prefix .. i]
+                if frame then
+                    local iconTexture = _G[frame:GetName() .. "Icon"]
+                    if iconTexture then
+                        local borderColorValue
+                        for j = 1, frame:GetNumChildren() do
+                            local child = select(j, frame:GetChildren())
+                            local bottomEdgeTexture = child.BottomEdge
+                            if bottomEdgeTexture and bottomEdgeTexture:IsObjectType("Texture") then
+                                local r, g, b, a = bottomEdgeTexture:GetVertexColor()
+                                borderColorValue = r
+                                break
+                            end
                         end
-                    end
-                    if borderColorValue then
-                        if ToggleHiddenAurasButton then
-                            ToggleHiddenAurasButton.Icon:SetTexCoord(iconTexture:GetTexCoord())
-                            createOrUpdateBorders(ToggleHiddenAurasButton, borderColorValue, nil, true)
-                            return
+                        if borderColorValue then
+                            if ToggleHiddenAurasButton then
+                                ToggleHiddenAurasButton.Icon:SetTexCoord(iconTexture:GetTexCoord())
+                                createOrUpdateBorders(ToggleHiddenAurasButton, borderColorValue, nil, true)
+                                return true
+                            end
                         end
                     end
                 end
             end
         end
 
-        -- Loop through debuffs
-        for i = 1, maxDebuffs do
-            local debuffFrame = _G["DebuffButton" .. i]
-            if debuffFrame then
-                local iconTexture = _G[debuffFrame:GetName() .. "Icon"]
-                if iconTexture then
-                    local borderColorValue
-                    for j = 1, debuffFrame:GetNumChildren() do
-                        local child = select(j, debuffFrame:GetChildren())
-                        local bottomEdgeTexture = child.BottomEdge
-                        if bottomEdgeTexture and bottomEdgeTexture:IsObjectType("Texture") then
-                            local r, g, b, a = bottomEdgeTexture:GetVertexColor()
-                            borderColorValue = r
-                            break
-                        end
-                    end
-                    if borderColorValue then
-                        if ToggleHiddenAurasButton then
-                            ToggleHiddenAurasButton.Icon:SetTexCoord(iconTexture:GetTexCoord())
-                            createOrUpdateBorders(ToggleHiddenAurasButton, borderColorValue, nil, true)
-                            return
-                        end
-                    end
-                end
-            end
-        end
+        if searchAuraFrames("BuffButton", 32) then return end
+        searchAuraFrames("DebuffButton", 16)
     end
 end
 
 function BBF.DarkModeCastbars()
-    if BetterBlizzFramesDB.darkModeCastbars then
-        local desaturationValue = BetterBlizzFramesDB.darkModeUi and true or false
-        local vertexColor = BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeColor or 1
-        local castbarBorder = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.1) or 1
-        local lighterVertexColor = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.3) or 1
-        BBF.darkModeCastbars = true
+    local enabled = BetterBlizzFramesDB.darkModeCastbars
+    if not enabled and not BBF.darkModeCastbars then return end
 
-        applySettings(TargetFrame.spellbar.Border, desaturationValue, castbarBorder)
-        applySettings(TargetFrame.spellbar.Background, desaturationValue, lighterVertexColor)
+    local desat = enabled and (BetterBlizzFramesDB.darkModeUi and true or false) or false
+    local vertexColor = enabled and (BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeColor or 1) or 1
+    local borderColor = enabled and (BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.1) or 1) or 1
+    local bgColor = enabled and (BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.3) or 1) or 1
 
-        applySettings(CastingBarFrame.Border, desaturationValue, castbarBorder)
-        applySettings(CastingBarFrame.Background, desaturationValue, lighterVertexColor)
+    applySettings(TargetFrame.spellbar.Border, desat, borderColor)
+    applySettings(TargetFrame.spellbar.Background, desat, bgColor)
 
-        if BetterBlizzFramesDB.showPartyCastbar then
-            for i = 1, 5 do
-                local partyCastbar = _G["Party"..i.."SpellBar"]
-                if partyCastbar then
-                    applySettings(partyCastbar.Border, desaturationValue, castbarBorder)
-                    applySettings(partyCastbar.Background, desaturationValue, lighterVertexColor)
-                end
+    applySettings(CastingBarFrame.Border, desat, borderColor)
+    applySettings(CastingBarFrame.Background, desat, bgColor)
+
+    if BetterBlizzFramesDB.showPartyCastbar then
+        for i = 1, 5 do
+            local partyCastbar = _G["Party"..i.."SpellBar"]
+            if partyCastbar then
+                applySettings(partyCastbar.Border, desat, borderColor)
+                applySettings(partyCastbar.Background, desat, bgColor)
             end
         end
-        local petCastbar = _G["PetSpellBar"]
-        if petCastbar then
-            applySettings(petCastbar.Border, desaturationValue, castbarBorder)
-            applySettings(petCastbar.Background, desaturationValue, lighterVertexColor)
-        end
-    elseif BBF.darkModeCastbars then
-        applySettings(TargetFrame.spellbar.Border, false, 1)
-        applySettings(TargetFrame.spellbar.Background, false, 1)
-
-        applySettings(CastingBarFrame.Border, false, 1)
-        applySettings(CastingBarFrame.Background, false, 1)
-
-        if BetterBlizzFramesDB.showPartyCastbar then
-            for i = 1, 5 do
-                local partyCastbar = _G["Party"..i.."SpellBar"]
-                if partyCastbar then
-                    applySettings(partyCastbar.Border, false, 1)
-                    applySettings(partyCastbar.Background, false, 1)
-                end
-            end
-        end
-        local petCastbar = _G["PetSpellBar"]
-        if petCastbar then
-            applySettings(petCastbar.Border, false, 1)
-            applySettings(petCastbar.Background, false, 1)
-        end
-        BBF.darkModeCastbars = nil
     end
+    local petCastbar = _G["PetSpellBar"]
+    if petCastbar then
+        applySettings(petCastbar.Border, desat, borderColor)
+        applySettings(petCastbar.Background, desat, bgColor)
+    end
+
+    BBF.darkModeCastbars = enabled or nil
 end
