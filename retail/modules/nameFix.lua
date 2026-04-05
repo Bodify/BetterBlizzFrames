@@ -1100,6 +1100,13 @@ local function SetActionBarFonts(font, size, kbSize, outline, kbOutline, chargeS
             end
         end
     end
+
+    local verifyButton = _G["ActionButton1Name"]
+    if verifyButton then
+        local verifyFont = verifyButton:GetFont()
+        return verifyFont == font
+    end
+    return true
 end
 
 
@@ -1268,7 +1275,9 @@ function BBF.SetCustomFonts()
         local outline = db.actionBarFontOutline or "THINOUTLINE"
         local kbOutline = db.actionBarKeyFontOutline or "THINOUTLINE"
         local chargeSize = db.actionBarChargeFontSize or 14
-        SetActionBarFonts(fontPath, fontSize, kbSize, outline, kbOutline, chargeSize)
+        if not SetActionBarFonts(fontPath, fontSize, kbSize, outline, kbOutline, chargeSize) then
+            needsRetry = true
+        end
     end
 
     if db.changeUnitFrameValueFont then
