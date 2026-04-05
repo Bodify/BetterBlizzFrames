@@ -1104,7 +1104,12 @@ function BBF.HideFrames()
                     end
                 end
             end
-
+            local extraHotKey = _G["ExtraActionButton1HotKey"]
+            if BetterBlizzFramesDB.hideActionBarHotKey then
+                hideElementByParent(extraHotKey)
+            else
+                restoreElementParent(extraHotKey)
+            end
             -- Dominos buttons
             local NUM_ACTIONBAR_BUTTONS = NUM_ACTIONBAR_BUTTONS or 12
             local DOMINOS_NUM_MAX_BUTTONS = 14 * NUM_ACTIONBAR_BUTTONS
