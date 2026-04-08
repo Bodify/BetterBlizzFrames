@@ -790,6 +790,11 @@ function BBF.ActionBarIconZoom()
             applyTexCoord(icon)
         end
     end
+
+    for i = 0, 3 do
+        applyTexCoord(_G["CharacterBag" .. i .. "SlotIconTexture"])
+    end
+    applyTexCoord(MainMenuBarBackpackButtonIconTexture)
 end
 
 
