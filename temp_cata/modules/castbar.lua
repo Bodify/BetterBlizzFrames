@@ -142,12 +142,18 @@ function BBF.UpdateCastbars()
                     spellbar.Flash:SetParent(BetterBlizzFramesDB.partyCastbarShowBorder and spellbar or hiddenFrame)
 
                     if not BetterBlizzFramesDB.showPartyCastBarIcon then
-                        spellbar.Icon:SetAlpha(0)
+                        spellbar.Icon:Hide()
+                        if spellbar.bbfIconBorder then
+                            spellbar.bbfIconBorder:Hide()
+                        end
                     else
+                        spellbar.Icon:Show()
+                        if spellbar.bbfIconBorder then
+                            spellbar.bbfIconBorder:Show()
+                        end
                         spellbar.Icon:ClearAllPoints()
                         spellbar.Icon:SetPoint("RIGHT", spellbar, "LEFT", -4 + BetterBlizzFramesDB.partyCastbarIconXPos, BetterBlizzFramesDB.partyCastbarIconYPos - 1)
                         spellbar.Icon:SetScale(BetterBlizzFramesDB.partyCastBarIconScale)
-                        spellbar.Icon:SetAlpha(1)
                     end
 
                     local partyFrame = nil
@@ -221,13 +227,19 @@ function BBF.UpdatePetCastbar()
         petSpellBar:SetIgnoreParentAlpha(true)
         petSpellBar:SetStatusBarTexture(classicCastbarTexture)
         if not BetterBlizzFramesDB.showPetCastBarIcon then
-            petSpellBar.Icon:SetAlpha(0)
+            petSpellBar.Icon:Hide()
+            if petSpellBar.bbfIconBorder then
+                petSpellBar.bbfIconBorder:Hide()
+            end
             petSpellBar.BorderShield:SetAlpha(0)
         else
+            petSpellBar.Icon:Show()
+            if petSpellBar.bbfIconBorder then
+                petSpellBar.bbfIconBorder:Show()
+            end
             petSpellBar.Icon:ClearAllPoints()
             petSpellBar.Icon:SetPoint("RIGHT", petSpellBar, "LEFT", -4 + 0, 0)
             petSpellBar.Icon:SetScale(iconScale)
-            petSpellBar.Icon:SetAlpha(1)
             -- petSpellBar.BorderShield:ClearAllPoints()
             -- petSpellBar.BorderShield:SetPoint("RIGHT", petSpellBar, "LEFT", -1 + 0, -7 + 0)
             -- petSpellBar.BorderShield:SetScale(iconScale)
