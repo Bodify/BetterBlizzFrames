@@ -2884,21 +2884,21 @@ function BBF.InstantComboPoints()
 
     if class == "MONK" then
         hooksecurefunc(MonkHarmonyBarFrame, "UpdatePower", UpdateMonkChi)
-        if not BBP then hooksecurefunc(ClassNameplateBarWindwalkerMonkFrame, "UpdatePower", UpdateMonkChi) end
+        if not BBP then hooksecurefunc(prdClassFrame, "UpdatePower", UpdateMonkChi) end
     elseif class == "ROGUE" then
         hooksecurefunc(RogueComboPointBarFrame, "UpdatePower", UpdateRogueComboPoints)
-        if not BBP then hooksecurefunc(ClassNameplateBarRogueFrame, "UpdatePower", UpdateRogueComboPoints) end
+        if not BBP then hooksecurefunc(prdClassFrame, "UpdatePower", UpdateRogueComboPoints) end
         if C_CVar.GetCVar("comboPointLocation") == "1" and ComboFrame then hooksecurefunc("ComboFrame_Update", UpdateLegacyComboFrame) end
     elseif class == "DRUID" then
         hooksecurefunc(DruidComboPointBarFrame, "UpdatePower", UpdateDruidComboPoints)
-        if not BBP then hooksecurefunc(ClassNameplateBarFeralDruidFrame, "UpdatePower", UpdateDruidComboPoints) end
+        if not BBP then hooksecurefunc(prdClassFrame, "UpdatePower", UpdateDruidComboPoints) end
         if C_CVar.GetCVar("comboPointLocation") == "1" and ComboFrame then hooksecurefunc("ComboFrame_Update", UpdateLegacyComboFrame) end
     elseif class == "MAGE" then
         hooksecurefunc(MageArcaneChargesFrame, "UpdatePower", UpdateArcaneCharges)
-        if not BBP then hooksecurefunc(ClassNameplateBarMageFrame, "UpdatePower", UpdateArcaneCharges) end
+        if not BBP then hooksecurefunc(prdClassFrame, "UpdatePower", UpdateArcaneCharges) end
     elseif class == "PALADIN" then
         hooksecurefunc(PaladinPowerBarFrame, "UpdatePower", UpdatePaladinHolyPower)
-        if not BBP then hooksecurefunc(ClassNameplateBarPaladinFrame, "UpdatePower", UpdatePaladinHolyPower) end
+        if not BBP then hooksecurefunc(prdClassFrame, "UpdatePower", UpdatePaladinHolyPower) end
     end
     BBF.InstantComboPointsActive = true
 end
@@ -2995,115 +2995,23 @@ end
 
 
 function BBF.ShowCooldownDuringCC()
-    if BBF.isMidnight then return end
     if not BetterBlizzFramesDB.fixActionBarCDs then return end
     if BBF.ShowCooldownDuringCCActive then return end
-    local usingOmniCC = C_AddOns.IsAddOnLoaded("OmniCC")
-    local alwaysHideCCDuration = BetterBlizzFramesDB.fixActionBarCDsAlwaysHideCD
+    local blizzPrefixes = {
+        "ActionButton", "MultiBarBottomLeftButton", "MultiBarBottomRightButton",
+        "MultiBarRightButton", "MultiBarLeftButton", "MultiBar5Button",
+        "MultiBar6Button", "MultiBar7Button", "PetActionButton"
+    }
 
-    local OmniCCTextUpdater = CreateFrame("Frame")
-    local trackedButtons = {}
-
-    local function StopTracking(button)
-        if trackedButtons[button] then
-            trackedButtons[button] = nil
-        end
-        if not next(trackedButtons) then
-            OmniCCTextUpdater:SetScript("OnUpdate", nil)
-        end
-    end
-
-    local function TrackButton(button)
-        if not trackedButtons[button] then
-            trackedButtons[button] = true
-            OmniCCTextUpdater:SetScript("OnUpdate", function()
-                for button in pairs(trackedButtons) do
-                    if button.chargeCooldown and button.chargeCooldown._occ_display then
-                        local occText = button.chargeCooldown._occ_display.text
-                        if occText and not occText:IsShown() then
-                            occText:Show()
-                        end
-                    end
-                end
-            end)
-        end
-    end
-
-    local function UpdateCooldown(self)
-        if BBF.isMidnight then return end
-        if self.cooldown.currentCooldownType ~= 1 then return end
-        if not self:IsVisible() or not self.action then return end
-
-        local start, duration, enable, modRate = 0, 0
-        local actionType, actionID = GetActionInfo(self.action)
-        local locStart, locDuration = 0, 0
-        local chargeInfo
-
-        if (actionType == "spell" or actionType == "macro") and actionID then
-            chargeInfo = C_Spell.GetSpellCharges(actionID)
-            if chargeInfo and chargeInfo.currentCharges ~= chargeInfo.maxCharges then
-                start, duration, modRate = chargeInfo.cooldownStartTime, chargeInfo.cooldownDuration, chargeInfo.chargeModRate
-            else
-                locStart, locDuration = C_Spell.GetSpellLossOfControlCooldown(actionID);
-                local spellCooldownInfo = C_Spell.GetSpellCooldown(actionID)
-                if spellCooldownInfo then
-                    start, duration, modRate = spellCooldownInfo.startTime, spellCooldownInfo.duration, spellCooldownInfo.modRate
-                else
-                    start, duration, enable, modRate = GetActionCooldown(self.action)
-                end
-            end
-        else
-            local charges, maxCharges, chargeStart, chargeDuration, chargeModRate = GetActionCharges(self.action)
-            if charges then
-                start, duration, modRate = chargeStart, chargeDuration, chargeModRate
-            else
-                start, duration, enable, modRate = GetActionCooldown(self.action)
-            end
-
-            locStart, locDuration = GetActionLossOfControlCooldown(self.action);
-        end
-        -- BBF.isMidnight
-        if duration == 0 then
-            if alwaysHideCCDuration then
-                self.cooldown:SetHideCountdownNumbers(true)
-                self.cooldown:SetCooldown(0, 0)
-            end
-            return
-        end
-
-        if not chargeInfo then
-            local now = GetTime()
-            local cdRemaining = (start and duration and duration > 0) and ((start + duration) - now) or 0
-            local locRemaining = (locStart and locDuration and locDuration > 0) and ((locStart + locDuration) - now) or 0
-            if locRemaining <= cdRemaining then
-                return
-            end
-        end
-
-        self.cooldown:SetHideCountdownNumbers(false)
-        self.cooldown:SetCooldown(start, duration, modRate)
-
-        -- Ensure OmniCC properly shows the cooldown text
-        if usingOmniCC then
-            if self.cooldown._occ_display then
-                local occText = self.cooldown._occ_display.text
-                C_Timer.After(0, function()
-                    occText:Show()
-                end)
-            end
-
-            if self.chargeCooldown then
-                self.chargeCooldown:SetHideCountdownNumbers(false)
-                self.chargeCooldown:SetCooldown(start, duration, modRate)
-                TrackButton(self)
-                C_Timer.After(0.15, function()
-                    StopTracking(self)
-                end)
+    for _, prefix in ipairs(blizzPrefixes) do
+        for i = 1, 12 do
+            local btn = _G[prefix .. i]
+            if btn and btn.lossOfControlCooldown then
+                btn.lossOfControlCooldown:SetParent(BBF.hiddenFrame)
             end
         end
     end
-
-    hooksecurefunc("ActionButton_UpdateCooldown", UpdateCooldown)
+    BBF.ShowCooldownDuringCCActive = true
 end
 
 
