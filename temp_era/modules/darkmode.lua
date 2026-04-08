@@ -580,11 +580,13 @@ end
 
 local function updateCastbarIconBorder(castbar, enabled, colorValue)
     if not castbar or not castbar.Icon then return end
-    if enabled then
+    local iconShown = castbar.Icon:IsShown()
+    if enabled and iconShown then
         if not castbar.bbfIconBorder then
             castbar.bbfIconBorder = createIconBorder(castbar, castbar.Icon, 8.5, {-1.5, 1.5, 1.5, -2})
         end
         castbar.bbfIconBorder:SetBackdropBorderColor(colorValue, colorValue, colorValue)
+        castbar.bbfIconBorder:Show()
     elseif castbar.bbfIconBorder then
         castbar.bbfIconBorder:Hide()
         castbar.bbfIconBorder:SetParent(nil)

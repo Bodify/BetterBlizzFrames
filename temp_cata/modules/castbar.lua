@@ -840,9 +840,15 @@ function BBF.ShowPlayerCastBarIcon()
     if CastingBarFrame then
         if BetterBlizzFramesDB.playerCastBarShowIcon then
             CastingBarFrame.Icon:Show()
+            if CastingBarFrame.bbfIconBorder then
+                CastingBarFrame.bbfIconBorder:Show()
+            end
             --CastingBarFrame.showShield = true
         else
             CastingBarFrame.Icon:Hide()
+            if CastingBarFrame.bbfIconBorder then
+                CastingBarFrame.bbfIconBorder:Hide()
+            end
             --CastingBarFrame.showShield = false
         end
     else
