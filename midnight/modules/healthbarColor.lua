@@ -555,6 +555,7 @@ local function HookPowerBarColors()
         hooksecurefunc("CompactUnitFrame_UpdatePowerColor", function(frame)
             if issecretvalue(frame) then return end
             if not frame or not frame.unit or frame.unit:find("nameplate") or frame:IsForbidden() then return end
+            if not frame.powerBar then return end
 
             local _, powerToken = UnitPowerType(frame.unit)
             if powerToken then
