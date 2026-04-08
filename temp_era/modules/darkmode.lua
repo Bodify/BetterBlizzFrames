@@ -399,9 +399,12 @@ local function darkModeBlizzardActionBars(desaturationValue, actionBarColor, bir
     end
 
     for i = 1, NUM_PET_ACTION_SLOTS do
-        local button = _G["PetActionButton" .. i .. "NormalTexture"]
-        applySettings(button, desaturationValue, actionBarColor)
-        BBF.HookVertexColor(button, actionBarColor, actionBarColor, actionBarColor, 1)
+        local nt1 = _G["PetActionButton" .. i .. "NormalTexture"]
+        local nt2 = _G["PetActionButton" .. i .. "NormalTexture2"]
+        applySettings(nt1, desaturationValue, actionBarColor)
+        applySettings(nt2, desaturationValue, actionBarColor)
+        BBF.HookVertexColor(nt1, actionBarColor, actionBarColor, actionBarColor, 1)
+        BBF.HookVertexColor(nt2, actionBarColor, actionBarColor, actionBarColor, 1)
     end
 
     for i = 1, NUM_STANCE_SLOTS do
@@ -417,6 +420,7 @@ local function darkModeBlizzardActionBars(desaturationValue, actionBarColor, bir
             _G["MainMenuBarTextureExtender"],
             _G["MainMenuMaxLevelBar"..i],
             _G["ReputationWatchBar"].StatusBar["XPBarTexture"..i],
+            _G["ReputationWatchBar"].StatusBar["WatchBarTexture"..i],
             _G["MainMenuXPBarTexture"..i],
             _G["SlidingActionBarTexture"..i]
         }
