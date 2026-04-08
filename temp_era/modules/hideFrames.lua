@@ -390,8 +390,8 @@ function BBF.HideFrames()
             --     --hooksecurefunc(FocusFrameFlash, "Show", OnShowHookScript())
             --     --FocusFrameFlash.BBFHookHide = true
             -- end
-            --PetFrameFlash:SetParent(hiddenFrame)
-            --PetAttackModeTexture:SetParent(hiddenFrame)
+            PetFrameFlash:SetParent(hiddenFrame)
+            PetAttackModeTexture:SetParent(hiddenFrame)
         end
 
     --     -- Hide Player level text
