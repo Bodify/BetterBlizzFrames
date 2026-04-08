@@ -873,10 +873,24 @@ local function CastingBarFrameMiscAdjustments()
     -- end
     --CastingBarFrame.InterruptGlow:SetSize(newInterruptGlowWidth, newInterruptGlowHeight)
 
-        if not CastingBarFrame.sparkHooked then
+    local playerSparkHeight = BetterBlizzFramesDB.playerCastBarHeight + 15
+    local targetSparkHeight = BetterBlizzFramesDB.targetCastBarHeight + 15
+    local focusSparkHeight = BetterBlizzFramesDB.focusCastBarHeight + 15
+
+    if not CastingBarFrame.sparkHooked then
         CastingBarFrame:HookScript("OnUpdate", function(self)
             --self.Spark:SetTexture(130877)
-            self.Spark:SetSize(33,BetterBlizzFramesDB.playerCastBarHeight + 20)
+            self.Spark:SetSize(30, playerSparkHeight)
+            UpdateSparkPosition(self)
+        end)
+        TargetFrameSpellBar:HookScript("OnUpdate", function(self)
+            --self.Spark:SetTexture(130877)
+            self.Spark:SetSize(30, targetSparkHeight)
+            UpdateSparkPosition(self)
+        end)
+        FocusFrameSpellBar:HookScript("OnUpdate", function(self)
+            --self.Spark:SetTexture(130877)
+            self.Spark:SetSize(30, focusSparkHeight)
             UpdateSparkPosition(self)
         end)
         CastingBarFrame.sparkHooked = true
