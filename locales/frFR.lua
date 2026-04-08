@@ -57,7 +57,6 @@ L["Profile_Streamers"] = "Streamers"
 -- Module Names & General Settings
 ---------------------------------------
 
-L["Always_Hide_CC_Duration"] = "Toujours masquer durée CC"
 L["CC_Scale"] = "Échelle CC"
 L["Elite_Texture"] = "Texture Élite"
 L["General_Settings"] = "Paramètres généraux"
@@ -543,7 +542,6 @@ L["Print_ActionBar1_Hide_Combat"] = "Impossible de masquer ActionBar1 en combat.
 L["Print_ActionBar1_Show_Combat"] = "Impossible d'afficher ActionBar1 en combat. Quittez le combat et rouvrez le mode édition pour l'afficher."
 L["Tooltip_ActionBar_Font_Color"] = "Changer la couleur de police des barres d'action.\n\nClic droit pour changer la couleur."
 L["Tooltip_ActionBar_Font_Color_Desc"] = "Couleur police barre d'action"
-L["Tooltip_Always_Hide_CC_Duration_Desc"] = "Toujours masquer la durée du CC sur les barres d'action et n'afficher que les vrais CD en assombrissant simplement les barres."
 L["Tooltip_Change_ActionBar_Font"] = "Change la police sur Joueur, Cible et Focus etc."
 L["Tooltip_Fix_ActionBar_CDs_Desc"] = "Toujours afficher les temps de recharge des capacités quand vous êtes CC.\n\nPar défaut si le CC est plus long que le temps de recharge de la capacité, celui-ci est masqué. Vous avez sûrement déjà utilisé votre Bijou pour interrompre quelqu'un pour découvrir que l'interruption était encore en CD quelques secondes. Plus jamais !"
 L["Tooltip_Hide_ActionBar1"] = "Masquer ActionBar1. L'interface par défaut ne le permet pas, voici donc un réglage pour ça."

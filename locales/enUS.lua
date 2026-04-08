@@ -53,12 +53,10 @@ L["Profile_Streamers"] = "Streamers"
 -- Module Names & General Settings
 ---------------------------------------
 
-L["Always_Hide_CC_Duration"] = "Always Hide CC Duration"
 L["CC_Scale"] = "CC Scale"
 L["Elite_Texture"] = "Elite Texture"
 L["General_Settings"] = "General settings"
 L["Hide_CC_Background"] = "Hide CC Background"
-L["Hide_CC_Duration"] = "Hide CC Duration"
 L["Hide_CC_Red_Lines"] = "Hide CC Red-lines"
 L["Module_Name_Advanced"] = "Advanced Settings"
 L["Module_Name_CD_Manager"] = "CD Manager"
@@ -539,9 +537,8 @@ L["Print_ActionBar1_Hide_Combat"] = "Could not hide ActionBar1 due to combat. Pl
 L["Print_ActionBar1_Show_Combat"] = "Could not show ActionBar1 due to combat. Please leave combat and re-open Edit Mode to show it."
 L["Tooltip_ActionBar_Font_Color"] = "Change the font color on ActionBars.\n\nRight-click to change color."
 L["Tooltip_ActionBar_Font_Color_Desc"] = "Action Bar Font Color"
-L["Tooltip_Always_Hide_CC_Duration_Desc"] = "Always hide the CC duration on ActionBars and only show real CDs and just have the bars darkened instead."
 L["Tooltip_Change_ActionBar_Font"] = "Changes the font on Player, Target & Focus etc."
-L["Tooltip_Fix_ActionBar_CDs_Desc"] = "Always show ability cooldowns when you're CC'ed.\n\nBy default if the CC is longer than the ability cooldown it gets hidden. You've probably been in situations where you Trinket to interrupt someone only for interrupt to still be on a few seconds CD. No more!"
+L["Tooltip_Fix_ActionBar_CDs_Desc"] = "Hide the fake cooldowns on ActionBars when you are in CC and only show the cooldown on the actual spells you have on cooldown.\n\nYou've probably been in situations where you Trinket to interrupt someone only for interrupt to still be on a few seconds CD. No more!"
 L["Tooltip_Hide_ActionBar1"] = "Hide ActionBar1. Default UI does not allow this so heres a setting for it."
 L["Tooltip_Hide_ActionBar_Active_Overlay"] = "Hide the green active overlay on default ActionBar buttons when a placement spell is active."
 L["Tooltip_Hide_ActionBar_Equipped_Overlay_Desc"] = "Hide the green equipped overlay on default ActionBar buttons."

@@ -52,12 +52,10 @@ L["Profile_Streamers"] = "主播"
 -- Module Names & General Settings
 ---------------------------------------
 
-L["Always_Hide_CC_Duration"] = "始终隐藏控制技能持续时间"
 L["CC_Scale"] = "控制技能缩放"
 L["Elite_Texture"] = "精英材质"
 L["General_Settings"] = "常规设置"
 L["Hide_CC_Background"] = "隐藏控制技能背景"
-L["Hide_CC_Duration"] = "隐藏控制技能持续时间"
 L["Hide_CC_Red_Lines"] = "隐藏控制技能红线"
 L["Module_Name_Advanced"] = "高级设置"
 L["Module_Name_CD_Manager"] = "冷却管理器"
@@ -515,7 +513,6 @@ L["Print_ActionBar1_Hide_Combat"] = "战斗中无法隐藏动作条1。请离开
 L["Print_ActionBar1_Show_Combat"] = "战斗中无法显示动作条1。请离开战斗并重新打开编辑模式以显示它。"
 L["Tooltip_ActionBar_Font_Color"] = "更改动作条的字体颜色。\n\n右键点击更改颜色。"
 L["Tooltip_ActionBar_Font_Color_Desc"] = "动作条字体颜色"
-L["Tooltip_Always_Hide_CC_Duration_Desc"] = "始终隐藏动作条上的控制技能持续时间，仅显示真实冷却并将条变暗。"
 L["Tooltip_Change_ActionBar_Font"] = "更改玩家、目标和焦点等的字体。"
 L["Tooltip_Fix_ActionBar_CDs_Desc"] = "被控制时始终显示技能冷却。\n\n默认情况下，如果控制时间长于技能冷却时间，冷却会被隐藏。你可能遇到过饰品解控后想打断，结果打断还在冷却的情况。不会再发生了！"
 L["Tooltip_Hide_ActionBar1"] = "隐藏动作条1。默认 UI 不允许此操作，所以这里提供了一个设置。"
