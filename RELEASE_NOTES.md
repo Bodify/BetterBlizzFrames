@@ -1,36 +1,18 @@
-# BetterBlizzFrames 1.9.4
+# BetterBlizzFrames 1.9.4b
+## All versions
+- Add French localization by Timikana@GitHub. Thank you!
 ## Midnight
-### New
-- Kick Popup: Show icon + spellname of the spell you interrupted. (/bbf -> Extra Features right side)
 ### Tweak
-- Castbar Quick Hide fixed again to not immediately hide if the castbar was interrupted (so you can see it got interrupted and by who).
-- Sort some castbar color issues
-
-# BetterBlizzFrames 1.9.3i
-## Midnight
+- Fix "Fix ActionBar Cooldowns in CC" setting in Misc for Midnight.
+- Fix Nameplate/PRD instant combo points setting.
+- Add ExtraActionButton1 to hide hotkey setting.
 ### Bugfix
-- Add some secret checks to avoid potential errors.
-
-# BetterBlizzFrames 1.9.3h
-## Midnight
-### Bugfix
-- Fix healthbar sticking out a bit from frame on minus mobs for classic frames setting.
-- Fix castbar color logic if classic castbars were enabled but not classic frames.
-- Fix "DarkMode: Tooltip" covering gems on tooltip with dark overlay.
-- Fix "No Portrait: Pixel Border" settings pixel border on minus mobs' manabar being out of position.
-- Fix some player name changes not going through on login like RP names.
-
-# BetterBlizzFrames 1.9.3g
-## Midnight
-### Bugfix
-- Fix aura durations on Player Auras not showing if moving auras upwards + dark mode.
-
-# BetterBlizzFrames 1.9.3f
-## All
-### Bugfix
-- Fix an issue causing custom fonts to not load on first time login on some elements but fixed by a /reload.
-## Midnight
-### Bugfix
-- Fix issues with interrupt color. /pray its better now.
-- Fix castbar color issue getting stuck red on finished casts.
-- Fix a secret error.
+- Fix actionbar font change not applying of first time login.
+## Classic Era
+### Tweak
+- Thanks to Shadeqt@GitHub for all of these tweaks below.
+- Add MinimapBorderTop to minimap darkmode (was not being darkened)
+- Add dark borders to pet buff icons (PetFrameBuff1-16) with UNIT_AURA event hook for dynamic updates
+- Add dark borders around castbar spell icons (target, player, party, pet) with proper lifecycle (created on enable, cleaned up on disable, matching aura border pattern)
+- OCD icon zoom fix for pet and stance buttons
+- Fix Hide Combat Glow for PetFrame
