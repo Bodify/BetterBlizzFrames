@@ -585,7 +585,6 @@ local function updateCastbarIconBorder(castbar, enabled, colorValue)
             castbar.bbfIconBorder = createIconBorder(castbar, castbar.Icon, 8.5, {-1.5, 1.5, 1.5, -2})
         end
         castbar.bbfIconBorder:SetBackdropBorderColor(colorValue, colorValue, colorValue)
-        castbar.bbfIconBorder:Show()
     elseif castbar.bbfIconBorder then
         castbar.bbfIconBorder:Hide()
         castbar.bbfIconBorder:SetParent(nil)
