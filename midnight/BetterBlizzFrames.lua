@@ -50,6 +50,7 @@ local defaultSettings = {
     queueTimerAudio = true,
     queueTimerWarningTime = 6,
     kickPopupSoundName = "Lossa Countered",
+    kickPopupFontShadow = true,
     minimizeObjectiveTracker = true,
     fadeMicroMenuExceptQueue = true,
     surrenderArena = true,
@@ -67,6 +68,7 @@ local defaultSettings = {
     hideObjectiveTracker = true,
     cdManagerBlacklist = {},
     cdManagerPriorityList = {},
+    kickPopupFontOutline = "OUTLINE",
 
     rpNames = true,
     rpNamesFirst = true,

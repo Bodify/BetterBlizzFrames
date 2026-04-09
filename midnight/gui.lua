@@ -7169,16 +7169,39 @@ local function guiPositionAndScale()
         function(fontPath)
             BBF.UpdateKickPopupFont()
         end,
-        { anchorFrame = kickPopupYPos, x = 8, y = -13, label = L["Font"] },
+        { anchorFrame = kickPopupYPos, x = -12, y = -13, label = L["Font"] },
         125,
         nil,
         "TOP"
     )
 
+    local kickPopupFontOutline = CreateCheckbox("kickPopupFontOutline", L["Outline_Label"], contentFrame)
+    kickPopupFontOutline:SetPoint("LEFT", kickPopupFontDropdown, "RIGHT", -2, 8)
+    kickPopupFontOutline:SetScript("OnMouseDown", function(self, button)
+        if button == "RightButton" and self:GetChecked() then
+            local current = BetterBlizzFramesDB.kickPopupFontOutline
+            if current == "THICKOUTLINE" then
+                BetterBlizzFramesDB.kickPopupFontOutline = "OUTLINE"
+            else
+                BetterBlizzFramesDB.kickPopupFontOutline = "THICKOUTLINE"
+            end
+            BBF.UpdateKickPopupFont()
+        end
+    end)
+    kickPopupFontOutline:HookScript("OnClick", function()
+        BBF.UpdateKickPopupFont()
+    end)
+    CreateTooltip(kickPopupFontOutline, L["Tooltip_Outline_Toggle"])
+
+    local kickPopupFontShadow = CreateCheckbox("kickPopupFontShadow", L["Shadow"], contentFrame, nil, function()
+        BBF.UpdateKickPopupFont()
+    end)
+    kickPopupFontShadow:SetPoint("TOPLEFT", kickPopupFontOutline, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+
     local kickPopupTestMode = CreateCheckbox("kickPopupTestMode", L["Test"], contentFrame, nil, function()
         BBF.TestKickPopup(BetterBlizzFramesDB.kickPopupTestMode)
     end)
-    kickPopupTestMode:SetPoint("TOPLEFT", kickPopupFontDropdown, "BOTTOMLEFT", 6, -2)
+    kickPopupTestMode:SetPoint("TOPLEFT", kickPopupFontDropdown, "BOTTOMLEFT", 26, -2)
 
     local kickPopupTextColor = CreateColorBox(contentFrame, "kickPopupTextColor", L["Kick_Popup_Text_Color"], function()
         BBF.UpdateKickPopupFont()

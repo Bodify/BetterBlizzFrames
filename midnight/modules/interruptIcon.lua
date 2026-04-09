@@ -357,11 +357,26 @@ local function CreateKickPopupFrame()
     popup.icon:SetPoint("RIGHT", popup.label, "LEFT", -4, 0)
 
     local fontName = BetterBlizzFramesDB.kickPopupFont
+    local outlineVal = BetterBlizzFramesDB.kickPopupFontOutline
+    local outlineFlag = (outlineVal == "THICKOUTLINE" and "THICKOUTLINE") or (outlineVal and "OUTLINE") or ""
     if fontName then
         local fontPath = LSM:Fetch(LSM.MediaType.FONT, fontName)
         if fontPath then
-            popup.label:SetFont(fontPath, 18)
+            popup.label:SetFont(fontPath, 18, outlineFlag)
         end
+    else
+        local existingFont, existingSize = popup.label:GetFont()
+        if existingFont then
+            popup.label:SetFont(existingFont, existingSize, outlineFlag)
+        end
+    end
+
+    if BetterBlizzFramesDB.kickPopupFontShadow then
+        popup.label:SetShadowOffset(1, -1)
+        popup.label:SetShadowColor(0, 0, 0, 1)
+    else
+        popup.label:SetShadowOffset(0, 0)
+        popup.label:SetShadowColor(0, 0, 0, 0)
     end
 
     local color = BetterBlizzFramesDB.kickPopupTextColor or {0.992, 0.992, 0.569}
@@ -483,12 +498,28 @@ function BBF.UpdateKickPopupFont()
     local popup = BBF.kickPopupFrame
     if not popup then return end
     local fontName = BetterBlizzFramesDB.kickPopupFont
+    local outlineVal = BetterBlizzFramesDB.kickPopupFontOutline
+    local outlineFlag = (outlineVal == "THICKOUTLINE" and "THICKOUTLINE") or (outlineVal and "OUTLINE") or ""
     if fontName then
         local fontPath = LSM:Fetch(LSM.MediaType.FONT, fontName)
         if fontPath then
-            popup.label:SetFont(fontPath, 18)
+            popup.label:SetFont(fontPath, 18, outlineFlag)
+        end
+    else
+        local existingFont, existingSize = popup.label:GetFont()
+        if existingFont then
+            popup.label:SetFont(existingFont, existingSize, outlineFlag)
         end
     end
+
+    if BetterBlizzFramesDB.kickPopupFontShadow then
+        popup.label:SetShadowOffset(1, -1)
+        popup.label:SetShadowColor(0, 0, 0, 1)
+    else
+        popup.label:SetShadowOffset(0, 0)
+        popup.label:SetShadowColor(0, 0, 0, 0)
+    end
+
     local color = BetterBlizzFramesDB.kickPopupTextColor or {0.992, 0.992, 0.569}
     popup.label:SetTextColor(color[1], color[2], color[3])
 end
