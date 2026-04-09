@@ -613,7 +613,7 @@ function BBF.DarkModeCastbars()
 
     applySettings(CastingBarFrame.Border, desat, borderColor)
     applySettings(CastingBarFrame.Background, desat, bgColor)
-    updateCastbarIconBorder(CastingBarFrame, enabled, borderColor)
+    updateCastbarIconBorder(CastingBarFrame, (enabled and BetterBlizzFramesDB.playerCastBarShowIcon), borderColor)
 
     if BetterBlizzFramesDB.showPartyCastbar then
         for i = 1, 5 do
@@ -621,7 +621,7 @@ function BBF.DarkModeCastbars()
             if partyCastbar then
                 applySettings(partyCastbar.Border, desat, borderColor)
                 applySettings(partyCastbar.Background, desat, bgColor)
-                updateCastbarIconBorder(partyCastbar, enabled, borderColor)
+                updateCastbarIconBorder(partyCastbar, (enabled and BetterBlizzFramesDB.showPartyCastBarIcon), borderColor)
             end
         end
     end
@@ -629,7 +629,7 @@ function BBF.DarkModeCastbars()
     if petCastbar then
         applySettings(petCastbar.Border, desat, borderColor)
         applySettings(petCastbar.Background, desat, bgColor)
-        updateCastbarIconBorder(petCastbar, enabled, borderColor)
+        updateCastbarIconBorder(petCastbar, (enabled and BetterBlizzFramesDB.showPetCastBarIcon), borderColor)
     end
 
     BBF.darkModeCastbars = enabled or nil

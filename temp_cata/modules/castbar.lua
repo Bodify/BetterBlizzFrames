@@ -204,6 +204,7 @@ function BBF.UpdateCastbars()
             end
         end
     end
+    BBF.DarkModeCastbars()
 end
 
 
@@ -233,6 +234,7 @@ function BBF.UpdatePetCastbar()
             -- petSpellBar.BorderShield:SetScale(iconScale)
             -- petSpellBar.BorderShield:SetAlpha(1)
         end
+        BBF.DarkModeCastbars()
         petSpellBar:SetScale(castbarScale)
         petSpellBar:SetWidth(width)
         petSpellBar:SetHeight(height)
@@ -845,6 +847,7 @@ function BBF.ShowPlayerCastBarIcon()
             CastingBarFrame.Icon:Hide()
             --CastingBarFrame.showShield = false
         end
+        BBF.DarkModeCastbars()
     else
         C_Timer.After(1, BBF.ShowPlayerCastBarIcon)
     end
