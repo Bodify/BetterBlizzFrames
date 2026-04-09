@@ -4144,9 +4144,11 @@ local function guiCastbars()
         petCastBarWidth:SetValue(137)
         petCastBarHeight:SetValue(10)
         petCastBarTimer:SetChecked(true)
+        showPetCastBarIcon:SetChecked(true)
         petCastBarShowText:SetChecked(true)
         petCastBarShowBorder:SetChecked(true)
         petDetachCastbar:SetChecked(false)
+        BetterBlizzFramesDB.showPetCastBarIcon = true
         BetterBlizzFramesDB.petCastBarShowText = true
         BetterBlizzFramesDB.petCastBarShowBorder = true
         BetterBlizzFramesDB.petDetachCastbar = false
