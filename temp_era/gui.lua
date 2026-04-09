@@ -3849,16 +3849,24 @@ local function guiCastbars()
         partyCastBarIconScale:SetMinMaxValues(0.4, 2)
         partyCastbarIconXPos:SetMinMaxValues(-50, 50)
         partyCastbarIconYPos:SetMinMaxValues(-50, 50)
-        partyCastBarScale:SetValue(1)
-        partyCastBarIconScale:SetValue(1)
+        partyCastBarScale:SetValue(0.9)
+        partyCastBarIconScale:SetValue(0.9)
         partyCastBarXPos:SetValue(0)
         partyCastBarYPos:SetValue(0)
         partyCastbarIconXPos:SetValue(0)
         partyCastbarIconYPos:SetValue(0)
-        partyCastBarWidth:SetValue(100)
-        partyCastBarHeight:SetValue(12)
+        partyCastBarWidth:SetValue(137)
+        partyCastBarHeight:SetValue(10)
         partyCastBarTimer:SetChecked(true)
+        showPartyCastBarIcon:SetChecked(true)
+        partyCastbarShowText:SetChecked(true)
+        partyCastbarShowBorder:SetChecked(true)
+        partyCastbarSelf:SetChecked(false)
         BetterBlizzFramesDB.partyCastBarTimer = true
+        BetterBlizzFramesDB.showPartyCastBarIcon = true
+        BetterBlizzFramesDB.partyCastbarShowText = true
+        BetterBlizzFramesDB.partyCastbarShowBorder = true
+        BetterBlizzFramesDB.partyCastbarSelf = false
         BBF.CastBarTimerCaller()
     end)
 
