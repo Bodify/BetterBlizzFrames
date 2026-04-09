@@ -3867,7 +3867,7 @@ local function guiCastbars()
         BetterBlizzFramesDB.partyCastbarShowText = true
         BetterBlizzFramesDB.partyCastbarShowBorder = true
         BetterBlizzFramesDB.partyCastbarSelf = false
-        BBF.CastBarTimerCaller()
+        BBF.UpdateCastbars()
     end)
 
 
@@ -4153,7 +4153,7 @@ local function guiCastbars()
         BetterBlizzFramesDB.petCastBarShowBorder = true
         BetterBlizzFramesDB.petDetachCastbar = false
         BetterBlizzFramesDB.petCastBarTimer = true
-        BBF.CastBarTimerCaller()
+        BBF.UpdatePetCastbar()
     end)
 
    ----------------------
