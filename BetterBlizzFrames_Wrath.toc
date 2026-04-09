@@ -17,14 +17,14 @@ temp_shared\functions.lua
 temp_shared\functions_classics.lua
 
 temp_cata\modules\darkmode.lua
-temp_cata\modules\nameFix.lua
+temp_tbc\modules\nameFix.lua
 temp_cata\modules\hideFrames.lua
-temp_cata\modules\auras.lua
+temp_tbc\modules\auras.lua
 temp_cata\modules\absorb.lua
 temp_cata\modules\combat.lua
-temp_cata\modules\castbar.lua
-temp_cata\modules\healthbarColor.lua
-temp_cata\modules\statusBarTextFormat.lua
+temp_tbc\modules\castbar.lua
+temp_tbc\modules\healthbarColor.lua
+temp_tbc\modules\statusBarTextFormat.lua
 temp_cata\modules\arenaframes.lua
 temp_cata\modules\profiles.lua
 temp_cata\modules\chatFrame.lua
@@ -32,7 +32,7 @@ temp_cata\modules\overShields.lua
 temp_cata\modules\stealthIndicator.lua
 temp_cata\modules\interruptIcon.lua
 temp_cata\modules\queueTimer.lua
-temp_cata\modules\loc.lua
+temp_tbc\modules\loc.lua
 
 temp_cata\gui.lua
-temp_cata\BetterBlizzFrames.lua
+temp_tbc\BetterBlizzFrames.lua
