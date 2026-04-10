@@ -818,88 +818,105 @@ The following 7 keys use inconsistent casing or word order. They are **not** bei
 
 Fresh file, built section by section. Each step adds a working section to `temp_era/modules/castbar_poc.lua`. Test after each step. The old `temp_cata/modules/castbar.lua` is never touched — swap the TOC back to verify the original still works anytime.
 
-### Step 0: Branch + TOC setup
+### Step 0: Branch + TOC setup — DONE
 
-- Create branch `refactor/castbar` off `main`
-- Create `temp_era/modules/castbar_poc.lua` with no-op stubs for all 12 `BBF.*` functions exported by the original module
-- Update `BetterBlizzFrames_Vanilla.toc` to load `temp_era/modules/castbar_poc.lua` instead of `temp_cata/modules/castbar.lua`
+- Created branch `refactor/castbar` off `main`
+- Created `temp_era/modules/castbar_poc.lua` with no-op stubs for all 12 `BBF.*` functions exported by the original module
+- Updated `BetterBlizzFrames_Vanilla.toc` to load `temp_era/modules/castbar_poc.lua` instead of `temp_cata/modules/castbar.lua`
+- Rebased onto `upstream/main` to pick up PRs #35-#42 (darkmode icon borders, pet castbar fixes, etc.)
+- Synced fork's `origin/main` to match `upstream/main`
 
-The original `temp_cata/modules/castbar.lua` exports these 12 public functions. All must exist as no-op stubs from day one — `BetterBlizzFrames.lua` and `gui.lua` call them at load time and from callbacks:
+### Step 1: Helpers — DONE
+
+Wrote `CreateBar`, `StyleBar`, `FitBorder`, `AttachTimerHook`, `UpdateCastTimer`, `GetVisibleFrame`, `GetPartySlotFrame`, `PartyBarOpts`, `PetBarOpts`, `AnchorPetBar` + constants.
+
+**Deviations from plan:**
+- `FitBorder` takes no params — detects player vs small template via `bar == CastingBarFrame` check. Reference sizes verified with debug addon against actual Blizzard defaults (150x10/196x49 for small, 195x13/256x64 for player). The border scaling ratios (`BORDER_ADJUST=15/50`, `BORDER_H_SCALE=5.0`) are BBF's own invention — Blizzard never resizes borders.
+- `StyleBar` creates the Timer font string if missing (not just `CreateBar`), so it works for Blizzard-owned bars too.
+- `StyleBar` also hooks texture re-application on cast events (`bbfTextureHooked`), removing this from `ChangeCastbarSizes`.
+- `StyleBar` sets icon size to `barHeight * 2` (was hardcoded 22x22 in original).
+- Icon base gap (`CASTBAR_ELEMENT_GAP = 5`) and Y offset (`CASTBAR_Y_OFFSET = -30`) extracted as constants.
+- Draw layers left at Blizzard defaults (commented out overrides). Verified via debug addon.
+- `ignoreParentAlpha` commented out — bars are parented to UIParent, not party frames.
+- `SmoothStatusBarMixin` deleted — Retail API, doesn't exist in Classic Era.
+- Flash hiding uses `hooksecurefunc` on `Flash:Show()` with `bbfHideBorder` flag instead of reparenting to hidden frame.
+- Font sizes read from existing bar (`GetFont()`) instead of hardcoded.
+- `PartyBarOpts(db)` / `PetBarOpts(db)` extract the StyleBar opts tables — shared between Update* and test mode functions. Single source of truth for DB key mapping.
+- `GetPartySlotFrame(i, useCompact)` extracts the CVar-based frame lookup — shared between `UpdateCastbars` and `partyCastBarTestMode`.
+- `AnchorPetBar(bar, db)` extracts pet bar anchoring (attach/detach logic) — shared between `UpdatePetCastbar` and `petCastBarTestMode`.
+
+### Step 2: Addon-owned bars — party + pet — DONE
+
+Wrote `BBF.UpdateCastbars` (party), `BBF.UpdatePetCastbar` (pet), `BBF.CreateCastbars`, `BBF.UpdateClassicCastbarTexture`.
+
+**Deviations from plan:**
+- Party frame detection uses `GetCVarBool("useCompactPartyFrames")` to decide frame type instead of the triple-detection fallback chain. Eliminates ambiguity when both PMF and CompactRaidFrame are visible for the same slot.
+- `GetVisibleFrame(name)` helper extracts the `_G[name] and frame:IsShown()` pattern, used by both `UpdateCastbars` and test mode.
+- `UpdateCastbars` does early returns before bar creation — bars only created when actually needed.
+- `skipUnit` consolidates three separate `CastingBarFrame_SetUnit(bar, nil)` branches into one boolean.
+- Magic offsets: removed `+10` x-offset and `+3` y-offset from party anchoring (were hand-tuned in original). Kept `+15/-30` for default party frame type offset.
+- `CreateCastbars` is a thin wrapper calling `UpdateCastbars` + `UpdatePetCastbar`.
+- `classicCastbarTexture` defaults to `137012` (Blizzard's default texture ID) instead of nil.
+
+### Step 3: Blizzard-owned bars — player + target — DONE
+
+Wrote `BBF.ChangeCastbarSizes`, `BBF.ShowPlayerCastBarIcon`, `BBF.CastBarTimerCaller`.
+
+**Deviations from plan:**
+- No separate `EnsurePlayerHooks`/`EnsureTargetHooks` functions — hooks are guarded inline within `ChangeCastbarSizes` using `bbfSparkHooked`, `bbfTextureHooked` flags. Simpler, same effect.
+- Player positioning uses `CastingBarFrame:GetBottom()` + half height to compute center Y instead of hardcoded `+166`.
+- Spark width uses Blizzard's default 32 (verified via debug addon), height scales at 2.5x bar height.
+- Target icon always shown (`showIcon = true`) — no DB key exists for target icon visibility.
+- `BBF.UpdateUserAuraSettings()` call commented out — aura concern, doesn't belong in castbar module.
+- `CastBarTimerCaller` is a thin wrapper calling `ChangeCastbarSizes`.
+- Player icon uses extra `-5` iconX offset at call site for wider gap on the bigger template.
+
+### Step 4: One-time hooks — DONE (merged into step 3)
+
+Plan had separate `EnsurePlayerHooks`/`EnsureTargetHooks`. In practice, the hooks are simple enough to guard inline:
+- Player spark repositioning OnUpdate hook
+- Player/target texture OnEvent hooks
+- All guarded with `bbf*Hooked` flags on the frame
+
+**Not implemented from plan:**
+- `OnShow` icon hook (Blizzard already shows the icon on cast start for the template)
+- `SetScale` persistence hook (deferred — needs `wasOnLoadingScreen` flag investigation)
+
+### Step 5: Interrupt highlighting — TODO
+
+`BBF.CastbarRecolorWidgets` and `BBF.InitializeInterruptSpellID` are still stubs.
+
+### Step 6: Test mode — DONE
+
+Wrote `AnimateTestBar`, `BBF.partyCastBarTestMode`, `BBF.petCastBarTestMode`.
+
+**Deviations from plan:**
+- Test mode is fully detached from `UpdateCastbars`/`UpdatePetCastbar` — owns its own create/style/anchor/animate lifecycle. Uses shared helpers (`PartyBarOpts`, `PetBarOpts`, `GetPartySlotFrame`, `AnchorPetBar`) to avoid duplication.
+- Party test mode uses `GetCVarBool("useCompactPartyFrames")` to decide frame type. Force-shows `PartyMemberFrame1-4` only when solo or using default frames (not when compact frames are active).
+- Party test mode respects `partyCastbarSelf` — skips own frame unless self-cast is enabled.
+- Cleans up previous test state (stops animations, hides forced frames) before setting up new state.
+- `AnimateTestBar` disconnects bar from unit via `CastingBarFrame_SetUnit(bar, nil)` so Blizzard's template doesn't hide the bar.
+- `AnimateTestBar` disable path hides icon (prevents stale icon state on test exit).
+- Timer counts down in sync with animation (3-second loop) instead of static "1.8" text.
+- `UpdateCastTimer` skips bars with `testStartTime` set to avoid overriding test animation timer.
+- `UpdateCastbars` and `UpdatePetCastbar` redirect to test mode functions when test mode is active — GUI slider changes during test mode re-run the test setup with new values.
+- Skipped bars (partypet, self without selfCast) no longer get positioned — `ClearAllPoints`/`SetPoint` only runs when a valid unit is assigned.
+
+### Step 7: Event wiring — TODO
+
+`GROUP_ROSTER_UPDATE`, `UNIT_PET`, summon spell detection, `BBF.RefreshCastbars`.
+
+### Step 8: gui.lua cleanup — TODO
+
+Remove focus castbar GUI section from `temp_era/gui.lua`.
+
+### Remaining stubs
 
 ```lua
-function BBF.UpdateCastbars() end            -- gui.lua, BetterBlizzFrames.lua
-function BBF.UpdatePetCastbar() end          -- gui.lua
-function BBF.ChangeCastbarSizes() end        -- gui.lua, BetterBlizzFrames.lua
-function BBF.partyCastBarTestMode() end      -- gui.lua
-function BBF.petCastBarTestMode() end        -- gui.lua
-function BBF.CreateCastbars() end            -- BetterBlizzFrames.lua (merged into UpdateCastbars in rewrite)
-function BBF.CastBarTimerCaller() end        -- BetterBlizzFrames.lua (replaced by AttachTimerHook in rewrite)
-function BBF.CastbarRecolorWidgets() end     -- gui.lua, BetterBlizzFrames.lua
-function BBF.ShowPlayerCastBarIcon() end     -- gui.lua, BetterBlizzFrames.lua
-function BBF.UpdateClassicCastbarTexture() end -- BetterBlizzFrames.lua
-function BBF.InitializeInterruptSpellID() end  -- internal only, but called from event wiring
-function BBF.HookCastbarsForEvoker() end     -- BetterBlizzFrames.lua (dead in Era, stub only)
+function BBF.HookCastbarsForEvoker() end     -- dead in Era, keep as stub
+function BBF.CastbarRecolorWidgets() end     -- step 5: interrupt highlighting
+function BBF.InitializeInterruptSpellID() end  -- step 5: interrupt highlighting
 ```
-
-As each step replaces a stub with a real implementation, remove the stub comment for that function. Stubs that remain at the end (e.g. `HookCastbarsForEvoker`) are dead in Era and can be cleaned up in a later pass.
-
-**Test:** `/reload` — addon loads without errors, no castbars appear (stubs do nothing)
-
-### Step 1: Helpers (~80 lines)
-
-Write `CreateBar`, `StyleBar`, `FitBorder`, `AttachTimerHook` + local constants/vars. No `BBF.*` functions yet — nothing calls these helpers.
-
-**Test:** `/reload` — no errors, no visible change
-
-### Step 2: Addon-owned bars — party + pet (~80 lines)
-
-Write `BBF.UpdateCastbars` (party) and `BBF.UpdatePetCastbar` (pet) using `CreateBar` + `StyleBar`.
-
-**Test:** Join a party — party castbars appear. Summon a pet — pet castbar appears. Resize via GUI sliders. Toggle icons, text, borders, timers. Detach/reattach pet bar.
-
-### Step 3: Blizzard-owned bars — player + target (~60 lines)
-
-Write `BBF.ChangeCastbarSizes` using `StyleBar` for player (`CastingBarFrame`) and target (`TargetFrameSpellBar`).
-
-**Test:** Cast a spell — player bar is styled. Target a mob — target bar is styled. Resize via GUI sliders. Toggle icons, text, borders, timers.
-
-### Step 4: One-time hooks (~50 lines)
-
-Write `EnsurePlayerHooks` (spark, OnShow icon, SetScale persistence, OnEvent texture) and `EnsureTargetHooks` (OnEvent texture, draw layers). Called from `ChangeCastbarSizes`.
-
-**Test:** Cast a spell — spark tracks correctly on custom-width player bar. Player icon shows on cast start. Resize player bar, `/reload`, verify scale persisted. Target a casting mob — texture stays custom after Blizzard reset events.
-
-### Step 5: Interrupt highlighting (~50 lines)
-
-Write `SPELL_UPDATE_COOLDOWN` caching, `GetInterruptState`, `HookTargetInterruptHighlight`. Target-only (no focus in Era).
-
-**Test:** Target interruptible mob — bar color changes based on interrupt CD state. Target uninterruptible mob — default color. Friendly target — default color.
-
-### Step 6: Test mode (~40 lines)
-
-Write unified `BBF.CastbarTestMode`, `BBF.partyCastBarTestMode`, `BBF.petCastBarTestMode`.
-
-**Test:** Toggle party test mode — 5 bars animate. Toggle pet test mode — pet bar animates. Toggle off — bars disappear. Icons/timers respect settings.
-
-### Step 7: Refresh + event wiring (~40 lines)
-
-Write `BBF.RefreshCastbars`. Wire `GROUP_ROSTER_UPDATE` and `UNIT_PET` event frames. Add summon spell detection listener for interrupt spell refresh.
-
-**Test:** `/reload` in a party — everything wires up. Leave/join party — bars update. Summon different pets — interrupt spell list refreshes.
-
-### Step 8: gui.lua cleanup (separate commit)
-
-Remove focus castbar GUI section from `temp_era/gui.lua` (dead in Era).
-
-**Test:** Open BBF settings — no focus castbar section. All other castbar settings still work.
-
-### Mitigations
-
-- Each step is a commit — revert any single step without losing the rest
-- Swap TOC back to `temp_cata/modules/castbar.lua` anytime to verify the original still works
-- Test each bar type individually (party, pet, player, target)
-- Verify borders/icons/text at default AND custom sizes
-- Test with different party frame types (PartyMemberFrame, CompactPartyFrame, CompactRaidFrame)
 
 ---
 
@@ -917,13 +934,13 @@ An earlier draft used a `BAR_DEFAULTS` table mapping type names to per-type cons
 
 Migration saves 0 lines, touches 6 files, and carries medium risk (one missed key = silent nil = setting disappears). String concatenation for key access (`db[prefix .. "CastBar" .. property]`) is harder to read and grep than literal key names. The 7 inconsistent keys are documented in a comment block and accessed by their actual names.
 
-### Why keep per-type icon offsets instead of normalizing to -4?
+### Why a shared base icon gap instead of per-type offsets?
 
-Player/target use `-5` offset, party/pet use `-4`. These have different visual contexts (Blizzard frames vs custom frames) and users have tuned their `IconXPos` settings relative to these baselines. Changing the baseline would shift all existing user configurations by 1 pixel.
+The original had `-4` for party/pet and `-5` for player/target. The rewrite uses a single `CASTBAR_ELEMENT_GAP = 5` in `StyleBar` for both icon and timer. Player passes an additional `-5` at the call site for extra gap on the wider template. Per-type offsets from DB keys are added on top.
 
-### Why keep player icon as ARTWORK instead of normalizing to OVERLAY?
+### Why not override draw layers?
 
-Player icon uses `ARTWORK` draw layer, others use `OVERLAY`. Changing this would alter visual stacking order (ARTWORK renders behind OVERLAY), potentially causing the player icon to appear in front of elements it was previously behind. Preserving existing behavior avoids visual regressions.
+The original overrode Border to `OVERLAY, 6`, BorderShield to `OVERLAY, 7`, etc. Debug addon verified Blizzard's defaults are sensible (Border at `ARTWORK, 0`, Icon at `OVERLAY, 0` for small template). Overrides are commented out — Blizzard handles stacking correctly at default sizes. If custom sizes cause visual issues, overrides can be re-enabled per bar type.
 
 ### Why OnUpdate instead of C_Timer.NewTicker for test mode?
 
@@ -941,20 +958,33 @@ Classic Era supports warlock summons (688, 691, 712, 713) and priest Shadowfiend
 
 ## Summary
 
+### Current state (steps 0-4, 6 complete + streamlining pass)
+
 | Metric | Before (`temp_cata/modules/castbar.lua`) | After (`temp_era/modules/castbar_poc.lua`) |
 |---|---|---|
-| Total lines | 1087 | ~700-750 |
+| Total lines | 1087 | ~515 (steps 5, 7, 8 remaining) |
 | Focus code (dead in Era) | ~100 lines | Not brought over |
-| Duplicated blocks | 6+ | 0 |
-| Helpers | N/A | 4: `CreateBar`, `StyleBar`, `FitBorder`, `AttachTimerHook` |
-| Places that read DB settings | ~50 scattered | Explicit at each `StyleBar` call site |
-| Mystery boolean parameters | `adjustCastBarBorder(bar, border, 15, nil, nil, true)` | `FitBorder(bar, border, false, 55, 10)` + named constants |
-| Inconsistent draw layers | 3 different values | Preserved per-type (intentional) |
+| Duplicated blocks | 6+ | 0 — shared helpers (`PartyBarOpts`, `PetBarOpts`, `GetPartySlotFrame`, `AnchorPetBar`) used by both Update* and test mode |
+| Helpers | N/A | 10: `CreateBar`, `StyleBar`, `FitBorder`, `AttachTimerHook`, `UpdateCastTimer`, `GetVisibleFrame`, `GetPartySlotFrame`, `PartyBarOpts`, `PetBarOpts`, `AnchorPetBar` |
+| Test mode | Coupled to Update* functions | Fully standalone — owns create/style/anchor/animate lifecycle, shares helpers with Update* |
+| Frame detection | Triple fallback chain (PMF/CPF/CRF) | CVar-based (`useCompactPartyFrames`) via `GetPartySlotFrame` — unambiguous |
+| Places that read DB settings | ~50 scattered | Explicit in `PartyBarOpts`/`PetBarOpts` (single source) and inline for player/target |
+| Mystery parameters | `adjustCastBarBorder(bar, border, 15, nil, nil, true)` | `FitBorder(bar, border)` — no params, player detected internally |
+| Magic numbers | `+166`, `+4`, `-27`, `+3`, `+10`, `22x22` | Named constants (`CASTBAR_ELEMENT_GAP`, `CASTBAR_Y_OFFSET`) or derived from Blizzard defaults (`GetBottom()`, `barHeight * 2`) |
+| Draw layers | Manually overridden per bar type | Blizzard defaults (verified via debug addon) |
 | DB key inconsistencies | 7 keys | 7 keys (documented, not migrated) |
-| Dead code | ~170 lines (70 commented + 100 focus) | None (fresh file, nothing carried over) |
+| Dead code | ~170 lines (70 commented + 100 focus) | None (fresh file) |
 | Known bugs | 3 (all in focus code) | 0 (focus code not brought over) |
-| Hooks | Missing guards, bare module-scope hooks | All guarded, all inside Ensure* functions |
-| Interrupt highlight | Loop-and-overwrite per frame, per-frame API calls | Aggregate state, event-driven CD caching |
-| Build steps | N/A | 8 steps (0: setup, 1-7: sections, 8: gui cleanup) |
-| Old file | N/A | Untouched — swap TOC back anytime |
-| Files in scope | N/A | 3 (new `castbar_poc.lua`, TOC update, `gui.lua` focus section removal) |
+| Hooks | Missing guards, bare module-scope hooks | All guarded with `bbf*Hooked` flags; texture hook in `StyleBar`, spark hook in `ChangeCastbarSizes` |
+| Interrupt highlight | Loop-and-overwrite per frame, per-frame API calls | TODO (step 5) |
+
+### Remaining work
+
+| Step | What | Status |
+|---|---|---|
+| Step 5 | Interrupt highlighting (`CastbarRecolorWidgets`, `InitializeInterruptSpellID`) | TODO |
+| Step 7 | Event wiring (`GROUP_ROSTER_UPDATE`, `UNIT_PET`, summon detection, `RefreshCastbars`) | TODO |
+| Step 8 | gui.lua focus section removal | TODO |
+| Cleanup | Delete `CastBarTimerCaller` wrapper, update gui.lua to call `ChangeCastbarSizes` directly | TODO |
+| Cleanup | Investigate `SetScale` persistence hook + `wasOnLoadingScreen` flag | TODO |
+| Cleanup | Remove `zzCastbarDebug` addon when no longer needed | TODO |

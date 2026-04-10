@@ -107,20 +107,57 @@ local function StyleBar(bar, opts)
     end
     bar.Timer:SetShown(opts.showTimer)
     AttachTimerHook(bar)
+
+    -- Re-apply texture after Blizzard resets on cast events
+    if not bar.bbfTextureHooked then
+        bar:HookScript("OnEvent", function(self)
+            self:SetStatusBarTexture(classicCastbarTexture)
+        end)
+        bar.bbfTextureHooked = true
+    end
 end
 
----------------------------------------------------------------------------
--- API stubs — replaced as each section is built out
----------------------------------------------------------------------------
 local function GetVisibleFrame(name)
     local frame = _G[name]
     return frame and frame:IsShown() and frame
 end
 
+local function GetPartySlotFrame(i, useCompact)
+    if useCompact then
+        return GetVisibleFrame("CompactPartyFrameMember" .. i)
+            or GetVisibleFrame("CompactRaidFrame" .. i)
+    end
+    return GetVisibleFrame("PartyMemberFrame" .. i)
+end
+
+local function PartyBarOpts(db)
+    return {
+        scale      = db.partyCastBarScale,
+        width      = db.partyCastBarWidth,
+        height     = db.partyCastBarHeight,
+        showText   = db.partyCastbarShowText,
+        showBorder = db.partyCastbarShowBorder,
+        showIcon   = db.showPartyCastBarIcon,
+        iconX      = db.partyCastbarIconXPos,
+        iconY      = db.partyCastbarIconYPos,
+        iconScale  = db.partyCastBarIconScale,
+        showTimer  = db.partyCastBarTimer,
+    }
+end
+
+---------------------------------------------------------------------------
+-- Castbar functions
+---------------------------------------------------------------------------
+
 function BBF.UpdateCastbars()
     local db = BetterBlizzFramesDB
 
-    if not (db.showPartyCastbar or db.partyCastBarTestMode) then
+    if db.partyCastBarTestMode then
+        BBF.partyCastBarTestMode()
+        return
+    end
+
+    if not db.showPartyCastbar then
         for i = 1, MEMBERS_PER_RAID_GROUP do
             if spellBars[i] then CastingBarFrame_SetUnit(spellBars[i], nil) end
         end
@@ -144,26 +181,9 @@ function BBF.UpdateCastbars()
         local bar = spellBars[i]
         CastingBarFrame_SetUnit(bar, nil)
 
-        StyleBar(bar, {
-            scale      = db.partyCastBarScale,
-            width      = db.partyCastBarWidth,
-            height     = db.partyCastBarHeight,
-            showText   = db.partyCastbarShowText,
-            showBorder = db.partyCastbarShowBorder,
-            showIcon   = db.showPartyCastBarIcon,
-            iconX      = db.partyCastbarIconXPos,
-            iconY      = db.partyCastbarIconYPos,
-            iconScale  = db.partyCastBarIconScale,
-            showTimer  = db.partyCastBarTimer,
-        })
+        StyleBar(bar, PartyBarOpts(db))
 
-        local slotFrame
-        if useCompact then
-            slotFrame = GetVisibleFrame("CompactPartyFrameMember" .. i)
-                     or GetVisibleFrame("CompactRaidFrame" .. i)
-        else
-            slotFrame = GetVisibleFrame("PartyMemberFrame" .. i)
-        end
+        local slotFrame = GetPartySlotFrame(i, useCompact)
 
         if not slotFrame or not slotFrame:IsVisible() then
             CastingBarFrame_SetUnit(bar, nil)
@@ -171,7 +191,6 @@ function BBF.UpdateCastbars()
             local xPos = db.partyCastBarXPos
             local yPos = db.partyCastBarYPos
             if not useCompact then
-                xPos = xPos
                 yPos = yPos + CASTBAR_Y_OFFSET
             end
 
@@ -185,37 +204,17 @@ function BBF.UpdateCastbars()
             else
                 CastingBarFrame_SetUnit(bar, unitId, true, true)
                 bar:SetFrameStrata("MEDIUM")
+                bar:ClearAllPoints()
+                bar:SetPoint("CENTER", slotFrame, "CENTER", xPos, yPos)
             end
-
-            bar:ClearAllPoints()
-            bar:SetPoint("CENTER", slotFrame, "CENTER", xPos, yPos)
         end
     end
 
     BBF.DarkModeCastbars()
 end
 
-function BBF.UpdatePetCastbar()
-    local db = BetterBlizzFramesDB
-
-    if db.petCastBarTestMode then return end
-
-    if not (db.petCastbar or db.petCastBarTestMode) then
-        if spellBars["pet"] then CastingBarFrame_SetUnit(spellBars["pet"], nil) end
-        return
-    end
-
-    spellBars["pet"] = CreateBar("PetSpellBar", "pet")
-    local bar = spellBars["pet"]
-
-
-    -- if not bar.smoothMixinApplied then
-    --     Mixin(bar, SmoothStatusBarMixin)
-    --     bar:SetMinMaxSmoothedValue(0, 100)
-    --     bar.smoothMixinApplied = true
-    -- end
-
-    StyleBar(bar, {
+local function PetBarOpts(db)
+    return {
         scale      = db.petCastBarScale,
         width      = db.petCastBarWidth,
         height     = db.petCastBarHeight,
@@ -226,13 +225,11 @@ function BBF.UpdatePetCastbar()
         iconY      = db.petCastbarIconYPos,
         iconScale  = db.petCastBarIconScale,
         showTimer  = db.petCastBarTimer,
-    })
+    }
+end
 
-    -- bar.Border:SetDrawLayer("OVERLAY", 6)
-    -- bar.BorderShield:SetDrawLayer("OVERLAY", 7)
-
+local function AnchorPetBar(bar, db)
     local petFrame = PetFrame
-
     if petFrame then
         bar:ClearAllPoints()
         if db.petDetachCastbar then
@@ -241,21 +238,36 @@ function BBF.UpdatePetCastbar()
             bar:SetPoint("CENTER", petFrame, "CENTER", db.petCastBarXPos, db.petCastBarYPos + CASTBAR_Y_OFFSET)
         end
         bar:SetFrameStrata("MEDIUM")
+        return true
+    end
+    return false
+end
+
+function BBF.UpdatePetCastbar()
+    local db = BetterBlizzFramesDB
+
+    if db.petCastBarTestMode then
+        BBF.petCastBarTestMode()
+        return
+    end
+
+    if not db.petCastbar then
+        if spellBars["pet"] then CastingBarFrame_SetUnit(spellBars["pet"], nil) end
+        return
+    end
+
+    spellBars["pet"] = CreateBar("PetSpellBar", "pet")
+    local bar = spellBars["pet"]
+
+    StyleBar(bar, PetBarOpts(db))
+
+    if AnchorPetBar(bar, db) then
         CastingBarFrame_SetUnit(bar, "pet", true, true)
     else
         CastingBarFrame_SetUnit(bar, nil)
     end
 
     BBF.DarkModeCastbars()
-end
-
-function BBF.UpdateClassicCastbarTexture(texture)
-    classicCastbarTexture = texture
-end
-
-function BBF.CreateCastbars()
-    BBF.UpdateCastbars()
-    BBF.UpdatePetCastbar()
 end
 
 function BBF.ChangeCastbarSizes()
@@ -270,7 +282,7 @@ function BBF.ChangeCastbarSizes()
         showText   = db.playerCastBarShowText,
         showBorder = db.playerCastBarShowBorder,
         showIcon   = db.playerCastBarShowIcon,
-        iconX      = -5 + db.playerCastbarIconXPos,
+        iconX      = -CASTBAR_ELEMENT_GAP + db.playerCastbarIconXPos,
         iconY      = db.playerCastbarIconYPos,
         iconScale  = db.playerCastBarIconScale,
         showTimer  = db.playerCastBarTimer,
@@ -297,14 +309,6 @@ function BBF.ChangeCastbarSizes()
         CastingBarFrame.bbfSparkHooked = true
     end
 
-    -- Re-apply texture after Blizzard resets on cast events
-    if not CastingBarFrame.bbfTextureHooked then
-        CastingBarFrame:HookScript("OnEvent", function()
-            CastingBarFrame:SetStatusBarTexture(classicCastbarTexture)
-        end)
-        CastingBarFrame.bbfTextureHooked = true
-    end
-
     -- Target (XY positioning handled in auras.lua)
     StyleBar(TargetFrameSpellBar, {
         scale      = db.targetCastBarScale,
@@ -318,14 +322,6 @@ function BBF.ChangeCastbarSizes()
         iconScale  = db.targetCastBarIconScale,
         showTimer  = db.targetCastBarTimer,
     })
-
-    -- Re-apply texture after Blizzard resets on cast events
-    if not TargetFrameSpellBar.bbfTextureHooked then
-        TargetFrameSpellBar:HookScript("OnEvent", function()
-            TargetFrameSpellBar:SetStatusBarTexture(classicCastbarTexture)
-        end)
-        TargetFrameSpellBar.bbfTextureHooked = true
-    end
 
     -- Font customization
     if db.changeUnitFrameFont then
@@ -352,6 +348,16 @@ end
 function BBF.CastBarTimerCaller()
     BBF.ChangeCastbarSizes()
 end
+
+function BBF.UpdateClassicCastbarTexture(texture)
+    classicCastbarTexture = texture
+end
+
+function BBF.CreateCastbars()
+    BBF.UpdateCastbars()
+    BBF.UpdatePetCastbar()
+end
+
 ---------------------------------------------------------------------------
 -- Test Mode
 ---------------------------------------------------------------------------
@@ -392,6 +398,7 @@ local function AnimateTestBar(bar, enabled, opts)
     else
         bar.testStartTime = nil
         bar:Hide()
+        bar.Icon:Hide()
         if bar.Timer then bar.Timer:Hide() end
     end
 end
@@ -424,26 +431,9 @@ function BBF.partyCastBarTestMode()
         for i = 1, MEMBERS_PER_RAID_GROUP do
             spellBars[i] = CreateBar("Party" .. i .. "SpellBar", "party" .. i)
 
-            StyleBar(spellBars[i], {
-                scale      = db.partyCastBarScale,
-                width      = db.partyCastBarWidth,
-                height     = db.partyCastBarHeight,
-                showText   = db.partyCastbarShowText,
-                showBorder = db.partyCastbarShowBorder,
-                showIcon   = db.showPartyCastBarIcon,
-                iconX      = db.partyCastbarIconXPos,
-                iconY      = db.partyCastbarIconYPos,
-                iconScale  = db.partyCastBarIconScale,
-                showTimer  = db.partyCastBarTimer,
-            })
+            StyleBar(spellBars[i], PartyBarOpts(db))
 
-            local slotFrame
-            if useCompact then
-                slotFrame = GetVisibleFrame("CompactPartyFrameMember" .. i)
-                         or GetVisibleFrame("CompactRaidFrame" .. i)
-            else
-                slotFrame = GetVisibleFrame("PartyMemberFrame" .. i)
-            end
+            local slotFrame = GetPartySlotFrame(i, useCompact)
 
             -- Skip own frame unless self-cast is enabled
             if slotFrame then
@@ -459,8 +449,7 @@ function BBF.partyCastBarTestMode()
             else
                 local xPos = db.partyCastBarXPos
                 local yPos = db.partyCastBarYPos
-                if string.match(slotFrame:GetName(), "PartyMemberFrame") then
-                    xPos = xPos
+                if not useCompact then
                     yPos = yPos + CASTBAR_Y_OFFSET
                 end
 
@@ -506,29 +495,8 @@ function BBF.petCastBarTestMode()
         spellBars["pet"] = CreateBar("PetSpellBar", "pet")
         local bar = spellBars["pet"]
 
-        StyleBar(bar, {
-            scale      = db.petCastBarScale,
-            width      = db.petCastBarWidth,
-            height     = db.petCastBarHeight,
-            showText   = db.petCastBarShowText,
-            showBorder = db.petCastBarShowBorder,
-            showIcon   = db.showPetCastBarIcon,
-            iconX      = db.petCastbarIconXPos,
-            iconY      = db.petCastbarIconYPos,
-            iconScale  = db.petCastBarIconScale,
-            showTimer  = db.petCastBarTimer,
-        })
-
-        local petFrame = PetFrame
-        if petFrame then
-            bar:ClearAllPoints()
-            if db.petDetachCastbar then
-                bar:SetPoint("CENTER", UIParent, "CENTER", db.petCastBarXPos, db.petCastBarYPos)
-            else
-                bar:SetPoint("CENTER", petFrame, "CENTER", db.petCastBarXPos, db.petCastBarYPos + CASTBAR_Y_OFFSET)
-            end
-            bar:SetFrameStrata("MEDIUM")
-        end
+        StyleBar(bar, PetBarOpts(db))
+        AnchorPetBar(bar, db)
 
         AnimateTestBar(bar, true, {
             showIcon = db.showPetCastBarIcon,
