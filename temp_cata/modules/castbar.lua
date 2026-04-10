@@ -911,7 +911,7 @@ function BBF.ChangeCastbarSizes()
     -- CastingBarFrame.BorderShield:SetPoint("RIGHT", CastingBarFrame, "LEFT", -1.5 + BetterBlizzFramesDB.playerCastbarIconXPos, -7 + BetterBlizzFramesDB.playerCastbarIconYPos)
     -- CastingBarFrame.BorderShield:SetScale(BetterBlizzFramesDB.playerCastBarIconScale)
     -- CastingBarFrame.BorderShield:SetDrawLayer("BORDER")
-    CastingBarFrame.Icon:SetDrawLayer("ARTWORK")
+    CastingBarFrame.Icon:SetDrawLayer("OVERLAY", 7)
     CastingBarFrame.Text:SetAlpha(BetterBlizzFramesDB.playerCastBarShowText and 1 or 0)
     CastingBarFrame.Border:SetAlpha(BetterBlizzFramesDB.playerCastBarShowBorder and 1 or 0)
 
