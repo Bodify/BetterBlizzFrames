@@ -719,6 +719,12 @@ local function CreateSlider(parent, label, minValue, maxValue, stepValue, elemen
                 elseif element == "petCastBarIconScale" then
                     BetterBlizzFramesDB.petCastBarIconScale = value
                     BBF.UpdatePetCastbar()
+                elseif element == "petCastbarIconXPos" then
+                    BetterBlizzFramesDB.petCastbarIconXPos = value
+                    BBF.UpdatePetCastbar()
+                elseif element == "petCastbarIconYPos" then
+                    BetterBlizzFramesDB.petCastbarIconYPos = value
+                    BBF.UpdatePetCastbar()
                 elseif element == "playerAuraMaxBuffsPerRow" then
                     BetterBlizzFramesDB.playerAuraMaxBuffsPerRow = value
                     BBF.RefreshAllAuraFrames()
@@ -4055,7 +4061,7 @@ local function guiCastbars()
     anchorSubPetCastbar:SetPoint("CENTER", mainGuiAnchor2, "CENTER", firstLineX, secondLineY - 90)
     anchorSubPetCastbar:SetText(L["Label_Pet_Castbar"])
 
-    local petCastbarBorder = CreateBorderedFrame(anchorSubPetCastbar, 157, 320, 0, -142, contentFrame)
+    local petCastbarBorder = CreateBorderedFrame(anchorSubPetCastbar, 157, 386, 0, -175, contentFrame)
 
     local petCastbars = contentFrame:CreateTexture(nil, "ARTWORK")
     petCastbars:SetAtlas("ui-castingbar-filling-channel")
@@ -4082,8 +4088,14 @@ local function guiCastbars()
     local petCastBarIconScale = CreateSlider(contentFrame, "Icon Size", 0.4, 2, 0.01, "petCastBarIconScale")
     petCastBarIconScale:SetPoint("TOP", petCastBarHeight, "BOTTOM", 0, -15)
 
+    local petCastbarIconXPos = CreateSlider(contentFrame, L["Icon_X_Offset"], -200, 200, 1, "petCastbarIconXPos")
+    petCastbarIconXPos:SetPoint("TOP", petCastBarIconScale, "BOTTOM", 0, -15)
+
+    local petCastbarIconYPos = CreateSlider(contentFrame, L["Icon_Y_Offset"], -50, 50, 1, "petCastbarIconYPos")
+    petCastbarIconYPos:SetPoint("TOP", petCastbarIconXPos, "BOTTOM", 0, -15)
+
     local petCastBarTestMode = CreateCheckbox("petCastBarTestMode", L["Test"], contentFrame, nil, BBF.petCastBarTestMode)
-    petCastBarTestMode:SetPoint("TOPLEFT", petCastBarIconScale, "BOTTOMLEFT", 10, -4)
+    petCastBarTestMode:SetPoint("TOPLEFT", petCastbarIconYPos, "BOTTOMLEFT", 10, -4)
     CreateTooltip(petCastBarTestMode, L["Tooltip_Need_Pet"])
 
     local petCastBarTimer = CreateCheckbox("petCastBarTimer", L["Timer"], contentFrame, nil, BBF.petCastBarTestMode)
@@ -4135,8 +4147,12 @@ local function guiCastbars()
         petCastBarWidth:SetMinMaxValues(20, 200)
         petCastBarHeight:SetMinMaxValues(5, 30)
         petCastBarIconScale:SetMinMaxValues(0.4, 2)
+        petCastbarIconXPos:SetMinMaxValues(-200, 200)
+        petCastbarIconYPos:SetMinMaxValues(-50, 50)
         petCastBarScale:SetValue(0.92)
         petCastBarIconScale:SetValue(1)
+        petCastbarIconXPos:SetValue(0)
+        petCastbarIconYPos:SetValue(0)
         petCastBarXPos:SetValue(0)
         petCastBarYPos:SetValue(0)
         petCastBarWidth:SetValue(137)
