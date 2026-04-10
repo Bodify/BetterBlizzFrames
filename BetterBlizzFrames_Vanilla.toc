@@ -22,7 +22,7 @@ temp_era\modules\hideFrames.lua
 temp_era\modules\auras.lua
 temp_era\modules\absorb.lua
 temp_era\modules\combat.lua
-temp_cata\modules\castbar.lua
+temp_era\modules\castbar_poc.lua
 temp_era\modules\healthbarColor.lua
 temp_era\modules\arenaframes.lua
 temp_era\modules\profiles.lua
