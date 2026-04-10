@@ -298,7 +298,7 @@ function BBF.ChangeCastbarSizes()
     -- Spark hook (player only — Blizzard doesn't reposition for custom widths)
     if not CastingBarFrame.bbfSparkHooked then
         CastingBarFrame:HookScript("OnUpdate", function(self)
-            self.Spark:SetSize(32, db.playerCastBarHeight * 2.5)
+            self.Spark:SetHeight(db.playerCastBarHeight * 2.5)
             local val = self:GetValue()
             local _, maxVal = self:GetMinMaxValues()
             if maxVal > 0 then
