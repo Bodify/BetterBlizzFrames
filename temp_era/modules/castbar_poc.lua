@@ -1,6 +1,7 @@
 local L = BBF.L
 local spellBars = {}
-local classicCastbarTexture = 137012
+local DEFAULT_CASTBAR_TEXTURE = 137012
+local classicCastbarTexture = DEFAULT_CASTBAR_TEXTURE
 
 ---------------------------------------------------------------------------
 -- Constants
@@ -11,7 +12,7 @@ local CASTBAR_ELEMENT_GAP  = 5
 local CASTBAR_Y_OFFSET     = -30
 
 ---------------------------------------------------------------------------
--- Helpers
+-- Core Helpers
 ---------------------------------------------------------------------------
 local function FitBorder(bar, border)
     local barWidth, barHeight, borderWidth, borderHeight = 150, 10, 196, 49
@@ -35,6 +36,7 @@ local function UpdateCastTimer(self)
     local _, maxVal = self:GetMinMaxValues()
     if maxVal <= 0 then return end
     local remaining = self.channeling and val or (maxVal - val)
+    if remaining <= 0 then self.Timer:SetText("") return end
     self.Timer:SetText(format("%.1f", remaining))
 end
 
@@ -103,6 +105,11 @@ local function StyleBar(bar, opts)
     -- Timer
     if not bar.Timer then
         bar.Timer = bar:CreateFontString(nil, "OVERLAY", "SystemFont_Shadow_Med1_Outline")
+    end
+    bar.Timer:ClearAllPoints()
+    if opts.timerCentered then
+        bar.Timer:SetPoint("BOTTOM", bar, "TOP", 0, 6)
+    else
         bar.Timer:SetPoint("LEFT", bar, "RIGHT", CASTBAR_ELEMENT_GAP, 0)
     end
     bar.Timer:SetShown(opts.showTimer)
@@ -117,6 +124,9 @@ local function StyleBar(bar, opts)
     end
 end
 
+---------------------------------------------------------------------------
+-- Party Castbars
+---------------------------------------------------------------------------
 local function GetVisibleFrame(name)
     local frame = _G[name]
     return frame and frame:IsShown() and frame
@@ -145,9 +155,12 @@ local function PartyBarOpts(db)
     }
 end
 
----------------------------------------------------------------------------
--- Castbar functions
----------------------------------------------------------------------------
+local function AnchorPartyBar(bar, slotFrame, db, useCompact)
+    bar:ClearAllPoints()
+    local yPos = db.partyCastBarYPos + (useCompact and 0 or CASTBAR_Y_OFFSET)
+    bar:SetPoint("CENTER", slotFrame, "CENTER", db.partyCastBarXPos, yPos)
+    bar:SetFrameStrata("MEDIUM")
+end
 
 function BBF.UpdateCastbars()
     local db = BetterBlizzFramesDB
@@ -188,12 +201,6 @@ function BBF.UpdateCastbars()
         if not slotFrame or not slotFrame:IsVisible() then
             CastingBarFrame_SetUnit(bar, nil)
         else
-            local xPos = db.partyCastBarXPos
-            local yPos = db.partyCastBarYPos
-            if not useCompact then
-                yPos = yPos + CASTBAR_Y_OFFSET
-            end
-
             local unitId = slotFrame.displayedUnit or slotFrame.unit
             local skipUnit = not unitId
                 or unitId:match("^partypet%d$")
@@ -203,9 +210,7 @@ function BBF.UpdateCastbars()
                 CastingBarFrame_SetUnit(bar, nil)
             else
                 CastingBarFrame_SetUnit(bar, unitId, true, true)
-                bar:SetFrameStrata("MEDIUM")
-                bar:ClearAllPoints()
-                bar:SetPoint("CENTER", slotFrame, "CENTER", xPos, yPos)
+                AnchorPartyBar(bar, slotFrame, db, useCompact)
             end
         end
     end
@@ -213,6 +218,9 @@ function BBF.UpdateCastbars()
     BBF.DarkModeCastbars()
 end
 
+---------------------------------------------------------------------------
+-- Pet Castbar
+---------------------------------------------------------------------------
 local function PetBarOpts(db)
     return {
         scale      = db.petCastBarScale,
@@ -270,6 +278,9 @@ function BBF.UpdatePetCastbar()
     BBF.DarkModeCastbars()
 end
 
+---------------------------------------------------------------------------
+-- Player + Target Castbars
+---------------------------------------------------------------------------
 function BBF.ChangeCastbarSizes()
     local db = BetterBlizzFramesDB
     -- BBF.UpdateUserAuraSettings() -- aura concern, doesn't belong in castbar module
@@ -285,7 +296,8 @@ function BBF.ChangeCastbarSizes()
         iconX      = -CASTBAR_ELEMENT_GAP + db.playerCastbarIconXPos,
         iconY      = db.playerCastbarIconYPos,
         iconScale  = db.playerCastBarIconScale,
-        showTimer  = db.playerCastBarTimer,
+        showTimer      = db.playerCastBarTimer,
+        timerCentered  = db.playerCastBarTimerCentered,
     })
 
     local bottomY = CastingBarFrame:GetBottom()
@@ -325,12 +337,13 @@ function BBF.ChangeCastbarSizes()
 
     -- Font customization
     if db.changeUnitFrameFont then
-        local font = BBF.GetActiveFont()
-        if font then
+        local fontPath = BBF.LSM:Fetch(BBF.LSM.MediaType.FONT, db.unitFrameFont)
+        if fontPath then
+            local outline = db.unitFrameFontOutline or "THINOUTLINE"
             local _, playerFontSize = CastingBarFrame.Text:GetFont()
             local _, targetFontSize = TargetFrameSpellBar.Text:GetFont()
-            CastingBarFrame.Text:SetFont(font, playerFontSize, "OUTLINE")
-            TargetFrameSpellBar.Text:SetFont(font, targetFontSize, "OUTLINE")
+            CastingBarFrame.Text:SetFont(fontPath, playerFontSize, outline)
+            TargetFrameSpellBar.Text:SetFont(fontPath, targetFontSize, outline)
         end
     end
 end
@@ -342,20 +355,9 @@ function BBF.ShowPlayerCastBarIcon()
         else
             CastingBarFrame.Icon:Hide()
         end
+        -- FIX: Update darkmode borders so they follow icon visibility
+        BBF.DarkModeCastbars()
     end
-end
-
-function BBF.CastBarTimerCaller()
-    BBF.ChangeCastbarSizes()
-end
-
-function BBF.UpdateClassicCastbarTexture(texture)
-    classicCastbarTexture = texture
-end
-
-function BBF.CreateCastbars()
-    BBF.UpdateCastbars()
-    BBF.UpdatePetCastbar()
 end
 
 ---------------------------------------------------------------------------
@@ -375,11 +377,6 @@ local function AnimateTestBar(bar, enabled, opts)
 
         if opts.showIcon and opts.iconTexture then
             bar.Icon:SetTexture(opts.iconTexture)
-            bar.Icon:Show()
-        end
-
-        if bar.Timer then
-            bar.Timer:SetShown(opts.showTimer)
         end
 
         bar.testStartTime = GetTime()
@@ -414,10 +411,13 @@ function BBF.partyCastBarTestMode()
             end
         end
         local useCompact = GetCVarBool("useCompactPartyFrames")
-        local inGroup = GetNumGroupMembers() > 0
+        local inGroup = IsInGroup()
 
         -- Fill up default party frames when solo or in group with default frames
         if not useCompact or not inGroup then
+            -- We force-show default PartyMemberFrames here, so the
+            -- lookup must also target them instead of compact frames.
+            useCompact = false
             for i = 1, MAX_PARTY_MEMBERS do
                 local frame = _G["PartyMemberFrame" .. i]
                 if frame and not frame:IsShown() then
@@ -447,15 +447,7 @@ function BBF.partyCastBarTestMode()
             if not slotFrame then
                 AnimateTestBar(spellBars[i], false)
             else
-                local xPos = db.partyCastBarXPos
-                local yPos = db.partyCastBarYPos
-                if not useCompact then
-                    yPos = yPos + CASTBAR_Y_OFFSET
-                end
-
-                spellBars[i]:ClearAllPoints()
-                spellBars[i]:SetPoint("CENTER", slotFrame, "CENTER", xPos, yPos)
-                spellBars[i]:SetFrameStrata("MEDIUM")
+                AnchorPartyBar(spellBars[i], slotFrame, db, useCompact)
 
                 AnimateTestBar(spellBars[i], true, {
                     showIcon = db.showPartyCastBarIcon,
@@ -514,11 +506,202 @@ function BBF.petCastBarTestMode()
     end
 end
 
+---------------------------------------------------------------------------
+-- Public API
+---------------------------------------------------------------------------
+function BBF.CastBarTimerCaller()
+    BBF.ChangeCastbarSizes()
+end
 
+function BBF.UpdateClassicCastbarTexture(texture)
+    classicCastbarTexture = BetterBlizzFramesDB.changeUnitFrameCastbarTexture and texture or DEFAULT_CASTBAR_TEXTURE
+end
 
+function BBF.CreateCastbars()
+    BBF.UpdateCastbars()
+    BBF.UpdatePetCastbar()
+end
+
+function BBF.RefreshCastbars()
+    BBF.UpdateCastbars()
+    BBF.UpdatePetCastbar()
+    BBF.ChangeCastbarSizes()
+    BBF.DarkModeCastbars()
+end
 
 function BBF.HookCastbarsForEvoker() end
-function BBF.CastbarRecolorWidgets() end
-function BBF.InitializeInterruptSpellID() end
 
+---------------------------------------------------------------------------
+-- Event Wiring
+---------------------------------------------------------------------------
+local groupEventFrame = CreateFrame("Frame")
+groupEventFrame:RegisterEvent("GROUP_ROSTER_UPDATE")
+groupEventFrame:SetScript("OnEvent", function()
+    if BetterBlizzFramesDB.showPartyCastbar then
+        BBF.UpdateCastbars()
+    end
+    if BetterBlizzFramesDB.partyCastBarTestMode then
+        BBF.partyCastBarTestMode()
+    end
+end)
 
+local petEventFrame = CreateFrame("Frame")
+petEventFrame:RegisterEvent("UNIT_PET")
+petEventFrame:SetScript("OnEvent", function(_, _, unit)
+    if unit == "player" then
+        BBF.InitializeInterruptSpellID()
+    end
+    if BetterBlizzFramesDB.petCastbar then
+        BBF.UpdatePetCastbar()
+    end
+end)
+
+---------------------------------------------------------------------------
+-- Interrupt Highlighting (target castbar only — no FocusFrame in Era)
+---------------------------------------------------------------------------
+local interruptList = {
+    -- Druid
+    [16979]  = true,  -- Feral Charge (Bear)
+
+    -- Mage
+    [2139]   = true,  -- Counterspell
+
+    -- Rogue
+    [1766]   = true,  -- Kick
+
+    -- Shaman
+    [8042]   = true,  -- Earth Shock
+
+    -- Warlock
+    [19647]  = true,  -- Spell Lock (Felhunter)
+
+    -- Warrior
+    [72]     = true,  -- Shield Bash
+    [6552]   = true,  -- Pummel
+}
+
+local interruptSpellIDs = {}
+
+function BBF.InitializeInterruptSpellID()
+    interruptSpellIDs = {}
+    for spellID in pairs(interruptList) do
+        if IsSpellKnownOrOverridesKnown(spellID)
+        or (UnitExists("pet") and IsSpellKnownOrOverridesKnown(spellID, true)) then
+            table.insert(interruptSpellIDs, spellID)
+        end
+    end
+end
+
+-- Cached config (read from DB via CastbarRecolorWidgets)
+local highlightStartTime, highlightEndTime
+local edgeColor, middleColor, colorMiddle
+local castBarNoInterruptColor, castBarDelayedInterruptColor
+local castBarRecolorInterrupt
+local targetCastbarEdgeHighlight
+local targetCastbarEdgeHooked
+
+local targetSpellBarTexture
+
+local function resetDefault(self)
+    targetSpellBarTexture:SetDesaturated(false)
+    self:SetStatusBarColor(1, 0.702, 0)
+    self.Spark:SetVertexColor(1, 1, 1)
+end
+
+local function applyEdgeHighlight(self, startTime, endTime)
+    local now = GetTime()
+    local elapsed = now - startTime / 1000
+    local remaining = endTime / 1000 - now
+
+    if (elapsed <= highlightStartTime) or (remaining <= highlightEndTime) then
+        targetSpellBarTexture:SetDesaturated(true)
+        self:SetStatusBarColor(unpack(edgeColor))
+        self.Spark:SetVertexColor(unpack(edgeColor))
+    elseif colorMiddle then
+        targetSpellBarTexture:SetDesaturated(true)
+        self:SetStatusBarColor(unpack(middleColor))
+        self.Spark:SetVertexColor(1, 1, 1)
+    else
+        resetDefault(self)
+    end
+end
+
+local function GetInterruptState(castLeft)
+    local now = GetTime()
+    local best = "cannot"
+    for _, id in ipairs(interruptSpellIDs) do
+        local start, dur = GetSpellCooldown(id)
+        local cdLeft = start + dur - now
+        if cdLeft <= 0 then
+            return "available"
+        elseif cdLeft <= castLeft then
+            best = "delayed"
+        end
+    end
+    return best
+end
+
+local function HookTargetInterruptHighlight()
+    if targetCastbarEdgeHooked then return end
+
+    targetSpellBarTexture = TargetFrameSpellBar:GetStatusBarTexture()
+    BBF.InitializeInterruptSpellID()
+
+    TargetFrameSpellBar:HookScript("OnUpdate", function(self)
+        if not UnitCanAttack(TargetFrame.unit, "player") then
+            resetDefault(self)
+            return
+        end
+
+        local name, _, _, startTime, endTime, _, _, notInterruptible = UnitCastingInfo("target")
+        if not name then
+            name, _, _, startTime, endTime, _, notInterruptible = UnitChannelInfo("target")
+        end
+
+        if not name or notInterruptible then
+            resetDefault(self)
+            return
+        end
+
+        local castLeft = endTime / 1000 - GetTime()
+
+        if castBarRecolorInterrupt then
+            local state = GetInterruptState(castLeft)
+            if state == "cannot" then
+                targetSpellBarTexture:SetDesaturated(true)
+                self:SetStatusBarColor(unpack(castBarNoInterruptColor))
+                self.Spark:SetVertexColor(unpack(castBarNoInterruptColor))
+            elseif state == "delayed" then
+                targetSpellBarTexture:SetDesaturated(true)
+                self:SetStatusBarColor(unpack(castBarDelayedInterruptColor))
+                self.Spark:SetVertexColor(unpack(castBarDelayedInterruptColor))
+            elseif targetCastbarEdgeHighlight then
+                applyEdgeHighlight(self, startTime, endTime)
+            else
+                resetDefault(self)
+            end
+        elseif targetCastbarEdgeHighlight then
+            applyEdgeHighlight(self, startTime, endTime)
+        else
+            resetDefault(self)
+        end
+    end)
+    targetCastbarEdgeHooked = true
+end
+
+function BBF.CastbarRecolorWidgets()
+    local db = BetterBlizzFramesDB
+    highlightStartTime = db.castBarInterruptHighlighterStartTime
+    highlightEndTime   = db.castBarInterruptHighlighterEndTime
+    edgeColor          = db.castBarInterruptHighlighterInterruptRGB
+    middleColor        = db.castBarInterruptHighlighterDontInterruptRGB
+    colorMiddle        = db.castBarInterruptHighlighterColorDontInterrupt
+    castBarNoInterruptColor      = db.castBarNoInterruptColor
+    castBarDelayedInterruptColor = db.castBarDelayedInterruptColor
+    castBarRecolorInterrupt      = db.castBarRecolorInterrupt
+    targetCastbarEdgeHighlight   = db.targetCastbarEdgeHighlight and db.castBarInterruptHighlighter
+
+    if (targetCastbarEdgeHighlight or castBarRecolorInterrupt) then
+        HookTargetInterruptHighlight()
+    end
+end
