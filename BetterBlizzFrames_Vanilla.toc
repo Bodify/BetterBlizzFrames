@@ -31,5 +31,7 @@ temp_era\modules\overShields.lua
 temp_era\modules\stealthIndicator.lua
 temp_era\modules\interruptIcon.lua
 
+temp_era\gui\factory.lua
+temp_era\gui\castbars.lua
 temp_era\gui.lua
 temp_era\BetterBlizzFrames.lua

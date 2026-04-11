@@ -8,7 +8,7 @@ BBF.VersionNumber = addonUpdates
 BBF.variablesLoaded = false
 local isAddonLoaded = C_AddOns.IsAddOnLoaded
 
-local defaultSettings = {
+BBF.defaultSettings = {
     version = addonVersion,
     updates = "empty",
     wasOnLoadingScreen = true,
@@ -305,7 +305,7 @@ local function InitializeSavedVariables()
         BetterBlizzFramesDB.version = addonVersion  -- Update the version number in the database
     end
 
-    for key, defaultValue in pairs(defaultSettings) do
+    for key, defaultValue in pairs(BBF.defaultSettings) do
         if BetterBlizzFramesDB[key] == nil then
             BetterBlizzFramesDB[key] = defaultValue
         end
