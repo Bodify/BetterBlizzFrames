@@ -338,30 +338,68 @@ function BBF.DarkmodeFrames(bypass)
         end
     end
 
-    for key, region in pairs(GameTooltip.NineSlice) do
-        if key ~= "Center" and type(region) == "table" and (region.SetDesaturated or region.SetVertexColor) then
-            applySettings(region, tooltipSat, tooltipColor)
-        end
-    end
-    if BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeGameTooltip and not BBF.hookedTip then
-        GameTooltip:HookScript("OnShow", function()
-            for key, region in pairs(GameTooltip.NineSlice) do
-                if key == "Center" then
-                    applySettings(region, tooltipSat, 0)
-                    region:SetDrawLayer("BACKGROUND", -8)
+    if (BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeGameTooltip) or BBF.darkModeTooltips then
+        local tooltipsToSkin = {
+            GameTooltip,
+            ShoppingTooltip1,
+            ShoppingTooltip2,
+            ItemRefTooltip,
+            ItemRefShoppingTooltip1,
+            ItemRefShoppingTooltip2,
+            EmbeddedItemTooltip,
+        }
+        for _, tip in pairs(tooltipsToSkin) do
+            if tip and tip.NineSlice then
+                for key, region in pairs(tip.NineSlice) do
+                    if key ~= "Center" and type(region) == "table" and (region.SetDesaturated or region.SetVertexColor) then
+                        applySettings(region, tooltipSat, tooltipColor)
+                    end
                 end
             end
-        end)
-        BBF.hookedTip = true
-    end
+        end
 
-    local aceTooltip = AceConfigDialogTooltip
-    if aceTooltip then
-        for key, region in pairs(aceTooltip.NineSlice) do
-            if key ~= "Center" and type(region) == "table" and (region.SetDesaturated or region.SetVertexColor) then
-                applySettings(region, tooltipSat, tooltipColor)
+        for _, tip in ipairs({ ShoppingTooltip1, ShoppingTooltip2, ItemRefShoppingTooltip1, ItemRefShoppingTooltip2 }) do
+            if tip and tip.CompareHeader then
+                local regions = { tip.CompareHeader:GetRegions() }
+                for _, region in ipairs(regions) do
+                    if region:GetObjectType() ~= "FontString" and (region.SetDesaturated or region.SetVertexColor) then
+                        applySettings(region, tooltipSat, tooltipColor)
+                    end
+                end
             end
         end
+
+        if not BBF.hookedTip then
+            for _, tip in pairs(tooltipsToSkin) do
+                if tip and tip.NineSlice then
+                    tip:HookScript("OnShow", function()
+                        for key, region in pairs(tip.NineSlice) do
+                            if key == "Center" then
+                                applySettings(region, tooltipSat, 0)
+                                region:SetDrawLayer("BACKGROUND", -8)
+                            end
+                        end
+                    end)
+                end
+            end
+            hooksecurefunc("SharedTooltip_SetBackdropStyle", function(self)
+                if self and self.NineSlice then
+                    self.NineSlice:SetCenterColor(0, 0, 0, 1)
+                end
+            end)
+            BBF.hookedTip = true
+        end
+
+        local aceTooltip = AceConfigDialogTooltip
+        if aceTooltip then
+            for key, region in pairs(aceTooltip.NineSlice) do
+                if key ~= "Center" and type(region) == "table" and (region.SetDesaturated or region.SetVertexColor) then
+                    applySettings(region, tooltipSat, tooltipColor)
+                end
+            end
+        end
+
+        BBF.darkModeTooltips = true
     end
 
     local function RecolorVigor()
