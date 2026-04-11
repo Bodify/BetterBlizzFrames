@@ -363,6 +363,11 @@ local function PlaceAuraGroup(self, list, forceNewRowAtStart, rowWidths, rowHeig
 
         aura:SetScale(auraScale)
         aura:SetAlpha(1)
+        if aura.Stealable ~= nil then
+            aura.Stealable:ClearAllPoints()
+            aura.Stealable:SetPoint("TOPLEFT", aura, "TOPLEFT", -2, 2)
+            aura.Stealable:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", 1, -1)
+        end
         local isLargeAura
         if showAuraCdText and auraCdTextOnlyMine then
             if aura.bbfAuraInstanceID ~= aura.auraInstanceID then
