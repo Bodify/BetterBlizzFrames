@@ -1373,7 +1373,7 @@ function BBF.HookCastbars()
                 if event == "UNIT_SPELLCAST_INTERRUPTED" and interruptedByOrCastBarID ~= nil then
                     self.wasKicked = true
                 end
-                if not self.wasKicked then
+                if not self.wasKicked and event ~= "UNIT_SPELLCAST_CHANNEL_STOP" then
                     self:Hide()
                 end
             elseif CastStartEvents[event] then
@@ -1385,7 +1385,7 @@ function BBF.HookCastbars()
                 if event == "UNIT_SPELLCAST_INTERRUPTED" and interruptedByOrCastBarID ~= nil then
                     self.wasKicked = true
                 end
-                if not self.wasKicked then
+                if not self.wasKicked and event ~= "UNIT_SPELLCAST_CHANNEL_STOP" then
                     self:Hide()
                 end
             elseif CastStartEvents[event] then
