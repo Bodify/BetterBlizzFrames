@@ -455,10 +455,25 @@ function BBF.DarkmodeFrames(bypass)
         for _, frame in pairs({_G.BuffFrame.AuraContainer:GetChildren()}) do
             createOrUpdateBorders(frame, vertexColor)
             if frame.Duration and frame.Icon then
+                frame.Duration:ClearAllPoints()
                 if BuffFrame.AuraContainer.addIconsToTop then
                     frame.Duration:SetPoint("BOTTOM", frame.Icon, "TOP", 0, 3)
                 else
                     frame.Duration:SetPoint("TOP", frame.Icon, "BOTTOM", 0, -3)
+                end
+                if not frame.Duration.bbfSetPointHook then
+                    frame.Duration.bbfSetPointHook = true
+                    hooksecurefunc(frame.Duration, "SetPoint", function(self)
+                        if self.changingPoint then return end
+                        self.changingPoint = true
+                        self:ClearAllPoints()
+                        if BuffFrame.AuraContainer.addIconsToTop then
+                            self:SetPoint("BOTTOM", frame.Icon, "TOP", 0, 3)
+                        else
+                            self:SetPoint("TOP", frame.Icon, "BOTTOM", 0, -3)
+                        end
+                        self.changingPoint = false
+                    end)
                 end
             end
         end
