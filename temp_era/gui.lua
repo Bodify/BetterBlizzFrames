@@ -3849,17 +3849,25 @@ local function guiCastbars()
         partyCastBarIconScale:SetMinMaxValues(0.4, 2)
         partyCastbarIconXPos:SetMinMaxValues(-50, 50)
         partyCastbarIconYPos:SetMinMaxValues(-50, 50)
-        partyCastBarScale:SetValue(1)
-        partyCastBarIconScale:SetValue(1)
+        partyCastBarScale:SetValue(0.9)
+        partyCastBarIconScale:SetValue(0.9)
         partyCastBarXPos:SetValue(0)
         partyCastBarYPos:SetValue(0)
         partyCastbarIconXPos:SetValue(0)
         partyCastbarIconYPos:SetValue(0)
-        partyCastBarWidth:SetValue(100)
-        partyCastBarHeight:SetValue(12)
+        partyCastBarWidth:SetValue(137)
+        partyCastBarHeight:SetValue(10)
         partyCastBarTimer:SetChecked(true)
+        showPartyCastBarIcon:SetChecked(true)
+        partyCastbarShowText:SetChecked(true)
+        partyCastbarShowBorder:SetChecked(true)
+        partyCastbarSelf:SetChecked(false)
         BetterBlizzFramesDB.partyCastBarTimer = true
-        BBF.CastBarTimerCaller()
+        BetterBlizzFramesDB.showPartyCastBarIcon = true
+        BetterBlizzFramesDB.partyCastbarShowText = true
+        BetterBlizzFramesDB.partyCastbarShowBorder = true
+        BetterBlizzFramesDB.partyCastbarSelf = false
+        BBF.UpdateCastbars()
     end)
 
 
@@ -4136,14 +4144,16 @@ local function guiCastbars()
         petCastBarWidth:SetValue(137)
         petCastBarHeight:SetValue(10)
         petCastBarTimer:SetChecked(true)
+        showPetCastBarIcon:SetChecked(true)
         petCastBarShowText:SetChecked(true)
         petCastBarShowBorder:SetChecked(true)
         petDetachCastbar:SetChecked(false)
+        BetterBlizzFramesDB.showPetCastBarIcon = true
         BetterBlizzFramesDB.petCastBarShowText = true
         BetterBlizzFramesDB.petCastBarShowBorder = true
         BetterBlizzFramesDB.petDetachCastbar = false
         BetterBlizzFramesDB.petCastBarTimer = true
-        BBF.CastBarTimerCaller()
+        BBF.UpdatePetCastbar()
     end)
 
    ----------------------
