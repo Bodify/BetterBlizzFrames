@@ -152,7 +152,7 @@ local defaultSettings = {
     petCastBarWidth = 103,
     petCastBarHeight = 10,
     showPetCastBarIcon = true,
-    showPetCastBarTimer = false,
+    petCastBarTimer = false,
 
     --Castbar edge highlight
     castBarInterruptHighlighterStartTime = 0.8,

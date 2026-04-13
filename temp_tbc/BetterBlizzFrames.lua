@@ -127,7 +127,7 @@ local defaultSettings = {
     petCastBarWidth = 137,
     petCastBarHeight = 10,
     showPetCastBarIcon = true,
-    showPetCastBarTimer = false,
+    petCastBarTimer = false,
     petCastBarShowText = true,
     petCastBarShowBorder = true,
 
