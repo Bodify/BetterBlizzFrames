@@ -671,6 +671,12 @@ local function CreateSlider(parent, label, minValue, maxValue, stepValue, elemen
                 elseif element == "playerCastBarIconScale" then
                     BetterBlizzFramesDB.playerCastBarIconScale = value
                     BBF.ChangeCastbarSizes()
+                elseif element == "playerCastbarIconXPos" then
+                    BetterBlizzFramesDB.playerCastbarIconXPos = value
+                    BBF.ChangeCastbarSizes()
+                elseif element == "playerCastbarIconYPos" then
+                    BetterBlizzFramesDB.playerCastbarIconYPos = value
+                    BBF.ChangeCastbarSizes()
                 elseif element == "playerCastBarXPos" then
                     BetterBlizzFramesDB.playerCastBarXPos = value
                     BBF.ChangeCastbarSizes()
@@ -712,6 +718,12 @@ local function CreateSlider(parent, label, minValue, maxValue, stepValue, elemen
                     BBF.UpdatePetCastbar()
                 elseif element == "petCastBarIconScale" then
                     BetterBlizzFramesDB.petCastBarIconScale = value
+                    BBF.UpdatePetCastbar()
+                elseif element == "petCastbarIconXPos" then
+                    BetterBlizzFramesDB.petCastbarIconXPos = value
+                    BBF.UpdatePetCastbar()
+                elseif element == "petCastbarIconYPos" then
+                    BetterBlizzFramesDB.petCastbarIconYPos = value
                     BBF.UpdatePetCastbar()
                 elseif element == "playerAuraMaxBuffsPerRow" then
                     BetterBlizzFramesDB.playerAuraMaxBuffsPerRow = value
@@ -4057,7 +4069,7 @@ local function guiCastbars()
     anchorSubPetCastbar:SetPoint("CENTER", mainGuiAnchor2, "CENTER", firstLineX, secondLineY - 90)
     anchorSubPetCastbar:SetText(L["Label_Pet_Castbar"])
 
-    local petCastbarBorder = CreateBorderedFrame(anchorSubPetCastbar, 157, 320, 0, -142, contentFrame)
+    local petCastbarBorder = CreateBorderedFrame(anchorSubPetCastbar, 157, 386, 0, -175, contentFrame)
 
     local petCastbars = contentFrame:CreateTexture(nil, "ARTWORK")
     petCastbars:SetAtlas("ui-castingbar-filling-channel")
@@ -4084,8 +4096,14 @@ local function guiCastbars()
     local petCastBarIconScale = CreateSlider(contentFrame, "Icon Size", 0.4, 2, 0.01, "petCastBarIconScale")
     petCastBarIconScale:SetPoint("TOP", petCastBarHeight, "BOTTOM", 0, -15)
 
+    local petCastbarIconXPos = CreateSlider(contentFrame, L["Icon_X_Offset"], -200, 200, 1, "petCastbarIconXPos")
+    petCastbarIconXPos:SetPoint("TOP", petCastBarIconScale, "BOTTOM", 0, -15)
+
+    local petCastbarIconYPos = CreateSlider(contentFrame, L["Icon_Y_Offset"], -50, 50, 1, "petCastbarIconYPos")
+    petCastbarIconYPos:SetPoint("TOP", petCastbarIconXPos, "BOTTOM", 0, -15)
+
     local petCastBarTestMode = CreateCheckbox("petCastBarTestMode", L["Test"], contentFrame, nil, BBF.petCastBarTestMode)
-    petCastBarTestMode:SetPoint("TOPLEFT", petCastBarIconScale, "BOTTOMLEFT", 10, -4)
+    petCastBarTestMode:SetPoint("TOPLEFT", petCastbarIconYPos, "BOTTOMLEFT", 10, -4)
     CreateTooltip(petCastBarTestMode, L["Tooltip_Need_Pet"])
 
     local petCastBarTimer = CreateCheckbox("petCastBarTimer", L["Timer"], contentFrame, nil, BBF.petCastBarTestMode)
@@ -4137,8 +4155,12 @@ local function guiCastbars()
         petCastBarWidth:SetMinMaxValues(20, 200)
         petCastBarHeight:SetMinMaxValues(5, 30)
         petCastBarIconScale:SetMinMaxValues(0.4, 2)
+        petCastbarIconXPos:SetMinMaxValues(-200, 200)
+        petCastbarIconYPos:SetMinMaxValues(-50, 50)
         petCastBarScale:SetValue(0.92)
         petCastBarIconScale:SetValue(1)
+        petCastbarIconXPos:SetValue(0)
+        petCastbarIconYPos:SetValue(0)
         petCastBarXPos:SetValue(0)
         petCastBarYPos:SetValue(0)
         petCastBarWidth:SetValue(137)
@@ -4358,18 +4380,23 @@ local function guiCastbars()
     local playerCastBarYPos = CreateSlider(contentFrame, "y offset", -200, 200, 1, "playerCastBarYPos", "Y")
     playerCastBarYPos:SetPoint("TOP", playerCastBarXPos, "BOTTOM", 0, -15)
 
-    local playerCastBarIconScale = CreateSlider(contentFrame, "Icon Size", 0.4, 2, 0.01, "playerCastBarIconScale")
-    playerCastBarIconScale:SetPoint("TOP", playerCastBarYPos, "BOTTOM", 0, -15)
-
     local playerCastBarWidth = CreateSlider(contentFrame, "Width", 60, 230, 1, "playerCastBarWidth")
-    --playerCastBarWidth:SetPoint("TOP", playerCastBarYPos, "BOTTOM", 0, -15)
-    playerCastBarWidth:SetPoint("TOP", playerCastBarIconScale, "BOTTOM", 0, -15)
+    playerCastBarWidth:SetPoint("TOP", playerCastBarYPos, "BOTTOM", 0, -15)
 
     local playerCastBarHeight = CreateSlider(contentFrame, "Height", 5, 30, 1, "playerCastBarHeight")
     playerCastBarHeight:SetPoint("TOP", playerCastBarWidth, "BOTTOM", 0, -15)
 
+    local playerCastBarIconScale = CreateSlider(contentFrame, "Icon Size", 0.4, 2, 0.01, "playerCastBarIconScale")
+    playerCastBarIconScale:SetPoint("TOP", playerCastBarHeight, "BOTTOM", 0, -15)
+
+    local playerCastbarIconXPos = CreateSlider(contentFrame, L["Icon_X_Offset"], -300, 300, 1, "playerCastbarIconXPos")
+    playerCastbarIconXPos:SetPoint("TOP", playerCastBarIconScale, "BOTTOM", 0, -15)
+
+    local playerCastbarIconYPos = CreateSlider(contentFrame, L["Icon_Y_Offset"], -50, 50, 1, "playerCastbarIconYPos")
+    playerCastbarIconYPos:SetPoint("TOP", playerCastbarIconXPos, "BOTTOM", 0, -15)
+
     local playerCastBarShowIcon = CreateCheckbox("playerCastBarShowIcon", L["Icon"], contentFrame, nil, BBF.ShowPlayerCastBarIcon)
-    playerCastBarShowIcon:SetPoint("TOPLEFT", playerCastBarHeight, "BOTTOMLEFT", 10, -4)
+    playerCastBarShowIcon:SetPoint("TOPLEFT", playerCastbarIconYPos, "BOTTOMLEFT", 10, -4)
     CreateTooltip(playerCastBarShowIcon, L["Tooltip_Player_Castbar_Icon"])
 
     local playerCastBarTimer = CreateCheckbox("playerCastBarTimer", L["Timer"], contentFrame, nil, BBF.CastBarTimerCaller)
@@ -4398,10 +4425,14 @@ local function guiCastbars()
         playerCastBarXPos:SetMinMaxValues(-200, 200)
         playerCastBarYPos:SetMinMaxValues(-200, 200)
         playerCastBarIconScale:SetMinMaxValues(0.4, 2)
+        playerCastbarIconXPos:SetMinMaxValues(-300, 300)
+        playerCastbarIconYPos:SetMinMaxValues(-50, 50)
         playerCastBarWidth:SetMinMaxValues(60, 230)
         playerCastBarHeight:SetMinMaxValues(5, 30)
         playerCastBarScale:SetValue(1)
         playerCastBarIconScale:SetValue(1)
+        playerCastbarIconXPos:SetValue(0)
+        playerCastbarIconYPos:SetValue(0)
         playerCastBarXPos:SetValue(0)
         playerCastBarYPos:SetValue(0)
         playerCastBarWidth:SetValue(195)
