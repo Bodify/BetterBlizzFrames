@@ -9,6 +9,7 @@ BBF.hiddenFrame = hiddenFrame
 --------------------------------------
 local hookedRaidFrameManager = false
 local hookedChatButtons = false
+local hookedChatBackground = false
 local originalResourceParent
 local originalBossFrameParent
 local bossFrameHooked
@@ -1041,6 +1042,100 @@ function BBF.HideFrames()
                     end)
                 end)
                 hookedChatButtons = true
+            end
+            if BetterBlizzFramesDB.hideChatBackground then
+                local chatBgTexSuffixes = {
+                    "Background", "TopLeftTexture", "BottomLeftTexture", "TopRightTexture",
+                    "BottomRightTexture", "LeftTexture", "RightTexture", "BottomTexture", "TopTexture",
+                }
+                for i = 1, NUM_CHAT_WINDOWS do
+                    for _, suffix in ipairs(chatBgTexSuffixes) do
+                        local tex = _G["ChatFrame"..i..suffix]
+                        if tex then tex:SetParent(BBF.hiddenFrame) end
+                    end
+                end
+
+                if not hookedChatBackground then
+                    local bbfChatMouseOver = false
+
+                    local function bbfShowChatTabs()
+                        bbfChatMouseOver = true
+                        for i = 1, NUM_CHAT_WINDOWS do
+                            local tab = _G["ChatFrame"..i.."Tab"]
+                            if tab then
+                                tab.bbfSettingAlpha = true
+                                UIFrameFadeRemoveFrame(tab)
+                                tab:SetAlpha(1)
+                                tab.bbfSettingAlpha = nil
+                            end
+                        end
+                        if GeneralDockManagerScrollFrame then
+                            GeneralDockManagerScrollFrame.bbfSettingAlpha = true
+                            GeneralDockManagerScrollFrame:SetAlpha(1)
+                            GeneralDockManagerScrollFrame.bbfSettingAlpha = nil
+                        end
+                    end
+
+                    local function bbfHideChatTabs()
+                        bbfChatMouseOver = false
+                        C_Timer.After(1, function()
+                            if bbfChatMouseOver then return end
+                            for i = 1, NUM_CHAT_WINDOWS do
+                                local tab = _G["ChatFrame"..i.."Tab"]
+                                if tab then
+                                    tab.bbfSettingAlpha = true
+                                    UIFrameFadeRemoveFrame(tab)
+                                    tab:SetAlpha(0)
+                                    tab.bbfSettingAlpha = nil
+                                end
+                            end
+                            if GeneralDockManagerScrollFrame then
+                                GeneralDockManagerScrollFrame.bbfSettingAlpha = true
+                                GeneralDockManagerScrollFrame:SetAlpha(0)
+                                GeneralDockManagerScrollFrame.bbfSettingAlpha = nil
+                            end
+                        end)
+                    end
+
+                    for i = 1, NUM_CHAT_WINDOWS do
+                        local chatFrame = _G["ChatFrame"..i]
+                        local tab = _G["ChatFrame"..i.."Tab"]
+                        if tab then
+                            hooksecurefunc(tab, "SetAlpha", function(self, alpha)
+                                if self.bbfSettingAlpha then return end
+                                if bbfChatMouseOver then return end
+                                if alpha > 0 then
+                                    self.bbfSettingAlpha = true
+                                    self:SetAlpha(0)
+                                    self.bbfSettingAlpha = nil
+                                end
+                            end)
+                            tab:HookScript("OnEnter", bbfShowChatTabs)
+                            tab:HookScript("OnLeave", bbfHideChatTabs)
+                            tab:SetAlpha(0)
+                        end
+                        if chatFrame then
+                            chatFrame:HookScript("OnEnter", bbfShowChatTabs)
+                            chatFrame:HookScript("OnLeave", bbfHideChatTabs)
+                        end
+                    end
+
+                    if GeneralDockManagerScrollFrame then
+                        GeneralDockManagerScrollFrame:SetAlpha(0)
+                        hooksecurefunc(GeneralDockManagerScrollFrame, "SetAlpha", function(self, alpha)
+                            if self.bbfSettingAlpha then return end
+                            if bbfChatMouseOver then return end
+                            if alpha > 0 then
+                                self.bbfSettingAlpha = true
+                                self:SetAlpha(0)
+                                self.bbfSettingAlpha = nil
+                            end
+                        end)
+                        GeneralDockManagerScrollFrame:HookScript("OnEnter", bbfShowChatTabs)
+                        GeneralDockManagerScrollFrame:HookScript("OnLeave", bbfHideChatTabs)
+                    end
+                    hookedChatBackground = true
+                end
             end
         else
             QuickJoinToastButton:SetAlpha(1)

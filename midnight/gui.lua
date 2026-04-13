@@ -4285,6 +4285,18 @@ local function guiGeneralTab()
     hideChatButtons:SetPoint("TOPLEFT", chatFrameText, "BOTTOMLEFT", -24, pixelsOnFirstBox)
     CreateTooltip(hideChatButtons, L["Tooltip_Hide_Chat_Buttons"])
 
+    chatFrameText.hideChatBackground = CreateCheckbox("hideChatBackground", L["Hide_Chat_Background"], hideChatButtons, nil, BBF.HideFrames)
+    chatFrameText.hideChatBackground:SetPoint("LEFT", hideChatButtons.text, "RIGHT", 0, 0)
+    CreateTooltip(chatFrameText.hideChatBackground, L["Tooltip_Hide_Chat_Background"])
+
+    hideChatButtons:HookScript("OnClick", function(self)
+        if self:GetChecked() then
+            EnableElement(chatFrameText.hideChatBackground)
+        else
+            DisableElement(chatFrameText.hideChatBackground)
+        end
+    end)
+
     local chatFrameFilters = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     chatFrameFilters:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 232, -507)
     chatFrameFilters:SetText(L["Filters"])
