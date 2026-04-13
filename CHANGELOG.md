@@ -1,3 +1,13 @@
+# BetterBlizzFrames 1.9.4e
+## Midnight
+### Tweak
+- Add more missed tooltips for the darkmode tooltip setting.
+- "Quick Hide Castbars" setting no longer insta hides channel casts due to a combination of API restrictions and 20+ year old Blizzard bug making it so I cannot keep an interrupted channel castbar visible after kicking it.
+- Hook Duration text on BuffFrame's aura with dark mode enabled due to Duration text changing position from Blizzard updates.
+### Bugfix
+- Fix Kick Popup not working when kicking channeled casts due to a 20+ year old Blizzard bug (i forgot).
+- Fix purge texture size on auras when the scale has been adjusted.
+
 # BetterBlizzFrames 1.9.4d
 ## Midnight
 ### New
