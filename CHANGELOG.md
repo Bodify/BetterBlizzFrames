@@ -7,6 +7,12 @@
 ### Bugfix
 - Fix Kick Popup not working when kicking channeled casts due to a 20+ year old Blizzard bug (i forgot).
 - Fix purge texture size on auras when the scale has been adjusted.
+## Classic Era
+### Tweak
+- Add missing castbar icon X/Y offset sliders for player and pet. By Shadeqt@GitHub
+- Improve darkmode setting for CompactPartyFrameMembers borders. By Shadeqt@GitHub
+### Bugfix
+- Fix many inconsistencies and some wrong values with castbar settings on Era. By Shadeqt@GitHub
 
 # BetterBlizzFrames 1.9.4d
 ## Midnight
