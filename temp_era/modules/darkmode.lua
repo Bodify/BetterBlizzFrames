@@ -359,14 +359,16 @@ function BBF.DarkmodeFrames(bypass)
                 applySettings(region, desaturationValue, vertexColor)
             end
         end
-        for i = 1, 5 do
-            local frame = _G["CompactRaidFrame"..i]
-            if frame then
-                applySettings(frame.horizDivider, desaturationValue, vertexColor)
-                applySettings(frame.horizTopBorder, desaturationValue, vertexColor)
-                applySettings(frame.horizBottomBorder, desaturationValue, vertexColor)
-                applySettings(frame.vertLeftBorder, desaturationValue, vertexColor)
-                applySettings(frame.vertRightBorder, desaturationValue, vertexColor)
+        for i = 1, MEMBERS_PER_RAID_GROUP do
+            for _, prefix in ipairs({"CompactPartyFrameMember", "CompactRaidFrame"}) do
+                local frame = _G[prefix..i]
+                if frame then
+                    applySettings(frame.horizDivider, desaturationValue, vertexColor)
+                    applySettings(frame.horizTopBorder, desaturationValue, vertexColor)
+                    applySettings(frame.horizBottomBorder, desaturationValue, vertexColor)
+                    applySettings(frame.vertLeftBorder, desaturationValue, vertexColor)
+                    applySettings(frame.vertRightBorder, desaturationValue, vertexColor)
+                end
             end
         end
     end
