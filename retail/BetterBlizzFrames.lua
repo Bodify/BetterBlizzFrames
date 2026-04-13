@@ -188,7 +188,7 @@ local defaultSettings = {
     playerCastBarWidth = 208,
     playerCastBarHeight = 11,
     playerCastBarTimer = false,
-    playerCastBarTimerCenter = false,
+    playerCastBarTimerCentered = false,
 
     --Auras
     --playerAuraMaxBuffsPerRow = 10,

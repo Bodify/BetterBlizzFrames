@@ -175,7 +175,7 @@ local defaultSettings = {
     playerCastBarWidth = 195,
     playerCastBarHeight = 13,
     playerCastBarTimer = false,
-    playerCastBarTimerCenter = false,
+    playerCastBarTimerCentered = false,
     playerCastBarShowText = true,
     playerCastBarShowBorder = true,
 
