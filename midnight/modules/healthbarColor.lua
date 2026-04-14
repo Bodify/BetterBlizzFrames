@@ -1233,6 +1233,17 @@ function BBF.HookFrameTextureColor()
         texture.changing = true
         texture:SetVertexColor(r, g, b)
         texture.changing = false
+
+        if TargetFrameCompactRing and unit == "target" then
+            TargetFrameCompactRing:SetDesaturated(desaturate)
+            TargetFrameCompactRing:SetVertexColor(r, g, b)
+        elseif FocusFrameCompactRing and unit == "focus" then
+            FocusFrameCompactRing:SetDesaturated(desaturate)
+            FocusFrameCompactRing:SetVertexColor(r, g, b)
+        elseif PlayerFrameCompactRing and unit == "player" then
+            PlayerFrameCompactRing:SetDesaturated(desaturate)
+            PlayerFrameCompactRing:SetVertexColor(r, g, b)
+        end
     end
 
 

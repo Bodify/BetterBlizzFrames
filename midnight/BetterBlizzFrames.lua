@@ -2173,7 +2173,7 @@ function BBF.MiniFrame(frame)
 
         if not compactRing then
             if frame.ClassicFrame then
-                compactRing = frame.TargetFrameContainer:CreateTexture(nil, "ARTWORK")
+                compactRing = frame.TargetFrameContainer:CreateTexture(frame:GetName().."CompactRing", "ARTWORK")
                 compactRing:SetTexture("Interface\\TargetingFrame\\playerframe")
                 compactRing:SetSize(99,99)
                 compactRing:SetPoint("CENTER", frame.TargetFrameContainer.Portrait, "CENTER", 13, -14)
@@ -2186,7 +2186,7 @@ function BBF.MiniFrame(frame)
                 compactRing:AddMaskTexture(mask)
                 name:SetParent(frame)
             else
-                compactRing = frame.TargetFrameContainer:CreateTexture(nil, "ARTWORK")
+                compactRing = frame.TargetFrameContainer:CreateTexture(frame:GetName().."CompactRing", "ARTWORK")
                 compactRing:SetAtlas("Map_Faction_Ring")
                 compactRing:SetSize(71, 70)
                 compactRing:SetPoint("CENTER", frame.TargetFrameContainer.Portrait, "CENTER", 1, -2)
@@ -2250,7 +2250,7 @@ function BBF.MiniFrame(frame)
 
         if not compactRing then
             if frame.ClassicFrame then
-                compactRing = frame.PlayerFrameContainer:CreateTexture(nil, "ARTWORK")
+                compactRing = frame.PlayerFrameContainer:CreateTexture(frame:GetName().."CompactRing", "ARTWORK")
                 compactRing:SetTexture("Interface\\TargetingFrame\\playerframe")
                 compactRing:SetSize(99,99)
                 compactRing:SetPoint("CENTER", frame.PlayerFrameContainer.PlayerPortrait, "CENTER", 13, -14)
@@ -2270,7 +2270,7 @@ function BBF.MiniFrame(frame)
                 end
 
             else
-                compactRing = frame.PlayerFrameContainer:CreateTexture(nil, "ARTWORK")
+                compactRing = frame.PlayerFrameContainer:CreateTexture(frame:GetName().."CompactRing", "ARTWORK")
                 compactRing:SetAtlas("Map_Faction_Ring")
                 compactRing:SetSize(71, 70)
                 compactRing:SetPoint("CENTER", frame.PlayerFrameContainer.PlayerPortrait, "CENTER", 0, -2)
@@ -2283,6 +2283,15 @@ function BBF.MiniFrame(frame)
             end
         end
         compactRing:Show()
+
+        if db.classColorFrameTexture then
+            local _, class = UnitClass("player")
+            local classColor = RAID_CLASS_COLORS[class]
+            if classColor then
+                compactRing:SetDesaturated(true)
+                compactRing:SetVertexColor(classColor.r, classColor.g, classColor.b)
+            end
+        end
 
         name:SetScale(1.4)
         name:ClearAllPoints()
