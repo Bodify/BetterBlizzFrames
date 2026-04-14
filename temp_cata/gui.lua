@@ -6990,7 +6990,7 @@ local function guiMisc()
 
     local moveResource = CreateCheckbox("moveResource", L["Move_Resource"], guiMisc)
     moveResource:SetPoint("TOPLEFT", instantComboPoints, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltipTwo(moveResource, L["Move_Resource"], L["Tooltip_Move_Resource_Desc"] .. playerClass, L["Tooltip_Move_Resource_SubText"])
+    CreateTooltipTwo(moveResource, L["Move_Resource"], string.format(L["Tooltip_Move_Resource_Desc"], playerClass), L["Tooltip_Move_Resource_SubText"])
     moveResource:HookScript("OnClick", function(self)
         if self:GetChecked() then
             BBF.EnableResourceMovement()

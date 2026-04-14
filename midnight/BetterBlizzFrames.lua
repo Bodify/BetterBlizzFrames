@@ -1386,7 +1386,7 @@ function BBF.ZoomDefaultActionbarIcons(enableZoom)
             end
         end
     end
-    
+
     local function zoomButtons(prefix, count)
         for i = 1, count do
             local btn = _G[prefix .. i]
@@ -1395,7 +1395,7 @@ function BBF.ZoomDefaultActionbarIcons(enableZoom)
             end
         end
     end
-    
+
     zoomButtons("ActionButton", 12)
     zoomButtons("MultiBarBottomLeftButton", 12)
     zoomButtons("MultiBarBottomRightButton", 12)
@@ -1407,7 +1407,24 @@ function BBF.ZoomDefaultActionbarIcons(enableZoom)
     zoomButtons("PetActionButton", 10)
     zoomButtons("StanceButton", 12)
     zoomButtons("PossessButton", 2)
-    
+
+    -- Dominos actionbars
+    if C_AddOns.IsAddOnLoaded("Dominos") then
+        local NUM_ACTIONBAR_BUTTONS = NUM_ACTIONBAR_BUTTONS
+        local DOMINOS_NUM_MAX_BUTTONS = 14 * NUM_ACTIONBAR_BUTTONS
+        print(DominosActionButton1)
+        zoomButtons("DominosActionButton", DOMINOS_NUM_MAX_BUTTONS)
+        zoomButtons("DominosPetActionButton", 12)
+        zoomButtons("DominosStanceButton", 12)
+        zoomButtons("MultiBarLeftActionButton", 12)
+        zoomButtons("MultiBarBottomLeftActionButton", 12)
+        zoomButtons("MultiBarBottomRightActionButton", 12)
+        zoomButtons("MultiBarRightActionButton", 12)
+        zoomButtons("MultiBar5ActionButton", 12)
+        zoomButtons("MultiBar6ActionButton", 12)
+        zoomButtons("MultiBar7ActionButton", 12)
+    end
+
     if ExtraActionButton1 and ExtraActionButton1.icon then
         zoom(ExtraActionButton1.icon)
     end
@@ -4513,8 +4530,76 @@ end
 function BBF.FixStupidBlizzPTRShit()
     --if BBF.isMidnight then return end
     if InCombatLockdown() then return end
-    if isAddonLoaded("ClassicFrames") or isAddonLoaded("EasyFrames") or BetterBlizzFramesDB.classicFrames or BetterBlizzFramesDB.noPortraitModes then return end
     if BBF.ocdFixActive then return end
+    BBF.ocdFixActive = true
+
+    local function FixCastbarBackground(bg)
+        bg:ClearAllPoints()
+        bg:SetPoint("TOPLEFT", bg:GetParent(), "TOPLEFT", -1, 1)
+        bg:SetPoint("BOTTOMRIGHT", bg:GetParent(), "BOTTOMRIGHT", 1, -1)
+    end
+
+    FixCastbarBackground(TargetFrameSpellBar.Background)
+    FixCastbarBackground(FocusFrameSpellBar.Background)
+    FixCastbarBackground(PlayerCastingBarFrame.Background)
+
+    if not BetterBlizzFramesDB.darkModeUi and not BetterBlizzFramesDB.darkModeUiAura then
+        if BuffFrame then
+            for _, frame in pairs({_G.BuffFrame.AuraContainer:GetChildren()}) do
+                if frame.Duration and frame.Icon then
+                    frame.Duration:ClearAllPoints()
+                    if BuffFrame.AuraContainer.addIconsToTop then
+                        frame.Duration:SetPoint("BOTTOM", frame.Icon, "TOP", 0, 1.5)
+                    else
+                        frame.Duration:SetPoint("TOP", frame.Icon, "BOTTOM", 0, -1.5)
+                    end
+                    if not frame.Duration.bbfSetPointHook then
+                        frame.Duration.bbfSetPointHook = true
+                        hooksecurefunc(frame.Duration, "SetPoint", function(self)
+                            if self.changingPoint then return end
+                            self.changingPoint = true
+                            self:ClearAllPoints()
+                            if BuffFrame.AuraContainer.addIconsToTop then
+                                self:SetPoint("BOTTOM", frame.Icon, "TOP", 0, 1.5)
+                            else
+                                self:SetPoint("TOP", frame.Icon, "BOTTOM", 0, -1.5)
+                            end
+                            self.changingPoint = false
+                        end)
+                    end
+                end
+            end
+        end
+    end
+
+    if DebuffFrame then
+        for _, frame in pairs({_G.DebuffFrame.AuraContainer:GetChildren()}) do
+            if frame.Duration and frame.Icon then
+                frame.Duration:ClearAllPoints()
+                if DebuffFrame.AuraContainer.addIconsToTop then
+                    frame.Duration:SetPoint("BOTTOM", frame.Icon, "TOP", 0, 2)
+                else
+                    frame.Duration:SetPoint("TOP", frame.Icon, "BOTTOM", 0, -2)
+                end
+                if not frame.Duration.bbfSetPointHook then
+                    frame.Duration.bbfSetPointHook = true
+                    hooksecurefunc(frame.Duration, "SetPoint", function(self)
+                        if self.changingPoint then return end
+                        self.changingPoint = true
+                        self:ClearAllPoints()
+                        if DebuffFrame.AuraContainer.addIconsToTop then
+                            self:SetPoint("BOTTOM", frame.Icon, "TOP", 0, 2)
+                        else
+                            self:SetPoint("TOP", frame.Icon, "BOTTOM", 0, -2)
+                        end
+                        self.changingPoint = false
+                    end)
+                end
+            end
+        end
+    end
+
+    if isAddonLoaded("ClassicFrames") or isAddonLoaded("EasyFrames") or BetterBlizzFramesDB.classicFrames or (BetterBlizzFramesDB.noPortraitModes or BetterBlizzFramesDB.noPortraitPixelBorder) then return end
     -- For god knows what reason PTR has a gap between Portrait and PlayerFrame. This fixes it + other gaps.
     --PlayerFrame.PlayerFrameContainer.PlayerPortrait:SetScale(1.02)
     PlayerFrame.PlayerFrameContainer.PlayerPortrait:SetSize(61,61)
@@ -4539,16 +4624,6 @@ function BBF.FixStupidBlizzPTRShit()
     FocusFrame.TargetFrameContainer.PortraitMask:ClearAllPoints()
     FocusFrame.TargetFrameContainer.PortraitMask:SetPoint("CENTER", FocusFrame.TargetFrameContainer.Portrait, "CENTER", 0, 0)
     FocusFrame.TargetFrameContainer.PortraitMask:SetSize(56,56)
-
-    local function FixCastbarBackground(bg)
-        bg:ClearAllPoints()
-        bg:SetPoint("TOPLEFT", bg:GetParent(), "TOPLEFT", -1, 1)
-        bg:SetPoint("BOTTOMRIGHT", bg:GetParent(), "BOTTOMRIGHT", 1, -1)
-    end
-
-    FixCastbarBackground(TargetFrameSpellBar.Background)
-    FixCastbarBackground(FocusFrameSpellBar.Background)
-    FixCastbarBackground(PlayerCastingBarFrame.Background)
 
     for i = 1, 4 do
         local memberFrame = PartyFrame["MemberFrame" .. i]
@@ -4665,8 +4740,6 @@ function BBF.FixStupidBlizzPTRShit()
         PlayerFrame.ocdLine3:SetColorTexture(v, v, v, 1)
         PlayerFrame.ocdLine3:SetPoint("BOTTOMLEFT", PlayerFrame.healthbar, "TOPLEFT", 0, 0)
         PlayerFrame.ocdLine3:SetPoint("BOTTOMRIGHT", PlayerFrame.manabar, "TOPRIGHT", -4, 0.5)
-
-        BBF.ocdFixActive = true
 
 
 
@@ -5102,6 +5175,9 @@ First:SetScript("OnEvent", function(_, event, addonName)
             BetterBlizzFramesDB.hideFocusDebuffs = true
             BetterBlizzFramesDB.hideFocusAuras = nil
         end
+        if BetterBlizzFramesDB.noPortraitPixelBorder then
+            BetterBlizzFramesDB.noPortraitModes = true
+        end
         FetchAndSaveValuesOnFirstLogin()
         TurnTestModesOff()
         BBF.FixLegacyComboPointsLocation()
@@ -5113,7 +5189,6 @@ First:SetScript("OnEvent", function(_, event, addonName)
         BBF.ModernRoleIcons()
         BBF.BetterTargetHighlight()
         BBF.HideAbsorbGlow()
-        BBF.ZoomDefaultActionbarIcons()
         BBF.ClassColorFriendlist()
         BBF.HookAndUpdatePartyFrameRangeAlpha()
         --BBF.DisableAddOnProfiling()
@@ -5145,6 +5220,7 @@ First:SetScript("OnEvent", function(_, event, addonName)
         BBF.ActionBarMods()
         BBF.GladTracker()
         C_Timer.After(0.5, function()
+            BBF.ZoomDefaultActionbarIcons()
             BBF.HookStatusBarText()
             BBF.UnitFrameBackgroundTexture()
             BBF.DarkModeUnitframeBorders()

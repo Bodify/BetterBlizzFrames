@@ -381,42 +381,38 @@ function BBF.HideFrames()
                 for j = 1, 5 do
                     local frame = _G["CompactRaidGroup"..j.."Member"..i]
                     if frame and frame.DispelOverlay then
-                        if not BetterBlizzFramesDB.hidePartyDispelOverlayKeepBorder and not BetterBlizzFramesDB.hidePartyDispelOverlayKeepGradient then
-                            frame.DispelOverlay:SetAlpha(0)
+                        if BetterBlizzFramesDB.hidePartyDispelOverlayKeepBorder then
+                            frame.DispelOverlay.Border:Show()
                         else
-                            frame.DispelOverlay:SetAlpha(1)
-                            if not BetterBlizzFramesDB.hidePartyDispelOverlayKeepBorder then
-                                frame.DispelOverlay.Border:Hide()
-                            else
-                                frame.DispelOverlay.Border:Show()
-                            end
-                            if not BetterBlizzFramesDB.hidePartyDispelOverlayKeepGradient and frame.DispelOverlay.Gradient then
-                                frame.DispelOverlay.Gradient:Hide()
-                            else
-                                frame.DispelOverlay.Gradient:Show()
-                            end
-                            frame.DispelOverlay.Background:Hide()
+                            frame.DispelOverlay.Border:Hide()
                         end
+                        if BetterBlizzFramesDB.hidePartyDispelOverlayKeepGradient and frame.DispelOverlay.Gradient then
+                            frame.DispelOverlay.Gradient:Show()
+                        elseif frame.DispelOverlay.Gradient then
+                            frame.DispelOverlay.Gradient:Hide()
+                        end
+                        frame.DispelOverlay.Background:Hide()
                     end
                 end
             end
             for i = 1, 5 do
                 local frame = _G["CompactPartyFrameMember"..i]
                 if frame and frame.DispelOverlay then
-                    if not BetterBlizzFramesDB.hidePartyDispelOverlayKeepBorder and not BetterBlizzFramesDB.hidePartyDispelOverlayKeepGradient then
-                        frame.DispelOverlay:SetAlpha(0)
-                    else
-                        frame.DispelOverlay:SetAlpha(1)
-                        if not BetterBlizzFramesDB.hidePartyDispelOverlayKeepGradient then
-                            frame.DispelOverlay.Gradient:Hide()
-                        else
-                            frame.DispelOverlay.Gradient:Show()
-                        end
-                        if not BetterBlizzFramesDB.hidePartyDispelOverlayKeepBorder then
-                            frame.DispelOverlay.Border:Hide()
-                        else
+                    if frame.DispelOverlay.Border and not frame.DispelOverlay.Border:IsForbidden() then
+                        if BetterBlizzFramesDB.hidePartyDispelOverlayKeepBorder then
                             frame.DispelOverlay.Border:Show()
+                        else
+                            frame.DispelOverlay.Border:Hide()
                         end
+                    end
+                    if frame.DispelOverlay.Gradient and not frame.DispelOverlay.Gradient:IsForbidden() then
+                        if BetterBlizzFramesDB.hidePartyDispelOverlayKeepGradient then
+                            frame.DispelOverlay.Gradient:Show()
+                        else
+                            frame.DispelOverlay.Gradient:Hide()
+                        end
+                    end
+                    if frame.DispelOverlay.Background and not frame.DispelOverlay.Background:IsForbidden() then
                         frame.DispelOverlay.Background:Hide()
                     end
                 end
@@ -427,23 +423,23 @@ function BBF.HideFrames()
                         return
                     end
 
-                    if not BetterBlizzFramesDB.hidePartyDispelOverlayKeepBorder and not BetterBlizzFramesDB.hidePartyDispelOverlayKeepGradient then
-                        frame.DispelOverlay:SetAlpha(0)
-                    else
-                        frame.DispelOverlay:SetAlpha(1)
-
-                        if not BetterBlizzFramesDB.hidePartyDispelOverlayKeepBorder then
-                            frame.DispelOverlay.Border:Hide()
-                        else
+                    if frame.DispelOverlay.Border and not frame.DispelOverlay.Border:IsForbidden() then
+                        if BetterBlizzFramesDB.hidePartyDispelOverlayKeepBorder then
                             frame.DispelOverlay.Border:Show()
-                        end
-
-                        if not BetterBlizzFramesDB.hidePartyDispelOverlayKeepGradient and frame.DispelOverlay.Gradient then
-                            frame.DispelOverlay.Gradient:Hide()
                         else
-                            frame.DispelOverlay.Gradient:Show()
+                            frame.DispelOverlay.Border:Hide()
                         end
+                    end
 
+                    if frame.DispelOverlay.Gradient and not frame.DispelOverlay.Gradient:IsForbidden() then
+                        if BetterBlizzFramesDB.hidePartyDispelOverlayKeepGradient then
+                            frame.DispelOverlay.Gradient:Show()
+                        else
+                            frame.DispelOverlay.Gradient:Hide()
+                        end
+                    end
+
+                    if frame.DispelOverlay.Background and not frame.DispelOverlay.Background:IsForbidden() then
                         frame.DispelOverlay.Background:Hide()
                     end
                 end
@@ -460,24 +456,30 @@ function BBF.HideFrames()
                 for j = 1, 5 do
                     local frame = _G["CompactRaidGroup"..j.."Member"..i]
                     if frame and frame.DispelOverlay then
-                        frame.DispelOverlay:SetAlpha(1)
                         if frame.DispelOverlay.Border then
                             frame.DispelOverlay.Border:Show()
                         end
                         if frame.DispelOverlay.Gradient then
                             frame.DispelOverlay.Gradient:Show()
                         end
-                        frame.DispelOverlay.Background:Show()
+                        if frame.DispelOverlay.Background then
+                            frame.DispelOverlay.Background:Show()
+                        end
                     end
                 end
             end
             for i = 1, 5 do
                 local frame = _G["CompactPartyFrameMember"..i]
                 if frame and frame.DispelOverlay then
-                    frame.DispelOverlay:SetAlpha(1)
-                    frame.DispelOverlay.Gradient:Show()
-                    frame.DispelOverlay.Border:Show()
-                    frame.DispelOverlay.Background:Show()
+                    if frame.DispelOverlay.Gradient then
+                        frame.DispelOverlay.Gradient:Show()
+                    end
+                    if frame.DispelOverlay.Border then
+                        frame.DispelOverlay.Border:Show()
+                    end
+                    if frame.DispelOverlay.Background then
+                        frame.DispelOverlay.Background:Show()
+                    end
                 end
             end
         end
