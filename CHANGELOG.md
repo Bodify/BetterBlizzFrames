@@ -1,3 +1,8 @@
+# BetterBlizzFrames 1.9.5b
+## Midnight
+### Bugfix
+- Fix a mistake in interrupt popup causing a lua error.
+
 # BetterBlizzFrames 1.9.5
 ## Midnight
 ### New
