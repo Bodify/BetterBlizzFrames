@@ -471,6 +471,8 @@ function BBF.ToggleKickPopup()
             return
         end
 
+        local now = GetTime()
+
         local isRealInterrupt = issecretvalue(interruptedByOrCastBarID) or (interruptedByOrCastBarID ~= nil)
         if not isRealInterrupt then
             if event == "UNIT_SPELLCAST_CHANNEL_STOP" then
@@ -482,7 +484,6 @@ function BBF.ToggleKickPopup()
             return
         end
 
-        local now = GetTime()
         if now - kickLastShownTime < 0.01 then return end
 
         if kickPlayerKicked then
