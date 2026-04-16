@@ -1,3 +1,8 @@
+# BetterBlizzFrames 1.9.5c
+## Midnight
+### Bugfix
+- Fix a mistake in interrupt popup causing it to popup on abilities player was channeling and stopped.
+
 # BetterBlizzFrames 1.9.5b
 ## Midnight
 ### Bugfix
