@@ -915,6 +915,7 @@ function BBF.ChangeCastbarSizes()
     CastingBarFrame.Icon:SetDrawLayer("OVERLAY", 7)
     CastingBarFrame.Text:SetAlpha(BetterBlizzFramesDB.playerCastBarShowText and 1 or 0)
     CastingBarFrame.Border:SetAlpha(BetterBlizzFramesDB.playerCastBarShowBorder and 1 or 0)
+    CastingBarFrame.Spark:SetDrawLayer("OVERLAY", 7)
 
     adjustCastBarBorder(CastingBarFrame, CastingBarFrame.Border, 15, nil, nil, nil, 11)
     adjustCastBarBorder(CastingBarFrame, CastingBarFrame.Flash, 15, nil, nil, nil, 11)
