@@ -1,3 +1,8 @@
+# BetterBlizzFrames 1.9.5e
+## TBC
+### New
+- Add new "Hide Player/Target/Focus Mana" settings in Misc. These work both together with the Bigger Healthbar setting and with it off and extends the healthbar. (i forgot in last)
+
 # BetterBlizzFrames 1.9.5d
 ## Midnight
 ### Bugfix
