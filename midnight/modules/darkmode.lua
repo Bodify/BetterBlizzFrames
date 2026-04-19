@@ -21,9 +21,12 @@ local function applySettings(frame, desaturate, colorValue, hook, hookShow)
                     frame.bbfHooked = true
 
                     hooksecurefunc(frame, "SetVertexColor", function(self)
+                        if not self then return end
                         if self.changing or self:IsProtected() then return end
                         self.changing = true
-                        self:SetDesaturated(desaturate)
+                        if self.SetDesaturated then
+                            self:SetDesaturated(desaturate)
+                        end
                         self:SetVertexColor(colorValue, colorValue, colorValue)
                         self.changing = false
                     end)
