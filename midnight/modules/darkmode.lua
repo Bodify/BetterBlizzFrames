@@ -386,7 +386,7 @@ function BBF.DarkmodeFrames(bypass)
                 end
             end
             hooksecurefunc("SharedTooltip_SetBackdropStyle", function(self)
-                if self and self.NineSlice then
+                if self and not self:IsForbidden() and self.NineSlice and self.NineSlice.SetCenterColor then
                     self.NineSlice:SetCenterColor(0, 0, 0, 1)
                 end
             end)
