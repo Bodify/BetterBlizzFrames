@@ -25,8 +25,13 @@ end
 local OnSetPointHookScript = function(point, relativeTo, relativePoint, xOffset, yOffset)
     return function(frame, _, _, _, _, _, flag)
         if flag ~= "BBFHookSetPoint" then
+            local vx, vy = 0, 0
+            if frame.bbfVehicleOffset and BBF.playerInVehicleArt then
+                vx = frame.bbfVehicleOffset.x
+                vy = frame.bbfVehicleOffset.y
+            end
             frame:ClearAllPoints()
-            frame:SetPoint(point, relativeTo, relativePoint, xOffset, yOffset, "BBFHookSetPoint")
+            frame:SetPoint(point, relativeTo, relativePoint, xOffset + vx, yOffset + vy, "BBFHookSetPoint")
         end
     end
 end
@@ -34,11 +39,24 @@ end
 function BBF.MoveRegion(frame, point, relativeTo, relativePoint, xOffset, yOffset)
     frame:ClearAllPoints()
     frame:SetPoint(point, relativeTo, relativePoint, xOffset, yOffset, "BBFHookSetPoint")
+    frame.bbfBasePos = { point = point, relativeTo = relativeTo, relativePoint = relativePoint, x = xOffset, y = yOffset }
 
     if (not frame.BBFHookSetPoint) then
         hooksecurefunc(frame, "SetPoint", OnSetPointHookScript(point, relativeTo, relativePoint, xOffset, yOffset))
         frame.BBFHookSetPoint = true
     end
+end
+
+local function ApplyBBFPosition(frame)
+    local pos = frame.bbfBasePos
+    if not pos then return end
+    local vx, vy = 0, 0
+    if frame.bbfVehicleOffset and BBF.playerInVehicleArt then
+        vx = frame.bbfVehicleOffset.x
+        vy = frame.bbfVehicleOffset.y
+    end
+    frame:ClearAllPoints()
+    frame:SetPoint(pos.point, pos.relativeTo, pos.relativePoint, pos.x + vx, pos.y + vy, "BBFHookSetPoint")
 end
 
 local OnShowHookScript = function()
@@ -463,7 +481,40 @@ end
 
 local biggerHealthbarHooked
 local frameTextureHooked
+local hideManabarHooked
 local maxLvl = BBF.isMoP and 90 or BBF.isTBC and 70 or 85
+
+local bigNoManaTexture = "Interface\\Addons\\BetterBlizzFrames\\media\\NoManas\\UI-TargetingFrame-Big-NoMana"
+local bigNoLevelNoManaTexture = "Interface\\Addons\\BetterBlizzFrames\\media\\NoManas\\UI-TargetingFrame-NoLevel-Big-NoMana"
+local bigEliteNoManaTexture = "Interface\\Addons\\BetterBlizzFrames\\media\\NoManas\\UI-TargetingFrame-Elite-Big-NoMana"
+local bigRareNoManaTexture = "Interface\\Addons\\BetterBlizzFrames\\media\\NoManas\\UI-TargetingFrame-Rare-Big-NoMana"
+local bigRareEliteNoManaTexture = "Interface\\Addons\\BetterBlizzFrames\\media\\NoManas\\UI-TargetingFrame-Rare-Elite-Big-NoMana"
+local bigMinusNoManaTexture = "Interface\\Addons\\BetterBlizzFrames\\media\\NoManas\\UI-TargetingFrame-Minus-Big-NoMana"
+local bigPlayerStatusNoManaTexture = "Interface\\Addons\\BetterBlizzFrames\\media\\NoManas\\UI-Player-Status-Big-NoMana"
+
+local noManaTexture = "Interface\\Addons\\BetterBlizzFrames\\media\\NoManas\\UI-TargetingFrame-NoMana"
+local noLevelNoManaTexture = "Interface\\Addons\\BetterBlizzFrames\\media\\NoManas\\UI-TargetingFrame-NoLevel-NoMana"
+local eliteNoManaTexture = "Interface\\Addons\\BetterBlizzFrames\\media\\NoManas\\UI-TargetingFrame-Elite-NoMana"
+local rareNoManaTexture = "Interface\\Addons\\BetterBlizzFrames\\media\\NoManas\\UI-TargetingFrame-Rare-NoMana"
+local rareEliteNoManaTexture = "Interface\\Addons\\BetterBlizzFrames\\media\\NoManas\\UI-TargetingFrame-Rare-Elite-NoMana"
+local minusNoManaTexture = "Interface\\Addons\\BetterBlizzFrames\\media\\NoManas\\UI-TargetingFrame-Minus-NoMana"
+
+local function ShouldHideManabar(frameName)
+    if frameName == "PlayerFrame" then return BetterBlizzFramesDB.hidePlayerManabar end
+    if frameName == "TargetFrame" then return BetterBlizzFramesDB.hideTargetManabar end
+    if frameName == "FocusFrame" then return BetterBlizzFramesDB.hideFocusManabar end
+    return false
+end
+
+local function HideManabarElements(frameName)
+    local manabar = _G[frameName.."ManaBar"]
+    if manabar then
+        manabar:SetAlpha(0)
+        if manabar.TextString then manabar.TextString:SetAlpha(0) end
+        if manabar.LeftText then manabar.LeftText:SetAlpha(0) end
+        if manabar.RightText then manabar.RightText:SetAlpha(0) end
+    end
+end
 
 function BBF.BiggerHealthbars(frame, name)
     local texture = _G[frame.."Texture"] or _G[frame.."TextureFrameTexture"]
@@ -481,21 +532,30 @@ function BBF.BiggerHealthbars(frame, name)
     local noLevelTexture = "Interface\\Addons\\BetterBlizzFrames\\media\\UI-TargetingFrame-NoLevel"
     local normalTexture = "Interface\\Addons\\BetterBlizzFrames\\media\\UI-TargetingFrame"
 
-    local targetTexture = normalTexture
+    local hideMana = ShouldHideManabar(frame)
+
+    local targetTexture
+    if hideMana then
+        targetTexture = bigNoManaTexture
+    else
+        targetTexture = normalTexture
+    end
     if BetterBlizzFramesDB.hideLevelText then
         if BetterBlizzFramesDB.hideLevelTextAlways then
-            targetTexture = noLevelTexture
+            targetTexture = hideMana and bigNoLevelNoManaTexture or noLevelTexture
         elseif frame == "PlayerFrame" and UnitLevel("player") == maxLvl then
-            targetTexture = noLevelTexture
+            targetTexture = hideMana and bigNoLevelNoManaTexture or noLevelTexture
         end
     end
     -- Texture
     texture:SetTexture(targetTexture)
-    playerGlowTexture:SetTexture("Interface\\Addons\\BetterBlizzFrames\\media\\UI-Player-Status")
+    local hidePlayerMana = BetterBlizzFramesDB.hidePlayerManabar
+    local playerGlowPath = hidePlayerMana and bigPlayerStatusNoManaTexture or "Interface\\Addons\\BetterBlizzFrames\\media\\UI-Player-Status"
+    playerGlowTexture:SetTexture(playerGlowPath)
     hooksecurefunc(playerGlowTexture, "SetTexture",
         function(self, texture)
-            if texture ~= "Interface\\Addons\\BetterBlizzFrames\\media\\UI-Player-Status" then
-                self:SetTexture("Interface\\Addons\\BetterBlizzFrames\\media\\UI-Player-Status")
+            if texture ~= playerGlowPath then
+                self:SetTexture(playerGlowPath)
                 playerGlowTexture:SetHeight(69)
             end
         end
@@ -503,15 +563,27 @@ function BBF.BiggerHealthbars(frame, name)
     playerGlowTexture:SetHeight(69)
 
     -- Healthbar
-    local point, relativeTo, relativePoint, xOfs, yOfs = healthbar:GetPoint()
+    local point, relativeTo, relativePoint, xOfs, yOfs
+    if frame == "PlayerFrame" then
+        point, relativePoint, xOfs, yOfs = "TOPLEFT", "TOPLEFT", 106, -41
+        relativeTo = healthbar:GetParent()
+    else
+        point, relativeTo, relativePoint, xOfs, yOfs = healthbar:GetPoint()
+    end
     local newYOffset = yOfs + 18
     BBF.MoveRegion(healthbar, point, relativeTo, relativePoint, xOfs, newYOffset)
-    healthbar:SetHeight(29)
+    healthbar:SetHeight(hideMana and 40 or 29)
     if not BetterBlizzFramesDB.changeUnitFrameHealthbarTexture then
         healthbar:SetStatusBarTexture(LSM:Fetch(LSM.MediaType.STATUSBAR, "Smooth"))
     end
 
-    BBF.SetRegionWidth(manabar, 120)
+    if hideMana then
+        HideManabarElements(frame)
+    end
+
+    if not (frame == "PlayerFrame" and UnitInVehicle("player")) then
+        BBF.SetRegionWidth(manabar, 120)
+    end
     --BBF.SetRegionSize(manabar, 120, 12)
 
     if nameBackground then
@@ -556,9 +628,13 @@ function BBF.BiggerHealthbars(frame, name)
         end
 
         -- Name
-        local point, relativeTo, relativePoint, xOfs, yOfs = name:GetPoint()
-        local newYOffset = yOfs + 1
-        BBF.MoveRegion(name, point, relativeTo, relativePoint, xOfs, newYOffset)
+        if frame == "PlayerFrame" then
+            BBF.MoveRegion(name, "CENTER", name:GetParent(), "CENTER", 50, 20)
+        else
+            local point, relativeTo, relativePoint, xOfs, yOfs = name:GetPoint()
+            local newYOffset = yOfs + 1
+            BBF.MoveRegion(name, point, relativeTo, relativePoint, xOfs, newYOffset)
+        end
 
 
         -- Statustext
@@ -567,22 +643,28 @@ function BBF.BiggerHealthbars(frame, name)
             local newXOffset = xOfs + 1
             BBF.MoveRegion(leftTextMana, point, relativeTo, relativePoint, newXOffset, yOfs)
         end
-        local point, relativeTo, relativePoint, xOfs, yOfs = leftText:GetPoint()
-        local newYOffset = yOfs + 4
-        local newXOffset = xOfs + 1
-        if not leftTextMana then
-            BBF.MoveRegion(leftText, point, relativeTo, relativePoint, xOfs, newYOffset)
+        if frame == "PlayerFrame" then
+            BBF.MoveRegion(leftText, "LEFT", leftText:GetParent(), "LEFT", 110, 7)
+            BBF.MoveRegion(rightText, "RIGHT", rightText:GetParent(), "RIGHT", -8, 7)
+            BBF.MoveRegion(centerText, "CENTER", centerText:GetParent(), "CENTER", 50, 7)
         else
-            BBF.MoveRegion(leftText, point, relativeTo, relativePoint, newXOffset, newYOffset)
+            local point, relativeTo, relativePoint, xOfs, yOfs = leftText:GetPoint()
+            local newYOffset = yOfs + 4 - (hideMana and 6 or 0)
+            local newXOffset = xOfs + 1
+            if not leftTextMana then
+                BBF.MoveRegion(leftText, point, relativeTo, relativePoint, xOfs, newYOffset)
+            else
+                BBF.MoveRegion(leftText, point, relativeTo, relativePoint, newXOffset, newYOffset)
+            end
+
+            local point, relativeTo, relativePoint, xOfs, yOfs = rightText:GetPoint()
+            local newYOffset = yOfs + 4 - (hideMana and 6 or 0)
+            BBF.MoveRegion(rightText, point, relativeTo, relativePoint, xOfs, newYOffset)
+
+            local point, relativeTo, relativePoint, xOfs, yOfs = centerText:GetPoint()
+            local newYOffset = yOfs + 4 - (hideMana and 6 or 0)
+            BBF.MoveRegion(centerText, point, relativeTo, relativePoint, xOfs, newYOffset)
         end
-
-        local point, relativeTo, relativePoint, xOfs, yOfs = rightText:GetPoint()
-        local newYOffset = yOfs + 4
-        BBF.MoveRegion(rightText, point, relativeTo, relativePoint, xOfs, newYOffset)
-
-        local point, relativeTo, relativePoint, xOfs, yOfs = centerText:GetPoint()
-        local newYOffset = yOfs + 4
-        BBF.MoveRegion(centerText, point, relativeTo, relativePoint, xOfs, newYOffset)
     else
         if deadText then
             local point, relativeTo, relativePoint, xOfs, yOfs = deadText:GetPoint()
@@ -591,9 +673,13 @@ function BBF.BiggerHealthbars(frame, name)
         end
 
         -- Name
-        local point, relativeTo, relativePoint, xOfs, yOfs = name:GetPoint()
-        local newYOffset = yOfs + 17
-        BBF.MoveRegion(name, point, relativeTo, relativePoint, xOfs, newYOffset)
+        if frame == "PlayerFrame" then
+            BBF.MoveRegion(name, "CENTER", name:GetParent(), "CENTER", 50, 36)
+        else
+            local point, relativeTo, relativePoint, xOfs, yOfs = name:GetPoint()
+            local newYOffset = yOfs + 17
+            BBF.MoveRegion(name, point, relativeTo, relativePoint, xOfs, newYOffset)
+        end
 
 
         -- Statustext
@@ -602,22 +688,89 @@ function BBF.BiggerHealthbars(frame, name)
             local newXOffset = xOfs + 1
             BBF.MoveRegion(leftTextMana, point, relativeTo, relativePoint, newXOffset, yOfs)
         end
-        local point, relativeTo, relativePoint, xOfs, yOfs = leftText:GetPoint()
-        local newYOffset = yOfs + 9
-        local newXOffset = xOfs + 1
-        if not leftTextMana then
-            BBF.MoveRegion(leftText, point, relativeTo, relativePoint, xOfs, newYOffset)
+        if frame == "PlayerFrame" then
+            BBF.MoveRegion(leftText, "LEFT", leftText:GetParent(), "LEFT", 110, 12)
+            BBF.MoveRegion(rightText, "RIGHT", rightText:GetParent(), "RIGHT", -8, 12)
+            BBF.MoveRegion(centerText, "CENTER", centerText:GetParent(), "CENTER", 50, 12)
         else
-            BBF.MoveRegion(leftText, point, relativeTo, relativePoint, newXOffset, newYOffset)
+            local point, relativeTo, relativePoint, xOfs, yOfs = leftText:GetPoint()
+            local newYOffset = yOfs + 9 - (hideMana and 6 or 0)
+            local newXOffset = xOfs + 1
+            if not leftTextMana then
+                BBF.MoveRegion(leftText, point, relativeTo, relativePoint, xOfs, newYOffset)
+            else
+                BBF.MoveRegion(leftText, point, relativeTo, relativePoint, newXOffset, newYOffset)
+            end
+
+            local point, relativeTo, relativePoint, xOfs, yOfs = rightText:GetPoint()
+            local newYOffset = yOfs + 9 - (hideMana and 6 or 0)
+            BBF.MoveRegion(rightText, point, relativeTo, relativePoint, xOfs, newYOffset)
+
+            local point, relativeTo, relativePoint, xOfs, yOfs = centerText:GetPoint()
+            local newYOffset = yOfs + 9 - (hideMana and 6 or 0)
+            BBF.MoveRegion(centerText, point, relativeTo, relativePoint, xOfs, newYOffset)
+        end
+    end
+
+    -- PlayerFrame vehicle art hooks
+    if frame == "PlayerFrame" and not BBF.vehicleArtHooked then
+        local vehicleHealthbarHeight = 10
+        local normalHealthbarHeight = hideMana and 40 or 29
+
+        healthbar.bbfVehicleOffset = { x = 12, y = -20 }
+        local nameVehicleY = BetterBlizzFramesDB.biggerHealthbarsNameInside and 2.5 or -13
+        name.bbfVehicleOffset = { x = 0, y = nameVehicleY }
+        if deadText then deadText.bbfVehicleOffset = { x = 0, y = 0 } end
+        if leftTextMana then leftTextMana.bbfVehicleOffset = { x = 0, y = 0 } end
+
+        local function AnchorTextToHealthbar()
+            leftText:ClearAllPoints()
+            leftText:SetPoint("LEFT", healthbar, "LEFT", 0, 0.5, "BBFHookSetPoint")
+            rightText:ClearAllPoints()
+            rightText:SetPoint("RIGHT", healthbar, "RIGHT", 6, 0.5, "BBFHookSetPoint")
+            centerText:ClearAllPoints()
+            centerText:SetPoint("CENTER", healthbar, "CENTER", 0, 0.5, "BBFHookSetPoint")
         end
 
-        local point, relativeTo, relativePoint, xOfs, yOfs = rightText:GetPoint()
-        local newYOffset = yOfs + 9
-        BBF.MoveRegion(rightText, point, relativeTo, relativePoint, xOfs, newYOffset)
+        local function RestoreTextPositions()
+            ApplyBBFPosition(leftText)
+            ApplyBBFPosition(rightText)
+            ApplyBBFPosition(centerText)
+        end
 
-        local point, relativeTo, relativePoint, xOfs, yOfs = centerText:GetPoint()
-        local newYOffset = yOfs + 9
-        BBF.MoveRegion(centerText, point, relativeTo, relativePoint, xOfs, newYOffset)
+        hooksecurefunc("PlayerFrame_ToVehicleArt", function()
+            if not BetterBlizzFramesDB.biggerHealthbars then return end
+            BBF.playerInVehicleArt = true
+            ApplyBBFPosition(healthbar)
+            healthbar:SetHeight(vehicleHealthbarHeight)
+            AnchorTextToHealthbar()
+            ApplyBBFPosition(name)
+            if deadText then ApplyBBFPosition(deadText) end
+            if leftTextMana then ApplyBBFPosition(leftTextMana) end
+        end)
+
+        hooksecurefunc("PlayerFrame_ToPlayerArt", function()
+            if not BetterBlizzFramesDB.biggerHealthbars then return end
+            BBF.playerInVehicleArt = false
+            ApplyBBFPosition(healthbar)
+            healthbar:SetHeight(normalHealthbarHeight)
+            RestoreTextPositions()
+            ApplyBBFPosition(name)
+            if deadText then ApplyBBFPosition(deadText) end
+            if leftTextMana then ApplyBBFPosition(leftTextMana) end
+        end)
+
+        BBF.vehicleArtHooked = true
+
+        if UnitInVehicle("player") then
+            BBF.playerInVehicleArt = true
+            ApplyBBFPosition(healthbar)
+            healthbar:SetHeight(vehicleHealthbarHeight)
+            AnchorTextToHealthbar()
+            ApplyBBFPosition(name)
+            if deadText then ApplyBBFPosition(deadText) end
+            if leftTextMana then ApplyBBFPosition(leftTextMana) end
+        end
     end
 
     if not frameTextureHooked then
@@ -626,25 +779,26 @@ function BBF.BiggerHealthbars(frame, name)
             local classification = UnitClassification(frame.unit);
         
             if BetterBlizzFramesDB.biggerHealthbars then
+                local frameName = frame:GetName()
+                local hideMana = ShouldHideManabar(frameName)
                 if (classification == "minus") then
-                    -- frame.borderTexture:SetTexture(Media:Fetch("frames", "minus"));
-                    -- frame.nameBackground:Hide();
-                    -- frame.Background:SetHeight(31)
-                    -- frame.manabar:Hide();
-                    -- frame.manabar.TextString:Hide();
-                    -- forceNormalTexture = true;
-                    frame.borderTexture:SetTexture("Interface\\Addons\\BetterBlizzFrames\\media\\UI-TargetingFrame-Minus")
+                    frame.borderTexture:SetTexture(hideMana and bigMinusNoManaTexture or "Interface\\Addons\\BetterBlizzFrames\\media\\UI-TargetingFrame-Minus")
                 elseif (classification == "worldboss" or classification == "elite") then
-                    frame.borderTexture:SetTexture("Interface\\Addons\\BetterBlizzFrames\\media\\UI-TargetingFrame-Elite")
+                    frame.borderTexture:SetTexture(hideMana and bigEliteNoManaTexture or "Interface\\Addons\\BetterBlizzFrames\\media\\UI-TargetingFrame-Elite")
                 elseif (classification == "rareelite") then
-                    frame.borderTexture:SetTexture("Interface\\Addons\\BetterBlizzFrames\\media\\UI-TargetingFrame-Rare-Elite")
+                    frame.borderTexture:SetTexture(hideMana and bigRareEliteNoManaTexture or "Interface\\Addons\\BetterBlizzFrames\\media\\UI-TargetingFrame-Rare-Elite")
                 elseif (classification == "rare") then
-                    frame.borderTexture:SetTexture("Interface\\Addons\\BetterBlizzFrames\\media\\UI-TargetingFrame-Rare")
+                    frame.borderTexture:SetTexture(hideMana and bigRareNoManaTexture or "Interface\\Addons\\BetterBlizzFrames\\media\\UI-TargetingFrame-Rare")
                 else
-                    local textureToUse = normalTexture
+                    local textureToUse
+                    if hideMana then
+                        textureToUse = bigNoManaTexture
+                    else
+                        textureToUse = normalTexture
+                    end
                     if BetterBlizzFramesDB.hideLevelText then
                         if BetterBlizzFramesDB.hideLevelTextAlways or UnitLevel(frame.unit) == maxLvl then
-                            textureToUse = noLevelTexture
+                            textureToUse = hideMana and bigNoLevelNoManaTexture or noLevelTexture
                         end
                     end
                     frame.borderTexture:SetTexture(textureToUse)
@@ -692,6 +846,78 @@ function BBF.HookBiggerHealthbars()
         -- BBF.BiggerHealthbars("FocusFrame", FocusFrameTextureFrameName)
 
         biggerHealthbarHooked = true
+    end
+end
+
+function BBF.HookHideManabars()
+    if BetterBlizzFramesDB.biggerHealthbars then return end
+
+    local frames = {
+        { name = "PlayerFrame", setting = "hidePlayerManabar" },
+        { name = "TargetFrame", setting = "hideTargetManabar" },
+        { name = "FocusFrame", setting = "hideFocusManabar" },
+    }
+
+    for _, info in ipairs(frames) do
+        if BetterBlizzFramesDB[info.setting] then
+            HideManabarElements(info.name)
+            local healthbar = _G[info.name.."HealthBar"]
+            if healthbar then
+                healthbar:SetHeight(22)
+                if healthbar.LeftText then
+                    local point, relativeTo, relativePoint, xOfs, yOfs = healthbar.LeftText:GetPoint()
+                    BBF.MoveRegion(healthbar.LeftText, point, relativeTo, relativePoint, xOfs, yOfs - 6)
+                end
+                if healthbar.RightText then
+                    local point, relativeTo, relativePoint, xOfs, yOfs = healthbar.RightText:GetPoint()
+                    BBF.MoveRegion(healthbar.RightText, point, relativeTo, relativePoint, xOfs, yOfs - 6)
+                end
+                if healthbar.TextString then
+                    local point, relativeTo, relativePoint, xOfs, yOfs = healthbar.TextString:GetPoint()
+                    BBF.MoveRegion(healthbar.TextString, point, relativeTo, relativePoint, xOfs, yOfs - 6)
+                end
+            end
+            local texture = _G[info.name.."Texture"] or _G[info.name.."TextureFrameTexture"]
+            if texture then
+                local textureToUse = noManaTexture
+                if BetterBlizzFramesDB.hideLevelText then
+                    if BetterBlizzFramesDB.hideLevelTextAlways then
+                        textureToUse = noLevelNoManaTexture
+                    elseif info.name == "PlayerFrame" and UnitLevel("player") == maxLvl then
+                        textureToUse = noLevelNoManaTexture
+                    end
+                end
+                texture:SetTexture(textureToUse)
+            end
+        end
+    end
+
+    if not hideManabarHooked then
+        hooksecurefunc("TargetFrame_CheckClassification", function(frame)
+            if not frame or not frame.unit then return end
+            local frameName = frame:GetName()
+            if not ShouldHideManabar(frameName) then return end
+            if BetterBlizzFramesDB.biggerHealthbars then return end
+            local classification = UnitClassification(frame.unit)
+            if classification == "minus" then
+                frame.borderTexture:SetTexture(minusNoManaTexture)
+            elseif classification == "worldboss" or classification == "elite" then
+                frame.borderTexture:SetTexture(eliteNoManaTexture)
+            elseif classification == "rareelite" then
+                frame.borderTexture:SetTexture(rareEliteNoManaTexture)
+            elseif classification == "rare" then
+                frame.borderTexture:SetTexture(rareNoManaTexture)
+            else
+                local textureToUse = noManaTexture
+                if BetterBlizzFramesDB.hideLevelText then
+                    if BetterBlizzFramesDB.hideLevelTextAlways or UnitLevel(frame.unit) == maxLvl then
+                        textureToUse = noLevelNoManaTexture
+                    end
+                end
+                frame.borderTexture:SetTexture(textureToUse)
+            end
+        end)
+        hideManabarHooked = true
     end
 end
 

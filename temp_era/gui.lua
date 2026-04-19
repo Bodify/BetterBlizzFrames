@@ -3492,8 +3492,11 @@ local function guiGeneralTab()
         StaticPopup_Show("BBF_CONFIRM_RELOAD")
     end)
 
-    biggerHealthbars:HookScript("OnClick", function()
+    biggerHealthbars:HookScript("OnClick", function(self)
         CheckAndToggleCheckboxes(biggerHealthbars)
+        if not self:GetChecked() then
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        end
     end)
 
 
@@ -6637,6 +6640,20 @@ local function guiMisc()
 
     moveResourceToTarget:HookScript("OnClick", function()
         CheckAndToggleCheckboxes(moveResourceToTarget)
+    end)
+
+    local hidePlayerManabar = CreateCheckbox("hidePlayerManabar", L["Hide_PlayerFrame_Mana"], guiMisc)
+    hidePlayerManabar:SetPoint("TOPLEFT", moveResourceToTarget, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(hidePlayerManabar, L["Hide_PlayerFrame_Mana"], L["Tooltip_Hide_Player_Manabar_Desc"])
+    hidePlayerManabar:HookScript("OnClick", function(self)
+        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+    end)
+
+    local hideTargetManabar = CreateCheckbox("hideTargetManabar", L["Hide_TargetFrame_Mana"], guiMisc)
+    hideTargetManabar:SetPoint("TOPLEFT", hidePlayerManabar, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(hideTargetManabar, L["Hide_TargetFrame_Mana"], L["Tooltip_Hide_Target_Manabar_Desc"])
+    hideTargetManabar:HookScript("OnClick", function(self)
+        StaticPopup_Show("BBF_CONFIRM_RELOAD")
     end)
 end
 

@@ -522,16 +522,25 @@ ClickthroughFrames:RegisterEvent("PLAYER_REGEN_DISABLED")
 function BBF.PlayerElite(mode)
     local playerElite = PlayerFrameTexture
     local bigHealthbars = BetterBlizzFramesDB["biggerHealthbars"]
+    local hideMana = BetterBlizzFramesDB.hidePlayerManabar
 
     -- Set Elite style according to value
     playerElite:SetDesaturated(false)
     if not BetterBlizzFramesDB.playerEliteFrame then
         if BBF.eliteToggled then
             if bigHealthbars then
-                playerElite:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\UI-TargetingFrame")
+                if hideMana then
+                    playerElite:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\NoManas\\UI-TargetingFrame-Big-NoMana")
+                else
+                    playerElite:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\UI-TargetingFrame")
+                end
                 playerElite:SetTexCoord(1, .09375, 0, .78125)
             else
-                playerElite:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame")
+                if hideMana then
+                    playerElite:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\NoManas\\UI-TargetingFrame-NoMana")
+                else
+                    playerElite:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame")
+                end
                 playerElite:SetTexCoord(1, .09375, 0, .78125)
             end
             BBF.eliteToggled = nil
@@ -542,29 +551,53 @@ function BBF.PlayerElite(mode)
     end
     if mode == 1 then -- Rare (Silver)
         if bigHealthbars then
-            playerElite:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\UI-TargetingFrame-Rare")
+            if hideMana then
+                playerElite:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\NoManas\\UI-TargetingFrame-Rare-Big-NoMana")
+            else
+                playerElite:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\UI-TargetingFrame-Rare")
+            end
             playerElite:SetTexCoord(1, .09375, 0, .78125)
             playerElite:SetDesaturated(true)
         else
-            playerElite:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Rare")
+            if hideMana then
+                playerElite:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\NoManas\\UI-TargetingFrame-Rare-NoMana")
+            else
+                playerElite:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Rare")
+            end
             playerElite:SetTexCoord(1, .09375, 0, .78125)
             playerElite:SetDesaturated(true)
         end
     elseif mode == 2 then -- Boss (Gold Winged)
         if bigHealthbars then
-            playerElite:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\UI-TargetingFrame-Elite")
+            if hideMana then
+                playerElite:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\NoManas\\UI-TargetingFrame-Elite-Big-NoMana")
+            else
+                playerElite:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\UI-TargetingFrame-Elite")
+            end
             playerElite:SetTexCoord(1, .09375, 0, .78125)
         else
-            playerElite:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Elite")
+            if hideMana then
+                playerElite:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\NoManas\\UI-TargetingFrame-Elite-NoMana")
+            else
+                playerElite:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Elite")
+            end
             playerElite:SetTexCoord(1, .09375, 0, .78125)
         end
     elseif mode == 3 then -- Boss (Silver Winged)
         if bigHealthbars then
-            playerElite:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\UI-TargetingFrame-Rare-Elite")
+            if hideMana then
+                playerElite:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\NoManas\\UI-TargetingFrame-Rare-Elite-Big-NoMana")
+            else
+                playerElite:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\UI-TargetingFrame-Rare-Elite")
+            end
             playerElite:SetTexCoord(1, .09375, 0, .78125)
             playerElite:SetDesaturated(true)
         else
-            playerElite:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Elite")
+            if hideMana then
+                playerElite:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\NoManas\\UI-TargetingFrame-Rare-Elite-NoMana")
+            else
+                playerElite:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Elite")
+            end
             playerElite:SetTexCoord(1, .09375, 0, .78125)
             playerElite:SetDesaturated(true)
         end
@@ -1551,6 +1584,7 @@ Frame:SetScript("OnEvent", function(...)
                 if BetterBlizzFramesDB.biggerHealthbars then
                     BBF.HookBiggerHealthbars()
                 end
+                BBF.HookHideManabars()
                 BBF.PlayerElite(BetterBlizzFramesDB.playerEliteFrameMode)
                 BBF.ToggleCastbarInterruptIcon()
                 BBF.UpdateUserTargetSettings()
