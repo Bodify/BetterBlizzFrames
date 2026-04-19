@@ -5444,16 +5444,16 @@ local function guiCastbars()
     ----------------------
     -- Advanced settings
     ----------------------
-    local firstLineX = 30
+    local firstLineX = 60
     local firstLineY = -65
-    local secondLineX = 217
+    local secondLineX = 290
     local secondLineY = -580
-    local thirdLineX = 404
+    local thirdLineX = 520
     local thirdLineY = -715
     local fourthLineX = 560
     -- Row 2 centered positions (for 3+2 layout)
-    local row2LeftX = 124
-    local row2RightX = 311
+    local row2LeftX = 175
+    local row2RightX = 405
 
     local BetterBlizzFramesCastbars = CreateFrame("Frame")
     BetterBlizzFramesCastbars.name = L["Castbars"]
@@ -5492,7 +5492,7 @@ local function guiCastbars()
     anchorSubPartyCastbar:SetWidth(150)
     anchorSubPartyCastbar:SetWordWrap(true)
 
-    local partyCastbarBorder = CreateBorderedFrame(anchorSubPartyCastbar, 157, 480, 0, -192, contentFrame)
+    local partyCastbarBorder = CreateBorderedFrame(anchorSubPartyCastbar, 200, 480, 0, -192, contentFrame)
 
     local partyCastbars = contentFrame:CreateTexture(nil, "ARTWORK")
     partyCastbars:SetAtlas("ui-castingbar-filling-channel")
@@ -5524,11 +5524,11 @@ local function guiCastbars()
     partyCastbarIconYPos:SetPoint("TOP", partyCastbarIconXPos, "BOTTOM", 0, -15)
 
     local partyCastBarTestMode = CreateCheckbox("partyCastBarTestMode", L["Test"], contentFrame, nil, BBF.partyCastBarTestMode)
-    partyCastBarTestMode:SetPoint("TOPLEFT", partyCastbarIconYPos, "BOTTOMLEFT", 10, -4)
+    partyCastBarTestMode:SetPoint("TOPLEFT", partyCastbarIconYPos, "BOTTOMLEFT", 0, -4)
     CreateTooltip(partyCastBarTestMode, L["Tooltip_Castbar_Test"])
 
     local partyCastBarTimer = CreateCheckbox("partyCastBarTimer", L["Timer"], contentFrame, nil, BBF.partyCastBarTestMode)
-    partyCastBarTimer:SetPoint("LEFT", partyCastBarTestMode.Text, "RIGHT", 10, 0)
+    partyCastBarTimer:SetPoint("TOPLEFT", partyCastBarTestMode, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(partyCastBarTimer, L["Tooltip_Castbar_Timer"])
 
     local partyCastbarSelf = CreateCheckbox("partyCastbarSelf", L["Self"], contentFrame, nil, BBF.partyCastBarTestMode)
@@ -5536,7 +5536,7 @@ local function guiCastbars()
     CreateTooltip(partyCastbarSelf, L["Tooltip_Show_Party_Castbar"])
 
     local showPartyCastBarIcon = CreateCheckbox("showPartyCastBarIcon", L["Icon"], contentFrame, nil, BBF.partyCastBarTestMode)
-    showPartyCastBarIcon:SetPoint("TOPLEFT", partyCastBarTestMode, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    showPartyCastBarIcon:SetPoint("TOPLEFT", partyCastbarSelf, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
 
     anchorSubPartyCastbar.classicCastbarsParty = CreateCheckbox("classicCastbarsParty", L["Castbar_Classic"], contentFrame, nil, BBF.partyCastBarTestMode)
     anchorSubPartyCastbar.classicCastbarsParty:SetPoint("TOPLEFT", showPartyCastBarIcon, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
@@ -5584,7 +5584,7 @@ local function guiCastbars()
     anchorSubTargetCastbar:SetWidth(150)
     anchorSubTargetCastbar:SetWordWrap(true)
 
-    local targetCastbarBorder = CreateBorderedFrame(anchorSubTargetCastbar, 157, 480, 0, -192, contentFrame)
+    local targetCastbarBorder = CreateBorderedFrame(anchorSubTargetCastbar, 200, 480, 0, -192, contentFrame)
 
     local targetCastBar = contentFrame:CreateTexture(nil, "ARTWORK")
     targetCastBar:SetAtlas("ui-castingbar-tier1-empower-2x")
@@ -5616,15 +5616,15 @@ local function guiCastbars()
     targetCastbarIconYPos:SetPoint("TOP", targetCastbarIconXPos, "BOTTOM", 0, -15)
 
     local targetStaticCastbar = CreateCheckbox("targetStaticCastbar", L["Static"], contentFrame)
-    targetStaticCastbar:SetPoint("TOPLEFT", targetCastbarIconYPos, "BOTTOMLEFT", 10, -4)
+    targetStaticCastbar:SetPoint("TOPLEFT", targetCastbarIconYPos, "BOTTOMLEFT", 0, -4)
     CreateTooltip(targetStaticCastbar, L["Tooltip_Castbar_Static"])
 
     local targetCastBarTimer = CreateCheckbox("targetCastBarTimer", L["Timer"], contentFrame, nil, BBF.CastBarTimerCaller)
-    targetCastBarTimer:SetPoint("LEFT", targetStaticCastbar.Text, "RIGHT", 10, 0)
+    targetCastBarTimer:SetPoint("TOPLEFT", targetStaticCastbar, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(targetCastBarTimer, L["Tooltip_Castbar_Timer"])
 
     local targetToTCastbarAdjustment = CreateCheckbox("targetToTCastbarAdjustment", L["ToT_Offset"], contentFrame)
-    targetToTCastbarAdjustment:SetPoint("TOPLEFT", targetStaticCastbar, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    targetToTCastbarAdjustment:SetPoint("TOPLEFT", targetCastBarTimer, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(targetToTCastbarAdjustment, L["Enable_ToT_Offset"], L["Tooltip_Castbar_ToT_Offset_Desc"])
 
     local targetToTAdjustmentOffsetY = CreateSlider(targetToTCastbarAdjustment, L["extra"], -20, 50, 1, "targetToTAdjustmentOffsetY", "Y", 55)
@@ -5757,7 +5757,7 @@ local function guiCastbars()
     anchorSubPetCastbar:SetWidth(150)
     anchorSubPetCastbar:SetWordWrap(true)
 
-    local petCastbarBorder = CreateBorderedFrame(anchorSubPetCastbar, 157, 480, 0, -192, contentFrame)
+    local petCastbarBorder = CreateBorderedFrame(anchorSubPetCastbar, 200, 480, 0, -192, contentFrame)
 
     local petCastbars = contentFrame:CreateTexture(nil, "ARTWORK")
     petCastbars:SetAtlas("ui-castingbar-filling-channel")
@@ -5785,15 +5785,15 @@ local function guiCastbars()
     petCastBarIconScale:SetPoint("TOP", petCastBarHeight, "BOTTOM", 0, -15)
 
     local petCastBarTestMode = CreateCheckbox("petCastBarTestMode", L["Test"], contentFrame, nil, BBF.petCastBarTestMode)
-    petCastBarTestMode:SetPoint("TOPLEFT", petCastBarIconScale, "BOTTOMLEFT", 10, -4)
+    petCastBarTestMode:SetPoint("TOPLEFT", petCastBarIconScale, "BOTTOMLEFT", 0, -4)
     CreateTooltip(petCastBarTestMode, L["Tooltip_Need_Pet"])
 
     local petCastBarTimer = CreateCheckbox("petCastBarTimer", L["Timer"], contentFrame, nil, BBF.petCastBarTestMode)
-    petCastBarTimer:SetPoint("LEFT", petCastBarTestMode.Text, "RIGHT", 10, 0)
+    petCastBarTimer:SetPoint("TOPLEFT", petCastBarTestMode, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(petCastBarTimer, L["Tooltip_Castbar_Timer"])
 
     local showPetCastBarIcon = CreateCheckbox("showPetCastBarIcon", L["Icon"], contentFrame, nil, BBF.petCastBarTestMode)
-    showPetCastBarIcon:SetPoint("TOPLEFT", petCastBarTestMode, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    showPetCastBarIcon:SetPoint("TOPLEFT", petCastBarTimer, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
 
     local petDetachCastbar = CreateCheckbox("petDetachCastbar", L["Castbar_Detach"], contentFrame, nil, BBF.petCastBarTestMode)
     petDetachCastbar:SetPoint("TOPLEFT", showPetCastBarIcon, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
@@ -5853,7 +5853,7 @@ local function guiCastbars()
     anchorSubFocusCastbar:SetWidth(150)
     anchorSubFocusCastbar:SetWordWrap(true)
 
-    local focusCastbarBorder = CreateBorderedFrame(anchorSubFocusCastbar, 157, 480, 0, -192, contentFrame)
+    local focusCastbarBorder = CreateBorderedFrame(anchorSubFocusCastbar, 200, 480, 0, -192, contentFrame)
 
     local focusCastBar = contentFrame:CreateTexture(nil, "ARTWORK")
     focusCastBar:SetAtlas("ui-castingbar-full-applyingcrafting")
@@ -5885,15 +5885,15 @@ local function guiCastbars()
     focusCastbarIconYPos:SetPoint("TOP", focusCastbarIconXPos, "BOTTOM", 0, -15)
 
     local focusStaticCastbar = CreateCheckbox("focusStaticCastbar", L["Static"], contentFrame)
-    focusStaticCastbar:SetPoint("TOPLEFT", focusCastbarIconYPos, "BOTTOMLEFT", 10, -4)
+    focusStaticCastbar:SetPoint("TOPLEFT", focusCastbarIconYPos, "BOTTOMLEFT", 0, -4)
     CreateTooltip(focusStaticCastbar, L["Tooltip_Castbar_Static"])
 
     local focusCastBarTimer = CreateCheckbox("focusCastBarTimer", L["Timer"], contentFrame, nil, BBF.CastBarTimerCaller)
-    focusCastBarTimer:SetPoint("LEFT", focusStaticCastbar.Text, "RIGHT", 10, 0)
+    focusCastBarTimer:SetPoint("TOPLEFT", focusStaticCastbar, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(focusCastBarTimer, L["Tooltip_Castbar_Timer"])
 
     local focusToTCastbarAdjustment = CreateCheckbox("focusToTCastbarAdjustment", L["ToT_Offset"], contentFrame)
-    focusToTCastbarAdjustment:SetPoint("TOPLEFT", focusStaticCastbar, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    focusToTCastbarAdjustment:SetPoint("TOPLEFT", focusCastBarTimer, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(focusToTCastbarAdjustment, L["Enable_ToT_Offset"], L["Tooltip_Castbar_ToT_Offset_Desc"])
 
     local focusToTAdjustmentOffsetY = CreateSlider(focusToTCastbarAdjustment, L["extra"], -20, 50, 1, "focusToTAdjustmentOffsetY", "Y", 55)
@@ -6025,7 +6025,7 @@ local function guiCastbars()
     anchorSubPlayerCastbar:SetWidth(150)
     anchorSubPlayerCastbar:SetWordWrap(true)
 
-    local playerCastbarBorder = CreateBorderedFrame(anchorSubPlayerCastbar, 157, 480, 0, -192, contentFrame)
+    local playerCastbarBorder = CreateBorderedFrame(anchorSubPlayerCastbar, 200, 480, 0, -192, contentFrame)
 
     local playerCastBar = contentFrame:CreateTexture(nil, "ARTWORK")
     playerCastBar:SetAtlas("ui-castingbar-filling-standard")
@@ -6053,29 +6053,31 @@ local function guiCastbars()
     playerCastBarHeight:SetPoint("TOP", playerCastBarWidth, "BOTTOM", 0, -15)
 
     local playerCastBarShowIcon = CreateCheckbox("playerCastBarShowIcon", L["Icon"], contentFrame, nil, BBF.ShowPlayerCastBarIcon)
-    playerCastBarShowIcon:SetPoint("TOPLEFT", playerCastBarHeight, "BOTTOMLEFT", 10, -4)
+    playerCastBarShowIcon:SetPoint("TOPLEFT", playerCastBarHeight, "BOTTOMLEFT", 0, -4)
     CreateTooltip(playerCastBarShowIcon, L["Tooltip_Player_Castbar_Icon"])
 
     local playerCastBarTimer = CreateCheckbox("playerCastBarTimer", L["Timer"], contentFrame, nil, BBF.CastBarTimerCaller)
-    playerCastBarTimer:SetPoint("LEFT", playerCastBarShowIcon.Text, "RIGHT", 7, 0)
+    playerCastBarTimer:SetPoint("TOPLEFT", playerCastBarShowIcon, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(playerCastBarTimer, L["Tooltip_Castbar_Timer"])
 
     local playerCastBarTimerCentered = CreateCheckbox("playerCastBarTimerCentered", L["Center"], contentFrame, nil, BBF.CastBarTimerCaller)
-    --playerStaticCastbar:SetPoint("TOPLEFT", playerCastBarIconScale, "BOTTOMLEFT", 10, -4)
-    playerCastBarTimerCentered:SetPoint("LEFT", playerCastBarTimer.Text, "RIGHT", 2, 0)
+    playerCastBarTimerCentered:SetPoint("TOPLEFT", playerCastBarTimer, "BOTTOMLEFT", 20, pixelsBetweenBoxes)
     CreateTooltip(playerCastBarTimerCentered, L["Tooltip_Player_Castbar_Timer_Center"])
 
     local playerCastBarNoTextBorder = CreateCheckbox("playerCastBarNoTextBorder", L["Player_Castbar_Simple"], contentFrame, nil, BBF.ChangeCastbarSizes)
-    --playerStaticCastbar:SetPoint("TOPLEFT", playerCastBarIconScale, "BOTTOMLEFT", 10, -4)
-    playerCastBarNoTextBorder:SetPoint("TOPLEFT", playerCastBarShowIcon, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    playerCastBarNoTextBorder:SetPoint("TOPLEFT", playerCastBarTimerCentered, "BOTTOMLEFT", -20, pixelsBetweenBoxes)
     CreateTooltipTwo(playerCastBarNoTextBorder, L["Player_Castbar_Simple"], L["Tooltip_Simple_Castbar"])
 
     local classicCastbarsPlayer = CreateCheckbox("classicCastbarsPlayer", L["Classic_Castbar"], contentFrame, nil, BBF.ChangeCastbarSizes)
     classicCastbarsPlayer:SetPoint("TOPLEFT", playerCastBarNoTextBorder, "BOTTOMLEFT", -15, pixelsBetweenBoxes)
     CreateTooltipTwo(classicCastbarsPlayer, L["Classic_Castbar"], L["Tooltip_Player_Castbar_Classic_Desc"])
 
+    local classicCastbarsPlayerBorder = CreateCheckbox("classicCastbarsPlayerBorder", L["Border"], classicCastbarsPlayer, nil, BBF.ChangeCastbarSizes)
+    classicCastbarsPlayerBorder:SetPoint("TOPLEFT", classicCastbarsPlayer, "BOTTOMLEFT", 20, pixelsBetweenBoxes)
+    CreateTooltipTwo(classicCastbarsPlayerBorder, L["Classic_Border"], L["Tooltip_Player_Castbar_Border_Desc"])
+
     local hidePlayerCastbar = CreateCheckbox("hidePlayerCastbar", L["Hide_Bar"], contentFrame, nil, BBF.ChangeCastbarSizes)
-    hidePlayerCastbar:SetPoint("TOPLEFT", classicCastbarsPlayer, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    hidePlayerCastbar:SetPoint("TOPLEFT", classicCastbarsPlayerBorder, "BOTTOMLEFT", -20, pixelsBetweenBoxes)
     CreateTooltipTwo(hidePlayerCastbar, L["Hide_Player_Castbar"], L["Hide_Player_Castbar"])
 
     local hidePlayerCastbarIcon = CreateCheckbox("hidePlayerCastbarIcon", L["Hide_Icon"], contentFrame, nil, BBF.ChangeCastbarSizes)
@@ -6086,10 +6088,6 @@ local function guiCastbars()
             StaticPopup_Show("BBF_CONFIRM_RELOAD")
         end
     end)
-
-    local classicCastbarsPlayerBorder = CreateCheckbox("classicCastbarsPlayerBorder", L["Border"], classicCastbarsPlayer, nil, BBF.ChangeCastbarSizes)
-    classicCastbarsPlayerBorder:SetPoint("LEFT", classicCastbarsPlayer.text, "RIGHT", 0, 0)
-    CreateTooltipTwo(classicCastbarsPlayerBorder, L["Classic_Border"], L["Tooltip_Player_Castbar_Border_Desc"])
 
     classicCastbarsPlayer:HookScript("OnClick", function(self)
         CheckAndToggleCheckboxes(self)
@@ -6887,6 +6885,8 @@ local function guiPositionAndScale()
     local castBarInterruptIconShowActiveOnly = CreateCheckbox("castBarInterruptIconShowActiveOnly", L["Tooltip_Only_Show_If_Available_Desc"], contentFrame, nil, BBF.UpdateInterruptIconSettings)
     castBarInterruptIconShowActiveOnly:SetPoint("TOPLEFT", castBarInterruptIconTarget, "BOTTOMLEFT", -28, pixelsBetweenBoxes)
     CreateTooltipTwo(castBarInterruptIconShowActiveOnly, L["Tooltip_Only_Show_If_Available_Desc"], L["Tooltip_Only_Show_Available"])
+    castBarInterruptIconShowActiveOnly.Text:SetWidth(160)
+    castBarInterruptIconShowActiveOnly.Text:SetJustifyH("LEFT")
 
     local interruptIconBorder = CreateCheckbox("interruptIconBorder", L["Border_Status_Color"], contentFrame, nil, BBF.UpdateInterruptIconSettings)
     interruptIconBorder:SetPoint("TOPLEFT", castBarInterruptIconShowActiveOnly, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
@@ -6894,7 +6894,7 @@ local function guiPositionAndScale()
 
     local reloadUiButton2 = CreateFrame("Button", nil, BetterBlizzFramesSubPanel, "UIPanelButtonTemplate")
     reloadUiButton2:SetText(L["Reload_UI"])
-    reloadUiButton2:SetWidth(85)
+    reloadUiButton2:SetWidth(105)
     reloadUiButton2:SetPoint("TOP", BetterBlizzFramesSubPanel, "BOTTOMRIGHT", -140, -9)
     reloadUiButton2:SetScript("OnClick", function()
         BetterBlizzFramesDB.reopenOptions = true
@@ -6903,14 +6903,14 @@ local function guiPositionAndScale()
 
     local resetBBFButton = CreateFrame("Button", nil, BetterBlizzFramesSubPanel, "UIPanelButtonTemplate")
     resetBBFButton:SetText(L["Reset_BetterBlizzFrames"])
-    resetBBFButton:SetWidth(165)
+    resetBBFButton:SetWidth(140)
     resetBBFButton:SetPoint("RIGHT", reloadUiButton2, "LEFT", -570, 0)
     resetBBFButton:SetScript("OnClick", function()
         StaticPopup_Show("CONFIRM_RESET_BETTERBLIZZFRAMESDB")
     end)
     CreateTooltip(resetBBFButton, L["Tooltip_Full_Reset"])
 
-    BetterBlizzFramesSubPanel.rightClickTip = BetterBlizzFramesSubPanel:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+    BetterBlizzFramesSubPanel.rightClickTip = BetterBlizzFramesSubPanel:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     BetterBlizzFramesSubPanel.rightClickTip:SetPoint("RIGHT", reloadUiButton2, "LEFT", -80, -2)
     BetterBlizzFramesSubPanel.rightClickTip:SetText("|A:smallquestbang:20:20|a" .. L["Right_Click_Slider_Tip"])
 end
@@ -6943,7 +6943,7 @@ local function guiFrameLook()
         scrollFrame:SetPoint("TOPLEFT", guiFrameLook, "TOPLEFT", 15, -15)
         scrollFrame:SetPoint("BOTTOMRIGHT", guiFrameLook, "BOTTOMRIGHT", -30, 15)
         BBF.fontTextureScrollChild = CreateFrame("Frame", nil, scrollFrame)
-        BBF.fontTextureScrollChild:SetSize(650, 1000)
+        BBF.fontTextureScrollChild:SetSize(650, 1450)
         BBF.fontTextureScrollChild.name = guiFrameLook.name
         scrollFrame:SetScrollChild(BBF.fontTextureScrollChild)
         mainGuiAnchor:SetParent(BBF.fontTextureScrollChild)
@@ -6974,7 +6974,7 @@ local function guiFrameLook()
 
     -- Section "Texture" (col 2)
     local textureSectionText = BBF.fontTextureScrollChild:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    textureSectionText:SetPoint("TOPLEFT", settingsText, "BOTTOMLEFT", 340 + 24, -18)
+    textureSectionText:SetPoint("TOPLEFT", settingsText, "BOTTOMLEFT", 0, -700)
     textureSectionText:SetText("Texture")
     textureSectionText:SetFont(fontLarge, 14)
     textureSectionText:SetTextColor(1,0.82,0)
@@ -6985,7 +6985,7 @@ local function guiFrameLook()
 
     local howToImport = BBF.fontTextureScrollChild:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     howToImport:SetFont(fontLarge, 16)
-    howToImport:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 0, -650)
+    howToImport:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 0, -1200)
     howToImport:SetText(L["How_To_Import"])
 
     local howStepOne = BBF.fontTextureScrollChild:CreateFontString(nil, "OVERLAY", "GameFontNormal")
@@ -7373,11 +7373,11 @@ local function guiFrameLook()
     changeUnitFrameHealthbarTexture:SetPoint("TOPLEFT", textureSectionText, "BOTTOMLEFT", -24, pixelsOnFirstBox)
     changeUnitFrameHealthbarTexture.Text:SetText("")
     local changeUnitFrameHealthbarTextureLabel = BBF.fontTextureScrollChild:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-    changeUnitFrameHealthbarTextureLabel:SetPoint("LEFT", changeUnitFrameHealthbarTexture, "RIGHT", 4, 0)
-    changeUnitFrameHealthbarTextureLabel:SetWidth(260)
+    changeUnitFrameHealthbarTextureLabel:SetPoint("TOPLEFT", changeUnitFrameHealthbarTexture, "TOPRIGHT", 4, 0)
+    changeUnitFrameHealthbarTextureLabel:SetPoint("BOTTOMRIGHT", changeUnitFrameHealthbarTexture, "BOTTOMRIGHT", 400, 0)
+    changeUnitFrameHealthbarTextureLabel:SetFont(fontMedium, 12)
     changeUnitFrameHealthbarTextureLabel:SetJustifyH("LEFT")
     changeUnitFrameHealthbarTextureLabel:SetWordWrap(true)
-    changeUnitFrameHealthbarTextureLabel:SetFont(fontMedium, 12)
     changeUnitFrameHealthbarTextureLabel:SetText(L["Tooltip_Change_UnitFrame_Healthbar_Texture_Desc"])
     if not BetterBlizzFramesDB.classicFrames then
         CreateTooltipTwo(changeUnitFrameHealthbarTexture, L["Tooltip_Change_UnitFrame_Healthbar_Texture_Desc"], L["Tooltip_Healthbar_Texture"])
@@ -7632,6 +7632,9 @@ local function guiFrameLook()
 
 
     local changePartyRaidFrameBackgroundColor = CreateCheckbox("changePartyRaidFrameBackgroundColor", L["Change_RaidFrame_Background_Texture"], BBF.fontTextureScrollChild)
+    changePartyRaidFrameBackgroundColor.Text:SetWidth(260)
+    changePartyRaidFrameBackgroundColor.Text:SetJustifyH("LEFT")
+    changePartyRaidFrameBackgroundColor.Text:SetWordWrap(true)
     changePartyRaidFrameBackgroundColor:SetPoint("TOPLEFT", changeRaidFrameManabarTexture, "BOTTOMLEFT", 0, -25)
     CreateTooltipTwo(changePartyRaidFrameBackgroundColor, L["Change_RaidFrame_Background_Texture"], L["Tooltip_Change_RaidFrame_Background_Texture_Desc"])
 
