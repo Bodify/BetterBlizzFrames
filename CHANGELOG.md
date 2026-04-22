@@ -1,3 +1,8 @@
+# BetterBlizzFrames 1.9.5g
+## Midnight
+### Bugfix
+- Fix lua error with hiding Dispel Overlay (this setting is likely gone now in 12.0.5, use Blizzards settings to hide it).
+
 # BetterBlizzFrames 1.9.5f
 ## All versions
 ### Bugfix
