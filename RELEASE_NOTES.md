@@ -1,3 +1,8 @@
+# BetterBlizzFrames 1.9.5f
+## All versions
+### Bugfix
+- Fix issues related to font settings causing lua errors.
+
 # BetterBlizzFrames 1.9.5e
 ## TBC
 ### New
