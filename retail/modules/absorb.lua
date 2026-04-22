@@ -5,7 +5,6 @@ local function GetMaxAbsorbAuraIcon(unit)
     local maxAbsorb = 0
     local maxAbsorbIcon = nil
 
-    -- Function to process each aura
     local function processAura(name, icon, _, _, _, _, _, _, _, spellId, _, _, _, _, _, absorb)
         if absorb and absorb > maxAbsorb then
             maxAbsorb = absorb
@@ -13,7 +12,6 @@ local function GetMaxAbsorbAuraIcon(unit)
         end
     end
 
-    -- Iterate over all helpful auras on the unit
     AuraUtil.ForEachAura(unit, "HELPFUL", nil, processAura)
 
     return maxAbsorbIcon
@@ -37,29 +35,28 @@ local function UpdateAbsorbIndicator(frame, unit)
 
     if not frame.absorbParent then
         frame.absorbParent = CreateFrame("Frame", nil, frame, "BackdropTemplate")
-        frame.absorbParent:SetSize(50, 50) -- Set this size to fit both icon and text
-        frame.absorbParent:SetPoint("CENTER", frame, "CENTER", xPos, yPos) -- Position it according to your needs
+        frame.absorbParent:SetSize(50, 50)
+        frame.absorbParent:SetPoint("CENTER", frame, "CENTER", xPos, yPos)
         frame.absorbParent:SetFrameStrata("HIGH")
 
         frame.absorbIcon = frame.absorbParent:CreateTexture(nil, "OVERLAY")
         frame.absorbIcon:SetSize(20, 20)
-        frame.absorbIcon:SetPoint("CENTER", frame.absorbParent, "CENTER") -- Position the icon inside the parent frame
+        frame.absorbIcon:SetPoint("CENTER", frame.absorbParent, "CENTER")
 
         frame.absorbIndicator = frame.absorbParent:CreateFontString(nil, "OVERLAY")
 
         if db.changeUnitFrameFont then
             local fontName = db.unitFrameFont
             local fontPath = LSM:Fetch(LSM.MediaType.FONT, fontName)
-            local outline = db.unitFrameFontOutline or "THINOUTLINE"
+            local outline = db.unitFrameFontOutline or "OUTLINE"
             frame.absorbIndicator:SetFont(fontPath, 16, outline)
         else
             frame.absorbIndicator:SetFont("Fonts\\FRIZQT__.TTF", 16, "OUTLINE")
         end
-        frame.absorbIndicator:SetPoint("CENTER", frame.absorbParent, "CENTER") -- Position the text inside the parent frame
+        frame.absorbIndicator:SetPoint("CENTER", frame.absorbParent, "CENTER")
         frame.absorbIndicator:SetDrawLayer("OVERLAY", 7)
     end
 
-    -- Ensure the border is attached to the absorbParent and appears above the icon
     if not frame.absorbIcon.border then
         local border = CreateFrame("Frame", nil, frame.absorbParent, "BackdropTemplate")
         border:SetBackdrop({
@@ -70,7 +67,7 @@ local function UpdateAbsorbIndicator(frame, unit)
 
         border:SetPoint("TOPLEFT", frame.absorbIcon, "TOPLEFT", -2, 2)
         border:SetPoint("BOTTOMRIGHT", frame.absorbIcon, "BOTTOMRIGHT", 2, -2)
-        border:SetFrameLevel(frame.absorbParent:GetFrameLevel() + 1)  -- Ensure the border is above the icon
+        border:SetFrameLevel(frame.absorbParent:GetFrameLevel() + 1)
         frame.absorbIcon.border = border
     end
 
@@ -250,7 +247,6 @@ local units = {
     ["focus"] = true,
 }
 
--- Event listener for Absorb Indicator
 local function OnAbsorbEvent(self, event, unit)
     if not units[unit] then return end
     if unit == "target" then

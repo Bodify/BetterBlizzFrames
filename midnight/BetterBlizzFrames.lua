@@ -5178,6 +5178,21 @@ First:SetScript("OnEvent", function(_, event, addonName)
         if BetterBlizzFramesDB.noPortraitPixelBorder then
             BetterBlizzFramesDB.noPortraitModes = true
         end
+        if not BetterBlizzFramesDB.fontOutlineFix then
+            local outlineKeys = {
+                "unitFrameFontOutline", "unitFrameValueFontOutline",
+                "partyFrameFontOutline", "actionBarFontOutline", "actionBarKeyFontOutline"
+            }
+            for _, key in ipairs(outlineKeys) do
+                local val = BetterBlizzFramesDB[key]
+                if val == "THINOUTLINE" then
+                    BetterBlizzFramesDB[key] = "OUTLINE"
+                elseif val == "NONE" then
+                    BetterBlizzFramesDB[key] = ""
+                end
+            end
+            BetterBlizzFramesDB.fontOutlineFix = true
+        end
         FetchAndSaveValuesOnFirstLogin()
         TurnTestModesOff()
         BBF.FixLegacyComboPointsLocation()

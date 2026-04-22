@@ -2142,6 +2142,11 @@ end
 local function CreateSimpleDropdown(name, parentFrame, labelText, settingKey, optionsTable, toggleFunc, point, dropdownWidth)
     dropdownWidth = dropdownWidth or 155  -- Default dropdown width if not provided
 
+    local function GetDisplayText(text)
+        if text == "" then return "NONE" end
+        return text
+    end
+
     -- Create container for label and dropdown
     local container = CreateFrame("Frame", nil, parentFrame)
     container:SetSize(dropdownWidth, 50)
@@ -2150,7 +2155,7 @@ local function CreateSimpleDropdown(name, parentFrame, labelText, settingKey, op
     local dropdown = CreateFrame("DropdownButton", nil, parentFrame, "WowStyle1DropdownTemplate")
     dropdown:SetPoint("BOTTOMLEFT", container, "BOTTOMLEFT", 0, 0)
     dropdown:SetWidth(dropdownWidth)
-    dropdown:SetDefaultText(BetterBlizzFramesDB[settingKey] or (L["Select"]..labelText))
+    dropdown:SetDefaultText(GetDisplayText(BetterBlizzFramesDB[settingKey]) or (L["Select"]..labelText))
     dropdown.Background:SetVertexColor(0.9, 0.9, 0.9)
     dropdown.Arrow:SetVertexColor(0.9, 0.9, 0.9)
 
@@ -2167,10 +2172,11 @@ local function CreateSimpleDropdown(name, parentFrame, labelText, settingKey, op
         rootDescription:SetScrollMode(maxScrollExtent)
 
         for _, option in ipairs(optionsTable) do
+            local displayText = GetDisplayText(option)
             -- Create each item as a button
-            local button = rootDescription:CreateButton(option, function()
+            local button = rootDescription:CreateButton(displayText, function()
                 BetterBlizzFramesDB[settingKey] = option
-                dropdown:SetDefaultText(option)
+                dropdown:SetDefaultText(displayText)
                 if toggleFunc then
                     toggleFunc(option)
                 end
@@ -2179,7 +2185,7 @@ local function CreateSimpleDropdown(name, parentFrame, labelText, settingKey, op
             -- Add the text initializer for the button
             button:AddInitializer(function(button)
                 if button.Text then
-                    button.Text:SetText(option)
+                    button.Text:SetText(displayText)
                 end
             end)
         end
@@ -2187,7 +2193,7 @@ local function CreateSimpleDropdown(name, parentFrame, labelText, settingKey, op
 
     -- Reset dropdown contents when closed
     hooksecurefunc(dropdown, "OnMenuClosed", function()
-        dropdown:SetDefaultText(BetterBlizzFramesDB[settingKey] or (L["Select"]..labelText))
+        dropdown:SetDefaultText(GetDisplayText(BetterBlizzFramesDB[settingKey]) or (L["Select"]..labelText))
     end)
 
     dropdown:SetupMenu(GeneratorFunction)
@@ -2518,7 +2524,7 @@ local function guiGeneralTab()
     local alpha2 = BetterBlizzFrames:CreateFontString(nil, "BACKGROUND", "GameFontNormal")
     alpha2:SetPoint("BOTTOM", SettingsPanel, "TOP", 0, 0)
     alpha2:SetText(L["Label_Betterblizzframes_Era_Alpha_Please_Report"])
-    alpha2:SetFont("Fonts\\FRIZQT__.TTF", 20, "THINOUTLINE")
+    alpha2:SetFont("Fonts\\FRIZQT__.TTF", 20, "OUTLINE")
     alpha2:Hide()
     BetterBlizzFrames:HookScript("OnShow",function()
         alpha2:Show()
@@ -5190,7 +5196,7 @@ local function guiFrameLook()
 
     -- For font outline
     local unitFrameFontOutline = CreateSimpleDropdown("FontOutlineDropdown", guiFrameLook, "Outline", "unitFrameFontOutline", {
-        "THICKOUTLINE", "THINOUTLINE", "NONE"
+        "THICKOUTLINE", "OUTLINE", ""
     }, function(selectedSize)
         BBF.SetCustomFonts()
     end, { anchorFrame = unitFrameFont, x = 0, y = -5 }, 155)
@@ -5258,7 +5264,7 @@ local function guiFrameLook()
 
     -- For font outline
     local unitFrameValueFontOutline = CreateSimpleDropdown("FontOutlineDropdown", guiFrameLook, "Outline", "unitFrameValueFontOutline", {
-        "THICKOUTLINE", "THINOUTLINE", "NONE"
+        "THICKOUTLINE", "OUTLINE", ""
     }, function(selectedSize)
         BBF.SetCustomFonts()
     end, { anchorFrame = unitFrameValueFont, x = 0, y = -5 }, 155)
@@ -5320,7 +5326,7 @@ local function guiFrameLook()
 
     -- For font outline
     local partyFrameFontOutline = CreateSimpleDropdown("FontOutlineDropdown", guiFrameLook, "Outline", "partyFrameFontOutline", {
-        "THICKOUTLINE", "THINOUTLINE", "NONE"
+        "THICKOUTLINE", "OUTLINE", ""
     }, function(selectedSize)
         BBF.SetCustomFonts()
     end, { anchorFrame = partyFrameFont, x = 0, y = -5 }, 155)
@@ -5397,14 +5403,14 @@ local function guiFrameLook()
 
     -- For font outline
     local actionBarFontOutline = CreateSimpleDropdown("FontOutlineDropdown", guiFrameLook, "Outline", "actionBarFontOutline", {
-        "THICKOUTLINE", "THINOUTLINE", "NONE"
+        "THICKOUTLINE", "OUTLINE", ""
     }, function(selectedSize)
         BBF.SetCustomFonts()
     end, { anchorFrame = actionBarFont, x = 0, y = -5 }, 77.5)
     CreateTooltipTwo(actionBarFontOutline, L["Tooltip_Macro_Text_Outline"])
 
     local actionBarKeyFontOutline = CreateSimpleDropdown("FontOutlineDropdown", guiFrameLook, "", "actionBarKeyFontOutline", {
-        "THICKOUTLINE", "THINOUTLINE", "NONE"
+        "THICKOUTLINE", "OUTLINE", ""
     }, function(selectedSize)
         BBF.SetCustomFonts()
     end, { anchorFrame = actionBarFontOutline, x = 77.5, y = 25 }, 77.5)

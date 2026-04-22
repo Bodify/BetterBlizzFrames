@@ -326,6 +326,7 @@ local function CreateSimpleDropdown(name, parentFrame, labelText, settingKey, op
 
     -- Function to get localized text
     local function GetLocalizedText(text)
+        if text == "" then return "NONE" end
         return L[text] or text
     end
 
@@ -3167,10 +3168,10 @@ local function guiGeneralTab()
     midnightBeta:SetText(L["Msg_Midnight_Available"])
     -- Use locale-aware font system instead of hardcoded font
     if useCustomFonts then
-        midnightBeta:SetFont("Fonts\\FRIZQT__.TTF", 24, "THINOUTLINE")
+        midnightBeta:SetFont("Fonts\\FRIZQT__.TTF", 24, "OUTLINE")
     else
         local gameFont = GameFontNormal:GetFont()
-        midnightBeta:SetFont(gameFont, 24, "THINOUTLINE")
+        midnightBeta:SetFont(gameFont, 24, "OUTLINE")
     end
     midnightBeta:Hide()
     BetterBlizzFrames:HookScript("OnShow",function()
@@ -7006,7 +7007,7 @@ local function guiFrameLook()
 
     -- For font outline
     local unitFrameFontOutline = CreateSimpleDropdown("FontOutlineDropdown", guiFrameLook, L["Outline_Label"], "unitFrameFontOutline", {
-        "THICKOUTLINE", "THINOUTLINE", "NONE"
+        "THICKOUTLINE", "OUTLINE", ""
     }, function(selectedSize)
         BBF.SetCustomFonts()
     end, { anchorFrame = unitFrameFont, x = 0, y = -5 }, 155)
@@ -7074,7 +7075,7 @@ local function guiFrameLook()
 
     -- For font outline
     local unitFrameValueFontOutline = CreateSimpleDropdown("FontOutlineDropdown", guiFrameLook, L["Outline_Label"], "unitFrameValueFontOutline", {
-        "THICKOUTLINE", "THINOUTLINE", "NONE"
+        "THICKOUTLINE", "OUTLINE", ""
     }, function(selectedSize)
         BBF.SetCustomFonts()
     end, { anchorFrame = unitFrameValueFont, x = 0, y = -5 }, 155)
@@ -7136,7 +7137,7 @@ local function guiFrameLook()
 
     -- For font outline
     local partyFrameFontOutline = CreateSimpleDropdown("FontOutlineDropdown", guiFrameLook, L["Outline_Label"], "partyFrameFontOutline", {
-        "THICKOUTLINE", "THINOUTLINE", "NONE"
+        "THICKOUTLINE", "OUTLINE", ""
     }, function(selectedSize)
         BBF.SetCustomFonts()
     end, { anchorFrame = partyFrameFont, x = 0, y = -5 }, 155)
@@ -7208,14 +7209,14 @@ local function guiFrameLook()
 
     -- For font outline
     local actionBarFontOutline = CreateSimpleDropdown("FontOutlineDropdown", guiFrameLook, L["Outline_Label"], "actionBarFontOutline", {
-        "THICKOUTLINE", "THINOUTLINE", "NONE"
+        "THICKOUTLINE", "OUTLINE", ""
     }, function(selectedSize)
         BBF.SetCustomFonts()
     end, { anchorFrame = actionBarFont, x = 0, y = -5 }, 77.5)
     CreateTooltipTwo(actionBarFontOutline, L["Tooltip_Macro_Text_Outline"])
 
     local actionBarKeyFontOutline = CreateSimpleDropdown("FontOutlineDropdown", guiFrameLook, "", "actionBarKeyFontOutline", {
-        "THICKOUTLINE", "THINOUTLINE", "NONE"
+        "THICKOUTLINE", "OUTLINE", ""
     }, function(selectedSize)
         BBF.SetCustomFonts()
     end, { anchorFrame = actionBarFontOutline, x = 77.5, y = 25 }, 77.5)

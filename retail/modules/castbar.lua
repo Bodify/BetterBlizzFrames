@@ -1517,7 +1517,7 @@ function BBF.ChangeCastbarSizes()
     if BetterBlizzFramesDB.changeUnitFrameFont then
         local fontName = BetterBlizzFramesDB.unitFrameFont
         local fontPath = BBF.LSM:Fetch(BBF.LSM.MediaType.FONT, fontName)
-        local outline = BetterBlizzFramesDB.unitFrameFontOutline or "THINOUTLINE"
+        local outline = BetterBlizzFramesDB.unitFrameFontOutline or "OUTLINE"
         local _, size, _ = TargetFrameSpellBar.Text:GetFont()
         TargetFrameSpellBar.Text:SetFont(fontPath, size, outline)
         FocusFrameSpellBar.Text:SetFont(fontPath, size, outline)

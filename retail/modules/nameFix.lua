@@ -813,9 +813,6 @@ end)
 
 
 local function SetPartyFont(font, size, outline, size2)
-    if outline == "NONE" then
-        outline = nil
-    end
     for i = 1, 5 do
         local frame = _G["CompactPartyFrameMember"..i]
         if frame then
@@ -880,9 +877,6 @@ end
 
 
 local function SetUnitFramesFont(font, size, outline)
-    if outline == "NONE" then
-        outline = nil
-    end
     local anyFailed = false
     for _, frame in ipairs(frames) do
         local newSize = size
@@ -1011,9 +1005,6 @@ local function SetUnitFramesValuesFont(font, size, outline)
             end
         end
 
-        if newOutline == "NONE" then
-            newOutline = nil
-        end
 
         textObject:SetFont(newFont, newSize, newOutline)
     end
@@ -1040,7 +1031,7 @@ local function SetActionBarFonts(font, size, kbSize, outline, kbOutline, chargeS
             local hotKeyText = _G[buttonPrefix .. i .. "HotKey"]
             if hotKeyText then
                 local ogFont, ogSize, ogOutline = hotKeyText:GetFont()
-                local finalOutline = kbOutline or (ogOutline ~= "NONE" and ogOutline) or nil
+                local finalOutline = kbOutline or (ogOutline ~= "NONE" and ogOutline) or ""
                 hotKeyText:SetFont((hotKeyText:GetText() == "●" and ogFont) or font or ogFont, kbSize or ogSize, finalOutline)
             end
 
@@ -1054,7 +1045,7 @@ local function SetActionBarFonts(font, size, kbSize, outline, kbOutline, chargeS
             local chargeText = _G[buttonPrefix .. i .. "Count"]
             if chargeText and BetterBlizzFramesDB.actionBarChangeCharge then
                 local ogFont, ogSize, ogOutline = chargeText:GetFont()
-                local finalOutline = kbOutline or (ogOutline ~= "NONE" and ogOutline) or nil
+                local finalOutline = kbOutline or (ogOutline ~= "NONE" and ogOutline) or ""
                 chargeText:SetFont(font or ogFont, chargeSize or ogSize, finalOutline)
             end
         end
@@ -1081,7 +1072,7 @@ local function SetActionBarFonts(font, size, kbSize, outline, kbOutline, chargeS
             local hotKeyText = _G[bar.name .. i .. "HotKey"]
             if hotKeyText then
                 local ogFont, ogSize, ogOutline = hotKeyText:GetFont()
-                local finalOutline = kbOutline or (ogOutline ~= "NONE" and ogOutline) or nil
+                local finalOutline = kbOutline or (ogOutline ~= "NONE" and ogOutline) or ""
                 hotKeyText:SetFont((hotKeyText:GetText() == "●" and ogFont) or font or ogFont, kbSize or ogSize, finalOutline)
             end
 
@@ -1095,7 +1086,7 @@ local function SetActionBarFonts(font, size, kbSize, outline, kbOutline, chargeS
             local chargeText = _G[bar.name .. i .. "Count"]
             if chargeText and BetterBlizzFramesDB.actionBarChangeCharge then
                 local ogFont, ogSize, ogOutline = chargeText:GetFont()
-                local finalOutline = kbOutline or (ogOutline ~= "NONE" and ogOutline) or nil
+                local finalOutline = kbOutline or (ogOutline ~= "NONE" and ogOutline) or ""
                 chargeText:SetFont(font or ogFont, chargeSize or ogSize, finalOutline)
             end
         end
@@ -1220,7 +1211,7 @@ function BBF.SetCustomFonts()
         local fontPath = LSM:Fetch(LSM.MediaType.FONT, fontName)
         local fontSize = db.partyFrameFontSize or 10
         local fontSize2 = db.partyFrameStatusFontSize or 10
-        local outline = db.partyFrameFontOutline or "THINOUTLINE"
+        local outline = db.partyFrameFontOutline or "OUTLINE"
 
         SetPartyFont(fontPath, fontSize, outline, fontSize2)
 
@@ -1260,7 +1251,7 @@ function BBF.SetCustomFonts()
         local fontName = db.unitFrameFont
         local fontPath = LSM:Fetch(LSM.MediaType.FONT, fontName)
         local fontSize = db.unitFrameFontSize or 10
-        local outline = db.unitFrameFontOutline or "THINOUTLINE"
+        local outline = db.unitFrameFontOutline or "OUTLINE"
 
         if not SetUnitFramesFont(fontPath, fontSize, outline) then
             needsRetry = true
@@ -1272,8 +1263,8 @@ function BBF.SetCustomFonts()
         local fontPath = LSM:Fetch(LSM.MediaType.FONT, fontName)
         local fontSize = db.actionBarFontSize or 10
         local kbSize = db.actionBarKeyFontSize or 10
-        local outline = db.actionBarFontOutline or "THINOUTLINE"
-        local kbOutline = db.actionBarKeyFontOutline or "THINOUTLINE"
+        local outline = db.actionBarFontOutline or "OUTLINE"
+        local kbOutline = db.actionBarKeyFontOutline or "OUTLINE"
         local chargeSize = db.actionBarChargeFontSize or 14
         if not SetActionBarFonts(fontPath, fontSize, kbSize, outline, kbOutline, chargeSize) then
             needsRetry = true
@@ -1284,7 +1275,7 @@ function BBF.SetCustomFonts()
         local fontName = db.unitFrameValueFont
         local fontPath = LSM:Fetch(LSM.MediaType.FONT, fontName)
         local fontSize = db.unitFrameValueFontSize or 10
-        local outline = db.unitFrameValueFontOutline or "THINOUTLINE"
+        local outline = db.unitFrameValueFontOutline or "OUTLINE"
 
         if not SetUnitFramesValuesFont(fontPath, fontSize, outline) then
             needsRetry = true
