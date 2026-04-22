@@ -381,17 +381,23 @@ function BBF.HideFrames()
                 for j = 1, 5 do
                     local frame = _G["CompactRaidGroup"..j.."Member"..i]
                     if frame and frame.DispelOverlay then
-                        if BetterBlizzFramesDB.hidePartyDispelOverlayKeepBorder then
-                            frame.DispelOverlay.Border:Show()
-                        else
-                            frame.DispelOverlay.Border:Hide()
+                        if frame.DispelOverlay.Border and not frame.DispelOverlay.Border:IsForbidden() then
+                            if BetterBlizzFramesDB.hidePartyDispelOverlayKeepBorder then
+                                frame.DispelOverlay.Border:Show()
+                            else
+                                frame.DispelOverlay.Border:Hide()
+                            end
                         end
-                        if BetterBlizzFramesDB.hidePartyDispelOverlayKeepGradient and frame.DispelOverlay.Gradient then
-                            frame.DispelOverlay.Gradient:Show()
-                        elseif frame.DispelOverlay.Gradient then
-                            frame.DispelOverlay.Gradient:Hide()
+                        if frame.DispelOverlay.Gradient and not frame.DispelOverlay.Gradient:IsForbidden() then
+                            if BetterBlizzFramesDB.hidePartyDispelOverlayKeepGradient then
+                                frame.DispelOverlay.Gradient:Show()
+                            else
+                                frame.DispelOverlay.Gradient:Hide()
+                            end
                         end
-                        frame.DispelOverlay.Background:Hide()
+                        if frame.DispelOverlay.Background and not frame.DispelOverlay.Background:IsForbidden() then
+                            frame.DispelOverlay.Background:Hide()
+                        end
                     end
                 end
             end
