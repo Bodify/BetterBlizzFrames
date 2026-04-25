@@ -1026,6 +1026,139 @@ function BBF.EnableResourceMovement()
     BBF.MovingResource = true
 end
 
+function BBF.RemoveAddonCategories()
+    if not BetterBlizzFramesDB.removeAddonListCategories then return end
+    if BBF.RemovedAddonCategories then return end
+    if AddonList.BetterBlizzHook then return end
+
+    local function RemoveColorCodes(str)
+        return (str:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", ""));
+    end
+
+    local function SortByTitle(a, b)
+        local aTitle = RemoveColorCodes(select(2, C_AddOns.GetAddOnInfo(a.addonIndex)) or ""):lower();
+        local bTitle = RemoveColorCodes(select(2, C_AddOns.GetAddOnInfo(b.addonIndex)) or ""):lower();
+        return aTitle < bTitle;
+    end
+
+    local function RemoveAddonCategories()
+        local dataProvider = CreateTreeDataProvider();
+        local filterText = AddonList.SearchBox:GetText():lower();
+        local character = UnitName("player");
+
+        local enabledGroups = {};
+        local disabledGroups = {};
+        local groupChildren = {};
+
+        for i = 1, C_AddOns.GetNumAddOns() do
+            local name, title = C_AddOns.GetAddOnInfo(i);
+            local group = C_AddOns.GetAddOnMetadata(i, "Group") or name;
+            local groupClean = RemoveColorCodes(group):lower();
+            local titleClean = RemoveColorCodes(title or name):lower();
+
+            local match = #filterText == 0 or titleClean:find(filterText, 1, true) or groupClean:find(filterText, 1, true);
+            if match then
+                local enabledState = C_AddOns.GetAddOnEnableState(i, character);
+                local loadable, reason = C_AddOns.IsAddOnLoadable(i, character);
+                local isEnabled = enabledState > Enum.AddOnEnableState.None;
+                local treatAsDisabled = not isEnabled or reason == "DEP_DISABLED";
+
+                local entry = { addonIndex = i };
+                local targetGroup = treatAsDisabled and disabledGroups or enabledGroups;
+
+                if name == group then
+                    targetGroup[group] = entry; -- this is the parent
+                else
+                    if BetterBlizzFramesDB.removeAddonListCategoriesHideDependancies and treatAsDisabled then
+                        -- Ungroup this dependency addon and put it directly in the disabled list.
+                        disabledGroups[name] = entry;
+                    else
+                        groupChildren[group] = groupChildren[group] or {};
+                        table.insert(groupChildren[group], entry);
+                    end
+                end
+            end
+        end
+
+        local function InsertSortedGroups(groupTable)
+            local sortedGroups = {};
+            for groupName in pairs(groupTable) do
+                table.insert(sortedGroups, groupName);
+            end
+            table.sort(sortedGroups, function(a, b)
+                return RemoveColorCodes(a):lower() < RemoveColorCodes(b):lower();
+            end);
+
+            for _, groupName in ipairs(sortedGroups) do
+                local parent = groupTable[groupName];
+                local parentNode = dataProvider:Insert(parent);
+                local children = groupChildren[groupName];
+                if children then
+                    table.sort(children, SortByTitle);
+                    for _, child in ipairs(children) do
+                        parentNode:Insert(child);
+                    end
+                end
+            end
+        end
+
+        InsertSortedGroups(enabledGroups);
+        InsertSortedGroups(disabledGroups);
+
+        AddonList.ScrollBox:SetDataProvider(dataProvider, ScrollBoxConstants.RetainScrollPosition);
+        AddonList.ScrollBox:Show();
+    end
+
+    -- Hooks
+    AddonList.SearchBox:HookScript("OnTextChanged", RemoveAddonCategories)
+    hooksecurefunc("AddonList_Update", RemoveAddonCategories)
+    AddonList:HookScript("OnShow", function()
+        AddonList.ScrollBox:Hide()
+        C_Timer.After(0, RemoveAddonCategories)
+    end)
+
+    AddonList.ForceLoad:SetSize(19,19)
+    AddonList.ForceLoad:SetPoint("TOP", AddonList, "TOP", -95, -24)
+
+    for i, region in ipairs({AddonList.ForceLoad:GetRegions()}) do
+        if region:GetObjectType() == "FontString" and region:GetText() == ADDON_FORCE_LOAD then
+            region:ClearAllPoints()
+            region:SetPoint("LEFT", AddonList.ForceLoad, "RIGHT", 5, 0)
+            break
+        end
+    end
+
+    local custom = CreateFrame("CheckButton", nil, AddonList, "MinimalCheckboxTemplate")
+    custom:SetPoint("TOPLEFT", AddonList.ForceLoad, "BOTTOMLEFT", 0, 2)
+    custom.Text = custom:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    custom.Text:SetPoint("LEFT", custom, "RIGHT", 5, 0)
+    custom.Text:SetText(L["Label_Hide_Unloaded_Dependency_Addons"])
+    custom:SetSize(19,19)
+
+    custom:SetScript("OnEnter", function(self)
+        GameTooltip:ClearLines()
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+        GameTooltip:SetText(L["Label_Hide_Unloaded_Dependency_Addons"], 1, 1, 1, 1, true)
+        GameTooltip:AddLine(L["Tooltip_Hide_Unloaded_Dependency_Addons_Desc"], nil, nil, nil, true)
+        GameTooltip:Show()
+    end)
+    custom:SetScript("OnLeave", function(self)
+        GameTooltip:ClearLines()
+        GameTooltip:Hide()
+    end)
+
+    custom:SetChecked(BetterBlizzFramesDB.removeAddonListCategoriesHideDependancies or false)
+
+    custom:SetScript("OnClick", function(self)
+        local checked = self:GetChecked()
+        BetterBlizzFramesDB.removeAddonListCategoriesHideDependancies = checked or nil
+        RemoveAddonCategories()
+    end)
+
+    AddonList.BetterBlizzHook = true
+    BBF.RemovedAddonCategories = true
+end
+
 function BBF.ZoomDefaultActionbarIcons(enableZoom)
     if not BetterBlizzFramesDB.zoomActionBarIcons and enableZoom ~= false then return end
     if BetterBlizzFramesDB.zoomActionBarIcons then
@@ -2629,6 +2762,7 @@ First:SetScript("OnEvent", function(_, event, addonName)
             --TurnOnEnabledFeaturesOnLogin()
             BBF.RaiseTargetCastbarStratas()
             BBF.ReduceEditModeAlpha()
+            BBF.RemoveAddonCategories()
 
             C_Timer.After(1, function()
                 BBF.HookStatusBarText()

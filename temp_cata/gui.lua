@@ -6754,8 +6754,14 @@ local function guiMisc()
         BBF.MinimapHider()
     end)
 
+    if BBF.isTBC then
+        guiMisc.removeAddonListCategories = CreateCheckbox("removeAddonListCategories", L["Improved_AddonList"], guiMisc, nil, BBF.RemoveAddonCategories)
+        guiMisc.removeAddonListCategories:SetPoint("TOPLEFT", hideObjectiveTracker, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+        CreateTooltipTwo(guiMisc.removeAddonListCategories, L["Improved_AddonList"], L["Tooltip_Improved_AddonList_Desc"])
+    end
+
     local zoomActionBarIcons = CreateCheckbox("zoomActionBarIcons", L["Zoom_ActionBar_Icons"], guiMisc)
-    zoomActionBarIcons:SetPoint("TOPLEFT", hideObjectiveTracker, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    zoomActionBarIcons:SetPoint("TOPLEFT", guiMisc.removeAddonListCategories or hideObjectiveTracker, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(zoomActionBarIcons, L["Zoom_ActionBar_Icons"], L["Tooltip_Zoom_ActionBar_Icons_Desc"])
     zoomActionBarIcons:HookScript("OnClick", function()
         BBF.ZoomDefaultActionbarIcons(zoomActionBarIcons:GetChecked())
