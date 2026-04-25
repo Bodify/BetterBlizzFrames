@@ -1,3 +1,8 @@
+# BetterBlizzFrames 1.9.5h
+## All versions
+### Bugfix
+- Fix an issue with adding fonts via custom code causing lua errors for others not having the font after Blizzard changes. Now it just uses default font if missing custom font.
+
 # BetterBlizzFrames 1.9.5g
 ## Midnight
 ### Bugfix
