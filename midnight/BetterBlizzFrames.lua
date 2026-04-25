@@ -3025,6 +3025,17 @@ end
 function BBF.ShowCooldownDuringCC()
     if not BetterBlizzFramesDB.fixActionBarCDs then return end
     if BBF.ShowCooldownDuringCCActive then return end
+    BBF.ShowCooldownDuringCCActive = true
+    if C_AddOns.IsAddOnLoaded("Bartender4") then
+        local BARTENDER4_NUM_MAX_BUTTONS = 180
+        for i = 1, BARTENDER4_NUM_MAX_BUTTONS do
+            local button = _G["BT4Button" .. i]
+            if button and button.lossOfControlCooldown then
+                button.lossOfControlCooldown:SetParent(BBF.hiddenFrame)
+            end
+        end
+        return
+    end
     local blizzPrefixes = {
         "ActionButton", "MultiBarBottomLeftButton", "MultiBarBottomRightButton",
         "MultiBarRightButton", "MultiBarLeftButton", "MultiBar5Button",
@@ -3039,7 +3050,6 @@ function BBF.ShowCooldownDuringCC()
             end
         end
     end
-    BBF.ShowCooldownDuringCCActive = true
 end
 
 
