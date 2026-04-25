@@ -1,3 +1,8 @@
+# BetterBlizzFrames 1.9.5i
+## Midnight
+### Tweak
+- Add Bartender4 support for "Fix ActionBar Cooldowns During CC" (Misc).
+
 # BetterBlizzFrames 1.9.5h
 ## All versions
 ### Bugfix
