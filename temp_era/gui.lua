@@ -3505,6 +3505,65 @@ local function guiGeneralTab()
         end
     end)
 
+    local biggerHealthbarsOptionsFrame
+    local function OpenBiggerHealthbarsOptionsWindow()
+        if not biggerHealthbarsOptionsFrame then
+            biggerHealthbarsOptionsFrame = CreateFrame("Frame", "BiggerHealthbarsOptionsFrame", UIParent, "BasicFrameTemplateWithInset")
+            biggerHealthbarsOptionsFrame:SetSize(185, 110)
+            biggerHealthbarsOptionsFrame:SetPoint("CENTER")
+            biggerHealthbarsOptionsFrame:SetFrameStrata("DIALOG")
+            biggerHealthbarsOptionsFrame:SetMovable(true)
+            biggerHealthbarsOptionsFrame:EnableMouse(true)
+            biggerHealthbarsOptionsFrame:RegisterForDrag("LeftButton")
+            biggerHealthbarsOptionsFrame:SetScript("OnDragStart", biggerHealthbarsOptionsFrame.StartMoving)
+            biggerHealthbarsOptionsFrame:SetScript("OnDragStop", biggerHealthbarsOptionsFrame.StopMovingOrSizing)
+            biggerHealthbarsOptionsFrame.title = biggerHealthbarsOptionsFrame:CreateFontString(nil, "OVERLAY")
+            biggerHealthbarsOptionsFrame.title:SetFontObject("GameFontHighlight")
+            biggerHealthbarsOptionsFrame.title:SetPoint("LEFT", biggerHealthbarsOptionsFrame.TitleBg, "LEFT", 5, 0)
+            biggerHealthbarsOptionsFrame.title:SetText(L["Frame_Options"])
+
+            local options = {
+                { var = "biggerHealthbarsNoPlayer", label = L["Ignore_On_Player_Frame"] },
+                { var = "biggerHealthbarsNoTarget", label = L["Ignore_On_Target_Frame"] },
+            }
+
+            local previousCheckbox
+            for i, optData in ipairs(options) do
+                local optCheckbox = CreateFrame("CheckButton", nil, biggerHealthbarsOptionsFrame, "UICheckButtonTemplate")
+                optCheckbox:SetSize(24, 24)
+                optCheckbox.Text:SetText(optData.label)
+
+                if i == 1 then
+                    optCheckbox:SetPoint("TOPLEFT", biggerHealthbarsOptionsFrame, "TOPLEFT", 10, -30)
+                else
+                    optCheckbox:SetPoint("TOPLEFT", previousCheckbox, "BOTTOMLEFT", 0, 3)
+                end
+
+                optCheckbox:SetChecked(BetterBlizzFramesDB[optData.var])
+
+                optCheckbox:SetScript("OnClick", function(self)
+                    BetterBlizzFramesDB[optData.var] = self:GetChecked() or nil
+                    StaticPopup_Show("BBF_CONFIRM_RELOAD")
+                end)
+
+                previousCheckbox = optCheckbox
+            end
+            biggerHealthbarsOptionsFrame:Show()
+        else
+            if biggerHealthbarsOptionsFrame:IsShown() then
+                biggerHealthbarsOptionsFrame:Hide()
+            else
+                biggerHealthbarsOptionsFrame:Show()
+            end
+        end
+    end
+
+    biggerHealthbars:SetScript("OnMouseDown", function(self, button)
+        if button == "RightButton" then
+            OpenBiggerHealthbarsOptionsWindow()
+        end
+    end)
+
 
     local classColorTargetNames = CreateCheckbox("classColorTargetNames", L["Class_Color_Names"], BetterBlizzFrames)
     classColorTargetNames:SetPoint("TOPLEFT", biggerHealthbars, "BOTTOMLEFT", 0, pixelsBetweenBoxes)

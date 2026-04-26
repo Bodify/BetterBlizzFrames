@@ -696,6 +696,8 @@ function BBF.BiggerHealthbars(frame, name)
         
             if BetterBlizzFramesDB.biggerHealthbars then
                 local frameName = self:GetName()
+                if frameName == "TargetFrame" and BetterBlizzFramesDB.biggerHealthbarsNoTarget then return end
+                if frameName == "FocusFrame" and BetterBlizzFramesDB.biggerHealthbarsNoFocus then return end
                 local hideMana = ShouldHideManabar(frameName)
                 if (classification == "minus") then
                     self.borderTexture:SetTexture(hideMana and bigMinusNoManaTexture or "Interface\\Addons\\BetterBlizzFrames\\media\\UI-TargetingFrame-Minus")
@@ -755,9 +757,15 @@ function BBF.HookBiggerHealthbars()
         local playerName = PlayerFrame.bbfName or PlayerName
         local targetName = TargetFrame.bbfName or TargetFrameTextureFrameName
         local focusName = FocusFrame.bbfName or FocusFrameTextureFrameName
-        BBF.BiggerHealthbars("PlayerFrame", playerName)
-        BBF.BiggerHealthbars("TargetFrame", targetName)
-        BBF.BiggerHealthbars("FocusFrame",focusName)
+        if not BetterBlizzFramesDB.biggerHealthbarsNoPlayer then
+            BBF.BiggerHealthbars("PlayerFrame", playerName)
+        end
+        if not BetterBlizzFramesDB.biggerHealthbarsNoTarget then
+            BBF.BiggerHealthbars("TargetFrame", targetName)
+        end
+        if not BetterBlizzFramesDB.biggerHealthbarsNoFocus then
+            BBF.BiggerHealthbars("FocusFrame", focusName)
+        end
 
         -- BBF.BiggerHealthbars("PlayerFrame", PlayerName)
         -- BBF.BiggerHealthbars("TargetFrame", TargetFrameTextureFrameName)
@@ -768,7 +776,13 @@ function BBF.HookBiggerHealthbars()
 end
 
 function BBF.HookHideManabars()
-    if BetterBlizzFramesDB.biggerHealthbars then return end
+    local function isHandledByBiggerHB(frameName)
+        if not BetterBlizzFramesDB.biggerHealthbars then return false end
+        if frameName == "PlayerFrame" then return not BetterBlizzFramesDB.biggerHealthbarsNoPlayer end
+        if frameName == "TargetFrame" then return not BetterBlizzFramesDB.biggerHealthbarsNoTarget end
+        if frameName == "FocusFrame" then return not BetterBlizzFramesDB.biggerHealthbarsNoFocus end
+        return false
+    end
 
     local frames = {
         { name = "PlayerFrame", setting = "hidePlayerManabar" },
@@ -777,7 +791,7 @@ function BBF.HookHideManabars()
     }
 
     for _, info in ipairs(frames) do
-        if BetterBlizzFramesDB[info.setting] then
+        if BetterBlizzFramesDB[info.setting] and not isHandledByBiggerHB(info.name) then
             HideManabarElements(info.name)
             local healthbar = _G[info.name.."HealthBar"]
             if healthbar then
@@ -815,7 +829,7 @@ function BBF.HookHideManabars()
             if not self or not self.unit then return end
             local frameName = self:GetName()
             if not ShouldHideManabar(frameName) then return end
-            if BetterBlizzFramesDB.biggerHealthbars then return end
+            if isHandledByBiggerHB(frameName) then return end
             local classification = UnitClassification(self.unit)
             if classification == "minus" then
                 self.borderTexture:SetTexture(minusNoManaTexture)

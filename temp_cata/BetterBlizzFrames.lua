@@ -1933,8 +1933,8 @@ local function IsFontFileValid(path)
 		return false
 	end
 
-	local ok, result = pcall(FontValidatorString.SetFont, FontValidatorString, path, 12, "")
-	if not ok or result == false then
+	local ok = pcall(FontValidatorString.SetFont, FontValidatorString, path, 12, "")
+	if not ok then
 		return false
 	end
 
