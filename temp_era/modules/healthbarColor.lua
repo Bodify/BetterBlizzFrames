@@ -671,6 +671,7 @@ function BBF.BiggerHealthbars(frame, name)
 
 
         -- Statustext
+        local statusTextY = hideMana and 6 or 12
         if leftTextMana then
             local point, relativeTo, relativePoint, xOfs, yOfs = leftTextMana:GetPoint()
             local newXOffset = xOfs + 1
@@ -680,18 +681,18 @@ function BBF.BiggerHealthbars(frame, name)
             local point, relativeTo, relativePoint, xOfs, yOfs = leftText:GetPoint()
             local newXOffset = xOfs + 1
             if not leftTextMana then
-                BBF.MoveRegion(leftText, point, relativeTo, relativePoint, xOfs, 6)
+                BBF.MoveRegion(leftText, point, relativeTo, relativePoint, xOfs, statusTextY)
             else
-                BBF.MoveRegion(leftText, point, relativeTo, relativePoint, newXOffset, 6)
+                BBF.MoveRegion(leftText, point, relativeTo, relativePoint, newXOffset, statusTextY)
             end
         end
 
         if rightText then
             local point, relativeTo, relativePoint, xOfs, yOfs = rightText:GetPoint()
-            BBF.MoveRegion(rightText, point, relativeTo, relativePoint, xOfs, 6)
+            BBF.MoveRegion(rightText, point, relativeTo, relativePoint, xOfs, statusTextY)
 
             local point, relativeTo, relativePoint, xOfs, yOfs = centerText:GetPoint()
-            BBF.MoveRegion(centerText, point, relativeTo, relativePoint, xOfs, 6)
+            BBF.MoveRegion(centerText, point, relativeTo, relativePoint, xOfs, statusTextY)
         end
         if healthbar.MhnLeftText then
             local point, relativeTo, relativePoint, xOfs, yOfs = healthbar.MhnLeftText:GetPoint()
