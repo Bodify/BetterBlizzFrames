@@ -2879,6 +2879,17 @@ First:SetScript("OnEvent", function(_, event, addonName)
             --TurnOnEnabledFeaturesOnLogin()
             BBF.RaiseTargetCastbarStratas()
 
+            if not BetterBlizzFramesDB.disableHealAbsorbRecolor then
+                local function SkinUnitFrameHealAbsorbBar(bar)
+                    bar.Fill:SetTexture(texture, true, true)
+                    bar.Fill:SetVertexColor(1, 1, 1, alpha)
+                end
+
+                SkinUnitFrameHealAbsorbBar(TargetFrame.HealthBar.HealAbsorbBar)
+                SkinUnitFrameHealAbsorbBar(FocusFrame.HealthBar.HealAbsorbBar)
+                SkinUnitFrameHealAbsorbBar(PlayerFrame.HealthBar.HealAbsorbBar)
+            end
+
             C_Timer.After(1, function()
                 BBF.HookStatusBarText()
                 BBF.FontColors()
