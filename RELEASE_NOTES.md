@@ -2,6 +2,9 @@
 ## Midnight
 ### Tweak
 - Update Dissonance profle (www.twitch.tv/dissonancewow)
+## Mist of Pandaria
+### Tweak
+- Healing Absorb on Player/Target/Focus now appear identical as the ones on raidframes (dark overlay instead of green tint).
 ## Classic Era
 ### Bugfix
 - Fix status text on healthbars not being postioned correctly with Bigger Healthbars enabled from a previous patch adding the hide mana settings.
