@@ -1,3 +1,11 @@
+# BetterBlizzFrames 1.9.5k
+## Midnight
+### Tweak
+- Update Dissonance profle (www.twitch.tv/dissonancewow)
+## Classic Era
+### Bugfix
+- Fix status text on healthbars not being postioned correctly with Bigger Healthbars enabled from a previous patch adding the hide mana settings.
+
 # BetterBlizzFrames 1.9.5j
 ## All versions
 ### Bugfix
