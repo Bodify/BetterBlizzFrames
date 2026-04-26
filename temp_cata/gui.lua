@@ -6480,17 +6480,19 @@ local function guiFrameAuras()
     personalAuraSettings:SetPoint("TOP", PlayerAuraBorder, "BOTTOM", 0, -5)
     personalAuraSettings:SetText(L["Label_Player_Aura_Settings"])
 
-    local repositionBuffFrame = CreateCheckbox("repositionBuffFrame", L["Move_Auras"], contentFrame)
-    repositionBuffFrame:SetPoint("LEFT", personalAuraSettings, "RIGHT", 2, 0)
-    repositionBuffFrame:HookScript("OnClick", function(self)
-        BBF.RepositionBuffFrame()
-    end)
-    CreateTooltipTwo(repositionBuffFrame, L["Tooltip_Move_Player_Auras_Desc"], L["Tooltip_Move_Player_Auras_Desc"])
-    repositionBuffFrame:HookScript("OnClick", function(self)
-        if not self:GetChecked() then
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
-        end
-    end)
+    if not BBF.isTBC then
+        local repositionBuffFrame = CreateCheckbox("repositionBuffFrame", L["Move_Auras"], contentFrame)
+        repositionBuffFrame:SetPoint("LEFT", personalAuraSettings, "RIGHT", 2, 0)
+        repositionBuffFrame:HookScript("OnClick", function(self)
+            BBF.RepositionBuffFrame()
+        end)
+        CreateTooltipTwo(repositionBuffFrame, L["Tooltip_Move_Player_Auras_Desc"], L["Tooltip_Move_Player_Auras_Desc"])
+        repositionBuffFrame:HookScript("OnClick", function(self)
+            if not self:GetChecked() then
+                StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            end
+        end)
+    end
 
 
     local targetAndFocusAuraSettings = contentFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
@@ -6593,14 +6595,16 @@ local function guiFrameAuras()
     local playerAuraBuffScale = CreateSlider(contentFrame, "Aura Size", 0.5, 2, 0.01, "playerAuraBuffScale")
     playerAuraBuffScale:SetPoint("TOP", PlayerAuraBorder, "BOTTOM", 0, -35)
 
-    local playerAuraXOffset = CreateSlider(contentFrame, "PlayerAura x offset", -200, 100, 1, "playerAuraXOffset", "X")
-    playerAuraXOffset:SetPoint("TOP", playerAuraBuffScale, "BOTTOM", 0, -15)
+    if not BBF.isTBC then
+        contentFrame.playerAuraXOffset = CreateSlider(contentFrame, "PlayerAura x offset", -200, 100, 1, "playerAuraXOffset", "X")
+        contentFrame.playerAuraXOffset:SetPoint("TOP", playerAuraBuffScale, "BOTTOM", 0, -15)
 
-    local playerAuraYOffset = CreateSlider(contentFrame, "PlayerAura y offset", -200, 12, 1, "playerAuraYOffset", "Y")
-    playerAuraYOffset:SetPoint("TOP", playerAuraXOffset, "BOTTOM", 0, -15)
+        contentFrame.playerAuraYOffset = CreateSlider(contentFrame, "PlayerAura y offset", -200, 12, 1, "playerAuraYOffset", "Y")
+        contentFrame.playerAuraYOffset:SetPoint("TOP", contentFrame.playerAuraXOffset, "BOTTOM", 0, -15)
+    end
 
     local playerAuraSpacingX = CreateSlider(playerAuraFiltering, "Horizontal Padding", -2, 10, 1, "playerAuraSpacingX", "X")
-    playerAuraSpacingX:SetPoint("TOP", playerAuraYOffset, "BOTTOM", 0, -15)
+    playerAuraSpacingX:SetPoint("TOP", BBF.isTBC and playerAuraBuffScale or contentFrame.playerAuraYOffset, "BOTTOM", 0, -15)
     CreateTooltip(playerAuraSpacingX, L["Tooltip_Horizontal_Aura_Padding"], "ANCHOR_LEFT")
 
     local playerAuraSpacingY = CreateSlider(playerAuraFiltering, "Vertical Padding", -10, 10, 1, "playerAuraSpacingY", "Y")
