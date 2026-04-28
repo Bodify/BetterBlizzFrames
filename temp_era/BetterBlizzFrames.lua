@@ -521,7 +521,7 @@ ClickthroughFrames:RegisterEvent("PLAYER_REGEN_DISABLED")
 
 function BBF.PlayerElite(mode)
     local playerElite = PlayerFrameTexture
-    local bigHealthbars = BetterBlizzFramesDB["biggerHealthbars"]
+    local bigHealthbars = BetterBlizzFramesDB["biggerHealthbars"] and not BetterBlizzFramesDB.biggerHealthbarsNoPlayer
     local hideMana = BetterBlizzFramesDB.hidePlayerManabar
 
     -- Set Elite style according to value

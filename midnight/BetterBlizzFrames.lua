@@ -3032,6 +3032,18 @@ function BBF.ShowCooldownDuringCC()
             local button = _G["BT4Button" .. i]
             if button and button.lossOfControlCooldown then
                 button.lossOfControlCooldown:SetParent(BBF.hiddenFrame)
+                hooksecurefunc(button.lossOfControlCooldown, "SetCooldownFromDurationObject", function()
+                    local inCC = C_LossOfControl.GetActiveLossOfControlDataCount() > 0
+                    if not inCC then return end
+                    button.cooldown:Show()
+                    local actionType, id = GetActionInfo(button.action)
+                    if actionType == "spell" or actionType == "macro" then
+                        local cd = C_Spell.GetSpellCooldownDuration(id)
+                        if cd then
+                            button.cooldown:SetCooldownFromDurationObject(cd)
+                        end
+                    end
+                end)
             end
         end
         return
@@ -3050,6 +3062,19 @@ function BBF.ShowCooldownDuringCC()
             end
         end
     end
+
+    hooksecurefunc("ActionButton_UpdateCooldown", function(btn)
+        local inCC = C_LossOfControl.GetActiveLossOfControlDataCount() > 0
+        if not inCC then return end
+
+        local actionType, id = GetActionInfo(btn.action)
+        if actionType == "spell" or actionType == "macro" then
+            local cd = C_Spell.GetSpellCooldownDuration(id)
+            if cd then
+                btn.cooldown:SetCooldownFromDurationObject(cd)
+            end
+        end
+    end)
 end
 
 
