@@ -52,7 +52,7 @@ local hooked = {}
 
 local function ApplyBorder(auraFrame, r, g, b)
     if not auraFrame.bbfBorder then
-        local border = auraFrame:CreateTexture(nil, "OVERLAY", nil, 7)
+        local border = auraFrame:CreateTexture(nil, "OVERLAY", nil, -1)
         local icon = auraFrame.Icon or auraFrame.icon
         if pixelBorderAuras then
             border:SetAtlas("communities-create-avatar-border-hover")
