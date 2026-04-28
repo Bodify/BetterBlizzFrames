@@ -1,3 +1,10 @@
+# BetterBlizzFrames 1.9.6
+## Midnight
+### New
+- Cast Target Text: Show true target of who the spell is being cast on (Castbars section).
+- Cast On Me Highlight: Show red highlight around the castbar when the cast is being cast on the player (Castbars section).
+![bbfTargetText](https://github.com/user-attachments/assets/d4fde923-9c26-4066-98fd-4e012c2efd7f)
+
 # BetterBlizzFrames 1.9.5l
 ## Midnight
 ### Tweak
