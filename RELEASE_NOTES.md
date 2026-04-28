@@ -1,23 +1,9 @@
-# BetterBlizzFrames 1.9.5k
+# BetterBlizzFrames 1.9.5l
 ## Midnight
 ### Tweak
-- Update Dissonance profle (www.twitch.tv/dissonancewow)
-## Mist of Pandaria
-### Tweak
-- Healing Absorb on Player/Target/Focus now appear identical as the ones on raidframes (dark overlay instead of green tint).
-## Classic Era
+- Tweak darkmode aura border to show beneath the purge texture on target/focus frames.
 ### Bugfix
-- Fix status text on healthbars not being postioned correctly with Bigger Healthbars enabled from a previous patch adding the hide mana settings.
-
-# BetterBlizzFrames 1.9.5j
-## All versions
+- Fix the Midnight version of "Fix ActionBar Cooldowns during CC" (Misc) not working properly as intended when you get CC'ed.
+## All classics
 ### Bugfix
-- Fix issue with custom font addition validation causing fonts to not be added.
-## The Burning Crusade
-### New
-- Add "Improved Addon List" setting to TBC as well (Misc).
-### Tweak
-- Update absorb stuff to work on TBC. The accuracy of it is TBD.
-## All Classics
-### New
-- Add right-click options for "Bigger Healthbars" setting allowing you to disable it on individual frames.
+- Fix combination of Bigger Healthbars (and disabled on PlayerFrame) + PlayerFrame No Mana + Elite Frame texture causing it to use the wrong texture.
