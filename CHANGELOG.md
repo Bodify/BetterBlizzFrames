@@ -1,3 +1,8 @@
+# BetterBlizzFrames 1.9.6c
+## Midnight
+### Tweak
+- Fix and improve PlayerFrame stealth indicator (Misc) for Midnight.
+
 # BetterBlizzFrames 1.9.6b
 ## All versions
 ### Tweak
