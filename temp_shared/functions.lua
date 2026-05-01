@@ -175,3 +175,59 @@ function BBF.ActionBarCDNumberSize(reset)
 
 	BBF.actionBarCDNumberSizeActive = BetterBlizzFramesDB.actionBarCDNumberSizeChange or nil
 end
+
+local LSM = LibStub("LibSharedMedia-3.0")
+local FontValidatorString = UIParent:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+
+local function IsFontFileValid(path)
+	if type(path) ~= "string" or path == "" then
+		return false
+	end
+
+	local ok = pcall(FontValidatorString.SetFont, FontValidatorString, path, 12, "")
+	if not ok then
+		return false
+	end
+
+	return path
+end
+
+BBF.LSM = setmetatable({}, {
+	__index = function(_, k)
+		if k == "Register" then
+			return function(_, mediaType, key, data, langMask)
+				if mediaType == "font" and not IsFontFileValid(data) then
+					return false
+				end
+				return LSM:Register(mediaType, key, data, langMask)
+			end
+		end
+
+		return LSM[k]
+	end
+})
+
+BBF.allLocales = LSM.LOCALE_BIT_western+LSM.LOCALE_BIT_ruRU+LSM.LOCALE_BIT_zhCN+LSM.LOCALE_BIT_zhTW+LSM.LOCALE_BIT_koKR
+
+function BBF.AddFont(name)
+	if type(name) ~= "string" then
+		C_Timer.After(4, function()
+			BBF.Print(L["Print_AddFont_Name_Not_String"])
+		end)
+		return
+	end
+	if name:sub(-4):lower() == ".ttf" then
+		name = name:sub(1, -5)
+	end
+	BBF.LSM:Register("font", name, "Interface\\AddOns\\CustomMedia\\" .. name .. ".ttf", BBF.allLocales)
+end
+
+function BBF.AddTexture(name)
+	if type(name) ~= "string" then
+		C_Timer.After(4, function()
+			BBF.Print(L["Print_AddTexture_Name_Not_String"])
+		end)
+		return
+	end
+	BBF.LSM:Register("statusbar", name, "Interface\\AddOns\\CustomMedia\\" .. name)
+end

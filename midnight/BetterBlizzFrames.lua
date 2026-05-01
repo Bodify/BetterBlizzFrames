@@ -3190,37 +3190,7 @@ end)
 
 
 local LSM = LibStub("LibSharedMedia-3.0")
-local FontValidatorString = UIParent:CreateFontString(nil, "OVERLAY", "GameFontNormal")
 
-local function IsFontFileValid(path)
-	if type(path) ~= "string" or path == "" then
-		return false
-	end
-
-	local ok = pcall(FontValidatorString.SetFont, FontValidatorString, path, 12, "")
-	if not ok then
-		return false
-	end
-
-	return path
-end
-
-BBF.LSM = setmetatable({}, {
-	__index = function(_, k)
-		if k == "Register" then
-			return function(_, mediaType, key, data, langMask)
-				if mediaType == "font" and not IsFontFileValid(data) then
-					return false
-				end
-				return LSM:Register(mediaType, key, data, langMask)
-			end
-		end
-
-		return LSM[k]
-	end
-})
-
-BBF.allLocales = LSM.LOCALE_BIT_western+LSM.LOCALE_BIT_ruRU+LSM.LOCALE_BIT_zhCN+LSM.LOCALE_BIT_zhTW+LSM.LOCALE_BIT_koKR
 LSM:Register("statusbar", "Blizzard DF", [[Interface\TargetingFrame\UI-TargetingFrame-BarFill]])
 LSM:Register("statusbar", "Blizzard CF", [[Interface\AddOns\BetterBlizzFrames\media\ui-statusbar-cf]])
 LSM:Register("statusbar", "Blizzard Retail Bar", [[Interface\AddOns\BetterBlizzFrames\media\blizzTex\BlizzardRetailBar]])

@@ -1,3 +1,11 @@
+# BetterBlizzFrames 1.9.6b
+## Midnight
+### Bugfix
+- Fix forbidden error on darkmode tooltip hook.
+## The Burning Crusade
+### Bugfix
+- Fix custom code font validator
+
 # BetterBlizzFrames 1.9.6
 ## Midnight
 ### New
