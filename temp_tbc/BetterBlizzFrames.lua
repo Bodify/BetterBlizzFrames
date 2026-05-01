@@ -2063,27 +2063,19 @@ end
 
 
 local LSM = LibStub("LibSharedMedia-3.0")
--- No template: an inherited template font can interfere with SetFont overrides
-local FontValidatorString = UIParent:CreateFontString(nil, "OVERLAY")
-
-local FALLBACK_FONT = STANDARD_TEXT_FONT or "Fonts\\FRIZQT__.TTF"
+local FontValidatorString = UIParent:CreateFontString(nil, "OVERLAY", "GameFontNormal")
 
 local function IsFontFileValid(path)
 	if type(path) ~= "string" or path == "" then
 		return false
 	end
 
-	-- Reset to a known-good font first so a prior failed SetFont can't
-	-- leave GetFont() returning a stale (matching) path.
-	pcall(FontValidatorString.SetFont, FontValidatorString, FALLBACK_FONT, 12, "")
-
 	local ok = pcall(FontValidatorString.SetFont, FontValidatorString, path, 12, "")
 	if not ok then
 		return false
 	end
 
-	-- Authoritative check: WoW only updates the font on a successful load.
-	return FontValidatorString:GetFont() == path
+	return path
 end
 
 BBF.LSM = setmetatable({}, {
