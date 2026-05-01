@@ -1,3 +1,8 @@
+# BetterBlizzFrames 1.9.6d
+## Midnight
+### Tweak
+- Fix "Fix ActionBar Cooldowns During CC" removing existing cooldown entirely on macros for items (Trinket macro).
+
 # BetterBlizzFrames 1.9.6c
 ## Midnight
 ### Tweak
