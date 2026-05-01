@@ -1,3 +1,14 @@
+# BetterBlizzFrames 1.9.6b
+## All versions
+### Tweak
+- Add helper functions to make adding fonts & textures via custom code a little simpler. Guide in Font & Textures section updated, can now just use "BBF.AddFont("Fontname")" and "BBF.AddTexture("Texturename")".
+## Midnight
+### Bugfix
+- Fix forbidden error on darkmode tooltip hook.
+## The Burning Crusade
+### Bugfix
+- Fix custom code font validator
+
 # BetterBlizzFrames 1.9.6
 ## Midnight
 ### New
