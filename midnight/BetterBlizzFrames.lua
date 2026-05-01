@@ -3067,8 +3067,8 @@ function BBF.ShowCooldownDuringCC()
         local inCC = C_LossOfControl.GetActiveLossOfControlDataCount() > 0
         if not inCC then return end
 
-        local actionType, id = GetActionInfo(btn.action)
-        if actionType == "spell" or actionType == "macro" then
+        local actionType, id, subType = GetActionInfo(btn.action)
+        if actionType == "spell" or actionType == "macro" and subType ~= "item" then
             local cd = C_Spell.GetSpellCooldownDuration(id)
             if cd then
                 btn.cooldown:SetCooldownFromDurationObject(cd)
