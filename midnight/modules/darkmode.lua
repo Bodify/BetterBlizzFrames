@@ -377,7 +377,8 @@ function BBF.DarkmodeFrames(bypass)
                 if tip and tip.NineSlice then
                     tip:HookScript("OnShow", function()
                         for key, region in pairs(tip.NineSlice) do
-                            if key == "Center" then
+                            if key == "Center" and region then
+                                if region:IsForbidden() then return end
                                 applySettings(region, tooltipSat, 0)
                                 region:SetDrawLayer("BACKGROUND", -8)
                             end
