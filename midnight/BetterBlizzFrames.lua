@@ -5259,6 +5259,7 @@ First:SetScript("OnEvent", function(_, event, addonName)
         --BBF.DruidBlueComboPoints() isMidnight
         BBF.DruidAlwaysShowCombos()
         BBF.RemoveAddonCategories()
+        BBF.ExternalDefensivesClickthrough()
         if BetterBlizzFramesDB.healerIndicator and BetterBlizzFramesDB.healerIndicatorPortrait and BetterBlizzFramesDB.classPortraitsUseSpecIcons then
             BBF.HealerIndicatorCaller()
         else
@@ -5630,4 +5631,21 @@ function BBF.CreateBigDebuffs()
             end
         end
     end)
+end
+
+function BBF.ExternalDefensivesClickthrough()
+    if not ExternalDefensivesFrame and ExternalDefensivesFrame.auraFrames then return end
+    if BetterBlizzFramesDB.externalDefensivesHideTooltip then
+        for _, auraFrame in ipairs(ExternalDefensivesFrame.auraFrames) do
+            auraFrame:EnableMouse(false)
+        end
+        BBF.externalDefensivesHideTooltip = true
+    elseif BBF.externalDefensivesHideTooltip then
+        for _, auraFrame in ipairs(ExternalDefensivesFrame.auraFrames) do
+            auraFrame:EnableMouse(true)
+        end
+    end
+    for _, auraFrame in ipairs(ExternalDefensivesFrame.auraFrames) do
+        auraFrame:SetMouseClickEnabled(false)
+    end
 end
