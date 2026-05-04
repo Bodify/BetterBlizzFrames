@@ -458,18 +458,21 @@ local function GetNameWithoutRealm(frame)
     return UnitFullName(frame.unit)
 end
 
+local function UnitIsProbablyUnit(unit1, unit2)
+    if not UnitExists(unit1) or not UnitExists(unit2) then return end
+
+    return UnitClassBase(unit1) == UnitClassBase(unit2)
+       and UnitRace(unit1) == UnitRace(unit2)
+       and UnitHonorLevel(unit1) == UnitHonorLevel(unit2)
+end
+
 local function SetArenaName(frame, unit, textObject)
     if UnitIsUnit(unit, "player") then return end
+    if not UnitIsFriend(unit, "player") then return end
     local specName = GetSpecName(unit)
     local nameText
-    local isParty1 = UnitIsUnit(unit, "party1")
-    local partyID
-    if not issecretvalue(isParty1) then
-        partyID = isParty1 and " 1" or " 2"
-    else
-        partyID = " ?"
-    end
-
+    local isParty1 = UnitIsProbablyUnit(unit, "party1")
+    local partyID = isParty1 and " 1" or " 2"
 
     if specName then
         if showSpecName and showArenaID then
@@ -1399,9 +1402,16 @@ local unitToArenaName = {
 }
 
 local function GetArenaUnitName(unit)
-    for arenaUnit, arenaName in pairs(unitToArenaName) do
-        if UnitIsUnit(unit, arenaUnit) then
-            return arenaName
+    local isFriendly = UnitIsFriend(unit, "player")
+    local candidates
+    if isFriendly then
+        candidates = { "party1", "party2" }
+    else
+        candidates = { "arena1", "arena2", "arena3" }
+    end
+    for _, arenaUnit in ipairs(candidates) do
+        if UnitExists(arenaUnit) and UnitIsProbablyUnit(unit, arenaUnit) then
+            return unitToArenaName[arenaUnit]
         end
     end
     return nil

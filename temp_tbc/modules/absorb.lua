@@ -247,6 +247,7 @@ local function UpdateRelevantUnits()
     -- Add main units
     AddUnit("player")
     AddUnit("target")
+    AddUnit("focus")
 
     -- Add party units (party1-4)
     for i = 1, 4 do
@@ -263,9 +264,41 @@ end
 
 
 
+-- In TBC, enemy players (typically cross-faction in the open world, or any
+-- hostile player elsewhere) report UnitHealth/UnitHealthMax as a 0-100
+-- percentage instead of real values. Detect that so we can fall back to
+-- MiniHealthNumbersApi or skip absorb math entirely.
+local function UnitHasNoHealthInfo(unit)
+    if unit ~= "target" and unit ~= "focus" then return false end
+    if not UnitExists(unit) or not UnitIsPlayer(unit) then return false end
+    if not UnitCanAttack("player", unit) then return false end
+    return UnitHealthMax(unit) == 100
+end
+
+-- For enemy units in TBC, UnitHealth returns a percentage (0-100)
+-- instead of an actual value. MiniHealthNumbersApi (if installed) provides
+-- the real values via combat log scraping, so prefer that when available.
+local function GetUnitHealth(unit)
+    if UnitHasNoHealthInfo(unit) then
+        if MiniHealthNumbersApi and MiniHealthNumbersApi.v1 then
+            local hp, max = MiniHealthNumbersApi.v1:GetHealth(unit)
+            if hp and max then
+                return hp, max
+            end
+        end
+        return nil
+    end
+    return UnitHealth(unit), UnitHealthMax(unit)
+end
+
 local function ComputeAbsorb(unit)
     local totalAbsorb = 0
     local maxAbsorbIcon = nil
+
+    if UnitHasNoHealthInfo(unit) and not MiniHealthNumbersApi then
+        return totalAbsorb, maxAbsorbIcon
+    end
+
     local bonusHealing = GetSpellBonusHealing()
     local level = UnitLevel("player")
 
@@ -527,10 +560,16 @@ local absorbHooked = false
 function BBF.AbsorbCaller()
     UpdateAbsorbIndicator(PlayerFrame, "player")
     UpdateAbsorbIndicator(TargetFrame, "target")
+    if FocusFrame then UpdateAbsorbIndicator(FocusFrame, "focus") end
     if not BetterBlizzFramesDB.absorbIndicator and not BetterBlizzFramesDB.absorbIndicatorTestMode then
         if TargetFrame.absorbIcon and TargetFrame.absorbIcon.border then TargetFrame.absorbIcon.border:SetAlpha(0) end
         if TargetFrame.absorbIndicator then TargetFrame.absorbIndicator:SetAlpha(0) end
         if TargetFrame.absorbIcon then TargetFrame.absorbIcon:SetAlpha(0) end
+        if FocusFrame then
+            if FocusFrame.absorbIcon and FocusFrame.absorbIcon.border then FocusFrame.absorbIcon.border:SetAlpha(0) end
+            if FocusFrame.absorbIndicator then FocusFrame.absorbIndicator:SetAlpha(0) end
+            if FocusFrame.absorbIcon then FocusFrame.absorbIcon:SetAlpha(0) end
+        end
         if PlayerFrame.absorbIndicator then PlayerFrame.absorbIndicator:SetAlpha(0) end
         if PlayerFrame.absorbIcon then PlayerFrame.absorbIcon:SetAlpha(0) end
         if PlayerFrame.absorbIcon and PlayerFrame.absorbIcon.border then PlayerFrame.absorbIcon.border:SetAlpha(0) end
@@ -543,6 +582,7 @@ function BBF.AbsorbCaller()
         frame:RegisterEvent("UNIT_MAXHEALTH")
         frame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
         frame:RegisterEvent("PLAYER_TARGET_CHANGED")
+        frame:RegisterEvent("PLAYER_FOCUS_CHANGED")
         frame:SetScript("OnEvent", function(self, event, ...)
             if event == "PLAYER_ENTERING_WORLD" or event == "GROUP_ROSTER_UPDATE" then
                 BBF.AbsorbCaller()
@@ -552,6 +592,8 @@ function BBF.AbsorbCaller()
                     UpdateAbsorbIndicator(PlayerFrame, unit)
                 elseif unit == "target" then
                     UpdateAbsorbIndicator(TargetFrame, unit)
+                elseif unit == "focus" and FocusFrame then
+                    UpdateAbsorbIndicator(FocusFrame, unit)
                 end
             elseif event == "COMBAT_LOG_EVENT_UNFILTERED" then
                 local timestamp, subEvent, _, sourceGUID, sourceName, sourceFlags, sourceRaidFlags, destGUID, destName = CombatLogGetCurrentEventInfo()
@@ -569,14 +611,18 @@ function BBF.AbsorbCaller()
                     end
                     UpdateAbsorbIndicator(PlayerFrame, "player")
                     UpdateAbsorbIndicator(TargetFrame, "target")
+                    if FocusFrame then UpdateAbsorbIndicator(FocusFrame, "focus") end
                 end
             elseif event == "PLAYER_TARGET_CHANGED" then
                 UpdateAbsorbIndicator(TargetFrame, "target")
+            elseif event == "PLAYER_FOCUS_CHANGED" then
+                if FocusFrame then UpdateAbsorbIndicator(FocusFrame, "focus") end
             end
         end)
 
         RaiseStrataOnHpText("PlayerFrame")
         RaiseStrataOnHpText("TargetFrame")
+        if FocusFrame then pcall(RaiseStrataOnHpText, "FocusFrame") end
 
         absorbHooked = true
     end
@@ -660,8 +706,13 @@ local function UpdateAbsorbOnFrame(unit, frame, absorbValue)
         return
     end
 
-    local currentHealth, maxHealth = UnitHealth(unit), UnitHealthMax(unit)
-    if maxHealth <= 0 then return end
+    local currentHealth, maxHealth = GetUnitHealth(unit)
+    if not currentHealth or not maxHealth or maxHealth <= 0 then
+        frame.absorbGlow:Hide()
+        frame.absorbOverlay:Hide()
+        frame.absorbBar:Hide()
+        return
+    end
     local totalAbsorb = absorbValue or 0
     local missingHealth = maxHealth - currentHealth
     local totalWidth = healthBar:GetWidth()
@@ -723,6 +774,7 @@ CataAbsorb.playerName = UnitName("player")
 local validUnits = {
     ["player"] = true,
     ["target"] = true,
+    ["focus"] = true,
 }
 
 -- Add party units (party1 to party5)
@@ -742,9 +794,13 @@ function BBF.UpdateValidUnits()
     if ufEnabled then
         CataAbsorb.unitFrames["player"] = PlayerFrame
         CataAbsorb.unitFrames["target"] = TargetFrame
+        if FocusFrame then
+            CataAbsorb.unitFrames["focus"] = FocusFrame
+        end
     else
         CataAbsorb.unitFrames["player"] = nil
         CataAbsorb.unitFrames["target"] = nil
+        CataAbsorb.unitFrames["focus"] = nil
     end
 
     for i = 1, 40 do
@@ -759,9 +815,8 @@ local function UnitValid(unit)
 end
 
 local function SetupState(allstates, unit, absorb)
-    if absorb > 0 then
-        local maxHealth = UnitHealthMax(unit)
-        local health = UnitHealth(unit)
+    local health, maxHealth = GetUnitHealth(unit)
+    if absorb > 0 and health and maxHealth and maxHealth > 0 then
         local healthPercent = health / maxHealth
         local healthDeficitPercent = 1.0 - healthPercent
         local absorbPercent = absorb / maxHealth
@@ -866,7 +921,7 @@ local function OnEvent(self, event, ...)
                     computedAbsorbs[unit] = ComputeAbsorb(unit)
                     if subEvent == "SPELL_AURA_APPLIED" or subEvent == "SPELL_AURA_REFRESH" then
                         local spellId = select(12, CombatLogGetCurrentEventInfo())
-                        if CataAbsorb.spells[spellId] then
+                        if CataAbsorb.spells[spellId] and CataAbsorb.activeAbsorbs[unit] then
                             CataAbsorb.activeAbsorbs[unit][spellId] = nil
                             computedAbsorbs[unit] = ComputeAbsorb(unit)
                             CataAbsorb.activeAbsorbs[unit][spellId] = computedAbsorbs[unit]
@@ -899,6 +954,9 @@ local function OnEvent(self, event, ...)
     elseif event == "PLAYER_TARGET_CHANGED" then
         UpdateRelevantUnits()
         RefreshUnit(CataAbsorb.allstates, "target")
+    elseif event == "PLAYER_FOCUS_CHANGED" then
+        UpdateRelevantUnits()
+        RefreshUnit(CataAbsorb.allstates, "focus")
     end
 end
 

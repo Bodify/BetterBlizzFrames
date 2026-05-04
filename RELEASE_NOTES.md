@@ -1,37 +1,12 @@
-# BetterBlizzFrames 1.9.6d
-## Midnight
-### Tweak
-- Fix "Fix ActionBar Cooldowns During CC" removing existing cooldown entirely on macros for items (Trinket macro).
-
-# BetterBlizzFrames 1.9.6c
-## Midnight
-### Tweak
-- Fix and improve PlayerFrame stealth indicator (Misc) for Midnight.
-
-# BetterBlizzFrames 1.9.6b
-## All versions
-### Tweak
-- Add helper functions to make adding fonts & textures via custom code a little simpler. Guide in Font & Textures section updated, can now just use "BBF.AddFont("Fontname")" and "BBF.AddTexture("Texturename")".
-## Midnight
-### Bugfix
-- Fix forbidden error on darkmode tooltip hook.
-## The Burning Crusade
-### Bugfix
-- Fix custom code font validator
-
-# BetterBlizzFrames 1.9.6
+# BetterBlizzFrames 1.9.7
 ## Midnight
 ### New
-- Cast Target Text: Show true target of who the spell is being cast on (Castbars section).
-- Cast On Me Highlight: Show red highlight around the castbar when the cast is being cast on the player (Castbars section).
-![bbfTargetText](https://github.com/user-attachments/assets/d4fde923-9c26-4066-98fd-4e012c2efd7f)
-
-# BetterBlizzFrames 1.9.5l
-## Midnight
-### Tweak
-- Tweak darkmode aura border to show beneath the purge texture on target/focus frames.
+- Party and Pet castbars are back and working!
+- Overshields is fixed and back. If you have used an alternative then either turn off this setting or the alternative so you dont run it twice. (And again huge thanks to Verz (MiniCC, FrameSort, etc) for being the goat and helping me a bit here)
+![castbarsAndOvershields](https://github.com/user-attachments/assets/fdf2b502-459f-4d82-bde3-26086d5ab39e)
 ### Bugfix
-- Fix the Midnight version of "Fix ActionBar Cooldowns during CC" (Misc) not working properly as intended when you get CC'ed.
-## All classics
+- Fix "Arena Names" on Target/Focus sometimes showing wrong name.
+## The Burning Crusade
 ### Bugfix
-- Fix combination of Bigger Healthbars (and disabled on PlayerFrame) + PlayerFrame No Mana + Elite Frame texture causing it to use the wrong texture.
+- Add another detection method for spell interrupt ids so Earth Shock (and maybe others) should hopefully be picked up more consistently now.
+- Fix Overshields for enemy units showing absorb on entire healthbar (since they dont have proper health info in TBC). It will now just hide unless you have MiniHealthNumbers addon. If you get MiniHealthNumbers to calculate health on enemy units overshields will work on enemy targets.
