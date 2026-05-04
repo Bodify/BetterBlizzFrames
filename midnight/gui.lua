@@ -8742,11 +8742,15 @@ local function guiMisc()
     gladWinTracker:SetPoint("TOPLEFT", arenaOptimizer, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(gladWinTracker, L["Glad_Win_Tracker"], L["Tooltip_Glad_Tracker"])
     gladWinTracker:HookScript("OnClick", function(self)
-        BBF.GladWinTracker()
+        BBF.GladTracker()
         if not self:GetChecked() then
             StaticPopup_Show("BBF_CONFIRM_RELOAD")
         end
     end)
+
+    local externalDefensivesHideTooltip = CreateCheckbox("externalDefensivesHideTooltip", L["External_Defensives_Hide_Tooltip"], guiMisc, nil, BBF.ExternalDefensivesClickthrough)
+    externalDefensivesHideTooltip:SetPoint("TOPLEFT", gladWinTracker, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(externalDefensivesHideTooltip, L["External_Defensives_Hide_Tooltip"], L["Tooltip_External_Defensives_Hide_Tooltip"])
 
     local uiWidgetPowerBarScale = CreateSlider(guiMisc, L["UIWidgetPowerBarFrame_Scale"], 0.4, 1.8, 0.01, "uiWidgetPowerBarScale")
     uiWidgetPowerBarScale:SetPoint("LEFT", gladWinTracker.text, "RIGHT", 55, 0)
