@@ -3,7 +3,10 @@
 ### New
 - Party and Pet castbars are back and working!
 - Overshields is fixed and back. If you have used an alternative then either turn off this setting or the alternative so you dont run it twice. (And again huge thanks to Verz (MiniCC, FrameSort, etc) for being the goat and helping me a bit here)
+- Hide External Defensives Tooltip (Misc).
 ![castbarsAndOvershields](https://github.com/user-attachments/assets/fdf2b502-459f-4d82-bde3-26086d5ab39e)
+### Tweak
+- BetterBlizzFrames now makes External Defensives clickthrough by default so you can actually move your camera.
 ### Bugfix
 - Fix "Arena Names" on Target/Focus sometimes showing wrong name.
 ## The Burning Crusade
