@@ -1,3 +1,14 @@
+# BetterBlizzFrames 1.9.7b
+## Midnight
+### Bugfix
+- Fix an issue with party castbars getting stuck on if party members left group while casting.
+- Fix overshield not updating immediately on the PRD when it was set to shown in combat only.
+- Fix a layering issue with overshields on normal UnitFrames.
+- Fix nil error related to new party castbars and castbar coloring.
+## All versions
+### Tweak
+- Update the new Midnight Stealth Indicator logic for all other versions too (and fix it for TBC).
+
 # BetterBlizzFrames 1.9.7
 ## Midnight
 ### New

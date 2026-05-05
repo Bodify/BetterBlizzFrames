@@ -29,7 +29,7 @@ temp_cata\modules\arenaframes.lua
 temp_cata\modules\profiles.lua
 temp_cata\modules\chatFrame.lua
 temp_cata\modules\overShields.lua
-temp_cata\modules\stealthIndicator.lua
+temp_shared\stealthIndicator.lua
 temp_cata\modules\interruptIcon.lua
 temp_cata\modules\queueTimer.lua
 temp_cata\modules\loc.lua

@@ -3789,9 +3789,11 @@ function BBF.HookUnitFrameTextures()
                     end)
                 end
 
-                hooksecurefunc(statusBar, "PlayFinishAnim", function(self)
-                    self:SetStatusBarTexture(castbarTexture)
-                end)
+                if statusBar.PlayFinishAnim then
+                    hooksecurefunc(statusBar, "PlayFinishAnim", function(self)
+                        self:SetStatusBarTexture(castbarTexture)
+                    end)
+                end
 
                 statusBar.textureChangedNeedsColor = true
             end

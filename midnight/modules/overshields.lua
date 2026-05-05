@@ -5,7 +5,7 @@ local UNITFRAME_OVERSHIELD_HOOKED = false
 local COMPACT_UNITFRAME_OVERSHIELD_HOOKED = false
 local PRD_OVERSHIELD_HOOKED = false
 
-local function CreateOvershieldBar(healthBar, classicOffset, prd)
+local function CreateOvershieldBar(healthBar, classicOffset, higherLayer)
     local overshieldBar = CreateFrame("StatusBar", nil, healthBar)
     if classicOffset then
         overshieldBar:SetPoint("TOPLEFT", healthBar, "TOPLEFT", 0, -10)
@@ -22,10 +22,10 @@ local function CreateOvershieldBar(healthBar, classicOffset, prd)
     barTex:SetTexture("Interface\\RaidFrame\\Shield-Overlay", "REPEAT", "REPEAT")
     barTex:SetHorizTile(true)
     barTex:SetVertTile(true)
-    if not prd then
-        barTex:SetDrawLayer("ARTWORK", -3)
-    else
+    if higherLayer then
         barTex:SetDrawLayer("ARTWORK", 1)
+    else
+        barTex:SetDrawLayer("ARTWORK", -3)
     end
 
     return overshieldBar
@@ -48,7 +48,7 @@ local function BBF_UnitFrameHealPredictionBars_Update(frame, classicOffset)
     if not absorbGlow or absorbGlow:IsForbidden() then return end
 
     if not frame.bbfOvershieldBar then
-        frame.bbfOvershieldBar = CreateOvershieldBar(healthBar, classicOffset)
+        frame.bbfOvershieldBar = CreateOvershieldBar(healthBar, classicOffset, true)
         frame.healPredictionCalc = CreateUnitHealPredictionCalculator()
         frame.healPredictionCalc:SetDamageAbsorbClampMode(Enum.UnitDamageAbsorbClampMode.MissingHealth)
     end
@@ -149,6 +149,7 @@ function BBF.HookOverShieldPersonalResourceDisplay()
     prdEvents:RegisterUnitEvent("UNIT_HEAL_ABSORB_AMOUNT_CHANGED", "player")
     prdEvents:RegisterUnitEvent("UNIT_HEALTH", "player")
     prdEvents:RegisterUnitEvent("UNIT_MAXHEALTH", "player")
+    prdEvents:RegisterEvent("PLAYER_REGEN_DISABLED")
 
     totalAbsorbOverlay:SetTexture("Interface\\RaidFrame\\Shield-Overlay", "REPEAT", "REPEAT")
     totalAbsorbOverlay:SetHorizTile(true)

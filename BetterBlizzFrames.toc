@@ -42,7 +42,7 @@ retail\modules\profiles.lua
 retail\modules\chatFrame.lua
 retail\modules\overShields.lua
 midnight\modules\overShields.lua
-retail\modules\stealthIndicator.lua
+temp_shared\stealthIndicator.lua
 retail\modules\interruptIcon.lua
 midnight\modules\interruptIcon.lua
 retail\modules\queueTimer.lua

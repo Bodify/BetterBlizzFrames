@@ -28,7 +28,7 @@ temp_era\modules\arenaframes.lua
 temp_era\modules\profiles.lua
 temp_era\modules\chatFrame.lua
 temp_era\modules\overShields.lua
-temp_era\modules\stealthIndicator.lua
+temp_shared\stealthIndicator.lua
 temp_era\modules\interruptIcon.lua
 
 temp_era\gui.lua

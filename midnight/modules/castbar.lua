@@ -775,6 +775,14 @@ local function SpellBarStart(spellbar, unit, channeling)
     spellbar:Show()
 end
 
+local function ClearSpellBar(spellbar)
+    spellbar.casting = nil
+    spellbar.channeling = nil
+    spellbar.castID = nil
+    spellbar.notInterruptible = nil
+    spellbar:Hide()
+end
+
 local function CustomSpellBarOnEvent(self, event, unit, _, _, interruptedByOrCastBarID)
     local testMode
     if self.unitType == "party" then
@@ -794,11 +802,7 @@ local function CustomSpellBarOnEvent(self, event, unit, _, _, interruptedByOrCas
     elseif CastUpdateEvents[event] then
         SpellBarCastDurationUpdate(self, self.channeling)
     else
-        self.casting = nil
-        self.channeling = nil
-        self.castID = nil
-        self.notInterruptible = nil
-        self:Hide()
+        ClearSpellBar(self)
     end
 end
 
@@ -951,6 +955,15 @@ function BBF.UpdateCastbars()
             local spellbar = spellBars[i]
             if spellbar then
                 spellbar.unit = nil
+            end
+        end
+    end
+
+    if not BetterBlizzFramesDB.partyCastBarTestMode then
+        for i = 1, 5 do
+            local spellbar = spellBars[i]
+            if spellbar and not spellbar.unit then
+                ClearSpellBar(spellbar)
             end
         end
     end
