@@ -1,5 +1,5 @@
 local function CreateStealthIndicator()
-    PlayerFrame.bbfStealthIndicatorFrame.Texture = PlayerFrame.bbfStealthIndicatorFrame:CreateTexture(nil, "OVERLAY")
+    PlayerFrame.bbfStealthIndicatorFrame.Texture = PlayerFrame.bbfStealthIndicatorFrame:CreateTexture(nil, "BACKGROUND")
     if BBF.isRetail then
         PlayerFrame.bbfStealthIndicatorFrame.Texture:SetAtlas("ui-hud-unitframe-player-portraiton-vehicle-status")
         PlayerFrame.bbfStealthIndicatorFrame.Texture:SetSize(BetterBlizzFramesDB.symmetricPlayerFrame and 200 or 201, 83.5)

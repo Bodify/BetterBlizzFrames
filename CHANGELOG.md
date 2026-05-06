@@ -1,3 +1,8 @@
+# BetterBlizzFrames 1.9.7c
+## Midnight
+### Bugfix
+- Fix layer issue introduced in 1.9.7b showing Stealth Indicator above PlayerFrame unintentionally. 
+
 # BetterBlizzFrames 1.9.7b
 ## Midnight
 ### Bugfix
