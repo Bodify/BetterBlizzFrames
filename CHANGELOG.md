@@ -1,3 +1,12 @@
+# BetterBlizzFrames 1.9.7d
+## Midnight
+### Tweak
+- Tweak most chatframe filters to use Blizzard globals instead so it also accounts for localization and not just English.
+## All versions
+### Tweak
+- Party Castbars now supports other party addons as well (DandersFrames, ElvUI, Cell, Grid2, VuhDo & ShadowedUnitFrames)
+- Interrupt logic: Replace IsSpellKnown API call with IsPlayerSpell because IsSpellKnown returns false on known spells on some clients causing interrupt logic to not detect an interrupt.
+
 # BetterBlizzFrames 1.9.7c
 ## Midnight
 ### Bugfix
