@@ -119,6 +119,48 @@ function BBF.UIFrameIsFading(frame)
 	return frame and BBF.UIFrameFadeContains(frame) or false;
 end
 
+function BBF.FindPartyFrame(i)
+    if C_AddOns.IsAddOnLoaded("DandersFrames") then
+        return _G["DandersPartyHeaderUnitButton" .. i]
+    elseif C_AddOns.IsAddOnLoaded("ElvUI") then
+        return _G["ElvUF_PartyGroup1UnitButton" .. i]
+    elseif C_AddOns.IsAddOnLoaded("Cell") then
+        return _G["CellPartyFrameHeaderUnitButton" .. i]
+    elseif C_AddOns.IsAddOnLoaded("Grid2") then
+        return _G["Grid2LayoutHeader1UnitButton" .. i]
+    elseif C_AddOns.IsAddOnLoaded("VuhDo") then
+        return _G["Vd1H" .. i]
+    elseif (C_AddOns.IsAddOnLoaded("ShadowedUnitFrames") and ShadowUF and ShadowUF.db) then
+        -- Checking if player is shown in party group by selecting the "Show Player in party" option
+        local showPlayerInParty = ShadowUF.db.profile.units.party.showPlayer
+        -- If player is shown in party, just return default SUF PartyFrames
+        if showPlayerInParty then
+            return _G["SUFHeaderpartyUnitButton" .. i]
+        end
+        -- Otherwise, there's no player frame in the SUF Partyframes group
+        -- Still need to verify that playerframe exists, users can disable playerframe for party and use some other playerframe addon
+        -- In which case we wouldn't be able to support it (since we don't know what they use for playerframe), but at least it wouldnt throw errors
+        if (_G["SUFUnitplayer"] and i == 1) then
+            return _G["SUFUnitplayer"]
+        end
+        -- Every other partymember will be shifted upwards by 1, SUF would basically start at frame2
+        -- From testing, the sorting order doesnt matter, SUF still calls them sequentially from 1 to 4
+        return _G["SUFHeaderpartyUnitButton" .. i - 1]
+    else
+        local EM = EditModeManagerFrame
+        if EM and EM.UseRaidStylePartyFrames and EM:UseRaidStylePartyFrames() then
+            return _G["CompactPartyFrameMember" .. i] or _G["CompactRaidFrame" .. i]
+        else
+            if C_CVar.GetCVarBool("useCompactPartyFrames") then
+                return _G["CompactPartyFrameMember" .. i] or _G["CompactRaidFrame" .. i]
+            else
+				local defaultPartyFrame = true
+                return _G["PartyMemberFrame" .. i] or (_G["PartyFrame"] and _G["PartyFrame"]["MemberFrame" .. i]), defaultPartyFrame
+            end
+        end
+    end
+end
+
 function BBF.ActionBarCDNumberSize(reset)
 	if not BetterBlizzFramesDB.actionBarCDNumberSizeChange then
 		if BBF.actionBarCDNumberSizeActive then

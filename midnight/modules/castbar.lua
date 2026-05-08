@@ -808,9 +808,7 @@ end
 
 function BBF.UpdateCastbars()
     local numGroupMembers = GetNumGroupMembers()
-    local compactFrame = (_G["PartyFrame"]["MemberFrame1"] and _G["PartyFrame"]["MemberFrame1"]:IsShown() and _G["PartyFrame"]["MemberFrame1"])
-                         or (_G["CompactPartyFrameMember1"] and _G["CompactPartyFrameMember1"]:IsShown() and _G["CompactPartyFrameMember1"])
-                         --or (_G["CompactRaidFrame1"] and _G["CompactRaidFrame1"]:IsShown() and _G["CompactRaidFrame1"])
+    local firstPartyFrame, defaultPartyFrame = BBF.FindPartyFrame(1)
 
     if BetterBlizzFramesDB.showPartyCastbar or BetterBlizzFramesDB.partyCastBarTestMode then
         for i = 1, 5 do
@@ -819,10 +817,8 @@ function BBF.UpdateCastbars()
                 spellbar.unit = BetterBlizzFramesDB.partyCastBarTestMode and "player" or nil
             end
         end
-        if compactFrame and compactFrame:IsShown() and numGroupMembers <= 5 then
-            local defaultPartyFrame
-            if compactFrame:GetName() == nil then
-                defaultPartyFrame = true
+        if firstPartyFrame and firstPartyFrame:IsShown() and numGroupMembers <= 5 then
+            if defaultPartyFrame then
                 numGroupMembers = numGroupMembers - 1
             end
             for i = 1, 5 do
@@ -904,15 +900,7 @@ function BBF.UpdateCastbars()
                         end
                     end
 
-                    local partyFrame = nil
-
-                    if _G["PartyFrame"]["MemberFrame"..i] and _G["PartyFrame"]["MemberFrame"..i]:IsShown() then
-                        partyFrame = _G["PartyFrame"]["MemberFrame"..i]
-                    elseif _G["CompactPartyFrameMember"..i] and _G["CompactPartyFrameMember"..i]:IsVisible() then
-                        partyFrame = _G["CompactPartyFrameMember"..i]
-                    -- elseif _G["CompactRaidFrame"..i] and _G["CompactRaidFrame"..i]:IsShown() then
-                    --     partyFrame = _G["CompactRaidFrame"..i]
-                    end
+                    local partyFrame = BBF.FindPartyFrame(i)
 
                     if partyFrame and partyFrame:IsShown() and partyFrame:IsVisible() then
                         local xPos = BetterBlizzFramesDB.partyCastBarXPos + 13
@@ -930,7 +918,6 @@ function BBF.UpdateCastbars()
                             spellbar.unit = nil
                         else
                             spellbar.unit = unitId
-                            spellbar:SetFrameStrata("MEDIUM")
                         end
 
                         spellbar:ClearAllPoints()
@@ -1030,7 +1017,6 @@ function BBF.UpdatePetCastbar()
             else
                 petSpellBar:SetPoint("CENTER", petFrame, "CENTER", xPos + 4, yPos - 27)
             end
-            petSpellBar:SetFrameStrata("MEDIUM")
             petSpellBar.unit = BetterBlizzFramesDB.petCastBarTestMode and "player" or "pet"
         else
             petSpellBar.unit = nil
@@ -1047,6 +1033,8 @@ function BBF.CreateCastbars()
             local spellbar = CreateFrame("StatusBar", "Party"..i.."SpellBar", UIParent)
             spellbar:SetSize(150, 20)
             spellbar:SetStatusBarTexture("UI-CastingBar-Filling-Standard")
+            spellbar:SetFrameStrata("MEDIUM")
+            spellbar:SetFrameLevel(9900)
             spellbar:Hide()
 
             spellbar.TextBorder = spellbar:CreateTexture(nil, "BACKGROUND", nil, 0)
@@ -1184,6 +1172,8 @@ function BBF.CreateCastbars()
         local petSpellBar = CreateFrame("StatusBar", "PetSpellBar", UIParent)
         petSpellBar:SetSize(150, 20)
         petSpellBar:SetStatusBarTexture("UI-CastingBar-Filling-Standard")
+        petSpellBar:SetFrameStrata("MEDIUM")
+        petSpellBar:SetFrameLevel(9900)
         petSpellBar:Hide()
 
         petSpellBar.TextBorder = petSpellBar:CreateTexture(nil, "BACKGROUND", nil, 0)
