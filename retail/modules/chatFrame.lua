@@ -32,45 +32,51 @@ local gladiusSpam = {
 }
 
 local talentSpam = {
-    ["You have learned a new"] = true,
-    ["You have unlearned"] = true,
-    ["Soulbound with "] = true,
+    [ERR_ACTIVATE_SOULBIND_S] = true, -- Soulbind with ...
+    [ERR_LEARN_PASSIVE_S] = true, -- You have learned a new passive effect: %s.
+    [ERR_LEARN_ABILITY_S] = true, -- You have learned a new ability: %s.
+    [ERR_LEARN_SPELL_S] = true, -- You have learned a new spell: %s.
 }
 
 local systemMessages = {
     ["Thirty seconds until the Arena"] = true,
     ["Fifteen seconds until the Arena"] = true,
     ["The Arena battle has begun!"] = true,
-    ["Party converted to Raid"] = true,
-    ["Raid Difficulty set to Normal"] = true,
-    ["Legacy Raid Difficulty set to 10 Player."] = true,
-    ["has joined the battle."] = true,
-    ["has joined the instance group."] = true,
-    ["has left the instance group."] = true,
-    ["You have been removed from the group."] = true,
-    ["Your group has been disbanded."] = true,
+    [ERR_PARTY_CONVERTED_TO_RAID] = true, -- Party converted to Raid
+    [ERR_RAID_DIFFICULTY_CHANGED_S] = true, -- Raid Difficulty set to
+    [ERR_LEGACY_RAID_DIFFICULTY_CHANGED_S] = true, -- Legacy Raid Difficulty set to
+    [ERR_INSTANCE_GROUP_ADDED_S] = true, -- has joined the instance group.
+    [ERR_INSTANCE_GROUP_REMOVED_S] = true, -- [player] has left the instance group.
+    [ERR_UNINVITE_YOU] = true, -- You have been removed from the group.
+    [ERR_GROUP_DISBANDED] = true, -- Your group has been disbanded.
     ["You have joined the queue for Arena Skirmish"] = true,
-    ["A role check has been initiated."] = true,
-    ["You have been awarded"] = true,
-    ["You are in both a party and an instance group."] = true,
-    ["This is now a cross-faction"] = true,
-    ["You aren't in a party"] = true,
-    ["You are now queued in the Dungeon Finder."] = true,
-    ["Dungeon Difficulty set to"] = true,
-    ["Loot Specialization set to"] = true,
+    [ERR_SOLO_JOIN_TRAINING_GROUND] = true, -- You have joined the solo training ground
+    [ERR_SOLO_JOIN_BATTLEGROUND_S] = true, -- You have joined the solo battleground
+    [ERR_SOLO_JOIN_BATTLEGROUND_SPEC_S] = true, -- You have joined the solo battleground with a specific role
+    [ERR_JOIN_SINGLE_SCENARIO_S] = true, -- You have joined a single scenario
+    [ERR_LFG_ROLE_CHECK_INITIATED] = true, -- A role check has been initiated.
+    [COMBATLOG_HONORAWARD] = true, -- You have been awarded [amount] honor points.
+    [COMBATLOG_ARENAPOINTSAWARD] = true, -- You have been awarded [amount] arena points.
+    [ERR_INSTANCE_GROUP_JOINED_WITH_PARTY] = true, -- You are in both a party and an instance group
+    [ERR_CROSS_FACTION_GROUP_JOINED] = true, -- This is now a cross-faction group.
+    [ERR_NOT_IN_GROUP] = true, -- You aren't in a party
+    [ERR_LFG_JOINED_QUEUE] = true, -- You are now queued in the Dungeon Finder.
+    [ERR_DUNGEON_DIFFICULTY_CHANGED_S] = true, -- Dungeon Difficulty set to
+    [ERR_LOOT_SPEC_CHANGED_S] = true, -- Loot Specialization set to
     ["SUSPENDED"] = true,
     ["YOU_CHANGED"] = true,
+    [ERR_BG_PLAYER_JOINED_SS] = true, -- [player] has joined the battle
 }
 
 local miscInfo = {
-    ["Your equipped items suffer a"] = true,
+    [DURABILITYDAMAGE_DEATH] = true, -- Your equipped items suffer a durability loss
 }
 
 local emoteSpam = {
-    ["yells at her team members."] = true,
-    ["yells at his team members."] = true,
-    ["makes some strange gestures."] = true,
-    ["says something unintelligible."] = true,
+    [CHAT_YELL_UNKNOWN_FEMALE] = true, -- yells at her team members.
+    [CHAT_YELL_UNKNOWN] = true, -- yells at his team members.
+    [CHAT_EMOTE_UNKNOWN] = true, -- makes some strange gestures.
+    [CHAT_SAY_UNKNOWN] = true, -- says something unintelligible.
 }
 
 -- Function to check if a message is spam based on user settings
@@ -151,6 +157,17 @@ function BBF.ChatFilterCaller()
         ChatFrame_AddMessageEventFilter("CHAT_MSG_CURRENCY", chatFilter)
         if not filterTalentSpamHooked then
             ChatFrame_AddMessageEventFilter("CHAT_MSG_SYSTEM", chatFilter)
+        end
+        if ONLINE_SAFETY_NOTICE then
+            hooksecurefunc(ChatFrameUtil, "AddSystemMessage", function(message)
+                if message ~= ONLINE_SAFETY_NOTICE then return end
+                for i = 1, NUM_CHAT_WINDOWS do
+                    local cf = _G["ChatFrame" .. i]
+                    if cf and cf.RemoveMessagesByPredicate then
+                        cf:RemoveMessagesByPredicate(function(line) return line == ONLINE_SAFETY_NOTICE end)
+                    end
+                end
+            end)
         end
         filterSystemMessagesHooked = true
     end
