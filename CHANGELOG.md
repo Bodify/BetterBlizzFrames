@@ -1,3 +1,8 @@
+# BetterBlizzFrames 1.9.7e
+## Midnight
+### Tweak
+- Tweak chat filters to add a few more spammy system messages and improve the detection method.
+
 # BetterBlizzFrames 1.9.7d
 ## Midnight
 ### Tweak
