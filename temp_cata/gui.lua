@@ -4148,6 +4148,10 @@ local function guiCastbars()
     partyCastbarShowText:SetPoint("TOPLEFT", showPartyCastBarIcon, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(partyCastbarShowText, L["Tooltip_Show_Castbar_Text_Desc"], L["Tooltip_Show_Castbar_Text_Desc"])
 
+    local partyCastBarForceDefaultPartyFrames = CreateCheckbox("partyCastBarForceDefaultPartyFrames", L["Party_Castbar_Force_Default_Frames"], contentFrame)
+    partyCastBarForceDefaultPartyFrames:SetPoint("TOPLEFT", partyCastbarShowText, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(partyCastBarForceDefaultPartyFrames, L["Tooltip_Party_Castbar_Force_Default_Frames_Title"], L["Tooltip_Party_Castbar_Force_Default_Frames_Desc"])
+
     local partyCastbarShowBorder = CreateCheckbox("partyCastbarShowBorder", L["Border"], contentFrame, nil, BBF.partyCastBarTestMode)
     partyCastbarShowBorder:SetPoint("TOPLEFT", partyCastbarSelf, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(partyCastbarShowBorder, L["Tooltip_Show_Castbar_Borders_Desc"], L["Tooltip_Show_Castbar_Borders_Desc"])

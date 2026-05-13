@@ -5868,6 +5868,10 @@ local function guiCastbars()
         end
     end)
 
+    local partyCastBarForceDefaultPartyFrames = CreateCheckbox("partyCastBarForceDefaultPartyFrames", L["Party_Castbar_Force_Default_Frames"], contentFrame)
+    partyCastBarForceDefaultPartyFrames:SetPoint("TOPLEFT", anchorSubPartyCastbar.classicCastbarsParty, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(partyCastBarForceDefaultPartyFrames, L["Tooltip_Party_Castbar_Force_Default_Frames_Title"], L["Tooltip_Party_Castbar_Force_Default_Frames_Desc"])
+
     local resetPartyCastbar = CreateFrame("Button", nil, contentFrame, "UIPanelButtonTemplate")
     resetPartyCastbar:SetText(L["Reset"])
     resetPartyCastbar:SetWidth(70)

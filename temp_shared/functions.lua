@@ -119,10 +119,38 @@ function BBF.UIFrameIsFading(frame)
 	return frame and BBF.UIFrameFadeContains(frame) or false;
 end
 
+local function GetDefaultPartyFrame(i)
+	local EM = EditModeManagerFrame
+	if EM and EM.UseRaidStylePartyFrames and EM:UseRaidStylePartyFrames() then
+		return _G["CompactPartyFrameMember" .. i] or _G["CompactRaidFrame" .. i]
+	else
+		if C_CVar.GetCVarBool("useCompactPartyFrames") then
+			return _G["CompactPartyFrameMember" .. i] or _G["CompactRaidFrame" .. i]
+		else
+			local defaultPartyFrame = true
+			return _G["PartyMemberFrame" .. i] or (_G["PartyFrame"] and _G["PartyFrame"]["MemberFrame" .. i]), defaultPartyFrame
+		end
+	end
+end
+
 function BBF.FindPartyFrame(i)
-    if C_AddOns.IsAddOnLoaded("DandersFrames") then
-        return _G["DandersPartyHeaderUnitButton" .. i]
-    elseif C_AddOns.IsAddOnLoaded("ElvUI") then
+	if BetterBlizzFramesDB.partyCastBarForceDefaultPartyFrames then
+		local defaultPartyFrame, isDefault = GetDefaultPartyFrame(i)
+		return defaultPartyFrame, isDefault
+    elseif C_AddOns.IsAddOnLoaded("DandersFrames") then
+		local _, instanceType = IsInInstance()
+    	local isInArena = instanceType == "arena"
+        if isInArena then
+            local arenaPartyFrame = _G["DandersArenaHeaderUnitButton" .. i]
+            if arenaPartyFrame then
+                return arenaPartyFrame
+            end
+        end
+        local partyFrame = _G["DandersPartyHeaderUnitButton" .. i]
+        if partyFrame then
+            return partyFrame
+        end
+    elseif C_AddOns.IsAddOnLoaded("ElvUI") and ElvUI[1].private.unitframe.disabledBlizzardFrames.party then
         return _G["ElvUF_PartyGroup1UnitButton" .. i]
     elseif C_AddOns.IsAddOnLoaded("Cell") then
         return _G["CellPartyFrameHeaderUnitButton" .. i]
@@ -147,17 +175,8 @@ function BBF.FindPartyFrame(i)
         -- From testing, the sorting order doesnt matter, SUF still calls them sequentially from 1 to 4
         return _G["SUFHeaderpartyUnitButton" .. i - 1]
     else
-        local EM = EditModeManagerFrame
-        if EM and EM.UseRaidStylePartyFrames and EM:UseRaidStylePartyFrames() then
-            return _G["CompactPartyFrameMember" .. i] or _G["CompactRaidFrame" .. i]
-        else
-            if C_CVar.GetCVarBool("useCompactPartyFrames") then
-                return _G["CompactPartyFrameMember" .. i] or _G["CompactRaidFrame" .. i]
-            else
-				local defaultPartyFrame = true
-                return _G["PartyMemberFrame" .. i] or (_G["PartyFrame"] and _G["PartyFrame"]["MemberFrame" .. i]), defaultPartyFrame
-            end
-        end
+		local defaultPartyFrame, isDefault = GetDefaultPartyFrame(i)
+		return defaultPartyFrame, isDefault
     end
 end
 

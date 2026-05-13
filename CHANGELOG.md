@@ -1,3 +1,11 @@
+# BetterBlizzFrames 1.9.7f
+## All versions
+### New
+- New setting for Party Castbars to force anchoring to default party frames instead of detected party frames addon. (Castbars section)
+## Midnight
+### Bugfix
+- Fix "Classic Castbar" setting for Player Castbar sometimes showing a big non-classic glow texture.
+
 # BetterBlizzFrames 1.9.7e
 ## Midnight
 ### Tweak

@@ -689,15 +689,12 @@ function BBF.ClassicCastbar(castBar, unitType)
             AdjustBorderShieldSize(castBar)
         end)
 
-        -- hooksecurefunc(castBar, "PlayFinishAnim", function(self)
-        --     self:SetStatusBarTexture(classicCastbarTexture)
-        --     --self:SetStatusBarColor(0, 1, 0, 1)
-        --     if castBar == PlayerCastingBarFrame then
-        --         AdjustFlash(castBar)
-        --     else
-        --         castBar.Flash:SetAlpha(0)
-        --     end
-        -- end)
+        if castBar == PlayerCastingBarFrame then
+            hooksecurefunc(castBar, "PlayFinishAnim", function(self)
+                self:SetStatusBarTexture(classicCastbarTexture)
+                AdjustFlash(castBar)
+            end)
+        end
 
         if BetterBlizzFramesDB.classicCastbarsModernSpark then
             castBar:HookScript("OnUpdate", function(self)
