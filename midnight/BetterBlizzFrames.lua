@@ -2123,7 +2123,7 @@ function BBF.HookAndUpdatePartyFrameRangeAlpha(toggle)
         if issecretvalue(frame) then return end
         if not frame or not frame.displayedUnit then return end
         if frame:IsForbidden() or string.match(frame.displayedUnit, "nameplate") then return end
-        if BBF.SoloPartyFrame then
+        if (not IsInGroup() and not IsInRaid()) then
             frame:SetAlpha(1)
             if frame.background and BetterBlizzFramesDB.partyFrameRangeAlphaSolidBackground then
                 frame.background:SetIgnoreParentAlpha(true)

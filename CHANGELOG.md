@@ -1,3 +1,10 @@
+# BetterBlizzFrames 1.9.7g
+## Midnight
+### Tweak
+- Now checks for tullaCTC handling of aura cooldown text and ignores BBF setting if thats the case.
+### Bugfix
+- Fix error related to darkmode and tooltips due to secrets.
+
 # BetterBlizzFrames 1.9.7f
 ## All versions
 ### New
