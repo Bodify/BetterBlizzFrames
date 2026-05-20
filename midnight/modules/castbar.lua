@@ -75,7 +75,7 @@ local function CastbarColorOnEvent(self, event, unitTarget, castGUID, spellID, i
     local _
 
     if CastStopEvents[event] then
-        if event == "UNIT_SPELLCAST_INTERRUPTED" then
+        if event == "UNIT_SPELLCAST_INTERRUPTED" or event == "UNIT_SPELLCAST_CHANNEL_STOP" then
             self.stoppedCast = true
             if interruptedByOrCastBarID ~= nil then
                 self.wasKicked = true
@@ -1834,10 +1834,10 @@ function BBF.HookCastbars()
     if BetterBlizzFramesDB.quickHideCastbars then
         TargetFrameSpellBar:HookScript("OnEvent", function(self, event, unitTarget, castGUID, spellID, interruptedByOrCastBarID)
             if CastStopEvents[event] then
-                if event == "UNIT_SPELLCAST_INTERRUPTED" and interruptedByOrCastBarID ~= nil then
+                if (event == "UNIT_SPELLCAST_INTERRUPTED" or event == "UNIT_SPELLCAST_CHANNEL_STOP") and interruptedByOrCastBarID ~= nil then
                     self.wasKicked = true
                 end
-                if not self.wasKicked and event ~= "UNIT_SPELLCAST_CHANNEL_STOP" then
+                if not self.wasKicked then
                     self:Hide()
                 end
             elseif CastStartEvents[event] then
@@ -1846,10 +1846,10 @@ function BBF.HookCastbars()
         end)
         FocusFrameSpellBar:HookScript("OnEvent", function(self, event, unitTarget, castGUID, spellID, interruptedByOrCastBarID)
             if CastStopEvents[event] then
-                if event == "UNIT_SPELLCAST_INTERRUPTED" and interruptedByOrCastBarID ~= nil then
+                if (event == "UNIT_SPELLCAST_INTERRUPTED" or event == "UNIT_SPELLCAST_CHANNEL_STOP") and interruptedByOrCastBarID ~= nil then
                     self.wasKicked = true
                 end
-                if not self.wasKicked and event ~= "UNIT_SPELLCAST_CHANNEL_STOP" then
+                if not self.wasKicked then
                     self:Hide()
                 end
             elseif CastStartEvents[event] then
@@ -1926,7 +1926,7 @@ function BBF.CastbarColorHooks()
         BBF.RecolorCastbarHooked = true
         PlayerCastingBarFrame:HookScript("OnEvent", function(self, event, unitTarget, castGUID, spellID, interruptedByOrCastBarID)
             if CastStopEvents[event] then
-                if event == "UNIT_SPELLCAST_INTERRUPTED" then
+                if event == "UNIT_SPELLCAST_INTERRUPTED" or event == "UNIT_SPELLCAST_CHANNEL_STOP" then
                     self.stoppedCast = true
                     if interruptedByOrCastBarID ~= nil then
                         self.wasKicked = true
