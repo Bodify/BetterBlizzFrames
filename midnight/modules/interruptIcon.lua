@@ -464,8 +464,9 @@ function BBF.ToggleKickPopup()
             if interruptSpells[spellID] then
                 kickPlayerKicked = true
                 self:RegisterEvent("UNIT_SPELLCAST_CHANNEL_STOP")
-                C_Timer.After(0.5, function()
+                C_Timer.After(0.1, function()
                     kickPlayerKicked = false
+                    self:UnregisterEvent("UNIT_SPELLCAST_CHANNEL_STOP")
                 end)
             end
             return
@@ -476,7 +477,7 @@ function BBF.ToggleKickPopup()
         local isRealInterrupt = issecretvalue(interruptedByOrCastBarID) or (interruptedByOrCastBarID ~= nil)
         if not isRealInterrupt then
             if event == "UNIT_SPELLCAST_CHANNEL_STOP" then
-                if kickPlayerKicked and unit ~= "player" then
+                if kickPlayerKicked and not UnitIsFriend(unit, "player") then
                     kickLastShownTime = now
                     ShowKickPopup(spellID)
                 end

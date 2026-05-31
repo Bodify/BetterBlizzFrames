@@ -722,6 +722,7 @@ L["Tooltip_Classic_Frames_Desc"] = "Enable for the old style UnitFrames from bef
 L["Tooltip_Classic_Frames_Healthbar_Desc"] = "Due to the original healthbar only showing 50% of its texture with Classic Frames enabled not all textures are suitable.\n\nI have made an exception for \"Blizzard CF\" and \"Blizzard DF\" but it does require a reload between swapping to and from these textures for full effect.\n\nPlease use \"Blizzard CF\" or \"Blizzard DF\" over \"Blizzard\" if you are looking for the classic texture.\n\nIf you have a custom texture in your Interface folder then please add this via the method mentioned below as well and select it here if needed."
 L["Tooltip_Clickthrough"] = "Makes the PlayerFrame clickthrough.\nYou can still hold shift to left/right click it\nwhile out of combat for trade/inspect etc.\n\nNOTE: You will NOT be able to click the frame\nat all during combat with this setting on."
 L["Tooltip_Color_Level_Font_Desc"] = "Also color the level font"
+L["Tooltip_Hide_Player_Frame"] = "Hide the PlayerFrame completely. You will not be able to interact with it anymore."
 L["Tooltip_Ctrl_C_Copy"] = "Ctrl+C to copy and share"
 L["Tooltip_Delete"] = "Remove custom Spell from list"
 L["Tooltip_Delete_Data_Desc"] = "Press Shift+Alt+RightClick to delete all the data in"

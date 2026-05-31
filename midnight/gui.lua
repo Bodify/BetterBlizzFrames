@@ -3533,8 +3533,18 @@ local function guiGeneralTab()
     playerFrameIcon:SetSize(28, 28)
     playerFrameIcon:SetPoint("RIGHT", playerFrameText, "LEFT", -0.5, 0)
 
+    BetterBlizzFrames.playerFrameHidden = CreateCheckbox("playerFrameHidden", L["Hide_Frame"], BetterBlizzFrames, nil, BBF.ClickthroughFrames)
+    BetterBlizzFrames.playerFrameHidden:SetPoint("TOPLEFT", playerFrameText, "BOTTOMLEFT", -24, pixelsOnFirstBox)
+    CreateTooltipTwo(BetterBlizzFrames.playerFrameHidden, L["Hide_Frame"], L["Tooltip_Hide_Player_Frame"])
+    BetterBlizzFrames.playerFrameHidden:HookScript("OnClick", function(self)
+        BBF.HidePlayerFrame()
+        if not self:GetChecked() then
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        end
+    end)
+
     local playerFrameClickthrough = CreateCheckbox("playerFrameClickthrough", L["Clickthrough"], BetterBlizzFrames, nil, BBF.ClickthroughFrames)
-    playerFrameClickthrough:SetPoint("TOPLEFT", playerFrameText, "BOTTOMLEFT", -24, pixelsOnFirstBox)
+    playerFrameClickthrough:SetPoint("LEFT", BetterBlizzFrames.playerFrameHidden.text, "RIGHT", 5, 0)
     CreateTooltip(playerFrameClickthrough, L["Tooltip_Clickthrough"])
     playerFrameClickthrough:HookScript("OnClick", function(self)
         if not self:GetChecked() then
@@ -3542,32 +3552,8 @@ local function guiGeneralTab()
         end
     end)
 
-    local textures = BetterBlizzFramesDB.classicFrames and 7 or 4
-    local playerEliteFrame = CreateCheckbox("playerEliteFrame", L["Elite_Texture"], BetterBlizzFrames)
-    playerEliteFrame:SetPoint("LEFT", playerFrameClickthrough.text, "RIGHT", 5, 0)
-    playerEliteFrame:HookScript("OnClick", function(self)
-        BBF.PlayerElite(BetterBlizzFramesDB.playerEliteFrameMode)
-    end)
-    playerEliteFrame:HookScript("OnMouseDown", function(self, button)
-        if button == "RightButton" and IsShiftKeyDown() then
-            if not BetterBlizzFramesDB.playerEliteFrameDarkmode then
-                BetterBlizzFramesDB.playerEliteFrameDarkmode = true
-            else
-                BetterBlizzFramesDB.playerEliteFrameDarkmode = nil
-            end
-            if GameTooltip:IsShown() and GameTooltip:GetOwner() == self then
-                self:GetScript("OnEnter")(self)
-            end
-            BBF.PlayerElite(BetterBlizzFramesDB["playerEliteFrameMode"])
-        elseif button == "RightButton" then
-            BetterBlizzFramesDB["playerEliteFrameMode"] = BetterBlizzFramesDB["playerEliteFrameMode"] % textures + 1
-            BBF.PlayerElite(BetterBlizzFramesDB["playerEliteFrameMode"])
-        end
-    end)
-    CreateTooltipTwo(playerEliteFrame, L["Show_Elite_Texture"], string.format(L["Tooltip_Show_Elite_Texture_Desc"], textures))
-
     local playerReputationColor = CreateCheckbox("playerReputationColor", L["Add_Reputation_Color"], BetterBlizzFrames, nil, BBF.PlayerReputationColor)
-    playerReputationColor:SetPoint("TOPLEFT", playerFrameClickthrough, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    playerReputationColor:SetPoint("TOPLEFT", BetterBlizzFrames.playerFrameHidden, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(playerReputationColor, L["Tooltip_Add_Reputation_Color"] .. " |A:UI-HUD-UnitFrame-Target-PortraitOn-Type:18:98|a")
 
     local playerReputationClassColor = CreateCheckbox("playerReputationClassColor", L["Class_Color_Combo"], BetterBlizzFrames, nil, BBF.PlayerReputationColor)
@@ -3713,6 +3699,30 @@ local function guiGeneralTab()
             OpenClassSpecificWindow()
         end
     end)
+
+    local textures = BetterBlizzFramesDB.classicFrames and 7 or 4
+    local playerEliteFrame = CreateCheckbox("playerEliteFrame", L["Elite_Texture"], BetterBlizzFrames)
+    playerEliteFrame:SetPoint("LEFT", hidePlayerPower.text, "RIGHT", 5, 0)
+    playerEliteFrame:HookScript("OnClick", function(self)
+        BBF.PlayerElite(BetterBlizzFramesDB.playerEliteFrameMode)
+    end)
+    playerEliteFrame:HookScript("OnMouseDown", function(self, button)
+        if button == "RightButton" and IsShiftKeyDown() then
+            if not BetterBlizzFramesDB.playerEliteFrameDarkmode then
+                BetterBlizzFramesDB.playerEliteFrameDarkmode = true
+            else
+                BetterBlizzFramesDB.playerEliteFrameDarkmode = nil
+            end
+            if GameTooltip:IsShown() and GameTooltip:GetOwner() == self then
+                self:GetScript("OnEnter")(self)
+            end
+            BBF.PlayerElite(BetterBlizzFramesDB["playerEliteFrameMode"])
+        elseif button == "RightButton" then
+            BetterBlizzFramesDB["playerEliteFrameMode"] = BetterBlizzFramesDB["playerEliteFrameMode"] % textures + 1
+            BBF.PlayerElite(BetterBlizzFramesDB["playerEliteFrameMode"])
+        end
+    end)
+    CreateTooltipTwo(playerEliteFrame, L["Show_Elite_Texture"], string.format(L["Tooltip_Show_Elite_Texture_Desc"], textures))
 
     local hideResourceTooltip = CreateCheckbox("hideResourceTooltip", L["Hide_Resource_Tooltip"], BetterBlizzFrames, nil, BBF.HideClassResourceTooltip)
     hideResourceTooltip:SetPoint("TOPLEFT", hidePlayerPower, "BOTTOMLEFT", 0, pixelsBetweenBoxes)

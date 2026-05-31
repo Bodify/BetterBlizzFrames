@@ -292,3 +292,13 @@ function BBF.AddTexture(name)
 	end
 	BBF.LSM:Register("statusbar", name, "Interface\\AddOns\\CustomMedia\\" .. name)
 end
+
+function BBF.HidePlayerFrame()
+	if BetterBlizzFramesDB.playerFrameHidden then
+		PlayerFrame:SetParent(BBF.hiddenFrame)
+		BBF.hiddenPlayerFrame = true
+	elseif BBF.hiddenPlayerFrame then
+		PlayerFrame:SetParent(UIParent)
+		BBF.hiddenPlayerFrame = nil
+	end
+end

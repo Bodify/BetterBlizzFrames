@@ -2098,7 +2098,11 @@ function BBF.ArenaOptimizer(disable, noPrint)
                 end
             end
             if changedCVars and not db.arenaOptimizerDisablePrint and not noPrint then
-                BBF.Print(L["Print_Arena_Optimizer_Adjusted_Down"])
+                C_Timer.After(1, function()
+                    print("|cff00c0ff---------------|r")
+                    BBF.Print(L["Print_Arena_Optimizer_Adjusted_Down"])
+                    print("|cff00c0ff---------------|r")
+                end)
             end
         end)
     else
@@ -2111,7 +2115,11 @@ function BBF.ArenaOptimizer(disable, noPrint)
                 end
             end
             if changedCVars and not db.arenaOptimizerDisablePrint and not noPrint then
-                BBF.Print(L["Print_Arena_Optimizer_Adjusted_Up"])
+                C_Timer.After(1, function()
+                    print("|cff00c0ff---------------|r")
+                    BBF.Print(L["Print_Arena_Optimizer_Adjusted_Up"])
+                    print("|cff00c0ff---------------|r")
+                end)
             end
         end)
     end
@@ -2123,7 +2131,7 @@ function BBF.HookAndUpdatePartyFrameRangeAlpha(toggle)
         if issecretvalue(frame) then return end
         if not frame or not frame.displayedUnit then return end
         if frame:IsForbidden() or string.match(frame.displayedUnit, "nameplate") then return end
-        if (not IsInGroup() and not IsInRaid()) then
+        if (not IsInGroup() and not IsInRaid()) and frame.displayedUnit == "player" then
             frame:SetAlpha(1)
             if frame.background and BetterBlizzFramesDB.partyFrameRangeAlphaSolidBackground then
                 frame.background:SetIgnoreParentAlpha(true)
@@ -5251,6 +5259,7 @@ First:SetScript("OnEvent", function(_, event, addonName)
         BBF.ClassicFrames()
         BBF.noPortraitModes()
         BBF.PlayerElite(BetterBlizzFramesDB.playerEliteFrameMode)
+        BBF.HidePlayerFrame()
         BBF.ReduceEditModeAlpha()
         BBF.SymmetricPlayerFrame()
         BBF.HookCastbars()

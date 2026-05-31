@@ -926,15 +926,37 @@ function BBF.HideFrames()
                     -- Player
                     if not BetterBlizzFramesDB.symmetricPlayerFrame then
                         local playerTex = PlayerFrame.PlayerFrameContainer.FrameTexture
-                        playerTex:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOn-NoShadow")
+                        local texture = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOn-NoShadow"
+                        local altTexture = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOn-ClassResource-NoShadow"
+                        playerTex:SetTexture(texture)
                         hooksecurefunc(playerTex, "SetAtlas", function(self)
-                            self:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOn-NoShadow")
+                            self:SetTexture(texture)
                         end)
 
                         local playerAltTex = PlayerFrame.PlayerFrameContainer.AlternatePowerFrameTexture
-                        playerAltTex:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOn-ClassResource-NoShadow")
+
+                        if BetterBlizzFramesDB.hideUnitFramePlayerSecondResource then
+                            altTexture = texture
+                            local altBars = {
+                                AlternatePowerBar,
+                                MonkStaggerBar,
+                                EvokerEbonMightBar,
+                                DemonHunterSoulFragmentsBar,
+                            }
+
+                            for _, frame in ipairs(altBars) do
+                                if frame then
+                                    frame:SetAlpha(0)
+                                end
+                            end
+                            playerAltTex:SetSize(198, 71)
+                            playerAltTex:ClearAllPoints()
+                            playerAltTex:SetAllPoints(playerTex)
+                        end
+
+                        playerAltTex:SetTexture(altTexture)
                         hooksecurefunc(playerAltTex, "SetAtlas", function(self)
-                            self:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOn-ClassResource-NoShadow")
+                            self:SetTexture(altTexture)
                         end)
                     end
 
@@ -982,6 +1004,35 @@ function BBF.HideFrames()
 
                     BBF.hideUnitFrameShadow = true
                 end
+            end
+        elseif not BetterBlizzFramesDB.symmetricPlayerFrame and BetterBlizzFramesDB.hideUnitFramePlayerSecondResource then
+            local playerTex = PlayerFrame.PlayerFrameContainer.FrameTexture
+            local playerAltTex = PlayerFrame.PlayerFrameContainer.AlternatePowerFrameTexture
+
+            local altBars = {
+                AlternatePowerBar,
+                MonkStaggerBar,
+                EvokerEbonMightBar,
+                DemonHunterSoulFragmentsBar,
+            }
+
+            for _, frame in ipairs(altBars) do
+                if frame then
+                    frame:SetAlpha(0)
+                end
+            end
+            if not BetterBlizzFramesDB.classicFrames and not BBF.hookedPlayerAltBarTex then
+                playerAltTex:SetSize(198, 71)
+                playerAltTex:ClearAllPoints()
+                playerAltTex:SetAllPoints(playerTex)
+                playerAltTex:SetAtlas(playerTex:GetAtlas())
+                hooksecurefunc(playerAltTex, "SetAtlas", function(self)
+                    if self.changingTex then return end
+                    self.changingTex = true
+                    self:SetAtlas(playerTex:GetAtlas())
+                    self.changingTex = false
+                end)
+                BBF.hookedPlayerAltBarTex = true
             end
         end
 
