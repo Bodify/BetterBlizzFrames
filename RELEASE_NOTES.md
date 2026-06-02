@@ -1,3 +1,8 @@
+# BetterBlizzFrames 1.9.8b
+## Mists of Pandaria
+### Tweak
+- Update to support MoP patch 5.5.4. Patch 5.5.4 was big and this is just a quick update and might require some minor bug fixes here and there, please report bugs!
+
 # BetterBlizzFrames 1.9.8
 ## Midnight
 ### New

@@ -879,14 +879,14 @@ end
 local function SetUnitFramesFont(font, size, outline)
     local anyFailed = false
     for _, frame in ipairs(frames) do
-        local newSize = size
+        local newSize = tonumber(size)
         if frame == PetFrame or frame == TargetFrameToT or frame == FocusFrameToT then
-            if tonumber(size) >= 13 then
-                newSize = size - 3
-            elseif tonumber(size) <= 10 then
-                newSize = size -1
+            if newSize >= 13 then
+                newSize = newSize - 3
+            elseif newSize <= 10 then
+                newSize = newSize - 1
             else
-                newSize = size -2
+                newSize = newSize - 2
             end
         end
         if not frame.bbfName:SetFont(font, newSize, outline) then
@@ -990,12 +990,12 @@ local function SetUnitFramesValuesFont(font, size, outline)
         local ogFont, ogSize, ogOutline = textObject:GetFont()
 
         local newFont = font or ogFont
-        local newSize = size or ogSize
+        local newSize = tonumber(size or ogSize)
         local newOutline = outline or ogOutline
 
         if petFrames[textObject] then
-            if tonumber(newSize) >= 12 then
-                if tonumber(newSize) > 13 then
+            if newSize >= 12 then
+                if newSize > 13 then
                     newSize = newSize - 3
                 else
                     newSize = newSize - 2

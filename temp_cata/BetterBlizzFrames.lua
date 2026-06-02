@@ -2103,10 +2103,12 @@ local function SetRaidFramePetTextures(frame)
         local originalLayer = originalTexture:GetDrawLayer()
         frame.healthBar:SetStatusBarTexture(raidHpTexture)
         originalTexture:SetDrawLayer(originalLayer)
-        frame.horizTopBorder:Hide()
-        frame.horizBottomBorder:Hide()
-        frame.vertLeftBorder:Hide()
-        frame.vertRightBorder:Hide()
+        if frame.horizTopBorder then
+            frame.horizTopBorder:Hide()
+            frame.horizBottomBorder:Hide()
+            frame.vertLeftBorder:Hide()
+            frame.vertRightBorder:Hide()
+        end
     end
 end
 
@@ -2945,7 +2947,9 @@ PlayerEnteringWorld:SetScript("OnEvent", function()
     BBF.DarkmodeFrames()
     BBF.ClickthroughFrames()
     BBF.CheckForAuraBorders()
-    BBF.RepositionBuffFrame()
+    if BBF.RepositionBuffFrame then
+        BBF.RepositionBuffFrame()
+    end
     if BetterBlizzFramesDB.playerFrameOCD then
         ChangeHotkeyWidth(32)
     end

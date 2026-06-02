@@ -258,7 +258,9 @@ local function updateFrameColorToggleVer(frame, unit)
                 frame:SetStatusBarDesaturated(false)
                 frame:SetStatusBarColor(0, 1, 0, 1)
             else
-                frame:SetStatusBarDesaturated(true)
+                if frame.SetStatusBarDesaturated then
+                    frame:SetStatusBarDesaturated(true)
+                end
                 frame:SetStatusBarColor(color.r, color.g, color.b, 1)
             end
         end
@@ -325,10 +327,10 @@ function BBF.UpdateFrames()
         if UnitExists("focus") then updateFrameColorToggleVer(FocusFrameHealthBar, "focus") end
         if UnitExists("targettarget") then updateFrameColorToggleVer(TargetFrameToTHealthBar, "targettarget") end
         if UnitExists("focustarget") then updateFrameColorToggleVer(FocusFrameToTHealthBar, "focustarget") end
-        if UnitExists("party1") then updateFrameColorToggleVer(PartyMemberFrame1HealthBar, "party1") end
-        if UnitExists("party2") then updateFrameColorToggleVer(PartyMemberFrame2HealthBar, "party2") end
-        if UnitExists("party3") then updateFrameColorToggleVer(PartyMemberFrame3HealthBar, "party3") end
-        if UnitExists("party4") then updateFrameColorToggleVer(PartyMemberFrame4HealthBar, "party4") end
+        if UnitExists("party1") then updateFrameColorToggleVer(PartyMemberFrame1HealthBar or _G["PartyFrame"]["MemberFrame1"].HealthBar, "party1") end
+        if UnitExists("party2") then updateFrameColorToggleVer(PartyMemberFrame2HealthBar or _G["PartyFrame"]["MemberFrame2"].HealthBar, "party2") end
+        if UnitExists("party3") then updateFrameColorToggleVer(PartyMemberFrame3HealthBar or _G["PartyFrame"]["MemberFrame3"].HealthBar, "party3") end
+        if UnitExists("party4") then updateFrameColorToggleVer(PartyMemberFrame4HealthBar or _G["PartyFrame"]["MemberFrame4"].HealthBar, "party4") end
         BBF.HealthColorOn = true
     else
         if BBF.HealthColorOn then
@@ -337,10 +339,10 @@ function BBF.UpdateFrames()
             if UnitExists("focus") then resetFrameColor(FocusFrameHealthBar, "focus") end
             if UnitExists("targettarget") then resetFrameColor(TargetFrameToTHealthBar, "targettarget") end
             if UnitExists("focustarget") then resetFrameColor(FocusFrameToTHealthBar, "focustarget") end
-            if UnitExists("party1") then resetFrameColor(PartyMemberFrame1HealthBar, "party1") end
-            if UnitExists("party2") then resetFrameColor(PartyMemberFrame2HealthBar, "party2") end
-            if UnitExists("party3") then resetFrameColor(PartyMemberFrame3HealthBar, "party3") end
-            if UnitExists("party4") then resetFrameColor(PartyMemberFrame4HealthBar, "party4") end
+            if UnitExists("party1") then resetFrameColor(PartyMemberFrame1HealthBar or _G["PartyFrame"]["MemberFrame1"].HealthBar, "party1") end
+            if UnitExists("party2") then resetFrameColor(PartyMemberFrame2HealthBar or _G["PartyFrame"]["MemberFrame2"].HealthBar, "party2") end
+            if UnitExists("party3") then resetFrameColor(PartyMemberFrame3HealthBar or _G["PartyFrame"]["MemberFrame3"].HealthBar, "party3") end
+            if UnitExists("party4") then resetFrameColor(PartyMemberFrame4HealthBar or _G["PartyFrame"]["MemberFrame4"].HealthBar, "party4") end
             BBF.HealthColorOn = nil
         end
     end
@@ -774,23 +776,23 @@ function BBF.BiggerHealthbars(frame, name)
     end
 
     if not frameTextureHooked then
-        hooksecurefunc("TargetFrame_CheckClassification", function(frame)
-            if not frame or not frame.unit then return end
-            local classification = UnitClassification(frame.unit);
-        
+        local function BiggerHBCheckClassification(self)
+            if not self or not self.unit then return end
+            local classification = UnitClassification(self.unit);
+
             if BetterBlizzFramesDB.biggerHealthbars then
-                local frameName = frame:GetName()
+                local frameName = self:GetName()
                 if frameName == "TargetFrame" and BetterBlizzFramesDB.biggerHealthbarsNoTarget then return end
                 if frameName == "FocusFrame" and BetterBlizzFramesDB.biggerHealthbarsNoFocus then return end
                 local hideMana = ShouldHideManabar(frameName)
                 if (classification == "minus") then
-                    frame.borderTexture:SetTexture(hideMana and bigMinusNoManaTexture or "Interface\\Addons\\BetterBlizzFrames\\media\\UI-TargetingFrame-Minus")
+                    self.borderTexture:SetTexture(hideMana and bigMinusNoManaTexture or "Interface\\Addons\\BetterBlizzFrames\\media\\UI-TargetingFrame-Minus")
                 elseif (classification == "worldboss" or classification == "elite") then
-                    frame.borderTexture:SetTexture(hideMana and bigEliteNoManaTexture or "Interface\\Addons\\BetterBlizzFrames\\media\\UI-TargetingFrame-Elite")
+                    self.borderTexture:SetTexture(hideMana and bigEliteNoManaTexture or "Interface\\Addons\\BetterBlizzFrames\\media\\UI-TargetingFrame-Elite")
                 elseif (classification == "rareelite") then
-                    frame.borderTexture:SetTexture(hideMana and bigRareEliteNoManaTexture or "Interface\\Addons\\BetterBlizzFrames\\media\\UI-TargetingFrame-Rare-Elite")
+                    self.borderTexture:SetTexture(hideMana and bigRareEliteNoManaTexture or "Interface\\Addons\\BetterBlizzFrames\\media\\UI-TargetingFrame-Rare-Elite")
                 elseif (classification == "rare") then
-                    frame.borderTexture:SetTexture(hideMana and bigRareNoManaTexture or "Interface\\Addons\\BetterBlizzFrames\\media\\UI-TargetingFrame-Rare")
+                    self.borderTexture:SetTexture(hideMana and bigRareNoManaTexture or "Interface\\Addons\\BetterBlizzFrames\\media\\UI-TargetingFrame-Rare")
                 else
                     local textureToUse
                     if hideMana then
@@ -799,30 +801,19 @@ function BBF.BiggerHealthbars(frame, name)
                         textureToUse = normalTexture
                     end
                     if BetterBlizzFramesDB.hideLevelText then
-                        if BetterBlizzFramesDB.hideLevelTextAlways or UnitLevel(frame.unit) == maxLvl then
+                        if BetterBlizzFramesDB.hideLevelTextAlways or UnitLevel(self.unit) == maxLvl then
                             textureToUse = hideMana and bigNoLevelNoManaTexture or noLevelTexture
                         end
                     end
-                    frame.borderTexture:SetTexture(textureToUse)
+                    self.borderTexture:SetTexture(textureToUse)
                 end
             end
-        end)
-        frameTextureHooked = true
-
-        -- Hide LTP Name background
-        for i = 1, PlayerFrame:GetNumChildren() do
-            local child = select(i, PlayerFrame:GetChildren())
-            if child and child:IsObjectType("Frame") and not child:GetName() then
-                for j = 1, child:GetNumRegions() do
-                    local region = select(j, child:GetRegions())
-                    if region and region:IsObjectType("Texture") then
-                        local texture = region:GetTexture()
-                        if texture == 137017 then
-                        region:SetTexture(nil)
-                        end
-                    end
-                end
-            end
+        end
+        if TargetFrame_CheckClassification then
+            hooksecurefunc(TargetFrame_CheckClassification, BiggerHBCheckClassification)
+        else
+            hooksecurefunc(TargetFrame, "CheckClassification", BiggerHBCheckClassification)
+            hooksecurefunc(FocusFrame, "CheckClassification", BiggerHBCheckClassification)
         end
     end
 end
@@ -907,30 +898,36 @@ function BBF.HookHideManabars()
     end
 
     if not hideManabarHooked then
-        hooksecurefunc("TargetFrame_CheckClassification", function(frame)
-            if not frame or not frame.unit then return end
-            local frameName = frame:GetName()
+        local function HideManaCheckClassification(self)
+            if not self or not self.unit then return end
+            local frameName = self:GetName()
             if not ShouldHideManabar(frameName) then return end
             if isHandledByBiggerHB(frameName) then return end
-            local classification = UnitClassification(frame.unit)
+            local classification = UnitClassification(self.unit)
             if classification == "minus" then
-                frame.borderTexture:SetTexture(minusNoManaTexture)
+                self.borderTexture:SetTexture(minusNoManaTexture)
             elseif classification == "worldboss" or classification == "elite" then
-                frame.borderTexture:SetTexture(eliteNoManaTexture)
+                self.borderTexture:SetTexture(eliteNoManaTexture)
             elseif classification == "rareelite" then
-                frame.borderTexture:SetTexture(rareEliteNoManaTexture)
+                self.borderTexture:SetTexture(rareEliteNoManaTexture)
             elseif classification == "rare" then
-                frame.borderTexture:SetTexture(rareNoManaTexture)
+                self.borderTexture:SetTexture(rareNoManaTexture)
             else
                 local textureToUse = noManaTexture
                 if BetterBlizzFramesDB.hideLevelText then
-                    if BetterBlizzFramesDB.hideLevelTextAlways or UnitLevel(frame.unit) == maxLvl then
+                    if BetterBlizzFramesDB.hideLevelTextAlways or UnitLevel(self.unit) == maxLvl then
                         textureToUse = noLevelNoManaTexture
                     end
                 end
-                frame.borderTexture:SetTexture(textureToUse)
+                self.borderTexture:SetTexture(textureToUse)
             end
-        end)
+        end
+        if TargetFrame_CheckClassification then
+            hooksecurefunc(TargetFrame_CheckClassification, HideManaCheckClassification)
+        else
+            hooksecurefunc(TargetFrame, "CheckClassification", HideManaCheckClassification)
+            hooksecurefunc(FocusFrame, "CheckClassification", HideManaCheckClassification)
+        end
         hideManabarHooked = true
     end
 end

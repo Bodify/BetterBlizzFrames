@@ -64,9 +64,11 @@ function BBF.HookStatusBarText()
            pMain.ManaBar.TextString,
            pMain.ManaBar.RightText)
 
-    AddBar(PlayerFrameAlternateManaBar,
-           PlayerFrameAlternateManaBar.TextString,
-           PlayerFrameAlternateManaBar.TextString)
+    if PlayerFrameAlternateManaBar then
+        AddBar(PlayerFrameAlternateManaBar,
+            PlayerFrameAlternateManaBar.TextString,
+            PlayerFrameAlternateManaBar.TextString)
+    end
 
     AddBar(PetFrame.healthbar,
            PetFrame.healthbar.TextString,
@@ -111,27 +113,31 @@ function BBF.HookStatusBarText()
     end
 
     -- Hook logic
-    local barUpdateFuncs = {}
     for _, info in ipairs(bars) do
         local bar, centerText, rightText = info.bar, info.centerText, info.rightText
 
         if singleDisplay and statusTextSetting == "NUMERIC" then
-            barUpdateFuncs[bar] = function() UpdateSingleText(bar, centerText) end
+            hooksecurefunc(bar, "UpdateTextStringWithValues", function()
+                UpdateSingleText(bar, centerText)
+            end)
             UpdateSingleText(bar, centerText)
         elseif statusTextSetting == "BOTH" then
-            barUpdateFuncs[bar] = function() UpdateSingleText(bar, rightText) end
+            hooksecurefunc(bar, "UpdateTextStringWithValues", function()
+                UpdateSingleText(bar, rightText)
+            end)
             UpdateSingleText(bar, rightText)
-        elseif statusTextSetting == "NUMERIC" or statusTextSetting == "NONE" then
-            barUpdateFuncs[bar] = function() UpdateNumericText(bar, centerText) end
+        elseif statusTextSetting == "NUMERIC" then
+            hooksecurefunc(bar, "UpdateTextStringWithValues", function()
+                UpdateNumericText(bar, centerText)
+            end)
+            UpdateNumericText(bar, centerText)
+        elseif statusTextSetting == "NONE" then
+            hooksecurefunc(bar, "UpdateTextStringWithValues", function()
+                UpdateNumericText(bar, centerText)
+            end)
             UpdateNumericText(bar, centerText)
         end
     end
-    hooksecurefunc("TextStatusBar_UpdateTextStringWithValues", function(self)
-        local updateFunc = barUpdateFuncs[self]
-        if updateFunc then
-            updateFunc()
-        end
-    end)
 
     BBF.statusBarTextHookBBF = true
 end
