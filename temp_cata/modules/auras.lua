@@ -321,6 +321,7 @@ local hideDefaultPlayerAuraCdText
 local clickthroughAuras
 local targetAuraGlows
 local focusAuraGlows
+local removeDebuffColorBorder
 
 local function UpdateMore()
     purgeableBuffSorting = BetterBlizzFramesDB.purgeableBuffSorting
@@ -351,6 +352,7 @@ local function UpdateMore()
     targetAuraGlows = BetterBlizzFramesDB.targetAuraGlows
     focusAuraGlows = BetterBlizzFramesDB.focusAuraGlows
     clickthroughAuras = BetterBlizzFramesDB.clickthroughAuras
+    removeDebuffColorBorder = BetterBlizzFramesDB.removeDebuffColorBorder
 
     if BetterBlizzFramesDB.targetdeBuffFilterBlizzard or BetterBlizzFramesDB.focusdeBuffFilterBlizzard then
         BetterBlizzFramesDB.targetdeBuffFilterBlizzard = false
@@ -1426,9 +1428,11 @@ local function AdjustAuras(self, frameType)
             local cooldown = _G[auraName.."Cooldown"]
             local count = _G[auraName.."Count"]
             local icon = _G[auraName.."Icon"]
+            local border = _G[auraName.."Border"]
 
             local auraFrame = _G[auraName]
             if auraFrame and auraFrame:IsShown() then
+                auraFrame.Border = border
                 if increaseAuraStrata then
                     auraFrame:SetFrameStrata("HIGH")
                 end
@@ -1544,6 +1548,10 @@ local function AdjustAuras(self, frameType)
 
                 if shouldShowAura then
                     auraFrame:Show()
+
+                    if removeDebuffColorBorder and auraFrame.Border then
+                        auraFrame.Border:Hide()
+                    end
 
                     -- Attach weakauras to certain named auraframes
                     if BBF.globalAuraFrames and BBF.globalAuraFrames[auraData.spellId] then

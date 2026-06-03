@@ -1143,9 +1143,11 @@ local function AdjustAuras(self, frameType)
             local cooldown = _G[auraName.."Cooldown"]
             local count = _G[auraName.."Count"]
             local icon = _G[auraName.."Icon"]
+            local border = _G[auraName.."Border"]
 
             local auraFrame = _G[auraName]
             if auraFrame and auraFrame:IsShown() then
+                auraFrame.Border = border
                 if increaseAuraStrata then
                     auraFrame:SetFrameStrata("HIGH")
                 end

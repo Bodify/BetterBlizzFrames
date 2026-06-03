@@ -2371,6 +2371,9 @@ function BBF.FixStupidBlizzPTRShit()
             hooksecurefunc(TargetFrameBackground, "SetSize", function()
                 TargetFrameBackground:SetHeight(40)
             end)
+            hooksecurefunc(FocusFrameBackground, "SetSize", function()
+                FocusFrameBackground:SetHeight(40)
+            end)
             BBF.tfbFix = true
         end
     else

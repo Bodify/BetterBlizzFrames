@@ -514,14 +514,14 @@ function BBF.SetupLoCFrame()
     frame.Icon.SchoolText:SetPoint("BOTTOM", frame.Icon, "BOTTOM", 0, 1)
     frame.Icon.SchoolText:SetJustifyH("CENTER")
     frame.Icon.SchoolText:SetTextColor(1, 1, 1)
-    frame.Icon.SchoolText:SetFont("Interface/Addons/BetterBlizzPlates/media/Prototype.ttf", 11, "OUTLINE")
+    frame.Icon.SchoolText:SetFont("Interface/Addons/BetterBlizzFrames/media/Prototype.ttf", 11, "OUTLINE")
 
     -- === School Text for Secondary Icon ===
     frame.SecondaryIcon.SchoolText = frame.SecondaryIcon:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     frame.SecondaryIcon.SchoolText:SetPoint("BOTTOM", frame.SecondaryIcon, "BOTTOM", 0, 1)
     frame.SecondaryIcon.SchoolText:SetJustifyH("CENTER")
     frame.SecondaryIcon.SchoolText:SetTextColor(1, 1, 1)
-    frame.SecondaryIcon.SchoolText:SetFont("Interface/Addons/BetterBlizzPlates/media/Prototype.ttf", 9, "OUTLINE")
+    frame.SecondaryIcon.SchoolText:SetFont("Interface/Addons/BetterBlizzFrames/media/Prototype.ttf", 9, "OUTLINE")
     frame.SecondaryIcon.SchoolText:SetDrawLayer("OVERLAY", 7) -- ensures it's above cooldown
 
     -- === CC Type Text ===

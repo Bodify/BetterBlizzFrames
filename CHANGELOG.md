@@ -1,3 +1,8 @@
+# BetterBlizzFrames 1.9.8d
+## Mists of Pandaria
+### Bugfix
+- More tweaks and fixes for the new 5.5.4 patch.
+
 # BetterBlizzFrames 1.9.8c
 ## Mists of Pandaria
 - More adjustments and bugfixes to work around new Blizzard spaghetti.

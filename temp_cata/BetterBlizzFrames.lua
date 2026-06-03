@@ -2339,7 +2339,22 @@ local function ChangeHotkeyWidth(width)
     end
 end
 
-if EJMicroButton then
+local function OCDFramesPresent(requiredFrames)
+    local missing
+    for _, name in ipairs(requiredFrames) do
+        if not _G[name] then
+            missing = missing or {}
+            missing[#missing + 1] = name
+        end
+    end
+    if missing then
+        BBF.Print("|cffff0000BetterBlizzFrames|r OCD tweaks skipped, missing frame(s): " .. table.concat(missing, ", "))
+        return false
+    end
+    return true
+end
+
+if BBF.isMoP then
     function BBF.FixStupidBlizzPTRShit()
         if BetterBlizzFramesDB.playerFrameOCD then
             if C_AddOns.IsAddOnLoaded("DragonflightUI") then
@@ -2347,6 +2362,63 @@ if EJMicroButton then
                     BBF.dfuiOcdWarning = true
                     BBF.Print(L["Print_DragonflightUI_Skipping_OCD_Tweaks"])
                 end
+                return
+            end
+
+            BBF.ActionBarIconZoom()
+            BBF.hotkeyCancel = nil
+
+            local a,b,c,d,e = TargetFrameToTPortrait:GetPoint()
+            TargetFrameToTPortrait:SetPoint(a,b,c,5,-5)
+            TargetFrameToTPortrait:SetSize(36,36)
+
+            local a,b,c,d,e = FocusFrameToTPortrait:GetPoint()
+            FocusFrameToTPortrait:SetPoint(a,b,c,5,-5)
+            FocusFrameToTPortrait:SetSize(36,36)
+
+            if not BBF.tfbFix then
+                hooksecurefunc(TargetFrameBackground, "SetSize", function()
+                    TargetFrameBackground:SetHeight(40)
+                end)
+                hooksecurefunc(FocusFrameBackground, "SetSize", function()
+                    FocusFrameBackground:SetHeight(40)
+                end)
+                BBF.tfbFix = true
+            end
+        else
+            -- BBF.hotkeyCancel = true
+            -- ChangeHotkeyWidth(28)
+            BBF.ActionBarIconZoom()
+        end
+    end
+elseif EJMicroButton then
+    function BBF.FixStupidBlizzPTRShit()
+        if BetterBlizzFramesDB.playerFrameOCD then
+            if C_AddOns.IsAddOnLoaded("DragonflightUI") then
+                if not BBF.dfuiOcdWarning then
+                    BBF.dfuiOcdWarning = true
+                    BBF.Print(L["Print_DragonflightUI_Skipping_OCD_Tweaks"])
+                end
+                return
+            end
+
+            if not OCDFramesPresent({
+                "TargetFrameToTPortrait", "FocusFrameToTPortrait",
+                "PetFrameHealthBar", "PetFrameManaBar",
+                "TargetFrameNameBackground", "TargetFrameHealthBar", "TargetFrameManaBar",
+                "FocusFrameNameBackground", "FocusFrameHealthBar", "FocusFrameManaBar",
+                "MainMenuBarTextureExtender", "MainMenuBarTexture3", "MainMenuBarArtFrame",
+                "CharacterMicroButton", "SpellbookMicroButton", "TalentMicroButton",
+                "AchievementMicroButton", "QuestLogMicroButton", "GuildMicroButton",
+                "CollectionsMicroButton", "PVPMicroButton", "LFGMicroButton",
+                "EJMicroButton", "MainMenuMicroButton", "HelpMicroButton",
+                "MainMenuBarBackpackButton", "MainMenuBarBackpackButtonNormalTexture",
+                "CharacterBag0Slot", "CharacterBag1Slot", "CharacterBag2Slot", "CharacterBag3Slot",
+                "MainMenuExpBar", "MainMenuBar", "MainMenuBarRightEndCap",
+                "MainMenuXPBarTexture0", "MainMenuXPBarTexture1", "MainMenuXPBarTexture2", "MainMenuXPBarTexture3",
+                "MainMenuMaxLevelBar0", "MainMenuMaxLevelBar1", "MainMenuMaxLevelBar2", "MainMenuMaxLevelBar3",
+                "ReputationWatchBar",
+            }) then
                 return
             end
 
@@ -2485,6 +2557,12 @@ else
                     BBF.dfuiOcdWarning = true
                     BBF.Print(L["Print_DragonflightUI_Skipping_OCD_Tweaks"])
                 end
+                return
+            end
+
+            if not OCDFramesPresent({
+                "TargetFrameToTPortrait", "FocusFrameToTPortrait", "TargetFrameBackground",
+            }) then
                 return
             end
 
