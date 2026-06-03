@@ -682,9 +682,11 @@ end
 
 function BBF.ScaleUnitFrames()
     local db = BetterBlizzFramesDB
-    PlayerFrame:SetScale(db.playerFrameScale)
-    TargetFrame:SetScale(db.targetFrameScale)
-    FocusFrame:SetScale(db.focusFrameScale)
+    if not BBF.isMoP and not BBF.isTBC then
+        PlayerFrame:SetScale(db.playerFrameScale)
+        TargetFrame:SetScale(db.targetFrameScale)
+        FocusFrame:SetScale(db.focusFrameScale)
+    end
 end
 
 -- Function to toggle test mode on and off

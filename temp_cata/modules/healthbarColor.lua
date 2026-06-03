@@ -567,14 +567,29 @@ function BBF.BiggerHealthbars(frame, name)
     -- Healthbar
     local point, relativeTo, relativePoint, xOfs, yOfs
     if frame == "PlayerFrame" then
-        point, relativePoint, xOfs, yOfs = "TOPLEFT", "TOPLEFT", 106, -41
+        if BBF.isMoP then
+            point, relativePoint, xOfs, yOfs = "TOPLEFT", "TOPLEFT", 90, -45
+        else
+            point, relativePoint, xOfs, yOfs = "TOPLEFT", "TOPLEFT", 106, -41
+        end
         relativeTo = healthbar:GetParent()
     else
         point, relativeTo, relativePoint, xOfs, yOfs = healthbar:GetPoint()
+        if BBF.isMoP then
+            xOfs = xOfs + 1
+        end
     end
     local newYOffset = yOfs + 18
     BBF.MoveRegion(healthbar, point, relativeTo, relativePoint, xOfs, newYOffset)
-    healthbar:SetHeight(hideMana and 40 or 29)
+    if BBF.isMoP and frame == "PlayerFrame" then
+        healthbar:SetHeight(hideMana and 39 or 28)
+    else
+        if BBF.isMoP then
+            healthbar:SetHeight(hideMana and 39 or 28)
+        else
+            healthbar:SetHeight(hideMana and 40 or 29)
+        end
+    end
     if not BetterBlizzFramesDB.changeUnitFrameHealthbarTexture then
         healthbar:SetStatusBarTexture(LSM:Fetch(LSM.MediaType.STATUSBAR, "Smooth"))
     end
@@ -631,7 +646,11 @@ function BBF.BiggerHealthbars(frame, name)
 
         -- Name
         if frame == "PlayerFrame" then
-            BBF.MoveRegion(name, "CENTER", name:GetParent(), "CENTER", 50, 20)
+            if BBF.isMoP then
+                BBF.MoveRegion(name, "CENTER", name:GetParent(), "CENTER", 35, 15.5)
+            else
+                BBF.MoveRegion(name, "CENTER", name:GetParent(), "CENTER", 50, 20)
+            end
         else
             local point, relativeTo, relativePoint, xOfs, yOfs = name:GetPoint()
             local newYOffset = yOfs + 1
@@ -646,26 +665,49 @@ function BBF.BiggerHealthbars(frame, name)
             BBF.MoveRegion(leftTextMana, point, relativeTo, relativePoint, newXOffset, yOfs)
         end
         if frame == "PlayerFrame" then
-            BBF.MoveRegion(leftText, "LEFT", leftText:GetParent(), "LEFT", 110, 7)
-            BBF.MoveRegion(rightText, "RIGHT", rightText:GetParent(), "RIGHT", -8, 7)
-            BBF.MoveRegion(centerText, "CENTER", centerText:GetParent(), "CENTER", 50, 7)
-        else
-            local point, relativeTo, relativePoint, xOfs, yOfs = leftText:GetPoint()
-            local newYOffset = yOfs + 4 - (hideMana and 6 or 0)
-            local newXOffset = xOfs + 1
-            if not leftTextMana then
-                BBF.MoveRegion(leftText, point, relativeTo, relativePoint, xOfs, newYOffset)
+            if BBF.isMoP then
+                BBF.MoveRegion(leftText, "LEFT", leftText:GetParent(), "LEFT", 94, 4.5)
+                BBF.MoveRegion(rightText, "RIGHT", rightText:GetParent(), "RIGHT", -24, 4.5)
+                BBF.MoveRegion(centerText, "CENTER", centerText:GetParent(), "CENTER", 34, 4.5)
             else
-                BBF.MoveRegion(leftText, point, relativeTo, relativePoint, newXOffset, newYOffset)
+                BBF.MoveRegion(leftText, "LEFT", leftText:GetParent(), "LEFT", 110, 7)
+                BBF.MoveRegion(rightText, "RIGHT", rightText:GetParent(), "RIGHT", -8, 7)
+                BBF.MoveRegion(centerText, "CENTER", centerText:GetParent(), "CENTER", 50, 7)
             end
+        else
+            if BBF.isMoP then
+                local point, relativeTo, relativePoint, xOfs, yOfs = leftText:GetPoint()
+                local newYOffset = yOfs + 4 - (hideMana and 6 or 0) + 1.5
+                local newXOffset = xOfs + 1
+                if not leftTextMana then
+                    BBF.MoveRegion(leftText, point, relativeTo, relativePoint, xOfs, newYOffset)
+                else
+                    BBF.MoveRegion(leftText, point, relativeTo, relativePoint, newXOffset, newYOffset)
+                end
 
-            local point, relativeTo, relativePoint, xOfs, yOfs = rightText:GetPoint()
-            local newYOffset = yOfs + 4 - (hideMana and 6 or 0)
-            BBF.MoveRegion(rightText, point, relativeTo, relativePoint, xOfs, newYOffset)
+                local point, relativeTo, relativePoint, xOfs, yOfs = rightText:GetPoint()
+                BBF.MoveRegion(rightText, point, relativeTo, relativePoint, xOfs, newYOffset)
 
-            local point, relativeTo, relativePoint, xOfs, yOfs = centerText:GetPoint()
-            local newYOffset = yOfs + 4 - (hideMana and 6 or 0)
-            BBF.MoveRegion(centerText, point, relativeTo, relativePoint, xOfs, newYOffset)
+                local point, relativeTo, relativePoint, xOfs, yOfs = centerText:GetPoint()
+                BBF.MoveRegion(centerText, point, relativeTo, relativePoint, xOfs, newYOffset)
+            else
+                local point, relativeTo, relativePoint, xOfs, yOfs = leftText:GetPoint()
+                local newYOffset = yOfs + 4 - (hideMana and 6 or 0)
+                local newXOffset = xOfs + 1
+                if not leftTextMana then
+                    BBF.MoveRegion(leftText, point, relativeTo, relativePoint, xOfs, newYOffset)
+                else
+                    BBF.MoveRegion(leftText, point, relativeTo, relativePoint, newXOffset, newYOffset)
+                end
+
+                local point, relativeTo, relativePoint, xOfs, yOfs = rightText:GetPoint()
+                local newYOffset = yOfs + 4 - (hideMana and 6 or 0)
+                BBF.MoveRegion(rightText, point, relativeTo, relativePoint, xOfs, newYOffset)
+
+                local point, relativeTo, relativePoint, xOfs, yOfs = centerText:GetPoint()
+                local newYOffset = yOfs + 4 - (hideMana and 6 or 0)
+                BBF.MoveRegion(centerText, point, relativeTo, relativePoint, xOfs, newYOffset)
+            end
         end
     else
         if deadText then
@@ -676,7 +718,11 @@ function BBF.BiggerHealthbars(frame, name)
 
         -- Name
         if frame == "PlayerFrame" then
-            BBF.MoveRegion(name, "CENTER", name:GetParent(), "CENTER", 50, 36)
+            if BBF.isMoP then
+                BBF.MoveRegion(name, "CENTER", name:GetParent(), "CENTER", 36, 31.5)
+            else
+                BBF.MoveRegion(name, "CENTER", name:GetParent(), "CENTER", 50, 36)
+            end
         else
             local point, relativeTo, relativePoint, xOfs, yOfs = name:GetPoint()
             local newYOffset = yOfs + 17
@@ -691,26 +737,49 @@ function BBF.BiggerHealthbars(frame, name)
             BBF.MoveRegion(leftTextMana, point, relativeTo, relativePoint, newXOffset, yOfs)
         end
         if frame == "PlayerFrame" then
-            BBF.MoveRegion(leftText, "LEFT", leftText:GetParent(), "LEFT", 110, 12)
-            BBF.MoveRegion(rightText, "RIGHT", rightText:GetParent(), "RIGHT", -8, 12)
-            BBF.MoveRegion(centerText, "CENTER", centerText:GetParent(), "CENTER", 50, 12)
-        else
-            local point, relativeTo, relativePoint, xOfs, yOfs = leftText:GetPoint()
-            local newYOffset = yOfs + 9 - (hideMana and 6 or 0)
-            local newXOffset = xOfs + 1
-            if not leftTextMana then
-                BBF.MoveRegion(leftText, point, relativeTo, relativePoint, xOfs, newYOffset)
+            if BBF.isMoP then
+                BBF.MoveRegion(leftText, "LEFT", leftText:GetParent(), "LEFT", 94, 9.5)
+                BBF.MoveRegion(rightText, "RIGHT", rightText:GetParent(), "RIGHT", -24, 9.5)
+                BBF.MoveRegion(centerText, "CENTER", centerText:GetParent(), "CENTER", 34, 9.5)
             else
-                BBF.MoveRegion(leftText, point, relativeTo, relativePoint, newXOffset, newYOffset)
+                BBF.MoveRegion(leftText, "LEFT", leftText:GetParent(), "LEFT", 110, 12)
+                BBF.MoveRegion(rightText, "RIGHT", rightText:GetParent(), "RIGHT", -8, 12)
+                BBF.MoveRegion(centerText, "CENTER", centerText:GetParent(), "CENTER", 50, 12)
             end
+        else
+            if BBF.isMoP then
+                local point, relativeTo, relativePoint, xOfs, yOfs = leftText:GetPoint()
+                local newYOffset = yOfs + 9 - (hideMana and 6 or 0) + 1.5
+                local newXOffset = xOfs + 1
+                if not leftTextMana then
+                    BBF.MoveRegion(leftText, point, relativeTo, relativePoint, xOfs, newYOffset)
+                else
+                    BBF.MoveRegion(leftText, point, relativeTo, relativePoint, newXOffset, newYOffset)
+                end
 
-            local point, relativeTo, relativePoint, xOfs, yOfs = rightText:GetPoint()
-            local newYOffset = yOfs + 9 - (hideMana and 6 or 0)
-            BBF.MoveRegion(rightText, point, relativeTo, relativePoint, xOfs, newYOffset)
+                local point, relativeTo, relativePoint, xOfs, yOfs = rightText:GetPoint()
+                BBF.MoveRegion(rightText, point, relativeTo, relativePoint, xOfs, newYOffset)
 
-            local point, relativeTo, relativePoint, xOfs, yOfs = centerText:GetPoint()
-            local newYOffset = yOfs + 9 - (hideMana and 6 or 0)
-            BBF.MoveRegion(centerText, point, relativeTo, relativePoint, xOfs, newYOffset)
+                local point, relativeTo, relativePoint, xOfs, yOfs = centerText:GetPoint()
+                BBF.MoveRegion(centerText, point, relativeTo, relativePoint, xOfs, newYOffset)
+            else
+                local point, relativeTo, relativePoint, xOfs, yOfs = leftText:GetPoint()
+                local newYOffset = yOfs + 9 - (hideMana and 6 or 0)
+                local newXOffset = xOfs + 1
+                if not leftTextMana then
+                    BBF.MoveRegion(leftText, point, relativeTo, relativePoint, xOfs, newYOffset)
+                else
+                    BBF.MoveRegion(leftText, point, relativeTo, relativePoint, newXOffset, newYOffset)
+                end
+    
+                local point, relativeTo, relativePoint, xOfs, yOfs = rightText:GetPoint()
+                local newYOffset = yOfs + 9 - (hideMana and 6 or 0)
+                BBF.MoveRegion(rightText, point, relativeTo, relativePoint, xOfs, newYOffset)
+    
+                local point, relativeTo, relativePoint, xOfs, yOfs = centerText:GetPoint()
+                local newYOffset = yOfs + 9 - (hideMana and 6 or 0)
+                BBF.MoveRegion(centerText, point, relativeTo, relativePoint, xOfs, newYOffset)
+            end
         end
     end
 

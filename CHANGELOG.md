@@ -1,3 +1,11 @@
+# BetterBlizzFrames 1.9.8c
+## Mists of Pandaria
+- More adjustments and bugfixes to work around new Blizzard spaghetti.
+- Fix issues with bigger healthbar setting.
+- Disable Player/Target/Focus scale settings now that Edit Mode handles this. You have have to tweak ur settings in edit mode now.
+## TBC
+- Disable Player/Target/Focus scale settings now that Edit Mode handles this. You have have to tweak ur settings in edit mode now.
+
 # BetterBlizzFrames 1.9.8b
 ## Mists of Pandaria
 ### Tweak

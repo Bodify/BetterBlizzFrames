@@ -9,6 +9,7 @@ local pixelsOnFirstBox = -1
 local sliderUnderBoxX = 12
 local sliderUnderBoxY = -10
 local sliderUnderBox = "12, -10"
+local editModeIntroduced = BBF.isMoP or BBF.isTBC
 
 -- Font configuration for localization support
 -- Custom fonts (arialn.TTF, Expressway_Free.ttf) support Latin alphabet only
@@ -2890,7 +2891,7 @@ local function guiGeneralTab()
 
 
     local playerFrameText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    playerFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 0, -150)
+    playerFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 0, editModeIntroduced and -160 or -150)
     playerFrameText:SetText(L["Player_Frame"])
     playerFrameText:SetFont(fontLarge, 16)
     playerFrameText:SetTextColor(1,1,1)
@@ -2899,12 +2900,14 @@ local function guiGeneralTab()
     playerFrameIcon:SetSize(28, 28)
     playerFrameIcon:SetPoint("RIGHT", playerFrameText, "LEFT", -0.5, 0)
 
-    local playerFrameScale = CreateSlider(BetterBlizzFrames, "Size", 0.7, 1.4, 0.01, "playerFrameScale", nil, 120)
-    playerFrameScale:SetPoint("TOP", playerFrameText, "BOTTOM", -4, -13)
-    CreateTooltipTwo(playerFrameScale, L["Tooltip_PlayerFrame_Size_Title"], L["Tooltip_PlayerFrame_Size_Desc"], L["Tooltip_Right_Click_For_Value"])
+    if not editModeIntroduced then
+        local playerFrameScale = CreateSlider(BetterBlizzFrames, "Size", 0.7, 1.4, 0.01, "playerFrameScale", nil, 120)
+        playerFrameScale:SetPoint("TOP", playerFrameText, "BOTTOM", -4, -13)
+        CreateTooltipTwo(playerFrameScale, L["Tooltip_PlayerFrame_Size_Title"], L["Tooltip_PlayerFrame_Size_Desc"], L["Tooltip_Right_Click_For_Value"])
+    end
 
     local playerFrameClickthrough = CreateCheckbox("playerFrameClickthrough", L["Clickthrough"], BetterBlizzFrames, nil, BBF.ClickthroughFrames)
-    playerFrameClickthrough:SetPoint("TOPLEFT", playerFrameText, "BOTTOMLEFT", -24, -26)
+    playerFrameClickthrough:SetPoint("TOPLEFT", playerFrameText, "BOTTOMLEFT", -24, editModeIntroduced and -1 or -26)
     CreateTooltip(playerFrameClickthrough, L["Tooltip_Clickthrough"])
 
     local textures = 3
@@ -3247,7 +3250,7 @@ local function guiGeneralTab()
 
 
     local targetFrameText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    targetFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 250, -160)
+    targetFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 250, editModeIntroduced and -175 or -160)
     targetFrameText:SetText(L["Target_Frame"])
     targetFrameText:SetFont(fontLarge, 16)
     targetFrameText:SetTextColor(1,1,1)
@@ -3258,12 +3261,14 @@ local function guiGeneralTab()
     targetFrameIcon:SetDesaturated(1)
     targetFrameIcon:SetVertexColor(1, 0, 0)
 
-    local targetFrameScale = CreateSlider(BetterBlizzFrames, "Size", 0.7, 1.4, 0.01, "targetFrameScale", nil, 120)
-    targetFrameScale:SetPoint("TOP", targetFrameText, "BOTTOM", -4, -13)
-    CreateTooltipTwo(targetFrameScale, L["Tooltip_TargetFrame_Size_Title"], L["Tooltip_TargetFrame_Size_Desc"], L["Tooltip_Right_Click_For_Value"])
+    if not editModeIntroduced then
+        local targetFrameScale = CreateSlider(BetterBlizzFrames, "Size", 0.7, 1.4, 0.01, "targetFrameScale", nil, 120)
+        targetFrameScale:SetPoint("TOP", targetFrameText, "BOTTOM", -4, -13)
+        CreateTooltipTwo(targetFrameScale, L["Tooltip_TargetFrame_Size_Title"], L["Tooltip_TargetFrame_Size_Desc"], L["Tooltip_Right_Click_For_Value"])
+    end
 
     local targetFrameClickthrough = CreateCheckbox("targetFrameClickthrough", L["Clickthrough"], BetterBlizzFrames, nil, BBF.ClickthroughFrames)
-    targetFrameClickthrough:SetPoint("TOPLEFT", targetFrameText, "BOTTOMLEFT", -24, -26)
+    targetFrameClickthrough:SetPoint("TOPLEFT", targetFrameText, "BOTTOMLEFT", -24, editModeIntroduced and -1 or -26)
     CreateTooltip(targetFrameClickthrough, L["Tooltip_Target_Clickthrough"])
 
     local hideTargetName = CreateCheckbox("hideTargetName", L["Hide_Names"], BetterBlizzFrames, nil, BBF.UpdateNameSettings)
@@ -3469,7 +3474,7 @@ local function guiGeneralTab()
     partyArenaNames:HookScript("OnClick", ToggleDependentCheckboxes)
 
     local focusFrameText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    focusFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 460, -160)
+    focusFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 460, editModeIntroduced and -175 or -160)
     focusFrameText:SetText(L["Focus_Frame"])
     focusFrameText:SetFont(fontLarge, 16)
     focusFrameText:SetTextColor(1,1,1)
@@ -3480,12 +3485,14 @@ local function guiGeneralTab()
     focusFrameIcon:SetDesaturated(1)
     focusFrameIcon:SetVertexColor(0, 1, 0)
 
-    local focusFrameScale = CreateSlider(BetterBlizzFrames, "Size", 0.7, 1.4, 0.01, "focusFrameScale", nil, 120)
-    focusFrameScale:SetPoint("TOP", focusFrameText, "BOTTOM", -4, -13)
-    CreateTooltipTwo(focusFrameScale, L["Tooltip_FocusFrame_Size_Title"], L["Tooltip_FocusFrame_Size_Desc"], L["Tooltip_Right_Click_For_Value"])
+    if not editModeIntroduced then
+        local focusFrameScale = CreateSlider(BetterBlizzFrames, "Size", 0.7, 1.4, 0.01, "focusFrameScale", nil, 120)
+        focusFrameScale:SetPoint("TOP", focusFrameText, "BOTTOM", -4, -13)
+        CreateTooltipTwo(focusFrameScale, L["Tooltip_FocusFrame_Size_Title"], L["Tooltip_FocusFrame_Size_Desc"], L["Tooltip_Right_Click_For_Value"])
+    end
 
     local focusFrameClickthrough = CreateCheckbox("focusFrameClickthrough", L["Clickthrough"], BetterBlizzFrames, nil, BBF.ClickthroughFrames)
-    focusFrameClickthrough:SetPoint("TOPLEFT", focusFrameText, "BOTTOMLEFT", -24, -26)
+    focusFrameClickthrough:SetPoint("TOPLEFT", focusFrameText, "BOTTOMLEFT", -24, editModeIntroduced and -1 or -26)
     CreateTooltip(focusFrameClickthrough, L["Tooltip_Focus_Clickthrough"])
 
     local hideFocusName = CreateCheckbox("hideFocusName", L["Hide_Names"], BetterBlizzFrames, nil, BBF.UpdateNameSettings)
