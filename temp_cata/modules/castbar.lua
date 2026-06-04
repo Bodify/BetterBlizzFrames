@@ -892,11 +892,13 @@ local function CastingBarFrameMiscAdjustments()
             self.Spark:SetSize(30, targetSparkHeight)
             UpdateSparkPosition(self)
         end)
-        FocusFrameSpellBar:HookScript("OnUpdate", function(self)
-            --self.Spark:SetTexture(130877)
-            self.Spark:SetSize(30, focusSparkHeight)
-            UpdateSparkPosition(self)
-        end)
+        if FocusFrameSpellBar then
+            FocusFrameSpellBar:HookScript("OnUpdate", function(self)
+                --self.Spark:SetTexture(130877)
+                self.Spark:SetSize(30, focusSparkHeight)
+                UpdateSparkPosition(self)
+            end)
+        end
         CastingBarFrame.sparkHooked = true
     end
     CastingBarFrame:SetStatusBarTexture(classicCastbarTexture)
