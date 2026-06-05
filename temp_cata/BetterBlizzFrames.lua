@@ -2642,18 +2642,24 @@ function BBF.AddBackgroundTextureToUnitFrames(frame, tot)
     frame.bbfBgTexture = bgTex
 
     if not BBF.bgTextureHook then
-        hooksecurefunc("TargetFrame_CheckClassification", function(self)
+        local function OnCheckClassification(self)
             local classification = UnitClassification(self.unit)
             if classification == "minus" then
                 self.bbfBgTexture:SetPoint("TOPLEFT", self.healthbar, "TOPLEFT", 0, 0)
                 self.bbfBgTexture:SetPoint("BOTTOMRIGHT", self.healthbar, "BOTTOMRIGHT", 0, 0)
                 self.bgTextureMinusChange = true
-            elseif frame.bgTextureMinusChange then
+            elseif self.bgTextureMinusChange then
                 self.bbfBgTexture:SetPoint("TOPLEFT", self.healthbar, "TOPLEFT", 0, 0)
                 self.bbfBgTexture:SetPoint("BOTTOMRIGHT", self.manabar, "BOTTOMRIGHT", 0, 0)
                 self.bgTextureMinusChange = nil
             end
-        end)
+        end
+        if TargetFrame_CheckClassification then
+            hooksecurefunc("TargetFrame_CheckClassification", OnCheckClassification)
+        else
+            hooksecurefunc(TargetFrame, "CheckClassification", OnCheckClassification)
+            hooksecurefunc(FocusFrame, "CheckClassification", OnCheckClassification)
+        end
         BBF.bgTextureHook = true
     end
 end
