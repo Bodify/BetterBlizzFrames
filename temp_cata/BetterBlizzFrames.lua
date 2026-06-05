@@ -623,6 +623,12 @@ function BBF.PlayerElite(mode)
             return
         end
     end
+    if BBF.isMoP then
+        --playerElite:SetSize(228, 98)
+        playerElite:SetSize(232, 100)
+        local point, relativeTo, relativePoint, xOfs, yOfs = playerElite:GetPoint()
+        playerElite:SetPoint("CENTER", relativeTo, "CENTER", -17, -3.5)
+    end
     if mode == 1 then -- Rare (Silver)
         if bigHealthbars then
             if hideMana then
@@ -3052,3 +3058,216 @@ end
 if RuneFrame then
     RuneFrame:SetFrameStrata("MEDIUM")
 end
+
+
+SLASH_DUMP21 = "/dump2"
+
+SlashCmdList.DUMP2 = function(msg)
+    if msg == "" then
+        print("Usage: /dump2 <lua expression>")
+        return
+    end
+    
+    local func, err = loadstring("return " .. msg)
+    if not func then
+        print("Error:", err)
+        return
+    end
+    
+    local pcall_results = {pcall(func)}
+    local ok = pcall_results[1]
+
+    if not ok then
+        print("Error:", pcall_results[2])
+        return
+    end
+
+    local results = {}
+    for i = 2, #pcall_results do
+        results[#results + 1] = tostring(pcall_results[i])
+    end
+    
+    local text = table.concat(results, ", ")
+    
+    local f = CreateFrame("Frame", "Dump2Frame", UIParent, "BackdropTemplate")
+    f:SetSize(600, 120)
+    f:SetPoint("CENTER")
+    f:SetFrameStrata("DIALOG")
+    
+    if not f.bg then
+        f:SetBackdrop({
+                bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
+                edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
+                tile = true,
+                tileSize = 32,
+                edgeSize = 32,
+                insets = { left = 8, right = 8, top = 8, bottom = 8 }
+        })
+        
+        f.editBox = CreateFrame("EditBox", nil, f, "InputBoxTemplate")
+        f.editBox:SetAutoFocus(true)
+        f.editBox:SetMultiLine(false)
+        f.editBox:SetSize(540, 30)
+        f.editBox:SetPoint("CENTER")
+        f.editBox:SetScript("OnEscapePressed", function(self)
+                self:GetParent():Hide()
+        end)
+        f.editBox:SetScript("OnEditFocusGained", function(self)
+                self:HighlightText()
+        end)
+    end
+    
+    f.editBox:SetText(text)
+    f:Show()
+    f.editBox:SetFocus()
+    f.editBox:HighlightText()
+end
+
+
+
+
+
+
+
+
+
+
+
+
+-- local f = CreateFrame("Frame", "TexCoordSimpleFrame", UIParent)
+-- f:SetSize(260, 180)
+-- f:SetPoint("CENTER")
+-- f:SetMovable(true)
+-- f:EnableMouse(true)
+-- f:RegisterForDrag("LeftButton")
+-- f:SetScript("OnDragStart", f.StartMoving)
+-- f:SetScript("OnDragStop", f.StopMovingOrSizing)
+
+-- f.bg = f:CreateTexture(nil, "BACKGROUND")
+-- f.bg:SetAllPoints()
+-- f.bg:SetColorTexture(0, 0, 0, 0.75)
+
+-- local tex = PlayerFrameTexture
+
+-- local labels = {
+--     "Left",
+--     "Right",
+--     "Top",
+--     "Bottom",
+-- }
+
+-- local boxes = {}
+
+-- local originalTex
+-- local hasCaptured = false
+-- local updating = false
+
+-- -- convert LRBT -> TexCoord (ULx, ULy, LLx, LLy, URx, URy, LRx, LRy)
+-- local function lrbtToTex(l, r, t, b)
+--     return l, t, l, b, r, t, r, b
+-- end
+
+-- local function texToLRBT(ulx, uly, llx, lly, urx, ury, lrx, lry)
+--     local left = ulx
+--     local right = urx
+--     local top = uly
+--     local bottom = lly
+--     return left, right, top, bottom
+-- end
+
+-- local function getTex()
+--     local ulx, uly, llx, lly, urx, ury, lrx, lry = tex:GetTexCoord()
+--     return { texToLRBT(ulx, uly, llx, lly, urx, ury, lrx, lry) }
+-- end
+
+-- local function applyLRBT(v)
+--     tex:SetTexCoord(lrbtToTex(v[1], v[2], v[3], v[4]))
+-- end
+
+-- local function readBoxes()
+--     local v = {}
+--     for i = 1, 4 do
+--         v[i] = tonumber(boxes[i]:GetText()) or 0
+--     end
+--     return v
+-- end
+
+-- local function setBoxes(v)
+--     for i = 1, 4 do
+--         boxes[i]:SetText(string.format("%.4f", v[i]))
+--     end
+-- end
+
+-- local function refresh()
+--     local v = getTex()
+
+--     updating = true
+--     setBoxes(v)
+--     updating = false
+
+--     if not hasCaptured then
+--         originalTex = { unpack(v) }
+--         hasCaptured = true
+--     end
+-- end
+
+-- local function reset()
+--     if originalTex then
+--         updating = true
+--         setBoxes(originalTex)
+--         updating = false
+
+--         applyLRBT(originalTex)
+--     end
+-- end
+
+-- local function liveApply()
+--     if updating then return end
+--     applyLRBT(readBoxes())
+-- end
+
+-- for i = 1, 4 do
+--     local label = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+--     label:SetPoint("TOPLEFT", 12, -12 - (i - 1) * 30)
+--     label:SetText(labels[i])
+
+--     local eb = CreateFrame("EditBox", nil, f)
+--     eb:SetSize(90, 20)
+--     eb:SetPoint("LEFT", label, "RIGHT", 10, 0)
+
+--     eb:SetAutoFocus(false)
+--     eb:SetFontObject("ChatFontSmall")
+--     eb:SetTextInsets(2, 2, 2, 2)
+
+--     eb:SetScript("OnEscapePressed", function(self)
+--         self:ClearFocus()
+--     end)
+
+--     eb:SetScript("OnTextChanged", function()
+--         liveApply()
+--     end)
+
+--     boxes[i] = eb
+-- end
+
+-- local refreshBtn = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+-- refreshBtn:SetSize(70, 22)
+-- refreshBtn:SetPoint("BOTTOMLEFT", 10, 10)
+-- refreshBtn:SetText("Refresh")
+-- refreshBtn:SetScript("OnClick", refresh)
+
+-- local resetBtn = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+-- resetBtn:SetSize(70, 22)
+-- resetBtn:SetPoint("BOTTOMRIGHT", -10, 10)
+-- resetBtn:SetText("Reset")
+-- resetBtn:SetScript("OnClick", reset)
+
+-- SLASH_TEXCOORD1 = "/texcoord"
+-- SlashCmdList["TEXCOORD"] = function()
+--     if f:IsShown() then
+--         f:Hide()
+--     else
+--         f:Show()
+--         refresh()
+--     end
+-- end
