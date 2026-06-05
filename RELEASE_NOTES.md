@@ -1,3 +1,10 @@
+# BetterBlizzFrames 1.9.8e
+## Mists of Pandaria
+### Bugfix
+- More tweaks and fixes for the new 5.5.4 patch.
+## Era
+- Fix lua error due to missing check for focus castbar (which doesnt exist on Era)
+
 # BetterBlizzFrames 1.9.8d
 ## Mists of Pandaria
 ### Bugfix
