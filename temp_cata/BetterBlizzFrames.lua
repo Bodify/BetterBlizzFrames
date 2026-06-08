@@ -623,12 +623,8 @@ function BBF.PlayerElite(mode)
             return
         end
     end
-    if BBF.isMoP then
-        --playerElite:SetSize(228, 98)
-        playerElite:SetSize(232, 100)
-        local point, relativeTo, relativePoint, xOfs, yOfs = playerElite:GetPoint()
-        playerElite:SetPoint("CENTER", relativeTo, "CENTER", -17, -3.5)
-    end
+    playerElite:SetSize(232, 100)
+    playerElite:SetPoint("CENTER", PlayerFrame, "CENTER", -17, -3.5)
     if mode == 1 then -- Rare (Silver)
         if bigHealthbars then
             if hideMana then

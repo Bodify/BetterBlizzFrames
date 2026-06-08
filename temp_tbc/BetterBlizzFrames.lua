@@ -624,9 +624,8 @@ function BBF.PlayerElite(mode)
             return
         end
     end
-    playerElite:SetSize(233, 102)
-    playerElite:ClearAllPoints()
-    playerElite:SetPoint("CENTER", PlayerFrame, "CENTER", -17, -3)
+    playerElite:SetSize(232, 100)
+    playerElite:SetPoint("CENTER", PlayerFrame, "CENTER", -17, -3.5)
     if mode == 1 then -- Rare (Silver)
         if bigHealthbars then
             if hideMana then
