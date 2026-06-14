@@ -7,6 +7,7 @@
 ### Bugfix
 - Fix Target/FocusFrame background texture being too low on Minus mobs
 - Fix adding duration to smoke bomb aura for MoP.
+- Fix PlayerFrame elite texture being wrong size after MoP changes.
 ## Midnight
 ### Bugfix
 - Fix "Hide Player Resource/Power" hiding some classes resources despite ignore setting being enabled.
