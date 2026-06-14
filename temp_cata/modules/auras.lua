@@ -18,6 +18,7 @@ local playerBuffsHooked
 local playerDebuffsHooked
 local targetAurasHooked
 local targetCastbarsHooked
+local smokeBombDetector
 
 local ipairs = ipairs
 local math_ceil = math.ceil
@@ -71,6 +72,10 @@ local activeNonDurationAuras = {}
 local updateInterval = 0.1
 local timeSinceLastUpdate = {}
 BBF.ActiveBuffCheck = CreateFrame("Frame")
+
+local smokeBombId = 76577
+local smokeBombCast = 0
+local smokeTracker
 
 local castToAuraMap = {
     [212182] = 212183, -- Smoke Bomb
@@ -216,6 +221,18 @@ local function BuffCastCheck()
     end)
 end
 
+local function SmokeBombCheck(self, event)
+    local _, subEvent, _, _, _, _, _, _, _, _, _, spellID = CombatLogGetCurrentEventInfo()
+    if subEvent == "SPELL_CAST_SUCCESS" and spellID == smokeBombId then
+        if smokeTracker then
+            smokeTracker:Cancel()
+        end
+        smokeBombCast = GetTime()
+        smokeTracker = C_Timer.NewTimer(5, function()
+            smokeBombCast = 0
+        end)
+    end
+end
 
 
 
@@ -3058,5 +3075,11 @@ function BBF.HookPlayerAndTargetAuras()
         BBF.buffDetector = CreateFrame("Frame")
         BBF.buffDetector:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
         BBF.buffDetector:SetScript("OnEvent", BuffCastCheck)
+    end
+
+    if BBF.isMoP and not smokeBombDetector then
+        smokeBombDetector = CreateFrame("Frame")
+        smokeBombDetector:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+        smokeBombDetector:SetScript("OnEvent", SmokeBombCheck)
     end
 end

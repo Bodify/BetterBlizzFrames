@@ -661,6 +661,11 @@ local function CreateSlider(parent, label, minValue, maxValue, stepValue, elemen
                 elseif element == "partyCastBarScale" then
                     BetterBlizzFramesDB.partyCastBarScale = value
                     BBF.UpdateCastbars()
+                elseif element == "partyFrameRangeAlpha" then
+                    BetterBlizzFramesDB.partyFrameRangeAlpha = value
+                    if BBF.HookAndUpdatePartyFrameRangeAlpha then
+                        BBF.HookAndUpdatePartyFrameRangeAlpha(true)
+                    end
                 elseif element == "partyCastBarXPos" then
                     BetterBlizzFramesDB.partyCastBarXPos = value
                     BBF.UpdateCastbars()
@@ -931,6 +936,17 @@ local function CreateTooltipTwo(widget, title, mainText, subText, anchor, cvarNa
                 tooltipText = tooltipText .. check
             end
 
+            GameTooltip:AddLine(tooltipText, 1, 1, 1, true)
+        end
+
+        if title == L["Change_Party_Frame_Alpha"] then
+            local green = "|cff32f795"
+            local reset = "|r"
+            local check = ""
+            if BetterBlizzFramesDB.partyFrameRangeAlphaSolidBackground then
+                check = " |A:ParagonReputation_Checkmark:15:15|a"
+            end
+            local tooltipText = "\n" .. green .. L["Tooltip_Party_Frame_Range_Alpha_Solid_Bg"] .. reset .. check
             GameTooltip:AddLine(tooltipText, 1, 1, 1, true)
         end
 
@@ -3117,7 +3133,7 @@ local function guiGeneralTab()
     CreateTooltipTwo(hidePetText, L["Hide_Pet_Statusbar_Text"], L["Tooltip_Hide_Pet_Statusbar_Text_Desc"])
 
     local partyFrameText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    partyFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 0, -430)
+    partyFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 0, -410)
     partyFrameText:SetText(L["Party_Frame"])
     partyFrameText:SetFont(fontLarge, 16)
     partyFrameText:SetTextColor(1,1,1)
@@ -3240,11 +3256,34 @@ local function guiGeneralTab()
     hideRaidFrameContainerBorder:SetPoint("TOPLEFT", hideRaidFrameManager, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(hideRaidFrameContainerBorder, L["Hide_CompactRaidFrame_Container_Border"], L["Hide_CompactRaidFrame_Container_Border"])
 
+    if BBF.isMoP then
+        local changePartyFrameRangeAlpha = CreateCheckbox("changePartyFrameRangeAlpha", "", BetterBlizzFrames)
 
+        local partyFrameRangeAlpha = CreateSlider(changePartyFrameRangeAlpha, L["Party_Frame_Range_Alpha"], 0, 1, 0.01, "partyFrameRangeAlpha", nil, 120)
+        partyFrameRangeAlpha:SetPoint("TOP", hideRaidFrameContainerBorder, "BOTTOM", 73, -10)
+        CreateTooltipTwo(changePartyFrameRangeAlpha, L["Party_Frame_Range_Alpha"], L["Tooltip_Party_Frame_Range_Alpha"])
 
-
-
-
+        changePartyFrameRangeAlpha:SetPoint("RIGHT", partyFrameRangeAlpha, "LEFT", 0, 0)
+        CreateTooltipTwo(changePartyFrameRangeAlpha, L["Change_Party_Frame_Alpha"], L["Tooltip_Change_Party_Frame_Alpha"])
+        changePartyFrameRangeAlpha:HookScript("OnClick", function(self)
+            if self:GetChecked() then
+                BBF.HookAndUpdatePartyFrameRangeAlpha(true)
+                EnableElement(partyFrameRangeAlpha)
+            else
+                StaticPopup_Show("BBF_CONFIRM_RELOAD")
+                DisableElement(partyFrameRangeAlpha)
+            end
+        end)
+        changePartyFrameRangeAlpha:HookScript("OnMouseDown", function(self, button)
+            if button == "RightButton" then
+                BetterBlizzFramesDB.partyFrameRangeAlphaSolidBackground = not BetterBlizzFramesDB.partyFrameRangeAlphaSolidBackground
+                if GameTooltip:IsShown() and GameTooltip:GetOwner() == self then
+                    self:GetScript("OnEnter")(self)
+                end
+                StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            end
+        end)
+    end
 
 
 
@@ -4102,15 +4141,15 @@ local function guiCastbars()
     -- Party Castbars
     ----------------------
     local anchorSubPartyCastbar = contentFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    anchorSubPartyCastbar:SetPoint("CENTER", mainGuiAnchor2, "CENTER", secondLineX, firstLineY+30)
+    anchorSubPartyCastbar:SetPoint("CENTER", mainGuiAnchor2, "CENTER", secondLineX, firstLineY+12)
     anchorSubPartyCastbar:SetText(L["Party_Castbars"])
 
-    local partyCastbarBorder = CreateBorderedFrame(anchorSubPartyCastbar, 157, 386, 0, -175, contentFrame)
+    local partyCastbarBorder = CreateBorderedFrame(anchorSubPartyCastbar, 157, 386, 0, -155, contentFrame)
 
     local partyCastbars = contentFrame:CreateTexture(nil, "ARTWORK")
     partyCastbars:SetAtlas("ui-castingbar-filling-channel")
     partyCastbars:SetSize(110, 13)
-    partyCastbars:SetPoint("BOTTOM", anchorSubPartyCastbar, "TOP", -1, 10)
+    partyCastbars:SetPoint("BOTTOM", anchorSubPartyCastbar, "TOP", -1, 5)
 
     local partyCastBarScale = CreateSlider(contentFrame, "Size", 0.5, 1.9, 0.01, "partyCastBarScale")
     partyCastBarScale:SetPoint("TOP", anchorSubPartyCastbar, "BOTTOM", 0, -15)
@@ -4194,15 +4233,15 @@ local function guiCastbars()
     -- Target Castbar
     ----------------------
     local anchorSubTargetCastbar = contentFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    anchorSubTargetCastbar:SetPoint("CENTER", mainGuiAnchor2, "CENTER", thirdLineX, firstLineY+30)
+    anchorSubTargetCastbar:SetPoint("CENTER", mainGuiAnchor2, "CENTER", thirdLineX, firstLineY+12)
     anchorSubTargetCastbar:SetText(L["Target_Castbar"])
 
-    local targetCastbarBorder = CreateBorderedFrame(anchorSubTargetCastbar, 157, 386, 0, -175, contentFrame)
+    local targetCastbarBorder = CreateBorderedFrame(anchorSubTargetCastbar, 157, 386, 0, -155, contentFrame)
 
     local targetCastBar = contentFrame:CreateTexture(nil, "ARTWORK")
     targetCastBar:SetAtlas("ui-castingbar-tier1-empower-2x")
     targetCastBar:SetSize(110, 13)
-    targetCastBar:SetPoint("BOTTOM", anchorSubTargetCastbar, "TOP", -1, 10)
+    targetCastBar:SetPoint("BOTTOM", anchorSubTargetCastbar, "TOP", -1, 5)
 
     local targetCastBarScale = CreateSlider(contentFrame, "Size", 0.1, 1.9, 0.01, "targetCastBarScale")
     targetCastBarScale:SetPoint("TOP", anchorSubTargetCastbar, "BOTTOM", 0, -15)
@@ -4373,17 +4412,17 @@ local function guiCastbars()
     -- Pet Castbars
     ----------------------
     local anchorSubPetCastbar = contentFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    anchorSubPetCastbar:SetPoint("CENTER", mainGuiAnchor2, "CENTER", firstLineX, secondLineY - 90)
+    anchorSubPetCastbar:SetPoint("CENTER", mainGuiAnchor2, "CENTER", firstLineX, secondLineY - 108)
     anchorSubPetCastbar:SetText(L["Pet_Castbar"])
 
-    local petCastbarBorder = CreateBorderedFrame(anchorSubPetCastbar, 157, 320, 0, -142, contentFrame)
+    local petCastbarBorder = CreateBorderedFrame(anchorSubPetCastbar, 157, 320, 0, -122, contentFrame)
 
     local petCastbars = contentFrame:CreateTexture(nil, "ARTWORK")
     petCastbars:SetAtlas("ui-castingbar-filling-channel")
     petCastbars:SetDesaturated(true)
     petCastbars:SetVertexColor(1, 0.25, 0.98)
     petCastbars:SetSize(110, 13)
-    petCastbars:SetPoint("BOTTOM", anchorSubPetCastbar, "TOP", -1, 10)
+    petCastbars:SetPoint("BOTTOM", anchorSubPetCastbar, "TOP", -1, 5)
 
     local petCastBarScale = CreateSlider(contentFrame, "Size", 0.5, 1.9, 0.01, "petCastBarScale")
     petCastBarScale:SetPoint("TOP", anchorSubPetCastbar, "BOTTOM", 0, -15)
@@ -4477,15 +4516,15 @@ local function guiCastbars()
     -- Focus Castbar
     ----------------------
     local anchorSubFocusCastbar = contentFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    anchorSubFocusCastbar:SetPoint("CENTER", mainGuiAnchor2, "CENTER", fourthLineX, firstLineY+30)
+    anchorSubFocusCastbar:SetPoint("CENTER", mainGuiAnchor2, "CENTER", fourthLineX, firstLineY+12)
     anchorSubFocusCastbar:SetText(L["Focus_Castbar"])
 
-    local focusCastbarBorder = CreateBorderedFrame(anchorSubFocusCastbar, 157, 386, 0, -175, contentFrame)
+    local focusCastbarBorder = CreateBorderedFrame(anchorSubFocusCastbar, 157, 386, 0, -155, contentFrame)
 
     local focusCastBar = contentFrame:CreateTexture(nil, "ARTWORK")
     focusCastBar:SetAtlas("ui-castingbar-full-applyingcrafting")
-    focusCastBar:SetSize(110, 16)
-    focusCastBar:SetPoint("BOTTOM", anchorSubFocusCastbar, "TOP", -1, 8.5)
+    focusCastBar:SetSize(110, 13)
+    focusCastBar:SetPoint("BOTTOM", anchorSubFocusCastbar, "TOP", -1, 5)
 
     local focusCastBarScale = CreateSlider(contentFrame, "Size", 0.1, 1.9, 0.01, "focusCastBarScale")
     focusCastBarScale:SetPoint("TOP", anchorSubFocusCastbar, "BOTTOM", 0, -15)
@@ -4655,15 +4694,15 @@ local function guiCastbars()
     -- Player Castbar
     ----------------------
     local anchorSubPlayerCastbar = contentFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    anchorSubPlayerCastbar:SetPoint("CENTER", mainGuiAnchor2, "CENTER", firstLineX, firstLineY+30)
+    anchorSubPlayerCastbar:SetPoint("CENTER", mainGuiAnchor2, "CENTER", firstLineX, firstLineY+12)
     anchorSubPlayerCastbar:SetText(L["Player_Castbar"])
 
-    local playerCastbarBorder = CreateBorderedFrame(anchorSubPlayerCastbar, 157, 386, 0, -175, contentFrame)
+    local playerCastbarBorder = CreateBorderedFrame(anchorSubPlayerCastbar, 157, 386, 0, -155, contentFrame)
 
     local playerCastBar = contentFrame:CreateTexture(nil, "ARTWORK")
     playerCastBar:SetAtlas("ui-castingbar-filling-standard")
     playerCastBar:SetSize(110, 13)
-    playerCastBar:SetPoint("BOTTOM", anchorSubPlayerCastbar, "TOP", -1, 10)
+    playerCastBar:SetPoint("BOTTOM", anchorSubPlayerCastbar, "TOP", -1, 5)
 
 
     local playerCastBarScale = CreateSlider(contentFrame, "Size", 0.1, 1.9, 0.01, "playerCastBarScale")

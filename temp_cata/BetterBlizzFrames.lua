@@ -300,6 +300,10 @@ local defaultSettings = {
         ["example aura :3 (delete me)"] = {name = "Example Aura :3 (delete me)"}
     },
     auraBlacklist = {},
+
+    partyFrameRangeAlpha = 0.55,
+    partyFrameRangeAlphaSolidBackground = true,
+    changePartyFrameRangeAlpha = true,
 }
 
 local version = GetBuildInfo()
@@ -1024,6 +1028,140 @@ function BBF.EnableResourceMovement()
         }
     end)
     BBF.MovingResource = true
+end
+
+function BBF.RemoveAddonCategories()
+    if not BetterBlizzFramesDB.removeAddonListCategories then return end
+    if BBF.RemovedAddonCategories then return end
+    if AddonList.BetterBlizzHook then return end
+    if not AddonList.SearchBox then return end
+
+    local function RemoveColorCodes(str)
+        return (str:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", ""));
+    end
+
+    local function SortByTitle(a, b)
+        local aTitle = RemoveColorCodes(select(2, C_AddOns.GetAddOnInfo(a.addonIndex)) or ""):lower();
+        local bTitle = RemoveColorCodes(select(2, C_AddOns.GetAddOnInfo(b.addonIndex)) or ""):lower();
+        return aTitle < bTitle;
+    end
+
+    local function RemoveAddonCategories()
+        local dataProvider = CreateTreeDataProvider();
+        local filterText = AddonList.SearchBox:GetText():lower();
+        local character = UnitName("player");
+
+        local enabledGroups = {};
+        local disabledGroups = {};
+        local groupChildren = {};
+
+        for i = 1, C_AddOns.GetNumAddOns() do
+            local name, title = C_AddOns.GetAddOnInfo(i);
+            local group = C_AddOns.GetAddOnMetadata(i, "Group") or name;
+            local groupClean = RemoveColorCodes(group):lower();
+            local titleClean = RemoveColorCodes(title or name):lower();
+
+            local match = #filterText == 0 or titleClean:find(filterText, 1, true) or groupClean:find(filterText, 1, true);
+            if match then
+                local enabledState = C_AddOns.GetAddOnEnableState(i, character);
+                local loadable, reason = C_AddOns.IsAddOnLoadable(i, character);
+                local isEnabled = enabledState > Enum.AddOnEnableState.None;
+                local treatAsDisabled = not isEnabled or reason == "DEP_DISABLED";
+
+                local entry = { addonIndex = i };
+                local targetGroup = treatAsDisabled and disabledGroups or enabledGroups;
+
+                if name == group then
+                    targetGroup[group] = entry; -- this is the parent
+                else
+                    if BetterBlizzFramesDB.removeAddonListCategoriesHideDependancies and treatAsDisabled then
+                        -- Ungroup this dependency addon and put it directly in the disabled list.
+                        disabledGroups[name] = entry;
+                    else
+                        groupChildren[group] = groupChildren[group] or {};
+                        table.insert(groupChildren[group], entry);
+                    end
+                end
+            end
+        end
+
+        local function InsertSortedGroups(groupTable)
+            local sortedGroups = {};
+            for groupName in pairs(groupTable) do
+                table.insert(sortedGroups, groupName);
+            end
+            table.sort(sortedGroups, function(a, b)
+                return RemoveColorCodes(a):lower() < RemoveColorCodes(b):lower();
+            end);
+
+            for _, groupName in ipairs(sortedGroups) do
+                local parent = groupTable[groupName];
+                local parentNode = dataProvider:Insert(parent);
+                local children = groupChildren[groupName];
+                if children then
+                    table.sort(children, SortByTitle);
+                    for _, child in ipairs(children) do
+                        parentNode:Insert(child);
+                    end
+                end
+            end
+        end
+
+        InsertSortedGroups(enabledGroups);
+        InsertSortedGroups(disabledGroups);
+
+        AddonList.ScrollBox:SetDataProvider(dataProvider, ScrollBoxConstants.RetainScrollPosition);
+        AddonList.ScrollBox:Show();
+    end
+
+    -- Hooks
+    AddonList.SearchBox:HookScript("OnTextChanged", RemoveAddonCategories)
+    hooksecurefunc("AddonList_Update", RemoveAddonCategories)
+    AddonList:HookScript("OnShow", function()
+        AddonList.ScrollBox:Hide()
+        C_Timer.After(0, RemoveAddonCategories)
+    end)
+
+    AddonList.ForceLoad:SetSize(19,19)
+    AddonList.ForceLoad:SetPoint("TOP", AddonList, "TOP", -95, -24)
+
+    for i, region in ipairs({AddonList.ForceLoad:GetRegions()}) do
+        if region:GetObjectType() == "FontString" and region:GetText() == ADDON_FORCE_LOAD then
+            region:ClearAllPoints()
+            region:SetPoint("LEFT", AddonList.ForceLoad, "RIGHT", 5, 0)
+            break
+        end
+    end
+
+    local custom = CreateFrame("CheckButton", nil, AddonList, "MinimalCheckboxTemplate")
+    custom:SetPoint("TOPLEFT", AddonList.ForceLoad, "BOTTOMLEFT", 0, 2)
+    custom.Text = custom:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    custom.Text:SetPoint("LEFT", custom, "RIGHT", 5, 0)
+    custom.Text:SetText(L["Label_Hide_Unloaded_Dependency_Addons"])
+    custom:SetSize(19,19)
+
+    custom:SetScript("OnEnter", function(self)
+        GameTooltip:ClearLines()
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+        GameTooltip:SetText(L["Label_Hide_Unloaded_Dependency_Addons"], 1, 1, 1, 1, true)
+        GameTooltip:AddLine(L["Tooltip_Hide_Unloaded_Dependency_Addons_Desc"], nil, nil, nil, true)
+        GameTooltip:Show()
+    end)
+    custom:SetScript("OnLeave", function(self)
+        GameTooltip:ClearLines()
+        GameTooltip:Hide()
+    end)
+
+    custom:SetChecked(BetterBlizzFramesDB.removeAddonListCategoriesHideDependancies or false)
+
+    custom:SetScript("OnClick", function(self)
+        local checked = self:GetChecked()
+        BetterBlizzFramesDB.removeAddonListCategoriesHideDependancies = checked or nil
+        RemoveAddonCategories()
+    end)
+
+    AddonList.BetterBlizzHook = true
+    BBF.RemovedAddonCategories = true
 end
 
 function BBF.ZoomDefaultActionbarIcons(enableZoom)
@@ -2128,6 +2266,39 @@ local function HookRaidFrameTextures()
     end
 end
 
+if BBF.isMoP then
+    function BBF.HookAndUpdatePartyFrameRangeAlpha(toggle)
+        if not BetterBlizzFramesDB.changePartyFrameRangeAlpha then return end
+        local function UpdateRangeAlpha(frame)
+            if not frame or not frame.displayedUnit then return end
+            if frame:IsForbidden() or string.match(frame.displayedUnit, "nameplate") then return end
+            if (not IsInGroup() and not IsInRaid()) and frame.displayedUnit == "player" then
+                frame:SetAlpha(1)
+                if frame.background and BetterBlizzFramesDB.partyFrameRangeAlphaSolidBackground then
+                    frame.background:SetIgnoreParentAlpha(true)
+                    frame.background:SetAlpha(1)
+                end
+                return
+            end
+            local inRange = UnitInRange(frame.displayedUnit)
+            frame:SetAlpha(inRange and 1 or (BetterBlizzFramesDB.partyFrameRangeAlpha or 0.55))
+            if frame.background and BetterBlizzFramesDB.partyFrameRangeAlphaSolidBackground then
+                frame.background:SetIgnoreParentAlpha(true)
+                frame.background:SetAlpha(1)
+            end
+        end
+        if toggle then
+            for i = 1, 5 do
+                local frame = _G["CompactPartyFrameMember" .. i]
+                UpdateRangeAlpha(frame)
+            end
+        end
+        if BBF.partyFrameRangeAlphaHooked then return end
+        BBF.partyFrameRangeAlphaHooked = true
+        hooksecurefunc("CompactUnitFrame_UpdateCenterStatusIcon", UpdateRangeAlpha)
+    end
+end
+
 function BBF.HookTextures()
     local db = BetterBlizzFramesDB
     -- Hook UnitFrames
@@ -2640,6 +2811,9 @@ function BBF.AddBackgroundTextureToUnitFrames(frame, tot)
     if frame.Background then
         frame.Background:Hide()
     end
+    if PlayerFrameBackground then
+        PlayerFrameBackground:SetHeight(17.5)
+    end
 
     frame.bbfBgTexture = bgTex
 
@@ -2939,6 +3113,8 @@ First:SetScript("OnEvent", function(_, event, addonName)
             BBF.ZoomDefaultActionbarIcons()
             --TurnOnEnabledFeaturesOnLogin()
             BBF.RaiseTargetCastbarStratas()
+            BBF.ReduceEditModeAlpha()
+            BBF.RemoveAddonCategories()
 
             if not BetterBlizzFramesDB.disableHealAbsorbRecolor then
                 local function SkinUnitFrameHealAbsorbBar(bar)
@@ -3035,6 +3211,9 @@ PlayerEnteringWorld:SetScript("OnEvent", function()
     BBF.DarkmodeFrames()
     BBF.ClickthroughFrames()
     BBF.CheckForAuraBorders()
+    if BBF.isMoP then
+        BBF.HookAndUpdatePartyFrameRangeAlpha()
+    end
     if BBF.RepositionBuffFrame then
         BBF.RepositionBuffFrame()
     end
@@ -3054,3 +3233,126 @@ end
 if RuneFrame then
     RuneFrame:SetFrameStrata("MEDIUM")
 end
+
+local function FixBlizzardHealthBackground(self, unit)
+    if UnitExists(unit) and UnitClassification(unit) == "minus" then
+        local height = BetterBlizzFramesDB.biggerHealthbars and 25 or 14
+        self:SetHeight(height)
+    else
+        self:SetHeight(40)
+    end
+end
+
+if TargetFrameBackground then
+    hooksecurefunc(TargetFrameBackground, "SetSize", function(self)
+        FixBlizzardHealthBackground(self, "target")
+    end)
+end
+
+if FocusFrameBackground then
+    hooksecurefunc(FocusFrameBackground, "SetSize", function(self)
+        FixBlizzardHealthBackground(self, "focus")
+    end)
+end
+
+function BBF.ReduceEditModeAlpha(disable)
+    if not BetterBlizzFramesDB.reduceEditModeSelectionAlpha and not disable then return end
+    local alpha = (disable and 1) or BetterBlizzFramesDB.editModeSelectionAlpha or 0.15
+
+    local frames = {
+        ArcheologyDigsiteProgressBar,
+        BagsBar,
+        BossTargetFrameContainer,
+        BuffFrame,
+        ChatFrame1,
+        CompactArenaFrame,
+        CompactRaidFrameContainer,
+        DebuffFrame,
+        DurabilityFrame,
+        ExtraAbilityContainer,
+        FocusFrame,
+        GameTooltipDefaultContainer,
+        LootFrame,
+        MainActionBar,
+        MainActionBar and MainActionBar.VehicleLeaveButton,
+        MicroMenuContainer,
+        MinimapCluster,
+        ObjectiveTrackerFrame,
+        EncounterBar,
+        MirrorTimerContainer,
+        MultiBarBottomLeft,
+        MultiBarBottomRight,
+        MultiBarLeft,
+        MultiBarRight,
+        MultiBar5,
+        MultiBar6,
+        MultiBar7,
+        PartyFrame,
+        PetActionBar,
+        PetFrame,
+        PlayerCastingBarFrame,
+        PlayerFrame,
+        PossessActionBar,
+        StanceBar,
+        StatusTrackingBarManager and StatusTrackingBarManager.MainStatusTrackingBarContainer,
+        StatusTrackingBarManager and StatusTrackingBarManager.SecondaryStatusTrackingBarContainer,
+        TargetFrame,
+        TalkingHeadFrame,
+        VehicleSeatIndicator,
+        EssentialCooldownViewer,
+        UtilityCooldownViewer,
+        BuffIconCooldownViewer,
+        BuffBarCooldownViewer,
+    }
+
+    for _, frame in pairs(frames) do
+        if frame and frame.Selection then
+            frame.Selection:SetAlpha(alpha)
+        end
+    end
+end
+
+local function CreateSmoothSlider(parent, variableToAdjust, title, defaultValue, onChangedCallback)
+    local stepSize = 0.05
+    local minValue, maxValue = 0, 1
+
+    local initialValue = BetterBlizzFramesDB[variableToAdjust] or defaultValue or maxValue
+
+    -- Create slider options and hide all labels except top
+    local options = Settings.CreateSliderOptions(minValue, maxValue, stepSize)
+    --options:SetLabelFormatter(MinimalSliderWithSteppersMixin.Label.Top, function() return title end)
+    -- Leave all others blank (default behavior is hidden if no formatter is set)
+
+    -- Create the slider
+    local slider = CreateFrame("Frame", nil, parent, "MinimalSliderWithSteppersTemplate")
+    slider:SetSize(235, 20)
+    slider:SetPoint("LEFT", parent, "RIGHT", 10, -2)
+
+    -- Label
+    local label = slider:CreateFontString(nil, "OVERLAY", "GameFontNormalMed1")
+    label:SetPoint("BOTTOM", slider, "TOP", 0, 1)
+    label:SetText(title)
+    label:SetTextColor(1,1,1,1)
+
+    -- Initialize with value and options
+    slider:Init(initialValue, options.minValue, options.maxValue, options.steps, options.formatters)
+
+    local function RoundToStep(value, step)
+        return math.floor((value / step) + 0.5) * step
+    end
+
+    -- Register OnValueChanged callback
+    slider:RegisterCallback("OnValueChanged", function(_, value)
+        local rounded = RoundToStep(value, stepSize)
+        BetterBlizzFramesDB.reduceEditModeSelectionAlpha = true
+        BetterBlizzFramesDB[variableToAdjust] = rounded
+        if onChangedCallback then
+            onChangedCallback()
+        end
+    end, slider)
+
+    return slider
+end
+C_Timer.After(1, function()
+    BBF.EditModeAlphaSlider = CreateSmoothSlider(EditModeManagerFrame.LayoutDropdown, "editModeSelectionAlpha", "Edit Mode Transparency", 0.85, BBF.ReduceEditModeAlpha)
+end)
