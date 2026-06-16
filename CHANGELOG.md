@@ -1,3 +1,8 @@
+# BetterBlizzFrames 1.9.9c
+## Midnight
+### Bugfix
+- More fixes for font settings for 12.0.7
+
 # BetterBlizzFrames 1.9.9b
 ## Midnight
 ### New
