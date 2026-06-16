@@ -1,3 +1,10 @@
+# BetterBlizzFrames 1.9.9b
+## Midnight
+### New
+- New JFarm profile (www.twitch.tv/jfarm_ & www.youtube.com/@Jfarm_). Thank you for sharing.
+### Bugfix
+- Fix lua error in unitframe font change setting
+
 # BetterBlizzFrames 1.9.9
 ## Mists of Pandaria
 ### New
