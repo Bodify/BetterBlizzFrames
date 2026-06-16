@@ -919,9 +919,10 @@ end
 
 
 local function SetUnitFramesFont(font, size, outline)
+    size = tonumber(size)
     local anyFailed = false
     for _, frame in ipairs(frames) do
-        local newSize = tonumber(size)
+        local newSize = size
         if frame == PetFrame or frame == TargetFrameToT or frame == FocusFrameToT then
             if newSize >= 13 then
                 newSize = newSize - 3
