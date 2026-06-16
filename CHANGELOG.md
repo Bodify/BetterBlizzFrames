@@ -1,3 +1,8 @@
+# BetterBlizzFrames 1.9.9d
+## Midnight
+### Tweak
+- WoW 12.0.7 comes with more bugs. Important aura filter is broken because of Blizzard and shows a bunch of trash auras. Temporarily disabled important auras until Blizzard fixes it.
+
 # BetterBlizzFrames 1.9.9c
 ## Midnight
 ### Bugfix
