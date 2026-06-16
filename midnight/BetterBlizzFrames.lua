@@ -16,7 +16,6 @@ local defaultSettings = {
     version = addonVersion,
     updates = "empty",
     wasOnLoadingScreen = true,
-    enableBigDebuffs = true,
     -- General
     removeRealmNames = true,
     centerNames = false,
