@@ -5560,10 +5560,11 @@ function BBF.CreateBigDebuffs()
             spellID, texture, auraInstanceID = IterateAuras("HELPFUL|EXTERNAL_DEFENSIVE", nil, unit, seen)
         end
 
-        -- Important buffs
-        if not spellID then
-            spellID, texture, auraInstanceID = IterateAuras("HELPFUL|IMPORTANT", C_Spell.IsSpellImportant, unit, seen)
-        end
+        -- -- Important buffs
+        -- if not spellID then
+        --     spellID, texture, auraInstanceID = IterateAuras("HELPFUL|IMPORTANT", C_Spell.IsSpellImportant, unit, seen)
+        -- end
+        -- - WoW 12.0.7 comes with more bugs. Important aura filter is broken because of Blizzard and shows a bunch of trash auras. Temporarily disabled important auras until Blizzard fixes it.
 
         if spellID then
             local durationObj = C_UnitAuras.GetAuraDuration(unit, auraInstanceID)
