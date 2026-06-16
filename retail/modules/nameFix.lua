@@ -813,6 +813,8 @@ end)
 
 
 local function SetPartyFont(font, size, outline, size2)
+    size = tonumber(size)
+    size2 = tonumber(size2)
     for i = 1, 5 do
         local frame = _G["CompactPartyFrameMember"..i]
         if frame then
@@ -877,9 +879,10 @@ end
 
 
 local function SetUnitFramesFont(font, size, outline)
+    size = tonumber(size)
     local anyFailed = false
     for _, frame in ipairs(frames) do
-        local newSize = tonumber(size)
+        local newSize = size
         if frame == PetFrame or frame == TargetFrameToT or frame == FocusFrameToT then
             if newSize >= 13 then
                 newSize = newSize - 3
@@ -1019,6 +1022,9 @@ end
 
 
 local function SetActionBarFonts(font, size, kbSize, outline, kbOutline, chargeSize)
+    size = tonumber(size)
+    kbSize = tonumber(kbSize)
+    chargeSize = tonumber(chargeSize)
     -- Blizzard action bars
     local blizzButtons = {
         "ActionButton", "MultiBarBottomLeftButton", "MultiBarBottomRightButton",

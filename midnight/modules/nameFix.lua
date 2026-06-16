@@ -855,6 +855,8 @@ end)
 
 
 local function SetPartyFont(font, size, outline, size2)
+    size = tonumber(size)
+    size2 = tonumber(size2)
     for i = 1, 5 do
         local frame = _G["CompactPartyFrameMember"..i]
         if frame then
@@ -1065,6 +1067,9 @@ end
 
 
 local function SetActionBarFonts(font, size, kbSize, outline, kbOutline, chargeSize)
+    size = tonumber(size)
+    kbSize = tonumber(kbSize)
+    chargeSize = tonumber(chargeSize)
     -- Blizzard action bars
     local blizzButtons = {
         "ActionButton", "MultiBarBottomLeftButton", "MultiBarBottomRightButton",
