@@ -363,7 +363,7 @@ local function CreateSimpleDropdown(name, parentFrame, labelText, settingKey, op
             local displayText = GetLocalizedText(option)
             -- Create each item as a button
             local button = rootDescription:CreateButton(displayText, function()
-                BetterBlizzFramesDB[settingKey] = option
+                BetterBlizzFramesDB[settingKey] = tonumber(option) or option
                 dropdown:SetDefaultText(displayText)
                 if toggleFunc then
                     toggleFunc(option)

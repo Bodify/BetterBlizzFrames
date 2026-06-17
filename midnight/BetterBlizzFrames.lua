@@ -5235,6 +5235,20 @@ First:SetScript("OnEvent", function(_, event, addonName)
             end
             BetterBlizzFramesDB.fontOutlineFix = true
         end
+        if not BetterBlizzFramesDB.fontSizeNumFix then
+            local sizeKeys = {
+                "unitFrameFontSize", "unitFrameValueFontSize",
+                "partyFrameFontSize", "partyFrameStatusFontSize",
+                "actionBarFontSize", "actionBarKeyFontSize", "actionBarChargeFontSize"
+            }
+            for _, key in ipairs(sizeKeys) do
+                local val = BetterBlizzFramesDB[key]
+                if type(val) == "string" then
+                    BetterBlizzFramesDB[key] = tonumber(val) or val
+                end
+            end
+            BetterBlizzFramesDB.fontSizeNumFix = true
+        end
         FetchAndSaveValuesOnFirstLogin()
         TurnTestModesOff()
         BBF.ChatFilterCaller()
