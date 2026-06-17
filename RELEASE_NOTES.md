@@ -1,3 +1,8 @@
+# BetterBlizzFrames 1.9.9f
+## Midnight
+### Bugfix
+- Fix lua error from instant combo points setting after changes to PRD from Blizzard
+
 # BetterBlizzFrames 1.9.9e
 ## Midnight
 ### Bugfix

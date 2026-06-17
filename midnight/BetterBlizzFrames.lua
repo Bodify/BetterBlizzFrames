@@ -2720,6 +2720,8 @@ end
 function BBF.InstantComboPoints()
     if not BetterBlizzFramesDB.instantComboPoints then return end
     if BBF.InstantComboPointsActive then return end
+
+    local prdClassFrame = PersonalResourceDisplayFrame.classFrame
     -- Call the function for each frame
     local _, class = UnitClass("player")
 
