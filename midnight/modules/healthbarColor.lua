@@ -55,6 +55,7 @@ end
 
 local function GetRPNameColor(unit)
     if not TRP3_API or not TRP3_API.globals or not TRP3_API.globals.player_realm_id then return end
+    if issecretvalue(UnitGUID(unit)) or issecretvalue(UnitName(unit)) then return end
     local player = AddOn_TotalRP3 and AddOn_TotalRP3.Player and AddOn_TotalRP3.Player.CreateFromUnit(unit)
     if player then
         local color = player:GetCustomColorForDisplay()
