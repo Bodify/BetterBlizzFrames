@@ -93,6 +93,7 @@ local customColorPartyNames
 local function GetRPNameColor(unit)
     if not UnitExists(unit) then return end
     if not TRP3_API.globals.player_realm_id then return end
+    if issecretvalue(UnitGUID(unit)) or issecretvalue(UnitName(unit)) then return end
     local player = AddOn_TotalRP3 and AddOn_TotalRP3.Player and AddOn_TotalRP3.Player.CreateFromUnit(unit)
     if player then
         local color = player:GetCustomColorForDisplay()
@@ -105,11 +106,13 @@ end
 
 local function SetRPName(name, unit)
     if not TRP3_API.globals.player_realm_id then return end
-    local fullName = TRP3_API.r.name(unit) or ""
-    if issecretvalue(fullName) then
-        name:SetText(fullName)
+    local baseName = UnitName(unit)
+    local baseGUID = UnitGUID(unit)
+    if issecretvalue(baseName) or issecretvalue(baseGUID) then
+        name:SetText(baseName or "")
         return
     end
+    local fullName = TRP3_API.r.name(unit) or ""
     local firstRpName, lastRpName = fullName:match("^(%S+)%s*(.*)$")
 
     if rpNamesFirst and rpNamesLast then
