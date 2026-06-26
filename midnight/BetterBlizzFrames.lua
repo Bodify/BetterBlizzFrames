@@ -27,7 +27,7 @@ local defaultSettings = {
     darkModeVigor = true,
     hideGroupIndicator = false,
     hideFocusCombatGlow = false,
-    biggerHealthBar = false,
+    bigPlayerHealthbar = false,
     hideDragonFlying = true,
     targetToTScale = 1,
     focusToTScale = 1,
@@ -5274,7 +5274,7 @@ First:SetScript("OnEvent", function(_, event, addonName)
         end)
         BBF.ClassicFrames()
         BBF.noPortraitModes()
-        BBF.UpdateBiggerHealthBar() -- wildu Wildu
+        BBF.UpdateBigPlayerHealthbar()
         BBF.PlayerElite(BetterBlizzFramesDB.playerEliteFrameMode)
         BBF.HidePlayerFrame()
         BBF.ReduceEditModeAlpha()

@@ -4810,10 +4810,10 @@ local function guiGeneralTab()
 
     -- Field instead of a local to stay under this function's 200-local limit.
     -- BODIFY PLEASE FIX
-    classColorFrames.bbfBigHealthbar = CreateCheckbox("biggerHealthBar", "Big Healthbar", BetterBlizzFrames, nil, BBF.UpdateBiggerHealthBar)
+    classColorFrames.bbfBigHealthbar = CreateCheckbox("bigPlayerHealthbar", "Big Healthbar", BetterBlizzFrames, nil, BBF.UpdateBigPlayerHealthbar)
     classColorFrames.bbfBigHealthbar:SetPoint("LEFT", classColorFrames.text, "RIGHT", 2, 0)
     CreateTooltipTwo(classColorFrames.bbfBigHealthbar, "Big Healthbar", "No Portrait only: makes the PlayerFrame health bar take over the space of health + the power/resource bar. Hides the mana/resource bar.")
-   
+
     classColorFrames.bbfBigHealthbar.UpdateEnabled = function()
         if noPortraitModes:GetChecked() then
             EnableElement(classColorFrames.bbfBigHealthbar)

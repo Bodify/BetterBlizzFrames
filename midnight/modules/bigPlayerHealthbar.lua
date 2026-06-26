@@ -1,7 +1,3 @@
-if not BBF.isMidnight then
-    return
-end
-
 local GROW_DOWN = 12
 local MASK_BASE_HEIGHT = 34
 
@@ -25,7 +21,7 @@ local function GetHealthBits()
 end
 
 local function IsEnabled()
-    return BetterBlizzFramesDB.biggerHealthBar and BetterBlizzFramesDB.noPortraitModes
+    return BetterBlizzFramesDB.bigPlayerHealthbar and BetterBlizzFramesDB.noPortraitModes
 end
 
 local function HideResourceBars()
@@ -102,30 +98,28 @@ local function EnsureHooks()
     end
     hooked = true
     hooksecurefunc(BBF, "noPortraitModes", function()
-        if BetterBlizzFramesDB.biggerHealthBar then
+        if BetterBlizzFramesDB.bigPlayerHealthbar then
             C_Timer.After(0, Apply)
         end
     end)
     hooksecurefunc("PlayerFrame_ToPlayerArt", Apply)
 end
 
-function BBF.UpdateBiggerHealthBar()
+function BBF.UpdateBigPlayerHealthbar()
     if IsEnabled() then
         EnsureHooks()
-        if BBF.UpdateNoPortraitManaVisibility then
-            BBF.UpdateNoPortraitManaVisibility()
-        end
+        BBF.UpdateNoPortraitManaVisibility()
         Apply()
         return
     end
 
     if InCombatLockdown() then
-        BBF.RunAfterCombat(BBF.UpdateBiggerHealthBar)
+        BBF.RunAfterCombat(BBF.UpdateBigPlayerHealthbar)
         return
     end
     RestoreBar()
     ShowResourceBars()
-    if BetterBlizzFramesDB.noPortraitModes and BBF.UpdateNoPortraitManaVisibility then
+    if BetterBlizzFramesDB.noPortraitModes then
         BBF.UpdateNoPortraitManaVisibility()
         RefreshText()
     end
