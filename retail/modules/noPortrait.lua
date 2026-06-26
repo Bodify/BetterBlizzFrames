@@ -363,8 +363,6 @@ function BBF.UpdateNoPortraitText(frame, frameType)
         local healthTextParent = frame.BBFHealthTextFrame or frame
         local manaTextParent = frame.BBFManaTextFrame or frame
 
-        -- wildu Wildu
-        -- Big Healthbar: nudge the health text down to stay centered on the taller bar.
         if db.biggerHealthBar then
             hpTextYOffset = hpTextYOffset - 6
         end
@@ -2550,8 +2548,6 @@ function BBF.UpdateNoPortraitManaVisibility()
         end
     end
 
-    -- wildu Wildu
-    -- Big Healthbar takes over the mana slot, so keep the player mana hidden.
     if db.biggerHealthBar then
         local manaBarArea = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea
         if manaBarArea then
@@ -2560,7 +2556,6 @@ function BBF.UpdateNoPortraitManaVisibility()
     end
 
     -- Hide PlayerFrame Second Resource (AlternatePowerBar)
-    -- wildu Wildu: also hidden when Big Healthbar is on
     if db.hideUnitFramePlayerSecondResource or db.biggerHealthBar then
         if AlternatePowerBar then
             AlternatePowerBar:SetAlpha(0)
