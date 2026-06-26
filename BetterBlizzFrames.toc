@@ -53,6 +53,7 @@ midnight\modules\cdManager.lua
 midnight\modules\partyHighlight.lua
 retail\modules\healer.lua
 retail\modules\noPortrait.lua
+midnight\modules\biggerHealthBar.lua
 
 retail\gui.lua
 midnight\gui.lua

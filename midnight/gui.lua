@@ -4808,6 +4808,22 @@ local function guiGeneralTab()
     end)
     CreateTooltipTwo(classColorFrames, L["Tooltip_Class_Color_Healthbars_Title"], L["Tooltip_Class_Color_Frames_Desc"])
 
+    -- Field instead of a local to stay under this function's 200-local limit.
+    -- BODIFY PLEASE FIX
+    classColorFrames.bbfBigHealthbar = CreateCheckbox("biggerHealthBar", "Big Healthbar", BetterBlizzFrames, nil, BBF.UpdateBiggerHealthBar)
+    classColorFrames.bbfBigHealthbar:SetPoint("LEFT", classColorFrames.text, "RIGHT", 2, 0)
+    CreateTooltipTwo(classColorFrames.bbfBigHealthbar, "Big Healthbar", "No Portrait only: makes the PlayerFrame health bar take over the space of health + the power/resource bar. Hides the mana/resource bar.")
+   
+    classColorFrames.bbfBigHealthbar.UpdateEnabled = function()
+        if noPortraitModes:GetChecked() then
+            EnableElement(classColorFrames.bbfBigHealthbar)
+        else
+            DisableElement(classColorFrames.bbfBigHealthbar)
+        end
+    end
+    classColorFrames.bbfBigHealthbar.UpdateEnabled()
+    noPortraitModes:HookScript("OnClick", classColorFrames.bbfBigHealthbar.UpdateEnabled)
+
     local customHealthbarColors = CreateCheckbox("customHealthbarColors", L["Custom_Color_Health_Mana"], BetterBlizzFrames)
     customHealthbarColors:SetPoint("TOPLEFT", classColorFrames, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(customHealthbarColors, L["Custom_Colors"], L["Tooltip_Custom_Colors_Desc"])

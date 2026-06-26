@@ -67,6 +67,17 @@ local function UpdateTextureVariables()
         playerDefaultTex = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Large.tga"
     end
 
+    if db.biggerHealthBar and not db.noPortraitPixelBorder then
+        local function Unify(tex)
+            if not tex then return tex end
+            return (tex
+                :gsub("PortraitOff%-Large%-Alt%.tga$", "PortraitOff-Large-Alt-Unified.tga")
+                :gsub("PortraitOff%-Large%.tga$", "PortraitOff-Large-Unified.tga"))
+        end
+        playerDefaultTex = Unify(playerDefaultTex)
+        playerAltTex = Unify(playerAltTex)
+    end
+
     if db.hideUnitFrameTargetMana then
         targetDefaultTex = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Minus.tga"
     else
@@ -351,6 +362,12 @@ function BBF.UpdateNoPortraitText(frame, frameType)
         local manaBar = contentMain.ManaBarArea.ManaBar
         local healthTextParent = frame.BBFHealthTextFrame or frame
         local manaTextParent = frame.BBFManaTextFrame or frame
+
+        -- wildu Wildu
+        -- Big Healthbar: nudge the health text down to stay centered on the taller bar.
+        if db.biggerHealthBar then
+            hpTextYOffset = hpTextYOffset - 6
+        end
 
         hpContainer.LeftText:SetParent(healthTextParent)
         hpContainer.LeftText:ClearAllPoints()
@@ -2533,8 +2550,18 @@ function BBF.UpdateNoPortraitManaVisibility()
         end
     end
 
+    -- wildu Wildu
+    -- Big Healthbar takes over the mana slot, so keep the player mana hidden.
+    if db.biggerHealthBar then
+        local manaBarArea = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea
+        if manaBarArea then
+            manaBarArea:SetAlpha(0)
+        end
+    end
+
     -- Hide PlayerFrame Second Resource (AlternatePowerBar)
-    if db.hideUnitFramePlayerSecondResource then
+    -- wildu Wildu: also hidden when Big Healthbar is on
+    if db.hideUnitFramePlayerSecondResource or db.biggerHealthBar then
         if AlternatePowerBar then
             AlternatePowerBar:SetAlpha(0)
             if AlternatePowerBar.BBFPixelBorder then
