@@ -53,11 +53,19 @@ local function UpdateTextureVariables()
     elseif db.hideUnitFramePlayerSecondResource then
         playerAltTex = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Large.tga"
         playerDefaultTex = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Large.tga"
+        if db.bigPlayerHealthbar then
+            playerAltTex = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Large-Unified.tga"
+            playerDefaultTex = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Large-Unified.tga"
+        end
     elseif db.hideUnitFramePlayerMana then
         local altBarShown = PlayerFrame.PlayerFrameContainer.AlternatePowerFrameTexture:IsShown()
         if altBarShown then
             playerAltTex = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Large.tga"
             playerDefaultTex = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Large.tga"
+            if db.bigPlayerHealthbar then
+                playerAltTex = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Large-Unified.tga"
+                playerDefaultTex = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Large-Unified.tga"
+            end
         else
             playerAltTex = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Minus.tga"
             playerDefaultTex = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Minus.tga"
@@ -65,17 +73,10 @@ local function UpdateTextureVariables()
     else
         playerAltTex = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Large-Alt.tga"
         playerDefaultTex = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Large.tga"
-    end
-
-    if db.biggerHealthBar and not db.noPortraitPixelBorder then
-        local function Unify(tex)
-            if not tex then return tex end
-            return (tex
-                :gsub("PortraitOff%-Large%-Alt%.tga$", "PortraitOff-Large-Alt-Unified.tga")
-                :gsub("PortraitOff%-Large%.tga$", "PortraitOff-Large-Unified.tga"))
+        if db.bigPlayerHealthbar then
+            playerAltTex = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Large-Alt-Unified.tga"
+            playerDefaultTex = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Large-Unified.tga"
         end
-        playerDefaultTex = Unify(playerDefaultTex)
-        playerAltTex = Unify(playerAltTex)
     end
 
     if db.hideUnitFrameTargetMana then
@@ -363,7 +364,7 @@ function BBF.UpdateNoPortraitText(frame, frameType)
         local healthTextParent = frame.BBFHealthTextFrame or frame
         local manaTextParent = frame.BBFManaTextFrame or frame
 
-        if db.biggerHealthBar then
+        if db.bigPlayerHealthbar then
             hpTextYOffset = hpTextYOffset - 6
         end
 
@@ -2548,7 +2549,7 @@ function BBF.UpdateNoPortraitManaVisibility()
         end
     end
 
-    if db.biggerHealthBar then
+    if db.bigPlayerHealthbar then
         local manaBarArea = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea
         if manaBarArea then
             manaBarArea:SetAlpha(0)
@@ -2556,7 +2557,10 @@ function BBF.UpdateNoPortraitManaVisibility()
     end
 
     -- Hide PlayerFrame Second Resource (AlternatePowerBar)
-    if db.hideUnitFramePlayerSecondResource or db.biggerHealthBar then
+    if db.hideUnitFramePlayerSecondResource or db.bigPlayerHealthbar then
+        if InsanityBarFrame then
+            InsanityBarFrame:SetAlpha(0)
+        end
         if AlternatePowerBar then
             AlternatePowerBar:SetAlpha(0)
             if AlternatePowerBar.BBFPixelBorder then
@@ -2594,6 +2598,9 @@ function BBF.UpdateNoPortraitManaVisibility()
             end
         end
     else
+        if InsanityBarFrame then
+            InsanityBarFrame:SetAlpha(1)
+        end
         if AlternatePowerBar then
             AlternatePowerBar:SetAlpha(1)
             if AlternatePowerBar.BBFPixelBorder then

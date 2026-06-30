@@ -132,7 +132,11 @@ local function UpdateAltManaBar(updateCombos, cf)
             PlayerFrame.PlayerFrameContainer.AlternatePowerFrameTexture:Show()
         end
         if BetterBlizzFramesDB.noPortraitModes then
-            PlayerFrame.noPortraitMode.Texture:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Large-Alt.tga")
+            if BetterBlizzFramesDB.bigPlayerHealthbar then
+                PlayerFrame.noPortraitMode.Texture:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Large-Alt-Unified.tga")
+            else
+                PlayerFrame.noPortraitMode.Texture:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Large-Alt.tga")
+            end
         end
         if updateCombos then
             if not bar.originalComboPos then
@@ -163,9 +167,17 @@ local function UpdateAltManaBar(updateCombos, cf)
             end
             if BetterBlizzFramesDB.noPortraitModes then
                 if PlayerFrame.PlayerFrameContainer.AlternatePowerFrameTexture:IsShown() then
-                    PlayerFrame.noPortraitMode.Texture:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Large-Alt.tga")
+                    if BetterBlizzFramesDB.bigPlayerHealthbar then
+                        PlayerFrame.noPortraitMode.Texture:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Large-Alt-Unified.tga")
+                    else
+                        PlayerFrame.noPortraitMode.Texture:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Large-Alt.tga")
+                    end
                 else
-                    PlayerFrame.noPortraitMode.Texture:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Large.tga")
+                    if BetterBlizzFramesDB.bigPlayerHealthbar then
+                        PlayerFrame.noPortraitMode.Texture:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Large-Unified.tga")
+                    else
+                        PlayerFrame.noPortraitMode.Texture:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Large.tga")
+                    end
                 end
             end
             bar:Hide()

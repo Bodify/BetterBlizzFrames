@@ -4808,22 +4808,6 @@ local function guiGeneralTab()
     end)
     CreateTooltipTwo(classColorFrames, L["Tooltip_Class_Color_Healthbars_Title"], L["Tooltip_Class_Color_Frames_Desc"])
 
-    -- Field instead of a local to stay under this function's 200-local limit.
-    -- BODIFY PLEASE FIX
-    classColorFrames.bbfBigHealthbar = CreateCheckbox("bigPlayerHealthbar", "Big Healthbar", BetterBlizzFrames, nil, BBF.UpdateBigPlayerHealthbar)
-    classColorFrames.bbfBigHealthbar:SetPoint("LEFT", classColorFrames.text, "RIGHT", 2, 0)
-    CreateTooltipTwo(classColorFrames.bbfBigHealthbar, "Big Healthbar", "No Portrait only: makes the PlayerFrame health bar take over the space of health + the power/resource bar. Hides the mana/resource bar.")
-
-    classColorFrames.bbfBigHealthbar.UpdateEnabled = function()
-        if noPortraitModes:GetChecked() then
-            EnableElement(classColorFrames.bbfBigHealthbar)
-        else
-            DisableElement(classColorFrames.bbfBigHealthbar)
-        end
-    end
-    classColorFrames.bbfBigHealthbar.UpdateEnabled()
-    noPortraitModes:HookScript("OnClick", classColorFrames.bbfBigHealthbar.UpdateEnabled)
-
     local customHealthbarColors = CreateCheckbox("customHealthbarColors", L["Custom_Color_Health_Mana"], BetterBlizzFrames)
     customHealthbarColors:SetPoint("TOPLEFT", classColorFrames, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(customHealthbarColors, L["Custom_Colors"], L["Tooltip_Custom_Colors_Desc"])
@@ -8786,8 +8770,12 @@ local function guiMisc()
     uiWidgetPowerBarScale:SetPoint("LEFT", gladWinTracker.text, "RIGHT", 55, 0)
     CreateTooltipTwo(uiWidgetPowerBarScale, L["UIWidgetPowerBarFrame_Scale"], L["Tooltip_UIWidgetPowerBar_Scale_Desc"])
 
+    local bbfBigPlayerHealthbar = CreateCheckbox("bigPlayerHealthbar", L["Big_PlayerHealthbar"], guiMisc, nil, BBF.UpdateBigPlayerHealthbar)
+    bbfBigPlayerHealthbar:SetPoint("TOPLEFT", settingsText, "BOTTOMLEFT", 320, 17)
+    CreateTooltipTwo(bbfBigPlayerHealthbar, L["Big_PlayerHealthbar"], L["Tooltip_Big_PlayerHealthbar_Desc"])
+
     local hideUnitFramePlayerMana = CreateCheckbox("hideUnitFramePlayerMana", L["Hide_PlayerFrame_Mana"], guiMisc, nil, BBF.UpdateNoPortraitManaVisibility)
-    hideUnitFramePlayerMana:SetPoint("TOPLEFT", settingsText, "BOTTOMLEFT", 320, 17)
+    hideUnitFramePlayerMana:SetPoint("TOPLEFT", bbfBigPlayerHealthbar, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(hideUnitFramePlayerMana, L["Hide_PlayerFrame_Mana"], L["Tooltip_Hide_Player_Mana"])
 
     local hideAllManabarText = CreateCheckbox("hideAllManabarText", L["Hide_All_Manabar_Text"], guiMisc, nil, BBF.HideFrames)
