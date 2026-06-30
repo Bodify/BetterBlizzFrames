@@ -53,11 +53,19 @@ local function UpdateTextureVariables()
     elseif db.hideUnitFramePlayerSecondResource then
         playerAltTex = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Large.tga"
         playerDefaultTex = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Large.tga"
+        if db.bigPlayerHealthbar then
+            playerAltTex = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Large-Unified.tga"
+            playerDefaultTex = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Large-Unified.tga"
+        end
     elseif db.hideUnitFramePlayerMana then
         local altBarShown = PlayerFrame.PlayerFrameContainer.AlternatePowerFrameTexture:IsShown()
         if altBarShown then
             playerAltTex = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Large.tga"
             playerDefaultTex = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Large.tga"
+            if db.bigPlayerHealthbar then
+                playerAltTex = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Large-Unified.tga"
+                playerDefaultTex = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Large-Unified.tga"
+            end
         else
             playerAltTex = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Minus.tga"
             playerDefaultTex = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Minus.tga"
@@ -65,6 +73,10 @@ local function UpdateTextureVariables()
     else
         playerAltTex = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Large-Alt.tga"
         playerDefaultTex = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Large.tga"
+        if db.bigPlayerHealthbar then
+            playerAltTex = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Large-Alt-Unified.tga"
+            playerDefaultTex = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Large-Unified.tga"
+        end
     end
 
     if db.hideUnitFrameTargetMana then
@@ -106,7 +118,7 @@ local function GetPlayerBackgroundYOffset()
     local db = BetterBlizzFramesDB
     if not db then return -11 end
 
-    if db.hideUnitFramePlayerMana and db.hideUnitFramePlayerSecondResource then
+    if (db.hideUnitFramePlayerMana or db.bigPlayerHealthbar) and db.hideUnitFramePlayerSecondResource then
         return 0  -- Both hidden
     elseif db.hideUnitFramePlayerSecondResource then
         return -11  -- Only 2nd resource hidden
@@ -351,6 +363,10 @@ function BBF.UpdateNoPortraitText(frame, frameType)
         local manaBar = contentMain.ManaBarArea.ManaBar
         local healthTextParent = frame.BBFHealthTextFrame or frame
         local manaTextParent = frame.BBFManaTextFrame or frame
+
+        if db.bigPlayerHealthbar then
+            hpTextYOffset = hpTextYOffset - 6
+        end
 
         hpContainer.LeftText:SetParent(healthTextParent)
         hpContainer.LeftText:ClearAllPoints()
@@ -2487,7 +2503,7 @@ function BBF.UpdateNoPortraitManaVisibility()
     UpdateTextureVariables()
 
     -- Hide PlayerFrame Mana
-    if db.hideUnitFramePlayerMana then
+    if db.hideUnitFramePlayerMana or db.bigPlayerHealthbar then
         local manaBarArea = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea
         local petMana = PetFrameManaBar
         if manaBarArea then
@@ -2530,6 +2546,13 @@ function BBF.UpdateNoPortraitManaVisibility()
             PetFrame.Background:ClearAllPoints()
             PetFrame.Background:SetPoint("TOPLEFT", PetFrameHealthBar, "TOPLEFT", 1, -1)
             PetFrame.Background:SetPoint("BOTTOMRIGHT", PetFrameManaBar, "BOTTOMRIGHT", -1, 1)
+        end
+    end
+
+    if db.bigPlayerHealthbar then
+        local manaBarArea = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea
+        if manaBarArea then
+            manaBarArea:SetAlpha(0)
         end
     end
 
