@@ -2595,9 +2595,6 @@ function BBF.UpdateNoPortraitManaVisibility()
             end
         end
     else
-        if InsanityBarFrame then
-            InsanityBarFrame:SetAlpha(1)
-        end
         if AlternatePowerBar then
             AlternatePowerBar:SetAlpha(1)
             if AlternatePowerBar.BBFPixelBorder then
