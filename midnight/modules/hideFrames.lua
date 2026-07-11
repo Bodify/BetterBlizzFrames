@@ -939,7 +939,7 @@ function BBF.HideFrames()
                             altTexture = texture
                             local altBars = {
                                 AlternatePowerBar,
-                                MonkStaggerBar,
+                                BBF.MonkStaggerBarHandler,
                                 EvokerEbonMightBar,
                                 DemonHunterSoulFragmentsBar,
                             }
@@ -1011,7 +1011,7 @@ function BBF.HideFrames()
 
             local altBars = {
                 AlternatePowerBar,
-                MonkStaggerBar,
+                BBF.MonkStaggerBarHandler,
                 EvokerEbonMightBar,
                 DemonHunterSoulFragmentsBar,
             }
@@ -1561,7 +1561,7 @@ function BBF.HideAllManabarText()
     end
 
     -- Class-specific power bars
-    local classBars = { MonkStaggerBar, EvokerEbonMightBar, DemonHunterSoulFragmentsBar }
+    local classBars = { BBF.MonkStaggerBarHandler, EvokerEbonMightBar, DemonHunterSoulFragmentsBar }
     for _, bar in ipairs(classBars) do
         if bar then
             if bar.TextString then table.insert(manaTexts, bar.TextString) end

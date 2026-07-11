@@ -984,7 +984,7 @@ local focusManaBar = FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBa
 local focusHealthBar = FocusFrame.TargetFrameContent.TargetFrameContentMain.HealthBarsContainer.HealthBar
 
 local altBar = AlternatePowerBar
-local staggerBar = MonkStaggerBar
+local staggerBar = BBF.MonkStaggerBarHandler
 
 local statusTexts = {
     playerManaBar.LeftText,

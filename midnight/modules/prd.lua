@@ -205,7 +205,7 @@ function BBF.FancyPRDAltTexture()
             BBF.FancyPRDAltTexture()
         end)
         if playerClass == "MONK" then
-            hooksecurefunc(MonkStaggerBar, "SetStatusBarTexture", function()
+            hooksecurefunc(BBF.MonkStaggerBarHandler, "SetStatusBarTexture", function()
                 BBF.FancyPRDAltTexture()
             end)
         end

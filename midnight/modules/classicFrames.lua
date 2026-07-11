@@ -1007,29 +1007,29 @@ local function AdjustAlternateBars()
     end
 
     if class == "MONK" then
-        MonkStaggerBar:SetSize(94, 12)
-        MonkStaggerBar:ClearAllPoints()
-        MonkStaggerBar:SetPoint("TOPLEFT", PlayerFrameAlternatePowerBarArea, "TOPLEFT", 101, -72)
+        BBF.MonkStaggerBarHandler:SetSize(94, 12)
+        BBF.MonkStaggerBarHandler:ClearAllPoints()
+        BBF.MonkStaggerBarHandler:SetPoint("TOPLEFT", PlayerFrameAlternatePowerBarArea, "TOPLEFT", 101, -72)
 
-        MonkStaggerBar.PowerBarMask:Hide()
+        BBF.MonkStaggerBarHandler.PowerBarMask:Hide()
 
         MonkStaggerBarText:SetPoint("CENTER", 1, -1)
-        MonkStaggerBar.LeftText:SetPoint("LEFT", 0, -1)
-        MonkStaggerBar.RightText:SetPoint("RIGHT", 0, -1)
+        BBF.MonkStaggerBarHandler.LeftText:SetPoint("LEFT", 0, -1)
+        BBF.MonkStaggerBarHandler.RightText:SetPoint("RIGHT", 0, -1)
 
-        MonkStaggerBar.Background = MonkStaggerBar:CreateTexture(nil, "BACKGROUND")
-        MonkStaggerBar.Background:SetSize(128, 16)
-        MonkStaggerBar.Background:SetTexture("Interface\\PlayerFrame\\MonkManaBar")
-        MonkStaggerBar.Background:SetTexCoord(0, 1, 0.5, 1)
-        MonkStaggerBar.Background:SetPoint("TOPLEFT", -17, 0)
+        BBF.MonkStaggerBarHandler.Background = BBF.MonkStaggerBarHandler:CreateTexture(nil, "BACKGROUND")
+        BBF.MonkStaggerBarHandler.Background:SetSize(128, 16)
+        BBF.MonkStaggerBarHandler.Background:SetTexture("Interface\\PlayerFrame\\MonkManaBar")
+        BBF.MonkStaggerBarHandler.Background:SetTexCoord(0, 1, 0.5, 1)
+        BBF.MonkStaggerBarHandler.Background:SetPoint("TOPLEFT", -17, 0)
 
-        MonkStaggerBar.Border = MonkStaggerBar:CreateTexture(nil, "OVERLAY")
-        MonkStaggerBar.Border:SetSize(128, 16)
-        MonkStaggerBar.Border:SetTexture("Interface\\PlayerFrame\\MonkManaBar")
-        MonkStaggerBar.Border:SetTexCoord(0, 1, 0, 0.5)
-        MonkStaggerBar.Border:SetPoint("TOPLEFT", -17, 0)
+        BBF.MonkStaggerBarHandler.Border = BBF.MonkStaggerBarHandler:CreateTexture(nil, "OVERLAY")
+        BBF.MonkStaggerBarHandler.Border:SetSize(128, 16)
+        BBF.MonkStaggerBarHandler.Border:SetTexture("Interface\\PlayerFrame\\MonkManaBar")
+        BBF.MonkStaggerBarHandler.Border:SetTexCoord(0, 1, 0, 0.5)
+        BBF.MonkStaggerBarHandler.Border:SetPoint("TOPLEFT", -17, 0)
 
-        BBF.ApplyTextureChange("mana", MonkStaggerBar, nil, true, false, true)
+        BBF.ApplyTextureChange("mana", BBF.MonkStaggerBarHandler, nil, true, false, true)
     end
 
     -- if class == "DRUID" then
@@ -1131,7 +1131,7 @@ local function AdjustAlternateBars()
     }
 
     if class == "MONK" then
-        tinsert(classicFrameColorTargets, MonkStaggerBar.Border)
+        tinsert(classicFrameColorTargets, BBF.MonkStaggerBarHandler.Border)
     end
 
     if class == "EVOKER" then
@@ -1155,8 +1155,8 @@ local function AdjustAlternateBars()
         if AlternatePowerBar then
             AlternatePowerBar:SetAlpha(0)
         end
-        if MonkStaggerBar then
-            MonkStaggerBar:SetAlpha(0)
+        if BBF.MonkStaggerBarHandler then
+            BBF.MonkStaggerBarHandler:SetAlpha(0)
         end
         if EvokerEbonMightBar then
             EvokerEbonMightBar:SetAlpha(0)

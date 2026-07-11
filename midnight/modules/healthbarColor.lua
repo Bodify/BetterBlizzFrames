@@ -583,8 +583,8 @@ local function HookPowerBarColors()
             SetupAlternateBarHook(AlternatePowerBar, defaultColors.AlternatePowerBar)
         end
 
-        if class == "MONK" and MonkStaggerBar then
-            SetupAlternateBarHook(MonkStaggerBar, defaultColors.MonkStaggerBar)
+        if class == "MONK" and BBF.MonkStaggerBarHandler then
+            SetupAlternateBarHook(BBF.MonkStaggerBarHandler, defaultColors.MonkStaggerBar)
         end
 
         if class == "EVOKER" and EvokerEbonMightBar then
@@ -805,12 +805,12 @@ function BBF.UpdateFrames()
         end
 
         local class = select(2, UnitClass("player"))
-        if class == "MONK" and MonkStaggerBar and MonkStaggerBar:IsShown() then
-            local powerToken = MonkStaggerBar.powerToken or MonkStaggerBar.powerName
+        if class == "MONK" and BBF.MonkStaggerBarHandler and BBF.MonkStaggerBarHandler:IsShown() then
+            local powerToken = BBF.MonkStaggerBarHandler.powerToken or BBF.MonkStaggerBarHandler.powerName
             if powerToken then
                 local r, g, b, a = GetCustomPowerColor(powerToken)
                 if r then
-                    MonkStaggerBar:SetStatusBarColor(r, g, b, a or 1)
+                    BBF.MonkStaggerBarHandler:SetStatusBarColor(r, g, b, a or 1)
                 end
             end
         end
