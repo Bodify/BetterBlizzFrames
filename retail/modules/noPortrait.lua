@@ -2092,10 +2092,10 @@ local function AdjustAlternateBars()
 
     if class == "MONK" then
         SetupAltStyleBar(
-            MonkStaggerBar,
+            BBFMonkStaggerBar,
             MonkStaggerBarText,
-            MonkStaggerBar.LeftText,
-            MonkStaggerBar.RightText
+            BBFMonkStaggerBar.LeftText,
+            BBFMonkStaggerBar.RightText
         )
     end
 
@@ -2454,8 +2454,8 @@ function BBF.UpdateNoPortraitManaVisibility()
             if AlternatePowerBar then
                 AlternatePowerBar:SetAlpha(0)
             end
-            if MonkStaggerBar then
-                MonkStaggerBar:SetAlpha(0)
+            if BBFMonkStaggerBar then
+                BBFMonkStaggerBar:SetAlpha(0)
             end
             if EvokerEbonMightBar then
                 EvokerEbonMightBar:SetAlpha(0)
@@ -2469,8 +2469,8 @@ function BBF.UpdateNoPortraitManaVisibility()
                 if AlternatePowerBar then
                     AlternatePowerBar:SetAlpha(1)
                 end
-                if MonkStaggerBar then
-                    MonkStaggerBar:SetAlpha(1)
+                if BBFMonkStaggerBar then
+                    BBFMonkStaggerBar:SetAlpha(1)
                 end
                 if EvokerEbonMightBar then
                     EvokerEbonMightBar:SetAlpha(1)
@@ -2544,13 +2544,13 @@ function BBF.UpdateNoPortraitManaVisibility()
                 AlternatePowerBar.pixelBorderBackground:SetAlpha(0)
             end
         end
-        if MonkStaggerBar then
-            MonkStaggerBar:SetAlpha(0)
-            if MonkStaggerBar.BBFPixelBorder then
-                MonkStaggerBar.BBFPixelBorder:Hide()
+        if BBFMonkStaggerBar then
+            BBFMonkStaggerBar:SetAlpha(0)
+            if BBFMonkStaggerBar.BBFPixelBorder then
+                BBFMonkStaggerBar.BBFPixelBorder:Hide()
             end
-            if MonkStaggerBar.pixelBorderBackground then
-                MonkStaggerBar.pixelBorderBackground:SetAlpha(0)
+            if BBFMonkStaggerBar.pixelBorderBackground then
+                BBFMonkStaggerBar.pixelBorderBackground:SetAlpha(0)
             end
         end
         if EvokerEbonMightBar then
@@ -2581,13 +2581,13 @@ function BBF.UpdateNoPortraitManaVisibility()
                 AlternatePowerBar.pixelBorderBackground:SetAlpha(1)
             end
         end
-        if MonkStaggerBar then
-            MonkStaggerBar:SetAlpha(1)
-            if MonkStaggerBar.BBFPixelBorder then
-                MonkStaggerBar.BBFPixelBorder:Show()
+        if BBFMonkStaggerBar then
+            BBFMonkStaggerBar:SetAlpha(1)
+            if BBFMonkStaggerBar.BBFPixelBorder then
+                BBFMonkStaggerBar.BBFPixelBorder:Show()
             end
-            if MonkStaggerBar.pixelBorderBackground then
-                MonkStaggerBar.pixelBorderBackground:SetAlpha(1)
+            if BBFMonkStaggerBar.pixelBorderBackground then
+                BBFMonkStaggerBar.pixelBorderBackground:SetAlpha(1)
             end
         end
         if EvokerEbonMightBar then

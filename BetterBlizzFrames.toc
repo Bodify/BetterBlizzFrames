@@ -17,8 +17,9 @@ temp_shared\functions.lua
 temp_shared\functions_classics.lua
 
 retail\temp_tww.lua
-
-midnight\modules\monkStaggerBar.lua
+midnight\modules\TextStatusBar\TextStatusBar.xml
+midnight\modules\UnitFrame\AlternatePowerBarBase.xml
+midnight\modules\Monk\MonkStaggerBar.xml
 midnight\modules\darkmode.lua
 midnight\modules\classicFrames.lua
 midnight\modules\nameFix.lua

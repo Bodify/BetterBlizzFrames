@@ -1,0 +1,20 @@
+<Ui>
+    <Script file="TextStatusBar.lua"/>
+
+    <StatusBar name="BBFTextStatusBar" enableMouseMotion="true" virtual="true" mixin="BBFTextStatusBarMixin">
+        <Scripts>
+            <OnLoad method="InitializeTextStatusBar"/>
+            <OnEvent method="TextStatusBarOnEvent"/>
+            <OnEnter autoEnableInput="false" method="OnStatusBarEnter"/>
+            <OnLeave autoEnableInput="false" method="OnStatusBarLeave"/>
+            <OnValueChanged method="OnStatusBarValueChanged"/>
+            <OnMinMaxChanged method="OnStatusBarMinMaxChanged"/>
+        </Scripts>
+    </StatusBar>
+
+    <Texture name="BBFTextStatusBarSparkTemplate" mixin="BBFTextStatusBarSparkMixin" virtual="true" alphaMode="ADD" texelSnappingBias="0.0" snapToPixelGrid="false">
+        <Anchors>
+            <Anchor point="RIGHT"/>
+        </Anchors>
+    </Texture>
+</Ui>

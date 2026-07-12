@@ -3687,8 +3687,8 @@ function BBF.HookUnitFrameTextures()
             ApplyTextureChange("mana", PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar)
             ApplyTextureChange("mana", AlternatePowerBar, nil, nil, nil, true)
             local class = select(2, UnitClass("player"))
-            if class == "MONK" and MonkStaggerBar then
-                ApplyTextureChange("mana", MonkStaggerBar, nil, nil, nil, true)
+            if class == "MONK" and BBF.MonkStaggerBarHandler then
+                ApplyTextureChange("mana", BBF.MonkStaggerBarHandler, nil, nil, nil, true)
             elseif class == "EVOKER" and EvokerEbonMightBar then
                 ApplyTextureChange("mana", EvokerEbonMightBar, nil, nil, nil, true)
             elseif class == "DEMONHUNTER" and DemonHunterSoulFragmentsBar then
@@ -4233,7 +4233,7 @@ function BBF.SymmetricPlayerFrame()
     local _, playerClass = UnitClass("player")
 
     if playerClass == "MONK" then
-        ConfigurePowerBar(MonkStaggerBar)
+        ConfigurePowerBar(BBF.MonkStaggerBarHandler)
     elseif playerClass == "EVOKER" then
         ConfigurePowerBar(EvokerEbonMightBar)
     elseif playerClass == "SHAMAN" or playerClass == "PRIEST" or playerClass == "DRUID" then
@@ -4258,7 +4258,7 @@ function BBF.AddBackgroundTextureToUnitFrames(frame)
     local hpBar = frame.healthbar or frame.HealthBar or frame.healthBar
     local manaBar = frame.manabar or frame.ManaBar or frame.manaBar
     
-    local isAltBar = frame == AlternatePowerBar or frame == MonkStaggerBar or frame == EvokerEbonMightBar or frame == DemonHunterSoulFragmentsBar
+    local isAltBar = frame == AlternatePowerBar or frame == BBF.MonkStaggerBarHandler or frame == EvokerEbonMightBar or frame == DemonHunterSoulFragmentsBar
 
     if not hpBar and not manaBar and not isAltBar then
         return
@@ -4375,8 +4375,8 @@ function BBF.UnitFrameBackgroundTexture()
     
     -- Add background to alternate power bars (use mana color)
     local _, class = UnitClass("player")
-    if class == "MONK" and MonkStaggerBar then
-        BBF.AddBackgroundTextureToUnitFrames(MonkStaggerBar)
+    if class == "MONK" and BBF.MonkStaggerBarHandler then
+        BBF.AddBackgroundTextureToUnitFrames(BBF.MonkStaggerBarHandler)
     elseif class == "EVOKER" and EvokerEbonMightBar then
         BBF.AddBackgroundTextureToUnitFrames(EvokerEbonMightBar)
     elseif class == "DEMONHUNTER" and DemonHunterSoulFragmentsBar then

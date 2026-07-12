@@ -1,0 +1,13 @@
+<Ui>
+    <Script file="MonkStaggerBarMixin.lua"/>
+    <Script file="MonkStaggerBarSetup.lua"/>
+
+    <StatusBar name="BBFMonkStaggerBarTemplate" mixin="BBFMonkStaggerBarMixin" virtual="true">
+        <KeyValues>
+            <KeyValue key="powerName" value="STAGGER" type="string" />
+        </KeyValues>
+    </StatusBar>
+
+    <StatusBar name="BBFMonkStaggerBar" inherits="BBFPlayerFrameAlternatePowerBarBaseTemplate, BBFMonkStaggerBarTemplate">
+    </StatusBar>
+</Ui>

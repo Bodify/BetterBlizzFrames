@@ -27,6 +27,7 @@ BBF.isRetail = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
 BBF.isMoP = gameVersion:match("^5%.")
 BBF.isTBC = gameVersion:match("^2%.")
 BBF.isEra = gameVersion:match("^1%.")
+BBF.MonkStaggerBarHandler = MonkStaggerBar
 
 local function CreateOverlayFrame(frame)
     frame.bbfOverlayFrame = CreateFrame("Frame", nil, frame)

@@ -1,0 +1,59 @@
+<Ui>
+    <Script file="AlternatePowerBarBase.lua"/>
+
+    <StatusBar name="BBFAlternatePowerBarBaseTemplate" mixin="BBFAlternatePowerBarBaseMixin" inherits="BBFTextStatusBar" virtual="true">
+        <KeyValues>
+            <KeyValue key="powerName" value="MANA" type="string" />
+            <KeyValue key="baseMixin" value="nil" type="global" />
+        </KeyValues>
+        <Layers>
+            <Layer level="OVERLAY" textureSubLevel="2">
+                <FontString name="$parentText" inherits="TextStatusBarText">
+                    <Anchors>
+                        <Anchor point="CENTER" x="0" y="0"/>
+                    </Anchors>
+                </FontString>
+                <FontString parentKey="LeftText" inherits="TextStatusBarText">
+                    <Anchors>
+                        <Anchor point="LEFT" x="2" y="0"/>
+                    </Anchors>
+                </FontString>
+                <FontString parentKey="RightText" inherits="TextStatusBarText">
+                    <Anchors>
+                        <Anchor point="RIGHT" x="-2" y="0"/>
+                    </Anchors>
+                </FontString>
+            </Layer>
+            <Layer level="OVERLAY" textureSubLevel="3">
+                <MaskTexture parentKey="PowerBarMask" atlas="UI-HUD-UnitFrame-Player-PortraitOn-Bar-Mana-Mask" useAtlasSize="true" hWrapMode="CLAMPTOBLACKADDITIVE" vWrapMode="CLAMPTOBLACKADDITIVE" texelSnappingBias="0.0" snapToPixelGrid="false">
+                    <Anchors>
+                        <Anchor point="TOPLEFT" x="-2" y="3"/>
+                    </Anchors>
+                </MaskTexture>
+            </Layer>
+        </Layers>
+        <Scripts>
+            <OnLoad method="OnLoad"/>
+            <OnEvent method="OnEvent"/>
+        </Scripts>
+    </StatusBar>
+
+    <StatusBar name="BBFPlayerFrameAlternatePowerBarBaseTemplate" mixin="BBFPlayerFrameAlternatePowerBarBaseMixin" inherits="BBFAlternatePowerBarBaseTemplate" parent="PlayerFrameAlternatePowerBarArea" useParentLevel="true" virtual="true">
+        <KeyValues>
+            <KeyValue key="baseMixin" value="BBFPlayerFrameAlternatePowerBarBaseMixin" type="global" />
+        </KeyValues>
+        <Size x="124" y="9"/>
+        <Anchors>
+            <Anchor point="TOPLEFT" x="85" y="-73"/>
+        </Anchors>
+        <Layers>
+            <Layer level="OVERLAY" textureSubLevel="4">
+                <Texture parentKey="Spark" inherits="BBFTextStatusBarSparkTemplate"/>
+            </Layer>
+        </Layers>
+        <Scripts>
+            <OnShow method="OnShow"/>
+            <OnHide method="OnHide"/>
+        </Scripts>
+    </StatusBar>
+</Ui>
