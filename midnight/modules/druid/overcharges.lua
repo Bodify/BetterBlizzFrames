@@ -142,12 +142,12 @@ local function UpdateAltManaBar(updateCombos, cf)
             if not bar.originalComboPos then
                 bar.originalComboPos = {}
                 local pts = bar.originalComboPos
-                pts.a, pts.b, pts.c, pts.d, pts.e = PlayerFrameBottomManagedFramesContainer:GetPoint()
+                pts.a, pts.b, pts.c, pts.d, pts.e = PlayerBottomManagedFrameContainer:GetPoint()
             end
             local pts = bar.originalComboPos
-            --PlayerFrameBottomManagedFramesContainer:ClearAllPoints()
-            if not InCombatLockdown() then -- temporary "fix" for combat, need to not move PlayerFrameBottomManagedFramesContainer anymore
-                PlayerFrameBottomManagedFramesContainer:SetPoint(pts.a, pts.b, pts.c, pts.d, pts.e-9)
+            --PlayerBottomManagedFrameContainer:ClearAllPoints()
+            if not InCombatLockdown() then -- temporary "fix" for combat, need to not move PlayerBottomManagedFrameContainer anymore
+                PlayerBottomManagedFrameContainer:SetPoint(pts.a, pts.b, pts.c, pts.d, pts.e-9)
             end
         end
     elseif bar:IsShown() then
@@ -155,9 +155,9 @@ local function UpdateAltManaBar(updateCombos, cf)
             if updateCombos then
                 local pts = bar.originalComboPos
                 if pts then
-                    --PlayerFrameBottomManagedFramesContainer:ClearAllPoints()
-                    if not InCombatLockdown() then -- temporary "fix" for combat, need to not move PlayerFrameBottomManagedFramesContainer anymore
-                        PlayerFrameBottomManagedFramesContainer:SetPoint(pts.a, pts.b, pts.c, pts.d, pts.e)
+                    --PlayerBottomManagedFrameContainer:ClearAllPoints()
+                    if not InCombatLockdown() then -- temporary "fix" for combat, need to not move PlayerBottomManagedFrameContainer anymore
+                        PlayerBottomManagedFrameContainer:SetPoint(pts.a, pts.b, pts.c, pts.d, pts.e)
                     end
                 end
             end

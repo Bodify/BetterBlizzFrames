@@ -1,31 +1,20 @@
-# BetterBlizzFrames 2.0.1c
-## Classics (Era, TBC & MoP)
+# BetterBlizzFrames 2.0.2
+## Midnight
 ### New
-- "Larger Frames" setting for default Party Frames (Non-raid). Makes them similar to TargetFrame. On by default while "Bigger Healthbars" is enabled and optionally under PartyFrames in /bbf otherwise.
-- "Cast Target Text" setting in Castbars section. This shows name of true target of spell cast inside the castbar. Same as on retail just ported to classics now.
-- "Cast On Me Highlight" setting in Castbars section. Red highlight around castbar when the cast is being casted on you (true target, no macro workaround)
-## Midnight
+- Aura settings has been completely remade with the new 12.1 API. Filters, Sorting, Glows, etc. You will have to re-do your aura settings.
+### Tweak
+- Tons of things to make things work on 12.1. Too many to mention x.x
+- Make UnitFrame castbar texture setting affect party castbars.
 ### Bugfix
-- Fix castbars showing normal cast/channel texture on an uninterruptible cast with certain specific settings. (2.0.1d: fix a missing check causing lua errors)
-
-# BetterBlizzFrames 2.0.1b
-## Retail
-### Tweak
-- Update Nahj profile (www.twitch.tv/nahj)
-## TBC
-### Tweak
-- Add missing kick spell id for LossOfControl
-
-# BetterBlizzFrames 2.0.1b
-## Classic Era/SoD
-### Tweak
-- Remove Era Player Castbar Moving in BetterBlizzFrames since it now exists in Edit Mode. Use Edit Mode instead.
-- Add some tweaks to OCD Tweaks setting that fixes Blizzards position of ToT and Pet Health/Manabars and Portrait.
-
-# BetterBlizzFrames 2.0.1
-## Midnight
+- Fix TRP3 names being active on npcs and causing some issues.
+### Notes
+- I want to thank Verz and Muleyo for helping me understand some of the new 12.1 API with examples and stuff. Thank you<3
+- Please report any issues as always.
+## All versions
+### New
+- Target Text setting now has right click options to move the text ouside of the castbar and also to hide it for npcs.
+## Classics
+### New
 ### Bugfix
-- Bugfix in the big player healthbar setting fixing some texture height issue. Again PR by Wildu, thank you!
-## Classic Era/SoD
-### New/Bugfix
-- Quick patch update for Classic Era/SoD version of addon to the TBC version so it works on new Blizzard patch. Might need to sort a few things later on. Please report issues.
+- For Wrath enable the same unified classic version of the addon as Wrath still loaded older version files.
+- Fix texture unitframe healthbar, manabar & castbar not affecting the default party frames.

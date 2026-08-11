@@ -1,7 +1,6 @@
-if not BBF.isMidnight then return end
-local L = BBF.L
 -- I did not know what a variable was when I started. I know a little bit more now and I am so sorry.
 
+local L = BBF.L
 local addonVersion = "1.00" --too afraid to to touch for now
 local addonUpdates = C_AddOns.GetAddOnMetadata("BetterBlizzFrames", "Version")
 local sendUpdate = false
@@ -17,6 +16,7 @@ local defaultSettings = {
     updates = "empty",
     wasOnLoadingScreen = true,
     -- General
+    enableBigDebuffs = true,
     removeRealmNames = true,
     centerNames = false,
     darkModeUi = false,
@@ -70,8 +70,6 @@ local defaultSettings = {
     cdManagerPriorityList = {},
     kickPopupFontOutline = "OUTLINE",
     prdSplitLines = true,
-    maxTargetFocusBuffs = 20,
-    maxTargetFocusDebuffs = 20,
 
     rpNames = true,
     rpNamesFirst = true,
@@ -200,6 +198,20 @@ local defaultSettings = {
     --Auras
     --playerAuraMaxBuffsPerRow = 10,
     --playerAuraMaxDebuffsPerRow = 10,
+    importantAurasFirst = true,
+    auraHighlightScale = 1.3,
+    auraTooltipSpellID = false,
+    auraImportantGlowColor = {1, 0.5, 0, 1},
+    auraDefensiveGlowColor = {1, 0.662, 0.945, 1},
+    auraCCGlowColor = {1, 0.874, 0, 1},
+    auraPandemicGlowColor = {1, 0, 0, 1},
+    auraSortMethod = "blizzard",
+    playerAuraSortMethod = "blizzard",
+    auraTimerColor = true,
+    auraTimerBaseColor = {1, 0.82, 0, 1},
+    auraTimerLowColor = {1, 0.1, 0.1, 1},
+    auraTimerLowThreshold = 6,
+    addCooldownFramePlayerAuras = false,
     customImportantAuraSorting = true,
     customLargeSmallAuraSorting = true,
     allowLargeAuraFirst = true,
@@ -216,6 +228,8 @@ local defaultSettings = {
     auraTypeGap = 4,
     playerAuraSpacingX = 5,
     playerAuraSpacingY = 0,
+    auraLegacyBorder = false,
+    playerAuraDurationOnIcon = false,
     maxBuffFrameBuffs = 32,
     maxDebuffFrameDebuffs = 16,
     printAuraSpellIds = false,
@@ -227,7 +241,7 @@ local defaultSettings = {
     targetAndFocusAuraOffsetY = 0,
     targetAndFocusHorizontalGap = 3,
     targetAndFocusVerticalGap = 4,
-    targetAndFocusAurasPerRow = 6,
+    auraWidthSpace = 150,
     targetAndFocusSmallAuraScale = 1,
     purgeTextureColorRGB = {0, 0.92, 1, 0.85},
     hiddenIconDirection = "BOTTOM",
@@ -260,20 +274,20 @@ local defaultSettings = {
     targetBuffFilterWatchList = false,
     targetBuffFilterLessMinite = false,
     targetBuffFilterPurgeable = false,
-    targetImportantAuraGlow = true,
     targetBuffFilterOnlyMe = false,
-    targetAuraGlows = true,
-    targetEnlargeAura = true,
-    targetCompactAura = true,
+    targetAuraGlows = false,
+    targetImportantAuraGlow = true,
+    targetAuraDefensiveGlow = true,
+    targetAuraCCGlow = true,
+    targetBuffPurgeGlow = true,
+    targetdeBuffPandemicGlow = false,
 
     --Target debuffs
     targetdeBuffEnable = true,
     targetdeBuffFilterAll = false,
-    targetdeBuffFilterBlizzard = true,
     targetdeBuffFilterWatchList = false,
     targetdeBuffFilterLessMinite = false,
     targetdeBuffFilterOnlyMe = false,
-    targetdeBuffPandemicGlow = true,
 
     --Focus buffs
     focusBuffEnable = true,
@@ -282,22 +296,29 @@ local defaultSettings = {
     focusBuffFilterLessMinite = false,
     focusBuffFilterOnlyMe = false,
     focusBuffFilterPurgeable = false,
-    focusAuraGlows = true,
-    focusEnlargeAura = true,
-    focusCompactAura = true,
+    focusAuraGlows = false,
     focusImportantAuraGlow = true,
+    focusAuraDefensiveGlow = true,
+    focusAuraCCGlow = true,
+    focusBuffPurgeGlow = true,
+    focusdeBuffPandemicGlow = false,
 
     --Focus debuffs
     focusdeBuffEnable = true,
     focusdeBuffFilterAll = false,
-    focusdeBuffFilterBlizzard = true,
     focusdeBuffFilterWatchList = false,
     focusdeBuffFilterLessMinite = false,
     focusdeBuffFilterOnlyMe = false,
-    focusdeBuffPandemicGlow = true,
 
     PlayerAuraFrameBuffFilterWatchList = false,
     PlayerAuraFramedeBuffFilterWatchList = false,
+    PlayerAuraFrameBuffFilterLessMinite = false,
+    PlayerAuraFramedeBuffFilterLessMinite = false,
+    playerAuraGlows = false,
+    playerAuraImportantGlow = true,
+    playerAuraDefensiveGlow = true,
+    playerAuraCCGlow = true,
+    showPurgeTextureOnSelf = false,
 
     -- Interrupt icon
     castBarInterruptIconScale = 1,
@@ -308,6 +329,11 @@ local defaultSettings = {
     castBarInterruptIconFocus = true,
     castBarInterruptIconShowActiveOnly = false,
     castBarInterruptIconDisplayCD = true,
+
+    castBarTargetTextOutsideXPos = 0,
+    castBarTargetTextOutsideYPos = 0,
+    castBarTargetTextOutsideSize = 10,
+    castBarTargetTextOutsideAnchor = "BOTTOM",
 
     moveResourceToTargetPaladinBG = true,
     unitFrameBgTextureColor = {0,0,0,0.5},
@@ -352,6 +378,8 @@ local defaultSettings = {
     auraWhitelist = {},
     auraBlacklist = {},
 
+    showAuraCdText = true,
+    auraHideLongDurationText = true,
     auraCdTextSize = 0.55,
     partyFrameRangeAlpha = 0.55,
     partyFrameRangeAlphaSolidBackground = true,
@@ -376,12 +404,33 @@ local function InitializeSavedVariables()
         BetterBlizzFramesDB.version = addonVersion  -- Update the version number in the database
     end
 
+    if not BetterBlizzFramesDB.playerAuraSpacingIsDelta then
+        BetterBlizzFramesDB.playerAuraSpacingIsDelta = true
+        if BetterBlizzFramesDB.playerAuraSpacingX == 5 then
+            BetterBlizzFramesDB.playerAuraSpacingX = 0
+        end
+    end
+
     for key, defaultValue in pairs(defaultSettings) do
         if BetterBlizzFramesDB[key] == nil then
             BetterBlizzFramesDB[key] = defaultValue
         end
     end
-    
+
+    if not BetterBlizzFramesDB.auraGlowColorsMatchPlates then
+        BetterBlizzFramesDB.auraGlowColorsMatchPlates = true
+        BetterBlizzFramesDB.auraGlowColorsAlignedWithPlates = nil
+        local function MoveColor(key, from, to)
+            local c = BetterBlizzFramesDB[key]
+            if type(c) == "table" and c[1] == from[1] and c[2] == from[2] and c[3] == from[3] then
+                BetterBlizzFramesDB[key] = to
+            end
+        end
+        MoveColor("auraImportantGlowColor", {0, 1, 0}, {1, 0.5, 0, 1})
+        MoveColor("auraCCGlowColor", {1, 0.2, 0.2}, {1, 0.874, 0, 1})
+        MoveColor("auraDefensiveGlowColor", {1, 0.55, 0}, {1, 0.662, 0.945, 1})
+    end
+
     -- Initialize power colors from game's PowerBarColor table (only valid types)
     if PowerBarColor then
         local validPowerTypes = {
@@ -457,6 +506,14 @@ StaticPopupDialogs["BBF_NEW_VERSION"] = {
     timeout = 0,
     whileDead = true,
     hideOnEscape = false,
+}
+
+StaticPopupDialogs["BBF_MIDNIGHT_121_AURA_UPDATE"] = {
+    text = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames:\n\nBetterBlizzFrames has been updated for Midnight 12.1.\n\nThis means new aura settings and you will have to re-do your aura settings within the new systems.\n\nThere is a reset button to restore aura settings to BBF's default if things are looking too wacko from out the gates from your old setup.\n\nThere may be bugs and please use BugSack and BugGrabber to report them.\n\nThank you!",
+    button1 = "OK",
+    timeout = 0,
+    whileDead = true,
+    preferredIndex = 3,
 }
 
 local function ResetBBF()
@@ -1128,8 +1185,6 @@ end
 
 function BBF.ClassColorFriendlist()
     if not BetterBlizzFramesDB.classColorFriendlist then return end
-    local CLASS_COLORS = RAID_CLASS_COLORS
-    if not CLASS_COLORS then return end
 
     local CLASS_COLOR_BY_ID = {}
 
@@ -2287,8 +2342,8 @@ function BBF.MiniFrame(frame)
         compactRing:Show()
 
         if db.classColorFrameTexture then
-            local _, class = UnitClass("player")
-            local classColor = RAID_CLASS_COLORS[class]
+            local class = UnitClassBase("player")
+            local classColor = C_ClassColor.GetClassColor(class)
             if classColor then
                 compactRing:SetDesaturated(true)
                 compactRing:SetVertexColor(classColor.r, classColor.g, classColor.b)
@@ -3121,6 +3176,8 @@ function BBF.ReduceEditModeAlpha(disable)
         MinorEncounterWarnings,
         PlayerCastingBarFrame,
         PersonalResourceDisplayFrame,
+        LossOfControlFrame,
+        RaidWarningFrame,
     }
 
     for _, frame in pairs(frames) do
@@ -3718,8 +3775,6 @@ function BBF.HookUnitFrameTextures()
             end
         end
 
-        BBF.UpdateClassicCastbarTexture(castbarTexture)
-
         if db.changeUnitFrameCastbarTexture and not BBF.castbarTexturesHooked then
             local function ApplyCastbarTexture(statusBar)
                 local originalTexture = statusBar:GetStatusBarTexture()
@@ -3808,26 +3863,6 @@ function BBF.HookUnitFrameTextures()
             end
             if db.classicCastbars or db.classicCastbarsPlayer then
                 BBF.CastbarColorHooks()
-            end
-
-            if db.showPartyCastbar and not db.classicCastbarsParty then
-                C_Timer.After(1, function()
-                    for i = 1, 5 do
-                        local partyCastbar = _G["Party"..i.."SpellBar"]
-                        if partyCastbar then
-                            ApplyCastbarTexture(partyCastbar)
-                        end
-                    end
-                end)
-            end
-
-            if db.petCastbar then
-                C_Timer.After(1, function()
-                    local petCastBar = _G["PetSpellBar"]
-                    if petCastBar then
-                        ApplyCastbarTexture(petCastBar)
-                    end
-                end)
             end
 
             BBF.castbarTexturesHooked = true
@@ -3923,6 +3958,7 @@ end
 
 function BBF.HookTextures()
     local db = BetterBlizzFramesDB
+    BBF.UpdateClassicCastbarTexture(castbarTexture)
     -- Hook UnitFrames
     -- BetterBlizzFramesDB.textureSwapUnitFrames
     if db.changeUnitFrameHealthbarTexture or db.changeUnitFrameManabarTexture or db.changeUnitFrameCastbarTexture then
@@ -4482,9 +4518,9 @@ function BBF.GladTracker()
 
         -- map rows -> {id, name}
         local tracked = {
-            [ConquestFrame.Arena3v3]         = { id = 61188, name = "Gladiator" },
-            [ConquestFrame.RatedSoloShuffle] = { id = 61190, name = "Legend" },
-            [ConquestFrame.RatedBGBlitz]     = { id = 61194, name = "Strategist" },
+            [ConquestFrame.Arena3v3]         = { id = 62930, name = "Gladiator" },
+            [ConquestFrame.RatedSoloShuffle] = { id = 62932, name = "Legend" },
+            [ConquestFrame.RatedBGBlitz]     = { id = 62950, name = "Strategist" },
         }
 
         local function BuildTooltip(holder)
@@ -5024,9 +5060,6 @@ Frame:SetScript("OnEvent", function(...)
             end
             BBF.MoveToTFrames()
             BBF.UpdateUserAuraSettings()
-            if BetterBlizzFramesDB.enableMasque then
-                BBF.SetupMasqueSupport()
-            end
             BBF.DarkmodeFrames()
             BBF.HookPlayerAndTargetAuras()
             BBF.HookFrameTextureColor()
@@ -5211,6 +5244,72 @@ First:SetScript("OnEvent", function(_, event, addonName)
             BetterBlizzFramesDB.hideFocusDebuffs = true
             BetterBlizzFramesDB.hideFocusAuras = nil
         end
+
+        BetterBlizzFramesDB.auraTestMode = nil
+
+        if BetterBlizzFramesDB.targetAndFocusAurasPerRow then
+            BetterBlizzFramesDB.auraWidthSpace = 150
+            BetterBlizzFramesDB.targetAndFocusAurasPerRow = nil
+        end
+
+        for old, new in pairs({
+            auraImportantGlow    = { "targetImportantAuraGlow", "focusImportantAuraGlow", "playerAuraImportantGlow" },
+            auraDefensiveGlow    = { "targetAuraDefensiveGlow", "focusAuraDefensiveGlow", "playerAuraDefensiveGlow" },
+            auraCCGlow           = { "targetAuraCCGlow", "focusAuraCCGlow", "playerAuraCCGlow" },
+        }) do
+            local value = BetterBlizzFramesDB[old]
+            if value ~= nil then
+                for _, key in ipairs(new) do
+                    BetterBlizzFramesDB[key] = value
+                end
+                BetterBlizzFramesDB[old] = nil
+            end
+        end
+
+        do
+            local keys = { "targetAuraDefensiveTier", "focusAuraDefensiveTier", "playerAuraDefensiveTier" }
+            local seen, allOff = false, true
+            for _, key in ipairs(keys) do
+                local value = BetterBlizzFramesDB[key]
+                if value ~= nil then
+                    seen = true
+                    if value ~= false then allOff = false end
+                    BetterBlizzFramesDB[key] = nil
+                end
+            end
+            if seen and allOff then
+                BetterBlizzFramesDB.importantAurasFirst = false
+            end
+        end
+
+        if BetterBlizzFramesDB.auraSortMethod == "default" then
+            BetterBlizzFramesDB.auraSortMethod = "blizzard"
+        end
+        if BetterBlizzFramesDB.playerAuraSortMethod == "stable" then
+            BetterBlizzFramesDB.playerAuraSortMethod = "blizzard"
+        end
+
+        for _, key in ipairs({
+            "targetdeBuffFilterCC", "focusdeBuffFilterCC", "PlayerAuraFramedeBuffFilterCC",
+            "enableMaxTargetFocusBuffs", "maxTargetFocusBuffs",
+            "enableMaxTargetFocusDebuffs", "maxTargetFocusDebuffs",
+            "hidePlayerAuraTooltips", "playerAuraPandemicGlow",
+        }) do
+            BetterBlizzFramesDB[key] = nil
+        end
+
+        for hide, enable in pairs({
+            hideTargetBuffs   = "targetBuffEnable",
+            hideTargetDebuffs = "targetdeBuffEnable",
+            hideFocusBuffs    = "focusBuffEnable",
+            hideFocusDebuffs  = "focusdeBuffEnable",
+        }) do
+            if BetterBlizzFramesDB[hide] then
+                BetterBlizzFramesDB[enable] = false
+            end
+            BetterBlizzFramesDB[hide] = nil
+        end
+
         if BetterBlizzFramesDB.noPortraitPixelBorder then
             BetterBlizzFramesDB.noPortraitModes = true
         end
@@ -5242,6 +5341,14 @@ First:SetScript("OnEvent", function(_, event, addonName)
                 end
             end
             BetterBlizzFramesDB.fontSizeNumFix = true
+        end
+        if not BetterBlizzFramesDB.midnight121AuraUpdateMsg then
+            BetterBlizzFramesDB.midnight121AuraUpdateMsg = true
+            if BetterBlizzFramesDB.hasSaved then
+                C_Timer.After(7, function()
+                    StaticPopup_Show("BBF_MIDNIGHT_121_AURA_UPDATE")
+                end)
+            end
         end
         FetchAndSaveValuesOnFirstLogin()
         TurnTestModesOff()
@@ -5456,208 +5563,6 @@ end)
 PlayerEnteringWorld:RegisterEvent("PLAYER_ENTERING_WORLD")
 
 
-
-function BBF.CreateBigDebuffs()
-    if not BetterBlizzFramesDB.enableBigDebuffs then
-        if BBF.BigDebuffs then
-            BBF.BigDebuffs:UnregisterAllEvents()
-            BBF.BigDebuffs:SetScript("OnEvent", nil)
-            for _, frame in pairs({ PlayerFrame, TargetFrame, FocusFrame, PetFrame }) do
-                if frame.bbfBigDebuff then
-                    frame.bbfBigDebuff:Hide()
-                    frame.bbfBigDebuff.icon:SetTexture(nil)
-                    frame.bbfBigDebuff.cooldown:Clear()
-                end
-            end
-        end
-        return
-    end
-    if C_AddOns.IsAddOnLoaded("MiniCC") or C_AddOns.IsAddOnLoaded("MvqUI") or BetterBlizzFramesDB.noPortraitModes then return end
-
-    local function CreateDebuffFrame(unitFrame, portraitMask)
-        local frame = CreateFrame("Frame", nil, unitFrame)
-        frame:SetSize(36, 36)
-        frame:Hide()
-
-        frame.icon = frame:CreateTexture(nil, "BACKGROUND", nil, 1)
-        frame.icon:SetAllPoints()
-        frame.icon:SetTexCoord(0.1, 0.9, 0.1, 0.9)
-
-        if portraitMask then
-            frame.icon:AddMaskTexture(portraitMask)
-        end
-
-        frame.cooldown = CreateFrame("Cooldown", nil, frame, "CooldownFrameTemplate")
-        frame.cooldown:SetAllPoints()
-        frame.cooldown:SetReverse(true)
-        frame.cooldown:SetDrawBling(false)
-        frame.cooldown:SetDrawEdge(false)
-        frame.cooldown:SetFrameLevel(frame:GetFrameLevel() + 1)
-        frame.cooldown:SetSwipeTexture("Interface\\CHARACTERFRAME\\TempPortraitAlphaMask")
-
-        return frame
-    end
-
-    local function AttachToPortrait(frame, portrait)
-        if not portrait then return end
-
-        local portraitParent = portrait:GetParent()
-        frame:SetParent(portraitParent)
-        frame:SetFrameLevel(portraitParent:GetFrameLevel())
-
-        portrait:SetDrawLayer("BACKGROUND", 0)
-
-        frame:ClearAllPoints()
-        frame:SetPoint(portrait:GetPoint())
-        frame:SetSize(portrait:GetSize())
-    end
-
-    -- Huge thanks to Verz for helping with this with his work on MiniCC
-    -- Portions of the code below are adapted and/or copied from his work in MiniCC with his permission.
-
-    local function AurasChanged(updateInfo)
-        if not updateInfo then return true end
-        if updateInfo.isFullUpdate then return true end
-        if (updateInfo.addedAuras and #updateInfo.addedAuras > 0)
-            or (updateInfo.updatedAuraInstanceIDs and #updateInfo.updatedAuraInstanceIDs > 0)
-            or (updateInfo.removedAuraInstanceIDs and #updateInfo.removedAuraInstanceIDs > 0)
-        then
-            return true
-        end
-        return false
-    end
-
-    local function IterateAuras(filter, validateAura, unit, seen)
-        local spellID, icon, applications, auraInstanceID
-        local auras = C_UnitAuras.GetUnitAuras(unit, filter)
-
-        for _, auraData in ipairs(auras) do
-            if not seen[auraData.auraInstanceID] then
-                local garbageAuraData = false
-
-                if validateAura then -- units out of range produce garbage data, so double check
-                    local isValid = validateAura(auraData.spellId)
-                    if not (issecretvalue(isValid) or isValid) then
-                        garbageAuraData = true
-                    end
-                end
-
-                if not garbageAuraData then
-                    spellID = auraData.spellId
-                    icon = auraData.icon
-                    applications = auraData.applications
-                    auraInstanceID = auraData.auraInstanceID
-                end
-            end
-
-            seen[auraData.auraInstanceID] = true
-        end
-
-        return spellID, icon, auraInstanceID, applications
-    end
-
-    local function FindAura(unit, debuffFrame, updateInfo)
-        if updateInfo and not AurasChanged(updateInfo) then return end
-
-        local spellID, texture, auraInstanceID
-        local seen = {}
-
-        -- Crowd Control
-        spellID, texture, auraInstanceID = IterateAuras("HARMFUL|CROWD_CONTROL", C_Spell.IsSpellCrowdControl, unit, seen)
-
-        -- Big Defensives
-        if not spellID then
-            spellID, texture, auraInstanceID = IterateAuras("HELPFUL|BIG_DEFENSIVE", C_UnitAuras.AuraIsBigDefensive, unit, seen)
-        end
-
-        -- External Defensives
-        if not spellID then
-            spellID, texture, auraInstanceID = IterateAuras("HELPFUL|EXTERNAL_DEFENSIVE", nil, unit, seen)
-        end
-
-        -- -- Important buffs
-        -- if not spellID then
-        --     spellID, texture, auraInstanceID = IterateAuras("HELPFUL|IMPORTANT", C_Spell.IsSpellImportant, unit, seen)
-        -- end
-        -- - WoW 12.0.7 comes with more bugs. Important aura filter is broken because of Blizzard and shows a bunch of trash auras. Temporarily disabled important auras until Blizzard fixes it.
-
-        if spellID then
-            local durationObj = C_UnitAuras.GetAuraDuration(unit, auraInstanceID)
-            debuffFrame.icon:SetTexture(texture)
-            if durationObj then
-                debuffFrame.cooldown:SetCooldownFromDurationObject(durationObj)
-            else
-                debuffFrame.cooldown:Clear()
-            end
-            debuffFrame:Show()
-        else
-            debuffFrame.icon:SetTexture(nil)
-            debuffFrame.cooldown:Clear()
-            debuffFrame:Hide()
-        end
-    end
-
-    -- Player
-    local playerDebuffFrame = CreateDebuffFrame(PlayerFrame, PlayerFrame.PlayerFrameContainer.PlayerPortraitMask)
-    AttachToPortrait(playerDebuffFrame, PlayerFrame.PlayerFrameContainer.PlayerPortrait)
-    PlayerFrame.bbfBigDebuff = playerDebuffFrame
-
-    -- Target
-    local targetDebuffFrame = CreateDebuffFrame(TargetFrame, TargetFrame.TargetFrameContainer.PortraitMask)
-    AttachToPortrait(targetDebuffFrame, TargetFrame.TargetFrameContainer.Portrait)
-    TargetFrame.bbfBigDebuff = targetDebuffFrame
-
-    -- Focus
-    local focusDebuffFrame = CreateDebuffFrame(FocusFrame, FocusFrame.TargetFrameContainer.PortraitMask)
-    AttachToPortrait(focusDebuffFrame, FocusFrame.TargetFrameContainer.Portrait)
-    FocusFrame.bbfBigDebuff = focusDebuffFrame
-
-    -- Pet
-    local petDebuffFrame = CreateDebuffFrame(PetFrame, PetFrame.PortraitMask)
-    AttachToPortrait(petDebuffFrame, PetPortrait)
-    PetFrame.bbfBigDebuff = petDebuffFrame
-
-    local unitToFrame = {
-        player = PlayerFrame,
-        target = TargetFrame,
-        focus = FocusFrame,
-        pet = PetFrame,
-    }
-
-    if not BBF.BigDebuffs then
-        BBF.BigDebuffs = CreateFrame("Frame")
-    end
-    BBF.BigDebuffs:RegisterUnitEvent("UNIT_AURA", "player", "target", "focus", "pet")
-    BBF.BigDebuffs:RegisterEvent("PLAYER_TARGET_CHANGED")
-    BBF.BigDebuffs:RegisterEvent("PLAYER_FOCUS_CHANGED")
-    BBF.BigDebuffs:RegisterEvent("UNIT_PET")
-    BBF.BigDebuffs:SetScript("OnEvent", function(_, event, unit, updateInfo)
-        if event == "UNIT_AURA" then
-            local frame = unitToFrame[unit]
-            if frame and frame.bbfBigDebuff then
-                FindAura(unit, frame.bbfBigDebuff, updateInfo)
-            end
-        elseif event == "PLAYER_TARGET_CHANGED" then
-            if UnitExists("target") then
-                FindAura("target", TargetFrame.bbfBigDebuff)
-            else
-                TargetFrame.bbfBigDebuff:Hide()
-            end
-        elseif event == "PLAYER_FOCUS_CHANGED" then
-            if UnitExists("focus") then
-                FindAura("focus", FocusFrame.bbfBigDebuff)
-            else
-                FocusFrame.bbfBigDebuff:Hide()
-            end
-        elseif event == "UNIT_PET" then
-            if UnitExists("pet") then
-                FindAura("pet", PetFrame.bbfBigDebuff)
-            else
-                PetFrame.bbfBigDebuff:Hide()
-            end
-        end
-    end)
-end
 
 function BBF.ExternalDefensivesClickthrough()
     if not ExternalDefensivesFrame and ExternalDefensivesFrame.auraFrames then return end

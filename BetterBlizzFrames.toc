@@ -1,4 +1,4 @@
-## Interface: 120007, 120005
+## Interface: 120100
 ## Title: Better|cff00c0ffBlizz|rFrames
 ## Notes: More options for Blizzard frames. Aura filtering, Party castbars, Combat indicator, Dark Mode etc.
 ## Author: Bodify
@@ -45,6 +45,7 @@ midnight\modules\overShields.lua
 temp_shared\stealthIndicator.lua
 retail\modules\interruptIcon.lua
 midnight\modules\interruptIcon.lua
+midnight\modules\bigDebuffs.lua
 retail\modules\queueTimer.lua
 retail\modules\druid\overcharges.lua
 midnight\modules\druid\overcharges.lua

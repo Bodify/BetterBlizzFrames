@@ -141,11 +141,11 @@ local function getUnitColor(unit, useCustomColors, txt)
                         if customColor then
                             color = {r = customColor[1], g = customColor[2], b = customColor[3], a = customColor[4] or 1}
                         else
-                            color = RAID_CLASS_COLORS[className]
+                            color = C_ClassColor.GetClassColor(className)
                         end
                     end
                 else
-                    color = RAID_CLASS_COLORS[className]
+                    color = C_ClassColor.GetClassColor(className)
                 end
 
                 if color then
@@ -165,11 +165,11 @@ local function getUnitColor(unit, useCustomColors, txt)
                     if customColor then
                         color = {r = customColor[1], g = customColor[2], b = customColor[3], a = customColor[4] or 1}
                     else
-                        color = RAID_CLASS_COLORS[className]
+                        color = C_ClassColor.GetClassColor(className)
                     end
                 end
             else
-                color = RAID_CLASS_COLORS[className]
+                color = C_ClassColor.GetClassColor(className)
             end
 
             if color then
@@ -184,7 +184,7 @@ local function getUnitColor(unit, useCustomColors, txt)
     elseif colorPetAfterOwner and unit == "pet" then
         -- Check if the unit is the player's pet and the setting is enabled
         local _, playerClass = UnitClass("player")
-        local color = RAID_CLASS_COLORS[playerClass]
+        local color = C_ClassColor.GetClassColor(playerClass)
         if color then
             return {r = color.r, g = color.g, b = color.b, a = 1}, false
         end
@@ -1004,7 +1004,7 @@ function BBF.HookHealthbarColors()
 
                 if frame.recolored then
                     if UnitIsPlayer(frame.unit) then
-                        local classColor = RAID_CLASS_COLORS[select(2, UnitClass(frame.unit))]
+                        local classColor = C_ClassColor.GetClassColor(select(2, UnitClass(frame.unit)))
                         if classColor then
                             frame.healthBar:SetStatusBarColor(classColor.r, classColor.g, classColor.b, 1)
                         end
@@ -1054,7 +1054,7 @@ function BBF.HookHealthbarColors()
 
             if frame.recolored then
                 if UnitIsPlayer(frame.unit) then
-                    local classColor = RAID_CLASS_COLORS[select(2, UnitClass(frame.unit))]
+                    local classColor = C_ClassColor.GetClassColor(select(2, UnitClass(frame.unit)))
                     if classColor then
                         frame.healthBar:SetStatusBarColor(classColor.r, classColor.g, classColor.b, 1)
                     end
@@ -1221,7 +1221,7 @@ function BBF.HookFrameTextureColor()
 
             if not colored and classColorFrameTexture then
                 local _, class = UnitClass(unit)
-                local color = RAID_CLASS_COLORS[class]
+                local color = C_ClassColor.GetClassColor(class)
                 if color then
                     r, g, b = color.r, color.g, color.b
                     desaturate = true

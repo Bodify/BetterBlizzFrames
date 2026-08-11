@@ -1495,7 +1495,7 @@ local function MakeNoPortraitMode(frame)
             end
 
             if not InCombatLockdown() then
-                PlayerFrameBottomManagedFramesContainer:ClearAllPoints()
+                PlayerBottomManagedFrameContainer:ClearAllPoints()
 
                 local point, relativePoint, xOffset, yOffset, scale = GetPlayerClassAndSpecPosition(maxResource)
                 local relativeFrame = PlayerFrame
@@ -1505,9 +1505,9 @@ local function MakeNoPortraitMode(frame)
                     yOffset = yOffset + 0
                 end
 
-                PlayerFrameBottomManagedFramesContainer:SetPoint(point, relativeFrame, relativePoint, xOffset, yOffset)
-                PlayerFrameBottomManagedFramesContainer:SetScale(scale)
-                PlayerFrameBottomManagedFramesContainer:SetFrameStrata("HIGH")
+                PlayerBottomManagedFrameContainer:SetPoint(point, relativeFrame, relativePoint, xOffset, yOffset)
+                PlayerBottomManagedFrameContainer:SetScale(scale)
+                PlayerBottomManagedFrameContainer:SetFrameStrata("HIGH")
             else
                 BBF.RunAfterCombat(function()
                     UpdateResourcePosition()

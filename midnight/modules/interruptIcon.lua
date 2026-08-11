@@ -194,7 +194,7 @@ local function IsAnyFeatureEnabled()
 end
 
 local function CreateInterruptIconFrame(parentFrame)
-    local button = CreateFrame("Frame", nil, parentFrame)
+    local button = CreateFrame("Frame", nil, parentFrame, BBF.AURA_ANCHOR_TEMPLATE)
     button:SetSize(30, 30)
     button:SetPoint("CENTER", parentFrame, BetterBlizzFramesDB.castBarInterruptIconAnchor,
                     BetterBlizzFramesDB.castBarInterruptIconXPos + 45,

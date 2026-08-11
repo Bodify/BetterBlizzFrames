@@ -611,9 +611,8 @@ local function MakeClassicFrame(frame)
             end
 
             if not InCombatLockdown() then
-                PlayerFrameBottomManagedFramesContainer:ClearAllPoints()
-                
-                -- Get positioning from the table based on specID
+                PlayerBottomManagedFrameContainer:ClearAllPoints()
+
                 local specID = GetSpecialization() and GetSpecializationInfo(GetSpecialization())
                 local posData = resourceFrameAnchorPositions[specID] or resourceFrameAnchorPositions.default
                 local point = posData.point or "TOP"
@@ -621,34 +620,34 @@ local function MakeClassicFrame(frame)
                 local relativePoint = posData.relativePoint or "BOTTOM"
                 local xOffset = posData.xOffset or 30
                 local yOffset = posData.yOffset or 25
-                
+
                 local _, _, scale = GetPlayerClassAndSpecPosition()
-                
+
                 if rogueCheck then
                     local isRogueWith5Combos = UnitPowerMax("player", Enum.PowerType.ComboPoints) == 5
                     local isRogueWith6Combos = UnitPowerMax("player", Enum.PowerType.ComboPoints) == 6
                     if isRogueWith5Combos then
-                        PlayerFrameBottomManagedFramesContainer:SetPoint(point, relativeFrame, relativePoint, 31.5, 35)
-                        PlayerFrameBottomManagedFramesContainer:SetScale(0.95)
+                        PlayerBottomManagedFrameContainer:SetPoint(point, relativeFrame, relativePoint, 31.5, 35)
+                        PlayerBottomManagedFrameContainer:SetScale(0.95)
                     elseif isRogueWith6Combos then
-                        PlayerFrameBottomManagedFramesContainer:SetPoint(point, relativeFrame, relativePoint, 46, 37)
-                        PlayerFrameBottomManagedFramesContainer:SetScale(scale)
+                        PlayerBottomManagedFrameContainer:SetPoint(point, relativeFrame, relativePoint, 46, 37)
+                        PlayerBottomManagedFrameContainer:SetScale(scale)
                     else
-                        PlayerFrameBottomManagedFramesContainer:SetPoint(point, relativeFrame, relativePoint, xOffset, yOffset)
-                        PlayerFrameBottomManagedFramesContainer:SetScale(scale)
+                        PlayerBottomManagedFrameContainer:SetPoint(point, relativeFrame, relativePoint, xOffset, yOffset)
+                        PlayerBottomManagedFrameContainer:SetScale(scale)
                     end
                 else
-                    PlayerFrameBottomManagedFramesContainer:SetPoint(point, relativeFrame, relativePoint, xOffset, yOffset)
-                    PlayerFrameBottomManagedFramesContainer:SetScale(scale)
+                    PlayerBottomManagedFrameContainer:SetPoint(point, relativeFrame, relativePoint, xOffset, yOffset)
+                    PlayerBottomManagedFrameContainer:SetScale(scale)
                 end
-                PlayerFrameBottomManagedFramesContainer:SetFrameStrata("HIGH")
+                PlayerBottomManagedFrameContainer:SetFrameStrata("HIGH")
             else
-                PlayerFrameBottomManagedFramesContainer.positionNeedsUpdate = true
+                PlayerBottomManagedFrameContainer.positionNeedsUpdate = true
                 if not BBF.CombatWaiter then
                     BBF.CombatWaiter = CreateFrame("Frame")
                     BBF.CombatWaiter:SetScript("OnEvent", function(self)
-                        if PlayerFrameBottomManagedFramesContainer.positionNeedsUpdate then
-                            PlayerFrameBottomManagedFramesContainer.positionNeedsUpdate = false
+                        if PlayerBottomManagedFrameContainer.positionNeedsUpdate then
+                            PlayerBottomManagedFrameContainer.positionNeedsUpdate = false
                             UpdateResourcePosition()
                         end
                         self:UnregisterEvent("PLAYER_REGEN_ENABLED")

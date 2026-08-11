@@ -289,6 +289,11 @@ local defaultSettings = {
     castBarInterruptIconFocus = true,
     castBarInterruptIconShowActiveOnly = false,
     castBarInterruptIconDisplayCD = true,
+
+    castBarTargetTextOutsideXPos = 0,
+    castBarTargetTextOutsideYPos = 0,
+    castBarTargetTextOutsideSize = 10,
+    castBarTargetTextOutsideAnchor = "BOTTOM",
     interruptIconBorder = true,
     unitFrameBgTextureColor = {0,0,0,0.5},
     unitFrameFontColorRGB = {1,1,1,1},
@@ -2141,6 +2146,10 @@ local function ApplyTextureChange(type, statusBar, parent)
     end
 end
 
+local function GetDefaultPartyMemberFrame(i)
+    return (PartyFrame and PartyFrame["MemberFrame"..i]) or _G["PartyMemberFrame"..i]
+end
+
 -- Main function to apply texture changes to raid frames and additional frames
 function BBF.HookUnitFrameTextures()
     local db = BetterBlizzFramesDB
@@ -2165,6 +2174,14 @@ function BBF.HookUnitFrameTextures()
         if true then
             ApplyTextureChange("health", TargetFrameToTHealthBar, TargetFrameToT)
             ApplyTextureChange("health", FocusFrameToTHealthBar, FocusFrameToT)
+        end
+
+        for i = 1, 4 do
+            local memberFrame = GetDefaultPartyMemberFrame(i)
+            local healthbar = memberFrame and (memberFrame.HealthBar or memberFrame.healthbar)
+            if healthbar then
+                ApplyTextureChange("health", healthbar, memberFrame)
+            end
         end
 
         if not BetterBlizzFramesDB.classColorFrames then
@@ -2205,9 +2222,16 @@ function BBF.HookUnitFrameTextures()
             ApplyTextureChange("mana", TargetFrameToTManaBar)
             ApplyTextureChange("mana", FocusFrameToTManaBar)
         end
-    end
 
-    BBF.UpdateClassicCastbarTexture(castbarTexture)
+        for i = 1, 4 do
+            manaTextureUnits["party"..i] = true
+            local memberFrame = GetDefaultPartyMemberFrame(i)
+            local manabar = memberFrame and (memberFrame.ManaBar or memberFrame.manabar)
+            if manabar and manabar.unit then
+                ApplyTextureChange("mana", manabar)
+            end
+        end
+    end
 end
 
 
@@ -2297,6 +2321,7 @@ end
 
 function BBF.HookTextures()
     local db = BetterBlizzFramesDB
+    BBF.UpdateClassicCastbarTexture(castbarTexture)
     -- Hook UnitFrames
     -- BetterBlizzFramesDB.textureSwapUnitFrames
     if db.changeUnitFrameHealthbarTexture or db.changeUnitFrameManabarTexture or db.changeUnitFrameCastbarTexture then

@@ -127,43 +127,9 @@ function BBF.DarkModeUnitframeBorders()
         end
     end
 
-    if hookedAuras then return end
-
-    local function styleAuras(self)
-        for auraFrame in self.auraPools:EnumerateActive() do
-            local icon = auraFrame.Icon
-            if icon then
-                icon:SetTexCoord(0.06, 0.94, 0.06, 0.94)
-
-                ApplyBorder(auraFrame, color, color, color)
-
-                if auraFrame.Border then
-                    if pixelBorderAuras then
-                        auraFrame.Border:SetAtlas("communities-create-avatar-border-hover")
-                        auraFrame.Border:SetDesaturated(true)
-                        auraFrame.Border:ClearAllPoints()
-                        auraFrame.Border:SetPoint("TOPLEFT", auraFrame.Icon, "TOPLEFT", -1, 1)
-                        auraFrame.Border:SetPoint("BOTTOMRIGHT", auraFrame.Icon, "BOTTOMRIGHT", 1, -1)
-                        auraFrame.Border:SetTexCoord(0, 1, 0, 1)
-                        if removeDebuffColorBorder then
-                            auraFrame.Border:SetVertexColor(color, color, color)
-                        end
-                    elseif removeDebuffColorBorder then
-                        auraFrame.Border:SetAlpha(0)
-                    else
-                        auraFrame.bbfBorder:Hide()
-                    end
-                else
-                    auraFrame.bbfBorder:Show()
-                end
-            end
-        end
+    if BBF.RestyleAuraButtons then
+        BBF.RestyleAuraButtons(true)
     end
-
-    hooksecurefunc(TargetFrame, "UpdateAuras", styleAuras)
-    hooksecurefunc(FocusFrame, "UpdateAuras", styleAuras)
-
-    hookedAuras = true
 end
 
 
@@ -491,6 +457,7 @@ function BBF.DarkmodeFrames(bypass)
     if ToggleHiddenAurasButton then
         createOrUpdateBorders(ToggleHiddenAurasButton, vertexColor)
     end
+    BBF.DarkModeBuffCollapseButton()
 
     BBF.DarkModeUnitframeBorders()
 
@@ -1099,6 +1066,18 @@ function BBF.UpdateFilteredBuffsIcon()
         if ToggleHiddenAurasButton then
             createOrUpdateBorders(ToggleHiddenAurasButton, vertexColor)
         end
+    end
+    BBF.DarkModeBuffCollapseButton()
+end
+
+function BBF.DarkModeBuffCollapseButton()
+    local button = BBF.buffCollapseButton
+    if not button or BetterBlizzFramesDB.enableMasque then return end
+
+    local darkMode = BetterBlizzFramesDB.darkModeUi and true or false
+    local vertexColor = darkMode and BetterBlizzFramesDB.darkModeColor or 1
+    for _, arrow in ipairs(button.bbfArrows or {}) do
+        applySettings(arrow, darkMode, vertexColor)
     end
 end
 

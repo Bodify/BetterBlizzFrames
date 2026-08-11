@@ -866,6 +866,10 @@ local function CreateSlider(parent, label, minValue, maxValue, stepValue, elemen
                     if BBF.UpdateLegacyComboPosition then
                         BBF.UpdateLegacyComboPosition()
                     end
+                elseif element == "castBarTargetTextOutsideXPos" or element == "castBarTargetTextOutsideYPos"
+                    or element == "castBarTargetTextOutsideSize" then
+                    BetterBlizzFramesDB[element] = value
+                    BBF.CastbarTargetTextCaller()
 
                     --end
                 end
@@ -4974,9 +4978,84 @@ local function guiCastbars()
 
     local castBarTargetText = CreateCheckbox("castBarTargetText", L["Castbar_Target_Text"], contentFrame)
     castBarTargetText:SetPoint("TOPLEFT", buffsOnTopReverseCastbarMovement, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltipTwo(castBarTargetText, L["Castbar_Target_Text"], L["Tooltip_Castbar_Target_Text_Desc"])
+    CreateTooltipTwo(castBarTargetText, L["Castbar_Target_Text"], L["Tooltip_Castbar_Target_Text_Desc"] .. "\n\n|cff32f795" .. L["Right_Click_To_Open_Options"] .. "|r")
     castBarTargetText:HookScript("OnClick", function()
         StaticPopup_Show("BBF_CONFIRM_RELOAD")
+    end)
+
+    local castBarTargetTextOptionsFrame
+    local function OpenCastbarTargetTextOptions()
+        if not castBarTargetTextOptionsFrame then
+            castBarTargetTextOptionsFrame = CreateFrame("Frame", "BBFCastbarTargetTextOptionsFrame", UIParent, "BasicFrameTemplateWithInset")
+            castBarTargetTextOptionsFrame:SetSize(220, 275)
+            castBarTargetTextOptionsFrame:SetPoint("CENTER")
+            castBarTargetTextOptionsFrame:SetFrameStrata("HIGH")
+            castBarTargetTextOptionsFrame:SetMovable(true)
+            castBarTargetTextOptionsFrame:EnableMouse(true)
+            castBarTargetTextOptionsFrame:RegisterForDrag("LeftButton")
+            castBarTargetTextOptionsFrame:SetScript("OnDragStart", castBarTargetTextOptionsFrame.StartMoving)
+            castBarTargetTextOptionsFrame:SetScript("OnDragStop", castBarTargetTextOptionsFrame.StopMovingOrSizing)
+            castBarTargetTextOptionsFrame.title = castBarTargetTextOptionsFrame:CreateFontString(nil, "OVERLAY")
+            castBarTargetTextOptionsFrame.title:SetFontObject("GameFontHighlight")
+            castBarTargetTextOptionsFrame.title:SetPoint("LEFT", castBarTargetTextOptionsFrame.TitleBg, "LEFT", 5, 0)
+            castBarTargetTextOptionsFrame.title:SetText(L["Castbar_Target_Text_Options"])
+
+            local hideOnNpcs = CreateCheckbox("castBarTargetTextHideOnNpcs", L["Castbar_Target_Text_Hide_Npcs"], castBarTargetTextOptionsFrame, nil, BBF.CastbarTargetTextCaller)
+            hideOnNpcs:SetPoint("TOPLEFT", castBarTargetTextOptionsFrame, "TOPLEFT", 10, -26)
+            CreateTooltipTwo(hideOnNpcs, L["Castbar_Target_Text_Hide_Npcs"], L["Tooltip_Castbar_Target_Text_Hide_Npcs_Desc"])
+
+            local outsideCastbar = CreateCheckbox("castBarTargetTextOutside", L["Castbar_Target_Text_Outside"], castBarTargetTextOptionsFrame, nil, BBF.CastbarTargetTextCaller)
+            outsideCastbar:SetPoint("TOPLEFT", hideOnNpcs, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+            CreateTooltipTwo(outsideCastbar, L["Castbar_Target_Text_Outside"], L["Tooltip_Castbar_Target_Text_Outside_Desc"])
+
+            local targetTextXPos = CreateSlider(outsideCastbar, L["X_Offset"], -100, 100, 1, "castBarTargetTextOutsideXPos", "X", 150)
+            targetTextXPos:SetPoint("TOPLEFT", outsideCastbar, "BOTTOMLEFT", 12, -14)
+
+            local targetTextYPos = CreateSlider(outsideCastbar, L["Y_Offset"], -100, 100, 1, "castBarTargetTextOutsideYPos", "Y", 150)
+            targetTextYPos:SetPoint("TOPLEFT", targetTextXPos, "BOTTOMLEFT", 0, -17)
+
+            local targetTextSize = CreateSlider(outsideCastbar, L["Size"], 6, 30, 1, "castBarTargetTextOutsideSize", nil, 150)
+            targetTextSize:SetPoint("TOPLEFT", targetTextYPos, "BOTTOMLEFT", 0, -17)
+
+            local targetTextAnchor = CreateAnchorDropdown(
+                "castBarTargetTextAnchorDropdown",
+                castBarTargetTextOptionsFrame,
+                L["Select_Anchor_Point"],
+                "castBarTargetTextOutsideAnchor",
+                function()
+                    BBF.CastbarTargetTextCaller()
+                end,
+                { anchorFrame = targetTextSize, x = -16, y = -40, label = L["Anchor"] }
+            )
+
+            local function UpdateTargetTextOptions()
+                if outsideCastbar:GetChecked() then
+                    EnableElement(targetTextXPos)
+                    EnableElement(targetTextYPos)
+                    EnableElement(targetTextSize)
+                    LibDD:UIDropDownMenu_EnableDropDown(targetTextAnchor)
+                else
+                    DisableElement(targetTextXPos)
+                    DisableElement(targetTextYPos)
+                    DisableElement(targetTextSize)
+                    LibDD:UIDropDownMenu_DisableDropDown(targetTextAnchor)
+                end
+            end
+
+            UpdateTargetTextOptions()
+            outsideCastbar:HookScript("OnClick", UpdateTargetTextOptions)
+
+            castBarTargetTextOptionsFrame:Show()
+        else
+            castBarTargetTextOptionsFrame:SetShown(not castBarTargetTextOptionsFrame:IsShown())
+        end
+    end
+
+    castBarTargetText:SetScript("OnMouseDown", function(self, button)
+        if button == "RightButton" then
+            GameTooltip:Hide()
+            OpenCastbarTargetTextOptions()
+        end
     end)
 
     local castBarTargetHighlight = CreateCheckbox("castBarTargetHighlight", L["Castbar_Target_Highlight"], contentFrame)

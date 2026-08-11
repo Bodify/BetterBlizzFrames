@@ -71,6 +71,7 @@ local function EnsureHooks()
     PlayerFrame:UnregisterEvent("UNIT_ENTERED_VEHICLE")
     PlayerFrame:UnregisterEvent("UNIT_EXITING_VEHICLE")
     PlayerFrame:UnregisterEvent("UNIT_EXITED_VEHICLE")
+    AlternatePowerBar:UnregisterEvent("UNIT_DISPLAYPOWER")
 end
 
 function BBF.UpdateBigPlayerHealthbar()
