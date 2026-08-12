@@ -1,4 +1,3 @@
---if not BBF.isMidnight then return end
 local function SetXYPoint(frame, xOffset, yOffset)
     local point, relativeTo, relativePoint, xOfs, yOfs = frame:GetPoint()
     frame:SetPoint(point, relativeTo, relativePoint, xOffset or xOfs, yOffset or yOfs)
@@ -129,6 +128,30 @@ local function GetPlayerBackgroundYOffset()
     end
 end
 
+local ExtraMaskedRegions = {
+    "OverAbsorbGlow",
+    "OverHealAbsorbGlow",
+    "MyHealAbsorb",
+    "MyHealAbsorbLeftShadow",
+    "MyHealAbsorbRightShadow",
+}
+
+local function ShareBarMask(region, maskTexture)
+    if not region or not maskTexture or not region.AddMaskTexture then return end
+    if region.bbfSharedMask == maskTexture then return end
+    if region.bbfSharedMask then
+        region:RemoveMaskTexture(region.bbfSharedMask)
+    end
+    region:AddMaskTexture(maskTexture)
+    region.bbfSharedMask = maskTexture
+end
+
+local function UnshareBarMask(region)
+    if not region or not region.bbfSharedMask then return end
+    region:RemoveMaskTexture(region.bbfSharedMask)
+    region.bbfSharedMask = nil
+end
+
 local function BlackBorder(bar, width, height, startX, startY, tot)
     if not bar then return end
 
@@ -213,15 +236,16 @@ local function BlackBorder(bar, width, height, startX, startY, tot)
     end
 
     if not bar.pixelBorderBackground then
-        bar.pixelBorderBackground = bar:CreateTexture(nil, "BACKGROUND")
+        bar.pixelBorderBackground = bar:CreateTexture(nil, "BACKGROUND", nil, -8)
         bar.pixelBorderBackground:SetColorTexture(0, 0, 0, 0.45)
     end
+    bar.pixelBorderBackground:SetDrawLayer("BACKGROUND", -8)
 
     bar.pixelBorderBackground:ClearAllPoints()
-    local scale = bar:GetEffectiveScale() or 1
-    local inset = (scale < 1) and (1 / scale) * 0.5 or 0
-    bar.pixelBorderBackground:SetPoint("TOPLEFT", top, "TOPLEFT", inset, -inset)
-    bar.pixelBorderBackground:SetPoint("BOTTOMRIGHT", bottom, "BOTTOMRIGHT", -inset, inset)
+    bar.pixelBorderBackground:SetPoint("TOPLEFT", posFrame, "TOPLEFT", 0, 0)
+    bar.pixelBorderBackground:SetPoint("BOTTOMRIGHT", posFrame, "BOTTOMRIGHT", 0, 0)
+
+    ShareBarMask(bar.pixelBorderBackground, bar.bbfBarMask)
 
     borderFrame:Show()
     for _, tex in ipairs(borders) do
@@ -229,45 +253,60 @@ local function BlackBorder(bar, width, height, startX, startY, tot)
     end
 end
 
-local function SetBarMask(bar, maskTexture, pixelBorderMode, tot)
-    if not bar or not maskTexture then return end
+local MASK_TEXTURE = "Interface\\AddOns\\BetterBlizzFrames\\media\\pixelMask.tga"
+local maskFilterSupported
 
-    if pixelBorderMode then
-        maskTexture:SetTexture("interface\\masks\\squaremask", "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
-        maskTexture:SetTexCoord(0.05, 0.95, 0.01, 0.99)
-        maskTexture:ClearAllPoints()
-
-        if bar.BBFPositionFrame then
-            local posFrame = bar.BBFPositionFrame
-            maskTexture:SetPoint("TOPLEFT", bar.pixelBorderBackground, "TOPLEFT", ((tot and 1) or -0.5), -0.5)
-            maskTexture:SetPoint("BOTTOMRIGHT", bar.pixelBorderBackground, "BOTTOMRIGHT", -0.75, tot and 0.5 or 0)
-            if class == "EVOKER" and not maskTexture.bbfTexHook then
-                hooksecurefunc(maskTexture, "SetAtlas", function(self)
-                    if self.changing then return end
-                    self.changing = true
-                    self:SetTexture("interface\\masks\\squaremask", "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
-                    self:SetTexCoord(0.05, 0.95, 0.01, 0.99)
-                    self:ClearAllPoints()
-                    maskTexture:SetPoint("TOPLEFT", posFrame, "TOPLEFT", -0.5, 0.5)
-                    maskTexture:SetPoint("BOTTOMRIGHT", posFrame, "BOTTOMRIGHT", 0.5, -0.5)
-                    self.changing = false
-                end)
-                maskTexture.bbfTexHook = true
-            end
-        elseif bar.BBFPixelBorder and bar.BBFPixelBorder.edges then
-            local borders = bar.BBFPixelBorder.edges
-            local top    = borders[1]
-            local right  = borders[2]
-
-            local scale = bar:GetEffectiveScale() or 1
-            local halfPixel = 0.5 / scale
-
-            maskTexture:SetPoint("TOPLEFT", top, "BOTTOMLEFT", -halfPixel, halfPixel)
-            maskTexture:SetPoint("BOTTOMRIGHT", right, "BOTTOMLEFT", halfPixel, -halfPixel)
-        else
-            maskTexture:SetPoint("TOPLEFT", bar, "TOPLEFT", 0, 0)
-            maskTexture:SetPoint("BOTTOMRIGHT", bar, "BOTTOMRIGHT", 0, 0)
+local function ApplyMaskTexture(maskTexture)
+    if maskFilterSupported ~= false then
+        if pcall(maskTexture.SetTexture, maskTexture, MASK_TEXTURE,
+            "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE", "NEAREST") then
+            maskFilterSupported = true
+            return
         end
+        maskFilterSupported = false
+    end
+
+    maskTexture:SetTexture(MASK_TEXTURE, "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
+end
+
+local function PlaceSquareMask(maskTexture, region)
+    if not maskTexture or not region then return end
+
+    ApplyMaskTexture(maskTexture)
+    maskTexture:SetTexCoord(0, 1, 0, 1)
+    maskTexture:ClearAllPoints()
+    maskTexture:SetPoint("TOPLEFT", region, "TOPLEFT", 0, 0)
+    maskTexture:SetPoint("BOTTOMRIGHT", region, "BOTTOMRIGHT", 0, 0)
+end
+
+local function SetBarMask(bar, maskTexture, pixelBorderMode)
+    if not bar or not maskTexture or not pixelBorderMode then return end
+
+    local function Place(mask)
+        PlaceSquareMask(mask, bar.BBFPositionFrame or bar)
+    end
+
+    Place(maskTexture)
+
+    bar.bbfBarMask = maskTexture
+    ShareBarMask(bar.pixelBorderBackground, maskTexture)
+    for _, key in ipairs(ExtraMaskedRegions) do
+        ShareBarMask(bar[key], maskTexture)
+    end
+    local absorbBar = bar.TotalAbsorbBar
+    if absorbBar then
+        ShareBarMask(absorbBar, maskTexture)
+        ShareBarMask(absorbBar.TiledFillOverlay, maskTexture)
+    end
+
+    if class == "EVOKER" and not maskTexture.bbfTexHook then
+        maskTexture.bbfTexHook = true
+        hooksecurefunc(maskTexture, "SetAtlas", function(self)
+            if self.changing then return end
+            self.changing = true
+            Place(self)
+            self.changing = false
+        end)
     end
 end
 
@@ -276,13 +315,13 @@ local BorderPositions = {
         health   = { width = 123, height = 19, startX = 0, startY = -1 },
         mana     = { width = 123, height = 8, startX = 0, startY = -2 },
         totHealth= { width = 63, height = 12, startX = 0, startY = 0 },
-        totMana  = { width = 63, height = 4, startX = 3, startY = 0 },
+        totMana  = { width = 63, height = 4, startX = 0, startY = 0, x = -21, y = -25 },
     },
     focus = {
         health   = { width = 123, height = 19, startX = 0, startY = -1 },
         mana     = { width = 123, height = 8, startX = 0, startY = -2 },
         totHealth= { width = 63, height = 12, startX = 0, startY = 0 },
-        totMana  = { width = 63, height = 4, startX = 3, startY = 0 },
+        totMana  = { width = 63, height = 4, startX = 0, startY = 0, x = -21, y = -25 },
     },
     player = {
         health = { width = 123, height = 19, startX = 0, startY = 0 },
@@ -567,15 +606,22 @@ local function MakeNoPortraitMode(frame)
         local totFrame = frame.totFrame
         local totHpBar = totFrame.HealthBar
         local totManaBar = totFrame.ManaBar
+        local totBorders = (frame == TargetFrame) and BorderPositions.target or BorderPositions.focus
         totFrame:SetFrameStrata("DIALOG")
         totHpBar:SetStatusBarColor(0, 1, 0)
-        totHpBar:SetSize(65, 16)
         totHpBar:ClearAllPoints()
+        totHpBar:SetSize(65, 16)
         totHpBar:SetPoint("TOPRIGHT", -19, -10)
-        totHpBar:SetFrameLevel(1)
-        totManaBar:SetSize(67, 8)
         totManaBar:ClearAllPoints()
-        totManaBar:SetPoint("TOPRIGHT", -20, -25)
+        if db.noPortraitPixelBorder then
+            local manaCfg = totBorders.totMana
+            totManaBar:SetSize(manaCfg.width, manaCfg.height)
+            totManaBar:SetPoint("TOPRIGHT", manaCfg.x, manaCfg.y)
+        else
+            totManaBar:SetSize(67, 8)
+            totManaBar:SetPoint("TOPRIGHT", -20, -25)
+        end
+        totHpBar:SetFrameLevel(1)
         totManaBar:SetFrameLevel(1)
         totFrame.Portrait:SetParent(BBF.hiddenFrame)
 
@@ -617,34 +663,18 @@ local function MakeNoPortraitMode(frame)
             totFrame.FrameTexture:SetAlpha(0)
             totFrame.Background:SetAlpha(0)
 
-            if frame == TargetFrame then
-                local cfg = BorderPositions.target.totHealth
-                BlackBorder(totHpBar, cfg.width, cfg.height, cfg.startX, cfg.startY, true)
-                cfg = BorderPositions.target.totMana
-                BlackBorder(totManaBar, cfg.width, cfg.height, cfg.startX, cfg.startY, true)
-                SetBarMask(totHpBar, totHpBar.HealthBarMask, true)
-                SetBarMask(totManaBar, totManaBar.ManaBarMask, true, true)
+            local cfg = totBorders.totHealth
+            BlackBorder(totHpBar, cfg.width, cfg.height, cfg.startX, cfg.startY, true)
+            cfg = totBorders.totMana
+            BlackBorder(totManaBar, cfg.width, cfg.height, cfg.startX, cfg.startY, true)
+            SetBarMask(totHpBar, totHpBar.HealthBarMask, true)
+            SetBarMask(totManaBar, totManaBar.ManaBarMask, true)
 
-                if totHpBar.pixelBorderBackground then
-                    totHpBar.pixelBorderBackground:SetAlpha(1)
-                end
-                if totManaBar.pixelBorderBackground then
-                    totManaBar.pixelBorderBackground:SetAlpha(1)
-                end
-            elseif frame == FocusFrame then
-                local cfg = BorderPositions.focus.totHealth
-                BlackBorder(totHpBar, cfg.width, cfg.height, cfg.startX, cfg.startY, true)
-                cfg = BorderPositions.focus.totMana
-                BlackBorder(totManaBar, cfg.width, cfg.height, cfg.startX, cfg.startY, true)
-                SetBarMask(totHpBar, totHpBar.HealthBarMask, true)
-                SetBarMask(totManaBar, totManaBar.ManaBarMask, true, true)
-
-                if totHpBar.pixelBorderBackground then
-                    totHpBar.pixelBorderBackground:SetAlpha(1)
-                end
-                if totManaBar.pixelBorderBackground then
-                    totManaBar.pixelBorderBackground:SetAlpha(1)
-                end
+            if totHpBar.pixelBorderBackground then
+                totHpBar.pixelBorderBackground:SetAlpha(1)
+            end
+            if totManaBar.pixelBorderBackground then
+                totManaBar.pixelBorderBackground:SetAlpha(1)
             end
 
             if not totManaBar.BBFVisibilityHooked then
@@ -793,6 +823,7 @@ local function MakeNoPortraitMode(frame)
                             manaBar.BBFPixelBorder:Show()
                         end
                         if manaBar.pixelBorderBackground then
+                            UnshareBarMask(manaBar.pixelBorderBackground)
                             manaBar.pixelBorderBackground:Show()
                             manaBar.pixelBorderBackground:SetParent(frame.noPortraitMode)
                             manaBar.pixelBorderBackground:SetAlpha(1)
@@ -807,6 +838,7 @@ local function MakeNoPortraitMode(frame)
                     end
                     if manaBar.pixelBorderBackground then
                         manaBar.pixelBorderBackground:SetParent(manaBar)
+                        ShareBarMask(manaBar.pixelBorderBackground, manaBar.ManaBarMask)
                     end
                 end
             else
@@ -1851,8 +1883,6 @@ local function MakeNoPortraitMode(frame)
             PetFrameManaBar:SetSize(65, 5)
             PetFrameManaBar:ClearAllPoints()
             PetFrameManaBar:SetPoint("TOPRIGHT", -19, -27)
-            SetBarMask(PetFrameHealthBar, PetFrameHealthBarMask, true)
-            SetBarMask(PetFrameManaBar, PetFrameManaBarMask, true)
         else
             PetFrameManaBar:SetSize(67, 8)
             PetFrameManaBar:ClearAllPoints()
@@ -1897,6 +1927,8 @@ local function MakeNoPortraitMode(frame)
             BlackBorder(PetFrameHealthBar, cfg.width, cfg.height, cfg.startX, cfg.startY)
             cfg = BorderPositions.pet.mana
             BlackBorder(PetFrameManaBar, cfg.width, cfg.height, cfg.startX, cfg.startY)
+            SetBarMask(PetFrameHealthBar, PetFrameHealthBarMask, true)
+            SetBarMask(PetFrameManaBar, PetFrameManaBarMask, true)
 
             if PetFrameHealthBar.pixelBorderBackground then
                 PetFrameHealthBar.pixelBorderBackground:SetAlpha(1)
@@ -1980,13 +2012,8 @@ local function AdjustAlternateBars()
             local cfg = BorderPositions.player.alt
             BlackBorder(bar, cfg.width, cfg.height, cfg.startX, cfg.startY)
 
-            if bar.PowerBarMask then
-                bar.PowerBarMask:SetTexture("interface\\masks\\squaremask", "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
-                bar.PowerBarMask:SetTexCoord(0.05, 0.95, 0.01, 0.99)
-                bar.PowerBarMask:ClearAllPoints()
-                if bar.BBFPositionFrame then
-                    bar.PowerBarMask:SetAllPoints(bar.BBFPositionFrame)
-                end
+            if bar.PowerBarMask and bar.BBFPositionFrame then
+                PlaceSquareMask(bar.PowerBarMask, bar.BBFPositionFrame)
             end
         else
             BBF.RunAfterCombat(function()

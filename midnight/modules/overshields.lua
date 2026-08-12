@@ -5,14 +5,27 @@ local UNITFRAME_OVERSHIELD_HOOKED = false
 local COMPACT_UNITFRAME_OVERSHIELD_HOOKED = false
 local PRD_OVERSHIELD_HOOKED = false
 
-local function CreateOvershieldBar(healthBar, classicOffset, higherLayer)
-    local overshieldBar = CreateFrame("StatusBar", nil, healthBar)
-    if classicOffset then
+local function AnchorOvershieldBar(overshieldBar, healthBar, classicOffset)
+    local box = BetterBlizzFramesDB and BetterBlizzFramesDB.noPortraitPixelBorder
+        and healthBar.BBFPositionFrame or nil
+
+    overshieldBar:ClearAllPoints()
+    if box then
+        overshieldBar:SetAllPoints(box)
+    elseif classicOffset then
         overshieldBar:SetPoint("TOPLEFT", healthBar, "TOPLEFT", 0, -10)
         overshieldBar:SetPoint("BOTTOMRIGHT", healthBar, "BOTTOMRIGHT", 0, 0)
     else
         overshieldBar:SetAllPoints(healthBar)
     end
+
+    overshieldBar.bbfAnchoredToBox = box and true or false
+end
+
+local function CreateOvershieldBar(healthBar, classicOffset, higherLayer)
+    local overshieldBar = CreateFrame("StatusBar", nil, healthBar)
+    overshieldBar.bbfClassicOffset = classicOffset
+    AnchorOvershieldBar(overshieldBar, healthBar, classicOffset)
     overshieldBar:SetReverseFill(true)
     overshieldBar:SetStatusBarTexture("Interface\\RaidFrame\\Shield-Overlay")
     overshieldBar:SetFrameLevel(healthBar:GetFrameLevel())
@@ -55,6 +68,10 @@ local function BBF_UnitFrameHealPredictionBars_Update(frame, classicOffset)
 
     local overshieldBar = frame.bbfOvershieldBar
     local unit = frame.unit
+
+    if not overshieldBar.bbfAnchoredToBox and healthBar.BBFPositionFrame then
+        AnchorOvershieldBar(overshieldBar, healthBar, overshieldBar.bbfClassicOffset)
+    end
 
     UnitGetDetailedHealPrediction(unit, nil, frame.healPredictionCalc)
     local _, clamped = frame.healPredictionCalc:GetDamageAbsorbs()

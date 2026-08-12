@@ -1048,7 +1048,11 @@ local function CreateSlider(parent, label, minValue, maxValue, stepValue, elemen
                 end
 
                 if not axis then
-                    BetterBlizzFramesDB[element .. "Scale"] = value
+                    if not string.match(element, "Scale$") then
+                        BetterBlizzFramesDB[element .. "Scale"] = value
+                    else
+                        BetterBlizzFramesDB[element] = value
+                    end
                 end
 
                 local xPos = BetterBlizzFramesDB[element .. "XPos"] or 0
@@ -1119,8 +1123,8 @@ local function CreateSlider(parent, label, minValue, maxValue, stepValue, elemen
                 elseif element == "selfAuraPurgeGlowAlpha" then
                     BetterBlizzFramesDB.selfAuraPurgeGlowAlpha = value
                     BBF.RefreshAllAuraFrames()
-                elseif element == "auraWidthSpace" then
-                    BetterBlizzFramesDB.auraWidthSpace = value
+                elseif element == "auraWidthSpace" or element == "auraWidthSpaceFocus" then
+                    BetterBlizzFramesDB[element] = value
                     BBF.RefreshAllAuraFrames()
                     BBF.PreviewAuraRowWidth()
                     --
@@ -1294,6 +1298,12 @@ local function CreateSlider(parent, label, minValue, maxValue, stepValue, elemen
                     BBF.RefreshAllAuraFrames()
                 elseif element == "auraCdTextSize" then
                     BetterBlizzFramesDB.auraCdTextSize = value
+                    BBF.RefreshAllAuraFrames()
+                elseif element == "auraHighlightScale" then
+                    BetterBlizzFramesDB.auraHighlightScale = value
+                    BBF.RefreshAllAuraFrames()
+                elseif element == "auraTimerLowThreshold" then
+                    BetterBlizzFramesDB.auraTimerLowThreshold = value
                     BBF.RefreshAllAuraFrames()
                 elseif element == "targetAndFocusSmallAuraScale" then
                     BetterBlizzFramesDB.targetAndFocusSmallAuraScale = value
@@ -2061,6 +2071,17 @@ local function addOrUpdateEntry(inputText, listName, addShowMineTag, skipRefresh
     local icon
     local iconString
     local _
+
+    if not id then
+        if name ~= "" then
+            BBF.Print(L["Print_Spell_ID_Only_Midnight"])
+        end
+        local editBox = listName and BBF[listName.."EditBox"]
+        if editBox then
+            editBox:SetText("")
+        end
+        return
+    end
 
     -- Check if there's a numeric ID within the name and clear the name if found
     if id then
@@ -5849,6 +5870,7 @@ local function guiCastbars()
             targetToTAdjustmentOffsetY:Disable()
             targetToTAdjustmentOffsetY:SetAlpha(0.5)
         end
+        BBF.CastbarAdjustCaller()
     end)
 
     local targetDetachCastbar = CreateCheckbox("targetDetachCastbar", L["Castbar_Detach"], contentFrame)
@@ -5868,12 +5890,15 @@ local function guiCastbars()
         else
             targetCastBarXPos:SetMinMaxValues(-130, 130)
             targetCastBarXPos:SetValue(0)
+            targetCastBarYPos:SetMinMaxValues(-130, 130)
+            targetCastBarYPos:SetValue(0)
             targetToTCastbarAdjustment:Enable()
             targetToTCastbarAdjustment:SetAlpha(1)
             targetToTAdjustmentOffsetY:Enable()
             targetToTAdjustmentOffsetY:SetAlpha(1)
         end
         BBF.ChangeCastbarSizes()
+        BBF.CastbarAdjustCaller()
     end)
     CreateTooltip(targetDetachCastbar, L["Tooltip_Detach_From_Frame"])
 
@@ -5901,6 +5926,7 @@ local function guiCastbars()
             targetToTAdjustmentOffsetY:Enable()
             targetToTAdjustmentOffsetY:SetAlpha(1)
         end
+        BBF.CastbarAdjustCaller()
     end)
     if BetterBlizzFramesDB.targetStaticCastbar then
         targetToTCastbarAdjustment:Disable()
@@ -6014,6 +6040,8 @@ local function guiCastbars()
         else
             petCastBarXPos:SetMinMaxValues(-130, 130)
             petCastBarXPos:SetValue(0)
+            petCastBarYPos:SetMinMaxValues(-130, 130)
+            petCastBarYPos:SetValue(0)
         end
         BBF.petCastBarTestMode()
         BBF.ChangeCastbarSizes()
@@ -6114,6 +6142,7 @@ local function guiCastbars()
             focusToTAdjustmentOffsetY:Disable()
             focusToTAdjustmentOffsetY:SetAlpha(0.5)
         end
+        BBF.CastbarAdjustCaller()
     end)
 
     local focusDetachCastbar = CreateCheckbox("focusDetachCastbar", L["Castbar_Detach"], contentFrame)
@@ -6133,12 +6162,15 @@ local function guiCastbars()
         else
             focusCastBarXPos:SetMinMaxValues(-130, 130)
             focusCastBarXPos:SetValue(0)
+            focusCastBarYPos:SetMinMaxValues(-130, 130)
+            focusCastBarYPos:SetValue(0)
             focusToTCastbarAdjustment:Enable()
             focusToTCastbarAdjustment:SetAlpha(1)
             focusToTAdjustmentOffsetY:Enable()
             focusToTAdjustmentOffsetY:SetAlpha(1)
         end
         BBF.ChangeCastbarSizes()
+        BBF.CastbarAdjustCaller()
     end)
     CreateTooltip(focusDetachCastbar, L["Tooltip_Detach_From_Frame"])
 
@@ -6159,12 +6191,14 @@ local function guiCastbars()
             focusToTAdjustmentOffsetY:Disable()
             focusToTAdjustmentOffsetY:SetAlpha(0.5)
             focusDetachCastbar:SetChecked(false)
+            BetterBlizzFramesDB.focusDetachCastbar = false
         else
             focusToTCastbarAdjustment:Enable()
             focusToTCastbarAdjustment:SetAlpha(1)
             focusToTAdjustmentOffsetY:Enable()
             focusToTAdjustmentOffsetY:SetAlpha(1)
         end
+        BBF.CastbarAdjustCaller()
     end)
     if BetterBlizzFramesDB.focusStaticCastbar then
         focusToTCastbarAdjustment:Disable()
@@ -6240,10 +6274,10 @@ local function guiCastbars()
     local playerCastBarScale = CreateSlider(contentFrame, L["Size"], 0.1, 1.9, 0.01, "playerCastBarScale")
     playerCastBarScale:SetPoint("TOP", anchorSubPlayerCastbar, "BOTTOM", 0, -15)
 
-    local playerCastbarIconXPos = CreateSlider(contentFrame, L["X_Offset"], -200, 200, 1, "playerCastbarIconXPos", "X")
+    local playerCastbarIconXPos = CreateSlider(contentFrame, L["Icon_x_offset"], -200, 200, 1, "playerCastbarIconXPos", "X")
     playerCastbarIconXPos:SetPoint("TOP", playerCastBarScale, "BOTTOM", 0, -15)
 
-    local playerCastbarIconYPos = CreateSlider(contentFrame, L["Y_Offset"], -200, 200, 1, "playerCastbarIconYPos", "Y")
+    local playerCastbarIconYPos = CreateSlider(contentFrame, L["Icon_y_offset"], -200, 200, 1, "playerCastbarIconYPos", "Y")
     playerCastbarIconYPos:SetPoint("TOP", playerCastbarIconXPos, "BOTTOM", 0, -15)
 
     local playerCastBarIconScale = CreateSlider(contentFrame, L["Icon_Size"], 0.4, 2, 0.01, "playerCastBarIconScale")
@@ -8575,10 +8609,67 @@ local function guiFrameAuras()
         DisableElement(targetAndFocusSmallAuraScale)
     end
 
+    local UpdateAuraWidthText, UpdateAuraWidthSeparate
+
     local auraWidthSpace = CreateSlider(playerAuraFiltering, L["Aura_Row_Width"], 20, 400, 1, "auraWidthSpace")
     auraWidthSpace:SetPoint("TOPLEFT", targetAndFocusSmallAuraScale, "BOTTOMLEFT", 0, -17)
     auraWidthSpace.integerOnly = true
     CreateTooltipTwo(auraWidthSpace, L["Aura_Row_Width"], L["Tooltip_Aura_Row_Width"])
+    auraWidthSpace:HookScript("OnValueChanged", function()
+        if UpdateAuraWidthText then UpdateAuraWidthText() end
+    end)
+
+    local auraWidthSpaceFullWidth = auraWidthSpace:GetWidth()
+    local auraWidthSpaceGap = 8
+    local auraWidthSpaceHalfWidth = (auraWidthSpaceFullWidth - auraWidthSpaceGap) / 2
+
+    local auraWidthSpaceFocus = CreateSlider(playerAuraFiltering, L["Aura_Row_Width_Focus"], 20, 400, 1, "auraWidthSpaceFocus", nil, auraWidthSpaceHalfWidth)
+    auraWidthSpaceFocus:SetPoint("LEFT", auraWidthSpace, "RIGHT", auraWidthSpaceGap, 0)
+    auraWidthSpaceFocus.integerOnly = true
+    auraWidthSpaceFocus.Text:Hide()
+    auraWidthSpaceFocus:Hide()
+    CreateTooltipTwo(auraWidthSpaceFocus, L["Aura_Row_Width_Focus"], L["Tooltip_Aura_Row_Width"])
+    auraWidthSpaceFocus:HookScript("OnValueChanged", function()
+        if UpdateAuraWidthText then UpdateAuraWidthText() end
+    end)
+
+    local auraWidthSpaceSeparate = CreateCheckbox("auraWidthSpaceSeparate", L["Separate"], playerAuraFiltering)
+    CreateTooltipTwo(auraWidthSpaceSeparate, L["Separate"], L["Tooltip_Aura_Row_Width_Separate"])
+    auraWidthSpaceSeparate:HookScript("OnClick", function()
+        if UpdateAuraWidthSeparate then UpdateAuraWidthSeparate() end
+        BBF.PreviewAuraRowWidth()
+    end)
+
+    function UpdateAuraWidthText()
+        local target = BetterBlizzFramesDB.auraWidthSpace or 150
+        local focus = BetterBlizzFramesDB.auraWidthSpaceFocus or target
+        local text = L["Aura_Row_Width"] .. ": " .. math.floor(target)
+        if BetterBlizzFramesDB.auraWidthSpaceSeparate then
+            text = text .. " -/- " .. math.floor(focus)
+        end
+        auraWidthSpace.Text:SetText(text)
+    end
+
+    function UpdateAuraWidthSeparate()
+        local separate = BetterBlizzFramesDB.auraWidthSpaceSeparate and true or false
+        auraWidthSpaceFocus:SetShown(separate)
+        auraWidthSpace:SetWidth(separate and auraWidthSpaceHalfWidth or auraWidthSpaceFullWidth)
+
+        auraWidthSpace.Text:ClearAllPoints()
+        if separate then
+            auraWidthSpace.Text:SetPoint("BOTTOM", auraWidthSpace, "TOPRIGHT", auraWidthSpaceGap / 2, 0)
+        else
+            auraWidthSpace.Text:SetPoint("BOTTOM", auraWidthSpace, "TOP", 0, 0)
+        end
+
+        auraWidthSpaceSeparate:ClearAllPoints()
+        auraWidthSpaceSeparate:SetPoint("LEFT", separate and auraWidthSpaceFocus or auraWidthSpace, "RIGHT", 3, 2)
+
+        CreateTooltipTwo(auraWidthSpace, separate and L["Aura_Row_Width_Target"] or L["Aura_Row_Width"], L["Tooltip_Aura_Row_Width"])
+        UpdateAuraWidthText()
+    end
+
+    UpdateAuraWidthSeparate()
 
     local targetAndFocusAuraOffsetX = CreateSlider(playerAuraFiltering, L["X_Offset"], -50, 50, 1, "targetAndFocusAuraOffsetX", "X")
     targetAndFocusAuraOffsetX:SetPoint("TOPLEFT", auraWidthSpace, "BOTTOMLEFT", 0, -17)

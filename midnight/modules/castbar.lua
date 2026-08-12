@@ -1819,6 +1819,9 @@ function BBF.ChangeCastbarSizes()
         PlayerCastingBarFrame.Border:SetTexture(BetterBlizzFramesDB.classicCastbarsPlayerBorder and 130874 or 130873)
         PetCastingBarFrame.Border:SetTexture(BetterBlizzFramesDB.classicCastbarsPlayerBorder and 130874 or 130873)
     end
+
+    BBF.AnchorCastbar("target")
+    BBF.AnchorCastbar("focus")
 end
 
 PlayerCastingBarFrame:HookScript("OnEvent", function()

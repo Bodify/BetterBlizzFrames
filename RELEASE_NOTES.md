@@ -1,3 +1,21 @@
+# BetterBlizzFrames 2.0.2b
+## Midnight
+### New
+- Add new setting to separate aura row width between Target/Focus (ill add more of these split settings later prob)
+### Tweak
+- "Remove Debuff Color Border" now works on Player auras as well, and with Dark Mode: Auras or Pixel Border Auras enabled debuffs get that same border instead of nothing, matching the look of buffs.
+- Clean blacklist & whitelist from old named entries (not spell ids) and disallow name entry.
+- Force player aura spacing "Horizontal Padding" to the default value of 5 because I made an oopsie here. If you had changed this you will have to tweak it again :x
+- Update Saul profile (www.twitch.tv/saul)
+- Improve No Portrait: Pixel Border.
+- Fix auras not being scaled with the Target/FocusFrame like how default auras are.
+### Bugfix
+- Fix secret errors in custom class colors. Custom class colors are dead I think though :/
+- Fix issues with No Portrait: Pixel Border
+- Fix issues with castbar positioning for Target/FocusFrame.
+- Fix Highlighted Auras Scale not saving its value after reload.
+- Fix Remove Debuff Color Border for auras not applying a dark border
+
 # BetterBlizzFrames 2.0.2
 ## Midnight
 ### New

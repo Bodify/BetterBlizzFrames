@@ -156,20 +156,22 @@ local function getUnitColor(unit, useCustomColors, txt)
             local _, className = UnitClass(unit)
             local color
 
-            if useCustomColors and customHealthbarColors and overrideClassColors then
-                if useOneClassColor then
-                    local customColor = singleClassColor or {1, 1, 1, 1}
-                    color = {r = customColor[1], g = customColor[2], b = customColor[3], a = customColor[4] or 1}
-                elseif className then
-                    local customColor = BetterBlizzFramesDB["classColor"..className]
-                    if customColor then
+            if className ~= nil then
+                if useCustomColors and customHealthbarColors and overrideClassColors then
+                    if useOneClassColor then
+                        local customColor = singleClassColor or {1, 1, 1, 1}
                         color = {r = customColor[1], g = customColor[2], b = customColor[3], a = customColor[4] or 1}
-                    else
-                        color = C_ClassColor.GetClassColor(className)
+                    elseif className then
+                        local customColor = BetterBlizzFramesDB["classColor"..className]
+                        if customColor then
+                            color = {r = customColor[1], g = customColor[2], b = customColor[3], a = customColor[4] or 1}
+                        else
+                            color = C_ClassColor.GetClassColor(className)
+                        end
                     end
+                else
+                    color = C_ClassColor.GetClassColor(className)
                 end
-            else
-                color = C_ClassColor.GetClassColor(className)
             end
 
             if color then
@@ -608,7 +610,7 @@ function BBF.UpdateFrames()
     rpNames = BetterBlizzFramesDB.rpNamesHealthbarColor
     rpNamesHealthbarColor = BetterBlizzFramesDB.rpNamesHealthbarColor
     customHealthbarColors = BetterBlizzFramesDB.customHealthbarColors
-    overrideClassColors = BetterBlizzFramesDB.overrideClassColors
+    overrideClassColors = false --UnitClass is secret now. idk if theres any way to let this setting live --BetterBlizzFramesDB.overrideClassColors
     customColorsUnitFrames = BetterBlizzFramesDB.customColorsUnitFrames
     customColorsRaidFrames = BetterBlizzFramesDB.customColorsRaidFrames
     useOneClassColor = BetterBlizzFramesDB.useOneClassColor

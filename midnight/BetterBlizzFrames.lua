@@ -242,6 +242,7 @@ local defaultSettings = {
     targetAndFocusHorizontalGap = 3,
     targetAndFocusVerticalGap = 4,
     auraWidthSpace = 150,
+    auraWidthSpaceFocus = 150,
     targetAndFocusSmallAuraScale = 1,
     purgeTextureColorRGB = {0, 0.92, 1, 0.85},
     hiddenIconDirection = "BOTTOM",
@@ -404,11 +405,10 @@ local function InitializeSavedVariables()
         BetterBlizzFramesDB.version = addonVersion  -- Update the version number in the database
     end
 
-    if not BetterBlizzFramesDB.playerAuraSpacingIsDelta then
-        BetterBlizzFramesDB.playerAuraSpacingIsDelta = true
-        if BetterBlizzFramesDB.playerAuraSpacingX == 5 then
-            BetterBlizzFramesDB.playerAuraSpacingX = 0
-        end
+    if not BetterBlizzFramesDB.playerAuraSpacingXFixed then
+        BetterBlizzFramesDB.playerAuraSpacingXFixed = true
+        BetterBlizzFramesDB.playerAuraSpacingIsDelta = nil
+        BetterBlizzFramesDB.playerAuraSpacingX = 5
     end
 
     for key, defaultValue in pairs(defaultSettings) do
@@ -5151,10 +5151,7 @@ SlashCmdList["BBF"] = function(msg)
                     BBF.Print(L["Print_Error_Invalid_Spell_ID"])
                 end
             else
-                -- The argument is not a number, treat it as a spell name
-                local spellName = arg
-                BBF.auraWhitelist(spellName)
-                BBF.Print(spellName .. L["Print_Added_To_Whitelist_Name"])
+                BBF.Print(L["Print_Spell_ID_Only_Midnight"])
             end
         else
             BBF.Print(L["Print_Usage_Whitelist"])
@@ -5173,10 +5170,7 @@ SlashCmdList["BBF"] = function(msg)
                     BBF.Print(L["Print_Error_Invalid_Spell_ID"])
                 end
             else
-                -- The argument is not a number, treat it as a spell name
-                local spellName = arg
-                BBF.auraBlacklist(spellName)
-                BBF.Print(spellName .. L["Print_Added_To_Blacklist_Name"])
+                BBF.Print(L["Print_Spell_ID_Only_Midnight"])
             end
         else
             BBF.Print(L["Print_Usage_Blacklist"])
@@ -5535,6 +5529,21 @@ First:SetScript("OnEvent", function(_, event, addonName)
                     BBF.Print(L["Print_Removed_PvP_Blacklist_Auras"])
                 end)
             end
+        end
+
+        if not BetterBlizzFramesDB.midnightAuraListsCleaned then
+            for _, listName in ipairs({ "auraBlacklist", "auraWhitelist" }) do
+                local list = BetterBlizzFramesDB[listName]
+                if type(list) == "table" then
+                    for key, entry in pairs(list) do
+                        if not tonumber(key) or type(entry) ~= "table" or not tonumber(entry.id) then
+                            list[key] = nil
+                        end
+                    end
+                end
+            end
+
+            BetterBlizzFramesDB.midnightAuraListsCleaned = true
         end
 
         BBF.InitializeOptions()

@@ -463,9 +463,11 @@ end
 
 local function UnitIsProbablyUnit(unit1, unit2)
     if not UnitExists(unit1) or not UnitExists(unit2) then return end
-    if not UnitIsPlayer(unit1) or not UnitIsPlayer(unit2) then return end
 
-    return UnitName(unit1) == UnitName(unit2)
+    local name1, name2 = UnitName(unit1), UnitName(unit2)
+    if issecretvalue(name1) or issecretvalue(name2) then return end
+
+    return name1 == name2
 end
 
 local function SetArenaName(frame, unit, textObject)

@@ -97,9 +97,39 @@ local function TestModeActive()
     return testMode or widthPreview
 end
 
-local function PreviewIsActive()
-    return TestModeActive() or editModeActive
+local function EditModeSettingChecked(settingName, checkButtonName)
+    local manager = EditModeManagerFrame
+    if not manager then return false end
+
+    local setting = Enum.EditModeAccountSetting and Enum.EditModeAccountSetting[settingName]
+    if setting and manager.HasAccountSettings and manager:HasAccountSettings() then
+        return manager:GetAccountSettingValueBool(setting)
+    end
+
+    local settings = manager.AccountSettings
+    local checkButton = settings and settings.settingsCheckButtons
+        and settings.settingsCheckButtons[checkButtonName]
+    if checkButton and checkButton.IsControlChecked then
+        return checkButton:IsControlChecked() and true or false
+    end
+
+    return false
 end
+
+local function EditModePreviewsHost(host)
+    if not editModeActive then return false end
+    if host.isPlayer then
+        return EditModeSettingChecked("ShowBuffsAndDebuffs", "BuffsAndDebuffs")
+    end
+    return EditModeSettingChecked("ShowTargetAndFocus", "TargetAndFocus")
+end
+
+local function PreviewIsActive(host)
+    if TestModeActive() then return true end
+    if not host then return editModeActive end
+    return EditModePreviewsHost(host)
+end
+
 local targetCastBarXPos, targetCastBarYPos = 0, 0
 local focusCastBarXPos, focusCastBarYPos = 0, 0
 local targetStaticCastbar, targetDetachCastbar
@@ -139,6 +169,8 @@ function BBF.UpdateUserAuraSettings()
 
     S.cell = math.max(S.largeSize, S.smallSize)
     S.rowWidth = db.auraWidthSpace or 141
+    S.separateRowWidth = db.auraWidthSpaceSeparate and true or false
+    S.rowWidthFocus = db.auraWidthSpaceFocus or S.rowWidth
     S.hGap = db.targetAndFocusHorizontalGap or 4
     S.vGap = db.targetAndFocusVerticalGap or 4
     S.typeGap = db.auraTypeGap or 4
@@ -544,14 +576,16 @@ local function ApplyDispelRegistrations(button, style)
     local borderStyle = (button.bbfDispel and not style.removeDebuffBorder and not style.glow)
         and GetDispelBorderStyle(style) or nil
     local ownBorderOn = (button.bbfBorder and style.drawBorder) and true or false
+    -- With the dispel colors removed debuffs reuse the same border the buffs draw.
+    local ownBorderHarmful = (ownBorderOn and style.removeDebuffBorder) and true or false
     local purgeMode = button.bbfPurgeGlow and GetPurgeMode(style) or nil
 
     local pc = style.recolorPurge and style.purgeColor or nil
-    local signature = string.format("%s|%s|%s|%s|%s|%s",
+    local signature = string.format("%s|%s|%s|%s|%s|%s|%s",
         tostring(borderStyle), tostring(ownBorderOn), tostring(purgeMode),
         tostring(style.purgeGlowAlways),
         pc and string.format("%.3f,%.3f,%.3f,%.3f", pc[1], pc[2], pc[3], pc[4] or 1) or "false",
-        tostring(style.darkColor))
+        tostring(style.darkColor), tostring(ownBorderHarmful))
     if button.bbfDispelSignature == signature then return end
     button.bbfDispelSignature = signature
 
@@ -562,7 +596,7 @@ local function ApplyDispelRegistrations(button, style)
             local c = style.darkColor or 1
             button:AddDispelTypeTexture(button.bbfBorder, {
                 style = Enum.CustomAuraButtonDispelTypeTextureStyle.CustomAsset,
-                showWhenHarmful = false,
+                showWhenHarmful = ownBorderHarmful,
                 showWhenHelpful = true,
                 showWithoutDispelType = true,
                 customDispelAssetMap = UniformDispelMap({
@@ -1028,12 +1062,20 @@ local function GetTierCell(tier, sizes)
     return size, size
 end
 
+local function RowWidth(host)
+    local width = S.rowWidth
+    if S.separateRowWidth and (host.settingsKey or host.key) == "focus" then
+        width = S.rowWidthFocus or width
+    end
+    return width
+end
+
 local function GetMaxLineSize(host, sizes, primarySpacing)
     if host.isPlayer then
         local perRow = math.max(host.perRow or 1, 1)
         return perRow * PLAYER_AURA_ICON + (perRow - 1) * primarySpacing
     end
-    return S.rowWidth
+    return RowWidth(host)
 end
 
 local function GetTierGlow(tier, cfg)
@@ -1069,7 +1111,7 @@ local function GetDurationYOffset(isPlayer, cfg, durationUnderIcon)
         return durationUnderIcon and -1 or 0
     end
 
-    if not cfg.harmful and S.darkBorder then
+    if (not cfg.harmful or S.removeDebuffBorder) and S.darkBorder then
         return -1
     end
 
@@ -1127,7 +1169,7 @@ local function BuildStyle(tier, sizes, isPlayer, cfg, into)
     t.clickthrough = clickthrough
     t.removeDebuffBorder = S.removeDebuffBorder
     t.pixelBorder = S.pixelBorder
-    t.borderInset = (isPlayer and not cfg.harmful)
+    t.borderInset = (isPlayer and (not cfg.harmful or t.removeDebuffBorder))
         and PLAYER_BUFF_BORDER_INSET or BORDER_INSET
     t.legacyBorder = legacyBorder
     t.showDispelType = cfg.showDispelType
@@ -1358,7 +1400,7 @@ local function ConfigureSpacer(host, harmful)
         spacer:SetAuraGroupFilterString(SPACER_KEY, filter)
     end
 
-    local count = (GetFrameConfig(host, harmful).enabled and not PreviewIsActive())
+    local count = (GetFrameConfig(host, harmful).enabled and not PreviewIsActive(host))
         and 1 or 0
     if record.count ~= count then
         record.count = count
@@ -1392,7 +1434,7 @@ local function ConfigureContainer(host, container, harmful)
         ApplyGroupSortMethod(container, def.key, sort[1], sort[2])
 
         local count = 0
-        if cfg.enabled and not blockAll and not PreviewIsActive() then
+        if cfg.enabled and not blockAll and not PreviewIsActive(host) then
             local whitelistLive = (cfg.whitelist or cfg.collapsed) and true or false
 
             if def.tier == "whitelistpandemic" then
@@ -1657,74 +1699,170 @@ local function SuppressAllBlizzardAuras()
     end
 end
 
-local anchoringSpellbar = false
+local CB = {
+    anchoring = false,
+    hooked = false,
+    keys = { "target", "focus" },
+    owned = {},
+    blizzBaseX = 17,
+    blizzBaseY = -8,
+    blizzToTBaseX = 42,
+    blizzToTBaseY = -18,
+    staticBaseX = 1,
+    staticBaseY = 9,
+}
 
-local function AttachSpellbarToBlock(host)
-    local spellbar = host.spellbar
-    if not spellbar then return end
-
-    local isTarget = host.key == "target"
-    local xPos = isTarget and targetCastBarXPos or focusCastBarXPos
-    local yPos = isTarget and targetCastBarYPos or focusCastBarYPos
-
-    anchoringSpellbar = true
-    spellbar:ClearAllPoints()
-    spellbar:SetPoint("TOPLEFT", host.blockBottom, "BOTTOMLEFT", 18 + xPos, -10 + yPos)
-    anchoringSpellbar = false
+function CB.GetFrames(key)
+    if key == "target" then
+        return TargetFrame, TargetFrameSpellBar
+    elseif key == "focus" then
+        return FocusFrame, FocusFrameSpellBar
+    end
 end
 
-local function AnchorSpellbar(host)
-    local spellbar = host.spellbar
-    if not spellbar or anchoringSpellbar then return end
+function CB.Settings(key)
+    if key == "target" then
+        return targetStaticCastbar, targetDetachCastbar,
+            targetCastBarXPos, targetCastBarYPos,
+            targetToTCastbarAdjustment, targetToTAdjustmentOffsetY
+    end
+    return focusStaticCastbar, focusDetachCastbar,
+        focusCastBarXPos, focusCastBarYPos,
+        focusToTCastbarAdjustment, focusToTAdjustmentOffsetY
+end
 
-    local frame = host.frame
-    local isTarget = host.key == "target"
-    local staticBar = isTarget and targetStaticCastbar or focusStaticCastbar
-    local detachBar = isTarget and targetDetachCastbar or focusDetachCastbar
-    local xPos = isTarget and targetCastBarXPos or focusCastBarXPos
-    local yPos = isTarget and targetCastBarYPos or focusCastBarYPos
-    local container = host.blockBottom
+function CB.SetOwnPoint(key, spellbar, point, relTo, relPoint, x, y)
+    CB.owned[key] = true
 
-    local _, relTo = spellbar:GetPoint()
+    CB.anchoring = true
+    if spellbar.ClearPointsOffset then
+        spellbar:ClearPointsOffset()
+    end
+    spellbar:ClearAllPoints()
+    spellbar:SetPoint(point, relTo, relPoint, x, y)
+    CB.anchoring = false
+end
 
-    anchoringSpellbar = true
+function CB.Release(key, frame, spellbar)
+    if not CB.owned[key] then return end
+    CB.owned[key] = nil
+
+    local baseX = frame.smallSize and 38 or 43
+    local baseY = frame.smallSize and 3 or 5
+    if frame.haveToT then
+        baseY = frame.smallSize and -48 or -46
+    end
+
+    CB.anchoring = true
+    if spellbar.ClearPointsOffset then
+        spellbar:ClearPointsOffset()
+    end
+    spellbar:ClearAllPoints()
+    spellbar:SetPoint("TOPLEFT", frame, "BOTTOMLEFT", baseX, baseY)
+    CB.anchoring = false
+end
+
+function CB.Anchor(key)
+    if CB.anchoring then return end
+    if BetterBlizzFramesDB.disableCastbarMovement then return end
+
+    local frame, spellbar = CB.GetFrames(key)
+    if not frame or not spellbar then return end
+
+    local staticBar, detachBar, xPos, yPos, totAdjust, totOffsetY = CB.Settings(key)
 
     if spellbar.bbfHiddenCastbar then
         spellbar:SetClampedToScreen(false)
-        spellbar:ClearAllPoints()
-        spellbar:SetPoint("TOPLEFT", frame, "BOTTOMLEFT", 0, 9000)
-    elseif detachBar then
-        spellbar:ClearAllPoints()
-        spellbar:SetPoint("CENTER", UIParent, "CENTER", xPos, yPos)
-    elseif staticBar then
-        spellbar:ClearAllPoints()
-        spellbar:SetPoint("TOPLEFT", frame, "BOTTOMLEFT", 43 + xPos, -14 + yPos)
-    elseif frame.buffsOnTop and not buffsOnTopReverseCastbarMovement then
-        local pointX = frame.smallSize and 38 or 43
-        local pointY = frame.smallSize and 3 or 5
-        local totAdjust = isTarget and targetToTCastbarAdjustment or focusToTCastbarAdjustment
-        if frame.haveToT and totAdjust then
-            pointY = (frame.smallSize and -48 or -46)
-                + (isTarget and targetToTAdjustmentOffsetY or focusToTAdjustmentOffsetY)
-        end
-        spellbar:ClearAllPoints()
-        spellbar:SetPoint("TOPLEFT", frame, "BOTTOMLEFT", pointX + xPos, pointY + yPos)
-    elseif relTo ~= container then
-        spellbar:ClearAllPoints()
-        if frame.buffsOnTop then
-            spellbar:SetPoint("BOTTOMLEFT", container, "TOPLEFT", 18 + xPos, 10 + yPos)
-        else
-            spellbar:SetPoint("TOPLEFT", container, "BOTTOMLEFT", 18 + xPos, -10 + yPos)
-        end
+        CB.SetOwnPoint(key, spellbar, "TOPLEFT", frame, "BOTTOMLEFT", 0, 9000)
+        return
     end
 
-    anchoringSpellbar = false
+    if detachBar then
+        CB.SetOwnPoint(key, spellbar, "CENTER", UIParent, "CENTER", xPos, yPos)
+        return
+    end
+
+    if staticBar then
+        CB.SetOwnPoint(key, spellbar, "TOPLEFT", frame, "BOTTOMLEFT",
+            43 + CB.staticBaseX + xPos, -14 + CB.staticBaseY + yPos)
+        return
+    end
+
+    local mirrored = frame.buffsOnTop == true
+
+    local host = BBF.auraHosts and BBF.auraHosts[key]
+    local block = host and host.blockBottom
+
+    if block then
+        if mirrored and not buffsOnTopReverseCastbarMovement then
+            local baseX = frame.smallSize and 38 or 43
+            local baseY = frame.smallSize and 3 or 5
+            if frame.haveToT and totAdjust then
+                baseY = (frame.smallSize and -48 or -46) + totOffsetY
+            end
+            CB.SetOwnPoint(key, spellbar, "TOPLEFT", frame, "BOTTOMLEFT", baseX + xPos, baseY + yPos)
+            return
+        end
+
+        if mirrored then
+            CB.SetOwnPoint(key, spellbar, "BOTTOMLEFT", block, "TOPLEFT", 18 + xPos, 10 + yPos)
+        else
+            CB.SetOwnPoint(key, spellbar, "TOPLEFT", block, "BOTTOMLEFT", 18 + xPos, -10 + yPos)
+        end
+        return
+    end
+
+    CB.Release(key, frame, spellbar)
+
+    if not spellbar.SetPointsOffset then return end
+
+    local baseX, baseY = CB.blizzBaseX, CB.blizzBaseY
+    if frame.haveToT and totAdjust then
+        baseX, baseY = CB.blizzToTBaseX, CB.blizzToTBaseY + totOffsetY
+    end
+
+    spellbar:SetPointsOffset(xPos + baseX, yPos + baseY)
+end
+
+BBF.AnchorCastbar = CB.Anchor
+
+local function AnchorSpellbar(host)
+    if not host or not host.spellbar then return end
+    CB.Anchor(host.key)
+end
+
+function BBF.HookCastbarAnchoring()
+    if CB.hooked then return end
+
+    for _, key in ipairs(CB.keys) do
+        local frame, spellbar = CB.GetFrames(key)
+        if not frame or not spellbar then return end
+    end
+
+    CB.hooked = true
+
+    for _, key in ipairs(CB.keys) do
+        local _, spellbar = CB.GetFrames(key)
+        hooksecurefunc(spellbar, "SetPoint", function()
+            if CB.anchoring then return end
+            CB.Anchor(key)
+        end)
+    end
+
+    local driver = CreateFrame("Frame")
+    driver:RegisterEvent("PLAYER_TARGET_CHANGED")
+    driver:RegisterEvent("PLAYER_FOCUS_CHANGED")
+    driver:SetScript("OnEvent", function(_, event)
+        CB.Anchor(event == "PLAYER_FOCUS_CHANGED" and "focus" or "target")
+    end)
+
+    BBF.CastbarAdjustCaller()
 end
 
 function BBF.CastbarAdjustCaller()
     BBF.UpdateUserAuraSettings()
-    for _, host in pairs(BBF.auraHosts) do
-        AnchorSpellbar(host)
+    for _, key in ipairs(CB.keys) do
+        CB.Anchor(key)
     end
 end
 
@@ -2115,7 +2253,7 @@ local function ConfigureFilteredContainer(host)
             usable and { includeSpellIDs = set } or {})
         ApplyGroupSortMethod(container, def.key, sort[1], sort[2])
         container:SetAuraGroupMaxFrameCount(def.key,
-            (usable and cfg.blacklist and S.showFilteredIcon and not PreviewIsActive())
+            (usable and cfg.blacklist and S.showFilteredIcon and not PreviewIsActive(host))
                 and (cfg.maxCount or 32) or 0)
 
         ApplyGroupLayout(container, def.key,
@@ -2328,6 +2466,13 @@ local EDIT_MODE_TIERS = {
 
 local EDIT_MODE_DISPELS = { "Magic", "Curse", "Disease", "Poison", "Bleed" }
 
+local function GetExampleIcon(texture)
+    local icon = texture:GetTexture()
+    if icon == nil then return FALLBACK_ICON end
+    if issecretvalue(icon) then return nil end
+    return icon
+end
+
 local function BuildEditModeEntries(host, harmful)
     local frames = host.frame and host.frame.auraFrames
     if not frames then return nil end
@@ -2335,8 +2480,10 @@ local function BuildEditModeEntries(host, harmful)
     local icons, count = {}, 0
     for _, auraFrame in ipairs(frames) do
         if not auraFrame.isAuraAnchor and auraFrame.isExample and auraFrame.Icon then
+            local icon = GetExampleIcon(auraFrame.Icon)
+            if not icon then return nil end
             count = count + 1
-            icons[count] = auraFrame.Icon:GetTexture() or FALLBACK_ICON
+            icons[count] = icon
         end
     end
     if count == 0 then return nil end
@@ -2478,7 +2625,7 @@ local function StyleTestButton(button, entry, tier, style, sizes, harmful)
     ApplyBorderGeometry(border, icon, style.pixelBorder, style.borderInset)
     local c = style.darkColor or 1
     border:SetVertexColor(c, c, c)
-    border:SetShown(style.drawBorder and not harmful)
+    border:SetShown(style.drawBorder and (not harmful or style.removeDebuffBorder))
 
     local dispel = button.bbfDispel
     if harmful and not style.removeDebuffBorder and not (HIGHLIGHT_TIERS[tier] and style.glow) then
@@ -2626,14 +2773,23 @@ local function LayoutTestButtons(preview, entries, host, harmful, cursorCross)
     return cursorCross
 end
 
+local function PreviewParent(host)
+    local container = host.blockTop or host.buffs or host.debuffs
+    return (container and container:GetParent()) or host.frame or UIParent
+end
+
 local function EnsurePreview(host)
     local preview = testHosts[host.key]
-    if preview then return preview end
+    if preview then
+        preview:SetParent(PreviewParent(host))
+        return preview
+    end
 
-    preview = CreateFrame("Frame", nil, UIParent)
+    preview = CreateFrame("Frame", nil, PreviewParent(host))
     preview:SetSize(1, 1)
     preview.bbfButtons = {}
     preview.bbfStyles = {}
+    preview.bbfBaseStrata = preview:GetFrameStrata()
 
     local space = preview:CreateTexture(nil, "BACKGROUND")
     space:SetColorTexture(0, 1, 0, 0.4)
@@ -2684,7 +2840,10 @@ local function AnchorPreview(host, preview)
 end
 
 local function ShouldPreviewHost(host)
-    return host.isPlayer or editModeActive or (UnitExists(host.unit) and true or false)
+    if TestModeActive() then
+        return host.isPlayer or (UnitExists(host.unit) and true or false)
+    end
+    return EditModePreviewsHost(host)
 end
 
 local function RefreshTestHost(host)
@@ -2696,7 +2855,7 @@ local function RefreshTestHost(host)
 
     local preview = EnsurePreview(host)
     AnchorPreview(host, preview)
-    preview:SetFrameStrata(S.increaseStrata and "FULLSCREEN" or "MEDIUM")
+    preview:SetFrameStrata(S.increaseStrata and "FULLSCREEN" or (preview.bbfBaseStrata or "MEDIUM"))
 
     preview.bbfCount = 0
 
@@ -2794,8 +2953,31 @@ function BBF.PreviewAuraRowWidth()
     BBF.RefreshAllAuraFrames()
 end
 
+local editModeSettingsHooked = false
+
+local function HookEditModeSettings()
+    if editModeSettingsHooked then return end
+
+    local settings = EditModeManagerFrame and EditModeManagerFrame.AccountSettings
+    if not settings then return end
+    editModeSettingsHooked = true
+
+    local function OnEditModeSettingRefreshed()
+        if not editModeActive then return end
+        BBF.RefreshAllAuraFrames()
+    end
+
+    if settings.RefreshBuffsAndDebuffs then
+        hooksecurefunc(settings, "RefreshBuffsAndDebuffs", OnEditModeSettingRefreshed)
+    end
+    if settings.RefreshTargetAndFocus then
+        hooksecurefunc(settings, "RefreshTargetAndFocus", OnEditModeSettingRefreshed)
+    end
+end
+
 EventRegistry:RegisterCallback("EditMode.Enter", function()
     editModeActive = true
+    HookEditModeSettings()
     BBF.RefreshAllAuraFrames()
 end)
 
@@ -2827,7 +3009,6 @@ local function CreateHost(key, frame, unit, spellbar)
     host.lastContainer = host.blockBottom
 
     BBF.AnchorAuraContainer(host)
-    AttachSpellbarToBlock(host)
     AnchorSpellbar(host)
 
     AddSpacerGroup(host.spacer)
@@ -2915,6 +3096,7 @@ end
 
 function BBF.HookPlayerAndTargetAuras()
     BBF.UpdateUserAuraSettings()
+    BBF.HookCastbarAnchoring()
 
     if auraFilteringOn and not hooked then
         hooked = true
@@ -2956,15 +3138,6 @@ function BBF.HookPlayerAndTargetAuras()
                 if PreviewIsActive() then BBF.RefreshAuraTestMode() end
             end
         end)
-
-        for _, host in pairs(BBF.auraHosts) do
-            if host.spellbar then
-                local captured = host
-                hooksecurefunc(host.spellbar, "SetPoint", function()
-                    AnchorSpellbar(captured)
-                end)
-            end
-        end
 
         hooksecurefunc(TargetFrame, "UpdateAuras", function()
             local host = BBF.auraHosts.target
