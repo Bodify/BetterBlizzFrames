@@ -1,3 +1,8 @@
+# BetterBlizzFrames 2.0.2d
+## Midnight
+### Bugfix
+- Remove some debug prints left in by accident
+
 # BetterBlizzFrames 2.0.2c
 ## Midnight
 ### Tweak
