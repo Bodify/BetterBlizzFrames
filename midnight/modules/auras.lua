@@ -300,9 +300,6 @@ function BBF.UpdateUserAuraSettings()
     targetToTAdjustmentOffsetY = db.targetToTAdjustmentOffsetY or 0
     focusToTAdjustmentOffsetY = db.focusToTAdjustmentOffsetY or 0
     buffsOnTopReverseCastbarMovement = db.buffsOnTopReverseCastbarMovement
-
-    TargetFrame.staticCastbar = (targetStaticCastbar or targetDetachCastbar) and true or false
-    FocusFrame.staticCastbar = (focusStaticCastbar or focusDetachCastbar) and true or false
 end
 
 local neverSecretCache = {}
@@ -634,10 +631,15 @@ local function ApplyDispelRegistrations(button, style)
             end
 
             local colorMap
+            -- The dispel color map only carries RGB, so the picked alpha goes on the texture.
+            local purgeAlpha = 1
             if style.recolorPurge then
                 local c = style.purgeColor
-                colorMap = UniformDispelMap(CreateColor(c[1], c[2], c[3], c[4] or 1))
+                purgeAlpha = c[4] or 1
+                print(purgeAlpha, c[4])
+                colorMap = UniformDispelMap(CreateColor(c[1], c[2], c[3], purgeAlpha))
             end
+            button.bbfPurgeGlow:SetAlpha(purgeAlpha)
 
             button:AddDispelTypeTexture(button.bbfPurgeGlow, {
                 style = Enum.CustomAuraButtonDispelTypeTextureStyle.CustomAsset,
@@ -1493,7 +1495,10 @@ local function ConfigureContainer(host, container, harmful)
 
     container:SetScale(host.scale or S.scale)
     container:SetFlowLayoutMaximumLineSize(GetMaxLineSize(host, sizes, primaryGap))
-    container:SetFrameStrata(S.increaseStrata and "FULLSCREEN" or container.bbfBaseStrata)
+    container:SetFrameStrata(container.bbfBaseStrata)
+    if S.increaseStrata then
+        container:SetFrameLevel(9999)
+    end
 end
 
 local function IsTopBlockHarmful(host)
@@ -1700,16 +1705,30 @@ local function SuppressAllBlizzardAuras()
 end
 
 local CB = {
-    anchoring = false,
+    anchoring = {},
     hooked = false,
     keys = { "target", "focus" },
     owned = {},
-    blizzBaseX = 17,
-    blizzBaseY = -8,
-    blizzToTBaseX = 42,
-    blizzToTBaseY = -18,
-    staticBaseX = 1,
-    staticBaseY = 9,
+    layoutAspect = Enum.ForbiddenAspect and Enum.ForbiddenAspect.UntrustedLayoutScriptExecution,
+
+    -- Aura settings on
+    blockX = 18,
+    blockY = -5,
+    blockMirrorY = 15,
+    staticX = 43,
+    staticY = -5.5,
+
+    -- Aura settings off
+    defaultX = 17,
+    defaultY = -8,
+    defaultStaticX = 42,
+    defaultStaticY = -3.5,
+    defaultToTX = 42,
+    defaultToTY = -46,
+    defaultAuraX = 17,
+    defaultAuraY = -8,
+    defaultToTUncheckedX = 25,
+    defaultToTUncheckedY = 8.5,
 }
 
 function CB.GetFrames(key)
@@ -1731,45 +1750,80 @@ function CB.Settings(key)
         focusToTCastbarAdjustment, focusToTAdjustmentOffsetY
 end
 
-function CB.SetOwnPoint(key, spellbar, point, relTo, relPoint, x, y)
-    CB.owned[key] = true
-
-    CB.anchoring = true
+function CB.ApplyPoint(spellbar, point, relTo, relPoint, x, y)
     if spellbar.ClearPointsOffset then
         spellbar:ClearPointsOffset()
     end
     spellbar:ClearAllPoints()
     spellbar:SetPoint(point, relTo, relPoint, x, y)
-    CB.anchoring = false
+end
+
+function CB.TryPoint(key, spellbar, point, relTo, relPoint, x, y)
+    CB.anchoring[key] = true
+    local ok = pcall(CB.ApplyPoint, spellbar, point, relTo, relPoint, x, y)
+    CB.anchoring[key] = nil
+    return ok
+end
+
+function CB.BlizzBase(frame)
+    local baseX = frame.smallSize and 38 or 43
+    local baseY = frame.smallSize and 3 or 5
+    if frame.haveToT then
+        baseY = frame.smallSize and -48 or -46
+    end
+    return baseX, baseY
+end
+
+function CB.SetOwnPoint(key, spellbar, point, relTo, relPoint, x, y)
+    CB.owned[key] = true
+
+    if CB.TryPoint(key, spellbar, point, relTo, relPoint, x, y) then
+        return true
+    end
+
+    local frame = CB.GetFrames(key)
+    if frame then
+        local baseX, baseY = CB.BlizzBase(frame)
+        CB.TryPoint(key, spellbar, "TOPLEFT", frame, "BOTTOMLEFT", baseX, baseY)
+    end
+    return false
 end
 
 function CB.Release(key, frame, spellbar)
     if not CB.owned[key] then return end
     CB.owned[key] = nil
 
-    local baseX = frame.smallSize and 38 or 43
-    local baseY = frame.smallSize and 3 or 5
-    if frame.haveToT then
-        baseY = frame.smallSize and -48 or -46
-    end
+    local baseX, baseY = CB.BlizzBase(frame)
+    CB.TryPoint(key, spellbar, "TOPLEFT", frame, "BOTTOMLEFT", baseX, baseY)
+end
 
-    CB.anchoring = true
-    if spellbar.ClearPointsOffset then
-        spellbar:ClearPointsOffset()
-    end
-    spellbar:ClearAllPoints()
-    spellbar:SetPoint("TOPLEFT", frame, "BOTTOMLEFT", baseX, baseY)
-    CB.anchoring = false
+function CB.CanAnchorToContainer(spellbar, block)
+    local aspect = CB.layoutAspect
+    if not block then return false end
+    if not (aspect and block.HasAnyForbiddenAspects) then return true end
+    if not block:HasAnyForbiddenAspects(aspect) then return true end
+    return spellbar:HasAnyForbiddenAspects(aspect) and true or false
+end
+
+function CB.SeedContainerAnchor(host)
+    local spellbar, block = host.spellbar, host.blockBottom
+    if not spellbar or not block then return end
+
+    host.spellbarOnBlock = CB.SetOwnPoint(host.key, spellbar,
+        "TOPLEFT", block, "BOTTOMLEFT", CB.blockX, CB.blockY)
 end
 
 function CB.Anchor(key)
-    if CB.anchoring then return end
+    if CB.anchoring[key] then return end
     if BetterBlizzFramesDB.disableCastbarMovement then return end
 
     local frame, spellbar = CB.GetFrames(key)
     if not frame or not spellbar then return end
 
     local staticBar, detachBar, xPos, yPos, totAdjust, totOffsetY = CB.Settings(key)
+
+    local host = BBF.auraHosts and BBF.auraHosts[key]
+    local block = host and host.blockBottom
 
     if spellbar.bbfHiddenCastbar then
         spellbar:SetClampedToScreen(false)
@@ -1783,17 +1837,15 @@ function CB.Anchor(key)
     end
 
     if staticBar then
-        CB.SetOwnPoint(key, spellbar, "TOPLEFT", frame, "BOTTOMLEFT",
-            43 + CB.staticBaseX + xPos, -14 + CB.staticBaseY + yPos)
+        local baseX = block and CB.staticX or CB.defaultStaticX
+        local baseY = block and CB.staticY or CB.defaultStaticY
+        CB.SetOwnPoint(key, spellbar, "TOPLEFT", frame, "BOTTOMLEFT", baseX + xPos, baseY + yPos)
         return
     end
 
     local mirrored = frame.buffsOnTop == true
 
-    local host = BBF.auraHosts and BBF.auraHosts[key]
-    local block = host and host.blockBottom
-
-    if block then
+    if block and CB.CanAnchorToContainer(spellbar, block) then
         if mirrored and not buffsOnTopReverseCastbarMovement then
             local baseX = frame.smallSize and 38 or 43
             local baseY = frame.smallSize and 3 or 5
@@ -1805,9 +1857,9 @@ function CB.Anchor(key)
         end
 
         if mirrored then
-            CB.SetOwnPoint(key, spellbar, "BOTTOMLEFT", block, "TOPLEFT", 18 + xPos, 10 + yPos)
+            CB.SetOwnPoint(key, spellbar, "BOTTOMLEFT", block, "TOPLEFT", CB.blockX + xPos, CB.blockMirrorY + yPos)
         else
-            CB.SetOwnPoint(key, spellbar, "TOPLEFT", block, "BOTTOMLEFT", 18 + xPos, -10 + yPos)
+            CB.SetOwnPoint(key, spellbar, "TOPLEFT", block, "BOTTOMLEFT", CB.blockX + xPos, CB.blockY + yPos)
         end
         return
     end
@@ -1816,9 +1868,18 @@ function CB.Anchor(key)
 
     if not spellbar.SetPointsOffset then return end
 
-    local baseX, baseY = CB.blizzBaseX, CB.blizzBaseY
-    if frame.haveToT and totAdjust then
-        baseX, baseY = CB.blizzToTBaseX, CB.blizzToTBaseY + totOffsetY
+    local _, relTo = spellbar:GetPoint()
+    local onBlizzContainer = frame.GetAuraContainer and relTo == frame:GetAuraContainer()
+
+    local baseX, baseY
+    if onBlizzContainer then
+        baseX, baseY = CB.defaultAuraX, CB.defaultAuraY
+    elseif frame.haveToT and totAdjust then
+        baseX, baseY = CB.defaultToTX, CB.defaultToTY + totOffsetY
+    elseif frame.haveToT then
+        baseX, baseY = CB.defaultX + CB.defaultToTUncheckedX, CB.defaultY + CB.defaultToTUncheckedY
+    else
+        baseX, baseY = CB.defaultX, CB.defaultY
     end
 
     spellbar:SetPointsOffset(xPos + baseX, yPos + baseY)
@@ -1844,7 +1905,7 @@ function BBF.HookCastbarAnchoring()
     for _, key in ipairs(CB.keys) do
         local _, spellbar = CB.GetFrames(key)
         hooksecurefunc(spellbar, "SetPoint", function()
-            if CB.anchoring then return end
+            if CB.anchoring[key] then return end
             CB.Anchor(key)
         end)
     end
@@ -1859,10 +1920,14 @@ function BBF.HookCastbarAnchoring()
     BBF.CastbarAdjustCaller()
 end
 
-function BBF.CastbarAdjustCaller()
+function BBF.CastbarAdjustCaller(key)
     BBF.UpdateUserAuraSettings()
-    for _, key in ipairs(CB.keys) do
+    if key then
         CB.Anchor(key)
+        return
+    end
+    for _, k in ipairs(CB.keys) do
+        CB.Anchor(k)
     end
 end
 
@@ -2855,7 +2920,7 @@ local function RefreshTestHost(host)
 
     local preview = EnsurePreview(host)
     AnchorPreview(host, preview)
-    preview:SetFrameStrata(S.increaseStrata and "FULLSCREEN" or (preview.bbfBaseStrata or "MEDIUM"))
+    preview:SetFrameStrata(preview.bbfBaseStrata or "MEDIUM")
 
     preview.bbfCount = 0
 
@@ -3009,7 +3074,7 @@ local function CreateHost(key, frame, unit, spellbar)
     host.lastContainer = host.blockBottom
 
     BBF.AnchorAuraContainer(host)
-    AnchorSpellbar(host)
+    CB.SeedContainerAnchor(host)
 
     AddSpacerGroup(host.spacer)
     AddContainerGroups(host, host.blockTop)

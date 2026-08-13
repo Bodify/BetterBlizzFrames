@@ -59,7 +59,6 @@ local defaultSettings = {
     druidAlwaysShowCombos = true,
     createAltManaBarDruid = true,
     gladWinTracker = true,
-    --partyFrameScale = 1,
     opBarriersOn = true,
     classicCastbarsPlayerBorder = true,
     legacyBlueComboPoints = true,
@@ -1165,6 +1164,7 @@ function BBF.ModernRoleIcons()
         if issecretvalue(frame) then return end
         if not frame.roleIcon then return end
         local role = UnitGroupRolesAssigned(frame.unit);
+        if issecretvalue(role) then return end
         if ( frame.optionTable.displayRoleIcon and (role == "TANK" or role == "HEALER" or role == "DAMAGER") ) then
             local atlas
             if ( role == "TANK" ) then
@@ -1185,100 +1185,163 @@ end
 
 function BBF.ClassColorFriendlist()
     if not BetterBlizzFramesDB.classColorFriendlist then return end
+    if BBF.classColorFriendlistApplied then return end
+    BBF.classColorFriendlistApplied = true
 
     local CLASS_COLOR_BY_ID = {}
+    local CLASS_COLOR_BY_LOCALIZED_NAME = {}
 
     if C_CreatureInfo and C_CreatureInfo.GetClassInfo then
-        local i = 1
-        while true do
+        for i = 1, 20 do
             local info = C_CreatureInfo.GetClassInfo(i)
-            if not info then break end
-            local color = CLASS_COLORS[info.classFile]
-            if color then
-                CLASS_COLOR_BY_ID[info.classID] = color
+            if info then
+                local color = C_ClassColor.GetClassColor(info.classFile)
+                if color then
+                    CLASS_COLOR_BY_ID[info.classID] = color
+                    if info.className then
+                        CLASS_COLOR_BY_LOCALIZED_NAME[info.className] = color
+                    end
+                end
             end
-            i = i + 1
         end
+    end
+
+    local function MapLocalizedClassNames(names)
+        if not names then return end
+        for classFile, localizedName in pairs(names) do
+            local color = C_ClassColor.GetClassColor(classFile)
+            if color then
+                CLASS_COLOR_BY_LOCALIZED_NAME[localizedName] = color
+            end
+        end
+    end
+    MapLocalizedClassNames(LOCALIZED_CLASS_NAMES_MALE)
+    MapLocalizedClassNames(LOCALIZED_CLASS_NAMES_FEMALE)
+
+    local function StripColorCodes(text)
+        text = text:gsub("|c%x%x%x%x%x%x%x%x", "")
+        text = text:gsub("|r", "")
+        return text
+    end
+
+    local function GetGameAccountClassColor(gameAccountInfo)
+        if not gameAccountInfo or not gameAccountInfo.isOnline then return end
+        local classFile = gameAccountInfo.classFilename
+        if classFile and classFile ~= "" then
+            local color = C_ClassColor.GetClassColor(classFile)
+            if color then
+                return color
+            end
+        end
+        return gameAccountInfo.classID and CLASS_COLOR_BY_ID[gameAccountInfo.classID]
+    end
+
+    local function ColorSocialCard(card)
+        local nameText = card and card.Name
+        if not nameText or not nameText.GetText then return end
+
+        local elementData = card.elementData
+        local accountInfo = elementData and elementData.accountInfo
+        if not accountInfo then return end
+
+        local color = GetGameAccountClassColor(accountInfo.gameAccountInfo)
+        if not color then return end
+
+        local text = nameText:GetText()
+        if not text or text == "" or issecretvalue(text) then return end
+
+        nameText:SetText(color:WrapTextInColorCode(StripColorCodes(text)))
+    end
+
+    local function HookSocialFriendsList()
+        local friendsList = SocialUIFrame and SocialUIFrame.FriendsList
+        local scrollBox = friendsList and friendsList.ScrollBox
+        if not scrollBox or not scrollBox.RegisterCallback then return false end
+
+        scrollBox:RegisterCallback(ScrollBoxListMixin.Event.OnInitializedFrame, function(_, card)
+            ColorSocialCard(card)
+        end, BBF)
+
+        if scrollBox:GetView() then
+            scrollBox:ForEachFrame(ColorSocialCard)
+        end
+        return true
     end
 
     local function GetWoWFriendClassColor(index)
         local info = C_FriendList.GetFriendInfoByIndex and C_FriendList.GetFriendInfoByIndex(index)
-        if info and info.connected and info.classID then
-            return CLASS_COLOR_BY_ID[info.classID]
+        if not info or not info.connected then return end
+        if info.guid then
+            local _, classFile = GetPlayerInfoByGUID(info.guid)
+            if classFile then
+                local color = C_ClassColor.GetClassColor(classFile)
+                if color then
+                    return color
+                end
+            end
         end
+
+        return info.className and CLASS_COLOR_BY_LOCALIZED_NAME[info.className]
     end
 
     local function GetBNFriendGameInfo(index)
         local numGames = C_BattleNet.GetFriendNumGameAccounts and C_BattleNet.GetFriendNumGameAccounts(index) or 0
         for i = 1, numGames do
             local gameInfo = C_BattleNet.GetFriendGameAccountInfo(index, i)
-            if gameInfo and gameInfo.isOnline and gameInfo.clientProgram == BNET_CLIENT_WOW and gameInfo.classID then
-                return gameInfo
+            if gameInfo and gameInfo.isOnline and gameInfo.clientProgram == BNET_CLIENT_WOW then
+                if gameInfo.classFilename or gameInfo.classID then
+                    return gameInfo
+                end
             end
         end
     end
 
-    local isSettingText = false
+    local function HookLegacyFriendsList()
+        if not FriendsFrame_UpdateFriendButton then return false end
 
-    local function SetTextHook(fontString, text)
-        if isSettingText then return end
+        hooksecurefunc("FriendsFrame_UpdateFriendButton", function(button)
+            local fontString = button and button.name
+            if not fontString or not button.id then return end
 
-        local button = fontString:GetParent()
-        if not button or not button.buttonType or not button.id then return end
+            if button.buttonType == FRIENDS_BUTTON_TYPE_WOW then
+                local color = GetWoWFriendClassColor(button.id)
+                if not color then return end
+                fontString:SetTextColor(color.r, color.g, color.b)
 
-        text = text or fontString:GetText()
-        if not text or text == "" then return end
+            elseif button.buttonType == FRIENDS_BUTTON_TYPE_BNET then
+                local gameInfo = GetBNFriendGameInfo(button.id)
+                if not gameInfo then return end
 
-        if button.buttonType == FRIENDS_BUTTON_TYPE_WOW then
-            local color = GetWoWFriendClassColor(button.id)
-            if not color then return end
-            fontString:SetTextColor(color.r, color.g, color.b)
+                local color = GetGameAccountClassColor(gameInfo)
+                if not color then return end
 
-        elseif button.buttonType == FRIENDS_BUTTON_TYPE_BNET then
-            local gameInfo = GetBNFriendGameInfo(button.id)
-            if not gameInfo then return end
+                local text = fontString:GetText()
+                if not text or text == "" or issecretvalue(text) then return end
 
-            local color = CLASS_COLOR_BY_ID[gameInfo.classID]
-            if not color then return end
+                local hex = color:GenerateHexColor()
+                text = text:gsub("|c%x%x%x%x%x%x%x%x(%b())|r", "%1")
+                text = text:gsub("(%b())", "|c" .. hex .. "%1|r", 1)
 
-            local hex = string.format("%02X%02X%02X", color.r * 255, color.g * 255, color.b * 255)
-
-            text = text:gsub("|cff%x%x%x%x%x%x%((.-)%)|r", "(%1)")
-            text = text:gsub("%((.-)%)", function(char)
-                return "|cff" .. hex .. "(" .. char .. ")|r"
-            end, 1)
-
-            isSettingText = true
-            fontString:SetText(text)
-            isSettingText = false
-        end
-    end
-
-    local hookedButtons = {}
-
-    local function HookButton(button)
-        if not button or not button.name or hookedButtons[button] then return end
-        hookedButtons[button] = true
-        hooksecurefunc(button.name, "SetText", SetTextHook)
-        local current = button.name:GetText()
-        if current and current ~= "" then
-            SetTextHook(button.name, current)
-        end
-    end
-
-    local scrollFrame = FriendsListFrameScrollFrame or FriendsFrameFriendsScrollFrame or FriendsListFrame
-
-    if scrollFrame and scrollFrame.ScrollBox and scrollFrame.ScrollBox.GetView then
-        scrollFrame.ScrollBox:GetView():RegisterCallback(
-        ScrollBoxListMixin.Event.OnAcquiredFrame, function(_, button)
-            HookButton(button)
+                fontString:SetText(text)
+            end
         end)
+        return true
     end
 
-    if scrollFrame and scrollFrame.buttons then
-        for _, button in ipairs(scrollFrame.buttons) do
-            HookButton(button)
-        end
+    local socialHooked = HookSocialFriendsList()
+    local legacyHooked = HookLegacyFriendsList()
+
+    if not socialHooked or not legacyHooked then
+        local waiter = CreateFrame("Frame")
+        waiter:RegisterEvent("ADDON_LOADED")
+        waiter:SetScript("OnEvent", function(self)
+            socialHooked = socialHooked or HookSocialFriendsList()
+            legacyHooked = legacyHooked or HookLegacyFriendsList()
+            if socialHooked and legacyHooked then
+                self:UnregisterAllEvents()
+                self:SetScript("OnEvent", nil)
+            end
+        end)
     end
 end
 
@@ -2379,16 +2442,6 @@ function BBF.MoveToTFrames()
     else
         C_Timer.After(1.5, function()
             BBF.MoveToTFrames()
-        end)
-    end
-end
-
-function BBF.CompactPartyFrameScale()
-    if BetterBlizzFramesDB.partyFrameScale then
-        CompactPartyFrame:SetScale(BetterBlizzFramesDB.partyFrameScale)
-    else
-        C_Timer.After(3, function()
-            BetterBlizzFramesDB.partyFrameScale = CompactPartyFrame:GetScale()
         end)
     end
 end
@@ -5023,7 +5076,6 @@ Frame:RegisterEvent("PLAYER_LOGIN")
 Frame:SetScript("OnEvent", function(...)
     CleanupFunc()
     CheckForUpdate()
-    BBF.CompactPartyFrameScale()
     --BBF.HideFrames()
     DisableClickForClassSpecificFrame()
     BBF.SetResourcePosition()

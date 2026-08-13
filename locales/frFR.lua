@@ -1277,7 +1277,7 @@ L["Tooltip_Hide_Realm_Indicator_Title"] = "Masquer indicateur de royaume"
 L["Tooltip_Hide_TotemFrame_CD_Desc"] = "Masquer CD TotemFrame"
 
 L["Tooltip_Important_Glow_Title"] = "Lueur importante"
-L["Tooltip_Pandemic_Glow_Desc"] = "Vérifier la lueur rouge quand l'aura a moins de 30% de sa durée restante.\\nOu les 5 dernières sec si l'aura n'a pas d'effet Pandemic."
+L["Tooltip_Pandemic_Glow_Desc"] = "Vérifier la lueur rouge quand l'aura a moins de 30% de sa durée restante.\nOu les 5 dernières sec si l'aura n'a pas d'effet Pandemic."
 L["Tooltip_Pandemic_Glow_Extra"] = "Cochez aussi sur quel(s) cadre(s) vous voulez ceci dans les paramètres ci-dessous."
 L["Tooltip_Pandemic_Glow_Warlock_Extra"] = "\n\nSi les talents de renouvellement d'Agonie ou Affliction instable sont spécialisés, cela brillera d'abord en orange en entrant dans cette fenêtre puis passera au rouge une fois dans la fenêtre Pandemic également."
 L["Tooltip_Pandemic_Glow_Title"] = "Lueur Pandemic"

@@ -67,7 +67,7 @@ local function GetRPNameColor(unit)
 end
 
 local function GetBBPNameplateColor(unit)
-    if not BetterBlizzPlatesDB then return end
+    if not BetterBlizzPlatesDB or not BBP then return end
     if not UnitIsEnemy(unit, "player") then return end
 
     local db = BetterBlizzPlatesDB
@@ -76,38 +76,28 @@ local function GetBBPNameplateColor(unit)
     end
 
     local lvl = UnitEffectiveLevel(unit)
-    local playerLvl = UnitLevel("player")
+    local instanceLvl = BBP.npcInstanceLevel or UnitEffectiveLevel("player")
     local classification = UnitClassification(unit)
+    local caster = UnitHasPowerType(unit, Enum.PowerType.Mana)
     local npcColor
 
     if classification == "elite" then
-        if lvl == playerLvl then
-            local class = UnitClassBase(unit)
-            if class == "PALADIN" then
-                npcColor = db.npcColorCaster
-            else
-                npcColor = db.npcColorMelee
-            end
-        elseif lvl == (playerLvl + 1) then
+        if lvl == instanceLvl + 1 or UnitIsLieutenant(unit) then
+            BBP.npcLieutenantLevel = lvl
             npcColor = db.npcColorMiniboss
-        elseif lvl >= (playerLvl + 2) or lvl == -1 then
+        elseif lvl == -1 or lvl == instanceLvl + 2 or (BBP.npcLieutenantLevel and lvl == BBP.npcLieutenantLevel + 1) or UnitIsBossMob(unit) or UnitIsQuestBoss(unit) then
             npcColor = db.npcColorBoss
+        elseif caster then
+            npcColor = db.npcColorCaster
         else
-            if (UnitIsBossMob and UnitIsBossMob(unit)) or (UnitIsQuestBoss and UnitIsQuestBoss(unit)) then
-                npcColor = db.npcColorBoss
-            else
-                local class = UnitClassBase(unit)
-                if class == "PALADIN" then
-                    npcColor = db.npcColorCaster
-                else
-                    return
-                end
-            end
+            npcColor = db.npcColorMelee
         end
     elseif classification == "trivial" then
-        npcColor = db.npcColorTrivial
+        npcColor = caster and db.npcColorCaster or db.npcColorTrivial
     elseif classification == "minus" then
-        npcColor = db.npcColorMinus
+        npcColor = caster and db.npcColorCaster or db.npcColorMinus
+    elseif classification == "normal" then
+        npcColor = caster and db.npcColorCaster or db.npcColorMelee
     elseif classification == "rareelite" or classification == "rare" then
         npcColor = db.npcColorRareElite
     elseif classification == "worldboss" then
@@ -117,7 +107,12 @@ local function GetBBPNameplateColor(unit)
     end
 
     if not npcColor then return end
-    return {r = npcColor[1], g = npcColor[2], b = npcColor[3]}
+    return {r = npcColor[1], g = npcColor[2], b = npcColor[3], a = npcColor[4]}
+end
+
+local function GetSingleClassColor()
+    local customColor = singleClassColor or {1, 1, 1, 1}
+    return {r = customColor[1], g = customColor[2], b = customColor[3], a = customColor[4] or 1}
 end
 
 local function getUnitColor(unit, useCustomColors, txt)
@@ -129,22 +124,12 @@ local function getUnitColor(unit, useCustomColors, txt)
             if r then
                 return {r = r, g = g, b = b}, false
             else
-                local _, className = UnitClass(unit)
                 local color
 
                 if useCustomColors and customHealthbarColors and overrideClassColors then
-                    if useOneClassColor then
-                        local customColor = singleClassColor or {1, 1, 1, 1}
-                        color = {r = customColor[1], g = customColor[2], b = customColor[3], a = customColor[4] or 1}
-                    elseif className then
-                        local customColor = BetterBlizzFramesDB["classColor"..className]
-                        if customColor then
-                            color = {r = customColor[1], g = customColor[2], b = customColor[3], a = customColor[4] or 1}
-                        else
-                            color = C_ClassColor.GetClassColor(className)
-                        end
-                    end
+                    color = GetSingleClassColor()
                 else
+                    local _, className = UnitClass(unit)
                     color = C_ClassColor.GetClassColor(className)
                 end
 
@@ -153,23 +138,13 @@ local function getUnitColor(unit, useCustomColors, txt)
                 end
             end
         else
-            local _, className = UnitClass(unit)
             local color
 
-            if className ~= nil then
-                if useCustomColors and customHealthbarColors and overrideClassColors then
-                    if useOneClassColor then
-                        local customColor = singleClassColor or {1, 1, 1, 1}
-                        color = {r = customColor[1], g = customColor[2], b = customColor[3], a = customColor[4] or 1}
-                    elseif className then
-                        local customColor = BetterBlizzFramesDB["classColor"..className]
-                        if customColor then
-                            color = {r = customColor[1], g = customColor[2], b = customColor[3], a = customColor[4] or 1}
-                        else
-                            color = C_ClassColor.GetClassColor(className)
-                        end
-                    end
-                else
+            if useCustomColors and customHealthbarColors and overrideClassColors then
+                color = GetSingleClassColor()
+            else
+                local _, className = UnitClass(unit)
+                if className ~= nil then
                     color = C_ClassColor.GetClassColor(className)
                 end
             end
@@ -194,7 +169,7 @@ local function getUnitColor(unit, useCustomColors, txt)
         if BetterBlizzPlatesDB and BetterBlizzPlatesDB.colorNPC then
             local npcHealthbarColor = GetBBPNameplateColor(unit)
             if npcHealthbarColor then
-                return {r = npcHealthbarColor.r, g = npcHealthbarColor.g, b = npcHealthbarColor.b, a = 1}, false
+                return {r = npcHealthbarColor.r, g = npcHealthbarColor.g, b = npcHealthbarColor.b, a = npcHealthbarColor.a or 1}, false
             else
                 local reaction = getUnitReaction(unit)
                 if reaction == "HOSTILE" then
@@ -610,11 +585,12 @@ function BBF.UpdateFrames()
     rpNames = BetterBlizzFramesDB.rpNamesHealthbarColor
     rpNamesHealthbarColor = BetterBlizzFramesDB.rpNamesHealthbarColor
     customHealthbarColors = BetterBlizzFramesDB.customHealthbarColors
-    overrideClassColors = false --UnitClass is secret now. idk if theres any way to let this setting live --BetterBlizzFramesDB.overrideClassColors
     customColorsUnitFrames = BetterBlizzFramesDB.customColorsUnitFrames
     customColorsRaidFrames = BetterBlizzFramesDB.customColorsRaidFrames
     useOneClassColor = BetterBlizzFramesDB.useOneClassColor
     singleClassColor = BetterBlizzFramesDB.singleClassColor
+    --UnitClass is secret :/
+    overrideClassColors = BetterBlizzFramesDB.overrideClassColors and useOneClassColor
     useOnePowerColor = BetterBlizzFramesDB.useOnePowerColor
     singlePowerColor = BetterBlizzFramesDB.singlePowerColor
     customPowerColors = BetterBlizzFramesDB.customPowerColors

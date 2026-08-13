@@ -1,3 +1,21 @@
+# BetterBlizzFrames 2.0.2c
+## Midnight
+### Tweak
+- REMOVED: Party Frame scale is removed cuz edit mode now has settings for it. Set it with edit mode instead.
+- Tweak castbar position values a bit (so theyre identical to default by default). You might have to tweak your values a bit again if you notice this (apologies).
+- Move "Raise Castbar Strata" setting into castbar section from Misc.
+- Tweak some layer issues between tot frames, classic frames, and castbars.
+### Bugfix
+- Fix "Raise Castbar Strata" setting not working properly.
+- Fix "modern role icons" setting causing new secret errors in 12.1
+- Fix color error when BBP's npc colors was enabled.
+- Fix new 12.1 aura layer issues.
+- Fix Class Color replacement "One Color for All" setting not working after I disabled the custom coloring, this can still function ofc.
+- Fix Friendlist Class Colors setting.
+## All versions
+### Tweak
+- Fix some locale key mistakes from a while back causing wrong text here n there.
+
 # BetterBlizzFrames 2.0.2b
 ## Midnight
 ### New

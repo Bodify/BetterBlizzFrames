@@ -1463,7 +1463,17 @@ function BBF.petCastBarTestMode()
     end
 end
 
+function BBF.HideUnitCastbar(key)
+    if not key then
+        BBF.HideUnitCastbar("target")
+        BBF.HideUnitCastbar("focus")
+        return
+    end
 
+    local spellbar = key == "focus" and FocusFrameSpellBar or TargetFrameSpellBar
+    if not spellbar then return end
+    spellbar:Hide()
+end
 
 
 local CastBarFrame = CreateFrame("Frame")
