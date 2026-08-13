@@ -2427,7 +2427,6 @@ function BBF.AddBackgroundTextureToUnitFrames(frame, tot)
             if classification == "minus" then
                 self.bbfBgTexture:SetPoint("TOPLEFT", self.healthbar, "TOPLEFT", 0, 0)
                 self.bbfBgTexture:SetPoint("BOTTOMRIGHT", self.healthbar, "BOTTOMRIGHT", 0, 0)
-                print("fixing minus change")
                 self.bgTextureMinusChange = true
             elseif frame.bgTextureMinusChange then
                 self.bbfBgTexture:SetPoint("TOPLEFT", self.healthbar, "TOPLEFT", 0, 0)

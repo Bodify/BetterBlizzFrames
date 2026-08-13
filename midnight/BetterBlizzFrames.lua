@@ -1533,7 +1533,6 @@ function BBF.ZoomDefaultActionbarIcons(enableZoom)
     if C_AddOns.IsAddOnLoaded("Dominos") then
         local NUM_ACTIONBAR_BUTTONS = NUM_ACTIONBAR_BUTTONS
         local DOMINOS_NUM_MAX_BUTTONS = 14 * NUM_ACTIONBAR_BUTTONS
-        print(DominosActionButton1)
         zoomButtons("DominosActionButton", DOMINOS_NUM_MAX_BUTTONS)
         zoomButtons("DominosPetActionButton", 12)
         zoomButtons("DominosStanceButton", 12)

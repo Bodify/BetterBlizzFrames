@@ -636,7 +636,6 @@ local function ApplyDispelRegistrations(button, style)
             if style.recolorPurge then
                 local c = style.purgeColor
                 purgeAlpha = c[4] or 1
-                print(purgeAlpha, c[4])
                 colorMap = UniformDispelMap(CreateColor(c[1], c[2], c[3], purgeAlpha))
             end
             button.bbfPurgeGlow:SetAlpha(purgeAlpha)
