@@ -1108,15 +1108,18 @@ end
 local function GetDurationYOffset(isPlayer, cfg, durationUnderIcon)
     if not isPlayer then return 0 end
 
+    local offset = 0
     if S.pixelBorder then
-        return durationUnderIcon and -1 or 0
+        offset = durationUnderIcon and -1 or 0
+    elseif (not cfg.harmful or S.removeDebuffBorder) and S.darkBorder then
+        offset = -1
     end
 
-    if (not cfg.harmful or S.removeDebuffBorder) and S.darkBorder then
-        return -1
+    if cfg.harmful then
+        offset = offset - 1
     end
 
-    return 0
+    return offset
 end
 
 local function BuildStyle(tier, sizes, isPlayer, cfg, into)
@@ -1504,7 +1507,8 @@ local function IsTopBlockHarmful(host)
     if host.isPlayer then
         return host.blockTop == host.debuffs
     end
-    return not (UnitExists(host.unit) and UnitIsFriend("player", host.unit))
+    local reaction = UnitExists(host.unit) and UnitReaction("player", host.unit)
+    return not reaction or reaction <= 4
 end
 
 local function SameStyleValue(a, b)

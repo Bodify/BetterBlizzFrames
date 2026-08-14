@@ -3,6 +3,14 @@ local function SetXYPoint(frame, xOffset, yOffset)
     frame:SetPoint(point, relativeTo, relativePoint, xOffset or xOfs, yOffset or yOfs)
 end
 
+local function SetManaTextParent(text, parent)
+    if BetterBlizzFramesDB.hideAllManabarText then
+        text.bbfOriginalParent = parent
+        parent = BBF.hiddenFrame
+    end
+    text:SetParent(parent)
+end
+
 local class = select(2, UnitClass("player"))
 local defaultTex = "Interface\\TargetingFrame\\UI-TargetingFrame"
 local noLvlTex = "Interface\\TargetingFrame\\UI-FocusFrame-Large"
@@ -81,13 +89,13 @@ local function MakeClassicFrame(frame)
         --AdjustFramePoint(hpContainer.HealthBar.OverAbsorbGlow, -7)
         hpContainer.HealthBar.OverAbsorbGlow:SetPoint("TOPLEFT", hpContainer.HealthBar, "TOPRIGHT", -7, 0)
 
-        manaBar.LeftText:SetParent(frame.ClassicFrame)
+        SetManaTextParent(manaBar.LeftText, frame.ClassicFrame)
         manaBar.LeftText:ClearAllPoints()
         manaBar.LeftText:SetPoint("LEFT", frame.ClassicFrame.Texture, "LEFT", 7, -8.5)
-        manaBar.RightText:SetParent(frame.ClassicFrame)
+        SetManaTextParent(manaBar.RightText, frame.ClassicFrame)
         manaBar.RightText:ClearAllPoints()
         manaBar.RightText:SetPoint("RIGHT", frame.ClassicFrame.Texture, "RIGHT", -108, -8.5)
-        manaBar.ManaBarText:SetParent(frame.ClassicFrame)
+        SetManaTextParent(manaBar.ManaBarText, frame.ClassicFrame)
         manaBar.ManaBarText:ClearAllPoints()
         manaBar.ManaBarText:SetPoint("CENTER", frame.ClassicFrame.Texture, "LEFT", 66, -8.5)
 
@@ -463,13 +471,13 @@ local function MakeClassicFrame(frame)
             hpContainer.HealthBarText:ClearAllPoints()
             hpContainer.HealthBarText:SetPoint("CENTER", frame.ClassicFrame.Texture, "CENTER", 52, 2.8)
 
-            manaBar.LeftText:SetParent(frame.ClassicFrame)
+            SetManaTextParent(manaBar.LeftText, frame.ClassicFrame)
             manaBar.LeftText:ClearAllPoints()
             manaBar.LeftText:SetPoint("LEFT", frame.ClassicFrame.Texture, "LEFT", 108, -8.5)
-            manaBar.RightText:SetParent(frame.ClassicFrame)
+            SetManaTextParent(manaBar.RightText, frame.ClassicFrame)
             manaBar.RightText:ClearAllPoints()
             manaBar.RightText:SetPoint("RIGHT", frame.ClassicFrame.Texture, "RIGHT", -7, -8.5)
-            manaBar.ManaBarText:SetParent(frame.ClassicFrame)
+            SetManaTextParent(manaBar.ManaBarText, frame.ClassicFrame)
             manaBar.ManaBarText:ClearAllPoints()
             manaBar.ManaBarText:SetPoint("CENTER", frame.ClassicFrame.Texture, "CENTER", 52, -8.5)
         end
@@ -845,13 +853,13 @@ local function MakeClassicFrame(frame)
             hpContainer.HealthBarText:ClearAllPoints()
             hpContainer.HealthBarText:SetPoint("CENTER", frame.ClassicFrame.Texture, "CENTER", 34, 3)
 
-            manaBar.LeftText:SetParent(frame.ClassicFrame)
+            SetManaTextParent(manaBar.LeftText, frame.ClassicFrame)
             manaBar.LeftText:ClearAllPoints()
             manaBar.LeftText:SetPoint("LEFT", frame.ClassicFrame.Texture, "LEFT", 101, -9)
-            manaBar.RightText:SetParent(frame.ClassicFrame)
+            SetManaTextParent(manaBar.RightText, frame.ClassicFrame)
             manaBar.RightText:ClearAllPoints()
             manaBar.RightText:SetPoint("RIGHT", frame.ClassicFrame.Texture, "RIGHT", -7, -9)
-            manaBar.ManaBarText:SetParent(frame.ClassicFrame)
+            SetManaTextParent(manaBar.ManaBarText, frame.ClassicFrame)
             manaBar.ManaBarText:ClearAllPoints()
             manaBar.ManaBarText:SetPoint("CENTER", frame.ClassicFrame.Texture, "CENTER", 52, -9)
 
@@ -922,9 +930,9 @@ local function MakeClassicFrame(frame)
         PetFrameHealthBarText:SetParent(PetFrame)
         PetFrameHealthBarTextLeft:SetParent(PetFrame)
         PetFrameHealthBarTextRight:SetParent(PetFrame)
-        PetFrameManaBarText:SetParent(PetFrame)
-        PetFrameManaBarTextLeft:SetParent(PetFrame)
-        PetFrameManaBarTextRight:SetParent(PetFrame)
+        SetManaTextParent(PetFrameManaBarText, PetFrame)
+        SetManaTextParent(PetFrameManaBarTextLeft, PetFrame)
+        SetManaTextParent(PetFrameManaBarTextRight, PetFrame)
 
         PetFrameHealthBarText:ClearAllPoints()
         PetFrameHealthBarText:SetPoint("CENTER", PetFrame, "TOPLEFT", 82, -26)

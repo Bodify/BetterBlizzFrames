@@ -1141,7 +1141,7 @@ function BBF.SurrenderNotLeaveArena()
 
     SlashCmdList["CHAT_AFK"] = function(msg)
         if IsActiveBattlefieldArena() then
-            if CanSurrenderArena() then
+            if C_PvP.CanSurrenderArena() then
                 SurrenderArena()
             else
                 if not surrenderFailed then

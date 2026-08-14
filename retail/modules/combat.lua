@@ -197,6 +197,7 @@ function BBF.RacialIndicator(unitFrame, unit)
     local raceOverSpells = BetterBlizzFramesDB.racialIndicatorRaceIcons
 
     local _, _, raceID = UnitRace(unit)
+    if issecretvalue(raceID) then return end
     local unitSex = UnitSex(unit)
 
     -- Optional: simple booleans if needed for logic elsewhere

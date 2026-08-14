@@ -1,3 +1,11 @@
+# BetterBlizzFrames 2.0.2e
+## Midnight
+### Bugfix
+- Fix arena surrender aftter API rename
+- Fix aura settings sometimes causing aura types in wrong order. Buffs first on enemy for example.
+- Race Indicator dead cuz race info is secret, fix lua errors. Idk if worth keeping now but I'll decide on that later.
+- Fix "Hide manatext on all bars" bugging in combination with classic frames setting.
+
 # BetterBlizzFrames 2.0.2d
 ## Midnight
 ### Bugfix
