@@ -1477,27 +1477,37 @@ end
 
 
 local CastBarFrame = CreateFrame("Frame")
-CastBarFrame:RegisterEvent("GROUP_ROSTER_UPDATE")
-CastBarFrame:SetScript("OnEvent", function(self, event, ...)
-    if BetterBlizzFramesDB.showPartyCastbar then
-        BBF.UpdateCastbars()
-        BBF.CreateCastbars()
+local rosterUpdateQueued = false
 
-        for i = 1, 5 do
-            local spellbar = spellBars[i]
-            if spellbar and spellbar.unit and spellbar:IsShown() then
-                local castingName = UnitCastingInfo(spellbar.unit)
-                local channelingName = UnitChannelInfo(spellbar.unit)
-                if castingName then
-                    SpellBarStart(spellbar, spellbar.unit, false)
-                elseif channelingName then
-                    SpellBarStart(spellbar, spellbar.unit, true)
-                else
-                    ClearSpellBar(spellbar)
-                end
+local function RosterUpdateCastbars()
+    rosterUpdateQueued = false
+    if not BetterBlizzFramesDB.showPartyCastbar then return end
+
+    BBF.UpdateCastbars()
+    BBF.CreateCastbars()
+
+    for i = 1, 5 do
+        local spellbar = spellBars[i]
+        if spellbar and spellbar.unit and spellbar:IsShown() then
+            local castingName = UnitCastingInfo(spellbar.unit)
+            local channelingName = UnitChannelInfo(spellbar.unit)
+            if castingName then
+                SpellBarStart(spellbar, spellbar.unit, false)
+            elseif channelingName then
+                SpellBarStart(spellbar, spellbar.unit, true)
+            else
+                ClearSpellBar(spellbar)
             end
         end
     end
+end
+
+CastBarFrame:RegisterEvent("GROUP_ROSTER_UPDATE")
+CastBarFrame:SetScript("OnEvent", function(self, event, ...)
+    if not BetterBlizzFramesDB.showPartyCastbar then return end
+    if rosterUpdateQueued then return end
+    rosterUpdateQueued = true
+    C_Timer.After(0.1, RosterUpdateCastbars)
 end)
 
 -- Hook into the OnUpdate, OnShow, and OnHide scripts for the spell bar

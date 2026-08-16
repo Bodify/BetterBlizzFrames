@@ -1074,7 +1074,7 @@ function BBF.DarkModeBuffCollapseButton()
     local button = BBF.buffCollapseButton
     if not button or BetterBlizzFramesDB.enableMasque then return end
 
-    local darkMode = BetterBlizzFramesDB.darkModeUi and true or false
+    local darkMode = (BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeUiAura) and true or false
     local vertexColor = darkMode and BetterBlizzFramesDB.darkModeColor or 1
     for _, arrow in ipairs(button.bbfArrows or {}) do
         applySettings(arrow, darkMode, vertexColor)

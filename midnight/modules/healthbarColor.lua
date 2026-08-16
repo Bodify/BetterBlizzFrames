@@ -130,7 +130,7 @@ local function getUnitColor(unit, useCustomColors, txt)
                     color = GetSingleClassColor()
                 else
                     local _, className = UnitClass(unit)
-                    color = C_ClassColor.GetClassColor(className)
+                    color = className and C_ClassColor.GetClassColor(className)
                 end
 
                 if color then
@@ -982,7 +982,8 @@ function BBF.HookHealthbarColors()
 
                 if frame.recolored then
                     if UnitIsPlayer(frame.unit) then
-                        local classColor = C_ClassColor.GetClassColor(select(2, UnitClass(frame.unit)))
+                        local class = UnitClassBase(frame.unit)
+                        local classColor = class and C_ClassColor.GetClassColor(class)
                         if classColor then
                             frame.healthBar:SetStatusBarColor(classColor.r, classColor.g, classColor.b, 1)
                         end
@@ -1032,7 +1033,8 @@ function BBF.HookHealthbarColors()
 
             if frame.recolored then
                 if UnitIsPlayer(frame.unit) then
-                    local classColor = C_ClassColor.GetClassColor(select(2, UnitClass(frame.unit)))
+                    local class = UnitClassBase(frame.unit)
+                    local classColor = class and C_ClassColor.GetClassColor(class)
                     if classColor then
                         frame.healthBar:SetStatusBarColor(classColor.r, classColor.g, classColor.b, 1)
                     end
@@ -1199,7 +1201,7 @@ function BBF.HookFrameTextureColor()
 
             if not colored and classColorFrameTexture then
                 local _, class = UnitClass(unit)
-                local color = C_ClassColor.GetClassColor(class)
+                local color = class and C_ClassColor.GetClassColor(class)
                 if color then
                     r, g, b = color.r, color.g, color.b
                     desaturate = true

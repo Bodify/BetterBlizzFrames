@@ -55,6 +55,8 @@ local AURA_GROUPS = {
     { key = "WhitelistPandemic", tier = "whitelistpandemic" },
     { key = "WhitelistMine",     tier = "whitelistmine" },
     { key = "Whitelist",         tier = "whitelist" },
+    { key = "Purge",             tier = "purge" },
+    { key = "PurgeEnrage",       tier = "purgeenrage" },
     { key = "Mine",              tier = "mine" },
     { key = "Others",            tier = "others" },
 }
@@ -79,6 +81,11 @@ end
 
 local PANDEMIC_TIERS = {
     mine = true, whitelistmine = true, whitelistpandemic = true,
+}
+
+local PURGE_DISPEL_TYPES = {
+    Magic = true, Curse = true, Disease = true, Poison = true, Bleed = true,
+    Enrage = true,
 }
 
 local S = {}
@@ -177,6 +184,7 @@ function BBF.UpdateUserAuraSettings()
     S.offsetX = db.targetAndFocusAuraOffsetX or 0
     S.offsetY = db.targetAndFocusAuraOffsetY or 0
     S.importantFirst = db.importantAurasFirst ~= false
+    S.purgeFirst = db.purgeableAurasFirst and true or false
 
     S.importantColor = { GetColor("auraImportantGlowColor", 1, 0.5, 0, 1) }
     S.defensiveColor = { GetColor("auraDefensiveGlowColor", 1, 0.662, 0.945, 1) }
@@ -561,7 +569,9 @@ local function ApplyDispelBorderGeometry(texture, anchor, style)
     texture:SetPoint("BOTTOMRIGHT", anchor, "BOTTOMRIGHT", inset, -inset)
 end
 
-local DISPEL_TYPE_KEYS = { "None", "Magic", "Curse", "Disease", "Poison", "Bleed" }
+local DISPEL_TYPE_KEYS = {
+    "None", "Magic", "Curse", "Disease", "Poison", "Bleed", "Enrage",
+}
 
 local function UniformDispelMap(value)
     local map = {}
@@ -578,9 +588,9 @@ local function ApplyDispelRegistrations(button, style)
     local purgeMode = button.bbfPurgeGlow and GetPurgeMode(style) or nil
 
     local pc = style.recolorPurge and style.purgeColor or nil
-    local signature = string.format("%s|%s|%s|%s|%s|%s|%s",
+    local signature = string.format("%s|%s|%s|%s|%s|%s|%s|%s",
         tostring(borderStyle), tostring(ownBorderOn), tostring(purgeMode),
-        tostring(style.purgeGlowAlways),
+        tostring(style.purgeGlowAlways), tostring(style.purgeEnrage),
         pc and string.format("%.3f,%.3f,%.3f,%.3f", pc[1], pc[2], pc[3], pc[4] or 1) or "false",
         tostring(style.darkColor), tostring(ownBorderHarmful))
     if button.bbfDispelSignature == signature then return end
@@ -630,6 +640,8 @@ local function ApplyDispelRegistrations(button, style)
                 stealableFilter = Enum.CustomAuraButtonDispelTypeStealableFilter.Stealable
             end
 
+            local showWithoutDispelType = (stealableFilter ~= nil) or style.purgeEnrage
+
             local colorMap
             -- The dispel color map only carries RGB, so the picked alpha goes on the texture.
             local purgeAlpha = 1
@@ -644,7 +656,7 @@ local function ApplyDispelRegistrations(button, style)
                 style = Enum.CustomAuraButtonDispelTypeTextureStyle.CustomAsset,
                 showWhenHarmful = false,
                 showWhenHelpful = true,
-                showWithoutDispelType = false,
+                showWithoutDispelType = showWithoutDispelType and true or false,
                 stealableFilter = stealableFilter,
                 customDispelAssetMap = UniformDispelMap(asset),
                 customDispelColorMap = colorMap,
@@ -958,9 +970,6 @@ local function BuildFilterString(harmful, tier, cfg)
         parts[#parts + 1] = F.Player
     end
 
-    if cfg.purgeable and not harmful then
-        parts[#parts + 1] = F.RaidPlayerDispellable
-    end
 
     return AuraUtil.CreateFilterString(unpack(parts))
 end
@@ -1014,11 +1023,31 @@ local function BuildCandidateFilters(harmful, tier, cfg, canFilterIDs)
         end
     end
 
-    if tier == "others" then
+    if tier == "others" or tier == "purge" or tier == "purgeenrage" then
         local set = canFilterIDs and whitelist.mine or whitelist.mineNS
         if next(set) then
             filters.excludeSpellIDs = MergeSpellSets(filters.excludeSpellIDs, set)
         end
+    end
+
+    if tier == "purge" then
+        if S.purgeGlowAlways then
+            filters.includeDispelTypes = PURGE_DISPEL_TYPES
+        else
+            filters.isStealable = true
+        end
+    elseif tier == "purgeenrage" then
+        filters.excludeDispelTypes = PURGE_DISPEL_TYPES
+        filters.isStealable = true
+    elseif cfg.purgeFirst and (tier == "mine" or tier == "others") then
+        filters.isStealable = false
+        if S.purgeGlowAlways then
+            filters.excludeDispelTypes = PURGE_DISPEL_TYPES
+        end
+    end
+
+    if cfg.purgeable and not harmful then
+        filters.isStealable = true
     end
 
     if cfg.short then
@@ -1181,6 +1210,7 @@ local function BuildStyle(tier, sizes, isPlayer, cfg, into)
     t.cropIcon = (S.pixelBorder or S.darkBorder) and true or false
     t.darkColor = S.darkColor
     t.purgeGlow = cfg.purgeGlow
+    t.purgeEnrage = tier == "purgeenrage"
     t.purgeGlowAlways = S.purgeGlowAlways
     t.purgeColor = S.purgeColor
     t.recolorPurge = S.recolorPurge
@@ -1237,6 +1267,10 @@ local function GetFrameConfig(host, harmful)
     if cfg.collapsed then
         cfg.importantFirst = true
     end
+
+    local reaction = UnitExists(host.unit) and UnitReaction("player", host.unit)
+    cfg.purgeFirst = (S.purgeFirst and not harmful and not host.isPlayer
+        and not cfg.purgeable and reaction and reaction <= 4) and true or false
     cfg.pandemicGlow = (extras and not host.isPlayer and f.pandemicGlow) and true or false
     cfg.splitPandemic = (not cfg.pandemicGlow) and (not host.isPlayer)
         and listCache.whitelist.anyPandemic and true or false
@@ -1309,9 +1343,11 @@ local function GetAppliedRecord(container, key)
 end
 
 local function CandidateFilterSignature(filters)
-    return string.format("%s/%s/%s",
+    return string.format("%s/%s/%s/%s/%s/%s",
         tostring(filters.includeSpellIDs), tostring(filters.excludeSpellIDs),
-        tostring(filters.maxDuration))
+        tostring(filters.maxDuration),
+        tostring(filters.includeDispelTypes), tostring(filters.excludeDispelTypes),
+        tostring(filters.isStealable))
 end
 
 local function ApplyGroupCandidateFilters(container, key, filters)
@@ -1450,6 +1486,13 @@ local function ConfigureContainer(host, container, harmful)
                     and (cfg.maxCount or 32) or 0
             elseif cfg.collapsed then
                 count = 0
+            elseif def.tier == "purge" or def.tier == "purgeenrage" then
+                local live = cfg.purgeFirst and not (cfg.whitelist and not cfg.otherFiltersOn)
+
+                if def.tier == "purgeenrage" and not S.purgeGlowAlways then
+                    live = false
+                end
+                count = live and (cfg.maxCount or 32) or 0
             elseif def.tier == "mine" and cfg.mergeNormal then
                 count = 0
             elseif def.tier == "others" and cfg.onlyMine and not cfg.mergeNormal then
@@ -2437,11 +2480,12 @@ local TEST_AURAS = {
         { tier = "mine",      spellID = 8936,  duration = 12 },  -- Regrowth
         { tier = "mine",      spellID = 33763, duration = 15, count = 3, pandemic = true }, -- Lifebloom
         { tier = "mine",      spellID = 61295, duration = 18 },  -- Riptide
-        { tier = "others",    spellID = 1459,  duration = 0, dispel = "Magic" }, -- Arcane Intellect
+        { tier = "others",    spellID = 5229,  duration = 10, dispel = "Enrage", stealable = true }, -- Enrage
+        { tier = "others",    spellID = 1459,  duration = 0, dispel = "Magic", stealable = true }, -- Arcane Intellect
         { tier = "others",    spellID = 21562, duration = 0 },   -- PW: Fortitude
         { tier = "others",    spellID = 1126,  duration = 0 },   -- Mark of the Wild
         { tier = "others",    spellID = 6673,  duration = 0 },   -- Battle Shout
-        { tier = "others",    spellID = 1044,  duration = 8, dispel = "Magic" }, -- Blessing of Freedom
+        { tier = "others",    spellID = 1044,  duration = 8, dispel = "Magic", stealable = true }, -- Blessing of Freedom
         { tier = "others",    spellID = 465,   duration = 0 },   -- Devotion Aura
         { tier = "others",    spellID = 32182, duration = 40 },  -- Heroism
         { tier = "others",    spellID = 2645,  duration = 0 },   -- Ghost Wolf
@@ -2506,21 +2550,32 @@ local function RequestTestAuraSpellData()
     end)
 end
 
-local function ActiveTier(tier, harmful)
+local function ActiveTier(entry, harmful, isPlayer)
+    local tier = entry.tier
     if HIGHLIGHT_TIERS[tier] and not HighlightTierActive(tier, harmful, S.importantFirst) then
-        return "others"
+        tier = "others"
+    end
+    local purgeOn = S.purgeFirst and not harmful and not isPlayer
+    if purgeOn and (tier == "mine" or tier == "others") then
+        local claimed
+        if S.purgeGlowAlways then
+            claimed = PURGE_DISPEL_TYPES[entry.dispel]
+        else
+            claimed = entry.stealable
+        end
+        if claimed then tier = "purge" end
     end
     return tier
 end
 
-local function SortedTestAuras(harmful)
+local function SortedTestAuras(harmful, isPlayer)
     local list = {}
     for _, entry in ipairs(TEST_AURAS[harmful and "harmful" or "helpful"]) do
         list[#list + 1] = entry
     end
     table.sort(list, function(a, b)
-        local ta = TIER_ORDER[ActiveTier(a.tier, harmful)] or 99
-        local tb = TIER_ORDER[ActiveTier(b.tier, harmful)] or 99
+        local ta = TIER_ORDER[ActiveTier(a, harmful, isPlayer)] or 99
+        local tb = TIER_ORDER[ActiveTier(b, harmful, isPlayer)] or 99
         if ta ~= tb then return ta < tb end
         return a.spellID < b.spellID
     end)
@@ -2584,7 +2639,7 @@ local function GetPreviewEntries(host, harmful)
         local entries = BuildEditModeEntries(host, harmful)
         if entries then return entries end
     end
-    return SortedTestAuras(harmful)
+    return SortedTestAuras(harmful, host.isPlayer)
 end
 
 local function CreateTestButton(parent)
@@ -2713,7 +2768,12 @@ local function StyleTestButton(button, entry, tier, style, sizes, harmful)
 
     local purge = button.bbfPurgeGlow
     local purgeMode = GetPurgeMode(style)
-    local purgeable = entry.dispel and (style.purgeGlowAlways or entry.dispel == "Magic")
+    local purgeable
+    if style.purgeGlowAlways then
+        purgeable = PURGE_DISPEL_TYPES[entry.dispel] and true or false
+    else
+        purgeable = entry.stealable and true or false
+    end
     if purgeMode and not harmful and purgeable then
         ApplyPurgeArt(purge, purgeMode, style.recolorPurge)
         if purgeMode == "glow" then
@@ -2776,7 +2836,7 @@ local function LayoutTestButtons(preview, entries, host, harmful, cursorCross)
 
     local styles, styleMoved = {}, {}
     for _, entry in ipairs(entries) do
-        local tier = ActiveTier(entry.tier, harmful)
+        local tier = ActiveTier(entry, harmful, host.isPlayer)
         local styleKey = (harmful and "H" or "B") .. tier
         if not styles[styleKey] then
             local fresh = BuildStyle(tier, sizes, host.isPlayer, cfg)
@@ -2793,7 +2853,7 @@ local function LayoutTestButtons(preview, entries, host, harmful, cursorCross)
     end
 
     for _, entry in ipairs(entries) do
-        local tier = ActiveTier(entry.tier, harmful)
+        local tier = ActiveTier(entry, harmful, host.isPlayer)
         local styleKey = (harmful and "H" or "B") .. tier
         local style = styles[styleKey]
         local styleChanged = styleMoved[styleKey]

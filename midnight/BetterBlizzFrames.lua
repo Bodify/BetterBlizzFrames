@@ -29,6 +29,7 @@ local defaultSettings = {
     hideFocusCombatGlow = false,
     bigPlayerHealthbar = false,
     hideDragonFlying = true,
+    raiseTargetCastbarStrata = true,
     targetToTScale = 1,
     focusToTScale = 1,
     targetToTXPos = 0,
@@ -43,7 +44,6 @@ local defaultSettings = {
     enlargedAuraSize = 1.4,
     compactedAuraSize = 0.7,
     onlyPandemicAuraMine = true,
-    lossOfControlScale = 1,
     customCode = "-- Enter custom code below here. Feel free to contact me @bodify",
     queueTimerID = 567458,
     queueTimerWarning = false,
@@ -198,6 +198,7 @@ local defaultSettings = {
     --playerAuraMaxBuffsPerRow = 10,
     --playerAuraMaxDebuffsPerRow = 10,
     importantAurasFirst = true,
+    purgeableAurasFirst = false,
     auraHighlightScale = 1.3,
     auraTooltipSpellID = false,
     auraImportantGlowColor = {1, 0.5, 0, 1},
@@ -515,6 +516,14 @@ StaticPopupDialogs["BBF_MIDNIGHT_121_AURA_UPDATE"] = {
     preferredIndex = 3,
 }
 
+StaticPopupDialogs["BBF_MIDNIGHT_EDITMODE_SCALE_REMOVED"] = {
+    text = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames:\n\nHeadsup:\n\nThe size setting for party frames and loss of control frame was removed due to Blizzard now having added those to edit mode. Adjust them with edit mode instead.",
+    button1 = "OK",
+    timeout = 0,
+    whileDead = true,
+    preferredIndex = 3,
+}
+
 local function ResetBBF()
     BetterBlizzFramesDB = {}
     ReloadUI()
@@ -539,6 +548,7 @@ local function SendUpdateMessage(oldVer)
         if not BetterBlizzFramesDB.scStart then
             if BetterBlizzFramesDB.skipUpdateMsg then
                 BetterBlizzFramesDB.skipUpdateMsg = nil
+                BBF.skippedUpdateMsg = true
                 return
             end
             if oldVer < "1.8.1" then
@@ -823,20 +833,10 @@ function BBF.ToggleLossOfControlTestMode()
 
         _G.FakeBBFLossOfControlFrame = frame
     end
-    FakeBBFLossOfControlFrame:SetScale(BetterBlizzFramesDB.lossOfControlScale)
     FakeBBFLossOfControlFrame.blackBg:SetAlpha(LossOfControlFrameAlphaBg)
     FakeBBFLossOfControlFrame.RedLineTop:SetAlpha(LossOfControlFrameAlphaLines)
     FakeBBFLossOfControlFrame.RedLineBottom:SetAlpha(LossOfControlFrameAlphaLines)
     FakeBBFLossOfControlFrame:Show()
-end
-
-function BBF.ChangeLossOfControlScale()
-    local scale = BetterBlizzFramesDB.lossOfControlScale
-    LossOfControlFrame:SetScale(scale)
-    if scale ~= 1 then
-        LossOfControlFrame:ClearAllPoints()
-        LossOfControlFrame:SetPoint("CENTER", UIParent, "CENTER", 0,0)
-    end
 end
 
 --TODO Bodify, already in aura function, this is better perf tho so figure out how (debuffs only)
@@ -5144,7 +5144,6 @@ Frame:SetScript("OnEvent", function(...)
                 BBF.MiniFrame(TargetFrame)
                 BBF.MiniFrame(PlayerFrame)
                 BBF.UpdateCastbars()
-                BBF.ChangeLossOfControlScale()
                 BBF.ChangeCastbarSizes()
             end)
             BBF.HideFrames()
@@ -5387,11 +5386,20 @@ First:SetScript("OnEvent", function(_, event, addonName)
             end
             BetterBlizzFramesDB.fontSizeNumFix = true
         end
+        local skipUpdateMsg = BetterBlizzFramesDB.skipUpdateMsg or BBF.skippedUpdateMsg
         if not BetterBlizzFramesDB.midnight121AuraUpdateMsg then
             BetterBlizzFramesDB.midnight121AuraUpdateMsg = true
-            if BetterBlizzFramesDB.hasSaved then
+            if BetterBlizzFramesDB.hasSaved and not skipUpdateMsg then
                 C_Timer.After(7, function()
                     StaticPopup_Show("BBF_MIDNIGHT_121_AURA_UPDATE")
+                end)
+            end
+        end
+        if not BetterBlizzFramesDB.midnightEditModeScaleRemovedMsg then
+            BetterBlizzFramesDB.midnightEditModeScaleRemovedMsg = true
+            if BetterBlizzFramesDB.hasSaved and not skipUpdateMsg then
+                C_Timer.After(7, function()
+                    StaticPopup_Show("BBF_MIDNIGHT_EDITMODE_SCALE_REMOVED")
                 end)
             end
         end

@@ -1,3 +1,16 @@
+# BetterBlizzFrames 2.0.3
+## New
+- New setting "Sort purgeable buffs first" to move purgeable buffs ahead of other Target/Focus buffs (after important auras, defensives and whitelisted auras). Covers enrage effects too.
+### Tweak
+- REMOVED: Loss of Control Scale is removed cuz edit mode now has settings for it. Set it with edit mode instead.
+- ENABLED: Raise Target/Focus Castbar Strata is now enabled by default in the addon. All this does is make sure the target/focus castbar is on top of other elements and not hidden under. It may have turned on for you and you can turn if back off in castbar section if for whatever reason this does not fit your UI setup but most people should have this on.
+- Update the pvp blacklist ever so slightly with a few added IDs.
+### Bugfix
+- Fix a secret error in class color stuff.
+- Fix issues with purge textures on auras for both magic and enrage effects.
+- Fix a layer issue mistake in earlier update to Classic Frames setting.
+- Fix a potential party castbar issue with them not attaching to the correct frame, especially with other addons enabled.
+
 # BetterBlizzFrames 2.0.2e
 ## Midnight
 ### Bugfix
