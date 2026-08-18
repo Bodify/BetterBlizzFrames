@@ -1378,18 +1378,13 @@ function BBF.HideFrames()
 
 
         local function ToggleLibDBIconButtons(show)
+            local alpha = show and 1 or 0
             for i = 1, Minimap:GetNumChildren() do
                 local child = select(i, Minimap:GetChildren())
                 if child then
                     local childName = child:GetName() or ""
                     if string.find(childName, "LibDBIcon") or childName == "ExpansionLandingPageMinimapButton" or childName == "ArenaAnalyticsMinimapButton" then
-                        if show then
-                            child:Show()
-                            ExpansionLandingPageMinimapButton:SetAlpha(1)
-                        else
-                            child:Hide()
-                            ExpansionLandingPageMinimapButton:SetAlpha(0)
-                        end
+                        child:SetAlpha(alpha)
                     end
                 end
             end

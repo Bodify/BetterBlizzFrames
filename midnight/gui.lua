@@ -612,6 +612,8 @@ local AURA_RESET_EXTRA_KEYS = {
     "auraSortMethod",
     "playerAuraSortMethod",
     "auraImportantGlowColor",
+    "auraWhitelistImportantGlowColor",
+    "auraEnlargedGlowColor",
     "auraDefensiveGlowColor",
     "auraCCGlowColor",
     "auraPandemicGlowColor",
@@ -1966,6 +1968,14 @@ end
 
 
 
+function BBF.GetListSearchFilter(listName)
+    return BBF[listName .. "SearchFilter"] or ""
+end
+
+function BBF.SetListSearchFilter(listName, text)
+    BBF[listName .. "SearchFilter"] = text or ""
+end
+
 local function deleteEntry(listName, key)
     if not key then return end
 
@@ -1996,7 +2006,7 @@ local function deleteEntry(listName, key)
         BetterBlizzFramesDB[listName][key] = nil
     end
 
-    BBF.currentSearchFilter = ""
+    BBF.SetListSearchFilter(listName, "")
 
     if SettingsPanel:IsShown() then
         if BBF[listName.."Refresh"] then
@@ -2018,7 +2028,9 @@ for _, listName in ipairs(lists) do
         button1 = L["Yes"],
         button2 = L["No"],
         OnAccept = function()
-            deleteEntry(listName, BBF.entryToDelete)  -- Delete the entry when "Yes" is clicked
+            local key = BBF[listName .. "EntryToDelete"]
+            BBF[listName .. "EntryToDelete"] = nil
+            deleteEntry(listName, key)
         end,
         timeout = 0,
         whileDead = true,
@@ -2030,7 +2042,9 @@ for _, listName in ipairs(lists) do
         button1 = L["Yes"],
         button2 = L["No"],
         OnAccept = function()
-            deleteEntry(listName, BBF.entryToDelete)  -- Delete the entry when "Yes" is clicked
+            local key = BBF[listName .. "EntryToDelete"]
+            BBF[listName .. "EntryToDelete"] = nil
+            deleteEntry(listName, key)
         end,
         timeout = 0,
         whileDead = true,
@@ -2042,10 +2056,10 @@ StaticPopupDialogs["BBF_DUPLICATE_UPDATE_OR_DELETE"] = {
     button1 = L["Update_And_Always_Hide"],
     button2 = L["Delete_From_Blacklist"],
     OnAccept = function()
-        BBF["auraBlacklist"](BBF.entryToDelete, "auraBlacklist", nil, true)  -- Update when accepted
+        BBF["auraBlacklist"](BBF.auraBlacklistEntryToDelete, "auraBlacklist", nil, true)
     end,
     OnCancel = function()
-        deleteEntry("auraBlacklist", BBF.entryToDelete)  -- Delete the entry when "Yes" is clicked
+        deleteEntry("auraBlacklist", BBF.auraBlacklistEntryToDelete)
     end,
     timeout = 0,
     whileDead = true,
@@ -2053,7 +2067,6 @@ StaticPopupDialogs["BBF_DUPLICATE_UPDATE_OR_DELETE"] = {
 
 
 local function addOrUpdateEntry(inputText, listName, addShowMineTag, skipRefresh, color)
-    BBF.entryToDelete = nil
     local name, comment = strsplit("/", inputText, 2)
     name = strtrim(name or "")
     comment = comment and strtrim(comment) or nil
@@ -2113,14 +2126,14 @@ local function addOrUpdateEntry(inputText, listName, addShowMineTag, skipRefresh
                     -- do nothing, removes tag
                 else
                     isDuplicate = true
-                    BBF.entryToDelete = key  -- Use key to identify the duplicate
+                    BBF[listName .. "EntryToDelete"] = key
                     if addShowMineTag then
                         BBF.DuplicateWithTag = true
                     end
                 end
             elseif listName == "auraWhitelist" then
                 isDuplicate = true
-                BBF.entryToDelete = key  -- Use key to identify the duplicate
+                BBF[listName .. "EntryToDelete"] = key
             end
         end
 
@@ -2163,12 +2176,7 @@ local function addOrUpdateEntry(inputText, listName, addShowMineTag, skipRefresh
             -- Add the new entry to the list using key
             BetterBlizzFramesDB[listName][key] = newEntry
 
-            -- Update UI: Re-create text line button and refresh the list display
-            if BBF["UpdateTextLine"..listName] then
-                BBF["UpdateTextLine"..listName](newEntry, #BBF[listName.."TextLines"] + 1, BBF[listName.."ExtraBoxes"])
-            end
-
-            BBF.currentSearchFilter = ""
+            BBF.SetListSearchFilter(listName, "")
 
             if not skipRefresh then
                 if BBF[listName.."Refresh"] then
@@ -2205,6 +2213,77 @@ BBF["auraWhitelist"] = addOrUpdateEntry
 
 
 
+function BBF.TintGlowSwatch(texture, colorKey, r, g, b)
+    if not texture then return end
+    local c = BetterBlizzFramesDB[colorKey]
+    if type(c) == "table" and c[1] then
+        texture:SetVertexColor(c[1], c[2] or 0, c[3] or 0)
+    else
+        texture:SetVertexColor(r, g, b)
+    end
+end
+
+function BBF.UpdateEnlargedGlowSwatch(button)
+    local swatch = button.checkBoxEnlarged and button.checkBoxEnlarged.swatch
+    if not swatch then return end
+
+    local show = (button.npcData and button.npcData.important) and true or false
+    swatch:SetShown(show)
+    if show then
+        BBF.TintGlowSwatch(swatch, "auraEnlargedGlowColor", 1, 0.5, 0)
+    end
+end
+
+function BBF.RefreshAuraGlowSwatches()
+    for _, button in ipairs(BBF.auraWhitelistTextLines or {}) do
+        if button.checkBoxImportant then
+            BBF.TintGlowSwatch(button.checkBoxImportant.swatch, "auraWhitelistImportantGlowColor", 0, 1, 0)
+        end
+        BBF.UpdateEnlargedGlowSwatch(button)
+        if button.checkBoxPandemic then
+            BBF.TintGlowSwatch(button.checkBoxPandemic.swatch, "auraPandemicGlowColor", 1, 0, 0)
+        end
+    end
+    if BBF.auraImportantHeaderIcon then
+        BBF.TintGlowSwatch(BBF.auraImportantHeaderIcon, "auraWhitelistImportantGlowColor", 0, 1, 0)
+    end
+end
+
+function BBF.OpenAuraGlowColor(colorKey, dr, dg, db)
+    local color = BetterBlizzFramesDB[colorKey]
+    if type(color) ~= "table" then
+        color = { dr, dg, db, 1 }
+        BetterBlizzFramesDB[colorKey] = color
+    end
+
+    local r, g, b = color[1] or dr, color[2] or dg, color[3] or db
+    local a = color[4] or 1
+
+    local function Apply()
+        color[1], color[2], color[3], color[4] = r, g, b, a
+        BBF.RefreshAuraGlowSwatches()
+        BBF.RefreshAllAuraFrames()
+    end
+
+    ColorPickerFrame.previousValues = { r = r, g = g, b = b, a = a }
+    ColorPickerFrame:SetupColorPickerAndShow({
+        r = r, g = g, b = b, opacity = a, hasOpacity = true,
+        swatchFunc = function()
+            r, g, b = ColorPickerFrame:GetColorRGB()
+            Apply()
+        end,
+        opacityFunc = function()
+            a = ColorPickerFrame:GetColorAlpha()
+            Apply()
+        end,
+        cancelFunc = function(previousValues)
+            if not previousValues then return end
+            r, g, b, a = previousValues.r, previousValues.g, previousValues.b, previousValues.a
+            Apply()
+        end,
+    })
+end
+
 local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes, width, pos)
     -- Create the scroll frame
     local scrollFrame = CreateFrame("ScrollFrame", nil, subPanel, "UIPanelScrollFrameTemplate")
@@ -2224,8 +2303,16 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
     BBF[listName.."TextLines"] = textLines
     BBF[listName.."ExtraBoxes"] = extraBoxes
     local framePool = {}
-    BBF.entryToDelete = nil
-    BBF.currentSearchFilter = ""
+    BBF[listName.."EntryToDelete"] = nil
+    BBF.SetListSearchFilter(listName, "")
+
+    local function GetList()
+        local live = BetterBlizzFramesDB and BetterBlizzFramesDB[listName]
+        if type(live) == "table" and live ~= listData then
+            listData = live
+        end
+        return listData or {}
+    end
 
     -- Function to update the background colors of the entries
     local function updateBackgroundColors()
@@ -2275,10 +2362,13 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
             deleteButton:SetPoint("RIGHT", button, "RIGHT", 4, 0)
             deleteButton:SetText("X")
             deleteButton:SetScript("OnClick", function()
+                local npc = button.npcData
+                local key = npc and (npc.id or (type(npc.name) == "string" and npc.name ~= "" and npc.name:lower()))
+                if not key then return end
                 if IsShiftKeyDown() then
-                    deleteEntry(listName, button.npcData.id or button.npcData.name:lower())
+                    deleteEntry(listName, key)
                 else
-                    BBF.entryToDelete = button.npcData.id or button.npcData.name:lower()
+                    BBF[listName .. "EntryToDelete"] = key
                     StaticPopup_Show("BBF_DELETE_NPC_CONFIRM_" .. listName)
                 end
             end)
@@ -2301,28 +2391,12 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
         button.iconTexture:SetTexture(C_Spell.GetSpellTexture(npc.id or npc.name))
 
         if extraBoxes then
-            if not button.checkBoxOnlyMine then
-                local checkBoxOnlyMine = CreateFrame("CheckButton", nil, button, "UICheckButtonTemplate")
-                checkBoxOnlyMine:SetSize(24, 24)
-                checkBoxOnlyMine:SetPoint("RIGHT", button, "RIGHT", -13, 0)
-                checkBoxOnlyMine:SetScript("OnClick", function(self)
-                    button.npcData.onlyMine = self:GetChecked() and true or nil
-                    BBF.RefreshAllAuraFrames()
-                end)
-                button.checkBoxOnlyMine = checkBoxOnlyMine
-                CreateTooltipTwo(checkBoxOnlyMine, L["Only_My_Aura_Icon"], L["Tooltip_Only_My_Aura"], nil, "ANCHOR_TOPRIGHT")
-
-                button.text:SetWidth(172)
-                button.text:SetWordWrap(false)
-                button.text:SetJustifyH("LEFT")
-            end
-            button.checkBoxOnlyMine:SetChecked(button.npcData.onlyMine)
-
             if not button.checkBoxPandemic then
                 local checkBoxPandemic = CreateFrame("CheckButton", nil, button, "UICheckButtonTemplate")
                 checkBoxPandemic:SetSize(24, 24)
-                checkBoxPandemic:SetPoint("RIGHT", button.checkBoxOnlyMine, "LEFT", 4, 0)
+                checkBoxPandemic:SetPoint("RIGHT", button.deleteButton, "LEFT", 0, 0)
                 checkBoxPandemic:SetScript("OnClick", function(self)
+                    if not button.npcData then return end
                     button.npcData.pandemic = self:GetChecked() and true or nil
                     BBF.RefreshAllAuraFrames()
                 end)
@@ -2336,13 +2410,103 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
                 CreateTooltipTwo(checkBoxPandemic, L["Pandemic_Glow_Icon"],
                     L["Tooltip_Pandemic_Glow_Entry"], nil, "ANCHOR_TOPRIGHT")
             end
-            local c = BetterBlizzFramesDB.auraPandemicGlowColor
-            if type(c) == "table" and c[1] then
-                button.checkBoxPandemic.swatch:SetVertexColor(c[1], c[2] or 0, c[3] or 0)
-            else
-                button.checkBoxPandemic.swatch:SetVertexColor(1, 0, 0)
+            if not button.checkBoxImportant then
+                local checkBoxImportant = CreateFrame("CheckButton", nil, button, "UICheckButtonTemplate")
+                checkBoxImportant:SetSize(24, 24)
+                checkBoxImportant:SetPoint("RIGHT", button.checkBoxPandemic, "LEFT", 0, 0)
+                checkBoxImportant:SetScript("OnClick", function(self)
+                    if not button.npcData then return end
+                    local checked = self:GetChecked() and true or nil
+                    button.npcData.important = checked
+                    if checked then
+                        button.npcData.pandemic = nil
+                        button.checkBoxPandemic:SetChecked(false)
+                        DisableElement(button.checkBoxPandemic)
+                    elseif not button.npcData.enlarged then
+                        EnableElement(button.checkBoxPandemic)
+                    end
+                    BBF.UpdateEnlargedGlowSwatch(button)
+                    BBF.RefreshAllAuraFrames()
+                end)
+                local swatch = checkBoxImportant:CreateTexture(nil, "ARTWORK", nil, 1)
+                swatch:SetAtlas("newplayertutorial-drag-slotgreen")
+                swatch:SetDesaturated(true)
+                swatch:SetSize(27, 27)
+                swatch:SetPoint("CENTER", checkBoxImportant, "CENTER", -0.5, 0.5)
+                checkBoxImportant.swatch = swatch
+                checkBoxImportant:HookScript("OnMouseDown", function(_, mouseButton)
+                    if mouseButton == "RightButton" then
+                        BBF.OpenAuraGlowColor("auraWhitelistImportantGlowColor", 0, 1, 0)
+                    end
+                end)
+                button.checkBoxImportant = checkBoxImportant
+                CreateTooltipTwo(checkBoxImportant, L["Important_Glow_Icon"],
+                    L["Tooltip_Important_Glow_Entry"], nil, "ANCHOR_TOPRIGHT")
             end
+            if not button.checkBoxEnlarged then
+                local checkBoxEnlarged = CreateFrame("CheckButton", nil, button, "UICheckButtonTemplate")
+                checkBoxEnlarged:SetSize(24, 24)
+                checkBoxEnlarged:SetPoint("RIGHT", button.checkBoxImportant, "LEFT", 0, 0)
+                checkBoxEnlarged:SetScript("OnClick", function(self)
+                    if not button.npcData then return end
+                    local checked = self:GetChecked() and true or nil
+                    button.npcData.enlarged = checked
+                    if checked then
+                        button.npcData.pandemic = nil
+                        button.checkBoxPandemic:SetChecked(false)
+                        DisableElement(button.checkBoxPandemic)
+                    elseif not button.npcData.important then
+                        EnableElement(button.checkBoxPandemic)
+                    end
+                    BBF.RefreshAllAuraFrames()
+                end)
+                local swatch = checkBoxEnlarged:CreateTexture(nil, "ARTWORK", nil, 1)
+                swatch:SetAtlas("newplayertutorial-drag-slotgreen")
+                swatch:SetDesaturated(true)
+                swatch:SetSize(27, 27)
+                swatch:SetPoint("CENTER", checkBoxEnlarged, "CENTER", -0.5, 0.5)
+                checkBoxEnlarged.swatch = swatch
+                checkBoxEnlarged:HookScript("OnMouseDown", function(_, mouseButton)
+                    if mouseButton == "RightButton" then
+                        BBF.OpenAuraGlowColor("auraEnlargedGlowColor", 1, 0.5, 0)
+                    end
+                end)
+                button.checkBoxEnlarged = checkBoxEnlarged
+                CreateTooltipTwo(checkBoxEnlarged, L["Enlarged_Aura_Icon"],
+                    L["Tooltip_Enlarged_Aura_Entry"], nil, "ANCHOR_TOPRIGHT")
+            end
+            if not button.checkBoxOnlyMine then
+                local checkBoxOnlyMine = CreateFrame("CheckButton", nil, button, "UICheckButtonTemplate")
+                checkBoxOnlyMine:SetSize(24, 24)
+                checkBoxOnlyMine:SetPoint("RIGHT", button.checkBoxEnlarged, "LEFT", 0, 0)
+                checkBoxOnlyMine:SetScript("OnClick", function(self)
+                    if not button.npcData then return end
+                    button.npcData.onlyMine = self:GetChecked() and true or nil
+                    BBF.RefreshAllAuraFrames()
+                end)
+                button.checkBoxOnlyMine = checkBoxOnlyMine
+                CreateTooltipTwo(checkBoxOnlyMine, L["Only_My_Aura_Icon"], L["Tooltip_Only_My_Aura"], nil, "ANCHOR_TOPRIGHT")
+
+                button.text:SetWidth((width or 322) - 161)
+                button.text:SetWordWrap(false)
+                button.text:SetJustifyH("LEFT")
+            end
+            button.checkBoxOnlyMine:SetChecked(button.npcData.onlyMine)
+
+            BBF.TintGlowSwatch(button.checkBoxImportant.swatch, "auraWhitelistImportantGlowColor", 0, 1, 0)
+            button.checkBoxImportant:SetChecked(button.npcData.important)
+
+            BBF.UpdateEnlargedGlowSwatch(button)
+            button.checkBoxEnlarged:SetChecked(button.npcData.enlarged)
+
+            BBF.TintGlowSwatch(button.checkBoxPandemic.swatch, "auraPandemicGlowColor", 1, 0, 0)
             button.checkBoxPandemic:SetChecked(button.npcData.pandemic)
+
+            if button.npcData.important or button.npcData.enlarged then
+                DisableElement(button.checkBoxPandemic)
+            else
+                EnableElement(button.checkBoxPandemic)
+            end
         end
 
         if listName == "auraBlacklist" then
@@ -2350,17 +2514,17 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
                 -- Create Checkbox Only Mine if not already created
                 local checkBoxShowMine = CreateFrame("CheckButton", nil, button, "UICheckButtonTemplate")
                 checkBoxShowMine:SetSize(24, 24)
-                checkBoxShowMine:SetPoint("RIGHT", button, "RIGHT", -13, 0)
+                checkBoxShowMine:SetPoint("RIGHT", button.deleteButton, "LEFT", 0, 0)
                 CreateTooltipTwo(checkBoxShowMine, L["Show_Mine_Icon"] .. " |A:UI-HUD-UnitFrame-Player-Group-FriendOnlineIcon:22:22|a", L["Tooltip_Show_Mine"], nil, "ANCHOR_TOPRIGHT")
 
                 -- Handler for the show mine checkbox
                 checkBoxShowMine:SetScript("OnClick", function(self)
+                    if not button.npcData then return end
                     button.npcData.showMine = self:GetChecked() and true or nil
                     BBF.RefreshAllAuraFrames()
                 end)
 
-                -- Adjust text width and settings
-                button.text:SetWidth(196)
+                button.text:SetWidth((width or 322) - 89)
                 button.text:SetWordWrap(false)
                 button.text:SetJustifyH("LEFT")
 
@@ -2370,7 +2534,7 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
             button.checkBoxShowMine:SetChecked(button.npcData.showMine)
         end
 
-        if npc.id and not button.idTip then
+        if not button.idTip then
             button:SetScript("OnEnter", function(self)
                 if not button.npcData.id then return end
                 GameTooltip:SetOwner(self, "ANCHOR_LEFT")
@@ -2383,9 +2547,6 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
             end)
             button.idTip = true
         end
-
-        -- Update background colors
-        updateBackgroundColors()
 
         return button
     end
@@ -2411,65 +2572,106 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
         end
     end
 
+    local function GetEntryName(entry)
+        local name = entry.name
+        if type(name) == "string" and name ~= "" then return name end
+        if entry.id then
+            local resolved = BBF.TWWGetSpellInfo(entry.id) or C_Spell.GetSpellName(entry.id)
+            if resolved and resolved ~= "" then
+                entry.name = resolved
+                return resolved
+            end
+        end
+        return nil
+    end
+
     local function getSortedNpcList()
         local sortableNpcList = {}
 
         -- Iterate over the structure using pairs to access all entries
-        local safeFilter = BBF.currentSearchFilter:gsub("([%(%)%.%%%+%-%*%?%[%]%^%$])", "%%%1")
-        for key, entry in pairs(listData) do
-            cleanUpEntry(entry)
-            -- Apply the search filter
-            if BBF.currentSearchFilter == "" or (entry.name and entry.name:lower():match(safeFilter)) or (entry.id and tostring(entry.id):match(safeFilter)) then
-                table.insert(sortableNpcList, entry)
+        local filter = BBF.GetListSearchFilter(listName)
+        local safeFilter = filter:gsub("([%(%)%.%%%+%-%*%?%[%]%^%$])", "%%%1")
+        for key, entry in pairs(GetList()) do
+            if type(entry) == "table" then
+                cleanUpEntry(entry)
+                local name = GetEntryName(entry)
+                if filter == "" or (name and name:lower():match(safeFilter)) or (entry.id and tostring(entry.id):match(safeFilter)) then
+                    table.insert(sortableNpcList, entry)
+                end
             end
         end
 
         -- Sort the list alphabetically by the 'name' field, and then by 'id' if the names are the same
         table.sort(sortableNpcList, function(a, b)
-            local nameA = a.name and a.name:lower() or ""
-            local nameB = b.name and b.name:lower() or ""
-
-            -- First, compare by name
-            if nameA ~= nameB then
-                return nameA < nameB
+            local nameA = GetEntryName(a)
+            local nameB = GetEntryName(b)
+            if (nameA ~= nil) ~= (nameB ~= nil) then
+                return nameA ~= nil
+            end
+            if nameA and nameB then
+                nameA, nameB = nameA:lower(), nameB:lower()
+                if nameA ~= nameB then
+                    return nameA < nameB
+                end
             end
 
             -- If names are the same, compare by id (sort low to high)
-            local idA = a.id or math.huge
-            local idB = b.id or math.huge
+            local idA = tonumber(a.id) or math.huge
+            local idB = tonumber(b.id) or math.huge
             return idA < idB
         end)
 
         return sortableNpcList
     end
 
+    local function releaseRowsFrom(firstIndex)
+        for i = firstIndex, #framePool do
+            local button = framePool[i]
+            if button then
+                button.npcData = nil
+                button:Hide()
+            end
+        end
+    end
+
+    local function clampScroll()
+        local maxScroll = math.max(0, contentFrame:GetHeight() - scrollFrame:GetHeight())
+        if scrollFrame:GetVerticalScroll() > maxScroll then
+            scrollFrame:SetVerticalScroll(maxScroll)
+        end
+    end
+
     -- Function to update the list with batching logic
+    local refreshGeneration = 0
     local function refreshList()
         local sortedListData = getSortedNpcList()
         local totalEntries = #sortedListData
         local batchSize = 35  -- Number of entries to process per frame
         local currentIndex = 1
 
+        refreshGeneration = refreshGeneration + 1
+        local generation = refreshGeneration
+        wipe(textLines)
+
         local function processNextBatch()
-            for i = currentIndex, math.min(currentIndex + batchSize - 1, totalEntries) do
+            if generation ~= refreshGeneration then return end
+
+            local lastIndex = math.min(currentIndex + batchSize - 1, totalEntries)
+            for i = currentIndex, lastIndex do
                 local npc = sortedListData[i]
                 local button = createOrUpdateTextLineButton(npc, i, extraBoxes)
                 textLines[i] = button
             end
 
-            -- Hide any extra frames
-            for i = totalEntries + 1, #framePool do
-                if framePool[i] then
-                    framePool[i]:Hide()
-                end
-            end
+            releaseRowsFrom(lastIndex + 1)
 
             -- Update the content frame height
             contentFrame:SetHeight(totalEntries * 20)
             updateBackgroundColors()
+            clampScroll()
 
             -- Continue processing if there are more entries
-            currentIndex = currentIndex + batchSize
+            currentIndex = lastIndex + 1
             if currentIndex <= totalEntries then
                 C_Timer.After(0.04, processNextBatch)  -- Defer to the next frame
             end
@@ -2490,7 +2692,11 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
 
         -- Function to search and filter the list
         local function searchList(searchText)
-            BBF.currentSearchFilter = searchText:lower()
+            local text = searchText:lower()
+            if BBF.GetListSearchFilter(listName) ~= text then
+                BBF.SetListSearchFilter(listName, text)
+                scrollFrame:SetVerticalScroll(0)
+            end
             refreshList()
         end
 
@@ -8227,7 +8433,7 @@ local function guiFrameAuras()
 
     local contentFrame = CreateFrame("Frame", nil, scrollFrame)
     contentFrame.name = guiFrameAuras.name
-    contentFrame:SetSize(680, 1470)
+    contentFrame:SetSize(680, 1470 + 3 * 17 + 3 * 34)
     scrollFrame:SetScrollChild(contentFrame)
 
     local auraBlacklistFrame = CreateFrame("Frame", nil, contentFrame)
@@ -8238,7 +8444,7 @@ local function guiFrameAuras()
     blacklistText:SetPoint("BOTTOM", auraBlacklistFrame, "TOP", -20, -5)
     blacklistText:SetText(L["Blacklist"])
 
-    local blacklist = CreateList(auraBlacklistFrame, "auraBlacklist", BetterBlizzFramesDB.auraBlacklist, BBF.RefreshAllAuraFrames, nil, 322)
+    local blacklist = CreateList(auraBlacklistFrame, "auraBlacklist", BetterBlizzFramesDB.auraBlacklist, BBF.RefreshAllAuraFrames, nil, 265)
 
     local auraWhitelistFrame = CreateFrame("Frame", nil, contentFrame)
     auraWhitelistFrame:SetSize(322, 320)
@@ -8248,26 +8454,58 @@ local function guiFrameAuras()
     whitelistText:SetPoint("BOTTOM", auraWhitelistFrame, "TOP", -20, -5)
     whitelistText:SetText(L["Whitelist"])
 
-    local whitelist = CreateList(auraWhitelistFrame, "auraWhitelist", BetterBlizzFramesDB.auraWhitelist, BBF.RefreshAllAuraFrames, true, 322)
-
-    local onlyMeTexture = contentFrame:CreateTexture(nil, "OVERLAY")
-    onlyMeTexture:SetAtlas("UI-HUD-UnitFrame-Player-Group-FriendOnlineIcon")
-    onlyMeTexture:SetPoint("RIGHT", whitelist, "TOPRIGHT", -18, 9)
-    onlyMeTexture:SetSize(18, 20)
-    CreateTooltipTwo(onlyMeTexture, L["Only_My_Aura_Icon"], L["Tooltip_Only_My_Aura"])
+    local whitelist = CreateList(auraWhitelistFrame, "auraWhitelist", BetterBlizzFramesDB.auraWhitelist, BBF.RefreshAllAuraFrames, true, 379, true)
 
     local pandemicAuraTexture = contentFrame:CreateTexture(nil, "OVERLAY")
     pandemicAuraTexture:SetAtlas("elementalstorm-boss-air")
-    pandemicAuraTexture:SetPoint("CENTER", onlyMeTexture, "CENTER", -20, 1)
-    pandemicAuraTexture:SetSize(26, 26)
+    pandemicAuraTexture:SetPoint("CENTER", whitelist, "TOPRIGHT", -30, 11)
+    pandemicAuraTexture:SetSize(25, 25)
     pandemicAuraTexture:SetDesaturated(true)
-    pandemicAuraTexture:SetVertexColor(1, 0, 0)
+    BBF.TintGlowSwatch(pandemicAuraTexture, "auraPandemicGlowColor", 1, 0, 0)
+    pandemicAuraTexture:EnableMouse(true)
     CreateTooltipTwo(pandemicAuraTexture, L["Pandemic_Glow_Icon"], L["Tooltip_Pandemic_Glow_Entry"])
+
+    local importantAuraTexture = contentFrame:CreateTexture(nil, "OVERLAY")
+    importantAuraTexture:SetAtlas("importantavailablequesticon")
+    importantAuraTexture:SetPoint("CENTER", pandemicAuraTexture, "CENTER", -25, -2)
+    importantAuraTexture:SetSize(16, 16)
+    importantAuraTexture:SetDesaturated(true)
+    BBF.auraImportantHeaderIcon = importantAuraTexture
+    BBF.TintGlowSwatch(importantAuraTexture, "auraWhitelistImportantGlowColor", 0, 1, 0)
+    importantAuraTexture:EnableMouse(true)
+    importantAuraTexture:SetScript("OnMouseDown", function(_, mouseButton)
+        if mouseButton == "RightButton" then
+            BBF.OpenAuraGlowColor("auraWhitelistImportantGlowColor", 0, 1, 0)
+        end
+    end)
+    CreateTooltipTwo(importantAuraTexture, L["Important_Glow_Icon"],
+        L["Tooltip_Important_Glow_Entry"])
+
+    local enlargedAuraTexture = contentFrame:CreateTexture(nil, "OVERLAY")
+    enlargedAuraTexture:SetAtlas("ui-hud-minimap-zoom-in")
+    enlargedAuraTexture:SetPoint("CENTER", importantAuraTexture, "CENTER", -23, -1)
+    enlargedAuraTexture:SetSize(18, 18)
+    enlargedAuraTexture:EnableMouse(true)
+    enlargedAuraTexture:SetScript("OnMouseDown", function(_, mouseButton)
+        if mouseButton == "RightButton" then
+            BBF.OpenAuraGlowColor("auraEnlargedGlowColor", 1, 0.5, 0)
+        end
+    end)
+    CreateTooltipTwo(enlargedAuraTexture, L["Enlarged_Aura_Icon"],
+        L["Tooltip_Enlarged_Aura_Entry"])
+
+    local onlyMeTexture = contentFrame:CreateTexture(nil, "OVERLAY")
+    onlyMeTexture:SetAtlas("UI-HUD-UnitFrame-Player-Group-FriendOnlineIcon")
+    onlyMeTexture:SetPoint("CENTER", enlargedAuraTexture, "CENTER", -24, 1)
+    onlyMeTexture:SetSize(18, 20)
+    onlyMeTexture:EnableMouse(true)
+    CreateTooltipTwo(onlyMeTexture, L["Only_My_Aura_Icon"], L["Tooltip_Only_My_Aura"])
 
     local showMineTexture = contentFrame:CreateTexture(nil, "OVERLAY")
     showMineTexture:SetAtlas("UI-HUD-UnitFrame-Player-Group-FriendOnlineIcon")
-    showMineTexture:SetPoint("RIGHT", blacklist, "TOPRIGHT", -18, 9)
+    showMineTexture:SetPoint("RIGHT", blacklist, "TOPRIGHT", -21, 9)
     showMineTexture:SetSize(18, 20)
+    showMineTexture:EnableMouse(true)
     CreateTooltipTwo(showMineTexture, L["Show_Mine_Icon"], L["Tooltip_Show_Mine"])
 
     local filterCaveat = contentFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
@@ -8397,6 +8635,7 @@ local function guiFrameAuras()
     end
 
     local COLUMN_TOP = -404
+    local COLUMN_ROW_HEIGHT = 23 - pixelsBetweenBoxes
 
     local function AddGlowColorRightClick(box, option, colorKey)
         box:RegisterForClicks("LeftButtonUp", "RightButtonUp")
@@ -8417,9 +8656,12 @@ local function guiFrameAuras()
     local leadingGlowBoxes = {}
     function UpdateLeadingGlowBoxes()
         local on = BetterBlizzFramesDB.importantAurasFirst ~= false
-        for _, box in ipairs(leadingGlowBoxes) do
+        for _, entry in ipairs(leadingGlowBoxes) do
+            local box = entry.box
             local parent = box:GetParent()
-            if on and parent:GetChecked() and playerAuraFiltering:GetChecked() then
+            local filtered = entry.filter and entry.filter:GetChecked()
+                and entry.section and entry.section:GetChecked()
+            if (on or filtered) and parent:GetChecked() and playerAuraFiltering:GetChecked() then
                 EnableElement(box)
             else
                 DisableElement(box)
@@ -8433,16 +8675,19 @@ local function guiFrameAuras()
             return overrides[prefix .. suffix] or (prefix .. suffix)
         end
 
+        local reservedX = keys.reserveTopRow and 15 or 0
+        local reservedY = keys.reserveTopRow and -COLUMN_ROW_HEIGHT or 0
+
         local anchor = CreateCheckbox(keys.buffEnable or (keys.buff .. "Enable"),
             L["Show_Buffs"], playerAuraFiltering)
-        anchor:SetPoint("TOPLEFT", contentFrame, "TOPLEFT", xOffset, COLUMN_TOP)
+        anchor:SetPoint("TOPLEFT", contentFrame, "TOPLEFT", xOffset + reservedX, COLUMN_TOP + reservedY)
         anchor:HookScript("OnClick", function()
             CheckAndToggleCheckboxes(anchor)
             BBF.RefreshAllAuraFrames()
         end)
 
         local title = contentFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-        title:SetPoint("LEFT", anchor, "CENTER", 35, 32)
+        title:SetPoint("LEFT", anchor, "CENTER", 35 - reservedX, 32 - reservedY)
         title:SetText(titleText)
         local icon = contentFrame:CreateTexture(nil, "ARTWORK")
         icon:SetAtlas("groupfinder-icon-friend")
@@ -8451,7 +8696,8 @@ local function guiFrameAuras()
         icon:SetDesaturated(1)
         icon:SetVertexColor(iconR, iconG, iconB)
 
-        local border = CreateBorderedFrame(anchor, 195, 324, 70, -145, contentFrame)
+        local border = CreateBorderedFrame(anchor, 195, 324 + 3 * COLUMN_ROW_HEIGHT,
+            70 - reservedX, -145 - reservedY - math.floor(3 * COLUMN_ROW_HEIGHT / 2), contentFrame)
 
         local previous, section = anchor, anchor
         local function Add(key, label, tooltip, extra)
@@ -8479,8 +8725,20 @@ local function guiFrameAuras()
             return box
         end
 
+        local function AddCategoryFilter(key, label, tooltip)
+            local box = Add(key, label, tooltip, L["Tooltip_Aura_Filter_Category_Note"])
+            box:HookScript("OnClick", function()
+                UpdateLeadingGlowBoxes()
+            end)
+            return box
+        end
+
         Add(Key(keys.buff, "FilterWatchList"), L["Whitelist"], L["Tooltip_Whitelist"], L["Tooltip_Whitelist_Desc"])
         Add(Key(keys.buff, "FilterBlacklist"), L["Blacklist"], L["Tooltip_Blacklist"], L["Tooltip_Aura_Filter_Unit_Note"])
+        local importantFilter = AddCategoryFilter(Key(keys.buff, "FilterImportant"),
+            L["Important"], L["Tooltip_Aura_Filter_Important"])
+        local defensivesFilter = AddCategoryFilter(Key(keys.buff, "FilterDefensives"),
+            L["Defensive_Auras"], L["Tooltip_Aura_Filter_Defensives"])
         Add(Key(keys.buff, "FilterLessMinite"), L["Under_One_Min"], L["Tooltip_Under_One_Min"])
         if keys.unitFrame then
             Add(Key(keys.buff, "FilterOnlyMe"), L["Only_Mine"], L["Tooltip_Aura_Only_Mine"])
@@ -8515,9 +8773,11 @@ local function guiFrameAuras()
             end)
         end
 
-        AddSection(keys.debuffEnable or (keys.debuff .. "Enable"), L["Show_Debuffs"])
+        local debuffSection = AddSection(keys.debuffEnable or (keys.debuff .. "Enable"), L["Show_Debuffs"])
         Add(Key(keys.debuff, "FilterWatchList"), L["Whitelist"], L["Tooltip_Aura_Whitelist_Filter"], L["Tooltip_Aura_Filter_Unit_Note"])
         Add(Key(keys.debuff, "FilterBlacklist"), L["Blacklist"], L["Tooltip_Aura_Blacklist_Filter"], L["Tooltip_Aura_Filter_Unit_Note"])
+        local ccFilter = AddCategoryFilter(Key(keys.debuff, "FilterCrowdControl"),
+            L["Crowd_Control"], L["Tooltip_Aura_Filter_CC"])
         Add(Key(keys.debuff, "FilterLessMinite"), L["Under_One_Min"], L["Tooltip_Under_One_Min"])
         if keys.unitFrame then
             Add(Key(keys.debuff, "FilterOnlyMe"), L["Only_Mine"], L["Tooltip_Aura_Only_Mine_Debuff"])
@@ -8531,15 +8791,21 @@ local function guiFrameAuras()
             return box
         end
 
-        leadingGlowBoxes[#leadingGlowBoxes + 1] =
-            AddGlow(keys.importantGlow, L["Important_Glow"], L["Tooltip_Important_Glow_Desc"],
-                "auraImportantGlowColor", L["Tooltip_Needs_Important_Auras_First"])
-        leadingGlowBoxes[#leadingGlowBoxes + 1] =
-            AddGlow(keys.prefix .. "AuraDefensiveGlow", L["Defensives_Glow"], L["Tooltip_Defensive_Glow_Desc"],
-                "auraDefensiveGlowColor", L["Tooltip_Needs_Important_Auras_First"])
-        leadingGlowBoxes[#leadingGlowBoxes + 1] =
-            AddGlow(keys.prefix .. "AuraCCGlow", L["CC_Glow"], L["Tooltip_CC_Auras_Desc"],
-                "auraCCGlowColor", L["Tooltip_Needs_Important_Auras_First"])
+        leadingGlowBoxes[#leadingGlowBoxes + 1] = {
+            box = AddGlow(keys.importantGlow, L["Important_Glow"], L["Tooltip_Important_Glow_Desc"],
+                "auraImportantGlowColor", L["Tooltip_Needs_Important_Auras_First"]),
+            filter = importantFilter, section = anchor,
+        }
+        leadingGlowBoxes[#leadingGlowBoxes + 1] = {
+            box = AddGlow(keys.prefix .. "AuraDefensiveGlow", L["Defensives_Glow"], L["Tooltip_Defensive_Glow_Desc"],
+                "auraDefensiveGlowColor", L["Tooltip_Needs_Important_Auras_First"]),
+            filter = defensivesFilter, section = anchor,
+        }
+        leadingGlowBoxes[#leadingGlowBoxes + 1] = {
+            box = AddGlow(keys.prefix .. "AuraCCGlow", L["CC_Glow"], L["Tooltip_CC_Auras_Desc"],
+                "auraCCGlowColor", L["Tooltip_Needs_Important_Auras_First"]),
+            filter = ccFilter, section = debuffSection,
+        }
 
         AddGlow(keys.purgeGlow, L["Purge_Glow"], L["Tooltip_Purge_Glow_Desc"],
             "purgeTextureColorRGB", nil, L["Tooltip_Purge_Glow_Color_Shared"])
@@ -8566,9 +8832,11 @@ local function guiFrameAuras()
         unitFrame = true,
     })
 
-    local playerBorder = AddFrameColumn(506, L["Label_Player_Auras"], 1, 1, 1, {
+    local playerColumnX = 506
+    local playerBorder = AddFrameColumn(playerColumnX, L["Label_Player_Auras"], 1, 1, 1, {
         prefix = "player", buff = "PlayerAuraFrameBuff", debuff = "PlayerAuraFramedeBuff",
         importantGlow = "playerAuraImportantGlow", purgeGlow = "showPurgeTextureOnSelf",
+        reserveTopRow = true,
         overrides = {
             PlayerAuraFrameBuffFilterBlacklist = "playerBuffFilterBlacklist",
             PlayerAuraFramedeBuffFilterBlacklist = "playerdeBuffFilterBlacklist",
@@ -8715,15 +8983,41 @@ local function guiFrameAuras()
     auraHighlightScale:SetPoint("TOPLEFT", auraCdTextSize, "BOTTOMLEFT", 0, -17)
     CreateTooltip(auraHighlightScale, L["Tooltip_Scale_Highlighted_Auras"])
 
+    local enlargedAuraSize = CreateSlider(playerAuraFiltering, L["Enlarged_Aura_Scale"], 1, 2, 0.01, "enlargedAuraSize")
+    enlargedAuraSize:SetPoint("TOPLEFT", auraHighlightScale, "BOTTOMLEFT", 0, -17)
+    CreateTooltipTwo(enlargedAuraSize, L["Enlarged_Aura_Scale"], L["Tooltip_Enlarged_Aura_Scale"])
+
+    local maxTargetBuffs = CreateSlider(playerAuraFiltering, L["Max_Buffs"], 1, 32, 1, "maxTargetBuffs")
+    maxTargetBuffs:SetPoint("TOPLEFT", enlargedAuraSize, "BOTTOMLEFT", 0, -17)
+    maxTargetBuffs.integerOnly = true
+    CreateTooltipTwo(maxTargetBuffs, L["Max_Buffs"], L["Tooltip_Max_Buffs_Desc"], L["Tooltip_Max_Auras_Note"])
+
+    local maxTargetDebuffs = CreateSlider(playerAuraFiltering, L["Max_Debuffs"], 1, 16, 1, "maxTargetDebuffs")
+    maxTargetDebuffs:SetPoint("TOPLEFT", maxTargetBuffs, "BOTTOMLEFT", 0, -17)
+    maxTargetDebuffs.integerOnly = true
+    CreateTooltipTwo(maxTargetDebuffs, L["Max_Debuffs"], L["Tooltip_Max_Debuffs_Desc"], L["Tooltip_Max_Auras_Note"])
+
+    local function AddColorButton(anchorTo, dbKey, tooltipTitle)
+        local button = CreateFrame("Button", nil, playerAuraFiltering, "UIPanelButtonTemplate")
+        button:SetText(L["Color"])
+        button:SetSize(43, 18)
+        button:SetPoint("LEFT", anchorTo.Text, "RIGHT", 2, 0)
+        button:SetScript("OnClick", function()
+            OpenColorPicker(BetterBlizzFramesDB[dbKey])
+        end)
+        CreateTooltip(button, tooltipTitle)
+        return button
+    end
+
     local playerAuraSettings = contentFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     playerAuraSettings:SetPoint("TOP", playerBorder, "BOTTOM", 0, -8)
     playerAuraSettings:SetText(L["Player_Aura_Settings"])
 
     local enablePlayerBuffFiltering = CreateCheckbox("enablePlayerBuffFiltering", L["Enable_Player_Aura_Adjustments"], playerAuraFiltering)
-    enablePlayerBuffFiltering:SetPoint("TOPLEFT", playerAuraSettings, "BOTTOMLEFT", -10, 0)
+    enablePlayerBuffFiltering:SetPoint("TOPLEFT", contentFrame, "TOPLEFT", playerColumnX - 5, COLUMN_TOP)
 
     local clickthroughPlayerAuras = CreateCheckbox("clickthroughPlayerAuras", L["Clickthrough_Player_Auras"], enablePlayerBuffFiltering)
-    clickthroughPlayerAuras:SetPoint("TOPLEFT", enablePlayerBuffFiltering, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    clickthroughPlayerAuras:SetPoint("TOPLEFT", playerAuraSettings, "BOTTOMLEFT", -10, 0)
     CreateTooltip(clickthroughPlayerAuras, L["Tooltip_Clickthrough_Player_Auras"], "ANCHOR_LEFT")
 
     local addCooldownFramePlayerAuras = CreateCheckbox("addCooldownFramePlayerAuras", L["Player_Aura_Cooldown_Swipe"], enablePlayerBuffFiltering)
@@ -8744,8 +9038,13 @@ local function guiFrameAuras()
         StaticPopup_Show("BBF_CONFIRM_RELOAD")
     end)
 
+    local playerAuraDurationColor = CreateCheckbox("playerAuraDurationColor", L["Duration_Text_Color"], enablePlayerBuffFiltering, nil, BBF.RefreshAllAuraFrames)
+    playerAuraDurationColor:SetPoint("TOPLEFT", auraLegacyBorder, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(playerAuraDurationColor, L["Duration_Text_Color"], L["Tooltip_Duration_Text_Color_Desc"])
+    AddColorButton(playerAuraDurationColor, "playerAuraDurationColorRGB", L["Duration_Text_Color"])
+
     local playerAuraSpacingX = CreateSlider(enablePlayerBuffFiltering, L["Horizontal_Padding"], 0, 10, 1, "playerAuraSpacingX", "X")
-    playerAuraSpacingX:SetPoint("TOPLEFT", auraLegacyBorder, "BOTTOMLEFT", 10, -20)
+    playerAuraSpacingX:SetPoint("TOPLEFT", playerAuraDurationColor, "BOTTOMLEFT", 10, -20)
     CreateTooltip(playerAuraSpacingX, L["Tooltip_Horizontal_Aura_Padding"], "ANCHOR_LEFT")
 
     local playerAuraSpacingY = CreateSlider(enablePlayerBuffFiltering, L["Vertical_Padding"], -10, 10, 1, "playerAuraSpacingY", "Y")
@@ -8758,7 +9057,7 @@ local function guiFrameAuras()
     CreateTooltipTwo(playerAuraSortMethod, L["Aura_Sort_Method"], L["Tooltip_Player_Aura_Sort_Method_Desc"], nil, "ANCHOR_LEFT")
 
     local useEditMode = contentFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-    useEditMode:SetPoint("TOP", playerAuraSortMethod, "BOTTOM", 0, -16)
+    useEditMode:SetPoint("TOP", playerAuraSortMethod, "BOTTOM", -20, -16)
     useEditMode:SetText(L["Use_Edit_Mode_For_Other_Settings"])
 
     enablePlayerBuffFiltering:HookScript("OnClick", function (self)
@@ -8767,18 +9066,6 @@ local function guiFrameAuras()
             StaticPopup_Show("BBF_CONFIRM_RELOAD")
         end
     end)
-
-    local function AddColorButton(anchorTo, dbKey, tooltipTitle)
-        local button = CreateFrame("Button", nil, playerAuraFiltering, "UIPanelButtonTemplate")
-        button:SetText(L["Color"])
-        button:SetSize(43, 18)
-        button:SetPoint("LEFT", anchorTo.Text, "RIGHT", 2, 0)
-        button:SetScript("OnClick", function()
-            OpenColorPicker(BetterBlizzFramesDB[dbKey])
-        end)
-        CreateTooltip(button, tooltipTitle)
-        return button
-    end
 
     local moreAuraSettings = contentFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     moreAuraSettings:SetPoint("TOPLEFT", focusBorder, "BOTTOMLEFT", 21, -8)
@@ -9442,10 +9729,9 @@ local function guiMisc()
             BBF.EnableResourceMovement()
         end
     end)
-    if BetterBlizzFramesDB.moveResourceStackPos and not BetterBlizzFramesDB.moveResourceStackPos[playerClass] then
+    if not (BetterBlizzFramesDB.moveResourceStackPos and BetterBlizzFramesDB.moveResourceStackPos[playerClass]) then
         moveResource:SetChecked(false)
-    elseif not BetterBlizzFramesDB.moveResourceStackPos then
-        moveResource:SetChecked(false)
+        BetterBlizzFramesDB.moveResource = false
     end
 
     local moveResourceToTarget = CreateCheckbox("moveResourceToTarget", L["Move_Resource_To_TargetFrame"], guiMisc)

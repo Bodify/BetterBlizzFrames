@@ -28,9 +28,10 @@ local GLOW_OUTSET = 1.5
 local DISPEL_BORDER_INSET_RATIO = (40 / 30 - 1) / 2
 local DEFAULT_DISPEL_BORDER_ATLAS = "ui-debuff-border-default-noicon"
 
-local LEGACY_BORDER_TEXTURE = [[Interface\Buttons\UI-Debuff-Overlays]]
-local LEGACY_BORDER_LEFT, LEGACY_BORDER_RIGHT = 0.296875, 0.5703125
-local LEGACY_BORDER_TOP, LEGACY_BORDER_BOTTOM = 0, 0.515625
+local LEGACY_BORDER = {
+    texture = [[Interface\Buttons\UI-Debuff-Overlays]],
+    left = 0.296875, right = 0.5703125, top = 0, bottom = 0.515625,
+}
 
 local GLOW_ATLAS = "newplayertutorial-drag-slotgreen"
 local PURGE_GLOW_ATLAS = "newplayertutorial-drag-slotblue"
@@ -48,39 +49,84 @@ local SORT_METHODS = {
 }
 
 local AURA_GROUPS = {
-    { key = "Important",         tier = "important" },
-    { key = "BigDef",            tier = "bigdef" },
-    { key = "ExtDef",            tier = "extdef" },
-    { key = "CC",                tier = "cc" },
-    { key = "WhitelistPandemic", tier = "whitelistpandemic" },
-    { key = "WhitelistMine",     tier = "whitelistmine" },
-    { key = "Whitelist",         tier = "whitelist" },
-    { key = "Purge",             tier = "purge" },
-    { key = "PurgeEnrage",       tier = "purgeenrage" },
-    { key = "Mine",              tier = "mine" },
-    { key = "Others",            tier = "others" },
+    { key = "Important",              tier = "important" },
+    { key = "BigDef",                 tier = "bigdef" },
+    { key = "ExtDef",                 tier = "extdef" },
+    { key = "CC",                     tier = "cc" },
+    { key = "WhitelistPandemic",      tier = "whitelistpandemic" },
+    { key = "WhitelistImportantMine", tier = "whitelistimportantmine" },
+    { key = "WhitelistImportant",     tier = "whitelistimportant" },
+    { key = "WhitelistMine",          tier = "whitelistmine" },
+    { key = "Whitelist",              tier = "whitelist" },
+    { key = "EnlargedImportantMine",  tier = "whitelistenlargedimportantmine" },
+    { key = "EnlargedImportant",      tier = "whitelistenlargedimportant" },
+    { key = "EnlargedMine",           tier = "whitelistenlargedmine" },
+    { key = "Enlarged",               tier = "whitelistenlarged" },
+    { key = "Purge",                  tier = "purge" },
+    { key = "PurgeEnrage",            tier = "purgeenrage" },
+    { key = "Mine",                   tier = "mine" },
+    { key = "Others",                 tier = "others" },
+}
+
+local ENLARGED_TIERS = {
+    whitelistenlarged = true, whitelistenlargedmine = true,
+    whitelistenlargedimportant = true, whitelistenlargedimportantmine = true,
 }
 
 local WHITELIST_TIERS = {
     whitelist = true, whitelistmine = true, whitelistpandemic = true,
+    whitelistimportant = true, whitelistimportantmine = true,
+    whitelistenlarged = true, whitelistenlargedmine = true,
+    whitelistenlargedimportant = true, whitelistenlargedimportantmine = true,
 }
 
-local WHITELIST_MINE_TIERS = { whitelistmine = true, whitelistpandemic = true }
+local WHITELIST_MINE_TIERS = {
+    whitelistmine = true, whitelistpandemic = true, whitelistimportantmine = true,
+    whitelistenlargedmine = true, whitelistenlargedimportantmine = true,
+}
+
+AURA_GROUPS.index = {}
+do
+    local index = 1
+    for _, wantEnlarged in ipairs({ true, false }) do
+        for _, def in ipairs(AURA_GROUPS) do
+            if (ENLARGED_TIERS[def.tier] and true or false) == wantEnlarged then
+                AURA_GROUPS.index[def.key] = index
+                index = index + 1
+            end
+        end
+    end
+end
 
 local HIGHLIGHT_TIERS = { important = true, bigdef = true, extdef = true, cc = true }
 
-local HELPFUL_HIGHLIGHT_TIERS = { important = true, bigdef = true, extdef = true }
-local HARMFUL_HIGHLIGHT_TIERS = { cc = true }
+local GLOW_TIERS = {
+    important = true, bigdef = true, extdef = true, cc = true,
+    whitelistimportant = true, whitelistimportantmine = true,
+    whitelistenlargedimportant = true, whitelistenlargedimportantmine = true,
+}
+
+local HIGHLIGHT_TIERS_BY_TYPE = {
+    [false] = { important = true, bigdef = true, extdef = true },
+    [true]  = { cc = true },
+}
 
 local function HighlightTierActive(tier, harmful, importantFirst)
     if not HIGHLIGHT_TIERS[tier] then return false end
     if not importantFirst then return false end
-    if harmful then return HARMFUL_HIGHLIGHT_TIERS[tier] or false end
-    return HELPFUL_HIGHLIGHT_TIERS[tier] or false
+    return HIGHLIGHT_TIERS_BY_TYPE[harmful and true or false][tier] or false
+end
+
+local function TierLive(tier, cfg)
+    if tier == "important" then return cfg.liveImportant end
+    if tier == "bigdef" or tier == "extdef" then return cfg.liveDefensives end
+    if tier == "cc" then return cfg.liveCC end
+    return false
 end
 
 local PANDEMIC_TIERS = {
     mine = true, whitelistmine = true, whitelistpandemic = true,
+    whitelistenlargedmine = true, whitelistenlargedimportantmine = true,
 }
 
 local PURGE_DISPEL_TYPES = {
@@ -185,8 +231,14 @@ function BBF.UpdateUserAuraSettings()
     S.offsetY = db.targetAndFocusAuraOffsetY or 0
     S.importantFirst = db.importantAurasFirst ~= false
     S.purgeFirst = db.purgeableAurasFirst and true or false
+    S.maxBuffs = Clamp(db.maxTargetBuffs or MAX_BUFFS_PER_GROUP, 1, MAX_BUFFS_PER_GROUP)
+    S.maxDebuffs = Clamp(db.maxTargetDebuffs or MAX_DEBUFFS_PER_GROUP, 1, MAX_DEBUFFS_PER_GROUP)
+
+    S.enlargedScale = db.enlargedAuraSize or 1.2
 
     S.importantColor = { GetColor("auraImportantGlowColor", 1, 0.5, 0, 1) }
+    S.whitelistImportantColor = { GetColor("auraWhitelistImportantGlowColor", 0, 1, 0, 1) }
+    S.enlargedColor = { GetColor("auraEnlargedGlowColor", 1, 0.5, 0, 1) }
     S.defensiveColor = { GetColor("auraDefensiveGlowColor", 1, 0.662, 0.945, 1) }
     S.ccColor = { GetColor("auraCCGlowColor", 1, 0.874, 0, 1) }
 
@@ -220,6 +272,18 @@ function BBF.UpdateUserAuraSettings()
     S.expiryThreshold = db.auraTimerLowThreshold or 6
     S.playerCooldown = db.addCooldownFramePlayerAuras
 
+    if db.playerAuraDurationColor then
+        local c = S.durationColor
+        local r, g, b, a = GetColor("playerAuraDurationColorRGB", 1, 1, 1, 1)
+        if not c or c.r ~= r or c.g ~= g or c.b ~= b or c.a ~= a then
+            S.durationColor = CreateColor(r, g, b, a)
+            S.durationCurve = nil
+        end
+    elseif S.durationColor then
+        S.durationColor = nil
+        S.durationCurve = nil
+    end
+
     local sortKey = db.auraSortMethod or "blizzard"
     if sortKey == "blizzard" then sortKey = "default" end
     S.sort = SORT_METHODS[sortKey] or SORT_METHODS.default
@@ -228,12 +292,17 @@ function BBF.UpdateUserAuraSettings()
     if playerSortKey == "blizzard" then playerSortKey = "stable" end
     S.playerSort = SORT_METHODS[playerSortKey] or SORT_METHODS.stable
 
+    local pveShowsAllDebuffs = BBF.noBuffDebuffFilterOnTargetInPvE
+
     S.target = {
         buffs = db.targetBuffEnable,
         debuffs = db.targetdeBuffEnable,
         buffOnlyMine = db.targetBuffFilterOnlyMe,
-        debuffOnlyMine = db.targetdeBuffFilterOnlyMe,
+        debuffOnlyMine = db.targetdeBuffFilterOnlyMe and not pveShowsAllDebuffs,
         buffPurgeable = db.targetBuffFilterPurgeable,
+        buffImportant = db.targetBuffFilterImportant,
+        buffDefensives = db.targetBuffFilterDefensives,
+        debuffCC = db.targetdeBuffFilterCrowdControl,
         buffShort = db.targetBuffFilterLessMinite,
         debuffShort = db.targetdeBuffFilterLessMinite,
         buffWhitelist = db.targetBuffFilterWatchList,
@@ -252,8 +321,11 @@ function BBF.UpdateUserAuraSettings()
         buffs = db.focusBuffEnable,
         debuffs = db.focusdeBuffEnable,
         buffOnlyMine = db.focusBuffFilterOnlyMe,
-        debuffOnlyMine = db.focusdeBuffFilterOnlyMe,
+        debuffOnlyMine = db.focusdeBuffFilterOnlyMe and not pveShowsAllDebuffs,
         buffPurgeable = db.focusBuffFilterPurgeable,
+        buffImportant = db.focusBuffFilterImportant,
+        buffDefensives = db.focusBuffFilterDefensives,
+        debuffCC = db.focusdeBuffFilterCrowdControl,
         buffShort = db.focusBuffFilterLessMinite,
         debuffShort = db.focusdeBuffFilterLessMinite,
         buffWhitelist = db.focusBuffFilterWatchList,
@@ -276,6 +348,9 @@ function BBF.UpdateUserAuraSettings()
         debuffWhitelist = db.PlayerAuraFramedeBuffFilterWatchList,
         buffBlacklist = db.playerBuffFilterBlacklist,
         debuffBlacklist = db.playerdeBuffFilterBlacklist,
+        buffImportant = db.PlayerAuraFrameBuffFilterImportant,
+        buffDefensives = db.PlayerAuraFrameBuffFilterDefensives,
+        debuffCC = db.PlayerAuraFramedeBuffFilterCrowdControl,
         buffShort = db.PlayerAuraFrameBuffFilterLessMinite,
         debuffShort = db.PlayerAuraFramedeBuffFilterLessMinite,
 
@@ -357,7 +432,8 @@ end
 
 local listCache = {
     blacklist = { all = {}, ns = {}, mine = {}, mineNS = {} },
-    whitelist = { all = {}, ns = {}, plain = {}, plainNS = {}, mine = {}, mineNS = {} },
+    whitelist = { all = {}, rest = {}, plain = {}, pandemic = {}, mineRest = {},
+                  important = {}, importantPlain = {} },
 }
 
 local mergeCache = setmetatable({}, { __mode = "k" })
@@ -408,7 +484,8 @@ local function ListSignature(list, parts)
         local flags = ""
         if type(entry) == "table" then
             flags = (entry.showMine and "m" or "") .. (entry.onlyMine and "o" or "")
-                .. (entry.pandemic and "p" or "")
+                .. (entry.pandemic and "p" or "") .. (entry.important and "i" or "")
+                .. (entry.enlarged and "e" or "")
         elseif not entry then
             flags = "-"
         end
@@ -435,19 +512,29 @@ local function RefreshSpellLists()
     wipe(mergeCache)
 
     local bl, blNS, blAny = BBF.PartitionSpellList(BetterBlizzFramesDB.auraBlacklist)
-    local wl, wlNS, wlAny = BBF.PartitionSpellList(BetterBlizzFramesDB.auraWhitelist)
+    local wl, _, wlAny = BBF.PartitionSpellList(BetterBlizzFramesDB.auraWhitelist)
 
     local showMine, hasShowMine = FlaggedSubset(BetterBlizzFramesDB.auraBlacklist, "showMine")
     local blShowMine, blMine = SplitByFlag(bl, showMine)
     local blShowMineNS, blMineNS = SplitByFlag(blNS, showMine)
 
     local onlyMine, hasOnlyMine = FlaggedSubset(BetterBlizzFramesDB.auraWhitelist, "onlyMine")
-    local wlMine, wlPlain = SplitByFlag(wl, onlyMine)
-    local wlMineNS, wlPlainNS = SplitByFlag(wlNS, onlyMine)
+    local important = FlaggedSubset(BetterBlizzFramesDB.auraWhitelist, "important")
 
-    local pandemic, hasPandemic = FlaggedSubset(BetterBlizzFramesDB.auraWhitelist, "pandemic")
-    local wlPandemic, wlMineRest = SplitByFlag(wl, pandemic)
-    local wlPandemicNS, wlMineRestNS = SplitByFlag(wlNS, pandemic)
+    local enlarged = FlaggedSubset(BetterBlizzFramesDB.auraWhitelist, "enlarged")
+    local wlEnlarged, wlNormal = SplitByFlag(wl, enlarged)
+
+    local wlBigImportant, wlBigRest = SplitByFlag(wlEnlarged, important)
+    local _, wlBigImportantPlain = SplitByFlag(wlBigImportant, onlyMine)
+    local _, wlBigPlain = SplitByFlag(wlBigRest, onlyMine)
+
+    local wlImportant, wlRest = SplitByFlag(wlNormal, important)
+
+    local _, wlImportantPlain = SplitByFlag(wlImportant, onlyMine)
+    local _, wlPlain = SplitByFlag(wlRest, onlyMine)
+
+    local pandemic = FlaggedSubset(BetterBlizzFramesDB.auraWhitelist, "pandemic")
+    local wlPandemic, wlMineRest = SplitByFlag(wlRest, pandemic)
 
     listCache.blacklist = {
         all = bl, ns = blNS, any = blAny,
@@ -455,13 +542,19 @@ local function RefreshSpellLists()
         showMine = blShowMine, showMineNS = blShowMineNS,
     }
     listCache.whitelist = {
-        all = wl, ns = wlNS, any = wlAny,
-        plain = wlPlain, plainNS = wlPlainNS,
-        mine = wlMine, mineNS = wlMineNS,
-        pandemic = wlPandemic, pandemicNS = wlPandemicNS,
-        mineRest = wlMineRest, mineRestNS = wlMineRestNS,
+        all = wl, any = wlAny,
+        rest = wlRest,
+        plain = wlPlain,
+        pandemic = wlPandemic,
+        mineRest = wlMineRest,
+        important = wlImportant,
+        importantPlain = wlImportantPlain,
+        enlargedImportant = wlBigImportant,
+        enlargedImportantPlain = wlBigImportantPlain,
+        enlargedRest = wlBigRest,
+        enlargedPlain = wlBigPlain,
         anyOnlyMine = hasOnlyMine,
-        anyPandemic = hasPandemic,
+        anyPandemic = next(wlPandemic) ~= nil,
     }
     listCache.hasShowMine = hasShowMine
 end
@@ -470,19 +563,25 @@ end
 local DURATION_MINUTES_FROM = 1 + (1.5 * 60)
 
 local function GetPlayerDurationColor(remaining)
-    return remaining >= DURATION_MINUTES_FROM and NORMAL_FONT_COLOR or HIGHLIGHT_FONT_COLOR
+    return S.durationColor
+        or (remaining >= DURATION_MINUTES_FROM and NORMAL_FONT_COLOR or HIGHLIGHT_FONT_COLOR)
 end
 
-local playerDurationCurve
-
 local function GetPlayerDurationCurve()
-    if not playerDurationCurve then
-        playerDurationCurve = C_CurveUtil.CreateColorCurve()
-        playerDurationCurve:SetType(Enum.LuaCurveType.Step)
-        playerDurationCurve:AddPoint(0, HIGHLIGHT_FONT_COLOR)
-        playerDurationCurve:AddPoint(DURATION_MINUTES_FROM, NORMAL_FONT_COLOR)
+    local curve = S.durationCurve
+    if not curve then
+        curve = C_CurveUtil.CreateColorCurve()
+        curve:SetType(Enum.LuaCurveType.Step)
+        if S.durationColor then
+            curve:AddPoint(0, S.durationColor)
+            curve:AddPoint(DURATION_MINUTES_FROM, S.durationColor)
+        else
+            curve:AddPoint(0, HIGHLIGHT_FONT_COLOR)
+            curve:AddPoint(DURATION_MINUTES_FROM, NORMAL_FONT_COLOR)
+        end
+        S.durationCurve = curve
     end
-    return playerDurationCurve
+    return curve
 end
 
 local function ApplyGlowGeometry(texture, anchor, size)
@@ -548,8 +647,8 @@ local function ApplyDispelBorderArt(texture, style)
         ApplyBorderArt(texture, true)
     elseif style.legacyBorder then
         texture:SetDesaturated(false)
-        texture:SetTexture(LEGACY_BORDER_TEXTURE)
-        texture:SetTexCoord(LEGACY_BORDER_LEFT, LEGACY_BORDER_RIGHT, LEGACY_BORDER_TOP, LEGACY_BORDER_BOTTOM)
+        texture:SetTexture(LEGACY_BORDER.texture)
+        texture:SetTexCoord(LEGACY_BORDER.left, LEGACY_BORDER.right, LEGACY_BORDER.top, LEGACY_BORDER.bottom)
     else
         texture:SetDesaturated(false)
         texture:SetAtlas(DEFAULT_DISPEL_BORDER_ATLAS, TextureKitConstants.IgnoreAtlasSize)
@@ -583,7 +682,6 @@ local function ApplyDispelRegistrations(button, style)
     local borderStyle = (button.bbfDispel and not style.removeDebuffBorder and not style.glow)
         and GetDispelBorderStyle(style) or nil
     local ownBorderOn = (button.bbfBorder and style.drawBorder) and true or false
-    -- With the dispel colors removed debuffs reuse the same border the buffs draw.
     local ownBorderHarmful = (ownBorderOn and style.removeDebuffBorder) and true or false
     local purgeMode = button.bbfPurgeGlow and GetPurgeMode(style) or nil
 
@@ -643,7 +741,6 @@ local function ApplyDispelRegistrations(button, style)
             local showWithoutDispelType = (stealableFilter ~= nil) or style.purgeEnrage
 
             local colorMap
-            -- The dispel color map only carries RGB, so the picked alpha goes on the texture.
             local purgeAlpha = 1
             if style.recolorPurge then
                 local c = style.purgeColor
@@ -741,6 +838,15 @@ local function ApplyMutableStyle(button, style)
                 0, style.durationYOffset or 0)
             button.bbfTimer:SetShown(style.showTimerText)
             ApplyDurationFont(button.bbfTimer, style)
+            if button.bbfDurationCurve ~= style.durationCurve then
+                button.bbfDurationCurve = style.durationCurve
+                button:SetDurationText(button.bbfTimer, {
+                    textColor = {
+                        curve = style.durationCurve,
+                        property = Enum.DurationTextBindingProperty.RemainingDuration,
+                    },
+                })
+            end
         end
         if button.bbfCount then
             button.bbfCount:ClearAllPoints()
@@ -866,7 +972,7 @@ local function InitAuraButton(button, style)
     purge:Hide()
     button.bbfPurgeGlow = purge
 
-    if PANDEMIC_TIERS[style.tier] and not HIGHLIGHT_TIERS[style.tier] and not style.isPlayer then
+    if PANDEMIC_TIERS[style.tier] and not GLOW_TIERS[style.tier] and not style.isPlayer then
         local pandemic = overlay:CreateTexture(nil, "OVERLAY", nil, 7)
         pandemic:SetAtlas(GLOW_ATLAS)
         pandemic:SetDesaturated(true)
@@ -885,7 +991,7 @@ local function InitAuraButton(button, style)
         })
     end
 
-    if HIGHLIGHT_TIERS[style.tier] then
+    if GLOW_TIERS[style.tier] then
         local glow = overlay:CreateTexture(nil, "OVERLAY", nil, 7)
         glow:SetAtlas(GLOW_ATLAS)
         glow:SetDesaturated(true)
@@ -896,12 +1002,6 @@ local function InitAuraButton(button, style)
         local timer = overlay:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
         button.bbfTimer = timer
         timer.bbfBaseFont = { timer:GetFont() }
-        button:SetDurationText(timer, {
-            textColor = {
-                curve = GetPlayerDurationCurve(),
-                property = Enum.DurationTextBindingProperty.RemainingDuration,
-            },
-        })
     elseif style.showTimerText then
         button.bbfTimer = button.bbfCooldown and button.bbfCooldown:GetCountdownFontString()
     end
@@ -923,24 +1023,28 @@ local function BuildFilterString(harmful, tier, cfg)
         parts[#parts + 1] = F.Helpful
     end
 
-    local leadingOn = cfg.importantFirst
-    local helpfulLead = leadingOn and not harmful
-    local harmfulLead = leadingOn and harmful
-
     local function AddNormalNegations()
-        if helpfulLead then
-            parts[#parts + 1] = "!" .. F.Important
-            parts[#parts + 1] = "!" .. F.BigDefensive
-            parts[#parts + 1] = "!" .. F.ExternalDefensive
-        elseif harmfulLead then
-            parts[#parts + 1] = "!" .. F.CrowdControl
+        if harmful then
+            if cfg.liveCC then
+                parts[#parts + 1] = "!" .. F.CrowdControl
+            end
+        else
+            if cfg.liveImportant then
+                parts[#parts + 1] = "!" .. F.Important
+            end
+            if cfg.liveDefensives then
+                parts[#parts + 1] = "!" .. F.BigDefensive
+                parts[#parts + 1] = "!" .. F.ExternalDefensive
+            end
         end
     end
 
     if tier == "important" then
         parts[#parts + 1] = F.Important
-        parts[#parts + 1] = "!" .. F.BigDefensive
-        parts[#parts + 1] = "!" .. F.ExternalDefensive
+        if cfg.liveDefensives then
+            parts[#parts + 1] = "!" .. F.BigDefensive
+            parts[#parts + 1] = "!" .. F.ExternalDefensive
+        end
     elseif tier == "bigdef" then
         parts[#parts + 1] = F.BigDefensive
     elseif tier == "extdef" then
@@ -952,10 +1056,10 @@ local function BuildFilterString(harmful, tier, cfg)
         AddNormalNegations()
     end
 
-    if tier == "whitelist" then
-        parts[#parts + 1] = "!" .. F.Player
-    elseif WHITELIST_MINE_TIERS[tier] then
+    if WHITELIST_MINE_TIERS[tier] then
         parts[#parts + 1] = F.Player
+    elseif WHITELIST_TIERS[tier] then
+        parts[#parts + 1] = "!" .. F.Player
     elseif tier == "mine" then
         parts[#parts + 1] = F.Player
     elseif tier == "others" then
@@ -966,7 +1070,7 @@ local function BuildFilterString(harmful, tier, cfg)
         else
             parts[#parts + 1] = "!" .. F.Player
         end
-    elseif cfg.onlyMine and tier ~= "cc" then
+    elseif cfg.onlyMine and (tier == "purge" or tier == "purgeenrage") then
         parts[#parts + 1] = F.Player
     end
 
@@ -993,21 +1097,29 @@ local function BuildCandidateFilters(harmful, tier, cfg, canFilterIDs)
         end
     end
 
-    local whitelistLive = (cfg.whitelist or cfg.collapsed) and true or false
+    local whitelistUsable = canFilterIDs and whitelist.any
 
-    if whitelistLive and WHITELIST_TIERS[tier] then
+    if WHITELIST_TIERS[tier] then
         local set
-        if whitelist.any then
-            if tier == "whitelistpandemic" then
-                set = canFilterIDs and whitelist.pandemic or whitelist.pandemicNS
+        if whitelistUsable then
+            if tier == "whitelistimportantmine" then
+                set = whitelist.important
+            elseif tier == "whitelistimportant" then
+                set = whitelist.importantPlain
+            elseif tier == "whitelistenlargedimportantmine" then
+                set = whitelist.enlargedImportant
+            elseif tier == "whitelistenlargedimportant" then
+                set = whitelist.enlargedImportantPlain
+            elseif tier == "whitelistenlargedmine" then
+                set = whitelist.enlargedRest
+            elseif tier == "whitelistenlarged" then
+                set = whitelist.enlargedPlain
+            elseif tier == "whitelistpandemic" then
+                set = whitelist.pandemic
             elseif tier == "whitelistmine" then
-                if cfg.splitPandemic then
-                    set = canFilterIDs and whitelist.mineRest or whitelist.mineRestNS
-                else
-                    set = canFilterIDs and whitelist.all or whitelist.ns
-                end
+                set = cfg.splitPandemic and whitelist.mineRest or whitelist.rest
             else
-                set = canFilterIDs and whitelist.plain or whitelist.plainNS
+                set = whitelist.plain
             end
         end
         if set and next(set) then
@@ -1015,19 +1127,8 @@ local function BuildCandidateFilters(harmful, tier, cfg, canFilterIDs)
         else
             blockAll = true
         end
-    elseif whitelistLive and whitelist.any
-        and (cfg.otherFiltersOn or (cfg.collapsed and not HIGHLIGHT_TIERS[tier])) then
-        local set = canFilterIDs and whitelist.all or whitelist.ns
-        if next(set) then
-            filters.excludeSpellIDs = MergeSpellSets(filters.excludeSpellIDs, set)
-        end
-    end
-
-    if tier == "others" or tier == "purge" or tier == "purgeenrage" then
-        local set = canFilterIDs and whitelist.mine or whitelist.mineNS
-        if next(set) then
-            filters.excludeSpellIDs = MergeSpellSets(filters.excludeSpellIDs, set)
-        end
+    elseif whitelistUsable and not HIGHLIGHT_TIERS[tier] then
+        filters.excludeSpellIDs = MergeSpellSets(filters.excludeSpellIDs, whitelist.all)
     end
 
     if tier == "purge" then
@@ -1046,11 +1147,11 @@ local function BuildCandidateFilters(harmful, tier, cfg, canFilterIDs)
         end
     end
 
-    if cfg.purgeable and not harmful then
+    if cfg.purgeable and not harmful and not HIGHLIGHT_TIERS[tier] then
         filters.isStealable = true
     end
 
-    if cfg.short then
+    if cfg.short and not HIGHLIGHT_TIERS[tier] then
         filters.maxDuration = 60
     end
 
@@ -1075,20 +1176,26 @@ local function GetHostSizes(host)
             isPlayer = true, isHorizontal = horizontal,
         }
     end
-    return { large = S.largeSize, small = S.smallSize, highlight = S.highlightSize, cell = S.cell }
+    return {
+        large = S.largeSize, small = S.smallSize, highlight = S.highlightSize,
+        enlarged = BASE_LARGE_SIZE * S.enlargedScale, cell = S.cell,
+    }
 end
 
-local function GetTierSize(tier, sizes)
-    if HIGHLIGHT_TIERS[tier] then return sizes.highlight end
-    if tier == "mine" then return sizes.large end
+local function GetTierSize(tier, sizes, scaleHighlight)
+    if HIGHLIGHT_TIERS[tier] then
+        return scaleHighlight and sizes.highlight or sizes.large
+    end
+    if ENLARGED_TIERS[tier] then return sizes.enlarged or sizes.large end
+    if tier == "mine" or WHITELIST_MINE_TIERS[tier] then return sizes.large end
     return sizes.small
 end
 
-local function GetTierCell(tier, sizes)
+local function GetTierCell(tier, sizes, scaleHighlight)
     if sizes.isPlayer then
         return sizes.cell, sizes.cellHeight
     end
-    local size = GetTierSize(tier, sizes)
+    local size = GetTierSize(tier, sizes, scaleHighlight)
     return size, size
 end
 
@@ -1112,6 +1219,8 @@ local function GetTierGlow(tier, cfg)
     if tier == "important" then return cfg.importantGlow, S.importantColor end
     if tier == "bigdef" or tier == "extdef" then return cfg.defensiveGlow, S.defensiveColor end
     if tier == "cc" then return cfg.ccGlow, S.ccColor end
+    if ENLARGED_TIERS[tier] and GLOW_TIERS[tier] then return true, S.enlargedColor end
+    if WHITELIST_TIERS[tier] and GLOW_TIERS[tier] then return true, S.whitelistImportantColor end
     return false, nil
 end
 
@@ -1153,10 +1262,10 @@ end
 
 local function BuildStyle(tier, sizes, isPlayer, cfg, into)
     local glow, glowColor = GetTierGlow(tier, cfg)
-    local size = GetTierSize(tier, sizes)
+    local size = GetTierSize(tier, sizes, cfg.importantFirst)
 
     local pandemicGlow
-    if isPlayer or HIGHLIGHT_TIERS[tier] then
+    if isPlayer or GLOW_TIERS[tier] then
         pandemicGlow = false
     elseif tier == "whitelistpandemic" then
         pandemicGlow = true
@@ -1191,6 +1300,7 @@ local function BuildStyle(tier, sizes, isPlayer, cfg, into)
     t.durationPoint = durationPoint
     t.durationRelativePoint = durationRelativePoint
     t.durationOutline = (isPlayer and S.playerDurationOnIcon) and true or false
+    t.durationCurve = isPlayer and GetPlayerDurationCurve() or nil
     t.durationYOffset = GetDurationYOffset(isPlayer, cfg, durationUnderIcon)
     t.stackScale = S.stackScale
     t.showTimerText = showTimerText
@@ -1236,7 +1346,9 @@ local function GetFrameConfig(host, harmful)
             short = f.debuffShort,
             whitelist = f.debuffWhitelist,
             blacklist = f.debuffBlacklist,
+            ccFilter = f.debuffCC and true or false,
             maxCount = MAX_DEBUFFS_PER_GROUP,
+            generalMax = host.isPlayer and MAX_DEBUFFS_PER_GROUP or S.maxDebuffs,
         }
     else
         cfg = {
@@ -1246,7 +1358,10 @@ local function GetFrameConfig(host, harmful)
             short = f.buffShort,
             whitelist = f.buffWhitelist,
             blacklist = f.buffBlacklist,
+            importantFilter = f.buffImportant and true or false,
+            defensivesFilter = f.buffDefensives and true or false,
             maxCount = MAX_BUFFS_PER_GROUP,
+            generalMax = host.isPlayer and MAX_BUFFS_PER_GROUP or S.maxBuffs,
         }
     end
 
@@ -1258,15 +1373,32 @@ local function GetFrameConfig(host, harmful)
 
     local extras = f.extras and true or false
     cfg.importantFirst = S.importantFirst
-    cfg.importantGlow = (extras and S.importantFirst and f.importantGlow) and true or false
-    cfg.defensiveGlow = (extras and S.importantFirst and f.defensiveGlow) and true or false
-    cfg.ccGlow = (extras and S.importantFirst and f.ccGlow) and true or false
     cfg.purgeGlow = extras and f.purgeGlow
     cfg.collapsed = (not harmful) and host.key == "playerBuffs" and S.buffsCollapsed
         and true or false
     if cfg.collapsed then
         cfg.importantFirst = true
+        cfg.importantFilter, cfg.defensivesFilter = false, false
     end
+
+    if harmful then
+        cfg.liveImportant, cfg.liveDefensives = false, false
+        cfg.liveCC = (cfg.ccFilter or cfg.importantFirst) and true or false
+    elseif cfg.importantFilter or cfg.defensivesFilter then
+        cfg.liveImportant = cfg.importantFilter
+        cfg.liveDefensives = cfg.defensivesFilter
+        cfg.liveCC = false
+    else
+        cfg.liveImportant = cfg.importantFirst and true or false
+        cfg.liveDefensives = cfg.liveImportant
+        cfg.liveCC = false
+    end
+
+    cfg.narrowOn = (cfg.onlyMine or cfg.short or cfg.purgeable) and true or false
+
+    cfg.importantGlow = (extras and f.importantGlow and cfg.liveImportant) and true or false
+    cfg.defensiveGlow = (extras and f.defensiveGlow and cfg.liveDefensives) and true or false
+    cfg.ccGlow = (extras and f.ccGlow and cfg.liveCC) and true or false
 
     local reaction = UnitExists(host.unit) and UnitReaction("player", host.unit)
     cfg.purgeFirst = (S.purgeFirst and not harmful and not host.isPlayer
@@ -1280,25 +1412,31 @@ end
 
 BBF.auraHosts = {}
 
-local function AddContainerGroups(host, container)
+local function SeedContainerStyles(host, container)
     local sizes = GetHostSizes(host)
     local cfg = GetFrameConfig(host, container.bbfHarmful)
-    local sort = SortFor(host)
 
     for _, def in ipairs(AURA_GROUPS) do
-        local style = BuildStyle(def.tier, sizes, host.isPlayer, cfg)
-        container.bbfStyles[def.key] = style
-
-        container:AddAuraGroup(def.key, BuildFilterString(container.bbfHarmful, def.tier, cfg), {
-            maxFrameCount = 0,
-            sortMethod = sort[1],
-            sortDirection = sort[2],
-            layout = { elementSpacing = S.hGap, lineSpacing = S.vGap },
-            initializeFrame = function(button)
-                InitAuraButton(button, container.bbfStyles[def.key])
-            end,
-        })
+        if not container.bbfStyles[def.key] then
+            container.bbfStyles[def.key] = BuildStyle(def.tier, sizes, host.isPlayer, cfg)
+        end
     end
+end
+
+local function AddContainerGroup(host, container, def, cfg, sort)
+    if not container.bbfStyles[def.key] then
+        container.bbfStyles[def.key] = BuildStyle(def.tier, GetHostSizes(host), host.isPlayer, cfg)
+    end
+
+    container:AddAuraGroup(def.key, BuildFilterString(container.bbfHarmful, def.tier, cfg), {
+        maxFrameCount = 0,
+        sortMethod = sort[1],
+        sortDirection = sort[2],
+        layout = { elementSpacing = S.hGap, lineSpacing = S.vGap },
+        initializeFrame = function(button)
+            InitAuraButton(button, container.bbfStyles[def.key])
+        end,
+    })
 end
 
 local function CreateTypeContainer(host, harmful, parent)
@@ -1460,34 +1598,29 @@ local function ConfigureContainer(host, container, harmful)
     local cfg = GetFrameConfig(host, harmful)
     cfg.mergeNormal = not NeedsMineSplit(cfg)
 
-    cfg.otherFiltersOn = (cfg.onlyMine or cfg.short or cfg.purgeable)
-        and true or false
-
     local canFilterIDs = BBF.CanFilterBySpellID(host.unit, not harmful)
     local sort = SortFor(host)
 
-    for index, def in ipairs(defs) do
-        local filters, blockAll = BuildCandidateFilters(harmful, def.tier, cfg, canFilterIDs)
+    local whitelistFilter = cfg.whitelist and canFilterIDs
+    local categoryOn = (whitelistFilter or cfg.importantFilter or cfg.defensivesFilter
+        or cfg.ccFilter) and true or false
 
-        container:SetAuraGroupFilterString(def.key, BuildFilterString(harmful, def.tier, cfg))
-        ApplyGroupCandidateFilters(container, def.key, filters)
-        ApplyGroupSortMethod(container, def.key, sort[1], sort[2])
+    for _, def in ipairs(defs) do
+        local exists = container:HasAuraGroup(def.key)
+        local filters, blockAll = BuildCandidateFilters(harmful, def.tier, cfg, canFilterIDs)
 
         local count = 0
         if cfg.enabled and not blockAll and not PreviewIsActive(host) then
-            local whitelistLive = (cfg.whitelist or cfg.collapsed) and true or false
-
             if def.tier == "whitelistpandemic" then
-                count = (whitelistLive and cfg.splitPandemic) and (cfg.maxCount or 32) or 0
+                count = cfg.splitPandemic and (cfg.maxCount or 32) or 0
             elseif WHITELIST_TIERS[def.tier] then
-                count = whitelistLive and (cfg.maxCount or 32) or 0
+                count = cfg.maxCount or 32
             elseif HIGHLIGHT_TIERS[def.tier] then
-                count = HighlightTierActive(def.tier, harmful, cfg.importantFirst)
-                    and (cfg.maxCount or 32) or 0
+                count = TierLive(def.tier, cfg) and (cfg.maxCount or 32) or 0
             elseif cfg.collapsed then
                 count = 0
             elseif def.tier == "purge" or def.tier == "purgeenrage" then
-                local live = cfg.purgeFirst and not (cfg.whitelist and not cfg.otherFiltersOn)
+                local live = cfg.purgeFirst and not (categoryOn and not cfg.narrowOn)
 
                 if def.tier == "purgeenrage" and not S.purgeGlowAlways then
                     live = false
@@ -1497,14 +1630,24 @@ local function ConfigureContainer(host, container, harmful)
                 count = 0
             elseif def.tier == "others" and cfg.onlyMine and not cfg.mergeNormal then
                 count = 0
-            elseif cfg.whitelist and not cfg.otherFiltersOn then
+            elseif categoryOn and not cfg.narrowOn then
                 count = 0
             else
-                count = cfg.maxCount or 32
+                count = cfg.generalMax or cfg.maxCount or 32
             end
         end
 
-        container:SetAuraGroupMaxFrameCount(def.key, count)
+        if not exists and count > 0 then
+            AddContainerGroup(host, container, def, cfg, sort)
+            exists = true
+        end
+
+        if exists then
+            container:SetAuraGroupFilterString(def.key, BuildFilterString(harmful, def.tier, cfg))
+            ApplyGroupCandidateFilters(container, def.key, filters)
+            ApplyGroupSortMethod(container, def.key, sort[1], sort[2])
+            container:SetAuraGroupMaxFrameCount(def.key, count)
+        end
     end
 
     local sizes = GetHostSizes(host)
@@ -1515,11 +1658,15 @@ local function ConfigureContainer(host, container, harmful)
         primaryGap, crossGap = vGap, hGap
     end
 
-    for index, def in ipairs(defs) do
-        local cell, cellHeight = GetTierCell(def.tier, sizes)
+    local layoutIndex = AURA_GROUPS.index
 
-        ApplyGroupLayout(container, def.key,
-            primaryGap, crossGap, cell, cellHeight, index, crossGap)
+    for _, def in ipairs(defs) do
+        if container:HasAuraGroup(def.key) then
+            local cell, cellHeight = GetTierCell(def.tier, sizes, cfg.importantFirst)
+
+            ApplyGroupLayout(container, def.key,
+                primaryGap, crossGap, cell, cellHeight, layoutIndex[def.key], crossGap)
+        end
     end
 
     if host.itemEnchantments then
@@ -1709,7 +1856,7 @@ function BBF.RestyleAuraButtons(force)
             container.bbfStylesChanged = false
 
             for key, style in pairs(container.bbfStyles) do
-                for i = 1, container:GetAuraGroupFrameCount(key) do
+                for i = 1, container:HasAuraGroup(key) and container:GetAuraGroupFrameCount(key) or 0 do
                     local button = container:GetAuraGroupFrame(key, i)
                     if button and button.bbfIcon then
                         ApplyMutableStyle(button, style)
@@ -2480,7 +2627,7 @@ local TEST_AURAS = {
         { tier = "mine",      spellID = 8936,  duration = 12 },  -- Regrowth
         { tier = "mine",      spellID = 33763, duration = 15, count = 3, pandemic = true }, -- Lifebloom
         { tier = "mine",      spellID = 61295, duration = 18 },  -- Riptide
-        { tier = "others",    spellID = 5229,  duration = 10, dispel = "Enrage", stealable = true }, -- Enrage
+        { tier = "others",    spellID = 384100,  duration = 10, dispel = "Enrage", stealable = true }, -- Berserker Shout
         { tier = "others",    spellID = 1459,  duration = 0, dispel = "Magic", stealable = true }, -- Arcane Intellect
         { tier = "others",    spellID = 21562, duration = 0 },   -- PW: Fortitude
         { tier = "others",    spellID = 1126,  duration = 0 },   -- Mark of the Wild
@@ -2510,9 +2657,10 @@ local TEST_AURAS = {
     },
 }
 
-local TIER_ORDER = {}
-for index, def in ipairs(AURA_GROUPS) do
-    TIER_ORDER[def.tier] = index
+local function TierOrder(tier)
+    for _, def in ipairs(AURA_GROUPS) do
+        if def.tier == tier then return AURA_GROUPS.index[def.key] end
+    end
 end
 
 local previewIconGeneration = 1
@@ -2574,8 +2722,8 @@ local function SortedTestAuras(harmful, isPlayer)
         list[#list + 1] = entry
     end
     table.sort(list, function(a, b)
-        local ta = TIER_ORDER[ActiveTier(a, harmful, isPlayer)] or 99
-        local tb = TIER_ORDER[ActiveTier(b, harmful, isPlayer)] or 99
+        local ta = TierOrder(ActiveTier(a, harmful, isPlayer)) or 99
+        local tb = TierOrder(ActiveTier(b, harmful, isPlayer)) or 99
         if ta ~= tb then return ta < tb end
         return a.spellID < b.spellID
     end)
@@ -2671,7 +2819,7 @@ local function CreateTestButton(parent)
 end
 
 local function StyleTestButton(button, entry, tier, style, sizes, harmful)
-    local size = GetTierSize(tier, sizes)
+    local size = GetTierSize(tier, sizes, S.importantFirst)
     local icon = button.bbfIcon
     local width, height = size, size
 
@@ -2751,7 +2899,7 @@ local function StyleTestButton(button, entry, tier, style, sizes, harmful)
     border:SetShown(style.drawBorder and (not harmful or style.removeDebuffBorder))
 
     local dispel = button.bbfDispel
-    if harmful and not style.removeDebuffBorder and not (HIGHLIGHT_TIERS[tier] and style.glow) then
+    if harmful and not style.removeDebuffBorder and not style.glow then
         ApplyDispelBorderGeometry(dispel, icon, style)
         if DispelBorderUsesOwnArt(style) then
             ApplyDispelBorderArt(dispel, style)
@@ -2806,7 +2954,7 @@ local function StyleTestButton(button, entry, tier, style, sizes, harmful)
     end
 
     local glow = button.bbfGlow
-    if HIGHLIGHT_TIERS[tier] and style.glow then
+    if style.glow then
         glow:SetAtlas(GLOW_ATLAS)
         glow:SetDesaturated(true)
         ApplyGlowGeometry(glow, icon, size)
@@ -3140,8 +3288,8 @@ local function CreateHost(key, frame, unit, spellbar)
     CB.SeedContainerAnchor(host)
 
     AddSpacerGroup(host.spacer)
-    AddContainerGroups(host, host.blockTop)
-    AddContainerGroups(host, host.blockBottom)
+    SeedContainerStyles(host, host.blockTop)
+    SeedContainerStyles(host, host.blockBottom)
 
     RefreshHost(host)
     host.spacer:UpdateAllAuras()
@@ -3167,11 +3315,11 @@ local function CreatePlayerHost(key, hostFrame, harmful)
     if harmful then
         host.debuffs = CreateTypeContainer(host, true, hostFrame)
         host.blockTop, host.blockBottom = host.debuffs, host.debuffs
-        AddContainerGroups(host, host.debuffs)
+        SeedContainerStyles(host, host.debuffs)
     else
         host.buffs = CreateTypeContainer(host, false, hostFrame)
         host.blockTop, host.blockBottom = host.buffs, host.buffs
-        AddContainerGroups(host, host.buffs)
+        SeedContainerStyles(host, host.buffs)
 
         host.itemEnchantments = true
         host.enchantButtons = {}

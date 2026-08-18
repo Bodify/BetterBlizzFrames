@@ -25,6 +25,7 @@ local defaultSettings = {
     darkModeCastbars = true,
     darkModeColor = 0.20,
     darkModeVigor = true,
+    darkModeNameplateResource = true,
     hideGroupIndicator = false,
     hideFocusCombatGlow = false,
     bigPlayerHealthbar = false,
@@ -41,7 +42,7 @@ local defaultSettings = {
     targetToTCastbarAdjustment = true,
     focusToTCastbarAdjustment = true,
     playerReputationClassColor = true,
-    enlargedAuraSize = 1.4,
+    enlargedAuraSize = 1.2,
     compactedAuraSize = 0.7,
     onlyPandemicAuraMine = true,
     customCode = "-- Enter custom code below here. Feel free to contact me @bodify",
@@ -202,6 +203,7 @@ local defaultSettings = {
     auraHighlightScale = 1.3,
     auraTooltipSpellID = false,
     auraImportantGlowColor = {1, 0.5, 0, 1},
+    auraEnlargedGlowColor = {1, 0.5, 0, 1},
     auraDefensiveGlowColor = {1, 0.662, 0.945, 1},
     auraCCGlowColor = {1, 0.874, 0, 1},
     auraPandemicGlowColor = {1, 0, 0, 1},
@@ -230,6 +232,8 @@ local defaultSettings = {
     playerAuraSpacingY = 0,
     auraLegacyBorder = false,
     playerAuraDurationOnIcon = false,
+    playerAuraDurationColor = false,
+    playerAuraDurationColorRGB = {1, 1, 1, 1},
     maxBuffFrameBuffs = 32,
     maxDebuffFrameDebuffs = 16,
     printAuraSpellIds = false,
@@ -276,6 +280,8 @@ local defaultSettings = {
     targetBuffFilterLessMinite = false,
     targetBuffFilterPurgeable = false,
     targetBuffFilterOnlyMe = false,
+    targetBuffFilterImportant = false,
+    targetBuffFilterDefensives = false,
     targetAuraGlows = false,
     targetImportantAuraGlow = true,
     targetAuraDefensiveGlow = true,
@@ -289,6 +295,7 @@ local defaultSettings = {
     targetdeBuffFilterWatchList = false,
     targetdeBuffFilterLessMinite = false,
     targetdeBuffFilterOnlyMe = false,
+    targetdeBuffFilterCrowdControl = false,
 
     --Focus buffs
     focusBuffEnable = true,
@@ -297,6 +304,8 @@ local defaultSettings = {
     focusBuffFilterLessMinite = false,
     focusBuffFilterOnlyMe = false,
     focusBuffFilterPurgeable = false,
+    focusBuffFilterImportant = false,
+    focusBuffFilterDefensives = false,
     focusAuraGlows = false,
     focusImportantAuraGlow = true,
     focusAuraDefensiveGlow = true,
@@ -310,11 +319,15 @@ local defaultSettings = {
     focusdeBuffFilterWatchList = false,
     focusdeBuffFilterLessMinite = false,
     focusdeBuffFilterOnlyMe = false,
+    focusdeBuffFilterCrowdControl = false,
 
     PlayerAuraFrameBuffFilterWatchList = false,
     PlayerAuraFramedeBuffFilterWatchList = false,
     PlayerAuraFrameBuffFilterLessMinite = false,
     PlayerAuraFramedeBuffFilterLessMinite = false,
+    PlayerAuraFrameBuffFilterImportant = false,
+    PlayerAuraFrameBuffFilterDefensives = false,
+    PlayerAuraFramedeBuffFilterCrowdControl = false,
     playerAuraGlows = false,
     playerAuraImportantGlow = true,
     playerAuraDefensiveGlow = true,
@@ -416,6 +429,8 @@ local function InitializeSavedVariables()
             BetterBlizzFramesDB[key] = defaultValue
         end
     end
+
+    BetterBlizzFramesDB.sortEnlargedAurasFirst = nil
 
     if not BetterBlizzFramesDB.auraGlowColorsMatchPlates then
         BetterBlizzFramesDB.auraGlowColorsMatchPlates = true
@@ -524,6 +539,14 @@ StaticPopupDialogs["BBF_MIDNIGHT_EDITMODE_SCALE_REMOVED"] = {
     preferredIndex = 3,
 }
 
+StaticPopupDialogs["BBF_MIDNIGHT_AURA_FILTER_FIXES"] = {
+    text = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames:\n\n|A:services-icon-warning:20:20|a |cffff8800IMPORTANT READ:|r |A:services-icon-warning:20:20|a\n\nLots of aura filter issues fixed. You may have to tweak your aura filter settings again. For a full overview read patch notes. Apologies for the inconvenience.\n\n- Some new filters and fixes to how they act. If you want to see all auras on Target/FocusFrame and on topright player auras make sure you dont have limiting filters enabled.",
+    button1 = "Okay",
+    timeout = 0,
+    whileDead = true,
+    preferredIndex = 3,
+}
+
 local function ResetBBF()
     BetterBlizzFramesDB = {}
     ReloadUI()
@@ -611,6 +634,15 @@ local function LoadingScreenDetector(_, event)
             if BetterBlizzFramesDB.arenaOptimizerSavedCVars then
                 BBF.ArenaOptimizer()
             end
+
+            local isPvE = instanceType == "party" or instanceType == "raid" or instanceType == "scenario"
+            local noFilter = isPvE and C_CVar.GetCVarBool("noBuffDebuffFilterOnTarget")
+            if BBF.noBuffDebuffFilterOnTargetInPvE ~= noFilter then
+                BBF.noBuffDebuffFilterOnTargetInPvE = noFilter
+                if BBF.RefreshAllAuraFrames then
+                    BBF.RefreshAllAuraFrames()
+                end
+            end
         end
 
         BBF.MinimapHider()
@@ -674,6 +706,7 @@ local function LoadingScreenDetector(_, event)
         end)
     end
 end
+BBF.noBuffDebuffFilterOnTargetInPvE = false
 local LoadingScreenFrame = CreateFrame("Frame")
 LoadingScreenFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
 LoadingScreenFrame:RegisterEvent("PLAYER_LEAVING_WORLD")
@@ -900,15 +933,12 @@ end
 
 function BBF.SetResourcePosition()
     if not BetterBlizzFramesDB.moveResource then return end
-    if CheckForResourceConflicts() then return end
 
     local _, class = UnitClass("player")
+    if not (BetterBlizzFramesDB.moveResourceStackPos and BetterBlizzFramesDB.moveResourceStackPos[class]) then return end
+    if CheckForResourceConflicts() then return end
     local frame = resourceFrames[class]
     if not frame then return end
-
-    if not BetterBlizzFramesDB.moveResourceStackPos then
-        BetterBlizzFramesDB.moveResourceStackPos = {}
-    end
 
     local pos = BetterBlizzFramesDB.moveResourceStackPos[class]
     if pos then
@@ -1557,7 +1587,22 @@ end
 --######################################################################
 -- Move Resource Frames to TargetFrame
 local hookedResourceFrames
-local comboPointCache = {} -- Cache for original combo point order and number of points
+local comboPointCache = {}
+local comboPointConfig = {}
+local RefreshComboPoints
+
+local function BumpChildDrawLayer(frameChild)
+    if frameChild.bbfDrawLayerBumped then return end
+    frameChild.bbfDrawLayerBumped = true
+    local nextDrawLayer = { BACKGROUND = "BORDER", BORDER = "ARTWORK", ARTWORK = "OVERLAY" }
+    for i = 1, frameChild:GetNumRegions() do
+        local region = select(i, frameChild:GetRegions())
+        if region:IsObjectType("Texture") then
+            local currentLayer, sublevel = region:GetDrawLayer()
+            region:SetDrawLayer(nextDrawLayer[currentLayer] or currentLayer, sublevel + 1)
+        end
+    end
+end
 
 local function DetectComboPointsOrder(comboPointFrame, expectedClass)
     -- Get the actual number of usable points
@@ -1566,10 +1611,19 @@ local function DetectComboPointsOrder(comboPointFrame, expectedClass)
 
     -- If maxUsablePoints isn't ready yet, retry after a short delay
     if expectedPoints == 0 then
-        C_Timer.After(0.5, function()
-            DetectComboPointsOrder(comboPointFrame, expectedClass)
-        end)
+        local cfg = comboPointConfig[comboPointFrame]
+        local retries = (cfg and cfg.retries or 0) + 1
+        if cfg then cfg.retries = retries end
+        if retries <= 20 then
+            C_Timer.After(0.5, function()
+                RefreshComboPoints(comboPointFrame)
+            end)
+        end
         return {}
+    end
+
+    if comboPointConfig[comboPointFrame] then
+        comboPointConfig[comboPointFrame].retries = 0
     end
 
     for i = 1, comboPointFrame:GetNumChildren() do
@@ -1613,54 +1667,52 @@ local function RepositionIndividualComboPoints(comboPointFrame, positions, scale
         comboPointCache[comboPointFrame].points = currentComboPoints
     end
 
+    local changeDrawLayer = comboPointConfig[comboPointFrame] and comboPointConfig[comboPointFrame].changeDrawLayer
+
     for i, child in ipairs(comboPointCache[comboPointFrame].points) do
         local savedPos = BetterBlizzFramesDB.moveResourceToTargetCustom
             and BetterBlizzFramesDB.customComboPositions
             and BetterBlizzFramesDB.customComboPositions[expectedClass]
             and BetterBlizzFramesDB.customComboPositions[expectedClass][i]
 
-        child:ClearAllPoints()
+        if changeDrawLayer then
+            BumpChildDrawLayer(child)
+        end
+
         if savedPos then
             savedPos[2] = _G.UIParent
+            child:ClearAllPoints()
             child:SetPoint(unpack(savedPos))
-        else
+        elseif positions[i] then
+            child:ClearAllPoints()
             child:SetPoint(unpack(positions[i]))
         end
         child:SetScale(scale)
     end
 end
 
+function RefreshComboPoints(comboPointFrame)
+    local cfg = comboPointConfig[comboPointFrame]
+    if not cfg then return end
+    RepositionIndividualComboPoints(comboPointFrame, cfg.positions, cfg.scale, cfg.expectedClass)
+end
+
 -- Function to setup combo points for any class
 local function SetupClassComboPoints(comboPointFrame, positions, expectedClass, scale, xPos, yPos, changeDrawLayer)
-    if select(2, UnitClass("player")) ~= expectedClass then return end
+    if UnitClassBase("player") ~= expectedClass then return end
+    if not comboPointFrame then return end
+
+    local cfg = comboPointConfig[comboPointFrame] or {}
+    cfg.positions = positions
+    cfg.scale = scale
+    cfg.expectedClass = expectedClass
+    cfg.changeDrawLayer = changeDrawLayer
+    comboPointConfig[comboPointFrame] = cfg
+
     if not hookedResourceFrames then
-        if comboPointFrame and changeDrawLayer then
-            local drawLayerOrder = {"BACKGROUND", "BORDER", "ARTWORK", "OVERLAY"}
-            local function getNextDrawLayer(currentLayer)
-                for i, layer in ipairs(drawLayerOrder) do
-                    if layer == currentLayer then
-                        if i < #drawLayerOrder then
-                            return drawLayerOrder[i + 1], false
-                        else
-                            return currentLayer, true
-                        end
-                    end
-                end
-                return currentLayer
-            end
+        if changeDrawLayer then
             for _, frameChild in pairs({comboPointFrame:GetChildren()}) do
-                for i = 1, frameChild:GetNumRegions() do
-                    local region = select(i, frameChild:GetRegions())
-                    if region:IsObjectType("Texture") then
-                        local currentLayer, sublevel = region:GetDrawLayer()
-                        local nextLayer, isOverlay = getNextDrawLayer(currentLayer)
-                        if isOverlay then
-                            region:SetDrawLayer(currentLayer, sublevel + 1)
-                        else
-                            region:SetDrawLayer(nextLayer, sublevel + 1)
-                        end
-                    end
-                end
+                BumpChildDrawLayer(frameChild)
             end
         end
 
@@ -1689,7 +1741,16 @@ local function SetupClassComboPoints(comboPointFrame, positions, expectedClass, 
             local frame = CreateFrame("Frame")
             frame:RegisterEvent("TRAIT_CONFIG_UPDATED")
             frame:SetScript("OnEvent", function()
-                RepositionIndividualComboPoints(comboPointFrame, positions, scale, expectedClass)
+                RefreshComboPoints(comboPointFrame)
+            end)
+        end
+
+        if comboPointFrame.Layout then
+            hooksecurefunc(comboPointFrame, "Layout", function(self)
+                if self.bbfRepositioning then return end
+                self.bbfRepositioning = true
+                RefreshComboPoints(self)
+                self.bbfRepositioning = false
             end)
         end
 
@@ -1701,7 +1762,7 @@ local function SetupClassComboPoints(comboPointFrame, positions, expectedClass, 
             comboPointFrame:SetPoint("LEFT", TargetFrame, "RIGHT", xPos, yPos or -2)
             comboPointFrame:SetMouseClickEnabled(false)
             comboPointFrame:SetFrameStrata("HIGH")
-            RepositionIndividualComboPoints(comboPointFrame, positions, scale, expectedClass)
+            RefreshComboPoints(comboPointFrame)
             self.changing = false
         end)
 
@@ -1793,7 +1854,7 @@ local function SetupClassComboPoints(comboPointFrame, positions, expectedClass, 
         end
     end
 
-    RepositionIndividualComboPoints(comboPointFrame, positions, scale, expectedClass)
+    RefreshComboPoints(comboPointFrame)
 end
 
 local roguePositions = {
@@ -5342,6 +5403,12 @@ First:SetScript("OnEvent", function(_, event, addonName)
             BetterBlizzFramesDB[key] = nil
         end
 
+        if not BetterBlizzFramesDB.midnightAuraMaxReset then
+            BetterBlizzFramesDB.maxTargetBuffs = defaultSettings.maxTargetBuffs
+            BetterBlizzFramesDB.maxTargetDebuffs = defaultSettings.maxTargetDebuffs
+            BetterBlizzFramesDB.midnightAuraMaxReset = true
+        end
+
         for hide, enable in pairs({
             hideTargetBuffs   = "targetBuffEnable",
             hideTargetDebuffs = "targetdeBuffEnable",
@@ -5400,6 +5467,14 @@ First:SetScript("OnEvent", function(_, event, addonName)
             if BetterBlizzFramesDB.hasSaved and not skipUpdateMsg then
                 C_Timer.After(7, function()
                     StaticPopup_Show("BBF_MIDNIGHT_EDITMODE_SCALE_REMOVED")
+                end)
+            end
+        end
+        if not BetterBlizzFramesDB.midnightAuraFilterFixesMsg then
+            BetterBlizzFramesDB.midnightAuraFilterFixesMsg = true
+            if BetterBlizzFramesDB.hasSaved and not skipUpdateMsg then
+                C_Timer.After(7, function()
+                    StaticPopup_Show("BBF_MIDNIGHT_AURA_FILTER_FIXES")
                 end)
             end
         end

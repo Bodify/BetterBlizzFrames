@@ -35,6 +35,84 @@ local function applySettings(frame, desaturate, colorValue, hook, hookShow)
         end
     end
 end
+
+function BBF.DarkModeNameplateResources()
+    if BetterBlizzPlatesDB and BetterBlizzPlatesDB.darkModeNameplateResource then return end
+
+    local prdClassFrame = PersonalResourceDisplayFrame and PersonalResourceDisplayFrame.classFrame
+    if not prdClassFrame or prdClassFrame:IsForbidden() then return end
+
+    local on = (BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeNameplateResource) and true or false
+    local desaturate = on
+    local base = on and BetterBlizzFramesDB.darkModeColor or 1
+    local druid = on and (base + 0.2) or 1
+    local druidActive = on and (base + 0.1) or 1
+    local mage = on and (base + 0.15) or 1
+    local monk = on and (base + 0.1) or 1
+    local rogue = on and (base + 0.45) or 1
+    local rogueActive = on and (base + 0.3) or 1
+
+    local playerClass = UnitClassBase("player")
+
+    if playerClass == "DEATHKNIGHT" then
+        for i = 1, 6 do
+            local rune = prdClassFrame["Rune" .. i]
+            if rune then
+                applySettings(rune.BG_Active, desaturate, base)
+                applySettings(rune.BG_Inactive, desaturate, base)
+            end
+        end
+    elseif playerClass == "WARLOCK" then
+        for _, v in pairs({prdClassFrame:GetChildren()}) do
+            applySettings(v.Background, desaturate, base)
+        end
+    elseif playerClass == "DRUID" then
+        for _, v in pairs({prdClassFrame:GetChildren()}) do
+            applySettings(v.BG_Inactive, desaturate, druid)
+            applySettings(v.BG_Active, desaturate, druidActive)
+            if BetterBlizzFramesDB.druidOverstacks then
+                applySettings(v.ChargedFrameActive, desaturate, druidActive)
+            end
+        end
+    elseif playerClass == "MAGE" then
+        for _, v in pairs({prdClassFrame:GetChildren()}) do
+            applySettings(v.ArcaneBG, desaturate, mage)
+        end
+    elseif playerClass == "MONK" then
+        for _, v in pairs({prdClassFrame:GetChildren()}) do
+            applySettings(v.Chi_BG, desaturate, monk)
+            applySettings(v.Chi_BG_Active, desaturate, monk)
+        end
+    elseif playerClass == "ROGUE" then
+        for _, v in pairs({prdClassFrame:GetChildren()}) do
+            applySettings(v.BGInactive, desaturate, rogue)
+            applySettings(v.BGActive, desaturate, rogueActive)
+        end
+    elseif playerClass == "PALADIN" then
+        applySettings(prdClassFrame.Background, desaturate, base)
+        applySettings(prdClassFrame.ActiveTexture, desaturate, base)
+    elseif playerClass == "EVOKER" then
+        for _, v in pairs({prdClassFrame:GetChildren()}) do
+            if v.EssenceFillDone then
+                applySettings(v.EssenceFillDone.CircBG, desaturate, monk)
+                applySettings(v.EssenceFillDone.CircBGActive, desaturate, base)
+                applySettings(v.EssenceFillDone.RimGlow, desaturate, monk)
+            end
+            if v.EssenceFilling then
+                applySettings(v.EssenceFilling.EssenceBG, desaturate, base)
+            end
+            if v.EssenceEmpty then
+                applySettings(v.EssenceEmpty.EssenceBG, desaturate, base)
+            end
+            if v.EssenceDepleting then
+                applySettings(v.EssenceDepleting.EssenceBG, desaturate, base)
+                applySettings(v.EssenceDepleting.CircBGActive, desaturate, base)
+                applySettings(v.EssenceDepleting.RimGlow, desaturate, monk)
+            end
+        end
+    end
+end
+
 local pixelBorderAuras
 local removeDebuffColorBorder
 function BBF.UpdateUserDarkModeSettings()
@@ -248,10 +326,6 @@ function BBF.DarkmodeFrames(bypass)
 
     local objectiveColor = (BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeObjectiveFrame) and BetterBlizzFramesDB.darkModeColor or 1
     local objectiveSat  = (BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeObjectiveFrame) and true or false
-
-    local darkModeNpBBP = BetterBlizzPlatesDB and BetterBlizzPlatesDB.darkModeNameplateResource
-    local darkModeNp = BetterBlizzFramesDB.darkModeNameplateResource and not darkModeNpBBP
-    local darkModeNpSatVal = darkModeNp and desaturationValue or false
 
     if BetterBlizzFramesDB.darkModeColor == 0 then
         if BetterBlizzFramesDB.darkModeActionBars then
@@ -708,27 +782,12 @@ function BBF.DarkmodeFrames(bypass)
         end
     end
 
-    local nameplateRunes = _G.DeathKnightResourceOverlayFrame
-    if nameplateRunes and not nameplateRunes:IsForbidden() and not darkModeNpBBP then
-        local dkNpRunes = darkModeNp and vertexColor or 1
-        for i = 1, 6 do
-            applySettings(nameplateRunes["Rune" .. i].BG_Active, darkModeNpSatVal, dkNpRunes)
-            applySettings(nameplateRunes["Rune" .. i].BG_Inactive, darkModeNpSatVal, dkNpRunes)
-        end
-    end
+    BBF.DarkModeNameplateResources()
 
     local soulShards = _G.WarlockPowerFrame
     if soulShards then
         for _, v in pairs({soulShards:GetChildren()}) do
             applySettings(v.Background, desaturationValue, druidComboPointActive)
-        end
-    end
-
-    local soulShardsNameplate = _G.ClassNameplateBarWarlockFrame
-    if soulShardsNameplate and not soulShardsNameplate:IsForbidden() and not darkModeNpBBP then
-        local soulShardNp = darkModeNp and vertexColor or 1
-        for _, v in pairs({soulShardsNameplate:GetChildren()}) do
-            applySettings(v.Background, darkModeNpSatVal, soulShardNp)
         end
     end
 
@@ -773,29 +832,10 @@ function BBF.DarkmodeFrames(bypass)
         end
     end
 
-    local druidComboPointsNameplate = _G.ClassNameplateBarFeralDruidFrame
-    if druidComboPointsNameplate and not druidComboPointsNameplate:IsForbidden() and not darkModeNpBBP then
-        local druidComboPointNp = darkModeNp and druidComboPoint or 1
-        local druidComboPointActiveNp = darkModeNp and druidComboPointActive or 1
-        for _, v in pairs({druidComboPointsNameplate:GetChildren()}) do
-            applySettings(v.BG_Inactive, darkModeNpSatVal, druidComboPointNp)
-            applySettings(v.BG_Active, darkModeNpSatVal, druidComboPointActiveNp)
-        end
-    end
-
     local mageArcaneCharges = _G.MageArcaneChargesFrame
     if mageArcaneCharges then
         for _, v in pairs({mageArcaneCharges:GetChildren()}) do
             applySettings(v.ArcaneBG, desaturationValue, comboColor)
-            --applySettings(v.BG_Active, desaturationValue, druidComboPointActive)
-        end
-    end
-
-    local mageArcaneChargesNameplate = _G.ClassNameplateBarMageFrame
-    if mageArcaneChargesNameplate and not mageArcaneChargesNameplate:IsForbidden() and not darkModeNpBBP then
-        local mageChargeNp = darkModeNp and comboColor or 1
-        for _, v in pairs({mageArcaneChargesNameplate:GetChildren()}) do
-            applySettings(v.ArcaneBG, darkModeNpSatVal, mageChargeNp)
             --applySettings(v.BG_Active, desaturationValue, druidComboPointActive)
         end
     end
@@ -808,16 +848,6 @@ function BBF.DarkmodeFrames(bypass)
         end
     end
 
-    local monkChiPointsNameplate = _G.ClassNameplateBarWindwalkerMonkFrame
-    if monkChiPointsNameplate and not monkChiPointsNameplate:IsForbidden() and not darkModeNpBBP then
-        local monkChiNp = darkModeNp and monkChi or 1
-        local monkChiNpActive = darkModeNp and monkChiActive or 1
-        for _, v in pairs({monkChiPointsNameplate:GetChildren()}) do
-            applySettings(v.Chi_BG, darkModeNpSatVal, monkChiNp)
-            applySettings(v.Chi_BG_Active, darkModeNpSatVal, monkChiNpActive)
-        end
-    end
-
     local rogueComboPoints = _G.RogueComboPointBarFrame
     if rogueComboPoints then
         for _, v in pairs({rogueComboPoints:GetChildren()}) do
@@ -826,27 +856,8 @@ function BBF.DarkmodeFrames(bypass)
         end
     end
 
-    local rogueComboPointsNameplate = _G.ClassNameplateBarRogueFrame
-    if rogueComboPointsNameplate and not rogueComboPointsNameplate:IsForbidden() and not darkModeNpBBP then
-        local rogueComboNp = darkModeNp and rogueCombo or 1
-        local rogueComboActiveNp = darkModeNp and rogueComboActive or 1
-        for _, v in pairs({rogueComboPointsNameplate:GetChildren()}) do
-            applySettings(v.BGInactive, darkModeNpSatVal, rogueComboNp)
-            applySettings(v.BGActive, darkModeNpSatVal, rogueComboActiveNp)
-        end
-    end
-
-
     -- PaladinPowerBarFrame.Background,
     -- PaladinPowerBarFrame.ActiveTexture,
-
-
-    local paladinHolyPowerNameplate = _G.ClassNameplateBarPaladinFrame
-    if paladinHolyPowerNameplate and not paladinHolyPowerNameplate:IsForbidden() and not darkModeNpBBP then
-        local palaPowerNp = darkModeNp and vertexColor or 1
-        applySettings(ClassNameplateBarPaladinFrame.Background, darkModeNpSatVal, palaPowerNp)
-        applySettings(ClassNameplateBarPaladinFrame.ActiveTexture, darkModeNpSatVal, palaPowerNp)
-    end
 
     local evokerEssencePoints = _G.EssencePlayerFrame
     if evokerEssencePoints then
@@ -874,38 +885,6 @@ function BBF.DarkmodeFrames(bypass)
             end
             if v.EssenceDepleting and v.EssenceDepleting.RimGlow then
                 applySettings(v.EssenceDepleting.RimGlow, desaturationValue, evokerEssence)
-            end
-        end
-    end
-
-    local evokerEssencePointsNameplate = _G.ClassNameplateBarDracthyrFrame
-    if evokerEssencePointsNameplate and not evokerEssencePointsNameplate:IsForbidden() and not darkModeNpBBP then
-        local evokerColorOne = darkModeNp and monkChi or 1
-        local evokerColorTwo = darkModeNp and vertexColor or 1
-        for _, v in pairs({evokerEssencePointsNameplate:GetChildren()}) do
-            if v.EssenceFillDone and v.EssenceFillDone.CircBG then
-                applySettings(v.EssenceFillDone.CircBG, darkModeNpSatVal, evokerColorOne)
-            end
-            if v.EssenceFilling and v.EssenceFilling.EssenceBG then
-                applySettings(v.EssenceFilling.EssenceBG, darkModeNpSatVal, evokerColorTwo)
-            end
-            if v.EssenceEmpty and v.EssenceEmpty.EssenceBG then
-                applySettings(v.EssenceEmpty.EssenceBG, darkModeNpSatVal, evokerColorTwo)
-            end
-            if v.EssenceFillDone and v.EssenceFillDone.CircBGActive then
-                applySettings(v.EssenceFillDone.CircBGActive, darkModeNpSatVal, evokerColorTwo)
-            end
-            if v.EssenceDepleting and v.EssenceDepleting.EssenceBG then
-                applySettings(v.EssenceDepleting.EssenceBG, darkModeNpSatVal, evokerColorTwo)
-            end
-            if v.EssenceDepleting and v.EssenceDepleting.CircBGActive then
-                applySettings(v.EssenceDepleting.CircBGActive, darkModeNpSatVal, evokerColorTwo)
-            end
-            if v.EssenceFillDone and v.EssenceFillDone.RimGlow then
-                applySettings(v.EssenceFillDone.RimGlow, darkModeNpSatVal, evokerColorOne)
-            end
-            if v.EssenceDepleting and v.EssenceDepleting.RimGlow then
-                applySettings(v.EssenceDepleting.RimGlow, darkModeNpSatVal, evokerColorOne)
             end
         end
     end
@@ -1092,6 +1071,10 @@ specChangeListener:SetScript("OnEvent", function(self, event, ...)
                 local playerClass = select(2, UnitClass("player"))
                 local vertexColor = BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeColor or 1
                 local desaturationValue = BetterBlizzFramesDB.darkModeUi
+
+                if BetterBlizzFramesDB.darkModeNameplateResource then
+                    BBF.DarkModeNameplateResources()
+                end
 
                 if playerClass == "ROGUE" then
                     local rogueCombo = vertexColor + 0.45

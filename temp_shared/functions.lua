@@ -152,6 +152,17 @@ function BBF.FindPartyFrame(i)
         end
     elseif C_AddOns.IsAddOnLoaded("ElvUI") and ElvUI[1].private.unitframe.disabledBlizzardFrames.party then
         return _G["ElvUF_PartyGroup1UnitButton" .. i]
+	elseif _G["ERFPartyHeader"] then
+        if i == 5 then
+            local euiSelfFrame = _G["ERFPartySelfButton"]
+            if euiSelfFrame and euiSelfFrame:IsShown() then
+                return euiSelfFrame
+            end
+        end
+        local partyFrame = _G["ERFPartyHeader"][i] or _G["ERFPartyHeaderUnitButton" .. i]
+        if partyFrame then
+            return partyFrame
+        end
     elseif C_AddOns.IsAddOnLoaded("Cell") then
         return _G["CellPartyFrameHeaderUnitButton" .. i]
     elseif C_AddOns.IsAddOnLoaded("Grid2") then

@@ -193,9 +193,11 @@ local function MakeClassicFrame(frame)
         totFrame.HealthBar.DeadText:SetParent(totFrame)
         totFrame.HealthBar.DeadText:ClearAllPoints()
         totFrame.HealthBar.DeadText:SetPoint("LEFT", 48, 3)
+        totFrame.HealthBar.DeadText:SetDrawLayer("OVERLAY", 7)
         totFrame.HealthBar.UnconsciousText:SetParent(totFrame)
         totFrame.HealthBar.UnconsciousText:ClearAllPoints()
         totFrame.HealthBar.UnconsciousText:SetPoint("LEFT", 48, 3)
+        totFrame.HealthBar.UnconsciousText:SetDrawLayer("OVERLAY", 7)
 
         local hideToTDebuffs = (frame.unit == "target" and db.hideTargetToTDebuffs) or (frame.unit == "focus" and db.hideFocusToTDebuffs)
         if not hideToTDebuffs then

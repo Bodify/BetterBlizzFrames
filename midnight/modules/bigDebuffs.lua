@@ -2,11 +2,38 @@
 -- Verz for helping with this in the past and many other things and
 -- Muleyo for helping me with questions and examples about the new aura systems in 12.1
 
+-- Auras Blizzard doesn't flag as CROWD_CONTROL
+local OTHER_CC = {
+    -- CC
+    [383005] = true,    -- Chrono Loop
+    -- Disarms
+    [207777] = true,    -- Dismantle (Rogue)
+    [236077] = true,    -- Disarm (Warrior)
+    [233759] = true,    -- Grapple Weapon (Monk)
+    [407028] = true,    -- Sticky Tar Bomb (Hunter)
+    [209749] = true,    -- Faerie Swarm (Druid)
+}
+
+-- Other auras that are nice to know.
+local OTHER_DEBUFFS = {
+    [41425] = true,     -- Hypothermia
+    [25771] = true,     -- Forbearance
+    [372048] = true,    -- Oppressing Roar
+    [212182] = true,    -- Smoke Bomb
+    [359053] = true,    -- Smoke Bomb
+    [121164] = true,    -- Orb of Power
+    [121175] = true,    -- Orb of Power
+    [121176] = true,    -- Orb of Power
+    [121177] = true,    -- Orb of Power
+}
+
 local TIERS = {
-    { key = "ExtDef",    filter = "HELPFUL|EXTERNAL_DEFENSIVE" },
-    { key = "BigDef",    filter = "HELPFUL|BIG_DEFENSIVE" },
-    { key = "Important", filter = "HELPFUL|IMPORTANT|!BIG_DEFENSIVE|!EXTERNAL_DEFENSIVE" },
-    { key = "CC",        filter = "HARMFUL|CROWD_CONTROL" },
+    { key = "OtherDebuffs", filter = "HARMFUL", candidateFilters = { includeSpellIDs = OTHER_DEBUFFS } },
+    { key = "ExtDef",       filter = "HELPFUL|EXTERNAL_DEFENSIVE" },
+    { key = "BigDef",       filter = "HELPFUL|BIG_DEFENSIVE" },
+    { key = "Important",    filter = "HELPFUL|IMPORTANT|!BIG_DEFENSIVE|!EXTERNAL_DEFENSIVE" },
+    { key = "OtherCC",      filter = "HARMFUL", candidateFilters = { includeSpellIDs = OTHER_CC } },
+    { key = "CC",           filter = "HARMFUL|CROWD_CONTROL" },
 }
 
 local SORT_METHOD = AuraContainerSortMethod.ExpirationOnly
@@ -94,6 +121,7 @@ local function CreateHost(unit, unitFrame, portrait, portraitMask)
         container:AddAuraSlot("Aura", tier.filter, {
             sortMethod = SORT_METHOD,
             sortDirection = SORT_DIRECTION,
+            candidateFilters = tier.candidateFilters,
             initializeFrame = function(button) InitIcon(host, button) end,
         })
 
