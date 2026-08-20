@@ -138,6 +138,10 @@ local PURGE_DISPEL_TYPES = {
     Enrage = true,
 }
 
+local PURGEABLE_BUFF_DISPEL_TYPES = {
+    Magic = true, Enrage = true,
+}
+
 local S = {}
 BBF.auraSettings = S
 
@@ -1158,8 +1162,10 @@ local function BuildCandidateFilters(harmful, tier, cfg, canFilterIDs, mine)
         end
     end
 
-    if cfg.purgeable and not harmful and not HIGHLIGHT_TIERS[tier] then
-        filters.isStealable = true
+    if cfg.purgeable and not harmful and not HIGHLIGHT_TIERS[tier]
+            and tier ~= "purge" and tier ~= "purgeenrage" then
+        filters.includeDispelTypes = PURGEABLE_BUFF_DISPEL_TYPES
+        filters.isStealable = nil
     end
 
     if cfg.short and not HIGHLIGHT_TIERS[tier] then
@@ -1650,10 +1656,15 @@ local function ConfigureContainer(host, container, harmful)
             elseif cfg.collapsed then
                 count = 0
             elseif def.tier == "purge" or def.tier == "purgeenrage" then
-                local live = cfg.purgeFirst and not (categoryOn and not cfg.narrowOn)
+                local live
+                if cfg.purgeable then
+                    live = def.tier == "purgeenrage"
+                else
+                    live = cfg.purgeFirst and not (categoryOn and not cfg.narrowOn)
 
-                if def.tier == "purgeenrage" and not S.purgeGlowAlways then
-                    live = false
+                    if def.tier == "purgeenrage" and not S.purgeGlowAlways then
+                        live = false
+                    end
                 end
                 count = live and (cfg.maxCount or 32) or 0
             elseif def.tier == "mine" and cfg.mergeNormal then

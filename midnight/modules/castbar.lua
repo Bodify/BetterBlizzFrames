@@ -97,8 +97,10 @@ local function CastbarColorOnEvent(self, event, unitTarget, castGUID, spellID, i
 
     if unitToken then
         if self.casting then
+            self.lastCastType = "cast"
             _, _, _, _, _, _, _, notInterruptible = UnitCastingInfo(unitToken)
         elseif self.channeling then
+            self.lastCastType = "channel"
             _, _, _, _, _, _, notInterruptible = UnitChannelInfo(unitToken)
         end
         isAttackable = UnitCanAttack("player", unitToken)
@@ -251,6 +253,35 @@ local function CastbarColorOnEvent(self, event, unitTarget, castGUID, spellID, i
             end
         end
     end
+end
+
+local function CastbarFinishAnimColor(self)
+    local castBarTexture = self:GetStatusBarTexture()
+    local borderShield = self.BorderShield
+    if not castBarTexture then return end
+
+    local colors = castbarColors
+    local unitToken = self.unit
+    local color, uninterruptableColor
+
+    if castBarRecolorInterrupt and BBF.interruptReady == false and UnitCanAttack("player", unitToken) then
+        color = colors.colorInterruptNotReady
+        uninterruptableColor = colors.enabled and colors.colorUninterruptable or colors.colorDefaultUninterruptable
+    elseif colors.enabled then
+        local isChannel = self.channeling or (not self.casting and self.lastCastType == "channel")
+        color = isChannel and colors.colorChannel or colors.colorStandard
+        uninterruptableColor = colors.colorUninterruptable
+    elseif self.textureChangedNeedsColor then
+        local isChannel = self.channeling or (not self.casting and self.lastCastType == "channel")
+        color = isChannel and colors.colorDefaultChannel or colors.colorDefaultStandard
+        uninterruptableColor = colors.colorDefaultUninterruptable
+    else
+        return
+    end
+
+    if not color or not uninterruptableColor then return end
+
+    castBarTexture:SetVertexColorFromBoolean(borderShield:IsShown(), uninterruptableColor, color)
 end
 
 local function CreateBorder(frame, r, g, b, a)
@@ -2204,8 +2235,10 @@ function BBF.CastbarColorHooks()
                 local unitToken = self.unit
                 if unitToken then
                     if self.casting then
+                        self.lastCastType = "cast"
                         notInterruptible = select(8, UnitCastingInfo(unitToken))
                     elseif self.channeling then
+                        self.lastCastType = "channel"
                         notInterruptible = select(7, UnitChannelInfo(unitToken))
                     end
                 end
@@ -2264,8 +2297,10 @@ function BBF.CastbarColorHooks()
                 local unitToken = self.unit
                 if unitToken then
                     if self.casting then
+                        self.lastCastType = "cast"
                         notInterruptible = select(8, UnitCastingInfo(unitToken))
                     elseif self.channeling then
+                        self.lastCastType = "channel"
                         notInterruptible = select(7, UnitChannelInfo(unitToken))
                     end
                 end
@@ -2298,6 +2333,13 @@ function BBF.CastbarColorHooks()
         end)
         TargetFrameSpellBar:HookScript("OnEvent", CastbarColorOnEvent)
         FocusFrameSpellBar:HookScript("OnEvent", CastbarColorOnEvent)
+    end
+
+    if not BBF.CastbarFinishAnimHooked and not BetterBlizzFramesDB.disableCastbarTweaks then
+        BBF.CastbarFinishAnimHooked = true
+        for _, castBar in ipairs({ PlayerCastingBarFrame, TargetFrameSpellBar, FocusFrameSpellBar, PetCastingBarFrame }) do
+            hooksecurefunc(castBar, "PlayFinishAnim", CastbarFinishAnimColor)
+        end
     end
 end
 

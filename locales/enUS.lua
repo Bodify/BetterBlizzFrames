@@ -232,6 +232,7 @@ L["Tooltip_Hide_Target_Name"] = "Hide the name of the target\n\nWill still show 
 L["Tooltip_Hide_Target_Reputation_Color"] = "Hide the color behind Target name."
 L["Tooltip_Mini_Target"] = "Removes healthbar and manabar from the TargetFrame\nand just leaves Portrait and name.\n\nMove castbar and/or disable auras to your liking."
 L["Tooltip_Mirror_TargetFrame_Desc"] = "Make the PlayerFrame texture a mirrored version of TargetFrame (round circle etc).\n\n|cfffc8312EXPERIMENTAL:|r\nCan cause glitches/taint on certain updates (Vehicles/PvE/?).\nIf you decide to use this understand the potential risk and please report issues. (WIP)\n\n|cff32f795Toggle on/off with right-click.|r"
+L["Tooltip_Mirror_TargetFrame_Desc_Midnight"] = "Make the PlayerFrame texture a mirrored version of TargetFrame (round circle etc)."
 L["Tooltip_Move_Resource_To_Target"] = "Move resource (Combo points, Warlock shards etc) to the TargetFrame."
 L["Tooltip_Raise_TargetFrame_Layer_Desc"] = "Raise the frame level of TargetFrame so it is above FocusFrame.\n\nThis makes it so if you have TargetFrame positioned above FocusFrame and the Target has so many auras that the castbar goes down to the FocusFrame the castbar will not be hidden behind the FocusFrame."
 L["Tooltip_Target"] = "Show on TargetFrame"

@@ -1,39 +1,53 @@
+# BetterBlizzFrames 2.0.5b
+## Midnight
+### New
+- New Ceit profile (www.twitch.tv/ceitxd). Thank you for sharing!
+### Tweak
+- Finally fix "Mirror TargetFrame" setting for Midnight.
+- Fix "Purgeable" filter to not rely on whether you can dispel or not but just the nature of the buff if its dispellable or not.
+- Add a tiny crop on spec icons for spec icon portraits setting (to hide borders sticking out)
+- Tiny tweak to ocd setting and level position.
+- Fix castbars flashing white on some castbar color settings at the end of cast.
+
 # BetterBlizzFrames 2.0.5
-## New
+## Midnight
+### New
 - New Kaaaz profile (www.twitch.tv/KaaazTTV). Thank you for sharing!
 - New "Hide purge texture" setting
 - New "Show purge texture on friendly too" setting.
-## Tweak
+### Tweak
 - Update Venruki profile (www.twitch.tv/venruki).
 - Fix the purge texture showing on friendly buffs unintentionally. Its now an optional setting instead.
 - Fix "Only mine" filters for Buffs and Debuffs for Target/FocusFrame applying where it doesnt make sense; "Only mine" on Enemy Buffs for example. "Only mine" is now only active for friendly buffs and enemy debuffs.
 - Filtered Buffs Icon now also gets disabled if "Show Buffs" is not enabled.
 - Filtered Buffs Icon now properly also gets Pixel Border if thats enabled (not only when dark mode is also enabled)
-## Bugfix
+### Bugfix
 - Fix "Hide Boss Frames" causing errors.
 - Fix an issue with blacklist + "Show Mine" tag filtering the buff anyway.
 - Fix "Big Debuffs" setting showing too many debuffs on friendly units due to a mistake in the filter.
 
 # BetterBlizzFrames 2.0.4
-## New
+## Midnight
+### New
 - "Enlarged Aura" is back as an option in the whitelist for Target & Focus. Can be combined with Important Glow for a separate (or same) color to the Important one. Scale it with "Enlarged Aura Scale" and sort the enlarged block first or last with "Sort Enlarged First". Player auras keep their Edit Mode size but still glow and sort with the block. Your old whitelist ticks and Enlarged Aura Scale carry over.
 - The "Important Glow" setting is back for whitelisted auras. Reminder that this only works for debuffs on enemies and buffs on friendlies.
 - New "Important" and "Defensives" filters under Show BUFFS and "Crowd Control" under Show DEBUFFS on Target, Focus and Player auras. Use them if you want a frame to show nothing but those auras. "Important Auras First" is still there and only moves them up front and scales them up. Unlike the whitelist/blacklist these work on every unit.
 - "Max Buffs" and "Max Debuffs" are back under Target & Focus Aura Settings but they are scuffed for now. Tldr is it cannot get properly fixed until new Blizzard API in 12.1.5.
-## Tweak
+### Tweak
 - ENABLED: When Dark Mode is enabled the "DarkMode: Nameplate Resource" is now on by default as well. Due to this change it mightve turned on for you but can still be turned off under Dark Mode top left in /bbf.
 - Fix whitelisted auras not sorting before others as intended (even without whitelist filter enabled).
 - Aura glow settings are no longer locked behind "Important Auras First", the matching filter on that frame enables them too.
 - "Under one min", "Only mine" and "Purgeable" now only narrow the normal auras and no longer hide important/defensive/crowd control auras.
 - Add EllesmereUI partyframe support for party castbars.
-## Bugfix
+### Bugfix
 - Fix a potential lua error from hiding/showing minimap buttons in combat with that setting.
 - Fix dark mode color for nameplate/PRD resource setting.
 - Fix potential issue with TargetFrame combo points setting that could sometimes not update properly on certain events.
 - Fix "Dead/Unconcious" text layer on ToT Frame for Classic Frames setting after recent changes.
 
 # BetterBlizzFrames 2.0.3
-## New
+## Midnight
+### New
 - New setting "Sort purgeable buffs first" to move purgeable buffs ahead of other Target/Focus buffs (after important auras, defensives and whitelisted auras). Covers enrage effects too.
 ### Tweak
 - REMOVED: Loss of Control Scale is removed cuz edit mode now has settings for it. Set it with edit mode instead.

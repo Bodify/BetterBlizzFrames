@@ -3301,7 +3301,7 @@ local function guiProfiles()
     frame.streamerText:SetText(L["Profile_Streamers"])
 
     frame.infoText = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-    frame.infoText:SetPoint("BOTTOM", frame, "BOTTOM", 2, 100)
+    frame.infoText:SetPoint("BOTTOM", frame, "BOTTOM", 2, 50)
     frame.infoText:SetText(L["Profile_Info_Message"])
     frame.infoText:SetWidth(100)
 
@@ -3687,28 +3687,9 @@ local function guiGeneralTab()
 
     local symmetricPlayerFrame = CreateCheckbox("symmetricPlayerFrame", L["Mirror_TargetFrame"], BetterBlizzFrames, nil, BBF.SymmetricPlayerFrame)
     symmetricPlayerFrame:SetPoint("LEFT", hidePlayerName.text, "RIGHT", 0, 0)
-    CreateTooltipTwo(symmetricPlayerFrame, L["Mirror_TargetFrame"], L["Tooltip_Mirror_TargetFrame_Desc"])
-    -- symmetricPlayerFrame:HookScript("OnClick", function(self)
-    --     if not self:GetChecked() then
-    --         StaticPopup_Show("BBF_CONFIRM_RELOAD")
-    --         BetterBlizzFramesDB.playerFrameOCD = nil
-    --     end
-    -- end)
-    symmetricPlayerFrame:SetScript("OnClick", function(self)
-        self:SetChecked(BetterBlizzFramesDB.symmetricPlayerFrame or false)
-    end)
-
-    symmetricPlayerFrame:SetScript("OnMouseDown", function(self, button)
-        if button == "RightButton" then
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
-            if BetterBlizzFramesDB.symmetricPlayerFrame then
-                BetterBlizzFramesDB.symmetricPlayerFrame = nil
-                symmetricPlayerFrame:SetChecked(false)
-                return
-            end
-            symmetricPlayerFrame:SetChecked(true)
-            BetterBlizzFramesDB.symmetricPlayerFrame = true
-        end
+    CreateTooltipTwo(symmetricPlayerFrame, L["Mirror_TargetFrame"], L["Tooltip_Mirror_TargetFrame_Desc_Midnight"])
+    symmetricPlayerFrame:HookScript("OnClick", function(self)
+        StaticPopup_Show("BBF_CONFIRM_RELOAD")
     end)
 
     -- local hidePlayerMaxHpReduction = CreateCheckbox("hidePlayerMaxHpReduction", "Hide Reduced HP", BetterBlizzFrames, nil, BBF.HideFrames)

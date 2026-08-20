@@ -52,6 +52,15 @@ local function Apply()
     BBF.UpdateNoPortraitText(PlayerFrame, "player")
 end
 
+function BBF.UnregisterPlayerFrameArtEvents()
+    PlayerFrame:UnregisterEvent("UNIT_ENTERED_VEHICLE")
+    PlayerFrame:UnregisterEvent("UNIT_EXITING_VEHICLE")
+    PlayerFrame:UnregisterEvent("UNIT_EXITED_VEHICLE")
+    if AlternatePowerBar then
+        AlternatePowerBar:UnregisterEvent("UNIT_DISPLAYPOWER")
+    end
+end
+
 local hooked = false
 local function EnsureHooks()
     if hooked then
@@ -68,10 +77,7 @@ local function EnsureHooks()
         Apply()
         VehicleMaskOffset()
     end)
-    PlayerFrame:UnregisterEvent("UNIT_ENTERED_VEHICLE")
-    PlayerFrame:UnregisterEvent("UNIT_EXITING_VEHICLE")
-    PlayerFrame:UnregisterEvent("UNIT_EXITED_VEHICLE")
-    AlternatePowerBar:UnregisterEvent("UNIT_DISPLAYPOWER")
+    BBF.UnregisterPlayerFrameArtEvents()
 end
 
 function BBF.UpdateBigPlayerHealthbar()

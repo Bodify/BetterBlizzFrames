@@ -1,3 +1,14 @@
+# BetterBlizzFrames 2.0.5b
+## Midnight
+### New
+- New Ceit profile (www.twitch.tv/ceitxd). Thank you for sharing!
+### Tweak
+- Finally fix "Mirror TargetFrame" setting for Midnight.
+- Fix "Purgeable" filter to not rely on whether you can dispel or not but just the nature of the buff if its dispellable or not.
+- Add a tiny crop on spec icons for spec icon portraits setting (to hide borders sticking out)
+- Tiny tweak to ocd setting and level position.
+- Fix castbars flashing white on some castbar color settings at the end of cast.
+
 # BetterBlizzFrames 2.0.5
 ## New
 - New Kaaaz profile (www.twitch.tv/KaaazTTV). Thank you for sharing!

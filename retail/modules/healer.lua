@@ -63,8 +63,10 @@ function BBF.HealerIndicatorPortrait()
                 if specID then
                     local _, _, _, icon = GetSpecializationInfoByID(specID)
                     if icon then
+                        local crop = 0.04
                         self.portrait:SetTexture(icon)
-                        self.portrait:SetTexCoord(0, 1, 0, 1)
+                        self.portrait:SetTexCoord(crop, 1 - crop, crop, 1 - crop)
+                        self.bbfHealerPortraitActive = nil
                         return
                     end
                 end
