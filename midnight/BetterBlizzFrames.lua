@@ -265,6 +265,8 @@ local defaultSettings = {
 
     playerAuraFiltering = false,
     displayDispelGlowAlways = false,
+    hidePurgeTexture = false,
+    showPurgeTextureOnFriendly = false,
     overShieldsUnitFrames = true,
     overShieldsCompactUnitFrames = true,
 

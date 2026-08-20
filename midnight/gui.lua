@@ -2227,7 +2227,8 @@ function BBF.UpdateEnlargedGlowSwatch(button)
     local swatch = button.checkBoxEnlarged and button.checkBoxEnlarged.swatch
     if not swatch then return end
 
-    local show = (button.npcData and button.npcData.important) and true or false
+    local data = button.npcData
+    local show = (data and data.enlarged and data.important) and true or false
     swatch:SetShown(show)
     if show then
         BBF.TintGlowSwatch(swatch, "auraEnlargedGlowColor", 1, 0.5, 0)
@@ -2458,6 +2459,7 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
                     elseif not button.npcData.important then
                         EnableElement(button.checkBoxPandemic)
                     end
+                    BBF.UpdateEnlargedGlowSwatch(button)
                     BBF.RefreshAllAuraFrames()
                 end)
                 local swatch = checkBoxEnlarged:CreateTexture(nil, "ARTWORK", nil, 1)
@@ -9082,14 +9084,37 @@ local function guiFrameAuras()
     purgeableAurasFirst:SetPoint("TOPLEFT", importantAurasFirst, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(purgeableAurasFirst, L["Purgeable_Auras_First"], L["Tooltip_Purgeable_Auras_First_Desc"])
 
+    local hidePurgeTexture = CreateCheckbox("hidePurgeTexture", L["Hide_Purge_Texture"], playerAuraFiltering, nil, BBF.RefreshAllAuraFrames)
+    hidePurgeTexture:SetPoint("TOPLEFT", purgeableAurasFirst, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(hidePurgeTexture, L["Hide_Purge_Texture"], L["Tooltip_Hide_Purge_Texture"])
+
+    local showPurgeTextureOnFriendly = CreateCheckbox("showPurgeTextureOnFriendly", L["Show_Purge_Texture_On_Friendly"], playerAuraFiltering, nil, BBF.RefreshAllAuraFrames)
+    showPurgeTextureOnFriendly:SetPoint("TOPLEFT", hidePurgeTexture, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(showPurgeTextureOnFriendly, L["Show_Purge_Texture_On_Friendly"], L["Tooltip_Show_Purge_Texture_On_Friendly"])
+
     local displayDispelGlowAlways = CreateCheckbox("displayDispelGlowAlways", L["Always_Show_Purge_Texture"], playerAuraFiltering, nil, BBF.RefreshAllAuraFrames)
-    displayDispelGlowAlways:SetPoint("TOPLEFT", purgeableAurasFirst, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    displayDispelGlowAlways:SetPoint("TOPLEFT", showPurgeTextureOnFriendly, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(displayDispelGlowAlways, L["Always_Show_Purge_Texture"], L["Tooltip_Always_Show_Purge_Texture"])
 
     local changePurgeTextureColor = CreateCheckbox("changePurgeTextureColor", L["Change_Purge_Texture_Color"], playerAuraFiltering, nil, BBF.RefreshAllAuraFrames)
     changePurgeTextureColor:SetPoint("TOPLEFT", displayDispelGlowAlways, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(changePurgeTextureColor, L["Change_Purge_Texture_Color"])
     AddColorButton(changePurgeTextureColor, "purgeTextureColorRGB", L["Change_Purge_Texture_Color"])
+
+    local function UpdatePurgeTextureBoxes()
+        local hidden = hidePurgeTexture:GetChecked()
+        for _, box in ipairs({ showPurgeTextureOnFriendly, displayDispelGlowAlways, changePurgeTextureColor }) do
+            if hidden then
+                box:Disable()
+                box:SetAlpha(0.5)
+            else
+                box:Enable()
+                box:SetAlpha(1)
+            end
+        end
+    end
+    hidePurgeTexture:HookScript("OnClick", UpdatePurgeTextureBoxes)
+    UpdatePurgeTextureBoxes()
 
     local auraTimerColor = CreateCheckbox("auraTimerColor", L["Timer_Text_Color"], playerAuraFiltering)
     auraTimerColor:SetPoint("TOPLEFT", showAuraCdText, "BOTTOMLEFT", 0, pixelsBetweenBoxes)

@@ -528,9 +528,7 @@ function BBF.DarkmodeFrames(bypass)
 
 
 
-    if ToggleHiddenAurasButton then
-        createOrUpdateBorders(ToggleHiddenAurasButton, vertexColor)
-    end
+    BBF.StyleToggleAuraIcon()
     BBF.DarkModeBuffCollapseButton()
 
     BBF.DarkModeUnitframeBorders()
@@ -1039,13 +1037,7 @@ end
 
 
 function BBF.UpdateFilteredBuffsIcon()
-    if BetterBlizzFramesDB.enableMasque then return end
-    if BetterBlizzFramesDB.darkModeUi then
-        local vertexColor = BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeColor or 1
-        if ToggleHiddenAurasButton then
-            createOrUpdateBorders(ToggleHiddenAurasButton, vertexColor)
-        end
-    end
+    BBF.StyleToggleAuraIcon()
     BBF.DarkModeBuffCollapseButton()
 end
 
@@ -1108,32 +1100,7 @@ specChangeListener:SetScript("OnEvent", function(self, event, ...)
 end)
 
 function BBF.CheckForAuraBorders()
-    if BetterBlizzFramesDB.enableMasque then return end
-    if not (BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeUiAura) then
-        local frames = {_G.BuffFrame.AuraContainer:GetChildren()}
-
-        for _, frame in ipairs(frames) do
-            local iconTexture
-            for i = 1, frame:GetNumChildren() do
-                local child = select(i, frame:GetChildren())
-
-                local bottomEdgeTexture = child.BottomEdge
-                if bottomEdgeTexture and bottomEdgeTexture:IsObjectType("Texture") then
-                    local r, g, b, a = bottomEdgeTexture:GetVertexColor()
-                    local borderColorValue = r
-
-                    iconTexture = frame.Icon
-                    if iconTexture and borderColorValue then
-                        if ToggleHiddenAurasButton then
-                            ToggleHiddenAurasButton.Icon:SetTexCoord(iconTexture:GetTexCoord())
-                            createOrUpdateBorders(ToggleHiddenAurasButton, borderColorValue, nil, true)
-                            return
-                        end
-                    end
-                end
-            end
-        end
-    end
+    BBF.StyleToggleAuraIcon()
 end
 
 function BBF.DarkModeCastbars()

@@ -49,9 +49,13 @@ local SORT_METHODS = {
 }
 
 local AURA_GROUPS = {
+    { key = "ImportantMine",          tier = "important", mine = true },
     { key = "Important",              tier = "important" },
+    { key = "BigDefMine",             tier = "bigdef",    mine = true },
     { key = "BigDef",                 tier = "bigdef" },
+    { key = "ExtDefMine",             tier = "extdef",    mine = true },
     { key = "ExtDef",                 tier = "extdef" },
+    { key = "CCMine",                 tier = "cc",        mine = true },
     { key = "CC",                     tier = "cc" },
     { key = "WhitelistPandemic",      tier = "whitelistpandemic" },
     { key = "WhitelistImportantMine", tier = "whitelistimportantmine" },
@@ -263,6 +267,8 @@ function BBF.UpdateUserAuraSettings()
         S.darkColor = 1
     end
     S.purgeGlowAlways = db.displayDispelGlowAlways
+    S.hidePurge = db.hidePurgeTexture and true or false
+    S.purgeOnFriendly = db.showPurgeTextureOnFriendly and true or false
     S.purgeColor = { GetColor("purgeTextureColorRGB", 0, 0.92, 1, 0.85) }
     S.recolorPurge = db.changePurgeTextureColor
     S.pandemicColor = { GetColor("auraPandemicGlowColor", 1, 0, 0, 1) }
@@ -292,13 +298,11 @@ function BBF.UpdateUserAuraSettings()
     if playerSortKey == "blizzard" then playerSortKey = "stable" end
     S.playerSort = SORT_METHODS[playerSortKey] or SORT_METHODS.stable
 
-    local pveShowsAllDebuffs = BBF.noBuffDebuffFilterOnTargetInPvE
-
     S.target = {
         buffs = db.targetBuffEnable,
         debuffs = db.targetdeBuffEnable,
         buffOnlyMine = db.targetBuffFilterOnlyMe,
-        debuffOnlyMine = db.targetdeBuffFilterOnlyMe and not pveShowsAllDebuffs,
+        debuffOnlyMine = db.targetdeBuffFilterOnlyMe,
         buffPurgeable = db.targetBuffFilterPurgeable,
         buffImportant = db.targetBuffFilterImportant,
         buffDefensives = db.targetBuffFilterDefensives,
@@ -321,7 +325,7 @@ function BBF.UpdateUserAuraSettings()
         buffs = db.focusBuffEnable,
         debuffs = db.focusdeBuffEnable,
         buffOnlyMine = db.focusBuffFilterOnlyMe,
-        debuffOnlyMine = db.focusdeBuffFilterOnlyMe and not pveShowsAllDebuffs,
+        debuffOnlyMine = db.focusdeBuffFilterOnlyMe,
         buffPurgeable = db.focusBuffFilterPurgeable,
         buffImportant = db.focusBuffFilterImportant,
         buffDefensives = db.focusBuffFilterDefensives,
@@ -365,9 +369,10 @@ function BBF.UpdateUserAuraSettings()
 
     S.playerSpacingX = (db.playerAuraSpacingX or 0) -5
     S.playerSpacingY = db.playerAuraSpacingY or 0
-    S.showFilteredIcon = db.showHiddenAurasIcon
-    S.filteredDirection = db.hiddenIconDirection or "BOTTOM"
     S.playerAurasOn = db.playerAuraFiltering and db.enablePlayerBuffFiltering
+    S.showFilteredIcon = db.showHiddenAurasIcon and S.playerAurasOn
+        and db.PlayerAuraFrameBuffEnable and true or false
+    S.filteredDirection = db.hiddenIconDirection or "BOTTOM"
     S.clickthroughPlayerAuras = db.clickthroughPlayerAuras
 
     targetStaticCastbar = db.targetStaticCastbar
@@ -592,6 +597,7 @@ local function ApplyGlowGeometry(texture, anchor, size)
 end
 
 local function GetPurgeMode(style)
+    if style.purgeHidden then return nil end
     if style.purgeGlow then return "glow" end
     if style.isPlayer then return nil end
     return "default"
@@ -1013,7 +1019,7 @@ end
 
 local F = AuraUtil.AuraFilters
 
-local function BuildFilterString(harmful, tier, cfg)
+local function BuildFilterString(harmful, tier, cfg, mine)
     local parts = {}
 
     if harmful then
@@ -1056,7 +1062,11 @@ local function BuildFilterString(harmful, tier, cfg)
         AddNormalNegations()
     end
 
-    if WHITELIST_MINE_TIERS[tier] then
+    if HIGHLIGHT_TIERS[tier] then
+        if cfg.blacklistMineSplit then
+            parts[#parts + 1] = mine and F.Player or ("!" .. F.Player)
+        end
+    elseif WHITELIST_MINE_TIERS[tier] then
         parts[#parts + 1] = F.Player
     elseif WHITELIST_TIERS[tier] then
         parts[#parts + 1] = "!" .. F.Player
@@ -1078,7 +1088,7 @@ local function BuildFilterString(harmful, tier, cfg)
     return AuraUtil.CreateFilterString(unpack(parts))
 end
 
-local function BuildCandidateFilters(harmful, tier, cfg, canFilterIDs)
+local function BuildCandidateFilters(harmful, tier, cfg, canFilterIDs, mine)
     local filters = {}
     local blockAll = false
 
@@ -1087,7 +1097,8 @@ local function BuildCandidateFilters(harmful, tier, cfg, canFilterIDs)
 
     if cfg.blacklist and blacklist.any then
         local set
-        if tier == "mine" then
+        if mine or tier == "mine" or WHITELIST_MINE_TIERS[tier]
+            or (cfg.onlyMine and (tier == "purge" or tier == "purgeenrage")) then
             set = canFilterIDs and blacklist.mine or blacklist.mineNS
         else
             set = canFilterIDs and blacklist.all or blacklist.ns
@@ -1320,6 +1331,7 @@ local function BuildStyle(tier, sizes, isPlayer, cfg, into)
     t.cropIcon = (S.pixelBorder or S.darkBorder) and true or false
     t.darkColor = S.darkColor
     t.purgeGlow = cfg.purgeGlow
+    t.purgeHidden = cfg.purgeHidden
     t.purgeEnrage = tier == "purgeenrage"
     t.purgeGlowAlways = S.purgeGlowAlways
     t.purgeColor = S.purgeColor
@@ -1339,10 +1351,18 @@ local function GetFrameConfig(host, harmful)
     local f = S[host.settingsKey or host.key]
     local cfg
 
+    local reaction = UnitExists(host.unit) and UnitReaction("player", host.unit)
+    local hostile = (reaction and reaction <= 4) and true or false
+    local friendly = (reaction and reaction > 4) and true or false
+
     if harmful then
+        local debuffOnlyMine = f.debuffOnlyMine
+        if debuffOnlyMine and (friendly or (hostile and BBF.noBuffDebuffFilterOnTargetInPvE)) then
+            debuffOnlyMine = false
+        end
         cfg = {
             enabled = f.debuffs,
-            onlyMine = f.debuffOnlyMine,
+            onlyMine = debuffOnlyMine,
             short = f.debuffShort,
             whitelist = f.debuffWhitelist,
             blacklist = f.debuffBlacklist,
@@ -1351,9 +1371,13 @@ local function GetFrameConfig(host, harmful)
             generalMax = host.isPlayer and MAX_DEBUFFS_PER_GROUP or S.maxDebuffs,
         }
     else
+        local buffOnlyMine = f.buffOnlyMine
+        if buffOnlyMine and hostile then
+            buffOnlyMine = false
+        end
         cfg = {
             enabled = f.buffs,
-            onlyMine = f.buffOnlyMine,
+            onlyMine = buffOnlyMine,
             purgeable = f.buffPurgeable,
             short = f.buffShort,
             whitelist = f.buffWhitelist,
@@ -1374,6 +1398,9 @@ local function GetFrameConfig(host, harmful)
     local extras = f.extras and true or false
     cfg.importantFirst = S.importantFirst
     cfg.purgeGlow = extras and f.purgeGlow
+    -- The purge texture is an enemy-buff cue: friendly buffs only get it on request.
+    cfg.purgeHidden = (S.hidePurge
+        or (friendly and not host.isPlayer and not S.purgeOnFriendly)) and true or false
     cfg.collapsed = (not harmful) and host.key == "playerBuffs" and S.buffsCollapsed
         and true or false
     if cfg.collapsed then
@@ -1395,14 +1422,14 @@ local function GetFrameConfig(host, harmful)
     end
 
     cfg.narrowOn = (cfg.onlyMine or cfg.short or cfg.purgeable) and true or false
+    cfg.blacklistMineSplit = (cfg.blacklist and listCache.hasShowMine) and true or false
 
     cfg.importantGlow = (extras and f.importantGlow and cfg.liveImportant) and true or false
     cfg.defensiveGlow = (extras and f.defensiveGlow and cfg.liveDefensives) and true or false
     cfg.ccGlow = (extras and f.ccGlow and cfg.liveCC) and true or false
 
-    local reaction = UnitExists(host.unit) and UnitReaction("player", host.unit)
     cfg.purgeFirst = (S.purgeFirst and not harmful and not host.isPlayer
-        and not cfg.purgeable and reaction and reaction <= 4) and true or false
+        and not cfg.purgeable and hostile) and true or false
     cfg.pandemicGlow = (extras and not host.isPlayer and f.pandemicGlow) and true or false
     cfg.splitPandemic = (not cfg.pandemicGlow) and (not host.isPlayer)
         and listCache.whitelist.anyPandemic and true or false
@@ -1428,7 +1455,8 @@ local function AddContainerGroup(host, container, def, cfg, sort)
         container.bbfStyles[def.key] = BuildStyle(def.tier, GetHostSizes(host), host.isPlayer, cfg)
     end
 
-    container:AddAuraGroup(def.key, BuildFilterString(container.bbfHarmful, def.tier, cfg), {
+    container:AddAuraGroup(def.key,
+        BuildFilterString(container.bbfHarmful, def.tier, cfg, def.mine), {
         maxFrameCount = 0,
         sortMethod = sort[1],
         sortDirection = sort[2],
@@ -1607,7 +1635,7 @@ local function ConfigureContainer(host, container, harmful)
 
     for _, def in ipairs(defs) do
         local exists = container:HasAuraGroup(def.key)
-        local filters, blockAll = BuildCandidateFilters(harmful, def.tier, cfg, canFilterIDs)
+        local filters, blockAll = BuildCandidateFilters(harmful, def.tier, cfg, canFilterIDs, def.mine)
 
         local count = 0
         if cfg.enabled and not blockAll and not PreviewIsActive(host) then
@@ -1616,7 +1644,9 @@ local function ConfigureContainer(host, container, harmful)
             elseif WHITELIST_TIERS[def.tier] then
                 count = cfg.maxCount or 32
             elseif HIGHLIGHT_TIERS[def.tier] then
-                count = TierLive(def.tier, cfg) and (cfg.maxCount or 32) or 0
+                local live = TierLive(def.tier, cfg)
+                    and (not def.mine or cfg.blacklistMineSplit)
+                count = live and (cfg.maxCount or 32) or 0
             elseif cfg.collapsed then
                 count = 0
             elseif def.tier == "purge" or def.tier == "purgeenrage" then
@@ -1643,7 +1673,8 @@ local function ConfigureContainer(host, container, harmful)
         end
 
         if exists then
-            container:SetAuraGroupFilterString(def.key, BuildFilterString(harmful, def.tier, cfg))
+            container:SetAuraGroupFilterString(def.key,
+                BuildFilterString(harmful, def.tier, cfg, def.mine))
             ApplyGroupCandidateFilters(container, def.key, filters)
             ApplyGroupSortMethod(container, def.key, sort[1], sort[2])
             container:SetAuraGroupMaxFrameCount(def.key, count)
@@ -2444,7 +2475,35 @@ local function CreateToggleIcon()
         BetterBlizzFramesDB.toggleIconPosition = { point, nil, relativePoint, x, y }
     end)
 
+    BBF.StyleToggleAuraIcon()
+
     return icon
+end
+
+function BBF.StyleToggleAuraIcon()
+    local button = BBF.toggleAuraIcon
+    if not button then return end
+
+    local texture = button.Icon
+    local drawBorder = (S.pixelBorder or S.darkBorder) and true or false
+
+    local border = button.bbfBorder
+    if not border then
+        border = button:CreateTexture(nil, "OVERLAY", nil, 5)
+        button.bbfBorder = border
+    end
+
+    ApplyBorderArt(border, S.pixelBorder)
+    ApplyBorderGeometry(border, texture, S.pixelBorder, PLAYER_BUFF_BORDER_INSET)
+    local c = S.darkColor or 1
+    border:SetVertexColor(c, c, c)
+    border:SetShown(drawBorder)
+
+    if drawBorder then
+        texture:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+    else
+        texture:SetTexCoord(0, 1, 0, 1)
+    end
 end
 
 local function GetFilteredFlow()
@@ -2531,6 +2590,7 @@ function BBF.RefreshFilteredAuras(host)
         BBF.toggleAuraIcon:SetShown(S.showFilteredIcon and true or false)
         BBF.toggleAuraIcon:SetScale(host.scale or 1)
         AnchorToggleIcon()
+        BBF.StyleToggleAuraIcon()
     end
 
     ConfigureFilteredContainer(host)

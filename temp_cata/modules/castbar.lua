@@ -169,9 +169,9 @@ function BBF.UpdateCastbars()
                             yPos = yPos - 20
                         end
 
-                        local unitId = partyFrame.displayedUnit or partyFrame.unit
+                        local unitId = BBF.GetPartyFrameUnit(partyFrame)
 
-                        if (unitId and unitId:match("^partypet%d$")) then
+                        if (not unitId or unitId:match("pet")) then
                             CastBarSetUnit(spellbar, nil)
                         elseif UnitIsUnit(unitId, "player") and (not BetterBlizzFramesDB.partyCastbarSelf and not BetterBlizzFramesDB.partyCastBarTestMode) then
                             CastBarSetUnit(spellbar, nil)
@@ -484,12 +484,22 @@ end
 
 
 local CastBarFrame = CreateFrame("Frame")
+local rosterUpdateQueued = false
+
+local function RosterUpdateCastbars()
+    rosterUpdateQueued = false
+    if not BetterBlizzFramesDB.showPartyCastbar then return end
+
+    BBF.UpdateCastbars()
+    BBF.CreateCastbars()
+end
+
 CastBarFrame:RegisterEvent("GROUP_ROSTER_UPDATE")
 CastBarFrame:SetScript("OnEvent", function(self, event, ...)
-    if BetterBlizzFramesDB.showPartyCastbar then
-        BBF.UpdateCastbars()
-        BBF.CreateCastbars()
-    end
+    if not BetterBlizzFramesDB.showPartyCastbar then return end
+    if rosterUpdateQueued then return end
+    rosterUpdateQueued = true
+    C_Timer.After(0.1, RosterUpdateCastbars)
 end)
 
 

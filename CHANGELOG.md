@@ -1,3 +1,19 @@
+# BetterBlizzFrames 2.0.5
+## New
+- New Kaaaz profile (www.twitch.tv/KaaazTTV). Thank you for sharing!
+- New "Hide purge texture" setting
+- New "Show purge texture on friendly too" setting.
+## Tweak
+- Update Venruki profile (www.twitch.tv/venruki).
+- Fix the purge texture showing on friendly buffs unintentionally. Its now an optional setting instead.
+- Fix "Only mine" filters for Buffs and Debuffs for Target/FocusFrame applying where it doesnt make sense; "Only mine" on Enemy Buffs for example. "Only mine" is now only active for friendly buffs and enemy debuffs.
+- Filtered Buffs Icon now also gets disabled if "Show Buffs" is not enabled.
+- Filtered Buffs Icon now properly also gets Pixel Border if thats enabled (not only when dark mode is also enabled)
+## Bugfix
+- Fix "Hide Boss Frames" causing errors.
+- Fix an issue with blacklist + "Show Mine" tag filtering the buff anyway.
+- Fix "Big Debuffs" setting showing too many debuffs on friendly units due to a mistake in the filter.
+
 # BetterBlizzFrames 2.0.4
 ## New
 - "Enlarged Aura" is back as an option in the whitelist for Target & Focus. Can be combined with Important Glow for a separate (or same) color to the Important one. Scale it with "Enlarged Aura Scale" and sort the enlarged block first or last with "Sort Enlarged First". Player auras keep their Edit Mode size but still glow and sort with the block. Your old whitelist ticks and Enlarged Aura Scale carry over.

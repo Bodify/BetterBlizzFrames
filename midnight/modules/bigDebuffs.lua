@@ -28,11 +28,11 @@ local OTHER_DEBUFFS = {
 }
 
 local TIERS = {
-    { key = "OtherDebuffs", filter = "HARMFUL", candidateFilters = { includeSpellIDs = OTHER_DEBUFFS } },
+    { key = "OtherDebuffs", filter = "HARMFUL", needsSpellIDs = true, candidateFilters = { includeSpellIDs = OTHER_DEBUFFS } },
     { key = "ExtDef",       filter = "HELPFUL|EXTERNAL_DEFENSIVE" },
     { key = "BigDef",       filter = "HELPFUL|BIG_DEFENSIVE" },
     { key = "Important",    filter = "HELPFUL|IMPORTANT|!BIG_DEFENSIVE|!EXTERNAL_DEFENSIVE" },
-    { key = "OtherCC",      filter = "HARMFUL", candidateFilters = { includeSpellIDs = OTHER_CC } },
+    { key = "OtherCC",      filter = "HARMFUL", needsSpellIDs = true, candidateFilters = { includeSpellIDs = OTHER_CC } },
     { key = "CC",           filter = "HARMFUL|CROWD_CONTROL" },
 }
 
@@ -40,9 +40,11 @@ local SORT_METHOD = AuraContainerSortMethod.ExpirationOnly
 local SORT_DIRECTION = AuraContainerSortDirection.Reverse
 
 local SWIPE_TEXTURE = "Interface\\CHARACTERFRAME\\TempPortraitAlphaMask"
+local ALWAYS_ASSISTABLE = { player = true, pet = true }
 
 local hosts = {}
 local buildQueued = false
+local hostsEnabled = false
 
 local STRATA_BELOW = {
     BACKGROUND = "BACKGROUND",
@@ -110,34 +112,48 @@ local function CreateHost(unit, unitFrame, portrait, portraitMask)
     }
 
     for index, tier in ipairs(TIERS) do
-        local container = CreateFrame("AuraContainer", nil, anchor, "CustomAuraContainerTemplate")
-        container:SetAllPoints(anchor)
-        container:SetUnit(unit)
-        container:SetFrameStrata(strata)
-        container:SetFrameLevel(index)
-        container:SetEnabled(false)
-        container:Hide()
+        if not (tier.needsSpellIDs and ALWAYS_ASSISTABLE[unit]) then
+            local container = CreateFrame("AuraContainer", nil, anchor, "CustomAuraContainerTemplate")
+            container:SetAllPoints(anchor)
+            container:SetUnit(unit)
+            container:SetFrameStrata(strata)
+            container:SetFrameLevel(index)
+            container:SetEnabled(false)
+            container:Hide()
 
-        container:AddAuraSlot("Aura", tier.filter, {
-            sortMethod = SORT_METHOD,
-            sortDirection = SORT_DIRECTION,
-            candidateFilters = tier.candidateFilters,
-            initializeFrame = function(button) InitIcon(host, button) end,
-        })
+            container:AddAuraSlot("Aura", tier.filter, {
+                sortMethod = SORT_METHOD,
+                sortDirection = SORT_DIRECTION,
+                candidateFilters = tier.candidateFilters,
+                initializeFrame = function(button) InitIcon(host, button) end,
+            })
 
-        host.containers[index] = container
+            host.containers[index] = container
+        end
     end
 
     hosts[unit] = host
     unitFrame.bbfBigDebuff = anchor
 end
 
-local function SetHostsEnabled(enabled)
-    for _, host in pairs(hosts) do
-        for _, container in ipairs(host.containers) do
-            container:SetEnabled(enabled)
-            container:SetShown(enabled)
+local function UpdateHostContainers(host)
+    local spellIDsUsable = BBF.CanFilterBySpellID(host.unit, false)
+
+    for index, tier in ipairs(TIERS) do
+        local container = host.containers[index]
+        if container then
+            local on = hostsEnabled and (not tier.needsSpellIDs or spellIDsUsable)
+            container:SetEnabled(on)
+            container:SetShown(on)
         end
+    end
+end
+
+local function SetHostsEnabled(enabled)
+    hostsEnabled = enabled
+
+    for _, host in pairs(hosts) do
+        UpdateHostContainers(host)
     end
 end
 
@@ -145,8 +161,11 @@ local function RefreshHost(unit)
     local host = hosts[unit]
     if not host then return end
 
-    for _, container in ipairs(host.containers) do
-        if container:IsShown() then
+    UpdateHostContainers(host)
+
+    for index = 1, #TIERS do
+        local container = host.containers[index]
+        if container and container:IsShown() then
             container:UpdateAllAuras()
         end
     end
@@ -161,11 +180,14 @@ local function CreateUnitWatcher()
     unitWatcher:RegisterEvent("PLAYER_TARGET_CHANGED")
     unitWatcher:RegisterEvent("PLAYER_FOCUS_CHANGED")
     unitWatcher:RegisterUnitEvent("UNIT_PET", "player")
-    unitWatcher:SetScript("OnEvent", function(_, event)
+    unitWatcher:RegisterUnitEvent("UNIT_FACTION", "target", "focus")
+    unitWatcher:SetScript("OnEvent", function(_, event, unit)
         if event == "PLAYER_TARGET_CHANGED" then
             RefreshHost("target")
         elseif event == "PLAYER_FOCUS_CHANGED" then
             RefreshHost("focus")
+        elseif event == "UNIT_FACTION" then
+            RefreshHost(unit)
         else
             RefreshHost("pet")
         end

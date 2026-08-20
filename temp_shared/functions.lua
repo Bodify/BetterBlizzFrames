@@ -133,6 +133,22 @@ local function GetDefaultPartyFrame(i)
 	end
 end
 
+function BBF.GetPartyFrameUnit(frame)
+	if not frame then return end
+	local unit = frame.displayedUnit or frame.unit
+	if not unit and frame.GetAttribute then
+		unit = frame:GetAttribute("unit")
+		if unit then
+			local suffix = frame:GetAttribute("unitsuffix")
+			if suffix and suffix ~= "" then
+				unit = unit .. suffix
+			end
+		end
+	end
+	if type(unit) ~= "string" or unit == "" then return end
+	return unit
+end
+
 function BBF.FindPartyFrame(i)
 	if BetterBlizzFramesDB.partyCastBarForceDefaultPartyFrames then
 		local defaultPartyFrame, isDefault = GetDefaultPartyFrame(i)

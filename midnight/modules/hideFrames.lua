@@ -152,12 +152,12 @@ function BBF.HideFrames()
                 hooksecurefunc(BossTargetFrameContainer, "UpdateShownState", function(self)
                     self:SetAlpha(0)
                     if InCombatLockdown() then return end
-                    self:SetScale(0.001)
+                    self:SetScaleBase(0.0001)
                 end)
                 BossTargetFrameContainer:SetAlpha(0)
                 BossTargetFrameContainer:SetMouseClickEnabled(false)
                 BossTargetFrameContainer:EnableMouse(false)
-                BossTargetFrameContainer:SetScale(0.001)
+                BossTargetFrameContainer:SetScaleBase(0.0001)
                 bossFrameHooked = true
             end
         end
