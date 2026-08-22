@@ -3539,6 +3539,17 @@ local function CreatePlayerHost(key, hostFrame, harmful)
         BBF.AnchorPlayerAuraContainer(host)
         BBF.ApplyAuraGroupConfig(host)
         BBF.RestyleAuraButtons()
+        BBF.RefreshFilteredAuras(host)
+
+        if PreviewIsActive(host) and not host.editModePreviewQueued then
+            host.editModePreviewQueued = true
+            C_Timer.After(0, function()
+                host.editModePreviewQueued = nil
+                if PreviewIsActive(host) then
+                    BBF.RefreshAuraTestMode()
+                end
+            end)
+        end
     end)
 
     return host
