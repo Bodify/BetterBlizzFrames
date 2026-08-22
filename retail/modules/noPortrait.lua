@@ -1532,7 +1532,7 @@ local function MakeNoPortraitMode(frame)
                 local point, relativePoint, xOffset, yOffset, scale = GetPlayerClassAndSpecPosition(maxResource)
                 local relativeFrame = PlayerFrame
 
-                if inVehicle then
+                if inVehicle and not db.bigPlayerHealthbar then
                     xOffset = xOffset + 2
                     yOffset = yOffset + 0
                 end

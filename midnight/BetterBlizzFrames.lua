@@ -298,6 +298,8 @@ local defaultSettings = {
     targetdeBuffFilterLessMinite = false,
     targetdeBuffFilterOnlyMe = false,
     targetdeBuffFilterCrowdControl = false,
+    targetdeBuffFilterDispellable = false,
+    targetdeBuffFilterDispellableAny = false,
 
     --Focus buffs
     focusBuffEnable = true,
@@ -322,6 +324,8 @@ local defaultSettings = {
     focusdeBuffFilterLessMinite = false,
     focusdeBuffFilterOnlyMe = false,
     focusdeBuffFilterCrowdControl = false,
+    focusdeBuffFilterDispellable = false,
+    focusdeBuffFilterDispellableAny = false,
 
     PlayerAuraFrameBuffFilterWatchList = false,
     PlayerAuraFramedeBuffFilterWatchList = false,
@@ -4168,6 +4172,7 @@ function BBF.SymmetricPlayerFrame()
     manaBar.ManaBarText:SetPoint("CENTER", 4.5, 0)
 
     hooksecurefunc(manaBar, "SetPoint", function(self)
+        if InCombatLockdown() then return end
         if not self.changing then
             self.changing = true
             self:SetPoint("TOPLEFT", 76, -61)
@@ -4203,12 +4208,12 @@ function BBF.SymmetricPlayerFrame()
     end)
     healthbarMask:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UIUnitFrameTargetHealthMask2x-Flipped")
 
-    healthbarMask:SetSize(129,32)
+    healthbarMask:SetSize(129, 32 + BBF.GetBigPlayerHealthbarGrowth())
 
     hooksecurefunc(healthbarMask, "SetHeight", function(self)
         if self.changing then return end
         self.changing = true
-        self:SetHeight(32)
+        self:SetHeight(32 + BBF.GetBigPlayerHealthbarGrowth())
         self.changing = false
     end)
 
@@ -4247,13 +4252,14 @@ function BBF.SymmetricPlayerFrame()
     healthBarsContainer:SetWidth(126)
 
     hooksecurefunc(healthBarsContainer, "SetHeight", function(self)
+        if InCombatLockdown() then return end
         if not self.changing then
             self.changing = true
-            self:SetHeight(20.5)
+            self:SetHeight(20.5 + BBF.GetBigPlayerHealthbarGrowth())
             self.changing = false
         end
     end)
-    healthBarsContainer:SetHeight(20.5)
+    healthBarsContainer:SetHeight(20.5 + BBF.GetBigPlayerHealthbarGrowth())
 
     healthBarsContainer.RightText:SetPoint("RIGHT", -4, 1)
     healthBarsContainer.LeftText:SetPoint("LEFT", 2, 1)
@@ -4263,11 +4269,11 @@ function BBF.SymmetricPlayerFrame()
         if InCombatLockdown() then return end
         if not self.changing then
             self.changing = true
-            self:SetHeight(20)
+            self:SetHeight(20 + BBF.GetBigPlayerHealthbarGrowth())
             self.changing = false
         end
     end)
-    healthBar:SetHeight(20)
+    healthBar:SetHeight(20 + BBF.GetBigPlayerHealthbarGrowth())
     healthBar:SetWidth(126)
 
 
@@ -4792,12 +4798,14 @@ function BBF.FixStupidBlizzPTRShit()
 
     local a, b, c, d, e = TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:GetPoint()
     TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:SetPoint(a, b, c, d, -24)
-    if not BBF.ocdAdjusted then
-        local a,b,c,d,e = TargetFrame.bbfName:GetPoint()
-        TargetFrame.bbfName:SetPoint(a,b,c,d,-2)
-        local a,b,c,d,e = FocusFrame.bbfName:GetPoint()
-        FocusFrame.bbfName:SetPoint(a,b,c,d,-2)
-        BBF.ocdAdjusted = true
+    if not BBF.ocdAdjusted and TargetFrame.bbfName and FocusFrame.bbfName then
+        local a,b,c,d = TargetFrame.bbfName:GetPoint()
+        local e,f,g,h = FocusFrame.bbfName:GetPoint()
+        if a and e then
+            TargetFrame.bbfName:SetPoint(a,b,c,d,-2)
+            FocusFrame.bbfName:SetPoint(e,f,g,h,-2)
+            BBF.ocdAdjusted = true
+        end
     end
     local lvlYOffset = BetterBlizzFramesDB.symmetricPlayerFrame and -4 or -4
     --TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:SetHeight()
@@ -5360,6 +5368,8 @@ First:SetScript("OnEvent", function(_, event, addonName)
             "enableMaxTargetFocusBuffs", "maxTargetFocusBuffs",
             "enableMaxTargetFocusDebuffs", "maxTargetFocusDebuffs",
             "hidePlayerAuraTooltips", "playerAuraPandemicGlow",
+            "targetdeBuffFilterDispellableEnemy", "targetdeBuffFilterDispellableFriendly",
+            "focusdeBuffFilterDispellableEnemy", "focusdeBuffFilterDispellableFriendly",
         }) do
             BetterBlizzFramesDB[key] = nil
         end

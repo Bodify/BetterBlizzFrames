@@ -18,6 +18,10 @@ local function IsEnabled()
     return BetterBlizzFramesDB.bigPlayerHealthbar and BetterBlizzFramesDB.noPortraitModes
 end
 
+function BBF.GetBigPlayerHealthbarGrowth()
+    return 0--IsEnabled() and (HEALTHBAR_HEIGHT_GROWN - HEALTHBAR_HEIGHT) or 0
+end
+
 local function GrowBar()
     local hpContainer, healthBar, mask = GetHealthBits()
     hpContainer:SetHeight(HEALTHBAR_HEIGHT_GROWN)
@@ -26,7 +30,8 @@ local function GrowBar()
 end
 
 local function RestoreBar()
-    local _, healthBar, mask = GetHealthBits()
+    local hpContainer, healthBar, mask = GetHealthBits()
+    hpContainer:SetHeight(HEALTHBAR_HEIGHT)
     healthBar:SetHeight(HEALTHBAR_HEIGHT)
     mask:SetHeight(MASK_HEIGHT)
 end
@@ -52,7 +57,24 @@ local function Apply()
     BBF.UpdateNoPortraitText(PlayerFrame, "player")
 end
 
+local vehicleExitListener
 function BBF.UnregisterPlayerFrameArtEvents()
+    if UnitInVehicle("player") then
+        PlayerFrame:UnregisterEvent("UNIT_ENTERED_VEHICLE")
+        PlayerFrame:UnregisterEvent("UNIT_EXITING_VEHICLE")
+        if not vehicleExitListener then
+            vehicleExitListener = CreateFrame("Frame")
+            vehicleExitListener:SetScript("OnEvent", function(self)
+                self:UnregisterAllEvents()
+                BBF.UnregisterPlayerFrameArtEvents()
+            end)
+        end
+        vehicleExitListener:RegisterUnitEvent("UNIT_EXITED_VEHICLE", "player")
+        return
+    end
+    if vehicleExitListener then
+        vehicleExitListener:UnregisterAllEvents()
+    end
     PlayerFrame:UnregisterEvent("UNIT_ENTERED_VEHICLE")
     PlayerFrame:UnregisterEvent("UNIT_EXITING_VEHICLE")
     PlayerFrame:UnregisterEvent("UNIT_EXITED_VEHICLE")
