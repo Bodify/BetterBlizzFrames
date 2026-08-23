@@ -26,6 +26,10 @@ local function GrowBar()
     local hpContainer, healthBar, mask = GetHealthBits()
     hpContainer:SetHeight(HEALTHBAR_HEIGHT_GROWN)
     healthBar:SetHeight(HEALTHBAR_HEIGHT_GROWN)
+    if BetterBlizzFramesDB.noPortraitPixelBorder then
+        BBF.UpdatePlayerPixelBorderSize()
+        return
+    end
     mask:SetHeight(MASK_HEIGHT_GROWN)
 end
 
@@ -33,13 +37,19 @@ local function RestoreBar()
     local hpContainer, healthBar, mask = GetHealthBits()
     hpContainer:SetHeight(HEALTHBAR_HEIGHT)
     healthBar:SetHeight(HEALTHBAR_HEIGHT)
+    if BetterBlizzFramesDB.noPortraitPixelBorder then
+        BBF.UpdatePlayerPixelBorderSize()
+        return
+    end
     mask:SetHeight(MASK_HEIGHT)
 end
 local function PlayerMaskOffset()
+    if BetterBlizzFramesDB.noPortraitPixelBorder then return end
     local _, healthBar, mask = GetHealthBits()
     mask:SetPoint("TOPLEFT", healthBar, "TOPLEFT", -33, 11)
 end
 local function VehicleMaskOffset()
+    if BetterBlizzFramesDB.noPortraitPixelBorder then return end
     local _, healthBar, mask = GetHealthBits()
     mask:SetPoint("TOPLEFT", healthBar, "TOPLEFT", -34, 10)
 end

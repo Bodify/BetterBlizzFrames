@@ -325,6 +325,7 @@ local BorderPositions = {
     },
     player = {
         health = { width = 123, height = 19, startX = 0, startY = 0 },
+        healthBig = { width = 123, height = 30, startX = 0, startY = 0 },
         mana   = { width = 123, height = 8, startX = 0, startY = -2 },
         alt    = { width = 123, height = 8, startX = 0, startY = 0 },
     },
@@ -337,6 +338,19 @@ local BorderPositions = {
         mana   = { width = 76, height = 5, startX = 0, startY = 0 },
     },
 }
+
+local function GetPlayerHealthBorder()
+    return BetterBlizzFramesDB.bigPlayerHealthbar and BorderPositions.player.healthBig or BorderPositions.player.health
+end
+
+function BBF.UpdatePlayerPixelBorderSize()
+    if not BetterBlizzFramesDB.noPortraitPixelBorder then return end
+
+    local hpContainer = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer
+    local cfg = GetPlayerHealthBorder()
+    BlackBorder(hpContainer.HealthBar, cfg.width, cfg.height, cfg.startX, cfg.startY)
+    SetBarMask(hpContainer.HealthBar, hpContainer.HealthBarMask, true)
+end
 
 function BBF.UpdateNoPortraitText(frame, frameType)
     local db = BetterBlizzFramesDB
@@ -1063,7 +1077,7 @@ local function MakeNoPortraitMode(frame)
         end
 
         if db.noPortraitPixelBorder then
-            local cfg = BorderPositions.player.health
+            local cfg = GetPlayerHealthBorder()
             BlackBorder(hpContainer.HealthBar, cfg.width, cfg.height, cfg.startX, cfg.startY)
             cfg = BorderPositions.player.mana
             BlackBorder(manaBar, cfg.width, cfg.height, cfg.startX, cfg.startY)
