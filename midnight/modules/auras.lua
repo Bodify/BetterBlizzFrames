@@ -732,9 +732,10 @@ local function ApplyDispelRegistrations(button, style)
     local purgeMode = button.bbfPurgeGlow and GetPurgeMode(style) or nil
 
     local pc = style.recolorPurge and style.purgeColor or nil
-    local signature = string.format("%s|%s|%s|%s|%s|%s|%s|%s",
+    local signature = string.format("%s|%s|%s|%s|%s|%s|%s|%s|%s",
         tostring(borderStyle), tostring(ownBorderOn), tostring(purgeMode),
-        tostring(style.purgeGlowAlways), tostring(style.purgeEnrage),
+        tostring(style.purgeGlowAlways), tostring(style.purgeFriendly),
+        tostring(style.purgeEnrage),
         pc and string.format("%.3f,%.3f,%.3f,%.3f", pc[1], pc[2], pc[3], pc[4] or 1) or "false",
         tostring(style.darkColor), tostring(ownBorderHarmful))
     if button.bbfDispelSignature == signature then return end
@@ -780,7 +781,7 @@ local function ApplyDispelRegistrations(button, style)
             local asset = { asset = purgeMode == "glow" and PURGE_GLOW_ATLAS or STEALABLE_TEXTURE }
 
             local stealableFilter
-            if not style.purgeGlowAlways then
+            if not style.purgeGlowAlways and not style.purgeFriendly then
                 stealableFilter = Enum.CustomAuraButtonDispelTypeStealableFilter.Stealable
             end
 
@@ -1379,6 +1380,7 @@ local function BuildStyle(tier, sizes, isPlayer, cfg, into)
     t.purgeHidden = cfg.purgeHidden
     t.purgeEnrage = tier == "purgeenrage"
     t.purgeGlowAlways = S.purgeGlowAlways
+    t.purgeFriendly = cfg.purgeFriendly
     t.purgeColor = S.purgeColor
     t.recolorPurge = S.recolorPurge
     t.pandemicGlow = pandemicGlow
@@ -1412,7 +1414,9 @@ local function GetFrameConfig(host, harmful)
 
     if harmful then
         local debuffOnlyMine = f.debuffOnlyMine
-        if debuffOnlyMine and (friendly or (hostile and BBF.noBuffDebuffFilterOnTargetInPvE)) then
+        if hostile and BBF.forceOnlyMyDebuffsInPvE then
+            debuffOnlyMine = true
+        elseif debuffOnlyMine and friendly then
             debuffOnlyMine = false
         end
         cfg = {
@@ -1458,6 +1462,7 @@ local function GetFrameConfig(host, harmful)
     cfg.purgeGlow = extras and f.purgeGlow
     cfg.purgeHidden = (S.hidePurge
         or (friendly and not host.isPlayer and not S.purgeOnFriendly)) and true or false
+    cfg.purgeFriendly = (friendly and not host.isPlayer and S.purgeOnFriendly) and true or false
     cfg.collapsed = (not harmful) and host.key == "playerBuffs" and S.buffsCollapsed
         and true or false
     if cfg.collapsed then
@@ -3139,7 +3144,7 @@ local function StyleTestButton(button, entry, tier, style, sizes, harmful)
     local purge = button.bbfPurgeGlow
     local purgeMode = GetPurgeMode(style)
     local purgeable
-    if style.purgeGlowAlways then
+    if style.purgeGlowAlways or style.purgeFriendly then
         purgeable = PURGE_DISPEL_TYPES[entry.dispel] and true or false
     else
         purgeable = entry.stealable and true or false

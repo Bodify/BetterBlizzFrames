@@ -628,6 +628,21 @@ local function CheckForUpdate()
     end
 end
 
+local cvarFilterHooked = false
+local function UpdatePvEDebuffFilter()
+    local _, instanceType = GetInstanceInfo()
+    local isPvE = instanceType == "party" or instanceType == "raid" or instanceType == "scenario"
+    local onlyMine = isPvE and not C_CVar.GetCVarBool("noBuffDebuffFilterOnTarget")
+    if BBF.forceOnlyMyDebuffsInPvE ~= onlyMine then
+        BBF.forceOnlyMyDebuffsInPvE = onlyMine
+        BBF.RefreshAllAuraFrames()
+    end
+    if not cvarFilterHooked and CVarCallbackRegistry then
+        cvarFilterHooked = true
+        CVarCallbackRegistry:RegisterCallback("noBuffDebuffFilterOnTarget", UpdatePvEDebuffFilter, BBF)
+    end
+end
+
 local function LoadingScreenDetector(_, event)
     --#######TEMPORARY BUGFIX FOR BLIZZARD#########
     local _, instanceType = GetInstanceInfo()
@@ -641,14 +656,7 @@ local function LoadingScreenDetector(_, event)
                 BBF.ArenaOptimizer()
             end
 
-            local isPvE = instanceType == "party" or instanceType == "raid" or instanceType == "scenario"
-            local noFilter = isPvE and C_CVar.GetCVarBool("noBuffDebuffFilterOnTarget")
-            if BBF.noBuffDebuffFilterOnTargetInPvE ~= noFilter then
-                BBF.noBuffDebuffFilterOnTargetInPvE = noFilter
-                if BBF.RefreshAllAuraFrames then
-                    BBF.RefreshAllAuraFrames()
-                end
-            end
+            UpdatePvEDebuffFilter()
         end
 
         BBF.MinimapHider()
@@ -712,7 +720,7 @@ local function LoadingScreenDetector(_, event)
         end)
     end
 end
-BBF.noBuffDebuffFilterOnTargetInPvE = false
+BBF.forceOnlyMyDebuffsInPvE = false
 local LoadingScreenFrame = CreateFrame("Frame")
 LoadingScreenFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
 LoadingScreenFrame:RegisterEvent("PLAYER_LEAVING_WORLD")
