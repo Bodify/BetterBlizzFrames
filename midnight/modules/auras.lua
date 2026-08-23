@@ -100,6 +100,10 @@ do
             end
         end
     end
+    for _, def in ipairs(AURA_GROUPS) do
+        def.friendlyKey = def.key .. "Friendly"
+        AURA_GROUPS.index[def.friendlyKey] = AURA_GROUPS.index[def.key]
+    end
 end
 
 local HIGHLIGHT_TIERS = { important = true, bigdef = true, extdef = true, cc = true }
@@ -436,8 +440,14 @@ local function IsNeverSecret(spellID)
 end
 
 function BBF.CanFilterBySpellID(unit, isHelpful)
-    if not unit or not UnitExists(unit) then return false end
-    local assist = UnitCanAssist("player", unit) and true or false
+    local assist
+    if S.primeReaction then
+        assist = S.primeReaction > 4
+    elseif unit and UnitExists(unit) then
+        assist = UnitCanAssist("player", unit) and true or false
+    else
+        return false
+    end
     if isHelpful then
         return assist
     end
@@ -1395,7 +1405,8 @@ local function GetFrameConfig(host, harmful)
     local f = S[host.settingsKey or host.key]
     local cfg
 
-    local reaction = UnitExists(host.unit) and UnitReaction("player", host.unit)
+    local reaction = S.primeReaction
+        or (UnitExists(host.unit) and UnitReaction("player", host.unit))
     local hostile = (reaction and reaction <= 4) and true or false
     local friendly = (reaction and reaction > 4) and true or false
 
@@ -1442,6 +1453,7 @@ local function GetFrameConfig(host, harmful)
     cfg.showDispelType = host.showDispelType and true or false
 
     local extras = f.extras and true or false
+    cfg.friendlyKeys = (friendly and not host.isPlayer) and true or false
     cfg.importantFirst = S.importantFirst
     cfg.purgeGlow = extras and f.purgeGlow
     cfg.purgeHidden = (S.hidePurge
@@ -1495,19 +1507,19 @@ local function SeedContainerStyles(host, container)
     end
 end
 
-local function AddContainerGroup(host, container, def, cfg, sort)
-    if not container.bbfStyles[def.key] then
-        container.bbfStyles[def.key] = BuildStyle(def.tier, GetHostSizes(host), host.isPlayer, cfg)
+local function AddContainerGroup(host, container, def, cfg, sort, key)
+    if not container.bbfStyles[key] then
+        container.bbfStyles[key] = BuildStyle(def.tier, GetHostSizes(host), host.isPlayer, cfg)
     end
 
-    container:AddAuraGroup(def.key,
+    container:AddAuraGroup(key,
         BuildFilterString(container.bbfHarmful, def.tier, cfg, def.mine), {
         maxFrameCount = 0,
         sortMethod = sort[1],
         sortDirection = sort[2],
         layout = { elementSpacing = S.hGap, lineSpacing = S.vGap },
         initializeFrame = function(button)
-            InitAuraButton(button, container.bbfStyles[def.key])
+            InitAuraButton(button, container.bbfStyles[key])
         end,
     })
 end
@@ -1567,6 +1579,13 @@ local function ApplyGroupCandidateFilters(container, key, filters)
     if record.filters == signature then return end
     record.filters = signature
     container:SetAuraGroupCandidateFilters(key, filters)
+end
+
+local function ApplyGroupFrameCount(container, key, count)
+    local record = GetAppliedRecord(container, key)
+    if record.count == count then return end
+    record.count = count
+    container:SetAuraGroupMaxFrameCount(key, count)
 end
 
 local function ApplyGroupSortMethod(container, key, method, direction)
@@ -1641,11 +1660,13 @@ local function ConfigureSpacer(host, harmful)
     local extent = SpacerExtent()
     local plan = host.spacerPlan
     local mirror = (plan and plan.mirror) and true or false
+    local cfg = GetFrameConfig(host, harmful)
 
     if mirror and InCombatLockdown() then
         for _, def in ipairs(AURA_GROUPS) do
-            local entry = plan[def.key]
-            if entry and entry.live and not spacer:HasAuraGroup(def.key) then
+            local key = cfg.friendlyKeys and def.friendlyKey or def.key
+            local entry = plan[key]
+            if entry and entry.live and not spacer:HasAuraGroup(key) then
                 mirror = false
                 host.spacerPending = true
                 break
@@ -1661,7 +1682,7 @@ local function ConfigureSpacer(host, harmful)
         spacer:SetAuraGroupFilterString(SPACER_KEY, filter)
     end
 
-    local count = (not mirror and GetFrameConfig(host, harmful).enabled
+    local count = (not mirror and cfg.enabled
         and not PreviewIsActive(host)) and 1 or 0
     if record.count ~= count then
         record.count = count
@@ -1671,33 +1692,34 @@ local function ConfigureSpacer(host, harmful)
     ApplyGroupLayout(spacer, SPACER_KEY, nil, nil, 1, extent, nil, nil)
 
     for _, def in ipairs(AURA_GROUPS) do
-        local entry = mirror and plan[def.key] or nil
+        local key = cfg.friendlyKeys and def.friendlyKey or def.key
+        local entry = mirror and plan[key] or nil
         if entry and not entry.live then entry = nil end
 
-        local exists = spacer:HasAuraGroup(def.key)
+        local exists = spacer:HasAuraGroup(key)
         if entry and not exists then
-            AddSpacerGroup(spacer, def.key, entry.filterString)
+            AddSpacerGroup(spacer, key, entry.filterString)
             exists = true
         end
 
         if exists then
-            local groupRecord = GetAppliedRecord(spacer, def.key)
-
             if entry then
+                local groupRecord = GetAppliedRecord(spacer, key)
                 if groupRecord.filterString ~= entry.filterString then
                     groupRecord.filterString = entry.filterString
-                    spacer:SetAuraGroupFilterString(def.key, entry.filterString)
+                    spacer:SetAuraGroupFilterString(key, entry.filterString)
                 end
-                ApplyGroupCandidateFilters(spacer, def.key, entry.filters)
+                ApplyGroupCandidateFilters(spacer, key, entry.filters)
             end
 
-            local groupCount = entry and 1 or 0
-            if groupRecord.count ~= groupCount then
-                groupRecord.count = groupCount
-                spacer:SetAuraGroupMaxFrameCount(def.key, groupCount)
-            end
+            ApplyGroupFrameCount(spacer, key, entry and 1 or 0)
+            ApplyGroupLayout(spacer, key, nil, nil, 1, extent, nil, nil)
+        end
 
-            ApplyGroupLayout(spacer, def.key, nil, nil, 1, extent, nil, nil)
+        local idle = cfg.friendlyKeys and def.key or def.friendlyKey
+        if spacer:HasAuraGroup(idle) then
+            ApplyGroupFrameCount(spacer, idle, 0)
+            ApplyGroupLayout(spacer, idle, nil, nil, 1, extent, nil, nil)
         end
     end
 
@@ -1710,7 +1732,7 @@ local function ConfigureContainer(host, container, harmful)
     local plan = (container == host.blockTop) and host.spacerPlan or nil
     if plan then plan.mirror = false end
 
-    if not UnitExists(host.unit) then return end
+    if not S.primeReaction and not UnitExists(host.unit) then return end
 
     local defs = AURA_GROUPS
     local cfg = GetFrameConfig(host, harmful)
@@ -1729,13 +1751,14 @@ local function ConfigureContainer(host, container, harmful)
     end
 
     for _, def in ipairs(defs) do
-        local exists = container:HasAuraGroup(def.key)
+        local key = cfg.friendlyKeys and def.friendlyKey or def.key
+        local exists = container:HasAuraGroup(key)
         local filters, blockAll = BuildCandidateFilters(harmful, def.tier, cfg, canFilterIDs, def.mine)
 
-        local entry = plan and plan[def.key]
+        local entry = plan and plan[key]
         if plan and not entry then
             entry = {}
-            plan[def.key] = entry
+            plan[key] = entry
         end
         if entry then entry.live = false end
 
@@ -1775,22 +1798,28 @@ local function ConfigureContainer(host, container, harmful)
         end
 
         if not exists and count > 0 then
-            AddContainerGroup(host, container, def, cfg, sort)
+            AddContainerGroup(host, container, def, cfg, sort, key)
             exists = true
         end
 
         if exists then
             local filterString = BuildFilterString(harmful, def.tier, cfg, def.mine)
-            container:SetAuraGroupFilterString(def.key, filterString)
-            ApplyGroupCandidateFilters(container, def.key, filters)
-            ApplyGroupSortMethod(container, def.key, sort[1], sort[2])
-            container:SetAuraGroupMaxFrameCount(def.key, count)
+            container:SetAuraGroupFilterString(key, filterString)
+            ApplyGroupCandidateFilters(container, key, filters)
+            ApplyGroupSortMethod(container, key, sort[1], sort[2])
+            ApplyGroupFrameCount(container, key, count)
 
             if entry and count > 0 then
                 entry.live = true
                 entry.filterString = filterString
                 entry.filters = filters
             end
+        end
+
+        local idle = cfg.friendlyKeys and def.key or def.friendlyKey
+        if container:HasAuraGroup(idle) then
+            ApplyGroupFrameCount(container, idle, 0)
+            if plan and plan[idle] then plan[idle].live = false end
         end
     end
 
@@ -1805,11 +1834,13 @@ local function ConfigureContainer(host, container, harmful)
     local layoutIndex = AURA_GROUPS.index
 
     for _, def in ipairs(defs) do
-        if container:HasAuraGroup(def.key) then
-            local cell, cellHeight = GetTierCell(def.tier, sizes, cfg.importantFirst)
+        local cell, cellHeight = GetTierCell(def.tier, sizes, cfg.importantFirst)
 
-            ApplyGroupLayout(container, def.key,
-                primaryGap, crossGap, cell, cellHeight, layoutIndex[def.key], crossGap)
+        for _, key in ipairs({ def.key, def.friendlyKey }) do
+            if container:HasAuraGroup(key) then
+                ApplyGroupLayout(container, key,
+                    primaryGap, crossGap, cell, cellHeight, layoutIndex[key], crossGap)
+            end
         end
     end
 
@@ -1841,7 +1872,8 @@ local function IsTopBlockHarmful(host)
     if host.isPlayer then
         return host.blockTop == host.debuffs
     end
-    local reaction = UnitExists(host.unit) and UnitReaction("player", host.unit)
+    local reaction = S.primeReaction
+        or (UnitExists(host.unit) and UnitReaction("player", host.unit))
     return not reaction or reaction <= 4
 end
 
@@ -1894,7 +1926,7 @@ function BBF.ApplyAuraGroupConfig(host)
     local function Configure(container, harmful)
         local cfg = GetFrameConfig(host, harmful)
         for _, def in ipairs(AURA_GROUPS) do
-            local style = container.bbfStyles[def.key]
+            local style = container.bbfStyles[cfg.friendlyKeys and def.friendlyKey or def.key]
             if style then
                 local fresh = BuildStyle(def.tier, sizes, host.isPlayer, cfg, styleScratch)
                 if ReplaceStyleInPlace(style, fresh) then
@@ -2268,6 +2300,22 @@ function BBF.CastbarAdjustCaller(key)
     end
 end
 
+local function PrimeHostGroups(host)
+    if host.isPlayer then return end
+
+    if InCombatLockdown() then
+        host.primePending = true
+        return
+    end
+    host.primePending = nil
+
+    S.primeReaction = 2
+    BBF.ApplyAuraGroupConfig(host)
+    S.primeReaction = 5
+    BBF.ApplyAuraGroupConfig(host)
+    S.primeReaction = nil
+end
+
 local function RefreshHost(host)
     if host.isPlayer then
         BBF.AnchorPlayerAuraContainer(host)
@@ -2286,6 +2334,7 @@ local function DoRefreshAllAuraFrames()
     RefreshSpellLists()
 
     for _, host in pairs(BBF.auraHosts) do
+        PrimeHostGroups(host)
         RefreshHost(host)
     end
 
@@ -3465,6 +3514,7 @@ local function CreateHost(key, frame, unit, spellbar)
     SeedContainerStyles(host, host.blockTop)
     SeedContainerStyles(host, host.blockBottom)
 
+    PrimeHostGroups(host)
     RefreshHost(host)
     host.spacer:UpdateAllAuras()
     host.blockTop:UpdateAllAuras()
@@ -3579,8 +3629,9 @@ function BBF.HookPlayerAndTargetAuras()
                     BBF.RestyleAuraButtons()
                 end
                 for _, h in pairs(BBF.auraHosts) do
-                    if h.spacerPending then
+                    if h.primePending or h.spacerPending then
                         h.spacerPending = nil
+                        PrimeHostGroups(h)
                         BBF.ApplyAuraGroupConfig(h)
                     end
                 end

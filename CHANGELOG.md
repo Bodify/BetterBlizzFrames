@@ -1,3 +1,11 @@
+# BetterBlizzFrames 2.0.6b
+## Midnight
+### Tweak
+- Update Jazggz profile (www.twitch.tv/jazggz). Thank you for sharing!
+- Update Dissonance profile (www.twitch.tv/dissonancewow). Thank you for sharing!
+### Bugfix
+- Fix an issue causing the purgeable border on auras on the new aura settings to get stuck hidden
+
 # BetterBlizzFrames 2.0.6
 ## Midnight
 ### New
