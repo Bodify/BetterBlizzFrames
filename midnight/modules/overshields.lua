@@ -8,11 +8,13 @@ local PRD_OVERSHIELD_HOOKED = false
 local function AnchorOvershieldBar(overshieldBar, healthBar, classicOffset)
     local box = BetterBlizzFramesDB and BetterBlizzFramesDB.noPortraitPixelBorder
         and healthBar.BBFPositionFrame or nil
+    local bigPlayerBar = BetterBlizzFramesDB and BetterBlizzFramesDB.bigPlayerHealthbar
+        and healthBar == PlayerFrame.healthbar
 
     overshieldBar:ClearAllPoints()
     if box then
         overshieldBar:SetAllPoints(box)
-    elseif classicOffset then
+    elseif classicOffset and not bigPlayerBar then
         overshieldBar:SetPoint("TOPLEFT", healthBar, "TOPLEFT", 0, -10)
         overshieldBar:SetPoint("BOTTOMRIGHT", healthBar, "BOTTOMRIGHT", 0, 0)
     else
@@ -20,6 +22,12 @@ local function AnchorOvershieldBar(overshieldBar, healthBar, classicOffset)
     end
 
     overshieldBar.bbfAnchoredToBox = box and true or false
+end
+
+function BBF.UpdatePlayerOvershieldAnchor()
+    local overshieldBar = PlayerFrame.bbfOvershieldBar
+    if not overshieldBar then return end
+    AnchorOvershieldBar(overshieldBar, PlayerFrame.healthbar, overshieldBar.bbfClassicOffset)
 end
 
 local function CreateOvershieldBar(healthBar, classicOffset, higherLayer)

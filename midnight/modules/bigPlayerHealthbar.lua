@@ -1,4 +1,4 @@
--- Big Healthbar (No Portrait): the PlayerFrame health bar takes over the mana slot.
+-- Big Healthbar (No Portrait & Classic Frames): the PlayerFrame health bar takes over the mana slot.
 
 -- Blizzard's player-bars heights: health 19, mana 10, 1px gap.
 -- Mask is noPortrait's portrait-off mask (uipartyframeportraitoffhealthmask, 190x34);
@@ -9,13 +9,18 @@ local HEALTHBAR_HEIGHT_GROWN = HEALTHBAR_HEIGHT + BAR_GAP + MANABAR_HEIGHT -- 30
 local MASK_HEIGHT = 34
 local MASK_HEIGHT_GROWN = 50
 
+local function SetContainerY(hpContainer, yOffset)
+    local point, relativeTo, relativePoint, xOffset = hpContainer:GetPoint()
+    hpContainer:SetPoint(point, relativeTo, relativePoint, xOffset, yOffset)
+end
+
 local function GetHealthBits()
     local hpContainer = PlayerFrame_GetHealthBarContainer()
     return hpContainer, hpContainer.HealthBar, hpContainer.HealthBarMask
 end
 
 local function IsEnabled()
-    return BetterBlizzFramesDB.bigPlayerHealthbar and BetterBlizzFramesDB.noPortraitModes
+    return BetterBlizzFramesDB.bigPlayerHealthbar and (BetterBlizzFramesDB.noPortraitModes or BetterBlizzFramesDB.classicFrames)
 end
 
 function BBF.GetBigPlayerHealthbarGrowth()
@@ -24,6 +29,18 @@ end
 
 local function GrowBar()
     local hpContainer, healthBar, mask = GetHealthBits()
+    if BetterBlizzFramesDB.classicFrames then
+        local hideMana = BetterBlizzFramesDB.hideUnitFramePlayerMana
+        local height = hideMana and 39 or 29
+        SetContainerY(hpContainer, -31)
+        hpContainer:SetSize(122, height)
+        healthBar:SetSize(122, height)
+        mask:SetPoint("TOPLEFT", healthBar, "TOPLEFT", -2, hideMana and 11 or 7)
+        mask:SetSize(126, hideMana and 63 or 44)
+        mask:Show()
+        BBF.UpdatePlayerOvershieldAnchor()
+        return
+    end
     hpContainer:SetHeight(HEALTHBAR_HEIGHT_GROWN)
     healthBar:SetHeight(HEALTHBAR_HEIGHT_GROWN)
     if BetterBlizzFramesDB.noPortraitPixelBorder then
@@ -35,6 +52,16 @@ end
 
 local function RestoreBar()
     local hpContainer, healthBar, mask = GetHealthBits()
+    if BetterBlizzFramesDB.classicFrames then
+        SetContainerY(hpContainer, -40)
+        hpContainer:SetSize(124, 20)
+        healthBar:SetSize(124, 20)
+        mask:SetPoint("TOPLEFT", healthBar, "TOPLEFT", -2, -6)
+        mask:SetSize(126, 17)
+        mask:Show()
+        BBF.UpdatePlayerOvershieldAnchor()
+        return
+    end
     hpContainer:SetHeight(HEALTHBAR_HEIGHT)
     healthBar:SetHeight(HEALTHBAR_HEIGHT)
     if BetterBlizzFramesDB.noPortraitPixelBorder then
@@ -44,14 +71,21 @@ local function RestoreBar()
     mask:SetHeight(MASK_HEIGHT)
 end
 local function PlayerMaskOffset()
-    if BetterBlizzFramesDB.noPortraitPixelBorder then return end
+    if BetterBlizzFramesDB.noPortraitPixelBorder or BetterBlizzFramesDB.classicFrames then return end
     local _, healthBar, mask = GetHealthBits()
     mask:SetPoint("TOPLEFT", healthBar, "TOPLEFT", -33, 11)
 end
 local function VehicleMaskOffset()
-    if BetterBlizzFramesDB.noPortraitPixelBorder then return end
+    if BetterBlizzFramesDB.noPortraitPixelBorder or BetterBlizzFramesDB.classicFrames then return end
     local _, healthBar, mask = GetHealthBits()
     mask:SetPoint("TOPLEFT", healthBar, "TOPLEFT", -34, 10)
+end
+local function UpdateClassicArt()
+    if not BetterBlizzFramesDB.classicFrames then return end
+    BBF.PlayerReputationColor()
+    if UnitHasVehiclePlayerFrameUI("player") then return end
+    BBF.UpdateClassicPlayerArt()
+    BBF.SetCenteredNamesCaller()
 end
 local function Apply()
     if not IsEnabled() then
@@ -61,10 +95,13 @@ local function Apply()
         BBF.RunAfterCombat(Apply)
         return
     end
+    UpdateClassicArt()
     BBF.UpdateNoPortraitManaVisibility()
     GrowBar()
     PlayerMaskOffset()
-    BBF.UpdateNoPortraitText(PlayerFrame, "player")
+    if not BetterBlizzFramesDB.classicFrames then
+        BBF.UpdateNoPortraitText(PlayerFrame, "player")
+    end
 end
 
 local vehicleExitListener
@@ -109,7 +146,9 @@ local function EnsureHooks()
         Apply()
         VehicleMaskOffset()
     end)
-    BBF.UnregisterPlayerFrameArtEvents()
+    if not BetterBlizzFramesDB.classicFrames then
+        BBF.UnregisterPlayerFrameArtEvents()
+    end
 end
 
 function BBF.UpdateBigPlayerHealthbar()
@@ -126,6 +165,7 @@ function BBF.UpdateBigPlayerHealthbar()
     RestoreBar()
 
     BBF.UpdateNoPortraitManaVisibility()
+    UpdateClassicArt()
     if BetterBlizzFramesDB.noPortraitModes then
         BBF.UpdateNoPortraitText(PlayerFrame, "player")
     end

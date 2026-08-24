@@ -171,6 +171,9 @@ local function CenterPlayerName()
     else
         local xPos = forceCenterNameSetting and 1.5 or BetterBlizzFramesDB.noPortraitModes and 0 or true and -2 or 0
         local yPos = BetterBlizzFramesDB.noPortraitModes and 14 or forceCenterNameSetting and 7.5 or BetterBlizzFramesDB.symmetricPlayerFrame and 15 or 14.5
+        if BetterBlizzFramesDB.classicFrames and BetterBlizzFramesDB.bigPlayerHealthbar then
+            yPos = yPos - 10
+        end
         name:SetPoint("TOP", healthBar, "TOP", xPos, yPos)
     end
 end

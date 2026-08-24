@@ -16,6 +16,36 @@ local defaultTex = "Interface\\TargetingFrame\\UI-TargetingFrame"
 local noLvlTex = "Interface\\TargetingFrame\\UI-FocusFrame-Large"
 local flashTex = "Interface\\TargetingFrame\\UI-TargetingFrame-Flash"
 local flashNoLvl = "Interface\\TargetingFrame\\UI-FocusFrame-Large-Flash"
+local bigPath = "Interface\\AddOns\\BetterBlizzFrames\\media\\"
+local bigTex = bigPath .. "UI-TargetingFrame-Retail.tga"
+local bigNoLvlTex = bigPath .. "UI-TargetingFrame-NoLevel-Retail.tga"
+local bigNoManaTex = bigPath .. "UI-TargetingFrame-Retail-NoMana.tga"
+local bigNoManaNoLvlTex = bigPath .. "UI-TargetingFrame-NoLevel-Retail-NoMana.tga"
+local bigStatusTex = bigPath .. "UI-Player-Status"
+
+local function BigPlayerHealthbar()
+    return BetterBlizzFramesDB.bigPlayerHealthbar
+end
+
+local function BigPlayerHealthbarNoMana()
+    return BetterBlizzFramesDB.bigPlayerHealthbar and BetterBlizzFramesDB.hideUnitFramePlayerMana
+end
+
+local function SetPlayerFrameTexture(texture, normal, big, bigNoMana)
+    if not BigPlayerHealthbar() then
+        texture:SetTexture(normal)
+        return
+    end
+    texture:SetTexture(BigPlayerHealthbarNoMana() and (bigNoMana or big) or big)
+end
+
+local function SetStatusGlowTexture(texture, normal, big)
+    if BigPlayerHealthbarNoMana() then
+        texture:SetTexture(nil)
+        return
+    end
+    SetPlayerFrameTexture(texture, normal, big)
+end
 
 local function MakeClassicFrame(frame)
     local db = BetterBlizzFramesDB
@@ -435,6 +465,11 @@ local function MakeClassicFrame(frame)
         frame.ClassicFrame.Background:SetPoint("TOPLEFT", hpContainer.HealthBar, "TOPLEFT", 0, 11)
         frame.ClassicFrame.Background:SetPoint("BOTTOMRIGHT", manaBar, "BOTTOMRIGHT", -3, 0)
 
+        local function AdjustBackground()
+            frame.ClassicFrame.Background:SetPoint("TOPLEFT", hpContainer.HealthBar, "TOPLEFT", 0, BigPlayerHealthbar() and 0 or 11)
+            frame.ClassicFrame.Background:SetPoint("BOTTOMRIGHT", hpContainer, "BOTTOMRIGHT", BigPlayerHealthbar() and 0 or -2, BigPlayerHealthbarNoMana() and -1 or -11)
+        end
+
 
         C_Timer.After(1, function()
             local bd = BigDebuffsplayerUnitFrame
@@ -464,15 +499,20 @@ local function MakeClassicFrame(frame)
 
 
         local function AdjustStatusBarText()
+            local hpTextYOffset = 2.8
+            if BigPlayerHealthbar() then
+                hpTextYOffset = BigPlayerHealthbarNoMana() and 0.3 or 3.3
+            end
+
             hpContainer.LeftText:SetParent(frame.ClassicFrame)
             hpContainer.LeftText:ClearAllPoints()
-            hpContainer.LeftText:SetPoint("LEFT", frame.ClassicFrame.Texture, "LEFT", 108, 2.8)
+            hpContainer.LeftText:SetPoint("LEFT", frame.ClassicFrame.Texture, "LEFT", 108, hpTextYOffset)
             hpContainer.RightText:SetParent(frame.ClassicFrame)
             hpContainer.RightText:ClearAllPoints()
-            hpContainer.RightText:SetPoint("RIGHT", frame.ClassicFrame.Texture, "RIGHT", -7, 2.8)
+            hpContainer.RightText:SetPoint("RIGHT", frame.ClassicFrame.Texture, "RIGHT", -7, hpTextYOffset)
             hpContainer.HealthBarText:SetParent(frame.ClassicFrame)
             hpContainer.HealthBarText:ClearAllPoints()
-            hpContainer.HealthBarText:SetPoint("CENTER", frame.ClassicFrame.Texture, "CENTER", 52, 2.8)
+            hpContainer.HealthBarText:SetPoint("CENTER", frame.ClassicFrame.Texture, "CENTER", 52, hpTextYOffset)
 
             SetManaTextParent(manaBar.LeftText, frame.ClassicFrame)
             manaBar.LeftText:ClearAllPoints()
@@ -705,10 +745,10 @@ local function MakeClassicFrame(frame)
                 playerElite:SetTexture("Interface\\TargetingFrame\\UI-FocusFrame-Large")
                 playerElite:SetDesaturated(false)
             else
-                frame.ClassicFrame.Texture:SetTexture(defaultTex)
+                SetPlayerFrameTexture(frame.ClassicFrame.Texture, defaultTex, bigTex, bigNoManaTex)
                 frameContainer.FrameFlash:SetTexture(flashTex)
                 frameContainer.FrameFlash:SetTexCoord(0.9453125, 0, 0, 0.181640625)
-                contentMain.StatusTexture:SetTexture("Interface\\CharacterFrame\\UI-Player-Status")
+                SetStatusGlowTexture(contentMain.StatusTexture, "Interface\\CharacterFrame\\UI-Player-Status", bigStatusTex)
             -- elseif mode == 4 then -- Only 3 available for classic
             --     db.playerEliteFrameMode = 3
             --     playerElite:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Elite")
@@ -718,16 +758,54 @@ local function MakeClassicFrame(frame)
 
         local function ToggleNoLevelFrame(noLvl)
             if noLvl then
-                frame.ClassicFrame.Texture:SetTexture(noLvlTex)
+                SetPlayerFrameTexture(frame.ClassicFrame.Texture, noLvlTex, bigNoLvlTex, bigNoManaNoLvlTex)
                 frameContainer.FrameFlash:SetTexture(flashNoLvl)
                 frameContainer.FrameFlash:SetTexCoord(0.9553125,0, -0.01,0.733)
-                contentMain.StatusTexture:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\classic-statustexture-nolevel")
+                SetStatusGlowTexture(contentMain.StatusTexture, "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\classic-statustexture-nolevel", "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\classic-statustexture-nolevel")
             else
-                frame.ClassicFrame.Texture:SetTexture(defaultTex)
+                SetPlayerFrameTexture(frame.ClassicFrame.Texture, defaultTex, bigTex, bigNoManaTex)
                 frameContainer.FrameFlash:SetTexture(flashTex)
                 frameContainer.FrameFlash:SetTexCoord(0.9453125, 0, 0, 0.181640625)
-                contentMain.StatusTexture:SetTexture("Interface\\CharacterFrame\\UI-Player-Status")
+                SetStatusGlowTexture(contentMain.StatusTexture, "Interface\\CharacterFrame\\UI-Player-Status", bigStatusTex)
             end
+        end
+
+        local function AdjustStatusGlow()
+            contentMain.StatusTexture:SetSize(191, BigPlayerHealthbar() and 81 or 77)
+        end
+
+        local function UpdatePlayerFrameTexture()
+            if db.playerEliteFrame then
+                PlayerEliteFrame()
+                frameContainer.FrameFlash:SetTexture(flashTex)
+                frameContainer.FrameFlash:SetTexCoord(0.9453125, 0, 0, 0.181640625)
+                SetStatusGlowTexture(contentMain.StatusTexture, "Interface\\CharacterFrame\\UI-Player-Status", bigStatusTex)
+                -- Handle level text for playerEliteFrame
+                local mode = BetterBlizzFramesDB.playerEliteFrameMode
+                if mode > 3 and (alwaysHideLvl or (hideLvl and UnitLevel("player") == 90)) then
+                    -- Ensure level text is hidden when using UI-FocusFrame-Large
+                    PlayerLevelText:SetParent(BBF.hiddenFrame)
+                end
+            else
+                if alwaysHideLvl then
+                    ToggleNoLevelFrame(true)
+                elseif hideLvl then
+                    if UnitLevel("player") == 90 then
+                        ToggleNoLevelFrame(true)
+                    else
+                        ToggleNoLevelFrame(false)
+                    end
+                else
+                    ToggleNoLevelFrame(false)
+                end
+            end
+        end
+
+        function BBF.UpdateClassicPlayerArt()
+            UpdatePlayerFrameTexture()
+            AdjustStatusGlow()
+            AdjustStatusBarText()
+            AdjustBackground()
         end
 
         local function ToPlayerArt()
@@ -754,30 +832,7 @@ local function MakeClassicFrame(frame)
             PlayerFrameGroupIndicatorText:SetPoint("LEFT", contentContext.GroupIndicator.GroupIndicatorLeft, "LEFT", 20, 2.5)
 
             frame.ClassicFrame.Texture:SetSize(232, 100)
-            if db.playerEliteFrame then
-                PlayerEliteFrame()
-                frameContainer.FrameFlash:SetTexture(flashTex)
-                frameContainer.FrameFlash:SetTexCoord(0.9453125, 0, 0, 0.181640625)
-                contentMain.StatusTexture:SetTexture("Interface\\CharacterFrame\\UI-Player-Status")
-                -- Handle level text for playerEliteFrame
-                local mode = BetterBlizzFramesDB.playerEliteFrameMode
-                if mode > 3 and (alwaysHideLvl or (hideLvl and UnitLevel("player") == 90)) then
-                    -- Ensure level text is hidden when using UI-FocusFrame-Large
-                    PlayerLevelText:SetParent(BBF.hiddenFrame)
-                end
-            else
-                if alwaysHideLvl then
-                    ToggleNoLevelFrame(true)
-                elseif hideLvl then
-                    if UnitLevel("player") == 90 then
-                        ToggleNoLevelFrame(true)
-                    else
-                        ToggleNoLevelFrame(false)
-                    end
-                else
-                    ToggleNoLevelFrame(false)
-                end
-            end
+            UpdatePlayerFrameTexture()
             frame.ClassicFrame.Texture:SetTexCoord(1, 0.09375, 0, 0.78125)
             frame.ClassicFrame.Texture:ClearAllPoints()
             frame.ClassicFrame.Texture:SetPoint("TOPLEFT", -19, -8)
@@ -795,7 +850,7 @@ local function MakeClassicFrame(frame)
             frameContainer.FrameFlash:SetPoint("TOPLEFT", -4.5, -8)
             frameContainer.FrameFlash:SetDrawLayer("BACKGROUND")
 
-            contentMain.StatusTexture:SetSize(191, 77)
+            AdjustStatusGlow()
             contentMain.StatusTexture:SetTexCoord(0, 0.74609375, 0, 0.58125)
             contentMain.StatusTexture:ClearAllPoints()
             contentMain.StatusTexture:SetPoint("TOPLEFT", 17, -15)
@@ -807,7 +862,7 @@ local function MakeClassicFrame(frame)
             frameContainer.PlayerPortrait:SetPoint("TOPLEFT", 26, -23)
             frame.ClassicFrame.Texture:Show()
 
-            frame.ClassicFrame.Background:SetPoint("BOTTOMRIGHT", contentMain.HealthBarsContainer, "BOTTOMRIGHT", -2, -11)
+            AdjustBackground()
         end
 
         hooksecurefunc("PlayerFrame_ToPlayerArt", function()

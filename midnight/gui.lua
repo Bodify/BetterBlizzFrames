@@ -9650,7 +9650,12 @@ local function guiMisc()
     bbfBigPlayerHealthbar:SetPoint("TOPLEFT", settingsText, "BOTTOMLEFT", 320, 17)
     CreateTooltipTwo(bbfBigPlayerHealthbar, L["Big_PlayerHealthbar"], L["Tooltip_Big_PlayerHealthbar_Desc"])
 
-    local hideUnitFramePlayerMana = CreateCheckbox("hideUnitFramePlayerMana", L["Hide_PlayerFrame_Mana"], guiMisc, nil, BBF.UpdateNoPortraitManaVisibility)
+    local hideUnitFramePlayerMana = CreateCheckbox("hideUnitFramePlayerMana", L["Hide_PlayerFrame_Mana"], guiMisc, nil, function()
+        BBF.UpdateNoPortraitManaVisibility()
+        if BetterBlizzFramesDB.bigPlayerHealthbar then
+            BBF.UpdateBigPlayerHealthbar()
+        end
+    end)
     hideUnitFramePlayerMana:SetPoint("TOPLEFT", bbfBigPlayerHealthbar, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(hideUnitFramePlayerMana, L["Hide_PlayerFrame_Mana"], L["Tooltip_Hide_Player_Mana"])
 

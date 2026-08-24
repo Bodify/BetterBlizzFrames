@@ -2534,6 +2534,13 @@ function BBF.UpdateNoPortraitManaVisibility()
             end
             BBF.changedSecondResourceAlpha = nil
         end
+
+        local manaBar = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar
+        local manaAlpha = (db.bigPlayerHealthbar and db.hideUnitFramePlayerMana) and 0 or 1
+        manaBar:GetParent():SetAlpha(manaAlpha)
+        manaBar.LeftText:SetAlpha(manaAlpha)
+        manaBar.RightText:SetAlpha(manaAlpha)
+        manaBar.ManaBarText:SetAlpha(manaAlpha)
         return
     end
     if not db.noPortraitModes then return end

@@ -1116,7 +1116,8 @@ end
 
 function BBF.PlayerReputationColor()
     local frame = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain
-    if BetterBlizzFramesDB.playerReputationColor and not BetterBlizzFramesDB.noPortraitModes then
+    local bigHealthbar = BetterBlizzFramesDB.bigPlayerHealthbar and BetterBlizzFramesDB.classicFrames
+    if BetterBlizzFramesDB.playerReputationColor and not BetterBlizzFramesDB.noPortraitModes and not bigHealthbar then
         if not frame.ReputationColor then
             frame.ReputationColor = frame:CreateTexture(nil, "OVERLAY")
             if BetterBlizzFramesDB.classicFrames then
