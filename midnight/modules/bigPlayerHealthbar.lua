@@ -9,9 +9,9 @@ local HEALTHBAR_HEIGHT_GROWN = HEALTHBAR_HEIGHT + BAR_GAP + MANABAR_HEIGHT -- 30
 local MASK_HEIGHT = 34
 local MASK_HEIGHT_GROWN = 50
 
-local function SetContainerY(hpContainer, yOffset)
-    local point, relativeTo, relativePoint, xOffset = hpContainer:GetPoint()
-    hpContainer:SetPoint(point, relativeTo, relativePoint, xOffset, yOffset)
+local function SetContainerPoint(hpContainer, xOffset, yOffset)
+    local point, relativeTo, relativePoint, x, y = hpContainer:GetPoint()
+    hpContainer:SetPoint(point, relativeTo, relativePoint, xOffset or x, yOffset or y)
 end
 
 local function GetHealthBits()
@@ -20,11 +20,36 @@ local function GetHealthBits()
 end
 
 local function IsEnabled()
-    return BetterBlizzFramesDB.bigPlayerHealthbar and (BetterBlizzFramesDB.noPortraitModes or BetterBlizzFramesDB.classicFrames)
+    return BetterBlizzFramesDB.bigPlayerHealthbar
 end
 
-function BBF.GetBigPlayerHealthbarGrowth()
-    return 0--IsEnabled() and (HEALTHBAR_HEIGHT_GROWN - HEALTHBAR_HEIGHT) or 0
+local function SetDefaultManaShown(shown)
+    PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea:SetAlpha(shown and 1 or 0)
+end
+
+local function SetDefaultFrameTexture(atlas)
+    if BetterBlizzFramesDB.symmetricPlayerFrame or BetterBlizzFramesDB.hideUnitFrameShadow then return end
+    PlayerFrame.PlayerFrameContainer.FrameTexture:SetAtlas(atlas)
+end
+
+function BBF.GetMirrorPlayerHealthbarSize()
+    if BetterBlizzFramesDB.bigPlayerHealthbar then
+        return 134, 31, 31
+    end
+    return 126, 20.5, 20
+end
+
+function BBF.SetMirrorPlayerHealthbarMask()
+    local _, healthBar, mask = GetHealthBits()
+    if BetterBlizzFramesDB.bigPlayerHealthbar then
+        mask:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\hpMaskBigHpMirror.tga")
+        mask:SetPoint("TOPLEFT", healthBar, "TOPLEFT", -54.5, 0)
+        mask:SetSize(254, 32)
+        return
+    end
+    mask:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UIUnitFrameTargetHealthMask2x-Flipped")
+    mask:SetPoint("TOPLEFT", healthBar, "TOPLEFT", -2, 6)
+    mask:SetSize(129, 32)
 end
 
 local function GrowBar()
@@ -32,7 +57,7 @@ local function GrowBar()
     if BetterBlizzFramesDB.classicFrames then
         local hideMana = BetterBlizzFramesDB.hideUnitFramePlayerMana
         local height = hideMana and 39 or 29
-        SetContainerY(hpContainer, -31)
+        SetContainerPoint(hpContainer, nil, -31)
         hpContainer:SetSize(122, height)
         healthBar:SetSize(122, height)
         mask:SetPoint("TOPLEFT", healthBar, "TOPLEFT", -2, hideMana and 11 or 7)
@@ -47,13 +72,29 @@ local function GrowBar()
         BBF.UpdatePlayerPixelBorderSize()
         return
     end
+    if not BetterBlizzFramesDB.noPortraitModes then
+        SetDefaultManaShown(false)
+        SetDefaultFrameTexture("plunderstorm-UI-HUD-UnitFrame-Player-PortraitOn-2x")
+        if BetterBlizzFramesDB.symmetricPlayerFrame then
+            local width, containerHeight, barHeight = BBF.GetMirrorPlayerHealthbarSize()
+            SetContainerPoint(hpContainer, 77)
+            hpContainer:SetSize(width, containerHeight)
+            healthBar:SetSize(width, barHeight)
+            BBF.SetMirrorPlayerHealthbarMask()
+        else
+            mask:SetAtlas("plunderstorm-UI-HUD-UnitFrame-Player-PortraitOn-Bar-Health-Mask-2x")
+            mask:SetPoint("TOPLEFT", healthBar, "TOPLEFT", -2, 0)
+            mask:SetSize(128, 32)
+        end
+        return
+    end
     mask:SetHeight(MASK_HEIGHT_GROWN)
 end
 
 local function RestoreBar()
     local hpContainer, healthBar, mask = GetHealthBits()
     if BetterBlizzFramesDB.classicFrames then
-        SetContainerY(hpContainer, -40)
+        SetContainerPoint(hpContainer, nil, -40)
         hpContainer:SetSize(124, 20)
         healthBar:SetSize(124, 20)
         mask:SetPoint("TOPLEFT", healthBar, "TOPLEFT", -2, -6)
@@ -68,15 +109,31 @@ local function RestoreBar()
         BBF.UpdatePlayerPixelBorderSize()
         return
     end
+    if not BetterBlizzFramesDB.noPortraitModes then
+        SetDefaultManaShown(true)
+        SetDefaultFrameTexture("UI-HUD-UnitFrame-Player-PortraitOn")
+        if BetterBlizzFramesDB.symmetricPlayerFrame then
+            local width, containerHeight, barHeight = BBF.GetMirrorPlayerHealthbarSize()
+            SetContainerPoint(hpContainer, 85)
+            hpContainer:SetSize(width, containerHeight)
+            healthBar:SetSize(width, barHeight)
+            BBF.SetMirrorPlayerHealthbarMask()
+            return
+        end
+        mask:SetAtlas("UI-HUD-UnitFrame-Player-PortraitOn-Bar-Health-Mask", true)
+        mask:SetPoint("TOPLEFT", healthBar, "TOPLEFT", -2, 6)
+        mask:SetHeight(31)
+        return
+    end
     mask:SetHeight(MASK_HEIGHT)
 end
 local function PlayerMaskOffset()
-    if BetterBlizzFramesDB.noPortraitPixelBorder or BetterBlizzFramesDB.classicFrames then return end
+    if not BetterBlizzFramesDB.noPortraitModes or BetterBlizzFramesDB.noPortraitPixelBorder then return end
     local _, healthBar, mask = GetHealthBits()
     mask:SetPoint("TOPLEFT", healthBar, "TOPLEFT", -33, 11)
 end
 local function VehicleMaskOffset()
-    if BetterBlizzFramesDB.noPortraitPixelBorder or BetterBlizzFramesDB.classicFrames then return end
+    if not BetterBlizzFramesDB.noPortraitModes or BetterBlizzFramesDB.noPortraitPixelBorder then return end
     local _, healthBar, mask = GetHealthBits()
     mask:SetPoint("TOPLEFT", healthBar, "TOPLEFT", -34, 10)
 end
@@ -99,7 +156,7 @@ local function Apply()
     BBF.UpdateNoPortraitManaVisibility()
     GrowBar()
     PlayerMaskOffset()
-    if not BetterBlizzFramesDB.classicFrames then
+    if BetterBlizzFramesDB.noPortraitModes then
         BBF.UpdateNoPortraitText(PlayerFrame, "player")
     end
 end
@@ -146,7 +203,7 @@ local function EnsureHooks()
         Apply()
         VehicleMaskOffset()
     end)
-    if not BetterBlizzFramesDB.classicFrames then
+    if BetterBlizzFramesDB.noPortraitModes then
         BBF.UnregisterPlayerFrameArtEvents()
     end
 end

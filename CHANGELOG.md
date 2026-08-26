@@ -1,3 +1,10 @@
+# BetterBlizzFrames 2.0.6c
+## Midnight
+### New
+- The Big Healthbar setting for PlayerFrame for the No Portrait setting (from Wildu) has now been extended to work with default frames, mirror targetframe, classic frames and also the "no portrait: pixel border" settings. It's also been moved from Misc to under PlayerFrame as "Big Healthbar" in general section of /bbf.
+### Tweak
+- Make BBF's new auras follow Blizzards PvE filter for which debuffs to show in PvE. By default Blizzard only shows your own debuffs while in PvE and now BBF does the same. It can be changed by enabling the no filter CVar from Blizzard and BBF will follow that too: noBuffDebuffFilterOnTarget
+
 # BetterBlizzFrames 2.0.6b
 ## Midnight
 ### Tweak

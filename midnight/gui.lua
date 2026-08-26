@@ -3645,8 +3645,12 @@ local function guiGeneralTab()
         end
     end)
 
+    local bbfBigPlayerHealthbar = CreateCheckbox("bigPlayerHealthbar", L["Big_PlayerHealthbar"], BetterBlizzFrames, nil, BBF.UpdateBigPlayerHealthbar)
+    bbfBigPlayerHealthbar:SetPoint("TOPLEFT", BetterBlizzFrames.playerFrameHidden, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(bbfBigPlayerHealthbar, L["Big_PlayerHealthbar"], L["Tooltip_Big_PlayerHealthbar_Desc"])
+
     local playerReputationColor = CreateCheckbox("playerReputationColor", L["Add_Reputation_Color"], BetterBlizzFrames, nil, BBF.PlayerReputationColor)
-    playerReputationColor:SetPoint("TOPLEFT", BetterBlizzFrames.playerFrameHidden, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    playerReputationColor:SetPoint("TOPLEFT", bbfBigPlayerHealthbar, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(playerReputationColor, L["Tooltip_Add_Reputation_Color"] .. " |A:UI-HUD-UnitFrame-Target-PortraitOn-Type:18:98|a")
 
     local playerReputationClassColor = CreateCheckbox("playerReputationClassColor", L["Class_Color_Combo"], BetterBlizzFrames, nil, BBF.PlayerReputationColor)
@@ -3687,7 +3691,7 @@ local function guiGeneralTab()
 
     local symmetricPlayerFrame = CreateCheckbox("symmetricPlayerFrame", L["Mirror_TargetFrame"], BetterBlizzFrames, nil, BBF.SymmetricPlayerFrame)
     symmetricPlayerFrame:SetPoint("LEFT", hidePlayerName.text, "RIGHT", 0, 0)
-    CreateTooltipTwo(symmetricPlayerFrame, L["Mirror_TargetFrame"], L["Tooltip_Mirror_TargetFrame_Desc_Midnight"])
+    CreateTooltipTwo(symmetricPlayerFrame, L["Mirror_TargetFrame"], L["Tooltip_Mirror_TargetFrame_Desc"])
     symmetricPlayerFrame:HookScript("OnClick", function(self)
         StaticPopup_Show("BBF_CONFIRM_RELOAD")
     end)
@@ -3807,11 +3811,11 @@ local function guiGeneralTab()
     CreateTooltipTwo(hideManaFeedback, L["Hide_Mana_Feedback"], L["Tooltip_Hide_Mana_Feedback_Desc"])
 
     local hidePlayerRestAnimation = CreateCheckbox("hidePlayerRestAnimation", L["Hide_Zzz_Rest_Animation"], BetterBlizzFrames, nil, BBF.HideFrames)
-    hidePlayerRestAnimation:SetPoint("TOPLEFT", hideManaFeedback, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    hidePlayerRestAnimation:SetPoint("LEFT", hideManaFeedback.text, "RIGHT", 0, 2)
     CreateTooltip(hidePlayerRestAnimation, L["Tooltip_Hide_Zzz_Rest"])
 
     local hidePlayerCornerIcon = CreateCheckbox("hidePlayerCornerIcon", L["Hide_Corner_Icon"], BetterBlizzFrames, nil, BBF.HideFrames)
-    hidePlayerCornerIcon:SetPoint("TOPLEFT", hidePlayerRestAnimation, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    hidePlayerCornerIcon:SetPoint("TOPLEFT", hideManaFeedback, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(hidePlayerCornerIcon, L["Tooltip_Hide_Corner_Icon"] .. " |A:UI-HUD-UnitFrame-Player-PortraitOn-CornerEmbellishment:22:22|a")
 
     local hidePlayerHealthLossAnim = CreateCheckbox("hidePlayerHealthLossAnim", L["Hide_Health_Loss_FX"], BetterBlizzFrames, nil, BBF.HideFrames)
@@ -9646,17 +9650,13 @@ local function guiMisc()
     uiWidgetPowerBarScale:SetPoint("LEFT", gladWinTracker.text, "RIGHT", 55, 0)
     CreateTooltipTwo(uiWidgetPowerBarScale, L["UIWidgetPowerBarFrame_Scale"], L["Tooltip_UIWidgetPowerBar_Scale_Desc"])
 
-    local bbfBigPlayerHealthbar = CreateCheckbox("bigPlayerHealthbar", L["Big_PlayerHealthbar"], guiMisc, nil, BBF.UpdateBigPlayerHealthbar)
-    bbfBigPlayerHealthbar:SetPoint("TOPLEFT", settingsText, "BOTTOMLEFT", 320, 17)
-    CreateTooltipTwo(bbfBigPlayerHealthbar, L["Big_PlayerHealthbar"], L["Tooltip_Big_PlayerHealthbar_Desc"])
-
     local hideUnitFramePlayerMana = CreateCheckbox("hideUnitFramePlayerMana", L["Hide_PlayerFrame_Mana"], guiMisc, nil, function()
         BBF.UpdateNoPortraitManaVisibility()
         if BetterBlizzFramesDB.bigPlayerHealthbar then
             BBF.UpdateBigPlayerHealthbar()
         end
     end)
-    hideUnitFramePlayerMana:SetPoint("TOPLEFT", bbfBigPlayerHealthbar, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    hideUnitFramePlayerMana:SetPoint("TOPLEFT", settingsText, "BOTTOMLEFT", 320, 17)
     CreateTooltipTwo(hideUnitFramePlayerMana, L["Hide_PlayerFrame_Mana"], L["Tooltip_Hide_Player_Mana"])
 
     local hideAllManabarText = CreateCheckbox("hideAllManabarText", L["Hide_All_Manabar_Text"], guiMisc, nil, BBF.HideFrames)

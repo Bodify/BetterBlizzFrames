@@ -4212,16 +4212,17 @@ function BBF.SymmetricPlayerFrame()
 
     local healthbarMask = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer.HealthBarMask
     hooksecurefunc(healthbarMask, "SetAtlas", function(self)
-        self:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UIUnitFrameTargetHealthMask2x-Flipped")
+        if self.changing then return end
+        self.changing = true
+        BBF.SetMirrorPlayerHealthbarMask()
+        self.changing = false
     end)
-    healthbarMask:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UIUnitFrameTargetHealthMask2x-Flipped")
-
-    healthbarMask:SetSize(129, 32 + BBF.GetBigPlayerHealthbarGrowth())
+    BBF.SetMirrorPlayerHealthbarMask()
 
     hooksecurefunc(healthbarMask, "SetHeight", function(self)
         if self.changing then return end
         self.changing = true
-        self:SetHeight(32 + BBF.GetBigPlayerHealthbarGrowth())
+        BBF.SetMirrorPlayerHealthbarMask()
         self.changing = false
     end)
 
@@ -4253,21 +4254,24 @@ function BBF.SymmetricPlayerFrame()
         if InCombatLockdown() then return end
         if not self.changing then
             self.changing = true
-            self:SetWidth(126)
+            local width = BBF.GetMirrorPlayerHealthbarSize()
+            self:SetWidth(width)
             self.changing = false
         end
     end)
-    healthBarsContainer:SetWidth(126)
+    healthBarsContainer:SetWidth((BBF.GetMirrorPlayerHealthbarSize()))
 
     hooksecurefunc(healthBarsContainer, "SetHeight", function(self)
         if InCombatLockdown() then return end
         if not self.changing then
             self.changing = true
-            self:SetHeight(20.5 + BBF.GetBigPlayerHealthbarGrowth())
+            local _, containerHeight = BBF.GetMirrorPlayerHealthbarSize()
+            self:SetHeight(containerHeight)
             self.changing = false
         end
     end)
-    healthBarsContainer:SetHeight(20.5 + BBF.GetBigPlayerHealthbarGrowth())
+    local _, containerHeight = BBF.GetMirrorPlayerHealthbarSize()
+    healthBarsContainer:SetHeight(containerHeight)
 
     healthBarsContainer.RightText:SetPoint("RIGHT", -4, 1)
     healthBarsContainer.LeftText:SetPoint("LEFT", 2, 1)
@@ -4277,12 +4281,14 @@ function BBF.SymmetricPlayerFrame()
         if InCombatLockdown() then return end
         if not self.changing then
             self.changing = true
-            self:SetHeight(20 + BBF.GetBigPlayerHealthbarGrowth())
+            local _, _, barHeight = BBF.GetMirrorPlayerHealthbarSize()
+            self:SetHeight(barHeight)
             self.changing = false
         end
     end)
-    healthBar:SetHeight(20 + BBF.GetBigPlayerHealthbarGrowth())
-    healthBar:SetWidth(126)
+    local barWidth, _, barHeight = BBF.GetMirrorPlayerHealthbarSize()
+    healthBar:SetHeight(barHeight)
+    healthBar:SetWidth(barWidth)
 
 
     local playerTex = PlayerFrame.PlayerFrameContainer.FrameTexture
