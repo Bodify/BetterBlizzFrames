@@ -444,7 +444,10 @@ function BBF.CanFilterBySpellID(unit, isHelpful)
     if S.primeReaction then
         assist = S.primeReaction > 4
     elseif unit and UnitExists(unit) then
-        assist = UnitCanAssist("player", unit) and true or false
+        if isHelpful and UnitIsPlayerControlledOrGroupMember(unit) then
+            return true
+        end
+        assist = UnitCanAssist("player", unit, true, true) and true or false
     else
         return false
     end

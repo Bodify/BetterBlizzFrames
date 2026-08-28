@@ -3308,7 +3308,13 @@ local function guiProfiles()
     frame:SetSize(130, parent:GetHeight())
     frame:SetPoint("TOPRIGHT", parent, "TOPLEFT", 7, 0)
     frame:SetFrameStrata("BACKGROUND")
-    frame.ClosePanelButton:Hide()
+    frame.ClosePanelButton:SetAlpha(0)
+    frame.ClosePanelButton:HookScript("OnEnter", function(self)
+        self:SetAlpha(1)
+    end)
+    frame.ClosePanelButton:HookScript("OnLeave", function(self)
+        self:SetAlpha(0)
+    end)
 
     local function CopyNineSliceColors(fromFrame, toFrame)
         if not (fromFrame and toFrame and fromFrame.NineSlice and toFrame.NineSlice) then
@@ -3338,6 +3344,36 @@ local function guiProfiles()
     end
 
     CopyNineSliceColors(SettingsPanel, frame)
+
+    local plusButton = CreateFrame("Button", nil, BetterBlizzFrames)
+    plusButton:SetSize(frame.ClosePanelButton:GetSize())
+    plusButton:SetPoint("TOPRIGHT", parent, "TOPLEFT", 7, 0)
+    plusButton:SetNormalAtlas("128-RedButton-Plus")
+    plusButton:SetHighlightAtlas("128-RedButton-Plus", "ADD")
+    plusButton:SetAlpha(0)
+    plusButton:HookScript("OnEnter", function(self)
+        self:SetAlpha(1)
+    end)
+    plusButton:HookScript("OnLeave", function(self)
+        self:SetAlpha(0)
+    end)
+    plusButton:SetScript("OnClick", function(self)
+        BetterBlizzFramesDB.profilesPanelClosed = false
+        frame:Show()
+        self:Hide()
+    end)
+    frame.PlusButton = plusButton
+
+    frame.ClosePanelButton:HookScript("OnClick", function()
+        BetterBlizzFramesDB.profilesPanelClosed = true
+        plusButton:Show()
+    end)
+
+    if BetterBlizzFramesDB.profilesPanelClosed then
+        frame:Hide()
+    else
+        plusButton:Hide()
+    end
 
     BetterBlizzFrames.profilesFrame = frame
     return frame
@@ -5797,12 +5833,14 @@ local function guiGeneralTab()
     local btnGap = -2
     local lastCoreButton = profilesFrame.coreText
     local lastStreamerButton = profilesFrame.streamerText
+    local profileButtons = {}
 
     for _, profile in ipairs(BBF.ProfileData) do
         local additionalNote = profile.name == "Starter" and "|cff808080(If you want to completely reset BBF there\nis a button in Advanced Settings)|r\n\n" or nil
         local button = CreateClassButton(BetterBlizzFrames, profile.class, profile.name, profile.twitchName, function()
             ShowProfileConfirmation(profile.name, profile.class, function() BBF.ApplyProfile(profile.name) end, additionalNote)
         end)
+        table.insert(profileButtons, button)
         if profile.core then
             button:SetPoint("TOP", lastCoreButton, "BOTTOM", 0, lastCoreButton == profilesFrame.coreText and -3 or btnGap)
             lastCoreButton = button
@@ -5820,6 +5858,25 @@ local function guiGeneralTab()
         StaticPopup_Show("CONFIRM_RESET_BETTERBLIZZFRAMESDB")
     end)
     CreateTooltip(resetBBFButton, L["Tooltip_Full_Reset"], "ANCHOR_TOP")
+    table.insert(profileButtons, resetBBFButton)
+
+    profilesFrame:HookScript("OnShow", function()
+        for _, button in ipairs(profileButtons) do
+            button:Show()
+        end
+    end)
+    profilesFrame:HookScript("OnHide", function()
+        for _, button in ipairs(profileButtons) do
+            button:Hide()
+        end
+    end)
+
+    if BetterBlizzFramesDB.profilesPanelClosed then
+        profilesFrame:Hide()
+        for _, button in ipairs(profileButtons) do
+            button:Hide()
+        end
+    end
 
 
 

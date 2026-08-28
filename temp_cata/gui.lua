@@ -2621,6 +2621,108 @@ end
 ------------------------------------------------------------
 -- GUI Panels
 ------------------------------------------------------------
+------------------------------------------------------------
+-- GUI Panels
+------------------------------------------------------------
+local function guiProfiles()
+    local parent = SettingsPanel
+    local frame = CreateFrame("Frame", nil, BetterBlizzFrames, "SettingsFrameTemplate")
+    frame.titleText = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    frame.titleText:SetPoint("TOP", frame, "TOP", 1, -4)
+    frame.titleText:SetText("|A:gmchat-icon-blizz:16:16|a BBF")
+
+    frame.descriptionText = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    frame.descriptionText:SetPoint("TOP", frame, "TOP", 2, -25)
+    frame.descriptionText:SetText(L["Profile_Description"])
+    frame.descriptionText:SetWidth(100)
+
+    frame.coreText = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    frame.coreText:SetPoint("TOP", frame.descriptionText, "BOTTOM", 0, -3)
+    frame.coreText:SetText(L["Profile_Core"])
+
+    frame.streamerText = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    frame.streamerText:SetPoint("TOP", frame.coreText, "BOTTOM", 0, -30)
+    frame.streamerText:SetText(L["Profile_Streamers"])
+
+    frame.infoText = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    frame.infoText:SetPoint("BOTTOM", frame, "BOTTOM", 2, 50)
+    frame.infoText:SetText(L["Profile_Info_Message"])
+    frame.infoText:SetWidth(100)
+
+    frame:SetSize(130, parent:GetHeight())
+    frame:SetPoint("TOPRIGHT", parent, "TOPLEFT", 7, 0)
+    frame:SetFrameStrata("BACKGROUND")
+    frame.ClosePanelButton:SetAlpha(0)
+    frame.ClosePanelButton:HookScript("OnEnter", function(self)
+        self:SetAlpha(1)
+    end)
+    frame.ClosePanelButton:HookScript("OnLeave", function(self)
+        self:SetAlpha(0)
+    end)
+
+    local function CopyNineSliceColors(fromFrame, toFrame)
+        if not (fromFrame and toFrame and fromFrame.NineSlice and toFrame.NineSlice) then
+            return
+        end
+
+        local parts = {
+            "TopLeftCorner", "TopRightCorner",
+            "BottomLeftCorner", "BottomRightCorner",
+            "TopEdge", "BottomEdge",
+            "LeftEdge", "RightEdge",
+            "Center",
+        }
+
+        for _, name in ipairs(parts) do
+            local src = fromFrame.NineSlice[name]
+            local dst = toFrame.NineSlice[name]
+            if src and dst and src.GetVertexColor and dst.SetVertexColor then
+                local r, g, b, a = src:GetVertexColor()
+                dst:SetVertexColor(r, g, b, a)
+
+                if src.IsDesaturated and dst.SetDesaturated then
+                    dst:SetDesaturated(src:IsDesaturated())
+                end
+            end
+        end
+    end
+
+    CopyNineSliceColors(SettingsPanel, frame)
+
+    local plusButton = CreateFrame("Button", nil, BetterBlizzFrames)
+    plusButton:SetSize(frame.ClosePanelButton:GetSize())
+    plusButton:SetPoint("TOPRIGHT", parent, "TOPLEFT", 7, 0)
+    plusButton:SetNormalAtlas("128-RedButton-Plus")
+    plusButton:SetHighlightAtlas("128-RedButton-Plus", "ADD")
+    plusButton:SetAlpha(0)
+    plusButton:HookScript("OnEnter", function(self)
+        self:SetAlpha(1)
+    end)
+    plusButton:HookScript("OnLeave", function(self)
+        self:SetAlpha(0)
+    end)
+    plusButton:SetScript("OnClick", function(self)
+        BetterBlizzFramesDB.profilesPanelClosed = false
+        frame:Show()
+        self:Hide()
+    end)
+    frame.PlusButton = plusButton
+
+    frame.ClosePanelButton:HookScript("OnClick", function()
+        BetterBlizzFramesDB.profilesPanelClosed = true
+        plusButton:Show()
+    end)
+
+    if BetterBlizzFramesDB.profilesPanelClosed then
+        frame:Hide()
+    else
+        plusButton:Hide()
+    end
+
+    BetterBlizzFrames.profilesFrame = frame
+    return frame
+end
+
 local function guiGeneralTab()
     ----------------------
     -- Main panel:
@@ -2628,6 +2730,8 @@ local function guiGeneralTab()
     local mainGuiAnchor = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     mainGuiAnchor:SetPoint("TOPLEFT", 15, -15)
     mainGuiAnchor:SetText(" ")
+
+    local profilesFrame = guiProfiles()
 
     local bgImg = BetterBlizzFrames:CreateTexture(nil, "BACKGROUND")
     bgImg:SetColorTexture(0,0,0,0.4)
@@ -4049,11 +4153,14 @@ local function guiGeneralTab()
 
 
 
-    local btnGap = 5
+    local btnGap = -2
+    local profileButtons = {}
+
     local starterButton = CreateClassButton(BetterBlizzFrames, "STARTER", "Starter", nil, function()
         ShowProfileConfirmation("Starter", "STARTER", BBF.StarterProfile, "|cff808080(If you want to completely reset BBF there\nis a button in Advanced Settings)|r\n\n")
     end)
-    starterButton:SetPoint("TOPLEFT", SettingsPanel, "BOTTOMLEFT", 16, 38)
+    starterButton:SetPoint("TOP", profilesFrame.coreText, "BOTTOM", 0, -3)
+    table.insert(profileButtons, starterButton)
 
     -- local aeghisButton = CreateClassButton(BetterBlizzFrames, "MAGE", "Aeghis", "aeghis", function()
     --     ShowProfileConfirmation("Aeghis", "MAGE", BBF.AeghisProfile)
@@ -4073,22 +4180,44 @@ local function guiGeneralTab()
     local aeghisButton = CreateClassButton(BetterBlizzFrames, "MAGE", "Aeghis", "aeghis", function()
         ShowProfileConfirmation("Aeghis", "MAGE", BBF.AeghisProfile)
     end)
-    aeghisButton:SetPoint("LEFT", starterButton, "RIGHT", btnGap, 0)
+    aeghisButton:SetPoint("TOP", profilesFrame.streamerText, "BOTTOM", 0, -3)
+    table.insert(profileButtons, aeghisButton)
 
     local mmarkersButton = CreateClassButton(BetterBlizzFrames, "DRUID", "Mmarkers", "mmarkers", function()
         ShowProfileConfirmation("Mmarkers", "DRUID", BBF.MmarkersProfile)
     end)
-    mmarkersButton:SetPoint("LEFT", aeghisButton, "RIGHT", btnGap, 0)
+    mmarkersButton:SetPoint("TOP", aeghisButton, "BOTTOM", 0, btnGap)
+    table.insert(profileButtons, mmarkersButton)
 
     local nahjButton = CreateClassButton(BetterBlizzFrames, "ROGUE", "Nahj", "nahj", function()
         ShowProfileConfirmation("Nahj", "ROGUE", BBF.NahjProfile)
     end)
-    nahjButton:SetPoint("LEFT", mmarkersButton, "RIGHT", btnGap, 0)
+    nahjButton:SetPoint("TOP", mmarkersButton, "BOTTOM", 0, btnGap)
+    table.insert(profileButtons, nahjButton)
 
     local snupyButton = CreateClassButton(BetterBlizzFrames, "DRUID", "Snupy", "snupy", function()
         ShowProfileConfirmation("Snupy", "DRUID", BBF.SnupyProfile)
     end)
-    snupyButton:SetPoint("LEFT", nahjButton, "RIGHT", btnGap, 0)
+    snupyButton:SetPoint("TOP", nahjButton, "BOTTOM", 0, btnGap)
+    table.insert(profileButtons, snupyButton)
+
+    profilesFrame:HookScript("OnShow", function()
+        for _, button in ipairs(profileButtons) do
+            button:Show()
+        end
+    end)
+    profilesFrame:HookScript("OnHide", function()
+        for _, button in ipairs(profileButtons) do
+            button:Hide()
+        end
+    end)
+
+    if BetterBlizzFramesDB.profilesPanelClosed then
+        profilesFrame:Hide()
+        for _, button in ipairs(profileButtons) do
+            button:Hide()
+        end
+    end
 
 
 

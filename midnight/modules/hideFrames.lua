@@ -1366,6 +1366,7 @@ function BBF.HideFrames()
                     button:SetParent(hiddenFrame)
                 end
             end
+            StanceBar:EnableMouse(false)
         elseif originalStanceParent then
             for i = 1, 10 do
                 local buttonName = "StanceButton" .. i
@@ -1374,6 +1375,7 @@ function BBF.HideFrames()
                     button:SetParent(originalStanceParent)
                 end
             end
+            StanceBar:EnableMouse(true)
         end
 
 
@@ -1778,11 +1780,10 @@ function BBF.FadeMicroMenu()
             BBF.UIFrameFadeIn(frame, duration, 0, 1)
         end
 
-        local fadeTimer = nil -- Holds the current fade-out timer
-        local gracePeriod = 0.5 -- Grace period before fading out
-        local isFadedIn = false -- Tracks whether elements are already faded in
+        local fadeTimer = nil
+        local gracePeriod = 0.5
+        local isFadedIn = false
 
-        -- Fade helper for multiple frames
         local function FadeElements(fadeType, duration)
             local frames = {BagsBar, MicroMenu, MicroMenuContainer}
             for _, child in ipairs({MicroMenu:GetChildren()}) do
@@ -1792,13 +1793,12 @@ function BBF.FadeMicroMenu()
             for _, frame in ipairs(frames) do
                 local adjustedDuration = duration
 
-                -- Make BagsBar fade out 0.2 seconds faster
                 if frame == BagsBar and fadeType == "out" then
-                    adjustedDuration = math.max(duration - 0.6, 0) -- Ensure non-negative duration
+                    adjustedDuration = math.max(duration - 0.6, 0)
                 end
 
                 if EditModeManagerFrame:IsEditModeActive() then
-                    FadeInFrame(frame, 0) -- Force full alpha if Edit Mode is active
+                    FadeInFrame(frame, 0)
                 else
                     if fadeType == "in" then
                         FadeInFrame(frame, adjustedDuration)
@@ -1809,7 +1809,6 @@ function BBF.FadeMicroMenu()
             end
         end
 
-        -- Mouseover detection
         local function IsAnyMouseOver()
             if BagsBar:IsMouseOver() or MicroMenu:IsMouseOver() or MicroMenuContainer:IsMouseOver() then
                 return true
@@ -1822,55 +1821,47 @@ function BBF.FadeMicroMenu()
             return false
         end
 
-        -- Show elements (fade in)
         local function ShowElements()
-            if not isFadedIn and not EditModeManagerFrame:IsEditModeActive() then -- Only fade in if not already visible and Edit Mode inactive
+            if not isFadedIn and not EditModeManagerFrame:IsEditModeActive() then
                 if fadeTimer then
-                    fadeTimer:Cancel() -- Cancel any pending fade-out
+                    fadeTimer:Cancel()
                     fadeTimer = nil
                 end
-                FadeElements("in", 0.1) -- Smooth fade-in
+                FadeElements("in", 0.1)
                 isFadedIn = true
             end
         end
 
-        -- Hide elements (fade out with grace period)
         local function HideElements()
             if fadeTimer then
-                fadeTimer:Cancel() -- Reset any existing timer
+                fadeTimer:Cancel()
             end
 
             fadeTimer = C_Timer.NewTimer(gracePeriod, function()
                 if not IsAnyMouseOver() and not EditModeManagerFrame:IsEditModeActive() then
-                    FadeElements("out", 1.1) -- Smooth fade-out
-                    isFadedIn = false -- Mark as faded out
+                    FadeElements("out", 1.1)
+                    isFadedIn = false
                 end
             end)
         end
 
-        -- Reset alpha on Edit Mode toggle
         local function ResetAlphaOnEditMode()
             if EditModeManagerFrame:IsEditModeActive() then
-                -- Force all frames to full alpha
                 FadeElements("in", 0)
             else
-                -- Fade out frames instantly if Edit Mode is closed
                 FadeElements("out", 0)
                 isFadedIn = false
             end
         end
 
-        -- Initial state: start hidden if not in Edit Mode
         if not EditModeManagerFrame:IsEditModeActive() then
-            FadeElements("out", 0) -- Instantly fade out all elements
+            FadeElements("out", 0)
             isFadedIn = false
         else
-            FadeElements("in", 0) -- Full alpha when Edit Mode is active
+            FadeElements("in", 0)
         end
 
-        -- Apply hooks only once
         if not BagsBar.scHooked then
-            -- Hooks for BagsBar and its children
             BagsBar:HookScript("OnEnter", ShowElements)
             BagsBar:HookScript("OnLeave", HideElements)
 
@@ -1883,7 +1874,6 @@ function BBF.FadeMicroMenu()
         end
 
         if not MicroMenu.scHooked then
-            -- Hooks for MicroMenu, MicroMenuContainer, and its children
             MicroMenu:HookScript("OnEnter", ShowElements)
             MicroMenu:HookScript("OnLeave", HideElements)
 
@@ -1895,18 +1885,15 @@ function BBF.FadeMicroMenu()
                 child:HookScript("OnLeave", HideElements)
             end
 
-            -- Special case for QueueStatusButton if required
             QueueStatusButton:SetParent(UIParent)
             QueueStatusButton:SetFrameLevel(10)
 
             MicroMenu.scHooked = true
         end
 
-        -- Hook into Edit Mode events to reset alpha
         hooksecurefunc(EditModeManagerFrame, "EnterEditMode", ResetAlphaOnEditMode)
         hooksecurefunc(EditModeManagerFrame, "ExitEditMode", ResetAlphaOnEditMode)
 
-        -- Special case for QueueStatusButton if required
         if BetterBlizzFramesDB.fadeMicroMenuExceptQueue then
             QueueStatusButton:SetParent(UIParent)
             QueueStatusButton:SetFrameLevel(10)
@@ -1962,7 +1949,6 @@ function BBF.MoveQueueStatusEye()
 	    self:SetWidth(width);
     end)
 
-    -- Hook the SetPoint function to prevent automatic resets
     hooksecurefunc(button, "SetPoint", function(self, _, _, _, _, _)
         if self:IsProtected() or self.changing then return end
         self.changing = true
@@ -1993,23 +1979,18 @@ function BBF.MoveQueueStatusEye()
         self.changing = false
     end)
 
-    -- Enable dragging with Ctrl + Left Click
     button:SetMovable(true)
     button:EnableMouse(true)
     button:RegisterForDrag("LeftButton")
-
-    -- Start dragging when Ctrl + Left Click is held
     button:SetScript("OnDragStart", function(self)
         if IsControlKeyDown() then
             self:StartMoving()
         end
     end)
 
-    -- Stop dragging and save position
     button:SetScript("OnDragStop", function(self)
         self:StopMovingOrSizing()
 
-        -- Save the new position
         local point, _, relativePoint, xOffset, yOffset = self:GetPoint()
         BetterBlizzFramesDB.queueStatusButtonPosition = {point, nil, relativePoint, xOffset, yOffset}
     end)
@@ -2026,7 +2007,7 @@ function BBF.MoveQueueStatusEye()
     end
 
     button:SetParent(UIParent)
-    button:SetFrameStrata("HIGH")
+    button:SetFrameStrata("MEDIUM")
 
     button.bbfHooked = true
 end

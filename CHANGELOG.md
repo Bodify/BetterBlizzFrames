@@ -1,3 +1,15 @@
+# BetterBlizzFrames 2.0.6d
+## Midnight
+### Tweak
+- Update Snupy profile (www.twitch.tv/snupy). Thank you for sharing!
+- Update Saul profile (www.twitch.tv/saul). Thank you for sharing!
+- Fix Queue Status Eye's frame strata when moved.
+### Bugfix
+- Fix "Hide StanceBar" setting leaving a clickable area where it was hidden.
+## All versions
+### Tweak
+- Add a hidden close button for the profiles sidebar in the top right corner of it that shows on mouseover.
+
 # BetterBlizzFrames 2.0.6c
 ## Midnight
 ### New
