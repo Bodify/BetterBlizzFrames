@@ -138,11 +138,12 @@ end
 
 local function UpdateHostContainers(host)
     local spellIDsUsable = BBF.CanFilterBySpellID(host.unit, false)
+    local tokensOk = BBF.AuraTokensReliable(host.unit)
 
     for index, tier in ipairs(TIERS) do
         local container = host.containers[index]
         if container then
-            local on = hostsEnabled and (not tier.needsSpellIDs or spellIDsUsable)
+            local on = hostsEnabled and (not tier.needsSpellIDs or spellIDsUsable) and (tokensOk or tier.needsSpellIDs)
             container:SetEnabled(on)
             container:SetShown(on)
         end
@@ -181,15 +182,25 @@ local function CreateUnitWatcher()
     unitWatcher:RegisterEvent("PLAYER_FOCUS_CHANGED")
     unitWatcher:RegisterUnitEvent("UNIT_PET", "player")
     unitWatcher:RegisterUnitEvent("UNIT_FACTION", "target", "focus")
+    unitWatcher:RegisterUnitEvent("UNIT_PHASE", "target", "focus")
+    unitWatcher:RegisterUnitEvent("UNIT_FLAGS", "target", "focus")
+    unitWatcher:RegisterUnitEvent("UNIT_CONNECTION", "target", "focus")
+    unitWatcher:RegisterEvent("PLAYER_ENTERING_WORLD")
+    unitWatcher:RegisterEvent("ZONE_CHANGED_NEW_AREA")
+    unitWatcher:RegisterEvent("ZONE_CHANGED_INDOORS")
     unitWatcher:SetScript("OnEvent", function(_, event, unit)
         if event == "PLAYER_TARGET_CHANGED" then
             RefreshHost("target")
         elseif event == "PLAYER_FOCUS_CHANGED" then
             RefreshHost("focus")
-        elseif event == "UNIT_FACTION" then
+        elseif event == "UNIT_PET" then
+            RefreshHost("pet")
+        elseif unit then
             RefreshHost(unit)
         else
-            RefreshHost("pet")
+            for hostUnit in pairs(hosts) do
+                RefreshHost(hostUnit)
+            end
         end
     end)
 end

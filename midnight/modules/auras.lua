@@ -457,6 +457,14 @@ function BBF.CanFilterBySpellID(unit, isHelpful)
     return not assist
 end
 
+function BBF.AuraTokensReliable(unit)
+    if S.primeReaction then return true end
+    if not unit or not UnitExists(unit) then return true end
+    local visible = UnitIsVisible(unit)
+    if issecretvalue(visible) then return true end
+    return visible and true or false
+end
+
 function BBF.PartitionSpellList(list)
     local all, neverSecret = {}, {}
     local anyAll, anyNeverSecret = false, false
@@ -1749,6 +1757,25 @@ local function ConfigureContainer(host, container, harmful)
     local canFilterIDs = BBF.CanFilterBySpellID(host.unit, not harmful)
     local sort = SortFor(host)
 
+    local tokensOk = BBF.AuraTokensReliable(host.unit)
+
+    local degradedFilters, degradedBlocked
+    if not tokensOk then
+        degradedFilters = {}
+        if cfg.importantFilter or cfg.defensivesFilter or cfg.ccFilter then
+            degradedBlocked = true
+        elseif cfg.whitelist then
+            if canFilterIDs and listCache.whitelist.any then
+                degradedFilters.includeSpellIDs = listCache.whitelist.all
+            else
+                degradedBlocked = true
+            end
+        elseif cfg.blacklist and listCache.blacklist.any then
+            degradedFilters.excludeSpellIDs = canFilterIDs
+                and listCache.blacklist.all or listCache.blacklist.ns
+        end
+    end
+
     local whitelistFilter = cfg.whitelist and canFilterIDs
     local categoryOn = (whitelistFilter or cfg.importantFilter or cfg.defensivesFilter
         or cfg.ccFilter) and true or false
@@ -1805,13 +1832,30 @@ local function ConfigureContainer(host, container, harmful)
             end
         end
 
+        if not tokensOk then
+            if def.tier == "others" and not degradedBlocked then
+                count = (cfg.enabled and not PreviewIsActive(host))
+                    and (cfg.maxCount or 32) or 0
+                filters = degradedFilters
+            else
+                count = 0
+            end
+        end
+
         if not exists and count > 0 then
             AddContainerGroup(host, container, def, cfg, sort, key)
             exists = true
         end
 
         if exists then
-            local filterString = BuildFilterString(harmful, def.tier, cfg, def.mine)
+            local filterString
+            if not tokensOk and def.tier == "others" then
+                filterString = harmful
+                    and AuraUtil.CreateFilterString(F.Harmful, F.IncludeNameplateOnly)
+                    or AuraUtil.CreateFilterString(F.Helpful)
+            else
+                filterString = BuildFilterString(harmful, def.tier, cfg, def.mine)
+            end
             container:SetAuraGroupFilterString(key, filterString)
             ApplyGroupCandidateFilters(container, key, filters)
             ApplyGroupSortMethod(container, key, sort[1], sort[2])
@@ -3630,6 +3674,12 @@ function BBF.HookPlayerAndTargetAuras()
         driver:RegisterEvent("PLAYER_TARGET_CHANGED")
         driver:RegisterEvent("PLAYER_FOCUS_CHANGED")
         driver:RegisterUnitEvent("UNIT_FACTION", "target", "focus")
+        driver:RegisterUnitEvent("UNIT_PHASE", "target", "focus")
+        driver:RegisterUnitEvent("UNIT_FLAGS", "target", "focus")
+        driver:RegisterUnitEvent("UNIT_CONNECTION", "target", "focus")
+        driver:RegisterEvent("PLAYER_ENTERING_WORLD")
+        driver:RegisterEvent("ZONE_CHANGED_NEW_AREA")
+        driver:RegisterEvent("ZONE_CHANGED_INDOORS")
         driver:RegisterEvent("PLAYER_REGEN_ENABLED")
         driver:SetScript("OnEvent", function(_, event, unit)
             if event == "PLAYER_REGEN_ENABLED" then
@@ -3641,6 +3691,17 @@ function BBF.HookPlayerAndTargetAuras()
                         h.spacerPending = nil
                         PrimeHostGroups(h)
                         BBF.ApplyAuraGroupConfig(h)
+                    end
+                end
+                return
+            end
+
+            if event == "PLAYER_ENTERING_WORLD" or event == "ZONE_CHANGED_NEW_AREA"
+                or event == "ZONE_CHANGED_INDOORS" then
+                for _, h in pairs(BBF.auraHosts) do
+                    if not h.isPlayer and UnitExists(h.unit) then
+                        RefreshHost(h)
+                        ForEachContainer(h, UpdateAllAurasIn)
                     end
                 end
                 return

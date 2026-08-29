@@ -1,3 +1,8 @@
+# BetterBlizzFrames 2.0.6e
+## Midnight
+### Tweak
+- Minor tweak to auras to try avoid spammy buggy auras due to Blizzard API while waiting for fix.
+
 # BetterBlizzFrames 2.0.6d
 ## Midnight
 ### Tweak
