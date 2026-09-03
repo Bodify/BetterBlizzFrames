@@ -369,3 +369,29 @@ function BBF.RunAfterCombat(func)
 		end)
 	end
 end
+StaticPopupDialogs["BBF_SWEEPYBOOP_CLASSCOLOR_CONFLICT"] = {
+    text = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames:\n\nThe \"SweepyBoop\" addon has started enabling a bunch of settings by default causing a bunch of bug reports my way.\n\n|cffffd100Class Color Unit Frames|r setting is one of them and it conflicts with BetterBlizzFrames' healthbar color and texture settings.\n\nIt has been turned off. Reload to fix.",
+    button1 = "Reload",
+    OnAccept = function()
+        ReloadUI()
+    end,
+    timeout = 0,
+    whileDead = true,
+}
+
+local function CheckSweepyBoopClassColor()
+    BBF.sweepyBoopCheckScheduled = false
+    if BBF.sweepyBoopConflictHandled then return end
+    local misc = SweepyBoop and SweepyBoop.db and SweepyBoop.db.profile and SweepyBoop.db.profile.misc
+    if not misc or not misc.classColorUnitFrames then return end
+
+    misc.classColorUnitFrames = false
+    BBF.sweepyBoopConflictHandled = true
+    StaticPopup_Show("BBF_SWEEPYBOOP_CLASSCOLOR_CONFLICT")
+end
+
+function BBF.CheckSweepyBoopClassColorConflict()
+    if BBF.sweepyBoopConflictHandled or BBF.sweepyBoopCheckScheduled then return end
+    BBF.sweepyBoopCheckScheduled = true
+    C_Timer.After(5, CheckSweepyBoopClassColor)
+end

@@ -2854,10 +2854,7 @@ local function DisableDefaultPlayerAuras(hostFrame)
     end
 
     for _, auraFrame in ipairs(hostFrame.auraFrames or {}) do
-        if not auraFrame.isAuraAnchor then
-            auraFrame:SetScript("OnUpdate", nil)
-            auraFrame:Hide()
-        end
+        auraFrame:SetParent(BBF.hiddenFrame)
     end
 
     if hostFrame == BuffFrame then

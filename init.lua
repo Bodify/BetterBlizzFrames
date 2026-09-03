@@ -28,6 +28,19 @@ BBF.isMoP = gameVersion:match("^5%.")
 BBF.isTBC = gameVersion:match("^2%.")
 BBF.isEra = gameVersion:match("^1%.")
 
+local eraShamanColor
+if BBF.isEra then
+    eraShamanColor = CreateColor(0, 0.44, 0.87)
+    eraShamanColor.colorStr = eraShamanColor:GenerateHexColor()
+end
+
+function BBF.GetClassColor(class)
+    if eraShamanColor and class == "SHAMAN" then
+        return eraShamanColor
+    end
+    return RAID_CLASS_COLORS[class]
+end
+
 local function CreateOverlayFrame(frame)
     frame.bbfOverlayFrame = CreateFrame("Frame", nil, frame)
     frame.bbfOverlayFrame:SetFrameStrata("DIALOG")

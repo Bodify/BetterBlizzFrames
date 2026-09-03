@@ -4824,11 +4824,11 @@ local function guiGeneralTab()
 
     local noPortraitModes = CreateCheckbox("noPortraitModes", L["No_Portrait"], BetterBlizzFrames)
     noPortraitModes:SetPoint("LEFT", classicFrames.text, "RIGHT", 0, 0)
-    CreateTooltipTwo(noPortraitModes, L["No_Portrait"], L["Tooltip_No_Portrait_Desc"])
+    CreateTooltipTwo(noPortraitModes, L["No_Portrait"], L["Tooltip_No_Portrait_Desc"] .. "\n\n|cff32f795" .. L["Right_Click_More_Settings"] .. "|r")
 
     local noPortraitPixelBorder = CreateCheckbox("noPortraitPixelBorder", L["NP_PixelBorder"], BetterBlizzFrames)
     noPortraitPixelBorder:SetPoint("BOTTOMLEFT", noPortraitModes, "TOPRIGHT", -14, -5)
-    CreateTooltipTwo(noPortraitPixelBorder, L["No_Portrait_PixelBorder"], L["Tooltip_No_Portrait_PixelBorder_Desc"])
+    CreateTooltipTwo(noPortraitPixelBorder, L["No_Portrait_PixelBorder"], L["Tooltip_No_Portrait_PixelBorder_Desc"] .. "\n\n|cff32f795" .. L["Right_Click_More_Settings"] .. "|r")
     noPortraitPixelBorder:HookScript("OnClick", function(self)
         if self:GetChecked() then
             BetterBlizzFramesDB.classicFrames = false
@@ -4854,6 +4854,82 @@ local function guiGeneralTab()
             noPortraitPixelBorder:SetChecked(false)
         end
         StaticPopup_Show("BBF_CONFIRM_RELOAD")
+    end)
+
+    local noPortraitOptionsFrame
+    local function OpenNoPortraitOptionsWindow()
+        if not noPortraitOptionsFrame then
+            noPortraitOptionsFrame = CreateFrame("Frame", "NoPortraitOptionsFrame", UIParent, "BasicFrameTemplateWithInset")
+            noPortraitOptionsFrame:SetSize(185, 155)
+            noPortraitOptionsFrame:SetPoint("TOP", noPortraitModes, "BOTTOM", 0, -20)
+            noPortraitOptionsFrame:SetFrameStrata("DIALOG")
+            noPortraitOptionsFrame:SetMovable(true)
+            noPortraitOptionsFrame:EnableMouse(true)
+            noPortraitOptionsFrame:RegisterForDrag("LeftButton")
+            noPortraitOptionsFrame:SetScript("OnDragStart", noPortraitOptionsFrame.StartMoving)
+            noPortraitOptionsFrame:SetScript("OnDragStop", noPortraitOptionsFrame.StopMovingOrSizing)
+            noPortraitOptionsFrame.title = noPortraitOptionsFrame:CreateFontString(nil, "OVERLAY")
+            noPortraitOptionsFrame.title:SetFontObject("GameFontHighlight")
+            noPortraitOptionsFrame.title:SetPoint("LEFT", noPortraitOptionsFrame.TitleBg, "LEFT", 5, 0)
+            noPortraitOptionsFrame.title:SetText(L["No_Portrait_Options"])
+
+            local options = {
+                { var = "noPortraitPartyOnly", label = L["No_Portrait_Party_Only"], tooltip = L["Tooltip_No_Portrait_Party_Only"] },
+                { var = "noPortraitSkipPlayer", label = L["No_Portrait_Skip_Player"], unit = L["Player"] },
+                { var = "noPortraitSkipTarget", label = L["No_Portrait_Skip_Target"], unit = L["Target"] },
+                { var = "noPortraitSkipFocus", label = L["No_Portrait_Skip_Focus"], unit = L["Focus"] },
+                { var = "noPortraitSkipPet", label = L["No_Portrait_Skip_Pet"], unit = L["Pet"] },
+            }
+
+            noPortraitOptionsFrame.checkboxes = {}
+
+            local previousCheckbox
+            for i, optionData in ipairs(options) do
+                local optionCheckbox = CreateFrame("CheckButton", nil, noPortraitOptionsFrame, "UICheckButtonTemplate")
+                optionCheckbox:SetSize(24, 24)
+                optionCheckbox.Text:SetText(optionData.label)
+
+                if i == 1 then
+                    optionCheckbox:SetPoint("TOPLEFT", noPortraitOptionsFrame, "TOPLEFT", 10, -30)
+                else
+                    optionCheckbox:SetPoint("TOPLEFT", previousCheckbox, "BOTTOMLEFT", 0, 3)
+                end
+
+                CreateTooltipTwo(optionCheckbox, optionData.label, optionData.tooltip or string.format(L["Tooltip_No_Portrait_Skip_Unit"], optionData.unit))
+
+                optionCheckbox:SetChecked(BetterBlizzFramesDB[optionData.var])
+
+                optionCheckbox:SetScript("OnClick", function(self)
+                    BetterBlizzFramesDB[optionData.var] = self:GetChecked() or nil
+                    StaticPopup_Show("BBF_CONFIRM_RELOAD")
+                end)
+
+                noPortraitOptionsFrame.checkboxes[optionData.var] = optionCheckbox
+                previousCheckbox = optionCheckbox
+            end
+            noPortraitOptionsFrame:Show()
+        else
+            if noPortraitOptionsFrame:IsShown() then
+                noPortraitOptionsFrame:Hide()
+            else
+                for var, optionCheckbox in pairs(noPortraitOptionsFrame.checkboxes) do
+                    optionCheckbox:SetChecked(BetterBlizzFramesDB[var])
+                end
+                noPortraitOptionsFrame:Show()
+            end
+        end
+    end
+
+    noPortraitModes:HookScript("OnMouseDown", function(self, button)
+        if button == "RightButton" then
+            OpenNoPortraitOptionsWindow()
+        end
+    end)
+
+    noPortraitPixelBorder:HookScript("OnMouseDown", function(self, button)
+        if button == "RightButton" then
+            OpenNoPortraitOptionsWindow()
+        end
     end)
 
     local classColorFrames = CreateCheckbox("classColorFrames", L["Class_Color_Health"], BetterBlizzFrames)

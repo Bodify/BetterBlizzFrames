@@ -1160,8 +1160,8 @@ local function MakeNoPortraitMode(frame)
         contentContext.RoleIcon:ClearAllPoints()
         contentContext.RoleIcon:SetPoint("TOPLEFT", 81, -36)
         contentContext.PlayerRestLoop:ClearAllPoints()
-        contentContext.PlayerRestLoop:SetPoint("TOPRIGHT", -35, -32)
-        contentContext.PlayerRestLoop:SetScale(0.7)
+        contentContext.PlayerRestLoop:SetPoint("TOPRIGHT", -80, -51)
+        contentContext.PlayerRestLoop:SetScale(0.5)
 
 
         --AdjustFramePoint(contentContext.GroupIndicator, nil, -3)
@@ -2500,6 +2500,74 @@ local function MakeClassicPartyFrame()
 end
 
 
+local function UpdatePartyFrameManaVisibility()
+    local db = BetterBlizzFramesDB
+    -- PartyFrames
+    if PartyFrame and PartyFrame.PartyMemberFramePool then
+        for frame in PartyFrame.PartyMemberFramePool:EnumerateActive() do
+            local manaBar = frame.ManaBar
+            if manaBar then
+                if db.hideDefaultPartyFramesMana then
+                    manaBar:SetAlpha(0)
+                    if manaBar.TextString then
+                        manaBar.TextString:SetAlpha(0)
+                    end
+                    if manaBar.LeftText then
+                        manaBar.LeftText:SetAlpha(0)
+                    end
+                    if manaBar.RightText then
+                        manaBar.RightText:SetAlpha(0)
+                    end
+                    if manaBar.BBFPixelBorder then
+                        manaBar.BBFPixelBorder:Hide()
+                    end
+                    if manaBar.pixelBorderBackground then
+                        manaBar.pixelBorderBackground:SetAlpha(0)
+                    end
+                    if frame.Background then
+                        frame.Background:ClearAllPoints()
+                        frame.Background:SetPoint("TOPLEFT", frame.HealthBarContainer.HealthBar, "TOPLEFT", 0, -1)
+                        frame.Background:SetPoint("BOTTOMRIGHT", frame.HealthBarContainer.HealthBar, "BOTTOMRIGHT", -2, 1)
+                    end
+                else
+                    manaBar:SetAlpha(1)
+                    if manaBar.TextString then
+                        manaBar.TextString:SetAlpha(1)
+                    end
+                    if manaBar.LeftText then
+                        manaBar.LeftText:SetAlpha(1)
+                    end
+                    if manaBar.RightText then
+                        manaBar.RightText:SetAlpha(1)
+                    end
+                    if db.noPortraitPixelBorder and manaBar.BBFPixelBorder then
+                        manaBar.BBFPixelBorder:Show()
+                    end
+                    if db.noPortraitPixelBorder and manaBar.pixelBorderBackground then
+                        manaBar.pixelBorderBackground:SetAlpha(1)
+                    end
+                    if frame.Background then
+                        frame.Background:ClearAllPoints()
+                        frame.Background:SetPoint("TOPLEFT", frame.HealthBarContainer.HealthBar, "TOPLEFT", 0, -1)
+                        frame.Background:SetPoint("BOTTOMRIGHT", manaBar, "BOTTOMRIGHT", -2, 1)
+                    end
+                end
+                if not db.noPortraitPixelBorder then
+                    if frame.Texture then
+                        frame.Texture:SetTexture(partyDefaultTex)
+                    end
+                    if frame.Flash then
+                        frame.Flash:SetTexture(partyDefaultTex)
+                    end
+                    if frame.PartyMemberOverlay and frame.PartyMemberOverlay.Status then
+                        frame.PartyMemberOverlay.Status:SetTexture(partyDefaultTex)
+                    end
+                end
+            end
+        end
+    end
+end
+
 function BBF.UpdateNoPortraitManaVisibility()
     local db = BetterBlizzFramesDB
     if db.classicFrames then
@@ -2541,6 +2609,11 @@ function BBF.UpdateNoPortraitManaVisibility()
         manaBar.LeftText:SetAlpha(manaAlpha)
         manaBar.RightText:SetAlpha(manaAlpha)
         manaBar.ManaBarText:SetAlpha(manaAlpha)
+        return
+    end
+    if db.noPortraitPartyOnly and not db.noPortraitModes then
+        UpdateTextureVariables()
+        UpdatePartyFrameManaVisibility()
         return
     end
     if not db.noPortraitModes then return end
@@ -2779,77 +2852,112 @@ function BBF.UpdateNoPortraitManaVisibility()
         FocusFrame.totFrame.FrameTexture:SetTexture(focusDefaultTex)
     end
 
-    -- PartyFrames
-    if PartyFrame and PartyFrame.PartyMemberFramePool then
-        for frame in PartyFrame.PartyMemberFramePool:EnumerateActive() do
-            local manaBar = frame.ManaBar
-            if manaBar then
-                if db.hideDefaultPartyFramesMana then
-                    manaBar:SetAlpha(0)
-                    if manaBar.TextString then
-                        manaBar.TextString:SetAlpha(0)
-                    end
-                    if manaBar.LeftText then
-                        manaBar.LeftText:SetAlpha(0)
-                    end
-                    if manaBar.RightText then
-                        manaBar.RightText:SetAlpha(0)
-                    end
-                    if manaBar.BBFPixelBorder then
-                        manaBar.BBFPixelBorder:Hide()
-                    end
-                    if manaBar.pixelBorderBackground then
-                        manaBar.pixelBorderBackground:SetAlpha(0)
-                    end
-                    if frame.Background then
-                        frame.Background:ClearAllPoints()
-                        frame.Background:SetPoint("TOPLEFT", frame.HealthBarContainer.HealthBar, "TOPLEFT", 0, -1)
-                        frame.Background:SetPoint("BOTTOMRIGHT", frame.HealthBarContainer.HealthBar, "BOTTOMRIGHT", -2, 1)
-                    end
-                else
-                    manaBar:SetAlpha(1)
-                    if manaBar.TextString then
-                        manaBar.TextString:SetAlpha(1)
-                    end
-                    if manaBar.LeftText then
-                        manaBar.LeftText:SetAlpha(1)
-                    end
-                    if manaBar.RightText then
-                        manaBar.RightText:SetAlpha(1)
-                    end
-                    if db.noPortraitPixelBorder and manaBar.BBFPixelBorder then
-                        manaBar.BBFPixelBorder:Show()
-                    end
-                    if db.noPortraitPixelBorder and manaBar.pixelBorderBackground then
-                        manaBar.pixelBorderBackground:SetAlpha(1)
-                    end
-                    if frame.Background then
-                        frame.Background:ClearAllPoints()
-                        frame.Background:SetPoint("TOPLEFT", frame.HealthBarContainer.HealthBar, "TOPLEFT", 0, -1)
-                        frame.Background:SetPoint("BOTTOMRIGHT", manaBar, "BOTTOMRIGHT", -2, 1)
-                    end
-                end
-                if not db.noPortraitPixelBorder then
-                    if frame.Texture then
-                        frame.Texture:SetTexture(partyDefaultTex)
-                    end
-                    if frame.Flash then
-                        frame.Flash:SetTexture(partyDefaultTex)
-                    end
-                    if frame.PartyMemberOverlay and frame.PartyMemberOverlay.Status then
-                        frame.PartyMemberOverlay.Status:SetTexture(partyDefaultTex)
-                    end
-                end
-            end
-        end
-    end
+    UpdatePartyFrameManaVisibility()
 
     AdjustAlternateBars()
     BBF.UpdateResourcePositionNoPortrait()
 end
 
+local function FixSelectionHighlight(frames)
+    for _, frame in pairs(frames) do
+        if frame.Selection and frame.Selection.TopLeftCorner and not frame.Selection.bbfRepositioned then
+            local xOffsetLeft = (frame == PartyFrame) and 43 or 0
+            local xOffsetRight = (frame == PartyFrame) and -3 or 0
+            local yOffsetBottom = (frame == PartyFrame) and 20 or 0
+            local yOffsetTop = (frame ~= PartyFrame and frame ~= PetFrame) and 6 or 0
+            frame.Selection.TopLeftCorner:ClearAllPoints()
+            frame.Selection.TopLeftCorner:SetPoint("TOPLEFT", (frame.healthBar or frame.HealthBar or frame.healthbar or PartyFrame), "TOPLEFT", -16 + xOffsetLeft, 15 + yOffsetTop)
+            frame.Selection.TopRightCorner:ClearAllPoints()
+            frame.Selection.TopRightCorner:SetPoint("TOPRIGHT", (frame.healthBar or frame.HealthBar or frame.healthbar or PartyFrame), "TOPRIGHT", 15 + xOffsetRight, 15 + yOffsetTop)
+            frame.Selection.BottomLeftCorner:ClearAllPoints()
+            frame.Selection.BottomLeftCorner:SetPoint("BOTTOMLEFT", (frame.healthBar or frame.HealthBar or frame.healthbar or PartyFrame), "BOTTOMLEFT", -16 + xOffsetLeft, -25 + yOffsetBottom)
+            frame.Selection.BottomRightCorner:ClearAllPoints()
+            frame.Selection.BottomRightCorner:SetPoint("BOTTOMRIGHT", (frame.healthBar or frame.HealthBar or frame.healthbar or PartyFrame), "BOTTOMRIGHT", 15 + xOffsetRight, -25 + yOffsetBottom)
+            frame.Selection.MouseOverHighlight:ClearAllPoints()
+            frame.Selection.MouseOverHighlight:SetPoint("TOPLEFT", frame.Selection.TopLeftCorner, "TOPLEFT", 8, -8)
+            frame.Selection.MouseOverHighlight:SetPoint("BOTTOMRIGHT", frame.Selection.BottomRightCorner, "BOTTOMRIGHT", -8, 8)
+            if frame.Selection.HorizontalLabel then
+                frame.Selection.HorizontalLabel:ClearAllPoints()
+                frame.Selection.HorizontalLabel:SetPoint("CENTER", frame.Selection.MouseOverHighlight, "CENTER", 0, 0)
+            end
+            frame.Selection.bbfRepositioned = true
+
+            hooksecurefunc(frame.Selection.TopLeftCorner, "SetPoint", function(self)
+                if self.changing then return end
+                self.changing = true
+                self:ClearAllPoints()
+                self:SetPoint("TOPLEFT", (frame.healthBar or frame.HealthBar or frame.healthbar or PartyFrame), "TOPLEFT", -16 + xOffsetLeft, 15 + yOffsetTop)
+                self.changing = false
+            end)
+
+            hooksecurefunc(frame.Selection.TopRightCorner, "SetPoint", function(self)
+                if self.changing then return end
+                self.changing = true
+                self:ClearAllPoints()
+                self:SetPoint("TOPRIGHT", (frame.healthBar or frame.HealthBar or frame.healthbar or PartyFrame), "TOPRIGHT", 15 + xOffsetRight, 15 + yOffsetTop)
+                self.changing = false
+            end)
+
+            hooksecurefunc(frame.Selection.BottomLeftCorner, "SetPoint", function(self)
+                if self.changing then return end
+                self.changing = true
+                self:ClearAllPoints()
+                self:SetPoint("BOTTOMLEFT", (frame.healthBar or frame.HealthBar or frame.healthbar or PartyFrame), "BOTTOMLEFT", -16 + xOffsetLeft, -25 + yOffsetBottom)
+                self.changing = false
+            end)
+
+            hooksecurefunc(frame.Selection.BottomRightCorner, "SetPoint", function(self)
+                if self.changing then return end
+                self.changing = true
+                self:ClearAllPoints()
+                self:SetPoint("BOTTOMRIGHT", (frame.healthBar or frame.HealthBar or frame.healthbar or PartyFrame), "BOTTOMRIGHT", 15 + xOffsetRight, -25 + yOffsetBottom)
+                self.changing = false
+            end)
+
+            hooksecurefunc(frame.Selection.MouseOverHighlight, "SetPoint", function(self)
+                if self.changing then return end
+                self.changing = true
+                self:ClearAllPoints()
+                self:SetPoint("TOPLEFT", frame.Selection.TopLeftCorner, "TOPLEFT", 8, -8)
+                self:SetPoint("BOTTOMRIGHT", frame.Selection.BottomRightCorner, "BOTTOMRIGHT", -8, 8)
+                self.changing = false
+            end)
+        end
+
+    end
+end
+
 function BBF.noPortraitModes()
-    if not BetterBlizzFramesDB.noPortraitModes and not BetterBlizzFramesDB.noPortraitPixelBorder then return end
+    local db = BetterBlizzFramesDB
+    if not db.noPortraitModes and not db.noPortraitPixelBorder and not db.noPortraitPartyOnly then return end
+
+    if db.noPortraitPartyOnly and not db.noPortraitModes then
+        UpdateTextureVariables()
+        MakeClassicPartyFrame()
+
+        for i = 1, 4 do
+            local partyMemberFrame = PartyFrame["MemberFrame"..i]
+            partyMemberFrame:SetHitRectInsets(29, -8, -6, 8)
+        end
+
+        local selectionFrames = {PartyFrame}
+
+        hooksecurefunc(EditModeManagerFrame, "EnterEditMode", function()
+            if InCombatLockdown() then return end
+            FixSelectionHighlight(selectionFrames)
+        end)
+
+        hooksecurefunc(EditModeManagerFrame, "ExitEditMode", function()
+            if InCombatLockdown() then return end
+            FixSelectionHighlight(selectionFrames)
+        end)
+
+        C_Timer.After(0.5, function()
+            BBF.UpdateNoPortraitManaVisibility()
+        end)
+        return
+    end
+
     UpdateTextureVariables()
     if not BetterBlizzFramesDB.noPortraitSkipTarget then
         MakeNoPortraitMode(TargetFrame)
@@ -2899,85 +3007,17 @@ function BBF.noPortraitModes()
         partyMemberFrame:SetHitRectInsets(29, -8, -6, 8)
     end
 
-    local function FixSelectionHighlight()
-        local frames = {PlayerFrame, PetFrame, TargetFrame, FocusFrame, TargetFrameToT, FocusFrameToT, PartyFrame}
 
-        for _, frame in pairs(frames) do
-            if frame.Selection and frame.Selection.TopLeftCorner and not frame.Selection.bbfRepositioned then
-                local xOffsetLeft = (frame == PartyFrame) and 43 or 0
-                local xOffsetRight = (frame == PartyFrame) and -3 or 0
-                local yOffsetBottom = (frame == PartyFrame) and 20 or 0
-                local yOffsetTop = (frame ~= PartyFrame and frame ~= PetFrame) and 6 or 0
-                frame.Selection.TopLeftCorner:ClearAllPoints()
-                frame.Selection.TopLeftCorner:SetPoint("TOPLEFT", (frame.healthBar or frame.HealthBar or frame.healthbar or PartyFrame), "TOPLEFT", -16 + xOffsetLeft, 15 + yOffsetTop)
-                frame.Selection.TopRightCorner:ClearAllPoints()
-                frame.Selection.TopRightCorner:SetPoint("TOPRIGHT", (frame.healthBar or frame.HealthBar or frame.healthbar or PartyFrame), "TOPRIGHT", 15 + xOffsetRight, 15 + yOffsetTop)
-                frame.Selection.BottomLeftCorner:ClearAllPoints()
-                frame.Selection.BottomLeftCorner:SetPoint("BOTTOMLEFT", (frame.healthBar or frame.HealthBar or frame.healthbar or PartyFrame), "BOTTOMLEFT", -16 + xOffsetLeft, -25 + yOffsetBottom)
-                frame.Selection.BottomRightCorner:ClearAllPoints()
-                frame.Selection.BottomRightCorner:SetPoint("BOTTOMRIGHT", (frame.healthBar or frame.HealthBar or frame.healthbar or PartyFrame), "BOTTOMRIGHT", 15 + xOffsetRight, -25 + yOffsetBottom)
-                frame.Selection.MouseOverHighlight:ClearAllPoints()
-                frame.Selection.MouseOverHighlight:SetPoint("TOPLEFT", frame.Selection.TopLeftCorner, "TOPLEFT", 8, -8)
-                frame.Selection.MouseOverHighlight:SetPoint("BOTTOMRIGHT", frame.Selection.BottomRightCorner, "BOTTOMRIGHT", -8, 8)
-                if frame.Selection.HorizontalLabel then
-                    frame.Selection.HorizontalLabel:ClearAllPoints()
-                    frame.Selection.HorizontalLabel:SetPoint("CENTER", frame.Selection.MouseOverHighlight, "CENTER", 0, 0)
-                end
-                frame.Selection.bbfRepositioned = true
-
-                hooksecurefunc(frame.Selection.TopLeftCorner, "SetPoint", function(self)
-                    if self.changing then return end
-                    self.changing = true
-                    self:ClearAllPoints()
-                    self:SetPoint("TOPLEFT", (frame.healthBar or frame.HealthBar or frame.healthbar or PartyFrame), "TOPLEFT", -16 + xOffsetLeft, 15 + yOffsetTop)
-                    self.changing = false
-                end)
-
-                hooksecurefunc(frame.Selection.TopRightCorner, "SetPoint", function(self)
-                    if self.changing then return end
-                    self.changing = true
-                    self:ClearAllPoints()
-                    self:SetPoint("TOPRIGHT", (frame.healthBar or frame.HealthBar or frame.healthbar or PartyFrame), "TOPRIGHT", 15 + xOffsetRight, 15 + yOffsetTop)
-                    self.changing = false
-                end)
-
-                hooksecurefunc(frame.Selection.BottomLeftCorner, "SetPoint", function(self)
-                    if self.changing then return end
-                    self.changing = true
-                    self:ClearAllPoints()
-                    self:SetPoint("BOTTOMLEFT", (frame.healthBar or frame.HealthBar or frame.healthbar or PartyFrame), "BOTTOMLEFT", -16 + xOffsetLeft, -25 + yOffsetBottom)
-                    self.changing = false
-                end)
-
-                hooksecurefunc(frame.Selection.BottomRightCorner, "SetPoint", function(self)
-                    if self.changing then return end
-                    self.changing = true
-                    self:ClearAllPoints()
-                    self:SetPoint("BOTTOMRIGHT", (frame.healthBar or frame.HealthBar or frame.healthbar or PartyFrame), "BOTTOMRIGHT", 15 + xOffsetRight, -25 + yOffsetBottom)
-                    self.changing = false
-                end)
-
-                hooksecurefunc(frame.Selection.MouseOverHighlight, "SetPoint", function(self)
-                    if self.changing then return end
-                    self.changing = true
-                    self:ClearAllPoints()
-                    self:SetPoint("TOPLEFT", frame.Selection.TopLeftCorner, "TOPLEFT", 8, -8)
-                    self:SetPoint("BOTTOMRIGHT", frame.Selection.BottomRightCorner, "BOTTOMRIGHT", -8, 8)
-                    self.changing = false
-                end)
-            end
-
-        end
-    end
+    local selectionFrames = {PlayerFrame, PetFrame, TargetFrame, FocusFrame, TargetFrameToT, FocusFrameToT, PartyFrame}
 
     hooksecurefunc(EditModeManagerFrame, "EnterEditMode", function()
         if InCombatLockdown() then return end
-        FixSelectionHighlight()
+        FixSelectionHighlight(selectionFrames)
     end)
 
     hooksecurefunc(EditModeManagerFrame, "ExitEditMode", function()
         if InCombatLockdown() then return end
-        FixSelectionHighlight()
+        FixSelectionHighlight(selectionFrames)
     end)
 
     C_Timer.After(0.5, function()

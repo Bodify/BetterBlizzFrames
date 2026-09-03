@@ -1130,7 +1130,7 @@ end
 local function GetColoredTargetString(name, class)
     if not name then return end
     if class then
-        local color = C_ClassColor and C_ClassColor.GetClassColor(class) or RAID_CLASS_COLORS[class]
+        local color = BBF.GetClassColor(class)
         if color then
             if color.WrapTextInColorCode then
                 return color:WrapTextInColorCode(name)

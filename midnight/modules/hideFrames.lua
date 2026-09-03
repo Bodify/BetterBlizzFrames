@@ -1944,9 +1944,26 @@ function BBF.MoveQueueStatusEye()
         return math.max(width, 1)
     end
 
+    local widthWaiter
+    local function ApplyMicroMenuWidth()
+        if InCombatLockdown() then
+            if not widthWaiter then
+                widthWaiter = CreateFrame("Frame")
+                widthWaiter:SetScript("OnEvent", function(self)
+                    self:UnregisterEvent("PLAYER_REGEN_ENABLED")
+                    ApplyMicroMenuWidth()
+                end)
+            end
+            if not widthWaiter:IsEventRegistered("PLAYER_REGEN_ENABLED") then
+                widthWaiter:RegisterEvent("PLAYER_REGEN_ENABLED")
+            end
+            return
+        end
+        MicroMenuContainer:SetWidth(CalculateMicroMenuWidthWithoutQueue())
+    end
+
     hooksecurefunc(MicroMenuContainer, "SetSize", function(self)
-        local width = CalculateMicroMenuWidthWithoutQueue();
-	    self:SetWidth(width);
+        ApplyMicroMenuWidth()
     end)
 
     hooksecurefunc(button, "SetPoint", function(self, _, _, _, _, _)

@@ -3608,6 +3608,10 @@ function BBF.HookUnitFrameTextures()
     local db = BetterBlizzFramesDB
     local classicFramesLoaded = C_AddOns.IsAddOnLoaded("ClassicFrames")
 
+    if db.changeUnitFrameHealthbarTexture then
+        BBF.CheckSweepyBoopClassColorConflict()
+    end
+
     if classicFramesLoaded then
         -- ClassicFrames is enabled: Modify ClassicFrames unit frames only
         if db.changeUnitFrameHealthbarTexture then

@@ -7,6 +7,7 @@ local UnitClass = UnitClass
 local LSM = LibStub("LibSharedMedia-3.0")
 
 local healthbarsHooked = nil
+local raidClassColorsHooked
 local classColorsOn
 local colorPetAfterOwner
 local skipPlayer
@@ -165,7 +166,7 @@ end
 local function getUnitColor(unit, useCustomColors, txt)
     if not UnitExists(unit) then return end
     if UnitIsPlayer(unit) then
-        local color = RAID_CLASS_COLORS[select(2, UnitClass(unit))]
+        local color = BBF.GetClassColor(UnitClassBase(unit))
         if color then
             if skipFriendly then
                 local reaction = getUnitReaction(unit)
@@ -177,8 +178,8 @@ local function getUnitColor(unit, useCustomColors, txt)
         end
     elseif colorPetAfterOwner and UnitIsUnit(unit, "pet") then
         -- Check if the unit is the player's pet and the setting is enabled
-        local _, playerClass = UnitClass("player")
-        local color = RAID_CLASS_COLORS[playerClass]
+        local playerClass = UnitClassBase("player")
+        local color = BBF.GetClassColor(playerClass)
         if color then
             return {r = color.r, g = color.g, b = color.b}, false
         end
@@ -402,6 +403,30 @@ function BBF.HookHealthbarColors()
 
         healthbarsHooked = true
     end
+    if BBF.isEra and not raidClassColorsHooked and C_CVar.GetCVarBool("raidFramesDisplayClassColor") then
+        hooksecurefunc("CompactUnitFrame_UpdateHealthColor", function(frame)
+            if not frame.unit or frame.unit:find("nameplate") then return end
+            if frame:IsForbidden() then return end
+
+            local class = UnitClassBase(frame.unit)
+            if class == "SHAMAN" then
+                local color = BBF.GetClassColor(class)
+                frame.healthBar:SetStatusBarColor(color.r, color.g, color.b, 1)
+            end
+        end)
+
+        for i = 1, 40 do
+            local frame = _G["CompactRaidFrame"..i]
+            if frame and frame.unit then
+                local class = UnitClassBase(frame.unit)
+                if class == "SHAMAN" then
+                    local color = BBF.GetClassColor(class)
+                    frame.healthBar:SetStatusBarColor(color.r, color.g, color.b, 1)
+                end
+            end
+        end
+        raidClassColorsHooked = true
+    end
 end
 
 function BBF.PlayerReputationColor()
@@ -560,6 +585,12 @@ function BBF.BiggerHealthbars(frame, name)
     end
 
     BBF.SetRegionWidth(manabar, 120)
+    if (BBF.isEra or BBF.isTBC) and (frame == "PlayerFrame" or frame == "TargetFrame") then
+        local mPoint, mRelativeTo, mRelativePoint, mXOfs, mYOfs = manabar:GetPoint()
+        if mPoint then
+            BBF.MoveRegion(manabar, mPoint, mRelativeTo, mRelativePoint, mXOfs, mYOfs + 1)
+        end
+    end
     --BBF.SetRegionSize(manabar, 120, 12)
 
     if nameBackground then

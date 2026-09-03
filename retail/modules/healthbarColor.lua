@@ -914,6 +914,7 @@ end
 function BBF.HookHealthbarColors()
     local shouldHook = classColorsOn or (customHealthbarColors and customColorsUnitFrames)
     if not healthbarsHooked and shouldHook then
+        BBF.CheckSweepyBoopClassColorConflict()
 
         local function HookCfSetStatusBarColor(frame, unit)
             if not frame.SetStatusBarColorHooked then

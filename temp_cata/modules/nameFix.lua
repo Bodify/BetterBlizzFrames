@@ -943,8 +943,8 @@ local function PlayerFrameNameChanges(frame)
         ClassColorName(frame.bbfName, unit)
     end
     if classColorLevelText then
-        local _, class = UnitClass(unit)
-        local classColor = RAID_CLASS_COLORS[class]
+        local class = UnitClassBase(unit)
+        local classColor = BBF.GetClassColor(class)
         PlayerLevelText:SetTextColor(classColor.r, classColor.g, classColor.b)
     end
 end
@@ -1057,8 +1057,8 @@ local function FocusFrameNameChanges(frame)
     local unit = frame.unit
 
     if classColorLevelText and UnitIsPlayer(unit) then
-        local _, class = UnitClass(unit)
-        local classColor = RAID_CLASS_COLORS[class]
+        local class = UnitClassBase(unit)
+        local classColor = BBF.GetClassColor(class)
         FocusFrameTextureFrameLevelText:SetTextColor(classColor.r, classColor.g, classColor.b)
     end
 
