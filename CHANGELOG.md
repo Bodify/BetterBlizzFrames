@@ -1,3 +1,10 @@
+# BetterBlizzFrames 2.0.7b
+## Midnight
+### Bugfix
+- Fix some new (and old) issues with the No Portrait skip settings; multiple other places only checked for no portrait setting and not if they were skipped or not causing lua errors.
+### Tweak
+- Restructure addon folders and get rid of unused files from the transition period between tww to midnight and from all the different classic updates slowly getting the retail treatment.
+
 # BetterBlizzFrames 2.0.7
 ## Midnight
 ### New
