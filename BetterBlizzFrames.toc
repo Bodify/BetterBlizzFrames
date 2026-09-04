@@ -12,9 +12,9 @@ init.lua
 locales\locales.xml
 embeds.xml
 
-temp_shared\ImportExport.lua
-temp_shared\functions.lua
-temp_shared\functions_classics.lua
+shared\ImportExport.lua
+shared\functions.lua
+shared\functions_classics.lua
 
 retail\temp_tww.lua
 
@@ -32,7 +32,7 @@ retail\modules\arenaframes.lua
 retail\modules\profiles.lua
 retail\modules\chatFrame.lua
 retail\modules\overShields.lua
-temp_shared\stealthIndicator.lua
+shared\stealthIndicator.lua
 retail\modules\interruptIcon.lua
 retail\modules\bigDebuffs.lua
 retail\modules\queueTimer.lua
