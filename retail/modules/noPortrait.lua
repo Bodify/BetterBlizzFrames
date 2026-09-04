@@ -1,3 +1,18 @@
+local noPortraitSkipKeys = {
+    player = "noPortraitSkipPlayer",
+    target = "noPortraitSkipTarget",
+    focus = "noPortraitSkipFocus",
+    pet = "noPortraitSkipPet",
+}
+
+function BBF.HasNoPortrait(unit)
+    local db = BetterBlizzFramesDB
+    if not db.noPortraitModes and not db.noPortraitPixelBorder then return false end
+    if db.noPortraitPartyOnly and not db.noPortraitModes then return false end
+    local skipKey = noPortraitSkipKeys[unit]
+    return not (skipKey and db[skipKey])
+end
+
 local function SetXYPoint(frame, xOffset, yOffset)
     local point, relativeTo, relativePoint, xOfs, yOfs = frame:GetPoint()
     frame:SetPoint(point, relativeTo, relativePoint, xOffset or xOfs, yOffset or yOfs)
@@ -345,6 +360,7 @@ end
 
 function BBF.UpdatePlayerPixelBorderSize()
     if not BetterBlizzFramesDB.noPortraitPixelBorder then return end
+    if not BBF.HasNoPortrait("player") then return end
 
     local hpContainer = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer
     local cfg = GetPlayerHealthBorder()
@@ -354,6 +370,11 @@ end
 
 function BBF.UpdateNoPortraitText(frame, frameType)
     local db = BetterBlizzFramesDB
+    if frameType == "pet" then
+        if not BBF.HasNoPortrait("pet") then return end
+    elseif frameType ~= "party" then
+        if not (frame and frame.noPortraitMode) then return end
+    end
     local thickOutline = db.changeUnitFrameValueFont and db.unitFrameValueFontOutline == "THICKOUTLINE"
     local defaultFont = not db.changeUnitFrameValueFont
     local manaTextYOffset = thickOutline and -5.5 or defaultFont and -5 or -4.5
@@ -2008,6 +2029,7 @@ local fancyManas = {
 }
 
 local function AdjustAlternateBars()
+    if not BBF.HasNoPortrait("player") then return end
     local db = BetterBlizzFramesDB
     local function SetupAltStyleBar(bar, centerText, leftText, rightText)
         if not bar then return end
@@ -2619,42 +2641,30 @@ function BBF.UpdateNoPortraitManaVisibility()
     if not db.noPortraitModes then return end
     UpdateTextureVariables()
 
+    local noPortraitPlayer = BBF.HasNoPortrait("player")
+    local noPortraitTarget = BBF.HasNoPortrait("target")
+    local noPortraitFocus = BBF.HasNoPortrait("focus")
+    local noPortraitPet = BBF.HasNoPortrait("pet")
+    local hidePlayerMana = db.hideUnitFramePlayerMana
+
     -- Hide PlayerFrame Mana
-    if db.hideUnitFramePlayerMana then
+    if noPortraitPlayer then
         local manaBarArea = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea
+        if manaBarArea then
+            manaBarArea:SetAlpha((hidePlayerMana or db.bigPlayerHealthbar) and 0 or 1)
+        end
+    end
+
+    -- Hide PetFrame Mana
+    if noPortraitPet and (hidePlayerMana or not db.bigPlayerHealthbar) then
         local petMana = PetFrameManaBar
-        if manaBarArea then
-            manaBarArea:SetAlpha(0)
-        end
         if petMana then
-            petMana:SetAlpha(0)
-            petMana.TextString:SetAlpha(0)
-            petMana.LeftText:SetAlpha(0)
-            petMana.RightText:SetAlpha(0)
-        end
-        if not db.noPortraitPixelBorder and PetFrameTexture then
-            PetFrameTexture:SetTexture(petDefaultTex)
-            PetFrameFlash:SetTexture(petDefaultTex)
-        end
-        if PetFrame.Background then
-            PetFrame.Background:ClearAllPoints()
-            PetFrame.Background:SetPoint("TOPLEFT", PetFrameHealthBar, "TOPLEFT", 1, -1)
-            PetFrame.Background:SetPoint("BOTTOMRIGHT", PetFrameHealthBar, "BOTTOMRIGHT", -1, 1)
-        end
-    elseif db.bigPlayerHealthbar then
-        local manaBarArea = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea
-        if manaBarArea then
-            manaBarArea:SetAlpha(0)
-        end
-    else
-        local manaBarArea = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea
-        local petMana = PetFrameManaBar
-        if manaBarArea then
-            manaBarArea:SetAlpha(1)
-        end
-        if petMana then
-            petMana:SetAlpha(1)
-            if not db.hidePetText then
+            petMana:SetAlpha(hidePlayerMana and 0 or 1)
+            if hidePlayerMana then
+                petMana.TextString:SetAlpha(0)
+                petMana.LeftText:SetAlpha(0)
+                petMana.RightText:SetAlpha(0)
+            elseif not db.hidePetText then
                 petMana.TextString:SetAlpha(1)
                 petMana.LeftText:SetAlpha(1)
                 petMana.RightText:SetAlpha(1)
@@ -2667,129 +2677,128 @@ function BBF.UpdateNoPortraitManaVisibility()
         if PetFrame.Background then
             PetFrame.Background:ClearAllPoints()
             PetFrame.Background:SetPoint("TOPLEFT", PetFrameHealthBar, "TOPLEFT", 1, -1)
-            PetFrame.Background:SetPoint("BOTTOMRIGHT", PetFrameManaBar, "BOTTOMRIGHT", -1, 1)
-        end
-    end
-
-    if db.bigPlayerHealthbar then
-        local manaBarArea = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea
-        if manaBarArea then
-            manaBarArea:SetAlpha(0)
+            PetFrame.Background:SetPoint("BOTTOMRIGHT", hidePlayerMana and PetFrameHealthBar or PetFrameManaBar, "BOTTOMRIGHT", -1, 1)
         end
     end
 
     -- Hide PlayerFrame Second Resource (AlternatePowerBar)
-    if db.hideUnitFramePlayerSecondResource then
-        if AlternatePowerBar then
-            AlternatePowerBar:SetAlpha(0)
-            if AlternatePowerBar.BBFPixelBorder then
-                AlternatePowerBar.BBFPixelBorder:Hide()
+    if noPortraitPlayer then
+        if db.hideUnitFramePlayerSecondResource then
+            if AlternatePowerBar then
+                AlternatePowerBar:SetAlpha(0)
+                if AlternatePowerBar.BBFPixelBorder then
+                    AlternatePowerBar.BBFPixelBorder:Hide()
+                end
+                if AlternatePowerBar.pixelBorderBackground then
+                    AlternatePowerBar.pixelBorderBackground:SetAlpha(0)
+                end
             end
-            if AlternatePowerBar.pixelBorderBackground then
-                AlternatePowerBar.pixelBorderBackground:SetAlpha(0)
+            if MonkStaggerBar then
+                MonkStaggerBar:SetAlpha(0)
+                if MonkStaggerBar.BBFPixelBorder then
+                    MonkStaggerBar.BBFPixelBorder:Hide()
+                end
+                if MonkStaggerBar.pixelBorderBackground then
+                    MonkStaggerBar.pixelBorderBackground:SetAlpha(0)
+                end
             end
-        end
-        if MonkStaggerBar then
-            MonkStaggerBar:SetAlpha(0)
-            if MonkStaggerBar.BBFPixelBorder then
-                MonkStaggerBar.BBFPixelBorder:Hide()
+            if EvokerEbonMightBar then
+                EvokerEbonMightBar:SetAlpha(0)
+                if EvokerEbonMightBar.BBFPixelBorder then
+                    EvokerEbonMightBar.BBFPixelBorder:Hide()
+                end
+                if EvokerEbonMightBar.pixelBorderBackground then
+                    EvokerEbonMightBar.pixelBorderBackground:SetAlpha(0)
+                end
             end
-            if MonkStaggerBar.pixelBorderBackground then
-                MonkStaggerBar.pixelBorderBackground:SetAlpha(0)
+            if DemonHunterSoulFragmentsBar then
+                DemonHunterSoulFragmentsBar:SetAlpha(0)
+                if DemonHunterSoulFragmentsBar.BBFPixelBorder then
+                    DemonHunterSoulFragmentsBar.BBFPixelBorder:Hide()
+                end
+                if DemonHunterSoulFragmentsBar.pixelBorderBackground then
+                    DemonHunterSoulFragmentsBar.pixelBorderBackground:SetAlpha(0)
+                end
             end
-        end
-        if EvokerEbonMightBar then
-            EvokerEbonMightBar:SetAlpha(0)
-            if EvokerEbonMightBar.BBFPixelBorder then
-                EvokerEbonMightBar.BBFPixelBorder:Hide()
+        else
+            if AlternatePowerBar then
+                AlternatePowerBar:SetAlpha(1)
+                if AlternatePowerBar.BBFPixelBorder then
+                    AlternatePowerBar.BBFPixelBorder:Show()
+                end
+                if AlternatePowerBar.pixelBorderBackground then
+                    AlternatePowerBar.pixelBorderBackground:SetAlpha(1)
+                end
             end
-            if EvokerEbonMightBar.pixelBorderBackground then
-                EvokerEbonMightBar.pixelBorderBackground:SetAlpha(0)
+            if MonkStaggerBar then
+                MonkStaggerBar:SetAlpha(1)
+                if MonkStaggerBar.BBFPixelBorder then
+                    MonkStaggerBar.BBFPixelBorder:Show()
+                end
+                if MonkStaggerBar.pixelBorderBackground then
+                    MonkStaggerBar.pixelBorderBackground:SetAlpha(1)
+                end
             end
-        end
-        if DemonHunterSoulFragmentsBar then
-            DemonHunterSoulFragmentsBar:SetAlpha(0)
-            if DemonHunterSoulFragmentsBar.BBFPixelBorder then
-                DemonHunterSoulFragmentsBar.BBFPixelBorder:Hide()
+            if EvokerEbonMightBar then
+                EvokerEbonMightBar:SetAlpha(1)
+                if EvokerEbonMightBar.BBFPixelBorder then
+                    EvokerEbonMightBar.BBFPixelBorder:Show()
+                end
+                if EvokerEbonMightBar.pixelBorderBackground then
+                    EvokerEbonMightBar.pixelBorderBackground:SetAlpha(1)
+                end
             end
-            if DemonHunterSoulFragmentsBar.pixelBorderBackground then
-                DemonHunterSoulFragmentsBar.pixelBorderBackground:SetAlpha(0)
-            end
-        end
-    else
-        if AlternatePowerBar then
-            AlternatePowerBar:SetAlpha(1)
-            if AlternatePowerBar.BBFPixelBorder then
-                AlternatePowerBar.BBFPixelBorder:Show()
-            end
-            if AlternatePowerBar.pixelBorderBackground then
-                AlternatePowerBar.pixelBorderBackground:SetAlpha(1)
-            end
-        end
-        if MonkStaggerBar then
-            MonkStaggerBar:SetAlpha(1)
-            if MonkStaggerBar.BBFPixelBorder then
-                MonkStaggerBar.BBFPixelBorder:Show()
-            end
-            if MonkStaggerBar.pixelBorderBackground then
-                MonkStaggerBar.pixelBorderBackground:SetAlpha(1)
-            end
-        end
-        if EvokerEbonMightBar then
-            EvokerEbonMightBar:SetAlpha(1)
-            if EvokerEbonMightBar.BBFPixelBorder then
-                EvokerEbonMightBar.BBFPixelBorder:Show()
-            end
-            if EvokerEbonMightBar.pixelBorderBackground then
-                EvokerEbonMightBar.pixelBorderBackground:SetAlpha(1)
-            end
-        end
-        if DemonHunterSoulFragmentsBar then
-            DemonHunterSoulFragmentsBar:SetAlpha(1)
-            if DemonHunterSoulFragmentsBar.BBFPixelBorder then
-                DemonHunterSoulFragmentsBar.BBFPixelBorder:Show()
-            end
-            if DemonHunterSoulFragmentsBar.pixelBorderBackground then
-                DemonHunterSoulFragmentsBar.pixelBorderBackground:SetAlpha(1)
+            if DemonHunterSoulFragmentsBar then
+                DemonHunterSoulFragmentsBar:SetAlpha(1)
+                if DemonHunterSoulFragmentsBar.BBFPixelBorder then
+                    DemonHunterSoulFragmentsBar.BBFPixelBorder:Show()
+                end
+                if DemonHunterSoulFragmentsBar.pixelBorderBackground then
+                    DemonHunterSoulFragmentsBar.pixelBorderBackground:SetAlpha(1)
+                end
             end
         end
     end
 
     -- Hide TargetFrame Mana
-    if db.hideUnitFrameTargetMana and TargetFrame and TargetFrame.TargetFrameContent then
-        local manaBar = TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar
-        if manaBar then
-            manaBar:SetAlpha(0)
-        end
-        if TargetFrame.totFrame and TargetFrame.totFrame.ManaBar then
-            TargetFrame.totFrame.ManaBar:SetAlpha(0)
-        end
-    elseif TargetFrame and TargetFrame.TargetFrameContent then
-        local manaBar = TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar
-        if manaBar then
-            manaBar:SetAlpha(1)
-        end
-        if TargetFrame.totFrame and TargetFrame.totFrame.ManaBar then
-            TargetFrame.totFrame.ManaBar:SetAlpha(1)
+    if noPortraitTarget then
+        if db.hideUnitFrameTargetMana and TargetFrame and TargetFrame.TargetFrameContent then
+            local manaBar = TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar
+            if manaBar then
+                manaBar:SetAlpha(0)
+            end
+            if TargetFrame.totFrame and TargetFrame.totFrame.ManaBar then
+                TargetFrame.totFrame.ManaBar:SetAlpha(0)
+            end
+        elseif TargetFrame and TargetFrame.TargetFrameContent then
+            local manaBar = TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar
+            if manaBar then
+                manaBar:SetAlpha(1)
+            end
+            if TargetFrame.totFrame and TargetFrame.totFrame.ManaBar then
+                TargetFrame.totFrame.ManaBar:SetAlpha(1)
+            end
         end
     end
 
     -- Hide FocusFrame Mana
-    if db.hideUnitFrameFocusMana then
-        local manaBar = FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar
-        if manaBar then
-            manaBar:SetAlpha(0)
-        end
-        if FocusFrame.totFrame and FocusFrame.totFrame.ManaBar then
-            FocusFrame.totFrame.ManaBar:SetAlpha(0)
-        end
-    else
-        local manaBar = FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar
-        if manaBar then
-            manaBar:SetAlpha(1)
-        end
-        if FocusFrame.totFrame and FocusFrame.totFrame.ManaBar then
-            FocusFrame.totFrame.ManaBar:SetAlpha(1)
+    if noPortraitFocus then
+        if db.hideUnitFrameFocusMana then
+            local manaBar = FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar
+            if manaBar then
+                manaBar:SetAlpha(0)
+            end
+            if FocusFrame.totFrame and FocusFrame.totFrame.ManaBar then
+                FocusFrame.totFrame.ManaBar:SetAlpha(0)
+            end
+        else
+            local manaBar = FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar
+            if manaBar then
+                manaBar:SetAlpha(1)
+            end
+            if FocusFrame.totFrame and FocusFrame.totFrame.ManaBar then
+                FocusFrame.totFrame.ManaBar:SetAlpha(1)
+            end
         end
     end
 
@@ -2826,7 +2835,7 @@ function BBF.UpdateNoPortraitManaVisibility()
         local contentMain = TargetFrame.TargetFrameContent.TargetFrameContentMain
         TargetFrame.noPortraitMode.Background:SetPoint("BOTTOMRIGHT", contentMain.ManaBar, "BOTTOMRIGHT", -10, bgYOffset)
     end
-    if TargetFrame.totFrame and TargetFrame.totFrame.FrameTexture then
+    if noPortraitTarget and TargetFrame.totFrame and TargetFrame.totFrame.FrameTexture then
         TargetFrame.totFrame.FrameTexture:SetTexture(targetDefaultTex)
     end
 
@@ -2848,7 +2857,7 @@ function BBF.UpdateNoPortraitManaVisibility()
         local contentMain = FocusFrame.TargetFrameContent.TargetFrameContentMain
         FocusFrame.noPortraitMode.Background:SetPoint("BOTTOMRIGHT", contentMain.ManaBar, "BOTTOMRIGHT", -10, bgYOffset)
     end
-    if FocusFrame.totFrame and FocusFrame.totFrame.FrameTexture then
+    if noPortraitFocus and FocusFrame.totFrame and FocusFrame.totFrame.FrameTexture then
         FocusFrame.totFrame.FrameTexture:SetTexture(focusDefaultTex)
     end
 
@@ -2976,30 +2985,44 @@ function BBF.noPortraitModes()
 
     AdjustAlternateBars()
 
-    C_Timer.After(0.5,function()
-        for _, child in ipairs({ PlayerFrame.PlayerFrameContent.PlayerFrameContentMain:GetRegions() }) do
-            if child:IsObjectType("Texture") then
-                local atlas = child:GetAtlas()
-                if atlas == "UI-HUD-UnitFrame-Target-PortraitOn-Type" then
-                    child:SetParent(BBF.hiddenFrame)
+    local noPortraitPlayer = BBF.HasNoPortrait("player")
+    local noPortraitTarget = BBF.HasNoPortrait("target")
+    local noPortraitFocus = BBF.HasNoPortrait("focus")
+    local noPortraitPet = BBF.HasNoPortrait("pet")
+
+    if noPortraitPlayer then
+        C_Timer.After(0.5,function()
+            for _, child in ipairs({ PlayerFrame.PlayerFrameContent.PlayerFrameContentMain:GetRegions() }) do
+                if child:IsObjectType("Texture") then
+                    local atlas = child:GetAtlas()
+                    if atlas == "UI-HUD-UnitFrame-Target-PortraitOn-Type" then
+                        child:SetParent(BBF.hiddenFrame)
+                    end
                 end
             end
-        end
-    end)
+        end)
 
-    PlayerFrame:SetHitRectInsets(66, 12, 21, 18)
-    TargetFrame:SetHitRectInsets(5, 70, 21, 18)
-    PetFrame:SetHitRectInsets(25, 12, -6, 8)
-    TargetFrameToT:SetHitRectInsets(25, 12, -6, 8)
-    FocusFrameToT:SetHitRectInsets(25, 12, -6, 8)
+        PlayerFrame:SetHitRectInsets(66, 12, 21, 18)
 
-    local txt = PlayerFrameGroupIndicatorText
-    local wt_p = PlayerFrameGroupIndicatorText:GetParent()
-    local regions = {wt_p:GetRegions()}
-    for _, region in ipairs(regions) do
-        if region ~= txt then
-            region:Hide()
+        local txt = PlayerFrameGroupIndicatorText
+        local wt_p = PlayerFrameGroupIndicatorText:GetParent()
+        local regions = {wt_p:GetRegions()}
+        for _, region in ipairs(regions) do
+            if region ~= txt then
+                region:Hide()
+            end
         end
+    end
+
+    if noPortraitTarget then
+        TargetFrame:SetHitRectInsets(5, 70, 21, 18)
+        TargetFrameToT:SetHitRectInsets(25, 12, -6, 8)
+    end
+    if noPortraitFocus then
+        FocusFrameToT:SetHitRectInsets(25, 12, -6, 8)
+    end
+    if noPortraitPet then
+        PetFrame:SetHitRectInsets(25, 12, -6, 8)
     end
 
     for i = 1, 4 do
@@ -3008,7 +3031,21 @@ function BBF.noPortraitModes()
     end
 
 
-    local selectionFrames = {PlayerFrame, PetFrame, TargetFrame, FocusFrame, TargetFrameToT, FocusFrameToT, PartyFrame}
+    local selectionFrames = {PartyFrame}
+    if noPortraitPlayer then
+        table.insert(selectionFrames, PlayerFrame)
+    end
+    if noPortraitPet then
+        table.insert(selectionFrames, PetFrame)
+    end
+    if noPortraitTarget then
+        table.insert(selectionFrames, TargetFrame)
+        table.insert(selectionFrames, TargetFrameToT)
+    end
+    if noPortraitFocus then
+        table.insert(selectionFrames, FocusFrame)
+        table.insert(selectionFrames, FocusFrameToT)
+    end
 
     hooksecurefunc(EditModeManagerFrame, "EnterEditMode", function()
         if InCombatLockdown() then return end

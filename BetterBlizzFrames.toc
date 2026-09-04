@@ -16,8 +16,6 @@ shared\ImportExport.lua
 shared\functions.lua
 shared\functions_classics.lua
 
-retail\temp_tww.lua
-
 retail\modules\darkmode.lua
 retail\modules\classicFrames.lua
 retail\modules\nameFix.lua
@@ -31,7 +29,7 @@ retail\modules\statusBarTextFormat.lua
 retail\modules\arenaframes.lua
 retail\modules\profiles.lua
 retail\modules\chatFrame.lua
-retail\modules\overShields.lua
+retail\modules\overshields.lua
 shared\stealthIndicator.lua
 retail\modules\interruptIcon.lua
 retail\modules\bigDebuffs.lua

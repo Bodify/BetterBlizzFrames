@@ -1,4 +1,3 @@
-if not BBF.isMidnight then return end
 local L = BBF.L
 local hiddenFrame = CreateFrame("Frame")
 hiddenFrame:Hide()
@@ -191,7 +190,7 @@ function BBF.HideFrames()
         end
 
         -- Hide reputation color on target frame (color tint behind name)
-        if BetterBlizzFramesDB.hideTargetReputationColor or BetterBlizzFramesDB.noPortraitModes then
+        if BetterBlizzFramesDB.hideTargetReputationColor or BBF.HasNoPortrait("target") then
             changes.hideTargetReputationColor = true
             TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:Hide()
             if classicFrames and not TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor.bbfHooked then
@@ -208,7 +207,7 @@ function BBF.HideFrames()
             TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:Show()
         end
 
-        if BetterBlizzFramesDB.hideFocusReputationColor or BetterBlizzFramesDB.hideTargetReputationColor or BetterBlizzFramesDB.noPortraitModes then
+        if BetterBlizzFramesDB.hideFocusReputationColor or BetterBlizzFramesDB.hideTargetReputationColor or BBF.HasNoPortrait("target") then
             for i = 1, 5 do
                 local frame = _G["Boss"..i.."TargetFrame"]
                 if frame then
@@ -217,7 +216,7 @@ function BBF.HideFrames()
             end
         end
 
-        if BetterBlizzFramesDB.hideFocusReputationColor or BetterBlizzFramesDB.noPortraitModes then
+        if BetterBlizzFramesDB.hideFocusReputationColor or BBF.HasNoPortrait("focus") then
             changes.hideFocusReputationColor = true
             FocusFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:Hide()
             if classicFrames and not FocusFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor.bbfCF then

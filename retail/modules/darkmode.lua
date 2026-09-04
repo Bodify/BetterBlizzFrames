@@ -1,4 +1,3 @@
-if not BBF.isMidnight then return end
 local darkModeUi
 local darkModeUiAura
 local darkModeColor = 1

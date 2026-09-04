@@ -1,4 +1,3 @@
-if not BBF.isMidnight then return end
 local function FormatText(value)
     return tostring(AbbreviateNumbers(value))
 end

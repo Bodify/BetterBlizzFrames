@@ -2689,6 +2689,22 @@ local function guiProfiles()
 
     CopyNineSliceColors(SettingsPanel, frame)
 
+    -- Replace corner
+    local atlasName = frame.NineSlice.TopLeftCorner:GetAtlas()
+    if atlasName then
+        local info = C_Texture.GetAtlasInfo(atlasName)
+        if info then
+            frame.NineSlice.TopRightCorner:Hide()
+            local cornerReplacement = frame.NineSlice:CreateTexture(nil, "BORDER")
+            cornerReplacement:SetSize(frame.NineSlice.TopRightCorner:GetSize())
+            cornerReplacement:SetPoint("TOPRIGHT", frame.NineSlice.TopRightCorner, "TOPRIGHT", 4, 0)
+            cornerReplacement:SetPoint("TOPLEFT", frame.NineSlice.TopEdge, "TOPRIGHT", 0, 0)
+            cornerReplacement:SetTexture(info.file)
+            cornerReplacement:SetTexCoord(info.rightTexCoord, info.leftTexCoord, info.topTexCoord, info.bottomTexCoord)
+            frame.NineSlice.CornerReplacement = cornerReplacement
+        end
+    end
+
     local plusButton = CreateFrame("Button", nil, BetterBlizzFrames)
     plusButton:SetSize(frame.ClosePanelButton:GetSize())
     plusButton:SetPoint("TOPRIGHT", parent, "TOPLEFT", 7, 0)
@@ -4200,6 +4216,16 @@ local function guiGeneralTab()
     end)
     snupyButton:SetPoint("TOP", nahjButton, "BOTTOM", 0, btnGap)
     table.insert(profileButtons, snupyButton)
+
+    local resetBBFButton = CreateFrame("Button", nil, BetterBlizzFrames, "UIPanelButtonTemplate")
+    resetBBFButton:SetText(L["Full_Reset"])
+    resetBBFButton:SetWidth(104)
+    resetBBFButton:SetPoint("BOTTOM", profilesFrame, "BOTTOM", 2, 15)
+    resetBBFButton:SetScript("OnClick", function()
+        StaticPopup_Show("CONFIRM_RESET_BETTERBLIZZFRAMESDB")
+    end)
+    CreateTooltip(resetBBFButton, L["Tooltip_Full_Reset"], "ANCHOR_TOP")
+    table.insert(profileButtons, resetBBFButton)
 
     profilesFrame:HookScript("OnShow", function()
         for _, button in ipairs(profileButtons) do

@@ -1,4 +1,3 @@
-if not BBF.isMidnight then return end
 local specIDToName = {
     -- Death Knight
     [250] = "Blood", [251] = "Frost", [252] = "Unholy",
@@ -160,17 +159,39 @@ function BBF.UpdateUserTargetSettings()
     showLastNameNpc = BetterBlizzFramesDB.showLastNameNpc
 end
 
+local function NameUnitForFrame(frame)
+    if frame == PlayerFrame then
+        return "player"
+    elseif frame == TargetFrame or frame == TargetFrameToT then
+        return "target"
+    elseif frame == FocusFrame or frame == FocusFrameToT then
+        return "focus"
+    elseif frame == PetFrame then
+        return "pet"
+    end
+end
+
+local function NameCenterForced(unit)
+    return BetterBlizzFramesDB.classicFrames or BBF.HasNoPortrait(unit)
+end
+
+local function NameCentered(unit)
+    return BetterBlizzFramesDB.centerNames or NameCenterForced(unit)
+end
+
 local function CenterPlayerName()
     local healthBar = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer
     local name = PlayerFrame.bbfName
+    local noPortrait = BBF.HasNoPortrait("player")
+    local forceCenter = NameCenterForced("player")
     name:SetJustifyH("CENTER")
     name:SetJustifyV(PlayerName:GetJustifyV())
     name:ClearAllPoints()
-    if playerFrameOCD and not forceCenterNameSetting then
+    if playerFrameOCD and not forceCenter then
         name:SetPoint("TOP", healthBar, "TOP", 0, 14.5)
     else
-        local xPos = forceCenterNameSetting and 1.5 or BetterBlizzFramesDB.noPortraitModes and 0 or true and -2 or 0
-        local yPos = BetterBlizzFramesDB.noPortraitModes and 14 or forceCenterNameSetting and 7.5 or BetterBlizzFramesDB.symmetricPlayerFrame and 15 or 14.5
+        local xPos = forceCenter and 1.5 or noPortrait and 0 or true and -2 or 0
+        local yPos = noPortrait and 14 or forceCenter and 7.5 or BetterBlizzFramesDB.symmetricPlayerFrame and 15 or 14.5
         if BetterBlizzFramesDB.classicFrames and BetterBlizzFramesDB.bigPlayerHealthbar then
             yPos = yPos - 10
         end
@@ -178,18 +199,20 @@ local function CenterPlayerName()
     end
 end
 
-local function CenterXName(fontObject, healthBar, ToT, pet)
+local function CenterXName(fontObject, healthBar, ToT, pet, unit)
+    local noPortrait = BBF.HasNoPortrait(unit)
+    local forceCenter = NameCenterForced(unit)
     fontObject:ClearAllPoints()
-    if not (forceCenterNameSetting and ToT) then
+    if not (forceCenter and ToT) then
         fontObject:SetJustifyH("CENTER")
     end
-    local xPos = (pet and BetterBlizzFramesDB.noPortraitModes and 16) or (ToT and BetterBlizzFramesDB.noPortraitModes and 0) or (ToT and (forceCenterNameSetting and 8 or -2)) or (forceCenterNameSetting and 0) or BetterBlizzFramesDB.noPortraitModes and -1 or 2
-    local yPos = (BetterBlizzFramesDB.noPortraitModes and ((pet and 2) or 13)) or ((pet and forceCenterNameSetting) and 2 or pet and 2) or ToT and (forceCenterNameSetting and -18 or 12) or (forceCenterNameSetting and 6.3 or 14)
-    if ToT and BetterBlizzFramesDB.noPortraitModes then
+    local xPos = (pet and noPortrait and 16) or (ToT and noPortrait and 0) or (ToT and (forceCenter and 8 or -2)) or (forceCenter and 0) or noPortrait and -1 or 2
+    local yPos = (noPortrait and ((pet and 2) or 13)) or ((pet and forceCenter) and 2 or pet and 2) or ToT and (forceCenter and -18 or 12) or (forceCenter and 6.3 or 14)
+    if ToT and noPortrait then
         fontObject:SetJustifyH("CENTER")
         xPos = xPos -1
     end
-    if pet and BetterBlizzFramesDB.noPortraitModes then
+    if pet and noPortrait then
         fontObject:SetJustifyH("CENTER")
         local xPos = 1.5
         local yPos = 22
@@ -220,14 +243,24 @@ function BBF.SetCenteredNamesCaller()
         end
         return
     end
-    CenterPlayerName()
-    CenterXName(TargetFrame.bbfName, TargetFrame.TargetFrameContent.TargetFrameContentMain.HealthBarsContainer)
-    CenterXName(FocusFrame.bbfName, FocusFrame.TargetFrameContent.TargetFrameContentMain.HealthBarsContainer)
-    CenterXName(TargetFrameToT.bbfName, TargetFrame.totFrame.HealthBar, true)
-    CenterXName(FocusFrameToT.bbfName, FocusFrame.totFrame.HealthBar, true)
-    C_Timer.After(0, function() --idk why but this wont update unless delayed a frame
-        CenterXName(PetFrame.bbfName, PetFrameHealthBar, true, true)
-    end)
+    if NameCentered("player") then
+        CenterPlayerName()
+    elseif not NameCenterForced("player") then
+        PlayerFrame.bbfName:SetJustifyH("LEFT")
+    end
+    if NameCentered("target") then
+        CenterXName(TargetFrame.bbfName, TargetFrame.TargetFrameContent.TargetFrameContentMain.HealthBarsContainer, nil, nil, "target")
+        CenterXName(TargetFrameToT.bbfName, TargetFrame.totFrame.HealthBar, true, nil, "target")
+    end
+    if NameCentered("focus") then
+        CenterXName(FocusFrame.bbfName, FocusFrame.TargetFrameContent.TargetFrameContentMain.HealthBarsContainer, nil, nil, "focus")
+        CenterXName(FocusFrameToT.bbfName, FocusFrame.totFrame.HealthBar, true, nil, "focus")
+    end
+    if NameCentered("pet") then
+        C_Timer.After(0, function() --idk why but this wont update unless delayed a frame
+            CenterXName(PetFrame.bbfName, PetFrameHealthBar, true, true, "pet")
+        end)
+    end
 end
 
 local function GetLocalizedSpecs()
@@ -770,7 +803,7 @@ local function InitializeFontString(frame)
     frame.bbfName:SetText(name:GetText())
     hooksecurefunc(name, "SetText", function()
         --frame.bbfName:SetSize(name:GetSize())
-        if (centerNames or forceCenterNameSetting) and not BetterBlizzFramesDB.classicFrames then
+        if NameCentered(NameUnitForFrame(frame)) and not BetterBlizzFramesDB.classicFrames then
             frame.bbfName:SetJustifyH("CENTER")
         end
         frame.bbfName:SetWidth(nameWidth)
@@ -1381,6 +1414,8 @@ function BBF.SetCustomFonts()
         BBF.UpdateNoPortraitText(FocusFrame, "tot")
         BBF.UpdateNoPortraitText(PetFrame, "pet")
         BBF.UpdateNoPortraitText(nil, "party")
+    elseif BetterBlizzFramesDB.noPortraitPartyOnly then
+        BBF.UpdateNoPortraitText(nil, "party")
     end
 end
 
@@ -1615,7 +1650,7 @@ end
 
 hooksecurefunc(PetFrame.name, "SetText", function(self)
     PetFrameNameChanges(PetFrame)
-    if BetterBlizzFramesDB and BetterBlizzFramesDB.noPortraitModes then
+    if BetterBlizzFramesDB and BBF.HasNoPortrait("pet") then
         PetFrame.bbfName:SetJustifyH("CENTER")
     end
 end)

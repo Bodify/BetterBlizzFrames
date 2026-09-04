@@ -1,5 +1,3 @@
-if not BBF.isMidnight then return end
-
 function BBF.DruidAlwaysShowCombos()
     if not BetterBlizzFramesDB.druidAlwaysShowCombos then return end
     if select(2, UnitClass("player")) ~= "DRUID" then return end
@@ -131,7 +129,7 @@ local function UpdateAltManaBar(updateCombos, cf)
             PlayerFrame.PlayerFrameContainer.FrameTexture:Hide()
             PlayerFrame.PlayerFrameContainer.AlternatePowerFrameTexture:Show()
         end
-        if BetterBlizzFramesDB.noPortraitModes then
+        if BBF.HasNoPortrait("player") and PlayerFrame.noPortraitMode then
             if BetterBlizzFramesDB.bigPlayerHealthbar then
                 PlayerFrame.noPortraitMode.Texture:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Large-Alt-Unified.tga")
             else
@@ -165,7 +163,7 @@ local function UpdateAltManaBar(updateCombos, cf)
                 PlayerFrame.PlayerFrameContainer.FrameTexture:Show()
                 PlayerFrame.PlayerFrameContainer.AlternatePowerFrameTexture:Hide()
             end
-            if BetterBlizzFramesDB.noPortraitModes then
+            if BBF.HasNoPortrait("player") and PlayerFrame.noPortraitMode then
                 if PlayerFrame.PlayerFrameContainer.AlternatePowerFrameTexture:IsShown() then
                     if BetterBlizzFramesDB.bigPlayerHealthbar then
                         PlayerFrame.noPortraitMode.Texture:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Large-Alt-Unified.tga")
@@ -190,11 +188,11 @@ end
 function BBF.CreateAltManaBar()
     if PlayerFrame.AltManaBarBBF then return end -- already created
     if not BetterBlizzFramesDB.createAltManaBarDruid then return end
-    if (BetterBlizzFramesDB.noPortraitPixelBorder or BetterBlizzFramesDB.noPortraitModes) and (BetterBlizzFramesDB.hideUnitFramePlayerMana or BetterBlizzFramesDB.hideUnitFramePlayerSecondResource) then return end
+    if BBF.HasNoPortrait("player") and (BetterBlizzFramesDB.hideUnitFramePlayerMana or BetterBlizzFramesDB.hideUnitFramePlayerSecondResource) then return end
     local db = BetterBlizzFramesDB
     if db.useMiniPlayerFrame then return end
     local cf = db.classicFrames
-    local noPortrait = db.noPortraitModes
+    local noPortrait = BBF.HasNoPortrait("player")
 
     local specID = GetSpecialization() and GetSpecializationInfo(GetSpecialization())
     if specID ~= 105 then

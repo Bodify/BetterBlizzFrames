@@ -1,5 +1,3 @@
-if not BBF.isMidnight then return end
-
 local cdManagerFrames = {
     EssentialCooldownViewer,
     UtilityCooldownViewer,
@@ -16,6 +14,19 @@ function BBF.RefreshCooldownManagerIcons()
     for _, frame in ipairs(cdManagerFrames) do
         local center = frame ~= BuffBarCooldownViewer
         BBF.SortCooldownManagerIcons(frame, center)
+    end
+end
+
+function BBF.ResetCooldownManagerIcons()
+    for _, frame in ipairs(cdManagerFrames) do
+        if frame:GetNumChildren() > 0 then
+            for i = 1, frame:GetNumChildren() do
+                local child = select(i, frame:GetChildren())
+                if child and child.Show then
+                    child:Show()
+                end
+            end
+        end
     end
 end
 

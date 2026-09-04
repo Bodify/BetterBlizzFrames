@@ -19,7 +19,7 @@ end
 local function CreateStealthIndicator()
     PlayerFrame.bbfStealthIndicatorFrame.Texture = PlayerFrame.bbfStealthIndicatorFrame:CreateTexture(nil, "BACKGROUND")
     if BBF.isRetail then
-        if BetterBlizzFramesDB.noPortraitModes or BetterBlizzFramesDB.noPortraitPixelBorder then
+        if BBF.HasNoPortrait("player") then
             PlayerFrame.bbfStealthIndicatorFrame.Texture:SetAtlas("loottoast-glow")
             PlayerFrame.bbfStealthIndicatorFrame.Texture:SetDesaturated(true)
             PlayerFrame.bbfStealthIndicatorFrame.Texture:SetVertexColor(0.212, 0.486, 1)
@@ -50,7 +50,7 @@ local function CreateStealthIndicator()
 end
 
 local function UpdateStealthIndicator()
-    if BBF.isRetail and (BetterBlizzFramesDB.noPortraitModes or BetterBlizzFramesDB.noPortraitPixelBorder) then
+    if BBF.isRetail and BBF.HasNoPortrait("player") then
         PlayerFrame.bbfStealthIndicatorFrame.Texture:SetHeight(GetStealthIndicatorHeight())
     end
     if IsStealthed() then

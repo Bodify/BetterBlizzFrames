@@ -68,11 +68,11 @@ local function GrowBar()
     end
     hpContainer:SetHeight(HEALTHBAR_HEIGHT_GROWN)
     healthBar:SetHeight(HEALTHBAR_HEIGHT_GROWN)
-    if BetterBlizzFramesDB.noPortraitPixelBorder then
+    if BetterBlizzFramesDB.noPortraitPixelBorder and BBF.HasNoPortrait("player") then
         BBF.UpdatePlayerPixelBorderSize()
         return
     end
-    if not BetterBlizzFramesDB.noPortraitModes then
+    if not BBF.HasNoPortrait("player") then
         SetDefaultManaShown(false)
         SetDefaultFrameTexture("plunderstorm-UI-HUD-UnitFrame-Player-PortraitOn-2x")
         if BetterBlizzFramesDB.symmetricPlayerFrame then
@@ -105,11 +105,11 @@ local function RestoreBar()
     end
     hpContainer:SetHeight(HEALTHBAR_HEIGHT)
     healthBar:SetHeight(HEALTHBAR_HEIGHT)
-    if BetterBlizzFramesDB.noPortraitPixelBorder then
+    if BetterBlizzFramesDB.noPortraitPixelBorder and BBF.HasNoPortrait("player") then
         BBF.UpdatePlayerPixelBorderSize()
         return
     end
-    if not BetterBlizzFramesDB.noPortraitModes then
+    if not BBF.HasNoPortrait("player") then
         SetDefaultManaShown(true)
         SetDefaultFrameTexture("UI-HUD-UnitFrame-Player-PortraitOn")
         if BetterBlizzFramesDB.symmetricPlayerFrame then
@@ -128,12 +128,12 @@ local function RestoreBar()
     mask:SetHeight(MASK_HEIGHT)
 end
 local function PlayerMaskOffset()
-    if not BetterBlizzFramesDB.noPortraitModes or BetterBlizzFramesDB.noPortraitPixelBorder then return end
+    if not BBF.HasNoPortrait("player") or BetterBlizzFramesDB.noPortraitPixelBorder then return end
     local _, healthBar, mask = GetHealthBits()
     mask:SetPoint("TOPLEFT", healthBar, "TOPLEFT", -33, 11)
 end
 local function VehicleMaskOffset()
-    if not BetterBlizzFramesDB.noPortraitModes or BetterBlizzFramesDB.noPortraitPixelBorder then return end
+    if not BBF.HasNoPortrait("player") or BetterBlizzFramesDB.noPortraitPixelBorder then return end
     local _, healthBar, mask = GetHealthBits()
     mask:SetPoint("TOPLEFT", healthBar, "TOPLEFT", -34, 10)
 end
@@ -156,7 +156,7 @@ local function Apply()
     BBF.UpdateNoPortraitManaVisibility()
     GrowBar()
     PlayerMaskOffset()
-    if BetterBlizzFramesDB.noPortraitModes then
+    if BBF.HasNoPortrait("player") then
         BBF.UpdateNoPortraitText(PlayerFrame, "player")
     end
 end
@@ -203,7 +203,7 @@ local function EnsureHooks()
         Apply()
         VehicleMaskOffset()
     end)
-    if BetterBlizzFramesDB.noPortraitModes then
+    if BBF.HasNoPortrait("player") then
         BBF.UnregisterPlayerFrameArtEvents()
     end
 end
@@ -223,7 +223,7 @@ function BBF.UpdateBigPlayerHealthbar()
 
     BBF.UpdateNoPortraitManaVisibility()
     UpdateClassicArt()
-    if BetterBlizzFramesDB.noPortraitModes then
+    if BBF.HasNoPortrait("player") then
         BBF.UpdateNoPortraitText(PlayerFrame, "player")
     end
 end

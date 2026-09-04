@@ -209,21 +209,29 @@ local function BuildHosts()
     if next(hosts) then return true end
     if InCombatLockdown() then return false end
 
-    CreateHost("player", PlayerFrame,
-        PlayerFrame.PlayerFrameContainer.PlayerPortrait,
-        PlayerFrame.PlayerFrameContainer.PlayerPortraitMask)
+    if not BBF.HasNoPortrait("player") then
+        CreateHost("player", PlayerFrame,
+            PlayerFrame.PlayerFrameContainer.PlayerPortrait,
+            PlayerFrame.PlayerFrameContainer.PlayerPortraitMask)
+    end
 
-    CreateHost("target", TargetFrame,
-        TargetFrame.TargetFrameContainer.Portrait,
-        TargetFrame.TargetFrameContainer.PortraitMask)
+    if not BBF.HasNoPortrait("target") then
+        CreateHost("target", TargetFrame,
+            TargetFrame.TargetFrameContainer.Portrait,
+            TargetFrame.TargetFrameContainer.PortraitMask)
+    end
 
-    CreateHost("focus", FocusFrame,
-        FocusFrame.TargetFrameContainer.Portrait,
-        FocusFrame.TargetFrameContainer.PortraitMask)
+    if not BBF.HasNoPortrait("focus") then
+        CreateHost("focus", FocusFrame,
+            FocusFrame.TargetFrameContainer.Portrait,
+            FocusFrame.TargetFrameContainer.PortraitMask)
+    end
 
-    CreateHost("pet", PetFrame,
-        PetPortrait,
-        PetFrame.PortraitMask)
+    if not BBF.HasNoPortrait("pet") then
+        CreateHost("pet", PetFrame,
+            PetPortrait,
+            PetFrame.PortraitMask)
+    end
 
     CreateUnitWatcher()
 
@@ -236,7 +244,8 @@ function BBF.CreateBigDebuffs()
         return
     end
 
-    if C_AddOns.IsAddOnLoaded("MiniAuras") or C_AddOns.IsAddOnLoaded("MvqUI") or BetterBlizzFramesDB.noPortraitModes then return end
+    if C_AddOns.IsAddOnLoaded("MiniAuras") or C_AddOns.IsAddOnLoaded("MvqUI") then return end
+    if BBF.HasNoPortrait("player") and BBF.HasNoPortrait("target") and BBF.HasNoPortrait("focus") and BBF.HasNoPortrait("pet") then return end
 
     if not BuildHosts() then
         if not buildQueued then

@@ -28,7 +28,7 @@ classics\modules\statusBarTextFormat.lua
 classics\modules\arenaframes.lua
 classics\modules\profiles.lua
 classics\modules\chatFrame.lua
-classics\modules\overShields.lua
+classics\modules\overshields.lua
 shared\stealthIndicator.lua
 classics\modules\interruptIcon.lua
 classics\modules\queueTimer.lua

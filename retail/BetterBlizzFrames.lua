@@ -4143,7 +4143,7 @@ end
 
 function BBF.SymmetricPlayerFrame()
     if not BetterBlizzFramesDB.symmetricPlayerFrame then return end
-    if BetterBlizzFramesDB.noPortraitModes or BetterBlizzFramesDB.noPortraitPixelBorder then return end
+    if BBF.HasNoPortrait("player") then return end
     if BetterBlizzFramesDB.classicFrames then
         BBF.Print(L["Print_Symmetric_Not_Available_Classic"])
         return
@@ -4763,7 +4763,7 @@ function BBF.FixStupidBlizzPTRShit()
         end
     end
 
-    if isAddonLoaded("ClassicFrames") or isAddonLoaded("EasyFrames") or BetterBlizzFramesDB.classicFrames or (BetterBlizzFramesDB.noPortraitModes or BetterBlizzFramesDB.noPortraitPixelBorder) then return end
+    if isAddonLoaded("ClassicFrames") or isAddonLoaded("EasyFrames") or BetterBlizzFramesDB.classicFrames or BBF.HasNoPortrait("player") then return end
     -- For god knows what reason PTR has a gap between Portrait and PlayerFrame. This fixes it + other gaps.
     --PlayerFrame.PlayerFrameContainer.PlayerPortrait:SetScale(1.02)
     PlayerFrame.PlayerFrameContainer.PlayerPortrait:SetSize(61,61)
@@ -5240,7 +5240,9 @@ SlashCmdList["BBF"] = function(msg)
             if tonumber(arg) then
                 -- The argument is a number, treat it as a spell ID
                 local spellId = tonumber(arg)
-                local spellName, _, icon = BBF.TWWGetSpellInfo(spellId)
+                local spellInfo = C_Spell.GetSpellInfo(spellId)
+                local spellName = spellInfo and spellInfo.name
+                local icon = spellInfo and (spellInfo.iconID or spellInfo.originalIconID)
                 if spellName then
                     local iconString = "|T" .. icon .. ":16:16:0:0|t" -- Format the icon for display
                     BBF.auraWhitelist(spellId)
@@ -5259,7 +5261,9 @@ SlashCmdList["BBF"] = function(msg)
             if tonumber(arg) then
                 -- The argument is a number, treat it as a spell ID
                 local spellId = tonumber(arg)
-                local spellName, _, icon = BBF.TWWGetSpellInfo(spellId)
+                local spellInfo = C_Spell.GetSpellInfo(spellId)
+                local spellName = spellInfo and spellInfo.name
+                local icon = spellInfo and (spellInfo.iconID or spellInfo.originalIconID)
                 if spellName then
                     local iconString = "|T" .. icon .. ":16:16:0:0|t" -- Format the icon for display
                     BBF.auraBlacklist(spellId)

@@ -1990,7 +1990,9 @@ local function deleteEntry(listName, key)
 
     if entry then
         if entry.id then
-            local spellName, _, icon = BBF.TWWGetSpellInfo(entry.id)
+            local spellInfo = C_Spell.GetSpellInfo(entry.id)
+            local spellName = spellInfo and spellInfo.name
+            local icon = spellInfo and (spellInfo.iconID or spellInfo.originalIconID)
             if spellName and icon then
                 local iconString = "|T" .. icon .. ":16:16:0:0|t"
                 BBF.Print(string.format(L["Print_Removed_From_List"], iconString .. " " .. spellName .. " (" .. entry.id .. ")"))
@@ -2075,7 +2077,6 @@ local function addOrUpdateEntry(inputText, listName, addShowMineTag, skipRefresh
     local spellName
     local icon
     local iconString
-    local _
 
     if not id then
         if name ~= "" then
@@ -2090,7 +2091,9 @@ local function addOrUpdateEntry(inputText, listName, addShowMineTag, skipRefresh
 
     -- Check if there's a numeric ID within the name and clear the name if found
     if id then
-        spellName, _, icon = BBF.TWWGetSpellInfo(id)
+        local spellInfo = C_Spell.GetSpellInfo(id)
+        spellName = spellInfo and spellInfo.name
+        icon = spellInfo and (spellInfo.iconID or spellInfo.originalIconID)
         name = spellName or ""
 
         if not spellName then
@@ -2578,7 +2581,7 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
         local name = entry.name
         if type(name) == "string" and name ~= "" then return name end
         if entry.id then
-            local resolved = BBF.TWWGetSpellInfo(entry.id) or C_Spell.GetSpellName(entry.id)
+            local resolved = C_Spell.GetSpellName(entry.id)
             if resolved and resolved ~= "" then
                 entry.name = resolved
                 return resolved

@@ -3053,7 +3053,7 @@ SlashCmdList["BBF"] = function(msg)
             if tonumber(arg) then
                 -- The argument is a number, treat it as a spell ID
                 local spellId = tonumber(arg)
-                local spellName, _, icon = BBF.TWWGetSpellInfo(spellId)
+                local spellName, _, icon = GetSpellInfo(spellId)
                 if spellName then
                     local iconString = "|T" .. icon .. ":16:16:0:0|t" -- Format the icon for display
                     BBF.auraWhitelist(spellId)
@@ -3075,7 +3075,7 @@ SlashCmdList["BBF"] = function(msg)
             if tonumber(arg) then
                 -- The argument is a number, treat it as a spell ID
                 local spellId = tonumber(arg)
-                local spellName, _, icon = BBF.TWWGetSpellInfo(spellId)
+                local spellName, _, icon = GetSpellInfo(spellId)
                 if spellName then
                     local iconString = "|T" .. icon .. ":16:16:0:0|t" -- Format the icon for display
                     BBF.auraBlacklist(spellId)

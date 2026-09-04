@@ -1,4 +1,3 @@
-if not BBF.isMidnight then return end
 local L = BBF.L
 local UnitIsFriend = UnitIsFriend
 local UnitIsEnemy = UnitIsEnemy
@@ -1118,7 +1117,7 @@ end
 function BBF.PlayerReputationColor()
     local frame = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain
     local bigHealthbar = BetterBlizzFramesDB.bigPlayerHealthbar and BetterBlizzFramesDB.classicFrames
-    if BetterBlizzFramesDB.playerReputationColor and not BetterBlizzFramesDB.noPortraitModes and not bigHealthbar then
+    if BetterBlizzFramesDB.playerReputationColor and not BBF.HasNoPortrait("player") and not bigHealthbar then
         if not frame.ReputationColor then
             frame.ReputationColor = frame:CreateTexture(nil, "OVERLAY")
             if BetterBlizzFramesDB.classicFrames then
