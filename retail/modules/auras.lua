@@ -490,6 +490,7 @@ local listCache = {
     blacklist = { all = {}, ns = {}, mine = {}, mineNS = {} },
     whitelist = { all = {}, rest = {}, plain = {}, pandemic = {}, mineRest = {},
                   important = {}, importantPlain = {} },
+    ccBlacklist = { all = { [1280457] = true } },
 }
 
 local mergeCache = setmetatable({}, { __mode = "k" })
@@ -613,6 +614,10 @@ local function RefreshSpellLists()
         anyPandemic = next(wlPandemic) ~= nil,
     }
     listCache.hasShowMine = hasShowMine
+
+    if not listCache.ccBlacklist.ns then
+        listCache.ccBlacklist.ns = select(2, BBF.PartitionSpellList(listCache.ccBlacklist.all))
+    end
 end
 
 
@@ -989,6 +994,7 @@ local function InitAuraButton(button, style)
 
     if not style.isPlayer or style.playerCooldown then
         local cooldown = CreateFrame("Cooldown", nil, button, "CooldownFrameTemplate")
+        cooldown:SetMinimumCountdownDuration(0)
         cooldown:SetAllPoints(icon)
         cooldown:SetReverse(true)
         cooldown:SetDrawEdge(true)
@@ -1195,6 +1201,14 @@ local function BuildCandidateFilters(harmful, tier, cfg, canFilterIDs, mine)
         end
     elseif whitelistUsable and not HIGHLIGHT_TIERS[tier] then
         filters.excludeSpellIDs = MergeSpellSets(filters.excludeSpellIDs, whitelist.all)
+    end
+
+    if tier == "cc" then
+        local ccBlacklist = listCache.ccBlacklist
+        local set = canFilterIDs and ccBlacklist.all or ccBlacklist.ns
+        if set and next(set) then
+            filters.excludeSpellIDs = MergeSpellSets(filters.excludeSpellIDs, set)
+        end
     end
 
     if tier == "purge" then
@@ -3067,6 +3081,7 @@ local function CreateTestButton(parent)
     button.bbfIcon = button:CreateTexture(nil, "BACKGROUND")
 
     local cooldown = CreateFrame("Cooldown", nil, button, "CooldownFrameTemplate")
+    cooldown:SetMinimumCountdownDuration(0)
     cooldown:SetReverse(true)
     cooldown:SetDrawEdge(true)
     cooldown:SetDrawBling(false)

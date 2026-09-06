@@ -487,6 +487,7 @@ function BBF.SetupLoCFrame()
 
     if BetterBlizzFramesDB.showCooldownOnLoC or iconOnlyMode then
         frame.Icon.Cooldown = CreateFrame("Cooldown", nil, frame, "CooldownFrameTemplate")
+        frame.Icon.Cooldown:SetMinimumCountdownDuration(0)
         frame.Icon.Cooldown:SetAllPoints(frame.Icon)
     end
 
@@ -497,6 +498,7 @@ function BBF.SetupLoCFrame()
     frame.SecondaryIcon:SetPoint("RIGHT", frame.Icon, "LEFT", -4, 0)
 
     frame.SecondaryIcon.Cooldown = CreateFrame("Cooldown", nil, frame.SecondaryIcon, "CooldownFrameTemplate")
+    frame.SecondaryIcon.Cooldown:SetMinimumCountdownDuration(0)
     frame.SecondaryIcon.Cooldown:SetAllPoints(frame.SecondaryIcon)
 
     local cooldownSwipe = frame.SecondaryIcon:GetRegions()

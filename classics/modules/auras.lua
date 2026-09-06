@@ -2309,6 +2309,7 @@ local function PersonalBuffFrameFilterAndGrid(self)
                     if addCooldownFramePlayerBuffs then
                         if not auraFrame.Cooldown then
                             local cooldownFrame = CreateFrame("Cooldown", nil, auraFrame, "CooldownFrameTemplate")
+                            cooldownFrame:SetMinimumCountdownDuration(0)
                             cooldownFrame:SetAllPoints(auraFrame.Icon)
                             cooldownFrame:SetDrawEdge(false)
                             cooldownFrame:SetDrawSwipe(true)
@@ -2627,6 +2628,7 @@ local function PersonalDebuffFrameFilterAndGrid(self)
                     if addCooldownFramePlayerDebuffs then
                         if not auraFrame.Cooldown then
                             local cooldownFrame = CreateFrame("Cooldown", nil, auraFrame, "CooldownFrameTemplate")
+                            cooldownFrame:SetMinimumCountdownDuration(0)
                             cooldownFrame:SetAllPoints(auraFrame.Icon)
                             cooldownFrame:SetDrawEdge(false)
                             cooldownFrame:SetDrawSwipe(true)

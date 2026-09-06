@@ -79,6 +79,7 @@ local function CreateInterruptIconFrame(parentFrame)
     frame.icon:SetAllPoints()
 
     frame.cooldown = CreateFrame("Cooldown", nil, frame, "CooldownFrameTemplate")
+    frame.cooldown:SetMinimumCountdownDuration(0)
     frame.cooldown:SetAllPoints()
 
     frame:SetAlpha(0)

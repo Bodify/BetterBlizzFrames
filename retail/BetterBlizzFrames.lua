@@ -2872,7 +2872,7 @@ function BBF.LegacyBlueCombos()
         end
         if ComboFrame then hooksecurefunc("ComboFrame_Update", BlueLegacyComboRogue) end
     elseif class == "DRUID" then
-        --BBF.DruidBlueComboPoints() -- isMidnight
+        BBF.DruidBlueComboPoints()
     end
 end
 
@@ -5503,7 +5503,7 @@ First:SetScript("OnEvent", function(_, event, addonName)
         BBF.EnableQueueTimer()
         ScaleClassResource()
         BBF.SurrenderNotLeaveArena()
-        --BBF.DruidBlueComboPoints() isMidnight
+        BBF.DruidBlueComboPoints()
         BBF.DruidAlwaysShowCombos()
         BBF.RemoveAddonCategories()
         BBF.ExternalDefensivesClickthrough()
@@ -5716,3 +5716,19 @@ function BBF.ExternalDefensivesClickthrough()
         auraFrame:SetMouseClickEnabled(false)
     end
 end
+
+-- Blizzard bug: MirrorTimerContainer's shown state is only ever toggled by Edit Mode.
+-- Entering Edit Mode with no timer running hides the container and nothing ever shows it again
+-- so the breath/fatigue bars stay invisible for the rest of the session.
+local function FixMirrorTimerContainer()
+    local container = MirrorTimerContainer
+    if not container or container.BodyBugfix then return end
+
+    container.BodyBugfix = true
+    hooksecurefunc(container, "SetupTimer", function(self)
+        if not self:IsShown() and self:ShouldShow() then
+            self:Show()
+        end
+    end)
+end
+FixMirrorTimerContainer()

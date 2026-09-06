@@ -1,3 +1,12 @@
+# BetterBlizzFrames 2.0.7c
+## Midnight
+### Tweak
+- Druid Blue Combopoints are back (Feral's Overflowing Power from Berserk/Incarn showing blue combo points). This has always been on by default but since theyve been out of commission for a hot minute it might surprise you with them being back on.
+- Tweak all cooldown frames to make sure they properly display the cooldown text on very short durations as well.
+### Bugfix
+- Fix a Blizzard bug causing breath bar (and other similar bars) to stay hidden after opening Edit Mode. Blizzard hides this bar when opening Edit Mode and they never re-show it... GG.
+- Fix an issue with manabar text hidden + no portrait settings causing it to show again after reload/loading screens.
+
 # BetterBlizzFrames 2.0.7b
 ## Midnight
 ### Bugfix

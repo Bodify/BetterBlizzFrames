@@ -742,6 +742,7 @@ function BBF.ToggleLossOfControlTestMode()
         frame.Icon = icon
 
         frame.Icon.Cooldown = CreateFrame("Cooldown", nil, frame, "CooldownFrameTemplate")
+        frame.Icon.Cooldown:SetMinimumCountdownDuration(0)
         frame.Icon.Cooldown:SetAllPoints(frame.Icon)
 
         -- Ability Name FontString

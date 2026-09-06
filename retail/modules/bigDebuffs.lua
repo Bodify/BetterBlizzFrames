@@ -25,6 +25,14 @@ local OTHER_DEBUFFS = {
     [121175] = true,    -- Orb of Power
     [121176] = true,    -- Orb of Power
     [121177] = true,    -- Orb of Power
+    [77606] = true,     -- Dark Simulacrum
+    [356723] = true,    -- Scorpid Venom (90% slow with silence after)
+    [80240] = true,     -- Havoc
+}
+
+-- Auras Blizzard flags as CROWD_CONTROL that aren't CC
+local CC_BLACKLIST = {
+    [1280457] = true,   -- Mind Flay (Priest)
 }
 
 local TIERS = {
@@ -33,7 +41,7 @@ local TIERS = {
     { key = "BigDef",       filter = "HELPFUL|BIG_DEFENSIVE" },
     { key = "Important",    filter = "HELPFUL|IMPORTANT|!BIG_DEFENSIVE|!EXTERNAL_DEFENSIVE" },
     { key = "OtherCC",      filter = "HARMFUL", needsSpellIDs = true, candidateFilters = { includeSpellIDs = OTHER_CC } },
-    { key = "CC",           filter = "HARMFUL|CROWD_CONTROL" },
+    { key = "CC",           filter = "HARMFUL|CROWD_CONTROL", candidateFilters = { excludeSpellIDs = CC_BLACKLIST } },
 }
 
 local SORT_METHOD = AuraContainerSortMethod.ExpirationOnly
@@ -69,6 +77,7 @@ local function InitIcon(host, button)
     button:SetIcon(icon)
 
     local cooldown = CreateFrame("Cooldown", nil, button, "CooldownFrameTemplate")
+    cooldown:SetMinimumCountdownDuration(0)
     cooldown:SetAllPoints(button)
     cooldown:SetUsingParentLevel(true)
     cooldown:SetReverse(true)

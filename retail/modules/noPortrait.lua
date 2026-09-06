@@ -5,6 +5,14 @@ local noPortraitSkipKeys = {
     pet = "noPortraitSkipPet",
 }
 
+local function SetManaTextParent(text, parent)
+    if BetterBlizzFramesDB.hideAllManabarText then
+        text.bbfOriginalParent = parent
+        parent = BBF.hiddenFrame
+    end
+    text:SetParent(parent)
+end
+
 function BBF.HasNoPortrait(unit)
     local db = BetterBlizzFramesDB
     if not db.noPortraitModes and not db.noPortraitPixelBorder then return false end
@@ -416,13 +424,13 @@ function BBF.UpdateNoPortraitText(frame, frameType)
         hpContainer.UnconsciousText:ClearAllPoints()
         hpContainer.UnconsciousText:SetPoint("CENTER", frame.noPortraitMode.Texture, "CENTER", -1, hpTextYOffset)
 
-        manaBar.LeftText:SetParent(manaTextParent)
+        SetManaTextParent(manaBar.LeftText, manaTextParent)
         manaBar.LeftText:ClearAllPoints()
         manaBar.LeftText:SetPoint("LEFT", frame.noPortraitMode.Texture, "LEFT", leftTextXOffset, manaTextYOffset)
-        manaBar.RightText:SetParent(manaTextParent)
+        SetManaTextParent(manaBar.RightText, manaTextParent)
         manaBar.RightText:ClearAllPoints()
         manaBar.RightText:SetPoint("RIGHT", frame.noPortraitMode.Texture, "RIGHT", -67, manaTextYOffset)
-        manaBar.ManaBarText:SetParent(manaTextParent)
+        SetManaTextParent(manaBar.ManaBarText, manaTextParent)
         manaBar.ManaBarText:ClearAllPoints()
         manaBar.ManaBarText:SetPoint("CENTER", frame.noPortraitMode.Texture, "CENTER", 2, manaTextYOffset)
 
@@ -448,13 +456,13 @@ function BBF.UpdateNoPortraitText(frame, frameType)
         hpContainer.HealthBarText:ClearAllPoints()
         hpContainer.HealthBarText:SetPoint("CENTER", frame.noPortraitMode.Texture, "CENTER", 2, hpTextYOffset)
 
-        manaBar.LeftText:SetParent(manaTextParent)
+        SetManaTextParent(manaBar.LeftText, manaTextParent)
         manaBar.LeftText:ClearAllPoints()
         manaBar.LeftText:SetPoint("LEFT", frame.noPortraitMode.Texture, "LEFT", leftTextXOffset, manaTextYOffset)
-        manaBar.RightText:SetParent(manaTextParent)
+        SetManaTextParent(manaBar.RightText, manaTextParent)
         manaBar.RightText:ClearAllPoints()
         manaBar.RightText:SetPoint("RIGHT", frame.noPortraitMode.Texture, "RIGHT", -67, manaTextYOffset)
-        manaBar.ManaBarText:SetParent(manaTextParent)
+        SetManaTextParent(manaBar.ManaBarText, manaTextParent)
         manaBar.ManaBarText:ClearAllPoints()
         manaBar.ManaBarText:SetPoint("CENTER", frame.noPortraitMode.Texture, "CENTER", 2, manaTextYOffset)
 

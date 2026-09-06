@@ -43,10 +43,11 @@ local function setResourceFrameVisibility(frame, visible)
 end
 
 local function hideElementByParent(element)
-    if element and not element.bbfOriginalParent then
-        element.bbfOriginalParent = element:GetParent()
-        element:SetParent(BBF.hiddenFrame)
-    end
+    if not element then return end
+    local parent = element:GetParent()
+    if parent == BBF.hiddenFrame then return end
+    element.bbfOriginalParent = parent
+    element:SetParent(BBF.hiddenFrame)
 end
 
 local function restoreElementParent(element)

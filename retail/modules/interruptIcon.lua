@@ -131,6 +131,7 @@ end
 
 BBF.interruptTrackingIcon = CreateFrame("Frame")
 BBF.interruptTrackingIcon.cooldown = CreateFrame("Cooldown", nil, BBF.interruptTrackingIcon, "CooldownFrameTemplate")
+BBF.interruptTrackingIcon.cooldown:SetMinimumCountdownDuration(0)
 BBF.interruptTrackingIcon.cooldown:HookScript("OnCooldownDone", function()
     BBF.interruptReady = true
     UpdateIconsAndColor()
@@ -215,6 +216,7 @@ local function CreateInterruptIconFrame(parentFrame)
     end
 
     button.cooldown = CreateFrame("Cooldown", nil, button, "CooldownFrameTemplate")
+    button.cooldown:SetMinimumCountdownDuration(0)
     button.cooldown:SetAllPoints()
     button.cooldown:HookScript("OnCooldownDone", function()
         if button.border then

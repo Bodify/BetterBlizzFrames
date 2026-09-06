@@ -9691,18 +9691,18 @@ local function guiMisc()
     surrenderArena:SetPoint("TOPLEFT", useMiniPlayerFrame, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(surrenderArena, L["Surrender_Arena"], L["Tooltip_Surrender_Arena_Desc"])
 
-    -- local druidOverstacks = CreateCheckbox("druidOverstacks", L["Druid_Berserk_Blue"], guiMisc)
-    -- druidOverstacks:SetPoint("TOPLEFT", surrenderArena, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    -- CreateTooltipTwo(druidOverstacks, L["Druid_Berserk_Blue"], L["Tooltip_Druid_Berserk"])
-    -- druidOverstacks:HookScript("OnClick", function(self)
-    --     BBF.DruidBlueComboPoints()
-    --     if not self:GetChecked() then
-    --         StaticPopup_Show("BBF_CONFIRM_RELOAD")
-    --     end
-    -- end) -- isMidnight
+    local druidOverstacks = CreateCheckbox("druidOverstacks", L["Druid_Berserk_Blue"], guiMisc)
+    druidOverstacks:SetPoint("TOPLEFT", surrenderArena, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(druidOverstacks, L["Druid_Berserk_Blue"], L["Tooltip_Druid_Berserk"])
+    druidOverstacks:HookScript("OnClick", function(self)
+        BBF.DruidBlueComboPoints()
+        if not self:GetChecked() then
+            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        end
+    end)
 
     local druidAlwaysShowCombos = CreateCheckbox("druidAlwaysShowCombos", L["Druid_Always_Combos"], guiMisc)
-    druidAlwaysShowCombos:SetPoint("TOPLEFT", surrenderArena, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    druidAlwaysShowCombos:SetPoint("TOPLEFT", druidOverstacks, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(druidAlwaysShowCombos, L["Druid_Always_Combos"], L["Tooltip_Druid_Always_Combos_Desc"])
     druidAlwaysShowCombos:HookScript("OnClick", function(self)
         BBF.DruidAlwaysShowCombos()
