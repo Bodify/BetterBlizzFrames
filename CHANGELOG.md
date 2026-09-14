@@ -7,8 +7,8 @@
 ![bbfHideToTManas](https://github.com/user-attachments/assets/abbbcdee-9ab4-4a52-aba4-c3c095f41f10)
 ## Midnight
 ### New
-- Shaman: Maelstrom Weapon Combo Points. Enhancement now gets a proper combo point bar for Maelstrom Weapon stacks, both under the PlayerFrame and on the Personal Resource Display (which can also be moved onto the target nameplate). It uses the Rogue combo point look; stacks 1-5 fill in light blue and stacks 6-10 turn deep blue one at a time. Works with all the existing Move Resource / Move to TargetFrame / Free Move / Class Resource Scale / Legacy Combo Point settings, and with Dark Mode. Plays nice with BetterBlizzPlates: if BBP shows it on the target nameplate you get both, if both would show on the Personal Resource Display only one is created.
-- Hunter: Tip of the Spear Combo Points. Survival gets the same treatment as Shaman above, with 3 green combo points tracking Tip of the Spear stacks.
+- Misc: "Shaman: Mealstrom Weapon Combo Points". Enhancement now gets a Rogue-style combo point bar for Maelstrom Weapon stacks on PlayerFrame and PRD/Target Nameplate.
+- Misc: "Hunter: Tip of the Spear Combo Points". Survival now gets a Rogue-style combo point bar for Tip of the Spear stacks on PlayerFrame and PRD/Target Nameplate.
 - New Hide PetFrame Mana setting that also makes the healthbar bigger (Misc).
 - New Hide ToT Frame Mana setting that also makes the healthbar bigger (Misc).
 ### Tweak
