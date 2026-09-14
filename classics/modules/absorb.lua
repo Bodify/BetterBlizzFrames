@@ -341,9 +341,12 @@ end
 
 
 local function RaiseStrataOnHpText(frame)
-    local leftText = _G[frame.."HealthBarTextLeft"] or _G[frame].textureFrame.HealthBarTextLeft
-    local rightText = _G[frame.."HealthBarTextRight"] or _G[frame].textureFrame.HealthBarTextRight
-    local centerText = _G[frame.."HealthBarText"] or _G[frame].textureFrame.HealthBarText
+    local parent = _G[frame]
+    if not parent then return end
+    local textureFrame = parent.textureFrame
+    local leftText = _G[frame.."HealthBarTextLeft"] or (textureFrame and textureFrame.HealthBarTextLeft)
+    local rightText = _G[frame.."HealthBarTextRight"] or (textureFrame and textureFrame.HealthBarTextRight)
+    local centerText = _G[frame.."HealthBarText"] or (textureFrame and textureFrame.HealthBarText)
 
     if leftText then
         leftText:SetDrawLayer("OVERLAY")
@@ -622,7 +625,7 @@ function BBF.AbsorbCaller()
 
         RaiseStrataOnHpText("PlayerFrame")
         RaiseStrataOnHpText("TargetFrame")
-        if FocusFrame then pcall(RaiseStrataOnHpText, "FocusFrame") end
+        RaiseStrataOnHpText("FocusFrame")
 
         absorbHooked = true
     end

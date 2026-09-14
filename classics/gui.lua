@@ -37,7 +37,7 @@ else
 end
 
 local titleText = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: \n\n"
-local playerClass = select(2, UnitClass("player"))
+local playerClass = UnitClassBase("player")
 local playerClassResourceScale = "classResource" .. playerClass .. "Scale"
 
 BBF.partyPointerTargetIconReplacement = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-QuestPoiImportant-QuestBang.tga"
@@ -294,11 +294,9 @@ end
 
 local function CreateIconChangeWindow()
     local window = CreateFrame("Frame", "IconChangeWindow", UIParent, "BasicFrameTemplateWithInset")
-    window:SetSize(300, 180)  -- Adjust size as needed
+    window:SetSize(300, 180)
     window:SetPoint("CENTER")
     window:SetFrameStrata("HIGH")
-
-    -- Make the frame movable
     window:SetMovable(true)
     window:EnableMouse(true)
     window:RegisterForDrag("LeftButton")
@@ -1712,7 +1710,7 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
                 checkBoxP.texture:SetSize(27, 27)
                 checkBoxP.texture:SetPoint("CENTER", checkBoxP, "CENTER", -0.5, 0.5)
                 button.checkBoxP = checkBoxP
-                local isWarlock = select(2, UnitClass("player")) == "WARLOCK"
+                local isWarlock = UnitClassBase("player") == "WARLOCK"
                 local extraText = isWarlock and L["Tooltip_Pandemic_Glow_Warlock_Extra"] or ""
                 CreateTooltipTwo(checkBoxP, L["Tooltip_Pandemic_Glow_Title"] .. " |A:elementalstorm-boss-air:22:22|a", L["Tooltip_Pandemic_Glow_Desc"]..extraText, L["Tooltip_Pandemic_Glow_Extra"], "ANCHOR_TOPRIGHT")
             end
@@ -7253,6 +7251,17 @@ local function guiMisc()
     CreateTooltip(useMiniFocusFrame, L["Tooltip_Mini_Focus"])
     notWorking(useMiniFocusFrame, true)
 
+    if BBF.isEra then
+        guiMisc.colorShamansBlue = CreateCheckbox("colorShamansBlue", L["Color_Shamans_Blue"], guiMisc)
+        guiMisc.colorShamansBlue:SetPoint("TOPLEFT", useMiniFocusFrame, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+        CreateTooltipTwo(guiMisc.colorShamansBlue, L["Color_Shamans_Blue"], L["Tooltip_Color_Shamans_Blue_Desc"])
+        guiMisc.colorShamansBlue:HookScript("OnClick", function()
+            BBF.UpdateFrames()
+            BBF.UpdateRaidFrameShamanColors()
+            BBF.AllNameChanges()
+        end)
+    end
+
     local hidePlayerManabar = CreateCheckbox("hidePlayerManabar", L["Hide_PlayerFrame_Mana"], guiMisc)
     hidePlayerManabar:SetPoint("TOPLEFT", settingsText, "BOTTOMLEFT", 310, pixelsOnFirstBox)
     CreateTooltipTwo(hidePlayerManabar, L["Hide_PlayerFrame_Mana"], L["Tooltip_Hide_Player_Manabar_Desc"])
@@ -7398,7 +7407,7 @@ local function guiMisc()
     end)
 
 
-    local moveResource = CreateCheckbox("moveResource", L["Move_Resource"], guiMisc)
+    local moveResource = CreateCheckbox("moveResource" .. playerClass, L["Move_Resource"], guiMisc)
     moveResource:SetPoint("TOPLEFT", instantComboPoints, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(moveResource, L["Move_Resource"], string.format(L["Tooltip_Move_Resource_Desc"], playerClass), L["Tooltip_Move_Resource_SubText"])
     moveResource:HookScript("OnClick", function(self)
@@ -7406,11 +7415,6 @@ local function guiMisc()
             BBF.EnableResourceMovement()
         end
     end)
-    if BetterBlizzFramesDB.moveResourceStackPos and not BetterBlizzFramesDB.moveResourceStackPos[playerClass] then
-        moveResource:SetChecked(false)
-    elseif not BetterBlizzFramesDB.moveResourceStackPos then
-        moveResource:SetChecked(false)
-    end
 
     -- local moveResourceToTarget = CreateCheckbox("moveResourceToTarget", L["Move_Resource_To_Target"], guiMisc)
     -- moveResourceToTarget:SetPoint("TOPLEFT", moveResource, "BOTTOMLEFT", 0, pixelsBetweenBoxes)

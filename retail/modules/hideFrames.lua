@@ -89,7 +89,7 @@ function BBF.HideFrames()
             BBF.Print(L["Print_Combat_Hide_Settings"])
             return
         end
-        local playerClass, englishClass = UnitClass("player")
+        local class = UnitClassBase("player")
         local classicFrames = C_AddOns.IsAddOnLoaded("ClassicFrames")
 
         --Hide group indicator on player unitframe
@@ -797,7 +797,7 @@ function BBF.HideFrames()
         end
 
         if BetterBlizzFramesDB.hidePlayerPower then
-            if WarlockPowerFrame and englishClass == "WARLOCK" then
+            if WarlockPowerFrame and class == "WARLOCK" then
                 if BetterBlizzFramesDB.hidePlayerPowerNoWarlock then
                     if originalResourceParent then WarlockPowerFrame:SetParent(originalResourceParent) end
                 else
@@ -805,7 +805,7 @@ function BBF.HideFrames()
                     WarlockPowerFrame:SetParent(hiddenFrame)
                 end
             end
-            if RogueComboPointBarFrame and englishClass == "ROGUE" then
+            if RogueComboPointBarFrame and class == "ROGUE" then
                 if BetterBlizzFramesDB.hidePlayerPowerNoRogue then
                     if originalResourceParent then RogueComboPointBarFrame:SetParent(originalResourceParent) end
                 else
@@ -813,7 +813,7 @@ function BBF.HideFrames()
                     RogueComboPointBarFrame:SetParent(hiddenFrame)
                 end
             end
-            if DruidComboPointBarFrame and englishClass == "DRUID" then
+            if DruidComboPointBarFrame and class == "DRUID" then
                 if BetterBlizzFramesDB.hidePlayerPowerNoDruid then
                     if originalResourceParent then setResourceFrameVisibility(DruidComboPointBarFrame, true) end
                 else
@@ -821,7 +821,7 @@ function BBF.HideFrames()
                     if not originalResourceParent then originalResourceParent = true end
                 end
             end
-            if PaladinPowerBarFrame and englishClass == "PALADIN" then
+            if PaladinPowerBarFrame and class == "PALADIN" then
                 if BetterBlizzFramesDB.hidePlayerPowerNoPaladin then
                     if originalResourceParent then PaladinPowerBarFrame:SetParent(originalResourceParent) end
                 else
@@ -829,7 +829,7 @@ function BBF.HideFrames()
                     PaladinPowerBarFrame:SetParent(hiddenFrame)
                 end
             end
-            if RuneFrame and englishClass == "DEATHKNIGHT" then
+            if RuneFrame and class == "DEATHKNIGHT" then
                 if BetterBlizzFramesDB.hidePlayerPowerNoDeathKnight then
                     if originalResourceParent then RuneFrame:SetParent(originalResourceParent) end
                 else
@@ -837,7 +837,7 @@ function BBF.HideFrames()
                     RuneFrame:SetParent(hiddenFrame)
                 end
             end
-            if EssencePlayerFrame and englishClass == "EVOKER" then
+            if EssencePlayerFrame and class == "EVOKER" then
                 if BetterBlizzFramesDB.hidePlayerPowerNoEvoker then
                     if originalResourceParent then EssencePlayerFrame:SetParent(originalResourceParent) end
                 else
@@ -845,7 +845,7 @@ function BBF.HideFrames()
                     EssencePlayerFrame:SetParent(hiddenFrame)
                 end
             end
-            if MonkHarmonyBarFrame and englishClass == "MONK" then
+            if MonkHarmonyBarFrame and class == "MONK" then
                 if BetterBlizzFramesDB.hidePlayerPowerNoMonk then
                     if originalResourceParent then setResourceFrameVisibility(MonkHarmonyBarFrame, true) end
                 else
@@ -853,7 +853,7 @@ function BBF.HideFrames()
                     if not originalResourceParent then originalResourceParent = true end
                 end
             end
-            if MageArcaneChargesFrame and englishClass == "MAGE" then
+            if MageArcaneChargesFrame and class == "MAGE" then
                 if BetterBlizzFramesDB.hidePlayerPowerNoMage then
                     if originalResourceParent then setResourceFrameVisibility(MageArcaneChargesFrame, true) end
                 else
@@ -861,16 +861,34 @@ function BBF.HideFrames()
                     if not originalResourceParent then originalResourceParent = true end
                 end
             end
+            if BBF.MaelstromWeaponBar and class == "SHAMAN" then
+                if BetterBlizzFramesDB.hidePlayerPowerNoShaman then
+                    if originalResourceParent then setResourceFrameVisibility(BBF.MaelstromWeaponBar, true) end
+                else
+                    setResourceFrameVisibility(BBF.MaelstromWeaponBar, false)
+                    if not originalResourceParent then originalResourceParent = true end
+                end
+            end
+            if BBF.TipOfSpearBar and class == "HUNTER" then
+                if BetterBlizzFramesDB.hidePlayerPowerNoHunter then
+                    if originalResourceParent then setResourceFrameVisibility(BBF.TipOfSpearBar, true) end
+                else
+                    setResourceFrameVisibility(BBF.TipOfSpearBar, false)
+                    if not originalResourceParent then originalResourceParent = true end
+                end
+            end
             changes.hidePlayerPower = true
         elseif originalResourceParent then
-            if WarlockPowerFrame and englishClass == "WARLOCK" then WarlockPowerFrame:SetParent(originalResourceParent) end
-            if RogueComboPointBarFrame and englishClass == "ROGUE" then RogueComboPointBarFrame:SetParent(originalResourceParent) end
-            if DruidComboPointBarFrame and englishClass == "DRUID" then setResourceFrameVisibility(DruidComboPointBarFrame, true) end
-            if PaladinPowerBarFrame and englishClass == "PALADIN" then PaladinPowerBarFrame:SetParent(originalResourceParent) end
-            if RuneFrame and englishClass == "DEATHKNIGHT" then RuneFrame:SetParent(originalResourceParent) end
-            if EssencePlayerFrame and englishClass == "EVOKER" then EssencePlayerFrame:SetParent(originalResourceParent) end
-            if MonkHarmonyBarFrame and englishClass == "MONK" then setResourceFrameVisibility(MonkHarmonyBarFrame, true) end
-            if MageArcaneChargesFrame and englishClass == "MAGE" then setResourceFrameVisibility(MageArcaneChargesFrame, true) end
+            if WarlockPowerFrame and class == "WARLOCK" then WarlockPowerFrame:SetParent(originalResourceParent) end
+            if RogueComboPointBarFrame and class == "ROGUE" then RogueComboPointBarFrame:SetParent(originalResourceParent) end
+            if DruidComboPointBarFrame and class == "DRUID" then setResourceFrameVisibility(DruidComboPointBarFrame, true) end
+            if PaladinPowerBarFrame and class == "PALADIN" then PaladinPowerBarFrame:SetParent(originalResourceParent) end
+            if RuneFrame and class == "DEATHKNIGHT" then RuneFrame:SetParent(originalResourceParent) end
+            if EssencePlayerFrame and class == "EVOKER" then EssencePlayerFrame:SetParent(originalResourceParent) end
+            if MonkHarmonyBarFrame and class == "MONK" then setResourceFrameVisibility(MonkHarmonyBarFrame, true) end
+            if MageArcaneChargesFrame and class == "MAGE" then setResourceFrameVisibility(MageArcaneChargesFrame, true) end
+            if BBF.MaelstromWeaponBar and class == "SHAMAN" then setResourceFrameVisibility(BBF.MaelstromWeaponBar, true) end
+            if BBF.TipOfSpearBar and class == "HUNTER" then setResourceFrameVisibility(BBF.TipOfSpearBar, true) end
             changes.hidePlayerPower = nil
         end
 
@@ -985,22 +1003,9 @@ function BBF.HideFrames()
                     end)
 
                     -- ToT's
-                    local totTex = TargetFrame.totFrame.FrameTexture
-                    totTex:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-TargetofTarget-PortraitOn-NoShadow")
-                    hooksecurefunc(totTex, "SetAtlas", function(self)
-                        self:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-TargetofTarget-PortraitOn-NoShadow")
-                    end)
-                    local totFocusTex = FocusFrame.totFrame.FrameTexture
-                    totFocusTex:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-TargetofTarget-PortraitOn-NoShadow")
-                    hooksecurefunc(totFocusTex, "SetAtlas", function(self)
-                        self:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-TargetofTarget-PortraitOn-NoShadow")
-                    end)
+                    BBF.UpdateTotFrameTexture()
                     --Pet
-                    local petTex = PetFrameTexture
-                    petTex:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-TargetofTarget-PortraitOn-NoShadow")
-                    hooksecurefunc(petTex, "SetAtlas", function(self)
-                        self:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-TargetofTarget-PortraitOn-NoShadow")
-                    end)
+                    BBF.UpdatePetFrameTexture()
 
                     BBF.hideUnitFrameShadow = true
                 end

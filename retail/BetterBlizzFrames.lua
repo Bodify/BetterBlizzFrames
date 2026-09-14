@@ -29,7 +29,6 @@ local defaultSettings = {
     hideGroupIndicator = false,
     hideFocusCombatGlow = false,
     bigPlayerHealthbar = false,
-    hideDragonFlying = true,
     raiseTargetCastbarStrata = true,
     targetToTScale = 1,
     focusToTScale = 1,
@@ -59,6 +58,11 @@ local defaultSettings = {
     druidOverstacks = true,
     druidAlwaysShowCombos = true,
     createAltManaBarDruid = true,
+    shamanMaelstromCombos = true,
+    hunterTipOfSpearCombos = false,
+    prdResourceScale = 1,
+    prdResourceXPos = 0,
+    prdResourceYPos = 0,
     gladWinTracker = true,
     opBarriersOn = true,
     classicCastbarsPlayerBorder = true,
@@ -644,10 +648,6 @@ local function UpdatePvEDebuffFilter()
 end
 
 local function LoadingScreenDetector(_, event)
-    --#######TEMPORARY BUGFIX FOR BLIZZARD#########
-    local _, instanceType = GetInstanceInfo()
-    local inArena = instanceType == "arena" or instanceType == "pvp"
-    --#######TEMPORARY BUGFIX FOR BLIZZARD#########
     if event == "PLAYER_ENTERING_WORLD" or event == "LOADING_SCREEN_ENABLED" then
         BetterBlizzFramesDB.wasOnLoadingScreen = true
 
@@ -661,60 +661,12 @@ local function LoadingScreenDetector(_, event)
 
         BBF.MinimapHider()
         BBF.FadeMicroMenu()
-
-        --#######TEMPORARY BUGFIX FOR BLIZZARD#########
-        if BetterBlizzFramesDB.hideDragonFlying then
-            if inArena and UIWidgetPowerBarContainerFrame then
-                for _, child in ipairs({UIWidgetPowerBarContainerFrame:GetChildren()}) do
-                    if child.DecorLeft then
-                        child.DecorLeft:SetAlpha(0)
-                    end
-                    if child.DecorRight then
-                        child.DecorRight:SetAlpha(0)
-                    end
-                end
-            else
-                for _, child in ipairs({UIWidgetPowerBarContainerFrame:GetChildren()}) do
-                    if child.DecorLeft then
-                        child.DecorLeft:SetAlpha(1)
-                    end
-                    if child.DecorRight then
-                        child.DecorRight:SetAlpha(1)
-                    end
-                end
-            end
-        end
-        --#######TEMPORARY BUGFIX FOR BLIZZARD#########
     elseif event == "LOADING_SCREEN_DISABLED" or event == "PLAYER_LEAVING_WORLD" then
         if BetterBlizzFramesDB.playerFrameOCD then
             BBF.FixStupidBlizzPTRShit()
         end
 
         BBF.MinimapHider()
-
-        --#######TEMPORARY BUGFIX FOR BLIZZARD#########
-        if BetterBlizzFramesDB.hideDragonFlying then
-            if inArena and UIWidgetPowerBarContainerFrame then
-                for _, child in ipairs({UIWidgetPowerBarContainerFrame:GetChildren()}) do
-                    if child.DecorLeft then
-                        child.DecorLeft:SetAlpha(0)
-                    end
-                    if child.DecorRight then
-                        child.DecorRight:SetAlpha(0)
-                    end
-                end
-            else
-                for _, child in ipairs({UIWidgetPowerBarContainerFrame:GetChildren()}) do
-                    if child.DecorLeft then
-                        child.DecorLeft:SetAlpha(1)
-                    end
-                    if child.DecorRight then
-                        child.DecorRight:SetAlpha(1)
-                    end
-                end
-            end
-        end
-        --#######TEMPORARY BUGFIX FOR BLIZZARD#########
         C_Timer.After(2, function()
             BetterBlizzFramesDB.wasOnLoadingScreen = false
         end)
@@ -908,6 +860,7 @@ local resourceFrames = {
     MAGE = MageArcaneChargesFrame,
     MONK = MonkHarmonyBarFrame,
 }
+BBF.resourceFrames = resourceFrames
 
 local function DisableClickForResourceFrame(frame)
     if BBF.MovingResource then return end
@@ -915,12 +868,14 @@ local function DisableClickForResourceFrame(frame)
 end
 
 local function DisableClickForClassSpecificFrame()
-    local _, class = UnitClass("player")
+    local class = UnitClassBase("player")
     local frame = resourceFrames[class]
 
     if frame then
         local updateFunction = (class == "DEATHKNIGHT") and "UpdateRunes" or "UpdatePower"
-        hooksecurefunc(frame, updateFunction, function() DisableClickForResourceFrame(frame) end)
+        if type(frame[updateFunction]) == "function" then
+            hooksecurefunc(frame, updateFunction, function() DisableClickForResourceFrame(frame) end)
+        end
     end
 end
 
@@ -935,9 +890,11 @@ local function CheckForResourceConflicts()
         EVOKER = db.moveResourceToTargetEvoker,
         PALADIN = db.moveResourceToTargetPaladin,
         DEATHKNIGHT = db.moveResourceToTargetDK,
+        SHAMAN = db.moveResourceToTargetShaman,
+        HUNTER = db.moveResourceToTargetHunter,
     }
 
-    local _, class = UnitClass("player")
+    local class = UnitClassBase("player")
     if db.moveResourceToTarget and conflicts[class] then
         BBF.Print(L["Print_Disable_Move_Resource_To_Target"])
         return true
@@ -946,9 +903,8 @@ local function CheckForResourceConflicts()
 end
 
 function BBF.SetResourcePosition()
-    if not BetterBlizzFramesDB.moveResource then return end
-
-    local _, class = UnitClass("player")
+    local class = UnitClassBase("player")
+    if not BetterBlizzFramesDB["moveResource" .. class] then return end
     if not (BetterBlizzFramesDB.moveResourceStackPos and BetterBlizzFramesDB.moveResourceStackPos[class]) then return end
     if CheckForResourceConflicts() then return end
     local frame = resourceFrames[class]
@@ -982,7 +938,7 @@ end
 
 
 function BBF.ResetResourcePosition()
-    local _, class = UnitClass("player")
+    local class = UnitClassBase("player")
     local frame = resourceFrames[class]
     if not frame or not frame.ogPoint then return end
 
@@ -992,13 +948,13 @@ function BBF.ResetResourcePosition()
 end
 
 function BBF.EnableResourceMovement()
-    if CheckForResourceConflicts() then return end
+    if CheckForResourceConflicts() then return false end
 
-    local _, class = UnitClass("player")
+    local class = UnitClassBase("player")
     local frame = resourceFrames[class]
-    if not frame then return end
+    if not frame then return true end
 
-    if BBF.MovingResource then return end
+    if BBF.MovingResource then return true end
 
     -- Make the frame draggable
     frame:SetMovable(true)
@@ -1030,6 +986,7 @@ function BBF.EnableResourceMovement()
         }
     end)
     BBF.MovingResource = true
+    return true
 end
 
 
@@ -1972,13 +1929,45 @@ local function HookClassComboPoints()
         if db.moveResourceToTargetEvoker then SetupClassComboPoints(EssencePlayerFrame, evokerPositions, "EVOKER", 0.65, -50, 0.5, true) end
         if db.moveResourceToTargetPaladin then SetupClassComboPoints(PaladinPowerBarFrame, paladinPositions, "PALADIN", 0.75, -61, -8, true) end
         if db.moveResourceToTargetDK then SetupClassComboPoints(RuneFrame, dkPositions, "DEATHKNIGHT", 0.7, -50.5, 0.5, true) end
+        if db.moveResourceToTargetShaman and BBF.MaelstromWeaponBar then
+            local bar = BBF.MaelstromWeaponBar
+            local xPos, yPos = -53, -2
+            SetupClassComboPoints(bar, {
+                { "TOPLEFT", bar, "TOPLEFT", 34, 32.5 },
+                { "TOPLEFT", bar, "TOPLEFT", 45, 14 },
+                { "TOPLEFT", bar, "TOPLEFT", 48, -7 },
+                { "TOPLEFT", bar, "TOPLEFT", 44, -28 },
+                { "TOPLEFT", bar, "TOPLEFT", 33.5, -46.5 },
+            }, "SHAMAN", 0.55, xPos, yPos, true)
+            bar:SetParent(TargetFrame)
+            bar:ClearAllPoints()
+            bar:SetPoint("LEFT", TargetFrame, "RIGHT", xPos, yPos)
+            bar:SetMouseClickEnabled(false)
+            bar:SetFrameStrata("HIGH")
+            RefreshComboPoints(bar)
+        end
+        if db.moveResourceToTargetHunter and BBF.TipOfSpearBar then
+            local bar = BBF.TipOfSpearBar
+            local xPos, yPos = -53, -2
+            SetupClassComboPoints(bar, {
+                { "TOPLEFT", bar, "TOPLEFT", 45, 14 },
+                { "TOPLEFT", bar, "TOPLEFT", 48, -7 },
+                { "TOPLEFT", bar, "TOPLEFT", 44, -28 },
+            }, "HUNTER", 0.55, xPos, yPos, true)
+            bar:SetParent(TargetFrame)
+            bar:ClearAllPoints()
+            bar:SetPoint("LEFT", TargetFrame, "RIGHT", xPos, yPos)
+            bar:SetMouseClickEnabled(false)
+            bar:SetFrameStrata("HIGH")
+            RefreshComboPoints(bar)
+        end
 
         hookedResourceFrames = true
     end
 end
 
 local function ScaleClassResource()
-    local _, playerClass = UnitClass("player")
+    local playerClass = UnitClassBase("player")
     local key = "classResource" .. playerClass .. "Scale"
     local scale = BetterBlizzFramesDB[key] or 1.0
 
@@ -1998,6 +1987,9 @@ local function ScaleClassResource()
             frame:SetScale(scale)
         end
     end
+
+    if BBF.MaelstromWeaponBar then BBF.MaelstromWeaponBar:SetScale(scale) end
+    if BBF.TipOfSpearBar then BBF.TipOfSpearBar:SetScale(scale) end
 end
 
 
@@ -2019,11 +2011,12 @@ local classPowerFrames = {
     PALADIN = PaladinPowerBarFrame,
     DEATHKNIGHT = RuneFrame,
 }
+BBF.classPowerFrames = classPowerFrames
 
 function BBF.HideClassResourceTooltip()
     if not BetterBlizzFramesDB.hideResourceTooltip then return end
     if BBF.HidingClassResourceTooltip then return end
-    local _, class = UnitClass("player")
+    local class = UnitClassBase("player")
     local resourceFrame = classPowerFrames[class]
     if not resourceFrame then return end
     resourceFrame:EnableMouse(false)
@@ -2530,8 +2523,8 @@ local legacyComboPowerTypes = {
 }
 
 local function GetLegacyComboStartIndex()
-    local _, class = UnitClass("player") -- class will be "PALADIN", "MONK", etc.
-    local classKey = class:sub(1, 1):upper() .. class:sub(2):lower() -- "Paladin"
+    local class = UnitClassBase("player")
+    local classKey = class:sub(1, 1):upper() .. class:sub(2):lower()
 
     if BetterBlizzFramesDB["ignore" .. classKey .. "LegacyCombos"] then return nil end
 
@@ -2549,7 +2542,7 @@ function BBF.ClassColorLegacyCombos()
     local startIndex = GetLegacyComboStartIndex()
     if not startIndex then return end
 
-    local _, class = UnitClass("player")
+    local class = UnitClassBase("player")
     local powerType = legacyComboPowerTypes[class]
     if not powerType then return end
 
@@ -2629,7 +2622,7 @@ function BBF.GenericLegacyComboSupport()
     if not BetterBlizzFramesDB.enableLegacyComboPointsMulticlass then return end
     if C_CVar.GetCVar("comboPointLocation") ~= "1" then return end
     if not ComboFrame or not ComboFrame.ComboPoints then return end
-    local _, class = UnitClass("player")
+    local class = UnitClassBase("player")
     local supported = {
         MONK = true, DEATHKNIGHT = true, EVOKER = true,
         WARLOCK = true, PALADIN = true, MAGE = true,
@@ -2779,7 +2772,7 @@ function BBF.AlwaysShowLegacyComboPoints()
     if not BetterBlizzFramesDB.alwaysShowLegacyComboPoints then return end
     if BetterBlizzFramesDB.instantComboPoints then return end
     if BBF.AlwaysShowLegacyComboPoints then return end
-    local _, class = UnitClass("player")
+    local class = UnitClassBase("player")
     if class ~= "ROGUE" and class ~= "DRUID" then return end
     local function UpdateLegacyComboFrame()
         local frame = ComboFrame
@@ -2837,7 +2830,7 @@ end
 function BBF.LegacyBlueCombos()
     if not BetterBlizzFramesDB.legacyBlueComboPoints then return end
     if C_CVar.GetCVar("comboPointLocation") ~= "1" then return end
-    local _, class = UnitClass("player")
+    local class = UnitClassBase("player")
     if class == "ROGUE" then
         local function BlueLegacyComboRogue()
             local frame = ComboFrame
@@ -2882,8 +2875,7 @@ function BBF.InstantComboPoints()
     if BBF.InstantComboPointsActive then return end
 
     local prdClassFrame = PersonalResourceDisplayFrame.classFrame
-    -- Call the function for each frame
-    local _, class = UnitClass("player")
+    local class = UnitClassBase("player")
 
     local function UpdateRogueComboPoints(self)
         if not self or self:IsForbidden() then return end
@@ -2894,12 +2886,10 @@ function BBF.InstantComboPoints()
             local isFull = i <= comboPoints
             local isCharged = tContains(chargedPowerPoints, i)
 
-            -- Stop all animations to enforce instant update
             for _, transitionAnim in ipairs(point.transitionAnims) do
                 transitionAnim:Stop()
             end
 
-            -- Directly set textures and visibility
             point.IconUncharged:SetAlpha(isFull and not isCharged and 1 or 0)
             point.IconCharged:SetAlpha(isFull and isCharged and 1 or 0)
             point.BGActive:SetAlpha(isFull and 1 or 0)
@@ -2907,17 +2897,15 @@ function BBF.InstantComboPoints()
             point.FXUncharged:SetAlpha(isFull and not isCharged and 1 or 0)
             point.FXCharged:SetAlpha(isFull and isCharged and 1 or 0)
 
-            -- ChargedFrame logic:
             if isCharged then
                 if isFull then
-                    point.ChargedFrameActive:SetAlpha(1)  -- Show Active only if both charged and filled
-                    point.ChargedFrameInactive:SetAlpha(0) -- Hide Inactive since it's full
+                    point.ChargedFrameActive:SetAlpha(1)
+                    point.ChargedFrameInactive:SetAlpha(0)
                 else
-                    point.ChargedFrameActive:SetAlpha(0)  -- Hide Active since no combo point is in it
-                    point.ChargedFrameInactive:SetAlpha(1) -- Show Inactive since it's charged but empty
+                    point.ChargedFrameActive:SetAlpha(0)
+                    point.ChargedFrameInactive:SetAlpha(1)
                 end
             else
-                -- If not charged, hide both charged frames
                 point.ChargedFrameActive:SetAlpha(0)
                 point.ChargedFrameInactive:SetAlpha(0)
             end
@@ -2971,11 +2959,9 @@ function BBF.InstantComboPoints()
         for i, point in ipairs(self.classResourceButtonTable) do
             local isFull = i <= comboPoints
 
-            -- Stop animations for instant update
             if point.activateAnim then point.activateAnim:Stop() end
             if point.deactivateAnim then point.deactivateAnim:Stop() end
 
-            -- Directly set textures and visibility
             point.Point_Icon:SetAlpha(isFull and 1 or 0)
             point.BG_Active:SetAlpha(isFull and 1 or 0)
             point.BG_Inactive:SetAlpha(isFull and 0 or 1)
@@ -2991,11 +2977,9 @@ function BBF.InstantComboPoints()
         for i, point in ipairs(self.classResourceButtonTable) do
             local isFull = i <= numChi
 
-            -- Stop animations for instant updates
             if point.activate then point.activate:Stop() end
             if point.deactivate then point.deactivate:Stop() end
 
-            -- Directly update textures and visibility
             point.Chi_Icon:SetAlpha(isFull and 1 or 0)
             point.Chi_BG_Active:SetAlpha(isFull and 1 or 0)
             point.Chi_BG:SetAlpha(isFull and 0 or 1)
@@ -3013,11 +2997,9 @@ function BBF.InstantComboPoints()
         for i, point in ipairs(self.classResourceButtonTable) do
             local isFull = i <= numCharges
 
-            -- Stop animations for instant updates
             if point.activateAnim then point.activateAnim:Stop() end
             if point.deactivateAnim then point.deactivateAnim:Stop() end
 
-            -- Directly update textures and visibility
             point.ArcaneIcon:SetAlpha(isFull and 1 or 0)
             point.ArcaneBG:SetAlpha(isFull and 1 or 0)
             point.Orb:SetAlpha(isFull and 0 or 1)
@@ -3041,19 +3023,16 @@ function BBF.InstantComboPoints()
         for i = 1, maxHolyPower do
             local rune = self["rune"..i]
             if rune then
-                -- Stop all animations
                 if rune.activateAnim then rune.activateAnim:Stop() end
                 if rune.readyAnim then rune.readyAnim:Stop() end
                 if rune.readyLoopAnim then rune.readyLoopAnim:Stop() end
                 if rune.depleteAnim then rune.depleteAnim:Stop() end
 
-                -- Hide all FX
                 if rune.FX then rune.FX:SetAlpha(0) end
                 if rune.Blur then rune.Blur:SetAlpha(0) end
                 if rune.Glow then rune.Glow:SetAlpha(0) end
                 if rune.DepleteFlipbook then rune.DepleteFlipbook:SetAlpha(0) end
 
-                -- Set active state
                 if i <= numHolyPower then
                     if rune.ActiveTexture then rune.ActiveTexture:SetAlpha(1) end
                 else
@@ -3062,13 +3041,11 @@ function BBF.InstantComboPoints()
             end
         end
 
-        -- Stop main bar animations
         self.activateAnim:Stop()
         self.readyAnim:Stop()
         self.readyLoopAnim:Stop()
         self.depleteAnim:Stop()
 
-        -- Update bar visuals
         self.ActiveTexture:SetAlpha(numHolyPower > 0 and 1 or 0)
         self.ThinGlow:SetAlpha(numHolyPower > 2 and 1 or 0)
         self.Glow:SetAlpha(numHolyPower == 5 and 1 or 0)
@@ -3405,13 +3382,12 @@ local fancyManas = {
 }
 BBF.fancyManas = fancyManas
 
--- Helper function to change the texture and retain the original draw layer
 local function ApplyTextureChange(type, statusBar, parent, classic, party, altBar)
     if not statusBar.GetStatusBarTexture then
         statusBar:SetTexture(texture)
         return
     end
-    -- Get the original texture and draw layer
+
     local originalTexture = statusBar:GetStatusBarTexture()
     local originalLayer, subLayer = originalTexture:GetDrawLayer()
     local keepFancyManas = BetterBlizzFramesDB.changeUnitFrameManaBarTextureKeepFancy and (type == "mana" and ((statusBar.powerToken and fancyManas[statusBar.powerToken]) or (statusBar.powerName and fancyManas[statusBar.powerName])))
@@ -3428,7 +3404,6 @@ local function ApplyTextureChange(type, statusBar, parent, classic, party, altBa
 
     local playerHp = statusBar == PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer.HealthBar
 
-    -- Change the texture
     if not keepFancyManas then
         if (parent and parent:GetName() == "PetFrame") then -- causes weird issues if not delayed
             C_Timer.After(0.1, function()
@@ -3464,18 +3439,15 @@ local function ApplyTextureChange(type, statusBar, parent, classic, party, altBa
         PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer.HealthBar.OverAbsorbGlow:SetDrawLayer("OVERLAY", (subLayer + 3))
     end
 
-    -- Hook SetStatusBarTexture to ensure the texture remains consistent
     if parent and type == "health" then
         if not parent.hookedHealthBarsTexture then
             local updateFunc = party and "ToPlayerArt" or "Update"
             if classicTexture then
-                -- procs secret error on beta BBF.isMidnight (no more?)
                 hooksecurefunc(parent, updateFunc, function()
                     statusBar:SetStatusBarTexture(classicTexture)
                     originalTexture:SetDrawLayer(originalLayer)
                 end)
             else
-                -- procs secret error on beta BBF.isMidnight (no more?)
                 hooksecurefunc(parent, updateFunc, function()
                     if parent.unit == "pet" then return end
                     statusBar:SetStatusBarTexture(texture)
@@ -3485,22 +3457,18 @@ local function ApplyTextureChange(type, statusBar, parent, classic, party, altBa
             parent.hookedHealthBarsTexture = true
         end
     elseif type == "mana" then
-        -- Function to get the color of the unit's current power type and apply it
         local function SetUnitPowerColor(manabar, unit)
-            -- Retrieve the unit's power type
             local _, powerToken = UnitPowerType(unit)
-            
-            -- Try custom color first if enabled
+
             local r, g, b
             if BetterBlizzFramesDB.customHealthbarColors and BetterBlizzFramesDB.customPowerColors and BetterBlizzFramesDB.customColorsUnitFrames then
                 r, g, b = BBF.GetCustomPowerColor(powerToken)
             end
-            
-            -- Fall back to default color
+
             if not r then
                 r, g, b = BBF.GetDefaultPowerColor(powerToken, manabar)
             end
-            
+
             if r then
                 manabar:SetStatusBarColor(r, g, b)
             end
@@ -3525,27 +3493,23 @@ local function ApplyTextureChange(type, statusBar, parent, classic, party, altBa
         end
 
         if altBar and not statusBar.bbfTextureColorHook then
-            -- Setup alternate bar with texture and color handling
-            -- Determine which optimized hook function to use based on settings
-            local useCustomColors = BetterBlizzFramesDB.customHealthbarColors and 
-                                   BetterBlizzFramesDB.customPowerColors and 
+            local useCustomColors = BetterBlizzFramesDB.customHealthbarColors and
+                                   BetterBlizzFramesDB.customPowerColors and
                                    BetterBlizzFramesDB.customColorsUnitFrames
             local keepFancy = BetterBlizzFramesDB.changeUnitFrameManaBarTextureKeepFancy
-            
-            -- Create optimized hook function based on settings
+
             local hookFunc
-            
+
             if useCustomColors then
                 local GetCustomPowerColor = BBF.GetCustomPowerColor
                 local GetDefaultPowerColor = BBF.GetDefaultPowerColor
-                
+
                 if keepFancy then
-                    -- Custom colors + fancy manas check
+
                     hookFunc = function(self)
                         local powerToken = self.powerToken or self.powerName
                         if powerToken then
                             if fancyManas[powerToken] then
-                                -- Keep fancy mana, only apply custom color
                                 local r, g, b = GetCustomPowerColor(powerToken)
                                 if not r then
                                     r, g, b = GetDefaultPowerColor(powerToken, self)
@@ -3553,7 +3517,6 @@ local function ApplyTextureChange(type, statusBar, parent, classic, party, altBa
                                 self:SetStatusBarDesaturated(true)
                                 self:SetStatusBarColor(r, g, b)
                             else
-                                -- Apply texture and custom color
                                 local r, g, b = GetCustomPowerColor(powerToken)
                                 if not r then
                                     r, g, b = GetDefaultPowerColor(powerToken, self)
@@ -3565,7 +3528,6 @@ local function ApplyTextureChange(type, statusBar, parent, classic, party, altBa
                         end
                     end
                 else
-                    -- Custom colors, no fancy mana check
                     hookFunc = function(self)
                         local powerToken = self.powerToken or self.powerName
                         if powerToken then
@@ -3580,11 +3542,9 @@ local function ApplyTextureChange(type, statusBar, parent, classic, party, altBa
                     end
                 end
             else
-                -- Default colors only - use Blizzard's PowerBarColor table with special case handling
                 local GetDefaultPowerColor = BBF.GetDefaultPowerColor
-                
+
                 if keepFancy then
-                    -- Default colors + fancy manas check
                     hookFunc = function(self)
                         local powerToken = self.powerToken or self.powerName
                         if not powerToken or not fancyManas[powerToken] then
@@ -3595,7 +3555,6 @@ local function ApplyTextureChange(type, statusBar, parent, classic, party, altBa
                         self:SetStatusBarColor(r, g, b)
                     end
                 else
-                    -- Default colors, no fancy mana check
                     hookFunc = function(self)
                         local powerToken = self.powerToken or self.powerName
                         self:SetStatusBarTexture(manaTexture)
@@ -3606,13 +3565,10 @@ local function ApplyTextureChange(type, statusBar, parent, classic, party, altBa
                 end
             end
 
-            -- Special handling for DemonHunterSoulFragmentsBar
             if statusBar == DemonHunterSoulFragmentsBar then
-                -- Function to apply textures and colors
                 local dhFunc
-                
+
                 if useCustomColors then
-                    -- Custom color version
                     dhFunc = function(self)
                         if self.bbfUpdating then return end
                         self.bbfUpdating = true
@@ -3622,23 +3578,21 @@ local function ApplyTextureChange(type, statusBar, parent, classic, party, altBa
                         if not r then
                             r, g, b = BBF.GetDefaultPowerColor(powerToken, self)
                         end
-                        
-                        -- Apply texture to main bar
+
                         self:SetStatusBarTexture(manaTexture)
                         self:SetStatusBarDesaturated(true)
                         self:SetStatusBarColor(r, g, b)
-                        
-                        -- Apply texture and color to all animation textures
+
                         if self.Glow then
                             self.Glow:SetTexture(manaTexture)
                             self.Glow:SetVertexColor(r, g, b)
                         end
-                        
+
                         if self.Ready then
                             self.Ready:SetTexture(manaTexture)
                             self.Ready:SetVertexColor(r, g, b)
                         end
-                        
+
                         if self.Deplete then
                             self.Deplete:SetTexture(manaTexture)
                             self.Deplete:SetVertexColor(r, g, b)
@@ -3648,34 +3602,30 @@ local function ApplyTextureChange(type, statusBar, parent, classic, party, altBa
                             self.CollapsingStarDepleteFin:SetTexture(manaTexture)
                             self.CollapsingStarDepleteFin:SetVertexColor(r, g, b)
                         end
-                        
+
                         self.bbfUpdating = false
                     end
                 else
-                    -- Default color version
                     dhFunc = function(self)
                         if self.bbfUpdating then return end
                         self.bbfUpdating = true
-                        
-                        -- Get the appropriate color based on current state
+
                         local r, g, b = BBF.GetDefaultPowerColor("SOUL_FRAGMENTS", self)
-                        
-                        -- Apply texture to main bar
+
                         self:SetStatusBarTexture(manaTexture)
                         self:SetStatusBarDesaturated(true)
                         self:SetStatusBarColor(r, g, b)
-                        
-                        -- Apply texture and color to all animation textures
+
                         if self.Glow then
                             self.Glow:SetTexture(manaTexture)
                             self.Glow:SetVertexColor(r, g, b)
                         end
-                        
+
                         if self.Ready then
                             self.Ready:SetTexture(manaTexture)
                             self.Ready:SetVertexColor(r, g, b)
                         end
-                        
+
                         if self.Deplete then
                             self.Deplete:SetTexture(manaTexture)
                             self.Deplete:SetVertexColor(r, g, b)
@@ -3685,19 +3635,15 @@ local function ApplyTextureChange(type, statusBar, parent, classic, party, altBa
                             self.CollapsingStarDepleteFin:SetTexture(manaTexture)
                             self.CollapsingStarDepleteFin:SetVertexColor(r, g, b)
                         end
-                        
+
                         self.bbfUpdating = false
                     end
                 end
-                
-                -- Hook UpdateArt - this is called when the bar changes state
+
                 hooksecurefunc(statusBar, "UpdateArt", dhFunc)
 
-                -- Initial application
                 dhFunc(statusBar)
             end
-        
-            
 
             hooksecurefunc(statusBar, "EvaluateUnit", hookFunc)
             hookFunc(statusBar)
@@ -3705,82 +3651,67 @@ local function ApplyTextureChange(type, statusBar, parent, classic, party, altBa
         end
 
         if not BBF.hookedManaBarsTexture then
-            -- Determine which optimized hook function to use based on settings
-            local useCustomColors = BetterBlizzFramesDB.customHealthbarColors and 
-                                   BetterBlizzFramesDB.customPowerColors and 
+
+            local useCustomColors = BetterBlizzFramesDB.customHealthbarColors and
+                                   BetterBlizzFramesDB.customPowerColors and
                                    BetterBlizzFramesDB.customColorsUnitFrames
             local keepFancy = BetterBlizzFramesDB.changeUnitFrameManaBarTextureKeepFancy
-            
-            -- Create optimized hook function based on settings
+
             local manaBarHookFunc
-            
+
             if useCustomColors then
                 local GetCustomPowerColor = BBF.GetCustomPowerColor
                 local GetDefaultPowerColor = BBF.GetDefaultPowerColor
-                
+
                 if keepFancy then
-                    -- Custom colors + fancy manas check
                     manaBarHookFunc = function(manabar)
-                        --if not manaTextureUnits[manabar.unit] then return end
-                        
                         local _, powerToken = UnitPowerType(manabar.unit)
                         if powerToken and fancyManas[powerToken] then return end
-                        
+
                         manabar:SetStatusBarTexture(manaTexture)
-                        
+
                         local r, g, b = GetCustomPowerColor(powerToken)
                         if not r then
                             r, g, b = GetDefaultPowerColor(powerToken, manabar)
                         end
-                        
+
                         if r then
                             manabar:SetStatusBarColor(r, g, b)
                         end
                     end
                 else
-                    -- Custom colors, no fancy mana check
+
                     manaBarHookFunc = function(manabar)
-                        --if not manaTextureUnits[manabar.unit] then return end
-                        
                         manabar:SetStatusBarTexture(manaTexture)
-                        
                         local _, powerToken = UnitPowerType(manabar.unit)
                         local r, g, b = GetCustomPowerColor(powerToken)
                         if not r then
                             r, g, b = GetDefaultPowerColor(powerToken, manabar)
                         end
-                        
+
                         if r then
                             manabar:SetStatusBarColor(r, g, b)
                         end
                     end
                 end
             else
-                -- Default colors only
                 local GetDefaultPowerColor = BBF.GetDefaultPowerColor
-                
+
                 if keepFancy then
-                    -- Default colors + fancy manas check
                     manaBarHookFunc = function(manabar)
-                        --if not manaTextureUnits[manabar.unit] then return end
-                        
                         local _, powerToken = UnitPowerType(manabar.unit)
                         if powerToken and fancyManas[powerToken] then return end
-                        
+
                         manabar:SetStatusBarTexture(manaTexture)
-                        
+
                         local r, g, b = GetDefaultPowerColor(powerToken, manabar)
                         if r then
                             manabar:SetStatusBarColor(r, g, b)
                         end
                     end
                 else
-                    -- Default colors, no fancy mana check
                     manaBarHookFunc = function(manabar)
-                        --if not manaTextureUnits[manabar.unit] then return end
-                        
                         manabar:SetStatusBarTexture(manaTexture)
-                        
                         local _, powerToken = UnitPowerType(manabar.unit)
                         local r, g, b = GetDefaultPowerColor(powerToken, manabar)
                         if r then
@@ -3789,7 +3720,7 @@ local function ApplyTextureChange(type, statusBar, parent, classic, party, altBa
                     end
                 end
             end
-            
+
             hooksecurefunc("UnitFrameManaBar_UpdateType", manaBarHookFunc)
             BBF.hookedManaBarsTexture = true
         end
@@ -3798,7 +3729,6 @@ end
 
 BBF.ApplyTextureChange = ApplyTextureChange
 
--- Main function to apply texture changes to unit frames
 function BBF.HookUnitFrameTextures()
     local db = BetterBlizzFramesDB
     local classicFramesLoaded = C_AddOns.IsAddOnLoaded("ClassicFrames")
@@ -3808,7 +3738,6 @@ function BBF.HookUnitFrameTextures()
     end
 
     if classicFramesLoaded then
-        -- ClassicFrames is enabled: Modify ClassicFrames unit frames only
         if db.changeUnitFrameHealthbarTexture then
             ApplyTextureChange("health", CfPlayerFrameHealthBar)
             ApplyTextureChange("health", CfTargetFrameHealthBar, TargetFrame)
@@ -3829,7 +3758,6 @@ function BBF.HookUnitFrameTextures()
             ApplyTextureChange("mana", CfFocusFrameManaBar, nil, true)
         end
 
-        -- Apply class color override if enabled
         if not db.classColorFrames then
             local healthbars = {
                 CfPlayerFrameHealthBar,
@@ -3842,7 +3770,6 @@ function BBF.HookUnitFrameTextures()
             end
         end
     else
-        -- ClassicFrames is NOT enabled: Modify Blizzard's default unit frames
         if db.changeUnitFrameHealthbarTexture then
             ApplyTextureChange("health", PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer.HealthBar)
             ApplyTextureChange("health", PetFrame.healthbar, PetFrame)
@@ -3878,7 +3805,7 @@ function BBF.HookUnitFrameTextures()
 
             ApplyTextureChange("mana", PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar)
             ApplyTextureChange("mana", AlternatePowerBar, nil, nil, nil, true)
-            local class = select(2, UnitClass("player"))
+            local class = UnitClassBase("player")
             if class == "MONK" and MonkStaggerBar then
                 ApplyTextureChange("mana", MonkStaggerBar, nil, nil, nil, true)
             elseif class == "EVOKER" and EvokerEbonMightBar then
@@ -4296,29 +4223,10 @@ function BBF.SymmetricPlayerFrame()
 
 
     local playerTex = PlayerFrame.PlayerFrameContainer.FrameTexture
-    if BetterBlizzFramesDB.hideUnitFrameShadow then
-        local targetTex = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Target-PortraitOn-NoShadow"
-        playerTex:SetTexture(targetTex)
-        playerTex:SetSize(192, 67)
-        playerTex:SetTexCoord(1,0,0,1)
-        hooksecurefunc(playerTex, "SetAtlas", function(self)
-            self:SetTexture(targetTex)
-            self:SetSize(192, 67)
-            self:SetTexCoord(1,0,0,1)
-        end)
-    else
-        playerTex:SetAtlas("UI-HUD-UnitFrame-Target-PortraitOn")
-        playerTex:SetSize(192, 67)
-        playerTex:SetTexCoord(1,0,0,1)
-        hooksecurefunc(playerTex, "SetAtlas", function(self)
-            if self.changing then return end
-            self.changing = true
-            self:SetAtlas("UI-HUD-UnitFrame-Target-PortraitOn")
-            self:SetSize(192, 67)
-            self:SetTexCoord(1,0,0,1)
-            self.changing = false
-        end)
-    end
+    BBF.SetMirrorPlayerFrameTexture()
+    hooksecurefunc(playerTex, "SetAtlas", function()
+        BBF.SetMirrorPlayerFrameTexture()
+    end)
 
     local playerFlash = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.StatusTexture
     hooksecurefunc(playerFlash, "SetAtlas", function(self)
@@ -4527,7 +4435,7 @@ function BBF.AddBackgroundTextureToUnitFrames(frame)
         bg:SetVertexColor(unpack(manaColor))
         bg:Show()
     end
-    
+
     -- Handle alternate power bars (use mana color)
     if isAltBar then
         local bg = frame.BBFBackground
@@ -4564,9 +4472,9 @@ function BBF.UnitFrameBackgroundTexture()
     BBF.AddBackgroundTextureToUnitFrames(TargetFrameToT, true)
     BBF.AddBackgroundTextureToUnitFrames(FocusFrameToT, true)
     BBF.AddBackgroundTextureToUnitFrames(PetFrame, true)
-    
+
     -- Add background to alternate power bars (use mana color)
-    local _, class = UnitClass("player")
+    local class = UnitClassBase("player")
     if class == "MONK" and MonkStaggerBar then
         BBF.AddBackgroundTextureToUnitFrames(MonkStaggerBar)
     elseif class == "EVOKER" and EvokerEbonMightBar then
@@ -4692,7 +4600,6 @@ end
 
 
 function BBF.FixStupidBlizzPTRShit()
-    --if BBF.isMidnight then return end
     if BBF.ocdFixActive then return end
     if InCombatLockdown() then return end
     BBF.ocdFixActive = true
@@ -4854,36 +4761,45 @@ function BBF.FixStupidBlizzPTRShit()
         -- --TargetFrame.TargetFrameContent.TargetFrameContentMain.Name:ClearAllPoints()
         -- --TargetFrame.TargetFrameContent.TargetFrameContentMain.Name:SetPoint(a, b, c, d, 99)
         -- TargetFrame.TargetFrameContent.TargetFrameContentMain.HealthBarsContainer.HealthBarMask:SetWidth(129)
-        TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar:SetSize(136, 10)
-        TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.ManaBarMask:SetSize(258, 16)
-        local point, relativeTo, relativePoint, xOffset, yOffset = TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar:GetPoint()
-        TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar:SetPoint(point, relativeTo, relativePoint, 9, yOffset)
+        if not BBF.HasNoPortrait("target") then
+            TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar:SetSize(136, 10)
+            TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.ManaBarMask:SetSize(258, 16)
+            local point, relativeTo, relativePoint, xOffset, yOffset = TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar:GetPoint()
+            TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar:SetPoint(point, relativeTo, relativePoint, 9, yOffset)
+        end
         --local p, r, rr, x, y = TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.RightText:GetPoint()
         TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.RightText:SetPoint("RIGHT", TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar, "RIGHT", -14, 0)
         --local a, b, c, d, e = TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.LeftText:GetPoint()
         TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.LeftText:SetPoint("LEFT", TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar, "LEFT", 3, 0)
         FocusFrame.TargetFrameContent.TargetFrameContentMain.HealthBarsContainer.HealthBarMask:SetWidth(129)
-        FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar:SetSize(136, 10)
-        FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.ManaBarMask:SetSize(258, 16)
-        local point, relativeTo, relativePoint, xOffset, yOffset = FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar:GetPoint()
-        FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar:SetPoint(point, relativeTo, relativePoint, 9, yOffset)
+        if not BBF.HasNoPortrait("focus") then
+            FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar:SetSize(136, 10)
+            FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.ManaBarMask:SetSize(258, 16)
+            local point, relativeTo, relativePoint, xOffset, yOffset = FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar:GetPoint()
+            FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar:SetPoint(point, relativeTo, relativePoint, 9, yOffset)
+        end
         --local p, r, rr, x, y = FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.RightText:GetPoint()
         FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.RightText:SetPoint("RIGHT", FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar, "RIGHT", -14, 0)
         --local a, b, c, d, e = FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.LeftText:GetPoint()
         FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar.LeftText:SetPoint("LEFT", FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar, "LEFT", 3, 0)
 
 
-        local a, b, c, d, e = TargetFrame.totFrame.HealthBar:GetPoint()
-        TargetFrame.totFrame.HealthBar:SetPoint(a,b,c,-5,-5)
-        TargetFrame.totFrame.HealthBar:SetSize(71, 13)
+        BBF.ocdTotAdjusted = true
+        if not BetterBlizzFramesDB.hideUnitFrameTotMana then
+            local a, b, c, d, e = TargetFrame.totFrame.HealthBar:GetPoint()
+            TargetFrame.totFrame.HealthBar:SetPoint(a,b,c,-5,-5)
+            TargetFrame.totFrame.HealthBar:SetSize(71, 13)
+        end
         TargetFrame.totFrame.ManaBar:SetSize(76, 8)
         local a, b, c, d, e = TargetFrame.totFrame.ManaBar:GetPoint()
         TargetFrame.totFrame.ManaBar:SetPoint(a,b,c,-5,3)
         TargetFrame.totFrame.ManaBar.ManaBarMask:SetWidth(130)
         TargetFrame.totFrame.ManaBar.ManaBarMask:SetHeight(17)
-        local a, b, c, d, e = FocusFrame.totFrame.HealthBar:GetPoint()
-        FocusFrame.totFrame.HealthBar:SetPoint(a,b,c,-5,-5)
-        FocusFrame.totFrame.HealthBar:SetSize(71, 13)
+        if not BetterBlizzFramesDB.hideUnitFrameTotMana then
+            local a, b, c, d, e = FocusFrame.totFrame.HealthBar:GetPoint()
+            FocusFrame.totFrame.HealthBar:SetPoint(a,b,c,-5,-5)
+            FocusFrame.totFrame.HealthBar:SetSize(71, 13)
+        end
         FocusFrame.totFrame.ManaBar:SetSize(77, 10)
         local a, b, c, d, e = FocusFrame.totFrame.ManaBar:GetPoint()
         FocusFrame.totFrame.ManaBar:SetPoint(a,b,c,-5,3)
@@ -4943,11 +4859,9 @@ function BBF.MoveableFPSCounter(reset, font)
         FramerateFrame.Label:SetFont(f,s,newOutline)
     end
     if FramerateFrame.moveable then return end
-    -- Make the frame movable
     FramerateFrame:SetMovable(true)
     FramerateFrame:EnableMouse(true)
     FramerateFrame:RegisterForDrag("LeftButton")
-    --FramerateFrame:SetFrameStrata("FULLSCREEN_DIALOG")
 
     -- Restore position if saved
     local pos = BetterBlizzFramesDB.fpsFramePos
@@ -4971,16 +4885,12 @@ function BBF.MoveableFPSCounter(reset, font)
 
     local BBF_FramerateFrame = CreateFrame("Frame")
     FramerateFrame:SetParent(BBF_FramerateFrame)
-
-    -- Drag handlers
     FramerateFrame:SetScript("OnDragStart", function(self)
         self:StartMoving()
     end)
-
     FramerateFrame:SetScript("OnDragStop", function(self)
         self:StopMovingOrSizing()
 
-        -- Save new position
         local point, _, relativePoint, xOfs, yOfs = self:GetPoint()
         BetterBlizzFramesDB.fpsFramePos = {
             point = point,
@@ -5396,6 +5306,15 @@ First:SetScript("OnEvent", function(_, event, addonName)
             BetterBlizzFramesDB[key] = nil
         end
 
+        if BetterBlizzFramesDB.moveResource ~= nil then
+            if BetterBlizzFramesDB.moveResource and BetterBlizzFramesDB.moveResourceStackPos then
+                for movedClass in pairs(BetterBlizzFramesDB.moveResourceStackPos) do
+                    BetterBlizzFramesDB["moveResource" .. movedClass] = true
+                end
+            end
+            BetterBlizzFramesDB.moveResource = nil
+        end
+
         if not BetterBlizzFramesDB.midnightAuraMaxReset then
             BetterBlizzFramesDB.maxTargetBuffs = defaultSettings.maxTargetBuffs
             BetterBlizzFramesDB.maxTargetDebuffs = defaultSettings.maxTargetDebuffs
@@ -5493,6 +5412,8 @@ First:SetScript("OnEvent", function(_, event, addonName)
         end)
         BBF.ClassicFrames()
         BBF.noPortraitModes()
+        BBF.UpdateDefaultPetFrameMana()
+        BBF.UpdateDefaultTotFrameMana()
         BBF.UpdateBigPlayerHealthbar()
         BBF.PlayerElite(BetterBlizzFramesDB.playerEliteFrameMode)
         BBF.HidePlayerFrame()
@@ -5501,10 +5422,15 @@ First:SetScript("OnEvent", function(_, event, addonName)
         BBF.HookCastbars()
         BBF.HookCooldownManagerTweaks()
         BBF.EnableQueueTimer()
+        BBF.CreateMaelstromWeaponBar()
+        BBF.CreateTipOfSpearBar()
         ScaleClassResource()
+        BBF.PrdResourceCaller()
         BBF.SurrenderNotLeaveArena()
         BBF.DruidBlueComboPoints()
         BBF.DruidAlwaysShowCombos()
+        BBF.ShamanLegacyMaelstrom()
+        BBF.HunterLegacyTipOfSpear()
         BBF.RemoveAddonCategories()
         BBF.ExternalDefensivesClickthrough()
         if BetterBlizzFramesDB.healerIndicator and BetterBlizzFramesDB.healerIndicatorPortrait and BetterBlizzFramesDB.classPortraitsUseSpecIcons then
@@ -5537,6 +5463,7 @@ First:SetScript("OnEvent", function(_, event, addonName)
             BBF.HidePersonalManabarFX()
             BBF.TexturePRD()
             BBF.LegacyPRDLook()
+            BBF.FixPrdRogueComboCentering()
         end)
 
         C_Timer.After(1, function()

@@ -1995,7 +1995,7 @@ local function GetCastbarTargetName(unit)
 
     local class = UnitSpellTargetClass(unit)
     if not class then
-        _, class = UnitClass(unit .. "target")
+        class = UnitClassBase(unit .. "target")
     end
     return name, class
 end
@@ -2120,7 +2120,7 @@ function BBF.HookCastbars()
                 if (event == "UNIT_SPELLCAST_INTERRUPTED" or event == "UNIT_SPELLCAST_CHANNEL_STOP") and interruptedByOrCastBarID ~= nil then
                     self.wasKicked = true
                 end
-                if not self.wasKicked then
+                if not self.wasKicked or BetterBlizzFramesDB.quickHideCastbarsAlways then
                     self:Hide()
                 end
             elseif CastStartEvents[event] then
@@ -2132,7 +2132,7 @@ function BBF.HookCastbars()
                 if (event == "UNIT_SPELLCAST_INTERRUPTED" or event == "UNIT_SPELLCAST_CHANNEL_STOP") and interruptedByOrCastBarID ~= nil then
                     self.wasKicked = true
                 end
-                if not self.wasKicked then
+                if not self.wasKicked or BetterBlizzFramesDB.quickHideCastbarsAlways then
                     self:Hide()
                 end
             elseif CastStartEvents[event] then

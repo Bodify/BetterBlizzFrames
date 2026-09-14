@@ -2,7 +2,7 @@ local L = BBF.L
 local UnitIsFriend = UnitIsFriend
 local UnitIsEnemy = UnitIsEnemy
 local UnitIsPlayer = UnitIsPlayer
-local UnitClass = UnitClass
+local UnitClassBase = UnitClassBase
 
 local LSM = LibStub("LibSharedMedia-3.0")
 
@@ -380,6 +380,20 @@ function BBF.ResetClassColorReputation(frame, unit)
     end
 end
 
+function BBF.UpdateRaidFrameShamanColors()
+    if not BBF.isEra then return end
+    for i = 1, 40 do
+        local frame = _G["CompactRaidFrame"..i]
+        if frame and frame.unit then
+            local class = UnitClassBase(frame.unit)
+            if class == "SHAMAN" then
+                local color = BBF.GetClassColor(class)
+                frame.healthBar:SetStatusBarColor(color.r, color.g, color.b, 1)
+            end
+        end
+    end
+end
+
 function BBF.HookHealthbarColors()
     if not healthbarsHooked and classColorsOn then
         hooksecurefunc("UnitFrameHealthBar_Update", function(self, unit)
@@ -415,16 +429,7 @@ function BBF.HookHealthbarColors()
             end
         end)
 
-        for i = 1, 40 do
-            local frame = _G["CompactRaidFrame"..i]
-            if frame and frame.unit then
-                local class = UnitClassBase(frame.unit)
-                if class == "SHAMAN" then
-                    local color = BBF.GetClassColor(class)
-                    frame.healthBar:SetStatusBarColor(color.r, color.g, color.b, 1)
-                end
-            end
-        end
+        BBF.UpdateRaidFrameShamanColors()
         raidClassColorsHooked = true
     end
 end

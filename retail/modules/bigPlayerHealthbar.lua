@@ -52,6 +52,29 @@ function BBF.SetMirrorPlayerHealthbarMask()
     mask:SetSize(129, 32)
 end
 
+function BBF.SetMirrorPlayerFrameTexture()
+    if not BetterBlizzFramesDB.symmetricPlayerFrame then return end
+    if BetterBlizzFramesDB.classicFrames then return end
+    if BBF.HasNoPortrait("player") then return end
+    local frameTexture = PlayerFrame.PlayerFrameContainer.FrameTexture
+    if frameTexture.changing then return end
+    frameTexture.changing = true
+    if BetterBlizzFramesDB.bigPlayerHealthbar then
+        if BetterBlizzFramesDB.hideUnitFrameShadow then
+            frameTexture:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Target-PortraitOn-NoShadow-NoMana")
+        else
+            frameTexture:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Target-PortraitOn-NoMana")
+        end
+    elseif BetterBlizzFramesDB.hideUnitFrameShadow then
+        frameTexture:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Target-PortraitOn-NoShadow")
+    else
+        frameTexture:SetAtlas("UI-HUD-UnitFrame-Target-PortraitOn")
+    end
+    frameTexture:SetSize(192, 67)
+    frameTexture:SetTexCoord(1, 0, 0, 1)
+    frameTexture.changing = false
+end
+
 local function GrowBar()
     local hpContainer, healthBar, mask = GetHealthBits()
     if BetterBlizzFramesDB.classicFrames then
@@ -81,6 +104,7 @@ local function GrowBar()
             hpContainer:SetSize(width, containerHeight)
             healthBar:SetSize(width, barHeight)
             BBF.SetMirrorPlayerHealthbarMask()
+            BBF.SetMirrorPlayerFrameTexture()
         else
             mask:SetAtlas("plunderstorm-UI-HUD-UnitFrame-Player-PortraitOn-Bar-Health-Mask-2x")
             mask:SetPoint("TOPLEFT", healthBar, "TOPLEFT", -2, 0)
@@ -118,6 +142,7 @@ local function RestoreBar()
             hpContainer:SetSize(width, containerHeight)
             healthBar:SetSize(width, barHeight)
             BBF.SetMirrorPlayerHealthbarMask()
+            BBF.SetMirrorPlayerFrameTexture()
             return
         end
         mask:SetAtlas("UI-HUD-UnitFrame-Player-PortraitOn-Bar-Health-Mask", true)

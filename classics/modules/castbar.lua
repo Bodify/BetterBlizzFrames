@@ -1122,7 +1122,7 @@ local function GetCastbarTargetName(unit)
 
     local class = UnitSpellTargetClass(unit)
     if not class then
-        _, class = UnitClass(unit .. "target")
+        class = UnitClassBase(unit .. "target")
     end
     return name, class
 end

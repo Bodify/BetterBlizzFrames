@@ -177,7 +177,7 @@ function BBF.FancyPRDAltTexture()
     local db = BetterBlizzFramesDB
     local powerBar = prd.PowerBar
     local altPowerBar = prd.AlternatePowerBar
-    local _, playerClass = UnitClass("player")
+    local playerClass = UnitClassBase("player")
 
     if not BBF.fancyPRDColorHooked then
         hooksecurefunc(powerBar, "SetStatusBarColor", function(self, r, g, b, a)
@@ -548,4 +548,152 @@ function BBF.LegacyPRDLook()
         end)
     end)
     BBF.FancyPRDAltTexture()
+end
+
+local rogueCenterWatcher
+
+function BBF.FixPrdRogueComboCentering()
+    if UnitClassBase("player") ~= "ROGUE" then return end
+
+    if BetterBlizzFramesDB.prdResourceAdjust then return end
+    if BBP and BetterBlizzPlatesDB and not BetterBlizzPlatesDB.disablePrdMovement then return end
+
+    local prd = PersonalResourceDisplayFrame
+    if not prd then return end
+
+    if not rogueCenterWatcher then
+        rogueCenterWatcher = CreateFrame("Frame")
+        rogueCenterWatcher:RegisterEvent("TRAIT_CONFIG_UPDATED")
+        rogueCenterWatcher:RegisterEvent("PLAYER_ENTERING_WORLD")
+        rogueCenterWatcher:RegisterUnitEvent("UNIT_MAXPOWER", "player")
+        rogueCenterWatcher:SetScript("OnEvent", function()
+            BBF.FixPrdRogueComboCentering()
+        end)
+        hooksecurefunc(prd, "SetupClassBar", BBF.FixPrdRogueComboCentering)
+    end
+
+    local classFrame = prd.classFrame
+    local container = prd.ClassFrameContainer
+    if not classFrame or not container or classFrame:IsForbidden() then return end
+
+    local maxPoints = classFrame.maxUsablePoints
+        or (RogueComboPointBarFrame and RogueComboPointBarFrame.maxUsablePoints)
+        or 5
+    local xOfs = maxPoints > 5 and (maxPoints - 5) * 10 or 0
+
+    if classFrame.bbfComboCenterOffset == xOfs then return end
+    classFrame.bbfComboCenterOffset = xOfs
+
+    classFrame:ClearAllPoints()
+    classFrame:SetPoint("CENTER", container, "CENTER", xOfs, 0)
+end
+
+local prdResourceUpdater, prdResourceHooked, prdResourceApplied, prdResourceUpdating
+
+local function RestorePrdResourceFrame(frame, xOfs, yOfs)
+    if frame.bbfPrdRestore then
+        frame.bbfPrdRestore(xOfs, yOfs)
+        return
+    end
+
+    local prd = PersonalResourceDisplayFrame
+    local container = prd and prd.ClassFrameContainer
+    if not container then return end
+
+    local centerOfs = 0
+    if UnitClassBase("player") == "ROGUE" then
+        local maxPoints = frame.maxUsablePoints
+            or (RogueComboPointBarFrame and RogueComboPointBarFrame.maxUsablePoints)
+            or 5
+        centerOfs = maxPoints > 5 and (maxPoints - 5) * 10 or 0
+    end
+
+    frame:SetParent(container)
+    frame:ClearAllPoints()
+    frame:SetPoint("CENTER", container, "CENTER", centerOfs + xOfs, yOfs)
+end
+
+function BBF.UpdatePrdResource()
+    if prdResourceUpdating then return end
+
+    local prd = PersonalResourceDisplayFrame
+    local frame = (prd and prd.classFrame) or BBF.MaelstromWeaponPrdBar or BBF.TipOfSpearPrdBar
+        or (BBP and (BBP.MaelstromBar or BBP.TipOfSpearBar))
+    if not frame or frame:IsForbidden() then return end
+
+    local db = BetterBlizzFramesDB
+
+    if not db.prdResourceAdjust then
+        if prdResourceApplied then
+            prdResourceApplied = false
+            prdResourceUpdating = true
+            frame:SetScale(1)
+            frame:SetFrameStrata("MEDIUM")
+            RestorePrdResourceFrame(frame, 0, 0)
+            prdResourceUpdating = false
+            if BBP and BBP.TargetResourceUpdater then
+                BBP.TargetResourceUpdater()
+            end
+        end
+        return
+    end
+
+    prdResourceApplied = true
+    prdResourceUpdating = true
+
+    local xOfs = db.prdResourceXPos or 0
+    local yOfs = db.prdResourceYPos or 0
+    frame:SetScale(db.prdResourceScale or 1)
+
+    local unitFrame
+    if db.prdResourceOnTarget then
+        local nameplate = C_NamePlate.GetNamePlateForUnit("target", issecure())
+        unitFrame = nameplate and nameplate.UnitFrame
+        if unitFrame and (unitFrame:IsForbidden() or not unitFrame.healthBar) then
+            unitFrame = nil
+        end
+    end
+
+    if unitFrame then
+        frame:SetParent(UIParent)
+        frame:SetFrameStrata("HIGH")
+        frame:ClearAllPoints()
+        PixelUtil.SetPoint(frame, "BOTTOM", unitFrame.healthBar, "TOP", xOfs, yOfs + 30)
+    else
+        frame:SetFrameStrata("MEDIUM")
+        RestorePrdResourceFrame(frame, xOfs, yOfs)
+    end
+
+    prdResourceUpdating = false
+end
+
+function BBF.PrdResourceCaller()
+    if not prdResourceHooked then
+        local prd = PersonalResourceDisplayFrame
+        if not prd then return end
+        prdResourceHooked = true
+
+        if prd.UpdateAdditionalBarAnchors then
+            hooksecurefunc(prd, "UpdateAdditionalBarAnchors", function()
+                BBF.UpdatePrdResource()
+            end)
+        end
+
+        if prd.SetupClassBar then
+            hooksecurefunc(prd, "SetupClassBar", function()
+                BBF.UpdatePrdResource()
+            end)
+        end
+
+        prdResourceUpdater = CreateFrame("Frame")
+        prdResourceUpdater:RegisterEvent("PLAYER_ENTERING_WORLD")
+        prdResourceUpdater:RegisterEvent("PLAYER_TARGET_CHANGED")
+        prdResourceUpdater:RegisterEvent("NAME_PLATE_UNIT_ADDED")
+        prdResourceUpdater:RegisterEvent("NAME_PLATE_UNIT_REMOVED")
+        prdResourceUpdater:SetScript("OnEvent", function()
+            BBF.UpdatePrdResource()
+        end)
+    end
+
+    BBF.UpdatePrdResource()
 end

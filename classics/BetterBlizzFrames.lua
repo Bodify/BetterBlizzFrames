@@ -65,6 +65,7 @@ local defaultSettings = {
     targetEnlargeAuraFriendly = true,
     focusEnlargeAuraEnemy = true,
     focusEnlargeAuraFriendly = true,
+    colorShamansBlue = true,
 
     -- Absorb Indicator
     absorbIndicatorScale = 1,
@@ -570,7 +571,7 @@ local function HookClassComboPoints()
 end
 
 local function ScaleClassResource()
-    local _, playerClass = UnitClass("player")
+    local playerClass = UnitClassBase("player")
     local key = "classResource" .. playerClass .. "Scale"
     local scale = BetterBlizzFramesDB[key] or 1.0
 
@@ -864,7 +865,7 @@ end
 
 local function DisableClickForClassSpecificFrame()
     if not cataReady then return end
-    local _, playerClass = UnitClass("player")
+    local playerClass = UnitClassBase("player")
     if playerClass == "WARLOCK" and WarlockPowerFrame then
         hooksecurefunc(WarlockPowerBar, "UpdatePower", DisableClickForWarlockPowerFrame)
     elseif playerClass == "ROGUE" and RogueComboPointBarFrame then
@@ -919,10 +920,10 @@ local function CheckForResourceConflicts()
     return false
 end
 function BBF.SetResourcePosition()
-    if not BetterBlizzFramesDB.moveResource then return end
     if CheckForResourceConflicts() then return end
 
-    local _, class = UnitClass("player")
+    local class = UnitClassBase("player")
+    if not BetterBlizzFramesDB["moveResource" .. class] then return end
     local frame = resourceFrames[class]
     if not frame then return end
 
@@ -956,7 +957,7 @@ function BBF.SetResourcePosition()
     end
 end
 function BBF.ResetResourcePosition()
-    local _, class = UnitClass("player")
+    local class = UnitClassBase("player")
     local frame = resourceFrames[class]
     if not frame or not frame.ogPoint then return end
 
@@ -967,7 +968,7 @@ end
 function BBF.EnableResourceMovement()
     if CheckForResourceConflicts() then return end
 
-    local _, class = UnitClass("player")
+    local class = UnitClassBase("player")
     local frame = resourceFrames[class]
     if not frame then return end
 
@@ -1285,8 +1286,8 @@ local legacyComboPowerTypes = {
 }
 
 local function GetLegacyComboStartIndex()
-    local _, class = UnitClass("player") -- class will be "PALADIN", "MONK", etc.
-    local classKey = class:sub(1, 1):upper() .. class:sub(2):lower() -- "Paladin"
+    local class = UnitClassBase("player")
+    local classKey = class:sub(1, 1):upper() .. class:sub(2):lower()
 
     if BetterBlizzFramesDB["ignore" .. classKey .. "LegacyCombos"] then return nil end
 
@@ -1305,7 +1306,7 @@ function BBF.ClassColorLegacyCombos()
     local startIndex = GetLegacyComboStartIndex()
     if not startIndex then return end
 
-    local _, class = UnitClass("player")
+    local class = UnitClassBase("player")
     local powerType = legacyComboPowerTypes[class]
     if not powerType then return end
 
@@ -1313,7 +1314,6 @@ function BBF.ClassColorLegacyCombos()
     local comboIndex = startIndex
     local maxPoints = UnitPowerMax("player", powerType)
 
-    -- Shared baseline config (Monk-style)
     local baseConfig = {
         texture = "AncientMana",
         texCoord = {0, 1, 0, 1},
@@ -1322,7 +1322,6 @@ function BBF.ClassColorLegacyCombos()
         color = {1, 1, 1}, -- Monk green
     }
 
-    -- Optional class-specific color overrides
     local classOverrides = {
         WARLOCK  = { color = {1, 0.388, 0.898} },
         PALADIN  = { color = {1, 0.961, 0} },
@@ -1344,7 +1343,6 @@ function BBF.ClassColorLegacyCombos()
     local specID = C_SpecializationInfo.GetSpecialization() and C_SpecializationInfo.GetSpecializationInfo(C_SpecializationInfo.GetSpecialization())
     local config = {}
 
-    -- Use class spec override if available
     local classConfig = classOverrides[class]
     if classConfig then
         if classConfig.specs and specID and classConfig.specs[specID] then
@@ -1354,7 +1352,6 @@ function BBF.ClassColorLegacyCombos()
         end
     end
 
-    -- Merge with baseline
     setmetatable(config, { __index = baseConfig })
 
     if class == "DEATHKNIGHT" then
@@ -1386,7 +1383,7 @@ function BBF.GenericLegacyComboSupport()
     if not BetterBlizzFramesDB.enableLegacyComboPointsMulticlass then return end
     if C_CVar.GetCVar("comboPointLocation") ~= "1" then return end
     if not ComboFrame or not ComboFrame.ComboPoints then return end
-    local _, class = UnitClass("player")
+    local class = UnitClassBase("player")
     local supported = {
         MONK = true, DEATHKNIGHT = true, EVOKER = true,
         WARLOCK = true, PALADIN = true, MAGE = true,
@@ -1619,7 +1616,7 @@ function BBF.AlwaysShowLegacyComboPoints()
     if not BetterBlizzFramesDB.alwaysShowLegacyComboPoints then return end
     if BetterBlizzFramesDB.instantComboPoints then return end
     if BBF.AlwaysShowLegacyComboPoints then return end
-    local _, class = UnitClass("player")
+    local class = UnitClassBase("player")
     if class ~= "ROGUE" and class ~= "DRUID" then return end
     local function UpdateLegacyComboFrame()
         local frame = ComboFrame
@@ -1663,7 +1660,7 @@ function BBF.ApplyLegacyBlueCombos(isEnabled)
                 point.Highlight:SetPoint("TOPLEFT", point, "TOPLEFT", -1, 1.5)
                 point.charged = true
             else
-                point.Highlight:SetTexture(130973) -- original texture
+                point.Highlight:SetTexture(130973)
                 point.Highlight:SetTexCoord(0.375, 0.5625, 0, 1)
                 point.Highlight:SetSize(8, 16)
                 point.Highlight:SetPoint("TOPLEFT", point, "TOPLEFT", 2, 0)
@@ -1682,7 +1679,7 @@ end
 function BBF.LegacyBlueCombos()
     if not BetterBlizzFramesDB.legacyBlueComboPoints then return end
     if C_CVar.GetCVar("comboPointLocation") ~= "1" then return end
-    local _, class = UnitClass("player")
+    local class = UnitClassBase("player")
     if class == "ROGUE" then
         local function BlueLegacyComboRogue()
             local frame = ComboFrame
@@ -1725,8 +1722,7 @@ end
 function BBF.InstantComboPoints()
     if not BetterBlizzFramesDB.instantComboPoints then return end
     if BBF.InstantComboPointsActive then return end
-    -- Call the function for each frame
-    local _, class = UnitClass("player")
+    local class = UnitClassBase("player")
 
     local function UpdateRogueComboPoints(self)
         if not self or self:IsForbidden() then return end
@@ -1737,12 +1733,10 @@ function BBF.InstantComboPoints()
             local isFull = i <= comboPoints
             local isCharged = tContains(chargedPowerPoints, i)
 
-            -- Stop all animations to enforce instant update
             for _, transitionAnim in ipairs(point.transitionAnims) do
                 transitionAnim:Stop()
             end
 
-            -- Directly set textures and visibility
             point.IconUncharged:SetAlpha(isFull and not isCharged and 1 or 0)
             point.IconCharged:SetAlpha(isFull and isCharged and 1 or 0)
             point.BGActive:SetAlpha(isFull and 1 or 0)
@@ -1750,17 +1744,15 @@ function BBF.InstantComboPoints()
             point.FXUncharged:SetAlpha(isFull and not isCharged and 1 or 0)
             point.FXCharged:SetAlpha(isFull and isCharged and 1 or 0)
 
-            -- ChargedFrame logic:
             if isCharged then
                 if isFull then
-                    point.ChargedFrameActive:SetAlpha(1)  -- Show Active only if both charged and filled
-                    point.ChargedFrameInactive:SetAlpha(0) -- Hide Inactive since it's full
+                    point.ChargedFrameActive:SetAlpha(1)
+                    point.ChargedFrameInactive:SetAlpha(0)
                 else
-                    point.ChargedFrameActive:SetAlpha(0)  -- Hide Active since no combo point is in it
-                    point.ChargedFrameInactive:SetAlpha(1) -- Show Inactive since it's charged but empty
+                    point.ChargedFrameActive:SetAlpha(0)
+                    point.ChargedFrameInactive:SetAlpha(1)
                 end
             else
-                -- If not charged, hide both charged frames
                 point.ChargedFrameActive:SetAlpha(0)
                 point.ChargedFrameInactive:SetAlpha(0)
             end
@@ -1814,11 +1806,9 @@ function BBF.InstantComboPoints()
         for i, point in ipairs(self.classResourceButtonTable) do
             local isFull = i <= comboPoints
 
-            -- Stop animations for instant update
             if point.activateAnim then point.activateAnim:Stop() end
             if point.deactivateAnim then point.deactivateAnim:Stop() end
 
-            -- Directly set textures and visibility
             point.Point_Icon:SetAlpha(isFull and 1 or 0)
             point.BG_Active:SetAlpha(isFull and 1 or 0)
             point.BG_Inactive:SetAlpha(isFull and 0 or 1)
@@ -1834,11 +1824,9 @@ function BBF.InstantComboPoints()
         for i, point in ipairs(self.classResourceButtonTable) do
             local isFull = i <= numChi
 
-            -- Stop animations for instant updates
             if point.activate then point.activate:Stop() end
             if point.deactivate then point.deactivate:Stop() end
 
-            -- Directly update textures and visibility
             point.Chi_Icon:SetAlpha(isFull and 1 or 0)
             point.Chi_BG_Active:SetAlpha(isFull and 1 or 0)
             point.Chi_BG:SetAlpha(isFull and 0 or 1)
@@ -1856,11 +1844,9 @@ function BBF.InstantComboPoints()
         for i, point in ipairs(self.classResourceButtonTable) do
             local isFull = i <= numCharges
 
-            -- Stop animations for instant updates
             if point.activateAnim then point.activateAnim:Stop() end
             if point.deactivateAnim then point.deactivateAnim:Stop() end
 
-            -- Directly update textures and visibility
             point.ArcaneIcon:SetAlpha(isFull and 1 or 0)
             point.ArcaneBG:SetAlpha(isFull and 1 or 0)
             point.Orb:SetAlpha(isFull and 0 or 1)
@@ -1884,19 +1870,16 @@ function BBF.InstantComboPoints()
         for i = 1, maxHolyPower do
             local rune = self["rune"..i]
             if rune then
-                -- Stop all animations
                 if rune.activateAnim then rune.activateAnim:Stop() end
                 if rune.readyAnim then rune.readyAnim:Stop() end
                 if rune.readyLoopAnim then rune.readyLoopAnim:Stop() end
                 if rune.depleteAnim then rune.depleteAnim:Stop() end
 
-                -- Hide all FX
                 if rune.FX then rune.FX:SetAlpha(0) end
                 if rune.Blur then rune.Blur:SetAlpha(0) end
                 if rune.Glow then rune.Glow:SetAlpha(0) end
                 if rune.DepleteFlipbook then rune.DepleteFlipbook:SetAlpha(0) end
 
-                -- Set active state
                 if i <= numHolyPower then
                     if rune.ActiveTexture then rune.ActiveTexture:SetAlpha(1) end
                 else
@@ -1905,13 +1888,11 @@ function BBF.InstantComboPoints()
             end
         end
 
-        -- Stop main bar animations
         self.activateAnim:Stop()
         self.readyAnim:Stop()
         self.readyLoopAnim:Stop()
         self.depleteAnim:Stop()
 
-        -- Update bar visuals
         self.ActiveTexture:SetAlpha(numHolyPower > 0 and 1 or 0)
         self.ThinGlow:SetAlpha(numHolyPower > 2 and 1 or 0)
         self.Glow:SetAlpha(numHolyPower == 5 and 1 or 0)
@@ -2097,24 +2078,22 @@ function BBF.UpdateCustomTextures()
 end
 
 
--- Helper function to change the texture and retain the original draw layer
+
 local function ApplyTextureChange(type, statusBar, parent)
     if not statusBar.GetStatusBarTexture then
         statusBar:SetTexture(texture)
         return
     end
-    -- Get the original texture and draw layer
+
     local originalTexture = statusBar:GetStatusBarTexture()
     local originalLayer = originalTexture:GetDrawLayer()
 
-    -- Change the texture
     statusBar:SetStatusBarTexture(type == "health" and texture or manaTexture)
     statusBar.bbfChangedTexture = true
 
     -- Restore the original draw layer
     originalTexture:SetDrawLayer(originalLayer)
 
-    -- Hook SetStatusBarTexture to ensure the texture remains consistent
     if parent and type == "health" then
         if not parent.hookedHealthBarsTexture then
             -- hooksecurefunc(parent, "Update", function()
@@ -2124,9 +2103,7 @@ local function ApplyTextureChange(type, statusBar, parent)
             parent.hookedHealthBarsTexture = true
         end
     elseif type == "mana" then
-        -- Function to get the color of the unit's current power type and apply it
         local function SetUnitPowerColor(manabar, unit)
-            -- Retrieve the unit's power type
             local _, powerToken = UnitPowerType(unit)
             -- Use the WoW PowerBarColor table to get the color
             local color = PowerBarColor[powerToken]
@@ -2151,7 +2128,6 @@ local function GetDefaultPartyMemberFrame(i)
     return (PartyFrame and PartyFrame["MemberFrame"..i]) or _G["PartyMemberFrame"..i]
 end
 
--- Main function to apply texture changes to raid frames and additional frames
 function BBF.HookUnitFrameTextures()
     local db = BetterBlizzFramesDB
     -- Hook Player, Target & Focus Healthbars
@@ -3162,6 +3138,14 @@ First:SetScript("OnEvent", function(_, event, addonName)
 
             InitializeSavedVariables()
             FetchAndSaveValuesOnFirstLogin()
+            if BetterBlizzFramesDB.moveResource ~= nil then
+                if BetterBlizzFramesDB.moveResource and BetterBlizzFramesDB.moveResourceStackPos then
+                    for movedClass in pairs(BetterBlizzFramesDB.moveResourceStackPos) do
+                        BetterBlizzFramesDB["moveResource" .. movedClass] = true
+                    end
+                end
+                BetterBlizzFramesDB.moveResource = nil
+            end
             if not BetterBlizzFramesDB.fontOutlineFix then
                 local outlineKeys = {
                     "unitFrameFontOutline", "unitFrameValueFontOutline",

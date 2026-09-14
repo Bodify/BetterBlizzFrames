@@ -483,7 +483,7 @@ function BBF.CreateAltManaBar()
     end
 
     local updateCombos = not (
-        (db.moveResource and db.moveResourceStackPos and db.moveResourceStackPos["DRUID"]) or
+        (db.moveResourceDRUID and db.moveResourceStackPos and db.moveResourceStackPos["DRUID"]) or
         (db.moveResourceToTarget and db.moveResourceToTargetDruid)
     )
     local f = CreateFrame("Frame")

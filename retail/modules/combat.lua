@@ -1,7 +1,7 @@
 function BBF.CombatIndicator(unitFrame, unit)
     if not BetterBlizzFramesDB.combatIndicator or not unitFrame then return end
 
-    local settingsPrefix = unit --== "player" and "player" or "target"
+    local settingsPrefix = unit
     local combatIndicatorOn = BetterBlizzFramesDB[settingsPrefix .. "CombatIndicator"]
     if not combatIndicatorOn then return end
 
@@ -20,12 +20,10 @@ function BBF.CombatIndicator(unitFrame, unit)
         unitFrame.combatParent:SetPoint("CENTER", unitFrame, "CENTER", xPos, yPos)
         unitFrame.combatParent:SetFrameStrata("HIGH")
 
-        -- Create the combat indicator texture within the parent frame
         unitFrame.combatIndicator = unitFrame.combatParent:CreateTexture(nil, "OVERLAY")
         unitFrame.combatIndicator:SetSize(32, 32)
         unitFrame.combatIndicator:SetPoint("CENTER", unitFrame.combatParent, "CENTER")
 
-        -- Create the border within the parent frame
         local border = CreateFrame("Frame", nil, unitFrame.combatParent, "BackdropTemplate")
         border:SetBackdrop({
             edgeFile = "Interface/Tooltips/UI-Tooltip-Border",
@@ -73,9 +71,6 @@ function BBF.CombatIndicator(unitFrame, unit)
     end
     unitFrame.combatIndicator:SetScale(BetterBlizzFramesDB.combatIndicatorScale)
 
-
-
-    -- Conditions to check before showing textures
     if BetterBlizzFramesDB.combatIndicatorArenaOnly and not (inInstance and instanceType == "arena") then
         unitFrame.combatIndicator:SetAlpha(0)
         return
@@ -86,7 +81,6 @@ function BBF.CombatIndicator(unitFrame, unit)
         return
     end
 
-    -- Show or hide textures based on combat status
     if inCombat then
         if BetterBlizzFramesDB.combatIndicatorShowSwords then
             unitFrame.combatIndicator:SetTexture("Interface\\Icons\\ABILITY_DUALWIELD")
@@ -177,7 +171,7 @@ local raceSpellIcons = {
 function BBF.RacialIndicator(unitFrame, unit)
     if not unitFrame or not BetterBlizzFramesDB.racialIndicator then return end
 
-    local settingsPrefix = unit --== "player" and "player" or "target"
+    local settingsPrefix = unit
     local racialIndicatorOn = BetterBlizzFramesDB[settingsPrefix .. "RacialIndicator"]
     if not racialIndicatorOn then return end
 
@@ -200,7 +194,6 @@ function BBF.RacialIndicator(unitFrame, unit)
     if issecretvalue(raceID) then return end
     local unitSex = UnitSex(unit)
 
-    -- Optional: simple booleans if needed for logic elsewhere
     local isOrc = raceID == 2
     local isNelf = raceID == 4
     local isUndead = raceID == 5
@@ -257,8 +250,7 @@ function BBF.RacialIndicator(unitFrame, unit)
     unitFrame.racialIndicator:SetScale(scale)
 
     if BetterBlizzFramesDB.classColorFrameTexture and UnitIsPlayer(unit) then
-        -- Get class color of the unit
-        local _, class = UnitClass(unit)
+        local class = UnitClassBase(unit)
         local classColor = class and RAID_CLASS_COLORS[class]
         if classColor then
             unitFrame.racialIndicator.border:SetVertexColor(classColor.r, classColor.g, classColor.b)

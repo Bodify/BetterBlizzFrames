@@ -39,6 +39,12 @@ function BBF.DarkModeNameplateResources()
     if BetterBlizzPlatesDB and BetterBlizzPlatesDB.darkModeNameplateResource then return end
 
     local prdClassFrame = PersonalResourceDisplayFrame and PersonalResourceDisplayFrame.classFrame
+    if not prdClassFrame and UnitClassBase("player") == "SHAMAN" then
+        prdClassFrame = BBF.MaelstromWeaponPrdBar
+    end
+    if not prdClassFrame and UnitClassBase("player") == "HUNTER" then
+        prdClassFrame = BBF.TipOfSpearPrdBar
+    end
     if not prdClassFrame or prdClassFrame:IsForbidden() then return end
 
     local on = (BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeNameplateResource) and true or false
@@ -72,6 +78,17 @@ function BBF.DarkModeNameplateResources()
             if BetterBlizzFramesDB.druidOverstacks then
                 applySettings(v.ChargedFrameActive, desaturate, druidActive)
             end
+        end
+    elseif playerClass == "SHAMAN" then
+        for _, v in pairs({prdClassFrame:GetChildren()}) do
+            applySettings(v.BGInactive, desaturate, rogue)
+            applySettings(v.BGActive, desaturate, rogueActive)
+            applySettings(v.ChargedFrameActive, desaturate, rogueActive)
+        end
+    elseif playerClass == "HUNTER" then
+        for _, v in pairs({prdClassFrame:GetChildren()}) do
+            applySettings(v.BGInactive, desaturate, rogue)
+            applySettings(v.BGActive, desaturate, rogueActive)
         end
     elseif playerClass == "MAGE" then
         for _, v in pairs({prdClassFrame:GetChildren()}) do
@@ -788,7 +805,22 @@ function BBF.DarkmodeFrames(bypass)
         end
     end
 
-    if select(2, UnitClass("player")) == "DRUID" then
+    if BBF.MaelstromWeaponBar then
+        for _, v in pairs({BBF.MaelstromWeaponBar:GetChildren()}) do
+            applySettings(v.BGInactive, desaturationValue, rogueCombo, true)
+            applySettings(v.BGActive, desaturationValue, rogueComboActive, true)
+            applySettings(v.ChargedFrameActive, desaturationValue, rogueComboActive, true)
+        end
+    end
+
+    if BBF.TipOfSpearBar then
+        for _, v in pairs({BBF.TipOfSpearBar:GetChildren()}) do
+            applySettings(v.BGInactive, desaturationValue, rogueCombo, true)
+            applySettings(v.BGActive, desaturationValue, rogueComboActive, true)
+        end
+    end
+
+    if UnitClassBase("player") == "DRUID" then
         local function updateComboPointTextures()
             local druidComboPoints = _G.DruidComboPointBarFrame
             if druidComboPoints then
@@ -1059,7 +1091,7 @@ specChangeListener:SetScript("OnEvent", function(self, event, ...)
         if BetterBlizzFramesDB.darkModeUi then
             local unitID = ...
             if unitID == "player" then
-                local playerClass = select(2, UnitClass("player"))
+                local playerClass = UnitClassBase("player")
                 local vertexColor = BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeColor or 1
                 local desaturationValue = BetterBlizzFramesDB.darkModeUi
 

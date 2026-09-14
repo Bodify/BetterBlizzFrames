@@ -181,7 +181,7 @@ cooldownFrame:SetScript("OnEvent", function(self, event, spellID)
 end)
 
 local interruptSpellUpdate = CreateFrame("Frame")
-if select(2, UnitClass("player")) == "WARLOCK" then
+if UnitClassBase("player") == "WARLOCK" then
     interruptSpellUpdate:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED", "player")
 end
 interruptSpellUpdate:RegisterEvent("TRAIT_CONFIG_UPDATED")

@@ -47,24 +47,20 @@ function BBF.ClassPortraits()
         if UnitIsPlayer(unit) then
             if BetterBlizzFramesDB.classPortraitsIgnoreSelf and portrait:GetParent():GetName() == "PlayerFrame" then return end
 
-            -- Check if spec icons are enabled
             if BetterBlizzFramesDB.classPortraitsUseSpecIcons and Details then
                 local unitGUID = UnitGUID(unit)
                 local specID = nil
 
-                -- Try to get spec from Details addon
                 if unitGUID then
                     specID = Details:GetSpecByGUID(unitGUID)
                 end
 
-                -- If we have a specID, try to get spec icon
                 if specID then
                     local _, _, _, icon = GetSpecializationInfoByID(specID)
                     if icon then
                         portrait:SetTexture(icon)
                         portrait:SetTexCoord(0, 1, 0, 1)
 
-                        -- Apply circular mask to spec icons
                         if not portrait.circleMask then
                             portrait.circleMask = portrait:GetParent():CreateMaskTexture()
                             portrait.circleMask:SetTexture("Interface\\CharacterFrame\\TempPortraitAlphaMask", "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
@@ -77,7 +73,7 @@ function BBF.ClassPortraits()
             end
 
             -- Fallback to class icons
-            local _, class = UnitClass(unit)
+            local class = UnitClassBase(unit)
             local texture = "Interface\\TargetingFrame\\UI-Classes-Circles"
             local coords = CLASS_ICON_TCOORDS[class]
 
@@ -89,4 +85,17 @@ function BBF.ClassPortraits()
             portrait:SetTexCoord(0, 1, 0, 1)
         end
     end)
+end
+
+local eraShamanColor
+if BBF.isEra then
+    eraShamanColor = CreateColor(0, 0.44, 0.87)
+    eraShamanColor.colorStr = eraShamanColor:GenerateHexColor()
+end
+
+function BBF.GetClassColor(class)
+    if eraShamanColor and class == "SHAMAN" and BetterBlizzFramesDB.colorShamansBlue then
+        return eraShamanColor
+    end
+    return RAID_CLASS_COLORS[class]
 end

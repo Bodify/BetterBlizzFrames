@@ -505,6 +505,7 @@ local function UnitIsProbablyUnit(unit1, unit2)
 
     return name1 == name2
 end
+BBF.UnitIsProbablyUnit = UnitIsProbablyUnit
 
 local function SetArenaName(frame, unit, textObject)
     if UnitIsUnit(unit, "player") then return end

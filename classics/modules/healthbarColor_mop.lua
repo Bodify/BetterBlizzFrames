@@ -2,7 +2,7 @@ local L = BBF.L
 local UnitIsFriend = UnitIsFriend
 local UnitIsEnemy = UnitIsEnemy
 local UnitIsPlayer = UnitIsPlayer
-local UnitClass = UnitClass
+local UnitClassBase = UnitClassBase
 
 local LSM = LibStub("LibSharedMedia-3.0")
 
@@ -183,7 +183,7 @@ end
 local function getUnitColor(unit, useCustomColors, txt)
     if not UnitExists(unit) then return end
     if UnitIsPlayer(unit) then
-        local color = RAID_CLASS_COLORS[select(2, UnitClass(unit))]
+        local color = RAID_CLASS_COLORS[UnitClassBase(unit)]
         if color then
             if skipFriendly then
                 local reaction = getUnitReaction(unit)
@@ -195,7 +195,7 @@ local function getUnitColor(unit, useCustomColors, txt)
         end
     elseif colorPetAfterOwner and UnitIsUnit(unit, "pet") then
         -- Check if the unit is the player's pet and the setting is enabled
-        local _, playerClass = UnitClass("player")
+        local playerClass = UnitClassBase("player")
         local color = RAID_CLASS_COLORS[playerClass]
         if color then
             return {r = color.r, g = color.g, b = color.b}, false

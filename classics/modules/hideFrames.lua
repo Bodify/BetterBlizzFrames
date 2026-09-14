@@ -179,7 +179,7 @@ end
 
 function BBF.HideFrames()
     -- if BetterBlizzFramesDB.hasCheckedUi then
-        local playerClass, englishClass = UnitClass("player")
+        local class = UnitClassBase("player")
         -- --Hide group indicator on player unitframe
         local groupIndicatorAlpha = BetterBlizzFramesDB.hideGroupIndicator and 0 or 1
         -- PlayerFrameGroupIndicatorMiddle:SetAlpha(groupIndicatorAlpha)
@@ -596,7 +596,7 @@ function BBF.HideFrames()
         end
 
         if BetterBlizzFramesDB.hidePlayerPower then
-            if WarlockPowerFrame and englishClass == "WARLOCK" then
+            if WarlockPowerFrame and class == "WARLOCK" then
                 if BetterBlizzFramesDB.hidePlayerPowerNoWarlock then
                     if originalResourceParent then WarlockPowerFrame:SetParent(originalResourceParent) end
                 else
@@ -604,7 +604,7 @@ function BBF.HideFrames()
                     WarlockPowerFrame:SetParent(hiddenFrame)
                 end
             end
-            if RogueComboPointBarFrame and englishClass == "ROGUE" then
+            if RogueComboPointBarFrame and class == "ROGUE" then
                 if BetterBlizzFramesDB.hidePlayerPowerNoRogue then
                     if originalResourceParent then RogueComboPointBarFrame:SetParent(originalResourceParent) end
                 else
@@ -612,7 +612,7 @@ function BBF.HideFrames()
                     RogueComboPointBarFrame:SetParent(hiddenFrame)
                 end
             end
-            if EclipseBarFrame and englishClass == "DRUID" then
+            if EclipseBarFrame and class == "DRUID" then
                 if BetterBlizzFramesDB.hidePlayerPowerNoDruid then
                     if originalResourceParent then EclipseBarFrame:SetParent(originalResourceParent) end
                 else
@@ -620,14 +620,14 @@ function BBF.HideFrames()
                     EclipseBarFrame:SetParent(hiddenFrame)
                 end
             end
-            if PaladinPowerBar and englishClass == "PALADIN" then
+            if PaladinPowerBar and class == "PALADIN" then
                 if BetterBlizzFramesDB.hidePlayerPowerNoPaladin then
                     PaladinPowerBar:SetAlpha(1)
                 else
                     PaladinPowerBar:SetAlpha(0)
                 end
             end
-            if RuneFrame and englishClass == "DEATHKNIGHT" then
+            if RuneFrame and class == "DEATHKNIGHT" then
                 if BetterBlizzFramesDB.hidePlayerPowerNoDeathKnight then
                     if originalResourceParent then RuneFrame:SetParent(originalResourceParent) end
                 else
@@ -635,7 +635,7 @@ function BBF.HideFrames()
                     RuneFrame:SetParent(hiddenFrame)
                 end
             end
-            if EssencePlayerFrame and englishClass == "EVOKER" then
+            if EssencePlayerFrame and class == "EVOKER" then
                 if BetterBlizzFramesDB.hidePlayerPowerNoEvoker then
                     if originalResourceParent then EssencePlayerFrame:SetParent(originalResourceParent) end
                 else
@@ -643,7 +643,7 @@ function BBF.HideFrames()
                     EssencePlayerFrame:SetParent(hiddenFrame)
                 end
             end
-            if MonkHarmonyBar and englishClass == "MONK" then
+            if MonkHarmonyBar and class == "MONK" then
                 if BetterBlizzFramesDB.hidePlayerPowerNoMonk then
                     if originalResourceParent then MonkHarmonyBar:SetParent(originalResourceParent) end
                 else
@@ -651,14 +651,14 @@ function BBF.HideFrames()
                     MonkHarmonyBar:SetParent(hiddenFrame)
                 end
             end
-            if MageArcaneChargesFrame and englishClass == "MAGE" then
+            if MageArcaneChargesFrame and class == "MAGE" then
                 if BetterBlizzFramesDB.hidePlayerPowerNoMage then
                     MageArcaneChargesFrame:SetAlpha(1)
                 else
                     MageArcaneChargesFrame:SetAlpha(0)
                 end
             end
-            if PriestBarFrame and englishClass == "PRIEST" then
+            if PriestBarFrame and class == "PRIEST" then
                 if BetterBlizzFramesDB.hidePlayerPowerNoPriest then
                     if originalResourceParent then PriestBarFrame:SetParent(originalResourceParent) end
                 else
@@ -668,15 +668,15 @@ function BBF.HideFrames()
             end
             changes.hidePlayerPower = true
         elseif originalResourceParent then
-            if WarlockPowerFrame and englishClass == "WARLOCK" then WarlockPowerFrame:SetParent(originalResourceParent) end
-            if RogueComboPointBarFrame and englishClass == "ROGUE" then RogueComboPointBarFrame:SetParent(originalResourceParent) end
-            if EclipseBarFrame and englishClass == "DRUID" then EclipseBarFrame:SetParent(originalResourceParent) end
-            if PaladinPowerBar and englishClass == "PALADIN" then PaladinPowerBar:SetParent(originalResourceParent) end
-            if RuneFrame and englishClass == "DEATHKNIGHT" then RuneFrame:SetParent(originalResourceParent) end
-            if EssencePlayerFrame and englishClass == "EVOKER" then EssencePlayerFrame:SetParent(originalResourceParent) end
-            if MonkHarmonyBar and englishClass == "MONK" then MonkHarmonyBar:SetParent(originalResourceParent) end
-            if MageArcaneChargesFrame and englishClass == "MAGE" then MageArcaneChargesFrame:SetAlpha(1) end
-            if PriestBarFrame and englishClass == "PRIEST" then PriestBarFrame:SetParent(originalResourceParent) end
+            if WarlockPowerFrame and class == "WARLOCK" then WarlockPowerFrame:SetParent(originalResourceParent) end
+            if RogueComboPointBarFrame and class == "ROGUE" then RogueComboPointBarFrame:SetParent(originalResourceParent) end
+            if EclipseBarFrame and class == "DRUID" then EclipseBarFrame:SetParent(originalResourceParent) end
+            if PaladinPowerBar and class == "PALADIN" then PaladinPowerBar:SetParent(originalResourceParent) end
+            if RuneFrame and class == "DEATHKNIGHT" then RuneFrame:SetParent(originalResourceParent) end
+            if EssencePlayerFrame and class == "EVOKER" then EssencePlayerFrame:SetParent(originalResourceParent) end
+            if MonkHarmonyBar and class == "MONK" then MonkHarmonyBar:SetParent(originalResourceParent) end
+            if MageArcaneChargesFrame and class == "MAGE" then MageArcaneChargesFrame:SetAlpha(1) end
+            if PriestBarFrame and class == "PRIEST" then PriestBarFrame:SetParent(originalResourceParent) end
             changes.hidePlayerPower = nil
         end
 

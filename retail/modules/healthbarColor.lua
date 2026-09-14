@@ -2,7 +2,7 @@ local L = BBF.L
 local UnitIsFriend = UnitIsFriend
 local UnitIsEnemy = UnitIsEnemy
 local UnitIsPlayer = UnitIsPlayer
-local UnitClass = UnitClass
+local UnitClassBase = UnitClassBase
 local UnitIsUnit = UnitIsUnit
 
 local healthbarsHooked = nil
@@ -65,6 +65,8 @@ local function GetRPNameColor(unit)
     end
 end
 
+local npcColorScratch = {}
+
 local function GetBBPNameplateColor(unit)
     if not BetterBlizzPlatesDB or not BBP then return end
     if not UnitIsEnemy(unit, "player") then return end
@@ -106,12 +108,162 @@ local function GetBBPNameplateColor(unit)
     end
 
     if not npcColor then return end
-    return {r = npcColor[1], g = npcColor[2], b = npcColor[3], a = npcColor[4]}
+    npcColorScratch.r, npcColorScratch.g = npcColor[1], npcColor[2]
+    npcColorScratch.b, npcColorScratch.a = npcColor[3], npcColor[4]
+    return npcColorScratch
 end
 
-local function GetSingleClassColor()
-    local customColor = singleClassColor or {1, 1, 1, 1}
-    return {r = customColor[1], g = customColor[2], b = customColor[3], a = customColor[4] or 1}
+local specClassCache = {}
+
+local function GetSpecClass(specID)
+    local class = specClassCache[specID]
+    if class == nil then
+        class = select(6, GetSpecializationInfoByID(specID)) or false
+        specClassCache[specID] = class
+    end
+    return class or nil
+end
+
+local arenaUnits = {"arena1", "arena2", "arena3"}
+local friendlyUnits = {"player", "party1", "party2", "party3", "party4"}
+
+local function GetArenaClass(unit)
+    if not C_PvP.IsArena() then return end
+    if not UnitIsPlayer(unit) then return end
+
+    if UnitIsFriend(unit, "player") then
+        for i = 1, #friendlyUnits do
+            if BBF.UnitIsProbablyUnit(unit, friendlyUnits[i]) then
+                local class = UnitClassBase(friendlyUnits[i])
+                if class ~= nil and not issecretvalue(class) then
+                    return class
+                end
+                return
+            end
+        end
+    else
+        for i = 1, #arenaUnits do
+            if BBF.UnitIsProbablyUnit(unit, arenaUnits[i]) then
+                local specID = GetArenaOpponentSpec(i)
+                if specID and specID > 0 then
+                    return GetSpecClass(specID)
+                end
+                return
+            end
+        end
+    end
+end
+
+local function ResolveOverrideClassColor(unit, out)
+    if useOneClassColor then
+        local single = singleClassColor or {1, 1, 1, 1}
+        out.r, out.g, out.b, out.a = single[1], single[2], single[3], single[4] or 1
+        return out, false
+    end
+
+    local class = UnitClassBase(unit)
+    if class == nil then return end
+
+    if issecretvalue(class) then
+        local arenaClass = GetArenaClass(unit)
+        if arenaClass == nil then
+            return C_ClassColor.GetClassColor(class), true
+        end
+        class = arenaClass
+    end
+
+    local customColor = BetterBlizzFramesDB["classColor"..class]
+    if customColor then
+        out.r, out.g, out.b, out.a = customColor[1], customColor[2], customColor[3], customColor[4] or 1
+        return out, false
+    end
+
+    return C_ClassColor.GetClassColor(class), true
+end
+
+local function ResolvePlainClassColor(unit)
+    local class = UnitClassBase(unit)
+    if class == nil then return end
+    return C_ClassColor.GetClassColor(class)
+end
+
+local classColorCache = {}
+
+local function InvalidateClassColor(unit)
+    local entry = classColorCache[unit]
+    if entry then
+        entry.overrideValid = false
+        entry.plainValid = false
+    end
+end
+
+local function InvalidateAllClassColors()
+    for _, entry in pairs(classColorCache) do
+        entry.overrideValid = false
+        entry.plainValid = false
+    end
+end
+BBF.InvalidateClassColorCache = InvalidateAllClassColors
+
+local classColorInvalidator = CreateFrame("Frame")
+classColorInvalidator:RegisterEvent("PLAYER_TARGET_CHANGED")
+classColorInvalidator:RegisterEvent("PLAYER_FOCUS_CHANGED")
+classColorInvalidator:RegisterUnitEvent("UNIT_TARGET", "target", "focus")
+classColorInvalidator:RegisterUnitEvent("UNIT_PET", "player")
+classColorInvalidator:RegisterEvent("GROUP_ROSTER_UPDATE")
+classColorInvalidator:RegisterEvent("PLAYER_ENTERING_WORLD")
+classColorInvalidator:RegisterEvent("PLAYER_REGEN_DISABLED")
+classColorInvalidator:RegisterEvent("PLAYER_REGEN_ENABLED")
+classColorInvalidator:RegisterEvent("ARENA_OPPONENT_UPDATE")
+classColorInvalidator:RegisterEvent("ARENA_PREP_OPPONENT_SPECIALIZATIONS")
+classColorInvalidator:SetScript("OnEvent", function(_, event, unit)
+    if event == "PLAYER_TARGET_CHANGED" then
+        InvalidateClassColor("target")
+        InvalidateClassColor("targettarget")
+    elseif event == "PLAYER_FOCUS_CHANGED" then
+        InvalidateClassColor("focus")
+        InvalidateClassColor("focustarget")
+    elseif event == "UNIT_TARGET" then
+        InvalidateClassColor(unit == "target" and "targettarget" or "focustarget")
+    elseif event == "UNIT_PET" then
+        InvalidateClassColor("pet")
+    else
+        InvalidateAllClassColors()
+    end
+end)
+
+local function GetClassColorForUnit(unit, useOverride)
+    local entry = classColorCache[unit]
+    if not entry then
+        entry = {scratch = {}}
+        classColorCache[unit] = entry
+    end
+
+    if useOverride then
+        if not entry.overrideValid then
+            entry.overrideValid = true
+            entry.overrideColor, entry.overrideIsDefault = ResolveOverrideClassColor(unit, entry.scratch)
+        end
+        return entry.overrideColor, entry.overrideIsDefault
+    end
+
+    if not entry.plainValid then
+        entry.plainValid = true
+        entry.plainColor = ResolvePlainClassColor(unit)
+    end
+    return entry.plainColor
+end
+
+local unitColorScratch = {}
+
+local function SetUnitColor(unit, r, g, b, a)
+    local color = unitColorScratch[unit]
+    if not color then
+        color = {}
+        unitColorScratch[unit] = color
+    end
+    color.r, color.g, color.b, color.a = r, g, b, a
+    return color
 end
 
 local function getUnitColor(unit, useCustomColors, txt)
@@ -121,80 +273,64 @@ local function getUnitColor(unit, useCustomColors, txt)
         if TRP3_API and rpNames then
             local r,g,b = GetRPNameColor(unit)
             if r then
-                return {r = r, g = g, b = b}, false
+                return SetUnitColor(unit, r, g, b, 1), false
             else
-                local color
-
-                if useCustomColors and customHealthbarColors and overrideClassColors then
-                    color = GetSingleClassColor()
-                else
-                    local _, className = UnitClass(unit)
-                    color = className and C_ClassColor.GetClassColor(className)
-                end
+                local color, defaultClassColor = GetClassColorForUnit(unit, useCustomColors and customHealthbarColors and overrideClassColors)
 
                 if color then
-                    return {r = color.r, g = color.g, b = color.b, a = color.a or 1}, false
+                    return SetUnitColor(unit, color.r, color.g, color.b, color.a or 1), false, defaultClassColor
                 end
             end
         else
-            local color
-
-            if useCustomColors and customHealthbarColors and overrideClassColors then
-                color = GetSingleClassColor()
-            else
-                local _, className = UnitClass(unit)
-                if className ~= nil then
-                    color = C_ClassColor.GetClassColor(className)
-                end
-            end
+            local color, defaultClassColor = GetClassColorForUnit(unit, useCustomColors and customHealthbarColors and overrideClassColors)
 
             if color then
                 if skipFriendly then
                     local reaction = getUnitReaction(unit)
-                    return {r = color.r, g = color.g, b = color.b, a = color.a or 1}, ((unit == "player" and skipPlayer) or (skipFriendly and reaction == "FRIENDLY" and unit ~= "player"))
+                    return SetUnitColor(unit, color.r, color.g, color.b, color.a or 1), ((unit == "player" and skipPlayer) or (skipFriendly and reaction == "FRIENDLY" and unit ~= "player")), defaultClassColor
                 else
-                    return {r = color.r, g = color.g, b = color.b, a = color.a or 1}, false
+                    return SetUnitColor(unit, color.r, color.g, color.b, color.a or 1), false, defaultClassColor
                 end
             end
         end
     elseif colorPetAfterOwner and unit == "pet" then
         -- Check if the unit is the player's pet and the setting is enabled
-        local _, playerClass = UnitClass("player")
+        local playerClass = UnitClassBase("player")
         local color = C_ClassColor.GetClassColor(playerClass)
         if color then
-            return {r = color.r, g = color.g, b = color.b, a = 1}, false
+            return SetUnitColor(unit, color.r, color.g, color.b, 1), false
         end
     else
         if BetterBlizzPlatesDB and BetterBlizzPlatesDB.colorNPC then
             local npcHealthbarColor = GetBBPNameplateColor(unit)
             if npcHealthbarColor then
-                return {r = npcHealthbarColor.r, g = npcHealthbarColor.g, b = npcHealthbarColor.b, a = npcHealthbarColor.a or 1}, false
+                return SetUnitColor(unit, npcHealthbarColor.r, npcHealthbarColor.g, npcHealthbarColor.b, npcHealthbarColor.a or 1), false
             else
                 local reaction = getUnitReaction(unit)
                 if reaction == "HOSTILE" then
                     if UnitIsTapDenied(unit) and not txt then
-                        return {r = 0.9, g = 0.9, b = 0.9, a = 1}, false
+                        return SetUnitColor(unit, 0.9, 0.9, 0.9, 1), false
                     elseif useCustomColors and customHealthbarColors then
                         local enemyColor = BetterBlizzFramesDB.enemyHealthColor
-                        return {r = enemyColor[1], g = enemyColor[2], b = enemyColor[3], a = enemyColor[4] or 1}, false
+                        return SetUnitColor(unit, enemyColor[1], enemyColor[2], enemyColor[3], enemyColor[4] or 1), false
                     else
-                        return {r = 1, g = 0, b = 0, a = 1}, false
+                        return SetUnitColor(unit, 1, 0, 0, 1), false
                     end
                 elseif reaction == "NEUTRAL" then
                     if UnitIsTapDenied(unit) and not txt then
-                        return {r = 0.9, g = 0.9, b = 0.9, a = 1}, false
+                        return SetUnitColor(unit, 0.9, 0.9, 0.9, 1), false
                     elseif useCustomColors and customHealthbarColors then
                         local neutralColor = BetterBlizzFramesDB.neutralHealthColor
-                        return {r = neutralColor[1], g = neutralColor[2], b = neutralColor[3], a = neutralColor[4] or 1}, false
+                        return SetUnitColor(unit, neutralColor[1], neutralColor[2], neutralColor[3], neutralColor[4] or 1), false
                     else
-                        return {r = 1, g = 1, b = 0, a = 1}, false
+                        return SetUnitColor(unit, 1, 1, 0, 1), false
                     end
                 elseif reaction == "FRIENDLY" then
                     if useCustomColors and customHealthbarColors then
                         local friendlyColor = BetterBlizzFramesDB.friendlyHealthColor
-                        return {r = friendlyColor[1], g = friendlyColor[2], b = friendlyColor[3], a = friendlyColor[4] or 1}, false
+                        return SetUnitColor(unit, friendlyColor[1], friendlyColor[2], friendlyColor[3], friendlyColor[4] or 1), false
                     else
-                        return {r = 0, g = 1, b = 0, a = 1}, true
+                        return SetUnitColor(unit, 0, 1, 0, 1), true
                     end
                 end
             end
@@ -203,28 +339,28 @@ local function getUnitColor(unit, useCustomColors, txt)
 
             if reaction == "HOSTILE" then
                 if UnitIsTapDenied(unit) and not txt then
-                    return {r = 0.9, g = 0.9, b = 0.9, a = 1}, false
+                    return SetUnitColor(unit, 0.9, 0.9, 0.9, 1), false
                 elseif useCustomColors and customHealthbarColors then
                     local enemyColor = BetterBlizzFramesDB.enemyHealthColor
-                    return {r = enemyColor[1], g = enemyColor[2], b = enemyColor[3], a = enemyColor[4] or 1}, false
+                    return SetUnitColor(unit, enemyColor[1], enemyColor[2], enemyColor[3], enemyColor[4] or 1), false
                 else
-                    return {r = 1, g = 0, b = 0, a = 1}, false
+                    return SetUnitColor(unit, 1, 0, 0, 1), false
                 end
             elseif reaction == "NEUTRAL" then
                 if UnitIsTapDenied(unit) and not txt then
-                    return {r = 0.9, g = 0.9, b = 0.9, a = 1}, false
+                    return SetUnitColor(unit, 0.9, 0.9, 0.9, 1), false
                 elseif useCustomColors and customHealthbarColors then
                     local neutralColor = BetterBlizzFramesDB.neutralHealthColor
-                    return {r = neutralColor[1], g = neutralColor[2], b = neutralColor[3], a = neutralColor[4] or 1}, false
+                    return SetUnitColor(unit, neutralColor[1], neutralColor[2], neutralColor[3], neutralColor[4] or 1), false
                 else
-                    return {r = 1, g = 1, b = 0, a = 1}, false
+                    return SetUnitColor(unit, 1, 1, 0, 1), false
                 end
             elseif reaction == "FRIENDLY" then
                 if useCustomColors and customHealthbarColors then
                     local friendlyColor = BetterBlizzFramesDB.friendlyHealthColor
-                    return {r = friendlyColor[1], g = friendlyColor[2], b = friendlyColor[3], a = friendlyColor[4] or 1}, false
+                    return SetUnitColor(unit, friendlyColor[1], friendlyColor[2], friendlyColor[3], friendlyColor[4] or 1), false
                 else
-                    return {r = 0, g = 1, b = 0, a = 1}, true
+                    return SetUnitColor(unit, 0, 1, 0, 1), true
                 end
             end
         end
@@ -273,6 +409,26 @@ local function updateFrameColorToggleVer(frame, unit)
 end
 
 BBF.updateFrameColorToggleVer = updateFrameColorToggleVer
+
+local function HookPartyMemberOnlineStatus()
+    if BBF.partyOnlineStatusHooked or not PartyFrame then return end
+
+    for i = 1, 4 do
+        local frame = PartyFrame["MemberFrame"..i]
+        if frame and frame.UpdateOnlineStatus then
+            local unit = "party"..i
+            hooksecurefunc(frame, "UpdateOnlineStatus", function(self)
+                if not UnitExists(unit) then return end
+                local healthBar = self.HealthBarContainer and self.HealthBarContainer.HealthBar
+                if healthBar then
+                    updateFrameColorToggleVer(healthBar, unit)
+                end
+            end)
+        end
+    end
+
+    BBF.partyOnlineStatusHooked = true
+end
 
 local function resetFrameColor(frame, unit)
     if frame.bbfChangedTexture then
@@ -546,7 +702,7 @@ local function HookPowerBarColors()
     end
 
     if customColorsUnitFrames and not BBF.altBarsTextureColorHooked and not BetterBlizzFramesDB.changeUnitFrameManabarTexture then
-        local class = select(2, UnitClass("player"))
+        local class = UnitClassBase("player")
 
         local defaultColors = {
             AlternatePowerBar = {r = 0, g = 0, b = 1},
@@ -588,8 +744,8 @@ function BBF.UpdateFrames()
     customColorsRaidFrames = BetterBlizzFramesDB.customColorsRaidFrames
     useOneClassColor = BetterBlizzFramesDB.useOneClassColor
     singleClassColor = BetterBlizzFramesDB.singleClassColor
-    --UnitClass is secret :/
-    overrideClassColors = BetterBlizzFramesDB.overrideClassColors and useOneClassColor
+    overrideClassColors = BetterBlizzFramesDB.overrideClassColors
+    InvalidateAllClassColors()
     useOnePowerColor = BetterBlizzFramesDB.useOnePowerColor
     singlePowerColor = BetterBlizzFramesDB.singlePowerColor
     customPowerColors = BetterBlizzFramesDB.customPowerColors
@@ -694,6 +850,7 @@ function BBF.UpdateFrames()
         if UnitExists("focus") then updateFrameColorToggleVer(FocusFrame.healthbar, "focus") end
         if UnitExists("targettarget") then updateFrameColorToggleVer(TargetFrameToT.HealthBar, "targettarget") end
         if UnitExists("focustarget") then updateFrameColorToggleVer(FocusFrameToT.HealthBar, "focustarget") end
+        HookPartyMemberOnlineStatus()
         if UnitExists("party1") then updateFrameColorToggleVer(PartyFrame.MemberFrame1.HealthBarContainer.HealthBar, "party1") end
         if UnitExists("party2") then updateFrameColorToggleVer(PartyFrame.MemberFrame2.HealthBarContainer.HealthBar, "party2") end
         if UnitExists("party3") then updateFrameColorToggleVer(PartyFrame.MemberFrame3.HealthBarContainer.HealthBar, "party3") end
@@ -781,7 +938,7 @@ function BBF.UpdateFrames()
             end
         end
 
-        local class = select(2, UnitClass("player"))
+        local class = UnitClassBase("player")
         if class == "MONK" and MonkStaggerBar and MonkStaggerBar:IsShown() then
             local powerToken = MonkStaggerBar.powerToken or MonkStaggerBar.powerName
             if powerToken then
@@ -932,11 +1089,16 @@ function BBF.HookHealthbarColors()
         end
 
         if C_AddOns.IsAddOnLoaded("ClassicFrames") then
+            local updatingHealthColorCF = false
             hooksecurefunc("UnitFrameHealthBar_Update", function(self, unit)
-                if unit then
+                if not unit or updatingHealthColorCF then return end
+                updatingHealthColorCF = true
+                if unit == "target" or unit == "targettarget" then
                     UpdateHealthColorCF(TargetFrameToT.HealthBar, "targettarget")
+                elseif unit == "focus" or unit == "focustarget" then
                     UpdateHealthColorCF(FocusFrameToT.HealthBar, "focustarget")
                 end
+                updatingHealthColorCF = false
             end)
             if CfPlayerFrameHealthBar then
                 if not BetterBlizzFramesDB.classColorFramesSkipPlayer then
@@ -948,12 +1110,17 @@ function BBF.HookHealthbarColors()
                 BBF.Print(L["Print_ClassicFrames_Not_Detected"])
             end
         else
+            local updatingHealthColor = false
             hooksecurefunc("UnitFrameHealthBar_Update", function(self, unit)
-                if unit then
-                    UpdateHealthColor(self, unit)
+                if not unit or updatingHealthColor then return end
+                updatingHealthColor = true
+                UpdateHealthColor(self, unit)
+                if unit == "target" then
                     UpdateHealthColor(TargetFrameToT.HealthBar, "targettarget")
+                elseif unit == "focus" then
                     UpdateHealthColor(FocusFrameToT.HealthBar, "focustarget")
                 end
+                updatingHealthColor = false
             end)
         end
 
@@ -972,8 +1139,8 @@ function BBF.HookHealthbarColors()
                 end
 
                 if customHealthbarColors and customColorsRaidFrames then
-                    local color, isFriendly = getUnitColor(frame.unit, true)
-                    if color then
+                    local color, isFriendly, defaultClassColor = getUnitColor(frame.unit, true)
+                    if color and not defaultClassColor then
                         frame.healthBar:SetStatusBarColor(color.r, color.g, color.b, color.a or 1)
                         frame.recolored = true
                         return
@@ -1023,8 +1190,8 @@ function BBF.HookHealthbarColors()
             end
 
             if customHealthbarColors and customColorsRaidFrames then
-                local color, isFriendly = getUnitColor(frame.unit, true)
-                if color then
+                local color, isFriendly, defaultClassColor = getUnitColor(frame.unit, true)
+                if color and not defaultClassColor then
                     frame.healthBar:SetStatusBarColor(color.r, color.g, color.b, color.a or 1)
                     frame.recolored = true
                     return
@@ -1059,7 +1226,7 @@ function BBF.HookHealthbarColors()
         local function getRPUnitColor(unit)
             local r,g,b = GetRPNameColor(unit)
             if r then
-                return {r = r, g = g, b = b}
+                return SetUnitColor(unit, r, g, b, 1)
             end
         end
 
@@ -1090,12 +1257,17 @@ function BBF.HookHealthbarColors()
             end
         end
 
+        local updatingRPHealthColor = false
         hooksecurefunc("UnitFrameHealthBar_Update", function(self, unit)
-            if unit then
-                UpdateRPHealthColor(self, unit)
+            if not unit or updatingRPHealthColor then return end
+            updatingRPHealthColor = true
+            UpdateRPHealthColor(self, unit)
+            if unit == "target" then
                 UpdateRPHealthColor(TargetFrameToT.HealthBar, "targettarget")
+            elseif unit == "focus" then
                 UpdateRPHealthColor(FocusFrameToT.HealthBar, "focustarget")
             end
+            updatingRPHealthColor = false
         end)
 
         UpdateRPHealthColor(PlayerFrame.healthbar, "player")
@@ -1201,7 +1373,7 @@ function BBF.HookFrameTextureColor()
             end
 
             if not colored and classColorFrameTexture then
-                local _, class = UnitClass(unit)
+                local class = UnitClassBase(unit)
                 local color = class and C_ClassColor.GetClassColor(class)
                 if color then
                     r, g, b = color.r, color.g, color.b

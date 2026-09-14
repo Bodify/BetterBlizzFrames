@@ -11,7 +11,7 @@ local function SetManaTextParent(text, parent)
     text:SetParent(parent)
 end
 
-local class = select(2, UnitClass("player"))
+local class = UnitClassBase("player")
 local defaultTex = "Interface\\TargetingFrame\\UI-TargetingFrame"
 local noLvlTex = "Interface\\TargetingFrame\\UI-FocusFrame-Large"
 local flashTex = "Interface\\TargetingFrame\\UI-TargetingFrame-Flash"
@@ -627,9 +627,8 @@ local function MakeClassicFrame(frame)
         }
 
         local function GetPlayerClassAndSpecPosition()
-            local _, classToken = UnitClass("player")
             local specID = GetSpecialization() and GetSpecializationInfo(GetSpecialization())
-            local position = resourceFramePositions[classToken]
+            local position = resourceFramePositions[class]
 
             if position then
                 if position.specs and specID and position.specs[specID] then
@@ -657,10 +656,12 @@ local function MakeClassicFrame(frame)
             EVOKER = db.moveResourceToTargetEvoker,
             PALADIN = db.moveResourceToTargetPaladin,
             DEATHKNIGHT = db.moveResourceToTargetDK,
+            SHAMAN      = db.moveResourceToTargetShaman,
+            HUNTER      = db.moveResourceToTargetHunter,
         }
 
         local function UpdateResourcePosition(rogueCheck)
-            if db.moveResource or (db.moveResourceToTarget and classConflicts[class]) then
+            if db["moveResource" .. class] or (db.moveResourceToTarget and classConflicts[class]) then
                 return
             end
 

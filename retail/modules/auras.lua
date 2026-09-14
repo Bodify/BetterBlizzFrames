@@ -2146,6 +2146,11 @@ local CB = {
     owned = {},
     layoutAspect = Enum.ForbiddenAspect and Enum.ForbiddenAspect.UntrustedLayoutScriptExecution,
 
+    totGap = 7,
+    totState = {},
+    totWant = {},
+    totMovers = { "SetPoint", "SetScale", "SetHeight", "SetSize" },
+
     -- Aura settings on
     blockX = 18,
     blockY = -5,
@@ -2195,9 +2200,8 @@ end
 
 function CB.TryPoint(key, spellbar, point, relTo, relPoint, x, y)
     CB.anchoring[key] = true
-    local ok = pcall(CB.ApplyPoint, spellbar, point, relTo, relPoint, x, y)
+    CB.ApplyPoint(spellbar, point, relTo, relPoint, x, y)
     CB.anchoring[key] = nil
-    return ok
 end
 
 function CB.BlizzBase(frame)
@@ -2211,17 +2215,8 @@ end
 
 function CB.SetOwnPoint(key, spellbar, point, relTo, relPoint, x, y)
     CB.owned[key] = true
-
-    if CB.TryPoint(key, spellbar, point, relTo, relPoint, x, y) then
-        return true
-    end
-
-    local frame = CB.GetFrames(key)
-    if frame then
-        local baseX, baseY = CB.BlizzBase(frame)
-        CB.TryPoint(key, spellbar, "TOPLEFT", frame, "BOTTOMLEFT", baseX, baseY)
-    end
-    return false
+    CB.TryPoint(key, spellbar, point, relTo, relPoint, x, y)
+    return true
 end
 
 function CB.Release(key, frame, spellbar)
@@ -2244,14 +2239,88 @@ function CB.SeedContainerAnchor(host)
     local spellbar, block = host.spellbar, host.blockBottom
     if not spellbar or not block then return end
 
+    CB.ClampBase(host.key, spellbar)
+
     host.spellbarOnBlock = CB.SetOwnPoint(host.key, spellbar,
         "TOPLEFT", block, "BOTTOMLEFT", CB.blockX, CB.blockY)
 end
 
+function CB.ToTFrame(key)
+    if key == "target" then return TargetFrameToT end
+    return FocusFrameToT
+end
+
+function CB.ClampBase(key, spellbar)
+    local base = CB.totState[key]
+    if not base then
+        local l, r, t, b = spellbar:GetClampRectInsets()
+        base = { l, r, t, b, clamped = spellbar:IsClampedToScreen() }
+        CB.totState[key] = base
+    end
+    return base
+end
+
+function CB.ToTTopInset(key, spellbar)
+    local tot = CB.ToTFrame(key)
+    if not tot:IsVisible() then return nil end
+
+    local _, _, _, _, _, totOffsetY = CB.Settings(key)
+    local barScale = spellbar:GetEffectiveScale()
+    local ceiling = tot:GetBottom() * tot:GetEffectiveScale()
+        - (CB.totGap - totOffsetY) * barScale
+
+    return (UIParent:GetHeight() * UIParent:GetEffectiveScale() - ceiling) / barScale
+end
+
+function CB.ApplyToTClamp(spellbar, base, topInset)
+    if not base.top or math.abs(base.top - topInset) > 0.01 then
+        spellbar:SetClampRectInsets(base[1], base[2], topInset, topInset)
+        base.top = topInset
+    end
+
+    if not base.on then
+        spellbar:SetClampedToScreen(true)
+        base.on = true
+    end
+end
+
+function CB.ReleaseToTClamp(spellbar, base)
+    if not (base.top or base.on) then return end
+
+    spellbar:SetClampRectInsets(base[1], base[2], base[3], base[4])
+    spellbar:SetClampedToScreen(not spellbar.bbfHiddenCastbar and base.clamped or false)
+
+    base.top = nil
+    base.on = nil
+end
+
+function CB.SyncToTClamp(key)
+    local _, spellbar = CB.GetFrames(key)
+    local base = CB.ClampBase(key, spellbar)
+    local topInset = CB.totWant[key] and CB.ToTTopInset(key, spellbar)
+
+    if topInset then
+        CB.ApplyToTClamp(spellbar, base, topInset)
+    else
+        CB.ReleaseToTClamp(spellbar, base)
+    end
+end
+
 function CB.Anchor(key)
     if CB.anchoring[key] then return end
-    if BetterBlizzFramesDB.disableCastbarMovement then return end
 
+    if BetterBlizzFramesDB.disableCastbarMovement then
+        CB.totWant[key] = nil
+        CB.SyncToTClamp(key)
+        return
+    end
+
+    CB.totWant[key] = nil
+    CB.Place(key)
+    CB.SyncToTClamp(key)
+end
+
+function CB.Place(key)
     local frame, spellbar = CB.GetFrames(key)
     if not frame or not spellbar then return end
 
@@ -2295,6 +2364,7 @@ function CB.Anchor(key)
             CB.SetOwnPoint(key, spellbar, "BOTTOMLEFT", block, "TOPLEFT", CB.blockX + xPos, CB.blockMirrorY + yPos)
         else
             CB.SetOwnPoint(key, spellbar, "TOPLEFT", block, "BOTTOMLEFT", CB.blockX + xPos, CB.blockY + yPos)
+            CB.totWant[key] = totAdjust and true or nil
         end
         return
     end
@@ -2338,18 +2408,54 @@ function BBF.HookCastbarAnchoring()
     CB.hooked = true
 
     for _, key in ipairs(CB.keys) do
-        local _, spellbar = CB.GetFrames(key)
+        local frame, spellbar = CB.GetFrames(key)
         hooksecurefunc(spellbar, "SetPoint", function()
             if CB.anchoring[key] then return end
             CB.Anchor(key)
         end)
+        spellbar:HookScript("OnShow", function()
+            CB.Anchor(key)
+        end)
+
+        local tot = CB.ToTFrame(key)
+        if tot then
+            tot:HookScript("OnShow", function()
+                CB.Anchor(key)
+            end)
+            tot:HookScript("OnHide", function()
+                CB.Anchor(key)
+            end)
+        end
+
+        for _, mover in ipairs({ frame, tot }) do
+            for _, method in ipairs(CB.totMovers) do
+                hooksecurefunc(mover, method, function()
+                    CB.SyncToTClamp(key)
+                end)
+            end
+        end
     end
 
     local driver = CreateFrame("Frame")
     driver:RegisterEvent("PLAYER_TARGET_CHANGED")
     driver:RegisterEvent("PLAYER_FOCUS_CHANGED")
-    driver:SetScript("OnEvent", function(_, event)
-        CB.Anchor(event == "PLAYER_FOCUS_CHANGED" and "focus" or "target")
+    driver:RegisterEvent("DISPLAY_SIZE_CHANGED")
+    driver:RegisterEvent("UI_SCALE_CHANGED")
+    driver:RegisterUnitEvent("UNIT_TARGET", "target", "focus")
+    driver:SetScript("OnEvent", function(_, event, unit)
+        if event == "PLAYER_TARGET_CHANGED" then
+            CB.Anchor("target")
+        elseif event == "PLAYER_FOCUS_CHANGED" then
+            CB.Anchor("focus")
+        elseif event == "UNIT_TARGET" then
+            if unit == "target" or unit == "focus" then
+                CB.SyncToTClamp(unit)
+            end
+        else
+            for _, key in ipairs(CB.keys) do
+                CB.Anchor(key)
+            end
+        end
     end)
 
     BBF.CastbarAdjustCaller()
