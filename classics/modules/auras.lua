@@ -1617,7 +1617,7 @@ local function AdjustAuras(self, frameType)
 
                             if name and (not auraFrame.bbfPrinted or auraFrame.bbfLastPrintedAuraID ~= currentAuraID) then
                                 local iconTexture = icon and "|T" .. icon .. ":16:16|t" or ""
-                                BBF.Print(iconTexture .. " " .. (name or L["Label_Unknown"]) .. "  |A:worldquest-icon-engineering:14:14|a ID: " .. (spellId or L["Label_Unknown"]))
+                                BBF.Print(iconTexture .. " " .. (name or L["Unknown"]) .. "  |A:worldquest-icon-engineering:14:14|a ID: " .. (spellId or L["Unknown"]))
                                 auraFrame.bbfPrinted = true
                                 auraFrame.bbfLastPrintedAuraID = currentAuraID
                                 -- Cancel existing timer if any
@@ -2085,7 +2085,7 @@ local function CreateToggleIcon()
     toggleIcon:SetScript("OnEnter", function(self)
         GameTooltip:SetOwner(self, "ANCHOR_BOTTOM", 0, -10)
         GameTooltip:AddLine("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames")
-        GameTooltip:AddLine(L["Tooltip_Filtered_Buffs_Icon_Retail"], 1, 1, 1, true)
+        GameTooltip:AddLine(L["Tooltip_Filtered_Buffs_Icon_Classic"], 1, 1, 1, true)
         GameTooltip:Show()
         if not self.isAurasShown then
             ShowHiddenAuras()

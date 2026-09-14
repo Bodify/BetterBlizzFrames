@@ -15,6 +15,8 @@ local defaultSettings = {
     version = addonVersion,
     updates = "empty",
     wasOnLoadingScreen = true,
+    guiFontEnabled = false,
+    guiFontSize = 12,
     -- General
     enableBigDebuffs = true,
     removeRealmNames = true,
@@ -517,7 +519,7 @@ end
 
 -- Define the popup window
 StaticPopupDialogs["BetterBlizzFrames_COMBAT_WARNING"] = {
-    text = L["Popup_Combat_Warning_Midnight"],
+    text = L["Popup_Combat_Warning"],
     button1 = L["Yes"],
     timeout = 0,
     whileDead = true,
