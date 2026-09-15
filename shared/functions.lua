@@ -331,7 +331,7 @@ LSM:Register("statusbar", "Minimalist", [[Interface\Addons\BetterBlizzFrames\med
 LSM:Register("sound", "Lossa Countered", [[Interface\AddOns\BetterBlizzFrames\media\LossaCountered.ogg]])
 LSM:Register("font", "PT Sans Narrow Bold", "Interface\\AddOns\\BetterBlizzFrames\\media\\PTSansNarrow-Bold.ttf", BBF.allLocales)
 LSM:Register("font", "Arial Narrow (BBF)", "Interface\\AddOns\\BetterBlizzFrames\\media\\arialn.ttf", BBF.allLocales)
-LSM:Register("font", "Expressway", "Interface\\AddOns\\BetterBlizzFrames\\media\\Expressway_Free.ttf", BBF.allLocales)
+LSM:Register("font", "Expressway (BBF)", "Interface\\AddOns\\BetterBlizzFrames\\media\\Expressway_Free.ttf", BBF.allLocales)
 
 function BBF.AddFont(name)
 	if type(name) ~= "string" then

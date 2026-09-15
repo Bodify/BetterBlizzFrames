@@ -2772,6 +2772,10 @@ function BBF.UpdateNoPortraitManaVisibility()
     local db = BetterBlizzFramesDB
     BBF.UpdateDefaultPetFrameMana()
     BBF.UpdateDefaultTotFrameMana()
+    local classPowerBar = PlayerFrame.classPowerBar
+    if classPowerBar and classPowerBar.FillOverlay then
+        classPowerBar.FillOverlay:SetAlpha((db.hideUnitFramePlayerMana or db.bigPlayerHealthbar) and 0 or 1)
+    end
     if db.classicFrames then
         if db.hideUnitFramePlayerSecondResource then
             if AlternatePowerBar then

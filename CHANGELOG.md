@@ -1,3 +1,9 @@
+# BetterBlizzFrames 2.0.8c
+## Midnight
+### Tweak
+- Rename the recently added Expressway font to Expressway (BBF) to avoid potential conflicts with other fonts.
+- Fix some issues with Big Player Healthbar setting and textures used with various settings and especially the alt frame texture for spriests etc. Glow, FrameTexture tweaks etc.
+
 # BetterBlizzFrames 2.0.8b
 ## All versions
 - New settings in Misc section for BBF's GUI to Force English Language and change Font and Font Size for the GUI.

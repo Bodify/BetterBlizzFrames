@@ -583,6 +583,7 @@ function BBF.HideFrames()
             changes.hideCombatGlow = true
         elseif changes.hideCombatGlow then
             PlayerFrame.PlayerFrameContainer.FrameFlash:SetParent(PlayerFrame.PlayerFrameContainer)
+            BBF.UpdatePlayerFrameFlash()
             TargetFrame.TargetFrameContainer.Flash:SetParent(TargetFrame.TargetFrameContainer)
             FocusFrame.TargetFrameContainer.Flash:SetParent(FocusFrame.TargetFrameContainer)
             PetFrameFlash:SetParent(PetFrame)
@@ -944,17 +945,14 @@ function BBF.HideFrames()
                     -- Player
                     if not BetterBlizzFramesDB.symmetricPlayerFrame then
                         local playerTex = PlayerFrame.PlayerFrameContainer.FrameTexture
-                        local texture = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOn-NoShadow"
-                        local altTexture = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOn-ClassResource-NoShadow"
-                        playerTex:SetTexture(texture)
+                        playerTex:SetTexture(BBF.GetNoShadowPlayerFrameTexture())
                         hooksecurefunc(playerTex, "SetAtlas", function(self)
-                            self:SetTexture(texture)
+                            self:SetTexture(BBF.GetNoShadowPlayerFrameTexture())
                         end)
 
                         local playerAltTex = PlayerFrame.PlayerFrameContainer.AlternatePowerFrameTexture
 
                         if BetterBlizzFramesDB.hideUnitFramePlayerSecondResource then
-                            altTexture = texture
                             local altBars = {
                                 AlternatePowerBar,
                                 MonkStaggerBar,
@@ -970,12 +968,11 @@ function BBF.HideFrames()
                             playerAltTex:SetSize(198, 71)
                             playerAltTex:ClearAllPoints()
                             playerAltTex:SetAllPoints(playerTex)
+                            BBF.UpdatePlayerFrameFlash()
                         end
 
-                        playerAltTex:SetTexture(altTexture)
-                        hooksecurefunc(playerAltTex, "SetAtlas", function(self)
-                            self:SetTexture(altTexture)
-                        end)
+                        BBF.UpdateNoShadowPlayerAltFrameTexture()
+                        hooksecurefunc(playerAltTex, "SetAtlas", BBF.UpdateNoShadowPlayerAltFrameTexture)
                     end
 
                     -- Target & Focus
@@ -1026,6 +1023,7 @@ function BBF.HideFrames()
                     frame:SetAlpha(0)
                 end
             end
+            BBF.UpdatePlayerFrameFlash()
             if not BetterBlizzFramesDB.classicFrames and not BBF.hookedPlayerAltBarTex then
                 playerAltTex:SetSize(198, 71)
                 playerAltTex:ClearAllPoints()

@@ -4238,15 +4238,15 @@ function BBF.SymmetricPlayerFrame()
     end)
 
     local playerAltTex = PlayerFrame.PlayerFrameContainer.AlternatePowerFrameTexture
-    local altTex = BetterBlizzFramesDB.hideUnitFrameShadow and "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Target-PortraitOn-NoShadow-Alt" or "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Target-PortraitOn-Alt"
-    playerAltTex:SetTexture(altTex)
-    playerAltTex:SetSize(192, 67)
-    playerAltTex:SetPoint("CENTER", 0, -0.5)
+    BBF.SetMirrorPlayerAltFrameTexture()
 
     local playerThreat = PlayerFrame.threatIndicator
+    local function UsesAltThreat()
+        return playerAltTex:IsShown() and not BetterBlizzFramesDB.hideUnitFramePlayerSecondResource
+    end
     local function ApplyThreatLayout(self)
-        if playerAltTex:IsShown() then
-            self:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOn-InCombat-Alt")
+        if UsesAltThreat() then
+            self:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOn-InCombat-Alt-Mirror" .. (BetterBlizzFramesDB.bigPlayerHealthbar and "-NoMana" or ""))
             self:SetSize(192, 67.5)
         else
             self:SetAtlas("UI-HUD-UnitFrame-Target-PortraitOn-InCombat")
@@ -4255,7 +4255,7 @@ function BBF.SymmetricPlayerFrame()
         end
     end
     local function ApplyThreatPoint(self)
-        if playerAltTex:IsShown() then
+        if UsesAltThreat() then
             self:SetPoint("CENTER", 0, 1.5)
         else
             self:SetPoint("CENTER", 0.5, 1)

@@ -27,8 +27,16 @@ local function SetDefaultManaShown(shown)
     PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea:SetAlpha(shown and 1 or 0)
 end
 
+function BBF.GetNoShadowPlayerFrameTexture()
+    return "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOn-NoShadow" .. (BetterBlizzFramesDB.bigPlayerHealthbar and "-NoMana" or "")
+end
+
 local function SetDefaultFrameTexture(atlas)
-    if BetterBlizzFramesDB.symmetricPlayerFrame or BetterBlizzFramesDB.hideUnitFrameShadow then return end
+    if BetterBlizzFramesDB.symmetricPlayerFrame then return end
+    if BetterBlizzFramesDB.hideUnitFrameShadow then
+        PlayerFrame.PlayerFrameContainer.FrameTexture:SetTexture(BBF.GetNoShadowPlayerFrameTexture())
+        return
+    end
     PlayerFrame.PlayerFrameContainer.FrameTexture:SetAtlas(atlas)
 end
 
@@ -75,6 +83,73 @@ function BBF.SetMirrorPlayerFrameTexture()
     frameTexture.changing = false
 end
 
+function BBF.SetMirrorPlayerAltFrameTexture()
+    local db = BetterBlizzFramesDB
+    if not db.symmetricPlayerFrame then return end
+    if db.classicFrames then return end
+    if BBF.HasNoPortrait("player") then return end
+    local altTex = PlayerFrame.PlayerFrameContainer.AlternatePowerFrameTexture
+    local path = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Target-PortraitOn" .. (db.hideUnitFrameShadow and "-NoShadow" or "")
+    local noMana = db.bigPlayerHealthbar and "-NoMana" or ""
+    altTex:ClearAllPoints()
+    if db.hideUnitFramePlayerSecondResource then
+        if db.bigPlayerHealthbar or db.hideUnitFrameShadow then
+            altTex:SetTexture(path .. noMana)
+        else
+            altTex:SetAtlas("UI-HUD-UnitFrame-Target-PortraitOn")
+        end
+        altTex:SetTexCoord(1, 0, 0, 1)
+        altTex:SetAllPoints(PlayerFrame.PlayerFrameContainer.FrameTexture)
+        return
+    end
+    altTex:SetTexture(path .. "-Alt" .. noMana)
+    altTex:SetTexCoord(0, 1, 0, 1)
+    altTex:SetSize(192, 67)
+    altTex:SetPoint("CENTER", 0, -0.5)
+end
+
+function BBF.UpdateNoShadowPlayerAltFrameTexture()
+    local db = BetterBlizzFramesDB
+    if not db.hideUnitFrameShadow or db.symmetricPlayerFrame or db.classicFrames then return end
+    local path = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOn-"
+    local altTex = PlayerFrame.PlayerFrameContainer.AlternatePowerFrameTexture
+    if db.hideUnitFramePlayerSecondResource then
+        altTex:SetTexture(BBF.GetNoShadowPlayerFrameTexture())
+    elseif db.bigPlayerHealthbar then
+        altTex:SetTexture(path .. "ClassResource-NoShadow-NoMana")
+    else
+        altTex:SetTexture(path .. "ClassResource-NoShadow")
+    end
+end
+
+function BBF.UpdatePlayerFrameFlash()
+    if not BBF.hookedPlayerFrameFlash then
+        BBF.hookedPlayerFrameFlash = true
+        hooksecurefunc("PlayerFrame_ToPlayerArt", BBF.UpdatePlayerFrameFlash)
+    end
+    local db = BetterBlizzFramesDB
+    local container = PlayerFrame.PlayerFrameContainer
+    local flash = container.FrameFlash
+    if db.symmetricPlayerFrame or db.classicFrames then return end
+    if BBF.HasNoPortrait("player") or UNIT_FRAME_SHOW_HEALTH_ONLY then return end
+    if PlayerFrame.state ~= "player" then return end
+    local showAltBar = PlayerFrame_GetAlternatePowerBar() and not db.hideUnitFramePlayerSecondResource
+    if showAltBar then
+        flash:SetAtlas("UI-HUD-UnitFrame-Player-PortraitOn-ClassResource-InCombat", TextureKitConstants.UseAtlasSize)
+        flash:SetPoint("CENTER", container, "CENTER", -2, 0.5)
+    else
+        flash:SetAtlas("UI-HUD-UnitFrame-Player-PortraitOn-InCombat", TextureKitConstants.UseAtlasSize)
+        flash:SetPoint("CENTER", container, "CENTER", -1.5, 1)
+    end
+    if not db.bigPlayerHealthbar then return end
+    flash:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOn-" .. (showAltBar and "ClassResource-InCombat-NoMana" or "InCombat-NoMana"))
+    flash:SetTexCoord(0, 1, 0, 1)
+    if not showAltBar then
+        flash:SetSize(197, 71)
+        flash:SetPoint("CENTER", container, "CENTER", 0, 0)
+    end
+end
+
 local function GrowBar()
     local hpContainer, healthBar, mask = GetHealthBits()
     if BetterBlizzFramesDB.classicFrames then
@@ -98,6 +173,8 @@ local function GrowBar()
     if not BBF.HasNoPortrait("player") then
         SetDefaultManaShown(false)
         SetDefaultFrameTexture("plunderstorm-UI-HUD-UnitFrame-Player-PortraitOn-2x")
+        BBF.UpdateNoShadowPlayerAltFrameTexture()
+        BBF.UpdatePlayerFrameFlash()
         if BetterBlizzFramesDB.symmetricPlayerFrame then
             local width, containerHeight, barHeight = BBF.GetMirrorPlayerHealthbarSize()
             SetContainerPoint(hpContainer, 77)
@@ -105,6 +182,7 @@ local function GrowBar()
             healthBar:SetSize(width, barHeight)
             BBF.SetMirrorPlayerHealthbarMask()
             BBF.SetMirrorPlayerFrameTexture()
+            BBF.SetMirrorPlayerAltFrameTexture()
         else
             mask:SetAtlas("plunderstorm-UI-HUD-UnitFrame-Player-PortraitOn-Bar-Health-Mask-2x")
             mask:SetPoint("TOPLEFT", healthBar, "TOPLEFT", -2, 0)
@@ -136,6 +214,8 @@ local function RestoreBar()
     if not BBF.HasNoPortrait("player") then
         SetDefaultManaShown(true)
         SetDefaultFrameTexture("UI-HUD-UnitFrame-Player-PortraitOn")
+        BBF.UpdateNoShadowPlayerAltFrameTexture()
+        BBF.UpdatePlayerFrameFlash()
         if BetterBlizzFramesDB.symmetricPlayerFrame then
             local width, containerHeight, barHeight = BBF.GetMirrorPlayerHealthbarSize()
             SetContainerPoint(hpContainer, 85)
@@ -143,6 +223,7 @@ local function RestoreBar()
             healthBar:SetSize(width, barHeight)
             BBF.SetMirrorPlayerHealthbarMask()
             BBF.SetMirrorPlayerFrameTexture()
+            BBF.SetMirrorPlayerAltFrameTexture()
             return
         end
         mask:SetAtlas("UI-HUD-UnitFrame-Player-PortraitOn-Bar-Health-Mask", true)
