@@ -40,6 +40,145 @@ local titleText = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: \
 local playerClass = UnitClassBase("player")
 local playerClassResourceScale = "classResource" .. playerClass .. "Scale"
 
+local LSM = LibStub("LibSharedMedia-3.0")
+
+-- GUI font override (Misc > GUI). Walks our settings panels and applies the chosen font plus a size offset to every
+-- text object, remembering each one's original font so the setting can be changed or reverted live.
+local GUI_FONT_BASE_SIZE = 12 -- checkbox text size, the size the "Size" dropdown is relative to
+local guiFontPanels = {}
+local guiFontOriginals = setmetatable({}, { __mode = "k" })
+local guiDerivedFontObjects = {}
+local guiDerivedFontCount = 0
+local guiFontApplied = false
+
+local function GetGuiFontSettings()
+    local db = BetterBlizzFramesDB
+    if not (db and db.guiFontEnabled) then
+        return nil, 0
+    end
+    local fontPath = db.guiFont and LSM:Fetch(LSM.MediaType.FONT, db.guiFont, true) or nil
+    return fontPath, (tonumber(db.guiFontSize) or GUI_FONT_BASE_SIZE) - GUI_FONT_BASE_SIZE
+end
+
+local function ApplyGuiFontToInstance(obj, fontPath, sizeDelta)
+    local original = guiFontOriginals[obj]
+    if not original then
+        local path, size, flags = obj:GetFont()
+        if not path then return end
+        original = { path, size, flags }
+        guiFontOriginals[obj] = original
+    end
+    obj:SetFont(fontPath or original[1], math.max(original[2] + sizeDelta, 6), original[3])
+end
+
+local function GetDerivedFontObject(source, fontPath, sizeDelta)
+    local key = tostring(source) .. "|" .. (fontPath or "") .. "|" .. sizeDelta
+    local fontObject = guiDerivedFontObjects[key]
+    if not fontObject then
+        guiDerivedFontCount = guiDerivedFontCount + 1
+        fontObject = CreateFont("BBF_GuiFont" .. guiDerivedFontCount)
+        fontObject:CopyFontObject(source)
+        local path, size, flags = source:GetFont()
+        fontObject:SetFont(fontPath or path, math.max(size + sizeDelta, 6), flags)
+        guiDerivedFontObjects[key] = fontObject
+    end
+    return fontObject
+end
+
+-- Buttons re-apply their font objects on hover/disable, so swap the font objects instead of the font string
+local function ApplyGuiFontToButton(button, fontPath, sizeDelta)
+    local original = guiFontOriginals[button]
+    if not original then
+        local normal = button:GetNormalFontObject()
+        if not normal then return end
+        original = { normal, button:GetHighlightFontObject(), button:GetDisabledFontObject() }
+        guiFontOriginals[button] = original
+    end
+    local changed = fontPath or sizeDelta ~= 0
+    local function Pick(source)
+        return changed and GetDerivedFontObject(source, fontPath, sizeDelta) or source
+    end
+    button:SetNormalFontObject(Pick(original[1]))
+    if original[2] then button:SetHighlightFontObject(Pick(original[2])) end
+    if original[3] then button:SetDisabledFontObject(Pick(original[3])) end
+end
+
+local function WalkGuiFonts(frame, fontPath, sizeDelta)
+    -- Regions first so a button's own font string is recorded before its font objects are swapped
+    for _, region in ipairs({ frame:GetRegions() }) do
+        if region:IsObjectType("FontString") then
+            ApplyGuiFontToInstance(region, fontPath, sizeDelta)
+        end
+    end
+    if frame:IsObjectType("EditBox") then
+        ApplyGuiFontToInstance(frame, fontPath, sizeDelta)
+    elseif frame:IsObjectType("Button") then
+        ApplyGuiFontToButton(frame, fontPath, sizeDelta)
+    end
+    for _, child in ipairs({ frame:GetChildren() }) do
+        WalkGuiFonts(child, fontPath, sizeDelta)
+    end
+end
+
+function BBF.ApplyGuiFont()
+    local fontPath, sizeDelta = GetGuiFontSettings()
+    -- Leave the GUI untouched until the setting has been used this session
+    if not fontPath and sizeDelta == 0 and not guiFontApplied then return end
+    guiFontApplied = true
+    for _, panel in ipairs(guiFontPanels) do
+        WalkGuiFonts(panel, fontPath, sizeDelta)
+    end
+end
+
+local function RegisterGuiFontPanel(panel)
+    table.insert(guiFontPanels, panel)
+    -- Re-apply when a page is shown so text created after the last pass (lists, popups) is covered too
+    panel:HookScript("OnShow", function()
+        BBF.ApplyGuiFont()
+    end)
+end
+
+-- Our tooltips use the shared GameTooltip, so the GUI font is only applied to its lines while one of ours is showing
+-- and restored as soon as it hides or gets cleared, leaving every other tooltip untouched
+local guiTooltipOriginals = {}
+local guiTooltipHooked = false
+
+local function RestoreGuiTooltipFonts()
+    for fontString, original in pairs(guiTooltipOriginals) do
+        fontString:SetFont(original[1], original[2], original[3])
+    end
+    wipe(guiTooltipOriginals)
+end
+
+local function ApplyGuiFontToTooltip()
+    local fontPath, sizeDelta = GetGuiFontSettings()
+    if not fontPath and sizeDelta == 0 then return end
+    if not guiTooltipHooked then
+        GameTooltip:HookScript("OnHide", RestoreGuiTooltipFonts)
+        GameTooltip:HookScript("OnTooltipCleared", RestoreGuiTooltipFonts)
+        guiTooltipHooked = true
+    end
+    for i = 1, GameTooltip:NumLines() do
+        for _, side in ipairs({ "Left", "Right" }) do
+            local fontString = _G["GameTooltipText" .. side .. i]
+            if fontString then
+                local original = guiTooltipOriginals[fontString]
+                if not original then
+                    local path, size, flags = fontString:GetFont()
+                    if path then
+                        original = { path, size, flags }
+                        guiTooltipOriginals[fontString] = original
+                    end
+                end
+                if original then
+                    fontString:SetFont(fontPath or original[1], math.max(original[2] + sizeDelta, 6), original[3])
+                end
+            end
+        end
+    end
+    GameTooltip:Show() -- resize the tooltip to fit the new text size
+end
+
 BBF.partyPointerTargetIconReplacement = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-QuestPoiImportant-QuestBang.tga"
 BBF.squareGreenGlow = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\newplayertutorial-drag-slotgreen.tga"
 BBF.squareBlueGlow = "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\newplayertutorial-drag-slotblue.tga"
@@ -124,71 +263,79 @@ end
 
 
 
-StaticPopupDialogs["BBF_CONFIRM_RELOAD"] = {
-    text = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: \n\n" .. L["Popup_Reload_Required"],
-    button1 = L["Yes"],
-    button2 = L["No"],
-    OnAccept = function()
-        BetterBlizzFramesDB.reopenOptions = true
-        ReloadUI()
-    end,
-    timeout = 0,
-    whileDead = true,
-    hideOnEscape = true,
-}
+BBF.popupBuilders["BBF_CONFIRM_RELOAD"] = function()
+    return {
+        text = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: \n\n" .. L["Popup_Reload_Required"],
+        button1 = L["Yes"],
+        button2 = L["No"],
+        OnAccept = function()
+            BetterBlizzFramesDB.reopenOptions = true
+            ReloadUI()
+        end,
+        timeout = 0,
+        whileDead = true,
+        hideOnEscape = true,
+    }
+end
 
-StaticPopupDialogs["BBF_TOT_MESSAGE"] = {
-    text = L["Popup_Tot_Message_Text"],
-    button1 = L["Yes"],
-    button2 = L["No"],
-    OnCancel = function()
-        BetterBlizzFramesDB.targetToTXPos = 0
-        BBF.targetToTXPos:SetValue(0)
-        BetterBlizzFramesDB.focusToTXPos = 0
-        BBF.focusToTXPos:SetValue(0)
-        BetterBlizzFramesDB.targetToTYPos = 0
-        BBF.targetToTYPos:SetValue(0)
-        BetterBlizzFramesDB.focusToTYPos = 0
-        BBF.focusToTYPos:SetValue(0)
-        BBF.MoveToTFrames()
-    end,
-    timeout = 0,
-    whileDead = true,
-    hideOnEscape = true,
-}
+BBF.popupBuilders["BBF_TOT_MESSAGE"] = function()
+    return {
+        text = L["Popup_Tot_Message_Text"],
+        button1 = L["Yes"],
+        button2 = L["No"],
+        OnCancel = function()
+            BetterBlizzFramesDB.targetToTXPos = 0
+            BBF.targetToTXPos:SetValue(0)
+            BetterBlizzFramesDB.focusToTXPos = 0
+            BBF.focusToTXPos:SetValue(0)
+            BetterBlizzFramesDB.targetToTYPos = 0
+            BBF.targetToTYPos:SetValue(0)
+            BetterBlizzFramesDB.focusToTYPos = 0
+            BBF.focusToTYPos:SetValue(0)
+            BBF.MoveToTFrames()
+        end,
+        timeout = 0,
+        whileDead = true,
+        hideOnEscape = true,
+    }
+end
 
-StaticPopupDialogs["BBF_CONFIRM_PROFILE"] = {
-    text = "",
-    button1 = L["Yes"],
-    button2 = L["No"],
-    OnAccept = function(self)
-        if self.data and self.data.func then
-            self.data.func()
-        end
-    end,
-    timeout = 0,
-    whileDead = true,
-    hideOnEscape = true,
-}
+BBF.popupBuilders["BBF_CONFIRM_PROFILE"] = function()
+    return {
+        text = "",
+        button1 = L["Yes"],
+        button2 = L["No"],
+        OnAccept = function(self)
+            if self.data and self.data.func then
+                self.data.func()
+            end
+        end,
+        timeout = 0,
+        whileDead = true,
+        hideOnEscape = true,
+    }
+end
 
-StaticPopupDialogs["BBF_CONFIRM_PVP_WHITELIST"] = {
-    text = titleText .. L["Popup_PVP_Whitelist"],
-    button1 = L["Yes"],
-    button2 = L["No"],
-    OnAccept = function()
-        local importString = BBF.isTBC and "!BBFvEvqOnvwuu7uNYfRWOttLbuSFLsTdmslIv3iM202yYm1AiP0Ile6RjVK)R5L))77)sA70QmkI1foBk6IQ4g3426mqhXfoGicZSki4obhgCwQl6QQWmo37)NwRMM(JRsiVZ9(E3Z9EU3BAOJizyA21ID0NpAelwb(cXT0CvjUf)YCljtLJNz8KPTL2QVVHgBOXfefCSvAMLE8dkYC0NdFZFoA5VyHOCMYymMkt5TpE5V0dz5Mie45qVVgH4ekfxM1iUvPIslUInHqk0Z4dVXyH)NE6P3TTTTfl8Bo5jhh)YAM37RHLUiA(F3VjNPfw5mga)0mq7w6Iq4tqx7xpmtxuXpKRrQPez1wCx3QEJHpbCGvrWtKYrjS0vD(bw9jHXJF2aIsclUrktbxMjONWtcdYF1pWDekH2WoRrsEgEbhTW2kiRrBHHkrxAeURwWKgJP8JB6WHkHO8T)V21UmqZAOry2f9Glz)irtPC481ZgnUMxNDry(BIWECktwg7PmsjYzwD8o)nHq3brPgSeZTEESHUdKyA0G7MGRsZ3qaUbNMyA4Q3J4JDnIj3icN5QngtOnfFW9Rhlvm5Q3dooJCB)2YmgrK22zQj2JZGwFj5(9erI5yIcqcpHYwZtxxeERVeoNJ37dPoPeZvzLRBkb4Co(Koft6JHi)f)cbSUxkdY96J9kQeQCRbb8vHHF7NPc(4fCu2L4uClSYhKzOrW1OuWLJWsNxYCnRjtDTPHU3oXQEkjmhSfy7E7HEkcDLptzBONcDTdQmRpvAgQysypfxvZlPRDaD1ShZNqXD5wP5uQ70cRANT7Qziw)elfHRC5Q8CLrswoELmvS(9ZuXc)6)9)i7qp8hlU4V)(3)(gHFiSFSJD5u0DfuSGgatB6xyyYkWSeOEm9Ax3wB60MT3jL13zqiBVt4sl7tbmHLrQIookQkUoQBV0YWKESxRBSWpflTsKvuhH3KndD1c1dFWs2Pz1LuPRwg5rejMK5iYyevO41krnYJGo7OUQ7rC6hsiB(t7COFiCFAeWcXXcdSjq6Gfd3)IT3grj7Ush76Vnq7TDJLO7YRzJSORUwr2nwcM9N8UJ1hWCQI4aqblW7anempmfR7oqOMhg(UVDtPf83H5UoPb6dNwNJY7RnIyZ1mZDDO7o9RJNIZD8gsOvI8C3kYMU7S8Mmv5w0T)vLRAsYTGHPzMpUcfhLvYwv1BC4vbE5r9M3q9uRVjNOjWzAIAWMKRzsr9vuEMMG4Hi6ikxAmGDbHfBtNdfpeCekfF3HOjqPWvzc(bDKLGlqYtvmUYw4wOMC8fwgo0q0JWRJhUTt2IFKi(tXFOHgOpkL0Yg1Urv4OB7c(zLb6RCtRr9qp0JyL(YGnUqEbz9Kf3IM39Sm02kK33ZPu2fTYqUFeuiuWyWSzr5qL0EBRSEAVQ4hc3Hxn(GsEbUfMmmonYAC1m18sd3bm)vOsMwQjK5Vc09d8f0Zymkxy5wtOD)a4S7BuVPAQ8U5fbxgC29b7LSO8bde6E3hC(349oSWrBLy6GBwE(3ajEB959eVfM921q7CBy6C0rgb6LPZbrEbbDhvvih5fW(7LYoHgtGAlSWrJlwf1w5YYZRquB2eWkMV)EH5MWR2RIcoUuw8JvnBX7AUjGj3z9retUtOvGuZr5ICw15(7Tc68uFJKCCBguA8H92RUkrNFcxVf3J(bcQshtO078yOHX9C)S)VhLEhmZQEnm7xAZY7nw1BTz3anDMvVm93Qgzgh(ZyfvSXmfAUe3C4)d!BBF" or "!BBFvM1ASrX1vygBk9MqufP8qJviIjfcGuObxPyAfkfZ6Nly7ixVogvlHexVZD39INDMH7mZA2excXHeQQscrOuPsKijevbsrPcJbbLiJ5rmeOriTcPO0evsATajesasM)08dA65CNDxVWYSZg(LXZ35Epp)oNZ1klVjDQl9p(NiV8o7RjtAAM9J)cuxpbBfoAT7rf6CQ5imtdQijtFl9e3YWsSXAJ241BOH1pRznROnE71TUTa)qT7LN22s4snD3YVGRdhNQspFCF5QXUUchJMvcTiMX5mtxTo4MjDYn7TK7NGh2)EEZtdodLAZnhuyusvLrnaPVsl8mCtMwSuCMHErbk72li4OgURbeBmF8ABIAyeMqURHyCuurxqmBUG7IQzpmDwABxULzysdYQQCM)fi)5YlESuSWVuugYF44GyIOmHf3jDqodaf5ITdaNUBUbegq1RnHLJBGcCX2vRjswqI9UbtxMidZK5JvP2IEyaa5vXR3EEDt5MAX8STfmhNQXIF1Jt22T9pEt44PUSqfzB3gm4l3MVHF5cQsnxjMRfeCBYZyiQyq4uiF9BlJeTAkOq(gehscAVGwvrIV(Tvv2xRsB6fnzM6qkgCaowgzqfuE37RvaBaNIQYHq3S9J3cOl)OUzuYwIGHOOutD)aeJPBL2)ABjI)LQuBT1sUZFbVJFEmprgEgQH2gmDC5MXDD8XcFVsA4QRhVfPcgJN2ZGgx4LUSGlatv57(a)YNej8CyADrtYJhUD8DFGQYHVJud3qC2awEG50guvZD90dnkJIcLUVfiEUFA4G75TuvEN9G31s2GzCQWu6RxRKAa9HUPyAB0ZmPblyEI3zpQkFlvAOS0qIOGtn4VuXW93sl45vaN3b)EPHbuqmhxb47B3JRtH)x466b)EYWVji9urGQPKOcUji1ivGLGd)MGU9H41T47Z2AoLLdtse2QHNzLmSpuv5uVgCaFueN4qU89PMLH(uVMAn1Di86weurjsVkTwPc3uRsdthBJlcwuqmsUBit77XYNCjgKuXtWd3TacQQm(KZuZeZYZyTADXDyISbRSJpPQYvrc3CZVqC6Qhn4KEYenllPJy6Y)LY04szyNjRhWPwZSxNmexSdwSH4jCnbETYjaN96a)2Uq1yjfuJtTRkv7n(5LutLyPDyAnKbtpzfImJFEW6ogEl)SYltV6Xi)(fdFBKMGZ0zqEOenaCvLJGmnNtQgGCjPHlgkdP()UKYoEwT(yCZa79c4uvgdtDhbyaGgOc9Yv8XGSZT(iaMX6of1r2DoHB5W26JaoGli9ATlyy5jq3LH7WhGBWDZgUAp(fiN)jrgVsc(9BzgEM55FsvLlVizEtlCM2azLSjXgYsufZqC5fPwZSMdgZwzW1nZAoKH7YN4jJfwCRfXtqllPC4Uuvg(eyaRhyuKSiZrZIQWYh(eq6XbrpCl002aLruQiD4ID1dsM89bPenXeqv4GbgLN89vvMy5(U2KmdWVott4qUJjwUQYK1lRZA3iRDkKZatvAYWk(GfkLMS(zyEj371Bl)pIx99EDWBenBAjnyulBmAso5)b56AH7ydkEv0YfeaO3tGuY9A5fxQeDaUiArQ)evQwEujR18A2WIoOKZlfv3AiNWUvuqY)qbdN(sO1sLiMbOK1Flz(FmMrcm53ZahQO6Y)bzjR(rXllIiofMtQBRHyIaVSv)OewoFvdOhRYjMbriNOt033Kbvh6lAjYp1c8Rl6blEvKDVlPJRxOAQjg1XvBtC3uLWa9Gk1U3LQYo(kzlI8Jh3j3CqTETCzvr68o(kO17DKEa)o2Lq0uX213HK9)IfW)6WWc4uvUfIDA5CojKLOnjydfMKOyQk34zXuWI9B6JNKBeC3GB8SKgxU0z0QblnSheysDbEXk0VeeGCPBIenDaJ)Jkxmyq9Gt5U0njRaJNtjtwGuoy8VsRNEq8ROZfGm0t)Jm3CbxG04ZJwY8NzCQhOzBfC6n(8KoZG2utGOWiBfNMc)yNzkpVR3jWu0EO28kpptVtaZIVtzkAHXyWJVBA8QiR5q7KS7)Cj12X4jtvwxnaI7Gs(Cw8bnaJ9(m4hqDChKm8ai48BX2gnJLimfbeHCx5mT(PgqAvZ(RXIF8UfhPTwGh7OpnE6aZRLoqLkefo9s7cF0N(AnkzRlSCs3cO6lE1SyZ1Aey8s1NCUHzi4dJImfj316BMjEQGLM7AKJSdeA3Hc9i7qvPJ5k9LmMnU20mrNhwPwhZLSqcaFS2y8KMATWkDC9GUKfsiB22p7Xg5q7HLWOONcbSz7CfBR9CFzFpSX6EUVeCb1HPRTWGONGvvlymADQ108DXdS3qbdavvU(2rWRjx(2DxF75cEc6TN03Msrttn5qfxCTEOjdvRa5uvo5wX7jw5PvNCRlBL4NiHDmlBLWK14B5yVqiHgMj)H6Arm5kzzT)gUUvU5g2HJavvoa(qtt1fMrGj4VOWXQkw29aFSQY38kyHw(cE)wGbNt9nVc5Kdd4hiQNUUr4(Vtomzb7hWlAndTQgQzb7hCdJ0x(Dscqlo1iWI2yhHClT8OYHVPQYzX95MQFyOXUy6CxAPo5ZEJsCY1ux)yfYlWtpGbRKMELUMuD9VSL0NCdpFkSQN8yzlrv5VIpg3arYqDPbo4cIsvzZ4ZgmM8fL0AZkUx5BSbqa9FJ(kdZHfh6zW01AxGVsr5Op7gj1pBK6sYooqL2wV(zdjdFo6r)vbRKh4ZbxFA8aJrtWs6rRMvjovAshnwvv1aosuCt3PYp6o4hYxKIFnAZ(XTOnER79)qfdoPlTV9D6F4h(HAjnGpK30r0bUgQbgK6XZjyRTHJtw9CLecDla3iqpH1mDXn1duKvpxvLV4W(bOIVMrWUQV4WQk)Zxcn71hMzJavvAahKVW7Voe1yqzxV2f04fFkNgQ488nIttypF)zE2eSL3AXDJfCwODBrzjVb(2j5(TbA)VXHipXILjEf6Hw9psYtaRSp(5qHxujpDa(SFp4OwL)4bNJCgSaA6yEPtdBy2oSUVv2GFpmaTQYf3ggN6KNGP1SvCRWRtrruR53Cv0fSQqbdajlzAP54x5HJKkhNxR1ejyY5SqvzjtxP41OVmEBne6Tbavv(S3d9b9YW)(c0swSrc4ZEVsi0uEMNcG(rXsBniWNzLEG8xa8Vch4Z8uKrXroMQ5uWibOYxDJgmkm)X()D9HRUAzKvt(oGbVmgI9DhTi7JHxWpx)7okyLsYN(dtjqGKtJpz6E7Khp1awcZc8dNEpvGFyc8nNZvxyhpGtv5m4JvngMKcTOP2vYepZXiF6NGHMI)bE8lGd9E(0prvP)LI6Kv5bO(xQQY2Fm8yLbgGhiIEM8BzlbS9hlxXjGhb)Jx1BwB2vOEc6MsXDzgWao))!BBF"
-        local profileData, errorMessage = BBF.OldImportProfile(importString, "auraWhitelist")
-        if errorMessage then
-            BBF.Print(L["Print_Error_Importing_Whitelist"] .. " " .. tostring(errorMessage))
-            return
-        end
-        BBF.DeepMergeTables(BetterBlizzFramesDB.auraWhitelist, profileData)
-        BBF.auraWhitelistRefresh()
-        Settings.OpenToCategory(BBF.category:GetID(), BBF.aurasSubCategory)
-    end,
-    timeout = 0,
-    whileDead = true,
-}
+BBF.popupBuilders["BBF_CONFIRM_PVP_WHITELIST"] = function()
+    return {
+        text = titleText .. L["Popup_PVP_Whitelist"],
+        button1 = L["Yes"],
+        button2 = L["No"],
+        OnAccept = function()
+            local importString = BBF.isTBC and "!BBFvEvqOnvwuu7uNYfRWOttLbuSFLsTdmslIv3iM202yYm1AiP0Ile6RjVK)R5L))77)sA70QmkI1foBk6IQ4g3426mqhXfoGicZSki4obhgCwQl6QQWmo37)NwRMM(JRsiVZ9(E3Z9EU3BAOJizyA21ID0NpAelwb(cXT0CvjUf)YCljtLJNz8KPTL2QVVHgBOXfefCSvAMLE8dkYC0NdFZFoA5VyHOCMYymMkt5TpE5V0dz5Mie45qVVgH4ekfxM1iUvPIslUInHqk0Z4dVXyH)NE6P3TTTTfl8Bo5jhh)YAM37RHLUiA(F3VjNPfw5mga)0mq7w6Iq4tqx7xpmtxuXpKRrQPez1wCx3QEJHpbCGvrWtKYrjS0vD(bw9jHXJF2aIsclUrktbxMjONWtcdYF1pWDekH2WoRrsEgEbhTW2kiRrBHHkrxAeURwWKgJP8JB6WHkHO8T)V21UmqZAOry2f9Glz)irtPC481ZgnUMxNDry(BIWECktwg7PmsjYzwD8o)nHq3brPgSeZTEESHUdKyA0G7MGRsZ3qaUbNMyA4Q3J4JDnIj3icN5QngtOnfFW9Rhlvm5Q3dooJCB)2YmgrK22zQj2JZGwFj5(9erI5yIcqcpHYwZtxxeERVeoNJ37dPoPeZvzLRBkb4Co(Koft6JHi)f)cbSUxkdY96J9kQeQCRbb8vHHF7NPc(4fCu2L4uClSYhKzOrW1OuWLJWsNxYCnRjtDTPHU3oXQEkjmhSfy7E7HEkcDLptzBONcDTdQmRpvAgQysypfxvZlPRDaD1ShZNqXD5wP5uQ70cRANT7Qziw)elfHRC5Q8CLrswoELmvS(9ZuXc)6)9)i7qp8hlU4V)(3)(gHFiSFSJD5u0DfuSGgatB6xyyYkWSeOEm9Ax3wB60MT3jL13zqiBVt4sl7tbmHLrQIookQkUoQBV0YWKESxRBSWpflTsKvuhH3KndD1c1dFWs2Pz1LuPRwg5rejMK5iYyevO41krnYJGo7OUQ7rC6hsiB(t7COFiCFAeWcXXcdSjq6Gfd3)IT3grj7Ush76Vnq7TDJLO7YRzJSORUwr2nwcM9N8UJ1hWCQI4aqblW7anempmfR7oqOMhg(UVDtPf83H5UoPb6dNwNJY7RnIyZ1mZDDO7o9RJNIZD8gsOvI8C3kYMU7S8Mmv5w0T)vLRAsYTGHPzMpUcfhLvYwv1BC4vbE5r9M3q9uRVjNOjWzAIAWMKRzsr9vuEMMG4Hi6ikxAmGDbHfBtNdfpeCekfF3HOjqPWvzc(bDKLGlqYtvmUYw4wOMC8fwgo0q0JWRJhUTt2IFKi(tXFOHgOpkL0Yg1Urv4OB7c(zLb6RCtRr9qp0JyL(YGnUqEbz9Kf3IM39Sm02kK33ZPu2fTYqUFeuiuWyWSzr5qL0EBRSEAVQ4hc3Hxn(GsEbUfMmmonYAC1m18sd3bm)vOsMwQjK5Vc09d8f0Zymkxy5wtOD)a4S7BuVPAQ8U5fbxgC29b7LSO8bde6E3hC(349oSWrBLy6GBwE(3ajEB959eVfM921q7CBy6C0rgb6LPZbrEbbDhvvih5fW(7LYoHgtGAlSWrJlwf1w5YYZRquB2eWkMV)EH5MWR2RIcoUuw8JvnBX7AUjGj3z9retUtOvGuZr5ICw15(7Tc68uFJKCCBguA8H92RUkrNFcxVf3J(bcQshtO078yOHX9C)S)VhLEhmZQEnm7xAZY7nw1BTz3anDMvVm93Qgzgh(ZyfvSXmfAUe3C4)d!BBF" or "!BBFvM1ASrX1vygBk9MqufP8qJviIjfcGuObxPyAfkfZ6Nly7ixVogvlHexVZD39INDMH7mZA2excXHeQQscrOuPsKijevbsrPcJbbLiJ5rmeOriTcPO0evsATajesasM)08dA65CNDxVWYSZg(LXZ35Epp)oNZ1klVjDQl9p(NiV8o7RjtAAM9J)cuxpbBfoAT7rf6CQ5imtdQijtFl9e3YWsSXAJ241BOH1pRznROnE71TUTa)qT7LN22s4snD3YVGRdhNQspFCF5QXUUchJMvcTiMX5mtxTo4MjDYn7TK7NGh2)EEZtdodLAZnhuyusvLrnaPVsl8mCtMwSuCMHErbk72li4OgURbeBmF8ABIAyeMqURHyCuurxqmBUG7IQzpmDwABxULzysdYQQCM)fi)5YlESuSWVuugYF44GyIOmHf3jDqodaf5ITdaNUBUbegq1RnHLJBGcCX2vRjswqI9UbtxMidZK5JvP2IEyaa5vXR3EEDt5MAX8STfmhNQXIF1Jt22T9pEt44PUSqfzB3gm4l3MVHF5cQsnxjMRfeCBYZyiQyq4uiF9BlJeTAkOq(gehscAVGwvrIV(Tvv2xRsB6fnzM6qkgCaowgzqfuE37RvaBaNIQYHq3S9J3cOl)OUzuYwIGHOOutD)aeJPBL2)ABjI)LQuBT1sUZFbVJFEmprgEgQH2gmDC5MXDD8XcFVsA4QRhVfPcgJN2ZGgx4LUSGlatv57(a)YNej8CyADrtYJhUD8DFGQYHVJud3qC2awEG50guvZD90dnkJIcLUVfiEUFA4G75TuvEN9G31s2GzCQWu6RxRKAa9HUPyAB0ZmPblyEI3zpQkFlvAOS0qIOGtn4VuXW93sl45vaN3b)EPHbuqmhxb47B3JRtH)x466b)EYWVji9urGQPKOcUji1ivGLGd)MGU9H41T47Z2AoLLdtse2QHNzLmSpuv5uVgCaFueN4qU89PMLH(uVMAn1Di86weurjsVkTwPc3uRsdthBJlcwuqmsUBit77XYNCjgKuXtWd3TacQQm(KZuZeZYZyTADXDyISbRSJpPQYvrc3CZVqC6Qhn4KEYenllPJy6Y)LY04szyNjRhWPwZSxNmexSdwSH4jCnbETYjaN96a)2Uq1yjfuJtTRkv7n(5LutLyPDyAnKbtpzfImJFEW6ogEl)SYltV6Xi)(fdFBKMGZ0zqEOenaCvLJGmnNtQgGCjPHlgkdP()UKYoEwT(yCZa79c4uvgdtDhbyaGgOc9Yv8XGSZT(iaMX6of1r2DoHB5W26JaoGli9ATlyy5jq3LH7WhGBWDZgUAp(fiN)jrgVsc(9BzgEM55FsvLlVizEtlCM2azLSjXgYsufZqC5fPwZSMdgZwzW1nZAoKH7YN4jJfwCRfXtqllPC4Uuvg(eyaRhyuKSiZrZIQWYh(eq6XbrpCl002aLruQiD4ID1dsM89bPenXeqv4GbgLN89vvMy5(U2KmdWVott4qUJjwUQYK1lRZA3iRDkKZatvAYWk(GfkLMS(zyEj371Bl)pIx99EDWBenBAjnyulBmAso5)b56AH7ydkEv0YfeaO3tGuY9A5fxQeDaUiArQ)evQwEujR18A2WIoOKZlfv3AiNWUvuqY)qbdN(sO1sLiMbOK1Flz(FmMrcm53ZahQO6Y)bzjR(rXllIiofMtQBRHyIaVSv)OewoFvdOhRYjMbriNOt033Kbvh6lAjYp1c8Rl6blEvKDVlPJRxOAQjg1XvBtC3uLWa9Gk1U3LQYo(kzlI8Jh3j3CqTETCzvr68o(kO17DKEa)o2Lq0uX213HK9)IfW)6WWc4uvUfIDA5CojKLOnjydfMKOyQk34zXuWI9B6JNKBeC3GB8SKgxU0z0QblnSheysDbEXk0VeeGCPBIenDaJ)Jkxmyq9Gt5U0njRaJNtjtwGuoy8VsRNEq8ROZfGm0t)Jm3CbxG04ZJwY8NzCQhOzBfC6n(8KoZG2utGOWiBfNMc)yNzkpVR3jWu0EO28kpptVtaZIVtzkAHXyWJVBA8QiR5q7KS7)Cj12X4jtvwxnaI7Gs(Cw8bnaJ9(m4hqDChKm8ai48BX2gnJLimfbeHCx5mT(PgqAvZ(RXIF8UfhPTwGh7OpnE6aZRLoqLkefo9s7cF0N(AnkzRlSCs3cO6lE1SyZ1Aey8s1NCUHzi4dJImfj316BMjEQGLM7AKJSdeA3Hc9i7qvPJ5k9LmMnU20mrNhwPwhZLSqcaFS2y8KMATWkDC9GUKfsiB22p7Xg5q7HLWOONcbSz7CfBR9CFzFpSX6EUVeCb1HPRTWGONGvvlymADQ108DXdS3qbdavvU(2rWRjx(2DxF75cEc6TN03Msrttn5qfxCTEOjdvRa5uvo5wX7jw5PvNCRlBL4NiHDmlBLWK14B5yVqiHgMj)H6Arm5kzzT)gUUvU5g2HJavvoa(qtt1fMrGj4VOWXQkw29aFSQY38kyHw(cE)wGbNt9nVc5Kdd4hiQNUUr4(Vtomzb7hWlAndTQgQzb7hCdJ0x(Dscqlo1iWI2yhHClT8OYHVPQYzX95MQFyOXUy6CxAPo5ZEJsCY1ux)yfYlWtpGbRKMELUMuD9VSL0NCdpFkSQN8yzlrv5VIpg3arYqDPbo4cIsvzZ4ZgmM8fL0AZkUx5BSbqa9FJ(kdZHfh6zW01AxGVsr5Op7gj1pBK6sYooqL2wV(zdjdFo6r)vbRKh4ZbxFA8aJrtWs6rRMvjovAshnwvv1aosuCt3PYp6o4hYxKIFnAZ(XTOnER79)qfdoPlTV9D6F4h(HAjnGpK30r0bUgQbgK6XZjyRTHJtw9CLecDla3iqpH1mDXn1duKvpxvLV4W(bOIVMrWUQV4WQk)Zxcn71hMzJavvAahKVW7Voe1yqzxV2f04fFkNgQ488nIttypF)zE2eSL3AXDJfCwODBrzjVb(2j5(TbA)VXHipXILjEf6Hw9psYtaRSp(5qHxujpDa(SFp4OwL)4bNJCgSaA6yEPtdBy2oSUVv2GFpmaTQYf3ggN6KNGP1SvCRWRtrruR53Cv0fSQqbdajlzAP54x5HJKkhNxR1ejyY5SqvzjtxP41OVmEBne6Tbavv(S3d9b9YW)(c0swSrc4ZEVsi0uEMNcG(rXsBniWNzLEG8xa8Vch4Z8uKrXroMQ5uWibOYxDJgmkm)X()D9HRUAzKvt(oGbVmgI9DhTi7JHxWpx)7okyLsYN(dtjqGKtJpz6E7Khp1awcZc8dNEpvGFyc8nNZvxyhpGtv5m4JvngMKcTOP2vYepZXiF6NGHMI)bE8lGd9E(0prvP)LI6Kv5bO(xQQY2Fm8yLbgGhiIEM8BzlbS9hlxXjGhb)Jx1BwB2vOEc6MsXDzgWao))!BBF"
+            local profileData, errorMessage = BBF.OldImportProfile(importString, "auraWhitelist")
+            if errorMessage then
+                BBF.Print(L["Print_Error_Importing_Whitelist"] .. " " .. tostring(errorMessage))
+                return
+            end
+            BBF.DeepMergeTables(BetterBlizzFramesDB.auraWhitelist, profileData)
+            BBF.auraWhitelistRefresh()
+            Settings.OpenToCategory(BBF.category:GetID(), BBF.aurasSubCategory)
+        end,
+        timeout = 0,
+        whileDead = true,
+    }
+end
 
 ------------------------------------------------------------
 -- GUI Creation Functions
@@ -891,6 +1038,7 @@ local function CreateTooltip(widget, tooltipText, anchor)
         GameTooltip:SetText(tooltipText)
 
         GameTooltip:Show()
+        ApplyGuiFontToTooltip()
     end)
 
     widget:SetScript("OnLeave", function(self)
@@ -979,6 +1127,7 @@ local function CreateTooltipTwo(widget, title, mainText, subText, anchor, cvarNa
             GameTooltip:AddLine("|A:shop-games-magnifyingglass:17:17|a " .. string.format(L["Tooltip_Setting_Located_In_Section"], category), 0.4, 0.8, 1, true)
         end
         GameTooltip:Show()
+        ApplyGuiFontToTooltip()
     end)
     widget:SetScript("OnLeave", function(self)
         GameTooltip:Hide()
@@ -1053,8 +1202,8 @@ local function ShowProfileConfirmation(profileName, class, profileFunction, addi
     local profileText = string.format("|A:%s:16:16|a %s%s|r", icon, color, string.format(L["Profile_Label"], profileName))
     local confirmationText = titleText .. string.format(L["Profile_Confirmation_Text"], profileText, noteText)
 
-    StaticPopupDialogs["BBF_CONFIRM_PROFILE"].text = confirmationText
-    StaticPopup_Show("BBF_CONFIRM_PROFILE", nil, nil, { func = profileFunction })
+    BBF.GetPopup("BBF_CONFIRM_PROFILE").text = confirmationText
+    BBF.ShowPopup("BBF_CONFIRM_PROFILE", nil, nil, { func = profileFunction })
 end
 
 local function CreateClassButton(parent, class, name, twitchName, onClickFunc)
@@ -1219,7 +1368,7 @@ local function CreateImportExportUI(parent, title, dataTable, posX, posY, tableN
                 end
             end
             BBF.Print(string.format(L["Print_Imported_Successfully"], title) .. L["Print_Imported_Beta_Note"])
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         end
     end)
     return frame
@@ -1373,7 +1522,6 @@ local function CreateCheckbox(option, label, parent, cvarName, extraFunc)
 end
 
 
-local LSM = LibStub("LibSharedMedia-3.0")
 
 
 
@@ -1661,7 +1809,7 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
         button.npcData = npc
         local displayText
         if npc.id then
-            displayText = string.format("%s (%d)", (npc.name or "Name Missing"), npc.id)  -- Display as "Name (id)"
+            displayText = string.format("%s (%d)", (npc.name or L["Name_Missing"]), npc.id)  -- Display as "Name (id)"
         else
             displayText = npc.name  -- Display just the name if there's no id
         end
@@ -1773,7 +1921,7 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
                     if not BBF._colorPickerOkText then
                         BBF._colorPickerOkText = okBtn:GetText()
                     end
-                    okBtn:SetText(isAll and "Color ALL Auras" or BBF._colorPickerOkText)
+                    okBtn:SetText(isAll and L["Color_All_Auras"] or BBF._colorPickerOkText)
                 end
 
                 -- entryColors is the per-row array table (entry.color). Ensure table exists.
@@ -2070,7 +2218,7 @@ SettingsPanel:HookScript("OnShow", function()
 end)
 
 
-local function CreateFontDropdown(name, parentFrame, defaultText, settingKey, toggleFunc, point, dropdownWidth, maxVisibleItems)
+local function CreateFontDropdown(name, parentFrame, defaultText, settingKey, toggleFunc, point, dropdownWidth, maxVisibleItems, labelPos, noneText)
     maxVisibleItems = maxVisibleItems or 25  -- Default to 25 visible items if not provided
 
     -- Create container for label and dropdown
@@ -2090,6 +2238,7 @@ local function CreateFontDropdown(name, parentFrame, defaultText, settingKey, to
     dropdown:SetDefaultText(BetterBlizzFramesDB[settingKey] or defaultText)
     dropdown.Background:SetVertexColor(0.9,0.9,0.9)
     dropdown.Arrow:SetVertexColor(0.9,0.9,0.9)
+    dropdown.LabelText = label
 
     -- Custom font display for the selected font
     -- dropdown.customFontText = dropdown:CreateFontString(nil, "OVERLAY", "GameFontNormal")
@@ -2118,6 +2267,14 @@ local function CreateFontDropdown(name, parentFrame, defaultText, settingKey, to
             local itemHeight = 20  -- Each item's height
             local maxScrollExtent = maxVisibleItems * itemHeight
             rootDescription:SetScrollMode(maxScrollExtent)
+
+            if noneText then
+                rootDescription:CreateButton(noneText, function()
+                    BetterBlizzFramesDB[settingKey] = nil
+                    dropdown:SetDefaultText(noneText)
+                    toggleFunc(nil)
+                end)
+            end
 
             for index, fontName in ipairs(sortedFonts) do
                 local fontPath = fonts[fontName]
@@ -2182,7 +2339,7 @@ local function CreateTextureDropdown(name, parentFrame, labelText, settingKey, t
     local dropdown = CreateFrame("DropdownButton", nil, parentFrame, "WowStyle1DropdownTemplate")
     dropdown:SetPoint("BOTTOMLEFT", container, "BOTTOMLEFT", 0, 0)
     dropdown:SetWidth(dropdownWidth or 155)
-    dropdown:SetDefaultText(BetterBlizzFramesDB[settingKey] or "Select texture")
+    dropdown:SetDefaultText(BetterBlizzFramesDB[settingKey] or L["Select_Texture"])
     dropdown.Background:SetVertexColor(0.9,0.9,0.9)
     dropdown.Arrow:SetVertexColor(0.9,0.9,0.9)
 
@@ -2322,6 +2479,7 @@ end
 
 
 local function CreateTitle(parent)
+    RegisterGuiFontPanel(parent)
     local mainGuiAnchor = parent:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     mainGuiAnchor:SetPoint("TOPLEFT", 15, -15)
     mainGuiAnchor:SetText(" ")
@@ -2825,7 +2983,7 @@ local function guiGeneralTab()
     hideArenaFrames:SetPoint("TOPLEFT", settingsText, "BOTTOMLEFT", -24, pixelsOnFirstBox)
     hideArenaFrames:HookScript("OnClick", function(self)
         if not self:GetChecked() then
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         end
     end)
     CreateTooltip(hideArenaFrames, L["Tooltip_Hide_Arena_Frames"])
@@ -2862,7 +3020,7 @@ local function guiGeneralTab()
     --         hideBossFramesRaid:SetAlpha(0)
     --         hideBossFramesRaid:Disable()
     --         hideBossFramesRaid:SetChecked(false)
-    --         StaticPopup_Show("BBF_CONFIRM_RELOAD")
+    --         BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     --     end
     -- end)
 
@@ -2910,7 +3068,7 @@ local function guiGeneralTab()
     CreateTooltipTwo(enableLoCFrame, L["Enable_LossOfControl"], L["Tooltip_Enable_LoC_Frame_Full_Desc"])
     enableLoCFrame:HookScript("OnClick", function(self)
         if not self:GetChecked() then
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         end
     end)
     enableLoCFrame:SetScript("OnMouseDown", function(self, button)
@@ -2928,7 +3086,7 @@ local function guiGeneralTab()
     showCooldownOnLoC:SetPoint("LEFT", enableLoCFrame.text, "RIGHT", 0, 0)
     CreateTooltipTwo(showCooldownOnLoC, L["Show_CD"], L["Tooltip_Show_CD_On_LoC_Desc"])
     showCooldownOnLoC:HookScript("OnClick", function(self)
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         BBF.ToggleLossOfControlTestMode()
     end)
 
@@ -2982,7 +3140,7 @@ local function guiGeneralTab()
     darkModeUiAura:SetPoint("TOPLEFT", darkModeCastbars, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     darkModeUiAura:HookScript("OnClick", function(self)
         if not self:GetChecked() then
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         end
         BBF.DarkmodeFrames(true)
     end)
@@ -2997,7 +3155,7 @@ local function guiGeneralTab()
             if GameTooltip:IsShown() and GameTooltip:GetOwner() == self then
                 self:GetScript("OnEnter")(self)
             end
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         end
     end)
 
@@ -3280,7 +3438,7 @@ local function guiGeneralTab()
     CreateTooltipTwo(betterDefaultPartyFrames, L["Larger_Frames"], L["Tooltip_Better_Frames_Desc"])
     betterDefaultPartyFrames:HookScript("OnClick", function(self)
         if not self:GetChecked() then
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         end
     end)
 
@@ -3401,7 +3559,7 @@ local function guiGeneralTab()
                 BBF.HookAndUpdatePartyFrameRangeAlpha(true)
                 EnableElement(partyFrameRangeAlpha)
             else
-                StaticPopup_Show("BBF_CONFIRM_RELOAD")
+                BBF.ShowPopup("BBF_CONFIRM_RELOAD")
                 DisableElement(partyFrameRangeAlpha)
             end
         end)
@@ -3411,7 +3569,7 @@ local function guiGeneralTab()
                 if GameTooltip:IsShown() and GameTooltip:GetOwner() == self then
                     self:GetScript("OnEnter")(self)
                 end
-                StaticPopup_Show("BBF_CONFIRM_RELOAD")
+                BBF.ShowPopup("BBF_CONFIRM_RELOAD")
             end
         end)
     end
@@ -3837,13 +3995,13 @@ local function guiGeneralTab()
     biggerHealthbarsNameInside:SetPoint("LEFT", biggerHealthbars.text, "RIGHT", 0, 0)
     CreateTooltipTwo(biggerHealthbarsNameInside, L["Tooltip_Bigger_Healthbars_Name_Inside_Title"], L["Tooltip_Bigger_Healthbars_Name_Inside_Desc"])
     biggerHealthbarsNameInside:HookScript("OnClick", function()
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     end)
 
     biggerHealthbars:HookScript("OnClick", function(self)
         CheckAndToggleCheckboxes(biggerHealthbars)
         if not self:GetChecked() then
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         else
             BBF.BiggerDefaultPartyFrames()
         end
@@ -3888,7 +4046,7 @@ local function guiGeneralTab()
 
                 optCheckbox:SetScript("OnClick", function(self)
                     BetterBlizzFramesDB[optData.var] = self:GetChecked() or nil
-                    StaticPopup_Show("BBF_CONFIRM_RELOAD")
+                    BBF.ShowPopup("BBF_CONFIRM_RELOAD")
                 end)
 
                 previousCheckbox = optCheckbox
@@ -3917,11 +4075,11 @@ local function guiGeneralTab()
     singleValueStatusBarText:SetPoint("LEFT", formatStatusBarText.text, "RIGHT", 0, 0)
     CreateTooltipTwo(singleValueStatusBarText, L["No_Max_Value"], "|A:glueannouncementpopup-arrow:20:20|a " .. L["Tooltip_No_Max_Value_Desc"], L["Popup_Reload_Required"])
     singleValueStatusBarText:HookScript("OnClick", function()
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     end)
 
     formatStatusBarText:HookScript("OnClick", function(self)
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         CheckAndToggleCheckboxes(self)
     end)
 
@@ -3955,7 +4113,7 @@ local function guiGeneralTab()
     -- centerNames:SetPoint("TOPLEFT", classColorTargetNames, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     -- CreateTooltipTwo(centerNames, "Center Names", "Center the name on Player, Target & Focus frames.", "Will enable a fake name. Because of this other addons like HealthBarColor's name stuff will not work properly.")
     -- centerNames:HookScript("OnClick", function()
-    --     StaticPopup_Show("BBF_CONFIRM_RELOAD")
+    --     BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     -- end)
 
     local removeRealmNames = CreateCheckbox("removeRealmNames", L["Hide_Realm"], BetterBlizzFrames)
@@ -4008,14 +4166,14 @@ local function guiGeneralTab()
     classPortraitsUseSpecIcons:SetPoint("LEFT", classPortraits.text, "RIGHT", 0, 0)
     CreateTooltipTwo(classPortraitsUseSpecIcons, L["Use_Spec_Icons"], L["Tooltip_Use_Spec_Icons_Desc"], L["Tooltip_Use_Spec_Icons_Extra"])
     classPortraitsUseSpecIcons:HookScript("OnClick", function()
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     end)
 
     local classPortraitsIgnoreSelf = CreateCheckbox("classPortraitsIgnoreSelf", L["Ignore_Self"], classPortraitsUseSpecIcons)
     classPortraitsIgnoreSelf:SetPoint("LEFT", classPortraitsUseSpecIcons.text, "RIGHT", 0, 0)
     CreateTooltip(classPortraitsIgnoreSelf, L["Tooltip_Ignore_Player_Portrait_Desc"])
     classPortraitsIgnoreSelf:HookScript("OnClick", function()
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     end)
 
     classPortraits:HookScript("OnClick", function(self)
@@ -4028,7 +4186,7 @@ local function guiGeneralTab()
             classPortraitsUseSpecIcons:Hide()
             classPortraitsIgnoreSelf:Hide()
         end
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     end)
 
     -- Set initial visibility based on current setting
@@ -4078,7 +4236,7 @@ local function guiGeneralTab()
     CreateTooltip(overShieldsUnitFrames, L["Tooltip_UnitFrame_Overshields_Desc"], "ANCHOR_LEFT")
     overShieldsUnitFrames:HookScript("OnClick", function(self)
         BBF.HookOverShields()
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     end)
 
     local overShieldsCompactUnitFrames = CreateCheckbox("overShieldsCompactUnitFrames", L["B"], BetterBlizzFrames)
@@ -4086,7 +4244,7 @@ local function guiGeneralTab()
     CreateTooltip(overShieldsCompactUnitFrames, L["Tooltip_Compact_UnitFrames_Overshields_Desc"], "ANCHOR_LEFT")
     overShieldsCompactUnitFrames:HookScript("OnClick", function(self)
         BBF.HookOverShields()
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     end)
 
     overShields:HookScript("OnClick", function(self)
@@ -4100,7 +4258,7 @@ local function guiGeneralTab()
             overShieldsCompactUnitFrames:SetAlpha(1)
             overShieldsCompactUnitFrames:Enable()
             overShieldsCompactUnitFrames:SetChecked(true)
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         else
             BetterBlizzFramesDB.overShieldsCompact = false
             BetterBlizzFramesDB.overShieldsUnitFrames = false
@@ -4110,7 +4268,7 @@ local function guiGeneralTab()
             overShieldsCompactUnitFrames:SetAlpha(0)
             overShieldsCompactUnitFrames:Disable()
             overShieldsCompactUnitFrames:SetChecked(false)
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         end
     end)
 
@@ -4151,7 +4309,7 @@ local function guiGeneralTab()
     end
 
     queueTimer:HookScript("OnClick", function(self)
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         CheckAndToggleCheckboxes(queueTimer)
         if not BetterBlizzFramesDB.queueTimerAudio then
             DisableElement(queueTimerWarning)
@@ -4170,8 +4328,8 @@ local function guiGeneralTab()
     local btnGap = -2
     local profileButtons = {}
 
-    local starterButton = CreateClassButton(BetterBlizzFrames, "STARTER", "Starter", nil, function()
-        ShowProfileConfirmation("Starter", "STARTER", BBF.StarterProfile, "|cff808080(If you want to completely reset BBF there\nis a button in Advanced Settings)|r\n\n")
+    local starterButton = CreateClassButton(BetterBlizzFrames, "STARTER", L["Starter"], nil, function()
+        ShowProfileConfirmation(L["Starter"], "STARTER", BBF.StarterProfile, "|cff808080"..L["Profile_Reset_Hint"].."|r\n\n")
     end)
     starterButton:SetPoint("TOP", profilesFrame.coreText, "BOTTOM", 0, -3)
     table.insert(profileButtons, starterButton)
@@ -4220,7 +4378,7 @@ local function guiGeneralTab()
     resetBBFButton:SetWidth(104)
     resetBBFButton:SetPoint("BOTTOM", profilesFrame, "BOTTOM", 2, 15)
     resetBBFButton:SetScript("OnClick", function()
-        StaticPopup_Show("CONFIRM_RESET_BETTERBLIZZFRAMESDB")
+        BBF.ShowPopup("CONFIRM_RESET_BETTERBLIZZFRAMESDB")
     end)
     CreateTooltip(resetBBFButton, L["Tooltip_Full_Reset"], "ANCHOR_TOP")
     table.insert(profileButtons, resetBBFButton)
@@ -5133,7 +5291,7 @@ local function guiCastbars()
     castBarTargetText:SetPoint("TOPLEFT", buffsOnTopReverseCastbarMovement, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(castBarTargetText, L["Castbar_Target_Text"], L["Tooltip_Castbar_Target_Text_Desc"] .. "\n\n|cff32f795" .. L["Right_Click_To_Open_Options"] .. "|r")
     castBarTargetText:HookScript("OnClick", function()
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     end)
 
     local castBarTargetTextOptionsFrame
@@ -5215,7 +5373,7 @@ local function guiCastbars()
     castBarTargetHighlight:SetPoint("LEFT", castBarTargetText.text, "RIGHT", 0, 0)
     CreateTooltipTwo(castBarTargetHighlight, L["Castbar_Target_Highlight"], L["Tooltip_Castbar_Target_Highlight_Desc"])
     castBarTargetHighlight:HookScript("OnClick", function()
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     end)
 
     local raiseTargetCastbarStrata = CreateCheckbox("raiseTargetCastbarStrata", L["Raise_Castbar_Stratas"], contentFrame, nil, BBF.RaiseTargetCastbarStratas)
@@ -5296,12 +5454,12 @@ local function guiPositionAndScale()
     local focusToTDropdown = CreateAnchorDropdown(
         "focusToTDropdown",
         contentFrame,
-        "Select Anchor Point",
+        L["Select_Anchor_Point"],
         "focusToTAnchor",
         function(arg1) 
             BBF.MoveToTFrames()
         end,
-        { anchorFrame = focusToTYPos, x = -16, y = -35, label = "Anchor" }
+        { anchorFrame = focusToTYPos, x = -16, y = -35, label = L["Anchor"] }
     )
 
     local combatIndicatorEnemyOnly = CreateCheckbox("combatIndicatorEnemyOnly", L["Enemies_Only"], contentFrame)
@@ -5339,12 +5497,12 @@ local function guiPositionAndScale()
     local petFrameDropdown = CreateAnchorDropdown(
         "petFrameDropdown",
         contentFrame,
-        "Select Anchor Point",
+        L["Select_Anchor_Point"],
         "petFrameAnchor",
         function(arg1) 
             BBF.MoveToTFrames()
         end,
-        { anchorFrame = petFrameYPos, x = -16, y = -35, label = "Anchor" }
+        { anchorFrame = petFrameYPos, x = -16, y = -35, label = L["Anchor"] }
     )
  
  ]]
@@ -5380,12 +5538,12 @@ local function guiPositionAndScale()
     local playerAbsorbAnchorDropdown = CreateAnchorDropdown(
         "playerAbsorbAnchorDropdown",
         contentFrame,
-        "Select Anchor Point",
+        L["Select_Anchor_Point"],
         "playerAbsorbAnchor",
         function(arg1)
         BBF.AbsorbCaller()
     end,
-        { anchorFrame = absorbIndicatorYPos, x = -16, y = -35, label = "Anchor" }
+        { anchorFrame = absorbIndicatorYPos, x = -16, y = -35, label = L["Anchor"] }
     )
 
     local absorbIndicatorTestMode = CreateCheckbox("absorbIndicatorTestMode", L["Test"], contentFrame, nil, BBF.AbsorbCaller)
@@ -5469,12 +5627,12 @@ local function guiPositionAndScale()
     local combatIndicatorDropdown = CreateAnchorDropdown(
         "combatIndicatorDropdown",
         contentFrame,
-        "Select Anchor Point",
+        L["Select_Anchor_Point"],
         "combatIndicatorAnchor",
         function(arg1) 
             BBF.CombatIndicatorCaller()
         end,
-        { anchorFrame = combatIndicatorYPos, x = -16, y = -35, label = "Anchor" }
+        { anchorFrame = combatIndicatorYPos, x = -16, y = -35, label = L["Anchor"] }
     )
 
     local combatIndicatorArenaOnly = CreateCheckbox("combatIndicatorArenaOnly", L["Arena_Only"], contentFrame)
@@ -5623,12 +5781,12 @@ local function guiPositionAndScale()
     local castBarInterruptIconAnchorDropdown = CreateAnchorDropdown(
         "castBarInterruptIconAnchorDropdown",
         contentFrame,
-        "Select Anchor Point",
+        L["Select_Anchor_Point"],
         "castBarInterruptIconAnchor",
         function(arg1)
         BBF.UpdateInterruptIconSettings()
     end,
-        { anchorFrame = castBarInterruptIconYPos, x = -16, y = -35, label = "Anchor" }
+        { anchorFrame = castBarInterruptIconYPos, x = -16, y = -35, label = L["Anchor"] }
     )
 
     local castBarInterruptIconTarget = CreateCheckbox("castBarInterruptIconTarget", L["Target"], contentFrame, nil, BBF.UpdateInterruptIconSettings)
@@ -5664,7 +5822,7 @@ local function guiPositionAndScale()
     resetBBFButton:SetWidth(165)
     resetBBFButton:SetPoint("RIGHT", reloadUiButton2, "LEFT", -533, 0)
     resetBBFButton:SetScript("OnClick", function()
-        StaticPopup_Show("CONFIRM_RESET_BETTERBLIZZFRAMESDB")
+        BBF.ShowPopup("CONFIRM_RESET_BETTERBLIZZFRAMESDB")
     end)
     CreateTooltip(resetBBFButton, L["Tooltip_Full_Reset"])
 
@@ -5788,16 +5946,16 @@ local function guiFrameLook()
     local unitFrameFont = CreateFontDropdown(
         "unitFrameFont",
         guiFrameLook,
-        "Select Font",
+        L["Select_Font"],
         "unitFrameFont",
         function(arg1)
             BBF.SetCustomFonts()
         end,
-        { anchorFrame = changeUnitFrameFont, x = 55, y = 1, label = "Font" }
+        { anchorFrame = changeUnitFrameFont, x = 55, y = 1, label = L["Font"] }
     )
 
     -- For font outline
-    local unitFrameFontOutline = CreateSimpleDropdown("FontOutlineDropdown", guiFrameLook, "Outline", "unitFrameFontOutline", {
+    local unitFrameFontOutline = CreateSimpleDropdown("FontOutlineDropdown", guiFrameLook, L["Outline_Label"], "unitFrameFontOutline", {
         "THICKOUTLINE", "OUTLINE", ""
     }, function(selectedSize)
         BBF.SetCustomFonts()
@@ -5809,14 +5967,14 @@ local function guiFrameLook()
         table.insert(fontSizeOptions, tostring(i))
     end
 
-    local unitFrameFontSize = CreateSimpleDropdown("FontSizeDropdown", guiFrameLook, "Size", "unitFrameFontSize", fontSizeOptions, function(selectedSize)
+    local unitFrameFontSize = CreateSimpleDropdown("FontSizeDropdown", guiFrameLook, L["Size"], "unitFrameFontSize", fontSizeOptions, function(selectedSize)
         BBF.SetCustomFonts()
     end, { anchorFrame = unitFrameFontOutline, x = 0, y = -5 }, 155)
 
     changeUnitFrameFont:HookScript("OnClick", function(self)
         BBF.SetCustomFonts()
         if not self:GetChecked() then
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
             unitFrameFont:Disable()
             unitFrameFontOutline:Disable()
             unitFrameFontSize:Disable()
@@ -5856,29 +6014,29 @@ local function guiFrameLook()
     local unitFrameValueFont = CreateFontDropdown(
         "unitFrameValueFont",
         guiFrameLook,
-        "Select Font",
+        L["Select_Font"],
         "unitFrameValueFont",
         function(arg1)
             BBF.SetCustomFonts()
         end,
-        { anchorFrame = changeUnitFrameValueFont, x = 55, y = 1, label = "Font" }
+        { anchorFrame = changeUnitFrameValueFont, x = 55, y = 1, label = L["Font"] }
     )
 
     -- For font outline
-    local unitFrameValueFontOutline = CreateSimpleDropdown("FontOutlineDropdown", guiFrameLook, "Outline", "unitFrameValueFontOutline", {
+    local unitFrameValueFontOutline = CreateSimpleDropdown("FontOutlineDropdown", guiFrameLook, L["Outline_Label"], "unitFrameValueFontOutline", {
         "THICKOUTLINE", "OUTLINE", ""
     }, function(selectedSize)
         BBF.SetCustomFonts()
     end, { anchorFrame = unitFrameValueFont, x = 0, y = -5 }, 155)
 
-    local unitFrameValueFontSize = CreateSimpleDropdown("FontSizeDropdown", guiFrameLook, "Size", "unitFrameValueFontSize", fontSizeOptions, function(selectedSize)
+    local unitFrameValueFontSize = CreateSimpleDropdown("FontSizeDropdown", guiFrameLook, L["Size"], "unitFrameValueFontSize", fontSizeOptions, function(selectedSize)
         BBF.SetCustomFonts()
     end, { anchorFrame = unitFrameValueFontOutline, x = 0, y = -5 }, 155)
 
     changeUnitFrameValueFont:HookScript("OnClick", function(self)
         BBF.SetCustomFonts()
         if not self:GetChecked() then
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
             unitFrameValueFont:Disable()
             unitFrameValueFontOutline:Disable()
             unitFrameValueFontSize:Disable()
@@ -5918,23 +6076,23 @@ local function guiFrameLook()
     local partyFrameFont = CreateFontDropdown(
         "partyFrameFont",
         guiFrameLook,
-        "Select Font",
+        L["Select_Font"],
         "partyFrameFont",
         function(arg1)
             BBF.SetCustomFonts()
         end,
-        { anchorFrame = changePartyFrameFont, x = 55, y = 1, label = "Font" }
+        { anchorFrame = changePartyFrameFont, x = 55, y = 1, label = L["Font"] }
     )
 
     -- For font outline
-    local partyFrameFontOutline = CreateSimpleDropdown("FontOutlineDropdown", guiFrameLook, "Outline", "partyFrameFontOutline", {
+    local partyFrameFontOutline = CreateSimpleDropdown("FontOutlineDropdown", guiFrameLook, L["Outline_Label"], "partyFrameFontOutline", {
         "THICKOUTLINE", "OUTLINE", ""
     }, function(selectedSize)
         BBF.SetCustomFonts()
     end, { anchorFrame = partyFrameFont, x = 0, y = -5 }, 155)
 
 
-    local partyFrameFontSize = CreateSimpleDropdown("FontSizeDropdown", guiFrameLook, "Size", "partyFrameFontSize", fontSizeOptions, function(selectedSize)
+    local partyFrameFontSize = CreateSimpleDropdown("FontSizeDropdown", guiFrameLook, L["Size"], "partyFrameFontSize", fontSizeOptions, function(selectedSize)
         BBF.SetCustomFonts()
     end, { anchorFrame = partyFrameFontOutline, x = 0, y = -5 }, 77.5)
     CreateTooltipTwo(partyFrameFontSize, L["Tooltip_Name_Size"])
@@ -5947,7 +6105,7 @@ local function guiFrameLook()
     changePartyFrameFont:HookScript("OnClick", function(self)
         BBF.SetCustomFonts()
         if not self:GetChecked() then
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
             partyFrameFont:Disable()
             partyFrameFontOutline:Disable()
             partyFrameFontSize:Disable()
@@ -5995,16 +6153,16 @@ local function guiFrameLook()
     local actionBarFont = CreateFontDropdown(
         "actionBarFont",
         guiFrameLook,
-        "Select Font",
+        L["Select_Font"],
         "actionBarFont",
         function(arg1)
             BBF.SetCustomFonts()
         end,
-        { anchorFrame = changeActionBarFont, x = 55, y = 1, label = "Font" }
+        { anchorFrame = changeActionBarFont, x = 55, y = 1, label = L["Font"] }
     )
 
     -- For font outline
-    local actionBarFontOutline = CreateSimpleDropdown("FontOutlineDropdown", guiFrameLook, "Outline", "actionBarFontOutline", {
+    local actionBarFontOutline = CreateSimpleDropdown("FontOutlineDropdown", guiFrameLook, L["Outline_Label"], "actionBarFontOutline", {
         "THICKOUTLINE", "OUTLINE", ""
     }, function(selectedSize)
         BBF.SetCustomFonts()
@@ -6019,7 +6177,7 @@ local function guiFrameLook()
     CreateTooltipTwo(actionBarKeyFontOutline, L["Tooltip_Keybinding_Text_Outline"])
 
 
-    local actionBarFontSize = CreateSimpleDropdown("FontSizeDropdown", guiFrameLook, "Size", "actionBarFontSize", fontSizeOptions, function(selectedSize)
+    local actionBarFontSize = CreateSimpleDropdown("FontSizeDropdown", guiFrameLook, L["Size"], "actionBarFontSize", fontSizeOptions, function(selectedSize)
         BBF.SetCustomFonts()
     end, { anchorFrame = actionBarFontOutline, x = 0, y = -5 }, 77.5)
     CreateTooltipTwo(actionBarFontSize, L["Tooltip_Macro_Text_Size"])
@@ -6050,7 +6208,7 @@ local function guiFrameLook()
     changeActionBarFont:HookScript("OnClick", function(self)
         BBF.SetCustomFonts()
         if not self:GetChecked() then
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         end
         ToggleDropdowns(self:GetChecked())
     end)
@@ -6078,18 +6236,18 @@ local function guiFrameLook()
     local allIngameFont = CreateFontDropdown(
         "allIngameFont",
         guiFrameLook,
-        "Select Font",
+        L["Select_Font"],
         "allIngameFont",
         function(arg1)
             BBF.SetCustomFonts()
         end,
-        { anchorFrame = changeAllFontsIngame, x = 55, y = 1, label = "Font" }
+        { anchorFrame = changeAllFontsIngame, x = 55, y = 1, label = L["Font"] }
     )
 
     changeAllFontsIngame:HookScript("OnClick", function(self)
         BBF.SetCustomFonts()
         if not self:GetChecked() then
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         end
         allIngameFont:SetEnabled(self:GetChecked())
     end)
@@ -6108,12 +6266,12 @@ local function guiFrameLook()
     local unitFrameHealthbarTexture = CreateTextureDropdown(
         "unitFrameHealthbarTexture",
         guiFrameLook,
-        "Select Texture",
+        L["Select_Texture"],
         "unitFrameHealthbarTexture",
         function(arg1)
             BBF.UpdateCustomTextures()
         end,
-        { anchorFrame = changeUnitFrameHealthbarTexture, x = 5, y = 3, label = "Texture" }
+        { anchorFrame = changeUnitFrameHealthbarTexture, x = 5, y = 3, label = L["Texture"] }
     )
     
     changeUnitFrameHealthbarTexture:HookScript("OnClick", function(self)
@@ -6129,12 +6287,12 @@ local function guiFrameLook()
     local unitFrameManabarTexture = CreateTextureDropdown(
         "unitFrameManabarTexture",
         guiFrameLook,
-        "Select Texture",
+        L["Select_Texture"],
         "unitFrameManabarTexture",
         function(arg1)
             BBF.UpdateCustomTextures()
         end,
-        { anchorFrame = changeUnitFrameManabarTexture, x = 5, y = 3, label = "Texture" }
+        { anchorFrame = changeUnitFrameManabarTexture, x = 5, y = 3, label = L["Texture"] }
     )
     changeUnitFrameManabarTexture:HookScript("OnClick", function(self)
         unitFrameManabarTexture:SetEnabled(self:GetChecked())
@@ -6149,12 +6307,12 @@ local function guiFrameLook()
     local unitFrameCastbarTexture = CreateTextureDropdown(
         "unitFrameCastbarTexture",
         guiFrameLook,
-        "Select Texture",
+        L["Select_Texture"],
         "unitFrameCastbarTexture",
         function(arg1)
             BBF.UpdateCustomTextures()
         end,
-        { anchorFrame = changeUnitFrameCastbarTexture, x = 5, y = 3, label = "Texture" }
+        { anchorFrame = changeUnitFrameCastbarTexture, x = 5, y = 3, label = L["Texture"] }
     )
     changeUnitFrameCastbarTexture:HookScript("OnClick", function(self)
         unitFrameCastbarTexture:SetEnabled(self:GetChecked())
@@ -6170,12 +6328,12 @@ local function guiFrameLook()
     local raidFrameHealthbarTexture = CreateTextureDropdown(
         "raidFrameHealthbarTexture",
         guiFrameLook,
-        "Select Texture",
+        L["Select_Texture"],
         "raidFrameHealthbarTexture",
         function(arg1)
             BBF.UpdateCustomTextures()
         end,
-        { anchorFrame = changeRaidFrameHealthbarTexture, x = 5, y = 3, label = "Texture" }
+        { anchorFrame = changeRaidFrameHealthbarTexture, x = 5, y = 3, label = L["Texture"] }
     )
 
     changeRaidFrameHealthbarTexture:HookScript("OnClick", function(self)
@@ -6191,12 +6349,12 @@ local function guiFrameLook()
     local raidFrameManabarTexture = CreateTextureDropdown(
         "raidFrameManabarTexture",
         guiFrameLook,
-        "Select Texture",
+        L["Select_Texture"],
         "raidFrameManabarTexture",
         function(arg1)
             BBF.UpdateCustomTextures()
         end,
-        { anchorFrame = changeRaidFrameManabarTexture, x = 5, y = 3, label = "Texture" }
+        { anchorFrame = changeRaidFrameManabarTexture, x = 5, y = 3, label = L["Texture"] }
     )
 
     changeRaidFrameManabarTexture:HookScript("OnClick", function(self)
@@ -6320,7 +6478,7 @@ local function guiFrameAuras()
         if self:GetChecked() then
             BBF.HookPlayerAndTargetAuras()
             if BetterBlizzFramesDB.targetToTXPos == 0 then
-                StaticPopup_Show("BBF_TOT_MESSAGE")
+                BBF.ShowPopup("BBF_TOT_MESSAGE")
                 BetterBlizzFramesDB.targetToTXPos = 42
                 BBF.targetToTXPos:SetValue(42)
                 BetterBlizzFramesDB.targetToTYPos = -10
@@ -6358,7 +6516,7 @@ local function guiFrameAuras()
     enableMasque:SetPoint("LEFT", playerAuraFiltering.Text, "RIGHT", 5, 0)
     CreateTooltipTwo(enableMasque, L["Add_Masque_Support"], L["Tooltip_Add_Masque_Support_Desc"])
     enableMasque:HookScript("OnClick", function()
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     end)
 
     local printAuraSpellIds = CreateCheckbox("printAuraSpellIds", L["Print_Spell_ID"], playerAuraFiltering)
@@ -6370,7 +6528,7 @@ local function guiFrameAuras()
     importPVPWhitelist:SetPoint("LEFT", printAuraSpellIds.text, "RIGHT", 3, 1)
     importPVPWhitelist:SetText(L["Import_PvP_Whitelist"])
     importPVPWhitelist:SetScript("OnClick", function()
-        StaticPopup_Show("BBF_CONFIRM_PVP_WHITELIST")
+        BBF.ShowPopup("BBF_CONFIRM_PVP_WHITELIST")
     end)
     local coloredText = L["Whitelist_Colors"]
 
@@ -6801,7 +6959,7 @@ local function guiFrameAuras()
         CreateTooltipTwo(repositionBuffFrame, L["Move_Player_Auras"], L["Tooltip_Move_Player_Auras_Desc"])
         repositionBuffFrame:HookScript("OnClick", function(self)
             if not self:GetChecked() then
-                StaticPopup_Show("BBF_CONFIRM_RELOAD")
+                BBF.ShowPopup("BBF_CONFIRM_RELOAD")
             end
         end)
     end
@@ -6953,7 +7111,7 @@ local function guiFrameAuras()
     removeDebuffColorBorder:SetPoint("TOPLEFT", clickthroughAuras, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(removeDebuffColorBorder, L["Remove_Debuff_Color_Border"], L["Tooltip_Remove_Debuff_Color_Border"])
     removeDebuffColorBorder:HookScript("OnClick", function(self)
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     end)
 
     local function OpenColorPicker(entryColors)
@@ -7042,7 +7200,7 @@ local function guiFrameAuras()
         if self:GetChecked() then
             --asd
         else
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         end
 
         CheckAndToggleCheckboxes(playerAuraFiltering)
@@ -7104,7 +7262,7 @@ local function guiMisc()
     hideMinimapButtons:SetPoint("TOPLEFT", hideMinimap, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     hideMinimapButtons:HookScript("OnClick", function(self)
         if not self:GetChecked() then
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         end
     end)
 
@@ -7162,7 +7320,7 @@ local function guiMisc()
     stealthIndicatorPlayer:SetPoint("TOPLEFT", hideStanceBar, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     stealthIndicatorPlayer:HookScript("OnClick", function(self)
         if not self:GetChecked() then
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         end
     end)
     CreateTooltip(stealthIndicatorPlayer, L["Tooltip_Stealth_Indicator_Desc"])
@@ -7171,7 +7329,7 @@ local function guiMisc()
     disableCastbarMovement:SetPoint("TOPLEFT", stealthIndicatorPlayer, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(disableCastbarMovement, L["Disable_Castbar_Movement"], L["Tooltip_Disable_Castbar_Movement_Desc"])
     disableCastbarMovement:HookScript("OnClick", function(self)
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     end)
 
     local addUnitFrameBgTexture = CreateCheckbox("addUnitFrameBgTexture", L["UnitFrame_Background_Color"], guiMisc)
@@ -7266,28 +7424,28 @@ local function guiMisc()
     hidePlayerManabar:SetPoint("TOPLEFT", settingsText, "BOTTOMLEFT", 310, pixelsOnFirstBox)
     CreateTooltipTwo(hidePlayerManabar, L["Hide_PlayerFrame_Mana"], L["Tooltip_Hide_Player_Manabar_Desc"])
     hidePlayerManabar:HookScript("OnClick", function(self)
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     end)
 
     local hideTargetManabar = CreateCheckbox("hideTargetManabar", L["Hide_TargetFrame_Mana"], guiMisc)
     hideTargetManabar:SetPoint("TOPLEFT", hidePlayerManabar, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(hideTargetManabar, L["Hide_TargetFrame_Mana"], L["Tooltip_Hide_Target_Manabar_Desc"])
     hideTargetManabar:HookScript("OnClick", function(self)
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     end)
 
     local hideFocusManabar = CreateCheckbox("hideFocusManabar", L["Hide_FocusFrame_Mana"], guiMisc)
     hideFocusManabar:SetPoint("TOPLEFT", hideTargetManabar, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(hideFocusManabar, L["Hide_FocusFrame_Mana"], L["Tooltip_Hide_Focus_Manabar_Desc"])
     hideFocusManabar:HookScript("OnClick", function(self)
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     end)
 
     local enableLegacyComboPoints = CreateCheckbox("enableLegacyComboPoints", L["Legacy_Combo_Points"], guiMisc)
     enableLegacyComboPoints:SetPoint("TOPLEFT", hideFocusManabar, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(enableLegacyComboPoints, L["Legacy_Combo_Points"], L["Tooltip_Legacy_Combo_Points_Desc"])
     enableLegacyComboPoints:HookScript("OnClick", function(self)
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         if not self:GetChecked() then
             BetterBlizzFramesDB.legacyCombosTurnedOff = true
         else
@@ -7302,7 +7460,7 @@ local function guiMisc()
     local legacyBlueComboPoints = CreateCheckbox("legacyBlueComboPoints", L["Blue_Combos"], enableLegacyComboPoints)
     legacyBlueComboPoints:SetPoint("LEFT", enableLegacyComboPoints.text, "RIGHT", 0, 0)
     legacyBlueComboPoints:HookScript("OnClick", function()
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     end)
     CreateTooltipTwo(legacyBlueComboPoints, L["Blue_Legacy_Combo_Points"], L["Tooltip_Blue_Legacy_Combo_Points_Desc"])
 
@@ -7385,7 +7543,7 @@ local function guiMisc()
     enableLegacyComboPointsMulticlass:SetPoint("TOPLEFT", enableLegacyComboPoints, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(enableLegacyComboPointsMulticlass, L["Tooltip_Legacy_Combo_Points_More_Classes_Desc"], L["Tooltip_Legacy_Combo_Multiclass_Desc"])
     enableLegacyComboPointsMulticlass:HookScript("OnClick", function()
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         BBF.GenericLegacyComboSupport()
     end)
     local legacyMulticlassComboClassColor = CreateCheckbox("legacyMulticlassComboClassColor", L["Class_Color_Combo"], enableLegacyComboPointsMulticlass)
@@ -7399,7 +7557,7 @@ local function guiMisc()
     CreateTooltipTwo(instantComboPoints, L["Instant_Combo_Points"], L["Tooltip_Instant_Combo_Points_Desc"])
     instantComboPoints:HookScript("OnClick", function(self)
         if not self:GetChecked() then
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
             if BetterBlizzPlatesDB then
                 BetterBlizzPlatesDB.instantComboPoints = false
             end
@@ -7440,56 +7598,56 @@ local function guiMisc()
     -- moveResourceToTargetRogue:SetPoint("TOPLEFT", moveResourceToTarget, "BOTTOMLEFT", 12, pixelsBetweenBoxes)
     -- CreateTooltip(moveResourceToTargetRogue, L["Tooltip_Move_Resource_Rogue"])
     -- moveResourceToTargetRogue:HookScript("OnClick", function()
-    --     StaticPopup_Show("BBF_CONFIRM_RELOAD")
+    --     BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     -- end)
 
     -- local moveResourceToTargetDruid = CreateCheckbox("moveResourceToTargetDruid", L["Druid_Combo_Points"], moveResourceToTarget)
     -- moveResourceToTargetDruid:SetPoint("TOPLEFT", moveResourceToTargetRogue, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     -- CreateTooltip(moveResourceToTargetDruid, L["Tooltip_Move_Resource_Druid"])
     -- moveResourceToTargetDruid:HookScript("OnClick", function()
-    --     StaticPopup_Show("BBF_CONFIRM_RELOAD")
+    --     BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     -- end)
 
     -- local moveResourceToTargetMonk = CreateCheckbox("moveResourceToTargetMonk", L["Monk_Chi_Points"], moveResourceToTarget)
     -- moveResourceToTargetMonk:SetPoint("TOPLEFT", moveResourceToTargetDruid, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     -- CreateTooltip(moveResourceToTargetMonk, L["Tooltip_Move_Resource_Monk"])
     -- moveResourceToTargetMonk:HookScript("OnClick", function()
-    --     StaticPopup_Show("BBF_CONFIRM_RELOAD")
+    --     BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     -- end)
 
     -- local moveResourceToTargetWarlock = CreateCheckbox("moveResourceToTargetWarlock", L["Warlock_Shards"], moveResourceToTarget)
     -- moveResourceToTargetWarlock:SetPoint("TOPLEFT", moveResourceToTargetMonk, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     -- CreateTooltip(moveResourceToTargetWarlock, L["Tooltip_Move_Resource_Warlock"])
     -- moveResourceToTargetWarlock:HookScript("OnClick", function()
-    --     StaticPopup_Show("BBF_CONFIRM_RELOAD")
+    --     BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     -- end)
 
     -- local moveResourceToTargetEvoker = CreateCheckbox("moveResourceToTargetEvoker", L["Evoker_Essence"], moveResourceToTarget)
     -- moveResourceToTargetEvoker:SetPoint("TOPLEFT", moveResourceToTargetWarlock, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     -- CreateTooltip(moveResourceToTargetEvoker, L["Tooltip_Move_Resource_Evoker"])
     -- moveResourceToTargetEvoker:HookScript("OnClick", function()
-    --     StaticPopup_Show("BBF_CONFIRM_RELOAD")
+    --     BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     -- end)
 
     -- local moveResourceToTargetMage = CreateCheckbox("moveResourceToTargetMage", L["Mage_Arcane_Charges"], moveResourceToTarget)
     -- moveResourceToTargetMage:SetPoint("TOPLEFT", moveResourceToTargetEvoker, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     -- CreateTooltip(moveResourceToTargetMage, L["Tooltip_Move_Resource_Mage"])
     -- moveResourceToTargetMage:HookScript("OnClick", function()
-    --     StaticPopup_Show("BBF_CONFIRM_RELOAD")
+    --     BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     -- end)
 
     -- local moveResourceToTargetDK = CreateCheckbox("moveResourceToTargetDK", L["Death_Knight_Runes"], moveResourceToTarget)
     -- moveResourceToTargetDK:SetPoint("TOPLEFT", moveResourceToTargetMage, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     -- CreateTooltip(moveResourceToTargetDK, L["Tooltip_Move_Resource_DK"])
     -- moveResourceToTargetDK:HookScript("OnClick", function()
-    --     StaticPopup_Show("BBF_CONFIRM_RELOAD")
+    --     BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     -- end)
 
     -- local moveResourceToTargetPaladin = CreateCheckbox("moveResourceToTargetPaladin", L["Paladin_Holy_Charges"], moveResourceToTarget)
     -- moveResourceToTargetPaladin:SetPoint("TOPLEFT", moveResourceToTargetDK, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     -- CreateTooltip(moveResourceToTargetPaladin, L["Tooltip_Move_Resource_Paladin"])
     -- moveResourceToTargetPaladin:HookScript("OnClick", function()
-    --     StaticPopup_Show("BBF_CONFIRM_RELOAD")
+    --     BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     -- end)
 
     -- local moveResourceToTargetPaladinBG = CreateCheckbox("moveResourceToTargetPaladinBG", L["BG"], moveResourceToTargetPaladin)
@@ -7497,7 +7655,7 @@ local function guiMisc()
     -- CreateTooltipTwo(moveResourceToTargetPaladinBG, L["Background"], L["Tooltip_Background"])
 
     -- moveResourceToTargetPaladinBG:HookScript("OnClick", function(self)
-    --     StaticPopup_Show("BBF_CONFIRM_RELOAD")
+    --     BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     -- end)
 
     -- moveResourceToTargetPaladin:HookScript("OnClick", function(self)
@@ -7508,6 +7666,64 @@ local function guiMisc()
     local classResourceScale = CreateSlider(guiMisc, L["Class_Resource_Scale"], 0.4, 2, 0.01, key)
     classResourceScale:SetPoint("TOPLEFT", moveResource, "BOTTOMLEFT", 5, -15)
     CreateTooltipTwo(classResourceScale, L["Class_Resource_Scale"], L["Tooltip_Class_Resource_Scale_Desc"], L["Tooltip_Class_Resource_Scale_Extra"])
+
+    local guiText = guiMisc:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    guiText:SetPoint("TOPLEFT", classResourceScale, "BOTTOMLEFT", -1, -20)
+    guiText:SetText(L["GUI"])
+    local guiIcon = guiMisc:CreateTexture(nil, "ARTWORK")
+    guiIcon:SetAtlas("gmchat-icon-blizz")
+    guiIcon:SetSize(20, 20)
+    guiIcon:SetPoint("RIGHT", guiText, "LEFT", -3, -1)
+
+    local forceEnglishGUI = CreateCheckbox("forceEnglishGUI", L["Force_English_GUI"], guiMisc)
+    forceEnglishGUI:SetPoint("TOPLEFT", guiText, "BOTTOMLEFT", -4, pixelsOnFirstBox)
+    CreateTooltipTwo(forceEnglishGUI, L["Force_English_GUI"], L["Tooltip_Force_English_GUI_Desc"])
+    forceEnglishGUI:HookScript("OnClick", function()
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
+    end)
+
+    local guiFontEnabled = CreateCheckbox("guiFontEnabled", L["Adjust_GUI_Font"], guiMisc, nil, BBF.ApplyGuiFont)
+    guiFontEnabled:SetPoint("TOPLEFT", forceEnglishGUI, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(guiFontEnabled, L["Adjust_GUI_Font"], L["Tooltip_Adjust_GUI_Font_Desc"])
+
+    local guiFontDropdown = CreateFontDropdown(
+        "guiFont",
+        guiMisc,
+        L["Dont_Change_Font"],
+        "guiFont",
+        function()
+            BBF.ApplyGuiFont()
+        end,
+        { anchorFrame = guiFontEnabled, x = 55, y = 8, label = L["Font"] },
+        165,
+        nil,
+        nil,
+        L["Dont_Change_Font"]
+    )
+    guiFontDropdown:SetScale(0.7)
+    guiFontDropdown.LabelText:ClearAllPoints()
+    guiFontDropdown.LabelText:SetPoint("LEFT", guiFontDropdown, "LEFT", -50, 0)
+    guiFontDropdown.LabelText:SetFont(fontSmall, 11)
+
+    local guiFontSizeOptions = {}
+    for i = 6, 16 do
+        table.insert(guiFontSizeOptions, tostring(i))
+    end
+
+    local guiFontSizeDropdown = CreateSimpleDropdown("guiFontSizeDropdown", guiMisc, L["Size"], "guiFontSize", guiFontSizeOptions, function()
+        BBF.ApplyGuiFont()
+    end, { anchorFrame = guiFontDropdown, x = 0, y = 9 }, 165)
+    guiFontSizeDropdown:SetScale(0.7)
+    guiFontSizeDropdown.LabelText:ClearAllPoints()
+    guiFontSizeDropdown.LabelText:SetPoint("LEFT", guiFontSizeDropdown, "LEFT", -50, 0)
+    guiFontSizeDropdown.LabelText:SetFont(fontSmall, 11)
+
+    guiFontEnabled:HookScript("OnClick", function(self)
+        guiFontDropdown:SetEnabled(self:GetChecked())
+        guiFontSizeDropdown:SetEnabled(self:GetChecked())
+    end)
+    guiFontDropdown:SetEnabled(guiFontEnabled:GetChecked())
+    guiFontSizeDropdown:SetEnabled(guiFontEnabled:GetChecked())
 
     moveResource:HookScript("OnMouseDown", function(self, button)
         if button == "RightButton" then
@@ -7535,7 +7751,7 @@ local function guiMisc()
     --     if self:GetChecked() then
     --         classResourceScale:SetValue(1)
     --     end
-    --     StaticPopup_Show("BBF_CONFIRM_RELOAD")
+    --     BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     --     CheckAndToggleCheckboxes(moveResourceToTarget)
     -- end)
 
@@ -7852,7 +8068,7 @@ end
 
 local function guiSupport()
     local guiSupport = CreateFrame("Frame")
-    guiSupport.name = "|A:GarrisonTroops-Health:10:10|a Support"
+    guiSupport.name = "|A:GarrisonTroops-Health:10:10|a " .. L["Module_Name_Support"]
     guiSupport.parent = BetterBlizzFrames.name
     --InterfaceOptions_AddCategory(guiSupport)
     local guiSupportCategory = Settings.RegisterCanvasLayoutSubcategory(BBF.category, guiSupport, guiSupport.name, guiSupport.name)
@@ -8038,6 +8254,7 @@ function BBF.LoadGUI()
     guiCustomCode()
     guiSupport()
     BetterBlizzFrames.guiLoaded = true
+    BBF.ApplyGuiFont()
 
     if SettingsPanel:IsShown() then
         HideUIPanel(SettingsPanel)
@@ -8115,12 +8332,12 @@ function BBF.CreateIntroMessageWindow()
         local icon = CLASS_ICONS[class] or "groupfinder-icon-role-leader"
         local profileText = string.format("|A:%s:16:16|a %s%s|r", icon, color, string.format(L["Profile_Label"], profileName))
         local confirmationText = titleText .. string.format(L["Profile_Confirmation_Text_Intro"], profileText, noteText)
-        StaticPopupDialogs["BBF_CONFIRM_PROFILE"].text = confirmationText
-        StaticPopup_Show("BBF_CONFIRM_PROFILE", nil, nil, { func = profileFunction })
+        BBF.GetPopup("BBF_CONFIRM_PROFILE").text = confirmationText
+        BBF.ShowPopup("BBF_CONFIRM_PROFILE", nil, nil, { func = profileFunction })
     end
 
-    local starterButton = CreateClassButton(BBF.IntroMessageWindow, "STARTER", "Starter", nil, function()
-        ShowProfileConfirmation("Starter", "STARTER", BBF.StarterProfile)
+    local starterButton = CreateClassButton(BBF.IntroMessageWindow, "STARTER", L["Starter"], nil, function()
+        ShowProfileConfirmation(L["Starter"], "STARTER", BBF.StarterProfile)
     end)
     starterButton:SetPoint("TOP", description1, "BOTTOM", 0, -20)
 

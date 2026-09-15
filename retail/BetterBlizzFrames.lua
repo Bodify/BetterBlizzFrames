@@ -517,65 +517,66 @@ local function FetchAndSaveValuesOnFirstLogin()
     end)
 end
 
--- Define the popup window
-StaticPopupDialogs["BetterBlizzFrames_COMBAT_WARNING"] = {
-    text = L["Popup_Combat_Warning"],
-    button1 = L["Yes"],
-    timeout = 0,
-    whileDead = true,
-    hideOnEscape = true,
-    preferredIndex = 3,
-}
+BBF.popupBuilders["BBF_COMBAT_WARNING"] = function()
+    return {
+        text = L["Popup_Combat_Warning"],
+        button1 = L["Yes"],
+        timeout = 0,
+        whileDead = true,
+        hideOnEscape = true,
+        preferredIndex = 3,
+    }
+end
 
-StaticPopupDialogs["BBF_NEW_VERSION"] = {
-    text = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames " .. addonUpdates .. ":\n\n" .. L["Popup_New_Version_Text_Midnight"],
-    button1 = L["Yes"],
-    timeout = 0,
-    whileDead = true,
-    hideOnEscape = false,
-}
+BBF.popupBuilders["BBF_MIDNIGHT_121_AURA_UPDATE"] = function()
+    return {
+        text = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames:\n\nBetterBlizzFrames has been updated for Midnight 12.1.\n\nThis means new aura settings and you will have to re-do your aura settings within the new systems.\n\nThere is a reset button to restore aura settings to BBF's default if things are looking too wacko from out the gates from your old setup.\n\nThere may be bugs and please use BugSack and BugGrabber to report them.\n\nThank you!",
+        button1 = "OK",
+        timeout = 0,
+        whileDead = true,
+        preferredIndex = 3,
+    }
+end
 
-StaticPopupDialogs["BBF_MIDNIGHT_121_AURA_UPDATE"] = {
-    text = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames:\n\nBetterBlizzFrames has been updated for Midnight 12.1.\n\nThis means new aura settings and you will have to re-do your aura settings within the new systems.\n\nThere is a reset button to restore aura settings to BBF's default if things are looking too wacko from out the gates from your old setup.\n\nThere may be bugs and please use BugSack and BugGrabber to report them.\n\nThank you!",
-    button1 = "OK",
-    timeout = 0,
-    whileDead = true,
-    preferredIndex = 3,
-}
+BBF.popupBuilders["BBF_MIDNIGHT_EDITMODE_SCALE_REMOVED"] = function()
+    return {
+        text = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames:\n\nHeadsup:\n\nThe size setting for party frames and loss of control frame was removed due to Blizzard now having added those to edit mode. Adjust them with edit mode instead.",
+        button1 = "OK",
+        timeout = 0,
+        whileDead = true,
+        preferredIndex = 3,
+    }
+end
 
-StaticPopupDialogs["BBF_MIDNIGHT_EDITMODE_SCALE_REMOVED"] = {
-    text = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames:\n\nHeadsup:\n\nThe size setting for party frames and loss of control frame was removed due to Blizzard now having added those to edit mode. Adjust them with edit mode instead.",
-    button1 = "OK",
-    timeout = 0,
-    whileDead = true,
-    preferredIndex = 3,
-}
-
-StaticPopupDialogs["BBF_MIDNIGHT_AURA_FILTER_FIXES"] = {
-    text = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames:\n\n|A:services-icon-warning:20:20|a |cffff8800IMPORTANT READ:|r |A:services-icon-warning:20:20|a\n\nLots of aura filter issues fixed. You may have to tweak your aura filter settings again. For a full overview read patch notes. Apologies for the inconvenience.\n\n- Some new filters and fixes to how they act. If you want to see all auras on Target/FocusFrame and on topright player auras make sure you dont have limiting filters enabled.",
-    button1 = "Okay",
-    timeout = 0,
-    whileDead = true,
-    preferredIndex = 3,
-}
+BBF.popupBuilders["BBF_MIDNIGHT_AURA_FILTER_FIXES"] = function()
+    return {
+        text = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames:\n\n|A:services-icon-warning:20:20|a |cffff8800IMPORTANT READ:|r |A:services-icon-warning:20:20|a\n\nLots of aura filter issues fixed. You may have to tweak your aura filter settings again. For a full overview read patch notes. Apologies for the inconvenience.\n\n- Some new filters and fixes to how they act. If you want to see all auras on Target/FocusFrame and on topright player auras make sure you dont have limiting filters enabled.",
+        button1 = "Okay",
+        timeout = 0,
+        whileDead = true,
+        preferredIndex = 3,
+    }
+end
 
 local function ResetBBF()
     BetterBlizzFramesDB = {}
     ReloadUI()
 end
 
-StaticPopupDialogs["CONFIRM_RESET_BETTERBLIZZFRAMESDB"] = {
-    text = L["Popup_Confirm_Reset"],
-    button1 = L["Yes"],
-    button2 = L["No"],
-    OnAccept = function()
-        ResetBBF()
-    end,
-    timeout = 0,
-    whileDead = true,
-    hideOnEscape = true,
-    preferredIndex = 3,
-}
+BBF.popupBuilders["CONFIRM_RESET_BETTERBLIZZFRAMESDB"] = function()
+    return {
+        text = L["Popup_Confirm_Reset"],
+        button1 = L["Yes"],
+        button2 = L["No"],
+        OnAccept = function()
+            ResetBBF()
+        end,
+        timeout = 0,
+        whileDead = true,
+        hideOnEscape = true,
+        preferredIndex = 3,
+    }
+end
 
 -- Update message
 local function SendUpdateMessage(oldVer)
@@ -586,22 +587,7 @@ local function SendUpdateMessage(oldVer)
                 BBF.skippedUpdateMsg = true
                 return
             end
-            if oldVer < "1.8.1" then
-                C_Timer.After(7, function()
-                    StaticPopup_Show("BBF_NEW_VERSION")
-                    -- if BetterBlizzFramesDB.enableLegacyComboPoints and not BetterBlizzFramesDB.classicFrames then
-                    --     DEFAULT_CHAT_FRAME:AddMessage("|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames "..addonUpdates..":")
-                    --     --DEFAULT_CHAT_FRAME:AddMessage("|A:QuestNormal:16:16|a New stuff:")
-                    --     DEFAULT_CHAT_FRAME:AddMessage("|A:QuestNormal:16:16|a Legacy Combo Points default position adjusted. You will have to re-adjust your points. Sorry :x")
-                    -- end
-                    -- DEFAULT_CHAT_FRAME:AddMessage("|A:Professions-Crafting-Orders-Icon:16:16|a Tweak:")
-                    -- DEFAULT_CHAT_FRAME:AddMessage("   - Reset castbar interrupt icon y offset to 0 due to default positional changes You may have to readjust to your liking.")
-
-                    -- end
-                    -- DEFAULT_CHAT_FRAME:AddMessage("   Reverted all name logic to 1.3.8b version. It's old and not optimal but at least it doesn't taint(?). I will never touch this again until TWW >_>")
-                    --DEFAULT_CHAT_FRAME:AddMessage("   A lot of behind the scenes Name logic changed. Should now work better and be happier with other addons.")
-                end)
-            end
+            -- new ver popup
         else
             BetterBlizzFramesDB.scStart = nil
         end
@@ -689,7 +675,7 @@ function BBF.checkCombatAndWarn()
             if IsActiveBattlefieldArena() then
                 return true -- Player is in combat but don't show the popup during arena
             else
-                StaticPopup_Show("BetterBlizzFrames_COMBAT_WARNING")
+                BBF.ShowPopup("BBF_COMBAT_WARNING")
                 return true -- Player is in combat and outside of arena, so show the pop-up
             end
         end
@@ -5238,6 +5224,7 @@ First:RegisterEvent("ADDON_LOADED")
 First:SetScript("OnEvent", function(_, event, addonName)
     if addonName == "BetterBlizzFrames" then
         BetterBlizzFramesDB.wasOnLoadingScreen = true
+        BBF.ApplyLocale()
 
         InitializeSavedVariables()
 
@@ -5372,7 +5359,7 @@ First:SetScript("OnEvent", function(_, event, addonName)
             BetterBlizzFramesDB.midnight121AuraUpdateMsg = true
             if BetterBlizzFramesDB.hasSaved and not skipUpdateMsg then
                 C_Timer.After(7, function()
-                    StaticPopup_Show("BBF_MIDNIGHT_121_AURA_UPDATE")
+                    BBF.ShowPopup("BBF_MIDNIGHT_121_AURA_UPDATE")
                 end)
             end
         end
@@ -5380,7 +5367,7 @@ First:SetScript("OnEvent", function(_, event, addonName)
             BetterBlizzFramesDB.midnightEditModeScaleRemovedMsg = true
             if BetterBlizzFramesDB.hasSaved and not skipUpdateMsg then
                 C_Timer.After(7, function()
-                    StaticPopup_Show("BBF_MIDNIGHT_EDITMODE_SCALE_REMOVED")
+                    BBF.ShowPopup("BBF_MIDNIGHT_EDITMODE_SCALE_REMOVED")
                 end)
             end
         end
@@ -5388,7 +5375,7 @@ First:SetScript("OnEvent", function(_, event, addonName)
             BetterBlizzFramesDB.midnightAuraFilterFixesMsg = true
             if BetterBlizzFramesDB.hasSaved and not skipUpdateMsg then
                 C_Timer.After(7, function()
-                    StaticPopup_Show("BBF_MIDNIGHT_AURA_FILTER_FIXES")
+                    BBF.ShowPopup("BBF_MIDNIGHT_AURA_FILTER_FIXES")
                 end)
             end
         end

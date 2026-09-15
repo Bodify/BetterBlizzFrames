@@ -12,6 +12,8 @@ local defaultSettings = {
     version = addonVersion,
     updates = "empty",
     wasOnLoadingScreen = true,
+    guiFontEnabled = false,
+    guiFontSize = 12,
     -- General
     removeRealmNames = true,
     centerNames = false,
@@ -354,41 +356,36 @@ local function FetchAndSaveValuesOnFirstLogin()
     end)
 end
 
--- Define the popup window
-StaticPopupDialogs["BetterBlizzFrames_COMBAT_WARNING"] = {
-    text = L["Popup_Combat_Warning"],
-    button1 = L["Yes"],
-    timeout = 0,
-    whileDead = true,
-    hideOnEscape = true,
-    preferredIndex = 3,
-}
-
-StaticPopupDialogs["BBF_NEW_VERSION"] = {
-    text = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames " .. "Cata Beta 0.0.8" .. ":\n\n" .. L["Popup_Cata_Beta_Version_Text"],
-    button1 = L["Yes"],
-    timeout = 0,
-    whileDead = true,
-    hideOnEscape = true,
-}
+BBF.popupBuilders["BBF_COMBAT_WARNING"] = function()
+    return {
+        text = L["Popup_Combat_Warning"],
+        button1 = L["Yes"],
+        timeout = 0,
+        whileDead = true,
+        hideOnEscape = true,
+        preferredIndex = 3,
+    }
+end
 
 local function ResetBBF()
     BetterBlizzFramesDB = {}
     ReloadUI()
 end
 
-StaticPopupDialogs["CONFIRM_RESET_BETTERBLIZZFRAMESDB"] = {
-    text = L["Popup_Confirm_Reset"],
-    button1 = L["Yes"],
-    button2 = L["No"],
-    OnAccept = function()
-        ResetBBF()
-    end,
-    timeout = 0,
-    whileDead = true,
-    hideOnEscape = true,
-    preferredIndex = 3,
-}
+BBF.popupBuilders["CONFIRM_RESET_BETTERBLIZZFRAMESDB"] = function()
+    return {
+        text = L["Popup_Confirm_Reset"],
+        button1 = L["Yes"],
+        button2 = L["No"],
+        OnAccept = function()
+            ResetBBF()
+        end,
+        timeout = 0,
+        whileDead = true,
+        hideOnEscape = true,
+        preferredIndex = 3,
+    }
+end
 
 -- Update message
 local function SendUpdateMessage()
@@ -398,23 +395,7 @@ local function SendUpdateMessage()
                 BetterBlizzFramesDB.skipUpdateMsg = nil
                 return
             end
-            C_Timer.After(7, function()
-                --StaticPopup_Show("BBF_NEW_VERSION")
-
-                --if BetterBlizzFramesDB.playerAuraFiltering then
-                    BBF.Print(addonUpdates..":", true)
-                    --BBF.Print("|A:QuestNormal:16:16|a New stuff:")
-                    DEFAULT_CHAT_FRAME:AddMessage("|A:QuestNormal:16:16|a " .. L["Print_Player_Castbar_Position_Changed_Cata"])
-                --end
-                -- DEFAULT_CHAT_FRAME:AddMessage("   - Absorb Indicator + Overshields now working (Potentially).")
-                -- -- DEFAULT_CHAT_FRAME:AddMessage("   - Sort Purgeable Auras setting (Buffs & Debuffs).")
-
-                -- DEFAULT_CHAT_FRAME:AddMessage("|A:Professions-Crafting-Orders-Icon:16:16|a Bugfixes:")
-                -- DEFAULT_CHAT_FRAME:AddMessage("   Castbar settings should now be better on Cata, might still need some tweaks.")
-                -- DEFAULT_CHAT_FRAME:AddMessage("   +Many more... Keep bug reporting please.")
-                -- -- DEFAULT_CHAT_FRAME:AddMessage("   Reverted all name logic to 1.3.8b version. It's old and not optimal but at least it doesn't taint(?). I will never touch this again until TWW >_>")
-                -- --DEFAULT_CHAT_FRAME:AddMessage("   A lot of behind the scenes Name logic changed. Should now work better and be happier with other addons.")
-            end)
+            -- new ver popup
         else
             BetterBlizzFramesDB.scStart = nil
         end
@@ -480,7 +461,7 @@ function BBF.checkCombatAndWarn()
             if IsActiveBattlefieldArena() then
                 return true -- Player is in combat but don't show the popup during arena
             else
-                StaticPopup_Show("BetterBlizzFrames_COMBAT_WARNING")
+                BBF.ShowPopup("BBF_COMBAT_WARNING")
                 return true -- Player is in combat and outside of arena, so show the pop-up
             end
         end
@@ -3119,6 +3100,7 @@ First:SetScript("OnEvent", function(_, event, addonName)
     if event == "ADDON_LOADED" and addonName then
         if addonName == "BetterBlizzFrames" then
             BetterBlizzFramesDB.wasOnLoadingScreen = true
+            BBF.ApplyLocale()
 
             if BetterBlizzFramesDB.hasSaved and not BetterBlizzFramesDB.mopUpdates then
                 BetterBlizzFramesDB.legacyComboXPos = -44

@@ -861,6 +861,8 @@ L["Popup_Tot_Message_Text"] = "The default Blizzard code to \"wrap auras\" aroun
 -- Miscellaneous Settings
 ---------------------------------------
 
+L["Force_English_GUI"] = "Force English GUI"
+L["Tooltip_Force_English_GUI_Desc"] = "Show BetterBlizzFrames settings in English instead of your client language.\n\nRequires a reload."
 L["Add_Masque_Support"] = "Add Masque Support"
 L["Add_Reputation_Color"] = "Add Reputation Color"
 L["All_Frames"] = "All Frames"
@@ -1041,9 +1043,9 @@ L["Minimize_Objective_Better"] = "Minimize Objective Frame Better"
 L["Misc_Info"] = "Misc Info"
 L["Misc_Settings"] = "Misc settings"
 L["GUI"] = "BBF GUI"
-L["Adjust_GUI_Font"] = "Adjust BBF's GUI Font"
+L["Adjust_GUI_Font"] = "Adjust BBF's Settings Font"
 L["Dont_Change_Font"] = "Don't change font"
-L["Tooltip_Adjust_GUI_Font_Desc"] = "Change the font and text size used in the BetterBlizzFrames settings and their tooltips.\n\nSize is based on checkbox text, headers stay proportionally bigger."
+L["Tooltip_Adjust_GUI_Font_Desc"] = "Change the font and text size used in the BetterBlizzFrames settings and their tooltips."
 L["Modern_Spark"] = "Modern Spark"
 L["Monk_Chi_Points"] = "Monk: Chi Points"
 L["More_Features"] = "More Features"
@@ -1567,3 +1569,31 @@ L["Tooltip_Prd_Resource_YPos_Desc"] = "Y offset for the resource on the Personal
 
 L["Color_Shamans_Blue"] = "Color Shamans Blue"
 L["Tooltip_Color_Shamans_Blue_Desc"] = "Color Shamans their blue color. On Era and only Era they are the same pink as paladin, this setting avoids that."
+
+---------------------------------------
+-- GUI Strings
+---------------------------------------
+
+L["Popup_Kick_Sound_ID_Text"] = "Enter a custom Sound ID (leave empty or 0 to use dropdown):"
+L["Tooltip_Kick_Sound_ID_Right_Click"] = "Right-click to enter a custom Sound ID."
+L["Sound_Channel_Master"] = "Master"
+L["Sound_Channel_Music"] = "Music"
+L["Sound_Channel_Ambience"] = "Ambience"
+L["Sound_Channel_Dialog"] = "Dialog"
+L["Tooltip_Pixel_Border_Size_Toggle"] = "Right-click to toggle between 1px and 1.5px. Active: %s"
+L["Tooltip_Class_Colors_Restricted_Note"] = "Individual class colors need to know the unit's class, which the game hides in arenas and other restricted content. Those units fall back to the default class color instead. \"%s\" always works since it needs no class."
+L["Class_Color_Title"] = "%s Class Color"
+L["Power_Color_Title"] = "%s Color"
+L["Color_All_Auras"] = "Color ALL Auras"
+L["Profile_Reset_Hint"] = "(If you want to completely reset BBF there\nis a button in Advanced Settings)"
+L["Name_Missing"] = "Name Missing"
+L["Texture"] = "Texture"
+L["Highlight_Style_Aggro"] = "Aggro"
+L["Highlight_Style_2x_Corners"] = "2xCorners"
+L["Highlight_Style_4x_Corners"] = "4xCorners"
+L["Highlight_Style_Big_Arrow"] = "Big Arrow"
+L["Highlight_Style_Thin_Glow"] = "Thin Glow"
+L["Highlight_Style_Glow_Mark"] = "Glow Mark"
+L["Highlight_Style_Cursor"] = "Cursor"
+L["Highlight_Style_Zoom"] = "Zoom"
+L["Module_Name_Support"] = "Support"

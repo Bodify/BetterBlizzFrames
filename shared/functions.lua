@@ -1,3 +1,21 @@
+BBF.popups = {}
+BBF.popupBuilders = {}
+
+function BBF.GetPopup(name)
+	local popup = BBF.popups[name]
+	if not popup then
+		popup = BBF.popupBuilders[name]()
+		BBF.popups[name] = popup
+		StaticPopupDialogs[name] = popup
+	end
+	return popup
+end
+
+function BBF.ShowPopup(name, ...)
+	BBF.GetPopup(name)
+	return StaticPopup_Show(name, ...)
+end
+
 -- Taint/combat lockdown concerns, use own to avoid Show call especially
 local FrameFadeManager = CreateFrame("Frame");
 local fadeFrames = {};
@@ -371,15 +389,17 @@ function BBF.RunAfterCombat(func)
 		end)
 	end
 end
-StaticPopupDialogs["BBF_SWEEPYBOOP_CLASSCOLOR_CONFLICT"] = {
-    text = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames:\n\nThe \"SweepyBoop\" addon has started enabling a bunch of settings by default causing a bunch of bug reports my way.\n\n|cffffd100Class Color Unit Frames|r setting is one of them and it conflicts with BetterBlizzFrames' healthbar color and texture settings.\n\nIt has been turned off. Reload to fix.",
-    button1 = "Reload",
-    OnAccept = function()
-        ReloadUI()
-    end,
-    timeout = 0,
-    whileDead = true,
-}
+BBF.popupBuilders["BBF_SWEEPYBOOP_CLASSCOLOR_CONFLICT"] = function()
+    return {
+        text = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames:\n\nThe \"SweepyBoop\" addon has started enabling a bunch of settings by default causing a bunch of bug reports my way.\n\n|cffffd100Class Color Unit Frames|r setting is one of them and it conflicts with BetterBlizzFrames' healthbar color and texture settings.\n\nIt has been turned off. Reload to fix.",
+        button1 = "Reload",
+        OnAccept = function()
+            ReloadUI()
+        end,
+        timeout = 0,
+        whileDead = true,
+    }
+end
 
 local function CheckSweepyBoopClassColor()
     BBF.sweepyBoopCheckScheduled = false
@@ -389,7 +409,7 @@ local function CheckSweepyBoopClassColor()
 
     misc.classColorUnitFrames = false
     BBF.sweepyBoopConflictHandled = true
-    StaticPopup_Show("BBF_SWEEPYBOOP_CLASSCOLOR_CONFLICT")
+    BBF.ShowPopup("BBF_SWEEPYBOOP_CLASSCOLOR_CONFLICT")
 end
 
 function BBF.CheckSweepyBoopClassColorConflict()

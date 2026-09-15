@@ -209,7 +209,6 @@ local classColorInvalidator = CreateFrame("Frame")
 classColorInvalidator:RegisterEvent("PLAYER_TARGET_CHANGED")
 classColorInvalidator:RegisterEvent("PLAYER_FOCUS_CHANGED")
 classColorInvalidator:RegisterUnitEvent("UNIT_TARGET", "target", "focus")
-classColorInvalidator:RegisterUnitEvent("UNIT_PET", "player")
 classColorInvalidator:RegisterEvent("GROUP_ROSTER_UPDATE")
 classColorInvalidator:RegisterEvent("PLAYER_ENTERING_WORLD")
 classColorInvalidator:RegisterEvent("PLAYER_REGEN_DISABLED")
@@ -218,19 +217,20 @@ classColorInvalidator:RegisterEvent("ARENA_OPPONENT_UPDATE")
 classColorInvalidator:RegisterEvent("ARENA_PREP_OPPONENT_SPECIALIZATIONS")
 classColorInvalidator:SetScript("OnEvent", function(_, event, unit)
     if event == "PLAYER_TARGET_CHANGED" then
-        InvalidateClassColor("target")
         InvalidateClassColor("targettarget")
     elseif event == "PLAYER_FOCUS_CHANGED" then
-        InvalidateClassColor("focus")
         InvalidateClassColor("focustarget")
     elseif event == "UNIT_TARGET" then
         InvalidateClassColor(unit == "target" and "targettarget" or "focustarget")
-    elseif event == "UNIT_PET" then
-        InvalidateClassColor("pet")
     else
         InvalidateAllClassColors()
     end
 end)
+
+local cachedClassColorUnits = {
+    targettarget = true,
+    focustarget = true,
+}
 
 local function GetClassColorForUnit(unit, useOverride)
     local entry = classColorCache[unit]
@@ -238,17 +238,18 @@ local function GetClassColorForUnit(unit, useOverride)
         entry = {scratch = {}}
         classColorCache[unit] = entry
     end
+    local cached = cachedClassColorUnits[unit]
 
     if useOverride then
-        if not entry.overrideValid then
-            entry.overrideValid = true
+        if not (cached and entry.overrideValid) then
+            entry.overrideValid = cached
             entry.overrideColor, entry.overrideIsDefault = ResolveOverrideClassColor(unit, entry.scratch)
         end
         return entry.overrideColor, entry.overrideIsDefault
     end
 
-    if not entry.plainValid then
-        entry.plainValid = true
+    if not (cached and entry.plainValid) then
+        entry.plainValid = cached
         entry.plainColor = ResolvePlainClassColor(unit)
     end
     return entry.plainColor

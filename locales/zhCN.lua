@@ -5,7 +5,7 @@
 local locale = GetLocale()
 if locale ~= "zhCN" then return end
 
-local L = BBF.L
+local L = BBF.L_native
 
 -- Falls back to English (enUS) if translation is not provided
 -- Any key needing update in translation will either be commented out completely or tagged --needsUpdate
@@ -1048,7 +1048,7 @@ L["Misc_Settings"] = "杂项设置"
 L["GUI"] = "BBF 界面"
 L["Adjust_GUI_Font"] = "调整 BBF 界面字体"
 L["Dont_Change_Font"] = "不更改字体"
-L["Tooltip_Adjust_GUI_Font_Desc"] = "更改 BetterBlizzFrames 设置界面及其提示使用的字体和文字大小。\n\n大小以复选框文字为基准，标题会按比例保持更大。"
+L["Tooltip_Adjust_GUI_Font_Desc"] = "更改 BetterBlizzFrames 设置界面及其提示使用的字体和文字大小。"
 L["Modern_Spark"] = "现代火花"
 L["Monk_Chi_Points"] = "武僧：真气"
 L["More_Features"] = "更多功能"
@@ -1572,3 +1572,31 @@ L["Tooltip_Prd_Resource_YPos_Desc"] = "个人资源显示上资源的 Y 偏移�
 
 L["Color_Shamans_Blue"] = "萨满显示为蓝色"
 L["Tooltip_Color_Shamans_Blue_Desc"] = "将萨满祭司显示为蓝色。仅在怀旧服 Era 中萨满与圣骑士同为粉色，此设置可避免这种情况。"
+
+---------------------------------------
+-- GUI Strings
+---------------------------------------
+
+L["Popup_Kick_Sound_ID_Text"] = "输入自定义音效 ID（留空或填 0 则使用下拉菜单）："
+L["Tooltip_Kick_Sound_ID_Right_Click"] = "右键点击以输入自定义音效 ID。"
+L["Sound_Channel_Master"] = "主音量"
+L["Sound_Channel_Music"] = "音乐"
+L["Sound_Channel_Ambience"] = "环境音"
+L["Sound_Channel_Dialog"] = "对话"
+L["Tooltip_Pixel_Border_Size_Toggle"] = "右键点击以在 1px 和 1.5px 之间切换。当前：%s"
+L["Tooltip_Class_Colors_Restricted_Note"] = "单独的职业颜色需要知道单位的职业，而游戏在竞技场和其他受限内容中会隐藏职业。这些单位将改用默认职业颜色。“%s”始终有效，因为它不需要职业信息。"
+L["Class_Color_Title"] = "%s职业颜色"
+L["Power_Color_Title"] = "%s颜色"
+L["Color_All_Auras"] = "为所有光环着色"
+L["Profile_Reset_Hint"] = "（如果想完全重置 BBF，\n高级设置中有一个按钮）"
+L["Name_Missing"] = "名称缺失"
+L["Texture"] = "材质"
+L["Highlight_Style_Aggro"] = "仇恨"
+L["Highlight_Style_2x_Corners"] = "双角"
+L["Highlight_Style_4x_Corners"] = "四角"
+L["Highlight_Style_Big_Arrow"] = "大箭头"
+L["Highlight_Style_Thin_Glow"] = "细光晕"
+L["Highlight_Style_Glow_Mark"] = "光晕标记"
+L["Highlight_Style_Cursor"] = "光标"
+L["Highlight_Style_Zoom"] = "放大"
+L["Module_Name_Support"] = "支持"

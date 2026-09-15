@@ -5,7 +5,7 @@
 local locale = GetLocale()
 if locale ~= "koKR" then return end
 
-local L = BBF.L
+local L = BBF.L_native
 
 -- Falls back to English (enUS) if translation is not provided
 -- Any key needing update in translation will either be commented out completely or tagged --needsUpdate
@@ -1048,7 +1048,7 @@ L["Misc_Settings"] = "기타 설정"
 L["GUI"] = "BBF GUI"
 L["Adjust_GUI_Font"] = "BBF GUI 글꼴 조정"
 L["Dont_Change_Font"] = "글꼴 변경 안 함"
-L["Tooltip_Adjust_GUI_Font_Desc"] = "BetterBlizzFrames 설정 창과 툴팁의 글꼴과 글자 크기를 변경합니다.\n\n크기는 체크박스 글자 기준이며, 제목은 비례해서 더 크게 유지됩니다."
+L["Tooltip_Adjust_GUI_Font_Desc"] = "BetterBlizzFrames 설정 창과 툴팁의 글꼴과 글자 크기를 변경합니다."
 L["Modern_Spark"] = "모던 스파크"
 L["Monk_Chi_Points"] = "수도사: 기 점수"
 L["More_Features"] = "추가 기능"
@@ -1572,3 +1572,31 @@ L["Tooltip_Prd_Resource_YPos_Desc"] = "개인 자원 표시에 있는 자원의 
 
 L["Color_Shamans_Blue"] = "주술사 파란색"
 L["Tooltip_Color_Shamans_Blue_Desc"] = "주술사를 파란색으로 표시합니다. 오리지널(Era)에서만 주술사가 성기사와 같은 분홍색이라 이 설정으로 이를 방지합니다."
+
+---------------------------------------
+-- GUI Strings
+---------------------------------------
+
+L["Popup_Kick_Sound_ID_Text"] = "사용자 지정 소리 ID를 입력하세요 (비워 두거나 0이면 드롭다운 사용):"
+L["Tooltip_Kick_Sound_ID_Right_Click"] = "우클릭하여 사용자 지정 소리 ID를 입력합니다."
+L["Sound_Channel_Master"] = "전체"
+L["Sound_Channel_Music"] = "음악"
+L["Sound_Channel_Ambience"] = "환경음"
+L["Sound_Channel_Dialog"] = "대화"
+L["Tooltip_Pixel_Border_Size_Toggle"] = "우클릭하여 1px과 1.5px 사이를 전환합니다. 현재: %s"
+L["Tooltip_Class_Colors_Restricted_Note"] = "개별 직업 색상은 유닛의 직업을 알아야 하는데, 투기장 및 기타 제한된 콘텐츠에서는 게임이 이를 숨깁니다. 해당 유닛은 기본 직업 색상을 대신 사용합니다. \"%s\"는 직업 정보가 필요 없으므로 항상 작동합니다."
+L["Class_Color_Title"] = "%s 직업 색상"
+L["Power_Color_Title"] = "%s 색상"
+L["Color_All_Auras"] = "모든 오라 색상 지정"
+L["Profile_Reset_Hint"] = "(BBF를 완전히 초기화하려면\n고급 설정에 버튼이 있습니다)"
+L["Name_Missing"] = "이름 없음"
+L["Texture"] = "텍스처"
+L["Highlight_Style_Aggro"] = "어그로"
+L["Highlight_Style_2x_Corners"] = "모서리 2개"
+L["Highlight_Style_4x_Corners"] = "모서리 4개"
+L["Highlight_Style_Big_Arrow"] = "큰 화살표"
+L["Highlight_Style_Thin_Glow"] = "얇은 광채"
+L["Highlight_Style_Glow_Mark"] = "광채 표시"
+L["Highlight_Style_Cursor"] = "커서"
+L["Highlight_Style_Zoom"] = "확대"
+L["Module_Name_Support"] = "후원"

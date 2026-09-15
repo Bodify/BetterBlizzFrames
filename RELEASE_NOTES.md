@@ -1,3 +1,12 @@
+# BetterBlizzFrames 2.0.8b
+## All versions
+- New settings in Misc section for BBF's GUI to Force English Language and change Font and Font Size for the GUI.
+- Existing translations for other languages have been updated and new translations for all other languages have been added.
+- Known issue with translations: Some languages will need some tweaks and especially tweaks to lenght of strings and overlapping. If theres a lot of issues probably use the new "Force English" setting in Misc for now.
+## Midnight
+### Bugfix
+- Fix attempt for class colors sometimes being stale on Target/Focus/ToT frames after changes from last patch 2.0.8
+
 # BetterBlizzFrames 2.0.8
 ## Highlights (Retail)
 - Hunter & Shaman combo points for Tip the spear and Mealstrom buff.

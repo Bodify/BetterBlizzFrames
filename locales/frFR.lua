@@ -4,7 +4,7 @@
 local locale = GetLocale()
 if locale ~= "frFR" then return end
 
-local L = BBF.L
+local L = BBF.L_native
 
 -- Falls back to English (enUS) if translation is not provided
 -- Any key needing update in translation will either be commented out completely or tagged --needsUpdate
@@ -1047,7 +1047,7 @@ L["Misc_Settings"] = "Paramètres divers"
 L["GUI"] = "Interface BBF"
 L["Adjust_GUI_Font"] = "Ajuster la police de l'interface de BBF"
 L["Dont_Change_Font"] = "Ne pas changer la police"
-L["Tooltip_Adjust_GUI_Font_Desc"] = "Change la police et la taille du texte des paramètres de BetterBlizzFrames et de leurs infobulles.\n\nLa taille se base sur le texte des cases à cocher, les titres restent proportionnellement plus grands."
+L["Tooltip_Adjust_GUI_Font_Desc"] = "Change la police et la taille du texte des paramètres de BetterBlizzFrames et de leurs infobulles."
 L["Modern_Spark"] = "Étincelle moderne"
 L["Monk_Chi_Points"] = "Moine : Points de Chi"
 L["More_Features"] = "Plus de fonctionnalités"
@@ -1571,3 +1571,31 @@ L["Tooltip_Prd_Resource_YPos_Desc"] = "Décalage Y de la ressource sur l'afficha
 
 L["Color_Shamans_Blue"] = "Chamans en bleu"
 L["Tooltip_Color_Shamans_Blue_Desc"] = "Colore les chamans de leur couleur bleue. Sur Era et uniquement Era, ils ont le même rose que les paladins, ce paramètre évite cela."
+
+---------------------------------------
+-- GUI Strings
+---------------------------------------
+
+L["Popup_Kick_Sound_ID_Text"] = "Saisissez un ID de son personnalisé (laissez vide ou 0 pour utiliser le menu déroulant) :"
+L["Tooltip_Kick_Sound_ID_Right_Click"] = "Clic droit pour saisir un ID de son personnalisé."
+L["Sound_Channel_Master"] = "Principal"
+L["Sound_Channel_Music"] = "Musique"
+L["Sound_Channel_Ambience"] = "Ambiance"
+L["Sound_Channel_Dialog"] = "Dialogues"
+L["Tooltip_Pixel_Border_Size_Toggle"] = "Clic droit pour basculer entre 1px et 1,5px. Actif : %s"
+L["Tooltip_Class_Colors_Restricted_Note"] = "Les couleurs de classe individuelles nécessitent de connaître la classe de l'unité, que le jeu masque en arène et dans d'autres contenus restreints. Ces unités utilisent alors la couleur de classe par défaut. « %s » fonctionne toujours, car aucune classe n'est nécessaire."
+L["Class_Color_Title"] = "Couleur de classe : %s"
+L["Power_Color_Title"] = "Couleur : %s"
+L["Color_All_Auras"] = "Colorer TOUTES les auras"
+L["Profile_Reset_Hint"] = "(Pour réinitialiser complètement BBF, il y a\nun bouton dans les Paramètres avancés)"
+L["Name_Missing"] = "Nom manquant"
+L["Texture"] = "Texture"
+L["Highlight_Style_Aggro"] = "Aggro"
+L["Highlight_Style_2x_Corners"] = "2 coins"
+L["Highlight_Style_4x_Corners"] = "4 coins"
+L["Highlight_Style_Big_Arrow"] = "Grande flèche"
+L["Highlight_Style_Thin_Glow"] = "Lueur fine"
+L["Highlight_Style_Glow_Mark"] = "Marque lumineuse"
+L["Highlight_Style_Cursor"] = "Curseur"
+L["Highlight_Style_Zoom"] = "Zoom"
+L["Module_Name_Support"] = "Soutien"

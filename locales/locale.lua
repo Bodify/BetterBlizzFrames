@@ -1,21 +1,23 @@
 -- Locale system for BetterBlizzFrames
 
--- Initialize locale table
 BBF.L = BBF.L or {}
+BBF.L_native = {}
+BBF.locale = GetLocale()
 
--- Get the client's locale
-local locale = GetLocale()
-
--- Store the current locale
-BBF.locale = locale
-
--- Create metatable for fallback to English (enUS)
-local L_mt = {
+setmetatable(BBF.L, {
 	__index = function(t, key)
-		-- If key doesn't exist in current locale, try to return the key itself as fallback
-		-- This will show the key name if translation is missing
 		return key
 	end
-}
+})
 
-setmetatable(BBF.L, L_mt)
+function BBF.ApplyLocale()
+	if not BBF.L_native then return end
+	if BetterBlizzFramesDB and BetterBlizzFramesDB.forceEnglishGUI then
+		BBF.locale = "enUS"
+	else
+		for key, value in pairs(BBF.L_native) do
+			BBF.L[key] = value
+		end
+	end
+	BBF.L_native = nil
+end

@@ -281,6 +281,7 @@ local function CreateFontDropdown(name, parentFrame, defaultText, settingKey, to
         label:SetText(L["Font"])
         label:SetFont(fontSmall, 13)
     end
+    dropdown.LabelText = label
 
     -- Custom font display for the selected font
     -- dropdown.customFontText = dropdown:CreateFontString(nil, "OVERLAY", "GameFontNormal")
@@ -637,138 +638,150 @@ end
 
 
 
-StaticPopupDialogs["BBF_KICK_POPUP_SOUND_ID"] = {
-    text = "Enter a custom Sound ID (leave empty or 0 to use dropdown):",
-    button1 = "OK",
-    button2 = "Cancel",
-    hasEditBox = true,
-    OnShow = function(self)
-        local fileID = BetterBlizzFramesDB.kickPopupSoundFileID
-        if fileID and fileID ~= 0 then
-            self.editBox:SetText(tostring(fileID))
-        else
-            self.editBox:SetText("")
-        end
-        self.editBox:HighlightText()
-    end,
-    OnAccept = function(self)
-        local text = self.editBox:GetText():trim()
-        local id = tonumber(text)
-        if not id or id == 0 then
-            BetterBlizzFramesDB.kickPopupSoundFileID = nil
-            if BBF.kickPopupSoundNameDropdown then
-                LibDD:UIDropDownMenu_SetText(BBF.kickPopupSoundNameDropdown, BetterBlizzFramesDB.kickPopupSoundName or "Lossa Countered")
+BBF.popupBuilders["BBF_KICK_POPUP_SOUND_ID"] = function()
+    return {
+        text = L["Popup_Kick_Sound_ID_Text"],
+        button1 = OKAY,
+        button2 = CANCEL,
+        hasEditBox = true,
+        OnShow = function(self)
+            local fileID = BetterBlizzFramesDB.kickPopupSoundFileID
+            if fileID and fileID ~= 0 then
+                self.editBox:SetText(tostring(fileID))
+            else
+                self.editBox:SetText("")
             end
-        else
-            BetterBlizzFramesDB.kickPopupSoundFileID = id
-            if BBF.kickPopupSoundNameDropdown then
-                LibDD:UIDropDownMenu_SetText(BBF.kickPopupSoundNameDropdown, "ID: " .. id)
+            self.editBox:HighlightText()
+        end,
+        OnAccept = function(self)
+            local text = self.editBox:GetText():trim()
+            local id = tonumber(text)
+            if not id or id == 0 then
+                BetterBlizzFramesDB.kickPopupSoundFileID = nil
+                if BBF.kickPopupSoundNameDropdown then
+                    LibDD:UIDropDownMenu_SetText(BBF.kickPopupSoundNameDropdown, BetterBlizzFramesDB.kickPopupSoundName or "Lossa Countered")
+                end
+            else
+                BetterBlizzFramesDB.kickPopupSoundFileID = id
+                if BBF.kickPopupSoundNameDropdown then
+                    LibDD:UIDropDownMenu_SetText(BBF.kickPopupSoundNameDropdown, "ID: " .. id)
+                end
+                local channel = BetterBlizzFramesDB.kickPopupSoundChannel or "Master"
+                PlaySound(id, channel)
             end
-            local channel = BetterBlizzFramesDB.kickPopupSoundChannel or "Master"
-            PlaySound(id, channel)
-        end
-    end,
-    EditBoxOnEnterPressed = function(self)
-        local parent = self:GetParent()
-        StaticPopupDialogs["BBF_KICK_POPUP_SOUND_ID"].OnAccept(parent)
-        parent:Hide()
-    end,
-    EditBoxOnEscapePressed = function(self)
-        self:GetParent():Hide()
-    end,
-    timeout = 0,
-    whileDead = true,
-    hideOnEscape = true,
-    preferredIndex = 3,
-}
+        end,
+        EditBoxOnEnterPressed = function(self)
+            local parent = self:GetParent()
+            StaticPopupDialogs["BBF_KICK_POPUP_SOUND_ID"].OnAccept(parent)
+            parent:Hide()
+        end,
+        EditBoxOnEscapePressed = function(self)
+            self:GetParent():Hide()
+        end,
+        timeout = 0,
+        whileDead = true,
+        hideOnEscape = true,
+        preferredIndex = 3,
+    }
+end
 
-StaticPopupDialogs["BBF_CONFIRM_RELOAD"] = {
-    text = titleText..L["Popup_Reload_Required"],
-    button1 = L["Yes"],
-    button2 = L["No"],
-    OnAccept = function()
-        BetterBlizzFramesDB.reopenOptions = true
-        ReloadUI()
-    end,
-    timeout = 0,
-    whileDead = true,
-}
+BBF.popupBuilders["BBF_CONFIRM_RELOAD"] = function()
+    return {
+        text = titleText..L["Popup_Reload_Required"],
+        button1 = L["Yes"],
+        button2 = L["No"],
+        OnAccept = function()
+            BetterBlizzFramesDB.reopenOptions = true
+            ReloadUI()
+        end,
+        timeout = 0,
+        whileDead = true,
+    }
+end
 
-StaticPopupDialogs["BBF_TOT_MESSAGE"] = {
-    text = titleText..L["Popup_ToT_Message"],
-    button1 = L["Yes"],
-    button2 = L["No"],
-    OnAccept = function()
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
-    end,
-    OnCancel = function()
-        BetterBlizzFramesDB.targetToTXPos = 0
-        BBF.targetToTXPos:SetValue(0)
-        BetterBlizzFramesDB.focusToTXPos = 0
-        BBF.focusToTXPos:SetValue(0)
-        BBF.MoveToTFrames()
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
-    end,
-    timeout = 0,
-    whileDead = true,
-}
+BBF.popupBuilders["BBF_TOT_MESSAGE"] = function()
+    return {
+        text = titleText..L["Popup_ToT_Message"],
+        button1 = L["Yes"],
+        button2 = L["No"],
+        OnAccept = function()
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
+        end,
+        OnCancel = function()
+            BetterBlizzFramesDB.targetToTXPos = 0
+            BBF.targetToTXPos:SetValue(0)
+            BetterBlizzFramesDB.focusToTXPos = 0
+            BBF.focusToTXPos:SetValue(0)
+            BBF.MoveToTFrames()
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
+        end,
+        timeout = 0,
+        whileDead = true,
+    }
+end
 
-StaticPopupDialogs["BBF_CONFIRM_PROFILE"] = {
-    text = "",
-    button1 = L["Yes"],
-    button2 = L["No"],
-    OnAccept = function(self)
-        if self.data and self.data.func then
-            self.data.func()
-        end
-    end,
-    timeout = 0,
-    whileDead = true,
-}
+BBF.popupBuilders["BBF_CONFIRM_PROFILE"] = function()
+    return {
+        text = "",
+        button1 = L["Yes"],
+        button2 = L["No"],
+        OnAccept = function(self)
+            if self.data and self.data.func then
+                self.data.func()
+            end
+        end,
+        timeout = 0,
+        whileDead = true,
+    }
+end
 
-StaticPopupDialogs["BBF_CONFIRM_PVP_WHITELIST"] = {
-    text = titleText..L["Popup_PVP_Whitelist"],
-    button1 = L["Yes"],
-    button2 = L["No"],
-    OnAccept = function()
-        local importString = "!BBFnQ1FSXr1DE2D8UElrxVetGmusWZDIEHiLtqPNJQao7S76FLw7elVoBiOwD5T7(2Dh8SZSm)y9TMC0MuQevkrjkfvrqhKFueuKOQb6PqnqsOrPbsqu26R6sc6sGyXDLRLlbzku(dk(((9nZB2NJND89x278((99EF)1NV)yMi)DPkqSjp65KJFpxjBkDsf6loszIfvjtz1I27KQRrmlrlST)w1cij7tTsvdtBIU92gnVHMH53mIuej71LTr0xe4GQvqzlenTgTHmyVUgX2wJ4FtPb75)QRUw)1DDx3G9CLU7EBW)ijh)p)1bMQUSK5Sm0CSHdKAs1vTR7YlUUl34bi3XH(yK6Byt1OMvnMaiTGskIPPk1eO3JkGEKtGwzPHxI7UxJQxsvVKsAthlsbo1bDJ84g4uo2R(Ia3ZoIPAfdZcQenqOQr9UyWI(I17T0LQa8cxWOjRdSSVnOBtnHZKtm84MsrIBzL4L6gtPrTSWlLrrLmK8MQfvZtxSlgWCIh8k97Tv4dEWRWoqD4aj2i)YTT9pboGt2RAnvDqHAtPf8UhWk87HKKC73txO8LupVkv3gVgdzysxGIeiR3Km1U4nUFtyBnQWPwYJ6EtM4QposChzCmRPwduABq3YwvpVT1IkBx9XLJS3Nc5(w3GEEIPoXw1q)UvgWHG6FD8C3SPLrE)DYxZ7Dxb2LL2LbSf5gRSHPULNGdpleNW27CmGJd3RHrfLTOQxWQL7pqPCSZVk0ppDztdDdqLzuL7sC(vj4Rg5d(uGSzgZWjFz8I)TiMviEucRfY1jYE3dQd6CE6GKG1LyIBusRYKkeFFlG6aCeJCSDIIusR8u9ce98(uFSDUqQt8OhepWLUrQDzQPLTHzfL(1iLUwxbGozPCVcqBJ)AUIn3Ri4rjTKmmRxMQMusb0tzSYuLTarp3TYiMg208OWWzDjzcrje9d3hdnbVmJtPvzXSSyPpCFbiVXt9PmriPUT6F)WKsQ5bOlkhccxwW0eBhFgZFoTbgxdAyagjPLfXrZMBk3XNfWHi197XoeuOsrjw2G3IDzvFbQ73ZLPb75)9V8fipa3Nz)7)eZn3Csj2(Uq3bFKOTysSl3k)mGy5ixylyu8MmZHg9rq0oUn8cBHFoF4N)xuy6Tt0zN9m3CFHeA5)(Ob6MBDmYX((YX(xEugebyMqtTAPY2liUhOro6n)SOeFtmZWAv6JyAxETke9ck9RA6JUDZpBa(un(ag07OgUETIiCOe24dclc4DpaW809QwSOdKeIzp5c)7EGqyuk3XMV35Xe8oJ(PNbwCNznulueeNwQGa6KB7DVu)meZ39sCTcimdsbfakn2OBTQgIRkh7NnccJUPQGtVl8ikZChPF2iIoExCB417g5lEXTfKx2TUbmhskndJcAow2T8Ecekh93JGDhoTrLCaPUbxTqQ(9gYXUWx1nkjNrfvxKfLHuRKRLmbmihtPt(LUfeP0PC026MH6VrITJjD1wkzMakCqhuiCNK26wqre)kVnUNk8WZR82bIH9iCpzx)2hjiTvUtWT4neteHlih)xvebrgMOrRzOr1fYVETcbq6JDeCNwJ7X9yhjOdt5Ym93iGLg3n0vyyiHrRnrkxwUJFm6FCyM9eWw9bUHNhWre7OdJ4eJcfpmb6lLsJmPFnhhD4q89J)rOoT6kgcu6utLwHe(rVTGDOTNBROmVCVfHF26diXwX6w2juV14wJZb9GhgchVWdJEYBauuG0NFCpwEHhw4giDxOwF67NQR0VrEhlLXO8SKWsIXohDi8QEN(6IHcdhyjYiX)v8DAjYEehzWE(LYYRNruS35G93InaPo6jzWDkUf0YoZ35Ga4ltJ934BYp3kwHle8bDTH(WSxyRjUZFPR8xxjlvLxmc80GCTw6pcTE3WOKsuoctgnXeFafbWx8x)vyi5uiDIs6Yyz6Cl9RlMAUT1ThrKr4Nclg5vpnE4lFaiFau5kuYwnvl1CQAnlehijmFVd(tybg9cx4YqEuOq76w2enFT0j7OdxT0mMMFpbTeWiyN7aDS6fCSeamGNgYb226278fN9kios)JdGH9ULZafTBYR)fwqWJkYfFgKSEjvQcEFdsyPeyY6fFMqo6iV1n5kRQuLC1Dnuty4FgWYHPOEQPzNjONusHA7YCR1tnDqw35IVo2QZfNHBJLZzHO23EAtv7145r)VT8LR452)vyOWBwZwTcb7MA(zDrceuarFVnl0jb(ta5jtvOkntOU9mEvfK47uLjVWcAAkJslQjwghSQyq6K7gX6YuXyCiM3WpZstyzGc5yNgtdwDzB0rttTyDeMldunTdxfcRlIqSeSNQzy9XGrgda9BwFHW9lPUSupRhOmvknh)yMEwFyOeXVo0XdXN6pScca6GW57Jh37gDFFUB8G9C5LTmVA9o1J9yhKz2ARef34XmDOwLnADgCGo5y)5FnkEO3VIV9TLCaud1zoi6dbvqcvFInApoxA7EqXOG1mfUXBwVSHwDH6BBHmUMPsmfcfBokPkMd3Z8o1rcrbgn2mOH8wa8c0GVrvNjjgRLfsa5TYpUYM(NBSyDAd7HS0k(CxxmEpJJraxS8(qbR4Zd7s8BZYqo9g8a4HKfQXMs0x8UPrELJvy1O6CekjpDck0HVFTBfwDt3WetHP(pCVQwaISvt3)PUCixTy76(erPGFkyFI(72iICNPmPGXek9scR6eGwzPBehhXHHoiGAqfqRGNh2vW6(XRqp8RG19hemt3VfquUuoMMgtWbK6(TcBB)r3fE5tAMNGZyWPzAhyLabYA3diRDeGQzFPk3(GqJu01WJ2J)4)dIysWprKcM2PzH3SkUKJEUxGz4tAHqw8v7JusZVZKZ9cbCxImk2Hu1BwCSc8HG8TaWiUBhqxR1ajgmn2Ga8hKMOZKc8kOMJd5BWm4ncUjq54R5PziFEZMzb9edRhwYJ4XrLo2Aoafte5lE8fkOjw(tIXZ9vJmpiLwn9LL)KaQ2qZhKBiU)QiQ59(FGe17cG2HfKJFM(Wfxf)EDM(eqYJSNtZWBnn0ZbWD8tzpHvzrhpXpm78vVUnx1cnS3vb4swAM2fd(GFke8fxhlZwit5i4uhPnhucqqyU)x2G1Ei8xM5Vr6wrPuxy1)x70(0ZBdoF8ARaAc5SI804CvZ5oaiUo7Pxxa276SXAS00AgKXzNddAzXN7w9pdA2)PD5La54NFdUbJibmihDU3erKCRZAIM5HGNly1LMjX8TdjeSdr(vFgtrc)9AphOmcNCq1OfDyylYrBSw8kU8(0nb))cqLiLGMKmj2))W5gzwoY2Fjm8zuqeR7omy)IB3(lfsK()(BaSn9WimLj0zBA)jBdRiiksDvlBZXU2pPMHFviDvtqFe7p9pH5Bsz4GyAPi8(IWfc5wC808aRgIJPbEUCStIfqFsOR08gLa34M4cWkIN8LMa3JVdFXlnraorRgHaMHnVjOpGIoc56w9qbGMgB2ddmSVm6gtuaQ1S1vyaeklDECEsnK5kMZh0KJoEj0RYTJMrGcb8o9JxkKGePupaElgel1rSG)upGi(ZB8GOMFi1IuL0g5n8vtWcHT3ZC9Z3b(6fbsYCYSE1qM2qJFUWtdzdJM)SOeoi00avyqRyP8)RRCLRxmVF(Zkh5z)EOOXkqSP6aFCihr8tDb8oZhnn8ZWiUDSzQd3xoOXIH9Q6NXv77nadU0KylmtZF9cSQU4QMjNU1hJ94SOpA(XrOWMD6zpEqhYmFP5RZ)sc68y7gNL6SBkNLkl)DM8eyl5E17ExHefTD0nz2KGIhs23lTiufYI)2GaUs8Xe8(8aE(IFmrmWFsmrZHHkElqzdp3xB0Easw0l(lyWjuBsfdZQLnSu9Nr2f)fbfGTRVmWqUrX5b53H0U(YTwiF)EqCYBsmJZ1wOX73ty(7RCwCdKNxklS5VjW6L0lXfVvoBy(uF4ZlAaHFkAavXQhnhqtTsvl)chvVlrSQpbL6QRCEVeK0G2IYQxRpnh9wxUmWSCS)WxJjfzmC0Y5ycC3lTIHUAEL0QM59lreiR5flXooAw289iQGxLJ3eD9X)2XrdrGJCOxhLjVcv4bPh61dY5E3sio0OK6OOmOrv)2Z3TuyQ05wPxn0ReRHuSg6SWP6xcD08y18tNeAUMTAteMb75SpXt8AWDyWE(Jp0dDqCxBI08wjof(U3A8iEs7PEQG8Ep3(rn0YNFn3J5yAlu09(dviw16Cx7Qh4aVMRrJvdV)KnCt0wFnUI6QKJ0dMxT6n4MsY9Lj18L(Y0Y9ulmdZEX3UvJDWjEVhmGCo1)ISS3PhK0rP3MJLbEEi7CSVX)ng4NudNz2yQvw8(nbosmekotNcGkyVszZMh2q1csJx)841F7CTB9ZVqIUTBhjzIf74VTBh8WAdj9h47W1wyAU357IxvVouDX3AzmhqSCSNBPOPAz9vbQld6fpTrLko6cLJ8ClnSJ7zUkMHiPL74Nk7wmbBVFMRgcM(RIDimlZQbLNLSqTMVVtynbyN4tItiFFzifPLCAwKa84WmY9YEBSDmai(QeaEhoJ(QKtJYH5bccH92gFcMkHvZVArvOW1bmHs)8FL8JpHaQN0zrqe3VFanxCHgIv7HeilLgFNp7lLrH6CXiCVoGHBJ9oC(2Uh6T1zyY7SJYqzG)IrD4ap0i5PvWeMPOK8GXK3Q(VbFBVnEiUA83KjOSxNM92SWOdLm2nFx5NEdIG9N6smuLmvvnvTXojyvANKwYp3iqstgs8g4aENDevOlyt3VgbJw)IYaQtS17gpGBSFtQ(KQlS5bKQTE3H4J11rzD73fldauarbyJiAybqJ6yvEba8)WZH5c8(AtAzidqMCK38NJipcP54(8V5ppK7Z94MOklPcQYYJEKMKfFGxaFYr6Qyqk7b84ND2Dvmmpelm790mtAVQZBoeWsHCPNQbdiVVkSVDhqZbQVTqjvB98obwE)7f18V)9Yu8n6QvxkPB4qz5VYgOeHMF(r4kHjmNcNRxJ167MDzb)YiNFs0pRFdtBV5uNYKYhqgSyi7B0VXfZY(4A8FlC3FZx9hSyiQPoXYVM1fLG9nua1U5b2aRfMS8tpdZWafk6)nZWLRF6zcJX)Zc4r2CilzkB44fpfYuwa2KB76rKLQRWF0TELe0VQTnviMSvyta)joc(AcNHL8fLxX8Vh5HddB9c)pSegoMefVQgwaGjqJCSPUJSyhLMKsgSHhWvktDhbGyfpHc6ruJdRLqzHeL4e7HHhCcg0F09nKA(Y5mm1B1G)sCC3pkkOnXCOzvH5sz7uGNN64pEiYPuUJNvSzOChVHFsTeV8ZZ8w4ZY0nQ2BxF5NpmT3F87Ya6H)ckXXalo05hOejA(U)7VpgkZM1PUEIJsTm0QTOOmiJ7e)GchREv60eW8SLYQ2unvl7)Vd!BBF"
-        local profileData, errorMessage = BBF.OldImportProfile(importString, "auraWhitelist")
-        if errorMessage then
-            BBF.Print(L["Print_Error_Importing_Whitelist"] .. " " .. tostring(errorMessage))
-            return
-        end
-        BBF.DeepMergeTables(BetterBlizzFramesDB.auraWhitelist, profileData)
-        if BBF.auraWhitelistRefresh then
-            BBF.auraWhitelistRefresh()
-        end
-        BBF.RefreshAllAuraFrames()
-        Settings.OpenToCategory(BBF.category:GetID(), BBF.aurasSubCategory)
-    end,
-    timeout = 0,
-    whileDead = true,
-}
+BBF.popupBuilders["BBF_CONFIRM_PVP_WHITELIST"] = function()
+    return {
+        text = titleText..L["Popup_PVP_Whitelist"],
+        button1 = L["Yes"],
+        button2 = L["No"],
+        OnAccept = function()
+            local importString = "!BBFnQ1FSXr1DE2D8UElrxVetGmusWZDIEHiLtqPNJQao7S76FLw7elVoBiOwD5T7(2Dh8SZSm)y9TMC0MuQevkrjkfvrqhKFueuKOQb6PqnqsOrPbsqu26R6sc6sGyXDLRLlbzku(dk(((9nZB2NJND89x278((99EF)1NV)yMi)DPkqSjp65KJFpxjBkDsf6loszIfvjtz1I27KQRrmlrlST)w1cij7tTsvdtBIU92gnVHMH53mIuej71LTr0xe4GQvqzlenTgTHmyVUgX2wJ4FtPb75)QRUw)1DDx3G9CLU7EBW)ijh)p)1bMQUSK5Sm0CSHdKAs1vTR7YlUUl34bi3XH(yK6Byt1OMvnMaiTGskIPPk1eO3JkGEKtGwzPHxI7UxJQxsvVKsAthlsbo1bDJ84g4uo2R(Ia3ZoIPAfdZcQenqOQr9UyWI(I17T0LQa8cxWOjRdSSVnOBtnHZKtm84MsrIBzL4L6gtPrTSWlLrrLmK8MQfvZtxSlgWCIh8k97Tv4dEWRWoqD4aj2i)YTT9pboGt2RAnvDqHAtPf8UhWk87HKKC73txO8LupVkv3gVgdzysxGIeiR3Km1U4nUFtyBnQWPwYJ6EtM4QposChzCmRPwduABq3YwvpVT1IkBx9XLJS3Nc5(w3GEEIPoXw1q)UvgWHG6FD8C3SPLrE)DYxZ7Dxb2LL2LbSf5gRSHPULNGdpleNW27CmGJd3RHrfLTOQxWQL7pqPCSZVk0ppDztdDdqLzuL7sC(vj4Rg5d(uGSzgZWjFz8I)TiMviEucRfY1jYE3dQd6CE6GKG1LyIBusRYKkeFFlG6aCeJCSDIIusR8u9ce98(uFSDUqQt8OhepWLUrQDzQPLTHzfL(1iLUwxbGozPCVcqBJ)AUIn3Ri4rjTKmmRxMQMusb0tzSYuLTarp3TYiMg208OWWzDjzcrje9d3hdnbVmJtPvzXSSyPpCFbiVXt9PmriPUT6F)WKsQ5bOlkhccxwW0eBhFgZFoTbgxdAyagjPLfXrZMBk3XNfWHi197XoeuOsrjw2G3IDzvFbQ73ZLPb75)9V8fipa3Nz)7)eZn3Csj2(Uq3bFKOTysSl3k)mGy5ixylyu8MmZHg9rq0oUn8cBHFoF4N)xuy6Tt0zN9m3CFHeA5)(Ob6MBDmYX((YX(xEugebyMqtTAPY2liUhOro6n)SOeFtmZWAv6JyAxETke9ck9RA6JUDZpBa(un(ag07OgUETIiCOe24dclc4DpaW809QwSOdKeIzp5c)7EGqyuk3XMV35Xe8oJ(PNbwCNznulueeNwQGa6KB7DVu)meZ39sCTcimdsbfakn2OBTQgIRkh7NnccJUPQGtVl8ikZChPF2iIoExCB417g5lEXTfKx2TUbmhskndJcAow2T8Ecekh93JGDhoTrLCaPUbxTqQ(9gYXUWx1nkjNrfvxKfLHuRKRLmbmihtPt(LUfeP0PC026MH6VrITJjD1wkzMakCqhuiCNK26wqre)kVnUNk8WZR82bIH9iCpzx)2hjiTvUtWT4neteHlih)xvebrgMOrRzOr1fYVETcbq6JDeCNwJ7X9yhjOdt5Ym93iGLg3n0vyyiHrRnrkxwUJFm6FCyM9eWw9bUHNhWre7OdJ4eJcfpmb6lLsJmPFnhhD4q89J)rOoT6kgcu6utLwHe(rVTGDOTNBROmVCVfHF26diXwX6w2juV14wJZb9GhgchVWdJEYBauuG0NFCpwEHhw4giDxOwF67NQR0VrEhlLXO8SKWsIXohDi8QEN(6IHcdhyjYiX)v8DAjYEehzWE(LYYRNruS35G93InaPo6jzWDkUf0YoZ35Ga4ltJ934BYp3kwHle8bDTH(WSxyRjUZFPR8xxjlvLxmc80GCTw6pcTE3WOKsuoctgnXeFafbWx8x)vyi5uiDIs6Yyz6Cl9RlMAUT1ThrKr4Nclg5vpnE4lFaiFau5kuYwnvl1CQAnlehijmFVd(tybg9cx4YqEuOq76w2enFT0j7OdxT0mMMFpbTeWiyN7aDS6fCSeamGNgYb226278fN9kios)JdGH9ULZafTBYR)fwqWJkYfFgKSEjvQcEFdsyPeyY6fFMqo6iV1n5kRQuLC1Dnuty4FgWYHPOEQPzNjONusHA7YCR1tnDqw35IVo2QZfNHBJLZzHO23EAtv7145r)VT8LR452)vyOWBwZwTcb7MA(zDrceuarFVnl0jb(ta5jtvOkntOU9mEvfK47uLjVWcAAkJslQjwghSQyq6K7gX6YuXyCiM3WpZstyzGc5yNgtdwDzB0rttTyDeMldunTdxfcRlIqSeSNQzy9XGrgda9BwFHW9lPUSupRhOmvknh)yMEwFyOeXVo0XdXN6pScca6GW57Jh37gDFFUB8G9C5LTmVA9o1J9yhKz2ARef34XmDOwLnADgCGo5y)5FnkEO3VIV9TLCaud1zoi6dbvqcvFInApoxA7EqXOG1mfUXBwVSHwDH6BBHmUMPsmfcfBokPkMd3Z8o1rcrbgn2mOH8wa8c0GVrvNjjgRLfsa5TYpUYM(NBSyDAd7HS0k(CxxmEpJJraxS8(qbR4Zd7s8BZYqo9g8a4HKfQXMs0x8UPrELJvy1O6CekjpDck0HVFTBfwDt3WetHP(pCVQwaISvt3)PUCixTy76(erPGFkyFI(72iICNPmPGXek9scR6eGwzPBehhXHHoiGAqfqRGNh2vW6(XRqp8RG19hemt3VfquUuoMMgtWbK6(TcBB)r3fE5tAMNGZyWPzAhyLabYA3diRDeGQzFPk3(GqJu01WJ2J)4)dIysWprKcM2PzH3SkUKJEUxGz4tAHqw8v7JusZVZKZ9cbCxImk2Hu1BwCSc8HG8TaWiUBhqxR1ajgmn2Ga8hKMOZKc8kOMJd5BWm4ncUjq54R5PziFEZMzb9edRhwYJ4XrLo2Aoafte5lE8fkOjw(tIXZ9vJmpiLwn9LL)KaQ2qZhKBiU)QiQ59(FGe17cG2HfKJFM(Wfxf)EDM(eqYJSNtZWBnn0ZbWD8tzpHvzrhpXpm78vVUnx1cnS3vb4swAM2fd(GFke8fxhlZwit5i4uhPnhucqqyU)x2G1Ei8xM5Vr6wrPuxy1)x70(0ZBdoF8ARaAc5SI804CvZ5oaiUo7Pxxa276SXAS00AgKXzNddAzXN7w9pdA2)PD5La54NFdUbJibmihDU3erKCRZAIM5HGNly1LMjX8TdjeSdr(vFgtrc)9AphOmcNCq1OfDyylYrBSw8kU8(0nb))cqLiLGMKmj2))W5gzwoY2Fjm8zuqeR7omy)IB3(lfsK()(BaSn9WimLj0zBA)jBdRiiksDvlBZXU2pPMHFviDvtqFe7p9pH5Bsz4GyAPi8(IWfc5wC808aRgIJPbEUCStIfqFsOR08gLa34M4cWkIN8LMa3JVdFXlnraorRgHaMHnVjOpGIoc56w9qbGMgB2ddmSVm6gtuaQ1S1vyaeklDECEsnK5kMZh0KJoEj0RYTJMrGcb8o9JxkKGePupaElgel1rSG)upGi(ZB8GOMFi1IuL0g5n8vtWcHT3ZC9Z3b(6fbsYCYSE1qM2qJFUWtdzdJM)SOeoi00avyqRyP8)RRCLRxmVF(Zkh5z)EOOXkqSP6aFCihr8tDb8oZhnn8ZWiUDSzQd3xoOXIH9Q6NXv77nadU0KylmtZF9cSQU4QMjNU1hJ94SOpA(XrOWMD6zpEqhYmFP5RZ)sc68y7gNL6SBkNLkl)DM8eyl5E17ExHefTD0nz2KGIhs23lTiufYI)2GaUs8Xe8(8aE(IFmrmWFsmrZHHkElqzdp3xB0Easw0l(lyWjuBsfdZQLnSu9Nr2f)fbfGTRVmWqUrX5b53H0U(YTwiF)EqCYBsmJZ1wOX73ty(7RCwCdKNxklS5VjW6L0lXfVvoBy(uF4ZlAaHFkAavXQhnhqtTsvl)chvVlrSQpbL6QRCEVeK0G2IYQxRpnh9wxUmWSCS)WxJjfzmC0Y5ycC3lTIHUAEL0QM59lreiR5flXooAw289iQGxLJ3eD9X)2XrdrGJCOxhLjVcv4bPh61dY5E3sio0OK6OOmOrv)2Z3TuyQ05wPxn0ReRHuSg6SWP6xcD08y18tNeAUMTAteMb75SpXt8AWDyWE(Jp0dDqCxBI08wjof(U3A8iEs7PEQG8Ep3(rn0YNFn3J5yAlu09(dviw16Cx7Qh4aVMRrJvdV)KnCt0wFnUI6QKJ0dMxT6n4MsY9Lj18L(Y0Y9ulmdZEX3UvJDWjEVhmGCo1)ISS3PhK0rP3MJLbEEi7CSVX)ng4NudNz2yQvw8(nbosmekotNcGkyVszZMh2q1csJx)841F7CTB9ZVqIUTBhjzIf74VTBh8WAdj9h47W1wyAU357IxvVouDX3AzmhqSCSNBPOPAz9vbQld6fpTrLko6cLJ8ClnSJ7zUkMHiPL74Nk7wmbBVFMRgcM(RIDimlZQbLNLSqTMVVtynbyN4tItiFFzifPLCAwKa84WmY9YEBSDmai(QeaEhoJ(QKtJYH5bccH92gFcMkHvZVArvOW1bmHs)8FL8JpHaQN0zrqe3VFanxCHgIv7HeilLgFNp7lLrH6CXiCVoGHBJ9oC(2Uh6T1zyY7SJYqzG)IrD4ap0i5PvWeMPOK8GXK3Q(VbFBVnEiUA83KjOSxNM92SWOdLm2nFx5NEdIG9N6smuLmvvnvTXojyvANKwYp3iqstgs8g4aENDevOlyt3VgbJw)IYaQtS17gpGBSFtQ(KQlS5bKQTE3H4J11rzD73fldauarbyJiAybqJ6yvEba8)WZH5c8(AtAzidqMCK38NJipcP54(8V5ppK7Z94MOklPcQYYJEKMKfFGxaFYr6Qyqk7b84ND2Dvmmpelm790mtAVQZBoeWsHCPNQbdiVVkSVDhqZbQVTqjvB98obwE)7f18V)9Yu8n6QvxkPB4qz5VYgOeHMF(r4kHjmNcNRxJ167MDzb)YiNFs0pRFdtBV5uNYKYhqgSyi7B0VXfZY(4A8FlC3FZx9hSyiQPoXYVM1fLG9nua1U5b2aRfMS8tpdZWafk6)nZWLRF6zcJX)Zc4r2CilzkB44fpfYuwa2KB76rKLQRWF0TELe0VQTnviMSvyta)joc(AcNHL8fLxX8Vh5HddB9c)pSegoMefVQgwaGjqJCSPUJSyhLMKsgSHhWvktDhbGyfpHc6ruJdRLqzHeL4e7HHhCcg0F09nKA(Y5mm1B1G)sCC3pkkOnXCOzvH5sz7uGNN64pEiYPuUJNvSzOChVHFsTeV8ZZ8w4ZY0nQ2BxF5NpmT3F87Ya6H)ckXXalo05hOejA(U)7VpgkZM1PUEIJsTm0QTOOmiJ7e)GchREv60eW8SLYQ2unvl7)Vd!BBF"
+            local profileData, errorMessage = BBF.OldImportProfile(importString, "auraWhitelist")
+            if errorMessage then
+                BBF.Print(L["Print_Error_Importing_Whitelist"] .. " " .. tostring(errorMessage))
+                return
+            end
+            BBF.DeepMergeTables(BetterBlizzFramesDB.auraWhitelist, profileData)
+            if BBF.auraWhitelistRefresh then
+                BBF.auraWhitelistRefresh()
+            end
+            BBF.RefreshAllAuraFrames()
+            Settings.OpenToCategory(BBF.category:GetID(), BBF.aurasSubCategory)
+        end,
+        timeout = 0,
+        whileDead = true,
+    }
+end
 
-StaticPopupDialogs["BBF_CONFIRM_PVP_BLACKLIST"] = {
-    text = titleText..L["Popup_PVP_Blacklist"],
-    button1 = L["Yes"],
-    button2 = L["No"],
-    OnAccept = function()
-        local importString = "!BBF11xcCsr5zE70901mQGkYvlhXsnFs2KqmMSgtWymZndmdmoZaeDxnwt31mt5uDvDQURzO5dJlKvZHBo2OzZQBmURzZL5NMOHiRAoeeJMSX1ErmIhOYGiO4ioaciQW3)NJQ6Eq)sYVFp60V175ZX)NJ33uZ52ywRIwFNK1Lo1TFJFQZ2jlrB0ZkN9MBPqbBVm2MngguO4AlmO)iD64zFv1FVF3ZfTdKYjYpTUSdk47z56Sk7SMRW2Q4G2bPnU3LYDfOLtSXU99lAUe7IJ4hmu5AVQ0gJ3G8RJ3a6HPSCNHTY4uSKPF)MTg4xOO0Mg1204X3MoCgyqUn1UUnZTb0Yjw7kSDDnB1ol)13DpYxF39GXVLvMXUqHQ77M1(U53Z47hKXMBZ9Q9W9IEi)P3tXaRI2d4KXSDV(dl447XtGh)XKjWJ)yOrNwJyjAB7zITaZwkzxGAsQ747lBQ3X3hnzgT4ANZ2ROLRztdA5xybMTyfuCqUH796LgU3RVCI91T1Q8dWm2AaQ5CpvxTYUgO0SUz8HoEdyUWWGaNmwE8So5Cxa3gqXosJHUUfSljRNJOR5JG1C5te)P6x7jq)fqqtBYpiVFGLl301KrA6AYGbAMTpGtG18ky2uqOTR5sOn)Cwb2YI7M1f3n)(U4QSJ)cDiD5l0bnyd6yUcRHL5170Y5Y)Y70s5e3E32fcZN31XgCx3OWKDJy6MkTXo1oyNDOt)0g7w)t7Ud6eAfofY6NJodPT)vy5kRLD2P(DDg)D7Cj6FAjr)PAp3JkNJN7rrxnRoTWbnwfT7vmGpRnB2kxEBp7aErVQ7GNXGYCgod4fnQDaoeFV0gROGSMwrbscPfVmw5le6cgOSMnBxahBLWO3Lol6kEIDYFv5pDYFvW02AyaZr(fcTjET6NZ9XNwZ5(kN472K)Qkz2QJCiySZlv7PlTsp910E6RH)0S5)0JEzYF6rVmIvTt)bcSGWmox7msCY471V0KVx)utwHdKN0fwZwJWm8g)1Lln5VUCmfBeRf)rILhR)EVj5i7M4JSeh8pXTfuCMVCFNS97hKJ7L)0FN0l)P)oA)PH8(y3Uu(Iq6QjFVVuOTW0K6WFhH76WFh0SPVIaR85Xo4YYJdgstZWG9NB3wUfPDB5wkNy0wdSTxfjySchVSSGJXRQt6xft6r7zqRSys3sU(cSur9t(BP7wFlmoNDdUe)N5kcCkuCGqRGS0Mqt(5YB5Hd3cd6KN)ONrxdpdwd7dQngaFtV2ESMeUbB9VxAWw)7PDZEYd1t9JJmZEYdnK8ax3KfTKGI(OxBii3NRT5YDkynGio3(6fX52xF5eb9myy)97kt5VJVWH9D8rNFgRWkOplVSMDcPp)amr6WEyBxSjKo1tFRYEZtFR0Ey32UOjUK2W2XgTtbh0EQdt8cIQuqXblofkyNbA8u9C1vBpQQhOm82B0pxFyBXrfhE4FKmcp8pIgHk6aAb9VRtFboHYHUHyDbus9vBd6h66uyWjOpn1o(bsFTJFaPpPvhYUsXslWSrxRmdz2L)izLbnX(fzyqlN4EAlqw8U2YMZgTLrAJ20irCk2bGrV3WI2U6oBQDO7l7G2xMwLrQLHDkKXMu2lSw)hkR1)bw4n57ML0P5jIlB7lkdZ2(IqKK4Vh0g6KLzq)YXZg7NxRKQdlxmf6AqlxlVvM24HurThIAWmBPqrBSTLvSgaliG7e7JYkDP6kLSK2l0bB2iggL13yJdOl1baR9YDwLdVs7XA4HzMWu7v3q3l2qVhYEGDriZkIH1v7x4CLt1Vq5eBULvM3VaMcTIj4qPnEmDc(y8kacnflAtCwkMasC)PzvRGq83qBuHIqvGn2K9S0DOFwEPt(z5PoPtlW21m458GL0ODyJRVK0MRVeyXBhBufDS4f(fEcYc)cpbAQ767NfCvGXKN6NOOnduAW7aBh20EcTXb8iSSZCAtKDMtB0QdNU2MDz7fn3s9BVtzN53ENq2tukucmJfI1gEbFBzIDbFBwjvwlOGAyi(w03ZUauyj23n((Jin77pcnt61jNnPedCCdO7tPtEo)rzMCo)rmtAeFoSpcLR6zyYpEtYp)XBcNH96x0MTIb1DcWGeB5zKnIT8mK9gy3FOC(WMeP)FeSlYcegFpDB87HTXn3MRTvoA7OBRsYSmZ1lmKzUEUpcWVxietrZfA7Mh7yGj4kvr8Re7hDAhKXHvtGn(r09Z219Z2rxm1UcidzWCxyHQ3wtE4VR0QddWHBgnkJtbSNnOVGHX41u2QxRF2Yi2M6lmWJMQTpGNtK(MAN9S5PlOW0rlEqrbSDM2yhoYxVdhWs0qMmUw5I1rL8W3OoYq)sFl3hS6IiWtRh0pnoOhTzBBSCH9Sbgq5tQ7KSKf(jzr6yDYmpWeXZ1NpNmApFosXwVJ4G9ClAM6va4cIXLzSELdy9ehWmBkOubWOItxacmxE)rSdOMYtXN)FtMIp))gDkaM9vcmxKk)gkuWk0va1oC9CJaL3Ie7uehrJJaUFRCzD4rDuD2nkn7o9MCHobbcBxHbKKmV23ZVqw775xqnQr6eL2Rj2lskmqgWtuhWtK4GRAa7YAEdfYnzDhrAY6oseeJ6MCwzBBYzb)YcjnFLmNae8B46Kj4nCDKUCWkKZxoHPUUkbTKZ5XugRhJmpdZchhU3jBRJeuNx(Vt67Rx7BIDE6hxF3JVRAzV2HNKU0MeT(RAPTymcZBewrJXu(jISXu(jmmdFXIVLj(NkoyjtGhOu9B71PoceOQVz7I2zIy7sD3)bzl(U)d0U3cTcGnnOKlJtEIfanP(LEE83U0Zd8Ylkm7arSdg)I1iRIFXAWcNDYI31jwgE2VOzjsblAwuxt4sSi3XG6LIb(UPn2VQED)q963TNs56ZXVGdVNvZf)B5FcuiP0ty2SWOsZ((cJ9ybY3nwaRBpe8RyQMfJm0DNrqVCj)qPnxYpKgBsPt)qAZUAfSh(MvbUBosbDbB7H05UX8LDEJ5t4jG(OGmweYxsLx9pY64DKhzDG1zXIMqZoTYmOSHL24F9Rld()6xNo26Aqhlgjkz9lMTj1oVxzJFN3lmn3JTnRVt49QztIGgOypVtlplanJpStnNxv(Q58QqlbWk6Tkz9(QJimbVkjepTEkgIDm(4Oha6ITTK24X)YY06X)Yy)(YXoAxHUIGMXHlkF(HlsEX4KfI0Wwf(MgUD5BA42XATRaNCwm7DMIHQluh9xltOJ(RjXeXxusPk(NC6hUHeZOnQCKckllBXU9LL5MB1YrSvyCRku2BLGYoJUjJE0Aa8nfNqVv7LCUY5ZLCUG3dURbLBDBBfZwN8V9)roC)B)FW8UHaYbtmm5aIolb23w3GmD26gqd6imZqLmxOFqb7cd6lBjRvC8fusSI8valChBak3CemDn7sasNCYIPCqlZ(qBLreJxUtqXqzp6qpGmwh6bWyr8IaMg0ediUfyo6u7wfc3necVDGGPWG59Dud9B(HLFBZpmTsGKt(bHJgD57uqb3ojr)nOrk3sTThs(MT9qyoDgWToRmLI8fIDQf6plMrmpVTxMBlOO)BkaJT4rKxegTxETYgXlVwIrnpyocIS9xZCRN5BaLefz7L4Whq462PV(ixjFdvhXBaDeRTBRSSkasg6gzy3GaRwDdW6HoIsL6(DcNyD)oivYS(9KNzFt9ZEszr9ZEsCK3HTvEsIPvsQwSJLq2ebLmW3tggKq0QMW3k7wxJUBDnXEBA)tLH0(NswyduShS)xPnUfX5mqrVoNMzn1zmBiO4cm70Ncwe7EffVaENFl)fzsUL)sflnIyhOX6)nEqPtnEq68zXozgINOTcWkSUeFshR43rQJSjPhpYMi(li75roAwDtmYkE0dkaT0Zio9xKSIwaBPyuxJo6RjE034njJ(gVj6qRj43b0Srr9W3lREmKAh)fjib74VWcIWFmlwnxZWWJVhoGBPKDAJVPQD4BE7upr6q5TUQ9jYy8VHm5g)BG28bJSHhFW0i8hzv2A)2VlX5H9Lhw3FEyA)PvaF6)V7pgFpDo89UDY2gC03ngc8v(RKF6k)v0IaaUWsL8keDbuPKDaiOjMON01PmfxxmtXyFt5Bh7BsCtlXIu4rEaf4xL1ZAB7cf1qTDHmBCw)W(4HUUtv7Xtf94g7HCzXSkT1Bv9LCRaR3OQ2PUGIhpNvY7(392KZ87EB4aLWAKL1P2UOZn5UfyrGczKo8Hw0SWMTIzO1pJmLA9ZG(EX(d7d1nlgI8aXhlYEdFC(3bft5fAfcCuQKXxt3e(AX6rg9jK5XOpbTb2Uxwama2aG3MqXCtwbEQ7OgN0FwwqN0FgnCURq8WZShp)rmBdq7ae6qpE7MLvR)A5DhqWuOf4SHNyzVgVvkQt8wjXR3MJRNTvbs6kxEkWuP(5VKmF(5Ve(9zvXWQn0kzUCyyhhUUrbW4vv28xLyZNHI6WvJHvqy8HOXd8Vln8b(3jU4L5fWrzGxao26c8aIFbGItKUPvuVqrrb1kyIDX4Rikfxjk0uMCGCutjkF4Aj(W0Vxtjllitrr)HXH0j9HOj9uBdESB7nafjRibh(CX9qY(G7HWW1rioqGlDr(RLA0Nrp1GdxLVvMPywsyebLJ7fGYysGA0yyMqoMbL8HnxE7IHYSjP(djPZ)tFPWDN(vrWwGNUdioOS5xugUn)I02xd5aWX(lrTPInkJlsCHeu6GTBY4h5OFR0exHGCl)sPj3YVenbSZw957cfDadqOL77VY238PLr(nFAwnrGFotY6k1NueVSlujw7g3IEgCl0zWz8E6(UCG3)a6mXD(ItL5oFXPgjhuZk)0ImZk)00b4ITClvCqkMYQ4d(YmdzZXq8aECmepGhbAyfWRIcZVX53g5ZCho5nB0Ynh0ujqMafhgD6l(p2trbyIXF5Ni)6FbW53x75OZwGKdgEC0nQ3sahckXIePlK2zaJDElhPBgvI8dOCKvapemCyUclXSF93Le8876eyJkC8hkCCjW42Koy8Bd6vx6kPjOYGzSxvGzV)7SWazuhC0(zeUMuR7nKJL19gKYG2ZqqZJevBYpiimFrX5Ev26(0t(7dN8LfgVt45L)0j880(imoKrm7gYEFuXP5PF1C7aLuiaqYei8kgx603dS62bcJ6fFAInTl(0K4tZ6uBZAv21BoBE3WKCxVvxCqT0qztiXlOsgVaf4qYhHmbwIuDQdSdzzEGDqkXlqX9Qjl46CjDd8)ZtjF7)NNIKlAFapBA8wi4in7fGO42SRFQ0MD9tPZH2jvHWwb4SAl0rcvAIHMHOAzOzqWVS6hQwbFNyL(UoOmfURdsYN9KXkW1UOjhRNkaVFIXKg9eJHtRoHNPwSg1(0iV8H3QyF(dVvWV1wGFOxwZEgYHy8a()VHatgumctdUhc8pXqjrRvni3OI96gb2Rnlim7SYoFYvl6raL8uKcgQFyrseTpFEkUXditXnEaAoefA1QmyEJkGPB8bPJokm0v19gBADYVUP1roRfqwtRWTMAh66FhJr7XnYUq3QFGju0bhg4MC4xrAYHFfwKci)iGLLwa5NVLNAqj1yVM0QXETy(0RSSmYxzz6aak1hagIoUWMyKCxsJsUlIrqYdf648ovIqTXMwVUewpfMuhiow1sOM8hvSlMNYVZPVmVSu8TkwQklJBw3b38bOw0yGC(jMx6WPFzN4n1fWB(Aey8bTYxWpRSdELBwxhBgNFljeUIJpghucR8uFT7KhFqjUGvOjvGybwMxgFWPIp9OcOeqP2i5lGzeILk5LYQ)SYsz1FwWkqC5zRSkQj)X015Xit29oyiTsX8a(WwPvg7qpU3X641kfsAshdNJtOtrGf(DKS3akwrnqbJeInaelZ1x)1(uSA6RLfnBa8zwazNDEl5ejTXbVB5Rp4DtdHyttD)KuHjsMh5TejZJ8wuJ6f8DfGR282sCqqQz1xSUEVyW0SvOj5nunkq54TVOqkoEEwI2MeR)KLoC9NCmcSXoOOZASds8CPR5p(r4MakzDWdihlkwsHDzE88wJcHAnSj7GbiwbRGQ2K)jI5hqjpFTT5dNkgR)Gxb9ZFWRaqlzlTaHoWkZtM5(rLjZC)OOVND1zoS3rC4OJqPjNsGEIxqCAeuYLxkT6MusoA2oJLimn35R918jrUQ7REY4tH2fEulOCafBvnKNaaehGOXgvwMJnkL6PWcdg6uzjMy)s(qbLrFBBLTuf7tjN2Ws)oTHJWM3xaBbK(16oLFTKvHtHcOXPTq)rIZIyxqVf8SlHieTLe8ehoQ7Y2BwITlafeOJXIenkGcrTf6xeQSLnXKh(3l)YH)9L5aUNpEDN3wGau73EzCtafnbAzTPWKtAKkme14w8YYX2UvSR6Nt97SwDwvl4tEn(p90jL)0tNeltrNryqGQuk1vFMYVE1NjnnqxgYq2XH9iUAMX2skTptf3NpJomptTuflaH3(1S4M4E(NLT875FMcMh0GxGsBflkUDjAeGs4bwA(8beu2HTnxke3yRDWHr3Wi8R1DI3p3EqHOBhOHULm58kOPdDJs39QBCcZ8E9J14MAdtwMMByYuO9a6lif4P5ERMXEjL15LOi)g6F1aSEfwNdihVGIvydWuvGQ(VgV)rvY6Fu4yDX6JZKrfTWRBFY4UU9rXs59bQZ7Q2jFxogfvsSwlRmpL5inS37pHiBS)emlcfwlkF(DBxKyfsB8reL9GsQABLD4fQ)k5AVatHBx2fovDx4uX53HyoldjweGItjkchaOHcxXqKzafZDoAUteNVXUum87cy4hfiRi7Va)CKtj1vRu7gGYgacD7pmy(DOrMLWhlhFxNcP66EHiROjQ5hZRxqlNOVg)yTI)BAJ3wpMFB6yEkKJ9fhelFa22jo0uj(VL2K4)MhsxRqStizsdwdCgsImunlzpIgVLShAvpOtGl8HrIY)Kvd4tggW3mmnxyqXYNOnT2hvQYbq5d0C9zb4vEegprpuQxrY2bO47VCcNpbIosvtn)Ej7NGs5gGZyLFvvaKX(09099hzEk7GaUkl4KS1tESayvgt9revgt9rapzB(bqzwOiI(mLv5rm9V9fcFy6jZG2IJ(gxNOIeu20HH5xsglZVeTH2soI1llyQOYFkcz)4UAWACP2Sc)vaEZg88Gmi8ToOu6uVZptgW35Nrq)T73NYJwfymg3RYeDV061ggdOTZyp2mMLYKnRJsb6K)4rSC5QQk1ZjwUaL2lwIDiMFWdCxsVqGzNd9jtBCUkkPZD9K1jy3hEu55fPM5Xu1mpgHb1f66yasbQO3(uab77pf7wN31Rs0uAyMAJoUdizKSkSghrIMcOK50kjQnYptEMFeLj4i1tbqeBMk6PSAnuTfneEBztKUr425qMTR66Q9tPcnFQYj2Anj4J75SiEAbkMPnM24jvWzpjaNDpTSsmbLiWiNy3N8JJFFmoNmCYBIx1P2Yg1HEJXr2QzXSkOLNqQr6zqa(xKk(DIJ1GsBmDhwCq2GtddmaR6wDSylAKP3Ydh13jpvnS7N6)dX)0Bjs5EZ2Ue)tmE8TOrEFlBiEkL6UKXl1DXSMX1Grfq(13TKZLUxh7LIy1ecK5IWM8P)SsV(P)SKBsKIYCAcSW57xrpN)kL1mqxGS1wnMibkhOmEpmvluKy)aa1SXt81pxziw)ClNiaqSlwuCrRUK)zbYqsk6xttN0lGeGrJiHz8rJRkJh)uPTumcoKB9n5d8ZbvgIXoS0QXoCKYX6mKqRbkv5uaflRBM32oDXcpO02gfEMcCzm2OFFrz5QM)jXZjqbZdN7HEcZKXxtDQp)JGIH7Y5(8LFcrdWltH850QgxwxyDLo1U1qcUBoKqmoxtAKhzqB3CrXN6jtln6jthlRnlzZduQFPeUe1VW7EwzBQhqHK8aNjXkR7qCa(f(MRv5BUw0dNbH9nGKcOsaJwwvh8IKZuJlWmVAoaQf91uFiGpn(6IJqGwMcVq1b1NwlUsGGsBSgTsCwdvjoZSxy0qmx3kHkSvG92QGuThgRF7slx)2PTLUd944Jomz7JkCor7391I0O7JQvq2lwy7w(TApy3YrXb7MZrKNKNxCEp)fjjm)dlkzaTmhQGOYFAEXXfoXJ(VWnbuSQ7LIcjPiQnfwPXZPs1phjvpRwd9gWkWb6q7SeS1NHkrs3WcrfKXL(osJV03HkNt2kpfe3kbx)qsMoaLwXl33TOf2dz40CPzWn6f0H8fOHCknaXUmCwj1ajWTzts8dbLox5uXhXASikbHWQy(ixPxGYXVGKeWUpgHvWKspa)JjNIW6MCkOJs3tMqxb9vhsv9YrBe2WQBYIVjGgNsKr1OdokfDWPevonnKjtGDCS(x0)a39GshaTbMKQREK0Po00f(ZdnDAdHYdFCCO6IAjpqzoImhZCe0OzuvHS0bzYFf(aujmv)gAOJEJNkkStXsjgxHEWCf4Gj)CICo49RinLnLPknp5uz558QOsNwzJmFzCfA(0VcoF6ewvwyckVHR1AIzhxTbn(MP20fmbzjE33bXQkM58eBLGIdN2j7Yvq6K6coB5hVGZUmhcdao094nKAS(rvPOrjRHFc(dF57q(Wx(oyZvodtvMYerTCfVTUaEB6ZAIpToMu0KGs5eBqruOcWRmVREo8Uu5tz7kjk3H15K2ydFEPd3WNNuw37GbvvlPTgVKoOEGFWPZR3jgqNKZqzgNbBcfaGD8MNzNvejtBCB7vgLBBVL5Y4MlCpxc5QT3a6((Vt8fcuA13cv4wscSy4fI8JI5AtaZv5)l6pL8sEhbbXLaEK7PlOhqDWfMOeolqPTLWC5OkXY2lOKGN8P(5Ys6P(5u5fWyOO)ED1Sv5ZQzR0uTrkSnohFI4sMw50stt1gahT)qCSjiqysf7njTOBMu24aCCNFmzeVZpgv2tXLoQXvk(HbkLGFkT0tejzYZqhTZGuHdDa8VtX1RHIfP03Ozh)u)RYqEQ)vwnvCjggcVqZzXvls9B))l1gqG0wlRCqlOfu)8enlo1aAzUcKSYOOLQQeSmEJ)z5S(nGVV7RfVbahQGsSrRbGUpjoXGsCNlqM9tx5oiDftVbZMcDl6mS6nCt(q3c0cCZVP8H38BwMZlvwNc5dj57UdJsaVrMKkFmbbygcG9Z)ZuCWjGA3ypQ1P9SDwnmhJgAFcMPIJs5cfFMbLTjszYvxfnee4pqSW23FHs7((lS87xIuMG9ZZBksBpVPWB(WFJaRHgYMYFCRwdlGqmEaj3zGY42P4pqb3qRYZupTwFUp9pI(zBBxjTXHbci01EXYpV2lMQuiBVcvf8T6oPNvo8pPNLmx4WH3GCiv4mEgLZGQlXtlUmB7kWpRJMAR78tQmNFsm2l3rQSLMkLrW9n1XUgjSOJDn0wr1yLQoD24K81vwGxhSaBMJgglw4if5FQdO6gpWztfDOR1aH2vfrkJwwNCg3cfVZ5Se7rmxIt)9B7zUe)53Jh(hjnl9sqysB0TecrqPtrXqwGVpX1qOMZhXYM8mvXho8pn4r5ZNLE6jQkMQBsxVkSE9QWA935RWrn9oFfsRs1Hl10v6nt424ODh2xPJtbDstD0mzNukcl2KJbHsbUNASJOb58iSNQPERZr2pERZHuoB5nqiPZxYnb)bh8dkn4GFqUIub)5iu5R7KtN5f1zEXy1mNXxq(IZ4lqfpIQnjU4rQF7Rw0aS6Yj6UhlnJ4gBxcIhOsirOQqZVQkCl1g18WUr4k190QDb21SO6c81flqGIFS3aYRVkfs6tk1XfO0zQeQFZ5d1sb2dryYA2oJtLId1iHSJakM(lJQdq3jCfaE9DRmy7MTYdefS2sjEFcaZZ8FLBcOCkA0Bzq3qEq2Z6t3Z6l2RSvziD6QmiDlXPTPBBhV(P7zuC42UZZtftopsdNaxD)6mA)ygTrPMNQA(ERkERBLWBD6r15vdzV6WytO1)3ZvGbimNmHRKcicxE4UdxPsW2LW7bk5DSaq1wLXnEnTkoEnQtMrxwzIHwgDRn0KQEBkgOBJWanvgY187X3AiwUr57QFgCT0acoeIsssLKCNA9k(N1)zOlng5cqvjPk1gKsfbumcZEHa94QGTxkmvzflsuD7eHek5SfTXGshOY9hO9m2LGD)iv)3VCfaaLSqcBgfkqUmhF7Y2LNUX4rNkRLzZFowaE7phvs59vvOlRLRTQAFsAWAI0t4oX1MXU(8IoODber3o7WedBnDQhssnoOW9ug8oy5Kn)hvTF9OS9RgQaRVnxlhnXHJRSjJVBUnzc87ZQi7hrC47mEsnCNpjfUZPYy4ItWlv3UIwYFVuJVGsr1NW52x4aWdcrsD7INUGYciu2PaJC)UvvjS788LMSZZNAs705IuufliQUmR7eLzlOyXYmj9fbq2ugaqPY0BvqoEc6aRF7Bt263gzQiABpAzSyhOUNIGDAJd(vK(5GFfwXCFL4tv2CSorRX7A0WzqMDMABEaewGnmqxjEg1Dk6e9uOT1PvjGkykbDVrZPhGlQfq4klxCcUjNa18MX21AEz70VtfqhLbe6(xigismMuJtGYcxCOaIpxSDlumqly3BlLkCLcnCwrxltTPI7nxAOTTCmCyvzYHHYKBVDQSOTkgXT8G6nm7b)Qe3cDTHiuWuHyegzTm1R)jeJjV(NG2D6j0HS9Xw2Y5WHJmDITEws8M36zrt8jK7PHCGg8cukSQTzr(c0YjwlvEgXWAgtIebOLte0RDU86n(Y4hwN8d)W6OWF(EQA1enk3PdqzPAQgyL9S4kGn5DjrGf0YC2nO7oaD4rHrkeqj2Hw647GIz5PTuytIVwlYjSO7yiPehbLs4pCm3MVVz5vr5BqVzQ3qJuj9gDQjv4gVdEaf1Zb(Ku605Ca27G2(AU8VORq69l6kOiXXEwlXBpcW2w0KVSfs11P3trwEUfssd2a1KPK8lPEO8LiVyNw1hbTG9FjwZDQb3Utk56tNlQqg8lGx0lSKmKOiS()eNtkqOneO2LVgEsQx0QezOVSUH8LXjz7zkz2swXlJeB9CuobYUA0SOrlkYEPnQvuiaQGrQWi8EDxbwLuyujERlroqFRlHywrp3B8D8X4(LCLbkXSwfx)LfopxvNZb08PDGA5c)1FekR)fffgpVOW45zw9sb5OGLxLi(KLRIcOXrX4(tjkPVFkHDZoDnV9Q4MakLCdj7fY9mfn)a3c14dqL16PTqFp)ag2DVuKJHhWltXhUmGp872b5OpLtpzuuyb3pblyQqYQOdvU5mtKt4QSKs64aFCDL9X5c)Da7OmfMCORvpnUwPGJZmKReCPOGgTD1UX2FtEFFaarbJFdqJ9sZQxjY7xf0U)6iESf74XrZ44Iy25i1WpOuJwAFuzuA5DCqt)Osc1bL0njHSLsjHCL7CYcLMCUh5gVgPwCafnEMDybxfSK6ydw5nPQKfc0ulRBYo6PJt0PtQDPEQSl4PY(wMhDDjXYgU8gzaAmfn5yhkU(s2MCjYaT8XD3CAYNUcxzihEevpNKQ65KIns(EJ9EITEUk)(5w(4Y6Etu8Sj1E3GCVXaLgYg8gWfm7ZJQCmUMuy4kYKRHpKmKn8HQMbpwLaVpmPpGSpmPpqmSY9PbWAFVdRFaMId90afyrz2MB0XKaYdkRMRqbOifYEl3btaFHpm5vjnj5vrYUz077aBoH)9rRr(9rRH0YhhVoUOjYwD9s(SYfyduMHMofXqjfxrLYO6fLRQiOSU7QUlsr3U4uNH43bOewilh347Q4u)2JjUk(ThJCLaNGdvs8031kiDQJDrYhESlQmFXQOqjXmhKVpwIvNup4ILg9GlMMalZZ1gUXq22IltQuVICf7bL8ZKZwAtwX3uVuVLcq9T(m8LKf(z66Nhhx8hNO8hM)vqlNOVw8cIUeVNGyMhuAv5uDDBDHcthOuYYZKjmOGc8ECncAJtrq70R(jkOIHMAhqCThuUNRQW4QREjDbGY1pIR4BEJajUyazQ)WjjBO)WjrcyPt8nKsHdu4gaLzBsiwx41KqUSzGsZgwBhFV1A2gUrR1fqTTlb0gucIlfDEUqz5LZ5)jKLZ5)jyTeWMi(Fyc1b4camU5xDPxwxQ3vM7PExc49tZDGMsFdoL(tRDx3qUciwSpbWZSdSJaoR(voS(FpCyHf4CKwBBY9gg0YC2z8QuQJwsaFtDiX8oOusaO6YrayO5lCVQvP9wl51aFGz2f8n1ALSvNFhdVaeYdHmUoW)im780ctj3pwg(C)yYCvixwY6TYk1Zl3VsqPc7YzaO3WSnFIiAlEc5USbkznNylJDfJt3MFGMSu5zrau0Uz3EU8urgMv8vhqphi0UkWm18zKigdk1Rewm6zGGscAE6w0f7I6Nlqqf(5ciFZSOB1PK640gN6NtMyN6NJnfsXbIcq1sWhRz534OAvzF0BIorVk5evJPX(nXNLEzWefZsjaQiyNXfkwQxB1Ys61wnPGblDU28I1GhfKefxws6fdz6AzTXUfJTQEJRGUuF(csV95PxNHtlgPD1q8o2CKU6yZPmN2fmiCogn)qurY)3itklDszHZlkrlYT7VOFo5bcypY1Qeunzvvs0KXlQNLV4KO4EqWwelVYgJcDy)NjTzThEWUl5ssbkfGiXaCrtohjYAFMA8qNjjF1aheoPc9NFBbusGKd0sPtE5)tI2Ol)FcyVHDbOEuqu(rKWpdkuM0qFHEXzvnXipSy1BKhgQP6W3NpPsN6jKhEcqPIk1nCL0DWVyK71V4PORXtHwg7J)BVPynduw8JJU2eUu5PnUib3dOKvh(wqhN5akHjJusFejoMcH5ymeMQpJwif1G)gPrkwRJryTonUr8d6XhImxln5KLeFdACw4)1YLbeuSv0QTRuqkPtSV)gUPGs9w0vzzy7k5fPU6LDrqRO766MNmcx38OWXLpaY2agvfGljNJGQauIDRI614uJ9SspaknWsncAk3U6OW4CIsIjaTSCtYYQrdhC(s(URFoCsiaHkiDyqiFCC4o6IK()OlcNKuzPvv8dQFAC(raHaIcJ7WtXZIxxnR12rZu(Qy)xgXoQO1s6ibsf0YCWVO7VpF32HxNu6lJZz1EuEI9aEIr5IlIeUR8U4Ci5Qxakg)U89GlH28T8XytcRmOS(EQASC8MyLLSt5nAauAxzcXKOrx52fAC)IPsqzEeZw5R3HF)mIDPgcQFg6P6miRPsk0MqPnSBj7ZGsbunmWZSOVjvt7YA8hOHF8hComJJpxhSaRSRRVUFvJ7)Meucx6wjmNJpahrpmeDt(FN6yIvmqlZH2tY3fT4BilxedSn(6Fc5wc9exhV217ug1JvEbLUn5UqakBwniGUmcKd)s9o6l1jVX2pnz(V9tJ0xrfPpa1hQxaYTi22bfhGTdGzYZ1rCO4M0)PWjmP)tYWg(j6QmWfNfZgvBlYnweu1(rqXc9r1GoBDfqGKRbnOKbn(EizLP4cate2(gPFYqOuFYGhr1iDOlLUyx0QSchzQNtdH9Z9fq)CgTKzqFB26pNcyk38zJHDN8cNLmNVWzr3ONm29hQLk)ZkPAau6UNqxVYMSkKrtLyY5iXvhui9N4e4HDlYdfdOL56D1LV59hxmhmwJQ2BnKAVZQNC0fxkGVOGa8gFWPZvc7Tu8AgJpn5BgFA4BMBLnMMakVmom8GM9d88hqExNQzNckzqJ9LytQr4nzsQRUiPBNU2TtNweNj)36tf17JkJl(XFOGa9i7WeiF1XZ5PGwN3NVCCqxNywYsLwKzbfZH1iJN6u44KtHNzLLrdWQqU(CJVTe0B3aRqA6C4iaHcujNXkIB1Ibox7s)dc30s)dyawA6KNTCpEaLpjDYeHNA8zQd7mPL5zZ)T)f5wrdkAmFBTLRdFI3r8YfuWyT08aKewvr3RHpRaWh0Y8BEro7SovDhB6ugiqJ22R9eLKQckz7Ilbx20vunNWtMBwYSlOL5BgUK9S4QyMntiRenXXJNoELuJ7nRQtOxMRPvT6KUTYnKf0LKo1llVqrGsceng6oIwCdDZ5aGhnLVp1oKOwbkA7mBRemfNXpVtgZfdqyoz5)nnI0Abtm(uJzFsnMkdmgKb2y7fgYYkWIuVYiLsTBjrpGskqOxAlo54DhkPwXy)Awq3)uIbev7jOM7ob2C3s8baDxTEiYfXoo(S1zYSPzsA(GC27uoiN9oLckDyNHzRKnAjB67rngShymyZXwJIERTQ9bLY3eug0H(ozecnWv5p8gguwpByqAUfxG1vxxcPExfq37EzcWes5(eVndgpKgEGh6drHqcw9kqbLN(P6QxyPaTckJX1z(4ZDIAd6LclR6tEVCfal5Z63OHN93CRXAd2JI8CpNz1MIxr0JmtTl8rLpzHpkj5PVQe2XL4IAiF8paTD)PK)McKE85u5VTFTD7)deFCASxnc37nf93gv2ghs3ghI(2pj3UvRPrz1SBXDZU9qfSdxUI2w9J5(zPRHZIGYeTgAqDTS(zPBCZkEJl12KIuduogK2k2hE8oQUPEuYnAoowuQ6T7lktQghtBWXOD9Pwfatn1vmgZA)Q3MOu6REBL57bC)UwI3oDsoKtP1KQAPAezmqPeEkxEN(1IZk1ruKmhHqYm3vmOvro(h(uzX8rHJI(z5cgb)BxcpXoFn4RNpf81z((4XDRAzTvxTAOcQLz5TCCJQzbUEPswJKpbqlhxAxM9ANzqph6PAJNCD2Q4DyNTIUyzE82JuRjPtAipbvGsFV(2ifhXB67lYjZS4VsYTFwOXVQKc(1LGXdkPil2bv6bzRsT0w)S4sxde665YHFM2udlM2yBAuS2wnSaFMmH0LtooAS14ERQIs6Ha7SpECxTrrpYXsm(UWsxTLl2rppDNL2qs)(SZ2quUus(k6nL5vgUmNmc61NGcMFvzY9zLOgbkXLphHl9mvU0ZmMlTUjlHpd04Wv)6Ag7E9JWbe11jhNRM40RB8cAF)cFykImCTYPrhpDDtshJjDMXU98MINqGY59WBaFFyBnYeGXFwHO8NjiktloaSWniPUVetLPEu5XBbukp5uEzOAGpiNySQUjzQJRzSANFSEtz)X3gfXL4lTMg7OAhw8KauwDAvpIpo56toftTHVRWaUb6nj94k4SEgYbsxj)sVTMXK3U8Xf62vq5rYpiDTNIuQCGY9IDG8(x0I3a01ItGWu)LXA3bbTbgtDD57QDtbvWPW1Usbxklh86B)QI89tX5fgmh0UOJjjizpsurZWj4xkbiE9CpIEtqj9CTN1NxnxM)adm)ESc0Oumx5j7cu2yu)f1lpx13ROKNSuPaGk1Gbff4QV69jNZhvD(KUuAZQLIKfix9f3RzhRC(quMD7O26Ll(dOSkfar1PsglJEEIsNACTI0gNWTmfjznKf2QVa(Jk5whuWzEPHuTDqVdd859VCC5u4xoopmujVss8XaFQu(iBt4maLSh5KFqUGaIYJ2DQrn6oxnFn1SOBaMtCAo32JOF7Ju5jKO6QQTo9LkRU(jqD6JTkZkXSXN)259cqlF85FBL5DHrPG01vJ8YWakj9lL3c3lzkHgYAFEd9IP(g0ftDQsibyEUOlolatRpZGZ7lskiixMQ3K5oabIq)E(pmn5pahb2yB8TjVnO(wSlx7IuOsl6P4P6q2U28DdW3Bi7sujwipkVZtthW8Uk6ytFwrMi69KZrVinZ5rOAfH8jfqgZkjE2yu9ThA0Vv1Oh6POTnZtN4vLNefqPZv4)ya9kdJ5A3qLmurWHsjDQ3rUJkGIUjYV3kXMR2huEmGaLkuartWYHnH4hEZVUeivqjTNpaFAVA9ACSA6ACKKB2b0OhCak6btHUhUCXCwLSr9MZv2wHHX1Ezwa0k(p0F)E5hMuqqNLI7SKkuZKZMcqazyIeZ8nxSwIA1UORvpeUwAsrMORF7pRKGYNLwh0ZfyvzN0y8wLoCCyrn)0Ro()CKWSIE8x)iVHai6JqVvaZ84UkBdvkWHGsx)zX3GAqimrSX5QknLBs3VUj6H9B6Cq24qzECxd76MKu8aGgR5ET6njETuL1DgV3hMJgSdgPKNw1fEcRUh90oqxIepRcfcR61jzQt7bKusmnCYYV(Nz5B7)8xULBOMmbGs6vUazmFLlGyNP4YRWn8PsaHsAeZQ(XKIEbu6jaRQ6SnXVsapdk1bGrTqE9XByc3w9DiwLaL4pQ8cH2Dy(OeWymx9bjCUo0nSLua7e59rYniphmGs1oPvqF0vSEqFbBF6VLCSLMENUMzdf9Zr3qrxkhOG60hFn2aQY)xP)p2)lA25SCiyJnmQYOwG5sSxzyH5dFu94h36fxAEdBVk(UuuBnsccbfsq8lAD)HUvEpCtTzvcBZRNXzceMaUu0dK2pvM2GIHC2q(lVJDgjqj0n0MEuxRC)8m(xK4EbkgQyWzvUHnP03AJuC8L6X2PabGMY0voQw7JkpV1QDZA7Usfxu1vp7TEC5NFRhNuKsV0DCjZcxIlQvvHXdk5Ge0Y07FjvFuMvQ)6Apr1MYjoo9cvGbEGqnrB3Qwy(36Mzbi)aZvmOFoPYAOICQxFxHJQ2hCtI5VhKEiPMrdvQaN29YIZpjO41wwUVqGYrdJkwOIvlTDb6l26fqPb9072NRjdbvD)rxvNK7vE0SaLA0eHZSWqnuk)sfO1V8RtkkZLVe0CXgUL3xJA8YPcCCs7Ahk07NEMIRsjZRCrQO0f9(ikTWipftDh3Gmq3XnGMLo(Pi54EUV5j(F4EfWe)H7LsjavMO(E0(YzL2Wum5dkDiQ2xMqTeu3KLcNbuQjnmI1q2EtWtH0gfKl5iOCPUM41LkZguArYtC)(5K5bLK6fRW43QLC9VDHKY3zX)TniLseO0FRd(e(JjxRjqPRhjvIE5IlcgJM)gYh083GCfKWv6iEsOp8m14(Jupj4hc5Q9KaToWAvaHrAJ38)s6L38)Q6ajjsljSKNNjqjlO(buC4XzVN(OkAK5QKfFMRIvHw5YV0P1a5jqUPEP)b5O6LO7yZPt1W(G0dxZedS01C5YC4AUCILVsKc4oKqddl6Yg3U1hP8Dtps5Zu4QYOCv0Jd)Plr93XRQhHIu)MJjZHFZXyNbh0hQ1Qu7XgVRY09Uxe)a15sqNwAobdrn)wrraOu4v57vvLinBCH6BE6fMJVvAS4q3dcWusgHUj9D((MwEz(YatX8WKlVSaoN5YA6k3I0QRCl09bmOuCg8xl9)ri0BP82B2kmWIbatfp2)V!BBF"
-        local profileData, errorMessage = BBF.OldImportProfile(importString, "auraBlacklist")
-        if errorMessage then
-            BBF.Print(L["Print_Error_Importing_Blacklist"] .. " " .. tostring(errorMessage))
-            return
-        end
-        BBF.DeepMergeTables(BetterBlizzFramesDB.auraBlacklist, profileData)
-        if BBF.auraBlacklistRefresh then
-            BBF.auraBlacklistRefresh()
-        end
-        BBF.RefreshAllAuraFrames()
-        Settings.OpenToCategory(BBF.category:GetID(), BBF.aurasSubCategory)
-    end,
-    timeout = 0,
-    whileDead = true,
-}
+BBF.popupBuilders["BBF_CONFIRM_PVP_BLACKLIST"] = function()
+    return {
+        text = titleText..L["Popup_PVP_Blacklist"],
+        button1 = L["Yes"],
+        button2 = L["No"],
+        OnAccept = function()
+            local importString = "!BBF11xcCsr5zE70901mQGkYvlhXsnFs2KqmMSgtWymZndmdmoZaeDxnwt31mt5uDvDQURzO5dJlKvZHBo2OzZQBmURzZL5NMOHiRAoeeJMSX1ErmIhOYGiO4ioaciQW3)NJQ6Eq)sYVFp60V175ZX)NJ33uZ52ywRIwFNK1Lo1TFJFQZ2jlrB0ZkN9MBPqbBVm2MngguO4AlmO)iD64zFv1FVF3ZfTdKYjYpTUSdk47z56Sk7SMRW2Q4G2bPnU3LYDfOLtSXU99lAUe7IJ4hmu5AVQ0gJ3G8RJ3a6HPSCNHTY4uSKPF)MTg4xOO0Mg1204X3MoCgyqUn1UUnZTb0Yjw7kSDDnB1ol)13DpYxF39GXVLvMXUqHQ77M1(U53Z47hKXMBZ9Q9W9IEi)P3tXaRI2d4KXSDV(dl447XtGh)XKjWJ)yOrNwJyjAB7zITaZwkzxGAsQ747lBQ3X3hnzgT4ANZ2ROLRztdA5xybMTyfuCqUH796LgU3RVCI91T1Q8dWm2AaQ5CpvxTYUgO0SUz8HoEdyUWWGaNmwE8So5Cxa3gqXosJHUUfSljRNJOR5JG1C5te)P6x7jq)fqqtBYpiVFGLl301KrA6AYGbAMTpGtG18ky2uqOTR5sOn)Cwb2YI7M1f3n)(U4QSJ)cDiD5l0bnyd6yUcRHL5170Y5Y)Y70s5e3E32fcZN31XgCx3OWKDJy6MkTXo1oyNDOt)0g7w)t7Ud6eAfofY6NJodPT)vy5kRLD2P(DDg)D7Cj6FAjr)PAp3JkNJN7rrxnRoTWbnwfT7vmGpRnB2kxEBp7aErVQ7GNXGYCgod4fnQDaoeFV0gROGSMwrbscPfVmw5le6cgOSMnBxahBLWO3Lol6kEIDYFv5pDYFvW02AyaZr(fcTjET6NZ9XNwZ5(kN472K)Qkz2QJCiySZlv7PlTsp910E6RH)0S5)0JEzYF6rVmIvTt)bcSGWmox7msCY471V0KVx)utwHdKN0fwZwJWm8g)1Lln5VUCmfBeRf)rILhR)EVj5i7M4JSeh8pXTfuCMVCFNS97hKJ7L)0FN0l)P)oA)PH8(y3Uu(Iq6QjFVVuOTW0K6WFhH76WFh0SPVIaR85Xo4YYJdgstZWG9NB3wUfPDB5wkNy0wdSTxfjySchVSSGJXRQt6xft6r7zqRSys3sU(cSur9t(BP7wFlmoNDdUe)N5kcCkuCGqRGS0Mqt(5YB5Hd3cd6KN)ONrxdpdwd7dQngaFtV2ESMeUbB9VxAWw)7PDZEYd1t9JJmZEYdnK8ax3KfTKGI(OxBii3NRT5YDkynGio3(6fX52xF5eb9myy)97kt5VJVWH9D8rNFgRWkOplVSMDcPp)amr6WEyBxSjKo1tFRYEZtFR0Ey32UOjUK2W2XgTtbh0EQdt8cIQuqXblofkyNbA8u9C1vBpQQhOm82B0pxFyBXrfhE4FKmcp8pIgHk6aAb9VRtFboHYHUHyDbus9vBd6h66uyWjOpn1o(bsFTJFaPpPvhYUsXslWSrxRmdz2L)izLbnX(fzyqlN4EAlqw8U2YMZgTLrAJ20irCk2bGrV3WI2U6oBQDO7l7G2xMwLrQLHDkKXMu2lSw)hkR1)bw4n57ML0P5jIlB7lkdZ2(IqKK4Vh0g6KLzq)YXZg7NxRKQdlxmf6AqlxlVvM24HurThIAWmBPqrBSTLvSgaliG7e7JYkDP6kLSK2l0bB2iggL13yJdOl1baR9YDwLdVs7XA4HzMWu7v3q3l2qVhYEGDriZkIH1v7x4CLt1Vq5eBULvM3VaMcTIj4qPnEmDc(y8kacnflAtCwkMasC)PzvRGq83qBuHIqvGn2K9S0DOFwEPt(z5PoPtlW21m458GL0ODyJRVK0MRVeyXBhBufDS4f(fEcYc)cpbAQ767NfCvGXKN6NOOnduAW7aBh20EcTXb8iSSZCAtKDMtB0QdNU2MDz7fn3s9BVtzN53ENq2tukucmJfI1gEbFBzIDbFBwjvwlOGAyi(w03ZUauyj23n((Jin77pcnt61jNnPedCCdO7tPtEo)rzMCo)rmtAeFoSpcLR6zyYpEtYp)XBcNH96x0MTIb1DcWGeB5zKnIT8mK9gy3FOC(WMeP)FeSlYcegFpDB87HTXn3MRTvoA7OBRsYSmZ1lmKzUEUpcWVxietrZfA7Mh7yGj4kvr8Re7hDAhKXHvtGn(r09Z219Z2rxm1UcidzWCxyHQ3wtE4VR0QddWHBgnkJtbSNnOVGHX41u2QxRF2Yi2M6lmWJMQTpGNtK(MAN9S5PlOW0rlEqrbSDM2yhoYxVdhWs0qMmUw5I1rL8W3OoYq)sFl3hS6IiWtRh0pnoOhTzBBSCH9Sbgq5tQ7KSKf(jzr6yDYmpWeXZ1NpNmApFosXwVJ4G9ClAM6va4cIXLzSELdy9ehWmBkOubWOItxacmxE)rSdOMYtXN)FtMIp))gDkaM9vcmxKk)gkuWk0va1oC9CJaL3Ie7uehrJJaUFRCzD4rDuD2nkn7o9MCHobbcBxHbKKmV23ZVqw775xqnQr6eL2Rj2lskmqgWtuhWtK4GRAa7YAEdfYnzDhrAY6oseeJ6MCwzBBYzb)YcjnFLmNae8B46Kj4nCDKUCWkKZxoHPUUkbTKZ5XugRhJmpdZchhU3jBRJeuNx(Vt67Rx7BIDE6hxF3JVRAzV2HNKU0MeT(RAPTymcZBewrJXu(jISXu(jmmdFXIVLj(NkoyjtGhOu9B71PoceOQVz7I2zIy7sD3)bzl(U)d0U3cTcGnnOKlJtEIfanP(LEE83U0Zd8Ylkm7arSdg)I1iRIFXAWcNDYI31jwgE2VOzjsblAwuxt4sSi3XG6LIb(UPn2VQED)q963TNs56ZXVGdVNvZf)B5FcuiP0ty2SWOsZ((cJ9ybY3nwaRBpe8RyQMfJm0DNrqVCj)qPnxYpKgBsPt)qAZUAfSh(MvbUBosbDbB7H05UX8LDEJ5t4jG(OGmweYxsLx9pY64DKhzDG1zXIMqZoTYmOSHL24F9Rld()6xNo26Aqhlgjkz9lMTj1oVxzJFN3lmn3JTnRVt49QztIGgOypVtlplanJpStnNxv(Q58QqlbWk6Tkz9(QJimbVkjepTEkgIDm(4Oha6ITTK24X)YY06X)Yy)(YXoAxHUIGMXHlkF(HlsEX4KfI0Wwf(MgUD5BA42XATRaNCwm7DMIHQluh9xltOJ(RjXeXxusPk(NC6hUHeZOnQCKckllBXU9LL5MB1YrSvyCRku2BLGYoJUjJE0Aa8nfNqVv7LCUY5ZLCUG3dURbLBDBBfZwN8V9)roC)B)FW8UHaYbtmm5aIolb23w3GmD26gqd6imZqLmxOFqb7cd6lBjRvC8fusSI8valChBak3CemDn7sasNCYIPCqlZ(qBLreJxUtqXqzp6qpGmwh6bWyr8IaMg0ediUfyo6u7wfc3necVDGGPWG59Dud9B(HLFBZpmTsGKt(bHJgD57uqb3ojr)nOrk3sTThs(MT9qyoDgWToRmLI8fIDQf6plMrmpVTxMBlOO)BkaJT4rKxegTxETYgXlVwIrnpyocIS9xZCRN5BaLefz7L4Whq462PV(ixjFdvhXBaDeRTBRSSkasg6gzy3GaRwDdW6HoIsL6(DcNyD)oivYS(9KNzFt9ZEszr9ZEsCK3HTvEsIPvsQwSJLq2ebLmW3tggKq0QMW3k7wxJUBDnXEBA)tLH0(NswyduShS)xPnUfX5mqrVoNMzn1zmBiO4cm70Ncwe7EffVaENFl)fzsUL)sflnIyhOX6)nEqPtnEq68zXozgINOTcWkSUeFshR43rQJSjPhpYMi(li75roAwDtmYkE0dkaT0Zio9xKSIwaBPyuxJo6RjE034njJ(gVj6qRj43b0Srr9W3lREmKAh)fjib74VWcIWFmlwnxZWWJVhoGBPKDAJVPQD4BE7upr6q5TUQ9jYy8VHm5g)BG28bJSHhFW0i8hzv2A)2VlX5H9Lhw3FEyA)PvaF6)V7pgFpDo89UDY2gC03ngc8v(RKF6k)v0IaaUWsL8keDbuPKDaiOjMON01PmfxxmtXyFt5Bh7BsCtlXIu4rEaf4xL1ZAB7cf1qTDHmBCw)W(4HUUtv7Xtf94g7HCzXSkT1Bv9LCRaR3OQ2PUGIhpNvY7(392KZ87EB4aLWAKL1P2UOZn5UfyrGczKo8Hw0SWMTIzO1pJmLA9ZG(EX(d7d1nlgI8aXhlYEdFC(3bft5fAfcCuQKXxt3e(AX6rg9jK5XOpbTb2Uxwama2aG3MqXCtwbEQ7OgN0FwwqN0FgnCURq8WZShp)rmBdq7ae6qpE7MLvR)A5DhqWuOf4SHNyzVgVvkQt8wjXR3MJRNTvbs6kxEkWuP(5VKmF(5Ve(9zvXWQn0kzUCyyhhUUrbW4vv28xLyZNHI6WvJHvqy8HOXd8Vln8b(3jU4L5fWrzGxao26c8aIFbGItKUPvuVqrrb1kyIDX4Rikfxjk0uMCGCutjkF4Aj(W0Vxtjllitrr)HXH0j9HOj9uBdESB7nafjRibh(CX9qY(G7HWW1rioqGlDr(RLA0Nrp1GdxLVvMPywsyebLJ7fGYysGA0yyMqoMbL8HnxE7IHYSjP(djPZ)tFPWDN(vrWwGNUdioOS5xugUn)I02xd5aWX(lrTPInkJlsCHeu6GTBY4h5OFR0exHGCl)sPj3YVenbSZw957cfDadqOL77VY238PLr(nFAwnrGFotY6k1NueVSlujw7g3IEgCl0zWz8E6(UCG3)a6mXD(ItL5oFXPgjhuZk)0ImZk)00b4ITClvCqkMYQ4d(YmdzZXq8aECmepGhbAyfWRIcZVX53g5ZCho5nB0Ynh0ujqMafhgD6l(p2trbyIXF5Ni)6FbW53x75OZwGKdgEC0nQ3sahckXIePlK2zaJDElhPBgvI8dOCKvapemCyUclXSF93Le8876eyJkC8hkCCjW42Koy8Bd6vx6kPjOYGzSxvGzV)7SWazuhC0(zeUMuR7nKJL19gKYG2ZqqZJevBYpiimFrX5Ev26(0t(7dN8LfgVt45L)0j880(imoKrm7gYEFuXP5PF1C7aLuiaqYei8kgx603dS62bcJ6fFAInTl(0K4tZ6uBZAv21BoBE3WKCxVvxCqT0qztiXlOsgVaf4qYhHmbwIuDQdSdzzEGDqkXlqX9Qjl46CjDd8)ZtjF7)NNIKlAFapBA8wi4in7fGO42SRFQ0MD9tPZH2jvHWwb4SAl0rcvAIHMHOAzOzqWVS6hQwbFNyL(UoOmfURdsYN9KXkW1UOjhRNkaVFIXKg9eJHtRoHNPwSg1(0iV8H3QyF(dVvWV1wGFOxwZEgYHy8a()VHatgumctdUhc8pXqjrRvni3OI96gb2Rnlim7SYoFYvl6raL8uKcgQFyrseTpFEkUXditXnEaAoefA1QmyEJkGPB8bPJokm0v19gBADYVUP1roRfqwtRWTMAh66FhJr7XnYUq3QFGju0bhg4MC4xrAYHFfwKci)iGLLwa5NVLNAqj1yVM0QXETy(0RSSmYxzz6aak1hagIoUWMyKCxsJsUlIrqYdf648ovIqTXMwVUewpfMuhiow1sOM8hvSlMNYVZPVmVSu8TkwQklJBw3b38bOw0yGC(jMx6WPFzN4n1fWB(Aey8bTYxWpRSdELBwxhBgNFljeUIJpghucR8uFT7KhFqjUGvOjvGybwMxgFWPIp9OcOeqP2i5lGzeILk5LYQ)SYsz1FwWkqC5zRSkQj)X015Xit29oyiTsX8a(WwPvg7qpU3X641kfsAshdNJtOtrGf(DKS3akwrnqbJeInaelZ1x)1(uSA6RLfnBa8zwazNDEl5ejTXbVB5Rp4DtdHyttD)KuHjsMh5TejZJ8wuJ6f8DfGR282sCqqQz1xSUEVyW0SvOj5nunkq54TVOqkoEEwI2MeR)KLoC9NCmcSXoOOZASds8CPR5p(r4MakzDWdihlkwsHDzE88wJcHAnSj7GbiwbRGQ2K)jI5hqjpFTT5dNkgR)Gxb9ZFWRaqlzlTaHoWkZtM5(rLjZC)OOVND1zoS3rC4OJqPjNsGEIxqCAeuYLxkT6MusoA2oJLimn35R918jrUQ7REY4tH2fEulOCafBvnKNaaehGOXgvwMJnkL6PWcdg6uzjMy)s(qbLrFBBLTuf7tjN2Ws)oTHJWM3xaBbK(16oLFTKvHtHcOXPTq)rIZIyxqVf8SlHieTLe8ehoQ7Y2BwITlafeOJXIenkGcrTf6xeQSLnXKh(3l)YH)9L5aUNpEDN3wGau73EzCtafnbAzTPWKtAKkme14w8YYX2UvSR6Nt97SwDwvl4tEn(p90jL)0tNeltrNryqGQuk1vFMYVE1NjnnqxgYq2XH9iUAMX2skTptf3NpJomptTuflaH3(1S4M4E(NLT875FMcMh0GxGsBflkUDjAeGs4bwA(8beu2HTnxke3yRDWHr3Wi8R1DI3p3EqHOBhOHULm58kOPdDJs39QBCcZ8E9J14MAdtwMMByYuO9a6lif4P5ERMXEjL15LOi)g6F1aSEfwNdihVGIvydWuvGQ(VgV)rvY6Fu4yDX6JZKrfTWRBFY4UU9rXs59bQZ7Q2jFxogfvsSwlRmpL5inS37pHiBS)emlcfwlkF(DBxKyfsB8reL9GsQABLD4fQ)k5AVatHBx2fovDx4uX53HyoldjweGItjkchaOHcxXqKzafZDoAUteNVXUum87cy4hfiRi7Va)CKtj1vRu7gGYgacD7pmy(DOrMLWhlhFxNcP66EHiROjQ5hZRxqlNOVg)yTI)BAJ3wpMFB6yEkKJ9fhelFa22jo0uj(VL2K4)MhsxRqStizsdwdCgsImunlzpIgVLShAvpOtGl8HrIY)Kvd4tggW3mmnxyqXYNOnT2hvQYbq5d0C9zb4vEegprpuQxrY2bO47VCcNpbIosvtn)Ej7NGs5gGZyLFvvaKX(09099hzEk7GaUkl4KS1tESayvgt9revgt9rapzB(bqzwOiI(mLv5rm9V9fcFy6jZG2IJ(gxNOIeu20HH5xsglZVeTH2soI1llyQOYFkcz)4UAWACP2Sc)vaEZg88Gmi8ToOu6uVZptgW35Nrq)T73NYJwfymg3RYeDV061ggdOTZyp2mMLYKnRJsb6K)4rSC5QQk1ZjwUaL2lwIDiMFWdCxsVqGzNd9jtBCUkkPZD9K1jy3hEu55fPM5Xu1mpgHb1f66yasbQO3(uab77pf7wN31Rs0uAyMAJoUdizKSkSghrIMcOK50kjQnYptEMFeLj4i1tbqeBMk6PSAnuTfneEBztKUr425qMTR66Q9tPcnFQYj2Anj4J75SiEAbkMPnM24jvWzpjaNDpTSsmbLiWiNy3N8JJFFmoNmCYBIx1P2Yg1HEJXr2QzXSkOLNqQr6zqa(xKk(DIJ1GsBmDhwCq2GtddmaR6wDSylAKP3Ydh13jpvnS7N6)dX)0Bjs5EZ2Ue)tmE8TOrEFlBiEkL6UKXl1DXSMX1Grfq(13TKZLUxh7LIy1ecK5IWM8P)SsV(P)SKBsKIYCAcSW57xrpN)kL1mqxGS1wnMibkhOmEpmvluKy)aa1SXt81pxziw)ClNiaqSlwuCrRUK)zbYqsk6xttN0lGeGrJiHz8rJRkJh)uPTumcoKB9n5d8ZbvgIXoS0QXoCKYX6mKqRbkv5uaflRBM32oDXcpO02gfEMcCzm2OFFrz5QM)jXZjqbZdN7HEcZKXxtDQp)JGIH7Y5(8LFcrdWltH850QgxwxyDLo1U1qcUBoKqmoxtAKhzqB3CrXN6jtln6jthlRnlzZduQFPeUe1VW7EwzBQhqHK8aNjXkR7qCa(f(MRv5BUw0dNbH9nGKcOsaJwwvh8IKZuJlWmVAoaQf91uFiGpn(6IJqGwMcVq1b1NwlUsGGsBSgTsCwdvjoZSxy0qmx3kHkSvG92QGuThgRF7slx)2PTLUd944Jomz7JkCor7391I0O7JQvq2lwy7w(TApy3YrXb7MZrKNKNxCEp)fjjm)dlkzaTmhQGOYFAEXXfoXJ(VWnbuSQ7LIcjPiQnfwPXZPs1phjvpRwd9gWkWb6q7SeS1NHkrs3WcrfKXL(osJV03HkNt2kpfe3kbx)qsMoaLwXl33TOf2dz40CPzWn6f0H8fOHCknaXUmCwj1ajWTzts8dbLox5uXhXASikbHWQy(ixPxGYXVGKeWUpgHvWKspa)JjNIW6MCkOJs3tMqxb9vhsv9YrBe2WQBYIVjGgNsKr1OdokfDWPevonnKjtGDCS(x0)a39GshaTbMKQREK0Po00f(ZdnDAdHYdFCCO6IAjpqzoImhZCe0OzuvHS0bzYFf(aujmv)gAOJEJNkkStXsjgxHEWCf4Gj)CICo49RinLnLPknp5uz558QOsNwzJmFzCfA(0VcoF6ewvwyckVHR1AIzhxTbn(MP20fmbzjE33bXQkM58eBLGIdN2j7Yvq6K6coB5hVGZUmhcdao094nKAS(rvPOrjRHFc(dF57q(Wx(oyZvodtvMYerTCfVTUaEB6ZAIpToMu0KGs5eBqruOcWRmVREo8Uu5tz7kjk3H15K2ydFEPd3WNNuw37GbvvlPTgVKoOEGFWPZR3jgqNKZqzgNbBcfaGD8MNzNvejtBCB7vgLBBVL5Y4MlCpxc5QT3a6((Vt8fcuA13cv4wscSy4fI8JI5AtaZv5)l6pL8sEhbbXLaEK7PlOhqDWfMOeolqPTLWC5OkXY2lOKGN8P(5Ys6P(5u5fWyOO)ED1Sv5ZQzR0uTrkSnohFI4sMw50stt1gahT)qCSjiqysf7njTOBMu24aCCNFmzeVZpgv2tXLoQXvk(HbkLGFkT0tejzYZqhTZGuHdDa8VtX1RHIfP03Ozh)u)RYqEQ)vwnvCjggcVqZzXvls9B))l1gqG0wlRCqlOfu)8enlo1aAzUcKSYOOLQQeSmEJ)z5S(nGVV7RfVbahQGsSrRbGUpjoXGsCNlqM9tx5oiDftVbZMcDl6mS6nCt(q3c0cCZVP8H38BwMZlvwNc5dj57UdJsaVrMKkFmbbygcG9Z)ZuCWjGA3ypQ1P9SDwnmhJgAFcMPIJs5cfFMbLTjszYvxfnee4pqSW23FHs7((lS87xIuMG9ZZBksBpVPWB(WFJaRHgYMYFCRwdlGqmEaj3zGY42P4pqb3qRYZupTwFUp9pI(zBBxjTXHbci01EXYpV2lMQuiBVcvf8T6oPNvo8pPNLmx4WH3GCiv4mEgLZGQlXtlUmB7kWpRJMAR78tQmNFsm2l3rQSLMkLrW9n1XUgjSOJDn0wr1yLQoD24K81vwGxhSaBMJgglw4if5FQdO6gpWztfDOR1aH2vfrkJwwNCg3cfVZ5Se7rmxIt)9B7zUe)53Jh(hjnl9sqysB0TecrqPtrXqwGVpX1qOMZhXYM8mvXho8pn4r5ZNLE6jQkMQBsxVkSE9QWA935RWrn9oFfsRs1Hl10v6nt424ODh2xPJtbDstD0mzNukcl2KJbHsbUNASJOb58iSNQPERZr2pERZHuoB5nqiPZxYnb)bh8dkn4GFqUIub)5iu5R7KtN5f1zEXy1mNXxq(IZ4lqfpIQnjU4rQF7Rw0aS6Yj6UhlnJ4gBxcIhOsirOQqZVQkCl1g18WUr4k190QDb21SO6c81flqGIFS3aYRVkfs6tk1XfO0zQeQFZ5d1sb2dryYA2oJtLId1iHSJakM(lJQdq3jCfaE9DRmy7MTYdefS2sjEFcaZZ8FLBcOCkA0Bzq3qEq2Z6t3Z6l2RSvziD6QmiDlXPTPBBhV(P7zuC42UZZtftopsdNaxD)6mA)ygTrPMNQA(ERkERBLWBD6r15vdzV6WytO1)3ZvGbimNmHRKcicxE4UdxPsW2LW7bk5DSaq1wLXnEnTkoEnQtMrxwzIHwgDRn0KQEBkgOBJWanvgY187X3AiwUr57QFgCT0acoeIsssLKCNA9k(N1)zOlng5cqvjPk1gKsfbumcZEHa94QGTxkmvzflsuD7eHek5SfTXGshOY9hO9m2LGD)iv)3VCfaaLSqcBgfkqUmhF7Y2LNUX4rNkRLzZFowaE7phvs59vvOlRLRTQAFsAWAI0t4oX1MXU(8IoODber3o7WedBnDQhssnoOW9ug8oy5Kn)hvTF9OS9RgQaRVnxlhnXHJRSjJVBUnzc87ZQi7hrC47mEsnCNpjfUZPYy4ItWlv3UIwYFVuJVGsr1NW52x4aWdcrsD7INUGYciu2PaJC)UvvjS788LMSZZNAs705IuufliQUmR7eLzlOyXYmj9fbq2ugaqPY0BvqoEc6aRF7Bt263gzQiABpAzSyhOUNIGDAJd(vK(5GFfwXCFL4tv2CSorRX7A0WzqMDMABEaewGnmqxjEg1Dk6e9uOT1PvjGkykbDVrZPhGlQfq4klxCcUjNa18MX21AEz70VtfqhLbe6(xigismMuJtGYcxCOaIpxSDlumqly3BlLkCLcnCwrxltTPI7nxAOTTCmCyvzYHHYKBVDQSOTkgXT8G6nm7b)Qe3cDTHiuWuHyegzTm1R)jeJjV(NG2D6j0HS9Xw2Y5WHJmDITEws8M36zrt8jK7PHCGg8cukSQTzr(c0YjwlvEgXWAgtIebOLte0RDU86n(Y4hwN8d)W6OWF(EQA1enk3PdqzPAQgyL9S4kGn5DjrGf0YC2nO7oaD4rHrkeqj2Hw647GIz5PTuytIVwlYjSO7yiPehbLs4pCm3MVVz5vr5BqVzQ3qJuj9gDQjv4gVdEaf1Zb(Ku605Ca27G2(AU8VORq69l6kOiXXEwlXBpcW2w0KVSfs11P3trwEUfssd2a1KPK8lPEO8LiVyNw1hbTG9FjwZDQb3Utk56tNlQqg8lGx0lSKmKOiS()eNtkqOneO2LVgEsQx0QezOVSUH8LXjz7zkz2swXlJeB9CuobYUA0SOrlkYEPnQvuiaQGrQWi8EDxbwLuyujERlroqFRlHywrp3B8D8X4(LCLbkXSwfx)LfopxvNZb08PDGA5c)1FekR)fffgpVOW45zw9sb5OGLxLi(KLRIcOXrX4(tjkPVFkHDZoDnV9Q4MakLCdj7fY9mfn)a3c14dqL16PTqFp)ag2DVuKJHhWltXhUmGp872b5OpLtpzuuyb3pblyQqYQOdvU5mtKt4QSKs64aFCDL9X5c)Da7OmfMCORvpnUwPGJZmKReCPOGgTD1UX2FtEFFaarbJFdqJ9sZQxjY7xf0U)6iESf74XrZ44Iy25i1WpOuJwAFuzuA5DCqt)Osc1bL0njHSLsjHCL7CYcLMCUh5gVgPwCafnEMDybxfSK6ydw5nPQKfc0ulRBYo6PJt0PtQDPEQSl4PY(wMhDDjXYgU8gzaAmfn5yhkU(s2MCjYaT8XD3CAYNUcxzihEevpNKQ65KIns(EJ9EITEUk)(5w(4Y6Etu8Sj1E3GCVXaLgYg8gWfm7ZJQCmUMuy4kYKRHpKmKn8HQMbpwLaVpmPpGSpmPpqmSY9PbWAFVdRFaMId90afyrz2MB0XKaYdkRMRqbOifYEl3btaFHpm5vjnj5vrYUz077aBoH)9rRr(9rRH0YhhVoUOjYwD9s(SYfyduMHMofXqjfxrLYO6fLRQiOSU7QUlsr3U4uNH43bOewilh347Q4u)2JjUk(ThJCLaNGdvs8031kiDQJDrYhESlQmFXQOqjXmhKVpwIvNup4ILg9GlMMalZZ1gUXq22IltQuVICf7bL8ZKZwAtwX3uVuVLcq9T(m8LKf(z66Nhhx8hNO8hM)vqlNOVw8cIUeVNGyMhuAv5uDDBDHcthOuYYZKjmOGc8ECncAJtrq70R(jkOIHMAhqCThuUNRQW4QREjDbGY1pIR4BEJajUyazQ)WjjBO)WjrcyPt8nKsHdu4gaLzBsiwx41KqUSzGsZgwBhFV1A2gUrR1fqTTlb0gucIlfDEUqz5LZ5)jKLZ5)jyTeWMi(Fyc1b4camU5xDPxwxQ3vM7PExc49tZDGMsFdoL(tRDx3qUciwSpbWZSdSJaoR(voS(FpCyHf4CKwBBY9gg0YC2z8QuQJwsaFtDiX8oOusaO6YrayO5lCVQvP9wl51aFGz2f8n1ALSvNFhdVaeYdHmUoW)im780ctj3pwg(C)yYCvixwY6TYk1Zl3VsqPc7YzaO3WSnFIiAlEc5USbkznNylJDfJt3MFGMSu5zrau0Uz3EU8urgMv8vhqphi0UkWm18zKigdk1Rewm6zGGscAE6w0f7I6Nlqqf(5ciFZSOB1PK640gN6NtMyN6NJnfsXbIcq1sWhRz534OAvzF0BIorVk5evJPX(nXNLEzWefZsjaQiyNXfkwQxB1Ys61wnPGblDU28I1GhfKefxws6fdz6AzTXUfJTQEJRGUuF(csV95PxNHtlgPD1q8o2CKU6yZPmN2fmiCogn)qurY)3itklDszHZlkrlYT7VOFo5bcypY1Qeunzvvs0KXlQNLV4KO4EqWwelVYgJcDy)NjTzThEWUl5ssbkfGiXaCrtohjYAFMA8qNjjF1aheoPc9NFBbusGKd0sPtE5)tI2Ol)FcyVHDbOEuqu(rKWpdkuM0qFHEXzvnXipSy1BKhgQP6W3NpPsN6jKhEcqPIk1nCL0DWVyK71V4PORXtHwg7J)BVPynduw8JJU2eUu5PnUib3dOKvh(wqhN5akHjJusFejoMcH5ymeMQpJwif1G)gPrkwRJryTonUr8d6XhImxln5KLeFdACw4)1YLbeuSv0QTRuqkPtSV)gUPGs9w0vzzy7k5fPU6LDrqRO766MNmcx38OWXLpaY2agvfGljNJGQauIDRI614uJ9SspaknWsncAk3U6OW4CIsIjaTSCtYYQrdhC(s(URFoCsiaHkiDyqiFCC4o6IK()OlcNKuzPvv8dQFAC(raHaIcJ7WtXZIxxnR12rZu(Qy)xgXoQO1s6ibsf0YCWVO7VpF32HxNu6lJZz1EuEI9aEIr5IlIeUR8U4Ci5Qxakg)U89GlH28T8XytcRmOS(EQASC8MyLLSt5nAauAxzcXKOrx52fAC)IPsqzEeZw5R3HF)mIDPgcQFg6P6miRPsk0MqPnSBj7ZGsbunmWZSOVjvt7YA8hOHF8hComJJpxhSaRSRRVUFvJ7)Meucx6wjmNJpahrpmeDt(FN6yIvmqlZH2tY3fT4BilxedSn(6Fc5wc9exhV217ug1JvEbLUn5UqakBwniGUmcKd)s9o6l1jVX2pnz(V9tJ0xrfPpa1hQxaYTi22bfhGTdGzYZ1rCO4M0)PWjmP)tYWg(j6QmWfNfZgvBlYnweu1(rqXc9r1GoBDfqGKRbnOKbn(EizLP4cate2(gPFYqOuFYGhr1iDOlLUyx0QSchzQNtdH9Z9fq)CgTKzqFB26pNcyk38zJHDN8cNLmNVWzr3ONm29hQLk)ZkPAau6UNqxVYMSkKrtLyY5iXvhui9N4e4HDlYdfdOL56D1LV59hxmhmwJQ2BnKAVZQNC0fxkGVOGa8gFWPZvc7Tu8AgJpn5BgFA4BMBLnMMakVmom8GM9d88hqExNQzNckzqJ9LytQr4nzsQRUiPBNU2TtNweNj)36tf17JkJl(XFOGa9i7WeiF1XZ5PGwN3NVCCqxNywYsLwKzbfZH1iJN6u44KtHNzLLrdWQqU(CJVTe0B3aRqA6C4iaHcujNXkIB1Ibox7s)dc30s)dyawA6KNTCpEaLpjDYeHNA8zQd7mPL5zZ)T)f5wrdkAmFBTLRdFI3r8YfuWyT08aKewvr3RHpRaWh0Y8BEro7SovDhB6ugiqJ22R9eLKQckz7Ilbx20vunNWtMBwYSlOL5BgUK9S4QyMntiRenXXJNoELuJ7nRQtOxMRPvT6KUTYnKf0LKo1llVqrGsceng6oIwCdDZ5aGhnLVp1oKOwbkA7mBRemfNXpVtgZfdqyoz5)nnI0Abtm(uJzFsnMkdmgKb2y7fgYYkWIuVYiLsTBjrpGskqOxAlo54DhkPwXy)Awq3)uIbev7jOM7ob2C3s8baDxTEiYfXoo(S1zYSPzsA(GC27uoiN9oLckDyNHzRKnAjB67rngShymyZXwJIERTQ9bLY3eug0H(ozecnWv5p8gguwpByqAUfxG1vxxcPExfq37EzcWes5(eVndgpKgEGh6drHqcw9kqbLN(P6QxyPaTckJX1z(4ZDIAd6LclR6tEVCfal5Z63OHN93CRXAd2JI8CpNz1MIxr0JmtTl8rLpzHpkj5PVQe2XL4IAiF8paTD)PK)McKE85u5VTFTD7)deFCASxnc37nf93gv2ghs3ghI(2pj3UvRPrz1SBXDZU9qfSdxUI2w9J5(zPRHZIGYeTgAqDTS(zPBCZkEJl12KIuduogK2k2hE8oQUPEuYnAoowuQ6T7lktQghtBWXOD9Pwfatn1vmgZA)Q3MOu6REBL57bC)UwI3oDsoKtP1KQAPAezmqPeEkxEN(1IZk1ruKmhHqYm3vmOvro(h(uzX8rHJI(z5cgb)BxcpXoFn4RNpf81z((4XDRAzTvxTAOcQLz5TCCJQzbUEPswJKpbqlhxAxM9ANzqph6PAJNCD2Q4DyNTIUyzE82JuRjPtAipbvGsFV(2ifhXB67lYjZS4VsYTFwOXVQKc(1LGXdkPil2bv6bzRsT0w)S4sxde665YHFM2udlM2yBAuS2wnSaFMmH0LtooAS14ERQIs6Ha7SpECxTrrpYXsm(UWsxTLl2rppDNL2qs)(SZ2quUus(k6nL5vgUmNmc61NGcMFvzY9zLOgbkXLphHl9mvU0ZmMlTUjlHpd04Wv)6Ag7E9JWbe11jhNRM40RB8cAF)cFykImCTYPrhpDDtshJjDMXU98MINqGY59WBaFFyBnYeGXFwHO8NjiktloaSWniPUVetLPEu5XBbukp5uEzOAGpiNySQUjzQJRzSANFSEtz)X3gfXL4lTMg7OAhw8KauwDAvpIpo56toftTHVRWaUb6nj94k4SEgYbsxj)sVTMXK3U8Xf62vq5rYpiDTNIuQCGY9IDG8(x0I3a01ItGWu)LXA3bbTbgtDD57QDtbvWPW1Usbxklh86B)QI89tX5fgmh0UOJjjizpsurZWj4xkbiE9CpIEtqj9CTN1NxnxM)adm)ESc0Oumx5j7cu2yu)f1lpx13ROKNSuPaGk1Gbff4QV69jNZhvD(KUuAZQLIKfix9f3RzhRC(quMD7O26Ll(dOSkfar1PsglJEEIsNACTI0gNWTmfjznKf2QVa(Jk5whuWzEPHuTDqVdd859VCC5u4xoopmujVss8XaFQu(iBt4maLSh5KFqUGaIYJ2DQrn6oxnFn1SOBaMtCAo32JOF7Ju5jKO6QQTo9LkRU(jqD6JTkZkXSXN)259cqlF85FBL5DHrPG01vJ8YWakj9lL3c3lzkHgYAFEd9IP(g0ftDQsibyEUOlolatRpZGZ7lskiixMQ3K5oabIq)E(pmn5pahb2yB8TjVnO(wSlx7IuOsl6P4P6q2U28DdW3Bi7sujwipkVZtthW8Uk6ytFwrMi69KZrVinZ5rOAfH8jfqgZkjE2yu9ThA0Vv1Oh6POTnZtN4vLNefqPZv4)ya9kdJ5A3qLmurWHsjDQ3rUJkGIUjYV3kXMR2huEmGaLkuartWYHnH4hEZVUeivqjTNpaFAVA9ACSA6ACKKB2b0OhCak6btHUhUCXCwLSr9MZv2wHHX1Ezwa0k(p0F)E5hMuqqNLI7SKkuZKZMcqazyIeZ8nxSwIA1UORvpeUwAsrMORF7pRKGYNLwh0ZfyvzN0y8wLoCCyrn)0Ro()CKWSIE8x)iVHai6JqVvaZ84UkBdvkWHGsx)zX3GAqimrSX5QknLBs3VUj6H9B6Cq24qzECxd76MKu8aGgR5ET6njETuL1DgV3hMJgSdgPKNw1fEcRUh90oqxIepRcfcR61jzQt7bKusmnCYYV(Nz5B7)8xULBOMmbGs6vUazmFLlGyNP4YRWn8PsaHsAeZQ(XKIEbu6jaRQ6SnXVsapdk1bGrTqE9XByc3w9DiwLaL4pQ8cH2Dy(OeWymx9bjCUo0nSLua7e59rYniphmGs1oPvqF0vSEqFbBF6VLCSLMENUMzdf9Zr3qrxkhOG60hFn2aQY)xP)p2)lA25SCiyJnmQYOwG5sSxzyH5dFu94h36fxAEdBVk(UuuBnsccbfsq8lAD)HUvEpCtTzvcBZRNXzceMaUu0dK2pvM2GIHC2q(lVJDgjqj0n0MEuxRC)8m(xK4EbkgQyWzvUHnP03AJuC8L6X2PabGMY0voQw7JkpV1QDZA7Usfxu1vp7TEC5NFRhNuKsV0DCjZcxIlQvvHXdk5Ge0Y07FjvFuMvQ)6Apr1MYjoo9cvGbEGqnrB3Qwy(36Mzbi)aZvmOFoPYAOICQxFxHJQ2hCtI5VhKEiPMrdvQaN29YIZpjO41wwUVqGYrdJkwOIvlTDb6l26fqPb9072NRjdbvD)rxvNK7vE0SaLA0eHZSWqnuk)sfO1V8RtkkZLVe0CXgUL3xJA8YPcCCs7Ahk07NEMIRsjZRCrQO0f9(ikTWipftDh3Gmq3XnGMLo(Pi54EUV5j(F4EfWe)H7LsjavMO(E0(YzL2Wum5dkDiQ2xMqTeu3KLcNbuQjnmI1q2EtWtH0gfKl5iOCPUM41LkZguArYtC)(5K5bLK6fRW43QLC9VDHKY3zX)TniLseO0FRd(e(JjxRjqPRhjvIE5IlcgJM)gYh083GCfKWv6iEsOp8m14(Jupj4hc5Q9KaToWAvaHrAJ38)s6L38)Q6ajjsljSKNNjqjlO(buC4XzVN(OkAK5QKfFMRIvHw5YV0P1a5jqUPEP)b5O6LO7yZPt1W(G0dxZedS01C5YC4AUCILVsKc4oKqddl6Yg3U1hP8Dtps5Zu4QYOCv0Jd)Plr93XRQhHIu)MJjZHFZXyNbh0hQ1Qu7XgVRY09Uxe)a15sqNwAobdrn)wrraOu4v57vvLinBCH6BE6fMJVvAS4q3dcWusgHUj9D((MwEz(YatX8WKlVSaoN5YA6k3I0QRCl09bmOuCg8xl9)ri0BP82B2kmWIbatfp2)V!BBF"
+            local profileData, errorMessage = BBF.OldImportProfile(importString, "auraBlacklist")
+            if errorMessage then
+                BBF.Print(L["Print_Error_Importing_Blacklist"] .. " " .. tostring(errorMessage))
+                return
+            end
+            BBF.DeepMergeTables(BetterBlizzFramesDB.auraBlacklist, profileData)
+            if BBF.auraBlacklistRefresh then
+                BBF.auraBlacklistRefresh()
+            end
+            BBF.RefreshAllAuraFrames()
+            Settings.OpenToCategory(BBF.category:GetID(), BBF.aurasSubCategory)
+        end,
+        timeout = 0,
+        whileDead = true,
+    }
+end
 
 local AURA_RESET_EXTRA_KEYS = {
     "auraSortMethod",
@@ -818,18 +831,20 @@ function BBF.ResetAuraSettings()
     ReloadUI()
 end
 
-StaticPopupDialogs["BBF_CONFIRM_RESET_AURA_SETTINGS"] = {
-    text = titleText..L["Popup_Confirm_Reset_Aura_Settings"],
-    button1 = L["Yes"],
-    button2 = L["No"],
-    OnAccept = function()
-        BBF.ResetAuraSettings()
-    end,
-    timeout = 0,
-    whileDead = true,
-    hideOnEscape = true,
-    preferredIndex = 3,
-}
+BBF.popupBuilders["BBF_CONFIRM_RESET_AURA_SETTINGS"] = function()
+    return {
+        text = titleText..L["Popup_Confirm_Reset_Aura_Settings"],
+        button1 = L["Yes"],
+        button2 = L["No"],
+        OnAccept = function()
+            BBF.ResetAuraSettings()
+        end,
+        timeout = 0,
+        whileDead = true,
+        hideOnEscape = true,
+        preferredIndex = 3,
+    }
+end
 
 ------------------------------------------------------------
 -- GUI Creation Functions
@@ -1679,7 +1694,7 @@ local function CreateTooltipTwo(widget, title, mainText, subText, anchor, cvarNa
             local green = "|cff32f795"
             local reset = "|r"
             local activeSize = BetterBlizzFramesDB.raidFramePixelBorderSize and "1.5px" or "1px"
-            local tooltipText = "\n" .. green .. "Right-click to toggle between 1px and 1.5px. Active: " .. activeSize .. reset
+            local tooltipText = "\n" .. green .. string.format(L["Tooltip_Pixel_Border_Size_Toggle"], activeSize) .. reset
             GameTooltip:AddLine(tooltipText, 1, 1, 1, true)
         end
 
@@ -1801,8 +1816,8 @@ local function ShowProfileConfirmation(profileName, class, profileFunction, addi
     local profileText = string.format("|A:%s:16:16|a %s%s|r", icon, color, string.format(L["Profile_Label"], profileName))
     local confirmationText = titleText .. string.format(L["Profile_Confirmation_Text"], profileText, noteText)
 
-    StaticPopupDialogs["BBF_CONFIRM_PROFILE"].text = confirmationText
-    StaticPopup_Show("BBF_CONFIRM_PROFILE", nil, nil, { func = profileFunction })
+    BBF.GetPopup("BBF_CONFIRM_PROFILE").text = confirmationText
+    BBF.ShowPopup("BBF_CONFIRM_PROFILE", nil, nil, { func = profileFunction })
 end
 
 local function CreateClassButton(parent, class, name, twitchName, onClickFunc)
@@ -1897,7 +1912,7 @@ local function CreateImportExportUI(parent, title, dataTable, posX, posY, tableN
     -- Import Button
     local importBtn = CreateFrame("Button", nil, frame, "GameMenuButtonTemplate")
     importBtn:SetPoint("RIGHT", importBox, "LEFT", -10, 0)
-    importBtn:SetSize(title ~= "Full Profile" and 52 or 73, 20)
+    importBtn:SetSize(tableName ~= "fullProfile" and 52 or 73, 20)
     importBtn:SetText(L["Import"])
     importBtn:SetNormalFontObject("GameFontNormal")
     importBtn:SetHighlightFontObject("GameFontHighlight")
@@ -1905,7 +1920,7 @@ local function CreateImportExportUI(parent, title, dataTable, posX, posY, tableN
 
     -- Keep Old Checkbox
     local keepOldCheckbox
-    if title ~= "Full Profile" then
+    if tableName ~= "fullProfile" then
         keepOldCheckbox = CreateFrame("CheckButton", nil, frame, "InterfaceOptionsCheckButtonTemplate")
         keepOldCheckbox:SetPoint("RIGHT", importBtn, "LEFT", 3, -1)
         keepOldCheckbox:SetChecked(true)
@@ -1979,7 +1994,7 @@ local function CreateImportExportUI(parent, title, dataTable, posX, posY, tableN
                 end
             end
             BBF.Print(string.format(L["Print_Imported_Successfully"], title))
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         end
     end)
     return frame
@@ -2243,19 +2258,21 @@ for _, listName in ipairs(lists) do
     }
 end
 
-StaticPopupDialogs["BBF_DUPLICATE_UPDATE_OR_DELETE"] = {
-    text = L["Dialog_Duplicate_Blacklist"],
-    button1 = L["Update_And_Always_Hide"],
-    button2 = L["Delete_From_Blacklist"],
-    OnAccept = function()
-        BBF["auraBlacklist"](BBF.auraBlacklistEntryToDelete, "auraBlacklist", nil, true)
-    end,
-    OnCancel = function()
-        deleteEntry("auraBlacklist", BBF.auraBlacklistEntryToDelete)
-    end,
-    timeout = 0,
-    whileDead = true,
-}
+BBF.popupBuilders["BBF_DUPLICATE_UPDATE_OR_DELETE"] = function()
+    return {
+        text = L["Dialog_Duplicate_Blacklist"],
+        button1 = L["Update_And_Always_Hide"],
+        button2 = L["Delete_From_Blacklist"],
+        OnAccept = function()
+            BBF["auraBlacklist"](BBF.auraBlacklistEntryToDelete, "auraBlacklist", nil, true)
+        end,
+        OnCancel = function()
+            deleteEntry("auraBlacklist", BBF.auraBlacklistEntryToDelete)
+        end,
+        timeout = 0,
+        whileDead = true,
+    }
+end
 
 
 local function addOrUpdateEntry(inputText, listName, addShowMineTag, skipRefresh, color)
@@ -2332,7 +2349,7 @@ local function addOrUpdateEntry(inputText, listName, addShowMineTag, skipRefresh
 
         if isDuplicate then
             if BBF.DuplicateWithTag then
-                StaticPopup_Show("BBF_DUPLICATE_UPDATE_OR_DELETE")
+                BBF.ShowPopup("BBF_DUPLICATE_UPDATE_OR_DELETE")
                 BBF.DuplicateWithTag = nil
             else
                 StaticPopup_Show("BBF_DUPLICATE_NPC_CONFIRM_" .. listName)
@@ -2576,7 +2593,7 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
         button.npcData = npc
         local displayText
         if npc.id then
-            displayText = string.format("%s (%d)", (npc.name or C_Spell.GetSpellName(npc.id) or "Name Missing"), npc.id)  -- Display as "Name (id)"
+            displayText = string.format("%s (%d)", (npc.name or C_Spell.GetSpellName(npc.id) or L["Name_Missing"]), npc.id)  -- Display as "Name (id)"
         else
             displayText = npc.name  -- Display just the name if there's no id
         end
@@ -3653,7 +3670,7 @@ local function guiGeneralTab()
     hideArenaFrames:SetPoint("TOPLEFT", settingsText, "BOTTOMLEFT", -24, pixelsOnFirstBox)
     hideArenaFrames:HookScript("OnClick", function(self)
         if not self:GetChecked() then
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         end
     end)
     CreateTooltip(hideArenaFrames, L["Tooltip_Hide_Arena_Frames"])
@@ -3689,7 +3706,7 @@ local function guiGeneralTab()
             hideBossFramesRaid:SetAlpha(0)
             hideBossFramesRaid:Disable()
             hideBossFramesRaid:SetChecked(false)
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         end
     end)
 
@@ -3710,7 +3727,7 @@ local function guiGeneralTab()
 
     playerFrameOCD:HookScript("OnClick", function(self)
         BBF.AllNameChanges()
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     end)
 
     -- if not BetterBlizzFramesDB.playerFrameOCD then
@@ -3763,7 +3780,7 @@ local function guiGeneralTab()
     local darkModeUiAura = CreateCheckbox("darkModeUiAura", L["Auras"], darkModeUi)
     darkModeUiAura:SetPoint("TOPLEFT", darkModeCastbars, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     darkModeUiAura:HookScript("OnClick", function()
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         BBF.DarkmodeFrames(true)
     end)
     CreateTooltipTwo(darkModeUiAura, L["Tooltip_Dark_Mode_Auras"], L["Tooltip_Dark_Mode_Auras_Desc"])
@@ -3777,7 +3794,7 @@ local function guiGeneralTab()
             if GameTooltip:IsShown() and GameTooltip:GetOwner() == self then
                 self:GetScript("OnEnter")(self)
             end
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         end
     end)
 
@@ -3862,7 +3879,7 @@ local function guiGeneralTab()
     BetterBlizzFrames.playerFrameHidden:HookScript("OnClick", function(self)
         BBF.HidePlayerFrame()
         if not self:GetChecked() then
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         end
     end)
 
@@ -3871,7 +3888,7 @@ local function guiGeneralTab()
     CreateTooltip(playerFrameClickthrough, L["Tooltip_Clickthrough"])
     playerFrameClickthrough:HookScript("OnClick", function(self)
         if not self:GetChecked() then
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         end
     end)
 
@@ -3923,7 +3940,7 @@ local function guiGeneralTab()
     symmetricPlayerFrame:SetPoint("LEFT", hidePlayerName.text, "RIGHT", 0, 0)
     CreateTooltipTwo(symmetricPlayerFrame, L["Mirror_TargetFrame"], L["Tooltip_Mirror_TargetFrame_Desc"])
     symmetricPlayerFrame:HookScript("OnClick", function(self)
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     end)
 
     -- local hidePlayerMaxHpReduction = CreateCheckbox("hidePlayerMaxHpReduction", "Hide Reduced HP", BetterBlizzFrames, nil, BBF.HideFrames)
@@ -4232,7 +4249,7 @@ local function guiGeneralTab()
     local raidFramePixelBorder = CreateCheckbox("raidFramePixelBorder", L["Pixel_Border"], BetterBlizzFrames)
     raidFramePixelBorder:SetPoint("LEFT", hidePartyFramesInArena.text, "RIGHT", 0, 0)
     raidFramePixelBorder:HookScript("OnClick", function(self)
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     end)
     raidFramePixelBorder:HookScript("OnMouseDown", function(self, button)
         if button == "RightButton" then
@@ -4244,7 +4261,7 @@ local function guiGeneralTab()
             if GameTooltip:IsShown() and GameTooltip:GetOwner() == self then
                 self:GetScript("OnEnter")(self)
             end
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         end
     end)
     CreateTooltipTwo(raidFramePixelBorder, L["Tooltip_Pixel_Border_RaidFrames_Title"], L["Tooltip_Pixel_Border_RaidFrames_Desc"])
@@ -4323,7 +4340,7 @@ local function guiGeneralTab()
     newRaidFrameRoleIcons:SetPoint("TOPLEFT", hidePartyRangeIcon, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(newRaidFrameRoleIcons, L["New_Role_Icons"], L["Tooltip_New_Role_Icons_Desc"])
     newRaidFrameRoleIcons:HookScript("OnClick", function(self)
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     end)
 
     local betterTargetHighlight = CreateCheckbox("betterTargetHighlight", L["Better_Target_Highlight"], BetterBlizzFrames)
@@ -4331,13 +4348,29 @@ local function guiGeneralTab()
     CreateTooltipTwo(betterTargetHighlight, L["Better_Target_Highlight"], L["Tooltip_Better_Target_Highlight"])
     betterTargetHighlight:HookScript("OnClick", function(self)
         if not self:GetChecked() then
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         else
             BBF.BetterTargetHighlight()
         end
     end)
 
     local highlightAtlasOptions = BBF.highlightAtlasOptions
+    local highlightStyleLabels = {
+        ["Default"] = L["Default"],
+        ["Aggro"] = L["Highlight_Style_Aggro"],
+        ["Thick"] = L["Thick"],
+        ["2xCorners"] = L["Highlight_Style_2x_Corners"],
+        ["4xCorners"] = L["Highlight_Style_4x_Corners"],
+        ["Big Arrow"] = L["Highlight_Style_Big_Arrow"],
+        ["Thin Glow"] = L["Highlight_Style_Thin_Glow"],
+        ["Glow Mark"] = L["Highlight_Style_Glow_Mark"],
+        ["Glow"] = L["Glow"],
+        ["Cursor"] = L["Highlight_Style_Cursor"],
+        ["Zoom"] = L["Highlight_Style_Zoom"],
+    }
+    local function HighlightStyleLabel(name)
+        return highlightStyleLabels[name] or name
+    end
 
     betterTargetHighlight.extendedSettings = CreateFrame("Frame", nil, BetterBlizzFrames, "DefaultPanelFlatTemplate")
     betterTargetHighlight.extendedSettings:SetSize(250, 195)
@@ -4376,9 +4409,9 @@ local function guiGeneralTab()
 
     local function GetAtlasDisplayName(atlasKey)
         for _, opt in ipairs(highlightAtlasOptions) do
-            if opt.atlas == atlasKey then return opt.name end
+            if opt.atlas == atlasKey then return HighlightStyleLabel(opt.name) end
         end
-        return "Default"
+        return L["Default"]
     end
 
     local thDropdown = CreateFrame("DropdownButton", nil, thExt, "WowStyle1DropdownTemplate")
@@ -4399,9 +4432,9 @@ local function guiGeneralTab()
         rootDescription:SetScrollMode(maxScrollExtent)
 
         for _, opt in ipairs(highlightAtlasOptions) do
-            local button = rootDescription:CreateButton(opt.name, function()
+            local button = rootDescription:CreateButton(HighlightStyleLabel(opt.name), function()
                 BetterBlizzFramesDB.betterTargetHighlightAtlas = opt.atlas
-                thDropdown:SetDefaultText(opt.name)
+                thDropdown:SetDefaultText(HighlightStyleLabel(opt.name))
                 BBF.UpdateTargetHighlightSettings()
             end)
 
@@ -4460,7 +4493,7 @@ local function guiGeneralTab()
             BBF.HookAndUpdatePartyFrameRangeAlpha(true)
             EnableElement(partyFrameRangeAlpha)
         else
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
             DisableElement(partyFrameRangeAlpha)
         end
     end)
@@ -4470,7 +4503,7 @@ local function guiGeneralTab()
             if GameTooltip:IsShown() and GameTooltip:GetOwner() == self then
                 self:GetScript("OnEnter")(self)
             end
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         end
     end)
 
@@ -4492,7 +4525,7 @@ local function guiGeneralTab()
     CreateTooltip(targetFrameClickthrough, L["Tooltip_Target_Clickthrough"])
     targetFrameClickthrough:HookScript("OnClick", function(self)
         if not self:GetChecked() then
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         end
     end)
 
@@ -4742,7 +4775,7 @@ local function guiGeneralTab()
     CreateTooltip(focusFrameClickthrough, L["Tooltip_Focus_Clickthrough"])
     focusFrameClickthrough:HookScript("OnClick", function(self)
         if not self:GetChecked() then
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         end
     end)
 
@@ -4884,7 +4917,7 @@ local function guiGeneralTab()
         end
         if self:GetChecked() then
             if not BBF.ClassicReloadWindow then
-                local statusText = classicFrames:GetChecked() and "|cff00ff00ON|r" or "|cffff0000OFF|r"
+                local statusText = classicFrames:GetChecked() and ("|cff00ff00"..L["True"].."|r") or ("|cffff0000"..L["False"].."|r")
                 StaticPopupDialogs["BBF_CLASSIC_RELOAD"] = {
                     text = titleText..string.format(L["Popup_Classic_Frames_Turn"], statusText),
                     button1 = L["Reload_UI"],
@@ -4903,7 +4936,7 @@ local function guiGeneralTab()
                         ReloadUI()
                     end,
                     OnShow = function(self)
-                        local statusText = classicFrames:GetChecked() and "|cff00ff00ON|r" or "|cffff0000OFF|r"
+                        local statusText = classicFrames:GetChecked() and ("|cff00ff00"..L["True"].."|r") or ("|cffff0000"..L["False"].."|r")
                         self.Text:SetText(titleText..string.format(L["Popup_Classic_Frames_Turn"], statusText))
                         if not self.classicSettings then
                             BBF.ChangesOnReload = {}
@@ -5025,7 +5058,7 @@ local function guiGeneralTab()
             if not InCombatLockdown() then
                 C_CVar.SetCVar("comboPointLocation", "2")
             end
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         end
     end)
 
@@ -5050,7 +5083,7 @@ local function guiGeneralTab()
                 BetterBlizzFramesDB.unitFrameManabarTexture = BetterBlizzFramesDB.unitFrameHealthbarTexture or "Blizzard Retail Bar Crop 2"
             end
         end
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     end)
 
     noPortraitModes:HookScript("OnClick", function(self)
@@ -5060,7 +5093,7 @@ local function guiGeneralTab()
             BetterBlizzFramesDB.noPortraitPixelBorder = false
             noPortraitPixelBorder:SetChecked(false)
         end
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     end)
 
     local noPortraitOptionsFrame
@@ -5118,7 +5151,7 @@ local function guiGeneralTab()
 
                 optionCheckbox:SetScript("OnClick", function(self)
                     BetterBlizzFramesDB[optionData.var] = self:GetChecked() or nil
-                    StaticPopup_Show("BBF_CONFIRM_RELOAD")
+                    BBF.ShowPopup("BBF_CONFIRM_RELOAD")
                 end)
 
                 noPortraitOptionsFrame.checkboxes[optionData.var] = optionCheckbox
@@ -5153,7 +5186,7 @@ local function guiGeneralTab()
     classColorFrames:SetPoint("TOPLEFT", classicFrames, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     classColorFrames:HookScript("OnClick", function(self)
         if not self:GetChecked() then
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         end
     end)
 
@@ -5218,7 +5251,7 @@ local function guiGeneralTab()
     customHealthbarColors:HookScript("OnClick", function(self)
         BBF.UpdateFrames()
         if not self:GetChecked() then
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         end
     end)
 
@@ -5349,7 +5382,7 @@ local function guiGeneralTab()
 
     clrFx.overrideClassColors = CreateCheckbox("overrideClassColors", L["Override_Class_Colors"], clrFx)
     clrFx.overrideClassColors:SetPoint("TOPLEFT", clrFx.classColorsSeparator, "BOTTOMLEFT", 0, -1)
-    CreateTooltipTwo(clrFx.overrideClassColors, L["Override_Class_Colors"], L["Tooltip_Override_Class_Colors_Desc"].."\n\n|cffffaa00Individual class colors need to know the unit's class, which the game hides in arenas and other restricted content. Those units fall back to the default class color instead. \"Use One Color\" always works since it needs no class.|r")
+    CreateTooltipTwo(clrFx.overrideClassColors, L["Override_Class_Colors"], L["Tooltip_Override_Class_Colors_Desc"].."\n\n|cffffaa00"..string.format(L["Tooltip_Class_Colors_Restricted_Note"], L["Use_One_Color"]).."|r")
 
     clrFx.useOneClassColor = CreateCheckbox("useOneClassColor", L["Use_One_Color"], clrFx)
     clrFx.useOneClassColor:SetPoint("TOPLEFT", clrFx.overrideClassColors, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
@@ -5406,7 +5439,7 @@ local function guiGeneralTab()
             end
             rowAnchors[row] = classColor
 
-            CreateTooltipTwo(classColor, classData.name.." Class Color", L["Tooltip_Color_Picker_Desc"])
+            CreateTooltipTwo(classColor, string.format(L["Class_Color_Title"], classData.name), L["Tooltip_Color_Picker_Desc"])
             table.insert(customHealthbarColors.classColorBoxes, {colorBox = classColor, class = classData.key})
         end
 
@@ -5556,7 +5589,7 @@ local function guiGeneralTab()
             lastPowerColorRow3 = powerColor
         end
         
-        CreateTooltipTwo(powerColor, powerData.name.." Color", L["Tooltip_Color_Picker_Desc"])
+        CreateTooltipTwo(powerColor, string.format(L["Power_Color_Title"], powerData.name), L["Tooltip_Color_Picker_Desc"])
         table.insert(customHealthbarColors.powerColorBoxes, {colorBox = powerColor, power = powerData.key})
     end
     
@@ -5664,7 +5697,7 @@ local function guiGeneralTab()
             BBF.UpdateCustomTextures()
             BBF.UnitFrameBackgroundTexture()
         end,
-        { anchorFrame = clrFx.unitFrameBgTextureColor, x = 2, y = 4, label = "Texture" }
+        { anchorFrame = clrFx.unitFrameBgTextureColor, x = 2, y = 4, label = L["Texture"] }
     )
 
     clrFx.changePartyRaidFrameBackgroundColor = CreateCheckbox("changePartyRaidFrameBackgroundColor", L["Change_Party_RaidFrame_Background_Color"], clrFx)
@@ -5688,7 +5721,7 @@ local function guiGeneralTab()
             BBF.UpdateCustomTextures()
             BBF.SetCompactUnitFramesBackground()
         end,
-        { anchorFrame = clrFx.partyRaidFrameBackgroundHealthColor, x = 2, y = 4, label = "Texture" }
+        { anchorFrame = clrFx.partyRaidFrameBackgroundHealthColor, x = 2, y = 4, label = L["Texture"] }
     )
 
     clrFx.addUnitFrameBgTexture:HookScript("OnClick", function(self)
@@ -5801,7 +5834,7 @@ local function guiGeneralTab()
     classColorFrameTexture:SetPoint("TOPLEFT", classColorTargetNames, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     classColorFrameTexture:HookScript("OnClick", function(self)
         if not self:GetChecked() then
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         else
             BBF.HookFrameTextureColor()
         end
@@ -5813,7 +5846,7 @@ local function guiGeneralTab()
     centerNames:SetPoint("TOPLEFT", classColorFrameTexture, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(centerNames, L["Center_Names"], L["Tooltip_Center_Name_Desc"])
     centerNames:HookScript("OnClick", function()
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     end)
 
     local removeRealmNames = CreateCheckbox("removeRealmNames", L["Hide_Realm"], BetterBlizzFrames)
@@ -5836,7 +5869,7 @@ local function guiGeneralTab()
             if formatStatusBarText:GetChecked() then
                 BBF.HookStatusBarText()
             end
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         end
     end)
 
@@ -5844,11 +5877,11 @@ local function guiGeneralTab()
     singleValueStatusBarText:SetPoint("LEFT", formatStatusBarText.text, "RIGHT", 0, 0)
     CreateTooltipTwo(singleValueStatusBarText, L["No_Max_Value"], L["Tooltip_No_Max_Value_Desc"])
     singleValueStatusBarText:HookScript("OnClick", function()
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     end)
 
     formatStatusBarText:HookScript("OnClick", function(self)
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         CheckAndToggleCheckboxes(self)
     end)
 
@@ -5865,7 +5898,7 @@ local function guiGeneralTab()
     CreateTooltipTwo(hideUnitFrameShadow, L["Hide_Shadow"], L["Tooltip_Hide_Shadow_Desc"])
     hideUnitFrameShadow:HookScript("OnClick", function(self)
         if not self:GetChecked() then
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         else
             BetterBlizzFramesDB.hideTargetReputationColor = true
             BetterBlizzFramesDB.hideFocusReputationColor = true
@@ -5880,7 +5913,7 @@ local function guiGeneralTab()
     CreateTooltip(hideLevelText, L["Tooltip_Hide_Max_Level_Text"])
     hideLevelText:HookScript("OnClick", function()
         if BetterBlizzFramesDB.classicFrames then
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         end
     end)
 
@@ -5889,7 +5922,7 @@ local function guiGeneralTab()
     CreateTooltip(hideLevelTextAlways, L["Tooltip_Always"])
     hideLevelTextAlways:HookScript("OnClick", function()
         if BetterBlizzFramesDB.classicFrames then
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         end
     end)
 
@@ -5917,7 +5950,7 @@ local function guiGeneralTab()
     CreateTooltip(hideRareDragonTexture, L["Tooltip_Hide_Dragon"] .. " |A:UI-HUD-UnitFrame-Target-PortraitOn-Boss-Gold:38:28|a")
     hideRareDragonTexture:HookScript("OnClick", function()
         if BetterBlizzFramesDB.classicFrames then
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         end
     end)
 
@@ -5930,7 +5963,7 @@ local function guiGeneralTab()
     CreateTooltip(classPortraitsUseSpecIcons, L["Tooltip_Use_Spec_Icons"])
     classPortraitsUseSpecIcons:HookScript("OnClick", function(self)
         if not self:GetChecked() then
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         end
     end)
 
@@ -5975,7 +6008,7 @@ local function guiGeneralTab()
     healerIndicator:HookScript("OnClick", function(self)
         BBF.HealerIndicatorCaller()
         if not self:GetChecked() then
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         end
     end)
     CreateTooltipTwo(healerIndicator, L["Healer_Indicator"], L["Tooltip_Healer_Indicator_Desc"])
@@ -6003,7 +6036,7 @@ local function guiGeneralTab()
     CreateTooltipTwo(overShieldsUnitFrames, L["UnitFrame_Overshields"], L["Tooltip_UnitFrame_Overshields_Desc"], nil, "ANCHOR_LEFT", nil, 1)
     overShieldsUnitFrames:HookScript("OnClick", function(self)
         BBF.HookOverShields()
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     end)
 
     local overShieldsCompactUnitFrames = CreateCheckbox("overShieldsCompactUnitFrames", L["B"], BetterBlizzFrames)
@@ -6011,7 +6044,7 @@ local function guiGeneralTab()
     CreateTooltipTwo(overShieldsCompactUnitFrames, L["Compact_UnitFrames_Overshields"], L["Tooltip_Compact_UnitFrames_Overshields_Desc"], nil, "ANCHOR_LEFT", nil, 2)
     overShieldsCompactUnitFrames:HookScript("OnClick", function(self)
         BBF.HookOverShields()
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     end)
 
     overShields:HookScript("OnClick", function(self)
@@ -6025,7 +6058,7 @@ local function guiGeneralTab()
             overShieldsCompactUnitFrames:SetAlpha(1)
             overShieldsCompactUnitFrames:Enable()
             overShieldsCompactUnitFrames:SetChecked(true)
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         else
             BetterBlizzFramesDB.overShieldsCompact = false
             BetterBlizzFramesDB.overShieldsUnitFrames = false
@@ -6035,7 +6068,7 @@ local function guiGeneralTab()
             overShieldsCompactUnitFrames:SetAlpha(0)
             overShieldsCompactUnitFrames:Disable()
             overShieldsCompactUnitFrames:SetChecked(false)
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         end
     end)
 
@@ -6076,7 +6109,7 @@ local function guiGeneralTab()
     end
 
     queueTimer:HookScript("OnClick", function(self)
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         CheckAndToggleCheckboxes(queueTimer)
         if not BetterBlizzFramesDB.queueTimerAudio then
             DisableElement(queueTimerWarning)
@@ -6115,9 +6148,9 @@ local function guiGeneralTab()
     local profileButtons = {}
 
     for _, profile in ipairs(BBF.ProfileData) do
-        local additionalNote = profile.name == "Starter" and "|cff808080(If you want to completely reset BBF there\nis a button in Advanced Settings)|r\n\n" or nil
-        local button = CreateClassButton(BetterBlizzFrames, profile.class, profile.name, profile.twitchName, function()
-            ShowProfileConfirmation(profile.name, profile.class, function() BBF.ApplyProfile(profile.name) end, additionalNote)
+        local additionalNote = profile.name == "Starter" and ("|cff808080"..L["Profile_Reset_Hint"].."|r\n\n") or nil
+        local button = CreateClassButton(BetterBlizzFrames, profile.class, (profile.name == "Starter" and L["Starter"] or profile.name), profile.twitchName, function()
+            ShowProfileConfirmation((profile.name == "Starter" and L["Starter"] or profile.name), profile.class, function() BBF.ApplyProfile(profile.name) end, additionalNote)
         end)
         table.insert(profileButtons, button)
         if profile.core then
@@ -6134,7 +6167,7 @@ local function guiGeneralTab()
     resetBBFButton:SetWidth(104)
     resetBBFButton:SetPoint("BOTTOM", profilesFrame, "BOTTOM", 2, 15)
     resetBBFButton:SetScript("OnClick", function()
-        StaticPopup_Show("CONFIRM_RESET_BETTERBLIZZFRAMESDB")
+        BBF.ShowPopup("CONFIRM_RESET_BETTERBLIZZFRAMESDB")
     end)
     CreateTooltip(resetBBFButton, L["Tooltip_Full_Reset"], "ANCHOR_TOP")
     table.insert(profileButtons, resetBBFButton)
@@ -6288,7 +6321,7 @@ local function guiCastbars()
 
     anchorSubPartyCastbar.classicCastbarsParty:HookScript("OnClick", function(self)
         if not self:GetChecked() then
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         end
     end)
 
@@ -6842,7 +6875,7 @@ local function guiCastbars()
     CreateTooltipTwo(hidePlayerCastbarIcon, L["Hide_Icon"], L["Hide_Player_Castbar_Icon"])
     hidePlayerCastbar:HookScript("OnClick", function(self)
         if not self:GetChecked() then
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         end
     end)
 
@@ -6855,7 +6888,7 @@ local function guiCastbars()
         if self:GetChecked() then
             BetterBlizzFramesDB.castbarPixelBorder = nil
         end
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     end)
 
     local resetPlayerCastbar = CreateFrame("Button", nil, contentFrame, "UIPanelButtonTemplate")
@@ -6998,7 +7031,7 @@ local function guiCastbars()
     quickHideCastbars:SetPoint("TOPLEFT", normalCastbarForEmpoweredCasts, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(quickHideCastbars, L["Quick_Hide_Castbars"], L["Tooltip_Quick_Hide_Castbars_Desc"])
     quickHideCastbars:HookScript("OnClick", function()
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     end)
     quickHideCastbars:HookScript("OnMouseDown", function(self, button)
         if button == "RightButton" then
@@ -7017,7 +7050,7 @@ local function guiCastbars()
     castBarTargetText:SetPoint("LEFT", quickHideCastbars.text, "RIGHT", 0, 0)
     CreateTooltipTwo(castBarTargetText, L["Castbar_Target_Text"], L["Tooltip_Castbar_Target_Text_Desc"] .. "\n\n|cff32f795" .. L["Right_Click_To_Open_Options"] .. "|r")
     castBarTargetText:HookScript("OnClick", function()
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     end)
 
     local castBarTargetTextOptionsFrame
@@ -7109,7 +7142,7 @@ local function guiCastbars()
     castBarTargetHighlight:SetPoint("LEFT", castBarTargetText.text, "RIGHT", 0, 0)
     CreateTooltipTwo(castBarTargetHighlight, L["Castbar_Target_Highlight"], L["Tooltip_Castbar_Target_Highlight_Desc"])
     castBarTargetHighlight:HookScript("OnClick", function()
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     end)
 
     local classicCastbars = CreateCheckbox("classicCastbars", L["Castbar_Classic"], contentFrame, nil, BBF.ChangeCastbarSizes)
@@ -7119,14 +7152,14 @@ local function guiCastbars()
         if self:GetChecked() then
             BetterBlizzFramesDB.castbarPixelBorder = nil
         end
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     end)
 
     local classicCastbarsModernSpark = CreateCheckbox("classicCastbarsModernSpark", L["Modern_Spark"], contentFrame, nil, BBF.ChangeCastbarSizes)
     classicCastbarsModernSpark:SetPoint("LEFT", classicCastbars.text, "RIGHT", 0, 0)
     CreateTooltipTwo(classicCastbarsModernSpark, L["Modern_Spark"], L["Tooltip_Modern_Spark_Desc"])
     classicCastbarsModernSpark:HookScript("OnClick", function(self)
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     end)
 
     local unitframeCastBarNoTextBorder = CreateCheckbox("unitframeCastBarNoTextBorder", L["UnitFrame_Simple_Castbars"], contentFrame, nil, BBF.ChangeCastbarSizes)
@@ -7136,12 +7169,12 @@ local function guiCastbars()
         if classicCastbars:GetChecked() then
             BetterBlizzFrames.classicCastbars = nil
             classicCastbars:SetChecked(false)
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         end
         if anchorSubPartyCastbar.classicCastbarsParty:GetChecked() then
             anchorSubPartyCastbar.classicCastbarsParty:SetChecked(false)
             BetterBlizzFrames.classicCastbarsParty = nil
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         end
     end)
 
@@ -7159,13 +7192,13 @@ local function guiCastbars()
             BetterBlizzFramesDB.classicCastbarsPlayer = nil
         end
         EnableElement(castbarPixelBorderTextInside)
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     end)
 
 
     classicCastbars:HookScript("OnClick", function(self)
         if not self:GetChecked() then
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
             DisableElement(classicCastbarsModernSpark)
         else
             EnableElement(classicCastbarsModernSpark)
@@ -7199,7 +7232,7 @@ local function guiCastbars()
         castbarChannelColor:SetAlpha(enable)
         castbarUninterruptableColor:SetAlpha(enable)
         BBF.CastbarRecolorWidgets()
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     end)
 
     local raiseTargetCastbarStrata = CreateCheckbox("raiseTargetCastbarStrata", L["Raise_Castbar_Stratas"], contentFrame, nil, BBF.RaiseTargetCastbarStratas)
@@ -7557,7 +7590,7 @@ local function guiPositionAndScale()
         end
         BBF.HealerIndicatorCaller()
         if not self:GetChecked() then
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         end
     end)
     CreateTooltip(healerIndicatorIcon, L["Tooltip_Healer_Icon_Show"])
@@ -7570,7 +7603,7 @@ local function guiPositionAndScale()
         end
         BBF.HealerIndicatorCaller()
         if not self:GetChecked() then
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         end
     end)
     CreateTooltip(healerIndicatorPortrait, L["Tooltip_Healer_Portrait_Change"])
@@ -7856,22 +7889,30 @@ local function guiPositionAndScale()
     kickPopupSoundRightClick:SetAllPoints()
     kickPopupSoundRightClick:RegisterForClicks("RightButtonUp")
     kickPopupSoundRightClick:SetScript("OnClick", function()
-        StaticPopup_Show("BBF_KICK_POPUP_SOUND_ID")
+        BBF.ShowPopup("BBF_KICK_POPUP_SOUND_ID")
     end)
-    CreateTooltip(kickPopupSoundRightClick, "Right-click to enter a custom Sound ID.")
+    CreateTooltip(kickPopupSoundRightClick, L["Tooltip_Kick_Sound_ID_Right_Click"])
+
+    local soundChannelLabels = {
+        Master = L["Sound_Channel_Master"],
+        SFX = L["SFX"],
+        Music = L["Sound_Channel_Music"],
+        Ambience = L["Sound_Channel_Ambience"],
+        Dialog = L["Sound_Channel_Dialog"],
+    }
 
     local kickPopupSoundChannelDropdown = LibDD:Create_UIDropDownMenu("kickPopupSoundChannelDropdown", contentFrame)
     LibDD:UIDropDownMenu_SetWidth(kickPopupSoundChannelDropdown, 65)
-    LibDD:UIDropDownMenu_SetText(kickPopupSoundChannelDropdown, BetterBlizzFramesDB.kickPopupSoundChannel or "Master")
+    LibDD:UIDropDownMenu_SetText(kickPopupSoundChannelDropdown, soundChannelLabels[BetterBlizzFramesDB.kickPopupSoundChannel or "Master"] or BetterBlizzFramesDB.kickPopupSoundChannel)
     LibDD:UIDropDownMenu_Initialize(kickPopupSoundChannelDropdown, function(self, level, menuList)
         local channels = {"Master", "SFX", "Music", "Ambience", "Dialog"}
         for _, ch in ipairs(channels) do
             local info = LibDD:UIDropDownMenu_CreateInfo()
-            info.text = ch
+            info.text = soundChannelLabels[ch] or ch
             info.arg1 = ch
             info.func = function(self, arg1)
                 BetterBlizzFramesDB.kickPopupSoundChannel = arg1
-                LibDD:UIDropDownMenu_SetText(kickPopupSoundChannelDropdown, arg1)
+                LibDD:UIDropDownMenu_SetText(kickPopupSoundChannelDropdown, soundChannelLabels[arg1] or arg1)
             end
             info.checked = (BetterBlizzFramesDB.kickPopupSoundChannel == ch)
             LibDD:UIDropDownMenu_AddButton(info)
@@ -7921,7 +7962,7 @@ local function guiPositionAndScale()
     resetBBFButton:SetWidth(165)
     resetBBFButton:SetPoint("RIGHT", reloadUiButton2, "LEFT", -533, 0)
     resetBBFButton:SetScript("OnClick", function()
-        StaticPopup_Show("CONFIRM_RESET_BETTERBLIZZFRAMESDB")
+        BBF.ShowPopup("CONFIRM_RESET_BETTERBLIZZFRAMESDB")
     end)
     CreateTooltip(resetBBFButton, L["Tooltip_Full_Reset"])
 
@@ -8078,7 +8119,7 @@ local function guiFrameLook()
     changeUnitFrameFont:HookScript("OnClick", function(self)
         BBF.SetCustomFonts()
         if not self:GetChecked() then
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
             unitFrameFont:Disable()
             unitFrameFontOutline:Disable()
             unitFrameFontSize:Disable()
@@ -8140,7 +8181,7 @@ local function guiFrameLook()
     changeUnitFrameValueFont:HookScript("OnClick", function(self)
         BBF.SetCustomFonts()
         if not self:GetChecked() then
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
             unitFrameValueFont:Disable()
             unitFrameValueFontOutline:Disable()
             unitFrameValueFontSize:Disable()
@@ -8208,7 +8249,7 @@ local function guiFrameLook()
     changePartyFrameFont:HookScript("OnClick", function(self)
         BBF.SetCustomFonts()
         if not self:GetChecked() then
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
             partyFrameFont:Disable()
             partyFrameFontOutline:Disable()
             partyFrameFontSize:Disable()
@@ -8306,7 +8347,7 @@ local function guiFrameLook()
     changeActionBarFont:HookScript("OnClick", function(self)
         BBF.SetCustomFonts()
         if not self:GetChecked() then
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         end
         ToggleDropdowns(self:GetChecked())
     end)
@@ -8345,7 +8386,7 @@ local function guiFrameLook()
     changeAllFontsIngame:HookScript("OnClick", function(self)
         BBF.SetCustomFonts()
         if not self:GetChecked() then
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         end
         allIngameFont:SetEnabled(self:GetChecked())
     end)
@@ -8398,14 +8439,14 @@ local function guiFrameLook()
         function(arg1)
             BBF.UpdateCustomTextures()
         end,
-        { anchorFrame = changeUnitFrameHealthbarTexture, x = 5, y = 3, label = "Texture" }
+        { anchorFrame = changeUnitFrameHealthbarTexture, x = 5, y = 3, label = L["Texture"] }
     )
 
     changeUnitFrameHealthbarTexture:HookScript("OnClick", function(self)
         unitFrameHealthbarTexture:SetEnabled(self:GetChecked())
         BBF.UpdateCustomTextures()
         if not self:GetChecked() then
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         end
     end)
     unitFrameHealthbarTexture:SetEnabled(changeUnitFrameHealthbarTexture:GetChecked())
@@ -8418,7 +8459,7 @@ local function guiFrameLook()
     changeUnitFrameManaBarTextureKeepFancy:SetPoint("LEFT", changeUnitFrameManabarTexture.Text, "RIGHT", 0, 0)
     CreateTooltipTwo(changeUnitFrameManaBarTextureKeepFancy, L["Keep_Fancy_Manabars"], L["Tooltip_Keep_Fancy_Manabars_Desc"])
     changeUnitFrameManaBarTextureKeepFancy:HookScript("OnClick", function()
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     end)
 
     local unitFrameManabarTexture = CreateTextureDropdown(
@@ -8429,13 +8470,13 @@ local function guiFrameLook()
         function(arg1)
             BBF.UpdateCustomTextures()
         end,
-        { anchorFrame = changeUnitFrameManabarTexture, x = 5, y = 3, label = "Texture" }
+        { anchorFrame = changeUnitFrameManabarTexture, x = 5, y = 3, label = L["Texture"] }
     )
     changeUnitFrameManabarTexture:HookScript("OnClick", function(self)
         unitFrameManabarTexture:SetEnabled(self:GetChecked())
         BBF.UpdateCustomTextures()
         if not self:GetChecked() then
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         end
         CheckAndToggleCheckboxes(self)
     end)
@@ -8455,13 +8496,13 @@ local function guiFrameLook()
             function(arg1)
                 BBF.UpdateCustomTextures()
             end,
-            { anchorFrame = changeUnitFrameNameBgTexture, x = 5, y = 3, label = "Texture" }
+            { anchorFrame = changeUnitFrameNameBgTexture, x = 5, y = 3, label = L["Texture"] }
         )
         changeUnitFrameNameBgTexture:HookScript("OnClick", function(self)
             unitFrameNameBgTexture:SetEnabled(self:GetChecked())
             BBF.UpdateCustomTextures()
             if not self:GetChecked() then
-                StaticPopup_Show("BBF_CONFIRM_RELOAD")
+                BBF.ShowPopup("BBF_CONFIRM_RELOAD")
             end
         end)
         unitFrameNameBgTexture:SetEnabled(changeUnitFrameNameBgTexture:GetChecked())
@@ -8479,13 +8520,13 @@ local function guiFrameLook()
         function(arg1)
             BBF.UpdateCustomTextures()
         end,
-        { anchorFrame = changeUnitFrameCastbarTexture, x = 5, y = 3, label = "Texture" }
+        { anchorFrame = changeUnitFrameCastbarTexture, x = 5, y = 3, label = L["Texture"] }
     )
     changeUnitFrameCastbarTexture:HookScript("OnClick", function(self)
         unitFrameCastbarTexture:SetEnabled(self:GetChecked())
         BBF.UpdateCustomTextures()
         if not self:GetChecked() then
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         end
     end)
     unitFrameCastbarTexture:SetEnabled(changeUnitFrameCastbarTexture:GetChecked())
@@ -8503,16 +8544,16 @@ local function guiFrameLook()
             BBF.UpdateCustomTextures()
             BBF.UnitFrameBackgroundTexture()
         end,
-        { anchorFrame = changeUnitFrameBackgroundTexture, x = 5, y = 3, label = "Texture" }
+        { anchorFrame = changeUnitFrameBackgroundTexture, x = 5, y = 3, label = L["Texture"] }
     )
 
-    local unitFrameBgTextureColorFL = CreateColorBox(contentFrame, "unitFrameBgTextureColor", "Health BG", function() BBF.UnitFrameBackgroundTexture() end)
+    local unitFrameBgTextureColorFL = CreateColorBox(contentFrame, "unitFrameBgTextureColor", L["Health_BG"], function() BBF.UnitFrameBackgroundTexture() end)
     unitFrameBgTextureColorFL:SetPoint("LEFT", unitFrameBgTexture, "RIGHT", 10, 0)
-    CreateTooltipTwo(unitFrameBgTextureColorFL, "Health Bar Background Color", "Left-click to change.\n\n|cff32f795Shift+Right-click to reset to default.|r")
+    CreateTooltipTwo(unitFrameBgTextureColorFL, L["Health_Bar_Background_Color"], L["Tooltip_Color_Picker_Desc"])
 
-    local unitFrameBgTextureManaColorFL = CreateColorBox(contentFrame, "unitFrameBgTextureManaColor", "Mana BG", function() BBF.UnitFrameBackgroundTexture() end)
+    local unitFrameBgTextureManaColorFL = CreateColorBox(contentFrame, "unitFrameBgTextureManaColor", L["Mana_BG"], function() BBF.UnitFrameBackgroundTexture() end)
     unitFrameBgTextureManaColorFL:SetPoint("LEFT", unitFrameBgTextureColorFL.text, "RIGHT", 4, 0)
-    CreateTooltipTwo(unitFrameBgTextureManaColorFL, "Mana Bar Background Color", "Left-click to change.\n\n|cff32f795Shift+Right-click to reset to default.|r")
+    CreateTooltipTwo(unitFrameBgTextureManaColorFL, L["Mana_Bar_Background_Color"], L["Tooltip_Color_Picker_Desc"])
 
     changeUnitFrameBackgroundTexture:HookScript("OnClick", function(self)
         local alpha = self:GetChecked() and 1 or 0.5
@@ -8540,7 +8581,7 @@ local function guiFrameLook()
         end
         
         if not self:GetChecked() then
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         end
     end)
     BBF.changeUnitFrameBackgroundColorTexture = changeUnitFrameBackgroundTexture
@@ -8562,14 +8603,14 @@ local function guiFrameLook()
         function(arg1)
             BBF.UpdateCustomTextures()
         end,
-        { anchorFrame = changeRaidFrameHealthbarTexture, x = 5, y = 3, label = "Texture" }
+        { anchorFrame = changeRaidFrameHealthbarTexture, x = 5, y = 3, label = L["Texture"] }
     )
 
     changeRaidFrameHealthbarTexture:HookScript("OnClick", function(self)
         raidFrameHealthbarTexture:SetEnabled(self:GetChecked())
         BBF.UpdateCustomTextures()
         if not self:GetChecked() then
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         end
     end)
     raidFrameHealthbarTexture:SetEnabled(changeRaidFrameHealthbarTexture:GetChecked())
@@ -8586,7 +8627,7 @@ local function guiFrameLook()
         function(arg1)
             BBF.UpdateCustomTextures()
         end,
-        { anchorFrame = changeRaidFrameManabarTexture, x = 5, y = 3, label = "Texture" }
+        { anchorFrame = changeRaidFrameManabarTexture, x = 5, y = 3, label = L["Texture"] }
     )
 
     changeRaidFrameManabarTexture:HookScript("OnClick", function(self)
@@ -8609,16 +8650,16 @@ local function guiFrameLook()
             BBF.UpdateCustomTextures()
             BBF.SetCompactUnitFramesBackground()
         end,
-        { anchorFrame = changePartyRaidFrameBackgroundColor, x = 5, y = 3, label = "Texture" }
+        { anchorFrame = changePartyRaidFrameBackgroundColor, x = 5, y = 3, label = L["Texture"] }
     )
 
-    local partyRaidFrameBackgroundHealthColorFL = CreateColorBox(contentFrame, "partyRaidFrameBackgroundHealthColor", "Health BG", function() BBF.SetCompactUnitFramesBackground() end)
+    local partyRaidFrameBackgroundHealthColorFL = CreateColorBox(contentFrame, "partyRaidFrameBackgroundHealthColor", L["Health_BG"], function() BBF.SetCompactUnitFramesBackground() end)
     partyRaidFrameBackgroundHealthColorFL:SetPoint("LEFT", raidFrameBgTexture, "RIGHT", 10, 0)
-    CreateTooltipTwo(partyRaidFrameBackgroundHealthColorFL, "Party/Raid Health Bar Background Color", "Left-click to change.\n\n|cff32f795Shift+Right-click to reset to default.|r")
+    CreateTooltipTwo(partyRaidFrameBackgroundHealthColorFL, L["Party_Raid_Health_Bar_Background_Color"], L["Tooltip_Color_Picker_Desc"])
 
-    local partyRaidFrameBackgroundManaColorFL = CreateColorBox(contentFrame, "partyRaidFrameBackgroundManaColor", "Mana BG", function() BBF.SetCompactUnitFramesBackground() end)
+    local partyRaidFrameBackgroundManaColorFL = CreateColorBox(contentFrame, "partyRaidFrameBackgroundManaColor", L["Mana_BG"], function() BBF.SetCompactUnitFramesBackground() end)
     partyRaidFrameBackgroundManaColorFL:SetPoint("LEFT", partyRaidFrameBackgroundHealthColorFL.text, "RIGHT", 4, 0)
-    CreateTooltipTwo(partyRaidFrameBackgroundManaColorFL, "Party/Raid Mana Bar Background Color", "Left-click to change.\n\n|cff32f795Shift+Right-click to reset to default.|r")
+    CreateTooltipTwo(partyRaidFrameBackgroundManaColorFL, L["Party_Raid_Mana_Bar_Background_Color"], L["Tooltip_Color_Picker_Desc"])
 
     changePartyRaidFrameBackgroundColor:HookScript("OnClick", function(self)
         local alpha = self:GetChecked() and 1 or 0.5
@@ -8646,7 +8687,7 @@ local function guiFrameLook()
         end
         
         if not self:GetChecked() then
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         end
     end)
     BBF.changePartyRaidFrameBackgroundColorTexture = changePartyRaidFrameBackgroundColor
@@ -8706,7 +8747,7 @@ local function guiFrameLook()
         function(arg1)
             BBF.TexturePRD()
         end,
-        { anchorFrame = useCustomTextureForSelf, x = 5, y = 3, label = "Texture" }
+        { anchorFrame = useCustomTextureForSelf, x = 5, y = 3, label = L["Texture"] }
     )
     useCustomTextureForSelf:HookScript("OnClick", function(self)
         prdHealthbarTexture:SetEnabled(self:GetChecked() and changePrdTextures:GetChecked())
@@ -8733,7 +8774,7 @@ local function guiFrameLook()
         function(arg1)
             BBF.TexturePRD()
         end,
-        { anchorFrame = useCustomTextureForSelfMana, x = 5, y = 3, label = "Texture" }
+        { anchorFrame = useCustomTextureForSelfMana, x = 5, y = 3, label = L["Texture"] }
     )
     useCustomTextureForSelfMana:HookScript("OnClick", function(self)
         local enabled = self:GetChecked() and changePrdTextures:GetChecked()
@@ -8875,14 +8916,14 @@ local function guiFrameAuras()
     playerAuraFiltering:HookScript("OnClick", function (self)
         if self:GetChecked() then
             if BetterBlizzFramesDB.targetToTXPos == 0 then
-                StaticPopup_Show("BBF_TOT_MESSAGE")
+                BBF.ShowPopup("BBF_TOT_MESSAGE")
                 BetterBlizzFramesDB.targetToTXPos = 31
                 BBF.targetToTXPos:SetValue(31)
                 BetterBlizzFramesDB.focusToTXPos = 31
                 BBF.focusToTXPos:SetValue(31)
                 BBF.MoveToTFrames()
             else
-                StaticPopup_Show("BBF_CONFIRM_RELOAD")
+                BBF.ShowPopup("BBF_CONFIRM_RELOAD")
             end
             auraWhitelistFrame:SetAlpha(1)
             auraBlacklistFrame:SetAlpha(1)
@@ -8897,7 +8938,7 @@ local function guiFrameAuras()
             end
             auraWhitelistFrame:SetAlpha(0.3)
             auraBlacklistFrame:SetAlpha(0.3)
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         end
 
         CheckAndToggleCheckboxes(playerAuraFiltering)
@@ -8923,15 +8964,11 @@ local function guiFrameAuras()
     importPVPWhitelist:SetText(L["Import_PvP_Whitelist"])
     SetButtonFont(importPVPWhitelist)
     importPVPWhitelist:SetScript("OnClick", function()
-        StaticPopup_Show("BBF_CONFIRM_PVP_WHITELIST")
+        BBF.ShowPopup("BBF_CONFIRM_PVP_WHITELIST")
     end)
     importPVPWhitelist:Disable()
     importPVPWhitelist:SetAlpha(0.5)
-    local coloredText = "|cff00FF00Important/Immunity|r\n" ..
-                    "|cffFF8000Offensive Buff|r\n" ..
-                    "|cffFFA9F1Defensive Buffs|r\n" ..
-                    "|cff00FFFFFreedom/Speed|r\n" ..
-                    "|cffEFFF33Fear Immunity|r"
+    local coloredText = L["Whitelist_Colors"]
     CreateTooltipTwo(importPVPWhitelist, L["Import_PvP_Whitelist"], string.format(L["Tooltip_Import_PvP_Whitelist_Desc"], coloredText), L["Tooltip_Aura_Filter_Unit_Note"])
     importPVPWhitelist.Middle:SetDesaturated(true)
     importPVPWhitelist.Left:SetDesaturated(true)
@@ -8943,7 +8980,7 @@ local function guiFrameAuras()
     importPVPBlacklist:SetText(L["Import_PvP_Blacklist"])
     SetButtonFont(importPVPBlacklist)
     importPVPBlacklist:SetScript("OnClick", function()
-        StaticPopup_Show("BBF_CONFIRM_PVP_BLACKLIST")
+        BBF.ShowPopup("BBF_CONFIRM_PVP_BLACKLIST")
     end)
     CreateTooltipTwo(importPVPBlacklist, L["Import_PvP_Blacklist"], L["Tooltip_Import_PvP_Blacklist_Desc"], L["Tooltip_Aura_Filter_Unit_Note"])
     importPVPBlacklist.Middle:SetDesaturated(true)
@@ -9525,7 +9562,7 @@ local function guiFrameAuras()
     addCooldownFramePlayerAuras:SetPoint("TOPLEFT", clickthroughPlayerAuras, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(addCooldownFramePlayerAuras, L["Player_Aura_Cooldown_Swipe"], L["Tooltip_Player_Aura_Cooldown_Swipe_Desc"])
     addCooldownFramePlayerAuras:HookScript("OnClick", function()
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     end)
 
     local playerAuraDurationOnIcon = CreateCheckbox("playerAuraDurationOnIcon", L["Aura_Duration_On_Icon"], enablePlayerBuffFiltering, nil, BBF.RefreshAllAuraFrames)
@@ -9536,7 +9573,7 @@ local function guiFrameAuras()
     auraLegacyBorder:SetPoint("TOPLEFT", playerAuraDurationOnIcon, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(auraLegacyBorder, L["Legacy_Aura_Border"], L["Tooltip_Legacy_Aura_Border_Desc"])
     auraLegacyBorder:HookScript("OnClick", function(self)
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     end)
 
     local playerAuraDurationColor = CreateCheckbox("playerAuraDurationColor", L["Duration_Text_Color"], enablePlayerBuffFiltering, nil, BBF.RefreshAllAuraFrames)
@@ -9565,7 +9602,7 @@ local function guiFrameAuras()
     enablePlayerBuffFiltering:HookScript("OnClick", function (self)
         CheckAndToggleCheckboxes(enablePlayerBuffFiltering)
         if not self:GetChecked() then
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         end
     end)
 
@@ -9621,7 +9658,7 @@ local function guiFrameAuras()
     auraTimerColor:SetPoint("TOPLEFT", showAuraCdText, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(auraTimerColor, L["Timer_Text_Color"], L["Tooltip_Timer_Text_Color_Desc"])
     auraTimerColor:HookScript("OnClick", function()
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     end)
     AddColorButton(auraTimerColor, "auraTimerBaseColor", L["Timer_Text_Color"])
 
@@ -9635,7 +9672,7 @@ local function guiFrameAuras()
     CreateTooltipTwo(increaseAuraStrata, L["Increase_Aura_Frame_Strata"], L["Tooltip_Increase_Aura_Frame_Strata"])
     increaseAuraStrata:HookScript("OnClick", function(self)
         if not self:GetChecked() then
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         end
     end)
 
@@ -9647,14 +9684,14 @@ local function guiFrameAuras()
     pixelBorderAuras:SetPoint("TOPLEFT", hideUnitframeAuraTooltips, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(pixelBorderAuras, L["Pixel_Border_Auras"], L["Tooltip_Pixel_Border_Auras_Desc"])
     pixelBorderAuras:HookScript("OnClick", function(self)
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     end)
 
     local removeDebuffColorBorder = CreateCheckbox("removeDebuffColorBorder", L["Remove_Debuff_Color_Border"], playerAuraFiltering)
     removeDebuffColorBorder:SetPoint("TOPLEFT", pixelBorderAuras, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(removeDebuffColorBorder, L["Remove_Debuff_Color_Border"], L["Tooltip_Remove_Debuff_Color_Border"])
     removeDebuffColorBorder:HookScript("OnClick", function(self)
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     end)
 
     local auraTooltipSpellID = CreateCheckbox("auraTooltipSpellID", L["Aura_Tooltip_Spell_ID"], playerAuraFiltering)
@@ -9680,7 +9717,7 @@ local function guiFrameAuras()
     resetAuraSettings:SetText(L["Reset_All_Aura_Settings"])
     SetButtonFont(resetAuraSettings)
     resetAuraSettings:SetScript("OnClick", function()
-        StaticPopup_Show("BBF_CONFIRM_RESET_AURA_SETTINGS")
+        BBF.ShowPopup("BBF_CONFIRM_RESET_AURA_SETTINGS")
     end)
     CreateTooltipTwo(resetAuraSettings, L["Reset_All_Aura_Settings"], L["Tooltip_Reset_All_Aura_Settings"])
 
@@ -9737,7 +9774,7 @@ local function guiMisc()
     classColorFriendlist:SetPoint("TOPLEFT", moreFeaturesText, "BOTTOMLEFT", -24, pixelsOnFirstBox)
     CreateTooltipTwo(classColorFriendlist, L["Class_Color_Friendlist"], L["Tooltip_Class_Color_Friendlist_Desc"])
     classColorFriendlist:HookScript("OnClick", function(self)
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     end)
 
     local removeAddonListCategories = CreateCheckbox("removeAddonListCategories", L["Improved_AddonList"], contentFrame, nil, BBF.RemoveAddonCategories)
@@ -9754,7 +9791,7 @@ local function guiMisc()
     gladWinTracker:HookScript("OnClick", function(self)
         BBF.GladTracker()
         if not self:GetChecked() then
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         end
     end)
 
@@ -9763,14 +9800,14 @@ local function guiMisc()
     CreateTooltipTwo(arenaOptimizer, L["Arena_Optimizer"], L["Tooltip_Arena_Optimizer"])
     arenaOptimizer:HookScript("OnClick", function(self)
         BBF.ArenaOptimizer(not self:GetChecked(), true)
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     end)
 
     local cdManagerCenterIcons = CreateCheckbox("cdManagerCenterIcons", L["CDM_Center_Icons"], contentFrame, nil, BBF.HookCooldownManagerTweaks)
     cdManagerCenterIcons:SetPoint("TOPLEFT", arenaOptimizer, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(cdManagerCenterIcons, L["CDM_Center_Icons"], L["CDM_Center_Icons_Tooltip"])
     cdManagerCenterIcons:HookScript("OnClick", function(self)
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     end)
 
     ----------------------
@@ -9778,8 +9815,15 @@ local function guiMisc()
     ----------------------
     local guiText = CreateSectionHeader(L["GUI"], "gmchat-icon-blizz", 20, 20, cdManagerCenterIcons, "BOTTOMLEFT", 24, -16)
 
+    local forceEnglishGUI = CreateCheckbox("forceEnglishGUI", L["Force_English_GUI"], contentFrame)
+    forceEnglishGUI:SetPoint("TOPLEFT", guiText, "BOTTOMLEFT", -24, pixelsOnFirstBox)
+    CreateTooltipTwo(forceEnglishGUI, L["Force_English_GUI"], L["Tooltip_Force_English_GUI_Desc"])
+    forceEnglishGUI:HookScript("OnClick", function()
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
+    end)
+
     local guiFontEnabled = CreateCheckbox("guiFontEnabled", L["Adjust_GUI_Font"], contentFrame, nil, BBF.ApplyGuiFont)
-    guiFontEnabled:SetPoint("TOPLEFT", guiText, "BOTTOMLEFT", -24, pixelsOnFirstBox)
+    guiFontEnabled:SetPoint("TOPLEFT", forceEnglishGUI, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(guiFontEnabled, L["Adjust_GUI_Font"], L["Tooltip_Adjust_GUI_Font_Desc"])
 
     local guiFontDropdown = CreateFontDropdown(
@@ -9790,12 +9834,16 @@ local function guiMisc()
         function()
             BBF.ApplyGuiFont()
         end,
-        { anchorFrame = guiFontEnabled, x = 55, y = 1, label = L["Font"] },
-        155,
+        { anchorFrame = guiFontEnabled, x = 55, y = 8, label = L["Font"] },
+        165,
         nil,
         nil,
         L["Dont_Change_Font"]
     )
+    guiFontDropdown:SetScale(0.7)
+    guiFontDropdown.LabelText:ClearAllPoints()
+    guiFontDropdown.LabelText:SetPoint("LEFT", guiFontDropdown, "LEFT", -50, 0)
+    guiFontDropdown.LabelText:SetFont(fontSmall, 11)
 
     local guiFontSizeOptions = {}
     for i = 6, 16 do
@@ -9804,7 +9852,18 @@ local function guiMisc()
 
     local guiFontSizeDropdown = CreateSimpleDropdown("guiFontSizeDropdown", contentFrame, L["Size"], "guiFontSize", guiFontSizeOptions, function()
         BBF.ApplyGuiFont()
-    end, { anchorFrame = guiFontDropdown, x = 0, y = -5 }, 155)
+    end, { anchorFrame = guiFontDropdown, x = 0, y = 9 }, 165)
+    guiFontSizeDropdown:SetScale(0.7)
+    guiFontSizeDropdown.LabelText:ClearAllPoints()
+    guiFontSizeDropdown.LabelText:SetPoint("LEFT", guiFontSizeDropdown, "LEFT", -50, 0)
+    guiFontSizeDropdown.LabelText:SetFont(fontSmall, 11)
+
+    guiFontEnabled:HookScript("OnClick", function(self)
+        guiFontDropdown:SetEnabled(self:GetChecked())
+        guiFontSizeDropdown:SetEnabled(self:GetChecked())
+    end)
+    guiFontDropdown:SetEnabled(guiFontEnabled:GetChecked())
+    guiFontSizeDropdown:SetEnabled(guiFontEnabled:GetChecked())
 
     ----------------------
     -- ActionBars:
@@ -9813,7 +9872,7 @@ local function guiMisc()
 
     local zoomActionBarIcons = CreateCheckbox("zoomActionBarIcons", L["Zoom_ActionBar_Icons"], contentFrame)
     zoomActionBarIcons:SetPoint("TOPLEFT", actionBarsText, "BOTTOMLEFT", -24, pixelsOnFirstBox)
-    CreateTooltipTwo(zoomActionBarIcons, "Zoom ActionBar Icons", "Zoom in on the icons on the action bar icons a little.")
+    CreateTooltipTwo(zoomActionBarIcons, L["Zoom_ActionBar_Icons"], L["Tooltip_Zoom_ActionBar_Icons_Desc"])
     zoomActionBarIcons:HookScript("OnClick", function()
         BBF.ZoomDefaultActionbarIcons(zoomActionBarIcons:GetChecked())
     end)
@@ -9851,7 +9910,7 @@ local function guiMisc()
     CreateTooltipTwo(hideActionBar1, L["Hide_ActionBar1"], L["Tooltip_Hide_ActionBar1"])
     hideActionBar1:HookScript("OnClick", function(self)
         if not self:GetChecked() then
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         end
     end)
 
@@ -9882,7 +9941,7 @@ local function guiMisc()
 
     fixActionBarCDs:HookScript("OnClick", function(self)
         if not self:GetChecked() then
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         end
     end)
 
@@ -9897,7 +9956,7 @@ local function guiMisc()
     druidOverstacks:HookScript("OnClick", function(self)
         BBF.DruidBlueComboPoints()
         if not self:GetChecked() then
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         end
     end)
 
@@ -9907,7 +9966,7 @@ local function guiMisc()
     druidAlwaysShowCombos:HookScript("OnClick", function(self)
         BBF.DruidAlwaysShowCombos()
         if not self:GetChecked() then
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         end
     end)
 
@@ -9917,7 +9976,7 @@ local function guiMisc()
     createAltManaBarDruid:HookScript("OnClick", function(self)
         BBF.CreateAltManaBar()
         if not self:GetChecked() then
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         end
     end)
 
@@ -9930,7 +9989,7 @@ local function guiMisc()
             BBP.MaelstromWeaponCombos()
         end
         if not self:GetChecked() then
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         end
     end)
 
@@ -9943,19 +10002,19 @@ local function guiMisc()
             BBP.TipOfSpearCombos()
         end
         if not self:GetChecked() then
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         end
     end)
 
     local instantComboPoints = CreateCheckbox("instantComboPoints", L["Instant_Combo_Points"], contentFrame, nil, BBF.InstantComboPoints)
     instantComboPoints:SetPoint("TOPLEFT", hunterTipOfSpearCombos, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(instantComboPoints, L["Instant_Combo_Points"],
-    "Remove the combo point animations for instant feedback.\n\nCurrently works for:\n|cFFFFF569Rogue|r\n|cFFFF7D0ADruid|r\n|cFF00FF96Monk|r\n|cFF3FC7EBMage|r\n|cFFF58CBAPaladin|r\n|cFF0070DEShaman|r\n|cFFAAD372Hunter|r\n|cFFAAAAAALegacy Combos (Rogue & Druid)|r")
+    L["Tooltip_Instant_Combo_Points_Desc"])
     instantComboPoints:HookScript("OnClick", function(self)
         BBF.UpdateMaelstromWeaponBar()
         BBF.UpdateTipOfSpearBar()
         if not self:GetChecked() then
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
             if BetterBlizzPlatesDB then
                 BetterBlizzPlatesDB.instantComboPoints = false
             end
@@ -9966,7 +10025,7 @@ local function guiMisc()
     enableLegacyComboPoints:SetPoint("TOPLEFT", instantComboPoints, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(enableLegacyComboPoints, L["Legacy_Combo_Points"], L["Tooltip_Legacy_Combo_Points_Desc"])
     enableLegacyComboPoints:HookScript("OnClick", function(self)
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         if not self:GetChecked() then
             BetterBlizzFramesDB.legacyCombosTurnedOff = true
         else
@@ -10059,7 +10118,7 @@ local function guiMisc()
     local legacyBlueComboPoints = CreateCheckbox("legacyBlueComboPoints", L["Blue_Combos"], enableLegacyComboPoints)
     legacyBlueComboPoints:SetPoint("LEFT", enableLegacyComboPoints.text, "RIGHT", 0, 0)
     legacyBlueComboPoints:HookScript("OnClick", function()
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     end)
     CreateTooltipTwo(legacyBlueComboPoints, L["Blue_Legacy_Combo_Points"], L["Tooltip_Blue_Legacy_Combo_Points_Desc"])
 
@@ -10074,7 +10133,7 @@ local function guiMisc()
     enableLegacyComboPointsMulticlass:SetPoint("TOPLEFT", enableLegacyComboPoints, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(enableLegacyComboPointsMulticlass, L["Tooltip_Legacy_Combo_Points_More_Classes_Desc"], L["Tooltip_Legacy_Combo_Multiclass_Desc"])
     enableLegacyComboPointsMulticlass:HookScript("OnClick", function()
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         BBF.GenericLegacyComboSupport()
         BBF.ShamanLegacyMaelstrom()
         BBF.UpdateMaelstromWeaponBar()
@@ -10213,70 +10272,70 @@ local function guiMisc()
     moveResourceToTargetRogue:SetPoint("TOPLEFT", moveResourceToTarget, "BOTTOMLEFT", 12, pixelsBetweenBoxes)
     CreateTooltip(moveResourceToTargetRogue, L["Tooltip_Move_Resource_Rogue"])
     moveResourceToTargetRogue:HookScript("OnClick", function()
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     end)
 
     local moveResourceToTargetDruid = CreateCheckbox("moveResourceToTargetDruid", L["Druid_Combo_Points"], moveResourceToTarget)
     moveResourceToTargetDruid:SetPoint("TOPLEFT", moveResourceToTargetRogue, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(moveResourceToTargetDruid, L["Tooltip_Move_Resource_Druid"])
     moveResourceToTargetDruid:HookScript("OnClick", function()
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     end)
 
     local moveResourceToTargetShaman = CreateCheckbox("moveResourceToTargetShaman", L["Shaman_Combo_Points"], moveResourceToTarget)
     moveResourceToTargetShaman:SetPoint("TOPLEFT", moveResourceToTargetDruid, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(moveResourceToTargetShaman, L["Tooltip_Move_Resource_Shaman"])
     moveResourceToTargetShaman:HookScript("OnClick", function()
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     end)
 
     local moveResourceToTargetHunter = CreateCheckbox("moveResourceToTargetHunter", L["Hunter_Combo_Points"], moveResourceToTarget)
     moveResourceToTargetHunter:SetPoint("TOPLEFT", moveResourceToTargetShaman, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(moveResourceToTargetHunter, L["Tooltip_Move_Resource_Hunter"])
     moveResourceToTargetHunter:HookScript("OnClick", function()
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     end)
 
     local moveResourceToTargetMonk = CreateCheckbox("moveResourceToTargetMonk", L["Monk_Chi_Points"], moveResourceToTarget)
     moveResourceToTargetMonk:SetPoint("TOPLEFT", moveResourceToTargetHunter, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(moveResourceToTargetMonk, L["Tooltip_Move_Resource_Monk"])
     moveResourceToTargetMonk:HookScript("OnClick", function()
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     end)
 
     local moveResourceToTargetWarlock = CreateCheckbox("moveResourceToTargetWarlock", L["Warlock_Shards"], moveResourceToTarget)
     moveResourceToTargetWarlock:SetPoint("TOPLEFT", moveResourceToTargetMonk, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(moveResourceToTargetWarlock, L["Tooltip_Move_Resource_Warlock"])
     moveResourceToTargetWarlock:HookScript("OnClick", function()
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     end)
 
     local moveResourceToTargetEvoker = CreateCheckbox("moveResourceToTargetEvoker", L["Evoker_Essence"], moveResourceToTarget)
     moveResourceToTargetEvoker:SetPoint("TOPLEFT", moveResourceToTargetWarlock, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(moveResourceToTargetEvoker, L["Tooltip_Move_Resource_Evoker"])
     moveResourceToTargetEvoker:HookScript("OnClick", function()
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     end)
 
     local moveResourceToTargetMage = CreateCheckbox("moveResourceToTargetMage", L["Mage_Arcane_Charges"], moveResourceToTarget)
     moveResourceToTargetMage:SetPoint("TOPLEFT", moveResourceToTargetEvoker, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(moveResourceToTargetMage, L["Tooltip_Move_Resource_Mage"])
     moveResourceToTargetMage:HookScript("OnClick", function()
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     end)
 
     local moveResourceToTargetDK = CreateCheckbox("moveResourceToTargetDK", L["Death_Knight_Runes"], moveResourceToTarget)
     moveResourceToTargetDK:SetPoint("TOPLEFT", moveResourceToTargetMage, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(moveResourceToTargetDK, L["Tooltip_Move_Resource_DK"])
     moveResourceToTargetDK:HookScript("OnClick", function()
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     end)
 
     local moveResourceToTargetPaladin = CreateCheckbox("moveResourceToTargetPaladin", L["Paladin_Holy_Charges"], moveResourceToTarget)
     moveResourceToTargetPaladin:SetPoint("TOPLEFT", moveResourceToTargetDK, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(moveResourceToTargetPaladin, L["Tooltip_Move_Resource_Paladin"])
     moveResourceToTargetPaladin:HookScript("OnClick", function()
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     end)
 
     local moveResourceToTargetPaladinBG = CreateCheckbox("moveResourceToTargetPaladinBG", L["BG"], moveResourceToTargetPaladin)
@@ -10284,7 +10343,7 @@ local function guiMisc()
     CreateTooltipTwo(moveResourceToTargetPaladinBG, L["Background"], L["Tooltip_Paladin_Background_Desc"])
 
     moveResourceToTargetPaladinBG:HookScript("OnClick", function(self)
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     end)
 
     moveResourceToTargetPaladin:HookScript("OnClick", function(self)
@@ -10322,7 +10381,7 @@ local function guiMisc()
         if self:GetChecked() then
             classResourceScale:SetValue(1)
         end
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         CheckAndToggleCheckboxes(moveResourceToTarget)
     end)
 
@@ -10357,7 +10416,7 @@ local function guiMisc()
     fadeMicroMenu:HookScript("OnClick", function(self)
         CheckAndToggleCheckboxes(self)
         if not self:GetChecked() then
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         end
     end)
 
@@ -10367,7 +10426,7 @@ local function guiMisc()
 
     hideBagsBar:HookScript("OnClick", function(self)
         if not self:GetChecked() then
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         end
     end)
 
@@ -10378,7 +10437,7 @@ local function guiMisc()
     hideMinimapButtons:SetPoint("TOPLEFT", hideMinimap, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     hideMinimapButtons:HookScript("OnClick", function(self)
         if not self:GetChecked() then
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         end
     end)
 
@@ -10402,7 +10461,7 @@ local function guiMisc()
     CreateTooltipTwo(hideTalkingHeads, L["Hide_Talking_Heads"], L["Tooltip_Hide_Talking_Heads_Desc"])
     hideTalkingHeads:HookScript("OnClick", function(self)
         if not self:GetChecked() then
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         end
     end)
 
@@ -10411,7 +10470,7 @@ local function guiMisc()
     CreateTooltipTwo(hideExpAndHonorBar, L["Hide_XP_Honor"], L["Tooltip_Hide_XP_Honor_Desc"])
     hideExpAndHonorBar:HookScript("OnClick", function(self)
         if not self:GetChecked() then
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         end
     end)
 
@@ -10419,7 +10478,7 @@ local function guiMisc()
     hideAllAbsorbGlow:SetPoint("TOPLEFT", hideExpAndHonorBar, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(hideAllAbsorbGlow, L["Hide_All_Absorb_Glow"], L["Tooltip_Hide_All_Absorb_Glow_Desc"])
     hideAllAbsorbGlow:HookScript("OnClick", function()
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     end)
 
     local hideOgRaidFrameBg = CreateCheckbox("hideOgRaidFrameBg", L["Hide_Party_RaidFrame_Background"], contentFrame, nil, BBF.HideFrames)
@@ -10485,7 +10544,7 @@ local function guiMisc()
 
     moveQueueStatusEye:HookScript("OnClick", function(self)
         if not self:GetChecked() then
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         end
     end)
 
@@ -10550,21 +10609,21 @@ local function guiMisc()
     disableCastbarMovement:SetPoint("TOPLEFT", externalDefensivesHideTooltip, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(disableCastbarMovement, L["Disable_Castbar_Movement"], L["Tooltip_Disable_Castbar_Movement_Desc"])
     disableCastbarMovement:HookScript("OnClick", function(self)
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     end)
 
     local disableCastbarTweaks = CreateCheckbox("disableCastbarTweaks", L["Disable_Castbar_Tweaks"], contentFrame)
     disableCastbarTweaks:SetPoint("LEFT", disableCastbarMovement.Text, "RIGHT", 0, 0)
     CreateTooltipTwo(disableCastbarTweaks, L["Disable_Castbar_Tweaks"], L["Tooltip_Disable_Castbar_Tweaks_Desc"])
     disableCastbarTweaks:HookScript("OnClick", function(self)
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     end)
 
     -- local disableAddonProfiling = CreateCheckbox("disableAddonProfiling", "Disable AddOn Profiler", contentFrame)
     -- disableAddonProfiling:SetPoint("TOPLEFT", disableCastbarMovement, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     -- CreateTooltipTwo(disableAddonProfiling, L["Disable_AddOn_Profiler"], L["Tooltip_Disable_AddOn_Profiler"])
     -- disableAddonProfiling:HookScript("OnClick", function(self)
-    --     StaticPopup_Show("BBF_CONFIRM_RELOAD")
+    --     BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     -- end)
 
     local useMiniPlayerFrame = CreateCheckbox("useMiniPlayerFrame", L["Mini_PlayerFrame"], contentFrame)
@@ -10573,7 +10632,7 @@ local function guiMisc()
     useMiniPlayerFrame:HookScript("OnClick", function(self)
         BBF.MiniFrame(PlayerFrame)
         if not self:GetChecked() then
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         end
     end)
 
@@ -10583,7 +10642,7 @@ local function guiMisc()
     useMiniTargetFrame:HookScript("OnClick", function(self)
         BBF.MiniFrame(TargetFrame)
         if not self:GetChecked() then
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         end
     end)
 
@@ -10593,7 +10652,7 @@ local function guiMisc()
     useMiniFocusFrame:HookScript("OnClick", function(self)
         BBF.MiniFrame(FocusFrame)
         if not self:GetChecked() then
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         end
     end)
 
@@ -10636,7 +10695,7 @@ local function guiMisc()
 
     rpNamesHealthbarColor:HookScript("OnClick", function(self)
         BBF.HookHealthbarColors()
-        StaticPopup_Show("BBF_CONFIRM_RELOAD")
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     end)
 
     local rpNamesFrameTextureColor = CreateCheckbox("rpNamesFrameTextureColor", L["RP_FrameTexture_Color"], contentFrame)
@@ -10646,7 +10705,7 @@ local function guiMisc()
     rpNamesFrameTextureColor:HookScript("OnClick", function(self)
         BBF.HookFrameTextureColor()
         if not self:GetChecked() then
-            StaticPopup_Show("BBF_CONFIRM_RELOAD")
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         end
     end)
 
@@ -10681,7 +10740,7 @@ local function guiImportAndExport()
     -- importPVPWhitelist:SetPoint("TOP", auraWhitelist, "BOTTOM", 0, -25)
     -- importPVPWhitelist:SetText(L["Import_PvP_Whitelist"])
     -- importPVPWhitelist:SetScript("OnClick", function()
-    --     StaticPopup_Show("BBF_CONFIRM_PVP_WHITELIST")
+    --     BBF.ShowPopup("BBF_CONFIRM_PVP_WHITELIST")
     -- end)
     -- local coloredText = L["Whitelist_Colors"]
 
@@ -10692,7 +10751,7 @@ local function guiImportAndExport()
     -- importPVPBlacklist:SetPoint("TOP", auraBlacklist, "BOTTOM", 0, -25)
     -- importPVPBlacklist:SetText(L["Import_PvP_Blacklist"])
     -- importPVPBlacklist:SetScript("OnClick", function()
-    --     StaticPopup_Show("BBF_CONFIRM_PVP_BLACKLIST")
+    --     BBF.ShowPopup("BBF_CONFIRM_PVP_BLACKLIST")
     -- end)
     -- CreateTooltipTwo(importPVPBlacklist, L["Import_PvP_Blacklist"], L["Tooltip_Import_PvP_Blacklist_Desc"])
 
@@ -10953,7 +11012,7 @@ end
 
 local function guiSupport()
     local guiSupport = CreateFrame("Frame")
-    guiSupport.name = "|A:GarrisonTroops-Health:10:10|a Support"
+    guiSupport.name = "|A:GarrisonTroops-Health:10:10|a " .. L["Module_Name_Support"]
     guiSupport.parent = BetterBlizzFrames.name
     --InterfaceOptions_AddCategory(guiSupport)
     local guiSupportCategory = Settings.RegisterCanvasLayoutSubcategory(BBF.category, guiSupport, guiSupport.name, guiSupport.name)
@@ -11218,12 +11277,12 @@ function BBF.CreateIntroMessageWindow()
         local icon = CLASS_ICONS[class] or "groupfinder-icon-role-leader"
         local profileText = string.format("|A:%s:16:16|a %s%s|r", icon, color, string.format(L["Profile_Label"], profileName))
         local confirmationText = titleText .. string.format(L["Profile_Confirmation_Text_Intro"], profileText, noteText)
-        StaticPopupDialogs["BBF_CONFIRM_PROFILE"].text = confirmationText
-        StaticPopup_Show("BBF_CONFIRM_PROFILE", nil, nil, { func = profileFunction })
+        BBF.GetPopup("BBF_CONFIRM_PROFILE").text = confirmationText
+        BBF.ShowPopup("BBF_CONFIRM_PROFILE", nil, nil, { func = profileFunction })
     end
 
-    local starterButton = CreateClassButton(BBF.IntroMessageWindow, "STARTER", "Starter", nil, function()
-        ShowProfileConfirmation("Starter", "STARTER", function() BBF.ApplyProfile("Starter") end)
+    local starterButton = CreateClassButton(BBF.IntroMessageWindow, "STARTER", L["Starter"], nil, function()
+        ShowProfileConfirmation(L["Starter"], "STARTER", function() BBF.ApplyProfile("Starter") end)
     end)
     starterButton:SetPoint("TOP", description1, "BOTTOM", -75, -20)
 
@@ -11246,7 +11305,7 @@ function BBF.CreateIntroMessageWindow()
     for _, profile in ipairs(BBF.ProfileData) do
         if not profile.core then
             local button = CreateClassButton(BBF.IntroMessageWindow, profile.class, profile.name, profile.twitchName, function()
-                ShowProfileConfirmation(profile.name, profile.class, function() BBF.ApplyProfile(profile.name) end)
+                ShowProfileConfirmation((profile.name == "Starter" and L["Starter"] or profile.name), profile.class, function() BBF.ApplyProfile(profile.name) end)
             end)
 
             if columnFirstRow[colIndex] then
