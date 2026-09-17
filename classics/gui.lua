@@ -2921,7 +2921,7 @@ local function guiGeneralTab()
 
     local alpha2 = BetterBlizzFrames:CreateFontString(nil, "BACKGROUND", "GameFontNormal")
     alpha2:SetPoint("BOTTOM", SettingsPanel, "TOP", 0, 0)
-    alpha2:SetText(string.format(L["Beta_Warning_Text"], (BBF.isMoP and "MoP" or BBF.isTBC and "TBC" or BBF.isEra and "Era" or "Cata")))
+    alpha2:SetText(string.format(L["Beta_Warning_Text"], (BBF.isMoP and "MoP" or BBF.isTBC and "TBC" or BBF.isEra and "Era" or BBF.isForever and "Forever" or "Cata")))
     alpha2:SetFont("Fonts\\FRIZQT__.TTF", 20, "OUTLINE")
     alpha2:Hide()
     BetterBlizzFrames:HookScript("OnShow",function()

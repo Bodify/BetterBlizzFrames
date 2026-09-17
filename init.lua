@@ -26,6 +26,7 @@ BBF.isMidnight = gameVersion:match("^12")
 BBF.isRetail = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
 BBF.isMoP = gameVersion:match("^5%.")
 BBF.isTBC = gameVersion:match("^2%.")
+BBF.isForever = gameVersion:match("^16")
 BBF.isEra = gameVersion:match("^1%.")
 
 local function CreateOverlayFrame(frame)
