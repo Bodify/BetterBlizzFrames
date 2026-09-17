@@ -1670,8 +1670,8 @@ local function MakeNoPortraitMode(frame)
         }
 
         local function GetPlayerClassAndSpecPosition(maxResource)
-            local specIndex = GetSpecialization()
-            local specID = specIndex and GetSpecializationInfo(specIndex)
+            local specIndex = BBF.GetSpecialization()
+            local specID = specIndex and BBF.GetSpecializationInfo(specIndex)
             local cfg = resourceFramePositions[class]
 
             local point = DEFAULT_POINT
@@ -2343,7 +2343,7 @@ local function AdjustAlternateBars()
         AlternatePowerBar.RightText
     )
 
-    if class == "MONK" then
+    if class == "MONK" and MonkStaggerBar then
         SetupAltStyleBar(
             MonkStaggerBar,
             MonkStaggerBarText,
@@ -2352,7 +2352,7 @@ local function AdjustAlternateBars()
         )
     end
 
-    if class == "EVOKER" then
+    if class == "EVOKER" and EvokerEbonMightBar then
         SetupAltStyleBar(
             EvokerEbonMightBar,
             EvokerEbonMightBarText,

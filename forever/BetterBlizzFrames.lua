@@ -2025,7 +2025,7 @@ function BBF.PlayerElite(mode)
                 PlayerFrame.PlayerFrameContainer.PlayerElite = PlayerFrame.PlayerFrameContainer:CreateTexture(nil, "OVERLAY", nil, 6)
                 PlayerFrame.PlayerFrameContainer.PlayerElite:SetTexCoord(1, 0, 0, 1)
                 PetPortrait:GetParent():SetFrameLevel(4)
-                RuneFrame:SetFrameLevel(4)
+                if RuneFrame then RuneFrame:SetFrameLevel(4) end
             end
             local playerElite = PlayerFrame.PlayerFrameContainer.PlayerElite
             local alpha = db.playerEliteFrame and 1 or 0
@@ -2085,7 +2085,7 @@ function BBF.PlayerElite(mode)
                     PlayerFrame.PlayerFrameContainer.PlayerElite = PlayerFrame.PlayerFrameContainer:CreateTexture(nil, "OVERLAY", nil, 6)
                     PlayerFrame.PlayerFrameContainer.PlayerElite:SetTexCoord(1, 0, 0, 1)
                     PetPortrait:GetParent():SetFrameLevel(4)
-                    RuneFrame:SetFrameLevel(4)
+                    if RuneFrame then RuneFrame:SetFrameLevel(4) end
                 end
                 playerElite = PlayerFrame.PlayerFrameContainer.PlayerElite
                 playerElite:SetParent(PlayerFrame.ClassicFrame)
@@ -2566,7 +2566,7 @@ function BBF.ClassColorLegacyCombos()
         }
     }
 
-    local specID = GetSpecialization() and GetSpecializationInfo(GetSpecialization())
+    local specID = BBF.GetSpecialization() and BBF.GetSpecializationInfo(BBF.GetSpecialization())
     local config = {}
 
     -- Use class spec override if available
@@ -2862,7 +2862,7 @@ function BBF.InstantComboPoints()
     if not BetterBlizzFramesDB.instantComboPoints then return end
     if BBF.InstantComboPointsActive then return end
 
-    local prdClassFrame = PersonalResourceDisplayFrame.classFrame
+    local prdClassFrame = PersonalResourceDisplayFrame and PersonalResourceDisplayFrame.classFrame
     local class = UnitClassBase("player")
 
     local function UpdateRogueComboPoints(self)
@@ -3045,22 +3045,22 @@ function BBF.InstantComboPoints()
     local BBP = BetterBlizzPlatesDB
 
     if class == "MONK" then
-        hooksecurefunc(MonkHarmonyBarFrame, "UpdatePower", UpdateMonkChi)
-        if not BBP then hooksecurefunc(prdClassFrame, "UpdatePower", UpdateMonkChi) end
+        if MonkHarmonyBarFrame then hooksecurefunc(MonkHarmonyBarFrame, "UpdatePower", UpdateMonkChi) end
+        if not BBP and prdClassFrame then hooksecurefunc(prdClassFrame, "UpdatePower", UpdateMonkChi) end
     elseif class == "ROGUE" then
-        hooksecurefunc(RogueComboPointBarFrame, "UpdatePower", UpdateRogueComboPoints)
-        if not BBP then hooksecurefunc(prdClassFrame, "UpdatePower", UpdateRogueComboPoints) end
-        if C_CVar.GetCVar("comboPointLocation") == "1" and ComboFrame then hooksecurefunc("ComboFrame_Update", UpdateLegacyComboFrame) end
+        if RogueComboPointBarFrame then hooksecurefunc(RogueComboPointBarFrame, "UpdatePower", UpdateRogueComboPoints) end
+        if not BBP and prdClassFrame then hooksecurefunc(prdClassFrame, "UpdatePower", UpdateRogueComboPoints) end
+        if ComboFrame then hooksecurefunc("ComboFrame_Update", UpdateLegacyComboFrame) end
     elseif class == "DRUID" then
-        hooksecurefunc(DruidComboPointBarFrame, "UpdatePower", UpdateDruidComboPoints)
-        if not BBP then hooksecurefunc(prdClassFrame, "UpdatePower", UpdateDruidComboPoints) end
-        if C_CVar.GetCVar("comboPointLocation") == "1" and ComboFrame then hooksecurefunc("ComboFrame_Update", UpdateLegacyComboFrame) end
+        if DruidComboPointBarFrame then hooksecurefunc(DruidComboPointBarFrame, "UpdatePower", UpdateDruidComboPoints) end
+        if not BBP and prdClassFrame then hooksecurefunc(prdClassFrame, "UpdatePower", UpdateDruidComboPoints) end
+        if ComboFrame then hooksecurefunc("ComboFrame_Update", UpdateLegacyComboFrame) end
     elseif class == "MAGE" then
-        hooksecurefunc(MageArcaneChargesFrame, "UpdatePower", UpdateArcaneCharges)
-        if not BBP then hooksecurefunc(prdClassFrame, "UpdatePower", UpdateArcaneCharges) end
+        if MageArcaneChargesFrame then hooksecurefunc(MageArcaneChargesFrame, "UpdatePower", UpdateArcaneCharges) end
+        if not BBP and prdClassFrame then hooksecurefunc(prdClassFrame, "UpdatePower", UpdateArcaneCharges) end
     elseif class == "PALADIN" then
-        hooksecurefunc(PaladinPowerBarFrame, "UpdatePower", UpdatePaladinHolyPower)
-        if not BBP then hooksecurefunc(prdClassFrame, "UpdatePower", UpdatePaladinHolyPower) end
+        if PaladinPowerBarFrame then hooksecurefunc(PaladinPowerBarFrame, "UpdatePower", UpdatePaladinHolyPower) end
+        if not BBP and prdClassFrame then hooksecurefunc(prdClassFrame, "UpdatePower", UpdatePaladinHolyPower) end
     end
     BBF.InstantComboPointsActive = true
 end
@@ -4572,13 +4572,13 @@ function BBF.GladTracker()
         UpdateTrackedProgress()
     end
 
-    if isAddonLoaded("Blizzard_PVPUI") then
+    if isAddonLoaded("Blizzard_PVPUI") and ConquestFrame then
         SetupGladTracker()
     else
         local loader = CreateFrame("Frame")
         loader:RegisterEvent("ADDON_LOADED")
         loader:SetScript("OnEvent", function(self, _, addon)
-            if addon == "Blizzard_PVPUI" then
+            if addon == "Blizzard_PVPUI" and ConquestFrame then
                 self:UnregisterEvent("ADDON_LOADED")
                 SetupGladTracker()
             end
@@ -4720,24 +4720,16 @@ function BBF.FixStupidBlizzPTRShit()
             BBF.ocdAdjusted = true
         end
     end
-    local lvlYOffset = BetterBlizzFramesDB.symmetricPlayerFrame and -4 or -4
     --TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:SetHeight()
     TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:SetHeight(20)
-    local a, b, c, d, e = TargetFrame.TargetFrameContent.TargetFrameContentMain.LevelText:GetPoint()
-    TargetFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetPoint(a, b, c, d+1.5, lvlYOffset)
 
     local a, b, c, d, e = FocusFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:GetPoint()
     FocusFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:SetPoint(a, b, c, d, -24)
     FocusFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:SetHeight(20)
-    local a, b, c, d, e = FocusFrame.TargetFrameContent.TargetFrameContentMain.LevelText:GetPoint()
-    FocusFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetPoint(a, b, c, d+1.5, lvlYOffset)
 
 
     -- HealthBarColorActive
     --if not BetterBlizzFramesDB.playerFrameOCDTextureBypass then
-        local a, b, c, d, e = PlayerLevelText:GetPoint()
-        local xoffset = BetterBlizzFramesDB.symmetricPlayerFrame and -2.5 or -1
-        PlayerLevelText:SetPoint(a,b,c,d+xoffset,-28.5)
         -- PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer.HealthBarMask:SetHeight(33)
         -- PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar.ManaBarMask:SetPoint("TOPLEFT", PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar, "TOPLEFT", -2, 3)
         -- PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar.ManaBarMask:SetHeight(17)
@@ -5648,3 +5640,7 @@ local function FixMirrorTimerContainer()
     end)
 end
 FixMirrorTimerContainer()
+
+C_Timer.After(3, function()
+    BBF.Print("Very early and in development WoW: Forever version. Please report bugs!")
+end)

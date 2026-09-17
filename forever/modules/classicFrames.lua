@@ -627,7 +627,7 @@ local function MakeClassicFrame(frame)
         }
 
         local function GetPlayerClassAndSpecPosition()
-            local specID = GetSpecialization() and GetSpecializationInfo(GetSpecialization())
+            local specID = BBF.GetSpecialization() and BBF.GetSpecializationInfo(BBF.GetSpecialization())
             local position = resourceFramePositions[class]
 
             if position then
@@ -668,7 +668,7 @@ local function MakeClassicFrame(frame)
             if not InCombatLockdown() then
                 PlayerBottomManagedFrameContainer:ClearAllPoints()
 
-                local specID = GetSpecialization() and GetSpecializationInfo(GetSpecialization())
+                local specID = BBF.GetSpecialization() and BBF.GetSpecializationInfo(BBF.GetSpecialization())
                 local posData = resourceFrameAnchorPositions[specID] or resourceFrameAnchorPositions.default
                 local point = posData.point or "TOP"
                 local relativeFrame = PlayerFrame
@@ -1075,14 +1075,14 @@ local function AdjustAlternateBars()
         AlternatePowerBar.PowerBarMask:SetPoint("TOPLEFT", AlternatePowerBar, "TOPLEFT", -2, 3)
     end
 
-    if class == "MONK" then
+    if class == "MONK" and MonkStaggerBar then
         MonkStaggerBar:SetSize(94, 12)
         MonkStaggerBar:ClearAllPoints()
         MonkStaggerBar:SetPoint("TOPLEFT", PlayerFrameAlternatePowerBarArea, "TOPLEFT", 101, -72)
 
         MonkStaggerBar.PowerBarMask:Hide()
 
-        MonkStaggerBarText:SetPoint("CENTER", 1, -1)
+        if MonkStaggerBarText then MonkStaggerBarText:SetPoint("CENTER", 1, -1) end
         MonkStaggerBar.LeftText:SetPoint("LEFT", 0, -1)
         MonkStaggerBar.RightText:SetPoint("RIGHT", 0, -1)
 
@@ -1108,12 +1108,12 @@ local function AdjustAlternateBars()
     -- end
 
 
-    if class == "EVOKER" then
+    if class == "EVOKER" and EvokerEbonMightBar then
         EvokerEbonMightBar:SetSize(altBarWidth, 12)
         EvokerEbonMightBar:ClearAllPoints()
         EvokerEbonMightBar:SetPoint("BOTTOMLEFT", 95, 17)
 
-        EvokerEbonMightBarText:SetPoint("CENTER", 1, -1)
+        if EvokerEbonMightBarText then EvokerEbonMightBarText:SetPoint("CENTER", 1, -1) end
         EvokerEbonMightBar.LeftText:SetPoint("LEFT", 0, -1)
         EvokerEbonMightBar.RightText:SetPoint("RIGHT", 0, -1)
 
@@ -1199,11 +1199,11 @@ local function AdjustAlternateBars()
         AlternatePowerBar.RightBorder,
     }
 
-    if class == "MONK" then
+    if class == "MONK" and MonkStaggerBar and MonkStaggerBar.Border then
         tinsert(classicFrameColorTargets, MonkStaggerBar.Border)
     end
 
-    if class == "EVOKER" then
+    if class == "EVOKER" and EvokerEbonMightBar and EvokerEbonMightBar.Border then
         tinsert(classicFrameColorTargets, EvokerEbonMightBar.Border)
         tinsert(classicFrameColorTargets, EvokerEbonMightBar.LeftBorder)
         tinsert(classicFrameColorTargets, EvokerEbonMightBar.RightBorder)
@@ -1387,7 +1387,11 @@ local function SortLocalizationChanges()
 end
 
 function BBF.ClassicFrames()
-    if not BetterBlizzFramesDB.classicFrames then return end
+    if not BetterBlizzFramesDB.classicFrames then
+        BBF.SetLevelRingsHidden(false)
+        return
+    end
+    BBF.SetLevelRingsHidden(true)
     MakeClassicFrame(TargetFrame)
     MakeClassicFrame(FocusFrame)
     MakeClassicFrame(PlayerFrame)
