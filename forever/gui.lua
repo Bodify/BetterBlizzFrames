@@ -7244,6 +7244,35 @@ local function guiCastbars()
     BetterBlizzFramesCastbars.rightClickTip:SetText("|A:smallquestbang:20:20|a" .. L["Right_Click_Slider_Tip"])
 end
 
+local function guiForever()
+    local guiForever = CreateFrame("Frame")
+    guiForever.name = "FOREVER"
+    guiForever.parent = BetterBlizzFrames.name
+    local guiForeverCategory = Settings.RegisterCanvasLayoutSubcategory(BBF.category, guiForever, guiForever.name, guiForever.name)
+    guiForeverCategory.ID = guiForever.name;
+    BBF.guiForever = guiForever.name
+    BBF.category.guiForeverCategory = guiForeverCategory.ID
+    CreateTitle(guiForever)
+
+    local bgImg = guiForever:CreateTexture(nil, "BACKGROUND")
+    bgImg:SetAtlas("professions-recipe-background")
+    bgImg:SetPoint("CENTER", guiForever, "CENTER", -8, 4)
+    bgImg:SetSize(680, 610)
+    bgImg:SetAlpha(0.4)
+    bgImg:SetVertexColor(0,0,0)
+
+    local headerText = guiForever:CreateFontString(nil, "OVERLAY", "GameFontNormalHuge")
+    headerText:SetPoint("TOP", guiForever, "TOP", -8, -150)
+    headerText:SetText("|cffffd100In development...|r")
+
+    local bodyText = guiForever:CreateFontString(nil, "OVERLAY", "GameFontHighlightLarge")
+    bodyText:SetPoint("TOP", headerText, "BOTTOM", 0, -20)
+    bodyText:SetWidth(500)
+    bodyText:SetJustifyH("CENTER")
+    bodyText:SetSpacing(6)
+    bodyText:SetText("The WoW: Forever version of BetterBlizzFrames is under heavy development. Expect bugs and please report them so I can more easily fix em! Thank you!\n\n- Bodify")
+end
+
 local function guiPositionAndScale()
 
     ----------------------
@@ -11189,6 +11218,7 @@ function BBF.LoadGUI()
     end
 
     guiGeneralTab()
+    guiForever()
     guiPositionAndScale()
     guiFrameAuras()
     guiFrameLook()
