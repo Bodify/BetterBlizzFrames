@@ -74,6 +74,7 @@ loader:RegisterEvent("PLAYER_LOGIN")
 loader:SetScript("OnEvent", function(self)
     self:UnregisterEvent("PLAYER_LOGIN")
     BBF.BindLevelRings()
+    BBF.ApplyPlayerLevelColor()
 end)
 
 local pvpBadgeRegions = {}
@@ -124,3 +125,23 @@ function BBF.GetSpecializationInfo(specIndex)
     if specInfo and specInfo.GetSpecializationInfo then return specInfo.GetSpecializationInfo(specIndex) end
     return nil
 end
+
+local PLAYER_LEVEL_R, PLAYER_LEVEL_G, PLAYER_LEVEL_B = 1.0, 0.82, 0.0
+
+local function BBFOwnsLevelColor()
+    local db = BetterBlizzFramesDB
+    if not db then return false end
+    if db.unitFrameFontColor and db.unitFrameFontColorLvl then return true end
+    if db.classColorTargetNames and db.classColorLevelText then return true end
+    return false
+end
+
+function BBF.ApplyPlayerLevelColor()
+    if not UnitExists("player") then return end
+    if BBFOwnsLevelColor() then return end
+    local unit = PlayerFrame.unit
+    if UnitLevel(unit) ~= UnitEffectiveLevel(unit) then return end
+    PlayerLevelText:SetVertexColor(PLAYER_LEVEL_R, PLAYER_LEVEL_G, PLAYER_LEVEL_B, 1.0)
+end
+
+hooksecurefunc("PlayerFrame_UpdateLevel", BBF.ApplyPlayerLevelColor)
