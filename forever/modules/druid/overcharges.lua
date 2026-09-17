@@ -146,7 +146,7 @@ function BBF.DruidBlueComboPoints()
             local prd = GetPrdComboPoints()
             CreateChargedPoints(druid)
             CreateChargedPoints(prd)
-            if druid.blueOverchargePoints and (not prd or prd.blueOverchargePoints) then
+            if (not druid or druid.blueOverchargePoints) and (not prd or prd.blueOverchargePoints) then
                 formWatch:UnregisterAllEvents()
             end
         end
@@ -154,9 +154,13 @@ function BBF.DruidBlueComboPoints()
         formWatch:SetScript("OnEvent", OnFormChanged)
     end
 
-    druid.auraWatch = CreateFrame("Frame")
+    local auraWatch = CreateFrame("Frame")
+    BBF.druidBlueComboWatch = auraWatch
+    if druid then
+        druid.auraWatch = auraWatch
+    end
     if BetterBlizzFramesDB.legacyBlueComboPoints and C_CVar.GetCVar("comboPointLocation") == "1" and ComboFrame then
-        druid.auraWatch:SetScript("OnEvent", function()
+        auraWatch:SetScript("OnEvent", function()
             local aura = C_UnitAuras.GetPlayerAuraBySpellID(405189)
             local prd = GetPrdComboPoints()
             CreateChargedPoints(prd)
@@ -165,7 +169,7 @@ function BBF.DruidBlueComboPoints()
             BlueLegacyDruidPoints(aura)
         end)
     else
-        druid.auraWatch:SetScript("OnEvent", function()
+        auraWatch:SetScript("OnEvent", function()
             local aura = C_UnitAuras.GetPlayerAuraBySpellID(405189)
             local prd = GetPrdComboPoints()
             CreateChargedPoints(prd)
@@ -173,7 +177,7 @@ function BBF.DruidBlueComboPoints()
             UpdateComboPoints(prd, aura)
         end)
     end
-    druid.auraWatch:RegisterUnitEvent("UNIT_AURA", "player")
+    auraWatch:RegisterUnitEvent("UNIT_AURA", "player")
     BBF.druidBlueCombos = true
 end
 

@@ -204,7 +204,7 @@ function BBF.FancyPRDAltTexture()
         hooksecurefunc(PersonalResourceDisplayFrame, "UpdateAlternatePowerBar", function()
             BBF.FancyPRDAltTexture()
         end)
-        if playerClass == "MONK" then
+        if playerClass == "MONK" and MonkStaggerBar then
             hooksecurefunc(MonkStaggerBar, "SetStatusBarTexture", function()
                 BBF.FancyPRDAltTexture()
             end)
