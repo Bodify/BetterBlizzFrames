@@ -326,6 +326,7 @@ function BBF.DarkmodeFrames(bypass)
     local actionBarColor = BetterBlizzFramesDB.darkModeActionBars and (vertexColor + 0.15) or 1
     local comboColor = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.15) or 1
     local birdColor = BetterBlizzFramesDB.darkModeActionBars and (vertexColor + 0.25) or 1
+    local bagSlotColor = BetterBlizzFramesDB.darkModeActionBars and math.max(vertexColor - 0.05, 0) or 1
     local rogueCombo = BetterBlizzFramesDB.darkModeUi and (vertexColor + (cf and 0.15 or 0.45)) or 1
     local rogueComboActive = BetterBlizzFramesDB.darkModeUi and (vertexColor + (cf and -0.1 or 0.20)) or 1
     local monkChi = BetterBlizzFramesDB.darkModeUi and (vertexColor + (cf and -0.10 or 0.10)) or 1
@@ -966,12 +967,88 @@ function BBF.DarkmodeFrames(bypass)
         end
 
         if mainActionBar and mainActionBar.EndCaps then
+            local leftEndCap = mainActionBar.EndCaps.LeftEndCap
+            local rightEndCap = mainActionBar.EndCaps.RightEndCap
             for _, v in pairs({
-                mainActionBar.EndCaps.LeftEndCap,
-                mainActionBar.EndCaps.RightEndCap,
+                leftEndCap,
+                rightEndCap,
+                leftEndCap and leftEndCap.Texture,
+                rightEndCap and rightEndCap.Texture,
             }) do
                 applySettings(v, desaturationValue, birdColor, true)
             end
+        end
+
+        local function applyButtonArt(button, buttonName, colorOverride)
+            if not button then return end
+            local buttonColor = colorOverride or actionBarColor
+            if button.GetNormalTexture then
+                applySettings(button:GetNormalTexture(), desaturationValue, buttonColor, true)
+            end
+            if button.GetPushedTexture then
+                applySettings(button:GetPushedTexture(), desaturationValue, buttonColor, true)
+            end
+            if buttonName then
+                applySettings(_G[buttonName .. "NormalTexture"], desaturationValue, buttonColor, true)
+                applySettings(_G[buttonName .. "PushedTexture"], desaturationValue, buttonColor, true)
+            end
+            applySettings(button.NormalTexture, desaturationValue, buttonColor, true)
+            applySettings(button.PushedTexture, desaturationValue, buttonColor, true)
+            applySettings(button.Background, desaturationValue, buttonColor, true)
+            applySettings(button.PushedBackground, desaturationValue, buttonColor, true)
+        end
+
+        local function applyMicroButtonArt(button)
+            if not button then return end
+            applySettings(button.Background, desaturationValue, actionBarColor, true)
+            applySettings(button.PushedBackground, desaturationValue, actionBarColor, true)
+        end
+
+        local function applyEdgeArt(frame)
+            if not frame then return end
+            applySettings(frame.TopEdge, desaturationValue, actionBarColor, true)
+            applySettings(frame.BottomEdge, desaturationValue, actionBarColor, true)
+            applySettings(frame.Center, desaturationValue, actionBarColor, true)
+        end
+
+        if MicroMenu then
+            applySettings(MicroMenu.BorderArt, desaturationValue, actionBarColor, true)
+        end
+
+        for _, microButtonName in ipairs({
+            "CharacterMicroButton",
+            "ProfessionMicroButton",
+            "SpellbookMicroButton",
+            "TalentMicroButton",
+            "LegacyMicroButton",
+            "QuestLogMicroButton",
+            "GuildMicroButton",
+            "LFDMicroButton",
+            "CollectionsMicroButton",
+            "HelpMicroButton",
+            "StoreMicroButton",
+            "MainMenuMicroButton",
+        }) do
+            applyMicroButtonArt(_G[microButtonName])
+        end
+
+        if BagsBar then
+            applySettings(BagsBar.BorderArt, desaturationValue, actionBarColor, true)
+            applyEdgeArt(BagsBar)
+            for _, bagsBarChild in pairs({BagsBar:GetChildren()}) do
+                applyEdgeArt(bagsBarChild)
+                for _, bagsBarGrandChild in pairs({bagsBarChild:GetChildren()}) do
+                    applyEdgeArt(bagsBarGrandChild)
+                end
+            end
+        end
+
+        applyButtonArt(KeyRingButton, "KeyRingButton", bagSlotColor)
+        applyButtonArt(MainMenuBarBackpackButton, "MainMenuBarBackpackButton")
+        applyButtonArt(CharacterReagentBag0Slot, "CharacterReagentBag0Slot", bagSlotColor)
+        for i = 0, 3 do
+            local bagSlotName = "CharacterBag" .. i .. "Slot"
+            applyButtonArt(_G[bagSlotName], bagSlotName, bagSlotColor)
         end
 
         local BARTENDER4_NUM_MAX_BUTTONS = 180
