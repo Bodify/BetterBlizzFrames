@@ -312,6 +312,7 @@ local defaultSettings = {
     partyFrameRangeAlpha = 0.55,
     partyFrameRangeAlphaSolidBackground = true,
     changePartyFrameRangeAlpha = true,
+    partyFrameStatusText = false,
 }
 
 local version = GetBuildInfo()
@@ -2968,6 +2969,7 @@ Frame:SetScript("OnEvent", function(...)
                     BBF.HookBiggerHealthbars()
                 end
                 BBF.BiggerDefaultPartyFrames()
+                BBF.PartyFrameStatusText()
                 BBF.HookHideManabars()
                 BBF.PlayerElite(BetterBlizzFramesDB.playerEliteFrameMode)
                 BBF.ToggleCastbarInterruptIcon()
@@ -3181,6 +3183,7 @@ First:SetScript("OnEvent", function(_, event, addonName)
 
             C_Timer.After(1, function()
                 BBF.HookStatusBarText()
+                BBF.PartyFrameStatusText()
                 BBF.FontColors()
                 MoveableSettingsPanel()
             end)
@@ -3485,5 +3488,9 @@ function BBF.BiggerDefaultPartyFrames()
 
         auras:ClearAllPoints()
         auras:SetPoint("TOPLEFT", manabar, "BOTTOMLEFT", 2, -3)
+    end
+
+    if BBF.UpdatePartyFrameStatusText then
+        BBF.UpdatePartyFrameStatusText()
     end
 end
