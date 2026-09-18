@@ -612,6 +612,7 @@ L["Profile_Confirmation_Text"] = "Esta ação vai excluir todas as configuraçõ
 L["Profile_Confirmation_Text_Intro"] = "Tem certeza de que quer usar o %s?\n\n%sClique em Sim para aplicar e recarregar a interface."
 L["Profile_Label"] = "Perfil %s"
 L["Profile_Mythic_Desc"] = "Um ótimo perfil equilibrado feito por |cffc79c6eJovelo|r que melhora os quadros de unidade padrão da Blizzard.\n\nÓtimo para todo tipo de conteúdo."
+L["Profile_Forever_Desc"] = "Um perfil bem básico com um estilo Classic, feito para um início rápido no WoW Forever!"
 L["Profile_Starter_Desc"] = "Um perfil inicial básico que ativa só as poucas coisas de que você precisa.\n\nPensado como um início rápido bem minimalista para você ir incrementando."
 L["Profile_Streamer_Desc"] = "Ativa todas as configurações do perfil de %s."
 L["Tooltip_Exit_No_Profile"] = "Sair e personalizar tudo você mesmo."
@@ -1599,3 +1600,17 @@ L["Highlight_Style_Glow_Mark"] = "Marca brilhante"
 L["Highlight_Style_Cursor"] = "Cursor"
 L["Highlight_Style_Zoom"] = "Zoom"
 L["Module_Name_Support"] = "Apoio"
+
+---------------------------------------
+-- WoW: Forever
+---------------------------------------
+
+L["Forever_Tweaks"] = "Ajustes do Forever"
+L["Bronze_Tint_Classic_Frames"] = "Tom bronze nos quadros clássicos"
+L["Tooltip_Bronze_Tint_Classic_Frames_Desc"] = "Aplica às bordas dos quadros clássicos o tom bronze do WoW: Forever.\n\nRequer quadros clássicos. O modo escuro tem prioridade quando ativado."
+L["Remove_ActionBar_Bronze_Tint"] = "Remover tom bronze das barras de ação"
+L["Tooltip_Remove_ActionBar_Bronze_Tint_Desc"] = "Dessatura a arte das barras de ação para remover o tom bronze do WoW: Forever.\n\nO modo escuro das barras de ação tem prioridade quando ativado."
+L["Forever_In_Development"] = "Em desenvolvimento..."
+L["Forever_In_Development_Desc"] = "A versão WoW: Forever do BetterBlizzFrames está em pleno desenvolvimento. Espere bugs e, por favor, reporte-os para que eu possa corrigi-los mais facilmente! Obrigado!\n\n- Bodify"
+L["Forever_Blizzard_Bug"] = "Bug da Blizzard:"
+L["Forever_Blizzard_Bug_Desc"] = "Há um bug da Blizzard no beta do Forever em que as configurações não são salvas/carregadas corretamente. Algumas pessoas relatam sucesso (temporário?) ao sair do jogo, apagar os arquivos de SavedVariables e tentar novamente. Teremos que esperar a Blizzard corrigir isso.\n\nEntre no Discord para mais novidades e informações sobre a situação:"

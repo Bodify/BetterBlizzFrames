@@ -21,6 +21,7 @@ forever\modules\darkmode.lua
 forever\modules\classicFrames.lua
 forever\modules\nameFix.lua
 forever\modules\hideFrames.lua
+forever\modules\classicMinimap.lua
 forever\modules\auras.lua
 forever\modules\absorb.lua
 forever\modules\combat.lua

@@ -612,6 +612,7 @@ L["Profile_Confirmation_Text"] = "Diese Aktion löscht alle Einstellungen, wende
 L["Profile_Confirmation_Text_Intro"] = "Möchtest du wirklich das %s verwenden?\n\n%sKlicke auf Ja, um es anzuwenden und das UI neu zu laden."
 L["Profile_Label"] = "%s-Profil"
 L["Profile_Mythic_Desc"] = "Ein großartiges, ausgewogenes Profil von |cffc79c6eJovelo|r, das die Standard-Einheitenfenster von Blizzard verbessert.\n\nIdeal für alle Arten von Inhalten."
+L["Profile_Forever_Desc"] = "Ein sehr einfaches Profil mit Classic-Feeling, gedacht für einen schnellen Einstieg in WoW Forever!"
 L["Profile_Starter_Desc"] = "Ein einfaches Einsteigerprofil, das nur die wenigen Dinge aktiviert, die du brauchst.\n\nGedacht als sehr minimaler Schnellstart, auf dem du aufbauen kannst."
 L["Profile_Streamer_Desc"] = "Aktiviert alle Profileinstellungen von %s."
 L["Tooltip_Exit_No_Profile"] = "Beenden und alles selbst anpassen."
@@ -1599,3 +1600,17 @@ L["Highlight_Style_Glow_Mark"] = "Leuchtmarkierung"
 L["Highlight_Style_Cursor"] = "Cursor"
 L["Highlight_Style_Zoom"] = "Zoom"
 L["Module_Name_Support"] = "Unterstützen"
+
+---------------------------------------
+-- WoW: Forever
+---------------------------------------
+
+L["Forever_Tweaks"] = "Forever-Anpassungen"
+L["Bronze_Tint_Classic_Frames"] = "Bronzetönung für Classic-Fenster"
+L["Tooltip_Bronze_Tint_Classic_Frames_Desc"] = "Gibt den Einheitenrahmen der Classic-Fenster die Bronzetönung von WoW: Forever.\n\nErfordert Classic-Fenster. Der Dunkelmodus hat Vorrang, wenn er aktiviert ist."
+L["Remove_ActionBar_Bronze_Tint"] = "Bronzetönung der Aktionsleisten entfernen"
+L["Tooltip_Remove_ActionBar_Bronze_Tint_Desc"] = "Entsättigt die Aktionsleisten-Grafiken, um die Bronzetönung von WoW: Forever zu entfernen.\n\nDer Dunkelmodus für Aktionsleisten hat Vorrang, wenn er aktiviert ist."
+L["Forever_In_Development"] = "In Entwicklung..."
+L["Forever_In_Development_Desc"] = "Die WoW: Forever-Version von BetterBlizzFrames befindet sich in intensiver Entwicklung. Rechnet mit Fehlern und meldet sie bitte, damit ich sie leichter beheben kann! Danke!\n\n- Bodify"
+L["Forever_Blizzard_Bug"] = "Blizzard-Fehler:"
+L["Forever_Blizzard_Bug_Desc"] = "In der Forever-Beta gibt es einen Blizzard-Fehler, durch den Einstellungen nicht richtig gespeichert/geladen werden. Einige berichten von (vorübergehendem?) Erfolg, indem sie sich ausloggen, ihre SavedVariables-Dateien löschen und es erneut versuchen. Wir müssen einfach warten, bis Blizzard das behebt.\n\nTritt dem Discord bei, um weitere Neuigkeiten und Infos zur Lage zu erhalten:"

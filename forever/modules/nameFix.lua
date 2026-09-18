@@ -268,7 +268,7 @@ local function GetLocalizedSpecs()
 
     local getNumSpecs = GetNumSpecializationsForClassID or (C_SpecializationInfo and C_SpecializationInfo.GetNumSpecializationsForClassID)
     local getSpecInfo = GetSpecializationInfoForClassID or (C_SpecializationInfo and C_SpecializationInfo.GetSpecializationInfoForClassID)
-    local numClasses = (GetNumClasses and GetNumClasses()) or MAX_CLASSES
+    local numClasses = (GetNumClasses and GetNumClasses()) or 13
 
     if getNumSpecs and getSpecInfo and numClasses then
         for classID = 1, numClasses do

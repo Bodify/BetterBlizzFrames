@@ -613,6 +613,7 @@ L["Profile_Confirmation_Text"] = "이 작업은 모든 설정을 삭제하고\n%
 L["Profile_Confirmation_Text_Intro"] = "%s 사용하시겠습니까?\n\n%s확인을 누르면 적용하고 UI를 재시작합니다."
 L["Profile_Label"] = "%s 프로필"
 L["Profile_Mythic_Desc"] = "|cffc79c6eJovelo|r가 제작한 균형 잡힌 훌륭한 프로필로 기본 블리자드 유닛 프레임을 향상시킵니다.\n\n모든 유형의 콘텐츠에 적합합니다."
+L["Profile_Forever_Desc"] = "WoW Forever를 빠르게 시작할 수 있도록 만든 클래식 느낌의 아주 기본적인 프로필입니다!"
 L["Profile_Starter_Desc"] = "필요한 몇 가지 기능만 활성화하는 기본 시작 프로필입니다.\n\n매우 최소한의 빠른 시작으로 작동하며 추가 구성이 가능합니다."
 L["Profile_Streamer_Desc"] = "%s의 모든 프로필 설정을 활성화합니다."
 L["Tooltip_Exit_No_Profile"] = "종료하고 직접 모든 것을 사용자 정의합니다."
@@ -1600,3 +1601,17 @@ L["Highlight_Style_Glow_Mark"] = "광채 표시"
 L["Highlight_Style_Cursor"] = "커서"
 L["Highlight_Style_Zoom"] = "확대"
 L["Module_Name_Support"] = "후원"
+
+---------------------------------------
+-- WoW: Forever
+---------------------------------------
+
+L["Forever_Tweaks"] = "Forever 조정"
+L["Bronze_Tint_Classic_Frames"] = "클래식 프레임 청동 색조"
+L["Tooltip_Bronze_Tint_Classic_Frames_Desc"] = "클래식 프레임의 유닛 프레임 테두리에 WoW: Forever의 청동 색조를 적용합니다.\n\n클래식 프레임이 필요합니다. 다크 모드가 활성화되어 있으면 다크 모드가 우선합니다."
+L["Remove_ActionBar_Bronze_Tint"] = "행동 단축바 청동 색조 제거"
+L["Tooltip_Remove_ActionBar_Bronze_Tint_Desc"] = "행동 단축바 그래픽의 채도를 낮춰 WoW: Forever의 청동 색조를 제거합니다.\n\n행동 단축바 다크 모드가 활성화되어 있으면 다크 모드가 우선합니다."
+L["Forever_In_Development"] = "개발 중..."
+L["Forever_In_Development_Desc"] = "BetterBlizzFrames의 WoW: Forever 버전은 활발히 개발 중입니다. 버그가 있을 수 있으니 제보해 주시면 더 쉽게 고칠 수 있습니다! 감사합니다!\n\n- Bodify"
+L["Forever_Blizzard_Bug"] = "블리자드 버그:"
+L["Forever_Blizzard_Bug_Desc"] = "Forever 베타에는 설정이 제대로 저장/불러와지지 않는 블리자드 버그가 있습니다. 일부 사용자는 로그아웃 후 SavedVariables 파일을 삭제하고 다시 시도하여 (일시적으로?) 해결했다고 합니다. 블리자드가 고칠 때까지 기다려야 할 것 같습니다.\n\n상황에 대한 추가 소식과 정보는 디스코드에 참여하세요:"

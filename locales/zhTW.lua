@@ -612,6 +612,7 @@ L["Profile_Confirmation_Text"] = "此操作將刪除所有設定，套用\n%s並
 L["Profile_Confirmation_Text_Intro"] = "你確定要使用%s嗎？\n\n%s點擊「是」以套用並重新載入介面。"
 L["Profile_Label"] = "%s 設定檔"
 L["Profile_Mythic_Desc"] = "由 |cffc79c6eJovelo|r 製作的出色均衡設定檔，強化 Blizzard 預設單位框架。\n\n適合各種類型的內容。"
+L["Profile_Forever_Desc"] = "一個非常基本、帶有經典懷舊風格的設定檔，適合在 WoW Forever 中快速上手！"
 L["Profile_Starter_Desc"] = "基本入門設定檔，只啟用少數必要功能。\n\n作為非常精簡的快速起點，可在此基礎上自行擴充。"
 L["Profile_Streamer_Desc"] = "啟用 %s 的所有設定檔設定。"
 L["Tooltip_Exit_No_Profile"] = "離開並自行自訂所有內容。"
@@ -1599,3 +1600,17 @@ L["Highlight_Style_Glow_Mark"] = "光暈標記"
 L["Highlight_Style_Cursor"] = "游標"
 L["Highlight_Style_Zoom"] = "放大"
 L["Module_Name_Support"] = "支持"
+
+---------------------------------------
+-- WoW: Forever
+---------------------------------------
+
+L["Forever_Tweaks"] = "Forever 調整"
+L["Bronze_Tint_Classic_Frames"] = "經典框架青銅色調"
+L["Tooltip_Bronze_Tint_Classic_Frames_Desc"] = "為經典框架的單位框架邊框加上 WoW: Forever 的青銅色調。\n\n需要啟用經典框架。啟用暗色模式時暗色模式優先。"
+L["Remove_ActionBar_Bronze_Tint"] = "移除快捷列青銅色調"
+L["Tooltip_Remove_ActionBar_Bronze_Tint_Desc"] = "降低快捷列美術的飽和度以移除 WoW: Forever 的青銅色調。\n\n啟用快捷列暗色模式時暗色模式優先。"
+L["Forever_In_Development"] = "開發中..."
+L["Forever_In_Development_Desc"] = "BetterBlizzFrames 的 WoW: Forever 版本正在積極開發中。可能會有錯誤，請回報給我以便更輕鬆地修復！謝謝！\n\n- Bodify"
+L["Forever_Blizzard_Bug"] = "暴雪錯誤："
+L["Forever_Blizzard_Bug_Desc"] = "Forever 測試版存在一個暴雪錯誤，導致設定無法正確儲存/載入。有玩家回報透過登出、刪除 SavedVariables 檔案後重試（暫時？）解決了問題。我們只能等待暴雪修復。\n\n加入 Discord 取得更多關於此情況的更新與資訊："

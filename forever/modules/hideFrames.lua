@@ -926,16 +926,15 @@ function BBF.HideFrames()
         end
 
         if db.hideExpAndHonorBar then
-            MainStatusTrackingBarContainer:SetParent(hiddenFrame)
-            SecondaryStatusTrackingBarContainer:SetParent(hiddenFrame)
+            StatusTrackingBarManager:SetAlpha(0)
             if not BBF.hideExpAndHonorBar then
                 CharacterFrame:HookScript("OnShow", function()
-                    MainStatusTrackingBarContainer:SetParent(StatusTrackingBarManager)
-                    SecondaryStatusTrackingBarContainer:SetParent(StatusTrackingBarManager)
+                    StatusTrackingBarManager:SetAlpha(1)
                 end)
                 CharacterFrame:HookScript("OnHide", function()
-                    MainStatusTrackingBarContainer:SetParent(hiddenFrame)
-                    SecondaryStatusTrackingBarContainer:SetParent(hiddenFrame)
+                    if BetterBlizzFramesDB.hideExpAndHonorBar then
+                        StatusTrackingBarManager:SetAlpha(0)
+                    end
                 end)
                 BBF.hideExpAndHonorBar = true
             end

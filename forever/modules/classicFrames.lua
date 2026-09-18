@@ -430,6 +430,14 @@ local function MakeClassicFrame(frame)
         contentMain.HitIndicator:SetParent(PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual)
 
         contentContext:SetParent(frame.ClassicFrame)
+        if contentMain.PvpBackgroundCircle then
+            contentMain.PvpBackgroundCircle:SetParent(frame.ClassicFrame)
+            contentMain.PvpBackgroundCircle:SetDrawLayer("OVERLAY", 5)
+        end
+        if contentMain.PvpBackgroundIcon then
+            contentMain.PvpBackgroundIcon:SetParent(frame.ClassicFrame)
+            contentMain.PvpBackgroundIcon:SetDrawLayer("OVERLAY", 6)
+        end
         contentContext.AttackIcon:ClearAllPoints()
         contentContext.AttackIcon:SetPoint("CENTER", -80, -23.5)
         contentContext.AttackIcon:SetSize(32, 31)
@@ -1398,6 +1406,7 @@ function BBF.ClassicFrames()
     MakeClassicFrame(PetFrame)
 
     MakeClassicPartyFrame()
+    BBF.UpdateClassicPvpCircles()
 
     AdjustAlternateBars()
     SortLocalizationChanges()

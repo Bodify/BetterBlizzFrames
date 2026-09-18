@@ -1788,6 +1788,7 @@ local CLASS_COLORS = {
     STARTER = "|cff32cd32",
     BLITZ = "|cffff8000",
     MYTHIC = "|cff7dd1c2",
+    FOREVER = "|cffffd100",
 }
 
 local CLASS_ICONS = {
@@ -1807,13 +1808,15 @@ local CLASS_ICONS = {
     STARTER = "newplayerchat-chaticon-newcomer",
     BLITZ = "questlog-questtypeicon-pvp",
     MYTHIC = "worldquest-icon-dungeon",
+    FOREVER = "logo-wow-forever",
 }
 
 local function ShowProfileConfirmation(profileName, class, profileFunction, additionalNote)
     local noteText = additionalNote or ""
     local color = CLASS_COLORS[class] or "|cffffffff"
     local icon = CLASS_ICONS[class] or "groupfinder-icon-role-leader"
-    local profileText = string.format("|A:%s:16:16|a %s%s|r", icon, color, string.format(L["Profile_Label"], profileName))
+    local iconSize = class == "FOREVER" and 28 or 16
+    local profileText = string.format("|A:%s:%d:%d|a %s%s|r", icon, iconSize, iconSize, color, string.format(L["Profile_Label"], profileName))
     local confirmationText = titleText .. string.format(L["Profile_Confirmation_Text"], profileText, noteText)
 
     BBF.GetPopup("BBF_CONFIRM_PROFILE").text = confirmationText
@@ -1822,7 +1825,7 @@ end
 
 local function CreateClassButton(parent, class, name, twitchName, onClickFunc)
     local bbfParent = parent == BetterBlizzFrames
-    local coreProfile = class == "STARTER" or name == "Bodify"
+    local coreProfile = class == "STARTER" or class == "FOREVER" or name == "Bodify"
     local btnWidth, btnHeight = bbfParent and 104 or (coreProfile and 150 or 114), bbfParent and 22 or 30
     local button = CreateFrame("Button", nil, parent, "GameMenuButtonTemplate")
     button:SetSize(btnWidth, btnHeight)
@@ -1830,12 +1833,13 @@ local function CreateClassButton(parent, class, name, twitchName, onClickFunc)
     local includeProfileText = not bbfParent and coreProfile
     local color = CLASS_COLORS[class] or "|cffffffff"
     local icon = CLASS_ICONS[class] or "groupfinder-icon-role-leader"
+    local iconSize = class == "FOREVER" and 28 or 16
 
     if name == "Bodify" then
         icon = "gmchat-icon-blizz"
     end
 
-    button:SetText(string.format("|A:%s:16:16|a %s%s|r", icon, color, (includeProfileText and string.format(L["Profile_Label"], name) or name)))
+    button:SetText(string.format("|A:%s:%d:%d|a %s%s|r", icon, iconSize, iconSize, color, (includeProfileText and string.format(L["Profile_Label"], name) or name)))
     button:SetNormalFontObject("GameFontNormal")
     button:SetHighlightFontObject("GameFontHighlight")
     local a,b,c = button.Text:GetFont()
@@ -1853,15 +1857,17 @@ local function CreateClassButton(parent, class, name, twitchName, onClickFunc)
     end)
 
     if class == "STARTER" then
-        CreateTooltipTwo(button, string.format("|A:%s:16:16|a %s%s|r", icon, color, string.format(L["Profile_Label"], name)), L["Profile_Starter_Desc"], nil, ttAnchor)
+        CreateTooltipTwo(button, string.format("|A:%s:%d:%d|a %s%s|r", icon, iconSize, iconSize, color, string.format(L["Profile_Label"], name)), L["Profile_Starter_Desc"], nil, ttAnchor)
+    elseif class == "FOREVER" then
+        CreateTooltipTwo(button, string.format("|A:%s:%d:%d|a %s%s|r", icon, iconSize, iconSize, color, string.format(L["Profile_Label"], name)), L["Profile_Forever_Desc"], nil, ttAnchor)
     elseif class == "BLITZ" then
-        CreateTooltipTwo(button, string.format("|A:%s:16:16|a %s%s|r", icon, color, string.format(L["Profile_Label"], name)), L["Profile_Blitz_Desc"], nil, ttAnchor)
+        CreateTooltipTwo(button, string.format("|A:%s:%d:%d|a %s%s|r", icon, iconSize, iconSize, color, string.format(L["Profile_Label"], name)), L["Profile_Blitz_Desc"], nil, ttAnchor)
     elseif class == "MYTHIC" then
-        CreateTooltipTwo(button, string.format("|A:%s:16:16|a %s%s|r", icon, color, string.format(L["Profile_Label"], name)), L["Profile_Mythic_Desc"], nil, ttAnchor)
+        CreateTooltipTwo(button, string.format("|A:%s:%d:%d|a %s%s|r", icon, iconSize, iconSize, color, string.format(L["Profile_Label"], name)), L["Profile_Mythic_Desc"], nil, ttAnchor)
     elseif name == "Bodify" then
-        CreateTooltipTwo(button, string.format("|A:%s:16:16|a %s%s|r", icon, color, string.format(L["Profile_Label"], name)), L["Profile_Bodify_Desc"], nil, ttAnchor)
+        CreateTooltipTwo(button, string.format("|A:%s:%d:%d|a %s%s|r", icon, iconSize, iconSize, color, string.format(L["Profile_Label"], name)), L["Profile_Bodify_Desc"], nil, ttAnchor)
     else
-        CreateTooltipTwo(button, string.format("|A:%s:16:16|a %s%s|r", icon, color, string.format(L["Profile_Label"], name)), string.format(L["Profile_Streamer_Desc"], name), string.format("www.twitch.tv/%s", twitchName), ttAnchor)
+        CreateTooltipTwo(button, string.format("|A:%s:%d:%d|a %s%s|r", icon, iconSize, iconSize, color, string.format(L["Profile_Label"], name)), string.format(L["Profile_Streamer_Desc"], name), string.format("www.twitch.tv/%s", twitchName), ttAnchor)
     end
 
     return button
@@ -3508,12 +3514,12 @@ local function guiProfiles()
     frame.coreText:SetText(L["Profile_Core"])
 
     frame.streamerText = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    frame.streamerText:SetPoint("TOP", frame.coreText, "BOTTOM", 0, -55)
+    frame.streamerText:SetPoint("TOP", frame.coreText, "BOTTOM", 0, -79)
     frame.streamerText:SetText(L["Profile_Streamers"])
 
     frame.infoText = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     frame.infoText:SetPoint("BOTTOM", frame, "BOTTOM", 2, 50)
-    frame.infoText:SetText(L["Profile_Info_Message"])
+    frame.infoText:SetText("")--(L["Profile_Info_Message"])
     frame.infoText:SetWidth(100)
 
     frame:SetSize(130, parent:GetHeight())
@@ -3619,6 +3625,18 @@ local function guiGeneralTab()
     end)
     BetterBlizzFrames:HookScript("OnHide",function()
         midnightBeta:Hide()
+    end)
+
+    BetterBlizzFrames.settingsBugText = BetterBlizzFrames:CreateFontString(nil, "BACKGROUND", "GameFontNormal")
+    BetterBlizzFrames.settingsBugText:SetPoint("TOP", SettingsPanel, "BOTTOM", 0, -4)
+    BetterBlizzFrames.settingsBugText:SetText("|cffff4040Blizzard Bug: Settings not saving. Check FOREVER section for info.|r")
+    BetterBlizzFrames.settingsBugText:SetFont("Fonts\\FRIZQT__.TTF", 32, "OUTLINE")
+    BetterBlizzFrames.settingsBugText:Hide()
+    BetterBlizzFrames:HookScript("OnShow", function()
+        BetterBlizzFrames.settingsBugText:Show()
+    end)
+    BetterBlizzFrames:HookScript("OnHide", function()
+        BetterBlizzFrames.settingsBugText:Hide()
     end)
 
     local newSearch = BetterBlizzFrames:CreateTexture(nil, "BACKGROUND")
@@ -3752,6 +3770,7 @@ local function guiGeneralTab()
     local darkModeUi = CreateCheckbox("darkModeUi", L["Dark_Mode"], BetterBlizzFrames)
     darkModeUi:SetPoint("TOPLEFT", hideLossOfControlFrameLines, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     darkModeUi:HookScript("OnClick", function()
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         BBF.DarkmodeFrames(true)
     end)
     CreateTooltip(darkModeUi, L["Tooltip_Dark_Mode"])
@@ -3759,6 +3778,7 @@ local function guiGeneralTab()
     local darkModeActionBars = CreateCheckbox("darkModeActionBars", L["ActionBars"], darkModeUi)
     darkModeActionBars:SetPoint("TOPLEFT", darkModeUi, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     darkModeActionBars:HookScript("OnClick", function()
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         BBF.DarkmodeFrames(true)
     end)
     CreateTooltip(darkModeActionBars, L["Dark_Borders_ActionBars"])
@@ -5416,7 +5436,7 @@ local function guiGeneralTab()
 
     do
         local classes = {}
-        for classID = 1, (GetNumClasses and GetNumClasses()) or MAX_CLASSES do
+        for classID = 1, (GetNumClasses and GetNumClasses()) or 13 do
             local _, classTag = GetClassInfo(classID)
             if classTag then
                 table.insert(classes, {key = classTag, name = FormatClassName(classTag)})
@@ -7262,15 +7282,48 @@ local function guiForever()
     bgImg:SetVertexColor(0,0,0)
 
     local headerText = guiForever:CreateFontString(nil, "OVERLAY", "GameFontNormalHuge")
-    headerText:SetPoint("TOP", guiForever, "TOP", -8, -150)
-    headerText:SetText("|cffffd100In development...|r")
+    headerText:SetPoint("TOP", guiForever, "TOP", -8, -100)
+    headerText:SetText("|cffffd100" .. L["Forever_In_Development"] .. "|r")
 
     local bodyText = guiForever:CreateFontString(nil, "OVERLAY", "GameFontHighlightLarge")
     bodyText:SetPoint("TOP", headerText, "BOTTOM", 0, -20)
     bodyText:SetWidth(500)
     bodyText:SetJustifyH("CENTER")
     bodyText:SetSpacing(6)
-    bodyText:SetText("The WoW: Forever version of BetterBlizzFrames is under heavy development. Expect bugs and please report them so I can more easily fix em! Thank you!\n\n- Bodify")
+    bodyText:SetText(L["Forever_In_Development_Desc"])
+
+    local bugTitle = guiForever:CreateFontString(nil, "OVERLAY", "GameFontNormalHuge")
+    bugTitle:SetPoint("TOP", bodyText, "BOTTOM", 0, -30)
+    bugTitle:SetText("|cffff4040" .. L["Forever_Blizzard_Bug"] .. "|r")
+
+    local bugText = guiForever:CreateFontString(nil, "OVERLAY", "GameFontHighlightLarge")
+    bugText:SetPoint("TOP", bugTitle, "BOTTOM", 0, -12)
+    bugText:SetWidth(500)
+    bugText:SetJustifyH("CENTER")
+    bugText:SetSpacing(6)
+    bugText:SetText(L["Forever_Blizzard_Bug_Desc"])
+
+    local discordLinkEditBox = CreateFrame("EditBox", nil, guiForever, "InputBoxTemplate")
+    discordLinkEditBox:SetPoint("TOP", bugText, "BOTTOM", 0, -12)
+    discordLinkEditBox:SetSize(180, 20)
+    discordLinkEditBox:SetAutoFocus(false)
+    discordLinkEditBox:SetFontObject("ChatFontNormal")
+    discordLinkEditBox:SetText("https://discord.gg/cjqVaEMm25")
+    discordLinkEditBox:SetCursorPosition(0)
+    discordLinkEditBox:ClearFocus()
+    discordLinkEditBox:SetScript("OnEscapePressed", function(self)
+        self:ClearFocus()
+    end)
+    discordLinkEditBox:SetScript("OnTextChanged", function(self)
+        self:SetText("https://discord.gg/cjqVaEMm25")
+    end)
+    discordLinkEditBox:SetScript("OnCursorChanged", function() end)
+    discordLinkEditBox:SetScript("OnEditFocusGained", function(self) self:HighlightText() end)
+    discordLinkEditBox:SetScript("OnMouseUp", function(self)
+        if not self:IsMouseOver() then
+            self:ClearFocus()
+        end
+    end)
 end
 
 local function guiPositionAndScale()
@@ -9778,7 +9831,7 @@ local function guiMisc()
 
     local contentFrame = CreateFrame("Frame", nil, scrollFrame)
     contentFrame.name = guiMisc.name
-    contentFrame:SetSize(680, 980)
+    contentFrame:SetSize(680, 1060)
     scrollFrame:SetScrollChild(contentFrame)
 
     local function CreateSectionHeader(text, atlas, iconWidth, iconHeight, relativeTo, relativePoint, x, y)
@@ -10415,9 +10468,25 @@ local function guiMisc()
     end)
 
     ----------------------
+    -- Forever Tweaks:
+    ----------------------
+    local foreverTweaksText = CreateSectionHeader(L["Forever_Tweaks"], "UI-HUD-UnitFrame-SmallCircle", 20, 20, contentFrame, "TOPLEFT", 377, -7)
+
+    local classicFramesBronzeTint = CreateCheckbox("classicFramesBronzeTint", L["Bronze_Tint_Classic_Frames"], contentFrame, nil, BBF.UpdateBronzeTint)
+    classicFramesBronzeTint:SetPoint("TOPLEFT", foreverTweaksText, "BOTTOMLEFT", -24, pixelsOnFirstBox)
+    CreateTooltipTwo(classicFramesBronzeTint, L["Bronze_Tint_Classic_Frames"], L["Tooltip_Bronze_Tint_Classic_Frames_Desc"])
+
+    local removeActionBarBronzeTint = CreateCheckbox("removeActionBarBronzeTint", L["Remove_ActionBar_Bronze_Tint"], contentFrame, nil, BBF.UpdateActionBarBronzeTint)
+    removeActionBarBronzeTint:SetPoint("TOPLEFT", classicFramesBronzeTint, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(removeActionBarBronzeTint, L["Remove_ActionBar_Bronze_Tint"], L["Tooltip_Remove_ActionBar_Bronze_Tint_Desc"])
+    removeActionBarBronzeTint:HookScript("OnClick", function(self)
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
+    end)
+
+    ----------------------
     -- Hide Stuff:
     ----------------------
-    local hideStuffText = CreateSectionHeader(L["Hide_Stuff"], "transmog-icon-remove", 20, 20, contentFrame, "TOPLEFT", 377, -7)
+    local hideStuffText = CreateSectionHeader(L["Hide_Stuff"], "transmog-icon-remove", 20, 20, removeActionBarBronzeTint, "BOTTOMLEFT", 24, -16)
 
     local minimizeObjectiveTracker = CreateCheckbox("minimizeObjectiveTracker", L["Minimize_Objective_Better"], contentFrame, nil, BBF.MinimizeObjectiveTracker)
     minimizeObjectiveTracker:SetPoint("TOPLEFT", hideStuffText, "BOTTOMLEFT", -24, pixelsOnFirstBox)
@@ -10577,8 +10646,20 @@ local function guiMisc()
         end
     end)
 
+    local classicMinimap = CreateCheckbox("classicMinimap", L["Classic_Minimap"], contentFrame)
+    classicMinimap:SetPoint("TOPLEFT", moveQueueStatusEye, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(classicMinimap, L["Classic_Minimap"], L["Tooltip_Classic_Minimap_Desc"])
+    classicMinimap:HookScript("OnClick", function(self)
+        if self:GetChecked() then
+            BBF.ClassicMinimap()
+            BBF.DarkmodeFrames()
+        else
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
+        end
+    end)
+
     local reduceEditModeSelectionAlpha = CreateCheckbox("reduceEditModeSelectionAlpha", L["Reduce_Edit_Mode_Glow"], contentFrame)
-    reduceEditModeSelectionAlpha:SetPoint("TOPLEFT", moveQueueStatusEye, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    reduceEditModeSelectionAlpha:SetPoint("TOPLEFT", classicMinimap, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(reduceEditModeSelectionAlpha, L["Reduce_Edit_Mode_Glow"], L["Tooltip_Reduce_Edit_Mode_Glow_Desc"])
     reduceEditModeSelectionAlpha:HookScript("OnClick", function(self)
         if self:GetChecked() then
@@ -11305,7 +11386,8 @@ function BBF.CreateIntroMessageWindow()
         local noteText = additionalNote or ""
         local color = CLASS_COLORS[class] or "|cffffffff"
         local icon = CLASS_ICONS[class] or "groupfinder-icon-role-leader"
-        local profileText = string.format("|A:%s:16:16|a %s%s|r", icon, color, string.format(L["Profile_Label"], profileName))
+        local iconSize = class == "FOREVER" and 28 or 16
+        local profileText = string.format("|A:%s:%d:%d|a %s%s|r", icon, iconSize, iconSize, color, string.format(L["Profile_Label"], profileName))
         local confirmationText = titleText .. string.format(L["Profile_Confirmation_Text_Intro"], profileText, noteText)
         BBF.GetPopup("BBF_CONFIRM_PROFILE").text = confirmationText
         BBF.ShowPopup("BBF_CONFIRM_PROFILE", nil, nil, { func = profileFunction })
@@ -11321,8 +11403,13 @@ function BBF.CreateIntroMessageWindow()
     end)
     bodifyButton:SetPoint("TOP", description1, "BOTTOM", 75, -20)
 
+    local foreverButton = CreateClassButton(BBF.IntroMessageWindow, "FOREVER", "Forever", nil, function()
+        ShowProfileConfirmation("Forever", "FOREVER", function() BBF.ApplyProfile("Forever") end)
+    end)
+    foreverButton:SetPoint("TOP", starterButton, "BOTTOM", 75, btnGap)
+
     local orText = BBF.IntroMessageWindow:CreateFontString(nil, "OVERLAY", "GameFontNormalMed2")
-    orText:SetPoint("CENTER", bodifyButton, "BOTTOM", -75, -20)
+    orText:SetPoint("CENTER", foreverButton, "BOTTOM", 0, -20)
     orText:SetText(L["OR"])
     orText:SetJustifyH("CENTER")
 

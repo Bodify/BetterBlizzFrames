@@ -145,3 +145,195 @@ function BBF.ApplyPlayerLevelColor()
 end
 
 hooksecurefunc("PlayerFrame_UpdateLevel", BBF.ApplyPlayerLevelColor)
+
+local BRONZE_R, BRONZE_G, BRONZE_B = 1, 0.678, 0.49
+local bronzedTextures = {}
+
+local function BronzeTintActive()
+    local db = BetterBlizzFramesDB
+    return db.classicFrames and db.classicFramesBronzeTint and not db.darkModeUi and not db.classColorFrameTexture
+end
+
+local function SetBronze(texture)
+    texture.bbfBronzeChanging = true
+    texture:SetVertexColor(BRONZE_R, BRONZE_G, BRONZE_B, 1)
+    texture.bbfBronzeChanging = false
+end
+
+local function BronzeTexture(texture)
+    if not texture or texture:IsForbidden() then return end
+    if not texture.bbfBronzeHooked then
+        texture.bbfBronzeHooked = true
+        tinsert(bronzedTextures, texture)
+        hooksecurefunc(texture, "SetVertexColor", function(self)
+            if self.bbfBronzeChanging or not BronzeTintActive() then return end
+            SetBronze(self)
+        end)
+    end
+    SetBronze(texture)
+end
+
+local function GetUnitFrameBorderTextures()
+    local textures = {
+        PlayerFrame.PlayerFrameContainer.FrameTexture,
+        PlayerFrame.PlayerFrameContainer.FrameTextureBBF,
+        PlayerFrame.PlayerFrameContainer.AlternatePowerFrameTexture,
+        PlayerFrame.PlayerFrameContainer.VehicleFrameTexture,
+        TargetFrame.TargetFrameContainer.FrameTexture,
+        TargetFrame.TargetFrameContainer.FrameTextureBBF,
+        TargetFrame.totFrame and TargetFrame.totFrame.FrameTexture,
+        FocusFrame and FocusFrame.TargetFrameContainer.FrameTexture,
+        FocusFrameToT and FocusFrameToT.FrameTexture,
+        PetFrameTexture,
+    }
+    for i = 1, 5 do
+        local boss = _G["Boss" .. i .. "TargetFrame"]
+        if boss then
+            tinsert(textures, boss.TargetFrameContainer.FrameTexture)
+        end
+    end
+    if PartyFrame then
+        for i = 1, 4 do
+            local member = PartyFrame["MemberFrame" .. i]
+            if member then
+                tinsert(textures, member.Texture)
+            end
+        end
+    end
+    return textures
+end
+
+local PVP_CIRCLE_R, PVP_CIRCLE_G, PVP_CIRCLE_B = 1, 0.9, 0.19
+
+local function GetPvpCircles()
+    return {
+        PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.PvpBackgroundCircle,
+        TargetFrame.TargetFrameContent.TargetFrameContentContextual.PvpBackgroundCircle,
+        FocusFrame and FocusFrame.TargetFrameContent.TargetFrameContentContextual.PvpBackgroundCircle,
+    }
+end
+
+function BBF.UpdateClassicPvpCircles()
+    if not BetterBlizzFramesDB.classicFrames then return end
+    local r, g, b = PVP_CIRCLE_R, PVP_CIRCLE_G, PVP_CIRCLE_B
+    if BronzeTintActive() then
+        r, g, b = BRONZE_R, BRONZE_G, BRONZE_B
+    end
+    for _, circle in pairs(GetPvpCircles()) do
+        if not circle:IsForbidden() then
+            circle:SetDesaturated(true)
+            circle:SetVertexColor(r, g, b, 1)
+        end
+    end
+end
+
+function BBF.UpdateBronzeTint()
+    BBF.UpdateClassicPvpCircles()
+    if BronzeTintActive() then
+        for _, texture in pairs(GetUnitFrameBorderTextures()) do
+            BronzeTexture(texture)
+        end
+    elseif not BetterBlizzFramesDB.darkModeUi then
+        for _, texture in ipairs(bronzedTextures) do
+            if not texture:IsForbidden() then
+                texture:SetVertexColor(1, 1, 1, 1)
+            end
+        end
+    end
+end
+
+local bagSlotNames = {"MainMenuBarBackpackButton", "CharacterBag0Slot", "CharacterBag1Slot", "CharacterBag2Slot", "CharacterBag3Slot"}
+local bagSlotIconNames = {"MainMenuBarBackpackButton", "CharacterBag0Slot", "CharacterBag1Slot", "CharacterBag2Slot", "CharacterBag3Slot", "CharacterReagentBag0Slot"}
+local desaturatedIconNames = {"MainMenuBarBackpackButton", "CharacterBag0Slot", "CharacterBag1Slot", "CharacterBag2Slot", "CharacterBag3Slot", "CharacterReagentBag0Slot", "KeyRingButton"}
+local actionButtonPrefixes = {"ActionButton", "MultiBarBottomLeftButton", "MultiBarBottomRightButton", "MultiBarRightButton", "MultiBarLeftButton", "MultiBar5Button", "MultiBar6Button", "MultiBar7Button", "PetActionButton", "StanceButton"}
+
+local function ActionBarBronzeRemovalActive()
+    local db = BetterBlizzFramesDB
+    return db.removeActionBarBronzeTint and not (db.darkModeUi and db.darkModeActionBars)
+end
+
+local function ReapplyDesaturated(self)
+    if self.bbfDesatChanging or not ActionBarBronzeRemovalActive() then return end
+    self.bbfDesatChanging = true
+    self:SetDesaturated(true)
+    self.bbfDesatChanging = false
+end
+
+local function ForceDesaturated(texture)
+    if not texture or texture:IsForbidden() then return end
+    if not texture.bbfDesatHooked then
+        texture.bbfDesatHooked = true
+        hooksecurefunc(texture, "SetDesaturated", ReapplyDesaturated)
+        hooksecurefunc(texture, "SetTexture", ReapplyDesaturated)
+        hooksecurefunc(texture, "SetAtlas", ReapplyDesaturated)
+    end
+    texture:SetDesaturated(true)
+end
+
+function BBF.UpdateActionBarBronzeTint()
+    if not ActionBarBronzeRemovalActive() then return end
+    if BBF.ApplyActionBarArt then
+        BBF.ApplyActionBarArt(true, 1, 1)
+    end
+    for _, slotName in ipairs(desaturatedIconNames) do
+        local slot = _G[slotName]
+        ForceDesaturated(slot and slot.icon)
+    end
+    for _, prefix in ipairs(actionButtonPrefixes) do
+        for i = 1, 12 do
+            local button = _G[prefix .. i]
+            ForceDesaturated(button and button.SlotArt)
+        end
+    end
+end
+
+local bagSlotTextureKeys = {"NormalTexture", "PushedTexture", "HighlightTexture", "SlotHighlightTexture"}
+
+local function ReapplyDarkModeColor(texture)
+    if texture and texture.bbfHooked and not texture:IsForbidden() then
+        texture:SetVertexColor(texture:GetVertexColor())
+    end
+end
+
+function BBF.UpdateBagSlotTextures()
+    for _, slotName in ipairs(bagSlotIconNames) do
+        local slot = _G[slotName]
+        if slot then
+            if not slot.bbfBagSlotHooked and slot.UpdateTextures then
+                slot.bbfBagSlotHooked = true
+                hooksecurefunc(slot, "UpdateTextures", BBF.UpdateBagSlotTextures)
+            end
+            if slot.icon and (slot == MainMenuBarBackpackButton or not GetInventoryItemTexture("player", slot:GetID())) then
+                slot.icon:SetAtlas("UI-HUD-ActionBar-IconFrame-Slot")
+            end
+        end
+    end
+    local source = CharacterReagentBag0Slot
+    if not source then return end
+    for _, key in ipairs(bagSlotTextureKeys) do
+        local sourceTexture = source[key]
+        local atlas = sourceTexture and sourceTexture:GetAtlas()
+        if atlas then
+            for _, slotName in ipairs(bagSlotNames) do
+                local slot = _G[slotName]
+                local texture = slot and slot[key]
+                if texture then
+                    texture:SetAtlas(atlas)
+                end
+            end
+        end
+    end
+    for _, slotName in ipairs(bagSlotIconNames) do
+        local slot = _G[slotName]
+        if slot then
+            ReapplyDarkModeColor(slot.NormalTexture)
+            ReapplyDarkModeColor(slot.PushedTexture)
+        end
+    end
+end
+
+function BBF.ForeverTweaks()
+    BBF.UpdateBagSlotTextures()
+    BBF.UpdateBronzeTint()
+    BBF.UpdateActionBarBronzeTint()
+end

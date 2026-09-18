@@ -2741,7 +2741,7 @@ end
 
 function BBF.FixLegacyComboPointsLocation()
     if BetterBlizzFramesDB.legacyCombosTurnedOff and not BetterBlizzFramesDB.enableLegacyComboPoints then
-        C_CVar.SetCVar("comboPointLocation", "2")
+        C_CVar.SetCVar("comboPointLocation", "1") -- Set it to 1 on WoW forever cuz 2 does nothing
         return
     end
     if BetterBlizzFramesDB.enableLegacyComboPoints then
@@ -5029,6 +5029,7 @@ Frame:SetScript("OnEvent", function(...)
             BBF.ArenaOptimizer(nil, true)
             -- add setings updates
             BBF.AllNameChanges()
+            BBF.ClassicMinimap()
             BBF.UpdateUserDarkModeSettings()
             HookClassComboPoints()
             BBF.FadeMicroMenu()
@@ -5050,6 +5051,7 @@ Frame:SetScript("OnEvent", function(...)
             BBF.MoveToTFrames()
             BBF.UpdateUserAuraSettings()
             BBF.DarkmodeFrames()
+            BBF.ForeverTweaks()
             BBF.HookPlayerAndTargetAuras()
             BBF.HookFrameTextureColor()
 
@@ -5601,6 +5603,7 @@ eventFrame:SetScript("OnEvent", OnVariablesLoaded)
 local PlayerEnteringWorld = CreateFrame("frame")
 PlayerEnteringWorld:SetScript("OnEvent", function()
     BBF.DarkmodeFrames()
+    BBF.ForeverTweaks()
     BBF.ClickthroughFrames()
     BBF.CheckForAuraBorders()
 end)
