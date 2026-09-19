@@ -1115,10 +1115,12 @@ local function CreateSlider(parent, label, minValue, maxValue, stepValue, elemen
         slider:SetWidth(sliderWidth)
     end
 
+    local allowsNegative = axis == "X" or axis == "Y" or minValue < 0
+
     local function UpdateSliderRange(newValue, minValue, maxValue)
         newValue = tonumber(newValue) -- Convert newValue to a number
 
-        if (axis == "X" or axis == "Y") and (newValue < minValue or newValue > maxValue) then
+        if allowsNegative and (newValue < minValue or newValue > maxValue) then
             -- For X or Y axis: extend the range by ±30
             local newMinValue = math.min(newValue - 30, minValue)
             local newMaxValue = math.max(newValue + 30, maxValue)
@@ -1182,7 +1184,7 @@ local function CreateSlider(parent, label, minValue, maxValue, stepValue, elemen
         local inputValue = tonumber(editBox:GetText())
         if inputValue then
             -- Check if it's a non-axis slider and inputValue is <= 0
-            if (axis ~= "X" and axis ~= "Y") and inputValue <= 0 then
+            if not allowsNegative and inputValue <= 0 then
                 inputValue = 0.1  -- Set to minimum allowed value for non-axis sliders
             end
             if slider.integerOnly then

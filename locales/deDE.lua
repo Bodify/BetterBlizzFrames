@@ -1607,7 +1607,7 @@ L["Module_Name_Support"] = "Unterstützen"
 
 L["Forever_Tweaks"] = "Forever-Anpassungen"
 L["Bronze_Tint_Classic_Frames"] = "Bronzetönung für Classic-Fenster"
-L["Tooltip_Bronze_Tint_Classic_Frames_Desc"] = "Gibt den Einheitenrahmen der Classic-Fenster die Bronzetönung von WoW: Forever.\n\nErfordert Classic-Fenster. Der Dunkelmodus hat Vorrang, wenn er aktiviert ist."
+L["Tooltip_Bronze_Tint_Classic_Frames_Desc"] = "Gibt den Einheitenrahmen der Classic-Fenster die Bronzetönung von WoW: Forever.\n\nErfordert Classic-Fenster. Der Dunkelmodus hat Vorrang, wenn er aktiviert ist." --needsUpdate
 L["Remove_ActionBar_Bronze_Tint"] = "Bronzetönung der Aktionsleisten entfernen"
 L["Tooltip_Remove_ActionBar_Bronze_Tint_Desc"] = "Entsättigt die Aktionsleisten-Grafiken, um die Bronzetönung von WoW: Forever zu entfernen.\n\nDer Dunkelmodus für Aktionsleisten hat Vorrang, wenn er aktiviert ist."
 L["Forever_In_Development"] = "In Entwicklung..."

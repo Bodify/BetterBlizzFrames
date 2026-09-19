@@ -47,6 +47,38 @@ local function SetStatusGlowTexture(texture, normal, big)
     SetPlayerFrameTexture(texture, normal, big)
 end
 
+local eliteOverlayClassifications = { elite = true, worldboss = true, rareelite = true }
+local ELITE_OVERLAY_R, ELITE_OVERLAY_G, ELITE_OVERLAY_B = 1, 0.816, 0.251
+
+function BBF.UpdateClassicEliteOverlay(frame)
+    local classicFrame = frame and frame.ClassicFrame
+    if not classicFrame or not classicFrame.Texture then return end
+    local db = BetterBlizzFramesDB
+    local classification = frame.unit and UnitExists(frame.unit) and UnitClassification(frame.unit)
+    local overlay = classicFrame.EliteOverlay
+    if not (db.classicFrames and db.darkModeUi and not db.darkModeEliteTexture and not db.hideRareDragonTexture and eliteOverlayClassifications[classification]) then
+        if overlay then overlay:Hide() end
+        return
+    end
+    if not overlay then
+        overlay = classicFrame:CreateTexture(nil, "OVERLAY")
+        overlay:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\eliteOverlayClassic")
+        overlay:SetAllPoints(classicFrame.Texture)
+        classicFrame.EliteOverlay = overlay
+    end
+    local layer, subLevel = classicFrame.Texture:GetDrawLayer()
+    overlay:SetDrawLayer(layer, math.min((subLevel or 0) + 1, 7))
+    overlay:SetTexCoord(classicFrame.Texture:GetTexCoord())
+    if classification == "rareelite" then
+        overlay:SetDesaturated(true)
+        overlay:SetVertexColor(1, 1, 1, 1)
+    else
+        overlay:SetDesaturated(false)
+        overlay:SetVertexColor(ELITE_OVERLAY_R, ELITE_OVERLAY_G, ELITE_OVERLAY_B, 1)
+    end
+    overlay:Show()
+end
+
 local function MakeClassicFrame(frame)
     local db = BetterBlizzFramesDB
     local hideLvl = db.hideLevelText
@@ -381,6 +413,7 @@ local function MakeClassicFrame(frame)
                     ToggleNoLevelFrame(false)
                 end
             end
+            BBF.UpdateClassicEliteOverlay(self)
         end)
 
         hooksecurefunc(frame, "CheckFaction", function(self)

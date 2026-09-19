@@ -1,3 +1,22 @@
+# BetterBlizzFrames 2.1.0b
+## Forever
+### Tweak
+- Bronze Tint for Classic Frames setting now also does Castbars and Minimap and has had its color tweaked slightly.
+- Fix legacy combo points being misaligned a bit and fix the settings for them in Misc section.
+- Some position tweaks for classic minimap setting.
+- "Hide Realm Names" removed in favour of "Hide 2nd Name" setting instead. This was causing names to only show first name. The setting is now reset and off by default.
+### Bugfix
+- Fix bag icons being desaturated by the "Remove Bronze Tint from ActionBars" setting.
+- Fix the main bag icon being hidden.
+- Fix "Hide Mana Feedback" sometimes showing the feedback animation again.
+- Fix the PvP faction icon on the PlayerFrame sometimes being hidden.
+## All versions
+### Tweak
+- Classic Frames: The elite dragon on Target/Focus now keeps its normal gold/silver color when using Dark Mode. If you are using a texture pack or smth you may have to replace the "eliteOverlayClassic.tga" file in the BBF media folder.
+### Bugfix
+- Fix an issue that would cause a lua error in combination with TRP3
+
+
 # BetterBlizzFrames 2.1.0
 ## Forever
 ## PSA

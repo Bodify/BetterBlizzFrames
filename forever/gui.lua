@@ -1115,10 +1115,12 @@ local function CreateSlider(parent, label, minValue, maxValue, stepValue, elemen
         slider:SetWidth(sliderWidth)
     end
 
+    local allowsNegative = axis == "X" or axis == "Y" or minValue < 0
+
     local function UpdateSliderRange(newValue, minValue, maxValue)
         newValue = tonumber(newValue) -- Convert newValue to a number
 
-        if (axis == "X" or axis == "Y") and (newValue < minValue or newValue > maxValue) then
+        if allowsNegative and (newValue < minValue or newValue > maxValue) then
             -- For X or Y axis: extend the range by ±30
             local newMinValue = math.min(newValue - 30, minValue)
             local newMaxValue = math.max(newValue + 30, maxValue)
@@ -1182,7 +1184,7 @@ local function CreateSlider(parent, label, minValue, maxValue, stepValue, elemen
         local inputValue = tonumber(editBox:GetText())
         if inputValue then
             -- Check if it's a non-axis slider and inputValue is <= 0
-            if (axis ~= "X" and axis ~= "Y") and inputValue <= 0 then
+            if not allowsNegative and inputValue <= 0 then
                 inputValue = 0.1  -- Set to minimum allowed value for non-axis sliders
             end
             if slider.integerOnly then
@@ -5869,9 +5871,9 @@ local function guiGeneralTab()
         BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     end)
 
-    local removeRealmNames = CreateCheckbox("removeRealmNames", L["Hide_Realm"], BetterBlizzFrames)
+    local removeRealmNames = CreateCheckbox("removeRealmNames", L["Hide_2nd_Name"], BetterBlizzFrames)
     removeRealmNames:SetPoint("LEFT", centerNames.text, "RIGHT", 0, 0)
-    CreateTooltipTwo(removeRealmNames, L["Tooltip_Hide_Realm_Indicator_Title"], L["Tooltip_Hide_Realm_Desc"])
+    CreateTooltipTwo(removeRealmNames, L["Hide_2nd_Name"], L["Tooltip_Hide_2nd_Name_Desc"])
 
     local formatStatusBarText = CreateCheckbox("formatStatusBarText", L["Format_Numbers"], BetterBlizzFrames, nil, BBF.HookStatusBarText)
     formatStatusBarText:SetPoint("TOPLEFT", centerNames, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
@@ -10166,13 +10168,13 @@ local function guiMisc()
             defaultButton:SetPoint("BOTTOM", f, "BOTTOM", 0, 10)
 
             defaultButton:SetScript("OnClick", function()
-                BetterBlizzFramesDB.legacyComboXPos = -28
-                BetterBlizzFramesDB.legacyComboYPos = -25
-                BetterBlizzFramesDB.legacyComboScale = 0.85
+                BetterBlizzFramesDB.legacyComboXPos = -28.5
+                BetterBlizzFramesDB.legacyComboYPos = -13
+                BetterBlizzFramesDB.legacyComboScale = 1
                 BBF.UpdateLegacyComboPosition()
-                sizeSlider:SetValue(0.85)
-                xOffsetSlider:SetValue(-28)
-                yOffsetSlider:SetValue(-25)
+                sizeSlider:SetValue(1)
+                xOffsetSlider:SetValue(-28.5)
+                yOffsetSlider:SetValue(-13)
             end)
 
             f:Hide()

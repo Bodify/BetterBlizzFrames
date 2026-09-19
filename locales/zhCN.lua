@@ -1608,7 +1608,7 @@ L["Module_Name_Support"] = "支持"
 
 L["Forever_Tweaks"] = "Forever 调整"
 L["Bronze_Tint_Classic_Frames"] = "经典框架青铜色调"
-L["Tooltip_Bronze_Tint_Classic_Frames_Desc"] = "为经典框架的单位框架边框添加 WoW: Forever 的青铜色调。\n\n需要启用经典框架。启用暗色模式时暗色模式优先。"
+L["Tooltip_Bronze_Tint_Classic_Frames_Desc"] = "为经典框架的单位框架边框添加 WoW: Forever 的青铜色调。\n\n需要启用经典框架。启用暗色模式时暗色模式优先。" --needsUpdate
 L["Remove_ActionBar_Bronze_Tint"] = "移除动作条青铜色调"
 L["Tooltip_Remove_ActionBar_Bronze_Tint_Desc"] = "降低动作条美术的饱和度以移除 WoW: Forever 的青铜色调。\n\n启用动作条暗色模式时暗色模式优先。"
 L["Forever_In_Development"] = "开发中..."

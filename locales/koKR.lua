@@ -1608,7 +1608,7 @@ L["Module_Name_Support"] = "후원"
 
 L["Forever_Tweaks"] = "Forever 조정"
 L["Bronze_Tint_Classic_Frames"] = "클래식 프레임 청동 색조"
-L["Tooltip_Bronze_Tint_Classic_Frames_Desc"] = "클래식 프레임의 유닛 프레임 테두리에 WoW: Forever의 청동 색조를 적용합니다.\n\n클래식 프레임이 필요합니다. 다크 모드가 활성화되어 있으면 다크 모드가 우선합니다."
+L["Tooltip_Bronze_Tint_Classic_Frames_Desc"] = "클래식 프레임의 유닛 프레임 테두리에 WoW: Forever의 청동 색조를 적용합니다.\n\n클래식 프레임이 필요합니다. 다크 모드가 활성화되어 있으면 다크 모드가 우선합니다." --needsUpdate
 L["Remove_ActionBar_Bronze_Tint"] = "행동 단축바 청동 색조 제거"
 L["Tooltip_Remove_ActionBar_Bronze_Tint_Desc"] = "행동 단축바 그래픽의 채도를 낮춰 WoW: Forever의 청동 색조를 제거합니다.\n\n행동 단축바 다크 모드가 활성화되어 있으면 다크 모드가 우선합니다."
 L["Forever_In_Development"] = "개발 중..."

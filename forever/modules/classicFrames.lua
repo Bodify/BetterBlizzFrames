@@ -381,6 +381,7 @@ local function MakeClassicFrame(frame)
                     ToggleNoLevelFrame(false)
                 end
             end
+            BBF.UpdateClassicEliteOverlay(self)
         end)
 
         hooksecurefunc(frame, "CheckFaction", function(self)

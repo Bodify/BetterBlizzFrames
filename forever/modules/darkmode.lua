@@ -766,6 +766,10 @@ function BBF.DarkmodeFrames(bypass)
         applySettings(TargetFrame.TargetFrameContainer.BossPortraitFrameTexture, d, v)
         applySettings(FocusFrame.TargetFrameContainer.BossPortraitFrameTexture, d, v)
     end
+    if BBF.UpdateClassicEliteOverlay then
+        BBF.UpdateClassicEliteOverlay(TargetFrame)
+        BBF.UpdateClassicEliteOverlay(FocusFrame)
+    end
 
 
     -- Applying settings based on BetterBlizzFramesDB.darkModeUi value

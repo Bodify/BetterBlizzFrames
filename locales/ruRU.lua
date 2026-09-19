@@ -1607,7 +1607,7 @@ L["Module_Name_Support"] = "Поддержка"
 
 L["Forever_Tweaks"] = "Доработки Forever"
 L["Bronze_Tint_Classic_Frames"] = "Бронзовый оттенок классических рамок"
-L["Tooltip_Bronze_Tint_Classic_Frames_Desc"] = "Придаёт границам классических рамок юнитов бронзовый оттенок WoW: Forever.\n\nТребуются классические рамки. Темный режим имеет приоритет, если включен."
+L["Tooltip_Bronze_Tint_Classic_Frames_Desc"] = "Придаёт границам классических рамок юнитов бронзовый оттенок WoW: Forever.\n\nТребуются классические рамки. Темный режим имеет приоритет, если включен." --needsUpdate
 L["Remove_ActionBar_Bronze_Tint"] = "Убрать бронзовый оттенок с панелей команд"
 L["Tooltip_Remove_ActionBar_Bronze_Tint_Desc"] = "Обесцвечивает оформление панелей команд, убирая бронзовый оттенок WoW: Forever.\n\nТемный режим для панелей команд имеет приоритет, если включен."
 L["Forever_In_Development"] = "В разработке..."

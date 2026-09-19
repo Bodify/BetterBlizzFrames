@@ -1607,7 +1607,7 @@ L["Module_Name_Support"] = "Apoyo"
 
 L["Forever_Tweaks"] = "Ajustes de Forever"
 L["Bronze_Tint_Classic_Frames"] = "Tinte bronce en marcos clásicos"
-L["Tooltip_Bronze_Tint_Classic_Frames_Desc"] = "Aplica a los bordes de los marcos clásicos el tinte bronce de WoW: Forever.\n\nRequiere marcos clásicos. El modo oscuro tiene prioridad si está activado."
+L["Tooltip_Bronze_Tint_Classic_Frames_Desc"] = "Aplica a los bordes de los marcos clásicos el tinte bronce de WoW: Forever.\n\nRequiere marcos clásicos. El modo oscuro tiene prioridad si está activado." --needsUpdate
 L["Remove_ActionBar_Bronze_Tint"] = "Quitar tinte bronce de las barras de acción"
 L["Tooltip_Remove_ActionBar_Bronze_Tint_Desc"] = "Desatura el arte de las barras de acción para quitar el tinte bronce de WoW: Forever.\n\nEl modo oscuro para barras de acción tiene prioridad si está activado."
 L["Forever_In_Development"] = "En desarrollo..."

@@ -1607,7 +1607,7 @@ L["Module_Name_Support"] = "Soutien"
 
 L["Forever_Tweaks"] = "Ajustements Forever"
 L["Bronze_Tint_Classic_Frames"] = "Teinte bronze des cadres classiques"
-L["Tooltip_Bronze_Tint_Classic_Frames_Desc"] = "Applique aux bordures des cadres classiques la teinte bronze de WoW: Forever.\n\nNécessite les cadres classiques. Le mode sombre est prioritaire s'il est activé."
+L["Tooltip_Bronze_Tint_Classic_Frames_Desc"] = "Applique aux bordures des cadres classiques la teinte bronze de WoW: Forever.\n\nNécessite les cadres classiques. Le mode sombre est prioritaire s'il est activé." --needsUpdate
 L["Remove_ActionBar_Bronze_Tint"] = "Retirer la teinte bronze des barres d'action"
 L["Tooltip_Remove_ActionBar_Bronze_Tint_Desc"] = "Désature les graphismes des barres d'action pour retirer la teinte bronze de WoW: Forever.\n\nLe mode sombre des barres d'action est prioritaire s'il est activé."
 L["Forever_In_Development"] = "En développement..."

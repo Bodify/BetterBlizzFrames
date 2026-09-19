@@ -69,12 +69,30 @@ function BBF.BindLevelRings()
     end
 end
 
+local function RaisePvpIconAboveCircle(container)
+    local circle = container and container.PvpBackgroundCircle
+    local icon = container and container.PvpBackgroundIcon
+    if not circle or not icon then return end
+    local circleLayer, circleSubLevel = circle:GetDrawLayer()
+    local iconLayer, iconSubLevel = icon:GetDrawLayer()
+    if iconLayer == circleLayer and iconSubLevel <= circleSubLevel then
+        icon:SetDrawLayer(circleLayer, circleSubLevel + 1)
+    end
+end
+
+function BBF.FixPvpIconDrawOrder()
+    RaisePvpIconAboveCircle(PlayerFrame.PlayerFrameContent.PlayerFrameContentMain)
+    RaisePvpIconAboveCircle(TargetFrame.TargetFrameContent.TargetFrameContentContextual)
+    RaisePvpIconAboveCircle(FocusFrame.TargetFrameContent.TargetFrameContentContextual)
+end
+
 local loader = CreateFrame("Frame")
 loader:RegisterEvent("PLAYER_LOGIN")
 loader:SetScript("OnEvent", function(self)
     self:UnregisterEvent("PLAYER_LOGIN")
     BBF.BindLevelRings()
     BBF.ApplyPlayerLevelColor()
+    BBF.FixPvpIconDrawOrder()
 end)
 
 local pvpBadgeRegions = {}
@@ -146,27 +164,46 @@ end
 
 hooksecurefunc("PlayerFrame_UpdateLevel", BBF.ApplyPlayerLevelColor)
 
-local BRONZE_R, BRONZE_G, BRONZE_B = 1, 0.678, 0.49
+local BRONZE_R, BRONZE_G, BRONZE_B = 0.95, 0.68, 0.35
+local MINIMAP_BRONZE_R, MINIMAP_BRONZE_G, MINIMAP_BRONZE_B = 1, 0.71, 0.34
 local bronzedTextures = {}
+local bronzedMinimapTextures = {}
 
 local function BronzeTintActive()
     local db = BetterBlizzFramesDB
     return db.classicFrames and db.classicFramesBronzeTint and not db.darkModeUi and not db.classColorFrameTexture
 end
 
+local function MinimapBronzeTintActive()
+    local db = BetterBlizzFramesDB
+    return db.classicMinimap and db.classicFramesBronzeTint and not (db.darkModeUi and db.darkModeMinimap)
+end
+
 local function SetBronze(texture)
     texture.bbfBronzeChanging = true
-    texture:SetVertexColor(BRONZE_R, BRONZE_G, BRONZE_B, 1)
+    if texture.bbfBronzeMinimap then
+        texture:SetDesaturated(true)
+        texture:SetVertexColor(MINIMAP_BRONZE_R, MINIMAP_BRONZE_G, MINIMAP_BRONZE_B, 1)
+    else
+        texture:SetDesaturated(true)
+        texture:SetVertexColor(BRONZE_R, BRONZE_G, BRONZE_B, 1)
+    end
     texture.bbfBronzeChanging = false
 end
 
-local function BronzeTexture(texture)
+local function BronzeTexture(texture, isMinimap)
     if not texture or texture:IsForbidden() then return end
     if not texture.bbfBronzeHooked then
         texture.bbfBronzeHooked = true
-        tinsert(bronzedTextures, texture)
+        texture.bbfBronzeMinimap = isMinimap
+        tinsert(isMinimap and bronzedMinimapTextures or bronzedTextures, texture)
         hooksecurefunc(texture, "SetVertexColor", function(self)
-            if self.bbfBronzeChanging or not BronzeTintActive() then return end
+            if self.bbfBronzeChanging then return end
+            if self.bbfBronzeMinimap then
+                if not MinimapBronzeTintActive() then return end
+            elseif not BronzeTintActive() then
+                return
+            end
             SetBronze(self)
         end)
     end
@@ -203,6 +240,38 @@ local function GetUnitFrameBorderTextures()
     return textures
 end
 
+local function GetClassicCastbarBorderTextures()
+    local db = BetterBlizzFramesDB
+    local textures = {}
+    if db.classicCastbars then
+        tinsert(textures, TargetFrameSpellBar and TargetFrameSpellBar.Border)
+        tinsert(textures, FocusFrameSpellBar and FocusFrameSpellBar.Border)
+    end
+    if db.classicCastbarsPlayer then
+        tinsert(textures, PlayerCastingBarFrame and PlayerCastingBarFrame.Border)
+        tinsert(textures, PetCastingBarFrame and PetCastingBarFrame.Border)
+    end
+    if db.classicCastbarsParty and db.showPartyCastbar then
+        for i = 1, 5 do
+            local partyCastbar = _G["Party" .. i .. "SpellBar"]
+            if partyCastbar then
+                tinsert(textures, partyCastbar.Border)
+            end
+        end
+    end
+    return textures
+end
+
+local function GetClassicMinimapTextures()
+    local textures = {}
+    if not BBF.classicMinimapTextures then return textures end
+    for _, texture in ipairs(BBF.classicMinimapTextures) do
+        tinsert(textures, texture)
+    end
+    tinsert(textures, MinimapCompassTexture)
+    return textures
+end
+
 local PVP_CIRCLE_R, PVP_CIRCLE_G, PVP_CIRCLE_B = 1, 0.9, 0.19
 
 local function GetPvpCircles()
@@ -227,15 +296,66 @@ function BBF.UpdateClassicPvpCircles()
     end
 end
 
+local eliteOverlayClassifications = { elite = true, worldboss = true, rareelite = true }
+local ELITE_OVERLAY_R, ELITE_OVERLAY_G, ELITE_OVERLAY_B = 1, 0.816, 0.251
+
+function BBF.UpdateClassicEliteOverlay(frame)
+    local classicFrame = frame and frame.ClassicFrame
+    if not classicFrame or not classicFrame.Texture then return end
+    local classification = frame.unit and UnitExists(frame.unit) and UnitClassification(frame.unit)
+    local db = BetterBlizzFramesDB
+    local darkModeKeepsDragon = db.classicFrames and db.darkModeUi and not db.darkModeEliteTexture
+    local overlay = classicFrame.EliteOverlay
+    if not ((BronzeTintActive() or darkModeKeepsDragon) and not db.hideRareDragonTexture and eliteOverlayClassifications[classification]) then
+        if overlay then overlay:Hide() end
+        return
+    end
+    if not overlay then
+        overlay = classicFrame:CreateTexture(nil, "OVERLAY")
+        overlay:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\eliteOverlayClassic")
+        overlay:SetAllPoints(classicFrame.Texture)
+        classicFrame.EliteOverlay = overlay
+    end
+    local layer, subLevel = classicFrame.Texture:GetDrawLayer()
+    overlay:SetDrawLayer(layer, math.min((subLevel or 0) + 1, 7))
+    overlay:SetTexCoord(classicFrame.Texture:GetTexCoord())
+    if classification == "rareelite" then
+        overlay:SetDesaturated(true)
+        overlay:SetVertexColor(1, 1, 1, 1)
+    else
+        overlay:SetDesaturated(false)
+        overlay:SetVertexColor(ELITE_OVERLAY_R, ELITE_OVERLAY_G, ELITE_OVERLAY_B, 1)
+    end
+    overlay:Show()
+end
+
 function BBF.UpdateBronzeTint()
     BBF.UpdateClassicPvpCircles()
+    BBF.UpdateClassicEliteOverlay(TargetFrame)
+    BBF.UpdateClassicEliteOverlay(FocusFrame)
     if BronzeTintActive() then
         for _, texture in pairs(GetUnitFrameBorderTextures()) do
+            BronzeTexture(texture)
+        end
+        for _, texture in pairs(GetClassicCastbarBorderTextures()) do
             BronzeTexture(texture)
         end
     elseif not BetterBlizzFramesDB.darkModeUi then
         for _, texture in ipairs(bronzedTextures) do
             if not texture:IsForbidden() then
+                texture:SetVertexColor(1, 1, 1, 1)
+            end
+        end
+    end
+
+    if MinimapBronzeTintActive() then
+        for _, texture in pairs(GetClassicMinimapTextures()) do
+            BronzeTexture(texture, true)
+        end
+    elseif not (BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeMinimap) then
+        for _, texture in ipairs(bronzedMinimapTextures) do
+            if not texture:IsForbidden() then
+                texture:SetDesaturated(false)
                 texture:SetVertexColor(1, 1, 1, 1)
             end
         end
@@ -252,22 +372,36 @@ local function ActionBarBronzeRemovalActive()
     return db.removeActionBarBronzeTint and not (db.darkModeUi and db.darkModeActionBars)
 end
 
+local emptyBagSlotAtlases = {
+    ["ui-hud-actionbar-iconframe-slot"] = true,
+    ["ui-hud-actionbar-iconframe-slot-small"] = true,
+}
+
+local function IsEmptyBagSlotArt(texture)
+    local atlas = texture:GetAtlas()
+    return atlas and emptyBagSlotAtlases[atlas:lower()] or false
+end
+
 local function ReapplyDesaturated(self)
     if self.bbfDesatChanging or not ActionBarBronzeRemovalActive() then return end
+    local desaturate = not self.bbfDesatCheck or self.bbfDesatCheck(self)
+    if not desaturate and not self.bbfDesatForced then return end
     self.bbfDesatChanging = true
-    self:SetDesaturated(true)
+    self.bbfDesatForced = desaturate
+    self:SetDesaturated(desaturate)
     self.bbfDesatChanging = false
 end
 
-local function ForceDesaturated(texture)
+local function ForceDesaturated(texture, check)
     if not texture or texture:IsForbidden() then return end
+    texture.bbfDesatCheck = check
     if not texture.bbfDesatHooked then
         texture.bbfDesatHooked = true
         hooksecurefunc(texture, "SetDesaturated", ReapplyDesaturated)
         hooksecurefunc(texture, "SetTexture", ReapplyDesaturated)
         hooksecurefunc(texture, "SetAtlas", ReapplyDesaturated)
     end
-    texture:SetDesaturated(true)
+    ReapplyDesaturated(texture)
 end
 
 function BBF.UpdateActionBarBronzeTint()
@@ -277,7 +411,7 @@ function BBF.UpdateActionBarBronzeTint()
     end
     for _, slotName in ipairs(desaturatedIconNames) do
         local slot = _G[slotName]
-        ForceDesaturated(slot and slot.icon)
+        ForceDesaturated(slot and slot.icon, IsEmptyBagSlotArt)
     end
     for _, prefix in ipairs(actionButtonPrefixes) do
         for i = 1, 12 do
@@ -287,7 +421,7 @@ function BBF.UpdateActionBarBronzeTint()
     end
 end
 
-local bagSlotTextureKeys = {"NormalTexture", "PushedTexture", "HighlightTexture", "SlotHighlightTexture"}
+local BAG_SLOT_BORDER_ATLAS = "UI-HUD-ActionBar-IconFrame"
 
 local function ReapplyDarkModeColor(texture)
     if texture and texture.bbfHooked and not texture:IsForbidden() then
@@ -303,24 +437,18 @@ function BBF.UpdateBagSlotTextures()
                 slot.bbfBagSlotHooked = true
                 hooksecurefunc(slot, "UpdateTextures", BBF.UpdateBagSlotTextures)
             end
-            if slot.icon and (slot == MainMenuBarBackpackButton or not GetInventoryItemTexture("player", slot:GetID())) then
+            if slot.icon and slot ~= MainMenuBarBackpackButton and not GetInventoryItemTexture("player", slot:GetID()) then
                 slot.icon:SetAtlas("UI-HUD-ActionBar-IconFrame-Slot")
             end
         end
     end
-    local source = CharacterReagentBag0Slot
-    if not source then return end
-    for _, key in ipairs(bagSlotTextureKeys) do
-        local sourceTexture = source[key]
-        local atlas = sourceTexture and sourceTexture:GetAtlas()
-        if atlas then
-            for _, slotName in ipairs(bagSlotNames) do
-                local slot = _G[slotName]
-                local texture = slot and slot[key]
-                if texture then
-                    texture:SetAtlas(atlas)
-                end
-            end
+    for _, slotName in ipairs(bagSlotNames) do
+        local slot = _G[slotName]
+        if slot then
+            local normalTexture = slot.NormalTexture or (slot.GetNormalTexture and slot:GetNormalTexture())
+            local pushedTexture = slot.PushedTexture or (slot.GetPushedTexture and slot:GetPushedTexture())
+            if normalTexture then normalTexture:SetAtlas(BAG_SLOT_BORDER_ATLAS) end
+            if pushedTexture then pushedTexture:SetAtlas(BAG_SLOT_BORDER_ATLAS) end
         end
     end
     for _, slotName in ipairs(bagSlotIconNames) do

@@ -19,7 +19,7 @@ local defaultSettings = {
     guiFontSize = 12,
     -- General
     enableBigDebuffs = true,
-    removeRealmNames = true,
+    removeRealmNames = false,
     centerNames = false,
     darkModeUi = false,
     darkModeActionBars = true,
@@ -189,9 +189,9 @@ local defaultSettings = {
     focusCastBarTimer = false,
     focusToTAdjustmentOffsetY = 0,
 
-    legacyComboXPos = -28,
-    legacyComboYPos = -25,
-    legacyComboScale = 0.85,
+    legacyComboXPos = -28.5,
+    legacyComboYPos = -13,
+    legacyComboScale = 1,
 
     --Player castbar
     --playerCastBarScale = 1,
@@ -434,6 +434,14 @@ local function InitializeSavedVariables()
         BetterBlizzFramesDB.playerAuraSpacingXFixed = true
         BetterBlizzFramesDB.playerAuraSpacingIsDelta = nil
         BetterBlizzFramesDB.playerAuraSpacingX = 5
+    end
+
+    if not BetterBlizzFramesDB.foreverUpdate1 then
+        BetterBlizzFramesDB.foreverUpdate1 = true
+        BetterBlizzFramesDB.removeRealmNames = nil
+        BetterBlizzFramesDB.legacyComboXPos = nil
+        BetterBlizzFramesDB.legacyComboYPos = nil
+        BetterBlizzFramesDB.legacyComboScale = nil
     end
 
     for key, defaultValue in pairs(defaultSettings) do
@@ -2729,10 +2737,10 @@ function BBF.UpdateLegacyComboPosition()
     local db = BetterBlizzFramesDB
     local x = db.legacyComboXPos
     local y = db.legacyComboYPos
-    local scale = db.legacyComboScale or 0.85
+    local scale = db.legacyComboScale or 1
 
-    local extraOffsetY = not db.classicFrames and 2.5 or 0
-    local extraOffsetX = not db.classicFrames and -5 or 0
+    local extraOffsetY = db.classicFrames and -2.5 or 0
+    local extraOffsetX = db.classicFrames and 5 or 0
 
     ComboFrame:ClearAllPoints()
     ComboFrame:SetPoint("TOPRIGHT", TargetFrame, "TOPRIGHT", x+extraOffsetX, y+extraOffsetY)
@@ -2753,6 +2761,10 @@ function BBF.FixLegacyComboPointsLocation()
         ComboFrame:SetParent(TargetFrame)
         ComboFrame:SetFrameStrata("HIGH")
         BBF.UpdateLegacyComboPosition()
+        if not BBF.legacyComboOverridesHooked and ComboFrame_ApplyOverrides then
+            hooksecurefunc("ComboFrame_ApplyOverrides", BBF.UpdateLegacyComboPosition)
+            BBF.legacyComboOverridesHooked = true
+        end
     end
 end
 
