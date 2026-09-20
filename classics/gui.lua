@@ -3444,6 +3444,10 @@ local function guiGeneralTab()
         end
     end)
 
+    local partyFrameStatusText = CreateCheckbox("partyFrameStatusText", L["Party_HP_Mana_Text"], BetterBlizzFrames, nil, BBF.PartyFrameStatusText)
+    partyFrameStatusText:SetPoint("TOPLEFT", showPartyCastbar, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(partyFrameStatusText, L["Party_HP_Mana_Text"], L["Tooltip_Party_HP_Mana_Text_Desc"])
+
 --[=[
     local sortGroup = CreateCheckbox("sortGroup", L["Sort_Group"], BetterBlizzFrames, nil, BBF.SortGroup)
     sortGroup:SetPoint("TOPLEFT", showPartyCastbar, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
@@ -3491,7 +3495,7 @@ local function guiGeneralTab()
 
 
     local hidePartyFramesInArena = CreateCheckbox("hidePartyFramesInArena", L["Hide_Party_in_Arena_GEX"], BetterBlizzFrames, nil, BBF.HidePartyInArena)
-    hidePartyFramesInArena:SetPoint("TOPLEFT", showPartyCastbar, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    hidePartyFramesInArena:SetPoint("TOPLEFT", partyFrameStatusText, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(hidePartyFramesInArena, L["Tooltip_Hide_Party_in_Arena_GEX"]) 
     notWorking(hidePartyFramesInArena, true)
 

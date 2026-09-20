@@ -781,6 +781,9 @@ function BBF.SetCustomFonts()
         local outline = db.partyFrameFontOutline or "OUTLINE"
 
         SetPartyFont(fontPath, fontSize, outline, fontSize2)
+        if BBF.UpdatePartyFrameStatusText then
+            BBF.UpdatePartyFrameStatusText()
+        end
 
         if not BBF.hookedRaidFramesFont then
             local function SetRaidFrameFont(raidFrame)
@@ -1301,21 +1304,29 @@ function BBF.FontColors()
             FocusFrame.manabar,        }
         if PartyFrame then
             for i = 1, 4 do
-                table.insert(unitFrameValueFonts, _G["PartyFrame"]["MemberFrame"..i].healthbar)
-                table.insert(unitFrameValueFonts, _G["PartyFrame"]["MemberFrame"..i].ManaBar)
+                local member = _G["PartyFrame"]["MemberFrame"..i]
+                table.insert(unitFrameValueFonts, member.HealthBar or member.healthbar)
+                table.insert(unitFrameValueFonts, member.ManaBar or member.manabar)
             end
         else
             for i = 1, 4 do
-                table.insert(unitFrameValueFonts, _G["PartyMemberFrame"..i].healthbar)
-                table.insert(unitFrameValueFonts, _G["PartyMemberFrame"..i].ManaBar)
+                local member = _G["PartyMemberFrame"..i]
+                table.insert(unitFrameValueFonts, member.healthbar or member.HealthBar)
+                table.insert(unitFrameValueFonts, member.ManaBar or member.manabar)
             end
         end
         for _, frame in ipairs(unitFrameValueFonts) do
-            if frame.LeftText then frame.LeftText:SetVertexColor(unpack(color)) end
-            if frame.RightText then frame.RightText:SetVertexColor(unpack(color)) end
-            if frame.TextString then frame.TextString:SetVertexColor(unpack(color)) end
-            if frame.CenterText then frame.CenterText:SetVertexColor(unpack(color)) end
-            if frame.ManaBarText then frame.ManaBarText:SetVertexColor(unpack(color)) end
+            if not frame then
+                -- skip
+            else
+                if frame.LeftText then frame.LeftText:SetVertexColor(unpack(color)) end
+                if frame.RightText then frame.RightText:SetVertexColor(unpack(color)) end
+                if frame.TextString then frame.TextString:SetVertexColor(unpack(color)) end
+                if frame.CenterText then frame.CenterText:SetVertexColor(unpack(color)) end
+                if frame.ManaBarText then frame.ManaBarText:SetVertexColor(unpack(color)) end
+                if frame.bbfPartyLeftText then frame.bbfPartyLeftText:SetTextColor(unpack(color)) end
+                if frame.bbfPartyRightText then frame.bbfPartyRightText:SetTextColor(unpack(color)) end
+            end
         end
     end
 
