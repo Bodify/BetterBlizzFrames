@@ -1,40 +1,26 @@
-# BetterBlizzFrames 2.1.0b
-## Forever
-### Tweak
-- Bronze Tint for Classic Frames setting now also does Castbars and Minimap and has had its color tweaked slightly.
-- Fix legacy combo points being misaligned a bit and fix the settings for them in Misc section.
-- Some position tweaks for classic minimap setting.
-- "Hide Realm Names" removed in favour of "Hide 2nd Name" setting instead. This was causing names to only show first name. The setting is now reset and off by default.
-### Bugfix
-- Fix bag icons being desaturated by the "Remove Bronze Tint from ActionBars" setting.
-- Fix the main bag icon being hidden.
-- Fix "Hide Mana Feedback" sometimes showing the feedback animation again.
-- Fix the PvP faction icon on the PlayerFrame sometimes being hidden.
-## All versions
-### Tweak
-- Classic Frames: The elite dragon on Target/Focus now keeps its normal gold/silver color when using Dark Mode. If you are using a texture pack or smth you may have to replace the "eliteOverlayClassic.tga" file in the BBF media folder.
-### Bugfix
-- Fix an issue that would cause a lua error in combination with TRP3
-
-# BetterBlizzFrames 2.1.0
-## Forever
-## PSA
-- There is a Blizzard Bug on WoW Forever Beta with addons atm making them fail to save/load settings. Nothing I can do. Deleting your saved variable files while logged out seems to fix it, at least for a while. Blizz pls.
+# BetterBlizzFrames 2.1.1
+## All Versions
 ### New
-- Add a new simple "Forever" core profile meant as a quickstart for the classic feel ui.
-- Tweak "Starter" and "Bodify" profile, mostly to uncheck hide bags bar for WoW: Forever as this can seem odd at first.
-- Add new "Remove Bronze Tint from ActionBars" setting in Misc.
-- Add new "Add Bronze Tint to Classic Frames" setting in Misc.
-- Add new "Classic Minimap" setting in Misc.
-### Tweaks
-- Lots of minor tweaks to different stuff, adding missing stuff to dark mode, changing some colors, etc.
+- Classic Frames: HD Elite Dragons (in Misc). Replaces the dragons with the newer HD ones when using Classic Frames.
+- Quest Indicator: Shows a quest icon on Target and FocusFrame for quest mobs. Located top right in /bbf with more settings for it in advanced settings.
+- Add "Hide Pet ActionBar" setting in Misc.
+### Tweak
+- BBF now unclamps the minimap by default so you can move it closer to the edges of your screen if you want to instead of the silly edit mode restriction Blizzard does.
+## Forever
+### Tweak
+- Add castbar background to dark mode
+- Classic Frames setting now has "Bronze Frames", "Gray Actionbars" and "HD Elite Dragons" settings in the popup window too (these are in the Misc section too)
+- The show mana while in other forms for Druids setting is now for all druid specs on Forever (as opposed to resto only on retail where that makes more sense). This is no longer enabled by default with this change but you might still have it on because of it being a previous default so turn it off in Misc if you dont want it.
 ### Bugfix
-- A couple of minor bugfixes.
+- Temporary disable "Instant Combo Points" setting due to Blizzard bugs and this causing an error because of it.
+## Midnight & Forever
+### New
+- Minimap tweaks setting in Misc. Can move/size the minimap a bit and hide stuff.
+### Tweak
+- Add PRD borders to dark mode
+### Bugfix
+- Fix Target/Focus castbar being too far to the left when the Target/Focus had 0 auras and aura settings were disabled. Due to this you may notice your castbar shift position now if you adjusted it for a target without buffs.
 ## Midnight
 ### Tweak
-- Add missing default party frames petframe to darkmode.
-
-# BetterBlizzFrames 2.0.9b
-## Forever
-- Very early work in progress version of BBF for WoW: Forever!
-- 2.0.9b: Fix a lua error on Druid due to missing frame in Forever.
+- Tweak combo points/resource movement handling, should get rid of some annoyances while tweaking settings.
+- Fix a lot of combo points issues. Especially related to no portrait and getting in vehicles while in combat. Lots of moving parts here so if any issues arise from these changes please lmk.

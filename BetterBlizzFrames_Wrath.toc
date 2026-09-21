@@ -22,6 +22,7 @@ classics\modules\hideFrames.lua
 classics\modules\auras.lua
 classics\modules\absorb.lua
 classics\modules\combat.lua
+classics\modules\quest.lua
 classics\modules\castbar.lua
 classics\modules\healthbarColor.lua
 classics\modules\statusBarTextFormat.lua

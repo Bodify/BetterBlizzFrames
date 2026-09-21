@@ -534,6 +534,14 @@ L["Tooltip_Combat_Indicator"] = "Afficher le statut de combat sur le cadre cible
 L["Tooltip_Combat_Indicator_Desc"] = "Afficher le statut de combat sur les cadres Joueur, Cible et Focus.\nIcône d'épée pour le combat, icône d'assommer pour hors combat.\nPlus de réglages dans \"Paramètres avancés\""
 
 ---------------------------------------
+-- Quest Indicator
+---------------------------------------
+
+L["Quest_Indicator"] = "Indicateur de quête"
+L["Tooltip_Quest_Indicator"] = "Affiche une icône de quête sur le cadre cible/focus pour les PNJ de quête. Activer sur la page Général."
+L["Tooltip_Quest_Indicator_Desc"] = "Affiche une icône de quête sur le cadre de cible et de focus pour les monstres de quête."
+
+---------------------------------------
 -- Healer Indicator
 ---------------------------------------
 
@@ -902,6 +910,9 @@ L["Class_Resource_Scale"] = "Échelle ressource classe"
 L["Class_Specific_Options"] = "Options spécifiques à la classe"
 L["Classic_Border"] = "Bordure classique"
 L["Classic_Combo_Points"] = "Points de combo classiques"
+L["Bronze_Frames"] = "Cadres bronze"
+L["HD_Elite_Dragons"] = "Dragons d'élite HD"
+L["Gray_ActionBars"] = "Barres d'action grises"
 L["Classic_Frames"] = "Cadres classiques"
 L["Classic_Frames_Healthbar"] = "Barre de vie cadres classiques"
 L["Classic_Frames_Label"] = "*Cadres classiques !"
@@ -1606,8 +1617,10 @@ L["Module_Name_Support"] = "Soutien"
 ---------------------------------------
 
 L["Forever_Tweaks"] = "Ajustements Forever"
-L["Bronze_Tint_Classic_Frames"] = "Teinte bronze des cadres classiques"
-L["Tooltip_Bronze_Tint_Classic_Frames_Desc"] = "Applique aux bordures des cadres classiques la teinte bronze de WoW: Forever.\n\nNécessite les cadres classiques. Le mode sombre est prioritaire s'il est activé." --needsUpdate
+L["Bronze_Tint_Classic_Frames"] = "Cadres classiques : teinte bronze"
+L["Tooltip_Bronze_Tint_Classic_Frames_Desc"] = "Applique la teinte bronze de WoW: Forever aux bordures des cadres d'unité classiques, aux bordures des barres d'incantation classiques et à la minicarte classique.\n\n(Le mode sombre est prioritaire s'il est activé)"
+L["Classic_Frames_HD_Elite"] = "Cadres classiques : textures d'élite HD"
+L["Tooltip_Classic_Frames_HD_Elite_Desc"] = "Utilise l'art moderne du dragon Élite HD sur les cadres de cible et de focus des cadres classiques."
 L["Remove_ActionBar_Bronze_Tint"] = "Retirer la teinte bronze des barres d'action"
 L["Tooltip_Remove_ActionBar_Bronze_Tint_Desc"] = "Désature les graphismes des barres d'action pour retirer la teinte bronze de WoW: Forever.\n\nLe mode sombre des barres d'action est prioritaire s'il est activé."
 L["Forever_In_Development"] = "En développement..."

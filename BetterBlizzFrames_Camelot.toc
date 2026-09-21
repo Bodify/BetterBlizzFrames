@@ -15,6 +15,7 @@ embeds.xml
 shared\functions.lua
 shared\functions_classics.lua
 shared\ImportExport.lua
+shared\minimapTweaks.lua
 
 forever\modules\camelotFrames.lua
 forever\modules\darkmode.lua
@@ -25,6 +26,7 @@ forever\modules\classicMinimap.lua
 forever\modules\auras.lua
 forever\modules\absorb.lua
 forever\modules\combat.lua
+forever\modules\quest.lua
 forever\modules\castbar.lua
 forever\modules\healthbarColor.lua
 forever\modules\statusBarTextFormat.lua

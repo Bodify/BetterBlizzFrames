@@ -1728,46 +1728,83 @@ local function MakeNoPortraitMode(frame)
             HUNTER      = db.moveResourceToTargetHunter,
         }
 
-        local function UpdateResourcePosition(inVehicle)
-            if db["moveResource" .. class] or (db.moveResourceToTarget and classConflicts[class]) then
-                return
-            end
+        local function ResourceMovedElsewhere()
+            return db["moveResource" .. class] or (db.moveResourceToTarget and classConflicts[class])
+        end
 
-            -- Get max resource if this class uses resource-based overrides
+        local function GetResourceOffsets()
             local maxResource
             local powerType = CLASS_RESOURCE_TYPES[class]
             if powerType then
                 maxResource = UnitPowerMax("player", powerType)
             end
 
-            if not InCombatLockdown() then
-                PlayerBottomManagedFrameContainer:ClearAllPoints()
+            local point, relativePoint, xOffset, yOffset, scale = GetPlayerClassAndSpecPosition(maxResource)
+            if PlayerFrame.state == "vehicle" and not db.bigPlayerHealthbar then
+                xOffset = xOffset + 2
+            end
+            return point, relativePoint, xOffset, yOffset, scale
+        end
 
-                local point, relativePoint, xOffset, yOffset, scale = GetPlayerClassAndSpecPosition(maxResource)
-                local relativeFrame = PlayerFrame
+        local classFrameLayoutX, classFrameLayoutY = 0, 0
 
-                if inVehicle and not db.bigPlayerHealthbar then
-                    xOffset = xOffset + 2
-                    yOffset = yOffset + 0
+        local function PinClassFrame()
+            if not classFrame or ResourceMovedElsewhere() then return end
+            if classFrame:IsProtected() or classFrame:GetParent() ~= PlayerBottomManagedFrameContainer then return end
+
+            local point, relativePoint, xOffset, yOffset = GetResourceOffsets()
+            local childScale = classFrame:GetScale()
+            classFrame.bbfPinning = true
+            classFrame:ClearAllPoints()
+            classFrame:SetPoint(point, PlayerFrame, relativePoint, xOffset / childScale + classFrameLayoutX, (yOffset + (BBF.classResourceNudgeY or 0)) / childScale + classFrameLayoutY)
+            classFrame.bbfPinning = false
+        end
+
+        if classFrame then
+            hooksecurefunc(classFrame, "SetPoint", function(self, point, relativeTo, relativePoint, x, y)
+                if self.bbfPinning or self.bbfNudging or point ~= "TOP" then return end
+                if type(relativeTo) == "number" then
+                    classFrameLayoutX, classFrameLayoutY = relativeTo, relativePoint or 0
+                elseif relativeTo == nil or relativeTo == PlayerBottomManagedFrameContainer then
+                    classFrameLayoutX, classFrameLayoutY = x or 0, y or 0
+                else
+                    return
                 end
+                PinClassFrame()
+            end)
+        end
 
-                PlayerBottomManagedFrameContainer:SetPoint(point, relativeFrame, relativePoint, xOffset, yOffset)
+        local resourceUpdatePending
+        local function UpdateResourcePosition()
+            if db.moveResourceToTarget and classConflicts[class] then
+                return
+            end
+
+            if not InCombatLockdown() then
+                local point, relativePoint, xOffset, yOffset, scale = GetResourceOffsets()
+                if not db["moveResource" .. class] then
+                    PlayerBottomManagedFrameContainer:ClearAllPoints()
+                    PlayerBottomManagedFrameContainer:SetPoint(point, PlayerFrame, relativePoint, xOffset, yOffset)
+                end
                 PlayerBottomManagedFrameContainer:SetScale(scale)
                 PlayerBottomManagedFrameContainer:SetFrameStrata("HIGH")
-            else
+            elseif not resourceUpdatePending then
+                resourceUpdatePending = true
                 BBF.RunAfterCombat(function()
+                    resourceUpdatePending = nil
                     UpdateResourcePosition()
                 end)
             end
+            PinClassFrame()
         end
 
         BBF.UpdateResourcePositionNoPortrait = UpdateResourcePosition
+        BBF.PinClassFrameNoPortrait = PinClassFrame
 
         local vehicleWatcher = CreateFrame("Frame")
         vehicleWatcher:RegisterUnitEvent("UNIT_ENTERED_VEHICLE", "player")
-        --vehicleWatcher:RegisterEvent("UNIT_EXITED_VEHICLE")
-        vehicleWatcher:SetScript("OnEvent", function(_, _, unit)
-            UpdateResourcePosition(true)
+        vehicleWatcher:SetScript("OnEvent", function()
+            UpdateResourcePosition()
         end)
 
         -- Watcher for classes whose layout depends on max resource (Rogue combos, Monk chi, etc.)
@@ -2026,6 +2063,7 @@ local function MakeNoPortraitMode(frame)
 
         hooksecurefunc("PlayerFrame_ToVehicleArt", function(self)
             ToVehicleArt()
+            UpdateResourcePosition()
         end)
 
         hooksecurefunc(TotemFrame, "Update", function(self)

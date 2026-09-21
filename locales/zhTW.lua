@@ -534,6 +534,14 @@ L["Tooltip_Combat_Indicator"] = "在目標/專注目標框架上顯示戰鬥狀�
 L["Tooltip_Combat_Indicator_Desc"] = "在玩家、目標與專注目標框架上顯示戰鬥狀態。\n戰鬥中顯示劍圖示，非戰鬥中顯示悶棍圖示。\n更多設定請見「進階設定」"
 
 ---------------------------------------
+-- Quest Indicator
+---------------------------------------
+
+L["Quest_Indicator"] = "任務指示器"
+L["Tooltip_Quest_Indicator"] = "在目標/專注框架上為任務NPC顯示任務圖示。請在一般頁面啟用。"
+L["Tooltip_Quest_Indicator_Desc"] = "在目標和專注框架上為任務怪物顯示任務圖示。"
+
+---------------------------------------
 -- Healer Indicator
 ---------------------------------------
 
@@ -902,6 +910,9 @@ L["Class_Resource_Scale"] = "職業資源縮放"
 L["Class_Specific_Options"] = "職業專屬選項"
 L["Classic_Border"] = "經典邊框"
 L["Classic_Combo_Points"] = "經典連擊點數"
+L["Bronze_Frames"] = "青銅框架"
+L["HD_Elite_Dragons"] = "高清精英龍紋"
+L["Gray_ActionBars"] = "灰色快捷列"
 L["Classic_Frames"] = "經典框架"
 L["Classic_Frames_Healthbar"] = "經典框架血量條"
 L["Classic_Frames_Label"] = "*經典框架！"
@@ -1606,8 +1617,10 @@ L["Module_Name_Support"] = "支持"
 ---------------------------------------
 
 L["Forever_Tweaks"] = "Forever 調整"
-L["Bronze_Tint_Classic_Frames"] = "經典框架青銅色調"
-L["Tooltip_Bronze_Tint_Classic_Frames_Desc"] = "為經典框架的單位框架邊框加上 WoW: Forever 的青銅色調。\n\n需要啟用經典框架。啟用暗色模式時暗色模式優先。" --needsUpdate
+L["Bronze_Tint_Classic_Frames"] = "經典框架：青銅色調"
+L["Tooltip_Bronze_Tint_Classic_Frames_Desc"] = "為經典框架的單位框架邊框、經典施法條邊框和經典小地圖加上 WoW: Forever 的青銅色調。\n\n（啟用暗色模式時暗色模式優先）"
+L["Classic_Frames_HD_Elite"] = "經典框架：使用高清菁英材質"
+L["Tooltip_Classic_Frames_HD_Elite_Desc"] = "在經典框架的目標和專注目標框架上使用現代高清精英龍紋圖案。"
 L["Remove_ActionBar_Bronze_Tint"] = "移除快捷列青銅色調"
 L["Tooltip_Remove_ActionBar_Bronze_Tint_Desc"] = "降低快捷列美術的飽和度以移除 WoW: Forever 的青銅色調。\n\n啟用快捷列暗色模式時暗色模式優先。"
 L["Forever_In_Development"] = "開發中..."

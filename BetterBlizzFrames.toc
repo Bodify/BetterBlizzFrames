@@ -15,6 +15,7 @@ embeds.xml
 shared\functions.lua
 shared\functions_classics.lua
 shared\ImportExport.lua
+shared\minimapTweaks.lua
 
 retail\modules\darkmode.lua
 retail\modules\classicFrames.lua
@@ -23,6 +24,7 @@ retail\modules\hideFrames.lua
 retail\modules\auras.lua
 retail\modules\absorb.lua
 retail\modules\combat.lua
+retail\modules\quest.lua
 retail\modules\castbar.lua
 retail\modules\healthbarColor.lua
 retail\modules\statusBarTextFormat.lua

@@ -63,6 +63,9 @@ local defaultSettings = {
     shamanMaelstromCombos = true,
     hunterTipOfSpearCombos = false,
     prdResourceScale = 1,
+    foreverMinimapScale = 1,
+    foreverMinimapXPos = 0,
+    foreverMinimapYPos = 12,
     prdResourceXPos = 0,
     prdResourceYPos = 0,
     gladWinTracker = true,
@@ -125,6 +128,10 @@ local defaultSettings = {
     healerIndicatorIcon = true,
     healerIndicatorPortrait = true,
     --Race Indicator
+    questIndicator = false,
+    questIndicatorScale = 1,
+    questIndicatorXPos = 0,
+    questIndicatorYPos = 0,
     racialIndicator = false,
     targetRacialIndicator = true,
     focusRacialIndicator = true,
@@ -867,8 +874,9 @@ local function DisableClickForClassSpecificFrame()
     end
 end
 
-local function CheckForResourceConflicts()
+local function HasResourceConflict(class)
     local db = BetterBlizzFramesDB
+    if not db.moveResourceToTarget then return false end
     local conflicts = {
         ROGUE = db.moveResourceToTargetRogue,
         DRUID = db.moveResourceToTargetDruid,
@@ -881,58 +889,128 @@ local function CheckForResourceConflicts()
         SHAMAN = db.moveResourceToTargetShaman,
         HUNTER = db.moveResourceToTargetHunter,
     }
+    return conflicts[class] and true or false
+end
 
-    local class = UnitClassBase("player")
-    if db.moveResourceToTarget and conflicts[class] then
+local function CheckForResourceConflicts()
+    if HasResourceConflict(UnitClassBase("player")) then
         BBF.Print(L["Print_Disable_Move_Resource_To_Target"])
         return true
     end
     return false
 end
 
+local function GetSavedResourcePos(class)
+    local db = BetterBlizzFramesDB
+    if not db["moveResource" .. class] or HasResourceConflict(class) then return end
+    return db.moveResourceStackPos and db.moveResourceStackPos[class]
+end
+
+local function ApplyResourcePosition(frame, class)
+    if frame.bbfResourceDragging or frame:IsProtected() then return end
+    local pos = GetSavedResourcePos(class)
+    if not pos then return end
+
+    frame.bbfMoveResourceChanging = true
+    frame:ClearAllPoints()
+    if pos.x then
+        local toFrame = UIParent:GetEffectiveScale() / frame:GetEffectiveScale()
+        frame:SetPoint("CENTER", UIParent, "BOTTOMLEFT", pos.x * toFrame, pos.y * toFrame)
+    else
+        local legacyScale = frame:GetParent() == PlayerBottomManagedFrameContainer and PlayerBottomManagedFrameContainer:GetScale() or 1
+        frame:SetPoint(pos.point, UIParent, pos.relativePoint, pos.xOfs / legacyScale, pos.yOfs / legacyScale)
+    end
+    frame.bbfMoveResourceChanging = false
+end
+
+local function RestoreBlizzardResourcePoint(frame)
+    if frame:IsProtected() then return end
+    local blizzPoint = frame.bbfBlizzResourcePoint
+
+    frame.bbfMoveResourceChanging = true
+    frame:ClearAllPoints()
+    if blizzPoint and blizzPoint.n > 0 then
+        frame:SetPoint(unpack(blizzPoint, 1, blizzPoint.n))
+    else
+        frame:SetPoint("TOP", frame:GetParent(), "TOP", 0, 0)
+    end
+    frame.bbfMoveResourceChanging = false
+end
+
+local function FinishResourceDrag(frame, class, discard)
+    if not frame.bbfResourceDragging then return end
+    frame:StopMovingOrSizing()
+    frame:SetUserPlaced(false)
+    frame.bbfResourceDragging = nil
+    if discard then return end
+
+    local x, y = frame:GetCenter()
+    if x and y then
+        local db = BetterBlizzFramesDB
+        local toUIParent = frame:GetEffectiveScale() / UIParent:GetEffectiveScale()
+        db.moveResourceStackPos = db.moveResourceStackPos or {}
+        db.moveResourceStackPos[class] = { x = x * toUIParent, y = y * toUIParent }
+    end
+    ApplyResourcePosition(frame, class)
+end
+
+local function HookResourceFrame(frame, class)
+    if frame.bbfMoveResourceHooked then return end
+    frame.bbfMoveResourceHooked = true
+
+    if frame:GetNumPoints() > 0 then
+        frame.bbfBlizzResourcePoint = { n = 5, frame:GetPoint(1) }
+    end
+
+    local function Reapply()
+        ApplyResourcePosition(frame, class)
+    end
+
+    hooksecurefunc(frame, "SetPoint", function(self, ...)
+        if self.bbfMoveResourceChanging or self.bbfPinning then return end
+        self.bbfBlizzResourcePoint = { n = select("#", ...), ... }
+        Reapply()
+    end)
+    hooksecurefunc(frame, "SetScale", Reapply)
+    hooksecurefunc(PlayerBottomManagedFrameContainer, "SetScale", Reapply)
+    hooksecurefunc(PlayerFrame, "SetScale", Reapply)
+
+    frame:HookScript("OnHide", function(self)
+        FinishResourceDrag(self, class)
+    end)
+
+    local scaleWatcher = CreateFrame("Frame")
+    scaleWatcher:RegisterEvent("UI_SCALE_CHANGED")
+    scaleWatcher:RegisterEvent("DISPLAY_SIZE_CHANGED")
+    scaleWatcher:SetScript("OnEvent", Reapply)
+end
+
 function BBF.SetResourcePosition()
     local class = UnitClassBase("player")
-    if not BetterBlizzFramesDB["moveResource" .. class] then return end
-    if not (BetterBlizzFramesDB.moveResourceStackPos and BetterBlizzFramesDB.moveResourceStackPos[class]) then return end
+    if not GetSavedResourcePos(class) then return end
     if CheckForResourceConflicts() then return end
     local frame = resourceFrames[class]
     if not frame then return end
 
-    local pos = BetterBlizzFramesDB.moveResourceStackPos[class]
-    if pos then
-        if not frame.ogPoint then
-            local point, relativeTo, relativePoint, xOfs, yOfs = frame:GetPoint()
-            frame.ogPoint = { point = point, relativeTo = relativeTo, relativePoint = relativePoint, xOfs = xOfs, yOfs = yOfs }
-        end
-
-        frame:ClearAllPoints()
-        frame:SetPoint(pos.point, UIParent, pos.relativePoint, pos.xOfs, pos.yOfs)
-
-        hooksecurefunc(frame, "SetPoint", function(self)
-            if self.changing then return end
-            self.changing = true
-            local pos = BetterBlizzFramesDB.moveResourceStackPos[class]
-            if pos then
-                self:ClearAllPoints()
-                self:SetPoint(pos.point, UIParent, pos.relativePoint, pos.xOfs, pos.yOfs)
-            else
-                self:ClearAllPoints()
-                self:SetPoint(frame.ogPoint.point, frame.ogPoint.relativeTo, frame.ogPoint.relativePoint, frame.ogPoint.xOfs, frame.ogPoint.yOfs)
-            end
-            self.changing = false
-        end)
-    end
+    HookResourceFrame(frame, class)
+    ApplyResourcePosition(frame, class)
 end
 
-
 function BBF.ResetResourcePosition()
-    local class = UnitClassBase("player")
-    local frame = resourceFrames[class]
-    if not frame or not frame.ogPoint then return end
+    local frame = resourceFrames[UnitClassBase("player")]
+    if not frame or not frame.bbfMoveResourceHooked then return end
 
-    -- Reset frame to its original position
-    frame:ClearAllPoints()
-    frame:SetPoint(frame.ogPoint.point, frame.ogPoint.relativeTo, frame.ogPoint.relativePoint, frame.ogPoint.xOfs, frame.ogPoint.yOfs)
+    FinishResourceDrag(frame, UnitClassBase("player"), true)
+    RestoreBlizzardResourcePoint(frame)
+    if BBF.UpdateResourcePositionNoPortrait then
+        BBF.UpdateResourcePositionNoPortrait()
+    end
+    if BBF.UpdateResourcePositionClassic then
+        BBF.UpdateResourcePositionClassic()
+    end
+    if BBF.ApplyClassResourceNudge then
+        BBF.ApplyClassResourceNudge()
+    end
 end
 
 function BBF.EnableResourceMovement()
@@ -942,39 +1020,44 @@ function BBF.EnableResourceMovement()
     local frame = resourceFrames[class]
     if not frame then return true end
 
+    HookResourceFrame(frame, class)
+    ApplyResourcePosition(frame, class)
+
     if BBF.MovingResource then return true end
 
-    -- Make the frame draggable
     frame:SetMovable(true)
     frame:EnableMouse(true)
     frame:SetClampedToScreen(true)
     frame:SetMouseClickEnabled(true)
 
     frame:SetScript("OnMouseDown", function(self, button)
-        if button == "LeftButton" and IsControlKeyDown() then
+        if button == "LeftButton" and IsControlKeyDown() and not self:IsProtected() then
+            self.bbfResourceDragging = true
             self:StartMoving()
         end
     end)
 
     frame:SetScript("OnMouseUp", function(self)
-        self:StopMovingOrSizing()
-
-        -- Ensure the database exists
-        if not BetterBlizzFramesDB.moveResourceStackPos then
-            BetterBlizzFramesDB.moveResourceStackPos = {}
-        end
-
-        -- Save class-specific position
-        local point, _, relativePoint, xOfs, yOfs = self:GetPoint()
-        BetterBlizzFramesDB.moveResourceStackPos[class] = {
-            point = point,
-            relativePoint = relativePoint,
-            xOfs = xOfs,
-            yOfs = yOfs
-        }
+        FinishResourceDrag(self, class)
     end)
+
     BBF.MovingResource = true
     return true
+end
+
+function BBF.DisableResourceMovement()
+    local frame = resourceFrames[UnitClassBase("player")]
+    if not frame then return end
+
+    if BBF.MovingResource then
+        FinishResourceDrag(frame, UnitClassBase("player"))
+        frame:SetScript("OnMouseDown", nil)
+        frame:SetScript("OnMouseUp", nil)
+        frame:SetMouseClickEnabled(false)
+        frame:SetMovable(false)
+        BBF.MovingResource = false
+    end
+    BBF.ResetResourcePosition()
 end
 
 
@@ -2016,6 +2099,15 @@ end
 
 
 
+function BBF.GetPlayerEliteMode(mode)
+    local db = BetterBlizzFramesDB
+    mode = mode or db.playerEliteFrameMode or 1
+    if db.classicFrames and db.classicFramesHDElite and mode <= 3 then
+        return mode + 3
+    end
+    return mode
+end
+
 function BBF.PlayerElite(mode)
     local db = BetterBlizzFramesDB
 
@@ -2073,6 +2165,7 @@ function BBF.PlayerElite(mode)
             end
         end
     else
+        mode = BBF.GetPlayerEliteMode(mode)
         if db.playerEliteFrame then
             local frameTexture = PlayerFrame.ClassicFrame.Texture
             local alpha = mode > 3 and 1 or 0
@@ -5024,6 +5117,7 @@ Frame:SetScript("OnEvent", function(...)
     --BBF.HideFrames()
     DisableClickForClassSpecificFrame()
     BBF.SetResourcePosition()
+    BBF.UnclampMinimap()
     BBF.MoveToTFrames()
     BBF.UpdateFrames()
     BBF.HookHealthbarColors()
@@ -5045,10 +5139,12 @@ Frame:SetScript("OnEvent", function(...)
             BBF.HookCastbarsForEvoker()
             BBF.StealthIndicator()
             BBF.MoveQueueStatusEye()
+            BBF.UpdateMinimapTweaks()
             BBF.CastbarRecolorWidgets()
             BBF.CastBarTimerCaller()
             BBF.ShowPlayerCastBarIcon()
             BBF.CombatIndicator(PlayerFrame, "player")
+            BBF.QuestIndicatorCaller()
             if BetterBlizzFramesDB.hideArenaFrames then
                 BBF.HideArenaFrames()
             end

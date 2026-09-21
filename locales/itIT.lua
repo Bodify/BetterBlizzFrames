@@ -534,6 +534,14 @@ L["Tooltip_Combat_Indicator"] = "Mostra lo stato di combattimento sul riquadro b
 L["Tooltip_Combat_Indicator_Desc"] = "Mostra lo stato di combattimento sui riquadri giocatore, bersaglio e focus.\nIcona spada in combattimento, icona Randellata fuori combattimento.\nAltre impostazioni in \"Impostazioni avanzate\""
 
 ---------------------------------------
+-- Quest Indicator
+---------------------------------------
+
+L["Quest_Indicator"] = "Indicatore missione"
+L["Tooltip_Quest_Indicator"] = "Mostra un'icona missione sul riquadro bersaglio/focus per i PNG delle missioni. Attiva nella pagina Generale."
+L["Tooltip_Quest_Indicator_Desc"] = "Mostra un'icona missione sul riquadro del bersaglio e del focus per i mostri delle missioni."
+
+---------------------------------------
 -- Healer Indicator
 ---------------------------------------
 
@@ -902,6 +910,9 @@ L["Class_Resource_Scale"] = "Scala risorsa di classe"
 L["Class_Specific_Options"] = "Opzioni specifiche della classe"
 L["Classic_Border"] = "Bordo classico"
 L["Classic_Combo_Points"] = "Punti combo classici"
+L["Bronze_Frames"] = "Riquadri bronzo"
+L["HD_Elite_Dragons"] = "Draghi élite HD"
+L["Gray_ActionBars"] = "Barre azioni grigie"
 L["Classic_Frames"] = "Riquadri classici"
 L["Classic_Frames_Healthbar"] = "Barra della salute riquadri classici"
 L["Classic_Frames_Label"] = "*Riquadri classici!"
@@ -1606,8 +1617,10 @@ L["Module_Name_Support"] = "Supporto"
 ---------------------------------------
 
 L["Forever_Tweaks"] = "Modifiche Forever"
-L["Bronze_Tint_Classic_Frames"] = "Tinta bronzo per i riquadri classici"
-L["Tooltip_Bronze_Tint_Classic_Frames_Desc"] = "Applica ai bordi dei riquadri classici la tinta bronzo di WoW: Forever.\n\nRichiede i riquadri classici. La modalità scura ha la priorità se attiva." --needsUpdate
+L["Bronze_Tint_Classic_Frames"] = "Riquadri classici: tinta bronzo"
+L["Tooltip_Bronze_Tint_Classic_Frames_Desc"] = "Applica la tinta bronzo di WoW: Forever ai bordi dei riquadri unità classici, ai bordi delle barre di lancio classiche e alla minimappa classica.\n\n(La modalità scura ha la priorità se attiva)"
+L["Classic_Frames_HD_Elite"] = "Riquadri classici: texture élite HD"
+L["Tooltip_Classic_Frames_HD_Elite_Desc"] = "Usa la moderna grafica HD del drago élite sui riquadri del bersaglio e del focus dei riquadri classici."
 L["Remove_ActionBar_Bronze_Tint"] = "Rimuovi tinta bronzo dalle barre azioni"
 L["Tooltip_Remove_ActionBar_Bronze_Tint_Desc"] = "Desatura la grafica delle barre azioni per rimuovere la tinta bronzo di WoW: Forever.\n\nLa modalità scura per le barre azioni ha la priorità se attiva."
 L["Forever_In_Development"] = "In sviluppo..."

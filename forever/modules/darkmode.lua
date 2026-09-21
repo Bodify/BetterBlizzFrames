@@ -35,6 +35,15 @@ local function applySettings(frame, desaturate, colorValue, hook, hookShow)
     end
 end
 
+
+local function applyTextBorder(textBorder, desaturate, colorValue, alpha)
+    if not textBorder or issecretvalue(textBorder) or textBorder:IsForbidden() then return end
+    applySettings(textBorder, desaturate, colorValue)
+    if textBorder:GetAlpha() ~= 0 then
+        textBorder:SetAlpha(alpha)
+    end
+end
+
 function BBF.DarkModeNameplateResources()
     if BetterBlizzPlatesDB and BetterBlizzPlatesDB.darkModeNameplateResource then return end
 
@@ -126,6 +135,33 @@ function BBF.DarkModeNameplateResources()
                 applySettings(v.EssenceDepleting.RimGlow, desaturate, monk)
             end
         end
+    end
+end
+
+local prdBarBgAtlas = "UI-HUD-CoolDownManager-Bar-BG"
+
+local function GetPrdBarBgBorder(bar)
+    if bar.bbfPrdBgBorder then return bar.bbfPrdBgBorder end
+    for _, region in ipairs({bar:GetRegions()}) do
+        if region:GetObjectType() == "Texture" and (region.blizzBgBorderTexture or region:GetAtlas() == prdBarBgAtlas) then
+            bar.bbfPrdBgBorder = region
+            return region
+        end
+    end
+end
+
+function BBF.DarkModePRDBarBorders()
+    local prd = PersonalResourceDisplayFrame
+    local on = BetterBlizzFramesDB.darkModeUi and true or false
+    local base = on and BetterBlizzFramesDB.darkModeColor or 1
+
+    local healthBars = prd.HealthBarsContainer
+    for _, bar in pairs({
+        healthBars and healthBars.healthBar,
+        prd.PowerBar,
+        prd.AlternatePowerBar,
+    }) do
+        applySettings(GetPrdBarBgBorder(bar), on, base)
     end
 end
 
@@ -766,10 +802,10 @@ function BBF.DarkmodeFrames(bypass)
         applySettings(TargetFrame.TargetFrameContainer.BossPortraitFrameTexture, d, v)
         applySettings(FocusFrame.TargetFrameContainer.BossPortraitFrameTexture, d, v)
     end
-    if BBF.UpdateClassicEliteOverlay then
-        BBF.UpdateClassicEliteOverlay(TargetFrame)
-        BBF.UpdateClassicEliteOverlay(FocusFrame)
-    end
+    BBF.UpdateClassicEliteOverlay(TargetFrame)
+    BBF.UpdateClassicEliteOverlay(FocusFrame)
+    BBF.UpdateClassicHDElite(TargetFrame)
+    BBF.UpdateClassicHDElite(FocusFrame)
 
 
     -- Applying settings based on BetterBlizzFramesDB.darkModeUi value
@@ -1040,6 +1076,7 @@ function BBF.DarkmodeFrames(bypass)
     end
 
     BBF.DarkModeNameplateResources()
+    BBF.DarkModePRDBarBorders()
 
     local soulShards = _G.WarlockPowerFrame
     if soulShards then
@@ -1165,6 +1202,9 @@ function BBF.DarkmodeFrames(bypass)
     if BetterBlizzFramesDB.darkModeActionBars or BBF.actionBarColorEnabled then
         ApplyActionBarArt(desaturationValue, actionBarColor, birdColor)
         BBF.actionBarColorEnabled = true
+        if BBF.UpdateActionBarBronzeTint then
+            BBF.UpdateActionBarBronzeTint()
+        end
     end
 
     if not hookedTotemBar and darkModeUi then
@@ -1256,9 +1296,11 @@ function BBF.DarkModeCastbars()
         BBF.darkModeCastbars = true
         local skip = BetterBlizzFramesDB.classicCastbars
         applySettings(TargetFrame.spellbar.Border, desaturationValue, color)
+        applyTextBorder(TargetFrame.spellbar.TextBorder, desaturationValue, color, 0.5)
         --applySettings(TargetFrame.spellbar.BorderShield, desaturationValue, vertexColor)
 
         applySettings(FocusFrame.spellbar.Border, desaturationValue, color)
+        applyTextBorder(FocusFrame.spellbar.TextBorder, desaturationValue, color, 0.5)
         --applySettings(FocusFrame.spellbar.BorderShield, desaturationValue, vertexColor)
         if not skip then
             applySettings(FocusFrame.spellbar.Background, desaturationValue, lighterColor)
@@ -1268,12 +1310,14 @@ function BBF.DarkModeCastbars()
             applySettings(PlayerCastingBarFrame.Background, desaturationValue, lighterColor)
         end
         applySettings(PlayerCastingBarFrame.Border, desaturationValue, color)
+        applyTextBorder(PlayerCastingBarFrame.TextBorder, desaturationValue, color, 0.5)
         --applySettings(PlayerCastingBarFrame.BorderShield, desaturationValue, vertexColor)
 
         for i = 1, 5 do
             local frame = _G["Boss"..i.."TargetFrame"]
             if frame then
                 applySettings(frame.spellbar.Border, desaturationValue, color)
+                applyTextBorder(frame.spellbar.TextBorder, desaturationValue, color, 0.5)
                 applySettings(frame.spellbar.Background, desaturationValue, lighterColor)
             end
         end
@@ -1283,6 +1327,7 @@ function BBF.DarkModeCastbars()
                 local partyCastbar = _G["Party"..i.."SpellBar"]
                 if partyCastbar then
                     applySettings(partyCastbar.Border, desaturationValue, color)
+                    applyTextBorder(partyCastbar.TextBorder, desaturationValue, color, 0.5)
                     --applySettings(partyCastbar.BorderShield, desaturationValue, vertexColor)
                     applySettings(partyCastbar.Background, desaturationValue, lighterColor)
                 end
@@ -1291,19 +1336,23 @@ function BBF.DarkModeCastbars()
         local petCastbar = _G["PetSpellBar"]
         if petCastbar then
             applySettings(petCastbar.Border, desaturationValue, color)
+            applyTextBorder(petCastbar.TextBorder, desaturationValue, color, 0.5)
             --applySettings(petCastbar.BorderShield, desaturationValue, vertexColor)
             applySettings(petCastbar.Background, desaturationValue, lighterColor)
         end
     elseif BBF.darkModeCastbars then
         applySettings(TargetFrame.spellbar.Border, false, 1)
+        applyTextBorder(TargetFrame.spellbar.TextBorder, false, 1, 1)
         --applySettings(TargetFrame.spellbar.BorderShield, desaturationValue, vertexColor)
         applySettings(TargetFrame.spellbar.Background, false, 1)
 
         applySettings(FocusFrame.spellbar.Border, false, 1)
+        applyTextBorder(FocusFrame.spellbar.TextBorder, false, 1, 1)
         --applySettings(FocusFrame.spellbar.BorderShield, desaturationValue, vertexColor)
         applySettings(FocusFrame.spellbar.Background, false, 1)
 
         applySettings(PlayerCastingBarFrame.Border, false, 1)
+        applyTextBorder(PlayerCastingBarFrame.TextBorder, false, 1, 1)
         --applySettings(PlayerCastingBarFrame.BorderShield, desaturationValue, vertexColor)
         applySettings(PlayerCastingBarFrame.Background, false, 1)
 
@@ -1312,6 +1361,7 @@ function BBF.DarkModeCastbars()
                 local partyCastbar = _G["Party"..i.."SpellBar"]
                 if partyCastbar then
                     applySettings(partyCastbar.Border, false, 1)
+                    applyTextBorder(partyCastbar.TextBorder, false, 1, 1)
                     --applySettings(partyCastbar.BorderShield, desaturationValue, vertexColor)
                     applySettings(partyCastbar.Background, false, 1)
                 end
@@ -1320,6 +1370,7 @@ function BBF.DarkModeCastbars()
         local petCastbar = _G["PetSpellBar"]
         if petCastbar then
             applySettings(petCastbar.Border, false, 1)
+            applyTextBorder(petCastbar.TextBorder, false, 1, 1)
             --applySettings(petCastbar.BorderShield, desaturationValue, vertexColor)
             applySettings(petCastbar.Background, false, 1)
         end
@@ -1327,6 +1378,7 @@ function BBF.DarkModeCastbars()
             local frame = _G["Boss"..i.."TargetFrame"]
             if frame then
                 applySettings(frame.spellbar.Border, false, 1)
+                applyTextBorder(frame.spellbar.TextBorder, false, 1, 1)
                 applySettings(frame.spellbar.Background, false, 1)
             end
         end

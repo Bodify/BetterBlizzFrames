@@ -981,6 +981,9 @@ local function CreateSlider(parent, label, minValue, maxValue, stepValue, elemen
                 elseif element == "racialIndicatorYPos" then
                     BetterBlizzFramesDB.racialIndicatorYPos = value
                     BBF.RacialIndicatorCaller()
+                elseif element == "questIndicatorScale" or element == "questIndicatorXPos" or element == "questIndicatorYPos" then
+                    BetterBlizzFramesDB[element] = value
+                    BBF.QuestIndicatorCaller()
                 elseif element == "targetToTAdjustmentOffsetY" then
                     BetterBlizzFramesDB.targetToTAdjustmentOffsetY = value
                     BBF.CastbarAdjustCaller()
@@ -4214,6 +4217,10 @@ local function guiGeneralTab()
     end)
     CreateTooltip(combatIndicator, L["Tooltip_Combat_Indicator_Desc"])
 
+    local questIndicator = CreateCheckbox("questIndicator", L["Quest_Indicator"], BetterBlizzFrames, nil, BBF.QuestIndicatorCaller)
+    questIndicator:SetPoint("LEFT", combatIndicator.Text, "RIGHT", 0, 0)
+    CreateTooltipTwo(questIndicator, L["Quest_Indicator"], L["Tooltip_Quest_Indicator_Desc"], nil, "ANCHOR_LEFT")
+
     local absorbIndicator = CreateCheckbox("absorbIndicator", L["Absorb_Indicator"], BetterBlizzFrames, nil, BBF.AbsorbCaller)
     absorbIndicator:SetPoint("TOPLEFT", combatIndicator, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     absorbIndicator:HookScript("OnClick", function()
@@ -5391,7 +5398,7 @@ local function guiPositionAndScale()
     local firstLineX = 53
     local firstLineY = -65
     local secondLineX = 222
-    local secondLineY = -360
+    local secondLineY = -365
     local thirdLineX = 391
     local thirdLineY = -655
     local fourthLineX = 560
@@ -5421,7 +5428,7 @@ local function guiPositionAndScale()
 
     local contentFrame = CreateFrame("Frame", nil, scrollFrame)
     contentFrame.name = BetterBlizzFramesSubPanel.name
-    contentFrame:SetSize(680, 520)
+    contentFrame:SetSize(680, 620)
     scrollFrame:SetScrollChild(contentFrame)
 
     local mainGuiAnchor2 = contentFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
@@ -5516,11 +5523,11 @@ local function guiPositionAndScale()
     -- Absorb Indicator
     ----------------------
     local anchorSubAbsorb = contentFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    anchorSubAbsorb:SetPoint("CENTER", mainGuiAnchor2, "CENTER", fourthLineX - 120, firstLineY)
+    anchorSubAbsorb:SetPoint("CENTER", mainGuiAnchor2, "CENTER", thirdLineX, firstLineY)
     anchorSubAbsorb:SetText(L["Absorb_Indicator"])
 
     --CreateBorderBox(anchorSubAbsorb)
-    CreateBorderedFrame(anchorSubAbsorb, 200, 293, 0, -98, BetterBlizzFramesSubPanel)
+    CreateBorderedFrame(anchorSubAbsorb, 165, 293, 0, -98, contentFrame)
 
     local absorbIndicator = contentFrame:CreateTexture(nil, "ARTWORK")
     absorbIndicator:SetAtlas("ParagonReputation_Glow")
@@ -5577,7 +5584,7 @@ local function guiPositionAndScale()
     CreateTooltip(playerAbsorbIcon, L["Tooltip_Absorb_Icon"])
 
     local targetAbsorbAmount = CreateCheckbox("targetAbsorbAmount", L["Target"], contentFrame, nil, BBF.AbsorbCaller)
-    targetAbsorbAmount:SetPoint("LEFT", playerAbsorbAmount.Text, "RIGHT", 5, 0)
+    targetAbsorbAmount:SetPoint("LEFT", playerAbsorbAmount.Text, "RIGHT", 0, 0)
     CreateTooltip(targetAbsorbAmount, L["Tooltip_Absorb_Show_Target"])
 
     local targetAbsorbIcon = CreateCheckbox("targetAbsorbIcon", L["Icon"], contentFrame, nil, BBF.AbsorbCaller)
@@ -5585,7 +5592,7 @@ local function guiPositionAndScale()
     CreateTooltip(targetAbsorbIcon, L["Tooltip_Absorb_Icon"])
 
     local focusAbsorbAmount = CreateCheckbox("focusAbsorbAmount", L["Focus"], contentFrame, nil, BBF.AbsorbCaller)
-    focusAbsorbAmount:SetPoint("LEFT", targetAbsorbAmount.Text, "RIGHT", 5, 0)
+    focusAbsorbAmount:SetPoint("LEFT", targetAbsorbAmount.Text, "RIGHT", 0, 0)
     CreateTooltip(focusAbsorbAmount, L["Tooltip_Absorb_Show_Focus"])
 
     local focusAbsorbIcon = CreateCheckbox("focusAbsorbIcon", L["Icon"], contentFrame, nil, BBF.AbsorbCaller)
@@ -5605,11 +5612,11 @@ local function guiPositionAndScale()
     -- Combat indicator
     ----------------------
     local anchorSubOutOfCombat = contentFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    anchorSubOutOfCombat:SetPoint("CENTER", mainGuiAnchor2, "CENTER", secondLineX-70, firstLineY)
+    anchorSubOutOfCombat:SetPoint("CENTER", mainGuiAnchor2, "CENTER", firstLineX, firstLineY)
     anchorSubOutOfCombat:SetText(L["Combat_Indicator"])
 
     --CreateBorderBox(anchorSubOutOfCombat)
-    CreateBorderedFrame(anchorSubOutOfCombat, 200, 293, 0, -98, BetterBlizzFramesSubPanel)
+    CreateBorderedFrame(anchorSubOutOfCombat, 165, 293, 0, -98, contentFrame)
 
     local combatIconSub = contentFrame:CreateTexture(nil, "ARTWORK")
     combatIconSub:SetTexture("Interface\\Icons\\ABILITY_DUALWIELD")
@@ -5676,13 +5683,13 @@ local function guiPositionAndScale()
     end)
 
     local targetCombatIndicator = CreateCheckbox("targetCombatIndicator", L["Target"], contentFrame)
-    targetCombatIndicator:SetPoint("LEFT", playerCombatIndicator.Text, "RIGHT", 5, 0)
+    targetCombatIndicator:SetPoint("LEFT", playerCombatIndicator.Text, "RIGHT", 0, 0)
     targetCombatIndicator:HookScript("OnClick", function(self)
         BBF.CombatIndicatorCaller()
     end)
 
     local focusCombatIndicator = CreateCheckbox("focusCombatIndicator", L["Focus"], contentFrame)
-    focusCombatIndicator:SetPoint("LEFT", targetCombatIndicator.Text, "RIGHT", 5, 0)
+    focusCombatIndicator:SetPoint("LEFT", targetCombatIndicator.Text, "RIGHT", 0, 0)
     focusCombatIndicator:HookScript("OnClick", function(self)
         BBF.CombatIndicatorCaller()
     end)
@@ -5692,11 +5699,11 @@ local function guiPositionAndScale()
     -- Racial indicator
     ----------------------
     local anchorSubracialIndicator = contentFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    anchorSubracialIndicator:SetPoint("CENTER", mainGuiAnchor2, "CENTER", secondLineX-70, secondLineY - 15)
+    anchorSubracialIndicator:SetPoint("CENTER", mainGuiAnchor2, "CENTER", secondLineX, firstLineY)
     anchorSubracialIndicator:SetText(L["Label_Pvp_Racial_Indicator"])
 
     --CreateBorderBox(anchorSubracialIndicator)
-    CreateBorderedFrame(anchorSubracialIndicator, 200, 293, 0, -98, BetterBlizzFramesSubPanel)
+    CreateBorderedFrame(anchorSubracialIndicator, 165, 293, 0, -98, contentFrame)
 
     local racialIndicatorIcon = contentFrame:CreateTexture(nil, "ARTWORK")
     racialIndicatorIcon:SetTexture("Interface\\Icons\\ability_ambush")
@@ -5759,11 +5766,11 @@ local function guiPositionAndScale()
     -- Castbar Interrupt Icon
     ----------------------
     local anchorSubInterruptIcon = contentFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    anchorSubInterruptIcon:SetPoint("CENTER", mainGuiAnchor2, "CENTER", fourthLineX - 120, secondLineY-15)
+    anchorSubInterruptIcon:SetPoint("CENTER", mainGuiAnchor2, "CENTER", fourthLineX, firstLineY)
     anchorSubInterruptIcon:SetText(L["Interrupt_Icon_AS"])
 
     --CreateBorderBox(anchorSubInterruptIcon)
-    CreateBorderedFrame(anchorSubInterruptIcon, 200, 293, 0, -98, BetterBlizzFramesSubPanel)
+    CreateBorderedFrame(anchorSubInterruptIcon, 165, 293, 0, -98, contentFrame)
 
     local castBarInterruptIcon = contentFrame:CreateTexture(nil, "ARTWORK")
     castBarInterruptIcon:SetTexture("Interface\\Icons\\ability_kick")
@@ -5800,7 +5807,7 @@ local function guiPositionAndScale()
     CreateTooltipTwo(castBarInterruptIconFocus, L["Show_On_Focus"])
 
     local castBarInterruptIconShowActiveOnly = CreateCheckbox("castBarInterruptIconShowActiveOnly", L["Tooltip_Only_Show_If_Available_Desc"], contentFrame, nil, BBF.UpdateInterruptIconSettings)
-    castBarInterruptIconShowActiveOnly:SetPoint("TOPLEFT", castBarInterruptIconTarget, "BOTTOMLEFT", -28, pixelsBetweenBoxes)
+    castBarInterruptIconShowActiveOnly:SetPoint("TOPLEFT", castBarInterruptIconTarget, "BOTTOMLEFT", -20, pixelsBetweenBoxes)
     CreateTooltipTwo(castBarInterruptIconShowActiveOnly, L["Tooltip_Only_Show_If_Available_Desc"], L["Tooltip_Only_Show_Available"])
 
     local interruptIconBorder = CreateCheckbox("interruptIconBorder", L["Border_Status_Color"], contentFrame, nil, BBF.UpdateInterruptIconSettings)
@@ -5809,6 +5816,30 @@ local function guiPositionAndScale()
 
 
 
+
+    ----------------------
+    -- Quest Indicator
+    ----------------------
+    local anchorSubQuestIndicator = contentFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    anchorSubQuestIndicator:SetPoint("CENTER", mainGuiAnchor2, "CENTER", firstLineX, secondLineY)
+    anchorSubQuestIndicator:SetText(L["Quest_Indicator"])
+
+    CreateBorderedFrame(anchorSubQuestIndicator, 165, 293, 0, -98, contentFrame)
+
+    local questIndicatorIcon = contentFrame:CreateTexture(nil, "ARTWORK")
+    questIndicatorIcon:SetAtlas("QuestNormal")
+    questIndicatorIcon:SetSize(34, 34)
+    questIndicatorIcon:SetPoint("BOTTOM", anchorSubQuestIndicator, "TOP", 0, 1)
+    CreateTooltip(questIndicatorIcon, L["Tooltip_Quest_Indicator"])
+
+    local questIndicatorScale = CreateSlider(contentFrame, L["Size"], 0.1, 1.9, 0.01, "questIndicatorScale")
+    questIndicatorScale:SetPoint("TOP", anchorSubQuestIndicator, "BOTTOM", 0, -15)
+
+    local questIndicatorXPos = CreateSlider(contentFrame, L["X_Offset"], -50, 50, 1, "questIndicatorXPos", "X")
+    questIndicatorXPos:SetPoint("TOP", questIndicatorScale, "BOTTOM", 0, -15)
+
+    local questIndicatorYPos = CreateSlider(contentFrame, L["Y_Offset"], -50, 50, 1, "questIndicatorYPos", "Y")
+    questIndicatorYPos:SetPoint("TOP", questIndicatorXPos, "BOTTOM", 0, -15)
 
     local reloadUiButton2 = CreateFrame("Button", nil, BetterBlizzFramesSubPanel, "UIPanelButtonTemplate")
     reloadUiButton2:SetText(L["Reload_UI"])
@@ -7318,8 +7349,17 @@ local function guiMisc()
     local hideStanceBar = CreateCheckbox("hideStanceBar", L["Hide_StanceBar"], guiMisc, nil, BBF.HideFrames)
     hideStanceBar:SetPoint("TOPLEFT", hideActionBarEquippedOverlay, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
 
+    local hidePetActionBar = CreateCheckbox("hidePetActionBar", L["Hide_PetActionBar"], guiMisc, nil, BBF.HideFrames)
+    hidePetActionBar:SetPoint("TOPLEFT", hideStanceBar, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(hidePetActionBar, L["Hide_PetActionBar"], L["Tooltip_Hide_PetActionBar"])
+    hidePetActionBar:HookScript("OnClick", function(self)
+        if not self:GetChecked() then
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
+        end
+    end)
+
     local stealthIndicatorPlayer = CreateCheckbox("stealthIndicatorPlayer", L["Tooltip_Stealth_Indicator"], guiMisc, nil, BBF.StealthIndicator)
-    stealthIndicatorPlayer:SetPoint("TOPLEFT", hideStanceBar, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    stealthIndicatorPlayer:SetPoint("TOPLEFT", hidePetActionBar, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     stealthIndicatorPlayer:HookScript("OnClick", function(self)
         if not self:GetChecked() then
             BBF.ShowPopup("BBF_CONFIRM_RELOAD")

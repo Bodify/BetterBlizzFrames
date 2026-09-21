@@ -534,6 +534,14 @@ L["Tooltip_Combat_Indicator"] = "Zeigt den Kampfstatus am Ziel-/Fokusfenster. Au
 L["Tooltip_Combat_Indicator_Desc"] = "Zeigt den Kampfstatus an Spieler-, Ziel- und Fokusfenster.\nSchwertsymbol für Kampf, Kopfnuss-Symbol für keinen Kampf.\nWeitere Einstellungen unter \"Erweiterte Einstellungen\""
 
 ---------------------------------------
+-- Quest Indicator
+---------------------------------------
+
+L["Quest_Indicator"] = "Questanzeige"
+L["Tooltip_Quest_Indicator"] = "Zeigt ein Questsymbol am Ziel-/Fokusfenster für Quest-NPCs. Auf der Seite Allgemein aktivieren."
+L["Tooltip_Quest_Indicator_Desc"] = "Zeigt ein Questsymbol am Ziel- und Fokusfenster für Questgegner."
+
+---------------------------------------
 -- Healer Indicator
 ---------------------------------------
 
@@ -902,6 +910,9 @@ L["Class_Resource_Scale"] = "Skalierung der Klassenressource"
 L["Class_Specific_Options"] = "Klassenspezifische Optionen"
 L["Classic_Border"] = "Classic-Rahmen"
 L["Classic_Combo_Points"] = "Classic-Combopunkte"
+L["Bronze_Frames"] = "Bronzefenster"
+L["HD_Elite_Dragons"] = "HD-Elitedrachen"
+L["Gray_ActionBars"] = "Graue Aktionsleisten"
 L["Classic_Frames"] = "Classic-Fenster"
 L["Classic_Frames_Healthbar"] = "Gesundheitsleiste der Classic-Fenster"
 L["Classic_Frames_Label"] = "*Classic-Fenster!"
@@ -1606,8 +1617,10 @@ L["Module_Name_Support"] = "Unterstützen"
 ---------------------------------------
 
 L["Forever_Tweaks"] = "Forever-Anpassungen"
-L["Bronze_Tint_Classic_Frames"] = "Bronzetönung für Classic-Fenster"
-L["Tooltip_Bronze_Tint_Classic_Frames_Desc"] = "Gibt den Einheitenrahmen der Classic-Fenster die Bronzetönung von WoW: Forever.\n\nErfordert Classic-Fenster. Der Dunkelmodus hat Vorrang, wenn er aktiviert ist." --needsUpdate
+L["Bronze_Tint_Classic_Frames"] = "Classic-Fenster: Bronzetönung"
+L["Tooltip_Bronze_Tint_Classic_Frames_Desc"] = "Gibt den Einheitenrahmen-Rändern der Classic-Fenster, den Rändern der Classic-Zauberleisten und der Classic-Minikarte die Bronzetönung von WoW: Forever.\n\n(Der Dunkelmodus hat Vorrang, wenn er aktiviert ist)"
+L["Classic_Frames_HD_Elite"] = "Classic-Fenster: HD-Elite-Texturen"
+L["Tooltip_Classic_Frames_HD_Elite_Desc"] = "Verwendet die moderne HD-Elite-Drachengrafik für das Ziel- und Fokusfenster der Classic-Fenster."
 L["Remove_ActionBar_Bronze_Tint"] = "Bronzetönung der Aktionsleisten entfernen"
 L["Tooltip_Remove_ActionBar_Bronze_Tint_Desc"] = "Entsättigt die Aktionsleisten-Grafiken, um die Bronzetönung von WoW: Forever zu entfernen.\n\nDer Dunkelmodus für Aktionsleisten hat Vorrang, wenn er aktiviert ist."
 L["Forever_In_Development"] = "In Entwicklung..."

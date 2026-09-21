@@ -417,3 +417,12 @@ function BBF.CheckSweepyBoopClassColorConflict()
     BBF.sweepyBoopCheckScheduled = true
     C_Timer.After(5, CheckSweepyBoopClassColor)
 end
+
+function BBF.UnclampMinimap()
+    if MinimapCluster then
+        MinimapCluster:SetClampedToScreen(false)
+    end
+    if Minimap then
+        Minimap:SetClampedToScreen(false)
+    end
+end

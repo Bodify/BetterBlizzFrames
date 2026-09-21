@@ -847,6 +847,23 @@ function BBF.HideFrames()
             end
         end
 
+        local petActionBar = PetActionBar or PetActionBarFrame
+        if BetterBlizzFramesDB.hidePetActionBar and petActionBar and not petActionBar.bbfHidden then
+            if InCombatLockdown() then
+                BBF.Print(BBF.L["Print_PetActionBar_Hide_Combat"])
+            else
+                petActionBar:EnableMouse(false)
+                petActionBar:SetAlpha(0)
+                for i = 1, 10 do
+                    local btn = _G["PetActionButton"..i]
+                    if btn then
+                        btn:EnableMouse(false)
+                    end
+                end
+                petActionBar.bbfHidden = true
+            end
+        end
+
         -- Hide Stance Bar
         if BetterBlizzFramesDB.hideStanceBar then
             for i = 1, 10 do

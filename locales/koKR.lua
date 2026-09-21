@@ -535,6 +535,14 @@ L["Tooltip_Combat_Indicator"] = "대상/주시 대상 프레임에 전투 상태
 L["Tooltip_Combat_Indicator_Desc"] = "플레이어, 대상 및 주시 대상 프레임에 전투 상태를 표시합니다.\n전투 중에는 검 아이콘, 비전투 중에는 혼절시키기 아이콘이 표시됩니다.\n\"고급 설정\"에서 더 많은 설정을 할 수 있습니다."
 
 ---------------------------------------
+-- Quest Indicator
+---------------------------------------
+
+L["Quest_Indicator"] = "퀘스트 표시기"
+L["Tooltip_Quest_Indicator"] = "퀘스트 NPC의 대상/주시 대상 프레임에 퀘스트 아이콘을 표시합니다. 일반 페이지에서 활성화하세요."
+L["Tooltip_Quest_Indicator_Desc"] = "퀘스트 몬스터일 때 대상 및 주시 대상 프레임에 퀘스트 아이콘을 표시합니다."
+
+---------------------------------------
 -- Healer Indicator
 ---------------------------------------
 
@@ -903,6 +911,9 @@ L["Class_Resource_Scale"] = "직업 자원 크기"
 L["Class_Specific_Options"] = "직업별 옵션"
 L["Classic_Border"] = "클래식 테두리"
 L["Classic_Combo_Points"] = "클래식 연계 점수"
+L["Bronze_Frames"] = "청동 프레임"
+L["HD_Elite_Dragons"] = "HD 정예 용 테두리"
+L["Gray_ActionBars"] = "회색 행동 단축바"
 L["Classic_Frames"] = "클래식 프레임"
 L["Classic_Frames_Healthbar"] = "클래식 프레임 체력바"
 L["Classic_Frames_Label"] = "*클래식 프레임!"
@@ -1607,8 +1618,10 @@ L["Module_Name_Support"] = "후원"
 ---------------------------------------
 
 L["Forever_Tweaks"] = "Forever 조정"
-L["Bronze_Tint_Classic_Frames"] = "클래식 프레임 청동 색조"
-L["Tooltip_Bronze_Tint_Classic_Frames_Desc"] = "클래식 프레임의 유닛 프레임 테두리에 WoW: Forever의 청동 색조를 적용합니다.\n\n클래식 프레임이 필요합니다. 다크 모드가 활성화되어 있으면 다크 모드가 우선합니다." --needsUpdate
+L["Bronze_Tint_Classic_Frames"] = "클래식 프레임: 청동 색조"
+L["Tooltip_Bronze_Tint_Classic_Frames_Desc"] = "클래식 프레임의 유닛 프레임 테두리, 클래식 시전바 테두리, 클래식 미니맵에 WoW: Forever의 청동 색조를 적용합니다.\n\n(다크 모드가 활성화되어 있으면 다크 모드가 우선합니다)"
+L["Classic_Frames_HD_Elite"] = "클래식 프레임: HD 정예 텍스처 사용"
+L["Tooltip_Classic_Frames_HD_Elite_Desc"] = "클래식 프레임의 대상 및 주시 대상 프레임에 최신 HD 정예 용 그래픽을 사용합니다."
 L["Remove_ActionBar_Bronze_Tint"] = "행동 단축바 청동 색조 제거"
 L["Tooltip_Remove_ActionBar_Bronze_Tint_Desc"] = "행동 단축바 그래픽의 채도를 낮춰 WoW: Forever의 청동 색조를 제거합니다.\n\n행동 단축바 다크 모드가 활성화되어 있으면 다크 모드가 우선합니다."
 L["Forever_In_Development"] = "개발 중..."

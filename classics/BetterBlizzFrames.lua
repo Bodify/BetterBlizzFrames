@@ -95,6 +95,10 @@ local defaultSettings = {
     combatIndicatorXPos = 0,
     combatIndicatorYPos = 0,
     --Race Indicator
+    questIndicator = false,
+    questIndicatorScale = 1,
+    questIndicatorXPos = 0,
+    questIndicatorYPos = 0,
     racialIndicator = false,
     targetRacialIndicator = true,
     focusRacialIndicator = true,
@@ -2885,6 +2889,7 @@ Frame:SetScript("OnEvent", function(...)
     CheckForUpdate()
     --BBF.HideFrames()
     DisableClickForClassSpecificFrame()
+    BBF.UnclampMinimap()
     BBF.MoveToTFrames()
     BBF.HookHealthbarColors()
     BBF.UnitFrameBackgroundTexture()
@@ -2921,6 +2926,7 @@ Frame:SetScript("OnEvent", function(...)
             BBF.ShowPlayerCastBarIcon()
             BBF.HookCastbars()
             BBF.CombatIndicator(PlayerFrame, "player")
+            BBF.QuestIndicatorCaller()
             if BetterBlizzFramesDB.hideArenaFrames then
                 BBF.HideArenaFrames()
             end

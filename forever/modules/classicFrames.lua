@@ -22,6 +22,12 @@ local bigNoLvlTex = bigPath .. "UI-TargetingFrame-NoLevel-Retail.tga"
 local bigNoManaTex = bigPath .. "UI-TargetingFrame-Retail-NoMana.tga"
 local bigNoManaNoLvlTex = bigPath .. "UI-TargetingFrame-NoLevel-Retail-NoMana.tga"
 local bigStatusTex = bigPath .. "UI-Player-Status"
+local eliteTextures = {
+    rareelite = "Interface\\TargetingFrame\\UI-TargetingFrame-Rare-Elite",
+    worldboss = "Interface\\TargetingFrame\\UI-TargetingFrame-Elite",
+    elite = "Interface\\TargetingFrame\\UI-TargetingFrame-Elite",
+    rare = "Interface\\TargetingFrame\\UI-TargetingFrame-Rare",
+}
 
 local function BigPlayerHealthbar()
     return BetterBlizzFramesDB.bigPlayerHealthbar
@@ -283,6 +289,10 @@ local function MakeClassicFrame(frame)
             end
         end
 
+        local function UseHDElite()
+            return BetterBlizzFramesDB.classicFramesHDElite and not hideDragon
+        end
+
         local function ToggleNoLevelFrame(noLvl, skipTexture)
             if noLvl then
                 if not skipTexture then
@@ -300,6 +310,36 @@ local function MakeClassicFrame(frame)
                 contentMain.LevelText:SetAlpha(1)
             end
         end
+
+        local function DefaultLevelFrame()
+            if alwaysHideLvl then
+                ToggleNoLevelFrame(true)
+            elseif hideLvl and UnitLevel(frame.unit) == BBF.GetMaxPlayerLevel() then
+                ToggleNoLevelFrame(true)
+            else
+                ToggleNoLevelFrame(false)
+            end
+        end
+
+        local function RefreshEliteArt()
+            local classification = UnitExists(frame.unit) and UnitClassification(frame.unit)
+            local eliteTexture = classification and eliteTextures[classification]
+            if eliteTexture then
+                if UseHDElite() then
+                    DefaultLevelFrame()
+                elseif hideDragon and alwaysHideLvl then
+                    ToggleNoLevelFrame(true)
+                elseif hideDragon then
+                    frame.ClassicFrame.Texture:SetTexture(defaultTex)
+                    ToggleNoLevelFrame(false, true)
+                else
+                    frame.ClassicFrame.Texture:SetTexture(eliteTexture)
+                    ToggleNoLevelFrame(false, true)
+                end
+            end
+            BBF.UpdateClassicHDElite(frame)
+        end
+        frame.ClassicFrame.RefreshEliteArt = RefreshEliteArt
 
         hooksecurefunc(frame, "CheckClassification", function(self)
             local classification = UnitClassification(self.unit)
@@ -326,7 +366,9 @@ local function MakeClassicFrame(frame)
 
             if ( classification == "rareelite" ) then
                 FrameAdjustments(frameContainer)
-                if hideDragon and alwaysHideLvl then
+                if UseHDElite() then
+                    DefaultLevelFrame()
+                elseif hideDragon and alwaysHideLvl then
                     ToggleNoLevelFrame(true)
                 elseif hideDragon then
                     frame.ClassicFrame.Texture:SetTexture(defaultTex)
@@ -337,7 +379,9 @@ local function MakeClassicFrame(frame)
                 end
             elseif ( classification == "worldboss" or classification == "elite" ) then
                 FrameAdjustments(frameContainer)
-                if hideDragon and alwaysHideLvl then
+                if UseHDElite() then
+                    DefaultLevelFrame()
+                elseif hideDragon and alwaysHideLvl then
                     ToggleNoLevelFrame(true)
                 elseif hideDragon then
                     frame.ClassicFrame.Texture:SetTexture(defaultTex)
@@ -348,7 +392,9 @@ local function MakeClassicFrame(frame)
                 end
             elseif ( classification == "rare" ) then
                 FrameAdjustments(frameContainer)
-                if hideDragon and alwaysHideLvl then
+                if UseHDElite() then
+                    DefaultLevelFrame()
+                elseif hideDragon and alwaysHideLvl then
                     ToggleNoLevelFrame(true)
                 elseif hideDragon then
                     frame.ClassicFrame.Texture:SetTexture(defaultTex)
@@ -382,6 +428,7 @@ local function MakeClassicFrame(frame)
                 end
             end
             BBF.UpdateClassicEliteOverlay(self)
+            BBF.UpdateClassicHDElite(self)
         end)
 
         hooksecurefunc(frame, "CheckFaction", function(self)
@@ -570,7 +617,7 @@ local function MakeClassicFrame(frame)
                 end
             else
                 -- When playerEliteFrame is enabled, handle level text based on mode
-                local mode = BetterBlizzFramesDB.playerEliteFrameMode
+                local mode = BBF.GetPlayerEliteMode()
                 if mode > 3 then
                     -- Always hide level text for mode > 3 (using UI-FocusFrame-Large texture)
                     PlayerLevelText:SetParent(BBF.hiddenFrame)
@@ -670,13 +717,11 @@ local function MakeClassicFrame(frame)
         }
 
         local function UpdateResourcePosition(rogueCheck)
-            if db["moveResource" .. class] or (db.moveResourceToTarget and classConflicts[class]) then
+            if db.moveResourceToTarget and classConflicts[class] then
                 return
             end
 
             if not InCombatLockdown() then
-                PlayerBottomManagedFrameContainer:ClearAllPoints()
-
                 local specID = BBF.GetSpecialization() and BBF.GetSpecializationInfo(BBF.GetSpecialization())
                 local posData = resourceFrameAnchorPositions[specID] or resourceFrameAnchorPositions.default
                 local point = posData.point or "TOP"
@@ -688,22 +733,19 @@ local function MakeClassicFrame(frame)
                 local _, _, scale = GetPlayerClassAndSpecPosition()
 
                 if rogueCheck then
-                    local isRogueWith5Combos = UnitPowerMax("player", Enum.PowerType.ComboPoints) == 5
-                    local isRogueWith6Combos = UnitPowerMax("player", Enum.PowerType.ComboPoints) == 6
-                    if isRogueWith5Combos then
-                        PlayerBottomManagedFrameContainer:SetPoint(point, relativeFrame, relativePoint, 31.5, 35)
-                        PlayerBottomManagedFrameContainer:SetScale(0.95)
-                    elseif isRogueWith6Combos then
-                        PlayerBottomManagedFrameContainer:SetPoint(point, relativeFrame, relativePoint, 46, 37)
-                        PlayerBottomManagedFrameContainer:SetScale(scale)
-                    else
-                        PlayerBottomManagedFrameContainer:SetPoint(point, relativeFrame, relativePoint, xOffset, yOffset)
-                        PlayerBottomManagedFrameContainer:SetScale(scale)
+                    local maxCombos = UnitPowerMax("player", Enum.PowerType.ComboPoints)
+                    if maxCombos == 5 then
+                        xOffset, yOffset, scale = 31.5, 35, 0.95
+                    elseif maxCombos == 6 then
+                        xOffset, yOffset = 46, 37
                     end
-                else
-                    PlayerBottomManagedFrameContainer:SetPoint(point, relativeFrame, relativePoint, xOffset, yOffset)
-                    PlayerBottomManagedFrameContainer:SetScale(scale)
                 end
+
+                if not db["moveResource" .. class] then
+                    PlayerBottomManagedFrameContainer:ClearAllPoints()
+                    PlayerBottomManagedFrameContainer:SetPoint(point, relativeFrame, relativePoint, xOffset, yOffset)
+                end
+                PlayerBottomManagedFrameContainer:SetScale(scale)
                 PlayerBottomManagedFrameContainer:SetFrameStrata("HIGH")
             else
                 PlayerBottomManagedFrameContainer.positionNeedsUpdate = true
@@ -723,6 +765,10 @@ local function MakeClassicFrame(frame)
             end
         end
 
+        BBF.UpdateResourcePositionClassic = function()
+            UpdateResourcePosition(class == "ROGUE")
+        end
+
         local isRogue = class == "ROGUE"
         if isRogue then
             local specWatcher = CreateFrame("Frame")
@@ -737,7 +783,7 @@ local function MakeClassicFrame(frame)
 
         local function PlayerEliteFrame()
             local playerElite = frame.ClassicFrame.Texture
-            local mode = BetterBlizzFramesDB.playerEliteFrameMode
+            local mode = BBF.GetPlayerEliteMode()
             local hideLvl = BetterBlizzFramesDB.hideLevelText
             local alwaysHideLvl = hideLvl and BetterBlizzFramesDB.hideLevelTextAlways
 
@@ -791,7 +837,7 @@ local function MakeClassicFrame(frame)
                 frameContainer.FrameFlash:SetTexCoord(0.9453125, 0, 0, 0.181640625)
                 SetStatusGlowTexture(contentMain.StatusTexture, "Interface\\CharacterFrame\\UI-Player-Status", bigStatusTex)
                 -- Handle level text for playerEliteFrame
-                local mode = BetterBlizzFramesDB.playerEliteFrameMode
+                local mode = BBF.GetPlayerEliteMode()
                 if mode > 3 and (alwaysHideLvl or (hideLvl and UnitLevel("player") == BBF.GetMaxPlayerLevel())) then
                     -- Ensure level text is hidden when using UI-FocusFrame-Large
                     PlayerLevelText:SetParent(BBF.hiddenFrame)
@@ -813,6 +859,7 @@ local function MakeClassicFrame(frame)
 
         function BBF.UpdateClassicPlayerArt()
             UpdatePlayerFrameTexture()
+            UpdateLevel()
             AdjustStatusGlow()
             AdjustStatusBarText()
             AdjustBackground()

@@ -299,6 +299,19 @@ end
 local eliteOverlayClassifications = { elite = true, worldboss = true, rareelite = true }
 local ELITE_OVERLAY_R, ELITE_OVERLAY_G, ELITE_OVERLAY_B = 1, 0.816, 0.251
 
+local hdEliteOverlays = {
+    rare = { atlas = "UI-HUD-UnitFrame-Target-PortraitOn-Boss-Rare-Silver", width = 97.5, height = 102, x = 22, y = 20 },
+    rareelite = { atlas = "UI-HUD-UnitFrame-Target-PortraitOn-Boss-Gold-Winged", width = 107, height = 92, x = 32, y = 15, desaturated = true },
+    elite = { atlas = "UI-HUD-UnitFrame-Target-PortraitOn-Boss-Gold", width = 97.5, height = 102, x = 22, y = 20 },
+    worldboss = { atlas = "UI-HUD-UnitFrame-Target-PortraitOn-Boss-Gold-Winged", width = 107, height = 92, x = 32, y = 15 },
+}
+
+local function HDEliteActive()
+    local db = BetterBlizzFramesDB
+    return db.classicFrames and db.classicFramesHDElite and not db.hideRareDragonTexture
+end
+BBF.ClassicHDEliteActive = HDEliteActive
+
 function BBF.UpdateClassicEliteOverlay(frame)
     local classicFrame = frame and frame.ClassicFrame
     if not classicFrame or not classicFrame.Texture then return end
@@ -306,7 +319,7 @@ function BBF.UpdateClassicEliteOverlay(frame)
     local db = BetterBlizzFramesDB
     local darkModeKeepsDragon = db.classicFrames and db.darkModeUi and not db.darkModeEliteTexture
     local overlay = classicFrame.EliteOverlay
-    if not ((BronzeTintActive() or darkModeKeepsDragon) and not db.hideRareDragonTexture and eliteOverlayClassifications[classification]) then
+    if not ((BronzeTintActive() or darkModeKeepsDragon) and not db.hideRareDragonTexture and not HDEliteActive() and eliteOverlayClassifications[classification]) then
         if overlay then overlay:Hide() end
         return
     end
@@ -327,6 +340,66 @@ function BBF.UpdateClassicEliteOverlay(frame)
         overlay:SetVertexColor(ELITE_OVERLAY_R, ELITE_OVERLAY_G, ELITE_OVERLAY_B, 1)
     end
     overlay:Show()
+end
+
+function BBF.UpdateClassicHDElite(frame)
+    local classicFrame = frame and frame.ClassicFrame
+    if not classicFrame then return end
+    local portrait = frame.TargetFrameContainer and frame.TargetFrameContainer.Portrait
+    if not portrait then return end
+    local overlay = classicFrame.HDElite
+    local classification = frame.unit and UnitExists(frame.unit) and UnitClassification(frame.unit)
+    local bossTexture = frame.TargetFrameContainer.BossPortraitFrameTexture
+    if classification and bossTexture and bossTexture:IsShown() then
+        local atlas = bossTexture:GetAtlas()
+        if atlas and not (issecretvalue and issecretvalue(atlas)) and atlas:lower():find("gold-winged", 1, true) then
+            classification = "worldboss"
+        end
+    end
+    local data = HDEliteActive() and classification and hdEliteOverlays[classification]
+    if not data then
+        if overlay then overlay:Hide() end
+        return
+    end
+    if not overlay then
+        overlay = classicFrame:CreateTexture(nil, "OVERLAY", nil, 6)
+        classicFrame.HDElite = overlay
+    end
+    local db = BetterBlizzFramesDB
+    overlay:SetAtlas(data.atlas)
+    overlay:SetSize(data.width, data.height)
+    overlay:ClearAllPoints()
+    overlay:SetPoint("TOPRIGHT", portrait, "TOPRIGHT", data.x, data.y)
+    if db.darkModeUi and db.darkModeEliteTexture then
+        local v = db.darkModeColor + 0.25
+        overlay:SetDesaturated(db.darkModeEliteTextureDesaturated or data.desaturated or false)
+        overlay:SetVertexColor(v, v, v, 1)
+    else
+        overlay:SetDesaturated(data.desaturated or false)
+        overlay:SetVertexColor(1, 1, 1, 1)
+    end
+    overlay:Show()
+end
+
+function BBF.RefreshClassicHDElite()
+    if not BetterBlizzFramesDB.classicFrames then return end
+    for _, frame in ipairs({ TargetFrame, FocusFrame }) do
+        local classicFrame = frame and frame.ClassicFrame
+        if classicFrame then
+            if classicFrame.RefreshEliteArt then
+                classicFrame.RefreshEliteArt()
+            else
+                BBF.UpdateClassicHDElite(frame)
+            end
+            BBF.UpdateClassicEliteOverlay(frame)
+        end
+    end
+    if BetterBlizzFramesDB.playerEliteFrame then
+        if BBF.UpdateClassicPlayerArt then
+            BBF.UpdateClassicPlayerArt()
+        end
+        BBF.PlayerElite(BetterBlizzFramesDB.playerEliteFrameMode)
+    end
 end
 
 function BBF.UpdateBronzeTint()
@@ -372,6 +445,11 @@ local function ActionBarBronzeRemovalActive()
     return db.removeActionBarBronzeTint and not (db.darkModeUi and db.darkModeActionBars)
 end
 
+local function SlotArtDesaturationActive()
+    local db = BetterBlizzFramesDB
+    return ActionBarBronzeRemovalActive() or (db.darkModeUi and db.darkModeActionBars) or false
+end
+
 local emptyBagSlotAtlases = {
     ["ui-hud-actionbar-iconframe-slot"] = true,
     ["ui-hud-actionbar-iconframe-slot-small"] = true,
@@ -383,8 +461,8 @@ local function IsEmptyBagSlotArt(texture)
 end
 
 local function ReapplyDesaturated(self)
-    if self.bbfDesatChanging or not ActionBarBronzeRemovalActive() then return end
-    local desaturate = not self.bbfDesatCheck or self.bbfDesatCheck(self)
+    if self.bbfDesatChanging then return end
+    local desaturate = SlotArtDesaturationActive() and (not self.bbfDesatCheck or self.bbfDesatCheck(self)) or false
     if not desaturate and not self.bbfDesatForced then return end
     self.bbfDesatChanging = true
     self.bbfDesatForced = desaturate
@@ -404,9 +482,13 @@ local function ForceDesaturated(texture, check)
     ReapplyDesaturated(texture)
 end
 
+local slotArtDesaturated
+
 function BBF.UpdateActionBarBronzeTint()
-    if not ActionBarBronzeRemovalActive() then return end
-    if BBF.ApplyActionBarArt then
+    local active = SlotArtDesaturationActive()
+    if not active and not slotArtDesaturated then return end
+    slotArtDesaturated = active
+    if ActionBarBronzeRemovalActive() and BBF.ApplyActionBarArt then
         BBF.ApplyActionBarArt(true, 1, 1)
     end
     for _, slotName in ipairs(desaturatedIconNames) do
@@ -464,4 +546,5 @@ function BBF.ForeverTweaks()
     BBF.UpdateBagSlotTextures()
     BBF.UpdateBronzeTint()
     BBF.UpdateActionBarBronzeTint()
+    BBF.UpdateMinimapTweaks()
 end

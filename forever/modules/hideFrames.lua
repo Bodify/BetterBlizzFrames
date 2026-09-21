@@ -18,6 +18,7 @@ local minimapButtonsHooked = false
 local bagButtonsHooked = false
 local keybindAlphaChanged = false
 local hiddenBar1 = true
+local hiddenPetBar = true
 
 local changes = {}
 
@@ -315,6 +316,44 @@ function BBF.HideFrames()
                 MainActionBar.bbfHidden = true
                 MainMenuBarVehicleLeaveButton:SetParent(UIParent)
                 MainActionBar.ActionBarPageNumber:SetParent(BBF.hiddenFrame)
+            end
+        end
+
+        if BetterBlizzFramesDB.hidePetActionBar then
+            if not PetActionBar.bbfHidden then
+                local function setPetActionBarVisibility(visible)
+                    local mouse = visible
+                    local alpha = visible and 1 or 0
+                    PetActionBar:EnableMouse(mouse)
+                    PetActionBar:SetAlpha(alpha)
+                    for i = 1, 10 do
+                        local btn = _G["PetActionButton"..i]
+                        if btn then
+                            btn:EnableMouse(mouse)
+                        end
+                    end
+                    hiddenPetBar = not visible
+                end
+                hooksecurefunc(EditModeManagerFrame, "EnterEditMode", function()
+                    if InCombatLockdown() then
+                        if hiddenPetBar then
+                            BBF.Print(L["Print_PetActionBar_Show_Combat"])
+                        end
+                        return
+                    end
+                    setPetActionBarVisibility(true)
+                end)
+                hooksecurefunc(EditModeManagerFrame, "ExitEditMode", function()
+                    if InCombatLockdown() then
+                        if not hiddenPetBar then
+                            BBF.Print(L["Print_PetActionBar_Hide_Combat"])
+                        end
+                        return
+                    end
+                    setPetActionBarVisibility(false)
+                end)
+                setPetActionBarVisibility(false)
+                PetActionBar.bbfHidden = true
             end
         end
 
@@ -1959,132 +1998,6 @@ function BBF.FadeMicroMenu()
 
         MicroMenu.bffHooked = true
     end
-end
-
-function BBF.MoveQueueStatusEye()
-    if not BetterBlizzFramesDB.moveQueueStatusEye then return end
-    if C_AddOns.IsAddOnLoaded("Bartender4") then
-        BBF.Print(L["Print_Bartender4_Conflict"])
-        return
-    end
-
-    local button = QueueStatusButton
-    if button.bbfHooked then return end
-    QueueStatusButton:SetParent(UIParent)
-    QueueStatusButton:SetFrameLevel(10)
-
-    local function CalculateMicroMenuWidthWithoutQueue()
-        if not MicroMenu then return 1 end
-        if MicroMenu:GetParent() ~= MicroMenuContainer then return 1 end
-
-        local isHorizontal = not MicroMenu or MicroMenu.isHorizontal;
-        local width, height = 0, 0;
-
-        local function AddFrameSize(frame, includeOffset)
-            local scale = frame:GetScale()
-            if isHorizontal then
-                width = width + frame:GetWidth() * scale;
-                if includeOffset then
-                    local point, _, _, offsetX = frame:GetPoint(1)
-                    width = width + math.abs(offsetX * scale);
-                end
-                height = math.max(height, frame:GetHeight() * scale);
-            else
-                width = math.max(width, frame:GetWidth() * scale);
-                height = height + frame:GetHeight() * scale;
-                if includeOffset then
-                    local _, _, _, _, offsetY = frame:GetPoint(1)
-                    height = height + math.abs(offsetY * scale);
-                end
-            end
-        end
-        AddFrameSize(MicroMenu);
-        return math.max(width, 1)
-    end
-
-    local widthWaiter
-    local function ApplyMicroMenuWidth()
-        if InCombatLockdown() then
-            if not widthWaiter then
-                widthWaiter = CreateFrame("Frame")
-                widthWaiter:SetScript("OnEvent", function(self)
-                    self:UnregisterEvent("PLAYER_REGEN_ENABLED")
-                    ApplyMicroMenuWidth()
-                end)
-            end
-            if not widthWaiter:IsEventRegistered("PLAYER_REGEN_ENABLED") then
-                widthWaiter:RegisterEvent("PLAYER_REGEN_ENABLED")
-            end
-            return
-        end
-        MicroMenuContainer:SetWidth(CalculateMicroMenuWidthWithoutQueue())
-    end
-
-    hooksecurefunc(MicroMenuContainer, "SetSize", function(self)
-        ApplyMicroMenuWidth()
-    end)
-
-    hooksecurefunc(button, "SetPoint", function(self, _, _, _, _, _)
-        if self:IsProtected() or self.changing then return end
-        self.changing = true
-        self:ClearAllPoints()
-
-        if BetterBlizzFramesDB.queueStatusButtonPosition then
-            local pos = BetterBlizzFramesDB.queueStatusButtonPosition
-            self:SetPoint(pos[1], UIParent, pos[3], pos[4], pos[5])
-        else
-            self:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", -180, -141)
-        end
-
-        self.changing = false
-    end)
-
-    button:HookScript("OnShow", function(self)
-        if self:IsProtected() or self.changing then return end
-        self.changing = true
-        self:ClearAllPoints()
-
-        if BetterBlizzFramesDB.queueStatusButtonPosition then
-            local pos = BetterBlizzFramesDB.queueStatusButtonPosition
-            self:SetPoint(pos[1], UIParent, pos[3], pos[4], pos[5])
-        else
-            self:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", -180, -141)
-        end
-
-        self.changing = false
-    end)
-
-    button:SetMovable(true)
-    button:EnableMouse(true)
-    button:RegisterForDrag("LeftButton")
-    button:SetScript("OnDragStart", function(self)
-        if IsControlKeyDown() then
-            self:StartMoving()
-        end
-    end)
-
-    button:SetScript("OnDragStop", function(self)
-        self:StopMovingOrSizing()
-
-        local point, _, relativePoint, xOffset, yOffset = self:GetPoint()
-        BetterBlizzFramesDB.queueStatusButtonPosition = {point, nil, relativePoint, xOffset, yOffset}
-    end)
-
-    if BetterBlizzFramesDB.queueStatusButtonPosition then
-        local pos = BetterBlizzFramesDB.queueStatusButtonPosition
-        button:ClearAllPoints()
-        button:SetPoint(pos[1], UIParent, pos[3], pos[4], pos[5])
-    else
-        button:ClearAllPoints()
-        button:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", -180, -141)
-        local point, _, relativePoint, xOffset, yOffset = button:GetPoint()
-        BetterBlizzFramesDB.queueStatusButtonPosition = {point, nil, relativePoint, xOffset, yOffset}
-    end
-
-    button:SetParent(UIParent)
-    button:SetFrameStrata("MEDIUM")
-
-    button.bbfHooked = true
 end
 
 -- QueueStatusButton:HookScript("OnShow", function(self)

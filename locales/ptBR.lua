@@ -534,6 +534,14 @@ L["Tooltip_Combat_Indicator"] = "Mostra o status de combate no quadro do alvo/fo
 L["Tooltip_Combat_Indicator_Desc"] = "Mostra o status de combate nos quadros de jogador, alvo e foco.\nÍcone de espada em combate, ícone de Porretada fora de combate.\nMais configurações em \"Configurações avançadas\""
 
 ---------------------------------------
+-- Quest Indicator
+---------------------------------------
+
+L["Quest_Indicator"] = "Indicador de missão"
+L["Tooltip_Quest_Indicator"] = "Mostra um ícone de missão no quadro de alvo/foco para PNJs de missão. Ative na página Geral."
+L["Tooltip_Quest_Indicator_Desc"] = "Mostra um ícone de missão no quadro de alvo e de foco para monstros de missão."
+
+---------------------------------------
 -- Healer Indicator
 ---------------------------------------
 
@@ -902,6 +910,9 @@ L["Class_Resource_Scale"] = "Escala do recurso de classe"
 L["Class_Specific_Options"] = "Opções específicas da classe"
 L["Classic_Border"] = "Borda clássica"
 L["Classic_Combo_Points"] = "Pontos de combo clássicos"
+L["Bronze_Frames"] = "Quadros de bronze"
+L["HD_Elite_Dragons"] = "Dragões de elite HD"
+L["Gray_ActionBars"] = "Barras de ação cinzas"
 L["Classic_Frames"] = "Quadros clássicos"
 L["Classic_Frames_Healthbar"] = "Barra de vida dos quadros clássicos"
 L["Classic_Frames_Label"] = "*Quadros clássicos!"
@@ -1606,8 +1617,10 @@ L["Module_Name_Support"] = "Apoio"
 ---------------------------------------
 
 L["Forever_Tweaks"] = "Ajustes do Forever"
-L["Bronze_Tint_Classic_Frames"] = "Tom bronze nos quadros clássicos"
-L["Tooltip_Bronze_Tint_Classic_Frames_Desc"] = "Aplica às bordas dos quadros clássicos o tom bronze do WoW: Forever.\n\nRequer quadros clássicos. O modo escuro tem prioridade quando ativado." --needsUpdate
+L["Bronze_Tint_Classic_Frames"] = "Quadros clássicos: tom bronze"
+L["Tooltip_Bronze_Tint_Classic_Frames_Desc"] = "Aplica o tom bronze do WoW: Forever às bordas dos quadros de unidade clássicos, às bordas das barras de lançamento clássicas e ao minimapa clássico.\n\n(O modo escuro tem prioridade quando ativado)"
+L["Classic_Frames_HD_Elite"] = "Quadros clássicos: texturas de elite em HD"
+L["Tooltip_Classic_Frames_HD_Elite_Desc"] = "Usa a arte moderna de dragão de elite em HD nos quadros de alvo e foco dos quadros clássicos."
 L["Remove_ActionBar_Bronze_Tint"] = "Remover tom bronze das barras de ação"
 L["Tooltip_Remove_ActionBar_Bronze_Tint_Desc"] = "Dessatura a arte das barras de ação para remover o tom bronze do WoW: Forever.\n\nO modo escuro das barras de ação tem prioridade quando ativado."
 L["Forever_In_Development"] = "Em desenvolvimento..."

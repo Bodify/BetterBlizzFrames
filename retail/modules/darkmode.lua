@@ -129,6 +129,33 @@ function BBF.DarkModeNameplateResources()
     end
 end
 
+local prdBarBgAtlas = "UI-HUD-CoolDownManager-Bar-BG"
+
+local function GetPrdBarBgBorder(bar)
+    if bar.bbfPrdBgBorder then return bar.bbfPrdBgBorder end
+    for _, region in ipairs({bar:GetRegions()}) do
+        if region:GetObjectType() == "Texture" and (region.blizzBgBorderTexture or region:GetAtlas() == prdBarBgAtlas) then
+            bar.bbfPrdBgBorder = region
+            return region
+        end
+    end
+end
+
+function BBF.DarkModePRDBarBorders()
+    local prd = PersonalResourceDisplayFrame
+    local on = BetterBlizzFramesDB.darkModeUi and true or false
+    local base = on and BetterBlizzFramesDB.darkModeColor or 1
+
+    local healthBars = prd.HealthBarsContainer
+    for _, bar in pairs({
+        healthBars and healthBars.healthBar,
+        prd.PowerBar,
+        prd.AlternatePowerBar,
+    }) do
+        applySettings(GetPrdBarBgBorder(bar), on, base)
+    end
+end
+
 local pixelBorderAuras
 local removeDebuffColorBorder
 function BBF.UpdateUserDarkModeSettings()
@@ -558,6 +585,8 @@ function BBF.DarkmodeFrames(bypass)
     end
     BBF.UpdateClassicEliteOverlay(TargetFrame)
     BBF.UpdateClassicEliteOverlay(FocusFrame)
+    BBF.UpdateClassicHDElite(TargetFrame)
+    BBF.UpdateClassicHDElite(FocusFrame)
 
 
     -- Applying settings based on BetterBlizzFramesDB.darkModeUi value
@@ -731,6 +760,7 @@ function BBF.DarkmodeFrames(bypass)
     end
 
     applySettings(MinimapCompassTexture, minimapSat, minimapColor)
+    applySettings(MinimapCluster.DielFrame and MinimapCluster.DielFrame.Background, minimapSat, minimapColor)
 
     for i = 1, ExpansionLandingPageMinimapButton:GetNumRegions() do
         local region = select(i, ExpansionLandingPageMinimapButton:GetRegions())
@@ -803,6 +833,7 @@ function BBF.DarkmodeFrames(bypass)
     end
 
     BBF.DarkModeNameplateResources()
+    BBF.DarkModePRDBarBorders()
 
     local soulShards = _G.WarlockPowerFrame
     if soulShards then

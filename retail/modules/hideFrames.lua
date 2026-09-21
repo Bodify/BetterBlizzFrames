@@ -18,6 +18,7 @@ local minimapButtonsHooked = false
 local bagButtonsHooked = false
 local keybindAlphaChanged = false
 local hiddenBar1 = true
+local hiddenPetBar = true
 
 local changes = {}
 
@@ -282,6 +283,44 @@ function BBF.HideFrames()
                 MainActionBar.bbfHidden = true
                 MainMenuBarVehicleLeaveButton:SetParent(UIParent)
                 MainActionBar.ActionBarPageNumber:SetParent(BBF.hiddenFrame)
+            end
+        end
+
+        if BetterBlizzFramesDB.hidePetActionBar then
+            if not PetActionBar.bbfHidden then
+                local function setPetActionBarVisibility(visible)
+                    local mouse = visible
+                    local alpha = visible and 1 or 0
+                    PetActionBar:EnableMouse(mouse)
+                    PetActionBar:SetAlpha(alpha)
+                    for i = 1, 10 do
+                        local btn = _G["PetActionButton"..i]
+                        if btn then
+                            btn:EnableMouse(mouse)
+                        end
+                    end
+                    hiddenPetBar = not visible
+                end
+                hooksecurefunc(EditModeManagerFrame, "EnterEditMode", function()
+                    if InCombatLockdown() then
+                        if hiddenPetBar then
+                            BBF.Print(L["Print_PetActionBar_Show_Combat"])
+                        end
+                        return
+                    end
+                    setPetActionBarVisibility(true)
+                end)
+                hooksecurefunc(EditModeManagerFrame, "ExitEditMode", function()
+                    if InCombatLockdown() then
+                        if not hiddenPetBar then
+                            BBF.Print(L["Print_PetActionBar_Hide_Combat"])
+                        end
+                        return
+                    end
+                    setPetActionBarVisibility(false)
+                end)
+                setPetActionBarVisibility(false)
+                PetActionBar.bbfHidden = true
             end
         end
 

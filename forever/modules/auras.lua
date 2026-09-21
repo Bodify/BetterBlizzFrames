@@ -2169,6 +2169,8 @@ local CB = {
     defaultAuraY = -8,
     defaultToTUncheckedX = 25,
     defaultToTUncheckedY = 8.5,
+    defaultNoAuraX = 25,
+    defaultNoAuraY = 0,
 }
 
 function CB.GetFrames(key)
@@ -2384,7 +2386,7 @@ function CB.Place(key)
     elseif frame.haveToT then
         baseX, baseY = CB.defaultX + CB.defaultToTUncheckedX, CB.defaultY + CB.defaultToTUncheckedY
     else
-        baseX, baseY = CB.defaultX, CB.defaultY
+        baseX, baseY = CB.defaultX + CB.defaultNoAuraX, CB.defaultY + CB.defaultNoAuraY
     end
 
     spellbar:SetPointsOffset(xPos + baseX, yPos + baseY)

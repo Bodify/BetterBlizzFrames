@@ -281,7 +281,63 @@ local moveComboInForm = {
     -- [35] = true,
 }
 
-local function UpdateAltManaBar(updateCombos, cf)
+local comboNudgeHooked
+local comboBlizzPoint
+
+local function ComboPointsMovedElsewhere()
+    local db = BetterBlizzFramesDB
+    return (db.moveResourceDRUID and db.moveResourceStackPos and db.moveResourceStackPos["DRUID"]) or (db.moveResourceToTarget and db.moveResourceToTargetDruid)
+end
+
+local function ApplyComboNudge()
+    local frame = DruidComboPointBarFrame
+    if not frame or frame:IsProtected() or ComboPointsMovedElsewhere() then return end
+    if BBF.HasNoPortrait("player") and BBF.PinClassFrameNoPortrait then
+        BBF.PinClassFrameNoPortrait()
+        return
+    end
+    if not comboBlizzPoint or frame:GetParent() ~= PlayerBottomManagedFrameContainer then return end
+
+    frame.bbfNudging = true
+    frame:ClearAllPoints()
+    frame:SetPoint("TOP", PlayerBottomManagedFrameContainer, "TOP", comboBlizzPoint[1], comboBlizzPoint[2] + (BBF.classResourceNudgeY or 0) / frame:GetScale())
+    frame.bbfNudging = false
+end
+BBF.ApplyClassResourceNudge = ApplyComboNudge
+
+local function HookComboNudge()
+    local frame = DruidComboPointBarFrame
+    if comboNudgeHooked or not frame then return end
+    comboNudgeHooked = true
+
+    local point, relativeTo, _, x, y = frame:GetPoint(1)
+    if point == "TOP" and relativeTo == PlayerBottomManagedFrameContainer then
+        comboBlizzPoint = { x or 0, y or 0 }
+    end
+
+    hooksecurefunc(frame, "SetPoint", function(self, point, relativeTo, relativePoint, x, y)
+        if self.bbfNudging or self.bbfPinning or self.bbfMoveResourceChanging or point ~= "TOP" then return end
+        if type(relativeTo) == "number" then
+            comboBlizzPoint = { relativeTo, relativePoint or 0 }
+        elseif relativeTo == nil or relativeTo == PlayerBottomManagedFrameContainer then
+            comboBlizzPoint = { x or 0, y or 0 }
+        else
+            return
+        end
+        if (BBF.classResourceNudgeY or 0) ~= 0 then
+            ApplyComboNudge()
+        end
+    end)
+end
+
+local function SetComboNudge(y)
+    if BBF.classResourceNudgeY == y then return end
+    BBF.classResourceNudgeY = y
+    HookComboNudge()
+    ApplyComboNudge()
+end
+
+local function UpdateAltManaBar(cf)
     local bar = PlayerFrame.AltManaBarBBF
     if not bar then return end
 
@@ -320,29 +376,10 @@ local function UpdateAltManaBar(updateCombos, cf)
                 PlayerFrame.noPortraitMode.Texture:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Large-Alt.tga")
             end
         end
-        if updateCombos then
-            if not bar.originalComboPos then
-                bar.originalComboPos = {}
-                local pts = bar.originalComboPos
-                pts.a, pts.b, pts.c, pts.d, pts.e = PlayerBottomManagedFrameContainer:GetPoint()
-            end
-            local pts = bar.originalComboPos
-            --PlayerBottomManagedFrameContainer:ClearAllPoints()
-            if not InCombatLockdown() then -- temporary "fix" for combat, need to not move PlayerBottomManagedFrameContainer anymore
-                PlayerBottomManagedFrameContainer:SetPoint(pts.a, pts.b, pts.c, pts.d, pts.e-9)
-            end
-        end
+        SetComboNudge(-9)
     elseif bar:IsShown() then
         C_Timer.After(0.2, function()
-            if updateCombos then
-                local pts = bar.originalComboPos
-                if pts then
-                    --PlayerBottomManagedFrameContainer:ClearAllPoints()
-                    if not InCombatLockdown() then -- temporary "fix" for combat, need to not move PlayerBottomManagedFrameContainer anymore
-                        PlayerBottomManagedFrameContainer:SetPoint(pts.a, pts.b, pts.c, pts.d, pts.e)
-                    end
-                end
-            end
+            SetComboNudge(0)
             if not cf and not AlternatePowerBar:IsShown() then
                 PlayerFrame.PlayerFrameContainer.FrameTexture:Show()
                 PlayerFrame.PlayerFrameContainer.AlternatePowerFrameTexture:Hide()
@@ -372,31 +409,12 @@ end
 function BBF.CreateAltManaBar()
     if PlayerFrame.AltManaBarBBF then return end -- already created
     if not BetterBlizzFramesDB.createAltManaBarDruid then return end
+    if UnitClassBase("player") ~= "DRUID" then return end
     if BBF.HasNoPortrait("player") and (BetterBlizzFramesDB.hideUnitFramePlayerMana or BetterBlizzFramesDB.hideUnitFramePlayerSecondResource) then return end
     local db = BetterBlizzFramesDB
     if db.useMiniPlayerFrame then return end
     local cf = db.classicFrames
     local noPortrait = BBF.HasNoPortrait("player")
-
-    local specID = BBF.GetSpecialization() and BBF.GetSpecializationInfo(BBF.GetSpecialization())
-    if specID ~= 105 then
-        -- Set up a listener that creates the bar when spec becomes 105 (Restoration)
-        if not BBF.AltManaSpecWatcher then
-            local f = CreateFrame("Frame")
-            f:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
-            f:SetScript("OnEvent", function()
-                local specID = BBF.GetSpecialization() and BBF.GetSpecializationInfo(BBF.GetSpecialization())
-                if specID == 105 then
-                    BBF.CreateAltManaBar()
-                    f:UnregisterAllEvents()
-                    f:SetScript("OnEvent", nil)
-                    BBF.AltManaSpecWatcher = nil
-                end
-            end)
-            BBF.AltManaSpecWatcher = f
-        end
-        return
-    end
 
     local bar = CreateFrame("StatusBar", "AltManaBarBBF", PlayerFrame)
     if cf then
@@ -407,7 +425,7 @@ function BBF.CreateAltManaBar()
         bar:SetPoint("BOTTOMLEFT", PlayerFrame, "BOTTOMLEFT", 85, 17.5)
     else
         bar:SetSize(124, 10)
-        bar:SetPoint("BOTTOMLEFT", PlayerFrame, "BOTTOMLEFT", 85, 18.5)
+        bar:SetPoint("BOTTOMLEFT", PlayerFrame, "BOTTOMLEFT", 85, 18)
     end
     if db.changeUnitFrameManabarTexture then
         bar:SetStatusBarTexture(BBF.manaTexture)
@@ -487,10 +505,6 @@ function BBF.CreateAltManaBar()
         end)
     end
 
-    local updateCombos = not (
-        (db.moveResourceDRUID and db.moveResourceStackPos and db.moveResourceStackPos["DRUID"]) or
-        (db.moveResourceToTarget and db.moveResourceToTargetDruid)
-    )
     local f = CreateFrame("Frame")
     f:RegisterUnitEvent("UNIT_POWER_UPDATE", "player")
     f:RegisterUnitEvent("UNIT_DISPLAYPOWER", "player")
@@ -498,7 +512,7 @@ function BBF.CreateAltManaBar()
     f:RegisterEvent("PLAYER_ENTERING_WORLD")
     f:SetScript("OnEvent", function(_, evt, unit, ptype)
         if evt == "UNIT_POWER_UPDATE" and ptype ~= "MANA" then return end
-        UpdateAltManaBar(updateCombos, cf)
+        UpdateAltManaBar(cf)
     end)
 
     if display == "NONE" then
@@ -514,5 +528,5 @@ function BBF.CreateAltManaBar()
         end)
     end
     PlayerFrame.AltManaBarBBF = bar
-    UpdateAltManaBar(updateCombos, cf)
+    UpdateAltManaBar(cf)
 end
