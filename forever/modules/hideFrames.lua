@@ -72,7 +72,7 @@ function BBF.UpdatePlayerStatusGlow()
     local hide
     if IsResting() then
         hide = db.hidePlayerRestGlow
-    elseif InCombatLockdown() then
+    elseif PlayerFrame.inCombat or InCombatLockdown() then
         hide = db.hideCombatGlow
     end
 

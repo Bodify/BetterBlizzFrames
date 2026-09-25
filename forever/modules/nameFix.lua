@@ -512,7 +512,8 @@ end
 
 local function GetUnitFrameNameText(frame)
     local unit = frame.unit
-    if unit and UnitIsUnit(unit, "player") then
+    local isSelf = unit and UnitIsUnit(unit, "player")
+    if not issecretvalue(isSelf) and isSelf then
         local name = GetSelfDisplayName(unit)
         if name and name ~= "" then return name end
     end
@@ -1677,6 +1678,8 @@ local function PlayerFrameNameChanges(frame)
                 frame.bbfName.recolored = nil
             end
         end
+    elseif removeRealmNames then
+        frame.bbfName:SetText(UnitName(unit))
     else
         frame.bbfName:SetText(GetUnitFrameNameText(frame))
     end

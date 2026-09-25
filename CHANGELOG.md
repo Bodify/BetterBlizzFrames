@@ -1,3 +1,10 @@
+# BetterBlizzFrames 2.1.2b
+## Forever
+### Bugfix
+- Fix "Hide 2nd name" not removing PlayerFrame's 2nd name
+- Fix "Hide Combat Glow" not working if right-click autoattack was enabled on a mob but not actually in combat.
+- Fix a secret error related to player name workaround for weird blizz API
+
 # BetterBlizzFrames 2.1.2
 ## Forever
 ### New
