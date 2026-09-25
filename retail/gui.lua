@@ -699,6 +699,23 @@ BBF.popupBuilders["BBF_CONFIRM_RELOAD"] = function()
     }
 end
 
+BBF.popupBuilders["BBF_SMOOTH_MANA_FEEDBACK"] = function()
+    return {
+        text = titleText..L["Popup_Smooth_Mana_Feedback"],
+        button1 = L["Yes"],
+        button2 = L["No"],
+        OnAccept = function()
+            BetterBlizzFramesDB.hideManaFeedback = true
+            if BBF.hideManaFeedbackCheckbox then
+                BBF.hideManaFeedbackCheckbox:SetChecked(true)
+            end
+            BBF.HideFrames()
+        end,
+        timeout = 0,
+        whileDead = true,
+    }
+end
+
 BBF.popupBuilders["BBF_TOT_MESSAGE"] = function()
     return {
         text = titleText..L["Popup_ToT_Message"],
@@ -2100,6 +2117,35 @@ local function CreateAnchorDropdown(name, parent, defaultText, settingKey, toggl
     else
         LibDD:UIDropDownMenu_EnableDropDown(dropdown)
     end
+
+    return dropdown
+end
+
+local function CreateMultiSelectDropdown(label, parent, options, width, onChange)
+    local dropdown = CreateFrame("DropdownButton", nil, parent, "WowStyle1DropdownTemplate")
+    dropdown:SetWidth(width or 120)
+    dropdown.options = options
+
+    dropdown:SetupMenu(function(owner, rootDescription)
+        for _, option in ipairs(options) do
+            local checkbox = rootDescription:CreateCheckbox(option.label,
+                function() return BetterBlizzFramesDB[option.key] and true or false end,
+                function()
+                    BetterBlizzFramesDB[option.key] = not BetterBlizzFramesDB[option.key]
+                    if onChange then
+                        onChange(option.key, BetterBlizzFramesDB[option.key])
+                    end
+                end)
+            if option.tooltip then
+                checkbox:SetTooltip(function(tooltip)
+                    GameTooltip_SetTitle(tooltip, option.tooltipTitle or option.label)
+                    GameTooltip_AddNormalLine(tooltip, option.tooltip, true)
+                end)
+            end
+        end
+    end)
+    dropdown:SetDefaultText(label)
+    dropdown:SetSelectionText(function() return label end)
 
     return dropdown
 end
@@ -4074,6 +4120,7 @@ local function guiGeneralTab()
     CreateTooltipTwo(hideResourceTooltip, L["Hide_Resource_Tooltip"], L["Tooltip_Hide_Resource_Tooltip_Desc"])
 
     local hideManaFeedback = CreateCheckbox("hideManaFeedback", L["Hide_Mana_Feedback"], BetterBlizzFrames, nil, BBF.HideFrames)
+    BBF.hideManaFeedbackCheckbox = hideManaFeedback
     hideManaFeedback:SetPoint("TOPLEFT", hideResourceTooltip, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(hideManaFeedback, L["Hide_Mana_Feedback"], L["Tooltip_Hide_Mana_Feedback_Desc"])
 
@@ -10085,6 +10132,15 @@ local function guiMisc()
     local enableLegacyComboPoints = CreateCheckbox("enableLegacyComboPoints", L["Legacy_Combo_Points"], contentFrame)
     enableLegacyComboPoints:SetPoint("TOPLEFT", instantComboPoints, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(enableLegacyComboPoints, L["Legacy_Combo_Points"], L["Tooltip_Legacy_Combo_Points_Desc"])
+
+    enableLegacyComboPoints.lockHintGlow = enableLegacyComboPoints:CreateTexture(nil, "OVERLAY")
+    enableLegacyComboPoints.lockHintGlow:SetAtlas("AlliedRace-UnlockingFrame-GenderSelectionGlow")
+    enableLegacyComboPoints.lockHintGlow:SetDesaturated(true)
+    enableLegacyComboPoints.lockHintGlow:SetVertexColor(0.3, 0.65, 1)
+    enableLegacyComboPoints.lockHintGlow:SetPoint("TOPLEFT", enableLegacyComboPoints, "TOPLEFT", -4, 4)
+    enableLegacyComboPoints.lockHintGlow:SetPoint("BOTTOMRIGHT", enableLegacyComboPoints, "BOTTOMRIGHT", 4, -4)
+    enableLegacyComboPoints.lockHintGlow:Hide()
+
     enableLegacyComboPoints:HookScript("OnClick", function(self)
         BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         if not self:GetChecked() then
@@ -10096,6 +10152,9 @@ local function guiMisc()
             BBF.FixLegacyComboPointsLocation()
         end
         CheckAndToggleCheckboxes(self)
+        if BBF.UpdateLegacyComboResourceLock then
+            BBF.UpdateLegacyComboResourceLock()
+        end
     end)
 
     function BBF.OpenLegacyComboSliderWindow(launch)
@@ -10448,6 +10507,58 @@ local function guiMisc()
         CheckAndToggleCheckboxes(moveResourceToTarget)
     end)
 
+    moveResource:SetMotionScriptsWhileDisabled(true)
+    moveResourceToTarget:SetMotionScriptsWhileDisabled(true)
+
+    local function ShowLegacyComboLockHint(self)
+        if not self.legacyComboLocked then return end
+        GameTooltip:ClearLines()
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+        GameTooltip:AddLine(self.Text:GetText(), NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b)
+        GameTooltip:AddLine(L["Tooltip_Resource_Locked_By_Legacy_Combos"], 1, 1, 1, true)
+        GameTooltip:Show()
+        ApplyGuiFontToTooltip()
+        enableLegacyComboPoints.lockHintGlow:Show()
+    end
+
+    local function HideLegacyComboLockHint()
+        enableLegacyComboPoints.lockHintGlow:Hide()
+    end
+
+    function BBF.UpdateLegacyComboResourceLock()
+        local locked = enableLegacyComboPoints:GetChecked() and true or false
+        moveResource.legacyComboLocked = locked
+        moveResourceToTarget.legacyComboLocked = locked
+        if locked then
+            DisableElement(moveResource)
+            DisableElement(moveResourceToTarget)
+            for i = 1, moveResourceToTarget:GetNumChildren() do
+                local child = select(i, moveResourceToTarget:GetChildren())
+                if child and (child:GetObjectType() == "CheckButton" or child:GetObjectType() == "Slider" or child:GetObjectType() == "Button") then
+                    DisableElement(child)
+                    for j = 1, child:GetNumChildren() do
+                        local grandChild = select(j, child:GetChildren())
+                        if grandChild and (grandChild:GetObjectType() == "CheckButton" or grandChild:GetObjectType() == "Slider" or grandChild:GetObjectType() == "Button") then
+                            DisableElement(grandChild)
+                        end
+                    end
+                end
+            end
+        else
+            EnableElement(moveResource)
+            EnableElement(moveResourceToTarget)
+            CheckAndToggleCheckboxes(moveResourceToTarget)
+            HideLegacyComboLockHint()
+        end
+    end
+
+    moveResource:HookScript("OnEnter", ShowLegacyComboLockHint)
+    moveResource:HookScript("OnLeave", HideLegacyComboLockHint)
+    moveResourceToTarget:HookScript("OnEnter", ShowLegacyComboLockHint)
+    moveResourceToTarget:HookScript("OnLeave", HideLegacyComboLockHint)
+
+    BBF.UpdateLegacyComboResourceLock()
+
     ----------------------
     -- Hide Stuff:
     ----------------------
@@ -10747,8 +10858,69 @@ local function guiMisc()
         BBF.RecolorHpTempLoss()
     end)
 
+    local smoothBars = CreateCheckbox("smoothBars", L["Smooth_Bars"], contentFrame)
+    smoothBars:SetPoint("TOPLEFT", recolorTempHpLoss, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(smoothBars, L["Smooth_Bars"], L["Tooltip_Smooth_Bars_Desc"], L["Tooltip_Smooth_Bars_SubText"])
+
+    local function AskHideManaFeedback()
+        local db = BetterBlizzFramesDB
+        if not db.smoothBars or not db.smoothManabars or db.hideManaFeedback then return end
+        BBF.ShowPopup("BBF_SMOOTH_MANA_FEEDBACK")
+    end
+
+    local smoothBarsOptions = CreateMultiSelectDropdown(L["Smooth_Bars_Options"], contentFrame, {
+        { key = "smoothHealthbars", label = L["Smooth_Healthbars"], tooltip = L["Tooltip_Smooth_Healthbars_Desc"] },
+        { key = "smoothManabars", label = L["Smooth_Manabars"], tooltip = L["Tooltip_Smooth_Manabars_Desc"] },
+    }, 150, function(key, value)
+        if value then
+            BBF.SmoothBars()
+            if key == "smoothManabars" then
+                AskHideManaFeedback()
+            end
+        else
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
+        end
+    end)
+    smoothBarsOptions:SetPoint("LEFT", smoothBars.Text, "RIGHT", 5, 0)
+    smoothBarsOptions:SetScale(0.7)
+    smoothBarsOptions:SetShown(BetterBlizzFramesDB.smoothBars)
+    CreateTooltipTwo(smoothBarsOptions, L["Smooth_Bars_Options"], L["Tooltip_Smooth_Bars_Options_Desc"])
+
+    smoothBars:HookScript("OnClick", function(self)
+        if self:GetChecked() then
+            smoothBarsOptions:Show()
+            BBF.SmoothBars()
+            AskHideManaFeedback()
+        else
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
+        end
+    end)
+
+
+    local tweakExtraBarTextures = CreateCheckbox("tweakExtraBarTextures", L["Tweak_Extra_Bar_Textures"], contentFrame)
+    tweakExtraBarTextures:SetPoint("TOPLEFT", smoothBars, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(tweakExtraBarTextures, L["Tweak_Extra_Bar_Textures"], L["Tooltip_Tweak_Extra_Bar_Textures_Desc"])
+    tweakExtraBarTextures:HookScript("OnClick", function(self)
+        if self:GetChecked() then
+            BBF.FixFeedbackTextures()
+            BBF.FixHealPredictionTextures()
+        else
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
+        end
+    end)
+
+    local centerCurrentValueOnBars = CreateCheckbox("centerCurrentValueOnBars", L["Current_HP_Only_Center"], contentFrame, nil, BBF.CenterCurrentValueOnBars)
+    centerCurrentValueOnBars:SetPoint("TOPLEFT", tweakExtraBarTextures, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(centerCurrentValueOnBars, L["Current_HP_Only_Center"], L["Tooltip_Current_HP_Only_Center_Desc"], L["Tooltip_Current_HP_Only_Center_SubText"])
+    centerCurrentValueOnBars:HookScript("OnClick", function()
+        BBF.RefreshCenteredBarText()
+        if BetterBlizzFramesDB.formatStatusBarText then
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
+        end
+    end)
+
     local raiseTargetFrameLevel = CreateCheckbox("raiseTargetFrameLevel", L["Raise_TargetFrame_Layer"], contentFrame, nil, BBF.RaiseTargetFrameLevel)
-    raiseTargetFrameLevel:SetPoint("TOPLEFT", recolorTempHpLoss, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    raiseTargetFrameLevel:SetPoint("TOPLEFT", centerCurrentValueOnBars, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(raiseTargetFrameLevel, L["Raise_TargetFrame_Layer"], L["Tooltip_Raise_TargetFrame_Layer_Desc"])
 
     local surrenderArena = CreateCheckbox("surrenderArena", L["Surrender_Arena"], contentFrame)

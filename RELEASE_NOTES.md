@@ -1,3 +1,33 @@
+# BetterBlizzFrames 2.1.2
+## Forever
+### New
+- Misc: "Rogue & Druid: Retail Combo Points". Use the retail style combo points for druid and rogue. (These settings work with all the Move Resources etc)
+- Adjust PRD: "Hide PRD Combo Points". Hides the combo points on the Personal Resource Display while keeping the ones under the PlayerFrame.
+- Adjust PRD: "Show on PRD with no target nameplate". With "Show resource on target nameplate" on, the resource is now only shown on the target nameplate and hidden when you have no target, unless you enable this.
+### Tweak
+- Remove warnings about Blizzard bug making addons not remember saved settings, this is finally fixed by Blizzard.
+- Fix the "Instant Combo Points" setting now that the Blizzard bug has been fixed.
+- Fix Stealth Indicator using the wrong texture on WoW Forever when using Classic Frames.
+- Tweak Classic Frames's level text and high level skull texture to fit better.
+- Dark Mode: Add the minimap day/night border to it.
+### Bugfix
+- Fix "Hide Combat Glow" not working properly on Forever.
+- Fix an issue of the level background texture disappearing and not coming back due to a Blizzard bug.
+- Fix PlayerFrame not showing Player name with some settings after the new Forever patch.
+- Fix TargetFrame not updating name sometimes after the new Forever patch.
+- Fix "Hide ActionBar Cast Animation" not hiding it for channels.
+## All Versions
+### New
+- Misc: "Smooth Bars". Apply a smooth animation to the health and mana bars on Player, Target and Focus (plus the Personal Resource Display on Midnight & Forever) when they lose or gain health/mana. Thank you to Mo for contributing a working blueprint here!
+- Misc: "Current HP Only & Center on Bars". Shows only the current health/mana on bars and centers them on the bar.
+## Midnight & Forever
+### New
+- Misc: "Force Fit Player/Target/Focus Names". Scales down longer names to fit without truncation, within reason.
+- Misc: "Tweak Extra Bar Textures". Changes the mana feedback and heal prediction textures to use the same texture as the bar, instead of the default older one that looks out of place.
+### Bugfix
+- Fix an issue with Legacy Combo Points not showing combo point background.
+- Fix an issue with healthbar textures when using big player healthbar and Classic Frames setting with the texture being cut in half.
+
 # BetterBlizzFrames 2.1.1
 ## All Versions
 ### New

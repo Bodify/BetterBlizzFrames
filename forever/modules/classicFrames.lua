@@ -60,8 +60,8 @@ local function MakeClassicFrame(frame)
     local hideDragon = db.hideRareDragonTexture
 
     local ClassResourceFrames = {
-        ROGUE      = RogueComboPointBarFrame,
-        DRUID      = DruidComboPointBarFrame,
+        ROGUE      = RogueComboPointBarFrame or BBF.ComboPointBar,
+        DRUID      = DruidComboPointBarFrame or BBF.ComboPointBar,
         WARLOCK    = WarlockPowerFrame,
         MAGE       = MageArcaneChargesFrame,
         MONK       = MonkHarmonyBarFrame,
@@ -137,7 +137,8 @@ local function MakeClassicFrame(frame)
 
         contentContext:SetParent(frame.ClassicFrame)
         contentContext.HighLevelTexture:ClearAllPoints()
-        contentContext.HighLevelTexture:SetPoint("CENTER", frame, "BOTTOMRIGHT", -34, 25)
+        contentContext.HighLevelTexture:SetSize(16, 20)
+        contentContext.HighLevelTexture:SetPoint("CENTER", frame, "BOTTOMRIGHT", -34.5, 25)
         contentContext.PetBattleIcon:ClearAllPoints()
         contentContext.PetBattleIcon:SetPoint("CENTER", frame, "BOTTOMRIGHT", -35, 25)
         contentContext.PrestigePortrait:ClearAllPoints()
@@ -154,7 +155,13 @@ local function MakeClassicFrame(frame)
 
         contentMain.LevelText:SetParent(frame.ClassicFrame)
         contentMain.LevelText:ClearAllPoints()
-        contentMain.LevelText:SetPoint("CENTER", frame, "BOTTOMRIGHT", -34, 25.5)
+        contentMain.LevelText:SetPoint("CENTER", frame, "BOTTOMRIGHT", 34, 25.5)
+        if frame == TargetFrame then
+            GlobalTarLvl = contentMain.LevelText
+        end
+        local lvlFont, _, lvlFlags = contentMain.LevelText:GetFont()
+        contentMain.LevelText:SetFont(lvlFont, 12, lvlFlags)
+        contentMain.LevelText:SetJustifyH("CENTER")
         contentMain.ReputationColor:SetSize(119, 18)
         contentMain.ReputationColor:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-LevelBackground")
         contentMain.ReputationColor:ClearAllPoints()
@@ -595,7 +602,12 @@ local function MakeClassicFrame(frame)
             PlayerLevelText:SetDrawLayer("OVERLAY", 7)
             PlayerLevelText:Show()
             PlayerLevelText:ClearAllPoints()
-            PlayerLevelText:SetPoint("CENTER", -81, -24.5)
+            PlayerLevelText:SetPoint("CENTER", -80.5, -24.5)
+            local plvlFont, _, plvlFlags = PlayerLevelText:GetFont()
+            if plvlFont then
+                PlayerLevelText:SetFont(plvlFont, 12, plvlFlags)
+            end
+            PlayerLevelText:SetJustifyH("CENTER")
         end
 
         local function UpdateLevel()
@@ -603,12 +615,12 @@ local function MakeClassicFrame(frame)
                 if alwaysHideLvl then
                     PlayerLevelText:SetParent(BBF.hiddenFrame)
                     PlayerLevelText:ClearAllPoints()
-                    PlayerLevelText:SetPoint("CENTER", -81, -24.5)
+                    PlayerLevelText:SetPoint("CENTER", -80.5, -24.5)
                 elseif hideLvl then
                     if UnitLevel(frame.unit) == BBF.GetMaxPlayerLevel() then
                         PlayerLevelText:SetParent(BBF.hiddenFrame)
                         PlayerLevelText:ClearAllPoints()
-                        PlayerLevelText:SetPoint("CENTER", -81, -24.5)
+                        PlayerLevelText:SetPoint("CENTER", -80.5, -24.5)
                     else
                         UpdateLevelDetails()
                     end
@@ -708,12 +720,7 @@ local function MakeClassicFrame(frame)
             DRUID = db.moveResourceToTargetDruid,
             WARLOCK = db.moveResourceToTargetWarlock,
             MAGE = db.moveResourceToTargetMage,
-            MONK = db.moveResourceToTargetMonk,
-            EVOKER = db.moveResourceToTargetEvoker,
             PALADIN = db.moveResourceToTargetPaladin,
-            DEATHKNIGHT = db.moveResourceToTargetDK,
-            SHAMAN      = db.moveResourceToTargetShaman,
-            HUNTER      = db.moveResourceToTargetHunter,
         }
 
         local function UpdateResourcePosition(rogueCheck)

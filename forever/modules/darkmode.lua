@@ -48,11 +48,8 @@ function BBF.DarkModeNameplateResources()
     if BetterBlizzPlatesDB and BetterBlizzPlatesDB.darkModeNameplateResource then return end
 
     local prdClassFrame = PersonalResourceDisplayFrame and PersonalResourceDisplayFrame.classFrame
-    if not prdClassFrame and UnitClassBase("player") == "SHAMAN" then
-        prdClassFrame = BBF.MaelstromWeaponPrdBar
-    end
-    if not prdClassFrame and UnitClassBase("player") == "HUNTER" then
-        prdClassFrame = BBF.TipOfSpearPrdBar
+    if not prdClassFrame then
+        prdClassFrame = BBF.ComboPointPrdBar
     end
     if not prdClassFrame or prdClassFrame:IsForbidden() then return end
 
@@ -84,9 +81,6 @@ function BBF.DarkModeNameplateResources()
         for _, v in pairs({prdClassFrame:GetChildren()}) do
             applySettings(v.BG_Inactive, desaturate, druid)
             applySettings(v.BG_Active, desaturate, druidActive)
-            if BetterBlizzFramesDB.druidOverstacks then
-                applySettings(v.ChargedFrameActive, desaturate, druidActive)
-            end
         end
     elseif playerClass == "SHAMAN" then
         for _, v in pairs({prdClassFrame:GetChildren()}) do
@@ -999,6 +993,22 @@ function BBF.DarkmodeFrames(bypass)
 
     applySettings(MinimapCompassTexture, minimapSat, minimapColor)
 
+    if MinimapCluster.DielFrame then
+        if not BBF.dielCycleBorder then
+            for i = 1, MinimapCluster.DielFrame:GetNumRegions() do
+                local region = select(i, MinimapCluster.DielFrame:GetRegions())
+                if region:IsObjectType("Texture") and region.GetAtlas then
+                    local atlas = region:GetAtlas()
+                    if atlas and strlower(atlas) == "ui-hud-minimap-frame-cycle" then
+                        BBF.dielCycleBorder = region
+                        break
+                    end
+                end
+            end
+        end
+        applySettings(BBF.dielCycleBorder, minimapSat, minimapColor)
+    end
+
     if BBF.classicMinimapTextures then
         for _, texture in ipairs(BBF.classicMinimapTextures) do
             applySettings(texture, minimapSat, minimapColor)
@@ -1085,35 +1095,17 @@ function BBF.DarkmodeFrames(bypass)
         end
     end
 
-    if BBF.MaelstromWeaponBar then
-        for _, v in pairs({BBF.MaelstromWeaponBar:GetChildren()}) do
-            applySettings(v.BGInactive, desaturationValue, rogueCombo, true)
-            applySettings(v.BGActive, desaturationValue, rogueComboActive, true)
-            applySettings(v.ChargedFrameActive, desaturationValue, rogueComboActive, true)
-        end
-    end
-
-    if BBF.TipOfSpearBar then
-        for _, v in pairs({BBF.TipOfSpearBar:GetChildren()}) do
-            applySettings(v.BGInactive, desaturationValue, rogueCombo, true)
-            applySettings(v.BGActive, desaturationValue, rogueComboActive, true)
-        end
-    end
-
     if UnitClassBase("player") == "DRUID" then
         local function updateComboPointTextures()
-            local druidComboPoints = _G.DruidComboPointBarFrame
+            local druidComboPoints = _G.DruidComboPointBarFrame or BBF.ComboPointBar
             if druidComboPoints then
                 for _, v in pairs({druidComboPoints:GetChildren()}) do
                     applySettings(v.BG_Inactive, desaturationValue, druidComboPoint, true)
                     applySettings(v.BG_Active, desaturationValue, druidComboPointActive, true)
-                    if BetterBlizzFramesDB.druidOverstacks then
-                        applySettings(v.ChargedFrameActive, desaturationValue, druidComboPointActive, true)
-                    end
                 end
             end
         end
-        if GetShapeshiftFormID() == 1 then
+        if GetShapeshiftFormID() == 1 or BBF.ComboPointBar then
             -- Already in cat form, run immediately
             updateComboPointTextures()
         else
@@ -1157,7 +1149,7 @@ function BBF.DarkmodeFrames(bypass)
         end
     end
 
-    local rogueComboPoints = _G.RogueComboPointBarFrame
+    local rogueComboPoints = _G.RogueComboPointBarFrame or BBF.ComboPointBar
     if rogueComboPoints then
         for _, v in pairs({rogueComboPoints:GetChildren()}) do
             applySettings(v.BGInactive, desaturationValue, rogueCombo)
@@ -1255,7 +1247,7 @@ specChangeListener:SetScript("OnEvent", function(self, event, ...)
                 if playerClass == "ROGUE" then
                     local rogueCombo = vertexColor + 0.45
                     local rogueComboActive = vertexColor + 0.30
-                    local rogueComboPoints = _G.RogueComboPointBarFrame
+                    local rogueComboPoints = _G.RogueComboPointBarFrame or BBF.ComboPointBar
                     if BetterBlizzFramesDB.darkModeColor == 0 then
                         rogueCombo = 0.25
                         rogueComboActive = 0.15

@@ -254,7 +254,7 @@ function BBF.HunterLegacyTipOfSpear()
                 local isActive = i <= stacks
                 point:Show()
                 point:SetAlpha(1)
-                point:SetShown(showAlways or isActive)
+                point:SetShown(BBF.LegacyComboPointShown(i, stacks, MAX_POINTS, showAlways))
 
                 if point.Highlight then
                     point.Highlight:SetAlpha(isActive and 1 or 0)
@@ -271,7 +271,7 @@ function BBF.HunterLegacyTipOfSpear()
             frame:Show()
         end
 
-        BBF.UIFrameFadeRemoveFrame(frame)
+        BBF.CancelAllFades(frame)
     end
 
     hooksecurefunc("ComboFrame_Update", UpdateHunterLegacyCombo)

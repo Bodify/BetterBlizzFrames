@@ -206,6 +206,7 @@ L["Tooltip_Mini_Target"] = "Removes healthbar and manabar from the TargetFrame\n
 L["Tooltip_Mirror_TargetFrame_Desc"] = "Make the PlayerFrame texture a mirrored version of TargetFrame (round circle etc). This will disable Vehicle PlayerFrame."
 L["Tooltip_Move_Resource_To_Target"] = "Move resource (Combo points, Warlock shards etc) to the TargetFrame."
 L["Tooltip_Raise_TargetFrame_Layer_Desc"] = "Raise the frame level of TargetFrame so it is above FocusFrame.\n\nThis makes it so if you have TargetFrame positioned above FocusFrame and the Target has so many auras that the castbar goes down to the FocusFrame the castbar will not be hidden behind the FocusFrame."
+L["Tooltip_Force_Fit_Names_Desc"] = "Scale down longer names to fit without truncation, within reason."
 L["Tooltip_Target"] = "Show on TargetFrame"
 L["Tooltip_Target_Castbar"] = "Enable for TargetFrame Castbar"
 L["Tooltip_Target_Clickthrough"] = "Makes the TargetFrame clickthrough.\nYou can still hold shift to left/right click it\nwhile out of combat for trade/inspect etc.\n\nNOTE: You will NOT be able to click the frame\nat all during combat with this setting on."
@@ -943,6 +944,9 @@ L["Druid_Manabar_CatBear"] = "Druid: Show Manabar while in Cat/Bear (as resto)"
 L["Druid_Manabar_CatBear_Forever"] = "Druid: Show Manabar while in Cat/Bear"
 L["Shaman_Maelstrom_Combos"] = "Shaman: Maelstrom Weapon Combo Points"
 L["Hunter_Tip_Of_Spear_Combos"] = "Hunter: Tip of the Spear Combo Points"
+L["Forever_Combo_Points"] = "Rogue & Druid: Retail Combo Points"
+L["Hide_Prd_Combo_Points"] = "Hide PRD Combo Points"
+L["Prd_Resource_No_Target_On_Prd"] = "Show on PRD with no target nameplate"
 L["Hunter_Combo_Points"] = "Hunter: Tip of the Spear"
 L["Shaman_Combo_Points"] = "Shaman: Maelstrom Weapon"
 L["Dwarf"] = "Dwarf"
@@ -1093,6 +1097,7 @@ L["Only_Mine"] = "Only mine"
 L["OR"] = "OR"
 L["Outline_Label"] = "Outline"
 L["Other_Stuff"] = "Other Stuff"
+L["Force_Fit_Names"] = "Force Fit Player/Target/Focus Names"
 L["Paladin_Holy_Charges"] = "Paladin: Holy Charges"
 L["Portrait"] = "Portrait"
 L["Print_ClassicFrames_Not_Detected"] = "ClassicFrames healthbars not detected. Please report to dev @bodify"
@@ -1366,6 +1371,10 @@ L["Use_One_Color"] = "Use One Color"
 
 -- StaticPopupDialogs
 L["Popup_Reload_Required"] = "This requires a reload. Reload now?"
+L["Popup_Forever_Combo_Offer"] = "Do you want to enable Better|cff00c0ffBlizz|rFrames' new combo points?\n\nThey replace the old Classic combo points with modern retail-style ones, either beside the TargetFrame or under your PlayerFrame.\n\nYou can change this at any time under Combo Points in the Misc section of the settings."
+L["Yes_On_Target"] = "Yes, on Target"
+L["Yes_On_Player"] = "Yes, on Player"
+L["Popup_Smooth_Mana_Feedback"] = "Do you also want to hide mana feedback? For a better result pick Yes.\n|cFFAAAAAA(It's what shows how much mana will be used before the cast is finished)|r"
 L["Popup_Classic_Frames_Turn"] = "Classic Frames will turn %s after reload.\n\nSelect which optional settings you want.\n|cFFAAAAAA(These can be changed individually later)|r\n\n\n\n\n "
 L["Popup_New_Version_Text_Midnight"] = "IMPORTANT CHANGE\n\nLots of new tweaks and settings for the No Portrait mode. Including Pixel Border setting and hiding of mana/energy/extra resource etc.\n\nBBF is under rapid development so expect more tweaks and possibly changes moving things a little (especially to these new ones).\n\nPlease report any issues!"
 L["Popup_Cata_Update_Text"] = "CHANGES\n\nLots of Retail features from BBF have been brought over to MoP and Cata.\n\nDue to the large amount of changes things might have changed slightly.\nThere might also be some missed bugs.\n\nRead changelog for more info."
@@ -1459,6 +1468,9 @@ L["Tooltip_Druid_Manabar_Desc"] = "Show Manabar as secondary AlternativePowerBar
 L["Tooltip_Druid_Manabar_Desc_Forever"] = "Show Manabar as secondary AlternativePowerBar while in Cat/Bear. Energy/Rage will still also be shown."
 L["Tooltip_Shaman_Maelstrom_Desc"] = "Show Enhancement Shaman's Maelstrom Weapon stacks as combo points under the PlayerFrame and the Personal Resource Display."
 L["Tooltip_Hunter_Tip_Of_Spear_Desc"] = "Show Survival Hunter's Tip of the Spear stacks as combo points under the PlayerFrame and the Personal Resource Display."
+L["Tooltip_Forever_Combo_Points_Desc"] = "Show Rogue and Druid combo points as the modern retail-style combo point bar under the PlayerFrame and on the Personal Resource Display."
+L["Tooltip_Hide_Prd_Combo_Points_Desc"] = "Hide the combo points on the Personal Resource Display."
+L["Tooltip_Prd_Resource_No_Target_On_Prd_Desc"] = "Keep showing the combo points on the Personal Resource Display when there is no target nameplate to put them on."
 L["Tooltip_Hide_XP_Honor_Desc"] = "Hide the Experience & Honor Bar. Still shows when opening Character Panel."
 L["Tooltip_Raise_Castbar_Strata_Desc"] = "Raise the Strata of Target & Focus frame so it does not appear behind the frames.\n\nNote that this will NOT make the TargetFrame castbar appear above the FocusFrame, the setting above is required for that behaviour."
 L["Hide_Party_in_Arena_GEX"] = "Hide Party in Arena (GEX)"
@@ -1641,5 +1653,33 @@ L["Tooltip_Minimap_Tweaks_XPos_Desc"] = "X offset for the minimap."
 L["Tooltip_Minimap_Tweaks_YPos_Desc"] = "Y offset for the minimap."
 L["Forever_In_Development"] = "In development..."
 L["Forever_In_Development_Desc"] = "The WoW: Forever version of BetterBlizzFrames is under heavy development. Expect bugs and please report them so I can more easily fix em! Thank you!\n\n- Bodify"
-L["Forever_Blizzard_Bug"] = "Blizzard Bug:"
-L["Forever_Blizzard_Bug_Desc"] = "There's a Blizzard bug on the Forever Beta with settings not saving/loading properly. Some people are reporting (temporary?) success by logging out and deleting their Saved Variables files and trying again. We will just have to wait for Blizzard to fix this one.\n\nJoin the Discord for more updates and info on the situation:"
+
+---------------------------------------
+-- Smooth Bars
+---------------------------------------
+
+L["Smooth_Bars"] = "Smooth Bars"
+L["Tooltip_Smooth_Bars_Desc"] = "Apply a smooth animation for healthbars and manabars on health/mana loss/gain."
+L["Tooltip_Smooth_Bars_SubText"] = "Requires a reload to turn back off."
+L["Smooth_Bars_Options"] = "Smooth Bars Options"
+L["Tooltip_Smooth_Bars_Options_Desc"] = "Choose which bars get the smooth animation."
+L["Smooth_Healthbars"] = "Smooth Healthbars"
+L["Tooltip_Smooth_Healthbars_Desc"] = "Apply a smooth animation for healthbars on health loss/gain."
+L["Smooth_Manabars"] = "Smooth Manabars"
+L["Tooltip_Smooth_Manabars_Desc"] = "Apply a smooth animation for manabars on mana loss/gain."
+L["Tweak_Extra_Bar_Textures"] = "Tweak Extra Bar Textures"
+L["Tooltip_Tweak_Extra_Bar_Textures_Desc"] = "Change the feedback textures and heal prediction textures to be the same texture as the healthbar so they look less out of place."
+
+---------------------------------------
+-- Legacy Combo Points Resource Lock
+---------------------------------------
+
+L["Tooltip_Resource_Locked_By_Legacy_Combos"] = "Because \"Legacy Combo Points\" is enabled to adjust resource position right-click the \"Legacy Combo Points\" checkbox instead."
+
+---------------------------------------
+-- Current HP Only & Center on Bars
+---------------------------------------
+
+L["Current_HP_Only_Center"] = "Current HP Only & Center on Bars"
+L["Tooltip_Current_HP_Only_Center_Desc"] = "Show only the current value on health and power bars and center it on the bar. The percentage text on the left side is hidden."
+L["Tooltip_Current_HP_Only_Center_SubText"] = "Sets Status Text to \"Always Show\" and Display Mode to \"Numeric Value and Percentage\". The previous display mode is restored when you turn this off."

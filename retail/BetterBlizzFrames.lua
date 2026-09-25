@@ -63,6 +63,8 @@ local defaultSettings = {
     shamanMaelstromCombos = true,
     hunterTipOfSpearCombos = false,
     prdResourceScale = 1,
+    smoothHealthbars = true,
+    smoothManabars = true,
     foreverMinimapScale = 1,
     foreverMinimapXPos = 0,
     foreverMinimapYPos = 12,
@@ -2757,6 +2759,8 @@ function BBF.GenericLegacyComboSupport()
         local comboIndex = GetLegacyComboStartIndex()
         if not comboIndex then return end
 
+        local instantCombos = BetterBlizzFramesDB.instantComboPoints
+
         for i = 1, maxComboPoints do
             local point = frame.ComboPoints[comboIndex]
             if point then
@@ -2766,13 +2770,18 @@ function BBF.GenericLegacyComboSupport()
 
                 -- Only show highlight when active or animating
                 local isActive = i <= comboPoints
-                point:SetShown(showAlways or isActive)
+                point:SetShown(BBF.LegacyComboPointShown(i, comboPoints, maxComboPoints, showAlways, frame.extraComboPoints))
 
                 if point.Highlight then
                     point.Highlight:SetAlpha(isActive and 1 or 0)
                 end
 
-                if isActive and i > lastComboPoints then
+                if instantCombos then
+                    BBF.CancelAllFades(point.Highlight)
+                    BBF.CancelAllFades(point.Shine)
+                    if point.Highlight then point.Highlight:SetAlpha(isActive and 1 or 0) end
+                    if point.Shine then point.Shine:SetAlpha(0) end
+                elseif isActive and i > lastComboPoints then
                     local highlight = point.Highlight
                     local shine = point.Shine
 
@@ -2798,7 +2807,7 @@ function BBF.GenericLegacyComboSupport()
             frame:Show()
         end
 
-        BBF.UIFrameFadeRemoveFrame(frame)
+        BBF.CancelAllFades(frame)
 
         lastComboPoints = comboPoints
     end
@@ -3001,6 +3010,7 @@ function BBF.InstantComboPoints()
         local maxComboPoints = UnitPowerMax("player", Enum.PowerType.ComboPoints)
         local showAlways = BetterBlizzFramesDB.alwaysShowLegacyComboPoints or false
 
+        BBF.CancelAllFades(frame)
         frame:SetAlpha(1)
         frame:Show()
 
@@ -3009,18 +3019,15 @@ function BBF.InstantComboPoints()
         for i = 1, maxComboPoints do
             local point = frame.ComboPoints[comboIndex]
             if point then
-                BBF.UIFrameFadeRemoveFrame(point.Highlight)
-                BBF.UIFrameFadeRemoveFrame(point.Shine)
+                BBF.CancelAllFades(point.Highlight)
+                BBF.CancelAllFades(point.Shine)
+                BBF.CancelAllFades(point)
 
                 point:SetAlpha(1)
                 point.Highlight:SetAlpha(i <= comboPoints and 1 or 0)
                 point.Shine:SetAlpha(0)
 
-                if showAlways then
-                    point:Show()
-                else
-                    point:SetShown(i <= comboPoints)
-                end
+                point:SetShown(BBF.LegacyComboPointShown(i, comboPoints, maxComboPoints, showAlways, frame.extraComboPoints))
 
                 comboIndex = comboIndex + 1
             end
@@ -3030,7 +3037,7 @@ function BBF.InstantComboPoints()
             frame:Hide()
         end
 
-        BBF.UIFrameFadeRemoveFrame(frame)
+        BBF.CancelAllFades(frame)
     end
 
     local function UpdateDruidComboPoints(self)
@@ -3439,6 +3446,7 @@ function BBF.UpdateCustomTextures()
     raidManaTexture = LSM:Fetch(LSM.MediaType.STATUSBAR, db.raidFrameManabarTexture)
     castbarTexture = LSM:Fetch(LSM.MediaType.STATUSBAR, db.unitFrameCastbarTexture)
     nameBgTexture = LSM:Fetch(LSM.MediaType.STATUSBAR, db.unitFrameNameBgTexture)
+    BBF.customTexturesReady = true
 
     BBF.HookTextures()
 end
@@ -3473,17 +3481,17 @@ local function ApplyTextureChange(type, statusBar, parent, classic, party, altBa
     local originalLayer, subLayer = originalTexture:GetDrawLayer()
     local keepFancyManas = BetterBlizzFramesDB.changeUnitFrameManaBarTextureKeepFancy and (type == "mana" and ((statusBar.powerToken and fancyManas[statusBar.powerToken]) or (statusBar.powerName and fancyManas[statusBar.powerName])))
     local classicFrames = BetterBlizzFramesDB.classicFrames
-    local classicTexture = (classicFrames and (parent == TargetFrame or parent == FocusFrame or statusBar == PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer.HealthBar) and
+    local playerHp = statusBar == PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer.HealthBar
+    local bigPlayerHp = playerHp and classicFrames and BetterBlizzFramesDB.bigPlayerHealthbar
+    local classicTexture = (classicFrames and not bigPlayerHp and (parent == TargetFrame or parent == FocusFrame or playerHp) and
     (texture == "Interface\\TargetingFrame\\UI-TargetingFrame-BarFill") and "Interface\\AddOns\\BetterBlizzFrames\\media\\ui-targetingframe-barfill") or
-    (texture == "Interface\\AddOns\\BetterBlizzFrames\\media\\ui-statusbar-cf" and "Interface\\AddOns\\BetterBlizzFrames\\media\\ui-statusbar")
+    (not bigPlayerHp and texture == "Interface\\AddOns\\BetterBlizzFrames\\media\\ui-statusbar-cf" and "Interface\\AddOns\\BetterBlizzFrames\\media\\ui-statusbar")
 
     if classicFrames and texture == "Interface\\AddOns\\BetterBlizzFrames\\media\\ui-statusbar-cf" then
         if (parent and parent:GetName() == "PetFrame") or statusBar == TargetFrame.totFrame.HealthBar or statusBar == FocusFrame.totFrame.HealthBar then
             classicTexture = "Interface\\AddOns\\BetterBlizzFrames\\media\\ui-statusbar-cf"
         end
     end
-
-    local playerHp = statusBar == PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer.HealthBar
 
     if not keepFancyManas then
         if (parent and parent:GetName() == "PetFrame") then -- causes weird issues if not delayed
@@ -5140,6 +5148,7 @@ Frame:SetScript("OnEvent", function(...)
             BBF.StealthIndicator()
             BBF.MoveQueueStatusEye()
             BBF.UpdateMinimapTweaks()
+            BBF.SmoothBars()
             BBF.CastbarRecolorWidgets()
             BBF.CastBarTimerCaller()
             BBF.ShowPlayerCastBarIcon()
@@ -5500,6 +5509,7 @@ First:SetScript("OnEvent", function(_, event, addonName)
         BBF.UpdateDefaultPetFrameMana()
         BBF.UpdateDefaultTotFrameMana()
         BBF.UpdateBigPlayerHealthbar()
+        BBF.CenterCurrentValueOnBars()
         BBF.PlayerElite(BetterBlizzFramesDB.playerEliteFrameMode)
         BBF.HidePlayerFrame()
         BBF.ReduceEditModeAlpha()
@@ -5547,6 +5557,8 @@ First:SetScript("OnEvent", function(_, event, addonName)
         C_Timer.After(0.95, function()
             BBF.HidePersonalManabarFX()
             BBF.TexturePRD()
+            BBF.FixFeedbackTextures()
+            BBF.FixHealPredictionTextures()
             BBF.LegacyPRDLook()
             BBF.FixPrdRogueComboCentering()
         end)

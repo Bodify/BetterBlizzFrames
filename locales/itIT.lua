@@ -210,6 +210,7 @@ L["Tooltip_Mini_Target"] = "Rimuove barra della salute e barra del mana dal riqu
 L["Tooltip_Mirror_TargetFrame_Desc"] = "Rende la texture del riquadro giocatore una versione speculare del riquadro bersaglio (cerchio rotondo ecc.). Disattiva il riquadro giocatore del veicolo."
 L["Tooltip_Move_Resource_To_Target"] = "Sposta la risorsa (punti combo, frammenti d'anima ecc.) sul riquadro bersaglio."
 L["Tooltip_Raise_TargetFrame_Layer_Desc"] = "Alza il livello del riquadro bersaglio in modo che stia sopra il riquadro focus.\n\nCosì, se hai il riquadro bersaglio posizionato sopra il riquadro focus e il bersaglio ha così tante aure che la barra di lancio scende fino al riquadro focus, la barra di lancio non resterà nascosta dietro il riquadro focus."
+L["Tooltip_Force_Fit_Names_Desc"] = "Riduce i nomi più lunghi per farli entrare senza troncarli, entro limiti ragionevoli."
 L["Tooltip_Target"] = "Mostra sul riquadro bersaglio"
 L["Tooltip_Target_Castbar"] = "Attiva per la barra di lancio del riquadro bersaglio"
 L["Tooltip_Target_Clickthrough"] = "Rende il riquadro bersaglio attraversabile dai clic.\nFuori dal combattimento puoi comunque tenere premuto Maiusc\nper cliccarlo con il tasto sinistro/destro per commerciare/ispezionare ecc.\n\nNOTA: Con questa impostazione attiva NON potrai\ncliccare il riquadro durante il combattimento."
@@ -937,6 +938,9 @@ L["Druid_Berserk_Blue"] = "Druido: colora di blu i punti combo in eccesso di Ber
 L["Druid_Combo_Points"] = "Druido: punti combo"
 L["Druid_Manabar_CatBear"] = "Druido: mostra barra del mana in forma felina/d'orso (da Rigenerazione)"
 L["Shaman_Maelstrom_Combos"] = "Sciamano: punti combo di Arma del Maelstrom"
+L["Forever_Combo_Points"] = "Ladro e Druido: punti combo stile Retail"
+L["Hide_Prd_Combo_Points"] = "Nascondi punti combo della PRD"
+L["Prd_Resource_No_Target_On_Prd"] = "Mostra sulla PRD senza targhetta del bersaglio"
 L["Hunter_Tip_Of_Spear_Combos"] = "Cacciatore: punti combo di Punta di lancia"
 L["Hunter_Combo_Points"] = "Cacciatore: Punta di lancia"
 L["Shaman_Combo_Points"] = "Sciamano: Arma del Maelstrom"
@@ -1087,6 +1091,7 @@ L["Only_Mine"] = "Solo mie"
 L["OR"] = "O"
 L["Outline_Label"] = "Contorno"
 L["Other_Stuff"] = "Altro"
+L["Force_Fit_Names"] = "Adatta i nomi di Giocatore/Bersaglio/Focus"
 L["Paladin_Holy_Charges"] = "Paladino: Potere Sacro"
 L["Portrait"] = "Ritratto"
 L["Print_ClassicFrames_Not_Detected"] = "Barre della salute di ClassicFrames non rilevate. Segnalalo allo sviluppatore @bodify"
@@ -1360,6 +1365,10 @@ L["Use_One_Color"] = "Usa un solo colore"
 
 -- StaticPopupDialogs
 L["Popup_Reload_Required"] = "Serve ricaricare. Ricaricare ora?"
+L["Popup_Forever_Combo_Offer"] = "Vuoi attivare i nuovi punti combo di Better|cff00c0ffBlizz|rFrames?\n\nSostituiscono i vecchi punti combo Classic con quelli moderni in stile Retail, accanto al riquadro del bersaglio o sotto il tuo riquadro giocatore.\n\nPuoi cambiarlo in qualsiasi momento sotto Punti combo, nella sezione Varie delle impostazioni."
+L["Yes_On_Target"] = "Sì, sul bersaglio"
+L["Yes_On_Player"] = "Sì, sul giocatore"
+L["Popup_Smooth_Mana_Feedback"] = "Vuoi nascondere anche la risposta del mana?\n|cFFAAAAAA(È ciò che mostra quanto mana verrà usato prima che la magia sia completata)|r"
 L["Popup_Classic_Frames_Turn"] = "Riquadri classici dopo il ricaricamento: %s\n\nScegli quali impostazioni facoltative vuoi.\n|cFFAAAAAA(Si possono cambiare singolarmente in seguito)|r\n\n\n\n\n "
 L["Popup_New_Version_Text_Midnight"] = "MODIFICA IMPORTANTE\n\nTanti nuovi ritocchi e impostazioni per la modalità senza ritratto, tra cui l'impostazione bordo pixel e la possibilità di nascondere mana/energia/risorsa extra ecc.\n\nBBF è in rapido sviluppo, quindi aspettati altri ritocchi ed eventuali cambiamenti che spostino un po' le cose (soprattutto per queste novità).\n\nSegnala qualsiasi problema!"
 L["Popup_Cata_Update_Text"] = "MODIFICHE\n\nMolte funzioni di BBF di Retail sono state portate su MoP e Cata.\n\nA causa del gran numero di modifiche alcune cose potrebbero essere leggermente cambiate.\nPotrebbero esserci anche bug sfuggiti.\n\nLeggi il changelog per maggiori informazioni."
@@ -1450,6 +1459,9 @@ L["Tooltip_Moveable_FPS_Counter_Desc"] = "Rende spostabile il contatore FPS pred
 L["Tooltip_Surrender_Arena_Desc"] = "Scrivere /afk in arena ti farà arrendere invece di abbandonare, così non perdi onore/conquista."
 L["Tooltip_Druid_Manabar_Desc"] = "Mostra la barra del mana come barra di potere alternativa secondaria in forma felina/d'orso da Rigenerazione. Energia/ira restano comunque visibili."
 L["Tooltip_Shaman_Maelstrom_Desc"] = "Mostra i cumuli di Arma del Maelstrom dello Sciamano Potenziamento come punti combo sotto il riquadro giocatore e nella schermata risorse personali."
+L["Tooltip_Forever_Combo_Points_Desc"] = "Mostra i punti combo di Ladro e Druido come la moderna barra dei punti combo in stile Retail sotto il riquadro giocatore e nella schermata risorse personali."
+L["Tooltip_Hide_Prd_Combo_Points_Desc"] = "Nasconde i punti combo nella schermata risorse personali."
+L["Tooltip_Prd_Resource_No_Target_On_Prd_Desc"] = "Continua a mostrare i punti combo nella schermata risorse personali quando non c'è una targhetta del bersaglio su cui metterli."
 L["Tooltip_Hunter_Tip_Of_Spear_Desc"] = "Mostra i cumuli di Punta di lancia del Cacciatore Sopravvivenza come punti combo sotto il riquadro giocatore e nella schermata risorse personali."
 L["Tooltip_Hide_XP_Honor_Desc"] = "Nasconde la barra esperienza e onore. Resta visibile aprendo il pannello del personaggio."
 L["Tooltip_Raise_Castbar_Strata_Desc"] = "Alza lo strato delle barre di lancio di bersaglio e focus così non appaiono dietro i riquadri.\n\nNota che questo NON farà apparire la barra di lancio del riquadro bersaglio sopra il riquadro focus, per quello serve l'impostazione qui sopra."
@@ -1625,5 +1637,25 @@ L["Remove_ActionBar_Bronze_Tint"] = "Rimuovi tinta bronzo dalle barre azioni"
 L["Tooltip_Remove_ActionBar_Bronze_Tint_Desc"] = "Desatura la grafica delle barre azioni per rimuovere la tinta bronzo di WoW: Forever.\n\nLa modalità scura per le barre azioni ha la priorità se attiva."
 L["Forever_In_Development"] = "In sviluppo..."
 L["Forever_In_Development_Desc"] = "La versione WoW: Forever di BetterBlizzFrames è in pieno sviluppo. Aspettati dei bug e segnalali, così potrò correggerli più facilmente! Grazie!\n\n- Bodify"
-L["Forever_Blizzard_Bug"] = "Bug di Blizzard:"
-L["Forever_Blizzard_Bug_Desc"] = "C'è un bug di Blizzard nella beta di Forever per cui le impostazioni non vengono salvate/caricate correttamente. Alcuni riferiscono di aver risolto (temporaneamente?) disconnettendosi, eliminando i file SavedVariables e riprovando. Dovremo aspettare che Blizzard lo risolva.\n\nUnisciti al Discord per altri aggiornamenti e informazioni sulla situazione:"
+
+---------------------------------------
+-- Smooth Bars
+---------------------------------------
+
+L["Smooth_Bars"] = "Barre fluide"
+L["Tooltip_Smooth_Bars_Desc"] = "Applica un'animazione fluida alle barre della salute e del mana quando si perde o si guadagna salute/mana."
+L["Tooltip_Smooth_Bars_SubText"] = "Richiede un ricaricamento per essere disattivato."
+L["Smooth_Bars_Options"] = "Opzioni barre fluide"
+L["Tooltip_Smooth_Bars_Options_Desc"] = "Scegli quali barre ricevono l'animazione fluida."
+L["Smooth_Healthbars"] = "Barre della salute fluide"
+L["Tooltip_Smooth_Healthbars_Desc"] = "Applica un'animazione fluida alle barre della salute quando si perde o si guadagna salute."
+L["Smooth_Manabars"] = "Barre del mana fluide"
+L["Tooltip_Smooth_Manabars_Desc"] = "Applica un'animazione fluida alle barre del mana quando si perde o si guadagna mana."
+L["Tweak_Extra_Bar_Textures"] = "Modifica texture barre aggiuntive"
+L["Tooltip_Tweak_Extra_Bar_Textures_Desc"] = "Cambia le texture di feedback e le texture di previsione delle cure affinché usino la stessa texture della barra della salute, così risultano meno fuori luogo."
+
+---------------------------------------
+-- Legacy Combo Points Resource Lock
+---------------------------------------
+
+L["Tooltip_Resource_Locked_By_Legacy_Combos"] = "Poiché \"Punti combo classici\" è attivo, fai clic destro sulla casella \"Punti combo classici\" per regolare la posizione della risorsa."

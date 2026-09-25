@@ -5,6 +5,17 @@ local noPortraitSkipKeys = {
     pet = "noPortraitSkipPet",
 }
 
+local noPortraitEliteAtlas = {
+    elite = "nameplates-icon-elite-gold",
+    worldboss = "nameplates-icon-elite-gold",
+    rareelite = "nameplates-icon-elite-silver",
+    rare = "nameplates-icon-elite-silver",
+}
+
+local function SetBossDragonAtlas(texture, classification)
+    texture:SetAtlas(noPortraitEliteAtlas[classification] or "nameplates-icon-elite-gold")
+end
+
 local function SetManaTextParent(text, parent)
     if BetterBlizzFramesDB.hideAllManabarText then
         text.bbfOriginalParent = parent
@@ -798,7 +809,7 @@ local function MakeNoPortraitMode(frame)
         frameContainer.PortraitMask:ClearAllPoints()
         frameContainer.PortraitMask:SetPoint("CENTER", frameContainer.Portrait, "CENTER", 0, 0)
         frameContainer.BossPortraitFrameTexture:SetParent(db.hideRareDragonTexture and BBF.hiddenFrame or frame.noPortraitMode)
-        frameContainer.BossPortraitFrameTexture:SetAtlas("nameplates-icon-elite-gold")
+        SetBossDragonAtlas(frameContainer.BossPortraitFrameTexture, frame.unit and UnitClassification(frame.unit))
         frameContainer.BossPortraitFrameTexture:SetSize(15, 15)
         frameContainer.BossPortraitFrameTexture:ClearAllPoints()
         frameContainer.BossPortraitFrameTexture:SetPoint("CENTER", hpContainer, "TOPRIGHT", -3.5, -1)
@@ -1080,7 +1091,7 @@ local function MakeNoPortraitMode(frame)
                 FrameAdjustments(frameContainer)
             end
 
-            frameContainer.BossPortraitFrameTexture:SetAtlas("nameplates-icon-elite-gold")
+            SetBossDragonAtlas(frameContainer.BossPortraitFrameTexture, classification)
             frameContainer.BossPortraitFrameTexture:SetSize(15, 15)
             frameContainer.BossPortraitFrameTexture:ClearAllPoints()
             frameContainer.BossPortraitFrameTexture:SetPoint("CENTER", hpContainer, "TOPRIGHT", -3.5, -1)

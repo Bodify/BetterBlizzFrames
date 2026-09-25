@@ -211,6 +211,7 @@ L["Tooltip_Mini_Target"] = "대상 프레임에서 체력바와 자원바를 제
 L["Tooltip_Mirror_TargetFrame_Desc"] = "플레이어 프레임 텍스처를 대상 프레임의 미러 버전으로 만듭니다 (둥근 원 등). 탈것 플레이어 프레임이 비활성화됩니다."
 L["Tooltip_Move_Resource_To_Target"] = "자원(연계 점수, 흑마법사 영혼의 조각 등)을 대상 프레임으로 이동합니다."
 L["Tooltip_Raise_TargetFrame_Layer_Desc"] = "대상 프레임의 프레임 레벨을 올려 주시 대상 프레임 위에 표시되도록 합니다.\n\n대상 프레임을 주시 대상 프레임 위에 배치했는데 대상에 오라가 너무 많아서 시전바가 주시 대상 프레임까지 내려가는 경우, 시전바가 주시 대상 프레임 뒤에 숨겨지지 않습니다."
+L["Tooltip_Force_Fit_Names_Desc"] = "긴 이름을 잘리지 않고 들어가도록 적당히 줄입니다."
 L["Tooltip_Target"] = "대상 프레임에 표시"
 L["Tooltip_Target_Castbar"] = "대상 프레임 시전바에 활성화"
 L["Tooltip_Target_Clickthrough"] = "대상 프레임을 클릭 통과시킵니다.\n전투 중이 아닐 때 Shift를 누른 채 좌/우 클릭하여\n거래/조사 등을 할 수 있습니다.\n\n주의: 이 설정을 켜면 전투 중에는\n프레임을 전혀 클릭할 수 없습니다."
@@ -938,6 +939,9 @@ L["Druid_Berserk_Blue"] = "드루이드: 광폭화 초과 중첩 연계 점수 �
 L["Druid_Combo_Points"] = "드루이드: 연계 점수"
 L["Druid_Manabar_CatBear"] = "드루이드: 야성/곰 변신 중 자원바 표시 (회복)"
 L["Shaman_Maelstrom_Combos"] = "주술사: 소용돌이치는 무기 연계 점수"
+L["Forever_Combo_Points"] = "도적 & 드루이드: 정식 서버 연계 점수"
+L["Hide_Prd_Combo_Points"] = "PRD 연계 점수 숨기기"
+L["Prd_Resource_No_Target_On_Prd"] = "대상 이름표가 없을 때 PRD에 표시"
 L["Hunter_Tip_Of_Spear_Combos"] = "사냥꾼: 창끝 연계 점수"
 L["Hunter_Combo_Points"] = "사냥꾼: 창끝"
 L["Shaman_Combo_Points"] = "주술사: 소용돌이치는 무기"
@@ -1088,6 +1092,7 @@ L["Only_Mine"] = "내 것만"
 L["OR"] = "또는"
 L["Outline_Label"] = "외곽선"
 L["Other_Stuff"] = "기타"
+L["Force_Fit_Names"] = "플레이어/대상/주시 이름 맞추기"
 L["Paladin_Holy_Charges"] = "성기사: 신성한 충전물"
 L["Portrait"] = "초상화"
 L["Print_ClassicFrames_Not_Detected"] = "클래식 프레임 체력바가 감지되지 않았습니다. 개발자 @bodify에게 신고해 주세요."
@@ -1361,6 +1366,10 @@ L["Use_One_Color"] = "단일 색상 사용"
 
 -- StaticPopupDialogs
 L["Popup_Reload_Required"] = "UI 재시작이 필요합니다. 지금 재시작 하시겠습니까?"
+L["Popup_Forever_Combo_Offer"] = "Better|cff00c0ffBlizz|rFrames의 새로운 연계 점수를 사용하시겠습니까?\n\n기존 클래식 연계 점수를 정식 서버 스타일로 교체하며, 대상 프레임 옆이나 플레이어 프레임 아래에 표시됩니다.\n\n설정의 기타 섹션에 있는 연계 점수 항목에서 언제든지 변경할 수 있습니다."
+L["Yes_On_Target"] = "예, 대상에 표시"
+L["Yes_On_Player"] = "예, 플레이어에 표시"
+L["Popup_Smooth_Mana_Feedback"] = "마나 반응도 숨길까요?\n|cFFAAAAAA(시전이 끝나기 전에 소모될 마나량을 보여주는 표시입니다)|r"
 L["Popup_Classic_Frames_Turn"] = "클래식 프레임이 재시작 후 %s로 전환됩니다.\n\n원하는 설정을 선택하세요.\n|cFFAAAAAA(나중에 개별적으로 변경할 수 있습니다)|r\n\n\n\n\n "
 L["Popup_New_Version_Text_Midnight"] = "중요한 변경 사항\n\n초상화 없음 모드를 위한 많은 새로운 조정 및 설정. 픽셀 테두리 설정과 마나/기력/추가 자원 숨기기 등이 포함됩니다.\n\nBBF는 빠르게 개발 중이므로 더 많은 조정과 약간의 변경 사항(특히 이러한 새로운 기능들)이 예상됩니다.\n\n문제가 있으면 보고해 주세요!"
 L["Popup_Cata_Update_Text"] = "변경 사항\n\nBBF의 많은 정식 버전 기능이 판다리아와 대격변으로 이식되었습니다.\n\n많은 변경으로 인해 일부 사항이 약간 변경되었을 수 있습니다.\n놓친 버그도 있을 수 있습니다.\n\n자세한 내용은 변경 로그를 참조하세요."
@@ -1451,6 +1460,9 @@ L["Tooltip_Moveable_FPS_Counter_Desc"] = "기본 블리자드 FPS 카운터(Ctrl
 L["Tooltip_Surrender_Arena_Desc"] = "투기장에서 /afk를 입력하면 떠나기 대신 항복하여 명예/정복 획득을 잃지 않습니다."
 L["Tooltip_Druid_Manabar_Desc"] = "회복 드루이드로 야성/곰 형상일 때 마나바를 보조 대체 힘 바로 표시합니다. 기력/분노도 여전히 표시됩니다."
 L["Tooltip_Shaman_Maelstrom_Desc"] = "고양 주술사의 소용돌이치는 무기 중첩을 플레이어 프레임 아래와 개인 자원 표시에 연계 점수로 표시합니다."
+L["Tooltip_Forever_Combo_Points_Desc"] = "도적과 드루이드의 연계 점수를 정식 서버 방식의 최신 연계 점수 바로 플레이어 프레임 아래와 개인 자원 표시에 보여줍니다."
+L["Tooltip_Hide_Prd_Combo_Points_Desc"] = "개인 자원 표시의 연계 점수를 숨깁니다."
+L["Tooltip_Prd_Resource_No_Target_On_Prd_Desc"] = "연계 점수를 표시할 대상 이름표가 없을 때 개인 자원 표시에 계속 보여줍니다."
 L["Tooltip_Hunter_Tip_Of_Spear_Desc"] = "생존 사냥꾼의 창끝 중첩을 플레이어 프레임 아래와 개인 자원 표시에 연계 점수로 표시합니다."
 L["Tooltip_Hide_XP_Honor_Desc"] = "경험치 및 명예 바를 숨깁니다. 캐릭터 창을 열면 여전히 표시됩니다."
 L["Tooltip_Raise_Castbar_Strata_Desc"] = "대상 및 주시 대상 프레임의 층위를 높여 프레임 뒤에 나타나지 않도록 합니다.\n\n이것은 대상 프레임 시전바가 주시 대상 프레임 위에 나타나도록 하지 않으며, 위의 설정이 해당 동작에 필요합니다."
@@ -1626,5 +1638,25 @@ L["Remove_ActionBar_Bronze_Tint"] = "행동 단축바 청동 색조 제거"
 L["Tooltip_Remove_ActionBar_Bronze_Tint_Desc"] = "행동 단축바 그래픽의 채도를 낮춰 WoW: Forever의 청동 색조를 제거합니다.\n\n행동 단축바 다크 모드가 활성화되어 있으면 다크 모드가 우선합니다."
 L["Forever_In_Development"] = "개발 중..."
 L["Forever_In_Development_Desc"] = "BetterBlizzFrames의 WoW: Forever 버전은 활발히 개발 중입니다. 버그가 있을 수 있으니 제보해 주시면 더 쉽게 고칠 수 있습니다! 감사합니다!\n\n- Bodify"
-L["Forever_Blizzard_Bug"] = "블리자드 버그:"
-L["Forever_Blizzard_Bug_Desc"] = "Forever 베타에는 설정이 제대로 저장/불러와지지 않는 블리자드 버그가 있습니다. 일부 사용자는 로그아웃 후 SavedVariables 파일을 삭제하고 다시 시도하여 (일시적으로?) 해결했다고 합니다. 블리자드가 고칠 때까지 기다려야 할 것 같습니다.\n\n상황에 대한 추가 소식과 정보는 디스코드에 참여하세요:"
+
+---------------------------------------
+-- Smooth Bars
+---------------------------------------
+
+L["Smooth_Bars"] = "부드러운 바"
+L["Tooltip_Smooth_Bars_Desc"] = "생명력이나 마나가 감소하거나 증가할 때 체력바와 마나바에 부드러운 애니메이션을 적용합니다."
+L["Tooltip_Smooth_Bars_SubText"] = "끄려면 UI를 다시 불러와야 합니다."
+L["Smooth_Bars_Options"] = "부드러운 바 옵션"
+L["Tooltip_Smooth_Bars_Options_Desc"] = "부드러운 애니메이션을 적용할 바를 선택합니다."
+L["Smooth_Healthbars"] = "부드러운 체력바"
+L["Tooltip_Smooth_Healthbars_Desc"] = "생명력이 감소하거나 증가할 때 체력바에 부드러운 애니메이션을 적용합니다."
+L["Smooth_Manabars"] = "부드러운 마나바"
+L["Tooltip_Smooth_Manabars_Desc"] = "마나가 감소하거나 증가할 때 마나바에 부드러운 애니메이션을 적용합니다."
+L["Tweak_Extra_Bar_Textures"] = "추가 바 텍스처 조정"
+L["Tooltip_Tweak_Extra_Bar_Textures_Desc"] = "피드백 텍스처와 치유 예측 텍스처를 생명력 바와 같은 텍스처로 변경하여 덜 어색해 보이게 합니다."
+
+---------------------------------------
+-- Legacy Combo Points Resource Lock
+---------------------------------------
+
+L["Tooltip_Resource_Locked_By_Legacy_Combos"] = "\"기본 연계 점수\"가 활성화되어 있으므로 자원 위치를 조정하려면 \"기본 연계 점수\" 확인란을 우클릭하십시오."

@@ -550,6 +550,9 @@ function BBF.LegacyPRDLook()
     BBF.FancyPRDAltTexture()
 end
 
+local FOREVER_COMBO_NAMEPLATE_Y = 11
+local NAMEPLATE_LEVEL_BUMP = 10
+
 local rogueCenterWatcher
 
 function BBF.FixPrdRogueComboCentering()
@@ -590,6 +593,12 @@ end
 
 local prdResourceUpdater, prdResourceHooked, prdResourceApplied, prdResourceUpdating
 
+local function RestorePrdResourceLevel(frame)
+    if frame.bbfPrdBaseLevel then
+        frame:SetFrameLevel(frame.bbfPrdBaseLevel)
+    end
+end
+
 local function RestorePrdResourceFrame(frame, xOfs, yOfs)
     if frame.bbfPrdRestore then
         frame.bbfPrdRestore(xOfs, yOfs)
@@ -613,12 +622,48 @@ local function RestorePrdResourceFrame(frame, xOfs, yOfs)
     frame:SetPoint("CENTER", container, "CENTER", centerOfs + xOfs, yOfs)
 end
 
+local function GetNameplateResourceAnchor(unitFrame)
+    if BBP and BBP.GetLevelSpanAnchor and BetterBlizzPlatesDB then
+        return BBP.GetLevelSpanAnchor(unitFrame, "BOTTOM")
+    end
+
+    local container = unitFrame.HealthBarsContainer
+    local levelFrame = unitFrame.PlayerLevelDiffFrame
+    if not container or not levelFrame or levelFrame:IsForbidden() or not unitFrame.unit
+        or not levelFrame.ShouldDisplay or not levelFrame:ShouldDisplay(unitFrame.unit) then
+        return unitFrame.healthBar
+    end
+
+    local span = unitFrame.bbfLevelSpan
+    if not span then
+        span = CreateFrame("Frame", nil, unitFrame)
+        unitFrame.bbfLevelSpan = span
+    end
+    span:ClearAllPoints()
+    span:SetPoint("TOPLEFT", container, "TOPLEFT")
+    span:SetPoint("BOTTOMRIGHT", levelFrame, "BOTTOMRIGHT")
+    return span
+end
+
+function BBF.GetPrdResourceNameplate()
+    local db = BetterBlizzFramesDB
+    if not db.prdResourceAdjust or not db.prdResourceOnTarget then return nil end
+
+    local nameplate = C_NamePlate.GetNamePlateForUnit("target", issecure())
+    local unitFrame = nameplate and nameplate.UnitFrame
+    if not unitFrame or unitFrame:IsForbidden() or not unitFrame.healthBar
+        or not UnitCanAttack("player", "target") then
+        return nil
+    end
+    return unitFrame
+end
+
 function BBF.UpdatePrdResource()
     if prdResourceUpdating then return end
 
     local prd = PersonalResourceDisplayFrame
-    local frame = (prd and prd.classFrame) or BBF.MaelstromWeaponPrdBar or BBF.TipOfSpearPrdBar
-        or (BBP and (BBP.MaelstromBar or BBP.TipOfSpearBar))
+    local frame = (prd and prd.classFrame) or BBF.ComboPointPrdBar
+        or (BBP and (BBP.MaelstromBar or BBP.TipOfSpearBar or BBP.ComboPointBar))
     if not frame or frame:IsForbidden() then return end
 
     local db = BetterBlizzFramesDB
@@ -629,6 +674,8 @@ function BBF.UpdatePrdResource()
             prdResourceUpdating = true
             frame:SetScale(1)
             frame:SetFrameStrata("MEDIUM")
+            RestorePrdResourceLevel(frame)
+            frame:SetAlpha(1)
             RestorePrdResourceFrame(frame, 0, 0)
             prdResourceUpdating = false
             if BBP and BBP.TargetResourceUpdater then
@@ -645,22 +692,23 @@ function BBF.UpdatePrdResource()
     local yOfs = db.prdResourceYPos or 0
     frame:SetScale(db.prdResourceScale or 1)
 
-    local unitFrame
-    if db.prdResourceOnTarget then
-        local nameplate = C_NamePlate.GetNamePlateForUnit("target", issecure())
-        unitFrame = nameplate and nameplate.UnitFrame
-        if unitFrame and (unitFrame:IsForbidden() or not unitFrame.healthBar) then
-            unitFrame = nil
-        end
-    end
+    local unitFrame = BBF.GetPrdResourceNameplate()
 
     if unitFrame then
+        frame:SetAlpha(1)
         frame:SetParent(UIParent)
-        frame:SetFrameStrata("HIGH")
+        if frame.bbfPrdBaseLevel == nil then
+            frame.bbfPrdBaseLevel = frame:GetFrameLevel()
+        end
+        frame:SetFrameStrata(unitFrame:GetFrameStrata())
+        frame:SetFrameLevel(unitFrame:GetFrameLevel() + NAMEPLATE_LEVEL_BUMP)
         frame:ClearAllPoints()
-        PixelUtil.SetPoint(frame, "BOTTOM", unitFrame.healthBar, "TOP", xOfs, yOfs + 30)
+        local comboRaise = frame.bbfForeverComboBar and FOREVER_COMBO_NAMEPLATE_Y or 0
+        PixelUtil.SetPoint(frame, "BOTTOM", GetNameplateResourceAnchor(unitFrame), "TOP", xOfs, yOfs + 30 + comboRaise)
     else
+        frame:SetAlpha((db.prdResourceOnTarget and not db.prdResourceNoTargetOnPrd) and 0 or 1)
         frame:SetFrameStrata("MEDIUM")
+        RestorePrdResourceLevel(frame)
         RestorePrdResourceFrame(frame, xOfs, yOfs)
     end
 

@@ -314,10 +314,18 @@ local function EnsureHooks()
     end
 end
 
+local function RefreshHealthbarTexture()
+    if not BBF.customTexturesReady then return end
+    if not BetterBlizzFramesDB.classicFrames then return end
+    if not BetterBlizzFramesDB.changeUnitFrameHealthbarTexture then return end
+    BBF.UpdateCustomTextures()
+end
+
 function BBF.UpdateBigPlayerHealthbar()
     if IsEnabled() then
         EnsureHooks()
         Apply()
+        RefreshHealthbarTexture()
         return
     end
 
@@ -329,6 +337,7 @@ function BBF.UpdateBigPlayerHealthbar()
 
     BBF.UpdateNoPortraitManaVisibility()
     UpdateClassicArt()
+    RefreshHealthbarTexture()
     if BBF.HasNoPortrait("player") then
         BBF.UpdateNoPortraitText(PlayerFrame, "player")
     end

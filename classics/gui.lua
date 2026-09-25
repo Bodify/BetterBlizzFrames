@@ -1452,6 +1452,35 @@ local function CreateAnchorDropdown(name, parent, defaultText, settingKey, toggl
     return dropdown
 end
 
+local function CreateMultiSelectDropdown(label, parent, options, width, onChange)
+    local dropdown = CreateFrame("DropdownButton", nil, parent, "WowStyle1DropdownTemplate")
+    dropdown:SetWidth(width or 120)
+    dropdown.options = options
+
+    dropdown:SetupMenu(function(owner, rootDescription)
+        for _, option in ipairs(options) do
+            local checkbox = rootDescription:CreateCheckbox(option.label,
+                function() return BetterBlizzFramesDB[option.key] and true or false end,
+                function()
+                    BetterBlizzFramesDB[option.key] = not BetterBlizzFramesDB[option.key]
+                    if onChange then
+                        onChange(option.key, BetterBlizzFramesDB[option.key])
+                    end
+                end)
+            if option.tooltip then
+                checkbox:SetTooltip(function(tooltip)
+                    GameTooltip_SetTitle(tooltip, option.tooltipTitle or option.label)
+                    GameTooltip_AddNormalLine(tooltip, option.tooltip, true)
+                end)
+            end
+        end
+    end)
+    dropdown:SetDefaultText(label)
+    dropdown:SetSelectionText(function() return label end)
+
+    return dropdown
+end
+
 local function CreateCheckbox(option, label, parent, cvarName, extraFunc)
     local checkBox = CreateFrame("CheckButton", nil, parent, "InterfaceOptionsCheckButtonTemplate")
     checkBox.Text:SetText(label)
@@ -7461,6 +7490,44 @@ local function guiMisc()
             BBF.AllNameChanges()
         end)
     end
+
+    guiMisc.smoothBars = CreateCheckbox("smoothBars", L["Smooth_Bars"], guiMisc)
+    guiMisc.smoothBars:SetPoint("TOPLEFT", guiMisc.colorShamansBlue or useMiniFocusFrame, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(guiMisc.smoothBars, L["Smooth_Bars"], L["Tooltip_Smooth_Bars_Desc"], L["Tooltip_Smooth_Bars_SubText"])
+
+    local smoothBarsOptions = CreateMultiSelectDropdown(L["Smooth_Bars_Options"], guiMisc, {
+        { key = "smoothHealthbars", label = L["Smooth_Healthbars"], tooltip = L["Tooltip_Smooth_Healthbars_Desc"] },
+        { key = "smoothManabars", label = L["Smooth_Manabars"], tooltip = L["Tooltip_Smooth_Manabars_Desc"] },
+    }, 150, function(key, value)
+        if value then
+            BBF.SmoothBars()
+        else
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
+        end
+    end)
+    smoothBarsOptions:SetPoint("LEFT", guiMisc.smoothBars.Text, "RIGHT", 5, 0)
+    smoothBarsOptions:SetScale(0.7)
+    smoothBarsOptions:SetShown(BetterBlizzFramesDB.smoothBars)
+    CreateTooltipTwo(smoothBarsOptions, L["Smooth_Bars_Options"], L["Tooltip_Smooth_Bars_Options_Desc"])
+
+    guiMisc.smoothBars:HookScript("OnClick", function(self)
+        if self:GetChecked() then
+            smoothBarsOptions:Show()
+            BBF.SmoothBars()
+        else
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
+        end
+    end)
+
+    local centerCurrentValueOnBars = CreateCheckbox("centerCurrentValueOnBars", L["Current_HP_Only_Center"], guiMisc, nil, BBF.CenterCurrentValueOnBars)
+    centerCurrentValueOnBars:SetPoint("TOPLEFT", guiMisc.smoothBars or guiMisc.colorShamansBlue or useMiniFocusFrame, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(centerCurrentValueOnBars, L["Current_HP_Only_Center"], L["Tooltip_Current_HP_Only_Center_Desc"], L["Tooltip_Current_HP_Only_Center_SubText"])
+    centerCurrentValueOnBars:HookScript("OnClick", function()
+        BBF.RefreshCenteredBarText()
+        if BetterBlizzFramesDB.formatStatusBarText then
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
+        end
+    end)
 
     local hidePlayerManabar = CreateCheckbox("hidePlayerManabar", L["Hide_PlayerFrame_Mana"], guiMisc)
     hidePlayerManabar:SetPoint("TOPLEFT", settingsText, "BOTTOMLEFT", 310, pixelsOnFirstBox)

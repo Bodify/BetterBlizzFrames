@@ -210,6 +210,7 @@ L["Tooltip_Mini_Target"] = "Entfernt Gesundheits- und Manaleiste vom Zielfenster
 L["Tooltip_Mirror_TargetFrame_Desc"] = "Macht die Textur des Spielerfensters zu einer gespiegelten Version des Zielfensters (runder Kreis usw.). Dadurch wird das Fahrzeug-Spielerfenster deaktiviert."
 L["Tooltip_Move_Resource_To_Target"] = "Verschiebt die Ressource (Combopunkte, Seelensplitter usw.) zum Zielfenster."
 L["Tooltip_Raise_TargetFrame_Layer_Desc"] = "Hebt die Fensterebene des Zielfensters an, sodass es über dem Fokusfenster liegt.\n\nWenn dein Zielfenster über dem Fokusfenster positioniert ist und das Ziel so viele Auren hat, dass die Zauberleiste bis zum Fokusfenster hinunterreicht, wird die Zauberleiste so nicht vom Fokusfenster verdeckt."
+L["Tooltip_Force_Fit_Names_Desc"] = "Verkleinert längere Namen, damit sie ohne Abschneiden passen, in vernünftigen Grenzen."
 L["Tooltip_Target"] = "Am Zielfenster anzeigen"
 L["Tooltip_Target_Castbar"] = "Für die Zauberleiste des Zielfensters aktivieren"
 L["Tooltip_Target_Clickthrough"] = "Macht das Zielfenster durchklickbar.\nAußerhalb des Kampfes kannst du weiterhin Umschalt halten\nund es links/rechts anklicken, um zu handeln/betrachten usw.\n\nHINWEIS: Mit dieser Einstellung kannst du das Fenster\nim Kampf überhaupt NICHT anklicken."
@@ -937,6 +938,9 @@ L["Druid_Berserk_Blue"] = "Druide: Überzählige Berserker-Combopunkte blau fär
 L["Druid_Combo_Points"] = "Druide: Combopunkte"
 L["Druid_Manabar_CatBear"] = "Druide: Manaleiste in Katze/Bär anzeigen (als Wiederherstellung)"
 L["Shaman_Maelstrom_Combos"] = "Schamane: Combopunkte für Waffe des Mahlstroms"
+L["Forever_Combo_Points"] = "Schurke & Druide: Retail-Combopunkte"
+L["Hide_Prd_Combo_Points"] = "PRD-Combopunkte ausblenden"
+L["Prd_Resource_No_Target_On_Prd"] = "Ohne Ziel-Namensplakette in der PRD anzeigen"
 L["Hunter_Tip_Of_Spear_Combos"] = "Jäger: Combopunkte für Speerspitze"
 L["Hunter_Combo_Points"] = "Jäger: Speerspitze"
 L["Shaman_Combo_Points"] = "Schamane: Waffe des Mahlstroms"
@@ -1087,6 +1091,7 @@ L["Only_Mine"] = "Nur eigene"
 L["OR"] = "ODER"
 L["Outline_Label"] = "Umriss"
 L["Other_Stuff"] = "Anderes"
+L["Force_Fit_Names"] = "Namen von Spieler/Ziel/Fokus einpassen"
 L["Paladin_Holy_Charges"] = "Paladin: Heilige Kraft"
 L["Portrait"] = "Porträt"
 L["Print_ClassicFrames_Not_Detected"] = "Gesundheitsleisten von ClassicFrames nicht erkannt. Bitte an den Entwickler @bodify melden"
@@ -1360,6 +1365,10 @@ L["Use_One_Color"] = "Eine Farbe verwenden"
 
 -- StaticPopupDialogs
 L["Popup_Reload_Required"] = "Dafür ist ein Neuladen nötig. Jetzt neu laden?"
+L["Popup_Forever_Combo_Offer"] = "Möchtest du die neuen Combopunkte von Better|cff00c0ffBlizz|rFrames aktivieren?\n\nSie ersetzen die alten Classic-Combopunkte durch moderne im Retail-Stil, entweder neben dem Zielfenster oder unter deinem Spielerfenster.\n\nDu kannst das jederzeit unter Combopunkte im Bereich Sonstiges der Einstellungen ändern."
+L["Yes_On_Target"] = "Ja, am Ziel"
+L["Yes_On_Player"] = "Ja, am Spieler"
+L["Popup_Smooth_Mana_Feedback"] = "Möchtest du auch die Mana-Rückmeldung ausblenden?\n|cFFAAAAAA(Sie zeigt an, wie viel Mana der Zauber verbraucht, bevor er fertig gewirkt ist)|r"
 L["Popup_Classic_Frames_Turn"] = "Classic-Fenster nach dem Neuladen: %s\n\nWähle, welche optionalen Einstellungen du möchtest.\n|cFFAAAAAA(Diese können später einzeln geändert werden)|r\n\n\n\n\n "
 L["Popup_New_Version_Text_Midnight"] = "WICHTIGE ÄNDERUNG\n\nViele neue Anpassungen und Einstellungen für den Ohne-Porträt-Modus. Darunter eine Pixelrahmen-Einstellung und das Ausblenden von Mana/Energie/Zusatzressource usw.\n\nBBF wird rasant weiterentwickelt, rechne also mit weiteren Anpassungen und möglicherweise Änderungen, die Dinge etwas verschieben (besonders bei diesen neuen).\n\nBitte melde alle Probleme!"
 L["Popup_Cata_Update_Text"] = "ÄNDERUNGEN\n\nViele Retail-Funktionen von BBF wurden nach MoP und Cata übertragen.\n\nWegen der vielen Änderungen kann sich einiges leicht verändert haben.\nEs könnte auch noch übersehene Fehler geben.\n\nMehr Infos im Changelog."
@@ -1450,6 +1459,9 @@ L["Tooltip_Moveable_FPS_Counter_Desc"] = "Macht die Standard-FPS-Anzeige von Bli
 L["Tooltip_Surrender_Arena_Desc"] = "Wenn du in der Arena /afk eingibst, gibst du auf, statt die Arena zu verlassen, damit dir kein Ehren-/Eroberungsgewinn verloren geht."
 L["Tooltip_Druid_Manabar_Desc"] = "Zeigt die Manaleiste als sekundäre alternative Ressourcenleiste in Katzen-/Bärengestalt als Wiederherstellung. Energie/Wut werden weiterhin ebenfalls angezeigt."
 L["Tooltip_Shaman_Maelstrom_Desc"] = "Zeigt die Stapel von Waffe des Mahlstroms des Verstärkungsschamanen als Combopunkte unter dem Spielerfenster und in der Persönlichen Ressourcenanzeige."
+L["Tooltip_Forever_Combo_Points_Desc"] = "Zeigt die Combopunkte von Schurke und Druide als moderne Retail-Combopunktleiste unter dem Spielerfenster und in der Persönlichen Ressourcenanzeige."
+L["Tooltip_Hide_Prd_Combo_Points_Desc"] = "Blendet die Combopunkte in der Persönlichen Ressourcenanzeige aus."
+L["Tooltip_Prd_Resource_No_Target_On_Prd_Desc"] = "Zeigt die Combopunkte weiterhin in der Persönlichen Ressourcenanzeige an, wenn es keine Ziel-Namensplakette gibt, auf die sie gesetzt werden können."
 L["Tooltip_Hunter_Tip_Of_Spear_Desc"] = "Zeigt die Stapel von Speerspitze des Überlebensjägers als Combopunkte unter dem Spielerfenster und in der Persönlichen Ressourcenanzeige."
 L["Tooltip_Hide_XP_Honor_Desc"] = "Blendet die Erfahrungs- & Ehrenleiste aus. Wird beim Öffnen des Charakterfensters weiterhin angezeigt."
 L["Tooltip_Raise_Castbar_Strata_Desc"] = "Hebt die Strata der Zauberleisten von Ziel & Fokus an, damit sie nicht hinter den Fenstern erscheinen.\n\nBeachte, dass die Zauberleiste des Zielfensters dadurch NICHT über dem Fokusfenster erscheint, dafür ist die Einstellung darüber nötig."
@@ -1625,5 +1637,25 @@ L["Remove_ActionBar_Bronze_Tint"] = "Bronzetönung der Aktionsleisten entfernen"
 L["Tooltip_Remove_ActionBar_Bronze_Tint_Desc"] = "Entsättigt die Aktionsleisten-Grafiken, um die Bronzetönung von WoW: Forever zu entfernen.\n\nDer Dunkelmodus für Aktionsleisten hat Vorrang, wenn er aktiviert ist."
 L["Forever_In_Development"] = "In Entwicklung..."
 L["Forever_In_Development_Desc"] = "Die WoW: Forever-Version von BetterBlizzFrames befindet sich in intensiver Entwicklung. Rechnet mit Fehlern und meldet sie bitte, damit ich sie leichter beheben kann! Danke!\n\n- Bodify"
-L["Forever_Blizzard_Bug"] = "Blizzard-Fehler:"
-L["Forever_Blizzard_Bug_Desc"] = "In der Forever-Beta gibt es einen Blizzard-Fehler, durch den Einstellungen nicht richtig gespeichert/geladen werden. Einige berichten von (vorübergehendem?) Erfolg, indem sie sich ausloggen, ihre SavedVariables-Dateien löschen und es erneut versuchen. Wir müssen einfach warten, bis Blizzard das behebt.\n\nTritt dem Discord bei, um weitere Neuigkeiten und Infos zur Lage zu erhalten:"
+
+---------------------------------------
+-- Smooth Bars
+---------------------------------------
+
+L["Smooth_Bars"] = "Weiche Leisten"
+L["Tooltip_Smooth_Bars_Desc"] = "Wendet eine weiche Animation auf Gesundheits- und Manaleisten bei Gesundheits-/Manaverlust und -gewinn an."
+L["Tooltip_Smooth_Bars_SubText"] = "Zum Ausschalten ist ein Neuladen erforderlich."
+L["Smooth_Bars_Options"] = "Optionen für weiche Leisten"
+L["Tooltip_Smooth_Bars_Options_Desc"] = "Wählt aus, welche Leisten die weiche Animation erhalten."
+L["Smooth_Healthbars"] = "Weiche Gesundheitsleisten"
+L["Tooltip_Smooth_Healthbars_Desc"] = "Wendet eine weiche Animation auf die Gesundheitsleisten bei Gesundheitsverlust/-gewinn an."
+L["Smooth_Manabars"] = "Weiche Manaleisten"
+L["Tooltip_Smooth_Manabars_Desc"] = "Wendet eine weiche Animation auf die Manaleisten bei Manaverlust/-gewinn an."
+L["Tweak_Extra_Bar_Textures"] = "Zusätzliche Leistentexturen anpassen"
+L["Tooltip_Tweak_Extra_Bar_Textures_Desc"] = "Ändert die Feedback-Texturen und die Texturen der Heilungsvorhersage auf dieselbe Textur wie die Lebensleiste, damit sie weniger fehl am Platz wirken."
+
+---------------------------------------
+-- Legacy Combo Points Resource Lock
+---------------------------------------
+
+L["Tooltip_Resource_Locked_By_Legacy_Combos"] = "Da \"Alte Combopunkte\" aktiviert ist, klickt stattdessen mit der rechten Maustaste auf das Kontrollkästchen \"Alte Combopunkte\", um die Ressourcenposition anzupassen."

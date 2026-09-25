@@ -2,7 +2,7 @@ local boundRings = {}
 local ringRefreshers = {}
 local ringsForcedHidden = false
 
-local function BindLevelRing(levelText, ring)
+local function BindLevelRing(levelText, ring, highLevelTexture)
     if not levelText or not ring then return end
     if boundRings[ring] then return end
     boundRings[ring] = true
@@ -14,7 +14,8 @@ local function BindLevelRing(levelText, ring)
         if ring.bbfRefreshing then return end
         ring.bbfRefreshing = true
         local ownedByBlizzard = anchoredToRing and levelText:GetParent() == originalParent
-        if ringsForcedHidden or not ownedByBlizzard then
+        local hasLevelDisplay = levelText:IsShown() or (highLevelTexture and highLevelTexture:IsShown())
+        if ringsForcedHidden or not ownedByBlizzard or not hasLevelDisplay then
             ring:Hide()
         else
             ring:Show()
@@ -32,6 +33,14 @@ local function BindLevelRing(levelText, ring)
 
     hooksecurefunc(levelText, "SetParent", Refresh)
     hooksecurefunc(levelText, "SetAlpha", Refresh)
+    hooksecurefunc(levelText, "Show", Refresh)
+    hooksecurefunc(levelText, "Hide", Refresh)
+    hooksecurefunc(levelText, "SetShown", Refresh)
+    if highLevelTexture then
+        hooksecurefunc(highLevelTexture, "Show", Refresh)
+        hooksecurefunc(highLevelTexture, "Hide", Refresh)
+        hooksecurefunc(highLevelTexture, "SetShown", Refresh)
+    end
     hooksecurefunc(ring, "Show", function()
         if ringsForcedHidden and not ring.bbfRefreshing then
             Refresh()
@@ -59,7 +68,8 @@ function BBF.BindLevelRings()
     local function BindTargetStyle(frame)
         if not frame or not frame.TargetFrameContent then return end
         local main = frame.TargetFrameContent.TargetFrameContentMain
-        BindLevelRing(main.LevelText, main.LevelBackgroundCircle)
+        local contextual = frame.TargetFrameContent.TargetFrameContentContextual
+        BindLevelRing(main.LevelText, main.LevelBackgroundCircle, contextual and contextual.HighLevelTexture)
     end
 
     BindTargetStyle(TargetFrame)
@@ -272,6 +282,37 @@ local function GetClassicMinimapTextures()
     return textures
 end
 
+local MINIMAP_BUTTON_BORDER = "136430"
+local minimapButtonSweepQueued
+
+local function BronzeMinimapButtonRegions(frame)
+    for i = 1, frame:GetNumRegions() do
+        local region = select(i, frame:GetRegions())
+        if region and region:IsObjectType("Texture") and not region:IsForbidden() then
+            local texture = region:GetTexture()
+            if texture and string.find(tostring(texture), MINIMAP_BUTTON_BORDER, 1, true) then
+                BronzeTexture(region, true)
+            end
+        end
+    end
+end
+
+local function BronzeMinimapButtons()
+    if not Minimap then return end
+    for i = 1, Minimap:GetNumChildren() do
+        local child = select(i, Minimap:GetChildren())
+        if child and not child:IsForbidden() then
+            BronzeMinimapButtonRegions(child)
+            for j = 1, child:GetNumChildren() do
+                local nested = select(j, child:GetChildren())
+                if nested and not nested:IsForbidden() then
+                    BronzeMinimapButtonRegions(nested)
+                end
+            end
+        end
+    end
+end
+
 local PVP_CIRCLE_R, PVP_CIRCLE_G, PVP_CIRCLE_B = 1, 0.9, 0.19
 
 local function GetPvpCircles()
@@ -424,6 +465,15 @@ function BBF.UpdateBronzeTint()
     if MinimapBronzeTintActive() then
         for _, texture in pairs(GetClassicMinimapTextures()) do
             BronzeTexture(texture, true)
+        end
+        BronzeMinimapButtons()
+        if not minimapButtonSweepQueued then
+            minimapButtonSweepQueued = true
+            C_Timer.After(2, function()
+                if MinimapBronzeTintActive() then
+                    BronzeMinimapButtons()
+                end
+            end)
         end
     elseif not (BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeMinimap) then
         for _, texture in ipairs(bronzedMinimapTextures) do

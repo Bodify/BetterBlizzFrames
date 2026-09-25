@@ -56,6 +56,61 @@ local legacyComboIgnoreVars = {
     HUNTER = "hidePlayerPowerNoHunter",
 }
 
+local statusGlowHooked
+
+local function GetPlayerStatusGlow()
+    local content = PlayerFrame and PlayerFrame.PlayerFrameContent
+    local main = content and content.PlayerFrameContentMain
+    return main and main.StatusTexture
+end
+
+function BBF.UpdatePlayerStatusGlow()
+    local glow = GetPlayerStatusGlow()
+    if not glow then return end
+    local db = BetterBlizzFramesDB
+
+    local hide
+    if IsResting() then
+        hide = db.hidePlayerRestGlow
+    elseif InCombatLockdown() then
+        hide = db.hideCombatGlow
+    end
+
+    if not statusGlowHooked then
+        statusGlowHooked = true
+
+        hooksecurefunc(glow, "SetAlpha", function(self, alpha)
+            if self.bbfGlowChanging then return end
+            self.bbfGlowAlpha = alpha
+            if self.bbfGlowHidden and alpha ~= 0 then
+                self.bbfGlowChanging = true
+                self:SetAlpha(0)
+                self.bbfGlowChanging = nil
+            end
+        end)
+
+        if PlayerFrame_UpdateStatus then
+            hooksecurefunc("PlayerFrame_UpdateStatus", function()
+                BBF.UpdatePlayerStatusGlow()
+            end)
+        end
+
+        local watcher = CreateFrame("Frame")
+        watcher:RegisterEvent("PLAYER_UPDATE_RESTING")
+        watcher:RegisterEvent("PLAYER_REGEN_DISABLED")
+        watcher:RegisterEvent("PLAYER_REGEN_ENABLED")
+        watcher:RegisterEvent("PLAYER_ENTERING_WORLD")
+        watcher:SetScript("OnEvent", function()
+            BBF.UpdatePlayerStatusGlow()
+        end)
+    end
+
+    glow.bbfGlowHidden = hide or nil
+    glow.bbfGlowChanging = true
+    glow:SetAlpha(hide and 0 or (glow.bbfGlowAlpha or 1))
+    glow.bbfGlowChanging = nil
+end
+
 local function setLegacyComboHidden(hide)
     local frame = ComboFrame
     if not frame then return end
@@ -378,7 +433,6 @@ function BBF.HideFrames()
         -- Hide rested glow on unit frame
         if BetterBlizzFramesDB.hidePlayerRestGlow then
             changes.hidePlayerRestGlow = true
-            PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.StatusTexture:SetParent(hiddenFrame)
             if classicFrames and not PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.bbfCF then
                 C_Timer.After(1, function()
                     for i = 1, PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual:GetNumRegions() do
@@ -397,9 +451,9 @@ function BBF.HideFrames()
                 PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.bbfCF = true
             end
         elseif changes.hidePlayerRestGlow then
-            PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.StatusTexture:SetParent(PlayerFrame.PlayerFrameContent.PlayerFrameContentMain)
             changes.hidePlayerRestGlow = nil
         end
+        BBF.UpdatePlayerStatusGlow()
 
         -- Hide corner icon
         if BetterBlizzFramesDB.hidePlayerCornerIcon then
@@ -432,11 +486,22 @@ function BBF.HideFrames()
             if ClassNameplateManaBarFrame and ClassNameplateManaBarFrame.FeedbackFrame then
                 ClassNameplateManaBarFrame.FeedbackFrame:Hide()
             end
+            if PersonalResourceDisplayFrame and not changes.hideManaFeedbackPRD then
+                local prdFeedback = PersonalResourceDisplayFrame.PowerBar.FeedbackFrame
+                changes.hideManaFeedbackPRD = prdFeedback:GetParent()
+                prdFeedback:SetParent(hiddenFrame)
+            end
         elseif not BetterBlizzFramesDB.hideManaFeedback and changes.hideManaFeedback then
             local parent = changes.hideManaFeedback
             changes.hideManaFeedback = nil
             manaFeedbackFrame:SetParent(parent)
             manaFeedbackFrame:SetAlpha(1)
+            if changes.hideManaFeedbackPRD then
+                if PersonalResourceDisplayFrame and not BetterBlizzFramesDB.hidePersonalManaFX then
+                    PersonalResourceDisplayFrame.PowerBar.FeedbackFrame:SetParent(changes.hideManaFeedbackPRD)
+                end
+                changes.hideManaFeedbackPRD = nil
+            end
         end
 
         if (BetterBlizzFramesDB.hideFullPower or BetterBlizzFramesDB.hideUnitFramePlayerMana or BetterBlizzFramesDB.bigPlayerHealthbar) and not changes.hideFullPower then
@@ -898,6 +963,14 @@ function BBF.HideFrames()
                     WarlockPowerFrame:SetParent(hiddenFrame)
                 end
             end
+            if not RogueComboPointBarFrame and BBF.ComboPointBar and class == "ROGUE" then
+                if BetterBlizzFramesDB.hidePlayerPowerNoRogue then
+                    if originalResourceParent then setResourceFrameVisibility(BBF.ComboPointBar, true) end
+                else
+                    setResourceFrameVisibility(BBF.ComboPointBar, false)
+                    if not originalResourceParent then originalResourceParent = true end
+                end
+            end
             if RogueComboPointBarFrame and class == "ROGUE" then
                 if BetterBlizzFramesDB.hidePlayerPowerNoRogue then
                     if originalResourceParent then RogueComboPointBarFrame:SetParent(originalResourceParent) end
@@ -906,11 +979,12 @@ function BBF.HideFrames()
                     RogueComboPointBarFrame:SetParent(hiddenFrame)
                 end
             end
-            if DruidComboPointBarFrame and class == "DRUID" then
+            local druidFrame = DruidComboPointBarFrame or BBF.ComboPointBar
+            if druidFrame and class == "DRUID" then
                 if BetterBlizzFramesDB.hidePlayerPowerNoDruid then
-                    if originalResourceParent then setResourceFrameVisibility(DruidComboPointBarFrame, true) end
+                    if originalResourceParent then setResourceFrameVisibility(druidFrame, true) end
                 else
-                    setResourceFrameVisibility(DruidComboPointBarFrame, false)
+                    setResourceFrameVisibility(druidFrame, false)
                     if not originalResourceParent then originalResourceParent = true end
                 end
             end
@@ -954,36 +1028,19 @@ function BBF.HideFrames()
                     if not originalResourceParent then originalResourceParent = true end
                 end
             end
-            if BBF.MaelstromWeaponBar and class == "SHAMAN" then
-                if BetterBlizzFramesDB.hidePlayerPowerNoShaman then
-                    if originalResourceParent then setResourceFrameVisibility(BBF.MaelstromWeaponBar, true) end
-                else
-                    setResourceFrameVisibility(BBF.MaelstromWeaponBar, false)
-                    if not originalResourceParent then originalResourceParent = true end
-                end
-            end
-            if BBF.TipOfSpearBar and class == "HUNTER" then
-                if BetterBlizzFramesDB.hidePlayerPowerNoHunter then
-                    if originalResourceParent then setResourceFrameVisibility(BBF.TipOfSpearBar, true) end
-                else
-                    setResourceFrameVisibility(BBF.TipOfSpearBar, false)
-                    if not originalResourceParent then originalResourceParent = true end
-                end
-            end
             local ignoreVar = legacyComboIgnoreVars[UnitClassBase("player")]
             setLegacyComboHidden(not (ignoreVar and BetterBlizzFramesDB[ignoreVar]))
             changes.hidePlayerPower = true
         elseif originalResourceParent or (ComboFrame and ComboFrame.bbfHidden) then
             if WarlockPowerFrame and class == "WARLOCK" then WarlockPowerFrame:SetParent(originalResourceParent) end
             if RogueComboPointBarFrame and class == "ROGUE" then RogueComboPointBarFrame:SetParent(originalResourceParent) end
-            if DruidComboPointBarFrame and class == "DRUID" then setResourceFrameVisibility(DruidComboPointBarFrame, true) end
+            if not RogueComboPointBarFrame and BBF.ComboPointBar and class == "ROGUE" then setResourceFrameVisibility(BBF.ComboPointBar, true) end
+            if (DruidComboPointBarFrame or BBF.ComboPointBar) and class == "DRUID" then setResourceFrameVisibility(DruidComboPointBarFrame or BBF.ComboPointBar, true) end
             if PaladinPowerBarFrame and class == "PALADIN" then PaladinPowerBarFrame:SetParent(originalResourceParent) end
             if RuneFrame and class == "DEATHKNIGHT" then RuneFrame:SetParent(originalResourceParent) end
             if EssencePlayerFrame and class == "EVOKER" then EssencePlayerFrame:SetParent(originalResourceParent) end
             if MonkHarmonyBarFrame and class == "MONK" then setResourceFrameVisibility(MonkHarmonyBarFrame, true) end
             if MageArcaneChargesFrame and class == "MAGE" then setResourceFrameVisibility(MageArcaneChargesFrame, true) end
-            if BBF.MaelstromWeaponBar and class == "SHAMAN" then setResourceFrameVisibility(BBF.MaelstromWeaponBar, true) end
-            if BBF.TipOfSpearBar and class == "HUNTER" then setResourceFrameVisibility(BBF.TipOfSpearBar, true) end
             setLegacyComboHidden(false)
             changes.hidePlayerPower = nil
         end

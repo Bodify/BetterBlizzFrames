@@ -14,8 +14,10 @@ embeds.xml
 
 shared\functions.lua
 shared\functions_classics.lua
+shared\functions_mainline.lua
 shared\ImportExport.lua
 shared\minimapTweaks.lua
+shared\smoothBars.lua
 
 retail\modules\darkmode.lua
 retail\modules\classicFrames.lua

@@ -1,192 +1,14 @@
-function BBF.DruidBlueComboPoints()
-    if not BetterBlizzFramesDB.druidOverstacks and not BetterBlizzFramesDB.legacyBlueComboPoints then return end
-    if BBF.druidBlueCombos then return end
-    if UnitClassBase("player") ~= "DRUID" then return end
-    local druid = _G.DruidComboPointBarFrame
-
-    local function GetPrdComboPoints()
-        if not BetterBlizzFramesDB.druidOverstacks then return end
-        local classFrame = PersonalResourceDisplayFrame and PersonalResourceDisplayFrame.classFrame
-        if classFrame and not classFrame:IsForbidden() then
-            return classFrame
-        end
-    end
-
-    local function CreateChargedPoints(comboPointFrame)
-        if not comboPointFrame then return end
-        if comboPointFrame:IsForbidden() then return end
-        if comboPointFrame.blueOverchargePoints then return end
-
-        local comboPoints = {}
-        local visibleComboPoints = 0
-
-        for i = 1, comboPointFrame:GetNumChildren() do
-            local child = select(i, comboPointFrame:GetChildren())
-
-            if child:IsShown() then
-                visibleComboPoints = visibleComboPoints + 1
-                table.insert(comboPoints, child)
-            end
-        end
-
-        table.sort(comboPoints, function(a, b)
-            return (a.layoutIndex or 0) < (b.layoutIndex or 0)
-        end)
-
-        for i = 1, 3 do
-            if comboPoints[i] then
-                local comboPoint = comboPoints[i]
-                comboPointFrame["ComboPoint"..i] = comboPoint
-
-                local overlayActive = comboPoint:CreateTexture(nil, "OVERLAY")
-                overlayActive:SetAtlas("UF-RogueCP-BG-Anima")
-                overlayActive:SetSize(20, 20)
-                overlayActive:SetPoint("CENTER", comboPoint, "CENTER")
-                comboPoint.ChargedFrameActive = overlayActive
-
-                overlayActive:Hide()
-            end
-        end
-
-        if visibleComboPoints == 5 then
-            comboPointFrame.blueOverchargePoints = true
-        end
-    end
-
-    CreateChargedPoints(druid)
-    CreateChargedPoints(GetPrdComboPoints())
-
-    local function UpdateComboPoints(self, aura)
-        if not self then return end
-        if self:IsForbidden() then return end
-        if not aura then
-            if self.overcharged then
-                for i = 1, 3 do
-                    local comboPoint = self["ComboPoint"..i]
-                    if comboPoint then
-                        comboPoint.Point_Icon:SetAtlas("UF-DruidCP-Icon")
-                        comboPoint.Point_Deplete:SetDesaturated(false)
-                        comboPoint.Point_Deplete:SetVertexColor(1, 1, 1)
-                        comboPoint.Smoke:SetDesaturated(false)
-                        comboPoint.Smoke:SetVertexColor(1, 1, 1)
-                        comboPoint.FB_Slash:SetDesaturated(false)
-                        comboPoint.FB_Slash:SetVertexColor(1, 1, 1)
-
-                        if comboPoint.ChargedFrameActive then
-                            comboPoint.ChargedFrameActive:Hide()
-                        end
-                    end
-                end
-                self.overcharged = nil
-            end
-            return
-        end
-
-        for i = 1, 3 do
-            local comboPoint = self["ComboPoint"..i]
-
-            if comboPoint then
-                if i <= aura.applications then
-                    self.overcharged = true
-                    comboPoint.Point_Icon:SetAtlas("UF-RogueCP-Icon-Blue")
-                    comboPoint.Point_Deplete:SetDesaturated(true)
-                    comboPoint.Point_Deplete:SetVertexColor(0, 0, 1)
-                    comboPoint.Smoke:SetDesaturated(true)
-                    comboPoint.Smoke:SetVertexColor(0, 0, 1)
-                    comboPoint.FB_Slash:SetDesaturated(true)
-                    comboPoint.FB_Slash:SetVertexColor(0, 0, 1)
-                    comboPoint.ChargedFrameActive:Show()
-                else
-                    comboPoint.Point_Icon:SetAtlas("UF-DruidCP-Icon")
-                    comboPoint.Point_Deplete:SetDesaturated(false)
-                    comboPoint.Point_Deplete:SetVertexColor(1, 1, 1)
-                    comboPoint.Smoke:SetDesaturated(false)
-                    comboPoint.Smoke:SetVertexColor(1, 1, 1)
-                    comboPoint.FB_Slash:SetDesaturated(false)
-                    comboPoint.FB_Slash:SetVertexColor(1, 1, 1)
-                    comboPoint.ChargedFrameActive:Hide()
-                end
-            end
-        end
-    end
-
-    local function BlueLegacyDruidPoints(aura)
-        local frame = ComboFrame
-        if not frame or not frame.ComboPoints then return end
-        local comboIndex = frame.startComboPointIndex or 2
-
-        for i = 1, 3 do
-            local point = frame.ComboPoints[comboIndex]
-            if point then
-                local isCharged = aura and i <= aura.applications
-
-                if isCharged then
-                    point.Highlight:SetAtlas("AncientMana")
-                    point.Highlight:SetTexCoord(0, 1, 0, 1)
-                    point.Highlight:SetSize(14, 14)
-                    point.Highlight:SetPoint("TOPLEFT", point, "TOPLEFT", -1, 1.5)
-                    point.charged = true
-                elseif point.charged then
-                    point.Highlight:SetTexture(130973)
-                    point.Highlight:SetTexCoord(0.375, 0.5625, 0, 1)
-                    point.Highlight:SetSize(8, 16)
-                    point.Highlight:SetPoint("TOPLEFT", point, "TOPLEFT", 2, 0)
-                    point.charged = false
-                end
-
-                comboIndex = comboIndex + 1
-            end
-        end
-    end
-
-    local currentForm = GetShapeshiftFormID()
-    if currentForm ~= 1 then
-        local formWatch = CreateFrame("Frame")
-        local function OnFormChanged()
-            local prd = GetPrdComboPoints()
-            CreateChargedPoints(druid)
-            CreateChargedPoints(prd)
-            if (not druid or druid.blueOverchargePoints) and (not prd or prd.blueOverchargePoints) then
-                formWatch:UnregisterAllEvents()
-            end
-        end
-        formWatch:RegisterEvent("UPDATE_SHAPESHIFT_FORM")
-        formWatch:SetScript("OnEvent", OnFormChanged)
-    end
-
-    local auraWatch = CreateFrame("Frame")
-    BBF.druidBlueComboWatch = auraWatch
-    if druid then
-        druid.auraWatch = auraWatch
-    end
-    if BetterBlizzFramesDB.legacyBlueComboPoints and C_CVar.GetCVar("comboPointLocation") == "1" and ComboFrame then
-        auraWatch:SetScript("OnEvent", function()
-            local aura = C_UnitAuras.GetPlayerAuraBySpellID(405189)
-            local prd = GetPrdComboPoints()
-            CreateChargedPoints(prd)
-            UpdateComboPoints(druid, aura)
-            UpdateComboPoints(prd, aura)
-            BlueLegacyDruidPoints(aura)
-        end)
-    else
-        auraWatch:SetScript("OnEvent", function()
-            local aura = C_UnitAuras.GetPlayerAuraBySpellID(405189)
-            local prd = GetPrdComboPoints()
-            CreateChargedPoints(prd)
-            UpdateComboPoints(druid, aura)
-            UpdateComboPoints(prd, aura)
-        end)
-    end
-    auraWatch:RegisterUnitEvent("UNIT_AURA", "player")
-    BBF.druidBlueCombos = true
-end
-
 function BBF.DruidAlwaysShowCombos()
     if not BetterBlizzFramesDB.druidAlwaysShowCombos then return end
     if UnitClassBase("player") ~= "DRUID" then return end
     if BBF.DruidAlwaysShowCombosActive then return end
     local frame = DruidComboPointBarFrame
-    if not frame then return end
+    if not frame then
+        if BBF.ComboPointBar and BBF.UpdateComboPointBars then
+            BBF.UpdateComboPointBars()
+        end
+        return
+    end
 
     local function TagCombos(comboPointFrame)
         if not comboPointFrame then return end
@@ -291,6 +113,12 @@ end
 
 local function ApplyComboNudge()
     local frame = DruidComboPointBarFrame
+    if not frame and BBF.ComboPointBar and BBF.ReanchorComboPointBar then
+        if not ComboPointsMovedElsewhere() then
+            BBF.ReanchorComboPointBar()
+        end
+        return
+    end
     if not frame or frame:IsProtected() or ComboPointsMovedElsewhere() then return end
     if BBF.HasNoPortrait("player") and BBF.PinClassFrameNoPortrait then
         BBF.PinClassFrameNoPortrait()

@@ -383,9 +383,21 @@ function BBF.HideFrames()
             if ClassNameplateManaBarFrame and ClassNameplateManaBarFrame.FeedbackFrame then
                 ClassNameplateManaBarFrame.FeedbackFrame:Hide()
             end
+            if PersonalResourceDisplayFrame and not changes.hideManaFeedbackPRD then
+                local prdFeedback = PersonalResourceDisplayFrame.PowerBar.FeedbackFrame
+                changes.hideManaFeedbackPRD = prdFeedback:GetParent()
+                prdFeedback:SetParent(hiddenFrame)
+            end
         elseif changes.hideManaFeedback then
             PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar.FeedbackFrame:SetParent(changes.hideManaFeedback)
             changes.hideManaFeedback = nil
+            if changes.hideManaFeedbackPRD then
+                -- hidePersonalManaFX wants it hidden regardless, so only restore when that is off
+                if PersonalResourceDisplayFrame and not BetterBlizzFramesDB.hidePersonalManaFX then
+                    PersonalResourceDisplayFrame.PowerBar.FeedbackFrame:SetParent(changes.hideManaFeedbackPRD)
+                end
+                changes.hideManaFeedbackPRD = nil
+            end
         end
 
         if (BetterBlizzFramesDB.hideFullPower or BetterBlizzFramesDB.hideUnitFramePlayerMana or BetterBlizzFramesDB.bigPlayerHealthbar) and not changes.hideFullPower then

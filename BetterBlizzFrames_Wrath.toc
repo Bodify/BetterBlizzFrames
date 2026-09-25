@@ -15,6 +15,7 @@ embeds.xml
 shared\functions.lua
 shared\functions_classics.lua
 shared\ImportExport.lua
+shared\smoothBars.lua
 
 classics\modules\darkmode.lua
 classics\modules\nameFix.lua

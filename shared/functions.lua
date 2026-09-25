@@ -16,6 +16,16 @@ function BBF.ShowPopup(name, ...)
 	return StaticPopup_Show(name, ...)
 end
 
+function BBF.LegacyComboPointShown(index, count, maxPoints, showAlways, extraComboPoints)
+	if showAlways then return true end
+	if not count or count <= 0 then return false end
+	extraComboPoints = extraComboPoints or ((maxPoints == 6 or maxPoints == 9) and 7 or 6)
+	if index >= extraComboPoints then
+		return count >= index
+	end
+	return true
+end
+
 -- Taint/combat lockdown concerns, use own to avoid Show call especially
 local FrameFadeManager = CreateFrame("Frame");
 local fadeFrames = {};
@@ -135,6 +145,12 @@ end
 
 function BBF.UIFrameIsFading(frame)
 	return frame and BBF.UIFrameFadeContains(frame) or false;
+end
+
+function BBF.CancelAllFades(frame)
+	if not frame then return end
+	BBF.UIFrameFadeRemoveFrame(frame)
+	UIFrameFadeRemoveFrame(frame)
 end
 
 local function GetDefaultPartyFrame(i)

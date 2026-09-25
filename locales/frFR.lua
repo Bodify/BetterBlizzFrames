@@ -210,6 +210,7 @@ L["Tooltip_Mini_Target"] = "Retire la barre de vie et la barre de mana du Target
 L["Tooltip_Mirror_TargetFrame_Desc"] = "Rendre la texture du PlayerFrame une version miroir du TargetFrame (cercle rond etc.). Ceci désactive le PlayerFrame de véhicule."
 L["Tooltip_Move_Resource_To_Target"] = "Déplacer la ressource (Points de combo, fragments de Démoniste etc.) vers le TargetFrame."
 L["Tooltip_Raise_TargetFrame_Layer_Desc"] = "Élever le niveau de cadre du TargetFrame pour qu'il soit au-dessus du FocusFrame.\n\nCeci fait en sorte que si votre TargetFrame est positionné au-dessus du FocusFrame et que la cible a tellement d'auras que la barre d'incantation descend jusqu'au FocusFrame, la barre d'incantation ne sera pas cachée derrière le FocusFrame."
+L["Tooltip_Force_Fit_Names_Desc"] = "Réduit la taille des noms longs pour qu'ils tiennent sans être tronqués, dans la limite du raisonnable."
 L["Tooltip_Target"] = "Afficher sur le TargetFrame"
 L["Tooltip_Target_Castbar"] = "Activer pour la barre d'incantation du TargetFrame"
 L["Tooltip_Target_Clickthrough"] = "Rend le TargetFrame cliquable à travers.\nVous pouvez toujours maintenir Maj pour faire un clic gauche/droit\nhors combat pour le commerce/inspection etc.\n\nNOTE : Vous ne pourrez PAS cliquer sur le cadre\ndu tout en combat avec ce réglage activé."
@@ -937,6 +938,9 @@ L["Druid_Berserk_Blue"] = "Druide : Combos Berserk surchargés en bleu"
 L["Druid_Combo_Points"] = "Druide : Points de combo"
 L["Druid_Manabar_CatBear"] = "Druide : Barre de mana en Chat/Ours (Resto)"
 L["Shaman_Maelstrom_Combos"] = "Chaman : points de combo Arme du Maelström"
+L["Forever_Combo_Points"] = "Voleur et Druide : points de combo Retail"
+L["Hide_Prd_Combo_Points"] = "Masquer les points de combo de la PRD"
+L["Prd_Resource_No_Target_On_Prd"] = "Afficher sur la PRD sans barre de nom de cible"
 L["Hunter_Tip_Of_Spear_Combos"] = "Chasseur : points de combo Pointe de lance"
 L["Hunter_Combo_Points"] = "Chasseur : Pointe de lance"
 L["Shaman_Combo_Points"] = "Chaman : Arme du Maelström"
@@ -1087,6 +1091,7 @@ L["Only_Mine"] = "Miennes uniquement"
 L["OR"] = "OU"
 L["Outline_Label"] = "Contour"
 L["Other_Stuff"] = "Autres éléments"
+L["Force_Fit_Names"] = "Ajuster les noms Joueur/Cible/Focus"
 L["Paladin_Holy_Charges"] = "Paladin : Charges sacrées"
 L["Portrait"] = "Portrait"
 L["Print_ClassicFrames_Not_Detected"] = "Barres de vie ClassicFrames non détectées. Veuillez signaler au dev @bodify"
@@ -1360,6 +1365,10 @@ L["Use_One_Color"] = "Une seule couleur"
 
 -- StaticPopupDialogs
 L["Popup_Reload_Required"] = "Ceci nécessite un rechargement. Recharger maintenant ?"
+L["Popup_Forever_Combo_Offer"] = "Voulez-vous activer les nouveaux points de combo de Better|cff00c0ffBlizz|rFrames ?\n\nIls remplacent les anciens points de combo Classic par des points modernes style Retail, à côté du cadre de cible ou sous votre cadre de joueur.\n\nVous pouvez modifier cela à tout moment sous Points de combo, dans la section Divers des paramètres."
+L["Yes_On_Target"] = "Oui, sur la cible"
+L["Yes_On_Player"] = "Oui, sur le joueur"
+L["Popup_Smooth_Mana_Feedback"] = "Veux-tu aussi masquer le retour de mana ?\n|cFFAAAAAA(C'est ce qui montre la quantité de mana qui sera utilisée avant la fin de l'incantation)|r"
 L["Popup_Classic_Frames_Turn"] = "Les cadres classiques seront %s après le rechargement.\n\nSélectionnez les paramètres optionnels que vous souhaitez.\n|cFFAAAAAA(Ceux-ci peuvent être changés individuellement plus tard)|r\n\n\n\n\n "
 L["Popup_New_Version_Text_Midnight"] = "CHANGEMENT IMPORTANT\n\nBeaucoup de nouveaux ajustements et paramètres pour le mode sans portrait. Y compris le paramètre de bordure pixel et le masquage de mana/énergie/ressource supplémentaire etc.\n\nBBF est en développement rapide donc attendez-vous à plus d'ajustements et possiblement des changements déplaçant un peu les choses (surtout ces nouvelles fonctions).\n\nMerci de signaler tout problème !"
 L["Popup_Cata_Update_Text"] = "CHANGEMENTS\n\nBeaucoup de fonctionnalités Retail de BBF ont été portées vers MoP et Cata.\n\nEn raison de la grande quantité de changements, les choses ont peut-être légèrement changé.\nIl peut aussi y avoir quelques bugs manqués.\n\nLisez le changelog pour plus d'infos."
@@ -1450,6 +1459,9 @@ L["Tooltip_Moveable_FPS_Counter_Desc"] = "Rendre le compteur IPS Blizzard par d�
 L["Tooltip_Surrender_Arena_Desc"] = "Fait en sorte que taper /afk en arène abandonne au lieu de quitter pour ne pas perdre le gain d'honneur/conquête."
 L["Tooltip_Druid_Manabar_Desc"] = "Afficher la barre de mana comme barre alternative secondaire en Chat/Ours en tant que Restauration. L'énergie/la rage sera toujours affichée aussi."
 L["Tooltip_Shaman_Maelstrom_Desc"] = "Afficher les cumuls d'Arme du Maelström du Chaman Amélioration comme points de combo sous le PlayerFrame et sur l'affichage des ressources personnelles."
+L["Tooltip_Forever_Combo_Points_Desc"] = "Affiche les points de combo du Voleur et du Druide sous forme de barre de points de combo moderne de Retail sous le PlayerFrame et sur l'affichage des ressources personnelles."
+L["Tooltip_Hide_Prd_Combo_Points_Desc"] = "Masque les points de combo sur l'affichage des ressources personnelles."
+L["Tooltip_Prd_Resource_No_Target_On_Prd_Desc"] = "Continue d'afficher les points de combo sur l'affichage des ressources personnelles quand il n'y a pas de barre de nom de cible où les placer."
 L["Tooltip_Hunter_Tip_Of_Spear_Desc"] = "Afficher les cumuls de Pointe de lance du Chasseur Survie comme points de combo sous le PlayerFrame et sur l'affichage des ressources personnelles."
 L["Tooltip_Hide_XP_Honor_Desc"] = "Masquer la barre d'expérience et d'honneur. S'affiche toujours en ouvrant le panneau de personnage."
 L["Tooltip_Raise_Castbar_Strata_Desc"] = "Élever la strate de la Cible et du Focus pour que la barre n'apparaisse pas derrière les cadres.\n\nNotez que ceci ne fera PAS apparaître la barre d'incantation du TargetFrame au-dessus du FocusFrame, le réglage ci-dessus est nécessaire pour ce comportement."
@@ -1625,5 +1637,25 @@ L["Remove_ActionBar_Bronze_Tint"] = "Retirer la teinte bronze des barres d'actio
 L["Tooltip_Remove_ActionBar_Bronze_Tint_Desc"] = "Désature les graphismes des barres d'action pour retirer la teinte bronze de WoW: Forever.\n\nLe mode sombre des barres d'action est prioritaire s'il est activé."
 L["Forever_In_Development"] = "En développement..."
 L["Forever_In_Development_Desc"] = "La version WoW: Forever de BetterBlizzFrames est en plein développement. Attendez-vous à des bugs et signalez-les pour que je puisse les corriger plus facilement ! Merci !\n\n- Bodify"
-L["Forever_Blizzard_Bug"] = "Bug de Blizzard :"
-L["Forever_Blizzard_Bug_Desc"] = "Il y a un bug de Blizzard sur la bêta de Forever qui empêche les paramètres de se sauvegarder/charger correctement. Certains signalent un succès (temporaire ?) en se déconnectant, en supprimant leurs fichiers SavedVariables puis en réessayant. Il faudra attendre que Blizzard corrige ce problème.\n\nRejoignez le Discord pour plus de nouvelles et d'infos sur la situation :"
+
+---------------------------------------
+-- Smooth Bars
+---------------------------------------
+
+L["Smooth_Bars"] = "Barres fluides"
+L["Tooltip_Smooth_Bars_Desc"] = "Applique une animation fluide aux barres de vie et de mana lors des pertes/gains de vie ou de mana."
+L["Tooltip_Smooth_Bars_SubText"] = "Nécessite un rechargement pour être désactivé."
+L["Smooth_Bars_Options"] = "Options des barres fluides"
+L["Tooltip_Smooth_Bars_Options_Desc"] = "Choisissez quelles barres reçoivent l'animation fluide."
+L["Smooth_Healthbars"] = "Barres de vie fluides"
+L["Tooltip_Smooth_Healthbars_Desc"] = "Applique une animation fluide aux barres de vie lors des pertes/gains de vie."
+L["Smooth_Manabars"] = "Barres de mana fluides"
+L["Tooltip_Smooth_Manabars_Desc"] = "Applique une animation fluide aux barres de mana lors des pertes/gains de mana."
+L["Tweak_Extra_Bar_Textures"] = "Ajuster les textures de barres supplémentaires"
+L["Tooltip_Tweak_Extra_Bar_Textures_Desc"] = "Change les textures de retour et les textures de prédiction de soins pour utiliser la même texture que la barre de vie afin qu'elles paraissent moins déplacées."
+
+---------------------------------------
+-- Legacy Combo Points Resource Lock
+---------------------------------------
+
+L["Tooltip_Resource_Locked_By_Legacy_Combos"] = "Comme \"Points de combo classiques\" est activé, faites plutôt un clic droit sur la case \"Points de combo classiques\" pour ajuster la position de la ressource."

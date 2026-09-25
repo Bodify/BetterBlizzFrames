@@ -1585,15 +1585,6 @@ function BBF.CastBarTimerCaller()
     CastBarTimer(FocusFrameSpellBar)
 end
 
-local function HideChargeTiers(castBar)
-    for _, child in ipairs({castBar:GetChildren()}) do
-        if child.BasePip or (child.Normal and child.Disabled) then
-            child:SetAlpha(0)
-            castBar.empowerHidden = true
-        end
-    end
-end
-
 function BBF.CastbarRecolorWidgets()
     if (BetterBlizzFramesDB.castBarRecolorInterrupt or BetterBlizzFramesDB.recolorCastbars or BetterBlizzFramesDB.classicFrames) then
         BBF.CastbarColorHooks()
@@ -1915,79 +1906,6 @@ local function PlayerCastingBarUpdateNextFrame()
     end)
 end
 hooksecurefunc(PlayerCastingBarFrame, "SetScale", PlayerCastingBarUpdateNextFrame)
-
-local evokerCastbarsHooked
-function BBF.HookCastbarsForEvoker()
-    if (not evokerCastbarsHooked and BetterBlizzFramesDB.normalCastbarForEmpoweredCasts) then
-        local castBars = {}
-
-        if BetterBlizzPlatesDB and not BetterBlizzPlatesDB.normalCastbarForEmpoweredCasts then
-            BetterBlizzPlatesDB.normalCastbarForEmpoweredCasts = true
-        end
-
-        if not BetterBlizzFramesDB.classicCastbars then
-            table.insert(castBars, TargetFrameSpellBar)
-            table.insert(castBars, FocusFrameSpellBar)
-        end
-
-        local empowerEvents = {
-            ["UNIT_SPELLCAST_EMPOWER_START"] = true,
-            ["UNIT_SPELLCAST_EMPOWER_UPDATE"] = true,
-            ["UNIT_SPELLCAST_EMPOWER_STOP"] = true,
-        }
-
-        local function NormalEvokerCastbar(castBar)
-            if castBar.empoweredFix then return end
-
-            if not castBar.empowerSpark then
-                castBar.empowerSpark = castBar:CreateTexture(nil, "OVERLAY")
-                castBar.empowerSpark:SetAtlas("UI-CastingBar-Pip")
-                castBar.empowerSpark:SetSize(6, 16)
-                castBar.empowerSpark:SetPoint("CENTER", castBar.Spark, "CENTER", 0, -4.5)
-                castBar.empowerSpark:Hide()
-            end
-
-            castBar:HookScript("OnEvent", function(self, event)
-                if empowerEvents[event] then
-                    if not self.empowerHidden then
-                        HideChargeTiers(castBar)
-                    end
-                    if not self.textureChangedNeedsColor then
-                        self:SetStatusBarTexture("UI-CastingBar-Filling-Standard")
-                    end
-                    self.Spark:Hide()
-                    self.empowerSparkShown = true
-                    self.empowerSpark:Show()
-                else
-                    if self.empowerSparkShown then
-                        self.empowerSpark:Hide()
-                        self.Spark:Show()
-                        self.empowerSparkShown = false
-                    end
-                end
-            end)
-
-            castBar.empoweredFix = true
-        end
-
-        if sArena then
-            for i = 1, 3 do
-                local arenaFrame = sArena["arena" .. i]
-                if arenaFrame and arenaFrame.CastBar then
-                    -- Mark the cast bars as belonging to sArena
-                    arenaFrame.CastBar.isSArena = true
-                    table.insert(castBars, arenaFrame.CastBar)
-                end
-            end
-        end
-
-        for _, castBar in ipairs(castBars) do
-            NormalEvokerCastbar(castBar)
-        end
-
-        evokerCastbarsHooked = true
-    end
-end
 
 local function GetCastbarTargetName(unit)
     local name = UnitSpellTargetName(unit)

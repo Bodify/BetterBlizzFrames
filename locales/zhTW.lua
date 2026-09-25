@@ -210,6 +210,7 @@ L["Tooltip_Mini_Target"] = "移除目標框架的血量條與法力條，\n只�
 L["Tooltip_Mirror_TargetFrame_Desc"] = "讓玩家框架的材質變成目標框架的鏡像版本（圓形等）。這會停用載具玩家框架。"
 L["Tooltip_Move_Resource_To_Target"] = "將資源（連擊點數、靈魂碎片等）移至目標框架。"
 L["Tooltip_Raise_TargetFrame_Layer_Desc"] = "提高目標框架的框架層級，使其位於專注目標框架之上。\n\n如果你把目標框架放在專注目標框架上方，而目標的光環多到讓施法條往下延伸到專注目標框架，施法條就不會被專注目標框架擋住。"
+L["Tooltip_Force_Fit_Names_Desc"] = "縮小較長的姓名，使其在合理範圍內完整顯示而不被截斷。"
 L["Tooltip_Target"] = "在目標框架上顯示"
 L["Tooltip_Target_Castbar"] = "為目標框架施法條啟用"
 L["Tooltip_Target_Clickthrough"] = "讓目標框架可以點擊穿透。\n脫離戰鬥時仍可按住 Shift 左/右鍵點擊它\n來進行交易/觀察等。\n\n注意：啟用此設定後，戰鬥中\n將完全無法點擊該框架。"
@@ -937,6 +938,9 @@ L["Druid_Berserk_Blue"] = "德魯伊：將狂暴溢出的連擊點數染成藍�
 L["Druid_Combo_Points"] = "德魯伊：連擊點數"
 L["Druid_Manabar_CatBear"] = "德魯伊：獵豹/熊形態時顯示法力條（恢復專精）"
 L["Shaman_Maelstrom_Combos"] = "薩滿：漩渦武器連擊點數"
+L["Forever_Combo_Points"] = "盜賊與德魯伊：正式伺服器連擊點數"
+L["Hide_Prd_Combo_Points"] = "隱藏 PRD 連擊點數"
+L["Prd_Resource_No_Target_On_Prd"] = "沒有目標名條時顯示於 PRD"
 L["Hunter_Tip_Of_Spear_Combos"] = "獵人：矛尖連擊點數"
 L["Hunter_Combo_Points"] = "獵人：矛尖"
 L["Shaman_Combo_Points"] = "薩滿：漩渦武器"
@@ -1087,6 +1091,7 @@ L["Only_Mine"] = "僅限我的"
 L["OR"] = "或"
 L["Outline_Label"] = "外框"
 L["Other_Stuff"] = "其他項目"
+L["Force_Fit_Names"] = "強制符合玩家/目標/焦點姓名"
 L["Paladin_Holy_Charges"] = "聖騎士：聖能"
 L["Portrait"] = "頭像"
 L["Print_ClassicFrames_Not_Detected"] = "未偵測到 ClassicFrames 血量條。請回報給開發者 @bodify"
@@ -1360,6 +1365,10 @@ L["Use_One_Color"] = "使用單一顏色"
 
 -- StaticPopupDialogs
 L["Popup_Reload_Required"] = "需要重新載入。立即重新載入？"
+L["Popup_Forever_Combo_Offer"] = "是否啟用Better|cff00c0ffBlizz|rFrames的新連擊點數？\n\n它們會將舊的經典連擊點數替換為現代正式伺服器風格，顯示在目標框架旁或玩家框架下方。\n\n你可以隨時在設定的其他區塊中的連擊點數更改此選項。"
+L["Yes_On_Target"] = "是，顯示在目標"
+L["Yes_On_Player"] = "是，顯示在玩家"
+L["Popup_Smooth_Mana_Feedback"] = "是否也隱藏法力回饋？\n|cFFAAAAAA(它會在施法結束前顯示將要消耗多少法力)|r"
 L["Popup_Classic_Frames_Turn"] = "重新載入後經典框架：%s\n\n選擇你想要的選用設定。\n|cFFAAAAAA（之後可以個別更改）|r\n\n\n\n\n "
 L["Popup_New_Version_Text_Midnight"] = "重要變更\n\n無頭像模式新增了許多調整與設定，包括像素邊框設定以及隱藏法力/能量/額外資源等功能。\n\nBBF 正在快速開發中，之後可能會有更多調整，也可能會稍微移動一些東西（尤其是這些新功能）。\n\n請回報任何問題！"
 L["Popup_Cata_Update_Text"] = "變更\n\nBBF 的許多正式版功能已移植到潘達利亞之謎與浩劫與重生。\n\n由於變更很多，有些東西可能略有不同。\n也可能還有一些尚未發現的錯誤。\n\n詳情請見更新記錄。"
@@ -1450,6 +1459,9 @@ L["Tooltip_Moveable_FPS_Counter_Desc"] = "讓 Blizzard 預設的 FPS 計數器�
 L["Tooltip_Surrender_Arena_Desc"] = "在競技場中輸入 /afk 會改為投降而非離開，這樣你就不會失去榮譽/征服獲得量。"
 L["Tooltip_Druid_Manabar_Desc"] = "恢復專精在獵豹/熊形態時，將法力條顯示為次要的額外能量條。能量/怒氣仍會一併顯示。"
 L["Tooltip_Shaman_Maelstrom_Desc"] = "將增強薩滿的漩渦武器層數以連擊點數的形式顯示在玩家框架下方與個人資源顯示中。"
+L["Tooltip_Forever_Combo_Points_Desc"] = "將盜賊與德魯伊的連擊點數以正式伺服器的現代連擊點數條顯示在玩家框架下方與個人資源顯示中。"
+L["Tooltip_Hide_Prd_Combo_Points_Desc"] = "隱藏個人資源顯示中的連擊點數。"
+L["Tooltip_Prd_Resource_No_Target_On_Prd_Desc"] = "當沒有可放置的目標名條時，繼續在個人資源顯示中顯示連擊點數。"
 L["Tooltip_Hunter_Tip_Of_Spear_Desc"] = "將生存獵人的矛尖層數以連擊點數的形式顯示在玩家框架下方與個人資源顯示中。"
 L["Tooltip_Hide_XP_Honor_Desc"] = "隱藏經驗值與榮譽條。開啟角色面板時仍會顯示。"
 L["Tooltip_Raise_Castbar_Strata_Desc"] = "提高目標與專注目標施法條的層級，讓它們不會出現在框架後方。\n\n請注意，這「不會」讓目標框架的施法條顯示在專注目標框架之上，那需要上方的設定。"
@@ -1625,5 +1637,25 @@ L["Remove_ActionBar_Bronze_Tint"] = "移除快捷列青銅色調"
 L["Tooltip_Remove_ActionBar_Bronze_Tint_Desc"] = "降低快捷列美術的飽和度以移除 WoW: Forever 的青銅色調。\n\n啟用快捷列暗色模式時暗色模式優先。"
 L["Forever_In_Development"] = "開發中..."
 L["Forever_In_Development_Desc"] = "BetterBlizzFrames 的 WoW: Forever 版本正在積極開發中。可能會有錯誤，請回報給我以便更輕鬆地修復！謝謝！\n\n- Bodify"
-L["Forever_Blizzard_Bug"] = "暴雪錯誤："
-L["Forever_Blizzard_Bug_Desc"] = "Forever 測試版存在一個暴雪錯誤，導致設定無法正確儲存/載入。有玩家回報透過登出、刪除 SavedVariables 檔案後重試（暫時？）解決了問題。我們只能等待暴雪修復。\n\n加入 Discord 取得更多關於此情況的更新與資訊："
+
+---------------------------------------
+-- Smooth Bars
+---------------------------------------
+
+L["Smooth_Bars"] = "平滑狀態條"
+L["Tooltip_Smooth_Bars_Desc"] = "血量或法力減少或增加時為血量條和法力條套用平滑動畫。"
+L["Tooltip_Smooth_Bars_SubText"] = "關閉後需要重新載入介面才會生效。"
+L["Smooth_Bars_Options"] = "平滑狀態條選項"
+L["Tooltip_Smooth_Bars_Options_Desc"] = "選擇哪些狀態條使用平滑動畫。"
+L["Smooth_Healthbars"] = "平滑血量條"
+L["Tooltip_Smooth_Healthbars_Desc"] = "血量減少或增加時為血量條套用平滑動畫。"
+L["Smooth_Manabars"] = "平滑法力條"
+L["Tooltip_Smooth_Manabars_Desc"] = "法力減少或增加時為法力條套用平滑動畫。"
+L["Tweak_Extra_Bar_Textures"] = "調整額外狀態條材質"
+L["Tooltip_Tweak_Extra_Bar_Textures_Desc"] = "將回饋材質和治療預估材質更改為與生命條相同的材質，使其看起來不那麼突兀。"
+
+---------------------------------------
+-- Legacy Combo Points Resource Lock
+---------------------------------------
+
+L["Tooltip_Resource_Locked_By_Legacy_Combos"] = "由於已啟用\"舊版連擊點數\"，請改為右鍵點擊\"舊版連擊點數\"核取方塊來調整資源位置。"

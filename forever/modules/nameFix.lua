@@ -88,6 +88,7 @@ local showLastNameNpc
 local classColorPartyNames
 local customColorTargetNames
 local customColorPartyNames
+local forceFitNames
 
 local function GetRPNameColor(unit)
     if not UnitExists(unit) then return end
@@ -134,6 +135,7 @@ function BBF.UpdateUserTargetSettings()
     classColorTargetNames = BetterBlizzFramesDB.classColorTargetNames
     customColorTargetNames = BetterBlizzFramesDB.customHealthbarColors and BetterBlizzFramesDB.customColorsUnitFramesNames and BetterBlizzFramesDB.customColorsUnitFrames
     customColorPartyNames = BetterBlizzFramesDB.customHealthbarColors and BetterBlizzFramesDB.customColorsRaidFramesNames and BetterBlizzFramesDB.customColorsUnitFrames
+    forceFitNames = BetterBlizzFramesDB.forceFitNames
     showSpecName = BetterBlizzFramesDB.showSpecName
     shortArenaSpecName = BetterBlizzFramesDB.shortArenaSpecName
     showArenaID = BetterBlizzFramesDB.showArenaID
@@ -501,6 +503,22 @@ local function ShowLastNameOnlyNpc(frame, name)
     -- end
 end
 
+local function GetSelfDisplayName(unit)
+    if RegionalUniqueNamesEnabled and RegionalUniqueNamesEnabled() and C_PlayerInfo.ShouldDisplaySurname and not C_PlayerInfo.ShouldDisplaySurname() then
+        return UnitName(unit)
+    end
+    return GetUnitName(unit)
+end
+
+local function GetUnitFrameNameText(frame)
+    local unit = frame.unit
+    if unit and UnitIsUnit(unit, "player") then
+        local name = GetSelfDisplayName(unit)
+        if name and name ~= "" then return name end
+    end
+    return frame.name:GetText()
+end
+
 local function GetNameWithoutRealm(frame)
     return UnitFullName(frame.unit)
 end
@@ -796,11 +814,14 @@ local function InitializeFontString(frame)
     frame.bbfName:SetTextColor(name:GetTextColor())
     frame.bbfName:SetShadowColor(name:GetShadowColor())
     frame.bbfName:SetShadowOffset(name:GetShadowOffset())
-    frame.bbfName:SetWidth(name:GetWidth())
-    frame.bbfName:SetHeight(name:GetHeight())
-    frame.bbfName:SetWordWrap(false)
     local nameWidth = name:GetWidth()
+    if frame == PlayerFrame then
+        nameWidth = 119
+    end
     local nameHeight = name:GetHeight()
+    frame.bbfName:SetWidth(nameWidth)
+    frame.bbfName:SetHeight(nameHeight)
+    frame.bbfName:SetWordWrap(false)
 
     -- Copy position
     local point, relativeTo, relativePoint, xOffset, yOffset = name:GetPoint()
@@ -862,6 +883,103 @@ end
 
 -- Run the function to initialize font strings on all specified frames
 InitializeFontStringsForFrames()
+
+local MIN_NAME_FONT_SIZE = 8
+local fitNameFrames = { PlayerFrame, TargetFrame, FocusFrame }
+
+local function GetNameFitBaseline(fontString)
+    local font, size, flags = fontString:GetFont()
+    if not font or not size then return nil end
+    local og = fontString.bbfOgNameFont
+    if not og or not fontString.bbfFitSize or size ~= fontString.bbfFitSize or font ~= og[1] then
+        og = { font, size, flags }
+        fontString.bbfOgNameFont = og
+    end
+    return og
+end
+
+local function RestoreNameFont(fontString)
+    local og = fontString.bbfOgNameFont
+    if not og then return end
+    if fontString.bbfFitSize then
+        fontString:SetFont(og[1], og[2], og[3])
+        fontString.bbfFitSize = nil
+    end
+    if fontString.bbfFitWidth then
+        fontString:SetWidth(fontString.bbfFitWidth)
+    end
+end
+
+local function FitNameToWidth(fontString)
+    if not fontString then return end
+
+    local og = GetNameFitBaseline(fontString)
+    if not og then return end
+
+    local maxWidth = fontString.bbfFitWidth
+    if not maxWidth then
+        maxWidth = fontString:GetWidth()
+        if not maxWidth or issecretvalue(maxWidth) or maxWidth <= 0 then return end
+        fontString.bbfFitWidth = maxWidth
+    end
+
+    if fontString.bbfFitSize then
+        fontString:SetFont(og[1], og[2], og[3])
+        fontString.bbfFitSize = nil
+    end
+
+    fontString:SetWidth(0)
+    local textWidth = fontString:GetStringWidth()
+
+    if not textWidth or issecretvalue(textWidth) then
+        fontString:SetWidth(maxWidth)
+        return
+    end
+
+    if textWidth <= maxWidth then
+        fontString:SetWidth(maxWidth)
+        return
+    end
+
+    local newSize = og[2]
+    while textWidth > maxWidth and newSize > MIN_NAME_FONT_SIZE do
+        newSize = newSize - 1
+        fontString:SetFont(og[1], newSize, og[3])
+        textWidth = fontString:GetStringWidth()
+        if not textWidth or issecretvalue(textWidth) then break end
+    end
+
+    fontString:SetWidth(maxWidth)
+    if newSize ~= og[2] then
+        fontString.bbfFitSize = newSize
+    end
+end
+
+function BBF.UpdateNameFit()
+    forceFitNames = BetterBlizzFramesDB.forceFitNames
+    for _, frame in ipairs(fitNameFrames) do
+        local fontString = frame and frame.bbfName
+        if fontString then
+            if forceFitNames then
+                FitNameToWidth(fontString)
+            else
+                RestoreNameFont(fontString)
+            end
+        end
+    end
+end
+
+for _, frame in ipairs(fitNameFrames) do
+    local fontString = frame and frame.bbfName
+    if fontString then
+        hooksecurefunc(fontString, "SetText", function(self)
+            if not forceFitNames or self.bbfFitting then return end
+            self.bbfFitting = true
+            FitNameToWidth(self)
+            self.bbfFitting = nil
+        end)
+    end
+end
 
 local function UpdateFontStringPosition(frame)
     local name = frame.name or frame.Name
@@ -1560,7 +1678,7 @@ local function PlayerFrameNameChanges(frame)
             end
         end
     else
-        frame.bbfName:SetText(frame.name:GetText())
+        frame.bbfName:SetText(GetUnitFrameNameText(frame))
     end
 
     if classColorTargetNames or customColorTargetNames then
@@ -1616,7 +1734,7 @@ local function TargetFrameNameChanges(frame)
         elseif showLastNameNpc and not UnitIsPlayer(frame.unit) then
             frame.bbfName:SetText(ShowLastNameOnlyNpc(frame, frame.name:GetText()))
         else
-            frame.bbfName:SetText(frame.name:GetText())
+            frame.bbfName:SetText(GetUnitFrameNameText(frame))
         end
         if classColorTargetNames or customColorTargetNames then
             ClassColorName(frame.bbfName, unit)
@@ -1715,7 +1833,7 @@ local function FocusFrameNameChanges(frame)
         elseif showLastNameNpc and not UnitIsPlayer(frame.unit) then
             frame.bbfName:SetText(ShowLastNameOnlyNpc(frame, frame.name:GetText()))
         else
-            frame.bbfName:SetText(frame.name:GetText())
+            frame.bbfName:SetText(GetUnitFrameNameText(frame))
         end
         if classColorTargetNames or customColorTargetNames then
             ClassColorName(frame.bbfName, unit)
@@ -1768,7 +1886,7 @@ local function TargetFrameToTNameChanges(frame)
         elseif showLastNameNpc and not UnitIsPlayer(frame.unit) then
             frame.bbfName:SetText(ShowLastNameOnlyNpc(frame, frame.name:GetText()))
         else
-            frame.bbfName:SetText(frame.name:GetText())
+            frame.bbfName:SetText(GetUnitFrameNameText(frame))
         end
         if classColorTargetNames or customColorTargetNames then
             ClassColorName(frame.bbfName, unit)
@@ -1814,7 +1932,7 @@ local function FocusFrameToTNameChanges(frame)
         elseif showLastNameNpc and not UnitIsPlayer(frame.unit) then
             frame.bbfName:SetText(ShowLastNameOnlyNpc(frame, frame.name:GetText()))
         else
-            frame.bbfName:SetText(frame.name:GetText())
+            frame.bbfName:SetText(GetUnitFrameNameText(frame))
         end
         if classColorTargetNames or customColorTargetNames then
             ClassColorName(frame.bbfName, unit)
@@ -1824,6 +1942,31 @@ end
 
 hooksecurefunc(FocusFrame.totFrame.Name, "SetText", function()
     FocusFrameToTNameChanges(FocusFrameToT)
+end)
+
+local SelfNameRefresh = CreateFrame("Frame")
+SelfNameRefresh:RegisterEvent("PLAYER_TARGET_CHANGED")
+SelfNameRefresh:RegisterEvent("PLAYER_FOCUS_CHANGED")
+SelfNameRefresh:RegisterUnitEvent("UNIT_TARGET", "target", "focus")
+SelfNameRefresh:RegisterEvent("CVAR_UPDATE")
+SelfNameRefresh:SetScript("OnEvent", function(_, event, cvar)
+    if event == "CVAR_UPDATE" then
+        if cvar ~= "UnitSurnameOwn" then return end
+        PlayerFrameNameChanges(PlayerFrame)
+        TargetFrameNameChanges(TargetFrame)
+        FocusFrameNameChanges(FocusFrame)
+        TargetFrameToTNameChanges(TargetFrameToT)
+        FocusFrameToTNameChanges(FocusFrameToT)
+    elseif event == "PLAYER_TARGET_CHANGED" then
+        TargetFrameNameChanges(TargetFrame)
+        TargetFrameToTNameChanges(TargetFrameToT)
+    elseif event == "PLAYER_FOCUS_CHANGED" then
+        FocusFrameNameChanges(FocusFrame)
+        FocusFrameToTNameChanges(FocusFrameToT)
+    else
+        TargetFrameToTNameChanges(TargetFrameToT)
+        FocusFrameToTNameChanges(FocusFrameToT)
+    end
 end)
 
 
