@@ -1440,7 +1440,7 @@ local function MakeNoPortraitMode(frame)
                     PlayerLevelText:ClearAllPoints()
                     PlayerLevelText:SetPoint("LEFT", 194, 17)
                 elseif hideLvl then
-                    if UnitLevel("player") == BBF.GetMaxPlayerLevel() then
+                    if UnitLevel("player") == GetMaxLevelForPlayerExpansion() then
                         PlayerLevelText:SetParent(BBF.hiddenFrame)
                         PlayerLevelText:ClearAllPoints()
                         PlayerLevelText:SetPoint("LEFT", 194, 17)
@@ -1456,7 +1456,7 @@ local function MakeNoPortraitMode(frame)
                 if mode > 3 then
                     -- Always hide level text for mode > 3 (using UI-FocusFrame-Large texture)
                     PlayerLevelText:SetParent(BBF.hiddenFrame)
-                elseif alwaysHideLvl or (hideLvl and UnitLevel("player") == BBF.GetMaxPlayerLevel()) then
+                elseif alwaysHideLvl or (hideLvl and UnitLevel("player") == GetMaxLevelForPlayerExpansion()) then
                     -- Hide level text based on hideLvl settings for mode <= 3
                     PlayerLevelText:SetParent(BBF.hiddenFrame)
                 else
@@ -1937,7 +1937,7 @@ local function MakeNoPortraitMode(frame)
                 contentMain.StatusTexture:SetTexture(playerFlashTex)
                 -- Handle level text for playerEliteFrame
                 local mode = BetterBlizzFramesDB.playerEliteFrameMode
-                if mode > 3 and (alwaysHideLvl or (hideLvl and UnitLevel("player") == BBF.GetMaxPlayerLevel())) then
+                if mode > 3 and (alwaysHideLvl or (hideLvl and UnitLevel("player") == GetMaxLevelForPlayerExpansion())) then
                     -- Ensure level text is hidden when using UI-FocusFrame-Large
                     PlayerLevelText:SetParent(BBF.hiddenFrame)
                 end
@@ -1945,7 +1945,7 @@ local function MakeNoPortraitMode(frame)
                 if alwaysHideLvl then
                     ToggleNoLevelFrame(true)
                 elseif hideLvl then
-                    if UnitLevel("player") == BBF.GetMaxPlayerLevel() then
+                    if UnitLevel("player") == GetMaxLevelForPlayerExpansion() then
                         ToggleNoLevelFrame(true)
                     else
                         ToggleNoLevelFrame(false)

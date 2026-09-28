@@ -266,6 +266,14 @@ function BBF.UpdateUserAuraSettings()
     S.removeDebuffBorder = db.removeDebuffColorBorder
     S.pixelBorder = ((db.noPortraitModes and db.noPortraitPixelBorder) or db.pixelBorderAuras) and true or false
     S.darkBorder = (db.darkModeUi and db.darkModeUiAura) and true or false
+    if S.masqueLib == nil then
+        S.masqueLib = db.enableMasque and LibStub("Masque", true) or false
+        S.masqueGroups = {}
+        if not S.masqueLib and db.enableMasque and not C_AddOns.IsAddOnLoaded("Masque") then
+            S.masqueLib = nil
+        end
+    end
+    S.masque = S.masqueLib or nil
     S.legacyBorder = db.auraLegacyBorder and true or false
     if S.pixelBorder then
         S.darkColor = 0
@@ -399,12 +407,16 @@ function BBF.UpdateUserAuraSettings()
         purgeGlow = db.showPurgeTextureOnSelf,
     }
 
-    S.buffsCollapsed = db.playerBuffsCollapsed
+    S.buffsCollapsed = db.playerBuffsCollapsed and not db.hideAuraCollapseButton
 
     S.playerSpacingX = (db.playerAuraSpacingX or 0) -5
     S.playerSpacingY = db.playerAuraSpacingY or 0
-    S.playerAurasOn = db.playerAuraFiltering and db.enablePlayerBuffFiltering
-    S.showFilteredIcon = db.showHiddenAurasIcon and S.playerAurasOn
+    local playerFiltering = db.playerAuraFiltering and db.enablePlayerBuffFiltering and true or false
+    if not playerFiltering and S.masque then
+        S.player = { buffs = true, debuffs = true }
+    end
+    S.playerAurasOn = (playerFiltering or S.masque) and true or false
+    S.showFilteredIcon = db.showHiddenAurasIcon and playerFiltering
         and db.PlayerAuraFrameBuffEnable and true or false
     S.filteredDirection = db.hiddenIconDirection or "BOTTOM"
     S.clickthroughPlayerAuras = db.clickthroughPlayerAuras
@@ -742,7 +754,7 @@ end
 
 local function ApplyDispelRegistrations(button, style)
     local borderStyle = (button.bbfDispel and not style.removeDebuffBorder and not style.glow)
-        and GetDispelBorderStyle(style) or nil
+        and (button.bbfMasqueBorder and Enum.CustomAuraButtonDispelTypeTextureStyle.PreserveAsset or GetDispelBorderStyle(style)) or nil
     local ownBorderOn = (button.bbfBorder and style.drawBorder) and true or false
     local ownBorderHarmful = (ownBorderOn and style.removeDebuffBorder) and true or false
     local purgeMode = button.bbfPurgeGlow and GetPurgeMode(style) or nil
@@ -890,7 +902,12 @@ local function ApplyMutableStyle(button, style)
 
     if style.isPlayer then
         button:SetSize(style.buttonWidth, style.buttonHeight)
-        if button.bbfIcon then
+        if button.bbfSkin then
+            button.bbfSkin:ClearAllPoints()
+            button.bbfSkin:SetSize(PLAYER_AURA_ICON, PLAYER_AURA_ICON)
+            button.bbfSkin:SetPoint(style.iconPoint, button, style.iconPoint)
+            button.bbfSkin.bbfSize = PLAYER_AURA_ICON
+        elseif button.bbfIcon then
             button.bbfIcon:ClearAllPoints()
             button.bbfIcon:SetSize(PLAYER_AURA_ICON, PLAYER_AURA_ICON)
             button.bbfIcon:SetPoint(style.iconPoint, button, style.iconPoint)
@@ -917,6 +934,10 @@ local function ApplyMutableStyle(button, style)
         end
     else
         button:SetSize(size, size)
+        if button.bbfSkin then
+            button.bbfSkin:SetSize(size, size)
+            button.bbfSkin.bbfSize = size
+        end
     end
 
     if not style.isPlayer then
@@ -957,11 +978,17 @@ local function ApplyMutableStyle(button, style)
         ApplyBorderGeometry(button.bbfBorder, iconAnchor, style.pixelBorder, style.borderInset)
     end
     if button.bbfDispel then
-        ApplyDispelBorderGeometry(button.bbfDispel, iconAnchor, style)
+        local hadMasqueBorder = button.bbfMasqueBorder
+        if not (button.bbfMasqueGroup and BBF.ApplyMasqueAuraBorder(button)) then
+            if hadMasqueBorder then
+                ApplyDispelBorderArt(button.bbfDispel, style)
+            end
+            ApplyDispelBorderGeometry(button.bbfDispel, iconAnchor, style)
+        end
     end
     ApplyDispelRegistrations(button, style)
 
-    if button.bbfIcon then
+    if button.bbfIcon and not button.bbfSkin then
         if style.cropIcon then
             button.bbfIcon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
         else
@@ -980,11 +1007,92 @@ local function ApplyMutableStyle(button, style)
     if not InCombatLockdown() then
         button:SetMouseMotionEnabled(not style.hideTooltips)
     end
+
+    if button.bbfMasqueGroup and not pcall(button.bbfMasqueGroup.ReSkin, button.bbfMasqueGroup, button.bbfSkin) then
+        button.bbfMasqueGroup = nil
+    end
 end
 
-local function InitAuraButton(button, style)
+function BBF.GetAuraMasqueGroup(groupName)
+    if not S.masque then return nil end
+    local group = S.masqueGroups[groupName]
+    if not group then
+        group = S.masque:Group("Better|cff00c0ffBlizz|rFrames", groupName)
+        S.masqueGroups[groupName] = group
+        if group.RegisterCallback then
+            group:RegisterCallback(function()
+                BBF.RestyleAuraButtons(true)
+                BBF.StyleToggleAuraIcon()
+            end)
+        end
+    end
+    return group
+end
+
+function BBF.ApplyMasqueAuraBorder(button)
+    local dispel, frame, group = button.bbfDispel, button.bbfSkin, button.bbfMasqueGroup
+    button.bbfMasqueBorder = nil
+    if not dispel or not frame or not group or not S.masque or not S.masque.GetSkin then return false end
+    local db = group.db
+    if not db or db.Disabled then return false end
+    local skin = S.masque:GetSkin(db.SkinID)
+    if type(skin) ~= "table" then return false end
+
+    local spec
+    for _, layer in ipairs({ skin.DebuffBorder, type(skin.Border) == "table" and skin.Border.Debuff or skin.Border, skin.Normal }) do
+        local typed = type(layer) == "table" and (layer.Debuff or layer.Aura or layer) or nil
+        if type(typed) == "table" and not typed.Hide and (typed.Texture or typed.Atlas) then
+            spec = typed
+            break
+        end
+    end
+    if not spec then return false end
+
+    local scale = (frame.bbfSize or 36) / 36
+    if spec.Atlas then
+        dispel:SetAtlas(spec.Atlas)
+    else
+        dispel:SetTexture(spec.Texture)
+    end
+    local coords = spec.TexCoords
+    if type(coords) == "table" then
+        dispel:SetTexCoord(coords[1] or 0, coords[2] or 1, coords[3] or 0, coords[4] or 1)
+    else
+        dispel:SetTexCoord(0, 1, 0, 1)
+    end
+    dispel:SetBlendMode(spec.BlendMode or "BLEND")
+    dispel:SetDesaturated(true)
+    dispel:ClearAllPoints()
+    if spec.SetAllPoints then
+        dispel:SetAllPoints(frame)
+    else
+        dispel:SetSize((spec.Width or 36) * scale, (spec.Height or 36) * scale)
+        local point = spec.Point or "CENTER"
+        dispel:SetPoint(point, frame, spec.RelPoint or point, (spec.OffsetX or 0) * scale, (spec.OffsetY or 0) * scale)
+    end
+    button.bbfMasqueBorder = true
+    return true
+end
+
+local function InitAuraButton(button, style, host, harmful, masqueType)
+    local masqueGroup = host and BBF.GetAuraMasqueGroup(host.isPlayer and (harmful and "Player Debuffs" or "Player Buffs")
+        or (host.unit == "focus" and "Focus" or "Target") .. (harmful and " Debuffs" or " Buffs"))
+
     local icon = button:CreateTexture(nil, "BACKGROUND")
-    if style.isPlayer then
+    if masqueGroup then
+        local skin = CreateFrame("Frame", nil, button)
+        skin.bbfSize = style.isPlayer and PLAYER_AURA_ICON or style.size
+        skin:SetSize(skin.bbfSize, skin.bbfSize)
+        if not style.isPlayer then
+            skin:SetPoint("CENTER", button, "CENTER")
+        end
+        function skin:GetSize()
+            return self.bbfSize, self.bbfSize
+        end
+        icon:SetAllPoints(skin)
+        button.bbfSkin = skin
+        button.bbfMasqueGroup = masqueGroup
+    elseif style.isPlayer then
         icon:SetSize(PLAYER_AURA_ICON, PLAYER_AURA_ICON)
     else
         icon:SetAllPoints(button)
@@ -1007,7 +1115,8 @@ local function InitAuraButton(button, style)
 
     local overlay = CreateFrame("Frame", nil, button)
     overlay:SetAllPoints(button)
-    overlay:SetFrameLevel((button.bbfCooldown and button.bbfCooldown:GetFrameLevel() or button:GetFrameLevel()) + 1)
+    overlay:SetFrameLevel(math.max(button.bbfCooldown and button.bbfCooldown:GetFrameLevel() or button:GetFrameLevel(),
+        button.bbfSkin and button.bbfSkin:GetFrameLevel() or 0) + 1)
     button.bbfOverlay = overlay
 
     local count = overlay:CreateFontString(nil, "OVERLAY",
@@ -1073,6 +1182,22 @@ local function InitAuraButton(button, style)
     button:SetTooltipAnchorPoint("ANCHOR_BOTTOMLEFT", 0, 0)
 
     ApplyMutableStyle(button, style)
+
+    if masqueGroup then
+        icon.SetParent = function() end
+        local ok, err = pcall(masqueGroup.AddButton, masqueGroup, button.bbfSkin, {
+            Icon = icon,
+            Count = button.bbfCount,
+            Cooldown = button.bbfCooldown,
+        }, masqueType, true)
+        if not ok then
+            button.bbfMasqueGroup = nil
+            if not S.masqueWarned then
+                S.masqueWarned = true
+                BBF.Print(string.format(L["Print_Masque_Skin_Failed"], tostring(err)))
+            end
+        end
+    end
 end
 
 local F = AuraUtil.AuraFilters
@@ -1398,8 +1523,8 @@ local function BuildStyle(tier, sizes, isPlayer, cfg, into)
         and PLAYER_BUFF_BORDER_INSET or BORDER_INSET
     t.legacyBorder = legacyBorder
     t.showDispelType = cfg.showDispelType
-    t.drawBorder = (S.pixelBorder or S.darkBorder) and true or false
-    t.cropIcon = (S.pixelBorder or S.darkBorder) and true or false
+    t.drawBorder = (S.pixelBorder or S.darkBorder) and not S.masque and true or false
+    t.cropIcon = (S.pixelBorder or S.darkBorder) and not S.masque and true or false
     t.darkColor = S.darkColor
     t.purgeGlow = cfg.purgeGlow
     t.purgeHidden = cfg.purgeHidden
@@ -1549,7 +1674,8 @@ local function AddContainerGroup(host, container, def, cfg, sort, key)
         sortDirection = sort[2],
         layout = { elementSpacing = S.hGap, lineSpacing = S.vGap },
         initializeFrame = function(button)
-            InitAuraButton(button, container.bbfStyles[key])
+            InitAuraButton(button, container.bbfStyles[key], host, container.bbfHarmful,
+                container.bbfHarmful and "Debuff" or "Buff")
         end,
     })
 end
@@ -2556,7 +2682,7 @@ end
 
 local function GetPlayerContainerOffset(host, layout)
     local button = host.frame.CollapseAndExpandButton
-    if not button then return 0, 0 end
+    if not button or BetterBlizzFramesDB.hideAuraCollapseButton then return 0, 0 end
 
     if layout.isHorizontal then
         local width = button:GetWidth() or COLLAPSE_BUTTON_EXTENT
@@ -2616,7 +2742,7 @@ local ROTATION_RIGHT, ROTATION_LEFT = 0, math.pi
 local ROTATION_UP, ROTATION_DOWN = math.pi / 2, 3 * math.pi / 2
 
 local function BuffsAreCollapsed()
-    return BetterBlizzFramesDB.playerBuffsCollapsed and true or false
+    return BetterBlizzFramesDB.playerBuffsCollapsed and not BetterBlizzFramesDB.hideAuraCollapseButton and true or false
 end
 
 local function GetCollapseRotation(layout, expanded)
@@ -2680,7 +2806,7 @@ function BBF.RefreshBuffCollapseButton(layout)
     local button = BBF.buffCollapseButton
     if not button then return end
 
-    button:SetShown(S.player.buffs and true or false)
+    button:SetShown(S.player.buffs and not BetterBlizzFramesDB.hideAuraCollapseButton and true or false)
 
     local point = GetPlayerAnchorPoint(layout)
     button:ClearAllPoints()
@@ -2821,7 +2947,8 @@ function BBF.StyleToggleAuraIcon()
     if not button then return end
 
     local texture = button.Icon
-    local drawBorder = (S.pixelBorder or S.darkBorder) and true or false
+    local masqueGroup = BBF.GetAuraMasqueGroup("Player Buffs")
+    local drawBorder = (S.pixelBorder or S.darkBorder) and not masqueGroup and true or false
 
     local border = button.bbfBorder
     if not border then
@@ -2835,7 +2962,14 @@ function BBF.StyleToggleAuraIcon()
     border:SetVertexColor(c, c, c)
     border:SetShown(drawBorder)
 
-    if drawBorder then
+    if masqueGroup then
+        if not button.bbfMasqued then
+            button.bbfMasqued = true
+            pcall(masqueGroup.AddButton, masqueGroup, button, { Icon = texture }, "Buff", true)
+        else
+            pcall(masqueGroup.ReSkin, masqueGroup, button)
+        end
+    elseif drawBorder then
         texture:SetTexCoord(0.07, 0.93, 0.07, 0.93)
     else
         texture:SetTexCoord(0, 1, 0, 1)
@@ -2951,7 +3085,7 @@ local function CreateFilteredAuras(host)
             sortMethod = sort[1],
             sortDirection = sort[2],
             initializeFrame = function(button)
-                InitAuraButton(button, host.filteredStyle)
+                InitAuraButton(button, host.filteredStyle, host, false, "Buff")
             end,
         })
     end
@@ -3729,7 +3863,7 @@ local function CreatePlayerHost(key, hostFrame, harmful)
             local button = host.buffs:AddItemEnchantment(slot, {
                 hidePermanent = true,
                 initializeFrame = function(button)
-                    InitAuraButton(button, host.enchantStyle)
+                    InitAuraButton(button, host.enchantStyle, host, false, "Enchant")
                 end,
             })
             host.enchantButtons[#host.enchantButtons + 1] = button
@@ -3858,6 +3992,10 @@ function BBF.HookPlayerAndTargetAuras()
 
     if S.playerAurasOn and not playerBuffsHooked then
         playerBuffsHooked = true
+
+        if not hooked then
+            RefreshSpellLists()
+        end
 
         CreatePlayerHost("playerBuffs", BuffFrame, false)
         CreatePlayerHost("playerDebuffs", DebuffFrame, true)

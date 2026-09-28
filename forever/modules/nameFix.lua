@@ -503,23 +503,6 @@ local function ShowLastNameOnlyNpc(frame, name)
     -- end
 end
 
-local function GetSelfDisplayName(unit)
-    if RegionalUniqueNamesEnabled and RegionalUniqueNamesEnabled() and C_PlayerInfo.ShouldDisplaySurname and not C_PlayerInfo.ShouldDisplaySurname() then
-        return UnitName(unit)
-    end
-    return GetUnitName(unit)
-end
-
-local function GetUnitFrameNameText(frame)
-    local unit = frame.unit
-    local isSelf = unit and UnitIsUnit(unit, "player")
-    if not issecretvalue(isSelf) and isSelf then
-        local name = GetSelfDisplayName(unit)
-        if name and name ~= "" then return name end
-    end
-    return frame.name:GetText()
-end
-
 local function GetNameWithoutRealm(frame)
     return UnitFullName(frame.unit)
 end
@@ -1679,9 +1662,9 @@ local function PlayerFrameNameChanges(frame)
             end
         end
     elseif removeRealmNames then
-        frame.bbfName:SetText(UnitName(unit))
+        frame.bbfName:SetText(GetNameWithoutRealm(frame))
     else
-        frame.bbfName:SetText(GetUnitFrameNameText(frame))
+        frame.bbfName:SetText(frame.name:GetText())
     end
 
     if classColorTargetNames or customColorTargetNames then
@@ -1737,7 +1720,7 @@ local function TargetFrameNameChanges(frame)
         elseif showLastNameNpc and not UnitIsPlayer(frame.unit) then
             frame.bbfName:SetText(ShowLastNameOnlyNpc(frame, frame.name:GetText()))
         else
-            frame.bbfName:SetText(GetUnitFrameNameText(frame))
+            frame.bbfName:SetText(frame.name:GetText())
         end
         if classColorTargetNames or customColorTargetNames then
             ClassColorName(frame.bbfName, unit)
@@ -1836,7 +1819,7 @@ local function FocusFrameNameChanges(frame)
         elseif showLastNameNpc and not UnitIsPlayer(frame.unit) then
             frame.bbfName:SetText(ShowLastNameOnlyNpc(frame, frame.name:GetText()))
         else
-            frame.bbfName:SetText(GetUnitFrameNameText(frame))
+            frame.bbfName:SetText(frame.name:GetText())
         end
         if classColorTargetNames or customColorTargetNames then
             ClassColorName(frame.bbfName, unit)
@@ -1889,7 +1872,7 @@ local function TargetFrameToTNameChanges(frame)
         elseif showLastNameNpc and not UnitIsPlayer(frame.unit) then
             frame.bbfName:SetText(ShowLastNameOnlyNpc(frame, frame.name:GetText()))
         else
-            frame.bbfName:SetText(GetUnitFrameNameText(frame))
+            frame.bbfName:SetText(frame.name:GetText())
         end
         if classColorTargetNames or customColorTargetNames then
             ClassColorName(frame.bbfName, unit)
@@ -1935,7 +1918,7 @@ local function FocusFrameToTNameChanges(frame)
         elseif showLastNameNpc and not UnitIsPlayer(frame.unit) then
             frame.bbfName:SetText(ShowLastNameOnlyNpc(frame, frame.name:GetText()))
         else
-            frame.bbfName:SetText(GetUnitFrameNameText(frame))
+            frame.bbfName:SetText(frame.name:GetText())
         end
         if classColorTargetNames or customColorTargetNames then
             ClassColorName(frame.bbfName, unit)
@@ -1947,31 +1930,44 @@ hooksecurefunc(FocusFrame.totFrame.Name, "SetText", function()
     FocusFrameToTNameChanges(FocusFrameToT)
 end)
 
-local SelfNameRefresh = CreateFrame("Frame")
-SelfNameRefresh:RegisterEvent("PLAYER_TARGET_CHANGED")
-SelfNameRefresh:RegisterEvent("PLAYER_FOCUS_CHANGED")
-SelfNameRefresh:RegisterUnitEvent("UNIT_TARGET", "target", "focus")
-SelfNameRefresh:RegisterEvent("CVAR_UPDATE")
-SelfNameRefresh:SetScript("OnEvent", function(_, event, cvar)
-    if event == "CVAR_UPDATE" then
-        if cvar ~= "UnitSurnameOwn" then return end
-        PlayerFrameNameChanges(PlayerFrame)
-        TargetFrameNameChanges(TargetFrame)
-        FocusFrameNameChanges(FocusFrame)
-        TargetFrameToTNameChanges(TargetFrameToT)
-        FocusFrameToTNameChanges(FocusFrameToT)
-    elseif event == "PLAYER_TARGET_CHANGED" then
-        TargetFrameNameChanges(TargetFrame)
-        TargetFrameToTNameChanges(TargetFrameToT)
-    elseif event == "PLAYER_FOCUS_CHANGED" then
-        FocusFrameNameChanges(FocusFrame)
-        FocusFrameToTNameChanges(FocusFrameToT)
-    else
-        TargetFrameToTNameChanges(TargetFrameToT)
-        FocusFrameToTNameChanges(FocusFrameToT)
+local selfNameFrames = { PlayerFrame, TargetFrame, FocusFrame, TargetFrameToT, FocusFrameToT }
+local nameSetByBlizzard = {}
+
+for _, frame in ipairs(selfNameFrames) do
+    if frame.name then
+        nameSetByBlizzard[frame] = false
+        hooksecurefunc(frame.name, "SetText", function()
+            nameSetByBlizzard[frame] = true
+        end)
+    end
+end
+
+hooksecurefunc("UnitFrame_Update", function(frame)
+    local wasSet = nameSetByBlizzard[frame]
+    if wasSet == nil then return end
+    nameSetByBlizzard[frame] = false
+    if not wasSet and frame.unit then
+        frame.name:SetText(UnitName(frame.unit))
+        nameSetByBlizzard[frame] = false
     end
 end)
 
+local function SelfNameText(unit)
+    if RegionalUniqueNamesEnabled() and not C_PlayerInfo.ShouldDisplaySurname() then
+        return UnitName(unit)
+    end
+    return GetUnitName(unit)
+end
+
+local function RefreshSelfNames()
+    for _, frame in ipairs(selfNameFrames) do
+        if frame.name and frame.unit and UnitIsUnit(frame.unit, "player") then
+            frame.name:SetText(SelfNameText(frame.unit))
+            nameSetByBlizzard[frame] = false
+        end
+    end
+    BBF.AllNameChanges()
+end
 
 local function ResetTextColors()
     -- Table of frames to process

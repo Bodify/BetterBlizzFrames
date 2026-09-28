@@ -1,7 +1,14 @@
 local ART = "Interface\\Minimap\\"
 local TRACKING_BORDER = 136430
+local SKIN_BASE_WIDTH = 140
+local MINIMAP_NUDGE = 12
+local TITLE_NUDGE = 22
+local TITLE_OFFSET = 64
+local CLOCK_DROP = 3
+local DEFAULT_Y_POS = 12
 
 local skin
+local title
 
 local function AddTexture(parent, layer, subLevel, file, width, height, point, relativeTo, relativePoint, x, y)
     local texture = parent:CreateTexture(nil, layer, nil, subLevel)
@@ -32,12 +39,45 @@ local function KeepPoint(frame, point, relativeTo, relativePoint, x, y)
     frame.bbfPoint = { point, relativeTo, relativePoint, x, y }
 end
 
+function BBF.UpdateClassicMinimapLayout()
+    if not skin or not title then return end
+    local db = BetterBlizzFramesDB
+    local tweaks = db.foreverMinimapTweaks
+    local mapScale = tweaks and db.foreverMinimapScale or 1
+    local titleScale = tweaks and db.foreverMinimapTitleScale or 1
+    local halfHeight = Minimap:GetHeight() / 2
+    local xPos = tweaks and db.foreverMinimapXPos or 0
+    local yPos = tweaks and (db.foreverMinimapYPos or DEFAULT_Y_POS) - DEFAULT_Y_POS or 0
+
+    Minimap:SetScale(mapScale)
+    local base = Minimap.bbfBasePoint
+    if base and type(base[5]) == "number" then
+        Minimap.changing = true
+        Minimap:ClearAllPoints()
+        Minimap:SetPoint(base[1], base[2], base[3], base[4] + xPos / mapScale, base[5] + (MINIMAP_NUDGE + yPos + halfHeight) / mapScale - halfHeight)
+        Minimap.changing = false
+    end
+
+    local skinScale = Minimap:GetWidth() / SKIN_BASE_WIDTH
+    local titleFrameScale = skinScale * titleScale
+    title:SetScale(titleFrameScale)
+    title:ClearAllPoints()
+    title:SetPoint("BOTTOM", MinimapCluster.MinimapContainer, "CENTER", 0, (TITLE_NUDGE + TITLE_OFFSET * skinScale) / titleFrameScale)
+
+    local coords = MinimapCluster.MinimapContainer.PlayerCoords
+    if coords and not TimeManagerClockTicker then
+        KeepPoint(coords, "TOP", skin, "CENTER", 0, -(84 * skinScale + CLOCK_DROP) * mapScale)
+    end
+end
+
 function BBF.ClassicMinimap()
     if not BetterBlizzFramesDB.classicMinimap or skin then return end
     if InCombatLockdown() then
         BBF.RunAfterCombat(BBF.ClassicMinimap)
         return
     end
+
+    BBF.UpdateMinimapTweaks()
 
     BBF.classicMinimapTextures = {}
     skin = CreateFrame("Frame", nil, Minimap)
@@ -70,13 +110,18 @@ function BBF.ClassicMinimap()
     CVarCallbackRegistry:RegisterCallback("rotateMinimap", UpdateCompass, skin)
     UpdateCompass()
 
-    local header = AddTexture(skin, "ARTWORK", 0, ART .. "UI-Minimap-Border", 176, 28, "BOTTOM", skin, "CENTER", 0, 64)
+    title = CreateFrame("Frame", nil, MinimapCluster.MinimapContainer)
+    title:SetSize(176, 28)
+    title:SetFrameLevel(Minimap:GetFrameLevel() + 1)
+
+    local header = AddTexture(title, "ARTWORK", 0, ART .. "UI-Minimap-Border", 176, 28, "BOTTOM", title, "BOTTOM", 0, 0)
     header:SetTexCoord(0.3125, 1, 0, 0.109375)
 
     local zoneButton = MinimapCluster.ZoneTextButton
-    zoneButton:SetParent(skin)
+    zoneButton:SetParent(title)
+    zoneButton:SetFrameLevel(skin:GetFrameLevel() + 3)
     zoneButton:ClearAllPoints()
-    zoneButton:SetSize(140, 12)
+    zoneButton:SetSize(156, 12)
     zoneButton:SetPoint("LEFT", header, "LEFT", 10, 0)
     MinimapZoneText:ClearAllPoints()
     MinimapZoneText:SetSize(140, 12)
@@ -164,11 +209,11 @@ function BBF.ClassicMinimap()
     indicators:Layout()
 
     local difficulty = MinimapCluster.InstanceDifficulty
-    difficulty:SetParent(skin)
+    difficulty:SetParent(title)
     difficulty:SetFrameLevel(skin:GetFrameLevel() + 10)
     local function PlaceDifficulty()
         difficulty:ClearAllPoints()
-        difficulty:SetPoint("TOPLEFT", skin, "CENTER", -83, 75)
+        difficulty:SetPoint("TOPLEFT", header, "BOTTOMLEFT", 5, 11)
         difficulty:SetFlipped(false)
     end
     hooksecurefunc(MinimapCluster, "SetHeaderUnderneath", PlaceDifficulty)
@@ -191,8 +236,9 @@ function BBF.ClassicMinimap()
     local function Relayout()
         local width = Minimap:GetWidth()
         if not width or width <= 0 then return end
-        local scale = width / 140
+        local scale = width / SKIN_BASE_WIDTH
         skin:SetScale(scale)
+        BBF.UpdateClassicMinimapLayout()
 
         local diel = MinimapCluster.DielFrame
         if diel then
@@ -201,9 +247,6 @@ function BBF.ClassicMinimap()
             diel:SetPoint("CENTER", skin, "CENTER", 71 * scale, 35 * scale)
         end
 
-        if coords and not TimeManagerClockTicker then
-            KeepPoint(coords, "TOP", skin, "CENTER", 0, -84 * scale)
-        end
     end
     if MinimapCluster.DielFrame then
         MinimapCluster.DielFrame:SetParent(skin)
@@ -212,16 +255,15 @@ function BBF.ClassicMinimap()
     Minimap:HookScript("OnSizeChanged", Relayout)
     Relayout()
 
-    local function NudgeMinimap()
-        if Minimap.changing or Minimap:GetNumPoints() ~= 1 then return end
-        local point, relativeTo, relativePoint, x, y = Minimap:GetPoint(1)
-        Minimap.changing = true
-        Minimap:ClearAllPoints()
-        Minimap:SetPoint(point, relativeTo, relativePoint, x, y + 22)
-        Minimap.changing = false
+    if Minimap:GetNumPoints() == 1 then
+        Minimap.bbfBasePoint = { Minimap:GetPoint(1) }
     end
-    hooksecurefunc(Minimap, "SetPoint", NudgeMinimap)
-    NudgeMinimap()
+    hooksecurefunc(Minimap, "SetPoint", function(self, ...)
+        if self.changing then return end
+        self.bbfBasePoint = { ... }
+        BBF.UpdateClassicMinimapLayout()
+    end)
+    BBF.UpdateClassicMinimapLayout()
 
     for _, frame in pairs({ MinimapCluster.BorderTop, GameTimeFrame, AddonCompartmentFrame, ExpansionLandingPageMinimapButton }) do
         frame:Hide()
@@ -232,7 +274,7 @@ function BBF.ClassicMinimap()
         local clock = TimeManagerClockButton
         clock:SetParent(skin)
         clock:SetSize(60, 28)
-        KeepPoint(clock, "CENTER", skin, "CENTER", 0, -74)
+        KeepPoint(clock, "CENTER", skin, "CENTER", 0, -74 - CLOCK_DROP * SKIN_BASE_WIDTH / Minimap:GetWidth())
         KeepPoint(TimeManagerClockTicker, "CENTER", clock, "CENTER", 3, 1.5)
         if coords then
             KeepPoint(coords, "TOP", TimeManagerClockTicker, "BOTTOM", 0, -1)

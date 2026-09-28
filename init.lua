@@ -30,13 +30,6 @@ BBF.isMoP = gameVersion:match("^5%.")
 BBF.isTBC = gameVersion:match("^2%.")
 BBF.isEra = not BBF.isForever and gameVersion:match("^1%.")
 
-function BBF.GetMaxPlayerLevel()
-    if GetMaxLevelForPlayerExpansion then
-        return GetMaxLevelForPlayerExpansion()
-    end
-    return BBF.isMidnight and 90 or 80
-end
-
 local function CreateOverlayFrame(frame)
     frame.bbfOverlayFrame = CreateFrame("Frame", nil, frame)
     frame.bbfOverlayFrame:SetFrameStrata("DIALOG")

@@ -1353,14 +1353,13 @@ function BBF.HookFrameTextureColor()
     local rpColor = BetterBlizzFramesDB.rpNamesFrameTextureColor
     if not classColorFrameTexture and not rpColor then return end
 
-    local darkmode = BetterBlizzFramesDB.darkModeUi
-    local darkmodeColor = BetterBlizzFramesDB.darkModeColor
 
 
     local function DesaturateAndColorTexture(texture, unit)
         if not UnitExists(unit) then return end
 
-        local color = darkmode and darkmodeColor or 1
+        local darkmode = BBF.darkModeUnitFramesActive
+        local color = darkmode and BetterBlizzFramesDB.darkModeColor or 1
         local r, g, b = color, color, color
         local desaturate = darkmode and true or false
         local colored = false

@@ -175,11 +175,31 @@ end
 hooksecurefunc("PlayerFrame_UpdateLevel", BBF.ApplyPlayerLevelColor)
 
 local BRONZE_R, BRONZE_G, BRONZE_B = 0.95, 0.68, 0.35
+local BRONZE_DRAGON_R, BRONZE_DRAGON_G, BRONZE_DRAGON_B = 0.776, 0.467, 0.278
 local MINIMAP_BRONZE_R, MINIMAP_BRONZE_G, MINIMAP_BRONZE_B = 1, 0.71, 0.34
 local bronzedTextures = {}
+local bronzedCastbarTextures = {}
 local bronzedMinimapTextures = {}
 
 local function BronzeTintActive()
+    local db = BetterBlizzFramesDB
+    return db.classicFrames and db.classicFramesBronzeTint and not BBF.DarkModeUnitFramesOn() and not db.classColorFrameTexture
+end
+
+BBF.ClassicBronzeTintActive = BronzeTintActive
+
+local function DarkModeEliteActive()
+    local db = BetterBlizzFramesDB
+    return db.darkModeUi and db.darkModeEliteTexture
+end
+
+local function BronzeDragonsActive()
+    return BetterBlizzFramesDB.bronzeEliteDragons and not DarkModeEliteActive()
+end
+
+BBF.BronzeEliteDragonsActive = BronzeDragonsActive
+
+local function CastbarBronzeTintActive()
     local db = BetterBlizzFramesDB
     return db.classicFrames and db.classicFramesBronzeTint and not db.darkModeUi and not db.classColorFrameTexture
 end
@@ -201,16 +221,19 @@ local function SetBronze(texture)
     texture.bbfBronzeChanging = false
 end
 
-local function BronzeTexture(texture, isMinimap)
+local function BronzeTexture(texture, isMinimap, isCastbar)
     if not texture or texture:IsForbidden() then return end
     if not texture.bbfBronzeHooked then
         texture.bbfBronzeHooked = true
         texture.bbfBronzeMinimap = isMinimap
-        tinsert(isMinimap and bronzedMinimapTextures or bronzedTextures, texture)
+        texture.bbfBronzeCastbar = isCastbar
+        tinsert(isMinimap and bronzedMinimapTextures or isCastbar and bronzedCastbarTextures or bronzedTextures, texture)
         hooksecurefunc(texture, "SetVertexColor", function(self)
             if self.bbfBronzeChanging then return end
             if self.bbfBronzeMinimap then
                 if not MinimapBronzeTintActive() then return end
+            elseif self.bbfBronzeCastbar then
+                if not CastbarBronzeTintActive() then return end
             elseif not BronzeTintActive() then
                 return
             end
@@ -282,7 +305,6 @@ local function GetClassicMinimapTextures()
     return textures
 end
 
-local MINIMAP_BUTTON_BORDER = "136430"
 local minimapButtonSweepQueued
 
 local function BronzeMinimapButtonRegions(frame)
@@ -290,7 +312,7 @@ local function BronzeMinimapButtonRegions(frame)
         local region = select(i, frame:GetRegions())
         if region and region:IsObjectType("Texture") and not region:IsForbidden() then
             local texture = region:GetTexture()
-            if texture and string.find(tostring(texture), MINIMAP_BUTTON_BORDER, 1, true) then
+            if texture and string.find(tostring(texture), "136430", 1, true) then
                 BronzeTexture(region, true)
             end
         end
@@ -338,13 +360,12 @@ function BBF.UpdateClassicPvpCircles()
 end
 
 local eliteOverlayClassifications = { elite = true, worldboss = true, rareelite = true }
-local ELITE_OVERLAY_R, ELITE_OVERLAY_G, ELITE_OVERLAY_B = 1, 0.816, 0.251
 
 local hdEliteOverlays = {
     rare = { atlas = "UI-HUD-UnitFrame-Target-PortraitOn-Boss-Rare-Silver", width = 97.5, height = 102, x = 22, y = 20 },
     rareelite = { atlas = "UI-HUD-UnitFrame-Target-PortraitOn-Boss-Gold-Winged", width = 107, height = 92, x = 32, y = 15, desaturated = true },
-    elite = { atlas = "UI-HUD-UnitFrame-Target-PortraitOn-Boss-Gold", width = 97.5, height = 102, x = 22, y = 20 },
-    worldboss = { atlas = "UI-HUD-UnitFrame-Target-PortraitOn-Boss-Gold-Winged", width = 107, height = 92, x = 32, y = 15 },
+    elite = { atlas = "UI-HUD-UnitFrame-Target-PortraitOn-Boss-Gold", width = 97.5, height = 102, x = 22, y = 20, gold = true },
+    worldboss = { atlas = "UI-HUD-UnitFrame-Target-PortraitOn-Boss-Gold-Winged", width = 107, height = 92, x = 32, y = 15, gold = true },
 }
 
 local function HDEliteActive()
@@ -356,11 +377,11 @@ BBF.ClassicHDEliteActive = HDEliteActive
 function BBF.UpdateClassicEliteOverlay(frame)
     local classicFrame = frame and frame.ClassicFrame
     if not classicFrame or not classicFrame.Texture then return end
-    local classification = frame.unit and UnitExists(frame.unit) and UnitClassification(frame.unit)
+    local classification = frame.unit and UnitExists(frame.unit) and BBF.GetUnitClassification(frame.unit)
     local db = BetterBlizzFramesDB
-    local darkModeKeepsDragon = db.classicFrames and db.darkModeUi and not db.darkModeEliteTexture
+    local darkModeKeepsDragon = db.classicFrames and BBF.DarkModeUnitFramesOn() and not db.darkModeEliteTexture
     local overlay = classicFrame.EliteOverlay
-    if not ((BronzeTintActive() or darkModeKeepsDragon) and not db.hideRareDragonTexture and not HDEliteActive() and eliteOverlayClassifications[classification]) then
+    if not ((BronzeTintActive() or darkModeKeepsDragon or BronzeDragonsActive()) and not db.hideRareDragonTexture and not HDEliteActive() and eliteOverlayClassifications[classification] and not BBF.GetSelfEliteClassification(frame.unit)) then
         if overlay then overlay:Hide() end
         return
     end
@@ -376,9 +397,12 @@ function BBF.UpdateClassicEliteOverlay(frame)
     if classification == "rareelite" then
         overlay:SetDesaturated(true)
         overlay:SetVertexColor(1, 1, 1, 1)
+    elseif BronzeDragonsActive() then
+        overlay:SetDesaturated(true)
+        overlay:SetVertexColor(BRONZE_DRAGON_R, BRONZE_DRAGON_G, BRONZE_DRAGON_B, 1)
     else
         overlay:SetDesaturated(false)
-        overlay:SetVertexColor(ELITE_OVERLAY_R, ELITE_OVERLAY_G, ELITE_OVERLAY_B, 1)
+        overlay:SetVertexColor(1, 0.816, 0.251, 1)
     end
     overlay:Show()
 end
@@ -389,7 +413,7 @@ function BBF.UpdateClassicHDElite(frame)
     local portrait = frame.TargetFrameContainer and frame.TargetFrameContainer.Portrait
     if not portrait then return end
     local overlay = classicFrame.HDElite
-    local classification = frame.unit and UnitExists(frame.unit) and UnitClassification(frame.unit)
+    local classification = frame.unit and UnitExists(frame.unit) and BBF.GetUnitClassification(frame.unit)
     local bossTexture = frame.TargetFrameContainer.BossPortraitFrameTexture
     if classification and bossTexture and bossTexture:IsShown() then
         local atlas = bossTexture:GetAtlas()
@@ -400,10 +424,11 @@ function BBF.UpdateClassicHDElite(frame)
     local data = HDEliteActive() and classification and hdEliteOverlays[classification]
     if not data then
         if overlay then overlay:Hide() end
+        BBF.SetClassicHDLevelRing(frame, false)
         return
     end
     if not overlay then
-        overlay = classicFrame:CreateTexture(nil, "OVERLAY", nil, 6)
+        overlay = classicFrame:CreateTexture(nil, "OVERLAY", nil, 4)
         classicFrame.HDElite = overlay
     end
     local db = BetterBlizzFramesDB
@@ -415,11 +440,133 @@ function BBF.UpdateClassicHDElite(frame)
         local v = db.darkModeColor + 0.25
         overlay:SetDesaturated(db.darkModeEliteTextureDesaturated or data.desaturated or false)
         overlay:SetVertexColor(v, v, v, 1)
+    elseif data.gold and BronzeDragonsActive() then
+        overlay:SetDesaturated(true)
+        overlay:SetVertexColor(BRONZE_DRAGON_R, BRONZE_DRAGON_G, BRONZE_DRAGON_B, 1)
     else
         overlay:SetDesaturated(data.desaturated or false)
         overlay:SetVertexColor(1, 1, 1, 1)
     end
+    local playerElite = PlayerFrame.PlayerFrameContainer.PlayerElite
+    if playerElite and BBF.GetSelfEliteClassification(frame.unit) then
+        local r, g, b = playerElite:GetVertexColor()
+        overlay:SetDesaturated(playerElite:IsDesaturated())
+        overlay:SetVertexColor(r, g, b, 1)
+    end
     overlay:Show()
+end
+
+local function BossDragonIsGold(frame, texture)
+    local atlas = texture:GetAtlas()
+    if not atlas or (issecretvalue and issecretvalue(atlas)) then return false end
+    if not atlas:lower():find("gold", 1, true) then return false end
+    return BBF.GetSelfEliteClassification(frame.unit) ~= "rareelite"
+end
+
+function BBF.UpdateBossDragonBronze(frame)
+    local texture = frame and frame.TargetFrameContainer and frame.TargetFrameContainer.BossPortraitFrameTexture
+    if not texture or texture:IsForbidden() then return end
+    local alpha = texture:GetAlpha()
+    if BronzeDragonsActive() and not BetterBlizzFramesDB.classicFrames and BossDragonIsGold(frame, texture) then
+        texture.bbfBronzeDragon = true
+        texture:SetDesaturated(true)
+        texture:SetVertexColor(BRONZE_DRAGON_R, BRONZE_DRAGON_G, BRONZE_DRAGON_B, alpha)
+    elseif texture.bbfBronzeDragon then
+        texture.bbfBronzeDragon = nil
+        local db = BetterBlizzFramesDB
+        if DarkModeEliteActive() then
+            local v = db.darkModeColor + 0.25
+            texture:SetDesaturated(db.darkModeEliteTextureDesaturated or false)
+            texture:SetVertexColor(v, v, v, alpha)
+        else
+            texture:SetDesaturated(BBF.GetSelfEliteClassification(frame.unit) == "rareelite")
+            texture:SetVertexColor(1, 1, 1, alpha)
+        end
+    end
+end
+
+function BBF.UpdateEliteDragonBronze()
+    if BBF.ColorPlayerElite then
+        BBF.ColorPlayerElite()
+    end
+    for _, frame in ipairs({ TargetFrame, FocusFrame }) do
+        if frame then
+            if not frame.bbfBronzeDragonHooked then
+                frame.bbfBronzeDragonHooked = true
+                hooksecurefunc(frame, "CheckClassification", BBF.UpdateBossDragonBronze)
+            end
+            BBF.UpdateBossDragonBronze(frame)
+            BBF.UpdateClassicEliteOverlay(frame)
+            BBF.UpdateClassicHDElite(frame)
+            if BBF.SyncSelfEliteClassicArt then
+                BBF.SyncSelfEliteClassicArt(frame)
+            end
+        end
+    end
+end
+
+local function ColorHDLevelRing(circle)
+    if not circle then return end
+    if BBF.DarkModeUnitFramesOn() then
+        local v = BetterBlizzFramesDB.darkModeColor
+        circle:SetDesaturated(true)
+        circle:SetVertexColor(v, v, v)
+    elseif BronzeTintActive() then
+        circle:SetDesaturated(true)
+        circle:SetVertexColor(BRONZE_R, BRONZE_G, BRONZE_B)
+    else
+        circle:SetDesaturated(false)
+        circle:SetVertexColor(1, 1, 1)
+    end
+end
+
+function BBF.UpdateClassicHDLevelRingColors()
+    for _, frame in ipairs({ PlayerFrame, TargetFrame, FocusFrame }) do
+        ColorHDLevelRing(frame and frame.ClassicFrame and frame.ClassicFrame.HDLevelCircle)
+    end
+end
+
+function BBF.SetClassicHDLevelRing(frame, enabled)
+    local classicFrame = frame and frame.ClassicFrame
+    if not classicFrame then return end
+    local levelText, highLevelTexture
+    if frame == PlayerFrame then
+        levelText = PlayerLevelText
+    elseif frame.TargetFrameContent then
+        levelText = frame.TargetFrameContent.TargetFrameContentMain.LevelText
+        highLevelTexture = frame.TargetFrameContent.TargetFrameContentContextual.HighLevelTexture
+    end
+    if not levelText then return end
+    local circle = classicFrame.HDLevelCircle
+    if not circle then
+        if not enabled then return end
+        circle = classicFrame:CreateTexture(nil, "OVERLAY", nil, 5)
+        circle:SetAtlas("Adventure_Ability_Frame_Filled")
+        if frame ~= PlayerFrame then
+            local ulx, uly, llx, lly, urx, ury, lrx, lry = circle:GetTexCoord()
+            circle:SetTexCoord(urx, ury, lrx, lry, ulx, uly, llx, lly)
+        end
+        circle:SetSize(38, 33)
+        circle:SetPoint("CENTER", levelText, "CENTER", frame == PlayerFrame and 0.5 or -1, -1.5)
+        classicFrame.HDLevelCircle = circle
+        ColorHDLevelRing(circle)
+        local function Refresh()
+            local hasLevelDisplay = levelText:IsShown() or (highLevelTexture and highLevelTexture:IsShown())
+            circle:SetShown(circle.bbfEnabled and hasLevelDisplay and levelText:GetParent() ~= BBF.hiddenFrame)
+            circle:SetAlpha(levelText:GetAlpha())
+        end
+        circle.Refresh = Refresh
+        for _, method in ipairs({ "SetParent", "SetAlpha", "Show", "Hide", "SetShown" }) do
+            hooksecurefunc(levelText, method, Refresh)
+        end
+        if highLevelTexture then
+            for _, method in ipairs({ "Show", "Hide", "SetShown" }) do
+                hooksecurefunc(highLevelTexture, method, Refresh)
+            end
+        end
+    end
+    circle.bbfEnabled = enabled and true or false
+    circle.Refresh()
 end
 
 function BBF.RefreshClassicHDElite()
@@ -445,17 +592,26 @@ end
 
 function BBF.UpdateBronzeTint()
     BBF.UpdateClassicPvpCircles()
-    BBF.UpdateClassicEliteOverlay(TargetFrame)
-    BBF.UpdateClassicEliteOverlay(FocusFrame)
+    BBF.UpdateEliteDragonBronze()
+    BBF.UpdateClassicHDLevelRingColors()
     if BronzeTintActive() then
         for _, texture in pairs(GetUnitFrameBorderTextures()) do
             BronzeTexture(texture)
         end
+    elseif not BBF.DarkModeUnitFramesOn() then
+        for _, texture in ipairs(bronzedTextures) do
+            if not texture:IsForbidden() then
+                texture:SetVertexColor(1, 1, 1, 1)
+            end
+        end
+    end
+
+    if CastbarBronzeTintActive() then
         for _, texture in pairs(GetClassicCastbarBorderTextures()) do
-            BronzeTexture(texture)
+            BronzeTexture(texture, nil, true)
         end
     elseif not BetterBlizzFramesDB.darkModeUi then
-        for _, texture in ipairs(bronzedTextures) do
+        for _, texture in ipairs(bronzedCastbarTextures) do
             if not texture:IsForbidden() then
                 texture:SetVertexColor(1, 1, 1, 1)
             end
@@ -592,7 +748,39 @@ function BBF.UpdateBagSlotTextures()
     end
 end
 
+local function ApplySmallerLevelCircle(ring, levelText, point, x, y, enabled)
+    if not ring or not levelText then return end
+    if not ring.bbfOrigPoint then
+        if not enabled then return end
+        ring.bbfOrigPoint = { ring:GetPoint(1) }
+        ring.bbfOrigScale = ring:GetScale()
+    end
+    ring:SetScale(enabled and 0.8 or ring.bbfOrigScale)
+    ring:ClearAllPoints()
+    if enabled then
+        ring:SetPoint(point, x, y)
+    else
+        ring:SetPoint(unpack(ring.bbfOrigPoint))
+    end
+    if levelText:GetParent() ~= ring:GetParent() then return end
+    if not levelText.bbfOrigFontHeight then
+        levelText.bbfOrigFontHeight = select(2, levelText:GetFont())
+    end
+    levelText:SetFontHeight(enabled and 12 or levelText.bbfOrigFontHeight)
+end
+
+function BBF.UpdateSmallerLevelCircle()
+    local enabled = BetterBlizzFramesDB.smallerLevelCircle and true or false
+    local playerMain = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain
+    ApplySmallerLevelCircle(playerMain.LevelBackgroundCircle, PlayerLevelText, "BOTTOMLEFT", 20, 16, enabled)
+    for _, frame in ipairs({ TargetFrame, FocusFrame }) do
+        local main = frame.TargetFrameContent.TargetFrameContentMain
+        ApplySmallerLevelCircle(main.LevelBackgroundCircle, main.LevelText, "BOTTOMRIGHT", -22, 17, enabled)
+    end
+end
+
 function BBF.ForeverTweaks()
+    BBF.UpdateSmallerLevelCircle()
     BBF.UpdateBagSlotTextures()
     BBF.UpdateBronzeTint()
     BBF.UpdateActionBarBronzeTint()

@@ -691,7 +691,7 @@ function BBF.HideFrames()
                 TargetFrame.TargetFrameContent.TargetFrameContentContextual.HighLevelTexture:SetAlpha(0)
                 FocusFrame.TargetFrameContent.TargetFrameContentContextual.HighLevelTexture:SetAlpha(0)
             else
-                if UnitLevel("player") == BBF.GetMaxPlayerLevel() then
+                if UnitLevel("player") == GetMaxLevelForPlayerExpansion() then
                     PlayerLevelText:SetParent(hiddenFrame)
                     if classicFrames then
                         C_Timer.After(1, function()
@@ -699,11 +699,11 @@ function BBF.HideFrames()
                         end)
                     end
                 end
-                if UnitLevel("target") == BBF.GetMaxPlayerLevel() then
+                if UnitLevel("target") == GetMaxLevelForPlayerExpansion() then
                     --TargetFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetParent(hiddenFrame)
                     TargetFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetAlpha(0)
                 end
-                if UnitLevel("focus") == BBF.GetMaxPlayerLevel() then
+                if UnitLevel("focus") == GetMaxLevelForPlayerExpansion() then
                     --FocusFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetParent(hiddenFrame)
                     FocusFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetAlpha(0)
                 end
@@ -1671,7 +1671,7 @@ local function UpdateLevelTextVisibility(unitFrame, unit)
             unitFrame.LevelText:SetAlpha(0)
             return
         end
-        if UnitLevel(unit) == BBF.GetMaxPlayerLevel() then
+        if UnitLevel(unit) == GetMaxLevelForPlayerExpansion() then
             unitFrame.LevelText:SetAlpha(0)
         else
             unitFrame.LevelText:SetAlpha(1)

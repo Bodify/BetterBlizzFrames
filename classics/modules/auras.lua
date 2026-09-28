@@ -62,12 +62,6 @@ local function SetupAuraFilterClicks(auraFrame)
     auraFrame.filterClick = true
 end
 
-local opBarriers = {
-    [235313] = true, -- Blazing Barrier
-    [11426] = true, -- Ice Barrier
-    [235450] = true, -- Prismatic Barrier
-}
-
 local activeNonDurationAuras = {}
 local updateInterval = 0.1
 local timeSinceLastUpdate = {}
@@ -2294,10 +2288,6 @@ local function PersonalBuffFrameFilterAndGrid(self)
                 if shouldShowAura then
 
                     local isPurgeable = dispelType == "Magic"
-
-                    if opBarriersOn and opBarriers[auraData.spellId] and auraData.duration ~= 5 then
-                        isImportant = nil
-                    end
 
                     if not auraFrame.GlowFrame then
                         auraFrame.GlowFrame = CreateFrame("Frame", nil, auraFrame)

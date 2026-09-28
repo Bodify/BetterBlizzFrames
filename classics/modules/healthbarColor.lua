@@ -728,7 +728,7 @@ function BBF.BiggerHealthbars(frame, name)
     if not frameTextureHooked then
         local function BiggerHBCheckClassification(self)
             if not self or not self.unit then return end
-            local classification = UnitClassification(self.unit);
+            local classification = BBF.GetUnitClassification(self.unit);
         
             if BetterBlizzFramesDB.biggerHealthbars then
                 local frameName = self:GetName()
@@ -866,7 +866,7 @@ function BBF.HookHideManabars()
             local frameName = self:GetName()
             if not ShouldHideManabar(frameName) then return end
             if isHandledByBiggerHB(frameName) then return end
-            local classification = UnitClassification(self.unit)
+            local classification = BBF.GetUnitClassification(self.unit)
             if classification == "minus" then
                 self.borderTexture:SetTexture(minusNoManaTexture)
             elseif classification == "worldboss" or classification == "elite" then

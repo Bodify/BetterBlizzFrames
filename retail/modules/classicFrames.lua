@@ -73,9 +73,9 @@ function BBF.UpdateClassicEliteOverlay(frame)
     local classicFrame = frame and frame.ClassicFrame
     if not classicFrame or not classicFrame.Texture then return end
     local db = BetterBlizzFramesDB
-    local classification = frame.unit and UnitExists(frame.unit) and UnitClassification(frame.unit)
+    local classification = frame.unit and UnitExists(frame.unit) and BBF.GetUnitClassification(frame.unit)
     local overlay = classicFrame.EliteOverlay
-    if not (db.classicFrames and db.darkModeUi and not db.darkModeEliteTexture and not db.hideRareDragonTexture and not HDEliteActive() and eliteOverlayClassifications[classification]) then
+    if not (db.classicFrames and BBF.DarkModeUnitFramesOn() and not db.darkModeEliteTexture and not db.hideRareDragonTexture and not HDEliteActive() and eliteOverlayClassifications[classification] and not BBF.GetSelfEliteClassification(frame.unit)) then
         if overlay then overlay:Hide() end
         return
     end
@@ -104,7 +104,7 @@ function BBF.UpdateClassicHDElite(frame)
     local portrait = frame.TargetFrameContainer and frame.TargetFrameContainer.Portrait
     if not portrait then return end
     local overlay = classicFrame.HDElite
-    local classification = frame.unit and UnitExists(frame.unit) and UnitClassification(frame.unit)
+    local classification = frame.unit and UnitExists(frame.unit) and BBF.GetUnitClassification(frame.unit)
     local bossTexture = frame.TargetFrameContainer.BossPortraitFrameTexture
     if classification and bossTexture and bossTexture:IsShown() then
         local atlas = bossTexture:GetAtlas()
@@ -115,10 +115,11 @@ function BBF.UpdateClassicHDElite(frame)
     local data = HDEliteActive() and classification and hdEliteOverlays[classification]
     if not data then
         if overlay then overlay:Hide() end
+        BBF.SetClassicHDLevelRing(frame, false)
         return
     end
     if not overlay then
-        overlay = classicFrame:CreateTexture(nil, "OVERLAY", nil, 6)
+        overlay = classicFrame:CreateTexture(nil, "OVERLAY", nil, 4)
         classicFrame.HDElite = overlay
     end
     local db = BetterBlizzFramesDB
@@ -134,7 +135,51 @@ function BBF.UpdateClassicHDElite(frame)
         overlay:SetDesaturated(data.desaturated or false)
         overlay:SetVertexColor(1, 1, 1, 1)
     end
+    local playerElite = PlayerFrame.PlayerFrameContainer.PlayerElite
+    if playerElite and BBF.GetSelfEliteClassification(frame.unit) then
+        local r, g, b = playerElite:GetVertexColor()
+        overlay:SetDesaturated(playerElite:IsDesaturated())
+        overlay:SetVertexColor(r, g, b, 1)
+    end
     overlay:Show()
+end
+
+function BBF.SetClassicHDLevelRing(frame, enabled)
+    local classicFrame = frame and frame.ClassicFrame
+    if not classicFrame then return end
+    local levelText, highLevelTexture
+    if frame == PlayerFrame then
+        levelText = PlayerLevelText
+    elseif frame.TargetFrameContent then
+        levelText = frame.TargetFrameContent.TargetFrameContentMain.LevelText
+        highLevelTexture = frame.TargetFrameContent.TargetFrameContentContextual.HighLevelTexture
+    end
+    if not levelText then return end
+    local circle = classicFrame.HDLevelCircle
+    if not circle then
+        if not enabled then return end
+        circle = classicFrame:CreateTexture(nil, "OVERLAY", nil, 5)
+        circle:SetAtlas("hud-PlayerFrame-levelring")
+        circle:SetSize(38, 32)
+        circle:SetPoint("CENTER", levelText, "CENTER", frame == PlayerFrame and 0.5 or 1, -1.5)
+        classicFrame.HDLevelCircle = circle
+        local function Refresh()
+            local hasLevelDisplay = levelText:IsShown() or (highLevelTexture and highLevelTexture:IsShown())
+            circle:SetShown(circle.bbfEnabled and hasLevelDisplay and levelText:GetParent() ~= BBF.hiddenFrame)
+            circle:SetAlpha(levelText:GetAlpha())
+        end
+        circle.Refresh = Refresh
+        for _, method in ipairs({ "SetParent", "SetAlpha", "Show", "Hide", "SetShown" }) do
+            hooksecurefunc(levelText, method, Refresh)
+        end
+        if highLevelTexture then
+            for _, method in ipairs({ "Show", "Hide", "SetShown" }) do
+                hooksecurefunc(highLevelTexture, method, Refresh)
+            end
+        end
+    end
+    circle.bbfEnabled = enabled and true or false
+    circle.Refresh()
 end
 
 function BBF.RefreshClassicHDElite()
@@ -241,6 +286,8 @@ local function MakeClassicFrame(frame)
         manaBar.ManaBarText:SetPoint("CENTER", frame.ClassicFrame.Texture, "LEFT", 66, -8.5)
 
         contentContext:SetParent(frame.ClassicFrame)
+        contentContext.HighLevelTexture:SetParent(frame.ClassicFrame)
+        contentContext.HighLevelTexture:SetDrawLayer("OVERLAY", 7)
         contentContext.HighLevelTexture:ClearAllPoints()
         contentContext.HighLevelTexture:SetPoint("CENTER", frame, "BOTTOMRIGHT", -34, 25)
         contentContext.PetBattleIcon:ClearAllPoints()
@@ -258,6 +305,7 @@ local function MakeClassicFrame(frame)
         frameContainer.Portrait:SetPoint("TOPRIGHT", frameContainer, "TOPRIGHT", -26, -19)
 
         contentMain.LevelText:SetParent(frame.ClassicFrame)
+        contentMain.LevelText:SetDrawLayer("OVERLAY", 7)
         contentMain.LevelText:ClearAllPoints()
         contentMain.LevelText:SetPoint("CENTER", frame, "BOTTOMRIGHT", -34, 25.5)
         contentMain.ReputationColor:SetSize(119, 18)
@@ -416,22 +464,19 @@ local function MakeClassicFrame(frame)
             end
         end
 
-        local function DefaultLevelFrame()
-            if alwaysHideLvl then
-                ToggleNoLevelFrame(true)
-            elseif hideLvl and UnitLevel(frame.unit) == BBF.GetMaxPlayerLevel() then
-                ToggleNoLevelFrame(true)
-            else
-                ToggleNoLevelFrame(false)
-            end
+        local function HDLevelFrame()
+            local noLvl = alwaysHideLvl or (hideLvl and UnitLevel(frame.unit) == GetMaxLevelForPlayerExpansion())
+            ToggleNoLevelFrame(noLvl, true)
+            frame.ClassicFrame.Texture:SetTexture(noLvlTex)
+            BBF.SetClassicHDLevelRing(frame, true)
         end
 
         local function RefreshEliteArt()
-            local classification = UnitExists(frame.unit) and UnitClassification(frame.unit)
+            local classification = UnitExists(frame.unit) and BBF.GetUnitClassification(frame.unit)
             local eliteTexture = classification and eliteTextures[classification]
             if eliteTexture then
                 if UseHDElite() then
-                    DefaultLevelFrame()
+                    HDLevelFrame()
                 elseif hideDragon and alwaysHideLvl then
                     ToggleNoLevelFrame(true)
                 elseif hideDragon then
@@ -446,8 +491,8 @@ local function MakeClassicFrame(frame)
         end
         frame.ClassicFrame.RefreshEliteArt = RefreshEliteArt
 
-        hooksecurefunc(frame, "CheckClassification", function(self)
-            local classification = UnitClassification(self.unit)
+        local function OnCheckClassification(self)
+            local classification = BBF.GetUnitClassification(self.unit)
 
             -- Frame
             local content = self.TargetFrameContent
@@ -472,7 +517,7 @@ local function MakeClassicFrame(frame)
             if ( classification == "rareelite" ) then
                 FrameAdjustments(frameContainer)
                 if UseHDElite() then
-                    DefaultLevelFrame()
+                    HDLevelFrame()
                 elseif hideDragon and alwaysHideLvl then
                     ToggleNoLevelFrame(true)
                 elseif hideDragon then
@@ -485,7 +530,7 @@ local function MakeClassicFrame(frame)
             elseif ( classification == "worldboss" or classification == "elite" ) then
                 FrameAdjustments(frameContainer)
                 if UseHDElite() then
-                    DefaultLevelFrame()
+                    HDLevelFrame()
                 elseif hideDragon and alwaysHideLvl then
                     ToggleNoLevelFrame(true)
                 elseif hideDragon then
@@ -498,7 +543,7 @@ local function MakeClassicFrame(frame)
             elseif ( classification == "rare" ) then
                 FrameAdjustments(frameContainer)
                 if UseHDElite() then
-                    DefaultLevelFrame()
+                    HDLevelFrame()
                 elseif hideDragon and alwaysHideLvl then
                     ToggleNoLevelFrame(true)
                 elseif hideDragon then
@@ -523,7 +568,7 @@ local function MakeClassicFrame(frame)
                 if alwaysHideLvl then
                     ToggleNoLevelFrame(true)
                 elseif hideLvl then
-                    if UnitLevel(frame.unit) == BBF.GetMaxPlayerLevel() then
+                    if UnitLevel(frame.unit) == GetMaxLevelForPlayerExpansion() then
                         ToggleNoLevelFrame(true)
                     else
                         ToggleNoLevelFrame(false)
@@ -534,7 +579,10 @@ local function MakeClassicFrame(frame)
             end
             BBF.UpdateClassicEliteOverlay(self)
             BBF.UpdateClassicHDElite(self)
-        end)
+            BBF.SyncSelfEliteClassicArt(self)
+        end
+        frame.ClassicFrame.OnCheckClassification = OnCheckClassification
+        hooksecurefunc(frame, "CheckClassification", OnCheckClassification)
 
         hooksecurefunc(frame, "CheckFaction", function(self)
             if (self.showPVP) then
@@ -695,37 +743,24 @@ local function MakeClassicFrame(frame)
             PlayerLevelText:SetPoint("CENTER", -81, -24.5)
         end
 
+        local function PlayerLevelHidden()
+            return alwaysHideLvl or (hideLvl and UnitLevel("player") == GetMaxLevelForPlayerExpansion())
+        end
+
+        local function UpdatePlayerLevelRing()
+            BBF.SetClassicHDLevelRing(frame, db.playerEliteFrame and BBF.GetPlayerEliteMode() > 3)
+        end
+        BBF.UpdateClassicPlayerLevelRing = UpdatePlayerLevelRing
+
         local function UpdateLevel()
-            if not db.playerEliteFrame then
-                if alwaysHideLvl then
-                    PlayerLevelText:SetParent(BBF.hiddenFrame)
-                    PlayerLevelText:ClearAllPoints()
-                    PlayerLevelText:SetPoint("CENTER", -81, -24.5)
-                elseif hideLvl then
-                    if UnitLevel(frame.unit) == BBF.GetMaxPlayerLevel() then
-                        PlayerLevelText:SetParent(BBF.hiddenFrame)
-                        PlayerLevelText:ClearAllPoints()
-                        PlayerLevelText:SetPoint("CENTER", -81, -24.5)
-                    else
-                        UpdateLevelDetails()
-                    end
-                else
-                    UpdateLevelDetails()
-                end
+            if PlayerLevelHidden() then
+                PlayerLevelText:SetParent(BBF.hiddenFrame)
+                PlayerLevelText:ClearAllPoints()
+                PlayerLevelText:SetPoint("CENTER", -81, -24.5)
             else
-                -- When playerEliteFrame is enabled, handle level text based on mode
-                local mode = BBF.GetPlayerEliteMode()
-                if mode > 3 then
-                    -- Always hide level text for mode > 3 (using UI-FocusFrame-Large texture)
-                    PlayerLevelText:SetParent(BBF.hiddenFrame)
-                elseif alwaysHideLvl or (hideLvl and UnitLevel(frame.unit) == BBF.GetMaxPlayerLevel()) then
-                    -- Hide level text based on hideLvl settings for mode <= 3
-                    PlayerLevelText:SetParent(BBF.hiddenFrame)
-                else
-                    -- Show level text for other cases
-                    UpdateLevelDetails()
-                end
+                UpdateLevelDetails()
             end
+            UpdatePlayerLevelRing()
         end
         hooksecurefunc("PlayerFrame_UpdateLevel", function()
             UpdateLevel()
@@ -894,8 +929,8 @@ local function MakeClassicFrame(frame)
             elseif mode == 3 then -- Boss (Gold Winged)
                 playerElite:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Elite")
                 playerElite:SetDesaturated(false)
-            elseif mode > 3 then -- For modes > 3, always use UI-FocusFrame-Large regardless of hideLvl
-                playerElite:SetTexture("Interface\\TargetingFrame\\UI-FocusFrame-Large")
+            elseif mode > 3 then
+                SetPlayerFrameTexture(playerElite, noLvlTex, bigNoLvlTex, bigNoManaNoLvlTex)
                 playerElite:SetDesaturated(false)
             else
                 SetPlayerFrameTexture(frame.ClassicFrame.Texture, defaultTex, bigTex, bigNoManaTex)
@@ -929,21 +964,20 @@ local function MakeClassicFrame(frame)
 
         local function UpdatePlayerFrameTexture()
             if db.playerEliteFrame then
-                PlayerEliteFrame()
-                frameContainer.FrameFlash:SetTexture(flashTex)
-                frameContainer.FrameFlash:SetTexCoord(0.9453125, 0, 0, 0.181640625)
-                SetStatusGlowTexture(contentMain.StatusTexture, "Interface\\CharacterFrame\\UI-Player-Status", bigStatusTex)
-                -- Handle level text for playerEliteFrame
-                local mode = BBF.GetPlayerEliteMode()
-                if mode > 3 and (alwaysHideLvl or (hideLvl and UnitLevel("player") == BBF.GetMaxPlayerLevel())) then
-                    -- Ensure level text is hidden when using UI-FocusFrame-Large
-                    PlayerLevelText:SetParent(BBF.hiddenFrame)
+                if BBF.GetPlayerEliteMode() > 3 then
+                    ToggleNoLevelFrame(PlayerLevelHidden())
+                    PlayerEliteFrame()
+                else
+                    PlayerEliteFrame()
+                    frameContainer.FrameFlash:SetTexture(flashTex)
+                    frameContainer.FrameFlash:SetTexCoord(0.9453125, 0, 0, 0.181640625)
+                    SetStatusGlowTexture(contentMain.StatusTexture, "Interface\\CharacterFrame\\UI-Player-Status", bigStatusTex)
                 end
             else
                 if alwaysHideLvl then
                     ToggleNoLevelFrame(true)
                 elseif hideLvl then
-                    if UnitLevel("player") == BBF.GetMaxPlayerLevel() then
+                    if UnitLevel("player") == GetMaxLevelForPlayerExpansion() then
                         ToggleNoLevelFrame(true)
                     else
                         ToggleNoLevelFrame(false)
@@ -1251,7 +1285,9 @@ local function AdjustAlternateBars()
         MonkStaggerBar.Border:SetTexCoord(0, 1, 0, 0.5)
         MonkStaggerBar.Border:SetPoint("TOPLEFT", -17, 0)
 
-        BBF.ApplyTextureChange("mana", MonkStaggerBar, nil, true, false, true)
+        if BetterBlizzFramesDB.changeUnitFrameManabarTexture then
+            BBF.ApplyTextureChange("mana", MonkStaggerBar, nil, true, false, true)
+        end
     end
 
     -- if class == "DRUID" then
@@ -1293,7 +1329,9 @@ local function AdjustAlternateBars()
         EvokerEbonMightBar.RightBorder:SetTexCoord(0.125, 0, 1, 0)
         EvokerEbonMightBar.RightBorder:SetPoint("LEFT", EvokerEbonMightBar.Border, "RIGHT")
 
-        BBF.ApplyTextureChange("mana", EvokerEbonMightBar, nil, true, false, true)
+        if BetterBlizzFramesDB.changeUnitFrameManabarTexture then
+            BBF.ApplyTextureChange("mana", EvokerEbonMightBar, nil, true, false, true)
+        end
         if EvokerEbonMightBar.PowerBarMask then
             EvokerEbonMightBar.PowerBarMask:Hide()
         end
@@ -1343,7 +1381,9 @@ local function AdjustAlternateBars()
         DemonHunterSoulFragmentsBar.Deplete:SetSize(altBarWidth, 12)
         DemonHunterSoulFragmentsBar.CollapsingStarDepleteFin:SetSize(altBarWidth, 12)
 
-        BBF.ApplyTextureChange("mana", DemonHunterSoulFragmentsBar, nil, true, false, true)
+        if BetterBlizzFramesDB.changeUnitFrameManabarTexture then
+            BBF.ApplyTextureChange("mana", DemonHunterSoulFragmentsBar, nil, true, false, true)
+        end
     end
 
     local classicFrameColorTargets = {

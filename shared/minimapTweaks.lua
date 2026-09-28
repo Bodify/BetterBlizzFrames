@@ -1,9 +1,13 @@
 local minimapTweaksHooked
 local minimapTweaksApplied
+local titleScaled
+
+local titleClusterKeys = { "BorderTop", "ZoneTextButton", "Tracking", "IndicatorFrame", "InstanceDifficulty" }
+local titleGlobalNames = { "GameTimeFrame", "AddonCompartmentFrame", "TimeManagerClockButton" }
 
 local function MinimapTweaksActive()
     local db = BetterBlizzFramesDB
-    return db.foreverMinimapTweaks and not db.classicFrames and not db.classicMinimap
+    return db.foreverMinimapTweaks and not db.classicMinimap
 end
 
 local function ApplyMinimapNudge(container)
@@ -30,6 +34,25 @@ local function ApplyMinimapCompass()
     MinimapCompassTexture.bbfChanging = false
 end
 
+local function ApplyTitleScale()
+    local scale = MinimapTweaksActive() and (BetterBlizzFramesDB.foreverMinimapTitleScale or 1) or 1
+    if scale == 1 and not titleScaled then return end
+    titleScaled = scale ~= 1
+    if not MinimapCluster then return end
+    for _, key in ipairs(titleClusterKeys) do
+        local frame = MinimapCluster[key]
+        if frame then
+            frame:SetScale(scale)
+        end
+    end
+    for _, name in ipairs(titleGlobalNames) do
+        local frame = _G[name]
+        if frame and frame:GetParent() == MinimapCluster then
+            frame:SetScale(scale)
+        end
+    end
+end
+
 local function HookMinimapTweaks()
     if minimapTweaksHooked then return end
     minimapTweaksHooked = true
@@ -51,6 +74,8 @@ local function HookMinimapTweaks()
         end)
     end
 
+    EventUtil.ContinueOnAddOnLoaded("Blizzard_TimeManager", ApplyTitleScale)
+
     local dielFrame = MinimapCluster and MinimapCluster.DielFrame
     if dielFrame then
         dielFrame:HookScript("OnShow", function(self)
@@ -63,7 +88,20 @@ end
 
 function BBF.UpdateMinimapTweaks()
     local db = BetterBlizzFramesDB
-    if db.classicFrames or db.classicMinimap then return end
+    if db.classicMinimap then
+        if minimapTweaksApplied then
+            minimapTweaksApplied = false
+            local container = MinimapCluster and MinimapCluster.MinimapContainer
+            if container then
+                ApplyMinimapNudge(container)
+            end
+            ApplyTitleScale()
+        end
+        if BBF.UpdateClassicMinimapLayout then
+            BBF.UpdateClassicMinimapLayout()
+        end
+        return
+    end
     local active = MinimapTweaksActive()
     if not active and not minimapTweaksApplied then return end
     minimapTweaksApplied = active
@@ -84,4 +122,6 @@ function BBF.UpdateMinimapTweaks()
     if dielFrame then
         dielFrame:SetShown(not active)
     end
+
+    ApplyTitleScale()
 end

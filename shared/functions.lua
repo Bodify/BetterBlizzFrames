@@ -1,3 +1,5 @@
+local L = BBF.L
+
 BBF.popups = {}
 BBF.popupBuilders = {}
 
@@ -14,6 +16,23 @@ end
 function BBF.ShowPopup(name, ...)
 	BBF.GetPopup(name)
 	return StaticPopup_Show(name, ...)
+end
+
+function BBF.DarkModeUnitFramesOn()
+	local db = BetterBlizzFramesDB
+	return db.darkModeUi and db.darkModeUnitFrames and true or false
+end
+
+function BBF.UpdateAuraCollapseButton()
+	local hide = BetterBlizzFramesDB.hideAuraCollapseButton and true or false
+	local button = BuffFrame and BuffFrame.CollapseAndExpandButton
+	if button then
+		button:SetAlpha(hide and 0 or 1)
+		button:EnableMouse(not hide)
+	end
+	if BBF.buffCollapseButton and BBF.RefreshAllAuraFrames then
+		BBF.RefreshAllAuraFrames()
+	end
 end
 
 function BBF.LegacyComboPointShown(index, count, maxPoints, showAlways, extraComboPoints)

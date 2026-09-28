@@ -1,3 +1,29 @@
+# BetterBlizzFrames 2.1.3
+## Forever
+### New
+- Misc: "Smaller Level Circle" in Forever Tweaks. Reduces the level circle size on Player/Target/Focus a little bit.
+- Classic profile (Forever profile renamed to Classic).
+- New Forever profile (previous Forever profile renamed to Classic). This has bronze frames, hew HD elite dragons, and a bit more modern look but still using the Classic Frames.
+### Tweak
+- Adjust the size and position of the PlayerFrame Elite Texture (for default frames, not Classic) to fit the new Forever textures.
+- Classic Frames: Improve level display on elite frames when using the HD dragon elite setting.
+## All Versions
+### New
+- Dark Mode: Separated "Player/Target/Focus/PartyFrame" into a new setting (on by default).
+### Tweak
+- Improve Dark Mode handling for easier toggle preview without a lot of reloads needed.
+- "Player Elite" setting now also shows elite texture on Target/FocusFrame if you target yourself.
+- Update Ceit profile (www.twitch.tv/ceitxd)
+## Retail & Forever
+### New
+- Minimap Tweaks now has setting to adjust title size as well, and also works with Classic Minimap setting.
+- Add back Masque support for Auras.
+- Add option to show player castbar text background while having pixel borders on
+### Tweak
+- Added Blizzards blue crafting cast color instead of it just being gray/white when enabling something that needs castbar colors.
+### Bugfix
+- Fix castbars flashing white at completed cast with some settings (texture swap only for example)
+
 # BetterBlizzFrames 2.1.2b
 ## Forever
 ### Bugfix

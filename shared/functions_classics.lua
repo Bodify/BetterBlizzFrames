@@ -24,6 +24,10 @@ function BBF.ClassPortraits()
 	TargetFrameToT.portrait:ClearAllPoints()
 	TargetFrameToT.portrait:SetPoint("TOPLEFT", TargetFrameToT, "TOPLEFT", 3, -4)
 
+    PlayerPortrait:SetSize(66, 66)
+    PlayerPortrait:ClearAllPoints()
+    PlayerPortrait:SetPoint("TOPLEFT", PlayerFrame, "TOPLEFT", 24, -16)
+
 	if FocusFrameToT then
 		FocusFrameToT.portrait:SetSize(38, 38)
 		FocusFrameToT.portrait:ClearAllPoints()
