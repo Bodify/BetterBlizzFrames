@@ -1266,6 +1266,7 @@ L["Print_Settings_Disabled"] = "Settings disabled. Likely due to error. Please u
 L["Print_Player_Castbar_Position_Changed_Cata"] = "Important Note: Player CastingBar has had its position moved up 9 pixels to match Blizzard's location for it. You might have to move it back down 9 pixels to fit your UI. Apologies for the inconvenience."
 L["Print_DragonflightUI_Skipping_OCD_Tweaks"] = "DragonflightUI is loaded, skipping \"OCD Tweaks\" to avoid conflict."
 L["Print_DragonflightUI_Class_Color_Conflict"] = "DragonflightUI is loaded. BBF's \"Class Color Frames\" can potentially be in conflict with Dragonflight UI's settings."
+L["Print_Leatrix_Plus_Class_Color_Conflict"] = "Warning: Leatrix Plus's \"Class Colored Frames\" setting can be conflicting with BBF settings. Please disable it in Leatrix Plus and instead use the similar settings in BBF for class coloring."
 L["Print_Bigger_Healthbars_Not_Supported_DragonflightUI"] = "Bigger Healthbars is not supported with DragonflightUI"
 L["Print_Classic_Frames_Recommend_BBF"] = "A super lightweight |cffff8000Classic Frames|r setting is now live! I would highly recommend swapping to BBF's setting over |cff9d9d9dClassicFrames|r the addon due to the high CPU usage of that addon."
 L["Print_Removed_Dispellable_Aura"] = "Removed dispellable aura in blacklist: %s (%s)"

@@ -1279,6 +1279,7 @@ L["Print_Settings_Disabled"] = "Einstellungen deaktiviert, wahrscheinlich wegen 
 L["Print_Player_Castbar_Position_Changed_Cata"] = "Wichtiger Hinweis: Die Zauberleiste des Spielers wurde um 9 Pixel nach oben verschoben, passend zu Blizzards Position. Eventuell musst du sie wieder um 9 Pixel nach unten verschieben, damit sie in dein UI passt. Entschuldige die Unannehmlichkeiten."
 L["Print_DragonflightUI_Skipping_OCD_Tweaks"] = "DragonflightUI ist geladen, \"OCD-Anpassungen\" werden übersprungen, um Konflikte zu vermeiden."
 L["Print_DragonflightUI_Class_Color_Conflict"] = "DragonflightUI ist geladen. BBFs \"Fenster in Klassenfarbe\" kann eventuell mit den Einstellungen von DragonflightUI kollidieren."
+L["Print_Leatrix_Plus_Class_Color_Conflict"] = "Warnung: Die Leatrix-Plus-Einstellung \"Fenster in Klassenfarben\" kann mit BBF-Einstellungen kollidieren. Bitte deaktiviere sie in Leatrix Plus und nutze stattdessen die ähnlichen Klassenfarben-Einstellungen in BBF."
 L["Print_Bigger_Healthbars_Not_Supported_DragonflightUI"] = "Größere Gesundheitsleisten werden mit DragonflightUI nicht unterstützt"
 L["Print_Classic_Frames_Recommend_BBF"] = "Eine superleichte Einstellung für |cffff8000Classic-Fenster|r ist jetzt verfügbar! Wegen der hohen CPU-Last des Addons |cff9d9d9dClassicFrames|r empfehle ich dringend, auf die Einstellung von BBF umzusteigen."
 L["Print_Removed_Dispellable_Aura"] = "Bannbare Aura aus der Blacklist entfernt: %s (%s)"

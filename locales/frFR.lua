@@ -1279,6 +1279,7 @@ L["Print_Settings_Disabled"] = "Paramètres désactivés. Probablement dû à un
 L["Print_Player_Castbar_Position_Changed_Cata"] = "Note importante : La position de la barre d'incantation du joueur a été déplacée de 9 pixels vers le haut pour correspondre à l'emplacement Blizzard. Vous devrez peut-être la redescendre de 9 pixels pour votre interface. Désolé pour le désagrément."
 L["Print_DragonflightUI_Skipping_OCD_Tweaks"] = "DragonflightUI est chargé, les \"Corrections OCD\" sont ignorées pour éviter les conflits."
 L["Print_DragonflightUI_Class_Color_Conflict"] = "DragonflightUI est chargé. Les \"Cadres couleur classe\" de BBF peuvent potentiellement entrer en conflit avec les paramètres de DragonflightUI."
+L["Print_Leatrix_Plus_Class_Color_Conflict"] = "Attention : le réglage \"Cadres colorés\" de Leatrix Plus peut entrer en conflit avec les réglages de BBF. Désactivez-le dans Leatrix Plus et utilisez plutôt les réglages similaires de couleur de classe de BBF."
 L["Print_Bigger_Healthbars_Not_Supported_DragonflightUI"] = "Les barres de vie agrandies ne sont pas supportées avec DragonflightUI"
 L["Print_Classic_Frames_Recommend_BBF"] = "Un paramètre |cffff8000Cadres classiques|r super léger est maintenant disponible ! Je recommande fortement de passer au paramètre de BBF plutôt que l'addon |cff9d9d9dClassicFrames|r en raison de la forte utilisation CPU de cet addon."
 L["Print_Removed_Dispellable_Aura"] = "Aura dissipable retirée de la liste noire : %s (%s)"

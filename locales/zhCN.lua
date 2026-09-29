@@ -1280,6 +1280,7 @@ L["Print_Settings_Disabled"] = "设置已禁用。可能由错误导致。请更
 L["Print_Player_Castbar_Position_Changed_Cata"] = "重要提示：玩家施法条的位置已上移 9 像素以匹配暴雪的位置。你可能需要将其下移 9 像素以适应你的界面。为此带来的不便深表歉意。"
 L["Print_DragonflightUI_Skipping_OCD_Tweaks"] = "DragonflightUI 已加载，跳过\"OCD 微调\"以避免冲突。"
 L["Print_DragonflightUI_Class_Color_Conflict"] = "DragonflightUI 已加载。BBF 的\"职业颜色框架\"可能与 DragonflightUI 的设置冲突。"
+L["Print_Leatrix_Plus_Class_Color_Conflict"] = "警告：Leatrix Plus 的\"头像职业染色\"设置可能与 BBF 的设置冲突。请在 Leatrix Plus 中将其关闭，改用 BBF 中类似的职业颜色设置。"
 L["Print_Bigger_Healthbars_Not_Supported_DragonflightUI"] = "DragonflightUI 不支持更大的生命值条"
 L["Print_Classic_Frames_Recommend_BBF"] = "一个超轻量级的 |cffff8000经典框架|r 设置现已上线！我强烈建议从 |cff9d9d9dClassicFrames|r 插件切换到 BBF 的设置，因为该插件的 CPU 占用很高。"
 L["Print_Removed_Dispellable_Aura"] = "已移除黑名单中的可驱散光环：%s（%s）"

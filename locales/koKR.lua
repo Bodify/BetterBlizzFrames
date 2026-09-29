@@ -1280,6 +1280,7 @@ L["Print_Settings_Disabled"] = "설정이 비활성화되었습니다. 오류 �
 L["Print_Player_Castbar_Position_Changed_Cata"] = "중요 알림: 플레이어 시전바의 위치가 블리자드 위치에 맞춰 9픽셀 위로 이동했습니다. UI에 맞추려면 9픽셀 아래로 다시 이동해야 할 수 있습니다. 불편을 드려 죄송합니다."
 L["Print_DragonflightUI_Skipping_OCD_Tweaks"] = "DragonflightUI가 로드되어 충돌을 피하기 위해 \"OCD 조정\"을 건너뜁니다."
 L["Print_DragonflightUI_Class_Color_Conflict"] = "DragonflightUI가 로드되었습니다. BBF의 \"직업 색상 프레임\"이 DragonflightUI 설정과 충돌할 수 있습니다."
+L["Print_Leatrix_Plus_Class_Color_Conflict"] = "경고: Leatrix Plus의 \"직업 색상 적용\" 설정이 BBF 설정과 충돌할 수 있습니다. Leatrix Plus에서 비활성화하고 대신 BBF의 비슷한 직업 색상 설정을 사용하세요."
 L["Print_Bigger_Healthbars_Not_Supported_DragonflightUI"] = "더 큰 생명력 바는 DragonflightUI와 함께 사용할 수 없습니다."
 L["Print_Classic_Frames_Recommend_BBF"] = "초경량 |cffff8000클래식 프레임|r 설정이 추가되었습니다! |cff9d9d9dClassicFrames|r 애드온은 CPU 사용량이 높기 때문에 BBF의 설정으로 바꾸는 것을 강력히 추천합니다."
 L["Print_Removed_Dispellable_Aura"] = "차단 목록에서 해제 가능 오라 제거됨: %s (%s)"

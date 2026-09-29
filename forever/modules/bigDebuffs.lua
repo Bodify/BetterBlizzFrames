@@ -50,6 +50,8 @@ local SORT_DIRECTION = AuraContainerSortDirection.Reverse
 local SWIPE_TEXTURE = "Interface\\CHARACTERFRAME\\TempPortraitAlphaMask"
 local ALWAYS_ASSISTABLE = { player = true, pet = true }
 
+local OFF_FILTERS = { includeSpellIDs = {} }
+
 local hosts = {}
 local buildQueued = false
 local hostsEnabled = false
@@ -65,8 +67,9 @@ local STRATA_BELOW = {
     TOOLTIP = "FULLSCREEN_DIALOG",
 }
 
-local function InitIcon(host, button)
+local function InitIcon(host, button, level)
     button:SetAllPoints(host.anchor)
+    button:SetFrameLevel(level)
 
     local icon = button:CreateTexture(nil, "BACKGROUND")
     icon:SetAllPoints(button)
@@ -112,32 +115,36 @@ local function CreateHost(unit, unitFrame, portrait, portraitMask)
     anchor:SetFrameStrata(strata)
     anchor:SetFrameLevel(0)
 
+    local container = CreateFrame("AuraContainer", nil, anchor, "CustomAuraContainerTemplate")
+    container:SetAllPoints(anchor)
+    container:SetUnit(unit)
+    container:SetFrameStrata(strata)
+    container:SetFrameLevel(1)
+    container:SetEnabled(false)
+    container:Hide()
+
     local host = {
         unit = unit,
         anchor = anchor,
         portraitLayer = portraitLayer,
         portraitMask = portraitMask,
-        containers = {},
+        container = container,
+        canToggleSlots = container.SetAuraSlotEnabled ~= nil,
+        tiers = {},
+        slotOn = {},
     }
 
+    local base = container:GetFrameLevel()
     for index, tier in ipairs(TIERS) do
         if not (tier.needsSpellIDs and ALWAYS_ASSISTABLE[unit]) then
-            local container = CreateFrame("AuraContainer", nil, anchor, "CustomAuraContainerTemplate")
-            container:SetAllPoints(anchor)
-            container:SetUnit(unit)
-            container:SetFrameStrata(strata)
-            container:SetFrameLevel(index)
-            container:SetEnabled(false)
-            container:Hide()
-
-            container:AddAuraSlot("Aura", tier.filter, {
+            container:AddAuraSlot(tier.key, tier.filter, {
                 sortMethod = SORT_METHOD,
                 sortDirection = SORT_DIRECTION,
                 candidateFilters = tier.candidateFilters,
-                initializeFrame = function(button) InitIcon(host, button) end,
+                initializeFrame = function(button) InitIcon(host, button, base + index) end,
             })
-
-            host.containers[index] = container
+            host.tiers[index] = tier
+            host.slotOn[index] = true
         end
     end
 
@@ -148,15 +155,32 @@ end
 local function UpdateHostContainers(host)
     local spellIDsUsable = BBF.CanFilterBySpellID(host.unit, false)
     local tokensOk = BBF.AuraTokensReliable(host.unit)
+    local container = host.container
+    local changed, anyOn = false, false
 
-    for index, tier in ipairs(TIERS) do
-        local container = host.containers[index]
-        if container then
-            local on = hostsEnabled and (not tier.needsSpellIDs or spellIDsUsable) and (tokensOk or tier.needsSpellIDs)
-            container:SetEnabled(on)
-            container:SetShown(on)
+    for index, tier in pairs(host.tiers) do
+        local on = hostsEnabled and (not tier.needsSpellIDs or spellIDsUsable)
+            and (tokensOk or tier.needsSpellIDs) and true or false
+        if on then anyOn = true end
+        if host.slotOn[index] ~= on then
+            host.slotOn[index] = on
+            changed = true
+            if host.canToggleSlots then
+                container:SetAuraSlotEnabled(tier.key, on)
+            else
+                container:SetAuraSlotCandidateFilters(tier.key, on and tier.candidateFilters or OFF_FILTERS)
+            end
         end
     end
+
+    if host.shown ~= anyOn then
+        host.shown = anyOn
+        changed = true
+        container:SetEnabled(anyOn)
+        container:SetShown(anyOn)
+    end
+
+    return changed
 end
 
 local function SetHostsEnabled(enabled)
@@ -167,17 +191,13 @@ local function SetHostsEnabled(enabled)
     end
 end
 
-local function RefreshHost(unit)
+local function RefreshHost(unit, force)
     local host = hosts[unit]
     if not host then return end
 
-    UpdateHostContainers(host)
-
-    for index = 1, #TIERS do
-        local container = host.containers[index]
-        if container and container:IsShown() then
-            container:UpdateAllAuras()
-        end
+    local changed = UpdateHostContainers(host)
+    if (force or changed) and host.shown then
+        host.container:UpdateAllAuras()
     end
 end
 
@@ -199,16 +219,16 @@ local function CreateUnitWatcher()
     unitWatcher:RegisterEvent("ZONE_CHANGED_INDOORS")
     unitWatcher:SetScript("OnEvent", function(_, event, unit)
         if event == "PLAYER_TARGET_CHANGED" then
-            RefreshHost("target")
+            RefreshHost("target", true)
         elseif event == "PLAYER_FOCUS_CHANGED" then
-            RefreshHost("focus")
+            RefreshHost("focus", true)
         elseif event == "UNIT_PET" then
-            RefreshHost("pet")
+            RefreshHost("pet", true)
         elseif unit then
-            RefreshHost(unit)
+            RefreshHost(unit, event == "UNIT_FACTION")
         else
             for hostUnit in pairs(hosts) do
-                RefreshHost(hostUnit)
+                RefreshHost(hostUnit, true)
             end
         end
     end)

@@ -1279,6 +1279,7 @@ L["Print_Settings_Disabled"] = "Настройки отключены, скор�
 L["Print_Player_Castbar_Position_Changed_Cata"] = "Важное примечание: полоса заклинания игрока поднята на 9 пикселей, чтобы совпадать с расположением Blizzard. Возможно, ее придется опустить обратно на 9 пикселей, чтобы она вписалась в ваш интерфейс. Извините за неудобства."
 L["Print_DragonflightUI_Skipping_OCD_Tweaks"] = "Загружен DragonflightUI, «OCD-правки» пропускаются во избежание конфликта."
 L["Print_DragonflightUI_Class_Color_Conflict"] = "Загружен DragonflightUI. «Рамки цветом класса» BBF могут конфликтовать с настройками DragonflightUI."
+L["Print_Leatrix_Plus_Class_Color_Conflict"] = "Внимание: настройка Leatrix Plus «Фон имени в цвете класса» может конфликтовать с настройками BBF. Отключите её в Leatrix Plus и используйте похожие настройки цвета класса в BBF."
 L["Print_Bigger_Healthbars_Not_Supported_DragonflightUI"] = "Увеличенные полосы здоровья не поддерживаются с DragonflightUI"
 L["Print_Classic_Frames_Recommend_BBF"] = "Появилась сверхлегкая настройка |cffff8000Классические рамки|r! Настоятельно рекомендую перейти на настройку BBF вместо аддона |cff9d9d9dClassicFrames|r из-за его высокой нагрузки на процессор."
 L["Print_Removed_Dispellable_Aura"] = "Рассеиваемая аура удалена из черного списка: %s (%s)"

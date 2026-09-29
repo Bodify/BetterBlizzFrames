@@ -1279,6 +1279,7 @@ L["Print_Settings_Disabled"] = "Opciones desactivadas, probablemente por un erro
 L["Print_Player_Castbar_Position_Changed_Cata"] = "Nota importante: la barra de lanzamiento del jugador se subió 9 píxeles para coincidir con la ubicación de Blizzard. Puede que tengas que volver a bajarla 9 píxeles para que encaje en tu interfaz. Disculpa las molestias."
 L["Print_DragonflightUI_Skipping_OCD_Tweaks"] = "DragonflightUI está cargado; se omiten los \"Ajustes OCD\" para evitar conflictos."
 L["Print_DragonflightUI_Class_Color_Conflict"] = "DragonflightUI está cargado. Los \"Marcos con color de clase\" de BBF pueden entrar en conflicto con las opciones de DragonflightUI."
+L["Print_Leatrix_Plus_Class_Color_Conflict"] = "Aviso: la opción \"Marcos coloreados\" de Leatrix Plus puede entrar en conflicto con las opciones de BBF. Desactívala en Leatrix Plus y usa en su lugar las opciones similares de color de clase de BBF."
 L["Print_Bigger_Healthbars_Not_Supported_DragonflightUI"] = "Las barras de salud más grandes no son compatibles con DragonflightUI"
 L["Print_Classic_Frames_Recommend_BBF"] = "¡Ya está disponible una opción de |cffff8000marcos clásicos|r superligera! Te recomiendo mucho usar la opción de BBF en lugar del addon |cff9d9d9dClassicFrames|r por el alto uso de CPU de ese addon."
 L["Print_Removed_Dispellable_Aura"] = "Aura disipable quitada de la lista negra: %s (%s)"

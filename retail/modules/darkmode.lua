@@ -253,8 +253,8 @@ function BBF.DarkModeUnitframeBorders()
         end
     end
 
-    if BBF.RestyleAuraButtons then
-        BBF.RestyleAuraButtons(true)
+    if BBF.RefreshAllAuraFrames then
+        BBF.RefreshAllAuraFrames()
     end
 end
 

@@ -2983,6 +2983,7 @@ Frame:SetScript("OnEvent", function(...)
     BBF.SetupLoCFrame()
     BBF.EnableQueueTimer()
     BBF.LegacyBlueCombos()
+    C_Timer.After(6, BBF.CheckLeatrixClassColorConflict)
 
     C_Timer.After(0.5, function()
         BBF.PlayerReputationColor()

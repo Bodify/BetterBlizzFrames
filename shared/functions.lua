@@ -453,6 +453,13 @@ function BBF.CheckSweepyBoopClassColorConflict()
     C_Timer.After(5, CheckSweepyBoopClassColor)
 end
 
+function BBF.CheckLeatrixClassColorConflict()
+    if not C_AddOns.IsAddOnLoaded("Leatrix_Plus") then return end
+    if type(LeaPlusDB) == "table" and LeaPlusDB["ClassColFrames"] == "On" then
+        BBF.Print(L["Print_Leatrix_Plus_Class_Color_Conflict"])
+    end
+end
+
 function BBF.UnclampMinimap()
     local unclamp = BetterBlizzFramesDB.unclampMinimap
     if not unclamp and not BBF.UnclampedMinimap then return end

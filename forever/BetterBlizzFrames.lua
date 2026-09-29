@@ -5363,6 +5363,7 @@ Frame:SetScript("OnEvent", function(...)
     BBF.ResizeUIWidgetPowerBarFrame()
     BBF.LegacyBlueCombos()
     BBF.HideClassResourceTooltip()
+    C_Timer.After(6, BBF.CheckLeatrixClassColorConflict)
 
     local function LoginVariablesLoaded()
         if BBF.variablesLoaded then
