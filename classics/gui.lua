@@ -7785,8 +7785,12 @@ local function guiMisc()
     guiMisc.hideAuraCollapseButton = CreateCheckbox("hideAuraCollapseButton", L["Hide_Aura_Collapse_Button"], guiMisc, nil, BBF.UpdateAuraCollapseButton)
     guiMisc.hideAuraCollapseButton:SetPoint("TOPLEFT", centerCurrentValueOnBars, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(guiMisc.hideAuraCollapseButton, L["Hide_Aura_Collapse_Button"], L["Tooltip_Hide_Aura_Collapse_Button_Desc"])
+    local unclampMinimap = CreateCheckbox("unclampMinimap", L["Unclamp_Minimap"], guiMisc, nil, BBF.UnclampMinimap)
+    unclampMinimap:SetPoint("TOPLEFT", guiMisc.hideAuraCollapseButton, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(unclampMinimap, L["Unclamp_Minimap"], L["Tooltip_Unclamp_Minimap_Desc"])
+
     if guiMisc.hideMonkComboBg then
-        guiMisc.hideMonkComboBg:SetPoint("TOPLEFT", guiMisc.hideAuraCollapseButton, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+        guiMisc.hideMonkComboBg:SetPoint("TOPLEFT", unclampMinimap, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     end
 
     local hidePlayerManabar = CreateCheckbox("hidePlayerManabar", L["Hide_PlayerFrame_Mana"], guiMisc)

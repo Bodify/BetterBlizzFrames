@@ -1,3 +1,11 @@
+# BetterBlizzFrames 2.1.4
+## Forever
+### Tweak
+- Update Xaryu profile with his Forever profile.
+## Retail & Forever
+### Tweak
+- Classic Player Castbar now also enables Classic Status/Breath Bars
+
 # BetterBlizzFrames 2.1.3
 ## Forever
 ### New

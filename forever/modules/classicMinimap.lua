@@ -213,11 +213,29 @@ function BBF.ClassicMinimap()
     difficulty:SetFrameLevel(skin:GetFrameLevel() + 10)
     local function PlaceDifficulty()
         difficulty:ClearAllPoints()
-        difficulty:SetPoint("TOPLEFT", header, "BOTTOMLEFT", 5, 11)
+        difficulty:SetPoint("TOPLEFT", header, "BOTTOMLEFT", 10, 5)
         difficulty:SetFlipped(false)
     end
     hooksecurefunc(MinimapCluster, "SetHeaderUnderneath", PlaceDifficulty)
     PlaceDifficulty()
+
+    for _, text in ipairs({ difficulty.Default.Text, difficulty.Guild.Instance.Text }) do
+        local font, size = text:GetFont()
+        text:SetFont(font, size, "OUTLINE")
+    end
+    function BBF.UpdateClassicMinimapDifficulty()
+        local r, g, b = 0.588, 0.588, 0.6
+        if BBF.MinimapBronzeTintActive and BBF.MinimapBronzeTintActive() then
+            r, g, b = 0.573, 0.435, 0.216
+        end
+        for _, mode in ipairs({ difficulty.Default, difficulty.ChallengeMode }) do
+            mode.Border:SetDesaturated(true)
+            mode.Border:SetVertexColor(r, g, b, 1)
+            mode.Background:SetVertexColor(0, 0, 0, 0.5)
+        end
+    end
+    hooksecurefunc(difficulty, "SetFlipped", BBF.UpdateClassicMinimapDifficulty)
+    BBF.UpdateClassicMinimapDifficulty()
 
     local function TintCycleBorder(frame)
         for _, region in ipairs({ frame:GetRegions() }) do

@@ -11092,8 +11092,12 @@ local function guiMisc()
         end
     end)
 
+    local unclampMinimap = CreateCheckbox("unclampMinimap", L["Unclamp_Minimap"], contentFrame, nil, BBF.UnclampMinimap)
+    unclampMinimap:SetPoint("TOPLEFT", foreverMinimapTweaks, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(unclampMinimap, L["Unclamp_Minimap"], L["Tooltip_Unclamp_Minimap_Desc"])
+
     local reduceEditModeSelectionAlpha = CreateCheckbox("reduceEditModeSelectionAlpha", L["Reduce_Edit_Mode_Glow"], contentFrame)
-    reduceEditModeSelectionAlpha:SetPoint("TOPLEFT", foreverMinimapTweaks, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    reduceEditModeSelectionAlpha:SetPoint("TOPLEFT", unclampMinimap, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(reduceEditModeSelectionAlpha, L["Reduce_Edit_Mode_Glow"], L["Tooltip_Reduce_Edit_Mode_Glow_Desc"])
     reduceEditModeSelectionAlpha:HookScript("OnClick", function(self)
         if self:GetChecked() then

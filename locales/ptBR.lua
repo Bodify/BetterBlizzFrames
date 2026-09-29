@@ -1702,3 +1702,5 @@ L["Tooltip_Resource_Locked_By_Legacy_Combos"] = "Como \"Pontos de combo antigos\
 L["Current_HP_Only_Center"] = "Só vida atual e centralizar nas barras"
 L["Tooltip_Current_HP_Only_Center_Desc"] = "Mostra só o valor atual nas barras de vida e poder, centralizado na barra. O texto de porcentagem à esquerda é ocultado."
 L["Tooltip_Current_HP_Only_Center_SubText"] = "Define o texto de status como \"Sempre mostrar\" e o modo de exibição como \"Valor numérico e porcentagem\". O modo anterior é restaurado quando você desativa."
+L["Unclamp_Minimap"] = "Soltar minimapa das bordas"
+L["Tooltip_Unclamp_Minimap_Desc"] = "Remove o limite de tela do minimapa para que você possa posicioná-lo mais perto das bordas. Alguns jogadores com addons de minimapa relataram problemas com esta opção e o minimapa sumindo para fora da tela. Normalmente isso não deve acontecer, mas fica o aviso."

@@ -454,10 +454,13 @@ function BBF.CheckSweepyBoopClassColorConflict()
 end
 
 function BBF.UnclampMinimap()
+    local unclamp = BetterBlizzFramesDB.unclampMinimap
+    if not unclamp and not BBF.UnclampedMinimap then return end
     if MinimapCluster then
-        MinimapCluster:SetClampedToScreen(false)
+        MinimapCluster:SetClampedToScreen(not unclamp)
     end
     if Minimap then
-        Minimap:SetClampedToScreen(false)
+        Minimap:SetClampedToScreen(not unclamp)
     end
+    BBF.UnclampedMinimap = unclamp and true or nil
 end

@@ -209,6 +209,8 @@ local function MinimapBronzeTintActive()
     return db.classicMinimap and db.classicFramesBronzeTint and not (db.darkModeUi and db.darkModeMinimap)
 end
 
+BBF.MinimapBronzeTintActive = MinimapBronzeTintActive
+
 local function SetBronze(texture)
     texture.bbfBronzeChanging = true
     if texture.bbfBronzeMinimap then
@@ -594,6 +596,9 @@ function BBF.UpdateBronzeTint()
     BBF.UpdateClassicPvpCircles()
     BBF.UpdateEliteDragonBronze()
     BBF.UpdateClassicHDLevelRingColors()
+    if BBF.UpdateClassicMinimapDifficulty then
+        BBF.UpdateClassicMinimapDifficulty()
+    end
     if BronzeTintActive() then
         for _, texture in pairs(GetUnitFrameBorderTextures()) do
             BronzeTexture(texture)

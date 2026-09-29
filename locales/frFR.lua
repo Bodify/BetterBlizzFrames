@@ -1702,3 +1702,5 @@ L["Tooltip_Resource_Locked_By_Legacy_Combos"] = "Comme \"Points de combo classiq
 L["Current_HP_Only_Center"] = "PV actuels seuls & centrés sur les barres"
 L["Tooltip_Current_HP_Only_Center_Desc"] = "Afficher uniquement la valeur actuelle sur les barres de vie et de ressource, centrée sur la barre. Le pourcentage à gauche est masqué."
 L["Tooltip_Current_HP_Only_Center_SubText"] = "Règle le texte d'état sur \"Toujours afficher\" et le mode d'affichage sur \"Valeur numérique et pourcentage\". L'ancien mode d'affichage est restauré quand vous désactivez l'option."
+L["Unclamp_Minimap"] = "Libérer la minicarte des bords"
+L["Tooltip_Unclamp_Minimap_Desc"] = "Retire la limite d'écran de la minicarte pour pouvoir la placer plus près des bords. Certains joueurs utilisant des addons de minicarte ont signalé des problèmes avec cette option, la minicarte disparaissant hors de l'écran. Cela ne devrait normalement pas arriver, mais soyez prévenu."

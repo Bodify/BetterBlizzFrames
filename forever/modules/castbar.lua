@@ -1766,6 +1766,53 @@ local function PlayerCastingBarFrameMiscAdjustments()
     --PetCastingBarFrame.StandardGlow:SetSize(37, BetterBlizzFramesDB.playerCastBarHeight + 1)
 end
 
+function BBF.ClassicMirrorTimers()
+    local container = MirrorTimerContainer
+    if not container or not container.mirrorTimers or container.bbfClassic then return end
+    container.bbfClassic = true
+
+    local colors = {
+        EXHAUSTION = { 1, 0.9, 0 },
+        BREATH = { 0, 0.5, 1 },
+        DEATH = { 1, 0.7, 0 },
+        FEIGNDEATH = { 1, 0.7, 0 },
+    }
+
+    local function StyleBar(timerFrame, timer)
+        local bar = timerFrame.StatusBar
+        bar:SetStatusBarTexture(classicCastbarTexture)
+        local color = colors[timer] or colors.EXHAUSTION
+        bar:SetStatusBarColor(color[1], color[2], color[3])
+    end
+
+    for _, timerFrame in ipairs(container.mirrorTimers) do
+        local bar = timerFrame.StatusBar
+        timerFrame:SetHeight(26)
+
+        for _, region in ipairs({ timerFrame:GetRegions() }) do
+            if region:IsObjectType("Texture") and region ~= timerFrame.Border and region ~= timerFrame.TextBorder then
+                region:SetColorTexture(0, 0, 0, 0.5)
+                region:ClearAllPoints()
+                region:SetAllPoints(bar)
+            end
+        end
+
+        timerFrame.TextBorder:SetAlpha(0)
+
+        timerFrame.Border:SetTexture("Interface\\CastingBar\\UI-CastingBar-Border")
+        timerFrame.Border:ClearAllPoints()
+        timerFrame.Border:SetSize(256, 64)
+        timerFrame.Border:SetPoint("TOP", timerFrame, "TOP", 0, 25)
+
+        timerFrame.Text:SetFontObject(GameFontHighlight)
+        timerFrame.Text:ClearAllPoints()
+        timerFrame.Text:SetPoint("TOP", timerFrame, "TOP", 0, -1)
+
+        StyleBar(timerFrame, timerFrame.timer)
+        hooksecurefunc(timerFrame, "Setup", StyleBar)
+    end
+end
+
 function BBF.ChangeCastbarSizes()
     if BetterBlizzFramesDB.disableCastbarTweaks then return end
     BBF.UpdateUserAuraSettings()
@@ -1883,6 +1930,7 @@ function BBF.ChangeCastbarSizes()
         BBF.ClassicCastbar(PetCastingBarFrame, "player")
         PlayerCastingBarFrame.Border:SetTexture(BetterBlizzFramesDB.classicCastbarsPlayerBorder and 130874 or 130873)
         PetCastingBarFrame.Border:SetTexture(BetterBlizzFramesDB.classicCastbarsPlayerBorder and 130874 or 130873)
+        BBF.ClassicMirrorTimers()
     end
 
     BBF.AnchorCastbar("target")

@@ -1702,3 +1702,5 @@ L["Tooltip_Resource_Locked_By_Legacy_Combos"] = "由於已啟用\"舊版連擊�
 L["Current_HP_Only_Center"] = "只顯示目前生命值並置中於條上"
 L["Tooltip_Current_HP_Only_Center_Desc"] = "在生命條和能量條上只顯示目前數值，並置中於條上。左側的百分比文字會被隱藏。"
 L["Tooltip_Current_HP_Only_Center_SubText"] = "將狀態文字設為\"總是顯示\"，顯示模式設為\"數值和百分比\"。關閉後會恢復先前的顯示模式。"
+L["Unclamp_Minimap"] = "取消小地圖螢幕限制"
+L["Tooltip_Unclamp_Minimap_Desc"] = "取消小地圖的螢幕邊緣限制，使其可以放置得更靠近螢幕邊緣。部分使用小地圖插件的玩家回報此設定會導致小地圖消失到螢幕外。通常不會發生，僅作提醒。"

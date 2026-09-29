@@ -1703,3 +1703,5 @@ L["Tooltip_Resource_Locked_By_Legacy_Combos"] = "\"기본 연계 점수\"가 활
 L["Current_HP_Only_Center"] = "현재 생명력만 표시 & 바 중앙 정렬"
 L["Tooltip_Current_HP_Only_Center_Desc"] = "생명력 및 자원 바에 현재 값만 바 중앙에 표시합니다. 왼쪽의 백분율 텍스트는 숨겨집니다."
 L["Tooltip_Current_HP_Only_Center_SubText"] = "상태 텍스트를 \"항상 표시\"로, 표시 방식을 \"수치와 백분율\"로 설정합니다. 끄면 이전 표시 방식이 복원됩니다."
+L["Unclamp_Minimap"] = "미니맵 화면 고정 해제"
+L["Tooltip_Unclamp_Minimap_Desc"] = "미니맵의 화면 고정을 해제하여 화면 가장자리에 더 가깝게 배치할 수 있습니다. 일부 미니맵 애드온 사용자가 이 설정으로 미니맵이 화면 밖으로 사라지는 문제를 보고했습니다. 일반적으로는 발생하지 않지만 참고하십시오."

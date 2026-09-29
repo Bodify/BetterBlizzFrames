@@ -1702,3 +1702,5 @@ L["Tooltip_Resource_Locked_By_Legacy_Combos"] = "Da \"Alte Combopunkte\" aktivie
 L["Current_HP_Only_Center"] = "Nur aktuelle LP & auf Leisten zentrieren"
 L["Tooltip_Current_HP_Only_Center_Desc"] = "Zeigt auf Gesundheits- und Ressourcenleisten nur den aktuellen Wert, zentriert auf der Leiste. Der Prozenttext links wird ausgeblendet."
 L["Tooltip_Current_HP_Only_Center_SubText"] = "Setzt Statustext auf \"Immer anzeigen\" und den Anzeigemodus auf \"Numerischer Wert und Prozentsatz\". Der vorherige Anzeigemodus wird beim Ausschalten wiederhergestellt."
+L["Unclamp_Minimap"] = "Minikarte nicht am Bildschirmrand begrenzen"
+L["Tooltip_Unclamp_Minimap_Desc"] = "Hebt die Bildschirmbegrenzung der Minikarte auf, damit du sie näher an den Bildschirmrand setzen kannst. Einige Spieler mit Minikarten-Addons haben Probleme mit dieser Einstellung gemeldet, bei denen die Minikarte aus dem Bildschirm verschwindet. Das sollte normalerweise nicht passieren, aber nur als Hinweis."

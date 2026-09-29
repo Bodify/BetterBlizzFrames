@@ -1703,3 +1703,5 @@ L["Tooltip_Resource_Locked_By_Legacy_Combos"] = "由于已启用\"经典连击�
 L["Current_HP_Only_Center"] = "仅显示当前生命值并在状态条居中"
 L["Tooltip_Current_HP_Only_Center_Desc"] = "在生命条和能量条上只显示当前数值，并居中显示。左侧的百分比文字会被隐藏。"
 L["Tooltip_Current_HP_Only_Center_SubText"] = "将状态文字设为\"总是显示\"，显示模式设为\"数值和百分比\"。关闭后会恢复之前的显示模式。"
+L["Unclamp_Minimap"] = "取消小地图屏幕限制"
+L["Tooltip_Unclamp_Minimap_Desc"] = "取消小地图的屏幕边缘限制，使其可以放置得更靠近屏幕边缘。部分使用小地图插件的玩家反馈此设置会导致小地图消失到屏幕外。通常不会发生，仅作提醒。"
