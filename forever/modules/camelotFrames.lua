@@ -183,7 +183,7 @@ local bronzedMinimapTextures = {}
 
 local function BronzeTintActive()
     local db = BetterBlizzFramesDB
-    return db.classicFrames and db.classicFramesBronzeTint and not BBF.DarkModeUnitFramesOn() and not db.classColorFrameTexture
+    return db.classicFrames and db.classicFramesBronzeTint and db.classicFramesBronzeTintUnitFrames and not db.classColorFrameTexture
 end
 
 BBF.ClassicBronzeTintActive = BronzeTintActive
@@ -201,12 +201,12 @@ BBF.BronzeEliteDragonsActive = BronzeDragonsActive
 
 local function CastbarBronzeTintActive()
     local db = BetterBlizzFramesDB
-    return db.classicFrames and db.classicFramesBronzeTint and not db.darkModeUi and not db.classColorFrameTexture
+    return db.classicFramesBronzeTint and db.classicFramesBronzeTintCastbars and not db.classColorFrameTexture
 end
 
 local function MinimapBronzeTintActive()
     local db = BetterBlizzFramesDB
-    return db.classicMinimap and db.classicFramesBronzeTint and not (db.darkModeUi and db.darkModeMinimap)
+    return db.classicMinimap and db.classicFramesBronzeTint and db.classicFramesBronzeTintMinimap
 end
 
 BBF.MinimapBronzeTintActive = MinimapBronzeTintActive
@@ -223,12 +223,13 @@ local function SetBronze(texture)
     texture.bbfBronzeChanging = false
 end
 
-local function BronzeTexture(texture, isMinimap, isCastbar)
+local function BronzeTexture(texture, isMinimap, isCastbar, restoreSaturation)
     if not texture or texture:IsForbidden() then return end
     if not texture.bbfBronzeHooked then
         texture.bbfBronzeHooked = true
         texture.bbfBronzeMinimap = isMinimap
         texture.bbfBronzeCastbar = isCastbar
+        texture.bbfBronzeRestoreSat = restoreSaturation
         tinsert(isMinimap and bronzedMinimapTextures or isCastbar and bronzedCastbarTextures or bronzedTextures, texture)
         hooksecurefunc(texture, "SetVertexColor", function(self)
             if self.bbfBronzeChanging then return end
@@ -275,6 +276,36 @@ local function GetUnitFrameBorderTextures()
     return textures
 end
 
+local function GetThreatBorder(frame)
+    local threat = frame and frame.TargetFrameContent and frame.TargetFrameContent.TargetFrameContentContextual.NumericalThreat
+    if not threat or threat:IsForbidden() then return end
+    if threat.bbfBorder == nil then
+        threat.bbfBorder = false
+        for i = 1, threat:GetNumRegions() do
+            local region = select(i, threat:GetRegions())
+            if region and region:IsObjectType("Texture") and region ~= threat.bg and region:GetDrawLayer() == "ARTWORK" then
+                threat.bbfBorder = region
+                break
+            end
+        end
+    end
+    return threat.bbfBorder or nil
+end
+
+local function GetSaturatedBorderTextures()
+    local textures = {}
+    for _, bar in pairs({ AlternatePowerBar, EvokerEbonMightBar, MonkStaggerBar, PlayerFrame.AltManaBarBBF }) do
+        if bar then
+            tinsert(textures, bar.Border)
+            tinsert(textures, bar.LeftBorder)
+            tinsert(textures, bar.RightBorder)
+        end
+    end
+    tinsert(textures, GetThreatBorder(TargetFrame))
+    tinsert(textures, GetThreatBorder(FocusFrame))
+    return textures
+end
+
 local function GetClassicCastbarBorderTextures()
     local db = BetterBlizzFramesDB
     local textures = {}
@@ -285,6 +316,11 @@ local function GetClassicCastbarBorderTextures()
     if db.classicCastbarsPlayer then
         tinsert(textures, PlayerCastingBarFrame and PlayerCastingBarFrame.Border)
         tinsert(textures, PetCastingBarFrame and PetCastingBarFrame.Border)
+        if MirrorTimerContainer and MirrorTimerContainer.bbfClassic then
+            for _, timerFrame in ipairs(MirrorTimerContainer.mirrorTimers) do
+                tinsert(textures, timerFrame.Border)
+            end
+        end
     end
     if db.classicCastbarsParty and db.showPartyCastbar then
         for i = 1, 5 do
@@ -350,7 +386,10 @@ end
 function BBF.UpdateClassicPvpCircles()
     if not BetterBlizzFramesDB.classicFrames then return end
     local r, g, b = PVP_CIRCLE_R, PVP_CIRCLE_G, PVP_CIRCLE_B
-    if BronzeTintActive() then
+    if BBF.DarkModeUnitFramesOn() then
+        local v = BetterBlizzFramesDB.darkModeColor
+        r, g, b = v, v, v
+    elseif BronzeTintActive() then
         r, g, b = BRONZE_R, BRONZE_G, BRONZE_B
     end
     for _, circle in pairs(GetPvpCircles()) do
@@ -599,13 +638,22 @@ function BBF.UpdateBronzeTint()
     if BBF.UpdateClassicMinimapDifficulty then
         BBF.UpdateClassicMinimapDifficulty()
     end
+    if BBF.UpdateComboPointTint then
+        BBF.UpdateComboPointTint()
+    end
     if BronzeTintActive() then
         for _, texture in pairs(GetUnitFrameBorderTextures()) do
             BronzeTexture(texture)
         end
+        for _, texture in pairs(GetSaturatedBorderTextures()) do
+            BronzeTexture(texture, nil, nil, true)
+        end
     elseif not BBF.DarkModeUnitFramesOn() then
         for _, texture in ipairs(bronzedTextures) do
             if not texture:IsForbidden() then
+                if texture.bbfBronzeRestoreSat then
+                    texture:SetDesaturated(false)
+                end
                 texture:SetVertexColor(1, 1, 1, 1)
             end
         end
@@ -615,9 +663,10 @@ function BBF.UpdateBronzeTint()
         for _, texture in pairs(GetClassicCastbarBorderTextures()) do
             BronzeTexture(texture, nil, true)
         end
-    elseif not BetterBlizzFramesDB.darkModeUi then
+    elseif not (BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeCastbars) then
         for _, texture in ipairs(bronzedCastbarTextures) do
             if not texture:IsForbidden() then
+                texture:SetDesaturated(false)
                 texture:SetVertexColor(1, 1, 1, 1)
             end
         end
@@ -782,6 +831,13 @@ function BBF.UpdateSmallerLevelCircle()
         local main = frame.TargetFrameContent.TargetFrameContentMain
         ApplySmallerLevelCircle(main.LevelBackgroundCircle, main.LevelText, "BOTTOMRIGHT", -22, 17, enabled)
     end
+end
+
+function BBF.RefreshBronzeTint()
+    if BetterBlizzFramesDB.darkModeUi then
+        BBF.DarkmodeFrames(true)
+    end
+    BBF.UpdateBronzeTint()
 end
 
 function BBF.ForeverTweaks()

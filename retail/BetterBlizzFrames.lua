@@ -68,6 +68,8 @@ local defaultSettings = {
     smoothManabars = true,
     foreverMinimapScale = 1,
     foreverMinimapTitleScale = 1,
+    foreverMinimapHideTitle = false,
+    hideThreatKeepTank = true,
     foreverMinimapXPos = 0,
     foreverMinimapYPos = 12,
     prdResourceXPos = 0,
@@ -2943,10 +2945,11 @@ end
 function BBF.AlwaysShowLegacyComboPoints()
     if not BetterBlizzFramesDB.alwaysShowLegacyComboPoints then return end
     if BetterBlizzFramesDB.instantComboPoints then return end
-    if BBF.AlwaysShowLegacyComboPoints then return end
+    if BBF.alwaysShowLegacyComboHooked then return end
     local class = UnitClassBase("player")
     if class ~= "ROGUE" and class ~= "DRUID" then return end
     local function UpdateLegacyComboFrame()
+        if not BetterBlizzFramesDB.alwaysShowLegacyComboPoints then return end
         local frame = ComboFrame
         local comboPoints = GetComboPoints("player", "target")
         local maxComboPoints = UnitPowerMax("player", Enum.PowerType.ComboPoints)
@@ -2967,8 +2970,38 @@ function BBF.AlwaysShowLegacyComboPoints()
     if C_CVar.GetCVar("comboPointLocation") == "1" and ComboFrame then
         hooksecurefunc("ComboFrame_Update", UpdateLegacyComboFrame)
         UpdateLegacyComboFrame()
+        BBF.alwaysShowLegacyComboHooked = true
     end
-    BBF.AlwaysShowLegacyComboPoints = true
+end
+
+local function UpdateLegacyComboActiveOnly(frame)
+    if not frame or not frame.ComboPoints or not frame.maxComboPoints then return end
+    local db = BetterBlizzFramesDB
+    local comboPoints = GetComboPoints("player", "target")
+    local comboIndex = frame.startComboPointIndex or 2
+    for i = 1, frame.maxComboPoints do
+        local point = frame.ComboPoints[comboIndex]
+        if point then
+            point:SetShown(BBF.LegacyComboPointShown(i, comboPoints, frame.maxComboPoints, db.alwaysShowLegacyComboPoints, frame.extraComboPoints))
+        end
+        comboIndex = comboIndex + 1
+    end
+end
+
+function BBF.LegacyComboActiveOnly()
+    if not ComboFrame or C_CVar.GetCVar("comboPointLocation") ~= "1" then return end
+    local class = UnitClassBase("player")
+    if class ~= "ROGUE" and class ~= "DRUID" then return end
+    if not BBF.legacyComboActiveOnlyHooked then
+        if not BetterBlizzFramesDB.legacyComboActiveOnly then return end
+        BBF.legacyComboActiveOnlyHooked = true
+        hooksecurefunc("ComboFrame_Update", function(frame)
+            if BetterBlizzFramesDB.legacyComboActiveOnly then
+                UpdateLegacyComboActiveOnly(frame)
+            end
+        end)
+    end
+    UpdateLegacyComboActiveOnly(ComboFrame)
 end
 
 function BBF.ApplyLegacyBlueCombos(isEnabled)
@@ -5573,6 +5606,7 @@ First:SetScript("OnEvent", function(_, event, addonName)
         BBF.ChatFilterCaller()
         BBF.FixLegacyComboPointsLocation()
         BBF.AlwaysShowLegacyComboPoints()
+        BBF.LegacyComboActiveOnly()
         BBF.GenericLegacyComboSupport()
         BBF.RaiseTargetFrameLevel()
         BBF.RaiseTargetCastbarStratas()

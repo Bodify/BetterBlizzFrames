@@ -600,8 +600,9 @@ function BBF.DarkmodeFrames(bypass)
     local frameColor = unitFramesOn and vertexColor or 1
     local frameDarkerColor = unitFramesOn and darkerVertexColor or 1
 
-    local minimapColor = (BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeMinimap) and BetterBlizzFramesDB.darkModeColor or 1
-    local minimapSat = (BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeMinimap) and true or false
+    local minimapDark = BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeMinimap and not (BBF.MinimapBronzeTintActive and BBF.MinimapBronzeTintActive())
+    local minimapColor = minimapDark and BetterBlizzFramesDB.darkModeColor or 1
+    local minimapSat = minimapDark and true or false
     local tooltipColor = (BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeGameTooltip) and BetterBlizzFramesDB.darkModeColor or 1
     local tooltipSat = (BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeGameTooltip) and true or false
 
@@ -804,6 +805,8 @@ function BBF.DarkmodeFrames(bypass)
         }) do
             applySettings(v, frameSat, frameColor)
         end
+    else
+        BBF.UpdateClassicPvpCircles()
     end
 
     for i = 1, Minimap:GetNumChildren() do

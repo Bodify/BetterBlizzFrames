@@ -1,6 +1,7 @@
 local minimapTweaksHooked
 local minimapTweaksApplied
 local titleScaled
+local titleHidden
 
 local titleClusterKeys = { "BorderTop", "ZoneTextButton", "Tracking", "IndicatorFrame", "InstanceDifficulty" }
 local titleGlobalNames = { "GameTimeFrame", "AddonCompartmentFrame", "TimeManagerClockButton" }
@@ -50,6 +51,37 @@ local function ApplyTitleScale()
         if frame and frame:GetParent() == MinimapCluster then
             frame:SetScale(scale)
         end
+    end
+end
+
+local function TitleHideActive()
+    local db = BetterBlizzFramesDB
+    return db.foreverMinimapTweaks and db.foreverMinimapHideTitle
+end
+
+local function KeepTitleHidden(self)
+    if TitleHideActive() then
+        self:Hide()
+    end
+end
+
+function BBF.UpdateMinimapTitle()
+    local hide = TitleHideActive()
+    if not hide and not titleHidden then return end
+    titleHidden = hide
+    if not MinimapCluster then return end
+    local frames = { MinimapCluster.ZoneTextButton }
+    if BetterBlizzFramesDB.classicMinimap then
+        table.insert(frames, BBF.classicMinimapHeader)
+    else
+        table.insert(frames, MinimapCluster.BorderTop)
+    end
+    for _, frame in pairs(frames) do
+        if hide and not frame.bbfTitleHook and frame.HookScript then
+            frame.bbfTitleHook = true
+            frame:HookScript("OnShow", KeepTitleHidden)
+        end
+        frame:SetShown(not hide)
     end
 end
 
@@ -124,4 +156,5 @@ function BBF.UpdateMinimapTweaks()
     end
 
     ApplyTitleScale()
+    BBF.UpdateMinimapTitle()
 end

@@ -39,13 +39,13 @@ local function GetMaxPoints()
 end
 
 local function TintOwnedByDarkMode()
-    return BetterBlizzFramesDB.darkModeUi and true or false
+    return BetterBlizzFramesDB.darkModeUi and not (BBF.ClassicBronzeTintActive and BBF.ClassicBronzeTintActive()) and true or false
 end
 
 local function ApplyBorderTint(texture)
     local db = BetterBlizzFramesDB
     texture.bbfComboTinting = true
-    if db.classicFrames and not db.classicFramesBronzeTint then
+    if db.classicFrames and not (db.classicFramesBronzeTint and db.classicFramesBronzeTintUnitFrames) then
         texture:SetDesaturated(true)
         texture:SetVertexColor(1, 1, 1, 1)
     else

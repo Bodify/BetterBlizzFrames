@@ -357,4 +357,7 @@ function BBF.CreateAltManaBar()
     end
     PlayerFrame.AltManaBarBBF = bar
     UpdateAltManaBar(cf)
+    if cf and BBF.UpdateBronzeTint then
+        BBF.UpdateBronzeTint()
+    end
 end

@@ -1788,6 +1788,11 @@ local function CreateTooltipTwo(widget, title, mainText, subText, anchor, cvarNa
             GameTooltip:AddLine(tooltipText, 1, 1, 1, true)
         end
 
+        if title == L["Hide_Threat_Meter"] then
+            local check = BetterBlizzFramesDB.hideThreatKeepTank and " |A:ParagonReputation_Checkmark:15:15|a" or ""
+            GameTooltip:AddLine("\n|cff32f795" .. L["Right_Click_Keep_Threat_Tank"] .. "|r" .. check, 1, 1, 1, true)
+        end
+
         if title == L["Quick_Hide_Castbars"] then
             local green = "|cff32f795"
             local reset = "|r"
@@ -6311,6 +6316,15 @@ local function guiGeneralTab()
     local hideThreatOnFrame = CreateCheckbox("hideThreatOnFrame", L["Hide_Threat"], BetterBlizzFrames, nil, BBF.HideFrames)
     hideThreatOnFrame:SetPoint("LEFT", hideRareDragonTexture.Text, "RIGHT", 0, 0)
     CreateTooltipTwo(hideThreatOnFrame, L["Hide_Threat_Meter"], L["Tooltip_Hide_Threat_Meter_Desc"])
+    hideThreatOnFrame:HookScript("OnMouseDown", function(self, button)
+        if button == "RightButton" then
+            BetterBlizzFramesDB.hideThreatKeepTank = not BetterBlizzFramesDB.hideThreatKeepTank
+            BBF.UpdateThreatMeterVisibility()
+            if GameTooltip:IsShown() and GameTooltip:GetOwner() == self then
+                self:GetScript("OnEnter")(self)
+            end
+        end
+    end)
 
     local classPortraitsUseSpecIcons = CreateCheckbox("classPortraitsUseSpecIcons", L["Use_Spec_Icons"], BetterBlizzFrames, nil, BBF.SpecPortraits)
     classPortraitsUseSpecIcons:SetPoint("TOPLEFT", hideRareDragonTexture, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
@@ -10458,13 +10472,11 @@ local function guiMisc()
 
     function BBF.OpenLegacyComboSliderWindow(launch)
         if not BBF.ComboSliderWindow then
-            local f = CreateFrame("Frame", "BBFComboSliderWindow", UIParent, "DefaultPanelFlatTemplate")
-            f:SetSize(210, 165)
+            local f = CreateFrame("Frame", "BBFComboSliderWindow", guiMisc, "DefaultPanelFlatTemplate")
+            f:SetSize(210, 270)
             f:SetPoint("RIGHT", enableLegacyComboPoints, "LEFT", -10, 0)
-            f:SetFrameStrata("DIALOG")
-            f:SetToplevel(true)
             f:SetIgnoreParentAlpha(true)
-            f:SetTitle(L["Legacy_Combo_Position"])
+            f:SetTitle(L["Legacy_Combo_Points"])
             f:EnableMouse(true)
             f:SetMovable(true)
             f:SetClampedToScreen(true)
@@ -10485,8 +10497,60 @@ local function guiMisc()
 
             BBF.ComboSliderWindow = f
 
+            local legacyBlueComboPoints = CreateCheckbox("legacyBlueComboPoints", L["Blue_Combos"], f)
+            legacyBlueComboPoints:SetPoint("TOPLEFT", f, "TOPLEFT", 14, -28)
+            legacyBlueComboPoints:HookScript("OnClick", function()
+                BBF.ShowPopup("BBF_CONFIRM_RELOAD")
+            end)
+            CreateTooltipTwo(legacyBlueComboPoints, L["Blue_Legacy_Combo_Points"], L["Tooltip_Blue_Legacy_Combo_Points_Desc"])
+
+            local alwaysShowLegacyComboPoints = CreateCheckbox("alwaysShowLegacyComboPoints", L["Show_Always"], f)
+            alwaysShowLegacyComboPoints:SetPoint("TOPLEFT", legacyBlueComboPoints, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+            CreateTooltipTwo(alwaysShowLegacyComboPoints, L["Show_Always"], L["Tooltip_Show_Always_Legacy_Desc"])
+
+            local legacyComboActiveOnly = CreateCheckbox("legacyComboActiveOnly", L["Only_Show_Active_Combos"], f)
+            legacyComboActiveOnly:SetPoint("TOPLEFT", alwaysShowLegacyComboPoints, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+            CreateTooltipTwo(legacyComboActiveOnly, L["Only_Show_Active_Combo_Points"], L["Tooltip_Only_Show_Active_Combo_Points_Desc"])
+
+            alwaysShowLegacyComboPoints:HookScript("OnClick", function(self)
+                if self:GetChecked() then
+                    BetterBlizzFramesDB.legacyComboActiveOnly = false
+                    legacyComboActiveOnly:SetChecked(false)
+                end
+                BBF.AlwaysShowLegacyComboPoints()
+                BBF.LegacyComboActiveOnly()
+            end)
+            legacyComboActiveOnly:HookScript("OnClick", function(self)
+                if self:GetChecked() then
+                    BetterBlizzFramesDB.alwaysShowLegacyComboPoints = false
+                    alwaysShowLegacyComboPoints:SetChecked(false)
+                end
+                BBF.LegacyComboActiveOnly()
+            end)
+
+            local enableLegacyComboPointsMulticlass = CreateCheckbox("enableLegacyComboPointsMulticlass", L["More_Classes"], f)
+            enableLegacyComboPointsMulticlass:SetPoint("TOPLEFT", legacyComboActiveOnly, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+            CreateTooltipTwo(enableLegacyComboPointsMulticlass, L["Tooltip_Legacy_Combo_Points_More_Classes_Desc"], L["Tooltip_Legacy_Combo_Multiclass_Desc"])
+            enableLegacyComboPointsMulticlass:HookScript("OnClick", function()
+                BBF.ShowPopup("BBF_CONFIRM_RELOAD")
+                BBF.GenericLegacyComboSupport()
+            end)
+
+            local legacyMulticlassComboClassColor = CreateCheckbox("legacyMulticlassComboClassColor", L["Class_Color_Combo"], enableLegacyComboPointsMulticlass)
+            legacyMulticlassComboClassColor:SetPoint("LEFT", enableLegacyComboPointsMulticlass.text, "RIGHT", 0, 0)
+            legacyMulticlassComboClassColor:HookScript("OnClick", function()
+                BBF.ClassColorLegacyCombos()
+            end)
+            CreateTooltipTwo(legacyMulticlassComboClassColor, L["Class_Color_Legacy_Combos"], L["Tooltip_Class_Color_Legacy_Combos_Desc"])
+
+            local separator = f:CreateTexture(nil, "ARTWORK")
+            separator:SetColorTexture(1, 1, 1, 0.15)
+            separator:SetHeight(1)
+            separator:SetPoint("TOPLEFT", enableLegacyComboPointsMulticlass, "BOTTOMLEFT", 0, -6)
+            separator:SetPoint("RIGHT", f, "RIGHT", -14, 0)
+
             local sizeSlider = CreateSlider(f, L["Size"], 0.6, 1.3, 0.01, "legacyComboScale", nil, 140)
-            sizeSlider:SetPoint("TOP", f, "TOP", 0, -45)
+            sizeSlider:SetPoint("TOP", separator, "BOTTOM", 0, -20)
             CreateTooltipTwo(sizeSlider, L["Tooltip_Legacy_Combo_Points_Size"])
 
             local xOffsetSlider = CreateSlider(f, L["X_Offset"], -60, 10, 0.5, "legacyComboXPos", true, 140)
@@ -10512,6 +10576,7 @@ local function guiMisc()
                 yOffsetSlider:SetValue(-13)
             end)
 
+            KeepPopupInSettings(f, guiMisc)
             f:Hide()
         end
 
@@ -10534,37 +10599,8 @@ local function guiMisc()
         end
     end)
 
-    local legacyBlueComboPoints = CreateCheckbox("legacyBlueComboPoints", L["Blue_Combos"], enableLegacyComboPoints)
-    legacyBlueComboPoints:SetPoint("LEFT", enableLegacyComboPoints.text, "RIGHT", 0, 0)
-    legacyBlueComboPoints:HookScript("OnClick", function()
-        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
-    end)
-    CreateTooltipTwo(legacyBlueComboPoints, L["Blue_Legacy_Combo_Points"], L["Tooltip_Blue_Legacy_Combo_Points_Desc"])
-
-    local alwaysShowLegacyComboPoints = CreateCheckbox("alwaysShowLegacyComboPoints", L["Show_Always"], enableLegacyComboPoints)
-    alwaysShowLegacyComboPoints:SetPoint("LEFT", legacyBlueComboPoints.text, "RIGHT", 0, 0)
-    alwaysShowLegacyComboPoints:HookScript("OnClick", function()
-        BBF.AlwaysShowLegacyComboPoints()
-    end)
-    CreateTooltipTwo(alwaysShowLegacyComboPoints, L["Show_Always"], L["Tooltip_Show_Always_Legacy_Desc"])
-
-    local enableLegacyComboPointsMulticlass = CreateCheckbox("enableLegacyComboPointsMulticlass", L["Tooltip_Legacy_Combo_Points_More_Classes_Desc"], enableLegacyComboPoints)
-    enableLegacyComboPointsMulticlass:SetPoint("TOPLEFT", enableLegacyComboPoints, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltipTwo(enableLegacyComboPointsMulticlass, L["Tooltip_Legacy_Combo_Points_More_Classes_Desc"], L["Tooltip_Legacy_Combo_Multiclass_Desc"])
-    enableLegacyComboPointsMulticlass:HookScript("OnClick", function()
-        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
-        BBF.GenericLegacyComboSupport()
-    end)
-
-    local legacyMulticlassComboClassColor = CreateCheckbox("legacyMulticlassComboClassColor", L["Class_Color_Combo"], enableLegacyComboPointsMulticlass)
-    legacyMulticlassComboClassColor:SetPoint("LEFT", enableLegacyComboPointsMulticlass.text, "RIGHT", 0, 0)
-    legacyMulticlassComboClassColor:HookScript("OnClick", function()
-        BBF.ClassColorLegacyCombos()
-    end)
-    CreateTooltipTwo(legacyMulticlassComboClassColor, L["Class_Color_Legacy_Combos"], L["Tooltip_Class_Color_Legacy_Combos_Desc"])
-
     local prdResourceAdjust = CreateCheckbox("prdResourceAdjust", L["Prd_Resource_Adjust"], contentFrame, nil, BBF.PrdResourceCaller)
-    prdResourceAdjust:SetPoint("TOPLEFT", enableLegacyComboPointsMulticlass, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    prdResourceAdjust:SetPoint("TOPLEFT", enableLegacyComboPoints, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(prdResourceAdjust, L["Prd_Resource_Adjust"], L["Tooltip_Prd_Resource_Adjust_Desc"])
     prdResourceAdjust:HookScript("OnClick", function()
         BBF.UpdateComboPointBars()
@@ -10855,9 +10891,29 @@ local function guiMisc()
     ----------------------
     local foreverTweaksText = CreateSectionHeader(L["Forever_Tweaks"], "UI-HUD-UnitFrame-SmallCircle", 20, 20, contentFrame, "TOPLEFT", 377, -7)
 
-    local classicFramesBronzeTint = CreateCheckbox("classicFramesBronzeTint", L["Bronze_Tint_Classic_Frames"], contentFrame, nil, BBF.UpdateBronzeTint)
+    local classicFramesBronzeTint = CreateCheckbox("classicFramesBronzeTint", L["Bronze_Tint_Classic_Frames"], contentFrame, nil, BBF.RefreshBronzeTint)
     classicFramesBronzeTint:SetPoint("TOPLEFT", foreverTweaksText, "BOTTOMLEFT", -24, pixelsOnFirstBox)
     CreateTooltipTwo(classicFramesBronzeTint, L["Bronze_Tint_Classic_Frames"], L["Tooltip_Bronze_Tint_Classic_Frames_Desc"])
+
+    local bronzeTintOptions = CreateMultiSelectDropdown(L["Bronze_Tint_Options"], contentFrame, {
+        { key = "classicFramesBronzeTintUnitFrames", label = L["Dark_Mode_UnitFrames"], onChange = BBF.RefreshBronzeTint },
+        { key = "classicFramesBronzeTintCastbars", label = L["Castbars"], onChange = BBF.RefreshBronzeTint },
+        { key = "classicFramesBronzeTintMinimap", label = L["Minimap"], onChange = BBF.RefreshBronzeTint },
+    }, 165)
+    bronzeTintOptions.searchParentKey = "classicFramesBronzeTint"
+    bronzeTintOptions.searchExtraTerms = { L["Bronze_Tint_Classic_Frames"] }
+    bronzeTintOptions:SetPoint("LEFT", classicFramesBronzeTint.text, "RIGHT", 5, 0)
+    bronzeTintOptions:SetScale(0.7)
+    bronzeTintOptions:OverrideText(L["Bronze_Tint_Options"])
+    CreateTooltipTwo(bronzeTintOptions, L["Bronze_Tint_Options"], L["Tooltip_Bronze_Tint_Options_Desc"])
+
+    local function UpdateBronzeTintOptionsState()
+        local enabled = classicFramesBronzeTint:GetChecked() and true or false
+        bronzeTintOptions:SetEnabled(enabled)
+        bronzeTintOptions:SetAlpha(enabled and 1 or 0.5)
+    end
+    classicFramesBronzeTint:HookScript("OnClick", UpdateBronzeTintOptionsState)
+    UpdateBronzeTintOptionsState()
 
     local classicFramesHDElite = CreateCheckbox("classicFramesHDElite", L["Classic_Frames_HD_Elite"], contentFrame, nil, BBF.RefreshClassicHDElite)
     classicFramesHDElite:SetPoint("TOPLEFT", classicFramesBronzeTint, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
@@ -11073,7 +11129,7 @@ local function guiMisc()
             frame = CreateFrame("Frame", "BBFMinimapTweaksOptionsFrame", guiMisc, "DefaultPanelFlatTemplate")
             KeepPopupInSettings(frame, guiMisc)
             foreverMinimapTweaks.optionsFrame = frame
-            frame:SetSize(220, 270)
+            frame:SetSize(220, 298)
             frame:SetPoint("CENTER")
             frame:SetFrameStrata("DIALOG")
             frame:SetIgnoreParentAlpha(true)
@@ -11110,8 +11166,12 @@ local function guiMisc()
             frame.titleScale:SetPoint("TOP", frame.scale, "BOTTOM", 0, -20)
             CreateTooltipTwo(frame.titleScale, L["Title_Size"], L["Tooltip_Minimap_Tweaks_Title_Scale_Desc"])
 
+            frame.hideTitle = CreateCheckbox("foreverMinimapHideTitle", L["Hide_Minimap_Title"], frame, nil, BBF.UpdateMinimapTitle)
+            frame.hideTitle:SetPoint("TOPLEFT", frame.titleScale, "BOTTOMLEFT", -4, -8)
+            CreateTooltipTwo(frame.hideTitle, L["Hide_Minimap_Title"], L["Tooltip_Hide_Minimap_Title_Desc"])
+
             frame.xPos = CreateSlider(frame, L["X_Offset"], -100, 100, 1, "foreverMinimapXPos", "X", 170)
-            frame.xPos:SetPoint("TOP", frame.titleScale, "BOTTOM", 0, -20)
+            frame.xPos:SetPoint("TOP", frame.titleScale, "BOTTOM", 0, -48)
             CreateTooltipTwo(frame.xPos, L["X_Offset"], L["Tooltip_Minimap_Tweaks_XPos_Desc"])
 
             frame.yPos = CreateSlider(frame, L["Y_Offset"], -100, 100, 1, "foreverMinimapYPos", "Y", 170)
@@ -11133,7 +11193,7 @@ local function guiMisc()
                 frame.yPos:SetValue(12)
             end)
 
-            frame.elements = { frame.scale, frame.titleScale, frame.xPos, frame.yPos, frame.reset }
+            frame.elements = { frame.scale, frame.titleScale, frame.hideTitle, frame.xPos, frame.yPos, frame.reset }
 
             frame:Hide()
         end

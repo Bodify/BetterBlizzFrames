@@ -68,6 +68,8 @@ function BBF.UpdateClassicMinimapLayout()
     if coords and not TimeManagerClockTicker then
         KeepPoint(coords, "TOP", skin, "CENTER", 0, -(84 * skinScale + CLOCK_DROP) * mapScale)
     end
+
+    BBF.UpdateMinimapTitle()
 end
 
 function BBF.ClassicMinimap()
@@ -116,6 +118,7 @@ function BBF.ClassicMinimap()
 
     local header = AddTexture(title, "ARTWORK", 0, ART .. "UI-Minimap-Border", 176, 28, "BOTTOM", title, "BOTTOM", 0, 0)
     header:SetTexCoord(0.3125, 1, 0, 0.109375)
+    BBF.classicMinimapHeader = header
 
     local zoneButton = MinimapCluster.ZoneTextButton
     zoneButton:SetParent(title)

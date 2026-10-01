@@ -1,3 +1,25 @@
+# BetterBlizzFrames 2.1.4
+## Forever
+### New
+- Misc: "Bronze Tint Options" dropdown next to "Classic Frames: Bronze Tint". Choose which elements get the bronze tint: Player/Target/Focus/PartyFrame, Castbars and Minimap (all on by default).
+### Tweak
+- BetterBlizzFrames now enables Blizzards threat meter on TargetFrame by default. I feel this is relevant for Forever and "Hide Threat Meter" is still a setting in BBF and now also with a new "Keep it shown while Tank specced" setting.
+- Classic Frames: Bronze Tint now takes priority over Dark Mode on the elements it's enabled for.
+- Classic Frames: Bronze Tint now also tints the borders of alternate power bars the Target/Focus threat display and the Classic Breath/Status Bars.
+- Classic Frames: Bronze Tint now also works on Classic Castbars without needing Classic Frames enabled.
+- Dark Mode now also darkens the PvP circle background.
+### Bugfix
+- Fix combo points not updating their color until reload when toggling Bronze Tint.
+## Retail & Forever
+### New
+- Minimap Tweaks: "Hide Minimap Title" setting.
+- Hide Threat Meter: Right-click to keep it shown while Tank specced (on by default).
+- Legacy Combo Points: "Only Show Active Combo Points" setting. Only shows a combo point and its background while you actually have it, instead of always showing every background.
+### Tweak
+- Legacy Combo Points: Blue Combos, Show Always, More Classes and Class Color moved into the right-click window together with the position sliders.
+### Bugfix
+- Fix Legacy Combo Points "Show Always" not working for Rogue/Druid unless "Instant Combo Points" was also enabled.
+
 # BetterBlizzFrames 2.1.3b
 ## Forever
 ### Tweak

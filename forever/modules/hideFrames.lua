@@ -171,6 +171,63 @@ local function HideElementFromActionBars(hide, element)
     end
 end
 
+local tankForms = {
+    [5] = true,
+    [8] = true,
+    [18] = true,
+}
+
+local THREAT_TANK_EVENTS = { "PLAYER_ENTERING_WORLD", "PLAYER_SPECIALIZATION_CHANGED", "PLAYER_ROLES_ASSIGNED", "UPDATE_SHAPESHIFT_FORM" }
+
+local function IsPlayerTank()
+    local tankAura = UnitHasEffectivelyTankAura and UnitHasEffectivelyTankAura("player")
+    if not issecretvalue(tankAura) and tankAura == true then return true end
+    local form = GetShapeshiftFormID()
+    if form and tankForms[form] then return true end
+    if UnitGroupRolesAssigned("player") == "TANK" then return true end
+    return GetPartyAssignment("MAINTANK", "player") and true or false
+end
+
+local function GetThreatMeters()
+    local meters = {
+        TargetFrame.TargetFrameContent.TargetFrameContentContextual.NumericalThreat,
+        FocusFrame and FocusFrame.TargetFrameContent.TargetFrameContentContextual.NumericalThreat,
+    }
+    for i = 1, 5 do
+        local frame = _G["Boss"..i.."TargetFrame"]
+        if frame then
+            tinsert(meters, frame.TargetFrameContent.TargetFrameContentContextual.NumericalThreat)
+        end
+    end
+    return meters
+end
+
+local threatTankWatcher
+
+function BBF.UpdateThreatMeterVisibility()
+    local db = BetterBlizzFramesDB
+    if db.hideThreatOnFrame and db.hideThreatKeepTank and not threatTankWatcher then
+        threatTankWatcher = CreateFrame("Frame")
+        for _, event in ipairs(THREAT_TANK_EVENTS) do
+            threatTankWatcher:RegisterEvent(event)
+        end
+        threatTankWatcher:RegisterUnitEvent("UNIT_AURA", "player")
+        threatTankWatcher:SetScript("OnEvent", BBF.UpdateThreatMeterVisibility)
+    end
+    local hide = db.hideThreatOnFrame and not (db.hideThreatKeepTank and IsPlayerTank())
+    if hide then
+        for _, meter in pairs(GetThreatMeters()) do
+            meter:SetAlpha(0)
+        end
+        BBF.threatHidden = true
+    elseif BBF.threatHidden then
+        for _, meter in pairs(GetThreatMeters()) do
+            meter:SetAlpha(1)
+        end
+        BBF.threatHidden = nil
+    end
+end
+
 function BBF.HideFrames()
     local db = BetterBlizzFramesDB
     if db.hasCheckedUi then
@@ -323,16 +380,7 @@ function BBF.HideFrames()
             FocusFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:Show()
         end
 
-        if BetterBlizzFramesDB.hideThreatOnFrame then
-            TargetFrame.TargetFrameContent.TargetFrameContentContextual.NumericalThreat:SetAlpha(0)
-            FocusFrame.TargetFrameContent.TargetFrameContentContextual.NumericalThreat:SetAlpha(0)
-            for i = 1, 5 do
-                local frame = _G["Boss"..i.."TargetFrame"]
-                if frame and frame.TargetFrameContent.TargetFrameContentContextual.NumericalThreat then
-                    frame.TargetFrameContent.TargetFrameContentContextual.NumericalThreat:SetAlpha(0)
-                end
-            end
-        end
+        BBF.UpdateThreatMeterVisibility()
 
         if BetterBlizzFramesDB.hideActionBar1 then
             if not MainActionBar.bbfHidden then

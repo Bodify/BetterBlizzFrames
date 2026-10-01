@@ -20,7 +20,7 @@ end
 
 function BBF.DarkModeUnitFramesOn()
 	local db = BetterBlizzFramesDB
-	return db.darkModeUi and db.darkModeUnitFrames and true or false
+	return db.darkModeUi and db.darkModeUnitFrames and not (BBF.ClassicBronzeTintActive and BBF.ClassicBronzeTintActive()) and true or false
 end
 
 function BBF.UpdateAuraCollapseButton()
@@ -36,6 +36,9 @@ function BBF.UpdateAuraCollapseButton()
 end
 
 function BBF.LegacyComboPointShown(index, count, maxPoints, showAlways, extraComboPoints)
+	if BetterBlizzFramesDB.legacyComboActiveOnly then
+		return count ~= nil and index <= count
+	end
 	if showAlways then return true end
 	if not count or count <= 0 then return false end
 	extraComboPoints = extraComboPoints or ((maxPoints == 6 or maxPoints == 9) and 7 or 6)

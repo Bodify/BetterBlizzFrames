@@ -1811,6 +1811,10 @@ function BBF.ClassicMirrorTimers()
         StyleBar(timerFrame, timerFrame.timer)
         hooksecurefunc(timerFrame, "Setup", StyleBar)
     end
+
+    if BBF.UpdateBronzeTint then
+        BBF.UpdateBronzeTint()
+    end
 end
 
 function BBF.ChangeCastbarSizes()
