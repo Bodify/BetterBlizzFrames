@@ -2882,6 +2882,7 @@ local function TurnTestModesOff()
     BetterBlizzFramesDB.absorbIndicatorTestMode = false
     BetterBlizzFramesDB.partyCastBarTestMode = false
     BetterBlizzFramesDB.petCastBarTestMode = false
+    BetterBlizzFramesDB.questIndicatorTestMode = false
 end
 
 local function executeCustomCode()

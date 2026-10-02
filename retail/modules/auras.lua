@@ -1185,7 +1185,10 @@ local function InitAuraButton(button, style, host, harmful, masqueType)
     end
 
     if style.isPlayer then
-        local timer = overlay:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+        button.bbfTextLayer = CreateFrame("Frame", nil, button)
+        button.bbfTextLayer:SetAllPoints(button)
+        button.bbfTextLayer:SetFrameLevel(overlay:GetFrameLevel() + 1)
+        local timer = button.bbfTextLayer:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
         button.bbfTimer = timer
         timer.bbfBaseFont = { timer:GetFont() }
     elseif style.showTimerText then
@@ -1473,11 +1476,7 @@ local function GetDurationYOffset(isPlayer, cfg, durationUnderIcon)
         offset = -1
     end
 
-    if cfg.harmful then
-        offset = offset - 1
-    end
-
-    return offset
+    return offset - 1
 end
 
 local function BuildStyle(tier, sizes, isPlayer, cfg, into)
@@ -1537,7 +1536,8 @@ local function BuildStyle(tier, sizes, isPlayer, cfg, into)
     t.legacyBorder = legacyBorder
     t.showDispelType = cfg.showDispelType
     t.drawBorder = (S.pixelBorder or S.darkBorder) and not S.masque and true or false
-    t.cropIcon = (S.pixelBorder or S.darkBorder) and not S.masque and true or false
+    t.cropIcon = (S.pixelBorder or (S.darkBorder and (not cfg.harmful or S.removeDebuffBorder)))
+        and not S.masque and true or false
     t.darkColor = S.darkColor
     t.purgeGlow = cfg.purgeGlow
     t.purgeHidden = cfg.purgeHidden
@@ -3489,7 +3489,10 @@ local function CreateTestButton(parent)
 
     button.bbfCount = overlay:CreateFontString(nil, "OVERLAY", "NumberFontNormalSmall")
     button.bbfCount:SetJustifyH("RIGHT")
-    button.bbfTimer = overlay:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    local textLayer = CreateFrame("Frame", nil, button)
+    textLayer:SetAllPoints(button)
+    textLayer:SetFrameLevel(overlay:GetFrameLevel() + 1)
+    button.bbfTimer = textLayer:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     button.bbfTimer.bbfBaseFont = { button.bbfTimer:GetFont() }
     button.bbfBorder = overlay:CreateTexture(nil, "OVERLAY", nil, 5)
     button.bbfDispel = overlay:CreateTexture(nil, "OVERLAY", nil, 6)

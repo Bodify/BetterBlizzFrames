@@ -1108,6 +1108,7 @@ function BBF.DarkmodeFrames(bypass)
         hookedTotemBar = true
     end
 
+    BBF.UpdateClassicHDTextureColors()
     BBF.DarkModeActive = true
 end
 
@@ -1256,4 +1257,5 @@ function BBF.DarkModeCastbars()
         end
         BBF.darkModeCastbars = nil
     end
+    BBF.UpdateClassicHDTextureColors()
 end

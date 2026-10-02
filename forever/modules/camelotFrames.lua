@@ -204,6 +204,8 @@ local function CastbarBronzeTintActive()
     return db.classicFramesBronzeTint and db.classicFramesBronzeTintCastbars and not db.classColorFrameTexture
 end
 
+BBF.CastbarBronzeTintActive = CastbarBronzeTintActive
+
 local function MinimapBronzeTintActive()
     local db = BetterBlizzFramesDB
     return db.classicMinimap and db.classicFramesBronzeTint and db.classicFramesBronzeTintMinimap
@@ -212,6 +214,10 @@ end
 BBF.MinimapBronzeTintActive = MinimapBronzeTintActive
 
 local function SetBronze(texture)
+    if texture.bbfClassicHD then
+        BBF.ApplyClassicHDColor(texture, texture.bbfClassicHD == "castbar")
+        return
+    end
     texture.bbfBronzeChanging = true
     if texture.bbfBronzeMinimap then
         texture:SetDesaturated(true)
@@ -411,7 +417,7 @@ local hdEliteOverlays = {
 
 local function HDEliteActive()
     local db = BetterBlizzFramesDB
-    return db.classicFrames and db.classicFramesHDElite and not db.hideRareDragonTexture
+    return db.classicFrames and (db.classicFramesHDElite or db.classicFramesHDTextures) and not db.hideRareDragonTexture
 end
 BBF.ClassicHDEliteActive = HDEliteActive
 
@@ -465,7 +471,7 @@ function BBF.UpdateClassicHDElite(frame)
     local data = HDEliteActive() and classification and hdEliteOverlays[classification]
     if not data then
         if overlay then overlay:Hide() end
-        BBF.SetClassicHDLevelRing(frame, false)
+        BBF.SetClassicHDLevelRing(frame, BBF.ClassicHDTexturesActive())
         return
     end
     if not overlay then
@@ -564,6 +570,7 @@ end
 function BBF.UpdateClassicHDLevelRingColors()
     for _, frame in ipairs({ PlayerFrame, TargetFrame, FocusFrame }) do
         ColorHDLevelRing(frame and frame.ClassicFrame and frame.ClassicFrame.HDLevelCircle)
+        BBF.ColorClassicHDLevelRing(frame)
     end
 end
 
@@ -582,13 +589,6 @@ function BBF.SetClassicHDLevelRing(frame, enabled)
     if not circle then
         if not enabled then return end
         circle = classicFrame:CreateTexture(nil, "OVERLAY", nil, 5)
-        circle:SetAtlas("Adventure_Ability_Frame_Filled")
-        if frame ~= PlayerFrame then
-            local ulx, uly, llx, lly, urx, ury, lrx, lry = circle:GetTexCoord()
-            circle:SetTexCoord(urx, ury, lrx, lry, ulx, uly, llx, lly)
-        end
-        circle:SetSize(38, 33)
-        circle:SetPoint("CENTER", levelText, "CENTER", frame == PlayerFrame and 0.5 or -1, -1.5)
         classicFrame.HDLevelCircle = circle
         ColorHDLevelRing(circle)
         local function Refresh()
@@ -606,8 +606,23 @@ function BBF.SetClassicHDLevelRing(frame, enabled)
             end
         end
     end
+    local hd = BBF.ClassicHDTexturesActive()
+    if circle.bbfHD ~= hd then
+        circle.bbfHD = hd
+        circle:ClearAllPoints()
+        if hd then
+            circle:SetAtlas("UI-HUD-UnitFrame-SmallCircle", TextureKitConstants.UseAtlasSize)
+            circle:SetPoint("CENTER", levelText, "CENTER", 0, 0.5)
+        else
+            circle:SetAtlas("hud-PlayerFrame-levelring")
+            circle:SetSize(36, 32)
+            circle:SetPoint("CENTER", levelText, "CENTER", -1, -1.5)
+        end
+    end
     circle.bbfEnabled = enabled and true or false
+    circle:SetScale(BetterBlizzFramesDB.smallerLevelCircle and 0.8 or 1)
     circle.Refresh()
+    BBF.ColorClassicHDLevelRing(frame)
 end
 
 function BBF.RefreshClassicHDElite()
@@ -693,6 +708,7 @@ function BBF.UpdateBronzeTint()
             end
         end
     end
+    BBF.UpdateClassicHDTextureColors()
 end
 
 local bagSlotNames = {"MainMenuBarBackpackButton", "CharacterBag0Slot", "CharacterBag1Slot", "CharacterBag2Slot", "CharacterBag3Slot"}
@@ -826,10 +842,20 @@ end
 function BBF.UpdateSmallerLevelCircle()
     local enabled = BetterBlizzFramesDB.smallerLevelCircle and true or false
     local playerMain = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain
-    ApplySmallerLevelCircle(playerMain.LevelBackgroundCircle, PlayerLevelText, "BOTTOMLEFT", 20, 16, enabled)
+    if BBF.symmetricPlayerFrameActive then
+        ApplySmallerLevelCircle(playerMain.LevelBackgroundCircle, PlayerLevelText, "BOTTOMLEFT", 22, 17, enabled)
+    else
+        ApplySmallerLevelCircle(playerMain.LevelBackgroundCircle, PlayerLevelText, "BOTTOMLEFT", 20, 16, enabled)
+    end
     for _, frame in ipairs({ TargetFrame, FocusFrame }) do
         local main = frame.TargetFrameContent.TargetFrameContentMain
         ApplySmallerLevelCircle(main.LevelBackgroundCircle, main.LevelText, "BOTTOMRIGHT", -22, 17, enabled)
+    end
+    for _, frame in ipairs({ PlayerFrame, TargetFrame, FocusFrame }) do
+        local circle = frame.ClassicFrame and frame.ClassicFrame.HDLevelCircle
+        if circle then
+            circle:SetScale(enabled and 0.8 or 1)
+        end
     end
 end
 

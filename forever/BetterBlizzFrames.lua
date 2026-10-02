@@ -2130,7 +2130,7 @@ end
 function BBF.GetPlayerEliteMode(mode)
     local db = BetterBlizzFramesDB
     mode = mode or db.playerEliteFrameMode or 1
-    if db.classicFrames and db.classicFramesHDElite and mode <= 3 then
+    if db.classicFrames and (db.classicFramesHDElite or db.classicFramesHDTextures) and mode <= 3 then
         return mode + 3
     end
     return mode
@@ -2197,10 +2197,18 @@ function BBF.SyncSelfEliteClassicArt(frame)
             texture.bbfSelfEliteDesat = texture:IsDesaturated()
             texture.bbfSelfElite = true
         end
-        texture:SetDesaturated(playerTexture:IsDesaturated() or (BBF.ClassicBronzeTintActive and BBF.ClassicBronzeTintActive()) or false)
+        if texture.bbfClassicHD then
+            BBF.ApplyClassicHDColor(texture)
+        else
+            texture:SetDesaturated(playerTexture:IsDesaturated() or (BBF.ClassicBronzeTintActive and BBF.ClassicBronzeTintActive()) or false)
+        end
     elseif texture.bbfSelfElite then
         texture.bbfSelfElite = nil
-        texture:SetDesaturated(texture.bbfSelfEliteDesat)
+        if texture.bbfClassicHD then
+            BBF.ApplyClassicHDColor(texture)
+        else
+            texture:SetDesaturated(texture.bbfSelfEliteDesat)
+        end
     end
 end
 
@@ -2319,11 +2327,11 @@ function BBF.PlayerElite(mode)
             else
                 -- For mode <= 3, check hideLvl conditions for texture choice
                 if alwaysHideLvl then
-                    frameTexture:SetTexture("Interface\\TargetingFrame\\UI-FocusFrame-Large")
+                    BBF.SetClassicTexture(frameTexture, "Interface\\TargetingFrame\\UI-FocusFrame-Large")
                 elseif hideLvl and UnitLevel("player") == GetMaxLevelForPlayerExpansion() then
-                    frameTexture:SetTexture("Interface\\TargetingFrame\\UI-FocusFrame-Large")
+                    BBF.SetClassicTexture(frameTexture, "Interface\\TargetingFrame\\UI-FocusFrame-Large")
                 else
-                    frameTexture:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame")
+                    BBF.SetClassicTexture(frameTexture, "Interface\\TargetingFrame\\UI-TargetingFrame")
                 end
                 if playerElite then
                     playerElite:SetAlpha(0)
@@ -2335,13 +2343,13 @@ function BBF.PlayerElite(mode)
                 playerElite:SetDesaturated(false)
             end
             if mode == 1 then -- Rare (Silver)
-                frameTexture:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Rare")
+                BBF.SetClassicTexture(frameTexture, "Interface\\TargetingFrame\\UI-TargetingFrame-Rare")
                 frameTexture:SetDesaturated(true)
             elseif mode == 2 then -- Boss (Silver Winged)
-                frameTexture:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Rare-Elite")
+                BBF.SetClassicTexture(frameTexture, "Interface\\TargetingFrame\\UI-TargetingFrame-Rare-Elite")
                 frameTexture:SetDesaturated(true)
             elseif mode == 3 then -- Boss (Gold Winged)
-                frameTexture:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Elite")
+                BBF.SetClassicTexture(frameTexture, "Interface\\TargetingFrame\\UI-TargetingFrame-Elite")
                 frameTexture:SetDesaturated(false)
             elseif mode == 4 then -- Rare (Silver)
                 playerElite:SetAtlas("UI-HUD-UnitFrame-Target-PortraitOn-Boss-Rare-Silver")
@@ -2382,11 +2390,11 @@ function BBF.PlayerElite(mode)
 
             frameTexture:SetDesaturated(false)
             if alwaysHideLvl then
-                frameTexture:SetTexture("Interface\\TargetingFrame\\UI-FocusFrame-Large")
+                BBF.SetClassicTexture(frameTexture, "Interface\\TargetingFrame\\UI-FocusFrame-Large")
             elseif hideLvl and UnitLevel("player") == GetMaxLevelForPlayerExpansion() then
-                frameTexture:SetTexture("Interface\\TargetingFrame\\UI-FocusFrame-Large")
+                BBF.SetClassicTexture(frameTexture, "Interface\\TargetingFrame\\UI-FocusFrame-Large")
             else
-                frameTexture:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame")
+                BBF.SetClassicTexture(frameTexture, "Interface\\TargetingFrame\\UI-TargetingFrame")
             end
             if playerElite then
                 playerElite:SetAlpha(0)
@@ -4346,10 +4354,8 @@ function BBF.SymmetricPlayerFrame()
     portraitMask:SetSize(56, 56)
     portraitMask:SetPoint("TOPLEFT", 27, -20)
 
-    PlayerLevelText:SetPoint("TOPRIGHT", PlayerFrame.PlayerFrameContent.PlayerFrameContentMain, "TOPRIGHT", -24, -27.7)
-
-    local tMain = TargetFrame.TargetFrameContent.TargetFrameContentMain
-    tMain.LevelText:SetPoint("TOPLEFT", tMain.ReputationColor, "TOPRIGHT", -132, -2)
+    BBF.symmetricPlayerFrameActive = true
+    BBF.UpdateSmallerLevelCircle()
 
     hooksecurefunc(portraitMask, "SetSize", function(self)
         if not self.changing then
@@ -5355,6 +5361,7 @@ local function TurnTestModesOff()
     BetterBlizzFramesDB.partyCastBarTestMode = nil
     BetterBlizzFramesDB.petCastBarTestMode = nil
     BetterBlizzFramesDB.kickPopupTestMode = nil
+    BetterBlizzFramesDB.questIndicatorTestMode = nil
 end
 
 local function executeCustomCode()

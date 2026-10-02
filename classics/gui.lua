@@ -6123,6 +6123,9 @@ local function guiPositionAndScale()
     local questIndicatorYPos = CreateSlider(contentFrame, L["Y_Offset"], -50, 50, 1, "questIndicatorYPos", "Y")
     questIndicatorYPos:SetPoint("TOP", questIndicatorXPos, "BOTTOM", 0, -15)
 
+    local questIndicatorTestMode = CreateCheckbox("questIndicatorTestMode", L["Test"], contentFrame, nil, BBF.QuestIndicatorCaller)
+    questIndicatorTestMode:SetPoint("TOPLEFT", questIndicatorYPos, "BOTTOMLEFT", 10, -4)
+
     local reloadUiButton2 = CreateFrame("Button", nil, BetterBlizzFramesSubPanel, "UIPanelButtonTemplate")
     reloadUiButton2:SetText(L["Reload_UI"])
     reloadUiButton2:SetWidth(85)

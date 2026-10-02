@@ -181,6 +181,26 @@ local function NameCentered(unit)
     return BetterBlizzFramesDB.centerNames or NameCenterForced(unit)
 end
 
+local function GetNameWidth(frame)
+    if frame == PlayerFrame then
+        return 122
+    end
+    if (frame == TargetFrame or frame == FocusFrame) and BetterBlizzFramesDB.centerNames and not NameCenterForced(NameUnitForFrame(frame)) then
+        return 122
+    end
+    return frame.bbfNameBaseWidth
+end
+
+local function ApplyNameWidth(frame)
+    local fontString = frame and frame.bbfName
+    if not fontString or not frame.bbfNameBaseWidth then return end
+    local width = GetNameWidth(frame)
+    fontString:SetWidth(width)
+    if fontString.bbfFitWidth then
+        fontString.bbfFitWidth = width
+    end
+end
+
 local function CenterPlayerName()
     local healthBar = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer
     local name = PlayerFrame.bbfName
@@ -192,7 +212,7 @@ local function CenterPlayerName()
     if playerFrameOCD and not forceCenter then
         name:SetPoint("TOP", healthBar, "TOP", 0, 14.5)
     else
-        local xPos = forceCenter and 1.5 or noPortrait and 0 or true and -2 or 0
+        local xPos = forceCenter and 1.5 or 0
         local yPos = noPortrait and 14 or forceCenter and 7.5 or BetterBlizzFramesDB.symmetricPlayerFrame and 15 or 14.5
         if BetterBlizzFramesDB.classicFrames and BetterBlizzFramesDB.bigPlayerHealthbar then
             yPos = yPos - 10
@@ -208,7 +228,7 @@ local function CenterXName(fontObject, healthBar, ToT, pet, unit)
     if not (forceCenter and ToT) then
         fontObject:SetJustifyH("CENTER")
     end
-    local xPos = (pet and noPortrait and 16) or (ToT and noPortrait and 0) or (ToT and (forceCenter and 8 or -2)) or (forceCenter and 0) or noPortrait and -1 or 2
+    local xPos = (pet and noPortrait and 16) or (ToT and noPortrait and 0) or (ToT and (forceCenter and 8 or -2)) or (forceCenter and 0) or noPortrait and -1 or -0.5
     local yPos = (noPortrait and ((pet and 2) or 13)) or ((pet and forceCenter) and 2 or pet and 2) or ToT and (forceCenter and -18 or 12) or (forceCenter and 6.3 or 14)
     if ToT and noPortrait then
         fontObject:SetJustifyH("CENTER")
@@ -238,6 +258,10 @@ function BBF.SetCenteredNamesCaller()
         return
     end
     BBF.UpdateUserTargetSettings()
+    ApplyNameWidth(PlayerFrame)
+    ApplyNameWidth(TargetFrame)
+    ApplyNameWidth(FocusFrame)
+    BBF.UpdateNameFit()
     if not centerNames then
         if not forceCenterNameSetting then
             PlayerFrame.bbfName:SetJustifyH("LEFT")
@@ -309,7 +333,7 @@ local ALL_SPECS = GetLocalizedSpecs()
 -- Caching Tables
 BBA.SpecCache = {}
 local SpecCache = BBA.SpecCache  -- Stores GUID -> specID
-local GetUnitTooltip = C_TooltipInfo and C_TooltipInfo.GetUnit or function() return nil end
+local GetUnitTooltip = C_TooltipInfo.GetUnit or function() return nil end
 
 local safeUnits = {
     ["player"] = true,
@@ -712,12 +736,9 @@ local function InitializeFontString(frame)
     frame.bbfName:SetTextColor(name:GetTextColor())
     frame.bbfName:SetShadowColor(name:GetShadowColor())
     frame.bbfName:SetShadowOffset(name:GetShadowOffset())
-    local nameWidth = name:GetWidth()
-    if frame == PlayerFrame then
-        nameWidth = 119
-    end
+    frame.bbfNameBaseWidth = name:GetWidth()
     local nameHeight = name:GetHeight()
-    frame.bbfName:SetWidth(nameWidth)
+    frame.bbfName:SetWidth(GetNameWidth(frame))
     frame.bbfName:SetHeight(nameHeight)
     frame.bbfName:SetWordWrap(false)
 
@@ -734,7 +755,7 @@ local function InitializeFontString(frame)
         if NameCentered(NameUnitForFrame(frame)) and not BetterBlizzFramesDB.classicFrames then
             frame.bbfName:SetJustifyH("CENTER")
         end
-        frame.bbfName:SetWidth(nameWidth)
+        frame.bbfName:SetWidth(GetNameWidth(frame))
         frame.bbfName:SetHeight(nameHeight)
     end)
 

@@ -556,7 +556,7 @@ local function AdjustBorderSize(castBar)
         local heightScale = barHeight / baseHeight
 
         -- Apply scaled size to the border
-        castBar.Border:SetTexture(130873)
+        BBF.SetClassicTexture(castBar.Border, 130873, nil, true)
         castBar.Border:SetSize(baseBorderWidth * widthScale, baseBorderHeight * heightScale)
         castBar.Border:ClearAllPoints()
         castBar.Border:SetPoint("CENTER", castBar, "CENTER", 0, 0)
@@ -581,7 +581,7 @@ local function AdjustBorderShieldSize(castBar)
         local heightScale = barHeight / baseHeight
 
         -- Apply scaled size to the border
-        castBar.BorderShield:SetTexture(311862)
+        BBF.SetClassicTexture(castBar.BorderShield, 311862, nil, true)
         castBar.BorderShield:SetSize(baseBorderWidth * widthScale, baseBorderHeight * heightScale)
         castBar.BorderShield:SetDrawLayer("OVERLAY")
         castBar.BorderShield:SetScale(1)
@@ -1799,7 +1799,7 @@ function BBF.ClassicMirrorTimers()
 
         timerFrame.TextBorder:SetAlpha(0)
 
-        timerFrame.Border:SetTexture("Interface\\CastingBar\\UI-CastingBar-Border")
+        BBF.SetClassicTexture(timerFrame.Border, "Interface\\CastingBar\\UI-CastingBar-Border", nil, true)
         timerFrame.Border:ClearAllPoints()
         timerFrame.Border:SetSize(256, 64)
         timerFrame.Border:SetPoint("TOP", timerFrame, "TOP", 0, 25)
@@ -1932,8 +1932,8 @@ function BBF.ChangeCastbarSizes()
     if BetterBlizzFramesDB.classicCastbarsPlayer then
         BBF.ClassicCastbar(PlayerCastingBarFrame, "player")
         BBF.ClassicCastbar(PetCastingBarFrame, "player")
-        PlayerCastingBarFrame.Border:SetTexture(BetterBlizzFramesDB.classicCastbarsPlayerBorder and 130874 or 130873)
-        PetCastingBarFrame.Border:SetTexture(BetterBlizzFramesDB.classicCastbarsPlayerBorder and 130874 or 130873)
+        BBF.SetClassicTexture(PlayerCastingBarFrame.Border, BetterBlizzFramesDB.classicCastbarsPlayerBorder and 130874 or 130873, nil, true)
+        BBF.SetClassicTexture(PetCastingBarFrame.Border, BetterBlizzFramesDB.classicCastbarsPlayerBorder and 130874 or 130873, nil, true)
         BBF.ClassicMirrorTimers()
     end
 

@@ -307,7 +307,7 @@ local ALL_SPECS = GetLocalizedSpecs()
 -- Caching Tables
 BBA.SpecCache = {}
 local SpecCache = BBA.SpecCache  -- Stores GUID -> specID
-local GetUnitTooltip = C_TooltipInfo and C_TooltipInfo.GetUnit or function() return nil end
+local GetUnitTooltip = C_TooltipInfo.GetUnit or function() return nil end
 
 local safeUnits = {
     ["player"] = true,

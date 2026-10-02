@@ -8,8 +8,13 @@
 - Classic Frames: Bronze Tint now also tints the borders of alternate power bars the Target/Focus threat display and the Classic Breath/Status Bars.
 - Classic Frames: Bronze Tint now also works on Classic Castbars without needing Classic Frames enabled.
 - Dark Mode now also darkens the PvP circle background.
+- Center Names: Adjust name width and position on Player/Target/Focus to fit WoW Forever better.
+- Tweak "Mirror TargetFrame" setting so it doesnt hide the level circle on WoW Forever and positions levels properly.
+- Update the Forever profile.
 ### Bugfix
 - Fix combo points not updating their color until reload when toggling Bronze Tint.
+- Fix Stealth Indicator error after the latest WoW Forever patch.
+- Fix Smaller Level Circle position with Symmetric PlayerFrame.
 ## Retail & Forever
 ### New
 - Minimap Tweaks: "Hide Minimap Title" setting.
@@ -17,6 +22,7 @@
 - Legacy Combo Points: "Only Show Active Combo Points" setting. Only shows a combo point and its background while you actually have it, instead of always showing every background.
 ### Tweak
 - Legacy Combo Points: Blue Combos, Show Always, More Classes and Class Color moved into the right-click window together with the position sliders.
+- Improve Quest Indicator (was missing detection on some quests).
 ### Bugfix
 - Fix Legacy Combo Points "Show Always" not working for Rogue/Druid unless "Instant Combo Points" was also enabled.
 

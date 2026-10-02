@@ -5276,6 +5276,11 @@ local function guiGeneralTab()
                             CreateTooltipTwo(self.cfHDElite, L["Classic_Frames_HD_Elite"], L["Tooltip_Classic_Frames_HD_Elite_Desc"])
                             self.cfHDElite.Text:SetText(L["HD_Elite_Dragons"])
 
+                            -- self.cfHDTextures = CreateFrame("CheckButton", nil, self, "UICheckButtonTemplate")
+                            -- self.cfHDTextures:SetSize(26, 26)
+                            -- CreateTooltipTwo(self.cfHDTextures, L["Classic_Frames_HD_Textures"], L["Tooltip_Classic_Frames_HD_Textures_Desc"])
+                            -- self.cfHDTextures.Text:SetText(L["HD_Textures_By_Mo"])
+
                             self.cfGrayActionBars = CreateFrame("CheckButton", nil, self, "UICheckButtonTemplate")
                             self.cfGrayActionBars:SetSize(26, 26)
                             CreateTooltipTwo(self.cfGrayActionBars, L["Remove_ActionBar_Bronze_Tint"], L["Tooltip_Remove_ActionBar_Bronze_Tint_Desc"])
@@ -5289,6 +5294,7 @@ local function guiGeneralTab()
                             self.cfTextures:SetChecked(BetterBlizzFramesDB.changeUnitFrameHealthbarTexture or false)
                             self.cfBronzeTint:SetChecked(BetterBlizzFramesDB.classicFramesBronzeTint or false)
                             self.cfHDElite:SetChecked(BetterBlizzFramesDB.classicFramesHDElite or false)
+                            -- self.cfHDTextures:SetChecked(BetterBlizzFramesDB.classicFramesHDTextures or false)
                             self.cfGrayActionBars:SetChecked(BetterBlizzFramesDB.removeActionBarBronzeTint or false)
 
                             self.classicSettings = true
@@ -5335,6 +5341,7 @@ local function guiGeneralTab()
 
                             BBF.ChangesOnReload["classicFramesBronzeTint"] = self.cfBronzeTint:GetChecked() or false
                             BBF.ChangesOnReload["classicFramesHDElite"] = self.cfHDElite:GetChecked() or false
+                            -- BBF.ChangesOnReload["classicFramesHDTextures"] = self.cfHDTextures:GetChecked() or false
                             BBF.ChangesOnReload["removeActionBarBronzeTint"] = self.cfGrayActionBars:GetChecked() or false
                         end
                         CheckBoxes()
@@ -5354,6 +5361,9 @@ local function guiGeneralTab()
                         self.cfHDElite:SetScript("OnClick", function()
                             CheckBoxes()
                         end)
+                        -- self.cfHDTextures:SetScript("OnClick", function()
+                            -- CheckBoxes()
+                        -- end)
                         self.cfGrayActionBars:SetScript("OnClick", function()
                             CheckBoxes()
                         end)
@@ -5365,7 +5375,9 @@ local function guiGeneralTab()
                         self.cfGrayActionBars:SetPoint("TOPLEFT", self.cfHDElite, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
                         self.cfTextures:Show()
                         self.cfBronzeTint:Show()
+                        -- self.cfHDTextures:SetPoint("LEFT", self.cfHDElite.Text, "RIGHT", 10, 0)
                         self.cfHDElite:Show()
+                        -- self.cfHDTextures:Show()
                         self.cfGrayActionBars:Show()
                     end,
                     OnHide = function(self)
@@ -5381,6 +5393,7 @@ local function guiGeneralTab()
                         if self.cfBronzeTint then
                             self.cfBronzeTint:Hide()
                             self.cfHDElite:Hide()
+                            -- self.cfHDTextures:Hide()
                             self.cfGrayActionBars:Hide()
                         end
                     end,
@@ -8395,6 +8408,9 @@ local function guiPositionAndScale()
     local questIndicatorYPos = CreateSlider(contentFrame, L["Y_Offset"], -50, 50, 1, "questIndicatorYPos", "Y")
     questIndicatorYPos:SetPoint("TOP", questIndicatorXPos, "BOTTOM", 0, -15)
 
+    local questIndicatorTestMode = CreateCheckbox("questIndicatorTestMode", L["Test"], contentFrame, nil, BBF.QuestIndicatorCaller)
+    questIndicatorTestMode:SetPoint("TOPLEFT", questIndicatorYPos, "BOTTOMLEFT", 10, -4)
+
     local reloadUiButton2 = CreateFrame("Button", nil, BetterBlizzFramesSubPanel, "UIPanelButtonTemplate")
     reloadUiButton2:SetText(L["Reload_UI"])
     reloadUiButton2:SetWidth(85)
@@ -11357,6 +11373,13 @@ local function guiMisc()
     -- CreateTooltipTwo(disableAddonProfiling, L["Disable_AddOn_Profiler"], L["Tooltip_Disable_AddOn_Profiler"])
     -- disableAddonProfiling:HookScript("OnClick", function(self)
     --     BBF.ShowPopup("BBF_CONFIRM_RELOAD")
+    -- end)
+
+    -- local classicFramesHDTextures = CreateCheckbox("classicFramesHDTextures", L["Classic_Frames_HD_Textures"], contentFrame)
+    -- classicFramesHDTextures:SetPoint("TOPLEFT", disableCastbarMovement, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    -- CreateTooltipTwo(classicFramesHDTextures, L["Classic_Frames_HD_Textures"], L["Tooltip_Classic_Frames_HD_Textures_Desc"])
+    -- classicFramesHDTextures:HookScript("OnClick", function()
+        -- BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     -- end)
 
     local useMiniPlayerFrame = CreateCheckbox("useMiniPlayerFrame", L["Mini_PlayerFrame"], contentFrame)

@@ -24,7 +24,7 @@ end
 local gameVersion, _, _, interfaceVersion = GetBuildInfo()
 BBF.isForever = interfaceVersion >= 16000 and interfaceVersion < 17000
 BBF.isMidnight = not BBF.isForever and gameVersion:match("^12")
-BBF.isRetail = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
+BBF.isRetail = BBF.isForever or WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
 BBF.isMainline = BBF.isMidnight or BBF.isForever
 BBF.isMoP = gameVersion:match("^5%.")
 BBF.isTBC = gameVersion:match("^2%.")

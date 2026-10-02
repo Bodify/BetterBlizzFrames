@@ -29,6 +29,128 @@ local eliteTextures = {
     rare = "Interface\\TargetingFrame\\UI-TargetingFrame-Rare",
 }
 
+local HD_MO = "Interface\\AddOns\\BetterBlizzFrames\\media\\MoTextures\\"
+local HD_NOMANA = HD_MO .. "NoManas\\"
+
+local hdFrame = { HD_MO .. "UI-TargetingFrame-NoLevel.png", HD_NOMANA .. "UI-TargetingFrame-NoLevel-NoMana.png" }
+local hdBig = { HD_MO .. "UI-TargetingFrame-NoLevel-Retail.png", HD_NOMANA .. "UI-TargetingFrame-NoLevel-Retail-NoMana.png" }
+local hdBigNoMana = { HD_NOMANA .. "UI-TargetingFrame-NoLevel-Retail-NoMana.png" }
+local hdMinus = { HD_MO .. "UI-TargetingFrame-Minus.png" }
+local hdSmall = { HD_MO .. "UI-SmallTargetingFrame.png", HD_NOMANA .. "UI-SmallTargetingFrame-NoMana.png" }
+local hdTot = { HD_MO .. "UI-TargetOfTargetFrame.png", HD_NOMANA .. "UI-TargetOfTargetFrame-NoMana.png" }
+local hdCastbar = { HD_MO .. "UI-CastingBar-Border.tga" }
+local hdCastbarSmall = { HD_MO .. "ui-castingbar-border-small.tga" }
+local hdCastbarShield = { HD_MO .. "ui-castingbar-small-shield.tga" }
+
+local frameTextures = {
+    ["Interface\\TargetingFrame\\UI-TargetingFrame"] = hdFrame,
+    ["Interface\\TargetingFrame\\UI-FocusFrame-Large"] = hdFrame,
+    ["Interface\\TargetingFrame\\UI-TargetingFrame-Elite"] = hdFrame,
+    ["Interface\\TargetingFrame\\UI-TargetingFrame-Rare"] = hdFrame,
+    ["Interface\\TargetingFrame\\UI-TargetingFrame-Rare-Elite"] = hdFrame,
+    [bigPath .. "UI-TargetingFrame-Retail.tga"] = hdBig,
+    [bigPath .. "UI-TargetingFrame-NoLevel-Retail.tga"] = hdBig,
+    [bigPath .. "UI-TargetingFrame-Retail-NoMana.tga"] = hdBigNoMana,
+    [bigPath .. "UI-TargetingFrame-NoLevel-Retail-NoMana.tga"] = hdBigNoMana,
+    ["Interface\\TargetingFrame\\UI-TargetingFrame-Minus"] = hdMinus,
+    ["Interface\\TargetingFrame\\UI-SmallTargetingFrame"] = hdSmall,
+    ["Interface\\TargetingFrame\\UI-TargetofTargetFrame"] = hdTot,
+}
+
+local castbarTextures = {
+    [130873] = hdCastbarSmall,
+    [130874] = hdCastbar,
+    ["Interface\\CastingBar\\UI-CastingBar-Border"] = hdCastbar,
+    [311862] = hdCastbarShield,
+}
+
+local hdTextures = {}
+local hdRings = {}
+
+function BBF.ClassicHDTexturesActive()
+    local db = BetterBlizzFramesDB
+    return db.classicFrames and db.classicFramesHDTextures and true or false
+end
+
+function BBF.ClassicHDCastbarsActive()
+    return BetterBlizzFramesDB.classicFramesHDTextures and true or false
+end
+
+function BBF.GetClassicTexture(original, noMana, isCastbar)
+    local active = isCastbar and BBF.ClassicHDCastbarsActive() or (not isCastbar and BBF.ClassicHDTexturesActive())
+    local entry = active and (isCastbar and castbarTextures or frameTextures)[original]
+    if not entry then return original, false end
+    return (noMana and entry[2]) or entry[1], true
+end
+
+function BBF.ClassicHDBronze(isCastbar)
+    local check
+    if isCastbar then
+        check = BBF.CastbarBronzeTintActive
+    else
+        check = BBF.ClassicBronzeTintActive
+    end
+    return check and check() and true or false
+end
+
+function BBF.ApplyClassicHDColor(texture, isCastbar)
+    if not texture or texture:IsForbidden() then return end
+    if BBF.ClassicHDBronze(isCastbar) then
+        texture.bbfBronzeChanging = true
+        texture:SetDesaturated(false)
+        texture:SetVertexColor(1, 1, 1)
+        texture.bbfBronzeChanging = false
+    else
+        texture:SetDesaturated(true)
+    end
+end
+
+function BBF.SetClassicTexture(texture, original, noMana, isCastbar)
+    if not texture then return end
+    local path, hd = BBF.GetClassicTexture(original, noMana, isCastbar)
+    texture:SetTexture(path)
+    if hd then
+        texture.bbfClassicHD = isCastbar and "castbar" or "frame"
+        hdTextures[texture] = true
+        BBF.ApplyClassicHDColor(texture, isCastbar)
+    elseif texture.bbfClassicHD then
+        local db = BetterBlizzFramesDB
+        local wasCastbar = texture.bbfClassicHD == "castbar"
+        texture.bbfClassicHD = nil
+        hdTextures[texture] = nil
+        texture:SetDesaturated(not wasCastbar and (db.classicFramesDesaturated or db.classColorFrameTexture) and true or false)
+    end
+end
+
+function BBF.ClassicHDFrameColor(texture, r, g, b)
+    if texture.bbfClassicHD and BBF.ClassicHDBronze() then
+        return 1, 1, 1
+    end
+    return r, g, b
+end
+
+function BBF.ColorClassicHDLevelRing(frame)
+    local classicFrame = frame and frame.ClassicFrame
+    local ring = classicFrame and classicFrame.HDLevelCircle
+    local texture = classicFrame and classicFrame.Texture
+    if not ring or not texture or not BBF.ClassicHDTexturesActive() then return end
+    hdRings[frame] = true
+    local r, g, b = texture:GetVertexColor()
+    ring:SetDesaturated(texture:IsDesaturated())
+    ring:SetVertexColor(r, g, b)
+end
+
+function BBF.UpdateClassicHDTextureColors()
+    for texture in pairs(hdTextures) do
+        if texture.bbfClassicHD then
+            BBF.ApplyClassicHDColor(texture, texture.bbfClassicHD == "castbar")
+        end
+    end
+    for frame in pairs(hdRings) do
+        BBF.ColorClassicHDLevelRing(frame)
+    end
+end
+
 local function BigPlayerHealthbar()
     return BetterBlizzFramesDB.bigPlayerHealthbar
 end
@@ -39,10 +161,10 @@ end
 
 local function SetPlayerFrameTexture(texture, normal, big, bigNoMana)
     if not BigPlayerHealthbar() then
-        texture:SetTexture(normal)
+        BBF.SetClassicTexture(texture, normal)
         return
     end
-    texture:SetTexture(BigPlayerHealthbarNoMana() and (bigNoMana or big) or big)
+    BBF.SetClassicTexture(texture, BigPlayerHealthbarNoMana() and (bigNoMana or big) or big)
 end
 
 local function SetStatusGlowTexture(texture, normal, big)
@@ -101,8 +223,9 @@ local function MakeClassicFrame(frame)
 
         local function GetFrameColor()
             local r,g,b = frameContainer.FrameTexture:GetVertexColor()
-            frame.ClassicFrame.Texture:SetVertexColor(r,g,b)
+            frame.ClassicFrame.Texture:SetVertexColor(BBF.ClassicHDFrameColor(frame.ClassicFrame.Texture, r, g, b))
             frameContainer.FrameTexture:SetAlpha(0)
+            BBF.ColorClassicHDLevelRing(frame)
         end
         GetFrameColor()
         hooksecurefunc(frameContainer.FrameTexture, "SetVertexColor", GetFrameColor)
@@ -145,6 +268,10 @@ local function MakeClassicFrame(frame)
         contentContext.PetBattleIcon:SetPoint("CENTER", frame, "BOTTOMRIGHT", -35, 25)
         contentContext.PrestigePortrait:ClearAllPoints()
         contentContext.PrestigePortrait:SetPoint("TOPRIGHT", 5, -17)
+        if contentContext.PvpBackgroundCircle then
+            contentContext.PvpBackgroundCircle:ClearAllPoints()
+            contentContext.PvpBackgroundCircle:SetPoint("TOP", contentContext, "TOPRIGHT", -20, -50)
+        end
         contentContext.LeaderIcon:ClearAllPoints()
         contentContext.LeaderIcon:SetPoint("TOPRIGHT", -84, -13.5)
         contentContext.GuideIcon:ClearAllPoints()
@@ -225,7 +352,7 @@ local function MakeClassicFrame(frame)
         totFrame.Background:SetPoint("TOPLEFT", totFrame.HealthBar, "TOPLEFT", 1, -1)
         totFrame.Background:SetPoint("BOTTOMRIGHT", totFrame.manabar, "BOTTOMRIGHT", -1, 1)
         totFrame.FrameTexture:SetSize(93, 45)
-        totFrame.FrameTexture:SetTexture("Interface\\TargetingFrame\\UI-TargetofTargetFrame")
+        BBF.SetClassicTexture(totFrame.FrameTexture, "Interface\\TargetingFrame\\UI-TargetofTargetFrame")
         totFrame.FrameTexture:SetTexCoord(0.015625, 0.7265625, 0, 0.703125)
         totFrame.FrameTexture:ClearAllPoints()
         totFrame.FrameTexture:SetPoint("TOPLEFT", 0, 0)
@@ -297,20 +424,20 @@ local function MakeClassicFrame(frame)
         end
 
         local function UseHDElite()
-            return BetterBlizzFramesDB.classicFramesHDElite and not hideDragon
+            return BBF.ClassicHDEliteActive()
         end
 
         local function ToggleNoLevelFrame(noLvl, skipTexture)
             if noLvl then
                 if not skipTexture then
-                    frame.ClassicFrame.Texture:SetTexture(noLvlTex)
+                    BBF.SetClassicTexture(frame.ClassicFrame.Texture, noLvlTex)
                 end
                 frameContainer.Flash:SetTexture(flashNoLvl)
                 frameContainer.Flash:SetTexCoord(0, 0.9553125, -0.01,0.733)
                 contentMain.LevelText:SetAlpha(0)
             else
                 if not skipTexture then
-                    frame.ClassicFrame.Texture:SetTexture(defaultTex)
+                    BBF.SetClassicTexture(frame.ClassicFrame.Texture, defaultTex)
                 end
                 frameContainer.Flash:SetTexture(flashTex)
                 frameContainer.Flash:SetTexCoord(0, 0.9453125, 0, 0.181640625)
@@ -321,7 +448,7 @@ local function MakeClassicFrame(frame)
         local function HDLevelFrame()
             local noLvl = alwaysHideLvl or (hideLvl and UnitLevel(frame.unit) == GetMaxLevelForPlayerExpansion())
             ToggleNoLevelFrame(noLvl, true)
-            frame.ClassicFrame.Texture:SetTexture(noLvlTex)
+            BBF.SetClassicTexture(frame.ClassicFrame.Texture, noLvlTex)
             BBF.SetClassicHDLevelRing(frame, true)
         end
 
@@ -334,10 +461,10 @@ local function MakeClassicFrame(frame)
                 elseif hideDragon and alwaysHideLvl then
                     ToggleNoLevelFrame(true)
                 elseif hideDragon then
-                    frame.ClassicFrame.Texture:SetTexture(defaultTex)
+                    BBF.SetClassicTexture(frame.ClassicFrame.Texture, defaultTex)
                     ToggleNoLevelFrame(false, true)
                 else
-                    frame.ClassicFrame.Texture:SetTexture(eliteTexture)
+                    BBF.SetClassicTexture(frame.ClassicFrame.Texture, eliteTexture)
                     ToggleNoLevelFrame(false, true)
                 end
             end
@@ -375,10 +502,10 @@ local function MakeClassicFrame(frame)
                 elseif hideDragon and alwaysHideLvl then
                     ToggleNoLevelFrame(true)
                 elseif hideDragon then
-                    frame.ClassicFrame.Texture:SetTexture(defaultTex)
+                    BBF.SetClassicTexture(frame.ClassicFrame.Texture, defaultTex)
                     ToggleNoLevelFrame(false, true)
                 else
-                    frame.ClassicFrame.Texture:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Rare-Elite")
+                    BBF.SetClassicTexture(frame.ClassicFrame.Texture, "Interface\\TargetingFrame\\UI-TargetingFrame-Rare-Elite")
                     ToggleNoLevelFrame(false, true)
                 end
             elseif ( classification == "worldboss" or classification == "elite" ) then
@@ -388,10 +515,10 @@ local function MakeClassicFrame(frame)
                 elseif hideDragon and alwaysHideLvl then
                     ToggleNoLevelFrame(true)
                 elseif hideDragon then
-                    frame.ClassicFrame.Texture:SetTexture(defaultTex)
+                    BBF.SetClassicTexture(frame.ClassicFrame.Texture, defaultTex)
                     ToggleNoLevelFrame(false, true)
                 else
-                    frame.ClassicFrame.Texture:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Elite")
+                    BBF.SetClassicTexture(frame.ClassicFrame.Texture, "Interface\\TargetingFrame\\UI-TargetingFrame-Elite")
                     ToggleNoLevelFrame(false, true)
                 end
             elseif ( classification == "rare" ) then
@@ -401,16 +528,16 @@ local function MakeClassicFrame(frame)
                 elseif hideDragon and alwaysHideLvl then
                     ToggleNoLevelFrame(true)
                 elseif hideDragon then
-                    frame.ClassicFrame.Texture:SetTexture(defaultTex)
+                    BBF.SetClassicTexture(frame.ClassicFrame.Texture, defaultTex)
                     ToggleNoLevelFrame(false, true)
                 else
-                    frame.ClassicFrame.Texture:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Rare")
+                    BBF.SetClassicTexture(frame.ClassicFrame.Texture, "Interface\\TargetingFrame\\UI-TargetingFrame-Rare")
                     ToggleNoLevelFrame(false, true)
                 end
             elseif ( classification == "minus" ) then
                 SetXYPoint(hpContainer.HealthBarMask, 1, -9)
                 FrameAdjustments(frameContainer, true)
-                frame.ClassicFrame.Texture:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Minus")
+                BBF.SetClassicTexture(frame.ClassicFrame.Texture, "Interface\\TargetingFrame\\UI-TargetingFrame-Minus")
                 frame.ClassicFrame.Background:SetPoint("TOPLEFT", self.TargetFrameContent.TargetFrameContentMain.HealthBarsContainer.HealthBar, "TOPLEFT", 3, -10)
             else
                 FrameAdjustments(frameContainer)
@@ -615,7 +742,7 @@ local function MakeClassicFrame(frame)
         end
 
         local function UpdatePlayerLevelRing()
-            BBF.SetClassicHDLevelRing(frame, db.playerEliteFrame and BBF.GetPlayerEliteMode() > 3)
+            BBF.SetClassicHDLevelRing(frame, BBF.ClassicHDTexturesActive() or (db.playerEliteFrame and BBF.GetPlayerEliteMode() > 3))
         end
         BBF.UpdateClassicPlayerLevelRing = UpdatePlayerLevelRing
 
@@ -649,7 +776,8 @@ local function MakeClassicFrame(frame)
 
         local function GetFrameColor()
             local r, g, b = frameContainer.FrameTexture:GetVertexColor()
-            frame.ClassicFrame.Texture:SetVertexColor(r, g, b)
+            frame.ClassicFrame.Texture:SetVertexColor(BBF.ClassicHDFrameColor(frame.ClassicFrame.Texture, r, g, b))
+            BBF.ColorClassicHDLevelRing(frame)
 
             if not db.darkModeUi then
                 local soulShards = _G.WarlockPowerFrame
@@ -783,17 +911,21 @@ local function MakeClassicFrame(frame)
 
             -- Set Elite style according to value
             if mode == 1 then -- Rare (Silver)
-                playerElite:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Rare")
+                BBF.SetClassicTexture(playerElite, "Interface\\TargetingFrame\\UI-TargetingFrame-Rare")
                 playerElite:SetDesaturated(true)
             elseif mode == 2 then -- Boss (Silver Winged)
-                playerElite:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Rare-Elite")
+                BBF.SetClassicTexture(playerElite, "Interface\\TargetingFrame\\UI-TargetingFrame-Rare-Elite")
                 playerElite:SetDesaturated(true)
             elseif mode == 3 then -- Boss (Gold Winged)
-                playerElite:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Elite")
+                BBF.SetClassicTexture(playerElite, "Interface\\TargetingFrame\\UI-TargetingFrame-Elite")
                 playerElite:SetDesaturated(false)
             elseif mode > 3 then
                 SetPlayerFrameTexture(playerElite, noLvlTex, bigNoLvlTex, bigNoManaNoLvlTex)
-                playerElite:SetDesaturated(false)
+                if playerElite.bbfClassicHD then
+                    BBF.ApplyClassicHDColor(playerElite)
+                else
+                    playerElite:SetDesaturated(false)
+                end
             else
                 SetPlayerFrameTexture(frame.ClassicFrame.Texture, defaultTex, bigTex, bigNoManaTex)
                 frameContainer.FrameFlash:SetTexture(flashTex)
@@ -926,7 +1058,7 @@ local function MakeClassicFrame(frame)
             frameContainer.VehicleFrameTexture:SetAlpha(0)
 
             frame.ClassicFrame.Texture:SetSize(240, 120)
-            frame.ClassicFrame.Texture:SetTexture("Interface\\Vehicles\\UI-Vehicle-Frame")
+            BBF.SetClassicTexture(frame.ClassicFrame.Texture, "Interface\\Vehicles\\UI-Vehicle-Frame")
             frame.ClassicFrame.Texture:ClearAllPoints()
             frame.ClassicFrame.Texture:SetPoint("TOPLEFT", -3, 1)
             frame.ClassicFrame.Texture:SetTexCoord(0, 1, 0, 1)
@@ -1011,7 +1143,7 @@ local function MakeClassicFrame(frame)
         PetPortrait:SetPoint("TOPLEFT", 7, -6)
 
         PetFrameTexture:SetSize(128, 64)
-        PetFrameTexture:SetTexture("Interface\\TargetingFrame\\UI-SmallTargetingFrame")
+        BBF.SetClassicTexture(PetFrameTexture, "Interface\\TargetingFrame\\UI-SmallTargetingFrame")
         PetFrameTexture:ClearAllPoints()
         PetFrameTexture:SetPoint("TOPLEFT", 1, -1)
 
@@ -1299,7 +1431,7 @@ local function MakeClassicPartyFrame()
         local manaBar = frame.ManaBar
 
         frame.Texture:SetSize(136, 59)
-        frame.Texture:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame")
+        BBF.SetClassicTexture(frame.Texture, "Interface\\TargetingFrame\\UI-TargetingFrame")
         frame.Texture:SetTexCoord(1, 0.09375, 0, 0.78125)
         frame.Texture:ClearAllPoints()
         frame.Texture:SetPoint("TOPLEFT", -18, 2)
@@ -1361,7 +1493,7 @@ local function MakeClassicPartyFrame()
         manaBar.RightText:SetPoint("RIGHT", manaBar, "RIGHT", 0, 1)
 
         hooksecurefunc(frame, "ToPlayerArt", function(self)
-            self.Texture:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame")
+            BBF.SetClassicTexture(self.Texture, "Interface\\TargetingFrame\\UI-TargetingFrame")
 
             --AdjustFramePoint(frame.HealthBarContainer.HealthBarMask, nil, -3)
             hpContainer.HealthBarMask:SetPoint("TOPLEFT", frame.HealthBarContainer.HealthBar, "TOPLEFT", -29, 0)

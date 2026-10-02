@@ -1,88 +1,62 @@
-local function QuestObjectiveParser(text)
-    local current, goal, objective_name = string.match(text, "^(%d+)/(%d+)%s+(.+)$")
-    if objective_name then
-        return objective_name, current, goal
-    end
-    return string.match(text, "^(.-):%s*(%d+)/(%d+)$")
-end
-
-local TooltipFrame = CreateFrame("GameTooltip", "BBF_QuestTooltip", nil, "GameTooltipTemplate")
+local UnitIsRelatedToActiveQuest = C_QuestLog.UnitIsRelatedToActiveQuest
+local GetUnitTooltip = C_TooltipInfo.GetUnit
+local LINE_OBJECTIVE = Enum.TooltipDataLineType.QuestObjective
+local LINE_TITLE = Enum.TooltipDataLineType.QuestTitle
+local LINE_PLAYER = Enum.TooltipDataLineType.QuestPlayer
 local PlayerName = UnitName("player")
+local PlayerGUID = UnitGUID("player")
+
+local function IsObjectiveDone(line)
+    if line.completed then
+        return true
+    end
+    local text = line.leftText
+    if type(text) ~= "string" then
+        return false
+    end
+    local current, goal = text:match("(%d+)%s*/%s*(%d+)")
+    if current then
+        return tonumber(current) >= tonumber(goal)
+    end
+    local percent = text:match("(%d+)%s*%%")
+    return percent ~= nil and tonumber(percent) >= 100
+end
 
 function BBF.IsQuestUnit(unit)
     if not unit or not UnitExists(unit) or UnitIsPlayer(unit) then
         return false
     end
 
-    if C_Secrets and C_Secrets.ShouldUnitIdentityBeSecret(unit) then
+    if C_Secrets.ShouldUnitIdentityBeSecret(unit) then
         return false
     end
 
-    local unitGUID = UnitGUID(unit)
-    if not unitGUID then
+    if not UnitIsRelatedToActiveQuest(unit) then
         return false
     end
 
-    local quest_title
-    local quest_player = true
+    local data = GetUnitTooltip(unit)
+    if not data or not data.lines then
+        return true
+    end
 
-    TooltipFrame:SetOwner(WorldFrame, "ANCHOR_NONE")
-    TooltipFrame:SetHyperlink("unit:" .. unitGUID)
-
-    for i = 3, TooltipFrame:NumLines() do
-        local line = _G["BBF_QuestTooltipTextLeft" .. i]
-        local text = line and line:GetText()
-        if not text then
-            break
-        end
-        local text_r, text_g, text_b = line:GetTextColor()
-
-        if text_r > 0.99 and text_g > 0.81 and text_b == 0 then
-            if quest_title then
-                quest_player = (text == PlayerName)
-            else
-                quest_title = text
-            end
-        elseif quest_title and quest_player then
-            local objective_name, current, goal
-            local objective_type = false
-
-            quest_title = false
-
-            if string.find(text, "%%") then
-                objective_name, current, goal = string.match(text, "^(.*) %(?(%d+)%%%)?$")
-                objective_type = "area"
-            else
-                objective_name, current, goal = QuestObjectiveParser(text)
-            end
-
-            if objective_name then
-                current = tonumber(current)
-
-                if objective_type then
-                    goal = 100
-                else
-                    goal = tonumber(goal)
-                end
-
-                if current and goal then
-                    if current ~= goal then
-                        TooltipFrame:Hide()
-                        return true
-                    end
-                else
-                    TooltipFrame:Hide()
-                    return false
-                end
-            end
+    local isMine = true
+    for _, line in ipairs(data.lines) do
+        local lineType = line.type
+        if lineType == LINE_TITLE then
+            isMine = true
+        elseif lineType == LINE_PLAYER then
+            isMine = line.guid == PlayerGUID or line.leftText == PlayerName
+        elseif lineType == LINE_OBJECTIVE and isMine and not IsObjectiveDone(line) then
+            return true
         end
     end
 
-    TooltipFrame:Hide()
     return false
 end
 
 local questEventFrame
+local updatePending
 
 local function SetupQuestIndicator(unitFrame)
     if not unitFrame then return end
@@ -108,11 +82,13 @@ end
 function BBF.QuestIndicator(unitFrame, unit)
     local indicator = unitFrame and unitFrame.bbfQuestIndicator
     if indicator then
-        indicator:SetShown(BBF.IsQuestUnit(unit))
+        indicator:SetShown(BetterBlizzFramesDB.questIndicatorTestMode or BBF.IsQuestUnit(unit))
     end
 end
 
 local function UpdateQuestIndicators()
+    updatePending = nil
+    if not (BetterBlizzFramesDB.questIndicator or BetterBlizzFramesDB.questIndicatorTestMode) then return end
     BBF.QuestIndicator(TargetFrame, "target")
     BBF.QuestIndicator(FocusFrame, "focus")
 end
@@ -123,7 +99,10 @@ local function OnQuestEvent(self, event)
     elseif event == "PLAYER_FOCUS_CHANGED" then
         BBF.QuestIndicator(FocusFrame, "focus")
     elseif event == "UNIT_QUEST_LOG_CHANGED" then
-        UpdateQuestIndicators()
+        if not updatePending then
+            updatePending = true
+            C_Timer.After(0.1, UpdateQuestIndicators)
+        end
     else
         local _, instanceType = IsInInstance()
         if instanceType == "arena" or instanceType == "pvp" then
@@ -142,12 +121,19 @@ local function OnQuestEvent(self, event)
 end
 
 function BBF.QuestIndicatorCaller()
-    if not BetterBlizzFramesDB.questIndicator then
+    local db = BetterBlizzFramesDB
+    if not db.questIndicator then
         if questEventFrame then
             questEventFrame:UnregisterAllEvents()
         end
-        HideQuestIndicator(TargetFrame)
-        HideQuestIndicator(FocusFrame)
+        if db.questIndicatorTestMode then
+            SetupQuestIndicator(TargetFrame)
+            SetupQuestIndicator(FocusFrame)
+            UpdateQuestIndicators()
+        else
+            HideQuestIndicator(TargetFrame)
+            HideQuestIndicator(FocusFrame)
+        end
         return
     end
 

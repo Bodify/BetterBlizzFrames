@@ -108,7 +108,7 @@ end
 function BBF.QuestIndicator(unitFrame, unit)
     local indicator = unitFrame and unitFrame.bbfQuestIndicator
     if indicator then
-        indicator:SetShown(BBF.IsQuestUnit(unit))
+        indicator:SetShown(BetterBlizzFramesDB.questIndicatorTestMode or BBF.IsQuestUnit(unit))
     end
 end
 
@@ -142,12 +142,19 @@ local function OnQuestEvent(self, event)
 end
 
 function BBF.QuestIndicatorCaller()
-    if not BetterBlizzFramesDB.questIndicator then
+    local db = BetterBlizzFramesDB
+    if not db.questIndicator then
         if questEventFrame then
             questEventFrame:UnregisterAllEvents()
         end
-        HideQuestIndicator(TargetFrame)
-        HideQuestIndicator(FocusFrame)
+        if db.questIndicatorTestMode then
+            SetupQuestIndicator(TargetFrame)
+            SetupQuestIndicator(FocusFrame)
+            UpdateQuestIndicators()
+        else
+            HideQuestIndicator(TargetFrame)
+            HideQuestIndicator(FocusFrame)
+        end
         return
     end
 

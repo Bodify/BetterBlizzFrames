@@ -56,7 +56,7 @@ local function CreateStealthIndicator()
 end
 
 local function UpdateStealthIndicator()
-    if BBF.isRetail and not BetterBlizzFramesDB.classicFrames and BBF.HasNoPortrait("player") then
+    if (BBF.isRetail or BBF.isForever) and not BetterBlizzFramesDB.classicFrames and BBF.HasNoPortrait("player") then
         PlayerFrame.bbfStealthIndicatorFrame.Texture:SetHeight(GetStealthIndicatorHeight())
     end
     if IsStealthed() then
