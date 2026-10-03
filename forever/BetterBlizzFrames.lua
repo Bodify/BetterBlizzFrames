@@ -791,6 +791,8 @@ end
 -- interactions are only bound to unmodified Left/Right clicks. A shift-click resolves to
 -- no binding and gets dropped, so route shift-clicks through a SecureActionButton proxy
 -- (which skips that check) that targets/opens the menu for the same unit.
+-- The proxy uses "togglemenu" rather than copying the frame's "menu-function": a function
+-- attribute set from addon code runs tainted, which blocks protected menu entries (Set Focus etc).
 local shiftClickProxies = {}
 
 local function UpdateShiftClickProxy(frame)
@@ -801,7 +803,9 @@ local function UpdateShiftClickProxy(frame)
         proxy:EnableMouse(false)
         proxy:SetAttribute("useOnKeyDown", false)
         proxy:SetAttribute("*type1", "target")
-        proxy:SetAttribute("*type2", "menu")
+        if frame:GetAttribute("menu-function") then
+            proxy:SetAttribute("*type2", "togglemenu")
+        end
         frame:SetAttribute("shift-type1", "click")
         frame:SetAttribute("shift-type2", "click")
         frame:SetAttribute("shift-clickbutton1", proxy)
@@ -809,7 +813,6 @@ local function UpdateShiftClickProxy(frame)
         shiftClickProxies[frame] = proxy
     end
     proxy:SetAttribute("unit", frame:GetAttribute("unit"))
-    proxy:SetAttribute("menu-function", frame:GetAttribute("menu-function"))
 end
 
 local function SetShiftClickable(frame, shift)
