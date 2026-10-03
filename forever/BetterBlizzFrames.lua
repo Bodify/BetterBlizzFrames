@@ -27,6 +27,7 @@ local defaultSettings = {
     darkModeUnitFrames = true,
     darkModeCastbars = true,
     darkModeColor = 0.20,
+    darkModeColorElite = 0.1,
     darkModeNameplateResource = true,
     classicFramesBronzeTintUnitFrames = true,
     classicFramesBronzeTintCastbars = true,
@@ -2235,7 +2236,7 @@ function BBF.ColorPlayerElite()
     local db = BetterBlizzFramesDB
     local baseDesat = playerElite.bbfBaseDesat or false
     if BBF.DarkModeUnitFramesOn() and (db.playerEliteFrameDarkmode or db.darkModeEliteTexture) then
-        local v = db.darkModeColor + 0.25
+        local v = BBF.DarkModeEliteValue()
         playerElite:SetDesaturated(baseDesat or (db.darkModeEliteTexture and db.darkModeEliteTextureDesaturated) or false)
         playerElite:SetVertexColor(v, v, v)
     elseif not baseDesat and BBF.BronzeEliteDragonsActive and BBF.BronzeEliteDragonsActive() and (playerElite:GetAtlas() or ""):lower():find("gold", 1, true) then
@@ -5792,6 +5793,7 @@ First:SetScript("OnEvent", function(_, event, addonName)
             BBF.ClassColorLegacyCombos()
             BBF.UpdateCustomTextures()
             BBF.SetCompactUnitFramesBackground()
+            BBF.XpBarTexture()
         end)
         BBF.ClassicFrames()
         BBF.noPortraitModes()

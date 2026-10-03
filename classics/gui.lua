@@ -218,10 +218,11 @@ local function KeepPopupInSettings(popup, panel)
     if popup.Bg then
         popup.Bg:Hide()
     end
-    popup:SetFrameStrata("DIALOG")
+    popup:SetFrameStrata("FULLSCREEN_DIALOG")
+    popup:SetFrameLevel(550)
     popup:SetToplevel(true)
     popup:HookScript("OnShow", function(self)
-        self:SetFrameStrata("DIALOG")
+        self:SetFrameStrata("FULLSCREEN_DIALOG")
         self:Raise()
     end)
     popup:HookScript("OnHide", function()
@@ -493,7 +494,8 @@ local function CreateIconChangeWindow()
     local window = CreateFrame("Frame", "IconChangeWindow", UIParent, "BasicFrameTemplateWithInset")
     window:SetSize(300, 180)
     window:SetPoint("CENTER")
-    window:SetFrameStrata("HIGH")
+    window:SetFrameStrata("FULLSCREEN_DIALOG")
+    window:SetFrameLevel(550)
     window:SetMovable(true)
     window:EnableMouse(true)
     window:RegisterForDrag("LeftButton")
@@ -694,7 +696,7 @@ local function CreateSlider(parent, label, minValue, maxValue, stepValue, elemen
     editBox:SetHeight(20) -- Set the height of the EditBox
     editBox:SetMultiLine(false)
     editBox:SetPoint("CENTER", slider, "CENTER", 0, 0) -- Position it to the right of the slider
-    editBox:SetFrameStrata("DIALOG") -- Ensure it appears above other UI elements
+    editBox:SetFrameStrata("TOOLTIP") -- Ensure it appears above other UI elements
     editBox:Hide()
     editBox:SetFontObject(GameFontHighlightSmall)
 
@@ -3594,7 +3596,8 @@ local function guiGeneralTab()
             classOptionsFrame = CreateFrame("Frame", "ClassOptionsFrame", UIParent, "BasicFrameTemplateWithInset")
             classOptionsFrame:SetSize(185, 210)
             classOptionsFrame:SetPoint("CENTER")
-            classOptionsFrame:SetFrameStrata("DIALOG")
+            classOptionsFrame:SetFrameStrata("FULLSCREEN_DIALOG")
+            classOptionsFrame:SetFrameLevel(550)
             classOptionsFrame:SetMovable(true)
             classOptionsFrame:EnableMouse(true)
             classOptionsFrame:RegisterForDrag("LeftButton")
@@ -4302,7 +4305,8 @@ local function guiGeneralTab()
             biggerHealthbarsOptionsFrame = CreateFrame("Frame", "BiggerHealthbarsOptionsFrame", UIParent, "BasicFrameTemplateWithInset")
             biggerHealthbarsOptionsFrame:SetSize(185, 135)
             biggerHealthbarsOptionsFrame:SetPoint("CENTER")
-            biggerHealthbarsOptionsFrame:SetFrameStrata("DIALOG")
+            biggerHealthbarsOptionsFrame:SetFrameStrata("FULLSCREEN_DIALOG")
+            biggerHealthbarsOptionsFrame:SetFrameLevel(550)
             biggerHealthbarsOptionsFrame:SetMovable(true)
             biggerHealthbarsOptionsFrame:EnableMouse(true)
             biggerHealthbarsOptionsFrame:RegisterForDrag("LeftButton")
@@ -4446,6 +4450,10 @@ local function guiGeneralTab()
     local hidePvpIcon = CreateCheckbox("hidePvpIcon", L["Hide_PvP_Icon"], BetterBlizzFrames, nil, BBF.HideFrames)
     hidePvpIcon:SetPoint("TOPLEFT", hideLevelText, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(hidePvpIcon, L["Tooltip_Hide_PvP_Icon_Desc"])
+
+    local hideRareDragonTexture = CreateCheckbox("hideRareDragonTexture", L["Hide_Dragon"], BetterBlizzFrames, nil, BBF.RefreshTargetClassification)
+    hideRareDragonTexture:SetPoint("LEFT", hidePvpIcon.Text, "RIGHT", 0, 0)
+    CreateTooltip(hideRareDragonTexture, L["Tooltip_Hide_Dragon"])
 
     local classPortraits = CreateCheckbox("classPortraits", L["Class_Portraits"], BetterBlizzFrames)
     classPortraits:SetPoint("TOPLEFT", hidePvpIcon, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
@@ -5592,7 +5600,8 @@ local function guiCastbars()
             castBarTargetTextOptionsFrame = CreateFrame("Frame", "BBFCastbarTargetTextOptionsFrame", UIParent, "BasicFrameTemplateWithInset")
             castBarTargetTextOptionsFrame:SetSize(220, 275)
             castBarTargetTextOptionsFrame:SetPoint("CENTER")
-            castBarTargetTextOptionsFrame:SetFrameStrata("HIGH")
+            castBarTargetTextOptionsFrame:SetFrameStrata("FULLSCREEN_DIALOG")
+            castBarTargetTextOptionsFrame:SetFrameLevel(550)
             castBarTargetTextOptionsFrame:SetMovable(true)
             castBarTargetTextOptionsFrame:EnableMouse(true)
             castBarTargetTextOptionsFrame:RegisterForDrag("LeftButton")
@@ -6569,6 +6578,26 @@ local function guiFrameLook()
         allIngameFont:SetEnabled(self:GetChecked())
     end)
     allIngameFont:SetEnabled(changeAllFontsIngame:GetChecked())
+
+    local changeXpBarTexture = CreateCheckbox("changeXpBarTexture", L["Change_XP_Rep_Bar_Texture"], guiFrameLook)
+    changeXpBarTexture:SetPoint("TOPLEFT", changeAllFontsIngame, "BOTTOMLEFT", 0, -30)
+    CreateTooltipTwo(changeXpBarTexture, L["Change_XP_Rep_Bar_Texture"], L["Tooltip_Change_XP_Rep_Bar_Texture_Desc"])
+
+    local xpBarTexture = CreateTextureDropdown(
+        "xpBarTexture",
+        guiFrameLook,
+        L["Select_Texture"],
+        "xpBarTexture",
+        function(arg1)
+            BBF.XpBarTexture()
+        end,
+        { anchorFrame = changeXpBarTexture, x = 5, y = 3, label = L["Texture"] }
+    )
+    changeXpBarTexture:HookScript("OnClick", function(self)
+        xpBarTexture:SetEnabled(self:GetChecked())
+        BBF.XpBarTexture()
+    end)
+    xpBarTexture:SetEnabled(changeXpBarTexture:GetChecked())
 
 
 
@@ -7851,7 +7880,8 @@ local function guiMisc()
             f:RegisterForDrag("LeftButton")
             f:SetScript("OnDragStart", f.StartMoving)
             f:SetScript("OnDragStop", f.StopMovingOrSizing)
-            f:SetFrameStrata("DIALOG")
+            f:SetFrameStrata("FULLSCREEN_DIALOG")
+            f:SetFrameLevel(550)
             f:SetClampedToScreen(true)
             f:SetToplevel(true)
 
@@ -8671,7 +8701,8 @@ function BBF.CreateIntroMessageWindow()
     BBF.IntroMessageWindow:SetScript("OnDragStart", BBF.IntroMessageWindow.StartMoving)
     BBF.IntroMessageWindow:SetScript("OnDragStop", BBF.IntroMessageWindow.StopMovingOrSizing)
     BBF.IntroMessageWindow:SetTitle("Better|cff00c0ffBlizz|rFrames v"..BBF.VersionNumber)
-    BBF.IntroMessageWindow:SetFrameStrata("HIGH")
+    BBF.IntroMessageWindow:SetFrameStrata("FULLSCREEN_DIALOG")
+    BBF.IntroMessageWindow:SetFrameLevel(550)
 
     -- Add background texture
     BBF.IntroMessageWindow.textureTest = BBF.IntroMessageWindow:CreateTexture(nil, "BACKGROUND")

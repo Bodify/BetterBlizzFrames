@@ -1090,6 +1090,29 @@ hooksecurefunc(FocusFrame.name, "SetText", function()
     FocusFrameNameChanges(FocusFrame)
 end)
 
+local factionNameHooked
+function BBF.HookFactionNameColor()
+    if factionNameHooked or not (classColorTargetNames) then return end
+    if TargetFrame_CheckFaction then
+        hooksecurefunc("TargetFrame_CheckFaction", function(self)
+            if not (classColorTargetNames) then return end
+            if self == TargetFrame then
+                TargetFrameNameChanges(self)
+            elseif self == FocusFrame then
+                FocusFrameNameChanges(self)
+            end
+        end)
+    else
+        hooksecurefunc(TargetFrame, "CheckFaction", function(self)
+            if classColorTargetNames then TargetFrameNameChanges(self) end
+        end)
+        hooksecurefunc(FocusFrame, "CheckFaction", function(self)
+            if classColorTargetNames then FocusFrameNameChanges(self) end
+        end)
+    end
+    factionNameHooked = true
+end
+
 local function TargetFrameToTNameChanges(frame)
     frame.name:SetAlpha(0)
     if not frame.unit then return end
@@ -1180,6 +1203,7 @@ end
 function BBF.AllNameChanges()
     ResetTextColors()
     BBF.UpdateUserTargetSettings()
+    BBF.HookFactionNameColor()
     BBF.PartyNameChange()
 
     PlayerFrameNameChanges(PlayerFrame)

@@ -686,13 +686,31 @@ local selfEliteTextures = {
     rareelite = "Interface\\TargetingFrame\\UI-TargetingFrame-Rare-Elite",
 }
 
+local dragonClassifications = { rare = true, elite = true, rareelite = true, worldboss = true }
+
 function BBF.GetSelfEliteClassification(unit)
-    if not BetterBlizzFramesDB.playerEliteFrame or not unit or not UnitIsUnit(unit, "player") then return end
+    if not BetterBlizzFramesDB.playerEliteFrame or BetterBlizzFramesDB.hideRareDragonTexture or not unit or not UnitIsUnit(unit, "player") then return end
     return selfEliteClassifications[BetterBlizzFramesDB.playerEliteFrameMode or 1]
 end
 
 function BBF.GetUnitClassification(unit)
-    return BBF.GetSelfEliteClassification(unit) or UnitClassification(unit)
+    local classification = BBF.GetSelfEliteClassification(unit) or UnitClassification(unit)
+    if BetterBlizzFramesDB.hideRareDragonTexture and dragonClassifications[classification] then
+        return "normal"
+    end
+    return classification
+end
+
+local function HideDragonCheckClassification(self, forceNormalTexture)
+    if forceNormalTexture or not BetterBlizzFramesDB.hideRareDragonTexture then return end
+    if not self.unit or not dragonClassifications[UnitClassification(self.unit)] then return end
+    self.borderTexture:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame")
+    local threat = self.threatIndicator
+    if threat then
+        threat:SetTexCoord(0, 0.9453125, 0, 0.181640625)
+        threat:SetSize(242, 93)
+        threat:SetPoint("TOPLEFT", self, "TOPLEFT", self.threatAnchorX or -24, self.threatAnchorY or 0)
+    end
 end
 
 local function SelfEliteCheckClassification(self)
@@ -717,7 +735,7 @@ function BBF.UpdateClassicEliteOverlay(frame, forceNormalTexture)
     if not texture then return end
     local classification = not forceNormalTexture and frame.unit and UnitExists(frame.unit) and UnitClassification(frame.unit)
     local overlay = frame.bbfEliteOverlay
-    if not (BBF.DarkModeUnitFramesOn() and eliteOverlayClassifications[classification] and not BBF.GetSelfEliteClassification(frame.unit)) then
+    if not (BBF.DarkModeUnitFramesOn() and not BetterBlizzFramesDB.hideRareDragonTexture and eliteOverlayClassifications[classification] and not BBF.GetSelfEliteClassification(frame.unit)) then
         if overlay then overlay:Hide() end
         return
     end
@@ -741,6 +759,7 @@ function BBF.UpdateClassicEliteOverlay(frame, forceNormalTexture)
 end
 
 local function EliteOverlayCheckClassification(self, forceNormalTexture)
+    HideDragonCheckClassification(self, forceNormalTexture)
     SelfEliteCheckClassification(self)
     BBF.UpdateClassicEliteOverlay(self, forceNormalTexture)
 end
@@ -751,6 +770,19 @@ else
     hooksecurefunc(TargetFrame, "CheckClassification", EliteOverlayCheckClassification)
     if FocusFrame then
         hooksecurefunc(FocusFrame, "CheckClassification", EliteOverlayCheckClassification)
+    end
+end
+
+function BBF.RefreshTargetClassification()
+    if InCombatLockdown() then return end
+    for _, frame in ipairs({ TargetFrame, FocusFrame }) do
+        if frame and frame.unit and UnitExists(frame.unit) then
+            if TargetFrame_CheckClassification then
+                TargetFrame_CheckClassification(frame)
+            else
+                frame:CheckClassification()
+            end
+        end
     end
 end
 
@@ -2990,6 +3022,7 @@ Frame:SetScript("OnEvent", function(...)
         BBF.PlayerReputationColor()
         BBF.SetCustomFonts()
         BBF.UpdateCustomTextures()
+        BBF.XpBarTexture()
         BBF.SetResourcePosition()
         ScaleClassResource()
     end)

@@ -1,3 +1,24 @@
+# BetterBlizzFrames 2.1.5
+## Forever
+### Bugfix
+- Fix rogue poisons and shaman imbues etc missing from the player buffs with BBF's aura settings enabled on WoW Forever.
+## Retail & Forever
+### New
+- Dark Mode: "Elite Texture" now has a right-click window with Desaturate and a new "Elite Texture Brightness Tweak" slider.
+### Tweak
+- Dark Mode: Elite textures are now a bit darker by default (brightness offset lowered from 0.25 to 0.1).
+- Dark Mode: Add breathbars and swing timers to dark mode
+## Classic
+### New
+- New "Hide Dragons" setting for Target/Focus that hides the elite dragons on target/focus. (ported from retail)
+### Bugfix
+- Fix the high level skull still showing on Target & Focus with "Hide Max Level Text" set to Always.
+## All Versions
+### New
+- Font & Textures: "Change XP/Reputation Bar Texture" setting.
+### Tweak
+- Tapped gray color when health/name colors is enabled now always gets prio and updated immediately on both health and names.
+
 # BetterBlizzFrames 2.1.4
 ## Forever
 ### New

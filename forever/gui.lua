@@ -87,10 +87,11 @@ local function KeepPopupInSettings(popup, panel)
     if popup.Bg then
         popup.Bg:Hide()
     end
-    popup:SetFrameStrata("DIALOG")
+    popup:SetFrameStrata("FULLSCREEN_DIALOG")
+    popup:SetFrameLevel(550)
     popup:SetToplevel(true)
     popup:HookScript("OnShow", function(self)
-        self:SetFrameStrata("DIALOG")
+        self:SetFrameStrata("FULLSCREEN_DIALOG")
         self:Raise()
     end)
     popup:HookScript("OnHide", function()
@@ -1026,7 +1027,8 @@ local function CreateIconChangeWindow()
     local window = CreateFrame("Frame", "IconChangeWindow", UIParent, "DefaultPanelFlatTemplate")
     window:SetSize(300, 180)
     window:SetPoint("CENTER")
-    window:SetFrameStrata("HIGH")
+    window:SetFrameStrata("FULLSCREEN_DIALOG")
+    window:SetFrameLevel(550)
     window:SetIgnoreParentAlpha(true)
     window:SetTitle(L["Icon"])
     window:EnableMouse(true)
@@ -1038,6 +1040,7 @@ local function CreateIconChangeWindow()
     window:Hide()
 
     window.closeButton = CreateFrame("Button", nil, window, "UIPanelCloseButton")
+    window.closeButton:SetFrameLevel((window.TitleContainer or window):GetFrameLevel() + 10)
     window.closeButton:SetPoint("TOPRIGHT", window, "TOPRIGHT", 0, 0)
     window.closeButton:SetScript("OnClick", function()
         window:Hide()
@@ -1242,7 +1245,7 @@ local function CreateSlider(parent, label, minValue, maxValue, stepValue, elemen
     editBox:SetHeight(20) -- Set the height of the EditBox
     editBox:SetMultiLine(false)
     editBox:SetPoint("CENTER", slider, "CENTER", 0, 0) -- Position it to the right of the slider
-    editBox:SetFrameStrata("DIALOG") -- Ensure it appears above other UI elements
+    editBox:SetFrameStrata("TOOLTIP") -- Ensure it appears above other UI elements
     editBox:Hide()
     editBox:SetFontObject(GameFontHighlightSmall)
 
@@ -1356,6 +1359,11 @@ local function CreateSlider(parent, label, minValue, maxValue, stepValue, elemen
                     BetterBlizzFramesDB.darkModeColor = value
                     if not BBF.checkCombatAndWarn() then
                         BBF.DarkmodeFrames()
+                    end
+                elseif element == "darkModeColorElite" then
+                    BetterBlizzFramesDB.darkModeColorElite = value
+                    if not BBF.checkCombatAndWarn() then
+                        BBF.DarkmodeFrames(true)
                     end
                 elseif element == "targetAndFocusAuraOffsetX" then
                     BetterBlizzFramesDB.targetAndFocusAuraOffsetX = value
@@ -4129,11 +4137,10 @@ local function guiGeneralTab()
         { key = "darkModeGameTooltip", label = L["Tooltip"], tooltipTitle = L["Dark_Mode_Tooltip"], tooltip = L["Tooltip_Dark_Mode_GameTooltip_Desc"], onChange = function(value)
             BBF.DarkmodeFrames(true)
         end },
-        { key = "darkModeEliteTexture", label = L["Elite_Texture"], tooltipTitle = L["Dark_Mode_Elite_Texture"], tooltip = L["Tooltip_Dark_Mode_Elite_Texture_Desc"], onChange = function(value)
+        { key = "darkModeEliteTexture", label = L["Elite_Texture"], tooltipTitle = L["Dark_Mode_Elite_Texture"], tooltip = L["Tooltip_Dark_Mode_Elite_Texture_Desc"] .. "\n\n|cff32f795" .. L["Right_Click_More_Settings"] .. "|r", onChange = function(value)
             BBF.DarkmodeFrames(true)
         end, onRightClick = function()
-            BetterBlizzFramesDB.darkModeEliteTextureDesaturated = not BetterBlizzFramesDB.darkModeEliteTextureDesaturated or nil
-            BBF.DarkmodeFrames(true)
+            BBF.OpenDarkModeEliteWindow()
         end },
         { key = "darkModeObjectiveFrame", label = L["Objectives"], tooltipTitle = L["Dark_Mode_Objectives"], tooltip = L["Tooltip_Dark_Mode_Objectives_Desc"], onChange = function(value)
             BBF.DarkmodeFrames(true)
@@ -4162,6 +4169,68 @@ local function guiGeneralTab()
     end
     darkModeUi:HookScript("OnClick", UpdateDarkModeOptionsState)
     UpdateDarkModeOptionsState()
+
+    function BBF.OpenDarkModeEliteWindow()
+        if not BBF.DarkModeEliteWindow then
+            local f = CreateFrame("Frame", "BBFDarkModeEliteWindow", UIParent, "DefaultPanelFlatTemplate")
+            f:SetSize(210, 140)
+            f:SetPoint("TOP", darkModeOptions, "BOTTOM", 0, -20)
+            f:SetFrameStrata("FULLSCREEN_DIALOG")
+            f:SetFrameLevel(550)
+            f:SetIgnoreParentAlpha(true)
+            f:SetTitle(L["Dark_Mode_Elite_Texture"])
+            f:EnableMouse(true)
+            f:SetMovable(true)
+            f:SetClampedToScreen(true)
+            f:RegisterForDrag("LeftButton")
+            f:SetScript("OnDragStart", function(self) self:StartMoving() end)
+            f:SetScript("OnDragStop", function(self) self:StopMovingOrSizing() end)
+
+            f.closeButton = CreateFrame("Button", nil, f, "UIPanelCloseButton")
+            f.closeButton:SetFrameLevel((f.TitleContainer or f):GetFrameLevel() + 10)
+            f.closeButton:SetPoint("TOPRIGHT", f, "TOPRIGHT", 0, 0)
+            f.closeButton:SetScript("OnClick", function()
+                f:Hide()
+            end)
+
+            f.bg = f:CreateTexture(nil, "BACKGROUND")
+            f.bg:SetPoint("TOPLEFT", f, "TOPLEFT", 7, -3)
+            f.bg:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -3, 3)
+            f.bg:SetColorTexture(0.08, 0.08, 0.08, 1)
+
+            local desaturate = CreateCheckbox("darkModeEliteTextureDesaturated", L["Desaturate"], f)
+            desaturate:SetPoint("TOPLEFT", f, "TOPLEFT", 14, -28)
+            desaturate:HookScript("OnClick", function()
+                BBF.DarkmodeFrames(true)
+            end)
+
+            local brightness = CreateSlider(f, L["Elite_Texture_Brightness_Tweak"], -1, 1, 0.01, "darkModeColorElite", nil, 170)
+            brightness:SetPoint("TOP", f, "TOP", 2, -75)
+            CreateTooltipTwo(brightness, L["Elite_Texture_Brightness_Tweak"], L["Tooltip_Elite_Texture_Brightness_Tweak"])
+
+            local defaultButton = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+            defaultButton:SetSize(80, 22)
+            defaultButton:SetText(L["Default"])
+            defaultButton:SetPoint("BOTTOM", f, "BOTTOM", 0, 10)
+            defaultButton:SetScript("OnClick", function()
+                brightness:SetValue(0.1)
+                BetterBlizzFramesDB.darkModeColorElite = 0.1
+                BBF.DarkmodeFrames(true)
+            end)
+
+            f.desaturate = desaturate
+            KeepPopupInSettings(f, BetterBlizzFrames)
+            BBF.DarkModeEliteWindow = f
+            return
+        end
+        local f = BBF.DarkModeEliteWindow
+        if f:IsShown() then
+            f:Hide()
+        else
+            f.desaturate:SetChecked(BetterBlizzFramesDB.darkModeEliteTextureDesaturated and true or false)
+            f:Show()
+        end
+    end
 
 
 
@@ -4266,7 +4335,8 @@ local function guiGeneralTab()
             classOptionsFrame = CreateFrame("Frame", "ClassOptionsFrame", UIParent, "DefaultPanelFlatTemplate")
             classOptionsFrame:SetSize(185, 252)
             classOptionsFrame:SetPoint("CENTER")
-            classOptionsFrame:SetFrameStrata("DIALOG")
+            classOptionsFrame:SetFrameStrata("FULLSCREEN_DIALOG")
+            classOptionsFrame:SetFrameLevel(550)
             classOptionsFrame:SetIgnoreParentAlpha(true)
             classOptionsFrame:SetTitle(L["Class_Specific_Options"])
             classOptionsFrame:EnableMouse(true)
@@ -4277,6 +4347,7 @@ local function guiGeneralTab()
             classOptionsFrame:SetScript("OnDragStop", function(self) self:StopMovingOrSizing() end)
 
             classOptionsFrame.closeButton = CreateFrame("Button", nil, classOptionsFrame, "UIPanelCloseButton")
+            classOptionsFrame.closeButton:SetFrameLevel((classOptionsFrame.TitleContainer or classOptionsFrame):GetFrameLevel() + 10)
             classOptionsFrame.closeButton:SetPoint("TOPRIGHT", classOptionsFrame, "TOPRIGHT", 0, 0)
             classOptionsFrame.closeButton:SetScript("OnClick", function()
                 classOptionsFrame:Hide()
@@ -4686,7 +4757,8 @@ local function guiGeneralTab()
     KeepPopupInSettings(betterTargetHighlight.extendedSettings, BetterBlizzFrames)
     betterTargetHighlight.extendedSettings:SetSize(250, 195)
     betterTargetHighlight.extendedSettings:SetPoint("BOTTOMRIGHT", betterTargetHighlight, "BOTTOMLEFT", -5, -10)
-    betterTargetHighlight.extendedSettings:SetFrameStrata("DIALOG")
+    betterTargetHighlight.extendedSettings:SetFrameStrata("FULLSCREEN_DIALOG")
+    betterTargetHighlight.extendedSettings:SetFrameLevel(550)
     betterTargetHighlight.extendedSettings:SetIgnoreParentAlpha(true)
     betterTargetHighlight.extendedSettings:Hide()
     betterTargetHighlight.extendedSettings:SetTitle(L["Better_Target_Highlight_Settings"])
@@ -4698,6 +4770,7 @@ local function guiGeneralTab()
     betterTargetHighlight.extendedSettings:SetScript("OnDragStop", function(self) self:StopMovingOrSizing() end)
 
     betterTargetHighlight.closeButton = CreateFrame("Button", nil, betterTargetHighlight.extendedSettings, "UIPanelCloseButton")
+    betterTargetHighlight.closeButton:SetFrameLevel((betterTargetHighlight.extendedSettings.TitleContainer or betterTargetHighlight.extendedSettings):GetFrameLevel() + 10)
     betterTargetHighlight.closeButton:SetPoint("TOPRIGHT", betterTargetHighlight.extendedSettings, "TOPRIGHT", 0, 0)
     betterTargetHighlight.closeButton:SetScript("OnClick", function()
         betterTargetHighlight.extendedSettings:Hide()
@@ -5473,7 +5546,8 @@ local function guiGeneralTab()
             noPortraitOptionsFrame = CreateFrame("Frame", "NoPortraitOptionsFrame", UIParent, "DefaultPanelFlatTemplate")
             noPortraitOptionsFrame:SetSize(185, 155)
             noPortraitOptionsFrame:SetPoint("TOP", noPortraitModes, "BOTTOM", 0, -20)
-            noPortraitOptionsFrame:SetFrameStrata("DIALOG")
+            noPortraitOptionsFrame:SetFrameStrata("FULLSCREEN_DIALOG")
+            noPortraitOptionsFrame:SetFrameLevel(550)
             noPortraitOptionsFrame:SetIgnoreParentAlpha(true)
             noPortraitOptionsFrame:SetTitle(L["No_Portrait_Options"])
             noPortraitOptionsFrame:EnableMouse(true)
@@ -5484,6 +5558,7 @@ local function guiGeneralTab()
             noPortraitOptionsFrame:SetScript("OnDragStop", function(self) self:StopMovingOrSizing() end)
 
             noPortraitOptionsFrame.closeButton = CreateFrame("Button", nil, noPortraitOptionsFrame, "UIPanelCloseButton")
+            noPortraitOptionsFrame.closeButton:SetFrameLevel((noPortraitOptionsFrame.TitleContainer or noPortraitOptionsFrame):GetFrameLevel() + 10)
             noPortraitOptionsFrame.closeButton:SetPoint("TOPRIGHT", noPortraitOptionsFrame, "TOPRIGHT", 0, 0)
             noPortraitOptionsFrame.closeButton:SetScript("OnClick", function()
                 noPortraitOptionsFrame:Hide()
@@ -5630,7 +5705,8 @@ local function guiGeneralTab()
     KeepPopupInSettings(customHealthbarColors.extendedSettings, BetterBlizzFrames)
     customHealthbarColors.extendedSettings:SetSize(345, 560)
     customHealthbarColors.extendedSettings:SetPoint("TOPLEFT", classColorFrames, "BOTTOMLEFT", 0, -10)
-    customHealthbarColors.extendedSettings:SetFrameStrata("DIALOG")
+    customHealthbarColors.extendedSettings:SetFrameStrata("FULLSCREEN_DIALOG")
+    customHealthbarColors.extendedSettings:SetFrameLevel(550)
     customHealthbarColors.extendedSettings:SetIgnoreParentAlpha(true)
     customHealthbarColors.extendedSettings:Hide()
     customHealthbarColors.extendedSettings:SetTitle(L["Custom_Health_Colors"])
@@ -5642,6 +5718,7 @@ local function guiGeneralTab()
     customHealthbarColors.extendedSettings:SetScript("OnDragStop", function(self) self:StopMovingOrSizing() end)
 
     customHealthbarColors.closeButton = CreateFrame("Button", nil, customHealthbarColors.extendedSettings, "UIPanelCloseButton")
+    customHealthbarColors.closeButton:SetFrameLevel((customHealthbarColors.extendedSettings.TitleContainer or customHealthbarColors.extendedSettings):GetFrameLevel() + 10)
     customHealthbarColors.closeButton:SetPoint("TOPRIGHT", customHealthbarColors.extendedSettings, "TOPRIGHT", 0, 0)
     customHealthbarColors.closeButton:SetScript("OnClick", function()
         customHealthbarColors.extendedSettings:Hide()
@@ -7430,7 +7507,8 @@ local function guiCastbars()
             castBarTargetTextOptionsFrame = CreateFrame("Frame", "BBFCastbarTargetTextOptionsFrame", UIParent, "DefaultPanelFlatTemplate")
             castBarTargetTextOptionsFrame:SetSize(220, 275)
             castBarTargetTextOptionsFrame:SetPoint("CENTER")
-            castBarTargetTextOptionsFrame:SetFrameStrata("HIGH")
+            castBarTargetTextOptionsFrame:SetFrameStrata("FULLSCREEN_DIALOG")
+            castBarTargetTextOptionsFrame:SetFrameLevel(550)
             castBarTargetTextOptionsFrame:SetIgnoreParentAlpha(true)
             castBarTargetTextOptionsFrame:SetTitle(L["Castbar_Target_Text_Options"])
             castBarTargetTextOptionsFrame:EnableMouse(true)
@@ -7441,6 +7519,7 @@ local function guiCastbars()
             castBarTargetTextOptionsFrame:SetScript("OnDragStop", function(self) self:StopMovingOrSizing() end)
 
             castBarTargetTextOptionsFrame.closeButton = CreateFrame("Button", nil, castBarTargetTextOptionsFrame, "UIPanelCloseButton")
+            castBarTargetTextOptionsFrame.closeButton:SetFrameLevel((castBarTargetTextOptionsFrame.TitleContainer or castBarTargetTextOptionsFrame):GetFrameLevel() + 10)
             castBarTargetTextOptionsFrame.closeButton:SetPoint("TOPRIGHT", castBarTargetTextOptionsFrame, "TOPRIGHT", 0, 0)
             castBarTargetTextOptionsFrame.closeButton:SetScript("OnClick", function()
                 castBarTargetTextOptionsFrame:Hide()
@@ -8458,7 +8537,7 @@ local function guiFrameLook()
 
     local contentFrame = CreateFrame("Frame", nil, scrollFrame)
     contentFrame.name = guiFrameLook.name
-    contentFrame:SetSize(680, 920)
+    contentFrame:SetSize(680, 980)
     scrollFrame:SetScrollChild(contentFrame)
 
     local mainGuiAnchor = contentFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
@@ -9253,6 +9332,25 @@ local function guiFrameLook()
         BBF.TexturePRD()
     end)
 
+    local changeXpBarTexture = CreateCheckbox("changeXpBarTexture", L["Change_XP_Rep_Bar_Texture"], contentFrame)
+    changeXpBarTexture:SetPoint("TOPLEFT", useCustomTextureForSelfMana, "BOTTOMLEFT", 0, -40)
+    CreateTooltipTwo(changeXpBarTexture, L["Change_XP_Rep_Bar_Texture"], L["Tooltip_Change_XP_Rep_Bar_Texture_Desc"])
+
+    local xpBarTexture = CreateTextureDropdown(
+        "xpBarTexture",
+        contentFrame,
+        L["Select_Texture"],
+        "xpBarTexture",
+        function(arg1)
+            BBF.XpBarTexture()
+        end,
+        { anchorFrame = changeXpBarTexture, x = 5, y = 3, label = L["Texture"] }
+    )
+    changeXpBarTexture:HookScript("OnClick", function(self)
+        xpBarTexture:SetEnabled(self:GetChecked())
+        BBF.XpBarTexture()
+    end)
+    xpBarTexture:SetEnabled(changeXpBarTexture:GetChecked())
 
 end
 
@@ -10489,6 +10587,8 @@ local function guiMisc()
     function BBF.OpenLegacyComboSliderWindow(launch)
         if not BBF.ComboSliderWindow then
             local f = CreateFrame("Frame", "BBFComboSliderWindow", guiMisc, "DefaultPanelFlatTemplate")
+            f:SetFrameStrata("FULLSCREEN_DIALOG")
+            f:SetFrameLevel(550)
             f:SetSize(210, 270)
             f:SetPoint("RIGHT", enableLegacyComboPoints, "LEFT", -10, 0)
             f:SetIgnoreParentAlpha(true)
@@ -10501,6 +10601,7 @@ local function guiMisc()
             f:SetScript("OnDragStop", function(self) self:StopMovingOrSizing() end)
 
             f.closeButton = CreateFrame("Button", nil, f, "UIPanelCloseButton")
+            f.closeButton:SetFrameLevel((f.TitleContainer or f):GetFrameLevel() + 10)
             f.closeButton:SetPoint("TOPRIGHT", f, "TOPRIGHT", 0, 0)
             f.closeButton:SetScript("OnClick", function()
                 f:Hide()
@@ -10655,7 +10756,8 @@ local function guiMisc()
             KeepPopupInSettings(prdResourceOptionsFrame, guiMisc)
             prdResourceOptionsFrame:SetSize(280, 246)
             prdResourceOptionsFrame:SetPoint("CENTER")
-            prdResourceOptionsFrame:SetFrameStrata("DIALOG")
+            prdResourceOptionsFrame:SetFrameStrata("FULLSCREEN_DIALOG")
+            prdResourceOptionsFrame:SetFrameLevel(550)
             prdResourceOptionsFrame:SetIgnoreParentAlpha(true)
             prdResourceOptionsFrame:SetTitle(L["Prd_Resource_Adjust"])
             prdResourceOptionsFrame:EnableMouse(true)
@@ -10666,6 +10768,7 @@ local function guiMisc()
             prdResourceOptionsFrame:SetScript("OnDragStop", function(self) self:StopMovingOrSizing() end)
 
             prdResourceOptionsFrame.closeButton = CreateFrame("Button", nil, prdResourceOptionsFrame, "UIPanelCloseButton")
+            prdResourceOptionsFrame.closeButton:SetFrameLevel((prdResourceOptionsFrame.TitleContainer or prdResourceOptionsFrame):GetFrameLevel() + 10)
             prdResourceOptionsFrame.closeButton:SetPoint("TOPRIGHT", prdResourceOptionsFrame, "TOPRIGHT", 0, 0)
             prdResourceOptionsFrame.closeButton:SetScript("OnClick", function()
                 prdResourceOptionsFrame:Hide()
@@ -10682,6 +10785,9 @@ local function guiMisc()
             CreateTooltipTwo(prdResourceOnTarget, L["Prd_Resource_On_Target"], L["Tooltip_Prd_Resource_On_Target_Desc"], L["Tooltip_Prd_Resource_On_Target_SubText"])
             prdResourceOnTarget:HookScript("OnClick", function()
                 RefreshPrdResourceOptions()
+                if BBP and BBP.ForeverComboPoints then
+                    BBP.ForeverComboPoints()
+                end
             end)
 
             local prdResourceNoTargetOnPrd = CreateCheckbox("prdResourceNoTargetOnPrd", L["Prd_Resource_No_Target_On_Prd"], prdResourceOptionsFrame, nil, BBF.PrdResourceCaller)
@@ -11147,7 +11253,8 @@ local function guiMisc()
             foreverMinimapTweaks.optionsFrame = frame
             frame:SetSize(220, 298)
             frame:SetPoint("CENTER")
-            frame:SetFrameStrata("DIALOG")
+            frame:SetFrameStrata("FULLSCREEN_DIALOG")
+            frame:SetFrameLevel(550)
             frame:SetIgnoreParentAlpha(true)
             frame:SetTitle(L["Minimap_Tweaks"])
             frame:EnableMouse(true)
@@ -11158,6 +11265,7 @@ local function guiMisc()
             frame:SetScript("OnDragStop", frame.StopMovingOrSizing)
 
             frame.closeButton = CreateFrame("Button", nil, frame, "UIPanelCloseButton")
+            frame.closeButton:SetFrameLevel((frame.TitleContainer or frame):GetFrameLevel() + 10)
             frame.closeButton:SetPoint("TOPRIGHT", frame, "TOPRIGHT", 0, 0)
             frame.closeButton:SetScript("OnClick", function()
                 frame:Hide()
@@ -11996,7 +12104,8 @@ function BBF.CreateIntroMessageWindow()
     BBF.IntroMessageWindow:SetScript("OnDragStart", BBF.IntroMessageWindow.StartMoving)
     BBF.IntroMessageWindow:SetScript("OnDragStop", BBF.IntroMessageWindow.StopMovingOrSizing)
     BBF.IntroMessageWindow:SetTitle("Better|cff00c0ffBlizz|rFrames "..BBF.VersionNumber)
-    BBF.IntroMessageWindow:SetFrameStrata("HIGH")
+    BBF.IntroMessageWindow:SetFrameStrata("FULLSCREEN_DIALOG")
+    BBF.IntroMessageWindow:SetFrameLevel(550)
 
     -- Add background texture
     BBF.IntroMessageWindow.textureTest = BBF.IntroMessageWindow:CreateTexture(nil, "BACKGROUND")

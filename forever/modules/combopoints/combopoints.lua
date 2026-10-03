@@ -2,6 +2,7 @@ local DEFAULT_MAX_POINTS = 5
 local PRD_Y_OFFSET = 9
 local PLAYER_SCALE_OFFSET = 0.05
 local REVEAL_FADE_TIME = 0.25
+local TARGET_LEVEL_BUMP = 20
 local TINT = { 1, 0.772, 0.34, 1 }
 local TINT_CLASSIC_BRONZE = { 1, 0.749, 0.337, 1 }
 local BORDER_KEYS = { "BGActive", "BGInactive", "BGGlow", "BG_Active", "BG_Inactive", "BG_Glow" }
@@ -349,7 +350,7 @@ function BBF.UpdateComboPointPrdAnchor()
     end
 
     prdBar:SetScale(1)
-    prdBar:SetFrameStrata("MEDIUM")
+    prdBar:SetFrameStrata("BACKGROUND")
     AnchorPrdBarToPrd()
 end
 
@@ -418,7 +419,8 @@ function ApplyTargetLayout()
     playerBar:SetParent(TargetFrame)
     playerBar:ClearAllPoints()
     playerBar:SetPoint("LEFT", TargetFrame, "RIGHT", xPos, yPos)
-    playerBar:SetFrameStrata("HIGH")
+    playerBar:SetFrameStrata(TargetFrame:GetFrameStrata())
+    playerBar:SetFrameLevel(TargetFrame:GetFrameLevel() + TARGET_LEVEL_BUMP)
     playerBar:SetMouseClickEnabled(false)
     playerBar.bbfPositioning = nil
 
@@ -458,7 +460,7 @@ function RestoreRowLayout()
         point:ClearAllPoints()
     end
     playerBar:SetParent(holder)
-    playerBar:SetFrameStrata("MEDIUM")
+    playerBar:SetFrameStrata(holder:GetFrameStrata())
     playerBar:Layout()
 end
 

@@ -1121,6 +1121,9 @@ local function InitAuraButton(button, style, host, harmful, masqueType)
     end
     button.bbfIcon = icon
     button:SetIcon(icon)
+    if masqueType == "Enchant" and H.IMBUE_WEAPONS then
+        H.CreateEnchantIcon(button)
+    end
 
     if not style.isPlayer or style.playerCooldown then
         local cooldown = CreateFrame("Cooldown", nil, button, "CooldownFrameTemplate")
@@ -2156,7 +2159,7 @@ local function ConfigureContainer(host, container, harmful)
     end
 
     container:SetScale(host.scale or S.scale)
-    container:SetFlowLayoutMaximumLineSize(GetMaxLineSize(host, sizes, primaryGap))
+    container:SetFlowLayoutMaximumLineSize(H.ImbueLineSize(host, container, GetMaxLineSize(host, sizes, primaryGap)))
     container:SetFrameStrata(container.bbfBaseStrata)
     if S.increaseStrata then
         container:SetFrameLevel(9999)
@@ -2259,6 +2262,7 @@ function BBF.ApplyAuraGroupConfig(host)
         Configure(host.blockBottom, not topHarmful)
     end
     if ConfigureSpacer(host, topHarmful) then changed = true end
+    H.LayoutImbues(host)
     return changed
 end
 
@@ -2371,6 +2375,7 @@ function BBF.RestyleAuraButtons(force)
                         ApplyMutableStyle(button, host.enchantStyle)
                     end
                 end
+                H.LayoutImbues(host)
             end
             if keys then wipe(keys) end
         end)
@@ -2879,12 +2884,21 @@ function BBF.AnchorPlayerAuraContainer(host)
         layout.addIconsToTop and AnchorUtil.FlowDirection.Up or AnchorUtil.FlowDirection.Down)
 
     local offsetX, offsetY = GetPlayerContainerOffset(host, layout)
+    if container == host.buffs then
+        local extent = H.ImbueExtent(host)
+        if layout.isHorizontal then
+            offsetX = offsetX + (layout.addIconsToRight and extent or -extent)
+        else
+            offsetY = offsetY + (layout.addIconsToTop and extent or -extent)
+        end
+    end
     container:ClearAllPoints()
     container:SetPoint(point, host.frame, point, offsetX, offsetY)
 
     if host.buffs then
         BBF.RefreshBuffCollapseButton(layout)
     end
+    H.LayoutImbues(host)
 end
 
 do
@@ -3653,6 +3667,360 @@ local function StyleTestButton(button, entry, tier, style, sizes, harmful)
     return width, height
 end
 
+H.IMBUE_WEAPONS = Enum.WeaponSlot and { Enum.WeaponSlot.MainHand, Enum.WeaponSlot.OffHand, Enum.WeaponSlot.Ranged }
+H.IMBUE_INVSLOTS = { INVSLOT_MAINHAND or 16, INVSLOT_OFFHAND or 17, INVSLOT_RANGED or 18 }
+
+function H.Readable(value)
+    return value ~= nil and not (issecretvalue and issecretvalue(value))
+end
+
+function H.ScanImbues(host)
+    local shown, track = host.imbues, host.imbueTrack
+    local now, n = GetTime(), 0
+    local permanent = Enum.ItemEnchantType and Enum.ItemEnchantType.Permanent
+
+    for index, weaponSlot in ipairs(H.IMBUE_WEAPONS) do
+        local inv = H.IMBUE_INVSLOTS[index]
+        local temp = C_PaperDollInfo.GetTemporaryEnchantmentInfo(inv)
+        local tempID = temp and H.Readable(temp.enchantID) and temp.hasExpirationTime and temp.enchantID
+        local list = C_Item.GetWeaponEnchantInfo(weaponSlot)
+        host.enchantIcons[index] = false
+
+        for _, e in ipairs(type(list) == "table" and list or {}) do
+            if tempID and H.Readable(e.enchantID) and e.enchantID == tempID
+                and H.Readable(e.enchantIconID) and e.enchantIconID ~= 0 then
+                host.enchantIcons[index] = e.enchantIconID
+            end
+            if H.Readable(e.hasEnchant) and e.hasEnchant and H.Readable(e.enchantType)
+                and e.enchantType ~= permanent and H.Readable(e.timeLeft) and e.timeLeft > 0
+                and H.Readable(e.enchantID) and e.enchantID ~= tempID then
+                local left = e.timeLeft / 1000
+                local endTime = now + left
+                local key = inv * 10 + e.enchantType
+                local t = track[key]
+                if not t then
+                    t = {}
+                    track[key] = t
+                end
+                if t.id ~= e.enchantID or endTime > (t.endTime or 0) + 1 then
+                    t.total = left
+                end
+                t.id, t.endTime, t.seen = e.enchantID, endTime, now
+
+                n = n + 1
+                local s = shown[n]
+                if not s then
+                    s = {}
+                    shown[n] = s
+                end
+                s.inv, s.endTime, s.total = inv, endTime, t.total
+                s.charges = H.Readable(e.charges) and e.charges or 0
+                local icon = GetInventoryItemTexture("player", inv)
+                if H.Readable(e.enchantIconID) and e.enchantIconID ~= 0 then
+                    icon = e.enchantIconID
+                end
+                s.icon = icon or FALLBACK_ICON
+            end
+        end
+    end
+
+    for key, t in pairs(track) do
+        if t.seen ~= now then track[key] = nil end
+    end
+    H.PaintEnchantIcons(host)
+    return n
+end
+
+function H.CreateEnchantIcon(button)
+    local icon = button.bbfIcon
+    local tex = button:CreateTexture(nil, "BACKGROUND", nil, 1)
+    tex:SetAllPoints(icon)
+    tex:Hide()
+    button.bbfEnchantIcon = tex
+    hooksecurefunc(icon, "SetTexCoord", function(_, ...)
+        tex:SetTexCoord(...)
+    end)
+    hooksecurefunc(icon, "SetDrawLayer", function(_, layer, sublevel)
+        tex:SetDrawLayer(layer, math.min((sublevel or 0) + 1, 7))
+    end)
+end
+
+function H.PaintEnchantIcons(host)
+    if InCombatLockdown() then
+        host.enchantIconsPending = true
+        return
+    end
+    host.enchantIconsPending = nil
+    for index, button in ipairs(host.enchantButtons or {}) do
+        local tex = button.bbfEnchantIcon
+        local iconID = host.enchantIcons[index]
+        if tex and iconID then
+            tex:SetTexture(iconID)
+            tex:Show()
+        elseif tex then
+            tex:Hide()
+        end
+    end
+end
+
+function H.ImbueExtent(host)
+    local gap
+    if host.isHorizontal ~= false then
+        gap = host.hGap or S.hGap
+    else
+        gap = host.vGap or S.vGap
+    end
+    return (host.imbueCount or 0) * (PLAYER_AURA_ICON + gap), gap
+end
+
+function H.ImbueLineSize(host, container, lineSize)
+    if container ~= host.buffs or not host.imbueCount or host.imbueCount == 0 then
+        return lineSize
+    end
+    return math.max(PLAYER_AURA_ICON, lineSize - H.ImbueExtent(host))
+end
+
+function H.ImbueEnter(button)
+    if not button.bbfInv then return end
+    GameTooltip:SetOwner(button, "ANCHOR_BOTTOMLEFT")
+    GameTooltip:SetInventoryItem("player", button.bbfInv)
+    GameTooltip:Show()
+end
+
+function H.CreateImbueCell(holder, host)
+    local button = CreateFrame("Frame", nil, holder)
+    local masqueGroup = BBF.GetAuraMasqueGroup("Player Buffs")
+
+    local icon = button:CreateTexture(nil, "BACKGROUND")
+    if masqueGroup then
+        local skin = CreateFrame("Frame", nil, button)
+        skin.bbfSize = PLAYER_AURA_ICON
+        skin:SetSize(PLAYER_AURA_ICON, PLAYER_AURA_ICON)
+        function skin:GetSize()
+            return self.bbfSize, self.bbfSize
+        end
+        icon:SetAllPoints(skin)
+        button.bbfSkin = skin
+        button.bbfMasqueGroup = masqueGroup
+    end
+    button.bbfIcon = icon
+
+    local cooldown = CreateFrame("Cooldown", nil, button, "CooldownFrameTemplate")
+    cooldown:SetMinimumCountdownDuration(0)
+    cooldown:SetAllPoints(icon)
+    cooldown:SetReverse(true)
+    cooldown:SetDrawEdge(true)
+    cooldown:SetDrawBling(false)
+    cooldown:SetHideCountdownNumbers(true)
+    button.bbfCooldown = cooldown
+
+    local overlay = CreateFrame("Frame", nil, button)
+    overlay:SetAllPoints(button)
+    overlay:SetFrameLevel(math.max(cooldown:GetFrameLevel(),
+        button.bbfSkin and button.bbfSkin:GetFrameLevel() or 0) + 1)
+
+    button.bbfCount = overlay:CreateFontString(nil, "OVERLAY", "NumberFontNormal")
+    button.bbfCount:SetJustifyH("RIGHT")
+    button.bbfBorder = overlay:CreateTexture(nil, "OVERLAY", nil, 5)
+
+    local textLayer = CreateFrame("Frame", nil, button)
+    textLayer:SetAllPoints(button)
+    textLayer:SetFrameLevel(overlay:GetFrameLevel() + 1)
+    local timer = textLayer:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    timer.bbfBaseFont = { timer:GetFont() }
+    button.bbfTimer = timer
+
+    button.bbfDuration = C_DurationUtil.CreateDuration()
+    local binding = C_DurationUtil.CreateDurationTextBinding()
+    binding:SetFormatter(AuraContainerInbound.GetDefaultAuraDurationFormatter())
+    binding:SetFontString(timer)
+    binding:SetDuration(button.bbfDuration)
+    button.bbfBinding = binding
+
+    button:SetScript("OnEnter", H.ImbueEnter)
+    button:SetScript("OnLeave", GameTooltip_Hide)
+
+    if masqueGroup then
+        icon.SetParent = function() end
+        local ok, err = pcall(masqueGroup.AddButton, masqueGroup, button.bbfSkin, {
+            Icon = icon,
+            Count = button.bbfCount,
+            Cooldown = cooldown,
+        }, "Buff", true)
+        if not ok then
+            button.bbfMasqueGroup = nil
+            if not S.masqueWarned then
+                S.masqueWarned = true
+                BBF.Print(string.format(L["Print_Masque_Skin_Failed"], tostring(err)))
+            end
+        end
+    end
+    return button
+end
+
+function H.StyleImbueCell(button, style)
+    local icon = button.bbfIcon
+    local iconAnchor = button.bbfSkin or icon
+    button:SetSize(style.buttonWidth, style.buttonHeight)
+    iconAnchor:ClearAllPoints()
+    iconAnchor:SetSize(PLAYER_AURA_ICON, PLAYER_AURA_ICON)
+    iconAnchor:SetPoint(style.iconPoint, button, style.iconPoint)
+    if not button.bbfSkin then
+        if style.cropIcon then
+            icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+        else
+            icon:SetTexCoord(0, 1, 0, 1)
+        end
+    end
+
+    local timer = button.bbfTimer
+    timer:ClearAllPoints()
+    timer:SetPoint(style.durationPoint, iconAnchor, style.durationRelativePoint, 0, style.durationYOffset or 0)
+    ApplyDurationFont(timer, style)
+    timer:SetShown(style.showTimerText)
+    if button.bbfDurationCurve ~= style.durationCurve then
+        button.bbfDurationCurve = style.durationCurve
+        button.bbfBinding:SetTextColorCurve(style.durationCurve, Enum.DurationTextBindingProperty.RemainingDuration)
+    end
+
+    local count = button.bbfCount
+    count:ClearAllPoints()
+    count:SetPoint("BOTTOMRIGHT", iconAnchor, "BOTTOMRIGHT", -2, 2)
+    count:SetScale(style.stackScale or 1)
+
+    local border = button.bbfBorder
+    ApplyBorderArt(border, style.pixelBorder)
+    ApplyBorderGeometry(border, iconAnchor, style.pixelBorder, style.borderInset)
+    local c = style.darkColor or 1
+    border:SetVertexColor(c, c, c)
+    border:SetShown(style.drawBorder)
+
+    button:EnableMouse(not style.hideTooltips)
+    button:SetMouseClickEnabled(false)
+
+    if button.bbfMasqueGroup and not pcall(button.bbfMasqueGroup.ReSkin, button.bbfMasqueGroup, button.bbfSkin) then
+        button.bbfMasqueGroup = nil
+    end
+end
+
+function H.PaintImbueCell(button, s, style)
+    button.bbfInv = s.inv
+    button.bbfIcon:SetTexture(s.icon)
+    button.bbfCount:SetText(s.charges > 1 and s.charges or "")
+    button.bbfDuration:SetTimeFromEnd(s.endTime, s.total)
+    button.bbfBinding:SetEnabled(style.showTimerText and true or false)
+
+    local cooldown = button.bbfCooldown
+    if style.playerCooldown and s.total > 0 then
+        cooldown:SetCooldown(s.endTime - s.total, s.total)
+        cooldown:Show()
+    else
+        cooldown:Clear()
+        cooldown:Hide()
+    end
+end
+
+function H.LayoutImbues(host)
+    local holder = host.imbueHolder
+    if not holder or not host.enchantStyle then return end
+
+    local n = host.imbueCount or 0
+    if n == 0 then
+        for _, button in ipairs(holder.bbfButtons) do
+            button.bbfBinding:SetEnabled(false)
+        end
+        holder:Hide()
+        return
+    end
+
+    local container = host.buffs
+    local layout = GetEditModeAuraLayout(host.frame)
+    local point = GetPlayerAnchorPoint(layout)
+    holder:SetScale(host.scale or S.scale)
+    holder:ClearAllPoints()
+    holder:SetPoint(point, host.frame, point, GetPlayerContainerOffset(host, layout))
+    holder:SetFrameStrata(container.bbfBaseStrata)
+    if S.increaseStrata then
+        holder:SetFrameLevel(9999)
+    end
+
+    local _, gap = H.ImbueExtent(host)
+    local step = PLAYER_AURA_ICON + gap
+    local dx, dy = 0, 0
+    if layout.isHorizontal then
+        dx = layout.addIconsToRight and step or -step
+    else
+        dy = layout.addIconsToTop and step or -step
+    end
+
+    local style = host.enchantStyle
+    for i = 1, n do
+        local button = holder.bbfButtons[i]
+        if not button then
+            button = H.CreateImbueCell(holder, host)
+            holder.bbfButtons[i] = button
+        end
+        H.StyleImbueCell(button, style)
+        H.PaintImbueCell(button, host.imbues[i], style)
+        button:ClearAllPoints()
+        button:SetPoint(point, holder, point, (i - 1) * dx, (i - 1) * dy)
+        button:Show()
+    end
+    for i = n + 1, #holder.bbfButtons do
+        local button = holder.bbfButtons[i]
+        button.bbfBinding:SetEnabled(false)
+        button:Hide()
+    end
+
+    holder:Show()
+end
+
+function H.RefreshImbues(host)
+    local n = H.ScanImbues(host)
+    if n == host.imbueCount then
+        H.LayoutImbues(host)
+        return
+    end
+
+    host.imbueCount = n
+    BBF.AnchorPlayerAuraContainer(host)
+    local _, gap = H.ImbueExtent(host)
+    host.buffs:SetFlowLayoutMaximumLineSize(H.ImbueLineSize(host, host.buffs,
+        GetMaxLineSize(host, GetHostSizes(host), gap)))
+end
+
+function H.CreateImbues(host)
+    if not (H.IMBUE_WEAPONS and C_Item.GetWeaponEnchantInfo and C_PaperDollInfo
+        and C_PaperDollInfo.GetTemporaryEnchantmentInfo and C_DurationUtil
+        and C_DurationUtil.CreateDurationTextBinding and AuraContainerInbound) then
+        return
+    end
+
+    host.imbues, host.imbueTrack, host.enchantIcons = {}, {}, {}
+
+    local holder = CreateFrame("Frame", nil, host.frame)
+    holder:SetSize(1, 1)
+    holder.bbfButtons = {}
+    holder:Hide()
+    host.imbueHolder = holder
+    host.imbueCount = H.ScanImbues(host)
+
+    local events = CreateFrame("Frame")
+    events:RegisterEvent("WEAPON_ENCHANT_CHANGED")
+    events:RegisterEvent("WEAPON_SLOT_CHANGED")
+    events:RegisterEvent("PLAYER_ENTERING_WORLD")
+    events:RegisterEvent("PLAYER_REGEN_ENABLED")
+    events:SetScript("OnEvent", function(_, event)
+        if event == "PLAYER_REGEN_ENABLED" then
+            if host.enchantIconsPending then
+                H.PaintEnchantIcons(host)
+            end
+            return
+        end
+        H.RefreshImbues(host)
+    end)
+end
+
 local function LayoutTestButtons(preview, entries, host, harmful, cursorCross)
     local sizes = GetHostSizes(host)
     local cfg = GetFrameConfig(host, harmful)
@@ -4025,6 +4393,8 @@ local function CreatePlayerHost(key, hostFrame, harmful)
             })
             host.enchantButtons[#host.enchantButtons + 1] = button
         end
+
+        H.CreateImbues(host)
 
         CreateFilteredAuras(host)
 

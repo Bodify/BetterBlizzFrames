@@ -551,7 +551,7 @@ function BBF.LegacyPRDLook()
 end
 
 local FOREVER_COMBO_NAMEPLATE_Y = 11
-local NAMEPLATE_LEVEL_BUMP = 10
+local PRD_RESOURCE_LEVEL = 1000
 
 local rogueCenterWatcher
 
@@ -592,6 +592,15 @@ function BBF.FixPrdRogueComboCentering()
 end
 
 local prdResourceUpdater, prdResourceHooked, prdResourceApplied, prdResourceUpdating
+
+local function IsBlizzardClassFrame(frame)
+    local prd = PersonalResourceDisplayFrame
+    return prd and frame == prd.classFrame or false
+end
+
+local function PrdResourceStrata(frame)
+    return IsBlizzardClassFrame(frame) and "MEDIUM" or "BACKGROUND"
+end
 
 local function RestorePrdResourceLevel(frame)
     if frame.bbfPrdBaseLevel then
@@ -661,19 +670,18 @@ end
 function BBF.UpdatePrdResource()
     if prdResourceUpdating then return end
 
+    local db = BetterBlizzFramesDB
     local prd = PersonalResourceDisplayFrame
     local frame = (prd and prd.classFrame) or BBF.ComboPointPrdBar
-        or (BBP and (BBP.MaelstromBar or BBP.TipOfSpearBar or BBP.ComboPointBar))
+        or (BBP and (BBP.MaelstromBar or BBP.TipOfSpearBar or (not db.foreverComboPoints and BBP.ComboPointBar)))
     if not frame or frame:IsForbidden() then return end
-
-    local db = BetterBlizzFramesDB
 
     if not db.prdResourceAdjust then
         if prdResourceApplied then
             prdResourceApplied = false
             prdResourceUpdating = true
             frame:SetScale(1)
-            frame:SetFrameStrata("MEDIUM")
+            frame:SetFrameStrata(PrdResourceStrata(frame))
             RestorePrdResourceLevel(frame)
             frame:SetAlpha(1)
             RestorePrdResourceFrame(frame, 0, 0)
@@ -700,15 +708,18 @@ function BBF.UpdatePrdResource()
         if frame.bbfPrdBaseLevel == nil then
             frame.bbfPrdBaseLevel = frame:GetFrameLevel()
         end
-        frame:SetFrameStrata(unitFrame:GetFrameStrata())
-        frame:SetFrameLevel(unitFrame:GetFrameLevel() + NAMEPLATE_LEVEL_BUMP)
+        frame:SetFrameStrata(IsBlizzardClassFrame(frame) and unitFrame:GetFrameStrata() or "BACKGROUND")
+        frame:SetFrameLevel(PRD_RESOURCE_LEVEL)
         frame:ClearAllPoints()
         local comboRaise = frame.bbfForeverComboBar and FOREVER_COMBO_NAMEPLATE_Y or 0
         PixelUtil.SetPoint(frame, "BOTTOM", GetNameplateResourceAnchor(unitFrame), "TOP", xOfs, yOfs + 30 + comboRaise)
     else
         frame:SetAlpha((db.prdResourceOnTarget and not db.prdResourceNoTargetOnPrd) and 0 or 1)
-        frame:SetFrameStrata("MEDIUM")
-        RestorePrdResourceLevel(frame)
+        frame:SetFrameStrata(PrdResourceStrata(frame))
+        if frame.bbfPrdBaseLevel == nil then
+            frame.bbfPrdBaseLevel = frame:GetFrameLevel()
+        end
+        frame:SetFrameLevel(PRD_RESOURCE_LEVEL + 1)
         RestorePrdResourceFrame(frame, xOfs, yOfs)
     end
 

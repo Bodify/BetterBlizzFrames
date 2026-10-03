@@ -250,7 +250,7 @@ function BBF.UpdateClassicHDElite(frame)
     overlay:ClearAllPoints()
     overlay:SetPoint("TOPRIGHT", portrait, "TOPRIGHT", data.x, data.y)
     if db.darkModeUi and db.darkModeEliteTexture then
-        local v = db.darkModeColor + 0.25
+        local v = BBF.DarkModeEliteValue()
         overlay:SetDesaturated(db.darkModeEliteTextureDesaturated or data.desaturated or false)
         overlay:SetVertexColor(v, v, v, 1)
     else

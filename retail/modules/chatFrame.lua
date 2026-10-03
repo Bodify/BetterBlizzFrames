@@ -191,11 +191,11 @@ function BBF.ChatFilterCaller()
         end
         if ONLINE_SAFETY_NOTICE then
             hooksecurefunc(ChatFrameUtil, "AddSystemMessage", function(message)
-                if message ~= ONLINE_SAFETY_NOTICE then return end
+                if issecretvalue(message) or message ~= ONLINE_SAFETY_NOTICE then return end
                 for i = 1, NUM_CHAT_WINDOWS do
                     local cf = _G["ChatFrame" .. i]
                     if cf and cf.RemoveMessagesByPredicate then
-                        cf:RemoveMessagesByPredicate(function(line) return line == ONLINE_SAFETY_NOTICE end)
+                        cf:RemoveMessagesByPredicate(function(line) return not issecretvalue(line) and line == ONLINE_SAFETY_NOTICE end)
                     end
                 end
             end)

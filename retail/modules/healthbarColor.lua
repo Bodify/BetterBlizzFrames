@@ -271,7 +271,6 @@ end
 
 local function getUnitColor(unit, useCustomColors, txt)
     if not UnitExists(unit) then return end
-
     if UnitIsPlayer(unit) or (C_LFGInfo.IsInLFGFollowerDungeon() and UnitInParty(unit)) then
         if TRP3_API and rpNames then
             local r,g,b = GetRPNameColor(unit)
@@ -304,6 +303,10 @@ local function getUnitColor(unit, useCustomColors, txt)
             return SetUnitColor(unit, color.r, color.g, color.b, 1), false
         end
     else
+        if UnitIsTapDenied(unit) and not UnitPlayerControlled(unit) then
+            local gray = txt and 0.5 or 0.9
+            return SetUnitColor(unit, gray, gray, gray, 1), false
+        end
         if BetterBlizzPlatesDB and BetterBlizzPlatesDB.colorNPC then
             local npcHealthbarColor = GetBBPNameplateColor(unit)
             if npcHealthbarColor then
@@ -311,18 +314,14 @@ local function getUnitColor(unit, useCustomColors, txt)
             else
                 local reaction = getUnitReaction(unit)
                 if reaction == "HOSTILE" then
-                    if UnitIsTapDenied(unit) and not txt then
-                        return SetUnitColor(unit, 0.9, 0.9, 0.9, 1), false
-                    elseif useCustomColors and customHealthbarColors then
+                    if useCustomColors and customHealthbarColors then
                         local enemyColor = BetterBlizzFramesDB.enemyHealthColor
                         return SetUnitColor(unit, enemyColor[1], enemyColor[2], enemyColor[3], enemyColor[4] or 1), false
                     else
                         return SetUnitColor(unit, 1, 0, 0, 1), false
                     end
                 elseif reaction == "NEUTRAL" then
-                    if UnitIsTapDenied(unit) and not txt then
-                        return SetUnitColor(unit, 0.9, 0.9, 0.9, 1), false
-                    elseif useCustomColors and customHealthbarColors then
+                    if useCustomColors and customHealthbarColors then
                         local neutralColor = BetterBlizzFramesDB.neutralHealthColor
                         return SetUnitColor(unit, neutralColor[1], neutralColor[2], neutralColor[3], neutralColor[4] or 1), false
                     else
@@ -341,18 +340,14 @@ local function getUnitColor(unit, useCustomColors, txt)
             local reaction = getUnitReaction(unit)
 
             if reaction == "HOSTILE" then
-                if UnitIsTapDenied(unit) and not txt then
-                    return SetUnitColor(unit, 0.9, 0.9, 0.9, 1), false
-                elseif useCustomColors and customHealthbarColors then
+                if useCustomColors and customHealthbarColors then
                     local enemyColor = BetterBlizzFramesDB.enemyHealthColor
                     return SetUnitColor(unit, enemyColor[1], enemyColor[2], enemyColor[3], enemyColor[4] or 1), false
                 else
                     return SetUnitColor(unit, 1, 0, 0, 1), false
                 end
             elseif reaction == "NEUTRAL" then
-                if UnitIsTapDenied(unit) and not txt then
-                    return SetUnitColor(unit, 0.9, 0.9, 0.9, 1), false
-                elseif useCustomColors and customHealthbarColors then
+                if useCustomColors and customHealthbarColors then
                     local neutralColor = BetterBlizzFramesDB.neutralHealthColor
                     return SetUnitColor(unit, neutralColor[1], neutralColor[2], neutralColor[3], neutralColor[4] or 1), false
                 else
@@ -1109,6 +1104,12 @@ function BBF.HookHealthbarColors()
                 end
                 HookCfSetStatusBarColor(CfTargetFrameHealthBar, "target")
                 HookCfSetStatusBarColor(CfFocusFrameHealthBar, "focus")
+                hooksecurefunc(TargetFrame, "CheckFaction", function()
+                    UpdateHealthColorCF(CfTargetFrameHealthBar, "target")
+                end)
+                hooksecurefunc(FocusFrame, "CheckFaction", function()
+                    UpdateHealthColorCF(CfFocusFrameHealthBar, "focus")
+                end)
             else
                 BBF.Print(L["Print_ClassicFrames_Not_Detected"])
             end
@@ -1125,6 +1126,14 @@ function BBF.HookHealthbarColors()
                 end
                 updatingHealthColor = false
             end)
+            local function UpdateFactionHealthColor(frame)
+                if updatingHealthColor or not frame.unit then return end
+                updatingHealthColor = true
+                UpdateHealthColor(frame.healthbar, frame.unit)
+                updatingHealthColor = false
+            end
+            hooksecurefunc(TargetFrame, "CheckFaction", UpdateFactionHealthColor)
+            hooksecurefunc(FocusFrame, "CheckFaction", UpdateFactionHealthColor)
         end
 
         if (rpNamesHealthbarColor and TRP3_API) or customHealthbarColors then

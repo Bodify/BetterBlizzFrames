@@ -18,6 +18,7 @@ shared\functions_mainline.lua
 shared\ImportExport.lua
 shared\minimapTweaks.lua
 shared\smoothBars.lua
+shared\xpBarTexture.lua
 
 retail\modules\darkmode.lua
 retail\modules\classicFrames.lua

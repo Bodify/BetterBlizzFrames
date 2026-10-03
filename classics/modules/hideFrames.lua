@@ -159,6 +159,17 @@ local function UpdateLevelTextVisibility(unitFrame, unit)
     end
 end
 
+local function UpdateHighLevelSkulls()
+    local alpha = (BetterBlizzFramesDB.hideLevelText and BetterBlizzFramesDB.hideLevelTextAlways) and 0 or 1
+    for _, name in ipairs({ "TargetFrame", "FocusFrame" }) do
+        local frame = _G[name]
+        local skull = frame and frame.highLevelTexture or _G[name.."TextureFrameHighLevelTexture"]
+        if skull then
+            skull:SetAlpha(alpha)
+        end
+    end
+end
+
 local function OnTargetOrFocusChanged(event, ...)
     UpdateLevelTextVisibility(TargetFrameTextureFrameLevelText, "target")
     UpdateLevelTextVisibility(FocusFrameTextureFrameLevelText, "focus")
@@ -408,6 +419,7 @@ function BBF.HideFrames()
     UpdateLevelTextVisibility(TargetFrameTextureFrameLevelText, "target")
     UpdateLevelTextVisibility(FocusFrameTextureFrameLevelText, "focus")
     UpdateLevelTextVisibility(PlayerLevelText, "player")
+    UpdateHighLevelSkulls()
 
     if BetterBlizzFramesDB.hideLevelText and not BBF.classicFramesLevelHide then
         local noLevelTexture = BetterBlizzFramesDB.biggerHealthbars and "Interface\\Addons\\BetterBlizzFrames\\media\\UI-TargetingFrame-NoLevel" or "Interface\\TargetingFrame\\UI-TargetingFrame-NoLevel"

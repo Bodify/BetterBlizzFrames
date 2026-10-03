@@ -166,6 +166,11 @@ function BBF.DarkModePRDBarBorders()
     end
 end
 
+function BBF.DarkModeEliteValue()
+    local db = BetterBlizzFramesDB
+    return math.max(0, math.min(1, db.darkModeColor + (db.darkModeColorElite or 0.1)))
+end
+
 local pixelBorderAuras
 local removeDebuffColorBorder
 function BBF.UpdateUserDarkModeSettings()
@@ -763,7 +768,7 @@ function BBF.DarkmodeFrames(bypass)
 
 
     if BetterBlizzFramesDB.darkModeEliteTexture then
-        local v = BetterBlizzFramesDB.darkModeColor + 0.25
+        local v = BBF.DarkModeEliteValue()
         local d = BetterBlizzFramesDB.darkModeEliteTextureDesaturated or false
         applySettings(TargetFrame.TargetFrameContainer.BossPortraitFrameTexture, d, v)
         applySettings(FocusFrame.TargetFrameContainer.BossPortraitFrameTexture, d, v)
@@ -1248,6 +1253,43 @@ function BBF.CheckForAuraBorders()
     BBF.StyleToggleAuraIcon()
 end
 
+local darkModeTimerBarsOn
+
+local function GetMirrorTimerBackground(timerFrame)
+    if timerFrame.bbfBackground == nil then
+        timerFrame.bbfBackground = false
+        for _, region in ipairs({ timerFrame:GetRegions() }) do
+            if region:IsObjectType("Texture") and region ~= timerFrame.Border and region ~= timerFrame.TextBorder then
+                timerFrame.bbfBackground = region
+                break
+            end
+        end
+    end
+    return timerFrame.bbfBackground or nil
+end
+
+local function DarkModeTimerBars(on)
+    local color = on and (BetterBlizzFramesDB.darkModeColor + 0.1) or 1
+    local lighterColor = on and (BetterBlizzFramesDB.darkModeColor + 0.3) or 1
+    local container = MirrorTimerContainer
+    if container and container.mirrorTimers then
+        for _, timerFrame in ipairs(container.mirrorTimers) do
+            applySettings(timerFrame.Border, on, color)
+            applyTextBorder(timerFrame.TextBorder, on, color, on and 0.5 or 1)
+            if not container.bbfClassic then
+                applySettings(GetMirrorTimerBackground(timerFrame), on, lighterColor)
+            end
+        end
+    end
+    for _, name in ipairs({ "SwingTimerMainHandFrame", "SwingTimerOffHandFrame", "SwingTimerRangedFrame" }) do
+        local frame = _G[name]
+        if frame then
+            applySettings(frame.Border, on, color)
+            applySettings(frame.Background, on, lighterColor)
+        end
+    end
+end
+
 function BBF.DarkModeCastbars()
     if BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeCastbars then
         local desaturationValue = BetterBlizzFramesDB.darkModeUi and true or false
@@ -1334,6 +1376,11 @@ function BBF.DarkModeCastbars()
             end
         end
         BBF.darkModeCastbars = nil
+    end
+    local timerBarsOn = BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeCastbars and true or false
+    if timerBarsOn or darkModeTimerBarsOn then
+        DarkModeTimerBars(timerBarsOn)
+        darkModeTimerBarsOn = timerBarsOn
     end
     BBF.UpdateClassicHDTextureColors()
 end

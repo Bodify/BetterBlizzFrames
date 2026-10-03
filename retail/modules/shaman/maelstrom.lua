@@ -188,7 +188,7 @@ function BBF.UpdateMaelstromPrdAnchor()
     end
 
     prdBar:SetScale(1)
-    prdBar:SetFrameStrata("MEDIUM")
+    prdBar:SetFrameStrata("BACKGROUND")
     AnchorPrdBarToPrd()
 end
 

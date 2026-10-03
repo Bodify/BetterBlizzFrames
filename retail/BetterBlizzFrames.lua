@@ -27,6 +27,7 @@ local defaultSettings = {
     darkModeUnitFrames = true,
     darkModeCastbars = true,
     darkModeColor = 0.20,
+    darkModeColorElite = 0.1,
     darkModeVigor = true,
     darkModeNameplateResource = true,
     hideGroupIndicator = false,
@@ -2249,7 +2250,7 @@ function BBF.PlayerElite(mode)
                 BBF.PlayerElite(1)
             end
             if BBF.DarkModeUnitFramesOn() and BetterBlizzFramesDB.playerEliteFrameDarkmode then
-                local v = (BetterBlizzFramesDB.darkModeColor + 0.25)
+                local v = BBF.DarkModeEliteValue()
                 playerElite:SetVertexColor(v,v,v)
             end
             BBF.eliteToggled = true
@@ -2336,7 +2337,7 @@ function BBF.PlayerElite(mode)
                 playerElite:SetVertexColor(1, 1, 1, alpha)
             end
             if BBF.DarkModeUnitFramesOn() and BetterBlizzFramesDB.playerEliteFrameDarkmode and playerElite then
-                local v = (BetterBlizzFramesDB.darkModeColor + 0.25)
+                local v = BBF.DarkModeEliteValue()
                 playerElite:SetVertexColor(v,v,v)
             end
             BBF.eliteToggled = true
@@ -5630,6 +5631,7 @@ First:SetScript("OnEvent", function(_, event, addonName)
             BBF.ClassColorLegacyCombos()
             BBF.UpdateCustomTextures()
             BBF.SetCompactUnitFramesBackground()
+            BBF.XpBarTexture()
         end)
         BBF.ClassicFrames()
         BBF.noPortraitModes()

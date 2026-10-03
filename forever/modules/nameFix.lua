@@ -1766,6 +1766,18 @@ hooksecurefunc(FocusFrame.name, "SetText", function()
     FocusFrameNameChanges(FocusFrame)
 end)
 
+local factionNameHooked
+function BBF.HookFactionNameColor()
+    if factionNameHooked or not (classColorTargetNames or customColorTargetNames) then return end
+    hooksecurefunc(TargetFrame, "CheckFaction", function(self)
+        if classColorTargetNames or customColorTargetNames then TargetFrameNameChanges(self) end
+    end)
+    hooksecurefunc(FocusFrame, "CheckFaction", function(self)
+        if classColorTargetNames or customColorTargetNames then FocusFrameNameChanges(self) end
+    end)
+    factionNameHooked = true
+end
+
 
 
 
@@ -1926,6 +1938,7 @@ end
 
 function BBF.AllNameChanges()
     BBF.UpdateUserTargetSettings()
+    BBF.HookFactionNameColor()
     ResetTextColors()
     BBF.PartyNameChange()
 

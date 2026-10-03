@@ -201,6 +201,10 @@ local function getUnitColor(unit, useCustomColors, txt)
             return {r = color.r, g = color.g, b = color.b}, false
         end
     else
+        if UnitIsTapDenied(unit) and not UnitPlayerControlled(unit) then
+            local gray = txt and 0.5 or 0.9
+            return {r = gray, g = gray, b = gray}, false
+        end
         if BetterBlizzPlatesDB and BetterBlizzPlatesDB.colorNPC then
             local npcHealthbarColor = GetBBPNameplateColor(unit)
             if npcHealthbarColor then
@@ -208,17 +212,9 @@ local function getUnitColor(unit, useCustomColors, txt)
             else
                 local reaction = getUnitReaction(unit)
                 if reaction == "HOSTILE" then
-                    if UnitIsTapDenied(unit) and not txt then
-                        return {r = 0.9, g = 0.9, b = 0.9}, false
-                    else
-                        return {r = 1, g = 0, b = 0}, false
-                    end
+                    return {r = 1, g = 0, b = 0}, false
                 elseif reaction == "NEUTRAL" then
-                    if UnitIsTapDenied(unit) and not txt then
-                        return {r = 0.9, g = 0.9, b = 0.9}, false
-                    else
-                        return {r = 1, g = 1, b = 0}, false
-                    end
+                    return {r = 1, g = 1, b = 0}, false
                 elseif reaction == "FRIENDLY" then
                     return {r = 0, g = 1, b = 0}, true
                 end
@@ -227,17 +223,9 @@ local function getUnitColor(unit, useCustomColors, txt)
             local reaction = getUnitReaction(unit)
 
             if reaction == "HOSTILE" then
-                if UnitIsTapDenied(unit) and not txt then
-                    return {r = 0.9, g = 0.9, b = 0.9}, false
-                else
-                    return {r = 1, g = 0, b = 0}, false
-                end
+                return {r = 1, g = 0, b = 0}, false
             elseif reaction == "NEUTRAL" then
-                if UnitIsTapDenied(unit) and not txt then
-                    return {r = 0.9, g = 0.9, b = 0.9}, false
-                else
-                    return {r = 1, g = 1, b = 0}, false
-                end
+                return {r = 1, g = 1, b = 0}, false
             elseif reaction == "FRIENDLY" then
                 return {r = 0, g = 1, b = 0}, true
             end
@@ -418,7 +406,17 @@ function BBF.HookHealthbarColors()
             end
         end)
 
-
+        local function UpdateFactionHealthColor(frame)
+            if frame and frame.unit and frame.healthbar then
+                UpdateHealthColor(frame.healthbar, frame.unit)
+            end
+        end
+        if TargetFrame_CheckFaction then
+            hooksecurefunc("TargetFrame_CheckFaction", UpdateFactionHealthColor)
+        else
+            hooksecurefunc(TargetFrame, "CheckFaction", UpdateFactionHealthColor)
+            hooksecurefunc(FocusFrame, "CheckFaction", UpdateFactionHealthColor)
+        end
 
         healthbarsHooked = true
     end

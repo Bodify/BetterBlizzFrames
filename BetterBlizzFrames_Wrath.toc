@@ -16,6 +16,7 @@ shared\functions.lua
 shared\functions_classics.lua
 shared\ImportExport.lua
 shared\smoothBars.lua
+shared\xpBarTexture.lua
 
 classics\modules\darkmode.lua
 classics\modules\nameFix.lua

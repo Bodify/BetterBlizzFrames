@@ -613,6 +613,15 @@ local function RestorePrdResourceFrame(frame, xOfs, yOfs)
     frame:SetPoint("CENTER", container, "CENTER", centerOfs + xOfs, yOfs)
 end
 
+local PRD_RESOURCE_LEVEL = 1000
+
+local function PrdResourceStrata(frame, prd, onNameplate)
+    if prd and frame == prd.classFrame then
+        return onNameplate and "HIGH" or "MEDIUM"
+    end
+    return "BACKGROUND"
+end
+
 function BBF.UpdatePrdResource()
     if prdResourceUpdating then return end
 
@@ -628,7 +637,7 @@ function BBF.UpdatePrdResource()
             prdResourceApplied = false
             prdResourceUpdating = true
             frame:SetScale(1)
-            frame:SetFrameStrata("MEDIUM")
+            frame:SetFrameStrata(PrdResourceStrata(frame, prd))
             RestorePrdResourceFrame(frame, 0, 0)
             prdResourceUpdating = false
             if BBP and BBP.TargetResourceUpdater then
@@ -656,11 +665,13 @@ function BBF.UpdatePrdResource()
 
     if unitFrame then
         frame:SetParent(UIParent)
-        frame:SetFrameStrata("HIGH")
+        frame:SetFrameStrata(PrdResourceStrata(frame, prd, true))
+        frame:SetFrameLevel(PRD_RESOURCE_LEVEL)
         frame:ClearAllPoints()
         PixelUtil.SetPoint(frame, "BOTTOM", unitFrame.healthBar, "TOP", xOfs, yOfs + 30)
     else
-        frame:SetFrameStrata("MEDIUM")
+        frame:SetFrameStrata(PrdResourceStrata(frame, prd))
+        frame:SetFrameLevel(PRD_RESOURCE_LEVEL + 1)
         RestorePrdResourceFrame(frame, xOfs, yOfs)
     end
 
