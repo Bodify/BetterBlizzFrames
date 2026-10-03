@@ -793,23 +793,58 @@ end
 --------------------------------------
 -- CLICKTHROUGH
 --------------------------------------
+-- SecureUnitButton_OnClick checks C_ClickBindings, where the default Target/Open Menu
+-- interactions are only bound to unmodified Left/Right clicks. A shift-click resolves to
+-- no binding and gets dropped, so route shift-clicks through a SecureActionButton proxy
+-- (which skips that check) that targets/opens the menu for the same unit.
+-- The proxy uses "togglemenu" rather than copying the frame's "menu-function": a function
+-- attribute set from addon code runs tainted, which blocks protected menu entries (Set Focus etc).
+local shiftClickProxies = {}
+
+local function UpdateShiftClickProxy(frame)
+    local proxy = shiftClickProxies[frame]
+    if not proxy then
+        proxy = CreateFrame("Button", nil, frame, "SecureActionButtonTemplate")
+        proxy:SetAllPoints(frame)
+        proxy:EnableMouse(false)
+        proxy:SetAttribute("useOnKeyDown", false)
+        proxy:SetAttribute("*type1", "target")
+        if frame:GetAttribute("menu-function") then
+            proxy:SetAttribute("*type2", "togglemenu")
+        end
+        frame:SetAttribute("shift-type1", "click")
+        frame:SetAttribute("shift-type2", "click")
+        frame:SetAttribute("shift-clickbutton1", proxy)
+        frame:SetAttribute("shift-clickbutton2", proxy)
+        shiftClickProxies[frame] = proxy
+    end
+    proxy:SetAttribute("unit", frame:GetAttribute("unit"))
+end
+
+local function SetShiftClickable(frame, shift)
+    if shift then
+        UpdateShiftClickProxy(frame)
+    end
+    frame:SetMouseClickEnabled(shift)
+end
+
 function BBF.ClickthroughFrames()
     if not InCombatLockdown() then
         local shift = IsShiftKeyDown()
         local db = BetterBlizzFramesDB
 
         if db.playerFrameClickthrough then
-            PlayerFrame:SetMouseClickEnabled(shift)
+            SetShiftClickable(PlayerFrame, shift)
         end
 
         if db.targetFrameClickthrough then
-            TargetFrame:SetMouseClickEnabled(shift)
-            TargetFrameToT:SetMouseClickEnabled(shift)
+            SetShiftClickable(TargetFrame, shift)
+            SetShiftClickable(TargetFrameToT, shift)
         end
 
         if db.focusFrameClickthrough then
-            FocusFrame:SetMouseClickEnabled(shift)
-            FocusFrameToT:SetMouseClickEnabled(shift)
+            SetShiftClickable(FocusFrame, shift)
+            SetShiftClickable(FocusFrameToT, shift)
         end
     end
 end
