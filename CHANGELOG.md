@@ -8,6 +8,8 @@
 ### Tweak
 - Dark Mode: Elite textures are now a bit darker by default (brightness offset lowered from 0.25 to 0.1).
 - Dark Mode: Add breathbars and swing timers to dark mode
+### Bugfix
+- Fix the clickthrough settings for Player/Target/Focus. Thank you @DecepUK for the fix.
 ## Classic
 ### New
 - New "Hide Dragons" setting for Target/Focus that hides the elite dragons on target/focus. (ported from retail)
