@@ -38,9 +38,9 @@ local hdBigNoMana = { HD_NOMANA .. "UI-TargetingFrame-NoLevel-Retail-NoMana.png"
 local hdMinus = { HD_MO .. "UI-TargetingFrame-Minus.png" }
 local hdSmall = { HD_MO .. "UI-SmallTargetingFrame.png", HD_NOMANA .. "UI-SmallTargetingFrame-NoMana.png" }
 local hdTot = { HD_MO .. "UI-TargetOfTargetFrame.png", HD_NOMANA .. "UI-TargetOfTargetFrame-NoMana.png" }
-local hdCastbar = { HD_MO .. "UI-CastingBar-Border.tga" }
-local hdCastbarSmall = { HD_MO .. "ui-castingbar-border-small.tga" }
-local hdCastbarShield = { HD_MO .. "ui-castingbar-small-shield.tga" }
+local hdCastbar = { HD_MO .. "UI-CastingBar-Border.png" }
+local hdCastbarSmall = { HD_MO .. "ui-castingbar-border-small.png" }
+local hdCastbarShield = { HD_MO .. "ui-castingbar-small-shield.png" }
 
 local frameTextures = {
     ["Interface\\TargetingFrame\\UI-TargetingFrame"] = hdFrame,
@@ -102,6 +102,26 @@ function BBF.ApplyClassicHDColor(texture, isCastbar)
         texture.bbfBronzeChanging = false
     else
         texture:SetDesaturated(true)
+    end
+end
+
+function BBF.SetClassicFlash(texture, noLvl, flip)
+    if BBF.ClassicHDTexturesActive() then
+        texture:SetTexture(HD_MO .. "UI-FocusFrame-Large-Flash.tga")
+        noLvl = true
+    else
+        texture:SetTexture(noLvl and flashNoLvl or flashTex)
+    end
+    if noLvl then
+        if flip then
+            texture:SetTexCoord(0.9553125, 0, -0.01, 0.733)
+        else
+            texture:SetTexCoord(0, 0.9553125, -0.01, 0.733)
+        end
+    elseif flip then
+        texture:SetTexCoord(0.9453125, 0, 0, 0.181640625)
+    else
+        texture:SetTexCoord(0, 0.9453125, 0, 0.181640625)
     end
 end
 
@@ -266,6 +286,19 @@ function BBF.UpdateClassicHDElite(frame)
     overlay:Show()
 end
 
+local function PlaceHDLevelRing(circle, levelText)
+    local text = levelText:GetText()
+    local x = 0
+    if text and not (issecretvalue and issecretvalue(text)) then
+        text = tostring(text)
+        if text:sub(1, 1) == "1" then
+            x = 0.5
+        end
+    end
+    circle:ClearAllPoints()
+    circle:SetPoint("CENTER", levelText, "CENTER", x, 0)
+end
+
 function BBF.SetClassicHDLevelRing(frame, enabled)
     local classicFrame = frame and frame.ClassicFrame
     if not classicFrame then return end
@@ -282,8 +315,11 @@ function BBF.SetClassicHDLevelRing(frame, enabled)
         if not enabled then return end
         circle = classicFrame:CreateTexture(nil, "OVERLAY", nil, 5)
         if BBF.ClassicHDTexturesActive() then
-            circle:SetAtlas("UI-HUD-UnitFrame-SmallCircle", TextureKitConstants.UseAtlasSize)
-            circle:SetPoint("CENTER", levelText, "CENTER", 0, 0.5)
+            circle:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\MoTextures\\lvlring.png")
+            circle:SetTexCoord(0, 1, 0, 1)
+            circle:SetSize(frame == PlayerFrame and 33.5 or 33, 31)
+            circle.bbfHD = true
+            PlaceHDLevelRing(circle, levelText)
         else
             circle:SetAtlas("hud-PlayerFrame-levelring")
             circle:SetSize(38, 32)
@@ -299,6 +335,11 @@ function BBF.SetClassicHDLevelRing(frame, enabled)
         for _, method in ipairs({ "SetParent", "SetAlpha", "Show", "Hide", "SetShown" }) do
             hooksecurefunc(levelText, method, Refresh)
         end
+        hooksecurefunc(levelText, "SetText", function()
+            if circle.bbfHD then
+                PlaceHDLevelRing(circle, levelText)
+            end
+        end)
         if highLevelTexture then
             for _, method in ipairs({ "Show", "Hide", "SetShown" }) do
                 hooksecurefunc(highLevelTexture, method, Refresh)
@@ -558,8 +599,7 @@ local function MakeClassicFrame(frame)
                 frame.FrameTexture:ClearAllPoints()
                 frame.FrameTexture:SetPoint("TOPLEFT", 20.5, -18)
                 frame.Flash:SetSize(240.5, 93)
-                frame.Flash:SetTexture(flashTex)
-                frame.Flash:SetTexCoord(0, 0.9453125, 0, 0.181640625)
+                BBF.SetClassicFlash(frame.Flash, false)
                 frame.Flash:ClearAllPoints()
                 frame.Flash:SetPoint("TOPLEFT", -2.5, -8)
                 contentMain.LevelText:SetAlpha(1)
@@ -580,15 +620,13 @@ local function MakeClassicFrame(frame)
                 if not skipTexture then
                     BBF.SetClassicTexture(frame.ClassicFrame.Texture, noLvlTex)
                 end
-                frameContainer.Flash:SetTexture(flashNoLvl)
-                frameContainer.Flash:SetTexCoord(0, 0.9553125, -0.01,0.733)
+                BBF.SetClassicFlash(frameContainer.Flash, true)
                 contentMain.LevelText:SetAlpha(0)
             else
                 if not skipTexture then
                     BBF.SetClassicTexture(frame.ClassicFrame.Texture, defaultTex)
                 end
-                frameContainer.Flash:SetTexture(flashTex)
-                frameContainer.Flash:SetTexCoord(0, 0.9453125, 0, 0.181640625)
+                BBF.SetClassicFlash(frameContainer.Flash, false)
                 contentMain.LevelText:SetAlpha(1)
             end
         end
@@ -734,6 +772,7 @@ local function MakeClassicFrame(frame)
         end
 
     elseif frame == PlayerFrame then
+        local hideLvl, alwaysHideLvl = BBF.PlayerLevelHideFlags()
         -- PlayerFrame
         -- Frame
         local content = frame.PlayerFrameContent
@@ -1046,8 +1085,7 @@ local function MakeClassicFrame(frame)
         local function PlayerEliteFrame()
             local playerElite = frame.ClassicFrame.Texture
             local mode = BBF.GetPlayerEliteMode()
-            local hideLvl = BetterBlizzFramesDB.hideLevelText
-            local alwaysHideLvl = hideLvl and BetterBlizzFramesDB.hideLevelTextAlways
+            local hideLvl, alwaysHideLvl = BBF.PlayerLevelHideFlags()
 
             -- Set Elite style according to value
             if mode == 1 then -- Rare (Silver)
@@ -1068,8 +1106,7 @@ local function MakeClassicFrame(frame)
                 end
             else
                 SetPlayerFrameTexture(frame.ClassicFrame.Texture, defaultTex, bigTex, bigNoManaTex)
-                frameContainer.FrameFlash:SetTexture(flashTex)
-                frameContainer.FrameFlash:SetTexCoord(0.9453125, 0, 0, 0.181640625)
+                BBF.SetClassicFlash(frameContainer.FrameFlash, false, true)
                 SetStatusGlowTexture(contentMain.StatusTexture, "Interface\\CharacterFrame\\UI-Player-Status", bigStatusTex)
             -- elseif mode == 4 then -- Only 3 available for classic
             --     db.playerEliteFrameMode = 3
@@ -1081,13 +1118,11 @@ local function MakeClassicFrame(frame)
         local function ToggleNoLevelFrame(noLvl)
             if noLvl then
                 SetPlayerFrameTexture(frame.ClassicFrame.Texture, noLvlTex, bigNoLvlTex, bigNoManaNoLvlTex)
-                frameContainer.FrameFlash:SetTexture(flashNoLvl)
-                frameContainer.FrameFlash:SetTexCoord(0.9553125,0, -0.01,0.733)
+                BBF.SetClassicFlash(frameContainer.FrameFlash, true, true)
                 SetStatusGlowTexture(contentMain.StatusTexture, "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\classic-statustexture-nolevel", "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\classic-statustexture-nolevel")
             else
                 SetPlayerFrameTexture(frame.ClassicFrame.Texture, defaultTex, bigTex, bigNoManaTex)
-                frameContainer.FrameFlash:SetTexture(flashTex)
-                frameContainer.FrameFlash:SetTexCoord(0.9453125, 0, 0, 0.181640625)
+                BBF.SetClassicFlash(frameContainer.FrameFlash, false, true)
                 SetStatusGlowTexture(contentMain.StatusTexture, "Interface\\CharacterFrame\\UI-Player-Status", bigStatusTex)
             end
         end
@@ -1103,8 +1138,7 @@ local function MakeClassicFrame(frame)
                     PlayerEliteFrame()
                 else
                     PlayerEliteFrame()
-                    frameContainer.FrameFlash:SetTexture(flashTex)
-                    frameContainer.FrameFlash:SetTexCoord(0.9453125, 0, 0, 0.181640625)
+                    BBF.SetClassicFlash(frameContainer.FrameFlash, false, true)
                     SetStatusGlowTexture(contentMain.StatusTexture, "Interface\\CharacterFrame\\UI-Player-Status", bigStatusTex)
                 end
             else

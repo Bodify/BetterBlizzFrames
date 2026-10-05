@@ -36,7 +36,13 @@ local function CreateOvershieldBar(healthBar, classicOffset, higherLayer)
     AnchorOvershieldBar(overshieldBar, healthBar, classicOffset)
     overshieldBar:SetReverseFill(true)
     overshieldBar:SetStatusBarTexture("Interface\\RaidFrame\\Shield-Overlay")
-    overshieldBar:SetFrameLevel(healthBar:GetFrameLevel())
+    local smoothOverlay = healthBar.bbfSmoothOverlay
+    if smoothOverlay then
+        overshieldBar:SetFrameLevel(smoothOverlay:GetFrameLevel() + 1)
+    else
+        overshieldBar:SetFrameLevel(healthBar:GetFrameLevel())
+    end
+    healthBar.bbfOvershieldBar = overshieldBar
     overshieldBar:SetStatusBarColor(1, 1, 1, 0.8)
 
     local barTex = overshieldBar:GetStatusBarTexture()

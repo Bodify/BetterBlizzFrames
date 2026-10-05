@@ -754,6 +754,16 @@ function BBF.HideFrames()
             FocusFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetAlpha(1)
         end
 
+        if not BetterBlizzFramesDB.hideLevelText then
+            if BetterBlizzFramesDB.hidePlayerLevelText then
+                changes.hidePlayerLevelText = true
+                PlayerLevelText:SetParent(hiddenFrame)
+            elseif changes.hidePlayerLevelText then
+                changes.hidePlayerLevelText = nil
+                PlayerLevelText:SetParent(PlayerFrame.PlayerFrameContent.PlayerFrameContentMain)
+            end
+        end
+
         -- Hide "Party" text above party raid frames
         if BetterBlizzFramesDB.hidePartyFrameTitle then
             changes.hidePartyFrameTitle = true

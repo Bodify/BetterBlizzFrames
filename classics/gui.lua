@@ -1263,6 +1263,44 @@ local function ShowProfileConfirmation(profileName, class, profileFunction, addi
     BBF.ShowPopup("BBF_CONFIRM_PROFILE", nil, nil, { func = profileFunction })
 end
 
+function BBF.ShowProfileLink(link)
+    local box = BBF.profileLinkBox
+    if not box then
+        box = CreateFrame("EditBox", nil, UIParent, "InputBoxTemplate")
+        box:SetSize(170, 20)
+        box:SetAutoFocus(false)
+        box:SetFrameStrata("FULLSCREEN_DIALOG")
+        box:SetScript("OnEscapePressed", box.Hide)
+        box:SetScript("OnEnterPressed", box.Hide)
+        box:SetScript("OnEditFocusLost", box.Hide)
+        box:SetScript("OnTextChanged", function(self, userInput)
+            if userInput then
+                self:SetText(self.link)
+                self:HighlightText()
+            end
+        end)
+        box:SetScript("OnKeyDown", function(self, key)
+            if key == "C" and IsControlKeyDown() then
+                C_Timer.After(0, function() self:Hide() end)
+            end
+        end)
+        BBF.profileLinkBox = box
+    end
+    if not link then
+        box:Hide()
+        return
+    end
+    box.link = link
+    box:ClearAllPoints()
+    local x, y = GetCursorPosition()
+    local scale = UIParent:GetEffectiveScale()
+    box:SetPoint("TOP", UIParent, "BOTTOMLEFT", x / scale, y / scale - 12)
+    box:SetText(link)
+    box:Show()
+    box:SetFocus()
+    box:HighlightText()
+end
+
 local function CreateClassButton(parent, class, name, twitchName, onClickFunc)
     local bbfParent = parent == BetterBlizzFrames
     local btnWidth, btnHeight = bbfParent and 96 or 150, bbfParent and 22 or  30
@@ -1281,8 +1319,11 @@ local function CreateClassButton(parent, class, name, twitchName, onClickFunc)
     local a,b,c,d,e = button.Text:GetPoint()
     button.Text:SetPoint(a,b,c,d,e-0.5)
 
-    button:SetScript("OnClick", function()
-        if onClickFunc then
+    button:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+    button:SetScript("OnClick", function(self, mouseButton)
+        if mouseButton == "RightButton" then
+            BBF.ShowProfileLink(twitchName and ("www.twitch.tv/"..twitchName))
+        elseif onClickFunc then
             onClickFunc()
         end
     end)
@@ -3577,13 +3618,17 @@ local function guiGeneralTab()
     -- CreateTooltip(hidePlayerGuideIcon, "Hide the guide icon from PlayerFrame.|A:UI-HUD-UnitFrame-Player-Group-GuideIcon:22:22|a")
     -- notWorking(hidePlayerGuideIcon, true)
 
-    local hidePlayerRoleIcon = CreateCheckbox("hidePlayerRoleIcon", L["Hide_Role_Icon"], BetterBlizzFrames, nil, BBF.HideFrames)
-    hidePlayerRoleIcon:SetPoint("TOPLEFT", hidePlayerLeaderIcon, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltip(hidePlayerRoleIcon, L["Tooltip_Hide_Role_Icon"] .. " |A:roleicon-tiny-dps:22:22|a")
-    notWorking(hidePlayerRoleIcon, true)
+    local hidePlayerLevelText = CreateCheckbox("hidePlayerLevelText", L["Hide_Player_Level"], BetterBlizzFrames, nil, BBF.HideFrames)
+    hidePlayerLevelText:SetPoint("TOPLEFT", hidePlayerLeaderIcon, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(hidePlayerLevelText, L["Hide_Player_Level"], L["Tooltip_Hide_Player_Level"])
+    hidePlayerLevelText:HookScript("OnClick", function(self)
+        if not self:GetChecked() then
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
+        end
+    end)
 
     local hidePvpTimerText = CreateCheckbox("hidePvpTimerText", L["Hide_PvP_Timer"], BetterBlizzFrames, nil, BBF.HideFrames)
-    hidePvpTimerText:SetPoint("TOPLEFT", hidePlayerRoleIcon, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    hidePvpTimerText:SetPoint("TOPLEFT", hidePlayerLevelText, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(hidePvpTimerText, L["Tooltip_Hide_PvP_Timer_Desc"])
 
     local hidePlayerPower = CreateCheckbox("hidePlayerPower", L["Hide_Resource_Power"], BetterBlizzFrames, nil, BBF.HideFrames)
@@ -8701,7 +8746,7 @@ function BBF.CreateIntroMessageWindow()
     BBF.IntroMessageWindow:SetScript("OnDragStart", BBF.IntroMessageWindow.StartMoving)
     BBF.IntroMessageWindow:SetScript("OnDragStop", BBF.IntroMessageWindow.StopMovingOrSizing)
     BBF.IntroMessageWindow:SetTitle("Better|cff00c0ffBlizz|rFrames v"..BBF.VersionNumber)
-    BBF.IntroMessageWindow:SetFrameStrata("FULLSCREEN_DIALOG")
+    BBF.IntroMessageWindow:SetFrameStrata("HIGH")
     BBF.IntroMessageWindow:SetFrameLevel(550)
 
     -- Add background texture

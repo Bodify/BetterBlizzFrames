@@ -1,6 +1,6 @@
 local L = BBF.L
 local LibDeflate = LibStub("LibDeflate")
-local LibSerialize = LibStub("LibSerialize")
+local LibSerialize = LibStub("LibSerialize-BB")
 
 local function ConvertOldWhitelist(oldWhitelist)
     local optimizedWhitelist = {}

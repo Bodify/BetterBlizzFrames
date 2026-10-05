@@ -556,6 +556,20 @@ function BBF.UpdatePlayerPixelBorderSize()
     SetBarMask(hpContainer.HealthBar, hpContainer.HealthBarMask, true)
 end
 
+function BBF.NoPortraitManaTextOffsets()
+    local db = BetterBlizzFramesDB
+    local thickOutline = db.changeUnitFrameValueFont and db.unitFrameValueFontOutline == "THICKOUTLINE"
+    local defaultFont = not db.changeUnitFrameValueFont
+    local manaTextYOffset = thickOutline and -5.5 or defaultFont and -5 or -4.5
+    if db.noPortraitPixelBorder then
+        manaTextYOffset = manaTextYOffset - (thickOutline and 1 or 2)
+        if defaultFont then
+            manaTextYOffset = manaTextYOffset + 0.5
+        end
+    end
+    return db.changeUnitFrameValueFont and 68 or 67, manaTextYOffset + (db.tempManaYOffset or 0)
+end
+
 function BBF.UpdateNoPortraitText(frame, frameType)
     local db = BetterBlizzFramesDB
     if frameType == "pet" then
@@ -564,20 +578,10 @@ function BBF.UpdateNoPortraitText(frame, frameType)
         if not (frame and frame.noPortraitMode) then return end
     end
     local thickOutline = db.changeUnitFrameValueFont and db.unitFrameValueFontOutline == "THICKOUTLINE"
-    local defaultFont = not db.changeUnitFrameValueFont
-    local manaTextYOffset = thickOutline and -5.5 or defaultFont and -5 or -4.5
     local hpTextYOffset = thickOutline and 9.5 or 10.5
-    local leftTextXOffset = db.changeUnitFrameValueFont and 68 or 67
+    local leftTextXOffset, manaTextYOffset = BBF.NoPortraitManaTextOffsets()
     local pixel = db.noPortraitPixelBorder
 
-    if db.noPortraitPixelBorder then
-        manaTextYOffset = manaTextYOffset - (thickOutline and 1 or 2)
-        if defaultFont then
-            manaTextYOffset = manaTextYOffset + 0.5
-        end
-    end
-
-    manaTextYOffset = manaTextYOffset + (BetterBlizzFramesDB.tempManaYOffset or 0)
     hpTextYOffset = hpTextYOffset + (BetterBlizzFramesDB.tempHpYOffset or 0)
 
     if frameType == "target" or frameType == "focus" then
@@ -769,6 +773,7 @@ local function MakeNoPortraitMode(frame)
         contentContext:SetParent(frame.noPortraitMode)
         contentContext.HighLevelTexture:ClearAllPoints()
         contentContext.HighLevelTexture:SetPoint("CENTER", frame, "RIGHT", -91, 17)
+        contentContext.HighLevelTexture:SetSize(11, 15)
         contentContext.PetBattleIcon:ClearAllPoints()
         contentContext.PetBattleIcon:SetPoint("CENTER", frame, "BOTTOMRIGHT", -35, 25)
         contentContext.PrestigePortrait:SetScale(0.85)
@@ -790,6 +795,14 @@ local function MakeNoPortraitMode(frame)
         contentContext.RaidTargetIcon:SetPoint("TOPRIGHT", pixelBorderMode and -63 or -56, pixelBorderMode and -40 or -42)
         if pixelBorderMode then
             contentContext.RaidTargetIcon:SetSize(20,20)
+        end
+        if contentContext.PvpBackgroundCircle then
+            contentContext.PvpBackgroundCircle:ClearAllPoints()
+            contentContext.PvpBackgroundCircle:SetPoint("TOP", contentContext, "TOPRIGHT", -92, -54)
+            contentContext.PvpBackgroundCircle:SetSize(30, 30)
+        end
+        if contentContext.PvpBackgroundIcon then
+            contentContext.PvpBackgroundIcon:SetScale(0.7)
         end
 
         --AdjustFramePoint(frameContainer.Portrait, nil, -4)
@@ -1256,6 +1269,7 @@ local function MakeNoPortraitMode(frame)
         end
 
     elseif frame == PlayerFrame then
+        local hideLvl, alwaysHideLvl = BBF.PlayerLevelHideFlags()
         -- PlayerFrame
         -- Frame
         local content = frame.PlayerFrameContent
@@ -1352,6 +1366,19 @@ local function MakeNoPortraitMode(frame)
 
         contentContext:SetParent(frame.noPortraitMode)
         frame.bbfName:SetParent(frame.noPortraitMode)
+
+        if contentMain.PvpBackgroundCircle then
+            contentMain.PvpBackgroundCircle:SetParent(frame.noPortraitMode)
+            contentMain.PvpBackgroundCircle:SetDrawLayer("OVERLAY", 5)
+            contentMain.PvpBackgroundCircle:ClearAllPoints()
+            contentMain.PvpBackgroundCircle:SetPoint("TOP", contentMain, "TOPLEFT", 92, -54)
+            contentMain.PvpBackgroundCircle:SetSize(30, 30)
+        end
+        if contentMain.PvpBackgroundIcon then
+            contentMain.PvpBackgroundIcon:SetParent(frame.noPortraitMode)
+            contentMain.PvpBackgroundIcon:SetDrawLayer("OVERLAY", 6)
+            contentMain.PvpBackgroundIcon:SetScale(0.7)
+        end
 
         contentContext.AttackIcon:ClearAllPoints()
         contentContext.AttackIcon:SetPoint("CENTER", -40, 0)
@@ -1837,8 +1864,7 @@ local function MakeNoPortraitMode(frame)
         local function PlayerEliteFrame()
             local playerElite = frame.noPortraitMode.Texture
             local mode = BetterBlizzFramesDB.playerEliteFrameMode
-            local hideLvl = BetterBlizzFramesDB.hideLevelText
-            local alwaysHideLvl = hideLvl and BetterBlizzFramesDB.hideLevelTextAlways
+            local hideLvl, alwaysHideLvl = BBF.PlayerLevelHideFlags()
 
             -- Set Elite style according to value
             if mode == 1 then -- Rare (Silver)

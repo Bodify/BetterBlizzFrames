@@ -59,6 +59,9 @@ local function SetupBar(stock, events, changeEvent, unit, altUnit)
     ov.bbfSmoothTex = ov:GetStatusBarTexture()
     ov.bbfSmoothMasks = {}
     stock.bbfSmoothOverlay = ov
+    if stock.bbfOvershieldBar then
+        stock.bbfOvershieldBar:SetFrameLevel(ov:GetFrameLevel() + 1)
+    end
 
     hooksecurefunc(stock, "SetValue", function(_, value)
         ov:SetValue(value, Enum.StatusBarInterpolation.ExponentialEaseOut)
@@ -78,6 +81,9 @@ local function SetupBar(stock, events, changeEvent, unit, altUnit)
     end)
     hooksecurefunc(stock, "SetFrameLevel", function(_, level)
         ov:SetFrameLevel(level)
+        if stock.bbfOvershieldBar then
+            stock.bbfOvershieldBar:SetFrameLevel(level + 1)
+        end
     end)
     hooksecurefunc(stock, "SetStatusBarTexture", function()
         MirrorTexture(stock)

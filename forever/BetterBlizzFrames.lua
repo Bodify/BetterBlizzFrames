@@ -63,6 +63,7 @@ local defaultSettings = {
     uiWidgetPowerBarScale = 1,
     druidAlwaysShowCombos = true,
     createAltManaBarDruid = false,
+    createAltManaBarDruidManaOnly = false,
     foreverComboPoints = false,
     hidePrdComboPoints = false,
     prdResourceNoTargetOnPrd = false,
@@ -582,6 +583,13 @@ BBF.popupBuilders["BBF_MIDNIGHT_AURA_FILTER_FIXES"] = function()
 end
 
 local COMBO_OFFER_HEADER = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames:\n\n"
+
+function BBF.EnforceForeverComboPoints()
+    local db = BetterBlizzFramesDB
+    local legacy = not db.foreverComboPoints
+    db.enableLegacyComboPoints = legacy
+    db.legacyCombosTurnedOff = (not legacy) or nil
+end
 
 function BBF.ApplyForeverComboPointChoice(choice)
     local db = BetterBlizzFramesDB
@@ -2276,7 +2284,8 @@ function BBF.ColorPlayerElite()
         playerElite:SetVertexColor(v, v, v)
     elseif not baseDesat and BBF.BronzeEliteDragonsActive and BBF.BronzeEliteDragonsActive() and (playerElite:GetAtlas() or ""):lower():find("gold", 1, true) then
         playerElite:SetDesaturated(true)
-        playerElite:SetVertexColor(0.776, 0.467, 0.278, playerElite:GetAlpha())
+        local r, g, b = BBF.BronzeEliteDragonColor()
+        playerElite:SetVertexColor(r, g, b, playerElite:GetAlpha())
     else
         playerElite:SetDesaturated(baseDesat)
         playerElite:SetVertexColor(1, 1, 1)
@@ -2343,8 +2352,7 @@ function BBF.PlayerElite(mode)
             local frameTexture = PlayerFrame.ClassicFrame.Texture
             local alpha = mode > 3 and 1 or 0
             local playerElite = PlayerFrame.PlayerFrameContainer.PlayerElite
-            local hideLvl = db.hideLevelText
-            local alwaysHideLvl = hideLvl and db.hideLevelTextAlways
+            local hideLvl, alwaysHideLvl = BBF.PlayerLevelHideFlags()
 
             if mode > 3 then
                 if not PlayerFrame.PlayerFrameContainer.PlayerElite then
@@ -2421,8 +2429,7 @@ function BBF.PlayerElite(mode)
         elseif BBF.eliteToggled then
             local frameTexture = PlayerFrame.ClassicFrame.Texture
             local playerElite = PlayerFrame.PlayerFrameContainer.PlayerElite
-            local hideLvl = db.hideLevelText
-            local alwaysHideLvl = hideLvl and db.hideLevelTextAlways
+            local hideLvl, alwaysHideLvl = BBF.PlayerLevelHideFlags()
 
             frameTexture:SetDesaturated(false)
             if alwaysHideLvl then
@@ -2457,6 +2464,7 @@ end
 
 
 function BBF.ArenaOptimizer(disable, noPrint)
+    do return end
     local db = BetterBlizzFramesDB
     if not db.arenaOptimizer and not disable then return end
 
@@ -3100,6 +3108,34 @@ function BBF.LegacyComboActiveOnly()
     UpdateLegacyComboActiveOnly(ComboFrame)
 end
 
+local HD_COMBO_POINT = "Interface\\AddOns\\BetterBlizzFrames\\media\\MoTextures\\ComboPoint.png"
+
+local function LegacyComboPointTexture()
+    return BBF.ClassicHDTexturesActive and BBF.ClassicHDTexturesActive() and HD_COMBO_POINT or 130973
+end
+
+function BBF.HDLegacyComboPoints()
+    if not ComboFrame or not ComboFrame.ComboPoints then return end
+    if not (BBF.ClassicHDTexturesActive and BBF.ClassicHDTexturesActive()) then return end
+    for _, point in ipairs(ComboFrame.ComboPoints) do
+        for i = 1, point:GetNumRegions() do
+            local region = select(i, point:GetRegions())
+            if region and region:IsObjectType("Texture") and region:GetDrawLayer() == "BACKGROUND" then
+                region:SetTexture(HD_COMBO_POINT)
+                region:SetTexCoord(0, 0.375, 0, 1)
+            end
+        end
+        if point.Highlight and not point.Highlight:GetAtlas() then
+            point.Highlight:SetTexture(HD_COMBO_POINT)
+            point.Highlight:SetTexCoord(0.375, 0.5625, 0, 1)
+        end
+        if point.Shine then
+            point.Shine:SetTexture(HD_COMBO_POINT)
+            point.Shine:SetTexCoord(0.5625, 1, 0, 1)
+        end
+    end
+end
+
 function BBF.ApplyLegacyBlueCombos(isEnabled)
     if not ComboFrame or not ComboFrame.ComboPoints then return end
 
@@ -3117,7 +3153,7 @@ function BBF.ApplyLegacyBlueCombos(isEnabled)
                 point.Highlight:SetPoint("TOPLEFT", point, "TOPLEFT", -1, 1.5)
                 point.charged = true
             else
-                point.Highlight:SetTexture(130973) -- original texture
+                point.Highlight:SetTexture(LegacyComboPointTexture())
                 point.Highlight:SetTexCoord(0.375, 0.5625, 0, 1)
                 point.Highlight:SetSize(8, 16)
                 point.Highlight:SetPoint("TOPLEFT", point, "TOPLEFT", 2, 0)
@@ -3153,7 +3189,7 @@ function BBF.LegacyBlueCombos()
                         point.Highlight:SetPoint("TOPLEFT", point, "TOPLEFT", -1, 1.5)
                         point.charged = true
                     elseif point.charged then
-                        point.Highlight:SetTexture(130973)
+                        point.Highlight:SetTexture(LegacyComboPointTexture())
                         point.Highlight:SetTexCoord(0.375, 0.5625, 0, 1)
                         point.Highlight:SetSize(8, 16)
                         point.Highlight:SetPoint("TOPLEFT", point, "TOPLEFT", 2, 0)
@@ -4788,7 +4824,39 @@ function BBF.UnitFrameBackgroundTexture()
 end
 
 
+local function TintMinimapRings(frame)
+    for i = 1, frame:GetNumRegions() do
+        local region = select(i, frame:GetRegions())
+        if region and region:IsObjectType("Texture") and not region:IsForbidden() then
+            local texture = region:GetTexture()
+            if texture and string.find(tostring(texture), "136430", 1, true) then
+                region:SetDesaturated(true)
+                region:SetVertexColor(1, 0.671, 0.349, 1)
+            end
+        end
+    end
+end
 
+function BBF.TintForeverMinimap()
+    local db = BetterBlizzFramesDB
+    if db.SkipMinimapForeverTint then return end
+    if db.darkModeUi and db.darkModeMinimap then return end
+    if BBF.MinimapBronzeTintActive and BBF.MinimapBronzeTintActive() then return end
+    if not Minimap or not MinimapCompassTexture then return end
+    MinimapCompassTexture:SetVertexColor(1, 0.90, 0.75, 1)
+    for i = 1, Minimap:GetNumChildren() do
+        local child = select(i, Minimap:GetChildren())
+        if child and not child:IsForbidden() then
+            TintMinimapRings(child)
+            for j = 1, child:GetNumChildren() do
+                local nestedChild = select(j, child:GetChildren())
+                if nestedChild and not nestedChild:IsForbidden() then
+                    TintMinimapRings(nestedChild)
+                end
+            end
+        end
+    end
+end
 
 function BBF.HideTalkingHeads()
     if not BetterBlizzFramesDB.hideTalkingHeads then return end
@@ -4800,6 +4868,7 @@ function BBF.HideTalkingHeads()
 end
 
 function BBF.GladTracker()
+    do return end
     if not BetterBlizzFramesDB.gladWinTracker then return end
     if BBF.GladTrackerOn then return end
     BBF.GladTrackerOn = true
@@ -5402,9 +5471,30 @@ end
 
 local function executeCustomCode()
     if BetterBlizzFramesDB and BetterBlizzFramesDB.customCode then
-        local func, errorMsg = loadstring(BetterBlizzFramesDB.customCode)
+        local function fontMissing(path)
+            if not BBF.testFont then
+                BBF.testFont = UIParent:CreateFontString()
+            end
+            return not pcall(BBF.testFont.SetFont, BBF.testFont, path, 12, "")
+        end
+        local function quoted(q)
+            return function(path)
+                if fontMissing((path:gsub("\\\\", "\\"))) then
+                    return q .. STANDARD_TEXT_FONT:gsub("\\", "\\\\") .. q
+                end
+            end
+        end
+        local code = BetterBlizzFramesDB.customCode
+        code = code:gsub('"([^"\n]-%.[oOtT][tT][fF])"', quoted('"'))
+        code = code:gsub("'([^'\n]-%.[oOtT][tT][fF])'", quoted("'"))
+        code = code:gsub("%[%[([^\n]-%.[oOtT][tT][fF])%]%]", function(path)
+            if fontMissing(path) then
+                return "[[" .. STANDARD_TEXT_FONT .. "]]"
+            end
+        end)
+        local func, errorMsg = loadstring(code, "BBF Custom Code")
         if func then
-            func() -- Execute the custom code
+            xpcall(func, geterrorhandler())
         else
             BBF.Print(string.format(L["Print_Error_In_Custom_Code"], errorMsg))
         end
@@ -5472,6 +5562,7 @@ Frame:SetScript("OnEvent", function(...)
             BBF.MoveToTFrames()
             BBF.UpdateUserAuraSettings()
             BBF.DarkmodeFrames()
+            BBF.TintForeverMinimap()
             BBF.ForeverTweaks()
             BBF.HookPlayerAndTargetAuras()
             BBF.HookFrameTextureColor()
@@ -5642,6 +5733,7 @@ First:SetScript("OnEvent", function(_, event, addonName)
         BBF.ApplyLocale()
 
         InitializeSavedVariables()
+        BBF.EnforceForeverComboPoints()
 
         if BetterBlizzFramesDB.hideTargetAuras then
             BetterBlizzFramesDB.hideTargetBuffs = true
@@ -5815,6 +5907,7 @@ First:SetScript("OnEvent", function(_, event, addonName)
         BBF.AlwaysShowLegacyComboPoints()
         BBF.LegacyComboActiveOnly()
         BBF.GenericLegacyComboSupport()
+        BBF.HDLegacyComboPoints()
         BBF.RaiseTargetFrameLevel()
         BBF.RaiseTargetCastbarStratas()
         BBF.RaidFramePixelBorder()

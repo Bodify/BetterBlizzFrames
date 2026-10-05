@@ -131,6 +131,8 @@ function BBF.HookStatusBarText()
         end
     end
 
+    BBF.statusBarTextFormatMode = statusTextSetting
+    BBF.statusBarTextFormatSingle = singleDisplay
     BBF.statusBarTextHookBBF = true
 end
 local centeredBars

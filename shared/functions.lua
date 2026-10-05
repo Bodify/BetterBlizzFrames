@@ -23,6 +23,20 @@ function BBF.DarkModeUnitFramesOn()
 	return db.darkModeUi and db.darkModeUnitFrames and not (BBF.ClassicBronzeTintActive and BBF.ClassicBronzeTintActive()) and true or false
 end
 
+function BBF.PlayerLevelHideFlags()
+	local db = BetterBlizzFramesDB
+	if db.hideLevelText then
+		return true, db.hideLevelTextAlways and true or false
+	end
+	local hide = db.hidePlayerLevelText and true or false
+	return hide, hide
+end
+
+function BBF.PlayerLevelHidden(maxLevel)
+	local hide, always = BBF.PlayerLevelHideFlags()
+	return always or (hide and UnitLevel("player") == (maxLevel or GetMaxLevelForPlayerExpansion()))
+end
+
 function BBF.UpdateAuraCollapseButton()
 	local hide = BetterBlizzFramesDB.hideAuraCollapseButton and true or false
 	local button = BuffFrame and BuffFrame.CollapseAndExpandButton

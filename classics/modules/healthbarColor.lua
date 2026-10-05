@@ -552,12 +552,12 @@ function BBF.BiggerHealthbars(frame, name)
     else
         targetTexture = normalTexture
     end
-    if BetterBlizzFramesDB.hideLevelText then
-        if BetterBlizzFramesDB.hideLevelTextAlways then
-            targetTexture = hideMana and bigNoLevelNoManaTexture or noLevelTexture
-        elseif frame == "PlayerFrame" and UnitLevel("player") == maxLvl then
+    if frame == "PlayerFrame" then
+        if BBF.PlayerLevelHidden(maxLvl) then
             targetTexture = hideMana and bigNoLevelNoManaTexture or noLevelTexture
         end
+    elseif BetterBlizzFramesDB.hideLevelText and BetterBlizzFramesDB.hideLevelTextAlways then
+        targetTexture = hideMana and bigNoLevelNoManaTexture or noLevelTexture
     end
     -- Texture
     texture:SetTexture(targetTexture)
@@ -846,12 +846,12 @@ function BBF.HookHideManabars()
             local texture = _G[info.name.."Texture"] or _G[info.name.."TextureFrameTexture"]
             if texture then
                 local textureToUse = noManaTexture
-                if BetterBlizzFramesDB.hideLevelText then
-                    if BetterBlizzFramesDB.hideLevelTextAlways then
-                        textureToUse = noLevelNoManaTexture
-                    elseif info.name == "PlayerFrame" and UnitLevel("player") == maxLvl then
+                if info.name == "PlayerFrame" then
+                    if BBF.PlayerLevelHidden(maxLvl) then
                         textureToUse = noLevelNoManaTexture
                     end
+                elseif BetterBlizzFramesDB.hideLevelText and BetterBlizzFramesDB.hideLevelTextAlways then
+                    textureToUse = noLevelNoManaTexture
                 end
                 texture:SetTexture(textureToUse)
             end

@@ -156,16 +156,14 @@ local function SetArenaName(frame, unit, textObject)
     local nameText
     local partyID = UnitIsUnit(unit, "party1") and " 1" or " 2"
 
-    if specName then
-        if showSpecName and showArenaID then
-            nameText = specName .. partyID
-        elseif showSpecName then
-            nameText = specName
-        elseif showArenaID then
-            nameText = "Party" .. partyID
-        end
+    if specName and showSpecName and showArenaID then
+        nameText = specName .. partyID
+    elseif specName and showSpecName then
+        nameText = specName
+    elseif showArenaID then
+        nameText = "Party" .. partyID
     else
-        nameText = showArenaID and "Party" .. partyID or removeRealmNames and GetNameWithoutRealm(frame)
+        nameText = removeRealmNames and GetNameWithoutRealm(frame) or UnitName(unit)
     end
 
     if nameText then
@@ -905,17 +903,15 @@ local function SetArenaNameUnitFrame(frame, unit, textObject)
         nameText = unitID -- Show "Party 1" or "Party 2"
     else
         -- Construct the nameText based on specName and unitID settings
-        if specName then
-            if showSpecName and showArenaID and unitID then
-                local arenaNumber = string.match(unitID, "%d+")
-                nameText = specName .. " " .. (arenaNumber or "")
-            elseif showSpecName then
-                nameText = specName
-            elseif showArenaID and unitID then
-                nameText = unitID
-            end
+        if specName and showSpecName and showArenaID and unitID then
+            local arenaNumber = string.match(unitID, "%d+")
+            nameText = specName .. " " .. (arenaNumber or "")
+        elseif specName and showSpecName then
+            nameText = specName
+        elseif showArenaID and unitID then
+            nameText = unitID
         else
-            nameText = (showArenaID and unitID) or (removeRealmNames and GetNameWithoutRealm(frame)) or UnitName(unit)
+            nameText = (removeRealmNames and GetNameWithoutRealm(frame)) or UnitName(unit)
         end
     end
 

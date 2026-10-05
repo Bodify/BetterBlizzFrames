@@ -142,6 +142,17 @@ end
 
 
 
+local function UpdatePlayerLevelTextVisibility()
+    local hide, always = BBF.PlayerLevelHideFlags()
+    if not hide then return end
+    if always then
+        PlayerLevelText:SetAlpha(0)
+        PlayerLevelText:SetParent(BBF.hiddenFrame)
+    else
+        PlayerLevelText:SetAlpha(UnitLevel("player") == maxLvl and 0 or 1)
+    end
+end
+
 local function UpdateLevelTextVisibility(unitFrame, unit)
     if BetterBlizzFramesDB.hideLevelText then
         if BetterBlizzFramesDB.hideLevelTextAlways then
@@ -418,8 +429,13 @@ function BBF.HideFrames()
     --     -- Hide Player level text
     UpdateLevelTextVisibility(TargetFrameTextureFrameLevelText, "target")
     UpdateLevelTextVisibility(FocusFrameTextureFrameLevelText, "focus")
-    UpdateLevelTextVisibility(PlayerLevelText, "player")
+    UpdatePlayerLevelTextVisibility()
     UpdateHighLevelSkulls()
+
+    if not BetterBlizzFramesDB.hideLevelText and BetterBlizzFramesDB.hidePlayerLevelText and not BBF.classicFramesPlayerLevelHide then
+        PlayerFrameTexture:SetTexture(BetterBlizzFramesDB.biggerHealthbars and "Interface\\Addons\\BetterBlizzFrames\\media\\UI-TargetingFrame-NoLevel" or "Interface\\TargetingFrame\\UI-TargetingFrame-NoLevel")
+        BBF.classicFramesPlayerLevelHide = true
+    end
 
     if BetterBlizzFramesDB.hideLevelText and not BBF.classicFramesLevelHide then
         local noLevelTexture = BetterBlizzFramesDB.biggerHealthbars and "Interface\\Addons\\BetterBlizzFrames\\media\\UI-TargetingFrame-NoLevel" or "Interface\\TargetingFrame\\UI-TargetingFrame-NoLevel"

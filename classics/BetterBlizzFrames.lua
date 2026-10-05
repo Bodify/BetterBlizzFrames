@@ -2919,9 +2919,30 @@ end
 
 local function executeCustomCode()
     if BetterBlizzFramesDB and BetterBlizzFramesDB.customCode then
-        local func, errorMsg = loadstring(BetterBlizzFramesDB.customCode)
+        local function fontMissing(path)
+            if not BBF.testFont then
+                BBF.testFont = UIParent:CreateFontString()
+            end
+            return not pcall(BBF.testFont.SetFont, BBF.testFont, path, 12, "")
+        end
+        local function quoted(q)
+            return function(path)
+                if fontMissing((path:gsub("\\\\", "\\"))) then
+                    return q .. STANDARD_TEXT_FONT:gsub("\\", "\\\\") .. q
+                end
+            end
+        end
+        local code = BetterBlizzFramesDB.customCode
+        code = code:gsub('"([^"\n]-%.[oOtT][tT][fF])"', quoted('"'))
+        code = code:gsub("'([^'\n]-%.[oOtT][tT][fF])'", quoted("'"))
+        code = code:gsub("%[%[([^\n]-%.[oOtT][tT][fF])%]%]", function(path)
+            if fontMissing(path) then
+                return "[[" .. STANDARD_TEXT_FONT .. "]]"
+            end
+        end)
+        local func, errorMsg = loadstring(code, "BBF Custom Code")
         if func then
-            func() -- Execute the custom code
+            xpcall(func, geterrorhandler())
         else
             BBF.Print(string.format(L["Print_Error_In_Custom_Code"], errorMsg))
         end

@@ -556,6 +556,20 @@ function BBF.UpdatePlayerPixelBorderSize()
     SetBarMask(hpContainer.HealthBar, hpContainer.HealthBarMask, true)
 end
 
+function BBF.NoPortraitManaTextOffsets()
+    local db = BetterBlizzFramesDB
+    local thickOutline = db.changeUnitFrameValueFont and db.unitFrameValueFontOutline == "THICKOUTLINE"
+    local defaultFont = not db.changeUnitFrameValueFont
+    local manaTextYOffset = thickOutline and -5.5 or defaultFont and -5 or -4.5
+    if db.noPortraitPixelBorder then
+        manaTextYOffset = manaTextYOffset - (thickOutline and 1 or 2)
+        if defaultFont then
+            manaTextYOffset = manaTextYOffset + 0.5
+        end
+    end
+    return db.changeUnitFrameValueFont and 68 or 67, manaTextYOffset + (db.tempManaYOffset or 0)
+end
+
 function BBF.UpdateNoPortraitText(frame, frameType)
     local db = BetterBlizzFramesDB
     if frameType == "pet" then
@@ -564,20 +578,10 @@ function BBF.UpdateNoPortraitText(frame, frameType)
         if not (frame and frame.noPortraitMode) then return end
     end
     local thickOutline = db.changeUnitFrameValueFont and db.unitFrameValueFontOutline == "THICKOUTLINE"
-    local defaultFont = not db.changeUnitFrameValueFont
-    local manaTextYOffset = thickOutline and -5.5 or defaultFont and -5 or -4.5
     local hpTextYOffset = thickOutline and 9.5 or 10.5
-    local leftTextXOffset = db.changeUnitFrameValueFont and 68 or 67
+    local leftTextXOffset, manaTextYOffset = BBF.NoPortraitManaTextOffsets()
     local pixel = db.noPortraitPixelBorder
 
-    if db.noPortraitPixelBorder then
-        manaTextYOffset = manaTextYOffset - (thickOutline and 1 or 2)
-        if defaultFont then
-            manaTextYOffset = manaTextYOffset + 0.5
-        end
-    end
-
-    manaTextYOffset = manaTextYOffset + (BetterBlizzFramesDB.tempManaYOffset or 0)
     hpTextYOffset = hpTextYOffset + (BetterBlizzFramesDB.tempHpYOffset or 0)
 
     if frameType == "target" or frameType == "focus" then
@@ -1250,6 +1254,7 @@ local function MakeNoPortraitMode(frame)
         end
 
     elseif frame == PlayerFrame then
+        local hideLvl, alwaysHideLvl = BBF.PlayerLevelHideFlags()
         -- PlayerFrame
         -- Frame
         local content = frame.PlayerFrameContent
@@ -1835,8 +1840,7 @@ local function MakeNoPortraitMode(frame)
         local function PlayerEliteFrame()
             local playerElite = frame.noPortraitMode.Texture
             local mode = BetterBlizzFramesDB.playerEliteFrameMode
-            local hideLvl = BetterBlizzFramesDB.hideLevelText
-            local alwaysHideLvl = hideLvl and BetterBlizzFramesDB.hideLevelTextAlways
+            local hideLvl, alwaysHideLvl = BBF.PlayerLevelHideFlags()
 
             -- Set Elite style according to value
             if mode == 1 then -- Rare (Silver)

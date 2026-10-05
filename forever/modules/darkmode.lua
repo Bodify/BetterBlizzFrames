@@ -1181,6 +1181,7 @@ function BBF.DarkmodeFrames(bypass)
 
     BBF.UpdateClassicHDTextureColors()
     BBF.DarkModeActive = true
+    BBF.TintForeverMinimap()
 end
 
 
