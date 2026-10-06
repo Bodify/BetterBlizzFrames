@@ -1562,6 +1562,8 @@ L["Timer_Low_Threshold"] = "Warnfarbe ab"
 L["Tooltip_Timer_Low_Threshold"] = "Verbleibende Sekunden, ab denen der Dauertext zur Warnfarbe wechselt."
 L["Duration_Text_Color"] = "Dauertextfarbe"
 L["Tooltip_Duration_Text_Color_Desc"] = "Färbt den Dauertext deiner eigenen Auren immer in einer eigenen Farbe statt Blizzards Weiß/Gelb-Aufteilung bei 90 Sekunden."
+L["Hide_Weapon_Enchants"] = "Waffenverzauberungen ausblenden"
+L["Tooltip_Hide_Weapon_Enchants_Desc"] = "Blendet temporäre Waffenverzauberungen in deinen Buffs aus."
 L["Player_Aura_Cooldown_Swipe"] = "Abklingzeit-Wischeffekt"
 L["Tooltip_Player_Aura_Cooldown_Swipe_Desc"] = "Fügt deinen eigenen Buffs und Debuffs einen Abklingzeit-Wischeffekt hinzu."
 

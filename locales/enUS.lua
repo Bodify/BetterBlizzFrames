@@ -1558,6 +1558,8 @@ L["Timer_Low_Threshold"] = "Timer Low Color At"
 L["Tooltip_Timer_Low_Threshold"] = "Seconds remaining at which the duration text switches to the low color."
 L["Duration_Text_Color"] = "Duration Text Color"
 L["Tooltip_Duration_Text_Color_Desc"] = "Always color your own aura duration text with a custom color instead of Blizzard's white/yellow split at 90 seconds."
+L["Hide_Weapon_Enchants"] = "Hide Weapon Enchants"
+L["Tooltip_Hide_Weapon_Enchants_Desc"] = "Hides temporary weapon enchants from your buffs."
 L["Player_Aura_Cooldown_Swipe"] = "Cooldown Swipe"
 L["Tooltip_Player_Aura_Cooldown_Swipe_Desc"] = "Add a cooldown swipe to your own buffs and debuffs."
 

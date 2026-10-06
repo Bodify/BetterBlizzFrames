@@ -1562,6 +1562,8 @@ L["Timer_Low_Threshold"] = "Цвет предупреждения с"
 L["Tooltip_Timer_Low_Threshold"] = "Сколько секунд должно остаться, чтобы текст длительности переключился на цвет предупреждения."
 L["Duration_Text_Color"] = "Цвет текста длительности"
 L["Tooltip_Duration_Text_Color_Desc"] = "Всегда окрашивает текст длительности ваших аур в свой цвет вместо стандартного разделения Blizzard на белый/желтый на 90 секундах."
+L["Hide_Weapon_Enchants"] = "Скрыть чары оружия"
+L["Tooltip_Hide_Weapon_Enchants_Desc"] = "Скрывает временные чары оружия среди ваших баффов."
 L["Player_Aura_Cooldown_Swipe"] = "Затемнение восстановления"
 L["Tooltip_Player_Aura_Cooldown_Swipe_Desc"] = "Добавляет затемнение восстановления на ваши баффы и дебаффы."
 

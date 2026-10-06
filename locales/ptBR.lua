@@ -1562,6 +1562,8 @@ L["Timer_Low_Threshold"] = "Cor de alerta a partir de"
 L["Tooltip_Timer_Low_Threshold"] = "Segundos restantes a partir dos quais o texto de duração muda para a cor de alerta."
 L["Duration_Text_Color"] = "Cor do texto de duração"
 L["Tooltip_Duration_Text_Color_Desc"] = "Sempre colore o texto de duração das suas próprias auras com uma cor personalizada em vez da divisão branco/amarelo da Blizzard aos 90 segundos."
+L["Hide_Weapon_Enchants"] = "Ocultar encantamentos de arma"
+L["Tooltip_Hide_Weapon_Enchants_Desc"] = "Oculta os encantamentos temporários de arma dos seus bônus."
 L["Player_Aura_Cooldown_Swipe"] = "Varredura de recarga"
 L["Tooltip_Player_Aura_Cooldown_Swipe_Desc"] = "Adiciona uma varredura de recarga aos seus próprios bônus e penalidades."
 

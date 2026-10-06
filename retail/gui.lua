@@ -10260,8 +10260,15 @@ local function guiFrameAuras()
     CreateTooltipTwo(playerAuraDurationColor, L["Duration_Text_Color"], L["Tooltip_Duration_Text_Color_Desc"])
     AddColorButton(playerAuraDurationColor, "playerAuraDurationColorRGB", L["Duration_Text_Color"])
 
+    local hidePlayerWeaponEnchants = CreateCheckbox("hidePlayerWeaponEnchants", L["Hide_Weapon_Enchants"], enablePlayerBuffFiltering)
+    hidePlayerWeaponEnchants:SetPoint("TOPLEFT", playerAuraDurationColor, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(hidePlayerWeaponEnchants, L["Hide_Weapon_Enchants"], L["Tooltip_Hide_Weapon_Enchants_Desc"])
+    hidePlayerWeaponEnchants:HookScript("OnClick", function()
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
+    end)
+
     local playerAuraSpacingX = CreateSlider(enablePlayerBuffFiltering, L["Horizontal_Padding"], 0, 10, 1, "playerAuraSpacingX", "X")
-    playerAuraSpacingX:SetPoint("TOPLEFT", playerAuraDurationColor, "BOTTOMLEFT", 10, -20)
+    playerAuraSpacingX:SetPoint("TOPLEFT", hidePlayerWeaponEnchants, "BOTTOMLEFT", 10, -20)
     CreateTooltip(playerAuraSpacingX, L["Tooltip_Horizontal_Aura_Padding"], "ANCHOR_LEFT")
 
     local playerAuraSpacingY = CreateSlider(enablePlayerBuffFiltering, L["Vertical_Padding"], -10, 10, 1, "playerAuraSpacingY", "Y")

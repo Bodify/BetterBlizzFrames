@@ -1562,6 +1562,8 @@ L["Timer_Low_Threshold"] = "Colore di avviso da"
 L["Tooltip_Timer_Low_Threshold"] = "Secondi rimanenti a partire dai quali il testo della durata passa al colore di avviso."
 L["Duration_Text_Color"] = "Colore testo durata"
 L["Tooltip_Duration_Text_Color_Desc"] = "Colora sempre il testo della durata delle tue aure con un colore personalizzato invece della divisione bianco/giallo di Blizzard a 90 secondi."
+L["Hide_Weapon_Enchants"] = "Nascondi incantamenti dell'arma"
+L["Tooltip_Hide_Weapon_Enchants_Desc"] = "Nasconde gli incantamenti temporanei dell'arma dai tuoi benefici."
 L["Player_Aura_Cooldown_Swipe"] = "Scorrimento recupero"
 L["Tooltip_Player_Aura_Cooldown_Swipe_Desc"] = "Aggiunge uno scorrimento di recupero ai tuoi buff e debuff."
 

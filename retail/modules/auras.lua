@@ -4376,25 +4376,27 @@ local function CreatePlayerHost(key, hostFrame, harmful)
         host.blockTop, host.blockBottom = host.buffs, host.buffs
         SeedContainerStyles(host, host.buffs)
 
-        host.itemEnchantments = true
-        host.enchantButtons = {}
-        host.enchantStyle = RefreshEnchantStyle(host, host.buffs)
+        if not BetterBlizzFramesDB.hidePlayerWeaponEnchants then
+            host.itemEnchantments = true
+            host.enchantButtons = {}
+            host.enchantStyle = RefreshEnchantStyle(host, host.buffs)
 
-        for _, slot in ipairs({
-            AuraContainerItemEnchantmentSlot.MainHand,
-            AuraContainerItemEnchantmentSlot.OffHand,
-            AuraContainerItemEnchantmentSlot.Ranged,
-        }) do
-            local button = host.buffs:AddItemEnchantment(slot, {
-                hidePermanent = true,
-                initializeFrame = function(button)
-                    InitAuraButton(button, host.enchantStyle, host, false, "Enchant")
-                end,
-            })
-            host.enchantButtons[#host.enchantButtons + 1] = button
+            for _, slot in ipairs({
+                AuraContainerItemEnchantmentSlot.MainHand,
+                AuraContainerItemEnchantmentSlot.OffHand,
+                AuraContainerItemEnchantmentSlot.Ranged,
+            }) do
+                local button = host.buffs:AddItemEnchantment(slot, {
+                    hidePermanent = true,
+                    initializeFrame = function(button)
+                        InitAuraButton(button, host.enchantStyle, host, false, "Enchant")
+                    end,
+                })
+                host.enchantButtons[#host.enchantButtons + 1] = button
+            end
+
+            H.CreateImbues(host)
         end
-
-        H.CreateImbues(host)
 
         CreateFilteredAuras(host)
 

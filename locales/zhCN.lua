@@ -1563,6 +1563,8 @@ L["Timer_Low_Threshold"] = "低时间颜色阈值"
 L["Tooltip_Timer_Low_Threshold"] = "持续时间文字切换为低时间颜色时的剩余秒数。"
 L["Duration_Text_Color"] = "持续时间文字颜色"
 L["Tooltip_Duration_Text_Color_Desc"] = "始终为你自己的光环持续时间文字使用自定义颜色，而不是暴雪默认的以 90 秒为界的白色/黄色。"
+L["Hide_Weapon_Enchants"] = "隐藏武器附魔"
+L["Tooltip_Hide_Weapon_Enchants_Desc"] = "在你的增益效果中隐藏临时武器附魔。"
 L["Player_Aura_Cooldown_Swipe"] = "冷却转圈"
 L["Tooltip_Player_Aura_Cooldown_Swipe_Desc"] = "为你自己的增益和减益添加冷却转圈效果。"
 

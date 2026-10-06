@@ -256,6 +256,7 @@ local defaultSettings = {
     playerAuraDurationOnIcon = false,
     playerAuraDurationColor = false,
     playerAuraDurationColorRGB = {1, 1, 1, 1},
+    hidePlayerWeaponEnchants = false,
     maxBuffFrameBuffs = 32,
     maxDebuffFrameDebuffs = 16,
     printAuraSpellIds = false,

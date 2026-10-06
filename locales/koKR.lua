@@ -1563,6 +1563,8 @@ L["Timer_Low_Threshold"] = "낮은 시간 색상 기준"
 L["Tooltip_Timer_Low_Threshold"] = "지속시간 텍스트가 낮은 시간 색상으로 바뀌는 남은 시간(초)입니다."
 L["Duration_Text_Color"] = "지속시간 텍스트 색상"
 L["Tooltip_Duration_Text_Color_Desc"] = "블리자드의 90초 기준 흰색/노란색 구분 대신 내 오라의 지속시간 텍스트에 항상 사용자 색상을 사용합니다."
+L["Hide_Weapon_Enchants"] = "무기 마법부여 숨기기"
+L["Tooltip_Hide_Weapon_Enchants_Desc"] = "강화 효과에서 임시 무기 마법부여를 숨깁니다."
 L["Player_Aura_Cooldown_Swipe"] = "재사용 대기시간 스와이프"
 L["Tooltip_Player_Aura_Cooldown_Swipe_Desc"] = "내 버프와 디버프에 재사용 대기시간 스와이프를 추가합니다."
 

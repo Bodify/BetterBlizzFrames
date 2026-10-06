@@ -1562,6 +1562,8 @@ L["Timer_Low_Threshold"] = "Couleur basse à"
 L["Tooltip_Timer_Low_Threshold"] = "Secondes restantes à partir desquelles le texte de durée passe à la couleur basse."
 L["Duration_Text_Color"] = "Couleur du texte de durée"
 L["Tooltip_Duration_Text_Color_Desc"] = "Toujours colorer le texte de durée de vos propres auras avec une couleur personnalisée au lieu de la séparation blanc/jaune de Blizzard à 90 secondes."
+L["Hide_Weapon_Enchants"] = "Masquer les enchantements d'arme"
+L["Tooltip_Hide_Weapon_Enchants_Desc"] = "Masque les enchantements d'arme temporaires de vos améliorations."
 L["Player_Aura_Cooldown_Swipe"] = "Balayage de recharge"
 L["Tooltip_Player_Aura_Cooldown_Swipe_Desc"] = "Ajouter un balayage de recharge à vos propres buffs et debuffs."
 

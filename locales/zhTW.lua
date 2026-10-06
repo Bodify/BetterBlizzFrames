@@ -1562,6 +1562,8 @@ L["Timer_Low_Threshold"] = "低時間顏色門檻"
 L["Tooltip_Timer_Low_Threshold"] = "剩餘秒數低於此值時，持續時間文字會切換為低時間顏色。"
 L["Duration_Text_Color"] = "持續時間文字顏色"
 L["Tooltip_Duration_Text_Color_Desc"] = "總是以自訂顏色為你自己的光環持續時間文字上色，取代 Blizzard 在 90 秒時白/黃分界的配色。"
+L["Hide_Weapon_Enchants"] = "隱藏武器附魔"
+L["Tooltip_Hide_Weapon_Enchants_Desc"] = "在你的增益效果中隱藏暫時武器附魔。"
 L["Player_Aura_Cooldown_Swipe"] = "冷卻轉圈"
 L["Tooltip_Player_Aura_Cooldown_Swipe_Desc"] = "為你自己的增益與減益加上冷卻轉圈效果。"
 
