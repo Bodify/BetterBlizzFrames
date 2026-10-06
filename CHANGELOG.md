@@ -1,3 +1,8 @@
+# BetterBlizzFrames 2.1.6
+## Forever
+### New
+- New "Hide Weapon Enchant" setting in Buffs & Debuffs section that removes weapon enchants/poisons from teh Buff row.
+
 # BetterBlizzFrames 2.1.5
 ## Forever
 ### New
