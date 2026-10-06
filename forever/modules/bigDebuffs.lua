@@ -10,7 +10,7 @@ local OTHER_CC = {
     [207777] = true,    -- Dismantle (Rogue)
     [236077] = true,    -- Disarm (Warrior)
     [233759] = true,    -- Grapple Weapon (Monk)
-    [407028] = true,    -- Sticky Tar Bomb (Hunter)
+    [407032] = true,    -- Sticky Tar Bomb (Hunter)
     [209749] = true,    -- Faerie Swarm (Druid)
 }
 
