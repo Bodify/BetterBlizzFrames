@@ -39,6 +39,7 @@ local function UpdateBar(bar, stacks)
             end
         end
     end
+    BBF.ApplyComboVisibility(bar, bar ~= prdBar, stacks)
 end
 
 local function RecolorUnchargedArt(point)

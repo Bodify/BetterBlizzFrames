@@ -238,7 +238,7 @@ local function SetBronze(texture)
     end
     texture.bbfBronzeChanging = true
     if texture.bbfBronzeNoPortrait then
-        texture:SetVertexColor(NO_PORTRAIT_BRONZE_R, NO_PORTRAIT_BRONZE_G, NO_PORTRAIT_BRONZE_B, 1)
+        texture:SetVertexColor(NO_PORTRAIT_BRONZE_R, NO_PORTRAIT_BRONZE_G, NO_PORTRAIT_BRONZE_B, texture:GetAlpha())
     elseif texture.bbfBronzeMinimap then
         texture:SetDesaturated(true)
         texture:SetVertexColor(MINIMAP_BRONZE_R, MINIMAP_BRONZE_G, MINIMAP_BRONZE_B, 1)
@@ -770,9 +770,10 @@ function BBF.UpdateBronzeTint()
             if not texture:IsForbidden() then
                 local source = texture.bbfBronzeSource
                 if source then
-                    texture:SetVertexColor(source:GetVertexColor())
+                    local r, g, b = source:GetVertexColor()
+                    texture:SetVertexColor(r, g, b, texture:GetAlpha())
                 elseif not BBF.DarkModeUnitFramesOn() then
-                    texture:SetVertexColor(1, 1, 1, 1)
+                    texture:SetVertexColor(1, 1, 1, texture:GetAlpha())
                 end
             end
         end

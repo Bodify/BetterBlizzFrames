@@ -10434,7 +10434,7 @@ local function guiMisc()
 
     local contentFrame = CreateFrame("Frame", nil, scrollFrame)
     contentFrame.name = guiMisc.name
-    contentFrame:SetSize(680, 980)
+    contentFrame:SetSize(680, 1050)
     scrollFrame:SetScrollChild(contentFrame)
 
     local function CreateSectionHeader(text, atlas, iconWidth, iconHeight, relativeTo, relativePoint, x, y)
@@ -11013,6 +11013,7 @@ local function guiMisc()
 
     prdResourceAdjust:HookScript("OnClick", function()
         RefreshPrdResourceOptions()
+        BBF.UpdateComboVisibility()
     end)
 
     prdResourceAdjust:HookScript("OnMouseDown", function(self, button)
@@ -11022,8 +11023,46 @@ local function guiMisc()
         end
     end)
 
+    local hideEmptyComboPoints = CreateCheckbox("hideEmptyComboPoints", L["Hide_Combo_Points_When_Empty"], contentFrame)
+    hideEmptyComboPoints:SetPoint("TOPLEFT", prdResourceAdjust, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(hideEmptyComboPoints, L["Hide_Combo_Points_When_Empty"], L["Tooltip_Hide_Combo_Points_When_Empty_Desc"])
+
+    local onlyActiveComboPoints = CreateCheckbox("onlyActiveComboPoints", L["Only_Show_Filled_Combo_Points"], contentFrame)
+    onlyActiveComboPoints:SetPoint("TOPLEFT", hideEmptyComboPoints, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(onlyActiveComboPoints, L["Only_Show_Filled_Combo_Points"], L["Tooltip_Only_Show_Filled_Combo_Points_Desc"])
+
+    local comboVisibilityUnitFrames = CreateCheckbox("comboVisibilityUnitFrames", L["Combo_Visibility_Unit_Frames"], contentFrame)
+    comboVisibilityUnitFrames:SetPoint("TOPLEFT", onlyActiveComboPoints, "BOTTOMLEFT", 12, pixelsBetweenBoxes)
+    CreateTooltipTwo(comboVisibilityUnitFrames, L["Combo_Visibility_Unit_Frames"], L["Tooltip_Combo_Visibility_Unit_Frames_Desc"])
+
+    local function RefreshComboVisibilityOptions()
+        if hideEmptyComboPoints:GetChecked() or onlyActiveComboPoints:GetChecked() then
+            EnableElement(comboVisibilityUnitFrames)
+        else
+            DisableElement(comboVisibilityUnitFrames)
+        end
+        BBF.UpdateComboVisibility()
+    end
+
+    hideEmptyComboPoints:HookScript("OnClick", function(self)
+        if self:GetChecked() then
+            BetterBlizzFramesDB.onlyActiveComboPoints = false
+            onlyActiveComboPoints:SetChecked(false)
+        end
+        RefreshComboVisibilityOptions()
+    end)
+    onlyActiveComboPoints:HookScript("OnClick", function(self)
+        if self:GetChecked() then
+            BetterBlizzFramesDB.hideEmptyComboPoints = false
+            hideEmptyComboPoints:SetChecked(false)
+        end
+        RefreshComboVisibilityOptions()
+    end)
+    comboVisibilityUnitFrames:HookScript("OnClick", RefreshComboVisibilityOptions)
+    RefreshComboVisibilityOptions()
+
     local moveResource = CreateCheckbox("moveResource" .. playerClass, L["Move_Resource"], contentFrame)
-    moveResource:SetPoint("TOPLEFT", prdResourceAdjust, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    moveResource:SetPoint("TOPLEFT", comboVisibilityUnitFrames, "BOTTOMLEFT", -12, pixelsBetweenBoxes)
     CreateTooltipTwo(moveResource, L["Move_Resource"], string.format(L["Tooltip_Move_Resource_Desc"], playerClass), L["Tooltip_Move_Resource_SubText"])
     moveResource:HookScript("OnClick", function(self)
         if not self:GetChecked() then

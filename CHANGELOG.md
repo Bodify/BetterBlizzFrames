@@ -2,6 +2,10 @@
 ## Forever
 ### New
 - New "Hide Weapon Enchant" setting in Buffs & Debuffs section that removes weapon enchants/poisons from teh Buff row.
+## Retail & Forever
+### New
+- Misc: "Hide Combo Points/Resource When Empty" setting. Hides the combos until you have at least one point.
+- Misc: "Only Show Filled Combo Points/Resource" setting. Hides empty points and their background and only display current ones.
 
 # BetterBlizzFrames 2.1.5
 ## Forever

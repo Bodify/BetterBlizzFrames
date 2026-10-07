@@ -135,6 +135,7 @@ local function UpdateBar(bar)
             end
         end
     end
+    BBF.ApplyComboVisibility(bar, not bar.isPrd, comboPoints)
 end
 
 local function UpdateMaxPower(bar)

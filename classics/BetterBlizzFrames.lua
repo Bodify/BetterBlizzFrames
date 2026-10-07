@@ -1,6 +1,6 @@
 -- I did not know what a variable was when I started. I know a little bit more now and I am so sorry.
-local L = BBF.L
 
+local L = BBF.L
 local addonVersion = "1.00" --too afraid to to touch for now
 local addonUpdates = C_AddOns.GetAddOnMetadata("BetterBlizzFrames", "Version")
 local sendUpdate = false

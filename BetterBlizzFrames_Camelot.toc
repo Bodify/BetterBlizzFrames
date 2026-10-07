@@ -19,6 +19,7 @@ shared\ImportExport.lua
 shared\minimapTweaks.lua
 shared\smoothBars.lua
 shared\xpBarTexture.lua
+shared\comboVisibility.lua
 
 forever\modules\camelotFrames.lua
 forever\modules\darkmode.lua
