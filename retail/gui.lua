@@ -4047,9 +4047,6 @@ function BBF.OpenMoveNamesWindow(anchor)
         BBF.Print(L["Print_Move_Names_Combat"])
         return
     end
-    if not BetterBlizzFramesDB.moveNames and BBF.moveNamesCheckbox then
-        BBF.moveNamesCheckbox:Click()
-    end
     if not f then
         f = CreateFrame("Frame", "BBFMoveNamesWindow", UIParent, "DefaultPanelFlatTemplate")
         f:SetSize(732, 252)
@@ -4122,6 +4119,19 @@ function BBF.OpenMoveNamesWindow(anchor)
         local alignOptions = { "Left", "Center", "Right" }
         local justifyOption = { LEFT = "Left", CENTER = "Center", RIGHT = "Right" }
         f.sliders = {}
+
+        local function EnableMoveNames()
+            if not BetterBlizzFramesDB.moveNames and BBF.moveNamesCheckbox then
+                BBF.moveNamesCheckbox:Click()
+            end
+        end
+        local function EnableOnChange(slider)
+            slider:HookScript("OnValueChanged", function(_, value)
+                if value ~= 0 then
+                    EnableMoveNames()
+                end
+            end)
+        end
         f.alignDropdowns = {}
 
         local function CurrentAlign(key, prefix)
@@ -4166,6 +4176,9 @@ function BBF.OpenMoveNamesWindow(anchor)
             widthSlider:SetPoint("TOPLEFT", f, "TOPLEFT", 288, yPos)
             CreateTooltipTwo(widthSlider, L["Width_Adjustment"], L["Tooltip_Width_Adjustment_Desc"])
             f.sliders[row.key] = { X = xSlider, Y = ySlider, prefix = prefix }
+            EnableOnChange(xSlider)
+            EnableOnChange(ySlider)
+            EnableOnChange(widthSlider)
 
             local align = CreateFrame("DropdownButton", nil, f, "WowStyle1DropdownTemplate")
             align:SetPoint("BOTTOMLEFT", f, "TOPLEFT", 424, yPos - 20)
@@ -4182,6 +4195,7 @@ function BBF.OpenMoveNamesWindow(anchor)
                         return CurrentAlign(row.key, prefix) == option
                     end, function()
                         BetterBlizzFramesDB[prefix .. "Align"] = option
+                        EnableMoveNames()
                         BBF.RefreshNameLayouts()
                     end)
                 end
@@ -4202,6 +4216,8 @@ function BBF.OpenMoveNamesWindow(anchor)
                 growDown:SetAlpha(on and 1 or 0.5)
             end
             multiLine:HookScript("OnClick", UpdateGrowDown)
+            multiLine:HookScript("OnClick", EnableMoveNames)
+            growDown:HookScript("OnClick", EnableMoveNames)
             UpdateGrowDown()
 
             local reset = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")

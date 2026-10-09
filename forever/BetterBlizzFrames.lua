@@ -5848,6 +5848,12 @@ First:SetScript("OnEvent", function(_, event, addonName)
             end
             BetterBlizzFramesDB.fontSizeNumFix = true
         end
+        if not BetterBlizzFramesDB.centerNamesMoveNamesMigrated then
+            if BetterBlizzFramesDB.centerNames then
+                BetterBlizzFramesDB.moveNames = true
+            end
+            BetterBlizzFramesDB.centerNamesMoveNamesMigrated = true
+        end
         local skipUpdateMsg = BetterBlizzFramesDB.skipUpdateMsg or BBF.skippedUpdateMsg
         if not BetterBlizzFramesDB.foreverComboReworkMsg then
             BetterBlizzFramesDB.foreverComboReworkMsg = true
