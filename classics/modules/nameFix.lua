@@ -340,6 +340,7 @@ BBF.nameMoveSliders = {}
 for _, prefix in pairs(movePrefix) do
     BBF.nameMoveSliders[prefix .. "X"] = true
     BBF.nameMoveSliders[prefix .. "Y"] = true
+    BBF.nameMoveSliders[prefix .. "Width"] = true
 end
 
 local function NameAlignForced(key)
@@ -391,6 +392,7 @@ local function ApplyNameLayout(frame)
     local dx, dy = prefix and tonumber(db[prefix .. "X"]) or 0, prefix and tonumber(db[prefix .. "Y"]) or 0
     local multiLine = prefix and db[prefix .. "MultiLine"] and true or false
     local edge = prefix and db[prefix .. "GrowDown"] and "TOP" or "BOTTOM"
+    local dw = prefix and tonumber(db[prefix .. "Width"]) or 0
     local height = frame.bbfNameBaseHeight
     local width = GetNameWidth(frame)
     local point, relativeTo, relativePoint, xPos, yPos, justify = GetBaseNameSpec(frame)
@@ -413,6 +415,7 @@ local function ApplyNameLayout(frame)
         end
         fontString:SetPoint(point, relativeTo, relativePoint, xPos + dx, yPos + dy)
         if width then
+            width = math.max(width + dw, 10)
             fontString:SetWidth(width)
         end
         if multiLine then
@@ -422,7 +425,11 @@ local function ApplyNameLayout(frame)
         end
     else
         local base = frame.bbfNameBaseWidth
-        local extra = (base and width and width > base) and (width - base) or 0
+        local extra = ((base and width and width > base) and (width - base) or 0) + dw
+        if base then
+            extra = math.max(extra, 10 - base)
+            width = base + extra
+        end
         local left = justify == "RIGHT" and extra or justify == "CENTER" and extra / 2 or 0
         local right = extra - left
         if multiLine then
@@ -434,6 +441,9 @@ local function ApplyNameLayout(frame)
             fontString:SetPoint("TOPLEFT", name, "TOPLEFT", dx - left, dy)
             fontString:SetPoint("BOTTOMRIGHT", name, "BOTTOMRIGHT", dx + right, dy)
         end
+    end
+    if width and fontString.bbfFitWidth then
+        fontString.bbfFitWidth = width
     end
     fontString:SetJustifyV(name:GetJustifyV())
     if fontString.bbfLaidJustify ~= justify then

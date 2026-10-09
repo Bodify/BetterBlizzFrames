@@ -3300,7 +3300,7 @@ function BBF.OpenMoveNamesWindow(anchor)
     end
     if not f then
         f = CreateFrame("Frame", "BBFMoveNamesWindow", UIParent, "BasicFrameTemplateWithInset")
-        f:SetSize(880, 340)
+        f:SetSize(732, 252)
         f:SetFrameStrata("FULLSCREEN_DIALOG")
         f:SetFrameLevel(550)
         f:SetClampedToScreen(true)
@@ -3316,7 +3316,7 @@ function BBF.OpenMoveNamesWindow(anchor)
         f.title:SetText(L["Move_Names"])
 
         local mirroredNames = CreateCheckbox("mirroredNames", L["Mirrored_Names"], f)
-        mirroredNames:SetPoint("TOPLEFT", f, "TOPLEFT", 14, -30)
+        mirroredNames:SetPoint("TOPLEFT", f, "TOPLEFT", 12, -28)
         CreateTooltipTwo(mirroredNames, L["Mirrored_Names"], L["Tooltip_Mirrored_Names_Desc"])
         mirroredNames:HookScript("OnClick", function(self)
             if self:GetChecked() then
@@ -3326,8 +3326,8 @@ function BBF.OpenMoveNamesWindow(anchor)
         end)
 
         BetterBlizzFramesDB.moveNamesGuideAlpha = nil
-        local guideAlpha = CreateSlider(f, L["Guide_Opacity"], 0, 1, 0.05, "moveNamesGuideAlpha", "Offset", 140)
-        guideAlpha:SetPoint("TOPRIGHT", f, "TOPRIGHT", -30, -40)
+        local guideAlpha = CreateSlider(f, L["Guide_Opacity"], 0, 1, 0.05, "moveNamesGuideAlpha", "Offset", 100)
+        guideAlpha:SetPoint("TOPRIGHT", f, "TOPRIGHT", -24, -38)
         CreateTooltipTwo(guideAlpha, L["Guide_Opacity"], L["Tooltip_Guide_Opacity_Desc"])
 
         local rows = {
@@ -3368,27 +3368,30 @@ function BBF.OpenMoveNamesWindow(anchor)
                 end
             end
         end
-        local yPos = -84
+        local yPos = -74
         for _, row in ipairs(rows) do
             local prefix = BBF.nameMovePrefix[row.key]
 
             local title = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-            title:SetPoint("TOPLEFT", f, "TOPLEFT", 18, yPos - 2)
+            title:SetPoint("TOPLEFT", f, "TOPLEFT", 14, yPos - 2)
             title:SetText(row.label)
 
-            local xSlider = CreateSlider(f, L["X_Offset"], -100, 100, 0.5, prefix .. "X", "Offset", 140)
-            xSlider:SetPoint("TOPLEFT", f, "TOPLEFT", 110, yPos)
-            local ySlider = CreateSlider(f, L["Y_Offset"], -100, 100, 0.5, prefix .. "Y", "Offset", 140)
-            ySlider:SetPoint("TOPLEFT", f, "TOPLEFT", 270, yPos)
+            local xSlider = CreateSlider(f, L["X_Offset"], -100, 100, 0.5, prefix .. "X", "Offset", 90)
+            xSlider:SetPoint("TOPLEFT", f, "TOPLEFT", 88, yPos)
+            local ySlider = CreateSlider(f, L["Y_Offset"], -100, 100, 0.5, prefix .. "Y", "Offset", 90)
+            ySlider:SetPoint("TOPLEFT", f, "TOPLEFT", 188, yPos)
+            local widthSlider = CreateSlider(f, L["Width_Adjustment"], -60, 60, 1, prefix .. "Width", "Offset", 90)
+            widthSlider:SetPoint("TOPLEFT", f, "TOPLEFT", 288, yPos)
+            CreateTooltipTwo(widthSlider, L["Width_Adjustment"], L["Tooltip_Width_Adjustment_Desc"])
             f.sliders[row.key] = { X = xSlider, Y = ySlider, prefix = prefix }
 
             local align = CreateFrame("DropdownButton", nil, f, "WowStyle1DropdownTemplate")
-            align:SetPoint("BOTTOMLEFT", f, "TOPLEFT", 490, yPos - 20)
-            align:SetWidth(90)
+            align:SetPoint("BOTTOMLEFT", f, "TOPLEFT", 424, yPos - 20)
+            align:SetWidth(72)
             align.Background:SetVertexColor(0.9, 0.9, 0.9)
             align.Arrow:SetVertexColor(0.9, 0.9, 0.9)
             local alignLabel = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall2")
-            alignLabel:SetPoint("LEFT", f, "TOPLEFT", 440, yPos - 7)
+            alignLabel:SetPoint("RIGHT", align, "LEFT", -4, 0)
             alignLabel:SetText(L["Align"])
             alignLabel:SetFont(fontSmall, 13)
             align:SetupMenu(function(_, rootDescription)
@@ -3404,7 +3407,7 @@ function BBF.OpenMoveNamesWindow(anchor)
             f.alignDropdowns[row.key] = align
 
             local multiLine = CreateCheckbox(prefix .. "MultiLine", L["Multi_Line"], f)
-            multiLine:SetPoint("TOPLEFT", f, "TOPLEFT", 595, yPos + 5)
+            multiLine:SetPoint("TOPLEFT", f, "TOPLEFT", 502, yPos + 3)
             CreateTooltipTwo(multiLine, L["Multi_Line"], L["Tooltip_Multi_Line_Desc"])
 
             local growDown = CreateCheckbox(prefix .. "GrowDown", L["Grow_Down"], multiLine)
@@ -3420,8 +3423,8 @@ function BBF.OpenMoveNamesWindow(anchor)
             UpdateGrowDown()
 
             local reset = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
-            reset:SetSize(60, 22)
-            reset:SetPoint("TOPRIGHT", f, "TOPRIGHT", -14, yPos + 2)
+            reset:SetSize(48, 20)
+            reset:SetPoint("TOPRIGHT", f, "TOPRIGHT", -12, yPos + 1)
             reset:SetText(L["Reset"])
             reset:SetScript("OnClick", function()
                 local db = BetterBlizzFramesDB
@@ -3433,15 +3436,16 @@ function BBF.OpenMoveNamesWindow(anchor)
                 UpdateGrowDown()
                 xSlider:SetValue(0)
                 ySlider:SetValue(0)
+                widthSlider:SetValue(0)
                 BBF.RefreshNameLayouts()
                 f.UpdateAlignDropdowns()
             end)
 
-            yPos = yPos - 44
+            yPos = yPos - 34
         end
 
         f.hint = f:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
-        f.hint:SetPoint("BOTTOM", f, "BOTTOM", 0, 14)
+        f.hint:SetPoint("BOTTOM", f, "BOTTOM", 0, 10)
         f.hint:SetText(L["Move_Names_Hint"])
 
         function BBF.OnNameMoved(key)
