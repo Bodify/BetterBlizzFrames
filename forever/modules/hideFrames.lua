@@ -112,7 +112,7 @@ function BBF.UpdatePlayerStatusGlow()
 end
 
 local function setLegacyComboHidden(hide)
-    local frame = ComboFrame
+    local frame = BBF.LegacyComboFrame
     if not frame then return end
     local wasHidden = frame.bbfHidden
     frame.bbfHidden = hide or nil
@@ -126,8 +126,8 @@ local function setLegacyComboHidden(hide)
             frame.bbfHideHooked = true
         end
         frame:Hide()
-    elseif wasHidden and ComboFrame_Update then
-        ComboFrame_Update(frame)
+    elseif wasHidden then
+        BBF.UpdateLegacyComboFrame()
     end
 end
 
@@ -1089,7 +1089,7 @@ function BBF.HideFrames()
             local ignoreVar = legacyComboIgnoreVars[UnitClassBase("player")]
             setLegacyComboHidden(not (ignoreVar and BetterBlizzFramesDB[ignoreVar]))
             changes.hidePlayerPower = true
-        elseif originalResourceParent or (ComboFrame and ComboFrame.bbfHidden) then
+        elseif originalResourceParent or (BBF.LegacyComboFrame and BBF.LegacyComboFrame.bbfHidden) then
             if WarlockPowerFrame and class == "WARLOCK" then WarlockPowerFrame:SetParent(originalResourceParent) end
             if RogueComboPointBarFrame and class == "ROGUE" then RogueComboPointBarFrame:SetParent(originalResourceParent) end
             if not RogueComboPointBarFrame and BBF.ComboPointBar and class == "ROGUE" then setResourceFrameVisibility(BBF.ComboPointBar, true) end

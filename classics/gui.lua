@@ -1,5 +1,4 @@
 BetterBlizzFrames = nil
-local LibDD = LibStub:GetLibrary("LibUIDropDownMenu-4.0")
 local L = BBF.L
 --local anchorPoints = {"CENTER", "TOPLEFT", "TOP", "TOPRIGHT", "LEFT", "RIGHT", "BOTTOMLEFT", "BOTTOM", "BOTTOMRIGHT"}
 local anchorPoints = {"CENTER", "TOP", "LEFT", "RIGHT", "BOTTOM"}
@@ -213,16 +212,17 @@ local function GetSearchCategory(parent)
     return category
 end
 
-local function KeepPopupInSettings(popup, panel)
+local function KeepPopupInSettings(popup, panel, strata)
+    strata = strata or "FULLSCREEN_DIALOG"
     popup:SetParent(UIParent)
     if popup.Bg then
         popup.Bg:Hide()
     end
-    popup:SetFrameStrata("FULLSCREEN_DIALOG")
+    popup:SetFrameStrata(strata)
     popup:SetFrameLevel(550)
     popup:SetToplevel(true)
     popup:HookScript("OnShow", function(self)
-        self:SetFrameStrata("FULLSCREEN_DIALOG")
+        self:SetFrameStrata(strata)
         self:Raise()
     end)
     popup:HookScript("OnHide", function()
@@ -1074,6 +1074,12 @@ local function CreateSlider(parent, label, minValue, maxValue, stepValue, elemen
                     BBF.CastbarTargetTextCaller()
 
                     --end
+                elseif BBF.nameMoveSliders[element] then
+                    BetterBlizzFramesDB[element] = value
+                    BBF.RefreshNameLayouts()
+                elseif element == "moveNamesGuideAlpha" then
+                    BetterBlizzFramesDB[element] = nil
+                    BBF.UpdateNameMoveGuideAlpha(value)
                 end
             end
     end)
@@ -1472,10 +1478,35 @@ local function CreateImportExportUI(parent, title, dataTable, posX, posY, tableN
     return frame
 end
 
+local function CreateLegacySizedDropdown(parent, width)
+    local dropdown = CreateFrame("DropdownButton", nil, parent, "WowStyle1DropdownTemplate")
+    local top, bottom = 1, 31 - dropdown:GetHeight()
+    dropdown:SetSize(width + 50, 32)
+    dropdown:SetHitRectInsets(17, 16, top, bottom)
+    for _, region in ipairs({ dropdown.Background, dropdown.Arrow, dropdown.Text }) do
+        local points = {}
+        for i = 1, region:GetNumPoints() do
+            points[i] = { region:GetPoint(i) }
+        end
+        region:ClearAllPoints()
+        for _, p in ipairs(points) do
+            local point, relativeTo, relativePoint, x, y = unpack(p)
+            if relativeTo == dropdown then
+                x = x + (relativePoint:find("LEFT") and 17 or relativePoint:find("RIGHT") and -16 or 0.5)
+                y = y + (relativePoint:find("TOP") and -top or relativePoint:find("BOTTOM") and bottom or (bottom - top) / 2)
+            end
+            region:SetPoint(point, relativeTo, relativePoint, x, y)
+        end
+    end
+    dropdown:SetMenuAnchor(AnchorUtil.CreateAnchor("TOPLEFT", dropdown, "BOTTOMLEFT", 17, bottom + 2))
+    dropdown.Background:SetVertexColor(0.9, 0.9, 0.9)
+    dropdown.Arrow:SetVertexColor(0.9, 0.9, 0.9)
+    return dropdown
+end
+
 local function CreateAnchorDropdown(name, parent, defaultText, settingKey, toggleFunc, point)
     -- Create the dropdown frame using the library's creation function
-    local dropdown = LibDD:Create_UIDropDownMenu(name, parent)
-    LibDD:UIDropDownMenu_SetWidth(dropdown, 125)
+    local dropdown = CreateLegacySizedDropdown(parent, 125)
 
     -- Function to get the display text based on the setting value
     local function getDisplayTextForSetting(settingValue)
@@ -1490,7 +1521,7 @@ local function CreateAnchorDropdown(name, parent, defaultText, settingKey, toggl
     end
 
     -- Set the initial dropdown text
-    LibDD:UIDropDownMenu_SetText(dropdown, getDisplayTextForSetting(BetterBlizzFramesDB[settingKey]) or defaultText)
+    dropdown:SetDefaultText(getDisplayTextForSetting(BetterBlizzFramesDB[settingKey]) or defaultText)
 
     local anchorPointsToUse = anchorPoints
     if name == "combatIndicatorDropdown" or name == "playerAbsorbAnchorDropdown" then
@@ -1498,8 +1529,7 @@ local function CreateAnchorDropdown(name, parent, defaultText, settingKey, toggl
     end
 
     -- Initialize the dropdown using the library's initialize function
-    LibDD:UIDropDownMenu_Initialize(dropdown, function(self, level, menuList)
-        local info = LibDD:UIDropDownMenu_CreateInfo()
+    dropdown:SetupMenu(function(_, rootDescription)
         for _, anchor in ipairs(anchorPointsToUse) do
             local displayText = anchor
 
@@ -1512,18 +1542,15 @@ local function CreateAnchorDropdown(name, parent, defaultText, settingKey, toggl
                 end
             end
 
-            info.text = displayText
-            info.arg1 = anchor
-            info.func = function(self, arg1)
-                if BetterBlizzFramesDB[settingKey] ~= arg1 then
-                    BetterBlizzFramesDB[settingKey] = arg1
-                    LibDD:UIDropDownMenu_SetText(dropdown, getDisplayTextForSetting(arg1))
-                    toggleFunc(arg1)
+            rootDescription:CreateRadio(displayText, function()
+                return BetterBlizzFramesDB[settingKey] == anchor
+            end, function()
+                if BetterBlizzFramesDB[settingKey] ~= anchor then
+                    BetterBlizzFramesDB[settingKey] = anchor
+                    toggleFunc(anchor)
                     BBF.MoveToTFrames()
                 end
-            end
-            info.checked = (BetterBlizzFramesDB[settingKey] == anchor)
-            LibDD:UIDropDownMenu_AddButton(info)
+            end)
         end
     end)
 
@@ -1536,11 +1563,7 @@ local function CreateAnchorDropdown(name, parent, defaultText, settingKey, toggl
     dropdownText:SetText(point.label)
 
     -- Enable or disable the dropdown based on the parent's check state
-    if parent:GetObjectType() == "CheckButton" and parent:GetChecked() == false then
-        LibDD:UIDropDownMenu_DisableDropDown(dropdown)
-    else
-        LibDD:UIDropDownMenu_EnableDropDown(dropdown)
-    end
+    dropdown:SetEnabled(not (parent:GetObjectType() == "CheckButton" and parent:GetChecked() == false))
 
     return dropdown
 end
@@ -1748,6 +1771,10 @@ local function CreateCheckbox(option, label, parent, cvarName, extraFunc)
 
         if extraFunc and not BetterBlizzFramesDB.wasOnLoadingScreen and BetterBlizzFrames.guiLoaded then
             extraFunc(option, value)
+        end
+
+        if BBF.nameLayoutSettings[option] and not BetterBlizzFramesDB.wasOnLoadingScreen and BetterBlizzFrames.guiLoaded then
+            BBF.RefreshNameLayouts()
         end
 
 
@@ -3242,6 +3269,224 @@ local function guiProfiles()
     return frame
 end
 
+function BBF.CreateNameLayoutCheckboxes(parent, anchor)
+    local moveNames = CreateCheckbox("moveNames", L["Move_Names"], parent)
+    moveNames:SetPoint("TOPLEFT", anchor, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(moveNames, L["Move_Names"], L["Tooltip_Move_Names_Desc"])
+    moveNames:HookScript("OnMouseDown", function(self, button)
+        if button == "RightButton" then
+            BBF.OpenMoveNamesWindow(self)
+        end
+    end)
+    moveNames:HookScript("OnClick", function(self)
+        local window = BBF.MoveNamesWindow
+        BBF.ShowNameMoveBoxes(self:GetChecked() and window and window:IsShown())
+    end)
+    BBF.moveNamesCheckbox = moveNames
+end
+
+function BBF.OpenMoveNamesWindow(anchor)
+    local f = BBF.MoveNamesWindow
+    if f and f:IsShown() then
+        f:Hide()
+        return
+    end
+    if InCombatLockdown() then
+        BBF.Print(L["Print_Move_Names_Combat"])
+        return
+    end
+    if not BetterBlizzFramesDB.moveNames and BBF.moveNamesCheckbox then
+        BBF.moveNamesCheckbox:Click()
+    end
+    if not f then
+        f = CreateFrame("Frame", "BBFMoveNamesWindow", UIParent, "BasicFrameTemplateWithInset")
+        f:SetSize(880, 340)
+        f:SetFrameStrata("FULLSCREEN_DIALOG")
+        f:SetFrameLevel(550)
+        f:SetClampedToScreen(true)
+        f:SetToplevel(true)
+        f:EnableMouse(true)
+        f:SetMovable(true)
+        f:RegisterForDrag("LeftButton")
+        f:SetScript("OnDragStart", f.StartMoving)
+        f:SetScript("OnDragStop", f.StopMovingOrSizing)
+
+        f.title = f:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+        f.title:SetPoint("TOP", f, "TOP", 0, -6)
+        f.title:SetText(L["Move_Names"])
+
+        local mirroredNames = CreateCheckbox("mirroredNames", L["Mirrored_Names"], f)
+        mirroredNames:SetPoint("TOPLEFT", f, "TOPLEFT", 14, -30)
+        CreateTooltipTwo(mirroredNames, L["Mirrored_Names"], L["Tooltip_Mirrored_Names_Desc"])
+        mirroredNames:HookScript("OnClick", function(self)
+            if self:GetChecked() then
+                f.ResetOffsets({ "player", "target", "focus" })
+            end
+            f.UpdateAlignDropdowns()
+        end)
+
+        BetterBlizzFramesDB.moveNamesGuideAlpha = nil
+        local guideAlpha = CreateSlider(f, L["Guide_Opacity"], 0, 1, 0.05, "moveNamesGuideAlpha", "Offset", 140)
+        guideAlpha:SetPoint("TOPRIGHT", f, "TOPRIGHT", -30, -40)
+        CreateTooltipTwo(guideAlpha, L["Guide_Opacity"], L["Tooltip_Guide_Opacity_Desc"])
+
+        local rows = {
+            { key = "player", label = L["Player"] },
+            { key = "target", label = L["Target"] },
+            { key = "focus", label = L["Focus"] },
+            { key = "targetToT", label = L["Target_ToT"] },
+            { key = "focusToT", label = L["Focus_ToT"] },
+        }
+        local alignOptions = { "Left", "Center", "Right" }
+        local justifyOption = { LEFT = "Left", CENTER = "Center", RIGHT = "Right" }
+        f.sliders = {}
+        f.alignDropdowns = {}
+
+        local function CurrentAlign(key, prefix)
+            local value = BetterBlizzFramesDB[prefix .. "Align"]
+            if not BBF.NameAlignForced(key) and justifyOption[string.upper(tostring(value))] then
+                return value
+            end
+            return justifyOption[BBF.GetNameJustify(key) or "LEFT"] or "Left"
+        end
+
+        function f.UpdateAlignDropdowns()
+            for key, dropdown in pairs(f.alignDropdowns) do
+                local forced = BBF.NameAlignForced(key)
+                dropdown:SetEnabled(not forced)
+                dropdown:SetAlpha(forced and 0.5 or 1)
+                dropdown:GenerateMenu()
+            end
+        end
+
+        function f.ResetOffsets(keys)
+            for _, key in ipairs(keys) do
+                local row = f.sliders[key]
+                if row then
+                    row.X:SetValue(0)
+                    row.Y:SetValue(0)
+                end
+            end
+        end
+        local yPos = -84
+        for _, row in ipairs(rows) do
+            local prefix = BBF.nameMovePrefix[row.key]
+
+            local title = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+            title:SetPoint("TOPLEFT", f, "TOPLEFT", 18, yPos - 2)
+            title:SetText(row.label)
+
+            local xSlider = CreateSlider(f, L["X_Offset"], -100, 100, 0.5, prefix .. "X", "Offset", 140)
+            xSlider:SetPoint("TOPLEFT", f, "TOPLEFT", 110, yPos)
+            local ySlider = CreateSlider(f, L["Y_Offset"], -100, 100, 0.5, prefix .. "Y", "Offset", 140)
+            ySlider:SetPoint("TOPLEFT", f, "TOPLEFT", 270, yPos)
+            f.sliders[row.key] = { X = xSlider, Y = ySlider, prefix = prefix }
+
+            local align = CreateFrame("DropdownButton", nil, f, "WowStyle1DropdownTemplate")
+            align:SetPoint("BOTTOMLEFT", f, "TOPLEFT", 490, yPos - 20)
+            align:SetWidth(90)
+            align.Background:SetVertexColor(0.9, 0.9, 0.9)
+            align.Arrow:SetVertexColor(0.9, 0.9, 0.9)
+            local alignLabel = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall2")
+            alignLabel:SetPoint("LEFT", f, "TOPLEFT", 440, yPos - 7)
+            alignLabel:SetText(L["Align"])
+            alignLabel:SetFont(fontSmall, 13)
+            align:SetupMenu(function(_, rootDescription)
+                for _, option in ipairs(alignOptions) do
+                    rootDescription:CreateRadio(L[option], function()
+                        return CurrentAlign(row.key, prefix) == option
+                    end, function()
+                        BetterBlizzFramesDB[prefix .. "Align"] = option
+                        BBF.RefreshNameLayouts()
+                    end)
+                end
+            end)
+            f.alignDropdowns[row.key] = align
+
+            local multiLine = CreateCheckbox(prefix .. "MultiLine", L["Multi_Line"], f)
+            multiLine:SetPoint("TOPLEFT", f, "TOPLEFT", 595, yPos + 5)
+            CreateTooltipTwo(multiLine, L["Multi_Line"], L["Tooltip_Multi_Line_Desc"])
+
+            local growDown = CreateCheckbox(prefix .. "GrowDown", L["Grow_Down"], multiLine)
+            growDown:SetPoint("LEFT", multiLine.Text, "RIGHT", 4, 0)
+            CreateTooltipTwo(growDown, L["Grow_Down"], L["Tooltip_Grow_Down_Desc"])
+
+            local function UpdateGrowDown()
+                local on = multiLine:GetChecked() and true or false
+                growDown:SetEnabled(on)
+                growDown:SetAlpha(on and 1 or 0.5)
+            end
+            multiLine:HookScript("OnClick", UpdateGrowDown)
+            UpdateGrowDown()
+
+            local reset = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+            reset:SetSize(60, 22)
+            reset:SetPoint("TOPRIGHT", f, "TOPRIGHT", -14, yPos + 2)
+            reset:SetText(L["Reset"])
+            reset:SetScript("OnClick", function()
+                local db = BetterBlizzFramesDB
+                db[prefix .. "Align"] = "Default"
+                db[prefix .. "MultiLine"] = false
+                db[prefix .. "GrowDown"] = false
+                multiLine:SetChecked(false)
+                growDown:SetChecked(false)
+                UpdateGrowDown()
+                xSlider:SetValue(0)
+                ySlider:SetValue(0)
+                BBF.RefreshNameLayouts()
+                f.UpdateAlignDropdowns()
+            end)
+
+            yPos = yPos - 44
+        end
+
+        f.hint = f:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
+        f.hint:SetPoint("BOTTOM", f, "BOTTOM", 0, 14)
+        f.hint:SetText(L["Move_Names_Hint"])
+
+        function BBF.OnNameMoved(key)
+            local row = f.sliders[key]
+            if not row then return end
+            for axis, slider in pairs(row) do
+                if axis ~= "prefix" then
+                    local value = tonumber(BetterBlizzFramesDB[row.prefix .. axis]) or 0
+                    local minValue, maxValue = slider:GetMinMaxValues()
+                    if value < minValue or value > maxValue then
+                        slider:SetMinMaxValues(math.min(value - 30, minValue), math.max(value + 30, maxValue))
+                    end
+                    slider:SetValue(value)
+                end
+            end
+        end
+
+        f:HookScript("OnShow", function(self)
+            self.UpdateAlignDropdowns()
+            self:RegisterEvent("PLAYER_REGEN_DISABLED")
+            BBF.ShowNameMoveBoxes(BetterBlizzFramesDB.moveNames)
+        end)
+        f:HookScript("OnHide", function(self)
+            self:UnregisterEvent("PLAYER_REGEN_DISABLED")
+            BBF.ShowNameMoveBoxes(false)
+        end)
+        f:SetScript("OnEvent", function(self)
+            self:Hide()
+        end)
+
+        KeepPopupInSettings(f, BetterBlizzFrames, "DIALOG")
+        BBF.MoveNamesWindow = f
+        f:Hide()
+    end
+    f:ClearAllPoints()
+    f:SetPoint("TOPLEFT", anchor or BetterBlizzFrames, "BOTTOMLEFT", 0, -6)
+    f:Show()
+end
+
+function BBF.CloseMoveNamesWindow()
+    if BBF.MoveNamesWindow then
+        BBF.MoveNamesWindow:Hide()
+    end
+end
+
 local function guiGeneralTab()
     ----------------------
     -- Main panel:
@@ -3507,6 +3752,8 @@ local function guiGeneralTab()
         darkModeOptions:SetAlpha(enabled and 1 or 0.5)
     end
     darkModeUi:HookScript("OnClick", UpdateDarkModeOptionsState)
+
+    BBF.CreateNameLayoutCheckboxes(BetterBlizzFrames, darkModeUi)
     UpdateDarkModeOptionsState()
 
 
@@ -5690,12 +5937,12 @@ local function guiCastbars()
                     EnableElement(targetTextXPos)
                     EnableElement(targetTextYPos)
                     EnableElement(targetTextSize)
-                    LibDD:UIDropDownMenu_EnableDropDown(targetTextAnchor)
+                    targetTextAnchor:SetEnabled(true)
                 else
                     DisableElement(targetTextXPos)
                     DisableElement(targetTextYPos)
                     DisableElement(targetTextSize)
-                    LibDD:UIDropDownMenu_DisableDropDown(targetTextAnchor)
+                    targetTextAnchor:SetEnabled(false)
                 end
             end
 
@@ -7859,8 +8106,36 @@ local function guiMisc()
         end
     end)
 
+    local statusTextExtra = CreateCheckbox("statusTextExtra", L["Extra_Status_Bar_Texts"], guiMisc, nil, BBF.StatusBarTextExtra)
+    statusTextExtra:SetPoint("TOPLEFT", centerCurrentValueOnBars, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(statusTextExtra, L["Extra_Status_Bar_Texts"], L["Tooltip_Add_Status_Bar_Text_To_Desc"])
+
+    local statusTextExtraOptions = CreateMultiSelectDropdown(L["Extra_Status_Bar_Texts"], guiMisc, {
+        { key = "statusTextExtraToT", label = L["Target_of_Target"] },
+        { key = "statusTextExtraParty", label = L["Default_Party_Frames"] },
+        { key = "statusTextExtraPercent", label = L["Show_Percent"], tooltip = L["Tooltip_Status_Text_Show_Percent_Desc"] },
+        { key = "statusTextExtraHealth", label = L["Show_Health_Text"] },
+        { key = "statusTextExtraMana", label = L["Show_Mana_Text"] },
+    }, 150, BBF.StatusBarTextExtra)
+    statusTextExtraOptions.searchParentKey = "statusTextExtra"
+    statusTextExtraOptions.searchExtraTerms = { L["Extra_Status_Bar_Texts"] }
+    statusTextExtraOptions:SetPoint("LEFT", statusTextExtra.text, "RIGHT", 5, 0)
+    statusTextExtraOptions:SetScale(0.7)
+    statusTextExtraOptions:SetSelectionText(function()
+        return L["Bar_Options"]
+    end)
+    CreateTooltipTwo(statusTextExtraOptions, L["Extra_Status_Bar_Texts"], L["Tooltip_Add_Status_Bar_Text_To_Desc"])
+
+    local function UpdateStatusTextExtraOptionsState()
+        local enabled = statusTextExtra:GetChecked() and true or false
+        statusTextExtraOptions:SetEnabled(enabled)
+        statusTextExtraOptions:SetAlpha(enabled and 1 or 0.5)
+    end
+    statusTextExtra:HookScript("OnClick", UpdateStatusTextExtraOptionsState)
+    UpdateStatusTextExtraOptionsState()
+
     guiMisc.hideAuraCollapseButton = CreateCheckbox("hideAuraCollapseButton", L["Hide_Aura_Collapse_Button"], guiMisc, nil, BBF.UpdateAuraCollapseButton)
-    guiMisc.hideAuraCollapseButton:SetPoint("TOPLEFT", centerCurrentValueOnBars, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    guiMisc.hideAuraCollapseButton:SetPoint("TOPLEFT", statusTextExtra, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(guiMisc.hideAuraCollapseButton, L["Hide_Aura_Collapse_Button"], L["Tooltip_Hide_Aura_Collapse_Button_Desc"])
     local unclampMinimap = CreateCheckbox("unclampMinimap", L["Unclamp_Minimap"], guiMisc, nil, BBF.UnclampMinimap)
     unclampMinimap:SetPoint("TOPLEFT", guiMisc.hideAuraCollapseButton, "BOTTOMLEFT", 0, pixelsBetweenBoxes)

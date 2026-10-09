@@ -1,5 +1,6 @@
 local DEFAULT_MAX_POINTS = 5
-local PRD_Y_OFFSET = 9
+local NAMEPLATE_Y = 41
+local NAMEPLATE_LEVEL = 1000
 local PLAYER_SCALE_OFFSET = 0.05
 local REVEAL_FADE_TIME = 0.25
 local TARGET_LEVEL_BUMP = 20
@@ -14,7 +15,6 @@ local CLASS_INFO = {
         playerX = 2,
         playerY = 8,
         classicY = -1,
-        prdY = 0,
         tooltip = "COMBO_POINTS_ROGUE_TOOLTIP",
     },
     DRUID = {
@@ -23,12 +23,11 @@ local CLASS_INFO = {
         playerX = 2,
         playerY = 8,
         classicY = -1,
-        prdY = 2,
         tooltip = "COMBO_POINTS_DRUID_TOOLTIP",
     },
 }
 
-local holder, playerBar, prdBar, updater, legacyHookInstalled
+local holder, playerBar, targetBar, updater, legacyHookInstalled
 local ApplyTargetLayout, RestoreRowLayout
 
 local function GetMaxPoints()
@@ -84,7 +83,7 @@ end
 
 function BBF.UpdateComboPointTint()
     TintBar(playerBar)
-    TintBar(prdBar)
+    TintBar(targetBar)
 end
 
 local function SetRogueInstant(point, isFull)
@@ -135,7 +134,7 @@ local function UpdateBar(bar)
             end
         end
     end
-    BBF.ApplyComboVisibility(bar, not bar.isPrd, comboPoints)
+    BBF.ApplyComboVisibility(bar, not bar.isTarget, comboPoints)
 end
 
 local function UpdateMaxPower(bar)
@@ -162,7 +161,7 @@ local function UpdateMaxPower(bar)
         end
     end
 
-    if bar.class == "ROGUE" and not bar.isPrd then
+    if bar.class == "ROGUE" and not bar.isTarget then
         bar.leftPadding = maxPoints > DEFAULT_MAX_POINTS and (maxPoints - DEFAULT_MAX_POINTS) * -20 or 0
     end
 
@@ -185,7 +184,7 @@ local function HideTooltip()
     GameTooltip:Hide()
 end
 
-local function CreateBar(name, parent, class, isPrd)
+local function CreateBar(name, parent, class, isTarget)
     local info = CLASS_INFO[class]
     local bar = CreateFrame("Frame", name, parent, "HorizontalLayoutFrame")
     bar.spacing = 4
@@ -193,7 +192,7 @@ local function CreateBar(name, parent, class, isPrd)
     bar.leftPadding = 0
     bar.class = class
     bar.template = info.template
-    bar.isPrd = isPrd
+    bar.isTarget = isTarget
     bar.powerType = Enum.PowerType.ComboPoints
     bar.powerToken = "COMBO_POINTS"
     bar.bbfForeverComboBar = true
@@ -203,7 +202,7 @@ local function CreateBar(name, parent, class, isPrd)
     bar.UpdatePower = UpdateBar
     bar.UpdateMaxPower = UpdateMaxPower
 
-    if not isPrd and COMBO_POINTS_POWER and _G[info.tooltip] then
+    if not isTarget and COMBO_POINTS_POWER and _G[info.tooltip] then
         bar.tooltipTitle = COMBO_POINTS_POWER
         bar.tooltip = _G[info.tooltip]
         bar:SetScript("OnEnter", ShowTooltip)
@@ -277,10 +276,8 @@ local function UpdateBackgroundReveal(force)
 end
 BBF.UpdateComboPointBackgroundReveal = UpdateBackgroundReveal
 
-local function ShouldShow()
+local function HasComboDisplay()
     local db = BetterBlizzFramesDB
-    if not db.foreverComboPoints then return false end
-
     if UnitInVehicle and UnitInVehicle("player") then
         return PlayerVehicleHasComboPoints and PlayerVehicleHasComboPoints() or false
     end
@@ -293,78 +290,46 @@ local function ShouldShow()
     return true
 end
 
-local function PlatesWantsBar()
-    local pdb = BBP and BetterBlizzPlatesDB
-    return pdb and pdb.foreverComboPoints and not pdb.disablePrdMovement
-        and not BetterBlizzFramesDB.prdResourceAdjust and true or false
+function BBF.ComboPointBarWanted()
+    local db = BetterBlizzFramesDB
+    if not CLASS_INFO[UnitClassBase("player")] then return false end
+    if db.foreverComboPoints then return true end
+    return MovedToTarget() and not db.enableLegacyComboPoints or false
 end
 
-local function PlatesCoversPrd()
-    if not PlatesWantsBar() then return false end
-    local pdb = BetterBlizzPlatesDB
-    local onTarget = pdb.nameplateResourceOnTarget == "1" or pdb.nameplateResourceOnTarget == true
-    return not onTarget or pdb.nameplateResourceOnTargetAndNoTargetOnSelf == true
+local function ShouldShow()
+    return BBF.ComboPointBarWanted() and HasComboDisplay() or false
 end
 
-function BBF.ComboPointsPlatesShouldShow()
-    if not BetterBlizzFramesDB.foreverComboPoints then return true end
-    return PlatesWantsBar()
+function BBF.ComboPointTargetBarWanted()
+    local db = BetterBlizzFramesDB
+    return db.prdResourceAdjust and db.prdResourceOnTarget and CLASS_INFO[UnitClassBase("player")] and true or false
 end
 
-local function OnTargetNameplate()
-    return BBF.GetPrdResourceNameplate and BBF.GetPrdResourceNameplate() and true or false
-end
+function BBF.UpdateComboPointTargetBar()
+    if not targetBar then return end
 
-local function PrdHidesClassInfo()
-    if BetterBlizzFramesDB.hidePrdComboPoints and not OnTargetNameplate() then return true end
-    local prd = PersonalResourceDisplayFrame
-    return prd and prd.hideClassInfo and not BetterBlizzFramesDB.prdResourceAdjust or false
-end
-
-local function AnchorPrdBarToPrd(xOfs, yOfs)
-    local prd = PersonalResourceDisplayFrame
-    if not prd or not prdBar then return end
-
-    local info = CLASS_INFO[prdBar.class]
-    local y = PRD_Y_OFFSET + info.prdY - prd:GetBarPadding()
-    local point, relativeTo, relativePoint = "TOP", prd, "TOP"
-    if prd.AlternatePowerBar and prd.AlternatePowerBar:IsShown() then
-        relativeTo, relativePoint = prd.AlternatePowerBar, "BOTTOM"
-    elseif not prd.hidePower then
-        relativeTo, relativePoint = prd.PowerBar, "BOTTOM"
-    elseif not prd.hideHealth then
-        relativeTo, relativePoint = prd.HealthBarsContainer, "BOTTOM"
-    else
-        y = PRD_Y_OFFSET + info.prdY
-    end
-    prdBar:SetParent(prd)
-    prdBar:ClearAllPoints()
-    prdBar:SetPoint(point, relativeTo, relativePoint, xOfs or 0, y + (yOfs or 0))
-end
-
-function BBF.UpdateComboPointPrdAnchor()
-    if not prdBar then return end
-
-    if BetterBlizzFramesDB.prdResourceAdjust then
-        BBF.UpdatePrdResource()
+    local db = BetterBlizzFramesDB
+    local unitFrame = BBF.ComboPointTargetBarWanted() and HasComboDisplay() and BBF.GetPrdResourceNameplate()
+    if not unitFrame then
+        targetBar:Hide()
         return
     end
 
-    prdBar:SetScale(1)
-    prdBar:SetFrameStrata("BACKGROUND")
-    AnchorPrdBarToPrd()
+    targetBar:SetScale(db.prdResourceScale or 1)
+    targetBar:SetFrameStrata("BACKGROUND")
+    targetBar:SetFrameLevel(NAMEPLATE_LEVEL)
+    targetBar:ClearAllPoints()
+    PixelUtil.SetPoint(targetBar, "BOTTOM", BBF.GetPrdResourceNameplateAnchor(unitFrame), "TOP",
+        db.prdResourceXPos or 0, (db.prdResourceYPos or 0) + NAMEPLATE_Y)
+    targetBar:Show()
+    targetBar:UpdatePower()
 end
 
-local function CreatePrdBar()
-    local prd = PersonalResourceDisplayFrame
-    if not prd then return end
-
-    prdBar = CreateBar("BBFComboPointBarPRD", prd, playerBar.class, true)
-    BBF.ComboPointPrdBar = prdBar
-    prdBar.bbfPrdRestore = AnchorPrdBarToPrd
-    AnchorPrdBarToPrd()
-
-    hooksecurefunc(prd, "UpdateAdditionalBarAnchors", BBF.UpdateComboPointPrdAnchor)
+local function CreateTargetBar(class)
+    targetBar = CreateBar("BBFComboPointBarTarget", UIParent, class, true)
+    targetBar:Hide()
+    BBF.ComboPointTargetBar = targetBar
 
     if BBF.DarkModeNameplateResources then
         BBF.DarkModeNameplateResources()
@@ -420,8 +385,7 @@ function ApplyTargetLayout()
     playerBar:SetParent(TargetFrame)
     playerBar:ClearAllPoints()
     playerBar:SetPoint("LEFT", TargetFrame, "RIGHT", xPos, yPos)
-    playerBar:SetFrameStrata(TargetFrame:GetFrameStrata())
-    playerBar:SetFrameLevel(TargetFrame:GetFrameLevel() + TARGET_LEVEL_BUMP)
+    BBF.RaiseAboveTargetArt(playerBar, nil, TARGET_LEVEL_BUMP)
     playerBar:SetMouseClickEnabled(false)
     playerBar.bbfPositioning = nil
 
@@ -460,6 +424,7 @@ function RestoreRowLayout()
         point:SetScale(1)
         point:ClearAllPoints()
     end
+    BBF.ReleaseTargetArtLayer(playerBar)
     playerBar:SetParent(holder)
     playerBar:SetFrameStrata(holder:GetFrameStrata())
     playerBar:Layout()
@@ -513,10 +478,11 @@ function BBF.ApplyComboPointScale(scale)
 end
 
 function BBF.UpdateLegacyComboVisibility()
-    local frame = ComboFrame
+    if BBF.UpdateBlizzardComboRing then BBF.UpdateBlizzardComboRing() end
+    local frame = BBF.LegacyComboFrame
     if not frame then return end
 
-    local hide = BetterBlizzFramesDB.foreverComboPoints and CLASS_INFO[UnitClassBase("player")] and true or false
+    local hide = BBF.ComboPointBarWanted()
     if hide == (frame.bbfComboPointsHidden or false) then return end
     frame.bbfComboPointsHidden = hide or nil
 
@@ -530,35 +496,24 @@ function BBF.UpdateLegacyComboVisibility()
             end)
         end
         frame:Hide()
-    elseif ComboFrame_Update then
-        ComboFrame_Update(frame)
+    else
+        BBF.UpdateLegacyComboFrame()
     end
 end
 
 function BBF.UpdateComboPointBars()
+    BBF.UpdateComboPointTargetBar()
     if not playerBar then return end
 
     local show = ShouldShow()
-    local showPrd = show and not PlatesCoversPrd() and not PrdHidesClassInfo()
-    if showPrd and not prdBar then
-        CreatePrdBar()
-        BBF.UpdateComboPointPrdAnchor()
-    end
 
     if MovedToTarget() and playerBar:GetParent() ~= TargetFrame then
         ApplyTargetLayout()
     end
 
     playerBar:SetShown(show)
-    if prdBar then
-        prdBar:SetShown(showPrd)
-    end
-
     if show then
         playerBar:UpdatePower()
-    end
-    if showPrd and prdBar then
-        prdBar:UpdatePower()
     end
 
     UpdateBackgroundReveal()
@@ -568,8 +523,8 @@ local function RefreshMaxPower()
     if playerBar then
         UpdateMaxPower(playerBar)
     end
-    if prdBar then
-        UpdateMaxPower(prdBar)
+    if targetBar then
+        UpdateMaxPower(targetBar)
     end
 end
 
@@ -615,7 +570,7 @@ local function CreateUpdater(class)
 
         if event == "PLAYER_ENTERING_WORLD" or event == "PLAYER_TARGET_CHANGED"
             or event == "NAME_PLATE_UNIT_ADDED" or event == "NAME_PLATE_UNIT_REMOVED" then
-            BBF.UpdateComboPointPrdAnchor()
+            BBF.UpdateComboPointTargetBar()
         end
 
         if event == "PLAYER_ENTERING_WORLD" or event == "UPDATE_SHAPESHIFT_FORM" then
@@ -625,34 +580,34 @@ local function CreateUpdater(class)
 end
 
 function BBF.CreateComboPointBars()
-    if not BetterBlizzFramesDB.foreverComboPoints then return end
     local class = UnitClassBase("player")
     if not CLASS_INFO[class] then return end
     if (class == "ROGUE" and _G.RogueComboPointBarFrame) or (class == "DRUID" and _G.DruidComboPointBarFrame) then return end
-    if playerBar then
-        BBF.UpdateComboPointBars()
-        return
+
+    if not targetBar and BBF.ComboPointTargetBarWanted() then
+        CreateTargetBar(class)
     end
-    if not PlayerFrame or not PlayerBottomManagedFrameContainer then return end
 
-    CreateHolder()
-    playerBar = CreateBar("BBFComboPointBar", holder, class, false)
-    BBF.ComboPointBar = playerBar
-    BBF.resourceFrames[class] = playerBar
-    BBF.classPowerFrames[class] = playerBar
+    local newPlayerBar
+    if not playerBar and BBF.ComboPointBarWanted() and PlayerFrame and PlayerBottomManagedFrameContainer then
+        CreateHolder()
+        playerBar = CreateBar("BBFComboPointBar", holder, class, false)
+        BBF.ComboPointBar = playerBar
+        BBF.resourceFrames[class] = playerBar
+        BBF.classPowerFrames[class] = playerBar
+        BBF.ApplyComboPointScale(BetterBlizzFramesDB["classResource" .. class .. "Scale"])
+        newPlayerBar = true
+    end
 
-    BBF.ApplyComboPointScale(BetterBlizzFramesDB["classResource" .. class .. "Scale"])
-    CreateUpdater(class)
-
-    local prd = PersonalResourceDisplayFrame
-    if prd and prd.SetHideClassInfo then
-        hooksecurefunc(prd, "SetHideClassInfo", BBF.UpdateComboPointBars)
+    if not updater and (playerBar or targetBar) then
+        CreateUpdater(class)
     end
 
     BBF.UpdateComboPointBars()
-    BBF.UpdateComboPointPrdAnchor()
-    BBF.UpdateLegacyComboVisibility()
-    ApplyTargetLayout()
 
-    C_Timer.After(1, ApplyTargetLayout)
+    if newPlayerBar then
+        BBF.UpdateLegacyComboVisibility()
+        ApplyTargetLayout()
+        C_Timer.After(1, ApplyTargetLayout)
+    end
 end

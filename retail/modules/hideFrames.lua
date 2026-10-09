@@ -1807,6 +1807,27 @@ end
 --------------------------------------
 local minimapStatusChanged
 
+local mythicDifficulties = {
+    [8] = true,
+    [23] = true,
+}
+
+local function ShouldHideObjectiveTracker()
+    local db = BetterBlizzFramesDB
+    if not db.hideObjectiveTracker then return false end
+    local _, instanceType, difficultyID = GetInstanceInfo()
+    if instanceType == "arena" then
+        return db.hideObjectiveTrackerArena and true or false
+    end
+    if instanceType == "party" and mythicDifficulties[difficultyID] then
+        return db.hideObjectiveTrackerMythic and true or false
+    end
+    if instanceType == "raid" then
+        return db.hideObjectiveTrackerRaid and true or false
+    end
+    return false
+end
+
 function BBF.MinimapHider()
     if InCombatLockdown() then
         BBF.RunAfterCombat(BBF.MinimapHider)
@@ -1853,19 +1874,18 @@ function BBF.MinimapHider()
         if not ObjectiveTracker.ogParent then
             ObjectiveTracker.ogParent = ObjectiveTracker:GetParent()
             ObjectiveTracker:HookScript("OnShow", function()
-                local _, instanceType = GetInstanceInfo()
-                local inArena = instanceType == "arena"
-
-                if inArena then
+                if ShouldHideObjectiveTracker() then
                     ObjectiveTracker:SetParent(BBF.hiddenFrame)
                 end
             end)
         end
-        if inArena then
+        if ShouldHideObjectiveTracker() then
             ObjectiveTracker:SetParent(BBF.hiddenFrame)
         else
             ObjectiveTracker:SetParent(ObjectiveTracker.ogParent)
         end
+    elseif ObjectiveTracker.ogParent then
+        ObjectiveTracker:SetParent(ObjectiveTracker.ogParent)
     end
 end
 

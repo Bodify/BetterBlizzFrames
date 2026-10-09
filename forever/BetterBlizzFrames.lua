@@ -21,6 +21,33 @@ local defaultSettings = {
     enableBigDebuffs = true,
     removeRealmNames = false,
     centerNames = false,
+    mirroredNames = false,
+    moveNames = false,
+    moveNamePlayerX = 0,
+    moveNamePlayerY = 0,
+    moveNamePlayerAlign = "Default",
+    moveNamePlayerMultiLine = false,
+    moveNamePlayerGrowDown = false,
+    moveNameTargetX = 0,
+    moveNameTargetY = 0,
+    moveNameTargetAlign = "Default",
+    moveNameTargetMultiLine = false,
+    moveNameTargetGrowDown = false,
+    moveNameFocusX = 0,
+    moveNameFocusY = 0,
+    moveNameFocusAlign = "Default",
+    moveNameFocusMultiLine = false,
+    moveNameFocusGrowDown = false,
+    moveNameTargetToTX = 0,
+    moveNameTargetToTY = 0,
+    moveNameTargetToTAlign = "Default",
+    moveNameTargetToTMultiLine = false,
+    moveNameTargetToTGrowDown = false,
+    moveNameFocusToTX = 0,
+    moveNameFocusToTY = 0,
+    moveNameFocusToTAlign = "Default",
+    moveNameFocusToTMultiLine = false,
+    moveNameFocusToTGrowDown = false,
     darkModeUi = false,
     darkModeActionBars = true,
     darkModeUiAura = true,
@@ -69,6 +96,9 @@ local defaultSettings = {
     prdResourceNoTargetOnPrd = false,
     prdResourceScale = 1,
     smoothHealthbars = true,
+    statusTextExtra = false,
+    statusTextExtraHealth = true,
+    statusTextExtraMana = true,
     smoothManabars = true,
     foreverMinimapScale = 1,
     foreverMinimapTitleScale = 1,
@@ -235,6 +265,11 @@ local defaultSettings = {
     auraTimerBaseColor = {1, 0.82, 0, 1},
     auraTimerLowColor = {1, 0.1, 0.1, 1},
     auraTimerLowThreshold = 6,
+    bigDebuffsMilliseconds = true,
+    bigDebuffsLowThreshold = 6,
+    bigDebuffsLowColor = {1, 0.1, 0.1, 1},
+    bigDebuffsBaseColor = {1, 0.82, 0, 1},
+    bigDebuffsTextScale = 1,
     addCooldownFramePlayerAuras = false,
     customImportantAuraSorting = true,
     customLargeSmallAuraSorting = true,
@@ -453,12 +488,25 @@ local function InitializeSavedVariables()
         BetterBlizzFramesDB.playerAuraSpacingX = 5
     end
 
+    if not BetterBlizzFramesDB.foreverComboUpdate2 then
+        BetterBlizzFramesDB.foreverComboUpdate2 = true
+        BetterBlizzFramesDB.foreverComboOfferAnswered = nil
+        BetterBlizzFramesDB.foreverComboPoints = false
+        if not BetterBlizzFramesDB.classicFrames then
+            BetterBlizzFramesDB.enableLegacyComboPoints = false
+        end
+    end
+
     if not BetterBlizzFramesDB.foreverUpdate1 then
         BetterBlizzFramesDB.foreverUpdate1 = true
         BetterBlizzFramesDB.removeRealmNames = nil
         BetterBlizzFramesDB.legacyComboXPos = nil
         BetterBlizzFramesDB.legacyComboYPos = nil
         BetterBlizzFramesDB.legacyComboScale = nil
+    end
+
+    if BetterBlizzFramesDB.statusTextExtra == nil and (BetterBlizzFramesDB.statusTextExtraToT or BetterBlizzFramesDB.statusTextExtraParty) then
+        BetterBlizzFramesDB.statusTextExtra = true
     end
 
     for key, defaultValue in pairs(defaultSettings) do
@@ -583,81 +631,12 @@ BBF.popupBuilders["BBF_MIDNIGHT_AURA_FILTER_FIXES"] = function()
     }
 end
 
-local COMBO_OFFER_HEADER = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames:\n\n"
-
 function BBF.EnforceForeverComboPoints()
     local db = BetterBlizzFramesDB
-    local legacy = not db.foreverComboPoints
-    db.enableLegacyComboPoints = legacy
-    db.legacyCombosTurnedOff = (not legacy) or nil
-end
-
-function BBF.ApplyForeverComboPointChoice(choice)
-    local db = BetterBlizzFramesDB
-    local changed = false
-    local function set(key, value)
-        if db[key] ~= value then
-            db[key] = value
-            changed = true
-        end
+    if db.foreverComboPoints and db.enableLegacyComboPoints then
+        db.enableLegacyComboPoints = false
     end
-
-    if choice == "legacy" then
-        set("foreverComboPoints", false)
-        set("enableLegacyComboPoints", true)
-        set("legacyCombosTurnedOff", nil)
-        set("comboPointLocation", "1")
-    else
-        local onTarget = choice == "target"
-        set("foreverComboPoints", true)
-        set("enableLegacyComboPoints", false)
-        set("legacyCombosTurnedOff", true)
-        if onTarget then
-            set("moveResourceToTarget", true)
-        end
-        set("moveResourceToTargetRogue", onTarget)
-        set("moveResourceToTargetDruid", onTarget)
-    end
-
-    if changed then
-        BBF.ShowPopup("BBF_FOREVER_COMBO_OFFER_RELOAD")
-    end
-end
-
-BBF.popupBuilders["BBF_FOREVER_COMBO_POINTS_OFFER"] = function()
-    return {
-        text = COMBO_OFFER_HEADER..L["Popup_Forever_Combo_Offer"],
-        button1 = L["Yes_On_Target"],
-        button2 = L["Yes_On_Player"],
-        button3 = L["No"],
-        selectCallbackByIndex = true,
-        OnButton1 = function()
-            BBF.ApplyForeverComboPointChoice("target")
-        end,
-        OnButton2 = function()
-            BBF.ApplyForeverComboPointChoice("player")
-        end,
-        OnButton3 = function()
-            BBF.ApplyForeverComboPointChoice("legacy")
-        end,
-        timeout = 0,
-        whileDead = true,
-        preferredIndex = 3,
-    }
-end
-
-BBF.popupBuilders["BBF_FOREVER_COMBO_OFFER_RELOAD"] = function()
-    return {
-        text = COMBO_OFFER_HEADER..L["Popup_Reload_Required"],
-        button1 = L["Yes"],
-        button2 = L["No"],
-        OnAccept = function()
-            ReloadUI()
-        end,
-        timeout = 0,
-        whileDead = true,
-        preferredIndex = 3,
-    }
+    db.legacyCombosTurnedOff = (not db.enableLegacyComboPoints) or nil
 end
 
 local function ResetBBF()
@@ -1864,6 +1843,14 @@ function RefreshComboPoints(comboPointFrame)
     RepositionIndividualComboPoints(comboPointFrame, cfg.positions, cfg.scale, cfg.expectedClass)
 end
 
+function BBF.RaiseMovedResourceAboveTargetArt()
+    for comboPointFrame in pairs(comboPointConfig) do
+        if comboPointFrame:GetParent() == TargetFrame and not comboPointFrame:IsProtected() then
+            BBF.RaiseAboveTargetArt(comboPointFrame, "HIGH")
+        end
+    end
+end
+
 -- Function to setup combo points for any class
 local function SetupClassComboPoints(comboPointFrame, positions, expectedClass, scale, xPos, yPos, changeDrawLayer)
     if UnitClassBase("player") ~= expectedClass then return end
@@ -1928,7 +1915,7 @@ local function SetupClassComboPoints(comboPointFrame, positions, expectedClass, 
             comboPointFrame:ClearAllPoints()
             comboPointFrame:SetPoint("LEFT", TargetFrame, "RIGHT", xPos, yPos or -2)
             comboPointFrame:SetMouseClickEnabled(false)
-            comboPointFrame:SetFrameStrata("HIGH")
+            BBF.RaiseAboveTargetArt(comboPointFrame, "HIGH")
             RefreshComboPoints(comboPointFrame)
             self.changing = false
         end)
@@ -2654,10 +2641,7 @@ function BBF.MiniFrame(frame)
         reputationColor:SetAlpha(0)
 
         name:SetScale(1.4)
-        name:ClearAllPoints()
-        name:SetJustifyH("RIGHT")
-        name:SetPoint("RIGHT", frame.TargetFrameContainer.Portrait, "LEFT", -9, 10)
-        name:SetWidth(180)
+        BBF.RefreshNameLayouts()
 
         levelText:Hide()
         levelText:ClearAllPoints()
@@ -2743,9 +2727,7 @@ function BBF.MiniFrame(frame)
         end
 
         name:SetScale(1.4)
-        name:ClearAllPoints()
-        name:SetJustifyH("LEFT")
-        name:SetPoint("LEFT", frame.PlayerFrameContainer, "TOP", -16, -26)
+        BBF.RefreshNameLayouts()
     end
 end
 
@@ -2799,7 +2781,7 @@ end
 
 function BBF.ClassColorLegacyCombos()
     if not (BetterBlizzFramesDB.enableLegacyComboPointsMulticlass and BetterBlizzFramesDB.legacyMulticlassComboClassColor) then return end
-    if not ComboFrame or not ComboFrame.ComboPoints then return end
+    if not BBF.LegacyComboFrame or not BBF.LegacyComboFrame.ComboPoints then return end
 
     local startIndex = GetLegacyComboStartIndex()
     if not startIndex then return end
@@ -2808,7 +2790,7 @@ function BBF.ClassColorLegacyCombos()
     local powerType = legacyComboPowerTypes[class]
     if not powerType then return end
 
-    local frame = ComboFrame
+    local frame = BBF.LegacyComboFrame
     local comboIndex = startIndex
     local maxPoints = UnitPowerMax("player", powerType)
 
@@ -2882,8 +2864,8 @@ end
 
 function BBF.GenericLegacyComboSupport()
     if not BetterBlizzFramesDB.enableLegacyComboPointsMulticlass then return end
-    if C_CVar.GetCVar("comboPointLocation") ~= "1" then return end
-    if not ComboFrame or not ComboFrame.ComboPoints then return end
+    if not BBF.LegacyCombosOn() then return end
+    if not BBF.LegacyComboFrame or not BBF.LegacyComboFrame.ComboPoints then return end
     local class = UnitClassBase("player")
     local supported = {
         MONK = true, DEATHKNIGHT = true, EVOKER = true,
@@ -2895,20 +2877,6 @@ function BBF.GenericLegacyComboSupport()
     if not enabled then return end
 
     local lastComboPoints = 0
-
-    local function ComboPointShineFadeIn(frame)
-        local fadeInfo = {
-            mode = "IN",
-            timeToFade = COMBOFRAME_SHINE_FADE_IN,
-            finishedFunc = ComboPointShineFadeOut,
-            finishedArg1 = frame,
-        }
-        BBF.UIFrameFade(frame, fadeInfo)
-    end
-
-    local function ComboPointShineFadeOut(frame)
-        BBF.UIFrameFadeOut(frame, COMBOFRAME_SHINE_FADE_OUT)
-    end
 
     local showAlways = BetterBlizzFramesDB.alwaysShowLegacyComboPoints
 
@@ -2934,7 +2902,7 @@ function BBF.GenericLegacyComboSupport()
             maxComboPoints = UnitPowerMax("player", powerType)
         end
 
-        local frame = ComboFrame
+        local frame = BBF.LegacyComboFrame
         local comboIndex = GetLegacyComboStartIndex()
         if not comboIndex then return end
 
@@ -2967,8 +2935,8 @@ function BBF.GenericLegacyComboSupport()
                     if highlight and shine then
                         local fadeInfo = {
                             mode = "IN",
-                            timeToFade = COMBOFRAME_HIGHLIGHT_FADE_IN,
-                            finishedFunc = ComboPointShineFadeIn,
+                            timeToFade = BBF.LEGACY_COMBO_HIGHLIGHT_FADE_IN,
+                            finishedFunc = BBF.LegacyComboShineFadeIn,
                             finishedArg1 = shine,
                         }
                         BBF.UIFrameFade(highlight, fadeInfo)
@@ -2991,7 +2959,7 @@ function BBF.GenericLegacyComboSupport()
         lastComboPoints = comboPoints
     end
 
-    hooksecurefunc("ComboFrame_Update", UpdateGenericLegacyCombo)
+    BBF.HookLegacyComboUpdate(UpdateGenericLegacyCombo)
 
     -- Special handling for Death Knight rune updates
     if class == "DEATHKNIGHT" then
@@ -3006,7 +2974,7 @@ end
 
 
 function BBF.UpdateLegacyComboPosition()
-    if not ComboFrame then return end
+    if not BBF.LegacyComboFrame then return end
     local db = BetterBlizzFramesDB
     local x = db.legacyComboXPos
     local y = db.legacyComboYPos
@@ -3015,35 +2983,25 @@ function BBF.UpdateLegacyComboPosition()
     local extraOffsetY = db.classicFrames and -2.5 or 0
     local extraOffsetX = db.classicFrames and 5 or 0
 
-    ComboFrame:ClearAllPoints()
-    ComboFrame:SetPoint("TOPRIGHT", TargetFrame, "TOPRIGHT", x+extraOffsetX, y+extraOffsetY)
-    ComboFrame:SetScale(scale)
+    BBF.LegacyComboFrame:ClearAllPoints()
+    BBF.LegacyComboFrame:SetPoint("TOPRIGHT", TargetFrame, "TOPRIGHT", x+extraOffsetX, y+extraOffsetY)
+    BBF.LegacyComboFrame:SetScale(scale)
+    if BBF.LegacyComboFrame:GetParent() == TargetFrame then
+        BBF.RaiseAboveTargetArt(BBF.LegacyComboFrame, "HIGH")
+    end
 end
 
 function BBF.FixLegacyComboPointsLocation()
-    local comboClass = UnitClassBase("player")
-    if BetterBlizzFramesDB.foreverComboPoints and BetterBlizzFramesDB.enableLegacyComboPoints
-        and (comboClass == "ROGUE" or comboClass == "DRUID") then
-        BetterBlizzFramesDB.enableLegacyComboPoints = false
-        BetterBlizzFramesDB.legacyCombosTurnedOff = true
-    end
-    if BetterBlizzFramesDB.legacyCombosTurnedOff and not BetterBlizzFramesDB.enableLegacyComboPoints then
-        C_CVar.SetCVar("comboPointLocation", "1") -- Set it to 1 on WoW forever cuz 2 does nothing
-        return
-    end
-    if BetterBlizzFramesDB.enableLegacyComboPoints then
-        C_CVar.SetCVar("comboPointLocation", "1")
-    elseif BetterBlizzFramesDB.comboPointLocation then
-        C_CVar.SetCVar("comboPointLocation", BetterBlizzFramesDB.comboPointLocation)
-    end
-    if C_CVar.GetCVar("comboPointLocation") == "1" and ComboFrame then
-        ComboFrame:SetParent(TargetFrame)
-        ComboFrame:SetFrameStrata("HIGH")
+    BBF.EnforceForeverComboPoints()
+    local frame = BBF.LegacyComboFrame
+    if not frame then return end
+    if BBF.LegacyCombosOn() then
+        frame:SetParent(TargetFrame)
+        frame:SetFrameStrata("HIGH")
         BBF.UpdateLegacyComboPosition()
-        if not BBF.legacyComboOverridesHooked and ComboFrame_ApplyOverrides then
-            hooksecurefunc("ComboFrame_ApplyOverrides", BBF.UpdateLegacyComboPosition)
-            BBF.legacyComboOverridesHooked = true
-        end
+        BBF.EnableLegacyComboFrame()
+    else
+        BBF.DisableLegacyComboFrame()
     end
 end
 
@@ -3055,7 +3013,7 @@ function BBF.AlwaysShowLegacyComboPoints()
     if class ~= "ROGUE" and class ~= "DRUID" then return end
     local function UpdateLegacyComboFrame()
         if not BetterBlizzFramesDB.alwaysShowLegacyComboPoints then return end
-        local frame = ComboFrame
+        local frame = BBF.LegacyComboFrame
         local comboPoints = GetComboPoints("player", "target")
         local maxComboPoints = UnitPowerMax("player", Enum.PowerType.ComboPoints)
         frame:Show()
@@ -3072,8 +3030,8 @@ function BBF.AlwaysShowLegacyComboPoints()
             end
         end
     end
-    if C_CVar.GetCVar("comboPointLocation") == "1" and ComboFrame then
-        hooksecurefunc("ComboFrame_Update", UpdateLegacyComboFrame)
+    if BBF.LegacyCombosOn() and BBF.LegacyComboFrame then
+        BBF.HookLegacyComboUpdate(UpdateLegacyComboFrame)
         UpdateLegacyComboFrame()
         BBF.alwaysShowLegacyComboHooked = true
     end
@@ -3094,19 +3052,19 @@ local function UpdateLegacyComboActiveOnly(frame)
 end
 
 function BBF.LegacyComboActiveOnly()
-    if not ComboFrame or C_CVar.GetCVar("comboPointLocation") ~= "1" then return end
+    if not BBF.LegacyComboFrame or not BBF.LegacyCombosOn() then return end
     local class = UnitClassBase("player")
     if class ~= "ROGUE" and class ~= "DRUID" then return end
     if not BBF.legacyComboActiveOnlyHooked then
         if not BetterBlizzFramesDB.legacyComboActiveOnly then return end
         BBF.legacyComboActiveOnlyHooked = true
-        hooksecurefunc("ComboFrame_Update", function(frame)
+        BBF.HookLegacyComboUpdate(function(frame)
             if BetterBlizzFramesDB.legacyComboActiveOnly then
                 UpdateLegacyComboActiveOnly(frame)
             end
         end)
     end
-    UpdateLegacyComboActiveOnly(ComboFrame)
+    UpdateLegacyComboActiveOnly(BBF.LegacyComboFrame)
 end
 
 local HD_COMBO_POINT = "Interface\\AddOns\\BetterBlizzFrames\\media\\MoTextures\\ComboPoint.png"
@@ -3116,9 +3074,9 @@ local function LegacyComboPointTexture()
 end
 
 function BBF.HDLegacyComboPoints()
-    if not ComboFrame or not ComboFrame.ComboPoints then return end
+    if not BBF.LegacyComboFrame or not BBF.LegacyComboFrame.ComboPoints then return end
     if not (BBF.ClassicHDTexturesActive and BBF.ClassicHDTexturesActive()) then return end
-    for _, point in ipairs(ComboFrame.ComboPoints) do
+    for _, point in ipairs(BBF.LegacyComboFrame.ComboPoints) do
         for i = 1, point:GetNumRegions() do
             local region = select(i, point:GetRegions())
             if region and region:IsObjectType("Texture") and region:GetDrawLayer() == "BACKGROUND" then
@@ -3138,9 +3096,9 @@ function BBF.HDLegacyComboPoints()
 end
 
 function BBF.ApplyLegacyBlueCombos(isEnabled)
-    if not ComboFrame or not ComboFrame.ComboPoints then return end
+    if not BBF.LegacyComboFrame or not BBF.LegacyComboFrame.ComboPoints then return end
 
-    local frame = ComboFrame
+    local frame = BBF.LegacyComboFrame
     local comboIndex = 1--frame.startComboPointIndex or 2
     local maxPoints = UnitPowerMax("player", Enum.PowerType.Chi)
 
@@ -3167,11 +3125,11 @@ end
 
 function BBF.LegacyBlueCombos()
     if not BetterBlizzFramesDB.legacyBlueComboPoints then return end
-    if C_CVar.GetCVar("comboPointLocation") ~= "1" then return end
+    if not BBF.LegacyCombosOn() then return end
     local class = UnitClassBase("player")
     if class == "ROGUE" then
         local function BlueLegacyComboRogue()
-            local frame = ComboFrame
+            local frame = BBF.LegacyComboFrame
             if not frame or not frame.ComboPoints then return end
 
             local chargedPowerPoints = GetUnitChargedPowerPoints("player") or {}
@@ -3201,7 +3159,7 @@ function BBF.LegacyBlueCombos()
                 end
             end
         end
-        if ComboFrame then hooksecurefunc("ComboFrame_Update", BlueLegacyComboRogue) end
+        if BBF.LegacyComboFrame then BBF.HookLegacyComboUpdate(BlueLegacyComboRogue) end
     end
 end
 
@@ -3210,12 +3168,27 @@ function BBF.InstantComboPoints()
     if not BetterBlizzFramesDB.instantComboPoints then return end
     if BBF.InstantComboPointsActive then return end
 
-    local prdClassFrame = PersonalResourceDisplayFrame and PersonalResourceDisplayFrame.classFrame
     local class = UnitClassBase("player")
+
+    local function HookPrdClassFrame(func)
+        local prd = PersonalResourceDisplayFrame
+        if not prd then return end
+        if prd.classFrame then
+            hooksecurefunc(prd.classFrame, "UpdatePower", func)
+            return
+        end
+        if not prd.SetupClassBar then return end
+        local hooked
+        hooksecurefunc(prd, "SetupClassBar", function(self)
+            if hooked or not self.classFrame then return end
+            hooked = true
+            hooksecurefunc(self.classFrame, "UpdatePower", func)
+        end)
+    end
 
     local function UpdateRogueComboPoints(self)
         if not self or self:IsForbidden() then return end
-        local comboPoints = UnitPower("player", self.powerType)
+        local comboPoints = GetComboPoints(UnitHasVehicleUI("player") and "vehicle" or "player", "target")
         local chargedPowerPoints = GetUnitChargedPowerPoints("player") or {}
 
         for i, point in ipairs(self.classResourceButtonTable) do
@@ -3249,7 +3222,7 @@ function BBF.InstantComboPoints()
     end
 
     local function UpdateLegacyComboFrame()
-        local frame = ComboFrame
+        local frame = BBF.LegacyComboFrame
         if not frame or not frame.ComboPoints then return end
 
         local comboPoints = GetComboPoints("player", "target")
@@ -3284,6 +3257,38 @@ function BBF.InstantComboPoints()
         end
 
         BBF.CancelAllFades(frame)
+    end
+
+    local function UpdateComboRing(self)
+        for _, point in ipairs(self.ComboPoints) do
+            local animating
+            for _, transitionAnim in ipairs(point.transitionAnims) do
+                if transitionAnim:IsPlaying() then
+                    transitionAnim:Stop()
+                    animating = true
+                end
+            end
+            if animating then
+                for _, fxTexture in ipairs(point.fxTextures) do
+                    fxTexture:SetAlpha(0)
+                end
+                local isFull = point.isFull
+                point.BGActive:SetAlpha(isFull and 1 or 0)
+                point.IconUncharged:SetAlpha(isFull and 1 or 0)
+                point.BGInactive:SetAlpha(isFull and 0 or 1)
+            end
+        end
+        if UIFrameIsFading(self) then
+            UIFrameFadeRemoveFrame(self)
+            self:SetAlpha(1)
+        end
+    end
+
+    local function HookComboRing()
+        local ring = ComboFrame
+        if not ring or not ring.ComboPoints or ring == BBF.LegacyComboFrame or type(ring.Update) ~= "function" then return end
+        hooksecurefunc(ring, "Update", UpdateComboRing)
+        UpdateComboRing(ring)
     end
 
     local function UpdateDruidComboPoints(self)
@@ -3392,21 +3397,32 @@ function BBF.InstantComboPoints()
 
     if class == "MONK" then
         if MonkHarmonyBarFrame then hooksecurefunc(MonkHarmonyBarFrame, "UpdatePower", UpdateMonkChi) end
-        if not BBP and prdClassFrame then hooksecurefunc(prdClassFrame, "UpdatePower", UpdateMonkChi) end
+        if not BBP then HookPrdClassFrame(UpdateMonkChi) end
     elseif class == "ROGUE" then
         if RogueComboPointBarFrame then hooksecurefunc(RogueComboPointBarFrame, "UpdatePower", UpdateRogueComboPoints) end
-        if not BBP and prdClassFrame then hooksecurefunc(prdClassFrame, "UpdatePower", UpdateRogueComboPoints) end
-        if ComboFrame then hooksecurefunc("ComboFrame_Update", UpdateLegacyComboFrame) end
+        if not BBP then HookPrdClassFrame(UpdateRogueComboPoints) end
+        if BBF.LegacyComboFrame then BBF.HookLegacyComboUpdate(UpdateLegacyComboFrame) end
+        HookComboRing()
     elseif class == "DRUID" then
         if DruidComboPointBarFrame then hooksecurefunc(DruidComboPointBarFrame, "UpdatePower", UpdateDruidComboPoints) end
-        if not BBP and prdClassFrame then hooksecurefunc(prdClassFrame, "UpdatePower", UpdateDruidComboPoints) end
-        if ComboFrame then hooksecurefunc("ComboFrame_Update", UpdateLegacyComboFrame) end
+        if not BBP then
+            HookPrdClassFrame(function(self)
+                local point = self.classResourceButtonTable and self.classResourceButtonTable[1]
+                if point and point.IconUncharged then
+                    UpdateRogueComboPoints(self)
+                else
+                    UpdateDruidComboPoints(self)
+                end
+            end)
+        end
+        if BBF.LegacyComboFrame then BBF.HookLegacyComboUpdate(UpdateLegacyComboFrame) end
+        HookComboRing()
     elseif class == "MAGE" then
         if MageArcaneChargesFrame then hooksecurefunc(MageArcaneChargesFrame, "UpdatePower", UpdateArcaneCharges) end
-        if not BBP and prdClassFrame then hooksecurefunc(prdClassFrame, "UpdatePower", UpdateArcaneCharges) end
+        if not BBP then HookPrdClassFrame(UpdateArcaneCharges) end
     elseif class == "PALADIN" then
         if PaladinPowerBarFrame then hooksecurefunc(PaladinPowerBarFrame, "UpdatePower", UpdatePaladinHolyPower) end
-        if not BBP and prdClassFrame then hooksecurefunc(prdClassFrame, "UpdatePower", UpdatePaladinHolyPower) end
+        if not BBP then HookPrdClassFrame(UpdatePaladinHolyPower) end
     end
     BBF.InstantComboPointsActive = true
 end
@@ -3468,6 +3484,7 @@ function BBF.RaiseTargetFrameLevel()
     end
     TargetFrame:SetFrameStrata("MEDIUM")
     TargetFrame:SetFrameLevel(0)
+    BBF.RaiseCombosAboveTargetArt()
 
     BBF.raisingTargetFrameLevel = true
 end
@@ -5094,14 +5111,8 @@ function BBF.FixStupidBlizzPTRShit()
 
     local a, b, c, d, e = TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:GetPoint()
     TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:SetPoint(a, b, c, d, -24)
-    if not BBF.ocdAdjusted and TargetFrame.bbfName and FocusFrame.bbfName then
-        local a,b,c,d = TargetFrame.bbfName:GetPoint()
-        local e,f,g,h = FocusFrame.bbfName:GetPoint()
-        if a and e then
-            TargetFrame.bbfName:SetPoint(a,b,c,d,-2)
-            FocusFrame.bbfName:SetPoint(e,f,g,h,-2)
-            BBF.ocdAdjusted = true
-        end
+    if BBF.ApplyNameLayouts then
+        BBF.ApplyNameLayouts()
     end
     --TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:SetHeight()
     TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:SetHeight(20)
@@ -5887,17 +5898,6 @@ First:SetScript("OnEvent", function(_, event, addonName)
                 end)
             end
         end
-        if not BetterBlizzFramesDB.foreverComboOfferAnswered and BetterBlizzFramesDB.hasSaved then
-            C_Timer.After(7, function()
-                local db = BetterBlizzFramesDB
-                if db.foreverComboOfferAnswered then return end
-                local offerClass = UnitClassBase("player")
-                if offerClass ~= "ROGUE" and offerClass ~= "DRUID" then return end
-                db.foreverComboOfferAnswered = true
-                if db.foreverComboPoints then return end
-                BBF.ShowPopup("BBF_FOREVER_COMBO_POINTS_OFFER")
-            end)
-        end
         FetchAndSaveValuesOnFirstLogin()
         TurnTestModesOff()
         BBF.ChatFilterCaller()
@@ -5931,6 +5931,7 @@ First:SetScript("OnEvent", function(_, event, addonName)
         BBF.UpdateDefaultTotFrameMana()
         BBF.UpdateBigPlayerHealthbar()
         BBF.CenterCurrentValueOnBars()
+        BBF.StatusBarTextExtra()
         BBF.UpdateAuraCollapseButton()
         BBF.PlayerElite(BetterBlizzFramesDB.playerEliteFrameMode)
         BBF.HidePlayerFrame()

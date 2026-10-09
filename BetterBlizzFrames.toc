@@ -20,10 +20,12 @@ shared\minimapTweaks.lua
 shared\smoothBars.lua
 shared\xpBarTexture.lua
 shared\comboVisibility.lua
+shared\statusBarTextExtra.lua
 
 retail\modules\darkmode.lua
 retail\modules\classicFrames.lua
 retail\modules\nameFix.lua
+shared\moveNames.lua
 retail\modules\hideFrames.lua
 retail\modules\auras.lua
 retail\modules\absorb.lua

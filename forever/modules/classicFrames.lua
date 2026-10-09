@@ -228,6 +228,9 @@ local function MakeClassicFrame(frame)
         frame.ClassicFrame:SetParent(frame)
         frame.ClassicFrame:SetFrameStrata("MEDIUM")
         frame.ClassicFrame:SetFrameLevel(9996)
+        if frame == TargetFrame then
+            BBF.RaiseCombosAboveTargetArt()
+        end
         frame.ClassicFrame:SetAllPoints(frame)
         frame.ClassicFrame.Texture = frame.ClassicFrame:CreateTexture(nil, "OVERLAY")
         frame.ClassicFrame.Texture:SetParent(frame.ClassicFrame)
@@ -736,9 +739,9 @@ local function MakeClassicFrame(frame)
         --AdjustFramePoint(hpContainer.HealthBar.OverAbsorbGlow,-3)
         hpContainer.HealthBar.OverAbsorbGlow:SetPoint("TOPLEFT", hpContainer.HealthBar, "TOPRIGHT", -7, 0)
 
-        if C_CVar.GetCVar("comboPointLocation") == "1" and ComboFrame then
-            ComboFrame:SetParent(TargetFrame)
-            ComboFrame:SetFrameStrata("HIGH")
+        if BBF.LegacyCombosOn() and BBF.LegacyComboFrame then
+            BBF.LegacyComboFrame:SetParent(TargetFrame)
+            BBF.LegacyComboFrame:SetFrameStrata("HIGH")
             BBF.UpdateLegacyComboPosition()
         end
 

@@ -868,36 +868,23 @@ local function ApplyDurationFont(timer, style)
     timer:SetFont(base[1], base[2], style.durationOutline and "OUTLINE" or base[3])
 end
 
-local ApplyCountdownFormatter
-do
-    local HIDE_LONG_TIMER_FROM = 60
-    local longTimerFormatter
+local function ApplyCountdownFormatter(cooldown, style)
+    if not cooldown or not cooldown.SetCountdownFormatter then return end
 
-    local function GetLongTimerFormatter()
-        if not longTimerFormatter then
-            longTimerFormatter = C_StringUtil.CreateNumericRuleFormatter()
-            longTimerFormatter:SetBreakpoints({
-                {
-                    threshold = 0,
-                    format = "%d",
-                    step = 1,
-                    rounding = Enum.NumericRuleFormatRounding.Up,
-                },
-                { threshold = HIDE_LONG_TIMER_FROM, format = " " },
-            })
+    local hide = style.hideLongTimers and true or false
+    local lowColor = style.timerColor and style.timerLowColor or nil
+    if not hide and not lowColor then
+        if cooldown.bbfFormatterKey then
+            cooldown.bbfFormatterKey = nil
+            cooldown:SetCountdownFormatter(nil)
         end
-        return longTimerFormatter
+        return
     end
 
-    function ApplyCountdownFormatter(cooldown, style)
-        if not cooldown or not cooldown.SetCountdownFormatter then return end
-
-        local hide = style.hideLongTimers and true or false
-        if cooldown.bbfHideLongTimers == hide then return end
-        cooldown.bbfHideLongTimers = hide
-
-        cooldown:SetCountdownFormatter(hide and GetLongTimerFormatter() or nil)
-    end
+    local formatter, key = BBF.GetTimerFormatter(lowColor, lowColor and style.expiryThreshold or 0, false, hide)
+    if cooldown.bbfFormatterKey == key then return end
+    cooldown.bbfFormatterKey = key
+    cooldown:SetCountdownFormatter(formatter)
 end
 
 function H.EnsureButtonRegions(button, style)
@@ -1553,6 +1540,8 @@ local function BuildStyle(tier, sizes, isPlayer, cfg, into)
     t.pandemicColor = S.pandemicColor
     t.timerColor = S.timerColor
     t.timerBaseColor = S.timerBaseColor
+    t.timerLowColor = S.timerLowColor
+    t.expiryThreshold = S.expiryThreshold
     t.glow = glow
     t.glowColor = glowColor
     return t
@@ -3702,6 +3691,9 @@ function H.ScanImbues(host)
                     t = {}
                     track[key] = t
                 end
+                if t.id ~= e.enchantID then
+                    t.applied = now
+                end
                 if t.id ~= e.enchantID or endTime > (t.endTime or 0) + 1 then
                     t.total = left
                 end
@@ -3714,6 +3706,7 @@ function H.ScanImbues(host)
                     shown[n] = s
                 end
                 s.inv, s.endTime, s.total = inv, endTime, t.total
+                s.applied, s.key = t.applied, key
                 s.charges = H.Readable(e.charges) and e.charges or 0
                 local icon = GetInventoryItemTexture("player", inv)
                 if H.Readable(e.enchantIconID) and e.enchantIconID ~= 0 then
@@ -3727,8 +3720,23 @@ function H.ScanImbues(host)
     for key, t in pairs(track) do
         if t.seen ~= now then track[key] = nil end
     end
+    for i = n + 1, #shown do
+        shown[i] = nil
+    end
+    table.sort(shown, H.ImbueBefore)
     H.PaintEnchantIcons(host)
     return n
+end
+
+function H.ImbueBefore(a, b)
+    local sort = S.playerSort
+    if sort == SORT_METHODS.firstending or sort == SORT_METHODS.expiration then
+        if a.endTime ~= b.endTime then return a.endTime < b.endTime end
+    elseif sort == SORT_METHODS.lastending then
+        if a.endTime ~= b.endTime then return a.endTime > b.endTime end
+    end
+    if a.applied ~= b.applied then return a.applied < b.applied end
+    return a.key < b.key
 end
 
 function H.CreateEnchantIcon(button)

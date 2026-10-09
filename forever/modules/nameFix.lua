@@ -174,21 +174,57 @@ local function NameUnitForFrame(frame)
 end
 
 local function NameCenterForced(unit)
-    return BetterBlizzFramesDB.classicFrames or BBF.HasNoPortrait(unit)
+    return BetterBlizzFramesDB.classicFrames or (BBF.HasNoPortrait and BBF.HasNoPortrait(unit))
 end
 
 local function NameCentered(unit)
     return BetterBlizzFramesDB.centerNames or NameCenterForced(unit)
 end
 
-local function GetNameWidth(frame)
+local layoutKeys = {
+    [PlayerFrame] = "player",
+    [TargetFrame] = "target",
+    [FocusFrame] = "focus",
+    [TargetFrameToT] = "targetToT",
+    [FocusFrameToT] = "focusToT",
+    [PetFrame] = "pet",
+}
+local layoutFrames = { PlayerFrame, TargetFrame, FocusFrame, TargetFrameToT, FocusFrameToT, PetFrame }
+
+local function NoPortraitNameWidth(frame)
+    if frame ~= PlayerFrame and frame ~= TargetFrame and frame ~= FocusFrame then return end
+    if not (BBF.HasNoPortrait and BBF.HasNoPortrait(NameUnitForFrame(frame))) then return end
+    return 123
+end
+
+local function DefaultNameWidth(frame)
+    local noPortraitWidth = NoPortraitNameWidth(frame)
+    if noPortraitWidth then
+        return noPortraitWidth
+    end
     if frame == PlayerFrame then
         return 122
     end
-    if (frame == TargetFrame or frame == FocusFrame) and BetterBlizzFramesDB.centerNames and not NameCenterForced(NameUnitForFrame(frame)) then
+    if BetterBlizzFramesDB and (frame == TargetFrame or frame == FocusFrame) and BetterBlizzFramesDB.centerNames and not NameCenterForced(NameUnitForFrame(frame)) then
         return 122
     end
     return frame.bbfNameBaseWidth
+end
+
+local classicNameShrink = {
+    [PlayerFrame] = 8,
+    [TargetFrame] = 4,
+    [FocusFrame] = 4,
+}
+
+local function GetNameWidth(frame)
+    local width = DefaultNameWidth(frame)
+    local shrink = classicNameShrink[frame]
+    if width and shrink and BetterBlizzFramesDB and BetterBlizzFramesDB.classicFrames
+        and not isAddonLoaded("ClassicFrames") and not (BBF.HasNoPortrait and BBF.HasNoPortrait(NameUnitForFrame(frame))) then
+        return width - shrink
+    end
+    return width
 end
 
 local function ApplyNameWidth(frame)
@@ -201,93 +237,285 @@ local function ApplyNameWidth(frame)
     end
 end
 
-local function CenterPlayerName()
+local function CenterPlayerSpec()
     local healthBar = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer
-    local name = PlayerFrame.bbfName
     local noPortrait = BBF.HasNoPortrait("player")
     local forceCenter = NameCenterForced("player")
-    name:SetJustifyH("CENTER")
-    name:SetJustifyV(PlayerName:GetJustifyV())
-    name:ClearAllPoints()
-    if playerFrameOCD and not forceCenter then
-        name:SetPoint("TOP", healthBar, "TOP", 0, 14.5)
-    else
-        local xPos = forceCenter and 1.5 or 0
-        local yPos = noPortrait and 14 or forceCenter and 7.5 or BetterBlizzFramesDB.symmetricPlayerFrame and 15 or 14.5
-        if BetterBlizzFramesDB.classicFrames and BetterBlizzFramesDB.bigPlayerHealthbar then
-            yPos = yPos - 10
-        end
-        name:SetPoint("TOP", healthBar, "TOP", xPos, yPos)
+    if BetterBlizzFramesDB.playerFrameOCD and not BetterBlizzFramesDB.playerFrameOCDTextureBypass and not forceCenter then
+        return "TOP", healthBar, "TOP", 0, 14.5, "CENTER"
     end
+    local xPos = forceCenter and 1.5 or 0
+    if noPortrait then
+        xPos = xPos - 1
+    end
+    local yPos = noPortrait and 14 or forceCenter and 7.5 or BetterBlizzFramesDB.symmetricPlayerFrame and 15 or 14.5
+    if BetterBlizzFramesDB.classicFrames and BetterBlizzFramesDB.bigPlayerHealthbar then
+        yPos = yPos - 10
+    end
+    return "TOP", healthBar, "TOP", xPos, yPos, "CENTER"
 end
 
-local function CenterXName(fontObject, healthBar, ToT, pet, unit)
+local function CenterXSpec(healthBar, ToT, pet, unit)
     local noPortrait = BBF.HasNoPortrait(unit)
     local forceCenter = NameCenterForced(unit)
-    fontObject:ClearAllPoints()
-    if not (forceCenter and ToT) then
-        fontObject:SetJustifyH("CENTER")
-    end
+    local justify = (BetterBlizzFramesDB.classicFrames and ToT) and "LEFT" or "CENTER"
     local xPos = (pet and noPortrait and 16) or (ToT and noPortrait and 0) or (ToT and (forceCenter and 8 or -2)) or (forceCenter and 0) or noPortrait and -1 or -0.5
     local yPos = (noPortrait and ((pet and 2) or 13)) or ((pet and forceCenter) and 2 or pet and 2) or ToT and (forceCenter and -18 or 12) or (forceCenter and 6.3 or 14)
     if ToT and noPortrait then
-        fontObject:SetJustifyH("CENTER")
         xPos = xPos -1
+    elseif noPortrait and not pet then
+        xPos = xPos - 1
+    elseif BetterBlizzFramesDB.classicFrames and not ToT and not pet then
+        xPos = xPos - 1
     end
     if pet and noPortrait then
-        fontObject:SetJustifyH("CENTER")
-        local xPos = 1.5
-        local yPos = 22
+        local petX, petY = 1.5, 22
         if BetterBlizzFramesDB.noPortraitPixelBorder then
-            xPos = 0
-            yPos = 23
+            petX, petY = 0, 23
         end
-        fontObject:SetPoint("CENTER", PetFrameTexture, "CENTER", xPos, yPos)
-    else
-        fontObject:SetPoint(pet and "BOTTOM" or "TOP", healthBar, "TOP", xPos, yPos)
+        return "CENTER", PetFrameTexture, "CENTER", petX, petY, justify
     end
-    if BetterBlizzFramesDB.classicFrames and ToT then
-        fontObject:SetJustifyH("LEFT")
+    return pet and "BOTTOM" or "TOP", healthBar, "TOP", xPos, yPos, justify
+end
+
+local function MiniNameSpec(frame, db)
+    if frame == PlayerFrame and db.useMiniPlayerFrame then
+        return "LEFT", PlayerFrame.PlayerFrameContainer, "TOP", -16, -26, "LEFT", 180
+    end
+    if (frame == TargetFrame and db.useMiniTargetFrame) or (frame == FocusFrame and db.useMiniFocusFrame) then
+        return "RIGHT", frame.TargetFrameContainer.Portrait, "LEFT", -9, 10, "RIGHT", 180
     end
 end
 
+local function GetBaseNameSpec(frame)
+    local db = BetterBlizzFramesDB
+    if not db or not BBF.HasNoPortrait or isAddonLoaded("ClassicFrames") then return end
+    local unit = NameUnitForFrame(frame)
+    local ToT = frame == TargetFrameToT or frame == FocusFrameToT
+    if not ToT and frame ~= PetFrame and MiniNameSpec(frame, db) then
+        return MiniNameSpec(frame, db)
+    end
+    if frame == PetFrame then
+        if NameCentered(unit) then
+            return CenterXSpec(PetFrameHealthBar, true, true, unit)
+        end
+        return
+    end
+    local mirrored = db.mirroredNames and not db.centerNames and not ToT and frame ~= PlayerFrame
+    if NameCentered(unit) then
+        if frame == PlayerFrame then
+            local point, relativeTo, relativePoint, xPos, yPos, justify = CenterPlayerSpec()
+            if db.mirroredNames and not db.centerNames then
+                justify = "LEFT"
+            end
+            return point, relativeTo, relativePoint, xPos, yPos, justify
+        end
+        local owner = unit == "target" and TargetFrame or FocusFrame
+        if ToT then
+            return CenterXSpec(owner.totFrame.HealthBar, true, nil, unit)
+        end
+        local point, relativeTo, relativePoint, xPos, yPos, justify = CenterXSpec(owner.TargetFrameContent.TargetFrameContentMain.HealthBarsContainer, nil, nil, unit)
+        return point, relativeTo, relativePoint, xPos, yPos, mirrored and "RIGHT" or justify
+    end
+    if mirrored then
+        return "TOPRIGHT", frame.TargetFrameContent.TargetFrameContentMain.ReputationColor, "TOPRIGHT", -12, db.playerFrameOCD and -2.5 or -1, "RIGHT"
+    end
+end
 
+local edgeOffset = { TOP = 0.5, BOTTOM = -0.5 }
+
+local movePrefix = {
+    player = "moveNamePlayer",
+    target = "moveNameTarget",
+    focus = "moveNameFocus",
+    targetToT = "moveNameTargetToT",
+    focusToT = "moveNameFocusToT",
+}
+BBF.nameMovePrefix = movePrefix
+
+local alignJustify = {
+    Left = "LEFT",
+    Center = "CENTER",
+    Right = "RIGHT",
+}
+
+BBF.nameMoveSliders = {}
+for _, prefix in pairs(movePrefix) do
+    BBF.nameMoveSliders[prefix .. "X"] = true
+    BBF.nameMoveSliders[prefix .. "Y"] = true
+end
+
+local function NameAlignForced(key)
+    local db = BetterBlizzFramesDB
+    if not db then return false end
+    if db.centerNames then return true end
+    return db.mirroredNames and (key == "player" or key == "target" or key == "focus") or false
+end
+BBF.NameAlignForced = NameAlignForced
+
+function BBF.GetNameJustify(key)
+    for frame, frameKey in pairs(layoutKeys) do
+        if frameKey == key and frame.bbfName then
+            return frame.bbfName.bbfLaidJustify
+        end
+    end
+end
+
+local function ToEdge(point, yPos, height, edge)
+    local vertical = point:match("^TOP") or point:match("^BOTTOM") or ""
+    local horizontal = point:sub(#vertical + 1)
+    if horizontal == "CENTER" then
+        horizontal = ""
+    end
+    return edge .. horizontal, yPos + ((edgeOffset[edge] or 0) - (edgeOffset[vertical] or 0)) * height
+end
+
+local function MultiLineNudge(fontString, height, edge)
+    local _, fontHeight = fontString:GetFont()
+    if not height or not fontHeight then return 0 end
+    local nudge = (height - fontHeight) / 2
+    return edge == "BOTTOM" and nudge or -nudge
+end
+
+local function ApplyNameLayout(frame)
+    local fontString = frame and frame.bbfName
+    local name = frame and (frame.name or frame.Name)
+    local key = layoutKeys[frame]
+    if not fontString or not name or not key then return end
+    local dragBox = fontString.bbfDragBox
+    if dragBox then
+        fontString:ClearAllPoints()
+        local extraX, extraY = dragBox.extraX or 0, dragBox.extraY or 0
+        local inset = dragBox.inset * dragBox:GetEffectiveScale() / fontString:GetEffectiveScale()
+        fontString:SetPoint("TOPLEFT", dragBox, "TOPLEFT", inset + extraX, -inset + extraY)
+        fontString:SetPoint("BOTTOMRIGHT", dragBox, "BOTTOMRIGHT", -inset + extraX, inset + extraY)
+        return
+    end
+    local db = BetterBlizzFramesDB
+    local prefix = db and db.moveNames and movePrefix[key]
+    local dx, dy = prefix and tonumber(db[prefix .. "X"]) or 0, prefix and tonumber(db[prefix .. "Y"]) or 0
+    local multiLine = prefix and db[prefix .. "MultiLine"] and true or false
+    local edge = prefix and db[prefix .. "GrowDown"] and "TOP" or "BOTTOM"
+    local height = frame.bbfNameBaseHeight
+    local width = GetNameWidth(frame)
+    local point, relativeTo, relativePoint, xPos, yPos, justify, specWidth = GetBaseNameSpec(frame)
+    width = specWidth or width
+    justify = prefix and not NameAlignForced(key) and alignJustify[db[prefix .. "Align"]] or justify or name:GetJustifyH()
+    if frame == PlayerFrame and db and db.mirroredNames and not db.centerNames then
+        justify = "LEFT"
+    end
+
+    fontString:ClearAllPoints()
+    fontString:SetWordWrap(multiLine)
+    if fontString.SetMaxLines then
+        fontString:SetMaxLines(multiLine and 3 or 0)
+    end
+    fontString.bbfMultiLine = multiLine or nil
+
+    if point then
+        if multiLine and height then
+            point, yPos = ToEdge(point, yPos, height, edge)
+            yPos = yPos + MultiLineNudge(fontString, height, edge)
+        end
+        fontString:SetPoint(point, relativeTo, relativePoint, xPos + dx, yPos + dy)
+        if width then
+            fontString:SetWidth(width)
+        end
+        if multiLine then
+            fontString:SetHeight(0)
+        elseif height then
+            fontString:SetHeight(height)
+        end
+    else
+        local base = frame.bbfNameBaseWidth
+        local extra = (base and width and width > base) and (width - base) or 0
+        local left = justify == "RIGHT" and extra or justify == "CENTER" and extra / 2 or 0
+        local right = extra - left
+        if db and db.playerFrameOCD and (frame == TargetFrame or frame == FocusFrame) then
+            dy = dy - 1.5
+        end
+        if multiLine then
+            dy = dy + MultiLineNudge(fontString, height, edge)
+            fontString:SetPoint(edge .. "LEFT", name, edge .. "LEFT", dx - left, dy)
+            fontString:SetPoint(edge .. "RIGHT", name, edge .. "RIGHT", dx + right, dy)
+            fontString:SetHeight(0)
+        else
+            fontString:SetPoint("TOPLEFT", name, "TOPLEFT", dx - left, dy)
+            fontString:SetPoint("BOTTOMRIGHT", name, "BOTTOMRIGHT", dx + right, dy)
+        end
+    end
+    fontString:SetJustifyV(name:GetJustifyV())
+    if fontString.bbfLaidJustify ~= justify then
+        fontString.bbfLaidJustify = justify
+        fontString:SetJustifyH(justify)
+        local text = fontString:GetText()
+        fontString:SetText("")
+        fontString:SetText(text)
+    end
+end
+
+function BBF.ApplyNameLayout(key)
+    for frame, frameKey in pairs(layoutKeys) do
+        if frameKey == key then
+            ApplyNameLayout(frame)
+        end
+    end
+end
+
+function BBF.ApplyNameLayouts()
+    for _, frame in ipairs(layoutFrames) do
+        ApplyNameLayout(frame)
+    end
+end
+
+BBF.NameLayoutTargets = {
+    { key = "player", frame = PlayerFrame },
+    { key = "target", frame = TargetFrame },
+    { key = "focus", frame = FocusFrame },
+    { key = "targetToT", frame = TargetFrameToT },
+    { key = "focusToT", frame = FocusFrameToT },
+}
 
 function BBF.SetCenteredNamesCaller()
-    if isAddonLoaded("ClassicFrames") then
-        return
-    end
     BBF.UpdateUserTargetSettings()
-    ApplyNameWidth(PlayerFrame)
-    ApplyNameWidth(TargetFrame)
-    ApplyNameWidth(FocusFrame)
+    for _, frame in ipairs(layoutFrames) do
+        ApplyNameWidth(frame)
+    end
+    BBF.ApplyNameLayouts()
     BBF.UpdateNameFit()
-    if not centerNames then
-        if not forceCenterNameSetting then
-            PlayerFrame.bbfName:SetJustifyH("LEFT")
-            return
-        end
-        return
-    end
-    if NameCentered("player") then
-        CenterPlayerName()
-    elseif not NameCenterForced("player") then
-        PlayerFrame.bbfName:SetJustifyH("LEFT")
-    end
-    if NameCentered("target") then
-        CenterXName(TargetFrame.bbfName, TargetFrame.TargetFrameContent.TargetFrameContentMain.HealthBarsContainer, nil, nil, "target")
-        CenterXName(TargetFrameToT.bbfName, TargetFrame.totFrame.HealthBar, true, nil, "target")
-    end
-    if NameCentered("focus") then
-        CenterXName(FocusFrame.bbfName, FocusFrame.TargetFrameContent.TargetFrameContentMain.HealthBarsContainer, nil, nil, "focus")
-        CenterXName(FocusFrameToT.bbfName, FocusFrame.totFrame.HealthBar, true, nil, "focus")
-    end
-    if NameCentered("pet") then
-        C_Timer.After(0, function() --idk why but this wont update unless delayed a frame
-            CenterXName(PetFrame.bbfName, PetFrameHealthBar, true, true, "pet")
-        end)
-    end
+    C_Timer.After(0, function()
+        ApplyNameLayout(PetFrame)
+    end)
 end
+
+BBF.RefreshNameLayouts = BBF.SetCenteredNamesCaller
+
+BBF.nameLayoutSettings = {
+    moveNamePlayerMultiLine = true,
+    moveNamePlayerGrowDown = true,
+    moveNameTargetMultiLine = true,
+    moveNameTargetGrowDown = true,
+    moveNameFocusMultiLine = true,
+    moveNameFocusGrowDown = true,
+    moveNameTargetToTMultiLine = true,
+    moveNameTargetToTGrowDown = true,
+    moveNameFocusToTMultiLine = true,
+    moveNameFocusToTGrowDown = true,
+    centerNames = true,
+    moveNames = true,
+    mirroredNames = true,
+    playerFrameOCD = true,
+    playerFrameOCDTextureBypass = true,
+    symmetricPlayerFrame = true,
+    bigPlayerHealthbar = true,
+    classicFrames = true,
+    noPortraitModes = true,
+    noPortraitPixelBorder = true,
+    forceFitNames = true,
+    useMiniPlayerFrame = true,
+    useMiniTargetFrame = true,
+    useMiniFocusFrame = true,
+}
 
 local function GetLocalizedSpecs()
     local specs = {}
@@ -736,20 +964,30 @@ local function InitializeFontString(frame)
     frame.bbfName:SetShadowOffset(name:GetShadowOffset())
     frame.bbfNameBaseWidth = name:GetWidth()
     local nameHeight = name:GetHeight()
+    frame.bbfNameBaseHeight = nameHeight
     frame.bbfName:SetWidth(GetNameWidth(frame))
     frame.bbfName:SetHeight(nameHeight)
     frame.bbfName:SetWordWrap(false)
 
-    -- Copy position
-    local point, relativeTo, relativePoint, xOffset, yOffset = name:GetPoint()
-    if point then
-        frame.bbfName:SetPoint(point, relativeTo, relativePoint, xOffset, yOffset)
+    frame.bbfName:SetText(name:GetText())
+
+    if layoutKeys[frame] then
+        ApplyNameLayout(frame)
+        hooksecurefunc(name, "SetText", function()
+            ApplyNameLayout(frame)
+        end)
+        hooksecurefunc(name, "SetJustifyH", function()
+            ApplyNameLayout(frame)
+        end)
+    else
+        local point, relativeTo, relativePoint, xOffset, yOffset = name:GetPoint()
+        if point then
+            frame.bbfName:SetPoint(point, relativeTo, relativePoint, xOffset, yOffset)
+        end
     end
 
-    -- Set initial text from the original FontString
-    frame.bbfName:SetText(name:GetText())
     hooksecurefunc(name, "SetText", function()
-        --frame.bbfName:SetSize(name:GetSize())
+        if layoutKeys[frame] then return end
         if NameCentered(NameUnitForFrame(frame)) and not BetterBlizzFramesDB.classicFrames then
             frame.bbfName:SetJustifyH("CENTER")
         end
@@ -877,7 +1115,7 @@ function BBF.UpdateNameFit()
     for _, frame in ipairs(fitNameFrames) do
         local fontString = frame and frame.bbfName
         if fontString then
-            if forceFitNames then
+            if forceFitNames and not fontString.bbfMultiLine then
                 FitNameToWidth(fontString)
             else
                 RestoreNameFont(fontString)
@@ -890,7 +1128,7 @@ for _, frame in ipairs(fitNameFrames) do
     local fontString = frame and frame.bbfName
     if fontString then
         hooksecurefunc(fontString, "SetText", function(self)
-            if not forceFitNames or self.bbfFitting then return end
+            if not forceFitNames or self.bbfFitting or self.bbfMultiLine then return end
             self.bbfFitting = true
             FitNameToWidth(self)
             self.bbfFitting = nil
@@ -899,6 +1137,7 @@ for _, frame in ipairs(fitNameFrames) do
 end
 
 local function UpdateFontStringPosition(frame)
+    if layoutKeys[frame] then return end
     local name = frame.name or frame.Name
     if not name or not name:GetParent() then return end
     local point, relativeTo, relativePoint, xOffset, yOffset = name:GetPoint()
@@ -1471,7 +1710,15 @@ local function UpdateNamePositionForClassic()
 
     for _, frame in ipairs(frames) do
         local name = frame.name or frame.Name
-        if frame.bbfName and name then
+        if frame.bbfName and name and layoutKeys[frame] then
+            if not frame.bbfForcedFont then
+                local font, fontHeight, fontFlags = name:GetFont()
+                frame.bbfName:SetFont(font, fontHeight, fontFlags)
+            end
+            frame.bbfName:SetShadowColor(name:GetShadowColor())
+            frame.bbfName:SetShadowOffset(name:GetShadowOffset())
+            ApplyNameLayout(frame)
+        elseif frame.bbfName and name then
             if not frame.bbfForcedFont then
                 local font, fontHeight, fontFlags = name:GetFont()
                 frame.bbfName:SetFont(font, fontHeight, fontFlags)

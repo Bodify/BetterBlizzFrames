@@ -298,6 +298,196 @@ if not GetCVarBool("useCompactPartyFrames") then
     end
 end
 
+local layoutKeys = {
+    [PlayerFrame] = "player",
+    [TargetFrame] = "target",
+    [FocusFrame] = "focus",
+    [TargetFrameToT] = "targetToT",
+    [FocusFrameToT] = "focusToT",
+}
+local layoutFrames = { PlayerFrame, TargetFrame, FocusFrame, TargetFrameToT, FocusFrameToT }
+
+local function GetNameWidth(frame)
+    return frame.bbfNameBaseWidth
+end
+
+local function GetBaseNameSpec(frame)
+    local db = BetterBlizzFramesDB
+    if not db or not db.mirroredNames then return end
+    if frame ~= TargetFrame and frame ~= FocusFrame then return end
+    local name = frame.name or frame.Name
+    return "RIGHT", name, "RIGHT", 12, 0, "RIGHT"
+end
+
+local edgeOffset = { TOP = 0.5, BOTTOM = -0.5 }
+
+local movePrefix = {
+    player = "moveNamePlayer",
+    target = "moveNameTarget",
+    focus = "moveNameFocus",
+    targetToT = "moveNameTargetToT",
+    focusToT = "moveNameFocusToT",
+}
+BBF.nameMovePrefix = movePrefix
+
+local alignJustify = {
+    Left = "LEFT",
+    Center = "CENTER",
+    Right = "RIGHT",
+}
+
+BBF.nameMoveSliders = {}
+for _, prefix in pairs(movePrefix) do
+    BBF.nameMoveSliders[prefix .. "X"] = true
+    BBF.nameMoveSliders[prefix .. "Y"] = true
+end
+
+local function NameAlignForced(key)
+    local db = BetterBlizzFramesDB
+    return db and db.mirroredNames and (key == "player" or key == "target" or key == "focus") or false
+end
+BBF.NameAlignForced = NameAlignForced
+
+function BBF.GetNameJustify(key)
+    for frame, frameKey in pairs(layoutKeys) do
+        if frameKey == key and frame.bbfName then
+            return frame.bbfName.bbfLaidJustify
+        end
+    end
+end
+
+local function ToEdge(point, yPos, height, edge)
+    local vertical = point:match("^TOP") or point:match("^BOTTOM") or ""
+    local horizontal = point:sub(#vertical + 1)
+    if horizontal == "CENTER" then
+        horizontal = ""
+    end
+    return edge .. horizontal, yPos + ((edgeOffset[edge] or 0) - (edgeOffset[vertical] or 0)) * height
+end
+
+local function MultiLineNudge(fontString, height, edge)
+    local _, fontHeight = fontString:GetFont()
+    if not height or not fontHeight then return 0 end
+    local nudge = (height - fontHeight) / 2
+    return edge == "BOTTOM" and nudge or -nudge
+end
+
+local function ApplyNameLayout(frame)
+    local fontString = frame and frame.bbfName
+    local name = frame and (frame.name or frame.Name)
+    local key = layoutKeys[frame]
+    if not fontString or not name or not key then return end
+    local dragBox = fontString.bbfDragBox
+    if dragBox then
+        fontString:ClearAllPoints()
+        local extraX, extraY = dragBox.extraX or 0, dragBox.extraY or 0
+        local inset = dragBox.inset * dragBox:GetEffectiveScale() / fontString:GetEffectiveScale()
+        fontString:SetPoint("TOPLEFT", dragBox, "TOPLEFT", inset + extraX, -inset + extraY)
+        fontString:SetPoint("BOTTOMRIGHT", dragBox, "BOTTOMRIGHT", -inset + extraX, inset + extraY)
+        return
+    end
+    local db = BetterBlizzFramesDB
+    local prefix = db and db.moveNames and movePrefix[key]
+    local dx, dy = prefix and tonumber(db[prefix .. "X"]) or 0, prefix and tonumber(db[prefix .. "Y"]) or 0
+    local multiLine = prefix and db[prefix .. "MultiLine"] and true or false
+    local edge = prefix and db[prefix .. "GrowDown"] and "TOP" or "BOTTOM"
+    local height = frame.bbfNameBaseHeight
+    local width = GetNameWidth(frame)
+    local point, relativeTo, relativePoint, xPos, yPos, justify = GetBaseNameSpec(frame)
+    justify = prefix and not NameAlignForced(key) and alignJustify[db[prefix .. "Align"]] or justify or name:GetJustifyH()
+    if frame == PlayerFrame and db and db.mirroredNames and not db.centerNames then
+        justify = "LEFT"
+    end
+
+    fontString:ClearAllPoints()
+    fontString:SetWordWrap(multiLine)
+    if fontString.SetMaxLines then
+        fontString:SetMaxLines(multiLine and 3 or 0)
+    end
+    fontString.bbfMultiLine = multiLine or nil
+
+    if point then
+        if multiLine and height then
+            point, yPos = ToEdge(point, yPos, height, edge)
+            yPos = yPos + MultiLineNudge(fontString, height, edge)
+        end
+        fontString:SetPoint(point, relativeTo, relativePoint, xPos + dx, yPos + dy)
+        if width then
+            fontString:SetWidth(width)
+        end
+        if multiLine then
+            fontString:SetHeight(0)
+        elseif height then
+            fontString:SetHeight(height)
+        end
+    else
+        local base = frame.bbfNameBaseWidth
+        local extra = (base and width and width > base) and (width - base) or 0
+        local left = justify == "RIGHT" and extra or justify == "CENTER" and extra / 2 or 0
+        local right = extra - left
+        if multiLine then
+            dy = dy + MultiLineNudge(fontString, height, edge)
+            fontString:SetPoint(edge .. "LEFT", name, edge .. "LEFT", dx - left, dy)
+            fontString:SetPoint(edge .. "RIGHT", name, edge .. "RIGHT", dx + right, dy)
+            fontString:SetHeight(0)
+        else
+            fontString:SetPoint("TOPLEFT", name, "TOPLEFT", dx - left, dy)
+            fontString:SetPoint("BOTTOMRIGHT", name, "BOTTOMRIGHT", dx + right, dy)
+        end
+    end
+    fontString:SetJustifyV(name:GetJustifyV())
+    if fontString.bbfLaidJustify ~= justify then
+        fontString.bbfLaidJustify = justify
+        fontString:SetJustifyH(justify)
+        local text = fontString:GetText()
+        fontString:SetText("")
+        fontString:SetText(text)
+    end
+end
+
+function BBF.ApplyNameLayout(key)
+    for frame, frameKey in pairs(layoutKeys) do
+        if frameKey == key then
+            ApplyNameLayout(frame)
+        end
+    end
+end
+
+function BBF.ApplyNameLayouts()
+    for _, frame in ipairs(layoutFrames) do
+        ApplyNameLayout(frame)
+    end
+end
+
+BBF.NameLayoutTargets = {
+    { key = "player", frame = PlayerFrame },
+    { key = "target", frame = TargetFrame },
+    { key = "focus", frame = FocusFrame },
+    { key = "targetToT", frame = TargetFrameToT },
+    { key = "focusToT", frame = FocusFrameToT },
+}
+
+function BBF.SetCenteredNamesCaller()
+    BBF.ApplyNameLayouts()
+end
+
+BBF.RefreshNameLayouts = BBF.SetCenteredNamesCaller
+
+BBF.nameLayoutSettings = {
+    moveNamePlayerMultiLine = true,
+    moveNamePlayerGrowDown = true,
+    moveNameTargetMultiLine = true,
+    moveNameTargetGrowDown = true,
+    moveNameFocusMultiLine = true,
+    moveNameFocusGrowDown = true,
+    moveNameTargetToTMultiLine = true,
+    moveNameTargetToTGrowDown = true,
+    moveNameFocusToTMultiLine = true,
+    moveNameFocusToTGrowDown = true,
+    moveNames = true,
+    mirroredNames = true,
+}
+
 local function InitializeFontString(frame)
     -- Determine the original FontString based on available properties
     local name = frame.name or frame.Name
@@ -319,18 +509,28 @@ local function InitializeFontString(frame)
     frame.bbfName:SetWidth(name:GetWidth())
     frame.bbfName:SetHeight(name:GetHeight())
     frame.bbfName:SetWordWrap(false)
+    frame.bbfNameBaseWidth = name:GetWidth()
+    frame.bbfNameBaseHeight = name:GetHeight()
 
-    -- Copy position
-    local point, relativeTo, relativePoint, xOffset, yOffset = name:GetPoint()
-    if point then
-        frame.bbfName:SetPoint(point, relativeTo, relativePoint, xOffset, yOffset)
-    end
-
-    -- Set initial text from the original FontString
     frame.bbfName:SetText(name:GetText())
-    hooksecurefunc(name, "SetText", function()
-        frame.bbfName:SetSize(name:GetSize())
-    end)
+
+    if layoutKeys[frame] then
+        ApplyNameLayout(frame)
+        hooksecurefunc(name, "SetText", function()
+            ApplyNameLayout(frame)
+        end)
+        hooksecurefunc(name, "SetJustifyH", function()
+            ApplyNameLayout(frame)
+        end)
+    else
+        local point, relativeTo, relativePoint, xOffset, yOffset = name:GetPoint()
+        if point then
+            frame.bbfName:SetPoint(point, relativeTo, relativePoint, xOffset, yOffset)
+        end
+        hooksecurefunc(name, "SetText", function()
+            frame.bbfName:SetSize(name:GetSize())
+        end)
+    end
 
     -- Hide original
     name:SetAlpha(0)
@@ -366,6 +566,7 @@ end
 InitializeFontStringsForFrames()
 
 local function UpdateFontStringPosition(frame)
+    if layoutKeys[frame] then return end
     local name = frame.name or frame.Name
     if not name or not name:GetParent() then return end
     local point, relativeTo, relativePoint, xOffset, yOffset = name:GetPoint()

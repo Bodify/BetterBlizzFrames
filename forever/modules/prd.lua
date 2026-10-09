@@ -654,6 +654,13 @@ local function GetNameplateResourceAnchor(unitFrame)
     return span
 end
 
+BBF.GetPrdResourceNameplateAnchor = GetNameplateResourceAnchor
+
+local function HasComboTargetBar()
+    local class = UnitClassBase("player")
+    return class == "ROGUE" or class == "DRUID"
+end
+
 function BBF.GetPrdResourceNameplate()
     local db = BetterBlizzFramesDB
     if not db.prdResourceAdjust or not db.prdResourceOnTarget then return nil end
@@ -672,8 +679,17 @@ function BBF.UpdatePrdResource()
 
     local db = BetterBlizzFramesDB
     local prd = PersonalResourceDisplayFrame
-    local frame = (prd and prd.classFrame) or BBF.ComboPointPrdBar
-        or (BBP and (BBP.MaelstromBar or BBP.TipOfSpearBar or (not db.foreverComboPoints and BBP.ComboPointBar)))
+    local comboClass = HasComboTargetBar()
+    if comboClass and BBF.CreateComboPointBars then
+        if BBF.ComboPointTargetBar then
+            BBF.UpdateComboPointTargetBar()
+        elseif BBF.ComboPointTargetBarWanted() then
+            BBF.CreateComboPointBars()
+        end
+    end
+
+    local frame = (prd and prd.classFrame)
+        or (BBP and (BBP.MaelstromBar or BBP.TipOfSpearBar))
     if not frame or frame:IsForbidden() then return end
 
     if not db.prdResourceAdjust then
@@ -700,7 +716,7 @@ function BBF.UpdatePrdResource()
     local yOfs = db.prdResourceYPos or 0
     frame:SetScale(db.prdResourceScale or 1)
 
-    local unitFrame = BBF.GetPrdResourceNameplate()
+    local unitFrame = not comboClass and BBF.GetPrdResourceNameplate()
 
     if unitFrame then
         frame:SetAlpha(1)
@@ -714,7 +730,11 @@ function BBF.UpdatePrdResource()
         local comboRaise = frame.bbfForeverComboBar and FOREVER_COMBO_NAMEPLATE_Y or 0
         PixelUtil.SetPoint(frame, "BOTTOM", GetNameplateResourceAnchor(unitFrame), "TOP", xOfs, yOfs + 30 + comboRaise)
     else
-        frame:SetAlpha((db.prdResourceOnTarget and not db.prdResourceNoTargetOnPrd) and 0 or 1)
+        if comboClass then
+            frame:SetAlpha(db.hidePrdComboPoints and 0 or 1)
+        else
+            frame:SetAlpha((db.prdResourceOnTarget and not db.prdResourceNoTargetOnPrd) and 0 or 1)
+        end
         frame:SetFrameStrata(PrdResourceStrata(frame))
         if frame.bbfPrdBaseLevel == nil then
             frame.bbfPrdBaseLevel = frame:GetFrameLevel()

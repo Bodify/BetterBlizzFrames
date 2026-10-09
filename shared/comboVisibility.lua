@@ -14,7 +14,7 @@ local UNIT_FRAME_BARS = {
 
 local CUSTOM_BARS = {
     "ComboPointBar",
-    "ComboPointPrdBar",
+    "ComboPointTargetBar",
     "MaelstromWeaponBar",
     "MaelstromWeaponPrdBar",
     "TipOfSpearBar",
@@ -31,6 +31,7 @@ local function GetMode(isUnitFrame)
 end
 
 local function GetPoints(bar)
+    if bar.ComboPoints then return bar.ComboPoints end
     if bar.classResourceButtonTable then return bar.classResourceButtonTable end
     if bar.Runes then return bar.Runes end
     if not bar.rune1 then return nil end
@@ -60,6 +61,9 @@ local function IsActive(point, index, count)
     end
     if point.fillAmount ~= nil then
         return point.fillAmount > 0
+    end
+    if point.isFull ~= nil then
+        return point.isFull
     end
     return index <= count
 end
@@ -162,6 +166,19 @@ local function HookBar(bar, apply)
     hooksecurefunc(bar, method, apply)
 end
 
+local function GetComboRing()
+    local ring = ComboFrame
+    if ring and ring.ComboPoints and ring ~= BBF.LegacyComboFrame and ring.Update then
+        return ring
+    end
+end
+
+local function HookComboRing(ring)
+    if ring.bbfComboVisHooked then return end
+    ring.bbfComboVisHooked = true
+    hooksecurefunc(ring, "Update", ApplyUnitFrameBar)
+end
+
 local function HookPrdClassFrame()
     local prd = PersonalResourceDisplayFrame
     if not prd then return end
@@ -183,6 +200,14 @@ function BBF.UpdateComboVisibility(fromPlates)
             HookBar(unitBar, ApplyUnitFrameBar)
         end
         ApplyUnitFrameBar(unitBar)
+    end
+
+    local ring = GetComboRing()
+    if ring then
+        if GetMode(true) then
+            HookComboRing(ring)
+        end
+        ApplyUnitFrameBar(ring)
     end
 
     local prd = PersonalResourceDisplayFrame

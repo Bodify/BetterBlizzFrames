@@ -741,6 +741,9 @@ local function MakeNoPortraitMode(frame)
         frame.noPortraitMode:SetParent(frame)
         frame.noPortraitMode:SetFrameStrata("HIGH")
         frame.noPortraitMode:SetAllPoints(frame)
+        if frame == TargetFrame then
+            BBF.RaiseCombosAboveTargetArt()
+        end
         frame.noPortraitMode.Texture = frame.noPortraitMode:CreateTexture(nil, "OVERLAY")
         frame.noPortraitMode.Texture:SetParent(frame.noPortraitMode)
         frame.noPortraitMode.Texture:SetSize(254, 46)

@@ -405,6 +405,9 @@ local function MakeClassicFrame(frame)
         frame.ClassicFrame:SetParent(frame)
         frame.ClassicFrame:SetFrameStrata("MEDIUM")
         frame.ClassicFrame:SetFrameLevel(9996)
+        if frame == TargetFrame then
+            BBF.RaiseCombosAboveTargetArt()
+        end
         frame.ClassicFrame:SetAllPoints(frame)
         frame.ClassicFrame.Texture = frame.ClassicFrame:CreateTexture(nil, "OVERLAY")
         frame.ClassicFrame.Texture:SetParent(frame.ClassicFrame)

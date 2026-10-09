@@ -1,5 +1,4 @@
 BetterBlizzFrames = nil
-local LibDD = LibStub:GetLibrary("LibUIDropDownMenu-4.0")
 local L = BBF.L
 --local anchorPoints = {"CENTER", "TOPLEFT", "TOP", "TOPRIGHT", "LEFT", "RIGHT", "BOTTOMLEFT", "BOTTOM", "BOTTOMRIGHT"}
 local anchorPoints = {"CENTER", "TOP", "LEFT", "RIGHT", "BOTTOM"}
@@ -82,16 +81,17 @@ local function GetSearchCategory(parent)
     return category
 end
 
-local function KeepPopupInSettings(popup, panel)
+local function KeepPopupInSettings(popup, panel, strata)
+    strata = strata or "FULLSCREEN_DIALOG"
     popup:SetParent(UIParent)
     if popup.Bg then
         popup.Bg:Hide()
     end
-    popup:SetFrameStrata("FULLSCREEN_DIALOG")
+    popup:SetFrameStrata(strata)
     popup:SetFrameLevel(550)
     popup:SetToplevel(true)
     popup:HookScript("OnShow", function(self)
-        self:SetFrameStrata("FULLSCREEN_DIALOG")
+        self:SetFrameStrata(strata)
         self:Raise()
     end)
     popup:HookScript("OnHide", function()
@@ -645,6 +645,7 @@ local function CreateColorBox(parent, colorVar, labelText, callback)
     text:SetText(labelText)
     text:SetPoint("LEFT", borderFrame, "RIGHT", 3, 0)
     frame.text = text
+    frame.colorTexture = colorTexture
 
     -- Make the frame clickable and open a color picker on click
     frame:EnableMouse(true)
@@ -709,13 +710,13 @@ BBF.popupBuilders["BBF_KICK_POPUP_SOUND_ID"] = function()
             local id = tonumber(text)
             if not id or id == 0 then
                 BetterBlizzFramesDB.kickPopupSoundFileID = nil
-                if BBF.kickPopupSoundNameDropdown then
-                    LibDD:UIDropDownMenu_SetText(BBF.kickPopupSoundNameDropdown, BetterBlizzFramesDB.kickPopupSoundName or "Lossa Countered")
+                if BBF.UpdateKickSoundDropdownText then
+                    BBF.UpdateKickSoundDropdownText()
                 end
             else
                 BetterBlizzFramesDB.kickPopupSoundFileID = id
-                if BBF.kickPopupSoundNameDropdown then
-                    LibDD:UIDropDownMenu_SetText(BBF.kickPopupSoundNameDropdown, "ID: " .. id)
+                if BBF.UpdateKickSoundDropdownText then
+                    BBF.UpdateKickSoundDropdownText()
                 end
                 local channel = BetterBlizzFramesDB.kickPopupSoundChannel or "Master"
                 PlaySound(id, channel)
@@ -1568,6 +1569,9 @@ local function CreateSlider(parent, label, minValue, maxValue, stepValue, elemen
                 elseif element == "auraTimerLowThreshold" then
                     BetterBlizzFramesDB.auraTimerLowThreshold = value
                     BBF.RefreshAllAuraFrames()
+                elseif element == "bigDebuffsLowThreshold" or element == "bigDebuffsTextScale" then
+                    BetterBlizzFramesDB[element] = value
+                    BBF.UpdateBigDebuffsTimers()
                 elseif element == "targetAndFocusSmallAuraScale" then
                     BetterBlizzFramesDB.targetAndFocusSmallAuraScale = value
                     BBF.RefreshAllAuraFrames()
@@ -1641,6 +1645,12 @@ local function CreateSlider(parent, label, minValue, maxValue, stepValue, elemen
                 elseif element == "foreverMinimapXPos" or element == "foreverMinimapYPos" or element == "foreverMinimapScale" or element == "foreverMinimapTitleScale" then
                     BetterBlizzFramesDB[element] = value
                     BBF.UpdateMinimapTweaks()
+                elseif BBF.nameMoveSliders[element] then
+                    BetterBlizzFramesDB[element] = value
+                    BBF.RefreshNameLayouts()
+                elseif element == "moveNamesGuideAlpha" then
+                    BetterBlizzFramesDB[element] = nil
+                    BBF.UpdateNameMoveGuideAlpha(value)
                 end
             end
         end)
@@ -2132,10 +2142,35 @@ local function CreateImportExportUI(parent, title, dataTable, posX, posY, tableN
     return frame
 end
 
+local function CreateLegacySizedDropdown(parent, width)
+    local dropdown = CreateFrame("DropdownButton", nil, parent, "WowStyle1DropdownTemplate")
+    local top, bottom = 1, 31 - dropdown:GetHeight()
+    dropdown:SetSize(width + 50, 32)
+    dropdown:SetHitRectInsets(17, 16, top, bottom)
+    for _, region in ipairs({ dropdown.Background, dropdown.Arrow, dropdown.Text }) do
+        local points = {}
+        for i = 1, region:GetNumPoints() do
+            points[i] = { region:GetPoint(i) }
+        end
+        region:ClearAllPoints()
+        for _, p in ipairs(points) do
+            local point, relativeTo, relativePoint, x, y = unpack(p)
+            if relativeTo == dropdown then
+                x = x + (relativePoint:find("LEFT") and 17 or relativePoint:find("RIGHT") and -16 or 0.5)
+                y = y + (relativePoint:find("TOP") and -top or relativePoint:find("BOTTOM") and bottom or (bottom - top) / 2)
+            end
+            region:SetPoint(point, relativeTo, relativePoint, x, y)
+        end
+    end
+    dropdown:SetMenuAnchor(AnchorUtil.CreateAnchor("TOPLEFT", dropdown, "BOTTOMLEFT", 17, bottom + 2))
+    dropdown.Background:SetVertexColor(0.9, 0.9, 0.9)
+    dropdown.Arrow:SetVertexColor(0.9, 0.9, 0.9)
+    return dropdown
+end
+
 local function CreateAnchorDropdown(name, parent, defaultText, settingKey, toggleFunc, point)
     -- Create the dropdown frame using the library's creation function
-    local dropdown = LibDD:Create_UIDropDownMenu(name, parent)
-    LibDD:UIDropDownMenu_SetWidth(dropdown, 125)
+    local dropdown = CreateLegacySizedDropdown(parent, 125)
 
     -- Function to get the display text based on the setting value
     local function getDisplayTextForSetting(settingValue)
@@ -2161,7 +2196,7 @@ local function CreateAnchorDropdown(name, parent, defaultText, settingKey, toggl
     end
 
     -- Set the initial dropdown text
-    LibDD:UIDropDownMenu_SetText(dropdown, getDisplayTextForSetting(BetterBlizzFramesDB[settingKey]) or defaultText)
+    dropdown:SetDefaultText(getDisplayTextForSetting(BetterBlizzFramesDB[settingKey]) or defaultText)
 
     local anchorPointsToUse = anchorPoints
     if name == "combatIndicatorDropdown" or name == "playerAbsorbAnchorDropdown" then
@@ -2169,8 +2204,7 @@ local function CreateAnchorDropdown(name, parent, defaultText, settingKey, toggl
     end
 
     -- Initialize the dropdown using the library's initialize function
-    LibDD:UIDropDownMenu_Initialize(dropdown, function(self, level, menuList)
-        local info = LibDD:UIDropDownMenu_CreateInfo()
+    dropdown:SetupMenu(function(_, rootDescription)
         for _, anchor in ipairs(anchorPointsToUse) do
             local displayText = anchor
 
@@ -2195,18 +2229,15 @@ local function CreateAnchorDropdown(name, parent, defaultText, settingKey, toggl
                 end
             end
 
-            info.text = displayText
-            info.arg1 = anchor
-            info.func = function(self, arg1)
-                if BetterBlizzFramesDB[settingKey] ~= arg1 then
-                    BetterBlizzFramesDB[settingKey] = arg1
-                    LibDD:UIDropDownMenu_SetText(dropdown, getDisplayTextForSetting(arg1))
-                    toggleFunc(arg1)
+            rootDescription:CreateRadio(displayText, function()
+                return BetterBlizzFramesDB[settingKey] == anchor
+            end, function()
+                if BetterBlizzFramesDB[settingKey] ~= anchor then
+                    BetterBlizzFramesDB[settingKey] = anchor
+                    toggleFunc(anchor)
                     BBF.MoveToTFrames()
                 end
-            end
-            info.checked = (BetterBlizzFramesDB[settingKey] == anchor)
-            LibDD:UIDropDownMenu_AddButton(info)
+            end)
         end
     end)
 
@@ -2219,11 +2250,7 @@ local function CreateAnchorDropdown(name, parent, defaultText, settingKey, toggl
     dropdownText:SetText(point.label)
 
     -- Enable or disable the dropdown based on the parent's check state
-    if parent:GetObjectType() == "CheckButton" and parent:GetChecked() == false then
-        LibDD:UIDropDownMenu_DisableDropDown(dropdown)
-    else
-        LibDD:UIDropDownMenu_EnableDropDown(dropdown)
-    end
+    dropdown:SetEnabled(not (parent:GetObjectType() == "CheckButton" and parent:GetChecked() == false))
 
     return dropdown
 end
@@ -2433,6 +2460,10 @@ local function CreateCheckbox(option, label, parent, cvarName, extraFunc)
 
         if not BetterBlizzFramesDB.wasOnLoadingScreen then
             BBF.UpdateUserTargetSettings()
+        end
+
+        if BBF.nameLayoutSettings[option] and not BetterBlizzFramesDB.wasOnLoadingScreen and BetterBlizzFrames.guiLoaded then
+            BBF.RefreshNameLayouts()
         end
 
         if not BetterBlizzFramesDB.wasOnLoadingScreen and BetterBlizzFramesDB.playerAuraFiltering then
@@ -3990,6 +4021,387 @@ local function guiProfiles()
     return frame
 end
 
+function BBF.CreateNameLayoutCheckboxes(parent, anchor)
+    local moveNames = CreateCheckbox("moveNames", L["Move_Names"], parent)
+    moveNames:SetPoint("TOPLEFT", anchor, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(moveNames, L["Move_Names"], L["Tooltip_Move_Names_Desc"])
+    moveNames:HookScript("OnMouseDown", function(self, button)
+        if button == "RightButton" then
+            BBF.OpenMoveNamesWindow(self)
+        end
+    end)
+    moveNames:HookScript("OnClick", function(self)
+        local window = BBF.MoveNamesWindow
+        BBF.ShowNameMoveBoxes(self:GetChecked() and window and window:IsShown())
+    end)
+    BBF.moveNamesCheckbox = moveNames
+end
+
+function BBF.OpenMoveNamesWindow(anchor)
+    local f = BBF.MoveNamesWindow
+    if f and f:IsShown() then
+        f:Hide()
+        return
+    end
+    if InCombatLockdown() then
+        BBF.Print(L["Print_Move_Names_Combat"])
+        return
+    end
+    if not BetterBlizzFramesDB.moveNames and BBF.moveNamesCheckbox then
+        BBF.moveNamesCheckbox:Click()
+    end
+    if not f then
+        f = CreateFrame("Frame", "BBFMoveNamesWindow", UIParent, "DefaultPanelFlatTemplate")
+        f:SetSize(880, 340)
+        f:SetFrameStrata("FULLSCREEN_DIALOG")
+        f:SetFrameLevel(550)
+        f:SetIgnoreParentAlpha(true)
+        f:SetTitle(L["Move_Names"])
+        f:EnableMouse(true)
+        f:SetMovable(true)
+        f:SetClampedToScreen(true)
+        f:RegisterForDrag("LeftButton")
+        f:SetScript("OnDragStart", function(self) self:StartMoving() end)
+        f:SetScript("OnDragStop", function(self) self:StopMovingOrSizing() end)
+
+        f.closeButton = CreateFrame("Button", nil, f, "UIPanelCloseButton")
+        f.closeButton:SetFrameLevel((f.TitleContainer or f):GetFrameLevel() + 10)
+        f.closeButton:SetPoint("TOPRIGHT", f, "TOPRIGHT", 0, 0)
+        f.closeButton:SetScript("OnClick", function()
+            f:Hide()
+        end)
+
+        f.bg = f:CreateTexture(nil, "BACKGROUND")
+        f.bg:SetPoint("TOPLEFT", f, "TOPLEFT", 7, -3)
+        f.bg:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -3, 3)
+        f.bg:SetColorTexture(0.08, 0.08, 0.08, 1)
+
+        local centerNames = CreateCheckbox("centerNames", L["Center_Names"], f)
+        centerNames:SetPoint("TOPLEFT", f, "TOPLEFT", 14, -30)
+        CreateTooltipTwo(centerNames, L["Center_Names"], L["Tooltip_Center_Name_Desc"])
+
+        local mirroredNames = CreateCheckbox("mirroredNames", L["Mirrored_Names"], f)
+        mirroredNames:SetPoint("LEFT", centerNames.Text, "RIGHT", 10, 0)
+        CreateTooltipTwo(mirroredNames, L["Mirrored_Names"], L["Tooltip_Mirrored_Names_Desc"])
+
+        centerNames:HookScript("OnClick", function(self)
+            if self:GetChecked() and mirroredNames:GetChecked() then
+                BetterBlizzFramesDB.mirroredNames = false
+                mirroredNames:SetChecked(false)
+                BBF.RefreshNameLayouts()
+            end
+            if self:GetChecked() then
+                f.ResetOffsets({ "player", "target", "focus", "targetToT", "focusToT" })
+            end
+            f.UpdateAlignDropdowns()
+        end)
+        mirroredNames:HookScript("OnClick", function(self)
+            if self:GetChecked() and centerNames:GetChecked() then
+                BetterBlizzFramesDB.centerNames = false
+                centerNames:SetChecked(false)
+                BBF.RefreshNameLayouts()
+            end
+            if self:GetChecked() then
+                f.ResetOffsets({ "player", "target", "focus" })
+            end
+            f.UpdateAlignDropdowns()
+        end)
+
+        BetterBlizzFramesDB.moveNamesGuideAlpha = nil
+        local guideAlpha = CreateSlider(f, L["Guide_Opacity"], 0, 1, 0.05, "moveNamesGuideAlpha", "Offset", 140)
+        guideAlpha:SetPoint("TOPRIGHT", f, "TOPRIGHT", -30, -40)
+        CreateTooltipTwo(guideAlpha, L["Guide_Opacity"], L["Tooltip_Guide_Opacity_Desc"])
+
+        local rows = {
+            { key = "player", label = L["Player"] },
+            { key = "target", label = L["Target"] },
+            { key = "focus", label = L["Focus"] },
+            { key = "targetToT", label = L["Target_ToT"] },
+            { key = "focusToT", label = L["Focus_ToT"] },
+        }
+        local alignOptions = { "Left", "Center", "Right" }
+        local justifyOption = { LEFT = "Left", CENTER = "Center", RIGHT = "Right" }
+        f.sliders = {}
+        f.alignDropdowns = {}
+
+        local function CurrentAlign(key, prefix)
+            local value = BetterBlizzFramesDB[prefix .. "Align"]
+            if not BBF.NameAlignForced(key) and justifyOption[string.upper(tostring(value))] then
+                return value
+            end
+            return justifyOption[BBF.GetNameJustify(key) or "LEFT"] or "Left"
+        end
+
+        function f.UpdateAlignDropdowns()
+            for key, dropdown in pairs(f.alignDropdowns) do
+                local forced = BBF.NameAlignForced(key)
+                dropdown:SetEnabled(not forced)
+                dropdown:SetAlpha(forced and 0.5 or 1)
+                dropdown:GenerateMenu()
+            end
+        end
+
+        function f.ResetOffsets(keys)
+            for _, key in ipairs(keys) do
+                local row = f.sliders[key]
+                if row then
+                    row.X:SetValue(0)
+                    row.Y:SetValue(0)
+                end
+            end
+        end
+        local yPos = -84
+        for _, row in ipairs(rows) do
+            local prefix = BBF.nameMovePrefix[row.key]
+
+            local title = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+            title:SetPoint("TOPLEFT", f, "TOPLEFT", 18, yPos - 2)
+            title:SetText(row.label)
+
+            local xSlider = CreateSlider(f, L["X_Offset"], -100, 100, 0.5, prefix .. "X", "Offset", 140)
+            xSlider:SetPoint("TOPLEFT", f, "TOPLEFT", 110, yPos)
+            local ySlider = CreateSlider(f, L["Y_Offset"], -100, 100, 0.5, prefix .. "Y", "Offset", 140)
+            ySlider:SetPoint("TOPLEFT", f, "TOPLEFT", 270, yPos)
+            f.sliders[row.key] = { X = xSlider, Y = ySlider, prefix = prefix }
+
+            local align = CreateFrame("DropdownButton", nil, f, "WowStyle1DropdownTemplate")
+            align:SetPoint("BOTTOMLEFT", f, "TOPLEFT", 490, yPos - 20)
+            align:SetWidth(90)
+            align.Background:SetVertexColor(0.9, 0.9, 0.9)
+            align.Arrow:SetVertexColor(0.9, 0.9, 0.9)
+            local alignLabel = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall2")
+            alignLabel:SetPoint("LEFT", f, "TOPLEFT", 440, yPos - 7)
+            alignLabel:SetText(L["Align"])
+            alignLabel:SetFont(fontSmall, 13)
+            align:SetupMenu(function(_, rootDescription)
+                for _, option in ipairs(alignOptions) do
+                    rootDescription:CreateRadio(L[option], function()
+                        return CurrentAlign(row.key, prefix) == option
+                    end, function()
+                        BetterBlizzFramesDB[prefix .. "Align"] = option
+                        BBF.RefreshNameLayouts()
+                    end)
+                end
+            end)
+            f.alignDropdowns[row.key] = align
+
+            local multiLine = CreateCheckbox(prefix .. "MultiLine", L["Multi_Line"], f)
+            multiLine:SetPoint("TOPLEFT", f, "TOPLEFT", 595, yPos + 5)
+            CreateTooltipTwo(multiLine, L["Multi_Line"], L["Tooltip_Multi_Line_Desc"])
+
+            local growDown = CreateCheckbox(prefix .. "GrowDown", L["Grow_Down"], multiLine)
+            growDown:SetPoint("LEFT", multiLine.Text, "RIGHT", 4, 0)
+            CreateTooltipTwo(growDown, L["Grow_Down"], L["Tooltip_Grow_Down_Desc"])
+
+            local function UpdateGrowDown()
+                local on = multiLine:GetChecked() and true or false
+                growDown:SetEnabled(on)
+                growDown:SetAlpha(on and 1 or 0.5)
+            end
+            multiLine:HookScript("OnClick", UpdateGrowDown)
+            UpdateGrowDown()
+
+            local reset = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+            reset:SetSize(60, 22)
+            reset:SetPoint("TOPRIGHT", f, "TOPRIGHT", -14, yPos + 2)
+            reset:SetText(L["Reset"])
+            reset:SetScript("OnClick", function()
+                local db = BetterBlizzFramesDB
+                db[prefix .. "Align"] = "Default"
+                db[prefix .. "MultiLine"] = false
+                db[prefix .. "GrowDown"] = false
+                multiLine:SetChecked(false)
+                growDown:SetChecked(false)
+                UpdateGrowDown()
+                xSlider:SetValue(0)
+                ySlider:SetValue(0)
+                BBF.RefreshNameLayouts()
+                f.UpdateAlignDropdowns()
+            end)
+
+            yPos = yPos - 44
+        end
+
+        f.hint = f:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
+        f.hint:SetPoint("BOTTOM", f, "BOTTOM", 0, 14)
+        f.hint:SetText(L["Move_Names_Hint"])
+
+        function BBF.OnNameMoved(key)
+            local row = f.sliders[key]
+            if not row then return end
+            for axis, slider in pairs(row) do
+                if axis ~= "prefix" then
+                    local value = tonumber(BetterBlizzFramesDB[row.prefix .. axis]) or 0
+                    local minValue, maxValue = slider:GetMinMaxValues()
+                    if value < minValue or value > maxValue then
+                        slider:SetMinMaxValues(math.min(value - 30, minValue), math.max(value + 30, maxValue))
+                    end
+                    slider:SetValue(value)
+                end
+            end
+        end
+
+        f:HookScript("OnShow", function(self)
+            self.UpdateAlignDropdowns()
+            self:RegisterEvent("PLAYER_REGEN_DISABLED")
+            BBF.ShowNameMoveBoxes(BetterBlizzFramesDB.moveNames)
+        end)
+        f:HookScript("OnHide", function(self)
+            self:UnregisterEvent("PLAYER_REGEN_DISABLED")
+            BBF.ShowNameMoveBoxes(false)
+        end)
+        f:SetScript("OnEvent", function(self)
+            self:Hide()
+        end)
+
+        KeepPopupInSettings(f, BetterBlizzFrames, "DIALOG")
+        BBF.MoveNamesWindow = f
+        f:Hide()
+    end
+    f:ClearAllPoints()
+    f:SetPoint("TOPLEFT", anchor or BetterBlizzFrames, "BOTTOMLEFT", 0, -6)
+    f:Show()
+end
+
+function BBF.CloseMoveNamesWindow()
+    if BBF.MoveNamesWindow then
+        BBF.MoveNamesWindow:Hide()
+    end
+end
+
+local function CreateSettingsPopup(name, title, width, height)
+    local f = CreateFrame("Frame", name, UIParent, "DefaultPanelFlatTemplate")
+    f:SetSize(width, height)
+    f:SetFrameStrata("FULLSCREEN_DIALOG")
+    f:SetFrameLevel(550)
+    f:SetIgnoreParentAlpha(true)
+    f:SetTitle(title)
+    f:EnableMouse(true)
+    f:SetMovable(true)
+    f:SetClampedToScreen(true)
+    f:RegisterForDrag("LeftButton")
+    f:SetScript("OnDragStart", function(self) self:StartMoving() end)
+    f:SetScript("OnDragStop", function(self) self:StopMovingOrSizing() end)
+
+    f.closeButton = CreateFrame("Button", nil, f, "UIPanelCloseButton")
+    f.closeButton:SetFrameLevel((f.TitleContainer or f):GetFrameLevel() + 10)
+    f.closeButton:SetPoint("TOPRIGHT", f, "TOPRIGHT", 0, 0)
+    f.closeButton:SetScript("OnClick", function()
+        f:Hide()
+    end)
+
+    f.bg = f:CreateTexture(nil, "BACKGROUND")
+    f.bg:SetPoint("TOPLEFT", f, "TOPLEFT", 7, -3)
+    f.bg:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -3, 3)
+    f.bg:SetColorTexture(0.08, 0.08, 0.08, 1)
+
+    KeepPopupInSettings(f, BetterBlizzFrames, "DIALOG")
+    f:Hide()
+    return f
+end
+
+local function ShowSettingsPopup(f, anchor)
+    if f:IsShown() then
+        f:Hide()
+        return
+    end
+    f:ClearAllPoints()
+    f:SetPoint("TOPLEFT", anchor or BetterBlizzFrames, "BOTTOMLEFT", 0, -6)
+    f:Show()
+end
+
+function BBF.OpenTimerColorWindow(anchor)
+    local f = BBF.TimerColorWindow
+    if not f then
+        f = CreateSettingsPopup("BBFTimerColorWindow", L["Timer_Text_Color"], 240, 150)
+
+        local mediumColor = CreateColorBox(f, "auraTimerBaseColor", L["Timer_Medium_Color"], BBF.RefreshAllAuraFrames)
+        mediumColor:SetPoint("TOPLEFT", f, "TOPLEFT", 16, -34)
+
+        local lowColor = CreateColorBox(f, "auraTimerLowColor", L["Timer_Low_Color"], BBF.RefreshAllAuraFrames)
+        lowColor:SetPoint("LEFT", mediumColor, "RIGHT", 50, 0)
+
+        local threshold = CreateSlider(f, L["Timer_Low_Threshold"], 1, 20, 1, "auraTimerLowThreshold", "Offset", 180)
+        threshold:SetPoint("TOPLEFT", f, "TOPLEFT", 26, -82)
+        threshold.integerOnly = true
+        CreateTooltip(threshold, L["Tooltip_Timer_Low_Threshold"])
+
+        BBF.TimerColorWindow = f
+    end
+    ShowSettingsPopup(f, anchor)
+end
+
+function BBF.OpenBigDebuffsWindow(anchor)
+    local f = BBF.BigDebuffsWindow
+    if not f then
+        f = CreateSettingsPopup("BBFBigDebuffsWindow", L["Enable_Big_Debuffs"], 240, 262)
+
+        local milliseconds = CreateCheckbox("bigDebuffsMilliseconds", L["Show_Milliseconds"], f, nil, BBF.UpdateBigDebuffsTimers)
+        milliseconds:SetPoint("TOPLEFT", f, "TOPLEFT", 12, -28)
+        CreateTooltipTwo(milliseconds, L["Show_Milliseconds"], L["Tooltip_Show_Milliseconds_Desc"])
+
+        local hideTimer = CreateCheckbox("bigDebuffsHideTimer", L["Hide_Timer_Text"], f, nil, BBF.UpdateBigDebuffsTimers)
+        hideTimer:SetPoint("TOPLEFT", f, "TOPLEFT", 120, -28)
+
+        local mediumColor = CreateColorBox(f, "bigDebuffsBaseColor", L["Timer_Medium_Color"], BBF.UpdateBigDebuffsTimers)
+        mediumColor:SetPoint("TOPLEFT", f, "TOPLEFT", 16, -60)
+
+        local lowColor = CreateColorBox(f, "bigDebuffsLowColor", L["Timer_Low_Color"], BBF.UpdateBigDebuffsTimers)
+        lowColor:SetPoint("LEFT", mediumColor, "RIGHT", 50, 0)
+
+        local threshold = CreateSlider(f, L["Timer_Low_Threshold"], 1, 20, 1, "bigDebuffsLowThreshold", "Offset", 180)
+        threshold:SetPoint("TOPLEFT", f, "TOPLEFT", 26, -106)
+        threshold.integerOnly = true
+        CreateTooltip(threshold, L["Tooltip_Timer_Low_Threshold"])
+
+        local textSize = CreateSlider(f, L["Cooldown_Text_Size"], 0.5, 2, 0.05, "bigDebuffsTextScale", "Offset", 180)
+        textSize:SetPoint("TOPLEFT", threshold, "BOTTOMLEFT", 0, -26)
+
+        local preview = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+        preview:SetSize(110, 22)
+        preview:SetPoint("TOP", f, "TOP", 0, -184)
+        local function UpdatePreviewText()
+            preview:SetText(BBF.IsBigDebuffsPreviewShown() and L["Stop_Test"] or L["Test"])
+        end
+        preview:SetScript("OnClick", function()
+            if not BBF.ToggleBigDebuffsPreview(not BBF.IsBigDebuffsPreviewShown()) and not BetterBlizzFramesDB.enableBigDebuffs then
+                BBF.Print(L["Print_Big_Debuffs_Preview_Off"])
+            end
+            UpdatePreviewText()
+        end)
+        UpdatePreviewText()
+
+        local defaultButton = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+        defaultButton:SetSize(80, 22)
+        defaultButton:SetPoint("BOTTOM", f, "BOTTOM", 0, 14)
+        defaultButton:SetText(L["Default"])
+        defaultButton:SetScript("OnClick", function()
+            local db, defaults = BetterBlizzFramesDB, BBF.defaultSettings
+            db.bigDebuffsMilliseconds = defaults.bigDebuffsMilliseconds
+            db.bigDebuffsHideTimer = defaults.bigDebuffsHideTimer
+            db.bigDebuffsBaseColor = {unpack(defaults.bigDebuffsBaseColor)}
+            db.bigDebuffsLowColor = {unpack(defaults.bigDebuffsLowColor)}
+            milliseconds:SetChecked(db.bigDebuffsMilliseconds and true or false)
+            hideTimer:SetChecked(db.bigDebuffsHideTimer and true or false)
+            mediumColor.colorTexture:SetColorTexture(unpack(db.bigDebuffsBaseColor))
+            lowColor.colorTexture:SetColorTexture(unpack(db.bigDebuffsLowColor))
+            threshold:SetValue(defaults.bigDebuffsLowThreshold)
+            textSize:SetValue(defaults.bigDebuffsTextScale)
+            db.bigDebuffsLowThreshold = defaults.bigDebuffsLowThreshold
+            db.bigDebuffsTextScale = defaults.bigDebuffsTextScale
+            BBF.UpdateBigDebuffsTimers()
+        end)
+
+        f:HookScript("OnHide", function()
+            BBF.ToggleBigDebuffsPreview(false)
+            UpdatePreviewText()
+        end)
+
+        BBF.BigDebuffsWindow = f
+    end
+    ShowSettingsPopup(f, anchor)
+end
+
 local function guiGeneralTab()
     ----------------------
     -- Main panel:
@@ -4216,6 +4628,8 @@ local function guiGeneralTab()
         darkModeOptions:SetAlpha(enabled and 1 or 0.5)
     end
     darkModeUi:HookScript("OnClick", UpdateDarkModeOptionsState)
+
+    BBF.CreateNameLayoutCheckboxes(BetterBlizzFrames, darkModeUi)
     UpdateDarkModeOptionsState()
 
     function BBF.OpenDarkModeEliteWindow()
@@ -6419,19 +6833,13 @@ local function guiGeneralTab()
     CreateTooltipTwo(classColorFrameTexture, L["Class_Color_FrameTexture"], L["Tooltip_Class_Color_FrameTexture_Desc"])
 
 
-    local centerNames = CreateCheckbox("centerNames", L["Center_Name"], BetterBlizzFrames, nil, BBF.SetCenteredNamesCaller)
-    centerNames:SetPoint("TOPLEFT", classColorFrameTexture, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltipTwo(centerNames, L["Center_Names"], L["Tooltip_Center_Name_Desc"])
-    centerNames:HookScript("OnClick", function()
-        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
-    end)
 
     local removeRealmNames = CreateCheckbox("removeRealmNames", L["Hide_Realm"], BetterBlizzFrames)
-    removeRealmNames:SetPoint("LEFT", centerNames.text, "RIGHT", 0, 0)
+    removeRealmNames:SetPoint("TOPLEFT", classColorFrameTexture, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(removeRealmNames, L["Tooltip_Hide_Realm_Indicator_Title"], L["Tooltip_Hide_Realm_Desc"])
 
     local formatStatusBarText = CreateCheckbox("formatStatusBarText", L["Format_Numbers"], BetterBlizzFrames, nil, BBF.HookStatusBarText)
-    formatStatusBarText:SetPoint("TOPLEFT", centerNames, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    formatStatusBarText:SetPoint("TOPLEFT", removeRealmNames, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(formatStatusBarText, L["Format_Numbers"], L["Tooltip_Format_Numbers_Desc"])
     formatStatusBarText:HookScript("OnMouseDown", function(self, button)
         if button == "RightButton" then
@@ -6712,7 +7120,12 @@ local function guiGeneralTab()
         BBF.CreateBigDebuffs()
     end)
     enableBigDebuffs:SetPoint("TOPLEFT", queueTimer, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltipTwo(enableBigDebuffs, L["Enable_Big_Debuffs"], L["Tooltip_Big_Debuffs_Desc"], nil, "ANCHOR_LEFT")
+    CreateTooltipTwo(enableBigDebuffs, L["Enable_Big_Debuffs"], L["Tooltip_Big_Debuffs_Desc"] .. "\n\n|cff32f795" .. L["Right_Click_More_Settings"] .. "|r", nil, "ANCHOR_LEFT")
+    enableBigDebuffs:HookScript("OnMouseDown", function(self, button)
+        if button == "RightButton" then
+            BBF.OpenBigDebuffsWindow(self)
+        end
+    end)
 
     BetterBlizzFrames.kickPopupEnabled = CreateCheckbox("kickPopupEnabled", L["Kick_Popup"], BetterBlizzFrames, nil, function()
         BBF.ToggleKickPopup()
@@ -7724,12 +8137,12 @@ local function guiCastbars()
                     EnableElement(targetTextXPos)
                     EnableElement(targetTextYPos)
                     EnableElement(targetTextSize)
-                    LibDD:UIDropDownMenu_EnableDropDown(targetTextAnchor)
+                    targetTextAnchor:SetEnabled(true)
                 else
                     DisableElement(targetTextXPos)
                     DisableElement(targetTextYPos)
                     DisableElement(targetTextSize)
-                    LibDD:UIDropDownMenu_DisableDropDown(targetTextAnchor)
+                    targetTextAnchor:SetEnabled(false)
                 end
             end
 
@@ -8473,16 +8886,19 @@ local function guiPositionAndScale()
         end
     end)
 
-    local kickPopupSoundNameDropdown = LibDD:Create_UIDropDownMenu("kickPopupSoundNameDropdown", contentFrame)
+    local kickPopupSoundNameDropdown = CreateLegacySizedDropdown(contentFrame, 65)
     BBF.kickPopupSoundNameDropdown = kickPopupSoundNameDropdown
-    LibDD:UIDropDownMenu_SetWidth(kickPopupSoundNameDropdown, 65)
-    local fileID = BetterBlizzFramesDB.kickPopupSoundFileID
-    if fileID and fileID ~= 0 then
-        LibDD:UIDropDownMenu_SetText(kickPopupSoundNameDropdown, "ID: " .. fileID)
-    else
-        LibDD:UIDropDownMenu_SetText(kickPopupSoundNameDropdown, BetterBlizzFramesDB.kickPopupSoundName or "Lossa Countered")
+    function BBF.UpdateKickSoundDropdownText()
+        local fileID = BetterBlizzFramesDB.kickPopupSoundFileID
+        if fileID and fileID ~= 0 then
+            kickPopupSoundNameDropdown:SetDefaultText("ID: " .. fileID)
+        else
+            kickPopupSoundNameDropdown:SetDefaultText(BetterBlizzFramesDB.kickPopupSoundName or "Lossa Countered")
+        end
+        kickPopupSoundNameDropdown:GenerateMenu()
     end
-    LibDD:UIDropDownMenu_Initialize(kickPopupSoundNameDropdown, function(self, level, menuList)
+    kickPopupSoundNameDropdown:SetupMenu(function(_, rootDescription)
+        rootDescription:SetScrollMode(20 * 20)
         local sounds = LSM:HashTable(LSM.MediaType.SOUND)
         local sorted = {}
         for name in pairs(sounds) do
@@ -8490,21 +8906,20 @@ local function guiPositionAndScale()
         end
         table.sort(sorted)
         for _, soundName in ipairs(sorted) do
-            local info = LibDD:UIDropDownMenu_CreateInfo()
-            info.text = soundName
-            info.arg1 = soundName
-            info.func = function(self, arg1)
-                BetterBlizzFramesDB.kickPopupSoundName = arg1
+            rootDescription:CreateRadio(soundName, function()
+                local fileID = BetterBlizzFramesDB.kickPopupSoundFileID
+                return not (fileID and fileID ~= 0) and BetterBlizzFramesDB.kickPopupSoundName == soundName
+            end, function()
+                BetterBlizzFramesDB.kickPopupSoundName = soundName
                 BetterBlizzFramesDB.kickPopupSoundFileID = nil
-                LibDD:UIDropDownMenu_SetText(kickPopupSoundNameDropdown, arg1)
+                BBF.UpdateKickSoundDropdownText()
                 local channel = BetterBlizzFramesDB.kickPopupSoundChannel or "Master"
-                local path = LSM:Fetch(LSM.MediaType.SOUND, arg1)
+                local path = LSM:Fetch(LSM.MediaType.SOUND, soundName)
                 if path then PlaySoundFile(path, channel) end
-            end
-            info.checked = (BetterBlizzFramesDB.kickPopupSoundName == soundName)
-            LibDD:UIDropDownMenu_AddButton(info)
+            end)
         end
     end)
+    BBF.UpdateKickSoundDropdownText()
     kickPopupSoundNameDropdown:SetPoint("TOPLEFT", kickPopupPlaySound, "BOTTOMLEFT", -42, -14)
 
     local kickPopupSoundNameLabel = contentFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
@@ -8512,8 +8927,12 @@ local function guiPositionAndScale()
     kickPopupSoundNameLabel:SetText(L["Kick_Popup_Sound"])
 
     local kickPopupSoundRightClick = CreateFrame("Button", nil, kickPopupSoundNameDropdown)
-    kickPopupSoundRightClick:SetAllPoints()
+    kickPopupSoundRightClick:SetPoint("TOPLEFT", kickPopupSoundNameDropdown, "TOPLEFT", 17, -1)
+    kickPopupSoundRightClick:SetPoint("BOTTOMRIGHT", kickPopupSoundNameDropdown, "BOTTOMRIGHT", -16, 32 - kickPopupSoundNameDropdown:GetHeight())
+    kickPopupSoundRightClick:SetFrameLevel(kickPopupSoundNameDropdown:GetFrameLevel() + 5)
     kickPopupSoundRightClick:RegisterForClicks("RightButtonUp")
+    kickPopupSoundRightClick:SetPassThroughButtons("LeftButton")
+    kickPopupSoundRightClick:SetPropagateMouseMotion(true)
     kickPopupSoundRightClick:SetScript("OnClick", function()
         BBF.ShowPopup("BBF_KICK_POPUP_SOUND_ID")
     end)
@@ -8527,21 +8946,14 @@ local function guiPositionAndScale()
         Dialog = L["Sound_Channel_Dialog"],
     }
 
-    local kickPopupSoundChannelDropdown = LibDD:Create_UIDropDownMenu("kickPopupSoundChannelDropdown", contentFrame)
-    LibDD:UIDropDownMenu_SetWidth(kickPopupSoundChannelDropdown, 65)
-    LibDD:UIDropDownMenu_SetText(kickPopupSoundChannelDropdown, soundChannelLabels[BetterBlizzFramesDB.kickPopupSoundChannel or "Master"] or BetterBlizzFramesDB.kickPopupSoundChannel)
-    LibDD:UIDropDownMenu_Initialize(kickPopupSoundChannelDropdown, function(self, level, menuList)
-        local channels = {"Master", "SFX", "Music", "Ambience", "Dialog"}
-        for _, ch in ipairs(channels) do
-            local info = LibDD:UIDropDownMenu_CreateInfo()
-            info.text = soundChannelLabels[ch] or ch
-            info.arg1 = ch
-            info.func = function(self, arg1)
-                BetterBlizzFramesDB.kickPopupSoundChannel = arg1
-                LibDD:UIDropDownMenu_SetText(kickPopupSoundChannelDropdown, soundChannelLabels[arg1] or arg1)
-            end
-            info.checked = (BetterBlizzFramesDB.kickPopupSoundChannel == ch)
-            LibDD:UIDropDownMenu_AddButton(info)
+    local kickPopupSoundChannelDropdown = CreateLegacySizedDropdown(contentFrame, 65)
+    kickPopupSoundChannelDropdown:SetupMenu(function(_, rootDescription)
+        for _, ch in ipairs({ "Master", "SFX", "Music", "Ambience", "Dialog" }) do
+            rootDescription:CreateRadio(soundChannelLabels[ch] or ch, function()
+                return (BetterBlizzFramesDB.kickPopupSoundChannel or "Master") == ch
+            end, function()
+                BetterBlizzFramesDB.kickPopupSoundChannel = ch
+            end)
         end
     end)
     kickPopupSoundChannelDropdown:SetPoint("LEFT", kickPopupSoundNameDropdown, "RIGHT", -35, 0)
@@ -8552,15 +8964,15 @@ local function guiPositionAndScale()
 
     local function UpdateKickSoundDropdownState()
         if BetterBlizzFramesDB.kickPopupPlaySound then
-            LibDD:UIDropDownMenu_EnableDropDown(kickPopupSoundNameDropdown)
-            LibDD:UIDropDownMenu_EnableDropDown(kickPopupSoundChannelDropdown)
+            kickPopupSoundNameDropdown:SetEnabled(true)
+            kickPopupSoundChannelDropdown:SetEnabled(true)
             kickPopupSoundNameDropdown:SetAlpha(1)
             kickPopupSoundChannelDropdown:SetAlpha(1)
             kickPopupSoundNameLabel:SetAlpha(1)
             kickPopupSoundChannelLabel:SetAlpha(1)
         else
-            LibDD:UIDropDownMenu_DisableDropDown(kickPopupSoundNameDropdown)
-            LibDD:UIDropDownMenu_DisableDropDown(kickPopupSoundChannelDropdown)
+            kickPopupSoundNameDropdown:SetEnabled(false)
+            kickPopupSoundChannelDropdown:SetEnabled(false)
             kickPopupSoundNameDropdown:SetAlpha(0.5)
             kickPopupSoundChannelDropdown:SetAlpha(0.5)
             kickPopupSoundNameLabel:SetAlpha(0.5)
@@ -10342,16 +10754,15 @@ local function guiFrameAuras()
 
     local auraTimerColor = CreateCheckbox("auraTimerColor", L["Timer_Text_Color"], playerAuraFiltering)
     auraTimerColor:SetPoint("TOPLEFT", showAuraCdText, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltipTwo(auraTimerColor, L["Timer_Text_Color"], L["Tooltip_Timer_Text_Color_Desc"])
+    CreateTooltipTwo(auraTimerColor, L["Timer_Text_Color"], L["Tooltip_Timer_Text_Color_Desc"] .. "\n\n|cff32f795" .. L["Right_Click_More_Settings"] .. "|r")
+    auraTimerColor:HookScript("OnMouseDown", function(self, button)
+        if button == "RightButton" then
+            BBF.OpenTimerColorWindow(self)
+        end
+    end)
     auraTimerColor:HookScript("OnClick", function()
         BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     end)
-    AddColorButton(auraTimerColor, "auraTimerBaseColor", L["Timer_Text_Color"])
-
-    local auraTimerLowThreshold = CreateSlider(playerAuraFiltering, L["Timer_Low_Threshold"], 1, 20, 1, "auraTimerLowThreshold")
-    auraTimerLowThreshold:SetPoint("TOPLEFT", auraTimerColor, "BOTTOMLEFT", 10, -20)
-    auraTimerLowThreshold.integerOnly = true
-    CreateTooltip(auraTimerLowThreshold, L["Tooltip_Timer_Low_Threshold"])
 
     local increaseAuraStrata = CreateCheckbox("increaseAuraStrata", L["Increase_Aura_Frame_Strata"], playerAuraFiltering)
     increaseAuraStrata:SetPoint("TOPLEFT", changePurgeTextureColor, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
@@ -11272,10 +11683,24 @@ local function guiMisc()
     minimizeObjectiveTracker:SetPoint("TOPLEFT", hideStuffText, "BOTTOMLEFT", -24, pixelsOnFirstBox)
     CreateTooltipTwo(minimizeObjectiveTracker, L["Minimize_Objective_Better"], L["Tooltip_Minimize_Objective_Better_Desc"] .. " |A:UI-QuestTrackerButton-Collapse-All:19:19|a")
 
-    local hideObjectiveTracker = CreateCheckbox("hideObjectiveTracker", L["Hide_Objective_Arena"], contentFrame)
+    local hideObjectiveTracker = CreateCheckbox("hideObjectiveTracker", L["Hide_Objective_During"], contentFrame)
     hideObjectiveTracker:SetPoint("TOPLEFT", minimizeObjectiveTracker, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltip(hideObjectiveTracker, L["Tooltip_Objective_Arena"])
-    hideObjectiveTracker:HookScript("OnClick", function()
+    CreateTooltipTwo(hideObjectiveTracker, L["Hide_Objective_During"], L["Tooltip_Hide_Objective_During"])
+
+    hideObjectiveTracker.contentDropdown = CreateMultiSelectDropdown(L["Hide_Objective_Content"], contentFrame, {
+        { key = "hideObjectiveTrackerArena", label = L["Arena"] },
+        { key = "hideObjectiveTrackerMythic", label = L["Mythic"], tooltip = L["Tooltip_Hide_Objective_Mythic"] },
+        { key = "hideObjectiveTrackerRaid", label = L["Raid"] },
+    }, 130, function()
+        BBF.MinimapHider()
+    end)
+    hideObjectiveTracker.contentDropdown:SetPoint("LEFT", hideObjectiveTracker.Text, "RIGHT", 5, 0)
+    hideObjectiveTracker.contentDropdown:SetScale(0.7)
+    hideObjectiveTracker.contentDropdown:SetShown(BetterBlizzFramesDB.hideObjectiveTracker)
+    hideObjectiveTracker.contentDropdown.searchParentKey = "hideObjectiveTracker"
+
+    hideObjectiveTracker:HookScript("OnClick", function(self)
+        self.contentDropdown:SetShown(self:GetChecked())
         BBF.MinimapHider()
     end)
 
@@ -11625,8 +12050,36 @@ local function guiMisc()
         end
     end)
 
+    local statusTextExtra = CreateCheckbox("statusTextExtra", L["Extra_Status_Bar_Texts"], contentFrame, nil, BBF.StatusBarTextExtra)
+    statusTextExtra:SetPoint("TOPLEFT", centerCurrentValueOnBars, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(statusTextExtra, L["Extra_Status_Bar_Texts"], L["Tooltip_Add_Status_Bar_Text_To_Desc"])
+
+    local statusTextExtraOptions = CreateMultiSelectDropdown(L["Extra_Status_Bar_Texts"], contentFrame, {
+        { key = "statusTextExtraToT", label = L["Target_of_Target"] },
+        { key = "statusTextExtraParty", label = L["Default_Party_Frames"] },
+        { key = "statusTextExtraPercent", label = L["Show_Percent"], tooltip = L["Tooltip_Status_Text_Show_Percent_Desc"] },
+        { key = "statusTextExtraHealth", label = L["Show_Health_Text"] },
+        { key = "statusTextExtraMana", label = L["Show_Mana_Text"] },
+    }, 150, BBF.StatusBarTextExtra)
+    statusTextExtraOptions.searchParentKey = "statusTextExtra"
+    statusTextExtraOptions.searchExtraTerms = { L["Extra_Status_Bar_Texts"] }
+    statusTextExtraOptions:SetPoint("LEFT", statusTextExtra.text, "RIGHT", 5, 0)
+    statusTextExtraOptions:SetScale(0.7)
+    statusTextExtraOptions:SetSelectionText(function()
+        return L["Bar_Options"]
+    end)
+    CreateTooltipTwo(statusTextExtraOptions, L["Extra_Status_Bar_Texts"], L["Tooltip_Add_Status_Bar_Text_To_Desc"])
+
+    local function UpdateStatusTextExtraOptionsState()
+        local enabled = statusTextExtra:GetChecked() and true or false
+        statusTextExtraOptions:SetEnabled(enabled)
+        statusTextExtraOptions:SetAlpha(enabled and 1 or 0.5)
+    end
+    statusTextExtra:HookScript("OnClick", UpdateStatusTextExtraOptionsState)
+    UpdateStatusTextExtraOptionsState()
+
     local raiseTargetFrameLevel = CreateCheckbox("raiseTargetFrameLevel", L["Raise_TargetFrame_Layer"], contentFrame, nil, BBF.RaiseTargetFrameLevel)
-    raiseTargetFrameLevel:SetPoint("TOPLEFT", centerCurrentValueOnBars, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    raiseTargetFrameLevel:SetPoint("TOPLEFT", statusTextExtra, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(raiseTargetFrameLevel, L["Raise_TargetFrame_Layer"], L["Tooltip_Raise_TargetFrame_Layer_Desc"])
 
     local surrenderArena = CreateCheckbox("surrenderArena", L["Surrender_Arena"], contentFrame)

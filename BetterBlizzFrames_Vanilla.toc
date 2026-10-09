@@ -17,9 +17,11 @@ shared\functions_classics.lua
 shared\ImportExport.lua
 shared\smoothBars.lua
 shared\xpBarTexture.lua
+shared\statusBarTextExtra.lua
 
 classics\modules\darkmode.lua
 classics\modules\nameFix.lua
+shared\moveNames.lua
 classics\modules\hideFrames.lua
 classics\modules\auras.lua
 classics\modules\absorb.lua

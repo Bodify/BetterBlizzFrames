@@ -894,9 +894,9 @@ function BBF.HookBiggerHealthbars()
         return
     end
     if BetterBlizzFramesDB.biggerHealthbars and not biggerHealthbarHooked then
-        local playerName = PlayerFrame.bbfName or PlayerName
-        local targetName = TargetFrame.bbfName or TargetFrameTextureFrameName
-        local focusName = FocusFrame.bbfName or FocusFrameTextureFrameName
+        local playerName = PlayerName
+        local targetName = TargetFrameTextureFrameName
+        local focusName = FocusFrameTextureFrameName
         if not BetterBlizzFramesDB.biggerHealthbarsNoPlayer then
             BBF.BiggerHealthbars("PlayerFrame", playerName)
         end

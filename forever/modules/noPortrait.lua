@@ -741,6 +741,9 @@ local function MakeNoPortraitMode(frame)
         frame.noPortraitMode:SetParent(frame)
         frame.noPortraitMode:SetFrameStrata("HIGH")
         frame.noPortraitMode:SetAllPoints(frame)
+        if frame == TargetFrame then
+            BBF.RaiseCombosAboveTargetArt()
+        end
         frame.noPortraitMode.Texture = frame.noPortraitMode:CreateTexture(nil, "OVERLAY")
         frame.noPortraitMode.Texture:SetParent(frame.noPortraitMode)
         frame.noPortraitMode.Texture:SetSize(254, 46)
@@ -1452,9 +1455,9 @@ local function MakeNoPortraitMode(frame)
         --AdjustFramePoint(hpContainer.HealthBar.OverAbsorbGlow,-3)
         hpContainer.HealthBar.OverAbsorbGlow:SetPoint("TOPLEFT", hpContainer.HealthBar, "TOPRIGHT", -7, 0)
 
-        if C_CVar.GetCVar("comboPointLocation") == "1" and ComboFrame then
-            ComboFrame:SetParent(TargetFrame)
-            ComboFrame:SetFrameStrata("HIGH")
+        if BBF.LegacyCombosOn() and BBF.LegacyComboFrame then
+            BBF.LegacyComboFrame:SetParent(TargetFrame)
+            BBF.LegacyComboFrame:SetFrameStrata("HIGH")
             BBF.UpdateLegacyComboPosition()
         end
 

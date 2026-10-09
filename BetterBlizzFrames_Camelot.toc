@@ -20,11 +20,14 @@ shared\minimapTweaks.lua
 shared\smoothBars.lua
 shared\xpBarTexture.lua
 shared\comboVisibility.lua
+shared\statusBarTextExtra.lua
 
 forever\modules\camelotFrames.lua
+forever\modules\legacyComboFrame.lua
 forever\modules\darkmode.lua
 forever\modules\classicFrames.lua
 forever\modules\nameFix.lua
+shared\moveNames.lua
 forever\modules\hideFrames.lua
 forever\modules\classicMinimap.lua
 forever\modules\auras.lua

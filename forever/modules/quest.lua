@@ -31,28 +31,31 @@ function BBF.IsQuestUnit(unit)
         return false
     end
 
-    if not UnitIsRelatedToActiveQuest(unit) then
-        return false
-    end
-
     local data = GetUnitTooltip(unit)
-    if not data or not data.lines then
-        return true
-    end
-
-    local isMine = true
-    for _, line in ipairs(data.lines) do
-        local lineType = line.type
-        if lineType == LINE_TITLE then
-            isMine = true
-        elseif lineType == LINE_PLAYER then
-            isMine = line.guid == PlayerGUID or line.leftText == PlayerName
-        elseif lineType == LINE_OBJECTIVE and isMine and not IsObjectiveDone(line) then
-            return true
+    local lines = data and data.lines
+    if lines then
+        local hasQuestLines = false
+        local isMine = true
+        for _, line in ipairs(lines) do
+            local lineType = line.type
+            if lineType == LINE_TITLE then
+                hasQuestLines = true
+                isMine = true
+            elseif lineType == LINE_PLAYER then
+                isMine = line.guid == PlayerGUID or line.leftText == PlayerName
+            elseif lineType == LINE_OBJECTIVE then
+                hasQuestLines = true
+                if isMine and not IsObjectiveDone(line) then
+                    return true
+                end
+            end
+        end
+        if hasQuestLines then
+            return false
         end
     end
 
-    return false
+    return UnitIsRelatedToActiveQuest(unit) == true
 end
 
 local questEventFrame
@@ -98,7 +101,7 @@ local function OnQuestEvent(self, event)
         BBF.QuestIndicator(TargetFrame, "target")
     elseif event == "PLAYER_FOCUS_CHANGED" then
         BBF.QuestIndicator(FocusFrame, "focus")
-    elseif event == "UNIT_QUEST_LOG_CHANGED" then
+    elseif event == "UNIT_QUEST_LOG_CHANGED" or event == "QUEST_LOG_UPDATE" then
         if not updatePending then
             updatePending = true
             C_Timer.After(0.1, UpdateQuestIndicators)
@@ -109,12 +112,14 @@ local function OnQuestEvent(self, event)
             self:UnregisterEvent("PLAYER_TARGET_CHANGED")
             self:UnregisterEvent("PLAYER_FOCUS_CHANGED")
             self:UnregisterEvent("UNIT_QUEST_LOG_CHANGED")
+            self:UnregisterEvent("QUEST_LOG_UPDATE")
             HideQuestIndicator(TargetFrame)
             HideQuestIndicator(FocusFrame)
         else
             self:RegisterEvent("PLAYER_TARGET_CHANGED")
             self:RegisterEvent("PLAYER_FOCUS_CHANGED")
             self:RegisterUnitEvent("UNIT_QUEST_LOG_CHANGED", "player")
+            self:RegisterEvent("QUEST_LOG_UPDATE")
             UpdateQuestIndicators()
         end
     end

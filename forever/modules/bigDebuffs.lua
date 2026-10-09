@@ -55,6 +55,12 @@ local OFF_FILTERS = { includeSpellIDs = {} }
 local hosts = {}
 local buildQueued = false
 local hostsEnabled = false
+local cooldowns = {}
+
+local TEXT_SIZE_BASE = 1.3
+local PREVIEW_DURATION = 8
+local PREVIEW_ICON = 136071
+local previewTicker
 
 local STRATA_BELOW = {
     BACKGROUND = "BACKGROUND",
@@ -66,6 +72,47 @@ local STRATA_BELOW = {
     FULLSCREEN_DIALOG = "FULLSCREEN",
     TOOLTIP = "FULLSCREEN_DIALOG",
 }
+
+local function ApplyTimerStyle(cooldown)
+    local db = BetterBlizzFramesDB
+    local formatter = BBF.GetTimerFormatter(db.bigDebuffsLowColor or { 1, 0.1, 0.1, 1 }, db.bigDebuffsLowThreshold or 6, db.bigDebuffsMilliseconds, false)
+    cooldown:SetCountdownFormatter(formatter)
+    cooldown:SetHideCountdownNumbers(db.bigDebuffsHideTimer and true or false)
+    local text = cooldown:GetCountdownFontString()
+    if text then
+        local c = db.bigDebuffsBaseColor or { 1, 0.82, 0, 1 }
+        text:SetTextColor(c[1], c[2], c[3], c[4] or 1)
+        local base = cooldown.bbfBaseFont
+        if not base then
+            local font, size, flags = text:GetFont()
+            base = { font, size, flags }
+            cooldown.bbfBaseFont = base
+        end
+        if base[1] and base[2] then
+            text:SetFont(base[1], base[2] * TEXT_SIZE_BASE * (db.bigDebuffsTextScale or 1), base[3])
+        end
+    end
+end
+
+local function CreateCooldown(parent)
+    local cooldown = CreateFrame("Cooldown", nil, parent, "CooldownFrameTemplate")
+    cooldown:SetMinimumCountdownDuration(0)
+    cooldown:SetAllPoints(parent)
+    cooldown:SetUsingParentLevel(true)
+    cooldown:SetReverse(true)
+    cooldown:SetDrawBling(false)
+    cooldown:SetDrawEdge(false)
+    cooldown:SetSwipeTexture(SWIPE_TEXTURE)
+    ApplyTimerStyle(cooldown)
+    cooldowns[#cooldowns + 1] = cooldown
+    return cooldown
+end
+
+function BBF.UpdateBigDebuffsTimers()
+    for _, cooldown in ipairs(cooldowns) do
+        ApplyTimerStyle(cooldown)
+    end
+end
 
 local function InitIcon(host, button, level)
     button:SetAllPoints(host.anchor)
@@ -79,15 +126,7 @@ local function InitIcon(host, button, level)
     end
     button:SetIcon(icon)
 
-    local cooldown = CreateFrame("Cooldown", nil, button, "CooldownFrameTemplate")
-    cooldown:SetMinimumCountdownDuration(0)
-    cooldown:SetAllPoints(button)
-    cooldown:SetUsingParentLevel(true)
-    cooldown:SetReverse(true)
-    cooldown:SetDrawBling(false)
-    cooldown:SetDrawEdge(false)
-    cooldown:SetSwipeTexture(SWIPE_TEXTURE)
-    button:SetDurationCooldown(cooldown)
+    button:SetDurationCooldown(CreateCooldown(button))
 
     button:EnableMouse(false)
 end
@@ -292,4 +331,58 @@ function BBF.CreateBigDebuffs()
     end
 
     SetHostsEnabled(true)
+end
+
+local function RestartPreview()
+    local now = GetTime()
+    for _, host in pairs(hosts) do
+        if host.preview then
+            host.preview.cooldown:SetCooldown(now, PREVIEW_DURATION)
+        end
+    end
+end
+
+local function CreatePreview(host)
+    local preview = CreateFrame("Frame", nil, host.anchor)
+    preview:SetAllPoints(host.anchor)
+    preview:SetFrameStrata(host.container:GetFrameStrata())
+    preview:SetFrameLevel(host.container:GetFrameLevel() + #TIERS + 1)
+
+    local icon = preview:CreateTexture(nil, "BACKGROUND")
+    icon:SetAllPoints(preview)
+    icon:SetTexCoord(0.1, 0.9, 0.1, 0.9)
+    icon:SetTexture(PREVIEW_ICON)
+    if host.portraitMask then
+        icon:AddMaskTexture(host.portraitMask)
+    end
+
+    preview.cooldown = CreateCooldown(preview)
+    preview:Hide()
+    host.preview = preview
+    return preview
+end
+
+function BBF.ToggleBigDebuffsPreview(show)
+    if previewTicker then
+        previewTicker:Cancel()
+        previewTicker = nil
+    end
+    if show and (not BetterBlizzFramesDB.enableBigDebuffs or not BuildHosts()) then
+        show = false
+    end
+    for _, host in pairs(hosts) do
+        local preview = host.preview or (show and CreatePreview(host))
+        if preview then
+            preview:SetShown(show)
+        end
+    end
+    if show then
+        RestartPreview()
+        previewTicker = C_Timer.NewTicker(PREVIEW_DURATION, RestartPreview)
+    end
+    return show
+end
+
+function BBF.IsBigDebuffsPreviewShown()
+    return previewTicker ~= nil
 end

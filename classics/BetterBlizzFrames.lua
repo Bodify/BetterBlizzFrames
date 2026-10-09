@@ -17,6 +17,33 @@ local defaultSettings = {
     -- General
     removeRealmNames = true,
     centerNames = false,
+    mirroredNames = false,
+    moveNames = false,
+    moveNamePlayerX = 0,
+    moveNamePlayerY = 0,
+    moveNamePlayerAlign = "Default",
+    moveNamePlayerMultiLine = false,
+    moveNamePlayerGrowDown = false,
+    moveNameTargetX = 0,
+    moveNameTargetY = 0,
+    moveNameTargetAlign = "Default",
+    moveNameTargetMultiLine = false,
+    moveNameTargetGrowDown = false,
+    moveNameFocusX = 0,
+    moveNameFocusY = 0,
+    moveNameFocusAlign = "Default",
+    moveNameFocusMultiLine = false,
+    moveNameFocusGrowDown = false,
+    moveNameTargetToTX = 0,
+    moveNameTargetToTY = 0,
+    moveNameTargetToTAlign = "Default",
+    moveNameTargetToTMultiLine = false,
+    moveNameTargetToTGrowDown = false,
+    moveNameFocusToTX = 0,
+    moveNameFocusToTY = 0,
+    moveNameFocusToTAlign = "Default",
+    moveNameFocusToTMultiLine = false,
+    moveNameFocusToTGrowDown = false,
     darkModeUi = false,
     darkModeActionBars = true,
     darkModeUiAura = true,
@@ -70,6 +97,9 @@ local defaultSettings = {
     focusEnlargeAuraFriendly = true,
     colorShamansBlue = true,
     smoothHealthbars = true,
+    statusTextExtra = false,
+    statusTextExtraHealth = true,
+    statusTextExtraMana = true,
     smoothManabars = true,
 
     -- Absorb Indicator
@@ -3314,6 +3344,7 @@ First:SetScript("OnEvent", function(_, event, addonName)
             BBF.ReduceEditModeAlpha()
             BBF.RemoveAddonCategories()
             BBF.CenterCurrentValueOnBars()
+            BBF.StatusBarTextExtra()
             BBF.UpdateAuraCollapseButton()
 
             if not BetterBlizzFramesDB.disableHealAbsorbRecolor then
