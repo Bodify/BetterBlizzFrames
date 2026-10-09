@@ -1,35 +1,33 @@
-# BetterBlizzFrames 2.1.5
+# BetterBlizzFrames 2.1.6
+## All versions
+### New
+- General: "Move Names" setting. Move the Player/Target/Focus/ToT names freely. Right-click to open settings and to allow dragging the names and pixel move with arrow keys or set x/y offsets, align and multi-line per name.
+- "Mirrored Names" setting in the Move Names popup. Target and Focus names move next to the portrait and align right, and the Player name aligns left.
+- Misc: "Extra Status Bar Texts" setting. Shows health and mana text on the Target of Target (Retail & Forever) and on the default Party Frames (Classic). It can also override party / tot text to show percent only.
+### Tweak
+- Player/Target/Focus/ToT names now always follow the default name position unless a BBF setting moves them, so other things moving them should now work better (or you can just move them yourself with the new Move Names).
+- "Center Names" moved into the Move Names popup.
 ## Forever
 ### New
-- New Perplexity profile (www.twitch.tv/perplexity). Thank you for sharing!
+- New "Hide Weapon Enchant" setting in Buffs & Debuffs section that removes weapon enchants/poisons from teh Buff row.
 ### Tweak
-- Update Mmarkers profile for Forever.
-- Fix position of PvP icon on Player/TargetFrame when using No Portrait.
-- Classic Frames bronze tint setting now also tints No Portrait borders (will prob revisit this in the future a bit)
+- Combo points now default to Blizzard's new combo points around the target portrait. Lots of changes and you will likely have to tweak your settings again due to all these changes.
+- "Rogue & Druid: Retail Combo Points" is now "Move Combo Points under PlayerFrame" instead and has been turned off due to the change, you can re-enable.
+- "Legacy Combo Points" is now off by default and has been turned off unless Classic Frames is on.
+- Removed the popup offering BBF's combo points since Blizzard added these pretty much.
+- The Personal Resource Display now uses Blizzard's new combo point bar. Adjust PRD moves, scales and hides it, and "Show resource on target nameplate" shows a separate bar on the target nameplate.
 ### Bugfix
-- Fix rogue poisons and shaman imbues etc missing from the player buffs with BBF's aura settings enabled on WoW Forever.
+- Fix Lua errors and legacy combo points after Blizzard's latest Forever update.
 ## Retail & Forever
 ### New
-- Misc: "Classic Frames: HD Texture by Mo" setting. Replace the older classic frame textures with higher def ones made by Mo. Thank you for the contribution!
-- New Corkiri/Mo profile (www.twitch.tv/corkiri). Thank you for sharing!
-- New Hansol profile (www.twitch.tv/hansol). Thank you for sharing!
-- Dark Mode: "Elite Texture" now has a right-click window with Desaturate and a new "Elite Texture Brightness Tweak" slider.
-- Misc: "Druid: Only show mana" setting. This will only show mana on playerframe even in other forms like cat/bear/moonkin. (Intended usage if you have a separate addon/PRD for energy/rage/etc display)
+- Misc: "Hide Combo Points/Resource When Empty" setting. Hides the combos until you have at least one point.
+- Misc: "Only Show Filled Combo Points/Resource" setting. Hides empty points and their background and only display current ones.
+- Big Debuffs: Right-click for settings. Milliseconds (on by default), Hide Timer Text, Low and Medium timer colors, Low Color threshold, timer text size, Test and Default buttons.
 ### Tweak
-- Dark Mode: Elite textures are now a bit darker by default (brightness offset lowered from 0.25 to 0.1).
-- Dark Mode: Add breathbars and swing timers to dark mode
+- Buffs & Debuffs auras: Timer Text Color: Right-click for Low and Medium colors and the Low Color threshold.
 ### Bugfix
-- Fix the clickthrough settings for Player/Target/Focus. Thank you @DecepUK for the fix.
-- Fix Smooth Bars setting sometimes causing the overshields texture to not be visible on PRD.
-## Classic
-### New
-- New "Hide Dragons" setting for Target/Focus that hides the elite dragons on target/focus. (ported from retail)
-- PlayerFrame: "Hide Lvl" setting, replacing the non-working "Hide Role Icon". Hides the level on PlayerFrame only.
-### Bugfix
-- Fix the high level skull still showing on Target & Focus with "Hide Max Level Text" set to Always.
-## All Versions
-### New
-- Font & Textures: "Change XP/Reputation Bar Texture" setting. (at the very bottom)
-- General: PlayerFrame Hide Lvl setting. Specifically for just hiding PlayerFrame level and not Target/Focus in the same go.
+- Fix combo points on TargetFrame getting covered by the elite dragon with Classic Frames (HD Elite).
+- Fix Target/Focus auras not sorting exactly like Blizzard's with "Blizzard Default" on.
+## Retail
 ### Tweak
-- Tapped gray color when health/name colors is enabled now always gets prio and updated immediately on both health and names.
+- Misc: "Hide Objective Tracker during Arena" is now "Hide Objective Tracker during:" with a dropdown to pick Arena, Mythic and Raid.
