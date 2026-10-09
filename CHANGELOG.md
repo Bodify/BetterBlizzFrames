@@ -27,6 +27,7 @@
 - Buffs & Debuffs auras: Timer Text Color: Right-click for Low and Medium colors and the Low Color threshold.
 ### Bugfix
 - Fix combo points on TargetFrame getting covered by the elite dragon with Classic Frames (HD Elite).
+- Fix Target/Focus auras not sorting exactly like Blizzard's with "Blizzard Default" on.
 ## Retail
 ### Tweak
 - Misc: "Hide Objective Tracker during Arena" is now "Hide Objective Tracker during:" with a dropdown to pick Arena, Mythic and Raid.

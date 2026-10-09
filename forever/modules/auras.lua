@@ -1945,14 +1945,6 @@ function H.ConfigSignature(host, harmful, reaction, canFilterIDs, tokensOk)
     }, "|")
 end
 
-function H.CasterPinned(tier, cfg)
-    if HIGHLIGHT_TIERS[tier] then return cfg.blacklistMineSplit and true or false end
-    if WHITELIST_TIERS[tier] or tier == "mine" then return true end
-    if tier == "others" then return (not cfg.mergeNormal) or (cfg.onlyMine and true or false) end
-    if tier == "purge" or tier == "purgeenrage" then return cfg.onlyMine and true or false end
-    return false
-end
-
 local function ConfigureContainer(host, container, harmful)
     container.bbfHarmful = harmful
 
@@ -1976,7 +1968,6 @@ local function ConfigureContainer(host, container, harmful)
     cfg.mergeNormal = not NeedsMineSplit(cfg)
 
     local sort = SortFor(host)
-    local pinCaster = sort == SORT_METHODS.default
 
     local degradedFilters, degradedBlocked
     if not tokensOk then
@@ -2082,8 +2073,7 @@ local function ConfigureContainer(host, container, harmful)
                     container:SetAuraGroupFilterString(key, filterString)
                 end
                 ApplyGroupCandidateFilters(container, key, filters)
-                local groupSort = (pinCaster and H.CasterPinned(def.tier, cfg)) and SORT_METHODS.stable or sort
-                ApplyGroupSortMethod(container, key, groupSort[1], groupSort[2])
+                ApplyGroupSortMethod(container, key, sort[1], sort[2])
                 ApplyGroupFrameCount(container, key, count)
                 H.SetGroupLive(container, key, true)
             end
