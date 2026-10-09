@@ -1783,8 +1783,11 @@ local function CreateTooltipTwo(widget, title, mainText, subText, anchor, cvarNa
             GameTooltip:AddLine(tooltipText, 1, 1, 1, true)
         end
 
-        if title == L["Smaller_Level_Circle"] and BetterBlizzFramesDB.classicFrames then
-            GameTooltip:AddLine("\n|cffffaa00" .. string.format(L["Tooltip_Smaller_Level_Circle_Classic_Note"], L["Classic_Frames"]) .. "|r", 1, 1, 1, true)
+        if title == L["Smaller_Level_Circle"] then
+            local blocker = BBF.SmallerLevelCircleBlocker("player") or BBF.SmallerLevelCircleBlocker("target") or BBF.SmallerLevelCircleBlocker("focus")
+            if blocker then
+                GameTooltip:AddLine("\n|cffffaa00" .. string.format(L["Tooltip_Smaller_Level_Circle_Classic_Note"], L[blocker]) .. "|r", 1, 1, 1, true)
+            end
         end
 
         if title == L["Tooltip_Pixel_Border_RaidFrames_Title"] then

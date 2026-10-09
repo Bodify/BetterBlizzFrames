@@ -20,6 +20,7 @@ local defaultSettings = {
     -- General
     enableBigDebuffs = true,
     removeRealmNames = false,
+    smallerLevelCircle = true,
     centerNames = false,
     mirroredNames = false,
     moveNames = false,
@@ -4464,11 +4465,11 @@ function BBF.SymmetricPlayerFrame()
     local playerManaMask = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar.ManaBarMask
     playerManaMask:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UIUnitFrameTargetManaMask2x-Flipped")
     playerManaMask:SetWidth(258.5)
-    playerManaMask:SetPoint("TOPLEFT", -64, 2)
+    playerManaMask:SetPoint("TOPLEFT", -63, 3)
     hooksecurefunc(playerManaMask, "SetAtlas", function(self)
         self:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UIUnitFrameTargetManaMask2x-Flipped")
         self:SetWidth(258.5)
-        self:SetPoint("TOPLEFT", -64, 2)
+        self:SetPoint("TOPLEFT", -63, 3)
     end)
 
     local healthbarMask = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer.HealthBarMask

@@ -16,6 +16,7 @@
 - "Legacy Combo Points" is now off by default and has been turned off unless Classic Frames is on.
 - Removed the popup offering BBF's combo points since Blizzard added these pretty much.
 - The Personal Resource Display now uses Blizzard's new combo point bar. Adjust PRD moves, scales and hides it, and "Show resource on target nameplate" shows a separate bar on the target nameplate.
+- "Smaller Level Frame" in Misc is now on by default. Feel free to turn it back off if you're not a fan.
 ### Bugfix
 - Fix Lua errors and legacy combo points after Blizzard's latest Forever update.
 ## Retail & Forever

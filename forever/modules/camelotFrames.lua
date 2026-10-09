@@ -707,7 +707,6 @@ function BBF.SetClassicHDLevelRing(frame, enabled)
         end
     end
     circle.bbfEnabled = enabled and true or false
-    circle:SetScale(BetterBlizzFramesDB.smallerLevelCircle and 0.8 or 1)
     circle.Refresh()
     BBF.ColorClassicHDLevelRing(frame)
 end
@@ -928,11 +927,12 @@ end
 
 local function ApplySmallerLevelCircle(ring, levelText, point, x, y, enabled)
     if not ring or not levelText then return end
-    if not ring.bbfOrigPoint then
-        if not enabled then return end
+    if not enabled and not ring.bbfSmallApplied then return end
+    if not ring.bbfSmallApplied then
         ring.bbfOrigPoint = { ring:GetPoint(1) }
         ring.bbfOrigScale = ring:GetScale()
     end
+    ring.bbfSmallApplied = enabled or nil
     ring:SetScale(enabled and 0.8 or ring.bbfOrigScale)
     ring:ClearAllPoints()
     if enabled then
@@ -947,23 +947,26 @@ local function ApplySmallerLevelCircle(ring, levelText, point, x, y, enabled)
     levelText:SetFontHeight(enabled and 12 or levelText.bbfOrigFontHeight)
 end
 
+function BBF.SmallerLevelCircleBlocker(unit)
+    local db = BetterBlizzFramesDB
+    if db.classicFrames then return "Classic_Frames" end
+    if BBF.HasNoPortrait and BBF.HasNoPortrait(unit) then return "No_Portrait" end
+end
+
+local function SmallerLevelCircleOn(unit)
+    return BetterBlizzFramesDB.smallerLevelCircle and not BBF.SmallerLevelCircleBlocker(unit) or false
+end
+
 function BBF.UpdateSmallerLevelCircle()
-    local enabled = BetterBlizzFramesDB.smallerLevelCircle and true or false
     local playerMain = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain
+    local playerX, playerY = 20, 16
     if BBF.symmetricPlayerFrameActive then
-        ApplySmallerLevelCircle(playerMain.LevelBackgroundCircle, PlayerLevelText, "BOTTOMLEFT", 22, 17, enabled)
-    else
-        ApplySmallerLevelCircle(playerMain.LevelBackgroundCircle, PlayerLevelText, "BOTTOMLEFT", 20, 16, enabled)
+        playerX, playerY = 22, 17
     end
-    for _, frame in ipairs({ TargetFrame, FocusFrame }) do
+    ApplySmallerLevelCircle(playerMain.LevelBackgroundCircle, PlayerLevelText, "BOTTOMLEFT", playerX, playerY, SmallerLevelCircleOn("player"))
+    for frame, unit in pairs({ [TargetFrame] = "target", [FocusFrame] = "focus" }) do
         local main = frame.TargetFrameContent.TargetFrameContentMain
-        ApplySmallerLevelCircle(main.LevelBackgroundCircle, main.LevelText, "BOTTOMRIGHT", -22, 17, enabled)
-    end
-    for _, frame in ipairs({ PlayerFrame, TargetFrame, FocusFrame }) do
-        local circle = frame.ClassicFrame and frame.ClassicFrame.HDLevelCircle
-        if circle then
-            circle:SetScale(enabled and 0.8 or 1)
-        end
+        ApplySmallerLevelCircle(main.LevelBackgroundCircle, main.LevelText, "BOTTOMRIGHT", -22, 17, SmallerLevelCircleOn(unit))
     end
 end
 
