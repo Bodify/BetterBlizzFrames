@@ -3752,7 +3752,9 @@ function H.PaintEnchantIcons(host)
     for index, button in ipairs(host.enchantButtons or {}) do
         local tex = button.bbfEnchantIcon
         local iconID = host.enchantIcons[index]
-        if tex and iconID then
+        if tex and tex:IsForbidden() then
+            host.enchantIconsPending = true
+        elseif tex and iconID then
             tex:SetTexture(iconID)
             tex:Show()
         elseif tex then
