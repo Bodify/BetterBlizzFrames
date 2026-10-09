@@ -1139,6 +1139,14 @@ function BBF.DarkmodeFrames(bypass)
         end
     end
 
+    local comboRing = ComboFrame and ComboFrame.ComboPoints
+    if comboRing then
+        for _, v in ipairs(comboRing) do
+            applySettings(v.BGInactive, frameSat, unitFramesOn and rogueCombo or 1)
+            applySettings(v.BGActive, frameSat, unitFramesOn and rogueComboActive or 1)
+        end
+    end
+
     local evokerEssencePoints = _G.EssencePlayerFrame
     if evokerEssencePoints then
         for _, v in pairs({evokerEssencePoints:GetChildren()}) do
