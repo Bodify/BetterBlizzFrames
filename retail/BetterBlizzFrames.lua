@@ -588,36 +588,6 @@ BBF.popupBuilders["BBF_COMBAT_WARNING"] = function()
     }
 end
 
-BBF.popupBuilders["BBF_MIDNIGHT_121_AURA_UPDATE"] = function()
-    return {
-        text = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames:\n\nBetterBlizzFrames has been updated for Midnight 12.1.\n\nThis means new aura settings and you will have to re-do your aura settings within the new systems.\n\nThere is a reset button to restore aura settings to BBF's default if things are looking too wacko from out the gates from your old setup.\n\nThere may be bugs and please use BugSack and BugGrabber to report them.\n\nThank you!",
-        button1 = "OK",
-        timeout = 0,
-        whileDead = true,
-        preferredIndex = 3,
-    }
-end
-
-BBF.popupBuilders["BBF_MIDNIGHT_EDITMODE_SCALE_REMOVED"] = function()
-    return {
-        text = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames:\n\nHeadsup:\n\nThe size setting for party frames and loss of control frame was removed due to Blizzard now having added those to edit mode. Adjust them with edit mode instead.",
-        button1 = "OK",
-        timeout = 0,
-        whileDead = true,
-        preferredIndex = 3,
-    }
-end
-
-BBF.popupBuilders["BBF_MIDNIGHT_AURA_FILTER_FIXES"] = function()
-    return {
-        text = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames:\n\n|A:services-icon-warning:20:20|a |cffff8800IMPORTANT READ:|r |A:services-icon-warning:20:20|a\n\nLots of aura filter issues fixed. You may have to tweak your aura filter settings again. For a full overview read patch notes. Apologies for the inconvenience.\n\n- Some new filters and fixes to how they act. If you want to see all auras on Target/FocusFrame and on topright player auras make sure you dont have limiting filters enabled.",
-        button1 = "Okay",
-        timeout = 0,
-        whileDead = true,
-        preferredIndex = 3,
-    }
-end
-
 local function ResetBBF()
     BetterBlizzFramesDB = {}
     ReloadUI()
@@ -5715,31 +5685,6 @@ First:SetScript("OnEvent", function(_, event, addonName)
                 end
             end
             BetterBlizzFramesDB.fontSizeNumFix = true
-        end
-        local skipUpdateMsg = BetterBlizzFramesDB.skipUpdateMsg or BBF.skippedUpdateMsg
-        if not BetterBlizzFramesDB.midnight121AuraUpdateMsg then
-            BetterBlizzFramesDB.midnight121AuraUpdateMsg = true
-            if BetterBlizzFramesDB.hasSaved and not skipUpdateMsg then
-                C_Timer.After(7, function()
-                    BBF.ShowPopup("BBF_MIDNIGHT_121_AURA_UPDATE")
-                end)
-            end
-        end
-        if not BetterBlizzFramesDB.midnightEditModeScaleRemovedMsg then
-            BetterBlizzFramesDB.midnightEditModeScaleRemovedMsg = true
-            if BetterBlizzFramesDB.hasSaved and not skipUpdateMsg then
-                C_Timer.After(7, function()
-                    BBF.ShowPopup("BBF_MIDNIGHT_EDITMODE_SCALE_REMOVED")
-                end)
-            end
-        end
-        if not BetterBlizzFramesDB.midnightAuraFilterFixesMsg then
-            BetterBlizzFramesDB.midnightAuraFilterFixesMsg = true
-            if BetterBlizzFramesDB.hasSaved and not skipUpdateMsg then
-                C_Timer.After(7, function()
-                    BBF.ShowPopup("BBF_MIDNIGHT_AURA_FILTER_FIXES")
-                end)
-            end
         end
         FetchAndSaveValuesOnFirstLogin()
         TurnTestModesOff()
