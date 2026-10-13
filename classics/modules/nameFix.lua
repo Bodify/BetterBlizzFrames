@@ -882,6 +882,37 @@ end
 local LSM = LibStub("LibSharedMedia-3.0")
 local oldChatFont = nil
 
+local combatTextFonts = {
+    ["SystemFont_World"] = true,
+    ["SystemFont_World_ThickOutline"] = true,
+    ["CombatTextFont"] = true,
+    ["CombatTextFontOutline"] = true,
+}
+
+local function HookCombatTextScaling()
+    if BBF.combatTextScalingHooked or not Enum.FontStringScaleAnimationMode then return end
+    if not CombatText then
+        if not BBF.combatTextScalingFrame then
+            BBF.combatTextScalingFrame = CreateFrame("Frame")
+            BBF.combatTextScalingFrame:RegisterEvent("ADDON_LOADED")
+            BBF.combatTextScalingFrame:SetScript("OnEvent", function(self, _, addon)
+                if addon ~= "Blizzard_CombatText" then return end
+                self:UnregisterEvent("ADDON_LOADED")
+                HookCombatTextScaling()
+            end)
+        end
+        return
+    end
+    if not CombatText.InitializeFontString then return end
+    hooksecurefunc(CombatText, "InitializeFontString", function(_, fontString)
+        local db = BetterBlizzFramesDB
+        if db.changeAllFontsIngame and not db.allFontsIgnoreSCT then
+            fontString:SetScaleAnimationMode(Enum.FontStringScaleAnimationMode.Vertex)
+        end
+    end)
+    BBF.combatTextScalingHooked = true
+end
+
 function BBF.SetCustomFonts()
     local db = BetterBlizzFramesDB
 
@@ -916,12 +947,17 @@ function BBF.SetCustomFonts()
                 ["SystemFont_LargeNamePlateFixed"] = 14,
                 ["SystemFont_LargeNamePlate"] = 14,
                 ["SystemFont_NamePlate"] = 12,
+                ["SystemFont_World"] = 64,
+                ["SystemFont_World_ThickOutline"] = 64,
+                ["CombatTextFont"] = 64,
+                ["CombatTextFontOutline"] = 64,
             }
+            local ignoreCombatText = db.allFontsIgnoreSCT
 
             local fontObjectNames = GetFonts()
             for index, fontObjectName in ipairs(fontObjectNames) do
                 local FontObject = _G[fontObjectName]
-                if FontObject then
+                if FontObject and not (ignoreCombatText and combatTextFonts[fontObjectName]) then
                     local _, size, style = FontObject:GetFont()
 
                     if forcedFontSizes[fontObjectName] then
@@ -980,6 +1016,9 @@ function BBF.SetCustomFonts()
         end
 
         SetAllFonts()
+        if not db.allFontsIgnoreSCT then
+            HookCombatTextScaling()
+        end
     end
 
     if db.changePartyFrameFont then

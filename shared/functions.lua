@@ -18,6 +18,19 @@ function BBF.ShowPopup(name, ...)
 	return StaticPopup_Show(name, ...)
 end
 
+BBF.popupBuilders["BB_PRD_AURAS_CLASH"] = function()
+	return {
+		text = BBF.L["Popup_PRD_Auras_Clash"],
+		button1 = "BetterBlizzFrames",
+		button2 = "BetterBlizzPlates",
+		OnAccept = function() BBF.SetPrdAuraOwner("BBF") end,
+		OnButton2 = function() BBF.SetPrdAuraOwner("BBP") end,
+		timeout = 0,
+		whileDead = true,
+		preferredIndex = 3,
+	}
+end
+
 function BBF.DarkModeUnitFramesOn()
 	local db = BetterBlizzFramesDB
 	return db.darkModeUi and db.darkModeUnitFrames and not (BBF.ClassicBronzeTintActive and BBF.ClassicBronzeTintActive()) and true or false
@@ -338,6 +351,9 @@ function BBF.ActionBarCDNumberSize(reset)
 	end
 
 	BBF.actionBarCDNumberSizeActive = BetterBlizzFramesDB.actionBarCDNumberSizeChange or nil
+	if BBF.ActionBarCooldownTextColor then
+		BBF.ActionBarCooldownTextColor()
+	end
 end
 
 local LSM = LibStub("LibSharedMedia-3.0")

@@ -132,42 +132,6 @@ end
 
 
 
-local raceIcons = {
-    [2] = { -- Orc
-        [2] = "raceicon-orc-male",
-        [3] = "raceicon-orc-female",
-    },
-    [4] = { -- Night Elf
-        [2] = "raceicon-nightelf-male",
-        [3] = "raceicon-nightelf-female",
-    },
-    [5] = { -- Undead (Scourge)
-        [2] = "raceicon-undead-male",
-        [3] = "raceicon-undead-female",
-    },
-    [1] = { -- Human
-        [2] = "raceicon-human-male",
-        [3] = "raceicon-human-female",
-    },
-    [3] = { -- Dwarf
-        [2] = "raceicon-dwarf-male",
-        [3] = "raceicon-dwarf-female",
-    },
-    [34] = { -- Dark Iron Dwarf
-        [2] = "raceicon-darkirondwarf-male",
-        [3] = "raceicon-darkirondwarf-female",
-    },
-}
-
-local raceSpellIcons = {
-    [2] = "Interface\\Icons\\inv_helmet_23",              -- Orc
-    [4] = "Interface\\Icons\\ability_ambush",             -- Night Elf
-    [5] = "Interface\\Icons\\spell_shadow_raisedead",     -- Undead
-    [1] = "Interface\\Icons\\spell_shadow_charm",         -- Human
-    [3] = 136225,                                         -- Dwarf
-    [34] = 1786406,                                       -- Dark Iron Dwarf
-}
-
 function BBF.RacialIndicator(unitFrame, unit)
     if not unitFrame or not BetterBlizzFramesDB.racialIndicator then return end
 
@@ -179,36 +143,18 @@ function BBF.RacialIndicator(unitFrame, unit)
     local yPos = BetterBlizzFramesDB.racialIndicatorYPos + 20
     local scale = BetterBlizzFramesDB.racialIndicatorScale
 
-    local showOrc = BetterBlizzFramesDB.racialIndicatorOrc
-    local showNelf = BetterBlizzFramesDB.racialIndicatorNelf
-    local showUndead = BetterBlizzFramesDB.racialIndicatorUndead
-    local showHuman = BetterBlizzFramesDB.racialIndicatorHuman
-    local showDwarf = BetterBlizzFramesDB.racialIndicatorDwarf
-    local showDarkIronDwarf = BetterBlizzFramesDB.racialIndicatorDarkIronDwarf
-
     local darkModeOn = BetterBlizzFramesDB.darkModeUi
     local vertexColor = darkModeOn and BetterBlizzFramesDB.darkModeColor or 1
     local raceOverSpells = BetterBlizzFramesDB.racialIndicatorRaceIcons
 
-    local _, _, raceID = UnitRace(unit)
-    if issecretvalue(raceID) then return end
-    local unitSex = UnitSex(unit)
-
-    local isOrc = raceID == 2
-    local isNelf = raceID == 4
-    local isUndead = raceID == 5
-    local isHuman = raceID == 1
-    local isDwarf = raceID == 3
-    local isDarkIronDwarf = raceID == 34
-
-    local raceIcon = (raceOverSpells and raceIcons[raceID] and raceIcons[raceID][unitSex or 2]) or raceSpellIcons[raceID]
-    local shouldShow =
-        (isOrc and showOrc) or
-        (isNelf and showNelf) or
-        (isUndead and showUndead) or
-        (isHuman and showHuman) or
-        (isDwarf and showDwarf) or
-        (isDarkIronDwarf and showDarkIronDwarf)
+    local _, raceToken = UnitRace(unit)
+    if issecretvalue(raceToken) then return end
+    local race = BBF.GetRacialIndicatorRace(raceToken)
+    local raceIcon, isAtlas
+    if race then
+        raceIcon, isAtlas = BBF.GetRacialIndicatorIcon(race, UnitSex(unit), raceOverSpells)
+    end
+    local shouldShow = race and BetterBlizzFramesDB[BBF.GetRacialIndicatorKey(race, unit)]
 
     if not unitFrame.racialIndicator then
         unitFrame.racialIndicator = CreateFrame("Frame", nil, unitFrame, "BackdropTemplate")
@@ -249,24 +195,31 @@ function BBF.RacialIndicator(unitFrame, unit)
     unitFrame.racialIndicator:SetPoint("CENTER", unitFrame, "CENTER", xPos, yPos)
     unitFrame.racialIndicator:SetScale(scale)
 
-    if BetterBlizzFramesDB.classColorFrameTexture and UnitIsPlayer(unit) then
-        local class = UnitClassBase(unit)
-        local classColor = class and RAID_CLASS_COLORS[class]
-        if classColor then
-            unitFrame.racialIndicator.border:SetVertexColor(classColor.r, classColor.g, classColor.b)
+    local borderR, borderG, borderB, borderBronze = BBF.UpdateRacialIndicatorBorder(unitFrame.racialIndicator)
+    if borderR and borderBronze and not darkModeOn then
+        unitFrame.racialIndicator.border:SetDesaturated(false)
+        unitFrame.racialIndicator.border:SetVertexColor(1, 1, 1)
+    elseif borderR then
+        unitFrame.racialIndicator.border:SetDesaturated(true)
+        if BetterBlizzFramesDB.classColorFrameTexture and UnitIsPlayer(unit) then
+            local class = UnitClassBase(unit)
+            local classColor = class and RAID_CLASS_COLORS[class]
+            if classColor then
+                unitFrame.racialIndicator.border:SetVertexColor(classColor.r, classColor.g, classColor.b)
+            elseif darkModeOn then
+                unitFrame.racialIndicator.border:SetVertexColor(vertexColor, vertexColor, vertexColor)
+            else
+                unitFrame.racialIndicator.border:SetVertexColor(borderR, borderG, borderB)
+            end
         elseif darkModeOn then
             unitFrame.racialIndicator.border:SetVertexColor(vertexColor, vertexColor, vertexColor)
         else
-            unitFrame.racialIndicator.border:SetVertexColor(1, 1, 0)
+            unitFrame.racialIndicator.border:SetVertexColor(borderR, borderG, borderB)
         end
-    elseif darkModeOn then
-        unitFrame.racialIndicator.border:SetVertexColor(vertexColor, vertexColor, vertexColor)
-    else
-        unitFrame.racialIndicator.border:SetVertexColor(1, 1, 0)
     end
 
     if raceIcon then
-        if raceOverSpells then
+        if isAtlas then
             unitFrame.racialIndicator.icon:SetAtlas(raceIcon)
         else
             unitFrame.racialIndicator.icon:SetTexture(raceIcon)

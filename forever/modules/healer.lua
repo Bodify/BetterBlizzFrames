@@ -7,12 +7,128 @@ local function CreateHealerIndicator(frame)
     frame.bbfHealerIndicator:Hide()
 end
 
+local secretBackdrop = "Interface\\Buttons\\WHITE8X8"
+local secretIndicatorMap = { HEALER = "bags-icon-addslots", TANK = "", DAMAGER = "" }
+local secretPortraitHealerMap = { HEALER = "UI-LFG-RoleIcon-Healer", TANK = "", DAMAGER = "" }
+local secretPortraitBackdropMap = { HEALER = secretBackdrop, TANK = "", DAMAGER = "" }
+
 local function UpdateHealerIndicator(frame, unit)
-    if UnitExists(unit) and BBF.IsSpecHealer(unit) then
+    local isHealer, secretIndex
+    if UnitExists(unit) then
+        isHealer, secretIndex = BBF.IsSpecHealer(unit)
+    end
+
+    if secretIndex then
+        frame.bbfHealerIndicator:Hide()
+        if not frame.bbfHealerIndicatorSecret then
+            frame.bbfHealerIndicatorSecret = frame.bbfOverlayFrame:CreateTexture(nil, "OVERLAY")
+            frame.bbfHealerIndicatorSecret:SetAllPoints(frame.bbfHealerIndicator)
+        end
+        BBF.SetSecretArenaRoleTexture(frame.bbfHealerIndicatorSecret, secretIndex, secretIndicatorMap)
+        frame.bbfHealerIndicatorSecret:Show()
+        return
+    end
+
+    if frame.bbfHealerIndicatorSecret then
+        frame.bbfHealerIndicatorSecret:Hide()
+    end
+    if isHealer then
         frame.bbfHealerIndicator:Show()
     else
         frame.bbfHealerIndicator:Hide()
     end
+end
+
+local function CreateSecretPortraitTexture(portrait, mask, subLevel)
+    local texture = portrait:GetParent():CreateTexture(nil, "BACKGROUND", nil, subLevel)
+    texture:SetAllPoints(portrait)
+    if mask then
+        texture:AddMaskTexture(mask)
+    end
+    texture:Hide()
+    return texture
+end
+
+local function HideSecretPortrait(frame)
+    local overlay = frame.bbfSecretPortrait
+    if overlay then
+        overlay.spec:Hide()
+        overlay.backdrop:Hide()
+        overlay.healer:Hide()
+    end
+end
+
+function BBF.UpdateSecretPortrait(frame)
+    local unit = frame.unit
+    local secretIndex
+    if frame.portrait and (unit == "target" or unit == "focus") and UnitIsPlayer(unit) then
+        local _
+        _, secretIndex = BBF.GetSpecID(unit)
+    end
+    if not secretIndex then
+        HideSecretPortrait(frame)
+        return false
+    end
+
+    local db = BetterBlizzFramesDB
+    local showSpec = db.classPortraitsUseSpecIcons and BBF.ArenaOpponentHasSpec(secretIndex)
+    local showHealer = db.healerIndicator and db.healerIndicatorPortrait
+    if not showSpec and not showHealer then
+        HideSecretPortrait(frame)
+        return false
+    end
+
+    local portrait = frame.portrait
+    local portraitParent = portrait:GetParent()
+    local container = frame.TargetFrameContainer
+    local overlay = frame.bbfSecretPortrait
+    if not overlay then
+        local mask = (container and container.PortraitMask) or portraitParent.PortraitMask
+        overlay = {
+            spec = CreateSecretPortraitTexture(portrait, mask, 2),
+            backdrop = CreateSecretPortraitTexture(portrait, mask, 3),
+            healer = CreateSecretPortraitTexture(portrait, mask, 4),
+        }
+        local crop = 0.04
+        overlay.spec:SetTexCoord(crop, 1 - crop, crop, 1 - crop)
+        overlay.backdrop:SetVertexColor(0.1, 0.1, 0.1)
+        overlay.parent = portraitParent
+        frame.bbfSecretPortrait = overlay
+    elseif overlay.parent ~= portraitParent then
+        overlay.spec:SetParent(portraitParent)
+        overlay.backdrop:SetParent(portraitParent)
+        overlay.healer:SetParent(portraitParent)
+        overlay.parent = portraitParent
+    end
+    if container and portraitParent == container and container.FrameTexture and not overlay.frameTextureRaised then
+        container.FrameTexture:SetDrawLayer("BACKGROUND", 5)
+        overlay.frameTextureRaised = true
+    end
+
+    if showSpec then
+        BBF.SetSecretArenaSpecIcon(overlay.spec, secretIndex)
+        overlay.spec:Show()
+    else
+        overlay.spec:Hide()
+    end
+
+    if showHealer then
+        BBF.SetSecretArenaRoleTexture(overlay.backdrop, secretIndex, secretPortraitBackdropMap)
+        BBF.SetSecretArenaRoleTexture(overlay.healer, secretIndex, secretPortraitHealerMap)
+        overlay.healer:SetTexCoord(0.13, 0.85, 0.13, 0.83)
+        overlay.backdrop:Show()
+        overlay.healer:Show()
+    else
+        overlay.backdrop:Hide()
+        overlay.healer:Hide()
+    end
+
+    if frame.bbfHealerPortraitActive or frame.bbfSpecPortraitCropped then
+        frame.portrait:SetTexCoord(0, 1, 0, 1)
+        frame.bbfHealerPortraitActive = nil
+        frame.bbfSpecPortraitCropped = nil
+    end
+    return true
 end
 
 local function UpdateHealerIndicatorOptions(frame)
@@ -49,6 +165,7 @@ end
 function BBF.HealerIndicatorPortrait()
     if BBF.healerPortrait then return end
     hooksecurefunc("UnitFramePortrait_Update", function(self)
+        if BBF.UpdateSecretPortrait(self) then return end
         local unit = self.unit
         if (unit == "target" or unit == "focus" or unit == "player") and UnitIsPlayer(unit) then
             if BBF.IsSpecHealer(unit) and unit ~= "player" then

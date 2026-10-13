@@ -19,6 +19,8 @@ local customColorsUnitFrames
 local customColorsRaidFrames
 local useOneClassColor
 local singleClassColor
+local hiddenClassTint
+local alwaysClassTint
 local useOnePowerColor
 local singlePowerColor
 local customPowerColors
@@ -147,6 +149,9 @@ local function GetArenaClass(unit)
         for i = 1, #arenaUnits do
             if BBF.UnitIsProbablyUnit(unit, arenaUnits[i]) then
                 local specID = GetArenaOpponentSpec(i)
+                if issecretvalue(specID) then
+                    return
+                end
                 if specID and specID > 0 then
                     return GetSpecClass(specID)
                 end
@@ -166,9 +171,16 @@ local function ResolveOverrideClassColor(unit, out)
     local class = UnitClassBase(unit)
     if class == nil then return end
 
+    if alwaysClassTint then
+        return C_ClassColor.GetClassColor(class, hiddenClassTint), true
+    end
+
     if issecretvalue(class) then
         local arenaClass = GetArenaClass(unit)
         if arenaClass == nil then
+            if hiddenClassTint then
+                return C_ClassColor.GetClassColor(class, hiddenClassTint), true
+            end
             return C_ClassColor.GetClassColor(class), true
         end
         class = arenaClass
@@ -259,6 +271,12 @@ end
 
 local unitColorScratch = {}
 
+local function ColorAlpha(color)
+    local a = color.a
+    if issecretvalue(a) or a == nil then return 1 end
+    return a
+end
+
 local function SetUnitColor(unit, r, g, b, a)
     local color = unitColorScratch[unit]
     if not color then
@@ -280,7 +298,7 @@ local function getUnitColor(unit, useCustomColors, txt)
                 local color, defaultClassColor = GetClassColorForUnit(unit, useCustomColors and customHealthbarColors and overrideClassColors)
 
                 if color then
-                    return SetUnitColor(unit, color.r, color.g, color.b, color.a or 1), false, defaultClassColor
+                    return SetUnitColor(unit, color.r, color.g, color.b, ColorAlpha(color)), false, defaultClassColor
                 end
             end
         else
@@ -289,9 +307,9 @@ local function getUnitColor(unit, useCustomColors, txt)
             if color then
                 if skipFriendly then
                     local reaction = getUnitReaction(unit)
-                    return SetUnitColor(unit, color.r, color.g, color.b, color.a or 1), ((unit == "player" and skipPlayer) or (skipFriendly and reaction == "FRIENDLY" and unit ~= "player")), defaultClassColor
+                    return SetUnitColor(unit, color.r, color.g, color.b, ColorAlpha(color)), ((unit == "player" and skipPlayer) or (skipFriendly and reaction == "FRIENDLY" and unit ~= "player")), defaultClassColor
                 else
-                    return SetUnitColor(unit, color.r, color.g, color.b, color.a or 1), false, defaultClassColor
+                    return SetUnitColor(unit, color.r, color.g, color.b, ColorAlpha(color)), false, defaultClassColor
                 end
             end
         end
@@ -743,6 +761,13 @@ function BBF.UpdateFrames()
     useOneClassColor = BetterBlizzFramesDB.useOneClassColor
     singleClassColor = BetterBlizzFramesDB.singleClassColor
     overrideClassColors = BetterBlizzFramesDB.overrideClassColors
+    hiddenClassTint = nil
+    alwaysClassTint = nil
+    if BetterBlizzFramesDB.tintHiddenClassColors and BBF.SupportsHiddenClassTint() then
+        local tint = BetterBlizzFramesDB.hiddenClassColorTint or {1, 1, 1}
+        hiddenClassTint = CreateColor(tint[1], tint[2], tint[3])
+        alwaysClassTint = BetterBlizzFramesDB.alwaysTintClassColors
+    end
     InvalidateAllClassColors()
     useOnePowerColor = BetterBlizzFramesDB.useOnePowerColor
     singlePowerColor = BetterBlizzFramesDB.singlePowerColor

@@ -143,13 +143,6 @@ end
 
 
 
-local raceIcons = {
-    [2] = "Interface\\Icons\\inv_helmet_23",         -- Orc
-    [4] = "Interface\\Icons\\ability_ambush",        -- Night Elf
-    [5] = "Interface\\Icons\\spell_shadow_raisedead",-- Undead
-    [1] = "Interface\\Icons\\spell_shadow_charm",    -- Human
-}
-
 function BBF.RacialIndicator(unitFrame, unit)
     if not unitFrame or not BetterBlizzFramesDB.racialIndicator then return end
 
@@ -161,29 +154,16 @@ function BBF.RacialIndicator(unitFrame, unit)
     local yPos = BetterBlizzFramesDB.racialIndicatorYPos + (BBF.isTBC and 16 or 20)
     local scale = BetterBlizzFramesDB.racialIndicatorScale
 
-    local showOrc = BetterBlizzFramesDB.racialIndicatorOrc
-    local showNelf = BetterBlizzFramesDB.racialIndicatorNelf
-    local showUndead = BetterBlizzFramesDB.racialIndicatorUndead
-    local showHuman = BetterBlizzFramesDB.racialIndicatorHuman
-
     local darkModeOn = BetterBlizzFramesDB.darkModeUi
     local vertexColor = darkModeOn and BetterBlizzFramesDB.darkModeColor or 1
 
-    local _, _, raceID = UnitRace(unit)
-
-    local isOrc = raceID == 2
-    local isNelf = raceID == 4
-    local isUndead = raceID == 5
-    local isHuman = raceID == 1
-
-    local raceIcon = raceIcons[raceID]
-
-    local shouldShow =
-        (isOrc and showOrc) or
-        (isNelf and showNelf) or
-        (isUndead and showUndead) or
-        (isHuman and showHuman)
-
+    local _, raceToken = UnitRace(unit)
+    local race = BBF.GetRacialIndicatorRace(raceToken)
+    local raceIcon, isAtlas
+    if race then
+        raceIcon, isAtlas = BBF.GetRacialIndicatorIcon(race, UnitSex(unit))
+    end
+    local shouldShow = race and BetterBlizzFramesDB[BBF.GetRacialIndicatorKey(race, unit)]
 
     if not unitFrame.racialIndicator then
         unitFrame.racialIndicator = CreateFrame("Frame", nil, unitFrame, "BackdropTemplate")
@@ -224,14 +204,25 @@ function BBF.RacialIndicator(unitFrame, unit)
     unitFrame.racialIndicator:SetPoint("CENTER", unitFrame, "CENTER", xPos+37.5, yPos-36)
     unitFrame.racialIndicator:SetScale(scale)
 
-    if darkModeOn then
-        unitFrame.racialIndicator.border:SetVertexColor(vertexColor, vertexColor, vertexColor)
-    else
-        unitFrame.racialIndicator.border:SetVertexColor(1, 1, 0)
+    local borderR, borderG, borderB, borderBronze = BBF.UpdateRacialIndicatorBorder(unitFrame.racialIndicator)
+    if borderR and borderBronze and not darkModeOn then
+        unitFrame.racialIndicator.border:SetDesaturated(false)
+        unitFrame.racialIndicator.border:SetVertexColor(1, 1, 1)
+    elseif borderR then
+        unitFrame.racialIndicator.border:SetDesaturated(true)
+        if darkModeOn then
+            unitFrame.racialIndicator.border:SetVertexColor(vertexColor, vertexColor, vertexColor)
+        else
+            unitFrame.racialIndicator.border:SetVertexColor(borderR, borderG, borderB)
+        end
     end
 
     if raceIcon then
-        unitFrame.racialIndicator.icon:SetTexture(raceIcon)
+        if isAtlas then
+            unitFrame.racialIndicator.icon:SetAtlas(raceIcon)
+        else
+            unitFrame.racialIndicator.icon:SetTexture(raceIcon)
+        end
     end
 
     if shouldShow then

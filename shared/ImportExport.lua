@@ -155,6 +155,9 @@ function BBF.ImportProfile(encodedString)
     end
 
     BBF.DeepMergeTables(BetterBlizzFramesDB, profileData)
+    if BBF.isForever then
+        BetterBlizzFramesDB.hideBagsBarImportCheck = true
+    end
 
     return true
 end

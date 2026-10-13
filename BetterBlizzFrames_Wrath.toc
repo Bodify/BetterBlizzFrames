@@ -13,11 +13,15 @@ locales\locales.xml
 embeds.xml
 
 shared\functions.lua
+shared\races.lua
+shared\timerFormatter.lua
+shared\actionBarTweaks.lua
 shared\functions_classics.lua
 shared\ImportExport.lua
 shared\smoothBars.lua
 shared\xpBarTexture.lua
 shared\statusBarTextExtra.lua
+shared\hideTooltip.lua
 
 classics\modules\darkmode.lua
 classics\modules\nameFix.lua

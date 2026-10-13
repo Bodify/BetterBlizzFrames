@@ -105,6 +105,9 @@ local defaultSettings = {
     statusTextExtra = false,
     statusTextExtraHealth = true,
     statusTextExtraMana = true,
+    hideTooltip = false,
+    hideTooltipArena = true,
+    hideTooltipCombat = true,
     smoothManabars = true,
 
     -- Absorb Indicator
@@ -219,7 +222,30 @@ local defaultSettings = {
     playerCastBarWidth = 195,
     playerCastBarHeight = 13,
     playerCastBarTimer = false,
-    playerCastBarTimerCentered = false,
+    playerCastBarTimerAnchor = "LEFT",
+    playerCastBarTimerRelativeAnchor = "RIGHT",
+    playerCastBarTimerJustify = "LEFT",
+    playerCastBarTimerXPos = 3,
+    playerCastBarTimerYPos = 2,
+    playerCastBarTimerSize = 13,
+    targetCastBarTimerAnchor = "LEFT",
+    targetCastBarTimerRelativeAnchor = "RIGHT",
+    targetCastBarTimerJustify = "LEFT",
+    targetCastBarTimerXPos = 3,
+    targetCastBarTimerYPos = -1,
+    targetCastBarTimerSize = 13,
+    focusCastBarTimerAnchor = "LEFT",
+    focusCastBarTimerRelativeAnchor = "RIGHT",
+    focusCastBarTimerJustify = "LEFT",
+    focusCastBarTimerXPos = 3,
+    focusCastBarTimerYPos = -1,
+    focusCastBarTimerSize = 13,
+    partyCastBarTimerAnchor = "LEFT",
+    partyCastBarTimerRelativeAnchor = "RIGHT",
+    partyCastBarTimerJustify = "LEFT",
+    partyCastBarTimerXPos = 5,
+    partyCastBarTimerYPos = 0,
+    partyCastBarTimerSize = 12,
     playerCastBarShowText = true,
     playerCastBarShowBorder = true,
 
@@ -339,12 +365,29 @@ local defaultSettings = {
     castBarTargetTextOutsideYPos = 0,
     castBarTargetTextOutsideSize = 10,
     castBarTargetTextOutsideAnchor = "BOTTOM",
+    castBarTargetTextPlayerOutsideXPos = 0,
+    castBarTargetTextPlayerOutsideYPos = 0,
+    castBarTargetTextPlayerOutsideSize = 10,
+    castBarTargetTextPlayerOutsideAnchor = "BOTTOM",
     interruptIconBorder = true,
     unitFrameBgTextureColor = {0,0,0,0.5},
     unitFrameFontColorRGB = {1,1,1,1},
     partyFrameFontColorRGB = {1,1,1,1},
     unitFrameValueFontColorRGB = {1,1,1,1},
     actionBarFontColorRGB = {1,1,1,1},
+    actionBarRangeColor = false,
+    actionBarRangeOverlayColor = {1, 0, 0, 0.35},
+    actionBarRangeIconColor = {0.59, 0.24, 0.22, 1},
+    actionBarRangeUseOverlay = false,
+    actionBarRangeDesaturate = false,
+    changeActionBarCDFont = false,
+    actionBarCDTextColor = false,
+    actionBarCDTextBaseColor = {1, 1, 0.1, 1},
+    actionBarCDTextLowColor = {1, 0.1, 0.1, 1},
+    actionBarCDTextHighColor = {1, 1, 1, 1},
+    actionBarCDTextLowThreshold = 6,
+    actionBarCDTextHighThreshold = 30,
+    actionBarCDTextMilliseconds = true,
 
     auraWhitelist = {
         ["example aura :3 (delete me)"] = {name = "Example Aura :3 (delete me)"}
@@ -355,6 +398,7 @@ local defaultSettings = {
     partyFrameRangeAlphaSolidBackground = true,
     changePartyFrameRangeAlpha = true,
 }
+BBF.defaultSettings = defaultSettings
 
 local version = GetBuildInfo()
 if version and version:match("^5") then
@@ -373,6 +417,15 @@ local function InitializeSavedVariables()
     if not BetterBlizzFramesDB.version or BetterBlizzFramesDB.version ~= addonVersion then
         BetterBlizzFramesDB.version = addonVersion  -- Update the version number in the database
     end
+
+    if BetterBlizzFramesDB.playerCastBarTimerCentered then
+        BetterBlizzFramesDB.playerCastBarTimerAnchor = "BOTTOM"
+        BetterBlizzFramesDB.playerCastBarTimerRelativeAnchor = "TOP"
+        BetterBlizzFramesDB.playerCastBarTimerJustify = "CENTER"
+        BetterBlizzFramesDB.playerCastBarTimerXPos = 0
+        BetterBlizzFramesDB.playerCastBarTimerYPos = 6
+    end
+    BetterBlizzFramesDB.playerCastBarTimerCentered = nil
 
     for key, defaultValue in pairs(defaultSettings) do
         if BetterBlizzFramesDB[key] == nil then
@@ -3338,18 +3391,23 @@ First:SetScript("OnEvent", function(_, event, addonName)
                 end
                 BetterBlizzFramesDB.fontSizeNumFix = true
             end
+            BBF.InitRacialIndicatorRaces()
             TurnTestModesOff()
             BBF.FixLegacyComboPointsLocation()
             BBF.AlwaysShowLegacyComboPoints()
             BBF.GenericLegacyComboSupport()
             BBF.ChangeTotemFrameScale()
             BBF.ZoomDefaultActionbarIcons()
+            BBF.ActionBarRangeColor()
+            BBF.ActionBarCooldownFont()
+            BBF.ActionBarCooldownTextColor()
             --TurnOnEnabledFeaturesOnLogin()
             BBF.RaiseTargetCastbarStratas()
             BBF.ReduceEditModeAlpha()
             BBF.RemoveAddonCategories()
             BBF.CenterCurrentValueOnBars()
             BBF.StatusBarTextExtra()
+            BBF.HideTooltip()
             BBF.UpdateAuraCollapseButton()
 
             if not BetterBlizzFramesDB.disableHealAbsorbRecolor then

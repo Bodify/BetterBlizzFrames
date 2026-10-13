@@ -75,7 +75,7 @@ local STRATA_BELOW = {
 
 local function ApplyTimerStyle(cooldown)
     local db = BetterBlizzFramesDB
-    local formatter = BBF.GetTimerFormatter(db.bigDebuffsLowColor or { 1, 0.1, 0.1, 1 }, db.bigDebuffsLowThreshold or 6, db.bigDebuffsMilliseconds, false)
+    local formatter = BBF.GetTimerFormatter(db.bigDebuffsLowColor or { 1, 0.1, 0.1, 1 }, db.bigDebuffsLowThreshold or 6, db.bigDebuffsMilliseconds, false, nil, db.bigDebuffsHighThreshold or 30, db.bigDebuffsHighColor or { 1, 1, 1, 1 })
     cooldown:SetCountdownFormatter(formatter)
     cooldown:SetHideCountdownNumbers(db.bigDebuffsHideTimer and true or false)
     local text = cooldown:GetCountdownFontString()

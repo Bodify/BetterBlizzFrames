@@ -192,6 +192,7 @@ local function EditModePreviewsHost(host)
 end
 
 local function PreviewIsActive(host)
+    if host and host.isPrd then return TestModeActive() end
     if TestModeActive() then return true end
     if not host then return editModeActive end
     return EditModePreviewsHost(host)
@@ -294,6 +295,8 @@ function BBF.UpdateUserAuraSettings()
     S.timerBaseColor = { GetColor("auraTimerBaseColor", 1, 0.82, 0, 1) }
     S.timerLowColor = { GetColor("auraTimerLowColor", 1, 0.1, 0.1, 1) }
     S.expiryThreshold = db.auraTimerLowThreshold or 6
+    S.timerHighColor = { GetColor("auraTimerHighColor", 1, 1, 1, 1) }
+    S.timerHighThreshold = db.auraTimerHighThreshold or 30
     S.playerCooldown = db.addCooldownFramePlayerAuras
 
     if db.playerAuraDurationColor then
@@ -408,6 +411,27 @@ function BBF.UpdateUserAuraSettings()
         ccGlow = db.playerAuraCCGlow,
         purgeGlow = db.showPurgeTextureOnSelf,
     }
+
+    S.prd = {
+        buffs = true,
+        buffWhitelist = db.prdBuffFilterWatchList,
+        buffBlacklist = db.prdBuffFilterBlacklist,
+        buffImportant = db.prdBuffFilterImportant,
+        buffDefensives = db.prdBuffFilterDefensives,
+        buffShort = db.prdBuffFilterLessMinite,
+        buffOnlyMine = db.prdBuffFilterOnlyMe,
+
+        extras = db.playerAuraGlows,
+        importantGlow = db.playerAuraImportantGlow,
+        defensiveGlow = db.playerAuraDefensiveGlow,
+    }
+    S.prdOn = H.PrdOn()
+    S.prdScale = db.prdAuraScale or 1
+    S.prdX = db.prdAuraXPos or 0
+    S.prdY = db.prdAuraYPos or 0
+    S.prdPerRow = db.prdAuraRowAmount or 6
+    S.prdLimit = db.prdAuraLimit or 6
+    S.prdAlign = string.upper(db.prdAuraAlign or "Center")
 
     S.buffsCollapsed = db.playerBuffsCollapsed and not db.hideAuraCollapseButton
 
@@ -881,7 +905,7 @@ local function ApplyCountdownFormatter(cooldown, style)
         return
     end
 
-    local formatter, key = BBF.GetTimerFormatter(lowColor, lowColor and style.expiryThreshold or 0, false, hide)
+    local formatter, key = BBF.GetTimerFormatter(lowColor, lowColor and style.expiryThreshold or 0, false, hide, nil, lowColor and style.timerHighThreshold, style.timerHighColor)
     if cooldown.bbfFormatterKey == key then return end
     cooldown.bbfFormatterKey = key
     cooldown:SetCountdownFormatter(formatter)
@@ -1421,6 +1445,10 @@ local function RowWidth(host)
 end
 
 local function GetMaxLineSize(host, sizes, primarySpacing)
+    if host.isPrd then
+        local perRow = math.max(host.perRow or 1, 1)
+        return perRow * S.cell + (perRow - 1) * primarySpacing
+    end
     if host.isPlayer then
         local perRow = math.max(host.perRow or 1, 1)
         return perRow * PLAYER_AURA_ICON + (perRow - 1) * primarySpacing
@@ -1542,6 +1570,8 @@ local function BuildStyle(tier, sizes, isPlayer, cfg, into)
     t.timerBaseColor = S.timerBaseColor
     t.timerLowColor = S.timerLowColor
     t.expiryThreshold = S.expiryThreshold
+    t.timerHighColor = S.timerHighColor
+    t.timerHighThreshold = S.timerHighThreshold
     t.glow = glow
     t.glowColor = glowColor
     return t
@@ -1600,8 +1630,9 @@ local function GetFrameConfig(host, harmful)
             blacklist = FriendlyFoeFilter(f, "buffBlacklist", hostile, friendly),
             importantFilter = FriendlyFoeFilter(f, "buffImportant", hostile, friendly),
             defensivesFilter = FriendlyFoeFilter(f, "buffDefensives", hostile, friendly),
-            maxCount = MAX_BUFFS_PER_GROUP,
-            generalMax = host.isPlayer and MAX_BUFFS_PER_GROUP or S.maxBuffs,
+            maxCount = host.isPrd and S.prdLimit or MAX_BUFFS_PER_GROUP,
+            generalMax = (host.isPrd and S.prdLimit)
+                or (host.isPlayer and MAX_BUFFS_PER_GROUP) or S.maxBuffs,
         }
     end
 
@@ -1613,7 +1644,7 @@ local function GetFrameConfig(host, harmful)
 
     local extras = f.extras and true or false
     cfg.friendlyKeys = (friendly and not host.isPlayer) and true or false
-    cfg.importantFirst = S.importantFirst
+    cfg.importantFirst = (not host.isPrd) and S.importantFirst
     cfg.purgeGlow = extras and f.purgeGlow
     cfg.purgeHidden = (S.hidePurge
         or (friendly and not host.isPlayer and not S.purgeOnFriendly)) and true or false
@@ -2147,6 +2178,7 @@ local function ConfigureContainer(host, container, harmful)
 end
 
 local function IsTopBlockHarmful(host)
+    if host.isPrd then return false end
     if host.isPlayer then
         return host.blockTop == host.debuffs
     end
@@ -2738,7 +2770,7 @@ function BBF.CastbarAdjustCaller(key)
 end
 
 local function PrimeHostGroups(host)
-    if host.isPlayer then return end
+    if host.isPlayer or host.isPrd then return end
 
     if InCombatLockdown() then
         host.primePending = true
@@ -2754,6 +2786,17 @@ local function PrimeHostGroups(host)
 end
 
 local function RefreshHost(host)
+    if host.isPrd then
+        if not host.prdShown then return false end
+        H.AnchorPrd(host)
+        local changed = BBF.ApplyAuraGroupConfig(host)
+        if host.prdWake then
+            host.prdWake = nil
+            host.buffs:UpdateAllAuras()
+        end
+        return changed
+    end
+
     if host.isPlayer then
         BBF.AnchorPlayerAuraContainer(host)
         local changed = BBF.ApplyAuraGroupConfig(host)
@@ -2767,9 +2810,91 @@ local function RefreshHost(host)
     return changed
 end
 
+function BBF.PrdAurasWanted()
+    local db = BetterBlizzFramesDB
+    return (db.playerAuraFiltering and db.prdAurasEnabled and PersonalResourceDisplayFrame) and true or false
+end
+
+function H.PrdOn()
+    if not BBF.PrdAurasWanted() then return false end
+    return not (BBP and BBP.PrdAurasActive and BBP.PrdAurasActive())
+end
+
+function H.AnchorPrd(host)
+    local container = host.buffs
+    local anchor = host.frame.HealthBarsContainer or host.frame
+    local side = (S.prdAlign == "LEFT" or S.prdAlign == "RIGHT") and S.prdAlign or ""
+    container:ClearAllPoints()
+    container:SetFlowLayoutAnchorPoint(side == "RIGHT" and "BOTTOMRIGHT" or "BOTTOMLEFT")
+    container:SetFlowLayoutGrowthDirection(side == "RIGHT" and AnchorUtil.FlowDirection.Left
+        or AnchorUtil.FlowDirection.Right, AnchorUtil.FlowDirection.Up)
+    container:SetPoint("BOTTOM" .. side, anchor, "TOP" .. side, S.prdX, 6 + S.prdY)
+end
+
+function H.EnsurePrdHost()
+    local host = BBF.auraHosts.prd
+    if not S.prdOn then
+        if host and host.prdShown then
+            host.prdShown = false
+            host.buffs:SetEnabled(false)
+            host.buffs:Hide()
+        end
+        return host
+    end
+
+    if not host then
+        RefreshSpellLists()
+        host = {
+            key = "prd",
+            settingsKey = "prd",
+            isPrd = true,
+            frame = PersonalResourceDisplayFrame,
+            unit = "player",
+            styles = {},
+        }
+        host.buffs = CreateTypeContainer(host, false, host.frame)
+        host.blockTop, host.blockBottom = host.buffs, host.buffs
+        BBF.auraHosts.prd = host
+        SeedContainerStyles(host, host.buffs)
+    end
+
+    host.scale = S.prdScale
+    host.perRow = S.prdPerRow
+    if not host.prdShown then
+        host.prdShown = true
+        host.prdWake = true
+        host.buffs:SetEnabled(true)
+        host.buffs:Show()
+    end
+    return host
+end
+
+function BBF.RefreshPrdAuras()
+    if H.PrdOn() ~= (S.prdOn and true or false) then
+        BBF.RefreshAllAuraFrames()
+    end
+end
+
+function BBF.CheckPrdAuraClash()
+    if not BBF.PrdAurasWanted() then return end
+    if not (BBP and BBP.PrdAurasActive and BBP.PrdAurasActive()) then return end
+    if StaticPopup_Visible("BB_PRD_AURAS_CLASH") then return end
+    BBF.ShowPopup("BB_PRD_AURAS_CLASH")
+end
+
+function BBF.SetPrdAuraOwner(owner)
+    BetterBlizzFramesDB.prdAurasEnabled = owner == "BBF"
+    if BetterBlizzPlatesDB then BetterBlizzPlatesDB.prdAurasEnabled = owner == "BBP" end
+    if BBF.SyncPrdAurasCheckbox then BBF.SyncPrdAurasCheckbox() end
+    if BBP and BBP.RefreshNameplateAuraPanel then BBP.RefreshNameplateAuraPanel() end
+    if BBP and BBP.RefreshAllNameplateAuras then BBP.RefreshAllNameplateAuras() end
+    BBF.RefreshAllAuraFrames()
+end
+
 local function DoRefreshAllAuraFrames()
     BBF.UpdateUserAuraSettings()
     RefreshSpellLists()
+    H.EnsurePrdHost()
 
     for _, host in pairs(BBF.auraHosts) do
         PrimeHostGroups(host)
@@ -4034,6 +4159,7 @@ local function LayoutTestButtons(preview, entries, host, harmful, cursorCross)
 
     local point, dx, dy = preview.bbfPoint, preview.bbfDX, preview.bbfDY
     local linePrimary, lineCross = 0, 0
+    local widest = 0
 
     local styles, styleMoved = {}, {}
     for _, entry in ipairs(entries) do
@@ -4081,6 +4207,7 @@ local function LayoutTestButtons(preview, entries, host, harmful, cursorCross)
         local crossSize = vertical and w or h
 
         if linePrimary > 0 and linePrimary + primarySize > maxLine then
+            widest = math.max(widest, linePrimary - primaryGap)
             cursorCross = cursorCross + lineCross + crossGap
             linePrimary, lineCross = 0, 0
         end
@@ -4097,8 +4224,10 @@ local function LayoutTestButtons(preview, entries, host, harmful, cursorCross)
     end
 
     if linePrimary > 0 then
+        widest = math.max(widest, linePrimary - primaryGap)
         cursorCross = cursorCross + lineCross
     end
+    preview.bbfWidest = widest
     return cursorCross
 end
 
@@ -4129,6 +4258,20 @@ local function EnsurePreview(host)
 end
 
 local function AnchorPreview(host, preview)
+    if host.isPrd then
+        local side = (S.prdAlign == "LEFT" or S.prdAlign == "RIGHT") and S.prdAlign or ""
+        local anchor = host.frame.HealthBarsContainer or host.frame
+        preview.bbfPoint = side == "RIGHT" and "BOTTOMRIGHT" or "BOTTOMLEFT"
+        preview.bbfSpacePoint = "BOTTOM" .. side
+        preview.bbfDX = side == "RIGHT" and -1 or 1
+        preview.bbfDY = 1
+        preview.bbfVertical = false
+        preview:ClearAllPoints()
+        preview:SetPoint("BOTTOM" .. side, anchor, "TOP" .. side, S.prdX, 6 + S.prdY)
+        preview:SetScale(ContainerScale(host))
+        return
+    end
+
     if host.isPlayer then
         local layout = GetEditModeAuraLayout(host.frame)
         local point = GetPlayerAnchorPoint(layout)
@@ -4169,6 +4312,7 @@ local function AnchorPreview(host, preview)
 end
 
 local function ShouldPreviewHost(host)
+    if host.isPrd then return (host.prdShown and TestModeActive()) and true or false end
     if TestModeActive() then
         return host.isPlayer or (UnitExists(host.unit) and true or false)
     end
@@ -4196,7 +4340,15 @@ local function RefreshTestHost(host)
     end
 
     local cursorCross = 0
-    if host.isPlayer then
+    if host.isPrd then
+        local entries = {}
+        for i, entry in ipairs(GetPreviewEntries(host, false)) do
+            if i > S.prdLimit then break end
+            entries[i] = entry
+        end
+        cursorCross = LayoutTestButtons(preview, entries, host, false, cursorCross)
+        preview:SetSize(math.max(preview.bbfWidest, 1), math.max(cursorCross, 1))
+    elseif host.isPlayer then
         cursorCross = LayoutTestButtons(preview, GetPreviewEntries(host, harmfulFirst), host, harmfulFirst, cursorCross)
     else
         cursorCross = LayoutTestButtons(preview, GetPreviewEntries(host, harmfulFirst), host, harmfulFirst, cursorCross)
@@ -4214,8 +4366,9 @@ local function RefreshTestHost(host)
         local vertical = preview.bbfVertical
         local primaryGap = vertical and (host.vGap or S.vGap) or (host.hGap or S.hGap)
         local line = GetMaxLineSize(host, sizes, primaryGap)
+        local spacePoint = host.isPrd and preview.bbfSpacePoint or preview.bbfPoint
         space:ClearAllPoints()
-        space:SetPoint(preview.bbfPoint, preview, preview.bbfPoint, 0, 0)
+        space:SetPoint(spacePoint, preview, spacePoint, 0, 0)
         if vertical then
             space:SetSize(math.max(cursorCross, 1), line)
         else
@@ -4482,7 +4635,7 @@ function BBF.HookPlayerAndTargetAuras()
             if event == "PLAYER_ENTERING_WORLD" or event == "ZONE_CHANGED_NEW_AREA"
                 or event == "ZONE_CHANGED_INDOORS" then
                 for _, h in pairs(BBF.auraHosts) do
-                    if not h.isPlayer and UnitExists(h.unit) then
+                    if not h.isPlayer and not h.isPrd and UnitExists(h.unit) then
                         RefreshHost(h)
                         ForEachContainer(h, UpdateAllAurasIn)
                     end
@@ -4546,4 +4699,8 @@ function BBF.HookPlayerAndTargetAuras()
             BBF.DebuffFrameHidden = nil
         end
     end
+
+    local prdHost = H.EnsurePrdHost()
+    if prdHost then RefreshHost(prdHost) end
+    BBF.CheckPrdAuraClash()
 end

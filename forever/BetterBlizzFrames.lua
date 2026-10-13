@@ -105,6 +105,9 @@ local defaultSettings = {
     statusTextExtra = false,
     statusTextExtraHealth = true,
     statusTextExtraMana = true,
+    hideTooltip = false,
+    hideTooltipArena = true,
+    hideTooltipCombat = true,
     smoothManabars = true,
     foreverMinimapScale = 1,
     foreverMinimapTitleScale = 1,
@@ -251,7 +254,30 @@ local defaultSettings = {
     playerCastBarWidth = 208,
     playerCastBarHeight = 11,
     playerCastBarTimer = false,
-    playerCastBarTimerCentered = false,
+    playerCastBarTimerAnchor = "LEFT",
+    playerCastBarTimerRelativeAnchor = "RIGHT",
+    playerCastBarTimerJustify = "LEFT",
+    playerCastBarTimerXPos = 3,
+    playerCastBarTimerYPos = 0,
+    playerCastBarTimerSize = 12,
+    targetCastBarTimerAnchor = "LEFT",
+    targetCastBarTimerRelativeAnchor = "RIGHT",
+    targetCastBarTimerJustify = "LEFT",
+    targetCastBarTimerXPos = 3,
+    targetCastBarTimerYPos = 0,
+    targetCastBarTimerSize = 12,
+    focusCastBarTimerAnchor = "LEFT",
+    focusCastBarTimerRelativeAnchor = "RIGHT",
+    focusCastBarTimerJustify = "LEFT",
+    focusCastBarTimerXPos = 3,
+    focusCastBarTimerYPos = 0,
+    focusCastBarTimerSize = 12,
+    partyCastBarTimerAnchor = "LEFT",
+    partyCastBarTimerRelativeAnchor = "RIGHT",
+    partyCastBarTimerJustify = "LEFT",
+    partyCastBarTimerXPos = 3,
+    partyCastBarTimerYPos = 0,
+    partyCastBarTimerSize = 12,
 
     --Auras
     --playerAuraMaxBuffsPerRow = 10,
@@ -271,10 +297,14 @@ local defaultSettings = {
     auraTimerBaseColor = {1, 0.82, 0, 1},
     auraTimerLowColor = {1, 0.1, 0.1, 1},
     auraTimerLowThreshold = 6,
+    auraTimerHighColor = {1, 1, 1, 1},
+    auraTimerHighThreshold = 30,
     bigDebuffsMilliseconds = true,
     bigDebuffsLowThreshold = 6,
     bigDebuffsLowColor = {1, 0.1, 0.1, 1},
     bigDebuffsBaseColor = {1, 0.82, 0, 1},
+    bigDebuffsHighColor = {1, 1, 1, 1},
+    bigDebuffsHighThreshold = 30,
     bigDebuffsTextScale = 1,
     addCooldownFramePlayerAuras = false,
     customImportantAuraSorting = true,
@@ -398,6 +428,19 @@ local defaultSettings = {
     PlayerAuraFrameBuffFilterImportant = false,
     PlayerAuraFrameBuffFilterDefensives = false,
     PlayerAuraFramedeBuffFilterCrowdControl = false,
+    prdAurasEnabled = false,
+    prdBuffFilterBlacklist = true,
+    prdBuffFilterWatchList = true,
+    prdBuffFilterDefensives = true,
+    prdBuffFilterImportant = true,
+    prdBuffFilterLessMinite = false,
+    prdBuffFilterOnlyMe = false,
+    prdAuraScale = 1,
+    prdAuraXPos = 0,
+    prdAuraYPos = 0,
+    prdAuraRowAmount = 6,
+    prdAuraLimit = 6,
+    prdAuraAlign = "Center",
     playerAuraGlows = false,
     playerAuraImportantGlow = true,
     playerAuraDefensiveGlow = true,
@@ -418,6 +461,10 @@ local defaultSettings = {
     castBarTargetTextOutsideYPos = 0,
     castBarTargetTextOutsideSize = 10,
     castBarTargetTextOutsideAnchor = "BOTTOM",
+    castBarTargetTextPlayerOutsideXPos = 0,
+    castBarTargetTextPlayerOutsideYPos = 0,
+    castBarTargetTextPlayerOutsideSize = 10,
+    castBarTargetTextPlayerOutsideAnchor = "BOTTOM",
 
     moveResourceToTargetPaladinBG = true,
     unitFrameBgTextureColor = {0,0,0,0.5},
@@ -428,6 +475,19 @@ local defaultSettings = {
     partyFrameFontColorRGB = {1,1,1,1},
     unitFrameValueFontColorRGB = {1,1,1,1},
     actionBarFontColorRGB = {1,1,1,1},
+    actionBarRangeColor = false,
+    actionBarRangeOverlayColor = {1, 0, 0, 0.35},
+    actionBarRangeIconColor = {0.59, 0.24, 0.22, 1},
+    actionBarRangeUseOverlay = false,
+    actionBarRangeDesaturate = false,
+    changeActionBarCDFont = false,
+    actionBarCDTextColor = false,
+    actionBarCDTextBaseColor = {1, 1, 0.1, 1},
+    actionBarCDTextLowColor = {1, 0.1, 0.1, 1},
+    actionBarCDTextHighColor = {1, 1, 1, 1},
+    actionBarCDTextLowThreshold = 6,
+    actionBarCDTextHighThreshold = 30,
+    actionBarCDTextMilliseconds = true,
 
     -- Custom Healthbar Colors
     customHealthbarColors = false,
@@ -440,6 +500,9 @@ local defaultSettings = {
     customColorsRaidFrames = true,
     useOneClassColor = false,
     singleClassColor = {1, 1, 1, 1},
+    tintHiddenClassColors = false,
+    hiddenClassColorTint = {1, 1, 1, 1},
+    alwaysTintClassColors = false,
     classColorDEATHKNIGHT = {0.77, 0.12, 0.23, 1},
     classColorDEMONHUNTER = {0.64, 0.19, 0.79, 1},
     classColorDRUID = {1, 0.49, 0.04, 1},
@@ -514,6 +577,21 @@ local function InitializeSavedVariables()
     if BetterBlizzFramesDB.statusTextExtra == nil and (BetterBlizzFramesDB.statusTextExtraToT or BetterBlizzFramesDB.statusTextExtraParty) then
         BetterBlizzFramesDB.statusTextExtra = true
     end
+
+    if BetterBlizzFramesDB.hideExpAndHonorBar then
+        BetterBlizzFramesDB.hideExpBar = true
+        BetterBlizzFramesDB.hideHonorBar = true
+    end
+    BetterBlizzFramesDB.hideExpAndHonorBar = nil
+
+    if BetterBlizzFramesDB.playerCastBarTimerCentered then
+        BetterBlizzFramesDB.playerCastBarTimerAnchor = "CENTER"
+        BetterBlizzFramesDB.playerCastBarTimerRelativeAnchor = "CENTER"
+        BetterBlizzFramesDB.playerCastBarTimerJustify = "CENTER"
+        BetterBlizzFramesDB.playerCastBarTimerXPos = 0
+        BetterBlizzFramesDB.playerCastBarTimerYPos = 0
+    end
+    BetterBlizzFramesDB.playerCastBarTimerCentered = nil
 
     for key, defaultValue in pairs(defaultSettings) do
         if BetterBlizzFramesDB[key] == nil then
@@ -1310,13 +1388,39 @@ function BBF.SurrenderNotLeaveArena()
     end
 end
 
+local modernRoleOptions = {
+    textureMap = {
+        TANK = "UI-LFG-RoleIcon-Tank-Micro-Raid",
+        HEALER = "UI-LFG-RoleIcon-Healer-Micro-Raid",
+        DAMAGER = "UI-LFG-RoleIcon-DPS-Micro-Raid",
+    },
+}
+local modernRoleFrame = { optionTable = modernRoleOptions }
+
+local function SetSecretModernRoleIcon(frame)
+    if not (UnitFrameUtil and UnitFrameUtil.UpdateUnitFrameRoleIcon) then return end
+    modernRoleOptions.displayRoleIcon = frame.optionTable.displayRoleIcon
+    modernRoleOptions.displayRaidRoleIcon = frame.optionTable.displayRaidRoleIcon
+    modernRoleFrame.roleIcon = frame.roleIcon
+    modernRoleFrame.unit = frame.unit
+    frame.roleIcon:SetSize(11,11)
+    UnitFrameUtil.UpdateUnitFrameRoleIcon(modernRoleFrame)
+    modernRoleFrame.roleIcon = nil
+    modernRoleFrame.unit = nil
+    frame.roleIcon:ClearAllPoints()
+    frame.roleIcon:SetPoint("TOPLEFT", frame.healthBar, "TOPLEFT", 3, -2)
+end
+
 function BBF.ModernRoleIcons()
     if not BetterBlizzFramesDB.newRaidFrameRoleIcons then return end
     hooksecurefunc("CompactUnitFrame_UpdateRoleIcon", function(frame)
         if issecretvalue(frame) then return end
         if not frame.roleIcon then return end
         local role = UnitGroupRolesAssigned(frame.unit);
-        if issecretvalue(role) then return end
+        if issecretvalue(role) then
+            SetSecretModernRoleIcon(frame)
+            return
+        end
         if ( frame.optionTable.displayRoleIcon and (role == "TANK" or role == "HEALER" or role == "DAMAGER") ) then
             local atlas
             if ( role == "TANK" ) then
@@ -3380,17 +3484,16 @@ function BBF.InstantComboPoints()
         if BBF.LegacyComboFrame then BBF.HookLegacyComboUpdate(UpdateLegacyComboFrame) end
         HookComboRing()
     elseif class == "DRUID" then
-        if DruidComboPointBarFrame then hooksecurefunc(DruidComboPointBarFrame, "UpdatePower", UpdateDruidComboPoints) end
-        if not BBP then
-            HookPrdClassFrame(function(self)
-                local point = self.classResourceButtonTable and self.classResourceButtonTable[1]
-                if point and point.IconUncharged then
-                    UpdateRogueComboPoints(self)
-                else
-                    UpdateDruidComboPoints(self)
-                end
-            end)
+        local function UpdateDruidBar(self)
+            local point = self.classResourceButtonTable and self.classResourceButtonTable[1]
+            if point and point.IconUncharged then
+                UpdateRogueComboPoints(self)
+            elseif point and point.Point_Icon then
+                UpdateDruidComboPoints(self)
+            end
         end
+        if DruidComboPointBarFrame then hooksecurefunc(DruidComboPointBarFrame, "UpdatePower", UpdateDruidBar) end
+        if not BBP then HookPrdClassFrame(UpdateDruidBar) end
         if BBF.LegacyComboFrame then BBF.HookLegacyComboUpdate(UpdateLegacyComboFrame) end
         HookComboRing()
     elseif class == "MAGE" then
@@ -5426,6 +5529,7 @@ function BBF.SpecPortraits()
     if BBF.SpecPortraitsHooked then return end
     if not BetterBlizzFramesDB.classPortraitsUseSpecIcons then return end
     hooksecurefunc("UnitFramePortrait_Update", function(self)
+        if BBF.UpdateSecretPortrait(self) then return end
         if (self.unit == "target" or self.unit == "focus" or self.unit == "player") and UnitIsPlayer(self.unit) then
             if not (self.unit == "player" and BetterBlizzFramesDB.classPortraitsUseSpecIconsSkipSelf) then
                 local specID = BBF.GetSpecID(self.unit)
@@ -5849,6 +5953,34 @@ First:SetScript("OnEvent", function(_, event, addonName)
             end
             BetterBlizzFramesDB.fontSizeNumFix = true
         end
+        BBF.InitRacialIndicatorRaces()
+        if BetterBlizzFramesDB.hideBagsBarImportCheck then
+            if BetterBlizzFramesDB.hideBagsBar then
+                C_Timer.After(7, function()
+                    BBF.popupBuilders["BBF_HIDE_BAGS_BAR_IMPORT"] = function()
+                        return {
+                            text = L["Popup_Hide_Bags_Bar_Import"],
+                            button1 = YES,
+                            button2 = NO,
+                            OnAccept = function()
+                                BetterBlizzFramesDB.hideBagsBarImportCheck = nil
+                            end,
+                            OnCancel = function()
+                                BetterBlizzFramesDB.hideBagsBarImportCheck = nil
+                                BetterBlizzFramesDB.hideBagsBar = false
+                                BBF.HideFrames()
+                            end,
+                            timeout = 0,
+                            whileDead = true,
+                            preferredIndex = 3,
+                        }
+                    end
+                    BBF.ShowPopup("BBF_HIDE_BAGS_BAR_IMPORT")
+                end)
+            else
+                BetterBlizzFramesDB.hideBagsBarImportCheck = nil
+            end
+        end
         if not BetterBlizzFramesDB.centerNamesMoveNamesMigrated then
             if BetterBlizzFramesDB.centerNames then
                 BetterBlizzFramesDB.moveNames = true
@@ -5907,6 +6039,7 @@ First:SetScript("OnEvent", function(_, event, addonName)
         BBF.UpdateBigPlayerHealthbar()
         BBF.CenterCurrentValueOnBars()
         BBF.StatusBarTextExtra()
+        BBF.HideTooltip()
         BBF.UpdateAuraCollapseButton()
         BBF.PlayerElite(BetterBlizzFramesDB.playerEliteFrameMode)
         BBF.HidePlayerFrame()
@@ -5919,7 +6052,6 @@ First:SetScript("OnEvent", function(_, event, addonName)
         ScaleClassResource()
         BBF.PrdResourceCaller()
         BBF.SurrenderNotLeaveArena()
-        BBF.DruidAlwaysShowCombos()
         BBF.RemoveAddonCategories()
         BBF.ExternalDefensivesClickthrough()
         if BetterBlizzFramesDB.healerIndicator and BetterBlizzFramesDB.healerIndicatorPortrait and BetterBlizzFramesDB.classPortraitsUseSpecIcons then
@@ -5933,6 +6065,9 @@ First:SetScript("OnEvent", function(_, event, addonName)
         BBF.GladTracker()
         C_Timer.After(0.5, function()
             BBF.ZoomDefaultActionbarIcons()
+            BBF.ActionBarRangeColor()
+            BBF.ActionBarCooldownFont()
+            BBF.ActionBarCooldownTextColor()
             BBF.HookStatusBarText()
             BBF.UnitFrameBackgroundTexture()
             BBF.DarkModeUnitframeBorders()
@@ -5962,11 +6097,6 @@ First:SetScript("OnEvent", function(_, event, addonName)
             BBF.CreateBigDebuffs()
             if BetterBlizzFramesDB.tempOmniCCFix then
                 BetterBlizzFramesDB.tempOmniCCFix = nil
-            end
-            if C_AddOns.IsAddOnLoaded("ClassicFrames") then
-                C_Timer.After(4, function()
-                    BBF.Print(L["Print_Classic_Frames_Recommend_BBF"])
-                end)
             end
             MoveableSettingsPanel()
             BBF.ShowCooldownDuringCC()

@@ -13,6 +13,9 @@ locales\locales.xml
 embeds.xml
 
 shared\functions.lua
+shared\races.lua
+shared\timerFormatter.lua
+shared\actionBarTweaks.lua
 shared\functions_classics.lua
 shared\functions_mainline.lua
 shared\ImportExport.lua
@@ -21,6 +24,7 @@ shared\smoothBars.lua
 shared\xpBarTexture.lua
 shared\comboVisibility.lua
 shared\statusBarTextExtra.lua
+shared\hideTooltip.lua
 
 forever\modules\camelotFrames.lua
 forever\modules\legacyComboFrame.lua
