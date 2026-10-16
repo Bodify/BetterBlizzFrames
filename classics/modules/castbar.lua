@@ -532,13 +532,7 @@ local function StyleCastBarTimer(bar, key, timer)
     local size, xPos = party and 12 or 13, party and 5 or 3
     local yPos = party and 0 or key == "playerCastBarTimer" and 2 or -1
     timer:SetFont("Fonts\\FRIZQT__.TTF", db[key .. "Size"] or size, "OUTLINE")
-    timer:SetWordWrap(false)
     timer:SetWidth(0)
-    timer:SetText("88.8")
-    local width = timer:GetStringWidth()
-    timer:SetText("")
-    timer:SetWidth(width + 2)
-    timer:SetJustifyH(db[key .. "Justify"] or "LEFT")
     timer:ClearAllPoints()
     timer:SetPoint(db[key .. "Anchor"] or "LEFT", bar, db[key .. "RelativeAnchor"] or "RIGHT",
         db[key .. "XPos"] or xPos, db[key .. "YPos"] or yPos)

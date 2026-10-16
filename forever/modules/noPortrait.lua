@@ -142,6 +142,7 @@ local function UpdateOneTotMana(frame, unit)
         mask:ClearAllPoints()
         mask:SetPoint("TOPLEFT", totFrame.HealthBar, "TOPLEFT", -29, 3)
         totFrame.bbfBigTotHealthbar = nil
+        BBF.UpdateTotTextureMasks()
     end
 end
 
@@ -2356,7 +2357,7 @@ local function AdjustAlternateBars()
             rightText:Show()
         end
 
-        if BetterBlizzFramesDB.changeUnitFrameManabarTexture then
+        if BBF.UnitFrameTextureOn("mana") then
             if not bar.bbfAltHooked then
                 bar.bbfAltHooked = true
                 local color = PowerBarColor[bar.powerType]

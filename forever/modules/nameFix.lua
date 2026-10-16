@@ -73,6 +73,10 @@ local hideFocusToTName
 local classColorLevelText
 local centerNames
 local playerFrameOCD
+local function OCDTweaksOn()
+    do return false end
+    return BetterBlizzFramesDB.playerFrameOCD
+end
 local playerFrameOCDTextureBypass
 local hidePlayerName
 local hidePetName
@@ -148,7 +152,7 @@ function BBF.UpdateUserTargetSettings()
     classColorLevelText = BetterBlizzFramesDB.classColorTargetNames and BetterBlizzFramesDB.classColorLevelText
     centerNames = BetterBlizzFramesDB.centerNames or BetterBlizzFramesDB.classicFrames or BetterBlizzFramesDB.noPortraitModes
     forceCenterNameSetting = BetterBlizzFramesDB.classicFrames or BetterBlizzFramesDB.noPortraitModes
-    playerFrameOCD = BetterBlizzFramesDB.playerFrameOCD and not BetterBlizzFramesDB.playerFrameOCDTextureBypass
+    playerFrameOCD = OCDTweaksOn() and not BetterBlizzFramesDB.playerFrameOCDTextureBypass
     playerFrameOCDTextureBypass = BetterBlizzFramesDB.playerFrameOCDTextureBypass
     hidePlayerName = BetterBlizzFramesDB.hidePlayerName
     hidePetName = BetterBlizzFramesDB.hidePetName
@@ -241,14 +245,11 @@ local function CenterPlayerSpec()
     local healthBar = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer
     local noPortrait = BBF.HasNoPortrait("player")
     local forceCenter = NameCenterForced("player")
-    if BetterBlizzFramesDB.playerFrameOCD and not BetterBlizzFramesDB.playerFrameOCDTextureBypass and not forceCenter then
+    if OCDTweaksOn() and not BetterBlizzFramesDB.playerFrameOCDTextureBypass and not forceCenter then
         return "TOP", healthBar, "TOP", 0, 14.5, "CENTER"
     end
-    local xPos = forceCenter and 1.5 or 0
-    if noPortrait then
-        xPos = xPos - 1
-    end
-    local yPos = noPortrait and 14 or forceCenter and 7.5 or BetterBlizzFramesDB.symmetricPlayerFrame and 15 or 14.5
+    local xPos = noPortrait and 0.5 or 0
+    local yPos = noPortrait and 14 or forceCenter and 10.5 or BetterBlizzFramesDB.symmetricPlayerFrame and 15 or 14.5
     if BetterBlizzFramesDB.classicFrames and BetterBlizzFramesDB.bigPlayerHealthbar then
         yPos = yPos - 10
     end
@@ -260,13 +261,13 @@ local function CenterXSpec(healthBar, ToT, pet, unit)
     local forceCenter = NameCenterForced(unit)
     local justify = (BetterBlizzFramesDB.classicFrames and ToT) and "LEFT" or "CENTER"
     local xPos = (pet and noPortrait and 16) or (ToT and noPortrait and 0) or (ToT and (forceCenter and 8 or -2)) or (forceCenter and 0) or noPortrait and -1 or -0.5
-    local yPos = (noPortrait and ((pet and 2) or 13)) or ((pet and forceCenter) and 2 or pet and 2) or ToT and (forceCenter and -18 or 12) or (forceCenter and 6.3 or 14)
+    local yPos = (noPortrait and ((pet and 2) or 13)) or ((pet and forceCenter) and 2 or pet and 2) or ToT and (forceCenter and -18 or 12) or (forceCenter and 10 or 14)
     if ToT and noPortrait then
         xPos = xPos -1
     elseif noPortrait and not pet then
         xPos = xPos - 1
     elseif BetterBlizzFramesDB.classicFrames and not ToT and not pet then
-        xPos = xPos - 1
+        xPos = 2.5
     end
     if pet and noPortrait then
         local petX, petY = 1.5, 22
@@ -318,7 +319,7 @@ local function GetBaseNameSpec(frame)
         return point, relativeTo, relativePoint, xPos, yPos, mirrored and "RIGHT" or justify
     end
     if mirrored then
-        return "TOPRIGHT", frame.TargetFrameContent.TargetFrameContentMain.ReputationColor, "TOPRIGHT", -12, db.playerFrameOCD and -2.5 or -1, "RIGHT"
+        return "TOPRIGHT", frame.TargetFrameContent.TargetFrameContentMain.ReputationColor, "TOPRIGHT", -12, OCDTweaksOn() and -2.5 or -1, "RIGHT"
     end
 end
 
@@ -438,7 +439,7 @@ local function ApplyNameLayout(frame)
         end
         local left = justify == "RIGHT" and extra or justify == "CENTER" and extra / 2 or 0
         local right = extra - left
-        if db and db.playerFrameOCD and (frame == TargetFrame or frame == FocusFrame) then
+        if db and OCDTweaksOn() and (frame == TargetFrame or frame == FocusFrame) then
             dy = dy - 1.5
         end
         if multiLine then

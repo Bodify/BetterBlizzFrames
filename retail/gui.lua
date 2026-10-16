@@ -2265,12 +2265,7 @@ do
         partyCastBarTimer = "Party_Castbar_Timer",
     }
     local TIMER_POINTS = { "TOPLEFT", "TOP", "TOPRIGHT", "LEFT", "CENTER", "RIGHT", "BOTTOMLEFT", "BOTTOM", "BOTTOMRIGHT" }
-    local TIMER_JUSTIFY = { "LEFT", "CENTER", "RIGHT" }
     local popups = {}
-
-    local function PointJustify(point)
-        return point:find("LEFT") and "LEFT" or point:find("RIGHT") and "RIGHT" or "CENTER"
-    end
 
     local function RefreshPopup(f)
         local enabled = BetterBlizzFramesDB[f.key] and true or false
@@ -2298,7 +2293,6 @@ do
         local db = BetterBlizzFramesDB
         db[key .. "Anchor"] = "LEFT"
         db[key .. "RelativeAnchor"] = "RIGHT"
-        db[key .. "Justify"] = "LEFT"
         db[key .. "XPos"] = TIMER_DEFAULTS[key].x or 3
         db[key .. "YPos"] = TIMER_DEFAULTS[key].y
         db[key .. "Size"] = TIMER_DEFAULTS[key].size
@@ -2310,7 +2304,7 @@ do
         local f = CreateFrame("Frame", "BBF_" .. key .. "OptionsFrame", UIParent, "DefaultPanelFlatTemplate")
         f.key = key
         f.dropdowns, f.sliders = {}, {}
-        f:SetSize(240, 385)
+        f:SetSize(240, 340)
         f:SetPoint("CENTER")
         f:SetFrameStrata("FULLSCREEN_DIALOG")
         f:SetFrameLevel(550)
@@ -2367,25 +2361,12 @@ do
             end)
         end
 
-        local timerPoint = CreatePointDropdown(CreateLine(L["Timer_Anchor_Timers"], f, -36), key .. "Anchor", function(point)
-            BetterBlizzFramesDB[key .. "Justify"] = PointJustify(point)
-        end)
+        local timerPoint = CreatePointDropdown(CreateLine(L["Timer_Anchor_Timers"], f, -36), key .. "Anchor")
         local castbarPoint = CreatePointDropdown(CreateLine(L["Timer_To_Castbars"], timerPoint.Background, -1), key .. "RelativeAnchor")
-
-        local align = CreateRowDropdown(CreateLine(L["Align_Text"], castbarPoint.Background, -1), function(_, rootDescription)
-            for _, justify in ipairs(TIMER_JUSTIFY) do
-                rootDescription:CreateRadio(L["Anchor_" .. justify], function()
-                    return BetterBlizzFramesDB[key .. "Justify"] == justify
-                end, function()
-                    BetterBlizzFramesDB[key .. "Justify"] = justify
-                    BBF.CastBarTimerCaller()
-                end)
-            end
-        end)
 
         local function CreatePopupSlider(row, label, setting, minValue, maxValue, step)
             local slider = CreateSlider(f, label, minValue, maxValue, step, setting, nil, 150)
-            slider:SetPoint("TOP", align.Background, "BOTTOM", 0, -34 - row * 37)
+            slider:SetPoint("TOP", castbarPoint.Background, "BOTTOM", 0, -34 - row * 37)
             slider.bbfElement = setting
             table.insert(f.sliders, slider)
         end
@@ -5108,7 +5089,7 @@ local function guiGeneralTab()
         end
     end)
 
-    local playerReputationColor = CreateCheckbox("playerReputationColor", L["Add_Reputation_Color"], BetterBlizzFrames, nil, BBF.PlayerReputationColor)
+    local playerReputationColor = CreateCheckbox("playerReputationColor", L["Add_Name_Bg_Color"], BetterBlizzFrames, nil, BBF.PlayerReputationColor)
     playerReputationColor:SetPoint("TOPLEFT", bbfBigPlayerHealthbar, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(playerReputationColor, L["Tooltip_Add_Reputation_Color"] .. " |A:UI-HUD-UnitFrame-Target-PortraitOn-Type:18:98|a")
 
@@ -5775,7 +5756,7 @@ local function guiGeneralTab()
     hideTargetLeaderIcon:SetPoint("TOPLEFT", hideTargetName, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(hideTargetLeaderIcon, L["Tooltip_Hide_Target_Leader_Icon"] .. " |A:UI-HUD-UnitFrame-Player-Group-LeaderIcon:22:22|a")
 
-    local classColorTargetReputationTexture = CreateCheckbox("classColorTargetReputationTexture", L["Reputation_Class_Color"], BetterBlizzFrames)
+    local classColorTargetReputationTexture = CreateCheckbox("classColorTargetReputationTexture", L["Name_Bg_Class_Color"], BetterBlizzFrames)
     classColorTargetReputationTexture:SetPoint("TOPLEFT", hideTargetLeaderIcon, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(classColorTargetReputationTexture, L["Tooltip_Target_Reputation_Class_Color"] .. " |A:UI-HUD-UnitFrame-Target-PortraitOn-Type:18:98|a")
     classColorTargetReputationTexture:HookScript("OnClick", function(self)
@@ -5786,7 +5767,7 @@ local function guiGeneralTab()
         end
     end)
 
-    local hideTargetReputationColor = CreateCheckbox("hideTargetReputationColor", L["Hide_Reputation_Color"], BetterBlizzFrames, nil, BBF.HideFrames)
+    local hideTargetReputationColor = CreateCheckbox("hideTargetReputationColor", L["Hide_Name_Bg_Color"], BetterBlizzFrames, nil, BBF.HideFrames)
     hideTargetReputationColor:SetPoint("TOPLEFT", classColorTargetReputationTexture, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(hideTargetReputationColor, L["Tooltip_Hide_Target_Reputation_Color"] .. " |A:UI-HUD-UnitFrame-Target-PortraitOn-Type:18:98|a")
 
@@ -6025,7 +6006,7 @@ local function guiGeneralTab()
     hideFocusLeaderIcon:SetPoint("TOPLEFT", hideFocusName, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(hideFocusLeaderIcon, L["Tooltip_Hide_Focus_Leader_Icon"] .. " |A:UI-HUD-UnitFrame-Player-Group-LeaderIcon:22:22|a")
 
-    local classColorFocusReputationTexture = CreateCheckbox("classColorFocusReputationTexture", L["Reputation_Class_Color"], BetterBlizzFrames)
+    local classColorFocusReputationTexture = CreateCheckbox("classColorFocusReputationTexture", L["Name_Bg_Class_Color"], BetterBlizzFrames)
     classColorFocusReputationTexture:SetPoint("TOPLEFT", hideFocusLeaderIcon, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(classColorFocusReputationTexture, L["Tooltip_Focus_Reputation_Class_Color"] .. " |A:UI-HUD-UnitFrame-Target-PortraitOn-Type:18:98|a")
     classColorFocusReputationTexture:HookScript("OnClick", function(self)
@@ -6036,7 +6017,7 @@ local function guiGeneralTab()
         end
     end)
 
-    local hideFocusReputationColor = CreateCheckbox("hideFocusReputationColor", L["Hide_Reputation_Color"], BetterBlizzFrames, nil, BBF.HideFrames)
+    local hideFocusReputationColor = CreateCheckbox("hideFocusReputationColor", L["Hide_Name_Bg_Color"], BetterBlizzFrames, nil, BBF.HideFrames)
     hideFocusReputationColor:SetPoint("TOPLEFT", classColorFocusReputationTexture, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(hideFocusReputationColor, L["Tooltip_Hide_Focus_Reputation_Color"] .. " |A:UI-HUD-UnitFrame-Target-PortraitOn-Type:18:98|a")
 

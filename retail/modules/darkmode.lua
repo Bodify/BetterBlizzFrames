@@ -1256,7 +1256,9 @@ function BBF.DarkModeCastbars()
         local petCastbar = _G["PetSpellBar"]
         if petCastbar then
             applySettings(petCastbar.Border, desaturationValue, color)
-            applySettings(petCastbar.Background, desaturationValue, lighterColor)
+            if not skip then
+                applySettings(petCastbar.Background, desaturationValue, lighterColor)
+            end
         end
     elseif BBF.darkModeCastbars then
         applySettings(TargetFrame.spellbar.Border, false, 1)

@@ -254,25 +254,21 @@ local defaultSettings = {
     playerCastBarTimer = false,
     playerCastBarTimerAnchor = "LEFT",
     playerCastBarTimerRelativeAnchor = "RIGHT",
-    playerCastBarTimerJustify = "LEFT",
     playerCastBarTimerXPos = 3,
     playerCastBarTimerYPos = 0,
     playerCastBarTimerSize = 12,
     targetCastBarTimerAnchor = "LEFT",
     targetCastBarTimerRelativeAnchor = "RIGHT",
-    targetCastBarTimerJustify = "LEFT",
     targetCastBarTimerXPos = 3,
     targetCastBarTimerYPos = 0,
     targetCastBarTimerSize = 12,
     focusCastBarTimerAnchor = "LEFT",
     focusCastBarTimerRelativeAnchor = "RIGHT",
-    focusCastBarTimerJustify = "LEFT",
     focusCastBarTimerXPos = 3,
     focusCastBarTimerYPos = 0,
     focusCastBarTimerSize = 12,
     partyCastBarTimerAnchor = "LEFT",
     partyCastBarTimerRelativeAnchor = "RIGHT",
-    partyCastBarTimerJustify = "LEFT",
     partyCastBarTimerXPos = 3,
     partyCastBarTimerYPos = 0,
     partyCastBarTimerSize = 12,
@@ -568,7 +564,6 @@ local function InitializeSavedVariables()
     if BetterBlizzFramesDB.playerCastBarTimerCentered then
         BetterBlizzFramesDB.playerCastBarTimerAnchor = "CENTER"
         BetterBlizzFramesDB.playerCastBarTimerRelativeAnchor = "CENTER"
-        BetterBlizzFramesDB.playerCastBarTimerJustify = "CENTER"
         BetterBlizzFramesDB.playerCastBarTimerXPos = 0
         BetterBlizzFramesDB.playerCastBarTimerYPos = 0
     end

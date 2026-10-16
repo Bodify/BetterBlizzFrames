@@ -1,3 +1,11 @@
+# BetterBlizzFrames 2.1.8
+## Retail & Forever
+### Tweak
+- Classic Castbars setting now also applies to pet castbar by default as that was missing.
+## Forever
+### Tweak
+- Tons of tweaks/fixes after the recent WoW Forever update with its new and... different unitframes. Theyre god awful and terrible looking and seems extremely rushed and I wish they just held it back and cooked more and not did these horrendous half assed releases. It is a beta but man I wouldnt show that that to anyone and here this company is releasing them to the public lmao.
+
 # BetterBlizzFrames 2.1.7
 ## All versions
 ### New

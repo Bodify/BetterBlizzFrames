@@ -541,6 +541,8 @@ local function GetCastbarSize(castBar)
         return BetterBlizzFramesDB.targetCastBarWidth, BetterBlizzFramesDB.targetCastBarHeight
     elseif castBar == FocusFrameSpellBar then
         return BetterBlizzFramesDB.focusCastBarWidth, BetterBlizzFramesDB.focusCastBarHeight
+    elseif castBar.unitType == "pet" then
+        return BetterBlizzFramesDB.petCastBarWidth, BetterBlizzFramesDB.petCastBarHeight
     end
     return BetterBlizzFramesDB.partyCastBarWidth, BetterBlizzFramesDB.partyCastBarHeight
 end
@@ -637,6 +639,7 @@ end
 
 function BBF.ClassicCastbar(castBar, unitType)
     local isParty = unitType == "party"
+    local isPet = unitType == "pet"
     local isPlayer = unitType == "player"
     local isTargets = unitType == "target" or unitType == "focus"
 
@@ -684,7 +687,10 @@ function BBF.ClassicCastbar(castBar, unitType)
     -- castBar.BorderShield:SetTexture(311862)
     -- castBar.BorderShield:SetSize(196, 56)
 
-    if not isParty then
+    if isPet then
+        castBar.iconXPos = 0
+        castBar.iconYPos = 0
+    elseif not isParty then
         local unit = castBar.unit == "pet" and "player" or castBar.unit
         castBar.iconXPos = BetterBlizzFramesDB[unit.."CastbarIconXPos"]
         castBar.iconYPos = BetterBlizzFramesDB[unit.."CastbarIconYPos"]
@@ -853,7 +859,7 @@ local function SpellBarStart(spellbar, unit, channeling)
         classicStyle = BetterBlizzFramesDB.classicCastbarsParty
     else -- pet
         showIcon = BetterBlizzFramesDB.showPetCastBarIcon
-        classicStyle = false
+        classicStyle = BetterBlizzFramesDB.classicCastbars
     end
 
     local name, _, texture, castID, notInterruptible
@@ -1121,6 +1127,27 @@ function BBF.UpdatePetCastbar()
                 petSpellBar.ogText = nil
             end
             petSpellBar.Text:SetPoint("CENTER", petSpellBar, "BOTTOM", 0, -5.5)
+        end
+
+        if BetterBlizzFramesDB.classicCastbars then
+            BBF.ClassicCastbar(petSpellBar, "pet")
+            if BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeCastbars then
+                local castbarBorder = BetterBlizzFramesDB.darkModeColor + 0.1
+                petSpellBar.Border:SetVertexColor(castbarBorder, castbarBorder, castbarBorder)
+            end
+            petSpellBar.Text:SetWidth(width)
+            petSpellBar.TextBorder:SetAlpha(0)
+
+            if BetterBlizzFramesDB.petCastBarTestMode then
+                petSpellBar:SetStatusBarTexture(classicCastbarTexture)
+                if recolorCastbars then
+                    petSpellBar:SetStatusBarColor(castbarColors.standard[1], castbarColors.standard[2], castbarColors.standard[3], 1)
+                else
+                    petSpellBar:SetStatusBarColor(1, 0.7, 0, 1)
+                end
+                petSpellBar.Background:SetTexture(classicCastbarTexture)
+                petSpellBar.Background:SetVertexColor(0, 0, 0, 0.6)
+            end
         end
 
         local petFrame = PetFrame
@@ -1593,13 +1620,7 @@ local function StyleCastBarTimer(bar, key, timer)
     timer = timer or bar.Timer
     local size, yPos = 12, 0
     timer:SetFont("Fonts\\FRIZQT__.TTF", db[key .. "Size"] or size, "OUTLINE")
-    timer:SetWordWrap(false)
     timer:SetWidth(0)
-    timer:SetText("88.8")
-    local width = timer:GetStringWidth()
-    timer:SetText("")
-    timer:SetWidth(width + 2)
-    timer:SetJustifyH(db[key .. "Justify"] or "LEFT")
     timer:ClearAllPoints()
     timer:SetPoint(db[key .. "Anchor"] or "LEFT", bar, db[key .. "RelativeAnchor"] or "RIGHT",
         db[key .. "XPos"] or 3, db[key .. "YPos"] or yPos)
@@ -1675,7 +1696,14 @@ end
 
 local function PlayerCastingBarFrameMiscAdjustments()
     if BetterBlizzFramesDB.disableCastbarTweaks then return end
-    PlayerCastingBarFrame:SetScale(BetterBlizzFramesDB.playerCastBarScale or 1)
+    local scale = BetterBlizzFramesDB.playerCastBarScale or 1
+    if PlayerCastingBarFrame:GetScale() ~= scale then
+        if InCombatLockdown() then
+            BBF.RunAfterCombat(PlayerCastingBarFrameMiscAdjustments)
+        else
+            PlayerCastingBarFrame:SetScale(scale)
+        end
+    end
     local w = BetterBlizzFramesDB.playerCastBarWidth
     local maskRatio = 256 / 208
 
@@ -1958,6 +1986,9 @@ function BBF.ChangeCastbarSizes()
     if BetterBlizzFramesDB.classicCastbars then
         BBF.ClassicCastbar(TargetFrameSpellBar, "target")
         BBF.ClassicCastbar(FocusFrameSpellBar, "focus")
+        if spellBars["pet"] then
+            BBF.UpdatePetCastbar()
+        end
     end
     if BetterBlizzFramesDB.classicCastbarsPlayer then
         BBF.ClassicCastbar(PlayerCastingBarFrame, "player")

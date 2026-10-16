@@ -203,7 +203,7 @@ local function CreateManaOnlyBar(isActive, extraEvent)
     end
 
     local function DefaultLook()
-        if db.changeUnitFrameManabarTexture and BBF.manaTexture then
+        if BBF.UnitFrameTextureOn("mana") and BBF.manaTexture then
             bar.fill:SetTexture(BBF.manaTexture)
             local r, g, b = BBF.GetCustomPowerColor and BBF.GetCustomPowerColor("MANA")
             if not r and BBF.GetDefaultPowerColor then
@@ -499,7 +499,7 @@ function BBF.CreateAltManaBar()
         bar:SetSize(124, 10)
         bar:SetPoint("BOTTOMLEFT", PlayerFrame, "BOTTOMLEFT", 85, 18)
     end
-    if db.changeUnitFrameManabarTexture then
+    if BBF.UnitFrameTextureOn("mana") then
         bar:SetStatusBarTexture(BBF.manaTexture)
         bar:SetStatusBarColor(0, 0, 1)
     else

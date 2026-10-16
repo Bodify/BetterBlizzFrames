@@ -1590,12 +1590,7 @@ do
         partyCastBarTimer = "Party_Castbar_Timer",
     }
     local TIMER_POINTS = { "TOPLEFT", "TOP", "TOPRIGHT", "LEFT", "CENTER", "RIGHT", "BOTTOMLEFT", "BOTTOM", "BOTTOMRIGHT" }
-    local TIMER_JUSTIFY = { "LEFT", "CENTER", "RIGHT" }
     local popups = {}
-
-    local function PointJustify(point)
-        return point:find("LEFT") and "LEFT" or point:find("RIGHT") and "RIGHT" or "CENTER"
-    end
 
     local function RefreshPopup(f)
         local enabled = BetterBlizzFramesDB[f.key] and true or false
@@ -1623,7 +1618,6 @@ do
         local db = BetterBlizzFramesDB
         db[key .. "Anchor"] = "LEFT"
         db[key .. "RelativeAnchor"] = "RIGHT"
-        db[key .. "Justify"] = "LEFT"
         db[key .. "XPos"] = TIMER_DEFAULTS[key].x or 3
         db[key .. "YPos"] = TIMER_DEFAULTS[key].y
         db[key .. "Size"] = TIMER_DEFAULTS[key].size
@@ -1635,7 +1629,7 @@ do
         local f = CreateFrame("Frame", "BBF_" .. key .. "OptionsFrame", UIParent, "BasicFrameTemplateWithInset")
         f.key = key
         f.dropdowns, f.sliders = {}, {}
-        f:SetSize(240, 385)
+        f:SetSize(240, 340)
         f:SetPoint("CENTER")
         f:SetFrameStrata("FULLSCREEN_DIALOG")
         f:SetFrameLevel(550)
@@ -1682,25 +1676,12 @@ do
             end)
         end
 
-        local timerPoint = CreatePointDropdown(CreateLine(L["Timer_Anchor_Timers"], f, -36), key .. "Anchor", function(point)
-            BetterBlizzFramesDB[key .. "Justify"] = PointJustify(point)
-        end)
+        local timerPoint = CreatePointDropdown(CreateLine(L["Timer_Anchor_Timers"], f, -36), key .. "Anchor")
         local castbarPoint = CreatePointDropdown(CreateLine(L["Timer_To_Castbars"], timerPoint.Background, -1), key .. "RelativeAnchor")
-
-        local align = CreateRowDropdown(CreateLine(L["Align_Text"], castbarPoint.Background, -1), function(_, rootDescription)
-            for _, justify in ipairs(TIMER_JUSTIFY) do
-                rootDescription:CreateRadio(L["Anchor_" .. justify], function()
-                    return BetterBlizzFramesDB[key .. "Justify"] == justify
-                end, function()
-                    BetterBlizzFramesDB[key .. "Justify"] = justify
-                    BBF.CastBarTimerCaller()
-                end)
-            end
-        end)
 
         local function CreatePopupSlider(row, label, setting, minValue, maxValue, step)
             local slider = CreateSlider(f, label, minValue, maxValue, step, setting, nil, 150)
-            slider:SetPoint("TOP", align.Background, "BOTTOM", 0, -34 - row * 37)
+            slider:SetPoint("TOP", castbarPoint.Background, "BOTTOM", 0, -34 - row * 37)
             slider.bbfElement = setting
             table.insert(f.sliders, slider)
         end

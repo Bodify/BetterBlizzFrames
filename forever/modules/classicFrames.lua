@@ -308,7 +308,7 @@ local function MakeClassicFrame(frame)
         contentMain.LevelText:SetParent(frame.ClassicFrame)
         contentMain.LevelText:SetDrawLayer("OVERLAY", 7)
         contentMain.LevelText:ClearAllPoints()
-        contentMain.LevelText:SetPoint("CENTER", frame, "BOTTOMRIGHT", 34, 25.5)
+        contentMain.LevelText:SetPoint("CENTER", frame, "BOTTOMRIGHT", -34.5, 25.5)
         local lvlFont, _, lvlFlags = contentMain.LevelText:GetFont()
         contentMain.LevelText:SetFont(lvlFont, 12, lvlFlags)
         contentMain.LevelText:SetJustifyH("CENTER")
@@ -366,6 +366,7 @@ local function MakeClassicFrame(frame)
         totHpBar:ClearAllPoints()
         totHpBar:SetPoint("TOPRIGHT", -29, -15)
         totHpBar:SetFrameLevel(9998)
+        totHpBar.HealthBarMask:Hide()
         totManaBar:SetSize(49, 7)
         totManaBar:ClearAllPoints()
         totManaBar:SetPoint("TOPRIGHT", -29, -23)
@@ -506,10 +507,10 @@ local function MakeClassicFrame(frame)
             frame.ClassicFrame.Background:SetPoint("TOPLEFT", hpContainer.HealthBar, "TOPLEFT", 3, 9)
             frameContainer.FrameTexture:SetAlpha(0)
 
-            SetXYPoint(hpContainer.HealthBarMask, 1, -6)
-            hpContainer.HealthBarMask:SetSize(125, 17)
-            manaBar.ManaBarMask:SetWidth(253)
-            SetXYPoint(manaBar.ManaBarMask, -59)
+            SetXYPoint(hpContainer.HealthBarMask, 1, 0)
+            hpContainer.HealthBarMask:SetSize(125, 23)
+            manaBar.ManaBarMask:SetSize(253, 17)
+            SetXYPoint(manaBar.ManaBarMask, -59, 3)
 
             frame.ClassicFrame.Texture:ClearAllPoints()
             frame.ClassicFrame.Texture:SetPoint("TOPLEFT", 20, -8)
@@ -555,7 +556,7 @@ local function MakeClassicFrame(frame)
                     ToggleNoLevelFrame(false, true)
                 end
             elseif ( classification == "minus" ) then
-                SetXYPoint(hpContainer.HealthBarMask, 1, -9)
+                SetXYPoint(hpContainer.HealthBarMask, 1, -3)
                 FrameAdjustments(frameContainer, true)
                 BBF.SetClassicTexture(frame.ClassicFrame.Texture, "Interface\\TargetingFrame\\UI-TargetingFrame-Minus")
                 frame.ClassicFrame.Background:SetPoint("TOPLEFT", self.TargetFrameContent.TargetFrameContentMain.HealthBarsContainer.HealthBar, "TOPLEFT", 3, -10)
@@ -750,7 +751,7 @@ local function MakeClassicFrame(frame)
             PlayerLevelText:SetDrawLayer("OVERLAY", 7)
             PlayerLevelText:Show()
             PlayerLevelText:ClearAllPoints()
-            PlayerLevelText:SetPoint("CENTER", -80.5, -24.5)
+            PlayerLevelText:SetPoint("CENTER", -82, -24.5)
             local plvlFont, _, plvlFlags = PlayerLevelText:GetFont()
             if plvlFont then
                 PlayerLevelText:SetFont(plvlFont, 12, plvlFlags)
@@ -771,7 +772,7 @@ local function MakeClassicFrame(frame)
             if PlayerLevelHidden() then
                 PlayerLevelText:SetParent(BBF.hiddenFrame)
                 PlayerLevelText:ClearAllPoints()
-                PlayerLevelText:SetPoint("CENTER", -80.5, -24.5)
+                PlayerLevelText:SetPoint("CENTER", -82, -24.5)
             else
                 UpdateLevelDetails()
             end
@@ -1009,13 +1010,17 @@ local function MakeClassicFrame(frame)
         local function ToPlayerArt()
             UpdateResourcePosition(isRogue)
 
-            --AdjustFramePoint(hpContainer.HealthBarMask, 0, -11)
-            hpContainer.HealthBarMask:SetPoint("TOPLEFT", hpContainer.HealthBar, "TOPLEFT", -2, -6)
-            hpContainer.HealthBarMask:SetSize(126, 17)
+            if not BigPlayerHealthbar() then
+                SetXYPoint(hpContainer, nil, -44)
+            end
 
-            manaBar.ManaBarMask:SetSize(126, 15)
+            --AdjustFramePoint(hpContainer.HealthBarMask, 0, -11)
+            hpContainer.HealthBarMask:SetPoint("TOPLEFT", hpContainer.HealthBar, "TOPLEFT", -2, -1)
+            hpContainer.HealthBarMask:SetSize(126, 25)
+
+            manaBar.ManaBarMask:SetSize(126, 16)
             --AdjustFramePoint(manaBar.ManaBarMask, 0, 2)
-            manaBar.ManaBarMask:SetPoint("TOPLEFT", manaBar, "TOPLEFT", -2, 2)
+            manaBar.ManaBarMask:SetPoint("TOPLEFT", manaBar, "TOPLEFT", -2, 3)
 
             frameContainer.FrameTexture:ClearAllPoints()
             frameContainer.FrameTexture:SetPoint("TOPLEFT", -19, 7)
@@ -1067,6 +1072,7 @@ local function MakeClassicFrame(frame)
             ToPlayerArt()
         end)
         ToPlayerArt()
+        BBF.UnregisterPlayerFrameArtEvents()
 
         local function ToVehicleArt()
             frameContainer.VehicleFrameTexture:ClearAllPoints()
@@ -1262,7 +1268,7 @@ local function AdjustAlternateBars()
     AlternatePowerBar.RightBorder:SetTexCoord(0.125, 0, 1, 0)
     AlternatePowerBar.RightBorder:SetPoint("LEFT", AlternatePowerBar.Border, "RIGHT")
 
-    if BetterBlizzFramesDB.changeUnitFrameManabarTexture then
+    if BBF.UnitFrameTextureOn("mana") then
         BBF.ApplyTextureChange("mana", AlternatePowerBar, nil, true, false, true)
         if AlternatePowerBar.PowerBarMask then
             AlternatePowerBar.PowerBarMask:Hide()
@@ -1295,7 +1301,7 @@ local function AdjustAlternateBars()
         MonkStaggerBar.Border:SetTexCoord(0, 1, 0, 0.5)
         MonkStaggerBar.Border:SetPoint("TOPLEFT", -17, 0)
 
-        if BetterBlizzFramesDB.changeUnitFrameManabarTexture then
+        if BBF.UnitFrameTextureOn("mana") then
             BBF.ApplyTextureChange("mana", MonkStaggerBar, nil, true, false, true)
         end
     end
@@ -1339,7 +1345,7 @@ local function AdjustAlternateBars()
         EvokerEbonMightBar.RightBorder:SetTexCoord(0.125, 0, 1, 0)
         EvokerEbonMightBar.RightBorder:SetPoint("LEFT", EvokerEbonMightBar.Border, "RIGHT")
 
-        if BetterBlizzFramesDB.changeUnitFrameManabarTexture then
+        if BBF.UnitFrameTextureOn("mana") then
             BBF.ApplyTextureChange("mana", EvokerEbonMightBar, nil, true, false, true)
         end
         if EvokerEbonMightBar.PowerBarMask then
@@ -1391,7 +1397,7 @@ local function AdjustAlternateBars()
         DemonHunterSoulFragmentsBar.Deplete:SetSize(altBarWidth, 12)
         DemonHunterSoulFragmentsBar.CollapsingStarDepleteFin:SetSize(altBarWidth, 12)
 
-        if BetterBlizzFramesDB.changeUnitFrameManabarTexture then
+        if BBF.UnitFrameTextureOn("mana") then
             BBF.ApplyTextureChange("mana", DemonHunterSoulFragmentsBar, nil, true, false, true)
         end
     end
@@ -1553,7 +1559,7 @@ local function SortLocalizationChanges()
             local tex = f.ClassicFrame.Texture
 
             contentMain.LevelText:ClearAllPoints()
-            contentMain.LevelText:SetPoint("CENTER", f, "BOTTOMRIGHT", -34, 25.5)
+            contentMain.LevelText:SetPoint("CENTER", f, "BOTTOMRIGHT", -34.5, 25.5)
 
             hpContainer.HealthBarText:ClearAllPoints()
             hpContainer.HealthBarText:SetPoint("CENTER", tex, "LEFT", 66, 2.8)

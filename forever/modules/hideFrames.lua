@@ -255,6 +255,25 @@ function BBF.UpdateStatusTrackingBars()
     end
 end
 
+function BBF.UpdateBagsBar()
+    if BetterBlizzFramesDB.hideBagsBar then
+        if not BagsBar.bbfHooked then
+            hooksecurefunc(BagsBar, "Show", function(self)
+                if changes.hideBagsBar then
+                    self:Hide()
+                end
+            end)
+            BagsBar.bbfHooked = true
+        end
+        changes.hideBagsBar = true
+        BagsBar:Hide()
+    elseif changes.hideBagsBar then
+        changes.hideBagsBar = nil
+        BagsBar:SetAlpha(BetterBlizzFramesDB.fadeMicroMenu and MicroMenu:GetAlpha() or 1)
+        BagsBar:Show()
+    end
+end
+
 function BBF.HideFrames()
     local db = BetterBlizzFramesDB
     if db.hasCheckedUi then
@@ -988,21 +1007,7 @@ function BBF.HideFrames()
             end
         end
 
-        if BetterBlizzFramesDB.hideBagsBar then
-            if not BagsBar.bbfHooked then
-                hooksecurefunc(BagsBar, "Show", function(self)
-                    if changes.hideBagsBar then
-                        self:Hide()
-                    end
-                end)
-                BagsBar.bbfHooked = true
-            end
-            changes.hideBagsBar = true
-            BagsBar:Hide()
-        elseif changes.hideBagsBar then
-            changes.hideBagsBar = nil
-            BagsBar:SetShown(MicroMenu:IsShown())
-        end
+        BBF.UpdateBagsBar()
 
         local function hideChatFrameTextures()
             for i = 1, NUM_CHAT_WINDOWS do
@@ -2003,8 +2008,27 @@ function BBF.MinimapHider()
 end
 
 
+local function MicroMenuFadeFrames()
+    local frames = {MicroMenu, MicroMenuContainer}
+    if not BetterBlizzFramesDB.hideBagsBar then
+        table.insert(frames, BagsBar)
+    end
+    for _, child in ipairs({MicroMenu:GetChildren()}) do
+        table.insert(frames, child)
+    end
+    return frames
+end
+
 function BBF.FadeMicroMenu()
-    if not BetterBlizzFramesDB.fadeMicroMenu then return end
+    if not BetterBlizzFramesDB.fadeMicroMenu then
+        if MicroMenu.bffHooked then
+            for _, frame in ipairs(MicroMenuFadeFrames()) do
+                frame.BBF_fadeInfo = nil
+                frame:SetAlpha(1)
+            end
+        end
+        return
+    end
     if not MicroMenu.bffHooked then
         local function FadeOutFrame(frame, duration)
             BBF.UIFrameFadeOut(frame, duration, 1, 0)
@@ -2019,12 +2043,8 @@ function BBF.FadeMicroMenu()
         local isFadedIn = false
 
         local function FadeElements(fadeType, duration)
-            local frames = {BagsBar, MicroMenu, MicroMenuContainer}
-            for _, child in ipairs({MicroMenu:GetChildren()}) do
-                table.insert(frames, child)
-            end
-
-            for _, frame in ipairs(frames) do
+            if not BetterBlizzFramesDB.fadeMicroMenu then return end
+            for _, frame in ipairs(MicroMenuFadeFrames()) do
                 local adjustedDuration = duration
 
                 if frame == BagsBar and fadeType == "out" then
