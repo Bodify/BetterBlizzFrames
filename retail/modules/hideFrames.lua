@@ -129,21 +129,27 @@ function BBF.UpdateThreatMeterVisibility()
     end
 end
 
+local statusBarsHidden = {}
+
 local function UpdateStatusTrackingBar(container)
-    local db = BetterBlizzFramesDB
     local index = container.shownBarIndex
-    local bars = StatusTrackingBarInfo.BarsEnum
-    local hide = not CharacterFrame:IsShown() and ((db.hideExpBar and index == bars.Experience) or (db.hideHonorBar and index == bars.Honor))
+    local hide = statusBarsHidden[index] and not CharacterFrame:IsShown()
     local parent = hide and hiddenFrame or StatusTrackingBarManager
     if container:GetParent() ~= parent then
         container:SetParent(parent)
+        if not hide then
+            container:SetShown(index ~= StatusTrackingBarInfo.BarsEnum.None or container.isInEditMode)
+        end
     end
 end
 
 function BBF.UpdateStatusTrackingBars()
     local db = BetterBlizzFramesDB
+    local bars = StatusTrackingBarInfo.BarsEnum
+    if db.hideExpBar then statusBarsHidden[bars.Experience] = true end
+    if db.hideHonorBar then statusBarsHidden[bars.Honor] = true end
+    if not next(statusBarsHidden) then return end
     if not BBF.statusTrackingBarsHooked then
-        if not (db.hideExpBar or db.hideHonorBar) then return end
         for _, container in ipairs(StatusTrackingBarManager.barContainers) do
             hooksecurefunc(container, "ApplyPendingBarToShow", UpdateStatusTrackingBar)
         end
@@ -153,6 +159,80 @@ function BBF.UpdateStatusTrackingBars()
     end
     for _, container in ipairs(StatusTrackingBarManager.barContainers) do
         UpdateStatusTrackingBar(container)
+    end
+end
+
+local statusGlowHooked
+
+local function GetPlayerStatusGlow()
+    local content = PlayerFrame and PlayerFrame.PlayerFrameContent
+    local main = content and content.PlayerFrameContentMain
+    return main and main.StatusTexture
+end
+
+function BBF.UpdatePlayerStatusGlow()
+    local glow = GetPlayerStatusGlow()
+    if not glow then return end
+    local db = BetterBlizzFramesDB
+
+    local hide
+    if IsResting() then
+        hide = db.hidePlayerRestGlow
+    elseif PlayerFrame.inCombat or InCombatLockdown() then
+        hide = db.hideCombatGlow
+    end
+
+    if not statusGlowHooked then
+        statusGlowHooked = true
+
+        hooksecurefunc(glow, "SetAlpha", function(self, alpha)
+            if self.bbfGlowChanging then return end
+            self.bbfGlowAlpha = alpha
+            if self.bbfGlowHidden and alpha ~= 0 then
+                self.bbfGlowChanging = true
+                self:SetAlpha(0)
+                self.bbfGlowChanging = nil
+            end
+        end)
+
+        if PlayerFrame_UpdateStatus then
+            hooksecurefunc("PlayerFrame_UpdateStatus", function()
+                BBF.UpdatePlayerStatusGlow()
+            end)
+        end
+
+        local watcher = CreateFrame("Frame")
+        watcher:RegisterEvent("PLAYER_UPDATE_RESTING")
+        watcher:RegisterEvent("PLAYER_REGEN_DISABLED")
+        watcher:RegisterEvent("PLAYER_REGEN_ENABLED")
+        watcher:RegisterEvent("PLAYER_ENTERING_WORLD")
+        watcher:SetScript("OnEvent", function()
+            BBF.UpdatePlayerStatusGlow()
+        end)
+    end
+
+    glow.bbfGlowHidden = hide or nil
+    glow.bbfGlowChanging = true
+    glow:SetAlpha(hide and 0 or (glow.bbfGlowAlpha or 1))
+    glow.bbfGlowChanging = nil
+end
+
+function BBF.UpdateBagsBar()
+    if BetterBlizzFramesDB.hideBagsBar then
+        if not BagsBar.bbfHooked then
+            hooksecurefunc(BagsBar, "Show", function(self)
+                if changes.hideBagsBar then
+                    self:Hide()
+                end
+            end)
+            BagsBar.bbfHooked = true
+        end
+        changes.hideBagsBar = true
+        BagsBar:Hide()
+    elseif changes.hideBagsBar then
+        changes.hideBagsBar = nil
+        BagsBar:SetAlpha(BetterBlizzFramesDB.fadeMicroMenu and MicroMenu:GetAlpha() or 1)
+        BagsBar:Show()
     end
 end
 
@@ -409,7 +489,6 @@ function BBF.HideFrames()
         -- Hide rested glow on unit frame
         if BetterBlizzFramesDB.hidePlayerRestGlow then
             changes.hidePlayerRestGlow = true
-            PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.StatusTexture:SetParent(hiddenFrame)
             if classicFrames and not PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.bbfCF then
                 C_Timer.After(1, function()
                     for i = 1, PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual:GetNumRegions() do
@@ -428,9 +507,9 @@ function BBF.HideFrames()
                 PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.bbfCF = true
             end
         elseif changes.hidePlayerRestGlow then
-            PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.StatusTexture:SetParent(PlayerFrame.PlayerFrameContent.PlayerFrameContentMain)
             changes.hidePlayerRestGlow = nil
         end
+        BBF.UpdatePlayerStatusGlow()
 
         -- Hide corner icon
         if BetterBlizzFramesDB.hidePlayerCornerIcon then
@@ -441,9 +520,25 @@ function BBF.HideFrames()
             changes.hidePlayerCornerIcon = nil
         end
 
+        local manaFeedbackFrame = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar.FeedbackFrame
         if BetterBlizzFramesDB.hideManaFeedback and not changes.hideManaFeedback then
-            changes.hideManaFeedback = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar.FeedbackFrame:GetParent()
-            PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar.FeedbackFrame:SetParent(hiddenFrame)
+            changes.hideManaFeedback = manaFeedbackFrame:GetParent()
+            manaFeedbackFrame:SetParent(hiddenFrame)
+            manaFeedbackFrame:SetAlpha(0)
+            if not manaFeedbackFrame.bbfHideHooked then
+                manaFeedbackFrame.bbfHideHooked = true
+                hooksecurefunc(manaFeedbackFrame, "SetParent", function(self, parent)
+                    if parent ~= hiddenFrame and changes.hideManaFeedback then
+                        changes.hideManaFeedback = parent
+                        self:SetParent(hiddenFrame)
+                    end
+                end)
+                hooksecurefunc(manaFeedbackFrame, "SetAlpha", function(self, alpha)
+                    if alpha ~= 0 and changes.hideManaFeedback then
+                        self:SetAlpha(0)
+                    end
+                end)
+            end
             if ClassNameplateManaBarFrame and ClassNameplateManaBarFrame.FeedbackFrame then
                 ClassNameplateManaBarFrame.FeedbackFrame:Hide()
             end
@@ -452,11 +547,12 @@ function BBF.HideFrames()
                 changes.hideManaFeedbackPRD = prdFeedback:GetParent()
                 prdFeedback:SetParent(hiddenFrame)
             end
-        elseif changes.hideManaFeedback then
-            PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar.FeedbackFrame:SetParent(changes.hideManaFeedback)
+        elseif not BetterBlizzFramesDB.hideManaFeedback and changes.hideManaFeedback then
+            local parent = changes.hideManaFeedback
             changes.hideManaFeedback = nil
+            manaFeedbackFrame:SetParent(parent)
+            manaFeedbackFrame:SetAlpha(1)
             if changes.hideManaFeedbackPRD then
-                -- hidePersonalManaFX wants it hidden regardless, so only restore when that is off
                 if PersonalResourceDisplayFrame and not BetterBlizzFramesDB.hidePersonalManaFX then
                     PersonalResourceDisplayFrame.PowerBar.FeedbackFrame:SetParent(changes.hideManaFeedbackPRD)
                 end
@@ -464,7 +560,7 @@ function BBF.HideFrames()
             end
         end
 
-        if (BetterBlizzFramesDB.hideFullPower or BetterBlizzFramesDB.hideUnitFramePlayerMana or BetterBlizzFramesDB.bigPlayerHealthbar) and not changes.hideFullPower then
+        if (BetterBlizzFramesDB.hideFullPower or BetterBlizzFramesDB.hideUnitFramePlayerMana or BBF.BigPlayerHealthbar()) and not changes.hideFullPower then
             changes.hideFullPower = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar.FullPowerFrame:GetParent()
             PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar.FullPowerFrame:SetParent(hiddenFrame)
             if ClassNameplateManaBarFrame and ClassNameplateManaBarFrame.FullPowerFrame then
@@ -871,21 +967,7 @@ function BBF.HideFrames()
             end
         end
 
-        if BetterBlizzFramesDB.hideBagsBar then
-            if not BagsBar.bbfHooked then
-                hooksecurefunc(BagsBar, "Show", function(self)
-                    if changes.hideBagsBar then
-                        self:Hide()
-                    end
-                end)
-                BagsBar.bbfHooked = true
-            end
-            changes.hideBagsBar = true
-            BagsBar:Hide()
-        elseif changes.hideBagsBar then
-            changes.hideBagsBar = nil
-            BagsBar:SetShown(MicroMenu:IsShown())
-        end
+        BBF.UpdateBagsBar()
 
         local function hideChatFrameTextures()
             for i = 1, NUM_CHAT_WINDOWS do
@@ -1071,50 +1153,33 @@ function BBF.HideFrames()
 
                         local playerAltTex = PlayerFrame.PlayerFrameContainer.AlternatePowerFrameTexture
 
-                        if BetterBlizzFramesDB.hideUnitFramePlayerSecondResource then
-                            local altBars = {
-                                AlternatePowerBar,
-                                MonkStaggerBar,
-                                EvokerEbonMightBar,
-                                DemonHunterSoulFragmentsBar,
-                            }
-
-                            for _, frame in ipairs(altBars) do
-                                if frame then
-                                    frame:SetAlpha(0)
-                                end
-                            end
-                            playerAltTex:SetSize(198, 71)
-                            playerAltTex:ClearAllPoints()
-                            playerAltTex:SetAllPoints(playerTex)
-                            BBF.UpdatePlayerFrameFlash()
-                        end
-
                         BBF.UpdateNoShadowPlayerAltFrameTexture()
                         hooksecurefunc(playerAltTex, "SetAtlas", BBF.UpdateNoShadowPlayerAltFrameTexture)
                     end
 
                     -- Target & Focus
                     local targetTex = TargetFrame.TargetFrameContainer.FrameTexture
-                    targetTex:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Target-PortraitOn-NoShadow")
+                    targetTex:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Target-PortraitOn-NoShadow.png")
                     hooksecurefunc(targetTex, "SetAtlas", function(self, atlas)
+                        if self.bbfBigArt then return end
                         if atlas == "UI-HUD-UnitFrame-Target-PortraitOn" then
-                            self:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Target-PortraitOn-NoShadow")
+                            self:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Target-PortraitOn-NoShadow.png")
                         elseif atlas == "UI-HUD-UnitFrame-Target-Rare-PortraitOn" then
-                            self:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Target-PortraitOn-NoShadow")
+                            self:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Target-PortraitOn-NoShadow.png")
                         elseif atlas == "UI-HUD-UnitFrame-Target-MinusMob-PortraitOn" then
-                            self:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Target-MinusMob-PortraitOn-NoShadow")
+                            self:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Target-MinusMob-PortraitOn-NoShadow.png")
                         end
                     end)
                     local focusTex = FocusFrame.TargetFrameContainer.FrameTexture
-                    focusTex:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Target-PortraitOn-NoShadow")
+                    focusTex:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Target-PortraitOn-NoShadow.png")
                     hooksecurefunc(focusTex, "SetAtlas", function(self, atlas)
+                        if self.bbfBigArt then return end
                         if atlas == "UI-HUD-UnitFrame-Target-PortraitOn" then
-                            self:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Target-PortraitOn-NoShadow")
+                            self:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Target-PortraitOn-NoShadow.png")
                         elseif atlas == "UI-HUD-UnitFrame-Target-Rare-PortraitOn" then
-                            self:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Target-PortraitOn-NoShadow")
+                            self:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Target-PortraitOn-NoShadow.png")
                         elseif atlas == "UI-HUD-UnitFrame-Target-MinusMob-PortraitOn" then
-                            self:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Target-MinusMob-PortraitOn-NoShadow")
+                            self:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Target-MinusMob-PortraitOn-NoShadow.png")
                         end
                     end)
 
@@ -1126,37 +1191,8 @@ function BBF.HideFrames()
                     BBF.hideUnitFrameShadow = true
                 end
             end
-        elseif not BetterBlizzFramesDB.symmetricPlayerFrame and BetterBlizzFramesDB.hideUnitFramePlayerSecondResource then
-            local playerTex = PlayerFrame.PlayerFrameContainer.FrameTexture
-            local playerAltTex = PlayerFrame.PlayerFrameContainer.AlternatePowerFrameTexture
-
-            local altBars = {
-                AlternatePowerBar,
-                MonkStaggerBar,
-                EvokerEbonMightBar,
-                DemonHunterSoulFragmentsBar,
-            }
-
-            for _, frame in ipairs(altBars) do
-                if frame then
-                    frame:SetAlpha(0)
-                end
-            end
-            BBF.UpdatePlayerFrameFlash()
-            if not BetterBlizzFramesDB.classicFrames and not BBF.hookedPlayerAltBarTex then
-                playerAltTex:SetSize(198, 71)
-                playerAltTex:ClearAllPoints()
-                playerAltTex:SetAllPoints(playerTex)
-                playerAltTex:SetAtlas(playerTex:GetAtlas())
-                hooksecurefunc(playerAltTex, "SetAtlas", function(self)
-                    if self.changingTex then return end
-                    self.changingTex = true
-                    self:SetAtlas(playerTex:GetAtlas())
-                    self.changingTex = false
-                end)
-                BBF.hookedPlayerAltBarTex = true
-            end
         end
+        BBF.UpdatePlayerSecondResource()
 
         if BetterBlizzFramesDB.hideChatButtons then
             QuickJoinToastButton:SetAlpha(0)
@@ -1911,8 +1947,27 @@ function BBF.MinimapHider()
 end
 
 
+local function MicroMenuFadeFrames()
+    local frames = {MicroMenu, MicroMenuContainer}
+    if not BetterBlizzFramesDB.hideBagsBar then
+        table.insert(frames, BagsBar)
+    end
+    for _, child in ipairs({MicroMenu:GetChildren()}) do
+        table.insert(frames, child)
+    end
+    return frames
+end
+
 function BBF.FadeMicroMenu()
-    if not BetterBlizzFramesDB.fadeMicroMenu then return end
+    if not BetterBlizzFramesDB.fadeMicroMenu then
+        if MicroMenu.bffHooked then
+            for _, frame in ipairs(MicroMenuFadeFrames()) do
+                frame.BBF_fadeInfo = nil
+                frame:SetAlpha(1)
+            end
+        end
+        return
+    end
     if not MicroMenu.bffHooked then
         local function FadeOutFrame(frame, duration)
             BBF.UIFrameFadeOut(frame, duration, 1, 0)
@@ -1927,12 +1982,8 @@ function BBF.FadeMicroMenu()
         local isFadedIn = false
 
         local function FadeElements(fadeType, duration)
-            local frames = {BagsBar, MicroMenu, MicroMenuContainer}
-            for _, child in ipairs({MicroMenu:GetChildren()}) do
-                table.insert(frames, child)
-            end
-
-            for _, frame in ipairs(frames) do
+            if not BetterBlizzFramesDB.fadeMicroMenu then return end
+            for _, frame in ipairs(MicroMenuFadeFrames()) do
                 local adjustedDuration = duration
 
                 if frame == BagsBar and fadeType == "out" then

@@ -174,6 +174,7 @@ function BBF.ApplyProfile(profileName)
         for k, v in pairs(profileData) do
             BetterBlizzFramesDB[k] = v
         end
+        BBF.UseDefaultsUntilReload(BetterBlizzFramesDB)
         BetterBlizzFramesDB.skipUpdateMsg = true
         if profileName == "Xaryu" then -- Xaryu's profile has some custom code moving the right text to center, needing this set to both.
             C_CVar.SetCVar("statusTextDisplay", "BOTH")

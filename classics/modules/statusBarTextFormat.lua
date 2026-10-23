@@ -1,6 +1,8 @@
 
 local function FormatText(value)
-    if value >= 1000000000 then
+    if not BetterBlizzFramesDB.formatStatusBarText then
+        return tostring(value)
+    elseif value >= 1000000000 then
         return string.format("%.2f B", value / 1000000000)
     elseif value >= 1000000 then
         return string.format("%.1f M", value / 1000000)
@@ -36,10 +38,10 @@ end
 
 function BBF.HookStatusBarText()
     if BBF.statusBarTextHookBBF then return end
-    if not BetterBlizzFramesDB.formatStatusBarText then return end
+    if not BetterBlizzFramesDB.formatStatusBarText and not (BetterBlizzFramesDB.noNumberCommas and (BBF.isEra or BBF.isTBC)) then return end
 
     local statusTextSetting = C_CVar.GetCVar("statusTextDisplay")
-    local singleDisplay = BetterBlizzFramesDB.singleValueStatusBarText
+    local singleDisplay = BetterBlizzFramesDB.formatStatusBarText and BetterBlizzFramesDB.singleValueStatusBarText
 
     local pMain = PlayerFrame
     local tMain = TargetFrame

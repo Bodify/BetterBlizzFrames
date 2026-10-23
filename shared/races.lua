@@ -136,7 +136,7 @@ function BBF.UpdateRacialIndicatorBorder(indicator)
             border:SetDrawLayer("OVERLAY", 1)
         else
             if style == "hd" then
-                border:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\MoTextures\\lvlring.png")
+                border:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\classicTextures\\MoTextures\\lvlring.png")
                 border:SetTexCoord(0, 1, 0, 1)
             else
                 border:SetAtlas("UI-HUD-UnitFrame-SmallCircle")

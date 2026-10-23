@@ -1,4 +1,5 @@
 function BBF.HideArenaFrames()
+    if not CompactArenaFrame or not CompactArenaFrameTitle then return end
     if CompactArenaFrame.isHidden then return end
     CompactArenaFrame.isHidden = true
     local ArenaAntiMalware = CreateFrame("Frame")

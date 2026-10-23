@@ -21,11 +21,16 @@ shared\functions_mainline.lua
 shared\ImportExport.lua
 shared\minimapTweaks.lua
 shared\smoothBars.lua
+shared\healthbarMirror.lua
+shared\partySecureLayout.lua
 shared\xpBarTexture.lua
+shared\damageMeterTexture.lua
 shared\comboVisibility.lua
 shared\statusBarTextExtra.lua
 shared\hideTooltip.lua
 
+forever\modules\retailTextures.lua
+shared\textArea.lua
 forever\modules\camelotFrames.lua
 forever\modules\legacyComboFrame.lua
 forever\modules\darkmode.lua
@@ -57,8 +62,12 @@ forever\modules\cdManager.lua
 forever\modules\partyHighlight.lua
 forever\modules\healer.lua
 forever\modules\noPortrait.lua
+shared\pixelBorderLayout.lua
+forever\modules\partyLevel.lua
+forever\modules\healthbarLayouts.lua
 forever\modules\bigPlayerHealthbar.lua
 forever\modules\prd.lua
+forever\modules\petHappiness.lua
 
 forever\gui.lua
 forever\BetterBlizzFrames.lua

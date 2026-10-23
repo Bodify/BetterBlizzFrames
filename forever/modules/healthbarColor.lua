@@ -10,7 +10,6 @@ local classColorsOn
 local colorPetAfterOwner
 local skipPlayer
 local skipFriendly
-local retexturedBars
 local rpNames
 local rpNamesHealthbarColor
 local customHealthbarColors
@@ -384,42 +383,51 @@ local function getUnitColor(unit, useCustomColors, txt)
 end
 BBF.getUnitColor = getUnitColor
 
+local function StoreToTColor(bar, desat, r, g, b, a)
+    bar.bbfToTDesat, bar.bbfToTR, bar.bbfToTG, bar.bbfToTB, bar.bbfToTA = desat, r, g, b, a
+end
+
+local function ApplyToTColor(bar)
+    local r = bar.bbfToTR
+    if r == nil then return end
+    if bar.bbfToTDesat ~= nil then
+        bar:SetStatusBarDesaturated(bar.bbfToTDesat)
+    end
+    bar:SetStatusBarColor(r, bar.bbfToTG, bar.bbfToTB, bar.bbfToTA)
+end
+
+local function ToTColorCached(bar)
+    local owner = bar.unitFrame
+    if not BBF.ToTUnit(owner) then return false, false end
+    if BBF.ToTChanged(owner, "healthColor") then return false, true end
+    ApplyToTColor(bar)
+    return true, true
+end
+
+local function PaintHealth(frame, color, isFriendly)
+    if isFriendly then
+        return BBF.ShowHealthGreen(frame)
+    end
+    return BBF.ShowHealthColor(frame, color.r, color.g, color.b, color.a)
+end
+
 local function updateFrameColorToggleVer(frame, unit)
     if not frame then return end
     if not frame.SetStatusBarDesaturated then return end
     if unit == "player" and skipPlayer then
-        if retexturedBars then
-            frame:SetStatusBarColor(0, 1, 0, 1)
-        end
+        BBF.ShowHealthGreen(frame)
         return
     end
 
     if classColorsOn or (customHealthbarColors and customColorsUnitFrames) then
         local useCustomColors = customHealthbarColors and customColorsUnitFrames
-        local shouldColorByClass = classColorsOn or (customHealthbarColors and overrideClassColors)
-
-        if shouldColorByClass then
-            local color, isFriendly = getUnitColor(unit, useCustomColors)
-            if color then
-                if isFriendly and (not frame.bbfChangedTexture or skipFriendly) then
-                    frame:SetStatusBarDesaturated(false)
-                    frame:SetStatusBarColor(1, 1, 1, 1)
-                else
-                    frame:SetStatusBarDesaturated(true)
-                    frame:SetStatusBarColor(color.r, color.g, color.b, color.a or 1)
-                end
-            end
-        else
-            local color, isFriendly = getUnitColor(unit, useCustomColors)
-            if color then
-                if isFriendly and (not frame.bbfChangedTexture or skipFriendly) then
-                    frame:SetStatusBarDesaturated(false)
-                    frame:SetStatusBarColor(1, 1, 1, 1)
-                else
-                    frame:SetStatusBarDesaturated(true)
-                    frame:SetStatusBarColor(color.r, color.g, color.b, color.a or 1)
-                end
-            end
+        local color, isFriendly = getUnitColor(unit, useCustomColors)
+        local desat, r, g, b, a
+        if color then
+            desat, r, g, b, a = PaintHealth(frame, color, isFriendly)
+        end
+        if BBF.ToTUnit(frame.unitFrame) then
+            StoreToTColor(frame, desat, r, g, b, a)
         end
     end
 end
@@ -447,13 +455,7 @@ local function HookPartyMemberOnlineStatus()
 end
 
 local function resetFrameColor(frame, unit)
-    if frame.bbfChangedTexture then
-        frame:SetStatusBarDesaturated(false)
-        frame:SetStatusBarColor(1, 1, 1, 1)
-    else
-        frame:SetStatusBarDesaturated(true)
-        frame:SetStatusBarColor(0, 1, 0, 1)
-    end
+    BBF.ShowHealthGreen(frame)
 end
 
 local validUnits = {
@@ -472,33 +474,37 @@ local validUnits = {
 local function UpdateHealthColor(frame, unit)
     if not validUnits[unit] then return end
     if unit == "player" and skipPlayer then
-        if retexturedBars then
-            frame:SetStatusBarColor(0, 1, 0, 1)
-        end
+        BBF.ShowHealthGreen(frame)
         return
     end
+    local cached, tot = ToTColorCached(frame)
+    if cached then return end
 
     local useCustomColors = customHealthbarColors and customColorsUnitFrames
     local color, isFriendly = getUnitColor(unit, useCustomColors)
+    local desat, r, g, b, a
     if color then
-        if isFriendly and (not frame.bbfChangedTexture or skipFriendly) then
-            frame:SetStatusBarDesaturated(false)
-            frame:SetStatusBarColor(1, 1, 1, 1)
-        else
-            frame:SetStatusBarDesaturated(true)
-            frame:SetStatusBarColor(color.r, color.g, color.b, color.a or 1)
-        end
+        desat, r, g, b, a = PaintHealth(frame, color, isFriendly)
+    end
+    if tot then
+        StoreToTColor(frame, desat, r, g, b, a)
     end
 end
 
 local function UpdateHealthColorCF(frame, unit)
     if unit == "player" and BetterBlizzFramesDB.classColorFramesSkipPlayer then return end
+    local cached, tot = ToTColorCached(frame)
+    if cached then return end
 
     local useCustomColors = customHealthbarColors and customColorsUnitFrames
-    local color, isFriendly = getUnitColor(unit, useCustomColors)
+    local color = getUnitColor(unit, useCustomColors)
+    local r, g, b, a
     if color then
-        --frame:SetStatusBarDesaturated(true)
-        frame:SetStatusBarColor(color.r, color.g, color.b, color.a or 1)
+        r, g, b, a = color.r, color.g, color.b, color.a or 1
+        frame:SetStatusBarColor(r, g, b, a)
+    end
+    if tot then
+        StoreToTColor(frame, nil, r, g, b, a)
     end
 end
 
@@ -687,14 +693,25 @@ local function HookPowerBarColors()
     if customColorsUnitFrames and not BBF.powerColorsUnitFramesHooked then
         hooksecurefunc("UnitFrameManaBar_UpdateType", function(manabar)
             if not manabar or not manabar.unit then return end
+            local owner = manabar.unitFrame
+            local tot = BBF.ToTUnit(owner)
+            if tot and not BBF.ToTChanged(owner, "powerColor") then
+                ApplyToTColor(manabar)
+                return
+            end
 
+            local r, g, b, a
             local _, powerToken = UnitPowerType(manabar.unit)
             if powerToken then
-                local r, g, b, a = GetCustomPowerColor(powerToken)
+                r, g, b, a = GetCustomPowerColor(powerToken)
                 if r then
+                    a = a or 1
                     manabar:SetStatusBarDesaturated(true)
-                    manabar:SetStatusBarColor(r, g, b, a or 1)
+                    manabar:SetStatusBarColor(r, g, b, a)
                 end
+            end
+            if tot then
+                StoreToTColor(manabar, true, r, g, b, a)
             end
         end)
         BBF.powerColorsUnitFramesHooked = true
@@ -748,8 +765,10 @@ local function HookPowerBarColors()
 end
 
 function BBF.UpdateFrames()
+    if BBF.customTexturesReady and BBF.healthTextureName ~= BBF.UnitFrameTextureName("health") then
+        BBF.UpdateCustomTextures()
+    end
     classColorsOn = BetterBlizzFramesDB.classColorFrames
-    retexturedBars = BBF.UnitFrameTextureOn("health")
     colorPetAfterOwner = BetterBlizzFramesDB.colorPetAfterOwner
     skipPlayer = BetterBlizzFramesDB.classColorFramesSkipPlayer
     skipFriendly = BetterBlizzFramesDB.classColorFramesSkipFriendly
@@ -769,6 +788,7 @@ function BBF.UpdateFrames()
         alwaysClassTint = BetterBlizzFramesDB.alwaysTintClassColors
     end
     InvalidateAllClassColors()
+    BBF.RefreshToT()
     useOnePowerColor = BetterBlizzFramesDB.useOnePowerColor
     singlePowerColor = BetterBlizzFramesDB.singlePowerColor
     customPowerColors = BetterBlizzFramesDB.customPowerColors
@@ -1029,13 +1049,7 @@ function BBF.UpdateFrameColor(frame, unit)
     local useCustomColors = customHealthbarColors and customColorsUnitFrames
     local color, isFriendly = getUnitColor(unit, useCustomColors)
     if color then
-        if isFriendly and not frame.bbfChangedTexture then
-            frame:SetStatusBarDesaturated(false)
-            frame:SetStatusBarColor(1, 1, 1, 1)
-        else
-            frame:SetStatusBarDesaturated(true)
-            frame:SetStatusBarColor(color.r, color.g, color.b, color.a or 1)
-        end
+        PaintHealth(frame, color, isFriendly)
     end
 end
 
@@ -1212,7 +1226,6 @@ function BBF.HookHealthbarColors()
 
         healthbarsHooked = true
     elseif not healthbarsHooked and ((rpNamesHealthbarColor and TRP3_API) or customHealthbarColors) then
-        retexturedBars = BBF.UnitFrameTextureOn("health")
 
         local function UpdateHealthColorUnified(frame)
             if not frame or not frame.unit or frame.unit:find("nameplate") or frame:IsForbidden() then return end
@@ -1269,28 +1282,20 @@ function BBF.HookHealthbarColors()
 
         local function UpdateRPHealthColor(frame, unit)
             if not validUnits[unit] then return end
+            local cached, tot = ToTColorCached(frame)
+            if cached then return end
+            local color
             if UnitIsPlayer(unit) or (C_LFGInfo.IsInLFGFollowerDungeon() and UnitInParty(unit)) then
-                local color = getRPUnitColor(unit)
-                if color then
-                    frame:SetStatusBarDesaturated(true)
-                    frame:SetStatusBarColor(color.r, color.g, color.b, 1)
-                else
-                    if retexturedBars then
-                        frame:SetStatusBarDesaturated(true)
-                        frame:SetStatusBarColor(0, 1, 0, 1)
-                    else
-                        frame:SetStatusBarDesaturated(false)
-                        frame:SetStatusBarColor(1, 1, 1, 1)
-                    end
-                end
+                color = getRPUnitColor(unit)
+            end
+            local desat, r, g, b, a
+            if color then
+                desat, r, g, b, a = BBF.ShowHealthColor(frame, color.r, color.g, color.b, 1)
             else
-                if retexturedBars then
-                    frame:SetStatusBarDesaturated(true)
-                    frame:SetStatusBarColor(0, 1, 0, 1)
-                else
-                    frame:SetStatusBarDesaturated(false)
-                    frame:SetStatusBarColor(1, 1, 1, 1)
-                end
+                desat, r, g, b, a = BBF.ShowHealthGreen(frame)
+            end
+            if tot then
+                StoreToTColor(frame, desat, r, g, b, a)
             end
         end
 
@@ -1323,9 +1328,54 @@ function BBF.HookHealthbarColors()
 end
 
 
+local PLAYER_NAME_BG_HEALTH_ATLAS = "UI-HUD-UnitFrame-Player-PortraitOn-Bar-Health"
+
+local function PlayerNameBgMode()
+    local db = BetterBlizzFramesDB
+    if db.classicFrames or C_AddOns.IsAddOnLoaded("ClassicFrames") then return false end
+    if db.playerNameBgClassic then return "classic" end
+    if db.playerNameBgRetail then return "retail" end
+end
+
+local function PlacePlayerNameBg(frame, mode)
+    local rep = frame.ReputationColor
+    local mask = rep.bbfShapeMask
+    if mode == "classic" and not mask then
+        mask = frame:CreateMaskTexture()
+        mask:SetAtlas(PLAYER_NAME_BG_HEALTH_ATLAS)
+        mask:SetAllPoints(rep)
+        rep.bbfShapeMask = mask
+    end
+    if mask and (rep.bbfShapeMasked or false) ~= (mode == "classic") then
+        rep.bbfShapeMasked = mode == "classic" or nil
+        if mode == "classic" then
+            rep:AddMaskTexture(mask)
+        else
+            rep:RemoveMaskTexture(mask)
+        end
+    end
+    rep:ClearAllPoints()
+    if mode == "classic" then
+        rep:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-LevelBackground")
+        rep:SetTexCoord(1, 0, 0, 1)
+        rep:SetSize(125, 21)
+        rep:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -21, -25)
+    elseif mode == "retail" then
+        rep:SetAtlas(PLAYER_NAME_BG_HEALTH_ATLAS)
+        rep:SetTexCoord(0, 1, 0, 1)
+        rep:SetSize(125, 21.5)
+        rep:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -21, -25)
+    else
+        rep:SetAtlas("UI-HUD-UnitFrame-Target-PortraitOn-Type")
+        rep:SetSize(136, 22)
+        rep:SetTexCoord(1, 0, 0, 1)
+        rep:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -21, -25)
+    end
+end
+
 function BBF.PlayerReputationColor()
     local frame = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain
-    local bigHealthbar = BetterBlizzFramesDB.bigPlayerHealthbar and BetterBlizzFramesDB.classicFrames
+    local bigHealthbar = BBF.BigPlayerHealthbar()
     if BetterBlizzFramesDB.playerReputationColor and not BBF.HasNoPortrait("player") and not bigHealthbar then
         if not frame.ReputationColor then
             frame.ReputationColor = frame:CreateTexture(nil, "OVERLAY")
@@ -1339,26 +1389,25 @@ function BBF.PlayerReputationColor()
                         frame.ReputationColor:SetTexture(137017)
                         frame.ReputationColor:SetTexCoord(1, 0, 0, 1)
                     else
-                        local texture = BBF.LSM:Fetch(BBF.LSM.MediaType.STATUSBAR, BBF.UnitFrameTextureName("health"))
+                        local texture = BBF.UnitFrameNameBgTexture()
                         frame.ReputationColor:SetTexture(texture)
                         frame.ReputationColor:SetTexCoord(0, 1, 0, 1)
                     end
                 end
-                frame.ReputationColor:SetSize(117, 18)
+                frame.ReputationColor:SetSize(117, 22)
                 frame.ReputationColor:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -26, -30)
             elseif C_AddOns.IsAddOnLoaded("ClassicFrames") then
                 frame.ReputationColor:SetTexture(137017)
                 frame.ReputationColor:SetSize(117, 19)
                 frame.ReputationColor:SetTexCoord(1, 0, 0, 1)
                 frame.ReputationColor:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -26, -26)
-            else
-                frame.ReputationColor:SetAtlas("UI-HUD-UnitFrame-Target-PortraitOn-Type")
-                frame.ReputationColor:SetSize(136, 20)
-                frame.ReputationColor:SetTexCoord(1, 0, 0, 1)
-                frame.ReputationColor:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -21, -25)
             end
         else
             frame.ReputationColor:Show()
+        end
+        local nameBgMode = PlayerNameBgMode()
+        if nameBgMode ~= false then
+            PlacePlayerNameBg(frame, nameBgMode)
         end
         if BetterBlizzFramesDB.playerReputationClassColor then
             local useCustomColors = customHealthbarColors and customColorsUnitFrames
@@ -1368,7 +1417,7 @@ function BBF.PlayerReputationColor()
                 frame.ReputationColor:SetVertexColor(color.r, color.g, color.b)
             end
         else
-            frame.ReputationColor:SetDesaturated(false)
+            frame.ReputationColor:SetDesaturated(nameBgMode == "retail")
             frame.ReputationColor:SetVertexColor(UnitSelectionColor("player"))
         end
     else
@@ -1388,6 +1437,47 @@ function BBF.HookFrameTextureColor()
     if not classColorFrameTexture and not rpColor then return end
 
 
+
+    local levelRings = {
+        player = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.LevelBackgroundCircle,
+        target = TargetFrame.TargetFrameContent.TargetFrameContentMain.LevelBackgroundCircle,
+        focus = FocusFrame.TargetFrameContent.TargetFrameContentMain.LevelBackgroundCircle,
+    }
+
+    local function ColorLevelRing(ring)
+        if not ring or not ring.bbfClassColor then return end
+        local c = ring.bbfClassColor
+        ring.bbfColoring = true
+        ring:SetDesaturated(c.desaturate)
+        ring:SetVertexColor(c.r, c.g, c.b)
+        ring.bbfColoring = false
+    end
+
+    local function SetLevelRingColor(unit, colored, r, g, b, desaturate)
+        local ring = levelRings[unit]
+        if not ring then return end
+        if colored then
+            r, g, b = math.min(r + 0.15, 1), math.min(g + 0.15, 1), math.min(b + 0.15, 1)
+        else
+            local darkmode = BBF.darkModeUnitFramesActive
+            local v = darkmode and BetterBlizzFramesDB.darkModeColor or 1
+            if v < 1 then
+                v = math.min(v + math.min(0.2, v * 0.5), 1)
+            end
+            r, g, b, desaturate = v, v, v, darkmode and true or false
+        end
+        ring.bbfClassColor = ring.bbfClassColor or {}
+        local c = ring.bbfClassColor
+        c.r, c.g, c.b, c.desaturate = r, g, b, desaturate
+        if not ring.bbfClassColorHook then
+            hooksecurefunc(ring, "SetVertexColor", function(self)
+                if self.bbfColoring then return end
+                ColorLevelRing(self)
+            end)
+            ring.bbfClassColorHook = true
+        end
+        ColorLevelRing(ring)
+    end
 
     local function DesaturateAndColorTexture(texture, unit)
         if not UnitExists(unit) then return end
@@ -1423,6 +1513,7 @@ function BBF.HookFrameTextureColor()
         texture.changing = true
         texture:SetVertexColor(r, g, b)
         texture.changing = false
+        SetLevelRingColor(unit, colored, r, g, b, desaturate)
 
         if TargetFrameCompactRing and unit == "target" then
             TargetFrameCompactRing:SetDesaturated(desaturate)
@@ -1478,9 +1569,26 @@ function BBF.HookFrameTextureColor()
     SetupFrame(FocusFrameToT, "focustarget")
     SetupFrame(PetFrame, "pet", "player")
 
-    for frame in PartyFrame.PartyMemberFramePool:EnumerateActive() do
-        local unit = frame.unit or ("party" .. frame:GetID())
-        SetupFrame(frame, unit)
+    for i = 1, 4 do
+        local frame = PartyFrame and PartyFrame["MemberFrame" .. i]
+        local texture = frame and frame.Texture
+        if texture then
+            local unit = "party" .. i
+            if not texture.bbfColorHook then
+                hooksecurefunc(texture, "SetVertexColor", function(self)
+                    if self.changing then return end
+                    DesaturateAndColorTexture(self, unit)
+                end)
+                texture.bbfColorHook = true
+            end
+            if frame.ToPlayerArt and not frame.bbfColorArtHook then
+                hooksecurefunc(frame, "ToPlayerArt", function()
+                    DesaturateAndColorTexture(texture, unit)
+                end)
+                frame.bbfColorArtHook = true
+            end
+            DesaturateAndColorTexture(texture, unit)
+        end
     end
 
     C_Timer.After(1, function()
@@ -1496,9 +1604,11 @@ function BBF.HookFrameTextureColor()
     f:RegisterEvent("PLAYER_ENTERING_WORLD")
     f:SetScript("OnEvent", function(self, event)
         if event == "PLAYER_ENTERING_WORLD" or event == "GROUP_ROSTER_UPDATE" then
-            for frame in PartyFrame.PartyMemberFramePool:EnumerateActive() do
-                local unit = frame.unit or ("party" .. frame:GetID())
-                DesaturateAndColorTexture(frame.Texture, unit)
+            for i = 1, 4 do
+                local frame = PartyFrame and PartyFrame["MemberFrame" .. i]
+                if frame and frame.Texture then
+                    DesaturateAndColorTexture(frame.Texture, "party" .. i)
+                end
             end
             return
         end

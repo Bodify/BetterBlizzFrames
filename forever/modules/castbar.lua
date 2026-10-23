@@ -630,8 +630,11 @@ end
 
 function BBF.CastbarShakeAnimationCancel()
     if BBF.castbarShakeAnimationCancel then return end
+    if not (BetterBlizzFramesDB.stopCastbarShake or BetterBlizzFramesDB.classicCastbarsPlayer) then return end
     hooksecurefunc(PlayerCastingBarFrame.InterruptShakeAnim, "Play", function(self)
-        self:Stop()
+        if BetterBlizzFramesDB.stopCastbarShake or BetterBlizzFramesDB.classicCastbarsPlayer then
+            self:Stop()
+        end
     end)
     BBF.castbarShakeAnimationCancel = true
 end
@@ -678,11 +681,6 @@ function BBF.ClassicCastbar(castBar, unitType)
             castBar["Sparkles0"..i]:SetAtlas(nil)
         end
     end
-
-    if isPlayer then
-        BBF.CastbarShakeAnimationCancel()
-    end
-
 
     -- castBar.BorderShield:SetTexture(311862)
     -- castBar.BorderShield:SetSize(196, 56)
@@ -822,7 +820,7 @@ function UpdateCustomSpellBarTexture(spellbar)
         spellbar:SetStatusBarTexture(classicCastbarTexture)
         if not spellbar.MaskTexture and not BetterBlizzFramesDB.castbarPixelBorder then
             spellbar.MaskTexture = spellbar:CreateMaskTexture()
-            spellbar.MaskTexture:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\RetailCastMask.tga",
+            spellbar.MaskTexture:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\RetailCastMask.png",
                 "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
             spellbar.MaskTexture:SetPoint("TOPLEFT", spellbar, "TOPLEFT", -1, 0)
             spellbar.MaskTexture:SetPoint("BOTTOMRIGHT", spellbar, "BOTTOMRIGHT", 1, 0)
@@ -1990,6 +1988,7 @@ function BBF.ChangeCastbarSizes()
             BBF.UpdatePetCastbar()
         end
     end
+    BBF.CastbarShakeAnimationCancel()
     if BetterBlizzFramesDB.classicCastbarsPlayer then
         BBF.ClassicCastbar(PlayerCastingBarFrame, "player")
         BBF.ClassicCastbar(PetCastingBarFrame, "player")
@@ -2116,7 +2115,7 @@ end
 local function IsSelfCast(unit)
     if not PlayerIsSpellTarget then return end
     local isSelf = PlayerIsSpellTarget(unit)
-    if issecretvalue and issecretvalue(isSelf) then return end
+    if issecretvalue(isSelf) then return end
     return isSelf
 end
 

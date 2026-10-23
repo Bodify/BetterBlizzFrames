@@ -57,11 +57,62 @@ function BBF.FixFeedbackTextures()
 end
 
 -- Heal prediction fix
+local healSegments = { "MyHealPredictionBar", "OtherHealPredictionBar", "HealAbsorbBar", "TotalAbsorbBar" }
+
+local function SetSegmentFill(seg, tex, useDefault)
+    if not seg or not seg.Fill then return end
+    if useDefault and seg.fillAtlas then
+        seg.Fill:SetAtlas(seg.fillAtlas, TextureKitConstants.IgnoreAtlasSize)
+    else
+        seg.Fill:SetTexture(tex)
+    end
+end
+
+local BAR_TEX = "Interface\\AddOns\\BetterBlizzFrames\\media\\barTextures\\"
+local grownSegmentFills = {
+    [BAR_TEX .. "BlizzardRetailBarGreen"] = BAR_TEX .. "BlizzardRetailBar",
+    [BAR_TEX .. "BlizzardForeverBarGreen"] = BAR_TEX .. "BlizzardForeverBar",
+}
+
+local function HealthBarGrown(statusBar)
+    local db = BetterBlizzFramesDB
+    if statusBar == PlayerFrame.healthbar then
+        return BBF.BigHealthbarOn(PlayerFrame) or BBF.PlayerManaHiddenArt()
+    end
+    if statusBar == TargetFrame.healthbar then
+        return BBF.BigHealthbarOn(TargetFrame) or db.hideUnitFrameTargetMana
+    end
+    if statusBar == FocusFrame.healthbar then
+        return BBF.BigHealthbarOn(FocusFrame) or db.hideUnitFrameFocusMana
+    end
+end
+
+function BBF.SetHealSegmentFills(statusBar, tex, useDefault)
+    statusBar.bbfGrownSegmentFill = nil
+    if useDefault and grownSegmentFills[tex] and HealthBarGrown(statusBar) then
+        tex, useDefault = grownSegmentFills[tex], false
+        statusBar.bbfGrownSegmentFill = tex
+    end
+    for i = 1, #healSegments do
+        SetSegmentFill(statusBar[healSegments[i]], tex, useDefault)
+    end
+end
+
+local function SyncHealPredictionBar(bar, overlay, src)
+    if bar.bbfGrownSegmentFill then
+        SetSegmentFill(overlay, bar.bbfGrownSegmentFill)
+    elseif overlay and overlay.fillAtlas and (bar.bbfGreenTexture or src:GetAtlas()) then
+        SetSegmentFill(overlay, nil, true)
+    else
+        SyncBarTexture(overlay, src)
+    end
+end
+
 local function SyncHealPrediction(bar, myBar, otherBar)
     local src = bar:GetStatusBarTexture()
     if not src then return end
-    SyncBarTexture(myBar, src)
-    SyncBarTexture(otherBar, src)
+    SyncHealPredictionBar(bar, myBar, src)
+    SyncHealPredictionBar(bar, otherBar, src)
 end
 
 local function HookHealPrediction(bar, myBar, otherBar)
@@ -159,4 +210,119 @@ function BBF.RaiseCombosAboveTargetArt()
     if BBF.RaiseMovedResourceAboveTargetArt then
         BBF.RaiseMovedResourceAboveTargetArt()
     end
+end
+
+local unsnappedBars = {}
+
+local function UnsnapBarTexture(bar)
+    local texture = bar:GetStatusBarTexture()
+    if not texture then return end
+    texture:SetTexelSnappingBias(0)
+    texture:SetSnapToPixelGrid(false)
+end
+
+local function UnsnapOnTextureChange(bar)
+    local owner = bar.unitFrame
+    if BBF.ToTUnit(owner) and not BBF.ToTChanged(owner, bar) then return end
+    UnsnapBarTexture(bar)
+end
+
+function BBF.UnsnapSmallFrameBars()
+    local bars = { PetFrameHealthBar, PetFrameManaBar }
+    for _, frame in ipairs({ TargetFrame, FocusFrame }) do
+        local tot = frame and frame.totFrame
+        if tot then
+            bars[#bars + 1] = tot.HealthBar
+            bars[#bars + 1] = tot.ManaBar
+        end
+    end
+    for i = 1, 4 do
+        local member = PartyFrame and PartyFrame["MemberFrame" .. i]
+        if member then
+            bars[#bars + 1] = member.HealthBarContainer and member.HealthBarContainer.HealthBar
+            bars[#bars + 1] = member.ManaBar
+        end
+    end
+    for _, bar in pairs(bars) do
+        if bar.GetStatusBarTexture then
+            UnsnapBarTexture(bar)
+            if not unsnappedBars[bar] then
+                unsnappedBars[bar] = true
+                hooksecurefunc(bar, "SetStatusBarTexture", UnsnapOnTextureChange)
+            end
+        end
+    end
+end
+
+local totFrames, totGen, totSeen = {}, {}, {}
+local totWatcher
+
+local function AddToTFrame(frame, unit)
+    if not frame then return end
+    totFrames[frame] = unit
+    totGen[frame] = 1
+    totSeen[frame] = {}
+end
+AddToTFrame(TargetFrameToT, "targettarget")
+AddToTFrame(FocusFrameToT, "focustarget")
+
+local function BumpToT(frame)
+    local gen = totGen[frame]
+    if gen then
+        totGen[frame] = gen + 1
+    end
+end
+
+local function BumpAllToT()
+    for frame in pairs(totGen) do
+        BumpToT(frame)
+    end
+end
+BBF.RefreshToT = BumpAllToT
+
+local function OnToTEvent(_, event)
+    if event == "PLAYER_TARGET_CHANGED" then
+        BumpToT(TargetFrameToT)
+    elseif event == "PLAYER_FOCUS_CHANGED" then
+        BumpToT(FocusFrameToT)
+    else
+        BumpAllToT()
+    end
+end
+
+local function WatchToT()
+    totWatcher = CreateFrame("Frame")
+    totWatcher:RegisterEvent("PLAYER_TARGET_CHANGED")
+    totWatcher:RegisterEvent("PLAYER_FOCUS_CHANGED")
+    totWatcher:RegisterEvent("PLAYER_ENTERING_WORLD")
+    totWatcher:RegisterEvent("GROUP_ROSTER_UPDATE")
+    totWatcher:RegisterEvent("PLAYER_REGEN_DISABLED")
+    totWatcher:RegisterEvent("PLAYER_REGEN_ENABLED")
+    totWatcher:RegisterEvent("ARENA_OPPONENT_UPDATE")
+    totWatcher:RegisterEvent("ARENA_PREP_OPPONENT_SPECIALIZATIONS")
+    totWatcher:RegisterUnitEvent("UNIT_TARGET", "target", "focus")
+    totWatcher:RegisterUnitEvent("UNIT_FACTION", "targettarget", "focustarget")
+    totWatcher:RegisterUnitEvent("UNIT_CONNECTION", "targettarget", "focustarget")
+    totWatcher:RegisterUnitEvent("UNIT_DISPLAYPOWER", "targettarget", "focustarget")
+    totWatcher:RegisterUnitEvent("UNIT_NAME_UPDATE", "targettarget", "focustarget")
+    totWatcher:SetScript("OnEvent", OnToTEvent)
+    for frame in pairs(totFrames) do
+        frame:HookScript("OnShow", BumpToT)
+    end
+end
+
+function BBF.ToTUnit(frame)
+    return frame and totFrames[frame]
+end
+
+function BBF.ToTChanged(frame, key)
+    local gen = totGen[frame]
+    if not gen then return true end
+    if not totWatcher then
+        WatchToT()
+    end
+    local seen = totSeen[frame]
+    if seen[key] == gen then return false end
+    seen[key] = gen
+    return true
 end

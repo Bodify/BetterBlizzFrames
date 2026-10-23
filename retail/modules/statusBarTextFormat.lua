@@ -3,6 +3,12 @@ local function FormatText(value)
 end
 
 local function UpdateFormatFunction()
+    if not BetterBlizzFramesDB.formatStatusBarText then
+        FormatText = function(value)
+            return value
+        end
+        return
+    end
     FormatText = function(value)
         return (AbbreviateNumbers(value))
     end
@@ -28,10 +34,10 @@ end
 function BBF.HookStatusBarText()
     UpdateFormatFunction()
     if BBF.statusBarTextHookBBF then return end
-    if not BetterBlizzFramesDB.formatStatusBarText then return end
+    if not BetterBlizzFramesDB.formatStatusBarText and not (BetterBlizzFramesDB.noNumberCommas and BBF.isForever) then return end
 
     local statusTextSetting = C_CVar.GetCVar("statusTextDisplay")
-    local singleDisplay = BetterBlizzFramesDB.singleValueStatusBarText
+    local singleDisplay = BetterBlizzFramesDB.formatStatusBarText and BetterBlizzFramesDB.singleValueStatusBarText
 
     local pMain = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain
     local tMain = TargetFrame.TargetFrameContent.TargetFrameContentMain
@@ -137,6 +143,7 @@ function BBF.HookStatusBarText()
 end
 local centeredBars
 local centeredBarsApplying = false
+local centeredTexts = {}
 
 local function AddCenteredBar(list, bar)
     if not bar then return end
@@ -144,6 +151,11 @@ local function AddCenteredBar(list, bar)
     local right = bar.RightText
     if not center or not right then return end
     list[#list + 1] = { bar = bar, center = center, right = right, left = bar.LeftText }
+    centeredTexts[right] = true
+end
+
+function BBF.IsCenteredValueText(text)
+    return BetterBlizzFramesDB.centerCurrentValueOnBars and centeredTexts[text] or false
 end
 
 local function GetCenteredBars()
@@ -202,8 +214,11 @@ end
 
 local function ApplyCenteredBarPoint(entry)
     centeredBarsApplying = true
+    local placing = entry.right.bbfTextAreaPlacing
+    entry.right.bbfTextAreaPlacing = true
     entry.right:ClearAllPoints()
     entry.right:SetPoint("CENTER", entry.center, "CENTER", 0, 0)
+    entry.right.bbfTextAreaPlacing = placing
     entry.right:SetJustifyH("CENTER")
     entry.right:SetJustifyV("MIDDLE")
     centeredBarsApplying = false

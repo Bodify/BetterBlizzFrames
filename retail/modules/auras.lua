@@ -258,6 +258,8 @@ function BBF.UpdateUserAuraSettings()
     S.ccColor = { GetColor("auraCCGlowColor", 1, 0.874, 0, 1) }
 
     S.stackScale = db.auraStackSize or 1
+    S.stackFont = H.AuraFont(db.auraStackFontEnabled, db.auraStackFont, db.auraStackFontOutline)
+    S.timerFont = H.AuraFont(db.auraTimerFontEnabled, db.auraTimerFont, db.auraTimerFontOutline)
     S.showCdText = db.showAuraCdText
     S.playerDurations = CVarCallbackRegistry:GetCVarValueBool("buffDurations")
     S.playerDurationOnIcon = db.playerAuraDurationOnIcon and true or false
@@ -886,10 +888,45 @@ local function ApplyPandemicRegistration(button, style)
     end
 end
 
+function H.AuraFont(enabled, name, outline)
+    local db = BetterBlizzFramesDB
+    if enabled then
+        local path = name and LibStub("LibSharedMedia-3.0"):Fetch("font", name, true)
+        if path or outline then
+            return { path, outline }
+        end
+        return nil
+    end
+    if db.changeAllFontsIngame and db.allIngameFont then
+        local path = LibStub("LibSharedMedia-3.0"):Fetch("font", db.allIngameFont, true)
+        if path then
+            return { path }
+        end
+    end
+end
+
+function H.ApplyAuraFont(text, font)
+    if not text then return end
+    local base = text.bbfAuraFont
+    if not font then
+        if base then
+            text.bbfAuraFont = nil
+            text:SetFont(base[1], base[2], base[3])
+        end
+        return
+    end
+    if not base then
+        base = { text:GetFont() }
+        text.bbfAuraFont = base
+    end
+    text:SetFont(font[1] or base[1], base[2], font[2] or base[3])
+end
+
 local function ApplyDurationFont(timer, style)
     local base = timer.bbfBaseFont
     if not base then return end
-    timer:SetFont(base[1], base[2], style.durationOutline and "OUTLINE" or base[3])
+    local font = style.timerFont
+    timer:SetFont(font and font[1] or base[1], base[2], font and font[2] or (style.durationOutline and "OUTLINE") or base[3])
 end
 
 local function ApplyCountdownFormatter(cooldown, style)
@@ -978,6 +1015,7 @@ local function ApplyMutableStyle(button, style)
 
         if button.bbfTimer then
             button.bbfTimer:SetScale(style.cdTextScale or 0.55)
+            H.ApplyAuraFont(button.bbfTimer, style.timerFont)
             if style.timerColor then
                 local c = style.timerBaseColor
                 button.bbfTimer:SetTextColor(c[1], c[2], c[3], c[4] or 1)
@@ -987,6 +1025,7 @@ local function ApplyMutableStyle(button, style)
 
     if button.bbfCount then
         button.bbfCount:SetScale(style.stackScale or 1)
+        H.ApplyAuraFont(button.bbfCount, style.stackFont)
     end
 
     if button.bbfGlow then
@@ -1540,6 +1579,8 @@ local function BuildStyle(tier, sizes, isPlayer, cfg, into)
     t.durationCurve = isPlayer and GetPlayerDurationCurve() or nil
     t.durationYOffset = GetDurationYOffset(isPlayer, cfg, durationUnderIcon)
     t.stackScale = S.stackScale
+    t.stackFont = S.stackFont
+    t.timerFont = S.timerFont
     t.showTimerText = showTimerText
     t.hideLongTimers = (not isPlayer and S.hideLongTimers) and true or false
     t.isPlayer = isPlayer
@@ -3676,6 +3717,7 @@ local function StyleTestButton(button, entry, tier, style, sizes, harmful)
         local timer = cooldown:GetCountdownFontString()
         if timer then
             timer:SetScale(style.cdTextScale or 0.55)
+            H.ApplyAuraFont(timer, style.timerFont)
             if style.timerColor then
                 local c = style.timerBaseColor
                 timer:SetTextColor(c[1], c[2], c[3], c[4] or 1)
@@ -3692,6 +3734,7 @@ local function StyleTestButton(button, entry, tier, style, sizes, harmful)
         count:SetPoint("BOTTOMRIGHT", icon, "BOTTOMRIGHT", 1, 0)
     end
     count:SetScale(style.stackScale or 1)
+    H.ApplyAuraFont(count, style.stackFont)
     count:SetText((entry.count and entry.count > 1) and entry.count or "")
 
     local border = button.bbfBorder
@@ -3775,7 +3818,7 @@ H.IMBUE_WEAPONS = Enum.WeaponSlot and { Enum.WeaponSlot.MainHand, Enum.WeaponSlo
 H.IMBUE_INVSLOTS = { INVSLOT_MAINHAND or 16, INVSLOT_OFFHAND or 17, INVSLOT_RANGED or 18 }
 
 function H.Readable(value)
-    return value ~= nil and not (issecretvalue and issecretvalue(value))
+    return value ~= nil and not issecretvalue(value)
 end
 
 function H.ScanImbues(host)
@@ -4016,6 +4059,7 @@ function H.StyleImbueCell(button, style)
     count:ClearAllPoints()
     count:SetPoint("BOTTOMRIGHT", iconAnchor, "BOTTOMRIGHT", -2, 2)
     count:SetScale(style.stackScale or 1)
+    H.ApplyAuraFont(count, style.stackFont)
 
     local border = button.bbfBorder
     ApplyBorderArt(border, style.pixelBorder)

@@ -11,6 +11,15 @@ local function MinimapTweaksActive()
     return db.foreverMinimapTweaks and not db.classicMinimap
 end
 
+local function StoreBasePoint(frame, ...)
+    local base = frame.bbfBasePoint
+    if not base then
+        base = {}
+        frame.bbfBasePoint = base
+    end
+    base[1], base[2], base[3], base[4], base[5] = ...
+end
+
 local function ApplyMinimapNudge(container)
     local base = container.bbfBasePoint
     if not base or type(base[5]) ~= "number" then return end
@@ -112,10 +121,10 @@ local function HookMinimapTweaks()
 
     local container = MinimapCluster and MinimapCluster.MinimapContainer
     if container then
-        container.bbfBasePoint = { container:GetPoint(1) }
+        StoreBasePoint(container, container:GetPoint(1))
         hooksecurefunc(container, "SetPoint", function(self, ...)
             if self.bbfNudging then return end
-            self.bbfBasePoint = { ... }
+            StoreBasePoint(self, ...)
             ApplyMinimapNudge(self)
         end)
     end

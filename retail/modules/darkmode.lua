@@ -42,6 +42,14 @@ local function applySettings(frame, desaturate, colorValue, hook, hookShow)
     end
 end
 
+local function applyTextBorder(textBorder, desaturate, colorValue, alpha)
+    if not textBorder or issecretvalue(textBorder) or textBorder:IsForbidden() then return end
+    applySettings(textBorder, desaturate, colorValue)
+    if textBorder:GetAlpha() ~= 0 then
+        textBorder:SetAlpha(alpha)
+    end
+end
+
 function BBF.DarkModeNameplateResources()
     if BetterBlizzPlatesDB and BetterBlizzPlatesDB.darkModeNameplateResource then return end
 
@@ -914,13 +922,7 @@ function BBF.DarkmodeFrames(bypass)
         end
     end
 
-    if PlayerFrame.PlayerFrameContainer.PlayerElite then
-        if unitFramesOn and BetterBlizzFramesDB.playerEliteFrameDarkmode then
-            PlayerFrame.PlayerFrameContainer.PlayerElite:SetVertexColor(color25,color25,color25)
-        else
-            PlayerFrame.PlayerFrameContainer.PlayerElite:SetVertexColor(1,1,1)
-        end
-    end
+    BBF.ColorPlayerElite()
     BBF.RefreshSelfEliteTargets()
 
     local mageArcaneCharges = _G.MageArcaneChargesFrame
@@ -1029,6 +1031,73 @@ function BBF.DarkmodeFrames(bypass)
             }) do
                 applySettings(v, actionBarSat, birdColor, true)
             end
+        end
+
+        local function applyButtonArt(button, buttonName)
+            if not button then return end
+            if button.GetNormalTexture then
+                applySettings(button:GetNormalTexture(), actionBarSat, actionBarColor, true)
+            end
+            if button.GetPushedTexture then
+                applySettings(button:GetPushedTexture(), actionBarSat, actionBarColor, true)
+            end
+            if buttonName then
+                applySettings(_G[buttonName .. "NormalTexture"], actionBarSat, actionBarColor, true)
+                applySettings(_G[buttonName .. "PushedTexture"], actionBarSat, actionBarColor, true)
+            end
+            applySettings(button.NormalTexture, actionBarSat, actionBarColor, true)
+            applySettings(button.PushedTexture, actionBarSat, actionBarColor, true)
+            applySettings(button.Background, actionBarSat, actionBarColor, true)
+            applySettings(button.PushedBackground, actionBarSat, actionBarColor, true)
+        end
+
+        local function applyEdgeArt(frame)
+            if not frame then return end
+            applySettings(frame.TopEdge, actionBarSat, actionBarColor, true)
+            applySettings(frame.BottomEdge, actionBarSat, actionBarColor, true)
+            applySettings(frame.Center, actionBarSat, actionBarColor, true)
+        end
+
+        for _, microButtonName in ipairs({
+            "CharacterMicroButton",
+            "ProfessionMicroButton",
+            "PlayerSpellsMicroButton",
+            "SpellbookMicroButton",
+            "TalentMicroButton",
+            "AchievementMicroButton",
+            "QuestLogMicroButton",
+            "HousingMicroButton",
+            "GuildMicroButton",
+            "LFDMicroButton",
+            "CollectionsMicroButton",
+            "EJMicroButton",
+            "HelpMicroButton",
+            "StoreMicroButton",
+            "MainMenuMicroButton",
+        }) do
+            local microButton = _G[microButtonName]
+            if microButton then
+                applySettings(microButton.Background, actionBarSat, actionBarColor, true)
+                applySettings(microButton.PushedBackground, actionBarSat, actionBarColor, true)
+            end
+        end
+
+        if BagsBar then
+            applySettings(BagsBar.BorderArt, actionBarSat, actionBarColor, true)
+            applyEdgeArt(BagsBar)
+            for _, bagsBarChild in pairs({BagsBar:GetChildren()}) do
+                applyEdgeArt(bagsBarChild)
+                for _, bagsBarGrandChild in pairs({bagsBarChild:GetChildren()}) do
+                    applyEdgeArt(bagsBarGrandChild)
+                end
+            end
+        end
+
+        applyButtonArt(MainMenuBarBackpackButton, "MainMenuBarBackpackButton")
+        applyButtonArt(CharacterReagentBag0Slot, "CharacterReagentBag0Slot")
+        for i = 0, 3 do
+            local bagSlotName = "CharacterBag" .. i .. "Slot"
+            applyButtonArt(_G[bagSlotName], bagSlotName)
         end
 
         local BARTENDER4_NUM_MAX_BUTTONS = 180
@@ -1209,6 +1278,7 @@ local function DarkModeTimerBars(on)
     if container and container.mirrorTimers then
         for _, timerFrame in ipairs(container.mirrorTimers) do
             applySettings(timerFrame.Border, on, color)
+            applyTextBorder(timerFrame.TextBorder, on, color, on and 0.5 or 1)
             if not container.bbfClassic then
                 applySettings(GetMirrorTimerBackground(timerFrame), on, lighterColor)
             end
@@ -1225,8 +1295,10 @@ function BBF.DarkModeCastbars()
         BBF.darkModeCastbars = true
         local skip = BetterBlizzFramesDB.classicCastbars
         applySettings(TargetFrame.spellbar.Border, desaturationValue, color)
+        applyTextBorder(TargetFrame.spellbar.TextBorder, desaturationValue, color, 0.5)
 
         applySettings(FocusFrame.spellbar.Border, desaturationValue, color)
+        applyTextBorder(FocusFrame.spellbar.TextBorder, desaturationValue, color, 0.5)
         if not skip then
             applySettings(FocusFrame.spellbar.Background, desaturationValue, lighterColor)
             applySettings(TargetFrame.spellbar.Background, desaturationValue, lighterColor)
@@ -1235,11 +1307,13 @@ function BBF.DarkModeCastbars()
             applySettings(PlayerCastingBarFrame.Background, desaturationValue, lighterColor)
         end
         applySettings(PlayerCastingBarFrame.Border, desaturationValue, color)
+        applyTextBorder(PlayerCastingBarFrame.TextBorder, desaturationValue, color, 0.5)
 
         for i = 1, 5 do
             local frame = _G["Boss"..i.."TargetFrame"]
             if frame then
                 applySettings(frame.spellbar.Border, desaturationValue, color)
+                applyTextBorder(frame.spellbar.TextBorder, desaturationValue, color, 0.5)
                 applySettings(frame.spellbar.Background, desaturationValue, lighterColor)
             end
         end
@@ -1249,6 +1323,7 @@ function BBF.DarkModeCastbars()
                 local partyCastbar = _G["Party"..i.."SpellBar"]
                 if partyCastbar then
                     applySettings(partyCastbar.Border, desaturationValue, color)
+                    applyTextBorder(partyCastbar.TextBorder, desaturationValue, color, 0.5)
                     applySettings(partyCastbar.Background, desaturationValue, lighterColor)
                 end
             end
@@ -1256,18 +1331,22 @@ function BBF.DarkModeCastbars()
         local petCastbar = _G["PetSpellBar"]
         if petCastbar then
             applySettings(petCastbar.Border, desaturationValue, color)
+            applyTextBorder(petCastbar.TextBorder, desaturationValue, color, 0.5)
             if not skip then
                 applySettings(petCastbar.Background, desaturationValue, lighterColor)
             end
         end
     elseif BBF.darkModeCastbars then
         applySettings(TargetFrame.spellbar.Border, false, 1)
+        applyTextBorder(TargetFrame.spellbar.TextBorder, false, 1, 1)
         applySettings(TargetFrame.spellbar.Background, false, 1)
 
         applySettings(FocusFrame.spellbar.Border, false, 1)
+        applyTextBorder(FocusFrame.spellbar.TextBorder, false, 1, 1)
         applySettings(FocusFrame.spellbar.Background, false, 1)
 
         applySettings(PlayerCastingBarFrame.Border, false, 1)
+        applyTextBorder(PlayerCastingBarFrame.TextBorder, false, 1, 1)
         applySettings(PlayerCastingBarFrame.Background, false, 1)
 
         if BetterBlizzFramesDB.showPartyCastbar then
@@ -1275,6 +1354,7 @@ function BBF.DarkModeCastbars()
                 local partyCastbar = _G["Party"..i.."SpellBar"]
                 if partyCastbar then
                     applySettings(partyCastbar.Border, false, 1)
+                    applyTextBorder(partyCastbar.TextBorder, false, 1, 1)
                     applySettings(partyCastbar.Background, false, 1)
                 end
             end
@@ -1282,12 +1362,14 @@ function BBF.DarkModeCastbars()
         local petCastbar = _G["PetSpellBar"]
         if petCastbar then
             applySettings(petCastbar.Border, false, 1)
+            applyTextBorder(petCastbar.TextBorder, false, 1, 1)
             applySettings(petCastbar.Background, false, 1)
         end
         for i = 1, 5 do
             local frame = _G["Boss"..i.."TargetFrame"]
             if frame then
                 applySettings(frame.spellbar.Border, false, 1)
+                applyTextBorder(frame.spellbar.TextBorder, false, 1, 1)
                 applySettings(frame.spellbar.Background, false, 1)
             end
         end

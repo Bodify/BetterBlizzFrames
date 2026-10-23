@@ -33,7 +33,7 @@ local function ApplyPRDBarMask(bar, container)
         bar.bbfPRDMask = bar:CreateMaskTexture()
     end
     local mask = bar.bbfPRDMask
-    mask:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\midnightNpMask.tga")
+    mask:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\masks\\midnightNpMask.png")
     mask:ClearAllPoints()
     mask:SetPoint("TOPLEFT", container, "TOPLEFT", -0.5, 1)
     mask:SetPoint("BOTTOMRIGHT", container, "BOTTOMRIGHT", 0.5, -1)
@@ -638,6 +638,7 @@ function BBF.UpdatePrdResource()
             prdResourceUpdating = true
             frame:SetScale(1)
             frame:SetFrameStrata(PrdResourceStrata(frame, prd))
+            frame:SetAlpha(1)
             RestorePrdResourceFrame(frame, 0, 0)
             prdResourceUpdating = false
             if BBP and BBP.TargetResourceUpdater then
@@ -665,11 +666,13 @@ function BBF.UpdatePrdResource()
 
     if unitFrame then
         frame:SetParent(UIParent)
+        frame:SetAlpha(1)
         frame:SetFrameStrata(PrdResourceStrata(frame, prd, true))
         frame:SetFrameLevel(PRD_RESOURCE_LEVEL)
         frame:ClearAllPoints()
         PixelUtil.SetPoint(frame, "BOTTOM", unitFrame.healthBar, "TOP", xOfs, yOfs + 30)
     else
+        frame:SetAlpha((db.prdResourceOnTarget and not db.prdResourceNoTargetOnPrd) and 0 or 1)
         frame:SetFrameStrata(PrdResourceStrata(frame, prd))
         frame:SetFrameLevel(PRD_RESOURCE_LEVEL + 1)
         RestorePrdResourceFrame(frame, xOfs, yOfs)

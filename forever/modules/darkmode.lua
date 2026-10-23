@@ -577,6 +577,49 @@ local function ColorCDMBuffBar(itemFrame)
     end
 end
 
+local MINIMAP_BUTTON_CENTER_MASK = "gamepad-flyout-square-slot-down-mask"
+local MINIMAP_BUTTON_MASK_INSET = -1
+
+local function SyncCenterCopy(source, copy)
+    local atlas = source:GetAtlas()
+    if atlas and atlas ~= copy:GetAtlas() then
+        copy:SetAtlas(atlas)
+    end
+end
+
+local function DarkModeMinimapButtonBorder(button, desaturate, colorValue)
+    local state = button and button.StateTexture
+    if not state then return end
+    local dark = colorValue ~= 1 and not BetterBlizzFramesDB.classicMinimap
+    local copy = state.bbfCenterCopy
+    if not copy then
+        if not dark then return end
+        copy = button:CreateTexture(nil, "ARTWORK", nil, 1)
+        copy:SetAllPoints(state)
+        local inset = MINIMAP_BUTTON_MASK_INSET
+        local mask = button:CreateMaskTexture()
+        mask:SetAtlas(MINIMAP_BUTTON_CENTER_MASK)
+        mask:SetPoint("TOPLEFT", state, "TOPLEFT", inset, -inset)
+        mask:SetPoint("BOTTOMRIGHT", state, "BOTTOMRIGHT", -inset, inset)
+        copy:AddMaskTexture(mask)
+        state.bbfCenterCopy = copy
+        hooksecurefunc(state, "SetAtlas", function(self)
+            SyncCenterCopy(self, self.bbfCenterCopy)
+        end)
+        SyncCenterCopy(state, copy)
+        if button.AddTexture then
+            button.AddTexture:SetDrawLayer("ARTWORK", 2)
+        end
+        if button == GameTimeFrame then
+            for _, texture in ipairs({ GameTimeCalendarInvitesTexture, GameTimeCalendarInvitesGlow }) do
+                if texture then texture:SetDrawLayer("ARTWORK", 3) end
+            end
+        end
+    end
+    applySettings(state, dark and desaturate, dark and colorValue or 1)
+    copy:SetShown(dark)
+end
+
 function BBF.DarkmodeFrames(bypass)
     UpdateDarkModeHookState()
     BBF.UpdateUserDarkModeSettings()
@@ -804,7 +847,7 @@ function BBF.DarkmodeFrames(bypass)
         TargetFrame.TargetFrameContent.TargetFrameContentMain.LevelBackgroundCircle,
         FocusFrame.TargetFrameContent.TargetFrameContentMain.LevelBackgroundCircle,
     }) do
-        applySettings(v, frameSat, frameColor)
+        applySettings(v, frameSat, frameColor < 1 and math.min(frameColor + math.min(0.2, frameColor * 0.5), 1) or frameColor)
     end
 
     if not cf then
@@ -973,6 +1016,15 @@ function BBF.DarkmodeFrames(bypass)
     end
 
     applySettings(MinimapCompassTexture, minimapSat, minimapColor)
+
+    for _, button in ipairs({ MinimapCluster.ZoneTextButton or false, AddonCompartmentFrame or false }) do
+        if button then
+            applySettings(button.StateTexture, minimapSat, minimapColor)
+            applySettings(button.AddTexture, minimapSat, minimapColor)
+        end
+    end
+    DarkModeMinimapButtonBorder(MinimapCluster.Tracking and MinimapCluster.Tracking.Button, minimapSat, minimapColor)
+    DarkModeMinimapButtonBorder(GameTimeFrame, minimapSat, minimapColor)
 
     if MinimapCluster.DielFrame then
         if not BBF.dielCycleBorder then

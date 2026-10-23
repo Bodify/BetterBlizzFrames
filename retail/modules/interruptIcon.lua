@@ -208,7 +208,7 @@ local function CreateInterruptIconFrame(parentFrame)
 
     if BetterBlizzFramesDB.interruptIconBorder then
         button.border = button:CreateTexture(nil, "OVERLAY")
-        button.border:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-ActionBar-IconFrame-AddRow-Light")
+        button.border:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-ActionBar-IconFrame-AddRow-Light.png")
         button.border:SetSize(48, 48)
         button.border:SetPoint("CENTER", button, "CENTER", 2, -2)
         button.border:SetDrawLayer("OVERLAY", 7)

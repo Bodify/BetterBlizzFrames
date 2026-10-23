@@ -228,21 +228,27 @@ function BBF.UpdateThreatMeterVisibility()
     end
 end
 
+local statusBarsHidden = {}
+
 local function UpdateStatusTrackingBar(container)
-    local db = BetterBlizzFramesDB
     local index = container.shownBarIndex
-    local bars = StatusTrackingBarInfo.BarsEnum
-    local hide = not CharacterFrame:IsShown() and ((db.hideExpBar and index == bars.Experience) or (db.hideHonorBar and index == bars.Honor))
+    local hide = statusBarsHidden[index] and not CharacterFrame:IsShown()
     local parent = hide and hiddenFrame or StatusTrackingBarManager
     if container:GetParent() ~= parent then
         container:SetParent(parent)
+        if not hide then
+            container:SetShown(index ~= StatusTrackingBarInfo.BarsEnum.None or container.isInEditMode)
+        end
     end
 end
 
 function BBF.UpdateStatusTrackingBars()
     local db = BetterBlizzFramesDB
+    local bars = StatusTrackingBarInfo.BarsEnum
+    if db.hideExpBar then statusBarsHidden[bars.Experience] = true end
+    if db.hideHonorBar then statusBarsHidden[bars.Honor] = true end
+    if not next(statusBarsHidden) then return end
     if not BBF.statusTrackingBarsHooked then
-        if not (db.hideExpBar or db.hideHonorBar) then return end
         for _, container in ipairs(StatusTrackingBarManager.barContainers) do
             hooksecurefunc(container, "ApplyPendingBarToShow", UpdateStatusTrackingBar)
         end
@@ -290,6 +296,14 @@ function BBF.HideFrames()
             changes.hideGroupIndicator = true
         elseif changes.hideGroupIndicator then
             PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.GroupIndicator:SetAlpha(1)
+        end
+
+        if db.hideMicroMenuBorder then
+            MicroMenu.BorderArt:Hide()
+            changes.hideMicroMenuBorder = true
+        elseif changes.hideMicroMenuBorder then
+            MicroMenu.BorderArt:Show()
+            changes.hideMicroMenuBorder = nil
         end
 
         if db.hideActionBarQualityIcon then
@@ -598,7 +612,7 @@ function BBF.HideFrames()
             end
         end
 
-        if (BetterBlizzFramesDB.hideFullPower or BetterBlizzFramesDB.hideUnitFramePlayerMana or BetterBlizzFramesDB.bigPlayerHealthbar) and not changes.hideFullPower then
+        if (BetterBlizzFramesDB.hideFullPower or BetterBlizzFramesDB.hideUnitFramePlayerMana or BBF.BigPlayerHealthbar()) and not changes.hideFullPower then
             changes.hideFullPower = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar.FullPowerFrame:GetParent()
             PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar.FullPowerFrame:SetParent(hiddenFrame)
             if ClassNameplateManaBarFrame and ClassNameplateManaBarFrame.FullPowerFrame then
@@ -1175,75 +1189,7 @@ function BBF.HideFrames()
 
         BBF.UpdateStatusTrackingBars()
 
-        if BetterBlizzFramesDB.hideUnitFrameShadow then
-            if not BetterBlizzFramesDB.classicFrames then
-                if not BBF.hideUnitFrameShadow then
-                    -- Player
-                    if not BetterBlizzFramesDB.symmetricPlayerFrame then
-                        local playerTex = PlayerFrame.PlayerFrameContainer.FrameTexture
-                        playerTex:SetTexture(BBF.GetNoShadowPlayerFrameTexture())
-                        hooksecurefunc(playerTex, "SetAtlas", function(self)
-                            self:SetTexture(BBF.GetNoShadowPlayerFrameTexture())
-                        end)
-
-                        local playerAltTex = PlayerFrame.PlayerFrameContainer.AlternatePowerFrameTexture
-
-                        if BetterBlizzFramesDB.hideUnitFramePlayerSecondResource then
-                            local altBars = {
-                                AlternatePowerBar,
-                                MonkStaggerBar,
-                                EvokerEbonMightBar,
-                                DemonHunterSoulFragmentsBar,
-                            }
-
-                            for _, frame in ipairs(altBars) do
-                                if frame then
-                                    frame:SetAlpha(0)
-                                end
-                            end
-                            playerAltTex:SetSize(198, 71)
-                            playerAltTex:ClearAllPoints()
-                            playerAltTex:SetAllPoints(playerTex)
-                            BBF.UpdatePlayerFrameFlash()
-                        end
-
-                        BBF.UpdateNoShadowPlayerAltFrameTexture()
-                        hooksecurefunc(playerAltTex, "SetAtlas", BBF.UpdateNoShadowPlayerAltFrameTexture)
-                    end
-
-                    -- Target & Focus
-                    local targetTex = TargetFrame.TargetFrameContainer.FrameTexture
-                    targetTex:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Target-PortraitOn-NoShadow")
-                    hooksecurefunc(targetTex, "SetAtlas", function(self, atlas)
-                        if atlas == "UI-HUD-UnitFrame-Target-PortraitOn" then
-                            self:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Target-PortraitOn-NoShadow")
-                        elseif atlas == "UI-HUD-UnitFrame-Target-Rare-PortraitOn" then
-                            self:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Target-PortraitOn-NoShadow")
-                        elseif atlas == "UI-HUD-UnitFrame-Target-MinusMob-PortraitOn" then
-                            self:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Target-MinusMob-PortraitOn-NoShadow")
-                        end
-                    end)
-                    local focusTex = FocusFrame.TargetFrameContainer.FrameTexture
-                    focusTex:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Target-PortraitOn-NoShadow")
-                    hooksecurefunc(focusTex, "SetAtlas", function(self, atlas)
-                        if atlas == "UI-HUD-UnitFrame-Target-PortraitOn" then
-                            self:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Target-PortraitOn-NoShadow")
-                        elseif atlas == "UI-HUD-UnitFrame-Target-Rare-PortraitOn" then
-                            self:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Target-PortraitOn-NoShadow")
-                        elseif atlas == "UI-HUD-UnitFrame-Target-MinusMob-PortraitOn" then
-                            self:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Target-MinusMob-PortraitOn-NoShadow")
-                        end
-                    end)
-
-                    -- ToT's
-                    BBF.UpdateTotFrameTexture()
-                    --Pet
-                    BBF.UpdatePetFrameTexture()
-
-                    BBF.hideUnitFrameShadow = true
-                end
-            end
-        elseif not BetterBlizzFramesDB.symmetricPlayerFrame and BetterBlizzFramesDB.hideUnitFramePlayerSecondResource then
+        if BetterBlizzFramesDB.hideUnitFramePlayerSecondResource then
             local playerTex = PlayerFrame.PlayerFrameContainer.FrameTexture
             local playerAltTex = PlayerFrame.PlayerFrameContainer.AlternatePowerFrameTexture
 
@@ -1264,11 +1210,21 @@ function BBF.HideFrames()
                 playerAltTex:SetSize(198, 71)
                 playerAltTex:ClearAllPoints()
                 playerAltTex:SetAllPoints(playerTex)
-                playerAltTex:SetAtlas(playerTex:GetAtlas())
+                local function CopyPlayerTex(self)
+                    local atlas = playerTex:GetAtlas()
+                    if atlas then
+                        self:SetAtlas(atlas)
+                    elseif playerTex.bbfRetailArt then
+                        BBF.SetRetailArt(self, playerTex.bbfRetailArt, playerTex.bbfRetailFlip, false)
+                    else
+                        self:SetTexture(playerTex:GetTexture())
+                    end
+                end
+                CopyPlayerTex(playerAltTex)
                 hooksecurefunc(playerAltTex, "SetAtlas", function(self)
                     if self.changingTex then return end
                     self.changingTex = true
-                    self:SetAtlas(playerTex:GetAtlas())
+                    CopyPlayerTex(self)
                     self.changingTex = false
                 end)
                 BBF.hookedPlayerAltBarTex = true

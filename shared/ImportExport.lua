@@ -37,6 +37,48 @@ local function ConvertOldBlacklist(oldBlacklist)
     return optimizedBlacklist
 end
 
+local exportKeepKeys = {
+    version = true,
+    statusTextExtra = true,
+}
+
+local function SameValue(a, b)
+    if a == b then return true end
+    if type(a) ~= "table" or type(b) ~= "table" then return false end
+    for k, v in pairs(a) do
+        if not SameValue(v, b[k]) then return false end
+    end
+    for k in pairs(b) do
+        if a[k] == nil then return false end
+    end
+    return true
+end
+
+local function WithoutDefaults(profileTable)
+    local defaults = BBF.exportDefaults
+    if not defaults then return profileTable end
+    local stripped = {}
+    for k, v in pairs(profileTable) do
+        if exportKeepKeys[k] or not SameValue(v, defaults[k]) then
+            stripped[k] = v
+        end
+    end
+    return stripped
+end
+
+function BBF.UseDefaultsUntilReload(db)
+    local defaults = BBF.exportDefaults
+    if not defaults then return end
+    setmetatable(db, { __index = function(t, k)
+        local v = defaults[k]
+        if type(v) == "table" then
+            v = CopyTable(v)
+            rawset(t, k, v)
+        end
+        return v
+    end })
+end
+
 function BBF.DeepMergeTables(destination, source)
     for k, v in pairs(source) do
         if destination[k] == nil then
@@ -63,7 +105,7 @@ function BBF.ExportProfile(profileTable, dataType)
 
     local exportTable = {
         dataType = dataType,
-        data = profileTable
+        data = dataType == "fullProfile" and WithoutDefaults(profileTable) or profileTable
     }
     local serialized = LibSerialize:Serialize(exportTable)
     local compressed = LibDeflate:CompressDeflate(serialized)
@@ -133,6 +175,8 @@ function BBF.OldImportProfile(encodedString, expectedDataType)
             -- Check the subtable and convert if necessary
             importTable.data[expectedDataType] = ConvertIfNeeded(importTable.data[expectedDataType], expectedDataType)
             return importTable.data[expectedDataType], nil
+        elseif expectedDataType ~= "fullProfile" and BBF.exportDefaults and type(BBF.exportDefaults[expectedDataType]) == "table" then
+            return CopyTable(BBF.exportDefaults[expectedDataType]), nil
         else
             return importTable.data, nil
         end

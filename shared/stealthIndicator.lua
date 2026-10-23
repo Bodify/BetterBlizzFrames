@@ -1,25 +1,34 @@
+local function SymmetricPlayer()
+    if BBF.SymmetricPlayerOn then return BBF.SymmetricPlayerOn() end
+    return BetterBlizzFramesDB.symmetricPlayerFrame
+end
+
 local function GetStealthIndicatorHeight()
     local db = BetterBlizzFramesDB
     if db.hideUnitFramePlayerMana and db.hideUnitFramePlayerSecondResource then
-        return 39  -- health only
+        return 36.5  -- health only
     elseif db.hideUnitFramePlayerSecondResource then
-        return 50  -- health + mana
+        return 48  -- health + mana
     elseif db.hideUnitFramePlayerMana then
         local altBarShown = PlayerFrame and
             PlayerFrame.PlayerFrameContainer and
             PlayerFrame.PlayerFrameContainer.AlternatePowerFrameTexture and
             PlayerFrame.PlayerFrameContainer.AlternatePowerFrameTexture:IsShown()
-        return altBarShown and 50 or 39  -- health + alt, or health only
+        return altBarShown and 48 or 36.5  -- health + alt, or health only
     else
         local altBarShown = PlayerFrame.PlayerFrameContainer.AlternatePowerFrameTexture:IsShown()
-        return altBarShown and 61 or 50  -- health + mana + alt, or health + mana
+        return altBarShown and 59 or 48  -- health + mana + alt, or health + mana
     end
 end
 
 local function CreateStealthIndicator()
     PlayerFrame.bbfStealthIndicatorFrame.Texture = PlayerFrame.bbfStealthIndicatorFrame:CreateTexture(nil, "BACKGROUND")
     if BBF.isRetail then
-        if BetterBlizzFramesDB.classicFrames then
+        if BBF.ClassicStealthGlowOn and BBF.ClassicStealthGlowOn() then
+            PlayerFrame.bbfStealthIndicatorFrame.Texture.bbfClassicGlow = true
+            PlayerFrame.bbfStealthIndicatorFrame.Texture:SetVertexColor(0.212, 0.486, 1)
+            BBF.SetClassicStealthGlow(PlayerFrame.bbfStealthIndicatorFrame.Texture)
+        elseif BetterBlizzFramesDB.classicFrames then
             PlayerFrame.bbfStealthIndicatorFrame.Texture:SetVertexColor(0.212, 0.486, 1)
             PlayerFrame.bbfStealthIndicatorFrame.Texture:SetSize(240.5, 93)
             PlayerFrame.bbfStealthIndicatorFrame.Texture:SetPoint("TOPLEFT", PlayerFrame, "TOPLEFT", -4.5, -8)
@@ -33,13 +42,13 @@ local function CreateStealthIndicator()
             PlayerFrame.bbfStealthIndicatorFrame.Texture:SetAtlas("loottoast-glow")
             PlayerFrame.bbfStealthIndicatorFrame.Texture:SetDesaturated(true)
             PlayerFrame.bbfStealthIndicatorFrame.Texture:SetVertexColor(0.212, 0.486, 1)
-            PlayerFrame.bbfStealthIndicatorFrame.Texture:SetPoint("TOP", PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer.HealthBar, "CENTER", 0, 20)
+            PlayerFrame.bbfStealthIndicatorFrame.Texture:SetPoint("TOP", BBF.HealthBar and BBF.HealthBar(PlayerFrame) or PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer.HealthBar, "CENTER", 0, 17.5)
             PlayerFrame.bbfStealthIndicatorFrame.Texture:SetSize(143, GetStealthIndicatorHeight())
         else
             PlayerFrame.bbfStealthIndicatorFrame.Texture:SetAtlas("ui-hud-unitframe-player-portraiton-vehicle-status")
-            PlayerFrame.bbfStealthIndicatorFrame.Texture:SetSize(BetterBlizzFramesDB.symmetricPlayerFrame and 200 or 201, 83.5)
+            PlayerFrame.bbfStealthIndicatorFrame.Texture:SetSize(SymmetricPlayer() and 200 or 201, 83.5)
             PlayerFrame.bbfStealthIndicatorFrame.Texture:SetVertexColor(0.212, 0.486, 1)
-            if BetterBlizzFramesDB.symmetricPlayerFrame then
+            if SymmetricPlayer() then
                 PlayerFrame.bbfStealthIndicatorFrame.Texture:SetPoint("CENTER", PlayerFrame, "CENTER", -3, 1)
             else
                 PlayerFrame.bbfStealthIndicatorFrame.Texture:SetPoint("CENTER", PlayerFrame, "CENTER", -4, 0)
@@ -64,6 +73,9 @@ local function UpdateStealthIndicator()
         PlayerFrame.bbfStealthIndicatorFrame.Texture:SetHeight(GetStealthIndicatorHeight())
     end
     if IsStealthed() then
+        if PlayerFrame.bbfStealthIndicatorFrame.Texture.bbfClassicGlow then
+            BBF.SetClassicStealthGlow(PlayerFrame.bbfStealthIndicatorFrame.Texture)
+        end
         PlayerFrame.bbfStealthIndicatorFrame.Texture:Show()
     else
         PlayerFrame.bbfStealthIndicatorFrame.Texture:Hide()

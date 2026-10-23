@@ -2,15 +2,13 @@ local entries
 local totHooked, partyHooked
 local cvarFrame
 
-local function IsSecret(value)
-    return issecretvalue and issecretvalue(value)
-end
-
 local function FormatNumber(bar, value)
     if BetterBlizzFramesDB.formatStatusBarText then
         return (AbbreviateNumbers or AbbreviateLargeNumbers)(value)
     elseif bar.capNumericDisplay then
         return AbbreviateLargeNumbers(value)
+    elseif BetterBlizzFramesDB.noNumberCommas and (BBF.isForever or BBF.isEra or BBF.isTBC) then
+        return value
     end
     return BreakUpLargeNumbers(value)
 end
@@ -25,7 +23,7 @@ local function NumericText(bar, value, maxValue)
 end
 
 local function PercentText(entry, value, maxValue)
-    if not IsSecret(value) and not IsSecret(maxValue) then
+    if not issecretvalue(value) and not issecretvalue(maxValue) then
         return math.ceil((value / maxValue) * 100) .. "%"
     end
     local bar = entry.bar
@@ -139,7 +137,7 @@ local function OverrideNative(entry, fromBlizzard)
     local value = bar:GetValue()
     local _, maxValue = bar:GetMinMaxValues()
     local alpha = 1
-    if IsSecret(maxValue) then
+    if issecretvalue(maxValue) then
         alpha = maxValue
     elseif maxValue <= 0 then
         return
@@ -148,7 +146,7 @@ local function OverrideNative(entry, fromBlizzard)
     if entry.left then entry.left:Hide() end
     if entry.right then entry.right:Hide() end
     entry.center:SetText(PercentText(entry, value, maxValue))
-    if IsSecret(maxValue) then
+    if issecretvalue(maxValue) then
         entry.center:SetAlpha(alpha)
         entry.alphaTouched = true
     end
@@ -185,7 +183,7 @@ local function Render(entry)
     local value = bar:GetValue()
     local _, maxValue = bar:GetMinMaxValues()
     local alpha = 1
-    if IsSecret(maxValue) then
+    if issecretvalue(maxValue) then
         alpha = maxValue
     elseif maxValue <= 0 then
         return
@@ -264,7 +262,11 @@ local function GetEntries()
         if owner then
             local bars
             if owner.HealthBar then
-                bars = { { owner.HealthBar, false, 0, 0, 0 }, { owner.ManaBar, true, 4, 2, 0 } }
+                if BBF.isForever then
+                    bars = { { owner.HealthBar, false, 0, 0, 0 }, { owner.ManaBar, true, 3, 0, -3 } }
+                else
+                    bars = { { owner.HealthBar, false, 0, 0, 0 }, { owner.ManaBar, true, 4, 2, 0 } }
+                end
             else
                 bars = { { owner.healthbar, false, 2, 0, -2 }, { owner.manabar, true, 2, 0, -2 } }
             end
@@ -280,6 +282,9 @@ local function GetEntries()
                         isMana = isMana,
                         groupKey = "statusTextExtraToT",
                         owned = true,
+                        leftX = leftX,
+                        centerX = centerX,
+                        rightX = rightX,
                         center = CreateBarText(bar, "CENTER", centerX, holder, nil, size),
                         left = CreateBarText(bar, "LEFT", leftX, holder, nil, size),
                         right = CreateBarText(bar, "RIGHT", rightX, holder, nil, size),
@@ -306,7 +311,67 @@ local function GetEntries()
         end
     end
 
+    if BBF.LayerPixelBorderTexts then
+        BBF.LayerPixelBorderTexts(TargetFrameToT)
+        BBF.LayerPixelBorderTexts(FocusFrameToT)
+    end
+
     return entries
+end
+
+function BBF.StatusTextExtraTexts(owner)
+    local list = {}
+    if not entries then return list end
+    for _, entry in ipairs(entries.tot) do
+        if entry.owner == owner then
+            list[#list + 1] = entry.center
+            list[#list + 1] = entry.left
+            list[#list + 1] = entry.right
+        end
+    end
+    return list
+end
+
+local function TotTextY(entry)
+    if entry.isMana or not BBF.TotBigMode or not BetterBlizzFramesDB.biggerHealthbarsNameInside then return 0 end
+    local unit = entry.owner == TargetFrameToT and "target" or "focus"
+    if BBF.ClassicToTActive and BBF.ClassicToTActive(unit) then return 0 end
+    return BBF.TotBigMode(unit) == "big" and -5 or 0
+end
+
+function BBF.PlaceTotStatusTexts(force)
+    if not entries then return end
+    for _, entry in ipairs(entries.tot) do
+        local box = BBF.TextAreaBox and BBF.TextAreaBox(entry.owner, entry.isMana)
+        if box then
+            local x, y = BBF.TextAreaOffset(entry.owner, entry.isMana)
+            local key = tostring(box) .. ":" .. x .. ":" .. y .. ":" .. tostring(BetterBlizzFramesDB.swapStatusBarTexts) .. ":" .. BBF.TextAreaOffset(entry.owner, entry.isMana, "LEFT") .. ":" .. BBF.TextAreaOffset(entry.owner, entry.isMana, "RIGHT")
+            if force or entry.textKey ~= key then
+                entry.textKey = key
+                for point, text in pairs({ CENTER = entry.center, LEFT = entry.left, RIGHT = entry.right }) do
+                    point = BBF.StatusTextPoint(point)
+                    local dx, dy = BBF.TextAreaOffset(entry.owner, entry.isMana, point)
+                    text:ClearAllPoints()
+                    text:SetPoint(point, box, point, dx, dy)
+                    if point ~= "CENTER" then text:SetJustifyH(point) end
+                end
+            end
+        else
+            local y = TotTextY(entry)
+            local anchor = BetterBlizzFramesDB.noPortraitPixelBorder and entry.bar.bbfPixelBox or entry.bar
+            local key = tostring(anchor) .. ":" .. y
+            if force or entry.textKey ~= key then
+                entry.textKey = key
+                entry.center:SetPoint("CENTER", anchor, "CENTER", entry.centerX, y)
+                entry.left:ClearAllPoints()
+                entry.left:SetPoint("LEFT", anchor, "LEFT", entry.leftX, y)
+                entry.left:SetJustifyH("LEFT")
+                entry.right:ClearAllPoints()
+                entry.right:SetPoint("RIGHT", anchor, "RIGHT", entry.rightX, y)
+                entry.right:SetJustifyH("RIGHT")
+            end
+        end
+    end
 end
 
 local function RenderGroup(list)
@@ -383,6 +448,7 @@ function BBF.StatusBarTextExtra()
     end
     UpdateCVarWatcher(list, tot or party)
 
+    BBF.PlaceTotStatusTexts()
     RenderGroup(list.tot)
     RenderGroup(list.party)
 end

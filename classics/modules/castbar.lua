@@ -1214,7 +1214,7 @@ end
 local function IsSelfCast(unit)
     if not PlayerIsSpellTarget then return end
     local isSelf = PlayerIsSpellTarget(unit)
-    if issecretvalue and issecretvalue(isSelf) then return end
+    if issecretvalue(isSelf) then return end
     return isSelf
 end
 

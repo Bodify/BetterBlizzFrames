@@ -304,8 +304,9 @@ local layoutKeys = {
     [FocusFrame] = "focus",
     [TargetFrameToT] = "targetToT",
     [FocusFrameToT] = "focusToT",
+    [PetFrame] = "pet",
 }
-local layoutFrames = { PlayerFrame, TargetFrame, FocusFrame, TargetFrameToT, FocusFrameToT }
+local layoutFrames = { PlayerFrame, TargetFrame, FocusFrame, TargetFrameToT, FocusFrameToT, PetFrame }
 
 local function GetNameWidth(frame)
     return frame.bbfNameBaseWidth
@@ -327,6 +328,7 @@ local movePrefix = {
     focus = "moveNameFocus",
     targetToT = "moveNameTargetToT",
     focusToT = "moveNameFocusToT",
+    pet = "moveNamePet",
 }
 BBF.nameMovePrefix = movePrefix
 
@@ -341,6 +343,7 @@ for _, prefix in pairs(movePrefix) do
     BBF.nameMoveSliders[prefix .. "X"] = true
     BBF.nameMoveSliders[prefix .. "Y"] = true
     BBF.nameMoveSliders[prefix .. "Width"] = true
+    BBF.nameMoveSliders[prefix .. "Scale"] = true
 end
 
 local function NameAlignForced(key)
@@ -381,7 +384,8 @@ local function ApplyNameLayout(frame)
     local dragBox = fontString.bbfDragBox
     if dragBox then
         fontString:ClearAllPoints()
-        local extraX, extraY = dragBox.extraX or 0, dragBox.extraY or 0
+        local moveScale = fontString.bbfMoveScale or 1
+        local extraX, extraY = (dragBox.extraX or 0) / moveScale, (dragBox.extraY or 0) / moveScale
         local inset = dragBox.inset * dragBox:GetEffectiveScale() / fontString:GetEffectiveScale()
         fontString:SetPoint("TOPLEFT", dragBox, "TOPLEFT", inset + extraX, -inset + extraY)
         fontString:SetPoint("BOTTOMRIGHT", dragBox, "BOTTOMRIGHT", -inset + extraX, inset + extraY)
@@ -393,6 +397,7 @@ local function ApplyNameLayout(frame)
     local multiLine = prefix and db[prefix .. "MultiLine"] and true or false
     local edge = prefix and db[prefix .. "GrowDown"] and "TOP" or "BOTTOM"
     local dw = prefix and tonumber(db[prefix .. "Width"]) or 0
+    local scale = BBF.GetNameMoveScale and BBF.GetNameMoveScale(prefix) or 1
     local height = frame.bbfNameBaseHeight
     local width = GetNameWidth(frame)
     local point, relativeTo, relativePoint, xPos, yPos, justify = GetBaseNameSpec(frame)
@@ -407,15 +412,24 @@ local function ApplyNameLayout(frame)
         fontString:SetMaxLines(multiLine and 3 or 0)
     end
     fontString.bbfMultiLine = multiLine or nil
+    if BBF.SetNameMoveScale then
+        BBF.SetNameMoveScale(fontString, scale)
+    end
 
     if point then
         if multiLine and height then
             point, yPos = ToEdge(point, yPos, height, edge)
             yPos = yPos + MultiLineNudge(fontString, height, edge)
         end
-        fontString:SetPoint(point, relativeTo, relativePoint, xPos + dx, yPos + dy)
         if width then
             width = math.max(width + dw, 10)
+        end
+        local x, y = xPos + dx, yPos + dy
+        if scale ~= 1 then
+            x, y = BBF.ScaleNamePoint(point, justify, width, not multiLine and height, scale, x, y)
+        end
+        fontString:SetPoint(point, relativeTo, relativePoint, x, y)
+        if width then
             fontString:SetWidth(width)
         end
         if multiLine then
@@ -434,12 +448,18 @@ local function ApplyNameLayout(frame)
         local right = extra - left
         if multiLine then
             dy = dy + MultiLineNudge(fontString, height, edge)
-            fontString:SetPoint(edge .. "LEFT", name, edge .. "LEFT", dx - left, dy)
-            fontString:SetPoint(edge .. "RIGHT", name, edge .. "RIGHT", dx + right, dy)
+        end
+        local x1, y1, x2, y2 = dx - left, dy, dx + right, dy
+        if scale ~= 1 then
+            x1, y1, x2, y2 = BBF.ScaleNameBox(justify, width, not multiLine and height, scale, x1, y1, x2, y2)
+        end
+        if multiLine then
+            fontString:SetPoint(edge .. "LEFT", name, edge .. "LEFT", x1, y1)
+            fontString:SetPoint(edge .. "RIGHT", name, edge .. "RIGHT", x2, y2)
             fontString:SetHeight(0)
         else
-            fontString:SetPoint("TOPLEFT", name, "TOPLEFT", dx - left, dy)
-            fontString:SetPoint("BOTTOMRIGHT", name, "BOTTOMRIGHT", dx + right, dy)
+            fontString:SetPoint("TOPLEFT", name, "TOPLEFT", x1, y1)
+            fontString:SetPoint("BOTTOMRIGHT", name, "BOTTOMRIGHT", x2, y2)
         end
     end
     if width and fontString.bbfFitWidth then
@@ -475,6 +495,7 @@ BBF.NameLayoutTargets = {
     { key = "focus", frame = FocusFrame },
     { key = "targetToT", frame = TargetFrameToT },
     { key = "focusToT", frame = FocusFrameToT },
+    { key = "pet", frame = PetFrame },
 }
 
 function BBF.SetCenteredNamesCaller()
@@ -494,6 +515,8 @@ BBF.nameLayoutSettings = {
     moveNameTargetToTGrowDown = true,
     moveNameFocusToTMultiLine = true,
     moveNameFocusToTGrowDown = true,
+    moveNamePetMultiLine = true,
+    moveNamePetGrowDown = true,
     moveNames = true,
     mirroredNames = true,
 }
@@ -1491,7 +1514,7 @@ end
 
 function BBF.FontColors()
     local db = BetterBlizzFramesDB
-    if db.unitFrameFontColor then
+    if db.changeUnitFrameFont and db.unitFrameFontColor then
         local color = db.unitFrameFontColorRGB
         local unitFrameFonts = {
             PlayerFrame,
@@ -1533,7 +1556,7 @@ function BBF.FontColors()
         end
     end
 
-    if db.partyFrameFontColor then
+    if db.changePartyFrameFont and db.partyFrameFontColor then
         local color = db.partyFrameFontColorRGB
         local partyFrameFonts = {
             CompactRaidFrame1,
@@ -1560,7 +1583,7 @@ function BBF.FontColors()
         end
     end
 
-    if db.unitFrameValueFontColor then
+    if db.changeUnitFrameValueFont and db.unitFrameValueFontColor then
         local color = db.unitFrameValueFontColorRGB
         local unitFrameValueFonts = {
             PlayerFrame.HealthBar,
@@ -1589,7 +1612,7 @@ function BBF.FontColors()
         end
     end
 
-    if db.actionBarFontColor and not db.hideActionBarHotKey then
+    if db.changeActionBarFont and db.actionBarFontColor and not db.hideActionBarHotKey then
         local color = db.actionBarFontColorRGB
         local function isBlizzardWhite(r)
             return math.abs(r - 0.6) < 0.01

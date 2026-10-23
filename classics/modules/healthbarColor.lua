@@ -494,20 +494,20 @@ local frameTextureHooked
 local hideManabarHooked
 local maxLvl = BBF.isMoP and 90 or BBF.isTBC and 70 or 85
 
-local bigNoManaTexture = "Interface\\Addons\\BetterBlizzFrames\\media\\NoManas\\UI-TargetingFrame-Big-NoMana"
-local bigNoLevelNoManaTexture = "Interface\\Addons\\BetterBlizzFrames\\media\\NoManas\\UI-TargetingFrame-NoLevel-Big-NoMana"
-local bigEliteNoManaTexture = "Interface\\Addons\\BetterBlizzFrames\\media\\NoManas\\UI-TargetingFrame-Elite-Big-NoMana"
-local bigRareNoManaTexture = "Interface\\Addons\\BetterBlizzFrames\\media\\NoManas\\UI-TargetingFrame-Rare-Big-NoMana"
-local bigRareEliteNoManaTexture = "Interface\\Addons\\BetterBlizzFrames\\media\\NoManas\\UI-TargetingFrame-Rare-Elite-Big-NoMana"
-local bigMinusNoManaTexture = "Interface\\Addons\\BetterBlizzFrames\\media\\NoManas\\UI-TargetingFrame-Minus-Big-NoMana"
-local bigPlayerStatusNoManaTexture = "Interface\\Addons\\BetterBlizzFrames\\media\\NoManas\\UI-Player-Status-Big-NoMana"
+local bigNoManaTexture = "Interface\\Addons\\BetterBlizzFrames\\media\\classicTextures\\NoManas\\UI-TargetingFrame-Big-NoMana.png"
+local bigNoLevelNoManaTexture = "Interface\\Addons\\BetterBlizzFrames\\media\\classicTextures\\NoManas\\UI-TargetingFrame-NoLevel-Big-NoMana.png"
+local bigEliteNoManaTexture = "Interface\\Addons\\BetterBlizzFrames\\media\\classicTextures\\NoManas\\UI-TargetingFrame-Elite-Big-NoMana.png"
+local bigRareNoManaTexture = "Interface\\Addons\\BetterBlizzFrames\\media\\classicTextures\\NoManas\\UI-TargetingFrame-Rare-Big-NoMana.png"
+local bigRareEliteNoManaTexture = "Interface\\Addons\\BetterBlizzFrames\\media\\classicTextures\\NoManas\\UI-TargetingFrame-Rare-Elite-Big-NoMana.png"
+local bigMinusNoManaTexture = "Interface\\Addons\\BetterBlizzFrames\\media\\classicTextures\\NoManas\\UI-TargetingFrame-Big-NoMana.png"
+local bigPlayerStatusNoManaTexture = "Interface\\Addons\\BetterBlizzFrames\\media\\classicTextures\\NoManas\\UI-Player-Status-Big-NoMana"
 
-local noManaTexture = "Interface\\Addons\\BetterBlizzFrames\\media\\NoManas\\UI-TargetingFrame-NoMana"
-local noLevelNoManaTexture = "Interface\\Addons\\BetterBlizzFrames\\media\\NoManas\\UI-TargetingFrame-NoLevel-NoMana"
-local eliteNoManaTexture = "Interface\\Addons\\BetterBlizzFrames\\media\\NoManas\\UI-TargetingFrame-Elite-NoMana"
-local rareNoManaTexture = "Interface\\Addons\\BetterBlizzFrames\\media\\NoManas\\UI-TargetingFrame-Rare-NoMana"
-local rareEliteNoManaTexture = "Interface\\Addons\\BetterBlizzFrames\\media\\NoManas\\UI-TargetingFrame-Rare-Elite-NoMana"
-local minusNoManaTexture = "Interface\\Addons\\BetterBlizzFrames\\media\\NoManas\\UI-TargetingFrame-Minus-NoMana"
+local noManaTexture = "Interface\\Addons\\BetterBlizzFrames\\media\\classicTextures\\NoManas\\UI-TargetingFrame-NoMana.png"
+local noLevelNoManaTexture = "Interface\\Addons\\BetterBlizzFrames\\media\\classicTextures\\NoManas\\UI-TargetingFrame-NoLevel-NoMana.png"
+local eliteNoManaTexture = "Interface\\Addons\\BetterBlizzFrames\\media\\classicTextures\\NoManas\\UI-TargetingFrame-Elite-NoMana.png"
+local rareNoManaTexture = "Interface\\Addons\\BetterBlizzFrames\\media\\classicTextures\\NoManas\\UI-TargetingFrame-Rare-NoMana.png"
+local rareEliteNoManaTexture = "Interface\\Addons\\BetterBlizzFrames\\media\\classicTextures\\NoManas\\UI-TargetingFrame-Rare-Elite-NoMana.png"
+local minusNoManaTexture = noManaTexture
 
 local function ShouldHideManabar(frameName)
     if frameName == "PlayerFrame" then return BetterBlizzFramesDB.hidePlayerManabar end
@@ -541,8 +541,8 @@ function BBF.BiggerHealthbars(frame, name)
     local background = _G[frame.."Background"]
     local deadText = _G[frame.."TextureFrameDeadText"]
 
-    local noLevelTexture = "Interface\\Addons\\BetterBlizzFrames\\media\\UI-TargetingFrame-NoLevel"
-    local normalTexture = "Interface\\Addons\\BetterBlizzFrames\\media\\UI-TargetingFrame"
+    local noLevelTexture = "Interface\\Addons\\BetterBlizzFrames\\media\\classicTextures\\UI-TargetingFrame-NoLevel.png"
+    local normalTexture = "Interface\\Addons\\BetterBlizzFrames\\media\\classicTextures\\UI-TargetingFrame.png"
 
     local hideMana = ShouldHideManabar(frame)
 
@@ -562,7 +562,7 @@ function BBF.BiggerHealthbars(frame, name)
     -- Texture
     texture:SetTexture(targetTexture)
     local hidePlayerMana = BetterBlizzFramesDB.hidePlayerManabar
-    local playerGlowPath = hidePlayerMana and bigPlayerStatusNoManaTexture or "Interface\\Addons\\BetterBlizzFrames\\media\\UI-Player-Status"
+    local playerGlowPath = hidePlayerMana and bigPlayerStatusNoManaTexture or "Interface\\Addons\\BetterBlizzFrames\\media\\classicTextures\\UI-Player-Status.png"
     playerGlowTexture:SetTexture(playerGlowPath)
     hooksecurefunc(playerGlowTexture, "SetTexture",
         function(self, texture)
@@ -734,13 +734,13 @@ function BBF.BiggerHealthbars(frame, name)
                 if frameName == "FocusFrame" and BetterBlizzFramesDB.biggerHealthbarsNoFocus then return end
                 local hideMana = ShouldHideManabar(frameName)
                 if (classification == "minus") then
-                    self.borderTexture:SetTexture(hideMana and bigMinusNoManaTexture or "Interface\\Addons\\BetterBlizzFrames\\media\\UI-TargetingFrame-Minus")
+                    self.borderTexture:SetTexture(hideMana and bigMinusNoManaTexture or "Interface\\Addons\\BetterBlizzFrames\\media\\classicTextures\\UI-TargetingFrame.png")
                 elseif (classification == "worldboss" or classification == "elite") then
-                    self.borderTexture:SetTexture(hideMana and bigEliteNoManaTexture or "Interface\\Addons\\BetterBlizzFrames\\media\\UI-TargetingFrame-Elite")
+                    self.borderTexture:SetTexture(hideMana and bigEliteNoManaTexture or "Interface\\Addons\\BetterBlizzFrames\\media\\classicTextures\\UI-TargetingFrame-Elite.png")
                 elseif (classification == "rareelite") then
-                    self.borderTexture:SetTexture(hideMana and bigRareEliteNoManaTexture or "Interface\\Addons\\BetterBlizzFrames\\media\\UI-TargetingFrame-Rare-Elite")
+                    self.borderTexture:SetTexture(hideMana and bigRareEliteNoManaTexture or "Interface\\Addons\\BetterBlizzFrames\\media\\classicTextures\\UI-TargetingFrame-Rare-Elite.png")
                 elseif (classification == "rare") then
-                    self.borderTexture:SetTexture(hideMana and bigRareNoManaTexture or "Interface\\Addons\\BetterBlizzFrames\\media\\UI-TargetingFrame-Rare")
+                    self.borderTexture:SetTexture(hideMana and bigRareNoManaTexture or "Interface\\Addons\\BetterBlizzFrames\\media\\classicTextures\\UI-TargetingFrame-Rare.png")
                 else
                     local textureToUse
                     if hideMana then

@@ -21,10 +21,14 @@ shared\functions_mainline.lua
 shared\ImportExport.lua
 shared\minimapTweaks.lua
 shared\smoothBars.lua
+shared\healthbarMirror.lua
+shared\partySecureLayout.lua
 shared\xpBarTexture.lua
+shared\damageMeterTexture.lua
 shared\comboVisibility.lua
 shared\statusBarTextExtra.lua
 shared\hideTooltip.lua
+shared\textArea.lua
 
 retail\modules\darkmode.lua
 retail\modules\classicFrames.lua
@@ -52,7 +56,11 @@ retail\modules\hunter\tipofthespear.lua
 retail\modules\cdManager.lua
 retail\modules\partyHighlight.lua
 retail\modules\healer.lua
+retail\modules\frameMasks.lua
 retail\modules\noPortrait.lua
+shared\pixelBorderLayout.lua
+retail\modules\partyLevel.lua
+retail\modules\healthbarLayouts.lua
 retail\modules\bigPlayerHealthbar.lua
 retail\modules\prd.lua
 

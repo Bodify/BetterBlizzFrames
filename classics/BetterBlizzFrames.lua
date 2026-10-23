@@ -25,30 +25,49 @@ local defaultSettings = {
     moveNamePlayerMultiLine = false,
     moveNamePlayerGrowDown = false,
     moveNamePlayerWidth = 0,
+    moveNamePlayerScale = 1,
     moveNameTargetX = 0,
     moveNameTargetY = 0,
     moveNameTargetAlign = "Default",
     moveNameTargetMultiLine = false,
     moveNameTargetGrowDown = false,
     moveNameTargetWidth = 0,
+    moveNameTargetScale = 1,
     moveNameFocusX = 0,
     moveNameFocusY = 0,
     moveNameFocusAlign = "Default",
     moveNameFocusMultiLine = false,
     moveNameFocusGrowDown = false,
     moveNameFocusWidth = 0,
+    moveNameFocusScale = 1,
     moveNameTargetToTX = 0,
     moveNameTargetToTY = 0,
     moveNameTargetToTAlign = "Default",
     moveNameTargetToTMultiLine = false,
     moveNameTargetToTGrowDown = false,
     moveNameTargetToTWidth = 0,
+    moveNameTargetToTScale = 1,
     moveNameFocusToTX = 0,
     moveNameFocusToTY = 0,
     moveNameFocusToTAlign = "Default",
     moveNameFocusToTMultiLine = false,
     moveNameFocusToTGrowDown = false,
     moveNameFocusToTWidth = 0,
+    moveNameFocusToTScale = 1,
+    moveNamePetX = 0,
+    moveNamePetY = 0,
+    moveNamePetAlign = "Default",
+    moveNamePetMultiLine = false,
+    moveNamePetGrowDown = false,
+    moveNamePetWidth = 0,
+    moveNamePetScale = 1,
+    moveNamePartyX = 0,
+    moveNamePartyY = 0,
+    moveNamePartyAlign = "Default",
+    moveNamePartyMultiLine = false,
+    moveNamePartyGrowDown = false,
+    moveNamePartyWidth = 0,
+    moveNamePartyScale = 1,
     darkModeUi = false,
     darkModeActionBars = true,
     darkModeUiAura = true,
@@ -108,6 +127,7 @@ local defaultSettings = {
     hideTooltip = false,
     hideTooltipArena = true,
     hideTooltipCombat = true,
+    lowerToTStrata = false,
     smoothManabars = true,
 
     -- Absorb Indicator
@@ -405,6 +425,7 @@ if version and version:match("^5") then
 end
 
 local function InitializeSavedVariables()
+    BBF.exportDefaults = CopyTable(defaultSettings)
     if not BetterBlizzFramesDB then
         BetterBlizzFramesDB = {}
     end
@@ -464,7 +485,7 @@ end
 
 BBF.popupBuilders["CONFIRM_RESET_BETTERBLIZZFRAMESDB"] = function()
     return {
-        text = L["Popup_Confirm_Reset"],
+        text = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: \n\n" .. L["Popup_Confirm_Reset"],
         button1 = L["Yes"],
         button2 = L["No"],
         OnAccept = function()
@@ -685,14 +706,14 @@ function BBF.PlayerElite(mode)
         if BBF.eliteToggled then
             if bigHealthbars then
                 if hideMana then
-                    playerElite:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\NoManas\\UI-TargetingFrame-Big-NoMana")
+                    playerElite:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\classicTextures\\NoManas\\UI-TargetingFrame-Big-NoMana.png")
                 else
-                    playerElite:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\UI-TargetingFrame")
+                    playerElite:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\classicTextures\\UI-TargetingFrame.png")
                 end
                 playerElite:SetTexCoord(1, .09375, 0, .78125)
             else
                 if hideMana then
-                    playerElite:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\NoManas\\UI-TargetingFrame-NoMana")
+                    playerElite:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\classicTextures\\NoManas\\UI-TargetingFrame-NoMana.png")
                 else
                     playerElite:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame")
                 end
@@ -708,15 +729,15 @@ function BBF.PlayerElite(mode)
     if mode == 1 then -- Rare (Silver)
         if bigHealthbars then
             if hideMana then
-                playerElite:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\NoManas\\UI-TargetingFrame-Rare-Big-NoMana")
+                playerElite:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\classicTextures\\NoManas\\UI-TargetingFrame-Rare-Big-NoMana.png")
             else
-                playerElite:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\UI-TargetingFrame-Rare")
+                playerElite:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\classicTextures\\UI-TargetingFrame-Rare.png")
             end
             playerElite:SetTexCoord(1, .09375, 0, .78125)
             playerElite:SetDesaturated(true)
         else
             if hideMana then
-                playerElite:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\NoManas\\UI-TargetingFrame-Rare-NoMana")
+                playerElite:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\classicTextures\\NoManas\\UI-TargetingFrame-Rare-NoMana.png")
             else
                 playerElite:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Rare")
             end
@@ -726,14 +747,14 @@ function BBF.PlayerElite(mode)
     elseif mode == 2 then -- Boss (Gold Winged)
         if bigHealthbars then
             if hideMana then
-                playerElite:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\NoManas\\UI-TargetingFrame-Elite-Big-NoMana")
+                playerElite:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\classicTextures\\NoManas\\UI-TargetingFrame-Elite-Big-NoMana.png")
             else
-                playerElite:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\UI-TargetingFrame-Elite")
+                playerElite:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\classicTextures\\UI-TargetingFrame-Elite.png")
             end
             playerElite:SetTexCoord(1, .09375, 0, .78125)
         else
             if hideMana then
-                playerElite:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\NoManas\\UI-TargetingFrame-Elite-NoMana")
+                playerElite:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\classicTextures\\NoManas\\UI-TargetingFrame-Elite-NoMana.png")
             else
                 playerElite:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Elite")
             end
@@ -742,15 +763,15 @@ function BBF.PlayerElite(mode)
     elseif mode == 3 then -- Boss (Silver Winged)
         if bigHealthbars then
             if hideMana then
-                playerElite:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\NoManas\\UI-TargetingFrame-Rare-Elite-Big-NoMana")
+                playerElite:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\classicTextures\\NoManas\\UI-TargetingFrame-Rare-Elite-Big-NoMana.png")
             else
-                playerElite:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\UI-TargetingFrame-Rare-Elite")
+                playerElite:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\classicTextures\\UI-TargetingFrame-Rare-Elite.png")
             end
             playerElite:SetTexCoord(1, .09375, 0, .78125)
             playerElite:SetDesaturated(true)
         else
             if hideMana then
-                playerElite:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\NoManas\\UI-TargetingFrame-Rare-Elite-NoMana")
+                playerElite:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\classicTextures\\NoManas\\UI-TargetingFrame-Rare-Elite-NoMana.png")
             else
                 playerElite:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Elite")
             end
@@ -824,7 +845,7 @@ function BBF.UpdateClassicEliteOverlay(frame, forceNormalTexture)
     end
     if not overlay then
         overlay = texture:GetParent():CreateTexture(nil, "OVERLAY")
-        overlay:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\eliteOverlayClassic")
+        overlay:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\classicTextures\\eliteOverlayClassic.png")
         overlay:SetAllPoints(texture)
         frame.bbfEliteOverlay = overlay
     end
@@ -3023,6 +3044,36 @@ local function executeCustomCode()
                 return "[[" .. STANDARD_TEXT_FONT .. "]]"
             end
         end)
+        local function textureFallback(path)
+            local lower = path:lower()
+            if not lower:find("^interface[\\/]+addons[\\/]") then return end
+            local fallback = lower:find("mask") and "Interface\\Common\\CommonIconMask"
+                or lower:find("edge") and "Interface\\AddOns\\BetterBlizzFrames\\media\\classicTextures\\MoTextures\\LoCEdge.png"
+            if not fallback then return end
+            if not BBF.testTexture then
+                BBF.testTexture = UIParent:CreateTexture()
+            end
+            BBF.testTexture:SetTexture(path)
+            if not BBF.testTexture:GetTextureFileID() then
+                return fallback
+            end
+        end
+        local function quotedTexture(q)
+            return function(path)
+                local fallback = textureFallback((path:gsub("\\\\", "\\")))
+                if fallback then
+                    return q .. fallback:gsub("\\", "\\\\") .. q
+                end
+            end
+        end
+        code = code:gsub('"([iI][nN][tT][eE][rR][fF][aA][cC][eE][^"\n]-)"', quotedTexture('"'))
+        code = code:gsub("'([iI][nN][tT][eE][rR][fF][aA][cC][eE][^'\n]-)'", quotedTexture("'"))
+        code = code:gsub("%[%[([iI][nN][tT][eE][rR][fF][aA][cC][eE][^\n]-)%]%]", function(path)
+            local fallback = textureFallback(path)
+            if fallback then
+                return "[[" .. fallback .. "]]"
+            end
+        end)
         local func, errorMsg = loadstring(code, "BBF Custom Code")
         if func then
             xpcall(func, geterrorhandler())
@@ -3235,6 +3286,8 @@ SlashCmdList["BBF"] = function(msg)
 
     if command == "news" then
         NewsUpdateMessage()
+    elseif command == "reset" then
+        BBF.ShowPopup("CONFIRM_RESET_BETTERBLIZZFRAMESDB")
     elseif command == "whitelist" or command == "wl" then
         if arg and arg ~= "" then
             if tonumber(arg) then
@@ -3403,6 +3456,7 @@ First:SetScript("OnEvent", function(_, event, addonName)
             BBF.CenterCurrentValueOnBars()
             BBF.StatusBarTextExtra()
             BBF.HideTooltip()
+            BBF.LowerToTStrata()
             BBF.UpdateAuraCollapseButton()
 
             if not BetterBlizzFramesDB.disableHealAbsorbRecolor then
@@ -3592,6 +3646,7 @@ function BBF.ReduceEditModeAlpha(disable)
         UtilityCooldownViewer,
         BuffIconCooldownViewer,
         BuffBarCooldownViewer,
+        DamageMeter,
     }
 
     for _, frame in pairs(frames) do
@@ -3672,7 +3727,7 @@ function BBF.BiggerDefaultPartyFrames()
 
         local texture = overlay.Texture
         if bigBars then
-            texture:SetTexture("Interface\\Addons\\BetterBlizzFrames\\media\\UI-TargetingFrame-NoLevel")
+            texture:SetTexture("Interface\\Addons\\BetterBlizzFrames\\media\\classicTextures\\UI-TargetingFrame-NoLevel.png")
         else
             texture:SetTexture("Interface\\TargetingFrame\\UI-FocusFrame-Large")
         end

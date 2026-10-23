@@ -103,10 +103,10 @@ local function UpdateAltManaBar(cf)
             PlayerFrame.PlayerFrameContainer.AlternatePowerFrameTexture:Show()
         end
         if BBF.HasNoPortrait("player") and PlayerFrame.noPortraitMode then
-            if BetterBlizzFramesDB.bigPlayerHealthbar then
-                PlayerFrame.noPortraitMode.Texture:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Large-Alt-Unified.tga")
+            if BBF.BigPlayerHealthbar() then
+                PlayerFrame.noPortraitMode.Texture:SetTexture(BBF.NoPortraitArt("Large-Alt-Unified"))
             else
-                PlayerFrame.noPortraitMode.Texture:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Large-Alt.tga")
+                PlayerFrame.noPortraitMode.Texture:SetTexture(BBF.NoPortraitArt("Large-Alt"))
             end
         end
         SetComboNudge(-9)
@@ -119,16 +119,16 @@ local function UpdateAltManaBar(cf)
             end
             if BBF.HasNoPortrait("player") and PlayerFrame.noPortraitMode then
                 if PlayerFrame.PlayerFrameContainer.AlternatePowerFrameTexture:IsShown() then
-                    if BetterBlizzFramesDB.bigPlayerHealthbar then
-                        PlayerFrame.noPortraitMode.Texture:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Large-Alt-Unified.tga")
+                    if BBF.BigPlayerHealthbar() then
+                        PlayerFrame.noPortraitMode.Texture:SetTexture(BBF.NoPortraitArt("Large-Alt-Unified"))
                     else
-                        PlayerFrame.noPortraitMode.Texture:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Large-Alt.tga")
+                        PlayerFrame.noPortraitMode.Texture:SetTexture(BBF.NoPortraitArt("Large-Alt"))
                     end
                 else
-                    if BetterBlizzFramesDB.bigPlayerHealthbar then
-                        PlayerFrame.noPortraitMode.Texture:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Large-Unified.tga")
+                    if BBF.BigPlayerHealthbar() then
+                        PlayerFrame.noPortraitMode.Texture:SetTexture(BBF.NoPortraitArt("Large-Unified"))
                     else
-                        PlayerFrame.noPortraitMode.Texture:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\UI-HUD-UnitFrame-Player-PortraitOff-Large.tga")
+                        PlayerFrame.noPortraitMode.Texture:SetTexture(BBF.NoPortraitArt("Large"))
                     end
                 end
             end
@@ -291,8 +291,6 @@ local function CreateManaOnlyBar(isActive, extraEvent)
         elseif cfTex then
             anchor, y = cfTex, -8.5
             x = key == "LeftText" and 107.5 or key == "RightText" and -7 or 52
-        elseif db.symmetricPlayerFrame then
-            x = key == "LeftText" and 10.5 or key == "RightText" and -5 or 4.5
         else
             x = key == "LeftText" and 1.5 or key == "RightText" and -2 or 0
         end
@@ -336,7 +334,7 @@ local function CreateManaOnlyBar(isActive, extraEvent)
     local function UpdateTexts()
         if not active then return end
         local mana, maxMana = GetMana()
-        if issecretvalue and (issecretvalue(mana) or issecretvalue(maxMana)) then
+        if issecretvalue(mana) or issecretvalue(maxMana) then
             bar.LeftText:Hide()
             bar.RightText:Hide()
             bar.TextString:Hide()

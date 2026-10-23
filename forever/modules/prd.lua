@@ -33,7 +33,7 @@ local function ApplyPRDBarMask(bar, container)
         bar.bbfPRDMask = bar:CreateMaskTexture()
     end
     local mask = bar.bbfPRDMask
-    mask:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\midnightNpMask.tga")
+    mask:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\masks\\midnightNpMask.png")
     mask:ClearAllPoints()
     mask:SetPoint("TOPLEFT", container, "TOPLEFT", -0.5, 1)
     mask:SetPoint("BOTTOMRIGHT", container, "BOTTOMRIGHT", 0.5, -1)
