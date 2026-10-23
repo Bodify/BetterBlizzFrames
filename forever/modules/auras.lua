@@ -3912,7 +3912,7 @@ function H.CreateEnchantIcon(button)
 end
 
 function H.PaintEnchantIcons(host)
-    if InCombatLockdown() then
+    if InCombatLockdown() or AurasAreSecret() then
         host.enchantIconsPending = true
         return
     end

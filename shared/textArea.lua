@@ -37,7 +37,7 @@ BBF.TextAreaLayouts = {
             { style = "noPortrait", left = 1, right = -6.5 },
             { style = "classic", mode = "big", mana = "hidden", inside = true, bottom = 1, healthY = 4.5 },
             { style = "classic", mode = "big", mana = "hidden", bottom = 1 },
-            { style = "classic", mode = "big", bottom = -1, manaY = 0, own = { bottom = true } },
+            { style = "classic", mode = "big", bottom = -1, manaY = -0.5, own = { bottom = true } },
             { style = "classic", mode = "none", mana = "hidden", top = 1, bottom = -1, healthY = 0 },
             { style = "classic", left = 1, right = -2, top = 1, bottom = -1, textLeft = -0.5, textRight = -0.5 },
             { client = "retail", style = "retail", mode = "none", mana = "shown", left = 1, right = -5, textRight = 7 },
@@ -222,7 +222,7 @@ end
 
 local CLIENT = BBF.isForever and "forever" or "retail"
 local CLASSIC_EXTRA_TEXT_RIGHT = 2
-local CLASSIC_RETAIL_MANA_GROW = { bottom = 1, targetRight = -4 }
+local CLASSIC_MANA_GROW = { bottom = 2, retailTargetRight = -4 }
 
 local function RetailArt(unit)
     if BBF.isForever then return BBF.RetailTexturesOn and BBF.RetailTexturesOn(unit) or false end
@@ -398,10 +398,10 @@ local function ResolveText(frame)
             end
         end
     end
-    if setup.style == "classic" and CLIENT == "retail" and not setup.manaHidden then
-        v.bottom = v.bottom + CLASSIC_RETAIL_MANA_GROW.bottom
-        if setup.key == "target" then
-            v.right = v.right + CLASSIC_RETAIL_MANA_GROW.targetRight
+    if setup.style == "classic" and not setup.manaHidden then
+        v.bottom = v.bottom + CLASSIC_MANA_GROW.bottom
+        if setup.key == "target" and CLIENT == "retail" then
+            v.right = v.right + CLASSIC_MANA_GROW.retailTargetRight
         end
     end
     return v, setup

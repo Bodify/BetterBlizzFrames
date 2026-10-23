@@ -69,39 +69,25 @@ local function SetSegmentFill(seg, tex, useDefault)
 end
 
 local BAR_TEX = "Interface\\AddOns\\BetterBlizzFrames\\media\\barTextures\\"
-local grownSegmentFills = {
+local plainSegmentFills = {
     [BAR_TEX .. "BlizzardRetailBarGreen"] = BAR_TEX .. "BlizzardRetailBar",
     [BAR_TEX .. "BlizzardForeverBarGreen"] = BAR_TEX .. "BlizzardForeverBar",
 }
 
-local function HealthBarGrown(statusBar)
-    local db = BetterBlizzFramesDB
-    if statusBar == PlayerFrame.healthbar then
-        return BBF.BigHealthbarOn(PlayerFrame) or BBF.PlayerManaHiddenArt()
+function BBF.SetHealSegmentFills(statusBar, tex)
+    if tex then
+        tex = plainSegmentFills[tex] or tex
     end
-    if statusBar == TargetFrame.healthbar then
-        return BBF.BigHealthbarOn(TargetFrame) or db.hideUnitFrameTargetMana
-    end
-    if statusBar == FocusFrame.healthbar then
-        return BBF.BigHealthbarOn(FocusFrame) or db.hideUnitFrameFocusMana
-    end
-end
-
-function BBF.SetHealSegmentFills(statusBar, tex, useDefault)
-    statusBar.bbfGrownSegmentFill = nil
-    if useDefault and grownSegmentFills[tex] and HealthBarGrown(statusBar) then
-        tex, useDefault = grownSegmentFills[tex], false
-        statusBar.bbfGrownSegmentFill = tex
-    end
+    statusBar.bbfSegmentFill = tex
     for i = 1, #healSegments do
-        SetSegmentFill(statusBar[healSegments[i]], tex, useDefault)
+        SetSegmentFill(statusBar[healSegments[i]], tex, not tex)
     end
 end
 
 local function SyncHealPredictionBar(bar, overlay, src)
-    if bar.bbfGrownSegmentFill then
-        SetSegmentFill(overlay, bar.bbfGrownSegmentFill)
-    elseif overlay and overlay.fillAtlas and (bar.bbfGreenTexture or src:GetAtlas()) then
+    if bar.bbfSegmentFill then
+        SetSegmentFill(overlay, bar.bbfSegmentFill)
+    elseif overlay and overlay.fillAtlas and src:GetAtlas() then
         SetSegmentFill(overlay, nil, true)
     else
         SyncBarTexture(overlay, src)

@@ -4112,7 +4112,6 @@ local function ApplyTextureChange(type, statusBar, parent, classic, party, altBa
     else
         statusBar.keepFancyManas = BetterBlizzFramesDB.changeUnitFrameManaBarTextureKeepFancy
     end
-    local greenTexture = type == "health" and BBF.UnitFrameTextureIsGreen()
     if type == "health" then
         statusBar.bbfGreenTexture = statusBar.bbfTexShown == healthTexGreen or nil
         if statusBar.bbfShowsGreen then
@@ -4124,9 +4123,9 @@ local function ApplyTextureChange(type, statusBar, parent, classic, party, altBa
         PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer.PlayerFrameHealthBarAnimatedLoss:SetStatusBarTexture(texture)
         local lossTex = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer.PlayerFrameHealthBarAnimatedLoss:GetStatusBarTexture()
         lossTex:SetDrawLayer(originalLayer, 0)
-        BBF.SetHealSegmentFills(statusBar, texture, greenTexture)
-    elseif parent == TargetFrame or parent == FocusFrame then
-        BBF.SetHealSegmentFills(statusBar, texture, greenTexture)
+    end
+    if type == "health" then
+        BBF.SetHealSegmentFills(statusBar, texture)
     end
 
     if playerHp then

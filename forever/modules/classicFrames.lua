@@ -271,6 +271,35 @@ function BBF.SquishClassicPlayerHealth()
     hpContainer.HealthBarMask:Hide()
 end
 
+local FRAME_MASK = "Interface\\AddOns\\BetterBlizzFrames\\media\\masks\\frameMask.png"
+
+BBF.ClassicManaMask = {
+    player = { left = 0, right = 0, top = 0, bottom = 0 },
+    target = { left = 0, right = 0, top = 0, bottom = 0 },
+}
+
+local function MaskClassicMana(manaBar, key)
+    local mask = manaBar.ManaBarMask
+    local o = BBF.ClassicManaMask[key]
+    mask:SetTexture(FRAME_MASK, "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
+    mask:ClearAllPoints()
+    mask:SetPoint("TOPLEFT", manaBar, "TOPLEFT", -o.left, o.top)
+    mask:SetPoint("BOTTOMRIGHT", manaBar, "BOTTOMRIGHT", o.right, -o.bottom)
+    mask:Show()
+end
+
+function BBF.RefreshClassicManaMasks()
+    if not BetterBlizzFramesDB.classicFrames then return end
+    if PlayerFrame.state ~= "vehicle" then
+        MaskClassicMana(PlayerFrame_GetManaBar(), "player")
+    end
+    for _, frame in ipairs({ TargetFrame, FocusFrame }) do
+        if frame and frame.ClassicFrame then
+            MaskClassicMana(frame.TargetFrameContent.TargetFrameContentMain.ManaBar, "target")
+        end
+    end
+end
+
 local classicManaHooked
 
 function BBF.SizeClassicPlayerMana()
@@ -285,8 +314,8 @@ function BBF.SizeClassicPlayerMana()
         return
     end
     local manaBar = PlayerFrame_GetManaBar()
-    manaBar:SetSize(120, 9)
-    manaBar.ManaBarMask:Hide()
+    manaBar:SetSize(120, 11)
+    MaskClassicMana(manaBar, "player")
 end
 
 function BBF.SyncClassicFrameDesaturation(texture, source)
@@ -451,7 +480,7 @@ local function MakeClassicFrame(frame)
             end
             manaBar:ClearAllPoints()
             manaBar:SetPoint("TOPRIGHT", hpContainer, "BOTTOMRIGHT", -1, -2)
-            manaBar:SetSize(120, 9)
+            manaBar:SetSize(120, 11)
         end
         PlaceClassicManaBar()
 
@@ -473,6 +502,10 @@ local function MakeClassicFrame(frame)
         frame.bbfName:SetDrawLayer("OVERLAY", 7)
         frame.ClassicFrame.Background = frame:CreateTexture(nil, "BACKGROUND")
         frame.ClassicFrame.Background:SetColorTexture(0,0,0,0.45)
+        frame.ClassicFrame.BackgroundMask = frame:CreateMaskTexture()
+        frame.ClassicFrame.BackgroundMask:SetTexture(FRAME_MASK, "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
+        frame.ClassicFrame.BackgroundMask:SetAllPoints(frame.ClassicFrame.Background)
+        frame.ClassicFrame.Background:AddMaskTexture(frame.ClassicFrame.BackgroundMask)
         frame.ClassicFrame.UpdateBackground = function()
             local background = frame.ClassicFrame.Background
             local healthBar = BBF.HealthBar(frame)
@@ -617,8 +650,8 @@ local function MakeClassicFrame(frame)
         totManaBar:SetFrameLevel(9998)
         totFrame.Background = totFrame.HealthBar:CreateTexture(nil, "BACKGROUND")
         totFrame.Background:SetColorTexture(0,0,0,0.45)
-        totFrame.Background:SetPoint("TOPLEFT", totFrame.HealthBar, "TOPLEFT", 1, -1)
-        totFrame.Background:SetPoint("BOTTOMRIGHT", totFrame.manabar, "BOTTOMRIGHT", -1, 1)
+        totFrame.Background:SetPoint("TOPLEFT", totFrame.HealthBar, "TOPLEFT", 1, 0)
+        totFrame.Background:SetPoint("BOTTOMRIGHT", totFrame.manabar, "BOTTOMRIGHT", -1, 0)
         totFrame.FrameTexture:SetSize(93, 45)
         UpdateClassicToTMana(totFrame)
         totFrame.FrameTexture:SetTexCoord(0.015625, 0.7265625, 0, 0.703125)
@@ -762,7 +795,7 @@ local function MakeClassicFrame(frame)
             frame.ClassicFrame.UpdateBackground()
             frameContainer.FrameTexture:SetAlpha(0)
 
-            manaBar.ManaBarMask:Hide()
+            MaskClassicMana(manaBar, "target")
 
             frame.ClassicFrame.Texture:ClearAllPoints()
             frame.ClassicFrame.Texture:SetPoint("TOPLEFT", 20, -8)
@@ -883,11 +916,15 @@ local function MakeClassicFrame(frame)
         frame.ClassicFrame.Background = frame:CreateTexture(nil, "BACKGROUND")
         frame.ClassicFrame.Background:SetColorTexture(0,0,0,0.45)
         frame.ClassicFrame.Background:SetPoint("TOPLEFT", hpContainer.HealthBar, "TOPLEFT", 0, 20)
-        frame.ClassicFrame.Background:SetPoint("BOTTOMRIGHT", manaBar, "BOTTOMRIGHT", -4, 0)
+        frame.ClassicFrame.Background:SetPoint("BOTTOMRIGHT", manaBar, "BOTTOMRIGHT", -4, 1)
+        frame.ClassicFrame.BackgroundMask = frame:CreateMaskTexture()
+        frame.ClassicFrame.BackgroundMask:SetTexture(FRAME_MASK, "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
+        frame.ClassicFrame.BackgroundMask:SetAllPoints(frame.ClassicFrame.Background)
+        frame.ClassicFrame.Background:AddMaskTexture(frame.ClassicFrame.BackgroundMask)
 
         local function AdjustBackground()
             frame.ClassicFrame.Background:SetPoint("TOPLEFT", hpContainer.HealthBar, "TOPLEFT", 0, BigPlayerHealthbar() and 0 or 20)
-            frame.ClassicFrame.Background:SetPoint("BOTTOMRIGHT", hpContainer, "BOTTOMRIGHT", BigPlayerHealthbar() and 0 or -3, BigPlayerHealthbarNoMana() and -1 or -11)
+            frame.ClassicFrame.Background:SetPoint("BOTTOMRIGHT", hpContainer, "BOTTOMRIGHT", BigPlayerHealthbar() and 0 or -3, BigPlayerHealthbarNoMana() and 0 or -10)
         end
 
 
@@ -1271,6 +1308,8 @@ local function MakeClassicFrame(frame)
 
             hpContainer.HealthBarMask:SetSize(120, 32)
             hpContainer.HealthBarMask:Show()
+            manaBar.ManaBarMask:ClearAllPoints()
+            manaBar.ManaBarMask:SetPoint("TOPLEFT", -2, 2)
             manaBar.ManaBarMask:Show()
 
             frameContainer.FrameFlash:SetParent(frame)
