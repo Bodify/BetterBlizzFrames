@@ -300,9 +300,11 @@ function BBF.HideFrames()
 
         if db.hideMicroMenuBorder then
             MicroMenu.BorderArt:Hide()
+            MicroMenu.BackgroundArt:Hide()
             changes.hideMicroMenuBorder = true
         elseif changes.hideMicroMenuBorder then
             MicroMenu.BorderArt:Show()
+            MicroMenu.BackgroundArt:Show()
             changes.hideMicroMenuBorder = nil
         end
 
