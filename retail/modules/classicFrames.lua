@@ -24,7 +24,7 @@ function BBF.ClassicLevelShift(levelText)
     if text == nil or issecretvalue(text) then return place.other end
     text = tostring(text)
     if place.levels then return place.levels(text) end
-    if text:sub(-1) == "1" then return 0 end
+    if text:sub(-1) == "1" then return 0.5 end
     if text == "10" then return place.ten end
     if text:sub(1, 1) == "1" then return place.startsOne end
     return place.other
@@ -761,7 +761,7 @@ local function MakeClassicFrame(frame)
 
         contentMain.LevelText:SetParent(frame.ClassicFrame)
         contentMain.LevelText:SetDrawLayer("OVERLAY", 7)
-        SetClassicLevelPoint(contentMain.LevelText, BBF.ClassicHDTexturesActive() and -36 or -34.5, 25.5, 0.5, 1.5, 2, frame, "BOTTOMRIGHT")
+        SetClassicLevelPoint(contentMain.LevelText, BBF.ClassicHDTexturesActive() and -36 or -34.5, 25.5, 1, 1.5, 2, frame, "BOTTOMRIGHT")
         local lvlFont, _, lvlFlags = contentMain.LevelText:GetFont()
         contentMain.LevelText:SetFont(lvlFont, 12, lvlFlags)
         contentMain.LevelText:SetJustifyH("CENTER")
@@ -2114,7 +2114,7 @@ local function SortLocalizationChanges()
             local manaBar = contentMain.ManaBar
             local tex = f.ClassicFrame.Texture
 
-            SetClassicLevelPoint(contentMain.LevelText, BBF.ClassicHDTexturesActive() and -36 or -34.5, 25.5, 0.5, 1.5, 2, f, "BOTTOMRIGHT")
+            SetClassicLevelPoint(contentMain.LevelText, BBF.ClassicHDTexturesActive() and -36 or -34.5, 25.5, 1, 1.5, 2, f, "BOTTOMRIGHT")
 
             hpContainer.HealthBarText:ClearAllPoints()
             hpContainer.HealthBarText:SetPoint("CENTER", tex, "LEFT", 66.5, BBF.ClassicHealthTextY(f))
