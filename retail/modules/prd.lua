@@ -702,11 +702,22 @@ function BBF.PrdResourceCaller()
         prdResourceUpdater = CreateFrame("Frame")
         prdResourceUpdater:RegisterEvent("PLAYER_ENTERING_WORLD")
         prdResourceUpdater:RegisterEvent("PLAYER_TARGET_CHANGED")
-        prdResourceUpdater:RegisterEvent("NAME_PLATE_UNIT_ADDED")
-        prdResourceUpdater:RegisterEvent("NAME_PLATE_UNIT_REMOVED")
-        prdResourceUpdater:SetScript("OnEvent", function()
+        prdResourceUpdater:SetScript("OnEvent", function(_, event, unit)
+            if event ~= "PLAYER_ENTERING_WORLD" and event ~= "PLAYER_TARGET_CHANGED"
+                and not UnitIsUnit(unit, "target") then
+                return
+            end
             BBF.UpdatePrdResource()
         end)
+    end
+
+    local db = BetterBlizzFramesDB
+    if db.prdResourceAdjust and db.prdResourceOnTarget then
+        prdResourceUpdater:RegisterEvent("NAME_PLATE_UNIT_ADDED")
+        prdResourceUpdater:RegisterEvent("NAME_PLATE_UNIT_REMOVED")
+    else
+        prdResourceUpdater:UnregisterEvent("NAME_PLATE_UNIT_ADDED")
+        prdResourceUpdater:UnregisterEvent("NAME_PLATE_UNIT_REMOVED")
     end
 
     BBF.UpdatePrdResource()

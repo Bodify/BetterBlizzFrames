@@ -66,7 +66,10 @@ local bigTex = bigPath .. "UI-TargetingFrame-Retail.png"
 local bigNoLvlTex = bigPath .. "UI-TargetingFrame-NoLevel-Retail.png"
 local bigNoManaTex = bigPath .. "UI-TargetingFrame-Retail-NoMana.png"
 local bigNoManaNoLvlTex = bigPath .. "UI-TargetingFrame-NoLevel-Retail-NoMana.png"
-local bigStatusTex = bigPath .. "UI-Player-Status.png"
+local bigStatusTex = bigPath .. "UI-Player-Status-Big.png"
+local bigStatusNoLvlTex = bigPath .. "UI-Player-Status-Big-NoLevel.png"
+local bigStatusNoManaTex = bigPath .. "NoManas\\UI-Player-Status-Big-NoMana.png"
+local bigStatusNoManaNoLvlTex = bigPath .. "NoManas\\UI-Player-Status-Big-NoLevel-NoMana.png"
 local bigTotTex = bigPath .. "ui-targetoftargetframe-large.png"
 local smallTex = "Interface\\TargetingFrame\\UI-SmallTargetingFrame"
 local smallNoManaTex = bigPath .. "UI-SmallTargetingFrame-NoMana.png"
@@ -374,12 +377,12 @@ local function SetPlayerFrameTexture(texture, normal, big, bigNoMana)
     BBF.SetClassicTexture(texture, BigPlayerHealthbarNoMana() and (bigNoMana or big) or big)
 end
 
-local function SetStatusGlowTexture(texture, normal, big)
-    if BigPlayerHealthbarNoMana() or PlayerNoManaArt() then
+local function SetStatusGlowTexture(texture, normal, big, bigNoMana)
+    if PlayerNoManaArt() then
         texture:SetTexture(nil)
         return
     end
-    SetPlayerFrameTexture(texture, normal, big)
+    SetPlayerFrameTexture(texture, normal, big, bigNoMana)
 end
 
 local eliteOverlayClassifications = { elite = true, worldboss = true, rareelite = true }
@@ -1360,7 +1363,7 @@ local function MakeClassicFrame(frame)
             else
                 SetPlayerFrameTexture(frame.ClassicFrame.Texture, defaultTex, bigTex, bigNoManaTex)
                 BBF.SetClassicFlash(frameContainer.FrameFlash, false, true)
-                SetStatusGlowTexture(contentMain.StatusTexture, "Interface\\CharacterFrame\\UI-Player-Status", bigStatusTex)
+                SetStatusGlowTexture(contentMain.StatusTexture, "Interface\\CharacterFrame\\UI-Player-Status", bigStatusTex, bigStatusNoManaTex)
             -- elseif mode == 4 then -- Only 3 available for classic
             --     db.playerEliteFrameMode = 3
             --     playerElite:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Elite")
@@ -1372,16 +1375,19 @@ local function MakeClassicFrame(frame)
             if noLvl then
                 SetPlayerFrameTexture(frame.ClassicFrame.Texture, noLvlTex, bigNoLvlTex, bigNoManaNoLvlTex)
                 BBF.SetClassicFlash(frameContainer.FrameFlash, true, true)
-                SetStatusGlowTexture(contentMain.StatusTexture, "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\classic-statustexture-nolevel.png", "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\classic-statustexture-nolevel.png")
+                SetStatusGlowTexture(contentMain.StatusTexture, "Interface\\AddOns\\BetterBlizzFrames\\media\\blizzTex\\classic-statustexture-nolevel.png", bigStatusNoLvlTex, bigStatusNoManaNoLvlTex)
             else
                 SetPlayerFrameTexture(frame.ClassicFrame.Texture, defaultTex, bigTex, bigNoManaTex)
                 BBF.SetClassicFlash(frameContainer.FrameFlash, false, true)
-                SetStatusGlowTexture(contentMain.StatusTexture, "Interface\\CharacterFrame\\UI-Player-Status", bigStatusTex)
+                SetStatusGlowTexture(contentMain.StatusTexture, "Interface\\CharacterFrame\\UI-Player-Status", bigStatusTex, bigStatusNoManaTex)
             end
         end
 
         local function AdjustStatusGlow()
-            contentMain.StatusTexture:SetSize(191, BigPlayerHealthbar() and 81 or 77)
+            local big = BigPlayerHealthbar()
+            contentMain.StatusTexture:SetSize(big and 190 or 191, 77)
+            contentMain.StatusTexture:ClearAllPoints()
+            contentMain.StatusTexture:SetPoint("TOPLEFT", 17, big and -17 or -15)
         end
 
         local function UpdatePlayerFrameTexture()
@@ -1456,8 +1462,6 @@ local function MakeClassicFrame(frame)
 
             AdjustStatusGlow()
             contentMain.StatusTexture:SetTexCoord(0, 0.74609375, 0, 0.58125)
-            contentMain.StatusTexture:ClearAllPoints()
-            contentMain.StatusTexture:SetPoint("TOPLEFT", 17, -15)
             contentMain.StatusTexture:SetBlendMode("ADD")
 
             AdjustStatusBarText()

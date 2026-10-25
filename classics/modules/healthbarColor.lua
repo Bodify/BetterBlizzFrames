@@ -500,7 +500,7 @@ local bigEliteNoManaTexture = "Interface\\Addons\\BetterBlizzFrames\\media\\clas
 local bigRareNoManaTexture = "Interface\\Addons\\BetterBlizzFrames\\media\\classicTextures\\NoManas\\UI-TargetingFrame-Rare-Big-NoMana.png"
 local bigRareEliteNoManaTexture = "Interface\\Addons\\BetterBlizzFrames\\media\\classicTextures\\NoManas\\UI-TargetingFrame-Rare-Elite-Big-NoMana.png"
 local bigMinusNoManaTexture = "Interface\\Addons\\BetterBlizzFrames\\media\\classicTextures\\NoManas\\UI-TargetingFrame-Big-NoMana.png"
-local bigPlayerStatusNoManaTexture = "Interface\\Addons\\BetterBlizzFrames\\media\\classicTextures\\NoManas\\UI-Player-Status-Big-NoMana"
+local bigPlayerStatusNoManaTexture = "Interface\\Addons\\BetterBlizzFrames\\media\\classicTextures\\NoManas\\UI-Player-Status-Big-NoMana.png"
 
 local noManaTexture = "Interface\\Addons\\BetterBlizzFrames\\media\\classicTextures\\NoManas\\UI-TargetingFrame-NoMana.png"
 local noLevelNoManaTexture = "Interface\\Addons\\BetterBlizzFrames\\media\\classicTextures\\NoManas\\UI-TargetingFrame-NoLevel-NoMana.png"

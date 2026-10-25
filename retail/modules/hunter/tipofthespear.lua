@@ -187,8 +187,6 @@ local function CreateUpdater()
     updater:RegisterUnitEvent("UNIT_AURA", "player")
     updater:RegisterEvent("PLAYER_ENTERING_WORLD")
     updater:RegisterEvent("PLAYER_TARGET_CHANGED")
-    updater:RegisterEvent("NAME_PLATE_UNIT_ADDED")
-    updater:RegisterEvent("NAME_PLATE_UNIT_REMOVED")
     updater:SetScript("OnEvent", function(_, event)
         if event == "UNIT_AURA" then
             BBF.UpdateTipOfSpearBar()
