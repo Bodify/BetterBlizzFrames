@@ -28,6 +28,7 @@ shared\damageMeterTexture.lua
 shared\comboVisibility.lua
 shared\statusBarTextExtra.lua
 shared\hideTooltip.lua
+shared\portraitFlip.lua
 shared\textArea.lua
 
 retail\modules\darkmode.lua

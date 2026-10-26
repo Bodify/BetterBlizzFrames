@@ -8757,8 +8757,12 @@ local function guiMisc()
     lowerToTStrata:SetPoint("TOPLEFT", unclampMinimap, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(lowerToTStrata, L["Lower_ToT_Strata"], L["Tooltip_Lower_ToT_Strata_Desc"])
 
+    local flipPortraits = CreateCheckbox("flipPortraits", L["Flip_Portraits"], contentFrame, nil, BBF.FlipPortraits)
+    flipPortraits:SetPoint("TOPLEFT", lowerToTStrata, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(flipPortraits, L["Flip_Portraits"], L["Tooltip_Flip_Portraits_Desc"])
+
     local showLastNameNpc = CreateCheckbox("showLastNameNpc", L["Tooltip_Only_Last_Name_NPCs_Desc"], contentFrame, nil, BBF.AllNameChanges)
-    showLastNameNpc:SetPoint("TOPLEFT", lowerToTStrata, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    showLastNameNpc:SetPoint("TOPLEFT", flipPortraits, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(showLastNameNpc, L["Tooltip_Only_Last_Name_NPCs_Desc"], L["Tooltip_Only_Last_Name_NPCs_Simple_Desc"])
 
     local centerCurrentValueOnBars = CreateCheckbox("centerCurrentValueOnBars", L["Current_HP_Only_Center"], contentFrame, nil, BBF.CenterCurrentValueOnBars)

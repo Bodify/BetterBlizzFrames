@@ -13019,8 +13019,12 @@ local function guiMisc()
     lowerToTStrata:SetPoint("TOPLEFT", normalizeGameMenu, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(lowerToTStrata, L["Lower_ToT_Strata"], L["Tooltip_Lower_ToT_Strata_Desc"])
 
+    local flipPortraits = CreateCheckbox("flipPortraits", L["Flip_Portraits"], contentFrame, nil, BBF.FlipPortraits)
+    flipPortraits:SetPoint("TOPLEFT", lowerToTStrata, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(flipPortraits, L["Flip_Portraits"], L["Tooltip_Flip_Portraits_Desc"])
+
     local classicMinimap = CreateCheckbox("classicMinimap", L["Classic_Minimap"], contentFrame)
-    classicMinimap:SetPoint("TOPLEFT", lowerToTStrata, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    classicMinimap:SetPoint("TOPLEFT", flipPortraits, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(classicMinimap, L["Classic_Minimap"], L["Tooltip_Classic_Minimap_Desc"])
     classicMinimap:HookScript("OnClick", function(self)
         if self:GetChecked() then

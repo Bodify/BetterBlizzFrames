@@ -194,6 +194,7 @@ local defaultSettings = {
     hideTooltipArena = true,
     hideTooltipCombat = true,
     lowerToTStrata = false,
+    flipPortraits = false,
     targetToTNameUnder = false,
     focusToTNameUnder = false,
     smoothManabars = true,
@@ -6232,6 +6233,7 @@ First:SetScript("OnEvent", function(_, event, addonName)
         BBF.StatusBarTextExtra()
         BBF.HideTooltip()
         BBF.LowerToTStrata()
+        BBF.FlipPortraits()
         BBF.UpdateAuraCollapseButton()
         BBF.PlayerElite(BetterBlizzFramesDB.playerEliteFrameMode)
         BBF.HidePlayerFrame()

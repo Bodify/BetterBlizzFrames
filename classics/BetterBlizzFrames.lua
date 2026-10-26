@@ -128,6 +128,7 @@ local defaultSettings = {
     hideTooltipArena = true,
     hideTooltipCombat = true,
     lowerToTStrata = false,
+    flipPortraits = false,
     smoothManabars = true,
 
     -- Absorb Indicator
@@ -3457,6 +3458,7 @@ First:SetScript("OnEvent", function(_, event, addonName)
             BBF.StatusBarTextExtra()
             BBF.HideTooltip()
             BBF.LowerToTStrata()
+            BBF.FlipPortraits()
             BBF.UpdateAuraCollapseButton()
 
             if not BetterBlizzFramesDB.disableHealAbsorbRecolor then

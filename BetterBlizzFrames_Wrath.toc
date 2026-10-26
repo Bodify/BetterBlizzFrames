@@ -22,6 +22,7 @@ shared\smoothBars.lua
 shared\xpBarTexture.lua
 shared\statusBarTextExtra.lua
 shared\hideTooltip.lua
+shared\portraitFlip.lua
 
 classics\modules\darkmode.lua
 classics\modules\nameFix.lua

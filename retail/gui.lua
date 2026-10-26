@@ -12836,8 +12836,12 @@ local function guiMisc()
     lowerToTStrata:SetPoint("TOPLEFT", normalizeGameMenu, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(lowerToTStrata, L["Lower_ToT_Strata"], L["Tooltip_Lower_ToT_Strata_Desc"])
 
+    local flipPortraits = CreateCheckbox("flipPortraits", L["Flip_Portraits"], contentFrame, nil, BBF.FlipPortraits)
+    flipPortraits:SetPoint("TOPLEFT", lowerToTStrata, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(flipPortraits, L["Flip_Portraits"], L["Tooltip_Flip_Portraits_Desc"])
+
     local showPartyLevel = CreateCheckbox("showPartyLevel", L["Show_Party_Level"], contentFrame, nil, BBF.UpdatePartyLevelRings)
-    showPartyLevel:SetPoint("TOPLEFT", lowerToTStrata, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    showPartyLevel:SetPoint("TOPLEFT", flipPortraits, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(showPartyLevel, L["Show_Party_Level"], L["Tooltip_Show_Party_Level_Desc"])
 
     local classicFramesHDElite = CreateCheckbox("classicFramesHDElite", L["Classic_Frames_HD_Elite"], contentFrame, nil, BBF.RefreshClassicHDElite)

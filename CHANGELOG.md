@@ -14,6 +14,7 @@
 - Move Names: "Scale" slider for every name.
 - Move Names: "Pet" and "Party" rows. Moving the first party name moves them all.
 - Misc: "Lower ToT Strata" setting. Puts the ToT frames behind most other frames.
+- Misc: "Flip Portraits" setting. Target, Focus & ToT portraits get flipped and face left instead.
 - Misc: "No Number Commas" setting. Shows 1300 instead of 1,300 on health and mana numbers. (Forever, Era & TBC)
 ### Bugfix
 - Fix an issue causing right click popup windows to cover dropdown items that was on the popup.
