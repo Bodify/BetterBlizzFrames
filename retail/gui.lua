@@ -7028,6 +7028,27 @@ local function guiGeneralTab()
             box:HookScript("OnClick", UpdateStyleBlockers)
         end
         UpdateStyleBlockers()
+
+        local symmetricLock = CreateFrame("Frame", nil, symmetricPlayerFrame)
+        symmetricLock:SetPoint("TOPLEFT", symmetricPlayerFrame, "TOPLEFT")
+        symmetricLock:SetPoint("BOTTOMRIGHT", symmetricPlayerFrame.Text, "BOTTOMRIGHT")
+        symmetricLock:SetFrameLevel(symmetricPlayerFrame:GetFrameLevel() + 5)
+        symmetricLock:EnableMouse(true)
+        symmetricLock:SetScript("OnEnter", function(self)
+            GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+            GameTooltip_SetTitle(GameTooltip, L["Mirror_TargetFrame"], NORMAL_FONT_COLOR)
+            GameTooltip:AddLine("|cffffaa00" .. L["Tooltip_Symmetric_Classic_Locked"] .. "|r", 1, 1, 1, true)
+            GameTooltip:Show()
+        end)
+        symmetricLock:SetScript("OnLeave", GameTooltip_Hide)
+        local function UpdateSymmetricLock()
+            local locked = BetterBlizzFramesDB.classicFrames and true or false
+            symmetricPlayerFrame:SetEnabled(not locked)
+            symmetricPlayerFrame:SetAlpha(locked and 0.5 or 1)
+            symmetricLock:SetShown(locked)
+        end
+        classicFrames:HookScript("OnClick", UpdateSymmetricLock)
+        UpdateSymmetricLock()
     end
 
     local classColorFrames = CreateCheckbox("classColorFrames", L["Class_Color_Health"], BetterBlizzFrames)

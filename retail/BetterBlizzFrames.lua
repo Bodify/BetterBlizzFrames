@@ -4808,10 +4808,7 @@ end
 function BBF.SymmetricPlayerFrame()
     if not BetterBlizzFramesDB.symmetricPlayerFrame then return end
     if BBF.HasNoPortrait("player") then return end
-    if BetterBlizzFramesDB.classicFrames then
-        BBF.Print(L["Print_Symmetric_Not_Available_Classic"])
-        return
-    end
+    if BetterBlizzFramesDB.classicFrames then return end
     if InCombatLockdown() then
         BBF.Print(L["Print_Leave_Combat"])
         return
