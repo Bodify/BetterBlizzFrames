@@ -36,6 +36,7 @@
 - "One font for all text ingame" now also changes the aura timer and stack numbers.
 - No Portrait: Stealth Indicator fits the borders better.
 - Classic Frames: Elites now hide level and the level ring properly.
+- Classic Frames & No Portrait: Minus mobs now show as a normal size frame.
 ### Bugfix
 - Fix role icon on classic frames being stretched across the frame.
 - Classic Frames: Fix the Player Elite Frame ignoring Big Healthbar and Hide Lvl.
@@ -73,6 +74,7 @@
 - Dark Mode: Player Elite Frame now follows "Dark Mode Elite Texture".
 ### Bugfix
 - Fix "Hide Mana Feedback" sometimes showing the animation again.
+- Fix ToT arena names showing "Arena 1" instead of the spec name, and sometimes the wrong arena number.
 
 
 
