@@ -57,9 +57,9 @@ end
 local function PlaceHDRing(frame)
     local ring, text = frame.bbfLevelRing, frame.bbfLevelText
     local level = text:GetText()
-    local x = 0
+    local x = -0.5
     if level and not issecretvalue(level) and tostring(level):sub(1, 1) == "1" then
-        x = 0.5 * CLASSIC_PARTY_SCALE
+        x = x + 0.5 * CLASSIC_PARTY_SCALE
     end
     ring:ClearAllPoints()
     ring:SetPoint("CENTER", text, "CENTER", x, 0)
@@ -78,7 +78,9 @@ local function PlaceElements(frame)
             ring:SetTexture(HD_RING)
             ring:SetTexCoord(0, 1, 0, 1)
             ring:SetScale(1)
-            ring:SetSize(33.5 * CLASSIC_PARTY_SCALE, 31 * CLASSIC_PARTY_SCALE)
+            ring:SetSnapToPixelGrid(false)
+            ring:SetTexelSnappingBias(0)
+            ring:SetSize(21, 20)
             PlaceHDRing(frame)
             ColorRing(frame)
         else

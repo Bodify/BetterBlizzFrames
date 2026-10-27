@@ -4954,7 +4954,7 @@ function BBF.AddBackgroundTextureToUnitFrames(frame)
     if hpBar then
         local bg = hpBar.BBFBackground
         if not bg then
-            bg = hpBar:CreateTexture(nil, "BACKGROUND", nil, -1)
+            bg = (BBF.PlayerHealthBgParent(hpBar) or hpBar):CreateTexture(nil, "BACKGROUND", nil, -1)
             bg:SetAllPoints(hpBar)
             hpBar.BBFBackground = bg
 
@@ -5804,6 +5804,7 @@ Frame:SetScript("OnEvent", function(...)
             BBF.HookOverShields()
             BBF.StealthIndicator()
             BBF.SmoothBars()
+            BBF.PlayerHealthLossBelowFill()
             BBF.CastbarRecolorWidgets()
             BBF.CastBarTimerCaller()
             BBF.ShowPlayerCastBarIcon()

@@ -6752,7 +6752,6 @@ local function guiGeneralTab()
 
             local f = noPortraitOptionsFrame
             local LEFT_X, RIGHT_X = 125, 375
-            local pixel = BetterBlizzFramesDB.noPortraitPixelBorder
             local function Header(text, x, y)
                 local header = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
                 header:SetPoint("TOPLEFT", f, "TOPLEFT", x, y)
@@ -6782,7 +6781,7 @@ local function guiGeneralTab()
             local leftSliders = {}
             local contentY = pixel and -76 or -106
             local auraTopY = contentY - 18
-            if pixel then
+            do
                 local borderSize = CreateSlider(f, L["Border_Size"], 1, 5, 1, "pixelBorderSize", "Offset", 190)
                 borderSize:SetPoint("TOP", f, "TOPLEFT", LEFT_X, contentY - 34)
                 leftSliders[#leftSliders + 1] = { borderSize, 1 }
@@ -6841,7 +6840,7 @@ local function guiGeneralTab()
             end)
             local height = -leftResetY + 22 + 16
 
-            if pixel then
+            do
                 Divider(250)
                 Header(L["Pixel_Border"], 262, -30)
 
@@ -6986,8 +6985,6 @@ local function guiGeneralTab()
                     BBF.UpdatePixelBorderLayout()
                 end)
                 f:SetSize(500, math.max(height, -rightResetY + 22 + 16))
-            else
-                f:SetSize(250, height)
             end
             noPortraitOptionsFrame:Show()
         else
@@ -12953,6 +12950,7 @@ local function guiMisc()
     local hideUnitFramePlayerMana = CreateCheckbox("hideUnitFramePlayerMana", L["Hide_PlayerFrame_Mana"], contentFrame, nil, function()
         BBF.UpdateNoPortraitManaVisibility()
         BBF.UpdateBigPlayerHealthbar()
+        BBF.UpdatePixelBorderLayout()
     end)
     hideUnitFramePlayerMana:SetPoint("TOPLEFT", hideOgRaidFrameBg, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(hideUnitFramePlayerMana, L["Hide_PlayerFrame_Mana"], L["Tooltip_Hide_Player_Manabar_Desc"])
@@ -12968,6 +12966,7 @@ local function guiMisc()
     local hideUnitFrameTargetMana = CreateCheckbox("hideUnitFrameTargetMana", L["Hide_TargetFrame_Mana"], contentFrame, nil, function()
         BBF.UpdateNoPortraitManaVisibility()
         BBF.UpdateTargetManaHidden()
+        BBF.UpdatePixelBorderLayout()
     end)
     hideUnitFrameTargetMana:SetPoint("TOPLEFT", hideUnitFramePlayerSecondResource, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(hideUnitFrameTargetMana, L["Hide_TargetFrame_Mana"], L["Tooltip_Hide_Target_Manabar_Desc"])
@@ -12975,19 +12974,29 @@ local function guiMisc()
     local hideUnitFrameFocusMana = CreateCheckbox("hideUnitFrameFocusMana", L["Hide_FocusFrame_Mana"], contentFrame, nil, function()
         BBF.UpdateNoPortraitManaVisibility()
         BBF.UpdateTargetManaHidden()
+        BBF.UpdatePixelBorderLayout()
     end)
     hideUnitFrameFocusMana:SetPoint("TOPLEFT", hideUnitFrameTargetMana, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(hideUnitFrameFocusMana, L["Hide_FocusFrame_Mana"], L["Tooltip_Hide_Focus_Manabar_Desc"])
 
-    local hideUnitFrameTotMana = CreateCheckbox("hideUnitFrameTotMana", L["Hide_ToT_Mana"], contentFrame, nil, BBF.UpdateNoPortraitManaVisibility)
+    local hideUnitFrameTotMana = CreateCheckbox("hideUnitFrameTotMana", L["Hide_ToT_Mana"], contentFrame, nil, function()
+        BBF.UpdateNoPortraitManaVisibility()
+        BBF.UpdatePixelBorderLayout()
+    end)
     hideUnitFrameTotMana:SetPoint("TOPLEFT", hideUnitFrameFocusMana, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(hideUnitFrameTotMana, L["Hide_ToT_Mana"], L["Tooltip_Hide_ToT_Mana"])
 
-    local hideUnitFramePetMana = CreateCheckbox("hideUnitFramePetMana", L["Hide_PetFrame_Mana"], contentFrame, nil, BBF.UpdateNoPortraitManaVisibility)
+    local hideUnitFramePetMana = CreateCheckbox("hideUnitFramePetMana", L["Hide_PetFrame_Mana"], contentFrame, nil, function()
+        BBF.UpdateNoPortraitManaVisibility()
+        BBF.UpdatePixelBorderLayout()
+    end)
     hideUnitFramePetMana:SetPoint("TOPLEFT", hideUnitFrameTotMana, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(hideUnitFramePetMana, L["Hide_PetFrame_Mana"], L["Tooltip_Hide_Pet_Mana"])
 
-    local hideDefaultPartyFramesMana = CreateCheckbox("hideDefaultPartyFramesMana", L["Hide_Default_PartyFrames_Mana"], contentFrame, nil, BBF.UpdateNoPortraitManaVisibility)
+    local hideDefaultPartyFramesMana = CreateCheckbox("hideDefaultPartyFramesMana", L["Hide_Default_PartyFrames_Mana"], contentFrame, nil, function()
+        BBF.UpdateNoPortraitManaVisibility()
+        BBF.UpdatePixelBorderLayout()
+    end)
     hideDefaultPartyFramesMana:SetPoint("TOPLEFT", hideUnitFramePetMana, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(hideDefaultPartyFramesMana, L["Hide_Default_PartyFrames_Mana"], L["Tooltip_Hide_Default_PartyFrames_Mana_Desc"])
 

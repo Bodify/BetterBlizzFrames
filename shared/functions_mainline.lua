@@ -111,6 +111,39 @@ local function HookHealPrediction(bar, myBar, otherBar)
     SyncHealPrediction(bar, myBar, otherBar)
 end
 
+local playerHealthBgLayer
+
+local function PlayerHealthBgLevel()
+    local health = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer.HealthBar
+    return math.max(health:GetFrameLevel() - 2, 0)
+end
+
+function BBF.PlayerHealthBgParent(bar)
+    local health = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer.HealthBar
+    if bar ~= health then return end
+    if not playerHealthBgLayer then
+        playerHealthBgLayer = CreateFrame("Frame", nil, health)
+        playerHealthBgLayer:SetAllPoints(health)
+        playerHealthBgLayer:SetFrameLevel(PlayerHealthBgLevel())
+    end
+    return playerHealthBgLayer
+end
+
+function BBF.PlayerHealthLossBelowFill()
+    local container = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer
+    local loss = container.PlayerFrameHealthBarAnimatedLoss
+    if not loss then return end
+    if InCombatLockdown() and loss:IsProtected() then
+        BBF.RunAfterCombat(BBF.PlayerHealthLossBelowFill)
+        return
+    end
+    loss:SetUsingParentLevel(false)
+    loss:SetFrameLevel(math.max(container.HealthBar:GetFrameLevel() - 1, 0))
+    if playerHealthBgLayer then
+        playerHealthBgLayer:SetFrameLevel(PlayerHealthBgLevel())
+    end
+end
+
 function BBF.FixHealPredictionTextures()
     if not BetterBlizzFramesDB.tweakExtraBarTextures then return end
     local prd = PersonalResourceDisplayFrame

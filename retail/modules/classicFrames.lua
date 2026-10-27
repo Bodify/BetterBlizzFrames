@@ -17,10 +17,10 @@ local function SetManaTextParent(text, parent)
     text:SetParent(parent)
 end
 
-function BBF.ClassicLevelShift(levelText)
+function BBF.ClassicLevelShift(levelText, text)
     local place = levelText.bbfClassicLevel
     if not place then return 0 end
-    local text = levelText:GetText()
+    text = text or levelText:GetText()
     if text == nil or issecretvalue(text) then return place.other end
     text = tostring(text)
     if place.levels then return place.levels(text) end
@@ -495,16 +495,16 @@ end
 
 local function PlaceHDLevelRing(circle, levelText)
     local text = levelText:GetText()
-    local x = 0
+    local x = circle.bbfHDX or 0
     if text and not issecretvalue(text) then
         text = tostring(text)
         if text:sub(1, 1) == "1" then
-            x = 0.5
+            x = x + 0.5
         end
+        x = x - BBF.ClassicLevelShift(levelText) + BBF.ClassicLevelShift(levelText, "70")
     end
-    x = x - BBF.ClassicLevelShift(levelText)
     circle:ClearAllPoints()
-    circle:SetPoint("CENTER", levelText, "CENTER", x, 0)
+    circle:SetPoint("CENTER", levelText, "CENTER", x, 0.5)
 end
 
 function BBF.SetClassicHDLevelRing(frame, enabled)
@@ -525,8 +525,11 @@ function BBF.SetClassicHDLevelRing(frame, enabled)
         if BBF.ClassicHDTexturesActive() then
             circle:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\classicTextures\\MoTextures\\lvlring.png")
             circle:SetTexCoord(0, 1, 0, 1)
+            circle:SetSnapToPixelGrid(false)
+            circle:SetTexelSnappingBias(0)
             circle:SetSize(frame == PlayerFrame and 33.5 or 33, 31)
             circle.bbfHD = true
+            circle.bbfHDX = frame == PlayerFrame and 0 or -0.5
             PlaceHDLevelRing(circle, levelText)
         else
             circle:SetAtlas("hud-PlayerFrame-levelring")
@@ -747,7 +750,8 @@ local function MakeClassicFrame(frame)
         hpContainer.UnconsciousText:ClearAllPoints()
         hpContainer.UnconsciousText:SetPoint("CENTER", frame.ClassicFrame.Texture, "LEFT", 66, hpTextYOffset)
         --AdjustFramePoint(hpContainer.HealthBar.OverAbsorbGlow, -7)
-        hpContainer.HealthBar.OverAbsorbGlow:SetPoint("TOPLEFT", hpContainer.HealthBar, "TOPRIGHT", -7, 0)
+        local overShieldsOn = BetterBlizzFramesDB.overShields and BetterBlizzFramesDB.overShieldsUnitFrames
+        hpContainer.HealthBar.OverAbsorbGlow:SetPoint("TOPLEFT", hpContainer.HealthBar, "TOPRIGHT", overShieldsOn and -7 or -10.5, 0)
 
         SetManaTextParent(manaBar.LeftText, frame.ClassicFrame)
         manaBar.LeftText:ClearAllPoints()
@@ -1065,8 +1069,15 @@ local function MakeClassicFrame(frame)
         contentContext.PrestigePortrait:SetPoint("TOPLEFT", -4, -17)
         contentContext.LeaderIcon:ClearAllPoints()
         contentContext.LeaderIcon:SetPoint("TOPLEFT", 86, -14)
-        contentContext.RoleIcon:ClearAllPoints()
-        contentContext.RoleIcon:SetPoint("TOPLEFT", 192, -34)
+        local function PlaceRoleIcon()
+            contentContext.RoleIcon:ClearAllPoints()
+            if BigPlayerHealthbar() then
+                contentContext.RoleIcon:SetPoint("CENTER", PlayerLevelText, "CENTER", -11, 11)
+            else
+                contentContext.RoleIcon:SetPoint("TOPLEFT", 192, -34)
+            end
+        end
+        PlaceRoleIcon()
 
         --AdjustFramePoint(contentContext.GroupIndicator, nil, -3)
 
@@ -1198,8 +1209,7 @@ local function MakeClassicFrame(frame)
         UpdateLevel()
 
         hooksecurefunc("PlayerFrame_UpdateRolesAssigned", function()
-            contentContext.RoleIcon:ClearAllPoints()
-            contentContext.RoleIcon:SetPoint("TOPLEFT", 192, -34)
+            PlaceRoleIcon()
             PlayerLevelText:SetShown(not UnitHasVehiclePlayerFrameUI("player"))
         end)
 
@@ -1434,8 +1444,7 @@ local function MakeClassicFrame(frame)
             frameContainer.FrameTexture:SetPoint("TOPLEFT", -19, 7)
             frameContainer.FrameTexture:SetAlpha(0)
 
-            contentContext.RoleIcon:ClearAllPoints()
-            contentContext.RoleIcon:SetPoint("TOPLEFT", 192, -34)
+            PlaceRoleIcon()
 
             contentContext.GroupIndicator:ClearAllPoints()
             contentContext.GroupIndicator:SetPoint("BOTTOMRIGHT", frame, "TOPRIGHT", -21, -33.5)
@@ -1948,7 +1957,7 @@ local function ApplyClassicBigParty(frame)
         if noMana then
             frame.Background:SetPoint("BOTTOMLEFT", hpContainer.HealthBar, "BOTTOMLEFT", 0, 0)
         else
-            frame.Background:SetPoint("BOTTOMLEFT", manaBar, "BOTTOMLEFT", 4, 3)
+            frame.Background:SetHeight(26)
         end
         frame.Background:SetWidth(69)
     end
