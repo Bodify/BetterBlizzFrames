@@ -311,7 +311,9 @@ end
 
 local function DefaultBarLayout(hpContainer, healthBar, mask)
     local raise = BBF.PlayerBigRaise()
-    BBF.ShiftRegionY(PlayerLevelText, raise)
+    if not BBF.LevelOnTextArea(PlayerFrame) then
+        BBF.ShiftRegionY(PlayerLevelText, raise)
+    end
     BBF.ShiftRegionY(PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ReputationColor, raise)
     local contextual = PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual
     BBF.ShiftRegionY(contextual and contextual.LeaderIcon, raise)
@@ -319,12 +321,13 @@ local function DefaultBarLayout(hpContainer, healthBar, mask)
     BBF.ShiftRegionY(contextual and contextual.RoleIcon, raise)
     local noMana = BBF.PlayerManaHiddenArt() and MANA_SPAN or 0
     local extra = raise > 0 and (BBF.BigHealthbarReduced(PlayerFrame) and BIG_EXTRA.reduced or BIG_EXTRA.big) or 0
-    local height = HEALTHBAR_HEIGHT + raise + extra + noMana
+    local tall = (noMana > 0 and (raise == 0 or not BBF.BigHealthbarReduced(PlayerFrame))) and 0.5 or 0
+    local height = HEALTHBAR_HEIGHT + raise + extra + noMana + tall * 2
     hpContainer:SetHeight(HEALTHBAR_HEIGHT)
     local art, artTexture = PlayerMaskArt()
     local grow = BBF.FrameMaskGrow(art, "health")
     healthBar:ClearAllPoints()
-    healthBar:SetPoint("TOPLEFT", hpContainer, "TOPLEFT", -grow, raise)
+    healthBar:SetPoint("TOPLEFT", hpContainer, "TOPLEFT", -grow, raise + tall)
     healthBar:SetSize(124 + grow, height)
     if not BBF.ApplyFrameMask(mask, art, "health", artTexture) then
         mask:SetAtlas("UI-HUD-UnitFrame-Player-PortraitOn-Bar-Health-Mask", true)
@@ -349,7 +352,7 @@ local function GrowBar()
         healthBar:SetSize(120, height)
         healthBar:ClearAllPoints()
         healthBar:SetPoint("TOPLEFT", hpContainer, "TOPLEFT", 0, 3)
-        mask:Hide()
+        BBF.MaskClassicPlayerHealth()
         BBF.UpdatePlayerOvershieldAnchor()
         BBF.SizeClassicPlayerMana()
         return
@@ -443,7 +446,9 @@ local function RestoreBar()
         DefaultBarLayout(hpContainer, healthBar, mask)
         return
     end
-    BBF.ShiftRegionY(PlayerLevelText, 0)
+    if not BBF.LevelOnTextArea(PlayerFrame) then
+        BBF.ShiftRegionY(PlayerLevelText, 0)
+    end
     BBF.ShiftRegionY(PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ReputationColor, 0)
     local contextual = PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual
     BBF.ShiftRegionY(contextual and contextual.LeaderIcon, 0)

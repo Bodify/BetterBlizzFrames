@@ -134,7 +134,6 @@ local hdFrame = { HD_MO .. "UI-TargetingFrame-NoLevel.png", HD_NOMANA .. "UI-Tar
 local hdBig = { HD_MO .. "UI-TargetingFrame-NoLevel-Retail.png", HD_NOMANA .. "UI-TargetingFrame-NoLevel-Retail-NoMana.png" }
 local hdBigNoMana = { HD_NOMANA .. "UI-TargetingFrame-NoLevel-Retail-NoMana.png" }
 local hdFrameNoMana = { HD_NOMANA .. "UI-TargetingFrame-NoLevel-NoMana.png" }
-local hdMinus = { HD_MO .. "UI-TargetingFrame-Minus.png" }
 local hdSmall = { HD_MO .. "UI-SmallTargetingFrame.png", HD_NOMANA .. "UI-SmallTargetingFrame-NoMana.png" }
 local hdTot = { HD_MO .. "UI-TargetOfTargetFrame.png", HD_NOMANA .. "UI-TargetOfTargetFrame-NoMana.png" }
 local hdTotNoMana = { HD_NOMANA .. "UI-TargetOfTargetFrame-NoMana.png" }
@@ -160,7 +159,6 @@ local frameTextures = {
     [bigPath .. "NoManas\\UI-TargetingFrame-Elite-NoMana.png"] = hdFrameNoMana,
     [bigPath .. "NoManas\\UI-TargetingFrame-Rare-NoMana.png"] = hdFrameNoMana,
     [bigPath .. "NoManas\\UI-TargetingFrame-Rare-Elite-NoMana.png"] = hdFrameNoMana,
-    ["Interface\\TargetingFrame\\UI-TargetingFrame-Minus"] = hdMinus,
     ["Interface\\TargetingFrame\\UI-SmallTargetingFrame"] = hdSmall,
     ["Interface\\TargetingFrame\\UI-TargetofTargetFrame"] = hdTot,
     [bigTotTex] = hdTotNoMana,
@@ -271,7 +269,7 @@ function BBF.SquishClassicPlayerHealth()
     healthBar:SetSize(120, BetterBlizzFramesDB.hideUnitFramePlayerMana and 21 or 9)
     healthBar:ClearAllPoints()
     healthBar:SetPoint("TOPLEFT", hpContainer, "TOPLEFT", 0, -7)
-    hpContainer.HealthBarMask:Hide()
+    BBF.MaskClassicPlayerHealth()
 end
 
 local FRAME_MASK = "Interface\\AddOns\\BetterBlizzFrames\\media\\masks\\frameMask.png"
@@ -281,20 +279,39 @@ BBF.ClassicManaMask = {
     target = { left = 0, right = 0, top = 0, bottom = 0 },
 }
 
-local function MaskClassicMana(manaBar, key)
-    local mask = manaBar.ManaBarMask
-    local o = BBF.ClassicManaMask[key]
+BBF.ClassicHealthMask = {
+    player = { left = 0, right = 0, top = 0, bottom = 0 },
+}
+
+local function FitFrameMask(mask, bar, o)
     mask:SetTexture(FRAME_MASK, "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
     mask:ClearAllPoints()
-    mask:SetPoint("TOPLEFT", manaBar, "TOPLEFT", -o.left, o.top)
-    mask:SetPoint("BOTTOMRIGHT", manaBar, "BOTTOMRIGHT", o.right, -o.bottom)
+    mask:SetPoint("TOPLEFT", bar, "TOPLEFT", -o.left, o.top)
+    mask:SetPoint("BOTTOMRIGHT", bar, "BOTTOMRIGHT", o.right, -o.bottom)
     mask:Show()
+end
+
+local function MaskClassicMana(manaBar, key)
+    FitFrameMask(manaBar.ManaBarMask, manaBar, BBF.ClassicManaMask[key])
+end
+
+local classicHealthHooked
+
+function BBF.MaskClassicPlayerHealth()
+    if not BetterBlizzFramesDB.classicFrames or PlayerFrame.state == "vehicle" then return end
+    if not classicHealthHooked and PlayerFrame_UpdateHealthBarVisuals then
+        classicHealthHooked = true
+        hooksecurefunc("PlayerFrame_UpdateHealthBarVisuals", BBF.MaskClassicPlayerHealth)
+    end
+    local hpContainer = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer
+    FitFrameMask(hpContainer.HealthBarMask, hpContainer.HealthBar, BBF.ClassicHealthMask.player)
 end
 
 function BBF.RefreshClassicManaMasks()
     if not BetterBlizzFramesDB.classicFrames then return end
     if PlayerFrame.state ~= "vehicle" then
         MaskClassicMana(PlayerFrame_GetManaBar(), "player")
+        BBF.MaskClassicPlayerHealth()
     end
     for _, frame in ipairs({ TargetFrame, FocusFrame }) do
         if frame and frame.ClassicFrame then
@@ -482,7 +499,7 @@ local function MakeClassicFrame(frame)
                 return
             end
             manaBar:ClearAllPoints()
-            manaBar:SetPoint("TOPRIGHT", hpContainer, "BOTTOMRIGHT", -1, -2)
+            manaBar:SetPoint("TOPRIGHT", frameContainer, "LEFT", 148, -12)
             manaBar:SetSize(120, 11)
         end
         PlaceClassicManaBar()
@@ -518,8 +535,7 @@ local function MakeClassicFrame(frame)
                 background:SetPoint("BOTTOMRIGHT", contentMain.ManaBar, "BOTTOMRIGHT", -2, -1)
                 return
             end
-            local minus = UnitExists(frame.unit) and BBF.GetUnitClassification(frame.unit) == "minus"
-            background:SetPoint("TOPLEFT", healthBar, "TOPLEFT", minus and 3 or 0, minus and -10 or 19)
+            background:SetPoint("TOPLEFT", healthBar, "TOPLEFT", 0, 19)
             background:SetPoint("BOTTOMRIGHT", contentMain.ManaBar, "BOTTOMRIGHT", -2, -1)
         end
         frame.ClassicFrame.UpdateBackground()
@@ -705,30 +721,18 @@ local function MakeClassicFrame(frame)
             end
         end
 
-        local function FrameAdjustments(frame, minus, normal)
-            if minus then
-                frame.FrameTexture:ClearAllPoints()
-                frame.FrameTexture:SetPoint("TOPLEFT", 20, -4)
-                frame.Flash:SetSize(253, 120)
-                frame.Flash:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Minus-Flash")
-                frame.Flash:SetTexCoord(0, 1, 0, 1)
-                frame.Flash:ClearAllPoints()
-                frame.Flash:SetPoint("TOPLEFT", -2.5, -10)
-                contentMain.ReputationColor:Hide()
-                contentMain.LevelText:SetAlpha(1)
-            else
-                frame.FrameTexture:ClearAllPoints()
-                frame.FrameTexture:SetPoint("TOPLEFT", 20.5, -18)
-                frame.Flash:SetSize(240.5, 93)
-                BBF.SetClassicFlash(frame.Flash, false)
-                frame.Flash:ClearAllPoints()
-                frame.Flash:SetPoint("TOPLEFT", -2.5, -8)
-                contentMain.LevelText:SetAlpha(1)
-                if frame.unit == "target" then
-                    contentMain.ReputationColor:SetShown(not BetterBlizzFramesDB.hideTargetReputationColor)
-                elseif frame.unit == "focus" then
-                    contentMain.ReputationColor:SetShown(not BetterBlizzFramesDB.hideFocusReputationColor)
-                end
+        local function FrameAdjustments(frame)
+            frame.FrameTexture:ClearAllPoints()
+            frame.FrameTexture:SetPoint("TOPLEFT", 20.5, -18)
+            frame.Flash:SetSize(240.5, 93)
+            BBF.SetClassicFlash(frame.Flash, false)
+            frame.Flash:ClearAllPoints()
+            frame.Flash:SetPoint("TOPLEFT", -2.5, -8)
+            contentMain.LevelText:SetAlpha(1)
+            if frame.unit == "target" then
+                contentMain.ReputationColor:SetShown(not BetterBlizzFramesDB.hideTargetReputationColor)
+            elseif frame.unit == "focus" then
+                contentMain.ReputationColor:SetShown(not BetterBlizzFramesDB.hideFocusReputationColor)
             end
         end
 
@@ -807,9 +811,6 @@ local function MakeClassicFrame(frame)
             if eliteTextures[classification] then
                 FrameAdjustments(frameContainer)
                 SetEliteArt(classification)
-            elseif ( classification == "minus" ) then
-                FrameAdjustments(frameContainer, true)
-                BBF.SetClassicTexture(frame.ClassicFrame.Texture, BBF.ClassicBigTargetTexture(frame, "Interface\\TargetingFrame\\UI-TargetingFrame-Minus"))
             else
                 FrameAdjustments(frameContainer)
                 if frame.unit == "target" then
@@ -1310,6 +1311,9 @@ local function MakeClassicFrame(frame)
             frame.ClassicFrame.Texture:SetPoint("TOPLEFT", -3, 1)
             frame.ClassicFrame.Texture:SetTexCoord(0, 1, 0, 1)
 
+            hpContainer.HealthBarMask:SetAtlas("UI-HUD-UnitFrame-Player-PortraitOn-Bar-Health-Mask")
+            hpContainer.HealthBarMask:ClearAllPoints()
+            hpContainer.HealthBarMask:SetPoint("TOPLEFT", hpContainer, "TOPLEFT", -8, 6)
             hpContainer.HealthBarMask:SetSize(120, 32)
             hpContainer.HealthBarMask:Show()
             manaBar.ManaBarMask:ClearAllPoints()

@@ -562,6 +562,12 @@ local function PlaceMask(mirror, layout)
     if info.artMask and BBF.ApplyFrameMask then
         local container = mirror.spec.frame.TargetFrameContainer
         if container and BBF.ApplyFrameMask(mask, info.artMask, "health", container.FrameTexture) then
+            local adjust = info.adjust
+            if adjust then
+                mask:ClearAllPoints()
+                mask:SetPoint("TOPLEFT", container.FrameTexture, "TOPLEFT", adjust.left or 0, adjust.top or 0)
+                mask:SetPoint("BOTTOMRIGHT", container.FrameTexture, "BOTTOMRIGHT", adjust.right or 0, adjust.bottom or 0)
+            end
             return
         end
         mask:SetTexture(fallback, "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")

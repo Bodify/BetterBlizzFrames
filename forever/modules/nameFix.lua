@@ -903,6 +903,16 @@ local function GetSpecName(unit)
     return specName, specName ~= nil
 end
 
+local function GetArenaSpecName(arenaIndex)
+    local specID = GetArenaOpponentSpec and GetArenaOpponentSpec(arenaIndex)
+    if issecretvalue(specID) then
+        if not BBF.ArenaOpponentHasSpec(arenaIndex) then return nil, false end
+        return UnitFrameUtil.GetArenaOpponentSpecDisplayInfo(arenaIndex).specName, true
+    end
+    local specName = specID and (shortArenaSpecName and specIDToNameShort[specID] or specIDToName[specID]) or nil
+    return specName, specName ~= nil
+end
+
 local function ShowLastNameOnlyNpc(frame, name)
     if issecretvalue(name) or not name then return name end
     local creatureType, creatureTypeID
@@ -2059,19 +2069,23 @@ local unitToArenaName = {
 local friendlyArenaUnits = { "party1", "party2" }
 local enemyArenaUnits = { "arena1", "arena2", "arena3" }
 
-local function GetArenaUnitName(unit)
-    local candidates = UnitIsFriend(unit, "player") and friendlyArenaUnits or enemyArenaUnits
-    for _, arenaUnit in ipairs(candidates) do
-        if UnitExists(arenaUnit) and UnitIsProbablyUnit(unit, arenaUnit) then
-            return unitToArenaName[arenaUnit]
+local function GetArenaUnitName(unit, tot)
+    local isFriend = UnitIsFriend(unit, "player")
+    local candidates = isFriend and friendlyArenaUnits or enemyArenaUnits
+    for i, arenaUnit in ipairs(candidates) do
+        if UnitExists(arenaUnit) and ((not tot and UnitIsUnit(unit, arenaUnit)) or UnitIsProbablyUnit(unit, arenaUnit)) then
+            return unitToArenaName[arenaUnit], not isFriend and i or nil
         end
     end
     return nil
 end
 
 local function SetArenaNameUnitFrame(frame, unit, textObject, tot)
-    local unitID = GetArenaUnitName(unit)
+    local unitID, arenaIndex = GetArenaUnitName(unit, tot)
     local specName, hasSpec = GetSpecName(unit)
+    if not hasSpec and arenaIndex then
+        specName, hasSpec = GetArenaSpecName(arenaIndex)
+    end
     local nameText
 
     local UnitChecker = tot and UnitIsProbablyUnit or UnitIsUnit

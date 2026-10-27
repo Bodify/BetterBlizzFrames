@@ -4694,6 +4694,21 @@ function BBF.HookUnitFrameTextures()
                 end
             end
         end
+
+        if db.changeUnitFrameHealthbarTexture and not BBF.targetMaskTextureHooked then
+            BBF.targetMaskTextureHooked = true
+            local function TextureMaskHeight(frame)
+                local db = BetterBlizzFramesDB
+                local bigKey = frame == FocusFrame and "Focus" or "Target"
+                if not db.changeUnitFrameHealthbarTexture or db.classicFrames or BBF.HasNoPortrait(frame.unit)
+                    or (BBF.BigHealthbarsOn() and db["bigHealthbar" .. bigKey]) then return end
+                frame.TargetFrameContent.TargetFrameContentMain.HealthBarsContainer.HealthBarMask:SetHeight(31.5)
+            end
+            for _, frame in ipairs({ TargetFrame, FocusFrame }) do
+                hooksecurefunc(frame, "CheckClassification", TextureMaskHeight)
+                TextureMaskHeight(frame)
+            end
+        end
     end
 end
 
@@ -4822,9 +4837,6 @@ function BBF.SymmetricPlayerFrame()
     portraitMask:SetPoint("TOPLEFT", 27, -20)
 
     PlayerLevelText:SetPoint("TOPRIGHT", PlayerFrame.PlayerFrameContent.PlayerFrameContentMain, "TOPRIGHT", -24, -27.7)
-
-    local tMain = TargetFrame.TargetFrameContent.TargetFrameContentMain
-    tMain.LevelText:SetPoint("TOPLEFT", tMain.ReputationColor, "TOPRIGHT", -132, -2)
 
     hooksecurefunc(portraitMask, "SetSize", function(self)
         if not self.changing then
@@ -5340,13 +5352,6 @@ function BBF.GladTracker()
 end
 
 
-local function NudgeY(region, delta)
-    local a, b, c, d, e = region:GetPoint()
-    region.bbfShifting = true
-    region:SetPoint(a, b, c, d, e + delta)
-    region.bbfShifting = nil
-end
-
 local function RoundToPixel(region)
     if not region or region.bbfPixelRounded or not region.SetRoundLayoutToNearestPixel or InCombatLockdown() then return end
     region.bbfPixelRounded = true
@@ -5360,17 +5365,10 @@ function BBF.DefaultFrameTweaks()
     RoundToPixel(playerContainer.FrameTexture)
     RoundToPixel(playerContainer.AlternatePowerFrameTexture)
     RoundToPixel(playerContainer.FrameFlash)
-    local db = BetterBlizzFramesDB
-    if not db.playerFrameOCD and not db.classicFrames and not db.symmetricPlayerFrame and not BBF.HasNoPortrait("player") then
-        NudgeY(PlayerLevelText, -0.5)
-    end
     for _, frame in ipairs({ TargetFrame, FocusFrame }) do
         local container = frame.TargetFrameContainer
         RoundToPixel(container.FrameTexture)
         RoundToPixel(container.Flash)
-        if not BetterBlizzFramesDB.playerFrameOCD and not BetterBlizzFramesDB.classicFrames and not BBF.HasNoPortrait(frame.unit) then
-            NudgeY(frame.TargetFrameContent.TargetFrameContentMain.LevelText, -0.5)
-        end
     end
 end
 
@@ -5446,13 +5444,18 @@ function BBF.FixStupidBlizzPTRShit()
     end
 
     if isAddonLoaded("ClassicFrames") or isAddonLoaded("EasyFrames") or BetterBlizzFramesDB.classicFrames or BBF.HasNoPortrait("player") then return end
-    -- For god knows what reason PTR has a gap between Portrait and PlayerFrame. This fixes it + other gaps.
-    --PlayerFrame.PlayerFrameContainer.PlayerPortrait:SetScale(1.02)
-    PlayerFrame.PlayerFrameContainer.PlayerPortrait:SetSize(61,61)
-    -- PlayerFrame.PlayerFrameContainer.PlayerPortrait:SetPoint("TOPLEFT", PlayerFrame.PlayerFrameContainer, "TOPLEFT", 22, -17)
-    -- PlayerFrame.PlayerFrameContainer.PlayerPortraitMask:SetScale(1.01)
-    -- PlayerFrame.PlayerFrameContainer.PlayerPortraitMask:SetSize(63,63)
-    -- PlayerFrame.PlayerFrameContainer.PlayerPortraitMask:SetPoint("TOPLEFT", PlayerFrame.PlayerFrameContainer, "TOPLEFT", 22, -16)
+    local function SetPlayerManaHeight()
+        BBF.RunAfterCombat(function()
+            PlayerFrame.manabar:SetHeight(10.5)
+        end)
+    end
+    SetPlayerManaHeight()
+    hooksecurefunc("PlayerFrame_ToPlayerArt", function()
+        local db = BetterBlizzFramesDB
+        if db.playerFrameOCD and not db.classicFrames and not BBF.HasNoPortrait("player") then
+            SetPlayerManaHeight()
+        end
+    end)
 
     -- local a, b, c, d, e = TargetFrame.totFrame.Portrait:GetPoint()
     -- TargetFrame.totFrame.Portrait:SetPoint(a, b, c, 6, -4)
@@ -5463,7 +5466,6 @@ function BBF.FixStupidBlizzPTRShit()
 
     TargetFrame.totFrame.Portrait:SetSize(36,36)
     FocusFrame.totFrame.Portrait:SetSize(36,36)
-    PlayerFrame.PlayerFrameContainer.PlayerPortraitMask:SetSize(61,60)
     TargetFrame.TargetFrameContainer.PortraitMask:ClearAllPoints()
     TargetFrame.TargetFrameContainer.PortraitMask:SetPoint("CENTER", TargetFrame.TargetFrameContainer.Portrait, "CENTER", 0, 0)
     TargetFrame.TargetFrameContainer.PortraitMask:SetSize(56,56)
@@ -5478,47 +5480,17 @@ function BBF.FixStupidBlizzPTRShit()
         end
     end
 
-    --Omniauras mask
-    if C_AddOns.IsAddOnLoaded("OmniAuras") then
-        for _, child in ipairs({PlayerFrame.PlayerFrameContainer:GetChildren()}) do
-            if child:IsObjectType("Button") then
-                local mask = child.mask
-                if mask and mask.SetTexture then
-                    mask:SetAtlas("UI-HUD-UnitFrame-Player-Portrait-Mask")
-                    child:ClearAllPoints()
-                    child:SetPoint("TOPLEFT", PlayerFrame.PlayerFrameContainer.PlayerPortrait, "TOPLEFT", 0, 0)
-                    child:SetPoint("BOTTOMRIGHT", PlayerFrame.PlayerFrameContainer.PlayerPortrait, "BOTTOMRIGHT", 1, -1)
-                    break
-                end
-            end
-        end
-    end
-
     --BBF.ShiftNamesCuzOCD()
 
-    local a, b, c, d, e = TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:GetPoint()
-    TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:SetPoint(a, b, c, d, -24)
     if BBF.ApplyNameLayouts then
         BBF.ApplyNameLayouts()
     end
-    local lvlYOffset = -4.5
-    --TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:SetHeight()
-    TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:SetHeight(20)
-    local a, b, c, d, e = TargetFrame.TargetFrameContent.TargetFrameContentMain.LevelText:GetPoint()
-    TargetFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetPoint(a, b, c, d+1.5, lvlYOffset)
-
-    local a, b, c, d, e = FocusFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:GetPoint()
-    FocusFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:SetPoint(a, b, c, d, -24)
-    FocusFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:SetHeight(20)
-    local a, b, c, d, e = FocusFrame.TargetFrameContent.TargetFrameContentMain.LevelText:GetPoint()
-    FocusFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetPoint(a, b, c, d+1.5, lvlYOffset)
+    TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:SetHeight(18.5)
+    FocusFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor:SetHeight(18.5)
 
 
     -- HealthBarColorActive
     --if not BetterBlizzFramesDB.playerFrameOCDTextureBypass then
-        local a, b, c, d, e = PlayerLevelText:GetPoint()
-        local xoffset = BetterBlizzFramesDB.symmetricPlayerFrame and -2.5 or -1
-        PlayerLevelText:SetPoint(a,b,c,d+xoffset,-29)
         -- PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer.HealthBarMask:SetHeight(33)
         -- PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar.ManaBarMask:SetPoint("TOPLEFT", PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar, "TOPLEFT", -2, 3)
         -- PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar.ManaBarMask:SetHeight(17)

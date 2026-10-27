@@ -423,7 +423,7 @@ local function GrowBar()
         healthBar:SetSize(120, height)
         healthBar:ClearAllPoints()
         healthBar:SetPoint("TOPLEFT", hpContainer, "TOPLEFT", 0, 3)
-        mask:Hide()
+        BBF.MaskClassicPlayerHealth()
         BBF.UpdatePlayerOvershieldAnchor()
         BBF.SizeClassicPlayerMana()
         return

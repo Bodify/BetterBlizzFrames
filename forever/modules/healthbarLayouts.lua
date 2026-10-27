@@ -15,10 +15,6 @@ local targetLayouts = {
     classic = {
         point = { "TOPLEFT", "LEFT", 26, -1 }, width = 120, height = 9, glowOffset = -7, texts = false,
     },
-    classicMinus = {
-        point = { "TOPLEFT", "LEFT", 21, 9 }, width = 121, height = 20, glowOffset = -7, texts = false,
-        mask = { atlas = TARGET_MASK, x = 1, y = -6, width = 125, height = 23 },
-    },
     classicBig = {
         point = { "TOPLEFT", "LEFT", 26, 19 }, width = 120, height = 29, glowOffset = -7, texts = false, big = true,
         mask = { texture = FRAME_MASK, fit = true },
@@ -29,10 +25,6 @@ local targetLayouts = {
     },
     noPortrait = {
         point = { "TOPLEFT", "LEFT", 23, 10 }, width = 126, height = 20, glowOffset = -10, texts = false,
-        mask = { texture = PORTRAIT_OFF_MASK, x = -35, y = 5, width = 193, height = 30 },
-    },
-    noPortraitMinus = {
-        point = { "TOPLEFT", "LEFT", 23, 11 }, width = 126, height = 20, glowOffset = -10, texts = false,
         mask = { texture = PORTRAIT_OFF_MASK, x = -35, y = 5, width = 193, height = 30 },
     },
     noPortraitBig = {
@@ -195,8 +187,21 @@ local function FrameExtraLargeKey(frame)
     if frame == PlayerFrame then return "Player" end
 end
 
+local function MinusAsNormal(unit)
+    local db = BetterBlizzFramesDB
+    if db.classicFrames then return true end
+    return (db.noPortraitModes or db.noPortraitPixelBorder) and BBF.HasNoPortrait(unit) or false
+end
+
 local function IsMinus(frame)
-    return UnitExists(frame.unit) and UnitClassification(frame.unit) == "minus"
+    return UnitExists(frame.unit) and UnitClassification(frame.unit) == "minus" and not MinusAsNormal(frame.unit)
+end
+
+local function NormalMinusHealthArt(frame)
+    if not UnitExists(frame.unit) or UnitClassification(frame.unit) ~= "minus" or not MinusAsNormal(frame.unit) then return end
+    local container = frame.TargetFrameContent.TargetFrameContentMain.HealthBarsContainer
+    container.HealthBar.HealthBarTexture:SetAtlas("UI-HUD-UnitFrame-Target-PortraitOn-Bar-Health", TextureKitConstants.UseAtlasSize)
+    container.TempMaxHealthLoss.TempMaxHealthLossTexture:SetAtlas("UI-HUD-UnitFrame-Target-PortraitOn-Bar-TempHPLoss", TextureKitConstants.UseAtlasSize)
 end
 
 local function HideTargetMana(frame)
@@ -324,10 +329,10 @@ function BBF.GetHealthbarLayout(frame)
         end
         return BBF.BigHealthbarOn(frame) and targetLayouts.defaultMinus or nil
     end
-    if style == "classic" and not minus and HideTargetMana(frame) then
+    if style == "classic" and HideTargetMana(frame) then
         return ClassicNoManaLayout(targetLayouts.classic)
     end
-    return minus and targetLayouts[style .. "Minus"] or targetLayouts[style]
+    return targetLayouts[style]
 end
 
 function BBF.TargetNameBorderRemoved(frame)
@@ -657,6 +662,7 @@ function BBF.UpdateHealthbarMirror(frame)
         BBF.DisableHealthbarMirror(frame)
         return
     end
+    NormalMinusHealthArt(frame)
     if TargetStyle(frame) == "retail" then
         UpdateRetailMirror(frame)
     else

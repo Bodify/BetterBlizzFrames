@@ -40,7 +40,8 @@ BBF.TextAreaLayouts = {
             { style = "classic", mode = "big", bottom = -1, manaY = -0.5, own = { bottom = true } },
             { style = "classic", mode = "none", mana = "hidden", top = 1, bottom = -1, healthY = 0 },
             { style = "classic", left = 1, right = -2, top = 1, bottom = -1, textLeft = -0.5, textRight = -0.5 },
-            { client = "retail", style = "retail", mode = "none", mana = "shown", left = 1, right = -5, textRight = 7 },
+            { client = "retail", style = "retail", mode = "none", mana = "shown", left = 1, right = -5, healthY = -1, manaY = 0, textRight = 7,
+                own = { healthY = true, manaY = true } },
             { client = "retail", style = "retail", mode = "xl", mana = "shown", left = 1, right = -1.5, textRight = 11 },
             { client = "retail", style = "retail", mode = "xl", mana = "hidden", left = 1.5, right = -9.5, textRight = 3 },
             { client = "retail", style = "retail", left = 1.5, right = -9.5, textRight = 2 },
@@ -130,11 +131,11 @@ BBF.TextAreaLayouts = {
 BBF.TextAreaOverrides = {}
 
 BBF.NameLayouts = {
-    player = { { inside = true, y = -12 }, { style = "retail", y = 1.5 },
+    player = { { inside = true, y = -12 }, { client = "retail", style = "retail", mode = "xl", mana = "hidden", y = 1 }, { style = "retail", y = 1.5 },
         { style = "classic", y = 3.5 }, { style = "camelot", mode = "xl", mana = "hidden", y = 3 }, { style = "camelot", mode = "xl", y = 2 },
         { style = "camelot", mode = "reduced", y = 2 }, { y = 1 } },
     target = { { style = "classic", mode = "big", mana = "hidden", inside = true, y = -12.5, own = true },
-        { style = "classic", mode = "big", mana = "hidden", y = 3, own = true }, { inside = true, y = -12 }, { client = "retail", style = "retail", left = 18, y = 2 }, { style = "retail", y = 2 }, { style = "camelot", mode = "none", mana = "hidden", y = -2, own = true },
+        { style = "classic", mode = "big", mana = "hidden", y = 3, own = true }, { inside = true, y = -12 }, { client = "retail", style = "retail", mode = "xl", mana = "hidden", left = 23, right = 5, y = 0.5, own = true }, { client = "retail", style = "retail", left = 23, right = 5, y = 1, own = true },{ style = "retail", y = 2 }, { style = "camelot", mode = "none", mana = "hidden", y = -2, own = true },
         { style = "camelot", mode = "xl", mana = "hidden", y = 2, own = true },
         { style = "camelot", mode = "big", mana = "hidden", y = 1.5, own = true }, { y = 1 } },
     tot = { { classicToT = true, below = true, y = -4 }, { inside = true, y = -10 }, { style = "pixel", y = 1 }, { style = "retail", y = 2 },
@@ -694,6 +695,66 @@ local function PlaceGroupIcons(frame, area, setup, v)
     end
 end
 
+local LEVEL_X = { player = -2.5, target = 1.5 }
+local LEVEL_EDGE = { player = 209, target = 23 }
+
+local function LevelText(frame)
+    if frame == PlayerFrame then return PlayerLevelText end
+    if frame == TargetFrame or frame == FocusFrame then return frame.TargetFrameContent.TargetFrameContentMain.LevelText end
+end
+
+function BBF.LevelOnTextArea(frame)
+    if CLIENT ~= "retail" or not LevelText(frame) or not BBF.TextAreaActive(frame) then return false end
+    local setup = BBF.TextAreaSetup(frame)
+    return setup and setup.style == "retail" and not setup.inside or false
+end
+
+local function PlaceLevel(frame)
+    local level, area = LevelText(frame), areas[frame]
+    if not level then return end
+    if not area or not area:IsShown() or not BBF.LevelOnTextArea(frame) then
+        local default = level.bbfLevelDefault
+        if level.bbfLevelArea and default then
+            level.bbfLevelArea = nil
+            level.bbfLevelAreaPlacing = true
+            level:ClearAllPoints()
+            level:SetPoint(default[1], default[2], default[3], default[4], default[5])
+            level.bbfLevelAreaPlacing = nil
+        end
+        return
+    end
+    local setup = BBF.TextAreaSetup(frame)
+    if not level.bbfLevelDefault and level:GetNumPoints() > 0 then
+        level.bbfLevelDefault = { level:GetPoint(1) }
+        level.bbfLevelDefault[5] = level.bbfLevelDefault[5] - (level.bbfShiftY or 0)
+    end
+    level.bbfLevelArea = true
+    level.bbfShiftY = nil
+    if not level.bbfLevelAreaHooked then
+        level.bbfLevelAreaHooked = true
+        hooksecurefunc(level, "SetPoint", function(self)
+            if not self.bbfLevelAreaPlacing then PlaceLevel(frame) end
+        end)
+    end
+    local name = BBF.NameAreaResolve(frame)
+    local y = (name and name.y or 0) + (frame.bbfNameBaseHeight or NAME_HEIGHT[setup.key]) / 2
+    local player = frame == PlayerFrame
+    local x = player and LEVEL_X.player or LEVEL_X.target
+    local frameLeft, edge = frame:GetLeft(), player and area:GetRight() or area:GetLeft()
+    if frameLeft and edge then
+        local ratio = area:GetEffectiveScale() / frame:GetEffectiveScale()
+        x = x + frameLeft + (player and LEVEL_EDGE.player or LEVEL_EDGE.target) - edge * ratio
+    end
+    level.bbfLevelAreaPlacing = true
+    level:ClearAllPoints()
+    if player then
+        level:SetPoint("RIGHT", area, "TOPRIGHT", x, y)
+    else
+        level:SetPoint("LEFT", area, "TOPLEFT", x, y)
+    end
+    level.bbfLevelAreaPlacing = nil
+end
+
 local function ApplyTextArea(frame)
     if not BBF.TextAreaActive(frame) then
         if areas[frame] then areas[frame]:Hide() end
@@ -780,6 +841,7 @@ local function ApplyTextArea(frame)
         end
     end
     PlaceGroupIcons(frame, area, setup, v)
+    PlaceLevel(frame)
     return true
 end
 

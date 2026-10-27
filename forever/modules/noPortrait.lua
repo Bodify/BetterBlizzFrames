@@ -1568,7 +1568,7 @@ local function MakeNoPortraitMode(frame)
             BBF.RunAfterCombat(function()
                 manaBar:SetWidth(137)
                 manaBar:ClearAllPoints()
-                manaBar:SetPoint("TOPRIGHT", hpContainer, "BOTTOMRIGHT", 6, -1)
+                manaBar:SetPoint("TOPRIGHT", frameContainer, "LEFT", 155, -11)
             end)
         end
 
@@ -1802,27 +1802,16 @@ local function MakeNoPortraitMode(frame)
             end
         end
 
-        local function FrameAdjustments(container, minus, normal)
-            if minus then
-                container.FrameTexture:ClearAllPoints()
-                container.FrameTexture:SetPoint("TOPLEFT", 20, -4)
-                container.Flash:SetTexture(minusTex)
-                container.Flash:SetTexCoord(1, 0, 0, 1)
-                container.Flash:ClearAllPoints()
-                container.Flash:SetAllPoints(frame.noPortraitMode.Texture)
-                contentMain.LevelText:SetAlpha(1)
-                hpContainer.HealthBarMask:SetHeight(30)
-            else
-                container.FrameTexture:ClearAllPoints()
-                container.FrameTexture:SetPoint("TOPLEFT", 20.5, -18)
-                container.Flash:SetTexture((frame == TargetFrame) and targetFlashTex or focusFlashTex)
-                container.Flash:SetTexCoord(1, 0, 0, 1)
-                container.Flash:ClearAllPoints()
-                container.Flash:SetAllPoints(frame.noPortraitMode.Texture)
-                container.Flash:SetDrawLayer("OVERLAY", 1)
-                contentMain.LevelText:SetAlpha(1)
-                hpContainer.HealthBarMask:SetHeight(30)
-            end
+        local function FrameAdjustments(container)
+            container.FrameTexture:ClearAllPoints()
+            container.FrameTexture:SetPoint("TOPLEFT", 20.5, -18)
+            container.Flash:SetTexture((frame == TargetFrame) and targetFlashTex or focusFlashTex)
+            container.Flash:SetTexCoord(1, 0, 0, 1)
+            container.Flash:ClearAllPoints()
+            container.Flash:SetAllPoints(frame.noPortraitMode.Texture)
+            container.Flash:SetDrawLayer("OVERLAY", 1)
+            contentMain.LevelText:SetAlpha(1)
+            hpContainer.HealthBarMask:SetHeight(30)
         end
 
         hooksecurefunc(frame, "CheckClassification", function(self)
@@ -1859,17 +1848,7 @@ local function MakeNoPortraitMode(frame)
 
             local hideMana = (frame == TargetFrame and db.hideUnitFrameTargetMana) or (frame == FocusFrame and db.hideUnitFrameFocusMana)
 
-            if ( classification == "rareelite" ) then
-                FrameAdjustments(frameContainer)
-            elseif ( classification == "worldboss" or classification == "elite" ) then
-                FrameAdjustments(frameContainer)
-            elseif ( classification == "rare" ) then
-                FrameAdjustments(frameContainer)
-            elseif ( classification == "minus" ) then
-                FrameAdjustments(frameContainer, true)
-            else
-                FrameAdjustments(frameContainer)
-            end
+            FrameAdjustments(frameContainer)
 
             SetBossDragonAtlas(frameContainer.BossPortraitFrameTexture, classification)
             frameContainer.BossPortraitFrameTexture:SetSize(15, 15)
@@ -1880,7 +1859,7 @@ local function MakeNoPortraitMode(frame)
             local textureToUse
             if BBF.IsBigHealthbarActive(frame) then
                 textureToUse = unifiedTex
-            elseif hideMana or classification == "minus" then
+            elseif hideMana then
                 textureToUse = minusTex
             else
                 textureToUse = (frame == TargetFrame) and targetDefaultTex or focusDefaultTex
@@ -3645,13 +3624,12 @@ function BBF.UpdateNoPortraitManaVisibility()
 
     -- TargetFrame
     if TargetFrame.noPortraitMode and TargetFrame.noPortraitMode.Texture then
-        local classification = UnitClassification("target")
         local hideMana = db.hideUnitFrameTargetMana
         local textureToUse
 
         if BBF.IsBigHealthbarActive(TargetFrame) then
             textureToUse = unifiedTex
-        elseif hideMana or classification == "minus" then
+        elseif hideMana then
             textureToUse = minusTex
         else
             textureToUse = targetDefaultTex
@@ -3665,13 +3643,12 @@ function BBF.UpdateNoPortraitManaVisibility()
 
     -- FocusFrame
     if FocusFrame.noPortraitMode and FocusFrame.noPortraitMode.Texture then
-        local classification = UnitClassification("focus")
         local hideMana = db.hideUnitFrameFocusMana
         local textureToUse
 
         if BBF.IsBigHealthbarActive(FocusFrame) then
             textureToUse = unifiedTex
-        elseif hideMana or classification == "minus" then
+        elseif hideMana then
             textureToUse = minusTex
         else
             textureToUse = focusDefaultTex
