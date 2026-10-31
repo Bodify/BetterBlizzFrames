@@ -7,6 +7,9 @@
 - **Name sizes:** Move Names now has a scale slider for every name, plus new Pet and Party rows. (All versions)
 - **No Portrait: Pixel Border resizing:** Right-click No Portrait Pixel Border to set health and mana sizes per frame and the border size. (Retail & Forever)
 - **Loss of Control Tweaks:** BetterBlizzCC has been revamped and updated for all versions of the game and now these settings are also included in BBF's new Loss of Control Tweaks settings. Second CC icon, interrupted school, icon only, text position, timer text and more. Right-click for settings. (All versions)
+![bbfForeverUf](https://github.com/user-attachments/assets/7f6d6077-83bd-44a6-b9b8-72e26dda7720)
+![bbfForeverRetailUf](https://github.com/user-attachments/assets/4c72d59c-03a3-4594-960b-ce9da7df2375)
+![BetterBlizzCC3](https://github.com/user-attachments/assets/7a41484a-4414-4498-9069-ca28ec933c26)
 
 ## All versions
 ### Important
