@@ -679,7 +679,10 @@ local function UpdatePartyNameAlign()
         local frame = PartyFrame["MemberFrame" .. i]
         local fontString = frame and frame.bbfName
         if fontString and frame.PartyMemberOverlay and not frame.bbfBigParty and not BBF.HasNoPortrait("party") then
-            fontString:SetWidth(GetNameWidth(frame))
+            local width = GetNameWidth(frame)
+            if width then
+                fontString:SetWidth(width)
+            end
             local justify = "CENTER"
             if fontString:GetJustifyH() ~= justify then
                 fontString:SetJustifyH(justify)
@@ -1239,10 +1242,10 @@ local function InitializeFontString(frame)
     frame.bbfName:SetTextColor(name:GetTextColor())
     frame.bbfName:SetShadowColor(name:GetShadowColor())
     frame.bbfName:SetShadowOffset(name:GetShadowOffset())
-    frame.bbfNameBaseWidth = name:GetWidth()
-    local nameHeight = name:GetHeight()
-    frame.bbfNameBaseHeight = nameHeight
-    frame.bbfName:SetWidth(GetNameWidth(frame))
+    local nameWidth, nameHeight = name:GetWidth(), name:GetHeight()
+    frame.bbfNameBaseWidth = not issecretvalue(nameWidth) and nameWidth or nil
+    frame.bbfNameBaseHeight = not issecretvalue(nameHeight) and nameHeight or nil
+    frame.bbfName:SetWidth(GetNameWidth(frame) or nameWidth)
     frame.bbfName:SetHeight(nameHeight)
     frame.bbfName:SetWordWrap(false)
 
@@ -1271,7 +1274,7 @@ local function InitializeFontString(frame)
         elseif frame.PartyMemberOverlay and not frame.bbfBigParty then
             frame.bbfName:SetJustifyH("CENTER")
         end
-        frame.bbfName:SetWidth(GetNameWidth(frame))
+        frame.bbfName:SetWidth(GetNameWidth(frame) or nameWidth)
         frame.bbfName:SetHeight(nameHeight)
     end)
 

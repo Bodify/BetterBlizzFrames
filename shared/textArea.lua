@@ -1000,7 +1000,7 @@ local function PlacePartyName(name, box)
     local boxHeight = box.bbfHeight
     if multiLine then
         local _, fontHeight = name:GetFont()
-        if fontHeight then
+        if boxHeight and fontHeight then
             local nudge = (boxHeight - fontHeight) / 2
             dy = dy + (edge == "BOTTOM" and nudge or -nudge)
         end

@@ -122,12 +122,14 @@ end
 local TOT_NOMANA_GROW = 9
 local TOT_NOMANA_BOTTOM = -12.5
 function BBF.SetTotNoManaMask(healthBar, mode)
+    local height = healthBar:GetHeight()
+    if not height or issecretvalue(height) then return end
     if mode == "big" then
-        BBF.SetStretchedTotHealthMask(healthBar, healthBar.HealthBarMask, healthBar:GetHeight(), 77)
+        BBF.SetStretchedTotHealthMask(healthBar, healthBar.HealthBarMask, height, 77)
     elseif mode then
-        BBF.SetStretchedTotHealthMask(healthBar, healthBar.HealthBarMask, healthBar:GetHeight())
+        BBF.SetStretchedTotHealthMask(healthBar, healthBar.HealthBarMask, height)
     else
-        BBF.SetStretchedTotHealthMask(healthBar, healthBar.HealthBarMask, healthBar:GetHeight(), 43, 12)
+        BBF.SetStretchedTotHealthMask(healthBar, healthBar.HealthBarMask, height, 43, 12)
     end
 end
 

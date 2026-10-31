@@ -1165,8 +1165,8 @@ local function InitializeFontString(frame)
     frame.bbfName:SetWordWrap(false)
     local nameWidth = name:GetWidth()
     local nameHeight = name:GetHeight()
-    frame.bbfNameBaseWidth = nameWidth
-    frame.bbfNameBaseHeight = nameHeight
+    frame.bbfNameBaseWidth = not issecretvalue(nameWidth) and nameWidth or nil
+    frame.bbfNameBaseHeight = not issecretvalue(nameHeight) and nameHeight or nil
 
     frame.bbfName:SetText(name:GetText())
 
