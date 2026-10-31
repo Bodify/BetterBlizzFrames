@@ -13,6 +13,7 @@ locales\locales.xml
 embeds.xml
 
 shared\functions.lua
+shared\lossOfControl.lua
 shared\races.lua
 shared\timerFormatter.lua
 shared\actionBarTweaks.lua
@@ -42,6 +43,7 @@ classics\modules\overshields.lua
 shared\stealthIndicator.lua
 classics\modules\interruptIcon.lua
 classics\modules\queueTimer.lua
+classics\modules\loc_spells_era.lua
 classics\modules\loc.lua
 
 classics\gui.lua

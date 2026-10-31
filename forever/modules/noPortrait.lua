@@ -1113,7 +1113,7 @@ local function FitArtBackground(art)
     local out = art.bbfArtOutset or 0
     bg:ClearAllPoints()
     bg:SetPoint("TOPLEFT", art, "TOPLEFT", w * ART_INSET_X - out, -h * ART_INSET_TOP + out)
-    bg:SetPoint("BOTTOMRIGHT", art, "BOTTOMRIGHT", -w * ART_INSET_X + out, h * ArtBottomInset(path) - out)
+    bg:SetPoint("BOTTOMRIGHT", art, "BOTTOMRIGHT", -w * ART_INSET_X + out, h * ArtBottomInset(path) - out - (art.bbfArtGrowDown or 0))
 end
 
 local function RoundToPixel(region)
@@ -1122,9 +1122,10 @@ local function RoundToPixel(region)
     region:SetRoundLayoutToNearestPixel(true)
 end
 
-local function BindArtBackground(bg, art, path, outset)
+local function BindArtBackground(bg, art, path, outset, growDown)
     art.bbfArtBackground = bg
     art.bbfArtOutset = outset
+    art.bbfArtGrowDown = growDown
     if type(path) == "function" then
         art.bbfArtPathFn = path
     elseif type(path) == "string" then
@@ -1499,11 +1500,9 @@ function BBF.UpdateNoPortraitText(frame, frameType)
         local textParent = totFrame.BBFTextFrame or totFrame
 
         totFrame.HealthBar.DeadText:SetParent(textParent)
-        totFrame.HealthBar.DeadText:ClearAllPoints()
-        totFrame.HealthBar.DeadText:SetPoint("LEFT", 48, 3)
         totFrame.HealthBar.UnconsciousText:SetParent(textParent)
-        totFrame.HealthBar.UnconsciousText:ClearAllPoints()
-        totFrame.HealthBar.UnconsciousText:SetPoint("LEFT", 48, 3)
+        totFrame.bbfCenterDeadText = true
+        BBF.PlaceTotDeadText(totFrame)
 
     elseif frameType == "party" then
         for partyFrame in PartyFrame.PartyMemberFramePool:EnumerateActive() do
@@ -1700,7 +1699,7 @@ local function MakeNoPortraitMode(frame)
         totFrame.Background:SetColorTexture(0,0,0,0.45)
         BindArtBackground(totFrame.Background, totFrame.FrameTexture, function()
             return (frame == TargetFrame) and totTargetDefaultTex or totFocusDefaultTex
-        end)
+        end, nil, 1)
         totFrame.FrameTexture:SetSize(130, 33)
         local totTexture = (frame == TargetFrame) and totTargetDefaultTex or totFocusDefaultTex
         totFrame.FrameTexture:SetTexture(totTexture)
@@ -1730,6 +1729,9 @@ local function MakeNoPortraitMode(frame)
 
         totFrame.HealthBar.DeadText:SetParent(totFrame.BBFTextFrame)
         totFrame.HealthBar.UnconsciousText:SetParent(totFrame.BBFTextFrame)
+        if BBF.PlaceTotStatusTexts then
+            BBF.PlaceTotStatusTexts()
+        end
 
         if db.noPortraitPixelBorder then
             totFrame.FrameTexture:SetAlpha(0)
@@ -1751,7 +1753,7 @@ local function MakeNoPortraitMode(frame)
         else
 
             if totFrame.BBFTextFrame then
-                local maxBarLevel = math.max(totHpBar:GetFrameLevel(), totManaBar:GetFrameLevel())
+                local maxBarLevel = math.max(totFrame:GetFrameLevel(), totHpBar:GetFrameLevel(), totManaBar:GetFrameLevel())
                 totFrame.BBFTextFrame:SetFrameLevel(maxBarLevel + 10)
             end
 

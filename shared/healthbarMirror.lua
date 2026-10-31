@@ -14,6 +14,7 @@ local HELPER_TEXTURE = "Interface\\Buttons\\WHITE8x8"
 local FRAME_MASK = "Interface\\AddOns\\BetterBlizzFrames\\media\\masks\\frameMask.png"
 local PIXEL_MASK = "Interface\\AddOns\\BetterBlizzFrames\\media\\masks\\pixelMask.png"
 local DIVIDER_MIN_PERCENT = 0.015
+local HELPER_SCALE = 0.01
 
 local mirrors = {}
 
@@ -88,8 +89,12 @@ end
 
 local function CreateHelper(parent)
     local helper = CreateFrame("StatusBar", nil, parent)
+    helper:SetScale(HELPER_SCALE)
     helper:SetStatusBarTexture(HELPER_TEXTURE)
-    helper:GetStatusBarTexture():SetAlpha(0)
+    local tex = helper:GetStatusBarTexture()
+    tex:SetAlpha(0)
+    tex:SetSnapToPixelGrid(false)
+    tex:SetTexelSnappingBias(0)
     return helper
 end
 
@@ -164,20 +169,22 @@ CopyTexture = function(mirror)
     HookFill(mirror, src)
 end
 
-local function SegmentEnd(segment, mirror)
-    return segment and segment.sizeHelper:GetStatusBarTexture() or mirror.fill
+local function SegmentEnd(segment)
+    if segment and segment.source:IsShown() then
+        return segment.sizeHelper:GetStatusBarTexture()
+    end
 end
 
 local function SegmentAnchor(mirror, seg)
     if seg.key == "OtherHealPredictionBar" then
-        return SegmentEnd(mirror.MyHealPredictionBar, mirror), true
+        return SegmentEnd(mirror.MyHealPredictionBar) or mirror.fill, false
     end
     if seg.key == "TotalAbsorbBar" then
         local healAbsorb = mirror.HealAbsorbBar
         if healAbsorb and healAbsorb.source:IsShown() then
             return mirror.fill, true
         end
-        return SegmentEnd(mirror.OtherHealPredictionBar, mirror), true
+        return SegmentEnd(mirror.OtherHealPredictionBar) or SegmentEnd(mirror.MyHealPredictionBar) or mirror.fill, true
     end
     return mirror.fill, false
 end
@@ -598,8 +605,8 @@ function BBF.RelayoutHealthbarMirror(frame)
     local width = layout.width * (1 - percent)
     mirror.bar:SetSize(width, layout.height)
     for _, seg in ipairs(mirror.segments) do
-        seg.offsetHelper:SetWidth(width)
-        seg.sizeHelper:SetWidth(width)
+        seg.offsetHelper:SetWidth(width / HELPER_SCALE)
+        seg.sizeHelper:SetWidth(width / HELPER_SCALE)
     end
     if mirror.tempLoss then
         mirror.tempLoss:SetValue(percent)

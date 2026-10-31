@@ -7,6 +7,7 @@ BBF.TextAreaLayouts = {
             { style = "pixel", textRight = 0.5 },
             { client = "retail", style = "noPortrait", mode = "big", mana = "hidden", right = -0.5, healthY = -1, textLeft = 1.5 },
             { style = "noPortrait", mode = "big", right = -0.5 },
+            { client = "retail", style = "noPortrait", mode = "none", right = -0.5, manaY = 0, textLeft = 1, textRight = 2.5, own = { manaY = true } },
             { style = "noPortrait", right = -1.5, manaY = -0.5 },
             { style = "symmetric", mode = "xl", mana = "hidden", left = 10, right = -0.5, textRight = 3 },
             { style = "symmetric", mode = "xl", left = 5.5, right = -0.5, textLeft = 1, textRight = 3 },
@@ -34,6 +35,7 @@ BBF.TextAreaLayouts = {
         rules = {
             { style = "pixel", textRight = 1 },
             { style = "noPortrait", mode = "big", left = 1, right = -2.5 },
+            { client = "retail", style = "noPortrait", mode = "none", right = -5, manaY = -0.5, textLeft = 1, textRight = 2.5 },
             { style = "noPortrait", left = 1, right = -6.5 },
             { style = "classic", mode = "big", mana = "hidden", inside = true, bottom = 1, healthY = 3.5 },
             { style = "classic", mode = "big", mana = "hidden", bottom = 1, healthY = -1.5 },
@@ -63,8 +65,8 @@ BBF.TextAreaLayouts = {
         health = {}, mana = {},
         rules = {
             { style = "pixel" },
-            { style = "noPortrait", mode = "big", top = -0.5, bottom = 0.5 },
-            { style = "noPortrait", right = -5.5, top = -0.5, bottom = 0.5 },
+            { style = "noPortrait", mode = "big", top = -0.5, bottom = 0.5, textCenter = 1 },
+            { style = "noPortrait", right = -5.5, top = -0.5, bottom = 0.5, textCenter = 1 },
             { style = "retail", classicToT = true, mana = "hidden", left = 1.5, right = 0 },
             { style = "retail", classicToT = true, left = 1, right = 0, bottom = 7 },
             { style = "retail", mode = "xl", left = 12, right = 0 },
@@ -135,7 +137,7 @@ BBF.NameLayouts = {
         { style = "classic", y = 2.5 }, { style = "camelot", mode = "xl", mana = "hidden", y = 3 }, { style = "camelot", mode = "xl", y = 2 },
         { style = "camelot", mode = "reduced", y = 2 }, { y = 1 } },
     target = { { style = "classic", mode = "big", mana = "hidden", inside = true, y = -13.5, own = true },
-        { style = "classic", mode = "big", mana = "hidden", y = 2, own = true }, { inside = true, y = -12 }, { client = "retail", style = "retail", mode = "xl", mana = "hidden", left = 23, right = 5, y = 0.5, own = true }, { client = "retail", style = "retail", left = 23, right = 5, y = 1, own = true },{ style = "retail", y = 2 }, { style = "camelot", mode = "none", mana = "hidden", y = -2, own = true },
+        { style = "classic", mode = "big", mana = "hidden", y = 2, own = true }, { inside = true, y = -12 }, { client = "retail", style = "retail", mode = "xl", mana = "hidden", left = 23, right = 5, centerX = -14, width = -8, centerWidth = -14, y = 0.5, own = true }, { client = "retail", style = "retail", left = 23, right = 5, centerX = -14, width = -8, centerWidth = -14, y = 1, own = true },{ style = "retail", y = 2 }, { style = "camelot", mode = "none", mana = "hidden", y = -2, own = true },
         { style = "camelot", mode = "xl", mana = "hidden", y = 2, own = true },
         { style = "camelot", mode = "big", mana = "hidden", y = 1.5, own = true }, { y = 1 } },
     tot = { { classicToT = true, below = true, y = -4 }, { inside = true, y = -10 }, { style = "pixel", y = 1 }, { style = "retail", y = 2 },
@@ -199,6 +201,10 @@ local function Bars(frame)
         return container.HealthBar or container, manaBar,
             { LEFT = container.LeftText, CENTER = container.CenterText, RIGHT = container.RightText },
             { LEFT = manaBar.LeftText, CENTER = manaBar.CenterText, RIGHT = manaBar.RightText }
+    end
+    if TotUnit(frame) then
+        local bar = frame.HealthBar
+        return bar, frame.ManaBar, { DEAD = bar and bar.DeadText, UNCONSCIOUS = bar and bar.UnconsciousText }, {}
     end
     return frame.HealthBar, frame.ManaBar, {}, {}
 end
@@ -345,6 +351,7 @@ local function ResolveText(frame)
             v.healthY = rule.healthY or v.healthY
             v.manaY = rule.manaY or v.manaY
             v.textLeft, v.textRight = rule.textLeft or 0, rule.textRight or 0
+            v.textCenter = rule.textCenter
             v.own = rule.own
             break
         end
@@ -625,6 +632,7 @@ end
 local function SideInset(v, point)
     if point == "LEFT" then return v.textLeft or 0 end
     if point == "RIGHT" then return -(v.textRight or 0) end
+    if point == "CENTER" then return v.textCenter or 0 end
     return 0
 end
 
@@ -741,9 +749,12 @@ local function PlaceLevel(frame)
     local player = frame == PlayerFrame
     local x = player and LEVEL_X.player or LEVEL_X.target
     local frameLeft, edge = frame:GetLeft(), player and area:GetRight() or area:GetLeft()
-    if frameLeft and edge then
+    if issecretvalue(frameLeft) or issecretvalue(edge) then
+        x = level.bbfLevelAreaX or x
+    elseif frameLeft and edge then
         local ratio = area:GetEffectiveScale() / frame:GetEffectiveScale()
         x = x + frameLeft + (player and LEVEL_EDGE.player or LEVEL_EDGE.target) - edge * ratio
+        level.bbfLevelAreaX = x
     end
     level.bbfLevelAreaPlacing = true
     level:ClearAllPoints()
@@ -824,7 +835,7 @@ local function ApplyTextArea(frame)
         end
         for _, extra in ipairs({ "DEAD", "UNCONSCIOUS" }) do
             HookText(texts[extra], frame)
-            PlaceText(texts[extra], box, "CENTER", x, y)
+            PlaceText(texts[extra], box, "CENTER", x + SideInset(v, "CENTER"), y)
         end
     end
     for _, point in ipairs(POINTS) do
@@ -868,7 +879,7 @@ local function ResolveName(frame)
     local rules = BBF.NameLayouts[setup.key] or {}
     for _, rule in ipairs(rules) do
         if Matches(rule, nameSetup) then
-            local v = { left = rule.left or 0, right = rule.right or 0, y = rule.y or 0, below = rule.below or nil, own = rule.own }
+            local v = { left = rule.left or 0, right = rule.right or 0, y = rule.y or 0, below = rule.below or nil, own = rule.own, centerX = rule.centerX, width = rule.width, centerWidth = rule.centerWidth }
             if setup.style == "classic" then
                 local base = ClassicBase(setup)
                 for _, baseRule in ipairs(rules) do
@@ -923,12 +934,23 @@ function BBF.NameAreaBox(frame)
         frame.bbfNameBox = box
     end
     box:ClearAllPoints()
-    if v.below then
-        box:SetPoint("TOPLEFT", area, "BOTTOMLEFT", v.left or 0, v.y or 0)
-        box:SetPoint("TOPRIGHT", area, "BOTTOMRIGHT", v.right or 0, v.y or 0)
+    local db = BetterBlizzFramesDB
+    local shift = db.centerNames and v.centerX or 0
+    local left, right = (v.left or 0) + shift, (v.right or 0) + shift
+    if db.centerNames then
+        local shrink = v.centerWidth or 0
+        left, right = left - shrink / 2, right + shrink / 2
+    elseif db.mirroredNames then
+        left = left - (v.width or 0)
     else
-        box:SetPoint("BOTTOMLEFT", area, "TOPLEFT", v.left or 0, v.y or 0)
-        box:SetPoint("BOTTOMRIGHT", area, "TOPRIGHT", v.right or 0, v.y or 0)
+        right = right + (v.width or 0)
+    end
+    if v.below then
+        box:SetPoint("TOPLEFT", area, "BOTTOMLEFT", left, v.y or 0)
+        box:SetPoint("TOPRIGHT", area, "BOTTOMRIGHT", right, v.y or 0)
+    else
+        box:SetPoint("BOTTOMLEFT", area, "TOPLEFT", left, v.y or 0)
+        box:SetPoint("BOTTOMRIGHT", area, "TOPRIGHT", right, v.y or 0)
     end
     box:SetHeight(frame.bbfNameBaseHeight or NAME_HEIGHT[setup.key])
     box:Show()
@@ -972,6 +994,16 @@ local function PlacePartyName(name, box)
     local justify = (db and db.centerNames and "CENTER") or (moved and partyAlign[db.moveNamePartyAlign]) or name:GetJustifyH()
     local left = justify == "RIGHT" and dw or justify == "CENTER" and dw / 2 or 0
     local scale = BBF.GetNameMoveScale and BBF.GetNameMoveScale("moveNameParty") or 1
+    local multiLine = moved and db.moveNamePartyMultiLine and true or false
+    local edge = moved and db.moveNamePartyGrowDown and "TOP" or "BOTTOM"
+    local boxHeight = box:GetHeight()
+    if multiLine then
+        local _, fontHeight = name:GetFont()
+        if fontHeight then
+            local nudge = (boxHeight - fontHeight) / 2
+            dy = dy + (edge == "BOTTOM" and nudge or -nudge)
+        end
+    end
     local x1, y1, x2, y2 = dx - left, dy, dx + dw - left, dy
     if BBF.SetNameMoveScale then
         BBF.SetNameMoveScale(name, scale)
@@ -979,11 +1011,22 @@ local function PlacePartyName(name, box)
     if scale ~= 1 then
         local boxWidth = box:GetWidth()
         if issecretvalue(boxWidth) then boxWidth = nil end
-        x1, y1, x2, y2 = BBF.ScaleNameBox(justify, boxWidth and boxWidth + dw, box:GetHeight(), scale, x1, y1, x2, y2)
+        x1, y1, x2, y2 = BBF.ScaleNameBox(justify, boxWidth and boxWidth + dw, not multiLine and boxHeight, scale, x1, y1, x2, y2)
     end
     name:ClearAllPoints()
-    name:SetPoint("TOPLEFT", box, "TOPLEFT", x1, y1)
-    name:SetPoint("BOTTOMRIGHT", box, "BOTTOMRIGHT", x2, y2)
+    name:SetWordWrap(multiLine)
+    if name.SetMaxLines then
+        name:SetMaxLines(multiLine and 3 or 0)
+    end
+    name.bbfMultiLine = multiLine or nil
+    if multiLine then
+        name:SetPoint(edge .. "LEFT", box, edge .. "LEFT", x1, y1)
+        name:SetPoint(edge .. "RIGHT", box, edge .. "RIGHT", x2, y2)
+        name:SetHeight(0)
+    else
+        name:SetPoint("TOPLEFT", box, "TOPLEFT", x1, y1)
+        name:SetPoint("BOTTOMRIGHT", box, "BOTTOMRIGHT", x2, y2)
+    end
     if name:GetJustifyH() ~= justify then
         name:SetJustifyH(justify)
         local text = name:GetText()

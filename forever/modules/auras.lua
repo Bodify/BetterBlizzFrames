@@ -151,6 +151,34 @@ BBF.auraSettings = S
 
 local H = {}
 
+H.offensivePurges = {
+    { spell = 370,    types = { "Magic" } },
+    { spell = 528,    types = { "Magic" } },
+    { spell = 30449,  types = { "Magic" } },
+    { spell = 278326, types = { "Magic" } },
+    { spell = 19505,  types = { "Magic" }, pet = true },
+    { spell = 19801,  types = { "Magic", "Enrage" } },
+    { spell = 2908,   types = { "Enrage" } },
+    { spell = 5938,   types = { "Enrage" } },
+}
+
+function H.RefreshOwnPurgeTypes(S)
+    local magic, enrage = false, false
+    for _, entry in ipairs(H.offensivePurges) do
+        if IsSpellKnownOrOverridesKnown(entry.spell, entry.pet) then
+            for _, dispelType in ipairs(entry.types) do
+                if dispelType == "Magic" then magic = true else enrage = true end
+            end
+        end
+    end
+    local signature = (magic and "M" or "") .. (enrage and "E" or "")
+    if signature == H.ownPurgeSignature and S.ownPurgeTypes then return false end
+    H.ownPurgeSignature = signature
+    S.ownPurgeTypes = { Magic = magic or nil, Enrage = enrage or nil }
+    S.canSoothe = enrage
+    return true
+end
+
 local function SortFor(host)
     return host.isPlayer and S.playerSort or S.sort
 end
@@ -288,6 +316,7 @@ function BBF.UpdateUserAuraSettings()
         S.darkColor = 1
     end
     S.purgeGlowAlways = db.displayDispelGlowAlways
+    H.RefreshOwnPurgeTypes(S)
     S.hidePurge = db.hidePurgeTexture and true or false
     S.purgeOnFriendly = db.showPurgeTextureOnFriendly and true or false
     S.purgeColor = { GetColor("purgeTextureColorRGB", 0, 0.92, 1, 0.85) }
@@ -793,7 +822,7 @@ local function ApplyDispelRegistrations(button, style)
     local signature = string.format("%s|%s|%s|%s|%s|%s|%s|%s|%s",
         tostring(borderStyle), tostring(ownBorderOn), tostring(purgeMode),
         tostring(style.purgeGlowAlways), tostring(style.purgeFriendly),
-        tostring(style.purgeEnrage),
+        tostring(style.purgeEnrage) .. tostring(style.canSoothe),
         pc and string.format("%.3f,%.3f,%.3f,%.3f", pc[1], pc[2], pc[3], pc[4] or 1) or "false",
         tostring(style.darkColor), tostring(ownBorderHarmful))
     if button.bbfDispelSignature == signature then return end
@@ -837,6 +866,8 @@ local function ApplyDispelRegistrations(button, style)
             ApplyPurgeArt(button.bbfPurgeGlow, purgeMode, style.recolorPurge)
 
             local asset = { asset = purgeMode == "glow" and PURGE_GLOW_ATLAS or STEALABLE_TEXTURE }
+            local assetMap = UniformDispelMap(asset)
+            if not style.canSoothe then assetMap.Enrage = nil end
 
             local stealableFilter
             if not style.purgeGlowAlways and not style.purgeFriendly then
@@ -860,7 +891,7 @@ local function ApplyDispelRegistrations(button, style)
                 showWhenHelpful = true,
                 showWithoutDispelType = showWithoutDispelType and true or false,
                 stealableFilter = stealableFilter,
-                customDispelAssetMap = UniformDispelMap(asset),
+                customDispelAssetMap = assetMap,
                 customDispelColorMap = colorMap,
             })
         else
@@ -1423,7 +1454,7 @@ local function BuildCandidateFilters(harmful, tier, cfg, canFilterIDs, mine)
 
     if cfg.purgeable and not harmful and not HIGHLIGHT_TIERS[tier]
             and tier ~= "purge" and tier ~= "purgeenrage" then
-        filters.includeDispelTypes = PURGEABLE_BUFF_DISPEL_TYPES
+        filters.includeDispelTypes = S.purgeGlowAlways and PURGEABLE_BUFF_DISPEL_TYPES or S.ownPurgeTypes
         filters.isStealable = nil
     end
 
@@ -1602,6 +1633,7 @@ local function BuildStyle(tier, sizes, isPlayer, cfg, into)
     t.purgeHidden = cfg.purgeHidden
     t.purgeEnrage = tier == "purgeenrage"
     t.purgeGlowAlways = S.purgeGlowAlways
+    t.canSoothe = S.canSoothe
     t.purgeFriendly = cfg.purgeFriendly
     t.purgeColor = S.purgeColor
     t.recolorPurge = S.recolorPurge
@@ -3768,6 +3800,7 @@ local function StyleTestButton(button, entry, tier, style, sizes, harmful)
     else
         purgeable = entry.stealable and true or false
     end
+    if entry.dispel == "Enrage" and not style.canSoothe then purgeable = false end
     if purgeMode and not harmful and purgeable then
         ApplyPurgeArt(purge, purgeMode, style.recolorPurge)
         if purgeMode == "glow" then
@@ -4665,7 +4698,13 @@ function BBF.HookPlayerAndTargetAuras()
         driver:RegisterEvent("ZONE_CHANGED_NEW_AREA")
         driver:RegisterEvent("ZONE_CHANGED_INDOORS")
         driver:RegisterEvent("PLAYER_REGEN_ENABLED")
+        driver:RegisterEvent("SPELLS_CHANGED")
+        driver:RegisterUnitEvent("UNIT_PET", "player")
         driver:SetScript("OnEvent", function(_, event, unit)
+            if event == "SPELLS_CHANGED" or event == "UNIT_PET" then
+                if H.RefreshOwnPurgeTypes(S) then BBF.RefreshAllAuraFrames() end
+                return
+            end
             if event == "PLAYER_REGEN_ENABLED" then
                 if restyleQueued then
                     BBF.RestyleAuraButtons()

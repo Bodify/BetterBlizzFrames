@@ -759,8 +759,8 @@ local function FitArtBackground(art)
     local w, h = art:GetSize()
     local out = art.bbfArtOutset or 0
     bg:ClearAllPoints()
-    bg:SetPoint("TOPLEFT", art, "TOPLEFT", w * ART_INSET_X - out, -h * ART_INSET_TOP + out)
-    bg:SetPoint("BOTTOMRIGHT", art, "BOTTOMRIGHT", -w * ART_INSET_X + out, h * ArtBottomInset(path) - out)
+    bg:SetPoint("TOPLEFT", art, "TOPLEFT", w * ART_INSET_X - out - (art.bbfArtGrowLeft or 0), -h * ART_INSET_TOP + out)
+    bg:SetPoint("BOTTOMRIGHT", art, "BOTTOMRIGHT", -w * ART_INSET_X + out + (art.bbfArtGrowRight or 0), h * ArtBottomInset(path) - out - (art.bbfArtGrowDown or 0))
 end
 
 local function RoundToPixel(region)
@@ -769,9 +769,12 @@ local function RoundToPixel(region)
     region:SetRoundLayoutToNearestPixel(true)
 end
 
-local function BindArtBackground(bg, art, path, outset)
+local function BindArtBackground(bg, art, path, outset, growLeft, growRight, growDown)
     art.bbfArtBackground = bg
     art.bbfArtOutset = outset
+    art.bbfArtGrowLeft = growLeft
+    art.bbfArtGrowRight = growRight
+    art.bbfArtGrowDown = growDown
     if type(path) == "function" then
         art.bbfArtPathFn = path
     elseif type(path) == "string" then
@@ -1146,11 +1149,9 @@ function BBF.UpdateNoPortraitText(frame, frameType)
         local textParent = totFrame.BBFTextFrame or totFrame
 
         totFrame.HealthBar.DeadText:SetParent(textParent)
-        totFrame.HealthBar.DeadText:ClearAllPoints()
-        totFrame.HealthBar.DeadText:SetPoint("LEFT", 48, 3)
         totFrame.HealthBar.UnconsciousText:SetParent(textParent)
-        totFrame.HealthBar.UnconsciousText:ClearAllPoints()
-        totFrame.HealthBar.UnconsciousText:SetPoint("LEFT", 48, 3)
+        totFrame.bbfCenterDeadText = true
+        BBF.PlaceTotDeadText(totFrame)
 
     elseif frameType == "party" then
         for partyFrame in PartyFrame.PartyMemberFramePool:EnumerateActive() do
@@ -1339,7 +1340,7 @@ local function MakeNoPortraitMode(frame)
         totFrame.Background:SetColorTexture(0,0,0,0.45)
         BindArtBackground(totFrame.Background, totFrame.FrameTexture, function()
             return (frame == TargetFrame) and totTargetDefaultTex or totFocusDefaultTex
-        end)
+        end, nil, 1, 1, 1)
         totFrame.FrameTexture:SetSize(130, 33)
         local totTexture = (frame == TargetFrame) and totTargetDefaultTex or totFocusDefaultTex
         totFrame.FrameTexture:SetTexture(totTexture)
@@ -1369,6 +1370,9 @@ local function MakeNoPortraitMode(frame)
 
         totFrame.HealthBar.DeadText:SetParent(totFrame.BBFTextFrame)
         totFrame.HealthBar.UnconsciousText:SetParent(totFrame.BBFTextFrame)
+        if BBF.PlaceTotStatusTexts then
+            BBF.PlaceTotStatusTexts()
+        end
 
         if db.noPortraitPixelBorder then
             totFrame.FrameTexture:SetAlpha(0)
@@ -1390,7 +1394,7 @@ local function MakeNoPortraitMode(frame)
         else
 
             if totFrame.BBFTextFrame then
-                local maxBarLevel = math.max(totHpBar:GetFrameLevel(), totManaBar:GetFrameLevel())
+                local maxBarLevel = math.max(totFrame:GetFrameLevel(), totHpBar:GetFrameLevel(), totManaBar:GetFrameLevel())
                 totFrame.BBFTextFrame:SetFrameLevel(maxBarLevel + 10)
             end
 
@@ -2263,8 +2267,8 @@ local function MakeNoPortraitMode(frame)
                     manaBar:SetPoint("TOPLEFT", 83, -60)
                 end)
                 manaBar.ManaBarMask:SetTexture("interface/hud/uipartyframeportraitoffmanamask")
-                manaBar.ManaBarMask:SetSize(194, 24.5)
-                manaBar.ManaBarMask:SetPoint("TOPLEFT", manaBar, "TOPLEFT", -34, 7)
+                manaBar.ManaBarMask:SetSize(190, 28)
+                manaBar.ManaBarMask:SetPoint("TOPLEFT", manaBar, "TOPLEFT", -30, 7)
 
                 frame.noPortraitMode.Texture:SetAlpha(1)
                 frame.noPortraitMode.Background:SetAlpha(1)
@@ -2485,8 +2489,8 @@ local function MakeNoPortraitMode(frame)
             PetFrameManaBar:SetPoint("TOPRIGHT", -17, -25)
 
             PetFrameManaBarMask:SetTexture("interface/hud/uipartyframeportraitoffmanamask")
-            PetFrameManaBarMask:SetSize(98, 17)
-            SetXYPoint(PetFrameManaBarMask, -14, 4)
+            PetFrameManaBarMask:SetSize(96, 17)
+            SetXYPoint(PetFrameManaBarMask, -12, 4)
         end
 
         if not PetFrame.BBFTextFrame then

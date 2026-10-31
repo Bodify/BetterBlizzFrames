@@ -332,16 +332,38 @@ function BBF.StatusTextExtraTexts(owner)
     return list
 end
 
-local function TotTextY(entry)
-    if entry.isMana or not BBF.TotBigMode or not BetterBlizzFramesDB.biggerHealthbarsNameInside then return 0 end
-    local unit = entry.owner == TargetFrameToT and "target" or "focus"
+local function TotTextY(owner, isMana)
+    if isMana or not BBF.TotBigMode or not BetterBlizzFramesDB.biggerHealthbarsNameInside then return 0 end
+    local unit = owner == TargetFrameToT and "target" or "focus"
     if BBF.ClassicToTActive and BBF.ClassicToTActive(unit) then return 0 end
     return BBF.TotBigMode(unit) == "big" and -5 or 0
 end
 
+function BBF.PlaceTotDeadText(owner)
+    local bar = owner and owner.HealthBar
+    if not bar or not bar.DeadText then return end
+    local anchor = BetterBlizzFramesDB.noPortraitPixelBorder and bar.bbfPixelBox or bar
+    local y = TotTextY(owner, false)
+    for _, text in ipairs({ bar.DeadText, bar.UnconsciousText }) do
+        text:ClearAllPoints()
+        text:SetPoint("CENTER", anchor, "CENTER", 0, y)
+    end
+end
+
 function BBF.PlaceTotStatusTexts(force)
+    for _, owner in ipairs({ TargetFrameToT or false, FocusFrameToT or false }) do
+        if owner and owner.bbfCenterDeadText then
+            BBF.PlaceTotDeadText(owner)
+        end
+    end
     if not entries then return end
     for _, entry in ipairs(entries.tot) do
+        local textFrame = entry.owner.BBFTextFrame
+        if textFrame then
+            for _, text in ipairs({ entry.center, entry.left, entry.right }) do
+                if text:GetParent() == entry.bar then text:SetParent(textFrame) end
+            end
+        end
         local box = BBF.TextAreaBox and BBF.TextAreaBox(entry.owner, entry.isMana)
         if box then
             local x, y = BBF.TextAreaOffset(entry.owner, entry.isMana)
@@ -357,7 +379,7 @@ function BBF.PlaceTotStatusTexts(force)
                 end
             end
         else
-            local y = TotTextY(entry)
+            local y = TotTextY(entry.owner, entry.isMana)
             local anchor = BetterBlizzFramesDB.noPortraitPixelBorder and entry.bar.bbfPixelBox or entry.bar
             local key = tostring(anchor) .. ":" .. y
             if force or entry.textKey ~= key then

@@ -18,6 +18,67 @@ function BBF.ShowPopup(name, ...)
 	return StaticPopup_Show(name, ...)
 end
 
+function BBF.BBCCHandlesLoC()
+	return C_AddOns.IsAddOnLoaded("BetterBlizzCC")
+end
+
+function BBF.RefreshLossOfControl()
+	if BBF.BBCCHandlesLoC() then return end
+	if BBF.LoC.Supported() then
+		BBF.LoC.Refresh()
+	elseif BBF.UpdateLoCFrame then
+		BBF.UpdateLoCFrame()
+	end
+end
+
+function BBF.LoCSettingsOpen()
+	local popup = BBF.LossOfControlWindow
+	return (popup and popup:IsVisible()) or (BetterBlizzFrames and BetterBlizzFrames:IsVisible()) or false
+end
+
+function BBF.ToggleLossOfControlTestMode()
+	if BBF.BBCCHandlesLoC() then return end
+	if BBF.LoC.Supported() then
+		BBF.LoC.Test()
+	elseif BBFLossOfControlFrame then
+		BBF.LoC.TestOwn(BBFLossOfControlFrame, BBF.L["Label_Stunned"])
+	end
+end
+
+local function UpdatePopupText()
+	local db = BetterBlizzFramesDB
+	local lines = {}
+	if BBF.isMainline then
+		lines[#lines + 1] = L["Popup_Update_Forever_Tweaks"]
+		if BBF.isForever then
+			lines[#lines + 1] = L["Retail_Textures"]
+		end
+	end
+	lines[#lines + 1] = L["Popup_Update_Move_Names"]:format(L["Move_Names"])
+	lines[#lines + 1] = L["Loss_Of_Control_Tweaks"]
+	for i, line in ipairs(lines) do
+		lines[i] = "- |cffffd100" .. line .. "|r"
+	end
+	local text = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames " .. (BBF.VersionNumber or "") .. "\n\n" .. (BBF.isMainline and L["Popup_Update_Highlights"] or L["Popup_Update_Highlights_Classic"]) .. "\n" .. table.concat(lines, "\n")
+	if BBF.locTweaksMigrated and not BBF.BBCCHandlesLoC() then
+		text = text .. "\n\n" .. L["Popup_LoC_Tweaks_On"]:format(L["Loss_Of_Control_Tweaks"])
+	end
+	if BBF.isMainline and db.noPortraitModes and db.noPortraitPixelBorder and not db.classicFrames then
+		text = text .. "\n\n" .. L["Popup_Update_Pixel_Border"]:format(L["Pixel_Border"], L["No_Portrait"])
+	end
+	return text .. "\n\n" .. L["Popup_Update_Changelog"]
+end
+
+BBF.popupBuilders["BBF_UPDATE_220"] = function()
+	return {
+		text = UpdatePopupText(),
+		button1 = OKAY,
+		timeout = 0,
+		whileDead = true,
+		preferredIndex = 3,
+	}
+end
+
 BBF.popupBuilders["BB_PRD_AURAS_CLASH"] = function()
 	return {
 		text = BBF.L["Popup_PRD_Auras_Clash"],

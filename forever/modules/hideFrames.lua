@@ -233,12 +233,16 @@ local statusBarsHidden = {}
 local function UpdateStatusTrackingBar(container)
     local index = container.shownBarIndex
     local hide = statusBarsHidden[index] and not CharacterFrame:IsShown()
-    local parent = hide and hiddenFrame or StatusTrackingBarManager
-    if container:GetParent() ~= parent then
-        container:SetParent(parent)
-        if not hide then
-            container:SetShown(index ~= StatusTrackingBarInfo.BarsEnum.None or container.isInEditMode)
+    for barIndex, bar in pairs(container.bars) do
+        local hideBar = hide and barIndex == index
+        bar:SetAlpha(hideBar and 0 or 1)
+        bar:EnableMouse(not hideBar)
+        if bar.ExhaustionTick then
+            bar.ExhaustionTick:EnableMouse(not hideBar)
         end
+    end
+    if container.BarFrameTexture then
+        container.BarFrameTexture:SetAlpha(hide and 0 or 1)
     end
 end
 
@@ -1422,12 +1426,6 @@ function BBF.HideFrames()
             PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer.PlayerFrameHealthBarAnimatedLoss:SetParent(hiddenFrame)
         end
 
-        local LossOfControlFrameAlphaBg = BetterBlizzFramesDB.hideLossOfControlFrameBg and 0 or 0.6
-        local LossOfControlFrameAlphaLines = BetterBlizzFramesDB.hideLossOfControlFrameLines and 0 or 1
-        LossOfControlFrame.blackBg:SetAlpha(LossOfControlFrameAlphaBg)
-        LossOfControlFrame.RedLineTop:SetAlpha(LossOfControlFrameAlphaLines)
-        LossOfControlFrame.RedLineBottom:SetAlpha(LossOfControlFrameAlphaLines)
-
         -- action bar macro name hotkey hide
         if BetterBlizzFramesDB.hideActionBarHotKey or BetterBlizzFramesDB.hideActionBarMacroName or keybindAlphaChanged then
             -- Blizzard buttons
@@ -1582,10 +1580,18 @@ function BBF.HideFrames()
                 local child = select(i, Minimap:GetChildren())
                 if child then
                     local childName = child:GetName() or ""
-                    if string.find(childName, "LibDBIcon") or childName == "ExpansionLandingPageMinimapButton" or childName == "ArenaAnalyticsMinimapButton" then
+                    if string.find(childName, "LibDBIcon") or childName == "ArenaAnalyticsMinimapButton" then
                         child:SetAlpha(alpha)
                     end
                 end
+            end
+            local landingButton = ExpansionLandingPageMinimapButton
+            if landingButton then
+                local blizzardShows = landingButton:IsShown() and GameRulesUtil.ShouldShowExpansionLandingPageButton()
+                    and landingButton:IsExpansionOverlayMode()
+                local visible = show and blizzardShows
+                landingButton:SetAlpha(visible and 1 or 0)
+                landingButton:EnableMouse(visible and true or false)
             end
         end
 
@@ -1623,6 +1629,19 @@ function BBF.HideFrames()
             changes.hideOgRaidFrameBg = nil
         end
 
+        local expansionButton = ExpansionLandingPageMinimapButton
+        if expansionButton then
+            if BetterBlizzFramesDB.hideExpansionLandingPageButton then
+                if expansionButton:GetParent() ~= hiddenFrame then
+                    expansionButton.bbfOriginalParent = expansionButton:GetParent()
+                    expansionButton:SetParent(hiddenFrame)
+                end
+            elseif expansionButton.bbfOriginalParent then
+                expansionButton:SetParent(expansionButton.bbfOriginalParent)
+                expansionButton.bbfOriginalParent = nil
+            end
+        end
+
         -- Hide all LibDBIcon buttons by default
         if BetterBlizzFramesDB.hideMinimapButtons and not minimapButtonsHooked then
             ToggleLibDBIconButtons(false)
@@ -1645,20 +1664,22 @@ function BBF.HideFrames()
                     end)
                 end)
 
-                ExpansionLandingPageMinimapButton:HookScript("OnEnter", function()
-                    iconMouseOver = true
-                    ToggleLibDBIconButtons(true)
-                end)
-
-                ExpansionLandingPageMinimapButton:HookScript("OnLeave", function()
-                    iconMouseOver = false
-                    -- Delay hiding to check if we left the Minimap to another LibDBIcon or completely out
-                    C_Timer.After(0.1, function() 
-                        if not Minimap:IsMouseOver() and not iconMouseOver then
-                            ToggleLibDBIconButtons(false)
-                        end
+                if ExpansionLandingPageMinimapButton then
+                    ExpansionLandingPageMinimapButton:HookScript("OnEnter", function()
+                        iconMouseOver = true
+                        ToggleLibDBIconButtons(true)
                     end)
-                end)
+
+                    ExpansionLandingPageMinimapButton:HookScript("OnLeave", function()
+                        iconMouseOver = false
+                        -- Delay hiding to check if we left the Minimap to another LibDBIcon or completely out
+                        C_Timer.After(0.1, function() 
+                            if not Minimap:IsMouseOver() and not iconMouseOver then
+                                ToggleLibDBIconButtons(false)
+                            end
+                        end)
+                    end)
+                end
 
                 for i = 1, Minimap:GetNumChildren() do
                     local child = select(i, Minimap:GetChildren())

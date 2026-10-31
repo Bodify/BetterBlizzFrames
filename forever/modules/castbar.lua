@@ -7,11 +7,16 @@ local UnitCastingInfo = UnitCastingInfo
 local UnitChannelInfo = UnitChannelInfo
 local classicCastbarTexture = 137012
 local customCastbarTexture = false
+local nonInterruptibleTexture
 local UpdateCustomSpellBarTexture
 
-function BBF.UpdateClassicCastbarTexture(texture)
+function BBF.UpdateClassicCastbarTexture(texture, nonIntTexture)
     customCastbarTexture = BetterBlizzFramesDB.changeUnitFrameCastbarTexture or false
     classicCastbarTexture = customCastbarTexture and texture or 137012
+    nonInterruptibleTexture = customCastbarTexture and nonIntTexture ~= texture and nonIntTexture or nil
+    for _, castBar in ipairs({ PlayerCastingBarFrame, TargetFrameSpellBar, FocusFrameSpellBar }) do
+        BBF.UpdateNonInterruptibleTexture(castBar)
+    end
     for _, spellbar in pairs(spellBars) do
         UpdateCustomSpellBarTexture(spellbar)
     end
@@ -73,7 +78,7 @@ local CastUpdateEvents = {
     UNIT_SPELLCAST_EMPOWER_UPDATE   = true,
 }
 
-local function CastbarColorOnEvent(self, event, unitTarget, castGUID, spellID, interruptedByOrCastBarID)
+local function CastbarColorOnEventBody(self, event, unitTarget, castGUID, spellID, interruptedByOrCastBarID)
     local colors = castbarColors
     local unitToken = self.unit
     local castBarTexture = self:GetStatusBarTexture()
@@ -252,6 +257,52 @@ local function CastbarColorOnEvent(self, event, unitTarget, castGUID, spellID, i
                 end
             end
         end
+    end
+end
+
+local function CastbarColorOnEvent(self, event, unitTarget, castGUID, spellID, interruptedByOrCastBarID)
+    CastbarColorOnEventBody(self, event, unitTarget, castGUID, spellID, interruptedByOrCastBarID)
+    if not self.unitType then
+        BBF.UpdateNonInterruptibleTexture(self)
+    end
+end
+
+local function ShowNonInterruptibleTexture(overlay, mask, fill, notInterruptible)
+    local c = castbarColors.uninterruptable or defaultCastbarColors.uninterruptable
+    mask:SetAllPoints(fill)
+    overlay:SetTexture(nonInterruptibleTexture)
+    overlay:SetDesaturated(true)
+    overlay:SetVertexColor(c[1], c[2], c[3])
+    overlay:SetAlphaFromBoolean(notInterruptible, 1, 0)
+end
+
+function BBF.UpdateNonInterruptibleTexture(castBar)
+    local overlay = castBar.NonInterruptibleTexture
+    if not overlay then
+        if not nonInterruptibleTexture then return end
+        overlay = castBar:CreateTexture(nil, "ARTWORK", nil, 7)
+        overlay:SetAllPoints(castBar)
+        overlay:SetAlpha(0)
+        castBar.NonInterruptibleMask = castBar:CreateMaskTexture()
+        castBar.NonInterruptibleMask:SetTexture("Interface\\Buttons\\WHITE8X8", "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
+        overlay:AddMaskTexture(castBar.NonInterruptibleMask)
+        castBar.NonInterruptibleTexture = overlay
+    end
+    if castBar.MaskTexture and not overlay.hasCastMask then
+        overlay:AddMaskTexture(castBar.MaskTexture)
+        overlay.hasCastMask = true
+    end
+    local unit = castBar.unit
+    local notInterruptible
+    if unit and castBar.casting then
+        notInterruptible = select(8, UnitCastingInfo(unit))
+    elseif unit and castBar.channeling then
+        notInterruptible = select(7, UnitChannelInfo(unit))
+    end
+    if nonInterruptibleTexture and notInterruptible ~= nil then
+        ShowNonInterruptibleTexture(overlay, castBar.NonInterruptibleMask, castBar:GetStatusBarTexture(), notInterruptible)
+    else
+        overlay:SetAlpha(0)
     end
 end
 
@@ -829,7 +880,7 @@ function UpdateCustomSpellBarTexture(spellbar)
         if spellbar.MaskTexture then
             spellbar.MaskTexture:Show()
         end
-        spellbar.UninterruptibleTextureBar:SetAlpha(0)
+        spellbar.UninterruptibleTexture:SetAlpha(0)
         local color = castbarColors.standard or { 1.0, 0.7, 0.0 }
         spellbar:SetStatusBarColor(color[1], color[2], color[3], 1)
     else
@@ -846,7 +897,6 @@ local function SpellBarCastDurationUpdate(spellbar, channeling)
     if duration then
         local direction = channeling and 1 or 0
         spellbar:SetTimerDuration(duration, 0, direction)
-        spellbar.UninterruptibleTextureBar:SetTimerDuration(duration, 0, direction)
     end
 end
 
@@ -888,14 +938,26 @@ local function SpellBarStart(spellbar, unit, channeling)
     spellbar.Spark:Show()
     spellbar.BorderShield:SetAlphaFromBoolean(notInterruptible)
     if not classicStyle then
-        if customCastbarTexture then
-            spellbar.UninterruptibleTextureBar:SetAlpha(0)
-        else
-            spellbar.UninterruptibleTextureBar:SetAlphaFromBoolean(notInterruptible)
+        if not customCastbarTexture then
+            spellbar.UninterruptibleTexture:SetAtlas("UI-CastingBar-Uninterruptable")
+            spellbar.UninterruptibleTexture:SetDesaturated(false)
+            spellbar.UninterruptibleTexture:SetVertexColor(1, 1, 1)
+            spellbar.UninterruptibleTexture:SetAlphaFromBoolean(notInterruptible)
         end
+    end
+    if (classicStyle or customCastbarTexture) and not (nonInterruptibleTexture and notInterruptible ~= nil) then
+        spellbar.UninterruptibleTexture:SetAlpha(0)
     end
     local textureToUse = ((classicStyle or customCastbarTexture) and classicCastbarTexture) or (channeling and "UI-CastingBar-Filling-Channel" or "UI-CastingBar-Filling-Standard")
     spellbar:SetStatusBarTexture(textureToUse)
+    spellbar.UninterruptibleMask:SetAllPoints(spellbar:GetStatusBarTexture())
+    if nonInterruptibleTexture and notInterruptible ~= nil then
+        if spellbar.MaskTexture and not spellbar.UninterruptibleTexture.hasCastMask then
+            spellbar.UninterruptibleTexture:AddMaskTexture(spellbar.MaskTexture)
+            spellbar.UninterruptibleTexture.hasCastMask = true
+        end
+        ShowNonInterruptibleTexture(spellbar.UninterruptibleTexture, spellbar.UninterruptibleMask, spellbar:GetStatusBarTexture(), notInterruptible)
+    end
     spellbar:Show()
 end
 
@@ -1191,11 +1253,13 @@ function BBF.CreateCastbars()
             spellbar.BorderShield:SetSize(29, 33)
             spellbar.BorderShield:SetPoint("TOPLEFT", spellbar, "TOPLEFT", -27, 4)
 
-            spellbar.UninterruptibleTextureBar = CreateFrame("StatusBar", nil, spellbar)
-            spellbar.UninterruptibleTextureBar:SetSize(150, 20)
-            spellbar.UninterruptibleTextureBar:SetStatusBarTexture("UI-CastingBar-Uninterruptable")
-            spellbar.UninterruptibleTextureBar:SetAlpha(0)
-            spellbar.UninterruptibleTextureBar:SetAllPoints(spellbar)
+            spellbar.UninterruptibleTexture = spellbar:CreateTexture(nil, "ARTWORK", nil, 7)
+            spellbar.UninterruptibleTexture:SetAtlas("UI-CastingBar-Uninterruptable")
+            spellbar.UninterruptibleTexture:SetAlpha(0)
+            spellbar.UninterruptibleTexture:SetAllPoints(spellbar)
+            spellbar.UninterruptibleMask = spellbar:CreateMaskTexture()
+            spellbar.UninterruptibleMask:SetTexture("Interface\\Buttons\\WHITE8X8", "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
+            spellbar.UninterruptibleTexture:AddMaskTexture(spellbar.UninterruptibleMask)
 
             spellbar.Icon = spellbar:CreateTexture(nil, "ARTWORK")
             spellbar.Icon:SetSize(20, 20)
@@ -1335,11 +1399,13 @@ function BBF.CreateCastbars()
         petSpellBar.BorderShield:SetSize(29, 33)
         petSpellBar.BorderShield:SetPoint("TOPLEFT", petSpellBar, "TOPLEFT", -27, 4)
 
-        petSpellBar.UninterruptibleTextureBar = CreateFrame("StatusBar", nil, petSpellBar)
-        petSpellBar.UninterruptibleTextureBar:SetSize(150, 20)
-        petSpellBar.UninterruptibleTextureBar:SetStatusBarTexture("UI-CastingBar-Uninterruptable")
-        petSpellBar.UninterruptibleTextureBar:SetAlpha(0)
-        petSpellBar.UninterruptibleTextureBar:SetAllPoints(petSpellBar)
+        petSpellBar.UninterruptibleTexture = petSpellBar:CreateTexture(nil, "ARTWORK", nil, 7)
+        petSpellBar.UninterruptibleTexture:SetAtlas("UI-CastingBar-Uninterruptable")
+        petSpellBar.UninterruptibleTexture:SetAlpha(0)
+        petSpellBar.UninterruptibleTexture:SetAllPoints(petSpellBar)
+        petSpellBar.UninterruptibleMask = petSpellBar:CreateMaskTexture()
+        petSpellBar.UninterruptibleMask:SetTexture("Interface\\Buttons\\WHITE8X8", "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
+        petSpellBar.UninterruptibleTexture:AddMaskTexture(petSpellBar.UninterruptibleMask)
 
         petSpellBar.Icon = petSpellBar:CreateTexture(nil, "ARTWORK")
         petSpellBar.Icon:SetSize(20, 20)

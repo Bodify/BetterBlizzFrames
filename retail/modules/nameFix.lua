@@ -456,12 +456,18 @@ local function ApplyNameLayout(frame)
             end
         end
         local left = justify == "RIGHT" and dw or justify == "CENTER" and dw / 2 or 0
+        local multiLine = prefix and db[prefix .. "MultiLine"] and true or false
+        local edge = prefix and db[prefix .. "GrowDown"] and "TOP" or "BOTTOM"
+        local boxHeight = nameBox:GetHeight()
         fontString:ClearAllPoints()
-        fontString:SetWordWrap(false)
+        fontString:SetWordWrap(multiLine)
         if fontString.SetMaxLines then
-            fontString:SetMaxLines(0)
+            fontString:SetMaxLines(multiLine and 3 or 0)
         end
-        fontString.bbfMultiLine = nil
+        fontString.bbfMultiLine = multiLine or nil
+        if multiLine then
+            dy = dy + MultiLineNudge(fontString, boxHeight, edge)
+        end
         local boxWidth = nameBox:GetWidth()
         local scale = BBF.GetNameMoveScale and BBF.GetNameMoveScale(prefix) or 1
         local x1, y1, x2, y2 = dx - left, dy, dx + dw - left, dy
@@ -469,10 +475,16 @@ local function ApplyNameLayout(frame)
             BBF.SetNameMoveScale(fontString, scale)
         end
         if scale ~= 1 then
-            x1, y1, x2, y2 = BBF.ScaleNameBox(justify, boxWidth and boxWidth + dw, nameBox:GetHeight(), scale, x1, y1, x2, y2)
+            x1, y1, x2, y2 = BBF.ScaleNameBox(justify, boxWidth and boxWidth + dw, not multiLine and boxHeight, scale, x1, y1, x2, y2)
         end
-        fontString:SetPoint("TOPLEFT", nameBox, "TOPLEFT", x1, y1)
-        fontString:SetPoint("BOTTOMRIGHT", nameBox, "BOTTOMRIGHT", x2, y2)
+        if multiLine then
+            fontString:SetPoint(edge .. "LEFT", nameBox, edge .. "LEFT", x1, y1)
+            fontString:SetPoint(edge .. "RIGHT", nameBox, edge .. "RIGHT", x2, y2)
+            fontString:SetHeight(0)
+        else
+            fontString:SetPoint("TOPLEFT", nameBox, "TOPLEFT", x1, y1)
+            fontString:SetPoint("BOTTOMRIGHT", nameBox, "BOTTOMRIGHT", x2, y2)
+        end
         if fontString.bbfFitWidth and boxWidth and boxWidth > 0 then
             fontString.bbfFitWidth = boxWidth + dw
         end

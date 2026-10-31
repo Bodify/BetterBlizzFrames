@@ -12,6 +12,21 @@ local hiddenFrame = CreateFrame("Frame")
 hiddenFrame:Hide()
 
 local defaultSettings = {
+    showCooldownOnLoC = true,
+    lossOfControlSecondaryPosition = "LEFT",
+    lossOfControlTextScale = 1,
+    lossOfControlCountdownScale = 1,
+    lossOfControlTimerScale = 1,
+    lossOfControlShowSecondIcon = true,
+    lossOfControlSecondIconInterruptsOnly = true,
+    lossOfControlShowSchool = true,
+    lossOfControlSecondIconScale = 0.75,
+    lossOfControlTimerMilliseconds = true,
+    lossOfControlTimerLowThreshold = 3,
+    lossOfControlTimerHighThreshold = 10,
+    lossOfControlTimerLowColor = { 1, 0.1, 0.1, 1 },
+    lossOfControlTimerBaseColor = { 1, 1, 1, 1 },
+    lossOfControlTimerHighColor = { 1, 1, 1, 1 },
     version = addonVersion,
     updates = "empty",
     wasOnLoadingScreen = true,
@@ -984,84 +999,6 @@ end)
 ClickthroughFrames:RegisterEvent("MODIFIER_STATE_CHANGED")
 ClickthroughFrames:RegisterEvent("PLAYER_REGEN_DISABLED")
 
-
--- Function to toggle test mode on and off
-function BBF.ToggleLossOfControlTestMode()
-    local LossOfControlFrameAlphaBg = BetterBlizzFramesDB.hideLossOfControlFrameBg and 0 or 0.6
-    local LossOfControlFrameAlphaLines = BetterBlizzFramesDB.hideLossOfControlFrameLines and 0 or 1
-    if not _G.FakeBBFLossOfControlFrame then
-        -- Main Frame Creation
-        local frame = CreateFrame("Frame", "FakeBBFLossOfControlFrame", UIParent, "BackdropTemplate")
-        frame:SetSize(256, 58)
-        frame:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
-        frame:SetFrameStrata("MEDIUM")
-        frame:SetToplevel(true)
-        frame:Hide()
-
-        -- Background Texture
-        local blackBg = frame:CreateTexture(nil, "BACKGROUND")
-        blackBg:SetTexture("Interface\\Cooldown\\loc-shadowbg")
-        blackBg:SetPoint("BOTTOM", frame, "BOTTOM", 0, 0)
-        blackBg:SetSize(256, 58)
-        frame.blackBg = blackBg
-
-        -- Red Lines Textures
-        local redLineTop = frame:CreateTexture(nil, "BACKGROUND")
-        redLineTop:SetTexture("Interface\\Cooldown\\Loc-RedLine")
-        redLineTop:SetSize(236, 27)
-        redLineTop:SetPoint("BOTTOM", frame, "TOP", 0, 0)
-        frame.RedLineTop = redLineTop
-
-        local redLineBottom = frame:CreateTexture(nil, "BACKGROUND")
-        redLineBottom:SetTexture("Interface\\Cooldown\\Loc-RedLine")
-        redLineBottom:SetSize(236, 27)
-        redLineBottom:SetPoint("TOP", frame, "BOTTOM", 0, 0)
-        redLineBottom:SetTexCoord(0, 1, 1, 0)
-        frame.RedLineBottom = redLineBottom
-
-        -- Icon Texture
-        local icon = frame:CreateTexture(nil, "ARTWORK")
-        icon:SetSize(48, 48)
-        icon:SetPoint("LEFT", frame, "LEFT", 42, 0)
-        icon:SetTexture(132298)
-        frame.Icon = icon
-
-        -- Ability Name FontString
-        local abilityName = frame:CreateFontString(nil, "ARTWORK", "MovieSubtitleFont")
-        abilityName:SetPoint("TOPLEFT", icon, "TOPRIGHT", 5, -4)
-        abilityName:SetSize(0, 20)
-        abilityName:SetText(L["Label_Stunned"])
-        frame.AbilityName = abilityName
-
-        -- Time Left Frame
-        local timeLeft = CreateFrame("Frame", nil, frame)
-        timeLeft:SetSize(200, 20)
-        timeLeft:SetPoint("TOPLEFT", abilityName, "BOTTOMLEFT", 0, 0)
-        frame.TimeLeft = timeLeft
-
-        -- Number and Seconds Text
-        local numberText = timeLeft:CreateFontString(nil, "ARTWORK", "GameFontNormalHuge")
-        numberText:SetText(L["Label_Seconds"])
-        numberText:SetPoint("LEFT", timeLeft, "LEFT", 0, -3)
-        numberText:SetShadowOffset(2, -2)
-        numberText:SetTextColor(1,1,1)
-        timeLeft.NumberText = numberText
-
-        -- Stop Testing Button
-        local stopButton = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
-        stopButton:SetSize(120, 30)
-        stopButton:SetPoint("BOTTOM", redLineBottom, "BOTTOM", 0, -35)
-        stopButton:SetText(L["Label_Stop_Testing"])
-        stopButton:SetScript("OnClick", function() frame:Hide() end)
-        frame.StopButton = stopButton
-
-        _G.FakeBBFLossOfControlFrame = frame
-    end
-    FakeBBFLossOfControlFrame.blackBg:SetAlpha(LossOfControlFrameAlphaBg)
-    FakeBBFLossOfControlFrame.RedLineTop:SetAlpha(LossOfControlFrameAlphaLines)
-    FakeBBFLossOfControlFrame.RedLineBottom:SetAlpha(LossOfControlFrameAlphaLines)
-    FakeBBFLossOfControlFrame:Show()
-end
 
 --TODO Bodify, already in aura function, this is better perf tho so figure out how (debuffs only)
 -- Make player debuffs clickthrough
@@ -4019,6 +3956,9 @@ function BBF.UpdateCustomTextures()
     raidHpTexture = LSM:Fetch(LSM.MediaType.STATUSBAR, db.raidFrameHealthbarTexture)
     raidManaTexture = LSM:Fetch(LSM.MediaType.STATUSBAR, db.raidFrameManabarTexture)
     castbarTexture = LSM:Fetch(LSM.MediaType.STATUSBAR, db.unitFrameCastbarTexture)
+    if db.unitFrameCastbarNonInterruptibleTexture == nil then
+        db.unitFrameCastbarNonInterruptibleTexture = db.unitFrameCastbarTexture
+    end
     nameBgTexture = LSM:Fetch(LSM.MediaType.STATUSBAR, db.unitFrameNameBgTexture)
     BBF.customTexturesReady = true
     BBF.RefreshToT()
@@ -4633,10 +4573,12 @@ function BBF.HookUnitFrameTextures()
                         -- else
                         --     self:SetStatusBarColor(1, 0.7, 0)
                         -- end
+                        BBF.UpdateNonInterruptibleTexture(self)
                     end)
                 else
                     statusBar:HookScript("OnEvent", function(self)
                         self:SetStatusBarTexture(castbarTexture)
+                        BBF.UpdateNonInterruptibleTexture(self)
                     end)
                 end
 
@@ -4768,7 +4710,7 @@ end
 
 function BBF.HookTextures()
     local db = BetterBlizzFramesDB
-    BBF.UpdateClassicCastbarTexture(castbarTexture)
+    BBF.UpdateClassicCastbarTexture(castbarTexture, db.unitFrameCastbarNonInterruptibleTexture and LSM:Fetch(LSM.MediaType.STATUSBAR, db.unitFrameCastbarNonInterruptibleTexture))
     -- Hook UnitFrames
     -- BetterBlizzFramesDB.textureSwapUnitFrames
     if BBF.UnitFrameTextureOn("health") or BBF.UnitFrameTextureOn("mana") or db.changeUnitFrameCastbarTexture then
@@ -5447,6 +5389,9 @@ function BBF.FixStupidBlizzPTRShit()
     local function SetPlayerManaHeight()
         BBF.RunAfterCombat(function()
             PlayerFrame.manabar:SetHeight(10.5)
+            if AlternatePowerBar then
+                AlternatePowerBar:SetHeight(9.5)
+            end
         end)
     end
     SetPlayerManaHeight()
@@ -5534,8 +5479,9 @@ function BBF.FixStupidBlizzPTRShit()
         TargetFrame.totFrame.ManaBar:SetSize(76, 8)
         local a, b, c, d, e = TargetFrame.totFrame.ManaBar:GetPoint()
         TargetFrame.totFrame.ManaBar:SetPoint(a,b,c,-5,3)
-        TargetFrame.totFrame.ManaBar.ManaBarMask:SetWidth(130)
-        TargetFrame.totFrame.ManaBar.ManaBarMask:SetHeight(17)
+        TargetFrame.totFrame.ManaBar.ManaBarMask:SetSize(127.5, 17)
+        local a, b, c, d, e = TargetFrame.totFrame.ManaBar.ManaBarMask:GetPoint()
+        TargetFrame.totFrame.ManaBar.ManaBarMask:SetPoint(a,b,c,-25.5,3)
         if not BetterBlizzFramesDB.hideUnitFrameTotMana then
             local a, b, c, d, e = FocusFrame.totFrame.HealthBar:GetPoint()
             FocusFrame.totFrame.HealthBar:SetPoint(a,b,c,-5,-5)
@@ -5544,8 +5490,9 @@ function BBF.FixStupidBlizzPTRShit()
         FocusFrame.totFrame.ManaBar:SetSize(77, 10)
         local a, b, c, d, e = FocusFrame.totFrame.ManaBar:GetPoint()
         FocusFrame.totFrame.ManaBar:SetPoint(a,b,c,-5,3)
-        FocusFrame.totFrame.ManaBar.ManaBarMask:SetWidth(130)
-        FocusFrame.totFrame.ManaBar.ManaBarMask:SetHeight(17)
+        FocusFrame.totFrame.ManaBar.ManaBarMask:SetSize(127.5, 17)
+        local a, b, c, d, e = FocusFrame.totFrame.ManaBar.ManaBarMask:GetPoint()
+        FocusFrame.totFrame.ManaBar.ManaBarMask:SetPoint(a,b,c,-25.5,3)
 
 
         -- Textures to fill some gaps
@@ -5941,6 +5888,7 @@ Frame:SetScript("OnEvent", function(...)
     BBF.HookHealthbarColors()
     BBF.ResizeUIWidgetPowerBarFrame()
     BBF.LegacyBlueCombos()
+    BBF.RefreshLossOfControl()
     BBF.HideClassResourceTooltip()
     C_Timer.After(6, BBF.CheckLeatrixClassColorConflict)
 
@@ -6291,11 +6239,8 @@ First:SetScript("OnEvent", function(_, event, addonName)
             BetterBlizzFramesDB.fontSizeNumFix = true
         end
         BBF.InitRacialIndicatorRaces()
-        if not BetterBlizzFramesDB.centerNamesMoveNamesMigrated then
-            if BetterBlizzFramesDB.centerNames then
-                BetterBlizzFramesDB.moveNames = true
-            end
-            BetterBlizzFramesDB.centerNamesMoveNamesMigrated = true
+        if BetterBlizzFramesDB.centerNames or BetterBlizzFramesDB.mirroredNames then
+            BetterBlizzFramesDB.moveNames = true
         end
         FetchAndSaveValuesOnFirstLogin()
         TurnTestModesOff()
@@ -6417,6 +6362,20 @@ First:SetScript("OnEvent", function(_, event, addonName)
         if BetterBlizzFramesDB.hideLossOfControlFrameLines == nil then
             if BetterBlizzFramesDB.hideLossOfControlFrameBg then
                 BetterBlizzFramesDB.hideLossOfControlFrameLines = true
+            end
+        end
+
+        if BetterBlizzFramesDB.enableLoCFrame == nil and (BetterBlizzFramesDB.hideLossOfControlFrameBg or BetterBlizzFramesDB.hideLossOfControlFrameLines) then
+            BetterBlizzFramesDB.enableLoCFrame = true
+            BBF.locTweaksMigrated = true
+        end
+
+        if not BetterBlizzFramesDB.updatePopup220 then
+            BetterBlizzFramesDB.updatePopup220 = true
+            if BetterBlizzFramesDB.hasSaved then
+                C_Timer.After(7, function()
+                    BBF.ShowPopup("BBF_UPDATE_220")
+                end)
             end
         end
 
