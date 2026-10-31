@@ -2741,10 +2741,7 @@ local function CreateFontDropdown(name, parentFrame, defaultText, settingKey, to
     container:SetSize(dropdownWidth or 155, 50)
 
     -- Create and position label
-    local label = container:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall2")
-    label:SetPoint("LEFT", container, "LEFT", -50, -12)
-    label:SetText(L["Font"])
-    label:SetFont(fontMedium, 13)
+    local label
 
     -- Create the dropdown button with the new dropdown template
     local dropdown = CreateFrame("DropdownButton", nil, parentFrame, "WowStyle1DropdownTemplate")
@@ -2753,6 +2750,17 @@ local function CreateFontDropdown(name, parentFrame, defaultText, settingKey, to
     dropdown:SetDefaultText(BetterBlizzFramesDB[settingKey] or defaultText)
     dropdown.Background:SetVertexColor(0.9,0.9,0.9)
     dropdown.Arrow:SetVertexColor(0.9,0.9,0.9)
+
+    if labelPos == "TOP" then
+        label = container:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+        label:SetPoint("BOTTOM", dropdown, "TOP", 0, 3)
+        label:SetText(L["Font"])
+    else
+        label = container:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall2")
+        label:SetPoint("LEFT", container, "LEFT", -50, -12)
+        label:SetText(L["Font"])
+        label:SetFont(fontMedium, 13)
+    end
     dropdown.LabelText = label
 
     -- Custom font display for the selected font

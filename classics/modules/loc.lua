@@ -38,6 +38,39 @@ local function isHardCC(type)
     return hardCCSet[type]
 end
 
+local ccTypeText
+
+local function CCTypeText(ccType)
+    if not ccTypeText then
+        ccTypeText = {
+            ["Stunned"] = LOSS_OF_CONTROL_DISPLAY_STUN,
+            ["Feared"] = LOSS_OF_CONTROL_DISPLAY_FEAR,
+            ["Horrified"] = LOSS_OF_CONTROL_DISPLAY_HORROR,
+            ["Cycloned"] = LOSS_OF_CONTROL_DISPLAY_CYCLONE,
+            ["Incapacitated"] = LOSS_OF_CONTROL_DISPLAY_INCAPACITATE,
+            ["Mind Controlled"] = L["Label_LoC_Mind_Controlled"],
+            ["Disoriented"] = LOSS_OF_CONTROL_DISPLAY_DISORIENT,
+            ["Polymorphed"] = LOSS_OF_CONTROL_DISPLAY_POLYMORPH,
+            ["Hexed"] = L["Label_LoC_Hexed"],
+            ["Frozen"] = LOSS_OF_CONTROL_DISPLAY_FREEZE,
+            ["Blinded"] = L["Label_LoC_Blinded"],
+            ["Seduced"] = L["Label_LoC_Seduced"],
+            ["Asleep"] = LOSS_OF_CONTROL_DISPLAY_SLEEP,
+            ["Shackled"] = LOSS_OF_CONTROL_DISPLAY_SHACKLE_UNDEAD,
+            ["Gouged"] = L["Label_LoC_Gouged"],
+            ["Sapped"] = LOSS_OF_CONTROL_DISPLAY_SAP,
+            ["Silenced"] = LOSS_OF_CONTROL_DISPLAY_SILENCE,
+            ["Disarmed"] = LOSS_OF_CONTROL_DISPLAY_DISARM,
+            ["Rooted"] = LOSS_OF_CONTROL_DISPLAY_ROOT,
+        }
+    end
+    return ccTypeText[ccType] or ccType
+end
+
+local function SecondsText(timeLeft)
+    return string.format("%.1f %s", timeLeft, LOSS_OF_CONTROL_SECONDS or "seconds")
+end
+
 function BBF.SetupLoCFrame()
     if not BetterBlizzFramesDB.enableLoCFrame or BBFLossOfControlFrame or BBF.BBCCHandlesLoC() or BBF.LoC.Supported() then return end
     local f = CreateFrame("Frame")
@@ -176,49 +209,54 @@ function BBF.SetupLoCFrame()
 
     BBF.LoC.ApplyOwnLayout(frame)
 
+    local schoolNames = {
+        [1]   = {"Physical",     0.85, 0.65, 0.45},
+        [2]   = {"Holy",         1.00, 0.95, 0.60},
+        [4]   = {"Fire",         1.00, 0.35, 0.10},
+        [8]   = {"Nature",       0.30, 0.85, 0.30},
+        [16]  = {"Frost",        0.45, 0.70, 1.00},
+        [32]  = {"Shadow",       0.50, 0.25, 0.75},
+        [64]  = {"Arcane",       0.80, 0.60, 1.00},
+
+        [3]   = {"Holystrike",   1.00, 0.85, 0.50},
+        [5]   = {"Flamestrike",  1.00, 0.45, 0.10},
+        [6]   = {"Holyfire",     1.00, 0.65, 0.30},
+        [9]   = {"Stormstrike",  0.40, 0.80, 1.00},
+        [10]  = {"Holystorm",    0.90, 0.90, 0.60},
+        [12]  = {"Firestorm",    1.00, 0.55, 0.10},
+        [17]  = {"Froststrike",  0.50, 0.75, 1.00},
+        [18]  = {"Holyfrost",    0.80, 0.90, 1.00},
+        [20]  = {"Frostfire",    0.80, 0.45, 1.00},
+        [24]  = {"Froststorm",   0.50, 0.80, 1.00},
+        [28]  = {"Spellfrost",   0.60, 0.70, 1.00},
+        [33]  = {"Shadowstrike", 0.65, 0.25, 0.60},
+        [34]  = {"Twilight",     0.70, 0.40, 0.85},
+        [36]  = {"Shadowflame",  0.80, 0.30, 0.60},
+        [40]  = {"Shadowstorm",  0.50, 0.30, 0.85},
+        [48]  = {"Shadowfrost",  0.55, 0.40, 0.85},
+        [65]  = {"Spellstrike",  0.90, 0.60, 1.00},
+        [66]  = {"Divine",       1.00, 0.85, 0.55},
+        [96]  = {"Spellshadow",  0.75, 0.45, 0.85},
+        [124] = {"Elemental",    0.95, 0.60, 0.20},
+        [126] = {"Chromatic",    0.95, 0.95, 1.00},
+        [127] = {"Magic",        0.90, 0.90, 1.00},
+
+        [200] = {"Astral",       0.50, 0.85, 1.00},
+        [201] = {"Chaos",        1.00, 0.15, 0.15},
+        [202] = {"Chimeric",     0.95, 0.55, 0.85},
+        [203] = {"Cosmic",       0.80, 0.80, 1.00},
+        [204] = {"Radiant",      1.00, 0.70, 0.40},
+        [205] = {"Volcanic",     1.00, 0.40, 0.20},
+        [206] = {"Plague",       0.55, 0.80, 0.40},
+    }
+
     local function GetSchoolInfo(school)
-        local schoolNames = {
-            [1]   = {"Physical",     0.85, 0.65, 0.45},
-            [2]   = {"Holy",         1.00, 0.95, 0.60},
-            [4]   = {"Fire",         1.00, 0.35, 0.10},
-            [8]   = {"Nature",       0.30, 0.85, 0.30},
-            [16]  = {"Frost",        0.45, 0.70, 1.00},
-            [32]  = {"Shadow",       0.50, 0.25, 0.75},
-            [64]  = {"Arcane",       0.80, 0.60, 1.00},
-
-            [3]   = {"Holystrike",   1.00, 0.85, 0.50},
-            [5]   = {"Flamestrike",  1.00, 0.45, 0.10},
-            [6]   = {"Holyfire",     1.00, 0.65, 0.30},
-            [9]   = {"Stormstrike",  0.40, 0.80, 1.00},
-            [10]  = {"Holystorm",    0.90, 0.90, 0.60},
-            [12]  = {"Firestorm",    1.00, 0.55, 0.10},
-            [17]  = {"Froststrike",  0.50, 0.75, 1.00},
-            [18]  = {"Holyfrost",    0.80, 0.90, 1.00},
-            [20]  = {"Frostfire",    0.80, 0.45, 1.00},
-            [24]  = {"Froststorm",   0.50, 0.80, 1.00},
-            [28]  = {"Spellfrost",   0.60, 0.70, 1.00},
-            [33]  = {"Shadowstrike", 0.65, 0.25, 0.60},
-            [34]  = {"Twilight",     0.70, 0.40, 0.85},
-            [36]  = {"Shadowflame",  0.80, 0.30, 0.60},
-            [40]  = {"Shadowstorm",  0.50, 0.30, 0.85},
-            [48]  = {"Shadowfrost",  0.55, 0.40, 0.85},
-            [65]  = {"Spellstrike",  0.90, 0.60, 1.00},
-            [66]  = {"Divine",       1.00, 0.85, 0.55},
-            [96]  = {"Spellshadow",  0.75, 0.45, 0.85},
-            [124] = {"Elemental",    0.95, 0.60, 0.20},
-            [126] = {"Chromatic",    0.95, 0.95, 1.00},
-            [127] = {"Magic",        0.90, 0.90, 1.00},
-
-            [200] = {"Astral",       0.50, 0.85, 1.00},
-            [201] = {"Chaos",        1.00, 0.15, 0.15},
-            [202] = {"Chimeric",     0.95, 0.55, 0.85},
-            [203] = {"Cosmic",       0.80, 0.80, 1.00},
-            [204] = {"Radiant",      1.00, 0.70, 0.40},
-            [205] = {"Volcanic",     1.00, 0.40, 0.20},
-            [206] = {"Plague",       0.55, 0.80, 0.40},
-        }
-
-        return unpack(schoolNames[school] or {"Interrupted", 1, 1, 1})
+        local info = schoolNames[school]
+        if not info then
+            return L["Label_Interrupted"], 1, 1, 1
+        end
+        local name = school <= 127 and C_Spell.GetSchoolString(school) or info[1]
+        return name, info[2], info[3], info[4]
     end
 
     local function checkAuras()
@@ -412,7 +450,7 @@ function BBF.SetupLoCFrame()
                 frame.AbilityName:SetText(L["Label_Interrupted"])
                 _, r, g, b = GetSchoolInfo(interrupt.school)
             else
-                frame.AbilityName:SetText(main.type or L["Unknown"])
+                frame.AbilityName:SetText(main.type and CCTypeText(main.type) or L["Unknown"])
             end
             frame.AbilityName:SetTextColor(r, g, b)
 
@@ -481,6 +519,7 @@ function BBF.SetupLoCFrame()
         else
             f:RegisterUnitEvent("UNIT_AURA", "player")
         end
+        BBF.LoC.RefreshOwnTest()
     end
     BBF.UpdateLoCFrame()
 
@@ -492,7 +531,7 @@ function BBF.SetupLoCFrame()
             if timeLeft <= 0 then
                 checkAuras()
             else
-                self.TimeLeft.NumberText:SetText(string.format("%.1f seconds", timeLeft))
+                self.TimeLeft.NumberText:SetText(SecondsText(timeLeft))
 
                 if self.interruptData and self.secondaryCC == self.interruptData and self.interruptData.expiration <= now then
                     self.interruptData = nil
@@ -517,8 +556,7 @@ function BBF.SetupLoCFrame()
             local _, _, _, _, _, _, notInterruptibleChannel = UnitChannelInfo("player")
 
             local ccData
-            local schoolName = GetSchoolInfo(school) or ""
-            if schoolName == "Interrupted" then
+            if not schoolNames[school] then
                 for i = 1, C_LossOfControl.GetActiveLossOfControlDataCount() do
                     local cc = C_LossOfControl.GetActiveLossOfControlData(i)
                     if cc and cc.locType == "SCHOOL_INTERRUPT" then

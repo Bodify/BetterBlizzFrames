@@ -1027,7 +1027,21 @@ function LoC.ApplyOwnLayout(frame)
     end
 end
 
-local ownTestTicker
+local ownTestTicker, ownTestFrame, ownTestText
+
+local function EndOwnTest(frame)
+    if ownTestTicker then
+        ownTestTicker:Cancel()
+        ownTestTicker = nil
+    end
+    frame.returnEarly = nil
+    frame:EnableMouse(false)
+    frame.bbLoCClose:Hide()
+    frame.TimeLeft.NumberText:SetText("")
+    frame.SecondaryIcon:Hide()
+    frame.fadeOutShrink:Stop()
+    frame.fadeOutShrink:Play()
+end
 
 function LoC.TestOwn(frame, text)
     if not frame then return end
@@ -1036,22 +1050,43 @@ function LoC.TestOwn(frame, text)
         ownTestTicker:Cancel()
         ownTestTicker = nil
     end
+    ownTestFrame, ownTestText = frame, text
 
-    local duration = 8
+    local interruptsOnly = DB().lossOfControlInterruptsOnly
+    local duration = interruptsOnly and 4 or 8
     local now = GetTime()
     frame.returnEarly = true
     frame:GetParent():SetParent(UIParent)
+    if not frame.bbLoCClose then
+        frame.bbLoCClose = CreateFrame("Button", nil, frame:GetParent(), "UIPanelCloseButton")
+        frame.bbLoCClose:SetSize(30, 30)
+        frame.bbLoCClose:SetPoint("TOPRIGHT", frame, "TOPRIGHT", 5, 40)
+        frame.bbLoCClose:SetFrameStrata(frame:GetFrameStrata())
+        frame.bbLoCClose:SetFrameLevel(frame:GetFrameLevel() + 10)
+        frame.bbLoCClose:SetScript("OnClick", function()
+            EndOwnTest(frame)
+        end)
+    end
+    frame.bbLoCClose:Show()
     frame.expiration = now + duration
     frame.duration = duration
-    frame.Icon:SetTexture(132298)
     frame.Icon.Cooldown:SetCooldown(now, duration)
-    frame.AbilityName:SetText(text or LOSS_OF_CONTROL_DISPLAY_STUN or "Stunned")
-    frame.AbilityName:SetTextColor(1, 0.819, 0)
-    frame.Icon.SchoolText:SetText("")
-    frame.SecondaryIcon.icon:SetTexture(132219)
-    frame.SecondaryIcon.Cooldown:SetCooldown(now, 4)
-    SetSchoolText(frame.SecondaryIcon.SchoolText, 32)
-    frame.SecondaryIcon:Show()
+    if interruptsOnly then
+        frame.Icon:SetTexture(132219)
+        frame.AbilityName:SetText(LOSS_OF_CONTROL_DISPLAY_INTERRUPT or "Interrupted")
+        SetSchoolText(frame.Icon.SchoolText, 32)
+        frame.AbilityName:SetTextColor(frame.Icon.SchoolText:GetTextColor())
+        frame.SecondaryIcon:Hide()
+    else
+        frame.Icon:SetTexture(132298)
+        frame.AbilityName:SetText(text or LOSS_OF_CONTROL_DISPLAY_STUN or "Stunned")
+        frame.AbilityName:SetTextColor(1, 0.819, 0)
+        frame.Icon.SchoolText:SetText("")
+        frame.SecondaryIcon.icon:SetTexture(132219)
+        frame.SecondaryIcon.Cooldown:SetCooldown(now, 4)
+        SetSchoolText(frame.SecondaryIcon.SchoolText, 32)
+        frame.SecondaryIcon:Show()
+    end
 
     if not frame:IsShown() then
         frame:SetAlpha(0)
@@ -1060,26 +1095,25 @@ function LoC.TestOwn(frame, text)
         frame.fadeInScale:Stop()
         frame.fadeInScale:Play()
     end
-    frame.TimeLeft.NumberText:SetText(string.format("%.1f seconds", duration))
+    frame.TimeLeft.NumberText:SetText(string.format("%.1f %s", duration, LOSS_OF_CONTROL_SECONDS or "seconds"))
     MakeDraggable(frame, LoC.ApplyOwnLayout)
 
     ownTestTicker = C_Timer.NewTicker(0.1, function()
         local remaining = frame.expiration and (frame.expiration - GetTime()) or 0
         if remaining > 0 then
-            frame.TimeLeft.NumberText:SetText(string.format("%.1f seconds", remaining))
+            frame.TimeLeft.NumberText:SetText(string.format("%.1f %s", remaining, LOSS_OF_CONTROL_SECONDS or "seconds"))
             return
         end
-        ownTestTicker:Cancel()
-        ownTestTicker = nil
         if SettingsOpen() then
             LoC.TestOwn(frame, text)
             return
         end
-        frame.returnEarly = nil
-        frame:EnableMouse(false)
-        frame.TimeLeft.NumberText:SetText("")
-        frame.SecondaryIcon:Hide()
-        frame.fadeOutShrink:Stop()
-        frame.fadeOutShrink:Play()
+        EndOwnTest(frame)
     end)
+end
+
+function LoC.RefreshOwnTest()
+    if ownTestTicker then
+        LoC.TestOwn(ownTestFrame, ownTestText)
+    end
 end
