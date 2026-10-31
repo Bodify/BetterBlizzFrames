@@ -50,6 +50,7 @@ local function UpdatePopupText()
 	local lines = {}
 	if BBF.isMainline then
 		lines[#lines + 1] = L["Popup_Update_Forever_Tweaks"]
+		lines[#lines + 1] = L["Big_Healthbars"]
 		if BBF.isForever then
 			lines[#lines + 1] = L["Retail_Textures"]
 		end
@@ -63,7 +64,7 @@ local function UpdatePopupText()
 	if BBF.locTweaksMigrated and not BBF.BBCCHandlesLoC() then
 		text = text .. "\n\n" .. L["Popup_LoC_Tweaks_On"]:format(L["Loss_Of_Control_Tweaks"])
 	end
-	if BBF.isMainline and db.noPortraitModes and db.noPortraitPixelBorder and not db.classicFrames then
+	if BBF.isMainline and (db.noPortraitModes or db.noPortraitPixelBorder) and not db.classicFrames then
 		text = text .. "\n\n" .. L["Popup_Update_Pixel_Border"]:format(L["Pixel_Border"], L["No_Portrait"])
 	end
 	return text .. "\n\n" .. L["Popup_Update_Changelog"]
