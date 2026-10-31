@@ -486,7 +486,7 @@ local function ApplyNameLayout(frame)
         local left = justify == "RIGHT" and dw or justify == "CENTER" and dw / 2 or 0
         local multiLine = prefix and db[prefix .. "MultiLine"] and true or false
         local edge = prefix and db[prefix .. "GrowDown"] and "TOP" or "BOTTOM"
-        local boxHeight = nameBox:GetHeight()
+        local boxHeight = nameBox.bbfHeight
         fontString:ClearAllPoints()
         fontString:SetWordWrap(multiLine)
         if fontString.SetMaxLines then
@@ -497,6 +497,7 @@ local function ApplyNameLayout(frame)
             dy = dy + MultiLineNudge(fontString, boxHeight, edge)
         end
         local boxWidth = nameBox:GetWidth()
+        if issecretvalue(boxWidth) then boxWidth = nil end
         local scale = BBF.GetNameMoveScale and BBF.GetNameMoveScale(prefix) or 1
         local x1, y1, x2, y2 = dx - left, dy, dx + dw - left, dy
         if BBF.SetNameMoveScale then

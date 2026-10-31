@@ -952,7 +952,8 @@ function BBF.NameAreaBox(frame)
         box:SetPoint("BOTTOMLEFT", area, "TOPLEFT", left, v.y or 0)
         box:SetPoint("BOTTOMRIGHT", area, "TOPRIGHT", right, v.y or 0)
     end
-    box:SetHeight(frame.bbfNameBaseHeight or NAME_HEIGHT[setup.key])
+    box.bbfHeight = frame.bbfNameBaseHeight or NAME_HEIGHT[setup.key]
+    box:SetHeight(box.bbfHeight)
     box:Show()
     return box
 end
@@ -996,7 +997,7 @@ local function PlacePartyName(name, box)
     local scale = BBF.GetNameMoveScale and BBF.GetNameMoveScale("moveNameParty") or 1
     local multiLine = moved and db.moveNamePartyMultiLine and true or false
     local edge = moved and db.moveNamePartyGrowDown and "TOP" or "BOTTOM"
-    local boxHeight = box:GetHeight()
+    local boxHeight = box.bbfHeight
     if multiLine then
         local _, fontHeight = name:GetFont()
         if fontHeight then
