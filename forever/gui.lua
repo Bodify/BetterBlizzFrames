@@ -9763,6 +9763,11 @@ local function guiCastbars()
     stopCastbarShake:SetPoint("LEFT", raiseTargetCastbarStrata.text, "RIGHT", 0, 0)
     CreateTooltipTwo(stopCastbarShake, L["Stop_Castbar_Shake"], L["Tooltip_Stop_Castbar_Shake_Desc"])
 
+    local hideCastFinishSparkles = CreateCheckbox("hideCastFinishSparkles", L["Hide_Cast_Finish_Sparkles"], contentFrame, nil, BBF.HideCastFinishSparkles)
+    hideCastFinishSparkles:SetPoint("LEFT", stopCastbarShake.text, "RIGHT", 0, 0)
+    CreateTooltipTwo(hideCastFinishSparkles, L["Hide_Cast_Finish_Sparkles"], L["Tooltip_Hide_Cast_Finish_Sparkles_Desc"])
+    BBF.hideCastFinishSparklesBox = hideCastFinishSparkles
+
     local hideCastbarTextBorder = CreateCheckbox("hideCastbarTextBorder", L["Hide_Castbar_Text_Background"], contentFrame, nil, function()
         BBF.ChangeCastbarSizes()
         BBF.UpdateCastbars()
@@ -9792,6 +9797,7 @@ local function guiCastbars()
             BetterBlizzFramesDB.castbarPixelBorderIcons = true
             castbarPixelBorderIcons:SetChecked(true)
             BBF.CastbarIconPixelBorders()
+            BBF.EnableHideCastFinishSparkles()
         end
         EnableElement(castbarPixelBorderTextInside)
         BBF.ShowPopup("BBF_CONFIRM_RELOAD")
@@ -11145,6 +11151,9 @@ local function guiFrameLook()
     changeUnitFrameCastbarTexture:SetPoint("TOPLEFT", lastUnitFrameTexture, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(changeUnitFrameCastbarTexture, L["Change_Castbar_Texture"], L["Tooltip_Change_Castbar_Texture_Desc"] .. rightClickHint)
     changeUnitFrameCastbarTexture:HookScript("OnClick", function(self)
+        if self:GetChecked() and not BetterBlizzFramesDB.classicCastbarsPlayer then
+            BBF.EnableHideCastFinishSparkles()
+        end
         BBF.UpdateCustomTextures()
         ReloadWhenOff(self)
     end)

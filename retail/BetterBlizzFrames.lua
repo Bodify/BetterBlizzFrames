@@ -6388,6 +6388,10 @@ First:SetScript("OnEvent", function(_, event, addonName)
             BetterBlizzFramesDB.castbarPixelBorderIcons = BetterBlizzFramesDB.castbarPixelBorder and true or false
         end
 
+        if BetterBlizzFramesDB.hideCastFinishSparkles == nil then
+            BetterBlizzFramesDB.hideCastFinishSparkles = (BetterBlizzFramesDB.castbarPixelBorder or (BetterBlizzFramesDB.changeUnitFrameCastbarTexture and not BetterBlizzFramesDB.classicCastbarsPlayer)) and true or false
+        end
+
         if not BetterBlizzFramesDB.optimizedAuraLists then
             if BetterBlizzFramesDB.hasSaved then
                 -- BetterBlizzFramesDB.auraBackups = {}

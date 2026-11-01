@@ -691,6 +691,40 @@ function BBF.CastbarShakeAnimationCancel()
 end
 
 
+function BBF.HideCastFinishSparkles()
+    if BBF.castFinishSparklesHooked then return end
+    if not (BetterBlizzFramesDB.hideCastFinishSparkles or BetterBlizzFramesDB.classicCastbarsPlayer) then return end
+    for _, castBar in ipairs({ PlayerCastingBarFrame, OverlayPlayerCastingBarFrame, PetCastingBarFrame }) do
+        hooksecurefunc(castBar, "PlayFinishAnim", function(self)
+            if BetterBlizzFramesDB.hideCastFinishSparkles or BetterBlizzFramesDB.classicCastbarsPlayer then
+                if BetterBlizzFramesDB.hideCastFinishSparkles then
+                    self.FlashAnim:Stop()
+                end
+                self.StandardFinish:Stop()
+                self.ChannelFinish:Stop()
+                self.CraftingFinish:Stop()
+                if self.StageTiers then
+                    for _, stageTier in pairs(self.StageTiers) do
+                        if stageTier.FinishAnim then
+                            stageTier.FinishAnim:Stop()
+                        end
+                    end
+                end
+            end
+        end)
+    end
+    BBF.castFinishSparklesHooked = true
+end
+
+function BBF.EnableHideCastFinishSparkles()
+    BetterBlizzFramesDB.hideCastFinishSparkles = true
+    BBF.HideCastFinishSparkles()
+    if BBF.hideCastFinishSparklesBox then
+        BBF.hideCastFinishSparklesBox:SetChecked(true)
+    end
+end
+
+
 function BBF.ClassicCastbar(castBar, unitType)
     local isParty = unitType == "party"
     local isPet = unitType == "pet"
@@ -2060,6 +2094,7 @@ function BBF.ChangeCastbarSizes()
         end
     end
     BBF.CastbarShakeAnimationCancel()
+    BBF.HideCastFinishSparkles()
     if BetterBlizzFramesDB.classicCastbarsPlayer then
         BBF.ClassicCastbar(PlayerCastingBarFrame, "player")
         BBF.ClassicCastbar(PetCastingBarFrame, "player")
