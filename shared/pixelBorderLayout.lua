@@ -336,7 +336,6 @@ end
 
 local function SnapBars(frame, g, healthBar, manaBar)
     if frame == PlayerFrame then
-        if PlayerFrame.state == "vehicle" then return end
         local container = healthBar:GetParent()
         PlaceBar(container, frame, g.point, g.healthBar)
         healthBar:ClearAllPoints()

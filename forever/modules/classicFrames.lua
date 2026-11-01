@@ -17,43 +17,46 @@ local function SetManaTextParent(text, parent)
     text:SetParent(parent)
 end
 
-function BBF.ClassicLevelShift(levelText)
-    local place = levelText.bbfClassicLevel
-    if not place then return 0 end
-    local text = levelText:GetText()
-    if text == nil or issecretvalue(text) then return place.other end
-    text = tostring(text)
-    if place.levels then return place.levels(text) end
-    if text:sub(-1) == "1" then return 0.5 end
-    if text == "10" then return place.ten end
-    if text:sub(1, 1) == "1" then return place.startsOne end
-    return place.other
-end
-
-local function PlaceClassicLevelText(levelText)
+function BBF.PlaceClassicLevel(levelText)
     local place = levelText.bbfClassicLevel
     if not place then return end
-    local x = place.x + BBF.ClassicLevelShift(levelText)
+    local nudge = 0
+    local text = levelText:GetText()
+    if text and not issecretvalue(text) and levelText:GetFont() == WhiteLargeNumberFont:GetFont() then
+        text = tostring(text)
+        if text:sub(1, 1) == "1" or text:sub(-1) == "1" then
+            nudge = -1
+        end
+    end
     levelText:ClearAllPoints()
-    if place.relativeTo then
-        levelText:SetPoint("CENTER", place.relativeTo, place.relativePoint, x, place.y)
+    local ring = levelText.bbfClassicLevelRing
+    if ring then
+        ring:ClearAllPoints()
+        ring:SetPoint("CENTER", place.relativeTo or ring:GetParent(), place.relativePoint or "CENTER", place.x + ring.bbfX, place.y + ring.bbfY)
+        levelText:SetPoint("CENTER", ring, "CENTER", nudge - ring.bbfX, -ring.bbfY)
+    elseif place.relativeTo then
+        levelText:SetPoint("CENTER", place.relativeTo, place.relativePoint, place.x + nudge, place.y)
     else
-        levelText:SetPoint("CENTER", x, place.y)
+        levelText:SetPoint("CENTER", place.x + nudge, place.y)
     end
 end
 
-local function SetClassicLevelPoint(levelText, x, y, startsOne, ten, other, relativeTo, relativePoint, levels)
-    levelText.bbfClassicLevel = { x = x, y = y, startsOne = startsOne, ten = ten, other = other, relativeTo = relativeTo, relativePoint = relativePoint, levels = levels }
+function BBF.SetClassicLevelRing(levelText, ring, x, y)
+    ring.bbfX, ring.bbfY = x, y
+    levelText.bbfClassicLevelRing = ring
+    BBF.PlaceClassicLevel(levelText)
+end
+
+local function SetClassicLevelPoint(levelText, x, y, relativeTo, relativePoint)
+    levelText.bbfClassicLevel = { x = x, y = y, relativeTo = relativeTo, relativePoint = relativePoint }
+    levelText:SetWidth(25)
+    levelText:SetJustifyH("CENTER")
     if not levelText.bbfClassicLevelHooked then
         levelText.bbfClassicLevelHooked = true
-        hooksecurefunc(levelText, "SetText", PlaceClassicLevelText)
+        hooksecurefunc(levelText, "SetText", BBF.PlaceClassicLevel)
+        hooksecurefunc(levelText, "SetFont", BBF.PlaceClassicLevel)
     end
-    PlaceClassicLevelText(levelText)
-end
-
-local function PlayerLevelShift(text)
-    if #text == 1 or text == "10" then return -1.5 end
-    return -2
+    BBF.PlaceClassicLevel(levelText)
 end
 
 local class = UnitClassBase("player")
@@ -583,8 +586,8 @@ local function MakeClassicFrame(frame)
         contentContext.HighLevelTexture:SetParent(frame.ClassicFrame)
         contentContext.HighLevelTexture:SetDrawLayer("OVERLAY", 7)
         contentContext.HighLevelTexture:ClearAllPoints()
-        contentContext.HighLevelTexture:SetSize(16, 20)
-        contentContext.HighLevelTexture:SetPoint("CENTER", frame, "BOTTOMRIGHT", -34.5, 25)
+        contentContext.HighLevelTexture:SetSize(13, 16)
+        contentContext.HighLevelTexture:SetPoint("CENTER", frame, "BOTTOMRIGHT", -33, 25)
         contentContext.PetBattleIcon:ClearAllPoints()
         contentContext.PetBattleIcon:SetPoint("CENTER", frame, "BOTTOMRIGHT", -35, 25)
         contentContext.PrestigePortrait:ClearAllPoints()
@@ -605,10 +608,9 @@ local function MakeClassicFrame(frame)
 
         contentMain.LevelText:SetParent(frame.ClassicFrame)
         contentMain.LevelText:SetDrawLayer("OVERLAY", 7)
-        SetClassicLevelPoint(contentMain.LevelText, BBF.ClassicHDTexturesActive() and -36 or -34.5, 25.5, 1, 1.5, 2, frame, "BOTTOMRIGHT")
+        SetClassicLevelPoint(contentMain.LevelText, BBF.ClassicHDTexturesActive() and -34 or -32.5, 25.5, frame, "BOTTOMRIGHT")
         local lvlFont, _, lvlFlags = contentMain.LevelText:GetFont()
         contentMain.LevelText:SetFont(lvlFont, 12, lvlFlags)
-        contentMain.LevelText:SetJustifyH("CENTER")
         contentMain.ReputationColor:SetSize(119, 18)
         contentMain.ReputationColor:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-LevelBackground")
         contentMain.ReputationColor:ClearAllPoints()
@@ -999,12 +1001,11 @@ local function MakeClassicFrame(frame)
             PlayerLevelText:SetParent(frame.ClassicFrame)
             PlayerLevelText:SetDrawLayer("OVERLAY", 7)
             PlayerLevelText:Show()
-            SetClassicLevelPoint(PlayerLevelText, -81, -24.5, 0, -1, 1, nil, nil, PlayerLevelShift)
+            SetClassicLevelPoint(PlayerLevelText, -83, -24.5)
             local plvlFont, _, plvlFlags = PlayerLevelText:GetFont()
             if plvlFont then
                 PlayerLevelText:SetFont(plvlFont, 12, plvlFlags)
             end
-            PlayerLevelText:SetJustifyH("CENTER")
         end
 
         local function PlayerLevelHidden()
@@ -1019,7 +1020,7 @@ local function MakeClassicFrame(frame)
         local function UpdateLevel()
             if PlayerLevelHidden() then
                 PlayerLevelText:SetParent(BBF.hiddenFrame)
-                SetClassicLevelPoint(PlayerLevelText, -81, -24.5, 0, -1, 1, nil, nil, PlayerLevelShift)
+                SetClassicLevelPoint(PlayerLevelText, -83, -24.5)
             else
                 UpdateLevelDetails()
             end
@@ -1945,7 +1946,7 @@ local function SortLocalizationChanges()
             local manaBar = contentMain.ManaBar
             local tex = f.ClassicFrame.Texture
 
-            SetClassicLevelPoint(contentMain.LevelText, BBF.ClassicHDTexturesActive() and -36 or -34.5, 25.5, 1, 1.5, 2, f, "BOTTOMRIGHT")
+            SetClassicLevelPoint(contentMain.LevelText, BBF.ClassicHDTexturesActive() and -34 or -32.5, 25.5, f, "BOTTOMRIGHT")
 
             hpContainer.HealthBarText:ClearAllPoints()
             hpContainer.HealthBarText:SetPoint("CENTER", tex, "LEFT", 66.5, BBF.ClassicHealthTextY(f))

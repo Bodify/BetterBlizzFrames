@@ -1614,12 +1614,6 @@ local function MakeNoPortraitMode(frame)
         frame.noPortraitMode.Texture = frame.noPortraitMode:CreateTexture(nil, "OVERLAY")
         RoundToPixel(frame.noPortraitMode.Texture)
         RoundToPixel(contentMain.StatusTexture)
-        frame.noPortraitMode.bbfVehicleTexture = frame.noPortraitMode:CreateTexture(nil, "OVERLAY", nil, 7)
-        frame.noPortraitMode.bbfVehicleTexture:SetSize(18, 18)
-        frame.noPortraitMode.bbfVehicleTexture:ClearAllPoints()
-        frame.noPortraitMode.bbfVehicleTexture:SetPoint("TOPLEFT", 76, -47)
-        frame.noPortraitMode.bbfVehicleTexture:Hide()
-        frame.noPortraitMode.bbfVehicleTexture:SetAtlas("Taxi_Frame_Gray")
         --contentContext.GroupIndicator:SetAlpha(0)
 
         if class == "PRIEST" then
@@ -1678,7 +1672,6 @@ local function MakeNoPortraitMode(frame)
             end
         end
 
-        --frame.bbfVehicleTexture:SetParent(frame.noPortraitMode)
         --frameContainer:SetAlpha(0)
         frameContainer:SetParent(BBF.hiddenFrame)
 
@@ -2093,7 +2086,7 @@ local function MakeNoPortraitMode(frame)
             end
 
             local point, relativePoint, xOffset, yOffset, scale = GetPlayerClassAndSpecPosition(maxResource)
-            if PlayerFrame.state == "vehicle" and not BBF.BigPlayerHealthbar() then
+            if PlayerFrame.state == "vehicle" and not BBF.BigPlayerHealthbar() and not db.noPortraitPixelBorder then
                 xOffset = xOffset + 2
             end
             return point, relativePoint, xOffset, yOffset, scale
@@ -2283,8 +2276,6 @@ local function MakeNoPortraitMode(frame)
 
             frame.noPortraitMode.Texture:Hide()
 
-            frame.noPortraitMode.bbfVehicleTexture:Hide()
-
             frameContainer.FrameTexture:ClearAllPoints()
             frameContainer.FrameTexture:SetPoint("TOPLEFT", -19, 7)
             frameContainer.FrameTexture:SetAlpha(0)
@@ -2367,20 +2358,20 @@ local function MakeNoPortraitMode(frame)
             frameContainer.VehicleFrameTexture:SetPoint("TOPLEFT", 23, -20)
             frameContainer.VehicleFrameTexture:SetAlpha(0)
 
-            frame.noPortraitMode.bbfVehicleTexture:Show()
-
             frame.noPortraitMode.Texture:SetSize(247, 45)
             frame.noPortraitMode.Texture:SetTexture(playerDefaultTex)
             frame.noPortraitMode.Texture:ClearAllPoints()
             frame.noPortraitMode.Texture:SetPoint("TOPLEFT", 26.5, -39)
             frame.noPortraitMode.Texture:SetTexCoord(0, 1, 0, 1)
 
-            hpContainer.HealthBarMask:SetPoint("TOPLEFT", hpContainer.HealthBar, "TOPLEFT", -34, 5)
-            hpContainer.HealthBarMask:SetSize(185, 34)
+            if not db.noPortraitPixelBorder then
+                hpContainer.HealthBarMask:SetPoint("TOPLEFT", hpContainer.HealthBar, "TOPLEFT", -34, 5)
+                hpContainer.HealthBarMask:SetSize(185, 34)
+            end
 
             --hpContainer.HealthBarMask:SetSize(120, 32)
 
-            frameContainer.FrameFlash:SetParent(frame)
+            frameContainer.FrameFlash:SetParent(db.noPortraitPixelBorder and BBF.hiddenFrame or frame)
             frameContainer.FrameFlash:SetSize(255, 45)
             frameContainer.FrameFlash:SetTexture(playerFlashTex)
             frameContainer.FrameFlash:SetTexCoord(0, 1, 0, 1)
@@ -2424,6 +2415,9 @@ local function MakeNoPortraitMode(frame)
         hooksecurefunc("PlayerFrame_ToVehicleArt", function(self)
             ToVehicleArt()
             UpdateResourcePosition()
+            if db.noPortraitPixelBorder then
+                PlaceHealthBar()
+            end
         end)
 
         hooksecurefunc(TotemFrame, "Update", function(self)

@@ -655,22 +655,6 @@ function BBF.UpdateClassicHDLevelRingColors()
     end
 end
 
-local function PlaceHDLevelRing(circle, levelText)
-    local text = levelText:GetText()
-    local x = 0
-    if text and not issecretvalue(text) then
-        text = tostring(text)
-        if text:sub(1, 1) == "1" then
-            x = 0.5
-        end
-    end
-    if BBF.ClassicLevelShift then
-        x = x - BBF.ClassicLevelShift(levelText)
-    end
-    circle:ClearAllPoints()
-    circle:SetPoint("CENTER", levelText, "CENTER", x, 0)
-end
-
 function BBF.SetClassicHDLevelRing(frame, enabled)
     local classicFrame = frame and frame.ClassicFrame
     if not classicFrame then return end
@@ -697,11 +681,6 @@ function BBF.SetClassicHDLevelRing(frame, enabled)
         for _, method in ipairs({ "SetParent", "SetAlpha", "Show", "Hide", "SetShown" }) do
             hooksecurefunc(levelText, method, Refresh)
         end
-        hooksecurefunc(levelText, "SetText", function()
-            if circle.bbfHD then
-                PlaceHDLevelRing(circle, levelText)
-            end
-        end)
         if highLevelTexture then
             for _, method in ipairs({ "Show", "Hide", "SetShown" }) do
                 hooksecurefunc(highLevelTexture, method, Refresh)
@@ -711,16 +690,17 @@ function BBF.SetClassicHDLevelRing(frame, enabled)
     local hd = BBF.ClassicHDTexturesActive()
     if circle.bbfHD ~= hd then
         circle.bbfHD = hd
-        circle:ClearAllPoints()
         if hd then
             circle:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\classicTextures\\MoTextures\\lvlring.png")
             circle:SetTexCoord(0, 1, 0, 1)
+            circle:SetSnapToPixelGrid(false)
+            circle:SetTexelSnappingBias(0)
             circle:SetSize(frame == PlayerFrame and 33.5 or 33, 31)
-            PlaceHDLevelRing(circle, levelText)
+            BBF.SetClassicLevelRing(levelText, circle, frame == PlayerFrame and 0 or -0.5, 0.5)
         else
             circle:SetAtlas("hud-PlayerFrame-levelring")
             circle:SetSize(36, 32)
-            circle:SetPoint("CENTER", levelText, "CENTER", -1, -1.5)
+            BBF.SetClassicLevelRing(levelText, circle, -1, -1.5)
         end
     end
     circle.bbfEnabled = enabled and true or false

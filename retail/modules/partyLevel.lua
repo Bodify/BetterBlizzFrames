@@ -1,6 +1,5 @@
 local RING_SCALE = 37 / 60
 local HD_RING = "Interface\\AddOns\\BetterBlizzFrames\\media\\classicTextures\\MoTextures\\lvlring.png"
-local CLASSIC_PARTY_SCALE = 136 / 232
 local built = {}
 local eventFrame
 
@@ -54,17 +53,6 @@ local function ClassicHDRing()
     return BetterBlizzFramesDB.classicFrames and BBF.ClassicHDTexturesActive and BBF.ClassicHDTexturesActive() or false
 end
 
-local function PlaceHDRing(frame)
-    local ring, text = frame.bbfLevelRing, frame.bbfLevelText
-    local level = text:GetText()
-    local x = -0.5
-    if level and not issecretvalue(level) and tostring(level):sub(1, 1) == "1" then
-        x = x + 0.5 * CLASSIC_PARTY_SCALE
-    end
-    ring:ClearAllPoints()
-    ring:SetPoint("CENTER", text, "CENTER", x, 0)
-end
-
 local function PlaceElements(frame)
     local ring, text = frame.bbfLevelRing, frame.bbfLevelText
     text:ClearAllPoints()
@@ -81,7 +69,10 @@ local function PlaceElements(frame)
             ring:SetSnapToPixelGrid(false)
             ring:SetTexelSnappingBias(0)
             ring:SetSize(21, 20)
-            PlaceHDRing(frame)
+            ring:ClearAllPoints()
+            ring:SetPoint("CENTER", frame, "TOPLEFT", 13.5, -37.5)
+            text:ClearAllPoints()
+            text:SetPoint("CENTER", ring, "CENTER", 0.5, 0)
             ColorRing(frame)
         else
             ring:Hide()
@@ -116,9 +107,6 @@ local function UpdateLevel(frame, index)
     frame.bbfLevelText:SetText((issecretvalue(level) or level > 0) and level or "??")
     frame.bbfLevelText:SetVertexColor(1, 0.82, 0)
     frame.bbfLevelText:Show()
-    if frame.bbfLevelRing.bbfHD then
-        PlaceHDRing(frame)
-    end
     frame.bbfLevelRing:SetShown(showRing)
 end
 
@@ -131,6 +119,7 @@ local function Build(frame, index)
     text:SetDrawLayer("OVERLAY", 2)
     local font, size, flags = PlayerLevelText:GetFont()
     frame.bbfLevelFont = { font, math.max(8, math.floor((size or 14) * RING_SCALE + 0.5)), flags }
+    text:SetWidth(25)
     text:SetJustifyH("CENTER")
     text:SetShadowOffset(1, -1)
     frame.bbfLevelRing, frame.bbfLevelText = ring, text
