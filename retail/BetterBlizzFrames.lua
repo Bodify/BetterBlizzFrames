@@ -1415,9 +1415,9 @@ local modernRoleTextures = {
 
 local raidRoleProxies = setmetatable({}, { __mode = "k" })
 
-local function PlaceModernRaidRoleName(frame)
+local function PlaceModernRaidRoleName(frame, layoutType)
     local name = frame.name
-    if not name or name:GetJustifyH() ~= "LEFT" then return end
+    if not name or layoutType ~= Enum.RaidAuraOrganizationType.Legacy then return end
     name:SetPoint("TOPLEFT", frame.roleIcon, "TOPRIGHT", -1, -5)
 end
 
@@ -1439,7 +1439,7 @@ local function UpdateModernRaidRoleIcon(frame)
     UnitFrameUtil.UpdateUnitFrameRoleIcon(proxy)
     frame.roleIcon:ClearAllPoints()
     frame.roleIcon:SetPoint("CENTER", frame.healthBar, "TOPLEFT", 8.5, -7.5)
-    PlaceModernRaidRoleName(frame)
+    PlaceModernRaidRoleName(frame, EditModeManagerFrame:GetRaidFrameAuraOrganizationType(frame.groupType))
 end
 
 local partyRoleOptions = { displayRoleIcon = true, textureMap = modernRoleTextures }
@@ -1506,9 +1506,9 @@ function BBF.ModernRoleIcons()
     end
     BBF.modernRoleIconsHooked = true
     hooksecurefunc("CompactUnitFrame_UpdateRoleIcon", UpdateModernRaidRoleIcon)
-    hooksecurefunc("CompactUnitFrameLayoutTemplates_LayoutFrameElement", function(frame, _, _, key)
+    hooksecurefunc("CompactUnitFrameLayoutTemplates_LayoutFrameElement", function(frame, _, layoutType, key)
         if key ~= "Name" or issecretvalue(frame) or not raidRoleProxies[frame] then return end
-        PlaceModernRaidRoleName(frame)
+        PlaceModernRaidRoleName(frame, layoutType)
     end)
     BBF.UpdatePartyRoleIcons()
 end

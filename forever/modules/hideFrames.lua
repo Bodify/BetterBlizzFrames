@@ -255,6 +255,9 @@ function BBF.UpdateStatusTrackingBars()
     if not BBF.statusTrackingBarsHooked then
         for _, container in ipairs(StatusTrackingBarManager.barContainers) do
             hooksecurefunc(container, "ApplyPendingBarToShow", UpdateStatusTrackingBar)
+            container.FadeInAnimation:HookScript("OnFinished", function()
+                C_Timer.After(0, BBF.UpdateStatusTrackingBars)
+            end)
         end
         CharacterFrame:HookScript("OnShow", BBF.UpdateStatusTrackingBars)
         CharacterFrame:HookScript("OnHide", BBF.UpdateStatusTrackingBars)
