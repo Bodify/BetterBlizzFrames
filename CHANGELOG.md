@@ -1,4 +1,4 @@
-# BetterBlizzFrames 2.2.0c
+# BetterBlizzFrames 2.2.0d
 ## Retail & Forever
 ### New
 - Castbars: Hide castbar finish effects. Remove the glows and stuff after a cast is completed on Player Castbar.
