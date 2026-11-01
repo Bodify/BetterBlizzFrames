@@ -1418,7 +1418,7 @@ local raidRoleProxies = setmetatable({}, { __mode = "k" })
 local function PlaceModernRaidRoleName(frame)
     local name = frame.name
     if not name or name:GetJustifyH() ~= "LEFT" then return end
-    name:SetPoint("TOPLEFT", frame.roleIcon, "TOPRIGHT", 0, -5)
+    name:SetPoint("TOPLEFT", frame.roleIcon, "TOPRIGHT", -1, -5)
 end
 
 local function UpdateModernRaidRoleIcon(frame)
