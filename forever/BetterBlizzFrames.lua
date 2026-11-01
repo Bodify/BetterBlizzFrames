@@ -2670,20 +2670,10 @@ end
 --########################################################
 function BBF.MiniFrame(frame)
     local db = BetterBlizzFramesDB
-    local useMiniFrame
-
-    -- Determine which setting to use based on frame type
-    if frame == PlayerFrame then
-        useMiniFrame = db.useMiniPlayerFrame
-    elseif frame == TargetFrame then
-        useMiniFrame = db.useMiniTargetFrame
-    elseif frame == FocusFrame then
-        useMiniFrame = db.useMiniFocusFrame
-    end
-
-    if not useMiniFrame then return end
+    if not BBF.IsMiniFrame(frame) then return end
 
     BBF.StopMiniFrameBars(frame)
+    BBF.HideMiniFrameBarArt(frame)
     if frame ~= PlayerFrame and BBF.UpdateHealthbarMirror then
         BBF.UpdateHealthbarMirror(frame)
     end
@@ -6208,7 +6198,7 @@ First:SetScript("OnEvent", function(_, event, addonName)
 
         BBF.MoveableFPSCounter(false, BetterBlizzFramesDB.fpsCounterFontOutline)
 
-        if BetterBlizzFramesDB.useMiniPlayerFrame then
+        if BBF.IsMiniFrame(PlayerFrame) then
             if AlternatePowerBar then
                 AlternatePowerBar:SetParent(hiddenFrame)
             end

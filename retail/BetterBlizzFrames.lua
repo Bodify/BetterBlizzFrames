@@ -1415,6 +1415,12 @@ local modernRoleTextures = {
 
 local raidRoleProxies = setmetatable({}, { __mode = "k" })
 
+local function PlaceModernRaidRoleName(frame)
+    local name = frame.name
+    if not name or name:GetJustifyH() ~= "LEFT" then return end
+    name:SetPoint("TOPLEFT", frame.roleIcon, "TOPRIGHT", 0, -5)
+end
+
 local function UpdateModernRaidRoleIcon(frame)
     if issecretvalue(frame) or not frame.roleIcon or not frame.unit then return end
     if not (UnitFrameUtil and UnitFrameUtil.UpdateUnitFrameRoleIcon) then return end
@@ -1429,10 +1435,11 @@ local function UpdateModernRaidRoleIcon(frame)
     proxy.roleIcon = frame.roleIcon
     proxy.unit = frame.unit
     frame.roleIcon:SetTexCoord(0, 1, 0, 1)
-    frame.roleIcon:SetSize(11, 11)
+    frame.roleIcon:SetSize(20, 20)
     UnitFrameUtil.UpdateUnitFrameRoleIcon(proxy)
     frame.roleIcon:ClearAllPoints()
-    frame.roleIcon:SetPoint("TOPLEFT", frame.healthBar, "TOPLEFT", 3, -2)
+    frame.roleIcon:SetPoint("CENTER", frame.healthBar, "TOPLEFT", 8.5, -7.5)
+    PlaceModernRaidRoleName(frame)
 end
 
 local partyRoleOptions = { displayRoleIcon = true, textureMap = modernRoleTextures }
@@ -1499,6 +1506,10 @@ function BBF.ModernRoleIcons()
     end
     BBF.modernRoleIconsHooked = true
     hooksecurefunc("CompactUnitFrame_UpdateRoleIcon", UpdateModernRaidRoleIcon)
+    hooksecurefunc("CompactUnitFrameLayoutTemplates_LayoutFrameElement", function(frame, _, _, key)
+        if key ~= "Name" or issecretvalue(frame) or not raidRoleProxies[frame] then return end
+        PlaceModernRaidRoleName(frame)
+    end)
     BBF.UpdatePartyRoleIcons()
 end
 
@@ -2718,20 +2729,10 @@ end
 --########################################################
 function BBF.MiniFrame(frame)
     local db = BetterBlizzFramesDB
-    local useMiniFrame
-
-    -- Determine which setting to use based on frame type
-    if frame == PlayerFrame then
-        useMiniFrame = db.useMiniPlayerFrame
-    elseif frame == TargetFrame then
-        useMiniFrame = db.useMiniTargetFrame
-    elseif frame == FocusFrame then
-        useMiniFrame = db.useMiniFocusFrame
-    end
-
-    if not useMiniFrame then return end
+    if not BBF.IsMiniFrame(frame) then return end
 
     BBF.StopMiniFrameBars(frame)
+    BBF.HideMiniFrameBarArt(frame)
     if frame ~= PlayerFrame and BBF.UpdateHealthbarMirror then
         BBF.UpdateHealthbarMirror(frame)
     end
@@ -6321,7 +6322,7 @@ First:SetScript("OnEvent", function(_, event, addonName)
 
         BBF.MoveableFPSCounter(false, BetterBlizzFramesDB.fpsCounterFontOutline)
 
-        if BetterBlizzFramesDB.useMiniPlayerFrame then
+        if BBF.IsMiniFrame(PlayerFrame) then
             if AlternatePowerBar then
                 AlternatePowerBar:SetParent(hiddenFrame)
             end

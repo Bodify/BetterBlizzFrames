@@ -692,15 +692,15 @@ end
 
 function BBF.BigPlayerHealthbar()
     local db = BetterBlizzFramesDB
-    return BBF.BigHealthbarsOn() and db.bigHealthbarPlayer ~= false and not db.useMiniPlayerFrame
+    return BBF.BigHealthbarsOn() and db.bigHealthbarPlayer ~= false and not BBF.IsMiniFrame(PlayerFrame)
 end
+
+local miniKeys = { player = "useMiniPlayerFrame", target = "useMiniTargetFrame", focus = "useMiniFocusFrame" }
 
 function BBF.IsMiniFrame(frame)
     local db = BetterBlizzFramesDB
-    if frame == PlayerFrame then return db.useMiniPlayerFrame and true or false end
-    if frame == TargetFrame then return db.useMiniTargetFrame and true or false end
-    if frame == FocusFrame then return db.useMiniFocusFrame and true or false end
-    return false
+    local unit = (frame == PlayerFrame and "player") or (frame == TargetFrame and "target") or (frame == FocusFrame and "focus")
+    return unit and db[miniKeys[unit]] and true or false
 end
 
 local stoppedBars = {}
@@ -713,6 +713,45 @@ local function StopBar(bar)
     end
     bar:UnregisterAllEvents()
     bar:SetScript("OnUpdate", nil)
+end
+
+local function MiniBarRegions(frame)
+    local main, manaBar
+    if frame == PlayerFrame then
+        main = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain
+        manaBar = main.ManaBarArea.ManaBar
+    else
+        main = frame.TargetFrameContent.TargetFrameContentMain
+        manaBar = main.ManaBar
+    end
+    local hp = main.HealthBarsContainer
+    local regions = {
+        hp, manaBar,
+        hp.LeftText, hp.RightText, hp.HealthBarText, hp.DeadText, hp.UnconsciousText,
+        manaBar.LeftText, manaBar.RightText, manaBar.ManaBarText,
+        frame.BBFHealthTextFrame, frame.BBFManaTextFrame,
+        frame.bbfPixelHealthBox, frame.bbfPixelManaBox,
+    }
+    if frame.noPortraitMode then
+        regions[#regions + 1] = frame.noPortraitMode.Texture
+        regions[#regions + 1] = frame.noPortraitMode.Background
+    end
+    return regions
+end
+
+local keptHidden = {}
+
+function BBF.HideMiniFrameBarArt(frame)
+    if not BBF.IsMiniFrame(frame) then return end
+    for _, region in pairs(MiniBarRegions(frame)) do
+        region:SetAlpha(0)
+        if not keptHidden[region] then
+            keptHidden[region] = true
+            hooksecurefunc(region, "SetAlpha", function(self, alpha)
+                if alpha ~= 0 then self:SetAlpha(0) end
+            end)
+        end
+    end
 end
 
 function BBF.StopMiniFrameBars(frame)

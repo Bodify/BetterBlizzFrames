@@ -221,16 +221,17 @@ local function HookPartyName(fontString)
         if type(rel) == "number" then
             rel, rp, px, py = self:GetParent(), p, rel, rp
         end
+        if issecretvalue(px) or issecretvalue(py) then return end
         StorePartyBase(self, p, rel or self:GetParent(), rp or p, px or 0, py or 0)
         ApplyPartyName(self)
     end)
     hooksecurefunc(fontString, "SetWidth", function(self, w)
-        if self.bbfPartyApplying or self.bbfNameBoxPlacing then return end
+        if self.bbfPartyApplying or self.bbfNameBoxPlacing or issecretvalue(w) then return end
         self.bbfPartyBaseWidth = w
         ApplyPartyName(self)
     end)
     hooksecurefunc(fontString, "SetHeight", function(self, h)
-        if self.bbfPartyApplying or self.bbfNameBoxPlacing or not h or h <= 0 then return end
+        if self.bbfPartyApplying or self.bbfNameBoxPlacing or issecretvalue(h) or not h or h <= 0 then return end
         self.bbfPartyBaseHeight = h
         ApplyPartyName(self)
     end)

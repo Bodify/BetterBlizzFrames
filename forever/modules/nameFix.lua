@@ -196,6 +196,21 @@ local layoutKeys = {
 }
 local layoutFrames = { PlayerFrame, TargetFrame, FocusFrame, TargetFrameToT, FocusFrameToT, PetFrame }
 
+local NAME_SIZE = {
+    [PlayerFrame] = { 96, 12 },
+    [TargetFrame] = { 90, 12 },
+    [FocusFrame] = { 90, 12 },
+    [TargetFrameToT] = { 68, 10 },
+    [FocusFrameToT] = { 68, 10 },
+    [PetFrame] = { 68, 10 },
+}
+local PARTY_NAME_SIZE = { 57, 10 }
+
+local function NameSize(frame)
+    local size = NAME_SIZE[frame] or PARTY_NAME_SIZE
+    return size[1], size[2]
+end
+
 local NO_PORTRAIT_NAME_SHRINK = -33
 
 local function NoPortraitMainFrame(frame)
@@ -294,10 +309,11 @@ local function CenterXSpec(healthBar, ToT, pet, unit)
 end
 
 local function MiniNameSpec(frame, db)
-    if frame == PlayerFrame and db.useMiniPlayerFrame then
+    if not BBF.IsMiniFrame(frame) then return end
+    if frame == PlayerFrame then
         return "LEFT", PlayerFrame.PlayerFrameContainer, "TOP", -16, -26, "LEFT", 180
     end
-    if (frame == TargetFrame and db.useMiniTargetFrame) or (frame == FocusFrame and db.useMiniFocusFrame) then
+    if frame == TargetFrame or frame == FocusFrame then
         return "RIGHT", frame.TargetFrameContainer.Portrait, "LEFT", -9, 10, "RIGHT", 180
     end
 end
@@ -679,10 +695,7 @@ local function UpdatePartyNameAlign()
         local frame = PartyFrame["MemberFrame" .. i]
         local fontString = frame and frame.bbfName
         if fontString and frame.PartyMemberOverlay and not frame.bbfBigParty and not BBF.HasNoPortrait("party") then
-            local width = GetNameWidth(frame)
-            if width then
-                fontString:SetWidth(width)
-            end
+            fontString:SetWidth(GetNameWidth(frame))
             local justify = "CENTER"
             if fontString:GetJustifyH() ~= justify then
                 fontString:SetJustifyH(justify)
@@ -1103,7 +1116,6 @@ local function PartyFrameNameChange(frame)
     end
 
     local _, fontSize = frame.bbfName:GetFont()
-    local baseWidth = frame.Name:GetWidth()
     local extraWidth = 0
     if fontSize and fontSize > 10 then
         extraWidth = math.floor((fontSize - 10) / 2) * 15
@@ -1111,10 +1123,8 @@ local function PartyFrameNameChange(frame)
 
     if BetterBlizzFramesDB.classicFrames and frame.bbfPartyNameWidth then
         frame.bbfName:SetWidth(frame.bbfPartyNameWidth + extraWidth)
-    elseif issecretvalue(baseWidth) then -- TODO: figure out a better way to handle this, all of it
-        frame.bbfName:SetWidth(57 + extraWidth)
     else
-        frame.bbfName:SetWidth(baseWidth + extraWidth)
+        frame.bbfName:SetWidth(frame.bbfNameBaseWidth + extraWidth)
     end
 
     if classColorPartyNames or customColorPartyNames then
@@ -1242,10 +1252,10 @@ local function InitializeFontString(frame)
     frame.bbfName:SetTextColor(name:GetTextColor())
     frame.bbfName:SetShadowColor(name:GetShadowColor())
     frame.bbfName:SetShadowOffset(name:GetShadowOffset())
-    local nameWidth, nameHeight = name:GetWidth(), name:GetHeight()
-    frame.bbfNameBaseWidth = not issecretvalue(nameWidth) and nameWidth or nil
-    frame.bbfNameBaseHeight = not issecretvalue(nameHeight) and nameHeight or nil
-    frame.bbfName:SetWidth(GetNameWidth(frame) or nameWidth)
+    local nameWidth, nameHeight = NameSize(frame)
+    frame.bbfNameBaseWidth = nameWidth
+    frame.bbfNameBaseHeight = nameHeight
+    frame.bbfName:SetWidth(GetNameWidth(frame))
     frame.bbfName:SetHeight(nameHeight)
     frame.bbfName:SetWordWrap(false)
 
@@ -1274,7 +1284,7 @@ local function InitializeFontString(frame)
         elseif frame.PartyMemberOverlay and not frame.bbfBigParty then
             frame.bbfName:SetJustifyH("CENTER")
         end
-        frame.bbfName:SetWidth(GetNameWidth(frame) or nameWidth)
+        frame.bbfName:SetWidth(GetNameWidth(frame))
         frame.bbfName:SetHeight(nameHeight)
     end)
 
@@ -2050,8 +2060,11 @@ local function UpdateNamePositionForClassic()
             frame.bbfName:SetJustifyV(name:GetJustifyV())
             frame.bbfName:SetShadowColor(name:GetShadowColor())
             frame.bbfName:SetShadowOffset(name:GetShadowOffset())
-            frame.bbfName:SetWidth(name:GetWidth())
-            frame.bbfName:SetHeight(name:GetHeight())
+            local width, height = name:GetWidth(), name:GetHeight()
+            if not issecretvalue(width) and not issecretvalue(height) then
+                frame.bbfName:SetWidth(width)
+                frame.bbfName:SetHeight(height)
+            end
             frame.bbfName:SetWordWrap(false)
 
             -- Copy position

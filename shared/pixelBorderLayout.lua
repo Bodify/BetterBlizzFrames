@@ -431,6 +431,7 @@ function BBF.ApplyPixelBorderLayout(frame)
     if frame == PlayerFrame and BBF.ApplyPixelBorderAltBar then
         BBF.ApplyPixelBorderAltBar()
     end
+    BBF.HideMiniFrameBarArt(frame)
 end
 
 function BBF.PixelBorderBoxes(frame)

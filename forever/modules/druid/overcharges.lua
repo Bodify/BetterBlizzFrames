@@ -482,7 +482,7 @@ function BBF.CreateAltManaBar()
     end
     if BBF.HasNoPortrait("player") and (BetterBlizzFramesDB.hideUnitFramePlayerMana or BetterBlizzFramesDB.hideUnitFramePlayerSecondResource) then return end
     local db = BetterBlizzFramesDB
-    if db.useMiniPlayerFrame then return end
+    if BBF.IsMiniFrame(PlayerFrame) then return end
     local cf = db.classicFrames
     local noPortrait = BBF.HasNoPortrait("player")
 

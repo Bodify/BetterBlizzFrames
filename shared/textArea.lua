@@ -223,8 +223,7 @@ BBF.TextAreaManaHidden = ManaHidden
 local HIDE_MANA = { Target = "hideUnitFrameTargetMana", Focus = "hideUnitFrameFocusMana" }
 
 local function MiniFrame(unit)
-    local db = BetterBlizzFramesDB
-    return (unit == "player" and db.useMiniPlayerFrame) or (unit == "target" and db.useMiniTargetFrame) or (unit == "focus" and db.useMiniFocusFrame)
+    return BBF.IsMiniFrame((unit == "player" and PlayerFrame) or (unit == "target" and TargetFrame) or (unit == "focus" and FocusFrame))
 end
 
 local CLIENT = BBF.isForever and "forever" or "retail"

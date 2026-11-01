@@ -1041,6 +1041,7 @@ end
 
 function BBF.UpdateNoPortraitText(frame, frameType)
     local db = BetterBlizzFramesDB
+    BBF.HideMiniFrameBarArt(frame)
     if frameType == "pet" then
         if not BBF.HasNoPortrait("pet") then return end
     elseif frameType ~= "party" then
