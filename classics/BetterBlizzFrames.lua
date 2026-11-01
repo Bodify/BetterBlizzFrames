@@ -2926,6 +2926,7 @@ local function TurnTestModesOff()
 end
 
 local function executeCustomCode()
+    if BetterBlizzFramesDB and BetterBlizzFramesDB.customCode == defaultSettings.customCode then return end
     if BetterBlizzFramesDB and BetterBlizzFramesDB.customCode then
         local function fontMissing(path)
             if not BBF.testFont then

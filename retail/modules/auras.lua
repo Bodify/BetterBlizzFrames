@@ -153,6 +153,7 @@ local H = {}
 
 H.offensivePurges = {
     { spell = 370,    types = { "Magic" } },
+    { spell = 378773, types = { "Magic" } },
     { spell = 528,    types = { "Magic" } },
     { spell = 30449,  types = { "Magic" } },
     { spell = 278326, types = { "Magic" } },

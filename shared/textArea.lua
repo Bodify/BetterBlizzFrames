@@ -176,43 +176,57 @@ local function FrameInfo(frame)
     if frame.PartyMemberOverlay then return "party", "party", "Party" end
 end
 
-local function Bars(frame)
+local function Texts(frame)
     if frame == PlayerFrame then
         local manaBar = PlayerFrame_GetManaBar()
         local container = PlayerFrame_GetHealthBarContainer()
-        return (BBF.HealthBar and BBF.HealthBar(frame)) or container.HealthBar or container, manaBar,
-            { LEFT = container.LeftText, CENTER = container.HealthBarText, RIGHT = container.RightText },
+        return { LEFT = container.LeftText, CENTER = container.HealthBarText, RIGHT = container.RightText },
             { LEFT = manaBar.LeftText, CENTER = manaBar.ManaBarText, RIGHT = manaBar.RightText }
     end
     if frame == TargetFrame or frame == FocusFrame then
         local main = frame.TargetFrameContent.TargetFrameContentMain
         local container, manaBar = main.HealthBarsContainer, main.ManaBar
-        return BBF.HealthBar(frame), manaBar,
-            { LEFT = container.LeftText, CENTER = container.HealthBarText, RIGHT = container.RightText, DEAD = container.DeadText, UNCONSCIOUS = container.UnconsciousText },
+        return { LEFT = container.LeftText, CENTER = container.HealthBarText, RIGHT = container.RightText, DEAD = container.DeadText, UNCONSCIOUS = container.UnconsciousText },
             { LEFT = manaBar.LeftText, CENTER = manaBar.ManaBarText, RIGHT = manaBar.RightText }
     end
     if frame == PetFrame then
-        return PetFrameHealthBar, PetFrameManaBar,
-            { LEFT = PetFrameHealthBarTextLeft, CENTER = PetFrameHealthBarText, RIGHT = PetFrameHealthBarTextRight },
+        return { LEFT = PetFrameHealthBarTextLeft, CENTER = PetFrameHealthBarText, RIGHT = PetFrameHealthBarTextRight },
             { LEFT = PetFrameManaBarTextLeft, CENTER = PetFrameManaBarText, RIGHT = PetFrameManaBarTextRight }
     end
     if frame.PartyMemberOverlay then
         local container, manaBar = frame.HealthBarContainer, frame.ManaBar
-        return container.HealthBar or container, manaBar,
-            { LEFT = container.LeftText, CENTER = container.CenterText, RIGHT = container.RightText },
+        return { LEFT = container.LeftText, CENTER = container.CenterText, RIGHT = container.RightText },
             { LEFT = manaBar.LeftText, CENTER = manaBar.CenterText, RIGHT = manaBar.RightText }
     end
     if TotUnit(frame) then
         local bar = frame.HealthBar
-        return bar, frame.ManaBar, { DEAD = bar and bar.DeadText, UNCONSCIOUS = bar and bar.UnconsciousText }, {}
+        return { DEAD = bar and bar.DeadText, UNCONSCIOUS = bar and bar.UnconsciousText }, {}
     end
-    return frame.HealthBar, frame.ManaBar, {}, {}
+    return {}, {}
+end
+
+local function Bars(frame)
+    local healthTexts, manaTexts = Texts(frame)
+    if frame == PlayerFrame then
+        local container = PlayerFrame_GetHealthBarContainer()
+        return (BBF.HealthBar and BBF.HealthBar(frame)) or container.HealthBar or container, PlayerFrame_GetManaBar(), healthTexts, manaTexts
+    end
+    if frame == TargetFrame or frame == FocusFrame then
+        return BBF.HealthBar(frame), frame.TargetFrameContent.TargetFrameContentMain.ManaBar, healthTexts, manaTexts
+    end
+    if frame == PetFrame then
+        return PetFrameHealthBar, PetFrameManaBar, healthTexts, manaTexts
+    end
+    if frame.PartyMemberOverlay then
+        local container = frame.HealthBarContainer
+        return container.HealthBar or container, frame.ManaBar, healthTexts, manaTexts
+    end
+    return frame.HealthBar, frame.ManaBar, healthTexts, manaTexts
 end
 
 function BBF.TextAreaTexts(frame)
     if not FrameInfo(frame) then return {}, {} end
-    local _, _, healthTexts, manaTexts = Bars(frame)
-    return healthTexts, manaTexts
+    return Texts(frame)
 end
 
 local function ManaHidden(manaBar)
@@ -590,6 +604,35 @@ local function WatchBar(bar, frame)
     bar:HookScript("OnSizeChanged", QueueRelayout)
 end
 
+local watchCustomCode = false
+local customCodeCanRunLater = false
+
+local function CalledFromCustomCode()
+    if not watchCustomCode then return false end
+    for line in debugstack(2, 6, 0):gmatch("[^\n]+") do
+        if not line:find("[C]", 1, true) and not line:find("textArea.lua", 1, true) then
+            return line:find("BBF Custom Code", 1, true) ~= nil
+        end
+    end
+    return false
+end
+
+local function ClaimText(text, ...)
+    local points = text:GetNumPoints() > 1 and text.bbfCustomPoints or {}
+    points[#points + 1] = { n = select("#", ...), ... }
+    text.bbfCustomPoints = points
+end
+
+local function RestoreCustomPoints(text)
+    local placing = text.bbfTextAreaPlacing
+    text.bbfTextAreaPlacing = true
+    text:ClearAllPoints()
+    for _, args in ipairs(text.bbfCustomPoints) do
+        text:SetPoint(unpack(args, 1, args.n))
+    end
+    text.bbfTextAreaPlacing = placing
+end
+
 local function HookText(text, frame)
     if not text then return end
     if textOwner[text] then
@@ -597,8 +640,16 @@ local function HookText(text, frame)
         return
     end
     textOwner[text] = frame
-    hooksecurefunc(text, "SetPoint", function(self)
+    hooksecurefunc(text, "SetPoint", function(self, ...)
         if self.bbfTextAreaPlacing then return end
+        if CalledFromCustomCode() then
+            ClaimText(self, ...)
+            return
+        end
+        if self.bbfCustomPoints then
+            RestoreCustomPoints(self)
+            return
+        end
         local owner = textOwner[self]
         if owner and BBF.TextAreaActive(owner) then
             BBF.ApplyTextArea(owner)
@@ -612,7 +663,7 @@ function BBF.StatusTextPoint(point)
 end
 
 local function PlaceText(text, box, point, x, y)
-    if not text then return end
+    if not text or text.bbfCustomPoints then return end
     text.bbfTextAreaPlacing = true
     text:ClearAllPoints()
     text:SetPoint(point, box, point, x, y)
@@ -842,11 +893,14 @@ local function ApplyTextArea(frame)
         if text then
             local detached = text:GetParent() ~= manaBar
             if area.manaHidden and detached then
-                text.bbfTextAreaHidden = true
+                if not text.bbfTextAreaHidden then
+                    text.bbfTextAreaHidden = true
+                    text.bbfTextAreaAlpha = text:GetAlpha()
+                end
                 text:SetAlpha(0)
             elseif text.bbfTextAreaHidden then
                 text.bbfTextAreaHidden = nil
-                text:SetAlpha(1)
+                text:SetAlpha(text.bbfTextAreaAlpha)
             end
         end
     end
@@ -1083,14 +1137,37 @@ function BBF.ApplyNameArea(frame)
     return result
 end
 
-function BBF.RefreshTextAreas()
+local function TextAreaFrames()
     local frames = { PlayerFrame, TargetFrame, FocusFrame, PetFrame, TargetFrame and TargetFrame.totFrame, FocusFrame and FocusFrame.totFrame }
     if PartyFrame then
         for i = 1, 4 do
             frames[#frames + 1] = PartyFrame["MemberFrame" .. i]
         end
     end
-    for _, frame in pairs(frames) do
+    return frames
+end
+
+function BBF.FinishCustomCodeTexts()
+    watchCustomCode = customCodeCanRunLater
+end
+
+function BBF.WatchCustomCodeTexts(code)
+    if not code:find("SetPoint", 1, true) then return end
+    watchCustomCode = true
+    customCodeCanRunLater = code:find("function", 1, true) ~= nil
+    for _, frame in pairs(TextAreaFrames()) do
+        if frame then
+            for _, texts in ipairs({ Texts(frame) }) do
+                for _, text in pairs(texts) do
+                    HookText(text, frame)
+                end
+            end
+        end
+    end
+end
+
+function BBF.RefreshTextAreas()
+    for _, frame in pairs(TextAreaFrames()) do
         if frame then
             BBF.ApplyTextArea(frame)
             BBF.ApplyNameArea(frame)

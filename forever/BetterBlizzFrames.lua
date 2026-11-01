@@ -5628,6 +5628,7 @@ local function TurnTestModesOff()
 end
 
 local function executeCustomCode()
+    if BetterBlizzFramesDB and BetterBlizzFramesDB.customCode == defaultSettings.customCode then return end
     if BetterBlizzFramesDB and BetterBlizzFramesDB.customCode then
         local function fontMissing(path)
             if not BBF.testFont then
@@ -5680,12 +5681,14 @@ local function executeCustomCode()
                 return "[[" .. fallback .. "]]"
             end
         end)
+        BBF.WatchCustomCodeTexts(code)
         local func, errorMsg = loadstring(code, "BBF Custom Code")
         if func then
             xpcall(func, geterrorhandler())
         else
             BBF.Print(string.format(L["Print_Error_In_Custom_Code"], errorMsg))
         end
+        BBF.FinishCustomCodeTexts()
     end
 end
 

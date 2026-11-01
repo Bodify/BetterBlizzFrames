@@ -4,9 +4,12 @@
 - Castbars: Hide castbar finish effects. Remove the glows and stuff after a cast is completed on Player Castbar.
 ### Tweak
 - Tweak lvl position a bit for classic frames n stuff.
+- Retail: revert new role icons to how they looked before patch 2.2.0
+- Allow custom code to move statusbar texts again.
 ### Bugfix
 - Fix a secret error in new role icons etting
 - Fix No Portrait Pixel Border healthbar being weird in vehicle.
+- Purgeable enemy buff filter: Fix Shaman's Greater Purge not counting as a purge.
 
 # BetterBlizzFrames 2.2.0c
 ## Retail & Forever

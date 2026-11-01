@@ -1408,18 +1408,12 @@ function BBF.SurrenderNotLeaveArena()
 end
 
 local modernRoleTextures = {
-    TANK = "GO-icon-role-Header-Tank",
-    HEALER = "GO-icon-role-Header-Healer",
-    DAMAGER = "GO-icon-role-Header-DPS",
+    TANK = "UI-LFG-RoleIcon-Tank-Micro-Raid",
+    HEALER = "UI-LFG-RoleIcon-Healer-Micro-Raid",
+    DAMAGER = "UI-LFG-RoleIcon-DPS-Micro-Raid",
 }
 
 local raidRoleProxies = setmetatable({}, { __mode = "k" })
-
-local function PlaceModernRaidRoleName(frame, layoutType)
-    local name = frame.name
-    if not name or layoutType ~= Enum.RaidAuraOrganizationType.Legacy then return end
-    name:SetPoint("TOPLEFT", frame.roleIcon, "TOPRIGHT", -1, -5)
-end
 
 local function UpdateModernRaidRoleIcon(frame)
     if issecretvalue(frame) or not frame.roleIcon or not frame.unit then return end
@@ -1435,11 +1429,10 @@ local function UpdateModernRaidRoleIcon(frame)
     proxy.roleIcon = frame.roleIcon
     proxy.unit = frame.unit
     frame.roleIcon:SetTexCoord(0, 1, 0, 1)
-    frame.roleIcon:SetSize(20, 20)
+    frame.roleIcon:SetSize(10, 10)
     UnitFrameUtil.UpdateUnitFrameRoleIcon(proxy)
     frame.roleIcon:ClearAllPoints()
-    frame.roleIcon:SetPoint("CENTER", frame.healthBar, "TOPLEFT", 8.5, -7.5)
-    PlaceModernRaidRoleName(frame, EditModeManagerFrame:GetRaidFrameAuraOrganizationType(frame.groupType))
+    frame.roleIcon:SetPoint("TOPLEFT", frame.healthBar, "TOPLEFT", 2, -2)
 end
 
 local partyRoleOptions = { displayRoleIcon = true, textureMap = modernRoleTextures }
@@ -1452,11 +1445,11 @@ local function PlacePartyModernRoleIcon(frame)
     local db = BetterBlizzFramesDB
     icon:ClearAllPoints()
     if db.classicFrames or BBF.HasNoPortrait("party") then
-        local size = math.max(roleIcon:GetHeight() or 12, 9) + 2
+        local size = math.max(roleIcon:GetHeight() or 12, 9)
         icon:SetSize(size, size)
         icon:SetPoint("CENTER", roleIcon, "CENTER")
     else
-        icon:SetSize(22, 22)
+        icon:SetSize(12, 12)
         icon:SetPoint("CENTER", frame.Portrait, "LEFT", -1, 0.5)
     end
 end
@@ -1485,7 +1478,7 @@ function BBF.UpdatePartyRoleIcons()
         if overlay and overlay.RoleIcon and frame.UpdateAssignedRoles then
             if not frame.bbfModernRole then
                 local icon = overlay:CreateTexture(nil, "OVERLAY")
-                icon:SetSize(22, 22)
+                icon:SetSize(12, 12)
                 icon:Hide()
                 frame.bbfModernRole = { roleIcon = icon, optionTable = partyRoleOptions }
                 hooksecurefunc(frame, "UpdateAssignedRoles", UpdatePartyModernRoleIcon)
@@ -1506,10 +1499,6 @@ function BBF.ModernRoleIcons()
     end
     BBF.modernRoleIconsHooked = true
     hooksecurefunc("CompactUnitFrame_UpdateRoleIcon", UpdateModernRaidRoleIcon)
-    hooksecurefunc("CompactUnitFrameLayoutTemplates_LayoutFrameElement", function(frame, _, layoutType, key)
-        if key ~= "Name" or issecretvalue(frame) or not raidRoleProxies[frame] then return end
-        PlaceModernRaidRoleName(frame, layoutType)
-    end)
     BBF.UpdatePartyRoleIcons()
 end
 
@@ -5798,6 +5787,7 @@ local function TurnTestModesOff()
 end
 
 local function executeCustomCode()
+    if BetterBlizzFramesDB and BetterBlizzFramesDB.customCode == defaultSettings.customCode then return end
     if BetterBlizzFramesDB and BetterBlizzFramesDB.customCode then
         local function fontMissing(path)
             if not BBF.testFont then
@@ -5850,12 +5840,14 @@ local function executeCustomCode()
                 return "[[" .. fallback .. "]]"
             end
         end)
+        BBF.WatchCustomCodeTexts(code)
         local func, errorMsg = loadstring(code, "BBF Custom Code")
         if func then
             xpcall(func, geterrorhandler())
         else
             BBF.Print(string.format(L["Print_Error_In_Custom_Code"], errorMsg))
         end
+        BBF.FinishCustomCodeTexts()
     end
 end
 
