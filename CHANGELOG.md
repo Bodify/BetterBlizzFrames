@@ -1,3 +1,10 @@
+# BetterBlizzFrames 2.2.0c
+## Retail & Forever
+### Bugfix
+- Fix No Portrait + Mini-FocusFrame causing pixel borders and text to still be showing.
+- Fix a secret error (ty Wildu for report)
+- Fix role icons being too small with the new role icons setting.
+
 # BetterBlizzFrames 2.2.0
 ## Highlights
 - Bigger update with many changes, especially for Forever. Here are some highlights:
