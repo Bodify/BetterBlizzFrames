@@ -1,5 +1,15 @@
 # BetterBlizzFrames 2.2.0c
 ## Retail & Forever
+### New
+- Castbars: Hide castbar finish effects. Remove the glows and stuff after a cast is completed on Player Castbar.
+### Tweak
+- Tweak lvl position a bit for classic frames n stuff.
+### Bugfix
+- Fix a secret error in new role icons etting
+- Fix No Portrait Pixel Border healthbar being weird in vehicle.
+
+# BetterBlizzFrames 2.2.0c
+## Retail & Forever
 ### Bugfix
 - Fix No Portrait + Mini-FocusFrame causing pixel borders and text to still be showing.
 - Fix a secret error (ty Wildu for report)
