@@ -1089,7 +1089,7 @@ local function MakeClassicFrame(frame)
 
         local function AdjustBackground()
             frame.ClassicFrame.Background:SetPoint("TOPLEFT", hpContainer.HealthBar, "TOPLEFT", 0, BigPlayerHealthbar() and 0 or 20)
-            frame.ClassicFrame.Background:SetPoint("BOTTOMRIGHT", hpContainer, "BOTTOMRIGHT", BigPlayerHealthbar() and 0 or -3, BigPlayerHealthbarNoMana() and 0 or -10)
+            frame.ClassicFrame.Background:SetPoint("BOTTOMRIGHT", hpContainer, "BOTTOMRIGHT", BigPlayerHealthbar() and 0 or -3, BigPlayerHealthbarNoMana() and 0 or -12)
         end
 
 
