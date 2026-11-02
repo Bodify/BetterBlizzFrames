@@ -847,7 +847,7 @@ local function GetSpecID(unit)
 
     -- Iterate through tooltip lines to find the spec name
     for _, line in ipairs(tooltipData.lines) do
-        if line and line.type == Enum.TooltipDataLineType.None and line.leftText and line.leftText ~= "" then
+        if line and line.leftText and not issecretvalue(line.leftText) and line.leftText ~= "" then
             local specID = ALL_SPECS[line.leftText]
             if specID then
                 SpecCache[tooltipGUID] = specID -- Cache result
