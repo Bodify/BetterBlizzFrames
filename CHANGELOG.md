@@ -8,6 +8,7 @@
 - Allow custom code to move statusbar texts again.
 ### Bugfix
 - Fix a secret error in new role icons etting
+- Fix Hide XP/Honor bar not working properly
 - Fix No Portrait Pixel Border healthbar being weird in vehicle.
 - Purgeable enemy buff filter: Fix Shaman's Greater Purge not counting as a purge.
 
