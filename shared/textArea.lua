@@ -44,6 +44,7 @@ BBF.TextAreaLayouts = {
             { style = "classic", mode = "none", mana = "hidden", top = 1, bottom = -1, healthY = 0 },
             { style = "classic", left = 1, right = -2, top = 1, bottom = -1, healthY = -0.5, manaY = -0.5, textLeft = -0.5, textRight = -0.5,
                 own = { healthY = true, manaY = true } },
+            { client = "retail", style = "retail", mode = "none", minus = true, right = 0.5, bottom = 7, healthY = -0.5, textRight = 6, own = { healthY = true } },
             { client = "retail", style = "retail", mode = "none", mana = "shown", left = 1, right = -5, healthY = -1, manaY = 0, textRight = 7,
                 own = { healthY = true, manaY = true } },
             { client = "retail", style = "retail", mode = "xl", mana = "shown", left = 1, right = -1.5, textRight = 11 },
@@ -152,7 +153,7 @@ BBF.NameLayouts = {
         { style = "classic", mode = "none", y = 3.5 }, { style = "classic", y = 2 }, { style = "camelot", mode = "xl", mana = "hidden", y = 3 }, { style = "camelot", mode = "xl", y = 2 },
         { style = "camelot", mode = "reduced", y = 2 }, { y = 1 } },
     target = { { style = "classic", mode = "none", y = 3.5, own = true }, { style = "classic", mode = "big", mana = "hidden", inside = true, y = -13.5, own = true },
-        { style = "classic", mode = "big", mana = "hidden", y = 2, own = true }, { style = "classic", mode = "big", inside = false, y = 2.5, own = true }, { inside = true, y = -12 }, { client = "retail", style = "retail", mode = "xl", mana = "hidden", left = 23, right = 5, centerX = -14, width = -8, centerWidth = -14, y = 0.5, own = true }, { client = "retail", style = "retail", left = 23, right = 5, centerX = -14, width = -8, centerWidth = -14, y = 1, own = true },{ style = "retail", y = 2 }, { style = "camelot", mode = "none", mana = "hidden", y = -2, own = true },
+        { style = "classic", mode = "big", mana = "hidden", y = 2, own = true }, { style = "classic", mode = "big", inside = false, y = 2.5, own = true }, { inside = true, y = -12 }, { client = "retail", style = "retail", mode = "xl", mana = "hidden", left = 23, right = 5, centerX = -14, width = -8, centerWidth = -14, y = 0.5, own = true }, { client = "retail", style = "retail", mode = "none", minus = true, left = 24.5, right = -5, centerX = -14, width = -8, centerWidth = -14, y = 1, own = true }, { client = "retail", style = "retail", left = 23, right = 5, centerX = -14, width = -8, centerWidth = -14, y = 1, own = true },{ style = "retail", y = 2 }, { style = "camelot", mode = "none", mana = "hidden", y = -2, own = true },
         { style = "camelot", mode = "xl", mana = "hidden", y = 2, own = true },
         { style = "camelot", mode = "big", mana = "hidden", y = 1.5, own = true }, { y = 1 } },
     tot = { { classicToT = true, below = true, y = -4 }, { inside = true, y = -10 }, { style = "pixel", y = 1 }, { style = "retail", y = 2 },
@@ -313,7 +314,9 @@ function BBF.TextAreaSetup(frame)
     local mode = big and (xl and "xl" or "reduced") or "none"
     local _, manaBar = Bars(frame)
     local manaHidden = manaBar and ManaHidden(manaBar) or false
-    if manaHidden and key == "target" and (style == "camelot" or style == "classic") and not db[HIDE_MANA[bigKey]] then
+    local minus = CLIENT == "retail" and key == "target" and UnitClassification(unit) == "minus"
+    local keepsManaLayout = style == "camelot" or style == "classic" or (CLIENT == "retail" and style == "retail" and not minus)
+    if manaHidden and key == "target" and keepsManaLayout and not db[HIDE_MANA[bigKey]] then
         manaHidden = false
     end
     local inside = db.biggerHealthbarsNameInside and mode ~= "none"
@@ -324,6 +327,7 @@ function BBF.TextAreaSetup(frame)
         mode = mode,
         inside = inside,
         manaHidden = manaHidden,
+        minus = minus,
         classicToT = key == "tot" and db[unit .. "ToTNameUnder"] and not NoPortraitStyle(unit) and true or false,
     }
 end
@@ -338,6 +342,7 @@ local function Matches(rule, setup)
         return false
     end
     if rule.mana and (rule.mana == "hidden") ~= setup.manaHidden then return false end
+    if rule.minus and not setup.minus then return false end
     if rule.classicToT ~= nil and rule.classicToT ~= setup.classicToT then return false end
     if rule.inside ~= nil and rule.inside ~= setup.inside then return false end
     return true
@@ -507,6 +512,13 @@ local function WatchGrid()
     end)
 end
 
+local function RecheckMinus(frame)
+    local area = areas[frame]
+    if area and BBF.TextAreaActive(frame) and not area.minus ~= not BBF.TextAreaSetup(frame).minus then
+        BBF.ApplyTextArea(frame)
+    end
+end
+
 local function GetArea(frame)
     local area = areas[frame]
     if area then return area end
@@ -517,6 +529,9 @@ local function GetArea(frame)
     frame.bbfTextArea = area
     hooksecurefunc(frame, "SetPoint", QueueRealign)
     hooksecurefunc(frame, "SetScale", QueueRealign)
+    if CLIENT == "retail" and frame.CheckClassification then
+        hooksecurefunc(frame, "CheckClassification", RecheckMinus)
+    end
     WatchGrid()
     return area
 end
@@ -849,6 +864,8 @@ local function ApplyTextArea(frame)
     WatchBar(healthBar, frame)
     WatchBar(manaBar, frame)
     area.manaHidden = ManaHidden(manaBar)
+    local minusChanged = not area.minus ~= not setup.minus
+    area.minus = setup.minus
     area:SetFrameLevel(math.max(healthBar:GetFrameLevel(), manaBar:GetFrameLevel()) + 5)
     area:ClearAllPoints()
     area.Health:ClearAllPoints()
@@ -926,6 +943,9 @@ local function ApplyTextArea(frame)
     end
     PlaceGroupIcons(frame, area, setup, v)
     PlaceLevel(frame)
+    if minusChanged then
+        BBF.ApplyNameArea(frame)
+    end
     return true
 end
 
