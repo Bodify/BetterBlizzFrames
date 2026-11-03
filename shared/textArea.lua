@@ -259,6 +259,7 @@ end
 local CLIENT = BBF.isForever and "forever" or "retail"
 local CLASSIC_EXTRA_TEXT_RIGHT = 2
 local CLASSIC_MANA_GROW = { bottom = 2, retailTargetRight = -4 }
+local NORMAL_HEALTH_CORNER = { x = 149, y = -10 }
 
 local function RetailArt(unit)
     if BBF.isForever then return BBF.RetailTexturesOn and BBF.RetailTexturesOn(unit) or false end
@@ -314,8 +315,9 @@ function BBF.TextAreaSetup(frame)
     local mode = big and (xl and "xl" or "reduced") or "none"
     local _, manaBar = Bars(frame)
     local manaHidden = manaBar and ManaHidden(manaBar) or false
-    local minus = CLIENT == "retail" and key == "target" and UnitClassification(unit) == "minus"
-    local keepsManaLayout = style == "camelot" or style == "classic" or (CLIENT == "retail" and style == "retail" and not minus)
+    local minus = key == "target" and UnitClassification(unit) == "minus"
+    local keepsManaLayout = style == "camelot" or style == "classic"
+        or (style == "retail" and ((minus and mode ~= "none") or (CLIENT == "retail" and not minus)))
     if manaHidden and key == "target" and keepsManaLayout and not db[HIDE_MANA[bigKey]] then
         manaHidden = false
     end
@@ -545,6 +547,20 @@ local function MeasureBars(frame, healthBar, manaBar)
     return height or 0, healthBottom and manaTop and (healthBottom - manaTop) or 1
 end
 
+local function ManaEdge(frame, setup, manaBar)
+    if CLIENT ~= "retail" or not setup.minus or setup.style ~= "retail" or setup.mode == "none" or setup.manaHidden then return manaBar end
+    local spot = frame.bbfMinusManaSpot
+    if not spot then
+        spot = CreateFrame("Frame", nil, frame)
+        frame.bbfMinusManaSpot = spot
+    end
+    local _, _, _, x, y = manaBar:GetPoint(1)
+    spot:ClearAllPoints()
+    spot:SetPoint("TOPRIGHT", frame.TargetFrameContainer, "LEFT", NORMAL_HEALTH_CORNER.x + x, NORMAL_HEALTH_CORNER.y + y)
+    spot:SetSize(manaBar:GetSize())
+    return spot
+end
+
 local function BoxGeometry(frame, v, healthBar, manaBar)
     local healthHeight, gap = v.healthHeight, v.gap
     if not healthHeight or not gap then
@@ -606,10 +622,10 @@ local function Relayout(frame)
     relayoutPending[frame] = nil
     local area = areas[frame]
     if not area or not area:IsShown() or not BBF.TextAreaActive(frame) then return end
-    local v = BBF.TextAreaResolve(frame)
+    local v, setup = BBF.TextAreaResolve(frame)
     local healthBar, manaBar = Bars(frame)
     if not v or not healthBar or not manaBar then return end
-    local healthHeight, gap = BoxGeometry(frame, v, healthBar, manaBar)
+    local healthHeight, gap = BoxGeometry(frame, v, healthBar, ManaEdge(frame, setup, manaBar))
     local manaChanged = ManaHidden(manaBar) ~= area.manaHidden
     if healthHeight ~= area.healthHeight or gap ~= area.gap or manaChanged then
         BBF.ApplyTextArea(frame)
@@ -891,9 +907,10 @@ local function ApplyTextArea(frame)
         area.Health:SetAllPoints(area)
         area.Mana:SetAllPoints(area)
     else
+        local manaEdge = ManaEdge(frame, setup, manaBar)
         SnapPoint(area, "TOPLEFT", healthBar, "TOPLEFT", v.left, v.top)
-        SnapPoint(area, "BOTTOMRIGHT", manaBar, "BOTTOMRIGHT", v.right, v.bottom)
-        local healthHeight, gap = BoxGeometry(frame, v, healthBar, manaBar)
+        SnapPoint(area, "BOTTOMRIGHT", manaEdge, "BOTTOMRIGHT", v.right, v.bottom)
+        local healthHeight, gap = BoxGeometry(frame, v, healthBar, manaEdge)
         area.healthHeight, area.gap = healthHeight, gap
         if healthHeight then
             healthHeight, gap = SnapLength(area, healthHeight), SnapLength(area, gap)
@@ -904,7 +921,7 @@ local function ApplyTextArea(frame)
         else
             area.Health:SetPoint("TOPLEFT", area, "TOPLEFT")
             area.Health:SetPoint("BOTTOMRIGHT", healthBar, "BOTTOMRIGHT", v.right, 0)
-            area.Mana:SetPoint("TOPLEFT", manaBar, "TOPLEFT", v.left, 0)
+            area.Mana:SetPoint("TOPLEFT", manaEdge, "TOPLEFT", v.left, 0)
         end
         area.Mana:SetPoint("BOTTOMRIGHT", area, "BOTTOMRIGHT")
     end
