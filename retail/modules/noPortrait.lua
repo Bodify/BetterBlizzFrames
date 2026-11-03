@@ -160,15 +160,28 @@ local function ApplyTotArtTexture(tex, hideMana, bigMode)
     tex.bbfChangingTex = nil
 end
 
-local function SetGlowArt(glow, on, file, atlas)
+local function SetGlowArt(glow, on, file, atlas, art)
     if not glow then return end
     if on then
         glow:SetTexture(file)
         glow:SetTexCoord(0, 1, 0, 1)
         glow.bbfBigGlow = true
+        if art then
+            glow.bbfGlowPoint = glow.bbfGlowPoint or { glow:GetPoint(1) }
+            glow:ClearAllPoints()
+            glow:SetPoint("TOPLEFT", art, "TOPLEFT")
+            glow:SetSize(120, 49)
+            glow:SetDrawLayer((glow:GetDrawLayer()), 1)
+        end
     elseif glow.bbfBigGlow then
         glow.bbfBigGlow = nil
         glow:SetAtlas(atlas, TextureKitConstants.UseAtlasSize)
+        if glow.bbfGlowPoint then
+            glow:ClearAllPoints()
+            glow:SetPoint(unpack(glow.bbfGlowPoint))
+            glow:SetDrawLayer((glow:GetDrawLayer()), 0)
+            glow.bbfGlowPoint = nil
+        end
     end
 end
 
@@ -188,7 +201,7 @@ function BBF.UpdatePetFrameTexture()
     ApplyTotArtTexture(PetFrameTexture, hideMana, bigMode)
     local custom = (bigMode or hideMana) and true or false
     SetGlowArt(PetFrameFlash, custom, RETAIL_TEX .. "ToT-InCombat" .. BigArtSuffix(bigMode, hideMana) .. ".png",
-        "UI-HUD-UnitFrame-TargetofTarget-PortraitOn-InCombat")
+        "UI-HUD-UnitFrame-TargetofTarget-PortraitOn-InCombat", PetFrameTexture)
     SetGlowArt(PetAttackModeTexture, bigMode and true or false, RETAIL_TEX .. "ToT-Status" .. BigArtSuffix(bigMode) .. ".png",
         "UI-HUD-UnitFrame-TargetofTarget-PortraitOn-Status")
     if not PetFrameTexture.bbfHookedTex then
@@ -468,7 +481,7 @@ local function UpdateOnePartyReduced(frame)
     end
     frame.Texture:SetTexture(RETAIL_TEX .. "ToT" .. ShadowSuffix() .. suffix .. ".png")
     frame.Texture:SetTexCoord(0, 1, 0, 1)
-    SetGlowArt(frame.Flash, true, RETAIL_TEX .. "ToT-InCombat" .. suffix .. ".png", "UI-HUD-UnitFrame-Party-PortraitOn-InCombat")
+    SetGlowArt(frame.Flash, true, RETAIL_TEX .. "ToT-InCombat" .. suffix .. ".png", "UI-HUD-UnitFrame-Party-PortraitOn-InCombat", frame.Texture)
     SetGlowArt(overlay and overlay.Status, mode and true or false, RETAIL_TEX .. "ToT-Status" .. BigArtSuffix(mode) .. ".png",
         "UI-HUD-UnitFrame-Party-PortraitOn-Status")
     SetBarManaAlpha(frame.ManaBar, hideMana and 0 or 1)

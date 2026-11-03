@@ -71,9 +71,13 @@ BBF.TextAreaLayouts = {
             { style = "noPortrait", right = -5.5, top = -0.5, bottom = 0.5, textCenter = 1 },
             { style = "retail", classicToT = true, mana = "hidden", left = 1.5, right = 0 },
             { style = "retail", classicToT = true, left = 1, right = 0, bottom = 7 },
+            { client = "retail", style = "retail", mode = "xl", left = 13, right = 0 },
+            { client = "retail", style = "retail", mode = "reduced", mana = "hidden", left = 8, right = 0 },
+            { client = "retail", style = "retail", mana = "hidden", left = 4.5, right = 0 },
+            { client = "retail", style = "retail", mode = "reduced", left = 2, right = 0, healthY = 0.5 },
             { style = "retail", mode = "xl", left = 12, right = 0 },
             { style = "retail", mode = "reduced", mana = "hidden", left = 7, right = 0 },
-            { style = "retail", mana = "hidden", left = 3, right = 0 },
+            { style = "retail", mana = "hidden", left = 3.5, right = 0 },
             { style = "retail", mode = "reduced", left = 1, right = 0, healthY = 0.5 },
             { style = "retail", left = 1, right = 0 },
             { style = "classic", mode = "big", top = -0.5 },
@@ -92,9 +96,13 @@ BBF.TextAreaLayouts = {
             { style = "pixel" },
             { style = "noPortrait", mode = "big", right = -2.5, top = -1 },
             { style = "noPortrait", right = -3.5, top = -1 },
+            { client = "retail", style = "retail", mode = "xl", left = 13.5, right = -0.5, healthY = -0.5 },
+            { client = "retail", style = "retail", mode = "reduced", mana = "hidden", left = 8, right = -1 },
+            { client = "retail", style = "retail", mana = "hidden", left = 3.5, right = -1 },
+            { client = "retail", style = "retail", mode = "reduced", left = 2, right = 0 },
             { style = "retail", mode = "xl", left = 12.5, right = -0.5, healthY = -0.5 },
             { style = "retail", mode = "reduced", mana = "hidden", left = 7, right = -1 },
-            { style = "retail", mana = "hidden", left = 2, right = -1 },
+            { style = "retail", mana = "hidden", left = 2.5, right = -1 },
             { style = "retail", mode = "reduced", left = 1, right = 0 },
             { style = "retail", left = 1, right = 0, bottom = -1, healthY = -0.5, textLeft = -1 },
             { style = "classic", mode = "big", mana = "hidden", top = -0.5, bottom = -1.5, healthY = 0 },
@@ -115,10 +123,15 @@ BBF.TextAreaLayouts = {
             { client = "retail", style = "noPortrait", mode = "big", mana = "hidden", left = -0.5, right = 1, bottom = -0.5, textLeft = 1.5 },
             { style = "noPortrait", mode = "big", left = -0.5, right = 1, bottom = -0.5 },
             { style = "noPortrait", right = -4.5, bottom = 1.5 },
+            { client = "retail", style = "retail", mode = "xl", mana = "hidden", left = 13.5, right = 0, textRight = 1.5 },
+            { client = "retail", style = "retail", mode = "xl", left = 13.5, right = 0 },
+            { client = "retail", style = "retail", mode = "reduced", mana = "hidden", left = 8.5, right = -1 },
+            { client = "retail", style = "retail", mana = "hidden", left = 4, right = -1 },
+            { client = "retail", style = "retail", mode = "reduced", left = 1, right = 1, healthY = 0, textLeft = 1 },
             { style = "retail", mode = "xl", mana = "hidden", left = 12.5, right = 0, textRight = 1.5 },
             { style = "retail", mode = "xl", left = 12.5, right = 0 },
             { style = "retail", mode = "reduced", mana = "hidden", left = 7.5, right = -1 },
-            { style = "retail", mana = "hidden", left = 2.5, right = -1 },
+            { style = "retail", mana = "hidden", left = 3, right = -1 },
             { style = "retail", mode = "reduced", left = 0, right = 1, healthY = 0, textLeft = 1 },
             { style = "retail", left = 0, right = 1, healthY = 0 },
             { style = "classic", mode = "big", mana = "hidden", bottom = 0.5 },
@@ -135,7 +148,7 @@ BBF.TextAreaLayouts = {
 BBF.TextAreaOverrides = {}
 
 BBF.NameLayouts = {
-    player = { { style = "classic", inside = true, y = -13 }, { inside = true, y = -12 }, { client = "retail", style = "retail", mode = "xl", mana = "hidden", y = 1 }, { style = "retail", y = 1.5 },
+    player = { { style = "classic", inside = true, y = -13 }, { inside = true, y = -12 }, { client = "retail", symmetric = true, mode = "xl", mana = "hidden", y = 0.5 }, { client = "retail", symmetric = true, mode = "big", y = 1 }, { client = "retail", style = "retail", mode = "xl", mana = "hidden", y = 1 }, { style = "retail", y = 1.5 },
         { style = "classic", mode = "none", y = 3.5 }, { style = "classic", y = 2 }, { style = "camelot", mode = "xl", mana = "hidden", y = 3 }, { style = "camelot", mode = "xl", y = 2 },
         { style = "camelot", mode = "reduced", y = 2 }, { y = 1 } },
     target = { { style = "classic", mode = "none", y = 3.5, own = true }, { style = "classic", mode = "big", mana = "hidden", inside = true, y = -13.5, own = true },
@@ -318,6 +331,7 @@ end
 local function Matches(rule, setup)
     if rule.client and rule.client ~= CLIENT then return false end
     if rule.style and rule.style ~= setup.style then return false end
+    if rule.symmetric and not setup.symmetric then return false end
     if rule.mode == "big" then
         if setup.mode == "none" then return false end
     elseif rule.mode and rule.mode ~= setup.mode then
@@ -332,7 +346,10 @@ end
 local function VerticalSetup(setup)
     local copy = {}
     for k, val in pairs(setup) do copy[k] = val end
-    if copy.style == "symmetric" then copy.style = "retail" end
+    if copy.style == "symmetric" then
+        copy.style = "retail"
+        copy.symmetric = true
+    end
     return copy
 end
 
@@ -755,7 +772,7 @@ local function PlaceGroupIcons(frame, area, setup, v)
     end
 end
 
-local LEVEL_X = { player = -2.5, target = 1.5 }
+local LEVEL_X = { player = -2.5, target = 1.5, symmetric = -1.5 }
 local LEVEL_EDGE = { player = 209, target = 23 }
 
 local function LevelText(frame)
@@ -766,7 +783,8 @@ end
 function BBF.LevelOnTextArea(frame)
     if CLIENT ~= "retail" or not LevelText(frame) or not BBF.TextAreaActive(frame) then return false end
     local setup = BBF.TextAreaSetup(frame)
-    return setup and setup.style == "retail" and not setup.inside or false
+    if not setup or setup.inside then return false end
+    return setup.style == "retail" or (setup.style == "symmetric" and setup.mode ~= "none")
 end
 
 local function PlaceLevel(frame)
@@ -799,7 +817,7 @@ local function PlaceLevel(frame)
     local name = BBF.NameAreaResolve(frame)
     local y = (name and name.y or 0) + (frame.bbfNameBaseHeight or NAME_HEIGHT[setup.key]) / 2
     local player = frame == PlayerFrame
-    local x = player and LEVEL_X.player or LEVEL_X.target
+    local x = setup.style == "symmetric" and LEVEL_X.symmetric or player and LEVEL_X.player or LEVEL_X.target
     local frameLeft, edge = frame:GetLeft(), player and area:GetRight() or area:GetLeft()
     if issecretvalue(frameLeft) or issecretvalue(edge) then
         x = level.bbfLevelAreaX or x

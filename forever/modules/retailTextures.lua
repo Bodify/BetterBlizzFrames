@@ -108,7 +108,7 @@ BBF.RetailSlots = {
     ["ToT-BigHealthbar"] = { scale = 2, width = 120, height = 49, health = { 32, 4.5, 82, 25.5 }, mana = { 36.5, 31, 77.5, 7 }, masks = { health = "ToT-BigHealthbar-HM", mana = "ToT-BigHealthbar-MM" } },
     ["ToT-NameBelow-NoMana"] = { scale = 2, width = 120, height = 49, health = { 42, 13.5, 72, 18 }, masks = { health = "ToT-NameBelow-NoMana-HM" } },
     ["ToT-NameBelow"] = { scale = 2, width = 120, height = 49, health = { 42, 13.5, 72, 10 }, mana = { 42, 24.5, 72, 7 }, masks = { health = "ToT-NameBelow-HM", mana = "ToT-NameBelow-MM" } },
-    ["ToT-NoMana"] = { scale = 2, width = 120, height = 49, health = { 40.5, 16.5, 73.5, 18 }, masks = { health = "ToT-NoMana-HM" } },
+    ["ToT-NoMana"] = { scale = 2, width = 120, height = 49, health = { 40, 16.5, 74, 18 }, masks = { health = "ToT-NoMana-HM" } },
     ["UI-HUD-UnitFrame-Target-PortraitOn-Alt"] = { scale = 2, width = 192, height = 67, health = { 63, 23.5, 126.5, 20 }, mana = { 55.5, 44.5, 134, 10 }, power = { 57.5, 55.5, 132, 8 }, masks = { health = "base\\Target-HMF", mana = "base\\Target-MMF", power = "base\\Target-BigHealthbar-Alt-PM" } },
     ["UI-HUD-UnitFrame-Target-PortraitOn-Alt-NoMana"] = { scale = 2, width = 192, height = 67, health = { 55.5, 23.5, 134, 31 }, power = { 57.5, 55.5, 132, 8 }, masks = { health = "Target-NoMana-HMF", power = "base\\Target-BigHealthbar-Alt-PM" } },
 }
@@ -145,7 +145,7 @@ BBF.PrepatchSlots = {
     ["ToT-BigHealthbar"] = { scale = 2, width = 120, height = 49, health = { 32, 4.5, 82, 25.5 }, mana = { 36.5, 31, 77.5, 7 }, masks = { health = "retail:ToT-BigHealthbar-HM", mana = "retail:ToT-BigHealthbar-MM" } },
     ["ToT-NameBelow-NoMana"] = { scale = 2, width = 120, height = 49, health = { 42, 13.5, 72, 18 }, masks = { health = "retail:ToT-NameBelow-NoMana-HM" } },
     ["ToT-NameBelow"] = { scale = 2, width = 120, height = 49, health = { 42, 13.5, 72, 10 }, mana = { 42, 24.5, 72, 7 }, masks = { health = "retail:ToT-NameBelow-HM", mana = "retail:ToT-NameBelow-MM" } },
-    ["ToT-NoMana"] = { scale = 2, width = 120, height = 49, health = { 40.5, 16.5, 73.5, 18 }, masks = { health = "retail:ToT-NoMana-HM" } },
+    ["ToT-NoMana"] = { scale = 2, width = 120, height = 49, health = { 40, 16.5, 74, 18 }, masks = { health = "retail:ToT-NoMana-HM" } },
     ["UI-HUD-UnitFrame-Target-PortraitOn-Alt-NoMana"] = { scale = 2, width = 192, height = 67, health = { 55.5, 23.5, 134, 31 }, power = { 57.5, 55.5, 132, 8 }, masks = { health = "retail:Target-NoMana-HMF", power = "retail:base\\Target-BigHealthbar-Alt-PM" } },
     ["UI-HUD-UnitFrame-Target-PortraitOn-Alt"] = { scale = 2, width = 192, height = 67, health = { 63, 23.5, 126.5, 20 }, mana = { 55.5, 44.5, 134, 10 }, power = { 57.5, 55.5, 132, 8 }, masks = { health = "retail:base\\Target-HMF", mana = "retail:base\\Target-MMF", power = "retail:base\\Target-BigHealthbar-Alt-PM" } },
 }
@@ -486,6 +486,26 @@ function BBF.MaskRetailSlot(mask, tex, slot)
     mask:ClearAllPoints()
     mask:SetAllPoints(tex)
     return true
+end
+
+function BBF.SetRetailSmallFlash(flash, art, big, reduced, noMana, atlas)
+    if not flash then return end
+    if big or noMana then
+        local suffix = (big and (reduced and "-BigHealthbar-Reduced" or "-BigHealthbar") or "") .. (noMana and "-NoMana" or "")
+        flash:SetTexture(RETAIL_TEX .. "ToT-InCombat" .. suffix .. ".png")
+        flash:SetTexCoord(0, 1, 0, 1)
+        flash.bbfSmallFlashPoint = flash.bbfSmallFlashPoint or { flash:GetPoint(1) }
+        flash:ClearAllPoints()
+        flash:SetPoint("TOPLEFT", art, "TOPLEFT")
+        flash:SetSize(120, 49)
+        flash:SetDrawLayer((flash:GetDrawLayer()), 1)
+    elseif flash.bbfSmallFlashPoint then
+        flash:SetAtlas(atlas, TextureKitConstants.UseAtlasSize)
+        flash:ClearAllPoints()
+        flash:SetPoint(unpack(flash.bbfSmallFlashPoint))
+        flash:SetDrawLayer((flash:GetDrawLayer()), 0)
+        flash.bbfSmallFlashPoint = nil
+    end
 end
 
 function BBF.FitRetailBars(tex, healthRegion, healthMask, manaBar, manaMask, bars)

@@ -15,13 +15,13 @@ local extents = {
     ["Target-BigHealthbar-Reduced"] = { health = 1.5, mana = 0 },
     ["Target-BigHealthbar"] = { health = 4.5, mana = 0 },
     ["Target-NoMana"] = { health = 9 },
-    ["ToT-BigHealthbar-NoMana"] = { health = 12 },
-    ["ToT-BigHealthbar-Reduced-NoMana"] = { health = 7.5 },
-    ["ToT-BigHealthbar-Reduced"] = { health = 1.5, mana = 3.5 },
-    ["ToT-BigHealthbar"] = { health = 12, mana = 3.5 },
+    ["ToT-BigHealthbar-NoMana"] = { health = 13 },
+    ["ToT-BigHealthbar-Reduced-NoMana"] = { health = 8.5 },
+    ["ToT-BigHealthbar-Reduced"] = { health = 2.5, mana = 4.5 },
+    ["ToT-BigHealthbar"] = { health = 13, mana = 4.5 },
     ["ToT-NameBelow-NoMana"] = { health = 2 },
     ["ToT-NameBelow"] = { health = 2, mana = 0 },
-    ["ToT-NoMana"] = { health = 3.5 },
+    ["ToT-NoMana"] = { health = 5 },
 }
 
 local function MaskArt(art)

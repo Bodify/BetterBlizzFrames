@@ -489,6 +489,7 @@ local function PlaceRetailPartyBars(frame)
     local bars = BBF.PartyBars(frame)
     if not BBF.FitRetailBars(frame.Texture, container, container.HealthBarMask, not frame.bbfPartyNoMana and manaBar, manaBar.ManaBarMask, bars) then return end
     bars:SetAllPoints(container.HealthBar, container)
+    BBF.SetRetailSmallFlash(frame.Flash, frame.Texture, frame.bbfBigParty, frame.bbfReducedParty, frame.bbfPartyNoMana, "ui-hud-unitframe-party-portraiton-incombat")
 end
 
 local function PlacePartyManaBar(frame, bars, manaBar, mask)
@@ -883,6 +884,8 @@ function BBF.UpdateDefaultPetFrameMana()
     BBF.UpdatePetFrameTexture()
     if (BBF.RetailTexturesOn and BBF.RetailTexturesOn("pet")) then
         BBF.FitRetailBars(PetFrameTexture, PetFrameHealthBar, PetFrameHealthBarMask, not db.hideUnitFramePetMana and PetFrameManaBar, PetFrameManaBarMask)
+        local petMode = BBF.PetBigMode()
+        BBF.SetRetailSmallFlash(PetFrameFlash, PetFrameTexture, petMode, petMode == "reduced", db.hideUnitFramePetMana, "UI-HUD-UnitFrame-TargetofTarget-PortraitOn-InCombat")
         BBF.ApplyTextArea(PetFrame)
     end
 end
