@@ -597,6 +597,12 @@ local function CreateManaOnlyBar(isActive, extraEvent)
 
     local function UpdateTexts()
         if not active then return end
+        if BetterBlizzFramesDB.alwaysHideStatusBarTexts then
+            bar.LeftText:Hide()
+            bar.RightText:Hide()
+            bar.TextString:Hide()
+            return
+        end
         local mana, maxMana = GetMana()
         if issecretvalue(mana) or issecretvalue(maxMana) then
             bar.LeftText:Hide()

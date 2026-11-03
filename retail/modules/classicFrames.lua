@@ -185,6 +185,15 @@ function BBF.ClassicHDTexturesActive()
     return db.classicFrames and db.classicFramesHDTextures and true or false
 end
 
+function BBF.ClassicTargetLevelX()
+    if BBF.ClassicHDTexturesActive() then return -34 end
+    return BetterBlizzFramesDB.classicFramesHDElite and -32.5 or -34
+end
+
+function BBF.ClassicPlayerLevelX()
+    return (BBF.ClassicHDTexturesActive() or BetterBlizzFramesDB.classicFramesHDElite) and -83 or -80
+end
+
 function BBF.ClassicHDCastbarsActive()
     return BetterBlizzFramesDB.classicFramesHDTextures and true or false
 end
@@ -750,8 +759,9 @@ local function MakeClassicFrame(frame)
         contentContext.HighLevelTexture:SetParent(frame.ClassicFrame)
         contentContext.HighLevelTexture:SetDrawLayer("OVERLAY", 7)
         contentContext.HighLevelTexture:ClearAllPoints()
-        contentContext.HighLevelTexture:SetSize(13, 16)
-        contentContext.HighLevelTexture:SetPoint("CENTER", frame, "BOTTOMRIGHT", -33, 25)
+        local classicHD = BBF.ClassicHDTexturesActive() or db.classicFramesHDElite
+        contentContext.HighLevelTexture:SetSize(classicHD and 13 or 14, 16)
+        contentContext.HighLevelTexture:SetPoint("CENTER", frame, "BOTTOMRIGHT", classicHD and -33 or -34, 25)
         contentContext.PetBattleIcon:ClearAllPoints()
         contentContext.PetBattleIcon:SetPoint("CENTER", frame, "BOTTOMRIGHT", -35, 25)
         contentContext.PrestigePortrait:ClearAllPoints()
@@ -768,7 +778,7 @@ local function MakeClassicFrame(frame)
 
         contentMain.LevelText:SetParent(frame.ClassicFrame)
         contentMain.LevelText:SetDrawLayer("OVERLAY", 7)
-        SetClassicLevelPoint(contentMain.LevelText, BBF.ClassicHDTexturesActive() and -34 or -32.5, 25.5, frame, "BOTTOMRIGHT")
+        SetClassicLevelPoint(contentMain.LevelText, BBF.ClassicTargetLevelX(), 25.5, frame, "BOTTOMRIGHT")
         local lvlFont, _, lvlFlags = contentMain.LevelText:GetFont()
         contentMain.LevelText:SetFont(lvlFont, 12, lvlFlags)
         contentMain.ReputationColor:SetSize(119, 18)
@@ -1160,7 +1170,7 @@ local function MakeClassicFrame(frame)
             PlayerLevelText:SetParent(frame.ClassicFrame)
             PlayerLevelText:SetDrawLayer("OVERLAY", 7)
             PlayerLevelText:Show()
-            SetClassicLevelPoint(PlayerLevelText, -83, -24.5)
+            SetClassicLevelPoint(PlayerLevelText, BBF.ClassicPlayerLevelX(), -24.5)
             local plvlFont, _, plvlFlags = PlayerLevelText:GetFont()
             if plvlFont then
                 PlayerLevelText:SetFont(plvlFont, 12, plvlFlags)
@@ -1179,7 +1189,7 @@ local function MakeClassicFrame(frame)
         local function UpdateLevel()
             if PlayerLevelHidden() then
                 PlayerLevelText:SetParent(BBF.hiddenFrame)
-                SetClassicLevelPoint(PlayerLevelText, -83, -24.5)
+                SetClassicLevelPoint(PlayerLevelText, BBF.ClassicPlayerLevelX(), -24.5)
             else
                 UpdateLevelDetails()
             end
@@ -2113,7 +2123,7 @@ local function SortLocalizationChanges()
             local manaBar = contentMain.ManaBar
             local tex = f.ClassicFrame.Texture
 
-            SetClassicLevelPoint(contentMain.LevelText, BBF.ClassicHDTexturesActive() and -34 or -32.5, 25.5, f, "BOTTOMRIGHT")
+            SetClassicLevelPoint(contentMain.LevelText, BBF.ClassicTargetLevelX(), 25.5, f, "BOTTOMRIGHT")
 
             hpContainer.HealthBarText:ClearAllPoints()
             hpContainer.HealthBarText:SetPoint("CENTER", tex, "LEFT", 66.5, BBF.ClassicHealthTextY(f))

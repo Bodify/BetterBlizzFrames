@@ -1,3 +1,14 @@
+# BetterBlizzFrames 2.2.0e
+## Retail & Forever
+### Tweak
+- More general name, status text and level position tweaks.
+### Bugfix
+- Fix an issue with Big Healthbar settings causing player healthbar to shrink a little bit after respecs.
+- Fix a combination of Classic Frames + PlayerFrame elite texture using the wrong texture.
+- Fix some issues with name background texture and Classic Frames setting.
+## Forever
+- New "Easy Darnassian" setting. Lets you speak Darnassian with /d hello (itll use whatever chat have selected, say yell etc). (for quick cross faction chat to other elves)
+
 # BetterBlizzFrames 2.2.0d
 ## Retail & Forever
 ### New

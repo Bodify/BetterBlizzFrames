@@ -58,7 +58,9 @@ local function GetRPNameColor(unit)
     local guid = UnitGUID(unit)
     if not guid or issecretvalue(guid) or issecretvalue(UnitName(unit)) then return end
     if not UnitIsPlayer(unit) then return end
-    local player = AddOn_TotalRP3 and AddOn_TotalRP3.Player and AddOn_TotalRP3.Player.CreateFromUnit(unit)
+    local characterID = TRP3_NameUtil and TRP3_NameUtil.GetQualifiedName(unit)
+    if not characterID then return end
+    local player = AddOn_TotalRP3 and AddOn_TotalRP3.Player and AddOn_TotalRP3.Player.CreateFromCharacterID(characterID)
     if player then
         local color = player:GetCustomColorForDisplay()
         if color then
@@ -1385,17 +1387,17 @@ function BBF.PlayerReputationColor()
                     frame.ReputationColor:SetTexture(nameBgTexture)
                     frame.ReputationColor:SetTexCoord(0, 1, 0, 1)
                 else
-                    if not BBF.UnitFrameTextureOn("health") then
-                        frame.ReputationColor:SetTexture(137017)
-                        frame.ReputationColor:SetTexCoord(1, 0, 0, 1)
-                    else
+                    if BetterBlizzFramesDB.changeUnitFrameHealthbarTextureRepColor and BBF.UnitFrameTextureOn("health") then
                         local texture = BBF.UnitFrameNameBgTexture()
                         frame.ReputationColor:SetTexture(texture)
                         frame.ReputationColor:SetTexCoord(0, 1, 0, 1)
+                    else
+                        frame.ReputationColor:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-LevelBackground")
+                        frame.ReputationColor:SetTexCoord(1, 0, 0, 1)
                     end
                 end
                 frame.ReputationColor:SetSize(117, 22)
-                frame.ReputationColor:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -26, -30)
+                frame.ReputationColor:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -26, -31)
             elseif C_AddOns.IsAddOnLoaded("ClassicFrames") then
                 frame.ReputationColor:SetTexture(137017)
                 frame.ReputationColor:SetSize(117, 19)

@@ -187,6 +187,7 @@ local defaultSettings = {
     smoothHealthbars = true,
     statusTextExtra = false,
     swapStatusBarTexts = false,
+    alwaysHideStatusBarTexts = false,
     statusTextExtraHealth = true,
     statusTextExtraMana = true,
     hideTooltip = false,
@@ -4849,11 +4850,11 @@ function BBF.SymmetricPlayerFrame()
     hooksecurefunc(healthBar, "SetPoint", function(self)
         if not self.changing then
             self.changing = true
-            self:SetPoint("TOPLEFT", healthBarsContainer, "TOPLEFT", -1.5 - BBF.GetMirrorPlayerHealthbarGrow(), 1 + BBF.GetMirrorPlayerHealthbarRaise())
+            self:SetPoint("TOPLEFT", healthBarsContainer, "TOPLEFT", -1.5, 1 + BBF.GetMirrorPlayerHealthbarRaise())
             self.changing = false
         end
     end)
-    healthBar:SetPoint("TOPLEFT", healthBarsContainer, "TOPLEFT", -1.5 - BBF.GetMirrorPlayerHealthbarGrow(), 1 + BBF.GetMirrorPlayerHealthbarRaise())
+    healthBar:SetPoint("TOPLEFT", healthBarsContainer, "TOPLEFT", -1.5, 1 + BBF.GetMirrorPlayerHealthbarRaise())
 
     local playerPortrait = PlayerFrame.PlayerFrameContainer.PlayerPortrait
     playerPortrait:SetSize(58.5, 58.5)
@@ -4864,11 +4865,11 @@ function BBF.SymmetricPlayerFrame()
         if not self.changing then
             self.changing = true
             local width = BBF.GetMirrorPlayerHealthbarSize()
-            self:SetWidth(width)
+            self:SetWidth(width + BBF.GetMirrorPlayerHealthbarGrow())
             self.changing = false
         end
     end)
-    healthBarsContainer:SetWidth((BBF.GetMirrorPlayerHealthbarSize()))
+    healthBarsContainer:SetWidth(BBF.GetMirrorPlayerHealthbarSize() + BBF.GetMirrorPlayerHealthbarGrow())
 
     hooksecurefunc(healthBarsContainer, "SetHeight", function(self)
         if InCombatLockdown() then return end
@@ -4882,9 +4883,10 @@ function BBF.SymmetricPlayerFrame()
     local _, containerHeight = BBF.GetMirrorPlayerHealthbarSize()
     healthBarsContainer:SetHeight(containerHeight)
 
+    local containerGrow = healthBarsContainer.bbfGrow or 0
     healthBarsContainer.RightText:SetPoint("RIGHT", -4, 1)
-    healthBarsContainer.LeftText:SetPoint("LEFT", 2, 1)
-    healthBarsContainer.HealthBarText:SetPoint("CENTER", 0, 1)
+    healthBarsContainer.LeftText:SetPoint("LEFT", 2 + containerGrow, 1)
+    healthBarsContainer.HealthBarText:SetPoint("CENTER", containerGrow / 2, 1)
 
     hooksecurefunc(healthBar, "SetHeight", function(self)
         if InCombatLockdown() then return end
@@ -5301,6 +5303,11 @@ function BBF.DefaultFrameTweaks()
         local container = frame.TargetFrameContainer
         RoundToPixel(container.FrameTexture)
         RoundToPixel(container.Flash)
+        if not BetterBlizzFramesDB.classicFrames and not BBF.HasNoPortrait(frame == TargetFrame and "target" or "focus") and not C_AddOns.IsAddOnLoaded("ClassicFrames") then
+            local context = frame.TargetFrameContent.TargetFrameContentContextual
+            context.LeaderIcon:SetPoint("TOPRIGHT", -85, -10)
+            context.GuideIcon:SetPoint("TOPRIGHT", -85, -10)
+        end
     end
 end
 
@@ -6268,6 +6275,7 @@ First:SetScript("OnEvent", function(_, event, addonName)
         BBF.UpdateBigPlayerHealthbar()
         BBF.CenterCurrentValueOnBars()
         BBF.StatusBarTextExtra()
+        BBF.AlwaysHideStatusBarTexts()
         BBF.HideTooltip()
         BBF.LowerToTStrata()
         BBF.FlipPortraits()

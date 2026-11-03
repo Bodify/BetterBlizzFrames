@@ -13454,8 +13454,12 @@ local function guiMisc()
     swapStatusBarTexts:SetPoint("TOPLEFT", statusTextExtra, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(swapStatusBarTexts, L["Swap_Status_Bar_Texts"], L["Tooltip_Swap_Status_Bar_Texts_Desc"])
 
+    local alwaysHideStatusBarTexts = CreateCheckbox("alwaysHideStatusBarTexts", L["Always_Hide_Status_Bar_Texts"], contentFrame, nil, BBF.RefreshAlwaysHideStatusBarTexts)
+    alwaysHideStatusBarTexts:SetPoint("TOPLEFT", swapStatusBarTexts, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(alwaysHideStatusBarTexts, L["Always_Hide_Status_Bar_Texts"], L["Tooltip_Always_Hide_Status_Bar_Texts_Desc"])
+
     local raiseTargetFrameLevel = CreateCheckbox("raiseTargetFrameLevel", L["Raise_TargetFrame_Layer"], contentFrame, nil, BBF.RaiseTargetFrameLevel)
-    raiseTargetFrameLevel:SetPoint("TOPLEFT", swapStatusBarTexts, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    raiseTargetFrameLevel:SetPoint("TOPLEFT", alwaysHideStatusBarTexts, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(raiseTargetFrameLevel, L["Raise_TargetFrame_Layer"], L["Tooltip_Raise_TargetFrame_Layer_Desc"])
 
     local forceFitNames = CreateCheckbox("forceFitNames", L["Force_Fit_Names"], contentFrame, nil, BBF.UpdateNameFit)

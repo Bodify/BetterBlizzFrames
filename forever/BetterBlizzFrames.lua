@@ -203,6 +203,7 @@ local defaultSettings = {
     smoothHealthbars = true,
     statusTextExtra = false,
     swapStatusBarTexts = false,
+    alwaysHideStatusBarTexts = false,
     statusTextExtraHealth = true,
     statusTextExtraMana = true,
     hideTooltip = false,
@@ -210,6 +211,7 @@ local defaultSettings = {
     hideTooltipCombat = true,
     lowerToTStrata = false,
     flipPortraits = false,
+    easyDarnassian = false,
     targetToTNameUnder = false,
     focusToTNameUnder = false,
     smoothManabars = true,
@@ -6162,9 +6164,11 @@ First:SetScript("OnEvent", function(_, event, addonName)
         BBF.FixForeverTextureMasks()
         BBF.CenterCurrentValueOnBars()
         BBF.StatusBarTextExtra()
+        BBF.AlwaysHideStatusBarTexts()
         BBF.HideTooltip()
         BBF.LowerToTStrata()
         BBF.FlipPortraits()
+        BBF.EasyDarnassian()
         BBF.UpdateAuraCollapseButton()
         BBF.PlayerElite(BetterBlizzFramesDB.playerEliteFrameMode)
         BBF.HidePlayerFrame()

@@ -94,7 +94,9 @@ local function GetRPNameColor(unit)
     if not UnitExists(unit) then return end
     if not TRP3_API.globals.player_realm_id then return end
     if issecretvalue(UnitGUID(unit)) or issecretvalue(UnitName(unit)) then return end
-    local player = AddOn_TotalRP3 and AddOn_TotalRP3.Player and AddOn_TotalRP3.Player.CreateFromUnit(unit)
+    local characterID = TRP3_NameUtil and TRP3_NameUtil.GetQualifiedName(unit)
+    if not characterID then return end
+    local player = AddOn_TotalRP3 and AddOn_TotalRP3.Player and AddOn_TotalRP3.Player.CreateFromCharacterID(characterID)
     if player then
         local color = player:GetCustomColorForDisplay()
         if color then
@@ -258,8 +260,9 @@ local function CenterPlayerSpec()
     local healthBar = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer
     local noPortrait = BBF.HasNoPortrait("player")
     local forceCenter = NameCenterForced("player")
+    local growShift = (healthBar.bbfGrow or 0) / 2
     if BetterBlizzFramesDB.playerFrameOCD and not BetterBlizzFramesDB.playerFrameOCDTextureBypass and not forceCenter then
-        return "TOP", healthBar, "TOP", 0, 14.5, "CENTER"
+        return "TOP", healthBar, "TOP", growShift, 14.5, "CENTER"
     end
     local xPos = forceCenter and 1.5 or noPortrait and 0 or -2
     if noPortrait then
@@ -269,7 +272,7 @@ local function CenterPlayerSpec()
     if BetterBlizzFramesDB.classicFrames and BBF.BigPlayerHealthbar() then
         yPos = yPos - 10
     end
-    return "TOP", healthBar, "TOP", xPos, yPos, "CENTER"
+    return "TOP", healthBar, "TOP", xPos + growShift, yPos, "CENTER"
 end
 
 local function CenterXSpec(healthBar, ToT, pet, unit)

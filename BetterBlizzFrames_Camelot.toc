@@ -51,6 +51,7 @@ forever\modules\statusBarTextFormat.lua
 forever\modules\arenaframes.lua
 forever\modules\profiles.lua
 forever\modules\chatFrame.lua
+forever\modules\easyDarnassian.lua
 forever\modules\overshields.lua
 shared\stealthIndicator.lua
 forever\modules\interruptIcon.lua

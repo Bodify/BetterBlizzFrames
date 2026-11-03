@@ -13626,8 +13626,12 @@ local function guiMisc()
     swapStatusBarTexts:SetPoint("TOPLEFT", statusTextExtra, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(swapStatusBarTexts, L["Swap_Status_Bar_Texts"], L["Tooltip_Swap_Status_Bar_Texts_Desc"])
 
+    local alwaysHideStatusBarTexts = CreateCheckbox("alwaysHideStatusBarTexts", L["Always_Hide_Status_Bar_Texts"], contentFrame, nil, BBF.RefreshAlwaysHideStatusBarTexts)
+    alwaysHideStatusBarTexts:SetPoint("TOPLEFT", swapStatusBarTexts, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(alwaysHideStatusBarTexts, L["Always_Hide_Status_Bar_Texts"], L["Tooltip_Always_Hide_Status_Bar_Texts_Desc"])
+
     local raiseTargetFrameLevel = CreateCheckbox("raiseTargetFrameLevel", L["Raise_TargetFrame_Layer"], contentFrame, nil, BBF.RaiseTargetFrameLevel)
-    raiseTargetFrameLevel:SetPoint("TOPLEFT", swapStatusBarTexts, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    raiseTargetFrameLevel:SetPoint("TOPLEFT", alwaysHideStatusBarTexts, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(raiseTargetFrameLevel, L["Raise_TargetFrame_Layer"], L["Tooltip_Raise_TargetFrame_Layer_Desc"])
 
     local forceFitNames = CreateCheckbox("forceFitNames", L["Force_Fit_Names"], contentFrame, nil, BBF.UpdateNameFit)
@@ -13638,8 +13642,19 @@ local function guiMisc()
     surrenderArena:SetPoint("TOPLEFT", forceFitNames, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(surrenderArena, L["Surrender_Arena"], L["Tooltip_Surrender_Arena_Desc"])
 
+    local easyDarnassian = CreateCheckbox("easyDarnassian", L["Easy_Darnassian"], contentFrame)
+    easyDarnassian:SetPoint("TOPLEFT", surrenderArena, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(easyDarnassian, L["Easy_Darnassian"], L["Tooltip_Easy_Darnassian_Desc"])
+    easyDarnassian:HookScript("OnClick", function(self)
+        if self:GetChecked() then
+            BBF.EasyDarnassian()
+        else
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
+        end
+    end)
+
     local disableCastbarMovement = CreateCheckbox("disableCastbarMovement", L["Disable_Castbar_Movement"], contentFrame)
-    disableCastbarMovement:SetPoint("TOPLEFT", surrenderArena, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    disableCastbarMovement:SetPoint("TOPLEFT", easyDarnassian, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(disableCastbarMovement, L["Disable_Castbar_Movement"], L["Tooltip_Disable_Castbar_Movement_Desc"])
     disableCastbarMovement:HookScript("OnClick", function(self)
         BBF.ShowPopup("BBF_CONFIRM_RELOAD")
