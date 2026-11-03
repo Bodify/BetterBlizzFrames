@@ -1093,7 +1093,6 @@ function BBF.DarkmodeFrames(bypass)
             end
         end
 
-        applyButtonArt(MainMenuBarBackpackButton, "MainMenuBarBackpackButton")
         applyButtonArt(CharacterReagentBag0Slot, "CharacterReagentBag0Slot")
         for i = 0, 3 do
             local bagSlotName = "CharacterBag" .. i .. "Slot"
