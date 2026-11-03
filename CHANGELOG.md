@@ -11,6 +11,7 @@
 - Fix an issue with Big Healthbar settings causing player healthbar to shrink a little bit after respecs.
 - Fix a combination of Classic Frames + PlayerFrame elite texture using the wrong texture.
 - Fix some issues with name background texture and Classic Frames setting.
+- Fix an issue with quick hide castbar setting causing a quick evoker channel into cast to sometimes hide the new cast castbar unintentionally.
 ## Forever
 - New "Easy Darnassian" setting. Lets you speak Darnassian with /d hello (itll use whatever chat have selected, say yell etc). (for quick cross faction chat to other elves)
 
