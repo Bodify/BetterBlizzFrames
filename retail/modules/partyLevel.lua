@@ -27,6 +27,12 @@ local function LevelHidden(level)
     return not issecretvalue(level) and level == GetMaxLevelForPlayerExpansion()
 end
 
+function BBF.PartyLevelHidden(frame)
+    local unit = frame.unit
+    if not unit or not UnitExists(unit) then return false end
+    return LevelHidden(UnitEffectiveLevel(unit))
+end
+
 local function ColorRing(frame)
     local ring = frame.bbfLevelRing
     local art = frame.Texture
@@ -91,6 +97,7 @@ end
 
 local function UpdateLevel(frame, index)
     if not frame.bbfLevelText then return end
+    if frame.bbfPlaceRoleIcon then frame.bbfPlaceRoleIcon() end
     local unit = PartyUnit(frame, index)
     local showRing = ClassicHDRing() or not BetterBlizzFramesDB.classicFrames
     if not UnitExists(unit) then
@@ -110,12 +117,21 @@ local function UpdateLevel(frame, index)
     frame.bbfLevelRing:SetShown(showRing)
 end
 
+local function LevelParent(frame)
+    local overlay = frame.PartyMemberOverlay or frame
+    if not BetterBlizzFramesDB.classicFrames then return overlay end
+    local holder = CreateFrame("Frame", nil, frame)
+    holder:SetAllPoints(frame)
+    holder:SetFrameLevel((frame.HealthBarContainer or overlay):GetFrameLevel() + 5)
+    return holder
+end
+
 local function Build(frame, index)
     if built[frame] then return end
     built[frame] = true
-    local overlay = frame.PartyMemberOverlay or frame
-    local ring = overlay:CreateTexture(nil, "OVERLAY", nil, 1)
-    local text = overlay:CreateFontString(nil, "OVERLAY", nil)
+    local parent = LevelParent(frame)
+    local ring = parent:CreateTexture(nil, "OVERLAY", nil, 1)
+    local text = parent:CreateFontString(nil, "OVERLAY", nil)
     text:SetDrawLayer("OVERLAY", 2)
     local font, size, flags = PlayerLevelText:GetFont()
     frame.bbfLevelFont = { font, math.max(8, math.floor((size or 14) * RING_SCALE + 0.5)), flags }

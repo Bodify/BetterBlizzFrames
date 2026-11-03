@@ -399,6 +399,7 @@ local function CreateManaOnlyBar(isActive, extraEvent)
         end
     end
     hooksecurefunc(stock, "UpdateTextString", UpdateTexts)
+    BBF.UpdateManaOnlyTexts = UpdateTexts
 
     local function UpdateValue(snap)
         local mana, maxMana = GetMana()

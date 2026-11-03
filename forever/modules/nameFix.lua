@@ -253,7 +253,7 @@ local function GetNameWidth(frame)
     local width = DefaultNameWidth(frame)
     local shrink = classicNameShrink[frame]
     if width and shrink and BetterBlizzFramesDB and BetterBlizzFramesDB.classicFrames
-        and not isAddonLoaded("ClassicFrames") and not (BBF.HasNoPortrait and BBF.HasNoPortrait(NameUnitForFrame(frame))) then
+        and not BBF.ClassicStyleAddon() and not (BBF.HasNoPortrait and BBF.HasNoPortrait(NameUnitForFrame(frame))) then
         return width - shrink
     end
     return width
@@ -322,7 +322,7 @@ end
 
 local function GetBaseNameSpec(frame)
     local db = BetterBlizzFramesDB
-    if not db or not BBF.HasNoPortrait or isAddonLoaded("ClassicFrames") then return end
+    if not db or not BBF.HasNoPortrait or BBF.ClassicStyleAddon() then return end
     local unit = NameUnitForFrame(frame)
     local ToT = frame == TargetFrameToT or frame == FocusFrameToT
     if not ToT and frame ~= PetFrame and MiniNameSpec(frame, db) then
@@ -461,6 +461,26 @@ local function MirroredNameShift(frame, db)
     return main and -2 or 2
 end
 
+local function FollowAddonName(fontString, name)
+    fontString:ClearAllPoints()
+    fontString:SetWordWrap(false)
+    if fontString.SetMaxLines then
+        fontString:SetMaxLines(0)
+    end
+    fontString.bbfMultiLine = nil
+    fontString:SetPoint("TOPLEFT", name, "TOPLEFT", 0, 0)
+    fontString:SetPoint("BOTTOMRIGHT", name, "BOTTOMRIGHT", 0, 0)
+    fontString:SetJustifyV(name:GetJustifyV())
+    local justify = name:GetJustifyH()
+    if fontString.bbfLaidJustify ~= justify then
+        fontString.bbfLaidJustify = justify
+        fontString:SetJustifyH(justify)
+        local text = fontString:GetText()
+        fontString:SetText("")
+        fontString:SetText(text)
+    end
+end
+
 local function ApplyNameLayout(frame)
     local fontString = frame and frame.bbfName
     local name = frame and (frame.name or frame.Name)
@@ -481,6 +501,10 @@ local function ApplyNameLayout(frame)
         return
     end
     local db = BetterBlizzFramesDB
+    if BBF.ClassicStyleAddon() and not (db and db.moveNames) then
+        FollowAddonName(fontString, name)
+        return
+    end
     local prefix = db and db.moveNames and movePrefix[key]
     local dx, dy = prefix and tonumber(db[prefix .. "X"]) or 0, prefix and tonumber(db[prefix .. "Y"]) or 0
     dx = dx + MirroredNameShift(frame, db)
@@ -617,11 +641,12 @@ local function ApplyNameLayout(frame)
         if frame == PlayerFrame then
             dx = dx - 0.5
         end
-        if frame == PetFrame then
+        local nudged = not BBF.ClassicStyleAddon()
+        if nudged and frame == PetFrame then
             dx = dx + 2
             dy = dy - 0.5
         end
-        if frame == TargetFrame or frame == FocusFrame then
+        if nudged and (frame == TargetFrame or frame == FocusFrame) then
             dx = dx + 2
             dy = dy + 1
             if db and OCDTweaksOn() then
@@ -1432,18 +1457,19 @@ for _, frame in ipairs(fitNameFrames) do
 end
 
 local function UpdateFontStringPosition(frame)
-    if layoutKeys[frame] then return end
+    if layoutKeys[frame] or BetterBlizzFramesDB.moveNames then return end
     local name = frame.name or frame.Name
     if not name or not name:GetParent() then return end
     local point, relativeTo, relativePoint, xOffset, yOffset = name:GetPoint()
     if point then
         if not name.bbfSetPointHook then
             hooksecurefunc(name, "SetPoint", function()
+                if BetterBlizzFramesDB.moveNames then return end
                 frame.bbfName:ClearAllPoints()
                 frame.bbfName:SetPoint("CENTER", name, "CENTER", 0, 0)
             end)
             hooksecurefunc(frame.bbfName, "SetPoint", function(self)
-                if self.changing then return end
+                if self.changing or BetterBlizzFramesDB.moveNames then return end
                 self.changing = true
                 self:ClearAllPoints()
                 self:SetPoint("CENTER", name, "CENTER", 0, 0)
@@ -1466,7 +1492,7 @@ local function UpdateAllFontStringPositions()
 end
 
 C_Timer.After(1, function()
-    if C_AddOns.IsAddOnLoaded("EasyFrames") then
+    if BBF.ClassicStyleAddon() then
         UpdateAllFontStringPositions()
         -- local playerName = UnitName("player")
         -- local realmName = GetRealmName()
@@ -1655,23 +1681,6 @@ local petFrames = {
 }
 
 local function SetUnitFramesValuesFont(font, size, outline)
-    if isAddonLoaded("ClassicFrames") and not BBF.classicFramesText then
-        -- ClassicFrames unit frame text elements
-        local classicTexts = {
-            CfPlayerFrameHealthBar.LeftText, CfPlayerFrameHealthBar.RightText, CfPlayerFrameHealthBar.TextString,
-            CfPlayerFrameManaBar.LeftText, CfPlayerFrameManaBar.RightText, CfPlayerFrameManaBar.TextString,
-            CfTargetFrameHealthBar.LeftText, CfTargetFrameHealthBar.RightText, CfTargetFrameHealthBar.TextString,
-            CfTargetFrameManaBar.LeftText, CfTargetFrameManaBar.RightText, CfTargetFrameManaBar.TextString,
-            CfFocusFrameHealthBar.LeftText, CfFocusFrameHealthBar.RightText, CfFocusFrameHealthBar.TextString,
-            CfFocusFrameManaBar.LeftText, CfFocusFrameManaBar.RightText, CfFocusFrameManaBar.TextString,
-        }
-
-        -- Append ClassicFrames elements to statusTexts
-        for _, text in ipairs(classicTexts) do
-            table.insert(statusTexts, text)
-        end
-        BBF.classicFramesText = true
-    end
     for _, textObject in ipairs(statusTexts) do
         local ogFont, ogSize, ogOutline = textObject:GetFont()
 
@@ -2040,7 +2049,7 @@ function BBF.SetCustomFonts()
 end
 
 local function UpdateNamePositionForClassic()
-    if not isAddonLoaded("ClassicFrames") then return end
+    if not BBF.ClassicStyleAddon() then return end
 
     for _, frame in ipairs(frames) do
         local name = frame.name or frame.Name

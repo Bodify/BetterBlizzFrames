@@ -1836,8 +1836,12 @@ local function CreateTooltipTwo(widget, title, mainText, subText, anchor, cvarNa
             GameTooltip:AddLine(tooltipText, 1, 1, 1, true)
         end
 
-        if self.bbfStyleBlocker then
+        if self.bbfStyleBlocker and not self.bbfClassicStyleAddonLock then
             GameTooltip:AddLine("\n|cffffaa00" .. string.format(L["Tooltip_Smaller_Level_Circle_Classic_Note"], self.bbfStyleBlocker, self.bbfStyleBlocker) .. "|r", 1, 1, 1, true)
+        end
+
+        if self.bbfClassicStyleAddonLock then
+            GameTooltip:AddLine("\n|cffffaa00" .. BBF.ClassicStyleAddonNote(self.bbfClassicStyleWide) .. "|r", 1, 1, 1, true)
         end
 
         if title == L["Smaller_Level_Circle"] then
@@ -1869,6 +1873,11 @@ local function CreateTooltipTwo(widget, title, mainText, subText, anchor, cvarNa
         if title == L["Hide_Threat_Meter"] then
             local check = BetterBlizzFramesDB.hideThreatKeepTank and " |A:ParagonReputation_Checkmark:15:15|a" or ""
             GameTooltip:AddLine("\n|cff32f795" .. L["Right_Click_Keep_Threat_Tank"] .. "|r" .. check, 1, 1, 1, true)
+        end
+
+        if title == L["Use_Spec_Icons"] then
+            local check = BetterBlizzFramesDB.classPortraitsUseSpecIconsPvPOnly and " |A:ParagonReputation_Checkmark:15:15|a" or ""
+            GameTooltip:AddLine("\n|cff32f795" .. L["Right_Click_Only_In_PvP"] .. "|r" .. check, 1, 1, 1, true)
         end
 
         if title == L["Quick_Hide_Castbars"] then
@@ -7490,12 +7499,12 @@ local function guiGeneralTab()
     bigHealthbarLock:SetScript("OnEnter", function(self)
         GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
         GameTooltip_SetTitle(GameTooltip, L["Big_Healthbars"], NORMAL_FONT_COLOR)
-        GameTooltip:AddLine("|cffffaa00" .. L["Tooltip_Big_Healthbar_Pixel_Border_Locked"] .. "|r", 1, 1, 1, true)
+        GameTooltip:AddLine("|cffffaa00" .. (BBF.ClassicStyleAddon() and BBF.ClassicStyleAddonNote() or L["Tooltip_Big_Healthbar_Pixel_Border_Locked"]) .. "|r", 1, 1, 1, true)
         GameTooltip:Show()
     end)
     bigHealthbarLock:SetScript("OnLeave", GameTooltip_Hide)
     bbfBigHealthbars.UpdatePixelBorderLock = function()
-        local locked = BetterBlizzFramesDB.noPortraitPixelBorder and true or false
+        local locked = (BetterBlizzFramesDB.noPortraitPixelBorder or BBF.ClassicStyleAddon()) and true or false
         bbfBigHealthbars:SetEnabled(not locked)
         bbfBigHealthbars:SetAlpha(locked and 0.5 or 1)
         bigHealthbarLock:SetShown(locked)
@@ -7527,7 +7536,7 @@ local function guiGeneralTab()
         local function UpdateBlockers()
             local db = BetterBlizzFramesDB
             BBF.UpdateFrameStyleBlockers(styleGroups)
-            local enabled = db.retailTextures and not db.classicFrames and true or false
+            local enabled = db.retailTextures and not db.classicFrames and not BBF.ClassicStyleAddon() and true or false
             retailTextures.textureOptions:SetEnabled(enabled)
             retailTextures.textureOptions:SetAlpha(enabled and 1 or 0.5)
         end
@@ -7589,15 +7598,15 @@ local function guiGeneralTab()
                 if PlayerFrame and PlayerFrame.healthbar then
                     BBF.ShowHealthGreen(PlayerFrame.healthbar)
                 end
-                if CfPlayerFrameHealthBar then
-                    BBF.updateFrameColorToggleVer(CfPlayerFrameHealthBar, "player")
+                if CfPlayerFrame and CfPlayerFrame.HealthBar then
+                    BBF.updateFrameColorToggleVer(CfPlayerFrame.HealthBar, "player")
                 end
             else
                 if PlayerFrame and PlayerFrame.healthbar then
                     BBF.updateFrameColorToggleVer(PlayerFrame.healthbar, "player")
                 end
-                if CfPlayerFrameHealthBar then
-                    BBF.updateFrameColorToggleVer(CfPlayerFrameHealthBar, "player")
+                if CfPlayerFrame and CfPlayerFrame.HealthBar then
+                    BBF.updateFrameColorToggleVer(CfPlayerFrame.HealthBar, "player")
                 end
             end
             if GameTooltip:IsShown() and GameTooltip:GetOwner() == self then
@@ -7681,15 +7690,15 @@ local function guiGeneralTab()
                     if PlayerFrame and PlayerFrame.healthbar then
                         BBF.ShowHealthGreen(PlayerFrame.healthbar)
                     end
-                    if CfPlayerFrameHealthBar then
-                        BBF.updateFrameColorToggleVer(CfPlayerFrameHealthBar, "player")
+                    if CfPlayerFrame and CfPlayerFrame.HealthBar then
+                        BBF.updateFrameColorToggleVer(CfPlayerFrame.HealthBar, "player")
                     end
                 else
                     if PlayerFrame and PlayerFrame.healthbar then
                         BBF.updateFrameColorToggleVer(PlayerFrame.healthbar, "player")
                     end
-                    if CfPlayerFrameHealthBar then
-                        BBF.updateFrameColorToggleVer(CfPlayerFrameHealthBar, "player")
+                    if CfPlayerFrame and CfPlayerFrame.HealthBar then
+                        BBF.updateFrameColorToggleVer(CfPlayerFrame.HealthBar, "player")
                     end
                 end
             elseif not IsShiftKeyDown() and not IsControlKeyDown() then
@@ -8340,6 +8349,8 @@ local function guiGeneralTab()
     end)
 
     local hideLevelTextAlways = CreateCheckbox("hideLevelTextAlways", L["Always"], hideOptionsHolder, nil, BBF.HideFrames)
+    hideLevelText:HookScript("OnClick", function() BBF.UpdatePartyLevelRings() end)
+    hideLevelTextAlways:HookScript("OnClick", function() BBF.UpdatePartyLevelRings() end)
     hideLevelTextAlways:SetPoint("LEFT", hideLevelText.Text, "RIGHT", 0, 0)
     CreateTooltip(hideLevelTextAlways, L["Tooltip_Always"])
     hideLevelTextAlways:HookScript("OnClick", function()
@@ -8427,7 +8438,16 @@ local function guiGeneralTab()
 
     local classPortraitsUseSpecIcons = CreateCheckbox("classPortraitsUseSpecIcons", L["Use_Spec_Icons"], BetterBlizzFrames, nil, BBF.SpecPortraits)
     classPortraitsUseSpecIcons:SetPoint("TOPLEFT", formatStatusBarText, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltip(classPortraitsUseSpecIcons, L["Tooltip_Use_Spec_Icons"])
+    CreateTooltipTwo(classPortraitsUseSpecIcons, L["Use_Spec_Icons"], L["Tooltip_Use_Spec_Icons"])
+    classPortraitsUseSpecIcons:HookScript("OnMouseDown", function(self, button)
+        if button == "RightButton" then
+            BetterBlizzFramesDB.classPortraitsUseSpecIconsPvPOnly = not BetterBlizzFramesDB.classPortraitsUseSpecIconsPvPOnly or nil
+            BBF.RefreshPortraits()
+            if GameTooltip:IsShown() and GameTooltip:GetOwner() == self then
+                self:GetScript("OnEnter")(self)
+            end
+        end
+    end)
     classPortraitsUseSpecIcons:HookScript("OnClick", function(self)
         if not self:GetChecked() then
             BBF.ShowPopup("BBF_CONFIRM_RELOAD")
@@ -13354,6 +13374,15 @@ local function guiMisc()
     end)
     hideDefaultPartyFramesMana:SetPoint("TOPLEFT", hideUnitFramePetMana, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(hideDefaultPartyFramesMana, L["Hide_Default_PartyFrames_Mana"], L["Tooltip_Hide_Default_PartyFrames_Mana_Desc"])
+
+    if BBF.ClassicStyleAddon() then
+        for _, box in ipairs({ hideUnitFramePlayerMana, hideUnitFrameTargetMana, hideUnitFrameFocusMana, hideUnitFrameTotMana, hideUnitFramePetMana, hideDefaultPartyFramesMana }) do
+            box:SetMotionScriptsWhileDisabled(true)
+            box:SetEnabled(false)
+            box:SetAlpha(0.5)
+            box.bbfClassicStyleAddonLock = true
+        end
+    end
 
     local externalDefensivesHideTooltip = CreateCheckbox("externalDefensivesHideTooltip", L["External_Defensives_Hide_Tooltip"], contentFrame, nil, BBF.ExternalDefensivesClickthrough)
     externalDefensivesHideTooltip:SetPoint("TOPLEFT", hideDefaultPartyFramesMana, "BOTTOMLEFT", 0, pixelsBetweenBoxes)

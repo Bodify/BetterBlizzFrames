@@ -1184,6 +1184,16 @@ local function CreateTooltipTwo(widget, title, mainText, subText, anchor, cvarNa
             GameTooltip:AddLine(tooltipText, 1, 1, 1, true)
         end
 
+        if title == L["Class_Portraits"] then
+            local check = BetterBlizzFramesDB.classPortraitsPvPOnly and " |A:ParagonReputation_Checkmark:15:15|a" or ""
+            GameTooltip:AddLine("\n|cff32f795" .. L["Right_Click_Only_In_PvP"] .. "|r" .. check, 1, 1, 1, true)
+        end
+
+        if title == L["Use_Spec_Icons"] then
+            local check = BetterBlizzFramesDB.classPortraitsUseSpecIconsPvPOnly and " |A:ParagonReputation_Checkmark:15:15|a" or ""
+            GameTooltip:AddLine("\n|cff32f795" .. L["Right_Click_Only_In_PvP"] .. "|r" .. check, 1, 1, 1, true)
+        end
+
         if title == L["Change_Party_Frame_Alpha"] then
             local green = "|cff32f795"
             local reset = "|r"
@@ -5636,11 +5646,29 @@ local function guiGeneralTab()
 
     local classPortraits = CreateCheckbox("classPortraits", L["Class_Portraits"], BetterBlizzFrames)
     classPortraits:SetPoint("TOPLEFT", classColorTargetNames, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltip(classPortraits, L["Tooltip_Class_Portraits"] .. " |A:groupfinder-icon-class-paladin:18:18|a")
+    CreateTooltipTwo(classPortraits, L["Class_Portraits"], L["Tooltip_Class_Portraits"] .. " |A:groupfinder-icon-class-paladin:18:18|a")
+    classPortraits:HookScript("OnMouseDown", function(self, button)
+        if button == "RightButton" then
+            BetterBlizzFramesDB.classPortraitsPvPOnly = not BetterBlizzFramesDB.classPortraitsPvPOnly or nil
+            BBF.RefreshPortraits()
+            if GameTooltip:IsShown() and GameTooltip:GetOwner() == self then
+                self:GetScript("OnEnter")(self)
+            end
+        end
+    end)
 
     local classPortraitsUseSpecIcons = CreateCheckbox("classPortraitsUseSpecIcons", L["Spec"], classPortraits)
     classPortraitsUseSpecIcons:SetPoint("LEFT", classPortraits.text, "RIGHT", 0, 0)
     CreateTooltipTwo(classPortraitsUseSpecIcons, L["Use_Spec_Icons"], L["Tooltip_Use_Spec_Icons_Desc"], L["Tooltip_Use_Spec_Icons_Extra"])
+    classPortraitsUseSpecIcons:HookScript("OnMouseDown", function(self, button)
+        if button == "RightButton" then
+            BetterBlizzFramesDB.classPortraitsUseSpecIconsPvPOnly = not BetterBlizzFramesDB.classPortraitsUseSpecIconsPvPOnly or nil
+            BBF.RefreshPortraits()
+            if GameTooltip:IsShown() and GameTooltip:GetOwner() == self then
+                self:GetScript("OnEnter")(self)
+            end
+        end
+    end)
     classPortraitsUseSpecIcons:HookScript("OnClick", function()
         BBF.ShowPopup("BBF_CONFIRM_RELOAD")
     end)

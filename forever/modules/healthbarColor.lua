@@ -1139,17 +1139,17 @@ function BBF.HookHealthbarColors()
                 end
                 updatingHealthColorCF = false
             end)
-            if CfPlayerFrameHealthBar then
+            if CfPlayerFrame and CfPlayerFrame.HealthBar then
                 if not BetterBlizzFramesDB.classColorFramesSkipPlayer then
-                    HookCfSetStatusBarColor(CfPlayerFrameHealthBar, "player")
+                    HookCfSetStatusBarColor(CfPlayerFrame.HealthBar, "player")
                 end
-                HookCfSetStatusBarColor(CfTargetFrameHealthBar, "target")
-                HookCfSetStatusBarColor(CfFocusFrameHealthBar, "focus")
+                HookCfSetStatusBarColor(CfTargetFrame.HealthBar, "target")
+                HookCfSetStatusBarColor(CfFocusFrame.HealthBar, "focus")
                 hooksecurefunc(TargetFrame, "CheckFaction", function()
-                    UpdateHealthColorCF(CfTargetFrameHealthBar, "target")
+                    UpdateHealthColorCF(CfTargetFrame.HealthBar, "target")
                 end)
                 hooksecurefunc(FocusFrame, "CheckFaction", function()
-                    UpdateHealthColorCF(CfFocusFrameHealthBar, "focus")
+                    UpdateHealthColorCF(CfFocusFrame.HealthBar, "focus")
                 end)
             else
                 BBF.Print(L["Print_ClassicFrames_Not_Detected"])
@@ -1334,7 +1334,7 @@ local PLAYER_NAME_BG_HEALTH_ATLAS = "UI-HUD-UnitFrame-Player-PortraitOn-Bar-Heal
 
 local function PlayerNameBgMode()
     local db = BetterBlizzFramesDB
-    if db.classicFrames or C_AddOns.IsAddOnLoaded("ClassicFrames") then return false end
+    if db.classicFrames or BBF.ClassicStyleAddon() then return false end
     if db.playerNameBgClassic then return "classic" end
     if db.playerNameBgRetail then return "retail" end
 end
@@ -1398,7 +1398,7 @@ function BBF.PlayerReputationColor()
                 end
                 frame.ReputationColor:SetSize(117, 22)
                 frame.ReputationColor:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -26, -31)
-            elseif C_AddOns.IsAddOnLoaded("ClassicFrames") then
+            elseif BBF.ClassicStyleAddon() then
                 frame.ReputationColor:SetTexture(137017)
                 frame.ReputationColor:SetSize(117, 19)
                 frame.ReputationColor:SetTexCoord(1, 0, 0, 1)

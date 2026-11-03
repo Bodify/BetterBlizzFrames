@@ -516,40 +516,42 @@ local function GetStatusBars()
     return list
 end
 
-local function HideStatusText(text)
+local function KeepStatusTextHidden(text, alpha)
+    if text.bbfStatusTextForcing then return end
+    text.bbfStatusTextAlpha = alpha
     if BetterBlizzFramesDB.alwaysHideStatusBarTexts then
-        text:Hide()
+        text.bbfStatusTextForcing = true
+        text:SetAlpha(0)
+        text.bbfStatusTextForcing = nil
     end
 end
 
-local function HookStatusText(text)
+local function ApplyStatusTextAlpha(text)
     if not text then return end
-    if not text.bbfAlwaysHideHooked then
-        text.bbfAlwaysHideHooked = true
-        hooksecurefunc(text, "Show", HideStatusText)
-        hooksecurefunc(text, "SetShown", HideStatusText)
+    if not text.bbfStatusTextAlpha then
+        text.bbfStatusTextAlpha = text:GetAlpha()
+        hooksecurefunc(text, "SetAlpha", KeepStatusTextHidden)
     end
-    HideStatusText(text)
+    text:SetAlpha(text.bbfStatusTextAlpha)
 end
 
 function BBF.AlwaysHideStatusBarTexts()
     if not BetterBlizzFramesDB.alwaysHideStatusBarTexts and not statusBars then return end
     for _, bar in ipairs(GetStatusBars()) do
-        HookStatusText(bar.TextString)
-        HookStatusText(bar.LeftText)
-        HookStatusText(bar.RightText)
+        ApplyStatusTextAlpha(bar.TextString)
+        ApplyStatusTextAlpha(bar.LeftText)
+        ApplyStatusTextAlpha(bar.RightText)
     end
 end
 
 function BBF.RefreshAlwaysHideStatusBarTexts()
-    if InCombatLockdown() then
-        BBF.RunAfterCombat(BBF.RefreshAlwaysHideStatusBarTexts)
-        return
-    end
     BBF.AlwaysHideStatusBarTexts()
-    if not statusBars then return end
-    for _, bar in ipairs(statusBars) do
-        bar:UpdateTextString()
+    if BBF.UpdateManaOnlyTexts then
+        BBF.UpdateManaOnlyTexts()
     end
-    BBF.StatusBarTextExtra()
+    if InCombatLockdown() then
+        BBF.RunAfterCombat(BBF.StatusBarTextExtra)
+    else
+        BBF.StatusBarTextExtra()
+    end
 end

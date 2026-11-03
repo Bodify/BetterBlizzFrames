@@ -870,6 +870,7 @@ function BBF.HideFrames()
         end
 
         -- Hide Player level text
+        BBF.UpdateAlwaysHiddenLevelText()
         if BetterBlizzFramesDB.hideLevelText then
             changes.hideLevelText = true
             if classicFrames and not BBF.classicFramesLevelHide then

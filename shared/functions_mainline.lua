@@ -137,8 +137,13 @@ function BBF.PlayerHealthLossBelowFill()
         BBF.RunAfterCombat(BBF.PlayerHealthLossBelowFill)
         return
     end
+    if BBF.ClassicStyleAddon() and not BBF.playerHealthLossHooked then
+        BBF.playerHealthLossHooked = true
+        hooksecurefunc(loss, "SetParent", function() BBF.PlayerHealthLossBelowFill() end)
+    end
     loss:SetUsingParentLevel(false)
-    loss:SetFrameLevel(math.max(container.HealthBar:GetFrameLevel() - 1, 0))
+    local parent = loss:GetParent()
+    loss:SetFrameLevel(math.max((parent ~= container and parent or container.HealthBar):GetFrameLevel() - 1, 0))
     if playerHealthBgLayer then
         playerHealthBgLayer:SetFrameLevel(PlayerHealthBgLevel())
     end

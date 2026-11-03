@@ -1139,17 +1139,17 @@ function BBF.HookHealthbarColors()
                 end
                 updatingHealthColorCF = false
             end)
-            if CfPlayerFrameHealthBar then
+            if CfPlayerFrame and CfPlayerFrame.HealthBar then
                 if not BetterBlizzFramesDB.classColorFramesSkipPlayer then
-                    HookCfSetStatusBarColor(CfPlayerFrameHealthBar, "player")
+                    HookCfSetStatusBarColor(CfPlayerFrame.HealthBar, "player")
                 end
-                HookCfSetStatusBarColor(CfTargetFrameHealthBar, "target")
-                HookCfSetStatusBarColor(CfFocusFrameHealthBar, "focus")
+                HookCfSetStatusBarColor(CfTargetFrame.HealthBar, "target")
+                HookCfSetStatusBarColor(CfFocusFrame.HealthBar, "focus")
                 hooksecurefunc(TargetFrame, "CheckFaction", function()
-                    UpdateHealthColorCF(CfTargetFrameHealthBar, "target")
+                    UpdateHealthColorCF(CfTargetFrame.HealthBar, "target")
                 end)
                 hooksecurefunc(FocusFrame, "CheckFaction", function()
-                    UpdateHealthColorCF(CfFocusFrameHealthBar, "focus")
+                    UpdateHealthColorCF(CfFocusFrame.HealthBar, "focus")
                 end)
             else
                 BBF.Print(L["Print_ClassicFrames_Not_Detected"])
@@ -1353,7 +1353,7 @@ function BBF.PlayerReputationColor()
                 end
                 frame.ReputationColor:SetSize(117, 18)
                 frame.ReputationColor:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -26, -31)
-            elseif C_AddOns.IsAddOnLoaded("ClassicFrames") then
+            elseif BBF.ClassicStyleAddon() then
                 frame.ReputationColor:SetTexture(137017)
                 frame.ReputationColor:SetSize(117, 19)
                 frame.ReputationColor:SetTexCoord(1, 0, 0, 1)
@@ -1367,7 +1367,7 @@ function BBF.PlayerReputationColor()
         else
             frame.ReputationColor:Show()
         end
-        if not BetterBlizzFramesDB.classicFrames and not C_AddOns.IsAddOnLoaded("ClassicFrames") then
+        if not BetterBlizzFramesDB.classicFrames and not BBF.ClassicStyleAddon() then
             local bigNameBg = BBF.BigPlayerHealthbar() and not BetterBlizzFramesDB.symmetricPlayerFrame
             if bigNameBg then
                 frame.ReputationColor:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\retailTextures\\Player-NameBg-Reduced.png")

@@ -98,6 +98,49 @@ function BBF.DarkModeUnitFramesOn()
 	return db.darkModeUi and db.darkModeUnitFrames and not (BBF.ClassicBronzeTintActive and BBF.ClassicBronzeTintActive()) and true or false
 end
 
+local classicStyleAddon
+
+function BBF.ClassicStyleAddon()
+	if classicStyleAddon == nil then
+		local db = BetterBlizzFramesDB
+		local player = UnitName("player")
+		classicStyleAddon = (C_AddOns.IsAddOnLoadable("ClassicFrames", player)
+			or C_AddOns.IsAddOnLoadable("EasyFrames", player)
+			or (C_AddOns.IsAddOnLoadable("ClassicUIForever", player) and not (db and db.classicUIUnitFramesOff))) and true or false
+	end
+	return classicStyleAddon or C_AddOns.IsAddOnLoaded("ClassicFrames")
+end
+
+local classicFramesHeld
+
+function BBF.HoldClassicFramesSetting()
+	local db = BetterBlizzFramesDB
+	if db.classicFrames and BBF.ClassicStyleAddon() then
+		classicFramesHeld = true
+		db.classicFrames = false
+	end
+end
+
+local classicUIState = CreateFrame("Frame")
+classicUIState:RegisterEvent("PLAYER_LOGOUT")
+classicUIState:SetScript("OnEvent", function()
+	if not BetterBlizzFramesDB then return end
+	if classicFramesHeld then
+		BetterBlizzFramesDB.classicFrames = true
+	end
+	if ForeverClassicUIDB then
+		BetterBlizzFramesDB.classicUIUnitFramesOff = ForeverClassicUIDB.unitFrames == false or nil
+	end
+end)
+
+function BBF.ClassicStyleAddonNote(styleWide)
+	if C_AddOns.IsAddOnLoaded("ClassicFrames") then
+		return styleWide and L["Tooltip_Classic_Style_Incompatible"] or L["Tooltip_Classic_Frames_Addon_Incompatible"]
+	end
+	if C_AddOns.IsAddOnLoaded("EasyFrames") then return L["Tooltip_EasyFrames_Incompatible"] end
+	return L["Tooltip_ClassicUI_Forever_Incompatible"]
+end
+
 function BBF.PlayerLevelHideFlags()
 	local db = BetterBlizzFramesDB
 	if db.hideLevelText then
@@ -110,6 +153,36 @@ end
 function BBF.PlayerLevelHidden(maxLevel)
 	local hide, always = BBF.PlayerLevelHideFlags()
 	return always or (hide and UnitLevel("player") == (maxLevel or GetMaxLevelForPlayerExpansion()))
+end
+
+local function BlankLevelText(text, unit, blank)
+	if not text or (text.bbfLevelBlank or false) == blank then return end
+	text.bbfLevelBlank = blank
+	if not text.bbfLevelBlankHooked then
+		text.bbfLevelBlankHooked = true
+		hooksecurefunc(text, "SetText", function(self)
+			if not self.bbfLevelBlank or self.bbfLevelBlanking then return end
+			self.bbfLevelBlanking = true
+			self:SetText("")
+			self.bbfLevelBlanking = nil
+		end)
+	end
+	if blank then
+		text:SetText("")
+	elseif unit and UnitExists(unit) then
+		local level = UnitEffectiveLevel(unit)
+		if issecretvalue(level) or level > 0 then
+			text:SetText(level)
+		end
+	end
+end
+
+function BBF.UpdateAlwaysHiddenLevelText()
+	local db = BetterBlizzFramesDB
+	local blank = db.hideLevelText and db.hideLevelTextAlways and true or false
+	BlankLevelText(PlayerLevelText, PlayerFrame.unit, blank)
+	BlankLevelText(TargetFrame.TargetFrameContent.TargetFrameContentMain.LevelText, "target", blank)
+	BlankLevelText(FocusFrame.TargetFrameContent.TargetFrameContentMain.LevelText, "focus", blank)
 end
 
 function BBF.UpdateAuraCollapseButton()
@@ -292,6 +365,35 @@ function BBF.GetPartyFrameUnit(frame)
 	end
 	if type(unit) ~= "string" or unit == "" then return end
 	return unit
+end
+
+function BBF.InPvPInstance()
+    local _, instanceType = IsInInstance()
+    return instanceType == "arena" or instanceType == "pvp"
+end
+
+function BBF.SpecIconsActive()
+    local db = BetterBlizzFramesDB
+    return db.classPortraitsUseSpecIcons and (not db.classPortraitsUseSpecIconsPvPOnly or BBF.InPvPInstance())
+end
+
+local portraitFrames = { "PlayerFrame", "PetFrame", "TargetFrame", "TargetFrameToT", "FocusFrame", "FocusFrameToT", "PartyMemberFrame1", "PartyMemberFrame2", "PartyMemberFrame3", "PartyMemberFrame4" }
+
+local function RefreshPortrait(frame)
+    if frame and frame.unit and UnitExists(frame.unit) then
+        UnitFramePortrait_Update(frame)
+    end
+end
+
+function BBF.RefreshPortraits()
+    for _, name in ipairs(portraitFrames) do
+        RefreshPortrait(_G[name])
+    end
+    if PartyFrame then
+        for i = 1, 4 do
+            RefreshPortrait(PartyFrame["MemberFrame" .. i])
+        end
+    end
 end
 
 function BBF.FindPartyFrame(i)
@@ -526,11 +628,14 @@ function BBF.UpdateFrameStyleBlockers(groups)
 		for _, entry in ipairs(group.boxes) do
 			local box, key = entry[1], entry[2]
 			local locked = blocker and not db[key]
+			local addonLocked = not db[key] and BBF.ClassicStyleAddon()
 			box:SetChecked(db[key] and true or false)
 			box:SetMotionScriptsWhileDisabled(true)
-			box:SetEnabled(not locked)
-			box:SetAlpha(locked and 0.5 or 1)
-			box.bbfStyleBlocker = locked and blocker or nil
+			box:SetEnabled(not locked and not addonLocked)
+			box:SetAlpha((locked or addonLocked) and 0.5 or 1)
+			box.bbfStyleBlocker = locked and not addonLocked and blocker or nil
+			box.bbfClassicStyleAddonLock = addonLocked or nil
+			box.bbfClassicStyleWide = key ~= "classicFrames"
 		end
 	end
 end

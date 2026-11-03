@@ -174,7 +174,8 @@ function BBF.HealerIndicatorPortrait()
                 self.portrait:SetAtlas("UI-LFG-RoleIcon-Healer")
                 self.portrait:SetTexCoord(0.13,0.85,0.13,0.83)
                 self.bbfHealerPortraitActive = true
-            elseif BetterBlizzFramesDB.classPortraitsUseSpecIcons then
+                self.bbfSpecPortraitCropped = nil
+            elseif BBF.SpecIconsActive() then
                 if unit == "player" and BetterBlizzFramesDB.classPortraitsUseSpecIconsSkipSelf then
                     return
                 end
@@ -186,16 +187,19 @@ function BBF.HealerIndicatorPortrait()
                         self.portrait:SetTexture(icon)
                         self.portrait:SetTexCoord(crop, 1 - crop, crop, 1 - crop)
                         self.bbfHealerPortraitActive = nil
+                        self.bbfSpecPortraitCropped = true
                         return
                     end
                 end
-            elseif self.bbfHealerPortraitActive then
+            elseif self.bbfHealerPortraitActive or self.bbfSpecPortraitCropped then
                 self.portrait:SetTexCoord(0,1,0,1)
                 self.bbfHealerPortraitActive = nil
+                self.bbfSpecPortraitCropped = nil
             end
-        elseif self.bbfHealerPortraitActive then
+        elseif self.bbfHealerPortraitActive or self.bbfSpecPortraitCropped then
             self.portrait:SetTexCoord(0,1,0,1)
             self.bbfHealerPortraitActive = nil
+            self.bbfSpecPortraitCropped = nil
         end
     end)
     BBF.healerPortrait = true

@@ -39,7 +39,7 @@ end
 
 local function DefaultArtFrame()
     local db = BetterBlizzFramesDB
-    return not db.classicFrames and not BBF.HasNoPortrait("player")
+    return not db.classicFrames and not BBF.HasNoPortrait("player") and not BBF.ClassicStyleAddon()
 end
 
 function BBF.PlayerManaHiddenArt()
@@ -289,6 +289,7 @@ local function UpdatePlayerStatusTexture()
 end
 
 function BBF.UpdatePlayerFrameFlash()
+    if BBF.ClassicStyleAddon() then return end
     if not BBF.hookedPlayerFrameFlash then
         BBF.hookedPlayerFrameFlash = true
         hooksecurefunc("PlayerFrame_ToPlayerArt", BBF.UpdatePlayerFrameFlash)
@@ -622,6 +623,7 @@ end
 
 function BBF.UpdateBigPlayerHealthbar()
     BBF.PlayerReputationColor()
+    if BBF.ClassicStyleAddon() then return end
     if IsEnabled() then
         EnsureHooks()
         Apply()

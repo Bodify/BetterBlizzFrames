@@ -302,6 +302,7 @@ end
 function BBF.GetHealthbarLayout(frame)
     if not IsTargetFrame(frame) then return end
     local style = TargetStyle(frame)
+    if style == "default" and BBF.ClassicStyleAddon() then return end
     if style == "pixel" then
         return BBF.PixelBorderMirrorLayout(frame)
     end

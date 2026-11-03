@@ -161,7 +161,7 @@ BBF.NameLayouts = {
         { style = "camelot", mode = "reduced", y = 1.5 }, { y = 0.5 } },
     pet = { { inside = true, y = -10 }, { style = "retail", y = 1.5 }, { style = "camelot", mode = "xl", mana = "hidden", y = 2.5 },
         { style = "camelot", mode = "reduced", y = 2 }, { y = 1.5 } },
-    party = { { inside = true, y = -10 }, { client = "retail", style = "retail", mode = "xl", left = -21, y = 2.5 }, { client = "retail", style = "retail", y = 2.5 }, { style = "retail", mode = "xl", left = -21, y = 0.5 }, { style = "retail", y = 0.5 }, { style = "classic", mode = "big", y = -1 }, { style = "classic", y = -3 }, { y = 0.5 } },
+    party = { { inside = true, y = -10 }, { client = "retail", style = "retail", mode = "xl", left = -21, y = 2.5 }, { client = "retail", style = "retail", y = 2.5 }, { style = "retail", mode = "xl", left = -21, y = 0.5 }, { style = "retail", y = 0.5 }, { style = "classic", mode = "big", y = -1 }, { style = "classic", y = 1 }, { y = 0.5 } },
 }
 BBF.NameAreaOverrides = {}
 local NAME_HEIGHT = { player = 12, target = 12, tot = 10, pet = 10, party = 10 }
@@ -291,7 +291,7 @@ end
 function BBF.TextAreaActive(frame)
     local key, unit = FrameInfo(frame)
     if not key or MiniFrame(unit) then return false end
-    if C_AddOns and C_AddOns.IsAddOnLoaded and C_AddOns.IsAddOnLoaded("ClassicFrames") then return false end
+    if BBF.ClassicStyleAddon() then return false end
     local noPortrait = NoPortraitStyle(unit)
     if noPortrait then
         return BBF.TextAreaOverrides[key] ~= nil or HasStyleRules(key, noPortrait)
@@ -915,7 +915,7 @@ local function ApplyTextArea(frame)
             if area.manaHidden and detached then
                 if not text.bbfTextAreaHidden then
                     text.bbfTextAreaHidden = true
-                    text.bbfTextAreaAlpha = text:GetAlpha()
+                    text.bbfTextAreaAlpha = text.bbfStatusTextAlpha or text:GetAlpha()
                 end
                 text:SetAlpha(0)
             elseif text.bbfTextAreaHidden then

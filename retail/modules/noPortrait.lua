@@ -193,7 +193,7 @@ end
 
 function BBF.UpdatePetFrameTexture()
     local db = BetterBlizzFramesDB
-    if db.classicFrames then return end
+    if db.classicFrames or BBF.ClassicStyleAddon() then return end
     if not PetFrameTexture then return end
     if BBF.HasNoPortrait("pet") then return end
     local bigMode = BBF.PetBigMode()
@@ -506,7 +506,7 @@ local function UpdateOnePartyReduced(frame)
 end
 
 function BBF.UpdatePartyReduced()
-    if not PartyFrame then return end
+    if not PartyFrame or BBF.ClassicStyleAddon() then return end
     for i = 1, 4 do
         local frame = PartyFrame["MemberFrame" .. i]
         if frame then
@@ -531,7 +531,7 @@ function BBF.UpdateTotFrameTexture()
     if BBF.PlaceTotStatusTexts then
         BBF.PlaceTotStatusTexts()
     end
-    if BetterBlizzFramesDB.classicFrames then return end
+    if BetterBlizzFramesDB.classicFrames or BBF.ClassicStyleAddon() then return end
     UpdateOneTotTexture(TargetFrame, "target")
     UpdateOneTotTexture(FocusFrame, "focus")
     UpdateOneTotBars(TargetFrame, "target")
@@ -556,6 +556,7 @@ local function PlaceBarText(text, point, bar, x, y)
 end
 
 function BBF.PlacePetHealthTexts()
+    if BBF.ClassicStyleAddon() then return end
     local db = BetterBlizzFramesDB
     if BBF.ApplyTextArea(PetFrame) then return end
     local big = BBF.PetBigMode() == "big"
@@ -571,7 +572,7 @@ end
 
 function BBF.UpdateDefaultPetBars()
     local db = BetterBlizzFramesDB
-    if db.classicFrames or BBF.HasNoPortrait("pet") then return end
+    if db.classicFrames or BBF.HasNoPortrait("pet") or BBF.ClassicStyleAddon() then return end
     if not PetFrameHealthBar or not PetFrameManaBar or not PetFrameHealthBarMask then return end
     local mode = BBF.PetBigMode()
     local hideMana = db.hideUnitFramePetMana

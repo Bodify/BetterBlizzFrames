@@ -687,7 +687,7 @@ end
 
 function BBF.BigHealthbarsOn()
     local db = BetterBlizzFramesDB
-    return db.bigHealthbars and not db.noPortraitPixelBorder
+    return db.bigHealthbars and not db.noPortraitPixelBorder and not BBF.ClassicStyleAddon()
 end
 
 function BBF.BigPlayerHealthbar()

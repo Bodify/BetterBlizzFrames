@@ -59,6 +59,7 @@ function BBF.SetLevelRingsHidden(hidden)
 end
 
 function BBF.BindLevelRings()
+    if BBF.ClassicStyleAddon() then return end
     if BBF.levelRingsBound then return end
     BBF.levelRingsBound = true
 
@@ -975,6 +976,7 @@ local function RoundFrameArt()
 end
 
 function BBF.UpdateSmallerLevelCircle()
+    if BBF.ClassicStyleAddon() then return end
     local playerMain = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain
     RoundToPixel(playerMain.LevelBackgroundCircle)
     local playerX, playerY = 19, 17.5
@@ -1017,6 +1019,7 @@ local function PlacePvpIcon(container, point, x, y)
 end
 
 function BBF.UpdatePvpIconPosition()
+    if BBF.ClassicStyleAddon() then return end
     if BBF.NoPortraitOnUnitFrames and BBF.NoPortraitOnUnitFrames() then return end
     PlacePvpIcon(PlayerFrame.PlayerFrameContent.PlayerFrameContentMain, "TOPLEFT", 12.5, -37)
     PlacePvpIcon(TargetFrame.TargetFrameContent.TargetFrameContentContextual, "TOPRIGHT", (BBF.RetailTexturesOn and BBF.RetailTexturesOn("target")) and -14.5 or -12, -35)
@@ -1055,6 +1058,7 @@ local function ApplyPlayerManaHeight()
 end
 
 function BBF.UpdatePlayerManaHeight()
+    if BBF.ClassicStyleAddon() then return end
     if not playerManaHeightHooked and PlayerFrame_UpdateManaBarVisuals then
         playerManaHeightHooked = true
         hooksecurefunc("PlayerFrame_UpdateManaBarVisuals", ApplyPlayerManaHeight)
@@ -1142,6 +1146,7 @@ local function ApplyNameBg(frame, unit)
 end
 
 function BBF.UpdateNameBgTextures()
+    if BBF.ClassicStyleAddon() then return end
     if InCombatLockdown() then
         if not nameBgFrame then
             nameBgFrame = CreateFrame("Frame")
@@ -1172,6 +1177,7 @@ local function PlaceDefaultHealthMask(mask, healthBar, width, x)
 end
 
 function BBF.UpdatePlayerHealthMask()
+    if BBF.ClassicStyleAddon() then return end
     local db = BetterBlizzFramesDB
     if not playerMaskHooked and PlayerFrame_UpdateHealthBarVisuals then
         playerMaskHooked = true
@@ -1188,6 +1194,7 @@ end
 local targetMaskHooked = {}
 
 function BBF.UpdateTargetHealthMask(frame)
+    if BBF.ClassicStyleAddon() then return end
     if not frame or not frame.TargetFrameContent then return end
     if not targetMaskHooked[frame] and frame.UpdateHealthBarVisuals then
         targetMaskHooked[frame] = true
@@ -1239,6 +1246,7 @@ local function NameBorderRemoved(frame)
 end
 
 function BBF.UpdateReducedGroupIcons()
+    if BBF.ClassicStyleAddon() then return end
     if InCombatLockdown() or not BBF.BigHealthbarReduced then return end
     local db = BetterBlizzFramesDB
     if db.classicFrames then return end
@@ -1283,6 +1291,7 @@ local function PlaceBarText(text, point, bar, x, y)
 end
 
 function BBF.PlacePetHealthTexts()
+    if BBF.ClassicStyleAddon() then return end
     if BBF.ApplyTextArea and BBF.ApplyTextArea(PetFrame) then return end
     local db = BetterBlizzFramesDB
     local big = BBF.PetBigMode() == "big"
@@ -1293,6 +1302,7 @@ function BBF.PlacePetHealthTexts()
 end
 
 function BBF.UpdateDefaultPetBars()
+    if BBF.ClassicStyleAddon() then return end
     local db = BetterBlizzFramesDB
     if db.classicFrames or BBF.HasNoPortrait("pet") then return end
     if not PetFrameHealthBar or not PetFrameManaBar or not PetFrameHealthBarMask or not PetFrameManaBarMask then return end

@@ -174,6 +174,7 @@ local function SetNoBorderFlash(flash, art, on, atlas, relativeTo, x, y)
 end
 
 function BBF.UpdatePetFrameTexture()
+    if BBF.ClassicStyleAddon() then return end
     local db = BetterBlizzFramesDB
     if db.classicFrames then return end
     if not PetFrameTexture then return end
@@ -684,6 +685,7 @@ local function PlaceMicroRoleIcon(frame)
     if not proxy then return end
     local default = DefaultPartyRoleLook()
     local size = default and PARTY_ROLE.size or 15
+    proxy.roleIcon:SetParent(frame.PartyMemberOverlay.RoleIcon:GetParent())
     proxy.roleIcon:SetSize(size, size)
     proxy.roleIcon:ClearAllPoints()
     proxy.roleIcon:SetPoint("CENTER", frame.PartyMemberOverlay.RoleIcon, "CENTER", default and PARTY_ROLE.x or 0, default and PARTY_ROLE.y or 0)
@@ -771,6 +773,7 @@ function BBF.UpdatePartyRoleIcons()
 end
 
 function BBF.UpdatePartyReduced()
+    if BBF.ClassicStyleAddon() then return end
     if not PartyFrame then return end
     for i = 1, 4 do
         local frame = PartyFrame["MemberFrame" .. i]
@@ -799,7 +802,7 @@ end
 
 function BBF.UpdateTotFrameTexture()
     BBF.PlaceTotStatusTexts()
-    if BetterBlizzFramesDB.classicFrames then return end
+    if BetterBlizzFramesDB.classicFrames or BBF.ClassicStyleAddon() then return end
     UpdateOneTotTexture(TargetFrame, "target")
     UpdateOneTotTexture(FocusFrame, "focus")
     UpdateOneTotReduced(TargetFrame, "target")

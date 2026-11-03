@@ -4374,11 +4374,11 @@ function BBF.HookUnitFrameTextures()
 
     if classicFramesLoaded then
         if db.changeUnitFrameHealthbarTexture then
-            ApplyTextureChange("health", CfPlayerFrameHealthBar)
-            ApplyTextureChange("health", CfTargetFrameHealthBar, TargetFrame)
+            ApplyTextureChange("health", CfPlayerFrame.HealthBar)
+            ApplyTextureChange("health", CfTargetFrame.HealthBar, TargetFrame)
             ApplyTextureChange("health", TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor, TargetFrame)
             ApplyTextureChange("health", FocusFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor, FocusFrame)
-            ApplyTextureChange("health", CfFocusFrameHealthBar, FocusFrame)
+            ApplyTextureChange("health", CfFocusFrame.HealthBar, FocusFrame)
             if PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ReputationColor then
                 ApplyTextureChange("health", PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ReputationColor)
             end
@@ -4388,16 +4388,16 @@ function BBF.HookUnitFrameTextures()
         end
 
         if db.changeUnitFrameManabarTexture then
-            ApplyTextureChange("mana", CfPlayerFrameManaBar)
-            ApplyTextureChange("mana", CfTargetFrameManaBar, nil, true)
-            ApplyTextureChange("mana", CfFocusFrameManaBar, nil, true)
+            ApplyTextureChange("mana", CfPlayerFrame.ManaBar)
+            ApplyTextureChange("mana", CfTargetFrame.ManaBar, nil, true)
+            ApplyTextureChange("mana", CfFocusFrame.ManaBar, nil, true)
         end
 
         if not db.classColorFrames then
             local healthbars = {
-                CfPlayerFrameHealthBar,
-                CfTargetFrameHealthBar,
-                CfFocusFrameHealthBar
+                CfPlayerFrame.HealthBar,
+                CfTargetFrame.HealthBar,
+                CfFocusFrame.HealthBar
             }
 
             for _, healthbar in ipairs(healthbars) do
@@ -4738,7 +4738,7 @@ function BBF.ForeverFixes()
     PlayerLevelText:SetJustifyH("CENTER")
     TargetFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetJustifyH("CENTER")
     FocusFrame.TargetFrameContent.TargetFrameContentMain.LevelText:SetJustifyH("CENTER")
-    if db.classicFrames or C_AddOns.IsAddOnLoaded("ClassicFrames") then return end
+    if db.classicFrames or BBF.ClassicStyleAddon() then return end
     if not db.useMiniPlayerFrame and not BBF.HasNoPortrait("player") then
         local playerMain = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain
         NudgeLevelText(PlayerLevelText, playerMain.LevelBackgroundCircle, -1, "player")
@@ -4780,7 +4780,7 @@ end
 
 function BBF.UpdateTotTextureMasks()
     local db = BetterBlizzFramesDB
-    if db.classicFrames or C_AddOns.IsAddOnLoaded("ClassicFrames") then return end
+    if db.classicFrames or BBF.ClassicStyleAddon() then return end
     for frame, unit in pairs({ [TargetFrame] = "target", [FocusFrame] = "focus" }) do
         local totFrame = frame.totFrame
         local retail = BBF.RetailTexturesOn and BBF.RetailTexturesOn(unit)
@@ -4813,7 +4813,7 @@ function BBF.UpdateTotTextureMasks()
 end
 
 function BBF.FixForeverTextureMasks()
-    if BetterBlizzFramesDB.classicFrames or C_AddOns.IsAddOnLoaded("ClassicFrames") then return end
+    if BetterBlizzFramesDB.classicFrames or BBF.ClassicStyleAddon() then return end
     BBF.UpdateTotTextureMasks()
 end
 
@@ -5205,7 +5205,7 @@ function BBF.FixStupidBlizzPTRShit()
         end
     end
 
-    if isAddonLoaded("ClassicFrames") or isAddonLoaded("EasyFrames") or BetterBlizzFramesDB.classicFrames or BBF.HasNoPortrait("player") then return end
+    if BBF.ClassicStyleAddon() or BetterBlizzFramesDB.classicFrames or BBF.HasNoPortrait("player") then return end
     -- For god knows what reason PTR has a gap between Portrait and PlayerFrame. This fixes it + other gaps.
     --PlayerFrame.PlayerFrameContainer.PlayerPortrait:SetScale(1.02)
     PlayerFrame.PlayerFrameContainer.PlayerPortrait:SetSize(61,61)
@@ -5598,7 +5598,7 @@ function BBF.SpecPortraits()
     if not BetterBlizzFramesDB.classPortraitsUseSpecIcons then return end
     hooksecurefunc("UnitFramePortrait_Update", function(self)
         if BBF.UpdateSecretPortrait(self) then return end
-        if (self.unit == "target" or self.unit == "focus" or self.unit == "player") and UnitIsPlayer(self.unit) then
+        if BBF.SpecIconsActive() and (self.unit == "target" or self.unit == "focus" or self.unit == "player") and UnitIsPlayer(self.unit) then
             if not (self.unit == "player" and BetterBlizzFramesDB.classPortraitsUseSpecIconsSkipSelf) then
                 local specID = BBF.GetSpecID(self.unit)
                 if specID then
@@ -5743,6 +5743,10 @@ Frame:SetScript("OnEvent", function(...)
             BBF.StealthIndicator()
             BBF.SmoothBars()
             BBF.PlayerHealthLossBelowFill()
+            if BBF.ClassicStyleAddon() and BetterBlizzFramesDB.bigHealthbars and not BetterBlizzFramesDB.classicStyleAddonNotice then
+                BetterBlizzFramesDB.classicStyleAddonNotice = true
+                BBF.Print(L["Big_Healthbars"] .. ": " .. BBF.ClassicStyleAddonNote())
+            end
             BBF.CastbarRecolorWidgets()
             BBF.CastBarTimerCaller()
             BBF.ShowPlayerCastBarIcon()
@@ -5929,6 +5933,7 @@ First:SetScript("OnEvent", function(_, event, addonName)
         BBF.ApplyLocale()
 
         InitializeSavedVariables()
+        BBF.HoldClassicFramesSetting()
         BBF.EnforceForeverComboPoints()
 
         if BetterBlizzFramesDB.hideTargetAuras then

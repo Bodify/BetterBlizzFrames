@@ -51,7 +51,12 @@ function BBF.ClassPortraits()
         if UnitIsPlayer(unit) then
             if BetterBlizzFramesDB.classPortraitsIgnoreSelf and portrait:GetParent():GetName() == "PlayerFrame" then return end
 
-            if BetterBlizzFramesDB.classPortraitsUseSpecIcons and Details then
+            if BetterBlizzFramesDB.classPortraitsPvPOnly and not BBF.InPvPInstance() then
+                portrait:SetTexCoord(0, 1, 0, 1)
+                return
+            end
+
+            if BBF.SpecIconsActive() and Details then
                 local unitGUID = UnitGUID(unit)
                 local specID = nil
 

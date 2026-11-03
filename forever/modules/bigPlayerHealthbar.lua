@@ -34,13 +34,13 @@ local MANA_SPAN = MANABAR_HEIGHT + BAR_GAP
 
 function BBF.PlayerManaHiddenArt()
     local db = BetterBlizzFramesDB
-    return db.hideUnitFramePlayerMana and not db.classicFrames
+    return db.hideUnitFramePlayerMana and not db.classicFrames and not BBF.ClassicStyleAddon()
         and not BBF.HasNoPortrait("player") and true or false
 end
 
 function BBF.PlayerNameBorderRemoved()
     local db = BetterBlizzFramesDB
-    return db.removeNameBorder and not db.classicFrames and not BBF.HasNoPortrait("player")
+    return db.removeNameBorder and not db.classicFrames and not BBF.ClassicStyleAddon() and not BBF.HasNoPortrait("player")
         and not BBF.BigPlayerHealthbar() and not RetailOn("player") and true or false
 end
 
@@ -277,6 +277,7 @@ local function UpdatePlayerStatusTexture()
 end
 
 function BBF.UpdatePlayerFrameFlash()
+    if BBF.ClassicStyleAddon() then return end
     if not BBF.hookedPlayerFrameFlash then
         BBF.hookedPlayerFrameFlash = true
         hooksecurefunc("PlayerFrame_ToPlayerArt", BBF.UpdatePlayerFrameFlash)
@@ -649,6 +650,7 @@ end
 
 function BBF.UpdateBigPlayerHealthbar()
     BBF.PlayerReputationColor()
+    if BBF.ClassicStyleAddon() then return end
     BBF.UpdatePlayerManaHeight()
     if IsEnabled() then
         EnsureHooks()

@@ -4,6 +4,14 @@ local ABSORB_GLOW_OFFSET = -5
 local UNITFRAME_OVERSHIELD_HOOKED = false
 local COMPACT_UNITFRAME_OVERSHIELD_HOOKED = false
 local PRD_OVERSHIELD_HOOKED = false
+local classicBars
+
+local function ClassicStyleBar(frame)
+    if classicBars then return classicBars[frame] end
+    local absorbBar = BBF.ClassicStyleAddon() and frame.totalAbsorbBar
+    local parent = absorbBar and absorbBar:GetParent()
+    return parent ~= frame.healthbar and parent or nil
+end
 
 local function AnchorOvershieldBar(overshieldBar, healthBar)
     if healthBar.bbfMirror then
@@ -75,7 +83,8 @@ end
 
 local function BBF_UnitFrameHealPredictionBars_Update(frame)
     local mirror = BBF.GetHealthbarMirror and BBF.GetHealthbarMirror(frame)
-    local healthBar = mirror and mirror.bar or frame.healthbar
+    local classicBar = ClassicStyleBar(frame)
+    local healthBar = classicBar or (mirror and mirror.bar) or frame.healthbar
     if not healthBar or healthBar:IsForbidden() then return end
 
     local absorbGlow = mirror and mirror.glows.OverAbsorbGlow or frame.overAbsorbGlow
@@ -87,13 +96,16 @@ local function BBF_UnitFrameHealPredictionBars_Update(frame)
     end
     if not healthBar.bbfOvershieldBar then
         CreateOvershieldBar(healthBar, true)
+        if classicBar then
+            healthBar.bbfOvershieldBar:SetFrameLevel(healthBar:GetFrameLevel() + 1)
+        end
     end
 
     local overshieldBar = healthBar.bbfOvershieldBar
     frame.bbfOvershieldBar = overshieldBar
     local unit = frame.unit
 
-    local mask = BBF.HealthBarMask and BBF.HealthBarMask(frame)
+    local mask = not classicBar and BBF.HealthBarMask and BBF.HealthBarMask(frame) or nil
     if mask and not mask:IsShown() then
         mask = nil
     end
@@ -117,7 +129,7 @@ local function BBF_UnitFrameHealPredictionBars_Update(frame)
     UnitGetDetailedHealPrediction(unit, nil, frame.healPredictionCalc)
     local _, clamped = frame.healPredictionCalc:GetDamageAbsorbs()
     local totalAbsorbs = UnitGetTotalAbsorbs(unit) or 0
-    local _, maxVal = healthBar:GetMinMaxValues()
+    local _, maxVal = (classicBar and frame.healthbar or healthBar):GetMinMaxValues()
     local absorbBar = mirror and mirror.TotalAbsorbBar or frame.totalAbsorbBar
     local blizzAbsorbOverlay = absorbBar.TiledFillOverlay
 
@@ -242,37 +254,24 @@ function BBF.HookOverShieldUnitFrames()
         return
     end
 
-    local classicFramesEnabled = C_AddOns.IsAddOnLoaded("ClassicFrames")
-
-    if not classicFramesEnabled then
-        hooksecurefunc("UnitFrameHealPredictionBars_Update", BBF_UnitFrameHealPredictionBars_Update)
-
-        C_Timer.After(3, function()
-            BBF_UnitFrameHealPredictionBars_Update(PlayerFrame)
-            BBF_UnitFrameHealPredictionBars_Update(TargetFrame)
-            BBF_UnitFrameHealPredictionBars_Update(FocusFrame)
-        end)
-    else
-        local classicFrames = {
-            [PlayerFrame] = CfPlayerFrame,
-            [TargetFrame] = CfTargetFrame,
-            [FocusFrame] = CfFocusFrame
+    if C_AddOns.IsAddOnLoaded("ClassicFrames") and CfPlayerFrame then
+        classicBars = {
+            [PlayerFrame] = CfPlayerFrame.HealthBar,
+            [TargetFrame] = CfTargetFrame.HealthBar,
+            [FocusFrame] = CfFocusFrame.HealthBar,
         }
-        hooksecurefunc("UnitFrameHealPredictionBars_Update", function(frame)
-            local classicFrame = classicFrames[frame]
-            if classicFrame then
-                BBF_UnitFrameHealPredictionBars_Update(classicFrame)
-            end
-        end)
-
-        C_Timer.After(3, function()
-            BBF_UnitFrameHealPredictionBars_Update(CfPlayerFrame)
-            BBF_UnitFrameHealPredictionBars_Update(CfTargetFrame)
-            BBF_UnitFrameHealPredictionBars_Update(CfFocusFrame)
-        end)
-
     end
 
+    hooksecurefunc("UnitFrameHealPredictionBars_Update", function(frame)
+        if BBF.ClassicStyleAddon() and frame ~= PlayerFrame and frame ~= TargetFrame and frame ~= FocusFrame then return end
+        BBF_UnitFrameHealPredictionBars_Update(frame)
+    end)
+
+    C_Timer.After(3, function()
+        BBF_UnitFrameHealPredictionBars_Update(PlayerFrame)
+        BBF_UnitFrameHealPredictionBars_Update(TargetFrame)
+        BBF_UnitFrameHealPredictionBars_Update(FocusFrame)
+    end)
 
     local eventFrame = CreateFrame("Frame")
     eventFrame:RegisterEvent("PLAYER_TARGET_CHANGED")

@@ -220,7 +220,7 @@ end
 
 function BBF.RetailTexturesOn(unit)
     local db = BetterBlizzFramesDB
-    if not db or not db.retailTextures or db.classicFrames then return false end
+    if not db or not db.retailTextures or db.classicFrames or BBF.ClassicStyleAddon() then return false end
     if unit == "party" then return not NoPortraitParty() end
     if unit and BBF.HasNoPortrait and BBF.HasNoPortrait(unit) then return false end
     return true
@@ -572,6 +572,7 @@ end
 
 local enabled
 function BBF.RetailTextures()
+    if BBF.ClassicStyleAddon() then return end
     if not BBF.RetailTexturesOn() or enabled then return end
     enabled = true
     local container = PlayerFrame.PlayerFrameContainer
@@ -688,7 +689,7 @@ local function PlaceThreat(threat)
 end
 
 function BBF.SymmetricPlayerFrame()
-    if not BBF.SymmetricPlayerOn() then return end
+    if BBF.ClassicStyleAddon() or not BBF.SymmetricPlayerOn() then return end
     if InCombatLockdown() then
         BBF.RunAfterCombat(BBF.SymmetricPlayerFrame)
         return

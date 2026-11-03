@@ -2026,8 +2026,13 @@ local function MakeClassicPartyFrame()
         overlay.LeaderIcon:SetPoint("BOTTOM", overlay, "TOP", -10, -6)
         local function PlaceRoleIcon()
             overlay.RoleIcon:ClearAllPoints()
-            overlay.RoleIcon:SetPoint("BOTTOMLEFT", 2, 19)
+            if BBF.PartyLevelHidden(frame) then
+                overlay.RoleIcon:SetPoint("BOTTOMLEFT", 8, 10)
+            else
+                overlay.RoleIcon:SetPoint("BOTTOMLEFT", 2, 19)
+            end
         end
+        frame.bbfPlaceRoleIcon = PlaceRoleIcon
         PlaceRoleIcon()
         for _, method in ipairs({ "ToPlayerArt", "ToCharacterStyleArt", "ToVehicleArt" }) do
             if frame[method] then
@@ -2049,6 +2054,8 @@ local function MakeClassicPartyFrame()
         frame.bbfName:SetWidth(69)
         frame.bbfName:SetScale(0.85)
         frame.bbfName:SetJustifyH("CENTER")
+        BBF.RaiseNameAboveBar(frame, hpContainer, true)
+        overlay.RoleIcon:SetParent(frame.bbfNameHolder)
 
         hpContainer.LeftText:SetScale(0.72)
         hpContainer.RightText:SetScale(0.72)
@@ -2169,6 +2176,7 @@ local function RoundClassicArt()
 end
 
 function BBF.ClassicFrames()
+    if BBF.ClassicStyleAddon() then return end
     if not BetterBlizzFramesDB.classicFrames then return end
     MakeClassicFrame(TargetFrame)
     MakeClassicFrame(FocusFrame)
