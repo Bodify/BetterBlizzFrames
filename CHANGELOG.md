@@ -1,7 +1,12 @@
 # BetterBlizzFrames 2.2.0e
+## All versions
+### New
+- Add right-click option on "Use Spec Icon" portrait setting to only be active in PvP.
+- Misc: Always hide statusbar texts (even when mouseover as that shows by default normally)
 ## Retail & Forever
 ### Tweak
-- More general name, status text and level position tweaks.
+- More general name, status text and level position tweaks. (If you have adjusted these with Move Names you might have to re-tweak them).
+- Improve compatibility with other classic frames addons a bit, still not intended usecase this but if it works then sure.
 ### Bugfix
 - Fix an issue with Big Healthbar settings causing player healthbar to shrink a little bit after respecs.
 - Fix a combination of Classic Frames + PlayerFrame elite texture using the wrong texture.
