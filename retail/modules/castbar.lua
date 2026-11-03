@@ -57,6 +57,10 @@ castbarColors.colorDefaultStandard = CreateColor(1.0, 0.7, 0.0, 1)
 castbarColors.colorDefaultChannel = CreateColor(0.0, 1.0, 0.0, 1)
 castbarColors.colorDefaultUninterruptable = CreateColor(0.7, 0.7, 0.7, 1)
 
+local function BarHasCast(castBar)
+    return castBar.casting or castBar.channeling or castBar.reverseChanneling
+end
+
 local CastStopEvents = {
     UNIT_SPELLCAST_STOP             = true,
     UNIT_SPELLCAST_CHANNEL_STOP     = true,
@@ -2388,7 +2392,7 @@ function BBF.HookCastbars()
                 if (event == "UNIT_SPELLCAST_INTERRUPTED" or event == "UNIT_SPELLCAST_CHANNEL_STOP") and interruptedByOrCastBarID ~= nil then
                     self.wasKicked = true
                 end
-                if not self.wasKicked or BetterBlizzFramesDB.quickHideCastbarsAlways then
+                if (not self.wasKicked or BetterBlizzFramesDB.quickHideCastbarsAlways) and not BarHasCast(self) then
                     self:Hide()
                 end
             elseif CastStartEvents[event] then
@@ -2400,7 +2404,7 @@ function BBF.HookCastbars()
                 if (event == "UNIT_SPELLCAST_INTERRUPTED" or event == "UNIT_SPELLCAST_CHANNEL_STOP") and interruptedByOrCastBarID ~= nil then
                     self.wasKicked = true
                 end
-                if not self.wasKicked or BetterBlizzFramesDB.quickHideCastbarsAlways then
+                if (not self.wasKicked or BetterBlizzFramesDB.quickHideCastbarsAlways) and not BarHasCast(self) then
                     self:Hide()
                 end
             elseif CastStartEvents[event] then
