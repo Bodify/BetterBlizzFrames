@@ -1,3 +1,8 @@
+# BetterBlizzFrames 2.2.0f
+## Retail
+### Tweak
+- Remove BagIcon from darkmode due to it being unique on Retail without a real border, all just one texture.
+
 # BetterBlizzFrames 2.2.0e
 ## All versions
 ### New
