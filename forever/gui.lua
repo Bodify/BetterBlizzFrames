@@ -12342,12 +12342,8 @@ local function guiMisc()
     ----------------------
     local moreFeaturesText = CreateSectionHeader(L["More_Features"], "Campaign-QuestLog-LoreBook", 24, 24, contentFrame, "TOPLEFT", 57, -7)
 
-    local snowfallKeypress = CreateCheckbox("snowfallKeypress", L["Snowfall_Keypress"], contentFrame, nil, BBF.SnowfallKeypress)
-    snowfallKeypress:SetPoint("TOPLEFT", moreFeaturesText, "BOTTOMLEFT", -24, pixelsOnFirstBox)
-    CreateTooltipTwo(snowfallKeypress, L["Snowfall_Keypress"], L["Tooltip_Snowfall_Keypress_Desc"])
-
     local classColorFriendlist = CreateCheckbox("classColorFriendlist", L["Class_Color_Friendlist"], contentFrame)
-    classColorFriendlist:SetPoint("TOPLEFT", snowfallKeypress, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    classColorFriendlist:SetPoint("TOPLEFT", moreFeaturesText, "BOTTOMLEFT", -24, pixelsOnFirstBox)
     CreateTooltipTwo(classColorFriendlist, L["Class_Color_Friendlist"], L["Tooltip_Class_Color_Friendlist_Desc"])
     classColorFriendlist:HookScript("OnClick", function(self)
         BBF.ShowPopup("BBF_CONFIRM_RELOAD")
@@ -12361,8 +12357,12 @@ local function guiMisc()
     stealthIndicatorPlayer:SetPoint("TOPLEFT", removeAddonListCategories, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(stealthIndicatorPlayer, L["Tooltip_Stealth_Indicator_Desc"])
 
+    local snowfallKeypress = CreateCheckbox("snowfallKeypress", L["Snowfall_Keypress"], contentFrame, nil, BBF.SnowfallKeypress)
+    snowfallKeypress:SetPoint("TOPLEFT", stealthIndicatorPlayer, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(snowfallKeypress, L["Snowfall_Keypress"], L["Tooltip_Snowfall_Keypress_Desc"])
+
     local smoothBars = CreateCheckbox("smoothBars", L["Smooth_Bars"], contentFrame)
-    smoothBars:SetPoint("TOPLEFT", stealthIndicatorPlayer, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    smoothBars:SetPoint("TOPLEFT", snowfallKeypress, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(smoothBars, L["Smooth_Bars"], L["Tooltip_Smooth_Bars_Desc"], L["Tooltip_Smooth_Bars_SubText"])
 
     local function AskHideManaFeedback()
