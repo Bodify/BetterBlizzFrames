@@ -1,7 +1,16 @@
 # BetterBlizzFrames 2.2.0f
+## All versions
+### New
+- New "Snowfall Keypress" setting in misc that shows an animation on key press. Based on jButtonFlash by woldner which is based on SnowfallKeyPress.
 ## Retail
 ### Tweak
 - Remove BagIcon from darkmode due to it being unique on Retail without a real border, all just one texture.
+## Forever
+### Tweak
+- Tweak some classic frames number positions
+- Fix "Hide XP Bar" showing each divider still.
+- Add missing glow texture for big healthbar for pet frame
+- Minor tweaks to lots of different settings to fix gaps and positions. If you notice stuff please let me know!
 
 # BetterBlizzFrames 2.2.0e
 ## All versions
