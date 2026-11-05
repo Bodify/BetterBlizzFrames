@@ -584,6 +584,7 @@ local defaultSettings = {
     unitFrameValueFontColorRGB = {1,1,1,1},
     actionBarFontColorRGB = {1,1,1,1},
     actionBarRangeColor = false,
+    snowfallKeypress = false,
     actionBarRangeOverlayColor = {1, 0, 0, 0.35},
     actionBarRangeIconColor = {0.59, 0.24, 0.22, 1},
     actionBarRangeUseOverlay = false,
@@ -6199,6 +6200,7 @@ First:SetScript("OnEvent", function(_, event, addonName)
         C_Timer.After(0.5, function()
             BBF.ZoomDefaultActionbarIcons()
             BBF.ActionBarRangeColor()
+            BBF.SnowfallKeypress()
             BBF.ActionBarCooldownFont()
             BBF.ActionBarCooldownTextColor()
             BBF.HookStatusBarText()
@@ -6441,7 +6443,3 @@ local function FixMirrorTimerContainer()
     end)
 end
 FixMirrorTimerContainer()
-
-C_Timer.After(3, function()
-    BBF.Print("Very early and in development WoW: Forever version. Please report bugs!")
-end)

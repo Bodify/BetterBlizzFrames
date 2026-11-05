@@ -5582,6 +5582,7 @@ local function guiGeneralTab()
     playerReputationColor:SetPoint("TOPLEFT", hidePlayerLevelText, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(playerReputationColor, L["Tooltip_Add_Reputation_Color"] .. " |A:UI-HUD-UnitFrame-Target-PortraitOn-Type:18:98|a")
 
+    local function NotRetailPlayer() return not (BBF.RetailTexturesOn and BBF.RetailTexturesOn("player")) end
     local function SetPlayerNameBgExclusive(keep)
         for _, key in ipairs({ "playerNameBgRetail", "playerNameBgClassic" }) do
             if key ~= keep then BetterBlizzFramesDB[key] = false end
@@ -5589,11 +5590,11 @@ local function guiGeneralTab()
     end
     local playerNameBgOptions = CreateMultiSelectDropdown(L["Name_Bg_Options"], BetterBlizzFrames, {
         { key = "playerReputationClassColor", label = L["Name_Bg_Class_Color"], tooltip = L["Tooltip_Class_Color_Reputation"], onChange = BBF.PlayerReputationColor },
-        { key = "playerNameBgRetail", label = L["Retail_Background_Texture"], tooltip = L["Tooltip_Retail_Background_Texture_Desc"], onChange = function(value)
+        { key = "playerNameBgRetail", label = L["Retail_Background_Texture"], tooltip = L["Tooltip_Retail_Background_Texture_Desc"], enabled = NotRetailPlayer, onChange = function(value)
             if value then SetPlayerNameBgExclusive("playerNameBgRetail") end
             BBF.PlayerReputationColor()
         end },
-        { key = "playerNameBgClassic", label = L["Classic_Background_Texture"], tooltip = L["Tooltip_Classic_Background_Texture_Desc"], onChange = function(value)
+        { key = "playerNameBgClassic", label = L["Classic_Background_Texture"], tooltip = L["Tooltip_Classic_Background_Texture_Desc"], enabled = NotRetailPlayer, onChange = function(value)
             if value then SetPlayerNameBgExclusive("playerNameBgClassic") end
             BBF.PlayerReputationColor()
         end },
@@ -6309,6 +6310,7 @@ local function guiGeneralTab()
     local function CreateNameBgOptions(unit, frame, anchor)
         local cap = unit == "target" and "Target" or "Focus"
         local retailKey, classicKey, hideKey = unit .. "NameBgRetail", unit .. "NameBgClassic", "hide" .. cap .. "ReputationColor"
+        local function NotRetail() return not (BBF.RetailTexturesOn and BBF.RetailTexturesOn(unit)) end
         local function SetExclusive(keep)
             local db = BetterBlizzFramesDB
             local hideWasOn = db[hideKey]
@@ -6333,11 +6335,11 @@ local function guiGeneralTab()
                 if value then SetExclusive(hideKey) end
                 BBF.HideFrames()
             end },
-            { key = retailKey, label = L["Retail_Background_Texture"], tooltip = L["Tooltip_Retail_Background_Texture_Desc"], onChange = function(value)
+            { key = retailKey, label = L["Retail_Background_Texture"], tooltip = L["Tooltip_Retail_Background_Texture_Desc"], enabled = NotRetail, onChange = function(value)
                 if value then SetExclusive(retailKey) end
                 BBF.UpdateNameBgTextures()
             end },
-            { key = classicKey, label = L["Classic_Background_Texture"], tooltip = L["Tooltip_Classic_Background_Texture_Desc"], onChange = function(value)
+            { key = classicKey, label = L["Classic_Background_Texture"], tooltip = L["Tooltip_Classic_Background_Texture_Desc"], enabled = NotRetail, onChange = function(value)
                 if value then SetExclusive(classicKey) end
                 BBF.UpdateNameBgTextures()
             end },
@@ -12319,7 +12321,7 @@ local function guiMisc()
 
     local contentFrame = CreateFrame("Frame", nil, scrollFrame)
     contentFrame.name = guiMisc.name
-    contentFrame:SetSize(680, 1130)
+    contentFrame:SetSize(680, 1150)
     scrollFrame:SetScrollChild(contentFrame)
 
     local function CreateSectionHeader(text, atlas, iconWidth, iconHeight, relativeTo, relativePoint, x, y)
@@ -12340,8 +12342,12 @@ local function guiMisc()
     ----------------------
     local moreFeaturesText = CreateSectionHeader(L["More_Features"], "Campaign-QuestLog-LoreBook", 24, 24, contentFrame, "TOPLEFT", 57, -7)
 
+    local snowfallKeypress = CreateCheckbox("snowfallKeypress", L["Snowfall_Keypress"], contentFrame, nil, BBF.SnowfallKeypress)
+    snowfallKeypress:SetPoint("TOPLEFT", moreFeaturesText, "BOTTOMLEFT", -24, pixelsOnFirstBox)
+    CreateTooltipTwo(snowfallKeypress, L["Snowfall_Keypress"], L["Tooltip_Snowfall_Keypress_Desc"])
+
     local classColorFriendlist = CreateCheckbox("classColorFriendlist", L["Class_Color_Friendlist"], contentFrame)
-    classColorFriendlist:SetPoint("TOPLEFT", moreFeaturesText, "BOTTOMLEFT", -24, pixelsOnFirstBox)
+    classColorFriendlist:SetPoint("TOPLEFT", snowfallKeypress, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(classColorFriendlist, L["Class_Color_Friendlist"], L["Tooltip_Class_Color_Friendlist_Desc"])
     classColorFriendlist:HookScript("OnClick", function(self)
         BBF.ShowPopup("BBF_CONFIRM_RELOAD")

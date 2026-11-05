@@ -17,6 +17,7 @@ shared\lossOfControl.lua
 shared\races.lua
 shared\timerFormatter.lua
 shared\actionBarTweaks.lua
+shared\snowfallKeypress.lua
 shared\functions_classics.lua
 shared\ImportExport.lua
 shared\smoothBars.lua

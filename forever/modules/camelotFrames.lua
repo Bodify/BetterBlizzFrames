@@ -1074,7 +1074,7 @@ local nameBgFrame
 
 local function NameBgMode(unit)
     local db = BetterBlizzFramesDB
-    if db.classicFrames or BBF.HasNoPortrait(unit) then return end
+    if db.classicFrames or BBF.HasNoPortrait(unit) or (BBF.RetailTexturesOn and BBF.RetailTexturesOn(unit)) then return end
     if db[unit == "target" and "hideTargetReputationColor" or "hideFocusReputationColor"] then return end
     if db[unit .. "NameBgClassic"] then return "classic" end
     if db[unit .. "NameBgRetail"] then return "retail" end

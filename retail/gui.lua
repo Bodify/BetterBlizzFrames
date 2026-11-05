@@ -12146,7 +12146,7 @@ local function guiMisc()
 
     local contentFrame = CreateFrame("Frame", nil, scrollFrame)
     contentFrame.name = guiMisc.name
-    contentFrame:SetSize(680, 1050)
+    contentFrame:SetSize(680, 1070)
     scrollFrame:SetScrollChild(contentFrame)
 
     local function CreateSectionHeader(text, atlas, iconWidth, iconHeight, relativeTo, relativePoint, x, y)
@@ -12167,8 +12167,12 @@ local function guiMisc()
     ----------------------
     local moreFeaturesText = CreateSectionHeader(L["More_Features"], "Campaign-QuestLog-LoreBook", 24, 24, contentFrame, "TOPLEFT", 57, -7)
 
+    local snowfallKeypress = CreateCheckbox("snowfallKeypress", L["Snowfall_Keypress"], contentFrame, nil, BBF.SnowfallKeypress)
+    snowfallKeypress:SetPoint("TOPLEFT", moreFeaturesText, "BOTTOMLEFT", -24, pixelsOnFirstBox)
+    CreateTooltipTwo(snowfallKeypress, L["Snowfall_Keypress"], L["Tooltip_Snowfall_Keypress_Desc"])
+
     local classColorFriendlist = CreateCheckbox("classColorFriendlist", L["Class_Color_Friendlist"], contentFrame)
-    classColorFriendlist:SetPoint("TOPLEFT", moreFeaturesText, "BOTTOMLEFT", -24, pixelsOnFirstBox)
+    classColorFriendlist:SetPoint("TOPLEFT", snowfallKeypress, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(classColorFriendlist, L["Class_Color_Friendlist"], L["Tooltip_Class_Color_Friendlist_Desc"])
     classColorFriendlist:HookScript("OnClick", function(self)
         BBF.ShowPopup("BBF_CONFIRM_RELOAD")

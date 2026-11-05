@@ -410,6 +410,7 @@ local defaultSettings = {
     unitFrameValueFontColorRGB = {1,1,1,1},
     actionBarFontColorRGB = {1,1,1,1},
     actionBarRangeColor = false,
+    snowfallKeypress = false,
     actionBarRangeOverlayColor = {1, 0, 0, 0.35},
     actionBarRangeIconColor = {0.59, 0.24, 0.22, 1},
     actionBarRangeUseOverlay = false,
@@ -3358,6 +3359,7 @@ First:SetScript("OnEvent", function(_, event, addonName)
             BBF.ChangeTotemFrameScale()
             BBF.ZoomDefaultActionbarIcons()
             BBF.ActionBarRangeColor()
+            BBF.SnowfallKeypress()
             BBF.ActionBarCooldownFont()
             BBF.ActionBarCooldownTextColor()
             --TurnOnEnabledFeaturesOnLogin()

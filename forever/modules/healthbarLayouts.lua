@@ -370,17 +370,17 @@ local function SetManaHidden(frame, hidden)
     if hidden then
         manaBar.bbfBigHidden = true
         manaBar:SetAlpha(0)
-        if manaBar.LeftText then manaBar.LeftText:SetAlpha(0) end
-        if manaBar.RightText then manaBar.RightText:SetAlpha(0) end
-        if manaBar.ManaBarText then manaBar.ManaBarText:SetAlpha(0) end
+        if manaBar.LeftText then BBF.SetStatusTextHidden(manaBar.LeftText, "hideMana", true) end
+        if manaBar.RightText then BBF.SetStatusTextHidden(manaBar.RightText, "hideMana", true) end
+        if manaBar.ManaBarText then BBF.SetStatusTextHidden(manaBar.ManaBarText, "hideMana", true) end
         return
     end
     if not manaBar.bbfBigHidden then return end
     manaBar.bbfBigHidden = nil
     manaBar:SetAlpha(1)
-    if manaBar.LeftText then manaBar.LeftText:SetAlpha(1) end
-    if manaBar.RightText then manaBar.RightText:SetAlpha(1) end
-    if manaBar.ManaBarText then manaBar.ManaBarText:SetAlpha(1) end
+    if manaBar.LeftText then BBF.SetStatusTextHidden(manaBar.LeftText, "hideMana", false) end
+    if manaBar.RightText then BBF.SetStatusTextHidden(manaBar.RightText, "hideMana", false) end
+    if manaBar.ManaBarText then BBF.SetStatusTextHidden(manaBar.ManaBarText, "hideMana", false) end
     if BBF.UpdateNoPortraitManaVisibility then
         BBF.UpdateNoPortraitManaVisibility()
     end
@@ -737,6 +737,7 @@ function BBF.UpdateTargetManaHidden()
         local classic = frame.ClassicFrame
         if classic and classic.OnCheckClassification and TargetStyle(frame) == "classic" then
             classic.OnCheckClassification(frame)
+            BBF.PlaceClassicTargetLevel(frame)
         end
     end
 end

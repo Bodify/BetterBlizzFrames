@@ -3005,13 +3005,13 @@ local function UpdatePartyFrameManaVisibility()
                 if db.hideDefaultPartyFramesMana or NoPortraitBigParty() then
                     manaBar:SetAlpha(0)
                     if manaBar.TextString then
-                        manaBar.TextString:SetAlpha(0)
+                        BBF.SetStatusTextHidden(manaBar.TextString, "hideMana", true)
                     end
                     if manaBar.LeftText then
-                        manaBar.LeftText:SetAlpha(0)
+                        BBF.SetStatusTextHidden(manaBar.LeftText, "hideMana", true)
                     end
                     if manaBar.RightText then
-                        manaBar.RightText:SetAlpha(0)
+                        BBF.SetStatusTextHidden(manaBar.RightText, "hideMana", true)
                     end
                     if manaBar.BBFPixelBorder then
                         manaBar.BBFPixelBorder:Hide()
@@ -3022,13 +3022,13 @@ local function UpdatePartyFrameManaVisibility()
                 else
                     manaBar:SetAlpha(1)
                     if manaBar.TextString then
-                        manaBar.TextString:SetAlpha(1)
+                        BBF.SetStatusTextHidden(manaBar.TextString, "hideMana", false)
                     end
                     if manaBar.LeftText then
-                        manaBar.LeftText:SetAlpha(1)
+                        BBF.SetStatusTextHidden(manaBar.LeftText, "hideMana", false)
                     end
                     if manaBar.RightText then
-                        manaBar.RightText:SetAlpha(1)
+                        BBF.SetStatusTextHidden(manaBar.RightText, "hideMana", false)
                     end
                     if db.noPortraitPixelBorder and manaBar.BBFPixelBorder then
                         manaBar.BBFPixelBorder:Show()
@@ -3097,9 +3097,9 @@ function BBF.UpdateNoPortraitManaVisibility()
         local manaBar = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar
         local manaAlpha = (BBF.BigPlayerHealthbar() and db.hideUnitFramePlayerMana) and 0 or 1
         manaBar:GetParent():SetAlpha(manaAlpha)
-        manaBar.LeftText:SetAlpha(manaAlpha)
-        manaBar.RightText:SetAlpha(manaAlpha)
-        manaBar.ManaBarText:SetAlpha(manaAlpha)
+        BBF.SetStatusTextHidden(manaBar.LeftText, "hideMana", db.hideUnitFramePlayerMana)
+        BBF.SetStatusTextHidden(manaBar.RightText, "hideMana", db.hideUnitFramePlayerMana)
+        BBF.SetStatusTextHidden(manaBar.ManaBarText, "hideMana", db.hideUnitFramePlayerMana)
         return
     end
     if not db.noPortraitModes then return end
@@ -3128,13 +3128,13 @@ function BBF.UpdateNoPortraitManaVisibility()
         if petMana then
             petMana:SetAlpha(hidePetMana and 0 or 1)
             if hidePetMana then
-                petMana.TextString:SetAlpha(0)
-                petMana.LeftText:SetAlpha(0)
-                petMana.RightText:SetAlpha(0)
+                BBF.SetStatusTextHidden(petMana.TextString, "hideMana", true)
+                BBF.SetStatusTextHidden(petMana.LeftText, "hideMana", true)
+                BBF.SetStatusTextHidden(petMana.RightText, "hideMana", true)
             elseif not db.hidePetText then
-                petMana.TextString:SetAlpha(1)
-                petMana.LeftText:SetAlpha(1)
-                petMana.RightText:SetAlpha(1)
+                BBF.SetStatusTextHidden(petMana.TextString, "hideMana", false)
+                BBF.SetStatusTextHidden(petMana.LeftText, "hideMana", false)
+                BBF.SetStatusTextHidden(petMana.RightText, "hideMana", false)
             end
         end
         if not db.noPortraitPixelBorder and PetFrameTexture then

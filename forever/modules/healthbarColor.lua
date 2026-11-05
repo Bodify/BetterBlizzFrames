@@ -1335,6 +1335,7 @@ local PLAYER_NAME_BG_HEALTH_ATLAS = "UI-HUD-UnitFrame-Player-PortraitOn-Bar-Heal
 local function PlayerNameBgMode()
     local db = BetterBlizzFramesDB
     if db.classicFrames or BBF.ClassicStyleAddon() then return false end
+    if BBF.RetailTexturesOn and BBF.RetailTexturesOn("player") then return end
     if db.playerNameBgClassic then return "classic" end
     if db.playerNameBgRetail then return "retail" end
 end

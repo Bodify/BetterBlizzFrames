@@ -78,6 +78,7 @@ local smallTex = "Interface\\TargetingFrame\\UI-SmallTargetingFrame"
 local smallNoManaTex = bigPath .. "UI-SmallTargetingFrame-NoMana.png"
 local smallBigTex = bigPath .. "UI-SmallTargetingFrame-Big.png"
 local smallBigNoManaTex = bigPath .. "UI-SmallTargetingFrame-Big-NoMana.png"
+local smallBigFlashTex = bigPath .. "UI-PartyFrame-Flash-Big.png"
 
 local function ClassicBigParty()
     local db = BetterBlizzFramesDB
@@ -185,13 +186,30 @@ function BBF.ClassicHDTexturesActive()
     return db.classicFrames and db.classicFramesHDTextures and true or false
 end
 
-function BBF.ClassicTargetLevelX()
-    if BBF.ClassicHDTexturesActive() then return -34 end
-    return BetterBlizzFramesDB.classicFramesHDElite and -32.5 or -34
+local function ClassicLevelArtSwapped(frame)
+    local db = BetterBlizzFramesDB
+    if BBF.BigHealthbarOn(frame) then return true end
+    if frame == PlayerFrame then return db.hideUnitFramePlayerMana end
+    if frame == TargetFrame then return db.hideUnitFrameTargetMana end
+    if frame == FocusFrame then return db.hideUnitFrameFocusMana end
+end
+
+function BBF.ClassicTargetLevelX(frame)
+    local x = -34
+    if not BBF.ClassicHDTexturesActive() and BetterBlizzFramesDB.classicFramesHDElite then
+        x = -32.5
+    end
+    return ClassicLevelArtSwapped(frame) and x + 1 or x
+end
+
+function BBF.PlaceClassicTargetLevel(frame)
+    local levelText = frame.TargetFrameContent.TargetFrameContentMain.LevelText
+    SetClassicLevelPoint(levelText, BBF.ClassicTargetLevelX(frame), 25.5, frame, "BOTTOMRIGHT")
 end
 
 function BBF.ClassicPlayerLevelX()
-    return (BBF.ClassicHDTexturesActive() or BetterBlizzFramesDB.classicFramesHDElite) and -83 or -80
+    local x = (BBF.ClassicHDTexturesActive() or BetterBlizzFramesDB.classicFramesHDElite) and -83 or -80
+    return ClassicLevelArtSwapped(PlayerFrame) and x - 1.5 or x
 end
 
 function BBF.ClassicHDCastbarsActive()
@@ -448,6 +466,8 @@ local function UpdateClassicPetMana()
         BBF.SetClassicTexture(PetFrameTexture, noMana and smallNoManaTex or smallTex)
     end
     PetFrameTexture:SetTexCoord(0, 1, 0, 1)
+    PetFrameFlash:SetTexture(big and smallBigFlashTex or "Interface\\TargetingFrame\\UI-PartyFrame-Flash")
+    PetFrameFlash:SetTexCoord(0, 1, big and 0 or 1, big and 1 or 0)
     local grow = big and 12 or 0
     PetFrameHealthBar:SetSize(69, (noMana and 15 or 8) + grow)
     PetFrameHealthBar:ClearAllPoints()
@@ -455,9 +475,9 @@ local function UpdateClassicPetMana()
     PlaceClassicPetHealthText()
     local alpha = noMana and 0 or 1
     PetFrameManaBar:SetAlpha(alpha)
-    PetFrameManaBarText:SetAlpha(alpha)
-    PetFrameManaBarTextLeft:SetAlpha(alpha)
-    PetFrameManaBarTextRight:SetAlpha(alpha)
+    BBF.SetStatusTextHidden(PetFrameManaBarText, "hideMana", noMana)
+    BBF.SetStatusTextHidden(PetFrameManaBarTextLeft, "hideMana", noMana)
+    BBF.SetStatusTextHidden(PetFrameManaBarTextRight, "hideMana", noMana)
 end
 
 function BBF.UpdateClassicHiddenMana()
@@ -511,7 +531,7 @@ local function MakeClassicFrame(frame)
                 return
             end
             manaBar:ClearAllPoints()
-            manaBar:SetPoint("TOPRIGHT", frameContainer, "LEFT", 148, -12)
+            manaBar:SetPoint("TOPRIGHT", frameContainer, "LEFT", 146, -11)
             manaBar:SetSize(120, 11)
         end
         PlaceClassicManaBar()
@@ -544,11 +564,11 @@ local function MakeClassicFrame(frame)
             background:ClearAllPoints()
             if BBF.IsBigHealthbarActive(frame) then
                 background:SetPoint("TOPLEFT", healthBar, "TOPLEFT", 0, 0)
-                background:SetPoint("BOTTOMRIGHT", contentMain.ManaBar, "BOTTOMRIGHT", -2, -1)
+                background:SetPoint("BOTTOMRIGHT", contentMain.ManaBar, "BOTTOMRIGHT", 0, 0)
                 return
             end
             background:SetPoint("TOPLEFT", healthBar, "TOPLEFT", 0, 19)
-            background:SetPoint("BOTTOMRIGHT", contentMain.ManaBar, "BOTTOMRIGHT", -2, -1)
+            background:SetPoint("BOTTOMRIGHT", contentMain.ManaBar, "BOTTOMRIGHT", 0, 0)
         end
         frame.ClassicFrame.UpdateBackground()
 
@@ -618,7 +638,7 @@ local function MakeClassicFrame(frame)
 
         contentMain.LevelText:SetParent(frame.ClassicFrame)
         contentMain.LevelText:SetDrawLayer("OVERLAY", 7)
-        SetClassicLevelPoint(contentMain.LevelText, BBF.ClassicTargetLevelX(), 25.5, frame, "BOTTOMRIGHT")
+        BBF.PlaceClassicTargetLevel(frame)
         local lvlFont, _, lvlFlags = contentMain.LevelText:GetFont()
         contentMain.LevelText:SetFont(lvlFont, 12, lvlFlags)
         contentMain.ReputationColor:SetSize(119, 18)
@@ -1709,7 +1729,7 @@ local function SetClassicPartyManaShown(frame, shown)
     local alpha = shown and 1 or 0
     manaBar:SetAlpha(alpha)
     for _, key in ipairs({ "TextString", "LeftText", "RightText" }) do
-        if manaBar[key] then manaBar[key]:SetAlpha(alpha) end
+        BBF.SetStatusTextHidden(manaBar[key], "hideMana", not shown)
     end
 end
 
@@ -1963,7 +1983,7 @@ local function SortLocalizationChanges()
             local manaBar = contentMain.ManaBar
             local tex = f.ClassicFrame.Texture
 
-            SetClassicLevelPoint(contentMain.LevelText, BBF.ClassicTargetLevelX(), 25.5, f, "BOTTOMRIGHT")
+            BBF.PlaceClassicTargetLevel(f)
 
             hpContainer.HealthBarText:ClearAllPoints()
             hpContainer.HealthBarText:SetPoint("CENTER", tex, "LEFT", 66.5, BBF.ClassicHealthTextY(f))

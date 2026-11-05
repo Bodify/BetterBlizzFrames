@@ -22,8 +22,10 @@ BBF.TextAreaLayouts = {
             { style = "classic", mode = "big", mana = "hidden", inside = true, healthY = 1.5, manaY = 0 },
             { style = "classic", mode = "big", mana = "hidden", healthY = -1.5, manaY = 0 },
             { style = "classic", mode = "big", inside = true, bottom = -1, healthY = 2, manaY = -0.5, own = { bottom = true, manaY = true } },
+            { client = "forever", style = "classic", mode = "big", bottom = -1, healthY = -1.5, manaY = 0, textRight = 4.5, own = { bottom = true, manaY = true, textRight = true } },
             { style = "classic", mode = "big", bottom = -1, healthY = -2, manaY = -1, own = { bottom = true, manaY = true } },
             { style = "classic", mode = "none", mana = "hidden", healthY = 0.5 },
+            { client = "forever", style = "classic", mode = "none", left = 2, right = 4, healthY = -0.5, manaY = -0.5, textLeft = 0.5, textRight = 3.5, sharedTextRight = true },
             { style = "classic", mode = "none", left = 2, right = 0, healthY = -0.5, manaY = -0.5 },
             { style = "camelot", mode = "xl", healthY = -1 },
             { style = "camelot", mode = "big" },
@@ -40,8 +42,12 @@ BBF.TextAreaLayouts = {
             { style = "classic", mode = "big", mana = "hidden", inside = true, bottom = 1, healthY = 3.5 },
             { style = "classic", mode = "big", mana = "hidden", bottom = 1, healthY = -1.5 },
             { style = "classic", mode = "big", inside = true, bottom = -1, manaY = -0.5, own = { bottom = true } },
+            { client = "forever", style = "classic", mode = "big", right = -1.5, bottom = -1, healthY = -1.5, manaY = 0, textRight = 2.5,
+                own = { right = true, bottom = true, healthY = true, manaY = true, textRight = true } },
             { style = "classic", mode = "big", bottom = -1, healthY = -1.5, manaY = -0.5, own = { bottom = true, healthY = true } },
             { style = "classic", mode = "none", mana = "hidden", top = 1, bottom = -1, healthY = 0 },
+            { client = "forever", style = "classic", left = 1, right = -2, top = 1, bottom = -1, healthY = -0.5, manaY = -0.5, textLeft = -0.5, textRight = 2, sharedTextRight = true,
+                own = { healthY = true, manaY = true } },
             { style = "classic", left = 1, right = -2, top = 1, bottom = -1, healthY = -0.5, manaY = -0.5, textLeft = -0.5, textRight = -0.5,
                 own = { healthY = true, manaY = true } },
             { client = "retail", style = "retail", mode = "none", minus = true, right = 0.5, bottom = 7, healthY = -0.5, textRight = 6, own = { healthY = true } },
@@ -148,12 +154,48 @@ BBF.TextAreaLayouts = {
 }
 BBF.TextAreaOverrides = {}
 
+local function SetHiddenTextAlpha(text, alpha)
+    text.bbfStatusTextHiding = true
+    text:SetAlpha(alpha)
+    text.bbfStatusTextHiding = nil
+end
+
+local function KeepTextHidden(text, alpha)
+    if not text.bbfStatusTextHiders or text.bbfStatusTextHiding or text.bbfStatusTextForcing then return end
+    text.bbfStatusTextShownAlpha = alpha
+    SetHiddenTextAlpha(text, 0)
+end
+
+function BBF.SetStatusTextHidden(text, owner, hidden)
+    if not text then return end
+    local hiders = text.bbfStatusTextHiders
+    if hidden then
+        if not hiders then
+            hiders = {}
+            text.bbfStatusTextHiders = hiders
+            text.bbfStatusTextShownAlpha = text.bbfStatusTextAlpha or text:GetAlpha()
+            if not text.bbfStatusTextHideHooked then
+                text.bbfStatusTextHideHooked = true
+                hooksecurefunc(text, "SetAlpha", KeepTextHidden)
+            end
+        end
+        hiders[owner] = true
+        SetHiddenTextAlpha(text, 0)
+    elseif hiders then
+        hiders[owner] = nil
+        if not next(hiders) then
+            text.bbfStatusTextHiders = nil
+            SetHiddenTextAlpha(text, text.bbfStatusTextShownAlpha)
+        end
+    end
+end
+
 BBF.NameLayouts = {
     player = { { style = "classic", inside = true, y = -13 }, { inside = true, y = -12 }, { client = "retail", symmetric = true, mode = "xl", mana = "hidden", y = 0.5 }, { client = "retail", symmetric = true, mode = "big", y = 1 }, { client = "retail", style = "retail", mode = "xl", mana = "hidden", y = 1 }, { style = "retail", y = 1.5 },
         { style = "classic", mode = "none", y = 3.5 }, { style = "classic", y = 2 }, { style = "camelot", mode = "xl", mana = "hidden", y = 3 }, { style = "camelot", mode = "xl", y = 2 },
         { style = "camelot", mode = "reduced", y = 2 }, { y = 1 } },
     target = { { style = "classic", mode = "none", y = 3.5, own = true }, { style = "classic", mode = "big", mana = "hidden", inside = true, y = -13.5, own = true },
-        { style = "classic", mode = "big", mana = "hidden", y = 2, own = true }, { style = "classic", mode = "big", inside = false, y = 2.5, own = true }, { inside = true, y = -12 }, { client = "retail", style = "retail", mode = "xl", mana = "hidden", left = 23, right = 5, centerX = -14, width = -8, centerWidth = -14, y = 0.5, own = true }, { client = "retail", style = "retail", mode = "none", minus = true, left = 24.5, right = -5, centerX = -14, width = -8, centerWidth = -14, y = 1, own = true }, { client = "retail", style = "retail", left = 23, right = 5, centerX = -14, width = -8, centerWidth = -14, y = 1, own = true },{ style = "retail", y = 2 }, { style = "camelot", mode = "none", mana = "hidden", y = -2, own = true },
+        { style = "classic", mode = "big", mana = "hidden", y = 2, own = true }, { client = "forever", style = "classic", mode = "big", inside = false, y = 2, own = true }, { style = "classic", mode = "big", inside = false, y = 2.5, own = true }, { inside = true, y = -12 }, { client = "retail", style = "retail", mode = "xl", mana = "hidden", left = 23, right = 5, centerX = -14, width = -8, centerWidth = -14, y = 0.5, own = true }, { client = "retail", style = "retail", mode = "none", minus = true, left = 24.5, right = -5, centerX = -14, width = -8, centerWidth = -14, y = 1, own = true }, { client = "retail", style = "retail", left = 23, right = 5, centerX = -14, width = -8, centerWidth = -14, y = 1, own = true },{ style = "retail", y = 2 }, { style = "camelot", mode = "none", mana = "hidden", y = -2, own = true },
         { style = "camelot", mode = "xl", mana = "hidden", y = 2, own = true },
         { style = "camelot", mode = "big", mana = "hidden", y = 1.5, own = true }, { y = 1 } },
     tot = { { classicToT = true, below = true, y = -4 }, { inside = true, y = -10 }, { style = "pixel", y = 1 }, { style = "retail", y = 2 },
@@ -258,7 +300,7 @@ end
 
 local CLIENT = BBF.isForever and "forever" or "retail"
 local CLASSIC_EXTRA_TEXT_RIGHT = 2
-local CLASSIC_MANA_GROW = { bottom = 2, retailTargetRight = -4 }
+local CLASSIC_MANA_GROW = { bottom = 2, targetRight = { retail = -4, forever = 1 } }
 local NORMAL_HEALTH_CORNER = { x = 149, y = -10 }
 
 local function RetailArt(unit)
@@ -407,13 +449,17 @@ local function ResolveText(frame)
     end
     if setup.style == "classic" then
         local base = ClassicBase(setup)
+        local sharedTextRight
         for _, rule in ipairs(cfg.rules) do
             if Matches(rule, base) then
-                for _, field in ipairs({ "left", "right", "textLeft", "textRight" }) do v[field] = rule[field] or 0 end
+                for _, field in ipairs({ "left", "right", "textLeft", "textRight" }) do
+                    if not Owns(v, field) then v[field] = rule[field] or 0 end
+                end
+                sharedTextRight = rule.sharedTextRight
                 break
             end
         end
-        if setup.mode ~= "none" or setup.manaHidden then
+        if (setup.mode ~= "none" or setup.manaHidden) and not sharedTextRight and not Owns(v, "textRight") then
             v.textRight = cfg.classicTextRight or CLASSIC_EXTRA_TEXT_RIGHT
         end
     end
@@ -447,8 +493,8 @@ local function ResolveText(frame)
     end
     if setup.style == "classic" and not setup.manaHidden then
         v.bottom = v.bottom + CLASSIC_MANA_GROW.bottom
-        if setup.key == "target" and CLIENT == "retail" then
-            v.right = v.right + CLASSIC_MANA_GROW.retailTargetRight
+        if setup.key == "target" then
+            v.right = v.right + CLASSIC_MANA_GROW.targetRight[CLIENT]
         end
     end
     return v, setup
@@ -947,14 +993,9 @@ local function ApplyTextArea(frame)
         if text then
             local detached = text:GetParent() ~= manaBar
             if area.manaHidden and detached then
-                if not text.bbfTextAreaHidden then
-                    text.bbfTextAreaHidden = true
-                    text.bbfTextAreaAlpha = text.bbfStatusTextAlpha or text:GetAlpha()
-                end
-                text:SetAlpha(0)
-            elseif text.bbfTextAreaHidden then
-                text.bbfTextAreaHidden = nil
-                text:SetAlpha(text.bbfTextAreaAlpha)
+                BBF.SetStatusTextHidden(text, "textArea", true)
+            else
+                BBF.SetStatusTextHidden(text, "textArea", false)
             end
         end
     end
@@ -994,7 +1035,9 @@ local function ResolveName(frame)
                 local base = ClassicBase(setup)
                 for _, baseRule in ipairs(rules) do
                     if Matches(baseRule, base) then
-                        v.left, v.right = baseRule.left or 0, baseRule.right or 0
+                        if not rule.ownSides then
+                            v.left, v.right = baseRule.left or 0, baseRule.right or 0
+                        end
                         break
                     end
                 end

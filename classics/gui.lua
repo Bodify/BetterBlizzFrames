@@ -8757,7 +8757,7 @@ local function guiMisc()
 
     local contentFrame = CreateFrame("Frame", nil, scrollFrame)
     contentFrame.name = guiMisc.name
-    contentFrame:SetSize(680, 780)
+    contentFrame:SetSize(680, 800)
     scrollFrame:SetScrollChild(contentFrame)
 
     local function CreateSectionHeader(text, atlas, iconWidth, iconHeight, relativeTo, relativePoint, x, y)
@@ -8778,8 +8778,12 @@ local function guiMisc()
     ----------------------
     local moreFeaturesText = CreateSectionHeader(L["More_Features"], "Class", 20, 20, contentFrame, "TOPLEFT", 57, -7)
 
+    local snowfallKeypress = CreateCheckbox("snowfallKeypress", L["Snowfall_Keypress"], contentFrame, nil, BBF.SnowfallKeypress)
+    snowfallKeypress:SetPoint("TOPLEFT", moreFeaturesText, "BOTTOMLEFT", -24, pixelsOnFirstBox)
+    CreateTooltipTwo(snowfallKeypress, L["Snowfall_Keypress"], L["Tooltip_Snowfall_Keypress_Desc"])
+
     local stealthIndicatorPlayer = CreateCheckbox("stealthIndicatorPlayer", L["Tooltip_Stealth_Indicator"], contentFrame, nil, BBF.StealthIndicator)
-    stealthIndicatorPlayer:SetPoint("TOPLEFT", moreFeaturesText, "BOTTOMLEFT", -24, pixelsOnFirstBox)
+    stealthIndicatorPlayer:SetPoint("TOPLEFT", snowfallKeypress, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     stealthIndicatorPlayer:HookScript("OnClick", function(self)
         if not self:GetChecked() then
             BBF.ShowPopup("BBF_CONFIRM_RELOAD")

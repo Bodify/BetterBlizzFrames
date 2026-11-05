@@ -15,20 +15,18 @@ local function UpdateFormatFunction()
 end
 
 local function UpdateNumericText(bar, centerText)
-    if not centerText then return end
+    if not centerText or bar.isZero then return end
     local value = bar:GetValue()
     local _, maxValue = bar:GetMinMaxValues()
     local formattedValue = FormatText(value)
     local formattedMaxValue = FormatText(maxValue)
     centerText:SetText(string.format("%s / %s", formattedValue, formattedMaxValue))
-    centerText:SetAlpha(value)
 end
 
 local function UpdateSingleText(bar, fontObj)
-    if not fontObj then return end
+    if not fontObj or bar.isZero then return end
     local value = bar:GetValue()
     fontObj:SetText(FormatText(value))
-    fontObj:SetAlpha(value)
 end
 
 function BBF.HookStatusBarText()

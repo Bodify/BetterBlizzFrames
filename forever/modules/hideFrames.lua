@@ -244,6 +244,9 @@ local function UpdateStatusTrackingBar(container)
     if container.BarFrameTexture then
         container.BarFrameTexture:SetAlpha(hide and 0 or 1)
     end
+    for divider in container.HorizontalDividersPool:EnumerateActive() do
+        divider:SetAlpha(hide and 0 or 1)
+    end
 end
 
 function BBF.UpdateStatusTrackingBars()
@@ -255,6 +258,7 @@ function BBF.UpdateStatusTrackingBars()
     if not BBF.statusTrackingBarsHooked then
         for _, container in ipairs(StatusTrackingBarManager.barContainers) do
             hooksecurefunc(container, "ApplyPendingBarToShow", UpdateStatusTrackingBar)
+            hooksecurefunc(container, "UpdateDividers", UpdateStatusTrackingBar)
             container.FadeInAnimation:HookScript("OnFinished", function()
                 C_Timer.After(0, BBF.UpdateStatusTrackingBars)
             end)
