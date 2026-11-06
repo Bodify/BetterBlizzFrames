@@ -111,6 +111,34 @@ function BBF.UpdatePlayerStatusGlow()
     glow.bbfGlowChanging = nil
 end
 
+local attackIconHooked
+
+local function ApplyPlayerAttackIcon()
+    local contextual = PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual
+    local attackIcon = contextual.AttackIcon
+    local cornerIcon = contextual.PlayerPortraitCornerIcon
+    if BetterBlizzFramesDB.hidePlayerAttackIcon then
+        attackIcon:Hide()
+        cornerIcon:Show()
+    elseif PlayerFrame.inCombat or PlayerFrame.onHateList then
+        attackIcon:Show()
+        cornerIcon:Hide()
+    end
+end
+
+function BBF.UpdatePlayerAttackIcon()
+    if not attackIconHooked then
+        if not BetterBlizzFramesDB.hidePlayerAttackIcon or not PlayerFrame_UpdateStatus then return end
+        attackIconHooked = true
+        hooksecurefunc("PlayerFrame_UpdateStatus", function()
+            if BetterBlizzFramesDB.hidePlayerAttackIcon then
+                ApplyPlayerAttackIcon()
+            end
+        end)
+    end
+    ApplyPlayerAttackIcon()
+end
+
 local function setLegacyComboHidden(hide)
     local frame = BBF.LegacyComboFrame
     if not frame then return end
@@ -384,6 +412,7 @@ function BBF.HideFrames()
         -- Player Combat Icon
         local playerCombatIconAlpha = BetterBlizzFramesDB.hideCombatIcon and 0 or 1
         PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.AttackIcon:SetAlpha(playerCombatIconAlpha)
+        BBF.UpdatePlayerAttackIcon()
 
         -- Hide prestige (honor) icon on player unitframe
         --local prestigeBadgeAlpha = (BetterBlizzFramesDB.hidePrestigeBadge or BetterBlizzFramesDB.classicFrames) and 0 or 1

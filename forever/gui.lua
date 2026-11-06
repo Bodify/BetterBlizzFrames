@@ -5631,6 +5631,10 @@ local function guiGeneralTab()
         BBF.SetCenteredNamesCaller()
     end)
 
+    local hidePlayerAttackIcon = CreateCheckbox("hidePlayerAttackIcon", L["Hide_Attack_Icon"], BetterBlizzFrames, nil, BBF.UpdatePlayerAttackIcon)
+    hidePlayerAttackIcon:SetPoint("LEFT", hidePlayerName.text, "RIGHT", 0, 0)
+    CreateTooltipTwo(hidePlayerAttackIcon, L["Hide_Attack_Icon"] .. " |A:UI-HUD-UnitFrame-Player-CombatIcon:22:22|a", L["Tooltip_Hide_Attack_Icon_Desc"])
+
     -- local hidePlayerMaxHpReduction = CreateCheckbox("hidePlayerMaxHpReduction", "Hide Reduced HP", BetterBlizzFrames, nil, BBF.HideFrames)
     -- hidePlayerMaxHpReduction:SetPoint("LEFT", hidePlayerName.text, "RIGHT", 0, 0)
     -- CreateTooltipTwo(hidePlayerMaxHpReduction, L["Hide_Reduced_HP"], L["Tooltip_Hide_Reduced_HP_Player"])
