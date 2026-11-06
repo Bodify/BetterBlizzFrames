@@ -176,6 +176,7 @@ local defaultSettings = {
     fadeMicroMenuExceptQueue = true,
     surrenderArena = true,
     uiWidgetPowerBarScale = 1,
+    actionBarArtScale = 1,
     druidOverstacks = true,
     druidAlwaysShowCombos = true,
     createAltManaBarDruid = true,
@@ -5889,6 +5890,7 @@ Frame:SetScript("OnEvent", function(...)
     BBF.UpdateFrames()
     BBF.HookHealthbarColors()
     BBF.ResizeUIWidgetPowerBarFrame()
+    BBF.ActionBarArtScale()
     BBF.LegacyBlueCombos()
     BBF.RefreshLossOfControl()
     BBF.HideClassResourceTooltip()

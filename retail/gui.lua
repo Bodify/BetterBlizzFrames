@@ -1663,6 +1663,9 @@ local function CreateSlider(parent, label, minValue, maxValue, stepValue, elemen
                 elseif element == "actionBarCDNumberScale" then
                     BetterBlizzFramesDB.actionBarCDNumberScale = value
                     BBF.ActionBarCDNumberSize()
+                elseif element == "actionBarArtScale" then
+                    BetterBlizzFramesDB.actionBarArtScale = value
+                    BBF.ActionBarArtScale()
                 elseif element == playerClassResourceScale then
                     BetterBlizzFramesDB[playerClassResourceScale] = value
                     BBF.UpdateClassComboPoints()
@@ -12384,8 +12387,26 @@ local function guiMisc()
         end
     end)
 
+    local changeActionBarArtScale = CreateCheckbox("changeActionBarArtScale", L["Change_ActionBar_Art_Size"], contentFrame)
+    changeActionBarArtScale:SetPoint("TOPLEFT", hideActionBar1, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(changeActionBarArtScale, L["Change_ActionBar_Art_Size"], L["Tooltip_Change_ActionBar_Art_Size_Desc"])
+
+    local actionBarArtScaleSlider = CreateSlider(changeActionBarArtScale, L["ActionBar_Art_Size"], 0.5, 2, 0.01, "actionBarArtScale", nil, 90)
+    actionBarArtScaleSlider:SetPoint("LEFT", changeActionBarArtScale.text, "RIGHT", 3, -3)
+    CreateTooltipTwo(actionBarArtScaleSlider, L["Change_ActionBar_Art_Size"], L["Tooltip_Change_ActionBar_Art_Size_Desc"])
+    actionBarArtScaleSlider:SetScale(0.9)
+
+    changeActionBarArtScale:HookScript("OnClick", function(self)
+        BBF.ActionBarArtScale()
+        if not self:GetChecked() then
+            DisableElement(actionBarArtScaleSlider)
+        else
+            EnableElement(actionBarArtScaleSlider)
+        end
+    end)
+
     local hidePetActionBar = CreateCheckbox("hidePetActionBar", L["Hide_PetActionBar"], contentFrame, nil, BBF.HideFrames)
-    hidePetActionBar:SetPoint("TOPLEFT", hideActionBar1, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    hidePetActionBar:SetPoint("TOPLEFT", changeActionBarArtScale, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(hidePetActionBar, L["Hide_PetActionBar"], L["Tooltip_Hide_PetActionBar"])
     hidePetActionBar:HookScript("OnClick", function(self)
         if not self:GetChecked() then

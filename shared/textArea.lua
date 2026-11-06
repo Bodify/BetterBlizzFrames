@@ -59,7 +59,7 @@ BBF.TextAreaLayouts = {
             { client = "retail", style = "retail", mode = "xl", mana = "shown", left = 1, right = -1.5, textRight = 11 },
             { client = "retail", style = "retail", mode = "xl", mana = "hidden", left = 1.5, right = -9.5, textRight = 3 },
             { client = "retail", style = "retail", left = 1.5, right = -9.5, textRight = 2 },
-            { client = "forever", style = "retail", mode = "reduced", mana = "shown", left = 0.5, right = -12, textRight = 7 },
+            { client = "forever", style = "retail", mode = "reduced", mana = "shown", left = 1.5, right = -9.5, textRight = 1 },
             { style = "retail", mode = "none", mana = "shown", left = 1, right = -5, textRight = 5 },
             { style = "retail", mode = "xl", mana = "shown", left = 1, right = -1.5, textRight = 9 },
             { style = "retail", mode = "xl", mana = "hidden", left = 1.5, right = -9.5, textRight = 1 },
@@ -293,16 +293,8 @@ function BBF.TextAreaTexts(frame)
     return Texts(frame)
 end
 
-local function ManaHidden(manaBar, frame)
-    if not manaBar:IsShown() then return true end
-    frame = frame or manaBar.bbfTextAreaOwner
-    local region = manaBar
-    while region and region ~= frame and region ~= UIParent do
-        local alpha = region:GetAlpha()
-        if not issecretvalue(alpha) and alpha == 0 then return true end
-        region = region:GetParent()
-    end
-    return false
+local function ManaHidden(manaBar)
+    return not manaBar:IsShown() or manaBar.bbfManaHidden == true
 end
 BBF.TextAreaManaHidden = ManaHidden
 
@@ -370,7 +362,7 @@ function BBF.TextAreaSetup(frame)
     local xl = db["bigHealthbarExtraLarge" .. bigKey] and not db.classicFrames and style ~= "noPortrait"
     local mode = big and (xl and "xl" or "reduced") or "none"
     local _, manaBar = Bars(frame)
-    local manaHidden = manaBar and ManaHidden(manaBar, frame) or false
+    local manaHidden = manaBar and ManaHidden(manaBar) or false
     local minus = key == "target" and UnitClassification(unit) == "minus"
     local keepsManaLayout = style == "camelot" or style == "classic"
         or (style == "retail" and ((minus and mode ~= "none") or not minus))
@@ -442,7 +434,24 @@ local DEFAULT_MANA_SHIFT_XL = {
     party = { right = -4, textRight = 0.5 },
 }
 
+local CLASSIC_DEFAULT_MANA_SHIFT = {
+    target = { right = -6 },
+    party = { right = -3, bottom = 2 },
+}
+
+local function ApplyClassicDefaultManaShift(v, setup)
+    local shift = CLIENT == "forever" and CLASSIC_DEFAULT_MANA_SHIFT[setup.key]
+    if not shift or setup.manaHidden or not BBF.UnitFrameTextureOn or BBF.UnitFrameTextureOn("mana") then return end
+    for field, delta in pairs(shift) do
+        v[field] = (v[field] or 0) + delta
+    end
+end
+
 local function ApplyDefaultManaShift(frame, v, setup)
+    if setup.style == "classic" then
+        ApplyClassicDefaultManaShift(v, setup)
+        return
+    end
     if setup.style ~= "retail" or setup.manaHidden or not BBF.RetailDefaultManaOn then return end
     local xl = setup.mode == "xl" and DEFAULT_MANA_SHIFT_XL[setup.key]
     if xl then
@@ -461,7 +470,7 @@ local function ApplyDefaultManaShift(frame, v, setup)
     end
 end
 
-local function ResolveText(frame)
+local function ResolveText(frame, raw)
     local setup = BBF.TextAreaSetup(frame)
     if not setup then return end
     local cfg = BBF.TextAreaLayouts[setup.key]
@@ -474,6 +483,7 @@ local function ResolveText(frame)
     }
     if override then
         for k, val in pairs(override) do v[k] = val end
+        if not raw then ApplyDefaultManaShift(frame, v, setup) end
         return v, setup
     end
     for _, rule in ipairs(cfg.rules) do
@@ -548,12 +558,12 @@ local function ResolveText(frame)
             v.right = v.right + CLASSIC_MANA_GROW.targetRight[CLIENT]
         end
     end
-    ApplyDefaultManaShift(frame, v, setup)
+    if not raw then ApplyDefaultManaShift(frame, v, setup) end
     return v, setup
 end
 
-function BBF.TextAreaResolve(frame)
-    local v, setup = ResolveText(frame)
+function BBF.TextAreaResolve(frame, raw)
+    local v, setup = ResolveText(frame, raw)
     if v and setup.key == "target" and not (setup.style == "classic" and setup.manaHidden) then
         local player = BBF.TextAreaOverrides.player
         local cfg = BBF.TextAreaLayouts.player
@@ -699,26 +709,31 @@ local function SnapPoint(region, point, relative, relativePoint, x, y)
     region:SetPoint(point, relative, relativePoint, x, y)
 end
 
+local function RecheckMana(manaBar)
+    local owner = manaBar.bbfTextAreaOwner
+    local area = owner and areas[owner]
+    if area and area.manaHidden ~= ManaHidden(manaBar) and BBF.TextAreaActive(owner) then
+        BBF.ApplyTextArea(owner)
+        BBF.ApplyNameArea(owner)
+    end
+end
+
+function BBF.SetManaBarHidden(manaBar, hidden, alphaRegion)
+    if not manaBar then return end
+    local region = alphaRegion or manaBar
+    region:SetAlpha(hidden and 0 or 1)
+    hidden = hidden and true or nil
+    if manaBar.bbfManaHidden == hidden then return end
+    manaBar.bbfManaHidden = hidden
+    RecheckMana(manaBar)
+end
+
 local function WatchMana(manaBar, frame)
     manaBar.bbfTextAreaOwner = frame
     if manaBar.bbfTextAreaWatched then return end
     manaBar.bbfTextAreaWatched = true
-    local function recheck(self)
-        local owner = self.bbfTextAreaOwner
-        local area = owner and areas[owner]
-        if area and area.manaHidden ~= ManaHidden(self) and BBF.TextAreaActive(owner) then
-            BBF.ApplyTextArea(owner)
-            BBF.ApplyNameArea(owner)
-        end
-    end
-    manaBar:HookScript("OnShow", recheck)
-    manaBar:HookScript("OnHide", recheck)
-    hooksecurefunc(manaBar, "SetAlpha", recheck)
-    local parent = manaBar:GetParent()
-    while parent and parent ~= frame and parent ~= UIParent do
-        hooksecurefunc(parent, "SetAlpha", function() recheck(manaBar) end)
-        parent = parent:GetParent()
-    end
+    manaBar:HookScript("OnShow", RecheckMana)
+    manaBar:HookScript("OnHide", RecheckMana)
 end
 
 local function Relayout(frame)
@@ -729,7 +744,7 @@ local function Relayout(frame)
     local healthBar, manaBar = Bars(frame)
     if not v or not healthBar or not manaBar then return end
     local healthHeight, gap = BoxGeometry(frame, v, healthBar, ManaEdge(frame, setup, manaBar))
-    local manaChanged = ManaHidden(manaBar, frame) ~= area.manaHidden
+    local manaChanged = ManaHidden(manaBar) ~= area.manaHidden
     if healthHeight ~= area.healthHeight or gap ~= area.gap or manaChanged then
         BBF.ApplyTextArea(frame)
     end
@@ -982,7 +997,7 @@ local function ApplyTextArea(frame)
     WatchMana(manaBar, frame)
     WatchBar(healthBar, frame)
     WatchBar(manaBar, frame)
-    area.manaHidden = ManaHidden(manaBar, frame)
+    area.manaHidden = ManaHidden(manaBar)
     local minusChanged = not area.minus ~= not setup.minus
     area.minus = setup.minus
     area:SetFrameLevel(math.max(healthBar:GetFrameLevel(), manaBar:GetFrameLevel()) + 5)

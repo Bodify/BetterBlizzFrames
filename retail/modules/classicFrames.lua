@@ -597,7 +597,7 @@ local function UpdateClassicToTMana(totFrame)
     local noMana = ClassicToTNoMana()
     totFrame.HealthBar:SetSize(47, noMana and 15 or 7)
     BBF.SetClassicTexture(totFrame.FrameTexture, noMana and bigTotTex or "Interface\\TargetingFrame\\UI-TargetofTargetFrame")
-    totFrame.ManaBar:SetAlpha(noMana and 0 or 1)
+    BBF.SetManaBarHidden(totFrame.ManaBar, noMana)
 end
 
 function BBF.ClassicBigPet()
@@ -637,7 +637,7 @@ local function UpdateClassicPetMana()
     PetFrameHealthBar:SetPoint("TOPLEFT", 47, -22 + grow)
     PlaceClassicPetHealthText()
     local alpha = noMana and 0 or 1
-    PetFrameManaBar:SetAlpha(alpha)
+    BBF.SetManaBarHidden(PetFrameManaBar, alpha == 0)
     BBF.SetStatusTextHidden(PetFrameManaBarText, "hideMana", noMana)
     BBF.SetStatusTextHidden(PetFrameManaBarTextLeft, "hideMana", noMana)
     BBF.SetStatusTextHidden(PetFrameManaBarTextRight, "hideMana", noMana)
@@ -1894,7 +1894,7 @@ end
 local function SetClassicPartyManaShown(frame, shown)
     local manaBar = frame.ManaBar
     local alpha = shown and 1 or 0
-    manaBar:SetAlpha(alpha)
+    BBF.SetManaBarHidden(manaBar, alpha == 0)
     for _, key in ipairs({ "TextString", "LeftText", "RightText" }) do
         BBF.SetStatusTextHidden(manaBar[key], "hideMana", not shown)
     end

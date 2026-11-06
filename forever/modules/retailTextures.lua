@@ -609,7 +609,12 @@ local function RegisterTargetFrame(frame, unit)
     local container = frame.TargetFrameContainer
     Register(container.FrameTexture, unit, true)
     Register(container.Flash, unit, true)
-    Register(frame.TargetFrameContent.TargetFrameContentMain.ReputationColor, unit)
+    local rep = frame.TargetFrameContent.TargetFrameContentMain.ReputationColor
+    Register(rep, unit)
+    if rep and BBF.RetailTexturesOn(unit) then
+        rep:SetParent(container)
+        rep:SetDrawLayer("ARTWORK", 0)
+    end
     local tot = frame.totFrame
     if tot then
         Register(tot.FrameTexture, unit, true)

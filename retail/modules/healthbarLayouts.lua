@@ -245,7 +245,7 @@ local function SetManaHidden(frame, hidden)
     local manaBar = frame.TargetFrameContent.TargetFrameContentMain.ManaBar
     if hidden then
         manaBar.bbfBigHidden = true
-        manaBar:SetAlpha(0)
+        BBF.SetManaBarHidden(manaBar, true)
         if manaBar.LeftText then BBF.SetStatusTextHidden(manaBar.LeftText, "hideMana", true) end
         if manaBar.RightText then BBF.SetStatusTextHidden(manaBar.RightText, "hideMana", true) end
         if manaBar.ManaBarText then BBF.SetStatusTextHidden(manaBar.ManaBarText, "hideMana", true) end
@@ -253,7 +253,7 @@ local function SetManaHidden(frame, hidden)
     end
     if not manaBar.bbfBigHidden then return end
     manaBar.bbfBigHidden = nil
-    manaBar:SetAlpha(1)
+    BBF.SetManaBarHidden(manaBar, false)
     if manaBar.LeftText then BBF.SetStatusTextHidden(manaBar.LeftText, "hideMana", false) end
     if manaBar.RightText then BBF.SetStatusTextHidden(manaBar.RightText, "hideMana", false) end
     if manaBar.ManaBarText then BBF.SetStatusTextHidden(manaBar.ManaBarText, "hideMana", false) end

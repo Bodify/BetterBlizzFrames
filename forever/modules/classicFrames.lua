@@ -434,7 +434,7 @@ local function UpdateClassicToTMana(totFrame)
     local noMana = ClassicToTNoMana()
     totFrame.HealthBar:SetSize(47, noMana and 15 or 7)
     BBF.SetClassicTexture(totFrame.FrameTexture, noMana and bigTotTex or "Interface\\TargetingFrame\\UI-TargetofTargetFrame")
-    totFrame.ManaBar:SetAlpha(noMana and 0 or 1)
+    BBF.SetManaBarHidden(totFrame.ManaBar, noMana)
 end
 
 function BBF.ClassicBigPet()
@@ -474,7 +474,7 @@ local function UpdateClassicPetMana()
     PetFrameHealthBar:SetPoint("TOPLEFT", 47, -22 + grow)
     PlaceClassicPetHealthText()
     local alpha = noMana and 0 or 1
-    PetFrameManaBar:SetAlpha(alpha)
+    BBF.SetManaBarHidden(PetFrameManaBar, alpha == 0)
     BBF.SetStatusTextHidden(PetFrameManaBarText, "hideMana", noMana)
     BBF.SetStatusTextHidden(PetFrameManaBarTextLeft, "hideMana", noMana)
     BBF.SetStatusTextHidden(PetFrameManaBarTextRight, "hideMana", noMana)
@@ -530,9 +530,10 @@ local function MakeClassicFrame(frame)
                 BBF.RunAfterCombat(PlaceClassicManaBar)
                 return
             end
+            local defaultTexture = not BBF.UnitFrameTextureOn("mana")
             manaBar:ClearAllPoints()
-            manaBar:SetPoint("TOPRIGHT", frameContainer, "LEFT", 146, -11)
-            manaBar:SetSize(120, 11)
+            manaBar:SetPoint("TOPRIGHT", frameContainer, "LEFT", defaultTexture and 152 or 146, -11)
+            manaBar:SetSize(defaultTexture and 132 or 120, 11)
         end
         PlaceClassicManaBar()
 
@@ -564,11 +565,11 @@ local function MakeClassicFrame(frame)
             background:ClearAllPoints()
             if BBF.IsBigHealthbarActive(frame) then
                 background:SetPoint("TOPLEFT", healthBar, "TOPLEFT", 0, 0)
-                background:SetPoint("BOTTOMRIGHT", contentMain.ManaBar, "BOTTOMRIGHT", 0, 0)
+                background:SetPoint("BOTTOMRIGHT", contentMain.ManaBar, "BOTTOMRIGHT", 1, 0)
                 return
             end
             background:SetPoint("TOPLEFT", healthBar, "TOPLEFT", 0, 19)
-            background:SetPoint("BOTTOMRIGHT", contentMain.ManaBar, "BOTTOMRIGHT", 0, 0)
+            background:SetPoint("BOTTOMRIGHT", contentMain.ManaBar, "BOTTOMRIGHT", 1, 0)
         end
         frame.ClassicFrame.UpdateBackground()
 
@@ -1727,7 +1728,7 @@ end
 local function SetClassicPartyManaShown(frame, shown)
     local manaBar = frame.ManaBar
     local alpha = shown and 1 or 0
-    manaBar:SetAlpha(alpha)
+    BBF.SetManaBarHidden(manaBar, alpha == 0)
     for _, key in ipairs({ "TextString", "LeftText", "RightText" }) do
         BBF.SetStatusTextHidden(manaBar[key], "hideMana", not shown)
     end
@@ -1749,7 +1750,12 @@ local function ApplyClassicNormalParty(frame)
     hpContainer.HealthBarMask:SetPoint("TOPLEFT", hpContainer.HealthBar, "TOPLEFT", -29, 2)
     local manaBar = frame.ManaBar
     bars:ClearAllPoints(manaBar)
-    bars:SetPoint(manaBar, "TOPLEFT", frame, "TOPLEFT", 41, -28)
+    if BBF.UnitFrameTextureOn("mana") then
+        bars:SetPoint(manaBar, "TOPLEFT", frame, "TOPLEFT", 41, -28)
+    else
+        bars:SetPoint(manaBar, "TOPLEFT", frame, "TOPLEFT", 42, -28)
+        bars:SetSize(manaBar, 76, 9)
+    end
     SetClassicPartyManaShown(frame, not noMana)
     if frame.Background then
         frame.Background:ClearAllPoints()
@@ -1794,7 +1800,12 @@ local function ApplyClassicBigParty(frame)
     BBF.SetStretchedTotHealthMask(hpContainer, hpContainer.HealthBarMask, height)
     local manaBar = frame.ManaBar
     bars:ClearAllPoints(manaBar)
-    bars:SetPoint(manaBar, "TOPLEFT", frame, "TOPLEFT", 41, -28)
+    if BBF.UnitFrameTextureOn("mana") then
+        bars:SetPoint(manaBar, "TOPLEFT", frame, "TOPLEFT", 41, -28)
+    else
+        bars:SetPoint(manaBar, "TOPLEFT", frame, "TOPLEFT", 42, -28)
+        bars:SetSize(manaBar, 76, 9)
+    end
     SetClassicPartyManaShown(frame, not noMana)
     if frame.Background then
         frame.Background:ClearAllPoints()

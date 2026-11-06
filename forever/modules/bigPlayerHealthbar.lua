@@ -149,7 +149,8 @@ local function SetHealthTextOffset(hpContainer, y)
 end
 
 local function SetDefaultManaShown(shown)
-    PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea:SetAlpha(shown and 1 or 0)
+    local manaBarArea = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea
+    BBF.SetManaBarHidden(manaBarArea.ManaBar, not shown, manaBarArea)
 end
 
 function BBF.GetPlayerFrameArtTexture()

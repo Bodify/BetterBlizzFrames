@@ -590,7 +590,7 @@ end
 local function DarkModeMinimapButtonBorder(button, desaturate, colorValue)
     local state = button and button.StateTexture
     if not state then return end
-    local dark = colorValue ~= 1 and not BetterBlizzFramesDB.classicMinimap
+    local dark = (desaturate or colorValue ~= 1) and not BetterBlizzFramesDB.classicMinimap
     local copy = state.bbfCenterCopy
     if not copy then
         if not dark then return end

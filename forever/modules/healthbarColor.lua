@@ -1335,13 +1335,70 @@ local PLAYER_NAME_BG_HEALTH_ATLAS = "UI-HUD-UnitFrame-Player-PortraitOn-Bar-Heal
 local function PlayerNameBgMode()
     local db = BetterBlizzFramesDB
     if db.classicFrames or BBF.ClassicStyleAddon() then return false end
-    if BBF.RetailTexturesOn and BBF.RetailTexturesOn("player") then return end
+    if BBF.RetailTexturesOn and BBF.RetailTexturesOn("player") then return "retailTextures" end
     if db.playerNameBgClassic then return "classic" end
     if db.playerNameBgRetail then return "retail" end
 end
 
+local RETAIL_NAME_BG_SPLIT = 270 / 300
+local SYMMETRIC_NAME_BG_RAISE = 7.5
+
+local function SyncPlayerNameBgExt(rep)
+    local ext = rep.bbfNameBgExt
+    if not ext then return end
+    ext:SetVertexColor(rep:GetVertexColor())
+    ext:SetDesaturated(rep:IsDesaturated())
+    ext:SetAlpha(rep:GetAlpha())
+    ext:SetShown(rep.bbfNameBgSplit and rep:IsShown() or false)
+end
+
+local function PlayerNameBgExt(rep)
+    local ext = rep.bbfNameBgExt
+    if ext then return ext end
+    ext = rep:GetParent():CreateTexture(nil, (rep:GetDrawLayer()))
+    ext:SetPoint("TOPRIGHT", rep, "TOPLEFT")
+    ext:SetPoint("BOTTOMRIGHT", rep, "BOTTOMLEFT")
+    ext:SetWidth(15)
+    rep.bbfNameBgExt = ext
+    local function sync() SyncPlayerNameBgExt(rep) end
+    for _, method in ipairs({ "SetVertexColor", "SetDesaturated", "SetAlpha", "Show", "Hide", "SetShown" }) do
+        hooksecurefunc(rep, method, sync)
+    end
+    return ext
+end
+
+local function PlaceRetailPlayerNameBg(frame, rep)
+    local big = BBF.BigPlayerHealthbar()
+    local symmetric = BBF.SymmetricPlayerOn()
+    if rep:GetParent() ~= PlayerFrame.PlayerFrameContainer then
+        rep:SetParent(PlayerFrame.PlayerFrameContainer)
+        rep:SetDrawLayer("ARTWORK", 0)
+    end
+    if big and not symmetric then
+        rep:SetTexture(BBF.RetailFile("Player-NameBg-Reduced"))
+        rep:SetTexCoord(0, 1, 0, 1)
+        rep:SetSize(156, 20)
+        rep:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -21, -25)
+    elseif big then
+        local file = BBF.RetailFile("Target-NameBg-Reduced")
+        rep.bbfNameBgSplit = true
+        rep:SetTexture(file)
+        rep:SetTexCoord(RETAIL_NAME_BG_SPLIT, 0, 0, 1)
+        rep:SetSize(135, 18)
+        local ext = PlayerNameBgExt(rep)
+        ext:SetTexture(file)
+        ext:SetTexCoord(1, RETAIL_NAME_BG_SPLIT, 0, 1)
+        rep:SetPoint("TOPLEFT", frame, "TOPLEFT", 75, -25)
+    else
+        BBF.SetRetailArt(rep, "Target-PortraitOn-Type", true)
+        rep:SetPoint("TOPLEFT", frame, "TOPLEFT", 75, symmetric and -25 or -25.5)
+    end
+    BBF.ShiftRegionY(rep, big and (symmetric and SYMMETRIC_NAME_BG_RAISE or BBF.PlayerBigRaise()) or 0)
+end
+
 local function PlacePlayerNameBg(frame, mode)
     local rep = frame.ReputationColor
+    rep.bbfNameBgSplit = nil
     local mask = rep.bbfShapeMask
     if mode == "classic" and not mask then
         mask = frame:CreateMaskTexture()
@@ -1358,7 +1415,9 @@ local function PlacePlayerNameBg(frame, mode)
         end
     end
     rep:ClearAllPoints()
-    if mode == "classic" then
+    if mode == "retailTextures" then
+        PlaceRetailPlayerNameBg(frame, rep)
+    elseif mode == "classic" then
         rep:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-LevelBackground")
         rep:SetTexCoord(1, 0, 0, 1)
         rep:SetSize(125, 21)
@@ -1374,11 +1433,12 @@ local function PlacePlayerNameBg(frame, mode)
         rep:SetTexCoord(1, 0, 0, 1)
         rep:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -21, -25)
     end
+    SyncPlayerNameBgExt(rep)
 end
 
 function BBF.PlayerReputationColor()
     local frame = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain
-    local bigHealthbar = BBF.BigPlayerHealthbar()
+    local bigHealthbar = BBF.BigPlayerHealthbar() and not (BBF.RetailTexturesOn("player") and BBF.BigHealthbarReduced(PlayerFrame))
     if BetterBlizzFramesDB.playerReputationColor and not BBF.HasNoPortrait("player") and not bigHealthbar then
         if not frame.ReputationColor then
             frame.ReputationColor = frame:CreateTexture(nil, "OVERLAY")

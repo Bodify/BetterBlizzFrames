@@ -526,6 +526,18 @@ function BBF.ActionBarCDNumberSize(reset)
 	end
 end
 
+function BBF.ActionBarArtScale()
+	local endCaps = MainActionBar and MainActionBar.EndCaps
+	if not endCaps then return end
+	if BetterBlizzFramesDB.changeActionBarArtScale then
+		endCaps:SetScale(BetterBlizzFramesDB.actionBarArtScale or 1)
+		BBF.actionBarArtScaleActive = true
+	elseif BBF.actionBarArtScaleActive then
+		endCaps:SetScale(1)
+		BBF.actionBarArtScaleActive = nil
+	end
+end
+
 local LSM = LibStub("LibSharedMedia-3.0")
 local FontValidatorString = UIParent:CreateFontString(nil, "OVERLAY", "GameFontNormal")
 

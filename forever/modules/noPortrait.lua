@@ -253,7 +253,7 @@ end
 
 local function SetTotManaAlpha(totFrame, alpha)
     local manaBar = totFrame.ManaBar
-    manaBar:SetAlpha(alpha)
+    BBF.SetManaBarHidden(manaBar, alpha == 0)
     for _, key in ipairs({ "TextString", "LeftText", "RightText" }) do
         if manaBar[key] then manaBar[key]:SetAlpha(alpha) end
     end
@@ -581,7 +581,7 @@ end
 local function SetPartyManaShown(frame, shown)
     local manaBar = frame.ManaBar
     local alpha = shown and 1 or 0
-    manaBar:SetAlpha(alpha)
+    BBF.SetManaBarHidden(manaBar, alpha == 0)
     for _, key in ipairs({ "TextString", "LeftText", "RightText" }) do
         if manaBar[key] then manaBar[key]:SetAlpha(alpha) end
     end
@@ -832,7 +832,7 @@ end
 
 local function SetDefaultPetManaShown(shown)
     local db = BetterBlizzFramesDB
-    PetFrameManaBar:SetAlpha(shown and 1 or 0)
+    BBF.SetManaBarHidden(PetFrameManaBar, not shown)
     if shown and db.hidePetText then return end
     local alpha = shown and 1 or 0
     PetFrameManaBar.TextString:SetAlpha(alpha)
@@ -3383,7 +3383,7 @@ local function UpdatePartyFrameManaVisibility()
             local manaBar = frame.ManaBar
             if manaBar then
                 if db.hideDefaultPartyFramesMana or NoPortraitBigParty() then
-                    manaBar:SetAlpha(0)
+                    BBF.SetManaBarHidden(manaBar, true)
                     if manaBar.TextString then
                         BBF.SetStatusTextHidden(manaBar.TextString, "hideMana", true)
                     end
@@ -3400,7 +3400,7 @@ local function UpdatePartyFrameManaVisibility()
                         manaBar.pixelBorderBackground:SetAlpha(0)
                     end
                 else
-                    manaBar:SetAlpha(1)
+                    BBF.SetManaBarHidden(manaBar, false)
                     if manaBar.TextString then
                         BBF.SetStatusTextHidden(manaBar.TextString, "hideMana", false)
                     end
@@ -3495,7 +3495,7 @@ function BBF.UpdateNoPortraitManaVisibility()
     if noPortraitPlayer then
         local manaBarArea = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea
         if manaBarArea then
-            manaBarArea:SetAlpha((hidePlayerMana or BBF.BigPlayerHealthbar()) and 0 or 1)
+            BBF.SetManaBarHidden(manaBarArea.ManaBar, hidePlayerMana or BBF.BigPlayerHealthbar(), manaBarArea)
         end
     end
 
@@ -3509,7 +3509,7 @@ function BBF.UpdateNoPortraitManaVisibility()
         end
         local petMana = PetFrameManaBar
         if petMana then
-            petMana:SetAlpha(hidePetMana and 0 or 1)
+            BBF.SetManaBarHidden(petMana, hidePetMana)
             if hidePetMana then
                 BBF.SetStatusTextHidden(petMana.TextString, "hideMana", true)
                 BBF.SetStatusTextHidden(petMana.LeftText, "hideMana", true)
@@ -3609,10 +3609,10 @@ function BBF.UpdateNoPortraitManaVisibility()
     if noPortraitTarget and TargetFrame and TargetFrame.TargetFrameContent then
         local manaBar = TargetFrame.TargetFrameContent.TargetFrameContentMain.ManaBar
         if manaBar then
-            manaBar:SetAlpha((db.hideUnitFrameTargetMana or manaBar.bbfBigHidden) and 0 or 1)
+            BBF.SetManaBarHidden(manaBar, db.hideUnitFrameTargetMana or manaBar.bbfBigHidden)
         end
         if TargetFrame.totFrame and TargetFrame.totFrame.ManaBar then
-            TargetFrame.totFrame.ManaBar:SetAlpha(HideTotMana(TargetFrame) and 0 or 1)
+            BBF.SetManaBarHidden(TargetFrame.totFrame.ManaBar, HideTotMana(TargetFrame))
         end
     end
 
@@ -3620,10 +3620,10 @@ function BBF.UpdateNoPortraitManaVisibility()
     if noPortraitFocus then
         local manaBar = FocusFrame.TargetFrameContent.TargetFrameContentMain.ManaBar
         if manaBar then
-            manaBar:SetAlpha((db.hideUnitFrameFocusMana or manaBar.bbfBigHidden) and 0 or 1)
+            BBF.SetManaBarHidden(manaBar, db.hideUnitFrameFocusMana or manaBar.bbfBigHidden)
         end
         if FocusFrame.totFrame and FocusFrame.totFrame.ManaBar then
-            FocusFrame.totFrame.ManaBar:SetAlpha(HideTotMana(FocusFrame) and 0 or 1)
+            BBF.SetManaBarHidden(FocusFrame.totFrame.ManaBar, HideTotMana(FocusFrame))
         end
     end
 

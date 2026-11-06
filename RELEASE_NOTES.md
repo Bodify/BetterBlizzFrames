@@ -1,3 +1,17 @@
+# BetterBlizzFrames 2.2.0g
+## Retail & Forever
+### New
+- Misc, Actionbars: Change Art Size. Change the size of the gryphon action bar art.
+- General: Hide Attack Icon. Hide the combat swords icon on PlayerFrame.
+### Bugfix
+- Potential fix for PlayerFrame mana text sometimes jumping onto the health text.
+## Forever
+### Tweak
+- Many minor tweaks and bugfixes.
+- Manabars now keep their default WoW Forever texture by default with No Portrait (not Pixel Border) and Classic Frames and Retail Textures. If you want this changed again theres a setting in Font & Textures to change manabar textures.
+- Retail Textures setting now uses the healthbar retail crop version by default.
+- Player name background setting now works with Retail Textures.
+
 # BetterBlizzFrames 2.2.0f
 ## All versions
 ### New
