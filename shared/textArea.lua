@@ -22,7 +22,7 @@ BBF.TextAreaLayouts = {
             { style = "classic", mode = "big", mana = "hidden", inside = true, healthY = 1.5, manaY = 0 },
             { style = "classic", mode = "big", mana = "hidden", healthY = -1.5, manaY = 0 },
             { style = "classic", mode = "big", inside = true, bottom = -1, healthY = 2, manaY = -0.5, own = { bottom = true, manaY = true } },
-            { client = "forever", style = "classic", mode = "big", bottom = -1, healthY = -1.5, manaY = 0, textRight = 4.5, own = { bottom = true, manaY = true, textRight = true } },
+            { client = "forever", style = "classic", mode = "big", bottom = -1, healthY = -1.5, manaY = -0.5, textRight = 4.5, own = { bottom = true, manaY = true, textRight = true } },
             { style = "classic", mode = "big", bottom = -1, healthY = -2, manaY = -1, own = { bottom = true, manaY = true } },
             { style = "classic", mode = "none", mana = "hidden", healthY = 0.5 },
             { client = "forever", style = "classic", mode = "none", left = 2, right = 4, healthY = -0.5, manaY = -0.5, textLeft = 0.5, textRight = 3.5, sharedTextRight = true },
@@ -42,7 +42,7 @@ BBF.TextAreaLayouts = {
             { style = "classic", mode = "big", mana = "hidden", inside = true, bottom = 1, healthY = 3.5 },
             { style = "classic", mode = "big", mana = "hidden", bottom = 1, healthY = -1.5 },
             { style = "classic", mode = "big", inside = true, bottom = -1, manaY = -0.5, own = { bottom = true } },
-            { client = "forever", style = "classic", mode = "big", right = -1.5, bottom = -1, healthY = -1.5, manaY = 0, textRight = 2.5,
+            { client = "forever", style = "classic", mode = "big", right = -0.5, bottom = -1, healthY = -1.5, manaY = -0.5, textRight = 2.5,
                 own = { right = true, bottom = true, healthY = true, manaY = true, textRight = true } },
             { style = "classic", mode = "big", bottom = -1, healthY = -1.5, manaY = -0.5, own = { bottom = true, healthY = true } },
             { style = "classic", mode = "none", mana = "hidden", top = 1, bottom = -1, healthY = 0 },
@@ -204,7 +204,7 @@ BBF.NameLayouts = {
         { style = "camelot", mode = "reduced", y = 1.5 }, { y = 0.5 } },
     pet = { { inside = true, y = -10 }, { style = "retail", y = 1.5 }, { style = "camelot", mode = "xl", mana = "hidden", y = 2.5 },
         { style = "camelot", mode = "reduced", y = 2 }, { y = 1.5 } },
-    party = { { inside = true, y = -10 }, { client = "retail", style = "retail", mode = "xl", left = -21, y = 2.5 }, { client = "retail", style = "retail", y = 2.5 }, { style = "retail", mode = "xl", left = -21, y = 0.5 }, { style = "retail", y = 0.5 }, { style = "classic", mode = "big", y = -1 }, { style = "classic", y = 1 }, { y = 0.5 } },
+    party = { { inside = true, y = -10 }, { client = "retail", style = "retail", mode = "xl", left = -21, y = 2.5 }, { client = "retail", style = "retail", y = 2.5 }, { style = "retail", mode = "xl", left = -21, y = 0.5 }, { style = "retail", y = 0.5 }, { client = "forever", style = "classic", mode = "big", y = 2 }, { style = "classic", mode = "big", y = -1 }, { style = "classic", y = 1 }, { y = 0.5 } },
 }
 BBF.NameAreaOverrides = {}
 local NAME_HEIGHT = { player = 12, target = 12, tot = 10, pet = 10, party = 10 }

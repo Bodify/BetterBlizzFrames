@@ -1802,7 +1802,7 @@ local function ApplyClassicBigParty(frame)
         if noMana then
             frame.Background:SetPoint("BOTTOMLEFT", hpContainer.HealthBar, "BOTTOMLEFT", 0, 0)
         else
-            frame.Background:SetPoint("BOTTOMLEFT", manaBar, "BOTTOMLEFT", 4, 3)
+            frame.Background:SetHeight(24)
         end
         frame.Background:SetWidth(69)
     end

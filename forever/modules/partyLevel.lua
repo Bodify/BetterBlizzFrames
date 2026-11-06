@@ -59,7 +59,8 @@ local function PlaceElements(frame)
     ring.bbfHD = nil
     if BetterBlizzFramesDB.classicFrames then
         text:SetFont(font[1], font[2], font[3])
-        text:SetPoint("CENTER", frame, "TOPLEFT", 14, -37.5)
+        local bigParty = BBF.BigHealthbarsOn() and BetterBlizzFramesDB.bigHealthbarParty
+        text:SetPoint("CENTER", frame, "TOPLEFT", bigParty and 12.5 or 13, -37.5)
         if ClassicHDRing() then
             ring.bbfHD = true
             ring:SetTexture(HD_RING)

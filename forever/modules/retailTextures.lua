@@ -575,6 +575,9 @@ function BBF.RetailTextures()
     if BBF.ClassicStyleAddon() then return end
     if not BBF.RetailTexturesOn() or enabled then return end
     enabled = true
+    if AlternatePowerBar then
+        AlternatePowerBar:UnregisterEvent("UNIT_DISPLAYPOWER")
+    end
     local container = PlayerFrame.PlayerFrameContainer
     Register(container.FrameTexture, "player", true)
     Register(container.AlternatePowerFrameTexture, "player", true)

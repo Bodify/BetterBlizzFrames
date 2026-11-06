@@ -100,13 +100,19 @@ end
 
 local classicStyleAddon
 
+local function AddonWillLoad(name, player)
+	local state = C_AddOns.GetAddOnEnableState(name, player)
+	if state == Enum.AddOnEnableState.None or (player and state ~= Enum.AddOnEnableState.All) then return false end
+	return C_AddOns.IsAddOnLoadable(name, player) and true or false
+end
+
 function BBF.ClassicStyleAddon()
 	if classicStyleAddon == nil then
 		local db = BetterBlizzFramesDB
-		local player = UnitName("player")
-		classicStyleAddon = (C_AddOns.IsAddOnLoadable("ClassicFrames", player)
-			or C_AddOns.IsAddOnLoadable("EasyFrames", player)
-			or (C_AddOns.IsAddOnLoadable("ClassicUIForever", player) and not (db and db.classicUIUnitFramesOff))) and true or false
+		local player = UnitGUID("player")
+		classicStyleAddon = (AddonWillLoad("ClassicFrames", player)
+			or AddonWillLoad("EasyFrames", player)
+			or (AddonWillLoad("ClassicUIForever", player) and not (db and db.classicUIUnitFramesOff))) and true or false
 	end
 	return classicStyleAddon or C_AddOns.IsAddOnLoaded("ClassicFrames")
 end
