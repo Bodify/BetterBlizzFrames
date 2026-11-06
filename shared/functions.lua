@@ -570,6 +570,7 @@ LSM:Register("statusbar", "Blizzard Retail Bar Crop 2", [[Interface\AddOns\Bette
 LSM:Register("statusbar", "Blizzard Forever Bar", [[Interface\AddOns\BetterBlizzFrames\media\barTextures\BlizzardForeverBar]])
 BBF.internalStatusbars = {
     ["Blizzard Retail Bar Green"] = [[Interface\AddOns\BetterBlizzFrames\media\barTextures\BlizzardRetailBarGreen]],
+    ["Blizzard Retail Bar Crop Green"] = [[Interface\AddOns\BetterBlizzFrames\media\barTextures\BlizzardRetailBarCropGreen]],
     ["Blizzard Forever Bar Green"] = [[Interface\AddOns\BetterBlizzFrames\media\barTextures\BlizzardForeverBarGreen]],
 }
 function BBF.FetchStatusbar(name)

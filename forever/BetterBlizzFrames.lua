@@ -3862,7 +3862,7 @@ local function HealthTextureNames()
         return name, BBF.internalStatusbars[green] and green
     end
     if RetailTextureDefault() then
-        return "Blizzard Retail Bar", "Blizzard Retail Bar Green"
+        return "Blizzard Retail Bar Crop", "Blizzard Retail Bar Crop Green"
     end
     return "Blizzard Forever Bar", "Blizzard Forever Bar Green"
 end
@@ -3881,7 +3881,7 @@ function BBF.UnitFrameTextureOn(kind)
     if kind == "health" then
         return db.changeUnitFrameHealthbarTexture or db.classicFrames or HealthColorsOn() or BigHealthbarTextureDefault() or NoPortraitTextureDefault() or RetailTextureDefault()
     end
-    return db.changeUnitFrameManabarTexture or db.classicFrames or PixelBorderManaDefault() or RetailTextureDefault()
+    return db.changeUnitFrameManabarTexture or PixelBorderManaDefault()
 end
 
 function BBF.UnitFrameTextureName(kind)
@@ -3893,11 +3893,8 @@ function BBF.UnitFrameTextureName(kind)
     if db.changeUnitFrameManabarTexture then
         return db.unitFrameManabarTexture or "Blizzard DF"
     end
-    if db.classicFrames then
+    if PixelBorderManaDefault() then
         return "Blizzard Forever Bar"
-    end
-    if PixelBorderManaDefault() or RetailTextureDefault() then
-        return "Blizzard Retail Bar"
     end
     return "Blizzard"
 end

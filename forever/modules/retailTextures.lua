@@ -82,7 +82,7 @@ BBF.RetailSlots = {
     ["Target"] = { scale = 2, width = 192, height = 67, health = { 2.5, 23.5, 126, 20 }, mana = { 2.5, 44.5, 134, 10 }, masks = { health = "base\\Target-HM", healthF = "base\\Target-HMF", mana = "base\\Target-MM", manaF = "base\\Target-MMF" } },
     ["Target-MinusMob"] = { scale = 2, width = 192, height = 67, health = { 3, 23, 123.5, 11.5 }, mana = { 3, 35.5, 125.5, 10 }, masks = { health = "base\\Target-MinusMob-HM", healthF = "base\\Target-MinusMob-HMF", mana = "base\\Target-MinusMob-MM", manaF = "base\\Target-MinusMob-MMF" } },
     ["ToT"] = { scale = 2, width = 120, height = 49, health = { 44, 16.5, 70, 10 }, mana = { 40.5, 27.5, 73.5, 7 }, masks = { health = "base\\ToT-HM", mana = "base\\ToT-MM" } },
-    ["Party"] = { scale = 1, width = 120, height = 49, health = { 44, 17, 69, 10 }, mana = { 41, 28, 72, 7 }, masks = { health = "base\\ToT-HM", mana = "base\\ToT-MM" } },
+    ["Party"] = { scale = 1, width = 120, height = 49, health = { 44, 17, 69, 10 }, mana = { 41, 28, 72, 7 }, masks = { health = "base\\Party-HM", mana = "base\\ToT-MM" } },
     ["Player-BigHealthbar-NoMana"] = { scale = 2, width = 198, height = 71, health = { 60.5, 14, 131.5, 43 }, masks = { health = "Player-BigHealthbar-NoMana-HM" } },
     ["Player-BigHealthbar-Reduced-NoMana"] = { scale = 2, width = 198, height = 71, health = { 63.5, 18, 128.5, 39 }, masks = { health = "Player-BigHealthbar-Reduced-NoMana-HM" } },
     ["Player-BigHealthbar-Reduced"] = { scale = 2, width = 198, height = 71, health = { 63.5, 18, 128.5, 28 }, mana = { 68, 47, 124, 10 }, masks = { health = "Player-BigHealthbar-Reduced-HM", mana = "base\\Player-MM" } },
@@ -119,7 +119,7 @@ BBF.PrepatchSlots = {
     ["Target"] = { scale = 2, width = 192, height = 67, health = { 2.5, 23.5, 126, 20 }, mana = { 2.5, 44.5, 134, 10 }, masks = { health = "retail:base\\Target-HM", healthF = "retail:base\\Target-HMF", mana = "retail:base\\Target-MM", manaF = "retail:base\\Target-MMF" } },
     ["Target-MinusMob"] = { scale = 2, width = 192, height = 67, health = { 3, 23, 123.5, 11.5 }, mana = { 3, 35.5, 125.5, 10 }, masks = { health = "retail:base\\Target-MinusMob-HM", healthF = "retail:base\\Target-MinusMob-HMF", mana = "retail:base\\Target-MinusMob-MM", manaF = "retail:base\\Target-MinusMob-MMF" } },
     ["ToT"] = { scale = 2, width = 120, height = 49, health = { 44, 16.5, 70, 10 }, mana = { 40.5, 27.5, 73.5, 7 }, masks = { health = "retail:base\\ToT-HM", mana = "retail:base\\ToT-MM" } },
-    ["Party"] = { scale = 2, width = 120, height = 49, health = { 44, 17, 69, 10 }, mana = { 41, 28, 72, 7 }, masks = { health = "retail:base\\ToT-HM", mana = "retail:base\\ToT-MM" } },
+    ["Party"] = { scale = 2, width = 120, height = 49, health = { 44, 17, 69, 10 }, mana = { 41, 28, 72, 7 }, masks = { health = "retail:base\\Party-HM", mana = "retail:base\\ToT-MM" } },
     ["Player-BigHealthbar-NoMana"] = { scale = 2, width = 198, height = 71, health = { 60.5, 14, 131.5, 43 }, masks = { health = "retail:Player-BigHealthbar-NoMana-HM" } },
     ["Player-BigHealthbar-Reduced-NoMana"] = { scale = 2, width = 198, height = 71, health = { 63.5, 18, 128.5, 39 }, masks = { health = "retail:Player-BigHealthbar-Reduced-NoMana-HM" } },
     ["Player-BigHealthbar-Reduced"] = { scale = 2, width = 198, height = 71, health = { 63.5, 18, 128.5, 28 }, mana = { 68, 47, 124, 10 }, masks = { health = "retail:Player-BigHealthbar-Reduced-HM", mana = "retail:base\\Player-MM" } },
@@ -448,13 +448,74 @@ local function ArtOffset(tex)
     end
 end
 
+local DEFAULT_MANA = {
+    { rect = { 68, 47, 124, 10 }, x = 83, y = 61, w = 128, h = 11, maskX = -3, maskW = 3.5 },
+    { rect = { 2.5, 44.5, 134, 10 }, x = 15, y = 60.5, w = 149, h = 11 },
+    { rect = { 41, 28, 72, 7 }, x = 39, y = 28, w = 79, h = 10 },
+    { rect = { 40.5, 27.5, 73.5, 7 }, x = 38, y = 27, w = 80, h = 8 },
+}
+
+local HEALTH_MASKS = {
+    { rect = { 68, 26, 124, 20 }, x = -2, w = 2 },
+    { rect = { 2.5, 23.5, 126, 20 }, x = 0, w = 1 },
+    { rect = { 44, 17, 69, 10 }, x = 0, w = 1, top = 1, barW = 70 },
+}
+
+local function HealthMask(tex, slot)
+    if slot ~= "health" then return end
+    local info, flip = BBF.RetailSlotInfo(tex)
+    local r = info and info.health
+    if not r or flip then return end
+    for _, entry in ipairs(HEALTH_MASKS) do
+        local e = entry.rect
+        if r[1] == e[1] and r[2] == e[2] and r[3] == e[3] and r[4] == e[4] then
+            return entry
+        end
+    end
+end
+
+local SYMMETRIC_MANA = { rect = { 2.5, 44.5, 134, 10 }, x = 74, y = 60, w = 138, h = 12 }
+
+local function DefaultManaSlot(tex, slot)
+    if slot ~= "mana" or BetterBlizzFramesDB.changeUnitFrameManabarTexture then return end
+    local info, flip = BBF.RetailSlotInfo(tex)
+    local r = info and info.mana
+    if not r then return end
+    if flip then
+        local e = SYMMETRIC_MANA.rect
+        if tex == PlayerFrame.PlayerFrameContainer.FrameTexture and BBF.SymmetricPlayerOn()
+            and r[1] == e[1] and r[2] == e[2] and r[3] == e[3] and r[4] == e[4] then
+            return SYMMETRIC_MANA
+        end
+        return
+    end
+    for _, entry in ipairs(DEFAULT_MANA) do
+        local e = entry.rect
+        if r[1] == e[1] and r[2] == e[2] and r[3] == e[3] and r[4] == e[4] then
+            return entry
+        end
+    end
+end
+
+function BBF.RetailDefaultManaOn(tex)
+    return DefaultManaSlot(tex, "mana") and true or false
+end
+
 function BBF.FitRetailSlot(region, tex, slot, bars)
     local x, y, w, h = SlotRect(tex, slot)
     if not x or not region then return false end
     local anchor, dx, dy = tex, 0, 0
-    if bars or (region.IsProtected and region:IsProtected()) then
+    local custom = DefaultManaSlot(tex, slot)
+    if custom then
+        anchor, x, y, w, h = tex:GetParent(), custom.x, custom.y, custom.w, custom.h
+        if anchor == region then return false end
+    elseif bars or (region.IsProtected and region:IsProtected()) then
         anchor, dx, dy = ArtOffset(tex)
         if not anchor or anchor == region then return false end
+    end
+    local health = HealthMask(tex, slot)
+    if health and health.barW then
+        w = health.barW
     end
     if bars then
         bars:ClearAllPoints(region)
@@ -484,7 +545,17 @@ function BBF.MaskRetailSlot(mask, tex, slot)
     end
     mask:SetTexture(root .. path .. ".png", "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
     mask:ClearAllPoints()
-    mask:SetAllPoints(tex)
+    local custom = DefaultManaSlot(tex, slot)
+    local health = HealthMask(tex, slot)
+    if custom and custom.maskX then
+        mask:SetPoint("TOPLEFT", tex, "TOPLEFT", custom.maskX, 0)
+        mask:SetPoint("BOTTOMRIGHT", tex, "BOTTOMRIGHT", custom.maskX + (custom.maskW or 0), 0)
+    elseif health then
+        mask:SetPoint("TOPLEFT", tex, "TOPLEFT", health.x, health.top or 0)
+        mask:SetPoint("BOTTOMRIGHT", tex, "BOTTOMRIGHT", health.x + health.w, 0)
+    else
+        mask:SetAllPoints(tex)
+    end
     return true
 end
 
@@ -545,10 +616,46 @@ local function RegisterTargetFrame(frame, unit)
     end
 end
 
+local PARTY_STATUS_X = 1
+
+local function PlacePartyStatus(status)
+    if status.bbfPlacing or InCombatLockdown() then return end
+    if not BBF.RetailTexturesOn("party") or BBF.HasNoPortrait("party") then return end
+    local point, rel, relPoint, x, y = status:GetPoint(1)
+    if not point or x == PARTY_STATUS_X then return end
+    status.bbfPlacing = true
+    status:SetPoint(point, rel, relPoint, PARTY_STATUS_X, y)
+    status.bbfPlacing = nil
+end
+
+function BBF.UpdateRetailPartyStatus(frame)
+    local status = frame.PartyMemberOverlay and frame.PartyMemberOverlay.Status
+    if not status then return end
+    if BBF.RetailTexturesOn("party") and BBF.PartyBigMode and BBF.PartyBigMode() == "big" then
+        if not status.bbfBigStatus then
+            status.bbfStatusAtlas = status:GetAtlas()
+            status.bbfBigStatus = true
+        end
+        status:SetTexture(RETAIL_TEX .. "ToT-Status-BigHealthbar.png")
+        status:SetTexCoord(0, 1, 0, 1)
+        if not InCombatLockdown() then status:SetSize(120, 49) end
+    elseif status.bbfBigStatus then
+        status.bbfBigStatus = nil
+        if status.bbfStatusAtlas then
+            status:SetAtlas(status.bbfStatusAtlas, TextureKitConstants.UseAtlasSize)
+        end
+    end
+end
+
 local function RegisterPartyFrame(frame)
     Register(frame.Texture, "party", true)
     Register(frame.Flash, "party", true)
-    Register(frame.PartyMemberOverlay and frame.PartyMemberOverlay.Status, "party", true)
+    local status = frame.PartyMemberOverlay and frame.PartyMemberOverlay.Status
+    Register(status, "party", true)
+    if status then
+        hooksecurefunc(status, "SetPoint", PlacePartyStatus)
+        PlacePartyStatus(status)
+    end
 end
 
 local function PlacePlayerName()

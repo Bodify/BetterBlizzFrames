@@ -490,6 +490,12 @@ local function PlaceRetailPartyBars(frame)
     local bars = BBF.PartyBars(frame)
     if not BBF.FitRetailBars(frame.Texture, container, container.HealthBarMask, not frame.bbfPartyNoMana and manaBar, manaBar.ManaBarMask, bars) then return end
     bars:SetAllPoints(container.HealthBar, container)
+    if not frame.bbfPartyNoMana and BBF.PartyBigMode() == "big" and not BetterBlizzFramesDB.changeUnitFrameManabarTexture then
+        bars:ClearAllPoints(manaBar)
+        bars:SetPoint(manaBar, "TOPLEFT", frame, "TOPLEFT", 35, -32)
+        bars:SetSize(manaBar, 85, 9)
+    end
+    if BBF.UpdateRetailPartyStatus then BBF.UpdateRetailPartyStatus(frame) end
     BBF.SetRetailSmallFlash(frame.Flash, frame.Texture, frame.bbfBigParty, frame.bbfReducedParty, frame.bbfPartyNoMana, "ui-hud-unitframe-party-portraiton-incombat")
 end
 
@@ -1574,9 +1580,9 @@ local function MakeNoPortraitMode(frame)
         manaBar.ManaBarMask:SetTexture("interface/hud/uipartyframeportraitoffmanamask")
         if not db.noPortraitPixelBorder then
             BBF.RunAfterCombat(function()
-                manaBar:SetWidth(137)
+                manaBar:SetSize(137, 11)
                 manaBar:ClearAllPoints()
-                manaBar:SetPoint("TOPRIGHT", frameContainer, "LEFT", 155, -11)
+                manaBar:SetPoint("TOPRIGHT", frameContainer, "LEFT", 153, -10)
             end)
         end
 
@@ -1599,7 +1605,7 @@ local function MakeNoPortraitMode(frame)
 
         frame.noPortraitMode.Background = frame:CreateTexture(nil, "BACKGROUND")
         frame.noPortraitMode.Background:SetColorTexture(0,0,0,0.45)
-        BindArtBackground(frame.noPortraitMode.Background, frame.noPortraitMode.Texture, nil, 0.5)
+        BindArtBackground(frame.noPortraitMode.Background, frame.noPortraitMode.Texture, nil, 0.5, 2)
         frame.noPortraitMode.BgMask = frame.noPortraitMode:CreateMaskTexture()
         frame.noPortraitMode.BgMask:SetAllPoints(frame.noPortraitMode.Background)
         frame.noPortraitMode.BgMask:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\masks\\frameMask.png", "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
@@ -1850,7 +1856,7 @@ local function MakeNoPortraitMode(frame)
                 manaBar.ManaBarMask:SetTexture("interface/hud/uipartyframeportraitoffmanamask")
                 SetXYPoint(manaBar.ManaBarMask, -26, 8)
                 BBF.RunAfterCombat(function()
-                    manaBar:SetHeight(10.5)
+                    manaBar:SetHeight(11)
                 end)
             end
 
@@ -2103,7 +2109,7 @@ local function MakeNoPortraitMode(frame)
 
         frame.noPortraitMode.Background = frame:CreateTexture(nil, "BACKGROUND")
         frame.noPortraitMode.Background:SetColorTexture(0,0,0,0.45)
-        BindArtBackground(frame.noPortraitMode.Background, frame.noPortraitMode.Texture, nil, 0.5)
+        BindArtBackground(frame.noPortraitMode.Background, frame.noPortraitMode.Texture, nil, 0.5, 2)
         frame.noPortraitMode.BgMask = frame.noPortraitMode:CreateMaskTexture()
         frame.noPortraitMode.BgMask:SetAllPoints(frame.noPortraitMode.Background)
         frame.noPortraitMode.BgMask:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\masks\\frameMask.png", "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")

@@ -1456,7 +1456,7 @@ local function MakeClassicFrame(frame)
         PetFrameFlash:SetTexture("Interface\\TargetingFrame\\UI-PartyFrame-Flash")
         PetFrameFlash:SetPoint("TOPLEFT", -3, 12)
         PetFrameFlash:SetTexCoord(0, 1, 1, 0)
-        PetFrameFlash:SetDrawLayer("BACKGROUND")
+        PetFrameFlash:SetDrawLayer("OVERLAY")
 
         --PetFrameHealthBar:SetStatusBarTexture("Interface\\TargetingFrame\\UI-StatusBar")
         BBF.ShowHealthGreen(PetFrameHealthBar)

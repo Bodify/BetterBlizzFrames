@@ -1,3 +1,10 @@
+# BetterBlizzFrames 2.2.0g
+## Forever
+### Tweak
+- Many minor tweaks and bugfixes.
+- Manabars now keep their default WoW Forever texture by default with No Portrait (not Pixel Border) and Classic Frames and Retail Textures. If you want this changed again theres a setting in Font & Textures to change manabar textures.
+- Retail Textures setting now uses the healthbar retail crop version by default.
+
 # BetterBlizzFrames 2.2.0f
 ## All versions
 ### New
