@@ -1438,6 +1438,10 @@ function BBF.HookFrameTextureColor()
             end
         end
 
+        local tinted = colored or darkmode
+        if not tinted and not texture.bbfFrameTinted then return end
+        texture.bbfFrameTinted = tinted or nil
+
         texture:SetDesaturated(desaturate)
         texture.changing = true
         texture:SetVertexColor(r, g, b)

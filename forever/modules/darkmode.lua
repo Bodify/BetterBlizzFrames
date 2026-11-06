@@ -43,6 +43,17 @@ local function applySettings(frame, desaturate, colorValue, hook, hookShow)
 end
 
 
+local function applyUnitFrameArt(frame, on, colorValue)
+    if not frame or issecretvalue(frame) then return end
+    if on then
+        frame.bbfUnitDark = true
+        applySettings(frame, true, colorValue)
+    elseif frame.bbfUnitDark then
+        frame.bbfUnitDark = nil
+        applySettings(frame, false, 1)
+    end
+end
+
 local function applyTextBorder(textBorder, desaturate, colorValue, alpha)
     if not textBorder or issecretvalue(textBorder) or textBorder:IsForbidden() then return end
     applySettings(textBorder, desaturate, colorValue)
@@ -649,7 +660,6 @@ function BBF.DarkmodeFrames(bypass)
     local castbarBorder = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.1) or 1
     local color25 = BetterBlizzFramesDB.darkModeUi and (vertexColor + 0.25) or 1
     local unitFramesOn = BBF.DarkModeUnitFramesOn()
-    local frameSat = unitFramesOn
     local frameColor = unitFramesOn and vertexColor or 1
     local frameDarkerColor = unitFramesOn and darkerVertexColor or 1
 
@@ -828,17 +838,17 @@ function BBF.DarkmodeFrames(bypass)
     BBF.UpdateClassicHDLevelRingColors()
 
 
-    applySettings(TargetFrame.TargetFrameContainer.FrameTexture, frameSat, frameColor)
-    applySettings(TargetFrame.TargetFrameContainer.FrameTextureBBF, frameSat, frameColor)
-    applySettings(FocusFrame.TargetFrameContainer.FrameTexture, frameSat, frameColor)
-    applySettings(TargetFrame.totFrame.FrameTexture, frameSat, frameColor)
-    applySettings(PetFrameTexture, frameSat, frameColor)
-    applySettings(FocusFrameToT.FrameTexture, frameSat, frameColor)
+    applyUnitFrameArt(TargetFrame.TargetFrameContainer.FrameTexture, unitFramesOn, frameColor)
+    applyUnitFrameArt(TargetFrame.TargetFrameContainer.FrameTextureBBF, unitFramesOn, frameColor)
+    applyUnitFrameArt(FocusFrame.TargetFrameContainer.FrameTexture, unitFramesOn, frameColor)
+    applyUnitFrameArt(TargetFrame.totFrame.FrameTexture, unitFramesOn, frameColor)
+    applyUnitFrameArt(PetFrameTexture, unitFramesOn, frameColor)
+    applyUnitFrameArt(FocusFrameToT.FrameTexture, unitFramesOn, frameColor)
     for i = 1, 5 do
         local frame = _G["Boss"..i.."TargetFrame"]
         if frame then
-            applySettings(frame.TargetFrameContainer.FrameTexture, frameSat, frameColor)
-            applySettings(frame.TargetFrameContent.TargetFrameContentMain.LevelBackgroundCircle, frameSat, frameColor)
+            applyUnitFrameArt(frame.TargetFrameContainer.FrameTexture, unitFramesOn, frameColor)
+            applyUnitFrameArt(frame.TargetFrameContent.TargetFrameContentMain.LevelBackgroundCircle, unitFramesOn, frameColor)
         end
     end
 
@@ -847,7 +857,7 @@ function BBF.DarkmodeFrames(bypass)
         TargetFrame.TargetFrameContent.TargetFrameContentMain.LevelBackgroundCircle,
         FocusFrame.TargetFrameContent.TargetFrameContentMain.LevelBackgroundCircle,
     }) do
-        applySettings(v, frameSat, frameColor < 1 and math.min(frameColor + math.min(0.2, frameColor * 0.5), 1) or frameColor)
+        applyUnitFrameArt(v, unitFramesOn, frameColor < 1 and math.min(frameColor + math.min(0.2, frameColor * 0.5), 1) or frameColor)
     end
 
     if not cf then
@@ -856,7 +866,7 @@ function BBF.DarkmodeFrames(bypass)
             TargetFrame.TargetFrameContent.TargetFrameContentContextual.PvpBackgroundCircle,
             FocusFrame.TargetFrameContent.TargetFrameContentContextual.PvpBackgroundCircle,
         }) do
-            applySettings(v, frameSat, frameColor)
+            applyUnitFrameArt(v, unitFramesOn, frameColor)
         end
     else
         BBF.UpdateClassicPvpCircles()
@@ -1060,11 +1070,11 @@ function BBF.DarkmodeFrames(bypass)
 
 
 
-    applySettings(PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.PlayerPortraitCornerIcon, frameSat, frameColor)
+    applyUnitFrameArt(PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.PlayerPortraitCornerIcon, unitFramesOn, frameColor)
 
     if not (BetterBlizzFramesDB.classColorFrameTexture or BetterBlizzFramesDB.rpNamesFrameTextureColor) then
         for _, ring in pairs({ _G.PlayerFrameCompactRing, _G.TargetFrameCompactRing, _G.FocusFrameCompactRing }) do
-            applySettings(ring, frameSat, frameColor)
+            applyUnitFrameArt(ring, unitFramesOn, frameColor)
         end
     end
 
@@ -1085,7 +1095,7 @@ function BBF.DarkmodeFrames(bypass)
         PlayerFrameGroupIndicatorRight,
         PlayerFrameGroupIndicatorMiddle
     }) do
-        applySettings(v, frameSat, frameColor)
+        applyUnitFrameArt(v, unitFramesOn, frameColor)
     end
     for _, v in pairs({
         PaladinPowerBarFrame and PaladinPowerBarFrame.Background,
@@ -1107,7 +1117,7 @@ function BBF.DarkmodeFrames(bypass)
             PlayerFrame.AltManaBarBBF.LeftBorder,
             PlayerFrame.AltManaBarBBF.RightBorder
         }) do
-            applySettings(v, frameSat, frameDarkerColor)
+            applyUnitFrameArt(v, unitFramesOn, frameDarkerColor)
         end
     end
 
@@ -1194,8 +1204,8 @@ function BBF.DarkmodeFrames(bypass)
     local comboRing = ComboFrame and ComboFrame.ComboPoints
     if comboRing then
         for _, v in ipairs(comboRing) do
-            applySettings(v.BGInactive, frameSat, unitFramesOn and rogueCombo or 1)
-            applySettings(v.BGActive, frameSat, unitFramesOn and rogueComboActive or 1)
+            applyUnitFrameArt(v.BGInactive, unitFramesOn, unitFramesOn and rogueCombo or 1)
+            applyUnitFrameArt(v.BGActive, unitFramesOn, unitFramesOn and rogueComboActive or 1)
         end
     end
 

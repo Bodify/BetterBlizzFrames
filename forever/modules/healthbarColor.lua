@@ -1519,6 +1519,16 @@ function BBF.HookFrameTextureColor()
     local function SetLevelRingColor(unit, colored, r, g, b, desaturate)
         local ring = levelRings[unit]
         if not ring then return end
+        if not colored and not BBF.darkModeUnitFramesActive then
+            if ring.bbfClassColor then
+                ring.bbfClassColor = nil
+                ring.bbfColoring = true
+                ring:SetDesaturated(false)
+                ring:SetVertexColor(1, 1, 1)
+                ring.bbfColoring = false
+            end
+            return
+        end
         if colored then
             r, g, b = math.min(r + 0.15, 1), math.min(g + 0.15, 1), math.min(b + 0.15, 1)
         else
@@ -1571,6 +1581,10 @@ function BBF.HookFrameTextureColor()
                 end
             end
         end
+
+        local tinted = colored or darkmode
+        if not tinted and not texture.bbfFrameTinted then return end
+        texture.bbfFrameTinted = tinted or nil
 
         texture:SetDesaturated(desaturate)
         texture.changing = true

@@ -6104,6 +6104,7 @@ First:SetScript("OnEvent", function(_, event, addonName)
         BBF.ApplyLocale()
 
         InitializeSavedVariables()
+        BBF.HidePlayerFrame()
         BBF.HoldClassicFramesSetting()
 
         if BetterBlizzFramesDB.hideTargetAuras then
@@ -6290,7 +6291,6 @@ First:SetScript("OnEvent", function(_, event, addonName)
         BBF.FlipPortraits()
         BBF.UpdateAuraCollapseButton()
         BBF.PlayerElite(BetterBlizzFramesDB.playerEliteFrameMode)
-        BBF.HidePlayerFrame()
         BBF.ReduceEditModeAlpha()
         BBF.SymmetricPlayerFrame()
         BBF.RefreshTextAreas()
