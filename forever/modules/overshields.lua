@@ -143,7 +143,7 @@ end
 local function BBF_CompactUnitFrame_UpdateHealPrediction(frame)
     if not frame.unit then return end
     local unit = frame.displayedUnit or frame.unit
-    if unit:find("nameplate") then return end
+    if frame.namePlateFrame or unit:find("nameplate") then return end
     if frame:IsForbidden() then return end
 
     local absorbGlow = frame.overAbsorbGlow
