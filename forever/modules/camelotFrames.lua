@@ -178,6 +178,8 @@ hooksecurefunc("PlayerFrame_UpdateLevel", BBF.ApplyPlayerLevelColor)
 local BRONZE_R, BRONZE_G, BRONZE_B = 0.95, 0.68, 0.35
 local BRONZE_DRAGON_R, BRONZE_DRAGON_G, BRONZE_DRAGON_B = 0.776, 0.467, 0.278
 local MINIMAP_BRONZE_R, MINIMAP_BRONZE_G, MINIMAP_BRONZE_B = 1, 0.71, 0.34
+local THREAT_BRONZE_R, THREAT_BRONZE_G, THREAT_BRONZE_B = 1, 0.7255, 0.502
+local THREAT_BORDER_FILE = 237668
 local NO_PORTRAIT_BRONZE_R, NO_PORTRAIT_BRONZE_G, NO_PORTRAIT_BRONZE_B = 1, 0.773, 0.361
 local bronzedTextures = {}
 local bronzedNoPortraitTextures = {}
@@ -191,14 +193,14 @@ end
 
 local function BronzeTintActive()
     local db = BetterBlizzFramesDB
-    return (db.classicFrames or RetailBronzeTintActive()) and db.classicFramesBronzeTint and db.classicFramesBronzeTintUnitFrames and not db.classColorFrameTexture
+    return (db.classicFrames or RetailBronzeTintActive()) and db.classicFramesBronzeTint and db.classicFramesBronzeTintUnitFrames and not db.classColorFrameTexture and not db.darkerBronzeUnitFrames
 end
 
 BBF.ClassicBronzeTintActive = BronzeTintActive
 
 local function NoPortraitBronzeTintActive()
     local db = BetterBlizzFramesDB
-    return not db.classicFrames and db.noPortraitModes and db.classicFramesBronzeTint and db.classicFramesBronzeTintUnitFrames and not db.classColorFrameTexture
+    return not db.classicFrames and db.noPortraitModes and db.classicFramesBronzeTint and db.classicFramesBronzeTintUnitFrames and not db.classColorFrameTexture and not db.darkerBronzeUnitFrames
 end
 
 BBF.NoPortraitBronzeTintActive = NoPortraitBronzeTintActive
@@ -355,7 +357,7 @@ local function GetThreatBorder(frame)
         threat.bbfBorder = false
         for i = 1, threat:GetNumRegions() do
             local region = select(i, threat:GetRegions())
-            if region and region:IsObjectType("Texture") and region ~= threat.bg and region:GetDrawLayer() == "ARTWORK" then
+            if region and region:IsObjectType("Texture") and region ~= threat.bg and (region:GetTextureFileID() == THREAT_BORDER_FILE or region:GetDrawLayer() == "ARTWORK") then
                 threat.bbfBorder = region
                 break
             end
@@ -373,9 +375,44 @@ local function GetSaturatedBorderTextures()
             tinsert(textures, bar.RightBorder)
         end
     end
-    tinsert(textures, GetThreatBorder(TargetFrame))
-    tinsert(textures, GetThreatBorder(FocusFrame))
     return textures
+end
+
+local function ThreatBorderTintActive()
+    local db = BetterBlizzFramesDB
+    return not db.classicFrames or (db.classicFramesBronzeTint and db.classicFramesBronzeTintUnitFrames)
+end
+
+local function TintThreatBorder(border)
+    border.bbfThreatChanging = true
+    if BBF.DarkModeUnitFramesOn() then
+        local v = BetterBlizzFramesDB.darkModeColor
+        border:SetDesaturated(true)
+        border:SetVertexColor(v, v, v)
+    elseif ThreatBorderTintActive() then
+        border:SetDesaturated(false)
+        border:SetVertexColor(THREAT_BRONZE_R, THREAT_BRONZE_G, THREAT_BRONZE_B)
+    else
+        border:SetDesaturated(false)
+        border:SetVertexColor(1, 1, 1)
+    end
+    border.bbfThreatChanging = false
+end
+
+function BBF.UpdateThreatBorderTint()
+    for _, frame in ipairs({ TargetFrame, FocusFrame }) do
+        local border = GetThreatBorder(frame)
+        if border then
+            if not border.bbfThreatHooked then
+                border.bbfThreatHooked = true
+                hooksecurefunc(border, "SetVertexColor", function(self)
+                    if self.bbfThreatChanging then return end
+                    TintThreatBorder(self)
+                end)
+            end
+            TintThreatBorder(border)
+        end
+    end
 end
 
 local function GetClassicCastbarBorderTextures()
@@ -740,6 +777,7 @@ function BBF.UpdateBronzeTint()
     if BBF.UpdateComboPointTint then
         BBF.UpdateComboPointTint()
     end
+    BBF.UpdateThreatBorderTint()
     if BronzeTintActive() then
         for _, texture in pairs(GetUnitFrameBorderTextures()) do
             BronzeTexture(texture)

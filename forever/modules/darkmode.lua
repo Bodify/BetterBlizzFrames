@@ -823,6 +823,9 @@ function BBF.DarkmodeFrames(bypass)
     BBF.DarkModeBuffCollapseButton()
 
     BBF.DarkModeUnitframeBorders()
+    if BBF.UpdateThreatBorderTint then
+        BBF.UpdateThreatBorderTint()
+    end
 
 
     if BetterBlizzFramesDB.darkModeEliteTexture then
@@ -1072,7 +1075,7 @@ function BBF.DarkmodeFrames(bypass)
 
     applyUnitFrameArt(PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.PlayerPortraitCornerIcon, unitFramesOn, frameColor)
 
-    if not (BetterBlizzFramesDB.classColorFrameTexture or BetterBlizzFramesDB.rpNamesFrameTextureColor) then
+    if not (BetterBlizzFramesDB.classColorFrameTexture or BetterBlizzFramesDB.rpNamesFrameTextureColor or BetterBlizzFramesDB.darkerBronzeUnitFrames) then
         for _, ring in pairs({ _G.PlayerFrameCompactRing, _G.TargetFrameCompactRing, _G.FocusFrameCompactRing }) do
             applyUnitFrameArt(ring, unitFramesOn, frameColor)
         end

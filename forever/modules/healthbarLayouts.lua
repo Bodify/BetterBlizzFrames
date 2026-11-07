@@ -578,11 +578,23 @@ local function UpdateRetailTargetDecor(frame, layout)
     BBF.ShiftRegionY(frame.TargetFrameContent.TargetFrameContentMain.ReputationColor, raise)
 end
 
+local THREAT_BIG_REDUCED_RAISE = 5
+
+local function ShiftThreatMeter(frame, retail)
+    local layout = not retail and BBF.GetHealthbarMirror(frame)
+    layout = layout and layout.layout
+    local contextual = frame.TargetFrameContent.TargetFrameContentContextual
+    if not contextual then return end
+    BBF.ShiftRegionY(contextual.NumericalThreat, layout and layout.big and layout.reduced and THREAT_BIG_REDUCED_RAISE or 0)
+end
+
 local function SetTargetPlayerArt(frame)
     if TargetStyle(frame) == "retail" then
+        ShiftThreatMeter(frame, true)
         SetRetailTargetArt(frame)
         return
     end
+    ShiftThreatMeter(frame)
     local container = frame.TargetFrameContainer
     local frameTexture, flash, portrait = container.FrameTexture, container.Flash, container.Portrait
     if frameTexture.bbfArtChanging then return end

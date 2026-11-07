@@ -104,6 +104,7 @@ local totArtNameUnderNoManaTex = "Interface\\AddOns\\BetterBlizzFrames\\media\\f
 local totArtNoBorderTex = "Interface\\AddOns\\BetterBlizzFrames\\media\\foreverTextures\\TargetofTarget-PortraitOn-NoNameBg.png"
 local totArtNoBorderNoManaTex = "Interface\\AddOns\\BetterBlizzFrames\\media\\foreverTextures\\TargetofTarget-PortraitOn-NoNameBg-NoMana.png"
 local totFlashNoBorderTex = "Interface\\AddOns\\BetterBlizzFrames\\media\\foreverTextures\\TargetofTarget-PortraitOn-InCombat-NoNameBg.png"
+local partyBigFlashTex = "Interface\\AddOns\\BetterBlizzFrames\\media\\foreverTextures\\TargetofTarget-PortraitOn-InCombat-BigHealthbar.png"
 local bigArtTex = { reduced = totArtReducedTex, big = totArtBigTex }
 local bigHealthHeight = { reduced = 13, big = 23 }
 local bigHealthMask = { reduced = { 29, 8 }, big = { 55, 16 } }
@@ -484,6 +485,15 @@ end
 
 local PARTY_DEFAULT_MASK = "UI-HUD-UnitFrame-Player-PortraitOn-Bar-Health-Mask"
 local PARTY_DEFAULT_MANA_MASK = "UI-HUD-UnitFrame-Target-PortraitOn-Bar-Health-Mask"
+local PARTY_DEFAULT_MANA_MASK_HEIGHT = 13
+
+local function SetDefaultPartyManaMaskHeight(frame)
+    local mask = frame.ManaBar and frame.ManaBar.ManaBarMask
+    if not mask then return end
+    if BetterBlizzFramesDB.classicFrames or BBF.HasNoPortrait("party") then return end
+    if BBF.RetailTexturesOn and BBF.RetailTexturesOn("party") then return end
+    mask:SetHeight(PARTY_DEFAULT_MANA_MASK_HEIGHT)
+end
 
 local function PlaceRetailPartyBars(frame)
     local container, manaBar = frame.HealthBarContainer, frame.ManaBar
@@ -526,6 +536,7 @@ local function PlacePartyDefaultMana(frame)
     local bars = BBF.PartyBars(frame)
     bars:ClearAllPoints(manaBar)
     PlacePartyManaBar(frame, bars, manaBar, manaBar.ManaBarMask)
+    SetDefaultPartyManaMaskHeight(frame)
 end
 
 local function PinRightText(text, bar, x, y)
@@ -565,6 +576,25 @@ local function SetPartyNoBorderFlash(frame, on)
     end
 end
 
+local function SetPartyBigFlash(frame, on)
+    local flash = frame.Flash
+    if not flash then return end
+    if on then
+        flash:SetTexture(partyBigFlashTex)
+        flash:SetTexCoord(0, 1, 0, 1)
+        flash:SetSize(120, 49)
+        flash:ClearAllPoints()
+        flash:SetPoint("TOPLEFT", frame.Texture, "TOPLEFT")
+        flash:SetDrawLayer((flash:GetDrawLayer()), 1)
+        flash.bbfBigFlash = true
+    elseif flash.bbfBigFlash then
+        flash.bbfBigFlash = nil
+        flash:ClearAllPoints()
+        flash:SetPoint("TOPLEFT", frame, "TOPLEFT", 1, -1)
+        flash:SetDrawLayer((flash:GetDrawLayer()), 0)
+    end
+end
+
 local function SetPartyPlainArt(frame)
     local db = BetterBlizzFramesDB
     if (BetterBlizzFramesDB.removeNameBorder and not (BBF.RetailTexturesOn and BBF.RetailTexturesOn())) and not (db.classicFrames or BBF.HasNoPortrait("party")) then
@@ -597,6 +627,7 @@ local function UpdateOnePartyReduced(frame)
         if (BetterBlizzFramesDB.removeNameBorder and not (BBF.RetailTexturesOn and BBF.RetailTexturesOn())) or frame.bbfPartyNoBorder or PartyHDArtOn() then
             SetPartyPlainArt(frame)
         end
+        SetDefaultPartyManaMaskHeight(frame)
         return
     end
     SetPartyNoBorderFlash(frame, false)
@@ -640,12 +671,14 @@ local function UpdateOnePartyReduced(frame)
             frame.bbfPartyNameWidth = 73
             PlacePartyName(frame, 44, PartyNameY() + 14, 73, "CENTER")
         end
+        SetPartyBigFlash(frame, mode == "big" and not (BBF.RetailTexturesOn and BBF.RetailTexturesOn("party")))
         RaisePartyName(frame, true)
         PlacePartyLeaderIcon(frame, true)
         PlacePartyHealthTexts(frame, inside and -5 or 0, nil, 1)
         PlacePartyRightTexts(frame, -1, -5)
         frame.bbfBigParty = true
     else
+        SetPartyBigFlash(frame, false)
         bars:SetPoint(container, "TOPLEFT", frame, "TOPLEFT", 47, -20)
         if hideMana then
             -- same art and tuning as Hide ToT Mana

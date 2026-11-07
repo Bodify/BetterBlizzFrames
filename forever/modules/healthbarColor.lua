@@ -1493,11 +1493,26 @@ end
 
 
 
+BBF.DARKER_BRONZE_R, BBF.DARKER_BRONZE_G, BBF.DARKER_BRONZE_B = 0.737, 0.655, 0.533
+
+function BBF.DarkerBronzeActive()
+    return BetterBlizzFramesDB.darkerBronzeUnitFrames and not BBF.darkModeUnitFramesActive and true or false
+end
+
+function BBF.UpdateDarkerBronze()
+    if BBF.FrameTextureColor then
+        BBF.RefreshFrameTextureColor()
+    else
+        BBF.HookFrameTextureColor()
+    end
+    BBF.RefreshBronzeTint()
+end
+
 function BBF.HookFrameTextureColor()
     if BBF.FrameTextureColor then return end
     local classColorFrameTexture = BetterBlizzFramesDB.classColorFrameTexture
     local rpColor = BetterBlizzFramesDB.rpNamesFrameTextureColor
-    if not classColorFrameTexture and not rpColor then return end
+    if not classColorFrameTexture and not rpColor and not BetterBlizzFramesDB.darkerBronzeUnitFrames then return end
 
 
 
@@ -1506,6 +1521,10 @@ function BBF.HookFrameTextureColor()
         target = TargetFrame.TargetFrameContent.TargetFrameContentMain.LevelBackgroundCircle,
         focus = FocusFrame.TargetFrameContent.TargetFrameContentMain.LevelBackgroundCircle,
     }
+    for i = 1, 5 do
+        local boss = _G["Boss" .. i .. "TargetFrame"]
+        levelRings["boss" .. i] = boss and boss.TargetFrameContent and boss.TargetFrameContent.TargetFrameContentMain.LevelBackgroundCircle
+    end
 
     local function ColorLevelRing(ring)
         if not ring or not ring.bbfClassColor then return end
@@ -1519,7 +1538,8 @@ function BBF.HookFrameTextureColor()
     local function SetLevelRingColor(unit, colored, r, g, b, desaturate)
         local ring = levelRings[unit]
         if not ring then return end
-        if not colored and not BBF.darkModeUnitFramesActive then
+        local bronze = not colored and BBF.DarkerBronzeActive()
+        if not colored and not bronze and not BBF.darkModeUnitFramesActive then
             if ring.bbfClassColor then
                 ring.bbfClassColor = nil
                 ring.bbfColoring = true
@@ -1531,7 +1551,7 @@ function BBF.HookFrameTextureColor()
         end
         if colored then
             r, g, b = math.min(r + 0.15, 1), math.min(g + 0.15, 1), math.min(b + 0.15, 1)
-        else
+        elseif not bronze then
             local darkmode = BBF.darkModeUnitFramesActive
             local v = darkmode and BetterBlizzFramesDB.darkModeColor or 1
             if v < 1 then
@@ -1560,6 +1580,10 @@ function BBF.HookFrameTextureColor()
         local r, g, b = color, color, color
         local desaturate = darkmode and true or false
         local colored = false
+        local bronze = BBF.DarkerBronzeActive()
+        if bronze then
+            r, g, b = BBF.DARKER_BRONZE_R, BBF.DARKER_BRONZE_G, BBF.DARKER_BRONZE_B
+        end
 
         if UnitIsPlayer(unit) or (C_LFGInfo.IsInLFGFollowerDungeon() and UnitInParty(unit)) then
             if TRP3_API and rpColor then
@@ -1582,7 +1606,7 @@ function BBF.HookFrameTextureColor()
             end
         end
 
-        local tinted = colored or darkmode
+        local tinted = colored or darkmode or bronze
         if not tinted and not texture.bbfFrameTinted then return end
         texture.bbfFrameTinted = tinted or nil
 
@@ -1638,7 +1662,14 @@ function BBF.HookFrameTextureColor()
         end
     end
 
+    local function SetupBossFrames()
+        for i = 1, 5 do
+            SetupFrame(_G["Boss" .. i .. "TargetFrame"], "boss" .. i)
+        end
+    end
+
     -- Setup all frames
+    SetupBossFrames()
     SetupFrame(PlayerFrame, "player")
     SetupFrame(TargetFrame, "target")
     SetupFrame(FocusFrame, "focus")
@@ -1673,13 +1704,34 @@ function BBF.HookFrameTextureColor()
         SetupFrame(PetFrame, "pet", "player")
     end)
 
+    function BBF.RefreshFrameTextureColor()
+        SetupFrame(PlayerFrame, "player")
+        SetupFrame(TargetFrame, "target")
+        SetupFrame(FocusFrame, "focus")
+        SetupFrame(TargetFrameToT, "targettarget")
+        SetupFrame(FocusFrameToT, "focustarget")
+        SetupFrame(PetFrame, "pet", "player")
+        SetupBossFrames()
+        for i = 1, 4 do
+            local frame = PartyFrame and PartyFrame["MemberFrame" .. i]
+            if frame and frame.Texture then
+                DesaturateAndColorTexture(frame.Texture, "party" .. i)
+            end
+        end
+    end
+
     local f = CreateFrame("Frame")
     f:RegisterEvent("PLAYER_TARGET_CHANGED")
     f:RegisterEvent("PLAYER_FOCUS_CHANGED")
     f:RegisterUnitEvent("UNIT_TARGET", "target", "focus")
     f:RegisterEvent("GROUP_ROSTER_UPDATE")
     f:RegisterEvent("PLAYER_ENTERING_WORLD")
+    f:RegisterEvent("INSTANCE_ENCOUNTER_ENGAGE_UNIT")
     f:SetScript("OnEvent", function(self, event)
+        if event == "INSTANCE_ENCOUNTER_ENGAGE_UNIT" then
+            SetupBossFrames()
+            return
+        end
         if event == "PLAYER_ENTERING_WORLD" or event == "GROUP_ROSTER_UPDATE" then
             for i = 1, 4 do
                 local frame = PartyFrame and PartyFrame["MemberFrame" .. i]

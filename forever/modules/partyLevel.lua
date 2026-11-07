@@ -41,7 +41,7 @@ local function ColorRing(frame)
             r = math.min(r + math.min(0.2, r * 0.5), 1)
             g, b = r, r
         end
-    else
+    elseif art:IsDesaturated() or not BetterBlizzFramesDB.darkerBronzeUnitFrames then
         r, g, b = math.min(r + 0.15, 1), math.min(g + 0.15, 1), math.min(b + 0.15, 1)
     end
     ring:SetDesaturated(art:IsDesaturated())
@@ -78,7 +78,7 @@ local function PlaceElements(frame)
         return
     end
     local small = BetterBlizzFramesDB.smallerLevelCircle
-    text:SetFont(font[1], small and 11 or 12, font[3])
+    text:SetFont(font[1], 9, font[3])
     local source = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.LevelBackgroundCircle
     local atlas = source and source:GetAtlas()
     if atlas then
@@ -91,7 +91,7 @@ local function PlaceElements(frame)
     ring:SetScale(scale)
     ring:ClearAllPoints()
     ring:SetPoint("BOTTOMLEFT", frame.Portrait, "BOTTOMLEFT", (-11 * spotScale - 1) / scale, (-14 * spotScale + 1) / scale)
-    text:SetPoint("CENTER", ring, "CENTER", 0, -0.5)
+    text:SetPoint("CENTER", ring, "CENTER", 0, 0)
     ColorRing(frame)
 end
 

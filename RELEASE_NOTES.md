@@ -1,3 +1,13 @@
+# BetterBlizzFrames 2.2.0h
+## Forever
+### New
+- Darker Bronze Tint for UnitFrames. Makes the default UnitFrames have a darker bronze color that fits in better with the rest of the default UI.
+- Show Blizz Threat Indicator. Shows Blizzards threat indicator over Target/FocusFrame. (This is no longer enabled by default but instead controlled by this new setting)
+### Tweak
+- Tweak darkmode & framecolor color handling to avoid some not needed recoloring
+- Threat indicator is no longer on by default by BBF. New setting instead.
+- Threat indicator is now colored bronze to fit default unitframes
+
 # BetterBlizzFrames 2.2.0g
 ## Retail & Forever
 ### New

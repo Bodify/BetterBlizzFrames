@@ -144,6 +144,7 @@ local defaultSettings = {
     darkModeColorElite = 0.1,
     darkModeNameplateResource = true,
     classicFramesBronzeTintUnitFrames = true,
+    darkerBronzeUnitFrames = false,
     classicFramesBronzeTintCastbars = true,
     classicFramesBronzeTintMinimap = true,
     hideGroupIndicator = false,
@@ -2815,13 +2816,13 @@ function BBF.MiniFrame(frame)
         end
         compactRing:Show()
 
-        if db.classColorFrameTexture then
-            local class = UnitClassBase("player")
-            local classColor = C_ClassColor.GetClassColor(class)
-            if classColor then
-                compactRing:SetDesaturated(true)
-                compactRing:SetVertexColor(classColor.r, classColor.g, classColor.b)
-            end
+        local classColor = db.classColorFrameTexture and C_ClassColor.GetClassColor(UnitClassBase("player"))
+        if classColor then
+            compactRing:SetDesaturated(true)
+            compactRing:SetVertexColor(classColor.r, classColor.g, classColor.b)
+        elseif BBF.DarkerBronzeActive() then
+            compactRing:SetDesaturated(false)
+            compactRing:SetVertexColor(BBF.DARKER_BRONZE_R, BBF.DARKER_BRONZE_G, BBF.DARKER_BRONZE_B)
         end
 
         name:SetScale(1.4)
@@ -3584,6 +3585,18 @@ function BBF.RaiseTargetFrameLevel()
     BBF.RaiseCombosAboveTargetArt()
 
     BBF.raisingTargetFrameLevel = true
+end
+
+function BBF.ShowBlizzThreatMeter(toggled)
+    local db = BetterBlizzFramesDB
+    if db.showBlizzThreatMeter == nil then
+        db.showBlizzThreatMeter = C_CVar.GetCVarBool("threatShowNumeric") and true or false
+    end
+    if db.showBlizzThreatMeter then
+        C_CVar.SetCVar("threatShowNumeric", "1")
+    elseif toggled then
+        C_CVar.SetCVar("threatShowNumeric", "0")
+    end
 end
 
 function BBF.RaiseTargetCastbarStratas()
@@ -6132,9 +6145,7 @@ First:SetScript("OnEvent", function(_, event, addonName)
         FetchAndSaveValuesOnFirstLogin()
         TurnTestModesOff()
         BBF.ChatFilterCaller()
-        if not BetterBlizzFramesDB.hideThreatOnFrame then
-            C_CVar.SetCVar("threatShowNumeric", "1")
-        end
+        BBF.ShowBlizzThreatMeter()
         BBF.FixLegacyComboPointsLocation()
         BBF.AlwaysShowLegacyComboPoints()
         BBF.LegacyComboActiveOnly()

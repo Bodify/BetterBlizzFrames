@@ -13204,8 +13204,12 @@ local function guiMisc()
     classicFramesBronzeTint:HookScript("OnClick", UpdateBronzeTintOptionsState)
     UpdateBronzeTintOptionsState()
 
+    local darkerBronzeUnitFrames = CreateCheckbox("darkerBronzeUnitFrames", L["Darker_Bronze_UnitFrames"], contentFrame, nil, BBF.UpdateDarkerBronze)
+    darkerBronzeUnitFrames:SetPoint("TOPLEFT", classicFramesBronzeTint, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(darkerBronzeUnitFrames, L["Darker_Bronze_UnitFrames"], L["Tooltip_Darker_Bronze_UnitFrames_Desc"])
+
     local classicFramesHDElite = CreateCheckbox("classicFramesHDElite", L["Classic_Frames_HD_Elite"], contentFrame, nil, BBF.RefreshClassicHDElite)
-    classicFramesHDElite:SetPoint("TOPLEFT", classicFramesBronzeTint, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    classicFramesHDElite:SetPoint("TOPLEFT", darkerBronzeUnitFrames, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(classicFramesHDElite, L["Classic_Frames_HD_Elite"], L["Tooltip_Classic_Frames_HD_Elite_Desc"])
 
     local bronzeEliteDragons = CreateCheckbox("bronzeEliteDragons", L["Bronze_Tint_Elite_Dragons"], contentFrame, nil, BBF.UpdateEliteDragonBronze)
@@ -13817,8 +13821,15 @@ local function guiMisc()
         end
     end)
 
+    local showBlizzThreatMeter = CreateCheckbox("showBlizzThreatMeter", L["Show_Blizz_Threat_Meter"], contentFrame)
+    showBlizzThreatMeter:SetPoint("TOPLEFT", rpNamesFrameTextureColor, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(showBlizzThreatMeter, L["Show_Blizz_Threat_Meter"], L["Tooltip_Show_Blizz_Threat_Meter_Desc"])
+    showBlizzThreatMeter:HookScript("OnClick", function()
+        BBF.ShowBlizzThreatMeter(true)
+    end)
+
     local uiWidgetPowerBarScale = CreateSlider(contentFrame, L["UIWidgetPowerBarFrame_Scale"], 0.4, 1.8, 0.01, "uiWidgetPowerBarScale")
-    uiWidgetPowerBarScale:SetPoint("TOPLEFT", rpNamesFrameTextureColor, "BOTTOMLEFT", 5, -20)
+    uiWidgetPowerBarScale:SetPoint("TOPLEFT", showBlizzThreatMeter, "BOTTOMLEFT", 5, -20)
     CreateTooltipTwo(uiWidgetPowerBarScale, L["UIWidgetPowerBarFrame_Scale"], L["Tooltip_UIWidgetPowerBar_Scale_Desc"])
 end
 
