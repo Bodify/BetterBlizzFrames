@@ -1,3 +1,8 @@
+# BetterBlizzFrames 2.2.0i
+## Forever
+### Tweak
+- Update JFarm Forever profile (www.twitch.tv/jfarm_)
+
 # BetterBlizzFrames 2.2.0h
 ## Forever
 ### New
