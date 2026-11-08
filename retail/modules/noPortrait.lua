@@ -1256,7 +1256,7 @@ local function MakeNoPortraitMode(frame)
 
         frame.noPortraitMode.Background = frame:CreateTexture(nil, "BACKGROUND")
         frame.noPortraitMode.Background:SetColorTexture(0,0,0,0.45)
-        BindArtBackground(frame.noPortraitMode.Background, frame.noPortraitMode.Texture, nil, 0.5)
+        BindArtBackground(frame.noPortraitMode.Background, frame.noPortraitMode.Texture, nil, 0.5, nil, nil, 2)
         frame.noPortraitMode.BgMask = frame.noPortraitMode:CreateMaskTexture()
         frame.noPortraitMode.BgMask:SetAllPoints(frame.noPortraitMode.Background)
         frame.noPortraitMode.BgMask:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\masks\\frameMask.png", "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
@@ -1373,7 +1373,7 @@ local function MakeNoPortraitMode(frame)
                 SetXYPoint(totHpBar.HealthBarMask, -17, 3.5)
             end
 
-            totManaBar.ManaBarMask:SetSize(96, 16)
+            totManaBar.ManaBarMask:SetSize(96, 19)
             totManaBar.ManaBarMask:SetTexture("interface/hud/uipartyframeportraitoffmanamask")
             SetXYPoint(totManaBar.ManaBarMask, -13, 4)
         end
@@ -1733,7 +1733,7 @@ local function MakeNoPortraitMode(frame)
 
         frame.noPortraitMode.Background = frame:CreateTexture(nil, "BACKGROUND")
         frame.noPortraitMode.Background:SetColorTexture(0,0,0,0.45)
-        BindArtBackground(frame.noPortraitMode.Background, frame.noPortraitMode.Texture, nil, 0.5)
+        BindArtBackground(frame.noPortraitMode.Background, frame.noPortraitMode.Texture, nil, 0.5, nil, nil, 2)
         frame.noPortraitMode.BgMask = frame.noPortraitMode:CreateMaskTexture()
         frame.noPortraitMode.BgMask:SetAllPoints(frame.noPortraitMode.Background)
         frame.noPortraitMode.BgMask:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\masks\\frameMask.png", "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
@@ -2818,7 +2818,7 @@ local function MakeClassicPartyFrame()
 
         frame.Background = frame:CreateTexture(nil, "BACKGROUND")
         frame.Background:SetColorTexture(0,0,0,0.45)
-        BindArtBackground(frame.Background, frame.Texture, partyDefaultTex)
+        BindArtBackground(frame.Background, frame.Texture, partyDefaultTex, nil, nil, nil, 2)
         frame.BgMask = frame:CreateMaskTexture()
         frame.BgMask:SetAllPoints(frame.Background)
         frame.BgMask:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\masks\\frameMask.png", "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
@@ -2924,19 +2924,19 @@ local function MakeClassicPartyFrame()
                     bars:SetPoint(hpContainer, "TOPLEFT", frame, "TOPLEFT", 43, -13)
                     bars:SetSize(hpContainer, 73, 22)
                 else
-                    bars:SetPoint(hpContainer, "TOPLEFT", frame, "TOPLEFT", 45, -20)
-                    bars:SetSize(hpContainer, 70, 10)
+                    bars:SetPoint(hpContainer, "TOPLEFT", frame, "TOPLEFT", 43, -20)
+                    bars:SetSize(hpContainer, 74, 10)
                 end
                 bars:ClearAllPoints(hpContainer.HealthBar)
                 if NoPortraitBigParty() then
                     bars:SetPoint(hpContainer.HealthBar, "TOPLEFT", hpContainer, "TOPLEFT", 0, 0)
                     bars:SetSize(hpContainer.HealthBar, 73, 22)
                 else
-                    bars:SetPoint(hpContainer.HealthBar, "TOPLEFT", hpContainer, "TOPLEFT", -2, 7)
+                    bars:SetPoint(hpContainer.HealthBar, "TOPLEFT", hpContainer, "TOPLEFT", 0, 7)
                     bars:SetSize(hpContainer.HealthBar, 74, 14)
                 end
                 bars:ClearAllPoints(manaBar)
-                bars:SetPoint(manaBar, "TOPLEFT", hpContainer, "TOPLEFT", -5, -7)
+                bars:SetPoint(manaBar, "TOPLEFT", hpContainer, "TOPLEFT", NoPortraitBigParty() and -5 or -3, -7)
                 bars:SetSize(manaBar, 81, 10)
 
                 hpContainer.HealthBarMask:ClearAllPoints()
@@ -2947,7 +2947,7 @@ local function MakeClassicPartyFrame()
                 else
                     hpContainer.HealthBarMask:SetAtlas("UI-HUD-UnitFrame-Party-PortraitOn-Bar-Health-Mask")
                     hpContainer.HealthBarMask:SetSize(137, 24)
-                    hpContainer.HealthBarMask:SetPoint("TOPLEFT", hpContainer, "TOPLEFT", -33, 11)
+                    hpContainer.HealthBarMask:SetPoint("TOPLEFT", hpContainer, "TOPLEFT", -31, 11)
                 end
 
                 manaBar.ManaBarMask:SetTexture("interface/hud/uipartyframeportraitoffmanamask")

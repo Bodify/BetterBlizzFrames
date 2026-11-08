@@ -178,10 +178,22 @@ end
 local ringParking = CreateFrame("Frame")
 ringParking:Hide()
 
+local comboIgnoreVars = {
+    ROGUE = "hidePlayerPowerNoRogue",
+    DRUID = "hidePlayerPowerNoDruid",
+}
+
+function BBF.ComboPowerHidden()
+    local db = BetterBlizzFramesDB
+    if not db or not db.hidePlayerPower then return false end
+    local var = comboIgnoreVars[UnitClassBase("player")]
+    return not (var and db[var])
+end
+
 function BBF.UpdateBlizzardComboRing()
     local ring = ComboFrame
     if not ring or ring == frame or not ring.ComboPoints then return end
-    local park = frame.bbfEnabled or (BBF.ComboPointBarWanted and BBF.ComboPointBarWanted())
+    local park = frame.bbfEnabled or BBF.ComboPowerHidden() or (BBF.ComboPointBarWanted and BBF.ComboPointBarWanted())
     if park then
         if ring:GetParent() ~= ringParking then
             ring:SetParent(ringParking)

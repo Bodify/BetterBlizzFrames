@@ -317,7 +317,74 @@ local function GetEntries()
         BBF.LayerPixelBorderTexts(FocusFrameToT)
     end
 
+    BBF.SetSmallValueTextsFont()
+
     return entries
+end
+
+local smallValueFont
+local valueTextKeys = { "TextString", "LeftText", "RightText", "CenterText", "ManaBarText" }
+
+local function AddValueTexts(list, holder)
+    if not holder then return end
+    for _, key in ipairs(valueTextKeys) do
+        local text = holder[key]
+        if text and text.SetFont then
+            list[#list + 1] = text
+        end
+    end
+end
+
+local function SmallValueTexts()
+    local list = {}
+    local partyFont = BetterBlizzFramesDB.changePartyFrameFont
+    if not partyFont then
+        for i = 1, 4 do
+            local member = GetPartyMember(i)
+            if member then
+                AddValueTexts(list, member.HealthBarContainer)
+                AddValueTexts(list, member.HealthBar or member.healthbar)
+                AddValueTexts(list, member.ManaBar or member.manabar)
+            end
+        end
+    end
+    for _, owner in ipairs({ TargetFrameToT or false, FocusFrameToT or false }) do
+        if owner then
+            AddValueTexts(list, owner.HealthBar or owner.healthbar)
+            AddValueTexts(list, owner.ManaBar or owner.manabar)
+        end
+    end
+    if entries then
+        for _, group in pairs(entries) do
+            for _, entry in ipairs(group) do
+                if entry.owned and not (partyFont and entry.groupKey == "statusTextExtraParty") then
+                    list[#list + 1] = entry.center
+                    list[#list + 1] = entry.left
+                    list[#list + 1] = entry.right
+                end
+            end
+        end
+    end
+    return list
+end
+
+local function SmallValueSize(size)
+    if size >= 12 then
+        return size > 13 and size - 3 or size - 2
+    end
+    return size - 1
+end
+
+function BBF.SetSmallValueTextsFont(font, size, outline)
+    if font then
+        smallValueFont = { font, tonumber(size), outline }
+    end
+    if not smallValueFont or not BetterBlizzFramesDB.changeUnitFrameValueFont then return end
+    font, size, outline = smallValueFont[1], smallValueFont[2], smallValueFont[3]
+    for _, text in ipairs(SmallValueTexts()) do
+        local ogFont, ogSize, ogOutline = text:GetFont()
+        text:SetFont(font or ogFont, SmallValueSize(size or ogSize), outline or ogOutline)
+    end
 end
 
 function BBF.StatusTextExtraTexts(owner)

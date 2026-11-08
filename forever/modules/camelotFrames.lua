@@ -1090,9 +1090,9 @@ local function ApplyPlayerManaHeight()
     manaBar:SetWidth(125.5)
     manaBar:SetPoint(point, relativeTo, relativePoint, 86, y)
     local big = BBF.BigPlayerHealthbar and BBF.BigPlayerHealthbar()
-    manaBar.ManaBarMask:SetWidth(big and 129 or 129.5)
+    manaBar.ManaBarMask:SetWidth(big and 129 or 128.5)
     manaBar.ManaBarMask:ClearAllPoints()
-    manaBar.ManaBarMask:SetPoint("TOPLEFT", manaBar, "TOPLEFT", big and -1.5 or -2.5, 2)
+    manaBar.ManaBarMask:SetPoint("TOPLEFT", manaBar, "TOPLEFT", -1.5, 2)
 end
 
 function BBF.UpdatePlayerManaHeight()
@@ -1145,7 +1145,8 @@ local function ApplyNameBg(frame, unit)
     local rep, name = main.ReputationColor, main.Name
     local mode = NameBgMode(unit)
     local retail = (BBF.RetailTexturesOn and BBF.RetailTexturesOn(unit)) and true or false
-    if mode == rep.bbfNameBgMode and retail == (rep.bbfNameBgRetail or false) then return end
+    if rep.bbfNameBgApplied and mode == rep.bbfNameBgMode and retail == rep.bbfNameBgRetail then return end
+    rep.bbfNameBgApplied = true
     rep.bbfNameBgMode = mode
     rep.bbfNameBgRetail = retail
     if mode then
@@ -1173,8 +1174,9 @@ local function ApplyNameBg(frame, unit)
             rep:SetPoint("TOPRIGHT", main, "TOPRIGHT", -75, -25)
             name:SetPoint("TOPLEFT", rep, "TOPRIGHT", -133, -1)
         else
-            rep:SetPoint("TOPRIGHT", main, "TOPRIGHT", -82, -26)
-            name:SetPoint("TOPLEFT", rep, "TOPRIGHT", -126, -4)
+            rep:SetSize(136, 18)
+            rep:SetPoint("TOPRIGHT", main, "TOPRIGHT", -82, -27)
+            name:SetPoint("TOPLEFT", rep, "TOPRIGHT", -126, -3)
         end
         frame.bbfNameBgShiftX, frame.bbfNameBgShiftY = nil, nil
     end
@@ -1207,11 +1209,11 @@ end
 local playerMaskHooked
 local PLAYER_HEALTH_MASK = "UI-HUD-UnitFrame-Player-PortraitOn-Bar-Health-Mask"
 
-local function PlaceDefaultHealthMask(mask, healthBar, width, x)
+local function PlaceDefaultHealthMask(mask, healthBar, width, x, height)
     mask:SetAtlas(PLAYER_HEALTH_MASK)
     mask:ClearAllPoints()
     mask:SetPoint("TOPLEFT", healthBar, "TOPLEFT", x or -2, 6)
-    mask:SetSize(width, 33)
+    mask:SetSize(width, height or 33)
 end
 
 function BBF.UpdatePlayerHealthMask()
@@ -1263,7 +1265,7 @@ function BBF.UpdateTargetHealthMask(frame)
     manaMask:SetPoint("TOPLEFT", manaBar, "TOPLEFT", -62, 3)
     if UnitExists(unit) and UnitClassification(unit) == "minus" then return end
     local hpContainer = frame.TargetFrameContent.TargetFrameContentMain.HealthBarsContainer
-    PlaceDefaultHealthMask(hpContainer.HealthBarMask, hpContainer.HealthBar, 129, -1.5)
+    PlaceDefaultHealthMask(hpContainer.HealthBarMask, hpContainer.HealthBar, 129, -1.5, 33.3)
 end
 
 local groupIconHooked

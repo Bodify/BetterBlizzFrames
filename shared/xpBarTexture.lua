@@ -29,6 +29,7 @@ local function GetAtlasColor(atlas)
 end
 
 local TILE_WIDTH = 256
+local MASK_ATLAS = "UI-HUD-ExperienceBar-Fill-Experience"
 local xpBarTexture
 local drivers = {}
 
@@ -55,6 +56,9 @@ local function Layout(driver, width, height, fillWidth, r, g, b)
             if not piece then
                 piece = statusBar:CreateTexture(nil, "BORDER")
                 pieces[i] = piece
+                if driver.mask then
+                    piece:AddMaskTexture(driver.mask)
+                end
             end
             piece:SetDrawLayer(driver.layer, driver.sub)
             piece:SetTexture(xpBarTexture)
@@ -106,6 +110,12 @@ local function SetupBar(statusBar)
     if not driver then
         driver = { statusBar = statusBar, pieces = {} }
         drivers[statusBar] = driver
+        local background = statusBar.Background
+        if background and background.GetAtlas and background:GetAtlas() == "UI-HUD-ExperienceBar-Background" then
+            driver.mask = statusBar:CreateMaskTexture()
+            driver.mask:SetAtlas(MASK_ATLAS)
+            driver.mask:SetAllPoints(statusBar)
+        end
         hooksecurefunc(statusBar, "SetStatusBarTexture", function(self, asset)
             if type(asset) == "string" then
                 self.bbfXpAtlas = asset

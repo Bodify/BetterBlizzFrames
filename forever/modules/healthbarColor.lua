@@ -1429,9 +1429,9 @@ local function PlacePlayerNameBg(frame, mode)
         rep:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -21, -25)
     else
         rep:SetAtlas("UI-HUD-UnitFrame-Target-PortraitOn-Type")
-        rep:SetSize(136, 22)
+        rep:SetSize(136, 18)
         rep:SetTexCoord(1, 0, 0, 1)
-        rep:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -21, -25)
+        rep:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -13.5, -28)
     end
     SyncPlayerNameBgExt(rep)
 end
@@ -1457,8 +1457,9 @@ function BBF.PlayerReputationColor()
                         frame.ReputationColor:SetTexCoord(1, 0, 0, 1)
                     end
                 end
-                frame.ReputationColor:SetSize(117, 22)
+                frame.ReputationColor:SetSize(117, 18)
                 frame.ReputationColor:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -26, -31)
+                BBF.MaskClassicReputationColor(frame.ReputationColor)
             elseif BBF.ClassicStyleAddon() then
                 frame.ReputationColor:SetTexture(137017)
                 frame.ReputationColor:SetSize(117, 19)

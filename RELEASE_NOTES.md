@@ -1,3 +1,22 @@
+# BetterBlizzFrames 2.2.0i
+## Retail & Forever
+### New
+- Font & Texture: "Change UnitFrame Castbar Texture" now has an optional Background setting to change the castbar background texture and color.
+### Bugfix
+- Fix castbar "Hide Icon" not hiding the icon with Classic Castbars on.
+## Forever
+### Tweak
+- Update Xaryu profile (www.twitch.tv/xaryu)
+- Update Snupy profile (www.twitch.tv/snupy)
+- Update JFarm profile (www.twitch.tv/jfarm_)
+- Fix "Change XP Bar Texture" causing the texture to stick out from the borders on the edges.
+- Another batch of small pixel tweaks around a bunch of settings.
+### Bugfix
+- Fix reputation color/name background color positioning (Blizzard made changes since Beta that wasnt accounted for yet)
+- Fix some frame glow issues with varius settings.
+- Fix an issue with Classic Frames causing healthbar to stick out from frame after shapeshifting as druid for example
+- Fix "Hide Resource/Power" setting not hiding combo points anymore.
+
 # BetterBlizzFrames 2.2.0h
 ## Forever
 ### New

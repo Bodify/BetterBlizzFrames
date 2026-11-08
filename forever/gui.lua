@@ -11187,7 +11187,7 @@ local function guiFrameLook()
         ReloadWhenOff(self)
     end)
     do
-        local f = AddPopup(changeUnitFrameCastbarTexture, "CastbarTexture", 162)
+        local f = AddPopup(changeUnitFrameCastbarTexture, "CastbarTexture", 228)
         for _, row in ipairs({
             { "unitFrameCastbarTexture", L["Texture"], -38 },
             { "unitFrameCastbarNonInterruptibleTexture", L["Uninterruptable"], -92 },
@@ -11197,6 +11197,20 @@ local function guiFrameLook()
             label:SetPoint("BOTTOM", dropdown, "TOP", 0, 3)
             label:SetText(row[2])
         end
+        local function BgOn()
+            return BetterBlizzFramesDB.changeUnitFrameCastbarBg and true or false
+        end
+        local bgToggle = f.Add(CreateCheckbox("changeUnitFrameCastbarBg", L["Background"], f))
+        bgToggle:SetPoint("TOPLEFT", f, "TOPLEFT", 12, -152)
+        bgToggle:HookScript("OnClick", function(self)
+            BBF.UpdateCastbarBackgrounds()
+            f.Refresh()
+            ReloadWhenOff(self)
+        end)
+        local bgDropdown = f.Add(AddTextureDropdown(f, "unitFrameCastbarBgTexture", function() BBF.UpdateCastbarBackgrounds() end, -158), BgOn)
+        local bgColor = f.Add(CreateColorBox(f, "unitFrameCastbarBgColor", "", function() BBF.UpdateCastbarBackgrounds() end), BgOn)
+        bgColor:SetPoint("LEFT", bgDropdown, "RIGHT", 2, 0)
+        CreateTooltipTwo(bgColor, L["Background"], L["Tooltip_Color_Picker_Desc"])
         f.Refresh()
     end
 

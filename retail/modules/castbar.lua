@@ -9,6 +9,47 @@ local classicCastbarTexture = 137012
 local customCastbarTexture = false
 local nonInterruptibleTexture
 local UpdateCustomSpellBarTexture
+local castbarBgTexture
+
+local function ApplyCastbarBackground(castBar)
+    local bg = castBar and castBar.Background
+    if not bg or not castbarBgTexture or bg.bbfBgApplying then return end
+    bg.bbfBgApplying = true
+    bg:SetTexture(castbarBgTexture)
+    bg:SetDesaturated(false)
+    local c = BetterBlizzFramesDB.unitFrameCastbarBgColor or { 0, 0, 0, 0.6 }
+    bg:SetVertexColor(c[1], c[2], c[3], c[4] or 1)
+    bg.bbfBgApplying = nil
+    if not bg.bbfBgHooked then
+        bg.bbfBgHooked = true
+        local function Reapply()
+            if castbarBgTexture and not bg.bbfBgApplying then
+                ApplyCastbarBackground(castBar)
+            end
+        end
+        hooksecurefunc(bg, "SetTexture", Reapply)
+        hooksecurefunc(bg, "SetAtlas", Reapply)
+        hooksecurefunc(bg, "SetColorTexture", Reapply)
+        hooksecurefunc(bg, "SetVertexColor", Reapply)
+        hooksecurefunc(bg, "SetDesaturated", Reapply)
+    end
+end
+
+function BBF.UpdateCastbarBackgrounds()
+    local db = BetterBlizzFramesDB
+    castbarBgTexture = db.changeUnitFrameCastbarTexture and db.changeUnitFrameCastbarBg and BBF.LSM:Fetch(BBF.LSM.MediaType.STATUSBAR, db.unitFrameCastbarBgTexture or "Solid") or nil
+    if not castbarBgTexture then return end
+    ApplyCastbarBackground(PlayerCastingBarFrame)
+    ApplyCastbarBackground(TargetFrameSpellBar)
+    ApplyCastbarBackground(FocusFrameSpellBar)
+    for i = 1, 5 do
+        local boss = _G["Boss"..i.."TargetFrame"]
+        ApplyCastbarBackground(boss and boss.spellbar)
+    end
+    for _, spellbar in pairs(spellBars) do
+        ApplyCastbarBackground(spellbar)
+    end
+end
 
 function BBF.UpdateClassicCastbarTexture(texture, nonIntTexture)
     customCastbarTexture = BetterBlizzFramesDB.changeUnitFrameCastbarTexture or false
@@ -20,6 +61,7 @@ function BBF.UpdateClassicCastbarTexture(texture, nonIntTexture)
     for _, spellbar in pairs(spellBars) do
         UpdateCustomSpellBarTexture(spellbar)
     end
+    BBF.UpdateCastbarBackgrounds()
 end
 
 local targetSpellBarTexture = TargetFrameSpellBar:GetStatusBarTexture()
@@ -609,8 +651,8 @@ local function AdjustBorderSize(castBar)
         local baseBorderWidth, baseBorderHeight = 200, 54.5 -- Original border dimensions
 
         local barWidth, barHeight = GetCastbarSize(castBar)
-        local widthScale = barWidth / baseWidth
-        local heightScale = barHeight / baseHeight
+        local widthScale = (barWidth or 150) / baseWidth
+        local heightScale = (barHeight or 10) / baseHeight
 
         -- Apply scaled size to the border
         BBF.SetClassicTexture(castBar.Border, 130873, nil, true)
@@ -780,7 +822,7 @@ function BBF.ClassicCastbar(castBar, unitType)
     elseif not isParty then
         local unit = castBar.unit == "pet" and "player" or castBar.unit
         castBar.iconXPos = BetterBlizzFramesDB[unit.."CastbarIconXPos"]
-        castBar.iconYPos = BetterBlizzFramesDB[unit.."CastbarIconYPos"]
+        castBar.iconYPos = BetterBlizzFramesDB["hide"..unit:gsub("^%l", string.upper).."CastbarIcon"] and -6969 or BetterBlizzFramesDB[unit.."CastbarIconYPos"]
     else
         castBar.iconXPos = BetterBlizzFramesDB["partyCastbarIconXPos"]
         castBar.iconYPos = BetterBlizzFramesDB["partyCastbarIconYPos"]
@@ -901,7 +943,9 @@ function BBF.ClassicCastbar(castBar, unitType)
 end
 
 function UpdateCustomSpellBarTexture(spellbar)
-    if not spellbar or spellbar.isClassicStyle then return end
+    if not spellbar then return end
+    ApplyCastbarBackground(spellbar)
+    if spellbar.isClassicStyle then return end
 
     spellbar.textureChangedNeedsColor = customCastbarTexture or nil
 
@@ -931,11 +975,37 @@ function UpdateCustomSpellBarTexture(spellbar)
 end
 
 local function SpellBarCastDurationUpdate(spellbar, channeling)
-    local duration = channeling and UnitChannelDuration(spellbar.unit) or UnitCastingDuration(spellbar.unit)
+    local unit, empowering = spellbar.unit, spellbar.empowering
+    local duration
+    if empowering and UnitEmpoweredChannelDuration then
+        duration = UnitEmpoweredChannelDuration(unit)
+    elseif channeling then
+        duration = UnitChannelDuration(unit)
+    else
+        duration = UnitCastingDuration(unit)
+    end
     if duration then
-        local direction = channeling and 1 or 0
+        local direction = (channeling and not empowering) and 1 or 0
         spellbar:SetTimerDuration(duration, 0, direction)
     end
+end
+
+local function SpellBarStillCasting(spellbar)
+    local unit = spellbar.unit
+    if not unit then return false end
+    if spellbar.channeling then return UnitChannelInfo(unit) ~= nil end
+    return UnitCastingInfo(unit) ~= nil
+end
+
+local ClearSpellBar
+
+local function WatchSpellBarEnd(spellbar)
+    if spellbar.endTicker then return end
+    spellbar.endTicker = C_Timer.NewTicker(0.25, function()
+        if not spellbar.casting or not SpellBarStillCasting(spellbar) then
+            ClearSpellBar(spellbar)
+        end
+    end)
 end
 
 local function SpellBarStart(spellbar, unit, channeling)
@@ -948,16 +1018,18 @@ local function SpellBarStart(spellbar, unit, channeling)
         classicStyle = BetterBlizzFramesDB.classicCastbars
     end
 
-    local name, _, texture, castID, notInterruptible
+    local name, _, texture, castID, notInterruptible, isEmpowered
     if channeling then
-        name, _, texture, _, _, _, notInterruptible = UnitChannelInfo(unit)
+        name, _, texture, _, _, _, notInterruptible, _, isEmpowered = UnitChannelInfo(unit)
         if not name then return false end
     else
         name, _, texture, _, _, _, castID, notInterruptible = UnitCastingInfo(unit)
         if not name then return false end
     end
 
+    spellbar.empowering = channeling and not issecretvalue(isEmpowered) and isEmpowered == true or nil
     SpellBarCastDurationUpdate(spellbar, channeling)
+    WatchSpellBarEnd(spellbar)
 
     spellbar.casting = true
     spellbar.channeling = channeling or false
@@ -999,15 +1071,25 @@ local function SpellBarStart(spellbar, unit, channeling)
     spellbar:Show()
 end
 
-local function ClearSpellBar(spellbar)
+function ClearSpellBar(spellbar)
+    if spellbar.endTicker then
+        spellbar.endTicker:Cancel()
+        spellbar.endTicker = nil
+    end
     spellbar.casting = nil
     spellbar.channeling = nil
+    spellbar.empowering = nil
     spellbar.castID = nil
     spellbar.notInterruptible = nil
     spellbar:Hide()
 end
 
-local function CustomSpellBarOnEvent(self, event, unit, _, _, interruptedByOrCastBarID)
+local function SameCast(a, b)
+    if a == nil or b == nil or issecretvalue(a) or issecretvalue(b) then return false end
+    return a == b
+end
+
+local function CustomSpellBarOnEvent(self, event, unit, castGUID, _, interruptedByOrCastBarID)
     local testMode
     if self.unitType == "party" then
         testMode = BetterBlizzFramesDB.partyCastBarTestMode
@@ -1023,11 +1105,14 @@ local function CustomSpellBarOnEvent(self, event, unit, _, _, interruptedByOrCas
         SpellBarStart(self, unit, event ~= "UNIT_SPELLCAST_START")
     elseif CastUpdateEvents[event] then
         SpellBarCastDurationUpdate(self, self.channeling)
+    elseif event == "UNIT_SPELLCAST_FAILED" then
+        if not self.casting or self.channeling or not SameCast(self.castID, castGUID) then return end
+        ClearSpellBar(self)
     else
         ClearSpellBar(self)
     end
 
-    CastbarColorOnEvent(self, event, unit, _, _, interruptedByOrCastBarID)
+    CastbarColorOnEvent(self, event, unit, castGUID, nil, interruptedByOrCastBarID)
 end
 
 function BBF.UpdateCastbars()
@@ -1383,6 +1468,7 @@ function BBF.CreateCastbars()
                     spellbar:RegisterEvent(event)
                 end
             end
+            spellbar:RegisterEvent("UNIT_SPELLCAST_FAILED")
             for event in pairs(CastUpdateEvents) do
                 spellbar:RegisterEvent(event)
             end
@@ -1527,6 +1613,7 @@ function BBF.CreateCastbars()
                 petSpellBar:RegisterEvent(event)
             end
         end
+        petSpellBar:RegisterEvent("UNIT_SPELLCAST_FAILED")
         for event in pairs(CastUpdateEvents) do
             petSpellBar:RegisterEvent(event)
         end

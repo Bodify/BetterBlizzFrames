@@ -8,7 +8,7 @@ local MANA_SPAN = 11
 
 local targetLayouts = {
     classic = {
-        point = { "TOPLEFT", "LEFT", 26, -1 }, width = 120, height = 9, glowOffset = -7, texts = false,
+        point = { "TOPLEFT", "LEFT", 26, 0 }, width = 120, height = 10, glowOffset = -7, texts = false,
     },
     classicBig = {
         point = { "TOPLEFT", "LEFT", 26, 19 }, width = 120, height = 29, glowOffset = -7, texts = false, big = true,
@@ -495,6 +495,9 @@ function BBF.UpdateBigHealthbars()
         return
     end
     BBF.HealthbarMirrors()
+    if BBF.RefreshTextAreas then
+        BBF.RefreshTextAreas()
+    end
     if not (db.bigHealthbarTarget or db.bigHealthbarFocus) then return end
     if db.classicFrames or db.noPortraitModes or db.noPortraitPixelBorder then
         BBF.ShowPopup("BBF_CONFIRM_RELOAD")

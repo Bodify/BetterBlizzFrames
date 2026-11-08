@@ -242,7 +242,7 @@ local function ResetBackgroundReveal()
 end
 
 local function UpdateBackgroundReveal(force)
-    if not playerBar then return end
+    if not playerBar or playerBar.bbfPowerHidden then return end
 
     if not MovedToTarget() or playerBar.bbfRevealSuppressed then
         if playerBar.bbfRevealAlpha ~= nil then
@@ -275,6 +275,21 @@ local function UpdateBackgroundReveal(force)
     })
 end
 BBF.UpdateComboPointBackgroundReveal = UpdateBackgroundReveal
+
+function BBF.UpdateComboPointBarHidden()
+    if not playerBar then return end
+    local hide = (BBF.ComboPowerHidden() and not playerBar.bbfRevealSuppressed) or nil
+    if playerBar.bbfPowerHidden == hide then return end
+    playerBar.bbfPowerHidden = hide
+    if hide then
+        BBF.UIFrameFadeRemoveFrame(playerBar)
+        playerBar:SetAlpha(0)
+        playerBar:EnableMouse(false)
+    else
+        ResetBackgroundReveal()
+        UpdateBackgroundReveal(true)
+    end
+end
 
 local function HasComboDisplay()
     local db = BetterBlizzFramesDB
@@ -446,6 +461,7 @@ function BBF.ComboPointsEditMode(state)
 
     playerBar.bbfRevealSuppressed = state and true or nil
     UpdateBackgroundReveal(true)
+    BBF.UpdateComboPointBarHidden()
 
     for index, point in ipairs(playerBar.classResourceButtonTable) do
         if not point.bbfIndexLabel then
@@ -596,6 +612,7 @@ function BBF.CreateComboPointBars()
         BBF.resourceFrames[class] = playerBar
         BBF.classPowerFrames[class] = playerBar
         BBF.ApplyComboPointScale(BetterBlizzFramesDB["classResource" .. class .. "Scale"])
+        BBF.UpdateComboPointBarHidden()
         newPlayerBar = true
     end
 

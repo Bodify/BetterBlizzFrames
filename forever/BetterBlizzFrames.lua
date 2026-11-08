@@ -244,6 +244,7 @@ local defaultSettings = {
 
     rpNames = true,
     rpNamesFirst = true,
+    rpNamesLast = true,
 
     --Target castbar
     playerCastbarIconXPos = 0,
@@ -578,6 +579,7 @@ local defaultSettings = {
 
     moveResourceToTargetPaladinBG = true,
     unitFrameBgTextureColor = {0,0,0,0.5},
+    unitFrameCastbarBgColor = {0,0,0,0.6},
     unitFrameBgTextureManaColor = {0,0,0,0.5},
     partyRaidFrameBackgroundHealthColor = {0,0,0,0.5},
     partyRaidFrameBackgroundManaColor = {0,0,0,0.5},
@@ -632,6 +634,7 @@ local defaultSettings = {
     singlePowerColor = {1, 1, 1, 1},
     raidFrameBgTexture = "Solid",
     unitFrameBgTexture = "Solid",
+    unitFrameCastbarBgTexture = "Solid",
     damageMeterHideBorder = true,
     unitFrameHealthbarTexture = "Blizzard DF",
     unitFrameManabarTexture = "Blizzard DF",
@@ -4926,7 +4929,7 @@ function BBF.AddBackgroundTextureToUnitFrames(frame)
     if manaBar then
         local bg = manaBar.BBFBackground
         if not bg then
-            bg = manaBar:CreateTexture(nil, "BACKGROUND", nil, -1)
+            bg = BBF.ManaBackgroundParent(frame, manaBar):CreateTexture(nil, "BACKGROUND", nil, -1)
             bg:SetAllPoints(manaBar)
             manaBar.BBFBackground = bg
 
@@ -4937,7 +4940,7 @@ function BBF.AddBackgroundTextureToUnitFrames(frame)
                     for i = 1, numMasks do
                         local mask = sbTex:GetMaskTexture(i)
                         if mask then
-                            bg:AddMaskTexture(mask)
+                            bg:AddMaskTexture(BBF.ManaBackgroundMask(frame, manaBar, mask))
                         end
                     end
                 end
@@ -4947,6 +4950,7 @@ function BBF.AddBackgroundTextureToUnitFrames(frame)
         bg:SetTexture(bgTexture)
         bg:SetVertexColor(unpack(manaColor))
         bg:Show()
+        BBF.UpdateManaBackground(manaBar)
     end
 
     -- Handle alternate power bars (use mana color)

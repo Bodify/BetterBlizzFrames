@@ -1618,6 +1618,8 @@ local function SetUnitFramesValuesFont(font, size, outline)
         textObject:SetFont(newFont, newSize, newOutline)
     end
 
+    BBF.SetSmallValueTextsFont(font, size, outline)
+
     local verifyFont = playerHealthBar.TextString:GetFont()
     return verifyFont == font
 end
@@ -1790,10 +1792,14 @@ function BBF.SetCustomFonts()
             }
             local ignoreCombatText = db.allFontsIgnoreSCT
 
+            local bbpNameplateFont = BetterBlizzPlatesDB and BetterBlizzPlatesDB.useCustomFont
+
             local fontObjectNames = GetFonts()
             for index, fontObjectName in ipairs(fontObjectNames) do
                 local FontObject = _G[fontObjectName]
-                if FontObject and not (ignoreCombatText and combatTextFonts[fontObjectName]) then
+                if FontObject and not (ignoreCombatText and combatTextFonts[fontObjectName])
+                    and not fontObjectName:find("^BBPTextFont")
+                    and not (bbpNameplateFont and fontObjectName:find("NamePlate", 1, true)) then
                     local _, size, style = FontObject:GetFont()
 
                     if forcedFontSizes[fontObjectName] then

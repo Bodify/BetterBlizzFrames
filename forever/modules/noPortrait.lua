@@ -104,10 +104,13 @@ local totArtNameUnderNoManaTex = "Interface\\AddOns\\BetterBlizzFrames\\media\\f
 local totArtNoBorderTex = "Interface\\AddOns\\BetterBlizzFrames\\media\\foreverTextures\\TargetofTarget-PortraitOn-NoNameBg.png"
 local totArtNoBorderNoManaTex = "Interface\\AddOns\\BetterBlizzFrames\\media\\foreverTextures\\TargetofTarget-PortraitOn-NoNameBg-NoMana.png"
 local totFlashNoBorderTex = "Interface\\AddOns\\BetterBlizzFrames\\media\\foreverTextures\\TargetofTarget-PortraitOn-InCombat-NoNameBg.png"
-local partyBigFlashTex = "Interface\\AddOns\\BetterBlizzFrames\\media\\foreverTextures\\TargetofTarget-PortraitOn-InCombat-BigHealthbar.png"
+local partyBigFlashTex = {
+    big = "Interface\\AddOns\\BetterBlizzFrames\\media\\foreverTextures\\TargetofTarget-PortraitOn-InCombat-BigHealthbar.png",
+    reduced = "Interface\\AddOns\\BetterBlizzFrames\\media\\foreverTextures\\TargetofTarget-PortraitOn-InCombat-BigHealthbar-Reduced.png",
+}
 local bigArtTex = { reduced = totArtReducedTex, big = totArtBigTex }
 local bigHealthHeight = { reduced = 13, big = 23 }
-local bigHealthMask = { reduced = { 29, 8 }, big = { 55, 16 } }
+local bigHealthMask = { reduced = { 73.5, 29.5, -1.5, 8.5 }, big = { 74.5, 55, -2, 16.5 } }
 local TOT_MANA_SPAN = 8 -- mana bar height + gap; a no-mana health bar grows down by this
 
 -- Stretched target health mask for ToT/Pet health bars that are taller than the stock mask covers.
@@ -509,14 +512,21 @@ local function PlaceRetailPartyBars(frame)
     BBF.SetRetailSmallFlash(frame.Flash, frame.Texture, frame.bbfBigParty, frame.bbfReducedParty, frame.bbfPartyNoMana, "ui-hud-unitframe-party-portraiton-incombat")
 end
 
-local function PlacePartyManaBar(frame, bars, manaBar, mask)
-    bars:SetSize(manaBar, 78, 10)
-    bars:SetPoint(manaBar, "TOPLEFT", frame, "TOPLEFT", 42, -30)
+local partyManaLayout = {
+    default = { 10, -30, 74, 12, 2 },
+    reduced = { 11, -29, 73.5, 13.5, 2.5 },
+    big = { 11, -29, 74, 13.5, 2 },
+}
+
+local function PlacePartyManaBar(frame, bars, manaBar, mask, mode)
+    local layout = partyManaLayout[mode] or partyManaLayout.default
+    bars:SetSize(manaBar, 78, layout[1])
+    bars:SetPoint(manaBar, "TOPLEFT", frame, "TOPLEFT", 42, layout[2])
     if mask then
         mask:SetAtlas(PARTY_DEFAULT_MANA_MASK)
-        mask:SetSize(74, 12)
+        mask:SetSize(layout[3], layout[4])
         mask:ClearAllPoints()
-        mask:SetPoint("TOPLEFT", manaBar, "TOPLEFT", 2, 1)
+        mask:SetPoint("TOPLEFT", manaBar, "TOPLEFT", layout[5], 1)
     end
 end
 
@@ -576,11 +586,11 @@ local function SetPartyNoBorderFlash(frame, on)
     end
 end
 
-local function SetPartyBigFlash(frame, on)
+local function SetPartyBigFlash(frame, mode)
     local flash = frame.Flash
     if not flash then return end
-    if on then
-        flash:SetTexture(partyBigFlashTex)
+    if mode then
+        flash:SetTexture(partyBigFlashTex[mode])
         flash:SetTexCoord(0, 1, 0, 1)
         flash:SetSize(120, 49)
         flash:ClearAllPoints()
@@ -589,6 +599,7 @@ local function SetPartyBigFlash(frame, on)
         flash.bbfBigFlash = true
     elseif flash.bbfBigFlash then
         flash.bbfBigFlash = nil
+        flash:SetAtlas(PartyHDArtOn() and partyArtHDAtlas .. "-InCombat" or "ui-hud-unitframe-party-portraiton-incombat", TextureKitConstants.UseAtlasSize)
         flash:ClearAllPoints()
         flash:SetPoint("TOPLEFT", frame, "TOPLEFT", 1, -1)
         flash:SetDrawLayer((flash:GetDrawLayer()), 0)
@@ -650,15 +661,20 @@ local function UpdateOnePartyReduced(frame)
         if hideMana then
             -- the no-mana art has one box down to the old mana bottom
             height = height + TOT_MANA_SPAN
-            BBF.SetStretchedTotHealthMask(container, healthMask, height)
+            if mode == "big" then
+                BBF.SetStretchedTotHealthMask(container, healthMask, height, 75.6, 23, 74.5, -2)
+            else
+                BBF.SetStretchedTotHealthMask(container, healthMask, height, 49.5, 14.5, 74.5, -2)
+            end
         else
             healthMask:SetAtlas("UI-HUD-UnitFrame-Target-PortraitOn-Bar-Health-Mask")
-            healthMask:SetSize(73, bigHealthMask[mode][1])
-            healthMask:SetPoint("TOPLEFT", container, "TOPLEFT", -1, bigHealthMask[mode][2])
+            local m = bigHealthMask[mode]
+            healthMask:SetSize(m[1], m[2])
+            healthMask:SetPoint("TOPLEFT", container, "TOPLEFT", m[3], m[4])
         end
         bars:SetSize(container, 70, height)
         bars:SetHeight(healthBar, height)
-        PlacePartyManaBar(frame, bars, manaBar, manaMask)
+        PlacePartyManaBar(frame, bars, manaBar, manaMask, mode)
         frame.bbfReducedParty = mode == "reduced" or nil
         local inside = mode == "big" and BetterBlizzFramesDB.biggerHealthbarsNameInside
         if mode == "reduced" then
@@ -671,7 +687,7 @@ local function UpdateOnePartyReduced(frame)
             frame.bbfPartyNameWidth = 73
             PlacePartyName(frame, 44, PartyNameY() + 14, 73, "CENTER")
         end
-        SetPartyBigFlash(frame, mode == "big" and not (BBF.RetailTexturesOn and BBF.RetailTexturesOn("party")))
+        SetPartyBigFlash(frame, not (BBF.RetailTexturesOn and BBF.RetailTexturesOn("party")) and mode)
         RaisePartyName(frame, true)
         PlacePartyLeaderIcon(frame, true)
         PlacePartyHealthTexts(frame, inside and -5 or 0, nil, 1)
@@ -1159,7 +1175,7 @@ local function FitArtBackground(art)
     local w, h = art:GetSize()
     local out = art.bbfArtOutset or 0
     bg:ClearAllPoints()
-    bg:SetPoint("TOPLEFT", art, "TOPLEFT", w * ART_INSET_X - out, -h * ART_INSET_TOP + out)
+    bg:SetPoint("TOPLEFT", art, "TOPLEFT", w * ART_INSET_X - out - (art.bbfArtGrowLeft or 0), -h * ART_INSET_TOP + out)
     bg:SetPoint("BOTTOMRIGHT", art, "BOTTOMRIGHT", -w * ART_INSET_X + out, h * ArtBottomInset(path) - out - (art.bbfArtGrowDown or 0))
 end
 
@@ -1169,10 +1185,11 @@ local function RoundToPixel(region)
     region:SetRoundLayoutToNearestPixel(true)
 end
 
-local function BindArtBackground(bg, art, path, outset, growDown)
+local function BindArtBackground(bg, art, path, outset, growDown, growLeft)
     art.bbfArtBackground = bg
     art.bbfArtOutset = outset
     art.bbfArtGrowDown = growDown
+    art.bbfArtGrowLeft = growLeft
     if type(path) == "function" then
         art.bbfArtPathFn = path
     elseif type(path) == "string" then
@@ -1638,7 +1655,7 @@ local function MakeNoPortraitMode(frame)
 
         frame.noPortraitMode.Background = frame:CreateTexture(nil, "BACKGROUND")
         frame.noPortraitMode.Background:SetColorTexture(0,0,0,0.45)
-        BindArtBackground(frame.noPortraitMode.Background, frame.noPortraitMode.Texture, nil, 0.5, 2)
+        BindArtBackground(frame.noPortraitMode.Background, frame.noPortraitMode.Texture, nil, 0.5, 4)
         frame.noPortraitMode.BgMask = frame.noPortraitMode:CreateMaskTexture()
         frame.noPortraitMode.BgMask:SetAllPoints(frame.noPortraitMode.Background)
         frame.noPortraitMode.BgMask:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\masks\\frameMask.png", "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
@@ -1765,7 +1782,7 @@ local function MakeNoPortraitMode(frame)
                 SetXYPoint(totHpBar.HealthBarMask, -17, 3.5)
             end
 
-            totManaBar.ManaBarMask:SetSize(96, 16)
+            totManaBar.ManaBarMask:SetSize(96, 19)
             totManaBar.ManaBarMask:SetTexture("interface/hud/uipartyframeportraitoffmanamask")
             SetXYPoint(totManaBar.ManaBarMask, -13, 4)
         end
@@ -2142,7 +2159,7 @@ local function MakeNoPortraitMode(frame)
 
         frame.noPortraitMode.Background = frame:CreateTexture(nil, "BACKGROUND")
         frame.noPortraitMode.Background:SetColorTexture(0,0,0,0.45)
-        BindArtBackground(frame.noPortraitMode.Background, frame.noPortraitMode.Texture, nil, 0.5, 2)
+        BindArtBackground(frame.noPortraitMode.Background, frame.noPortraitMode.Texture, nil, 0.5, 4)
         frame.noPortraitMode.BgMask = frame.noPortraitMode:CreateMaskTexture()
         frame.noPortraitMode.BgMask:SetAllPoints(frame.noPortraitMode.Background)
         frame.noPortraitMode.BgMask:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\masks\\frameMask.png", "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
@@ -2676,7 +2693,7 @@ local function MakeNoPortraitMode(frame)
                     manaBar:SetPoint("TOPLEFT", 83, -60)
                 end)
                 manaBar.ManaBarMask:SetTexture("interface/hud/uipartyframeportraitoffmanamask")
-                manaBar.ManaBarMask:SetSize(194, 24.5)
+                manaBar.ManaBarMask:SetSize(195, 26)
                 manaBar.ManaBarMask:SetPoint("TOPLEFT", manaBar, "TOPLEFT", -34, 7)
 
                 frame.noPortraitMode.Texture:SetAlpha(1)
@@ -3231,7 +3248,7 @@ local function MakeClassicPartyFrame()
 
         frame.Background = frame:CreateTexture(nil, "BACKGROUND")
         frame.Background:SetColorTexture(0,0,0,0.45)
-        BindArtBackground(frame.Background, frame.Texture, partyDefaultTex)
+        BindArtBackground(frame.Background, frame.Texture, partyDefaultTex, nil, 2)
         frame.BgMask = frame:CreateMaskTexture()
         frame.BgMask:SetAllPoints(frame.Background)
         frame.BgMask:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\masks\\frameMask.png", "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
@@ -3337,19 +3354,19 @@ local function MakeClassicPartyFrame()
                     bars:SetPoint(hpContainer, "TOPLEFT", frame, "TOPLEFT", 43, -13)
                     bars:SetSize(hpContainer, 73, 22)
                 else
-                    bars:SetPoint(hpContainer, "TOPLEFT", frame, "TOPLEFT", 45, -20)
-                    bars:SetSize(hpContainer, 70, 10)
+                    bars:SetPoint(hpContainer, "TOPLEFT", frame, "TOPLEFT", 43, -20)
+                    bars:SetSize(hpContainer, 74, 10)
                 end
                 bars:ClearAllPoints(hpContainer.HealthBar)
                 if NoPortraitBigParty() then
                     bars:SetPoint(hpContainer.HealthBar, "TOPLEFT", hpContainer, "TOPLEFT", 0, 0)
                     bars:SetSize(hpContainer.HealthBar, 73, 22)
                 else
-                    bars:SetPoint(hpContainer.HealthBar, "TOPLEFT", hpContainer, "TOPLEFT", -2, 7)
+                    bars:SetPoint(hpContainer.HealthBar, "TOPLEFT", hpContainer, "TOPLEFT", 0, 7)
                     bars:SetSize(hpContainer.HealthBar, 74, 14)
                 end
                 bars:ClearAllPoints(manaBar)
-                bars:SetPoint(manaBar, "TOPLEFT", hpContainer, "TOPLEFT", -5, -7)
+                bars:SetPoint(manaBar, "TOPLEFT", hpContainer, "TOPLEFT", NoPortraitBigParty() and -5 or -3, -7)
                 bars:SetSize(manaBar, 81, 10)
 
                 hpContainer.HealthBarMask:ClearAllPoints()
@@ -3360,7 +3377,7 @@ local function MakeClassicPartyFrame()
                 else
                     hpContainer.HealthBarMask:SetAtlas("UI-HUD-UnitFrame-Party-PortraitOn-Bar-Health-Mask")
                     hpContainer.HealthBarMask:SetSize(137, 24)
-                    hpContainer.HealthBarMask:SetPoint("TOPLEFT", hpContainer, "TOPLEFT", -33, 11)
+                    hpContainer.HealthBarMask:SetPoint("TOPLEFT", hpContainer, "TOPLEFT", -31, 11)
                 end
 
                 manaBar.ManaBarMask:SetTexture("interface/hud/uipartyframeportraitoffmanamask")

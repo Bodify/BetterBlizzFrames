@@ -8,7 +8,7 @@ BBF.TextAreaLayouts = {
             { client = "retail", style = "noPortrait", mode = "big", mana = "hidden", right = -0.5, healthY = -1, textLeft = 1.5 },
             { style = "noPortrait", mode = "big", right = -0.5 },
             { client = "retail", style = "noPortrait", mode = "none", right = -0.5, manaY = 0, textLeft = 1, textRight = 2.5, own = { manaY = true } },
-            { style = "noPortrait", left = -1.5, right = 1, bottom = -1.5, manaY = 0, textLeft = 2, textRight = 3.5 },
+            { style = "noPortrait", left = -1.5, right = 1, bottom = -1.5, manaY = 0, textLeft = 3.5, textRight = 3.5 },
             { style = "symmetric", mode = "xl", mana = "hidden", left = 10, right = -0.5, textRight = 3 },
             { style = "symmetric", mode = "xl", left = 5.5, right = -0.5, textLeft = 1, textRight = 3 },
             { style = "symmetric", mode = "reduced", mana = "hidden", left = 5, right = -1, textLeft = 5, textRight = 3 },
@@ -28,11 +28,11 @@ BBF.TextAreaLayouts = {
             { client = "forever", style = "classic", mode = "big", bottom = -1, healthY = -1.5, manaY = -0.5, textRight = 4.5, own = { bottom = true, manaY = true, textRight = true } },
             { style = "classic", mode = "big", bottom = -1, healthY = -2, manaY = -1, own = { bottom = true, manaY = true } },
             { style = "classic", mode = "none", mana = "hidden", healthY = 0.5 },
-            { client = "forever", style = "classic", mode = "none", left = 2, right = 4, healthY = -0.5, manaY = -0.5, textLeft = 0.5, textRight = 3.5, sharedTextRight = true },
-            { style = "classic", mode = "none", left = 2, right = 0, healthY = -0.5, manaY = -0.5 },
+            { client = "forever", style = "classic", mode = "none", left = 2, right = 0.5, healthY = -1, manaY = -0.5, textLeft = 0.5, textRight = 2.5, sharedTextRight = true },
+            { style = "classic", mode = "none", left = 2, right = 0, healthY = -1, manaY = -0.5 },
             { style = "camelot", mode = "xl", healthY = -1 },
             { style = "camelot", mode = "big" },
-            { style = "camelot", left = 0.5, right = 1, top = -0.5, textLeft = 0.5, textRight = 3.5 },
+            { style = "camelot", left = 1.5, right = 1, top = -0.5, textLeft = 0.5, textRight = 4 },
         },
     },
     target = {
@@ -41,17 +41,17 @@ BBF.TextAreaLayouts = {
             { style = "pixel", textRight = 1 },
             { style = "noPortrait", mode = "big", left = 1, right = -2.5 },
             { client = "retail", style = "noPortrait", mode = "none", right = -5, manaY = -0.5, textLeft = 1, textRight = 2.5 },
-            { style = "noPortrait", left = -2, right = -4, bottom = -1.5, manaY = 0, textLeft = 2, textRight = 4 },
+            { style = "noPortrait", left = -2, right = -3, bottom = -1.5, manaY = 0, textLeft = 4, textRight = 4 },
             { style = "classic", mode = "big", mana = "hidden", inside = true, bottom = 1, healthY = 3.5 },
             { style = "classic", mode = "big", mana = "hidden", bottom = 1, healthY = -1.5 },
             { style = "classic", mode = "big", inside = true, bottom = -1, manaY = -0.5, own = { bottom = true } },
-            { client = "forever", style = "classic", mode = "big", right = -0.5, bottom = -1, healthY = -1.5, manaY = -0.5, textRight = 2.5,
-                own = { right = true, bottom = true, healthY = true, manaY = true, textRight = true } },
+            { client = "forever", style = "classic", mode = "big", bottom = -1, healthY = -1.5, manaY = -0.5, textRight = 2.5,
+                own = { bottom = true, healthY = true, manaY = true, textRight = true } },
             { style = "classic", mode = "big", bottom = -1, healthY = -1.5, manaY = -0.5, own = { bottom = true, healthY = true } },
             { style = "classic", mode = "none", mana = "hidden", top = 1, bottom = -1, healthY = 0 },
-            { client = "forever", style = "classic", left = 1, right = -2, top = 1, bottom = -1, healthY = -0.5, manaY = -0.5, textLeft = -0.5, textRight = 2, sharedTextRight = true,
+            { client = "forever", style = "classic", left = 0.5, right = -2, top = 1, bottom = -1, healthY = -1, manaY = -0.5, textLeft = 0, textRight = 2, sharedTextRight = true,
                 own = { healthY = true, manaY = true } },
-            { style = "classic", left = 1, right = -2, top = 1, bottom = -1, healthY = -0.5, manaY = -0.5, textLeft = -0.5, textRight = -0.5,
+            { style = "classic", left = 1, right = -2, top = 1, bottom = -1, healthY = -1, manaY = -0.5, textLeft = -0.5, textRight = -0.5,
                 own = { healthY = true, manaY = true } },
             { client = "retail", style = "retail", mode = "none", minus = true, right = 0.5, bottom = 7, healthY = -0.5, textRight = 6, own = { healthY = true } },
             { client = "retail", style = "retail", mode = "none", mana = "shown", left = 1, right = -5, healthY = -1, manaY = 0, textRight = 7,
@@ -65,14 +65,12 @@ BBF.TextAreaLayouts = {
             { style = "retail", mode = "xl", mana = "hidden", left = 1.5, right = -9.5, textRight = 1 },
             { style = "retail", mode = "reduced", mana = "hidden", left = 1.5, right = -9.5, textRight = 2 },
             { style = "retail", left = 1.5, right = -9.5 },
-            { style = "camelot", mode = "xl", mana = "hidden", left = 2, right = -1.5, healthY = -1, textRight = 2.5,
-                own = { left = true, right = true, textLeft = true, textRight = true, healthY = true } },
-            { style = "camelot", mode = "big", mana = "hidden", left = 2, right = -1.5, healthY = -0.5, textRight = 2.5,
-                own = { left = true, right = true, textLeft = true, textRight = true, healthY = true } },
+            { style = "camelot", mode = "xl", mana = "hidden", healthY = -1, own = { healthY = true } },
+            { style = "camelot", mode = "big", mana = "hidden", healthY = -0.5, own = { healthY = true } },
             { style = "camelot", mana = "hidden" },
-            { style = "camelot", mode = "reduced", textRight = 2, own = { textRight = true } },
+            { style = "camelot", mode = "reduced" },
             { style = "camelot", mode = "big" },
-            { style = "camelot", left = 2, right = -5, top = -0.5, textRight = 2.5 },
+            { style = "camelot", left = 1, right = -4.5, top = -0.5, healthY = -1, textLeft = 1, textRight = 3.5, own = { healthY = true } },
         },
     },
     tot = {
@@ -135,7 +133,7 @@ BBF.TextAreaLayouts = {
             { style = "pixel", textRight = 1 },
             { client = "retail", style = "noPortrait", mode = "big", mana = "hidden", left = -0.5, right = 1, bottom = -0.5, textLeft = 1.5 },
             { style = "noPortrait", mode = "big", left = -0.5, right = 1, bottom = -0.5 },
-            { style = "noPortrait", right = -4.5, bottom = 1.5 },
+            { style = "noPortrait", left = 1.5, right = -4.5, bottom = 1.5, textRight = 0.5 },
             { client = "retail", style = "retail", mode = "xl", mana = "hidden", left = 13.5, right = 0, textRight = 1.5 },
             { client = "retail", style = "retail", mode = "xl", left = 13.5, right = 0 },
             { client = "retail", style = "retail", mode = "reduced", mana = "hidden", left = 8.5, right = -1 },
@@ -199,19 +197,19 @@ end
 
 BBF.NameLayouts = {
     player = { { style = "classic", inside = true, y = -13 }, { inside = true, y = -12 }, { client = "retail", symmetric = true, mode = "xl", mana = "hidden", y = 0.5 }, { client = "retail", symmetric = true, mode = "big", y = 1 }, { client = "retail", style = "retail", mode = "xl", mana = "hidden", y = 1 }, { style = "retail", y = 1.5 },
-        { style = "classic", mode = "none", y = 3.5 }, { style = "classic", y = 2 }, { style = "camelot", mode = "xl", mana = "hidden", y = 3 }, { style = "camelot", mode = "xl", y = 2 },
+        { client = "forever", style = "classic", mode = "none", y = 3 }, { style = "classic", mode = "none", y = 3.5 }, { style = "classic", y = 2 }, { style = "camelot", mode = "xl", mana = "hidden", y = 3 }, { style = "camelot", mode = "xl", y = 2 },
         { style = "camelot", mode = "reduced", y = 2 }, { y = 1 } },
-    target = { { style = "classic", mode = "none", y = 3.5, own = true }, { style = "classic", mode = "big", mana = "hidden", inside = true, y = -13.5, own = true },
+    target = { { client = "forever", style = "classic", mode = "none", y = 3, own = true }, { style = "classic", mode = "none", y = 3.5, own = true }, { style = "classic", mode = "big", mana = "hidden", inside = true, y = -13.5, own = true },
         { style = "classic", mode = "big", mana = "hidden", y = 2, own = true }, { client = "forever", style = "classic", mode = "big", inside = false, y = 2, own = true }, { style = "classic", mode = "big", inside = false, y = 2.5, own = true }, { inside = true, y = -12 }, { client = "retail", style = "retail", mode = "xl", mana = "hidden", left = 23, right = 5, centerX = -14, width = -8, centerWidth = -14, y = 0.5, own = true }, { client = "retail", style = "retail", mode = "none", minus = true, left = 24.5, right = -5, centerX = -14, width = -8, centerWidth = -14, y = 1, own = true }, { client = "retail", style = "retail", left = 23, right = 5, centerX = -14, width = -8, centerWidth = -14, y = 1, own = true }, { client = "forever", style = "retail", mode = "big", left = 2, right = 2, width = -6, y = 2 }, { style = "retail", y = 2 }, { style = "camelot", mode = "none", mana = "hidden", y = -2, own = true },
         { style = "camelot", mode = "xl", mana = "hidden", y = 2, own = true },
-        { style = "camelot", mode = "big", mana = "hidden", y = 1.5, own = true }, { y = 1 } },
+        { style = "camelot", mode = "big", mana = "hidden", y = 1.5, own = true }, { style = "camelot", mode = "none", y = 0.5, own = true }, { y = 1 } },
     tot = { { classicToT = true, below = true, y = -4 }, { inside = true, y = -10 }, { style = "pixel", y = 1 }, { style = "retail", y = 2 },
         { style = "classic", mode = "big", mana = "hidden", y = -28 }, { style = "classic", y = -29 },
         { style = "camelot", mode = "xl", mana = "hidden", y = 2 }, { style = "camelot", mode = "xl", y = 2 },
         { style = "camelot", mode = "reduced", y = 1.5 }, { y = 0.5 } },
     pet = { { inside = true, y = -10 }, { style = "retail", y = 1.5 }, { style = "camelot", mode = "xl", mana = "hidden", y = 2.5 },
         { style = "camelot", mode = "reduced", y = 2 }, { y = 1.5 } },
-    party = { { inside = true, y = -10 }, { client = "retail", style = "retail", mode = "xl", left = -21, y = 2.5 }, { client = "retail", style = "retail", y = 2.5 }, { style = "retail", mode = "xl", left = -21, y = 0.5 }, { style = "retail", y = 0.5 }, { client = "forever", style = "classic", mode = "big", y = 2 }, { style = "classic", mode = "big", y = -1 }, { style = "classic", y = 1 }, { style = "camelot", mode = "xl", mana = "shown", y = 2 }, { style = "camelot", mode = "none", mana = "shown", y = 1.5 }, { y = 0.5 } },
+    party = { { inside = true, y = -10 }, { client = "retail", style = "retail", mode = "xl", left = -21, y = 2.5 }, { client = "retail", style = "retail", y = 2.5 }, { style = "retail", mode = "xl", left = -21, y = 0.5 }, { style = "retail", y = 0.5 }, { client = "forever", style = "classic", mode = "big", y = 2 }, { style = "classic", mode = "big", y = -1 }, { style = "classic", y = 1 }, { style = "camelot", mode = "xl", mana = "shown", y = 2 }, { style = "camelot", mode = "xl", mana = "hidden", y = 2.5 }, { style = "camelot", mode = "reduced", mana = "hidden", y = 2.5 }, { style = "camelot", mode = "none", mana = "shown", y = 1.5 }, { y = 0.5 } },
 }
 BBF.NameAreaOverrides = {}
 local NAME_HEIGHT = { player = 12, target = 12, tot = 10, pet = 10, party = 10 }
@@ -307,7 +305,7 @@ end
 
 local CLIENT = BBF.isForever and "forever" or "retail"
 local CLASSIC_EXTRA_TEXT_RIGHT = 2
-local CLASSIC_MANA_GROW = { bottom = 2, targetRight = { retail = -4, forever = 1 } }
+local CLASSIC_MANA_GROW = { bottom = 2, targetRight = { retail = -4, forever = 0 }, manaY = { retail = 0, forever = -0.5 } }
 local NORMAL_HEALTH_CORNER = { x = 149, y = -10 }
 
 local function RetailArt(unit)
@@ -367,6 +365,7 @@ function BBF.TextAreaSetup(frame)
     local minus = key == "target" and UnitClassification(unit) == "minus"
     local keepsManaLayout = style == "camelot" or style == "classic"
         or (style == "retail" and ((minus and mode ~= "none") or not minus))
+        or style == "noPortrait" or style == "pixel"
     if manaHidden and key == "target" and keepsManaLayout and not db[HIDE_MANA[bigKey]] then
         manaHidden = false
     end
@@ -436,7 +435,6 @@ local DEFAULT_MANA_SHIFT_XL = {
 }
 
 local CLASSIC_DEFAULT_MANA_SHIFT = {
-    target = { right = -6 },
     party = { right = -3, bottom = 2 },
 }
 
@@ -555,6 +553,7 @@ local function ResolveText(frame, raw)
     end
     if setup.style == "classic" and not setup.manaHidden then
         v.bottom = v.bottom + CLASSIC_MANA_GROW.bottom
+        v.manaY = (v.manaY or 0) + CLASSIC_MANA_GROW.manaY[CLIENT]
         if setup.key == "target" then
             v.right = v.right + CLASSIC_MANA_GROW.targetRight[CLIENT]
         end
@@ -640,7 +639,7 @@ local function GetArea(frame)
     frame.bbfTextArea = area
     hooksecurefunc(frame, "SetPoint", QueueRealign)
     hooksecurefunc(frame, "SetScale", QueueRealign)
-    if CLIENT == "retail" and frame.CheckClassification then
+    if frame.CheckClassification then
         hooksecurefunc(frame, "CheckClassification", RecheckMinus)
     end
     WatchGrid()
@@ -668,6 +667,26 @@ local function ManaEdge(frame, setup, manaBar)
     spot:SetPoint("TOPRIGHT", frame.TargetFrameContainer, "LEFT", NORMAL_HEALTH_CORNER.x + x, NORMAL_HEALTH_CORNER.y + y)
     spot:SetSize(manaBar:GetSize())
     return spot
+end
+
+function BBF.TextAreaManaDrop(frame, healthBar, manaBar)
+    if CLIENT ~= "forever" then return end
+    local setup = BBF.TextAreaSetup(frame)
+    if not setup or setup.style ~= "classic" or setup.manaHidden or (setup.key ~= "player" and setup.key ~= "target") then return end
+    local healthBottom, manaBottom = healthBar:GetBottom(), manaBar:GetBottom()
+    local healthScale, manaScale = healthBar:GetEffectiveScale(), manaBar:GetEffectiveScale()
+    if not healthBottom or not manaBottom or issecretvalue(healthBottom) or issecretvalue(manaBottom) or issecretvalue(healthScale) or issecretvalue(manaScale) then return end
+    return (manaBottom * manaScale - healthBottom * healthScale) / healthScale
+end
+
+function BBF.TextAreaManaRightShift(frame, healthBar, manaBar)
+    if CLIENT ~= "forever" or not manaBar then return end
+    local setup = BBF.TextAreaSetup(frame)
+    if not setup or setup.style ~= "camelot" or not setup.manaHidden or (setup.key ~= "player" and setup.key ~= "target") then return end
+    local healthRight, manaRight = healthBar:GetRight(), manaBar:GetRight()
+    local healthScale, manaScale = healthBar:GetEffectiveScale(), manaBar:GetEffectiveScale()
+    if not healthRight or not manaRight or issecretvalue(healthRight) or issecretvalue(manaRight) or issecretvalue(healthScale) or issecretvalue(manaScale) then return end
+    return (manaRight * manaScale - healthRight * healthScale) / healthScale
 end
 
 local function BoxGeometry(frame, v, healthBar, manaBar)
@@ -719,6 +738,57 @@ local function RecheckMana(manaBar)
     end
 end
 
+local function KeepsManaSlot(frame)
+    if frame ~= TargetFrame and frame ~= FocusFrame or not frame.unit then return false end
+    return UnitClassification(frame.unit) ~= "minus" or (BBF.HasNoPortrait and BBF.HasNoPortrait(frame.unit)) and true or false
+end
+
+function BBF.UpdateManaBackground(manaBar)
+    local bg = manaBar and manaBar.BBFBackground
+    if not bg or not BetterBlizzFramesDB.addUnitFrameBgTexture then return end
+    local shown = manaBar:IsShown() or KeepsManaSlot(manaBar.bbfBgOwner)
+    bg:SetShown(shown and not manaBar.bbfManaHidden and true or false)
+end
+
+local function CopyMask(proxy, mask)
+    local atlas = mask.GetAtlas and mask:GetAtlas()
+    if atlas then
+        proxy:SetAtlas(atlas)
+    else
+        proxy:SetTexture(mask:GetTexture(), "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
+    end
+end
+
+function BBF.ManaBackgroundMask(frame, manaBar, mask)
+    if frame ~= TargetFrame and frame ~= FocusFrame then return mask end
+    local proxy = mask.bbfBgProxy
+    if not proxy then
+        proxy = manaBar:GetParent():CreateMaskTexture()
+        proxy:SetAllPoints(mask)
+        mask.bbfBgProxy = proxy
+        hooksecurefunc(mask, "SetTexture", function() CopyMask(proxy, mask) end)
+        hooksecurefunc(mask, "SetAtlas", function() CopyMask(proxy, mask) end)
+    end
+    CopyMask(proxy, mask)
+    return proxy
+end
+
+function BBF.ManaBackgroundParent(frame, manaBar)
+    if frame ~= TargetFrame and frame ~= FocusFrame then return manaBar end
+    manaBar.bbfBgOwner = frame
+    if not manaBar.bbfBgWatched then
+        manaBar.bbfBgWatched = true
+        manaBar:HookScript("OnShow", BBF.UpdateManaBackground)
+        manaBar:HookScript("OnHide", BBF.UpdateManaBackground)
+        if frame.CheckClassification then
+            hooksecurefunc(frame, "CheckClassification", function()
+                BBF.UpdateManaBackground(manaBar)
+            end)
+        end
+    end
+    return manaBar:GetParent()
+end
+
 function BBF.SetManaBarHidden(manaBar, hidden, alphaRegion)
     if not manaBar then return end
     local region = alphaRegion or manaBar
@@ -726,6 +796,7 @@ function BBF.SetManaBarHidden(manaBar, hidden, alphaRegion)
     hidden = hidden and true or nil
     if manaBar.bbfManaHidden == hidden then return end
     manaBar.bbfManaHidden = hidden
+    BBF.UpdateManaBackground(manaBar)
     RecheckMana(manaBar)
 end
 
@@ -1022,13 +1093,18 @@ local function ApplyTextArea(frame)
         end
     elseif setup.manaHidden then
         SnapPoint(area, "TOPLEFT", healthBar, "TOPLEFT", v.left, v.top)
-        SnapPoint(area, "BOTTOMRIGHT", healthBar, "BOTTOMRIGHT", v.right, v.bottom)
+        SnapPoint(area, "BOTTOMRIGHT", healthBar, "BOTTOMRIGHT", v.right + (BBF.TextAreaManaRightShift(frame, healthBar, manaBar) or 0), v.bottom)
         area.Health:SetAllPoints(area)
         area.Mana:SetAllPoints(area)
     else
         local manaEdge = ManaEdge(frame, setup, manaBar)
         SnapPoint(area, "TOPLEFT", healthBar, "TOPLEFT", v.left, v.top)
-        SnapPoint(area, "BOTTOMRIGHT", manaEdge, "BOTTOMRIGHT", v.right, v.bottom)
+        local drop = BBF.TextAreaManaDrop(frame, healthBar, manaEdge)
+        if drop then
+            SnapPoint(area, "BOTTOMRIGHT", healthBar, "BOTTOMRIGHT", v.right, drop + v.bottom)
+        else
+            SnapPoint(area, "BOTTOMRIGHT", manaEdge, "BOTTOMRIGHT", v.right, v.bottom)
+        end
         local healthHeight, gap = BoxGeometry(frame, v, healthBar, manaEdge)
         area.healthHeight, area.gap = healthHeight, gap
         if healthHeight then

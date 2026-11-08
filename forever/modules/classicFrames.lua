@@ -296,13 +296,23 @@ end
 function BBF.SquishClassicPlayerHealth()
     local hpContainer = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer
     local healthBar = hpContainer.HealthBar
-    healthBar:SetSize(120, BetterBlizzFramesDB.hideUnitFramePlayerMana and 21 or 9)
+    hpContainer:SetWidth(120)
+    healthBar:SetSize(120, BetterBlizzFramesDB.hideUnitFramePlayerMana and 22 or 10)
     healthBar:ClearAllPoints()
-    healthBar:SetPoint("TOPLEFT", hpContainer, "TOPLEFT", 0, -7)
+    healthBar:SetPoint("TOPLEFT", hpContainer, "TOPLEFT", 0, -6)
     BBF.MaskClassicPlayerHealth()
 end
 
 local FRAME_MASK = "Interface\\AddOns\\BetterBlizzFrames\\media\\masks\\frameMask.png"
+
+function BBF.MaskClassicReputationColor(texture)
+    if not texture or texture.bbfFrameMask then return end
+    local mask = texture:GetParent():CreateMaskTexture()
+    mask:SetTexture(FRAME_MASK, "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
+    mask:SetAllPoints(texture)
+    texture:AddMaskTexture(mask)
+    texture.bbfFrameMask = mask
+end
 
 BBF.ClassicManaMask = {
     player = { left = 0, right = 0, top = 0, bottom = 0 },
@@ -364,7 +374,9 @@ function BBF.SizeClassicPlayerMana()
         return
     end
     local manaBar = PlayerFrame_GetManaBar()
-    manaBar:SetSize(120, 11)
+    manaBar:SetSize(122, 12)
+    manaBar:ClearAllPoints()
+    manaBar:SetPoint("TOPLEFT", 87, -60)
     MaskClassicMana(manaBar, "player")
 end
 
@@ -532,8 +544,8 @@ local function MakeClassicFrame(frame)
             end
             local defaultTexture = not BBF.UnitFrameTextureOn("mana")
             manaBar:ClearAllPoints()
-            manaBar:SetPoint("TOPRIGHT", frameContainer, "LEFT", defaultTexture and 152 or 146, -11)
-            manaBar:SetSize(defaultTexture and 132 or 120, 11)
+            manaBar:SetPoint("TOPRIGHT", frameContainer, "LEFT", defaultTexture and 151 or 145, -10)
+            manaBar:SetSize(defaultTexture and 132 or 120, 12)
         end
         PlaceClassicManaBar()
 
@@ -565,11 +577,11 @@ local function MakeClassicFrame(frame)
             background:ClearAllPoints()
             if BBF.IsBigHealthbarActive(frame) then
                 background:SetPoint("TOPLEFT", healthBar, "TOPLEFT", 0, 0)
-                background:SetPoint("BOTTOMRIGHT", contentMain.ManaBar, "BOTTOMRIGHT", 1, 0)
+                background:SetPoint("BOTTOMRIGHT", contentMain.ManaBar, "BOTTOMRIGHT", -3, 0)
                 return
             end
-            background:SetPoint("TOPLEFT", healthBar, "TOPLEFT", 0, 19)
-            background:SetPoint("BOTTOMRIGHT", contentMain.ManaBar, "BOTTOMRIGHT", 1, 0)
+            background:SetPoint("TOPLEFT", healthBar, "TOPLEFT", 0, 20)
+            background:SetPoint("BOTTOMRIGHT", contentMain.ManaBar, "BOTTOMRIGHT", -3, 0)
         end
         frame.ClassicFrame.UpdateBackground()
 
@@ -646,6 +658,7 @@ local function MakeClassicFrame(frame)
         contentMain.ReputationColor:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-LevelBackground")
         contentMain.ReputationColor:ClearAllPoints()
         contentMain.ReputationColor:SetPoint("TOPRIGHT", -87, -31)
+        BBF.MaskClassicReputationColor(contentMain.ReputationColor)
 
         -- if true then
         --     contentMain.ReputationColor:SetSize(121, 18)
@@ -961,7 +974,7 @@ local function MakeClassicFrame(frame)
 
         local function AdjustBackground()
             frame.ClassicFrame.Background:SetPoint("TOPLEFT", hpContainer.HealthBar, "TOPLEFT", 0, BigPlayerHealthbar() and 0 or 20)
-            frame.ClassicFrame.Background:SetPoint("BOTTOMRIGHT", hpContainer, "BOTTOMRIGHT", BigPlayerHealthbar() and 0 or -3, BigPlayerHealthbarNoMana() and 0 or BigPlayerHealthbar() and -10 or -12)
+            frame.ClassicFrame.Background:SetPoint("BOTTOMRIGHT", hpContainer, "BOTTOMRIGHT", BigPlayerHealthbar() and 0 or 1, BigPlayerHealthbarNoMana() and 0 or BigPlayerHealthbar() and -10 or -12)
         end
 
 

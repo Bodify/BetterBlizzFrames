@@ -1353,6 +1353,7 @@ function BBF.PlayerReputationColor()
                 end
                 frame.ReputationColor:SetSize(117, 18)
                 frame.ReputationColor:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -26, -31)
+                BBF.MaskClassicReputationColor(frame.ReputationColor)
             elseif BBF.ClassicStyleAddon() then
                 frame.ReputationColor:SetTexture(137017)
                 frame.ReputationColor:SetSize(117, 19)

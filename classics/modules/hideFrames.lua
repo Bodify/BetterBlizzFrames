@@ -14,6 +14,23 @@ local bossFrameHooked
 local originalStanceParent
 local iconMouseOver = false -- flag to indicate if any LibDBIcon is currently moused over
 local minimapButtonsHooked = false
+local minimapButtons = {}
+local minimapChildCount
+local minimapButtonsShown
+
+local function RefreshMinimapButtons()
+    local count = Minimap:GetNumChildren()
+    if count == minimapChildCount then return false end
+    minimapChildCount = count
+    wipe(minimapButtons)
+    for _, child in ipairs({ Minimap:GetChildren() }) do
+        local name = child:GetName()
+        if name and (name:find("LibDBIcon", 1, true) or name == "ArenaAnalyticsMinimapButton") then
+            minimapButtons[#minimapButtons + 1] = child
+        end
+    end
+    return true
+end
 local bagButtonsHooked = false
 local keybindAlphaChanged = false
 local PlayerStatusTextureParent
@@ -913,30 +930,25 @@ function BBF.HideFrames()
 
 
         local function ToggleLibDBIconButtons(show)
-            for i = 1, Minimap:GetNumChildren() do
-                local child = select(i, Minimap:GetChildren())
-                if child then
-                    local childName = child:GetName() or ""
-                    if string.find(childName, "LibDBIcon") or childName == "ExpansionLandingPageMinimapButton" or childName == "ArenaAnalyticsMinimapButton" then
-                        if show then
-                            child:Show()
-                            --ExpansionLandingPageMinimapButton:Show()
-                            MiniMapTrackingButton:Show()
-                            MiniMapTracking:Show()
-                            if MiniMapWorldMapButton then
-                                MiniMapWorldMapButton:Show()
-                            end
-                        else
-                            child:Hide()
-                            --ExpansionLandingPageMinimapButton:Hide()
-                            MiniMapTrackingButton:Hide()
-                            MiniMapTracking:Hide()
-                            if MiniMapWorldMapButton then
-                                MiniMapWorldMapButton:Hide()
-                            end
-                        end
-                    end
-                end
+            if not RefreshMinimapButtons() and minimapButtonsShown == show then return end
+            minimapButtonsShown = show
+            local landing = ExpansionLandingPageMinimapButton
+            for _, child in ipairs(minimapButtons) do
+                if show then child:Show() else child:Hide() end
+            end
+            local hasLanding = landing and landing:GetParent() == Minimap
+            if hasLanding then
+                if show then landing:Show() else landing:Hide() end
+            end
+            if #minimapButtons == 0 and not hasLanding then return end
+            if MiniMapTrackingButton then
+                if show then MiniMapTrackingButton:Show() else MiniMapTrackingButton:Hide() end
+            end
+            if MiniMapTracking then
+                if show then MiniMapTracking:Show() else MiniMapTracking:Hide() end
+            end
+            if MiniMapWorldMapButton then
+                if show then MiniMapWorldMapButton:Show() else MiniMapWorldMapButton:Hide() end
             end
         end
 
@@ -977,8 +989,7 @@ function BBF.HideFrames()
                 --     end)
                 -- end)
 
-                for i = 1, Minimap:GetNumChildren() do
-                    local child = select(i, Minimap:GetChildren())
+                for _, child in ipairs({ Minimap:GetChildren() }) do
                     local childName = child:GetName() or ""
                     if string.find(childName, "LibDBIcon") or childName == "ExpansionLandingPageMinimapButton" or childName == "ArenaAnalyticsMinimapButton" then
                         child:HookScript("OnEnter", function()

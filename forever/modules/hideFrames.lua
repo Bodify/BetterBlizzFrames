@@ -15,6 +15,23 @@ local bossFrameHooked
 local originalStanceParent
 local iconMouseOver = false -- flag to indicate if any LibDBIcon is currently moused over
 local minimapButtonsHooked = false
+local minimapButtons = {}
+local minimapChildCount
+local minimapButtonsShown
+
+local function RefreshMinimapButtons()
+    local count = Minimap:GetNumChildren()
+    if count == minimapChildCount then return false end
+    minimapChildCount = count
+    wipe(minimapButtons)
+    for _, child in ipairs({ Minimap:GetChildren() }) do
+        local name = child:GetName()
+        if name and (name:find("LibDBIcon", 1, true) or name == "ArenaAnalyticsMinimapButton") then
+            minimapButtons[#minimapButtons + 1] = child
+        end
+    end
+    return true
+end
 local bagButtonsHooked = false
 local keybindAlphaChanged = false
 local hiddenBar1 = true
@@ -1118,31 +1135,6 @@ function BBF.HideFrames()
                     WarlockPowerFrame:SetParent(hiddenFrame)
                 end
             end
-            if not RogueComboPointBarFrame and BBF.ComboPointBar and class == "ROGUE" then
-                if BetterBlizzFramesDB.hidePlayerPowerNoRogue then
-                    if originalResourceParent then setResourceFrameVisibility(BBF.ComboPointBar, true) end
-                else
-                    setResourceFrameVisibility(BBF.ComboPointBar, false)
-                    if not originalResourceParent then originalResourceParent = true end
-                end
-            end
-            if RogueComboPointBarFrame and class == "ROGUE" then
-                if BetterBlizzFramesDB.hidePlayerPowerNoRogue then
-                    if originalResourceParent then RogueComboPointBarFrame:SetParent(originalResourceParent) end
-                else
-                    if not originalResourceParent then originalResourceParent = RogueComboPointBarFrame:GetParent() end
-                    RogueComboPointBarFrame:SetParent(hiddenFrame)
-                end
-            end
-            local druidFrame = DruidComboPointBarFrame or BBF.ComboPointBar
-            if druidFrame and class == "DRUID" then
-                if BetterBlizzFramesDB.hidePlayerPowerNoDruid then
-                    if originalResourceParent then setResourceFrameVisibility(druidFrame, true) end
-                else
-                    setResourceFrameVisibility(druidFrame, false)
-                    if not originalResourceParent then originalResourceParent = true end
-                end
-            end
             if PaladinPowerBarFrame and class == "PALADIN" then
                 if BetterBlizzFramesDB.hidePlayerPowerNoPaladin then
                     if originalResourceParent then PaladinPowerBarFrame:SetParent(originalResourceParent) end
@@ -1188,9 +1180,6 @@ function BBF.HideFrames()
             changes.hidePlayerPower = true
         elseif originalResourceParent or (BBF.LegacyComboFrame and BBF.LegacyComboFrame.bbfHidden) then
             if WarlockPowerFrame and class == "WARLOCK" then WarlockPowerFrame:SetParent(originalResourceParent) end
-            if RogueComboPointBarFrame and class == "ROGUE" then RogueComboPointBarFrame:SetParent(originalResourceParent) end
-            if not RogueComboPointBarFrame and BBF.ComboPointBar and class == "ROGUE" then setResourceFrameVisibility(BBF.ComboPointBar, true) end
-            if (DruidComboPointBarFrame or BBF.ComboPointBar) and class == "DRUID" then setResourceFrameVisibility(DruidComboPointBarFrame or BBF.ComboPointBar, true) end
             if PaladinPowerBarFrame and class == "PALADIN" then PaladinPowerBarFrame:SetParent(originalResourceParent) end
             if RuneFrame and class == "DEATHKNIGHT" then RuneFrame:SetParent(originalResourceParent) end
             if EssencePlayerFrame and class == "EVOKER" then EssencePlayerFrame:SetParent(originalResourceParent) end
@@ -1199,6 +1188,8 @@ function BBF.HideFrames()
             setLegacyComboHidden(false)
             changes.hidePlayerPower = nil
         end
+        BBF.UpdateComboPointBarHidden()
+        BBF.UpdateBlizzardComboRing()
 
         if BetterBlizzFramesDB.hideRaidFrameContainerBorder then
             local compactPartyBorder = CompactPartyFrameBorderFrame or CompactRaidFrameContainerBorderFrame
@@ -1612,14 +1603,11 @@ function BBF.HideFrames()
 
 
         local function ToggleLibDBIconButtons(show)
-            local alpha = show and 1 or 0
-            for i = 1, Minimap:GetNumChildren() do
-                local child = select(i, Minimap:GetChildren())
-                if child then
-                    local childName = child:GetName() or ""
-                    if string.find(childName, "LibDBIcon") or childName == "ArenaAnalyticsMinimapButton" then
-                        child:SetAlpha(alpha)
-                    end
+            if RefreshMinimapButtons() or minimapButtonsShown ~= show then
+                minimapButtonsShown = show
+                local alpha = show and 1 or 0
+                for _, child in ipairs(minimapButtons) do
+                    child:SetAlpha(alpha)
                 end
             end
             local landingButton = ExpansionLandingPageMinimapButton
@@ -1718,8 +1706,7 @@ function BBF.HideFrames()
                     end)
                 end
 
-                for i = 1, Minimap:GetNumChildren() do
-                    local child = select(i, Minimap:GetChildren())
+                for _, child in ipairs({ Minimap:GetChildren() }) do
                     local childName = child:GetName() or ""
                     if string.find(childName, "LibDBIcon") or childName == "ExpansionLandingPageMinimapButton" then
                         child:HookScript("OnEnter", function()
