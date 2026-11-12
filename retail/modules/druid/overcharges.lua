@@ -743,6 +743,25 @@ local function CreateManaOnlyBar(isActive, extraEvent)
     Refresh()
 end
 
+local function SetAltBarLook(bar)
+    local r, g, b, a = BBF.GetCustomPowerColor("MANA")
+    if BBF.AltManaTextureOn() then
+        bar:SetStatusBarTexture(BBF.altManaTexture)
+        if not r then
+            r, g, b = BBF.GetDefaultPowerColor("MANA")
+        end
+        bar:SetStatusBarColor(r, g, b, a or 1)
+    else
+        bar:SetStatusBarTexture("UI-HUD-UnitFrame-Player-PortraitOn-Bar-Mana")
+        bar:SetStatusBarDesaturated(r and true or false)
+        bar:SetStatusBarColor(r or 1, g or 1, b or 1, a or 1)
+    end
+end
+
+function BBF.UpdateAltManaBarLook()
+    SetAltBarLook(PlayerFrame.AltManaBarBBF)
+end
+
 function BBF.CreateAltManaBar()
     if PlayerFrame.AltManaBarBBF or PlayerFrame.ManaOnlyBarBBF then return end -- already created
     if not (BetterBlizzFramesDB.createAltManaBarDruid or BetterBlizzFramesDB.createAltManaBarDruidManaOnly) then return end
@@ -791,13 +810,7 @@ function BBF.CreateAltManaBar()
         bar:SetSize(124, 10)
         bar:SetPoint("BOTTOMLEFT", PlayerFrame, "BOTTOMLEFT", 85, 18)
     end
-    if db.changeUnitFrameManabarTexture then
-        bar:SetStatusBarTexture(BBF.manaTexture)
-        bar:SetStatusBarColor(0, 0, 1)
-    else
-        bar:SetStatusBarTexture("UI-HUD-UnitFrame-Player-PortraitOn-Bar-Mana")
-        bar:SetStatusBarColor(1, 1, 1)
-    end
+    SetAltBarLook(bar)
     bar:SetMinMaxValues(0, 100)
     bar:Hide()
 

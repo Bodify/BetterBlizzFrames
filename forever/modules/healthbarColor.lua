@@ -746,7 +746,7 @@ local function HookPowerBarColors()
             DemonHunterSoulFragmentsBar = {r = 0.11, g = 0.34, b = 0.71}
         }
 
-        if AlternatePowerBar then
+        if AlternatePowerBar and not BetterBlizzFramesDB.changeAltManaBarTexture then
             SetupAlternateBarHook(AlternatePowerBar, defaultColors.AlternatePowerBar)
         end
 
@@ -797,6 +797,9 @@ function BBF.UpdateFrames()
     if customPowerColors then
         UpdatePowerColorCache()
         HookPowerBarColors()
+        if PlayerFrame.AltManaBarBBF then
+            BBF.UpdateAltManaBarLook()
+        end
 
         if customHealthbarColors and customColorsUnitFrames then
             if PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar then

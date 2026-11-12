@@ -1135,9 +1135,9 @@ local function ApplyPlayerManaHeight()
     manaBar:SetWidth(125.5)
     manaBar:SetPoint(point, relativeTo, relativePoint, 86, y)
     local big = BBF.BigPlayerHealthbar and BBF.BigPlayerHealthbar()
-    manaBar.ManaBarMask:SetWidth(big and 129 or 128.5)
+    manaBar.ManaBarMask:SetSize(big and 129 or 128.5, 17)
     manaBar.ManaBarMask:ClearAllPoints()
-    manaBar.ManaBarMask:SetPoint("TOPLEFT", manaBar, "TOPLEFT", -1.5, 2)
+    manaBar.ManaBarMask:SetPoint("TOPLEFT", manaBar, "TOPLEFT", -1.5, 2.5)
 end
 
 function BBF.UpdatePlayerManaHeight()
@@ -1349,7 +1349,7 @@ function BBF.UpdateTargetHealthMask(frame)
         return
     end
     if not InCombatLockdown() then
-        manaBar:SetWidth(135)
+        manaBar:SetSize(135, 11)
         manaBar:ClearAllPoints()
         manaBar:SetPoint("TOPRIGHT", main.HealthBarsContainer, "BOTTOMRIGHT", 4, -1)
     end

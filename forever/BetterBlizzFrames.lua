@@ -675,6 +675,7 @@ local defaultSettings = {
     damageMeterHideBorder = true,
     unitFrameHealthbarTexture = "Blizzard DF",
     unitFrameManabarTexture = "Blizzard DF",
+    altManaBarTexture = "Blizzard DF",
 
     auraWhitelist = {},
     auraBlacklist = {},
@@ -3846,6 +3847,8 @@ local LSM = LibStub("LibSharedMedia-3.0")
 local texture = "Interface\\Addons\\BetterBlizzPlates\\media\\DragonflightTextureHD"
 local manaTexture = "Interface\\Addons\\BetterBlizzPlates\\media\\blizzTex\\BlizzardRetailBarCrop2"
 BBF.manaTexture = manaTexture
+local altManaTexture = manaTexture
+BBF.altManaTexture = altManaTexture
 local raidHpTexture = "Interface\\Addons\\BetterBlizzPlates\\media\\DragonflightTextureHD"
 local raidManaTexture = "Interface\\Addons\\BetterBlizzPlates\\media\\DragonflightTextureHD"
 local castbarTexture = 137012
@@ -3931,6 +3934,14 @@ function BBF.UnitFrameTextureOn(kind)
         return db.changeUnitFrameHealthbarTexture or db.classicFrames or HealthColorsOn() or BigHealthbarTextureDefault() or NoPortraitTextureDefault() or RetailTextureDefault()
     end
     return db.changeUnitFrameManabarTexture or PixelBorderManaDefault()
+end
+
+function BBF.AltManaTextureOn()
+    return BetterBlizzFramesDB.changeAltManaBarTexture or BBF.UnitFrameTextureOn("mana")
+end
+
+local function ManaTextureFor(bar)
+    return bar == AlternatePowerBar and altManaTexture or manaTexture
 end
 
 function BBF.UnitFrameTextureName(kind)
@@ -4049,6 +4060,8 @@ function BBF.UpdateCustomTextures()
     texture = BBF.FetchStatusbar(BBF.healthTextureName)
     manaTexture = BBF.FetchStatusbar(BBF.UnitFrameTextureName("mana"))
     BBF.manaTexture = manaTexture
+    altManaTexture = db.changeAltManaBarTexture and BBF.FetchStatusbar(db.altManaBarTexture) or manaTexture
+    BBF.altManaTexture = altManaTexture
     raidHpTexture = LSM:Fetch(LSM.MediaType.STATUSBAR, db.raidFrameHealthbarTexture)
     raidManaTexture = LSM:Fetch(LSM.MediaType.STATUSBAR, db.raidFrameManabarTexture)
     castbarTexture = LSM:Fetch(LSM.MediaType.STATUSBAR, db.unitFrameCastbarTexture)
@@ -4060,6 +4073,9 @@ function BBF.UpdateCustomTextures()
     BBF.RefreshToT()
 
     BBF.HookTextures()
+    if PlayerFrame.AltManaBarBBF then
+        BBF.UpdateAltManaBarLook()
+    end
     if BBF.FixForeverTextureMasks then
         BBF.FixForeverTextureMasks()
     end
@@ -4132,10 +4148,10 @@ local function ApplyTextureChange(type, statusBar, parent, classic, party, altBa
     if not keepFancyManas then
         if (parent and parent:GetName() == "PetFrame") then -- causes weird issues if not delayed
             C_Timer.After(0.1, function()
-                statusBar:SetStatusBarTexture((type == "health" and (statusBar.bbfTexShown or texture)) or manaTexture)
+                statusBar:SetStatusBarTexture((type == "health" and (statusBar.bbfTexShown or texture)) or ManaTextureFor(statusBar))
             end)
         else
-            statusBar:SetStatusBarTexture((type == "health" and statusBar.bbfTexShown) or manaTexture)
+            statusBar:SetStatusBarTexture((type == "health" and statusBar.bbfTexShown) or ManaTextureFor(statusBar))
         end
     else
         statusBar.keepFancyManas = BetterBlizzFramesDB.changeUnitFrameManaBarTextureKeepFancy
@@ -4201,11 +4217,11 @@ local function ApplyTextureChange(type, statusBar, parent, classic, party, altBa
         end
 
         if classic and not statusBar.bbfTextureHook then
-            statusBar:SetStatusBarTexture(manaTexture)
+            statusBar:SetStatusBarTexture(ManaTextureFor(statusBar))
             hooksecurefunc(statusBar, "SetStatusBarTexture", function(self)
                 if self.changing then return end
                 self.changing = true
-                self:SetStatusBarTexture(manaTexture)
+                self:SetStatusBarTexture(ManaTextureFor(self))
                 self.changing = false
             end)
             statusBar.bbfTextureHook = true
@@ -4240,7 +4256,7 @@ local function ApplyTextureChange(type, statusBar, parent, classic, party, altBa
                                 if not r then
                                     r, g, b = GetDefaultPowerColor(powerToken, self)
                                 end
-                                self:SetStatusBarTexture(manaTexture)
+                                self:SetStatusBarTexture(ManaTextureFor(self))
                                 self:SetStatusBarDesaturated(true)
                                 self:SetStatusBarColor(r, g, b)
                             end
@@ -4254,7 +4270,7 @@ local function ApplyTextureChange(type, statusBar, parent, classic, party, altBa
                             if not r then
                                 r, g, b = GetDefaultPowerColor(powerToken, self)
                             end
-                            self:SetStatusBarTexture(manaTexture)
+                            self:SetStatusBarTexture(ManaTextureFor(self))
                             self:SetStatusBarDesaturated(true)
                             self:SetStatusBarColor(r, g, b)
                         end
@@ -4267,7 +4283,7 @@ local function ApplyTextureChange(type, statusBar, parent, classic, party, altBa
                     hookFunc = function(self)
                         local powerToken = self.powerToken or self.powerName
                         if not powerToken or not fancyManas[powerToken] then
-                            self:SetStatusBarTexture(manaTexture)
+                            self:SetStatusBarTexture(ManaTextureFor(self))
                         end
                         local r, g, b = GetDefaultPowerColor(powerToken, self)
                         self:SetStatusBarDesaturated(true)
@@ -4276,7 +4292,7 @@ local function ApplyTextureChange(type, statusBar, parent, classic, party, altBa
                 else
                     hookFunc = function(self)
                         local powerToken = self.powerToken or self.powerName
-                        self:SetStatusBarTexture(manaTexture)
+                        self:SetStatusBarTexture(ManaTextureFor(self))
                         local r, g, b = GetDefaultPowerColor(powerToken, self)
                         self:SetStatusBarDesaturated(true)
                         self:SetStatusBarColor(r, g, b)
@@ -4369,7 +4385,7 @@ local function ApplyTextureChange(type, statusBar, parent, classic, party, altBa
             statusBar.bbfTextureColorHook = true
         end
 
-        if not BBF.hookedManaBarsTexture then
+        if not BBF.hookedManaBarsTexture and BBF.UnitFrameTextureOn("mana") then
 
             local useCustomColors = BetterBlizzFramesDB.customHealthbarColors and
                                    BetterBlizzFramesDB.customPowerColors and
@@ -4535,7 +4551,6 @@ function BBF.HookUnitFrameTextures()
             manaTextureUnits["pet"] = true
 
             ApplyTextureChange("mana", PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.ManaBarArea.ManaBar)
-            ApplyTextureChange("mana", AlternatePowerBar, nil, nil, nil, true)
             local class = UnitClassBase("player")
             if class == "MONK" and MonkStaggerBar then
                 ApplyTextureChange("mana", MonkStaggerBar, nil, nil, nil, true)
@@ -4562,6 +4577,10 @@ function BBF.HookUnitFrameTextures()
                     ApplyTextureChange("mana", frame.ManaBar)
                 end
             end
+        end
+
+        if BBF.AltManaTextureOn() then
+            ApplyTextureChange("mana", AlternatePowerBar, nil, nil, nil, true)
         end
 
         if db.changeUnitFrameCastbarTexture and not BBF.castbarTexturesHooked then
@@ -4762,7 +4781,7 @@ function BBF.HookTextures()
     BBF.UpdateClassicCastbarTexture(castbarTexture, db.unitFrameCastbarNonInterruptibleTexture and LSM:Fetch(LSM.MediaType.STATUSBAR, db.unitFrameCastbarNonInterruptibleTexture))
     -- Hook UnitFrames
     -- BetterBlizzFramesDB.textureSwapUnitFrames
-    if BBF.UnitFrameTextureOn("health") or BBF.UnitFrameTextureOn("mana") or db.changeUnitFrameCastbarTexture then
+    if BBF.UnitFrameTextureOn("health") or BBF.AltManaTextureOn() or db.changeUnitFrameCastbarTexture then
         BBF.HookUnitFrameTextures()
     end
     if db.classicFrames and db.changeUnitFrameNameBgTexture then
@@ -5094,14 +5113,18 @@ function BBF.UnitFrameBackgroundTexture()
 end
 
 
-local function TintMinimapRings(frame)
+local function TintMinimapRings(frame, default)
     for i = 1, frame:GetNumRegions() do
         local region = select(i, frame:GetRegions())
         if region and region:IsObjectType("Texture") and not region:IsForbidden() then
             local texture = region:GetTexture()
             if texture and string.find(tostring(texture), "136430", 1, true) then
-                region:SetDesaturated(true)
-                region:SetVertexColor(1, 0.671, 0.349)
+                region:SetDesaturated(not default)
+                if default then
+                    region:SetVertexColor(1, 1, 1)
+                else
+                    region:SetVertexColor(1, 0.671, 0.349)
+                end
             end
         end
     end
@@ -5113,18 +5136,20 @@ function BBF.TintForeverMinimap()
     if db.darkModeUi and db.darkModeMinimap then return end
     if BBF.MinimapBronzeTintActive and BBF.MinimapBronzeTintActive() then return end
     if not Minimap or not MinimapCompassTexture then return end
-    MinimapCompassTexture:SetVertexColor(1, 0.90, 0.75)
+    local default = db.classicMinimap
+    local g, b = default and 1 or 0.90, default and 1 or 0.75
+    MinimapCompassTexture:SetVertexColor(1, g, b)
     if MinimapCompassTextureUnderlay then
-        MinimapCompassTextureUnderlay:SetVertexColor(1, 0.90, 0.75)
+        MinimapCompassTextureUnderlay:SetVertexColor(1, g, b)
     end
     for i = 1, Minimap:GetNumChildren() do
         local child = select(i, Minimap:GetChildren())
         if child and not child:IsForbidden() then
-            TintMinimapRings(child)
+            TintMinimapRings(child, default)
             for j = 1, child:GetNumChildren() do
                 local nestedChild = select(j, child:GetChildren())
                 if nestedChild and not nestedChild:IsForbidden() then
-                    TintMinimapRings(nestedChild)
+                    TintMinimapRings(nestedChild, default)
                 end
             end
         end

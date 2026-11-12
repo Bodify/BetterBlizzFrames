@@ -5838,7 +5838,7 @@ local function guiGeneralTab()
             BBF.DarkmodeFrames(true)
             BBF.UpdateBronzeTint()
         end },
-        { key = "darkModeUiAura", label = L["Auras"], tooltipTitle = L["Tooltip_Dark_Mode_Auras"], tooltip = L["Tooltip_Dark_Mode_Auras_Desc"], onChange = function(value)
+        { key = "darkModeUiAura", label = L["Auras"], tooltipTitle = L["Tooltip_Dark_Mode_Auras"], tooltip = L["Tooltip_Dark_Mode_Auras_Desc"] .. "\n\n|cff808080" .. L["Tooltip_Dark_Mode_Auras_Note"] .. "|r", onChange = function(value)
             BBF.DarkmodeFrames(true)
             BBF.RefreshAllAuraFrames()
         end, tooltipExtra = function()
@@ -11668,6 +11668,19 @@ local function guiFrameLook()
         f.Refresh()
     end
 
+    local changeAltManaBarTexture = CreateCheckbox("changeAltManaBarTexture", L["Change_AltManabar_Texture"], contentFrame)
+    changeAltManaBarTexture:SetPoint("TOPLEFT", changeUnitFrameManabarTexture, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(changeAltManaBarTexture, L["Change_AltManabar_Texture"], L["Tooltip_AltManabar_Texture"] .. rightClickHint)
+    changeAltManaBarTexture:HookScript("OnClick", function(self)
+        BBF.UpdateCustomTextures()
+        ReloadWhenOff(self)
+    end)
+    do
+        local f = AddPopup(changeAltManaBarTexture, "AltManabarTexture", 92)
+        AddTextureRow(f, "altManaBarTexture", function() BBF.UpdateCustomTextures() end, -50)
+        f.Refresh()
+    end
+
     local lastUnitFrameTexture
     do
         local function UpdateNameBg()
@@ -11677,7 +11690,7 @@ local function guiFrameLook()
             BBF.UpdateNameBgAlpha()
         end
         local changeUnitFrameNameBgTexture = CreateCheckbox("changeUnitFrameNameBgTexture", L["Change_Name_Bg_Texture"], contentFrame)
-        changeUnitFrameNameBgTexture:SetPoint("TOPLEFT", changeUnitFrameManabarTexture, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+        changeUnitFrameNameBgTexture:SetPoint("TOPLEFT", changeAltManaBarTexture, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
         CreateTooltipTwo(changeUnitFrameNameBgTexture, L["Change_Name_Bg_Texture"], L["Tooltip_Change_Name_Bg_Texture_Desc"] .. rightClickHint)
         changeUnitFrameNameBgTexture:HookScript("OnClick", function(self)
             UpdateNameBg()
@@ -14129,6 +14142,7 @@ local function guiMisc()
         if self:GetChecked() then
             BBF.ClassicMinimap()
             BBF.DarkmodeFrames()
+            BBF.TintForeverMinimap()
         else
             BBF.ShowPopup("BBF_CONFIRM_RELOAD")
         end

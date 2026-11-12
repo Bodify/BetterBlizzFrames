@@ -2640,7 +2640,8 @@ local function AdjustAlternateBars()
             rightText:Show()
         end
 
-        if BBF.UnitFrameTextureOn("mana") then
+        local altMana = bar == AlternatePowerBar
+        if (altMana and BBF.AltManaTextureOn()) or BBF.UnitFrameTextureOn("mana") then
             if not bar.bbfAltHooked then
                 bar.bbfAltHooked = true
                 local color = PowerBarColor[bar.powerType]
@@ -2674,7 +2675,7 @@ local function AdjustAlternateBars()
                             end
                         end
 
-                        self:SetStatusBarTexture(BBF.manaTexture)
+                        self:SetStatusBarTexture(altMana and BBF.altManaTexture or BBF.manaTexture)
                         self:SetStatusBarColor(r, g, b)
                     end)
                 else
@@ -2692,7 +2693,7 @@ local function AdjustAlternateBars()
                             end
                         end
 
-                        self:SetStatusBarTexture(BBF.manaTexture)
+                        self:SetStatusBarTexture(altMana and BBF.altManaTexture or BBF.manaTexture)
                         self:SetStatusBarColor(r, g, b)
                     end)
                 end

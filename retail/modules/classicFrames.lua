@@ -1721,7 +1721,7 @@ local function AdjustAlternateBars()
     AlternatePowerBar.RightBorder:SetTexCoord(0.125, 0, 1, 0)
     AlternatePowerBar.RightBorder:SetPoint("LEFT", AlternatePowerBar.Border, "RIGHT")
 
-    if BetterBlizzFramesDB.changeUnitFrameManabarTexture then
+    if BBF.AltManaTextureOn() then
         BBF.ApplyTextureChange("mana", AlternatePowerBar, nil, true, false, true)
         if AlternatePowerBar.PowerBarMask then
             AlternatePowerBar.PowerBarMask:Hide()

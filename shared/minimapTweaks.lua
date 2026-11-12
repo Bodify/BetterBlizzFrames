@@ -211,6 +211,7 @@ local function SetMailArtShown(mail, classic)
     end
     mailHolder.icon:SetShown(classic)
     mailHolder.border:SetShown(classic)
+    mailHolder.background:SetShown(classic)
 end
 
 function BBF.UpdateMinimapMail()
@@ -233,6 +234,11 @@ function BBF.UpdateMinimapMail()
         mailHolder.iconMask:SetTexture("Interface\\CharacterFrame\\TempPortraitAlphaMask", "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
         mailHolder.iconMask:SetAllPoints(mailHolder.icon)
         mailHolder.icon:AddMaskTexture(mailHolder.iconMask)
+        mailHolder.background = mail:CreateTexture(nil, "BACKGROUND")
+        mailHolder.background:SetTexture("Interface\\Minimap\\UI-Minimap-Background")
+        mailHolder.background:SetSize(25, 25)
+        mailHolder.background:SetPoint("CENTER", mailHolder.icon, "CENTER")
+        mailHolder.background:SetVertexColor(1, 1, 1, 0.6)
         mailHolder.border = mail:CreateTexture(nil, "OVERLAY")
         mailHolder.border:SetTexture(MAIL_BORDER)
         mailHolder.border:SetSize(MAIL_BORDER_SIZE, MAIL_BORDER_SIZE)
@@ -243,6 +249,8 @@ function BBF.UpdateMinimapMail()
         BBF.minimapMailBorder = mailHolder.border
         if BBF.DarkmodeFrames and BetterBlizzFramesDB.darkModeUi then
             BBF.DarkmodeFrames()
+        elseif BBF.TintForeverMinimap then
+            BBF.TintForeverMinimap()
         end
     end
     if mailHolder.active == active then return end

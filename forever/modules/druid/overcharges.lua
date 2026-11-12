@@ -94,20 +94,17 @@ end
 local function SetAltBarLook(bar, token)
     if bar.powerToken == token then return end
     bar.powerToken = token
-    if BBF.UnitFrameTextureOn("mana") then
-        bar:SetStatusBarTexture(BBF.manaTexture)
-        if token == "MANA" then
-            bar:SetStatusBarColor(0, 0, 1)
-        else
-            local r, g, b = BBF.GetCustomPowerColor(token)
-            if not r then
-                r, g, b = BBF.GetDefaultPowerColor(token)
-            end
-            bar:SetStatusBarColor(r, g, b)
+    local r, g, b, a = BBF.GetCustomPowerColor(token)
+    if BBF.AltManaTextureOn() then
+        bar:SetStatusBarTexture(BBF.altManaTexture)
+        if not r then
+            r, g, b = BBF.GetDefaultPowerColor(token)
         end
+        bar:SetStatusBarColor(r, g, b, a or 1)
     else
         bar:SetStatusBarTexture(altBarPower[token].atlas)
-        bar:SetStatusBarColor(1, 1, 1)
+        bar:SetStatusBarDesaturated(r and true or false)
+        bar:SetStatusBarColor(r or 1, g or 1, b or 1, a or 1)
     end
 end
 
@@ -182,6 +179,11 @@ local function UpdateAltManaBar(cf)
 end
 
 function BBF.UpdateAltManaBar()
+    UpdateAltManaBar(BetterBlizzFramesDB.classicFrames)
+end
+
+function BBF.UpdateAltManaBarLook()
+    PlayerFrame.AltManaBarBBF.powerToken = nil
     UpdateAltManaBar(BetterBlizzFramesDB.classicFrames)
 end
 

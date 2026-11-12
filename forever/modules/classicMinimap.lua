@@ -12,6 +12,7 @@ local title
 
 local TRACKING_SPOT = { x = -75, y = 16 }
 local DIEL_SPOT = { x = 71, y = 35 }
+local MAIL_SPOT = { x = 77.5, y = 16.5 }
 
 local function RimSpot(spot, angleKey)
     local angle = BetterBlizzFramesDB[angleKey]
@@ -36,6 +37,14 @@ local function PlaceDiel()
     local x, y = RimSpot(DIEL_SPOT, "classicMinimapDielAngle")
     diel:ClearAllPoints()
     diel:SetPoint("CENTER", skin, "CENTER", x * scale, y * scale)
+end
+
+local function PlaceMail()
+    local mail = MinimapCluster.IndicatorFrame.MailFrame
+    if not skin then return end
+    local x, y = RimSpot(MAIL_SPOT, "classicMinimapMailAngle")
+    mail:ClearAllPoints()
+    mail:SetPoint("CENTER", skin, "CENTER", x, y)
 end
 
 local function MakeRimDraggable(handle, angleKey, place)
@@ -270,6 +279,19 @@ function BBF.ClassicMinimap()
         icon:SetPoint("TOPLEFT", frame, "TOPLEFT", 7, -6)
         AddTexture(frame, "OVERLAY", 0, TRACKING_BORDER, 52, 52, "TOPLEFT")
     end
+    local mailIcon = indicatorList[1][2]
+    mailIcon:SetTexCoord(0.05, 0.95, 0.05, 0.95)
+    local mailMask = mail:CreateMaskTexture()
+    mailMask:SetTexture("Interface\\CharacterFrame\\TempPortraitAlphaMask", "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
+    mailMask:SetAllPoints(mailIcon)
+    mailIcon:AddMaskTexture(mailMask)
+    local mailBackground = mail:CreateTexture(nil, "BACKGROUND")
+    mailBackground:SetTexture(ART .. "UI-Minimap-Background")
+    mailBackground:SetSize(25, 25)
+    mailBackground:SetPoint("CENTER", mailIcon, "CENTER")
+    mailBackground:SetVertexColor(1, 1, 1, 0.6)
+    PlaceMail()
+    MakeRimDraggable(mail, "classicMinimapMailAngle", PlaceMail)
     MiniMapMailIcon:SetAlpha(0)
     if mail.NewMailFlipbook then mail.NewMailFlipbook:SetTexture(nil) end
     if mail.MailReminderFlipbook then mail.MailReminderFlipbook:SetTexture(nil) end
