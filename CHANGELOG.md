@@ -1,3 +1,14 @@
+# BetterBlizzFrames 2.2.1b
+## All versions
+### New
+- Alt Mana Bar Texture setting in Font & Texture.
+### Bugfix
+- Fix names losing its shadow on font from 2.2.1 patch.
+- Fix custom power colors not working on bbf's alt mana bar for druids.
+## Forever
+### Bugfix
+- Fix classic minimap setting unintentionally having bronze colored minimap button rings.
+
 # BetterBlizzFrames 2.2.1
 ## All versions
 ### New
