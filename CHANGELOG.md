@@ -6,6 +6,8 @@
 - Fix names losing its shadow on font from 2.2.1 patch.
 - Fix custom power colors not working on bbf's alt mana bar for druids.
 ## Forever
+### Tweak
+- Update Perplexity profile (www.twitch.tv/perplexity). Thank you for sharing!
 ### Bugfix
 - Fix classic minimap setting unintentionally having bronze colored minimap button rings.
 
