@@ -13,10 +13,13 @@ locales\locales.xml
 embeds.xml
 
 shared\functions.lua
+shared\fontFallback.lua
 shared\lossOfControl.lua
 shared\races.lua
 shared\timerFormatter.lua
 shared\actionBarTweaks.lua
+shared\buffDurationFont.lua
+shared\interruptRange.lua
 shared\snowfallKeypress.lua
 shared\functions_classics.lua
 shared\functions_mainline.lua
@@ -24,13 +27,17 @@ shared\ImportExport.lua
 shared\minimapTweaks.lua
 shared\smoothBars.lua
 shared\healthbarMirror.lua
+shared\healPredictionColor.lua
 shared\partySecureLayout.lua
 shared\xpBarTexture.lua
 shared\damageMeterTexture.lua
 shared\comboVisibility.lua
 shared\statusBarTextExtra.lua
 shared\hideTooltip.lua
+shared\colorTooltips.lua
+shared\raidFramePixelBorder.lua
 shared\portraitFlip.lua
+shared\skullIcon.lua
 
 forever\modules\retailTextures.lua
 shared\textArea.lua

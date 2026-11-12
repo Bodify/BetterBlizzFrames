@@ -566,6 +566,7 @@ function BBF.SetRetailSmallFlash(flash, art, big, reduced, noMana, atlas)
         flash:SetTexture(RETAIL_TEX .. "ToT-InCombat" .. suffix .. ".png")
         flash:SetTexCoord(0, 1, 0, 1)
         flash.bbfSmallFlashPoint = flash.bbfSmallFlashPoint or { flash:GetPoint(1) }
+        flash.bbfSmallFlashSublevel = flash.bbfSmallFlashSublevel or select(2, flash:GetDrawLayer())
         flash:ClearAllPoints()
         flash:SetPoint("TOPLEFT", art, "TOPLEFT")
         flash:SetSize(120, 49)
@@ -574,8 +575,9 @@ function BBF.SetRetailSmallFlash(flash, art, big, reduced, noMana, atlas)
         flash:SetAtlas(atlas, TextureKitConstants.UseAtlasSize)
         flash:ClearAllPoints()
         flash:SetPoint(unpack(flash.bbfSmallFlashPoint))
-        flash:SetDrawLayer((flash:GetDrawLayer()), 0)
+        flash:SetDrawLayer((flash:GetDrawLayer()), flash.bbfSmallFlashSublevel)
         flash.bbfSmallFlashPoint = nil
+        flash.bbfSmallFlashSublevel = nil
     end
 end
 

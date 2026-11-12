@@ -80,6 +80,16 @@ BBF.popupBuilders["BBF_UPDATE_220"] = function()
 	}
 end
 
+BBF.popupBuilders["BBF_CLASSIC_ORIGINAL_TEXTURES"] = function()
+	return {
+		text = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames\n\n" .. L["Popup_Classic_Original_Textures"]:format(L["Classic_Frames_Ingame_Textures"]),
+		button1 = OKAY,
+		timeout = 0,
+		whileDead = true,
+		preferredIndex = 3,
+	}
+end
+
 BBF.popupBuilders["BB_PRD_AURAS_CLASH"] = function()
 	return {
 		text = BBF.L["Popup_PRD_Auras_Clash"],
@@ -95,7 +105,7 @@ end
 
 function BBF.DarkModeUnitFramesOn()
 	local db = BetterBlizzFramesDB
-	return db.darkModeUi and db.darkModeUnitFrames and not (BBF.ClassicBronzeTintActive and BBF.ClassicBronzeTintActive()) and true or false
+	return db.darkModeUi and db.darkModeUnitFrames and true or false
 end
 
 local classicStyleAddon

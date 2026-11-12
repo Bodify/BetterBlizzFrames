@@ -269,6 +269,7 @@ end
 local moveComboInForm = {
     [1] = true,
     [5] = true,
+    [8] = true,
     -- [31] = true,
     -- [32] = true,
     -- [33] = true,
@@ -374,6 +375,7 @@ local function UpdateAltManaBar(cf)
         SetComboNudge(-9)
     elseif bar:IsShown() then
         C_Timer.After(0.2, function()
+            if moveComboInForm[GetShapeshiftFormID()] then return end
             SetComboNudge(0)
             if not cf and not AlternatePowerBar:IsShown() then
                 PlayerFrame.PlayerFrameContainer.FrameTexture:Show()

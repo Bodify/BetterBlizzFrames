@@ -3136,7 +3136,7 @@ local function CreateSearchFrame()
         local function matchesQuery(label)
             label = string.lower(label)
             for _, queryWord in ipairs(queryWords) do
-                if not string.find(label, queryWord) then
+                if not string.find(label, queryWord, 1, true) then
                     return false
                 end
             end
@@ -3433,6 +3433,23 @@ local function guiProfiles()
     frame.streamerText = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     frame.streamerText:SetPoint("TOP", frame.coreText, "BOTTOM", 0, -30)
     frame.streamerText:SetText(L["Profile_Streamers"])
+    do
+        local file = GameFontNormal:GetFont()
+        frame.coreText:SetFont(file, 15, "OUTLINE")
+        frame.streamerText:SetFont(file, 15, "OUTLINE")
+    end
+    for fontString, tip in pairs({ [frame.coreText] = L["Tooltip_Profile_Core"], [frame.streamerText] = L["Tooltip_Profile_Streamers"] .. "\n\n|cff808080" .. L["Tooltip_Profile_Streamers_Note"] .. "|r" }) do
+        local hover = CreateFrame("Frame", nil, frame)
+        hover:SetAllPoints(fontString)
+        hover:EnableMouse(true)
+        hover:SetScript("OnEnter", function(self)
+            GameTooltip:SetOwner(self, "ANCHOR_TOP")
+            GameTooltip:AddLine(fontString:GetText(), NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b)
+            GameTooltip:AddLine(tip, 1, 1, 1, true)
+            GameTooltip:Show()
+        end)
+        hover:SetScript("OnLeave", GameTooltip_Hide)
+    end
 
     frame.infoText = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     frame.infoText:SetPoint("BOTTOM", frame, "BOTTOM", 2, 50)
@@ -3960,6 +3977,105 @@ function BBF.OpenActionBarRangeWindow(anchor)
 
         KeepPopupInSettings(f, BetterBlizzFrames, "DIALOG")
         BBF.ActionBarRangeWindow = f
+        f:Hide()
+    end
+    f:ClearAllPoints()
+    f:SetPoint("TOPLEFT", anchor or BetterBlizzFrames, "BOTTOMLEFT", 0, -6)
+    f:Show()
+end
+
+function BBF.OpenInterruptRangeWindow(anchor)
+    local f = BBF.InterruptRangeWindow
+    if f and f:IsShown() then
+        f:Hide()
+        return
+    end
+    if not f then
+        f = CreateFrame("Frame", "BBFInterruptRangeWindow", UIParent, "BasicFrameTemplateWithInset")
+        f:SetSize(240, 175)
+        f:SetFrameStrata("FULLSCREEN_DIALOG")
+        f:SetFrameLevel(550)
+        f:SetClampedToScreen(true)
+        f:SetToplevel(true)
+        f:EnableMouse(true)
+        f:SetMovable(true)
+        f:RegisterForDrag("LeftButton")
+        f:SetScript("OnDragStart", f.StartMoving)
+        f:SetScript("OnDragStop", f.StopMovingOrSizing)
+
+        f.title = f:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+        f.title:SetPoint("TOP", f, "TOP", 0, -6)
+        f.title:SetText(L["Interrupt_Range_Color"])
+
+        local function CreateColorSwatch(colorKey, label)
+            local swatch = CreateFrame("Button", nil, f)
+            swatch:SetSize(90, 18)
+            swatch.colorTexture = swatch:CreateTexture(nil, "ARTWORK")
+            swatch.colorTexture:SetSize(14, 14)
+            swatch.colorTexture:SetPoint("LEFT", swatch, "LEFT", 2, 0)
+            local border = swatch:CreateTexture(nil, "BACKGROUND")
+            border:SetPoint("TOPLEFT", swatch.colorTexture, "TOPLEFT", -1, 1)
+            border:SetPoint("BOTTOMRIGHT", swatch.colorTexture, "BOTTOMRIGHT", 1, -1)
+            border:SetColorTexture(0.6, 0.6, 0.6, 1)
+            local text = swatch:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+            text:SetPoint("LEFT", swatch.colorTexture, "RIGHT", 4, 0)
+            text:SetText(label)
+            local function Refresh()
+                swatch.colorTexture:SetColorTexture(unpack(BetterBlizzFramesDB[colorKey]))
+            end
+            swatch:SetScript("OnClick", function()
+                BetterBlizzFramesDB[colorKey] = {unpack(BetterBlizzFramesDB[colorKey])}
+                OpenColorOptions(BetterBlizzFramesDB[colorKey], function()
+                    Refresh()
+                    BBF.RefreshInterruptIconRange()
+                end)
+            end)
+            Refresh()
+            return swatch
+        end
+
+        local own = CreateCheckbox("interruptIconRangeOwnSettings", L["Own_Settings"], f, nil, BBF.RefreshInterruptIconRange)
+        own:SetPoint("TOPLEFT", f, "TOPLEFT", 12, -30)
+        CreateTooltipTwo(own, L["Own_Settings"], L["Tooltip_Interrupt_Range_Own_Desc"])
+
+        local iconColor = CreateColorSwatch("interruptIconRangeIconColor", L["Color"])
+        iconColor:SetPoint("TOPLEFT", own, "BOTTOMLEFT", 6, -2)
+
+        local overlayColor = CreateColorSwatch("interruptIconRangeOverlayColor", L["Color"])
+        overlayColor:SetPoint("TOPLEFT", own, "BOTTOMLEFT", 6, -2)
+
+        local desaturate = CreateCheckbox("interruptIconRangeDesaturate", L["Desaturate_Icon"], f, nil, BBF.RefreshInterruptIconRange)
+        desaturate:SetPoint("TOPLEFT", own, "BOTTOMLEFT", 0, -22)
+        CreateTooltipTwo(desaturate, L["Desaturate_Icon"], L["Tooltip_Range_Desaturate_Desc"], L["Requires_Own_Settings"])
+
+        local useOverlay = CreateCheckbox("interruptIconRangeUseOverlay", L["Use_Color_Overlay"], f, nil, BBF.RefreshInterruptIconRange)
+        useOverlay:SetPoint("TOPLEFT", desaturate, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+        CreateTooltipTwo(useOverlay, L["Use_Color_Overlay"], L["Tooltip_Interrupt_Range_Overlay_Desc"], L["Requires_Own_Settings"])
+
+        local rangeBorder = CreateCheckbox("interruptIconRangeBorder", L["Range_Color_Border"], f, nil, BBF.RefreshInterruptIconRange)
+        rangeBorder:SetPoint("TOPLEFT", useOverlay, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+        CreateTooltipTwo(rangeBorder, L["Range_Color_Border"], L["Tooltip_Range_Color_Border_Desc"])
+
+        local function UpdateState()
+            local db = BetterBlizzFramesDB
+            local overlay = db.interruptIconRangeUseOverlay and true or false
+            overlayColor:SetShown(overlay)
+            iconColor:SetShown(not overlay)
+            local enabled = db.interruptIconRangeOwnSettings and true or false
+            for _, widget in ipairs({ iconColor, overlayColor, desaturate, useOverlay }) do
+                widget:SetAlpha(enabled and 1 or 0.5)
+                if widget.SetMotionScriptsWhileDisabled then
+                    widget:SetMotionScriptsWhileDisabled(true)
+                end
+                widget:SetEnabled(enabled)
+            end
+        end
+        own:HookScript("OnClick", UpdateState)
+        useOverlay:HookScript("OnClick", UpdateState)
+        UpdateState()
+
+        KeepPopupInSettings(f, BetterBlizzFrames, "DIALOG")
+        BBF.InterruptRangeWindow = f
         f:Hide()
     end
     f:ClearAllPoints()
@@ -4941,63 +5057,79 @@ local function guiGeneralTab()
     CreateTooltip(hidePartyFramesInArena, L["Tooltip_Hide_Party_in_Arena_GEX"]) 
     notWorking(hidePartyFramesInArena, true)
 
-    local hidePartyNames = CreateCheckbox("hidePartyNames", L["Hide_Names"], BetterBlizzFrames)
-    hidePartyNames:SetPoint("TOPLEFT", hidePartyFramesInArena, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    hidePartyNames:HookScript("OnClick", function(self)
-        BBF.AllNameChanges()
-    end)
+    local partyHideEntries = {}
+    do
+        local partyHideHolder = CreateFrame("Frame", nil, BetterBlizzFrames)
+        partyHideHolder:Hide()
 
-    local hidePartyAggroHighlight = CreateCheckbox("hidePartyAggroHighlight", L["Hide_Aggro_Highlight"], BetterBlizzFrames, nil, BBF.HideFrames)
-    hidePartyAggroHighlight:SetPoint("LEFT", hidePartyNames.text, "RIGHT", 0, 0)
-    CreateTooltip(hidePartyAggroHighlight, L["Tooltip_Hide_Party_Aggro_Highlight"])
+        local hidePartyNames = CreateCheckbox("hidePartyNames", L["Hide_Names"], partyHideHolder)
+        hidePartyNames:HookScript("OnClick", function(self)
+            BBF.AllNameChanges()
+        end)
 
-    local hidePartyRoles = CreateCheckbox("hidePartyRoles", L["Hide_Role_Icons"], BetterBlizzFrames)
-    hidePartyRoles:SetPoint("TOPLEFT", hidePartyNames, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    hidePartyRoles:HookScript("OnClick", function(self)
-        BBF.UpdateUserTargetSettings()
-        if self:GetChecked() then
-            for i = 1, 5 do
-                local roleIcon = _G["CompactPartyFrameMember"..i.."RoleIcon"]
-                local roleIconRaid = _G["CompactRaidFrame"..i.."RoleIcon"]
-                if roleIcon then
-                    roleIcon:SetAlpha(0)
+        local hidePartyAggroHighlight = CreateCheckbox("hidePartyAggroHighlight", L["Hide_Aggro_Highlight"], partyHideHolder, nil, BBF.HideFrames)
+        CreateTooltip(hidePartyAggroHighlight, L["Tooltip_Hide_Party_Aggro_Highlight"])
+
+        local hidePartyRoles = CreateCheckbox("hidePartyRoles", L["Hide_Role_Icons"], partyHideHolder)
+        hidePartyRoles:HookScript("OnClick", function(self)
+            BBF.UpdateUserTargetSettings()
+            if self:GetChecked() then
+                for i = 1, 5 do
+                    local roleIcon = _G["CompactPartyFrameMember"..i.."RoleIcon"]
+                    local roleIconRaid = _G["CompactRaidFrame"..i.."RoleIcon"]
+                    if roleIcon then
+                        roleIcon:SetAlpha(0)
+                    end
+                    if roleIconRaid then
+                        roleIconRaid:SetAlpha(0)
+                    end
                 end
-                if roleIconRaid then
-                    roleIconRaid:SetAlpha(0)
+            else
+                for i = 1, 5 do
+                    local roleIcon = _G["CompactPartyFrameMember"..i.."RoleIcon"]
+                    local roleIconRaid = _G["CompactRaidFrame"..i.."RoleIcon"]
+                    if roleIcon then
+                        roleIcon:SetAlpha(1)
+                    end
+                    if roleIconRaid then
+                        roleIconRaid:SetAlpha(1)
+                    end
                 end
             end
-        else
-            for i = 1, 5 do
-                local roleIcon = _G["CompactPartyFrameMember"..i.."RoleIcon"]
-                local roleIconRaid = _G["CompactRaidFrame"..i.."RoleIcon"]
-                if roleIcon then
-                    roleIcon:SetAlpha(1)
-                end
-                if roleIconRaid then
-                    roleIconRaid:SetAlpha(1)
+        end)
+        CreateTooltip(hidePartyRoles, L["Tooltip_Hide_Role_Icons_Desc"])
+
+        local hidePartyFrameTitle = CreateCheckbox("hidePartyFrameTitle", L["Hide_CompactPartyFrame_Title"], partyHideHolder, nil, BBF.HideFrames)
+        CreateTooltip(hidePartyFrameTitle, L["Tooltip_Hide_CompactPartyFrame_Title"])
+
+        local hideRaidFrameManager = CreateCheckbox("hideRaidFrameManager", L["Hide_RaidFrameManager"], partyHideHolder, nil, BBF.HideFrames)
+        CreateTooltip(hideRaidFrameManager, L["Tooltip_Hide_RaidFrameManager"])
+
+        local hideRaidFrameContainerBorder = CreateCheckbox("hideRaidFrameContainerBorder", L["Hide_Container_Border"], partyHideHolder, nil, BBF.HideFrames)
+        CreateTooltipTwo(hideRaidFrameContainerBorder, L["Hide_CompactRaidFrame_Container_Border"], L["Tooltip_Hide_Container_Border_Desc"])
+
+        for _, box in ipairs({ hidePartyNames, hidePartyRoles, hidePartyAggroHighlight, hidePartyFrameTitle, hideRaidFrameContainerBorder, hideRaidFrameManager }) do
+            for i = #checkBoxList, 1, -1 do
+                if checkBoxList[i].checkbox == box then
+                    table.remove(checkBoxList, i)
                 end
             end
+            local label = box.Text:GetText()
+            local tooltip = box.tooltipMainText or box.tooltipTitle
+            table.insert(partyHideEntries, { key = box.dbKey, checkbox = box, label = label, tooltipTitle = box.tooltipMainText and box.tooltipTitle or label, tooltip = tooltip })
         end
-    end)
-    CreateTooltip(hidePartyRoles, L["Tooltip_Hide_Role_Icons_Desc"])
+    end
 
-    local hidePartyFrameTitle = CreateCheckbox("hidePartyFrameTitle", L["Hide_CompactPartyFrame_Title"], BetterBlizzFrames, nil, BBF.HideFrames)
-    hidePartyFrameTitle:SetPoint("TOPLEFT", hidePartyRoles, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltip(hidePartyFrameTitle, L["Tooltip_Hide_CompactPartyFrame_Title"])
-
-    local hideRaidFrameManager = CreateCheckbox("hideRaidFrameManager", L["Hide_RaidFrameManager"], BetterBlizzFrames, nil, BBF.HideFrames)
-    hideRaidFrameManager:SetPoint("TOPLEFT", hidePartyFrameTitle, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltip(hideRaidFrameManager, L["Tooltip_Hide_RaidFrameManager"])
-
-    local hideRaidFrameContainerBorder = CreateCheckbox("hideRaidFrameContainerBorder", L["Hide_Container_Border"], BetterBlizzFrames, nil, BBF.HideFrames)
-    hideRaidFrameContainerBorder:SetPoint("TOPLEFT", hideRaidFrameManager, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltipTwo(hideRaidFrameContainerBorder, L["Hide_CompactRaidFrame_Container_Border"], L["Tooltip_Hide_Container_Border_Desc"])
+    local partyHideOptions = CreateMultiSelectDropdown(L["Hide_Options"], BetterBlizzFrames, partyHideEntries, 150)
+    partyHideOptions:SetScale(0.7)
+    partyHideOptions:SetPoint("TOPLEFT", hidePartyFramesInArena, "BOTTOMLEFT", 6 / 0.7, 0)
+    CreateTooltipTwo(partyHideOptions, L["Hide_Options"])
 
     if BBF.isMoP or BBF.isTBC or BBF.isEra then
         local changePartyFrameRangeAlpha = CreateCheckbox("changePartyFrameRangeAlpha", "", BetterBlizzFrames)
 
         local partyFrameRangeAlpha = CreateSlider(changePartyFrameRangeAlpha, L["Party_Frame_Range_Alpha"], 0, 1, 0.01, "partyFrameRangeAlpha", nil, 120)
-        partyFrameRangeAlpha:SetPoint("TOP", hideRaidFrameContainerBorder, "BOTTOM", 73, -10)
+        partyFrameRangeAlpha:SetPoint("TOPLEFT", hidePartyFramesInArena, "BOTTOMLEFT", 23, -30)
         CreateTooltipTwo(changePartyFrameRangeAlpha, L["Party_Frame_Range_Alpha"], L["Tooltip_Party_Frame_Range_Alpha"])
 
         changePartyFrameRangeAlpha:SetPoint("RIGHT", partyFrameRangeAlpha, "LEFT", 0, 0)
@@ -5841,6 +5973,8 @@ local function guiGeneralTab()
     local starterButton = CreateClassButton(BetterBlizzFrames, "STARTER", L["Starter"], nil, function()
         ShowProfileConfirmation(L["Starter"], "STARTER", BBF.StarterProfile, "|cff808080"..L["Profile_Reset_Hint"].."|r\n\n")
     end)
+    starterButton:SetScale(0.95)
+    starterButton:SetWidth(125)
     starterButton:SetPoint("TOP", profilesFrame.coreText, "BOTTOM", 0, -3)
     table.insert(profileButtons, starterButton)
 
@@ -7283,7 +7417,7 @@ local function guiPositionAndScale()
     ----------------------
     local anchorSubracialIndicator = contentFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     anchorSubracialIndicator:SetPoint("CENTER", mainGuiAnchor2, "CENTER", secondLineX, firstLineY)
-    anchorSubracialIndicator:SetText(L["Label_Pvp_Racial_Indicator"])
+    anchorSubracialIndicator:SetText(L["Racial_Indicator"])
 
     --CreateBorderBox(anchorSubracialIndicator)
     CreateBorderedFrame(anchorSubracialIndicator, 165, 293, 0, -98, contentFrame)
@@ -7320,6 +7454,13 @@ local function guiPositionAndScale()
         BBF.RacialIndicatorCaller()
     end)
     CreateTooltip(focusRacialIndicator, L["Tooltip_Show_On_FocusFrame"])
+
+    local racialIndicatorNpcs = CreateCheckbox("racialIndicatorNpcs", L["NPCs"], contentFrame)
+    racialIndicatorNpcs:SetPoint("TOPLEFT", targetRacialIndicator, "BOTTOMLEFT", 12, pixelsBetweenBoxes)
+    racialIndicatorNpcs:HookScript("OnClick", function(self)
+        BBF.RacialIndicatorCaller()
+    end)
+    CreateTooltip(racialIndicatorNpcs, L["Tooltip_Racial_Indicator_Npcs"])
 
    ----------------------
     -- Castbar Interrupt Icon
@@ -7372,6 +7513,15 @@ local function guiPositionAndScale()
     local interruptIconBorder = CreateCheckbox("interruptIconBorder", L["Border_Status_Color"], contentFrame, nil, BBF.UpdateInterruptIconSettings)
     interruptIconBorder:SetPoint("TOPLEFT", castBarInterruptIconShowActiveOnly, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(interruptIconBorder, L["Border_Status_Color"], L["Tooltip_Interrupt_Icon_Border_Desc"])
+
+    local interruptIconRangeColor = CreateCheckbox("interruptIconRangeColor", L["Interrupt_Range_Color"], contentFrame, nil, BBF.RefreshInterruptIconRange)
+    interruptIconRangeColor:SetPoint("TOPLEFT", interruptIconBorder, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(interruptIconRangeColor, L["Interrupt_Range_Color"], L["Tooltip_Interrupt_Range_Color_Desc"] .. "\n\n|cff32f795" .. L["Right_Click_More_Settings"] .. "|r")
+    interruptIconRangeColor:HookScript("OnMouseDown", function(self, button)
+        if button == "RightButton" then
+            BBF.OpenInterruptRangeWindow(self)
+        end
+    end)
 
 
 
@@ -7766,6 +7916,7 @@ local function guiFrameLook()
         AddTextureDropdown(f, "xpBarTexture", function() BBF.XpBarTexture() end, -26)
         f.Refresh()
     end
+
 
     ----------------------
     -- Custom Media
@@ -8757,7 +8908,7 @@ local function guiMisc()
 
     local contentFrame = CreateFrame("Frame", nil, scrollFrame)
     contentFrame.name = guiMisc.name
-    contentFrame:SetSize(680, 800)
+    contentFrame:SetSize(680, 825)
     scrollFrame:SetScrollChild(contentFrame)
 
     local function CreateSectionHeader(text, atlas, iconWidth, iconHeight, relativeTo, relativePoint, x, y)
@@ -8826,10 +8977,130 @@ local function guiMisc()
         end
     end)
 
+    local changeHealPredictionColor = CreateCheckbox("changeHealPredictionColor", L["Heal_Prediction_Color"], contentFrame)
+    changeHealPredictionColor:SetPoint("TOPLEFT", smoothBars, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(changeHealPredictionColor, L["Heal_Prediction_Color"], L["Tooltip_Heal_Prediction_Color_Desc"])
+
+    local function OpenHealPredictionColorPicker()
+        local db = BetterBlizzFramesDB
+        local c = db.healPredictionColor or BBF.defaultSettings.healPredictionColor
+        local r, g, b, a = c[1], c[2], c[3], c[4] or 1
+        local function apply()
+            db.healPredictionColor = {r, g, b, a}
+            BBF.HealPredictionColor()
+        end
+        ColorPickerFrame:SetupColorPickerAndShow({
+            r = r, g = g, b = b, opacity = a,
+            hasOpacity = true,
+            swatchFunc = function()
+                r, g, b = ColorPickerFrame:GetColorRGB()
+                a = ColorPickerFrame:GetColorAlpha()
+                apply()
+            end,
+            opacityFunc = function()
+                a = ColorPickerFrame:GetColorAlpha()
+                apply()
+            end,
+            cancelFunc = function(previous)
+                if previous then
+                    r, g, b, a = previous.r, previous.g, previous.b, previous.a or 1
+                    apply()
+                end
+            end,
+        })
+    end
+
+    local healPredictionColorOptions = CreateMultiSelectDropdown(L["Heal_Prediction_Color_Options"], contentFrame, {
+        { key = "healPredictionColorUnitFrames", label = L["Unit_Frames"], tooltip = L["Tooltip_Heal_Prediction_Unit_Frames_Desc"] },
+        { key = "healPredictionColorRaidFrames", label = L["Raid_Frames"], tooltip = L["Tooltip_Heal_Prediction_Raid_Frames_Desc"] },
+    }, 150, function(key, value)
+        if value then
+            BBF.HealPredictionColor()
+        else
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
+        end
+    end, function(rootDescription)
+        local c = BetterBlizzFramesDB.healPredictionColor or BBF.defaultSettings.healPredictionColor
+        rootDescription:CreateColorSwatch(L["Color"], OpenHealPredictionColorPicker, { r = c[1], g = c[2], b = c[3] })
+        rootDescription:CreateDivider()
+    end)
+    healPredictionColorOptions:SetPoint("LEFT", changeHealPredictionColor.Text, "RIGHT", 5, 0)
+    healPredictionColorOptions:SetScale(0.7)
+    healPredictionColorOptions:SetShown(BetterBlizzFramesDB.changeHealPredictionColor)
+    healPredictionColorOptions.searchParentKey = "changeHealPredictionColor"
+    CreateTooltipTwo(healPredictionColorOptions, L["Heal_Prediction_Color_Options"], L["Tooltip_Heal_Prediction_Color_Options_Desc"])
+
+    changeHealPredictionColor:HookScript("OnClick", function(self)
+        if self:GetChecked() then
+            healPredictionColorOptions:Show()
+            BBF.HealPredictionColor()
+        else
+            healPredictionColorOptions:Hide()
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
+        end
+    end)
+
+    local questXpBar = CreateCheckbox("questXpBar", L["Quest_XP_Bar"], contentFrame, nil, BBF.QuestXpBar)
+    questXpBar:SetPoint("TOPLEFT", changeHealPredictionColor, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(questXpBar, L["Quest_XP_Bar"], L["Tooltip_Quest_XP_Bar_Desc"] .. "\n\n|cff32f795" .. L["Right_Click_More_Settings"] .. "|r")
+    do
+        local f = CreateSettingsPopup("BBFQuestXpBarWindow", L["Quest_XP_Bar"], 260, 150)
+        local resetText = L["Select_Texture"]
+        local texture = CreateTextureDropdown("questXpBarTexture", f, L["Select_Texture"], "questXpBarTexture", function() BBF.QuestXpBar() end,
+            { anchorFrame = f, x = 52, y = -26, label = L["Texture"] })
+        local color = CreateColorBox(f, "questXpBarColor", L["Color"], BBF.QuestXpBar)
+        color:SetPoint("TOPLEFT", f, "TOPLEFT", 16, -88)
+        local defaultButton = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+        defaultButton:SetSize(80, 22)
+        defaultButton:SetPoint("BOTTOM", f, "BOTTOM", 0, 14)
+        defaultButton:SetText(L["Default"])
+        defaultButton:SetScript("OnClick", function()
+            local db = BetterBlizzFramesDB
+            db.questXpBarTexture = nil
+            db.questXpBarColor = {unpack(BBF.defaultSettings.questXpBarColor)}
+            texture:SetDefaultText(resetText)
+            color.colorTexture:SetColorTexture(unpack(db.questXpBarColor))
+            BBF.QuestXpBar()
+        end)
+        questXpBar:HookScript("OnMouseDown", function(self, button)
+            if button == "RightButton" and self:IsEnabled() then
+                ShowSettingsPopup(f, self)
+            end
+        end)
+    end
+
+    local colorTooltips = CreateCheckbox("colorTooltips", L["Color_Tooltips"], contentFrame, nil, BBF.ColorTooltips)
+    colorTooltips:SetPoint("TOPLEFT", questXpBar, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(colorTooltips, L["Color_Tooltips"], L["Tooltip_Color_Tooltips_Desc"])
+
+    local colorTooltipsOptions = CreateMultiSelectDropdown(L["Color_Tooltips_Options"], contentFrame, {
+        { key = "colorTooltipsClass", label = L["Color_Tooltips_Class"] },
+        { key = "colorTooltipsNpc", label = L["Color_Tooltips_Npc"] },
+        { key = "colorTooltipsLevel", label = L["Color_Tooltips_Level"] },
+        { key = "colorTooltipsFaction", label = L["Color_Tooltips_Faction"] },
+        { key = "colorTooltipsHideFaction", label = L["Color_Tooltips_Hide_Faction"] },
+        { key = "colorTooltipsHideHealthbar", label = L["Color_Tooltips_Hide_Healthbar"], tooltip = L["Tooltip_Color_Tooltips_Hide_Healthbar"] },
+        { key = "colorTooltipsClassHealthbar", label = L["Color_Tooltips_Class_Healthbar"], tooltip = L["Tooltip_Color_Tooltips_Class_Healthbar"] },
+        { key = "colorTooltipsHideClass", label = L["Color_Tooltips_Hide_Class"] },
+    }, 150, BBF.ColorTooltips)
+    colorTooltipsOptions.searchParentKey = "colorTooltips"
+    colorTooltipsOptions.searchExtraTerms = { L["Color_Tooltips"] }
+    colorTooltipsOptions:SetPoint("LEFT", colorTooltips.text, "RIGHT", 5, 0)
+    colorTooltipsOptions:SetScale(0.7)
+    CreateTooltipTwo(colorTooltipsOptions, L["Color_Tooltips_Options"], L["Tooltip_Color_Tooltips_Desc"])
+
+    local function UpdateColorTooltipsOptionsState()
+        local enabled = colorTooltips:GetChecked() and true or false
+        colorTooltipsOptions:SetEnabled(enabled)
+        colorTooltipsOptions:SetAlpha(enabled and 1 or 0.5)
+    end
+    colorTooltips:HookScript("OnClick", UpdateColorTooltipsOptionsState)
+    UpdateColorTooltipsOptionsState()
+
     ----------------------
     -- GUI:
     ----------------------
-    local guiText = CreateSectionHeader(L["GUI"], "gmchat-icon-blizz", 20, 20, smoothBars, "BOTTOMLEFT", 24, -16)
+    local guiText = CreateSectionHeader(L["GUI"], "gmchat-icon-blizz", 20, 20, colorTooltips, "BOTTOMLEFT", 24, -16)
 
     local forceEnglishGUI = CreateCheckbox("forceEnglishGUI", L["Force_English_GUI"], contentFrame)
     forceEnglishGUI:SetPoint("TOPLEFT", guiText, "BOTTOMLEFT", -24, pixelsOnFirstBox)

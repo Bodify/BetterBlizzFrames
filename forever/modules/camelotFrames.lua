@@ -19,7 +19,7 @@ local function BindLevelRing(levelText, ring, highLevelTexture)
             ring:Hide()
         else
             ring:Show()
-            ring:SetAlpha(levelText:GetAlpha())
+            ring:SetAlpha(levelText.bbfUnderAttackIcon and 1 or levelText:GetAlpha())
         end
         ring.bbfRefreshing = false
     end
@@ -191,8 +191,14 @@ local function RetailBronzeTintActive()
     return not db.classicFrames and BBF.RetailTexturesOn and BBF.RetailTexturesOn() and true or false
 end
 
+local function DarkModeUnitFramesSet()
+    local db = BetterBlizzFramesDB
+    return db.darkModeUi and db.darkModeUnitFrames
+end
+
 local function BronzeTintActive()
     local db = BetterBlizzFramesDB
+    if DarkModeUnitFramesSet() then return false end
     return (db.classicFrames or RetailBronzeTintActive()) and db.classicFramesBronzeTint and db.classicFramesBronzeTintUnitFrames and not db.classColorFrameTexture and not db.darkerBronzeUnitFrames
 end
 
@@ -200,6 +206,7 @@ BBF.ClassicBronzeTintActive = BronzeTintActive
 
 local function NoPortraitBronzeTintActive()
     local db = BetterBlizzFramesDB
+    if DarkModeUnitFramesSet() then return false end
     return not db.classicFrames and db.noPortraitModes and db.classicFramesBronzeTint and db.classicFramesBronzeTintUnitFrames and not db.classColorFrameTexture and not db.darkerBronzeUnitFrames
 end
 
@@ -225,16 +232,35 @@ end
 
 BBF.BronzeEliteDragonColor = BronzeDragonColor
 
+local function DefaultBronzeFramesActive()
+    local db = BetterBlizzFramesDB
+    if db.classicFrames or db.classColorFrameTexture or BBF.ClassicStyleAddon() then return false end
+    if db.darkModeUi and db.darkModeUnitFrames then return false end
+    if BBF.RetailTexturesOn and BBF.RetailTexturesOn() then return false end
+    if BBF.NoPortraitOnUnitFrames and BBF.NoPortraitOnUnitFrames() then return false end
+    return true
+end
+
+local function UnitFramesBronze()
+    if BronzeTintActive() or NoPortraitBronzeTintActive() then return true end
+    if BBF.DarkerBronzeActive and BBF.DarkerBronzeActive() then return true end
+    return DefaultBronzeFramesActive()
+end
+
 local function CastbarBronzeTintActive()
     local db = BetterBlizzFramesDB
-    return db.classicFramesBronzeTint and db.classicFramesBronzeTintCastbars and not db.classColorFrameTexture
+    if db.darkModeUi and db.darkModeCastbars then return false end
+    if db.classicFramesBronzeTint and db.classicFramesBronzeTintCastbars and not db.classColorFrameTexture then
+        return true
+    end
+    return UnitFramesBronze()
 end
 
 BBF.CastbarBronzeTintActive = CastbarBronzeTintActive
 
 local function MinimapBronzeTintActive()
     local db = BetterBlizzFramesDB
-    return db.classicMinimap and db.classicFramesBronzeTint and db.classicFramesBronzeTintMinimap
+    return db.classicMinimap and db.classicFramesBronzeTint and db.classicFramesBronzeTintMinimap and not (db.darkModeUi and db.darkModeMinimap)
 end
 
 BBF.MinimapBronzeTintActive = MinimapBronzeTintActive
@@ -492,6 +518,23 @@ local function GetPvpCircles()
     }
 end
 
+function BBF.GetPvpCircleColor()
+    if BBF.DarkModeUnitFramesOn() then
+        local v = BetterBlizzFramesDB.darkModeColor
+        return v, v, v, true
+    end
+    if BetterBlizzFramesDB.classicFrames then
+        if BronzeTintActive() then
+            return BRONZE_R, BRONZE_G, BRONZE_B, true
+        end
+        return PVP_CIRCLE_R, PVP_CIRCLE_G, PVP_CIRCLE_B, true
+    end
+    if BBF.DarkerBronzeActive and BBF.DarkerBronzeActive() then
+        return BBF.DARKER_BRONZE_R, BBF.DARKER_BRONZE_G, BBF.DARKER_BRONZE_B, false
+    end
+    return 1, 1, 1, false
+end
+
 function BBF.UpdateClassicPvpCircles()
     if not BetterBlizzFramesDB.classicFrames then return end
     local r, g, b = PVP_CIRCLE_R, PVP_CIRCLE_G, PVP_CIRCLE_B
@@ -713,7 +756,7 @@ function BBF.SetClassicHDLevelRing(frame, enabled)
         local function Refresh()
             local hasLevelDisplay = levelText:IsShown() or (highLevelTexture and highLevelTexture:IsShown())
             circle:SetShown(circle.bbfEnabled and hasLevelDisplay and levelText:GetParent() ~= BBF.hiddenFrame)
-            circle:SetAlpha(levelText:GetAlpha())
+            circle:SetAlpha(levelText.bbfUnderAttackIcon and 1 or levelText:GetAlpha())
         end
         circle.Refresh = Refresh
         for _, method in ipairs({ "SetParent", "SetAlpha", "Show", "Hide", "SetShown" }) do
@@ -737,7 +780,7 @@ function BBF.SetClassicHDLevelRing(frame, enabled)
             BBF.SetClassicLevelRing(levelText, circle, frame == PlayerFrame and 0 or -0.5, 0.5)
         else
             circle:SetAtlas("hud-PlayerFrame-levelring")
-            circle:SetSize(36, 32)
+            circle:SetSize(32, 32)
             BBF.SetClassicLevelRing(levelText, circle, -1, -1.5)
         end
     end
@@ -778,6 +821,7 @@ function BBF.UpdateBronzeTint()
         BBF.UpdateComboPointTint()
     end
     BBF.UpdateThreatBorderTint()
+    BBF.RacialIndicatorCaller()
     if BronzeTintActive() then
         for _, texture in pairs(GetUnitFrameBorderTextures()) do
             BronzeTexture(texture)
@@ -1066,6 +1110,7 @@ function BBF.UpdatePvpIconPosition()
     end
 end
 
+
 local playerManaHeightHooked, playerManaHeightFrame
 
 local function ApplyPlayerManaHeight()
@@ -1104,6 +1149,53 @@ function BBF.UpdatePlayerManaHeight()
     ApplyPlayerManaHeight()
 end
 
+local partyStatusHooked = {}
+local partyStatusInit
+
+local function NudgePartyStatus(status)
+    if status.bbfNudging or InCombatLockdown() then return end
+    local point, rel, relPoint, x, y = status:GetPoint(1)
+    if point ~= "TOPLEFT" or not x or x >= 0 or x < -2 then return end
+    status.bbfNudging = true
+    status:SetPoint(point, rel, relPoint, 1, y)
+    status.bbfNudging = nil
+end
+
+local function NudgePartyFlash(flash)
+    if flash.bbfNudging or InCombatLockdown() then return end
+    local point, rel, relPoint, x, y = flash:GetPoint(1)
+    if point ~= "TOPLEFT" or rel ~= flash:GetParent() or not y or y >= 2 or y == -2 then return end
+    flash.bbfNudging = true
+    flash:SetPoint(point, rel, relPoint, x, -2)
+    flash.bbfNudging = nil
+end
+
+local function HookPartyStatus()
+    for i = 1, MAX_PARTY_MEMBERS do
+        local frame = PartyFrame["MemberFrame" .. i]
+        if frame and not partyStatusHooked[frame] then
+            partyStatusHooked[frame] = true
+            local status = frame.PartyMemberOverlay.Status
+            hooksecurefunc(status, "SetPoint", NudgePartyStatus)
+            NudgePartyStatus(status)
+            local flash = frame.Flash
+            local layer, sublevel = flash:GetDrawLayer()
+            if layer == "ARTWORK" and sublevel < 1 then
+                flash:SetDrawLayer("ARTWORK", 1)
+            end
+            hooksecurefunc(flash, "SetPoint", NudgePartyFlash)
+            NudgePartyFlash(flash)
+        end
+    end
+end
+
+function BBF.UpdatePartyStatusPosition()
+    if BBF.ClassicStyleAddon() or partyStatusInit then return end
+    partyStatusInit = true
+    hooksecurefunc(PartyFrame, "InitializePartyMemberFrames", HookPartyStatus)
+    HookPartyStatus()
+end
+
 local NAME_BG_DEFAULT_ATLAS = "UI-HUD-UnitFrame-Target-PortraitOn-Type"
 local NAME_BG_HEALTH_ATLAS = "UI-HUD-UnitFrame-Target-PortraitOn-Bar-Health"
 local NAME_BG_CLASSIC_TEXTURE = "Interface\\TargetingFrame\\UI-TargetingFrame-LevelBackground"
@@ -1114,8 +1206,7 @@ local function NameBgMode(unit)
     local db = BetterBlizzFramesDB
     if db.classicFrames or BBF.HasNoPortrait(unit) or (BBF.RetailTexturesOn and BBF.RetailTexturesOn(unit)) then return end
     if db[unit == "target" and "hideTargetReputationColor" or "hideFocusReputationColor"] then return end
-    if db[unit .. "NameBgClassic"] then return "classic" end
-    if db[unit .. "NameBgRetail"] then return "retail" end
+    return BBF.NameBgStyle(unit)
 end
 
 local function NameBgClassColored(unit)
@@ -1145,22 +1236,25 @@ local function ApplyNameBg(frame, unit)
     local rep, name = main.ReputationColor, main.Name
     local mode = NameBgMode(unit)
     local retail = (BBF.RetailTexturesOn and BBF.RetailTexturesOn(unit)) and true or false
-    if rep.bbfNameBgApplied and mode == rep.bbfNameBgMode and retail == rep.bbfNameBgRetail then return end
+    local texture = mode == "custom" and BBF.NameBgCustomTexture() or nil
+    BBF.ApplyNameBgAlpha(rep, unit)
+    if rep.bbfNameBgApplied and mode == rep.bbfNameBgMode and retail == rep.bbfNameBgRetail and texture == rep.bbfNameBgTexture then return end
     rep.bbfNameBgApplied = true
     rep.bbfNameBgMode = mode
     rep.bbfNameBgRetail = retail
+    rep.bbfNameBgTexture = texture
     if mode then
         rep:SetSize(125, mode == "retail" and 21.5 or 21)
         rep:ClearAllPoints()
         rep:SetPoint("TOPLEFT", frame, "TOPLEFT", 21, -23.5)
-        if mode == "classic" then
-            rep:SetTexture(NAME_BG_CLASSIC_TEXTURE)
-            rep:SetTexCoord(0, 1, 0, 1)
-        else
+        if mode == "retail" then
             rep:SetAtlas(NAME_BG_HEALTH_ATLAS)
+        else
+            rep:SetTexture(texture or NAME_BG_CLASSIC_TEXTURE)
+            rep:SetTexCoord(0, 1, 0, 1)
         end
         rep:SetDesaturated(mode == "retail" or NameBgClassColored(unit))
-        SetNameBgMask(rep, main, mode == "classic")
+        SetNameBgMask(rep, main, mode ~= "retail")
         name:ClearAllPoints()
         name:SetPoint("TOPLEFT", rep, "TOPRIGHT", -126 + NAME_BG_NAME_SHIFT_X, -4 + NAME_BG_NAME_SHIFT_Y)
         frame.bbfNameBgShiftX, frame.bbfNameBgShiftY = NAME_BG_NAME_SHIFT_X, NAME_BG_NAME_SHIFT_Y
@@ -1260,7 +1354,7 @@ function BBF.UpdateTargetHealthMask(frame)
         manaBar:SetPoint("TOPRIGHT", main.HealthBarsContainer, "BOTTOMRIGHT", 4, -1)
     end
     local manaMask = manaBar.ManaBarMask
-    manaMask:SetWidth(259)
+    manaMask:SetSize(259, 17)
     manaMask:ClearAllPoints()
     manaMask:SetPoint("TOPLEFT", manaBar, "TOPLEFT", -62, 3)
     if UnitExists(unit) and UnitClassification(unit) == "minus" then return end
@@ -1377,6 +1471,12 @@ function BBF.UpdateDefaultPetBars()
     PetFrameManaBarMask:SetPoint("TOPLEFT", PetFrameManaBar, "TOPLEFT", health[5], 4)
 end
 
+function BBF.NameBorderRemovedFor(key)
+    local db = BetterBlizzFramesDB
+    if db.classicFrames or db.noPortraitModes or db.noPortraitPixelBorder then return false end
+    return db.removeNameBorder and db["removeNameBorder" .. key] and not (BBF.RetailTexturesOn and BBF.RetailTexturesOn()) and true or false
+end
+
 function BBF.UpdateNameBorder()
     BBF.UpdateBigPlayerHealthbar()
     BBF.UpdateTargetPlayerArt(TargetFrame)
@@ -1400,6 +1500,7 @@ function BBF.ForeverTweaks()
         BBF.UpdateTotFrameTexture()
     end
     BBF.UpdatePlayerManaHeight()
+    BBF.UpdatePartyStatusPosition()
     RoundFrameArt()
     BBF.UpdatePvpIconPosition()
     BBF.UpdateSmallerLevelCircle()

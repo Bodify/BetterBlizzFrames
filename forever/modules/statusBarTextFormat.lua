@@ -1,5 +1,5 @@
 local function FormatText(value)
-    return tostring(AbbreviateNumbers(value))
+    return tostring(BBF.AbbreviateValue(value))
 end
 
 local function UpdateFormatFunction()
@@ -10,7 +10,7 @@ local function UpdateFormatFunction()
         return
     end
     FormatText = function(value)
-        return (AbbreviateNumbers(value))
+        return (BBF.AbbreviateValue(value))
     end
 end
 

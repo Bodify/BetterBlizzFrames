@@ -1,6 +1,7 @@
 local moveComboInForm = {
     [1] = true,
     [5] = true,
+    [8] = true,
     -- [31] = true,
     -- [32] = true,
     -- [33] = true,
@@ -70,31 +71,73 @@ local function SetComboNudge(y)
     ApplyComboNudge()
 end
 
+local altBarPower = {
+    MANA = { type = Enum.PowerType.Mana, atlas = "UI-HUD-UnitFrame-Player-PortraitOn-Bar-Mana" },
+    ENERGY = { type = Enum.PowerType.Energy, atlas = "UI-HUD-UnitFrame-Player-PortraitOn-Bar-Energy" },
+}
+local energyShowUntil = 0
+
+local function AltBarToken()
+    local db = BetterBlizzFramesDB
+    local form = GetShapeshiftFormID()
+    if moveComboInForm[form] then
+        if db.createAltManaBarDruid and not db.createAltManaBarDruidManaOnly then
+            return "MANA"
+        end
+    elseif not form and db.createAltEnergyBarDruid then
+        if db.createAltEnergyBarDruidAlways or GetTime() < energyShowUntil then
+            return "ENERGY"
+        end
+    end
+end
+
+local function SetAltBarLook(bar, token)
+    if bar.powerToken == token then return end
+    bar.powerToken = token
+    if BBF.UnitFrameTextureOn("mana") then
+        bar:SetStatusBarTexture(BBF.manaTexture)
+        if token == "MANA" then
+            bar:SetStatusBarColor(0, 0, 1)
+        else
+            local r, g, b = BBF.GetCustomPowerColor(token)
+            if not r then
+                r, g, b = BBF.GetDefaultPowerColor(token)
+            end
+            bar:SetStatusBarColor(r, g, b)
+        end
+    else
+        bar:SetStatusBarTexture(altBarPower[token].atlas)
+        bar:SetStatusBarColor(1, 1, 1)
+    end
+end
+
 local function UpdateAltManaBar(cf)
     local bar = PlayerFrame.AltManaBarBBF
     if not bar then return end
 
-    local form = GetShapeshiftFormID()
-    local inNoManaForm = moveComboInForm[form]
-    if inNoManaForm then
-        local percent = UnitPowerPercent("player", Enum.PowerType.Mana, false, CurveConstants.ScaleTo100) or 0
-        local percentMana = string.format("%.0f%%", percent)
+    local token = AltBarToken()
+    if token then
+        local powerType = altBarPower[token].type
+        SetAltBarLook(bar, token)
+        local power = UnitPower("player", powerType)
+        local percent = UnitPowerPercent("player", powerType, false, CurveConstants.ScaleTo100) or 0
+        local percentText = string.format("%.0f%%", percent)
 
-        bar:SetMinMaxValues(0, UnitPowerMax("player", Enum.PowerType.Mana))
-        bar:SetValue(UnitPower("player", Enum.PowerType.Mana))
+        bar:SetMinMaxValues(0, UnitPowerMax("player", powerType))
+        bar:SetValue(power)
 
         local display = GetCVar("statusTextDisplay")
 
         if display == "NONE" then
             bar.TextString:SetText("")
         elseif display == "NUMERIC" then
-            bar.TextString:SetText(AbbreviateNumbers(UnitPower("player", Enum.PowerType.Mana)))
+            bar.TextString:SetText(AbbreviateNumbers(power))
         elseif display == "PERCENT" then
-            bar.TextString:SetText(percentMana)
+            bar.TextString:SetText(percentText)
         elseif display == "BOTH" and bar.LeftText and bar.RightText then
             bar.TextString:SetText("")
-            bar.LeftText:SetText(percentMana)
-            bar.RightText:SetText(AbbreviateNumbers(UnitPower("player", Enum.PowerType.Mana)))
+            bar.LeftText:SetText(percentText)
+            bar.RightText:SetText(AbbreviateNumbers(power))
         end
 
         bar:Show()
@@ -112,6 +155,7 @@ local function UpdateAltManaBar(cf)
         SetComboNudge(-9)
     elseif bar:IsShown() then
         C_Timer.After(0.2, function()
+            if AltBarToken() then return end
             SetComboNudge(0)
             if not cf and not AlternatePowerBar:IsShown() then
                 PlayerFrame.PlayerFrameContainer.FrameTexture:Show()
@@ -135,6 +179,10 @@ local function UpdateAltManaBar(cf)
             bar:Hide()
         end)
     end
+end
+
+function BBF.UpdateAltManaBar()
+    UpdateAltManaBar(BetterBlizzFramesDB.classicFrames)
 end
 
 
@@ -478,17 +526,19 @@ local function CreateManaOnlyBar(isActive, extraEvent)
 end
 
 function BBF.CreateAltManaBar()
-    if PlayerFrame.AltManaBarBBF or PlayerFrame.ManaOnlyBarBBF then return end -- already created
-    if not (BetterBlizzFramesDB.createAltManaBarDruid or BetterBlizzFramesDB.createAltManaBarDruidManaOnly) then return end
+    local db = BetterBlizzFramesDB
     if UnitClassBase("player") ~= "DRUID" then return end
-    if BetterBlizzFramesDB.createAltManaBarDruidManaOnly then
+    if db.createAltManaBarDruidManaOnly then
         CreateManaOnlyBar(function()
             return UnitPowerType("player") ~= Enum.PowerType.Mana
         end)
+    end
+    if PlayerFrame.AltManaBarBBF then
+        UpdateAltManaBar(db.classicFrames)
         return
     end
-    if BBF.HasNoPortrait("player") and (BetterBlizzFramesDB.hideUnitFramePlayerMana or BetterBlizzFramesDB.hideUnitFramePlayerSecondResource) then return end
-    local db = BetterBlizzFramesDB
+    if not ((db.createAltManaBarDruid and not db.createAltManaBarDruidManaOnly) or db.createAltEnergyBarDruid) then return end
+    if BBF.HasNoPortrait("player") and (db.hideUnitFramePlayerMana or db.hideUnitFramePlayerSecondResource) then return end
     if BBF.IsMiniFrame(PlayerFrame) then return end
     local cf = db.classicFrames
     local noPortrait = BBF.HasNoPortrait("player")
@@ -504,13 +554,7 @@ function BBF.CreateAltManaBar()
         bar:SetSize(124, 10)
         bar:SetPoint("BOTTOMLEFT", PlayerFrame, "BOTTOMLEFT", 85, 18)
     end
-    if BBF.UnitFrameTextureOn("mana") then
-        bar:SetStatusBarTexture(BBF.manaTexture)
-        bar:SetStatusBarColor(0, 0, 1)
-    else
-        bar:SetStatusBarTexture("UI-HUD-UnitFrame-Player-PortraitOn-Bar-Mana")
-        bar:SetStatusBarColor(1, 1, 1)
-    end
+    SetAltBarLook(bar, "MANA")
     bar:SetMinMaxValues(0, 100)
     bar:Hide()
 
@@ -582,22 +626,37 @@ function BBF.CreateAltManaBar()
         end)
     end
 
+    local lastForm = GetShapeshiftFormID()
+    local energyTimer
     local f = CreateFrame("Frame")
     f:RegisterUnitEvent("UNIT_POWER_UPDATE", "player")
     f:RegisterUnitEvent("UNIT_DISPLAYPOWER", "player")
     f:RegisterEvent("UPDATE_SHAPESHIFT_FORM")
     f:RegisterEvent("PLAYER_ENTERING_WORLD")
     f:SetScript("OnEvent", function(_, evt, unit, ptype)
-        if evt == "UNIT_POWER_UPDATE" and ptype ~= "MANA" then return end
+        if evt == "UNIT_POWER_UPDATE" and ptype ~= bar.powerToken then return end
+        if evt == "UPDATE_SHAPESHIFT_FORM" then
+            local form = GetShapeshiftFormID()
+            if lastForm and not form and db.createAltEnergyBarDruid and not db.createAltEnergyBarDruidAlways then
+                energyShowUntil = GetTime() + 5
+                if energyTimer then energyTimer:Cancel() end
+                energyTimer = C_Timer.NewTimer(6, function()
+                    energyTimer = nil
+                    UpdateAltManaBar(cf)
+                end)
+            end
+            lastForm = form
+        end
         UpdateAltManaBar(cf)
     end)
 
     if display == "NONE" then
         bar:EnableMouse(true)
         bar:SetScript("OnEnter", function(self)
-            local mana = UnitPower("player", Enum.PowerType.Mana)
-            local maxMana = UnitPowerMax("player", Enum.PowerType.Mana)
-            self.TextString:SetText(BreakUpLargeNumbers(mana) .. " / " .. BreakUpLargeNumbers(maxMana))
+            local powerType = altBarPower[self.powerToken].type
+            local power = UnitPower("player", powerType)
+            local maxPower = UnitPowerMax("player", powerType)
+            self.TextString:SetText(BreakUpLargeNumbers(power) .. " / " .. BreakUpLargeNumbers(maxPower))
         end)
 
         bar:SetScript("OnLeave", function(self)

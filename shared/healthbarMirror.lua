@@ -225,6 +225,14 @@ local function CreateSegment(mirror, src, info)
     local seg = CreateFrame("Frame", nil, mirror.bar, mirror.spec.segmentTemplate .. ", " .. info.template)
     seg:Initialize()
     seg.source = src
+    if src.fillColor then
+        seg:SetFillColor(src.fillColor)
+    end
+    if src.SetFillColor then
+        hooksecurefunc(src, "SetFillColor", function(_, color)
+            seg:SetFillColor(color)
+        end)
+    end
     seg.offsetHelper = CreateHelper(mirror.bar)
     seg.offsetHelper:SetMinMaxValues(-1, 0)
     seg.offsetHelper:SetValue(0)

@@ -40,7 +40,7 @@ end
 
 function BBF.PlayerNameBorderRemoved()
     local db = BetterBlizzFramesDB
-    return db.removeNameBorder and not db.classicFrames and not BBF.ClassicStyleAddon() and not BBF.HasNoPortrait("player")
+    return db.removeNameBorder and db.removeNameBorderPlayer and not db.classicFrames and not BBF.ClassicStyleAddon() and not BBF.HasNoPortrait("player")
         and not BBF.BigPlayerHealthbar() and not RetailOn("player") and true or false
 end
 
@@ -178,7 +178,8 @@ function BBF.UpdatePlayerAltFrameArt()
     local big = BBF.BigPlayerHealthbar()
     local noMana = BBF.PlayerManaHiddenArt()
     local altTex = PlayerFrame.PlayerFrameContainer.AlternatePowerFrameTexture
-    if not big and not noMana and not (BBF.PlayerNameBorderRemoved() and db.hideUnitFramePlayerSecondResource) then
+    local noName = BBF.PlayerNameBorderRemoved()
+    if not big and not noMana and not noName then
         if altTex.bbfBigArt then
             altTex.bbfBigArt = nil
             altTex:SetAtlas(db.hideUnitFramePlayerSecondResource and "UI-HUD-UnitFrame-Player-PortraitOn" or "UI-HUD-UnitFrame-Player-PortraitOn-ClassResource")
@@ -191,7 +192,7 @@ function BBF.UpdatePlayerAltFrameArt()
     elseif big then
         altTex:SetTexture(FOREVER_TEX .. "Player-PortraitOn-ClassResource-BigHealthbar" .. ReducedSuffix() .. NoManaSuffix() .. ".png")
     else
-        altTex:SetTexture(FOREVER_TEX .. "Player-PortraitOn-ClassResource-NoMana.png")
+        altTex:SetTexture(FOREVER_TEX .. "Player-PortraitOn-ClassResource" .. (noName and "-NoNameBg" or "") .. NoManaSuffix() .. ".png")
     end
 end
 
@@ -219,10 +220,25 @@ function BBF.ClassicStealthGlowOn()
     return not BetterBlizzFramesDB.classicFrames and not BBF.HasNoPortrait("player") and not RetailMode() and not SymmetricOn()
 end
 
+local function AltFrameArtShown()
+    return PlayerFrame.PlayerFrameContainer.AlternatePowerFrameTexture:IsShown() and not BetterBlizzFramesDB.hideUnitFramePlayerSecondResource
+end
+
 function BBF.SetClassicStealthGlow(tex)
-    tex:SetTexture(ClassicCombatGlowFile())
+    if AltFrameArtShown() then
+        local suffix = ""
+        if BBF.BigPlayerHealthbar() then
+            suffix = ReducedSuffix()
+        elseif BBF.PlayerNameBorderRemoved() then
+            suffix = "-NoNameBg"
+        end
+        tex:SetTexture(FOREVER_TEX .. "Player-PortraitOn-ClassResource-Status-Classic" .. suffix .. ".png")
+        tex:SetSize(CLASSIC_GLOW_WIDTH, CLASSIC_GLOW_HEIGHT + 3)
+    else
+        tex:SetTexture(ClassicCombatGlowFile())
+        tex:SetSize(CLASSIC_GLOW_WIDTH, CLASSIC_GLOW_HEIGHT)
+    end
     tex:SetTexCoord(0, 1, 0, 1)
-    tex:SetSize(CLASSIC_GLOW_WIDTH, CLASSIC_GLOW_HEIGHT)
     tex:ClearAllPoints()
     tex:SetPoint("TOPLEFT", PlayerFrame.PlayerFrameContainer, "TOPLEFT", 17 - CLASSIC_GLOW_PAD, -14 + CLASSIC_GLOW_PAD)
     tex:SetBlendMode("ADD")
@@ -454,7 +470,7 @@ local function GrowBar()
         local maskY, maskHeight = 23, 78
         if reduced > 0 then
             maskY, maskHeight = 18, 60
-            if noMana > 0 then maskY, maskHeight = 24, 83 end
+            if noMana > 0 then maskY, maskHeight = 25, 85 end
         elseif noMana > 0 then
             maskY, maskHeight = 31, 105
         end

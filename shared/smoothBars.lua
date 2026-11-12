@@ -18,6 +18,10 @@ local function MirrorTexture(stock)
         dst:SetTexture(src:GetTexture())
     end
     dst:SetTexCoord(src:GetTexCoord())
+    if src.IsSnappingToPixelGrid then
+        dst:SetSnapToPixelGrid(src:IsSnappingToPixelGrid())
+        dst:SetTexelSnappingBias(src:GetTexelSnappingBias())
+    end
     local layer, sub = src:GetDrawLayer()
     dst:SetDrawLayer(layer, (sub or 0) + 1)
     local r, g, b = stock:GetStatusBarColor()

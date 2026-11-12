@@ -2,9 +2,51 @@ local entries
 local totHooked, partyHooked
 local cvarFrame
 
+local abbreviateKey, abbreviateOptions
+
+local function BuildAbbreviateOptions(extraDecimal, skipBelow10k)
+    if not (extraDecimal or skipBelow10k) then return end
+    if not (AbbreviateNumbers and CreateAbbreviateConfig and C_StringUtil and C_StringUtil.GetDefaultAbbreviationBreakpoints) then return end
+    local breakpoints = {}
+    for _, entry in ipairs(C_StringUtil.GetDefaultAbbreviationBreakpoints()) do
+        local copy = {
+            breakpoint = entry.breakpoint,
+            abbreviation = entry.abbreviation,
+            significandDivisor = entry.significandDivisor,
+            fractionDivisor = entry.fractionDivisor,
+            abbreviationIsGlobal = entry.abbreviationIsGlobal,
+        }
+        if skipBelow10k and copy.breakpoint < 10000 then
+            copy.breakpoint = 10000
+        end
+        if extraDecimal and copy.breakpoint >= 1000000 and copy.fractionDivisor > 0 and copy.significandDivisor >= 10 then
+            copy.significandDivisor = copy.significandDivisor / 10
+            copy.fractionDivisor = copy.fractionDivisor * 10
+        end
+        breakpoints[#breakpoints + 1] = copy
+    end
+    local ok, config = pcall(CreateAbbreviateConfig, breakpoints)
+    if ok and config then
+        return { config = config }
+    end
+end
+
+function BBF.AbbreviateValue(value)
+    local db = BetterBlizzFramesDB
+    local key = (db.formatStatusBarTextExtraDecimals and 1 or 0) + (db.formatStatusBarTextSkipBelow10k and 2 or 0)
+    if key ~= abbreviateKey then
+        abbreviateKey = key
+        abbreviateOptions = BuildAbbreviateOptions(db.formatStatusBarTextExtraDecimals, db.formatStatusBarTextSkipBelow10k)
+    end
+    if abbreviateOptions then
+        return AbbreviateNumbers(value, abbreviateOptions)
+    end
+    return (AbbreviateNumbers or AbbreviateLargeNumbers)(value)
+end
+
 local function FormatNumber(bar, value)
     if BetterBlizzFramesDB.formatStatusBarText then
-        return (AbbreviateNumbers or AbbreviateLargeNumbers)(value)
+        return BBF.AbbreviateValue(value)
     elseif bar.capNumericDisplay then
         return AbbreviateLargeNumbers(value)
     elseif BetterBlizzFramesDB.noNumberCommas and (BBF.isForever or BBF.isEra or BBF.isTBC) then

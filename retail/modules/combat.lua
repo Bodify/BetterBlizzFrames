@@ -147,14 +147,19 @@ function BBF.RacialIndicator(unitFrame, unit)
     local vertexColor = darkModeOn and BetterBlizzFramesDB.darkModeColor or 1
     local raceOverSpells = BetterBlizzFramesDB.racialIndicatorRaceIcons
 
-    local _, raceToken = UnitRace(unit)
-    if issecretvalue(raceToken) then return end
-    local race = BBF.GetRacialIndicatorRace(raceToken)
-    local raceIcon, isAtlas
-    if race then
-        raceIcon, isAtlas = BBF.GetRacialIndicatorIcon(race, UnitSex(unit), raceOverSpells)
+    local raceIcon, isAtlas, npcIcon, shouldShow
+    if UnitIsPlayer(unit) then
+        local _, raceToken = UnitRace(unit)
+        if issecretvalue(raceToken) then return end
+        local race = BBF.GetRacialIndicatorRace(raceToken)
+        if race then
+            raceIcon, isAtlas = BBF.GetRacialIndicatorIcon(race, UnitSex(unit), raceOverSpells)
+        end
+        shouldShow = race and BetterBlizzFramesDB[BBF.GetRacialIndicatorKey(race, unit)]
+    else
+        npcIcon = BetterBlizzFramesDB.racialIndicatorNpcs and BBF.GetRacialIndicatorCreatureIcon(unit)
+        shouldShow = npcIcon
     end
-    local shouldShow = race and BetterBlizzFramesDB[BBF.GetRacialIndicatorKey(race, unit)]
 
     if not unitFrame.racialIndicator then
         unitFrame.racialIndicator = CreateFrame("Frame", nil, unitFrame, "BackdropTemplate")
@@ -194,6 +199,9 @@ function BBF.RacialIndicator(unitFrame, unit)
 
     unitFrame.racialIndicator:SetPoint("CENTER", unitFrame, "CENTER", xPos, yPos)
     unitFrame.racialIndicator:SetScale(scale)
+    if unitFrame.noPortraitMode then
+        unitFrame.racialIndicator:SetFrameLevel(unitFrame.noPortraitMode:GetFrameLevel() + 2)
+    end
 
     local borderR, borderG, borderB, borderBronze = BBF.UpdateRacialIndicatorBorder(unitFrame.racialIndicator)
     if borderR and borderBronze and not darkModeOn then
@@ -218,12 +226,10 @@ function BBF.RacialIndicator(unitFrame, unit)
         end
     end
 
-    if raceIcon then
-        if isAtlas then
-            unitFrame.racialIndicator.icon:SetAtlas(raceIcon)
-        else
-            unitFrame.racialIndicator.icon:SetTexture(raceIcon)
-        end
+    if npcIcon then
+        BBF.SetRacialIndicatorIcon(unitFrame.racialIndicator, npcIcon, false, true)
+    elseif raceIcon then
+        BBF.SetRacialIndicatorIcon(unitFrame.racialIndicator, raceIcon, isAtlas)
     end
 
     if shouldShow then

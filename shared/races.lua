@@ -96,7 +96,14 @@ end
 
 local function GetRaceAtlas(race, unitSex)
     local name = race.atlas or race.token:lower()
-    local atlas = string.format("raceicon-%s-%s", name, unitSex == 3 and "female" or "male")
+    local sex = unitSex == 3 and "female" or "male"
+    if BBF.isForever then
+        local atlas = string.format("raceicon-sd-%s-%s", name, sex)
+        if C_Texture.GetAtlasInfo(atlas) then
+            return atlas
+        end
+    end
+    local atlas = string.format("raceicon-%s-%s", name, sex)
     if C_Texture.GetAtlasInfo(atlas) then
         return atlas
     end
@@ -112,6 +119,42 @@ function BBF.GetRacialIndicatorIcon(race, unitSex, preferRaceIcon)
     local atlas = GetRaceAtlas(race, unitSex)
     if atlas then return atlas, true end
     return 134400, false
+end
+
+local creatureTypeIcons = {
+    [1] = "Beast",
+    [2] = "Dragon",
+    [4] = "Elemental",
+    [6] = "Undead",
+    [7] = "Humanoid",
+    [8] = "Critter",
+    [9] = "Mechanical",
+}
+
+function BBF.GetRacialIndicatorCreatureIcon(unit)
+    local _, typeID = UnitCreatureType(unit)
+    if issecretvalue(typeID) then return end
+    local suffix = typeID and creatureTypeIcons[typeID]
+    return suffix and ("Interface\\PetBattles\\PetIcon-" .. suffix)
+end
+
+function BBF.SetRacialIndicatorIcon(indicator, texture, isAtlas, isCreature)
+    local icon = indicator.icon
+    icon:ClearAllPoints()
+    if isCreature then
+        icon:SetTexture(texture)
+        icon:SetTexCoord(0.7725, 0.5165625, 0.51609375, 0.6440625)
+        icon:SetPoint("TOPLEFT", indicator, "TOPLEFT", -0.5, 0)
+        icon:SetPoint("BOTTOMRIGHT", indicator, "BOTTOMRIGHT", -0.5, 0)
+        return
+    end
+    icon:SetAllPoints(indicator)
+    icon:SetTexCoord(0, 1, 0, 1)
+    if isAtlas then
+        icon:SetAtlas(texture)
+    else
+        icon:SetTexture(texture)
+    end
 end
 
 local function GetBorderStyle()
@@ -147,8 +190,9 @@ function BBF.UpdateRacialIndicatorBorder(indicator)
         end
     end
     if style == "pvp" then
-        border:SetDesaturated(false)
-        border:SetVertexColor(1, 1, 1)
+        local r, g, b, desaturate = BBF.GetPvpCircleColor()
+        border:SetDesaturated(desaturate)
+        border:SetVertexColor(r, g, b)
         return
     end
     if style == "default" then

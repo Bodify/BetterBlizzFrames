@@ -6,9 +6,10 @@ BBF.TextAreaLayouts = {
         rules = {
             { style = "pixel", textRight = 0.5 },
             { client = "retail", style = "noPortrait", mode = "big", mana = "hidden", right = -0.5, healthY = -1, textLeft = 1.5 },
+            { client = "forever", style = "noPortrait", mode = "big", left = 0, right = 1, bottom = -1.5, textLeft = 1.5, textRight = 3.5, own = { bottom = true } },
             { style = "noPortrait", mode = "big", right = -0.5 },
             { client = "retail", style = "noPortrait", mode = "none", right = -0.5, manaY = 0, textLeft = 1, textRight = 2.5, own = { manaY = true } },
-            { style = "noPortrait", left = -1.5, right = 1, bottom = -1.5, manaY = 0, textLeft = 3.5, textRight = 3.5 },
+            { style = "noPortrait", left = -1.5, right = 1, bottom = -1.5, manaY = 0, textLeft = 3, textRight = 4.5 },
             { style = "symmetric", mode = "xl", mana = "hidden", left = 10, right = -0.5, textRight = 3 },
             { style = "symmetric", mode = "xl", left = 5.5, right = -0.5, textLeft = 1, textRight = 3 },
             { style = "symmetric", mode = "reduced", mana = "hidden", left = 5, right = -1, textLeft = 5, textRight = 3 },
@@ -25,7 +26,7 @@ BBF.TextAreaLayouts = {
             { style = "classic", mode = "big", mana = "hidden", inside = true, healthY = 1.5, manaY = 0 },
             { style = "classic", mode = "big", mana = "hidden", healthY = -1.5, manaY = 0 },
             { style = "classic", mode = "big", inside = true, bottom = -1, healthY = 2, manaY = -0.5, own = { bottom = true, manaY = true } },
-            { client = "forever", style = "classic", mode = "big", bottom = -1, healthY = -1.5, manaY = -0.5, textRight = 4.5, own = { bottom = true, manaY = true, textRight = true } },
+            { client = "forever", style = "classic", mode = "big", bottom = -1, left = 1, right = 2, healthY = -1.5, manaY = -0.5, textLeft = 1.5, textRight = 3, own = { bottom = true, manaY = true, left = true, right = true, textLeft = true, textRight = true } },
             { style = "classic", mode = "big", bottom = -1, healthY = -2, manaY = -1, own = { bottom = true, manaY = true } },
             { style = "classic", mode = "none", mana = "hidden", healthY = 0.5 },
             { client = "forever", style = "classic", mode = "none", left = 2, right = 0.5, healthY = -1, manaY = -0.5, textLeft = 0.5, textRight = 2.5, sharedTextRight = true },
@@ -39,14 +40,15 @@ BBF.TextAreaLayouts = {
         health = { y = -0.5 }, mana = { y = -0.5 },
         rules = {
             { style = "pixel", textRight = 1 },
+            { client = "forever", style = "noPortrait", mode = "big", left = -1, right = -4, manaY = 0, textLeft = 2.5, textRight = 4.5, own = { manaY = true } },
             { style = "noPortrait", mode = "big", left = 1, right = -2.5 },
             { client = "retail", style = "noPortrait", mode = "none", right = -5, manaY = -0.5, textLeft = 1, textRight = 2.5 },
-            { style = "noPortrait", left = -2, right = -3, bottom = -1.5, manaY = 0, textLeft = 4, textRight = 4 },
+            { style = "noPortrait", left = -2, right = -3, bottom = -1.5, manaY = 0, textLeft = 3.5, textRight = 5.5 },
             { style = "classic", mode = "big", mana = "hidden", inside = true, bottom = 1, healthY = 3.5 },
             { style = "classic", mode = "big", mana = "hidden", bottom = 1, healthY = -1.5 },
             { style = "classic", mode = "big", inside = true, bottom = -1, manaY = -0.5, own = { bottom = true } },
-            { client = "forever", style = "classic", mode = "big", bottom = -1, healthY = -1.5, manaY = -0.5, textRight = 2.5,
-                own = { bottom = true, healthY = true, manaY = true, textRight = true } },
+            { client = "forever", style = "classic", mode = "big", bottom = -1, left = 0, right = -1.5, healthY = -1.5, manaY = -0.5, textLeft = 0.5, textRight = 1.5,
+                own = { bottom = true, healthY = true, manaY = true, left = true, right = true, textLeft = true, textRight = true } },
             { style = "classic", mode = "big", bottom = -1, healthY = -1.5, manaY = -0.5, own = { bottom = true, healthY = true } },
             { style = "classic", mode = "none", mana = "hidden", top = 1, bottom = -1, healthY = 0 },
             { client = "forever", style = "classic", left = 0.5, right = -2, top = 1, bottom = -1, healthY = -1, manaY = -0.5, textLeft = 0, textRight = 2, sharedTextRight = true,
@@ -117,6 +119,7 @@ BBF.TextAreaLayouts = {
             { style = "retail", mode = "reduced", left = 1, right = 0 },
             { style = "retail", left = 1, right = 0, bottom = -1, healthY = -0.5, textLeft = -1 },
             { style = "classic", mode = "big", mana = "hidden", top = -0.5, bottom = -1.5, healthY = 0 },
+            { client = "forever", style = "classic", mode = "big", mana = "shown", top = -0.5, manaY = -1.5, textLeft = -1, textRight = 2.5, own = { textLeft = true, textRight = true } },
             { style = "classic", mode = "big", top = -0.5 },
             { style = "classic", mode = "none", mana = "hidden", top = 1, bottom = -2, healthY = 0.5 },
             { style = "classic", left = 1, right = -1, bottom = -4, textLeft = -1.5 },
@@ -146,6 +149,7 @@ BBF.TextAreaLayouts = {
             { style = "retail", mode = "reduced", left = 0, right = -0.5, healthY = 0, textLeft = 1 },
             { style = "retail", left = 0, right = 1, healthY = 0 },
             { style = "classic", mode = "big", mana = "hidden", bottom = 0.5 },
+            { client = "forever", style = "classic", mode = "big", bottom = -0.5, manaY = -2, textLeft = 1.5, textRight = 0, own = { textLeft = true, textRight = true } },
             { style = "classic", mode = "big", bottom = -0.5, manaY = -2 },
             { style = "classic", mode = "none", mana = "hidden", bottom = -1.5, healthY = 0 },
             { style = "classic", left = 0, right = -1, bottom = -1.5, manaY = -2, textRight = -1 },
@@ -206,7 +210,7 @@ BBF.NameLayouts = {
     tot = { { classicToT = true, below = true, y = -4 }, { inside = true, y = -10 }, { style = "pixel", y = 1 }, { style = "retail", y = 2 },
         { style = "classic", mode = "big", mana = "hidden", y = -28 }, { style = "classic", y = -29 },
         { style = "camelot", mode = "xl", mana = "hidden", y = 2 }, { style = "camelot", mode = "xl", y = 2 },
-        { style = "camelot", mode = "reduced", y = 1.5 }, { y = 0.5 } },
+        { style = "camelot", mode = "reduced", y = 1.5 }, { client = "forever", style = "camelot", mode = "none", y = 1.5 }, { y = 0.5 } },
     pet = { { inside = true, y = -10 }, { style = "retail", y = 1.5 }, { style = "camelot", mode = "xl", mana = "hidden", y = 2.5 },
         { style = "camelot", mode = "reduced", y = 2 }, { y = 1.5 } },
     party = { { inside = true, y = -10 }, { client = "retail", style = "retail", mode = "xl", left = -21, y = 2.5 }, { client = "retail", style = "retail", y = 2.5 }, { style = "retail", mode = "xl", left = -21, y = 0.5 }, { style = "retail", y = 0.5 }, { client = "forever", style = "classic", mode = "big", y = 2 }, { style = "classic", mode = "big", y = -1 }, { style = "classic", y = 1 }, { style = "camelot", mode = "xl", mana = "shown", y = 2 }, { style = "camelot", mode = "xl", mana = "hidden", y = 2.5 }, { style = "camelot", mode = "reduced", mana = "hidden", y = 2.5 }, { style = "camelot", mode = "none", mana = "shown", y = 1.5 }, { y = 0.5 } },
@@ -521,6 +525,19 @@ local function ResolveText(frame, raw)
         end
         if (setup.mode ~= "none" or setup.manaHidden) and not sharedTextRight and not Owns(v, "textRight") then
             v.textRight = cfg.classicTextRight or CLASSIC_EXTRA_TEXT_RIGHT
+        end
+        if setup.mode ~= "none" and setup.manaHidden then
+            local shown = {}
+            for k, val in pairs(setup) do shown[k] = val end
+            shown.manaHidden = false
+            for _, rule in ipairs(cfg.rules) do
+                if Matches(rule, shown) then
+                    for _, field in ipairs({ "left", "right", "textLeft", "textRight" }) do
+                        if Owns(rule, field) then v[field] = rule[field] or 0 end
+                    end
+                    break
+                end
+            end
         end
     end
     if setup.style == "camelot" then

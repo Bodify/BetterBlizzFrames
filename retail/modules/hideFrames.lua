@@ -288,6 +288,47 @@ function BBF.UpdateBagsBar()
     end
 end
 
+local function ApplyCompactAggroHighlight(frame)
+    if not frame or frame:IsForbidden() then return end
+    if BetterBlizzFramesDB.hidePartyAggroHighlight then
+        frame.aggroHighlight:SetAlpha(0)
+        frame.bbfAggroHidden = true
+    elseif frame.bbfAggroHidden then
+        frame.aggroHighlight:SetAlpha(1)
+        frame.bbfAggroHidden = nil
+    end
+end
+
+local partyFlashHidden
+function BBF.UpdatePartyAggroHighlight()
+    local hide = BetterBlizzFramesDB.hidePartyAggroHighlight
+    if hide and not BBF.compactAggroHooked then
+        hooksecurefunc("CompactUnitFrame_UpdateAggroHighlight", ApplyCompactAggroHighlight)
+        BBF.compactAggroHooked = true
+    end
+    for i = 1, 5 do
+        ApplyCompactAggroHighlight(_G["CompactPartyFrameMember" .. i])
+    end
+    for i = 1, 40 do
+        ApplyCompactAggroHighlight(_G["CompactRaidFrame" .. i])
+    end
+    for group = 1, 8 do
+        for member = 1, 5 do
+            ApplyCompactAggroHighlight(_G["CompactRaidGroup" .. group .. "Member" .. member])
+        end
+    end
+    if hide and not BBF.partyFlashHooked then
+        hooksecurefunc(PartyFrame, "InitializePartyMemberFrames", BBF.UpdatePartyAggroHighlight)
+        BBF.partyFlashHooked = true
+    end
+    if hide or partyFlashHidden then
+        for member in PartyFrame.PartyMemberFramePool:EnumerateActive() do
+            member.Flash:SetAlpha(hide and 0 or 1)
+        end
+        partyFlashHidden = hide or nil
+    end
+end
+
 function BBF.HideFrames()
     local db = BetterBlizzFramesDB
     if db.hasCheckedUi then
@@ -638,170 +679,11 @@ function BBF.HideFrames()
 
         -- /dump CompactPartyFrameMember1CenterStatusIcon.texture:GetAtlas()
 
-        -- Hide DispelOverlay
-        if BetterBlizzFramesDB.hidePartyDispelOverlay then
-            changes.hidePartyDispelOverlay = true
-            for i = 1, 8 do
-                for j = 1, 5 do
-                    local frame = _G["CompactRaidGroup"..j.."Member"..i]
-                    if frame and frame.DispelOverlay then
-                        if frame.DispelOverlay.Border and not frame.DispelOverlay.Border:IsForbidden() then
-                            if BetterBlizzFramesDB.hidePartyDispelOverlayKeepBorder then
-                                frame.DispelOverlay.Border:Show()
-                            else
-                                frame.DispelOverlay.Border:Hide()
-                            end
-                        end
-                        if frame.DispelOverlay.Gradient and not frame.DispelOverlay.Gradient:IsForbidden() then
-                            if BetterBlizzFramesDB.hidePartyDispelOverlayKeepGradient then
-                                frame.DispelOverlay.Gradient:Show()
-                            else
-                                frame.DispelOverlay.Gradient:Hide()
-                            end
-                        end
-                        if frame.DispelOverlay.Background and not frame.DispelOverlay.Background:IsForbidden() then
-                            frame.DispelOverlay.Background:Hide()
-                        end
-                    end
-                end
-            end
-            for i = 1, 5 do
-                local frame = _G["CompactPartyFrameMember"..i]
-                if frame and frame.DispelOverlay then
-                    if frame.DispelOverlay.Border and not frame.DispelOverlay.Border:IsForbidden() then
-                        if BetterBlizzFramesDB.hidePartyDispelOverlayKeepBorder then
-                            frame.DispelOverlay.Border:Show()
-                        else
-                            frame.DispelOverlay.Border:Hide()
-                        end
-                    end
-                    if frame.DispelOverlay.Gradient and not frame.DispelOverlay.Gradient:IsForbidden() then
-                        if BetterBlizzFramesDB.hidePartyDispelOverlayKeepGradient then
-                            frame.DispelOverlay.Gradient:Show()
-                        else
-                            frame.DispelOverlay.Gradient:Hide()
-                        end
-                    end
-                    if frame.DispelOverlay.Background and not frame.DispelOverlay.Background:IsForbidden() then
-                        frame.DispelOverlay.Background:Hide()
-                    end
-                end
-            end
-            if not BBF.hidePartyDispelOverlayHooked then
-                local function ApplyDispelOverlaySettings(frame)
-                    if not frame.DispelOverlay then
-                        return
-                    end
-
-                    if frame.DispelOverlay.Border and not frame.DispelOverlay.Border:IsForbidden() then
-                        if BetterBlizzFramesDB.hidePartyDispelOverlayKeepBorder then
-                            frame.DispelOverlay.Border:Show()
-                        else
-                            frame.DispelOverlay.Border:Hide()
-                        end
-                    end
-
-                    if frame.DispelOverlay.Gradient and not frame.DispelOverlay.Gradient:IsForbidden() then
-                        if BetterBlizzFramesDB.hidePartyDispelOverlayKeepGradient then
-                            frame.DispelOverlay.Gradient:Show()
-                        else
-                            frame.DispelOverlay.Gradient:Hide()
-                        end
-                    end
-
-                    if frame.DispelOverlay.Background and not frame.DispelOverlay.Background:IsForbidden() then
-                        frame.DispelOverlay.Background:Hide()
-                    end
-                end
-
-                hooksecurefunc("CompactUnitFrame_SetUpFrame", function(frame, setupFunc)
-                    if issecretvalue(frame) then return end
-                    ApplyDispelOverlaySettings(frame)
-                end)
-                BBF.hidePartyDispelOverlayHooked = true
-            end
-        elseif changes.hidePartyDispelOverlay then
-            changes.hidePartyDispelOverlay = nil
-            for i = 1, 8 do
-                for j = 1, 5 do
-                    local frame = _G["CompactRaidGroup"..j.."Member"..i]
-                    if frame and frame.DispelOverlay then
-                        if frame.DispelOverlay.Border then
-                            frame.DispelOverlay.Border:Show()
-                        end
-                        if frame.DispelOverlay.Gradient then
-                            frame.DispelOverlay.Gradient:Show()
-                        end
-                        if frame.DispelOverlay.Background then
-                            frame.DispelOverlay.Background:Show()
-                        end
-                    end
-                end
-            end
-            for i = 1, 5 do
-                local frame = _G["CompactPartyFrameMember"..i]
-                if frame and frame.DispelOverlay then
-                    if frame.DispelOverlay.Gradient then
-                        frame.DispelOverlay.Gradient:Show()
-                    end
-                    if frame.DispelOverlay.Border then
-                        frame.DispelOverlay.Border:Show()
-                    end
-                    if frame.DispelOverlay.Background then
-                        frame.DispelOverlay.Background:Show()
-                    end
-                end
-            end
-        end
-
         if BetterBlizzFramesDB.hidePetAuraTooltip and not changes.hidePetAuraTooltip then
             changes.hidePetAuraTooltip = true
             PetFrame:HookScript("OnEnter", function()
                 PartyMemberBuffTooltip:Hide()
             end)
-        end
-
-        -- Hide Dispel Icons (DispelDebuff1-3)
-        if BetterBlizzFramesDB.hidePartyDispelOverlay and BetterBlizzFramesDB.hidePartyDispelOverlayHideIcons then
-            changes.hidePartyDispelOverlayHideIcons = true
-            for i = 1, 5 do
-                for j = 1, 3 do
-                    local frame = _G["CompactPartyFrameMember"..i.."DispelDebuff"..j]
-                    if frame then
-                        frame:SetAlpha(0)
-                    end
-                end
-            end
-            for i = 1, 8 do
-                for k = 1, 5 do
-                    for j = 1, 3 do
-                        local frame = _G["CompactRaidGroup"..k.."Member"..i.."DispelDebuff"..j]
-                        if frame then
-                            frame:SetAlpha(0)
-                        end
-                    end
-                end
-            end
-        elseif changes.hidePartyDispelOverlayHideIcons then
-            changes.hidePartyDispelOverlayHideIcons = nil
-            for i = 1, 5 do
-                for j = 1, 3 do
-                    local frame = _G["CompactPartyFrameMember"..i.."DispelDebuff"..j]
-                    if frame then
-                        frame:SetAlpha(1)
-                    end
-                end
-            end
-            for i = 1, 8 do
-                for k = 1, 5 do
-                    for j = 1, 3 do
-                        local frame = _G["CompactRaidGroup"..k.."Member"..i.."DispelDebuff"..j]
-                        if frame then
-                            frame:SetAlpha(1)
-                        end
-                    end
-                end
-            end
         end
 
         -- Hide Range Icon
@@ -1704,14 +1586,7 @@ function BBF.HideFrames()
             end)
         end
 
-        local aggroAlpha = BetterBlizzFramesDB.hidePartyAggroHighlight and 0 or 1
-
-        for i = 1, 5 do
-            local aggroHighlight = _G["CompactPartyFrameMember" .. i .. "AggroHighlight"]
-            if aggroHighlight then
-                aggroHighlight:SetAlpha(aggroAlpha)
-            end
-        end
+        BBF.UpdatePartyAggroHighlight()
 
         if BetterBlizzFramesDB.hidePetText then
             if not BBF.PetTextHook then

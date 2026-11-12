@@ -155,7 +155,7 @@ local function SetSchoolText(fontString, school)
     end
 end
 
-local function SetCooldown(cooldown, data)
+function LoC.SetCooldown(cooldown, data)
     if data and data.secret then
         local duration = C_LossOfControl.GetActiveLossOfControlDuration and C_LossOfControl.GetActiveLossOfControlDuration("player", data.index)
         if duration and cooldown.SetCooldownFromDurationObject then
@@ -168,6 +168,19 @@ local function SetCooldown(cooldown, data)
     else
         CooldownFrame_Clear(cooldown)
     end
+end
+
+function LoC.GetInterrupt()
+    local count = C_LossOfControl.GetActiveLossOfControlDataCount()
+    if not count or issecretvalue(count) then return end
+    local interrupt
+    for i = 1, count do
+        local data = ReadEntry(i)
+        if data and data.displayType ~= DISPLAY_TYPE_NONE and IsInterrupt(data) and (not interrupt or Expiration(data) > Expiration(interrupt)) then
+            interrupt = data
+        end
+    end
+    return interrupt
 end
 
 local function DisplayText(data)
@@ -647,7 +660,7 @@ local function ShowSecondary(frame, data)
         return
     end
     secondary.Icon:SetTexture(data.iconTexture)
-    SetCooldown(secondary.Cooldown, data)
+    LoC.SetCooldown(secondary.Cooldown, data)
     SetSchoolText(secondary.SchoolText, IsInterrupt(data) and data.lockoutSchool)
     secondary:Show()
 end
@@ -674,7 +687,7 @@ local function ShowInterrupt(data)
     frame:SetScale(LossOfControlFrame:GetScale())
     frame.Icon:SetTexture(data.iconTexture)
     frame.AbilityName:SetText(DisplayText(data))
-    SetCooldown(frame.Cooldown, data)
+    LoC.SetCooldown(frame.Cooldown, data)
     SetSchoolText(GetSchoolText(frame), data.lockoutSchool)
     ApplyLayout(frame)
     frame:Show()

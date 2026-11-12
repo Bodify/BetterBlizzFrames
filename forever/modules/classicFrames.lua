@@ -22,11 +22,10 @@ function BBF.PlaceClassicLevel(levelText)
     if not place then return end
     local nudge = 0
     local text = levelText:GetText()
-    if text and not issecretvalue(text) and levelText:GetFont() == WhiteLargeNumberFont:GetFont() then
+    if text and not issecretvalue(text) and levelText ~= PlayerLevelText then
         text = tostring(text)
-        if text:sub(1, 1) == "1" or text:sub(-1) == "1" then
-            nudge = -1
-        end
+        if text:sub(1, 1) == "1" then nudge = nudge - 0.5 end
+        if text:sub(-1) == "1" then nudge = nudge - 0.5 end
     end
     levelText:ClearAllPoints()
     local ring = levelText.bbfClassicLevelRing
@@ -131,6 +130,14 @@ local eliteNoLvlTextures = {
     rare = bigPath .. "UI-TargetingFrame-Rare-NoLevel.png",
 }
 
+local ORIGINAL = bigPath .. "Original\\"
+local originalTextures = {
+    [defaultTex] = ORIGINAL .. "UI-TargetingFrame.png",
+    [eliteTextures.elite] = ORIGINAL .. "UI-TargetingFrame-Elite.png",
+    [eliteTextures.rare] = ORIGINAL .. "UI-TargetingFrame-Rare.png",
+    [eliteTextures.rareelite] = ORIGINAL .. "UI-TargetingFrame-Rare-Elite.png",
+}
+
 local HD_MO = "Interface\\AddOns\\BetterBlizzFrames\\media\\classicTextures\\MoTextures\\"
 local HD_NOMANA = HD_MO .. "NoManas\\"
 
@@ -186,30 +193,17 @@ function BBF.ClassicHDTexturesActive()
     return db.classicFrames and db.classicFramesHDTextures and true or false
 end
 
-local function ClassicLevelArtSwapped(frame)
-    local db = BetterBlizzFramesDB
-    if BBF.BigHealthbarOn(frame) then return true end
-    if frame == PlayerFrame then return db.hideUnitFramePlayerMana end
-    if frame == TargetFrame then return db.hideUnitFrameTargetMana end
-    if frame == FocusFrame then return db.hideUnitFrameFocusMana end
-end
-
-function BBF.ClassicTargetLevelX(frame)
-    local x = -34
-    if not BBF.ClassicHDTexturesActive() and BetterBlizzFramesDB.classicFramesHDElite then
-        x = -32.5
-    end
-    return ClassicLevelArtSwapped(frame) and x + 1 or x
+function BBF.ClassicTargetLevelX()
+    return -32.5
 end
 
 function BBF.PlaceClassicTargetLevel(frame)
     local levelText = frame.TargetFrameContent.TargetFrameContentMain.LevelText
-    SetClassicLevelPoint(levelText, BBF.ClassicTargetLevelX(frame), 25.5, frame, "BOTTOMRIGHT")
+    SetClassicLevelPoint(levelText, BBF.ClassicTargetLevelX(), 25.5, frame, "BOTTOMRIGHT")
 end
 
 function BBF.ClassicPlayerLevelX()
-    local x = (BBF.ClassicHDTexturesActive() or BetterBlizzFramesDB.classicFramesHDElite) and -83 or -80
-    return ClassicLevelArtSwapped(PlayerFrame) and x - 1.5 or x
+    return -81.5
 end
 
 function BBF.ClassicHDCastbarsActive()
@@ -219,7 +213,10 @@ end
 function BBF.GetClassicTexture(original, noMana, isCastbar)
     local active = isCastbar and BBF.ClassicHDCastbarsActive() or (not isCastbar and BBF.ClassicHDTexturesActive())
     local entry = active and (isCastbar and castbarTextures or frameTextures)[original]
-    if not entry then return original, false end
+    if not entry then
+        local bundled = not isCastbar and not BetterBlizzFramesDB.classicFramesIngameTextures and originalTextures[original]
+        return bundled or original, false
+    end
     return (noMana and entry[2]) or entry[1], true
 end
 
@@ -315,8 +312,8 @@ function BBF.MaskClassicReputationColor(texture)
 end
 
 BBF.ClassicManaMask = {
-    player = { left = 0, right = 0, top = 0, bottom = 0 },
-    target = { left = 0, right = 0, top = 0, bottom = 0 },
+    player = { left = 0, right = -2, top = 0, bottom = 0 },
+    target = { left = -1, right = 1, top = 0, bottom = 0 },
 }
 
 BBF.ClassicHealthMask = {
@@ -577,11 +574,11 @@ local function MakeClassicFrame(frame)
             background:ClearAllPoints()
             if BBF.IsBigHealthbarActive(frame) then
                 background:SetPoint("TOPLEFT", healthBar, "TOPLEFT", 0, 0)
-                background:SetPoint("BOTTOMRIGHT", contentMain.ManaBar, "BOTTOMRIGHT", -3, 0)
+                background:SetPoint("BOTTOMRIGHT", contentMain.ManaBar, "BOTTOMRIGHT", 1, 0)
                 return
             end
             background:SetPoint("TOPLEFT", healthBar, "TOPLEFT", 0, 20)
-            background:SetPoint("BOTTOMRIGHT", contentMain.ManaBar, "BOTTOMRIGHT", -3, 0)
+            background:SetPoint("BOTTOMRIGHT", contentMain.ManaBar, "BOTTOMRIGHT", 1, 0)
         end
         frame.ClassicFrame.UpdateBackground()
 
@@ -627,10 +624,9 @@ local function MakeClassicFrame(frame)
         contentContext:SetParent(frame.ClassicFrame)
         contentContext.HighLevelTexture:SetParent(frame.ClassicFrame)
         contentContext.HighLevelTexture:SetDrawLayer("OVERLAY", 7)
-        contentContext.HighLevelTexture:ClearAllPoints()
         local classicHD = BBF.ClassicHDTexturesActive() or db.classicFramesHDElite
         contentContext.HighLevelTexture:SetSize(classicHD and 13 or 14, 16)
-        contentContext.HighLevelTexture:SetPoint("CENTER", frame, "BOTTOMRIGHT", classicHD and -33 or -34, 25)
+        BBF.UpdateSkullIcon(frame, classicHD and 13 or 14, 16)
         contentContext.PetBattleIcon:ClearAllPoints()
         contentContext.PetBattleIcon:SetPoint("CENTER", frame, "BOTTOMRIGHT", -35, 25)
         contentContext.PrestigePortrait:ClearAllPoints()
@@ -888,9 +884,11 @@ local function MakeClassicFrame(frame)
             end
         end)
 
-        if db.classicFramesDesaturated or db.classColorFrameTexture then
+        if db.classicFramesDesaturated then
             frame.ClassicFrame.Texture:SetDesaturated(true)
             totFrame.FrameTexture:SetDesaturated(true)
+        else
+            BBF.SyncClassicFrameDesaturation(frame.ClassicFrame.Texture, frameContainer.FrameTexture)
         end
 
     elseif frame == PlayerFrame then
@@ -934,8 +932,8 @@ local function MakeClassicFrame(frame)
             contentMain.PvpBackgroundIcon:SetDrawLayer("OVERLAY", 6)
         end
         contentContext.AttackIcon:ClearAllPoints()
-        contentContext.AttackIcon:SetPoint("CENTER", -80, -23.5)
-        contentContext.AttackIcon:SetSize(32, 31)
+        contentContext.AttackIcon:SetPoint("CENTER", -80.5, -23.5)
+        contentContext.AttackIcon:SetSize(26, 26)
         contentContext.AttackIcon:SetTexture("Interface\\CharacterFrame\\UI-StateIcon")
         contentContext.AttackIcon:SetTexCoord(0.5, 1.0, 0, 0.484375)
         contentContext.AttackIcon:SetDrawLayer("OVERLAY")
@@ -1074,6 +1072,15 @@ local function MakeClassicFrame(frame)
             UpdateLevel()
         end)
         UpdateLevel()
+
+        local function UpdateLevelUnderAttackIcon()
+            local icon = contentContext.AttackIcon
+            local covered = icon:IsShown() and not db.hidePlayerAttackIcon and not db.hideCombatIcon
+            PlayerLevelText.bbfUnderAttackIcon = covered or nil
+            PlayerLevelText:SetAlpha(covered and 0 or 1)
+        end
+        hooksecurefunc("PlayerFrame_UpdateStatus", UpdateLevelUnderAttackIcon)
+        UpdateLevelUnderAttackIcon()
 
         hooksecurefunc("PlayerFrame_UpdateRolesAssigned", function()
             contentContext.RoleIcon:ClearAllPoints()
@@ -1453,8 +1460,10 @@ local function MakeClassicFrame(frame)
             self.changing = false
         end)
 
-        if db.classicFramesDesaturated or db.classColorFrameTexture then
+        if db.classicFramesDesaturated then
             frame.ClassicFrame.Texture:SetDesaturated(true)
+        else
+            BBF.SyncClassicFrameDesaturation(frame.ClassicFrame.Texture, frameContainer.FrameTexture)
         end
 
     elseif frame == PetFrame then
@@ -1479,7 +1488,7 @@ local function MakeClassicFrame(frame)
         PetFrameHealthBar:SetFrameLevel(1)
         PetFrameHealthBarMask:Hide()
 
-        PetFrameManaBar:SetSize(71, 8)
+        PetFrameManaBar:SetSize(73, 8)
         PetFrameManaBar:ClearAllPoints()
         PetFrameManaBar:SetPoint("TOPLEFT", 45, -29)
         PetFrameManaBar:SetFrameLevel(1)

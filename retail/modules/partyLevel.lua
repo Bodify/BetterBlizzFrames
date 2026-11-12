@@ -38,7 +38,7 @@ local function ColorRing(frame)
     local art = frame.Texture
     if not ring or not art then return end
     local r, g, b = art:GetVertexColor()
-    if ring.bbfHD then
+    if ring.bbfHD or issecretvalue(r) then
         ring:SetDesaturated(art:IsDesaturated())
         ring:SetVertexColor(r, g, b)
         return

@@ -254,7 +254,7 @@ local function PartyFrameNameChange(frame)
 
     if not (BetterBlizzFramesDB.biggerHealthbars or BetterBlizzFramesDB.betterDefaultPartyFrames) then
         if not changeUnitFrameFont and not changePartyFrameFont then
-            frame.bbfName:SetFont(frame.name:GetFont())
+            BBF.SetNameFont(frame.bbfName, frame.name:GetFont())
         end
         frame.bbfName:ClearAllPoints()
         frame.bbfName:SetPoint("LEFT", frame.name, "LEFT")
@@ -531,7 +531,7 @@ local function InitializeFontString(frame)
 
     -- Copy font settings
     local font, fontHeight, fontFlags = name:GetFont()
-    frame.bbfName:SetFont(font, fontHeight, fontFlags)
+    BBF.SetNameFont(frame.bbfName, font, fontHeight, fontFlags)
 
     -- Copy alignment, color, shadow, and dimensions
     frame.bbfName:SetJustifyH(name:GetJustifyH())
@@ -645,7 +645,7 @@ local function SetPartyFont(font, size, outline, size2)
     for i = 1, 5 do
         local frame = _G["CompactPartyFrameMember"..i]
         if frame then
-            frame.name:SetFont(font, size, outline)
+            BBF.SetNameFont(frame.name, font, size, outline)
             frame.bbfSetFont = true
             if frame.statusText then
                 frame.statusText:SetFont(font, size2, outline)
@@ -655,7 +655,7 @@ local function SetPartyFont(font, size, outline, size2)
     for i = 1, 5 do
         local frame = _G["CompactRaidFrame"..i]
         if frame then
-            frame.name:SetFont(font, size, outline)
+            BBF.SetNameFont(frame.name, font, size, outline)
             frame.bbfSetFont = true
             if frame.statusText then
                 frame.statusText:SetFont(font, size2, outline)
@@ -666,7 +666,7 @@ local function SetPartyFont(font, size, outline, size2)
         for member = 1, 5 do
             local raidFrame = _G["CompactRaidGroup" .. group .. "Member" .. member]
             if raidFrame then
-                raidFrame.name:SetFont(font, size, outline)
+                BBF.SetNameFont(raidFrame.name, font, size, outline)
                 if raidFrame.statusText then
                     raidFrame.statusText:SetFont(font, size2, outline)
                 end
@@ -681,7 +681,7 @@ local function SetPartyFont(font, size, outline, size2)
             partyFrameMember = _G["PartyMemberFrame"..i]
         end
         if partyFrameMember then
-            partyFrameMember.bbfName:SetFont(font, size, outline)
+            BBF.SetNameFont(partyFrameMember.bbfName, font, size, outline)
         end
     end
 end
@@ -700,7 +700,7 @@ local function SetUnitFramesFont(font, size, outline)
                 newSize = newSize - 2
             end
         end
-        if not frame.bbfName:SetFont(font, newSize, outline) then
+        if not BBF.SetNameFont(frame.bbfName, font, newSize, outline) then
             anyFailed = true
         end
         --if frame.TargetFrameContent and frame.TargetFrameContent.TargetFrameContentMain.LevelText then
@@ -986,6 +986,7 @@ function BBF.SetCustomFonts()
                 local FontObject = _G[fontObjectName]
                 if FontObject and not (ignoreCombatText and combatTextFonts[fontObjectName])
                     and not fontObjectName:find("^BBPTextFont")
+                    and not fontObjectName:find("^BBFNameFont")
                     and not (bbpNameplateFont and fontObjectName:find("NamePlate", 1, true)) then
                     local _, size, style = FontObject:GetFont()
 
@@ -1001,7 +1002,7 @@ function BBF.SetCustomFonts()
 
             for _, frame in ipairs(frames) do
                 local _, size, style = frame.bbfName:GetFont()
-                frame.bbfName:SetFont(fontPath, size, style)
+                BBF.SetNameFont(frame.bbfName, fontPath, size, style)
             end
 
             -- Override action bar hotkey font for "●" symbol
@@ -1062,7 +1063,7 @@ function BBF.SetCustomFonts()
         if not BBF.hookedRaidFramesFont then
             local function SetRaidFrameFont(raidFrame)
                 --if raidFrame.bbfSetFont then return end
-                raidFrame.name:SetFont(fontPath, fontSize, outline)
+                BBF.SetNameFont(raidFrame.name, fontPath, fontSize, outline)
                 if raidFrame.statusText then
                     raidFrame.statusText:SetFont(fontPath, fontSize2, outline)
                 end
@@ -1070,7 +1071,7 @@ function BBF.SetCustomFonts()
             end
             local function SetRaidFramePetFont(raidFrame)
                 --if raidFrame.bbfSetFont then return end
-                raidFrame.name:SetFont(fontPath, fontSize, outline)
+                BBF.SetNameFont(raidFrame.name, fontPath, fontSize, outline)
                 if raidFrame.statusText then
                     raidFrame.statusText:SetFont(fontPath, fontSize2, outline)
                 end
@@ -1212,7 +1213,7 @@ local function PlayerFrameNameChanges(frame)
         return
     end
     if not changeUnitFrameFont then
-        frame.bbfName:SetFont(frame.name:GetFont())
+        BBF.SetNameFont(frame.bbfName, frame.name:GetFont())
     end
     if classColorTargetNames then
         ClassColorName(frame.bbfName, unit)
@@ -1237,7 +1238,7 @@ local function TargetFrameNameChanges(frame)
     local unit = frame.unit
 
     if not changeUnitFrameFont then
-        frame.bbfName:SetFont(frame.name:GetFont())
+        BBF.SetNameFont(frame.bbfName, frame.name:GetFont())
     end
 
     if targetAndFocusArenaNames and IsActiveBattlefieldArena() then
@@ -1308,7 +1309,7 @@ local function PetFrameNameChanges(frame)
         return
     end
     if not changeUnitFrameFont then
-        frame.bbfName:SetFont(frame.name:GetFont())
+        BBF.SetNameFont(frame.bbfName, frame.name:GetFont())
     end
     frame.bbfName:SetText(frame.name:GetText())
     if classColorTargetNames then
@@ -1338,7 +1339,7 @@ local function FocusFrameNameChanges(frame)
     end
 
     if not changeUnitFrameFont then
-        frame.bbfName:SetFont(frame.name:GetFont())
+        BBF.SetNameFont(frame.bbfName, frame.name:GetFont())
     end
 
     if targetAndFocusArenaNames and IsActiveBattlefieldArena() then
@@ -1394,7 +1395,7 @@ local function TargetFrameToTNameChanges(frame)
     local unit = frame.unit
 
     if not changeUnitFrameFont then
-        frame.bbfName:SetFont(frame.name:GetFont())
+        BBF.SetNameFont(frame.bbfName, frame.name:GetFont())
     end
 
     if targetAndFocusArenaNames and IsActiveBattlefieldArena() then
@@ -1427,7 +1428,7 @@ local function FocusFrameToTNameChanges(frame)
     local unit = frame.unit
 
     if not changeUnitFrameFont then
-        frame.bbfName:SetFont(frame.name:GetFont())
+        BBF.SetNameFont(frame.bbfName, frame.name:GetFont())
     end
 
     if targetAndFocusArenaNames and IsActiveBattlefieldArena() then

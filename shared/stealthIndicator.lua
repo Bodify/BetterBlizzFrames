@@ -21,6 +21,15 @@ local function GetStealthIndicatorHeight()
     end
 end
 
+local function NoPortraitBigHealthbar()
+    return BBF.isForever and BBF.BigHealthbarOn and BBF.BigHealthbarOn(PlayerFrame)
+end
+
+local function GetNoPortraitStealthHeight()
+    local height = GetStealthIndicatorHeight()
+    return NoPortraitBigHealthbar() and height - 1 or height
+end
+
 local function CreateStealthIndicator()
     PlayerFrame.bbfStealthIndicatorFrame.Texture = PlayerFrame.bbfStealthIndicatorFrame:CreateTexture(nil, "BACKGROUND")
     if BBF.isRetail then
@@ -28,6 +37,12 @@ local function CreateStealthIndicator()
             PlayerFrame.bbfStealthIndicatorFrame.Texture.bbfClassicGlow = true
             PlayerFrame.bbfStealthIndicatorFrame.Texture:SetVertexColor(0.212, 0.486, 1)
             BBF.SetClassicStealthGlow(PlayerFrame.bbfStealthIndicatorFrame.Texture)
+            local function RefreshGlow()
+                BBF.SetClassicStealthGlow(PlayerFrame.bbfStealthIndicatorFrame.Texture)
+            end
+            hooksecurefunc(PlayerFrame.PlayerFrameContainer.AlternatePowerFrameTexture, "Show", RefreshGlow)
+            hooksecurefunc(PlayerFrame.PlayerFrameContainer.AlternatePowerFrameTexture, "Hide", RefreshGlow)
+            hooksecurefunc(PlayerFrame.PlayerFrameContainer.AlternatePowerFrameTexture, "SetShown", RefreshGlow)
         elseif BetterBlizzFramesDB.classicFrames then
             PlayerFrame.bbfStealthIndicatorFrame.Texture:SetVertexColor(0.212, 0.486, 1)
             PlayerFrame.bbfStealthIndicatorFrame.Texture:SetSize(240.5, 93)
@@ -42,8 +57,9 @@ local function CreateStealthIndicator()
             PlayerFrame.bbfStealthIndicatorFrame.Texture:SetAtlas("loottoast-glow")
             PlayerFrame.bbfStealthIndicatorFrame.Texture:SetDesaturated(true)
             PlayerFrame.bbfStealthIndicatorFrame.Texture:SetVertexColor(0.212, 0.486, 1)
-            PlayerFrame.bbfStealthIndicatorFrame.Texture:SetPoint("TOP", BBF.HealthBar and BBF.HealthBar(PlayerFrame) or PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer.HealthBar, "CENTER", 0, 17.5)
-            PlayerFrame.bbfStealthIndicatorFrame.Texture:SetSize(143, GetStealthIndicatorHeight())
+            local big = NoPortraitBigHealthbar()
+            PlayerFrame.bbfStealthIndicatorFrame.Texture:SetPoint("TOP", BBF.HealthBar and BBF.HealthBar(PlayerFrame) or PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer.HealthBar, "CENTER", 0, big and 22 or 17.5)
+            PlayerFrame.bbfStealthIndicatorFrame.Texture:SetSize(big and 144 or 143, GetNoPortraitStealthHeight())
         else
             PlayerFrame.bbfStealthIndicatorFrame.Texture:SetAtlas("ui-hud-unitframe-player-portraiton-vehicle-status")
             PlayerFrame.bbfStealthIndicatorFrame.Texture:SetSize(SymmetricPlayer() and 200 or 201, 83.5)
@@ -70,7 +86,7 @@ end
 
 local function UpdateStealthIndicator()
     if (BBF.isRetail or BBF.isForever) and not BetterBlizzFramesDB.classicFrames and BBF.HasNoPortrait("player") then
-        PlayerFrame.bbfStealthIndicatorFrame.Texture:SetHeight(GetStealthIndicatorHeight())
+        PlayerFrame.bbfStealthIndicatorFrame.Texture:SetHeight(GetNoPortraitStealthHeight())
     end
     if IsStealthed() then
         if PlayerFrame.bbfStealthIndicatorFrame.Texture.bbfClassicGlow then

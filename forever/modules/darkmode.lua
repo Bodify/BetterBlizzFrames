@@ -43,6 +43,21 @@ local function applySettings(frame, desaturate, colorValue, hook, hookShow)
 end
 
 
+local function ApplyDarkElite(frame)
+    local texture = frame.TargetFrameContainer.BossPortraitFrameTexture
+    if not texture or texture:IsForbidden() then return end
+    local db = BetterBlizzFramesDB
+    if db.darkModeUi and db.darkModeEliteTexture then
+        texture.bbfDarkElite = true
+        applySettings(texture, db.darkModeEliteTextureDesaturated or false, BBF.DarkModeEliteValue())
+    elseif texture.bbfDarkElite then
+        texture.bbfDarkElite = nil
+        texture:SetDesaturated(frame.unit and BBF.GetSelfEliteClassification(frame.unit) == "rareelite" or false)
+        texture:SetVertexColor(1, 1, 1)
+    if BBF.UpdateBossDragonBronze then BBF.UpdateBossDragonBronze(frame) end
+    end
+end
+
 local function applyUnitFrameArt(frame, on, colorValue)
     if not frame or issecretvalue(frame) then return end
     if on then
@@ -634,6 +649,9 @@ end
 function BBF.DarkmodeFrames(bypass)
     UpdateDarkModeHookState()
     BBF.UpdateUserDarkModeSettings()
+    if BBF.UpdateCalmerCombatGlow then
+        BBF.UpdateCalmerCombatGlow()
+    end
     if not bypass and not BetterBlizzFramesDB.darkModeUi then return end
 
     BBF.AbsorbCaller()
@@ -663,7 +681,7 @@ function BBF.DarkmodeFrames(bypass)
     local frameColor = unitFramesOn and vertexColor or 1
     local frameDarkerColor = unitFramesOn and darkerVertexColor or 1
 
-    local minimapDark = BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeMinimap and not (BBF.MinimapBronzeTintActive and BBF.MinimapBronzeTintActive())
+    local minimapDark = BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeMinimap
     local minimapColor = minimapDark and BetterBlizzFramesDB.darkModeColor or 1
     local minimapSat = minimapDark and true or false
     local tooltipColor = (BetterBlizzFramesDB.darkModeUi and BetterBlizzFramesDB.darkModeGameTooltip) and BetterBlizzFramesDB.darkModeColor or 1
@@ -786,6 +804,20 @@ function BBF.DarkmodeFrames(bypass)
             end
         end
 
+        if AuraContainerInbound and AuraContainerInbound.SetTooltipNineSlice then
+            if tooltipSat then
+                AuraContainerInbound.SetTooltipNineSlice({
+                    layoutName = "TooltipDefaultLayout",
+                    borderColor = CreateColor(tooltipColor, tooltipColor, tooltipColor, 1),
+                    centerColor = CreateColor(0, 0, 0, 1),
+                })
+                BBF.darkAuraTooltip = true
+            elseif BBF.darkAuraTooltip then
+                AuraContainerInbound.ResetTooltipStyle()
+                BBF.darkAuraTooltip = nil
+            end
+        end
+
         BBF.darkModeTooltips = true
     end
 
@@ -828,12 +860,8 @@ function BBF.DarkmodeFrames(bypass)
     end
 
 
-    if BetterBlizzFramesDB.darkModeEliteTexture then
-        local v = BBF.DarkModeEliteValue()
-        local d = BetterBlizzFramesDB.darkModeEliteTextureDesaturated or false
-        applySettings(TargetFrame.TargetFrameContainer.BossPortraitFrameTexture, d, v)
-        applySettings(FocusFrame.TargetFrameContainer.BossPortraitFrameTexture, d, v)
-    end
+    ApplyDarkElite(TargetFrame)
+    ApplyDarkElite(FocusFrame)
     BBF.UpdateClassicEliteOverlay(TargetFrame)
     BBF.UpdateClassicEliteOverlay(FocusFrame)
     BBF.UpdateClassicHDElite(TargetFrame)
@@ -874,6 +902,7 @@ function BBF.DarkmodeFrames(bypass)
     else
         BBF.UpdateClassicPvpCircles()
     end
+    BBF.RacialIndicatorCaller()
 
     for i = 1, Minimap:GetNumChildren() do
         local child = select(i, Minimap:GetChildren())
@@ -1029,6 +1058,7 @@ function BBF.DarkmodeFrames(bypass)
     end
 
     applySettings(MinimapCompassTexture, minimapSat, minimapColor)
+    applySettings(MinimapCompassTextureUnderlay, minimapSat, minimapColor)
 
     for _, button in ipairs({ MinimapCluster.ZoneTextButton or false, AddonCompartmentFrame or false }) do
         if button then
@@ -1060,6 +1090,7 @@ function BBF.DarkmodeFrames(bypass)
             applySettings(texture, minimapSat, minimapColor)
         end
     end
+    applySettings(BBF.minimapMailBorder, minimapSat, minimapColor)
 
     for i = 1, ExpansionLandingPageMinimapButton:GetNumRegions() do
         local region = select(i, ExpansionLandingPageMinimapButton:GetRegions())

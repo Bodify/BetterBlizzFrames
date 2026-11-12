@@ -144,6 +144,15 @@ local defaultSettings = {
     hideTooltip = false,
     hideTooltipArena = true,
     hideTooltipCombat = true,
+    colorTooltips = false,
+    colorTooltipsClass = true,
+    colorTooltipsNpc = true,
+    colorTooltipsLevel = true,
+    colorTooltipsFaction = true,
+    colorTooltipsHideFaction = false,
+    colorTooltipsHideHealthbar = false,
+    colorTooltipsClassHealthbar = false,
+    colorTooltipsHideClass = false,
     lowerToTStrata = false,
     flipPortraits = false,
     smoothManabars = true,
@@ -184,6 +193,7 @@ local defaultSettings = {
     racialIndicatorXPos = 0,
     racialIndicatorYPos = 0,
     racialIndicatorScale = 1,
+    racialIndicatorNpcs = true,
     racialIndicatorOrc = true,
     racialIndicatorNelf = true,
     racialIndicatorHuman = true,
@@ -411,10 +421,21 @@ local defaultSettings = {
     actionBarFontColorRGB = {1,1,1,1},
     actionBarRangeColor = false,
     snowfallKeypress = false,
+    questXpBarColor = {0.847, 0.51, 0.125, 1},
+    healPredictionColor = {0, 1, 0, 1},
+    healPredictionColorUnitFrames = true,
+    healPredictionColorRaidFrames = true,
     actionBarRangeOverlayColor = {1, 0, 0, 0.35},
     actionBarRangeIconColor = {0.59, 0.24, 0.22, 1},
     actionBarRangeUseOverlay = false,
     actionBarRangeDesaturate = false,
+    interruptIconRangeColor = false,
+    interruptIconRangeOwnSettings = false,
+    interruptIconRangeOverlayColor = {1, 0, 0, 0.35},
+    interruptIconRangeIconColor = {0.59, 0.24, 0.22, 1},
+    interruptIconRangeUseOverlay = false,
+    interruptIconRangeDesaturate = false,
+    interruptIconRangeBorder = false,
     changeActionBarCDFont = false,
     actionBarCDTextColor = false,
     actionBarCDTextBaseColor = {1, 1, 0.1, 1},
@@ -1170,10 +1191,22 @@ function BBF.RemoveAddonCategories()
         return aTitle < bTitle;
     end
 
+    local function GetAddonCharacter()
+        local dropdown = AddonList.Dropdown
+        if dropdown and dropdown.CollectSelectionData then
+            local _, _, selections = dropdown:CollectSelectionData()
+            local selected = selections and selections[1]
+            local data = selected and selected.GetData and selected:GetData()
+            if data == "All" then return nil end
+            if type(data) == "string" then return data end
+        end
+        return UnitGUID("player")
+    end
+
     local function RemoveAddonCategories()
         local dataProvider = CreateTreeDataProvider();
         local filterText = AddonList.SearchBox:GetText():lower();
-        local character = UnitName("player");
+        local character = GetAddonCharacter();
 
         local enabledGroups = {};
         local disabledGroups = {};
@@ -1192,7 +1225,7 @@ function BBF.RemoveAddonCategories()
                 local isEnabled = enabledState > Enum.AddOnEnableState.None;
                 local treatAsDisabled = not isEnabled or reason == "DEP_DISABLED";
 
-                local entry = { addonIndex = i };
+                local entry = { addonIndex = i, disabled = treatAsDisabled };
                 local targetGroup = treatAsDisabled and disabledGroups or enabledGroups;
 
                 if name == group then
@@ -1209,13 +1242,24 @@ function BBF.RemoveAddonCategories()
             end
         end
 
+        for group, children in pairs(groupChildren) do
+            if not enabledGroups[group] and not disabledGroups[group] then
+                for _, child in ipairs(children) do
+                    local childName = C_AddOns.GetAddOnInfo(child.addonIndex);
+                    local targetGroup = child.disabled and disabledGroups or enabledGroups;
+                    targetGroup[childName] = child;
+                end
+                groupChildren[group] = nil;
+            end
+        end
+
         local function InsertSortedGroups(groupTable)
             local sortedGroups = {};
             for groupName in pairs(groupTable) do
                 table.insert(sortedGroups, groupName);
             end
             table.sort(sortedGroups, function(a, b)
-                return RemoveColorCodes(a):lower() < RemoveColorCodes(b):lower();
+                return SortByTitle(groupTable[a], groupTable[b]);
             end);
 
             for _, groupName in ipairs(sortedGroups) do
@@ -3087,6 +3131,8 @@ Frame:SetScript("OnEvent", function(...)
         BBF.SetCustomFonts()
         BBF.UpdateCustomTextures()
         BBF.XpBarTexture()
+        BBF.QuestXpBar()
+        BBF.HealPredictionColor()
         BBF.SetResourcePosition()
         ScaleClassResource()
     end)
@@ -3369,6 +3415,7 @@ First:SetScript("OnEvent", function(_, event, addonName)
             BBF.CenterCurrentValueOnBars()
             BBF.StatusBarTextExtra()
             BBF.HideTooltip()
+            BBF.ColorTooltips()
             BBF.LowerToTStrata()
             BBF.FlipPortraits()
             BBF.UpdateAuraCollapseButton()

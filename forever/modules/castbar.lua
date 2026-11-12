@@ -2288,7 +2288,7 @@ local function ApplyTargetTextSettings(castBar)
 
     local font, _, flags = text:GetFont()
     if font then
-        text:SetFont(font, db[key .. "Size"] or 10, flags)
+        BBF.SetNameFont(text, font, db[key .. "Size"] or 10, flags)
     end
 end
 

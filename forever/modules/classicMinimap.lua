@@ -10,6 +10,53 @@ local DEFAULT_Y_POS = 12
 local skin
 local title
 
+local TRACKING_SPOT = { x = -75, y = 16 }
+local DIEL_SPOT = { x = 71, y = 35 }
+
+local function RimSpot(spot, angleKey)
+    local angle = BetterBlizzFramesDB[angleKey]
+    local radius = math.sqrt(spot.x * spot.x + spot.y * spot.y)
+    if not angle then return spot.x, spot.y end
+    angle = math.rad(angle)
+    return radius * math.cos(angle), radius * math.sin(angle)
+end
+
+local function PlaceTracking()
+    local tracking = MinimapCluster.Tracking
+    if not tracking or not skin then return end
+    local x, y = RimSpot(TRACKING_SPOT, "classicMinimapTrackingAngle")
+    tracking:ClearAllPoints()
+    tracking:SetPoint("CENTER", skin, "CENTER", x, y)
+end
+
+local function PlaceDiel()
+    local diel = MinimapCluster.DielFrame
+    if not diel or not skin then return end
+    local scale = skin:GetScale()
+    local x, y = RimSpot(DIEL_SPOT, "classicMinimapDielAngle")
+    diel:ClearAllPoints()
+    diel:SetPoint("CENTER", skin, "CENTER", x * scale, y * scale)
+end
+
+local function MakeRimDraggable(handle, angleKey, place)
+    local function Drag()
+        local mx, my = Minimap:GetCenter()
+        local px, py = GetCursorPosition()
+        local effective = Minimap:GetEffectiveScale()
+        BetterBlizzFramesDB[angleKey] = math.deg(math.atan2(py / effective - my, px / effective - mx)) % 360
+        place()
+    end
+    handle:EnableMouse(true)
+    handle:RegisterForDrag("LeftButton")
+    handle:HookScript("OnDragStart", function(self)
+        GameTooltip_Hide()
+        self:SetScript("OnUpdate", Drag)
+    end)
+    handle:HookScript("OnDragStop", function(self)
+        self:SetScript("OnUpdate", nil)
+    end)
+end
+
 local function AddTexture(parent, layer, subLevel, file, width, height, point, relativeTo, relativePoint, x, y)
     local texture = parent:CreateTexture(nil, layer, nil, subLevel)
     texture:SetTexture(file)
@@ -173,7 +220,7 @@ function BBF.ClassicMinimap()
         tracking:SetParent(skin)
         tracking:ClearAllPoints()
         tracking:SetSize(32, 32)
-        tracking:SetPoint("TOPLEFT", skin, "TOPLEFT", 5, -64)
+        PlaceTracking()
 
         tracking.Background:SetTexture(ART .. "UI-Minimap-Background")
         tracking.Background:SetTexCoord(0, 1, 0, 1)
@@ -197,6 +244,7 @@ function BBF.ClassicMinimap()
         button:SetHighlightTexture(ART .. "UI-Minimap-ZoomButton-Highlight", "ADD")
         button:GetHighlightTexture():SetTexCoord(0, 1, 0, 1)
         AddTexture(button, "BORDER", 0, TRACKING_BORDER, 54, 54, "TOPLEFT")
+        MakeRimDraggable(button, "classicMinimapTrackingAngle", PlaceTracking)
     end
 
     local indicators = MinimapCluster.IndicatorFrame
@@ -282,13 +330,13 @@ function BBF.ClassicMinimap()
         local diel = MinimapCluster.DielFrame
         if diel then
             diel:SetScale(1 / scale)
-            diel:ClearAllPoints()
-            diel:SetPoint("CENTER", skin, "CENTER", 71 * scale, 35 * scale)
+            PlaceDiel()
         end
 
     end
     if MinimapCluster.DielFrame then
         MinimapCluster.DielFrame:SetParent(skin)
+        MakeRimDraggable(MinimapCluster.DielFrame, "classicMinimapDielAngle", PlaceDiel)
         hooksecurefunc(MinimapCluster, "SetEditModeScale", Relayout)
     end
     Minimap:HookScript("OnSizeChanged", Relayout)

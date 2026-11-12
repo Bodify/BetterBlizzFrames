@@ -131,6 +131,14 @@ local eliteNoLvlTextures = {
     rare = bigPath .. "UI-TargetingFrame-Rare-NoLevel.png",
 }
 
+local ORIGINAL = bigPath .. "Original\\"
+local originalTextures = {
+    [defaultTex] = ORIGINAL .. "UI-TargetingFrame.png",
+    [eliteTextures.elite] = ORIGINAL .. "UI-TargetingFrame-Elite.png",
+    [eliteTextures.rare] = ORIGINAL .. "UI-TargetingFrame-Rare.png",
+    [eliteTextures.rareelite] = ORIGINAL .. "UI-TargetingFrame-Rare-Elite.png",
+}
+
 local HD_MO = "Interface\\AddOns\\BetterBlizzFrames\\media\\classicTextures\\MoTextures\\"
 local HD_NOMANA = HD_MO .. "NoManas\\"
 
@@ -186,30 +194,17 @@ function BBF.ClassicHDTexturesActive()
     return db.classicFrames and db.classicFramesHDTextures and true or false
 end
 
-local function ClassicLevelArtSwapped(frame)
-    local db = BetterBlizzFramesDB
-    if BBF.BigHealthbarOn(frame) then return true end
-    if frame == PlayerFrame then return db.hideUnitFramePlayerMana end
-    if frame == TargetFrame then return db.hideUnitFrameTargetMana end
-    if frame == FocusFrame then return db.hideUnitFrameFocusMana end
-end
-
-function BBF.ClassicTargetLevelX(frame)
-    local x = -34
-    if not BBF.ClassicHDTexturesActive() and BetterBlizzFramesDB.classicFramesHDElite then
-        x = -32.5
-    end
-    return ClassicLevelArtSwapped(frame) and x + 1 or x
+function BBF.ClassicTargetLevelX()
+    return -32
 end
 
 function BBF.PlaceClassicTargetLevel(frame)
     local levelText = frame.TargetFrameContent.TargetFrameContentMain.LevelText
-    SetClassicLevelPoint(levelText, BBF.ClassicTargetLevelX(frame), 25.5, frame, "BOTTOMRIGHT")
+    SetClassicLevelPoint(levelText, BBF.ClassicTargetLevelX(), 25, frame, "BOTTOMRIGHT")
 end
 
 function BBF.ClassicPlayerLevelX()
-    local x = (BBF.ClassicHDTexturesActive() or BetterBlizzFramesDB.classicFramesHDElite) and -83 or -80
-    return ClassicLevelArtSwapped(PlayerFrame) and x - 1.5 or x
+    return -81.5
 end
 
 function BBF.ClassicHDCastbarsActive()
@@ -219,7 +214,10 @@ end
 function BBF.GetClassicTexture(original, noMana, isCastbar)
     local active = isCastbar and BBF.ClassicHDCastbarsActive() or (not isCastbar and BBF.ClassicHDTexturesActive())
     local entry = active and (isCastbar and castbarTextures or frameTextures)[original]
-    if not entry then return original, false end
+    if not entry then
+        local bundled = not isCastbar and not BetterBlizzFramesDB.classicFramesIngameTextures and originalTextures[original]
+        return bundled or original, false
+    end
     return (noMana and entry[2]) or entry[1], true
 end
 
@@ -558,7 +556,7 @@ function BBF.SetClassicHDLevelRing(frame, enabled)
             BBF.SetClassicLevelRing(levelText, circle, frame == PlayerFrame and 0 or -0.5, 0.5)
         else
             circle:SetAtlas("hud-PlayerFrame-levelring")
-            circle:SetSize(38, 32)
+            circle:SetSize(32, 32)
             BBF.SetClassicLevelRing(levelText, circle, frame == PlayerFrame and 0.5 or 1, -1.5)
         end
         classicFrame.HDLevelCircle = circle
@@ -788,10 +786,9 @@ local function MakeClassicFrame(frame)
         contentContext:SetParent(frame.ClassicFrame)
         contentContext.HighLevelTexture:SetParent(frame.ClassicFrame)
         contentContext.HighLevelTexture:SetDrawLayer("OVERLAY", 7)
-        contentContext.HighLevelTexture:ClearAllPoints()
         local classicHD = BBF.ClassicHDTexturesActive() or db.classicFramesHDElite
         contentContext.HighLevelTexture:SetSize(classicHD and 13 or 14, 16)
-        contentContext.HighLevelTexture:SetPoint("CENTER", frame, "BOTTOMRIGHT", classicHD and -33 or -34, 25)
+        BBF.UpdateSkullIcon(frame, classicHD and 13 or 14, 16)
         contentContext.PetBattleIcon:ClearAllPoints()
         contentContext.PetBattleIcon:SetPoint("CENTER", frame, "BOTTOMRIGHT", -35, 25)
         contentContext.PrestigePortrait:ClearAllPoints()
@@ -1201,7 +1198,7 @@ local function MakeClassicFrame(frame)
             PlayerLevelText:SetParent(frame.ClassicFrame)
             PlayerLevelText:SetDrawLayer("OVERLAY", 7)
             PlayerLevelText:Show()
-            SetClassicLevelPoint(PlayerLevelText, BBF.ClassicPlayerLevelX(), -24.5)
+            SetClassicLevelPoint(PlayerLevelText, BBF.ClassicPlayerLevelX(), -25)
             local plvlFont, _, plvlFlags = PlayerLevelText:GetFont()
             if plvlFont then
                 PlayerLevelText:SetFont(plvlFont, 12, plvlFlags)
@@ -1220,7 +1217,7 @@ local function MakeClassicFrame(frame)
         local function UpdateLevel()
             if PlayerLevelHidden() then
                 PlayerLevelText:SetParent(BBF.hiddenFrame)
-                SetClassicLevelPoint(PlayerLevelText, BBF.ClassicPlayerLevelX(), -24.5)
+                SetClassicLevelPoint(PlayerLevelText, BBF.ClassicPlayerLevelX(), -25)
             else
                 UpdateLevelDetails()
             end

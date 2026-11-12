@@ -289,6 +289,7 @@ function BBF.UpdateUserAuraSettings()
     S.stackScale = db.auraStackSize or 1
     S.stackFont = H.AuraFont(db.auraStackFontEnabled, db.auraStackFont, db.auraStackFontOutline)
     S.timerFont = H.AuraFont(db.auraTimerFontEnabled, db.auraTimerFont, db.auraTimerFontOutline)
+    S.durationFontKey = db.changeBuffDurationFont and (tostring(db.buffDurationFont) .. "|" .. tostring(db.buffDurationFontSize) .. "|" .. tostring(db.buffDurationFontOutline)) or nil
     S.showCdText = db.showAuraCdText
     S.playerDurations = CVarCallbackRegistry:GetCVarValueBool("buffDurations")
     S.playerDurationOnIcon = db.playerAuraDurationOnIcon and true or false
@@ -958,7 +959,7 @@ local function ApplyDurationFont(timer, style)
     local base = timer.bbfBaseFont
     if not base then return end
     local font = style.timerFont
-    timer:SetFont(font and font[1] or base[1], base[2], font and font[2] or (style.durationOutline and "OUTLINE") or base[3])
+    timer:SetFont(BBF.BuffDurationFontOverride(font and font[1] or base[1], base[2], font and font[2] or (style.durationOutline and "OUTLINE") or base[3]))
 end
 
 local function ApplyCountdownFormatter(cooldown, style)
@@ -1613,6 +1614,7 @@ local function BuildStyle(tier, sizes, isPlayer, cfg, into)
     t.stackScale = S.stackScale
     t.stackFont = S.stackFont
     t.timerFont = S.timerFont
+    t.durationFontKey = isPlayer and S.durationFontKey or nil
     t.showTimerText = showTimerText
     t.hideLongTimers = (not isPlayer and S.hideLongTimers) and true or false
     t.isPlayer = isPlayer
@@ -1673,7 +1675,9 @@ local function GetFrameConfig(host, harmful)
 
     if harmful then
         local debuffOnlyMine = f.debuffOnlyMine
+        local forcedOnlyMine = false
         if hostile and BBF.forceOnlyMyDebuffsInPvE then
+            forcedOnlyMine = not debuffOnlyMine
             debuffOnlyMine = true
         elseif debuffOnlyMine and friendly then
             debuffOnlyMine = false
@@ -1681,6 +1685,7 @@ local function GetFrameConfig(host, harmful)
         cfg = {
             enabled = FriendlyFoeFilter(f, "debuffs", hostile, friendly),
             onlyMine = debuffOnlyMine,
+            forcedOnlyMine = forcedOnlyMine,
             short = FriendlyFoeFilter(f, "debuffShort", hostile, friendly),
             whitelist = f.debuffWhitelist,
             blacklist = FriendlyFoeFilter(f, "debuffBlacklist", hostile, friendly),
@@ -1743,7 +1748,7 @@ local function GetFrameConfig(host, harmful)
         cfg.liveCC = false
     end
 
-    cfg.narrowOn = (cfg.onlyMine or cfg.short or cfg.purgeable or cfg.dispellable) and true or false
+    cfg.narrowOn = ((cfg.onlyMine and not cfg.forcedOnlyMine) or cfg.short or cfg.purgeable or cfg.dispellable) and true or false
     cfg.blacklistMineSplit = (cfg.blacklist and listCache.hasShowMine) and true or false
 
     cfg.importantGlow = (extras and f.importantGlow and cfg.liveImportant) and true or false
@@ -2096,7 +2101,7 @@ local function ConfigureContainer(host, container, harmful)
         or cfg.ccFilter) and true or false
 
     if plan then
-        plan.mirror = (cfg.narrowOn or categoryOn
+        plan.mirror = (cfg.narrowOn or cfg.onlyMine or categoryOn
             or (cfg.blacklist and listCache.blacklist.any)) and true or false
     end
 
@@ -3019,7 +3024,7 @@ end
 
 local function GetPlayerContainerOffset(host, layout)
     local button = host.frame.CollapseAndExpandButton
-    if not button or BetterBlizzFramesDB.hideAuraCollapseButton then return 0, 0 end
+    if not button then return 0, 0 end
 
     if layout.isHorizontal then
         local width = button:GetWidth() or COLLAPSE_BUTTON_EXTENT

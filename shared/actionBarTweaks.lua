@@ -186,6 +186,8 @@ function BBF.ActionBarRangeColor()
     if rangeOn then
         ForEachButton(SyncActionRange)
     end
+
+    BBF.RefreshInterruptIconRange()
 end
 
 local cdTextOn, cdTextHooked, cdTextPending, cdFormatter, combatFrame
@@ -376,5 +378,67 @@ function BBF.ActionBarCooldownFont()
     ForEachButton(ApplyCooldownFont)
     if cdTextOn then
         BBF.ActionBarCooldownTextColor()
+    end
+end
+
+local slotArtGroups = {
+    { "MultiBarBottomLeftButton", 12 },
+    { "MultiBarBottomRightButton", 12 },
+    { "MultiBarRightButton", 12 },
+    { "MultiBarLeftButton", 12 },
+    { "MultiBar5Button", 12 },
+    { "MultiBar6Button", 12 },
+    { "MultiBar7Button", 12 },
+    { "PetActionButton", 10 },
+    { "StanceButton", 10 },
+    { "PossessButton", 2 },
+}
+
+local slotArtOn
+
+local function ApplySlotArt(button)
+    if not button.SlotArt or not button.SlotBackground then return end
+    local small = button:GetWidth() < 40
+    if slotArtOn then
+        button.SlotArt:Show()
+        button.SlotBackground:Hide()
+        local w, h = 46, 45
+        if small then w, h = 46 * 30 / 45, 30 end
+        button:SetNormalAtlas("UI-HUD-ActionBar-IconFrame")
+        button.NormalTexture:SetDrawLayer("OVERLAY")
+        button.NormalTexture:SetSize(w, h)
+        button:SetPushedAtlas("UI-HUD-ActionBar-IconFrame-Down")
+        button.PushedTexture:SetDrawLayer("OVERLAY")
+        button.PushedTexture:SetSize(w, h)
+    else
+        button.SlotArt:Hide()
+        button.SlotBackground:Show()
+        local size = small and 35 or 51
+        button:SetNormalAtlas("UI-HUD-ActionBar-IconFrame-AddRow")
+        button.NormalTexture:SetDrawLayer("OVERLAY")
+        button.NormalTexture:SetSize(size, size)
+        button:SetPushedAtlas("UI-HUD-ActionBar-IconFrame-AddRow-Down")
+        button.PushedTexture:SetDrawLayer("OVERLAY")
+        button.PushedTexture:SetSize(size, size)
+    end
+end
+
+function BBF.ActionBarSlotArt()
+    local enabled = BetterBlizzFramesDB.actionBarSlotArt and true or false
+    if not enabled and not slotArtOn then return end
+    slotArtOn = enabled
+    for _, group in ipairs(slotArtGroups) do
+        for i = 1, group[2] do
+            local button = _G[group[1] .. i]
+            if button and button.SlotArt then
+                if not button.bbfSlotArtHooked and button.UpdateButtonArt then
+                    button.bbfSlotArtHooked = true
+                    hooksecurefunc(button, "UpdateButtonArt", function(self)
+                        if slotArtOn then ApplySlotArt(self) end
+                    end)
+                end
+                ApplySlotArt(button)
+            end
+        end
     end
 end

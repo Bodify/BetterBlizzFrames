@@ -144,6 +144,7 @@ local function UpdateInterruptIcon(frame)
                 frame.icon:SetTexture(GetSpellTexture(knownInterruptSpellID))
                 frame.cooldown:SetCooldown(start, duration)
                 frame:SetAlpha(1)
+                BBF.UpdateInterruptIconRange(frame, knownInterruptSpellID, frame.unit)
             else
                 frame:SetAlpha(0)
             end

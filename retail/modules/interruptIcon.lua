@@ -97,6 +97,7 @@ local function UpdateInterruptIcon(frame)
             if shouldShow then
                 frame:Show()
                 frame.icon:SetTexture(C_Spell.GetSpellTexture(playerKick))
+                BBF.UpdateInterruptIconRange(frame, playerKick, castBar.unit)
 
                 if frame.border then
                     if isOnCooldown then

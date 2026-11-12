@@ -333,7 +333,9 @@ function BBF.GetHealthbarLayout(frame)
 end
 
 function BBF.TargetNameBorderRemoved(frame)
-    if not BetterBlizzFramesDB.removeNameBorder or not IsTargetFrame(frame) then return false end
+    if not IsTargetFrame(frame) then return false end
+    local db = BetterBlizzFramesDB
+    if not (db.removeNameBorder and db[frame == FocusFrame and "removeNameBorderFocus" or "removeNameBorderTarget"]) then return false end
     return TargetStyle(frame) == "default" and not BBF.BigHealthbarOn(frame) and not IsMinus(frame)
 end
 
@@ -420,7 +422,7 @@ local function SetNameBackgroundHidden(frame, hidden)
         KeepNameBackgroundHidden(reputationColor)
     elseif reputationColor.bbfBigHidden then
         reputationColor.bbfBigHidden = nil
-        reputationColor:SetAlpha(1)
+        reputationColor:SetAlpha(BBF.NameBgAlpha(frame.unit))
     end
 end
 
@@ -437,7 +439,8 @@ local function TargetPlayerArt(frame)
         return PLAYER_ART .. "-BigHealthbar" .. suffix .. noMana .. ".png", PLAYER_ART .. "-InCombat-BigHealthbar" .. suffix .. ".png", false, PLAYER_ART .. "-Status-Classic" .. suffix .. ".png"
     end
     if TargetStyle(frame) == "default" and not IsMinus(frame) then
-        if BetterBlizzFramesDB.removeNameBorder then
+        local db = BetterBlizzFramesDB
+        if db.removeNameBorder and db[frame == FocusFrame and "removeNameBorderFocus" or "removeNameBorderTarget"] then
             return PLAYER_ART .. "-NoNameBg" .. noMana .. ".png", PLAYER_ART .. "-InCombat-NoNameBg.png", true, PLAYER_ART .. "-Status-Classic-NoNameBg.png"
         end
         return PLAYER_ART .. noMana .. ".png", PLAYER_ART .. "-InCombat.png", false, PLAYER_ART .. "-Status-Classic.png"
@@ -585,7 +588,19 @@ local function ShiftThreatMeter(frame, retail)
     layout = layout and layout.layout
     local contextual = frame.TargetFrameContent.TargetFrameContentContextual
     if not contextual then return end
-    BBF.ShiftRegionY(contextual.NumericalThreat, layout and layout.big and layout.reduced and THREAT_BIG_REDUCED_RAISE or 0)
+    local raise = layout and layout.big and layout.reduced and THREAT_BIG_REDUCED_RAISE or 0
+    if BetterBlizzFramesDB.showBlizzThreatMeter then
+        raise = raise + 2
+    end
+    BBF.ShiftRegionY(contextual.NumericalThreat, raise)
+end
+
+function BBF.UpdateThreatMeterShift()
+    for _, frame in ipairs({ TargetFrame, FocusFrame }) do
+        if frame and frame.TargetFrameContent then
+            ShiftThreatMeter(frame, TargetStyle(frame) == "retail")
+        end
+    end
 end
 
 local function SetTargetPlayerArt(frame)
@@ -602,7 +617,7 @@ local function SetTargetPlayerArt(frame)
     local art, flashArt, noBorder, glowArt = TargetPlayerArt(frame)
     local mirror = BBF.GetHealthbarMirror(frame)
     local db = BetterBlizzFramesDB
-    local nameBgTexture = db[frame.unit .. "NameBgRetail"] or db[frame.unit .. "NameBgClassic"]
+    local nameBgTexture = db.changeUnitFrameNameBgTexture
     SetNameBackgroundHidden(frame, (noBorder and nameBgTexture) or (mirror and mirror.layout and mirror.layout.big))
     if art then
         frameTexture.bbfPlayerArt = true

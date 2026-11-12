@@ -291,7 +291,7 @@ local function SetNameBackgroundHidden(frame, hidden)
         reputationColor:SetAlpha(0)
     elseif reputationColor.bbfBigHidden then
         reputationColor.bbfBigHidden = nil
-        reputationColor:SetAlpha(1)
+        reputationColor:SetAlpha(BBF.NameBgAlpha())
     end
 end
 
