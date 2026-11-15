@@ -28,15 +28,17 @@ function BBF.PlaceClassicLevel(levelText)
         if text:sub(-1) == "1" then nudge = nudge - 0.5 end
     end
     levelText:ClearAllPoints()
+    local dx, dy = BBF.LevelTweakOffset(levelText == PlayerLevelText and "player" or "target")
+    local x, y = place.x + dx, place.y + dy
     local ring = levelText.bbfClassicLevelRing
     if ring then
         ring:ClearAllPoints()
-        ring:SetPoint("CENTER", place.relativeTo or ring:GetParent(), place.relativePoint or "CENTER", place.x + ring.bbfX, place.y + ring.bbfY)
+        ring:SetPoint("CENTER", place.relativeTo or ring:GetParent(), place.relativePoint or "CENTER", x + ring.bbfX, y + ring.bbfY)
         levelText:SetPoint("CENTER", ring, "CENTER", nudge - ring.bbfX, -ring.bbfY)
     elseif place.relativeTo then
-        levelText:SetPoint("CENTER", place.relativeTo, place.relativePoint, place.x + nudge, place.y)
+        levelText:SetPoint("CENTER", place.relativeTo, place.relativePoint, x + nudge, y)
     else
-        levelText:SetPoint("CENTER", place.x + nudge, place.y)
+        levelText:SetPoint("CENTER", x + nudge, y)
     end
 end
 
@@ -782,13 +784,13 @@ local function MakeClassicFrame(frame)
             return BBF.ClassicHDEliteActive()
         end
 
-        local function ToggleNoLevelFrame(noLvl, skipTexture)
+        local function ToggleNoLevelFrame(noLvl, skipTexture, showText)
             if noLvl then
                 if not skipTexture then
                     BBF.SetClassicTexture(frame.ClassicFrame.Texture, BBF.ClassicBigTargetTexture(frame, noLvlTex))
                 end
                 BBF.SetClassicFlash(frameContainer.Flash, true)
-                contentMain.LevelText:SetAlpha(0)
+                contentMain.LevelText:SetAlpha(showText and 1 or 0)
             else
                 if not skipTexture then
                     BBF.SetClassicTexture(frame.ClassicFrame.Texture, BBF.ClassicBigTargetTexture(frame, defaultTex))
@@ -802,6 +804,10 @@ local function MakeClassicFrame(frame)
             return alwaysHideLvl or (hideLvl and UnitLevel(frame.unit) == GetMaxLevelForPlayerExpansion()) or false
         end
 
+        local function NoLevelArt()
+            return LevelHidden() or BBF.LevelTweakRingActive("target")
+        end
+
         local function HDLevelFrame()
             ToggleNoLevelFrame(LevelHidden(), true)
             BBF.SetClassicTexture(frame.ClassicFrame.Texture, BBF.ClassicBigTargetTexture(frame, noLvlTex))
@@ -809,15 +815,15 @@ local function MakeClassicFrame(frame)
         end
 
         local function SetEliteArt(classification)
-            local noLvl = LevelHidden()
+            local noLvl = NoLevelArt()
             if UseHDElite() then
                 HDLevelFrame()
             elseif hideDragon then
-                ToggleNoLevelFrame(noLvl)
+                ToggleNoLevelFrame(noLvl, nil, not LevelHidden())
             else
                 local path = noLvl and eliteNoLvlTextures[classification] or eliteTextures[classification]
                 BBF.SetClassicTexture(frame.ClassicFrame.Texture, BBF.ClassicBigTargetTexture(frame, path))
-                ToggleNoLevelFrame(noLvl, true)
+                ToggleNoLevelFrame(noLvl, true, not LevelHidden())
             end
         end
 
@@ -860,7 +866,7 @@ local function MakeClassicFrame(frame)
                 elseif frame.unit == "focus" then
                     contentMain.ReputationColor:SetShown(not BetterBlizzFramesDB.hideFocusReputationColor)
                 end
-                ToggleNoLevelFrame(LevelHidden())
+                ToggleNoLevelFrame(NoLevelArt(), nil, not LevelHidden())
             end
             BBF.UpdateClassicEliteOverlay(self)
             BBF.UpdateClassicHDElite(self)
@@ -1054,6 +1060,10 @@ local function MakeClassicFrame(frame)
             return alwaysHideLvl or (hideLvl and UnitLevel("player") == GetMaxLevelForPlayerExpansion())
         end
 
+        local function PlayerNoLevelArt()
+            return PlayerLevelHidden() or BBF.LevelTweakRingActive("player")
+        end
+
         local function UpdatePlayerLevelRing()
             BBF.SetClassicHDLevelRing(frame, BBF.ClassicHDTexturesActive() or (db.playerEliteFrame and BBF.GetPlayerEliteMode() > 3))
         end
@@ -1073,14 +1083,14 @@ local function MakeClassicFrame(frame)
         end)
         UpdateLevel()
 
-        local function UpdateLevelUnderAttackIcon()
+        function BBF.UpdateLevelUnderAttackIcon()
             local icon = contentContext.AttackIcon
-            local covered = icon:IsShown() and not db.hidePlayerAttackIcon and not db.hideCombatIcon
+            local covered = icon:IsShown() and not db.hidePlayerAttackIcon and not db.hideCombatIcon and not BBF.IconTweakMoved("player", "Combat")
             PlayerLevelText.bbfUnderAttackIcon = covered or nil
             PlayerLevelText:SetAlpha(covered and 0 or 1)
         end
-        hooksecurefunc("PlayerFrame_UpdateStatus", UpdateLevelUnderAttackIcon)
-        UpdateLevelUnderAttackIcon()
+        hooksecurefunc("PlayerFrame_UpdateStatus", BBF.UpdateLevelUnderAttackIcon)
+        BBF.UpdateLevelUnderAttackIcon()
 
         hooksecurefunc("PlayerFrame_UpdateRolesAssigned", function()
             contentContext.RoleIcon:ClearAllPoints()
@@ -1232,7 +1242,7 @@ local function MakeClassicFrame(frame)
 
             -- Set Elite style according to value
             if mode <= 3 then
-                SetPlayerFrameTexture(playerElite, PlayerEliteArt(mode, PlayerLevelHidden()))
+                SetPlayerFrameTexture(playerElite, PlayerEliteArt(mode, PlayerNoLevelArt()))
                 playerElite:SetDesaturated(mode ~= 3)
             elseif mode > 3 then
                 SetPlayerFrameTexture(playerElite, noLvlTex, bigNoLvlTex, bigNoManaNoLvlTex)
@@ -1272,21 +1282,9 @@ local function MakeClassicFrame(frame)
         end
 
         local function UpdatePlayerFrameTexture()
+            ToggleNoLevelFrame(PlayerNoLevelArt())
             if db.playerEliteFrame then
-                ToggleNoLevelFrame(PlayerLevelHidden())
                 PlayerEliteFrame()
-            else
-                if alwaysHideLvl then
-                    ToggleNoLevelFrame(true)
-                elseif hideLvl then
-                    if UnitLevel("player") == GetMaxLevelForPlayerExpansion() then
-                        ToggleNoLevelFrame(true)
-                    else
-                        ToggleNoLevelFrame(false)
-                    end
-                else
-                    ToggleNoLevelFrame(false)
-                end
             end
         end
 
@@ -1860,10 +1858,16 @@ local function ApplyClassicBigParty(frame)
 end
 
 local function SetClassicPartyArt(frame)
+    local noLvl = BBF.LevelTweakRingActive("party")
     if ClassicBigParty() then
-        BBF.SetClassicTexture(frame.Texture, ClassicPartyNoMana() and bigNoManaTex or bigTex)
+        if noLvl then
+            BBF.SetClassicTexture(frame.Texture, ClassicPartyNoMana() and bigNoManaNoLvlTex or bigNoLvlTex)
+        else
+            BBF.SetClassicTexture(frame.Texture, ClassicPartyNoMana() and bigNoManaTex or bigTex)
+        end
     else
-        BBF.SetClassicTexture(frame.Texture, ClassicPartyNoMana() and classicNoManaArt[defaultTex] or defaultTex)
+        local art = noLvl and noLvlTex or defaultTex
+        BBF.SetClassicTexture(frame.Texture, ClassicPartyNoMana() and classicNoManaArt[art] or art)
     end
     frame.Texture:SetTexCoord(1, 0.09375, 0, 0.78125)
 end

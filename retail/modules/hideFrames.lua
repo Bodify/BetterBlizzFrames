@@ -329,6 +329,28 @@ function BBF.UpdatePartyAggroHighlight()
     end
 end
 
+local function ApplyRaidGroupTitle(groupIndex)
+    local frame = _G["CompactRaidGroup" .. groupIndex]
+    if not frame then return end
+    if BetterBlizzFramesDB.hideRaidGroupTitles then
+        frame.title:Hide()
+        frame.bbfTitleHidden = true
+    elseif frame.bbfTitleHidden then
+        frame.title:Show()
+        frame.bbfTitleHidden = nil
+    end
+end
+
+function BBF.UpdateRaidGroupTitles()
+    if BetterBlizzFramesDB.hideRaidGroupTitles and not BBF.raidGroupTitleHooked then
+        hooksecurefunc("CompactRaidGroup_GenerateForGroup", ApplyRaidGroupTitle)
+        BBF.raidGroupTitleHooked = true
+    end
+    for group = 1, 8 do
+        ApplyRaidGroupTitle(group)
+    end
+end
+
 function BBF.HideFrames()
     local db = BetterBlizzFramesDB
     if db.hasCheckedUi then
@@ -831,6 +853,7 @@ function BBF.HideFrames()
             changes.hidePartyFrameTitle = nil
             CompactPartyFrameTitle:Show()
         end
+        BBF.UpdateRaidGroupTitles()
 
         -- Hide PvP Icon BetterBlizzFramesDB.hidePvpIcon
         if BetterBlizzFramesDB.hidePrestigeBadge then

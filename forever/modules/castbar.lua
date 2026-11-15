@@ -676,8 +676,8 @@ local function AdjustBorderShieldSize(castBar)
 
 
         local barWidth, barHeight = GetCastbarSize(castBar)
-        local widthScale = barWidth / baseWidth
-        local heightScale = barHeight / baseHeight
+        local widthScale = (barWidth or baseWidth) / baseWidth
+        local heightScale = (barHeight or baseHeight) / baseHeight
 
         -- Apply scaled size to the border
         BBF.SetClassicTexture(castBar.BorderShield, 311862, nil, true)
@@ -708,8 +708,8 @@ local function AdjustFlash(castBar)
     local baseOffsetYBottom = -23
 
     local barWidth, barHeight = GetCastbarSize(castBar)
-    local widthScale = barWidth / baseWidth
-    local heightScale = barHeight / baseHeight
+    local widthScale = (barWidth or baseWidth) / baseWidth
+    local heightScale = (barHeight or baseHeight) / baseHeight
 
     -- Adjust the offsets based on the scaling factors
     local offsetX = baseOffsetX * widthScale

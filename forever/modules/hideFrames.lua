@@ -156,7 +156,7 @@ function BBF.UpdatePlayerAttackIcon()
     ApplyPlayerAttackIcon()
 end
 
-local function setLegacyComboHidden(hide)
+function BBF.SetLegacyComboHidden(hide)
     local frame = BBF.LegacyComboFrame
     if not frame then return end
     local wasHidden = frame.bbfHidden
@@ -397,6 +397,28 @@ function BBF.UpdatePartyAurasHidden()
         hooksecurefunc(PartyFrame, "InitializePartyMemberFrames", ApplyPartyAurasHidden)
     end
     ApplyPartyAurasHidden()
+end
+
+local function ApplyRaidGroupTitle(groupIndex)
+    local frame = _G["CompactRaidGroup" .. groupIndex]
+    if not frame then return end
+    if BetterBlizzFramesDB.hideRaidGroupTitles then
+        frame.title:Hide()
+        frame.bbfTitleHidden = true
+    elseif frame.bbfTitleHidden then
+        frame.title:Show()
+        frame.bbfTitleHidden = nil
+    end
+end
+
+function BBF.UpdateRaidGroupTitles()
+    if BetterBlizzFramesDB.hideRaidGroupTitles and not BBF.raidGroupTitleHooked then
+        hooksecurefunc("CompactRaidGroup_GenerateForGroup", ApplyRaidGroupTitle)
+        BBF.raidGroupTitleHooked = true
+    end
+    for group = 1, 8 do
+        ApplyRaidGroupTitle(group)
+    end
 end
 
 function BBF.HideFrames()
@@ -929,6 +951,7 @@ function BBF.HideFrames()
             changes.hidePartyFrameTitle = nil
             CompactPartyFrameTitle:Show()
         end
+        BBF.UpdateRaidGroupTitles()
 
         -- Hide PvP Icon BetterBlizzFramesDB.hidePvpIcon
         if BetterBlizzFramesDB.hidePrestigeBadge then
@@ -1098,7 +1121,7 @@ function BBF.HideFrames()
                 end
             end
             local ignoreVar = legacyComboIgnoreVars[UnitClassBase("player")]
-            setLegacyComboHidden(not (ignoreVar and BetterBlizzFramesDB[ignoreVar]))
+            BBF.SetLegacyComboHidden(not (ignoreVar and BetterBlizzFramesDB[ignoreVar]))
             changes.hidePlayerPower = true
         elseif originalResourceParent or (BBF.LegacyComboFrame and BBF.LegacyComboFrame.bbfHidden) then
             if WarlockPowerFrame and class == "WARLOCK" then WarlockPowerFrame:SetParent(originalResourceParent) end
@@ -1107,7 +1130,7 @@ function BBF.HideFrames()
             if EssencePlayerFrame and class == "EVOKER" then EssencePlayerFrame:SetParent(originalResourceParent) end
             if MonkHarmonyBarFrame and class == "MONK" then setResourceFrameVisibility(MonkHarmonyBarFrame, true) end
             if MageArcaneChargesFrame and class == "MAGE" then setResourceFrameVisibility(MageArcaneChargesFrame, true) end
-            setLegacyComboHidden(false)
+            BBF.SetLegacyComboHidden(false)
             changes.hidePlayerPower = nil
         end
         BBF.UpdateComboPointBarHidden()

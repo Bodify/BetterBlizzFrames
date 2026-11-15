@@ -150,9 +150,13 @@ local defaultSettings = {
     colorTooltipsLevel = true,
     colorTooltipsFaction = true,
     colorTooltipsHideFaction = false,
-    colorTooltipsHideHealthbar = false,
+    colorTooltipsFactionIcon = true,
+    colorTooltipsHideHealthbar = true,
     colorTooltipsClassHealthbar = false,
-    colorTooltipsHideClass = false,
+    colorTooltipsHideClass = true,
+    colorTooltipsClassInLevel = true,
+    colorTooltipsShowToT = true,
+    colorTooltipsHidePlayerTag = true,
     lowerToTStrata = false,
     flipPortraits = false,
     smoothManabars = true,
@@ -483,6 +487,10 @@ local function InitializeSavedVariables()
     end
     BetterBlizzFramesDB.playerCastBarTimerCentered = nil
 
+    if BetterBlizzFramesDB.arenaNames == nil then
+        BetterBlizzFramesDB.arenaNames = (BetterBlizzFramesDB.targetAndFocusArenaNames or BetterBlizzFramesDB.partyArenaNames) and true or false
+    end
+
     for key, defaultValue in pairs(defaultSettings) do
         if BetterBlizzFramesDB[key] == nil then
             BetterBlizzFramesDB[key] = defaultValue
@@ -520,6 +528,7 @@ end
 
 local function ResetBBF()
     BetterBlizzFramesDB = {}
+    BBF.UseDefaultsUntilReload(BetterBlizzFramesDB)
     ReloadUI()
 end
 
@@ -542,7 +551,7 @@ end
 local function SendUpdateMessage()
     if sendUpdate then
         if not BetterBlizzFramesDB.scStart then
-            if BetterBlizzFramesDB.skipUpdateMsg then
+            if BetterBlizzFramesDB.skipUpdateMsg or BBF.skippedUpdateMsg then
                 BetterBlizzFramesDB.skipUpdateMsg = nil
                 return
             end
@@ -3344,13 +3353,15 @@ First:SetScript("OnEvent", function(_, event, addonName)
                 BetterBlizzFramesDB.legacyComboYPos = -9
                 BetterBlizzFramesDB.legacyComboScale = 1
                 BetterBlizzFramesDB.mopUpdates = true
-                StaticPopupDialogs["BBF_MOP_UPDATE"] = {
-                    text = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: \n\n" .. L["Popup_Cata_Update_Text"],
-                    button1 = L["Yes"],
-                    timeout = 0,
-                    whileDead = true,
-                }
-                StaticPopup_Show("BBF_MOP_UPDATE")
+                if not (BetterBlizzFramesDB.skipUpdateMsg or BBF.skippedUpdateMsg) then
+                    StaticPopupDialogs["BBF_MOP_UPDATE"] = {
+                        text = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames: \n\n" .. L["Popup_Cata_Update_Text"],
+                        button1 = L["Yes"],
+                        timeout = 0,
+                        whileDead = true,
+                    }
+                    StaticPopup_Show("BBF_MOP_UPDATE")
+                end
             elseif not BetterBlizzFramesDB.hasSaved then
                 BetterBlizzFramesDB.mopUpdates = true
             end
@@ -3455,11 +3466,16 @@ First:SetScript("OnEvent", function(_, event, addonName)
 
             if not BetterBlizzFramesDB.updatePopup220 then
                 BetterBlizzFramesDB.updatePopup220 = true
-                if BetterBlizzFramesDB.hasSaved then
+                if BetterBlizzFramesDB.hasSaved and not (BetterBlizzFramesDB.skipUpdateMsg or BBF.skippedUpdateMsg) then
                     C_Timer.After(7, function()
                         BBF.ShowPopup("BBF_UPDATE_220")
                     end)
                 end
+            end
+
+            if BetterBlizzFramesDB.skipUpdateMsg then
+                BetterBlizzFramesDB.skipUpdateMsg = nil
+                BBF.skippedUpdateMsg = true
             end
 
             if not BetterBlizzFramesDB.optimizedAuraLists then

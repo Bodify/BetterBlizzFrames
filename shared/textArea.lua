@@ -6,10 +6,10 @@ BBF.TextAreaLayouts = {
         rules = {
             { style = "pixel", textRight = 0.5 },
             { client = "retail", style = "noPortrait", mode = "big", mana = "hidden", right = -0.5, healthY = -1, textLeft = 1.5 },
-            { client = "forever", style = "noPortrait", mode = "big", left = 0, right = 1, bottom = -1.5, textLeft = 1.5, textRight = 3.5, own = { bottom = true } },
+            { client = "forever", style = "noPortrait", mode = "big", left = 0, right = 2.5, bottom = -1.5, textLeft = 3.5, textRight = 4.5, own = { bottom = true } },
             { style = "noPortrait", mode = "big", right = -0.5 },
             { client = "retail", style = "noPortrait", mode = "none", right = -0.5, manaY = 0, textLeft = 1, textRight = 2.5, own = { manaY = true } },
-            { style = "noPortrait", left = -1.5, right = 1, bottom = -1.5, manaY = 0, textLeft = 3, textRight = 4.5 },
+            { style = "noPortrait", left = -1, right = 1, bottom = -1.5, manaY = 0, textLeft = 3.5, textRight = 4.5 },
             { style = "symmetric", mode = "xl", mana = "hidden", left = 10, right = -0.5, textRight = 3 },
             { style = "symmetric", mode = "xl", left = 5.5, right = -0.5, textLeft = 1, textRight = 3 },
             { style = "symmetric", mode = "reduced", mana = "hidden", left = 5, right = -1, textLeft = 5, textRight = 3 },
@@ -40,10 +40,10 @@ BBF.TextAreaLayouts = {
         health = { y = -0.5 }, mana = { y = -0.5 },
         rules = {
             { style = "pixel", textRight = 1 },
-            { client = "forever", style = "noPortrait", mode = "big", left = -1, right = -4, manaY = 0, textLeft = 2.5, textRight = 4.5, own = { manaY = true } },
+            { client = "forever", style = "noPortrait", mode = "big", left = -1, right = -2, manaY = 0, textLeft = 3.5, textRight = 6.5, own = { manaY = true } },
             { style = "noPortrait", mode = "big", left = 1, right = -2.5 },
             { client = "retail", style = "noPortrait", mode = "none", right = -5, manaY = -0.5, textLeft = 1, textRight = 2.5 },
-            { style = "noPortrait", left = -2, right = -3, bottom = -1.5, manaY = 0, textLeft = 3.5, textRight = 5.5 },
+            { style = "noPortrait", left = -2, right = -3, bottom = -1.5, manaY = 0, textLeft = 5.5, textRight = 5.5 },
             { style = "classic", mode = "big", mana = "hidden", inside = true, bottom = 1, healthY = 3.5 },
             { style = "classic", mode = "big", mana = "hidden", bottom = 1, healthY = -1.5 },
             { style = "classic", mode = "big", inside = true, bottom = -1, manaY = -0.5, own = { bottom = true } },
@@ -135,6 +135,7 @@ BBF.TextAreaLayouts = {
         rules = {
             { style = "pixel", textRight = 1 },
             { client = "retail", style = "noPortrait", mode = "big", mana = "hidden", left = -0.5, right = 1, bottom = -0.5, textLeft = 1.5 },
+            { client = "forever", style = "noPortrait", mode = "big", left = -0.5, right = 1, bottom = -0.5, textLeft = 2.5, textRight = 1 },
             { style = "noPortrait", mode = "big", left = -0.5, right = 1, bottom = -0.5 },
             { style = "noPortrait", left = 1.5, right = -4.5, bottom = 1.5, textRight = 0.5 },
             { client = "retail", style = "retail", mode = "xl", mana = "hidden", left = 13.5, right = 0, textRight = 1.5 },
@@ -213,7 +214,7 @@ BBF.NameLayouts = {
         { style = "camelot", mode = "reduced", y = 1.5 }, { client = "forever", style = "camelot", mode = "none", y = 1.5 }, { y = 0.5 } },
     pet = { { inside = true, y = -10 }, { style = "retail", y = 1.5 }, { style = "camelot", mode = "xl", mana = "hidden", y = 2.5 },
         { style = "camelot", mode = "reduced", y = 2 }, { y = 1.5 } },
-    party = { { inside = true, y = -10 }, { client = "retail", style = "retail", mode = "xl", left = -21, y = 2.5 }, { client = "retail", style = "retail", y = 2.5 }, { style = "retail", mode = "xl", left = -21, y = 0.5 }, { style = "retail", y = 0.5 }, { client = "forever", style = "classic", mode = "big", y = 2 }, { style = "classic", mode = "big", y = -1 }, { style = "classic", y = 1 }, { style = "camelot", mode = "xl", mana = "shown", y = 2 }, { style = "camelot", mode = "xl", mana = "hidden", y = 2.5 }, { style = "camelot", mode = "reduced", mana = "hidden", y = 2.5 }, { style = "camelot", mode = "none", mana = "shown", y = 1.5 }, { y = 0.5 } },
+    party = { { inside = true, y = -10 }, { client = "retail", style = "retail", mode = "xl", left = -21, y = 2.5 }, { client = "retail", style = "retail", y = 2.5 }, { style = "retail", mode = "xl", left = -21, y = 0.5 }, { style = "retail", y = 0.5 }, { client = "forever", style = "classic", mode = "big", y = 2 }, { style = "classic", mode = "big", y = -1 }, { style = "classic", y = 1 }, { style = "camelot", mode = "xl", mana = "shown", y = 2 }, { style = "camelot", mode = "xl", mana = "hidden", y = 2.5 }, { style = "camelot", mode = "reduced", mana = "hidden", left = -1, right = -1, y = 3.5 }, { style = "camelot", mode = "reduced", left = -1, right = -1, y = 1.5 }, { style = "camelot", mode = "none", mana = "shown", left = -1, right = -1, y = 1.5 }, { style = "camelot", mode = "none", left = -1, right = -1, y = 0.5 }, { y = 0.5 } },
 }
 BBF.NameAreaOverrides = {}
 local NAME_HEIGHT = { player = 12, target = 12, tot = 10, pet = 10, party = 10 }
@@ -1041,15 +1042,17 @@ local function PlaceLevel(frame)
     end
     local setup = BBF.TextAreaSetup(frame)
     if not level.bbfLevelDefault and level:GetNumPoints() > 0 then
-        level.bbfLevelDefault = { level:GetPoint(1) }
-        level.bbfLevelDefault[5] = level.bbfLevelDefault[5] - (level.bbfShiftY or 0)
+        local point, relativeTo, relativePoint, x, y = level:GetPoint(1)
+        if not issecretvalue(x) and not issecretvalue(y) then
+            level.bbfLevelDefault = { point, relativeTo, relativePoint, x - (level.bbfLevelDX or 0), y - (level.bbfShiftY or 0) - (level.bbfLevelDY or 0) }
+        end
     end
     level.bbfLevelArea = true
     level.bbfShiftY = nil
     if not level.bbfLevelAreaHooked then
         level.bbfLevelAreaHooked = true
         hooksecurefunc(level, "SetPoint", function(self)
-            if not self.bbfLevelAreaPlacing then PlaceLevel(frame) end
+            if not self.bbfLevelAreaPlacing and not self.bbfLevelMoving then PlaceLevel(frame) end
         end)
     end
     local name = BBF.NameAreaResolve(frame)
@@ -1392,6 +1395,29 @@ local function ApplyNameArea(frame)
     return true
 end
 
+local NAME_THREAT_GAP = 2
+local NO_PORTRAIT_THREAT_Y = 12
+
+local function ThreatAboveName(frame)
+    if not frame.bbfName or not BBF.TextAreaActive(frame) then return end
+    local setup = BBF.TextAreaSetup(frame)
+    if setup.inside then return end
+    if setup.style == "classic" and setup.mode ~= "none" then return "name" end
+    if (setup.style == "noPortrait" or setup.style == "pixel") and nameBoxes[frame] then return "box" end
+end
+
+local function UpdateNameThreat(frame)
+    local threat = frame.TargetFrameContent.TargetFrameContentContextual.NumericalThreat
+    local mode = ThreatAboveName(frame)
+    if mode == "box" then
+        BBF.PinIconPoint(threat, "target", "Threat", "BOTTOM", nameBoxes[frame], "BOTTOM", 0, NO_PORTRAIT_THREAT_Y)
+    elseif mode == "name" then
+        BBF.PinIconPoint(threat, "target", "Threat", "BOTTOM", frame.bbfName, "TOP", 0, NAME_THREAT_GAP)
+    else
+        BBF.PinIconPoint(threat, "target", "Threat")
+    end
+end
+
 local applyingName = {}
 function BBF.ApplyNameArea(frame)
     if not frame then return false end
@@ -1400,6 +1426,9 @@ function BBF.ApplyNameArea(frame)
     local ok, result = pcall(ApplyNameArea, frame)
     applyingName[frame] = nil
     if not ok then error(result, 0) end
+    if frame == TargetFrame or frame == FocusFrame then
+        UpdateNameThreat(frame)
+    end
     return result
 end
 

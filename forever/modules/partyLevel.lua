@@ -60,21 +60,33 @@ local function PlaceElements(frame)
     if BetterBlizzFramesDB.classicFrames then
         text:SetFont(font[1], font[2], font[3])
         local bigParty = BBF.BigHealthbarsOn() and BetterBlizzFramesDB.bigHealthbarParty
-        text:SetPoint("CENTER", frame, "TOPLEFT", bigParty and 12.5 or 13, -37.5)
+        local dx, dy = BBF.LevelTweakOffset("party")
+        local size = CLASSIC_PARTY_SCALE * BBF.LevelTweakRingScale("party")
+        text:SetPoint("CENTER", frame, "TOPLEFT", (bigParty and 12.5 or 13) + dx, -37.5 + dy)
         if ClassicHDRing() then
             ring.bbfHD = true
             ring:SetTexture(HD_RING)
             ring:SetTexCoord(0, 1, 0, 1)
             ring:SetScale(1)
-            ring:SetSize(33.5 * CLASSIC_PARTY_SCALE, 31 * CLASSIC_PARTY_SCALE)
+            ring:SetSize(33.5 * size, 31 * size)
             ring:ClearAllPoints()
-            ring:SetPoint("CENTER", frame, "TOPLEFT", 14, -37.5)
+            ring:SetPoint("CENTER", frame, "TOPLEFT", 14 + dx, -37.5 + dy)
             text:ClearAllPoints()
             text:SetPoint("CENTER", ring, "CENTER", 0, 0)
+            ColorRing(frame)
+        elseif BBF.LevelTweakRingActive("party") then
+            ring.bbfHD = true
+            ring:SetAtlas("hud-PlayerFrame-levelring")
+            ring:SetScale(1)
+            ring:SetSize(32 * size, 32 * size)
+            ring:ClearAllPoints()
+            local sx, sy = BBF.LevelTextShift("party")
+            ring:SetPoint("CENTER", text, "CENTER", -0.5 - sx, -1 - sy)
             ColorRing(frame)
         else
             ring:Hide()
         end
+        BBF.TweakLevelText(text, "party")
         return
     end
     local small = BetterBlizzFramesDB.smallerLevelCircle
@@ -88,18 +100,17 @@ local function PlaceElements(frame)
     end
     local scale = small and 0.55 or RING_SCALE
     local spotScale = small and 0.5 or RING_SCALE
-    ring:SetScale(scale)
-    ring:ClearAllPoints()
-    ring:SetPoint("BOTTOMLEFT", frame.Portrait, "BOTTOMLEFT", (-11 * spotScale - 1) / scale, (-14 * spotScale + 1) / scale)
+    BBF.PlaceLevelRing(ring, "BOTTOMLEFT", frame.Portrait, "BOTTOMLEFT", (-11 * spotScale - 1) / scale, (-14 * spotScale + 1) / scale, scale, "party")
     text:SetPoint("CENTER", ring, "CENTER", 0, 0)
     ColorRing(frame)
+    BBF.TweakLevelText(text, "party")
 end
 
 local function UpdateLevel(frame, index)
     if not frame.bbfLevelText then return end
     if frame.bbfPlaceRoleIcon then frame.bbfPlaceRoleIcon() end
     local unit = PartyUnit(frame, index)
-    local showRing = not BetterBlizzFramesDB.classicFrames or ClassicHDRing()
+    local showRing = (not BetterBlizzFramesDB.classicFrames or ClassicHDRing() or BBF.LevelTweakRingActive("party")) and not BBF.LevelTweakRingHidden("party")
     if not UnitExists(unit) then
         frame.bbfLevelText:Hide()
         frame.bbfLevelRing:Hide()
@@ -112,7 +123,13 @@ local function UpdateLevel(frame, index)
         return
     end
     frame.bbfLevelText:SetText((issecretvalue(level) or level > 0) and level or "??")
-    frame.bbfLevelText:SetVertexColor(1, 0.82, 0)
+    local db = BetterBlizzFramesDB
+    if db.changePartyFrameFont and db.partyFrameFontColor and db.partyFrameFontColorLvl then
+        local color = db.partyFrameFontColorRGB
+        frame.bbfLevelText:SetVertexColor(color[1], color[2], color[3])
+    else
+        frame.bbfLevelText:SetVertexColor(1, 0.82, 0)
+    end
     frame.bbfLevelText:Show()
     frame.bbfLevelRing:SetShown(showRing)
 end
@@ -128,7 +145,7 @@ end
 
 local function Build(frame, index)
     if built[frame] then return end
-    built[frame] = true
+    built[frame] = index
     local parent = LevelParent(frame)
     local ring = parent:CreateTexture(nil, "OVERLAY", nil, 1)
     local text = parent:CreateFontString(nil, "OVERLAY", nil)
@@ -138,6 +155,7 @@ local function Build(frame, index)
     text:SetWidth(25)
     text:SetJustifyH("CENTER")
     text:SetShadowOffset(1, -1)
+    text.bbfLevelTweakOwn = true
     frame.bbfLevelRing, frame.bbfLevelText = ring, text
     PlaceElements(frame)
     if frame.Texture then
@@ -161,6 +179,14 @@ local function UpdateAll()
             Build(frame, i)
             UpdateLevel(frame, i)
         end
+    end
+end
+
+function BBF.RefreshPartyLevelRings()
+    if NoPortraitParty() then return end
+    for frame, index in pairs(built) do
+        PlaceElements(frame)
+        UpdateLevel(frame, index)
     end
 end
 

@@ -32,6 +32,79 @@ local defaultSettings = {
     wasOnLoadingScreen = true,
     guiFontEnabled = false,
     guiFontSize = 12,
+    levelTweakPlayerTextScale = 1,
+    levelTweakPlayerRingScale = 1,
+    levelTweakPlayerHideRing = false,
+    levelTweakPlayerX = 0,
+    levelTweakPlayerY = 0,
+    levelTweakPlayerTextX = 0,
+    levelTweakPlayerTextY = 0,
+    levelTweakTargetTextScale = 1,
+    levelTweakTargetRingScale = 1,
+    levelTweakTargetHideRing = false,
+    levelTweakTargetX = 0,
+    levelTweakTargetY = 0,
+    levelTweakTargetTextX = 0,
+    levelTweakTargetTextY = 0,
+    levelTweakPartyTextScale = 1,
+    levelTweakPartyRingScale = 1,
+    levelTweakPartyHideRing = false,
+    levelTweakPartyX = 0,
+    levelTweakPartyY = 0,
+    levelTweakPartyTextX = 0,
+    levelTweakPartyTextY = 0,
+    unitFrameIconTweaks = false,
+    iconTweakPlayerLeaderX = 0,
+    iconTweakPlayerLeaderY = 0,
+    iconTweakPlayerLeaderScale = 1,
+    iconTweakPlayerRoleX = 0,
+    iconTweakPlayerRoleY = 0,
+    iconTweakPlayerRoleScale = 1,
+    iconTweakPlayerPvpX = 0,
+    iconTweakPlayerPvpY = 0,
+    iconTweakPlayerPvpScale = 1,
+    iconTweakPlayerCombatX = 0,
+    iconTweakPlayerCombatY = 0,
+    iconTweakPlayerCombatScale = 1,
+    iconTweakTargetLeaderX = 0,
+    iconTweakTargetLeaderY = 0,
+    iconTweakTargetLeaderScale = 1,
+    iconTweakTargetRaidTargetX = 0,
+    iconTweakTargetRaidTargetY = 0,
+    iconTweakTargetRaidTargetScale = 1,
+    iconTweakTargetBossX = 0,
+    iconTweakTargetBossY = 0,
+    iconTweakTargetBossScale = 1,
+    iconTweakTargetQuestX = 0,
+    iconTweakTargetQuestY = 0,
+    iconTweakTargetQuestScale = 1,
+    iconTweakTargetPetBattleX = 0,
+    iconTweakTargetPetBattleY = 0,
+    iconTweakTargetPetBattleScale = 1,
+    iconTweakTargetHighLevelX = 0,
+    iconTweakTargetHighLevelY = 0,
+    iconTweakTargetHighLevelScale = 1,
+    iconTweakTargetPvpX = 0,
+    iconTweakTargetPvpY = 0,
+    iconTweakTargetPvpScale = 1,
+    iconTweakTargetThreatX = 0,
+    iconTweakTargetThreatY = 0,
+    iconTweakTargetThreatScale = 1,
+    iconTweakPartyLeaderX = 0,
+    iconTweakPartyLeaderY = 0,
+    iconTweakPartyLeaderScale = 1,
+    iconTweakPartyRoleX = 0,
+    iconTweakPartyRoleY = 0,
+    iconTweakPartyRoleScale = 1,
+    iconTweakPartyPvpX = 0,
+    iconTweakPartyPvpY = 0,
+    iconTweakPartyPvpScale = 1,
+    iconTweakPartyReadyCheckX = 0,
+    iconTweakPartyReadyCheckY = 0,
+    iconTweakPartyReadyCheckScale = 1,
+    iconTweakPartyNotPresentX = 0,
+    iconTweakPartyNotPresentY = 0,
+    iconTweakPartyNotPresentScale = 1,
     -- General
     enableBigDebuffs = true,
     removeRealmNames = true,
@@ -202,9 +275,13 @@ local defaultSettings = {
     colorTooltipsLevel = true,
     colorTooltipsFaction = true,
     colorTooltipsHideFaction = false,
-    colorTooltipsHideHealthbar = false,
+    colorTooltipsFactionIcon = true,
+    colorTooltipsHideHealthbar = true,
     colorTooltipsClassHealthbar = false,
-    colorTooltipsHideClass = false,
+    colorTooltipsHideClass = true,
+    colorTooltipsClassInLevel = true,
+    colorTooltipsShowToT = true,
+    colorTooltipsHidePlayerTag = true,
     lowerToTStrata = false,
     flipPortraits = false,
     showPartyLevel = false,
@@ -413,6 +490,11 @@ local defaultSettings = {
     bigDebuffsCustomBuffs = {},
     bigDebuffsBlacklist = {},
     bigDebuffsInterrupts = true,
+    bigDebuffsPlayer = true,
+    bigDebuffsTarget = true,
+    bigDebuffsFocus = true,
+    bigDebuffsParty = true,
+    bigDebuffsPet = true,
     addCooldownFramePlayerAuras = false,
     customImportantAuraSorting = true,
     customLargeSmallAuraSorting = true,
@@ -693,6 +775,17 @@ local function InitializeSavedVariables()
         end
     end
 
+    if BetterBlizzFramesDB.arenaNames == nil then
+        BetterBlizzFramesDB.arenaNames = (BetterBlizzFramesDB.targetAndFocusArenaNames or BetterBlizzFramesDB.partyArenaNames) and true or false
+    end
+
+    if BetterBlizzFramesDB.tweakLevelText ~= nil then
+        if BetterBlizzFramesDB.tweakLevelText then
+            BetterBlizzFramesDB.unitFrameIconTweaks = true
+        end
+        BetterBlizzFramesDB.tweakLevelText = nil
+    end
+
     if BetterBlizzFramesDB.statusTextExtra == nil and (BetterBlizzFramesDB.statusTextExtraToT or BetterBlizzFramesDB.statusTextExtraParty) then
         BetterBlizzFramesDB.statusTextExtra = true
     end
@@ -825,6 +918,7 @@ end
 
 local function ResetBBF()
     BetterBlizzFramesDB = {}
+    BBF.UseDefaultsUntilReload(BetterBlizzFramesDB)
     ReloadUI()
 end
 
@@ -847,7 +941,7 @@ end
 local function SendUpdateMessage(oldVer)
     if sendUpdate then
         if not BetterBlizzFramesDB.scStart then
-            if BetterBlizzFramesDB.skipUpdateMsg then
+            if BetterBlizzFramesDB.skipUpdateMsg or BBF.skippedUpdateMsg then
                 BetterBlizzFramesDB.skipUpdateMsg = nil
                 BBF.skippedUpdateMsg = true
                 return
@@ -1560,6 +1654,9 @@ function BBF.UpdatePartyRoleIcons()
             end
             UpdatePartyModernRoleIcon(frame)
         end
+    end
+    if BetterBlizzFramesDB.unitFrameIconTweaks then
+        BBF.UpdatePartyIconTweaks()
     end
 end
 
@@ -3866,8 +3963,18 @@ function BBF.UpdateNameBgAlpha()
         TargetFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor,
         FocusFrame and FocusFrame.TargetFrameContent.TargetFrameContentMain.ReputationColor,
     }) do
-        if rep and not rep.bbfBigHidden then
-            rep:SetAlpha(alpha)
+        if rep then
+            if not rep.bbfNameBgAlphaHooked then
+                rep.bbfNameBgAlphaHooked = true
+                hooksecurefunc(rep, "SetVertexColor", function(self)
+                    if BetterBlizzFramesDB.unitFrameNameBgAlphaOverride and not self.bbfBigHidden then
+                        self:SetAlpha(BBF.NameBgAlpha())
+                    end
+                end)
+            end
+            if not rep.bbfBigHidden then
+                rep:SetAlpha(alpha)
+            end
         end
     end
 end
@@ -6076,6 +6183,7 @@ First:SetScript("OnEvent", function(_, event, addonName)
         InitializeSavedVariables()
         BBF.HidePlayerFrame()
         BBF.HoldClassicFramesSetting()
+        BBF.UpdateUserTargetSettings()
 
         if BetterBlizzFramesDB.hideTargetAuras then
             BetterBlizzFramesDB.hideTargetBuffs = true
@@ -6256,6 +6364,10 @@ First:SetScript("OnEvent", function(_, event, addonName)
         BBF.UpdateDefaultTotFrameMana()
         BBF.UpdateBigPlayerHealthbar()
         BBF.CenterCurrentValueOnBars()
+        if BetterBlizzFramesDB.unitFrameIconTweaks then
+            BBF.UpdateLevelTweaks()
+            BBF.UpdateIconTweaks()
+        end
         BBF.StatusBarTextExtra()
         BBF.AlwaysHideStatusBarTexts()
         BBF.HideTooltip()
@@ -6359,20 +6471,37 @@ First:SetScript("OnEvent", function(_, event, addonName)
 
         if not BetterBlizzFramesDB.updatePopup220 then
             BetterBlizzFramesDB.updatePopup220 = true
-            if BetterBlizzFramesDB.hasSaved then
+            if BetterBlizzFramesDB.hasSaved and not (BetterBlizzFramesDB.skipUpdateMsg or BBF.skippedUpdateMsg) then
                 C_Timer.After(7, function()
                     BBF.ShowPopup("BBF_UPDATE_220")
                 end)
             end
         end
 
+        if not BetterBlizzFramesDB.absorbIndicatorUpdated then
+            BetterBlizzFramesDB.absorbIndicatorUpdated = true
+            if BetterBlizzFramesDB.absorbIndicator then
+                BetterBlizzFramesDB.absorbIndicator = false
+                if not (BetterBlizzFramesDB.skipUpdateMsg or BBF.skippedUpdateMsg) then
+                    C_Timer.After(7, function()
+                        BBF.ShowPopup("BBF_ABSORB_INDICATOR_FIXED")
+                    end)
+                end
+            end
+        end
+
         if not BetterBlizzFramesDB.classicOriginalTexturesNotice then
             BetterBlizzFramesDB.classicOriginalTexturesNotice = true
-            if BetterBlizzFramesDB.hasSaved and BetterBlizzFramesDB.classicFrames and not BetterBlizzFramesDB.classicFramesHDTextures then
+            if BetterBlizzFramesDB.hasSaved and not (BetterBlizzFramesDB.skipUpdateMsg or BBF.skippedUpdateMsg) and BetterBlizzFramesDB.classicFrames and not BetterBlizzFramesDB.classicFramesHDTextures then
                 C_Timer.After(7, function()
                     BBF.ShowPopup("BBF_CLASSIC_ORIGINAL_TEXTURES")
                 end)
             end
+        end
+
+        if BetterBlizzFramesDB.skipUpdateMsg then
+            BetterBlizzFramesDB.skipUpdateMsg = nil
+            BBF.skippedUpdateMsg = true
         end
 
         if BetterBlizzFramesDB.hideCastbarTextBorder == nil then

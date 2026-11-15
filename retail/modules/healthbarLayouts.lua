@@ -265,6 +265,10 @@ end
 function BBF.ShiftRegionY(region, shift)
     if not region or region:GetNumPoints() == 0 then return end
     shift = shift or 0
+    if region.bbfIconHooked then
+        BBF.ShiftIconY(region, shift)
+        return
+    end
     if not region.bbfShiftHooked then
         region.bbfShiftHooked = true
         hooksecurefunc(region, "SetPoint", function(self)

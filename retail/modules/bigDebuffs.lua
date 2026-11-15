@@ -256,6 +256,18 @@ local kickEvents
 local lastKick = { time = -math.huge }
 local kicks = {}
 
+local FRAME_KEYS = {
+    player = "bigDebuffsPlayer",
+    target = "bigDebuffsTarget",
+    focus = "bigDebuffsFocus",
+    pet = "bigDebuffsPet",
+}
+
+local function FrameEnabled(host)
+    local key = host.isParty and "bigDebuffsParty" or FRAME_KEYS[host.unit]
+    return BetterBlizzFramesDB[key] ~= false
+end
+
 local function CreateInterruptSlot(host)
     local slot = CreateFrame("Frame", nil, host.anchor)
     slot:SetAllPoints(host.anchor)
@@ -279,7 +291,7 @@ local function UpdateInterruptSlot(host)
     local slot = host.interrupt
     if not slot then return end
 
-    local kick = interruptsOn and host.kick
+    local kick = interruptsOn and FrameEnabled(host) and host.kick
     if kick then
         slot.icon:SetTexture(kick.texture)
         slot.cooldown:SetCooldown(kick.start, kick.duration)
@@ -295,7 +307,7 @@ local function UpdatePlayerInterrupt()
     if not host or not host.interrupt then return end
 
     local slot = host.interrupt
-    local data = interruptsOn and BBF.LoC.GetInterrupt()
+    local data = interruptsOn and FrameEnabled(host) and BBF.LoC.GetInterrupt()
     if data then
         slot.icon:SetTexture(data.iconTexture)
         BBF.LoC.SetCooldown(slot.cooldown, data)
@@ -562,7 +574,7 @@ local function UpdateHostContainers(host)
     local tokensOk = BBF.AuraTokensReliable(host.unit)
     local container = host.container
     local changed, anyOn = false, false
-    local enabled = hostsEnabled and (not host.isParty or PartyFrame:ShouldShow())
+    local enabled = hostsEnabled and FrameEnabled(host) and (not host.isParty or PartyFrame:ShouldShow())
 
     for index, tier in pairs(host.tiers) do
         local on
@@ -816,9 +828,10 @@ function BBF.ToggleBigDebuffsPreview(show)
         show = false
     end
     for _, host in pairs(hosts) do
-        local preview = host.preview or (show and CreatePreview(host))
+        local on = show and FrameEnabled(host)
+        local preview = host.preview or (on and CreatePreview(host))
         if preview then
-            preview:SetShown(show)
+            preview:SetShown(on)
         end
     end
     if show then
@@ -826,6 +839,16 @@ function BBF.ToggleBigDebuffsPreview(show)
         previewTicker = C_Timer.NewTicker(PREVIEW_DURATION, RestartPreview)
     end
     return show
+end
+
+function BBF.UpdateBigDebuffsFrames()
+    for unit in pairs(hosts) do
+        RefreshHost(unit, true)
+    end
+    BBF.UpdateBigDebuffsInterrupts()
+    if previewTicker then
+        BBF.ToggleBigDebuffsPreview(true)
+    end
 end
 
 function BBF.IsBigDebuffsPreviewShown()

@@ -38,12 +38,14 @@ shared\colorTooltips.lua
 shared\raidFramePixelBorder.lua
 shared\portraitFlip.lua
 shared\skullIcon.lua
+shared\levelTweaks.lua
 shared\textArea.lua
 
 retail\modules\darkmode.lua
 retail\modules\classicFrames.lua
 retail\modules\nameFix.lua
 shared\moveNames.lua
+shared\iconTweaks.lua
 retail\modules\hideFrames.lua
 retail\modules\auras.lua
 retail\modules\absorb.lua

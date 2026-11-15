@@ -189,6 +189,7 @@ local function TargetArtTop()
     end
     Check(TargetFrame.ClassicFrame)
     Check(TargetFrame.noPortraitMode)
+    Check(TargetFrame.combatParent)
     return topStrata, topLevel
 end
 

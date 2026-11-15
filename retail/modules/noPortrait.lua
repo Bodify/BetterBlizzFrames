@@ -824,7 +824,7 @@ local function ShareBarMask(region, maskTexture)
 end
 
 local function MatchNameFont(levelText, name)
-    local _, nameSize = name:GetFont()
+    local _, nameSize = BBF.GetNameFont(name)
     local font, _, flags = levelText:GetFont()
     if font and nameSize then
         levelText:SetFont(font, nameSize, flags)
@@ -851,8 +851,8 @@ function BBF.ApplyNoPortraitBigPlayerMask()
     local mask = hpContainer.HealthBarMask
     mask:SetAtlas("UI-HUD-UnitFrame-Player-PortraitOn-Bar-Health-Mask")
     mask:ClearAllPoints()
-    mask:SetPoint("TOPLEFT", hpContainer.HealthBar, "TOPLEFT", -2, 19)
-    mask:SetSize(128.5, 70)
+    mask:SetPoint("TOPLEFT", hpContainer.HealthBar, "TOPLEFT", -2, 20)
+    mask:SetSize(132, 71)
 end
 
 function BBF.ApplyNoPortraitPlayerMask()
@@ -1372,7 +1372,7 @@ local function MakeNoPortraitMode(frame)
                 SetXYPoint(totHpBar.HealthBarMask, -17, 6.5)
             else
                 totHpBar.HealthBarMask:SetSize(98, 21)
-                SetXYPoint(totHpBar.HealthBarMask, -17, 2)
+                SetXYPoint(totHpBar.HealthBarMask, -17, 3)
             end
 
             totManaBar.ManaBarMask:SetSize(96, 20)
@@ -2823,7 +2823,8 @@ local function MakeClassicPartyFrame()
         frame.Background:SetColorTexture(0,0,0,0.45)
         BindArtBackground(frame.Background, frame.Texture, partyDefaultTex, nil, nil, nil, 2)
         frame.BgMask = frame:CreateMaskTexture()
-        frame.BgMask:SetAllPoints(frame.Background)
+        frame.BgMask:SetPoint("BOTTOMLEFT", frame.Background, "BOTTOMLEFT", 0, 0)
+        frame.BgMask:SetPoint("TOPRIGHT", frame.Background, "TOPRIGHT", 1, 1)
         frame.BgMask:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\masks\\frameMask.png", "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
         frame.Background:AddMaskTexture(frame.BgMask)
 

@@ -1,5 +1,5 @@
 local hooked
-local active, classOn, npcOn, levelOn, factionOn, hideFaction, hideHealthbar, hideClass, classHealthbar
+local active, classOn, npcOn, levelOn, factionOn, hideFaction, factionIcon, hideHealthbar, hideClass, classHealthbar, classInLevel, showToT, hidePlayerTag
 local barColor
 
 local reactionColors = {
@@ -12,6 +12,29 @@ local factionColors = {
     Alliance = { 0.29, 0.55, 1 },
     Horde = { 0.9, 0.15, 0.15 },
 }
+
+local factionIconArt = {
+    Alliance = { "UI-HUD-UnitFrame-SmallCircle-Alliance", "UI-HUD-UnitFrame-Player-PVP-AllianceIcon", "Interface\\TargetingFrame\\UI-PVP-Alliance" },
+    Horde = { "UI-HUD-UnitFrame-SmallCircle-Horde", "UI-HUD-UnitFrame-Player-PVP-HordeIcon", "Interface\\TargetingFrame\\UI-PVP-Horde" },
+}
+local factionMarkup = {}
+
+local function FactionMarkup(faction)
+    if factionMarkup[faction] ~= nil then return factionMarkup[faction] end
+    local art = factionIconArt[faction]
+    local markup = false
+    if art then
+        if C_Texture.GetAtlasInfo(art[1]) then
+            markup = CreateAtlasMarkup(art[1], 16, 18)
+        elseif C_Texture.GetAtlasInfo(art[2]) then
+            markup = CreateAtlasMarkup(art[2], 16, 18)
+        else
+            markup = "|T" .. art[3] .. ":20:18:0:0:64:64:3:38:2:38|t"
+        end
+    end
+    factionMarkup[faction] = markup
+    return markup
+end
 
 local function Clean(value)
     if value == nil or issecretvalue(value) then return nil end
@@ -50,18 +73,31 @@ local function RemoveLine(tooltip, index, numLines)
         end
     end
     tooltip:Show()
+    return true
+end
+
+local function AddFactionIcon(tooltip, faction)
+    local markup = FactionMarkup(faction)
+    local nameLine = markup and GetLine(tooltip, 1)
+    local text = nameLine and Clean(nameLine:GetText())
+    if not text or text:find(markup, 1, true) then return end
+    nameLine:SetText(text .. " " .. markup)
+    tooltip:Show()
 end
 
 local function HandleFaction(tooltip, unit, firstLine, numLines)
-    if not factionOn and not hideFaction then return end
+    if not factionOn and not hideFaction and not factionIcon then return end
     local faction, factionName = UnitFactionGroup(unit)
     faction, factionName = Clean(faction), Clean(factionName)
     if not faction or not factionName then return end
+    if factionIcon then
+        AddFactionIcon(tooltip, faction)
+    end
     for i = firstLine, numLines do
         local line = GetLine(tooltip, i)
         local text = line and Clean(line:GetText())
         if text == factionName then
-            if hideFaction then
+            if hideFaction or factionIcon then
                 RemoveLine(tooltip, i, numLines)
             else
                 local color = factionColors[faction]
@@ -152,6 +188,86 @@ local function HideClassName(tooltip, unit, firstLine, numLines)
     return numLines
 end
 
+local function ClassInLevelLine(tooltip, unit, firstLine, numLines)
+    local className = Clean(UnitClass(unit))
+    if not className then return numLines end
+    local playerTag = "(" .. PLAYER .. ")"
+    for i = firstLine, numLines do
+        local line = GetLine(tooltip, i)
+        local text = line and Clean(line:GetText())
+        if text and text:find(LEVEL, 1, true) then
+            local s, e = text:find(playerTag, 1, true)
+            if not s or text:find(className, 1, true) then return numLines end
+            line:SetText(text:sub(1, s - 1) .. className .. text:sub(e + 1))
+            for j = i + 1, numLines do
+                local other = GetLine(tooltip, j)
+                local otherText = other and Clean(other:GetText())
+                if otherText and otherText:find(className, 1, true) then
+                    return RemoveLine(tooltip, j, numLines) and numLines - 1 or numLines, true
+                end
+            end
+            return numLines, true
+        end
+    end
+    return numLines
+end
+
+local function HidePlayerTag(tooltip, firstLine, numLines)
+    local playerTag = "(" .. PLAYER .. ")"
+    for i = firstLine, numLines do
+        local line = GetLine(tooltip, i)
+        local text = line and Clean(line:GetText())
+        local s, e
+        if text then s, e = text:find(playerTag, 1, true) end
+        if s then
+            local before, after = text:sub(1, s - 1), text:sub(e + 1)
+            if before:sub(-1) == " " then
+                before = before:sub(1, -2)
+            elseif after:sub(1, 1) == " " then
+                after = after:sub(2)
+            end
+            line:SetText(before .. after)
+            return
+        end
+    end
+end
+
+local function Hex(r, g, b)
+    return string.format("|cff%02x%02x%02x", math.floor(r * 255 + 0.5), math.floor(g * 255 + 0.5), math.floor(b * 255 + 0.5))
+end
+
+local warningMarkup
+local function AddTargetLine(tooltip, unit)
+    local target = unit .. "target"
+    if not Clean(UnitExists(target)) then return end
+    local text
+    if Clean(UnitIsUnit(target, "player")) then
+        if warningMarkup == nil then
+            warningMarkup = C_Texture.GetAtlasInfo("Ping_Marker_Icon_Warning") and (" " .. CreateAtlasMarkup("Ping_Marker_Icon_Warning", 16, 16)) or ""
+        end
+        text = YOU .. "!" .. warningMarkup
+    else
+        local name = Clean(UnitName(target))
+        if not name then return end
+        local class = Clean(UnitIsPlayer(target)) and Clean(UnitClassBase(target))
+        local classColor = class and RAID_CLASS_COLORS[class]
+        local color = not classColor and ReactionColor(target)
+        if classColor then
+            text = Hex(classColor.r, classColor.g, classColor.b) .. name .. "|r"
+        elseif color then
+            text = Hex(color[1], color[2], color[3]) .. name .. "|r"
+        else
+            text = name
+        end
+    end
+    text = TARGET .. ": " .. text
+    local numLines = Clean(tooltip:NumLines()) or 0
+    local last = GetLine(tooltip, numLines)
+    if last and Clean(last:GetText()) == text then return end
+    tooltip:AddLine(text, 1, 1, 1)
+    tooltip:Show()
+end
+
 local function ColorPlayer(tooltip, unit, numLines)
     local guildName = Clean(GetGuildInfo(unit))
     local firstLine = guildName and 3 or 2
@@ -173,13 +289,21 @@ local function ColorPlayer(tooltip, unit, numLines)
         end
     end
 
-    if hideClass then
+    local moved
+    if classInLevel then
+        numLines, moved = ClassInLevelLine(tooltip, unit, firstLine, numLines)
+    end
+    local classHidden = hideClass and not moved
+    if classHidden then
         numLines = HideClassName(tooltip, unit, firstLine, numLines)
     end
+    if hidePlayerTag then
+        HidePlayerTag(tooltip, firstLine, numLines)
+    end
 
-    local className = classColor and not hideClass and Clean(UnitClass(unit))
+    local className = classColor and not classHidden and Clean(UnitClass(unit))
     if className then
-        local hex = string.format("|cff%02x%02x%02x", math.floor(classColor.r * 255 + 0.5), math.floor(classColor.g * 255 + 0.5), math.floor(classColor.b * 255 + 0.5))
+        local hex = Hex(classColor.r, classColor.g, classColor.b)
         for i = firstLine, numLines do
             local line = GetLine(tooltip, i)
             local text = line and Clean(line:GetText())
@@ -214,6 +338,22 @@ local function ColorHealthbar(unit)
     bar.bbfClassColored = barColor and true or nil
 end
 
+local function ColorNpc(tooltip, unit, numLines)
+    if levelOn then
+        ColorLevel(tooltip, unit, 2, numLines)
+    end
+
+    local color = npcOn and ReactionColor(unit)
+    local nameLine = color and GetLine(tooltip, 1)
+    if nameLine then
+        nameLine:SetTextColor(color[1], color[2], color[3])
+    end
+
+    if hideFaction or factionIcon then
+        HandleFaction(tooltip, unit, 2, numLines)
+    end
+end
+
 local function ColorUnitTooltip(tooltip)
     if not active or not tooltip or not tooltip.GetUnit then return end
     local _, unit = tooltip:GetUnit()
@@ -227,21 +367,12 @@ local function ColorUnitTooltip(tooltip)
 
     if Clean(UnitIsPlayer(unit)) then
         ColorPlayer(tooltip, unit, numLines)
-        return
+    else
+        ColorNpc(tooltip, unit, numLines)
     end
 
-    if levelOn then
-        ColorLevel(tooltip, unit, 2, numLines)
-    end
-
-    local color = npcOn and ReactionColor(unit)
-    local nameLine = color and GetLine(tooltip, 1)
-    if nameLine then
-        nameLine:SetTextColor(color[1], color[2], color[3])
-    end
-
-    if hideFaction then
-        HandleFaction(tooltip, unit, 2, numLines)
+    if showToT then
+        AddTargetLine(tooltip, unit)
     end
 end
 
@@ -263,6 +394,34 @@ local function UpdateHealthbar()
     end
 end
 
+local totFrame
+
+local function RefreshToT(_, _, eventUnit)
+    if not GameTooltip:IsShown() then return end
+    local _, unit = GameTooltip:GetUnit()
+    unit = Clean(unit)
+    if not unit or not Clean(UnitIsUnit(eventUnit, unit)) then return end
+    if GameTooltip.RefreshData then
+        GameTooltip:RefreshData()
+    else
+        GameTooltip:SetUnit(unit)
+    end
+end
+
+local function UpdateToTEvents()
+    local on = active and showToT
+    if not on and not totFrame then return end
+    if not totFrame then
+        totFrame = CreateFrame("Frame")
+        totFrame:SetScript("OnEvent", RefreshToT)
+    end
+    if on then
+        totFrame:RegisterEvent("UNIT_TARGET")
+    else
+        totFrame:UnregisterEvent("UNIT_TARGET")
+    end
+end
+
 function BBF.ColorTooltips()
     local db = BetterBlizzFramesDB
     active = db.colorTooltips and true or false
@@ -271,12 +430,17 @@ function BBF.ColorTooltips()
     levelOn = db.colorTooltipsLevel and true or false
     factionOn = db.colorTooltipsFaction and true or false
     hideFaction = db.colorTooltipsHideFaction and true or false
+    factionIcon = db.colorTooltipsFactionIcon and true or false
     hideHealthbar = db.colorTooltipsHideHealthbar and true or false
     hideClass = db.colorTooltipsHideClass and true or false
     classHealthbar = db.colorTooltipsClassHealthbar and true or false
+    classInLevel = db.colorTooltipsClassInLevel and true or false
+    showToT = db.colorTooltipsShowToT and true or false
+    hidePlayerTag = db.colorTooltipsHidePlayerTag and true or false
     if active or hooked then
         UpdateHealthbar()
     end
+    UpdateToTEvents()
     if not active or hooked then return end
     hooked = true
     if TooltipDataProcessor and Enum.TooltipDataType then

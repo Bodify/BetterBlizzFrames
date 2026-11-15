@@ -43,49 +43,53 @@ function BBF.LegacyCombosOn()
     return db.enableLegacyComboPointsMulticlass and true or false
 end
 
-local frame = CreateFrame("Frame", "BBFLegacyComboFrame", TargetFrame)
-frame:SetFrameStrata("MEDIUM")
-frame:SetToplevel(true)
-frame:SetSize(256, 32)
-frame:SetPoint("TOPRIGHT", TargetFrame, "TOPRIGHT", -26, -13)
-frame:SetAlpha(0)
-frame:Hide()
-frame.ComboPoints = {}
-BBF.LegacyComboFrame = frame
+local frame
 
-for i, offset in ipairs(POINT_OFFSETS) do
-    local point = CreateFrame("Frame", nil, frame)
-    point:SetSize(12, 12)
-    point:SetPoint("TOPRIGHT", frame, "TOPRIGHT", offset[1], offset[2])
-    if i >= 7 then
-        point:SetAlpha(0.6)
+local function CreateLegacyComboFrame()
+    frame = CreateFrame("Frame", "BBFLegacyComboFrame", TargetFrame)
+    frame:SetFrameStrata("MEDIUM")
+    frame:SetToplevel(true)
+    frame:SetSize(256, 32)
+    frame:SetPoint("TOPRIGHT", TargetFrame, "TOPRIGHT", -26, -13)
+    frame:SetAlpha(0)
+    frame:Hide()
+    frame.ComboPoints = {}
+    BBF.LegacyComboFrame = frame
+
+    for i, offset in ipairs(POINT_OFFSETS) do
+        local point = CreateFrame("Frame", nil, frame)
+        point:SetSize(12, 12)
+        point:SetPoint("TOPRIGHT", frame, "TOPRIGHT", offset[1], offset[2])
+        if i >= 7 then
+            point:SetAlpha(0.6)
+        end
+
+        local bg = point:CreateTexture(nil, "BACKGROUND")
+        bg:SetTexture(COMBO_TEXTURE)
+        bg:SetSize(12, 16)
+        bg:SetPoint("TOPLEFT")
+        bg:SetTexCoord(0, 0.375, 0, 1)
+
+        local highlight = point:CreateTexture(nil, "ARTWORK")
+        highlight:SetTexture(COMBO_TEXTURE)
+        highlight:SetSize(8, 16)
+        highlight:SetPoint("TOPLEFT", 2, 0)
+        highlight:SetTexCoord(0.375, 0.5625, 0, 1)
+        point.Highlight = highlight
+
+        local shine = point:CreateTexture(nil, "OVERLAY")
+        shine:SetTexture(COMBO_TEXTURE)
+        shine:SetBlendMode("ADD")
+        shine:SetSize(14, 16)
+        shine:SetPoint("TOPLEFT", 0, 4)
+        shine:SetTexCoord(0.5625, 1, 0, 1)
+        shine:SetAlpha(0)
+        point.Shine = shine
+
+        frame.ComboPoints[i] = point
     end
-
-    local bg = point:CreateTexture(nil, "BACKGROUND")
-    bg:SetTexture(COMBO_TEXTURE)
-    bg:SetSize(12, 16)
-    bg:SetPoint("TOPLEFT")
-    bg:SetTexCoord(0, 0.375, 0, 1)
-
-    local highlight = point:CreateTexture(nil, "ARTWORK")
-    highlight:SetTexture(COMBO_TEXTURE)
-    highlight:SetSize(8, 16)
-    highlight:SetPoint("TOPLEFT", 2, 0)
-    highlight:SetTexCoord(0.375, 0.5625, 0, 1)
-    point.Highlight = highlight
-
-    local shine = point:CreateTexture(nil, "OVERLAY")
-    shine:SetTexture(COMBO_TEXTURE)
-    shine:SetBlendMode("ADD")
-    shine:SetSize(14, 16)
-    shine:SetPoint("TOPLEFT", 0, 4)
-    shine:SetTexCoord(0.5625, 1, 0, 1)
-    shine:SetAlpha(0)
-    point.Shine = shine
-
-    frame.ComboPoints[i] = point
+    frame.ComboPoints[1].Highlight:SetAlpha(0)
 end
-frame.ComboPoints[1].Highlight:SetAlpha(0)
 
 local function UpdateMax(self)
     self.maxComboPoints = UnitPowerMax(PlayerFrame.unit, Enum.PowerType.ComboPoints)
@@ -154,7 +158,7 @@ local function Update(self)
     end
 end
 
-frame:SetScript("OnEvent", function(self, event, unit)
+local function OnEvent(self, event, unit)
     if event == "UNIT_POWER_FREQUENT" then
         if unit == PlayerFrame.unit then
             Update(self)
@@ -165,7 +169,7 @@ frame:SetScript("OnEvent", function(self, event, unit)
     else
         Update(self)
     end
-end)
+end
 
 function BBF.HookLegacyComboUpdate(func)
     table.insert(updateHooks, func)
@@ -193,7 +197,7 @@ end
 function BBF.UpdateBlizzardComboRing()
     local ring = ComboFrame
     if not ring or ring == frame or not ring.ComboPoints then return end
-    local park = frame.bbfEnabled or BBF.ComboPowerHidden() or (BBF.ComboPointBarWanted and BBF.ComboPointBarWanted())
+    local park = (frame and frame.bbfEnabled) or BBF.ComboPowerHidden() or (BBF.ComboPointBarWanted and BBF.ComboPointBarWanted())
     if park then
         if ring:GetParent() ~= ringParking then
             ring:SetParent(ringParking)
@@ -210,11 +214,16 @@ end
 function BBF.RaiseBlizzardComboRing()
     local ring = ComboFrame
     if not ring or ring == frame or not ring.ComboPoints or ring:GetParent() ~= TargetFrame then return end
-    if not TargetFrame.ClassicFrame and not TargetFrame.noPortraitMode then return end
+    if not TargetFrame.ClassicFrame and not TargetFrame.noPortraitMode and not TargetFrame.combatParent then return end
     BBF.RaiseAboveTargetArt(ring, "MEDIUM")
 end
 
 function BBF.EnableLegacyComboFrame()
+    if not frame then
+        CreateLegacyComboFrame()
+        frame:SetScript("OnEvent", OnEvent)
+        BBF.SetLegacyComboHidden(BBF.ComboPowerHidden())
+    end
     if not frame.bbfEnabled then
         frame.bbfEnabled = true
         frame:RegisterEvent("PLAYER_TARGET_CHANGED")
@@ -231,7 +240,7 @@ function BBF.EnableLegacyComboFrame()
 end
 
 function BBF.DisableLegacyComboFrame()
-    if frame.bbfEnabled then
+    if frame and frame.bbfEnabled then
         frame.bbfEnabled = nil
         frame:UnregisterAllEvents()
         frame.maxComboPoints = nil

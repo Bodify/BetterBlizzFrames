@@ -187,8 +187,8 @@ end
 local function CreateBar(name, parent, class, isTarget)
     local info = CLASS_INFO[class]
     local bar = CreateFrame("Frame", name, parent, "HorizontalLayoutFrame")
-    function bar:GetChildSize(child)
-        return child:GetSize(true)
+    function bar:GetChildSize()
+        return 20, 20
     end
     bar.spacing = 4
     bar.topPadding = info.topPadding

@@ -1468,7 +1468,8 @@ local function CreateImportExportUI(parent, title, dataTable, posX, posY, tableN
     wipeButton:SetScript("OnMouseDown", function(self, button)
         if button == "RightButton" and IsShiftKeyDown() and IsAltKeyDown() then
             if tableName == "fullProfile" then
-                BetterBlizzFramesDB = nil
+                BetterBlizzFramesDB = {}
+                BBF.UseDefaultsUntilReload(BetterBlizzFramesDB)
             else
                 BetterBlizzFramesDB[tableName] = nil
             end
@@ -2807,6 +2808,7 @@ local function CreateFontDropdown(name, parentFrame, defaultText, settingKey, to
                     dropdown:SetDefaultText(noneText)
                     toggleFunc(nil)
                 end)
+                rootDescription:CreateDivider()
             end
 
             for index, fontName in ipairs(sortedFonts) do
@@ -4192,8 +4194,80 @@ local function ShowSettingsPopup(f, anchor)
     f:Show()
 end
 
+local function SetWidgetsEnabled(widgets, enabled)
+    for _, widget in ipairs(widgets) do
+        if enabled then
+            EnableElement(widget)
+        else
+            DisableElement(widget)
+        end
+    end
+end
+
+function BBF.OpenArenaNamesWindow(anchor)
+    local f = BBF.ArenaNamesWindow
+    if not f then
+        f = CreateSettingsPopup("BBFArenaNamesWindow", L["Arena_Names"], 290, 112)
+
+        local targetAndFocusArenaNames = CreateCheckbox("targetAndFocusArenaNames", L["Target_And_Focus_Arena_Names"], f)
+        targetAndFocusArenaNames:SetPoint("TOPLEFT", f, "TOPLEFT", 12, -30)
+        CreateTooltipTwo(targetAndFocusArenaNames, L["Arena_Names"], L["Tooltip_Target_Focus_Arena_Names_Desc"])
+
+        local partyArenaNames = CreateCheckbox("partyArenaNames", L["Party"], f)
+        partyArenaNames:SetPoint("LEFT", targetAndFocusArenaNames.text, "RIGHT", 0, 0)
+        CreateTooltipTwo(partyArenaNames, L["Arena_Names"], L["Tooltip_Party_Arena_Names_Desc"])
+
+        local showSpecName = CreateCheckbox("showSpecName", L["Show_Spec_Name"], f)
+        showSpecName:SetPoint("TOPLEFT", targetAndFocusArenaNames, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+        CreateTooltipTwo(showSpecName, L["Show_Spec_Name"], string.format(L["Tooltip_Show_Spec_Name_Desc"], (BetterBlizzFramesDB.targetAndFocusArenaNamePartyOverride and L["True"] or L["False"])))
+        showSpecName:SetScript("OnMouseDown", function(self, button)
+            if button == "RightButton" then
+                BetterBlizzFramesDB.targetAndFocusArenaNamePartyOverride = not BetterBlizzFramesDB.targetAndFocusArenaNamePartyOverride
+                local value = (BetterBlizzFramesDB.targetAndFocusArenaNamePartyOverride and L["True"] or L["False"])
+                GameTooltip:ClearLines()
+                GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+                GameTooltip:AddLine(L["Show_Spec_Name"])
+                GameTooltip:AddLine(L["Tooltip_Show_Spec_Name_Tip_Prefix"] .. value .. "|r", 1, 1, 1, true)
+                GameTooltip:Show()
+                CreateTooltipTwo(showSpecName, L["Show_Spec_Name"], string.format(L["Tooltip_Show_Spec_Name_Desc"], value))
+                BBF.AllNameChanges()
+            end
+        end)
+
+        local shortArenaSpecName = CreateCheckbox("shortArenaSpecName", L["Short"], f)
+        shortArenaSpecName:SetPoint("LEFT", showSpecName.Text, "RIGHT", 0, 0)
+        CreateTooltip(shortArenaSpecName, L["Tooltip_Short_Arena_Spec_Name"])
+
+        local showArenaID = CreateCheckbox("showArenaID", L["Show_Arena_ID"], f)
+        showArenaID:SetPoint("TOPLEFT", showSpecName, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+        CreateTooltip(showArenaID, L["Tooltip_Show_Arena_ID"])
+
+        function f.Sync()
+            local db = BetterBlizzFramesDB
+            targetAndFocusArenaNames:SetChecked(db.targetAndFocusArenaNames)
+            partyArenaNames:SetChecked(db.partyArenaNames)
+            SetWidgetsEnabled({ targetAndFocusArenaNames, partyArenaNames }, db.arenaNames)
+            SetWidgetsEnabled({ showSpecName, shortArenaSpecName, showArenaID }, db.arenaNames and (db.targetAndFocusArenaNames or db.partyArenaNames))
+        end
+
+        local function OnSubClick()
+            local db = BetterBlizzFramesDB
+            if db.arenaNames and not db.targetAndFocusArenaNames and not db.partyArenaNames then
+                BBF.arenaNamesCheckbox:Click()
+            end
+            f.Sync()
+        end
+        targetAndFocusArenaNames:HookScript("OnClick", OnSubClick)
+        partyArenaNames:HookScript("OnClick", OnSubClick)
+        f.Sync()
+
+        BBF.ArenaNamesWindow = f
+    end
+    ShowSettingsPopup(f, anchor)
+end
+
 function BBF.CreateLossOfControlWindow()
-    local f = CreateSettingsPopup("BBFLossOfControlWindow", L["Loss_Of_Control_Tweaks"], 320, 0)
+    local f = CreateSettingsPopup("BBFLossOfControlWindow", L["Loss_Of_Control_Tweaks"], 560, 0)
     local db = BetterBlizzFramesDB
 
     local textPosition, secondaryPosition, secondIconScale, reverseSwipe, secondIconInterrupts
@@ -4224,11 +4298,25 @@ function BBF.CreateLossOfControlWindow()
     end
 
     local y = -30
+    local colX = 0
+    local RIGHT_COLUMN = 290
+    local DROPDOWN_SCALE = 0.85
+    local DROPDOWN_WIDTH = 120
+    local SLIDER_WIDTH = 150
+    local LEFT_SLIDER_X = 60
+    local RIGHT_SLIDER_X = RIGHT_COLUMN + 60
     local boxes, sliders, colorBoxes = {}, {}, {}
+
+    local function PlaceDropdown(dropdown, x)
+        dropdown:ClearAllPoints()
+        dropdown:SetScale(DROPDOWN_SCALE)
+        dropdown:SetPoint("TOPLEFT", f, "TOPLEFT", x / DROPDOWN_SCALE, (y - 20) / DROPDOWN_SCALE)
+        dropdown.LabelText:SetFont(fontSmall, 12)
+    end
 
     local function Header(text)
         local header = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-        header:SetPoint("TOPLEFT", f, "TOPLEFT", 16, y)
+        header:SetPoint("TOPLEFT", f, "TOPLEFT", colX + 16, y)
         header:SetText(text)
         header:SetFont(fontLarge, 14)
         header:SetTextColor(1, 1, 1)
@@ -4238,7 +4326,7 @@ function BBF.CreateLossOfControlWindow()
     local function Checkboxes(rows)
         for _, row in ipairs(rows) do
             local box = CreateCheckbox(row[1], row[2], f, nil, Refresh)
-            box:SetPoint("TOPLEFT", f, "TOPLEFT", 12, y)
+            box:SetPoint("TOPLEFT", f, "TOPLEFT", colX + 12, y)
             CreateTooltipTwo(box, row[2], row[3])
             boxes[row[1]] = box
             y = y - 23 + pixelsBetweenBoxes
@@ -4261,13 +4349,14 @@ function BBF.CreateLossOfControlWindow()
 
     local function Choice(x, title, setting, default, options)
         local dropdown = CreateFrame("DropdownButton", nil, f, "WowStyle1DropdownTemplate")
-        dropdown:SetPoint("TOPLEFT", f, "TOPLEFT", x, y - 22)
-        dropdown:SetWidth(135)
+        dropdown:SetWidth(DROPDOWN_WIDTH)
         dropdown.Background:SetVertexColor(0.9, 0.9, 0.9)
         dropdown.Arrow:SetVertexColor(0.9, 0.9, 0.9)
         local label = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
         label:SetPoint("BOTTOM", dropdown, "TOP", 0, 3)
         label:SetText(title)
+        dropdown.LabelText = label
+        PlaceDropdown(dropdown, x)
         dropdown:SetupMenu(function(_, rootDescription)
             for _, option in ipairs(options) do
                 rootDescription:CreateRadio(option[2], function()
@@ -4281,6 +4370,7 @@ function BBF.CreateLossOfControlWindow()
         return dropdown
     end
 
+    local top = y
     Header(L["Display"])
     Checkboxes({
         { "lossOfControlIconOnly", L["Show_Icon_Only"], L["Tooltip_LoC_Icon_Only"] },
@@ -4310,33 +4400,34 @@ function BBF.CreateLossOfControlWindow()
     boxes.lossOfControlSecondIconInterruptsOnly = secondIconInterrupts
 
     y = y - 2
-    textPosition = Choice(18, L["Text_Position"], "lossOfControlTextPosition", "RIGHT", {
+    textPosition = Choice(26, L["Text_Position"], "lossOfControlTextPosition", "RIGHT", {
         { "LEFT", L["Left"] },
         { "RIGHT", L["Right"] },
         { "OVER", L["Top"] },
         { "UNDER", L["Bottom"] },
     })
     textPosition:SetEnabled(not db.lossOfControlIconOnly)
-    secondaryPosition = Choice(168, L["Second_Icon_Position"], "lossOfControlSecondaryPosition", "LEFT", {
+    secondaryPosition = Choice(142, L["Second_Icon_Position"], "lossOfControlSecondaryPosition", "LEFT", {
         { "LEFT", L["Left"] },
         { "RIGHT", L["Right"] },
         { "UP", L["Top"] },
         { "DOWN", L["Bottom"] },
     })
-    y = y - 52
-    secondIconScale = Slider(L["Second_Icon_Scale"], 0.3, 1.5, 0.01, "lossOfControlSecondIconScale")
+    y = y - 42
+    secondIconScale = Slider(L["Second_Icon_Scale"], 0.3, 1.5, 0.01, "lossOfControlSecondIconScale", nil, LEFT_SLIDER_X, SLIDER_WIDTH)
     secondIconScale:SetShown(db.lossOfControlShowSecondIcon ~= false)
     y = y - 32
     local positionSliders = {}
-    for _, slider in ipairs({
+    for _, def in ipairs({
         { L["CC_Scale"], 0.4, 1.5, 0.01, "lossOfControlScale" },
-        { L["X_Offset"], -400, 400, 1, "lossOfControlXPos" },
-        { L["Y_Offset"], -400, 400, 1, "lossOfControlYPos" },
+        { L["X_Offset"], -400, 400, 1, "lossOfControlXPos", true },
+        { L["Y_Offset"], -400, 400, 1, "lossOfControlYPos", true },
+        { L["Text_Scale"], 0.5, 3, 0.05, "lossOfControlTextScale" },
     }) do
-        local widget = Slider(slider[1], slider[2], slider[3], slider[4], slider[5])
-        if slider[5] ~= "lossOfControlScale" then
+        local widget = Slider(def[1], def[2], def[3], def[4], def[5], nil, LEFT_SLIDER_X, SLIDER_WIDTH)
+        if def[6] then
             widget.integerOnly = true
-            positionSliders[slider[5]] = widget
+            positionSliders[def[5]] = widget
         end
         y = y - 32
     end
@@ -4350,8 +4441,10 @@ function BBF.CreateLossOfControlWindow()
             widget:SetValue(value)
         end
     end
-    y = y - 4
+    local leftY = y
 
+    y = top
+    colX = RIGHT_COLUMN
     Header(L["Timer_Text"])
     Checkboxes({
         { "lossOfControlCountdown", L["Show_Countdown_Numbers"], L["Tooltip_LoC_Countdown"] },
@@ -4359,15 +4452,17 @@ function BBF.CreateLossOfControlWindow()
         { "lossOfControlHideTimer", L["Hide_Timer_Text"], L["Tooltip_LoC_Hide_Timer"] },
         { "lossOfControlHideName", L["Hide_CC_Text"], L["Tooltip_LoC_Hide_CC_Text"] },
     })
-    y = y - 6
+    y = y - 2
 
     local textFont = CreateFontDropdown("lossOfControlFont", f, L["Default"], "lossOfControlFont", Refresh,
-        { anchorFrame = f, x = 18, y = y + 2 }, 135, nil, "TOP", L["Default"])
+        { anchorFrame = f, x = 0, y = 0 }, DROPDOWN_WIDTH, nil, "TOP", L["Default"])
     textFont.LabelText:SetText(L["Text_Font"])
+    PlaceDropdown(textFont, RIGHT_COLUMN + 26)
     local numberFont = CreateFontDropdown("lossOfControlNumberFont", f, L["Default"], "lossOfControlNumberFont", Refresh,
-        { anchorFrame = f, x = 168, y = y + 2 }, 135, nil, "TOP", L["Default"])
+        { anchorFrame = f, x = 0, y = 0 }, DROPDOWN_WIDTH, nil, "TOP", L["Default"])
     numberFont.LabelText:SetText(L["CD_Timer_Text_Font"])
-    y = y - 54
+    PlaceDropdown(numberFont, RIGHT_COLUMN + 142)
+    y = y - 42
 
     local colors = {
         { "lossOfControlTimerLowColor", L["Timer_Low_Color"], { L["Timer_Low_Threshold"], 0.5, 20, 0.1, "lossOfControlTimerLowThreshold", L["Tooltip_Timer_Low_Threshold"] } },
@@ -4379,23 +4474,24 @@ function BBF.CreateLossOfControlWindow()
         colorBoxes[color[1]] = box
         local threshold = color[3]
         if threshold then
-            box:SetPoint("TOPLEFT", f, "TOPLEFT", 16, y - 13)
-            local slider = Slider(threshold[1], threshold[2], threshold[3], threshold[4], threshold[5], threshold[6], nil, 90)
+            box:SetPoint("TOPLEFT", f, "TOPLEFT", RIGHT_COLUMN + 16, y - 13)
+            local slider = Slider(threshold[1], threshold[2], threshold[3], threshold[4], threshold[5], threshold[6], nil, 110)
             slider:ClearAllPoints()
-            slider:SetPoint("LEFT", box.text, "RIGHT", 25, 0)
+            slider:SetPoint("LEFT", box, "LEFT", 124, 0)
             y = y - 32
         else
-            box:SetPoint("TOPLEFT", f, "TOPLEFT", 16, y - 2)
+            box:SetPoint("TOPLEFT", f, "TOPLEFT", RIGHT_COLUMN + 16, y - 2)
             y = y - 26
         end
     end
 
-    Slider(L["Text_Scale"], 0.5, 3, 0.05, "lossOfControlTextScale")
+    y = y - 4
+    Slider(L["Cooldown_Text_Size"], 0.5, 3, 0.05, "lossOfControlTimerScale", nil, RIGHT_SLIDER_X, SLIDER_WIDTH)
     y = y - 32
-    Slider(L["Cooldown_Text_Size"], 0.5, 3, 0.05, "lossOfControlTimerScale")
+    Slider(L["CD_Timer_Text_Size"], 0.5, 3, 0.05, "lossOfControlCountdownScale", nil, RIGHT_SLIDER_X, SLIDER_WIDTH)
     y = y - 32
-    Slider(L["CD_Timer_Text_Size"], 0.5, 3, 0.05, "lossOfControlCountdownScale")
-    y = y - 32
+    y = math.min(leftY, y) + 4
+    colX = 0
 
     local resetKeys = {
         "lossOfControlIconOnly", "hideLossOfControlFrameBg", "hideLossOfControlFrameLines", "lossOfControlInterruptsOnly",
@@ -5312,74 +5408,6 @@ local function guiGeneralTab()
     filterMiscInfo:SetPoint("TOPLEFT", filterSystemMessages, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltip(filterMiscInfo, L["Tooltip_Filter_Misc_Info"])
 
-    local arenaNamesText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    arenaNamesText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 460, -80)
-    arenaNamesText:SetText(L["Arena_Names"])
-    arenaNamesText:SetFont(fontLarge, 16)
-    arenaNamesText:SetTextColor(1,1,1)
-    CreateTooltip(arenaNamesText, L["Change_player_names_into_spec"], "ANCHOR_LEFT")
-    local arenaNamesIcon = BetterBlizzFrames:CreateTexture(nil, "ARTWORK")
-    arenaNamesIcon:SetAtlas("questbonusobjective")
-    arenaNamesIcon:SetSize(24, 24)
-    arenaNamesIcon:SetPoint("RIGHT", arenaNamesText, "LEFT", -3, 0)
-
-    local targetAndFocusArenaNames = CreateCheckbox("targetAndFocusArenaNames", L["Target_And_Focus_Arena_Names"], BetterBlizzFrames)
-    targetAndFocusArenaNames:SetPoint("TOPLEFT", arenaNamesText, "BOTTOMLEFT", -24, pixelsOnFirstBox)
-    CreateTooltipTwo(targetAndFocusArenaNames, L["Arena_Names"], L["Tooltip_Target_Focus_Arena_Names_Desc"], nil, "ANCHOR_LEFT")
-
-    local partyArenaNames = CreateCheckbox("partyArenaNames", L["Party"], BetterBlizzFrames)
-    partyArenaNames:SetPoint("LEFT", targetAndFocusArenaNames.text, "RIGHT", 0, 0)
-    CreateTooltipTwo(partyArenaNames, L["Arena_Names"], L["Tooltip_Party_Arena_Names_Desc"], nil, "ANCHOR_LEFT")
-
-    local showSpecName = CreateCheckbox("showSpecName", L["Show_Spec_Name"], BetterBlizzFrames)
-    showSpecName:SetPoint("TOPLEFT", targetAndFocusArenaNames, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltipTwo(showSpecName, L["Show_Spec_Name"], string.format(L["Tooltip_Show_Spec_Name_Desc"], (BetterBlizzFramesDB.targetAndFocusArenaNamePartyOverride and L["True"] or L["False"])).."|r")
-    showSpecName:SetScript("OnMouseDown", function(self, button)
-        if button == "RightButton" then
-            if BetterBlizzFramesDB.targetAndFocusArenaNamePartyOverride then
-                BetterBlizzFramesDB.targetAndFocusArenaNamePartyOverride = false
-            else
-                BetterBlizzFramesDB.targetAndFocusArenaNamePartyOverride = true
-            end
-            local value = (BetterBlizzFramesDB.targetAndFocusArenaNamePartyOverride and L["True"] or L["False"])
-            local showSpecNameTip = L["Tooltip_Show_Spec_Name_Tip_Prefix"]..value.."|r"
-            GameTooltip:ClearLines()
-            GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-            GameTooltip:AddLine(L["Show_Spec_Name"])
-            GameTooltip:AddLine(showSpecNameTip, 1, 1, 1, true)
-            GameTooltip:Show()
-            CreateTooltipTwo(showSpecName, L["Show_Spec_Name"], string.format(L["Tooltip_Show_Spec_Name_Desc"], (BetterBlizzFramesDB.targetAndFocusArenaNamePartyOverride and L["True"] or L["False"])).."|r")
-            BBF.AllNameChanges()
-        end
-    end)
-
-    local shortArenaSpecName = CreateCheckbox("shortArenaSpecName", L["Short"], BetterBlizzFrames)
-    shortArenaSpecName:SetPoint("LEFT", showSpecName.Text, "RIGHT", 0, 0)
-    CreateTooltip(shortArenaSpecName, L["Tooltip_Short_Arena_Spec_Name"], "ANCHOR_LEFT")
-
-    local showArenaID = CreateCheckbox("showArenaID", L["Show_Arena_ID"], BetterBlizzFrames)
-    showArenaID:SetPoint("TOPLEFT", showSpecName, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltip(showArenaID, L["Tooltip_Show_Arena_ID"])
-
-    local function ToggleDependentCheckboxes()
-        local enable = targetAndFocusArenaNames:GetChecked() or partyArenaNames:GetChecked()
-
-        if enable then
-            EnableElement(showSpecName)
-            EnableElement(shortArenaSpecName)
-            EnableElement(showArenaID)
-        else
-            DisableElement(showSpecName)
-            DisableElement(shortArenaSpecName)
-            DisableElement(showArenaID)
-        end
-    end
-    -- Initial setup to ensure correct state upon UI load/reload
-    ToggleDependentCheckboxes()
-    -- Hook into the OnClick event of targetAndFocusArenaNames
-    targetAndFocusArenaNames:HookScript("OnClick", ToggleDependentCheckboxes)
-    -- Hook into the OnClick event of partyArenaNames
-    partyArenaNames:HookScript("OnClick", ToggleDependentCheckboxes)
 
     local focusFrameText = BetterBlizzFrames:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     focusFrameText:SetPoint("TOPLEFT", mainGuiAnchor, "BOTTOMLEFT", 460, editModeIntroduced and -175 or -160)
@@ -5843,16 +5871,33 @@ local function guiGeneralTab()
     extraFeaturesIcon:SetSize(23, 23)
     extraFeaturesIcon:SetPoint("RIGHT", extraFeaturesText, "LEFT", -3, -2)
 
+    local arenaNames = CreateCheckbox("arenaNames", L["Arena_Names"], BetterBlizzFrames)
+    arenaNames:SetPoint("TOPLEFT", extraFeaturesText, "BOTTOMLEFT", -24, pixelsOnFirstBox)
+    CreateTooltipTwo(arenaNames, L["Arena_Names"], L["Change_player_names_into_spec"] .. "\n\n|cff32f795" .. L["Right_Click_More_Settings"] .. "|r", nil, "ANCHOR_LEFT")
+    arenaNames:HookScript("OnMouseDown", function(self, button)
+        if button == "RightButton" then
+            BBF.OpenArenaNamesWindow(self)
+        end
+    end)
+    arenaNames:HookScript("OnClick", function(self)
+        local db = BetterBlizzFramesDB
+        if self:GetChecked() and not db.targetAndFocusArenaNames and not db.partyArenaNames then
+            db.targetAndFocusArenaNames = true
+            db.partyArenaNames = true
+        end
+        BBF.UpdateUserTargetSettings()
+        if BBF.ArenaNamesWindow then
+            BBF.ArenaNamesWindow.Sync()
+        end
+    end)
+    BBF.arenaNamesCheckbox = arenaNames
+
     local combatIndicator = CreateCheckbox("combatIndicator", L["Combat_Indicator"], BetterBlizzFrames)
-    combatIndicator:SetPoint("TOPLEFT", extraFeaturesText, "BOTTOMLEFT", -24, pixelsOnFirstBox)
+    combatIndicator:SetPoint("TOPLEFT", arenaNames, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     combatIndicator:HookScript("OnClick", function()
         BBF.CombatIndicatorCaller()
     end)
     CreateTooltip(combatIndicator, L["Tooltip_Combat_Indicator_Desc"])
-
-    local questIndicator = CreateCheckbox("questIndicator", L["Quest_Indicator"], BetterBlizzFrames, nil, BBF.QuestIndicatorCaller)
-    questIndicator:SetPoint("LEFT", combatIndicator.Text, "RIGHT", 0, 0)
-    CreateTooltipTwo(questIndicator, L["Quest_Indicator"], L["Tooltip_Quest_Indicator_Desc"], nil, "ANCHOR_LEFT")
 
     local absorbIndicator = CreateCheckbox("absorbIndicator", L["Absorb_Indicator"], BetterBlizzFrames, nil, BBF.AbsorbCaller)
     absorbIndicator:SetPoint("TOPLEFT", combatIndicator, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
@@ -5966,6 +6011,10 @@ local function guiGeneralTab()
 
 
 
+
+    local questIndicator = CreateCheckbox("questIndicator", L["Quest_Indicator"], BetterBlizzFrames, nil, BBF.QuestIndicatorCaller)
+    questIndicator:SetPoint("TOPLEFT", queueTimer, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(questIndicator, L["Quest_Indicator"], L["Tooltip_Quest_Indicator_Desc"], nil, "ANCHOR_LEFT")
 
     local btnGap = -2
     local profileButtons = {}
@@ -9079,9 +9128,13 @@ local function guiMisc()
         { key = "colorTooltipsLevel", label = L["Color_Tooltips_Level"] },
         { key = "colorTooltipsFaction", label = L["Color_Tooltips_Faction"] },
         { key = "colorTooltipsHideFaction", label = L["Color_Tooltips_Hide_Faction"] },
+        { key = "colorTooltipsFactionIcon", label = L["Color_Tooltips_Faction_Icon"], tooltip = L["Tooltip_Color_Tooltips_Faction_Icon"] },
         { key = "colorTooltipsHideHealthbar", label = L["Color_Tooltips_Hide_Healthbar"], tooltip = L["Tooltip_Color_Tooltips_Hide_Healthbar"] },
         { key = "colorTooltipsClassHealthbar", label = L["Color_Tooltips_Class_Healthbar"], tooltip = L["Tooltip_Color_Tooltips_Class_Healthbar"] },
         { key = "colorTooltipsHideClass", label = L["Color_Tooltips_Hide_Class"] },
+        { key = "colorTooltipsClassInLevel", label = L["Color_Tooltips_Class_In_Level"], tooltip = L["Tooltip_Color_Tooltips_Class_In_Level"] },
+        { key = "colorTooltipsShowToT", label = L["Color_Tooltips_Show_ToT"], tooltip = L["Tooltip_Color_Tooltips_Show_ToT"] },
+        { key = "colorTooltipsHidePlayerTag", label = L["Color_Tooltips_Hide_Player_Tag"], tooltip = L["Tooltip_Color_Tooltips_Hide_Player_Tag"] },
     }, 150, BBF.ColorTooltips)
     colorTooltipsOptions.searchParentKey = "colorTooltips"
     colorTooltipsOptions.searchExtraTerms = { L["Color_Tooltips"] }

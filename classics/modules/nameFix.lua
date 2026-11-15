@@ -87,8 +87,8 @@ function BBF.UpdateUserTargetSettings()
     showSpecName = BetterBlizzFramesDB.showSpecName
     shortArenaSpecName = BetterBlizzFramesDB.shortArenaSpecName
     showArenaID = BetterBlizzFramesDB.showArenaID
-    targetAndFocusArenaNames = BetterBlizzFramesDB.targetAndFocusArenaNames
-    partyArenaNames = BetterBlizzFramesDB.partyArenaNames
+    targetAndFocusArenaNames = BetterBlizzFramesDB.arenaNames and BetterBlizzFramesDB.targetAndFocusArenaNames
+    partyArenaNames = BetterBlizzFramesDB.arenaNames and BetterBlizzFramesDB.partyArenaNames
     hideTargetName = BetterBlizzFramesDB.hideTargetName
     hideFocusName = BetterBlizzFramesDB.hideFocusName
     hideTargetToTName = BetterBlizzFramesDB.hideTargetToTName
@@ -254,12 +254,12 @@ local function PartyFrameNameChange(frame)
 
     if not (BetterBlizzFramesDB.biggerHealthbars or BetterBlizzFramesDB.betterDefaultPartyFrames) then
         if not changeUnitFrameFont and not changePartyFrameFont then
-            BBF.SetNameFont(frame.bbfName, frame.name:GetFont())
+            BBF.SetNameFont(frame.bbfName, BBF.GetNameFont(frame.name))
         end
         frame.bbfName:ClearAllPoints()
         frame.bbfName:SetPoint("LEFT", frame.name, "LEFT")
 
-        local _, fontSize = frame.bbfName:GetFont()
+        local _, fontSize = BBF.GetNameFont(frame.bbfName)
         local baseWidth = frame.name:GetWidth()
         local extraWidth = 0
         if fontSize and fontSize > 10 then
@@ -530,7 +530,7 @@ local function InitializeFontString(frame)
     frame.bbfName = name:GetParent():CreateFontString(nil, name:GetDrawLayer() or "OVERLAY", "GameFontNormal")
 
     -- Copy font settings
-    local font, fontHeight, fontFlags = name:GetFont()
+    local font, fontHeight, fontFlags = BBF.GetNameFont(name)
     BBF.SetNameFont(frame.bbfName, font, fontHeight, fontFlags)
 
     -- Copy alignment, color, shadow, and dimensions
@@ -1001,7 +1001,7 @@ function BBF.SetCustomFonts()
             end
 
             for _, frame in ipairs(frames) do
-                local _, size, style = frame.bbfName:GetFont()
+                local _, size, style = BBF.GetNameFont(frame.bbfName)
                 BBF.SetNameFont(frame.bbfName, fontPath, size, style)
             end
 
@@ -1213,7 +1213,7 @@ local function PlayerFrameNameChanges(frame)
         return
     end
     if not changeUnitFrameFont then
-        BBF.SetNameFont(frame.bbfName, frame.name:GetFont())
+        BBF.SetNameFont(frame.bbfName, BBF.GetNameFont(frame.name))
     end
     if classColorTargetNames then
         ClassColorName(frame.bbfName, unit)
@@ -1238,7 +1238,7 @@ local function TargetFrameNameChanges(frame)
     local unit = frame.unit
 
     if not changeUnitFrameFont then
-        BBF.SetNameFont(frame.bbfName, frame.name:GetFont())
+        BBF.SetNameFont(frame.bbfName, BBF.GetNameFont(frame.name))
     end
 
     if targetAndFocusArenaNames and IsActiveBattlefieldArena() then
@@ -1309,7 +1309,7 @@ local function PetFrameNameChanges(frame)
         return
     end
     if not changeUnitFrameFont then
-        BBF.SetNameFont(frame.bbfName, frame.name:GetFont())
+        BBF.SetNameFont(frame.bbfName, BBF.GetNameFont(frame.name))
     end
     frame.bbfName:SetText(frame.name:GetText())
     if classColorTargetNames then
@@ -1339,7 +1339,7 @@ local function FocusFrameNameChanges(frame)
     end
 
     if not changeUnitFrameFont then
-        BBF.SetNameFont(frame.bbfName, frame.name:GetFont())
+        BBF.SetNameFont(frame.bbfName, BBF.GetNameFont(frame.name))
     end
 
     if targetAndFocusArenaNames and IsActiveBattlefieldArena() then
@@ -1395,7 +1395,7 @@ local function TargetFrameToTNameChanges(frame)
     local unit = frame.unit
 
     if not changeUnitFrameFont then
-        BBF.SetNameFont(frame.bbfName, frame.name:GetFont())
+        BBF.SetNameFont(frame.bbfName, BBF.GetNameFont(frame.name))
     end
 
     if targetAndFocusArenaNames and IsActiveBattlefieldArena() then
@@ -1428,7 +1428,7 @@ local function FocusFrameToTNameChanges(frame)
     local unit = frame.unit
 
     if not changeUnitFrameFont then
-        BBF.SetNameFont(frame.bbfName, frame.name:GetFont())
+        BBF.SetNameFont(frame.bbfName, BBF.GetNameFont(frame.name))
     end
 
     if targetAndFocusArenaNames and IsActiveBattlefieldArena() then

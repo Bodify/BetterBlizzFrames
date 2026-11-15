@@ -29,15 +29,17 @@ function BBF.PlaceClassicLevel(levelText)
         end
     end
     levelText:ClearAllPoints()
+    local dx, dy = BBF.LevelTweakOffset(levelText == PlayerLevelText and "player" or "target")
+    local x, y = place.x + dx, place.y + dy
     local ring = levelText.bbfClassicLevelRing
     if ring then
         ring:ClearAllPoints()
-        ring:SetPoint("CENTER", place.relativeTo or ring:GetParent(), place.relativePoint or "CENTER", place.x + ring.bbfX, place.y + ring.bbfY)
+        ring:SetPoint("CENTER", place.relativeTo or ring:GetParent(), place.relativePoint or "CENTER", x + ring.bbfX, y + ring.bbfY)
         levelText:SetPoint("CENTER", ring, "CENTER", nudge - ring.bbfX, -ring.bbfY)
     elseif place.relativeTo then
-        levelText:SetPoint("CENTER", place.relativeTo, place.relativePoint, place.x + nudge, place.y)
+        levelText:SetPoint("CENTER", place.relativeTo, place.relativePoint, x + nudge, y)
     else
-        levelText:SetPoint("CENTER", place.x + nudge, place.y)
+        levelText:SetPoint("CENTER", x + nudge, y)
     end
 end
 
@@ -542,21 +544,24 @@ function BBF.SetClassicHDLevelRing(frame, enabled)
         highLevelTexture = frame.TargetFrameContent.TargetFrameContentContextual.HighLevelTexture
     end
     if not levelText then return end
+    local group = frame == PlayerFrame and "player" or "target"
+    enabled = enabled or BBF.LevelTweakRingActive(group)
     local circle = classicFrame.HDLevelCircle
     if not circle then
         if not enabled then return end
         circle = classicFrame:CreateTexture(nil, "OVERLAY", nil, 5)
+        circle.bbfLevelTweakRing = true
         if BBF.ClassicHDTexturesActive() then
             circle:SetTexture("Interface\\AddOns\\BetterBlizzFrames\\media\\classicTextures\\MoTextures\\lvlring.png")
             circle:SetTexCoord(0, 1, 0, 1)
             circle:SetSnapToPixelGrid(false)
             circle:SetTexelSnappingBias(0)
-            circle:SetSize(frame == PlayerFrame and 33.5 or 33, 31)
+            circle.bbfW, circle.bbfH = frame == PlayerFrame and 33.5 or 33, 31
             circle.bbfHD = true
             BBF.SetClassicLevelRing(levelText, circle, frame == PlayerFrame and 0 or -0.5, 0.5)
         else
             circle:SetAtlas("hud-PlayerFrame-levelring")
-            circle:SetSize(32, 32)
+            circle.bbfW, circle.bbfH = 32, 32
             BBF.SetClassicLevelRing(levelText, circle, frame == PlayerFrame and 0.5 or 1, -1.5)
         end
         classicFrame.HDLevelCircle = circle
@@ -575,7 +580,10 @@ function BBF.SetClassicHDLevelRing(frame, enabled)
             end
         end
     end
-    circle.bbfEnabled = enabled and true or false
+    local k = BBF.LevelTweakRingScale(group)
+    circle:SetSize(circle.bbfW * k, circle.bbfH * k)
+    BBF.PlaceClassicLevel(levelText)
+    circle.bbfEnabled = enabled and not BBF.LevelTweakRingHidden(group)
     circle.Refresh()
     BBF.ColorClassicHDLevelRing(frame)
 end
@@ -940,13 +948,13 @@ local function MakeClassicFrame(frame)
             return BBF.ClassicHDEliteActive()
         end
 
-        local function ToggleNoLevelFrame(noLvl, skipTexture)
+        local function ToggleNoLevelFrame(noLvl, skipTexture, showText)
             if noLvl then
                 if not skipTexture then
                     BBF.SetClassicTexture(frame.ClassicFrame.Texture, BBF.ClassicBigTargetTexture(frame, noLvlTex))
                 end
                 BBF.SetClassicFlash(frameContainer.Flash, true)
-                contentMain.LevelText:SetAlpha(0)
+                contentMain.LevelText:SetAlpha(showText and 1 or 0)
             else
                 if not skipTexture then
                     BBF.SetClassicTexture(frame.ClassicFrame.Texture, BBF.ClassicBigTargetTexture(frame, defaultTex))
@@ -960,6 +968,10 @@ local function MakeClassicFrame(frame)
             return alwaysHideLvl or (hideLvl and UnitLevel(frame.unit) == GetMaxLevelForPlayerExpansion()) or false
         end
 
+        local function NoLevelArt()
+            return LevelHidden() or BBF.LevelTweakRingActive("target")
+        end
+
         local function HDLevelFrame()
             ToggleNoLevelFrame(LevelHidden(), true)
             BBF.SetClassicTexture(frame.ClassicFrame.Texture, BBF.ClassicBigTargetTexture(frame, noLvlTex))
@@ -967,15 +979,15 @@ local function MakeClassicFrame(frame)
         end
 
         local function SetEliteArt(classification)
-            local noLvl = LevelHidden()
+            local noLvl = NoLevelArt()
             if UseHDElite() then
                 HDLevelFrame()
             elseif hideDragon then
-                ToggleNoLevelFrame(noLvl)
+                ToggleNoLevelFrame(noLvl, nil, not LevelHidden())
             else
                 local path = noLvl and eliteNoLvlTextures[classification] or eliteTextures[classification]
                 BBF.SetClassicTexture(frame.ClassicFrame.Texture, BBF.ClassicBigTargetTexture(frame, path))
-                ToggleNoLevelFrame(noLvl, true)
+                ToggleNoLevelFrame(noLvl, true, not LevelHidden())
             end
         end
 
@@ -1018,7 +1030,7 @@ local function MakeClassicFrame(frame)
                 elseif frame.unit == "focus" then
                     contentMain.ReputationColor:SetShown(not BetterBlizzFramesDB.hideFocusReputationColor)
                 end
-                ToggleNoLevelFrame(LevelHidden())
+                ToggleNoLevelFrame(NoLevelArt(), nil, not LevelHidden())
             end
             BBF.UpdateClassicEliteOverlay(self)
             BBF.UpdateClassicHDElite(self)
@@ -1209,6 +1221,10 @@ local function MakeClassicFrame(frame)
             return alwaysHideLvl or (hideLvl and UnitLevel("player") == GetMaxLevelForPlayerExpansion())
         end
 
+        local function PlayerNoLevelArt()
+            return PlayerLevelHidden() or BBF.LevelTweakRingActive("player")
+        end
+
         local function UpdatePlayerLevelRing()
             BBF.SetClassicHDLevelRing(frame, BBF.ClassicHDTexturesActive() or (db.playerEliteFrame and BBF.GetPlayerEliteMode() > 3))
         end
@@ -1382,7 +1398,7 @@ local function MakeClassicFrame(frame)
 
             -- Set Elite style according to value
             if mode <= 3 then
-                SetPlayerFrameTexture(playerElite, PlayerEliteArt(mode, PlayerLevelHidden()))
+                SetPlayerFrameTexture(playerElite, PlayerEliteArt(mode, PlayerNoLevelArt()))
                 playerElite:SetDesaturated(mode ~= 3)
             elseif mode > 3 then
                 SetPlayerFrameTexture(playerElite, noLvlTex, bigNoLvlTex, bigNoManaNoLvlTex)
@@ -1422,21 +1438,9 @@ local function MakeClassicFrame(frame)
         end
 
         local function UpdatePlayerFrameTexture()
+            ToggleNoLevelFrame(PlayerNoLevelArt())
             if db.playerEliteFrame then
-                ToggleNoLevelFrame(PlayerLevelHidden())
                 PlayerEliteFrame()
-            else
-                if alwaysHideLvl then
-                    ToggleNoLevelFrame(true)
-                elseif hideLvl then
-                    if UnitLevel("player") == GetMaxLevelForPlayerExpansion() then
-                        ToggleNoLevelFrame(true)
-                    else
-                        ToggleNoLevelFrame(false)
-                    end
-                else
-                    ToggleNoLevelFrame(false)
-                end
             end
         end
 
@@ -2002,10 +2006,16 @@ local function ApplyClassicBigParty(frame)
 end
 
 local function SetClassicPartyArt(frame)
+    local noLvl = BBF.LevelTweakRingActive("party")
     if ClassicBigParty() then
-        BBF.SetClassicTexture(frame.Texture, ClassicPartyNoMana() and bigNoManaTex or bigTex)
+        if noLvl then
+            BBF.SetClassicTexture(frame.Texture, ClassicPartyNoMana() and bigNoManaNoLvlTex or bigNoLvlTex)
+        else
+            BBF.SetClassicTexture(frame.Texture, ClassicPartyNoMana() and bigNoManaTex or bigTex)
+        end
     else
-        BBF.SetClassicTexture(frame.Texture, ClassicPartyNoMana() and classicNoManaArt[defaultTex] or defaultTex)
+        local art = noLvl and noLvlTex or defaultTex
+        BBF.SetClassicTexture(frame.Texture, ClassicPartyNoMana() and classicNoManaArt[art] or art)
     end
     frame.Texture:SetTexCoord(1, 0.09375, 0, 0.78125)
 end

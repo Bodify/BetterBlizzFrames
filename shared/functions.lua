@@ -90,6 +90,21 @@ BBF.popupBuilders["BBF_CLASSIC_ORIGINAL_TEXTURES"] = function()
 	}
 end
 
+BBF.popupBuilders["BBF_ABSORB_INDICATOR_FIXED"] = function()
+	return {
+		text = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames\n\n" .. L["Popup_Absorb_Indicator_Fixed"]:format(L["Absorb_Indicator"]),
+		button1 = L["Turn_On"],
+		button2 = L["Turn_Off"],
+		OnAccept = function()
+			BetterBlizzFramesDB.absorbIndicator = true
+			BBF.AbsorbCaller()
+		end,
+		timeout = 0,
+		whileDead = true,
+		preferredIndex = 3,
+	}
+end
+
 BBF.popupBuilders["BB_PRD_AURAS_CLASH"] = function()
 	return {
 		text = BBF.L["Popup_PRD_Auras_Clash"],
@@ -108,7 +123,7 @@ function BBF.DarkModeUnitFramesOn()
 	return db.darkModeUi and db.darkModeUnitFrames and true or false
 end
 
-local classicStyleAddon
+local otherStyleAddon, classicUIForever, classicUIFramesOff
 
 local function AddonWillLoad(name, player)
 	local state = C_AddOns.GetAddOnEnableState(name, player)
@@ -117,14 +132,17 @@ local function AddonWillLoad(name, player)
 end
 
 function BBF.ClassicStyleAddon()
-	if classicStyleAddon == nil then
-		local db = BetterBlizzFramesDB
+	if otherStyleAddon == nil then
+		local off = BetterBlizzFramesDB and BetterBlizzFramesDB.classicUIFramesOff
 		local player = UnitGUID("player")
-		classicStyleAddon = (AddonWillLoad("ClassicFrames", player)
-			or AddonWillLoad("EasyFrames", player)
-			or (AddonWillLoad("ClassicUIForever", player) and not (db and db.classicUIUnitFramesOff))) and true or false
+		otherStyleAddon = AddonWillLoad("ClassicFrames", player) or AddonWillLoad("EasyFrames", player)
+		classicUIForever = AddonWillLoad("ClassicUIForever", player)
+		classicUIFramesOff = off and player and off[player] and true or false
 	end
-	return classicStyleAddon or C_AddOns.IsAddOnLoaded("ClassicFrames")
+	if otherStyleAddon or C_AddOns.IsAddOnLoaded("ClassicFrames") then return true end
+	if not classicUIForever then return false end
+	if ForeverClassicUIDB then return ForeverClassicUIDB.unitFrames ~= false end
+	return not classicUIFramesOff
 end
 
 local classicFramesHeld
@@ -144,8 +162,12 @@ classicUIState:SetScript("OnEvent", function()
 	if classicFramesHeld then
 		BetterBlizzFramesDB.classicFrames = true
 	end
-	if ForeverClassicUIDB then
-		BetterBlizzFramesDB.classicUIUnitFramesOff = ForeverClassicUIDB.unitFrames == false or nil
+	BetterBlizzFramesDB.classicUIUnitFramesOff = nil
+	local player = UnitGUID("player")
+	if ForeverClassicUIDB and player then
+		local off = BetterBlizzFramesDB.classicUIFramesOff or {}
+		off[player] = ForeverClassicUIDB.unitFrames == false or nil
+		BetterBlizzFramesDB.classicUIFramesOff = next(off) and off or nil
 	end
 end)
 

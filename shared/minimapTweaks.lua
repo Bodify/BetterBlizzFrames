@@ -284,66 +284,8 @@ function BBF.UpdateMinimapMail()
     indicators:Layout()
 end
 
-local OCD_BUTTON_BORDER = 48
-local MINIMAP_BUTTON_BORDER = 136430
-local buttonBorderCallback
-
-local OCD_BACKGROUND_X = 5
-local MINIMAP_BUTTON_BACKGROUND = 136467
-
-local function SetButtonBackground(lib, name, button)
-    local background = button and button.background
-    if not background then return end
-    if BetterBlizzFramesDB.playerFrameOCD then
-        local texture = background:GetTexture()
-        local isDefault = texture == MINIMAP_BUTTON_BACKGROUND or (type(texture) == "string" and texture:lower():find("ui%-minimap%-background"))
-        if not isDefault and not background.bbfOCDPoint then return end
-        local point, rel, relPoint, _, y = background:GetPoint()
-        if not point then return end
-        background.bbfOCDPoint = true
-        background:ClearAllPoints()
-        background:SetPoint(point, rel, relPoint, OCD_BACKGROUND_X, y)
-    elseif background.bbfOCDPoint then
-        background.bbfOCDPoint = nil
-        if lib.ResetButtonBackground then
-            lib:ResetButtonBackground(name)
-        end
-    end
-end
-
-local function SetButtonBorder(lib, name, button)
-    SetButtonBackground(lib, name, button)
-    local border = button and button.border
-    if not border then return end
-    if BetterBlizzFramesDB.playerFrameOCD then
-        local texture = border:GetTexture()
-        local isRing = texture == MINIMAP_BUTTON_BORDER or (type(texture) == "string" and texture:lower():find("minimap%-trackingborder"))
-        if not isRing and not border.bbfOCDSize then return end
-        border.bbfOCDSize = true
-        border:SetSize(OCD_BUTTON_BORDER, OCD_BUTTON_BORDER)
-    elseif border.bbfOCDSize then
-        border.bbfOCDSize = nil
-        lib:ResetButtonBorder(name)
-    end
-end
-
-function BBF.UpdateMinimapButtonBorders()
-    local lib = LibStub and LibStub("LibDBIcon-1.0", true)
-    if not lib or not lib.objects then return end
-    if not buttonBorderCallback and lib.RegisterCallback then
-        buttonBorderCallback = {}
-        lib.RegisterCallback(buttonBorderCallback, "LibDBIcon_IconCreated", function(_, button, name)
-            SetButtonBorder(lib, name, button)
-        end)
-    end
-    for name, button in pairs(lib.objects) do
-        SetButtonBorder(lib, name, button)
-    end
-end
-
 function BBF.UpdateMinimapTweaks()
     local db = BetterBlizzFramesDB
-    BBF.UpdateMinimapButtonBorders()
     BBF.UpdateMinimapMail()
     if db.classicMinimap then
         if minimapTweaksApplied then

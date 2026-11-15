@@ -517,7 +517,7 @@ local function ApplyCooldownSettings(cooldown, forceNumbers)
     local swipe = db.showCooldownOnLoC ~= false
     cooldown:SetDrawSwipe(swipe)
     cooldown:SetReverse(db.lossOfControlReverseSwipe and true or false)
-    if swipe then
+    if swipe and not db.lossOfControlHideEdge then
         if cooldown.bbLoCEdgeHidden then
             cooldown:SetEdgeColor(unpack(cooldown.bbLoCEdgeColor or { 1, 1, 1, 1 }))
             cooldown.bbLoCEdgeHidden = nil
@@ -567,6 +567,11 @@ local function ApplyLayout(frame)
         ApplyCooldownSettings(frame.bbLoCSecondary.Cooldown)
     end
     ApplyCooldownSettings(frame.Cooldown, frame.bbLoCNoTimer)
+    if db.lossOfControlRemoveRedTint then
+        frame.Cooldown:SetSwipeColor(0, 0, 0, 0.64)
+    else
+        frame.Cooldown:SetSwipeColor(0.17, 0, 0, 0.64)
+    end
 
     local sideways = position == "RIGHT" or position == "LEFT"
     if iconOnly or not sideways then
@@ -638,6 +643,7 @@ local function RestoreBlizzard(frame)
     RestoreCountdownStyle(frame.Cooldown)
     frame.Cooldown:SetDrawSwipe(true)
     frame.Cooldown:SetReverse(false)
+    frame.Cooldown:SetSwipeColor(0.17, 0, 0, 0.64)
     if frame.Cooldown.bbLoCEdgeHidden then
         frame.Cooldown:SetEdgeColor(unpack(frame.Cooldown.bbLoCEdgeColor or { 1, 1, 1, 1 }))
         frame.Cooldown.bbLoCEdgeHidden = nil

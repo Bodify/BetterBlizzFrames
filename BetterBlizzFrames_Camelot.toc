@@ -38,6 +38,7 @@ shared\colorTooltips.lua
 shared\raidFramePixelBorder.lua
 shared\portraitFlip.lua
 shared\skullIcon.lua
+shared\levelTweaks.lua
 
 forever\modules\retailTextures.lua
 shared\textArea.lua
@@ -47,6 +48,7 @@ forever\modules\darkmode.lua
 forever\modules\classicFrames.lua
 forever\modules\nameFix.lua
 shared\moveNames.lua
+shared\iconTweaks.lua
 forever\modules\hideFrames.lua
 forever\modules\classicMinimap.lua
 forever\modules\auras.lua

@@ -1,20 +1,6 @@
 local LSM = LibStub("LibSharedMedia-3.0")
 
-local function GetMaxAbsorbAuraIcon(unit)
-    local maxAbsorb = 0
-    local maxAbsorbIcon = nil
-
-    local function processAura(name, icon, _, _, _, _, _, _, _, spellId, _, _, _, _, _, absorb)
-        if absorb and absorb > maxAbsorb then
-            maxAbsorb = absorb
-            maxAbsorbIcon = icon
-        end
-    end
-
-    AuraUtil.ForEachAura(unit, "HELPFUL", nil, processAura)
-
-    return maxAbsorbIcon
-end
+local DEFAULT_ABSORB_ICON = 1723997
 
 local function UpdateAbsorbIndicator(frame, unit)
     local db = BetterBlizzFramesDB
@@ -85,10 +71,16 @@ local function UpdateAbsorbIndicator(frame, unit)
 
     if frame == PlayerFrame then
         xPos = xPos * -1 -- invert the xPos value for PlayerFrame
+        if not BBF.RetailTexturesOn("player") then
+            yPos = yPos - 1.5
+        end
     end
 
+    frame.absorbIndicator:SetScale(db.absorbIndicatorScale)
+    frame.absorbIcon:SetScale(db.absorbIndicatorScale)
+
     if testMode then
-        frame.absorbIcon:SetTexture("Interface\\Icons\\SPELL_HOLY_POWERWORDSHIELD")
+        frame.absorbIcon:SetTexture(DEFAULT_ABSORB_ICON)
         frame.absorbIcon:SetAlpha(1)
         frame.absorbIndicator:SetText("69k")
         frame.absorbIndicator:SetAlpha(1)
@@ -139,7 +131,7 @@ local function UpdateAbsorbIndicator(frame, unit)
     if showAmount then
         if frame == PlayerFrame then
             if anchor == "LEFT" or anchor == "RIGHT" then
-                frame.absorbIcon:SetPoint(anchor, frame, reverseAnchor, -20 + xPos, -1.5 + yPos)
+                frame.absorbIcon:SetPoint(anchor, frame, reverseAnchor, -20 + xPos, -2.5 + yPos)
             else
                 frame.absorbIcon:SetPoint(reverseAnchor, frame, anchor, -30 + xPos, -25.5 + yPos)
             end
@@ -179,57 +171,18 @@ local function UpdateAbsorbIndicator(frame, unit)
             end
         end
 
-        frame.absorbIndicator:SetScale(BetterBlizzFramesDB.absorbIndicatorScale)
-        frame.absorbIcon:SetScale(BetterBlizzFramesDB.absorbIndicatorScale)
 
         local absorb = UnitGetTotalAbsorbs(unit) or 0
-        local absorbActive
-        if absorb >= 1000000 then
-            local displayValue = string.format("%.1fm", absorb / 1000000)
-            frame.absorbIndicator:SetText(displayValue)
-            frame.absorbIndicator:SetAlpha(1)
-            absorbActive = true
-        elseif absorb >= 1000 then
-            local displayValue = math.floor(absorb / 1000) .. "k"  -- Truncate to thousands
-            frame.absorbIndicator:SetText(displayValue)
-            frame.absorbIndicator:SetAlpha(1)
-            absorbActive = true
+        local shown = issecretvalue(absorb) and absorb or (absorb > 0 and 1 or 0)
+        frame.absorbIndicator:SetText(AbbreviateNumbers(absorb))
+        frame.absorbIndicator:SetAlpha(shown)
+        if showIcon then
+            frame.absorbIcon:SetTexture(DEFAULT_ABSORB_ICON)
+            frame.absorbIcon:SetAlpha(shown)
+            frame.absorbIcon.border:SetAlpha(darkModeOn and shown or 0)
         else
-            absorbActive = false
-            frame.absorbIndicator:SetAlpha(0)
             frame.absorbIcon:SetAlpha(0)
-            if frame.absorbIcon.border then
-                frame.absorbIcon.border:SetAlpha(0)
-            end
-        end
-
-        if absorbActive then
-            if showIcon then
-                local auraIcon = GetMaxAbsorbAuraIcon(unit)
-                if auraIcon then
-                    frame.absorbIcon:SetTexture(auraIcon)
-                    frame.absorbIcon:SetAlpha(1)
-                    if frame.absorbIcon.border and darkModeOn then
-                        frame.absorbIcon.border:SetAlpha(1)
-                    end
-                else
-                    frame.absorbIcon:SetAlpha(0)
-                    if frame.absorbIcon.border then
-                        frame.absorbIcon.border:SetAlpha(0)
-                    end
-                end
-            else
-                frame.absorbIcon:SetAlpha(0)
-                if frame.absorbIcon.border then
-                    frame.absorbIcon.border:SetAlpha(0)
-                end
-            end
-        else
-            frame.absorbIndicator:SetAlpha(0)
-            frame.absorbIcon:SetAlpha(0)
-            if frame.absorbIcon.border then
-                frame.absorbIcon.border:SetAlpha(0)
-            end
+            frame.absorbIcon.border:SetAlpha(0)
         end
     else
         if frame.absorbIndicator then frame.absorbIndicator:SetAlpha(0) end
@@ -271,7 +224,6 @@ end
 
 local absorbEventFrame
 function BBF.AbsorbCaller()
-    if not BBFMIDNIGHT then return end
     if BetterBlizzFramesDB.absorbIndicator and not absorbEventFrame then
         absorbEventFrame = CreateFrame("Frame")
         absorbEventFrame:RegisterUnitEvent("UNIT_ABSORB_AMOUNT_CHANGED", "player", "target", "focus")

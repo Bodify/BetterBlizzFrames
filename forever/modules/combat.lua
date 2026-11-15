@@ -34,6 +34,9 @@ function BBF.CombatIndicator(unitFrame, unit)
         border:SetPoint("BOTTOMRIGHT", unitFrame.combatIndicator, "BOTTOMRIGHT", 1.5, -1.5)
         border:SetFrameLevel(unitFrame.combatParent:GetFrameLevel() + 1)
         unitFrame.combatIndicator.border = border
+        if unitFrame == TargetFrame then
+            BBF.RaiseCombosAboveTargetArt()
+        end
     end
 
     if darkModeOn then

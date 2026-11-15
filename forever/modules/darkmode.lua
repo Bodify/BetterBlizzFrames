@@ -42,6 +42,18 @@ local function applySettings(frame, desaturate, colorValue, hook, hookShow)
     end
 end
 
+local function applyMinimapSettings(frame, desaturate, colorValue)
+    if not frame then return end
+    if desaturate then
+        frame.bbfMinimapDark = true
+    elseif not frame.bbfMinimapDark then
+        return
+    else
+        frame.bbfMinimapDark = nil
+    end
+    applySettings(frame, desaturate, colorValue)
+end
+
 
 local function ApplyDarkElite(frame)
     local texture = frame.TargetFrameContainer.BossPortraitFrameTexture
@@ -912,7 +924,7 @@ function BBF.DarkmodeFrames(bypass)
             if region:IsObjectType("Texture") then
                 local texturePath = region:GetTexture()
                 if texturePath and string.find(texturePath, "136430") then
-                    applySettings(region, minimapSat, minimapColor)
+                    applyMinimapSettings(region, minimapSat, minimapColor)
                 end
             end
         end
@@ -924,7 +936,7 @@ function BBF.DarkmodeFrames(bypass)
                     if nestedRegion:IsObjectType("Texture") then
                         local texturePath = nestedRegion:GetTexture()
                         if texturePath and string.find(texturePath, "136430") then
-                            applySettings(nestedRegion, minimapSat, minimapColor)
+                            applyMinimapSettings(nestedRegion, minimapSat, minimapColor)
                         end
                     end
                 end
@@ -969,7 +981,7 @@ function BBF.DarkmodeFrames(bypass)
     for i = 1, zoomOutButton:GetNumRegions() do
         local region = select(i, zoomOutButton:GetRegions())
         if region:IsObjectType("Texture") then
-            applySettings(region, minimapSat, minimapColor)
+            applyMinimapSettings(region, minimapSat, minimapColor)
         end
     end
 
@@ -1043,7 +1055,7 @@ function BBF.DarkmodeFrames(bypass)
     for i = 1, zoomInButton:GetNumRegions() do
         local region = select(i, zoomInButton:GetRegions())
         if region:IsObjectType("Texture") then
-            applySettings(region, minimapSat, minimapColor)
+            applyMinimapSettings(region, minimapSat, minimapColor)
         end
     end
 
@@ -1057,13 +1069,13 @@ function BBF.DarkmodeFrames(bypass)
         end
     end
 
-    applySettings(MinimapCompassTexture, minimapSat, minimapColor)
-    applySettings(MinimapCompassTextureUnderlay, minimapSat, minimapColor)
+    applyMinimapSettings(MinimapCompassTexture, minimapSat, minimapColor)
+    applyMinimapSettings(MinimapCompassTextureUnderlay, minimapSat, minimapColor)
 
     for _, button in ipairs({ MinimapCluster.ZoneTextButton or false, AddonCompartmentFrame or false }) do
         if button then
-            applySettings(button.StateTexture, minimapSat, minimapColor)
-            applySettings(button.AddTexture, minimapSat, minimapColor)
+            applyMinimapSettings(button.StateTexture, minimapSat, minimapColor)
+            applyMinimapSettings(button.AddTexture, minimapSat, minimapColor)
         end
     end
     DarkModeMinimapButtonBorder(MinimapCluster.Tracking and MinimapCluster.Tracking.Button, minimapSat, minimapColor)
@@ -1082,20 +1094,20 @@ function BBF.DarkmodeFrames(bypass)
                 end
             end
         end
-        applySettings(BBF.dielCycleBorder, minimapSat, minimapColor)
+        applyMinimapSettings(BBF.dielCycleBorder, minimapSat, minimapColor)
     end
 
     if BBF.classicMinimapTextures then
         for _, texture in ipairs(BBF.classicMinimapTextures) do
-            applySettings(texture, minimapSat, minimapColor)
+            applyMinimapSettings(texture, minimapSat, minimapColor)
         end
     end
-    applySettings(BBF.minimapMailBorder, minimapSat, minimapColor)
+    applyMinimapSettings(BBF.minimapMailBorder, minimapSat, minimapColor)
 
     for i = 1, ExpansionLandingPageMinimapButton:GetNumRegions() do
         local region = select(i, ExpansionLandingPageMinimapButton:GetRegions())
         if region:IsObjectType("Texture") then
-            applySettings(region, minimapSat, minimapColor)
+            applyMinimapSettings(region, minimapSat, minimapColor)
         end
     end
 
