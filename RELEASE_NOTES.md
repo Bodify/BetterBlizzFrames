@@ -1,3 +1,8 @@
+# BetterBlizzFrames 2.2.2c
+## Forever
+### Tweak
+- Couple of minor pixel tweaks and changes
+
 # BetterBlizzFrames 2.2.2
 ## All versions
 ### New
