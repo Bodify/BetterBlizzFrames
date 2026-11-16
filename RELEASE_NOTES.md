@@ -1,3 +1,10 @@
+# BetterBlizzFrames 2.2.2d
+## Retail & Forever
+### New
+- Racial Indicator now has dropdown for npc types to show/hide as well.
+### Tweak
+- Fix and improve other "classic style" addons detection like ClasscUI Forever. If that addons unitframe settings is disabled BBF's now correctly work. These changes are fully based on reports and whats possible and not. If you have feedback lmk.
+
 # BetterBlizzFrames 2.2.2c
 ## Forever
 ### Tweak
