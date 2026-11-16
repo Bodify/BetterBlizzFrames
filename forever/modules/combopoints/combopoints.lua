@@ -572,6 +572,7 @@ local function CreateUpdater(class)
     updater:RegisterUnitEvent("UNIT_EXITED_VEHICLE", "player")
     updater:RegisterEvent("PLAYER_ENTERING_WORLD")
     updater:RegisterEvent("PLAYER_TARGET_CHANGED")
+    updater:RegisterEvent("COMBO_TARGET_CHANGED")
     updater:RegisterEvent("NAME_PLATE_UNIT_ADDED")
     updater:RegisterEvent("NAME_PLATE_UNIT_REMOVED")
     if class == "DRUID" then

@@ -1046,6 +1046,7 @@ function BBF.SetCustomFonts()
         end
 
         SetAllFonts()
+        BBF.CastBarTimerCaller()
         if not db.allFontsIgnoreSCT then
             HookCombatTextScaling()
         end
