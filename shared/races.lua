@@ -1,3 +1,5 @@
+local L = BBF.L
+
 local races = {
     Human = { id = 1, icon = "Interface\\Icons\\spell_shadow_charm", key = "racialIndicatorHuman" },
     Dwarf = { id = 3, icon = 136225 },
@@ -121,21 +123,31 @@ function BBF.GetRacialIndicatorIcon(race, unitSex, preferRaceIcon)
     return 134400, false
 end
 
-local creatureTypeIcons = {
-    [1] = "Beast",
-    [2] = "Dragon",
-    [4] = "Elemental",
-    [6] = "Undead",
-    [7] = "Humanoid",
-    [8] = "Critter",
-    [9] = "Mechanical",
+local creatureTypes = {
+    { id = 7, icon = "Humanoid", label = L["Humanoid"] },
+    { id = 1, icon = "Beast", label = L["Beast"] },
+    { id = 2, icon = "Dragon", label = L["Dragonkin"] },
+    { id = 4, icon = "Elemental", label = L["Elemental"] },
+    { id = 6, icon = "Undead", label = L["Undead"] },
+    { id = 9, icon = "Mechanical", label = L["Mechanical"] },
+    { id = 8, icon = "Critter", label = L["Critter"] },
 }
+
+local creatureTypeByID = {}
+BBF.racialIndicatorNpcTypes = {}
+for _, creatureType in ipairs(creatureTypes) do
+    creatureType.key = "racialIndicatorNpc" .. creatureType.icon
+    creatureTypeByID[creatureType.id] = creatureType
+    table.insert(BBF.racialIndicatorNpcTypes, { key = creatureType.key, label = creatureType.label })
+end
 
 function BBF.GetRacialIndicatorCreatureIcon(unit)
     local _, typeID = UnitCreatureType(unit)
     if issecretvalue(typeID) then return end
-    local suffix = typeID and creatureTypeIcons[typeID]
-    return suffix and ("Interface\\PetBattles\\PetIcon-" .. suffix)
+    local creatureType = typeID and creatureTypeByID[typeID]
+    if creatureType and BetterBlizzFramesDB[creatureType.key] then
+        return "Interface\\PetBattles\\PetIcon-" .. creatureType.icon
+    end
 end
 
 function BBF.SetRacialIndicatorIcon(indicator, texture, isAtlas, isCreature)
@@ -215,6 +227,11 @@ function BBF.InitRacialIndicatorRaces()
     local db = BetterBlizzFramesDB
     local reset = not db.racialIndicatorRacesReset
     local keep = reset and BBF.isMidnight and db.racialIndicator
+    for _, option in ipairs(BBF.racialIndicatorNpcTypes) do
+        if db[option.key] == nil then
+            db[option.key] = true
+        end
+    end
     for _, option in ipairs(BBF.racialIndicatorRaces) do
         if option.key and keep then
             if db[option.key] == nil then

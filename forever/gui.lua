@@ -11160,8 +11160,12 @@ local function guiPositionAndScale()
     racialIndicatorRaces:SetPoint("TOP", racialIndicatorYPos, "BOTTOM", 0, -10)
     racialIndicatorRaces.searchParentKey = "racialIndicator"
 
+    local racialIndicatorNpcTypes = CreateMultiSelectDropdown(L["NPCs_Shown"], contentFrame, BBF.racialIndicatorNpcTypes, 125, BBF.RacialIndicatorCaller)
+    racialIndicatorNpcTypes:SetPoint("TOP", racialIndicatorRaces, "BOTTOM", 0, -4)
+    racialIndicatorNpcTypes.searchParentKey = "racialIndicator"
+
     local targetRacialIndicator = CreateCheckbox("targetRacialIndicator", L["Target"], contentFrame)
-    targetRacialIndicator:SetPoint("TOPLEFT", racialIndicatorYPos, "BOTTOMLEFT", 5, -46)
+    targetRacialIndicator:SetPoint("TOPLEFT", racialIndicatorYPos, "BOTTOMLEFT", 5, -76)
     targetRacialIndicator:HookScript("OnClick", function(self)
         BBF.RacialIndicatorCaller()
     end)
