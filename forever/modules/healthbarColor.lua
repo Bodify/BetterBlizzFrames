@@ -1610,6 +1610,13 @@ function BBF.HookFrameTextureColor()
             end
         end
 
+        if bronze and not colored then
+            local er, eg, eb, edesat = BBF.ExtraBronzeColor(texture)
+            if er then
+                r, g, b, desaturate = er, eg, eb, edesat
+            end
+        end
+
         local tinted = colored or darkmode or bronze
         if not tinted and not texture.bbfFrameTinted then return end
         texture.bbfFrameTinted = tinted or nil

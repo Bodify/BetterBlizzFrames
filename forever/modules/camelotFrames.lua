@@ -180,7 +180,17 @@ local MINIMAP_BRONZE_R, MINIMAP_BRONZE_G, MINIMAP_BRONZE_B = 1, 0.71, 0.34
 local THREAT_BRONZE_R, THREAT_BRONZE_G, THREAT_BRONZE_B = 1, 0.7255, 0.502
 local THREAT_BORDER_FILE = 237668
 local NO_PORTRAIT_BRONZE_R, NO_PORTRAIT_BRONZE_G, NO_PORTRAIT_BRONZE_B = 1, 0.773, 0.361
+local DARKER_EXTRA_BRONZE = 0.8
 local bronzedTextures = {}
+
+local function BronzeShade()
+    return BetterBlizzFramesDB.darkerBronzeUnitFrames and DARKER_EXTRA_BRONZE or 1
+end
+
+local function UnitBronzeColor()
+    local k = BronzeShade()
+    return BRONZE_R * k, BRONZE_G * k, BRONZE_B * k
+end
 local bronzedNoPortraitTextures = {}
 local bronzedCastbarTextures = {}
 local bronzedMinimapTextures = {}
@@ -198,7 +208,7 @@ end
 local function BronzeTintActive()
     local db = BetterBlizzFramesDB
     if DarkModeUnitFramesSet() then return false end
-    return (db.classicFrames or RetailBronzeTintActive()) and db.classicFramesBronzeTint and db.classicFramesBronzeTintUnitFrames and not db.classColorFrameTexture and not db.darkerBronzeUnitFrames
+    return (db.classicFrames or RetailBronzeTintActive()) and db.classicFramesBronzeTint and db.classicFramesBronzeTintUnitFrames and not db.classColorFrameTexture
 end
 
 BBF.ClassicBronzeTintActive = BronzeTintActive
@@ -206,7 +216,7 @@ BBF.ClassicBronzeTintActive = BronzeTintActive
 local function NoPortraitBronzeTintActive()
     local db = BetterBlizzFramesDB
     if DarkModeUnitFramesSet() then return false end
-    return not db.classicFrames and db.noPortraitModes and db.classicFramesBronzeTint and db.classicFramesBronzeTintUnitFrames and not db.classColorFrameTexture and not db.darkerBronzeUnitFrames
+    return not db.classicFrames and db.noPortraitModes and db.classicFramesBronzeTint and db.classicFramesBronzeTintUnitFrames and not db.classColorFrameTexture
 end
 
 BBF.NoPortraitBronzeTintActive = NoPortraitBronzeTintActive
@@ -271,13 +281,19 @@ local function SetBronze(texture)
     end
     texture.bbfBronzeChanging = true
     if texture.bbfBronzeNoPortrait then
-        texture:SetVertexColor(NO_PORTRAIT_BRONZE_R, NO_PORTRAIT_BRONZE_G, NO_PORTRAIT_BRONZE_B, texture:GetAlpha())
+        local k = BronzeShade()
+        texture:SetVertexColor(NO_PORTRAIT_BRONZE_R * k, NO_PORTRAIT_BRONZE_G * k, NO_PORTRAIT_BRONZE_B * k, texture:GetAlpha())
     elseif texture.bbfBronzeMinimap then
         texture:SetDesaturated(true)
         texture:SetVertexColor(MINIMAP_BRONZE_R, MINIMAP_BRONZE_G, MINIMAP_BRONZE_B, 1)
     else
         texture:SetDesaturated(true)
-        texture:SetVertexColor(BRONZE_R, BRONZE_G, BRONZE_B, 1)
+        if texture.bbfBronzeCastbar then
+            texture:SetVertexColor(BRONZE_R, BRONZE_G, BRONZE_B, 1)
+        else
+            local r, g, b = UnitBronzeColor()
+            texture:SetVertexColor(r, g, b, 1)
+        end
     end
     texture.bbfBronzeChanging = false
 end
@@ -308,6 +324,20 @@ local function BronzeTexture(texture, isMinimap, isCastbar, restoreSaturation, i
         end)
     end
     SetBronze(texture)
+end
+
+function BBF.ExtraBronzeColor(texture)
+    if not texture.bbfBronzeHooked or texture.bbfBronzeMinimap or texture.bbfBronzeCastbar then return end
+    local k = BronzeShade()
+    if texture.bbfBronzeNoPortrait then
+        if not NoPortraitBronzeTintActive() then return end
+        return NO_PORTRAIT_BRONZE_R * k, NO_PORTRAIT_BRONZE_G * k, NO_PORTRAIT_BRONZE_B * k, false
+    end
+    if not BronzeTintActive() then return end
+    if texture.bbfBronzeUnit and RetailBronzeTintActive() and not BBF.RetailTexturesOn(texture.bbfBronzeUnit) then return end
+    if texture.bbfClassicHD then return k, k, k, false end
+    local r, g, b = UnitBronzeColor()
+    return r, g, b, true
 end
 
 local function GetUnitFrameBorderTextures()
@@ -524,7 +554,8 @@ function BBF.GetPvpCircleColor()
     end
     if BetterBlizzFramesDB.classicFrames then
         if BronzeTintActive() then
-            return BRONZE_R, BRONZE_G, BRONZE_B, true
+            local r, g, b = UnitBronzeColor()
+            return r, g, b, true
         end
         return PVP_CIRCLE_R, PVP_CIRCLE_G, PVP_CIRCLE_B, true
     end
@@ -541,7 +572,7 @@ function BBF.UpdateClassicPvpCircles()
         local v = BetterBlizzFramesDB.darkModeColor
         r, g, b = v, v, v
     elseif BronzeTintActive() then
-        r, g, b = BRONZE_R, BRONZE_G, BRONZE_B
+        r, g, b = UnitBronzeColor()
     end
     local hd = BBF.ClassicHDTexturesActive()
     local hdBronze = hd and BronzeTintActive() and not BBF.DarkModeUnitFramesOn()
@@ -554,8 +585,9 @@ function BBF.UpdateClassicPvpCircles()
                 circle:SetSize(40, 40)
             end
             if hdBronze then
+                local k = BronzeShade()
                 circle:SetDesaturated(false)
-                circle:SetVertexColor(1, 1, 1, 1)
+                circle:SetVertexColor(k, k, k, 1)
             else
                 circle:SetDesaturated(true)
                 circle:SetVertexColor(r, g, b, 1)
@@ -721,7 +753,7 @@ local function ColorHDLevelRing(circle)
         circle:SetVertexColor(v, v, v)
     elseif BronzeTintActive() then
         circle:SetDesaturated(true)
-        circle:SetVertexColor(BRONZE_R, BRONZE_G, BRONZE_B)
+        circle:SetVertexColor(UnitBronzeColor())
     else
         circle:SetDesaturated(false)
         circle:SetVertexColor(1, 1, 1)

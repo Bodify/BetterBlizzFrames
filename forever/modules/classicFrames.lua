@@ -236,8 +236,9 @@ function BBF.ApplyClassicHDColor(texture, isCastbar)
     if not texture or texture:IsForbidden() then return end
     if BBF.ClassicHDBronze(isCastbar) then
         texture.bbfBronzeChanging = true
+        local k = not isCastbar and BetterBlizzFramesDB.darkerBronzeUnitFrames and 0.8 or 1
         texture:SetDesaturated(false)
-        texture:SetVertexColor(1, 1, 1)
+        texture:SetVertexColor(k, k, k)
         texture.bbfBronzeChanging = false
     else
         local desat = texture.bbfSyncedDesat
