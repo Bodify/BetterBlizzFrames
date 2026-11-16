@@ -123,26 +123,10 @@ function BBF.DarkModeUnitFramesOn()
 	return db.darkModeUi and db.darkModeUnitFrames and true or false
 end
 
-local otherStyleAddon, classicUIForever, classicUIFramesOff
-
-local function AddonWillLoad(name, player)
-	local state = C_AddOns.GetAddOnEnableState(name, player)
-	if state == Enum.AddOnEnableState.None or (player and state ~= Enum.AddOnEnableState.All) then return false end
-	return C_AddOns.IsAddOnLoadable(name, player) and true or false
-end
-
 function BBF.ClassicStyleAddon()
-	if otherStyleAddon == nil then
-		local off = BetterBlizzFramesDB and BetterBlizzFramesDB.classicUIFramesOff
-		local player = UnitGUID("player")
-		otherStyleAddon = AddonWillLoad("ClassicFrames", player) or AddonWillLoad("EasyFrames", player)
-		classicUIForever = AddonWillLoad("ClassicUIForever", player)
-		classicUIFramesOff = off and player and off[player] and true or false
-	end
-	if otherStyleAddon or C_AddOns.IsAddOnLoaded("ClassicFrames") then return true end
-	if not classicUIForever then return false end
+	if C_AddOns.IsAddOnLoaded("ClassicFrames") or C_AddOns.IsAddOnLoaded("EasyFrames") then return true end
 	if ForeverClassicUIDB then return ForeverClassicUIDB.unitFrames ~= false end
-	return not classicUIFramesOff
+	return false
 end
 
 local classicFramesHeld
@@ -158,17 +142,11 @@ end
 local classicUIState = CreateFrame("Frame")
 classicUIState:RegisterEvent("PLAYER_LOGOUT")
 classicUIState:SetScript("OnEvent", function()
-	if not BetterBlizzFramesDB then return end
 	if classicFramesHeld then
 		BetterBlizzFramesDB.classicFrames = true
 	end
+	BetterBlizzFramesDB.classicUIFramesOff = nil
 	BetterBlizzFramesDB.classicUIUnitFramesOff = nil
-	local player = UnitGUID("player")
-	if ForeverClassicUIDB and player then
-		local off = BetterBlizzFramesDB.classicUIFramesOff or {}
-		off[player] = ForeverClassicUIDB.unitFrames == false or nil
-		BetterBlizzFramesDB.classicUIFramesOff = next(off) and off or nil
-	end
 end)
 
 function BBF.ClassicStyleAddonNote(styleWide)
