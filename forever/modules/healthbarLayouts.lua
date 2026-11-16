@@ -401,7 +401,7 @@ local function SetManaMaskWidth(frame, width)
 end
 
 local function KeepNameBackgroundHidden(reputationColor)
-    if reputationColor.bbfBigHidden and not reputationColor.bbfKeepHidden and reputationColor:GetAlpha() ~= 0 then
+    if reputationColor.bbfBigHidden and not reputationColor.bbfKeepHidden then
         reputationColor.bbfKeepHidden = true
         reputationColor:SetAlpha(0)
         reputationColor.bbfKeepHidden = nil
