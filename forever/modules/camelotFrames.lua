@@ -1142,7 +1142,7 @@ local function LayoutClassicPvpIcon(frame, unit)
         elseif BetterBlizzFramesDB.classicFrames then
             PlaceClassicPvpIcon(main.PvpBackgroundIcon, main, "TOPLEFT", 21 + 1.5 / 0.85, -63, 0.85)
         else
-            PlaceClassicPvpIcon(main.PvpBackgroundIcon, main, "TOPLEFT", 17 - 1 / 0.85, -63 + 2 / 0.85, 0.85)
+            PlaceClassicPvpIcon(main.PvpBackgroundIcon, main, "TOPLEFT", 17 - 2 / 0.85, -63 + 2 / 0.85, 0.85)
         end
         return
     end
