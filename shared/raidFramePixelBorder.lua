@@ -60,7 +60,7 @@ local function LayoutBorder(frame)
         separator:ClearAllPoints()
         separator:SetPoint("TOPLEFT", frame.healthBar, "BOTTOMLEFT", 0, size / 2)
         separator:SetPoint("BOTTOMRIGHT", frame.powerBar, "TOPRIGHT", 0, -size / 2)
-        separator:SetShown(frame.powerBar:IsShown())
+        separator:SetAlphaFromBoolean(frame.powerBar:IsShown(), 1, 0)
     end
 end
 
