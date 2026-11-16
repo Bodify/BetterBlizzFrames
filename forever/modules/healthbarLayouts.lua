@@ -443,7 +443,21 @@ local function TargetPlayerArt(frame)
         if db.removeNameBorder and db[frame == FocusFrame and "removeNameBorderFocus" or "removeNameBorderTarget"] then
             return PLAYER_ART .. "-NoNameBg" .. noMana .. ".png", PLAYER_ART .. "-InCombat-NoNameBg.png", true, PLAYER_ART .. "-Status-Classic-NoNameBg.png"
         end
+        if noMana == "" then
+            return "UI-HUD-UnitFrame-Player-PortraitOn", "UI-HUD-UnitFrame-Player-PortraitOn-InCombat", false, PLAYER_ART .. "-Status-Classic.png"
+        end
         return PLAYER_ART .. noMana .. ".png", PLAYER_ART .. "-InCombat.png", false, PLAYER_ART .. "-Status-Classic.png"
+    end
+end
+
+local function SetMirroredArt(tex, art)
+    if art:find("^UI%-HUD") then
+        local info = C_Texture.GetAtlasInfo(art)
+        tex:SetTexture(info.file or info.filename)
+        tex:SetTexCoord(info.rightTexCoord, info.leftTexCoord, info.topTexCoord, info.bottomTexCoord)
+    else
+        tex:SetTexture(art)
+        tex:SetTexCoord(1, 0, 0, 1)
     end
 end
 
@@ -621,24 +635,23 @@ local function SetTargetPlayerArt(frame)
     SetNameBackgroundHidden(frame, (noBorder and nameBgTexture) or (mirror and mirror.layout and mirror.layout.big))
     if art then
         frameTexture.bbfPlayerArt = true
-        frameTexture:SetTexture(art)
-        frameTexture:SetTexCoord(1, 0, 0, 1)
+        SetMirroredArt(frameTexture, art)
         frameTexture:SetSize(198, 71)
         frameTexture:ClearAllPoints()
-        frameTexture:SetPoint("CENTER", container, "CENTER", 0.5, 2)
+        frameTexture:SetPoint("CENTER", container, "CENTER", 1, 2)
         flash:ClearAllPoints()
         if db.classicCombatGlow then
             flash.bbfClassicGlow = true
             flash:SetTexture(glowArt)
+            flash:SetTexCoord(1, 0, 0, 1)
             flash:SetBlendMode("ADD")
             flash:SetPoint("TOPLEFT", frameTexture, "TOPLEFT", -CLASSIC_GLOW_PAD, CLASSIC_GLOW_PAD)
             flash:SetPoint("BOTTOMRIGHT", frameTexture, "BOTTOMRIGHT", CLASSIC_GLOW_PAD, -CLASSIC_GLOW_PAD)
         else
             ClearClassicGlow(flash)
-            flash:SetTexture(flashArt)
+            SetMirroredArt(flash, flashArt)
             flash:SetAllPoints(frameTexture)
         end
-        flash:SetTexCoord(1, 0, 0, 1)
         portrait:SetSize(60, 60)
         portrait:ClearAllPoints()
         portrait:SetPoint("TOPRIGHT", container, "TOPRIGHT", -24, -16.5)

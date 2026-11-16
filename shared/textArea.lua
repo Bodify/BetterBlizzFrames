@@ -72,7 +72,7 @@ BBF.TextAreaLayouts = {
             { style = "camelot", mana = "hidden", manaY = -0.5, own = { manaY = true } },
             { style = "camelot", mode = "reduced", manaY = -0.5, own = { manaY = true } },
             { style = "camelot", mode = "big", manaY = -0.5, own = { manaY = true } },
-            { style = "camelot", left = 1, right = -4.5, top = -0.5, healthY = -1, manaY = -0.5, textLeft = 1, textRight = 3.5, own = { healthY = true, manaY = true } },
+            { style = "camelot", left = 1, right = -4.5, top = -0.5, healthY = -0.5, manaY = -0.5, textLeft = 1, textRight = 3.5, own = { healthY = true, manaY = true } },
         },
     },
     tot = {

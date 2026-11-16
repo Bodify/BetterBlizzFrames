@@ -1072,7 +1072,7 @@ function BBF.UpdateSmallerLevelCircle()
     if BBF.ClassicStyleAddon() then return end
     local playerMain = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain
     RoundToPixel(playerMain.LevelBackgroundCircle)
-    local playerX, playerY = 19, 17.5
+    local playerX, playerY = 19 + 2 / 0.8, 17.5 - 1 / 0.8
     if (BBF.SymmetricPlayerOn and BBF.SymmetricPlayerOn()) then
         playerX, playerY = 21, 19
     end
@@ -1142,7 +1142,7 @@ local function LayoutClassicPvpIcon(frame, unit)
         elseif BetterBlizzFramesDB.classicFrames then
             PlaceClassicPvpIcon(main.PvpBackgroundIcon, main, "TOPLEFT", 21 + 1.5 / 0.85, -63, 0.85)
         else
-            PlaceClassicPvpIcon(main.PvpBackgroundIcon, main, "TOPLEFT", 17 - 0.5 / 0.85, -63 + 1 / 0.85, 0.85)
+            PlaceClassicPvpIcon(main.PvpBackgroundIcon, main, "TOPLEFT", 17 - 1 / 0.85, -63 + 2 / 0.85, 0.85)
         end
         return
     end
@@ -1345,10 +1345,10 @@ local function ApplyNameBg(frame, unit)
             name:SetPoint("TOPLEFT", rep, "TOPRIGHT", -133, -1)
             frame.bbfNameBgShiftX, frame.bbfNameBgShiftY = nil, nil
         else
-            rep:SetSize(137, 18.5)
-            rep:SetPoint("TOPRIGHT", main, "TOPRIGHT", -81.5, -26.5)
-            name:SetPoint("TOPLEFT", rep, "TOPRIGHT", -126.5, -3.5)
-            frame.bbfNameBgShiftX, frame.bbfNameBgShiftY = -0.5, -0.5
+            rep:SetSize(136.5, 19)
+            rep:SetPoint("TOPRIGHT", main, "TOPRIGHT", -82, -25.5)
+            name:SetPoint("TOPLEFT", rep, "TOPRIGHT", -126, -4.5)
+            frame.bbfNameBgShiftX, frame.bbfNameBgShiftY = 0, -1.5
         end
     end
     if BBF.ApplyNameLayouts then
@@ -1380,11 +1380,11 @@ end
 local playerMaskHooked
 local PLAYER_HEALTH_MASK = "UI-HUD-UnitFrame-Player-PortraitOn-Bar-Health-Mask"
 
-local function PlaceDefaultHealthMask(mask, healthBar, width, x, height)
+local function PlaceDefaultHealthMask(mask, healthBar, width, x)
     mask:SetAtlas(PLAYER_HEALTH_MASK)
     mask:ClearAllPoints()
-    mask:SetPoint("TOPLEFT", healthBar, "TOPLEFT", x or -2, 6)
-    mask:SetSize(width, height or 33)
+    mask:SetPoint("TOPLEFT", healthBar, "TOPLEFT", x, 6.5)
+    mask:SetSize(width, 33.5)
 end
 
 function BBF.UpdatePlayerHealthMask()
@@ -1428,15 +1428,17 @@ function BBF.UpdateTargetHealthMask(frame)
     if not InCombatLockdown() then
         manaBar:SetSize(135, 11)
         manaBar:ClearAllPoints()
-        manaBar:SetPoint("TOPRIGHT", main.HealthBarsContainer, "BOTTOMRIGHT", 4, -1)
+        manaBar:SetPoint("TOPRIGHT", main.HealthBarsContainer, "BOTTOMRIGHT", 4, -0.5)
     end
+    local manaTexture = BBF.UnitFrameTextureOn("mana")
     local manaMask = manaBar.ManaBarMask
-    manaMask:SetSize(259, 17)
+    manaMask:SetSize(manaTexture and 258.5 or 259, 17)
     manaMask:ClearAllPoints()
-    manaMask:SetPoint("TOPLEFT", manaBar, "TOPLEFT", -62, 3)
+    manaMask:SetPoint("TOPLEFT", manaBar, "TOPLEFT", manaTexture and -61.5 or -62, 3)
     if UnitExists(unit) and UnitClassification(unit) == "minus" then return end
     local hpContainer = frame.TargetFrameContent.TargetFrameContentMain.HealthBarsContainer
-    PlaceDefaultHealthMask(hpContainer.HealthBarMask, hpContainer.HealthBar, 129, -1.5, 33.3)
+    local healthTexture = BBF.UnitFrameTextureOnFor(unit)
+    PlaceDefaultHealthMask(hpContainer.HealthBarMask, hpContainer.HealthBar, healthTexture and 128.5 or 129, healthTexture and -1 or -1.5)
 end
 
 local groupIconHooked
