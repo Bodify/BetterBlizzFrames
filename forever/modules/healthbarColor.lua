@@ -1437,7 +1437,7 @@ local function PlacePlayerNameBg(frame, mode)
         rep:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -21, -25)
     else
         rep:SetAtlas("UI-HUD-UnitFrame-Target-PortraitOn-Type")
-        rep:SetSize(136, 18)
+        rep:SetSize(136, 18.5)
         rep:SetTexCoord(1, 0, 0, 1)
         rep:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -13.5, -28)
     end

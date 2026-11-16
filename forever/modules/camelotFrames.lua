@@ -1087,9 +1087,9 @@ function BBF.UpdateSmallerLevelCircle()
         local ring = main.LevelBackgroundCircle
         RoundToPixel(ring)
         local small = SmallerLevelCircleOn(unit)
-        ApplySmallerLevelCircle(ring, main.LevelText, "BOTTOMRIGHT", -20, 20, small)
+        ApplySmallerLevelCircle(ring, main.LevelText, "BOTTOMRIGHT", -20, 20 - 1 / 0.8, small)
         if not BBF.SmallerLevelCircleBlocker(unit) then
-            TweakRing(ring, "BOTTOMRIGHT", small and -20 or -11, small and 20 or 11, small and 0.8 or ring.bbfOrigScale, "target")
+            TweakRing(ring, "BOTTOMRIGHT", small and -20 or -11, small and 20 - 1 / 0.8 or 11, small and 0.8 or ring.bbfOrigScale, "target")
         end
     end
     for _, Refresh in ipairs(ringRefreshers) do
@@ -1142,7 +1142,7 @@ local function LayoutClassicPvpIcon(frame, unit)
         elseif BetterBlizzFramesDB.classicFrames then
             PlaceClassicPvpIcon(main.PvpBackgroundIcon, main, "TOPLEFT", 21 + 1.5 / 0.85, -63, 0.85)
         else
-            PlaceClassicPvpIcon(main.PvpBackgroundIcon, main, "TOPLEFT", 17, -63, 0.85)
+            PlaceClassicPvpIcon(main.PvpBackgroundIcon, main, "TOPLEFT", 17 - 0.5 / 0.85, -63 + 1 / 0.85, 0.85)
         end
         return
     end
@@ -1320,7 +1320,7 @@ local function ApplyNameBg(frame, unit)
     rep.bbfNameBgRetail = retail
     rep.bbfNameBgTexture = texture
     if mode then
-        rep:SetSize(125, mode == "retail" and 21.5 or 21)
+        rep:SetSize(125, 21.5)
         rep:ClearAllPoints()
         rep:SetPoint("TOPLEFT", frame, "TOPLEFT", 21, -23.5)
         if mode == "retail" then
@@ -1343,12 +1343,13 @@ local function ApplyNameBg(frame, unit)
         if (BBF.RetailTexturesOn and BBF.RetailTexturesOn(unit)) then
             rep:SetPoint("TOPRIGHT", main, "TOPRIGHT", -75, -25)
             name:SetPoint("TOPLEFT", rep, "TOPRIGHT", -133, -1)
+            frame.bbfNameBgShiftX, frame.bbfNameBgShiftY = nil, nil
         else
-            rep:SetSize(136, 18)
-            rep:SetPoint("TOPRIGHT", main, "TOPRIGHT", -82, -27)
-            name:SetPoint("TOPLEFT", rep, "TOPRIGHT", -126, -3)
+            rep:SetSize(137, 18.5)
+            rep:SetPoint("TOPRIGHT", main, "TOPRIGHT", -81.5, -26.5)
+            name:SetPoint("TOPLEFT", rep, "TOPRIGHT", -126.5, -3.5)
+            frame.bbfNameBgShiftX, frame.bbfNameBgShiftY = -0.5, -0.5
         end
-        frame.bbfNameBgShiftX, frame.bbfNameBgShiftY = nil, nil
     end
     if BBF.ApplyNameLayouts then
         BBF.ApplyNameLayouts()
