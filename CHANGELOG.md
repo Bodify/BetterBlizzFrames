@@ -1,3 +1,8 @@
+# BetterBlizzFrames 2.2.2e
+## Retail & Forever
+### Bugfix
+- Fix secret error with reputation color in bgs/instances
+
 # BetterBlizzFrames 2.2.2d
 ## Retail & Forever
 ### New
