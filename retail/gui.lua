@@ -2842,9 +2842,9 @@ local function deleteEntry(listName, key)
             local icon = spellInfo and (spellInfo.iconID or spellInfo.originalIconID)
             if spellName and icon then
                 local iconString = "|T" .. icon .. ":16:16:0:0|t"
-                BBF.Print(string.format(L["Print_Removed_From_List"], iconString .. " " .. spellName .. " (" .. entry.id .. ")"))
+                BBF.Print(string.format(L["Print_Removed_From_List"], iconString .. " " .. spellName .. " (" .. BBF.FormatSpellIDs(entry.id, entry.ids) .. ")"))
             elseif entry.name then
-                BBF.Print(string.format(L["Print_Removed_From_List"], entry.name .. " (" .. entry.id .. ")"))
+                BBF.Print(string.format(L["Print_Removed_From_List"], entry.name .. " (" .. BBF.FormatSpellIDs(entry.id, entry.ids) .. ")"))
             else
                 BBF.Print(string.format(L["Print_Removed_ID_Not_Found"], entry.id))
             end
@@ -2917,26 +2917,39 @@ BBF.popupBuilders["BBF_DUPLICATE_UPDATE_OR_DELETE"] = function()
 end
 
 
-local function addOrUpdateEntry(inputText, listName, addShowMineTag, skipRefresh, color)
+local function addOrUpdateEntry(inputText, listName, addShowMineTag, skipRefresh, color, ids)
     local name, comment = strsplit("/", inputText, 2)
     name = strtrim(name or "")
     comment = comment and strtrim(comment) or nil
-    local id = tonumber(name)
+    local id = ids and ids[1] or tonumber(name)
     local printMsg
     local spellName
     local icon
     local iconString
 
     if not id then
-        if name ~= "" then
-            BBF.Print(L["Print_Spell_ID_Only_Midnight"])
-        end
         local editBox = listName and BBF[listName.."EditBox"]
         if editBox then
             editBox:SetText("")
+            BBF.SetListSearchFilter(listName, "")
+            if BBF[listName.."Refresh"] then
+                BBF[listName.."Refresh"]()
+            end
+        end
+        if name ~= "" then
+            BBF.FindSpellIDsByName(name, function(found)
+                if found then
+                    addOrUpdateEntry(inputText, listName, addShowMineTag, skipRefresh, color, found)
+                else
+                    BBF.Print(string.format(L["Print_No_Spell_Found_Name"], name))
+                end
+            end)
         end
         return
     end
+
+    ids = ids and ids[2] and ids or nil
+    local idText = BBF.FormatSpellIDs(id, ids)
 
     -- Check if there's a numeric ID within the name and clear the name if found
     if id then
@@ -2958,9 +2971,9 @@ local function addOrUpdateEntry(inputText, listName, addShowMineTag, skipRefresh
 
         -- Check if the spell is being added to blacklist or whitelist
         if listName == "auraBlacklist" then
-            printMsg = iconString .. " " .. spellName .. " (" .. id .. ")" .. L["Print_Added_To_Blacklist_With_Icon"]
+            printMsg = iconString .. " " .. spellName .. " (" .. idText .. ")" .. L["Print_Added_To_Blacklist_With_Icon"]
         elseif listName == "auraWhitelist" then
-            printMsg = iconString .. " " .. spellName .. " (" .. id .. ")" .. L["Print_Added_To_Whitelist_With_Icon"]
+            printMsg = iconString .. " " .. spellName .. " (" .. idText .. ")" .. L["Print_Added_To_Whitelist_With_Icon"]
         end
     end
 
@@ -3001,11 +3014,12 @@ local function addOrUpdateEntry(inputText, listName, addShowMineTag, skipRefresh
             local newEntry = {
                 name = name,
                 id = id,
+                ids = ids,
                 comment = comment or nil,
             }
 
             if listName == "auraWhitelist" then
-                newEntry = {name = name, id = id, comment = comment or nil, color = {0,1,0,1}}
+                newEntry = {name = name, id = id, ids = ids, comment = comment or nil, color = {0,1,0,1}}
             end
 
             -- if color then
@@ -3021,7 +3035,7 @@ local function addOrUpdateEntry(inputText, listName, addShowMineTag, skipRefresh
             if addShowMineTag and listName == "auraBlacklist" then
                 newEntry.showMine = true
                 if id then
-                    printMsg = iconString .. " " .. spellName .. " (" .. id .. ")" .. L["Print_Added_To_Blacklist_With_Tag"]
+                    printMsg = iconString .. " " .. spellName .. " (" .. idText .. ")" .. L["Print_Added_To_Blacklist_With_Tag"]
                 end
             end
 
@@ -3235,7 +3249,8 @@ local function CreateList(subPanel, listName, listData, refreshFunc, extraBoxes,
         button.npcData = npc
         local displayText
         if npc.id then
-            displayText = string.format("%s (%d)", (npc.name or C_Spell.GetSpellName(npc.id) or L["Name_Missing"]), npc.id)  -- Display as "Name (id)"
+            local idText = npc.ids and (npc.id .. " +" .. (#npc.ids - 1)) or npc.id
+            displayText = string.format("%s (%s)", (npc.name or C_Spell.GetSpellName(npc.id) or L["Name_Missing"]), idText)  -- Display as "Name (id)"
         else
             displayText = npc.name  -- Display just the name if there's no id
         end
@@ -3966,7 +3981,28 @@ local function CreateSearchFrame()
             return true
         end
 
-        local function applyRightClickScript(searchCheckbox, originalCheckbox)
+        local function copyTooltip(searchCheckbox, original, label)
+            if original.tooltipMainText then
+                CreateTooltipTwo(searchCheckbox, original.tooltipTitle, original.tooltipMainText, original.tooltipSubText, nil, original.tooltipCVarName, SearchCategoryOf(original))
+            elseif original.tooltipTitle then
+                CreateTooltipTwo(searchCheckbox, original.tooltipTitle, nil, nil, nil, nil, SearchCategoryOf(original))
+            else
+                CreateTooltipTwo(searchCheckbox, label, nil, nil, nil, nil, SearchCategoryOf(original))
+            end
+        end
+
+        local function restoreSearchPoints(popup)
+            local points = popup.bbfSearchPoints
+            if points then
+                popup.bbfSearchPoints = nil
+                popup:ClearAllPoints()
+                for _, point in ipairs(points) do
+                    popup:SetPoint(unpack(point))
+                end
+            end
+        end
+
+        local function applyRightClickScript(searchCheckbox, originalCheckbox, label)
             local handlers = originalCheckbox.bbfMouseDownHandlers
             if not handlers and originalCheckbox.GetScript then
                 local originalScript = originalCheckbox:GetScript("OnMouseDown")
@@ -3975,8 +4011,40 @@ local function CreateSearchFrame()
             if handlers and #handlers > 0 then
                 searchCheckbox:SetScript("OnMouseDown", function(self, button)
                     if button == "RightButton" then
+                        local wasShown = {}
+                        for _, child in ipairs({ UIParent:GetChildren() }) do
+                            if not child:IsForbidden() and child:IsShown() then
+                                wasShown[child] = true
+                            end
+                        end
                         for _, handler in ipairs(handlers) do
                             handler(originalCheckbox, button)
+                        end
+                        for _, child in ipairs({ UIParent:GetChildren() }) do
+                            if not child:IsForbidden() and child:IsShown() and not wasShown[child] then
+                                local _, relativeTo = child:GetPoint(1)
+                                if relativeTo and not relativeTo:IsVisible() then
+                                    local points = {}
+                                    for i = 1, child:GetNumPoints() do
+                                        points[i] = { child:GetPoint(i) }
+                                    end
+                                    child.bbfSearchPoints = points
+                                    child:ClearAllPoints()
+                                    child:SetPoint("TOPLEFT", self, "BOTTOMLEFT", 0, -6)
+                                    child:SetClampedToScreen(true)
+                                    if not child.bbfSearchHooked then
+                                        child.bbfSearchHooked = true
+                                        child:HookScript("OnHide", restoreSearchPoints)
+                                    end
+                                end
+                            end
+                        end
+                        self:SetChecked(originalCheckbox:GetChecked())
+                        copyTooltip(self, originalCheckbox, label)
+                        UpdateSearchDropdownStates()
+                        local owner = GameTooltip:IsShown() and GameTooltip:GetOwner()
+                        if owner == self or owner == originalCheckbox then
+                            self:GetScript("OnEnter")(self)
                         end
                     end
                 end)
@@ -4078,16 +4146,9 @@ local function CreateSearchFrame()
                     UpdateSearchDropdownStates()
                 end)
 
-                applyRightClickScript(resultCheckBox, data.checkbox)
+                applyRightClickScript(resultCheckBox, data.checkbox, data.label)
 
-                -- Reapply tooltip
-                if data.checkbox.tooltipMainText then
-                    CreateTooltipTwo(resultCheckBox, data.checkbox.tooltipTitle, data.checkbox.tooltipMainText, data.checkbox.tooltipSubText, nil, data.checkbox.tooltipCVarName, SearchCategoryOf(data.checkbox))
-                elseif data.checkbox.tooltipTitle then
-                    CreateTooltipTwo(resultCheckBox, data.checkbox.tooltipTitle, nil, nil, nil, nil, SearchCategoryOf(data.checkbox))
-                else
-                    CreateTooltipTwo(resultCheckBox, data.label, nil, nil, nil, nil, SearchCategoryOf(data.checkbox))
-                end
+                copyTooltip(resultCheckBox, data.checkbox, data.label)
 
                 resultCheckBox:Show()
 
@@ -4379,7 +4440,7 @@ end
 function BBF.CreateNameLayoutCheckboxes(parent, anchor)
     local moveNames = CreateCheckbox("moveNames", L["Move_Names"], parent)
     moveNames:SetPoint("TOPLEFT", anchor, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltipTwo(moveNames, L["Move_Names"], L["Tooltip_Move_Names_Desc"])
+    CreateTooltipTwo(moveNames, L["Move_Names"], L["Tooltip_Move_Names_Desc"] .. "\n\n|cff32f795" .. L["Right_Click_More_Settings"] .. "|r")
     moveNames:HookScript("OnMouseDown", function(self, button)
         if button == "RightButton" then
             BBF.OpenMoveNamesWindow(self)
@@ -5509,7 +5570,7 @@ function BBF.OpenBigDebuffsWindow(anchor)
 
         local spellTitle = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
         spellTitle:SetPoint("TOP", f, "TOP", 0, -220)
-        spellTitle:SetText(L["Add_Spell_ID"])
+        spellTitle:SetText(L["Add_Spell_ID_Or_Name"])
 
         local spellNote = f:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
         spellNote:SetPoint("TOP", f, "TOP", 0, -236)
@@ -5520,8 +5581,7 @@ function BBF.OpenBigDebuffsWindow(anchor)
         spellInput:SetSize(200, 20)
         spellInput:SetPoint("TOP", f, "TOP", -26, -262)
         spellInput:SetAutoFocus(false)
-        spellInput:SetNumeric(true)
-        CreateTooltip(spellInput, L["Enter_Spell_ID"])
+        CreateTooltip(spellInput, L["Enter_Spell_ID_Or_Name"])
 
         local addButton = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
         addButton:SetSize(50, 22)
@@ -5535,16 +5595,18 @@ function BBF.OpenBigDebuffsWindow(anchor)
         listContent:SetSize(250, 100)
         listScroll:SetScrollChild(listContent)
 
-        local function SpellString(spellID)
+        local function SpellString(spellID, ids)
             local icon = C_Spell.GetSpellTexture(spellID)
             local name = C_Spell.GetSpellName(spellID) or ""
-            return (icon and ("|T" .. icon .. ":16:16:0:0|t ") or "") .. name .. " (" .. spellID .. ")"
+            if ids == nil then ids = BetterBlizzFramesDB.bigDebuffsSpellGroups[spellID] end
+            return (icon and ("|T" .. icon .. ":16:16:0:0|t ") or "") .. name .. " (" .. BBF.FormatSpellIDs(spellID, ids) .. ")"
         end
 
         local RefreshSpellList
         local function RemoveSpell(listKey, spellID)
-            BetterBlizzFramesDB[listKey][spellID] = nil
             BBF.Print(string.format(L["Print_Removed_From_List"], SpellString(spellID)))
+            BetterBlizzFramesDB[listKey][spellID] = nil
+            BetterBlizzFramesDB.bigDebuffsSpellGroups[spellID] = nil
             RefreshSpellList()
             BBF.UpdateBigDebuffsSpellLists()
         end
@@ -5647,7 +5709,8 @@ function BBF.OpenBigDebuffsWindow(anchor)
                 row.spellID = spellID
                 row.icon:SetTexture(C_Spell.GetSpellTexture(spellID))
                 row.icon:SetDesaturated(entry.blacklisted or false)
-                row.label:SetText((C_Spell.GetSpellName(spellID) or "") .. " (" .. spellID .. ")")
+                local group = BetterBlizzFramesDB.bigDebuffsSpellGroups[spellID]
+                row.label:SetText((C_Spell.GetSpellName(spellID) or "") .. " (" .. spellID .. (group and (" +" .. (#group - 1)) or "") .. ")")
                 if entry.blacklisted then
                     row.label:SetTextColor(0.5, 0.5, 0.5)
                 else
@@ -5681,12 +5744,13 @@ function BBF.OpenBigDebuffsWindow(anchor)
             listContent:SetHeight(math.max(#entries * 20, 1))
         end
 
+        local pendingID, pendingIDs
         local function AddSpell(listKey)
-            local spellID = tonumber(spellInput:GetText())
-            spellInput:SetText("")
-            spellInput:ClearFocus()
-            BetterBlizzFramesDB.bigDebuffsBlacklist[spellID] = nil
-            BetterBlizzFramesDB[listKey][spellID] = true
+            local db = BetterBlizzFramesDB
+            local spellID = pendingID
+            db.bigDebuffsBlacklist[spellID] = nil
+            db[listKey][spellID] = true
+            db.bigDebuffsSpellGroups[spellID] = pendingIDs
             BBF.Print(string.format(L["Print_Added_To_List"], SpellString(spellID)))
             RefreshSpellList()
             BBF.UpdateBigDebuffsSpellLists()
@@ -5711,26 +5775,42 @@ function BBF.OpenBigDebuffsWindow(anchor)
             whileDead = true,
         }
 
-        local function SubmitSpell()
-            local text = spellInput:GetText()
-            if text == "" then
-                spellInput:ClearFocus()
-                return
-            end
-            local spellID = tonumber(text)
-            if not spellID or not C_Spell.DoesSpellExist(spellID) then
-                spellInput:SetText("")
-                spellInput:SetFocus()
-                BBF.Print(string.format(L["Print_Invalid_Spell_ID"], text))
-                return
-            end
-            spellInput:ClearFocus()
+        local function ChooseSpellList(spellID, ids)
+            pendingID, pendingIDs = spellID, ids
             local harmful, helpful = C_Spell.IsSpellHarmful(spellID), C_Spell.IsSpellHelpful(spellID)
             if harmful ~= helpful then
                 AddSpell(harmful and "bigDebuffsCustomDebuffs" or "bigDebuffsCustomBuffs")
                 return
             end
-            StaticPopup_Show("BBF_BIG_DEBUFFS_ADD_SPELL", titleText .. L["Dialog_Big_Debuffs_Add_Spell"] .. "\n\n" .. SpellString(spellID))
+            StaticPopup_Show("BBF_BIG_DEBUFFS_ADD_SPELL", titleText .. L["Dialog_Big_Debuffs_Add_Spell"] .. "\n\n" .. SpellString(spellID, ids or false))
+        end
+
+        local function SubmitSpell()
+            local text = strtrim(spellInput:GetText())
+            spellInput:SetText("")
+            if text == "" then
+                spellInput:ClearFocus()
+                return
+            end
+            local spellID = tonumber(text)
+            if not spellID then
+                spellInput:ClearFocus()
+                BBF.FindSpellIDsByName(text, function(found)
+                    if found then
+                        ChooseSpellList(found[1], found[2] and found or nil)
+                    else
+                        BBF.Print(string.format(L["Print_No_Spell_Found_Name"], text))
+                    end
+                end)
+                return
+            end
+            if not C_Spell.DoesSpellExist(spellID) then
+                spellInput:SetFocus()
+                BBF.Print(string.format(L["Print_Invalid_Spell_ID"], text))
+                return
+            end
+            spellInput:ClearFocus()
+            ChooseSpellList(spellID)
         end
 
         spellInput:SetScript("OnEnterPressed", SubmitSpell)

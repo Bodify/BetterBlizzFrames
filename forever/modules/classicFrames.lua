@@ -22,10 +22,12 @@ function BBF.PlaceClassicLevel(levelText)
     if not place then return end
     local nudge = 0
     local text = levelText:GetText()
-    if text and not issecretvalue(text) and levelText ~= PlayerLevelText then
+    if text and not issecretvalue(text) then
         text = tostring(text)
-        if text:sub(1, 1) == "1" then nudge = nudge - 0.5 end
-        if text:sub(-1) == "1" then nudge = nudge - 0.5 end
+        if text:sub(1, 1) == "1" then
+            nudge = levelText == PlayerLevelText and -0.5 or -1
+        end
+        if levelText ~= PlayerLevelText and text:sub(-1) == "1" then nudge = nudge - 0.5 end
     end
     levelText:ClearAllPoints()
     local dx, dy = BBF.LevelTweakOffset(levelText == PlayerLevelText and "player" or "target")
@@ -232,11 +234,15 @@ function BBF.ClassicHDBronze(isCastbar)
     return check and check() and true or false
 end
 
+local function ClassicHDShade(isCastbar)
+    return not isCastbar and BetterBlizzFramesDB.darkerBronzeUnitFrames and 0.8 or 1
+end
+
 function BBF.ApplyClassicHDColor(texture, isCastbar)
     if not texture or texture:IsForbidden() then return end
     if BBF.ClassicHDBronze(isCastbar) then
         texture.bbfBronzeChanging = true
-        local k = not isCastbar and BetterBlizzFramesDB.darkerBronzeUnitFrames and 0.8 or 1
+        local k = ClassicHDShade(isCastbar)
         texture:SetDesaturated(false)
         texture:SetVertexColor(k, k, k)
         texture.bbfBronzeChanging = false
@@ -288,7 +294,8 @@ end
 
 function BBF.ClassicHDFrameColor(texture, r, g, b)
     if texture.bbfClassicHD and BBF.ClassicHDBronze() then
-        return 1, 1, 1
+        local k = ClassicHDShade()
+        return k, k, k
     end
     return r, g, b
 end

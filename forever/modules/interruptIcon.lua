@@ -27,13 +27,17 @@ local interruptSpells = {
     --[47482]  = true, -- Leap (DK Transform)
 }
 
+local interruptNames = {}
+for spellID in pairs(interruptSpells) do
+    local name = C_Spell.GetSpellName(spellID)
+    if name then interruptNames[name] = true end
+end
+
 local function GetInterruptSpell()
-    for spellID, _ in pairs(interruptSpells) do
-        if IsSpellKnownOrOverridesKnown(spellID) or (UnitExists("pet") and IsSpellKnownOrOverridesKnown(spellID, true)) then
-            return spellID
-        end
+    for spellID in pairs(interruptSpells) do
+        local known = BBF.KnownSpellRank(spellID) or (UnitExists("pet") and BBF.KnownSpellRank(spellID, true))
+        if known then return known end
     end
-    return nil
 end
 
 local playerKick = GetInterruptSpell()
@@ -188,6 +192,7 @@ if UnitClassBase("player") == "WARLOCK" then
 end
 interruptSpellUpdate:RegisterEvent("TRAIT_CONFIG_UPDATED")
 interruptSpellUpdate:RegisterEvent("PLAYER_TALENT_UPDATE")
+interruptSpellUpdate:RegisterEvent("LEARNED_SPELL_IN_SKILL_LINE")
 interruptSpellUpdate:SetScript("OnEvent", OnPetEvent)
 
 local function IsAnyFeatureEnabled()
@@ -465,7 +470,7 @@ function BBF.ToggleKickPopup()
 
     BBF.kickPopupEventFrame:SetScript("OnEvent", function(self, event, unit, castGUID, spellID, interruptedByOrCastBarID)
         if event == "UNIT_SPELLCAST_SUCCEEDED" then
-            if interruptSpells[spellID] then
+            if interruptSpells[spellID] or interruptNames[C_Spell.GetSpellName(spellID)] then
                 kickPlayerKicked = true
                 self:RegisterEvent("UNIT_SPELLCAST_CHANNEL_STOP")
                 C_Timer.After(0.1, function()

@@ -3145,7 +3145,28 @@ local function CreateSearchFrame()
             return true
         end
 
-        local function applyRightClickScript(searchCheckbox, originalCheckbox)
+        local function copyTooltip(searchCheckbox, original, label)
+            if original.tooltipMainText then
+                CreateTooltipTwo(searchCheckbox, original.tooltipTitle, original.tooltipMainText, original.tooltipSubText, nil, original.tooltipCVarName, SearchCategoryOf(original))
+            elseif original.tooltipTitle then
+                CreateTooltipTwo(searchCheckbox, original.tooltipTitle, nil, nil, nil, nil, SearchCategoryOf(original))
+            else
+                CreateTooltipTwo(searchCheckbox, label, nil, nil, nil, nil, SearchCategoryOf(original))
+            end
+        end
+
+        local function restoreSearchPoints(popup)
+            local points = popup.bbfSearchPoints
+            if points then
+                popup.bbfSearchPoints = nil
+                popup:ClearAllPoints()
+                for _, point in ipairs(points) do
+                    popup:SetPoint(unpack(point))
+                end
+            end
+        end
+
+        local function applyRightClickScript(searchCheckbox, originalCheckbox, label)
             local handlers = originalCheckbox.bbfMouseDownHandlers
             if not handlers and originalCheckbox.GetScript then
                 local originalScript = originalCheckbox:GetScript("OnMouseDown")
@@ -3154,8 +3175,40 @@ local function CreateSearchFrame()
             if handlers and #handlers > 0 then
                 searchCheckbox:SetScript("OnMouseDown", function(self, button)
                     if button == "RightButton" then
+                        local wasShown = {}
+                        for _, child in ipairs({ UIParent:GetChildren() }) do
+                            if not child:IsForbidden() and child:IsShown() then
+                                wasShown[child] = true
+                            end
+                        end
                         for _, handler in ipairs(handlers) do
                             handler(originalCheckbox, button)
+                        end
+                        for _, child in ipairs({ UIParent:GetChildren() }) do
+                            if not child:IsForbidden() and child:IsShown() and not wasShown[child] then
+                                local _, relativeTo = child:GetPoint(1)
+                                if relativeTo and not relativeTo:IsVisible() then
+                                    local points = {}
+                                    for i = 1, child:GetNumPoints() do
+                                        points[i] = { child:GetPoint(i) }
+                                    end
+                                    child.bbfSearchPoints = points
+                                    child:ClearAllPoints()
+                                    child:SetPoint("TOPLEFT", self, "BOTTOMLEFT", 0, -6)
+                                    child:SetClampedToScreen(true)
+                                    if not child.bbfSearchHooked then
+                                        child.bbfSearchHooked = true
+                                        child:HookScript("OnHide", restoreSearchPoints)
+                                    end
+                                end
+                            end
+                        end
+                        self:SetChecked(originalCheckbox:GetChecked())
+                        copyTooltip(self, originalCheckbox, label)
+                        UpdateSearchDropdownStates()
+                        local owner = GameTooltip:IsShown() and GameTooltip:GetOwner()
+                        if owner == self or owner == originalCheckbox then
+                            self:GetScript("OnEnter")(self)
                         end
                     end
                 end)
@@ -3255,16 +3308,9 @@ local function CreateSearchFrame()
                     UpdateSearchDropdownStates()
                 end)
 
-                applyRightClickScript(resultCheckBox, data.checkbox)
+                applyRightClickScript(resultCheckBox, data.checkbox, data.label)
 
-                -- Reapply tooltip
-                if data.checkbox.tooltipMainText then
-                    CreateTooltipTwo(resultCheckBox, data.checkbox.tooltipTitle, data.checkbox.tooltipMainText, data.checkbox.tooltipSubText, nil, data.checkbox.tooltipCVarName, SearchCategoryOf(data.checkbox))
-                elseif data.checkbox.tooltipTitle then
-                    CreateTooltipTwo(resultCheckBox, data.checkbox.tooltipTitle, nil, nil, nil, nil, SearchCategoryOf(data.checkbox))
-                else
-                    CreateTooltipTwo(resultCheckBox, data.label, nil, nil, nil, nil, SearchCategoryOf(data.checkbox))
-                end
+                copyTooltip(resultCheckBox, data.checkbox, data.label)
 
                 resultCheckBox:Show()
 
@@ -3551,7 +3597,7 @@ end
 function BBF.CreateNameLayoutCheckboxes(parent, anchor)
     local moveNames = CreateCheckbox("moveNames", L["Move_Names"], parent)
     moveNames:SetPoint("TOPLEFT", anchor, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltipTwo(moveNames, L["Move_Names"], L["Tooltip_Move_Names_Desc"])
+    CreateTooltipTwo(moveNames, L["Move_Names"], L["Tooltip_Move_Names_Desc"] .. "\n\n|cff32f795" .. L["Right_Click_More_Settings"] .. "|r")
     moveNames:HookScript("OnMouseDown", function(self, button)
         if button == "RightButton" then
             BBF.OpenMoveNamesWindow(self)

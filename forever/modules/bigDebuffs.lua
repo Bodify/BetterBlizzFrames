@@ -210,11 +210,18 @@ local function BuildTierFilters()
                     ids[spellID] = true
                 end
             end
+            local groups = db.bigDebuffsSpellGroups
             for spellID in pairs(db[tier.customKey]) do
                 ids[spellID] = true
+                for _, id in ipairs(groups[spellID] or {}) do
+                    ids[id] = true
+                end
             end
             for spellID in pairs(db.bigDebuffsBlacklist) do
                 ids[spellID] = nil
+                for _, id in ipairs(groups[spellID] or {}) do
+                    ids[id] = nil
+                end
             end
             tier.candidateFilters = { includeSpellIDs = ids }
             tier.empty = next(ids) == nil

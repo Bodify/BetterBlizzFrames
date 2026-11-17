@@ -545,11 +545,15 @@ function BBF.PartitionSpellList(list)
         for key, entry in pairs(list) do
             local spellID = tonumber(key)
             if spellID and entry then
-                all[spellID] = true
-                anyAll = true
-                if IsNeverSecret(spellID) then
-                    neverSecret[spellID] = true
-                    anyNeverSecret = true
+                local ids = type(entry) == "table" and entry.ids
+                for i = 0, ids and #ids or 0 do
+                    local id = i == 0 and spellID or ids[i]
+                    all[id] = true
+                    anyAll = true
+                    if IsNeverSecret(id) then
+                        neverSecret[id] = true
+                        anyNeverSecret = true
+                    end
                 end
             end
         end
@@ -594,6 +598,9 @@ local function FlaggedSubset(list, flag)
         if spellID and type(entry) == "table" and entry[flag] then
             flagged[spellID] = true
             any = true
+            for _, id in ipairs(entry.ids or {}) do
+                flagged[id] = true
+            end
         end
     end
     return flagged, any
@@ -3888,9 +3895,6 @@ function H.ScanImbues(host)
                     t = {}
                     track[key] = t
                 end
-                if t.id ~= e.enchantID then
-                    t.applied = now
-                end
                 if t.id ~= e.enchantID or endTime > (t.endTime or 0) + 1 then
                     t.total = left
                 end
@@ -3903,7 +3907,7 @@ function H.ScanImbues(host)
                     shown[n] = s
                 end
                 s.inv, s.endTime, s.total = inv, endTime, t.total
-                s.applied, s.key = t.applied, key
+                s.key = key
                 s.charges = H.Readable(e.charges) and e.charges or 0
                 local icon = GetInventoryItemTexture("player", inv)
                 if H.Readable(e.enchantIconID) and e.enchantIconID ~= 0 then
@@ -3920,7 +3924,6 @@ function H.ScanImbues(host)
     for i = n + 1, #shown do
         shown[i] = nil
     end
-    table.sort(shown, H.ImbueBefore)
     H.PaintEnchantIcons(host)
     return n
 end
@@ -3932,7 +3935,7 @@ function H.ImbueBefore(a, b)
     elseif sort == SORT_METHODS.lastending then
         if a.endTime ~= b.endTime then return a.endTime > b.endTime end
     end
-    if a.applied ~= b.applied then return a.applied < b.applied end
+    if H.imbueSlotsReversed then return a.key > b.key end
     return a.key < b.key
 end
 
@@ -4164,6 +4167,9 @@ function H.LayoutImbues(host)
     else
         dy = layout.addIconsToTop and step or -step
     end
+
+    H.imbueSlotsReversed = layout.isHorizontal and not layout.addIconsToRight
+    table.sort(host.imbues, H.ImbueBefore)
 
     local style = host.enchantStyle
     for i = 1, n do

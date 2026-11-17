@@ -489,6 +489,7 @@ local defaultSettings = {
     bigDebuffsCustomDebuffs = {},
     bigDebuffsCustomBuffs = {},
     bigDebuffsBlacklist = {},
+    bigDebuffsSpellGroups = {},
     bigDebuffsInterrupts = true,
     bigDebuffsPlayer = true,
     bigDebuffsTarget = true,
@@ -6089,43 +6090,13 @@ SlashCmdList["BBF"] = function(msg)
         BBF.ShowPopup("CONFIRM_RESET_BETTERBLIZZFRAMESDB")
     elseif command == "whitelist" or command == "wl" then
         if arg and arg ~= "" then
-            if tonumber(arg) then
-                -- The argument is a number, treat it as a spell ID
-                local spellId = tonumber(arg)
-                local spellInfo = C_Spell.GetSpellInfo(spellId)
-                local spellName = spellInfo and spellInfo.name
-                local icon = spellInfo and (spellInfo.iconID or spellInfo.originalIconID)
-                if spellName then
-                    local iconString = "|T" .. icon .. ":16:16:0:0|t" -- Format the icon for display
-                    BBF.auraWhitelist(spellId)
-                    BBF.Print(iconString .. " " .. spellName .. " (" .. spellId .. ")" .. L["Print_Added_To_Whitelist_With_Icon"])
-                else
-                    BBF.Print(L["Print_Error_Invalid_Spell_ID"])
-                end
-            else
-                BBF.Print(L["Print_Spell_ID_Only_Midnight"])
-            end
+            BBF.auraWhitelist(arg, "auraWhitelist")
         else
             BBF.Print(L["Print_Usage_Whitelist"])
         end
     elseif command == "blacklist" or command == "bl" then
         if arg and arg ~= "" then
-            if tonumber(arg) then
-                -- The argument is a number, treat it as a spell ID
-                local spellId = tonumber(arg)
-                local spellInfo = C_Spell.GetSpellInfo(spellId)
-                local spellName = spellInfo and spellInfo.name
-                local icon = spellInfo and (spellInfo.iconID or spellInfo.originalIconID)
-                if spellName then
-                    local iconString = "|T" .. icon .. ":16:16:0:0|t" -- Format the icon for display
-                    BBF.auraBlacklist(spellId)
-                    BBF.Print(iconString .. " " .. spellName .. " (" .. spellId .. ")" .. L["Print_Added_To_Blacklist_With_Icon"])
-                else
-                    BBF.Print(L["Print_Error_Invalid_Spell_ID"])
-                end
-            else
-                BBF.Print(L["Print_Spell_ID_Only_Midnight"])
-            end
+            BBF.auraBlacklist(arg, "auraBlacklist")
         else
             BBF.Print(L["Print_Usage_Blacklist"])
         end

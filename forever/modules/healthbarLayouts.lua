@@ -33,7 +33,7 @@ local targetLayouts = {
     },
     defaultBig = {
         point = { "TOPLEFT", "LEFT", 21, 24 }, width = 126, height = 32.5, glowOffset = -7, big = true, keepArt = false, manaMaskWidth = 258.5,
-        mask = { atlas = PLAYER_MASK, x = -2, y = 22, width = 129.5, height = 78 },
+        mask = { atlas = PLAYER_MASK, x = -1, y = 22, width = 129.5, height = 78 },
         texts = {
             HealthBarText = { "CENTER", 1, -1.5 },
             LeftText = { "LEFT", 3, -1.5 },
@@ -44,7 +44,7 @@ local targetLayouts = {
     },
     defaultBigInside = {
         point = { "TOPLEFT", "LEFT", 21, 24 }, width = 126, height = 32.5, glowOffset = -7, big = true, keepArt = false, manaMaskWidth = 258.5,
-        mask = { atlas = PLAYER_MASK, x = -2, y = 22, width = 129.5, height = 78 },
+        mask = { atlas = PLAYER_MASK, x = -1, y = 22, width = 129.5, height = 78 },
         texts = {
             HealthBarText = { "CENTER", 1, -10 },
             LeftText = { "LEFT", 3, -10 },
@@ -55,7 +55,7 @@ local targetLayouts = {
     },
     defaultBigReduced = {
         point = { "TOPLEFT", "LEFT", 21, 16 }, width = 126, height = 25, glowOffset = -7, big = true, keepArt = false, reduced = true, manaMaskWidth = 258.5,
-        mask = { atlas = PLAYER_MASK, x = -2, y = 17.5, width = 129.5, height = 60 },
+        mask = { atlas = PLAYER_MASK, x = -1, y = 17.5, width = 129.5, height = 60 },
         texts = {
             HealthBarText = { "CENTER", 1, -1 },
             LeftText = { "LEFT", 3, -1 },
@@ -66,7 +66,7 @@ local targetLayouts = {
     },
     defaultBigInsideReduced = {
         point = { "TOPLEFT", "LEFT", 21, 16 }, width = 126, height = 25, glowOffset = -7, big = true, keepArt = false, reduced = true, manaMaskWidth = 258.5,
-        mask = { atlas = PLAYER_MASK, x = -2, y = 17.5, width = 129.5, height = 60 },
+        mask = { atlas = PLAYER_MASK, x = -1, y = 17.5, width = 129.5, height = 60 },
         texts = {
             HealthBarText = { "CENTER", 1, -6.5 },
             LeftText = { "LEFT", 3, -6.5 },
@@ -603,9 +603,6 @@ local function ShiftThreatMeter(frame, retail)
     local contextual = frame.TargetFrameContent.TargetFrameContentContextual
     if not contextual then return end
     local raise = layout and layout.big and layout.reduced and THREAT_BIG_REDUCED_RAISE or 0
-    if BetterBlizzFramesDB.showBlizzThreatMeter then
-        raise = raise + 2
-    end
     BBF.ShiftRegionY(contextual.NumericalThreat, raise)
 end
 

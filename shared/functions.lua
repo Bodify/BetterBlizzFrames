@@ -3,6 +3,14 @@ local L = BBF.L
 BBF.popups = {}
 BBF.popupBuilders = {}
 
+function BBF.KnownSpellRank(spellID, isPet)
+    if IsSpellKnownOrOverridesKnown(spellID, isPet) then return spellID end
+    local name = C_Spell.GetSpellName(spellID)
+    if not name then return end
+    local slot, bank = C_SpellBook.FindSpellBookSlotForSpell(name)
+    if slot then return C_SpellBook.GetSpellBookItemInfo(slot, bank).spellID end
+end
+
 function BBF.GetPopup(name)
 	local popup = BBF.popups[name]
 	if not popup then

@@ -351,3 +351,51 @@ function BBF.ToTChanged(frame, key)
     seen[key] = gen
     return true
 end
+
+local spellNameScans = {}
+
+function BBF.FindSpellIDsByName(name, callback)
+    local scan = spellNameScans[name]
+    if scan then
+        if scan.done then
+            callback(scan.ids[1] and scan.ids)
+        else
+            scan.callbacks[#scan.callbacks + 1] = callback
+        end
+        return
+    end
+    scan = { ids = {}, callbacks = { callback } }
+    spellNameScans[name] = scan
+    local nextID = 1
+    local function Step()
+        local last = nextID + 30000
+        for id = nextID, last do
+            if C_Spell.GetSpellName(id) == name then
+                scan.ids[#scan.ids + 1] = id
+            end
+        end
+        nextID = last + 1
+        if nextID < 2000000 then
+            C_Timer.After(0, Step)
+            return
+        end
+        scan.done = true
+        local ids = scan.ids[1] and scan.ids
+        for _, cb in ipairs(scan.callbacks) do
+            cb(ids)
+        end
+        scan.callbacks = nil
+    end
+    Step()
+end
+
+function BBF.FormatSpellIDs(id, ids)
+    if not ids then
+        return tostring(id)
+    end
+    local others = #ids - 1
+    if others == 1 then
+        return string.format(BBF.L["Spell_ID_And_One_Other"], id)
+    end
+    return string.format(BBF.L["Spell_ID_And_Others"], id, others)
+end
