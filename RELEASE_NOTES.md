@@ -1,3 +1,26 @@
+# BetterBlizzFrames 2.2.3b
+## Retail & Forever
+### Bugfix
+- Fix legacy combo points color with Classic Frames + HD Textures by Mo and some other bronze settings not acting as intended.
+## Forever
+### Tweak
+- Legacy Combo Points now look and sit like in Classic Era as intended. Their X/Y offsets have been reset.
+
+# BetterBlizzFrames 2.2.3
+## All versions
+### Bugfix
+- Fix right-click options on settings from search results not always working.
+## Retail & Forever
+### New
+- Aura Whitelist/Blacklist: You can now enter the exact spell name to add all auras with that name. Case-sensitive.
+## Forever
+### Tweak
+- Update Mmarkers profile (www.twitch.tv/mmarkers). Thank you for sharing!
+- Minor default level txt position tweak with classicframes+hdtextures by mo on.
+- Minor healthbar mask tweak on target frame with big healthbar.
+### Bugfix
+- Fix interrupt and purge detection not working with higher spell ranks.
+
 # BetterBlizzFrames 2.2.2e
 ## Retail & Forever
 ### Bugfix

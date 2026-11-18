@@ -1,3 +1,11 @@
+# BetterBlizzFrames 2.2.3b
+## Retail & Forever
+### Bugfix
+- Fix legacy combo points color with Classic Frames + HD Textures by Mo and some other bronze settings not acting as intended.
+## Forever
+### Tweak
+- Legacy Combo Points now look and sit like in Classic Era as intended. Their X/Y offsets have been reset.
+
 # BetterBlizzFrames 2.2.3
 ## All versions
 ### Bugfix
