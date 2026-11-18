@@ -453,8 +453,8 @@ local defaultSettings = {
     focusCastBarTimer = false,
     focusToTAdjustmentOffsetY = 0,
 
-    legacyComboXPos = -28.5,
-    legacyComboYPos = -13,
+    legacyComboXPos = 0,
+    legacyComboYPos = 0,
     legacyComboScale = 1,
 
     --Player castbar
@@ -803,6 +803,12 @@ local function InitializeSavedVariables()
         if not BetterBlizzFramesDB.classicFrames then
             BetterBlizzFramesDB.enableLegacyComboPoints = false
         end
+    end
+
+    if not BetterBlizzFramesDB.legacyComboEraLayout then
+        BetterBlizzFramesDB.legacyComboEraLayout = true
+        BetterBlizzFramesDB.legacyComboXPos = nil
+        BetterBlizzFramesDB.legacyComboYPos = nil
     end
 
     if not BetterBlizzFramesDB.foreverUpdate1 then
@@ -2406,11 +2412,21 @@ function BBF.UpdateSelfEliteBossTexture(frame)
         end
         texture:SetAtlas(data[1], TextureKitConstants.UseAtlasSize)
         texture:SetPoint("TOPRIGHT", container, "TOPRIGHT", data[2], data[3])
-        texture:SetDesaturated(data[4] or texture.bbfSelfEliteDesat)
+        local playerElite = PlayerFrame.PlayerFrameContainer.PlayerElite
+        if playerElite then
+            local r, g, b = playerElite:GetVertexColor()
+            texture:SetDesaturated(data[4] or texture.bbfSelfEliteDesat or playerElite:IsDesaturated())
+            texture:SetVertexColor(r, g, b, texture:GetAlpha())
+        else
+            texture:SetDesaturated(data[4] or texture.bbfSelfEliteDesat)
+        end
         texture:Show()
     elseif texture.bbfSelfElite then
         texture.bbfSelfElite = nil
         texture:SetDesaturated(texture.bbfSelfEliteDesat)
+        if not texture.bbfDarkElite then
+            texture:SetVertexColor(1, 1, 1, texture:GetAlpha())
+        end
         if UnitIsUnit(frame.unit, "player") then
             texture:Hide()
         end
@@ -2926,12 +2942,7 @@ local function GetLegacyComboStartIndex()
     local classKey = class:sub(1, 1):upper() .. class:sub(2):lower()
 
     if BetterBlizzFramesDB["ignore" .. classKey .. "LegacyCombos"] then return nil end
-
-    if class == "MONK" or class == "DEATHKNIGHT" or class == "EVOKER" then
-        return 1
-    end
-    if class == "MAGE" then return 3 end
-    return 2
+    return 1
 end
 
 function BBF.ClassColorLegacyCombos()
@@ -3072,7 +3083,7 @@ function BBF.GenericLegacyComboSupport()
 
                 -- Only show highlight when active or animating
                 local isActive = i <= comboPoints
-                point:SetShown(BBF.LegacyComboPointShown(i, comboPoints, maxComboPoints, showAlways, frame.extraComboPoints))
+                point:SetShown(BBF.LegacyComboPointShown(i, comboPoints, maxComboPoints, showAlways))
 
                 if point.Highlight then
                     point.Highlight:SetAlpha(isActive and 1 or 0)
@@ -3131,15 +3142,10 @@ end
 function BBF.UpdateLegacyComboPosition()
     if not BBF.LegacyComboFrame then return end
     local db = BetterBlizzFramesDB
-    local x = db.legacyComboXPos
-    local y = db.legacyComboYPos
-    local scale = db.legacyComboScale or 1
-
-    local extraOffsetY = db.classicFrames and -2.5 or 0
-    local extraOffsetX = db.classicFrames and 5 or 0
+    local scale = db.legacyComboScale
 
     BBF.LegacyComboFrame:ClearAllPoints()
-    BBF.LegacyComboFrame:SetPoint("TOPRIGHT", TargetFrame, "TOPRIGHT", x+extraOffsetX, y+extraOffsetY)
+    BBF.LegacyComboFrame:SetPoint("TOPRIGHT", TargetFrame:GetPortrait(), "CENTER", (30 + db.legacyComboXPos) / scale, (35 + db.legacyComboYPos) / scale)
     BBF.LegacyComboFrame:SetScale(scale)
     if BBF.LegacyComboFrame:GetParent() == TargetFrame then
         BBF.RaiseAboveTargetArt(BBF.LegacyComboFrame, "HIGH")
@@ -3172,15 +3178,13 @@ function BBF.AlwaysShowLegacyComboPoints()
         local maxComboPoints = UnitPowerMax("player", Enum.PowerType.ComboPoints)
         frame:Show()
         frame:SetAlpha(1)
-        local comboIndex = frame.startComboPointIndex or 2
         for i = 1, maxComboPoints do
-            local point = frame.ComboPoints[comboIndex]
+            local point = frame.ComboPoints[i]
             if point then
                 point:Show()
                 point:SetAlpha(1)
                 point.Highlight:SetAlpha(i <= comboPoints and 1 or 0)
                 point.Shine:SetAlpha(0)
-                comboIndex = comboIndex + 1
             end
         end
     end
@@ -3195,13 +3199,11 @@ local function UpdateLegacyComboActiveOnly(frame)
     if not frame or not frame.ComboPoints or not frame.maxComboPoints then return end
     local db = BetterBlizzFramesDB
     local comboPoints = GetComboPoints("player", "target")
-    local comboIndex = frame.startComboPointIndex or 2
     for i = 1, frame.maxComboPoints do
-        local point = frame.ComboPoints[comboIndex]
+        local point = frame.ComboPoints[i]
         if point then
-            point:SetShown(BBF.LegacyComboPointShown(i, comboPoints, frame.maxComboPoints, db.alwaysShowLegacyComboPoints, frame.extraComboPoints))
+            point:SetShown(BBF.LegacyComboPointShown(i, comboPoints, frame.maxComboPoints, db.alwaysShowLegacyComboPoints))
         end
-        comboIndex = comboIndex + 1
     end
 end
 
@@ -3234,7 +3236,8 @@ function BBF.HDLegacyComboPoints()
         for i = 1, point:GetNumRegions() do
             local region = select(i, point:GetRegions())
             if region and region:IsObjectType("Texture") and region:GetDrawLayer() == "BACKGROUND" then
-                region:SetTexture(HD_COMBO_POINT)
+                region.bbfDarkerBronze = true
+                BBF.SetClassicTexture(region, 130973)
                 region:SetTexCoord(0, 0.375, 0, 1)
             end
         end
@@ -3288,10 +3291,8 @@ function BBF.LegacyBlueCombos()
 
             local chargedPowerPoints = GetUnitChargedPowerPoints("player") or {}
 
-            local comboIndex = frame.startComboPointIndex or 2
-
             for i = 1, 2 do
-                local point = frame.ComboPoints[comboIndex]
+                local point = frame.ComboPoints[i]
                 if point then
                     local isCharged = tContains(chargedPowerPoints, i)
 
@@ -3308,8 +3309,6 @@ function BBF.LegacyBlueCombos()
                         point.Highlight:SetPoint("TOPLEFT", point, "TOPLEFT", 2, 0)
                         point.charged = false
                     end
-
-                    comboIndex = comboIndex + 1
                 end
             end
         end
@@ -3387,10 +3386,8 @@ function BBF.InstantComboPoints()
         frame:SetAlpha(1)
         frame:Show()
 
-        local comboIndex = frame.startComboPointIndex or 2
-
         for i = 1, maxComboPoints do
-            local point = frame.ComboPoints[comboIndex]
+            local point = frame.ComboPoints[i]
             if point then
                 BBF.CancelAllFades(point.Highlight)
                 BBF.CancelAllFades(point.Shine)
@@ -3400,9 +3397,7 @@ function BBF.InstantComboPoints()
                 point.Highlight:SetAlpha(i <= comboPoints and 1 or 0)
                 point.Shine:SetAlpha(0)
 
-                point:SetShown(BBF.LegacyComboPointShown(i, comboPoints, maxComboPoints, showAlways, frame.extraComboPoints))
-
-                comboIndex = comboIndex + 1
+                point:SetShown(BBF.LegacyComboPointShown(i, comboPoints, maxComboPoints, showAlways))
             end
         end
 
@@ -5954,6 +5949,7 @@ Frame:SetScript("OnEvent", function(...)
     BBF.MoveToTFrames()
     BBF.UpdateFrames()
     BBF.HookHealthbarColors()
+    C_Timer.After(5, BBF.CheckHealthConflictsOnLogin)
     BBF.ResizeUIWidgetPowerBarFrame()
     BBF.ActionBarArtScale()
     BBF.LegacyBlueCombos()

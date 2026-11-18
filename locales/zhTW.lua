@@ -1627,6 +1627,9 @@ L["Use_One_Color"] = "使用單一顏色"
 
 -- StaticPopupDialogs
 L["Popup_Reload_Required"] = "需要重新載入。立即重新載入？"
+L["Popup_OneForAll_Conflict"] = "OneForAll 的職業顏色設定已開啟，與 BBF 的設定衝突。\n\n選擇「修正」即可在 OneForAll 中關閉這些設定。"
+L["Button_Fix_It"] = "修正"
+L["Button_Fix_It_Myself"] = "我自己來"
 L["Popup_Smooth_Mana_Feedback"] = "是否也隱藏法力回饋？\n|cFFAAAAAA(它會在施法結束前顯示將要消耗多少法力)|r"
 L["Popup_Classic_Frames_Turn"] = "重新載入後經典框架：%s\n\n選擇你想要的選用設定。\n|cFFAAAAAA（之後可以個別更改）|r\n\n\n\n\n "
 L["Popup_Cata_Update_Text"] = "變更\n\nBBF 的許多正式版功能已移植到潘達利亞之謎與浩劫與重生。\n\n由於變更很多，有些東西可能略有不同。\n也可能還有一些尚未發現的錯誤。\n\n詳情請見更新記錄。"

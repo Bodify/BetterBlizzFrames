@@ -1628,6 +1628,9 @@ L["Use_One_Color"] = "使用同一颜色"
 
 -- StaticPopupDialogs
 L["Popup_Reload_Required"] = "此操作需要重载。现在重载吗？"
+L["Popup_OneForAll_Conflict"] = "OneForAll 的职业颜色设置已开启，与 BBF 的设置冲突。\n\n选择“修复”即可在 OneForAll 中关闭这些设置。"
+L["Button_Fix_It"] = "修复"
+L["Button_Fix_It_Myself"] = "我自己来"
 L["Popup_Smooth_Mana_Feedback"] = "是否也隐藏法力反馈？\n|cFFAAAAAA(它会在施法结束前显示将要消耗多少法力)|r"
 L["Popup_Classic_Frames_Turn"] = "经典框架将在重载后%s。\n\n选择你想要的可选设置。\n|cFFAAAAAA（这些可以稍后单独更改）|r\n\n\n\n\n "
 L["Popup_Cata_Update_Text"] = "更改\n\n大量正式服 BBF 功能已移植到 MoP 和 CTM。\n\n由于更改量很大，某些内容可能有细微变化。\n也可能有一些遗漏的 Bug。\n\n详情请阅读更新日志。"

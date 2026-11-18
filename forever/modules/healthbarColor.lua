@@ -1907,3 +1907,86 @@ function BBF.SetCompactUnitFramesBackground()
         BBF.RaidFrameBgHook = true
     end
 end
+local function OneForAllQoL()
+    local qol = OneForAll and OneForAll.QoL
+    if qol and qol.Get and qol.Set then
+        return qol
+    end
+end
+
+local healthConflicts = {
+    {
+        addon = "OneForAll",
+        active = function()
+            local qol = OneForAllQoL()
+            return qol and qol.Get("classColors") and true or false
+        end,
+        disable = function()
+            local qol = OneForAllQoL()
+            if not qol then return end
+            qol.Set("classColors", false)
+            qol.Set("classBright", false)
+        end,
+        text = function()
+            return L["Popup_OneForAll_Conflict"]
+        end,
+    },
+}
+
+local function ActiveHealthConflicts()
+    local list = {}
+    for _, conflict in ipairs(healthConflicts) do
+        if C_AddOns.IsAddOnLoaded(conflict.addon) and conflict.active() then
+            list[#list + 1] = conflict
+        end
+    end
+    return list
+end
+
+function BBF.HealthSettingsOn()
+    local db = BetterBlizzFramesDB
+    return db.classColorFrames or db.customHealthbarColors or db.changeUnitFrameHealthbarTexture
+end
+
+function BBF.FixHealthConflicts()
+    local list = ActiveHealthConflicts()
+    for _, conflict in ipairs(list) do
+        conflict.disable()
+    end
+    return #list > 0
+end
+
+BBF.popupBuilders["BBF_HEALTH_CONFLICT"] = function()
+    local texts = {}
+    for _, conflict in ipairs(ActiveHealthConflicts()) do
+        texts[#texts + 1] = conflict.text()
+    end
+    return {
+        text = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames:\n\n" .. table.concat(texts, "\n\n"),
+        button1 = L["Button_Fix_It"],
+        button2 = L["Button_Fix_It_Myself"],
+        OnAccept = function()
+            BBF.FixHealthConflicts()
+            BBF.RunAfterCombat(function()
+                BBF.UpdateCustomTextures()
+                BBF.UpdateFrames()
+            end)
+        end,
+        timeout = 0,
+        whileDead = true,
+        hideOnEscape = true,
+        preferredIndex = 3,
+    }
+end
+
+function BBF.CheckHealthConflictsOnLogin()
+    if BBF.HealthSettingsOn() and #ActiveHealthConflicts() > 0 then
+        BBF.ShowPopup("BBF_HEALTH_CONFLICT")
+    end
+end
+
+function BBF.FixHealthConflictsOnToggle()
+    if BBF.HealthSettingsOn() and BBF.FixHealthConflicts() then
+        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
+    end
+end

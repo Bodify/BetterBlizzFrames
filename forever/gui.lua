@@ -60,6 +60,7 @@ local checkBoxList = {}
 local checkboxByOption = {}
 local sliderList = {}
 local dropdownList = {}
+local buttonList = {}
 local settingsPopups = {}
 local settingsPopupsHooked
 local MAX_SEARCH_CHECKBOXES = 25
@@ -3966,6 +3967,7 @@ local function CreateSearchFrame()
     local checkboxPool = {}
     local sliderPool = {}
     local dropdownPool = {}
+    local buttonPool = {}
 
     local function UpdateSearchDropdownStates()
         for _, resultDropdown in ipairs(dropdownPool) do
@@ -4084,6 +4086,29 @@ local function CreateSearchFrame()
             end
         end
 
+        local buttonCount = 0
+        for _, data in ipairs(buttonList) do
+            local button = data.button
+            if matchesQuery(data.label .. " " .. (button.tooltipTitle or "")) then
+                buttonCount = buttonCount + 1
+                local resultButton = buttonPool[buttonCount]
+                if not resultButton then
+                    resultButton = CreateFrame("Button", nil, resultsList, "UIPanelButtonTemplate")
+                    buttonPool[buttonCount] = resultButton
+                end
+                resultButton:ClearAllPoints()
+                resultButton:SetPoint("TOPLEFT", searchIcon, "TOPLEFT", 31, yOffsetCheckbox - 1)
+                resultButton:SetText(data.label)
+                resultButton:SetWidth(button:GetWidth())
+                resultButton:SetScript("OnClick", function()
+                    button:GetScript("OnClick")(button)
+                end)
+                CreateTooltipTwo(resultButton, data.label, button.tooltipTitle, nil, nil, nil, SearchCategoryOf(button))
+                resultButton:Show()
+                yOffsetCheckbox = yOffsetCheckbox - 26
+            end
+        end
+
         for _, data in ipairs(dropdownList) do
             local dropdown = data.dropdown
             local base = data.label .. " " .. (dropdown.tooltipTitle or "")
@@ -4126,7 +4151,7 @@ local function CreateSearchFrame()
                 yOffsetCheckbox = yOffsetCheckbox - 26
             end
         end
-        local checkboxCap = MAX_SEARCH_CHECKBOXES - math.ceil(dropdownCount * 26 / 21)
+        local checkboxCap = MAX_SEARCH_CHECKBOXES - math.ceil((dropdownCount + buttonCount) * 26 / 21)
 
         -- Search through checkboxes
         for _, data in ipairs(checkBoxList) do
@@ -4256,8 +4281,8 @@ local function CreateSearchFrame()
 
         UpdateSearchDropdownStates()
 
-        local totalMatches = checkboxMatches + sliderMatches + dropdownMatches
-        local shown = checkboxCount + sliderCount + dropdownCount
+        local totalMatches = checkboxMatches + sliderMatches + dropdownMatches + buttonCount
+        local shown = checkboxCount + sliderCount + dropdownCount + buttonCount
         if shown < totalMatches then
             cappedText:SetFormattedText(L["Search_Results_Capped"], shown, totalMatches)
             cappedText:Show()
@@ -8533,6 +8558,8 @@ local function guiGeneralTab()
     classColorFrames:HookScript("OnClick", function(self)
         if not self:GetChecked() then
             BBF.ShowPopup("BBF_CONFIRM_RELOAD")
+        else
+            BBF.FixHealthConflictsOnToggle()
         end
     end)
 
@@ -8597,6 +8624,8 @@ local function guiGeneralTab()
         BBF.UpdateFrames()
         if not self:GetChecked() then
             BBF.ShowPopup("BBF_CONFIRM_RELOAD")
+        else
+            BBF.FixHealthConflictsOnToggle()
         end
     end)
 
@@ -9623,6 +9652,7 @@ local function guiGeneralTab()
         BBF.ShowPopup("CONFIRM_RESET_BETTERBLIZZFRAMESDB")
     end)
     CreateTooltip(resetBBFButton, L["Tooltip_Full_Reset"], "ANCHOR_TOP")
+    table.insert(buttonList, { button = resetBBFButton, label = L["Full_Reset"] })
     table.insert(profileButtons, resetBBFButton)
     profilesFrame.infoText:ClearAllPoints()
     profilesFrame.infoText:SetPoint("BOTTOM", resetBBFButton, "TOP", 0, 6)
@@ -12142,6 +12172,9 @@ local function guiFrameLook()
         BBF.UpdateTargetHealthMask(TargetFrame)
         BBF.UpdateTargetHealthMask(FocusFrame)
         ReloadWhenOff(self)
+        if self:GetChecked() then
+            BBF.FixHealthConflictsOnToggle()
+        end
     end)
     do
         local f = AddPopup(changeUnitFrameHealthbarTexture, "HealthbarTexture", 92)
@@ -13989,11 +14022,11 @@ local function guiMisc()
             sizeSlider:SetPoint("TOP", separator, "BOTTOM", 0, -20)
             CreateTooltipTwo(sizeSlider, L["Tooltip_Legacy_Combo_Points_Size"])
 
-            local xOffsetSlider = CreateSlider(f, L["X_Offset"], -60, 10, 0.5, "legacyComboXPos", true, 140)
+            local xOffsetSlider = CreateSlider(f, L["X_Offset"], -40, 40, 0.5, "legacyComboXPos", true, 140)
             xOffsetSlider:SetPoint("TOP", sizeSlider, "TOP", 0, -30)
             CreateTooltipTwo(xOffsetSlider, L["Tooltip_Legacy_Combo_Points_X_Offset"])
 
-            local yOffsetSlider = CreateSlider(f, L["Y_Offset"], -60, 10, 0.5, "legacyComboYPos", true, 140)
+            local yOffsetSlider = CreateSlider(f, L["Y_Offset"], -40, 40, 0.5, "legacyComboYPos", true, 140)
             yOffsetSlider:SetPoint("TOP", xOffsetSlider, "TOP", 0, -30)
             CreateTooltipTwo(yOffsetSlider, L["Tooltip_Legacy_Combo_Points_Y_Offset"])
 
@@ -14003,13 +14036,13 @@ local function guiMisc()
             defaultButton:SetPoint("BOTTOM", f, "BOTTOM", 0, 10)
 
             defaultButton:SetScript("OnClick", function()
-                BetterBlizzFramesDB.legacyComboXPos = -28.5
-                BetterBlizzFramesDB.legacyComboYPos = -13
+                BetterBlizzFramesDB.legacyComboXPos = 0
+                BetterBlizzFramesDB.legacyComboYPos = 0
                 BetterBlizzFramesDB.legacyComboScale = 1
                 BBF.UpdateLegacyComboPosition()
                 sizeSlider:SetValue(1)
-                xOffsetSlider:SetValue(-28.5)
-                yOffsetSlider:SetValue(-13)
+                xOffsetSlider:SetValue(0)
+                yOffsetSlider:SetValue(0)
             end)
 
             KeepPopupInSettings(f, guiMisc)

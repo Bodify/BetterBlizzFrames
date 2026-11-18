@@ -1628,6 +1628,9 @@ L["Use_One_Color"] = "단일 색상 사용"
 
 -- StaticPopupDialogs
 L["Popup_Reload_Required"] = "UI 재시작이 필요합니다. 지금 재시작 하시겠습니까?"
+L["Popup_OneForAll_Conflict"] = "OneForAll의 직업 색상 설정이 켜져 있어 BBF 설정과 충돌합니다.\n\n해결하기를 선택하면 OneForAll에서 해당 설정만 끕니다."
+L["Button_Fix_It"] = "해결하기"
+L["Button_Fix_It_Myself"] = "직접 해결할게요"
 L["Popup_Smooth_Mana_Feedback"] = "마나 반응도 숨길까요?\n|cFFAAAAAA(시전이 끝나기 전에 소모될 마나량을 보여주는 표시입니다)|r"
 L["Popup_Classic_Frames_Turn"] = "클래식 프레임이 재시작 후 %s로 전환됩니다.\n\n원하는 설정을 선택하세요.\n|cFFAAAAAA(나중에 개별적으로 변경할 수 있습니다)|r\n\n\n\n\n "
 L["Popup_Cata_Update_Text"] = "변경 사항\n\nBBF의 많은 정식 버전 기능이 판다리아와 대격변으로 이식되었습니다.\n\n많은 변경으로 인해 일부 사항이 약간 변경되었을 수 있습니다.\n놓친 버그도 있을 수 있습니다.\n\n자세한 내용은 변경 로그를 참조하세요."

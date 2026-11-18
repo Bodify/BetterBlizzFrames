@@ -718,8 +718,10 @@ function BBF.UpdateBossDragonBronze(frame)
             local v = BBF.DarkModeEliteValue()
             texture:SetDesaturated(db.darkModeEliteTextureDesaturated or false)
             texture:SetVertexColor(v, v, v, alpha)
+        elseif BBF.GetSelfEliteClassification(frame.unit) then
+            BBF.UpdateSelfEliteBossTexture(frame)
         else
-            texture:SetDesaturated(BBF.GetSelfEliteClassification(frame.unit) == "rareelite")
+            texture:SetDesaturated(false)
             texture:SetVertexColor(1, 1, 1, alpha)
         end
     end

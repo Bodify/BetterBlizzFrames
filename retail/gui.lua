@@ -60,6 +60,7 @@ local checkBoxList = {}
 local checkboxByOption = {}
 local sliderList = {}
 local dropdownList = {}
+local buttonList = {}
 local settingsPopups = {}
 local settingsPopupsHooked
 local MAX_SEARCH_CHECKBOXES = 25
@@ -3935,6 +3936,7 @@ local function CreateSearchFrame()
     local checkboxPool = {}
     local sliderPool = {}
     local dropdownPool = {}
+    local buttonPool = {}
 
     local function UpdateSearchDropdownStates()
         for _, resultDropdown in ipairs(dropdownPool) do
@@ -4053,6 +4055,29 @@ local function CreateSearchFrame()
             end
         end
 
+        local buttonCount = 0
+        for _, data in ipairs(buttonList) do
+            local button = data.button
+            if matchesQuery(data.label .. " " .. (button.tooltipTitle or "")) then
+                buttonCount = buttonCount + 1
+                local resultButton = buttonPool[buttonCount]
+                if not resultButton then
+                    resultButton = CreateFrame("Button", nil, resultsList, "UIPanelButtonTemplate")
+                    buttonPool[buttonCount] = resultButton
+                end
+                resultButton:ClearAllPoints()
+                resultButton:SetPoint("TOPLEFT", searchIcon, "TOPLEFT", 31, yOffsetCheckbox - 1)
+                resultButton:SetText(data.label)
+                resultButton:SetWidth(button:GetWidth())
+                resultButton:SetScript("OnClick", function()
+                    button:GetScript("OnClick")(button)
+                end)
+                CreateTooltipTwo(resultButton, data.label, button.tooltipTitle, nil, nil, nil, SearchCategoryOf(button))
+                resultButton:Show()
+                yOffsetCheckbox = yOffsetCheckbox - 26
+            end
+        end
+
         for _, data in ipairs(dropdownList) do
             local dropdown = data.dropdown
             local base = data.label .. " " .. (dropdown.tooltipTitle or "")
@@ -4095,7 +4120,7 @@ local function CreateSearchFrame()
                 yOffsetCheckbox = yOffsetCheckbox - 26
             end
         end
-        local checkboxCap = MAX_SEARCH_CHECKBOXES - math.ceil(dropdownCount * 26 / 21)
+        local checkboxCap = MAX_SEARCH_CHECKBOXES - math.ceil((dropdownCount + buttonCount) * 26 / 21)
 
         -- Search through checkboxes
         for _, data in ipairs(checkBoxList) do
@@ -4225,8 +4250,8 @@ local function CreateSearchFrame()
 
         UpdateSearchDropdownStates()
 
-        local totalMatches = checkboxMatches + sliderMatches + dropdownMatches
-        local shown = checkboxCount + sliderCount + dropdownCount
+        local totalMatches = checkboxMatches + sliderMatches + dropdownMatches + buttonCount
+        local shown = checkboxCount + sliderCount + dropdownCount + buttonCount
         if shown < totalMatches then
             cappedText:SetFormattedText(L["Search_Results_Capped"], shown, totalMatches)
             cappedText:Show()
@@ -9377,6 +9402,7 @@ local function guiGeneralTab()
         BBF.ShowPopup("CONFIRM_RESET_BETTERBLIZZFRAMESDB")
     end)
     CreateTooltip(resetBBFButton, L["Tooltip_Full_Reset"], "ANCHOR_TOP")
+    table.insert(buttonList, { button = resetBBFButton, label = L["Full_Reset"] })
     table.insert(profileButtons, resetBBFButton)
     profilesFrame.infoText:ClearAllPoints()
     profilesFrame.infoText:SetPoint("BOTTOM", resetBBFButton, "TOP", 0, 6)

@@ -1627,6 +1627,9 @@ L["Use_One_Color"] = "Usar uma só cor"
 
 -- StaticPopupDialogs
 L["Popup_Reload_Required"] = "Isso requer recarregar. Recarregar agora?"
+L["Popup_OneForAll_Conflict"] = "As opções de cores de classe do OneForAll estão ativas e entram em conflito com as opções do BBF.\n\nEscolha Corrigir para desativar essas opções no OneForAll."
+L["Button_Fix_It"] = "Corrigir"
+L["Button_Fix_It_Myself"] = "Eu mesmo corrijo"
 L["Popup_Smooth_Mana_Feedback"] = "Você também quer ocultar a resposta de mana?\n|cFFAAAAAA(É o que mostra quanta mana será usada antes de a conjuração terminar)|r"
 L["Popup_Classic_Frames_Turn"] = "Quadros clássicos após recarregar: %s\n\nSelecione quais configurações opcionais você quer.\n|cFFAAAAAA(Podem ser alteradas individualmente depois)|r\n\n\n\n\n "
 L["Popup_Cata_Update_Text"] = "MUDANÇAS\n\nMuitos recursos do BBF do Retail foram trazidos para MoP e Cata.\n\nPor causa da grande quantidade de mudanças, algumas coisas podem ter mudado um pouco.\nTambém pode haver alguns erros que passaram despercebidos.\n\nLeia o registro de mudanças para mais informações."

@@ -1627,6 +1627,9 @@ L["Use_One_Color"] = "Eine Farbe verwenden"
 
 -- StaticPopupDialogs
 L["Popup_Reload_Required"] = "Dafür ist ein Neuladen nötig. Jetzt neu laden?"
+L["Popup_OneForAll_Conflict"] = "Die Klassenfarben-Einstellungen von OneForAll sind aktiv und kollidieren mit den Einstellungen von BBF.\n\nWähle Beheben, um genau diese Einstellungen in OneForAll auszuschalten."
+L["Button_Fix_It"] = "Beheben"
+L["Button_Fix_It_Myself"] = "Mache ich selbst"
 L["Popup_Smooth_Mana_Feedback"] = "Möchtest du auch die Mana-Rückmeldung ausblenden?\n|cFFAAAAAA(Sie zeigt an, wie viel Mana der Zauber verbraucht, bevor er fertig gewirkt ist)|r"
 L["Popup_Classic_Frames_Turn"] = "Classic-Fenster nach dem Neuladen: %s\n\nWähle, welche optionalen Einstellungen du möchtest.\n|cFFAAAAAA(Diese können später einzeln geändert werden)|r\n\n\n\n\n "
 L["Popup_Cata_Update_Text"] = "ÄNDERUNGEN\n\nViele Retail-Funktionen von BBF wurden nach MoP und Cata übertragen.\n\nWegen der vielen Änderungen kann sich einiges leicht verändert haben.\nEs könnte auch noch übersehene Fehler geben.\n\nMehr Infos im Changelog."

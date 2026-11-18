@@ -5,15 +5,11 @@ local SHINE_FADE_OUT = 0.4
 local COMBO_TEXTURE = 130973
 
 local POINT_OFFSETS = {
-    { -39, 7 },
-    { -26.5, 8 },
-    { -14, 7 },
-    { -2.5, 1.5 },
-    { 6.5, -7 },
-    { 12, -18.5 },
-    { 14, -30 },
-    { 12, -41 },
-    { 24, -33 },
+    { 0, 0 },
+    { 7, -8 },
+    { 12, -18 },
+    { 14, -29 },
+    { 13, -40 },
 }
 
 BBF.LEGACY_COMBO_HIGHLIGHT_FADE_IN = HIGHLIGHT_FADE_IN
@@ -54,15 +50,13 @@ local function CreateLegacyComboFrame()
     frame:SetAlpha(0)
     frame:Hide()
     frame.ComboPoints = {}
+    frame.unit = "player"
     BBF.LegacyComboFrame = frame
 
     for i, offset in ipairs(POINT_OFFSETS) do
         local point = CreateFrame("Frame", nil, frame)
         point:SetSize(12, 12)
         point:SetPoint("TOPRIGHT", frame, "TOPRIGHT", offset[1], offset[2])
-        if i >= 7 then
-            point:SetAlpha(0.6)
-        end
 
         local bg = point:CreateTexture(nil, "BACKGROUND")
         bg:SetTexture(COMBO_TEXTURE)
@@ -91,26 +85,10 @@ local function CreateLegacyComboFrame()
     frame.ComboPoints[1].Highlight:SetAlpha(0)
 end
 
-local function UpdateMax(self)
-    self.maxComboPoints = UnitPowerMax(PlayerFrame.unit, Enum.PowerType.ComboPoints)
-
-    if self.maxComboPoints == 6 or self.maxComboPoints == 9 then
-        self.startComboPointIndex = 1
-        self.extraComboPoints = 7
-    else
-        self.startComboPointIndex = 2
-        self.extraComboPoints = 6
-    end
-
-    for i = 1, #self.ComboPoints do
-        self.ComboPoints[i]:Hide()
-    end
-end
-
 local function Update(self)
     if not self.maxComboPoints then return end
 
-    local comboPoints = GetComboPoints(PlayerFrame.unit, "target")
+    local comboPoints = GetComboPoints(self.unit, "target")
 
     if comboPoints > 0 then
         if not self:IsShown() then
@@ -118,10 +96,8 @@ local function Update(self)
             BBF.UIFrameFadeIn(self, FRAME_FADE_IN)
         end
 
-        local colorblind = C_CVar.GetCVarBool("colorblindMode")
-        local comboIndex = self.startComboPointIndex
         for i = 1, self.maxComboPoints do
-            local point = self.ComboPoints[comboIndex]
+            local point = self.ComboPoints[i]
             if not point then break end
             if i <= comboPoints then
                 if i > lastComboPoints then
@@ -133,18 +109,10 @@ local function Update(self)
                     })
                 end
             else
-                if colorblind then
-                    point:Hide()
-                end
                 point.Highlight:SetAlpha(0)
                 point.Shine:SetAlpha(0)
             end
-            if i >= self.extraComboPoints then
-                point:SetShown(comboPoints >= i)
-            else
-                point:Show()
-            end
-            comboIndex = comboIndex + 1
+            point:Show()
         end
     else
         self.ComboPoints[1].Highlight:SetAlpha(0)
@@ -158,14 +126,30 @@ local function Update(self)
     end
 end
 
+local function UpdateMax(self)
+    self.maxComboPoints = UnitPowerMax(self.unit, Enum.PowerType.ComboPoints)
+
+    for i = 1, #self.ComboPoints do
+        self.ComboPoints[i]:Hide()
+    end
+
+    Update(self)
+end
+
+local function SetUnit(self)
+    self.unit = UnitHasVehicleUI("player") and "vehicle" or "player"
+end
+
 local function OnEvent(self, event, unit)
     if event == "UNIT_POWER_FREQUENT" then
-        if unit == PlayerFrame.unit then
+        if unit == self.unit then
             Update(self)
         end
     elseif event == "UNIT_MAXPOWER" or event == "PLAYER_ENTERING_WORLD" then
         UpdateMax(self)
-        Update(self)
+    elseif event == "UNIT_ENTERED_VEHICLE" or event == "UNIT_EXITED_VEHICLE" then
+        SetUnit(self)
+        UpdateMax(self)
     else
         Update(self)
     end
@@ -230,11 +214,13 @@ function BBF.EnableLegacyComboFrame()
         frame:RegisterEvent("UNIT_POWER_FREQUENT")
         frame:RegisterEvent("UNIT_MAXPOWER")
         frame:RegisterEvent("PLAYER_ENTERING_WORLD")
+        frame:RegisterUnitEvent("UNIT_ENTERED_VEHICLE", "player")
+        frame:RegisterUnitEvent("UNIT_EXITED_VEHICLE", "player")
         if C_EventUtils.IsEventValid("COMBO_TARGET_CHANGED") then
             frame:RegisterEvent("COMBO_TARGET_CHANGED")
         end
+        SetUnit(frame)
         UpdateMax(frame)
-        Update(frame)
     end
     BBF.UpdateBlizzardComboRing()
 end

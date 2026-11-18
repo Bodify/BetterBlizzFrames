@@ -179,6 +179,7 @@ local frameTextures = {
     [smallNoManaTex] = hdSmallNoMana,
     [smallBigTex] = hdSmallBig,
     [smallBigNoManaTex] = hdSmallBigNoMana,
+    [130973] = { HD_MO .. "ComboPoint.png" },
 }
 
 local castbarTextures = {

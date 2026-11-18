@@ -1623,6 +1623,9 @@ L["Use_One_Color"] = "Use One Color"
 
 -- StaticPopupDialogs
 L["Popup_Reload_Required"] = "This requires a reload. Reload now?"
+L["Popup_OneForAll_Conflict"] = "OneForAll's Class Color settings are on and is in conflict with BBF's settings.\n\nSelect Fix it to turn off those specific settings in OneForAll."
+L["Button_Fix_It"] = "Fix it"
+L["Button_Fix_It_Myself"] = "I'll fix it myself"
 L["Popup_Smooth_Mana_Feedback"] = "Do you also want to hide mana feedback? For a better result pick Yes.\n|cFFAAAAAA(It's what shows how much mana will be used before the cast is finished)|r"
 L["Popup_Classic_Frames_Turn"] = "Classic Frames will turn %s after reload.\n\nSelect which optional settings you want.\n|cFFAAAAAA(These can be changed individually later)|r\n\n\n\n\n "
 L["Popup_Cata_Update_Text"] = "CHANGES\n\nLots of Retail features from BBF have been brought over to MoP and Cata.\n\nDue to the large amount of changes things might have changed slightly.\nThere might also be some missed bugs.\n\nRead changelog for more info."

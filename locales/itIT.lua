@@ -1627,6 +1627,9 @@ L["Use_One_Color"] = "Usa un solo colore"
 
 -- StaticPopupDialogs
 L["Popup_Reload_Required"] = "Serve ricaricare. Ricaricare ora?"
+L["Popup_OneForAll_Conflict"] = "Le opzioni dei colori di classe di OneForAll sono attive e vanno in conflitto con le opzioni di BBF.\n\nScegli Sistema per disattivare quelle opzioni in OneForAll."
+L["Button_Fix_It"] = "Sistema"
+L["Button_Fix_It_Myself"] = "Ci penso io"
 L["Popup_Smooth_Mana_Feedback"] = "Vuoi nascondere anche la risposta del mana?\n|cFFAAAAAA(È ciò che mostra quanto mana verrà usato prima che la magia sia completata)|r"
 L["Popup_Classic_Frames_Turn"] = "Riquadri classici dopo il ricaricamento: %s\n\nScegli quali impostazioni facoltative vuoi.\n|cFFAAAAAA(Si possono cambiare singolarmente in seguito)|r\n\n\n\n\n "
 L["Popup_Cata_Update_Text"] = "MODIFICHE\n\nMolte funzioni di BBF di Retail sono state portate su MoP e Cata.\n\nA causa del gran numero di modifiche alcune cose potrebbero essere leggermente cambiate.\nPotrebbero esserci anche bug sfuggiti.\n\nLeggi il changelog per maggiori informazioni."

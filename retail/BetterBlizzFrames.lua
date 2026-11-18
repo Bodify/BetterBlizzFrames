@@ -2441,11 +2441,21 @@ function BBF.UpdateSelfEliteBossTexture(frame)
         end
         texture:SetAtlas(data[1], TextureKitConstants.UseAtlasSize)
         texture:SetPoint("TOPRIGHT", container, "TOPRIGHT", data[2], data[3])
-        texture:SetDesaturated(data[4] or texture.bbfSelfEliteDesat)
+        local playerElite = PlayerFrame.PlayerFrameContainer.PlayerElite
+        if playerElite then
+            local r, g, b = playerElite:GetVertexColor()
+            texture:SetDesaturated(data[4] or texture.bbfSelfEliteDesat or playerElite:IsDesaturated())
+            texture:SetVertexColor(r, g, b, texture:GetAlpha())
+        else
+            texture:SetDesaturated(data[4] or texture.bbfSelfEliteDesat)
+        end
         texture:Show()
     elseif texture.bbfSelfElite then
         texture.bbfSelfElite = nil
         texture:SetDesaturated(texture.bbfSelfEliteDesat)
+        if not texture.bbfDarkElite then
+            texture:SetVertexColor(1, 1, 1, texture:GetAlpha())
+        end
         if UnitIsUnit(frame.unit, "player") then
             texture:Hide()
         end
@@ -3279,7 +3289,7 @@ function BBF.HDLegacyComboPoints()
         for i = 1, point:GetNumRegions() do
             local region = select(i, point:GetRegions())
             if region and region:IsObjectType("Texture") and region:GetDrawLayer() == "BACKGROUND" then
-                region:SetTexture(HD_COMBO_POINT)
+                BBF.SetClassicTexture(region, 130973)
                 region:SetTexCoord(0, 0.375, 0, 1)
             end
         end

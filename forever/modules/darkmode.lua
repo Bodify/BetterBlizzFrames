@@ -716,9 +716,8 @@ function BBF.DarkmodeFrames(bypass)
         if BetterBlizzFramesDB.legacyComboColor then
             legacyComboColor = legacyComboColor + BetterBlizzFramesDB.legacyComboColor
         end
-        for i = 1, 9 do
-            local point = BBF.LegacyComboFrame.ComboPoints[i]
-            if point and point:GetNumRegions() then
+        for _, point in ipairs(BBF.LegacyComboFrame.ComboPoints) do
+            if point:GetNumRegions() then
                 for j = 1, point:GetNumRegions() do
                     local region = select(j, point:GetRegions())
                     if region and region:IsObjectType("Texture") then

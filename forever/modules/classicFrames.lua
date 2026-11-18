@@ -180,6 +180,7 @@ local frameTextures = {
     [smallNoManaTex] = hdSmallNoMana,
     [smallBigTex] = hdSmallBig,
     [smallBigNoManaTex] = hdSmallBigNoMana,
+    [130973] = { HD_MO .. "ComboPoint.png" },
 }
 
 local castbarTextures = {
@@ -250,6 +251,17 @@ function BBF.ApplyClassicHDColor(texture, isCastbar)
         local desat = texture.bbfSyncedDesat
         if desat == nil then desat = true end
         texture:SetDesaturated(desat)
+        if texture.bbfDarkerBronze then
+            if BBF.DarkerBronzeActive() then
+                texture:SetVertexColor(BBF.DARKER_BRONZE_R, BBF.DARKER_BRONZE_G, BBF.DARKER_BRONZE_B)
+                texture.bbfDarkerBronzeSet = true
+            elseif texture.bbfDarkerBronzeSet then
+                texture.bbfDarkerBronzeSet = nil
+                if not BBF.darkModeUnitFramesActive then
+                    texture:SetVertexColor(1, 1, 1)
+                end
+            end
+        end
     end
 end
 
