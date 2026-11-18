@@ -1433,10 +1433,34 @@ function BBF.UpdatePlayerHealthMask()
     if BBF.BigPlayerHealthbar and BBF.BigPlayerHealthbar() then return end
     if BBF.PlayerManaHiddenArt and BBF.PlayerManaHiddenArt() then return end
     local hpContainer = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer
-    PlaceDefaultHealthMask(hpContainer.HealthBarMask, hpContainer.HealthBar, 128.5, -2)
+    PlaceDefaultHealthMask(hpContainer.HealthBarMask, hpContainer.HealthBar, 129, -2)
 end
 
 local targetMaskHooked = {}
+
+local function DefaultTargetStyle(frame, unit)
+    local db = BetterBlizzFramesDB
+    if db.classicFrames or BBF.IsMiniFrame(frame) or BBF.HasNoPortrait(unit) then return false end
+    if BBF.RetailTexturesOn and BBF.RetailTexturesOn(unit) then return false end
+    if BBF.BigHealthbarOn(frame) then return false end
+    if db[unit == "focus" and "hideUnitFrameFocusMana" or "hideUnitFrameTargetMana"] then return false end
+    return true
+end
+
+local function UpdateTargetDefaultHealthBar(frame, unit)
+    if InCombatLockdown() then return end
+    local container = frame.TargetFrameContent.TargetFrameContentMain.HealthBarsContainer
+    local on = DefaultTargetStyle(frame, unit)
+    if on then
+        container:SetPoint("TOPLEFT", frame.TargetFrameContainer, "LEFT", 20.5, 6)
+        container.HealthBar:SetSize(127, 20)
+    elseif frame.bbfDefaultHealthBar then
+        container:ClearPoint("TOPLEFT")
+        container:SetWidth(126)
+        container.HealthBar:SetSize(126, 20)
+    end
+    frame.bbfDefaultHealthBar = on
+end
 
 function BBF.UpdateTargetHealthMask(frame)
     if BBF.ClassicStyleAddon() then return end
@@ -1447,6 +1471,7 @@ function BBF.UpdateTargetHealthMask(frame)
     end
     local db = BetterBlizzFramesDB
     local unit = frame == FocusFrame and "focus" or "target"
+    UpdateTargetDefaultHealthBar(frame, unit)
     local mini = (unit == "target" and db.useMiniTargetFrame) or (unit == "focus" and db.useMiniFocusFrame)
     if db.classicFrames or mini or BBF.HasNoPortrait(unit) then return end
     local main = frame.TargetFrameContent.TargetFrameContentMain
@@ -1472,7 +1497,8 @@ function BBF.UpdateTargetHealthMask(frame)
     if UnitExists(unit) and UnitClassification(unit) == "minus" then return end
     local hpContainer = frame.TargetFrameContent.TargetFrameContentMain.HealthBarsContainer
     local healthTexture = BBF.UnitFrameTextureOnFor(unit)
-    PlaceDefaultHealthMask(hpContainer.HealthBarMask, hpContainer.HealthBar, healthTexture and 128.5 or 129, healthTexture and -1 or -1.5)
+    local maskX = (healthTexture and -1 or -1.5) + (frame.bbfDefaultHealthBar and 0.5 or 0)
+    PlaceDefaultHealthMask(hpContainer.HealthBarMask, hpContainer.HealthBar, healthTexture and 128.5 or 129, maskX)
 end
 
 local groupIconHooked

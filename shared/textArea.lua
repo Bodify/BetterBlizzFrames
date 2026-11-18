@@ -72,6 +72,7 @@ BBF.TextAreaLayouts = {
             { style = "camelot", mana = "hidden", manaY = -0.5, own = { manaY = true } },
             { style = "camelot", mode = "reduced", manaY = -0.5, own = { manaY = true } },
             { style = "camelot", mode = "big", manaY = -0.5, own = { manaY = true } },
+            { client = "forever", style = "camelot", mode = "none", notBase = true, left = 1, right = -4.5, top = -0.5, healthY = -0.5, manaY = -0.5, textLeft = 2, textRight = 3.5, own = { healthY = true, manaY = true, textLeft = true } },
             { style = "camelot", left = 1, right = -4.5, top = -0.5, healthY = -0.5, manaY = -0.5, textLeft = 1, textRight = 3.5, own = { healthY = true, manaY = true } },
         },
     },
@@ -207,7 +208,7 @@ BBF.NameLayouts = {
     target = { { client = "forever", style = "classic", mode = "none", y = 3, own = true }, { style = "classic", mode = "none", y = 3.5, own = true }, { style = "classic", mode = "big", mana = "hidden", inside = true, y = -13.5, own = true },
         { style = "classic", mode = "big", mana = "hidden", y = 2, own = true }, { client = "forever", style = "classic", mode = "big", inside = false, y = 2, own = true }, { style = "classic", mode = "big", inside = false, y = 2.5, own = true }, { inside = true, y = -12 }, { client = "retail", style = "retail", mode = "xl", mana = "hidden", left = 23, right = 5, centerX = -14, width = -8, centerWidth = -14, y = 0.5, own = true }, { client = "retail", style = "retail", mode = "none", minus = true, left = 24.5, right = -5, centerX = -14, width = -8, centerWidth = -14, y = 1, own = true }, { client = "retail", style = "retail", left = 23, right = 5, centerX = -14, width = -8, centerWidth = -14, y = 1, own = true }, { client = "forever", style = "retail", mode = "big", left = 2, right = 2, width = -6, y = 2 }, { style = "retail", y = 2 }, { style = "camelot", mode = "none", mana = "hidden", y = -2, own = true },
         { style = "camelot", mode = "xl", mana = "hidden", y = 2, own = true },
-        { style = "camelot", mode = "big", mana = "hidden", y = 1.5, own = true }, { style = "camelot", mode = "none", y = 0.5, own = true }, { y = 1 } },
+        { style = "camelot", mode = "big", mana = "hidden", y = 1.5, own = true }, { client = "forever", style = "camelot", mode = "none", y = 1, own = true }, { style = "camelot", mode = "none", y = 0.5, own = true }, { y = 1 } },
     tot = { { classicToT = true, below = true, y = -4 }, { inside = true, y = -10 }, { style = "pixel", y = 1 }, { style = "retail", y = 2 },
         { style = "classic", mode = "big", mana = "hidden", y = -28 }, { style = "classic", y = -29 },
         { style = "camelot", mode = "xl", mana = "hidden", y = 2 }, { style = "camelot", mode = "xl", y = 2 },
@@ -400,6 +401,7 @@ local function Matches(rule, setup)
     if rule.minus and not setup.minus then return false end
     if rule.classicToT ~= nil and rule.classicToT ~= setup.classicToT then return false end
     if rule.inside ~= nil and rule.inside ~= setup.inside then return false end
+    if rule.notBase and setup.base then return false end
     return true
 end
 
@@ -542,7 +544,7 @@ local function ResolveText(frame, raw)
         end
     end
     if setup.style == "camelot" then
-        local base = { key = setup.key, style = "camelot", mode = "none", manaHidden = false, classicToT = setup.classicToT, inside = false }
+        local base = { key = setup.key, style = "camelot", mode = "none", manaHidden = false, classicToT = setup.classicToT, inside = false, base = true }
         for _, rule in ipairs(cfg.rules) do
             if Matches(rule, base) then
                 for _, field in ipairs({ "left", "right", "textLeft", "textRight" }) do
