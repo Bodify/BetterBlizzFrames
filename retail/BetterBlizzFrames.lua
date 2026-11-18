@@ -673,6 +673,7 @@ local defaultSettings = {
     healPredictionColor = {0, 1, 0, 1},
     healPredictionColorUnitFrames = true,
     healPredictionColorRaidFrames = true,
+    hideHealPrediction = false,
     actionBarRangeOverlayColor = {1, 0, 0, 0.35},
     actionBarRangeIconColor = {0.59, 0.24, 0.22, 1},
     actionBarRangeUseOverlay = false,
@@ -6412,6 +6413,7 @@ First:SetScript("OnEvent", function(_, event, addonName)
             BBF.FixFeedbackTextures()
             BBF.FixHealPredictionTextures()
             BBF.HealPredictionColor()
+            BBF.HideHealPrediction()
             BBF.LegacyPRDLook()
             BBF.FixPrdRogueComboCentering()
         end)

@@ -9165,8 +9165,12 @@ local function guiMisc()
         end
     end)
 
+    local hideHealPrediction = CreateCheckbox("hideHealPrediction", L["Hide_Heal_Prediction"], contentFrame, nil, BBF.HideHealPrediction)
+    hideHealPrediction:SetPoint("TOPLEFT", changeHealPredictionColor, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(hideHealPrediction, L["Hide_Heal_Prediction"], L["Tooltip_Hide_Heal_Prediction_Desc"])
+
     local questXpBar = CreateCheckbox("questXpBar", L["Quest_XP_Bar"], contentFrame, nil, BBF.QuestXpBar)
-    questXpBar:SetPoint("TOPLEFT", changeHealPredictionColor, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    questXpBar:SetPoint("TOPLEFT", hideHealPrediction, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(questXpBar, L["Quest_XP_Bar"], L["Tooltip_Quest_XP_Bar_Desc"] .. "\n\n|cff32f795" .. L["Right_Click_More_Settings"] .. "|r")
     do
         local f = CreateSettingsPopup("BBFQuestXpBarWindow", L["Quest_XP_Bar"], 260, 150)

@@ -543,14 +543,18 @@ function BBF.DarkmodeFrames(bypass)
         end
     end
 
-    local compactPartyBorder = CompactPartyFrameBorderFrame or CompactRaidFrameContainerBorderFrame
-    if compactPartyBorder then
+    if CompactPartyFrameBorderFrame or CompactRaidFrameContainerBorderFrame then
         raidBorderSat, raidBorderColor = desaturationValue, vertexColor
 
-        for i = 1, compactPartyBorder:GetNumRegions() do
-            local region = select(i, compactPartyBorder:GetRegions())
-            if region:IsObjectType("Texture") then
-                applySettings(region, desaturationValue, vertexColor)
+        for _, name in ipairs({ "CompactPartyFrameBorderFrame", "CompactRaidFrameContainerBorderFrame" }) do
+            local border = _G[name]
+            if border then
+                for i = 1, border:GetNumRegions() do
+                    local region = select(i, border:GetRegions())
+                    if region:IsObjectType("Texture") then
+                        applySettings(region, desaturationValue, vertexColor)
+                    end
+                end
             end
         end
 

@@ -421,6 +421,11 @@ function BBF.UpdateRaidGroupTitles()
     end
 end
 
+local raidBorderFrames = { "CompactPartyFrameBorderFrame", "CompactRaidFrameContainerBorderFrame" }
+for i = 1, 8 do
+    raidBorderFrames[#raidBorderFrames + 1] = "CompactRaidGroup"..i.."BorderFrame"
+end
+
 function BBF.HideFrames()
     local db = BetterBlizzFramesDB
     if db.hasCheckedUi then
@@ -1137,13 +1142,8 @@ function BBF.HideFrames()
         BBF.UpdateBlizzardComboRing()
 
         if BetterBlizzFramesDB.hideRaidFrameContainerBorder then
-            local compactPartyBorder = CompactPartyFrameBorderFrame or CompactRaidFrameContainerBorderFrame
-            if compactPartyBorder then
-                changes.hideRaidFrameContainerBorder = compactPartyBorder:GetParent()
-                compactPartyBorder:SetParent(BBF.hiddenFrame)
-            end
-            for i = 1, 8 do
-                local frame = _G["CompactRaidGroup"..i.."BorderFrame"]
+            for _, name in ipairs(raidBorderFrames) do
+                local frame = _G[name]
                 if frame then
                     if not frame.ogParent then
                         frame.ogParent = frame:GetParent()
@@ -1151,19 +1151,16 @@ function BBF.HideFrames()
                     frame:SetParent(BBF.hiddenFrame)
                 end
             end
+            changes.hideRaidFrameContainerBorder = true
         elseif changes.hideRaidFrameContainerBorder then
-            local compactPartyBorder = CompactPartyFrameBorderFrame or CompactRaidFrameContainerBorderFrame
-            compactPartyBorder:SetParent(changes.hideRaidFrameContainerBorder)
-            changes.hideRaidFrameContainerBorder = nil
-            for i = 1, 8 do
-                local frame = _G["CompactRaidGroup"..i.."BorderFrame"]
-                if frame then
-                    if frame.ogParent then
-                        frame:SetParent(frame.ogParent)
-                        frame.ogParent = nil
-                    end
+            for _, name in ipairs(raidBorderFrames) do
+                local frame = _G[name]
+                if frame and frame.ogParent then
+                    frame:SetParent(frame.ogParent)
+                    frame.ogParent = nil
                 end
             end
+            changes.hideRaidFrameContainerBorder = nil
         end
 
         BBF.UpdateStatusTrackingBars()

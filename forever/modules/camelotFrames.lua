@@ -1433,7 +1433,7 @@ function BBF.UpdatePlayerHealthMask()
     if BBF.BigPlayerHealthbar and BBF.BigPlayerHealthbar() then return end
     if BBF.PlayerManaHiddenArt and BBF.PlayerManaHiddenArt() then return end
     local hpContainer = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer
-    PlaceDefaultHealthMask(hpContainer.HealthBarMask, hpContainer.HealthBar, 127.5, -1)
+    PlaceDefaultHealthMask(hpContainer.HealthBarMask, hpContainer.HealthBar, 128.5, -2)
 end
 
 local targetMaskHooked = {}

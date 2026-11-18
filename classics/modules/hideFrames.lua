@@ -216,6 +216,8 @@ local function ChangeParent(element, hide)
     end
 end
 
+local raidBorderFrames = { "CompactPartyFrameBorderFrame", "CompactRaidFrameContainerBorderFrame" }
+
 function BBF.HideFrames()
     -- if BetterBlizzFramesDB.hasCheckedUi then
         local class = UnitClassBase("player")
@@ -629,14 +631,24 @@ function BBF.HideFrames()
         end
 
         if BetterBlizzFramesDB.hideRaidFrameContainerBorder then
-            local compactPartyBorder = CompactPartyFrameBorderFrame or CompactRaidFrameContainerBorderFrame
-            if compactPartyBorder then
-                changes.hideRaidFrameContainerBorder = compactPartyBorder:GetParent()
-                compactPartyBorder:SetParent(BBF.hiddenFrame)
+            for _, name in ipairs(raidBorderFrames) do
+                local frame = _G[name]
+                if frame then
+                    if not frame.ogParent then
+                        frame.ogParent = frame:GetParent()
+                    end
+                    frame:SetParent(BBF.hiddenFrame)
+                end
             end
+            changes.hideRaidFrameContainerBorder = true
         elseif changes.hideRaidFrameContainerBorder then
-            local compactPartyBorder = CompactPartyFrameBorderFrame or CompactRaidFrameContainerBorderFrame
-            compactPartyBorder:SetParent(changes.hideRaidFrameContainerBorder)
+            for _, name in ipairs(raidBorderFrames) do
+                local frame = _G[name]
+                if frame and frame.ogParent then
+                    frame:SetParent(frame.ogParent)
+                    frame.ogParent = nil
+                end
+            end
             changes.hideRaidFrameContainerBorder = nil
         end
 

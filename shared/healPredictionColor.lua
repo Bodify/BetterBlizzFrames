@@ -20,21 +20,21 @@ local function ColorUnitFrame(frame)
     end
 end
 
-local function ColorUnitFrames()
-    ColorUnitFrame(PlayerFrame)
-    ColorUnitFrame(TargetFrame)
-    ColorUnitFrame(FocusFrame)
-    ColorUnitFrame(PetFrame)
+local function ForEachUnitFrame(fn)
+    fn(PlayerFrame)
+    fn(TargetFrame)
+    fn(FocusFrame)
+    fn(PetFrame)
     for i = 1, 5 do
-        ColorUnitFrame(_G["Boss" .. i .. "TargetFrame"])
+        fn(_G["Boss" .. i .. "TargetFrame"])
     end
     if PartyFrame and PartyFrame.PartyMemberFramePool then
         for frame in PartyFrame.PartyMemberFramePool:EnumerateActive() do
-            ColorUnitFrame(frame)
+            fn(frame)
         end
     else
         for i = 1, 4 do
-            ColorUnitFrame(_G["PartyMemberFrame" .. i])
+            fn(_G["PartyMemberFrame" .. i])
         end
     end
 end
@@ -44,11 +44,15 @@ local function RaidActive()
     return db.changeHealPredictionColor and db.healPredictionColorRaidFrames
 end
 
-local function ColorRaidFrame(frame)
-    if not color or not RaidActive() then return end
+local function IsRaidFrame(frame)
     if not frame or frame:IsForbidden() then return end
     local name = frame:GetName()
-    if not name or not name:find("^Compact") then return end
+    return name and name:find("^Compact")
+end
+
+local function ColorRaidFrame(frame)
+    if not color or not RaidActive() then return end
+    if not IsRaidFrame(frame) then return end
     local r, g, b, a = color:GetRGBA()
     for i = 1, #RAID_TEXTURES do
         local tex = frame[RAID_TEXTURES[i]]
@@ -58,31 +62,49 @@ local function ColorRaidFrame(frame)
     end
 end
 
-local function ColorRaidFrames()
+local function ForEachRaidFrame(fn)
     for i = 1, 5 do
-        ColorRaidFrame(_G["CompactPartyFrameMember" .. i])
+        fn(_G["CompactPartyFrameMember" .. i])
     end
     for i = 1, 40 do
-        ColorRaidFrame(_G["CompactRaidFrame" .. i])
+        fn(_G["CompactRaidFrame" .. i])
     end
     for group = 1, 8 do
         for i = 1, 5 do
-            ColorRaidFrame(_G["CompactRaidGroup" .. group .. "Member" .. i])
+            fn(_G["CompactRaidGroup" .. group .. "Member" .. i])
         end
     end
+end
+
+local hidden
+
+local function HideRaidFrame(frame)
+    if not hidden or not IsRaidFrame(frame) then return end
+    local alpha = BetterBlizzFramesDB.hideHealPrediction and 0 or 1
+    for i = 1, #RAID_TEXTURES do
+        local tex = frame[RAID_TEXTURES[i]]
+        if tex then
+            tex:SetAlpha(alpha)
+        end
+    end
+end
+
+local function OnRaidSetup(frame)
+    ColorRaidFrame(frame)
+    HideRaidFrame(frame)
 end
 
 local function HookRaidFrames()
     if raidHooked then return end
     raidHooked = true
     if DefaultCompactUnitFrameSetup then
-        hooksecurefunc("DefaultCompactUnitFrameSetup", ColorRaidFrame)
+        hooksecurefunc("DefaultCompactUnitFrameSetup", OnRaidSetup)
     end
     if DefaultCompactMiniFrameSetup then
-        hooksecurefunc("DefaultCompactMiniFrameSetup", ColorRaidFrame)
+        hooksecurefunc("DefaultCompactMiniFrameSetup", OnRaidSetup)
     end
     if CompactUnitFrameUtil and CompactUnitFrameUtil.ApplyConfig then
-        hooksecurefunc(CompactUnitFrameUtil, "ApplyConfig", ColorRaidFrame)
+        hooksecurefunc(CompactUnitFrameUtil, "ApplyConfig", OnRaidSetup)
     end
 end
 
@@ -91,10 +113,33 @@ function BBF.HealPredictionColor()
     if not db.changeHealPredictionColor then return end
     GetColor()
     if db.healPredictionColorUnitFrames then
-        ColorUnitFrames()
+        ForEachUnitFrame(ColorUnitFrame)
     end
     if db.healPredictionColorRaidFrames then
         HookRaidFrames()
-        ColorRaidFrames()
+        ForEachRaidFrame(OnRaidSetup)
     end
+end
+
+local function HideUnitFrame(frame)
+    if not frame then return end
+    local alpha = BetterBlizzFramesDB.hideHealPrediction and 0 or 1
+    for i = 1, #SEGMENTS do
+        local seg = frame[SEGMENTS[i]]
+        if seg then
+            seg:SetAlpha(alpha)
+        end
+    end
+end
+
+function BBF.HideHealPrediction()
+    local on = BetterBlizzFramesDB.hideHealPrediction
+    if not on and not hidden then return end
+    hidden = true
+    ForEachUnitFrame(HideUnitFrame)
+    if BBF.HealthbarMirrorHealPredictionAlpha then
+        BBF.HealthbarMirrorHealPredictionAlpha(on and 0 or 1)
+    end
+    HookRaidFrames()
+    ForEachRaidFrame(HideRaidFrame)
 end

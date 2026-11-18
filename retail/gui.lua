@@ -14611,8 +14611,12 @@ local function guiMisc()
         end
     end)
 
+    local hideHealPrediction = CreateCheckbox("hideHealPrediction", L["Hide_Heal_Prediction"], contentFrame, nil, BBF.HideHealPrediction)
+    hideHealPrediction:SetPoint("TOPLEFT", changeHealPredictionColor, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(hideHealPrediction, L["Hide_Heal_Prediction"], L["Tooltip_Hide_Heal_Prediction_Desc"])
+
     local centerCurrentValueOnBars = CreateCheckbox("centerCurrentValueOnBars", L["Current_HP_Only_Center"], contentFrame, nil, BBF.CenterCurrentValueOnBars)
-    centerCurrentValueOnBars:SetPoint("TOPLEFT", changeHealPredictionColor, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    centerCurrentValueOnBars:SetPoint("TOPLEFT", hideHealPrediction, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(centerCurrentValueOnBars, L["Current_HP_Only_Center"], L["Tooltip_Current_HP_Only_Center_Desc"], L["Tooltip_Current_HP_Only_Center_SubText"])
     centerCurrentValueOnBars:HookScript("OnClick", function()
         BBF.RefreshCenteredBarText()

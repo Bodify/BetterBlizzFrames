@@ -429,6 +429,7 @@ local defaultSettings = {
     healPredictionColor = {0, 1, 0, 1},
     healPredictionColorUnitFrames = true,
     healPredictionColorRaidFrames = true,
+    hideHealPrediction = false,
     actionBarRangeOverlayColor = {1, 0, 0, 0.35},
     actionBarRangeIconColor = {0.59, 0.24, 0.22, 1},
     actionBarRangeUseOverlay = false,
@@ -3142,6 +3143,7 @@ Frame:SetScript("OnEvent", function(...)
         BBF.XpBarTexture()
         BBF.QuestXpBar()
         BBF.HealPredictionColor()
+        BBF.HideHealPrediction()
         BBF.SetResourcePosition()
         ScaleClassResource()
     end)

@@ -1,7 +1,7 @@
 local SEGMENTS = {
     { key = "HealAbsorbBar", template = "HealAbsorbBarTemplate" },
-    { key = "MyHealPredictionBar", template = "MyHealPredictionBarTemplate" },
-    { key = "OtherHealPredictionBar", template = "OtherHealPredictionBarTemplate" },
+    { key = "MyHealPredictionBar", template = "MyHealPredictionBarTemplate", healPrediction = true },
+    { key = "OtherHealPredictionBar", template = "OtherHealPredictionBarTemplate", healPrediction = true },
     { key = "TotalAbsorbBar", template = "TotalAbsorbBarTemplate" },
 }
 local SEGMENT_TEXTURES = { "Fill", "TiledFillOverlay", "LeftShadow", "RightShadow" }
@@ -248,6 +248,9 @@ local function CreateSegment(mirror, src, info)
     end
     seg:Hide()
     seg.key = info.key
+    if info.healPrediction and BetterBlizzFramesDB.hideHealPrediction then
+        seg:SetAlpha(0)
+    end
 
     hooksecurefunc(src, "UpdateFillPosition", function(_, _, fillValue, xOffsetPercent)
         if type(xOffsetPercent) == "nil" then
@@ -666,6 +669,13 @@ function BBF.DisableHealthbarMirror(frame)
     mirror.holder:Hide()
     ShowSource(mirror)
     RestoreTexts(mirror)
+end
+
+function BBF.HealthbarMirrorHealPredictionAlpha(alpha)
+    for _, mirror in pairs(mirrors) do
+        if mirror.MyHealPredictionBar then mirror.MyHealPredictionBar:SetAlpha(alpha) end
+        if mirror.OtherHealPredictionBar then mirror.OtherHealPredictionBar:SetAlpha(alpha) end
+    end
 end
 
 function BBF.GetHealthbarMirror(frame)
