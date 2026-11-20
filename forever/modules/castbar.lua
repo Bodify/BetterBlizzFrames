@@ -820,7 +820,7 @@ function BBF.ClassicCastbar(castBar, unitType)
         castBar.iconXPos = 0
         castBar.iconYPos = 0
     elseif not isParty then
-        local unit = castBar.unit == "pet" and "player" or castBar.unit
+        local unit = unitType
         castBar.iconXPos = BetterBlizzFramesDB[unit.."CastbarIconXPos"]
         castBar.iconYPos = BetterBlizzFramesDB["hide"..unit:gsub("^%l", string.upper).."CastbarIcon"] and -6969 or BetterBlizzFramesDB[unit.."CastbarIconYPos"]
     else
