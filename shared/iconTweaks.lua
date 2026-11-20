@@ -104,30 +104,30 @@ local PVP_PREVIEW = BBF.isForever and { atlas = "UI-HUD-UnitFrame-SmallCircle-Al
 
 BBF.IconTweakElements = {
     player = {
-        { key = "Leader", label = L["Icon_Leader"], regions = PlayerLeader, preview = { atlas = "UI-HUD-UnitFrame-Player-Group-LeaderIcon" } },
-        { key = "Role", label = L["Icon_Role"], regions = PlayerRole, preview = { atlas = "roleicon-tiny-tank" } },
-        { key = "Pvp", label = L["Icon_Pvp"], regions = PlayerPvp, home = PlayerPvpHome, preview = PVP_PREVIEW },
-        { key = "Combat", label = L["Icon_Combat"], regions = PlayerCombat, preview = { atlas = "UI-HUD-UnitFrame-Player-CombatIcon" } },
+        { key = "Leader", label = L["Icon_Leader"], move = L["Icon_Tweaks_Move_Leader"], regions = PlayerLeader, preview = { atlas = "UI-HUD-UnitFrame-Player-Group-LeaderIcon" } },
+        { key = "Role", label = L["Icon_Role"], move = L["Icon_Tweaks_Move_Role"], regions = PlayerRole, preview = { atlas = "roleicon-tiny-tank" } },
+        { key = "Pvp", label = L["Icon_Pvp"], move = L["Icon_Tweaks_Move_Pvp"], regions = PlayerPvp, home = PlayerPvpHome, preview = PVP_PREVIEW },
+        { key = "Combat", label = L["Icon_Combat"], move = L["Icon_Tweaks_Move_Combat"], regions = PlayerCombat, preview = { atlas = "UI-HUD-UnitFrame-Player-CombatIcon" } },
     },
     target = {
-        { key = "Leader", label = L["Icon_Leader"], regions = TargetLeader, preview = { atlas = "UI-HUD-UnitFrame-Player-Group-LeaderIcon" } },
-        { key = "RaidTarget", label = L["Icon_Raid_Marker"], regions = TargetRegion("RaidTargetIcon"), preview = { raidTarget = 8 }, icon = "Interface\\TargetingFrame\\UI-RaidTargetingIcon_8" },
-        { key = "Quest", label = L["Icon_Quest"], regions = TargetRegion("QuestIcon"), preview = { atlas = "UI-HUD-UnitFrame-Target-PortraitOn-Boss-Quest" } },
-        { key = "Pvp", label = L["Icon_Pvp"], regions = TargetPvp, home = TargetContext, preview = PVP_PREVIEW },
-        { key = "Threat", label = L["Icon_Threat"], regions = TargetThreat, preview = { texture = "Interface\\TargetingFrame\\NumericThreatBorder", coords = { 0, 0.765625, 0, 0.5625 } } },
+        { key = "Leader", label = L["Icon_Leader"], move = L["Icon_Tweaks_Move_Leader"], regions = TargetLeader, preview = { atlas = "UI-HUD-UnitFrame-Player-Group-LeaderIcon" } },
+        { key = "RaidTarget", label = L["Icon_Raid_Marker"], move = L["Icon_Tweaks_Move_Raid_Marker"], regions = TargetRegion("RaidTargetIcon"), preview = { raidTarget = 8 }, icon = "Interface\\TargetingFrame\\UI-RaidTargetingIcon_8" },
+        { key = "Quest", label = L["Icon_Quest"], move = L["Icon_Tweaks_Move_Quest"], regions = TargetRegion("QuestIcon"), preview = { atlas = "UI-HUD-UnitFrame-Target-PortraitOn-Boss-Quest" } },
+        { key = "Pvp", label = L["Icon_Pvp"], move = L["Icon_Tweaks_Move_Pvp"], regions = TargetPvp, home = TargetContext, preview = PVP_PREVIEW },
+        { key = "Threat", label = L["Icon_Threat"], move = L["Icon_Tweaks_Move_Threat"], regions = TargetThreat, preview = { texture = "Interface\\TargetingFrame\\NumericThreatBorder", coords = { 0, 0.765625, 0, 0.5625 } } },
     },
     party = {
-        { key = "Leader", label = L["Icon_Leader"], regions = PartyLeader, preview = { atlas = "UI-HUD-UnitFrame-Player-Group-LeaderIcon" } },
-        { key = "Role", label = L["Icon_Role"], regions = PartyRole, preview = { atlas = "roleicon-tiny-tank" } },
-        { key = "Pvp", label = L["Icon_Pvp"], regions = PartyPvp, home = PartyPvpHome, preview = { atlas = "ui-hud-unitframe-player-pvp-ffaicon" } },
-        { key = "ReadyCheck", label = L["Icon_Ready_Check"], regions = PartyReadyCheck, preview = { texture = "Interface\\RaidFrame\\ReadyCheck-Ready" } },
-        { key = "NotPresent", label = L["Icon_Not_Present"], regions = PartyNotPresent, preview = { atlas = "groupfinder-eye-single" } },
+        { key = "Leader", label = L["Icon_Leader"], move = L["Icon_Tweaks_Move_Leader"], regions = PartyLeader, preview = { atlas = "UI-HUD-UnitFrame-Player-Group-LeaderIcon" } },
+        { key = "Role", label = L["Icon_Role"], move = L["Icon_Tweaks_Move_Role"], regions = PartyRole, preview = { atlas = "roleicon-tiny-tank" } },
+        { key = "Pvp", label = L["Icon_Pvp"], move = L["Icon_Tweaks_Move_Pvp"], regions = PartyPvp, home = PartyPvpHome, preview = { atlas = "ui-hud-unitframe-player-pvp-ffaicon" } },
+        { key = "ReadyCheck", label = L["Icon_Ready_Check"], move = L["Icon_Tweaks_Move_Ready_Check"], regions = PartyReadyCheck, preview = { texture = "Interface\\RaidFrame\\ReadyCheck-Ready" } },
+        { key = "NotPresent", label = L["Icon_Not_Present"], move = L["Icon_Tweaks_Move_Not_Present"], regions = PartyNotPresent, preview = { atlas = "groupfinder-eye-single" } },
     },
 }
 
 if not BBF.isForever then
-    table.insert(BBF.IconTweakElements.target, 3, { key = "Boss", label = L["Icon_Rare"], regions = TargetRegion("BossIcon"), preview = { atlas = "UI-HUD-UnitFrame-Target-PortraitOn-Boss-Rare-Star" } })
-    table.insert(BBF.IconTweakElements.target, 5, { key = "PetBattle", label = L["Icon_Pet_Battle"], regions = TargetRegion("PetBattleIcon"), preview = { texture = "Interface\\TargetingFrame\\PetBadge-Beast" } })
+    table.insert(BBF.IconTweakElements.target, 3, { key = "Boss", label = L["Icon_Rare"], move = L["Icon_Tweaks_Move_Rare"], regions = TargetRegion("BossIcon"), preview = { atlas = "UI-HUD-UnitFrame-Target-PortraitOn-Boss-Rare-Star" } })
+    table.insert(BBF.IconTweakElements.target, 5, { key = "PetBattle", label = L["Icon_Pet_Battle"], move = L["Icon_Tweaks_Move_Pet_Battle"], regions = TargetRegion("PetBattleIcon"), preview = { texture = "Interface\\TargetingFrame\\PetBadge-Beast" } })
 end
 
 local function PlayerLevel()
@@ -147,7 +147,23 @@ end
 local LEVEL_PREVIEW = { atlas = "guild-levelring" }
 for group, regions in pairs({ player = PlayerLevel, target = TargetLevel, party = PartyLevel }) do
     local elements = BBF.IconTweakElements[group]
-    elements[#elements + 1] = { key = "Level", label = L["Level"], level = true, regions = regions, preview = LEVEL_PREVIEW }
+    elements[#elements + 1] = { key = "Level", label = L["Level"], move = L["Icon_Tweaks_Move_Level"], level = true, regions = regions, preview = LEVEL_PREVIEW }
+end
+
+local GROUP_LABELS = { player = L["Icon_Tweaks_PlayerFrame"], target = L["Icon_Tweaks_TargetFocusFrame"], party = L["Icon_Tweaks_PartyFrame"] }
+
+function BBF.IconTweakTooltip(group, element)
+    return string.format(L["Tooltip_Icon_Tweaks_Move"], element.move, GROUP_LABELS[group])
+end
+
+function BBF.IconTweakSearchTerms()
+    local terms = {}
+    for group in pairs(GROUP_LABELS) do
+        for _, element in ipairs(BBF.IconTweakElements[group]) do
+            terms[#terms + 1] = BBF.IconTweakTooltip(group, element)
+        end
+    end
+    return terms
 end
 
 function BBF.IconTweakMenuIcon(element)

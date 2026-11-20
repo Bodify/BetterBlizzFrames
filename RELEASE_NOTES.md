@@ -1,10 +1,26 @@
 # BetterBlizzFrames 2.2.3b
+## All versions
+### New
+- New setting in Misc: Hide Heal Prediction. Hides the green heal prediction bar on frames.
 ## Retail & Forever
+### Tweak
+- Minor skull level icon position tweak.
+- Minor player aura icon mask tweaks.
+- Loss of Control Tweaks: Remove Red Tint is now on by default for it.
 ### Bugfix
 - Fix legacy combo points color with Classic Frames + HD Textures by Mo and some other bronze settings not acting as intended.
-## Forever
+## Retail
 ### Tweak
+- Classic Frames: Level text and level ring positioned better (like on Forever too)
+## Forever
+### New
+- Remove Bronze Tint from ActionBars is now Remove Bronze Tint, with a dropdown for ActionBars and Castbars.
+- Popup to fix OneForAll's Class Color settings conflicting with BBF.
+### Tweak
+- Update Jazggz profile (www.twitch.tv/jazggz). Thank you for sharing!
+- Update Ceit profile (www.twitch.tv/ceitxd). Thank you for sharing!
 - Legacy Combo Points now look and sit like in Classic Era as intended. Their X/Y offsets have been reset.
+- Minor default Target/Focus healthbar position tweak.
 
 # BetterBlizzFrames 2.2.3
 ## All versions

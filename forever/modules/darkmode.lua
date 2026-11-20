@@ -345,11 +345,22 @@ local function createOrUpdateBorders(frame, colorValue, textureName, bypass)
                     border:SetPoint("TOPLEFT", icon, "TOPLEFT", -2, 2)
                     border:SetPoint("BOTTOMRIGHT", icon, "BOTTOMRIGHT", 2, -2)
                 else
-                    border:SetPoint("TOPLEFT", icon, "TOPLEFT", -3.5, 3.5)
+                    border:SetPoint("TOPLEFT", icon, "TOPLEFT", -3.5, 3)
                     border:SetPoint("BOTTOMRIGHT", icon, "BOTTOMRIGHT", 3.5, -3.5)
                 end
             end
             border:SetVertexColor(colorValue, colorValue, colorValue)
+
+            if not pixelBorderAuras then
+                if not frame.bbfIconMask then
+                    frame.bbfIconMask = frame:CreateMaskTexture()
+                    frame.bbfIconMask:SetTexture("Interface\\Common\\common-iconmask", "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
+                    frame.bbfIconMask:SetPoint("TOPLEFT", icon, "TOPLEFT", -0.5, 0.5)
+                    frame.bbfIconMask:SetPoint("BOTTOMRIGHT", icon, "BOTTOMRIGHT", 0.5, -0.5)
+                end
+                icon:AddMaskTexture(frame.bbfIconMask)
+                frame.bbfIconMasked = icon
+            end
 
             BBF.auraBorders[frame] = border
             if frame.ImportantGlow then
@@ -367,6 +378,11 @@ local function createOrUpdateBorders(frame, colorValue, textureName, bypass)
         if BBF.auraBorders[frame] then
             BBF.auraBorders[frame]:Hide()
             BBF.auraBorders[frame] = nil
+
+            if frame.bbfIconMasked then
+                frame.bbfIconMasked:RemoveMaskTexture(frame.bbfIconMask)
+                frame.bbfIconMasked = nil
+            end
 
             local icon = frame.Icon
             if textureName then
@@ -1510,4 +1526,5 @@ function BBF.DarkModeCastbars()
         darkModeTimerBarsOn = timerBarsOn
     end
     BBF.UpdateClassicHDTextureColors()
+    BBF.UpdateCastbarBronzeRemoval()
 end

@@ -4498,6 +4498,7 @@ function BBF.CreateNameLayoutCheckboxes(parent, anchor)
             BBF.OpenIconTweaksWindow(self)
         end
     end)
+    iconTweaks.searchExtraTerms = BBF.IconTweakSearchTerms()
     BBF.iconTweaksCheckbox = iconTweaks
 end
 
@@ -5309,6 +5310,10 @@ function BBF.OpenIconTweaksWindow(anchor)
                     else
                         icon:SetTexture(art)
                     end
+                end)
+                radio:SetTooltip(function(tooltip)
+                    GameTooltip_SetTitle(tooltip, element.label)
+                    GameTooltip_AddNormalLine(tooltip, BBF.IconTweakTooltip(group, element))
                 end)
             end
         end)

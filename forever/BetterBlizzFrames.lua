@@ -20,6 +20,7 @@ local defaultSettings = {
     lossOfControlShowSecondIcon = true,
     lossOfControlSecondIconInterruptsOnly = true,
     lossOfControlShowSchool = true,
+    lossOfControlRemoveRedTint = true,
     lossOfControlSecondIconScale = 0.75,
     lossOfControlTimerMilliseconds = true,
     lossOfControlTimerLowThreshold = 3,
@@ -214,6 +215,8 @@ local defaultSettings = {
     darkerBronzeUnitFrames = false,
     classicFramesBronzeTintCastbars = true,
     classicFramesBronzeTintMinimap = true,
+    removeBronzeTintActionBars = true,
+    removeBronzeTintCastbars = true,
     hideGroupIndicator = false,
     hideFocusCombatGlow = false,
     classicCombatGlow = false,
@@ -893,6 +896,14 @@ local function InitializeSavedVariables()
         BetterBlizzFramesDB.playerCastBarTimerYPos = 0
     end
     BetterBlizzFramesDB.playerCastBarTimerCentered = nil
+
+    if BetterBlizzFramesDB.removeActionBarBronzeTint ~= nil then
+        if BetterBlizzFramesDB.removeActionBarBronzeTint then
+            BetterBlizzFramesDB.removeBronzeTint = true
+            BetterBlizzFramesDB.removeBronzeTintCastbars = false
+        end
+        BetterBlizzFramesDB.removeActionBarBronzeTint = nil
+    end
 
     for key, defaultValue in pairs(defaultSettings) do
         if BetterBlizzFramesDB[key] == nil then
@@ -5884,7 +5895,7 @@ local function executeCustomCode()
         local function textureFallback(path)
             local lower = path:lower()
             if not lower:find("^interface[\\/]+addons[\\/]") then return end
-            local fallback = lower:find("mask") and "Interface\\Common\\CommonIconMask"
+            local fallback = lower:find("mask") and "Interface\\Common\\common-iconmask"
                 or lower:find("edge") and "Interface\\AddOns\\BetterBlizzFrames\\media\\classicTextures\\MoTextures\\LoCEdge.png"
             if not fallback then return end
             if not BBF.testTexture then

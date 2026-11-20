@@ -4558,6 +4558,7 @@ function BBF.CreateNameLayoutCheckboxes(parent, anchor)
             BBF.OpenIconTweaksWindow(self)
         end
     end)
+    iconTweaks.searchExtraTerms = BBF.IconTweakSearchTerms()
     BBF.iconTweaksCheckbox = iconTweaks
 end
 
@@ -5362,6 +5363,10 @@ function BBF.OpenIconTweaksWindow(anchor)
                     else
                         icon:SetTexture(art)
                     end
+                end)
+                radio:SetTooltip(function(tooltip)
+                    GameTooltip_SetTitle(tooltip, element.label)
+                    GameTooltip_AddNormalLine(tooltip, BBF.IconTweakTooltip(group, element))
                 end)
             end
         end)
@@ -7624,7 +7629,12 @@ local function guiGeneralTab()
                 { key = "classicFramesHDElite", label = L["HD_Elite_Dragons"], title = L["Classic_Frames_HD_Elite"], desc = L["Tooltip_Classic_Frames_HD_Elite_Desc"] },
                 { key = "classicFramesHDTextures", label = L["HD_Textures_By_Mo"], title = L["Classic_Frames_HD_Textures"], desc = L["Tooltip_Classic_Frames_HD_Textures_Desc"] },
                 { key = "bronzeEliteDragons", label = L["Bronze_Tint_Elite_Dragons"], title = L["Bronze_Tint_Elite_Dragons"], desc = L["Tooltip_Bronze_Tint_Elite_Dragons_Desc"] },
-                { key = "removeActionBarBronzeTint", label = L["Gray_ActionBars"], title = L["Remove_ActionBar_Bronze_Tint"], desc = L["Tooltip_Remove_ActionBar_Bronze_Tint_Desc"] },
+                { key = "removeBronzeTint", label = L["Remove_Bronze_Tint"], title = L["Remove_Bronze_Tint"], desc = L["Tooltip_Remove_Bronze_Tint_Desc"] },
+                { key = "removeBronzeTintActionBars", label = L["ActionBars"], parent = "removeBronzeTint", onChange = function()
+                    BBF.UpdateActionBarBronzeTint()
+                    BBF.ShowPopup("BBF_CONFIRM_RELOAD")
+                end },
+                { key = "removeBronzeTintCastbars", label = L["Castbars"], parent = "removeBronzeTint", onChange = BBF.RefreshBronzeTint },
                 { key = "smallerLevelCircle", label = L["Smaller_Level_Circle"], title = L["Smaller_Level_Circle"], desc = L["Tooltip_Smaller_Level_Circle_Desc"] },
             }
 
@@ -7772,7 +7782,7 @@ local function guiGeneralTab()
 
                             self.cfGrayActionBars = CreateFrame("CheckButton", nil, self, "UICheckButtonTemplate")
                             self.cfGrayActionBars:SetSize(26, 26)
-                            CreateTooltipTwo(self.cfGrayActionBars, L["Remove_ActionBar_Bronze_Tint"], L["Tooltip_Remove_ActionBar_Bronze_Tint_Desc"])
+                            CreateTooltipTwo(self.cfGrayActionBars, L["Remove_Bronze_Tint"], L["Tooltip_Remove_Bronze_Tint_Desc"])
                             self.cfGrayActionBars.Text:SetText(L["Gray_ActionBars"])
 
                             self.cfPvpIcon = CreateFrame("CheckButton", nil, self, "UICheckButtonTemplate")
@@ -7789,7 +7799,7 @@ local function guiGeneralTab()
                             self.cfBronzeTint:SetChecked(BetterBlizzFramesDB.classicFramesBronzeTint or false)
                             self.cfHDElite:SetChecked(BetterBlizzFramesDB.classicFramesHDElite or false)
                             self.cfHDTextures:SetChecked(BetterBlizzFramesDB.classicFramesHDTextures or false)
-                            self.cfGrayActionBars:SetChecked(BetterBlizzFramesDB.removeActionBarBronzeTint or false)
+                            self.cfGrayActionBars:SetChecked((BetterBlizzFramesDB.removeBronzeTint and BetterBlizzFramesDB.removeBronzeTintActionBars) or false)
                             self.cfPvpIcon:SetChecked(firstClick or BetterBlizzFramesDB.classicPvpIcon or false)
 
                             self.classicSettings = true
@@ -7833,7 +7843,14 @@ local function guiGeneralTab()
                             BBF.ChangesOnReload["classicFramesBronzeTint"] = self.cfBronzeTint:GetChecked() or false
                             BBF.ChangesOnReload["classicFramesHDElite"] = self.cfHDElite:GetChecked() or false
                             BBF.ChangesOnReload["classicFramesHDTextures"] = self.cfHDTextures:GetChecked() or false
-                            BBF.ChangesOnReload["removeActionBarBronzeTint"] = self.cfGrayActionBars:GetChecked() or false
+                            local grayActionBars = self.cfGrayActionBars:GetChecked() and true or false
+                            if grayActionBars then
+                                BBF.ChangesOnReload["removeBronzeTint"] = true
+                                BBF.ChangesOnReload["removeBronzeTintActionBars"] = true
+                            else
+                                BBF.ChangesOnReload["removeBronzeTint"] = BetterBlizzFramesDB.removeBronzeTint and BetterBlizzFramesDB.removeBronzeTintCastbars or false
+                                BBF.ChangesOnReload["removeBronzeTintActionBars"] = false
+                            end
                             BBF.ChangesOnReload["classicPvpIcon"] = self.cfPvpIcon:GetChecked() or false
                         end
                         CheckBoxes()
@@ -14439,15 +14456,39 @@ local function guiMisc()
     bronzeEliteDragons:SetPoint("TOPLEFT", classicFramesHDElite, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(bronzeEliteDragons, L["Bronze_Tint_Elite_Dragons"], L["Tooltip_Bronze_Tint_Elite_Dragons_Desc"])
 
-    local removeActionBarBronzeTint = CreateCheckbox("removeActionBarBronzeTint", L["Remove_ActionBar_Bronze_Tint"], contentFrame, nil, BBF.UpdateActionBarBronzeTint)
-    removeActionBarBronzeTint:SetPoint("TOPLEFT", bronzeEliteDragons, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltipTwo(removeActionBarBronzeTint, L["Remove_ActionBar_Bronze_Tint"], L["Tooltip_Remove_ActionBar_Bronze_Tint_Desc"])
-    removeActionBarBronzeTint:HookScript("OnClick", function(self)
-        BBF.ShowPopup("BBF_CONFIRM_RELOAD")
+    local removeBronzeTint = CreateCheckbox("removeBronzeTint", L["Remove_Bronze_Tint"], contentFrame, nil, BBF.UpdateRemoveBronzeTint)
+    removeBronzeTint:SetPoint("TOPLEFT", bronzeEliteDragons, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltipTwo(removeBronzeTint, L["Remove_Bronze_Tint"], L["Tooltip_Remove_Bronze_Tint_Desc"])
+    removeBronzeTint:HookScript("OnClick", function()
+        if BetterBlizzFramesDB.removeBronzeTintActionBars then
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
+        end
     end)
 
+    local removeBronzeTintOptions = CreateMultiSelectDropdown(L["Bronze_Tint_Options"], contentFrame, {
+        { key = "removeBronzeTintActionBars", label = L["ActionBars"], onChange = function()
+            BBF.UpdateActionBarBronzeTint()
+            BBF.ShowPopup("BBF_CONFIRM_RELOAD")
+        end },
+        { key = "removeBronzeTintCastbars", label = L["Castbars"], onChange = BBF.RefreshBronzeTint },
+    }, 165)
+    removeBronzeTintOptions.searchParentKey = "removeBronzeTint"
+    removeBronzeTintOptions.searchExtraTerms = { L["Remove_Bronze_Tint"] }
+    removeBronzeTintOptions:SetPoint("LEFT", removeBronzeTint.text, "RIGHT", 5, 0)
+    removeBronzeTintOptions:SetScale(0.7)
+    removeBronzeTintOptions:OverrideText(L["Bronze_Tint_Options"])
+    CreateTooltipTwo(removeBronzeTintOptions, L["Bronze_Tint_Options"], L["Tooltip_Remove_Bronze_Tint_Options_Desc"])
+
+    local function UpdateRemoveBronzeTintOptionsState()
+        local enabled = removeBronzeTint:GetChecked() and true or false
+        removeBronzeTintOptions:SetEnabled(enabled)
+        removeBronzeTintOptions:SetAlpha(enabled and 1 or 0.5)
+    end
+    removeBronzeTint:HookScript("OnClick", UpdateRemoveBronzeTintOptionsState)
+    UpdateRemoveBronzeTintOptionsState()
+
     local smallerLevelCircle = CreateCheckbox("smallerLevelCircle", L["Smaller_Level_Circle"], contentFrame, nil, BBF.UpdateSmallerLevelCircle)
-    smallerLevelCircle:SetPoint("TOPLEFT", removeActionBarBronzeTint, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    smallerLevelCircle:SetPoint("TOPLEFT", removeBronzeTint, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
     CreateTooltipTwo(smallerLevelCircle, L["Smaller_Level_Circle"], L["Tooltip_Smaller_Level_Circle_Desc"])
 
     local classicPvpIcon = CreateCheckbox("classicPvpIcon", L["Classic_PvP_Icon"], contentFrame, nil, BBF.UpdateClassicPvpIcon)

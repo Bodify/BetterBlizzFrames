@@ -2,9 +2,15 @@ local NEW_ATLAS = "Islands-AzeriteBoss"
 local DEFAULT_ATLAS = "UI-HUD-UnitFrame-Target-HighLevelTarget_Icon"
 
 local function NewSkullSize(frame, skull)
-    if frame.ClassicFrame and skull:GetParent() == frame.ClassicFrame then return 21, 34 end
+    if frame.ClassicFrame and skull:GetParent() == frame.ClassicFrame then
+        if BBF.ClassicHDTexturesActive() then return 29, 34 end
+        return 29, 34, 0.5, 0.5
+    end
     if frame.noPortraitMode then return 23, 25 end
-    if BBF.isForever and not (BBF.RetailTexturesOn and BBF.RetailTexturesOn(frame.unit)) then return 29, 33, 0.5 end
+    if BBF.isForever then
+        if BBF.RetailTexturesOn and BBF.RetailTexturesOn(frame.unit) then return 29, 34, 0, 0.5 end
+        return 29, 33, 0, 0.5
+    end
     return 23, 25
 end
 
@@ -17,12 +23,12 @@ function BBF.UpdateSkullIcon(frame, defaultWidth, defaultHeight)
         skull.bbfDefaultWidth, skull.bbfDefaultHeight = defaultWidth, defaultHeight
     end
     local newSkull = BetterBlizzFramesDB.newSkullLevelIcon
-    local width, height, yOffset
+    local width, height, xOffset, yOffset
     if newSkull then
-        width, height, yOffset = NewSkullSize(frame, skull)
+        width, height, xOffset, yOffset = NewSkullSize(frame, skull)
     end
     skull:ClearAllPoints()
-    skull:SetPoint("CENTER", levelText, "CENTER", 0, yOffset or 0)
+    skull:SetPoint("CENTER", levelText, "CENTER", xOffset or 0, yOffset or 0)
     if newSkull then
         skull:SetAtlas(NEW_ATLAS)
         skull:SetSize(width, height)

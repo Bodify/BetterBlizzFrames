@@ -22,11 +22,12 @@ function BBF.PlaceClassicLevel(levelText)
     if not place then return end
     local nudge = 0
     local text = levelText:GetText()
-    if text and not issecretvalue(text) and levelText:GetFont() == GameNormalNumberFont:GetFont() then
+    if text and not issecretvalue(text) then
         text = tostring(text)
-        if text:sub(1, 1) == "1" or text:sub(-1) == "1" then
-            nudge = -1
+        if text:sub(1, 1) == "1" then
+            nudge = levelText == PlayerLevelText and -0.5 or -1
         end
+        if levelText ~= PlayerLevelText and text:sub(-1) == "1" then nudge = nudge - 0.5 end
     end
     levelText:ClearAllPoints()
     local dx, dy = BBF.LevelTweakOffset(levelText == PlayerLevelText and "player" or "target")
@@ -198,12 +199,12 @@ function BBF.ClassicHDTexturesActive()
 end
 
 function BBF.ClassicTargetLevelX()
-    return -32
+    return -32.5
 end
 
 function BBF.PlaceClassicTargetLevel(frame)
     local levelText = frame.TargetFrameContent.TargetFrameContentMain.LevelText
-    SetClassicLevelPoint(levelText, BBF.ClassicTargetLevelX(), 25, frame, "BOTTOMRIGHT")
+    SetClassicLevelPoint(levelText, BBF.ClassicTargetLevelX(), 25.5, frame, "BOTTOMRIGHT")
 end
 
 function BBF.ClassicPlayerLevelX()
@@ -563,7 +564,7 @@ function BBF.SetClassicHDLevelRing(frame, enabled)
         else
             circle:SetAtlas("hud-PlayerFrame-levelring")
             circle.bbfW, circle.bbfH = 32, 32
-            BBF.SetClassicLevelRing(levelText, circle, frame == PlayerFrame and 0.5 or 1, -1.5)
+            BBF.SetClassicLevelRing(levelText, circle, -1, -1.5)
         end
         classicFrame.HDLevelCircle = circle
         local function Refresh()
@@ -1211,7 +1212,7 @@ local function MakeClassicFrame(frame)
             PlayerLevelText:SetParent(frame.ClassicFrame)
             PlayerLevelText:SetDrawLayer("OVERLAY", 7)
             PlayerLevelText:Show()
-            SetClassicLevelPoint(PlayerLevelText, BBF.ClassicPlayerLevelX(), -25)
+            SetClassicLevelPoint(PlayerLevelText, BBF.ClassicPlayerLevelX(), -24.5)
             local plvlFont, _, plvlFlags = PlayerLevelText:GetFont()
             if plvlFont then
                 PlayerLevelText:SetFont(plvlFont, 12, plvlFlags)
@@ -1234,7 +1235,7 @@ local function MakeClassicFrame(frame)
         local function UpdateLevel()
             if PlayerLevelHidden() then
                 PlayerLevelText:SetParent(BBF.hiddenFrame)
-                SetClassicLevelPoint(PlayerLevelText, BBF.ClassicPlayerLevelX(), -25)
+                SetClassicLevelPoint(PlayerLevelText, BBF.ClassicPlayerLevelX(), -24.5)
             else
                 UpdateLevelDetails()
             end

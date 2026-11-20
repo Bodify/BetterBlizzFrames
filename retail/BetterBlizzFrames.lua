@@ -20,6 +20,7 @@ local defaultSettings = {
     lossOfControlShowSecondIcon = true,
     lossOfControlSecondIconInterruptsOnly = true,
     lossOfControlShowSchool = true,
+    lossOfControlRemoveRedTint = true,
     lossOfControlSecondIconScale = 0.75,
     lossOfControlTimerMilliseconds = true,
     lossOfControlTimerLowThreshold = 3,
@@ -5912,7 +5913,7 @@ local function executeCustomCode()
         local function textureFallback(path)
             local lower = path:lower()
             if not lower:find("^interface[\\/]+addons[\\/]") then return end
-            local fallback = lower:find("mask") and "Interface\\Common\\CommonIconMask"
+            local fallback = lower:find("mask") and "Interface\\Common\\common-iconmask"
                 or lower:find("edge") and "Interface\\AddOns\\BetterBlizzFrames\\media\\classicTextures\\MoTextures\\LoCEdge.png"
             if not fallback then return end
             if not BBF.testTexture then

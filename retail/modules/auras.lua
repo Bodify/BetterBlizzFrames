@@ -1005,6 +1005,32 @@ function H.EnsureButtonRegions(button, style)
     end
 end
 
+function H.ApplyIconMask(button, icon, on)
+    local mask = button.bbfIconMask
+    if on then
+        if not mask then
+            mask = button:CreateMaskTexture()
+            mask:SetTexture("Interface\\Common\\common-iconmask", "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
+            mask:SetPoint("TOPLEFT", icon, "TOPLEFT", -0.5, 0.5)
+            mask:SetPoint("BOTTOMRIGHT", icon, "BOTTOMRIGHT", 0.5, -0.5)
+            button.bbfIconMask = mask
+        end
+        if not button.bbfIconMasked then
+            button.bbfIconMasked = true
+            icon:AddMaskTexture(mask)
+            if button.bbfEnchantIcon then
+                button.bbfEnchantIcon:AddMaskTexture(mask)
+            end
+        end
+    elseif button.bbfIconMasked then
+        button.bbfIconMasked = nil
+        icon:RemoveMaskTexture(mask)
+        if button.bbfEnchantIcon then
+            button.bbfEnchantIcon:RemoveMaskTexture(mask)
+        end
+    end
+end
+
 local function ApplyMutableStyle(button, style)
     local size = style.size
     local iconAnchor = button.bbfIcon or button
@@ -1106,6 +1132,7 @@ local function ApplyMutableStyle(button, style)
         else
             button.bbfIcon:SetTexCoord(0, 1, 0, 1)
         end
+        H.ApplyIconMask(button, button.bbfIcon, style.iconMask)
     end
 
     if style.clickthrough then
@@ -1638,6 +1665,7 @@ local function BuildStyle(tier, sizes, isPlayer, cfg, into)
     t.drawBorder = (S.pixelBorder or S.darkBorder) and not S.masque and true or false
     t.cropIcon = (S.pixelBorder or (S.darkBorder and (not cfg.harmful or S.removeDebuffBorder)))
         and not S.masque and true or false
+    t.iconMask = (isPlayer and not cfg.harmful and S.darkBorder and not S.pixelBorder and not S.masque) and true or false
     t.darkColor = S.darkColor
     t.purgeGlow = cfg.purgeGlow
     t.purgeHidden = cfg.purgeHidden
@@ -3332,6 +3360,7 @@ function BBF.StyleToggleAuraIcon()
     else
         texture:SetTexCoord(0, 1, 0, 1)
     end
+    H.ApplyIconMask(button, texture, drawBorder and not S.pixelBorder)
 end
 
 local function GetFilteredFlow()
@@ -3729,6 +3758,7 @@ local function StyleTestButton(button, entry, tier, style, sizes, harmful)
     else
         icon:SetTexCoord(0, 1, 0, 1)
     end
+    H.ApplyIconMask(button, icon, style.iconMask)
 
     local cooldown = button.bbfCooldown
     local wantsCooldown = not style.isPlayer or style.playerCooldown
@@ -4085,6 +4115,7 @@ function H.StyleImbueCell(button, style)
         else
             icon:SetTexCoord(0, 1, 0, 1)
         end
+        H.ApplyIconMask(button, icon, style.iconMask)
     end
 
     local timer = button.bbfTimer
