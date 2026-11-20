@@ -1,4 +1,4 @@
-# BetterBlizzFrames 2.2.3b
+# BetterBlizzFrames 2.2.3c
 ## All versions
 ### New
 - New setting in Misc: Hide Heal Prediction. Hides the green heal prediction bar on frames.
@@ -9,6 +9,7 @@
 - Loss of Control Tweaks: Remove Red Tint is now on by default for it.
 ### Bugfix
 - Fix legacy combo points color with Classic Frames + HD Textures by Mo and some other bronze settings not acting as intended.
+- Fix a potential nil error with castbar settings
 ## Retail
 ### Tweak
 - Classic Frames: Level text and level ring positioned better (like on Forever too)
