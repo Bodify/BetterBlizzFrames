@@ -647,23 +647,60 @@ end
 --------------------------------------
 -- CLICKTHROUGH
 --------------------------------------
+local function SetShiftClickable(frame, shift)
+    frame:SetMouseMotionEnabled(true)
+    frame:SetMouseClickEnabled(shift)
+end
+
+local clickthroughDriver
+
+local function UpdateClickthroughDriver(frames)
+    if not clickthroughDriver then
+        clickthroughDriver = CreateFrame("Frame", nil, UIParent, "SecureHandlerStateTemplate")
+        clickthroughDriver:SetAttribute("_onstate-clickthrough", [[
+            if newstate == "nocombat" then return end
+            local shift = newstate == "shift"
+            for i = 1, self:GetAttribute("numframes") or 0 do
+                local frame = self:GetFrameRef("frame" .. i)
+                if frame and (shift or frame:IsMouseClickEnabled()) then
+                    frame:EnableMouse(shift)
+                end
+            end
+        ]])
+        RegisterStateDriver(clickthroughDriver, "clickthrough", "[combat,mod:shift] shift; [combat] noshift; nocombat")
+    end
+    for i, frame in ipairs(frames) do
+        clickthroughDriver:SetFrameRef("frame" .. i, frame)
+    end
+    clickthroughDriver:SetAttribute("numframes", #frames)
+end
+
 function BBF.ClickthroughFrames()
     if not InCombatLockdown() then
         local shift = IsShiftKeyDown()
         local db = BetterBlizzFramesDB
+        local frames = {}
 
         if db.playerFrameClickthrough then
-            PlayerFrame:SetMouseClickEnabled(shift)
+            tinsert(frames, PlayerFrame)
         end
 
         if db.targetFrameClickthrough then
-            TargetFrame:SetMouseClickEnabled(shift)
-            TargetFrameToT:SetMouseClickEnabled(shift)
+            tinsert(frames, TargetFrame)
+            tinsert(frames, TargetFrameToT)
         end
 
         if db.focusFrameClickthrough then
-            FocusFrame:SetMouseClickEnabled(shift)
-            FocusFrameToT:SetMouseClickEnabled(shift)
+            tinsert(frames, FocusFrame)
+            tinsert(frames, FocusFrameToT)
+        end
+
+        for _, frame in ipairs(frames) do
+            SetShiftClickable(frame, shift)
+        end
+
+        if #frames > 0 or clickthroughDriver then
+            UpdateClickthroughDriver(frames)
         end
     end
 end
@@ -693,6 +730,7 @@ ClickthroughFrames:SetScript("OnEvent", function(_, event)
 end)
 ClickthroughFrames:RegisterEvent("MODIFIER_STATE_CHANGED")
 ClickthroughFrames:RegisterEvent("PLAYER_REGEN_DISABLED")
+ClickthroughFrames:RegisterEvent("PLAYER_REGEN_ENABLED")
 
 local function HookClassComboPoints()
     -- local db = BetterBlizzFramesDB
