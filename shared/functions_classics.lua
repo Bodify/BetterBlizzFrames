@@ -19,6 +19,13 @@ local allowedPortraits = {
     ["PartyMemberFrame4"] = true,
 }
 
+function BBF.NudgeTargetPortraits()
+    for _, portrait in ipairs({ TargetFramePortrait, FocusFramePortrait }) do
+        local point, relativeTo, relativePoint, _, yOfs = portrait:GetPoint()
+        portrait:SetPoint(point, relativeTo, relativePoint, -25, yOfs)
+    end
+end
+
 function BBF.ClassPortraits()
 	TargetFrameToT.portrait:SetSize(38, 38)
 	TargetFrameToT.portrait:ClearAllPoints()

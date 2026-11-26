@@ -97,7 +97,6 @@ local forceFitNames
 
 local function GetRPNameColor(unit)
     if not UnitExists(unit) then return end
-    if not TRP3_API.globals.player_realm_id then return end
     if issecretvalue(UnitGUID(unit)) or issecretvalue(UnitName(unit)) then return end
     local characterID = TRP3_NameUtil and TRP3_NameUtil.GetQualifiedName(unit)
     if not characterID then return end
@@ -111,23 +110,27 @@ local function GetRPNameColor(unit)
     end
 end
 
+local function RPNamesReady()
+    return rpNames and TRP3_API and TRP3_API.profile.getPlayerCurrentProfile() ~= nil
+end
+
 local function SetRPName(name, unit)
-    if not TRP3_API.globals.player_realm_id then return end
     local baseName = UnitName(unit)
     local baseGUID = UnitGUID(unit)
     if issecretvalue(baseName) or issecretvalue(baseGUID) then
-        name:SetText(baseName or "")
+        name:SetText(baseName)
         return
     end
     local fullName = TRP3_API.r.name(unit) or ""
-    local firstRpName, lastRpName = fullName:match("^(%S+)%s*(.*)$")
-
-    if rpNamesFirst and rpNamesLast then
+    if rpNamesFirst == rpNamesLast then
         name:SetText(fullName)
-    elseif rpNamesFirst then
-        name:SetText(firstRpName or fullName)
-    elseif rpNamesLast then
-        name:SetText(lastRpName ~= "" and lastRpName or fullName)
+        return
+    end
+    local characterID = TRP3_NameUtil.GetQualifiedName(unit)
+    local player = characterID and AddOn_TotalRP3.Player.CreateFromCharacterID(characterID)
+    local part = player and (rpNamesFirst and player:GetFirstName() or rpNamesLast and player:GetLastName())
+    if part and strtrim(part) ~= "" then
+        name:SetText(part)
     else
         name:SetText(fullName)
     end
@@ -1087,7 +1090,7 @@ local function CompactPartyFrameNameChanges(frame)
         frame.name:SetText("")
         return
     end
-    if TRP3_API and rpNames and UnitIsPlayer(frame.unit) then
+    if RPNamesReady() and UnitIsPlayer(frame.unit) then
 
         SetRPName(frame.name, frame.unit)
 
@@ -1168,7 +1171,7 @@ local function PartyFrameNameChange(frame)
         SetArenaName(frame, frame.unit, frame.bbfName)
         return
     end
-    if TRP3_API and rpNames and UnitIsPlayer(frame.unit) then
+    if RPNamesReady() and UnitIsPlayer(frame.unit) then
 
         SetRPName(frame.bbfName, frame.unit)
 
@@ -2014,6 +2017,11 @@ function BBF.SetCustomFonts()
         end
     end
 
+    if db.changeUnitFrameFont or db.changeAllFontsIngame then
+        BBF.UpdatePartyCastbarFonts()
+        BBF.UpdateUnitCastbarFonts()
+    end
+
     if db.changeActionBarFont then
         local fontName = db.actionBarFont
         local fontPath = LSM:Fetch(LSM.MediaType.FONT, fontName)
@@ -2036,6 +2044,7 @@ function BBF.SetCustomFonts()
         if not SetUnitFramesValuesFont(fontPath, fontSize, outline) then
             needsRetry = true
         end
+        BBF.UpdateBigDebuffsTimers()
     end
 
     -- Font files from SharedMedia may not be loaded into the VFS yet on first login.
@@ -2176,6 +2185,13 @@ local function SetArenaNameUnitFrame(frame, unit, textObject, tot)
     end
 end
 
+local function SelfNameText(unit)
+    if RegionalUniqueNamesEnabled() and not C_PlayerInfo.ShouldDisplaySurname() then
+        return NameUtil.GetUnitFirstName(unit)
+    end
+    return GetUnitName(unit)
+end
+
 local function PlayerFrameNameChanges(frame)
     frame.name:SetAlpha(0)
     if not frame.unit then return end
@@ -2189,7 +2205,7 @@ local function PlayerFrameNameChanges(frame)
         BBF.SetNameFont(frame.bbfName, BBF.GetNameFont(frame.name))
     end
 
-    if TRP3_API and rpNames then
+    if RPNamesReady() then
 
         SetRPName(frame.bbfName, unit)
 
@@ -2205,7 +2221,7 @@ local function PlayerFrameNameChanges(frame)
             end
         end
     elseif removeRealmNames then
-        frame.bbfName:SetText(GetNameWithoutRealm(frame))
+        frame.bbfName:SetText(SelfNameText(unit))
     else
         frame.bbfName:SetText(frame.name:GetText())
     end
@@ -2243,7 +2259,7 @@ local function TargetFrameNameChanges(frame)
             frame.bbfName:SetText("")
             return
         end
-        if TRP3_API and rpNames and UnitIsPlayer(frame.unit) then
+        if RPNamesReady() and UnitIsPlayer(frame.unit) then
 
             SetRPName(frame.bbfName, unit)
 
@@ -2276,7 +2292,7 @@ hooksecurefunc(TargetFrame.name, "SetText", function(self)
 end)
 
 local function ClassColorLevelText(frame)
-    if not classColorLevelText then return end
+    if not classColorLevelText or not UnitIsPlayer(frame.unit) then return end
     ClassColorName(frame.TargetFrameContent.TargetFrameContentMain.LevelText, frame.unit)
 end
 hooksecurefunc(TargetFrame, "CheckLevel", ClassColorLevelText)
@@ -2343,7 +2359,7 @@ local function FocusFrameNameChanges(frame)
             frame.bbfName:SetText("")
             return
         end
-        if TRP3_API and rpNames and UnitIsPlayer(frame.unit) then
+        if RPNamesReady() and UnitIsPlayer(frame.unit) then
 
             SetRPName(frame.bbfName, unit)
 
@@ -2408,7 +2424,7 @@ local function TargetFrameToTNameChanges(frame)
             frame.bbfName:SetText("")
             return
         end
-        if TRP3_API and rpNames and UnitIsPlayer(frame.unit) then
+        if RPNamesReady() and UnitIsPlayer(frame.unit) then
 
             SetRPName(frame.bbfName, unit)
 
@@ -2455,7 +2471,7 @@ local function FocusFrameToTNameChanges(frame)
             frame.bbfName:SetText("")
             return
         end
-        if TRP3_API and rpNames and UnitIsPlayer(frame.unit) then
+        if RPNamesReady() and UnitIsPlayer(frame.unit) then
 
             SetRPName(frame.bbfName, unit)
 
@@ -2505,17 +2521,10 @@ hooksecurefunc("UnitFrame_Update", function(frame)
     if wasSet == nil then return end
     nameSetByBlizzard[frame] = false
     if not wasSet and frame.unit then
-        frame.name:SetText(UnitName(frame.unit))
+        frame.name:SetText(UnitIsUnit(frame.unit, "player") and SelfNameText(frame.unit) or UnitName(frame.unit))
         nameSetByBlizzard[frame] = false
     end
 end)
-
-local function SelfNameText(unit)
-    if RegionalUniqueNamesEnabled() and not C_PlayerInfo.ShouldDisplaySurname() then
-        return UnitName(unit)
-    end
-    return GetUnitName(unit)
-end
 
 local function RefreshSelfNames()
     for _, frame in ipairs(selfNameFrames) do
@@ -2526,6 +2535,14 @@ local function RefreshSelfNames()
     end
     BBF.AllNameChanges()
 end
+
+local surnameFrame = CreateFrame("Frame")
+surnameFrame:RegisterEvent("CVAR_UPDATE")
+surnameFrame:SetScript("OnEvent", function(_, _, cvar)
+    if cvar == "UnitSurnameOwn" then
+        RefreshSelfNames()
+    end
+end)
 
 local function ResetTextColors()
     -- Table of frames to process

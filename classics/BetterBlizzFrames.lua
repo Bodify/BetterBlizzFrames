@@ -2221,10 +2221,10 @@ end
 
 local LSM = LibStub("LibSharedMedia-3.0")
 
-local texture = "Interface\\Addons\\BetterBlizzPlates\\media\\DragonflightTextureHD"
-local manaTexture = "Interface\\Addons\\BetterBlizzPlates\\media\\blizzTex\\BlizzardRetailBarCrop2"
-local raidHpTexture = "Interface\\Addons\\BetterBlizzPlates\\media\\DragonflightTextureHD"
-local raidManaTexture = "Interface\\Addons\\BetterBlizzPlates\\media\\DragonflightTextureHD"
+local texture = "Interface\\Addons\\BetterBlizzPlates\\media\\barTextures\\DragonflightTextureHD"
+local manaTexture = "Interface\\AddOns\\BetterBlizzFrames\\media\\barTextures\\BlizzardRetailBarCrop2"
+local raidHpTexture = "Interface\\Addons\\BetterBlizzPlates\\media\\barTextures\\DragonflightTextureHD"
+local raidManaTexture = "Interface\\Addons\\BetterBlizzPlates\\media\\barTextures\\DragonflightTextureHD"
 local castbarTexture = 137012
 
 local manaTextureUnits = {}
@@ -2376,53 +2376,24 @@ end
 
 
 local function SetRaidFrameTextures(frame)
-    --if not frame:IsShown() then return end
     local db = BetterBlizzFramesDB
-    -- Retexture healthbars
     if db.changeRaidFrameHealthbarTexture then
         local originalTexture = frame.healthBar:GetStatusBarTexture()
         local originalLayer = originalTexture:GetDrawLayer()
         frame.healthBar:SetStatusBarTexture(raidHpTexture)
         originalTexture:SetDrawLayer(originalLayer)
-    end
-
-    -- Retexture manabars
-    -- BetterBlizzFramesDB.textureSwapRaidFramesMana
-    if db.changeRaidFrameManabarTexture then
-        local originalTexture = frame.powerBar:GetStatusBarTexture()
-        if not originalTexture then return end
-        local originalLayer = originalTexture:GetDrawLayer()
-        frame.powerBar:SetStatusBarTexture(raidManaTexture)
-        originalTexture:SetDrawLayer(originalLayer)
-    end
-end
-
-local function SetRaidFramePetTextures(frame)
-    local db = BetterBlizzFramesDB
-    -- Retexture healthbars
-    if db.changeRaidFrameHealthbarTexture then
-        local originalTexture = frame.healthBar:GetStatusBarTexture()
-        local originalLayer = originalTexture:GetDrawLayer()
-        frame.healthBar:SetStatusBarTexture(raidHpTexture)
-        originalTexture:SetDrawLayer(originalLayer)
-        if frame.horizTopBorder then
+        if frame.horizTopBorder and BBF.IsCompactMiniFrame(frame) then
             frame.horizTopBorder:Hide()
             frame.horizBottomBorder:Hide()
             frame.vertLeftBorder:Hide()
             frame.vertRightBorder:Hide()
         end
     end
-end
-
-local function HookRaidFrameTextures()
-    hooksecurefunc("DefaultCompactUnitFrameSetup", SetRaidFrameTextures)
-    if C_CVar.GetCVar("raidOptionDisplayPets") == "1" or C_CVar.GetCVar("raidOptionDisplayMainTankAndAssist") == "1" then
-        hooksecurefunc("DefaultCompactMiniFrameSetup", SetRaidFramePetTextures)
-        hooksecurefunc("CompactUnitFrame_SetUnit", function(frame)
-            if frame.unit and (frame.unit:match("raidpet") or frame.unit:match("target")) then
-                SetRaidFramePetTextures(frame)
-            end
-        end)
+    if db.changeRaidFrameManabarTexture then
+        local originalTexture = frame.powerBar:GetStatusBarTexture()
+        local originalLayer = originalTexture:GetDrawLayer()
+        frame.powerBar:SetStatusBarTexture(raidManaTexture)
+        originalTexture:SetDrawLayer(originalLayer)
     end
 end
 
@@ -2467,45 +2438,12 @@ function BBF.HookTextures()
     if db.changeUnitFrameHealthbarTexture or db.changeUnitFrameManabarTexture or db.changeUnitFrameCastbarTexture then
         BBF.HookUnitFrameTextures()
     end
-    -- Hook Raidframes
-    -- BetterBlizzFramesDB.textureSwapRaidFrames
     if db.changeRaidFrameHealthbarTexture or db.changeRaidFrameManabarTexture then
         if not BBF.HookRaidFrameTextures then
-            HookRaidFrameTextures()
+            BBF.OnCompactFrameSetup(SetRaidFrameTextures)
             BBF.HookRaidFrameTextures = true
         end
-
-        for i = 1, 40 do
-            local frame = _G["CompactPartyFrameMember"..i]
-            if frame then
-                SetRaidFrameTextures(frame)
-            end
-        end
-
-        for i = 1, 40 do
-            local frame = _G["CompactRaidFrame"..i]
-            if frame then
-                SetRaidFrameTextures(frame)
-            end
-        end
-
-        for i = 1, 8 do
-            for j = 1, 5 do
-                local raidFrame = _G["CompactRaidGroup" .. i .. "Member" .. j]
-                if raidFrame then
-                    SetRaidFrameTextures(raidFrame)
-                end
-            end
-        end
-
-        C_Timer.After(1, function()
-            for i = 1, 5 do
-                local frame = _G["CompactPartyFramePet"..i]
-                if frame then
-                    SetRaidFrameTextures(frame)
-                end
-            end
-        end)
+        BBF.ForEachCompactFrame(SetRaidFrameTextures)
     end
 
 end
@@ -2975,8 +2913,6 @@ end
 
 local function TurnTestModesOff()
     BetterBlizzFramesDB.absorbIndicatorTestMode = false
-    BetterBlizzFramesDB.partyCastBarTestMode = false
-    BetterBlizzFramesDB.petCastBarTestMode = false
     BetterBlizzFramesDB.questIndicatorTestMode = false
 end
 
@@ -3126,6 +3062,9 @@ Frame:SetScript("OnEvent", function(...)
     BBF.UnitFrameBackgroundTexture()
     if BetterBlizzFramesDB.classPortraits then
         BBF.ClassPortraits()
+    end
+    if BBF.isMoP then
+        BBF.NudgeTargetPortraits()
     end
     BBF.ClassColorReputationCaller()
     if BBF.SetupLoCFrame then
@@ -3471,6 +3410,15 @@ First:SetScript("OnEvent", function(_, event, addonName)
                 if BetterBlizzFramesDB.hasSaved and not (BetterBlizzFramesDB.skipUpdateMsg or BBF.skippedUpdateMsg) then
                     C_Timer.After(7, function()
                         BBF.ShowPopup("BBF_UPDATE_220")
+                    end)
+                end
+            end
+
+            if not BetterBlizzFramesDB.systemMessagesSpamNotice then
+                BetterBlizzFramesDB.systemMessagesSpamNotice = true
+                if BetterBlizzFramesDB.filterSystemMessages and not (BetterBlizzFramesDB.skipUpdateMsg or BBF.skippedUpdateMsg) then
+                    C_Timer.After(7, function()
+                        BBF.ShowPopup("BBF_SYSTEM_MESSAGES_SPAM")
                     end)
                 end
             end

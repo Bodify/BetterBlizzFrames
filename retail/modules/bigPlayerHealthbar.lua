@@ -533,6 +533,34 @@ local function Apply()
     end
 end
 
+local altPowerWatch
+local function SyncAltPowerBar()
+    local bar = AlternatePowerBar
+    if bar:IsBarEnabled() or InCombatLockdown() then
+        bar:UnregisterEvent("UNIT_DISPLAYPOWER")
+    else
+        bar:RegisterEvent("UNIT_DISPLAYPOWER")
+    end
+    if not bar:IsBarEnabled() or BetterBlizzFramesDB.hideUnitFramePlayerSecondResource then return end
+    local shown = GetUnitSecondaryPowerInfo("player") ~= nil
+    bar:SetAlpha(shown and 1 or 0)
+    if bar.BBFPixelBorder then
+        bar.BBFPixelBorder:SetShown(shown)
+    end
+end
+
+local function WatchAltPowerBar()
+    if not altPowerWatch then
+        altPowerWatch = CreateFrame("Frame")
+        altPowerWatch:RegisterUnitEvent("UNIT_DISPLAYPOWER", "player")
+        altPowerWatch:RegisterEvent("PLAYER_REGEN_DISABLED")
+        altPowerWatch:RegisterEvent("PLAYER_REGEN_ENABLED")
+        altPowerWatch:SetScript("OnEvent", SyncAltPowerBar)
+        hooksecurefunc(AlternatePowerBar, "EvaluateUnit", SyncAltPowerBar)
+    end
+    SyncAltPowerBar()
+end
+
 local vehicleExitListener
 function BBF.UnregisterPlayerFrameArtEvents()
     if UnitInVehicle("player") then
@@ -556,6 +584,7 @@ function BBF.UnregisterPlayerFrameArtEvents()
     PlayerFrame:UnregisterEvent("UNIT_EXITED_VEHICLE")
     if AlternatePowerBar then
         AlternatePowerBar:UnregisterEvent("UNIT_DISPLAYPOWER")
+        WatchAltPowerBar()
     end
 end
 

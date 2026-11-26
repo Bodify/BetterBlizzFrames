@@ -333,13 +333,20 @@ local function SetComboNudge(y)
     ApplyComboNudge()
 end
 
+local function IsResto()
+    local spec = GetSpecialization()
+    return spec and GetSpecializationInfo(spec) == 105
+end
+
+local function ShowAltMana()
+    return moveComboInForm[GetShapeshiftFormID()] and IsResto()
+end
+
 local function UpdateAltManaBar(cf)
     local bar = PlayerFrame.AltManaBarBBF
     if not bar then return end
 
-    local form = GetShapeshiftFormID()
-    local inNoManaForm = moveComboInForm[form]
-    if inNoManaForm then
+    if ShowAltMana() then
         local percent = UnitPowerPercent("player", Enum.PowerType.Mana, false, CurveConstants.ScaleTo100) or 0
         local percentMana = string.format("%.0f%%", percent)
 
@@ -375,7 +382,7 @@ local function UpdateAltManaBar(cf)
         SetComboNudge(-9)
     elseif bar:IsShown() then
         C_Timer.After(0.2, function()
-            if moveComboInForm[GetShapeshiftFormID()] then return end
+            if ShowAltMana() then return end
             SetComboNudge(0)
             if not cf and not AlternatePowerBar:IsShown() then
                 PlayerFrame.PlayerFrameContainer.FrameTexture:Show()
@@ -768,8 +775,7 @@ function BBF.CreateAltManaBar()
     if BetterBlizzFramesDB.createAltManaBarDruidManaOnly then
         if UnitClassBase("player") ~= "DRUID" then return end
         CreateManaOnlyBar(function()
-            local spec = GetSpecialization()
-            return spec and GetSpecializationInfo(spec) == 105 and UnitPowerType("player") ~= Enum.PowerType.Mana
+            return IsResto() and UnitPowerType("player") ~= Enum.PowerType.Mana
         end, "PLAYER_SPECIALIZATION_CHANGED")
         return
     end
@@ -779,15 +785,13 @@ function BBF.CreateAltManaBar()
     local cf = db.classicFrames
     local noPortrait = BBF.HasNoPortrait("player")
 
-    local specID = GetSpecialization() and GetSpecializationInfo(GetSpecialization())
-    if specID ~= 105 then
+    if not IsResto() then
         -- Set up a listener that creates the bar when spec becomes 105 (Restoration)
         if not BBF.AltManaSpecWatcher then
             local f = CreateFrame("Frame")
             f:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
             f:SetScript("OnEvent", function()
-                local specID = GetSpecialization() and GetSpecializationInfo(GetSpecialization())
-                if specID == 105 then
+                if IsResto() then
                     BBF.CreateAltManaBar()
                     f:UnregisterAllEvents()
                     f:SetScript("OnEvent", nil)
@@ -885,6 +889,7 @@ function BBF.CreateAltManaBar()
     local f = CreateFrame("Frame")
     f:RegisterUnitEvent("UNIT_POWER_UPDATE", "player")
     f:RegisterUnitEvent("UNIT_DISPLAYPOWER", "player")
+    f:RegisterUnitEvent("PLAYER_SPECIALIZATION_CHANGED", "player")
     f:RegisterEvent("UPDATE_SHAPESHIFT_FORM")
     f:RegisterEvent("PLAYER_ENTERING_WORLD")
     f:SetScript("OnEvent", function(_, evt, unit, ptype)

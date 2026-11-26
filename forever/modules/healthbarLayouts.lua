@@ -32,7 +32,7 @@ local targetLayouts = {
         mask = { atlas = PLAYER_MASK, x = -2, y = 19, width = 130.5, height = 70 },
     },
     defaultBig = {
-        point = { "TOPLEFT", "LEFT", 21, 24 }, width = 126, height = 32.5, glowOffset = -7, big = true, keepArt = false, manaMaskWidth = 258.5,
+        point = { "TOPLEFT", "LEFT", 21, 24 }, width = 126, height = 32.5, glowOffset = -7, big = true, keepArt = false, bigMana = true,
         mask = { atlas = PLAYER_MASK, x = -1, y = 22, width = 129.5, height = 78 },
         texts = {
             HealthBarText = { "CENTER", 1, -1.5 },
@@ -43,7 +43,7 @@ local targetLayouts = {
         },
     },
     defaultBigInside = {
-        point = { "TOPLEFT", "LEFT", 21, 24 }, width = 126, height = 32.5, glowOffset = -7, big = true, keepArt = false, manaMaskWidth = 258.5,
+        point = { "TOPLEFT", "LEFT", 21, 24 }, width = 126, height = 32.5, glowOffset = -7, big = true, keepArt = false, bigMana = true,
         mask = { atlas = PLAYER_MASK, x = -1, y = 22, width = 129.5, height = 78 },
         texts = {
             HealthBarText = { "CENTER", 1, -10 },
@@ -54,7 +54,7 @@ local targetLayouts = {
         },
     },
     defaultBigReduced = {
-        point = { "TOPLEFT", "LEFT", 21, 16 }, width = 126, height = 25, glowOffset = -7, big = true, keepArt = false, reduced = true, manaMaskWidth = 258.5,
+        point = { "TOPLEFT", "LEFT", 21, 16 }, width = 126, height = 25, glowOffset = -7, big = true, keepArt = false, reduced = true, bigMana = true,
         mask = { atlas = PLAYER_MASK, x = -1, y = 17.5, width = 129.5, height = 60 },
         texts = {
             HealthBarText = { "CENTER", 1, -1 },
@@ -65,7 +65,7 @@ local targetLayouts = {
         },
     },
     defaultBigInsideReduced = {
-        point = { "TOPLEFT", "LEFT", 21, 16 }, width = 126, height = 25, glowOffset = -7, big = true, keepArt = false, reduced = true, manaMaskWidth = 258.5,
+        point = { "TOPLEFT", "LEFT", 21, 16 }, width = 126, height = 25, glowOffset = -7, big = true, keepArt = false, reduced = true, bigMana = true,
         mask = { atlas = PLAYER_MASK, x = -1, y = 17.5, width = 129.5, height = 60 },
         texts = {
             HealthBarText = { "CENTER", 1, -6.5 },
@@ -388,18 +388,6 @@ local function SetManaHidden(frame, hidden)
     end
 end
 
-local function SetManaMaskWidth(frame, width)
-    local mask = frame.TargetFrameContent.TargetFrameContentMain.ManaBar.ManaBarMask
-    if not mask then return end
-    if width then
-        mask.bbfBaseWidth = mask.bbfBaseWidth or mask:GetWidth()
-        mask:SetWidth(width)
-    elseif mask.bbfBaseWidth then
-        mask:SetWidth(mask.bbfBaseWidth)
-        mask.bbfBaseWidth = nil
-    end
-end
-
 local function KeepNameBackgroundHidden(reputationColor)
     if reputationColor.bbfBigHidden and not reputationColor.bbfKeepHidden then
         reputationColor.bbfKeepHidden = true
@@ -707,7 +695,7 @@ function BBF.UpdateHealthbarMirror(frame)
             BBF.DisableHealthbarMirror(frame)
         end
         SetManaHidden(frame, layout and layout.hideMana)
-        SetManaMaskWidth(frame, layout and layout.manaMaskWidth)
+        BBF.UpdateTargetHealthMask(frame)
         SetTargetPlayerArt(frame)
     end
     if BetterBlizzFramesDB.addUnitFrameBgTexture and BBF.AddBackgroundTextureToUnitFrames then

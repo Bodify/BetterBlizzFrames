@@ -1278,7 +1278,7 @@ if TargetFrame_CheckLevel then
     end)
 else
     local function ClassColorLevelText(frame)
-        if not classColorLevelText then return end
+        if not classColorLevelText or not UnitIsPlayer(frame.unit) then return end
         if frame == TargetFrame then
             ClassColorName(TargetFrameTextureFrameLevelText, frame.unit)
         elseif frame == FocusFrame then
@@ -1505,14 +1505,21 @@ function BBF.AllNameChanges()
     end
 
     if classColorLevelText then
-        ClassColorName(TargetFrameTextureFrameLevelText, "target")
-        ClassColorName(FocusFrameTextureFrameLevelText, "focus")
+        if UnitIsPlayer("target") then ClassColorName(TargetFrameTextureFrameLevelText, "target") end
+        if UnitIsPlayer("focus") then ClassColorName(FocusFrameTextureFrameLevelText, "focus") end
         ClassColorName(PlayerLevelText, "player")
         BBF.colorLvl = true
     elseif BBF.colorLvl then
         PlayerLevelText:SetTextColor(1, 0.81960791349411, 0)
-        TargetFrameTextureFrameLevelText:SetTextColor(1, 0.81960791349411, 0)
-        FocusFrameTextureFrameLevelText:SetTextColor(1, 0.81960791349411, 0)
+        for _, frame in ipairs({ TargetFrame, FocusFrame }) do
+            if frame and frame.unit and UnitExists(frame.unit) then
+                if TargetFrame_CheckLevel then
+                    TargetFrame_CheckLevel(frame)
+                else
+                    frame:CheckLevel()
+                end
+            end
+        end
         BBF.colorLvl = nil
     end
 end

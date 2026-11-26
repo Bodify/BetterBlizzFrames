@@ -50,6 +50,7 @@ forever\modules\classicFrames.lua
 forever\modules\nameFix.lua
 shared\moveNames.lua
 shared\iconTweaks.lua
+shared\targetCombatSwords.lua
 forever\modules\hideFrames.lua
 forever\modules\classicMinimap.lua
 forever\modules\auras.lua
@@ -65,6 +66,7 @@ forever\modules\chatFrame.lua
 forever\modules\easyDarnassian.lua
 forever\modules\overshields.lua
 shared\stealthIndicator.lua
+shared\playerDispelGlow.lua
 forever\modules\interruptIcon.lua
 forever\modules\bigDebuffs.lua
 forever\modules\queueTimer.lua

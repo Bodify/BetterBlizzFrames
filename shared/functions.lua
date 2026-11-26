@@ -98,6 +98,21 @@ BBF.popupBuilders["BBF_CLASSIC_ORIGINAL_TEXTURES"] = function()
 	}
 end
 
+BBF.popupBuilders["BBF_SYSTEM_MESSAGES_SPAM"] = function()
+	return {
+		text = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames\n\n" .. L["Popup_System_Messages_Spam"]:format(L["System_Messages"]),
+		button1 = YES,
+		button2 = NO,
+		OnAccept = function()
+			BetterBlizzFramesDB.filterSystemMessages = false
+			ReloadUI()
+		end,
+		timeout = 0,
+		whileDead = true,
+		preferredIndex = 3,
+	}
+end
+
 BBF.popupBuilders["BBF_ABSORB_INDICATOR_FIXED"] = function()
 	return {
 		text = "|A:gmchat-icon-blizz:16:16|a Better|cff00c0ffBlizz|rFrames\n\n" .. L["Popup_Absorb_Indicator_Fixed"]:format(L["Absorb_Indicator"]),
@@ -773,4 +788,47 @@ function BBF.LowerToTStrata()
             end
         end
     end
+end
+
+function BBF.ForEachCompactFrame(fn)
+    for i = 1, 5 do
+        local frame = _G["CompactPartyFrameMember" .. i]
+        if frame then fn(frame) end
+        frame = _G["CompactPartyFramePet" .. i]
+        if frame then fn(frame) end
+    end
+    for group = 1, 8 do
+        for i = 1, 5 do
+            local frame = _G["CompactRaidGroup" .. group .. "Member" .. i]
+            if frame then fn(frame) end
+        end
+    end
+    local i = 1
+    local frame = _G["CompactRaidFrame1"]
+    while frame do
+        fn(frame)
+        i = i + 1
+        frame = _G["CompactRaidFrame" .. i]
+    end
+end
+
+function BBF.IsCompactMiniFrame(frame)
+    return frame.optionTable == DefaultCompactMiniFrameOptions
+end
+
+local compactSetupCallbacks
+
+function BBF.OnCompactFrameSetup(fn)
+    if not compactSetupCallbacks then
+        compactSetupCallbacks = {}
+        hooksecurefunc("CompactUnitFrame_SetUpFrame", function(frame)
+            if frame:IsForbidden() then return end
+            local name = frame:GetName()
+            if not name or not name:find("^Compact") then return end
+            for i = 1, #compactSetupCallbacks do
+                compactSetupCallbacks[i](frame)
+            end
+        end)
+    end
+    compactSetupCallbacks[#compactSetupCallbacks + 1] = fn
 end

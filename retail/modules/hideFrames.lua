@@ -7,6 +7,14 @@ BBF.hiddenFrame = hiddenFrame
 -- Hide UI Frame Elements
 --------------------------------------
 local hookedRaidFrameManager = false
+local hookedOgRaidFrameBg = false
+
+local function ApplyOgRaidFrameBg(frame)
+    local shown = not BetterBlizzFramesDB.hideOgRaidFrameBg
+    frame.background:SetShown(shown)
+    frame.powerBar.background:SetShown(shown)
+end
+
 local hookedChatButtons = false
 local hookedChatBackground = false
 local originalResourceParent
@@ -866,11 +874,18 @@ function BBF.HideFrames()
             TargetFrame.TargetFrameContent.TargetFrameContentContextual.PvpIcon:SetParent(hiddenFrame)
             PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.PVPIcon:SetParent(hiddenFrame)
             FocusFrame.TargetFrameContent.TargetFrameContentContextual.PvpIcon:SetParent(hiddenFrame)
+            for i = 1, 4 do
+                PartyFrame["MemberFrame" .. i].PartyMemberOverlay.PVPIcon:SetParent(hiddenFrame)
+            end
         elseif changes.hidePvpIcon then
             changes.hidePvpIcon = nil
             TargetFrame.TargetFrameContent.TargetFrameContentContextual.PvpIcon:SetParent(TargetFrame.TargetFrameContent.TargetFrameContentContextual)
             PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual.PVPIcon:SetParent(PlayerFrame.PlayerFrameContent.PlayerFrameContentContextual)
             FocusFrame.TargetFrameContent.TargetFrameContentContextual.PvpIcon:SetParent(FocusFrame.TargetFrameContent.TargetFrameContentContextual)
+            for i = 1, 4 do
+                local overlay = PartyFrame["MemberFrame" .. i].PartyMemberOverlay
+                overlay.PVPIcon:SetParent(overlay)
+            end
         end
 
         -- Hide role icons
@@ -1506,36 +1521,14 @@ function BBF.HideFrames()
         end
 
         if BetterBlizzFramesDB.hideOgRaidFrameBg then
-            for i = 1, 5 do
-                local frame = _G["CompactPartyFrameMember"..i]
-                if frame and frame.background and frame.powerBar.background then
-                    frame.background:Hide()
-                    frame.powerBar.background:Hide()
-                end
-            end
-            for i = 1, 40 do
-                local frame = _G["CompactRaidFrame"..i]
-                if frame and frame.background and frame.powerBar.background then
-                    frame.background:Hide()
-                    frame.powerBar.background:Hide()
-                end
+            BBF.ForEachCompactFrame(ApplyOgRaidFrameBg)
+            if not hookedOgRaidFrameBg then
+                BBF.OnCompactFrameSetup(ApplyOgRaidFrameBg)
+                hookedOgRaidFrameBg = true
             end
             changes.hideOgRaidFrameBg = true
         elseif changes.hideOgRaidFrameBg then
-            for i = 1, 5 do
-                local frame = _G["CompactPartyFrameMember"..i]
-                if frame and frame.background and frame.powerBar.background then
-                    frame.background:Show()
-                    frame.powerBar.background:Show()
-                end
-            end
-            for i = 1, 40 do
-                local frame = _G["CompactRaidFrame"..i]
-                if frame and frame.background and frame.powerBar.background then
-                    frame.background:Show()
-                    frame.powerBar.background:Show()
-                end
-            end
+            BBF.ForEachCompactFrame(ApplyOgRaidFrameBg)
             changes.hideOgRaidFrameBg = nil
         end
 

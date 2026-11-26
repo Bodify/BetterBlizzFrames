@@ -2,6 +2,50 @@ local LSM = LibStub("LibSharedMedia-3.0")
 
 local DEFAULT_ABSORB_ICON = 1723997
 
+local PLAYER_MIRROR = { sideY = 0, sideTestY = 0, topY = 0, flipTextX = 0, textX = 0, textTestX = 0, noIconTextX = 0 }
+local PLAYER_TWEAK = { sideY = -1.5, sideTestY = -0.5, topY = -0.5, flipTextX = 3, textX = 1, textTestX = 3, noIconTextX = -3 }
+
+local function AnchorAbsorb(frame, anchor, reverseAnchor, xPos, yPos, showIcon, flipIconText, testMode)
+    local side = anchor == "LEFT" or anchor == "RIGHT"
+    local x = (side and 20 or 30) + xPos
+    local y = (side and -1 or -25) + yPos
+    local textX
+    if not showIcon then
+        textX = 20
+    elseif flipIconText then
+        textX = 3
+    else
+        textX = testMode and 0 or -2
+    end
+
+    if frame == PlayerFrame then
+        local tweak = BBF.PlayerMirrorsTarget() and PLAYER_MIRROR or PLAYER_TWEAK
+        x = -x
+        y = y + (side and (testMode and tweak.sideTestY or tweak.sideY) or tweak.topY)
+        if side then
+            frame.absorbIcon:SetPoint(anchor, frame, reverseAnchor, x, y)
+        else
+            frame.absorbIcon:SetPoint(reverseAnchor, frame, anchor, x, y)
+        end
+        if not showIcon then
+            frame.absorbIndicator:SetPoint("LEFT", frame.absorbIcon, "RIGHT", -textX + tweak.noIconTextX, 0)
+        elseif flipIconText then
+            frame.absorbIndicator:SetPoint("RIGHT", frame.absorbIcon, "LEFT", -textX + tweak.flipTextX, 0)
+        else
+            frame.absorbIndicator:SetPoint("LEFT", frame.absorbIcon, "RIGHT", -textX + (testMode and tweak.textTestX or tweak.textX), 0)
+        end
+    else
+        frame.absorbIcon:SetPoint(reverseAnchor, frame, anchor, x, y)
+        if not showIcon then
+            frame.absorbIndicator:SetPoint("RIGHT", frame.absorbIcon, "LEFT", textX, 0)
+        elseif flipIconText then
+            frame.absorbIndicator:SetPoint("LEFT", frame.absorbIcon, "RIGHT", textX, 0)
+        else
+            frame.absorbIndicator:SetPoint("RIGHT", frame.absorbIcon, "LEFT", textX, 0)
+        end
+    end
+end
+
 local function UpdateAbsorbIndicator(frame, unit)
     local db = BetterBlizzFramesDB
     if not db.absorbIndicator and not db.absorbIndicatorTestMode then return end
@@ -69,12 +113,6 @@ local function UpdateAbsorbIndicator(frame, unit)
     frame.absorbIcon:ClearAllPoints()
     frame.absorbIndicator:ClearAllPoints()
 
-    if frame == PlayerFrame then
-        xPos = xPos * -1 -- invert the xPos value for PlayerFrame
-        if not BBF.RetailTexturesOn("player") then
-            yPos = yPos - 1.5
-        end
-    end
 
     frame.absorbIndicator:SetScale(db.absorbIndicatorScale)
     frame.absorbIcon:SetScale(db.absorbIndicatorScale)
@@ -84,93 +122,13 @@ local function UpdateAbsorbIndicator(frame, unit)
         frame.absorbIcon:SetAlpha(1)
         frame.absorbIndicator:SetText("69k")
         frame.absorbIndicator:SetAlpha(1)
-        if frame == PlayerFrame then
-            if anchor == "LEFT" or anchor == "RIGHT" then
-                frame.absorbIcon:SetPoint(anchor, frame, reverseAnchor, -20 + xPos, -1.5 + yPos)
-            else
-                frame.absorbIcon:SetPoint(reverseAnchor, frame, anchor, -30 + xPos, -25.5 + yPos)
-            end
-            if showIcon then
-                if darkModeOn then
-                    frame.absorbIcon.border:SetAlpha(1)
-                else
-                    frame.absorbIcon.border:SetAlpha(0)
-                end
-                if flipIconText then
-                    frame.absorbIndicator:SetPoint("RIGHT", frame.absorbIcon, "LEFT", 0, 0)
-                else
-                    frame.absorbIndicator:SetPoint("LEFT", frame.absorbIcon, "RIGHT", 3, 0)
-                end
-            else
-                frame.absorbIndicator:SetPoint("LEFT", frame.absorbIcon, "RIGHT", -23, 0)
-            end
-        else
-            if anchor == "LEFT" or anchor =="RIGHT" then
-                frame.absorbIcon:SetPoint(reverseAnchor, frame, anchor, 20 + xPos, -1 + yPos)
-            else
-                frame.absorbIcon:SetPoint(reverseAnchor, frame, anchor, 30 + xPos, -25 + yPos)
-            end
-            if showIcon then
-                if darkModeOn then
-                    frame.absorbIcon.border:SetAlpha(1)
-                else
-                    frame.absorbIcon.border:SetAlpha(0)
-                end
-                if flipIconText then
-                    frame.absorbIndicator:SetPoint("LEFT", frame.absorbIcon, "RIGHT", 3, 0)
-                else
-                    frame.absorbIndicator:SetPoint("RIGHT", frame.absorbIcon, "LEFT", 0, 0)
-                end
-            else
-                frame.absorbIndicator:SetPoint("RIGHT", frame.absorbIcon, "LEFT", 20, 0)
-            end
-        end
+        AnchorAbsorb(frame, anchor, reverseAnchor, xPos, yPos, showIcon, flipIconText, true)
+        frame.absorbIcon.border:SetAlpha(showIcon and darkModeOn and 1 or 0)
         return
     end
 
     if showAmount then
-        if frame == PlayerFrame then
-            if anchor == "LEFT" or anchor == "RIGHT" then
-                frame.absorbIcon:SetPoint(anchor, frame, reverseAnchor, -20 + xPos, -2.5 + yPos)
-            else
-                frame.absorbIcon:SetPoint(reverseAnchor, frame, anchor, -30 + xPos, -25.5 + yPos)
-            end
-            if showIcon then
-                if darkModeOn then
-                    frame.absorbIcon.border:SetAlpha(1)
-                else
-                    frame.absorbIcon.border:SetAlpha(0)
-                end
-                if flipIconText then
-                    frame.absorbIndicator:SetPoint("RIGHT", frame.absorbIcon, "LEFT", 0, 0)
-                else
-                    frame.absorbIndicator:SetPoint("LEFT", frame.absorbIcon, "RIGHT", 3, 0)
-                end
-            else
-                frame.absorbIndicator:SetPoint("LEFT", frame.absorbIcon, "RIGHT", -23, 0)
-            end
-        else
-            if anchor == "LEFT" or anchor =="RIGHT" then
-                frame.absorbIcon:SetPoint(reverseAnchor, frame, anchor, 20 + xPos, -1 + yPos)
-            else
-                frame.absorbIcon:SetPoint(reverseAnchor, frame, anchor, 30 + xPos, -25 + yPos)
-            end
-            if showIcon then
-                if darkModeOn then
-                    frame.absorbIcon.border:SetAlpha(1)
-                else
-                    frame.absorbIcon.border:SetAlpha(0)
-                end
-                if flipIconText then
-                    frame.absorbIndicator:SetPoint("LEFT", frame.absorbIcon, "RIGHT", 3, 0)
-                else
-                    frame.absorbIndicator:SetPoint("RIGHT", frame.absorbIcon, "LEFT", -2, 0)
-                end
-            else
-                frame.absorbIndicator:SetPoint("RIGHT", frame.absorbIcon, "LEFT", 20, 0)
-            end
-        end
-
+        AnchorAbsorb(frame, anchor, reverseAnchor, xPos, yPos, showIcon, flipIconText, false)
 
         local absorb = UnitGetTotalAbsorbs(unit) or 0
         local shown = issecretvalue(absorb) and absorb or (absorb > 0 and 1 or 0)

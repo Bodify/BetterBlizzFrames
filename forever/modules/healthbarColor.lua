@@ -54,7 +54,7 @@ local function getUnitReaction(unit)
 end
 
 local function GetRPNameColor(unit)
-    if not TRP3_API or not TRP3_API.globals or not TRP3_API.globals.player_realm_id then return end
+    if not TRP3_API or not TRP3_API.profile.getPlayerCurrentProfile() then return end
     local guid = UnitGUID(unit)
     if not guid or issecretvalue(guid) or issecretvalue(UnitName(unit)) then return end
     if not UnitIsPlayer(unit) then return end
@@ -295,23 +295,16 @@ local function getUnitColor(unit, useCustomColors, txt)
             local r,g,b = GetRPNameColor(unit)
             if r then
                 return SetUnitColor(unit, r, g, b, 1), false
-            else
-                local color, defaultClassColor = GetClassColorForUnit(unit, useCustomColors and customHealthbarColors and overrideClassColors)
-
-                if color then
-                    return SetUnitColor(unit, color.r, color.g, color.b, ColorAlpha(color)), false, defaultClassColor
-                end
             end
-        else
-            local color, defaultClassColor = GetClassColorForUnit(unit, useCustomColors and customHealthbarColors and overrideClassColors)
+        end
+        local color, defaultClassColor = GetClassColorForUnit(unit, useCustomColors and customHealthbarColors and overrideClassColors)
 
-            if color then
-                if skipFriendly then
-                    local reaction = getUnitReaction(unit)
-                    return SetUnitColor(unit, color.r, color.g, color.b, ColorAlpha(color)), ((unit == "player" and skipPlayer) or (skipFriendly and reaction == "FRIENDLY" and unit ~= "player")), defaultClassColor
-                else
-                    return SetUnitColor(unit, color.r, color.g, color.b, ColorAlpha(color)), false, defaultClassColor
-                end
+        if color then
+            if skipFriendly then
+                local reaction = getUnitReaction(unit)
+                return SetUnitColor(unit, color.r, color.g, color.b, ColorAlpha(color)), ((unit == "player" and skipPlayer) or (skipFriendly and reaction == "FRIENDLY" and unit ~= "player")), defaultClassColor
+            else
+                return SetUnitColor(unit, color.r, color.g, color.b, ColorAlpha(color)), false, defaultClassColor
             end
         end
     elseif colorPetAfterOwner and unit == "pet" then
@@ -1101,7 +1094,63 @@ function BBF.ResetClassColorReputation(frame, unit)
     end
 end
 
+local RefreshRPHealth
+local RefreshRPCompactHealth
+
+local function RefreshRPHealthBars(update)
+    update(PlayerFrame.healthbar, "player")
+    if UnitExists("target") then update(TargetFrame.healthbar, "target") end
+    if UnitExists("focus") then update(FocusFrame.healthbar, "focus") end
+    for i = 1, 4 do
+        local frame = PartyFrame and PartyFrame["MemberFrame" .. i]
+        local bar = frame and frame.HealthBarContainer and frame.HealthBarContainer.HealthBar
+        if bar and UnitExists("party" .. i) then update(bar, "party" .. i) end
+    end
+end
+
+local trp3Units = { "player", "target", "focus", "targettarget", "focustarget", "party1", "party2", "party3", "party4" }
+
+local function TRP3UnitShown(unitID)
+    if not unitID then return true end
+    for _, unit in ipairs(trp3Units) do
+        if UnitIsPlayer(unit) and TRP3_NameUtil.GetQualifiedName(unit) == unitID then
+            return true
+        end
+    end
+end
+
+local trp3RefreshQueued
+
+local function RefreshTRP3Frames()
+    trp3RefreshQueued = nil
+    local db = BetterBlizzFramesDB
+    BBF.RefreshToT()
+    if db.rpNames then
+        BBF.AllNameChanges()
+    end
+    if rpNamesHealthbarColor then
+        if RefreshRPHealth then RefreshRPHealth() end
+        if RefreshRPCompactHealth then RefreshRPCompactHealth() end
+    end
+    if db.rpNamesFrameTextureColor and BBF.FrameTextureColor then
+        BBF.RefreshFrameTextureColor()
+    end
+end
+
+function BBF.HookTRP3Updates()
+    if BBF.trp3UpdatesHooked or not TRP3_API then return end
+    local db = BetterBlizzFramesDB
+    if not (db.rpNames or db.rpNamesHealthbarColor or db.rpNamesFrameTextureColor) then return end
+    TRP3_API.RegisterCallback(TRP3_Addon, TRP3_Addon.Events.REGISTER_DATA_UPDATED, function(_, unitID)
+        if trp3RefreshQueued or not TRP3UnitShown(unitID) then return end
+        trp3RefreshQueued = true
+        C_Timer.After(0.2, RefreshTRP3Frames)
+    end)
+    BBF.trp3UpdatesHooked = true
+end
+
 function BBF.HookHealthbarColors()
+    BBF.HookTRP3Updates()
     local shouldHook = classColorsOn or (customHealthbarColors and customColorsUnitFrames)
     if not healthbarsHooked and shouldHook then
         BBF.CheckSweepyBoopClassColorConflict()
@@ -1154,6 +1203,11 @@ function BBF.HookHealthbarColors()
                 hooksecurefunc(FocusFrame, "CheckFaction", function()
                     UpdateHealthColorCF(CfFocusFrame.HealthBar, "focus")
                 end)
+                RefreshRPHealth = function()
+                    UpdateHealthColorCF(CfPlayerFrame.HealthBar, "player")
+                    UpdateHealthColorCF(CfTargetFrame.HealthBar, "target")
+                    UpdateHealthColorCF(CfFocusFrame.HealthBar, "focus")
+                end
             else
                 BBF.Print(L["Print_ClassicFrames_Not_Detected"])
             end
@@ -1178,6 +1232,9 @@ function BBF.HookHealthbarColors()
             end
             hooksecurefunc(TargetFrame, "CheckFaction", UpdateFactionHealthColor)
             hooksecurefunc(FocusFrame, "CheckFaction", UpdateFactionHealthColor)
+            RefreshRPHealth = function()
+                RefreshRPHealthBars(UpdateHealthColor)
+            end
         end
 
         if (rpNamesHealthbarColor and TRP3_API) or customHealthbarColors then
@@ -1227,6 +1284,7 @@ function BBF.HookHealthbarColors()
             end
 
             ApplyColorsToPartyFrames()
+            RefreshRPCompactHealth = ApplyColorsToPartyFrames
         end
 
         healthbarsHooked = true
@@ -1277,6 +1335,7 @@ function BBF.HookHealthbarColors()
         end
 
         ApplyColorsToPartyFrames()
+        RefreshRPCompactHealth = ApplyColorsToPartyFrames
 
         local function getRPUnitColor(unit)
             local r,g,b = GetRPNameColor(unit)
@@ -1327,6 +1386,9 @@ function BBF.HookHealthbarColors()
         C_Timer.After(1, function()
             UpdateRPHealthColor(PlayerFrame.healthbar, "player")
         end)
+        RefreshRPHealth = function()
+            RefreshRPHealthBars(UpdateRPHealthColor)
+        end
 
         healthbarsHooked = true
     end
@@ -1423,18 +1485,18 @@ local function PlacePlayerNameBg(frame, mode)
     elseif mode == "classic" then
         rep:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-LevelBackground")
         rep:SetTexCoord(1, 0, 0, 1)
-        rep:SetSize(125, 21)
-        rep:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -21, -25)
+        rep:SetSize(125, 22)
+        rep:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -20, -24.5)
     elseif mode == "custom" then
         rep:SetTexture(BBF.NameBgCustomTexture())
         rep:SetTexCoord(0, 1, 0, 1)
-        rep:SetSize(125, 21)
-        rep:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -21, -25)
+        rep:SetSize(125, 22)
+        rep:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -20, -24.5)
     elseif mode == "retail" then
         rep:SetAtlas(PLAYER_NAME_BG_HEALTH_ATLAS)
         rep:SetTexCoord(0, 1, 0, 1)
-        rep:SetSize(125, 21.5)
-        rep:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -21, -25)
+        rep:SetSize(125, 22)
+        rep:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -20, -24.5)
     else
         rep:SetAtlas("UI-HUD-UnitFrame-Target-PortraitOn-Type")
         rep:SetSize(136, 18.5)
@@ -1764,149 +1826,40 @@ function BBF.HookFrameTextureColor()
     BBF.FrameTextureColor = true
 end
 
+local function ApplyCompactBackground(frame)
+    local db = BetterBlizzFramesDB
+    if not db.changePartyRaidFrameBackgroundColor then return end
+    local bgTexture = BBF.LSM:Fetch(BBF.LSM.MediaType.STATUSBAR, db.raidFrameBgTexture)
+    local health = db.partyRaidFrameBackgroundHealthColor or {0, 0, 0, 1}
+    frame.background:SetDrawLayer("BACKGROUND", -1)
+    if not frame.bbfHealthBackground then
+        local tex = frame:CreateTexture(nil, "BACKGROUND", nil, 0)
+        tex:SetPoint("TOPLEFT", frame.healthBar, "TOPLEFT", 0, 0)
+        tex:SetPoint("BOTTOMRIGHT", frame.healthBar, "BOTTOMRIGHT", 0, 0)
+        frame.bbfHealthBackground = tex
+    end
+    frame.bbfHealthBackground:SetTexture(bgTexture)
+    frame.bbfHealthBackground:SetVertexColor(health[1], health[2], health[3], health[4])
+    if BBF.IsCompactMiniFrame(frame) then return end
+    local mana = db.partyRaidFrameBackgroundManaColor or {0, 0, 0, 1}
+    if not frame.bbfManaBackground then
+        local tex = frame.powerBar:CreateTexture(nil, "BACKGROUND", nil, 3)
+        tex:SetAllPoints(frame.powerBar)
+        frame.bbfManaBackground = tex
+    end
+    frame.bbfManaBackground:SetTexture(bgTexture)
+    frame.bbfManaBackground:SetVertexColor(mana[1], mana[2], mana[3], mana[4])
+end
+
 function BBF.SetCompactUnitFramesBackground()
     if not BetterBlizzFramesDB.changePartyRaidFrameBackgroundColor then return end
-
-    local healthColor = BetterBlizzFramesDB.partyRaidFrameBackgroundHealthColor or {0, 0, 0, 1}
-    local healthR, healthG, healthB, healthA = healthColor[1], healthColor[2], healthColor[3], healthColor[4]
-
-    local manaColor = BetterBlizzFramesDB.partyRaidFrameBackgroundManaColor or {0, 0, 0, 1}
-    local manaR, manaG, manaB, manaA = manaColor[1], manaColor[2], manaColor[3], manaColor[4]
-
-    local bgTexture = BBF.LSM:Fetch(BBF.LSM.MediaType.STATUSBAR, BetterBlizzFramesDB.raidFrameBgTexture)
-
-    for i = 1, 5 do
-        local frame = _G["CompactPartyFrameMember"..i]
-        if frame and frame.background and frame.healthBar then
-            frame.background:SetDrawLayer("BACKGROUND", -1)
-
-            if not frame.bbfHealthBackground then
-                local tex = frame:CreateTexture(nil, "BACKGROUND", nil, 0)
-                frame.bbfHealthBackground = tex
-                tex:SetPoint("TOPLEFT", frame.healthBar, "TOPLEFT", 0, 0)
-                tex:SetPoint("BOTTOMRIGHT", frame.healthBar, "BOTTOMRIGHT", 0, 0)
-            end
-            frame.bbfHealthBackground:SetTexture(bgTexture)
-            frame.bbfHealthBackground:SetVertexColor(healthR, healthG, healthB, healthA)
-
-            if frame.powerBar then
-                if not frame.bbfManaBackground then
-                    local tex = frame:CreateTexture(nil, "BACKGROUND", nil, 0)
-                    frame.bbfManaBackground = tex
-                    tex:SetPoint("TOPLEFT", frame.powerBar, "TOPLEFT", 0, 0)
-                    tex:SetPoint("BOTTOMRIGHT", frame.powerBar, "BOTTOMRIGHT", 0, 0)
-                end
-                frame.bbfManaBackground:SetTexture(bgTexture)
-                frame.bbfManaBackground:SetVertexColor(manaR, manaG, manaB, manaA)
-            end
-        end
-    end
-
-    for i = 1, 40 do
-        local frame = _G["CompactRaidFrame"..i]
-        if frame and frame.background and frame.healthBar then
-            frame.background:SetDrawLayer("BACKGROUND", -1)
-
-            if not frame.bbfHealthBackground then
-                local tex = frame:CreateTexture(nil, "BACKGROUND", nil, 0)
-                frame.bbfHealthBackground = tex
-                tex:SetPoint("TOPLEFT", frame.healthBar, "TOPLEFT", 0, 0)
-                tex:SetPoint("BOTTOMRIGHT", frame.healthBar, "BOTTOMRIGHT", 0, 0)
-            end
-            frame.bbfHealthBackground:SetTexture(bgTexture)
-            frame.bbfHealthBackground:SetVertexColor(healthR, healthG, healthB, healthA)
-
-            if frame.powerBar then
-                if not frame.bbfManaBackground then
-                    local tex = frame:CreateTexture(nil, "BACKGROUND", nil, 0)
-                    frame.bbfManaBackground = tex
-                    tex:SetPoint("TOPLEFT", frame.powerBar, "TOPLEFT", 0, 0)
-                    tex:SetPoint("BOTTOMRIGHT", frame.powerBar, "BOTTOMRIGHT", 0, 0)
-                end
-                frame.bbfManaBackground:SetTexture(bgTexture)
-                frame.bbfManaBackground:SetVertexColor(manaR, manaG, manaB, manaA)
-            end
-        end
-    end
-
-    for i = 1, 8 do
-        for j = 1, 5 do
-            local frame = _G["CompactRaidGroup"..i.."Member"..j]
-            if frame and frame.background then
-                frame.background:SetDrawLayer("BACKGROUND", -1)
-
-                if not frame.bbfHealthBackground then
-                    local tex = frame:CreateTexture(nil, "BACKGROUND", nil, 0)
-                    frame.bbfHealthBackground = tex
-                    tex:SetPoint("TOPLEFT", frame.healthBar, "TOPLEFT", 0, 0)
-                    tex:SetPoint("BOTTOMRIGHT", frame.healthBar, "BOTTOMRIGHT", 0, 0)
-                end
-                frame.bbfHealthBackground:SetTexture(bgTexture)
-                frame.bbfHealthBackground:SetVertexColor(healthR, healthG, healthB, healthA)
-
-                if frame.powerBar then
-                    if not frame.bbfManaBackground then
-                        local tex = frame:CreateTexture(nil, "BACKGROUND", nil, 0)
-                        frame.bbfManaBackground = tex
-                        tex:SetPoint("TOPLEFT", frame.powerBar, "TOPLEFT", 0, 0)
-                        tex:SetPoint("BOTTOMRIGHT", frame.powerBar, "BOTTOMRIGHT", 0, 0)
-                    end
-                    frame.bbfManaBackground:SetTexture(bgTexture)
-                    frame.bbfManaBackground:SetVertexColor(manaR, manaG, manaB, manaA)
-                end
-            end
-        end
-    end
-
-    if not BBF.PetFrameBgHook then
-        hooksecurefunc("DefaultCompactMiniFrameSetup", function(frame)
-            if not frame or frame.bbfHealthBackground then return end
-            local healthColor = BetterBlizzFramesDB.partyRaidFrameBackgroundHealthColor or {0, 0, 0, 1}
-            local healthR, healthG, healthB, healthA = healthColor[1], healthColor[2], healthColor[3], healthColor[4]
-            local bgTexture = BBF.LSM:Fetch(BBF.LSM.MediaType.STATUSBAR, BetterBlizzFramesDB.raidFrameBgTexture)
-            local tex = frame:CreateTexture(nil, "BACKGROUND", nil, 0)
-            frame.bbfHealthBackground = tex
-            tex:SetPoint("TOPLEFT", frame.healthBar, "TOPLEFT", 0, 0)
-            tex:SetPoint("BOTTOMRIGHT", frame.healthBar, "BOTTOMRIGHT", 0, 0)
-            frame.bbfHealthBackground:SetTexture(bgTexture)
-            frame.bbfHealthBackground:SetVertexColor(healthR, healthG, healthB, healthA)
-        end)
-        BBF.PetFrameBgHook = true
-    end
-
+    BBF.ForEachCompactFrame(ApplyCompactBackground)
     if not BBF.RaidFrameBgHook then
-        hooksecurefunc("DefaultCompactUnitFrameSetup", function(frame)
-            if not frame or not frame.healthBar or frame.bbfHealthBackground then return end
-
-            local healthColor = BetterBlizzFramesDB.partyRaidFrameBackgroundHealthColor or {0, 0, 0, 1}
-            local healthR, healthG, healthB, healthA = healthColor[1], healthColor[2], healthColor[3], healthColor[4]
-            local manaColor = BetterBlizzFramesDB.partyRaidFrameBackgroundManaColor or {0, 0, 0, 1}
-            local manaR, manaG, manaB, manaA = manaColor[1], manaColor[2], manaColor[3], manaColor[4]
-            local bgTexture = BBF.LSM:Fetch(BBF.LSM.MediaType.STATUSBAR, BetterBlizzFramesDB.raidFrameBgTexture)
-
-            if frame.background then
-                frame.background:SetDrawLayer("BACKGROUND", -1)
-            end
-
-            local tex = frame:CreateTexture(nil, "BACKGROUND", nil, 0)
-            frame.bbfHealthBackground = tex
-            tex:SetPoint("TOPLEFT", frame.healthBar, "TOPLEFT", 0, 0)
-            tex:SetPoint("BOTTOMRIGHT", frame.healthBar, "BOTTOMRIGHT", 0, 0)
-            tex:SetTexture(bgTexture)
-            tex:SetVertexColor(healthR, healthG, healthB, healthA)
-
-            if frame.powerBar then
-                local manaTex = frame:CreateTexture(nil, "BACKGROUND", nil, 0)
-                frame.bbfManaBackground = manaTex
-                manaTex:SetPoint("TOPLEFT", frame.powerBar, "TOPLEFT", 0, 0)
-                manaTex:SetPoint("BOTTOMRIGHT", frame.powerBar, "BOTTOMRIGHT", 0, 0)
-                manaTex:SetTexture(bgTexture)
-                manaTex:SetVertexColor(manaR, manaG, manaB, manaA)
-            end
-        end)
+        BBF.OnCompactFrameSetup(ApplyCompactBackground)
         BBF.RaidFrameBgHook = true
     end
 end
+
 local function OneForAllQoL()
     local qol = OneForAll and OneForAll.QoL
     if qol and qol.Get and qol.Set then

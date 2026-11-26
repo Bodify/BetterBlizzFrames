@@ -41,6 +41,7 @@ local function GetInterruptSpell()
 end
 
 local playerKick = GetInterruptSpell()
+local kickOnCooldown = false
 
 -- Recheck interrupt spells when lock resummons/sacrifices pet
 local petSummonSpells = {
@@ -89,31 +90,33 @@ local function UpdateInterruptIcon(frame)
     end
 
     if playerKick then
-        local cooldownInfo = C_Spell.GetSpellCooldownDuration(playerKick)
-        if cooldownInfo then
-            frame.cooldown:SetCooldownFromDurationObject(cooldownInfo)
-            local isOnCooldown = frame.cooldown:IsShown()
+        local isOnCooldown = false
+        if kickOnCooldown then
+            frame.cooldown:SetCooldownFromDurationObject(C_Spell.GetSpellCooldownDuration(playerKick, true))
+            isOnCooldown = frame.cooldown:IsShown()
+        else
+            frame.cooldown:Clear()
+        end
 
-            if BetterBlizzFramesDB.castBarInterruptIconShowActiveOnly and isOnCooldown then
-                frame:Hide()
-                return
-            end
+        if BetterBlizzFramesDB.castBarInterruptIconShowActiveOnly and isOnCooldown then
+            frame:Hide()
+            return
+        end
 
-            if shouldShow then
-                frame:Show()
-                frame.icon:SetTexture(C_Spell.GetSpellTexture(playerKick))
-                BBF.UpdateInterruptIconRange(frame, playerKick, castBar.unit)
+        if shouldShow then
+            frame:Show()
+            frame.icon:SetTexture(C_Spell.GetSpellTexture(playerKick))
+            BBF.UpdateInterruptIconRange(frame, playerKick, castBar.unit)
 
-                if frame.border then
-                    if isOnCooldown then
-                        frame.border:SetVertexColor(1, 0, 0)
-                    else
-                        frame.border:SetVertexColor(0, 1, 0)
-                    end
+            if frame.border then
+                if isOnCooldown then
+                    frame.border:SetVertexColor(1, 0, 0)
+                else
+                    frame.border:SetVertexColor(0, 1, 0)
                 end
-            else
-                frame:Hide()
             end
+        else
+            frame:Hide()
         end
     else
         frame:Hide()
@@ -139,6 +142,7 @@ BBF.interruptTrackingIcon = CreateFrame("Frame")
 BBF.interruptTrackingIcon.cooldown = CreateFrame("Cooldown", nil, BBF.interruptTrackingIcon, "CooldownFrameTemplate")
 BBF.interruptTrackingIcon.cooldown:SetMinimumCountdownDuration(0)
 BBF.interruptTrackingIcon.cooldown:HookScript("OnCooldownDone", function()
+    kickOnCooldown = false
     BBF.interruptReady = true
     UpdateIconsAndColor()
 end)
@@ -148,10 +152,12 @@ local function UpdateInterruptTracking()
         playerKick = GetInterruptSpell()
     end
     if playerKick then
-        local cooldownInfo = C_Spell.GetSpellCooldownDuration(playerKick)
-        if cooldownInfo then
-            BBF.interruptTrackingIcon.cooldown:SetCooldownFromDurationObject(cooldownInfo)
+        if kickOnCooldown then
+            BBF.interruptTrackingIcon.cooldown:SetCooldownFromDurationObject(C_Spell.GetSpellCooldownDuration(playerKick, true))
             BBF.interruptReady = not BBF.interruptTrackingIcon.cooldown:IsShown()
+        else
+            BBF.interruptTrackingIcon.cooldown:Clear()
+            BBF.interruptReady = true
         end
     else
         BBF.interruptReady = nil
@@ -174,7 +180,13 @@ cooldownFrame:RegisterEvent("SPELL_UPDATE_COOLDOWN")
 cooldownFrame:RegisterEvent("SPELL_UPDATE_USABLE")
 cooldownFrame:SetScript("OnEvent", function(self, event, spellID)
     if event == "SPELL_UPDATE_COOLDOWN" then
-        if spellID ~= playerKick then return end
+        if not playerKick or spellID ~= playerKick then return end
+        local info = C_Spell.GetSpellCooldown(playerKick)
+        if not info.isActive then
+            kickOnCooldown = false
+        elseif info.isOnGCD == false then
+            kickOnCooldown = true
+        end
         UpdateInterruptTracking()
         UpdateIconsAndColor()
     else

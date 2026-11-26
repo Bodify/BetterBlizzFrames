@@ -867,6 +867,7 @@ function BBF.UpdateBronzeTint()
     end
     BBF.UpdateThreatBorderTint()
     BBF.RacialIndicatorCaller()
+    BBF.CombatIndicatorCaller()
     BBF.UpdateCastbarBronzeRemoval()
     if BronzeTintActive() then
         for _, texture in pairs(GetUnitFrameBorderTextures()) do
@@ -1278,13 +1279,13 @@ local function ApplyPlayerManaHeight()
     local manaBar = PlayerFrame_GetManaBar()
     manaBar:SetHeight(11)
     if PlayerFrame.unit == "vehicle" then return end
-    local point, relativeTo, relativePoint, _, y = manaBar:GetPoint()
-    manaBar:SetWidth(125.5)
-    manaBar:SetPoint(point, relativeTo, relativePoint, 86, y)
+    local point, relativeTo, relativePoint = manaBar:GetPoint()
     local big = BBF.BigPlayerHealthbar and BBF.BigPlayerHealthbar()
-    manaBar.ManaBarMask:SetSize(big and 129 or 128.5, 17)
+    manaBar:SetWidth(125.5)
+    manaBar:SetPoint(point, relativeTo, relativePoint, 86, big and -61.5 or -61)
+    manaBar.ManaBarMask:SetSize(big and 129.5 or 128.5, 17)
     manaBar.ManaBarMask:ClearAllPoints()
-    manaBar.ManaBarMask:SetPoint("TOPLEFT", manaBar, "TOPLEFT", -1, 2.5)
+    manaBar.ManaBarMask:SetPoint("TOPLEFT", manaBar, "TOPLEFT", big and -2 or -1, big and 3 or 2.5)
 end
 
 function BBF.UpdatePlayerManaHeight()
@@ -1391,9 +1392,9 @@ local function ApplyNameBg(frame, unit)
     rep.bbfNameBgRetail = retail
     rep.bbfNameBgTexture = texture
     if mode then
-        rep:SetSize(125, 21.5)
+        rep:SetSize(126, 22)
         rep:ClearAllPoints()
-        rep:SetPoint("TOPLEFT", frame, "TOPLEFT", 21, -23.5)
+        rep:SetPoint("TOPLEFT", frame, "TOPLEFT", 21, -22.5)
         if mode == "retail" then
             rep:SetAtlas(NAME_BG_HEALTH_ATLAS)
         else
@@ -1470,7 +1471,7 @@ function BBF.UpdatePlayerHealthMask()
     if BBF.BigPlayerHealthbar and BBF.BigPlayerHealthbar() then return end
     if BBF.PlayerManaHiddenArt and BBF.PlayerManaHiddenArt() then return end
     local hpContainer = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HealthBarsContainer
-    PlaceDefaultHealthMask(hpContainer.HealthBarMask, hpContainer.HealthBar, 129, -2)
+    PlaceDefaultHealthMask(hpContainer.HealthBarMask, hpContainer.HealthBar, 128.5, -1.5)
 end
 
 local targetMaskHooked = {}
@@ -1521,16 +1522,17 @@ function BBF.UpdateTargetHealthMask(frame)
         BBF.MaskRetailSlot(manaBar.ManaBarMask, tex, "mana")
         return
     end
+    local mirror = BBF.GetHealthbarMirror(frame)
+    local bigMana = mirror and mirror.layout.bigMana
     if not InCombatLockdown() then
-        manaBar:SetSize(135, 11)
+        manaBar:SetSize(bigMana and 136 or 135, 11)
         manaBar:ClearAllPoints()
-        manaBar:SetPoint("TOPRIGHT", main.HealthBarsContainer, "BOTTOMRIGHT", 4, -0.5)
+        manaBar:SetPoint("TOPRIGHT", main.HealthBarsContainer, "BOTTOMRIGHT", bigMana and 5 or 4, -0.5)
     end
-    local manaTexture = BBF.UnitFrameTextureOn("mana")
     local manaMask = manaBar.ManaBarMask
-    manaMask:SetSize(manaTexture and 258.5 or 259, 17)
+    manaMask:SetSize(bigMana and 259.5 or 257.5, 17)
     manaMask:ClearAllPoints()
-    manaMask:SetPoint("TOPLEFT", manaBar, "TOPLEFT", manaTexture and -61.5 or -62, 3)
+    manaMask:SetPoint("TOPLEFT", manaBar, "TOPLEFT", bigMana and -61.5 or -61, 3)
     if UnitExists(unit) and UnitClassification(unit) == "minus" then return end
     local hpContainer = frame.TargetFrameContent.TargetFrameContentMain.HealthBarsContainer
     local healthTexture = BBF.UnitFrameTextureOnFor(unit)
@@ -1587,7 +1589,7 @@ function BBF.UpdateReducedGroupIcons()
 end
 
 local petHealth = {
-    default = { 11.5, 23.5, 6.5, 0, -24, 71.5, 2, -6, 77, 8.5, -3, 0.5 },
+    default = { 11.5, 23.5, 6.5, 0, -24, 77, 2, -6, 77, 8.5, -3, 0.5 },
     reduced = { 13, 30, 9, -1, -25.5, 70.5, 2.5, -5, 76.5, 7, -3, -1 },
     big = { 23, 55, 16, -1, -25.5, 70.5, 2.5, -5, 76.5, 7, -3, -1 },
 }
@@ -1646,7 +1648,7 @@ function BBF.UpdateDefaultPetBars()
     PetFrameManaBar:SetSize(health[9], health[10])
     PetFrameManaBar:ClearAllPoints()
     PetFrameManaBar:SetPoint("TOPLEFT", PetFrameHealthBar, "BOTTOMLEFT", health[11], health[12])
-    PetFrameManaBarMask:SetSize(127.5, 16)
+    PetFrameManaBarMask:SetSize(BBF.PetBigMode() and 127.5 or 125.5, 16)
     PetFrameManaBarMask:ClearAllPoints()
     PetFrameManaBarMask:SetPoint("TOPLEFT", PetFrameManaBar, "TOPLEFT", health[5], 4)
 end

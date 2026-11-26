@@ -47,6 +47,7 @@ retail\modules\classicFrames.lua
 retail\modules\nameFix.lua
 shared\moveNames.lua
 shared\iconTweaks.lua
+shared\targetCombatSwords.lua
 retail\modules\hideFrames.lua
 retail\modules\auras.lua
 retail\modules\absorb.lua
@@ -60,6 +61,7 @@ retail\modules\profiles.lua
 retail\modules\chatFrame.lua
 retail\modules\overshields.lua
 shared\stealthIndicator.lua
+shared\playerDispelGlow.lua
 retail\modules\interruptIcon.lua
 retail\modules\bigDebuffs.lua
 retail\modules\queueTimer.lua

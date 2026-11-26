@@ -71,6 +71,7 @@ end
 local BAR_TEX = "Interface\\AddOns\\BetterBlizzFrames\\media\\barTextures\\"
 local plainSegmentFills = {
     [BAR_TEX .. "BlizzardRetailBarGreen"] = BAR_TEX .. "BlizzardRetailBar",
+    [BAR_TEX .. "BlizzardRetailBarCropGreen"] = BAR_TEX .. "BlizzardRetailBarCrop",
     [BAR_TEX .. "BlizzardForeverBarGreen"] = BAR_TEX .. "BlizzardForeverBar",
 }
 

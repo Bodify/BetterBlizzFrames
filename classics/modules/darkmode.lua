@@ -580,6 +580,7 @@ function BBF.DarkmodeFrames(bypass)
 
 
     applySettings(MinimapBorder, minimapSat, minimapColor)
+    applySettings(MinimapCluster.BorderTop, minimapSat, minimapColor)
 
     BBF.DarkModeCastbars()
 

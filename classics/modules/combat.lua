@@ -1,3 +1,10 @@
+local sappableTypes = select(4, GetBuildInfo()) >= 40000 and { [1] = true, [2] = true, [3] = true, [7] = true } or { [7] = true }
+
+local function IsSappable(unit)
+    local _, typeID = UnitCreatureType(unit)
+    return sappableTypes[typeID]
+end
+
 function BBF.CombatIndicator(unitFrame, unit)
     if not BetterBlizzFramesDB.combatIndicator or not unitFrame then return end
 
@@ -47,14 +54,34 @@ function BBF.CombatIndicator(unitFrame, unit)
         unitFrame.combatIndicator.border = border
     end
 
-    if darkModeOn then
-        unitFrame.combatIndicator:SetTexCoord(0.08, 0.92, 0.08, 0.92)
-        unitFrame.combatIndicator.border:SetBackdropBorderColor(vertexColor, vertexColor, vertexColor)
-        unitFrame.combatIndicator.border:SetAlpha(0)
-    else
-        unitFrame.combatIndicator:SetTexCoord(0, 1, 0, 1)
-        unitFrame.combatIndicator.border:SetAlpha(0)
+    local indicator = unitFrame.combatIndicator
+    local round = BetterBlizzFramesDB.combatIndicatorRound and true or false
+    if round and not indicator.round then
+        local roundFrame = CreateFrame("Frame", nil, unitFrame.combatParent)
+        roundFrame:SetPoint("CENTER", indicator, "CENTER")
+        roundFrame.mask = unitFrame.combatParent:CreateMaskTexture()
+        roundFrame.mask:SetTexture("Interface/Masks/CircleMaskScalable")
+        roundFrame.mask:SetAllPoints(indicator)
+        roundFrame.border = unitFrame.combatParent:CreateTexture(nil, "OVERLAY")
+        indicator.round = roundFrame
+        indicator.roundMasked = false
     end
+    if indicator.round and indicator.roundMasked ~= round then
+        indicator.roundMasked = round
+        if round then
+            indicator:AddMaskTexture(indicator.round.mask)
+        else
+            indicator:RemoveMaskTexture(indicator.round.mask)
+        end
+    end
+
+    if darkModeOn or round then
+        indicator:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+    else
+        indicator:SetTexCoord(0, 1, 0, 1)
+    end
+    indicator.border:SetBackdropBorderColor(vertexColor, vertexColor, vertexColor)
+    indicator.border:SetAlpha(0)
 
     unitFrame.combatIndicator:ClearAllPoints()
 
@@ -81,37 +108,36 @@ function BBF.CombatIndicator(unitFrame, unit)
         unitFrame.combatIndicator:SetPoint(reverseAnchor, unitFrame, mainAnchor, xPos-9, yPos+5)
     end
     unitFrame.combatIndicator:SetScale(BetterBlizzFramesDB.combatIndicatorScale)
-
-    if BetterBlizzFramesDB.combatIndicatorArenaOnly and not (inInstance and instanceType == "arena") then
-        unitFrame.combatIndicator:SetAlpha(0)
-        return
+    if round then
+        local size = indicator:GetWidth() * BetterBlizzFramesDB.combatIndicatorScale
+        indicator.round:SetSize(size, size)
+        BBF.ColorRoundIndicatorBorder(indicator.round, unit)
     end
 
-    if BetterBlizzFramesDB.combatIndicatorPlayersOnly and not UnitIsPlayer(unit) then
-        unitFrame.combatIndicator:SetAlpha(0)
-        return
-    end
-
-    if inCombat then
-        if BetterBlizzFramesDB.combatIndicatorShowSwords then
-            unitFrame.combatIndicator:SetTexture("Interface\\Icons\\ABILITY_DUALWIELD")
-            unitFrame.combatIndicator:SetAlpha(1)
-            if unitFrame.combatIndicator:IsVisible() and darkModeOn then
-                unitFrame.combatIndicator.border:SetAlpha(1)
-            end
+    local icon
+    local arenaBlocked = BetterBlizzFramesDB.combatIndicatorArenaOnly and not (inInstance and instanceType == "arena")
+    local npcBlocked = BetterBlizzFramesDB.combatIndicatorPlayersOnly and not UnitIsPlayer(unit)
+    if not arenaBlocked and not npcBlocked then
+        if inCombat then
+            icon = BetterBlizzFramesDB.combatIndicatorShowSwords and "Interface\\Icons\\ABILITY_DUALWIELD"
+        elseif not BetterBlizzFramesDB.combatIndicatorHumanoidOnly or IsSappable(unit) then
+            icon = BetterBlizzFramesDB.combatIndicatorShowSap and "Interface\\Icons\\Ability_Sap"
         else
-            unitFrame.combatIndicator:SetAlpha(0)
+            icon = BetterBlizzFramesDB.combatIndicatorCampfire and "Interface\\Icons\\Spell_Fire_Fire"
+        end
+    end
+
+    if icon then
+        indicator:SetTexture(icon)
+        indicator:SetAlpha(1)
+        if darkModeOn and not round and indicator:IsVisible() then
+            indicator.border:SetAlpha(1)
         end
     else
-        if BetterBlizzFramesDB.combatIndicatorShowSap then
-            unitFrame.combatIndicator:SetTexture("Interface\\Icons\\Ability_Sap")
-            unitFrame.combatIndicator:SetAlpha(1)
-            if unitFrame.combatIndicator:IsVisible() and darkModeOn then
-                unitFrame.combatIndicator.border:SetAlpha(1)
-            end
-        else
-            unitFrame.combatIndicator:SetAlpha(0)
-        end
+        indicator:SetAlpha(0)
+    end
+    if indicator.round then
+        indicator.round.border:SetAlpha(icon and round and 1 or 0)
     end
 end
 
@@ -135,9 +161,13 @@ function BBF.CombatIndicatorCaller()
                 if frame.combatIndicator.border then
                     frame.combatIndicator.border:SetAlpha(0)
                 end
+                if frame.combatIndicator.round then
+                    frame.combatIndicator.round.border:SetAlpha(0)
+                end
             end
         end
     end
+    BBF.UpdateCombatIndicatorShapeshiftEvent()
     --BBF:UpdateCombatBorder()
 end
 
@@ -153,9 +183,6 @@ function BBF.RacialIndicator(unitFrame, unit)
     local xPos = BetterBlizzFramesDB.racialIndicatorXPos + (BBF.isTBC and 44 or 26)
     local yPos = BetterBlizzFramesDB.racialIndicatorYPos + (BBF.isTBC and 16 or 20)
     local scale = BetterBlizzFramesDB.racialIndicatorScale
-
-    local darkModeOn = BetterBlizzFramesDB.darkModeUi
-    local vertexColor = darkModeOn and BetterBlizzFramesDB.darkModeColor or 1
 
     local raceIcon, isAtlas, npcIcon, shouldShow
     if UnitIsPlayer(unit) then
@@ -209,18 +236,7 @@ function BBF.RacialIndicator(unitFrame, unit)
     unitFrame.racialIndicator:SetPoint("CENTER", unitFrame, "CENTER", xPos+37.5, yPos-36)
     unitFrame.racialIndicator:SetScale(scale)
 
-    local borderR, borderG, borderB, borderBronze = BBF.UpdateRacialIndicatorBorder(unitFrame.racialIndicator)
-    if borderR and borderBronze and not darkModeOn then
-        unitFrame.racialIndicator.border:SetDesaturated(false)
-        unitFrame.racialIndicator.border:SetVertexColor(1, 1, 1)
-    elseif borderR then
-        unitFrame.racialIndicator.border:SetDesaturated(true)
-        if darkModeOn then
-            unitFrame.racialIndicator.border:SetVertexColor(vertexColor, vertexColor, vertexColor)
-        else
-            unitFrame.racialIndicator.border:SetVertexColor(borderR, borderG, borderB)
-        end
-    end
+    BBF.ColorRoundIndicatorBorder(unitFrame.racialIndicator, unit)
 
     if npcIcon then
         BBF.SetRacialIndicatorIcon(unitFrame.racialIndicator, npcIcon, false, true)
@@ -261,7 +277,10 @@ end
 -- Event Listener for Combat Indicator
 local combatIndicatorFrame = CreateFrame("Frame")
 combatIndicatorFrame:SetScript("OnEvent", function(self, event, unit)
-    if event == "UNIT_FLAGS" then
+    if event == "PLAYER_ENTERING_WORLD" then
+        BBF.UpdateCombatIndicatorShapeshiftEvent()
+    end
+    if event == "UNIT_FLAGS" or event == "UNIT_MODEL_CHANGED" then
         if isValidUnit(unit) then
             if UnitIsUnit(unit, "target") then
                 BBF.CombatIndicator(TargetFrame, "target")
@@ -288,3 +307,11 @@ combatIndicatorFrame:RegisterEvent("UNIT_FLAGS")
 combatIndicatorFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
 combatIndicatorFrame:RegisterEvent("PLAYER_FOCUS_CHANGED")
 combatIndicatorFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
+
+function BBF.UpdateCombatIndicatorShapeshiftEvent()
+    if BetterBlizzFramesDB.combatIndicator and BetterBlizzFramesDB.combatIndicatorHumanoidOnly then
+        combatIndicatorFrame:RegisterUnitEvent("UNIT_MODEL_CHANGED", "player", "target", "focus")
+    else
+        combatIndicatorFrame:UnregisterEvent("UNIT_MODEL_CHANGED")
+    end
+end

@@ -116,6 +116,34 @@ function BBF.UpdateMinimapTitle()
     end
 end
 
+local calendarHidden
+
+local function CalendarHideActive()
+    local db = BetterBlizzFramesDB
+    return db.foreverMinimapTweaks and db.classicMinimap and db.foreverMinimapHideCalendar
+end
+
+local function KeepCalendarHidden(self)
+    if CalendarHideActive() then
+        self:Hide()
+    end
+end
+
+function BBF.UpdateMinimapCalendar()
+    local hide = CalendarHideActive() and true or false
+    if not hide and not calendarHidden then return end
+    calendarHidden = hide
+    if not GameTimeFrame.bbfCalendarHook then
+        GameTimeFrame.bbfCalendarHook = true
+        GameTimeFrame:HookScript("OnShow", KeepCalendarHidden)
+    end
+    if hide then
+        GameTimeFrame:Hide()
+    elseif not (TitleHideActive() and not BetterBlizzFramesDB.classicMinimap) then
+        GameTimeFrame:Show()
+    end
+end
+
 local function HookMinimapTweaks()
     if minimapTweaksHooked then return end
     minimapTweaksHooked = true
@@ -287,6 +315,7 @@ end
 function BBF.UpdateMinimapTweaks()
     local db = BetterBlizzFramesDB
     BBF.UpdateMinimapMail()
+    BBF.UpdateMinimapCalendar()
     if db.classicMinimap then
         if minimapTweaksApplied then
             minimapTweaksApplied = false

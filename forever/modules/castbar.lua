@@ -322,7 +322,7 @@ local function ShowNonInterruptibleTexture(overlay, mask, fill, notInterruptible
     overlay:SetAlphaFromBoolean(notInterruptible, 1, 0)
 end
 
-function BBF.UpdateNonInterruptibleTexture(castBar)
+function BBF.UpdateNonInterruptibleTexture(castBar, testNotInterruptible)
     local overlay = castBar.NonInterruptibleTexture
     if not overlay then
         if not nonInterruptibleTexture then return end
@@ -339,11 +339,13 @@ function BBF.UpdateNonInterruptibleTexture(castBar)
         overlay.hasCastMask = true
     end
     local unit = castBar.unit
-    local notInterruptible
-    if unit and castBar.casting then
-        notInterruptible = select(8, UnitCastingInfo(unit))
-    elseif unit and castBar.channeling then
-        notInterruptible = select(7, UnitChannelInfo(unit))
+    local notInterruptible = testNotInterruptible
+    if notInterruptible == nil and unit then
+        if castBar.casting then
+            notInterruptible = select(8, UnitCastingInfo(unit))
+        elseif castBar.channeling then
+            notInterruptible = select(7, UnitChannelInfo(unit))
+        end
     end
     if nonInterruptibleTexture and notInterruptible ~= nil then
         ShowNonInterruptibleTexture(overlay, castBar.NonInterruptibleMask, castBar:GetStatusBarTexture(), notInterruptible)
@@ -837,7 +839,7 @@ function BBF.ClassicCastbar(castBar, unitType)
     AdjustBorderShieldSize(castBar)
 
     if not castBar.isClassicStyle then
-        castBar:HookScript("OnEvent", function(self, event)
+        castBar.bbfApplyClassicStyle = function(self, notInterruptible)
             self:SetStatusBarTexture(classicCastbarTexture)
             castBar.TextBorder:SetAlpha(0)
             if castBar == PlayerCastingBarFrame or castBar == PetCastingBarFrame then
@@ -889,6 +891,15 @@ function BBF.ClassicCastbar(castBar, unitType)
             --     -- AdjustBorderShieldSize(self)
             -- end
 
+            if not isPlayer then
+                if notInterruptible ~= nil then
+                    self.Border:SetAlphaFromBoolean(notInterruptible, 0, 1)
+                else
+                    self.Border:SetAlpha(1)
+                end
+            end
+        end
+        castBar:HookScript("OnEvent", function(self, event)
             -- Check if cast is interruptible
             local notInterruptible
             local unitToken = self.unit
@@ -900,13 +911,7 @@ function BBF.ClassicCastbar(castBar, unitType)
                 end
             end
 
-            if not isPlayer then
-                if notInterruptible ~= nil then
-                    self.Border:SetAlphaFromBoolean(notInterruptible, 0, 1)
-                else
-                    self.Border:SetAlpha(1)
-                end
-            end
+            self.bbfApplyClassicStyle(self, notInterruptible)
         end)
 
         hooksecurefunc(castBar.BorderShield, "SetAlpha", function()
@@ -1092,9 +1097,9 @@ end
 local function CustomSpellBarOnEvent(self, event, unit, castGUID, _, interruptedByOrCastBarID)
     local testMode
     if self.unitType == "party" then
-        testMode = BetterBlizzFramesDB.partyCastBarTestMode
+        testMode = BBF.castbarTestMode
     else -- pet
-        testMode = BetterBlizzFramesDB.petCastBarTestMode
+        testMode = BBF.castbarTestMode
     end
 
     if testMode then return end
@@ -1115,15 +1120,52 @@ local function CustomSpellBarOnEvent(self, event, unit, castGUID, _, interrupted
     CastbarColorOnEvent(self, event, unit, castGUID, nil, interruptedByOrCastBarID)
 end
 
+local function ApplyCastbarFont(spellbar)
+    local db = BetterBlizzFramesDB
+    local _, size, flags = spellbar.Text:GetFont()
+    if db.changeUnitFrameFont then
+        spellbar.Text:SetFont(BBF.LSM:Fetch(BBF.LSM.MediaType.FONT, db.unitFrameFont), size, db.unitFrameFontOutline or "OUTLINE")
+    elseif db.changeAllFontsIngame then
+        spellbar.Text:SetFont(BBF.LSM:Fetch(BBF.LSM.MediaType.FONT, db.allIngameFont), size, flags)
+    end
+end
+
+local unitCastbarLookHooked
+
+function BBF.UpdateUnitCastbarFonts()
+    local db = BetterBlizzFramesDB
+    if not (db.changeUnitFrameFont or db.changeAllFontsIngame) then return end
+    if not unitCastbarLookHooked then
+        unitCastbarLookHooked = true
+        hooksecurefunc(PlayerCastingBarFrame, "SetLook", ApplyCastbarFont)
+        hooksecurefunc(PetCastingBarFrame, "SetLook", ApplyCastbarFont)
+        hooksecurefunc(TargetFrameSpellBar, "SetLook", ApplyCastbarFont)
+        hooksecurefunc(FocusFrameSpellBar, "SetLook", ApplyCastbarFont)
+    end
+    ApplyCastbarFont(PlayerCastingBarFrame)
+    ApplyCastbarFont(PetCastingBarFrame)
+    ApplyCastbarFont(TargetFrameSpellBar)
+    ApplyCastbarFont(FocusFrameSpellBar)
+end
+
+function BBF.UpdatePartyCastbarFonts()
+    for i = 1, 5 do
+        local spellbar = spellBars[i]
+        if spellbar then
+            ApplyCastbarFont(spellbar)
+        end
+    end
+end
+
 function BBF.UpdateCastbars()
     local numGroupMembers = GetNumGroupMembers()
     local firstPartyFrame, defaultPartyFrame = BBF.FindPartyFrame(1)
 
-    if BetterBlizzFramesDB.showPartyCastbar or BetterBlizzFramesDB.partyCastBarTestMode then
+    if BetterBlizzFramesDB.showPartyCastbar or BBF.castbarTestMode then
         for i = 1, 5 do
             local spellbar = spellBars[i]
             if spellbar then
-                spellbar.unit = BetterBlizzFramesDB.partyCastBarTestMode and "player" or nil
+                spellbar.unit = BBF.castbarTestMode and "player" or nil
             end
         end
         if firstPartyFrame and firstPartyFrame:IsShown() and numGroupMembers <= 5 then
@@ -1133,7 +1175,7 @@ function BBF.UpdateCastbars()
             for i = 1, 5 do
                 local spellbar = spellBars[i]
                 if spellbar then
-                    if not BetterBlizzFramesDB.partyCastBarTestMode then
+                    if not BBF.castbarTestMode then
                         spellbar.unit = nil
                     end
                     --spellbar:SetParent(UIParent)
@@ -1173,7 +1215,7 @@ function BBF.UpdateCastbars()
                         spellbar.Text:SetScale(0.9)
                         spellbar.TextBorder:SetAlpha(0)
 
-                        if BetterBlizzFramesDB.partyCastBarTestMode then
+                        if BBF.castbarTestMode then
                             spellbar:SetStatusBarTexture(137012)
                             if recolorCastbars then
                                 spellbar:SetStatusBarColor(castbarColors.standard[1], castbarColors.standard[2], castbarColors.standard[3], 1)
@@ -1206,6 +1248,7 @@ function BBF.UpdateCastbars()
                             spellbar.Text:SetPoint("CENTER", spellbar, "BOTTOM", 0, -5.5)
                         end
                     end
+                    ApplyCastbarFont(spellbar)
 
                     local partyFrame = BBF.FindPartyFrame(i)
 
@@ -1221,7 +1264,7 @@ function BBF.UpdateCastbars()
 
                         if (not unitId or unitId:match("pet")) then
                             spellbar.unit = nil
-                        elseif UnitIsUnit(unitId, "player") and (not BetterBlizzFramesDB.partyCastbarSelf and not BetterBlizzFramesDB.partyCastBarTestMode) then
+                        elseif UnitIsUnit(unitId, "player") and (not BetterBlizzFramesDB.partyCastbarSelf and not BBF.castbarTestMode) then
                             spellbar.unit = nil
                         else
                             spellbar.unit = unitId
@@ -1253,7 +1296,7 @@ function BBF.UpdateCastbars()
         end
     end
 
-    if not BetterBlizzFramesDB.partyCastBarTestMode then
+    if not BBF.castbarTestMode then
         for i = 1, 5 do
             local spellbar = spellBars[i]
             if spellbar and not spellbar.unit then
@@ -1321,7 +1364,7 @@ function BBF.UpdatePetCastbar()
             petSpellBar.Text:SetWidth(width)
             petSpellBar.TextBorder:SetAlpha(0)
 
-            if BetterBlizzFramesDB.petCastBarTestMode then
+            if BBF.castbarTestMode then
                 petSpellBar:SetStatusBarTexture(classicCastbarTexture)
                 if recolorCastbars then
                     petSpellBar:SetStatusBarColor(castbarColors.standard[1], castbarColors.standard[2], castbarColors.standard[3], 1)
@@ -1342,7 +1385,7 @@ function BBF.UpdatePetCastbar()
             else
                 petSpellBar:SetPoint("CENTER", petFrame, "CENTER", xPos + 4, yPos - 27)
             end
-            petSpellBar.unit = BetterBlizzFramesDB.petCastBarTestMode and "player" or "pet"
+            petSpellBar.unit = BBF.castbarTestMode and "player" or "pet"
         else
             petSpellBar.unit = nil
         end
@@ -1353,7 +1396,7 @@ end
 
 
 function BBF.CreateCastbars()
-    if not castBarsCreated and (BetterBlizzFramesDB.showPartyCastbar or BetterBlizzFramesDB.partyCastBarTestMode) then
+    if not castBarsCreated and (BetterBlizzFramesDB.showPartyCastbar or BBF.castbarTestMode) then
         for i = 1, 5 do
             local spellbar = CreateFrame("StatusBar", "Party"..i.."SpellBar", UIParent)
             spellbar:SetSize(150, 20)
@@ -1501,7 +1544,7 @@ function BBF.CreateCastbars()
         castBarsCreated = true
         BBF.CastbarIconPixelBorders()
     end
-    if not petCastbarCreated and (BetterBlizzFramesDB.petCastbar or BetterBlizzFramesDB.petCastBarTestMode) then
+    if not petCastbarCreated and (BetterBlizzFramesDB.petCastbar or BBF.castbarTestMode) then
         local petSpellBar = CreateFrame("StatusBar", "PetSpellBar", UIParent)
         petSpellBar:SetSize(150, 20)
         petSpellBar:SetStatusBarTexture("UI-CastingBar-Filling-Standard")
@@ -1641,7 +1684,7 @@ function BBF.partyCastBarTestMode()
 
     for i = 1, 5 do
         local spellbar = spellBars[i]
-        if spellbar and BetterBlizzFramesDB.partyCastBarTestMode then
+        if spellbar and BBF.castbarTestMode then
             --spellbar:SetParent(UIParent)
             spellbar:SetIgnoreParentAlpha(true)
             spellbar:Show()
@@ -1711,7 +1754,7 @@ end
 function BBF.petCastBarTestMode()
     BBF.CreateCastbars()
     BBF.UpdatePetCastbar()
-    if BetterBlizzFramesDB.petCastBarTestMode then
+    if BBF.castbarTestMode then
         spellBars["pet"]:Show()
         spellBars["pet"]:SetAlpha(1)
         spellBars["pet"]:SetSmoothedValue(math.random(100))
@@ -2161,17 +2204,7 @@ function BBF.ChangeCastbarSizes()
     end
     FocusFrameSpellBar.Text:SetWidth(BetterBlizzFramesDB.focusCastBarWidth)
 
-    if BetterBlizzFramesDB.changeUnitFrameFont then
-        local fontName = BetterBlizzFramesDB.unitFrameFont
-        local fontPath = BBF.LSM:Fetch(BBF.LSM.MediaType.FONT, fontName)
-        local outline = BetterBlizzFramesDB.unitFrameFontOutline or "OUTLINE"
-        local _, size, _ = TargetFrameSpellBar.Text:GetFont()
-        TargetFrameSpellBar.Text:SetFont(fontPath, size, outline)
-        FocusFrameSpellBar.Text:SetFont(fontPath, size, outline)
-        local _, size, _ = PlayerCastingBarFrame.Text:GetFont()
-        PlayerCastingBarFrame.Text:SetFont(fontPath, size, outline)
-        PetCastingBarFrame.Text:SetFont(fontPath, size, outline)
-    end
+    BBF.UpdateUnitCastbarFonts()
 
     if BetterBlizzFramesDB.classicCastbars then
         BBF.ClassicCastbar(TargetFrameSpellBar, "target")
@@ -2636,5 +2669,179 @@ function BBF.CastbarColorHooks()
     end
 end
 
+local UnitCastTest = {
+    bars = {
+        { hideKey = "hidePlayerCastbar", unit = "player" },
+        { hideKey = "hideTargetCastbar", unit = "target" },
+        { hideKey = "hideFocusCastbar", unit = "focus" },
+    },
+    casts = {
+        cast = { spell = 116, name = "Frostbolt", atlas = "UI-CastingBar-Filling-Standard" },
+        nonInt = { spell = 19434, name = "Aimed Shot", icon = 135130, atlas = "UI-CastingBar-Uninterruptable" },
+        channel = { spell = 47540, name = "Penance", icon = "Interface\\Icons\\Spell_Holy_Penance", atlas = "UI-CastingBar-Filling-Channel" },
+    },
+    defaults = { cast = { 1, 0.7, 0, 1 }, channel = { 0, 1, 0, 1 }, nonInt = { 0.7, 0.7, 0.7, 1 } },
+    duration = 2,
+    steps = 50,
+}
 
+function UnitCastTest.Frame(entry)
+    if entry.unit == "player" then return PlayerCastingBarFrame end
+    if entry.unit == "target" then return TargetFrameSpellBar end
+    return FocusFrameSpellBar
+end
 
+function UnitCastTest.Active(entry, bar)
+    local db = BetterBlizzFramesDB
+    if not BBF.castbarTestMode or db[entry.hideKey] or bar.isInEditMode or BarHasCast(bar) then return false end
+    if entry.unit == "player" then
+        return GameRulesUtil.ShouldShowPlayerCastBar()
+    end
+    return UnitExists(entry.unit)
+end
+
+function UnitCastTest.Color(bar, kind, nonInt)
+    local colors = castbarColors
+    local defaults = UnitCastTest.defaults
+    local notReady = colors.interruptNotReady or defaults.nonInt
+    local texture = bar:GetStatusBarTexture()
+    local kickNotReady = castBarRecolorInterrupt and BBF.interruptReady == false and bar ~= PlayerCastingBarFrame
+        and UnitCanAttack("player", bar == TargetFrameSpellBar and "target" or "focus")
+    local color
+    if colors.enabled then
+        texture:SetDesaturated(true)
+        if kickNotReady then
+            color = nonInt and colors.uninterruptable or notReady
+        elseif nonInt then
+            color = colors.uninterruptable
+        elseif kind == "channel" then
+            color = colors.channel
+        else
+            color = colors.standard
+        end
+    elseif bar.textureChangedNeedsColor or customCastbarTexture then
+        if kickNotReady then
+            color = nonInt and defaults.nonInt or notReady
+        else
+            color = defaults[kind]
+        end
+    elseif kickNotReady then
+        texture:SetDesaturated(true)
+        color = nonInt and defaults.nonInt or notReady
+    else
+        texture:SetDesaturated(false)
+    end
+    bar:SetStatusBarColor(unpack(color or { 1, 1, 1, 1 }))
+end
+
+function UnitCastTest.TargetText(bar, spellName)
+    local db = BetterBlizzFramesDB
+    local isPlayerBar = bar == PlayerCastingBarFrame
+    local enabled = db.castBarTargetText and not isPlayerBar
+        and not TargetTextHiddenForUnit(bar == TargetFrameSpellBar and "target" or "focus")
+    local name = enabled and GetColoredTargetString(GetUnitName("player"), UnitClassBase("player"))
+    if db[OutsideKey(bar)] then
+        if name or bar.bbfTargetText then
+            GetOutsideTargetText(bar):SetText(name or "")
+        end
+        return spellName
+    end
+    return name and (spellName .. ": " .. name) or spellName
+end
+
+function UnitCastTest.StartCast(bar, kind)
+    local info = UnitCastTest.casts[kind]
+    local nonInt = kind == "nonInt"
+    if bar.textureChangedNeedsColor or customCastbarTexture then
+        bar:SetStatusBarTexture(classicCastbarTexture)
+    else
+        bar:SetStatusBarTexture(info.atlas)
+    end
+    if bar.bbfApplyClassicStyle then
+        bar.bbfApplyClassicStyle(bar, nonInt)
+    end
+    UnitCastTest.Color(bar, kind, nonInt)
+    BBF.UpdateNonInterruptibleTexture(bar, nonInt)
+    bar.BorderShield:SetShown(nonInt and bar.showShield or false)
+    local spellName = C_Spell.GetSpellName(info.spell) or info.name
+    bar.Text:SetText(UnitCastTest.TargetText(bar, spellName))
+    bar.Icon:SetTexture(info.icon or C_Spell.GetSpellTexture(info.spell))
+end
+
+function UnitCastTest.Timer(bar, remaining)
+    local key = CastBarTimerKey(bar)
+    if not BetterBlizzFramesDB[key] then
+        if bar.bbfTestTimer then bar.bbfTestTimer:Hide() end
+        return
+    end
+    if not bar.bbfTestTimer then
+        bar.bbfTestTimer = bar:CreateFontString(nil, "OVERLAY")
+    end
+    StyleCastBarTimer(bar, key, bar.bbfTestTimer)
+    bar.bbfTestTimer:SetFormattedText("%.1f", remaining)
+    bar.bbfTestTimer:Show()
+end
+
+function UnitCastTest.Clear(bar)
+    if bar.bbfTestTimer then bar.bbfTestTimer:Hide() end
+    if bar.bbfTargetText then bar.bbfTargetText:SetText("") end
+    bar.bbfTestKind = nil
+    if not BarHasCast(bar) then
+        BBF.UpdateNonInterruptibleTexture(bar)
+        bar:Hide()
+    end
+end
+
+function UnitCastTest.Tick()
+    local step = 100 / (UnitCastTest.duration * UnitCastTest.steps)
+    for _, entry in ipairs(UnitCastTest.bars) do
+        local bar = UnitCastTest.Frame(entry)
+        if UnitCastTest.Active(entry, bar) then
+            local value = (bar.bbfTestValue or 100) + (bar.bbfTestKind == "channel" and -step or step)
+            if not bar.bbfTestKind or value >= 100 or value <= 0 then
+                local roll = math.random()
+                local kind = roll <= 0.25 and "nonInt" or roll <= 0.5 and "channel" or "cast"
+                bar.bbfTestKind = kind
+                value = kind == "channel" and 100 or 0
+                UnitCastTest.StartCast(bar, kind)
+            end
+            bar.bbfTestValue = value
+            bar:Show()
+            bar:SetAlpha(1)
+            if bar.Flash then
+                bar.Flash:Hide()
+            end
+            bar:SetMinMaxValues(0, 100)
+            bar:SetValue(value)
+            bar.Spark:SetPoint("CENTER", bar:GetStatusBarTexture(), "RIGHT", 0, bar.Spark.offsetY or 0)
+            bar.Spark:Show()
+            local left = bar.bbfTestKind == "channel" and value or (100 - value)
+            UnitCastTest.Timer(bar, UnitCastTest.duration * left / 100)
+        elseif bar.bbfTestKind then
+            UnitCastTest.Clear(bar)
+        end
+    end
+end
+
+function BBF.UnitCastbarTestMode()
+    local any = BBF.castbarTestMode
+    if any and not UnitCastTest.ticker then
+        UnitCastTest.ticker = C_Timer.NewTicker(1 / UnitCastTest.steps, UnitCastTest.Tick)
+    elseif not any and UnitCastTest.ticker then
+        UnitCastTest.ticker:Cancel()
+        UnitCastTest.ticker = nil
+    end
+    for _, entry in ipairs(UnitCastTest.bars) do
+        local bar = UnitCastTest.Frame(entry)
+        if not BBF.castbarTestMode and bar.bbfTestKind then
+            UnitCastTest.Clear(bar)
+        end
+    end
+end
+
+function BBF.ToggleAllCastbarTests()
+    BBF.castbarTestMode = not BBF.castbarTestMode
+    BBF.partyCastBarTestMode()
+    BBF.petCastBarTestMode()
+    BBF.UnitCastbarTestMode()
+end

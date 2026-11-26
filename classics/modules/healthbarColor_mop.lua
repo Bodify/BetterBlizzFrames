@@ -599,6 +599,13 @@ function BBF.BiggerHealthbars(frame, name)
     if not (frame == "PlayerFrame" and UnitInVehicle("player")) then
         BBF.SetRegionWidth(manabar, 120)
     end
+    if frame == "PlayerFrame" then
+        manabar.bbfVehicleOffset = { x = 13, y = -1 }
+        BBF.MoveRegion(manabar, "TOPLEFT", manabar:GetParent(), "TOPLEFT", 90, -55)
+    else
+        local mPoint, mRelativeTo, mRelativePoint, mXOfs, mYOfs = manabar:GetPoint()
+        BBF.MoveRegion(manabar, mPoint, mRelativeTo, mRelativePoint, mXOfs, mYOfs + 1)
+    end
     --BBF.SetRegionSize(manabar, 120, 12)
 
     if nameBackground then
@@ -811,6 +818,7 @@ function BBF.BiggerHealthbars(frame, name)
             if not BetterBlizzFramesDB.biggerHealthbars then return end
             BBF.playerInVehicleArt = true
             ApplyBBFPosition(healthbar)
+            ApplyBBFPosition(manabar)
             healthbar:SetHeight(vehicleHealthbarHeight)
             AnchorTextToHealthbar()
             ApplyBBFPosition(name)
@@ -822,6 +830,7 @@ function BBF.BiggerHealthbars(frame, name)
             if not BetterBlizzFramesDB.biggerHealthbars then return end
             BBF.playerInVehicleArt = false
             ApplyBBFPosition(healthbar)
+            ApplyBBFPosition(manabar)
             healthbar:SetHeight(normalHealthbarHeight)
             RestoreTextPositions()
             ApplyBBFPosition(name)
@@ -834,6 +843,7 @@ function BBF.BiggerHealthbars(frame, name)
         if UnitInVehicle("player") then
             BBF.playerInVehicleArt = true
             ApplyBBFPosition(healthbar)
+            ApplyBBFPosition(manabar)
             healthbar:SetHeight(vehicleHealthbarHeight)
             AnchorTextToHealthbar()
             ApplyBBFPosition(name)

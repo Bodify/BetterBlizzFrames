@@ -1,3 +1,11 @@
+local PLAYER_MIRROR = { x = 0, y = 0, innerX = 0, innerY = 0 }
+local PLAYER_NO_PORTRAIT = { x = 0.5, y = 0, innerX = 0.5, innerY = 0 }
+local PLAYER_TWEAK = { x = -3, y = 0, innerX = 0.5, innerY = -0.5 }
+
+function BBF.PlayerMirrorsTarget()
+    return BBF.HasNoPortrait("player")
+end
+
 function BBF.CombatIndicator(unitFrame, unit)
     if not BetterBlizzFramesDB.combatIndicator or not unitFrame then return end
 
@@ -36,71 +44,84 @@ function BBF.CombatIndicator(unitFrame, unit)
         unitFrame.combatIndicator.border = border
     end
 
-    if darkModeOn then
-        unitFrame.combatIndicator:SetTexCoord(0.08, 0.92, 0.08, 0.92)
-        unitFrame.combatIndicator.border:SetBackdropBorderColor(vertexColor, vertexColor, vertexColor)
-        unitFrame.combatIndicator.border:SetAlpha(0)
-    else
-        unitFrame.combatIndicator:SetTexCoord(0, 1, 0, 1)
-        unitFrame.combatIndicator.border:SetAlpha(0)
+    local indicator = unitFrame.combatIndicator
+    local round = BetterBlizzFramesDB.combatIndicatorRound and true or false
+    if round and not indicator.round then
+        local roundFrame = CreateFrame("Frame", nil, unitFrame.combatParent)
+        roundFrame:SetPoint("CENTER", indicator, "CENTER")
+        roundFrame.mask = unitFrame.combatParent:CreateMaskTexture()
+        roundFrame.mask:SetTexture("Interface/Masks/CircleMaskScalable")
+        roundFrame.mask:SetAllPoints(indicator)
+        roundFrame.border = unitFrame.combatParent:CreateTexture(nil, "OVERLAY")
+        indicator.round = roundFrame
+        indicator.roundMasked = false
     end
-
-    unitFrame.combatIndicator:ClearAllPoints()
-
-    if unitFrame == PlayerFrame then
-        xPos = xPos * -1 -- invert the xPos value for PlayerFrame
-    end
-    if mainAnchor == "LEFT" then
-        if unitFrame == TargetFrame or unitFrame == FocusFrame then
-            xPos = xPos + 38.5
-            yPos = yPos - 6.5
+    if indicator.round and indicator.roundMasked ~= round then
+        indicator.roundMasked = round
+        if round then
+            indicator:AddMaskTexture(indicator.round.mask)
         else
-            xPos = xPos - 35
-            yPos = yPos - 7
+            indicator:RemoveMaskTexture(indicator.round.mask)
         end
     end
 
+    if darkModeOn or round then
+        indicator:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+    else
+        indicator:SetTexCoord(0, 1, 0, 1)
+    end
+    indicator.border:SetBackdropBorderColor(vertexColor, vertexColor, vertexColor)
+    indicator.border:SetAlpha(0)
+
+    unitFrame.combatIndicator:ClearAllPoints()
+
+    local inner = mainAnchor == "LEFT"
+    if inner then
+        xPos = xPos + 38.5
+        yPos = yPos - 6.5
+    end
+
     if unitFrame == PlayerFrame then
+        local tweak = BBF.HasNoPortrait("player") and PLAYER_NO_PORTRAIT or BBF.PlayerMirrorsTarget() and PLAYER_MIRROR or PLAYER_TWEAK
+        xPos = -xPos + (inner and tweak.innerX or tweak.x)
+        yPos = yPos + (inner and tweak.innerY or tweak.y)
         if mainAnchor == "TOP" or mainAnchor == "BOTTOM" then
-            unitFrame.combatIndicator:SetPoint(reverseAnchor, unitFrame, mainAnchor, xPos - 3, yPos)
+            unitFrame.combatIndicator:SetPoint(reverseAnchor, unitFrame, mainAnchor, xPos, yPos)
         else
-            unitFrame.combatIndicator:SetPoint(mainAnchor, unitFrame, reverseAnchor, xPos - 3, yPos)
+            unitFrame.combatIndicator:SetPoint(mainAnchor, unitFrame, reverseAnchor, xPos, yPos)
         end
     else
         unitFrame.combatIndicator:SetPoint(reverseAnchor, unitFrame, mainAnchor, xPos, yPos)
     end
     unitFrame.combatIndicator:SetScale(BetterBlizzFramesDB.combatIndicatorScale)
-
-    if BetterBlizzFramesDB.combatIndicatorArenaOnly and not (inInstance and instanceType == "arena") then
-        unitFrame.combatIndicator:SetAlpha(0)
-        return
+    if round then
+        local size = indicator:GetWidth() * BetterBlizzFramesDB.combatIndicatorScale
+        indicator.round:SetSize(size, size)
+        BBF.ColorRoundIndicatorBorder(indicator.round, unit)
     end
 
-    if BetterBlizzFramesDB.combatIndicatorPlayersOnly and not UnitIsPlayer(unit) then
-        unitFrame.combatIndicator:SetAlpha(0)
-        return
-    end
-
-    if inCombat then
-        if BetterBlizzFramesDB.combatIndicatorShowSwords then
-            unitFrame.combatIndicator:SetTexture("Interface\\Icons\\ABILITY_DUALWIELD")
-            unitFrame.combatIndicator:SetAlpha(1)
-            if unitFrame.combatIndicator:IsVisible() and darkModeOn then
-                unitFrame.combatIndicator.border:SetAlpha(1)
-            end
+    local icon
+    local arenaBlocked = BetterBlizzFramesDB.combatIndicatorArenaOnly and not (inInstance and instanceType == "arena")
+    local npcBlocked = BetterBlizzFramesDB.combatIndicatorPlayersOnly and not UnitIsPlayer(unit)
+    if not arenaBlocked and not npcBlocked then
+        if inCombat then
+            icon = BetterBlizzFramesDB.combatIndicatorShowSwords and "Interface\\Icons\\ABILITY_DUALWIELD"
         else
-            unitFrame.combatIndicator:SetAlpha(0)
+            icon = BetterBlizzFramesDB.combatIndicatorShowSap and "Interface\\Icons\\Ability_Sap"
+        end
+    end
+
+    if icon then
+        indicator:SetTexture(icon)
+        indicator:SetAlpha(1)
+        if darkModeOn and not round and indicator:IsVisible() then
+            indicator.border:SetAlpha(1)
         end
     else
-        if BetterBlizzFramesDB.combatIndicatorShowSap then
-            unitFrame.combatIndicator:SetTexture("Interface\\Icons\\Ability_Sap")
-            unitFrame.combatIndicator:SetAlpha(1)
-            if unitFrame.combatIndicator:IsVisible() and darkModeOn then
-                unitFrame.combatIndicator.border:SetAlpha(1)
-            end
-        else
-            unitFrame.combatIndicator:SetAlpha(0)
-        end
+        indicator:SetAlpha(0)
+    end
+    if indicator.round then
+        indicator.round.border:SetAlpha(icon and round and 1 or 0)
     end
 end
 
@@ -124,6 +145,9 @@ function BBF.CombatIndicatorCaller()
                 if frame.combatIndicator.border then
                     frame.combatIndicator.border:SetAlpha(0)
                 end
+                if frame.combatIndicator.round then
+                    frame.combatIndicator.round.border:SetAlpha(0)
+                end
             end
         end
     end
@@ -143,8 +167,6 @@ function BBF.RacialIndicator(unitFrame, unit)
     local yPos = BetterBlizzFramesDB.racialIndicatorYPos + 20
     local scale = BetterBlizzFramesDB.racialIndicatorScale
 
-    local darkModeOn = BetterBlizzFramesDB.darkModeUi
-    local vertexColor = darkModeOn and BetterBlizzFramesDB.darkModeColor or 1
     local raceOverSpells = BetterBlizzFramesDB.racialIndicatorRaceIcons
 
     local raceIcon, isAtlas, npcIcon, shouldShow
@@ -203,28 +225,7 @@ function BBF.RacialIndicator(unitFrame, unit)
         unitFrame.racialIndicator:SetFrameLevel(unitFrame.noPortraitMode:GetFrameLevel() + 2)
     end
 
-    local borderR, borderG, borderB, borderBronze = BBF.UpdateRacialIndicatorBorder(unitFrame.racialIndicator)
-    if borderR and borderBronze and not darkModeOn then
-        unitFrame.racialIndicator.border:SetDesaturated(false)
-        unitFrame.racialIndicator.border:SetVertexColor(1, 1, 1)
-    elseif borderR then
-        unitFrame.racialIndicator.border:SetDesaturated(true)
-        if BetterBlizzFramesDB.classColorFrameTexture and UnitIsPlayer(unit) then
-            local class = UnitClassBase(unit)
-            local classColor = class and RAID_CLASS_COLORS[class]
-            if classColor then
-                unitFrame.racialIndicator.border:SetVertexColor(classColor.r, classColor.g, classColor.b)
-            elseif darkModeOn then
-                unitFrame.racialIndicator.border:SetVertexColor(vertexColor, vertexColor, vertexColor)
-            else
-                unitFrame.racialIndicator.border:SetVertexColor(borderR, borderG, borderB)
-            end
-        elseif darkModeOn then
-            unitFrame.racialIndicator.border:SetVertexColor(vertexColor, vertexColor, vertexColor)
-        else
-            unitFrame.racialIndicator.border:SetVertexColor(borderR, borderG, borderB)
-        end
-    end
+    BBF.ColorRoundIndicatorBorder(unitFrame.racialIndicator, unit)
 
     if npcIcon then
         BBF.SetRacialIndicatorIcon(unitFrame.racialIndicator, npcIcon, false, true)

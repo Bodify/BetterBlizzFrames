@@ -1121,6 +1121,7 @@ function BBF.DarkmodeFrames(bypass)
             applyMinimapSettings(texture, minimapSat, minimapColor)
         end
     end
+    applyMinimapSettings(BBF.classicCalendarPage, minimapSat, math.min(1, minimapColor + 0.3))
     applyMinimapSettings(BBF.minimapMailBorder, minimapSat, minimapColor)
 
     for i = 1, ExpansionLandingPageMinimapButton:GetNumRegions() do

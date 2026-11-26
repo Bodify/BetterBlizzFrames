@@ -11,8 +11,13 @@ local skin
 local title
 
 local TRACKING_SPOT = { x = -75, y = 16 }
-local DIEL_SPOT = { x = 71, y = 35 }
+local DIEL_SPOT = { x = -50, y = 58 }
 local MAIL_SPOT = { x = 77.5, y = 16.5 }
+local CALENDAR_SPOT = { x = 71, y = 35 }
+local CALENDAR_SIZE = 32
+local CALENDAR_PAGE_SIZE = 18
+local CALENDAR_PAGE_X = 0
+local CALENDAR_PAGE_Y = 0
 
 local function RimSpot(spot, angleKey)
     local angle = BetterBlizzFramesDB[angleKey]
@@ -45,6 +50,13 @@ local function PlaceMail()
     local x, y = RimSpot(MAIL_SPOT, "classicMinimapMailAngle")
     mail:ClearAllPoints()
     mail:SetPoint("CENTER", skin, "CENTER", x, y)
+end
+
+local function PlaceCalendar()
+    if not skin then return end
+    local x, y = RimSpot(CALENDAR_SPOT, "classicMinimapCalendarAngle")
+    GameTimeFrame:ClearAllPoints()
+    GameTimeFrame:SetPoint("CENTER", skin, "CENTER", x, y)
 end
 
 local function MakeRimDraggable(handle, angleKey, place)
@@ -374,7 +386,64 @@ function BBF.ClassicMinimap()
     end)
     BBF.UpdateClassicMinimapLayout()
 
-    for _, frame in pairs({ MinimapCluster.BorderTop, GameTimeFrame, AddonCompartmentFrame, ExpansionLandingPageMinimapButton }) do
+    local calendar = GameTimeFrame
+    local calendarFile = "Interface\\Calendar\\UI-Calendar-Button"
+    local upCoords = { 0, 0.390625, 0, 0.78125 }
+    local downCoords = { 0.5, 0.890625, 0, 0.78125 }
+    calendar:SetParent(skin)
+    calendar:SetFrameLevel(skin:GetFrameLevel() + 3)
+    calendar:SetSize(CALENDAR_SIZE, CALENDAR_SIZE)
+    calendar:SetHitRectInsets(5, 0, 4, 8)
+    HideButtonArt(calendar)
+    calendar:SetNormalTexture(calendarFile)
+    calendar:GetNormalTexture():SetTexCoord(unpack(upCoords))
+    calendar:SetPushedTexture(calendarFile)
+    calendar:GetPushedTexture():SetTexCoord(unpack(downCoords))
+    calendar:SetHighlightTexture(ART .. "UI-Minimap-ZoomButton-Highlight", "ADD")
+    calendar:GetNormalTexture():SetDrawLayer("BACKGROUND")
+    calendar:GetPushedTexture():SetDrawLayer("BACKGROUND")
+    table.insert(BBF.classicMinimapTextures, calendar:GetNormalTexture())
+    table.insert(BBF.classicMinimapTextures, calendar:GetPushedTexture())
+
+    local page = calendar:CreateTexture(nil, "BORDER")
+    page:SetTexture(calendarFile)
+    page:SetAllPoints(calendar)
+    page:SetTexCoord(unpack(upCoords))
+    local pageMask = calendar:CreateMaskTexture()
+    pageMask:SetTexture("Interface\\CharacterFrame\\TempPortraitAlphaMask", "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
+    pageMask:SetSize(CALENDAR_PAGE_SIZE, CALENDAR_PAGE_SIZE)
+    pageMask:SetPoint("CENTER", calendar, "CENTER", CALENDAR_PAGE_X, CALENDAR_PAGE_Y)
+    page:AddMaskTexture(pageMask)
+    BBF.classicCalendarPage = page
+    hooksecurefunc(calendar, "OnButtonStateChanged", function(self)
+        page:SetTexCoord(unpack(self:GetButtonState() == "PUSHED" and downCoords or upCoords))
+    end)
+
+    local dayFont = CreateFont("BBFClassicCalendarDayFont")
+    dayFont:CopyFontObject(GameFontBlack)
+    local fontPath = GameFontBlack:GetFont()
+    if BetterBlizzFramesDB.changeAllFontsIngame then
+        fontPath = BBF.LSM:Fetch(BBF.LSM.MediaType.FONT, BetterBlizzFramesDB.allIngameFont)
+    end
+    dayFont:SetFont(fontPath, 10, "OUTLINE")
+    dayFont:SetTextColor(1, 1, 1)
+    local day = calendar:CreateFontString(nil, "ARTWORK")
+    day:SetFontObject(dayFont)
+    day:SetDrawLayer("ARTWORK", -1)
+    day:SetPoint("CENTER", calendar, "CENTER", -1, -1)
+    calendar:SetFontString(day)
+    calendar:SetPushedTextOffset(1, -1)
+    local function UpdateDay()
+        calendar:SetText(C_DateAndTime.GetCurrentCalendarTime().monthDay)
+    end
+    hooksecurefunc(calendar, "SetDate", UpdateDay)
+    UpdateDay()
+    PlaceCalendar()
+    MakeRimDraggable(calendar, "classicMinimapCalendarAngle", PlaceCalendar)
+    calendar:Show()
+    BBF.UpdateMinimapCalendar()
+
+    for _, frame in pairs({ MinimapCluster.BorderTop, AddonCompartmentFrame, ExpansionLandingPageMinimapButton }) do
         frame:Hide()
         frame:HookScript("OnShow", frame.Hide)
     end

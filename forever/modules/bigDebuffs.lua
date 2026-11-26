@@ -127,6 +127,7 @@ local INTERRUPTS = {
     [19647]   = 8,      -- Spell Lock (Warlock Pet)
     [1238122] = 4,      -- Feral Charge (Druid)
     [19675]   = 4,      -- Feral Charge (Druid)
+    [15487]   = 3,      -- Silence (Priest)
 }
 
 local CLASS_INTERRUPTS = {
@@ -245,7 +246,11 @@ local function ApplyTimerStyle(cooldown)
             cooldown.bbfBaseFont = base
         end
         if base[1] and base[2] then
-            text:SetFont(base[1], base[2] * TEXT_SIZE_BASE * (db.bigDebuffsTextScale or 1), base[3])
+            local useValueFont = not db.bigDebuffsFont and db.changeUnitFrameValueFont
+            local fontName = db.bigDebuffsFont or (useValueFont and db.unitFrameValueFont)
+            local font = fontName and LibStub("LibSharedMedia-3.0"):Fetch("font", fontName, true) or base[1]
+            local flags = useValueFont and (db.unitFrameValueFontOutline or "OUTLINE") or base[3]
+            text:SetFont(font, base[2] * TEXT_SIZE_BASE * (db.bigDebuffsTextScale or 1), flags)
         end
     end
 end

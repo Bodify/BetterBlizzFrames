@@ -11,7 +11,7 @@ local sliderUnderBox = "12, -10"
 local editModeIntroduced = BBF.isMoP or BBF.isTBC or BBF.isEra
 
 -- Font configuration for localization support
--- Custom fonts (arialn.TTF, Expressway_Free.ttf) support Latin and Cyrillic only
+-- Custom fonts (arialn.ttf, Expressway_Free.ttf) support Latin and Cyrillic only
 -- For other languages, use WoW's default font from GameFontNormal (supports all locales)
 local locale = GetLocale()
 
@@ -24,8 +24,8 @@ local fontSmall, fontMedium, fontLarge
 
 if useCustomFonts then
     -- Use custom addon fonts for Latin and Cyrillic languages
-    fontSmall = "Interface\\AddOns\\BetterBlizzFrames\\media\\fonts\\arialn.TTF"
-    fontMedium = "Interface\\AddOns\\BetterBlizzFrames\\media\\fonts\\arialn.TTF"
+    fontSmall = "Interface\\AddOns\\BetterBlizzFrames\\media\\fonts\\arialn.ttf"
+    fontMedium = "Interface\\AddOns\\BetterBlizzFrames\\media\\fonts\\arialn.ttf"
     fontLarge = "Interface\\AddOns\\BetterBlizzFrames\\media\\fonts\\Expressway_Free.ttf"
 else
     -- Get game's default font path which already supports the current locale
@@ -4691,17 +4691,6 @@ local function guiGeneralTab()
     alpha:SetScale(1.4)
     alpha:SetAlpha(0.03)
 
-    local alpha2 = BetterBlizzFrames:CreateFontString(nil, "BACKGROUND", "GameFontNormal")
-    alpha2:SetPoint("BOTTOM", SettingsPanel, "TOP", 0, 0)
-    alpha2:SetText(string.format(L["Beta_Warning_Text"], (BBF.isMoP and "MoP" or BBF.isTBC and "TBC" or BBF.isEra and "Era" or BBF.isForever and "Forever" or "Cata")))
-    alpha2:SetFont(STANDARD_TEXT_FONT, 20, "OUTLINE")
-    alpha2:Hide()
-    BetterBlizzFrames:HookScript("OnShow",function()
-        alpha2:Show()
-    end)
-    BetterBlizzFrames:HookScript("OnHide",function()
-        alpha2:Hide()
-    end)
 
     if BetterBlizzFrames.titleText then
         BetterBlizzFrames.titleText:Hide()
@@ -5473,7 +5462,7 @@ local function guiGeneralTab()
 
     local filterSystemMessages = CreateCheckbox("filterSystemMessages", L["System_Messages"], BetterBlizzFrames, nil, BBF.ChatFilterCaller)
     filterSystemMessages:SetPoint("TOPLEFT", filterNpcArenaSpam, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltip(filterSystemMessages, L["Tooltip_Filter_System_Messages"])
+    CreateTooltipTwo(filterSystemMessages, L["System_Messages"], L["Tooltip_Filter_System_Messages"])
 
     local filterMiscInfo = CreateCheckbox("filterMiscInfo", L["Misc_Info"], BetterBlizzFrames, nil, BBF.ChatFilterCaller)
     filterMiscInfo:SetPoint("TOPLEFT", filterSystemMessages, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
@@ -6265,12 +6254,12 @@ local function guiCastbars()
     local partyCastbarIconYPos = CreateSlider(contentFrame, L["Icon_Y_Offset"], -50, 50, 1, "partyCastbarIconYPos")
     partyCastbarIconYPos:SetPoint("TOP", partyCastbarIconXPos, "BOTTOM", 0, -15)
 
-    local partyCastBarTestMode = CreateCheckbox("partyCastBarTestMode", L["Test"], contentFrame, nil, BBF.partyCastBarTestMode)
-    partyCastBarTestMode:SetPoint("TOPLEFT", partyCastbarIconYPos, "BOTTOMLEFT", 10, -4)
-    CreateTooltip(partyCastBarTestMode, L["Tooltip_Castbar_Test"])
+    local partyCastbarSelf = CreateCheckbox("partyCastbarSelf", L["Self"], contentFrame, nil, BBF.partyCastBarTestMode)
+    partyCastbarSelf:SetPoint("TOPLEFT", partyCastbarIconYPos, "BOTTOMLEFT", 10, -4)
+    CreateTooltip(partyCastbarSelf, L["Tooltip_Show_Party_Castbar"])
 
     local partyCastBarTimer = CreateCheckbox("partyCastBarTimer", L["Timer"], contentFrame, nil, BBF.partyCastBarTestMode)
-    partyCastBarTimer:SetPoint("LEFT", partyCastBarTestMode.Text, "RIGHT", 10, 0)
+    partyCastBarTimer:SetPoint("LEFT", partyCastbarSelf.Text, "RIGHT", 10, 0)
     CreateTooltipTwo(partyCastBarTimer, L["Timer"], L["Tooltip_Castbar_Timer"] .. "\n\n|cff32f795" .. L["Right_Click_To_Open_Options"] .. "|r")
     partyCastBarTimer:HookScript("OnMouseDown", function(_, button)
         if button == "RightButton" then
@@ -6280,12 +6269,9 @@ local function guiCastbars()
     end)
     partyCastBarTimer:HookScript("OnClick", BBF.RefreshCastBarTimerOptions)
 
-    local partyCastbarSelf = CreateCheckbox("partyCastbarSelf", L["Self"], contentFrame, nil, BBF.partyCastBarTestMode)
-    partyCastbarSelf:SetPoint("TOPLEFT", partyCastBarTimer, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
-    CreateTooltip(partyCastbarSelf, L["Tooltip_Show_Party_Castbar"])
 
     local showPartyCastBarIcon = CreateCheckbox("showPartyCastBarIcon", L["Icon"], contentFrame, nil, BBF.partyCastBarTestMode)
-    showPartyCastBarIcon:SetPoint("TOPLEFT", partyCastBarTestMode, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    showPartyCastBarIcon:SetPoint("TOPLEFT", partyCastbarSelf, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
 
     local partyCastbarShowText = CreateCheckbox("partyCastbarShowText", L["Text"], contentFrame, nil, BBF.partyCastBarTestMode)
     partyCastbarShowText:SetPoint("TOPLEFT", showPartyCastBarIcon, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
@@ -6546,16 +6532,13 @@ local function guiCastbars()
     local petCastBarIconScale = CreateSlider(contentFrame, L["Icon_Size"], 0.4, 2, 0.01, "petCastBarIconScale")
     petCastBarIconScale:SetPoint("TOP", petCastBarHeight, "BOTTOM", 0, -15)
 
-    local petCastBarTestMode = CreateCheckbox("petCastBarTestMode", L["Test"], contentFrame, nil, BBF.petCastBarTestMode)
-    petCastBarTestMode:SetPoint("TOPLEFT", petCastBarIconScale, "BOTTOMLEFT", 10, -4)
-    CreateTooltip(petCastBarTestMode, L["Tooltip_Need_Pet"])
 
     local petCastBarTimer = CreateCheckbox("petCastBarTimer", L["Timer"], contentFrame, nil, BBF.petCastBarTestMode)
-    petCastBarTimer:SetPoint("LEFT", petCastBarTestMode.Text, "RIGHT", 10, 0)
+    petCastBarTimer:SetPoint("TOPLEFT", petCastBarIconScale, "BOTTOMLEFT", 10, -4)
     CreateTooltip(petCastBarTimer, L["Tooltip_Castbar_Timer"])
 
     local showPetCastBarIcon = CreateCheckbox("showPetCastBarIcon", L["Icon"], contentFrame, nil, BBF.petCastBarTestMode)
-    showPetCastBarIcon:SetPoint("TOPLEFT", petCastBarTestMode, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    showPetCastBarIcon:SetPoint("TOPLEFT", petCastBarTimer, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
 
     local petDetachCastbar = CreateCheckbox("petDetachCastbar", L["Castbar_Detach"], contentFrame, nil, BBF.petCastBarTestMode)
     petDetachCastbar:SetPoint("TOPLEFT", showPetCastBarIcon, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
@@ -7048,6 +7031,22 @@ local function guiCastbars()
         OpenColorPicker("castBarNoInterruptColor", castBarNoInterruptColorIcon)
     end)
 
+    local castbarTestButton = CreateFrame("Button", nil, contentFrame, "GameMenuButtonTemplate")
+    castbarTestButton:SetSize(132, 30)
+    castbarTestButton:SetNormalFontObject("GameFontNormal")
+    castbarTestButton:SetHighlightFontObject("GameFontHighlight")
+    castbarTestButton:SetPoint("LEFT", castBarNoInterruptColorIcon, "RIGHT", 50, 1)
+    local function UpdateCastbarTestButtonText()
+        castbarTestButton:SetText(BBF.castbarTestMode and L["Stop_Test"] or L["Test_Castbars"])
+    end
+    castbarTestButton:SetScript("OnClick", function()
+        BBF.ToggleAllCastbarTests()
+        UpdateCastbarTestButtonText()
+    end)
+    castbarTestButton:HookScript("OnShow", UpdateCastbarTestButtonText)
+    UpdateCastbarTestButtonText()
+    CreateTooltipTwo(castbarTestButton, L["Test_Castbars"], L["Tooltip_Test_Castbars_Desc"], L["Tooltip_Test_Castbars_Note"])
+
     local castBarDelayedInterruptColor = CreateFrame("Button", nil, castBarRecolorInterrupt, "UIPanelButtonTemplate")
     castBarDelayedInterruptColor:SetText(L["Interrupt_CD_Soon"])
     castBarDelayedInterruptColor:SetPoint("TOPLEFT", castBarNoInterruptColor, "BOTTOMLEFT", 0, -5)
@@ -7454,7 +7453,7 @@ local function guiPositionAndScale()
     anchorSubOutOfCombat:SetText(L["Combat_Indicator"])
 
     --CreateBorderBox(anchorSubOutOfCombat)
-    CreateBorderedFrame(anchorSubOutOfCombat, 165, 293, 0, -98, contentFrame)
+    CreateBorderedFrame(anchorSubOutOfCombat, 165, 308, 0, -105.5, contentFrame)
 
     local combatIconSub = contentFrame:CreateTexture(nil, "ARTWORK")
     combatIconSub:SetTexture("Interface\\Icons\\ABILITY_DUALWIELD")
@@ -7514,8 +7513,32 @@ local function guiPositionAndScale()
     end)
     CreateTooltip(combatIndicatorPlayersOnly, L["Tooltip_Players_Only"])
 
+    local combatIndicatorRound = CreateCheckbox("combatIndicatorRound", L["Round_Icon"], contentFrame)
+    combatIndicatorRound:SetPoint("TOPLEFT", combatIndicatorAssumePalaCombat, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    combatIndicatorRound:HookScript("OnClick", function(self)
+        BBF.CombatIndicatorCaller()
+    end)
+    CreateTooltip(combatIndicatorRound, L["Tooltip_Combat_Round_Icon"])
+
+    local combatIndicatorHumanoidOnly = CreateCheckbox("combatIndicatorHumanoidOnly", L["Humanoids_Only"], contentFrame)
+    combatIndicatorHumanoidOnly:SetPoint("TOPLEFT", combatIndicatorRound, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
+    CreateTooltip(combatIndicatorHumanoidOnly, L["Tooltip_Humanoids_Only"])
+
+    local combatIndicatorCampfire = CreateCheckbox("combatIndicatorCampfire", L["Show_Out_Of_Combat"], combatIndicatorHumanoidOnly)
+    combatIndicatorCampfire:SetPoint("TOPLEFT", combatIndicatorHumanoidOnly, "BOTTOMLEFT", 15, pixelsBetweenBoxes)
+    combatIndicatorCampfire:SetMotionScriptsWhileDisabled(true)
+    combatIndicatorCampfire:HookScript("OnClick", function(self)
+        BBF.CombatIndicatorCaller()
+    end)
+    CreateTooltipTwo(combatIndicatorCampfire, L["Show_Out_Of_Combat"], L["Tooltip_Combat_Campfire"], L["Tooltip_Needs_Humanoids_Only"])
+
+    combatIndicatorHumanoidOnly:HookScript("OnClick", function(self)
+        CheckAndToggleCheckboxes(self)
+        BBF.CombatIndicatorCaller()
+    end)
+
     local playerCombatIndicator = CreateCheckbox("playerCombatIndicator", L["Player"], contentFrame)
-    playerCombatIndicator:SetPoint("TOPLEFT", combatIndicatorShowSap, "BOTTOMLEFT", -5, -17)
+    playerCombatIndicator:SetPoint("TOPLEFT", combatIndicatorCampfire, "BOTTOMLEFT", -15, -8)
     playerCombatIndicator:HookScript("OnClick", function(self)
         BBF.CombatIndicatorCaller()
     end)
@@ -7632,7 +7655,7 @@ local function guiPositionAndScale()
     CreateTooltipTwo(castBarInterruptIconFocus, L["Show_On_Focus"])
 
     local castBarInterruptIconShowActiveOnly = CreateCheckbox("castBarInterruptIconShowActiveOnly", L["Tooltip_Only_Show_If_Available_Desc"], contentFrame, nil, BBF.UpdateInterruptIconSettings)
-    castBarInterruptIconShowActiveOnly:SetPoint("TOPLEFT", castBarInterruptIconTarget, "BOTTOMLEFT", -20, pixelsBetweenBoxes)
+    castBarInterruptIconShowActiveOnly:SetPoint("TOPLEFT", castBarInterruptIconTarget, "BOTTOMLEFT", -17, pixelsBetweenBoxes)
     CreateTooltipTwo(castBarInterruptIconShowActiveOnly, L["Tooltip_Only_Show_If_Available_Desc"], L["Tooltip_Only_Show_Available"])
 
     local interruptIconBorder = CreateCheckbox("interruptIconBorder", L["Border_Status_Color"], contentFrame, nil, BBF.UpdateInterruptIconSettings)
@@ -8740,6 +8763,8 @@ local function guiFrameAuras()
     local personalAuraSettings = contentFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     personalAuraSettings:SetPoint("TOP", PlayerAuraBorder, "BOTTOM", 0, -5)
     personalAuraSettings:SetText(L["Player_Aura_Settings"])
+    personalAuraSettings:SetFont(fontLarge, 15)
+    personalAuraSettings:SetTextColor(1, 1, 1)
 
     if not BBF.isTBC and not BBF.isMoP and not BBF.isEra then
         local repositionBuffFrame = CreateCheckbox("repositionBuffFrame", L["Move_Auras"], contentFrame)
@@ -8759,6 +8784,8 @@ local function guiFrameAuras()
     local targetAndFocusAuraSettings = contentFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     targetAndFocusAuraSettings:SetPoint("TOP", targetAuraBorder, "BOTTOMRIGHT", 20, -5)
     targetAndFocusAuraSettings:SetText(L["Target_And_Focus_Aura_Settings"])
+    targetAndFocusAuraSettings:SetFont(fontLarge, 15)
+    targetAndFocusAuraSettings:SetTextColor(1, 1, 1)
 
     --------------------------
     -- Frame settings
@@ -8877,6 +8904,8 @@ local function guiFrameAuras()
     local moreAuraSettings = contentFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     moreAuraSettings:SetPoint("TOP", PlayerAuraBorder, "BOTTOM", -100, -215)
     moreAuraSettings:SetText(L["More_Aura_Settings"])
+    moreAuraSettings:SetFont(fontLarge, 15)
+    moreAuraSettings:SetTextColor(1, 1, 1)
 
     local displayDispelGlowAlways = CreateCheckbox("displayDispelGlowAlways", L["Always_Show_Purge_Texture"], playerAuraFiltering)
     displayDispelGlowAlways:SetPoint("TOPLEFT", moreAuraSettings, "BOTTOMLEFT", -10, -3)

@@ -1531,11 +1531,11 @@ local function MakeClassicFrame(frame)
         PetFrameOverAbsorbGlow:SetParent(PetFrame)
         PetFrameOverAbsorbGlow:SetDrawLayer("ARTWORK", 7)
 
-        PetAttackModeTexture:SetSize(76, 64)
+        PetAttackModeTexture:SetSize(78, 65)
         PetAttackModeTexture:SetTexture("Interface\\TargetingFrame\\UI-Player-AttackStatus")
         PetAttackModeTexture:SetTexCoord(0.703125, 1, 0, 1)
         PetAttackModeTexture:ClearAllPoints()
-        PetAttackModeTexture:SetPoint("TOPLEFT", 6, -9)
+        PetAttackModeTexture:SetPoint("TOPLEFT", 7, -8)
 
         PetHitIndicator:ClearAllPoints()
         PetHitIndicator:SetPoint("CENTER", PetFrame, "TOPLEFT", 28, -27)
@@ -2101,6 +2101,7 @@ function BBF.ClassicFrames()
 
     MakeClassicPartyFrame()
     BBF.UpdateClassicPvpCircles()
+    BBF.ClassicTargetCombatSwords()
 
     AdjustAlternateBars()
     SortLocalizationChanges()

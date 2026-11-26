@@ -196,10 +196,13 @@ function BBF.UpdateRacialIndicatorBorder(indicator)
             else
                 border:SetAtlas("UI-HUD-UnitFrame-SmallCircle")
             end
-            border:SetSize(31, 31)
             border:SetPoint("CENTER", indicator, "CENTER")
             border:SetDrawLayer("ARTWORK", 1)
         end
+    end
+    if style ~= "default" then
+        local ringSize = indicator:GetWidth() * 1.55
+        border:SetSize(ringSize, ringSize)
     end
     if style == "pvp" then
         local r, g, b, desaturate = BBF.GetPvpCircleColor()
@@ -211,6 +214,33 @@ function BBF.UpdateRacialIndicatorBorder(indicator)
         return 1, 1, 0, false
     end
     return 1, 0.9, 0.19, BBF.ClassicHDBronze and BBF.ClassicHDBronze()
+end
+
+function BBF.ColorRoundIndicatorBorder(indicator, unit)
+    local border = indicator.border
+    local borderR, borderG, borderB, borderBronze = BBF.UpdateRacialIndicatorBorder(indicator)
+    if not borderR then return end
+    local darkModeOn = BetterBlizzFramesDB.darkModeUi
+    local vertexColor = darkModeOn and BetterBlizzFramesDB.darkModeColor or 1
+    if borderBronze and not darkModeOn then
+        border:SetDesaturated(false)
+        border:SetVertexColor(1, 1, 1)
+        return
+    end
+    border:SetDesaturated(true)
+    if BetterBlizzFramesDB.classColorFrameTexture and UnitIsPlayer(unit) then
+        local class = UnitClassBase(unit)
+        local classColor = class and RAID_CLASS_COLORS[class]
+        if classColor then
+            border:SetVertexColor(classColor.r, classColor.g, classColor.b)
+            return
+        end
+    end
+    if darkModeOn then
+        border:SetVertexColor(vertexColor, vertexColor, vertexColor)
+    else
+        border:SetVertexColor(borderR, borderG, borderB)
+    end
 end
 
 BBF.popupBuilders["BBF_RACIAL_INDICATOR_RACES"] = function()

@@ -31,8 +31,8 @@ BBF.TextAreaLayouts = {
             { style = "classic", mode = "none", mana = "hidden", healthY = 0.5 },
             { client = "forever", style = "classic", mode = "none", left = 2, right = 0.5, healthY = -0.5, manaY = -0.5, textLeft = 0.5, textRight = 2.5, sharedTextRight = true },
             { style = "classic", mode = "none", left = 2, right = 0, healthY = -1, manaY = -0.5 },
-            { style = "camelot", mode = "xl", healthY = -1 },
-            { style = "camelot", mode = "big" },
+            { style = "camelot", mode = "xl", healthY = -1, manaY = -0.5 },
+            { style = "camelot", mode = "big", manaY = -0.5 },
             { style = "camelot", left = 1.5, right = 1, top = -0.5, textLeft = 0.5, textRight = 4 },
         },
     },
@@ -70,8 +70,8 @@ BBF.TextAreaLayouts = {
             { style = "camelot", mode = "xl", mana = "hidden", healthY = -1, manaY = -0.5, own = { healthY = true, manaY = true } },
             { style = "camelot", mode = "big", mana = "hidden", healthY = -0.5, manaY = -0.5, own = { healthY = true, manaY = true } },
             { style = "camelot", mana = "hidden", manaY = -0.5, own = { manaY = true } },
-            { style = "camelot", mode = "reduced", manaY = -0.5, own = { manaY = true } },
-            { style = "camelot", mode = "big", manaY = -0.5, own = { manaY = true } },
+            { style = "camelot", mode = "reduced", healthY = -1, manaY = -0.5, own = { healthY = true, manaY = true } },
+            { style = "camelot", mode = "big", healthY = -1.5, manaY = -0.5, own = { healthY = true, manaY = true } },
             { client = "forever", style = "camelot", mode = "none", notBase = true, left = 1, right = -4.5, top = -0.5, healthY = -0.5, manaY = -0.5, textLeft = 2, textRight = 3.5, own = { healthY = true, manaY = true, textLeft = true } },
             { style = "camelot", left = 1, right = -4.5, top = -0.5, healthY = -0.5, manaY = -0.5, textLeft = 1, textRight = 3.5, own = { healthY = true, manaY = true } },
         },
@@ -203,12 +203,12 @@ end
 
 BBF.NameLayouts = {
     player = { { style = "classic", inside = true, y = -13 }, { inside = true, y = -12 }, { client = "retail", symmetric = true, mode = "xl", mana = "hidden", y = 0.5 }, { client = "retail", symmetric = true, mode = "big", y = 1 }, { client = "retail", style = "retail", mode = "xl", mana = "hidden", y = 1 }, { style = "retail", y = 1.5 },
-        { client = "forever", style = "classic", mode = "none", y = 3 }, { style = "classic", mode = "none", y = 3.5 }, { style = "classic", y = 2 }, { style = "camelot", mode = "xl", mana = "hidden", y = 3 }, { style = "camelot", mode = "xl", y = 2 },
-        { style = "camelot", mode = "reduced", y = 2 }, { y = 1 } },
+        { client = "forever", style = "classic", mode = "none", y = 3 }, { style = "classic", mode = "none", y = 3.5 }, { style = "classic", y = 2 }, { style = "camelot", mode = "xl", mana = "hidden", y = 3 }, { style = "camelot", mode = "xl", y = 2.5 },
+        { style = "camelot", mode = "reduced", y = 2.5 }, { client = "forever", style = "camelot", mode = "none", y = 1.5 }, { y = 1 } },
     target = { { client = "forever", style = "classic", mode = "none", y = 3, own = true }, { style = "classic", mode = "none", y = 3.5, own = true }, { style = "classic", mode = "big", mana = "hidden", inside = true, y = -13.5, own = true },
         { style = "classic", mode = "big", mana = "hidden", y = 2, own = true }, { client = "forever", style = "classic", mode = "big", inside = false, y = 2, own = true }, { style = "classic", mode = "big", inside = false, y = 2.5, own = true }, { inside = true, y = -12 }, { client = "retail", style = "retail", mode = "xl", mana = "hidden", left = 23, right = 5, centerX = -14, width = -8, centerWidth = -14, y = 0.5, own = true }, { client = "retail", style = "retail", mode = "none", minus = true, left = 24.5, right = -5, centerX = -14, width = -8, centerWidth = -14, y = 1, own = true }, { client = "retail", style = "retail", left = 23, right = 5, centerX = -14, width = -8, centerWidth = -14, y = 1, own = true }, { client = "forever", style = "retail", mode = "big", left = 2, right = 2, width = -6, y = 2 }, { style = "retail", y = 2 }, { style = "camelot", mode = "none", mana = "hidden", y = -2, own = true },
         { style = "camelot", mode = "xl", mana = "hidden", y = 2, own = true },
-        { style = "camelot", mode = "big", mana = "hidden", y = 1.5, own = true }, { client = "forever", style = "camelot", mode = "none", y = 1, own = true }, { style = "camelot", mode = "none", y = 0.5, own = true }, { y = 1 } },
+        { style = "camelot", mode = "big", mana = "hidden", y = 1.5, own = true }, { style = "camelot", mode = "big", y = 2, own = true }, { client = "forever", style = "camelot", mode = "none", y = 1, own = true }, { style = "camelot", mode = "none", y = 0.5, own = true }, { y = 1 } },
     tot = { { classicToT = true, below = true, y = -4 }, { inside = true, y = -10 }, { style = "pixel", y = 1 }, { style = "retail", y = 2 },
         { style = "classic", mode = "big", mana = "hidden", y = -28 }, { style = "classic", y = -29 },
         { style = "camelot", mode = "xl", mana = "hidden", y = 2 }, { style = "camelot", mode = "xl", y = 2 },
@@ -709,11 +709,20 @@ function BBF.TextAreaManaRightShift(frame, healthBar, manaBar)
     return (manaRight * manaScale - healthRight * healthScale) / healthScale
 end
 
-local function BoxGeometry(frame, v, healthBar, manaBar)
+local lastMeasure = {}
+
+local function BoxGeometry(frame, v, setup, healthBar, manaBar)
     local healthHeight, gap = v.healthHeight, v.gap
     if not healthHeight or not gap then
+        local key = tostring(healthBar) .. tostring(manaBar) .. setup.style .. tostring(setup.mode) .. tostring(setup.manaHidden) .. tostring(setup.minus) .. tostring(setup.inside)
         local height, measuredGap = MeasureBars(frame, healthBar, manaBar)
-        if not height then return end
+        if height then
+            lastMeasure[key] = { height, measuredGap }
+        elseif lastMeasure[key] then
+            height, measuredGap = lastMeasure[key][1], lastMeasure[key][2]
+        else
+            return
+        end
         healthHeight = healthHeight or (height + (v.top or 0))
         gap = gap or measuredGap
     end
@@ -835,7 +844,7 @@ local function Relayout(frame)
     local v, setup = BBF.TextAreaResolve(frame)
     local healthBar, manaBar = Bars(frame)
     if not v or not healthBar or not manaBar then return end
-    local healthHeight, gap = BoxGeometry(frame, v, healthBar, ManaEdge(frame, setup, manaBar))
+    local healthHeight, gap = BoxGeometry(frame, v, setup, healthBar, ManaEdge(frame, setup, manaBar))
     local manaChanged = ManaHidden(manaBar) ~= area.manaHidden
     if healthHeight ~= area.healthHeight or gap ~= area.gap or manaChanged then
         BBF.ApplyTextArea(frame)
@@ -1127,7 +1136,7 @@ local function ApplyTextArea(frame)
         else
             SnapPoint(area, "BOTTOMRIGHT", manaEdge, "BOTTOMRIGHT", v.right, v.bottom)
         end
-        local healthHeight, gap = BoxGeometry(frame, v, healthBar, manaEdge)
+        local healthHeight, gap = BoxGeometry(frame, v, setup, healthBar, manaEdge)
         area.healthHeight, area.gap = healthHeight, gap
         if healthHeight then
             healthHeight, gap = SnapLength(area, healthHeight), SnapLength(area, gap)

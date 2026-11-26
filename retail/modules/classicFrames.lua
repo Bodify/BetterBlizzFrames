@@ -1700,7 +1700,7 @@ local function AdjustAlternateBars()
     AlternatePowerBar:ClearAllPoints()
     AlternatePowerBar:SetPoint("BOTTOMLEFT", 95, 16)
 
-    AlternatePowerBarText:SetPoint("CENTER", 2, -1)
+    AlternatePowerBarText:SetPoint("CENTER", 0, -1)
     AlternatePowerBar.LeftText:SetPoint("LEFT", 0, -1)
     AlternatePowerBar.RightText:SetPoint("RIGHT", 0, -1)
 
@@ -2227,6 +2227,7 @@ function BBF.ClassicFrames()
 
     MakeClassicPartyFrame()
     BBF.classicFramesBuilt = true
+    BBF.ClassicTargetCombatSwords()
 
     AdjustAlternateBars()
     SortLocalizationChanges()

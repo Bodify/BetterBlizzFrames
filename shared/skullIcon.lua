@@ -28,7 +28,11 @@ function BBF.UpdateSkullIcon(frame, defaultWidth, defaultHeight)
         width, height, xOffset, yOffset = NewSkullSize(frame, skull)
     end
     skull:ClearAllPoints()
-    skull:SetPoint("CENTER", levelText, "CENTER", xOffset or 0, yOffset or 0)
+    if BBF.isForever and frame.isBossFrame then
+        skull:SetPoint("CENTER", content.TargetFrameContentMain.LevelBackgroundCircle, "CENTER", 0, 0)
+    else
+        skull:SetPoint("CENTER", levelText, "CENTER", xOffset or 0, yOffset or 0)
+    end
     if newSkull then
         skull:SetAtlas(NEW_ATLAS)
         skull:SetSize(width, height)

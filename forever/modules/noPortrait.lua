@@ -491,7 +491,7 @@ end
 
 local PARTY_DEFAULT_MASK = "UI-HUD-UnitFrame-Player-PortraitOn-Bar-Health-Mask"
 local PARTY_DEFAULT_MANA_MASK = "UI-HUD-UnitFrame-Target-PortraitOn-Bar-Health-Mask"
-local PARTY_DEFAULT_MANA_MASK_HEIGHT = 13.5
+local PARTY_DEFAULT_MANA_MASK_HEIGHT = 14
 
 local function SetDefaultPartyManaMaskHeight(frame)
     local mask = frame.ManaBar and frame.ManaBar.ManaBarMask
@@ -516,9 +516,9 @@ local function PlaceRetailPartyBars(frame)
 end
 
 local partyManaLayout = {
-    default = { 11, -30, 73.5, 12, 2 },
-    reduced = { 11, -29, 73.5, 14, 2.5 },
-    big = { 11, -29, 74, 14, 2 },
+    default = { 11, -30, 73.5, 14, 2, 1.5 },
+    reduced = { 11, -29, 73.5, 14, 2.5, 1 },
+    big = { 11, -29, 74, 14, 2, 1 },
 }
 
 local function PlacePartyManaBar(frame, bars, manaBar, mask, mode)
@@ -529,7 +529,7 @@ local function PlacePartyManaBar(frame, bars, manaBar, mask, mode)
         mask:SetAtlas(PARTY_DEFAULT_MANA_MASK)
         mask:SetSize(layout[3], layout[4])
         mask:ClearAllPoints()
-        mask:SetPoint("TOPLEFT", manaBar, "TOPLEFT", layout[5], 1)
+        mask:SetPoint("TOPLEFT", manaBar, "TOPLEFT", layout[5], layout[6])
     end
 end
 
