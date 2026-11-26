@@ -4919,7 +4919,7 @@ local function guiGeneralTab()
 
     local playerFrameClickthrough = CreateCheckbox("playerFrameClickthrough", L["Clickthrough"], BetterBlizzFrames, nil, BBF.ClickthroughFrames)
     playerFrameClickthrough:SetPoint("TOPLEFT", playerFrameText, "BOTTOMLEFT", -24, editModeIntroduced and -1 or -26)
-    CreateTooltip(playerFrameClickthrough, L["Tooltip_Clickthrough"])
+    CreateTooltipTwo(playerFrameClickthrough, L["Clickthrough"], L["Tooltip_Clickthrough"])
 
     local textures = 3
     local playerEliteFrame = CreateCheckbox("playerEliteFrame", L["Elite_Texture"], BetterBlizzFrames)
@@ -5333,7 +5333,7 @@ local function guiGeneralTab()
 
     local targetFrameClickthrough = CreateCheckbox("targetFrameClickthrough", L["Clickthrough"], BetterBlizzFrames, nil, BBF.ClickthroughFrames)
     targetFrameClickthrough:SetPoint("TOPLEFT", targetFrameText, "BOTTOMLEFT", -24, editModeIntroduced and -1 or -26)
-    CreateTooltip(targetFrameClickthrough, L["Tooltip_Target_Clickthrough"])
+    CreateTooltipTwo(targetFrameClickthrough, L["Clickthrough"], L["Tooltip_Target_Clickthrough"])
 
     local hideTargetName = CreateCheckbox("hideTargetName", L["Hide_Names"], BetterBlizzFrames, nil, BBF.UpdateNameSettings)
     hideTargetName:SetPoint("TOPLEFT", targetFrameClickthrough, "BOTTOMLEFT", 0, pixelsBetweenBoxes)
@@ -5489,7 +5489,7 @@ local function guiGeneralTab()
 
     local focusFrameClickthrough = CreateCheckbox("focusFrameClickthrough", L["Clickthrough"], BetterBlizzFrames, nil, BBF.ClickthroughFrames)
     focusFrameClickthrough:SetPoint("TOPLEFT", focusFrameText, "BOTTOMLEFT", -24, editModeIntroduced and -1 or -26)
-    CreateTooltip(focusFrameClickthrough, L["Tooltip_Focus_Clickthrough"])
+    CreateTooltipTwo(focusFrameClickthrough, L["Clickthrough"], L["Tooltip_Focus_Clickthrough"])
 
     local hideFocusName = CreateCheckbox("hideFocusName", L["Hide_Names"], BetterBlizzFrames, nil, BBF.UpdateNameSettings)
     hideFocusName:SetPoint("TOPLEFT", focusFrameClickthrough, "BOTTOMLEFT", 0, pixelsBetweenBoxes)

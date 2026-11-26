@@ -6538,7 +6538,7 @@ local function guiGeneralTab()
 
     local playerFrameClickthrough = CreateCheckbox("playerFrameClickthrough", L["Clickthrough"], BetterBlizzFrames, nil, BBF.ClickthroughFrames)
     playerFrameClickthrough:SetPoint("LEFT", BetterBlizzFrames.playerFrameHidden.text, "RIGHT", 5, 0)
-    CreateTooltip(playerFrameClickthrough, L["Tooltip_Clickthrough"])
+    CreateTooltipTwo(playerFrameClickthrough, L["Clickthrough"], L["Tooltip_Clickthrough"])
     playerFrameClickthrough:HookScript("OnClick", function(self)
         if not self:GetChecked() then
             BBF.ShowPopup("BBF_CONFIRM_RELOAD")
@@ -7210,7 +7210,7 @@ local function guiGeneralTab()
 
     local targetFrameClickthrough = CreateCheckbox("targetFrameClickthrough", L["Clickthrough"], BetterBlizzFrames, nil, BBF.ClickthroughFrames)
     targetFrameClickthrough:SetPoint("TOPLEFT", targetFrameText, "BOTTOMLEFT", -24, pixelsOnFirstBox)
-    CreateTooltip(targetFrameClickthrough, L["Tooltip_Target_Clickthrough"])
+    CreateTooltipTwo(targetFrameClickthrough, L["Clickthrough"], L["Tooltip_Target_Clickthrough"])
     targetFrameClickthrough:HookScript("OnClick", function(self)
         if not self:GetChecked() then
             BBF.ShowPopup("BBF_CONFIRM_RELOAD")
@@ -7389,7 +7389,7 @@ local function guiGeneralTab()
 
     local focusFrameClickthrough = CreateCheckbox("focusFrameClickthrough", L["Clickthrough"], BetterBlizzFrames, nil, BBF.ClickthroughFrames)
     focusFrameClickthrough:SetPoint("TOPLEFT", focusFrameText, "BOTTOMLEFT", -24, pixelsOnFirstBox)
-    CreateTooltip(focusFrameClickthrough, L["Tooltip_Focus_Clickthrough"])
+    CreateTooltipTwo(focusFrameClickthrough, L["Clickthrough"], L["Tooltip_Focus_Clickthrough"])
     focusFrameClickthrough:HookScript("OnClick", function(self)
         if not self:GetChecked() then
             BBF.ShowPopup("BBF_CONFIRM_RELOAD")
