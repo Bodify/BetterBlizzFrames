@@ -1,90 +1,46 @@
-# BetterBlizzFrames 2.2.3c
+# BetterBlizzFrames 2.2.4
 ## All versions
 ### New
-- New setting in Misc: Hide Heal Prediction. Hides the green heal prediction bar on frames.
-## Retail & Forever
+- Combat Indicator: New "Round icon" setting. Round icon with a ring border like Racial Indicator.
+- Castbars: New "Test Castbars" button to test all castbars while you're adjusting.
 ### Tweak
-- Minor skull level icon position tweak.
-- Minor player aura icon mask tweaks.
-- Loss of Control Tweaks: Remove Red Tint is now on by default for it.
+- Chat Filter System Messages: Added a warning that it can cause chat spam together with other addons. Unsure of cause but if you are having that issue consider trying it off. Based off of reports but I cannot replicate myself.
+- Class Color Level Text no longer colors the level on NPCs, that gets the normal level coloring instead.
+- Clickthrough Player/Target/FocusFrame can now be shift-clicked in combat too. (Thanks DecepUK for the PR #93)
+## Retail & Forever
+### New
+- New Nepminjoong profile (www.youtube.com/@nepminjoong). Thank you for sharing!
+- New PlayerFrame "Dispel Glow" setting. Show dispel glow around PlayerFrame when affected by things you can dispel.
+- Big Debuffs: New font setting for the timer text in the rightclick popup. Also now uses the UnitFrame Value Font by default if that is enabled.
+- Classic Frames: New "Show Combat Swords on Target" setting in Misc. Shows the Classic Frames PlayerFrame combat swords over the Target and FocusFrame level too.
+### Tweak
+- PartyFrame castbars now use the UnitFrame font and the All Fonts setting.
+- Hide Prestige & PvP Icon now also hides the PvP icon on PartyFrames.
 ### Bugfix
-- Fix legacy combo points color with Classic Frames + HD Textures by Mo and some other bronze settings not acting as intended.
-- Fix a potential nil error with castbar settings
+- Fix RP names (TRP3) setting causing either no name to show or a npc name on players.
+- Fix interrupt icon showing the GCD and wand as a cooldown for Silence.
+- Fix Target mana text sometimes moving out of place.
 ## Retail
-### Tweak
-- Classic Frames: Level text and level ring positioned better (like on Forever too)
+### Bugfix
+- Fix the AlternatePowerBar sometimes showing when it shouldnt.
 ## Forever
 ### New
-- Remove Bronze Tint from ActionBars is now Remove Bronze Tint, with a dropdown for ActionBars and Castbars.
-- Popup to fix OneForAll's Class Color settings conflicting with BBF.
+- Combat Indicator: New "Humanoids only" setting to only show sap on units that can be sapped, with "Show out of combat" to show a campfire on the rest.
+- Big Debuffs: Silence (Priest) added to interrupts (the interrupt effect).
+- Minimap Tweaks: New "Hide Calendar" setting for Classic Minimap. (and classic minimap now has calendar shown by default)
 ### Tweak
-- Update Jazggz profile (www.twitch.tv/jazggz). Thank you for sharing!
-- Update Ceit profile (www.twitch.tv/ceitxd). Thank you for sharing!
-- Legacy Combo Points now look and sit like in Classic Era as intended. Their X/Y offsets have been reset.
-- Minor default Target/Focus healthbar position tweak.
-
-# BetterBlizzFrames 2.2.3
-## All versions
+- Classic Minimap now has the classic calendar button.
+- Fix skull level icon on boss frames being positioned in retail position.
+- Minor pixel tweaks to the default mana bars, name backgrounds, health masks and name/text positions.
+- Classic Frames: Pet attack glow tweaked position of a bit.
 ### Bugfix
-- Fix right-click options on settings from search results not always working.
-## Retail & Forever
+- Fix BBF not taking Blizzards "Show Secondary Name" setting into consideration for PlayerFrame. This will allow you to have one name on yourself but not others.
+## Classics
 ### New
-- Aura Whitelist/Blacklist: You can now enter the exact spell name to add all auras with that name. Case-sensitive.
-## Forever
+- Combat Indicator: New "Humanoids only" setting to only show sap on units that can be sapped, with "Show out of combat" to show a campfire on the rest.
 ### Tweak
-- Update Mmarkers profile (www.twitch.tv/mmarkers). Thank you for sharing!
-- Minor default level txt position tweak with classicframes+hdtextures by mo on.
-- Minor healthbar mask tweak on target frame with big healthbar.
+- Racial Indicator ring can now be class colored.
+- Dark Mode now also darkens the top minimap border.
 ### Bugfix
-- Fix interrupt and purge detection not working with higher spell ranks.
-
-# BetterBlizzFrames 2.2.2e
-## Retail & Forever
-### Bugfix
-- Fix secret error with reputation color in bgs/instances
-
-# BetterBlizzFrames 2.2.2d
-## Retail & Forever
-### New
-- Racial Indicator now has dropdown for npc types to show/hide as well.
-### Tweak
-- Fix and improve other "classic style" addons detection like ClasscUI Forever. If that addons unitframe settings is disabled BBF's now correctly work. These changes are fully based on reports and whats possible and not. If you have feedback lmk.
-
-# BetterBlizzFrames 2.2.2c
-## Forever
-### Tweak
-- Couple of minor pixel tweaks and changes
-
-# BetterBlizzFrames 2.2.2
-## All versions
-### New
-- Misc: Tooltip Tweaks: "Faction Icon" setting. Replaces the faction text with an icon after the name.
-- Misc: Tooltip Tweaks: "Class In Level Line" setting. Shows "Level 28 Human Paladin" instead of "Level 28 Human (Player)" and removes the separate class line.
-- Misc: Tooltip Tweaks: "Show Target" setting. Adds who the unit is targeting at the bottom of the tooltip.
-- Misc: Tooltip Tweaks: "Hide Player Tag" setting. Hides "(Player)" on player tooltips.
-### Tweak
-- Misc: Tooltip Tweaks: Most of its settings are now on by default.
-### Bugfix
-- Fix names sometimes using the fallback font instead of your custom font.
-## Retail & Forever
-### New
-- UnitFrame Element Tweaks under General topleft in /bbf. Move and scale most icons and lvl text on the unitframes like party leader icon, role icon, elite icon, etc.
-- Party/Raid Hide Options: "Hide RaidFrame Titles" to hide the "Group 1", "Group 2" etc text above raid groups.
-- Big Debuffs: New "Frames" dropdown to pick which frames it shows on (Player, Target, Focus, Default Party, Pet).
-### Tweak
-- The Target/Focus threat number now sits above the name when the name is above the healthbar.
-- OCD Tweaks no longer resizes minimap button borders cuz it seems fixed by Blizzard now (?).
-- Change Party Font: "Lvl" checkbox to also color the party level text.
-### Bugfix
-- Fix the "Absorb Indicator" setting not working at all. This was temporarily disabled when Midnight hit and then forgotten about (oops). Fixed now but uses a general shield absorb icon instead of getting the biggest one active due to restrictions.
-- Fix a secret error on the combo point, Maelstrom and Tip of the Spear bars.
-- Fix Change Party Font not changing the name font on default party frames.
-- Fix Change Name Bg Texture alpha resetting back to 1 when changing target with some settings.
-## Retail
-### New
-- New Langneur profile (www.twitch.tv/langneuur). Thank you for sharing!
-## Forever
-### New
-- Misc: Classic PvP Icon. Older faction PvP icons on Player, Target and Focus. Turned on for Classic Frames users.
-### Tweak
-- Tweak all core profiles, especially the Forever one and my personal one.
+- MoP: Small tweak for Target/Focus portrait position.
+- MoP: Small tweak for player mana bar position with Bigger Healthbars.
