@@ -1093,29 +1093,64 @@ local function UpdateShiftClickProxy(frame)
 end
 
 local function SetShiftClickable(frame, shift)
-    if shift then
-        UpdateShiftClickProxy(frame)
-    end
+    UpdateShiftClickProxy(frame)
+    frame:SetMouseMotionEnabled(true)
     frame:SetMouseClickEnabled(shift)
+end
+
+-- In combat the frames can only be changed from a secure handler, so a state driver
+-- watches [combat,mod:shift] and toggles mouse input on the frames while Shift is held.
+-- Restricted code only has EnableMouse (clicks + hover together), so frames that were
+-- made clickable lose hover until combat ends; PLAYER_REGEN_ENABLED restores them.
+local clickthroughDriver
+
+local function UpdateClickthroughDriver(frames)
+    if not clickthroughDriver then
+        clickthroughDriver = CreateFrame("Frame", nil, UIParent, "SecureHandlerStateTemplate")
+        clickthroughDriver:SetAttribute("_onstate-clickthrough", [[
+            if newstate == "nocombat" then return end
+            local shift = newstate == "shift"
+            for i = 1, self:GetAttribute("numframes") or 0 do
+                local frame = self:GetFrameRef("frame" .. i)
+                if frame and (shift or frame:IsMouseClickEnabled()) then
+                    frame:EnableMouse(shift)
+                end
+            end
+        ]])
+        RegisterStateDriver(clickthroughDriver, "clickthrough", "[combat,mod:shift] shift; [combat] noshift; nocombat")
+    end
+    for i, frame in ipairs(frames) do
+        clickthroughDriver:SetFrameRef("frame" .. i, frame)
+    end
+    clickthroughDriver:SetAttribute("numframes", #frames)
 end
 
 function BBF.ClickthroughFrames()
     if not InCombatLockdown() then
         local shift = IsShiftKeyDown()
         local db = BetterBlizzFramesDB
+        local frames = {}
 
         if db.playerFrameClickthrough then
-            SetShiftClickable(PlayerFrame, shift)
+            tinsert(frames, PlayerFrame)
         end
 
         if db.targetFrameClickthrough then
-            SetShiftClickable(TargetFrame, shift)
-            SetShiftClickable(TargetFrameToT, shift)
+            tinsert(frames, TargetFrame)
+            tinsert(frames, TargetFrameToT)
         end
 
         if db.focusFrameClickthrough then
-            SetShiftClickable(FocusFrame, shift)
-            SetShiftClickable(FocusFrameToT, shift)
+            tinsert(frames, FocusFrame)
+            tinsert(frames, FocusFrameToT)
+        end
+
+        for _, frame in ipairs(frames) do
+            SetShiftClickable(frame, shift)
+        end
+
+        if #frames > 0 or clickthroughDriver then
+            UpdateClickthroughDriver(frames)
         end
     end
 end
@@ -1145,6 +1180,7 @@ ClickthroughFrames:SetScript("OnEvent", function(_, event)
 end)
 ClickthroughFrames:RegisterEvent("MODIFIER_STATE_CHANGED")
 ClickthroughFrames:RegisterEvent("PLAYER_REGEN_DISABLED")
+ClickthroughFrames:RegisterEvent("PLAYER_REGEN_ENABLED")
 
 
 --TODO Bodify, already in aura function, this is better perf tho so figure out how (debuffs only)
