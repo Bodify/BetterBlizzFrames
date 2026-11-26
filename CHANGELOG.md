@@ -6,6 +6,7 @@
 ### Tweak
 - Chat Filter System Messages: Added a warning that it can cause chat spam together with other addons. Unsure of cause but if you are having that issue consider trying it off. Based off of reports but I cannot replicate myself.
 - Class Color Level Text no longer colors the level on NPCs, that gets the normal level coloring instead.
+- Clickthrough Player/Target/FocusFrame can now be shift-clicked in combat too. (Thanks DecepUK for the PR #93)
 ## Retail & Forever
 ### New
 - New Nepminjoong profile (www.youtube.com/@nepminjoong). Thank you for sharing!
