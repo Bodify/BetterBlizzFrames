@@ -11547,6 +11547,7 @@ local function guiFrameLook()
         CreateTooltipTwo(colorLvl, L["FontTexture_Color_Level"], L["Tooltip_Color_Level_Font_Desc"])
         colorLvl:HookScript("OnClick", function() BBF.FontColors() end)
         local levelFont = f.Add(CreateCheckbox("changeUnitFrameFontLevel", L["Tooltip_Change_UnitFrame_Level_Font_Desc"], f))
+        levelFont.searchCategory = contentFrame.name
         levelFont:SetPoint("TOPLEFT", color, "BOTTOMLEFT", 0, -2)
         CreateTooltipTwo(levelFont, L["Tooltip_Change_UnitFrame_Level_Font_Desc"], L["Tooltip_Change_UnitFrame_Level_Font_Etc_Desc"])
         levelFont:HookScript("OnClick", function(self)
