@@ -11869,6 +11869,13 @@ local function guiFrameLook()
             BBF.SetCustomFonts()
             ReloadWhenOff(self)
         end)
+        -- Turning the main font option off returns the level font to its default, on.
+        changeUnitFrameFont:HookScript("OnClick", function(self)
+            if not self:GetChecked() then
+                BetterBlizzFramesDB.changeUnitFrameFontLevel = true
+                levelFont:SetChecked(true)
+            end
+        end)
         local _, outline = AddFontDropdowns(f, "unitFrame", -68)
         f.Add(CreateSimpleDropdown("FontSizeDropdown", f, L["Size"], "unitFrameFontSize", fontSizeOptions, function()
             BBF.SetCustomFonts()
