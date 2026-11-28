@@ -695,6 +695,7 @@ local defaultSettings = {
     partyRaidFrameBackgroundHealthColor = {0,0,0,0.5},
     partyRaidFrameBackgroundManaColor = {0,0,0,0.5},
     unitFrameFontColorRGB = {1,1,1,1},
+    changeUnitFrameFontLevel = true,
     partyFrameFontColorRGB = {1,1,1,1},
     unitFrameValueFontColorRGB = {1,1,1,1},
     actionBarFontColorRGB = {1,1,1,1},

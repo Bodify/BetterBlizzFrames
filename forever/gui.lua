@@ -11848,7 +11848,7 @@ local function guiFrameLook()
         ReloadWhenOff(self)
     end)
     do
-        local f = AddPopup(changeUnitFrameFont, "UnitFrameFont", 206)
+        local f = AddPopup(changeUnitFrameFont, "UnitFrameFont", 230)
         local color = f.Add(CreateCheckbox("unitFrameFontColor", L["Color"], f))
         color:SetPoint("TOPLEFT", f, "TOPLEFT", 12, -28)
         CreateTooltipTwo(color, L["Color"], L["Tooltip_UnitFrame_Font_Color_Desc"])
@@ -11862,7 +11862,22 @@ local function guiFrameLook()
         colorLvl:SetPoint("LEFT", color.Text, "RIGHT", 0, 0)
         CreateTooltipTwo(colorLvl, L["FontTexture_Color_Level"], L["Tooltip_Color_Level_Font_Desc"])
         colorLvl:HookScript("OnClick", function() BBF.FontColors() end)
-        local _, outline = AddFontDropdowns(f, "unitFrame", -40)
+        local levelFont = f.Add(CreateCheckbox("changeUnitFrameFontLevel", L["Tooltip_Change_UnitFrame_Level_Font_Desc"], f))
+        levelFont.searchCategory = contentFrame.name
+        levelFont:SetPoint("TOPLEFT", color, "BOTTOMLEFT", 0, -2)
+        CreateTooltipTwo(levelFont, L["Tooltip_Change_UnitFrame_Level_Font_Desc"], L["Tooltip_Change_UnitFrame_Level_Font_Etc_Desc"])
+        levelFont:HookScript("OnClick", function(self)
+            BBF.SetCustomFonts()
+            ReloadWhenOff(self)
+        end)
+        -- Turning the main font option off returns the level font to its default, on.
+        changeUnitFrameFont:HookScript("OnClick", function(self)
+            if not self:GetChecked() then
+                BetterBlizzFramesDB.changeUnitFrameFontLevel = true
+                levelFont:SetChecked(true)
+            end
+        end)
+        local _, outline = AddFontDropdowns(f, "unitFrame", -68)
         f.Add(CreateSimpleDropdown("FontSizeDropdown", f, L["Size"], "unitFrameFontSize", fontSizeOptions, function()
             BBF.SetCustomFonts()
         end, { anchorFrame = outline, x = 0, y = -5 }, 155))
