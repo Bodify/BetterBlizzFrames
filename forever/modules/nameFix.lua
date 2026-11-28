@@ -1606,7 +1606,7 @@ local function SetUnitFramesFont(font, size, outline)
             if not BBF.SetNameFont(frame.bbfName, font, newSize, outline) then
                 anyFailed = true
             end
-            if frame.TargetFrameContent and frame.TargetFrameContent.TargetFrameContentMain.LevelText then
+            if BetterBlizzFramesDB.changeUnitFrameFontLevel ~= false and frame.TargetFrameContent and frame.TargetFrameContent.TargetFrameContentMain.LevelText then
                 local _, lvlSize = frame.TargetFrameContent.TargetFrameContentMain.LevelText:GetFont()
                 frame.TargetFrameContent.TargetFrameContentMain.LevelText:SetFont(font, lvlSize, outline)
                 PlayerLevelText:SetFont(font, lvlSize, outline)
